@@ -1,3 +1,12 @@
+2001-09-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/PosixProcess.java (exitValue): Implement here. Throw 
+	IllegalThreadStateException if process hasn't exited yet.
+	* java/lang/natPosixProcess.cc (exitValue): Removed.
+	(waitFor): Only check thread interrupted status if waitpid() returned
+	an error. Use WIFEXITED and WEXITSTATUS to process process's exit
+	value.
+
 2001-09-22  Anthony Green  <green@redhat.com>
 
  	* java/security/DummyKeyPairGenerator.java (initialize): New

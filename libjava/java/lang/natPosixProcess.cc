@@ -49,27 +49,6 @@ java::lang::ConcreteProcess::destroy (void)
 }
 
 jint
-java::lang::ConcreteProcess::exitValue (void)
-{
-  if (! hasExited)
-    {
-      int wstat;
-      pid_t r = waitpid ((pid_t) pid, &wstat, WNOHANG);
-      if (r == -1)
-	{
-	  jstring x = JvNewStringLatin1 (strerror (errno));
-	  throw new IllegalThreadStateException (x);
-	}
-
-      hasExited = true;
-      // Just use the raw status.  FIXME: what is right?
-      status = wstat;
-    }
-
-  return status;
-}
-
-jint
 java::lang::ConcreteProcess::waitFor (void)
 {
   if (! hasExited)
@@ -77,15 +56,21 @@ java::lang::ConcreteProcess::waitFor (void)
       int wstat;
       int r = waitpid ((pid_t) pid, &wstat, 0);
 
-      if (r != -1)
+      if (r == -1)
+        {
+	  if (java::lang::Thread::interrupted())
+	    throw new InterruptedException (JvNewStringLatin1 (strerror
+	      (errno)));
+	}
+      else
 	{
 	  hasExited = true;
-	  // Just use the raw status.  FIXME: what is right?
-	  status = wstat;
-	}
 
-      if (java::lang::Thread::interrupted())
-	throw new InterruptedException (JvNewStringLatin1 ("wait interrupted"));
+	  if (WIFEXITED (wstat))
+	    status = WEXITSTATUS (wstat);
+	  else
+	    status = -1;
+	}
     }
 
   return status;
