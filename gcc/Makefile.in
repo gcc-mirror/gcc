@@ -986,8 +986,8 @@ $(srcdir)/c-gperf.h: $(srcdir)/c-parse.gperf
 	   $(srcdir)/c-parse.gperf >tmp-gperf.h
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
-c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
-c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
+c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h output.h
+c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h output.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
 c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h $(srcdir)/c-parse.h \
     input.h flags.h $(srcdir)/c-gperf.h
@@ -1055,7 +1055,7 @@ print-tree.o : print-tree.c $(CONFIG_H) $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(TREE_H) function.h
 fold-const.o : fold-const.c $(CONFIG_H) $(TREE_H) flags.h 
 toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h input.h \
-   insn-attr.h xcoffout.h defaults.h
+   insn-attr.h xcoffout.h defaults.h output.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(MAYBE_TARGET_DEFAULT) $(MAYBE_USE_COLLECT2) \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
@@ -1067,7 +1067,8 @@ rtlanal.o : rtlanal.c $(CONFIG_H) $(RTL_H)
 
 toplev.o: bytecode.h bc-emit.h
 varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h function.h \
-   defaults.h insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h bytecode.h
+   defaults.h insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h \
+   output.h bytecode.h 
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
    recog.h output.h bytecode.h
