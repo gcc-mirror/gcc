@@ -2135,10 +2135,12 @@ emit_library_call (va_alist)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
 	{
+	  /* We do not support FUNCTION_ARG_CALLEE_COPIES here since it can
+	     be viewed as just an efficiency improvement.  */
 	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
 	  emit_move_insn (slot, val);
 	  val = XEXP (slot, 0);
-	  mode = SImode;
+	  mode = Pmode;
 	}
 #endif
 
@@ -2470,6 +2472,8 @@ emit_library_call_value (va_alist)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
 	{
+	  /* We do not support FUNCTION_ARG_CALLEE_COPIES here since it can
+	     be viewed as just an efficiency improvement.  */
 	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
 	  emit_move_insn (slot, val);
 	  val = XEXP (slot, 0);
