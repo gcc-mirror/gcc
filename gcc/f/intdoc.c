@@ -709,6 +709,10 @@ types of all the arguments.\n\n");
 		      argument_name_string (imp, 0));
 	      break;
 
+	    case 'N':
+	      printf ("@code{INTEGER} not wider than the default kind");
+	      break;
+
 	    default:
 	      assert ("Ia" == NULL);
 	      break;
@@ -730,6 +734,10 @@ types of all the arguments.\n\n");
 	    case 'A':
 	      printf ("@code{LOGICAL} with same @samp{KIND=} value as for @var{%s}",
 		      argument_name_string (imp, 0));
+	      break;
+
+	    case 'N':
+	      printf ("@code{LOGICAL} not wider than the default kind");
 	      break;
 
 	    default:
@@ -777,6 +785,10 @@ types of all the arguments.\n\n");
 	    case 'A':
 	      printf ("Same type and @samp{KIND=} value as for @var{%s}",
 		      argument_name_string (imp, 0));
+	      break;
+
+	    case 'N':
+	      printf ("@code{INTEGER} or @code{LOGICAL} not wider than the default kind");
 	      break;
 
 	    default:

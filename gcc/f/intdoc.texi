@@ -1673,7 +1673,7 @@ BesJN(@var{N}, @var{X})
 BesJN: @code{REAL} function, the @samp{KIND=} value of the type being that of argument @var{X}.
 
 @noindent
-@var{N}: @code{INTEGER}; scalar; INTENT(IN).
+@var{N}: @code{INTEGER} not wider than the default kind; scalar; INTENT(IN).
 
 @noindent
 @var{X}: @code{REAL}; scalar; INTENT(IN).
@@ -1748,7 +1748,7 @@ BesYN(@var{N}, @var{X})
 BesYN: @code{REAL} function, the @samp{KIND=} value of the type being that of argument @var{X}.
 
 @noindent
-@var{N}: @code{INTEGER}; scalar; INTENT(IN).
+@var{N}: @code{INTEGER} not wider than the default kind; scalar; INTENT(IN).
 
 @noindent
 @var{X}: @code{REAL}; scalar; INTENT(IN).
@@ -3113,7 +3113,7 @@ DbesJN(@var{N}, @var{X})
 DbesJN: @code{REAL(KIND=2)} function.
 
 @noindent
-@var{N}: @code{INTEGER}; scalar; INTENT(IN).
+@var{N}: @code{INTEGER} not wider than the default kind; scalar; INTENT(IN).
 
 @noindent
 @var{X}: @code{REAL(KIND=2)}; scalar; INTENT(IN).
@@ -3194,7 +3194,7 @@ DbesYN(@var{N}, @var{X})
 DbesYN: @code{REAL(KIND=2)} function.
 
 @noindent
-@var{N}: @code{INTEGER}; scalar; INTENT(IN).
+@var{N}: @code{INTEGER} not wider than the default kind; scalar; INTENT(IN).
 
 @noindent
 @var{X}: @code{REAL(KIND=2)}; scalar; INTENT(IN).
@@ -4385,7 +4385,7 @@ CALL Exit(@var{Status})
 @end example
 
 @noindent
-@var{Status}: @code{INTEGER}; OPTIONAL; scalar; INTENT(IN).
+@var{Status}: @code{INTEGER} not wider than the default kind; OPTIONAL; scalar; INTENT(IN).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -5249,7 +5249,7 @@ CALL GetArg(@var{Pos}, @var{Value})
 @end example
 
 @noindent
-@var{Pos}: @code{INTEGER}; scalar; INTENT(IN).
+@var{Pos}: @code{INTEGER} not wider than the default kind; scalar; INTENT(IN).
 
 @noindent
 @var{Value}: @code{CHARACTER}; scalar; INTENT(OUT).

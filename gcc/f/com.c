@@ -3730,6 +3730,10 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       item = ffecom_arg_ptr_to_expr (ffebld_left (expr), &list);
       return convert (tree_type, item);
 
+    case FFEBLD_opPERCENT_VAL:
+      item = ffecom_arg_expr (ffebld_left (expr), &list);
+      return convert (tree_type, item);
+
     case FFEBLD_opITEM:
     case FFEBLD_opSTAR:
     case FFEBLD_opBOUNDS:
