@@ -1198,6 +1198,7 @@ java/util/Dictionary.java \
 java/util/EmptyStackException.java \
 java/util/Enumeration.java \
 java/util/EventListener.java \
+java/util/EventListenerProxy.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \

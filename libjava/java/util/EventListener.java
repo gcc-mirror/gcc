@@ -1,5 +1,5 @@
-/* An interface that all event listener interfaces must extend
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* EventListener.java -- tagging interface for all event listeners
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,6 @@ exception statement from your version. */
 
 package java.util;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Believed complete and correct.
- */
-
 /**
  * Empty interface that is implemented by classes that need to receive
  * events. Subinterfaces define methods that can be called to fire an
@@ -51,7 +46,8 @@ package java.util;
  * take as argument an subclass of <code>EventObject</code>.
  *
  * @author Tom Tromey <tromey@cygnus.com>
- * @date December 12, 1998
+ * @see EventObject
+ * @status updated to 1.4
  */
 public interface EventListener
 {

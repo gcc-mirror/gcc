@@ -288,6 +288,7 @@ extern "Java"
       class EmptyStackException;
       class Enumeration;
       class EventListener;
+      class EventListenerProxy;
       class EventObject;
       class GregorianCalendar;
       class HashMap;
