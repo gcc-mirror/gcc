@@ -1,5 +1,10 @@
 2000-05-17  Richard Henderson  <rth@cygnus.com>
 
+	* jump.c (jump_optimize_1): Remove inactive but real insns
+	in jump-to-next-insn optimization.
+
+2000-05-17  Richard Henderson  <rth@cygnus.com>
+
 	* toplev.c (rest_of_compilation): Don't call optimize_mode_switching
 	unless OPTIMIZE_MODE_SWITCHING.  Conditionally set no_new_pseudos.
 	Don't call recompute_reg_usage if no_new_pseudos is true.
