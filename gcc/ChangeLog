@@ -1,3 +1,14 @@
+2004-02-02  Jeff Law  <law@redhat.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	* tree.c (commutative_tree_code, associative_tree_code): New
+	functions.
+	(iterative_hash_expr): Use commutative_tree_code.
+	* tree.h (commutative_tree_code, associative_tree_code): Declare.
+	* fold-const.c (operand_equal_p): Use commutative_tree_code
+	rather than inlining the commutativity check.
+	(fold): Likewise.
+
 2004-02-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* system.h (FUNCTION_ARG_KEEP_AS_REFERENCE): Poison.
