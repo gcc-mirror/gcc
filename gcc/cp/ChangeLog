@@ -1,3 +1,22 @@
+2000-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (dfs_mark_primary_bases_queue_p): New function.
+	(layout_basetypes): Remove.
+	* class.c (propagate_binfo_offsets): Moved here from tree.c.
+	Update to handle primary virtual bases.
+	(remove_base_fields): New function, split out from
+	layout_basetypes.
+	(dfs_mark_primary_bases_and_set_vbase_offsets): New function.
+	(layout_virtual_bases): New function, split out from
+	layout_basetypes.  Update to handle primary virtual bases.
+	(layout_basetypes): Moved here from tree.c.  Use
+	remove_base_fields and layout_virtual_bases.
+	* search.c (dfs_mark_primary_bases_queue_p): New function.
+	(mark_primary_bases): Use it.
+	* tree.c (CEIL): Remove.
+	(propagate_binfo_offsets): Remove.
+	(layout_basetypes): Remove.
+	
 2000-01-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (skip_rtti_stuff): Adjust prototype.

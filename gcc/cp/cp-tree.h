@@ -3909,6 +3909,7 @@ extern tree dfs_walk                            PROTO((tree,
 						       void *));
 extern tree dfs_unmark                          PROTO((tree, void *));
 extern tree markedp                             PROTO((tree, void *));
+extern tree dfs_mark_primary_bases_queue_p      PROTO((tree, void *));
 extern void mark_primary_bases                  PROTO((tree));
 extern void unmark_primary_bases                PROTO((tree));
 
@@ -4028,7 +4029,6 @@ extern tree break_out_calls			PROTO((tree));
 extern tree build_cplus_method_type		PROTO((tree, tree, tree));
 extern tree build_cplus_staticfn_type		PROTO((tree, tree, tree));
 extern tree build_cplus_array_type		PROTO((tree, tree));
-extern int layout_basetypes			PROTO((tree, int));
 extern tree hash_tree_cons			PROTO((tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));

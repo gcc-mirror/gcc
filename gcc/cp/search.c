@@ -2104,7 +2104,7 @@ get_matching_virtual (binfo, fndecl, dtorp)
     }
 }
 
-/* Called via dfs_walk from mark_nonprimary_bases.  */
+/* Called via dfs_walk from mark_primary_bases.  */
 
 static tree
 dfs_mark_primary_bases (binfo, data)
@@ -2124,6 +2124,31 @@ dfs_mark_primary_bases (binfo, data)
   return NULL_TREE;
 }
 
+/* Called via dfs_walk from mark_primary_bases.  */
+
+tree
+dfs_mark_primary_bases_queue_p (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  /* Don't walk into virtual baseclasses that are not primary 
+     bases.  */
+  if (TREE_VIA_VIRTUAL (binfo))
+    {
+      tree derived_class;
+      tree primary_base;
+      
+      derived_class = BINFO_TYPE (BINFO_INHERITANCE_CHAIN (binfo));
+      primary_base = CLASSTYPE_PRIMARY_BINFO (derived_class);
+      if (!primary_base || !same_type_p (BINFO_TYPE (primary_base),
+					 BINFO_TYPE (binfo)))
+	return NULL_TREE;
+    }
+
+  /* But do walk into everything else.  */
+  return binfo;
+}
+
 /* Set BINFO_PRIMARY_MARKED_P for all binfos in the hierarchy
    dominated by TYPE that are primary bases.  (In addition,
    BINFO_MARKED is set for all classes in the hierarchy; callers
@@ -2135,7 +2160,7 @@ mark_primary_bases (type)
 {
   dfs_walk (TYPE_BINFO (type), 
 	    dfs_mark_primary_bases,
-	    unmarkedp,
+	    dfs_mark_primary_bases_queue_p,
 	    NULL);
 }
 
