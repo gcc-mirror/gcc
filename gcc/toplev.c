@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/types.h>
-#include <ctype.h>
 #include <sys/stat.h>
 
 #ifdef HAVE_UNISTD_H
@@ -80,6 +79,7 @@ Boston, MA 02111-1307, USA.  */
 #include "bytecode.h"
 #include "bc-emit.h"
 #include "except.h"
+#include "intl.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -174,6 +174,7 @@ void rest_of_decl_compilation ();
 void error_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void error_with_decl PVPROTO((tree decl, char *s, ...));
 void error_for_asm PVPROTO((rtx insn, char *s, ...));
+void notice PVPROTO((char *s, ...));
 void error PVPROTO((char *s, ...));
 void fatal PVPROTO((char *s, ...));
 void warning_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
@@ -184,7 +185,6 @@ void pedwarn PVPROTO((char *s, ...));
 void pedwarn_with_decl PVPROTO((tree decl, char *s, ...));
 void pedwarn_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void sorry PVPROTO((char *s, ...));
-void really_sorry PVPROTO((char *s, ...));
 void fancy_abort ();
 #ifndef abort
 void abort ();
@@ -1026,7 +1026,7 @@ count_error (warningp)
 
       if (warningp && !warning_message)
 	{
-	  fprintf (stderr, "%s: warnings being treated as errors\n", progname);
+	  notice ("%s: warnings being treated as errors\n", progname);
 	  warning_message = 1;
 	}
       errorcount++;
@@ -1051,7 +1051,7 @@ void
 fatal_io_error (name)
      char *name;
 {
-  fprintf (stderr, "%s: %s: I/O error\n", progname, name);
+  notice ("%s: %s: I/O error\n", progname, name);
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1059,13 +1059,13 @@ fatal_io_error (name)
    just calling abort().  */
 
 void
-fatal_insn (message, insn)
-     char *message;
+fatal_insn (msgid, insn)
+     char *msgid;
      rtx insn;
 {
   if (!output_bytecode)
     {
-      error (message);
+      error (msgid);
       debug_rtx (insn);
     }
   if (asm_out_file)
@@ -1171,21 +1171,16 @@ default_print_error_function (file)
 {
   if (last_error_function != current_function_decl)
     {
-      char *kind = "function";
-      if (current_function_decl != 0
-	  && TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
-	kind = "method";
-
       if (file)
 	fprintf (stderr, "%s: ", file);
 
       if (current_function_decl == NULL)
-	fprintf (stderr, "At top level:\n");
+	notice ("At top level:\n");
       else
-	{
-	  char *name = (*decl_printable_name) (current_function_decl, 2);
-	  fprintf (stderr, "In %s `%s':\n", kind, name);
-	}
+	notice ((TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
+		 ? "In method `%s':\n"
+		 : "In function `%s':\n"),
+		(*decl_printable_name) (current_function_decl, 2));
 
       last_error_function = current_function_decl;
     }
@@ -1217,13 +1212,11 @@ report_error_function (file)
       && input_file_stack_tick != last_error_tick
       && file == input_filename)
     {
-      fprintf (stderr, "In file included");
       for (p = input_file_stack->next; p; p = p->next)
-	{
-	  fprintf (stderr, " from %s:%d", p->name, p->line);
-	  if (p->next)
-	    fprintf (stderr, ",\n                ");
-	}
+	notice ((p == input_file_stack->next
+		 ?    "In file included from %s:%d"
+		 : ",\n                 from %s:%d"),
+		p->name, p->line);
       fprintf (stderr, ":\n");
       last_error_tick = input_file_stack_tick;
     }
@@ -1232,104 +1225,148 @@ report_error_function (file)
 /* Print a message.  */
 
 static void
-vmessage (prefix, s, ap)
-     char *prefix;
-     char *s;
+vnotice (file, msgid, ap)
+     FILE *file;
+     char *msgid;
      va_list ap;
 {
-  if (prefix)
-    fprintf (stderr, "%s: ", prefix);
-
 #ifdef HAVE_VPRINTF
-  vfprintf (stderr, s, ap);
+  vfprintf (file, _(msgid), ap);
 #else
   {
     HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
     HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
     HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
     HOST_WIDE_INT v4 = va_arg(ap, HOST_WIDE_INT);
-    fprintf (stderr, s, v1, v2, v3, v4);
+    HOST_WIDE_INT v5 = va_arg(ap, HOST_WIDE_INT);
+    HOST_WIDE_INT v6 = va_arg(ap, HOST_WIDE_INT);
+    fprintf (file, _(msgid), v1, v2, v3, v4, v5, v6);
   }
 #endif
 }
 
-/* Print a message relevant to line LINE of file FILE.  */
+void
+notice VPROTO((char *msgid, ...))
+{
+#ifndef __STDC__
+  char *msgid;
+#endif
+  va_list ap;
+
+  VA_START (ap, msgid);
+
+#ifndef __STDC__
+  msgid = va_arg (ap, char *);
+#endif
+
+  vnotice (stderr, msgid, ap);
+  va_end (ap);
+}
+
+void
+fnotice VPROTO((FILE *file, char *msgid, ...))
+{
+#ifndef __STDC__
+  FILE *file;
+  char *msgid;
+#endif
+  va_list ap;
+
+  VA_START (ap, msgid);
+
+#ifndef __STDC__
+  file = va_arg (ap, FILE *);
+  msgid = va_arg (ap, char *);
+#endif
+
+  vnotice (file, msgid, ap);
+  va_end (ap);
+}
+
+/* Report FILE and LINE (or program name), and optionally just WARN.  */
 
 static void
-v_message_with_file_and_line (file, line, prefix, s, ap)
+report_file_and_line (file, line, warn)
      char *file;
      int line;
-     char *prefix;
-     char *s;
-     va_list ap;
+     int warn;
 {
   if (file)
     fprintf (stderr, "%s:%d: ", file, line);
   else
     fprintf (stderr, "%s: ", progname);
 
-  vmessage (prefix, s, ap);
+  if (warn)
+    notice ("warning: ");
+}
+
+/* Print a message relevant to line LINE of file FILE.  */
+
+static void
+v_message_with_file_and_line (file, line, warn, msgid, ap)
+     char *file;
+     int line;
+     int warn;
+     char *msgid;
+     va_list ap;
+{
+  report_file_and_line (file, line, warn);
+  vnotice (stderr, msgid, ap);
   fputc ('\n', stderr);
 }
 
 /* Print a message relevant to the given DECL.  */
 
 static void
-v_message_with_decl (decl, prefix, s, ap)
+v_message_with_decl (decl, warn, msgid, ap)
      tree decl;
-     char *prefix;
-     char *s;
+     int warn;
+     char *msgid;
      va_list ap;
 {
   char *n, *p;
 
-  fprintf (stderr, "%s:%d: ",
-	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
-
-  if (prefix)
-    fprintf (stderr, "%s: ", prefix);
+  report_file_and_line (DECL_SOURCE_FILE (decl),
+			DECL_SOURCE_LINE (decl), warn);
 
   /* Do magic to get around lack of varargs support for insertion
      of arguments into existing list.  We know that the decl is first;
      we ass_u_me that it will be printed with "%s".  */
 
-  for (p = s; *p; ++p)
+  for (p = _(msgid); *p; ++p)
     {
       if (*p == '%')
 	{
 	  if (*(p + 1) == '%')
 	    ++p;
+	  else if (*(p + 1) != 's')
+	    abort ();
 	  else
-	    break;
+	    {
+	      /* Print the name.  */
+	      fputs ((DECL_NAME (decl)
+		      ? (*decl_printable_name) (decl, 2)
+		      : _("((anonymous))")),
+		     stderr);
+
+	      /* Print the rest of the message.  */
+#ifdef HAVE_VPRINTF
+	      vfprintf (stderr, p + 2, ap);
+#else
+	      {
+		HOST_WIDE_INT v1 = va_arg(ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v2 = va_arg(ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v3 = va_arg(ap, HOST_WIDE_INT);
+		HOST_WIDE_INT v4 = va_arg(ap, HOST_WIDE_INT);
+		fprintf (stderr, p + 2, v1, v2, v3, v4);
+	      }
+#endif
+	      break;
+	    }
 	}
-    }
 
-  if (p > s)			/* Print the left-hand substring.  */
-    {
-      char fmt[sizeof "%.255s"];
-      long width = p - s;
-             
-      if (width > 255L) width = 255L;	/* arbitrary */
-      sprintf (fmt, "%%.%lds", width);
-      fprintf (stderr, fmt, s);
+      putc (*p, stderr);
     }
-
-  if (*p == '%')		/* Print the name.  */
-    {
-      char *n = (DECL_NAME (decl)
-		 ? (*decl_printable_name) (decl, 2)
-		 : "((anonymous))");
-      fputs (n, stderr);
-      while (*p)
-	{
-	  ++p;
-	  if (isalpha (*(p - 1) & 0xFF))
-	    break;
-	}
-    }
-
-  if (*p)			/* Print the rest of the message.  */
-    vmessage ((char *)NULL, p, ap);
 
   fputc ('\n', stderr);
 }
@@ -1374,71 +1411,71 @@ file_and_line_for_asm (insn, pfile, pline)
 /* Report an error at line LINE of file FILE.  */
 
 static void
-v_error_with_file_and_line (file, line, s, ap)
+v_error_with_file_and_line (file, line, msgid, ap)
      char *file;
      int line;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   count_error (0);
   report_error_function (file);
-  v_message_with_file_and_line (file, line, (char *)NULL, s, ap);
+  v_message_with_file_and_line (file, line, 0, msgid, ap);
 }
 
 void
-error_with_file_and_line VPROTO((char *file, int line, char *s, ...))
+error_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 {
 #ifndef __STDC__
   char *file;
   int line;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_error_with_file_and_line (file, line, s, ap);
+  v_error_with_file_and_line (file, line, msgid, ap);
   va_end (ap);
 }
 
 /* Report an error at the declaration DECL.
-   S is a format string which uses %s to substitute the declaration
+   MSGID is a format string which uses %s to substitute the declaration
    name; subsequent substitutions are a la printf.  */
 
 static void
-v_error_with_decl (decl, s, ap)
+v_error_with_decl (decl, msgid, ap)
      tree decl;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   count_error (0);
   report_error_function (DECL_SOURCE_FILE (decl));
-  v_message_with_decl (decl, (char *)NULL, s, ap);
+  v_message_with_decl (decl, 0, msgid, ap);
 }
 
 void
-error_with_decl VPROTO((tree decl, char *s, ...))
+error_with_decl VPROTO((tree decl, char *msgid, ...))
 {
 #ifndef __STDC__
   tree decl;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   decl = va_arg (ap, tree);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_error_with_decl (decl, s, ap);
+  v_error_with_decl (decl, msgid, ap);
   va_end (ap);
 }
 
@@ -1447,9 +1484,9 @@ error_with_decl VPROTO((tree decl, char *s, ...))
    and each ASM_OPERANDS records its own source file and line.  */
 
 static void
-v_error_for_asm (insn, s, ap)
+v_error_for_asm (insn, msgid, ap)
      rtx insn;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   char *file;
@@ -1458,158 +1495,158 @@ v_error_for_asm (insn, s, ap)
   count_error (0);
   file_and_line_for_asm (insn, &file, &line);
   report_error_function (file);
-  v_message_with_file_and_line (file, line, (char *)NULL, s, ap);
+  v_message_with_file_and_line (file, line, 0, msgid, ap);
 }
 
 void
-error_for_asm VPROTO((rtx insn, char *s, ...))
+error_for_asm VPROTO((rtx insn, char *msgid, ...))
 {
 #ifndef __STDC__
   rtx insn;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   insn = va_arg (ap, rtx);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_error_for_asm (insn, s, ap);
+  v_error_for_asm (insn, msgid, ap);
   va_end (ap);
 }
 
 /* Report an error at the current line number.  */
 
 static void
-verror (s, ap)
-     char *s;
+verror (msgid, ap)
+     char *msgid;
      va_list ap;
 {
-  v_error_with_file_and_line (input_filename, lineno, s, ap);
+  v_error_with_file_and_line (input_filename, lineno, msgid, ap);
 }
 
 void
-error VPROTO((char *s, ...))
+error VPROTO((char *msgid, ...))
 {
 #ifndef __STDC__
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  verror (s, ap);
+  verror (msgid, ap);
   va_end (ap);
 }
 
 /* Report a fatal error at the current line number.  */
 
 static void
-vfatal (s, ap)
-     char *s;
+vfatal (msgid, ap)
+     char *msgid;
      va_list ap;
 {
-  verror (s, ap);
+  verror (msgid, ap);
   exit (FATAL_EXIT_CODE);
 }
 
 void
-fatal VPROTO((char *s, ...))
+fatal VPROTO((char *msgid, ...))
 {
 #ifndef __STDC__
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  vfatal (s, ap);
+  vfatal (msgid, ap);
   va_end (ap);
 }
 
 /* Report a warning at line LINE of file FILE.  */
 
 static void
-v_warning_with_file_and_line (file, line, s, ap)
+v_warning_with_file_and_line (file, line, msgid, ap)
      char *file;
      int line;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   if (count_error (1))
     {
       report_error_function (file);
-      v_message_with_file_and_line (file, line, "warning", s, ap);
+      v_message_with_file_and_line (file, line, 1, msgid, ap);
     }
 }
 
 void
-warning_with_file_and_line VPROTO((char *file, int line, char *s, ...))
+warning_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 {
 #ifndef __STDC__
   char *file;
   int line;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_warning_with_file_and_line (file, line, s, ap);
+  v_warning_with_file_and_line (file, line, msgid, ap);
   va_end (ap);
 }
 
 /* Report a warning at the declaration DECL.
-   S is a format string which uses %s to substitute the declaration
+   MSGID is a format string which uses %s to substitute the declaration
    name; subsequent substitutions are a la printf.  */
 
 static void
-v_warning_with_decl (decl, s, ap)
+v_warning_with_decl (decl, msgid, ap)
      tree decl;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   if (count_error (1))
     {
       report_error_function (DECL_SOURCE_FILE (decl));
-      v_message_with_decl (decl, "warning", s, ap);
+      v_message_with_decl (decl, 1, msgid, ap);
     }
 }
 
 void
-warning_with_decl VPROTO((tree decl, char *s, ...))
+warning_with_decl VPROTO((tree decl, char *msgid, ...))
 {
 #ifndef __STDC__
   tree decl;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   decl = va_arg (ap, tree);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_warning_with_decl (decl, s, ap);
+  v_warning_with_decl (decl, msgid, ap);
   va_end (ap);
 }
 
@@ -1618,9 +1655,9 @@ warning_with_decl VPROTO((tree decl, char *s, ...))
    and each ASM_OPERANDS records its own source file and line.  */
 
 static void
-v_warning_for_asm (insn, s, ap)
+v_warning_for_asm (insn, msgid, ap)
      rtx insn;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   if (count_error (1))
@@ -1630,55 +1667,55 @@ v_warning_for_asm (insn, s, ap)
 
       file_and_line_for_asm (insn, &file, &line);
       report_error_function (file);
-      v_message_with_file_and_line (file, line, "warning", s, ap);
+      v_message_with_file_and_line (file, line, 1, msgid, ap);
     }
 }
 
 void
-warning_for_asm VPROTO((rtx insn, char *s, ...))
+warning_for_asm VPROTO((rtx insn, char *msgid, ...))
 {
 #ifndef __STDC__
   rtx insn;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   insn = va_arg (ap, rtx);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_warning_for_asm (insn, s, ap);
+  v_warning_for_asm (insn, msgid, ap);
   va_end (ap);
 }
 
 /* Report a warning at the current line number.  */
 
 static void
-vwarning (s, ap)
-     char *s;
+vwarning (msgid, ap)
+     char *msgid;
      va_list ap;
 {
-  v_warning_with_file_and_line (input_filename, lineno, s, ap);
+  v_warning_with_file_and_line (input_filename, lineno, msgid, ap);
 }
 
 void
-warning VPROTO((char *s, ...))
+warning VPROTO((char *msgid, ...))
 {
 #ifndef __STDC__
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  vwarning (s, ap);
+  vwarning (msgid, ap);
   va_end (ap);
 }
 
@@ -1686,38 +1723,38 @@ warning VPROTO((char *s, ...))
    -pedantic-errors.  */
 
 static void
-vpedwarn (s, ap)
-     char *s;
+vpedwarn (msgid, ap)
+     char *msgid;
      va_list ap;
 {
   if (flag_pedantic_errors)
-    verror (s, ap);
+    verror (msgid, ap);
   else
-    vwarning (s, ap);
+    vwarning (msgid, ap);
 }
 
 void
-pedwarn VPROTO((char *s, ...))
+pedwarn VPROTO((char *msgid, ...))
 {
 #ifndef __STDC__
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  vpedwarn (s, ap);
+  vpedwarn (msgid, ap);
   va_end (ap);
 }
 
 static void
-v_pedwarn_with_decl (decl, s, ap)
+v_pedwarn_with_decl (decl, msgid, ap)
      tree decl;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   /* We don't want -pedantic-errors to cause the compilation to fail from
@@ -1730,72 +1767,72 @@ v_pedwarn_with_decl (decl, s, ap)
   if (! DECL_IN_SYSTEM_HEADER (decl))
     {
       if (flag_pedantic_errors)
-	v_error_with_decl (decl, s, ap);
+	v_error_with_decl (decl, msgid, ap);
       else
-	v_warning_with_decl (decl, s, ap);
+	v_warning_with_decl (decl, msgid, ap);
     }
 }
 
 void
-pedwarn_with_decl VPROTO((tree decl, char *s, ...))
+pedwarn_with_decl VPROTO((tree decl, char *msgid, ...))
 {
 #ifndef __STDC__
   tree decl;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   decl = va_arg (ap, tree);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_pedwarn_with_decl (decl, s, ap);
+  v_pedwarn_with_decl (decl, msgid, ap);
   va_end (ap);
 }
 
 static void
-v_pedwarn_with_file_and_line (file, line, s, ap)
+v_pedwarn_with_file_and_line (file, line, msgid, ap)
      char *file;
      int line;
-     char *s;
+     char *msgid;
      va_list ap;
 {
   if (flag_pedantic_errors)
-    v_error_with_file_and_line (file, line, s, ap);
+    v_error_with_file_and_line (file, line, msgid, ap);
   else
-    v_warning_with_file_and_line (file, line, s, ap);
+    v_warning_with_file_and_line (file, line, msgid, ap);
 }
 
 void
-pedwarn_with_file_and_line VPROTO((char *file, int line, char *s, ...))
+pedwarn_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 {
 #ifndef __STDC__
   char *file;
   int line;
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  v_pedwarn_with_file_and_line (file, line, s, ap);
+  v_pedwarn_with_file_and_line (file, line, msgid, ap);
   va_end (ap);
 }
 
 /* Apologize for not implementing some feature.  */
 
 static void
-vsorry (s, ap)
-     char *s;
+vsorry (msgid, ap)
+     char *msgid;
      va_list ap;
 {
   sorrycount++;
@@ -1803,59 +1840,26 @@ vsorry (s, ap)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
   else
     fprintf (stderr, "%s: ", progname);
-  vmessage ("sorry, not implemented", s, ap);
+  notice ("sorry, not implemented: ");
+  vnotice (stderr, msgid, ap);
   fputc ('\n', stderr);
 }
 
 void
-sorry VPROTO((char *s, ...))
+sorry VPROTO((char *msgid, ...))
 {
 #ifndef __STDC__
-  char *s;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, s);
+  VA_START (ap, msgid);
 
 #ifndef __STDC__
-  s = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
-  vsorry (s, ap);
-  va_end (ap);
-}
-
-/* Apologize for not implementing some feature, then quit.  */
-
-static void
-v_really_sorry (s, ap)
-     char *s;
-     va_list ap;
-{
-  sorrycount++;
-  if (input_filename)
-    fprintf (stderr, "%s:%d: ", input_filename, lineno);
-  else
-    fprintf (stderr, "%s: ", progname);
-  vmessage ("sorry, not implemented", s, ap);
-  fatal (" (fatal)\n");
-}
-
-void
-really_sorry VPROTO((char *s, ...))
-{
-#ifndef __STDC__
-  char *s;
-#endif
-  va_list ap;
-
-  VA_START (ap, s);
-
-#ifndef __STDC__
-  s = va_arg (ap, char *);
-#endif
-
-  v_really_sorry (s, ap);
+  vsorry (msgid, ap);
   va_end (ap);
 }
 
@@ -2510,7 +2514,7 @@ compile_file (name)
   if (yyparse () != 0)
     {
       if (errorcount == 0)
-	fprintf (stderr, "Errors detected in input file (your bison.simple is out of date)");
+	notice ("Errors detected in input file (your bison.simple is out of date)\n");
 
       /* In case there were missing closebraces,
 	 get us back to the global binding level.  */
@@ -3803,6 +3807,10 @@ main (argc, argv, envp)
   }
 #endif
 
+  setlocale (LC_MESSAGES, "");
+  bindtextdomain (PACKAGE, localedir);
+  textdomain (PACKAGE);
+
   signal (SIGFPE, float_signal);
 
 #ifdef SIGPIPE
@@ -4415,8 +4423,7 @@ main (argc, argv, envp)
     {
       char *lim = (char *) sbrk (0);
 
-      fprintf (stderr, "Data size %d.\n",
-	       lim - (char *) &environ);
+      notice ("Data size %ld.\n", (long) (lim - (char *) &environ));
       fflush (stderr);
 
 #ifndef __MSDOS__
@@ -4462,7 +4469,7 @@ set_target_switch (name)
      char *name;
 {
   register int j;
-  int valid = 0;
+  int valid_target_option = 0;
 
   for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
     if (!strcmp (target_switches[j].name, name))
@@ -4471,23 +4478,23 @@ set_target_switch (name)
 	  target_flags &= ~-target_switches[j].value;
 	else
 	  target_flags |= target_switches[j].value;
-	valid = 1;
+	valid_target_option = 1;
       }
 
 #ifdef TARGET_OPTIONS
-  if (!valid)
+  if (!valid_target_option)
     for (j = 0; j < sizeof target_options / sizeof target_options[0]; j++)
       {
 	int len = strlen (target_options[j].prefix);
 	if (!strncmp (target_options[j].prefix, name, len))
 	  {
 	    *target_options[j].variable = name + len;
-	    valid = 1;
+	    valid_target_option = 1;
 	  }
       }
 #endif
 
-  if (!valid)
+  if (!valid_target_option)
     error ("Invalid option `%s'", name);
 }
 
@@ -4500,17 +4507,17 @@ print_version (file, indent)
      FILE *file;
      char *indent;
 {
-  fprintf (file, "%s%s%s version %s", indent, *indent != 0 ? " " : "",
-	   language_string, version_string);
-  fprintf (file, " (%s)", TARGET_NAME);
-#ifdef __GNUC__
 #ifndef __VERSION__
-#define __VERSION__ "[unknown]"
+#define __VERSION__ "[?]"
 #endif
-  fprintf (file, " compiled by GNU C version %s.\n", __VERSION__);
+  fnotice (file,
+#ifdef __GNUC__
+	   "%s%s%s version %s (%s) compiled by GNU C version %s.\n"
 #else
-  fprintf (file, " compiled by CC.\n");
+	   "%s%s%s version %s (%s) compiled by CC.\n"
 #endif
+	   , indent, *indent != 0 ? " " : "",
+	   language_string, version_string, TARGET_NAME, __VERSION__);
 }
 
 /* Print an option value and return the adjusted position in the line.
@@ -4560,7 +4567,7 @@ print_switch_values (file, pos, max, indent, sep, term)
   /* Print the options as passed.  */
 
   pos = print_single_switch (file, pos, max, indent, *indent ? " " : "", term,
-			     "options passed: ", "");
+			     _("options passed: "), "");
 
   for (p = &save_argv[1]; *p != NULL; p++)
     if (**p == '-')
@@ -4589,7 +4596,7 @@ print_switch_values (file, pos, max, indent, sep, term)
      should suffice.  */
 
   pos = print_single_switch (file, 0, max, indent, *indent ? " " : "", term,
-			     "options enabled: ", "");
+			     _("options enabled: "), "");
 
   for (j = 0; j < sizeof f_options / sizeof f_options[0]; j++)
     if (*f_options[j].variable == f_options[j].on_value)
