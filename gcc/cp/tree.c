@@ -411,10 +411,6 @@ break_out_calls (exp)
 
 }
 
-/* Here is how primitive or already-canonicalized types' hash
-   codes are made.  MUST BE CONSISTENT WITH tree.c !!! */
-#define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
-
 /* Construct, lay out and return the type of methods belonging to class
    BASETYPE and whose arguments are described by ARGTYPES and whose values
    are described by RETTYPE.  If each type exists already, reuse it.  */

@@ -1,3 +1,7 @@
+2001-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.c (TYPE_HASH): Moved to ../tree.h.
+
 2001-08-11  Zack Weinberg  <zackw@panix.com>
 
 	* lex.c: Don't include setjmp.h.

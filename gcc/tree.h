@@ -327,6 +327,10 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    In VECTOR_TYPE nodes, this is the type of the elements.  */
 #define TREE_TYPE(NODE) ((NODE)->common.type)
 
+/* Here is how primitive or already-canonicalized types' hash codes
+   are made.  */
+#define TYPE_HASH(TYPE) ((size_t) (TYPE) & 0777777)
+
 /* Nodes are chained together for many purposes.
    Types are chained together to record them for being output to the debugger
    (see the function `chain_type').

@@ -136,10 +136,6 @@ static int next_decl_uid;
 /* Unique id for next type created.  */
 static int next_type_uid = 1;
 
-/* Here is how primitive or already-canonicalized types' hash
-   codes are made.  */
-#define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
-
 /* Since we cannot rehash a type after it is in the table, we have to
    keep the hash code.  */
 

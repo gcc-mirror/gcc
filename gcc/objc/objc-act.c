@@ -5481,7 +5481,7 @@ build_ivar_reference (id)
 #define SIZEHASHTABLE 		257
 
 /* make positive */
-#define HASHFUNCTION(key)	((HOST_WIDE_INT) key & 0x7fffffff)
+#define HASHFUNCTION(key)	((size_t) key & 0x7fffffff)
 
 static void
 hash_init ()

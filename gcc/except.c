@@ -1475,9 +1475,6 @@ duplicate_eh_regions (ifun, map)
 }
 
 
-/* ??? Move from tree.c to tree.h.  */
-#define TYPE_HASH(TYPE) ((size_t) (TYPE) & 0777777)
-
 static int
 t2r_eq (pentry, pdata)
      const PTR pentry;
