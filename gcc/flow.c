@@ -264,10 +264,27 @@ struct propagate_block_info
 
   /* Flags controlling the set of information propagate_block collects.  */
   int flags;
+  /* Index of instruction being processed.  */
+  int insn_num;
 };
 
 /* Number of dead insns removed.  */
 static int ndead;
+
+/* When PROP_REG_INFO set, array contains pbi->insn_num of instruction
+   where given register died.  When the register is marked alive, we use the
+   information to compute amount of instructions life range cross.
+   (remember, we are walking backward).  This can be computed as current
+   pbi->insn_num - reg_deaths[regno].
+   At the end of processing each basic block, the remaining live registers
+   are inspected and liferanges are increased same way so liverange of global
+   registers are computed correctly.
+  
+   The array is maintained clear for dead registers, so it can be safely reused
+   for next basic block without expensive memset of the whole array after
+   reseting pbi->insn_num to 0.  */
+
+static int *reg_deaths;
 
 /* Maximum length of pbi->mem_set_list before we start dropping
    new elements on the floor.  */
@@ -458,6 +475,11 @@ life_analysis (rtx f, FILE *file, int flags)
       memset (regs_asm_clobbered, 0, sizeof (regs_asm_clobbered));
     }
   update_life_info (NULL, UPDATE_LIFE_GLOBAL, flags);
+  if (reg_deaths)
+    {
+      free (reg_deaths);
+      reg_deaths = NULL;
+    }
 
   /* Clean up.  */
   if (optimize && (flags & PROP_SCAN_DEAD_STORES))
@@ -733,6 +755,11 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
 				       REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
 				     }
 				 });
+    }
+  if (reg_deaths)
+    {
+      free (reg_deaths);
+      reg_deaths = NULL;
     }
   timevar_pop ((extent == UPDATE_LIFE_LOCAL || blocks)
 	       ? TV_LIFE_UPDATE : TV_LIFE);
@@ -1457,6 +1484,9 @@ allocate_reg_life_data (void)
   int i;
 
   max_regno = max_reg_num ();
+  if (reg_deaths)
+    abort ();
+  reg_deaths = xcalloc (sizeof (*reg_deaths), max_regno);
 
   /* Recalculate the register space, in case it has grown.  Old style
      vector oriented regsets would set regset_{size,bytes} here also.  */
@@ -1783,6 +1813,9 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	    mark_used_regs (pbi, XEXP (XEXP (note, 0), 0), cond, insn);
 
 	  /* The stack ptr is used (honorarily) by a CALL insn.  */
+	  if ((flags & PROP_REG_INFO)
+	      && !REGNO_REG_SET_P (pbi->reg_live, STACK_POINTER_REGNUM))
+	    reg_deaths[STACK_POINTER_REGNUM] = pbi->insn_num;
 	  SET_REGNO_REG_SET (pbi->reg_live, STACK_POINTER_REGNUM);
 
 	  /* Calls may also reference any of the global registers,
@@ -1793,11 +1826,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	}
     }
 
-  /* On final pass, update counts of how many insns in which each reg
-     is live.  */
-  if (flags & PROP_REG_INFO)
-    EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
-			       { REG_LIVE_LENGTH (i)++; });
+  pbi->insn_num++;
 
   return prev;
 }
@@ -1820,6 +1849,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   pbi->cond_local_set = cond_local_set;
   pbi->cc0_live = 0;
   pbi->flags = flags;
+  pbi->insn_num = 0;
 
   if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
     pbi->reg_next_use = xcalloc (max_reg_num (), sizeof (rtx));
@@ -1976,6 +2006,16 @@ free_propagate_block_info (struct propagate_block_info *pbi)
   BITMAP_XFREE (pbi->reg_cond_reg);
 #endif
 
+  if (pbi->flags & PROP_REG_INFO)
+    {
+      int num = pbi->insn_num;
+      int i;
+
+      EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
+	 { REG_LIVE_LENGTH (i) += num - reg_deaths[i];
+	   reg_deaths[i] = 0;
+         });
+    }
   if (pbi->reg_next_use)
     free (pbi->reg_next_use);
 
@@ -2803,7 +2843,15 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	{
 	  for (i = regno_first; i <= regno_last; ++i)
 	    if (!(not_dead & (((unsigned long) 1) << (i - regno_first))))
-	      CLEAR_REGNO_REG_SET (pbi->reg_live, i);
+	      {
+		if ((pbi->flags & PROP_REG_INFO)
+		    && REGNO_REG_SET_P (pbi->reg_live, i))
+		  {
+		    REG_LIVE_LENGTH (i) += pbi->insn_num - reg_deaths[i];
+		    reg_deaths[i] = 0;
+		  }
+		CLEAR_REGNO_REG_SET (pbi->reg_live, i);
+	      }
 	}
     }
   else if (GET_CODE (reg) == REG)
@@ -3334,6 +3382,10 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
 	 on this insn, which is incorrect.  */
       SET_REGNO_REG_SET (pbi->reg_live, regno);
 
+      /* We shall not do the autoinc during final pass.  */
+      if (flags & PROP_REG_INFO)
+	abort ();
+
       /* If there are any calls between INSN and INCR, show
 	 that REGNO now crosses them.  */
       for (temp = insn; temp != incr; temp = NEXT_INSN (temp))
@@ -3365,6 +3417,9 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
       /* If the original source was dead, it's dead now.  */
       rtx note;
 
+      /* We shall not do the autoinc during final pass.  */
+      if (flags & PROP_REG_INFO)
+	abort ();
       while ((note = find_reg_note (incr, REG_DEAD, NULL_RTX)) != NULL_RTX)
 	{
 	  remove_note (incr, note);
@@ -3550,6 +3605,15 @@ mark_used_reg (struct propagate_block_info *pbi, rtx reg,
 	  REG_FREQ (regno_first) += REG_FREQ_FROM_BB (pbi->bb);
 	  REG_N_REFS (regno_first)++;
 	}
+      for (i = regno_first; i <= regno_last; ++i)
+	if (! REGNO_REG_SET_P (pbi->reg_live, i))
+	  {
+#ifdef ENABLE_CHECKING
+	    if (reg_deaths[i])
+	      abort ();
+#endif
+	    reg_deaths[i] = pbi->insn_num;
+	  }
     }
 
   /* Record and count the insns in which a reg dies.  If it is used in

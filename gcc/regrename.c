@@ -360,7 +360,7 @@ regrename_optimize (void)
 
   count_or_remove_death_notes (NULL, 1);
   update_life_info (NULL, UPDATE_LIFE_LOCAL,
-		    PROP_REG_INFO | PROP_DEATH_NOTES);
+		    PROP_DEATH_NOTES);
 }
 
 static void

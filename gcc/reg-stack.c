@@ -2236,9 +2236,14 @@ subst_stack_regs (rtx insn, stack regstack)
 	for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	  {
 	    if (stack_regs_mentioned_p (XVECEXP (PATTERN (insn), 0, i)))
-	      control_flow_insn_deleted
-		|= subst_stack_regs_pat (insn, regstack,
-					 XVECEXP (PATTERN (insn), 0, i));
+	      {
+	        if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == CLOBBER)
+	           XVECEXP (PATTERN (insn), 0, i)
+		     = shallow_copy_rtx (XVECEXP (PATTERN (insn), 0, i));
+		control_flow_insn_deleted
+		  |= subst_stack_regs_pat (insn, regstack,
+					   XVECEXP (PATTERN (insn), 0, i));
+	      }
 	  }
       else
 	control_flow_insn_deleted

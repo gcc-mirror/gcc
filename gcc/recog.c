@@ -2795,7 +2795,7 @@ split_all_insns (int upd_life)
 
   if (changed && upd_life)
     update_life_info (blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
-		      PROP_DEATH_NOTES | PROP_REG_INFO);
+		      PROP_DEATH_NOTES);
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

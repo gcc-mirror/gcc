@@ -1,3 +1,23 @@
+2004-02-06  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (split_all_insns): Do not update reg info.
+	* regrename.c (regrename_optimize): Likewise.
+	* toplev.c (rest_of_handle_reorder_blocks): Likewise.
+	* flow.c (struct propagate_block_info): Add insn_num field.
+	(reg_deaths): New array.
+	(life_analysis): Free reg_deaths info.
+	(allocate_reg_life_data): Allocate reg_deaths array.
+	(propagate_one_insn): Use new array.
+	(init_propagate_block): Initialize it.
+	(free_propagate_block_info): Finish compuation of
+	REG_LIVE_LENGTH
+	(attempt_auto_inc): Sanity check that REG_INFO is not
+	computed at same time.
+	(mark_used_regs): Update new array.
+
+	* reg-stack.c (subst_stack_regs): Unshare clobbers before
+	substitution.
+
 2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/s390/s390.md (*extendsiqi2_short_displ): Change to
