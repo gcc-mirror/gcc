@@ -1,3 +1,11 @@
+2005-02-07  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/19611:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (src.zip): New target.
+	(install-src.zip): Likewise.
+	(sourcesdir): New variable.
+
 2005-02-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* javax/imageio/metadata/IIOMetadataNode.java:
