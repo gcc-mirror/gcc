@@ -282,7 +282,221 @@ struct builtin_description
   const char *const name;
   const enum rs6000_builtins code;
 };
+
+/* Target cpu costs.  */
 
+struct processor_costs {
+  const int mulsi;        /* cost of SImode multiplication.  */
+  const int mulsi_const;  /* cost of SImode multiplication by constant.  */
+  const int mulsi_const9; /* cost of SImode mult by short constant.  */
+  const int muldi;        /* cost of DImode multiplication.  */
+  const int divsi;        /* cost of SImode division.  */
+  const int divdi;        /* cost of DImode division.  */
+};
+
+const struct processor_costs *rs6000_cost;
+
+/* Processor costs (relative to an add) */
+
+/* Instruction size costs on 32bit processors.  */
+static const
+struct processor_costs size32_cost = {
+  1,    /* mulsi */
+  1,    /* mulsi_const */
+  1,    /* mulsi_const9 */
+  1,    /* muldi */
+  1,    /* divsi */
+  1,    /* divdi */
+};
+
+/* Instruction size costs on 64bit processors.  */
+static const
+struct processor_costs size64_cost = {
+  1,    /* mulsi */
+  1,    /* mulsi_const */
+  1,    /* mulsi_const9 */
+  1,    /* muldi */
+  1,    /* divsi */
+  1,    /* divdi */
+};
+
+/* Instruction costs on RIOS1 processors.  */
+static const
+struct processor_costs rios1_cost = {
+  5,    /* mulsi */
+  4,    /* mulsi_const */
+  3,    /* mulsi_const9 */
+  5,    /* muldi */
+  19,   /* divsi */
+  19,   /* divdi */
+};
+
+/* Instruction costs on RIOS2 processors.  */
+static const
+struct processor_costs rios2_cost = {
+  2,    /* mulsi */
+  2,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  2,    /* muldi */
+  13,   /* divsi */
+  13,   /* divdi */
+};
+
+/* Instruction costs on RS64A processors.  */
+static const
+struct processor_costs rs64a_cost = {
+  20,   /* mulsi */
+  12,   /* mulsi_const */
+  8,    /* mulsi_const9 */
+  34,   /* muldi */
+  65,   /* divsi */
+  67,   /* divdi */
+};
+
+/* Instruction costs on MPCCORE processors.  */
+static const
+struct processor_costs mpccore_cost = {
+  2,    /* mulsi */
+  2,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  2,    /* muldi */
+  6,    /* divsi */
+  6,    /* divdi */
+};
+
+/* Instruction costs on PPC403 processors.  */
+static const
+struct processor_costs ppc403_cost = {
+  4,    /* mulsi */
+  4,    /* mulsi_const */
+  4,    /* mulsi_const9 */
+  4,    /* muldi */
+  33,   /* divsi */
+  33,   /* divdi */
+};
+
+/* Instruction costs on PPC405 processors.  */
+static const
+struct processor_costs ppc405_cost = {
+  5,    /* mulsi */
+  4,    /* mulsi_const */
+  3,    /* mulsi_const9 */
+  5,    /* muldi */
+  35,   /* divsi */
+  35,   /* divdi */
+};
+
+/* Instruction costs on PPC440 processors.  */
+static const
+struct processor_costs ppc440_cost = {
+  3,    /* mulsi */
+  2,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  3,    /* muldi */
+  34,   /* divsi */
+  34,   /* divdi */
+};
+
+/* Instruction costs on PPC601 processors.  */
+static const
+struct processor_costs ppc601_cost = {
+  5,    /* mulsi */
+  5,    /* mulsi_const */
+  5,    /* mulsi_const9 */
+  5,    /* muldi */
+  36,   /* divsi */
+  36,   /* divdi */
+};
+
+/* Instruction costs on PPC603 processors.  */
+static const
+struct processor_costs ppc603_cost = {
+  5,    /* mulsi */
+  3,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  5,    /* muldi */
+  37,   /* divsi */
+  37,   /* divdi */
+};
+
+/* Instruction costs on PPC604 processors.  */
+static const
+struct processor_costs ppc604_cost = {
+  4,    /* mulsi */
+  4,    /* mulsi_const */
+  4,    /* mulsi_const9 */
+  4,    /* muldi */
+  20,   /* divsi */
+  20,   /* divdi */
+};
+
+/* Instruction costs on PPC604e processors.  */
+static const
+struct processor_costs ppc604e_cost = {
+  2,    /* mulsi */
+  2,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  2,    /* muldi */
+  20,   /* divsi */
+  20,   /* divdi */
+};
+
+/* Instruction costs on PPC620 and PPC630 processors.  */
+static const
+struct processor_costs ppc620_cost = {
+  5,    /* mulsi */
+  4,    /* mulsi_const */
+  3,    /* mulsi_const9 */
+  7,    /* muldi */
+  21,   /* divsi */
+  37,   /* divdi */
+};
+
+/* Instruction costs on PPC750 and PPC7400 processors.  */
+static const
+struct processor_costs ppc750_cost = {
+  5,    /* mulsi */
+  3,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  5,    /* muldi */
+  17,   /* divsi */
+  17,   /* divdi */
+};
+
+/* Instruction costs on PPC7450 processors.  */
+static const
+struct processor_costs ppc7450_cost = {
+  4,    /* mulsi */
+  3,    /* mulsi_const */
+  3,    /* mulsi_const9 */
+  4,    /* muldi */
+  23,   /* divsi */
+  23,   /* divdi */
+};
+
+/* Instruction costs on PPC8540 processors.  */
+static const
+struct processor_costs ppc8540_cost = {
+  4,    /* mulsi */
+  4,    /* mulsi_const */
+  4,    /* mulsi_const9 */
+  4,    /* muldi */
+  19,   /* divsi */
+  19,   /* divdi */
+};
+
+/* Instruction costs on POWER4 and POWER5 processors.  */
+static const
+struct processor_costs power4_cost = {
+  3,    /* mulsi */
+  2,    /* mulsi_const */
+  2,    /* mulsi_const9 */
+  4,    /* muldi */
+  18,   /* divsi */
+  34,   /* divdi */
+};
+
+
 static bool rs6000_function_ok_for_sibcall (tree, tree);
 static int num_insns_constant_wide (HOST_WIDE_INT);
 static void validate_condition_mode (enum rtx_code, enum machine_mode);
@@ -1104,6 +1318,83 @@ rs6000_override_options (const char *default_cpu)
      Linux and Darwin ABIs at the moment.  For now, only AIX is fixed.  */
   if (DEFAULT_ABI != ABI_AIX)
     targetm.calls.split_complex_arg = NULL;
+
+  /* Initialize rs6000_cost with the appropriate target costs.  */
+  if (optimize_size)
+    rs6000_cost = TARGET_POWERPC64 ? &size64_cost : &size32_cost;
+  else
+    switch (rs6000_cpu)
+      {
+      case PROCESSOR_RIOS1:
+	rs6000_cost = &rios1_cost;
+	break;
+
+      case PROCESSOR_RIOS2:
+	rs6000_cost = &rios2_cost;
+	break;
+
+      case PROCESSOR_RS64A:
+	rs6000_cost = &rs64a_cost;
+	break;
+
+      case PROCESSOR_MPCCORE:
+	rs6000_cost = &mpccore_cost;
+	break;
+
+      case PROCESSOR_PPC403:
+	rs6000_cost = &ppc403_cost;
+	break;
+
+      case PROCESSOR_PPC405:
+	rs6000_cost = &ppc405_cost;
+	break;
+
+      case PROCESSOR_PPC440:
+	rs6000_cost = &ppc440_cost;
+	break;
+
+      case PROCESSOR_PPC601:
+	rs6000_cost = &ppc601_cost;
+	break;
+
+      case PROCESSOR_PPC603:
+	rs6000_cost = &ppc603_cost;
+	break;
+
+      case PROCESSOR_PPC604:
+	rs6000_cost = &ppc604_cost;
+	break;
+
+      case PROCESSOR_PPC604e:
+	rs6000_cost = &ppc604e_cost;
+	break;
+
+      case PROCESSOR_PPC620:
+      case PROCESSOR_PPC630:
+	rs6000_cost = &ppc620_cost;
+	break;
+
+      case PROCESSOR_PPC750:
+      case PROCESSOR_PPC7400:
+	rs6000_cost = &ppc750_cost;
+	break;
+
+      case PROCESSOR_PPC7450:
+	rs6000_cost = &ppc7450_cost;
+	break;
+
+      case PROCESSOR_PPC8540:
+	rs6000_cost = &ppc8540_cost;
+	break;
+
+      case PROCESSOR_POWER4:
+      case PROCESSOR_POWER5:
+	rs6000_cost = &power4_cost;
+	break;
+
+      default:
+	abort ();
+      }
 }
 
 /* Handle generic options of the form -mfoo=yes/no.
@@ -16165,90 +16456,19 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
       return true;
 
     case MULT:
-      if (optimize_size)
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
-	  *total = COSTS_N_INSNS (2);
-	  return true;
+	  if (INTVAL (XEXP (x, 1)) >= -256
+	      && INTVAL (XEXP (x, 1)) <= 255)
+	    *total = COSTS_N_INSNS (rs6000_cost->mulsi_const9);
+	  else
+	    *total = COSTS_N_INSNS (rs6000_cost->mulsi_const);
 	}
-      switch (rs6000_cpu)
-	{
-	case PROCESSOR_RIOS1:
-	case PROCESSOR_PPC405:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? COSTS_N_INSNS (5)
-		    : (INTVAL (XEXP (x, 1)) >= -256
-		       && INTVAL (XEXP (x, 1)) <= 255)
-		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));
-	  return true;
-
-	case PROCESSOR_PPC440:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? COSTS_N_INSNS (3)
-		    : COSTS_N_INSNS (2));
-	  return true;
-
-	case PROCESSOR_RS64A:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (20) : COSTS_N_INSNS (34)
-		    : (INTVAL (XEXP (x, 1)) >= -256
-		       && INTVAL (XEXP (x, 1)) <= 255)
-		    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (12));
-	  return true;
-
-	case PROCESSOR_RIOS2:
-	case PROCESSOR_MPCCORE:
-	case PROCESSOR_PPC604e:
-	  *total = COSTS_N_INSNS (2);
-	  return true;
-
-	case PROCESSOR_PPC601:
-	  *total = COSTS_N_INSNS (5);
-	  return true;
-
-	case PROCESSOR_PPC603:
-	case PROCESSOR_PPC7400:
-	case PROCESSOR_PPC750:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? COSTS_N_INSNS (5)
-		    : (INTVAL (XEXP (x, 1)) >= -256
-		       && INTVAL (XEXP (x, 1)) <= 255)
-		    ? COSTS_N_INSNS (2) : COSTS_N_INSNS (3));
-	  return true;
-
-	case PROCESSOR_PPC7450:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? COSTS_N_INSNS (4)
-		    : COSTS_N_INSNS (3));
-	  return true;
-
-	case PROCESSOR_PPC403:
-	case PROCESSOR_PPC604:
-	case PROCESSOR_PPC8540:
-	  *total = COSTS_N_INSNS (4);
-	  return true;
-
-	case PROCESSOR_PPC620:
-	case PROCESSOR_PPC630:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)
-		    : (INTVAL (XEXP (x, 1)) >= -256
-		       && INTVAL (XEXP (x, 1)) <= 255)
-		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));
-	  return true;
-
-	case PROCESSOR_POWER4:
-	case PROCESSOR_POWER5:
-	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
-		    ? GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4)
-		    : COSTS_N_INSNS (2));
-	  return true;
-
-	default:
-	  abort ();
-	}
+      else if (GET_MODE (XEXP (x, 1)) == DImode)
+	*total = COSTS_N_INSNS (rs6000_cost->muldi);
+      else
+	*total = COSTS_N_INSNS (rs6000_cost->mulsi);
+      return true;
 
     case DIV:
     case MOD:
@@ -16262,78 +16482,11 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 
     case UDIV:
     case UMOD:
-      switch (rs6000_cpu)
-	{
-	case PROCESSOR_RIOS1:
-	  *total = COSTS_N_INSNS (19);
-	  return true;
-
-	case PROCESSOR_RIOS2:
-	  *total = COSTS_N_INSNS (13);
-	  return true;
-
-	case PROCESSOR_RS64A:
-	  *total = (GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (65)
-		    : COSTS_N_INSNS (67));
-	  return true;
-
-	case PROCESSOR_MPCCORE:
-	  *total = COSTS_N_INSNS (6);
-	  return true;
-
-	case PROCESSOR_PPC403:
-	  *total = COSTS_N_INSNS (33);
-	  return true;
-
-	case PROCESSOR_PPC405:
-	  *total = COSTS_N_INSNS (35);
-	  return true;
-
-	case PROCESSOR_PPC440:
-	  *total = COSTS_N_INSNS (34);
-	  return true;
-
-	case PROCESSOR_PPC601:
-	  *total = COSTS_N_INSNS (36);
-	  return true;
-
-	case PROCESSOR_PPC603:
-	  *total = COSTS_N_INSNS (37);
-	  return true;
-
-	case PROCESSOR_PPC604:
-	case PROCESSOR_PPC604e:
-	  *total = COSTS_N_INSNS (20);
-	  return true;
-
-	case PROCESSOR_PPC620:
-	case PROCESSOR_PPC630:
-	  *total = (GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (21)
-		    : COSTS_N_INSNS (37));
-	  return true;
-
-	case PROCESSOR_PPC750:
-	case PROCESSOR_PPC8540:
-	case PROCESSOR_PPC7400:
-	  *total = COSTS_N_INSNS (19);
-	  return true;
-
-	case PROCESSOR_PPC7450:
-	  *total = COSTS_N_INSNS (23);
-	  return true;
-
-	case PROCESSOR_POWER4:
-	case PROCESSOR_POWER5:
-	  *total = (GET_MODE (XEXP (x, 1)) != DImode
-		    ? COSTS_N_INSNS (18)
-		    : COSTS_N_INSNS (34));
-	  return true;
-
-	default:
-	  abort ();
-	}
+      if (GET_MODE (XEXP (x, 1)) == DImode)
+	*total = COSTS_N_INSNS (rs6000_cost->divdi);
+      else
+	*total = COSTS_N_INSNS (rs6000_cost->divsi);
+      return true;
 
     case FFS:
       *total = COSTS_N_INSNS (4);

@@ -1,3 +1,13 @@
+2004-07-02  Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/rs6000.c (struct processor_costs): New structure
+	used to hold instruction latencies/sizes for processor types.
+	(rs6000_cost): New global variable pointing to current CPU's costs.
+	(rs6000_override_options): Initialize rs6000_cost to point to the
+	appropriate cost table based upon rs6000_cpu and optimize_size.
+	(rs6000_rtx_costs): Use rs6000_cost to avoid hardcoding processor
+	timings inline.
+
 2004-07-02  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (make_tree): Don't use SET_DECL_RTL.
