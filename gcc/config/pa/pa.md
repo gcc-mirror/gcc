@@ -3589,9 +3589,9 @@
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-     (if_then_else (and (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
 			    (const_int 0))
-			(ne (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
+			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
 			    (const_int 0)))
 		   (const_int 12)
 		   (const_int 24)))])
@@ -3697,9 +3697,9 @@
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-     (if_then_else (and (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+     (if_then_else (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
 			    (const_int 0))
-			(ne (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
+			(eq (symbol_ref "TARGET_MILLICODE_LONG_CALLS")
 			    (const_int 0)))
 		   (const_int 12)
 		   (const_int 24)))])
