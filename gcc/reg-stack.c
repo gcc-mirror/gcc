@@ -1470,9 +1470,12 @@ delete_insn_for_stacker (insn)
 
 /* Emit an insn to pop virtual register REG before or after INSN.
    REGSTACK is the stack state after INSN and is updated to reflect this
-   pop.  WHEN is either emit_insn_before or emit_insn_after.  A pop insn
-   is represented as a SET whose destination is the register to be popped
-   and source is the top of stack.  A death note for the top of stack
+   pop.  WHEN is either emit_insn_before, emit_insn_after or NULL. 
+   in case WHEN is NULL we don't really emit the insn, just modify stack 
+   information.  Caller is expected to emit insn himself.
+
+   A pop insn is represented as a SET whose destination is the register to
+   be popped and source is the top of stack.  A death note for the top of stack
    cases the movdf pattern to pop.  */
 
 static rtx
@@ -1490,14 +1493,18 @@ emit_pop_insn (insn, regstack, reg, when)
   if (hard_regno < FIRST_STACK_REG)
     abort ();
 
-  pop_rtx = gen_rtx_SET (VOIDmode, FP_MODE_REG (hard_regno, DFmode),
-			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
+  if (when)
+   {
+     pop_rtx = gen_rtx_SET (VOIDmode, FP_MODE_REG (hard_regno, DFmode),
+			    FP_MODE_REG (FIRST_STACK_REG, DFmode));
 
-  pop_insn = (*when) (pop_rtx, insn);
+     pop_insn = (*when) (pop_rtx, insn);
 
-  REG_NOTES (pop_insn) = gen_rtx_EXPR_LIST (REG_DEAD,
-					    FP_MODE_REG (FIRST_STACK_REG, DFmode),
-					    REG_NOTES (pop_insn));
+     REG_NOTES (pop_insn) = gen_rtx_EXPR_LIST (REG_DEAD,
+					       FP_MODE_REG (FIRST_STACK_REG,
+							    DFmode),
+					       REG_NOTES (pop_insn));
+   }
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
     = regstack->reg[regstack->top];
@@ -1757,10 +1764,18 @@ swap_rtx_condition (pat)
 /* Handle a comparison.  Special care needs to be taken to avoid
    causing comparisons that a 387 cannot do correctly, such as EQ.
 
-   Also, a pop insn may need to be emitted.  The 387 does have an
+   Also, a fstp instruction may need to be emitted.  The 387 does have an
    `fcompp' insn that can pop two regs, but it is sometimes too expensive
    to do this - a `fcomp' followed by a `fstpl %st(0)' may be easier to
-   set up.  */
+   set up. 
+ 
+   We can not handle this by emiting fpop instruction after compare, because
+   it appears between cc0 setter and user.  So we emit only
+   REG_DEAD note and handle it as a special case in machine description.
+ 
+   This code used trick with delay_slot filling to emit pop insn after
+   comparsion but it didn't worked because it caused confusion with cc_status
+   in final pass. */
 
 static void
 compare_for_stack_reg (insn, regstack, pat)
@@ -1772,6 +1787,7 @@ compare_for_stack_reg (insn, regstack, pat)
   rtx src1_note, src2_note;
   rtx cc0_user;
   int have_cmove; 
+  int hard_regno;
 
   src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
   src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
@@ -1838,7 +1854,10 @@ compare_for_stack_reg (insn, regstack, pat)
   replace_reg (src1, FIRST_STACK_REG);
 
   if (STACK_REG_P (*src2))
-    replace_reg (src2, get_hard_regnum (regstack, *src2));
+    {
+      hard_regno = get_hard_regnum (regstack, *src2);
+      replace_reg (src2, hard_regno);
+    }
 
   if (src1_note)
     {
@@ -1867,16 +1886,11 @@ compare_for_stack_reg (insn, regstack, pat)
 	}
       else
 	{
-	  /* The 386 can only represent death of the first operand in
-	     the case handled above.  In all other cases, emit a separate
-	     pop and remove the death note from here.  */
+	  /* Pop of second operand is handled using special REG_DEAD note
+	     because we can't emit pop insn after cc0 setter.  */
 
-	  link_cc0_insns (insn);
-
-	  remove_regno_note (insn, REG_DEAD, REGNO (XEXP (src2_note, 0)));
-
-	  emit_pop_insn (insn, regstack, XEXP (src2_note, 0),
-			 emit_insn_after);
+	  emit_pop_insn (insn, regstack, XEXP (src2_note, 0), NULL);
+	  replace_reg (&XEXP (src2_note, 0), hard_regno);
 	}
     }
 }

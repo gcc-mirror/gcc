@@ -4115,6 +4115,8 @@ output_float_compare (insn, operands)
   rtx body = XVECEXP (PATTERN (insn), 0, 0);
   int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
   rtx tmp;
+  int cc0_set = 1;
+  int i;
 
   if (0 && TARGET_CMOVE && STACK_REG_P (operands[1]))
     {
@@ -4138,7 +4140,7 @@ output_float_compare (insn, operands)
   if (STACK_REG_P (operands[1])
       && stack_top_dies
       && find_regno_note (insn, REG_DEAD, REGNO (operands[1]))
-      && REGNO (operands[1]) != FIRST_STACK_REG)
+      && REGNO (operands[1]) == FIRST_STACK_REG + 1)
     {
       /* If both the top of the 387 stack dies, and the other operand
 	 is also a stack register that dies, then this must be a
@@ -4150,7 +4152,7 @@ output_float_compare (insn, operands)
 	    {
 	      output_asm_insn (AS2 (fucomip,%y1,%0), operands);
 	      output_asm_insn (AS1 (fstp, %y0), operands);
-	      return "";
+	      cc0_set = 0; 
 	    }
 	  else
 	    output_asm_insn ("fucompp", operands);
@@ -4161,7 +4163,7 @@ output_float_compare (insn, operands)
 	    {
 	      output_asm_insn (AS2 (fcomip, %y1,%0), operands);
 	      output_asm_insn (AS1 (fstp, %y0), operands);
-	      return "";
+	      cc0_set = 0; 
 	    }
 	  else
 	    output_asm_insn ("fcompp", operands);
@@ -4186,15 +4188,39 @@ output_float_compare (insn, operands)
       if (cc_status.flags & CC_FCOMI)
 	{
 	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%0)), operands);
-	  return "";
+	  cc0_set = 0; 
 	}
       else
         output_asm_insn (strcat (buf, AS1 (%z1,%y1)), operands);
     }
 
   /* Now retrieve the condition code. */
+  if (cc0_set) 
+    {
+      char *r = output_fp_cc0_set (insn); 
+      if (r[0]) output_asm_insn (r, operands);
+    }
 
-  return output_fp_cc0_set (insn);
+
+  /* We emit fstp instruction after integer comparsions to improve
+     scheduling. */
+  for (i = 0; i < 2 ; i++)
+    {
+      if (STACK_REG_P (operands[i])
+          && find_regno_note (insn, REG_DEAD, REGNO (operands[i]))
+          && REGNO (operands[i]) != FIRST_STACK_REG 
+          && (!stack_top_dies || REGNO (operands[i]) != FIRST_STACK_REG + 1))
+        {
+          rtx xexp[i];
+          xexp[0] = gen_rtx_REG (DFmode,
+				 REGNO (operands[i]) - (stack_top_dies != 0));
+          output_asm_insn (AS1 (fstp, %y0), xexp);
+        }
+    }
+
+  return "";
+
+
 }
 
 /* Output opcodes to transfer the results of FP compare or test INSN
