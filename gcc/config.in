@@ -465,7 +465,8 @@
 /* Define if your assembler supports offsetable %lo(). */
 #undef HAVE_AS_OFFSETABLE_LO10
 
-/* Define if your assembler supports dwarf2 .file/.loc directives. */
+/* Define if your assembler supports dwarf2 .file/.loc directives,
+   and preserves file table indicies exactly as given. */
 #undef HAVE_AS_DWARF2_DEBUG_LINE
 
 /* Define to 1 if you want to enable namespaces (-fhonor-std) by default. */
