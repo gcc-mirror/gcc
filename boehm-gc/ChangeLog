@@ -1,3 +1,13 @@
+2002-04-09  Loren J. Rittle  <ljrittle@acm.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	* include/private/gcconfig.h (DATAEND): Update comment example
+	to match reality.  Clarify comment.
+	Change all likely references to linker script synthesized
+	symbols to use this idiom: extern int etext[]; etext
+	* os_dep.c (GC_init_linux_data_start): Fix references to
+	__data_start and _end.
+
 2002-04-08  Hans Boehm  <Hans_Boehm@hp.com>
 	
 	* include/private/gc_priv.h (WARN macro): Add "GC warning:" prefix.
