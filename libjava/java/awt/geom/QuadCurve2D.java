@@ -550,39 +550,157 @@ public abstract class QuadCurve2D
   }
 
 
+  /**
+   * Finds the non-complex roots of a quadratic equation, placing the
+   * results into the same array as the equation coefficients. The
+   * following equation is being solved:
+   *
+   * <blockquote><code>eqn[2]</code> &#xb7; <i>x</i><sup>2</sup>
+   * + <code>eqn[1]</code> &#xb7; <i>x</i>
+   * + <code>eqn[0]</code>
+   * = 0
+   * </blockquote>
+   *
+   * <p>For some background about solving quadratic equations, see the
+   * article <a href=
+   * "http://planetmath.org/encyclopedia/QuadraticFormula.html"
+   * >&#x201c;Quadratic Formula&#x201d;</a> in <a href=
+   * "http://planetmath.org/">PlanetMath</a>. For an extensive library
+   * of numerical algorithms written in the C programming language,
+   * see the <a href="http://www.gnu.org/software/gsl/">GNU Scientific
+   * Library</a>.
+   *
+   * @see #solveQuadratic(double[], double[])
+   * @see CubicCurve2D#solveCubic(double[], double[])
+   *
+   * @param eqn an array with the coefficients of the equation. When
+   * this procedure has returned, <code>eqn</code> will contain the
+   * non-complex solutions of the equation, in no particular order.
+   *
+   * @return the number of non-complex solutions. A result of 0
+   * indicates that the equation has no non-complex solutions. A
+   * result of -1 indicates that the equation is constant (i.e.,
+   * always or never zero).
+   *
+   * @author <a href="mailto:bjg@network-theory.com">Brian Gough</a>
+   * (original C implementation in the <a href=
+   * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
+   *
+   * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+   * (adaptation to Java)
+   */
   public static int solveQuadratic(double[] eqn)
   {
     return solveQuadratic(eqn, eqn);
   }
 
 
+  /**
+   * Finds the non-complex roots of a quadratic equation. The
+   * following equation is being solved:
+   *
+   * <blockquote><code>eqn[2]</code> &#xb7; <i>x</i><sup>2</sup>
+   * + <code>eqn[1]</code> &#xb7; <i>x</i>
+   * + <code>eqn[0]</code>
+   * = 0
+   * </blockquote>
+   *
+   * <p>For some background about solving quadratic equations, see the
+   * article <a href=
+   * "http://planetmath.org/encyclopedia/QuadraticFormula.html"
+   * >&#x201c;Quadratic Formula&#x201d;</a> in <a href=
+   * "http://planetmath.org/">PlanetMath</a>. For an extensive library
+   * of numerical algorithms written in the C programming language,
+   * see the <a href="http://www.gnu.org/software/gsl/">GNU Scientific
+   * Library</a>.
+   *
+   * @see CubicCurve2D#solveCubic(double[],double[])
+   *
+   * @param eqn an array with the coefficients of the equation.
+   *
+   * @param res an array into which the non-complex roots will be
+   * stored.  The results may be in an arbitrary order. It is safe to
+   * pass the same array object reference for both <code>eqn</code>
+   * and <code>res</code>.
+   *
+   * @return the number of non-complex solutions. A result of 0
+   * indicates that the equation has no non-complex solutions. A
+   * result of -1 indicates that the equation is constant (i.e.,
+   * always or never zero).
+   *
+   * @author <a href="mailto:bjg@network-theory.com">Brian Gough</a>
+   * (original C implementation in the <a href=
+   * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
+   *
+   * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+   * (adaptation to Java)
+   */
   public static int solveQuadratic(double[] eqn, double[] res)
   {
-    double c = eqn[0];
-    double b = eqn[1];
-    double a = eqn[2];
+    // Taken from poly/solve_quadratic.c in the GNU Scientific Library
+    // (GSL), cvs revision 1.7 of 2003-07-26. For the original source,
+    // see http://www.gnu.org/software/gsl/
+    //
+    // Brian Gough, the author of that code, has granted the
+    // permission to use it in GNU Classpath under the GNU Classpath
+    // license, and has assigned the copyright to the Free Software
+    // Foundation.
+    //
+    // The Java implementation is very similar to the GSL code, but
+    // not a strict one-to-one copy. For example, GSL would sort the
+    // result.
+
+    double a, b, c, disc;
+
+    c = eqn[0];
+    b = eqn[1];
+    a = eqn[2];
+
+    // Check for linear or constant functions. This is not done by the
+    // GNU Scientific Library.  Without this special check, we
+    // wouldn't return -1 for constant functions, and 2 instead of 1
+    // for linear functions.
     if (a == 0)
     {
       if (b == 0)
         return -1;
+      
       res[0] = -c / b;
       return 1;
     }
-    c /= a;
-    b /= a * 2;
-    double det = Math.sqrt(b * b - c);
-    if (det != det)
+
+    disc = b * b - 4 * a * c;
+
+    if (disc < 0)
       return 0;
-    // For fewer rounding errors, we calculate the two roots differently.
-    if (b > 0)
+
+    if (disc == 0)
     {
-      res[0] = -b - det;
-      res[1] = -c / (b + det);
+      // The GNU Scientific Library returns two identical results here.
+      // We just return one.
+      res[0] = -0.5 * b / a ;
+      return 1;
+    }
+
+    // disc > 0
+    if (b == 0)
+    {
+      double r;
+
+      r = Math.abs(0.5 * Math.sqrt(disc) / a);
+      res[0] = -r;
+      res[1] = r;
     }
     else
     {
-      res[0] = -c / (b - det);
-      res[1] = -b + det;
+      double sgnb, temp;
+      
+      sgnb = (b > 0 ? 1 : -1);
+      temp = -0.5 * (b + sgnb * Math.sqrt(disc));
+
+      // The GNU Scientific Library sorts the result here. We don't.
+      res[0] = temp / a;
+      res[1] = c / temp;
     }
     return 2;
   }

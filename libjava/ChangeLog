@@ -1,3 +1,9 @@
+2004-01-05  Sascha Brawer  <brawer@dandelis.ch>
+
+	Thanks to Brian Gough <bjg@network-theory.com>
+	* java/awt/geom/CubicCurve2D.java (solveCubic): Implemented.
+	* java/awt/geom/QuadCurve2D.java (solveQuadratic): Re-written.
+
 2004-01-04  Matthias Klose  <doko@debian.org>
 
 	* aclocal.m4: Rebuilt using "aclocal -I .".

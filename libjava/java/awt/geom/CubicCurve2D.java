@@ -624,17 +624,115 @@ public abstract class CubicCurve2D
   }
 
 
+  /**
+   * Finds the non-complex roots of a cubic equation, placing the
+   * results into the same array as the equation coefficients. The
+   * following equation is being solved:
+   *
+   * <blockquote><code>eqn[3]</code> &#xb7; <i>x</i><sup>3</sup>
+   * + <code>eqn[2]</code> &#xb7; <i>x</i><sup>2</sup>
+   * + <code>eqn[1]</code> &#xb7; <i>x</i>
+   * + <code>eqn[0]</code>
+   * = 0
+   * </blockquote>
+   *
+   * <p>For some background about solving cubic equations, see the
+   * article <a
+   * href="http://planetmath.org/encyclopedia/CubicFormula.html"
+   * >&#x201c;Cubic Formula&#x201d;</a> in <a
+   * href="http://planetmath.org/" >PlanetMath</a>.  For an extensive
+   * library of numerical algorithms written in the C programming
+   * language, see the <a href= "http://www.gnu.org/software/gsl/">GNU
+   * Scientific Library</a>, from which this implementation was
+   * adapted.
+   *
+   * @param eqn an array with the coefficients of the equation. When
+   * this procedure has returned, <code>eqn</code> will contain the
+   * non-complex solutions of the equation, in no particular order.
+   *
+   * @return the number of non-complex solutions. A result of 0
+   * indicates that the equation has no non-complex solutions. A
+   * result of -1 indicates that the equation is constant (i.e.,
+   * always or never zero).
+   *
+   * @see #solveCubic(double[], double[])
+   * @see QuadCurve2D#solveQuadratic(double[],double[])
+   *
+   * @author <a href="mailto:bjg@network-theory.com">Brian Gough</a>
+   * (original C implementation in the <a href=
+   * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
+   *
+   * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+   * (adaptation to Java)
+   */
   public static int solveCubic(double[] eqn)
   {
     return solveCubic(eqn, eqn);
   }
 
 
+  /**
+   * Finds the non-complex roots of a cubic equation. The following
+   * equation is being solved:
+   *
+   * <blockquote><code>eqn[3]</code> &#xb7; <i>x</i><sup>3</sup>
+   * + <code>eqn[2]</code> &#xb7; <i>x</i><sup>2</sup>
+   * + <code>eqn[1]</code> &#xb7; <i>x</i>
+   * + <code>eqn[0]</code>
+   * = 0
+   * </blockquote>
+   *
+   * <p>For some background about solving cubic equations, see the
+   * article <a
+   * href="http://planetmath.org/encyclopedia/CubicFormula.html"
+   * >&#x201c;Cubic Formula&#x201d;</a> in <a
+   * href="http://planetmath.org/" >PlanetMath</a>.  For an extensive
+   * library of numerical algorithms written in the C programming
+   * language, see the <a href= "http://www.gnu.org/software/gsl/">GNU
+   * Scientific Library</a>, from which this implementation was
+   * adapted.
+   *
+   * @see QuadCurve2D#solveQuadratic(double[],double[])
+   *
+   * @param eqn an array with the coefficients of the equation.
+   *
+   * @param res an array into which the non-complex roots will be
+   * stored.  The results may be in an arbitrary order. It is safe to
+   * pass the same array object reference for both <code>eqn</code>
+   * and <code>res</code>.
+   *
+   * @return the number of non-complex solutions. A result of 0
+   * indicates that the equation has no non-complex solutions. A
+   * result of -1 indicates that the equation is constant (i.e.,
+   * always or never zero).
+   *
+   * @author <a href="mailto:bjg@network-theory.com">Brian Gough</a>
+   * (original C implementation in the <a href=
+   * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
+   *
+   * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+   * (adaptation to Java)
+   */
   public static int solveCubic(double[] eqn, double[] res)
   {
+    // Adapted from poly/solve_cubic.c in the GNU Scientific Library
+    // (GSL), revision 1.7 of 2003-07-26. For the original source, see
+    // http://www.gnu.org/software/gsl/
+    //
+    // Brian Gough, the author of that code, has granted the
+    // permission to use it in GNU Classpath under the GNU Classpath
+    // license, and has assigned the copyright to the Free Software
+    // Foundation.
+    //
+    // The Java implementation is very similar to the GSL code, but
+    // not a strict one-to-one copy. For example, GSL would sort the
+    // result.
+
     double a, b, c, q, r, Q, R;
-    
-    double c3 = eqn[3];
+    double c3, Q3, R2, CR2, CQ3;
+
+    // If the cubic coefficient is zero, we have a quadratic equation.
+    c3 = eqn[3];
     if (c3 == 0)
       return QuadCurve2D.solveQuadratic(eqn, res);
 
@@ -644,7 +742,69 @@ public abstract class CubicCurve2D
     a = eqn[2] / c3;
 
     // We now need to solve x^3 + ax^2 + bx + c = 0.
-    throw new Error("not implemented"); // FIXME
+    q = a * a - 3 * b;
+    r = 2 * a * a * a - 9 * a * b + 27 * c;
+
+    Q = q / 9;
+    R = r / 54;
+
+    Q3 = Q * Q * Q;
+    R2 = R * R;
+
+    CR2 = 729 * r * r;
+    CQ3 = 2916 * q * q * q;
+
+    if (R == 0 && Q == 0)
+    {
+      // The GNU Scientific Library would return three identical
+      // solutions in this case.
+      res[0] = -a/3;
+      return 1;
+    }
+
+    if (CR2 == CQ3) 
+    {
+      /* this test is actually R2 == Q3, written in a form suitable
+         for exact computation with integers */
+
+      /* Due to finite precision some double roots may be missed, and
+         considered to be a pair of complex roots z = x +/- epsilon i
+         close to the real axis. */
+
+      double sqrtQ = Math.sqrt(Q);
+
+      if (R > 0)
+      {
+        res[0] = -2 * sqrtQ - a/3;
+        res[1] = sqrtQ - a/3;
+      }
+      else
+      {
+        res[0] = -sqrtQ - a/3;
+        res[1] = 2 * sqrtQ - a/3;
+      }
+      return 2;
+    }
+
+    if (CR2 < CQ3) /* equivalent to R2 < Q3 */
+    {
+      double sqrtQ = Math.sqrt(Q);
+      double sqrtQ3 = sqrtQ * sqrtQ * sqrtQ;
+      double theta = Math.acos(R / sqrtQ3);
+      double norm = -2 * sqrtQ;
+      res[0] = norm * Math.cos(theta / 3) - a / 3;
+      res[1] = norm * Math.cos((theta + 2.0 * Math.PI) / 3) - a/3;
+      res[2] = norm * Math.cos((theta - 2.0 * Math.PI) / 3) - a/3;
+
+      // The GNU Scientific Library sorts the results. We don't.
+      return 3;
+    }
+
+    double sgnR = (R >= 0 ? 1 : -1);
+    double A = -sgnR * Math.pow(Math.abs(R) + Math.sqrt(R2 - Q3), 1.0/3.0);
+    double B = Q / A ;
+    res[0] = A + B - a/3;
+    return 1;
   }
 
 
