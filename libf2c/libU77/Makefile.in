@@ -172,7 +172,8 @@ alarm_.o: alarm_.c
 datetime_.o: datetime_.c
 
 check:
-	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f -lg2c $(LIBS) -lm && ./a.out
+	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f \
+	-lg2c $(LIBS) -lm -o a.out && ./a.out
 	rm -f a.out
 
 install uninstall install-strip dist installcheck installdirs:
