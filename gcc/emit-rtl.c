@@ -3222,7 +3222,7 @@ try_split (pat, trial, last)
 	     usage count so we don't delete the label.  */
 	  if (GET_CODE (trial) == INSN)
 	    {
-	      insn = last_insn;
+	      insn = insn_last;
 	      while (insn != NULL_RTX)
 		{
 		  if (GET_CODE (insn) == INSN)
