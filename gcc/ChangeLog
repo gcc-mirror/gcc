@@ -1,5 +1,9 @@
 Wed Jun 30 03:31:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* elfos.h (const_section): Output a tab before assembler directives.
+	(ctors_section, dtors_section): Likewise.
+	(ASM_OUTPUT_SECTION_NAME): Likewise.
+
 	* pa/pa1.h: Delete unused file.
 
 Tue Jun 29 01:37:53 1999  Jeffrey A Law  (law@cygnus.com)

@@ -289,7 +289,7 @@ const_section ()							\
     text_section();							\
   else if (in_section != in_const)					\
     {									\
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "\t%s\n", CONST_SECTION_ASM_OP);		\
       in_section = in_const;						\
     }									\
 }
@@ -300,7 +300,7 @@ ctors_section ()							\
 {									\
   if (in_section != in_ctors)						\
     {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "\t%s\n", CTORS_SECTION_ASM_OP);		\
       in_section = in_ctors;						\
     }									\
 }
@@ -311,7 +311,7 @@ dtors_section ()							\
 {									\
   if (in_section != in_dtors)						\
     {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "\t%s\n", DTORS_SECTION_ASM_OP);		\
       in_section = in_dtors;						\
     }									\
 }
@@ -350,14 +350,14 @@ do {									\
       s->type = type;							\
       s->next = sections;						\
       sections = s;							\
-      fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, mode);	\
+      fprintf (FILE, "\t.section\t%s,\"%s\",@progbits\n", NAME, mode);	\
     }									\
   else									\
     {									\
       if (DECL && s->type != type)					\
 	error_with_decl (DECL, "%s causes a section type conflict");	\
 									\
-      fprintf (FILE, ".section\t%s\n", NAME);				\
+      fprintf (FILE, "\t.section\t%s\n", NAME);				\
     }									\
 } while (0)
 
