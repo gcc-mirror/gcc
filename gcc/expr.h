@@ -471,6 +471,9 @@ extern enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block moves.  */
 extern enum insn_code movstr_optab[NUM_MACHINE_MODES];
 
+/* This array records the insn_code of insns to perform block clears.  */
+extern enum insn_code clrstr_optab[NUM_MACHINE_MODES];
+
 /* Define functions given in optabs.c.  */
 
 /* Expand a binary operation given optab and rtx operands.  */
@@ -631,8 +634,9 @@ extern void use_reg PROTO((rtx*, rtx));
 extern void use_regs PROTO((rtx*, int, int));
 
 /* Write zeros through the storage of OBJECT.
-   If OBJECT has BLKmode, SIZE is its length in bytes.  */
-extern void clear_storage PROTO((rtx, rtx));
+   If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is its
+   alignment.
+extern void clear_storage PROTO((rtx, rtx, int));
 
 /* Emit insns to set X from Y.  */
 extern rtx emit_move_insn PROTO((rtx, rtx));
