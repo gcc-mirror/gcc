@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,46 +28,65 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 20.5  Date and time
+// ISO C++ 14882: 26.5  C library extensions
 //
 
-// XXX incomplete
+#ifndef _CPP_FCNTL
+#define _CPP_FCNTL 1
 
-#ifndef _CPP_WRAP_UNISTD_H
-#define _CPP_WRAP_UNISTD_H 1
+# include <bits/c++config.h>
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
-#     include_next <unistd.h>
-    }
+    // XXX
+# undef SEEK_SET
+# undef SEEK_CUR
+# undef SEEK_END
 
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
-
-// #  undef that
-
-  namespace _C_legacy {
-    namespace _C_shadow {
-      // typedef stuff
-    }
+#     include_next <fcntl.h>
   }
-  namespace std {
+} // namespace _C_legacy
 
-    using ::_C_legacy::read;
-    using ::_C_legacy::write;
-    using ::_C_legacy::open;
+# undef SEEK_SET
+# undef SEEK_CUR
+# undef SEEK_END
 
-  } // close namespace std::
-  
-  namespace _C_legacy {
-    namespace _C_shadow {
-      // using ::std::stuff
-    }
-  }
+// NB: Don't bring elements from this non-standard header into namespace std.
 
 # undef _IN_C_LEGACY_
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
