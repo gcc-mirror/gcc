@@ -33,6 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Most of the complexity is in heuristics to decide when it is worth
    while to do these things.  */
 
+#include <stdio.h>
 #include "config.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -44,7 +45,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "recog.h"
 #include "flags.h"
 #include "real.h"
-#include <stdio.h>
 #include "loop.h"
 
 /* Vector mapping INSN_UIDs to luids.

@@ -339,7 +339,8 @@ finish_inline (fndecl, head)
    the insns for FNDECL.  The insns in maybepermanent_obstack cannot be
    modified by the compilation process, so we copy all of them to
    new storage and consider the new insns to be the insn chain to be
-   compiled.  */
+   compiled.  Our caller (rest_of_compilation) saves the original
+   DECL_INITIAL and DECL_ARGUMENTS; here we copy them.  */
 
 void
 save_for_inline_copying (fndecl)
