@@ -60,12 +60,12 @@ namespace std
     basic_ios<_CharT, _Traits>&
     basic_ios<_CharT, _Traits>::copyfmt(const basic_ios& __rhs)
     {
-      // Per 27.1.1.1, do not call imbue, yet must trash all caches
+      // Per 27.1.1, do not call imbue, yet must trash all caches
       // associated with imbue()
 
       // Alloc any new word array first, so if it fails we have "rollback".
       _Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
-	_M_local_word : new _Words[__rhs._M_word_size];
+	                 _M_local_word : new _Words[__rhs._M_word_size];
 
       // Bump refs before doing callbacks, for safety.
       _Callback_list* __cb = __rhs._M_callbacks;
@@ -79,7 +79,8 @@ namespace std
 	}
       _M_dispose_callbacks();
 
-      _M_callbacks = __cb;  // NB: Don't want any added during above.
+      // NB: Don't want any added during above.
+      _M_callbacks = __cb;  
       for (int __i = 0; __i < __rhs._M_word_size; ++__i)
 	__words[__i] = __rhs._M_word[__i];
       if (_M_word != _M_local_word) 
@@ -95,10 +96,14 @@ namespace std
       this->precision(__rhs.precision());
       this->tie(__rhs.tie());
       this->fill(__rhs.fill());
+      _M_ios_locale = __rhs.getloc();
+      _M_cache_locale(_M_ios_locale);
+
+      _M_call_callbacks(copyfmt_event);
+
       // The next is required to be the last assignment.
       this->exceptions(__rhs.exceptions());
-      
-      _M_call_callbacks(copyfmt_event);
+
       return *this;
     }
 
@@ -129,7 +134,7 @@ namespace std
     {
       locale __old(this->getloc());
       ios_base::imbue(__loc);
-      _M_cache_facets(__loc);
+      _M_cache_locale(__loc);
       if (this->rdbuf() != 0)
 	this->rdbuf()->pubimbue(__loc);
       return __old;
@@ -141,8 +146,14 @@ namespace std
     {
       // NB: This may be called more than once on the same object.
       ios_base::_M_init();
-      _M_cache_facets(_M_ios_locale);
-      _M_tie = 0;
+
+      // Cache locale data and specific facets used by iostreams.
+      if (!_M_locale_cache.get())
+	{
+	  typedef __locale_cache<_CharT> __cache_t;
+	  this->_M_locale_cache = auto_ptr<__locale_cache_base>(static_cast<__locale_cache_base*>(new __cache_t));
+	  _M_cache_locale(_M_ios_locale);
+	}
 
       // NB: The 27.4.4.1 Postconditions Table specifies requirements
       // after basic_ios::init() has been called. As part of this,
@@ -159,6 +170,7 @@ namespace std
       _M_fill = _CharT();
       _M_fill_init = false;
 
+      _M_tie = 0;
       _M_exception = goodbit;
       _M_streambuf = __sb;
       _M_streambuf_state = __sb ? goodbit : badbit;
@@ -166,21 +178,15 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     void
-    basic_ios<_CharT, _Traits>::_M_cache_facets(const locale& __loc)
+    basic_ios<_CharT, _Traits>::_M_cache_locale(const locale& __loc)
     {
-      if (has_facet<__ctype_type>(__loc))
+      if (__builtin_expect(has_facet<__ctype_type>(__loc), true))
 	_M_fctype = &use_facet<__ctype_type>(__loc);
-      else
-	_M_fctype = 0;
-      // Should be filled in by ostream and istream, respectively.
-      if (has_facet<__numput_type>(__loc))
+      if (__builtin_expect(has_facet<__numput_type>(__loc), true))
 	_M_fnumput = &use_facet<__numput_type>(__loc); 
-      else
-	_M_fnumput = 0;
-      if (has_facet<__numget_type>(__loc))
+      if (__builtin_expect(has_facet<__numget_type>(__loc), true))
 	_M_fnumget = &use_facet<__numget_type>(__loc); 
-      else
-	_M_fnumget = 0;
+      static_cast<__locale_cache<_CharT>&>(_M_cache())._M_init(__loc); 
     }
 
   // Inhibit implicit instantiations for required instantiations,

@@ -1,6 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003 
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -90,9 +91,9 @@ namespace std
 
       // Cached use_facet<ctype>, which is based on the current locale info.
       const __ctype_type*                            _M_fctype;      
-      // From ostream.
+      // For ostream.
       const __numput_type*                           _M_fnumput;
-      // From istream.
+      // For istream.
       const __numget_type*                           _M_fnumget;
 
     public:
@@ -239,7 +240,8 @@ namespace std
        *  The parameter is passed by derived streams.
       */
       explicit 
-      basic_ios(basic_streambuf<_CharT, _Traits>* __sb) : ios_base() 
+      basic_ios(basic_streambuf<_CharT, _Traits>* __sb) 
+      : ios_base(), _M_fctype(0), _M_fnumput(0), _M_fnumget(0)
       { this->init(__sb); }
 
       /**
@@ -438,7 +440,7 @@ namespace std
       }
 
       void
-      _M_cache_facets(const locale& __loc);
+      _M_cache_locale(const locale& __loc);
     };
 } // namespace std
 
