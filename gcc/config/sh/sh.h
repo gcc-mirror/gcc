@@ -800,7 +800,7 @@ extern int current_function_anonymous_args;
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 
-#define EXIT_IGNORE_STACK 0
+#define EXIT_IGNORE_STACK 1
 
 /* Generate the assembly code for function exit 
    Just dump out any accumulated constant table.*/
