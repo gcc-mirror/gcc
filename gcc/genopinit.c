@@ -118,6 +118,7 @@ char *optabs[] =
   "tst_optab->handlers[(int) %A].insn_code = CODE_FOR_%(tst%a%)",
   "bcc_gen_fctn[(int) %C] = gen_%(b%c%)",
   "setcc_gen_code[(int) %C] = CODE_FOR_%(s%c%)",
+  "movcc_gen_code[(int) %A] = CODE_FOR_%(mov%acc%)",
   "reload_in_optab[(int) %A] = CODE_FOR_%(reload_in%a%)",
   "reload_out_optab[(int) %A] = CODE_FOR_%(reload_out%a%)",
   "movstr_optab[(int) %A] = CODE_FOR_%(movstr%a%)" };
