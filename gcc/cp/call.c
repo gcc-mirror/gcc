@@ -5782,7 +5782,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
   /* warn about confusing overload resolution for user-defined conversions,
      either between a constructor and a conversion op, or between two
      conversion ops.  */
-  if (winner && cand1->second_conv
+  if (winner && warn_conversion && cand1->second_conv
       && (!DECL_CONSTRUCTOR_P (cand1->fn) || !DECL_CONSTRUCTOR_P (cand2->fn))
       && winner != compare_ics (cand1->second_conv, cand2->second_conv))
     {
@@ -5816,7 +5816,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
       
       if (!give_warning)
 	/*NOP*/;
-      else if (warn && warn_conversion)
+      else if (warn)
 	{
 	  tree source = source_type (TREE_VEC_ELT (w->convs, 0));
 	  if (! DECL_CONSTRUCTOR_P (w->fn))
