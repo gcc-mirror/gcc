@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -1161,7 +1161,6 @@ CUMULATIVE_ARGS;
 /* How Large Values Are Returned.  */
 
 #define DEFAULT_PCC_STRUCT_RETURN	0
-#define STRUCT_VALUE_REGNUM		AR0_REGNO	/* AR0.  */
 
 /* Varargs handling.  */
 
@@ -1490,13 +1489,6 @@ fini_section ()							\
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
 c4x_external_ref (NAME)
-
-/* A C statement to output on FILE an assembler pseudo-op to
-   declare a library function named external.
-   (Only needed to keep asm30 happy for ___divqf3 etc.)  */
-
-#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
-c4x_external_ref (XSTR (FUN, 0))
 
 /* The prefix to add to user-visible assembler symbols.  */
 

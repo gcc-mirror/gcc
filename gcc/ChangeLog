@@ -1,5 +1,15 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/c4x/c4x.c (TARGET_ASM_EXTERNAL_LIBCALL): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(c4x_external_libcall): Likewise.
+	(c4x_struct_value_rtx): Likewise.
+	* config/c4x/c4x.h: Remove.
+	(STRUCT_VALUE_REGNUM): Likewise.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i386/i386.c (TARGET_PROMOTE_PROTOTYPES): New.
 	(TARGET_STRUCT_VALUE_RTX): Likewise.
 	* config/i386/i386.h (STRUCT_VALUE_INCOMING): Remove.
