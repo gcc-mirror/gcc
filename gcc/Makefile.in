@@ -1860,7 +1860,7 @@ extraclean: distclean lang.extraclean
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
 	-rm -f config/*/=* config/*/"#"* config/*/*~*
 	-rm -f config/*/*.orig config/*/*.rej
-	-rm -f *.dvi *.oaux *.d *.[zZ] *.gz
+	-rm -f *.dvi *.ps *.oaux *.d *.[zZ] *.gz
 	-rm -f *.tar *.xtar *diff *.diff.* *.tar.* *.xtar.* *diffs
 	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
