@@ -1,3 +1,8 @@
+2001-03-09  Nicola Pero <n.pero@mi.flashnet.it>
+
+	* configure.in: Only use `lang_requires' for languages athat are
+	actually enabled.
+
 2001-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (ALL_GCC, ALL_GCC_C, ALL_GCC_CXX): Set before use.

@@ -1016,7 +1016,7 @@ do
 	      ;;
 	   *,all,*)
 	      ;;
-	   *)
+	   *,$lang_alias,*)
 	      echo " \`$other' language required by \`$lang_alias'; enabling" 1>&2
 	      enable_languages="$enable_languages,$other"
 	      ;;
