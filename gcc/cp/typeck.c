@@ -7310,10 +7310,10 @@ c_expand_return (retval)
 	  return;
 	}
 
-      /* We can't initialize a register from a NEW_EXPR.  */
+      /* We can't initialize a register from a AGGR_INIT_EXPR.  */
       else if (! current_function_returns_struct
 	       && TREE_CODE (retval) == TARGET_EXPR
-	       && TREE_CODE (TREE_OPERAND (retval, 1)) == NEW_EXPR)
+	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
 	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			TREE_OPERAND (retval, 0));
 
@@ -7337,7 +7337,7 @@ c_expand_return (retval)
 	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
 	    {
 	      whats_returned = TREE_OPERAND (whats_returned, 0);
-	      while (TREE_CODE (whats_returned) == NEW_EXPR
+	      while (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
 		     || TREE_CODE (whats_returned) == TARGET_EXPR)
 		{
 		  /* Get the target.  */

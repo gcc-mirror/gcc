@@ -1,3 +1,7 @@
+Thu Dec 18 14:51:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c: Remove register_exception_table{,_p}.
+
 Thu Dec 18 14:57:29 1997  Gavin Koch  <gavin@cygnus.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug): Handle adjustments of the

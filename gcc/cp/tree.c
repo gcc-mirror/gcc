@@ -244,13 +244,13 @@ build_cplus_new (type, init)
   tree slot;
   tree rval;
 
-  if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != NEW_EXPR)
+  if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != AGGR_INIT_EXPR)
     return init;
 
   slot = build (VAR_DECL, type);
   DECL_ARTIFICIAL (slot) = 1;
   layout_decl (slot, 0);
-  rval = build (NEW_EXPR, type,
+  rval = build (AGGR_INIT_EXPR, type,
 		TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), slot);
   TREE_SIDE_EFFECTS (rval) = 1;
   rval = build (TARGET_EXPR, type, slot, rval, NULL_TREE, NULL_TREE);
@@ -1498,7 +1498,7 @@ mapcar (t, func)
 
     case COND_EXPR:
     case TARGET_EXPR:
-    case NEW_EXPR:
+    case AGGR_INIT_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
@@ -1761,7 +1761,7 @@ bot_manip (t)
     return t;
   else if (TREE_CODE (t) == TARGET_EXPR)
     {
-      if (TREE_CODE (TREE_OPERAND (t, 1)) == NEW_EXPR)
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == AGGR_INIT_EXPR)
 	{
 	  mark_used (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 1), 0), 0));
 	  return build_cplus_new
