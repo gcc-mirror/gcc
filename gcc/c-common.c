@@ -5023,7 +5023,7 @@ check_function_arguments (tree attrs, tree params)
   /* Check for errors in format strings.  */
 
   if (warn_format)
-    check_function_format (NULL, attrs, params);
+    check_function_format (attrs, params);
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to
