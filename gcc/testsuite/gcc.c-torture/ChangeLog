@@ -1,3 +1,7 @@
+1999-09-06  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* execute/va-arg-9.c: New test.
+
 1999-07-27  Michael Meissner  <meissner@cygnus.com>
 
 	* execute/ieee/fp-cmp-2.c: New file, clone from fp-cmp-1.c,
