@@ -3215,9 +3215,6 @@ extern unsigned int maximum_field_alignment;
 /* and its original value in bytes, specified via -fpack-struct=<value>.  */
 extern unsigned int initial_max_fld_align;
 
-/* If nonzero, the alignment of a bitstring or (power-)set value, in bits.  */
-extern unsigned int set_alignment;
-
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y
    by making the last node in X point to Y.
    Returns X, except if X is 0 returns Y.  */

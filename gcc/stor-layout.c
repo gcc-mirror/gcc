@@ -47,10 +47,6 @@ unsigned int maximum_field_alignment = TARGET_DEFAULT_PACK_STRUCT * BITS_PER_UNI
 /* ... and its original value in bytes, specified via -fpack-struct=<value>.  */
 unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT;
 
-/* If nonzero, the alignment of a bitstring or (power-)set value, in bits.
-   May be overridden by front-ends.  */
-unsigned int set_alignment = 0;
-
 /* Nonzero if all REFERENCE_TYPEs are internal and hence should be
    allocated in Pmode, not ptr_mode.   Set only by internal_reference_types
    called only by a front end.  */
