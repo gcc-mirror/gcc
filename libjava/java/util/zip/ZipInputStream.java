@@ -1,5 +1,5 @@
-/* ZipInputStream.java - Input filter for reading zip file
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+/* java.util.zip.ZipInputStream
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,259 +36,327 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.util.zip;
-import java.io.*;
+import java.io.EOFException;
+import java.io.InputStream;
+import java.io.IOException;
+import java.util.Enumeration;
 
 /**
- * @author Per Bothner
- * @date May 1999.
+ * This is a FilterInputStream that reads the files in an zip archive
+ * one after another.  It has a special method to get the zip entry of
+ * the next file.  The zip entry contains information about the file name
+ * size, compressed size, CRC, etc.
+ *
+ * It includes support for STORED and DEFLATED entries.
+ *
+ * @author Jochen Hoenicke
  */
-
-/*
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Quite incomplete, but can read uncompressed .zip archives.
- */
-
-// We do not calculate the CRC and compare it with the specified value;
-// we probably should.  FIXME.
-   
-
 public class ZipInputStream extends InflaterInputStream implements ZipConstants
 {
-  public ZipInputStream (InputStream in)
-  {
-    super (in, new Inflater (true));
-  }
+  private CRC32 crc = new CRC32();
+  private ZipEntry entry = null;
 
-  public ZipEntry getNextEntry () throws IOException
-  {
-    if (closed)
-      throw new IOException ("stream closed");
-    if (current != null)
-      closeEntry();
-    if (in.read() != 'P'
-	|| in.read() != 'K')
-      return null;
-    int code = in.read();
-    while (code == '\001')
-      {
-	code = in.read();
-	if (code != '\002')
-	  return null;
-	in.skip(16);
-	int size = read4();
-	in.skip(4);
-	int fname_length = readu2();
-	int extra_length = readu2();
-	int fcomment_length = readu2();
-	// `12' is the number of bytes between the comment length
-	// field and the end of the fixed part of the header:
-	// 2 bytes for `disk number start'
-	// 2 bytes for `internal file attributes'
-	// 4 bytes for `external file attributes'
-	// 4 bytes for `relative offset of local header'
-	in.skip(12 + fname_length + extra_length + fcomment_length);
-	if (in.read() != 'P' || in.read() != 'K')
-	  return null;
-	code = in.read();
-      }
-    if (code == '\005')
-      {
-	if (in.read() != '\006')
-	  return null;
-	in.skip(16);
-	int comment_size = readu2();
-	in.skip(comment_size);
-	if (in.read() != 'P' || in.read() != 'K')
-	  return null;
-	code = in.read();
-      }
-    if (code != '\003'
-	|| in.read() != '\004')
-      return null;
-    int ex_version = readu2();
-    current_flags = readu2();
-    int method = readu2();
-    int modtime = readu2();
-    int moddate = readu2();
-    int crc = read4();
-    int compressedSize = read4();
-    int uncompressedSize = read4();
-    int filenameLength = readu2();
-    int extraLength = readu2();
-    byte[] bname = new byte[filenameLength];
-    readFully(bname);
-    ZipEntry entry = createZipEntry(new String(bname, "8859_1"));
-    if (extraLength > 0)
-      {
-	byte[] bextra = new byte[extraLength];
-	readFully(bextra);
-	entry.extra = bextra;
-      }
-    entry.compressedSize = compressedSize;
-    entry.size = uncompressedSize;
-    entry.crc = (long) crc & 0xffffffffL;
-    entry.method = method;
-    entry.time = ZipEntry.timeFromDOS(moddate, modtime);
-    current = entry;
-    avail = uncompressedSize;
-    compressed_bytes = compressedSize;
-    return entry;
-  }
-
-  // We override fill to let us control how much data gets read from
-  // the underlying input stream.  This lets us avoid having to push
-  // back data.
-  protected void fill () throws IOException
-  {
-    if (closed)
-      throw new IOException ("stream closed");
-    int count = buf.length;
-    if (count > compressed_bytes)
-      count = compressed_bytes;
-    len = in.read(buf, 0, count);
-    if (len != -1)
-      {
-	compressed_bytes -= len;
-	inf.setInput(buf, 0, len);
-      }
-  }
+  private int csize;
+  private int size;
+  private int method;
+  private int flags;
+  private int avail;
 
   /**
-   * Creates a new ZipEntry with the given name.
-   * Used by ZipInputStream when normally <code>new ZipEntry (name)</code>
-   * would be called. This gives subclasses such as JarInputStream a change
-   * to override this method and add aditional information to the ZipEntry
-   * (subclass).
+   * Creates a new Zip input stream, reading a zip archive.
    */
-  protected ZipEntry createZipEntry (String name)
+  public ZipInputStream(InputStream in)
   {
-    return new ZipEntry (name);
+    super(in, new Inflater(true));
   }
 
-  public int read (byte[] b, int off, int len)  throws IOException
+  private void fillBuf() throws IOException
   {
-    if (closed)
-      throw new IOException ("stream closed");
-    if (len > avail)
-      len = avail;
-    int count;
-    if (current.method == Deflater.DEFLATED)
-      count = super.read(b, off, len);
-    else
-      count = in.read(b, off, len);
-    if (count == -1 || avail == 0)
+    avail = len = in.read(buf, 0, buf.length);
+  }
+
+  private int readBuf(byte[] out, int offset, int length) throws IOException
+  {
+    if (avail <= 0)
       {
-	inf.reset();
-	count = -1;
+	fillBuf();
+	if (avail <= 0)
+	  return -1;
       }
-    else
-      avail -= count;
-    return count;
+    if (length > avail)
+      length = avail;
+    System.arraycopy(buf, len - avail, out, offset, length);
+    avail -= length;
+    return length;
   }
-
-  public long skip (long n)  throws IOException
-  {
-    if (closed)
-      throw new IOException ("stream closed");
-    if (n > avail)
-      n = avail;
-    long count;
-    if (current.method == Deflater.DEFLATED)
-      count = super.skip(n);
-    else
-      count = in.skip(n);
-    avail = avail - (int) count;
-    return count;
-  }
-
-  /**
-   * Returns 0 if the ZipInputStream is closed and 1 otherwise.
-   *
-   * @since 1.2
-   */
-  public int available()
-  {
-    return closed ? 0 : 1;
-  }
-
-  private void readFully (byte[] b)  throws IOException
+  
+  private void readFully(byte[] out) throws IOException
   {
     int off = 0;
-    int len = b.length;
+    int len = out.length;
     while (len > 0)
       {
-	int count = in.read(b, off, len);
-	if (count <= 0)
-	  throw new EOFException(".zip archive ended prematurely");
+	int count = readBuf(out, off, len);
+	if (count == -1)
+	  throw new EOFException();
 	off += count;
 	len -= count;
       }
   }
-
-  private int readu2 ()  throws IOException
+  
+  private final int readLeByte() throws IOException
   {
-    int byte0 = in.read();
-    int byte1 = in.read();
-    if (byte0 < 0 || byte1 < 0)
-      throw new EOFException(".zip archive ended prematurely");
-    return ((byte1 & 0xFF) << 8) | (byte0 & 0xFF);
-  }
-
-  private int read4 () throws IOException
-  {
-    int byte0 = in.read();
-    int byte1 = in.read();
-    int byte2 = in.read();
-    int byte3 = in.read();
-    if (byte3 < 0)
-      throw new EOFException(".zip archive ended prematurely");
-    return ((byte3 & 0xFF) << 24) + ((byte2 & 0xFF) << 16)
-      + ((byte1 & 0xFF) << 8) + (byte0 & 0xFF);
-  }
-
-  public void closeEntry ()  throws IOException
-  {
-    if (current != null)
+    if (avail <= 0)
       {
-	if (avail > 0)
-	  skip (avail);
-	if ((current_flags & 8) != 0)
-	  {
-	    int sig = read4();
-	    if (sig != 0x04034b50)
-	      throw new ZipException("bad/missing magic number at end of .zip entry");
-	    int crc = read4();
-	    int compressedSize = read4();
-	    int uncompressedSize = read4();
-	    if (current.compressedSize != compressedSize
-		|| current.size != uncompressedSize
-		|| current.crc != crc)
-	      throw new ZipException("bad data descriptor at end of .zip entry");
-	  }
-	current = null;
-	avail = 0;
+	fillBuf();
+	if (avail <= 0)
+	  throw new ZipException("EOF in header");
       }
+    return buf[len - avail--] & 0xff;
   }
 
   /**
-   * Closes this InflaterInputStream.
-   *
-   * @since 1.2
+   * Read an unsigned short in little endian byte order.
    */
-  public void close ()  throws IOException
+  private final int readLeShort() throws IOException 
   {
-    current = null;
-    closed = true;
-    super.close();
+    return readLeByte() | (readLeByte() << 8);
   }
 
-  private ZipEntry current;
-  private int current_flags;
-  // Number of uncompressed bytes to be read.
-  private int avail;
-  // Number of bytes we can read from underlying stream.
-  private int compressed_bytes;
-  // Is this ZipInputStream closed? Set by the close() method.
-  private boolean closed = false;
+  /**
+   * Read an int in little endian byte order.
+   */
+  private final int readLeInt() throws IOException 
+  {
+    return readLeShort() | (readLeShort() << 16);
+  }
+
+  /**
+   * Open the next entry from the zip archive, and return its description.
+   * If the previous entry wasn't closed, this method will close it.
+   */
+  public ZipEntry getNextEntry() throws IOException
+  {
+    if (crc == null)
+      throw new IllegalStateException("Closed.");
+    if (entry != null)
+      closeEntry();
+
+    int header = readLeInt();
+    if (header == CENSIG)
+      {
+	/* Central Header reached. */
+	close();
+	return null;
+      }
+    if (header != LOCSIG)
+      throw new ZipException("Wrong Local header signature" + Integer.toHexString(header));
+    /* skip version */
+    readLeShort();
+    flags = readLeShort();
+    method = readLeShort();
+    int dostime = readLeInt();
+    int crc = readLeInt();
+    csize = readLeInt();
+    size = readLeInt();
+    int nameLen = readLeShort();
+    int extraLen = readLeShort();
+
+    if (method == ZipOutputStream.STORED && csize != size)
+      throw new ZipException("Stored, but compressed != uncompressed");
+
+
+    byte[] buffer = new byte[nameLen];
+    readFully(buffer);
+    String name = new String(buffer);
+    
+    entry = createZipEntry(name);
+    entry.setMethod(method);
+    if ((flags & 8) == 0)
+      {
+	entry.setCrc(crc & 0xffffffffL);
+	entry.setSize(size & 0xffffffffL);
+	entry.setCompressedSize(csize & 0xffffffffL);
+      }
+    entry.setDOSTime(dostime);
+    if (extraLen > 0)
+      {
+	byte[] extra = new byte[extraLen];
+	readFully(extra);
+	entry.setExtra(extra);
+      }
+
+    if (method == ZipOutputStream.DEFLATED && avail > 0)
+      {
+	System.arraycopy(buf, len - avail, buf, 0, avail);
+	len = avail;
+	avail = 0;
+	inf.setInput(buf, 0, len);
+      }
+    return entry;
+  }
+
+  private void readDataDescr() throws IOException
+  {
+    if (readLeInt() != EXTSIG)
+      throw new ZipException("Data descriptor signature not found");
+    entry.setCrc(readLeInt() & 0xffffffffL);
+    csize = readLeInt();
+    size = readLeInt();
+    entry.setSize(size & 0xffffffffL);
+    entry.setCompressedSize(csize & 0xffffffffL);
+  }
+
+  /**
+   * Closes the current zip entry and moves to the next one.
+   */
+  public void closeEntry() throws IOException
+  {
+    if (crc == null)
+      throw new IllegalStateException("Closed.");
+    if (entry == null)
+      return;
+
+    if (method == ZipOutputStream.DEFLATED)
+      {
+	if ((flags & 8) != 0)
+	  {
+	    /* We don't know how much we must skip, read until end. */
+	    byte[] tmp = new byte[2048];
+	    while (read(tmp) > 0)
+	      ;
+	    /* read will close this entry */
+	    return;
+	  }
+	csize -= inf.getTotalIn();
+	avail = inf.getRemaining();
+      }
+
+    if (avail > csize && csize >= 0)
+      avail -= csize;
+    else
+      {
+	csize -= avail;
+	avail = 0;
+	while (csize != 0)
+	  {
+	    long skipped = in.skip(csize & 0xffffffffL);
+	    if (skipped <= 0)
+	      throw new ZipException("zip archive ends early.");
+	    csize -= skipped;
+	  }
+      }
+
+    size = 0;
+    crc.reset();
+    if (method == ZipOutputStream.DEFLATED)
+      inf.reset();
+    entry = null;
+  }
+
+  public int available() throws IOException
+  {
+    return entry != null ? 1 : 0;
+  }
+
+  /**
+   * Reads a byte from the current zip entry.
+   * @return the byte or -1 on EOF.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the deflated stream is corrupted.
+   */
+  public int read() throws IOException
+  {
+    byte[] b = new byte[1];
+    if (read(b, 0, 1) <= 0)
+      return -1;
+    return b[0] & 0xff;
+  }
+
+  /**
+   * Reads a block of bytes from the current zip entry.
+   * @return the number of bytes read (may be smaller, even before
+   * EOF), or -1 on EOF.
+   * @exception IOException if a i/o error occured.
+   * @exception ZipException if the deflated stream is corrupted.
+   */
+  public int read(byte[] b, int off, int len) throws IOException
+  {
+    if (crc == null)
+      throw new IllegalStateException("Closed.");
+    if (entry == null)
+      return -1;
+    boolean finished = false;
+    switch (method)
+      {
+      case ZipOutputStream.DEFLATED:
+	len = super.read(b, off, len);
+	if (len < 0)
+	  {
+	    if (!inf.finished())
+	      throw new ZipException("Inflater not finished!?");
+	    avail = inf.getRemaining();
+	    if ((flags & 8) != 0)
+	      readDataDescr();
+
+	    if (inf.getTotalIn() != csize
+		|| inf.getTotalOut() != size)
+	      throw new ZipException("size mismatch: "+csize+";"+size+" <-> "+inf.getTotalIn()+";"+inf.getTotalOut());
+	    inf.reset();
+	    finished = true;
+	  }
+	break;
+	
+      case ZipOutputStream.STORED:
+
+	if (len > csize && csize >= 0)
+	  len = csize;
+	
+	len = readBuf(b, off, len);
+	if (len > 0)
+	  {
+	    csize -= len;
+	    size -= len;
+	  }
+
+	if (csize == 0)
+	  finished = true;
+	else if (len < 0)
+	  throw new ZipException("EOF in stored block");
+	break;
+      }
+
+    if (len > 0)
+      crc.update(b, off, len);
+
+    if (finished)
+      {
+	if ((crc.getValue() & 0xffffffffL) != entry.getCrc())
+	  throw new ZipException("CRC mismatch");
+	crc.reset();
+	entry = null;
+      }
+    return len;
+  }
+
+  /**
+   * Closes the zip file.
+   * @exception IOException if a i/o error occured.
+   */
+  public void close() throws IOException
+  {
+    super.close();
+    crc = null;
+    entry = null;
+  }
+
+  /**
+   * Creates a new zip entry for the given name.  This is equivalent
+   * to new ZipEntry(name).
+   * @param name the name of the zip entry.
+   */
+  protected ZipEntry createZipEntry(String name) 
+  {
+    return new ZipEntry(name);
+  }
 }

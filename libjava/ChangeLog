@@ -1,3 +1,18 @@
+2002-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/InflaterInputStream.java (read): Loop if data has
+	been read but none output by inflater.
+	* java/util/zip/natDeflater.cc (reset): Set is_finished.
+	* java/util/zip/natInflater.cc (reset): Set dist_needed and
+	is_finished.
+	* java/util/zip/ZipOutputStream.java: Replaced with Classpath
+	version.
+	* java/util/zip/ZipFile.java: Replaced with Classpath version.
+	* java/util/zip/ZipEntry.java: Replaced with Classpath version.
+	* java/util/zip/ZipInputStream.java: Replaced with Classpath
+	version.
+	* java/util/zip/ZipConstants.java: Replaced with Classpath version.
+
 2002-06-13  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natString.cc (init): Handle case where DONT_COPY is
