@@ -1012,7 +1012,8 @@ dbxout_type (type, full, show_arg_types)
 	   take care to make sure that `char' was type number 2.  */
 	fprintf (asmfile, "r%d;0;127;", TYPE_SYMTAB_ADDRESS (type));
       else if (use_gnu_debug_info_extensions
-	       && TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node))
+	       && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
+		   || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT))
 	{
 	  /* This used to say `r1' and we used to take care
 	     to make sure that `int' was type number 1.  */
@@ -1376,6 +1377,20 @@ print_int_cst_octal (c)
   unsigned HOST_WIDE_INT high = TREE_INT_CST_HIGH (c);
   unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (c);
   int excess = (3 - (HOST_BITS_PER_WIDE_INT % 3));
+  int width = TYPE_PRECISION (TREE_TYPE (c));
+
+  /* GDB wants constants with no extra leading "1" bits, so
+     we need to remove any sign-extension that might be
+     present.  */
+  if (width == HOST_BITS_PER_WIDE_INT * 2)
+    ;
+  else if (width > HOST_BITS_PER_WIDE_INT)
+    high &= (((HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT)) - 1);
+  else 
+    {
+      high = 0;
+      low &= (((HOST_WIDE_INT) 1 << width) - 1);
+    }
 
   fprintf (asmfile, "0");
 
@@ -1391,7 +1406,10 @@ print_int_cst_octal (c)
 	= ((high & (((HOST_WIDE_INT) 1 << excess) - 1)) << (3 - excess)
 	   | (low >> (HOST_BITS_PER_WIDE_INT / 3 * 3)));
       unsigned HOST_WIDE_INT end
-	= low & (((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 3 * 3)) - 1);
+	= low & (((unsigned HOST_WIDE_INT) 1
+		  << (HOST_BITS_PER_WIDE_INT / 3 * 3))
+		 - 1);
+
       fprintf (asmfile, "%o%01o", beg, middle);
       print_octal (end, HOST_BITS_PER_WIDE_INT / 3);
     }
