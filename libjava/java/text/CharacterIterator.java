@@ -140,4 +140,5 @@ public interface CharacterIterator extends Cloneable
    * @return A copy of this <code>CharacterIterator</code>.
    */
   Object clone();
-}
+
+} // interface CharacterIterator
