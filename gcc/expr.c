@@ -2659,6 +2659,9 @@ can_store_by_pieces (len, constfun, constfundata, align)
   int reverse;
   rtx cst;
 
+  if (len == 0)
+    return 1;
+
   if (! MOVE_BY_PIECES_P (len, align))
     return 0;
 
@@ -2734,6 +2737,9 @@ store_by_pieces (to, len, constfun, constfundata, align)
 {
   struct store_by_pieces data;
 
+  if (len == 0)
+    return;
+
   if (! MOVE_BY_PIECES_P (len, align))
     abort ();
   to = protect_from_queue (to, 1);
@@ -2755,6 +2761,9 @@ clear_by_pieces (to, len, align)
      unsigned int align;
 {
   struct store_by_pieces data;
+
+  if (len == 0)
+    return;
 
   data.constfun = clear_by_pieces_1;
   data.constfundata = NULL;
@@ -2926,7 +2935,9 @@ clear_storage (object, size)
       object = protect_from_queue (object, 1);
       size = protect_from_queue (size, 0);
 
-      if (GET_CODE (size) == CONST_INT
+      if (GET_CODE (size) == CONST_INT && INTVAL (size) == 0)
+	;
+      else if (GET_CODE (size) == CONST_INT
 	  && CLEAR_BY_PIECES_P (INTVAL (size), align))
 	clear_by_pieces (object, INTVAL (size), align);
       else if (clear_storage_via_clrstr (object, size, align))
@@ -4802,11 +4813,13 @@ store_constructor (exp, target, cleared, size)
     {
       tree elt;
 
+      /* If size is zero or the target is already cleared, do nothing.  */
+      if (size == 0 || cleared)
+	cleared = 1;
       /* We either clear the aggregate or indicate the value is dead.  */
-      if ((TREE_CODE (type) == UNION_TYPE
-	   || TREE_CODE (type) == QUAL_UNION_TYPE)
-	  && ! cleared
-	  && ! CONSTRUCTOR_ELTS (exp))
+      else if ((TREE_CODE (type) == UNION_TYPE
+		|| TREE_CODE (type) == QUAL_UNION_TYPE)
+	       && ! CONSTRUCTOR_ELTS (exp))
 	/* If the constructor is empty, clear the union.  */
 	{
 	  clear_storage (target, expr_size (exp));
@@ -4817,7 +4830,7 @@ store_constructor (exp, target, cleared, size)
 	 set the initial value as zero so we can fold the value into
 	 a constant.  But if more than one register is involved,
 	 this probably loses.  */
-      else if (! cleared && GET_CODE (target) == REG && TREE_STATIC (exp)
+      else if (GET_CODE (target) == REG && TREE_STATIC (exp)
 	       && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
 	{
 	  emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
@@ -4829,10 +4842,8 @@ store_constructor (exp, target, cleared, size)
 	 clear the whole structure first.  Don't do this if TARGET is a
 	 register whose mode size isn't equal to SIZE since clear_storage
 	 can't handle this case.  */
-      else if (! cleared && size > 0
-	       && ((list_length (CONSTRUCTOR_ELTS (exp))
-		    != fields_length (type))
-		   || mostly_zeros_p (exp))
+      else if (((list_length (CONSTRUCTOR_ELTS (exp)) != fields_length (type))
+		|| mostly_zeros_p (exp))
 	       && (GET_CODE (target) != REG
 		   || ((HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target))
 		       == size)))
