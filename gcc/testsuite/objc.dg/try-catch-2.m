@@ -3,7 +3,7 @@
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-options "-fobjc-exceptions -lobjc" } */
-/* { dg-do run { target *-*-darwin[789]* } } */
+/* { dg-do run { target *-*-darwin* } } */
 
 #include <objc/objc.h>
 #include <objc/objc-runtime.h>
