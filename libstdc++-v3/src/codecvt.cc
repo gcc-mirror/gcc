@@ -29,12 +29,12 @@
 
 #include <bits/std_locale.h>
 
-namespace std {
-
-#ifdef _GLIBCPP_USE_WCHAR_T
+namespace std 
+{
+#ifdef _GLIBCPP_USE___ENC_TRAITS
   // Definitions for static const data members of __enc_traits.
   const int __enc_traits::_S_max_size;
-#endif /* _GLIBCPP_USE_WCHAR_T */
+#endif 
 
   codecvt<char, char, mbstate_t>::
   codecvt(size_t __refs)
@@ -199,7 +199,6 @@ namespace std {
   do_max_length() const throw()
   { return 1; }
 #endif //  _GLIBCPP_USE_WCHAR_T
-
 } // namespace std
 
 

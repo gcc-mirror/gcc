@@ -4,30 +4,13 @@
 AC_PREREQ(2.13)
 AC_INIT(src/ios.cc)
 
-# When building with srcdir == objdir, links to the source files will
-# be created in directories within the target_subdir.  We have to
-# adjust toplevel_srcdir accordingly, so that configure finds
-# install-sh and other auxiliary files that live in the top-level
-# source directory.
-if test "${srcdir}" = "."; then
-  if test -z "${with_target_subdir}"; then
-    toprel=".."
-  else
-    if test "${with_target_subdir}" != "."; then
-      toprel="${with_multisrctop}../.."
-    else
-      toprel="${with_multisrctop}.."
-    fi
-  fi
-else
-  toprel=".."
-fi
-AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
-toplevel_srcdir=\${top_srcdir}/$toprel
-AC_SUBST(toplevel_srcdir)
-
-dnl This is here just to satisfy automake.
-ifelse(not,equal,[AC_CONFIG_AUX_DIR(..)])
+PACKAGE=libstdc++
+MAJOR_VERSION=3
+MINOR_VERSION=1
+MICRO_VERSION=0
+VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
 
 # Gets and sets build, host, target, *_vendor, *_cpu, *_os, etc.
 # AC 2.50 sets target_alias iff the user specified --target, but we use it
@@ -36,34 +19,26 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
 
-# Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.50+, can also
-# be 'cp -p' if linking isn't available.
-#ac_cv_prog_LN_S='cp -p'
-AC_PROG_LN_S
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_CONFIG_HEADER(config.h)
 
-# We use these options to decide which functions to include.
-AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR
-                           configuring in a subdirectory])
-AC_ARG_WITH(cross-host,
-[  --with-cross-host=HOST  configuring with a cross compiler])
-
-# Runs configure.host and configure.target. Have to run this before
-# the GLIBCPP_ENABLE_* macros below.
+# Runs configure.host and configure.target, as well as finds CC, CXX
+# and assorted other critical bits. Have to run this before the
+# GLIBCPP_ENABLE_* macros below.
 GLIBCPP_CONFIGURE(.)
 
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
-GLIBCPP_CHECK_GNU_MAKE
 
 AM_CONFIG_HEADER(config.h testsuite/testsuite_hooks.h)
 
 # Check for c++ or library specific bits that don't require linking.
-GLIBCPP_CHECK_COMPILER_VERSION
+#GLIBCPP_CHECK_COMPILER_VERSION
+GLIBCPP_CHECK_GNU_MAKE
 
-# Enable all the crazy c++ stuff.  C_MBCHAR must come early.
+# Enable all the variable C++ stuff.  C_MBCHAR must come early.
 GLIBCPP_ENABLE_DEBUG($USE_MAINTAINER_MODE)
 GLIBCPP_ENABLE_CSTDIO
 GLIBCPP_ENABLE_CLOCALE
@@ -75,13 +50,14 @@ GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
 
+
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
   # We are being configured with some form of cross compiler.
   # mknumeric_limits may not work correctly, either because the
   # compiler may not run on this machine, may not be able to link
   # executables, or may produce executables we can't run on this
-  # machine.
+  # machine. Thus, just use the pre-generated include/bits/limits_generic.h
   GLIBCPP_IS_CROSS_COMPILING=1
 
   # If Canadian cross, then don't pick up tools from the build
@@ -220,6 +196,7 @@ else
 [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.  ])])
 
   AC_FUNC_MMAP
+
 fi
 
 # Enable/configure some pieces which may require knowledge about the
@@ -272,7 +249,7 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 AC_OUTPUT(Makefile \
     include/Makefile src/Makefile \
     libmath/Makefile libio/Makefile libsupc++/Makefile \
-    testsuite/Makefile mkcheck testsuite_flags,
+    po/Makefile intl/Makefile testsuite/Makefile mkcheck testsuite_flags,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile

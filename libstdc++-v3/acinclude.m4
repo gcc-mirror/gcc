@@ -12,10 +12,57 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
    esac], [multilib=yes])dnl
 
+# When building with srcdir == objdir, links to the source files will
+# be created in directories within the target_subdir.  We have to
+# adjust toplevel_srcdir accordingly, so that configure finds
+# install-sh and other auxiliary files that live in the top-level
+# source directory.
+if test "${srcdir}" = "."; then
+  if test -z "${with_target_subdir}"; then
+    toprel=".."
+  else
+    if test "${with_target_subdir}" != "."; then
+      toprel="${with_multisrctop}../.."
+    else
+      toprel="${with_multisrctop}.."
+    fi
+  fi
+else
+  toprel=".."
+fi
+AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
+toplevel_srcdir=\${top_srcdir}/$toprel
+AC_SUBST(toplevel_srcdir)
+
+# Export build and source directories.
+# These need to be absolute paths, yet at the same time need to
+# canonicalize only relative paths, because then amd will not unmount
+# drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
+glibcpp_builddir=`pwd`
+case $srcdir in
+[\\/$]* | ?:[\\/]*) glibcpp_srcdir=${srcdir} ;;
+*) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
+esac
+AC_SUBST(glibcpp_builddir)
+AC_SUBST(glibcpp_srcdir)
+
+dnl This is here just to satisfy automake.
+ifelse(not,equal,[AC_CONFIG_AUX_DIR(..)])
+
+# Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.50+, can also
+# be 'cp -p' if linking isn't available.
+#ac_cv_prog_LN_S='cp -p'
+AC_PROG_LN_S
+
+# We use these options to decide which functions to include.
+AC_ARG_WITH(target-subdir,
+[  --with-target-subdir=SUBDIR
+                           configuring in a subdirectory])
+AC_ARG_WITH(cross-host,
+[  --with-cross-host=HOST  configuring with a cross compiler])
+
   glibcpp_basedir=$srcdir/$toprel/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
-
-  AM_INIT_AUTOMAKE(libstdc++, 3.0.0)
 
   # Never versions of autoconf add an underscore to these functions.
   # Prevent future problems ...
@@ -112,6 +159,9 @@ fi
 
 LIB_AC_PROG_CXX
 
+   # For some reason, gettext needs this.
+   AC_ISC_POSIX
+
   AC_CHECK_TOOL(AS, as)
   AC_CHECK_TOOL(AR, ar)
   AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
@@ -144,6 +194,8 @@ LIB_AC_PROG_CXX
   # This does for the target what configure.host does for the host.  In
   # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_TARGET
+
+  # 
 ])
 
 
@@ -977,8 +1029,8 @@ dnl
 dnl Check for which locale library to use:  gnu or generic.
 dnl
 dnl GLIBCPP_ENABLE_CLOCALE
-dnl --enable-clocale=gnu sets config/c_locale_gnu.cc and friends
-dnl --enable-clocale=generic sets config/c_locale_generic.cc and friends
+dnl --enable-clocale=gnu sets config/locale/c_locale_gnu.cc and friends
+dnl --enable-clocale=generic sets config/locale/c_locale_generic.cc and friends
 dnl 
 dnl default is generic
 dnl
@@ -997,15 +1049,52 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
 
   dnl Check if a valid locale package
   case x${enable_clocale_flag} in
-    xgnu)
-      CLOCALE_H=config/c_locale_gnu.h
-      CLOCALE_CC=config/c_locale_gnu.cc
-      AC_MSG_RESULT(gnu)
-      ;;
     xgeneric)
-      CLOCALE_H=config/c_locale_generic.h
-      CLOCALE_CC=config/c_locale_generic.cc
       AC_MSG_RESULT(generic)
+
+      # Don't use gettext.
+      USE_NLS=no
+      AC_SUBST(USE_NLS)
+
+      CLOCALE_H=config/locale/c_locale_generic.h
+      CLOCALE_CC=config/locale/c_locale_generic.cc
+      CCODECVT_H=config/locale/codecvt_specializations_generic.h
+      CMESSAGES_H=config/locale/messages_members_generic.h
+      CMESSAGES_CC=config/locale/messages_members_generic.cc
+      ;;
+    xgnu)
+      AC_MSG_RESULT(gnu)
+
+      # Declare intention to use gettext, and add support for specific
+      # languages.
+      # For some reason, ALL_LINGUAS has to be before AM_GNU_GETTEXT
+      ALL_LINGUAS="de fr"
+      AM_GNU_GETTEXT
+
+      # Export the build objects.
+      for ling in $ALL_LINGUAS; do \
+        glibcpp_MOFILES="$glibcpp_MOFILES $ling.mo"; \
+      done
+      AC_SUBST(glibcpp_MOFILES)
+
+      CLOCALE_H=config/locale/c_locale_gnu.h
+      CLOCALE_CC=config/locale/c_locale_gnu.cc
+      CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
+      CMESSAGES_H=config/locale/messages_members_gnu.h
+      CMESSAGES_CC=config/locale/messages_members_gnu.cc
+      ;;
+    xieee_1003.1)
+      AC_MSG_RESULT(generic)
+
+      # Don't use gettext.
+      USE_NLS=no
+      AC_SUBST(USE_NLS)
+
+      CLOCALE_H=config/locale/c_locale_ieee_1003.1-200x.h
+      CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
+      CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
+      CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
+      CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -1013,8 +1102,16 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       ;;
   esac
 
+  # This is where the testsuite looks for locale catalogs, using the
+  # -DLOCALEDIR define during testsuite compilation.
+  glibcpp_localedir=${glibcpp_builddir}/po/share/locale
+  AC_SUBST(glibcpp_localedir)
+
   AC_SUBST(CLOCALE_H)
+  AC_SUBST(CCODECVT_H)
+  AC_SUBST(CMESSAGES_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
+  AC_LINK_FILES($CMESSAGES_CC, src/messages_members.cc)
 ])
 
 
@@ -1022,7 +1119,7 @@ dnl
 dnl Check for which I/O library to use:  libio, or something specific.
 dnl
 dnl GLIBCPP_ENABLE_CSTDIO
-dnl --enable-cstdio=libio sets config/c_io_libio.h and friends
+dnl --enable-cstdio=libio sets config/io/c_io_libio.h and friends
 dnl 
 dnl default is stdio
 dnl
@@ -1042,9 +1139,9 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   dnl Check if a valid I/O package
   case x${enable_cstdio_flag} in
     xlibio)
-      CSTDIO_H=config/c_io_libio.h
-      BASIC_FILE_H=config/basic_file_libio.h
-      BASIC_FILE_CC=config/basic_file_libio.cc
+      CSTDIO_H=config/io/c_io_libio.h
+      BASIC_FILE_H=config/io/basic_file_libio.h
+      BASIC_FILE_CC=config/io/basic_file_libio.cc
       AC_MSG_RESULT(libio)
 
       # see if we are on a system with libio native (ie, linux)
@@ -1099,9 +1196,9 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       ;;
     xstdio | x | xno | xnone | xyes)
       # default
-      CSTDIO_H=config/c_io_stdio.h
-      BASIC_FILE_H=config/basic_file_stdio.h
-      BASIC_FILE_CC=config/basic_file_stdio.cc
+      CSTDIO_H=config/io/c_io_stdio.h
+      BASIC_FILE_H=config/io/basic_file_stdio.h
+      BASIC_FILE_CC=config/io/basic_file_stdio.cc
       AC_MSG_RESULT(stdio)
 
       # We're not using stdio.
@@ -1118,7 +1215,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_LINK_FILES($BASIC_FILE_CC, src/basic_file.cc)
 
   # 2000-08-04 bkoz hack
-  CCODECVT_C=config/c_io_libio_codecvt.c
+  CCODECVT_C=config/io/c_io_libio_codecvt.c
   AC_SUBST(CCODECVT_C)
   # 2000-08-04 bkoz hack
 
@@ -1540,8 +1637,6 @@ dnl  GLIBCPP_EXPORT_INSTALL_INFO
 dnl  calculates gxx_install_dir
 dnl  exports glibcpp_toolexecdir
 dnl  exports glibcpp_toolexeclibdir
-dnl  exports glibcpp_builddir
-dnl  exports glibcpp_srcdir
 dnl  exports glibcpp_prefixdir
 dnl
 dnl Assumes cross_compiling bits already done, and with_cross_host in
@@ -1549,19 +1644,10 @@ dnl particular
 dnl
 dnl GLIBCPP_EXPORT_INSTALL_INFO
 AC_DEFUN(GLIBCPP_EXPORT_INSTALL_INFO, [
-
+# Assumes glibcpp_builddir, glibcpp_srcdir are alreay set up and
+# exported correctly in GLIBCPP_CONFIGURE.
 glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
-
-# Export build and source directories.
-# These need to be absolute paths, yet at the same time need to
-# canonicalize only relative paths, because then amd will not unmount
-# drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
-glibcpp_builddir=`pwd`
-case $srcdir in
-[\\/$]* | ?:[\\/]*) glibcpp_srcdir=${srcdir} ;;
-*) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
-esac
 glibcpp_prefixdir=${prefix}
 
 AC_MSG_CHECKING([for interface version number])
@@ -1627,34 +1713,10 @@ fi
 AC_MSG_CHECKING([for install location])
 AC_MSG_RESULT($gxx_include_dir)
 
-AC_SUBST(glibcpp_builddir)
-AC_SUBST(glibcpp_srcdir)
 AC_SUBST(glibcpp_prefixdir)
 AC_SUBST(gxx_include_dir)
 AC_SUBST(glibcpp_toolexecdir)
 AC_SUBST(glibcpp_toolexeclibdir)
-])
-
-
-# Check whether LC_MESSAGES is available in <locale.h>.
-# Ulrich Drepper <drepper@cygnus.com>, 1995.
-#
-# This file file be copied and used freely without restrictions.  It can
-# be used in projects which are not available under the GNU Public License
-# but which still want to provide support for the GNU gettext functionality.
-# Please note that the actual code is *not* freely available.
-
-# serial 1
-
-AC_DEFUN(AC_LC_MESSAGES, [
-  AC_CHECK_HEADER(locale.h, [
-    AC_CACHE_CHECK([for LC_MESSAGES], ac_cv_val_LC_MESSAGES,
-      [AC_TRY_LINK([#include <locale.h>], [return LC_MESSAGES],
-       ac_cv_val_LC_MESSAGES=yes, ac_cv_val_LC_MESSAGES=no)])
-    if test $ac_cv_val_LC_MESSAGES = yes; then
-      AC_DEFINE(HAVE_LC_MESSAGES)
-    fi
-  ])
 ])
 
 
@@ -1674,22 +1736,6 @@ AC_DEFUN(AC_REPLACE_MATHFUNCS,
 AC_SUBST(LIBMATHOBJS)dnl
 ])
 
-
-# Check for string functions.
-# Ulrich Drepper <drepper@cygnus.com>, 1998.
-#
-# This file can be copied and used freely without restrictions.  It can
-# be used in projects which are not available under the GNU Public License
-# but which still want to provide support for the GNU gettext functionality.
-# Please note that the actual code is *not* freely available.
-
-# serial 1
-
-dnl AC_REPLACE_STRINGFUNCS(FUNCTION...)
-AC_DEFUN(AC_REPLACE_STRINGFUNCS,
-[AC_CHECK_FUNCS([$1], , [LIBSTRINGOBJS="$LIBSTRINGOBJS ${ac_func}.lo"])
-AC_SUBST(LIBSTRINGOBJS)dnl
-])
 
 
 dnl This macro searches for a GNU version of make.  If a match is found, the
@@ -1809,4 +1855,25 @@ AC_DEFUN([AC_LIBTOOL_DLOPEN])
 AC_DEFUN([AC_PROG_LD])
 ])
 
+
+# Check whether LC_MESSAGES is available in <locale.h>.
+# Ulrich Drepper <drepper@cygnus.com>, 1995.
+#
+# This file file be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
+
+# serial 1
+
+AC_DEFUN(AC_LC_MESSAGES, [
+  AC_CHECK_HEADER(locale.h, [
+    AC_CACHE_CHECK([for LC_MESSAGES], ac_cv_val_LC_MESSAGES,
+      [AC_TRY_LINK([#include <locale.h>], [return LC_MESSAGES],
+       ac_cv_val_LC_MESSAGES=yes, ac_cv_val_LC_MESSAGES=no)])
+    if test $ac_cv_val_LC_MESSAGES = yes; then
+      AC_DEFINE(HAVE_LC_MESSAGES)
+    fi
+  ])
+])
 

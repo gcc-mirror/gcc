@@ -37,7 +37,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/c++locale.h>     // Defines __c_locale.
+#include <bits/c++locale.h>     // Defines __c_locale, config-specific includes
 #include <bits/std_climits.h>	// For CHAR_BIT
 #include <bits/std_string.h> 	// For string
 #include <bits/std_cctype.h>	// For isspace, etc.
@@ -124,6 +124,7 @@ namespace std
   // NB: Specialized for char and wchar_t in locale_facets.h.
 
   class codecvt_base;
+  class __enc_traits;
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt;
   template<> class codecvt<char, char, mbstate_t>;
@@ -310,7 +311,6 @@ namespace std
     size_t 				_M_references;
     __vec_facet* 			_M_facets;
     string 				_M_names[_S_num_categories];
-    __c_locale				_M_c_locale;
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
     static const locale::id* const 	_S_id_collate[];
@@ -379,6 +379,7 @@ namespace std
   {
     friend class locale;
     friend class locale::_Impl;
+    friend class __enc_traits;
 
   protected:
     explicit 
@@ -389,6 +390,9 @@ namespace std
 
     static void
     _S_create_c_locale(__c_locale& __cloc, const char* __s);
+
+    static __c_locale
+    _S_clone_c_locale(__c_locale& __cloc);
 
     static void
     _S_destroy_c_locale(__c_locale& __cloc);

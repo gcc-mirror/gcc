@@ -1,5 +1,15 @@
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
+// Defines libstdc++ version.
+#undef PACKAGE
+#undef VERSION
+
+// Needed for gettext.
+#undef ENABLE_NLS
+#undef HAVE_CATGETS
+#undef HAVE_GETTEXT
+#undef HAVE_STPCPY
+
 // Define if GCC supports weak symbols
 #undef _GLIBCPP_SUPPORTS_WEAK
 

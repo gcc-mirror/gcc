@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id$
+## $Id: Makefile.am,v 1.1 2001/07/13 16:47:55 pme Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -294,9 +294,10 @@ thread_headers = \
 
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
-# XXX stamp-c_compatibility 
+# XXX stamp-c_compatibility not implemented yet.
 allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext \
-	stamp-target stamp-thread stamp-file_model stamp-io stamp-locale
+	stamp-target stamp-thread stamp-file_model stamp-io \
+	stamp-locale stamp-messages_model stamp-codecvt_model
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = ${allstamps}
@@ -370,6 +371,14 @@ stamp-locale: ${glibcpp_srcdir}/@CLOCALE_H@ ${target_builddir}
 	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h) ;\
 	echo `date` > stamp-locale
 
+stamp-messages_model: ${glibcpp_srcdir}/@CMESSAGES_H@ ${target_builddir}
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h) ;\
+	echo `date` > stamp-messages_model
+
+stamp-codecvt_model: ${glibcpp_srcdir}/@CCODECVT_H@ ${target_builddir}
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h) ;\
+	echo `date` > stamp-codecvt_model
+
 # This target is kinda special.  The timestamp on a directory gets modified
 # whenever a file it contains gets modified, and that'll throw off all the
 # build dependencies that need this target.  On the other hand, someone
@@ -426,7 +435,7 @@ ${thread_builddir}/gthr-default.h:
 gxx_include_dir = @gxx_include_dir@
 
 install-data-local:
-	for file in `find . ! -name stamp-\* -print`; do \
+	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
 	installFile=${gxx_include_dir}/$${file} ;\
 	if [ -d $${file} ]; then \
 	  $(INSTALL) -d $${installFile} ;\

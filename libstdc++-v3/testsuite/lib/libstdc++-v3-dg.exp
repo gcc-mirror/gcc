@@ -156,15 +156,3 @@ proc libstdc++-v3_target_compile { source dest type options } {
     return [target_compile $source $dest $type $options]
 }
 
-# On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-# called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-# (for the 64-bit ABI).  The right way to do this would be to modify
-# unix.exp -- but that's not an option since it's part of DejaGNU
-# proper, so we do it here, by trickery.  We really only need to do 
-# this on IRIX, but it shouldn't hurt to do it anywhere else.
-proc libstdc++-v3_set_ld_library_path { name element op } {
-  setenv LD_LIBRARYN32_PATH [getenv LD_LIBRARY_PATH]
-  setenv LD_LIBRARY64_PATH [getenv LD_LIBRARY_PATH]
-}
-
-trace variable env(LD_LIBRARY_PATH) w libstdc++-v3_set_ld_library_path

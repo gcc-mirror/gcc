@@ -33,7 +33,7 @@ void test00()
   std::locale loc("C");
 }
 
-#if _GLIBCPP_USE_WCHAR_T
+#if _GLIBCPP_USE___ENC_TRAITS
 typedef std::codecvt<char, char, std::mbstate_t> 	      c_codecvt;
 typedef std::codecvt_byname<char, char, std::mbstate_t>       c_codecvt_byname;
 typedef std::codecvt<wchar_t, char, std::mbstate_t>	      w_codecvt;
@@ -237,13 +237,13 @@ void test01()
     VERIFY (loc15 != loc09);  
   }
 }
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+#endif // _GLIBCPP_USE___ENC_TRAITS
 
 int main ()
 {
   test00();
 
-#if _GLIBCPP_USE_WCHAR_T
+#if _GLIBCPP_USE___ENC_TRAITS
   test01();
 #endif 
 

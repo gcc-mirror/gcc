@@ -1,4 +1,4 @@
-// Wrapper for underlying C-language localization -*- C++ -*-
+// std::messages implementation details, IEEE 1003.1-200x version -*- C++ -*-
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -28,14 +28,22 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 22.8  Standard locale categories.
+// ISO C++ 14882: 22.2.7.1.2  messages virtual functions
 //
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-#include <clocale>
+#include <locale>
 
 namespace std
 {
-  typedef __locale_t		__c_locale;
+  // Specializations
+  template<>
+    string
+    messages<char>::do_get(catalog __c, int __setid, int __msgid, 
+			   const string& __dfault) const
+    {
+      nl_catd __nlc = reinterpret_cast<nl_catd>(__c);
+      return string(catgets(__nlc, __setid, __msgid, __dfault.c_str())); 
+    }
 }

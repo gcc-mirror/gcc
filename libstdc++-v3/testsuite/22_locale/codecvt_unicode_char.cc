@@ -1,6 +1,6 @@
 // 2000-08-22 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2001 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,7 @@
 
 using namespace std;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCPP_USE___ENC_TRAITS
 
 /*
 > how do I check that these conversions are correct? 
@@ -226,14 +226,14 @@ void test02()
   delete [] i_arr;
 }
 
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+#endif // _GLIBCPP_USE___ENC_TRAITS
 
 int main ()
 {
-#if _GLIBCPP_USE_WCHAR_T
+#if _GLIBCPP_USE___ENC_TRAITS
   test01();
   test02();
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+#endif 
 
   return 0;
 }

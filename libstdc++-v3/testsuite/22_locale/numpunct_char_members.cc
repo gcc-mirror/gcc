@@ -1,4 +1,4 @@
-// 2001-01-17 bkoz
+// 2001-01-17 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation
 //

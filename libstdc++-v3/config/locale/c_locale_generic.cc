@@ -38,16 +38,20 @@
 namespace std 
 {
   void
-  locale::facet::_S_create_c_locale(__c_locale& /*__cloc*/, const char*)
+  locale::facet::_S_create_c_locale(__c_locale&, const char*)
   { }
 
   void
-  locale::facet::_S_destroy_c_locale(__c_locale& /*__cloc*/)
+  locale::facet::_S_destroy_c_locale(__c_locale&)
   { }
+
+  __c_locale
+  locale::facet::_S_clone_c_locale(__c_locale&)
+  { return __c_locale(); }
 
   template<> 
     void
-    numpunct<char>::_M_initialize_numpunct(__c_locale /*__cloc*/)
+    numpunct<char>::_M_initialize_numpunct(__c_locale)
     {
       // "C" locale
       _M_decimal_point = '.';
@@ -60,7 +64,7 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
-    numpunct<wchar_t>::_M_initialize_numpunct(__c_locale /*__cloc*/)
+    numpunct<wchar_t>::_M_initialize_numpunct(__c_locale)
     {
       // "C" locale
       _M_decimal_point = L'.';
@@ -73,7 +77,7 @@ namespace std
 
   template<> 
     void
-    moneypunct<char>::_M_initialize_moneypunct(__c_locale /*__cloc*/)
+    moneypunct<char>::_M_initialize_moneypunct(__c_locale)
     {
       // "C" locale
       _M_decimal_point = '.';
@@ -90,7 +94,7 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
-    moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale /*__cloc*/)
+    moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale)
     {
       // "C" locale
       _M_decimal_point = L'.';
@@ -105,3 +109,4 @@ namespace std
     }
 #endif
 }  // namespace std
+
