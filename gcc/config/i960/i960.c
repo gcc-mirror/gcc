@@ -2181,7 +2181,7 @@ secondary_reload_class (class, mode, in)
 
   /* We can place any hard register, 0.0, and 1.0 into FP_REGS.  */
   if (class == FP_REGS
-      && ((regno >= 0 && regno <= FIRST_PSEUDO_REGISTER)
+      && ((regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
 	  || in == CONST0_RTX (mode) || in == CONST1_RTX (mode)))
     return NO_REGS;
 
