@@ -31,11 +31,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "parse.h"
 
-static unsigned int mark_reference_fields PARAMS ((tree,
-						   unsigned HOST_WIDE_INT *,
-						   unsigned HOST_WIDE_INT *,
-						   unsigned int,
-						   int *, int *, int *));
+static void mark_reference_fields PARAMS ((tree,
+					   unsigned HOST_WIDE_INT *,
+					   unsigned HOST_WIDE_INT *,
+					   unsigned int,
+					   int *, int *,
+					   int *,
+					   HOST_WIDE_INT *));
 static void set_bit PARAMS ((unsigned HOST_WIDE_INT *,
 			     unsigned HOST_WIDE_INT *,
 			     unsigned int));
@@ -69,33 +71,45 @@ set_bit (low, high, n)
 }
 
 /* Recursively mark reference fields.  */
-static unsigned int
+static void
 mark_reference_fields (field, low, high, ubit,
-		       pointer_after_end, all_bits_set, last_set_index)
+		       pointer_after_end, all_bits_set,
+		       last_set_index, last_view_index)
      tree field;
      unsigned HOST_WIDE_INT *low, *high;
      unsigned int ubit;
-     int *pointer_after_end, *all_bits_set, *last_set_index;
+     int *pointer_after_end, *all_bits_set;
+     int *last_set_index;
+     HOST_WIDE_INT *last_view_index;
 {
-  unsigned int count = 0;
-
   /* See if we have fields from our superclass.  */
   if (DECL_NAME (field) == NULL_TREE)
     {
-      count += mark_reference_fields (TYPE_FIELDS (TREE_TYPE (field)),
-				      low, high, ubit,
-				      pointer_after_end, all_bits_set,
-				      last_set_index);
+      mark_reference_fields (TYPE_FIELDS (TREE_TYPE (field)),
+			     low, high, ubit,
+			     pointer_after_end, all_bits_set,
+			     last_set_index, last_view_index);
       field = TREE_CHAIN (field);
     }
 
   for (; field != NULL_TREE; field = TREE_CHAIN (field))
     {
+      HOST_WIDE_INT offset = tree_low_cst (byte_position (field), 1);
+
       if (FIELD_STATIC (field))
 	continue;
 
       if (JREFERENCE_TYPE_P (TREE_TYPE (field)))
 	{
+	  unsigned int count;
+
+	  /* If this reference slot appears to overlay a slot we think
+	     we already covered, then we are doomed.  */
+	  if (offset <= *last_view_index)
+	    abort ();
+
+	  count = offset * BITS_PER_UNIT / POINTER_SIZE;
+
 	  *last_set_index = count;
 	  /* First word in object corresponds to most significant byte
 	     of bitmap.  */
@@ -106,10 +120,8 @@ mark_reference_fields (field, low, high, ubit,
       else
 	*all_bits_set = 0;
 
-      ++count;
+      *last_view_index = offset;
     }
-
-  return count;
 }
 
 /* Return the marking bitmap for the class TYPE.  For now this is a
@@ -121,6 +133,7 @@ get_boehm_type_descriptor (tree type)
   int bit;
   int all_bits_set = 1;
   int last_set_index = 0;
+  HOST_WIDE_INT last_view_index = -1;
   int pointer_after_end = 0;
   unsigned HOST_WIDE_INT low = 0, high = 0;
   tree field, value;
@@ -151,9 +164,9 @@ get_boehm_type_descriptor (tree type)
   ubit = (unsigned int) bit;
 
   field = TYPE_FIELDS (type);
-  count = mark_reference_fields (field, &low, &high, ubit,
-				 &pointer_after_end, &all_bits_set,
-				 &last_set_index);
+  mark_reference_fields (field, &low, &high, ubit,
+			 &pointer_after_end, &all_bits_set,
+			 &last_set_index, &last_view_index);
 
   /* If the object is all pointers, or if the part with pointers fits
      in our bitmap, then we are ok.  Otherwise we have to allocate it
