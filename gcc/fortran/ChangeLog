@@ -1,3 +1,9 @@
+2005-03-05  Steven G. Kargl  <kargls@comcast.net> 
+
+	PR fortran/19754
+	* resolve.c (compare_shapes):  New function.
+	(resolve_operator): Use it.
+
 2005-03-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19673
