@@ -1,3 +1,7 @@
+1999-05-12  Andrew Haley  <aph@cygnus.com>
+
+	* libjava.lang/Invoke_2.java: New file.
+
 1999-05-03  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (libjava_arguments): Don't use -nodefaultlibs.
