@@ -1404,6 +1404,11 @@ while (0)
   case PLUS: /* this includes shNadd insns */		\
     return COSTS_N_INSNS (1) + 2;
 
+/* Adjust the cost of dependencies.  */
+
+#define ADJUST_COST(INSN,LINK,DEP,COST) \
+  (COST) = pa_adjust_cost (INSN, LINK, DEP, COST)
+
 /* Conditional branches with empty delay slots have a length of two.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
   if (GET_CODE (INSN) == CALL_INSN					\
