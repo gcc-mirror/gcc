@@ -70,6 +70,8 @@ extern int normal_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_no_subreg_operand PARAMS ((rtx, enum machine_mode));
 extern int addition_operation PARAMS ((rtx, enum machine_mode));
 
+extern rtx alpha_tablejump_addr_vec PARAMS ((rtx));
+extern rtx alpha_tablejump_best_label PARAMS ((rtx));
 extern void get_aligned_mem PARAMS ((rtx, rtx *, rtx *));
 extern rtx get_unaligned_address PARAMS ((rtx, int));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
