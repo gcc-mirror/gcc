@@ -108,6 +108,8 @@ check_compatible(const symbol_info& lhs, const symbol_info& rhs,
       if (verbose)
 	{
 	  cout << tab << "incompatible sizes" << endl;
+	  cout << tab << lhs.size << endl;
+	  cout << tab << rhs.size << endl;
 	}
     }
 
@@ -117,8 +119,13 @@ check_compatible(const symbol_info& lhs, const symbol_info& rhs,
       if (verbose)
 	{
 	  cout << tab << "incompatible versions" << endl;
+	  cout << tab << lhs.version_name << endl;
+	  cout << tab << rhs.version_name << endl;
 	}
     }
+
+  if (verbose)
+    cout << endl;
 
   return ret;
 }
@@ -247,7 +254,7 @@ create_symbol_data(const char* file, symbol_infos& symbols,
 }
 
 void
-report_symbol_info(const symbol_info& symbol, std::size_t n)
+report_symbol_info(const symbol_info& symbol, std::size_t n, bool ret = true)
 {
   using namespace std;
   const char tab = '\t';
@@ -259,7 +266,8 @@ report_symbol_info(const symbol_info& symbol, std::size_t n)
   cout << tab << "demangled symbol"<< endl;
   cout << tab << symbol.demangled_name << endl;
 
-  cout << endl;
+  if (ret)
+    cout << endl;
 }
 
 
@@ -370,7 +378,10 @@ main(int argc, char** argv)
 					  test.name);
 
       if (it1 == end && it2 == end)
-	incompatible.push_back(symbol_pair(test, test));
+	{
+	  incompatible.push_back(symbol_pair(test, test));
+	  cout << test.version_name << endl;
+	}
     }
 
   // Report results.
@@ -388,7 +399,7 @@ main(int argc, char** argv)
       // First, report name.
       const symbol_info& base = incompatible[j].first;
       const symbol_info& test = incompatible[j].second;
-      report_symbol_info(test, j + 1);
+      report_symbol_info(test, j + 1, false);
 
       // Second, report reason or reasons incompatible.
       check_compatible(base, test, true);
