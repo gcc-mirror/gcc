@@ -215,6 +215,8 @@ enum node_type {
  T_UNDEF,	/* `#undef' */
  T_LINE,	/* `#line' */
  T_ENDIF,	/* `#endif' */
+ T_ASSERT,	/* `#assert' */
+ T_UNASSERT,	/* `#unassert' */
  T_SPECLINE,	/* special symbol `__LINE__' */
  T_DATE,	/* `__DATE__' */
  T_FILE,	/* `__FILE__' */
@@ -258,7 +260,7 @@ HASHNODE *hashtab[HASHSIZE];
 
 struct directive {
   int length;			/* Length of name */
-  void (*func) PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+  void (*func) PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
   				/* Function to handle directive */
   const char *name;		/* Name of directive */
   enum node_type type;		/* Code which describes which directive. */
@@ -305,15 +307,19 @@ struct arglist {
 
 /* Function prototypes.  */
 
-static void do_define	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_if	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_xifdef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_else	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_elif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
-static void do_endif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void do_define	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_if	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_ifdef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_ifndef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_else	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_elif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_endif	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_assert	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_unassert	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_xifdef	PARAMS ((U_CHAR *, U_CHAR *, enum node_type));
 
 static struct hashnode *install PARAMS ((const U_CHAR *, int, enum node_type, int));
 static int hashf		 PARAMS ((const U_CHAR *, int, int));
@@ -353,8 +359,11 @@ static int eval_if_expression	PARAMS ((const U_CHAR *, int));
 
 static void initialize_char_syntax	PARAMS ((void));
 static void initialize_builtins	PARAMS ((void));
-static void make_definition	PARAMS ((const U_CHAR *));
-static void make_undef		PARAMS ((U_CHAR *));
+static void run_directive	PARAMS ((const char *, size_t,
+					 enum node_type));
+static void make_definition	PARAMS ((const char *));
+static void make_undef		PARAMS ((const char *));
+static void make_assertion	PARAMS ((const char *));
 
 static void grow_outbuf 	PARAMS ((FILE_BUF *, int));
 static int handle_directive 	PARAMS ((FILE_BUF *, FILE_BUF *));
@@ -384,13 +393,15 @@ struct directive directive_table[] = {
   {  6, do_define,  "define",  T_DEFINE  },
   {  7, do_include, "include", T_INCLUDE },
   {  5, do_endif,   "endif",   T_ENDIF   },
-  {  5, do_xifdef,  "ifdef",   T_IFDEF   },
+  {  5, do_ifdef,   "ifdef",   T_IFDEF   },
   {  2, do_if,      "if",      T_IF,     },
   {  4, do_else,    "else",    T_ELSE    },
-  {  6, do_xifdef,  "ifndef",  T_IFNDEF  },
+  {  6, do_ifndef,  "ifndef",  T_IFNDEF  },
   {  5, do_undef,   "undef",   T_UNDEF   },
   {  4, do_line,    "line",    T_LINE    },
   {  4, do_elif,    "elif",    T_ELIF    },
+  {  6, do_assert,  "assert",  T_ASSERT  },
+  {  8, do_unassert,"unassert",T_UNASSERT},
   {  -1, 0, "", T_UNUSED},
 };
 
@@ -515,7 +526,6 @@ main (argc, argv)
       int c = argv[i][1];
 
       switch (c) {
-      case 'A':
       case 'E':
       case '$':
       case 'g':
@@ -604,6 +614,7 @@ main (argc, argv)
 
       case 'D':
       case 'U':
+      case 'A':
 	{
 	  char *p;
 
@@ -614,7 +625,12 @@ main (argc, argv)
 	  else
 	    p = argv[++i];
 
-	  pend[i].type = c == 'D' ? PD_DEFINE: PD_UNDEF;
+	  if (c == 'D')
+	    pend[i].type = PD_DEFINE;
+	  else if (c == 'U')
+	    pend[i].type = PD_UNDEF;
+	  else
+	    pend[i].type = PD_ASSERTION;
 	  pend[i].arg = p;
 	}
 	break;
@@ -701,9 +717,11 @@ main (argc, argv)
   /* Do defines specified with -D and undefines specified with -U.  */
   for (i = 1; i < argc; i++)
     if (pend[i].type == PD_DEFINE)
-      make_definition ((const U_CHAR *) pend[i].arg);
+      make_definition (pend[i].arg);
     else if (pend[i].type == PD_UNDEF)
-      make_undef ((U_CHAR *) pend[i].arg);
+      make_undef (pend[i].arg);
+    else if (pend[i].type == PD_ASSERTION)
+      make_assertion (pend[i].arg);
 
   /* Unless -fnostdinc,
      tack on the standard include file dirs to the specified list */
@@ -2011,7 +2029,7 @@ handle_directive (ip, op)
 	 the temp buffer if it was necessary to make one.  cp
 	 points to the first char after the contents of the (possibly
 	 copied) command, in either case. */
-      (*kt->func) (buf, cp, op, kt);
+      (*kt->func) (buf, cp, op);
       check_expand (op, ip->length - (ip->bufp - ip->buf));
 
       return 1;
@@ -2172,10 +2190,9 @@ oops:
  * Expects to see "fname" or <fname> on the input.
  */
 static void
-do_include (buf, limit, op, keyword)
+do_include (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   char *fname;		/* Dynamically allocated fname buffer */
   U_CHAR *fbeg, *fend;		/* Beginning and end of fname */
@@ -2463,10 +2480,9 @@ LIMIT points to the first character past the end of the definition.
 KEYWORD is the keyword-table entry for #define.  */
 
 static void
-do_define (buf, limit, op, keyword)
+do_define (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *bp;			/* temp ptr into input buffer */
   U_CHAR *symname;		/* remember where symbol name starts */
@@ -2874,10 +2890,9 @@ collect_expansion (buf, end, nargs, arglist)
  */
 #define FNAME_HASHSIZE 37
 static void
-do_line (buf, limit, op, keyword)
+do_line (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   register U_CHAR *bp;
   FILE_BUF *ip = &instack[indepth];
@@ -2987,11 +3002,10 @@ do_line (buf, limit, op, keyword)
  * something that has no definitions, so it isn't one here either.
  */
 static void
-do_undef (buf, limit, op, keyword)
+do_undef (buf, limit, op)
      U_CHAR *buf;
      U_CHAR *limit ATTRIBUTE_UNUSED;
      FILE_BUF *op ATTRIBUTE_UNUSED;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   HASHNODE *hp;
 
@@ -3007,6 +3021,24 @@ do_undef (buf, limit, op, keyword)
   }
 }
 
+/* Function body to be provided later.  */
+static void
+do_assert (buf, limit, op)
+     U_CHAR *buf ATTRIBUTE_UNUSED;
+     U_CHAR *limit ATTRIBUTE_UNUSED;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+{
+}
+
+/* Function body to be provided later.  */
+static void
+do_unassert (buf, limit, op)
+     U_CHAR *buf ATTRIBUTE_UNUSED;
+     U_CHAR *limit ATTRIBUTE_UNUSED;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+{
+}
+
 /*
  * handle #if command by
  *   1) inserting special `defined' keyword into the hash table
@@ -3020,10 +3052,9 @@ do_undef (buf, limit, op, keyword)
  *      or not, depending on the value from step 3.
  */
 static void
-do_if (buf, limit, op, keyword)
+do_if (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   int value;
   FILE_BUF *ip = &instack[indepth];
@@ -3037,10 +3068,9 @@ do_if (buf, limit, op, keyword)
  * see the comment above do_else.
  */
 static void
-do_elif (buf, limit, op, keyword)
+do_elif (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   int value;
   FILE_BUF *ip = &instack[indepth];
@@ -3103,10 +3133,9 @@ eval_if_expression (buf, length)
  * on what directive is actually being processed.
  */
 static void
-do_xifdef (buf, limit, op, keyword)
+do_xifdef (buf, limit, type)
      U_CHAR *buf, *limit;
-     FILE_BUF *op ATTRIBUTE_UNUSED;
-     struct directive *keyword;
+     enum node_type type;     
 {
   int skip;
   FILE_BUF *ip = &instack[indepth];
@@ -3119,13 +3148,28 @@ do_xifdef (buf, limit, op, keyword)
   /* Find the end of the identifier at the beginning.  */
   for (end = buf; is_idchar[*end]; end++);
 
-  if (end == buf) {
-    skip = (keyword->type == T_IFDEF);
-  } else {
-    skip = (lookup (buf, end-buf, -1) == NULL) ^ (keyword->type == T_IFNDEF);
-  }
+  if (end == buf)
+    skip = (type == T_IFDEF);
+  else
+    skip = (lookup (buf, end-buf, -1) == NULL) ^ (type == T_IFNDEF);
 
   conditional_skip (ip, skip, T_IF);
+}
+
+static void
+do_ifdef (buf, limit, op)
+     U_CHAR *buf, *limit;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+{
+  do_xifdef (buf, limit, T_IFDEF);
+}
+
+static void
+do_ifndef (buf, limit, op)
+     U_CHAR *buf, *limit;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+{
+  do_xifdef (buf, limit, T_IFNDEF);
 }
 
 /*
@@ -3329,11 +3373,10 @@ skip_if_group (ip, any)
  * is possible that something different would be better.
  */
 static void
-do_else (buf, limit, op, keyword)
+do_else (buf, limit, op)
      U_CHAR *buf ATTRIBUTE_UNUSED;
      U_CHAR *limit ATTRIBUTE_UNUSED;
      FILE_BUF *op;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   FILE_BUF *ip = &instack[indepth];
 
@@ -3363,11 +3406,10 @@ do_else (buf, limit, op, keyword)
  * unstack after #endif command
  */
 static void
-do_endif (buf, limit, op, keyword)
+do_endif (buf, limit, op)
      U_CHAR *buf ATTRIBUTE_UNUSED;
      U_CHAR *limit ATTRIBUTE_UNUSED;
      FILE_BUF *op;
-     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   if (if_stack == instack[indepth].if_stack)
     error ("unbalanced #endif");
@@ -4663,77 +4705,100 @@ initialize_builtins ()
 #undef install_spec
 #undef install_value
 
-/*
- * process a given definition string, for initialization
- * If STR is just an identifier, define it with value 1.
- * If STR has anything after the identifier, then it should
- * be identifier-space-definition.
- */
+/* Common handler of command line directives -U, -D and -A.  */
 static void
-make_definition (str)
-     const U_CHAR *str;
+run_directive (str, len, type)
+     const char *str;
+     size_t len;
+     enum node_type type;
 {
-  FILE_BUF *ip;
   struct directive *kt;
-  U_CHAR *buf;
-  const U_CHAR *p;
-  size_t len = strlen ((const char *)str);
+  FILE_BUF *ip = &instack[++indepth];
+  ip->fname = "*command line*";
 
-  p = (const U_CHAR *) strchr ((const char *)str, '=');
-  if (p == NULL) {
-    /* Change -DFOO into #define FOO 1 */
-    buf = (U_CHAR *) alloca (len + 3);
-    memcpy (buf, str, len);
-    memcpy (buf + len, " 1", 3);
-    len += 2;
-  } else {
-    buf = (U_CHAR *) alloca (len + 1);
-    memcpy (buf, str, len + 1);
-    buf[p - str] = ' ';
-  }
-  
-  ip = &instack[++indepth];
-  ip->fname = "*Initialization*";
-
-  ip->buf = ip->bufp = buf;
+  ip->buf = ip->bufp = (U_CHAR *) str;
   ip->length = len;
   ip->lineno = 1;
   ip->macro = 0;
   ip->free_ptr = 0;
   ip->if_stack = if_stack;
 
-  for (kt = directive_table; kt->type != T_DEFINE; kt++)
+  for (kt = directive_table; kt->type != type; kt++)
     ;
 
-  /* pass NULL as output ptr to do_define since we KNOW it never
-     does any output.... */
-  do_define (buf, buf + ip->length, NULL, kt);
+  (*kt->func) ((U_CHAR *) str, (U_CHAR *) str + len, NULL);
   --indepth;
 }
 
-/* JF, this does the work for the -U option */
+/* Handle the -D option.  If STR is just an identifier, define it with
+ * value 1.  If STR has anything after the identifier, then it should
+ * be identifier-space-definition.  */
+static void
+make_definition (str)
+     const char *str;
+{
+  char *buf, *p;
+  size_t count;
+
+  /* Copy the entire option so we can modify it. 
+     Change the first "=" in the string to a space.  If there is none,
+     tack " 1" on the end.  */
+
+  /* Length including the null.  */  
+  count = strlen (str);
+  buf = (char *) alloca (count + 2);
+  memcpy (buf, str, count);
+
+  p = strchr (str, '=');
+  if (p)
+    buf[p - str] = ' ';
+  else
+    {
+      buf[count++] = ' ';
+      buf[count++] = '1';
+    }
+
+  run_directive (buf, count, T_DEFINE);
+}
+
+/* Handle the -U option.  */
 static void
 make_undef (str)
-     U_CHAR *str;
+     const char *str;
 {
-  FILE_BUF *ip;
-  struct directive *kt;
+  run_directive (str, strlen (str), T_UNDEF);
+}
 
-  ip = &instack[++indepth];
-  ip->fname = "*undef*";
+/* Handles the #assert (-A) and #unassert (-A-) command line options.  */
+static void
+make_assertion (str)
+     const char *str;
+{
+  enum node_type type = T_ASSERT;
+  size_t count;
+  const char *p;
 
-  ip->buf = ip->bufp = str;
-  ip->length = strlen ((const char *)str);
-  ip->lineno = 1;
-  ip->macro = 0;
-  ip->free_ptr = 0;
-  ip->if_stack = if_stack;
+  if (*str == '-')
+    {
+      str++;
+      type = T_UNASSERT;
+    }
+  
+  count = strlen (str);
+  p = strchr (str, '=');
+  if (p)
+    {
+      /* Copy the entire option so we can modify it.  Change the first
+	 "=" in the string to a '(', and tack a ')' on the end.  */
+      char *buf = (char *) alloca (count + 1);
 
-  for (kt = directive_table; kt->type != T_UNDEF; kt++)
-    ;
+      memcpy (buf, str, count);
+      buf[p - str] = '(';
+      buf[count++] = ')';
+      str = buf;
+    }
 
-  do_undef (str, str + ip->length, NULL, kt);
-  --indepth;
+  run_directive (str, count, type);
 }
 
 /* Add output to `deps_buffer' for the -M switch.
