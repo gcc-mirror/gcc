@@ -2857,6 +2857,9 @@ gen_mem_addressof (reg, decl)
   rtx r = gen_rtx_ADDRESSOF (Pmode, gen_reg_rtx (GET_MODE (reg)),
 			     REGNO (reg), decl);
 
+  /* Calculate this before we start messing with decl's RTL.  */
+  HOST_WIDE_INT set = get_alias_set (decl);
+
   /* If the original REG was a user-variable, then so is the REG whose
      address is being taken.  Likewise for unchanging.  */
   REG_USERVAR_P (XEXP (r, 0)) = REG_USERVAR_P (reg);
@@ -2874,7 +2877,7 @@ gen_mem_addressof (reg, decl)
       PUT_MODE (reg, decl_mode);
       MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
       MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
-      set_mem_alias_set (reg, get_alias_set (decl));
+      set_mem_alias_set (reg, set);
 
       if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
 	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);

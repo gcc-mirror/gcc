@@ -1,3 +1,10 @@
+2001-08-08  Jason Merrill  <jason_merrill@redhat.com>
+
+	* alias.c (get_alias_set): Return a previously calculated
+	alias set for a VAR_DECL.
+	* function.c (gen_mem_addressof): Calculate the alias set before
+	touching the RTL.
+
 Wed Aug  8 18:44:37 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.def: Set hitrates according our experimental run.
