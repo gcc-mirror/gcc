@@ -409,11 +409,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
-/* One to use setjmp/longjmp method of generating code for exception
-   handling.  */
-
-int exceptions_via_longjmp = 2;
-
 /* One to enable asynchronous exception support.  */
 
 int flag_non_call_exceptions = 0;
@@ -671,7 +666,7 @@ receive_exception_label (handler_label)
 {
   rtx around_label = NULL_RTX;
 
-  if (! flag_new_exceptions || exceptions_via_longjmp)
+  if (! flag_new_exceptions || USING_SJLJ_EXCEPTIONS)
     {
       around_label = gen_label_rtx ();
       emit_jump (around_label);
@@ -680,7 +675,7 @@ receive_exception_label (handler_label)
 
   emit_label (handler_label);
   
-  if (! exceptions_via_longjmp)
+  if (! USING_SJLJ_EXCEPTIONS)
     {
 #ifdef HAVE_exception_receiver
       if (HAVE_exception_receiver)
@@ -1413,7 +1408,7 @@ expand_eh_region_start_tree (decl, cleanup)
   /* The optimization only applies to actions protected with
      terminate, and only applies if we are using the setjmp/longjmp
      codegen method.  */
-  if (exceptions_via_longjmp
+  if (USING_SJLJ_EXCEPTIONS
       && protect_cleanup_actions_with_terminate)
     {
       tree func, arg;
@@ -1481,7 +1476,7 @@ expand_eh_region_start_for_decl (decl)
      automatically.  */
   mark_block_as_eh_region ();
 
-  if (exceptions_via_longjmp)
+  if (USING_SJLJ_EXCEPTIONS)
     {
       /* Arrange for returns and gotos to pop the entry we make on the
 	 dynamic handler stack.  */
@@ -1492,7 +1487,7 @@ expand_eh_region_start_for_decl (decl)
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
   NOTE_EH_HANDLER (note)
     = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
-  if (exceptions_via_longjmp)
+  if (USING_SJLJ_EXCEPTIONS)
     start_dynamic_handler ();
 }
 
@@ -1532,7 +1527,7 @@ expand_eh_region_end (handler)
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
   ret = NOTE_EH_HANDLER (note)
     = CODE_LABEL_NUMBER (entry->exception_handler_label);
-  if (exceptions_via_longjmp == 0 && ! flag_new_exceptions
+  if (USING_SJLJ_EXCEPTIONS == 0 && ! flag_new_exceptions
       /* We share outer_context between regions; only emit it once.  */
       && INSN_UID (entry->outer_context) == 0)
     {
@@ -1592,7 +1587,7 @@ expand_eh_region_end (handler)
 void
 expand_fixup_region_start ()
 {
-  if (! doing_eh (0) || exceptions_via_longjmp)
+  if (! doing_eh (0) || USING_SJLJ_EXCEPTIONS)
     return;
 
   expand_eh_region_start ();
@@ -1611,7 +1606,7 @@ expand_fixup_region_end (cleanup)
   struct eh_node *node;
   int dont_issue;
 
-  if (! doing_eh (0) || exceptions_via_longjmp)
+  if (! doing_eh (0) || USING_SJLJ_EXCEPTIONS)
     return;
 
   for (node = ehstack.top; node && node->entry->finalization != cleanup; )
@@ -1658,7 +1653,7 @@ expand_fixup_region_end (cleanup)
 void
 emit_throw ()
 {
-  if (exceptions_via_longjmp)
+  if (USING_SJLJ_EXCEPTIONS)
     {
       emit_library_call (sjthrow_libfunc, 0, VOIDmode, 0);
     }
@@ -1739,7 +1734,7 @@ start_catch_handler (rtime)
 
   add_new_handler (eh_region_entry, get_new_handler (handler_label, rtime));
 
-  if (flag_new_exceptions && ! exceptions_via_longjmp)
+  if (flag_new_exceptions && ! USING_SJLJ_EXCEPTIONS)
     return;
 
   /* Under the old mechanism, as well as setjmp/longjmp, we need to
@@ -1787,7 +1782,7 @@ end_catch_handler ()
   if (! doing_eh (1))
     return;
 
-  if (flag_new_exceptions && ! exceptions_via_longjmp) 
+  if (flag_new_exceptions && ! USING_SJLJ_EXCEPTIONS) 
     {
       emit_barrier ();
       return;
@@ -1936,7 +1931,7 @@ expand_start_all_catch ()
      out of line, we arrange to rethrow in the outer context.  We need to
      do this because we are not physically within the region, if any, that
      logically contains this catch block.  */
-  if (! exceptions_via_longjmp)
+  if (! USING_SJLJ_EXCEPTIONS)
     {
       expand_eh_region_start ();
       ehstack.top->entry->outer_context = outer_context;
@@ -1963,7 +1958,7 @@ expand_end_all_catch ()
   entry = pop_eh_entry (&catchstack);
   free (entry);
 
-  if (! exceptions_via_longjmp)
+  if (! USING_SJLJ_EXCEPTIONS)
     {
       rtx outer_context = ehstack.top->entry->outer_context;
 
@@ -2010,7 +2005,7 @@ static void
 expand_rethrow (label)
      rtx label;
 {
-  if (exceptions_via_longjmp)
+  if (USING_SJLJ_EXCEPTIONS)
     emit_throw ();
   else
     if (flag_new_exceptions)
@@ -2085,7 +2080,7 @@ protect_with_terminate (e)
   /* We only need to do this when using setjmp/longjmp EH and the
      language requires it, as otherwise we protect all of the handlers
      at once, if we need to.  */
-  if (exceptions_via_longjmp && protect_cleanup_actions_with_terminate)
+  if (USING_SJLJ_EXCEPTIONS && protect_cleanup_actions_with_terminate)
     {
       tree handler, result;
 
@@ -2389,7 +2384,7 @@ output_function_exception_table ()
    Inlined functions may use it too, and thus we'll have to be able
    to change them too.
 
-   This is done only if using exceptions_via_longjmp. */
+   This is done only if using USING_SJLJ_EXCEPTIONS. */
 
 void
 emit_eh_context ()
