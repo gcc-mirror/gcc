@@ -356,8 +356,7 @@ Thu Feb 25 23:43:59 1999  Richard Henderson  <rth@cygnus.com>
 	nonlocal_goto_handler_labels.
 
 	* Makefile.in (print-rtl.o): Depend on basic-block.h.
-	(flow.o): Depend on tree.h and insn-flags.h.
-	(sched.o): Depend on tree.h and expr.h.
+	(flow.o): Depend on insn-flags.h.
 
 	* function.c (thread_prologue_and_epilogue_insns): Do not
 	half-heartedly update bb structures.
