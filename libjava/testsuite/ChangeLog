@@ -1,3 +1,8 @@
+2000-07-07  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/stringconst2.out: New file.
+	* libjava.lang/stringconst2.java: New file.
+
 2000-06-23  Tom Tromey  <tromey@cygnus.com>
 
 	For PR gcj/260:
