@@ -197,6 +197,10 @@
 #   define __STL_HAS_NAMESPACES
 # endif
 
+# if defined(__MINGW32__)
+#   define __STL_NO_DRAND48
+# endif
+
 # if defined(_MSC_VER)
 #   define __STL_NO_DRAND48
 #   define __STL_NEED_TYPENAME
