@@ -10,6 +10,9 @@ Tue Apr 13 05:04:59 1999  Richard Earnshaw (rearnsha@arm.com)
 
 Tue Apr 13 02:11:11 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c: Use a register name, not a raw immediate in "bv" instructions.
+	* pa.md, pa.h, ee.asm, ee_fp.asm, lib2funcs.asm: Likewise.
+
 	* pa.c: Remove space register specification in memory addresses,
 	except where it is actually needed.
 	* pa.md, pa.h, ee.asm, ee_fp.asm, lib2funcs.asm: Likewise.

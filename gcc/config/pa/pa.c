@@ -4580,7 +4580,8 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  output_asm_insn ("bl .+8,%%r1\n\taddil L'%l0-%l4,%%r1", xoperands);
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (xoperands[4]));
-	  output_asm_insn ("ldo R'%l0-%l4(%%r1),%%r1\n\tbv 0(%%r1)", xoperands);
+	  output_asm_insn ("ldo R'%l0-%l4(%%r1),%%r1\n\tbv %%r0(%%r1)",
+			   xoperands);
 	}
 
 	/* Now restore the value of %r1 in the delay slot.  We're not
@@ -5159,7 +5160,7 @@ output_millicode_call (insn, call_dest)
 	  output_asm_insn ("blr 0,%%r31", xoperands);
 
 	  /* Jump to our target address in %r29.  */
-	  output_asm_insn ("bv,n 0(%%r29)", xoperands);
+	  output_asm_insn ("bv,n %%r0(%%r29)", xoperands);
 
 	  /* Empty delay slot.  Note this insn gets fetched twice and
 	     executed once.  To be safe we use a nop.  */
@@ -5184,7 +5185,7 @@ output_millicode_call (insn, call_dest)
 	  output_asm_insn ("blr 0,%%r31", xoperands);
 
 	  /* Branch to our target which is in %r1.  */
-	  output_asm_insn ("bv,n 0(%%r1)", xoperands);
+	  output_asm_insn ("bv,n %%r0(%%r1)", xoperands);
 
 	  /* Empty delay slot.  Note this insn gets fetched twice and
 	     executed once.  To be safe we use a nop.  */
@@ -5417,7 +5418,7 @@ output_call (insn, call_dest)
 	      output_asm_insn ("blr 0,%%r31", xoperands);
 
 	      /* Branch to our target which is in %r1.  */
-	      output_asm_insn ("bv 0(%%r1)", xoperands);
+	      output_asm_insn ("bv %%r0(%%r1)", xoperands);
 
 	      /* Copy the return address into %r2 also.  */
 	      output_asm_insn ("copy %%r31,%%r2", xoperands);

@@ -282,12 +282,12 @@ $$divU
 	ds		%r1,divisor,%r1
 	addc		dividend,dividend,quotient
 	ds		%r1,divisor,%r1
-	bv		0(ret)
+	bv		%r0(ret)
 	addc		quotient,quotient,quotient
 L$largedivisor
 	comclr,<<	dividend,divisor,quotient
 	ldi		1,quotient
-	bv,n		0(ret)
+	bv,n		%r0(ret)
 	.exit
 	.procend
 #endif
@@ -376,12 +376,12 @@ $$remU
 	ds		%r1,divisor,%r1
 	comclr,>=	%r1,%r0,%r0
 	addl		%r1,divisor,%r1
-	bv		0(ret)
+	bv		%r0(ret)
 	copy		%r1,quotient
 L$largedivisor
 	sub,>>=		dividend,divisor,quotient
 	copy		dividend,quotient
-	bv,n		0(ret)
+	bv,n		%r0(ret)
 	.exit
 	.procend
 #endif
@@ -479,12 +479,12 @@ $$divI
 	addl		%r1,divisor,%r1
 	comclr,>=	quotient,%r0,%r0	; skip of no need to negate
 	sub		%r0,dividend,dividend
-	bv		0(ret)
+	bv		%r0(ret)
 	copy		dividend,quotient
 L$largedivisor
 	comclr,<<	dividend,divisor,quotient
 	ldi		1,quotient
-	bv,n		0(ret)
+	bv,n		%r0(ret)
 	.exit
 	.procend
 #endif
@@ -582,12 +582,12 @@ $$remI
 	addl		%r1,divisor,%r1
 	comclr,>=	quotient,%r0,%r0	; skip of no need to negate
 	sub		%r0,%r1,%r1
-	bv		0(ret)
+	bv		%r0(ret)
 	copy		%r1,quotient
 L$largedivisor
 	sub,>>=		dividend,divisor,quotient
 	copy		dividend,quotient
-	bv,n		0(ret)
+	bv,n		%r0(ret)
 	.exit
 	.procend
 #endif
@@ -630,7 +630,7 @@ $$divU_3
 	sh1add	%r29,%r26,%r0		;  r0 = lo(10 x r) + dividend
 	shd	%r1,%r29,31,%r29	; r29 = hi(10 x r)
 	addc	%r29,%r0,%r29
-	bv	0(ret)
+	bv	%r0(ret)
 	extru	%r29,30,31,result
 	.exit
 	.procend
@@ -674,7 +674,7 @@ $$divU_5
 	sh2add	%r29,%r26,%r0		;  r0 = lo(1000 x r) + dividend
 	shd	%r1,%r29,30,%r29	; r29 = hi(1000 x r)
 	addc	%r29,%r0,%r29
-	bv	0(ret)
+	bv	%r0(ret)
 	extru	%r29,29,30,result
 	.exit
 	.procend
@@ -718,7 +718,7 @@ $$divU_6
 	sh1add	%r29,%r26,%r0		;  r0 = lo(10 x r) + dividend
 	shd	%r1,%r29,31,%r29	; r29 = hi(10 x r)
 	addc	%r29,%r0,%r29
-	bv	0(ret)
+	bv	%r0(ret)
 	extru	%r29,29,30,result
 	.exit
 	.procend
@@ -762,7 +762,7 @@ $$divU_9
 	sh3add	%r29,%r26,%r0
 	shd	%r1,%r29,29,%r29
 	addc	%r29,0,%r29		/* 111000111000111000111000111001 */
-	bv	0(ret)
+	bv	%r0(ret)
 	extru	%r29,30,31,result
 	.exit
 	.procend
@@ -806,7 +806,7 @@ $$divU_10
 	sh2add	%r29,%r26,%r0		;  r0 = lo(1000 x r) + dividend
 	shd	%r1,%r29,30,%r29	; r29 = hi(1000 x r)
 	addc	%r29,%r0,%r29
-	bv	0(ret)
+	bv	%r0(ret)
 	extru	%r29,28,29,result
 	.exit
 	.procend
@@ -850,7 +850,7 @@ $$divU_12
 	sh1add	%r29,%r26,%r0		;  r0 = lo(10 x r) + dividend
 	shd	%r1,%r29,31,%r29	; r29 = hi(10 x r)
 	addc	%r29,%r0,%r29
-	bv	0(ret)
+	bv	%r0(ret)
 	extru	%r29,28,29,result
 	.exit
 	.procend

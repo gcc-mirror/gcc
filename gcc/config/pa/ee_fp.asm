@@ -154,7 +154,7 @@ L$0002
 	nop
 L$0003
 	; Return, setting up a frame pointer in the delay slot
-	bv 0(%r31)
+	bv %r0(%r31)
 	sub %r30,%r21,%r3
 	.EXIT
 	.PROCEND
@@ -266,7 +266,7 @@ L$0006
 	nop
 L$0007
 	; Return and deallocate our frame.
-	bv 0(%r31)
+	bv %r0(%r31)
 	copy %r21,%r30
 	.EXIT
 	.PROCEND
