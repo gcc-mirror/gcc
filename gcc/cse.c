@@ -4582,7 +4582,9 @@ fold_rtx (x, insn)
 	 extra bits would have.  However, if the operand is equivalent
 	 to a SUBREG whose operand is the same as our mode, and all the
 	 modes are within a word, we can just use the inner operand
-	 because these SUBREGs just say how to treat the register.  */
+	 because these SUBREGs just say how to treat the register.
+
+	 Similarly if we find an integer constant.  */
 
       if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 	{
@@ -4593,9 +4595,13 @@ fold_rtx (x, insn)
 	      && GET_MODE_SIZE (imode) <= UNITS_PER_WORD
 	      && (elt = lookup (SUBREG_REG (x), HASH (SUBREG_REG (x), imode),
 				imode)) != 0)
-	    {
-	      for (elt = elt->first_same_value;
-		   elt; elt = elt->next_same_value)
+	    for (elt = elt->first_same_value;
+		 elt; elt = elt->next_same_value)
+	      {
+		if (CONSTANT_P (elt->exp)
+		    && GET_MODE (elt->exp) == VOIDmode)
+		  return elt->exp;
+
 		if (GET_CODE (elt->exp) == SUBREG
 		    && GET_MODE (SUBREG_REG (elt->exp)) == mode
 		    && exp_equiv_p (elt->exp, elt->exp, 1, 0))
