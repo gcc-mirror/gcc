@@ -4039,7 +4039,7 @@ output_simode_bld (int bild, rtx operands[])
 	output_asm_insn ("xor.l\t%S0,%S0", operands);
 
       /* Perform the bit store.  */
-      output_asm_insn ("bst\t#0,%w0", operands);
+      output_asm_insn ("rotxl.l\t%S0", operands);
     }
 
   /* All done.  */

@@ -1,3 +1,11 @@
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_simode_bld): Use rotxl.l to
+	store into bit 0.
+	* config/h8300/h8300.md (*extzv_1_r_h8300hs): Change cc of the
+	second alternative to set_znv.
+	(*extzv_1_r_inv_h8300hs): Likewise.
+
 2003-06-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (in_tree_gas): Find out here whether GAS is ELF,
