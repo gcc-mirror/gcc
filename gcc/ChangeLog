@@ -1,3 +1,12 @@
+2001-05-03  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* config/i386/djgpp.h (CPP_PREDEFINES): Define __GO32__.
+	(CPP_SPEC): Conditionally define MSDOS and GO32.
+	(SUBTARGET_SWITCHES): Ignore -mbnu210 and -mno-bnu210.
+	(SUBTARGET_OVERRIDE_OPTIONS): Warn that -mbnu210 and -mno-bnu210 are
+	ignored.
+	(SUPPORTS_WEAK, SUPPORTS_ONE_ONLY): Remove.
+
 2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.md: Sign-extend GEN_INT operands.
