@@ -100,13 +100,13 @@ require_complete_type (value)
      not been laid out.  Try to avoid an error by interpreting
      it as this->X::Y, if reasonable.  */
   if (TREE_CODE (value) == OFFSET_REF
-      && C_C_D != 0
-      && TREE_OPERAND (value, 0) == C_C_D)
+      && current_class_ref != 0
+      && TREE_OPERAND (value, 0) == current_class_ref)
     {
       tree base, member = TREE_OPERAND (value, 1);
       tree basetype = TYPE_OFFSET_BASETYPE (type);
       my_friendly_assert (TREE_CODE (member) == FIELD_DECL, 305);
-      base = convert_pointer_to (basetype, current_class_decl);
+      base = convert_pointer_to (basetype, current_class_ptr);
       value = build (COMPONENT_REF, TREE_TYPE (member),
 		     build_indirect_ref (base, NULL_PTR), member);
       return require_complete_type (value);
@@ -1470,14 +1470,7 @@ decay_conversion (exp)
     }
   if (code == METHOD_TYPE)
     {
-      if (TREE_CODE (exp) == OFFSET_REF)
-	{
-	  /* FIXME: We should emit an error here about using a ptrmemfunc
-	     for something other than a function call.  */
-	  my_friendly_assert (TREE_CODE (TREE_OPERAND (exp, 1)) == FUNCTION_DECL,
-			      308);
-	  return build_unary_op (ADDR_EXPR, TREE_OPERAND (exp, 1), 0);
-	}
+      cp_pedwarn ("assuming & on `%E'", exp);
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
   if (code == ARRAY_TYPE)
@@ -1628,7 +1621,7 @@ build_object_ref (datum, basetype, field)
 }
 
 /* Like `build_component_ref, but uses an already found field.
-   Must compute access for C_C_D.  Otherwise, ok.  */
+   Must compute access for current_class_ref.  Otherwise, ok.  */
 tree
 build_component_ref_1 (datum, field, protect)
      tree datum, field;
@@ -1667,7 +1660,7 @@ build_component_ref_1 (datum, field, protect)
   if (TREE_STATIC (field))
     return field;
 
-  if (datum == C_C_D)
+  if (datum == current_class_ref)
     {
       tree access = compute_access (TYPE_BINFO (current_class_type), field);
 
@@ -2020,8 +2013,8 @@ build_indirect_ref (ptr, errorstring)
 			   ptr : default_conversion (ptr));
   register tree type = TREE_TYPE (pointer);
 
-  if (ptr == current_class_decl)
-    return C_C_D;
+  if (ptr == current_class_ptr)
+    return current_class_ref;
 
   if (IS_AGGR_TYPE (type))
     {
@@ -2226,8 +2219,9 @@ build_array_ref (array, idx)
 
 /* Build a function call to function FUNCTION with parameters PARAMS.
    PARAMS is a list--a chain of TREE_LIST nodes--in which the
-   TREE_VALUE of each node is a parameter-expression.
-   FUNCTION's data type may be a function type or a pointer-to-function.
+   TREE_VALUE of each node is a parameter-expression.  The PARAMS do
+   not include any object pointer that may be required.  FUNCTION's
+   data type may be a function type or a pointer-to-function.
 
    For C++: If FUNCTION's data type is a TREE_LIST, then the tree list
    is the list of possible methods that FUNCTION could conceivably
@@ -2242,7 +2236,7 @@ build_array_ref (array, idx)
    In the second case, TREE_PURPOSE (function) is the function's
    name directly.
 
-   DECL is the class instance variable, usually CURRENT_CLASS_DECL.
+   DECL is the class instance variable, usually CURRENT_CLASS_REF.
 
    When calling a TEMPLATE_DECL, we don't require a complete return
    type.  */
@@ -2392,7 +2386,7 @@ build_x_function_call (function, params, decl)
       if (TREE_OPERAND (function, 0))
 	decl = TREE_OPERAND (function, 0);
       else
-	decl = C_C_D;
+	decl = current_class_ref;
 
       decl_addr = build_unary_op (ADDR_EXPR, decl, 0);
       function = get_member_function_from_ptrfunc (&decl_addr,
@@ -2594,25 +2588,25 @@ build_function_call_real (function, params, require_complete, flags)
 	  function = inline_conversion (function);
 	}
       else
-	function = default_conversion (function);
+	function = build_addr_func (function);
     }
   else
     {
       fndecl = NULL_TREE;
 
-      /* Convert anything with function type to a pointer-to-function.  */
-      if (function == error_mark_node)
-	return error_mark_node;
-      function = default_conversion (function);
+      function = build_addr_func (function);
     }
+
+  if (function == error_mark_node)
+    return error_mark_node;
 
   fntype = TREE_TYPE (function);
 
   if (TYPE_PTRMEMFUNC_P (fntype))
     {
-      tree instance_ptr = build_unary_op (ADDR_EXPR, C_C_D, 0);
-      fntype = TYPE_PTRMEMFUNC_FN_TYPE (fntype);
-      function = get_member_function_from_ptrfunc (&instance_ptr, function);
+      cp_error ("must use .* or ->* to call pointer-to-member function in `%E (...)'",
+		function);
+      return error_mark_node;
     }
 
   is_method = (TREE_CODE (fntype) == POINTER_TYPE
@@ -2670,17 +2664,15 @@ build_function_call_real (function, params, require_complete, flags)
   /* C++ */
   value_type = TREE_TYPE (fntype) ? TREE_TYPE (fntype) : void_type_node;
   {
-    register tree result = 
-      build (CALL_EXPR, value_type,
-	     function, coerced_params, NULL_TREE);
+    register tree result
+      = build_call (function, value_type, coerced_params);
 
-    TREE_SIDE_EFFECTS (result) = 1;
-
-    if (! require_complete)
-      return convert_from_reference (result);
-    if (value_type == void_type_node)
-      return result;
-    result = require_complete_type (result);
+    if (require_complete)
+      {
+	if (value_type == void_type_node)
+	  return result;
+	result = require_complete_type (result);
+      }
     return convert_from_reference (result);
   }
 }
@@ -4282,10 +4274,10 @@ build_unary_op (code, xarg, noconvert)
       /* Let &* cancel out to simplify resulting code.  */
       if (TREE_CODE (arg) == INDIRECT_REF)
 	{
-	  /* We don't need to have `current_class_decl' wrapped in a
+	  /* We don't need to have `current_class_ptr' wrapped in a
 	     NON_LVALUE_EXPR node.  */
-	  if (arg == C_C_D)
-	    return current_class_decl;
+	  if (arg == current_class_ref)
+	    return current_class_ptr;
 
 	  /* Keep `default_conversion' from converting if
 	     ARG is of REFERENCE_TYPE.  */
@@ -4402,6 +4394,14 @@ build_unary_op (code, xarg, noconvert)
 	   function counts as a constant */
 	if (staticp (arg))
 	  TREE_CONSTANT (addr) = 1;
+
+	if (TREE_CODE (argtype) == POINTER_TYPE &&
+	    TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
+	  {
+	    build_ptrmemfunc_type (argtype);
+	    addr = build_ptrmemfunc (argtype, addr, 0);
+	  }
+
 	return addr;
       }
     }
@@ -4542,31 +4542,6 @@ unary_complex_lvalue (code, arg)
     }
 
   
-#if 0
-  /* This seems to be obsolete now (and posssibly wrong, compare with
-     resolve_offset_ref).  */
-  if (TREE_CODE (arg) == OFFSET_REF)
-    {
-      tree left = TREE_OPERAND (arg, 0), left_addr;
-      tree right_addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 1), 0);
-
-      if (left == 0)
-	if (current_class_decl)
-	  left_addr = current_class_decl;
-	else
-	  {
-	    error ("no `this' for pointer to member");
-	    return error_mark_node;
-	  }
-      else
-	left_addr = build_unary_op (ADDR_EXPR, left, 0);
-
-      return build (PLUS_EXPR, build_pointer_type (TREE_TYPE (arg)),
-		    build1 (NOP_EXPR, integer_type_node, left_addr),
-		    build1 (NOP_EXPR, integer_type_node, right_addr));
-    }
-#endif
-
   /* We permit compiler to make function calls returning
      objects of aggregate type look like lvalues.  */
   {
@@ -4597,7 +4572,7 @@ unary_complex_lvalue (code, arg)
    address of it; it should not be allocated in a register.
    Value is 1 if successful.
 
-   C++: we do not allow `current_class_decl' to be addressable.  */
+   C++: we do not allow `current_class_ptr' to be addressable.  */
 
 int
 mark_addressable (exp)
@@ -4618,7 +4593,7 @@ mark_addressable (exp)
 	break;
 
       case PARM_DECL:
-	if (x == current_class_decl)
+	if (x == current_class_ptr)
 	  {
 	    error ("address of `this' not available");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
@@ -5702,7 +5677,7 @@ build_modify_expr (lhs, modifycode, rhs)
     }
 
   /* check to see if there is an assignment to `this' */
-  if (lhs == current_class_decl)
+  if (lhs == current_class_ptr)
     {
       if (flag_this_is_variable > 0
 	  && DECL_NAME (current_function_decl) != NULL_TREE
@@ -5976,11 +5951,16 @@ get_delta_difference (from, to, force)
 	}
       if (TREE_VIA_VIRTUAL (binfo))
 	{
+	  binfo = binfo_member (BINFO_TYPE (binfo),
+				CLASSTYPE_VBASECLASSES (from));
 	  warning ("pointer to member conversion to virtual base class will only work if you are very careful");
 	}
+      delta = BINFO_OFFSET (binfo);
+      delta = convert (ptrdiff_type_node, delta);
+      
       return build_binary_op (MINUS_EXPR,
 			      integer_zero_node,
-			      BINFO_OFFSET (binfo), 1);
+			      delta, 1);
     }
   if (TREE_VIA_VIRTUAL (binfo))
     {
@@ -6099,8 +6079,7 @@ build_ptrmemfunc (type, pfn, force)
       pfn = instantiate_type (type, pfn, 1);
       if (pfn == error_mark_node)
 	return error_mark_node;
-      if (TREE_CODE (pfn) != ADDR_EXPR)
-	pfn = build_unary_op (ADDR_EXPR, pfn, 0);
+      pfn = build_addr_func (pfn);
     }
 
   /* Allow pointer to member conversions here. */
@@ -6108,6 +6087,14 @@ build_ptrmemfunc (type, pfn, force)
 				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
 				force);
   delta2 = build_binary_op (PLUS_EXPR, delta2, delta, 1);
+
+#if 0
+  /* We need to check the argument types to see if they are compatible
+     (any const or volatile violations.  */
+  something like this:
+  comptype (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (type))),
+	    TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn)))), ?);
+#endif
 
   if (TREE_CODE (TREE_OPERAND (pfn, 0)) != FUNCTION_DECL)
     warning ("assuming pointer to member function is non-virtual");
@@ -6414,12 +6401,12 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	     some type instantiation if that resolves the
 	     ambiguity of (X Y::*) and (X *).  */
 
-	  if (current_class_decl)
+	  if (current_class_ptr)
 	    {
 	      if (TREE_CODE (rhs) == INTEGER_CST)
 		{
 		  rhs = build (PLUS_EXPR, build_pointer_type (TREE_TYPE (ttr)),
-			       current_class_decl, rhs);
+			       current_class_ptr, rhs);
 		  return convert_for_assignment (type, rhs,
 						 errtype, fndecl, parmnum);
 		}
@@ -6521,24 +6508,6 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		    warning ("conflicting function types in %s:", errtype);
 		    cp_warning ("\t`%T' != `%T'", type, rhstype);
 		  }
-	    }
-	  else if (TREE_CODE (TREE_TYPE (rhs)) == METHOD_TYPE)
-	    {
-	      /* When does this happen?  */
-	      my_friendly_abort (119);
-	      /* Conversion of a pointer-to-member type to void *.  */
-	      rhs = build_unary_op (ADDR_EXPR, rhs, 0);
-	      TREE_TYPE (rhs) = type;
-	      return rhs;
-	    }
-	  else if (TREE_CODE (TREE_TYPE (rhs)) == OFFSET_TYPE)
-	    {
-	      /* When does this happen?  */
-	      my_friendly_abort (120);
-	      /* Conversion of a pointer-to-member type to void *.  */
-	      rhs = build_unary_op (ADDR_EXPR, rhs, 0);
-	      TREE_TYPE (rhs) = type;
-	      return rhs;
 	    }
 	  else
 	    {
@@ -6931,7 +6900,7 @@ c_expand_return (retval)
 	}
 
       if (DECL_CONSTRUCTOR_P (current_function_decl))
-	retval = current_class_decl;
+	retval = current_class_ptr;
       else if (DECL_NAME (result) != NULL_TREE
 	       && TREE_CODE (valtype) != VOID_TYPE)
 	retval = result;
@@ -6956,10 +6925,10 @@ c_expand_return (retval)
 	}
     }
   else if (DECL_CONSTRUCTOR_P (current_function_decl)
-	   && retval != current_class_decl)
+	   && retval != current_class_ptr)
     {
       error ("return from a constructor: use `this = ...' instead");
-      retval = current_class_decl;
+      retval = current_class_ptr;
     }
 
   if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
@@ -7164,7 +7133,7 @@ c_expand_return (retval)
 	}
       else if (ctor_label && TREE_CODE (ctor_label) != ERROR_MARK)
 	{
-	  /* Here RETVAL is CURRENT_CLASS_DECL, so there's nothing to do.  */
+	  /* Here RETVAL is CURRENT_CLASS_PTR, so there's nothing to do.  */
 	  expand_goto (ctor_label);
 	}
       else if (retval)

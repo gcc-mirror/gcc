@@ -82,6 +82,7 @@ static tree
 convert_fn_ptr (type, expr)
      tree type, expr;
 {
+#if 0				/* We don't use thunks for pmfs.  */
   if (flag_vtable_thunks)
     {
       tree intype = TREE_TYPE (expr);
@@ -104,6 +105,7 @@ convert_fn_ptr (type, expr)
       return build1 (NOP_EXPR, type, build_thunk (BINFO_OFFSET (binfo), expr));
     }
   else
+#endif
     return build_ptrmemfunc (type, expr, 1);
 }
 
@@ -477,7 +479,7 @@ build_up_reference (type, arg, flags, checkconst)
 
     case PARM_DECL:
 #if 0
-      if (targ == current_class_decl)
+      if (targ == current_class_ptr)
 	{
 	  error ("address of `this' not available");
 /* #if 0 */	  
@@ -1056,14 +1058,11 @@ convert_to_aggr (type, expr, msgp, protect)
     return NULL_TREE;
 
   fntype = TREE_TYPE (function);
-  function = default_conversion (function);
 
-  result = build_nt (CALL_EXPR, function,
-		     convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
-					parmlist, NULL_TREE, LOOKUP_NORMAL),
-		     NULL_TREE);
-  TREE_TYPE (result) = TREE_TYPE (fntype);
-  TREE_SIDE_EFFECTS (result) = 1;
+  parmlist = convert_arguments (NULL_TREE, TYPE_ARG_TYPES (fntype),
+				parmlist, NULL_TREE, LOOKUP_NORMAL);
+
+  result = build_call (function, TREE_TYPE (fntype), parmlist);
   return result;
 }
 
@@ -1809,3 +1808,166 @@ type_promotes_to (type)
 
   return cp_build_type_variant (type, constp, volatilep);
 }
+
+#if 0
+/* Work in progress.  Ask jason before removing. */
+
+int
+null_ptr_cst (t)
+     tree t;
+{
+  return (INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t));
+}
+
+tree
+standard_conversion (to, from, expr)
+     tree to, from, expr;
+{
+  enum tree_code fcode = TREE_CODE (from);
+  enum tree_code tcode = TREE_CODE (to);
+  tree conv;
+
+  if (from == to)
+    return from;
+
+  conv = from;
+
+  if (fcode == FUNCTION_TYPE)
+    {
+      from = build_pointer_type (from);
+      fcode = TREE_CODE (from);
+      conv = build1 (LVALUE_CONV, from, conv);
+    }
+  else if (fcode == ARRAY_TYPE)
+    {
+      from = build_pointer_type (TREE_TYPE (from));
+      fcode = TREE_CODE (from);
+      conv = build1 (LVALUE_CONV, from, conv);
+    }
+
+  if ((tcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (to))
+      && expr && null_ptr_cst (expr))
+    {
+      conv = build1 (CONV_CONV, to, conv);
+    }
+  else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE)
+    {
+      enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
+      enum tree_code utcode = TREE_CODE (TREE_TYPE (to));
+
+      if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (from))),
+		     TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (to))), 1))
+	/* OK for now */;
+      else if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
+	       && ufcode != FUNCTION_TYPE)
+	{
+	  from = cp_build_type_variant (void_type_node,
+					TYPE_READONLY (TREE_TYPE (from)),
+					TYPE_VOLATILE (TREE_TYPE (from)));
+	  conv = build1 (CONV_CONV, from, conv);
+	}
+      else if (ufcode == OFFSET_TYPE && utcode == OFFSET_TYPE)
+	{
+	  tree fbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (from));
+	  tree tbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (to));
+
+	  if (DERIVED_FROM_P (tbase, fbase)
+	      && (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (from))),
+			     TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (to))),
+			     1)))
+	    {
+	      from = build_offset_type (tbase, TREE_TYPE (TREE_TYPE (from)));
+	      conv = build1 (CONV_CONV, from, conv);
+	    }
+	  else
+	    return 0;
+	}
+      else if (IS_AGGR_TYPE (TREE_TYPE (from))
+	       && IS_AGGR_TYPE (TREE_TYPE (to)))
+	{
+	  if (DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from)))
+	    {
+	      from = cp_build_type_variant (TREE_TYPE (to),
+					    TYPE_READONLY (TREE_TYPE (from)),
+					    TYPE_VOLATILE (TREE_TYPE (from)));
+	      conv = build1 (CONV_CONV, from, conv);
+	    }
+	  else
+	    return 0;
+	}
+      else
+	return 0;
+
+      if (! comptypes (from, to, 1) && comp_ptr_ttypes (to, from))
+	{
+	  from = to;
+	  conv = build1 (QUAL_CONV, from, conv);
+	}
+    }
+  else if (TYPE_PTRMEMFUNC_P (to) && TYPE_PTRMEMFUNC_P (from))
+    {
+      tree fromfn = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (from));
+      tree tofn = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to));
+      tree fbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fromfn)));
+      tree tbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (tofn)));
+
+      if (! DERIVED_FROM_P (tbase, fbase)
+	  || ! comptypes (TREE_TYPE (fromfn), TREE_TYPE (tofn), 1)
+	  || ! compparms (TREE_CHAIN (TYPE_ARG_TYPES (fromfn)),
+			  TREE_CHAIN (TYPE_ARG_TYPES (tofn)), 1)
+	  || TYPE_READONLY (fbase) != TYPE_READONLY (tbase)
+	  || TYPE_VOLATILE (fbase) != TYPE_VOLATILE (tbase))
+	return 0;
+
+      from = cp_build_type_variant (tbase, TYPE_READONLY (fbase),
+				    TYPE_VOLATILE (fbase));
+      from = build_cplus_method_type (from, TREE_TYPE (fromfn),
+				      TREE_CHAIN (TYPE_ARG_TYPES (fromfn)));
+      conv = build1 (CONV_CONV, from, conv);
+    }
+  else if (tcode == BOOLEAN_TYPE)
+    {
+      if (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE
+	  || fcode == POINTER_TYPE)
+	return build1 (CONV_CONV, to, conv);
+      else
+	return 0;
+    }
+  else if (INTEGRAL_CODE_P (tcode) || tcode == REAL_TYPE)
+    {
+      if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE))
+	return 0;
+      else if (to == type_promotes_to (from))
+	conv = build1 (PROMO_CONV, to, conv);
+      else 
+	conv = build1 (CONV_CONV, to, conv);
+    }
+  else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+	   && DERIVED_FROM_P (to, from))
+    {
+      conv = build1 (CONV_CONV, to, conv);
+    }
+  else
+    return 0;
+
+  return conv;
+}
+
+tree
+implicit_conversion (to, from, expr, flags)
+     tree to, from, expr;
+     int flags;
+{
+  tree conv = standard_conversion (to, from, expr);
+
+  if (conv || (flags & LOOKUP_NO_CONVERSION))
+    return conv;
+
+  flags |= LOOKUP_NO_CONVERSION;
+
+    /* try constructors */;
+    /* try conversion ops */;
+
+  return conv;
+}
+#endif

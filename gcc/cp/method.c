@@ -1549,19 +1549,19 @@ hack_identifier (value, name)
   type = TREE_TYPE (value);
   if (TREE_CODE (value) == FIELD_DECL)
     {
-      if (current_class_decl == NULL_TREE)
+      if (current_class_ptr == NULL_TREE)
 	{
 	  error ("request for member `%s' in static member function",
 		 IDENTIFIER_POINTER (DECL_NAME (value)));
 	  return error_mark_node;
 	}
-      TREE_USED (current_class_decl) = 1;
+      TREE_USED (current_class_ptr) = 1;
 
       /* Mark so that if we are in a constructor, and then find that
 	 this field was initialized by a base initializer,
 	 we can emit an error message.  */
       TREE_USED (value) = 1;
-      value = build_component_ref (C_C_D, name, NULL_TREE, 1);
+      value = build_component_ref (current_class_ref, name, NULL_TREE, 1);
     }
   else if (really_overloaded_fn (value))
     {
@@ -1653,141 +1653,6 @@ hack_identifier (value, name)
 }
 
 
-#if 0
-/* Given an object OF, and a type conversion operator COMPONENT
-   build a call to the conversion operator, if a call is requested,
-   or return the address (as a pointer to member function) if one is not.
-
-   OF can be a TYPE_DECL or any kind of datum that would normally
-   be passed to `build_component_ref'.  It may also be NULL_TREE,
-   in which case `current_class_type' and `current_class_decl'
-   provide default values.
-
-   BASETYPE_PATH, if non-null, is the path of basetypes
-   to go through before we get the the instance of interest.
-
-   PROTECT says whether we apply C++ scoping rules or not.  */
-tree
-build_component_type_expr (of, component, basetype_path, protect)
-     tree of, component, basetype_path;
-     int protect;
-{
-  tree cname = NULL_TREE;
-  tree tmp, last;
-  tree name;
-  int flags = protect ? LOOKUP_NORMAL : LOOKUP_COMPLAIN;
-
-  if (of)
-    my_friendly_assert (IS_AGGR_TYPE (TREE_TYPE (of)), 253);
-  my_friendly_assert (TREE_CODE (component) == TYPE_EXPR, 254);
-
-  tmp = TREE_OPERAND (component, 0);
-  last = NULL_TREE;
-
-  while (tmp)
-    {
-      switch (TREE_CODE (tmp))
-	{
-	case CALL_EXPR:
-	  if (last)
-	    TREE_OPERAND (last, 0) = TREE_OPERAND (tmp, 0);
-	  else
-	    TREE_OPERAND (component, 0) = TREE_OPERAND (tmp, 0);
-
-	  last = groktypename (build_tree_list (TREE_TYPE (component),
-						TREE_OPERAND (component, 0)));
-	  name = build_typename_overload (last);
-	  TREE_TYPE (name) = last;
-
-	  if (TREE_OPERAND (tmp, 0)
-	      && TREE_OPERAND (tmp, 0) != void_list_node)
-	    {
-	      cp_error ("`operator %T' requires empty parameter list", last);
-	      TREE_OPERAND (tmp, 0) = NULL_TREE;
-	    }
-
-	  if (of && TREE_CODE (of) != TYPE_DECL)
-	    return build_method_call (of, name, NULL_TREE, NULL_TREE, flags);
-	  else if (of)
-	    {
-	      tree this_this;
-
-	      if (current_class_decl == NULL_TREE)
-		{
-		  cp_error ("object required for `operator %T' call",
-			    TREE_TYPE (name));
-		  return error_mark_node;
-		}
-
-	      this_this = convert_pointer_to (TREE_TYPE (of),
-					      current_class_decl);
-	      this_this = build_indirect_ref (this_this, NULL_PTR);
-	      return build_method_call (this_this, name, NULL_TREE,
-					NULL_TREE, flags | LOOKUP_NONVIRTUAL);
-	    }
-	  else if (current_class_decl)
-	    return build_method_call (tmp, name, NULL_TREE, NULL_TREE, flags);
-
-	  cp_error ("object required for `operator %T' call",
-		    TREE_TYPE (name));
-	  return error_mark_node;
-
-	case INDIRECT_REF:
-	case ADDR_EXPR:
-	case ARRAY_REF:
-	  break;
-
-	case SCOPE_REF:
-	  my_friendly_assert (cname == 0, 255);
-	  cname = TREE_OPERAND (tmp, 0);
-	  tmp = TREE_OPERAND (tmp, 1);
-	  break;
-
-	default:
-	  my_friendly_abort (77);
-	}
-      last = tmp;
-      tmp = TREE_OPERAND (tmp, 0);
-    }
-
-  last = groktypename (build_tree_list (TREE_TYPE (component), TREE_OPERAND (component, 0)));
-  name = build_typename_overload (last);
-  TREE_TYPE (name) = last;
-  if (of && TREE_CODE (of) == TYPE_DECL)
-    {
-      if (cname == NULL_TREE)
-	{
-	  cname = DECL_NAME (of);
-	  of = NULL_TREE;
-	}
-      else my_friendly_assert (cname == DECL_NAME (of), 256);
-    }
-
-  if (of)
-    {
-      tree this_this;
-
-      if (current_class_decl == NULL_TREE)
-	{
-	  cp_error ("object required for `operator %T' call",
-		    TREE_TYPE (name));
-	  return error_mark_node;
-	}
-
-      this_this = convert_pointer_to (TREE_TYPE (of), current_class_decl);
-      return build_component_ref (this_this, name, NULL_TREE, protect);
-    }
-  else if (cname)
-    return build_offset_ref (cname, name);
-  else if (current_class_name)
-    return build_offset_ref (current_class_name, name);
-
-  cp_error ("object required for `operator %T' member reference",
-	    TREE_TYPE (name));
-  return error_mark_node;
-}
-#endif
-
 static char *
 thunk_printable_name (decl)
      tree decl;
@@ -1863,6 +1728,7 @@ emit_thunk (thunk_fndecl)
   char *fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
   int tem;
   int failure = 0;
+  int save_ofp;
 
   /* Used to remember which regs we need to emit a USE rtx for. */
   rtx need_use[FIRST_PSEUDO_REGISTER];
@@ -1892,6 +1758,8 @@ emit_thunk (thunk_fndecl)
   ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
   assemble_end_function (thunk_fndecl, fnname);
 #else
+  save_ofp = flag_omit_frame_pointer;
+  flag_omit_frame_pointer = 1;
   init_function_start (thunk_fndecl, input_filename, lineno);
   pushlevel (0);
   expand_start_bindings (1);
@@ -2063,13 +1931,12 @@ emit_thunk (thunk_fndecl)
   final (insns, asm_out_file, optimize, 0);
   assemble_end_function (thunk_fndecl, fnname);
 
- exit_rest_of_compilation:
-
   reload_completed = 0;
 
   /* Cancel the effect of rtl_in_current_obstack.  */
 
   permanent_allocation (1);
+  flag_omit_frame_pointer = save_ofp;
 #endif /* ASM_OUTPUT_MI_THUNK */
 
   decl_printable_name = save_decl_printable_name;
@@ -2112,7 +1979,7 @@ do_build_copy_constructor (fndecl)
 
   if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
     {
-      t = build (INIT_EXPR, void_type_node, C_C_D, parm);
+      t = build (INIT_EXPR, void_type_node, current_class_ref, parm);
       TREE_SIDE_EFFECTS (t) = 1;
       cplus_expand_expr_stmt (t);
     }
@@ -2202,7 +2069,7 @@ do_build_assign_ref (fndecl)
 
   if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type))
     {
-      tree t = build (MODIFY_EXPR, void_type_node, C_C_D, parm);
+      tree t = build (MODIFY_EXPR, void_type_node, current_class_ref, parm);
       TREE_SIDE_EFFECTS (t) = 1;
       cplus_expand_expr_stmt (t);
     }
@@ -2253,13 +2120,13 @@ do_build_assign_ref (fndecl)
 	  else
 	    continue;
 
-	  comp = build (COMPONENT_REF, TREE_TYPE (field), C_C_D, field);
+	  comp = build (COMPONENT_REF, TREE_TYPE (field), current_class_ref, field);
 	  init = build (COMPONENT_REF, TREE_TYPE (field), parm, field);
 
 	  expand_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
 	}
     }
-  c_expand_return (C_C_D);
+  c_expand_return (current_class_ref);
   pop_momentary ();
 }
 

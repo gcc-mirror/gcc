@@ -3,6 +3,82 @@ Sat May 11 04:33:50 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* decl2.c (finish_vtable_vardecl): Surround DECL_ONE_ONLY with ifdef.
 	(finish_file): Likewise.
 
+Wed May 15 14:46:14 1996  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (build_method_call): Allow implicit & on METHOD_TYPEs,
+	but pedwarn as the code is bogus.
+	* typeck.c (decay_conversion): Ditto.
+	(build_function_call_real): Use build_addr_func instead of
+	default_conversion.  Don't allow pointer-to-method functions down
+	here.
+	(build_unary_op): Use real pointer-to-member functions instead of
+	fake ones.
+	(build_ptrmemfunc): Use build_addr_func instead of build_unary_op.
+	(convert_for_assignment): Removed some obsolete code.
+	* decl2.c (reparse_absdcl_as_expr): Pass current_class_ref to
+	build_x_function_call instead of current_class_ptr.  Only call
+	digest_init once on an initializer, we do this just checking
+	TREE_TYPE.
+	(build_expr_from_tree): Pass current_class_ref to
+	build_x_function_call instead of current_class_ptr.
+	* init.c (build_member_call): Ditto.
+	* pase.y: Ditto.
+	* error.c (dump_expr): Handle OFFSET_REFs better.
+	* pt.c (unify): Handle pointer-to-member functions better.
+	* decl.c (finish_function): Clear out current_class_ref just like
+	we do for current_class_ptr.
+
+	* typeck.c (get_delta_difference): Handle virtual bases better.
+
+Tue May 14 16:37:37 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* sig.c (build_signature_table_constructor): Use the delta for
+	the original basetype for this virtual function with thunks.
+	(build_signature_method_call): We still need to adjust 'this'
+	with thunks.
+
+Tue May 14 16:27:25 1996  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (build_addr_func): New routine.  Used to get the `real'
+	address of a function or a method.  Needed to avoid getting a
+	pointer-to-member function.
+	(build_call): New routine to build CALL_EXPRs.
+	(build_method_call): Use it.
+	* cvt.c (convert_to_aggr): Ditto.
+	* typeck.c (build_function_call_real): Ditto.
+	* sig.c (build_signature_table_constructor): Use build_addr_func.
+	* cp-tree.h (build_call, build_addr_func): Declare them.
+
+Tue May 14 12:47:47 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cp-tree.h (LOOKUP_AGGR): Remove, unused.
+	* parse.y: Remove uses of LOOKUP_AGGR.
+
+Tue May 14 12:07:51 1996  Mike Stump  <mrs@cygnus.com>
+
+	* *.[chy]: Rename current_class_decl to current_class_ptr, and
+	C_C_D to current_class_ref.
+
+Mon May 13 16:55:23 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (convert_harshness): Tighten up pointer conversions.
+
+Sat May 11 04:33:50 1996  Doug Evans  <dje@canuck.cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Surround DECL_ONE_ONLY with ifdef.
+	(finish_file): Likewise.
+
+Fri May 10 11:09:57 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (convert_fn_ptr): We don't use thunks for pmfs.
+
+	* method.c (emit_thunk): Set flag_omit_frame_pointer in default
+ 	code.
+
+Thu May  9 18:18:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c: Turn on thunks by default where supported.
+
 Tue May  7 20:39:57 1996  Mike Stump  <mrs@cygnus.com>
 
 	* cp-tree.h (build_overload_call_maybe): Removed.

@@ -573,7 +573,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
 	      delta = integer_zero_node;
 	      index = integer_zero_node;
-	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
+	      pfn = build_addr_func (rhs_method);
 	      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (rhs_method)) = 1;
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      TREE_ADDRESSABLE (rhs_method) = 1;
@@ -584,8 +584,12 @@ build_signature_table_constructor (sig_ty, rhs)
 	      /* virtual member function */
 	      tag = integer_one_node;
 	      vb_off = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
-	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
-					       rhstype, 1));
+	      if (flag_vtable_thunks)
+		delta = BINFO_OFFSET
+		  (get_binfo (DECL_CONTEXT (rhs_method), rhstype, 1));
+	      else
+		delta = BINFO_OFFSET
+		  (get_binfo (DECL_CLASS_CONTEXT (rhs_method), rhstype, 1));
 	      index = DECL_VINDEX (rhs_method);
 	      vt_off = get_vfield_offset (get_binfo (DECL_CONTEXT (rhs_method),
 						     rhstype, 0));
@@ -598,7 +602,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
 					       rhstype, 1));
 	      index = integer_zero_node;
-	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
+	      pfn = build_addr_func (rhs_method);
 	      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (rhs_method)) = 1;
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      TREE_ADDRESSABLE (rhs_method) = 1;
@@ -985,10 +989,7 @@ build_signature_method_call (basetype, instance, function, parms)
 
       TREE_TYPE (vfn) = build_pointer_type (TREE_TYPE (function));
 
-      if (flag_vtable_thunks)
-	virtual_call = build_function_call (vfn, parms);
-      else
-	virtual_call = build_function_call (vfn, new_parms);
+      virtual_call = build_function_call (vfn, new_parms);
     }
 
     /* Undo the cast, make `this' a signature pointer again.  */

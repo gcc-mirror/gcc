@@ -155,9 +155,13 @@ int warn_implicit = 1;
 int warn_ctor_dtor_privacy = 1;
 
 /* True if we want to implement vtables using "thunks".
-   The default is off now, but will be on later. */
+   The default is off by default, on if explicitly supported. */
 
+#ifdef ASM_OUTPUT_MI_THUNK
+int flag_vtable_thunks = 1;
+#else
 int flag_vtable_thunks;
+#endif
 
 /* True if we want to deal with repository information.  */
 
@@ -3336,7 +3340,7 @@ reparse_absdcl_as_expr (type, decl)
   /* recurse */
   decl = reparse_decl_as_expr (type, TREE_OPERAND (decl, 0));
 
-  decl = build_x_function_call (decl, NULL_TREE, current_class_decl);
+  decl = build_x_function_call (decl, NULL_TREE, current_class_ref);
 
   if (TREE_CODE (decl) == CALL_EXPR && TREE_TYPE (decl) != void_type_node)
     decl = require_complete_type (decl);
@@ -3357,7 +3361,8 @@ reparse_absdcl_as_casts (decl, expr)
 {
   tree type;
   
-  if (TREE_CODE (expr) == CONSTRUCTOR)
+  if (TREE_CODE (expr) == CONSTRUCTOR
+      && TREE_TYPE (expr) == 0)
     {
       type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
       decl = TREE_OPERAND (decl, 0);
@@ -3556,7 +3561,7 @@ build_expr_from_tree (t)
 	    name = build_expr_from_tree (name);
 	  return build_x_function_call
 	    (name, build_expr_from_tree (TREE_OPERAND (t, 1)),
-	     current_class_decl);
+	     current_class_ref);
 	}
 
     case COND_EXPR:

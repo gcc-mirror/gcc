@@ -769,7 +769,7 @@ lookup_field_1 (type, name)
    itself inside a class, we need decls to go into the fn's decls (our
    second case below).  But if we're in a class and the class itself is
    inside a function, we need decls to go into the decls for the class.  To
-   achieve this last goal, we must see if, when both current_class_decl and
+   achieve this last goal, we must see if, when both current_class_ptr and
    current_function_decl are set, the class was declared inside that
    function.  If so, we know to put the decls into the class's scope.  */
 
