@@ -7323,6 +7323,12 @@ invalidate_skipped_set (dest, set)
   if (GET_CODE (dest) == MEM)
     note_mem_written (dest, &skipped_writes_memory);
 
+  /* There are times when an address can appear varying and be a PLUS
+     during this scan when it would be a fixed address were we to know
+     the proper equivalences.  So promote "nonscalar" to be "all".  */
+  if (skipped_writes_memory.nonscalar)
+    skipped_writes_memory.all = 1;
+
   if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
       || (! skipped_writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
     invalidate (dest);
