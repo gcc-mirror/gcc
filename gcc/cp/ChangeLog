@@ -1,3 +1,7 @@
+2000-04-05  Benjamin Kosnik  <bkoz@cygnus.com>
+
+        * decl2.c: Make flag_honor_std dependant on ENABLE_STD_NAMESPACE.
+
 2000-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (instantiate_decl): Change prototype.
