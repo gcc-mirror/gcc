@@ -4720,26 +4720,20 @@ default_expand_builtin (exp, target, subtarget, mode, ignore)
 void
 purge_builtin_constant_p ()
 {
-  rtx insn, done, set;
-  rtx arg, new, note;
-  basic_block bb;
+  rtx insn, set, arg, new, note;
 
-  FOR_EACH_BB (bb)
-    {
-      done = NEXT_INSN (bb->end);
-      for (insn = bb->head; insn != done; insn = NEXT_INSN (insn))
-	if (INSN_P (insn)
-	    && (set = single_set (insn)) != NULL_RTX
-	    && GET_CODE (SET_SRC (set)) == CONSTANT_P_RTX)
-	  {
-	    arg = XEXP (SET_SRC (set), 0);
-	    new = CONSTANT_P (arg) ? const1_rtx : const0_rtx;
-	    validate_change (insn, &SET_SRC (set), new, 0);
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& (set = single_set (insn)) != NULL_RTX
+	&& GET_CODE (SET_SRC (set)) == CONSTANT_P_RTX)
+      {
+	arg = XEXP (SET_SRC (set), 0);
+	new = CONSTANT_P (arg) ? const1_rtx : const0_rtx;
+	validate_change (insn, &SET_SRC (set), new, 0);
 
-	    /* Remove the REG_EQUAL note from the insn.  */
-	    if ((note = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0)
-	      remove_note (insn, note);
-	  }
-    }
+	/* Remove the REG_EQUAL note from the insn.  */
+	if ((note = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0)
+	  remove_note (insn, note);
+      }
 }
 
