@@ -1,3 +1,8 @@
+2005-03-31  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cfgloopanal.c (mark_loop_exit_edges): Clean EDGE_LOOP_EXIT
+	flag for edges outside any loops.
+
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Directives): Describe cleanup-* procs.
