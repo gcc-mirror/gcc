@@ -1,3 +1,8 @@
+Tue Oct  7 18:22:10 1997  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (CGFLAGS): Don't force -g0.
+	* libF77/Makefile.in, libI77/Makefile.in, libU77/Makefile.in: Likewise.
+
 Mon Oct  6 14:16:46 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (distclean): Do a better job at cleaning up.

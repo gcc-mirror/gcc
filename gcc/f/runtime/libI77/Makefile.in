@@ -35,7 +35,7 @@ CC = $(GCC_FOR_TARGET)
 CFLAGS = @CFLAGS@ $(GCC_FLAGS)
 CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@
-CGFLAGS = -g0
+CGFLAGS = #-g0
 # f2c.h should already be installed in xgcc's include directory but add that
 # to -I anyhow in case not using xgcc.
 ALL_CFLAGS = -I. -I$(srcdir) -I../../../include $(CPPFLAGS) $(DEFS) $(CFLAGS)
