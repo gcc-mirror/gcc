@@ -407,7 +407,7 @@ straighten_stack (insn, regstack)
   if (regstack->top <= 0)
     return;
 
-  temp_stack.reg_set = regstack->reg_set;
+  COPY_HARD_REG_SET (temp_stack.reg_set, regstack->reg_set);
 
   for (top = temp_stack.top = regstack->top; top >= 0; top--)
     temp_stack.reg[top] = FIRST_STACK_REG + temp_stack.top - top;

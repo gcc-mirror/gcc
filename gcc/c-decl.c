@@ -2992,6 +2992,10 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL,
 			ridpointers[(int) RID_VOID], void_type_node));
 
+#ifdef MD_INIT_BUILTINS
+  MD_INIT_BUILTINS;
+#endif
+
   wchar_type_node = get_identifier (flag_short_wchar
 				    ? "short unsigned int"
 				    : WCHAR_TYPE);
