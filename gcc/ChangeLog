@@ -1,3 +1,8 @@
+2001-09-25  Graham Stott  <grahams@redhat.com>
+
+	* sibcall.c (skip_copy_to_return_value): Tighten return value
+	copy check.
+
 2001-09-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (lwa_operand): Address must be word aligned.

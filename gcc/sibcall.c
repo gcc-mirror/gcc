@@ -159,8 +159,9 @@ skip_copy_to_return_value (orig_insn)
 
   if (return_value_pseudo)
     {
-      if (SET_DEST (set) == return_value_pseudo)
-        return insn;
+      if (SET_DEST (set) == return_value_pseudo
+	  && SET_SRC (set) == softret)
+	return insn;
       return orig_insn;
     }
 
