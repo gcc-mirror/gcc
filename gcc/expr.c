@@ -6037,22 +6037,31 @@ safe_from_p (x, exp, top_p)
 
     case 'x':
       if (TREE_CODE (exp) == TREE_LIST)
-	return ((TREE_VALUE (exp) == 0
-		 || safe_from_p (x, TREE_VALUE (exp), 0))
-		&& (TREE_CHAIN (exp) == 0
-		    || safe_from_p (x, TREE_CHAIN (exp), 0)));
+	{
+	  while (1)
+	    {
+	      if (TREE_VALUE (exp) && !safe_from_p (x, TREE_VALUE (exp), 0))
+		return 0;
+	      exp = TREE_CHAIN (exp);
+	      if (!exp)
+		return 1;
+	      if (TREE_CODE (exp) != TREE_LIST)
+		return safe_from_p (x, exp, 0);
+	    }
+	}
       else if (TREE_CODE (exp) == ERROR_MARK)
 	return 1;	/* An already-visited SAVE_EXPR? */
       else
 	return 0;
 
-    case '1':
-      return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
-
     case '2':
     case '<':
-      return (safe_from_p (x, TREE_OPERAND (exp, 0), 0)
-	      && safe_from_p (x, TREE_OPERAND (exp, 1), 0));
+      if (!safe_from_p (x, TREE_OPERAND (exp, 1), 0))
+	return 0;
+      /* FALLTHRU */
+
+    case '1':
+      return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
     case 'e':
     case 'r':
