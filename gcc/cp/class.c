@@ -4178,6 +4178,7 @@ build_clone (fn, name)
   DECL_ABSTRACT_ORIGIN (clone) = fn;
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
+  SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;
