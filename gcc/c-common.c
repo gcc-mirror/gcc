@@ -1340,6 +1340,10 @@ type_for_mode (mode, unsignedp)
     return build_pointer_type (integer_type_node);
 
 #ifdef VECTOR_MODE_SUPPORTED_P
+  if (mode == TYPE_MODE (V16QI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V16QI_type_node;
+  if (mode == TYPE_MODE (V8HI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V8HI_type_node;
   if (mode == TYPE_MODE (V4SF_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
     return V4SF_type_node;
   if (mode == TYPE_MODE (V4SI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))

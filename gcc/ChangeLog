@@ -1,3 +1,13 @@
+2001-10-31  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree.h (tree_index): Add support for V16QI and V8HI.
+	(V8HI_type_node): New.
+	(V16QI_type_node): New.
+
+	* tree.c (build_common_tree_nodes_2): Same.
+
+	* c-common.c (type_for_mode): Same.
+
 2001-10-31  Kazu Hirata  <kazu@hxi.com>
 
 	* config/i386/att.h: Fix comment formatting.
