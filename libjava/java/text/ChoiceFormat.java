@@ -1,5 +1,5 @@
 /* ChoiceFormat.java -- Format over a range of numbers
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -259,14 +259,12 @@ public class ChoiceFormat extends NumberFormat
     if (choiceLimits.length == 0)
       return appendBuf;
 
-    int index =  0;
+    int index = 0;
     if (! Double.isNaN(num) && num >= choiceLimits[0])
       {
 	for (; index < choiceLimits.length - 1; ++index)
 	  {
-	    if (choiceLimits[index] <= num
-		&& index != choiceLimits.length - 2
-		&& num < choiceLimits[index + 1])
+	    if (choiceLimits[index] <= num && num < choiceLimits[index + 1])
 	      break;
 	  }
       }

@@ -1,3 +1,13 @@
+2002-07-02  Tom Tromey  <tromey@redhat.com>
+            David Hovemeyer  <daveho@cs.umd.edu>
+
+	* java/text/ChoiceFormat.java
+	(format(double,StringBuffer,FieldPosition)): Fix fencepost error
+	in check loop.
+	* java/text/MessageFormat.java
+	(format(Object[],StringBuffer,FieldPosition): Pass all arguments
+	to MessageFormat.
+
 2002-07-01  Tom Tromey  <tromey@redhat.com>
 
 	* javax/naming/spi/NamingManager.java (getPlusPath): Don't create
