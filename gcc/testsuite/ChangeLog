@@ -1,3 +1,7 @@
+2001-11-20  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* gcc.c-torture/compile/981006-1.x: Treat XScale like ARM.
+
 2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* lib/g77.exp: Don't specify --rpath-link.
