@@ -1,3 +1,24 @@
+2003-12-19  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	Fix for PR c++/13447:
+	* cp-demangle.c (enum d_comp_type): Add D_COMP_LOCAL_NAME.
+	(d_dump, d_make_comp): Handle D_COMP_LOCAL_NAME.
+	(is_ctor_dtor_or_conversion): Handle D_COMP_LOCAL_NAME like
+	D_COMP_QUAL_NAME.
+	(is_ctor_or_dtor): Likewise.
+	(d_local_name): Use D_COMP_LOCAL_NAME rather than
+	D_COMP_QUAL_NAME.
+	(d_print_comp) [D_COMP_LOCAL_NAME]: New.
+	(d_prinT_comp) [D_COMP_TYPED_NAME]: If the left tree is
+	D_COMP_LOCAL_NAME, pull any qualifiers off its right subtree.
+	(d_print_mod_list): Handle D_COMP_LOCAL_NAME.
+	* testsuite/demangle-expected: Add two test cases.
+
+	* cp-demangle.c (d_print_function_type): Clear the global modifier
+	list when printing the modifiers, not just when printing the
+	function parameters.
+	* testsuite/demangle-expected: Add two test cases.
+
 2003-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (d_print_function_type): Print the function

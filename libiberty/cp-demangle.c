@@ -166,6 +166,8 @@ enum d_comp_type
   D_COMP_NAME,
   /* A qualified name.  */
   D_COMP_QUAL_NAME,
+  /* A local name.  */
+  D_COMP_LOCAL_NAME,
   /* A typed name.  */
   D_COMP_TYPED_NAME,
   /* A template.  */
@@ -585,6 +587,9 @@ d_dump (dc, indent)
     case D_COMP_QUAL_NAME:
       printf ("qualified name\n");
       break;
+    case D_COMP_LOCAL_NAME:
+      printf ("local name\n");
+      break;
     case D_COMP_TYPED_NAME:
       printf ("typed name\n");
       break;
@@ -748,6 +753,7 @@ d_make_comp (di, type, left, right)
     {
       /* These types require two parameters.  */
     case D_COMP_QUAL_NAME:
+    case D_COMP_LOCAL_NAME:
     case D_COMP_TYPED_NAME:
     case D_COMP_TEMPLATE:
     case D_COMP_VENDOR_TYPE_QUAL:
@@ -1025,6 +1031,7 @@ is_ctor_dtor_or_conversion (dc)
     default:
       return 0;
     case D_COMP_QUAL_NAME:
+    case D_COMP_LOCAL_NAME:
       return is_ctor_dtor_or_conversion (d_right (dc));
     case D_COMP_CTOR:
     case D_COMP_DTOR:
@@ -2332,7 +2339,7 @@ d_local_name (di)
       d_advance (di, 1);
       if (! d_discriminator (di))
 	return NULL;
-      return d_make_comp (di, D_COMP_QUAL_NAME, function,
+      return d_make_comp (di, D_COMP_LOCAL_NAME, function,
 			  d_make_name (di, "string literal",
 				       sizeof "string literal" - 1));
     }
@@ -2343,7 +2350,7 @@ d_local_name (di)
       name = d_name (di);
       if (! d_discriminator (di))
 	return NULL;
-      return d_make_comp (di, D_COMP_QUAL_NAME, function, name);
+      return d_make_comp (di, D_COMP_LOCAL_NAME, function, name);
     }
 }
 
@@ -2641,6 +2648,7 @@ d_print_comp (dpi, dc)
       return;
 
     case D_COMP_QUAL_NAME:
+    case D_COMP_LOCAL_NAME:
       d_print_comp (dpi, d_left (dc));
       d_append_string (dpi, (dpi->options & DMGL_JAVA) == 0 ? "::" : ".");
       d_print_comp (dpi, d_right (dc));
@@ -2690,6 +2698,38 @@ d_print_comp (dpi, dc)
 	    dpt.next = dpi->templates;
 	    dpi->templates = &dpt;
 	    dpt.template = typed_name;
+	  }
+
+	/* If typed_name is a D_COMP_LOCAL_NAME, then there may be
+	   CV-qualifiers on its right argument which really apply
+	   here; this happens when parsing a class which is local to a
+	   function.  */
+	if (typed_name->type == D_COMP_LOCAL_NAME)
+	  {
+	    struct d_comp *local_name;
+
+	    local_name = d_right (typed_name);
+	    while (local_name->type == D_COMP_RESTRICT_THIS
+		   || local_name->type == D_COMP_VOLATILE_THIS
+		   || local_name->type == D_COMP_CONST_THIS)
+	      {
+		if (i >= sizeof adpm / sizeof adpm[0])
+		  {
+		    d_print_error (dpi);
+		    return;
+		  }
+
+		adpm[i] = adpm[i - 1];
+		adpm[i].next = &adpm[i - 1];
+		dpi->modifiers = &adpm[i];
+
+		adpm[i - 1].mod = local_name;
+		adpm[i - 1].printed = 0;
+		adpm[i - 1].templates = dpi->templates;
+		++i;
+
+		local_name = d_left (local_name);
+	      }
 	  }
 
 	d_print_comp (dpi, d_right (dc));
@@ -3260,6 +3300,34 @@ d_print_mod_list (dpi, mods, suffix)
       dpi->templates = hold_dpt;
       return;
     }
+  else if (mods->mod->type == D_COMP_LOCAL_NAME)
+    {
+      struct d_print_mod *hold_modifiers;
+      struct d_comp *dc;
+
+      /* When this is on the modifier stack, we have pulled any
+	 qualifiers off the right argument already.  Otherwise, we
+	 print it as usual, but don't let the left argument see any
+	 modifiers.  */
+
+      hold_modifiers = dpi->modifiers;
+      dpi->modifiers = NULL;
+      d_print_comp (dpi, d_left (mods->mod));
+      dpi->modifiers = hold_modifiers;
+
+      d_append_string (dpi, (dpi->options & DMGL_JAVA) == 0 ? "::" : ".");
+
+      dc = d_right (mods->mod);
+      while (dc->type == D_COMP_RESTRICT_THIS
+	     || dc->type == D_COMP_VOLATILE_THIS
+	     || dc->type == D_COMP_CONST_THIS)
+	dc = d_left (dc);
+
+      d_print_comp (dpi, dc);
+
+      dpi->templates = hold_dpt;
+      return;
+    }
 
   d_print_mod (dpi, mods->mod);
 
@@ -3335,6 +3403,7 @@ d_print_function_type (dpi, dc, mods)
   int need_paren;
   int saw_mod;
   struct d_print_mod *p;
+  struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
   saw_mod = 0;
@@ -3388,6 +3457,9 @@ d_print_function_type (dpi, dc, mods)
       d_append_char (dpi, '(');
     }
 
+  hold_modifiers = dpi->modifiers;
+  dpi->modifiers = NULL;
+
   d_print_mod_list (dpi, mods, 0);
 
   if (need_paren)
@@ -3396,18 +3468,13 @@ d_print_function_type (dpi, dc, mods)
   d_append_char (dpi, '(');
 
   if (d_right (dc) != NULL)
-    {
-      struct d_print_mod *hold_modifiers;
-
-      hold_modifiers = dpi->modifiers;
-      dpi->modifiers = NULL;
-      d_print_comp (dpi, d_right (dc));
-      dpi->modifiers = hold_modifiers;
-    }
+    d_print_comp (dpi, d_right (dc));
 
   d_append_char (dpi, ')');
 
   d_print_mod_list (dpi, mods, 1);
+
+  dpi->modifiers = hold_modifiers;
 }
 
 /* Print an array type, except for the element type.  */
@@ -3857,6 +3924,7 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
 	  dc = d_left (dc);
 	  break;
 	case D_COMP_QUAL_NAME:
+	case D_COMP_LOCAL_NAME:
 	  dc = d_right (dc);
 	  break;
 	case D_COMP_CTOR:
