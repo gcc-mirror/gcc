@@ -22,6 +22,10 @@ Wed Mar 10 23:11:19 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Wed Mar 10 20:28:29 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* lcm.c: New file.
+	* Makefile.in (OBJS): Add lcm.o
+	(lcm.o): Add dependencies.
+
 	* gcse.c (compute_pre_local_properties): Delete.
 	(compute_pre_data): Use compute_local_properties instead of
 	compute_pre_local_properties.
