@@ -4925,7 +4925,7 @@ mips_expand_prologue ()
 
   /* Determine the last argument, and get its name.  */
 
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, (rtx)0);
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, (rtx)0, 0);
   regno = GP_ARG_FIRST;
 
   for (cur_arg = fnargs; cur_arg != (tree)0; cur_arg = next_arg)
