@@ -8026,6 +8026,12 @@ maybe_inject_for_scope_var (decl)
 {
   if (!DECL_NAME (decl))
     return;
+  
+  /* Declarations of __FUNCTION__ and its ilk appear magically when
+     the variable is first used.  If that happens to be inside a
+     for-loop, we don't want to do anything special.  */
+  if (DECL_PRETTY_FUNCTION_P (decl))
+    return;
 
   if (current_binding_level->is_for_scope)
     {

@@ -1,5 +1,10 @@
 2002-10-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8067
+	* g++.dg/lookup/pretty1.C: New test.
+
+2002-10-23  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/7679
 	* g++.dg/parse/inline1.C: New test.
 	
