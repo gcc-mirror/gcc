@@ -8473,7 +8473,7 @@ mips16_lay_out_constants (void)
     }
 
   /* Store the original value of insns_len in cfun->machine, so
-     that simple_memory_operand can look at it.  */
+     that m16_usym8_4 and m16_usym5_4 can look at it.  */
   cfun->machine->insns_len = insns_len;
 
   pool_size = get_pool_size ();

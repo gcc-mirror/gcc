@@ -1,3 +1,11 @@
+2004-02-01  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (PREDICATE_CODES): Remove entries for
+	"mips_const_double_ok" and "simple_memory_operand", which were
+	removed from the MIPS port with the mips-3_4-rewrite branch merge.
+	* config/mips/mips.c (mips16_lay_out_constants): Update comment
+	for removal of simple_memory_operand.
+
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/c4x/c4x.md: Use GEN_INT instead of
