@@ -1,3 +1,7 @@
+Fri Jul 17 11:48:55 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.c (MODES_TIEABLE_P): Fix typo.
+
 Fri Jul 17 03:26:12 1998  Rihcard Earnshaw (rearnsha@arm.com)
 
 	* tree.c (valid_machine_attribute): Only create a new type variant if
