@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed old-abort
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 class A {
         int	i; // ERROR - private

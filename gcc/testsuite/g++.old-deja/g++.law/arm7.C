@@ -7,7 +7,7 @@
 // Date: Sat, 6 Mar 93 06:46:27 -0600
 
 
-extern "C" void printf(const char *,...);
+extern "C" int printf (const char *, ...);
 
 class Base {
 public:

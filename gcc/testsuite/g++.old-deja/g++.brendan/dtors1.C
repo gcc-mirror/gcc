@@ -5,7 +5,7 @@
 //
 // (also check that this execution doesn't seg-fault)
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int derived_destructed;
 int base_destructed;

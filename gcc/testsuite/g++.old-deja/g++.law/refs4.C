@@ -1,5 +1,5 @@
 // GROUPS passed references
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 const int& min(const int& tX, const int& tY)
 {

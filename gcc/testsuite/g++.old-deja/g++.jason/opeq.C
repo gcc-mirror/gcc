@@ -2,7 +2,7 @@
 // Bug: Generating default op= didn't set TYPE_HAS_ASSIGNMENT, so it wasn't
 // found.
 
-extern "C" int printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 class Y 
 {

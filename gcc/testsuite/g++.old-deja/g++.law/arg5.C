@@ -3,7 +3,7 @@
 extern double pow(double,int*);
 
 extern "C" {
-  extern int    printf(char*,...);
+  extern int printf (const char *, ...);
   extern double pow(double, double);
 }
 

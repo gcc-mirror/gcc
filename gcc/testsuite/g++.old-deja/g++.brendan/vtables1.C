@@ -2,7 +2,7 @@
 // Check that virtual function tables are generated and used
 // even for struct's/classes which have no explicit constructors.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int base_func_member_1_called = 0;
 int derived_func_member_1_called = 0;

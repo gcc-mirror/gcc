@@ -6,7 +6,7 @@
 // Note that in order for this test to work properly, the destructor
 // for the base class should be explicitly declared to be virtual.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int member_destructor_calls = 0;
 int middle_destructor_calls = 0;

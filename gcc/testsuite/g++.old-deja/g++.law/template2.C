@@ -1,6 +1,6 @@
 // GROUPS passed templates
 // Special g++ Options: -fguiding-decls
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 template<class T> T max(T a, T b) { return a > b ? a : b; }
 

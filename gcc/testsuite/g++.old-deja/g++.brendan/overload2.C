@@ -3,7 +3,7 @@
 // functions are generated even where the type of the formal
 // arguments for the overloadings are similar or related.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int proper_method_called = 0;
 

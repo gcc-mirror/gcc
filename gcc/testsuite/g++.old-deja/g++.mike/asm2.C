@@ -1,10 +1,7 @@
 // Compile with -S, there should be no references to
 // LTRAMP in the output.
 
-extern "C"
-{
-  int printf (char *, ...);
-}
+extern "C" int printf (const char *, ...);
 
 void
 sub2 (void (*func) ())

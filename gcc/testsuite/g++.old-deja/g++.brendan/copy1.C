@@ -1,5 +1,5 @@
 // GROUPS passed copy-ctors
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 int count = 0;
 
 class C {

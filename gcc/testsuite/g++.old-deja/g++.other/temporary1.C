@@ -1,4 +1,4 @@
-extern "C" int printf(char*, ...);
+extern "C" int printf (const char *, ...);
 
 int c, d;
 class Foo 

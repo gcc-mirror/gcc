@@ -1,7 +1,7 @@
 // prms-id: 3708
 
-extern "C" void printf (char *, ...);
-extern "C" int atoi (char *);
+extern "C" int printf (const char *, ...);
+extern "C" int atoi (const char *);
 
 void *ptr;
 

@@ -1,7 +1,7 @@
 // Build don't link:
 // Special g++ Options: -fexceptions -O -S
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" int atoi (const char *);
 extern "C" void exit (int);
 

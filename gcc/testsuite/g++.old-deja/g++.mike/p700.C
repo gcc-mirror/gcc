@@ -1628,7 +1628,7 @@ int    vprintf(const char*, ... );
 
 
 
-char*  sprintf(char*, const char*, ...);
+int  sprintf(char*, const char*, ...);
 char*  vsprintf(char*, const char*, ...);
 
 

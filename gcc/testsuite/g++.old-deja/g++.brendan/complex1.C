@@ -5,7 +5,7 @@
 // a bug where the compiler was not converting the integer `90' to a
 // complex number, unless you did `90.0'.  Fixed 10/1/1997.
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 __complex__ double cd;
 

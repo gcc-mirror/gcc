@@ -1,7 +1,7 @@
 // GROUPS passed sizeof
 // ARM $5.3.2
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 class foo {};
 

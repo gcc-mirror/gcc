@@ -1,5 +1,5 @@
 // GROUPS passed overloading
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 struct NoName {
         

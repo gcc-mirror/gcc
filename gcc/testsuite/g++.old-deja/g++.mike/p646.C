@@ -10,7 +10,7 @@
 
 extern "C"
 {
-  void printf (char *, ...);
+  int printf (const char *, ...);
   void abort ();
 }
 

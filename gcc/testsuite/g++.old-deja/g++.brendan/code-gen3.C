@@ -2,7 +2,7 @@
 // Check that passing things which are not a multiple of
 // 4 bytes in size doesn't mess up other subsequent parameters.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 struct base {
 	int f1 : 8;

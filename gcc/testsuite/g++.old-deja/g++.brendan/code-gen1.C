@@ -2,7 +2,7 @@
 // Check that sub-word sized structs/classes are passed correctly
 // if the struct/class has a constructor (i.e. ANY constructor).
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 struct base {
 	unsigned int f1 : 8;

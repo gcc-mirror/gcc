@@ -9,7 +9,7 @@
 //
 // Workaround - declare "f1_arg" as type "short int".
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 short int v2;
 

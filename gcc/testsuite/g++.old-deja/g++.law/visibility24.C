@@ -8,7 +8,7 @@
 /*
  * private.cc
  */
-extern "C" void printf(...);
+extern "C" int printf (const char *, ...);
 
 template <class T>
 class A

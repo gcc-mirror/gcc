@@ -5,7 +5,7 @@
 // of argument defaults provided, that correct values are
 // passed at all call points anyway.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 void receiver (int ii, int jj);
 

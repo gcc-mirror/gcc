@@ -1,7 +1,7 @@
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 extern "C" void abort();
-extern "C" void printf(const char*, ...);
+extern "C" int printf (const char *, ...);
 
 int i;
 

@@ -5,7 +5,7 @@
 // Subject:  excess elements in aggr initzer
 // Message-ID: <Pine.3.07.9306061541.A10267-b100000@fubar.cs.montana.edu>
 
-extern "C" void printf (char *, ...);
+extern "C" int printf (const char *, ...);
 
 class samp {
         int a;

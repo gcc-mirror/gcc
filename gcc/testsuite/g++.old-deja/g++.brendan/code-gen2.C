@@ -2,7 +2,7 @@
 // Check that declarations with initializations are executed
 // correctly.
 
-extern "C" void printf (char *, ...); 
+extern "C" int printf (const char *, ...); 
 
 int main ()
 {

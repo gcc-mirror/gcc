@@ -2,7 +2,7 @@
 /* g++ constructs j 13 times, and destructs it once. */
 
 extern "C" {
-  int printf(...);
+  int printf (const char *, ...);
   void exit(int);
 }
 
