@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3907,7 +3907,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      choose_reload_regs without affecting code quality, and cases that
      actually fail are extremely rare, so it turns out to be better to fix
      the problem here by not generating cases that choose_reload_regs will
-     fail for.  */
+     fail for. 
+
+     Likewise, if we have more than one RELOAD_FOR_{IN,OUT}PUT_ADDRESS
+     reload for the same operand, convert any RELOAD_FOR_{INP,OUT}ADDR_ADDRESS
+     reloads to it.  */
    
   {
     int op_addr_reloads = 0;
@@ -3920,6 +3924,33 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	if (reload_when_needed[i] == RELOAD_FOR_OPADDR_ADDR)
 	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
   }
+
+  for (i = 0; i < reload_n_operands; i++)
+    {
+      int address_reloads;
+
+      for (j = 0, address_reloads = 0; j < n_reloads; j++)
+	if (reload_when_needed[j] == RELOAD_FOR_INPUT_ADDRESS
+	    && reload_opnum[j] == i)
+	  address_reloads++;
+
+      if (address_reloads > 1)
+	for (j = 0; j < n_reloads; j++)
+	  if (reload_when_needed[j] == RELOAD_FOR_INPADDR_ADDRESS
+	      && reload_opnum[j] == i)
+	    reload_when_needed[j] = RELOAD_FOR_INPUT_ADDRESS;
+
+      for (j = 0, address_reloads = 0; j < n_reloads; j++)
+	if (reload_when_needed[j] == RELOAD_FOR_OUTPUT_ADDRESS
+	    && reload_opnum[j] == i)
+	  address_reloads++;
+
+      if (address_reloads > 1)
+	for (j = 0; j < n_reloads; j++)
+	  if (reload_when_needed[j] == RELOAD_FOR_OUTADDR_ADDRESS
+	      && reload_opnum[j] == i)
+	    reload_when_needed[j] = RELOAD_FOR_OUTPUT_ADDRESS;
+    }
 
   /* See if we have any reloads that are now allowed to be merged
      because we've changed when the reload is needed to
