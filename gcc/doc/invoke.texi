@@ -263,7 +263,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-phiopt@r{[}-@var{n}@r{]} @gol
 -fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-copyrename@r{[}-@var{n}@r{]} @gol
--fdump-tree-nrv @gol
+-fdump-tree-nrv -fdump-tree-vect @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
@@ -318,7 +318,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-lim @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
--ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre @gol
+-ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -3664,6 +3664,11 @@ Dump each function after applying the named return value optimization on
 generic trees.  The file name is made by appending @file{.nrv} to the source
 file name.
 
+@item vect
+@opindex fdump-tree-vect
+Dump each function after applying vectorization of loops.  The file name is 
+made by appending @file{.vect} to the source file name.
+
 @item all
 @opindex fdump-tree-all
 Enable all the available tree dumps with the flags provided in this option.
@@ -4498,6 +4503,9 @@ enabled by default at -O and higher.
 Perform live range splitting during the SSA->normal phase.  Distinct live
 ranges of a variable are split into unique variables, allowing for better
 optimization later.  This is enabled by default at -O and higher.
+
+@item -ftree-vectorize
+Perform loop vectorization on trees.
 
 @item -ftracer
 @opindex ftracer

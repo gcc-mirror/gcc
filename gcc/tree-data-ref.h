@@ -151,7 +151,7 @@ extern void analyze_all_data_dependences (struct loops *);
 extern void compute_data_dependences_for_loop (unsigned, struct loop *, 
 					       varray_type *, varray_type *, 
 					       varray_type *, varray_type *);
-extern struct data_reference * init_data_ref (tree, tree, tree, tree);
+extern struct data_reference * init_data_ref (tree, tree, tree, tree, bool);
 extern struct data_reference *analyze_array (tree, tree, bool);
 
 extern void dump_data_reference (FILE *, struct data_reference *);
@@ -161,28 +161,9 @@ extern void dump_data_dependence_relation (FILE *,
 extern void dump_data_dependence_relations (FILE *, varray_type);
 extern void dump_data_dependence_direction (FILE *, 
 					    enum data_dependence_direction);
+extern bool array_base_name_differ_p (struct data_reference *, 
+				      struct data_reference *, bool *p);
 
 
-
-/* Inline functions.  */
-
-/* This is the simplest data dependence test: determines whether the
-   data references A and B access the same array.  */
-
-static inline bool
-array_base_name_differ_p (struct data_reference *a, 
-			  struct data_reference *b)
-{
-  if (DR_BASE_NAME (a) == DR_BASE_NAME (b))
-    return false;
-  
-  if (TREE_CODE (DR_BASE_NAME (a)) == INDIRECT_REF
-      && TREE_CODE (DR_BASE_NAME (b)) == INDIRECT_REF
-      && TREE_OPERAND (DR_BASE_NAME (a), 0) 
-      == TREE_OPERAND (DR_BASE_NAME (b), 0))
-    return false;
-  
-  return true;
-}
 
 #endif  /* GCC_TREE_DATA_REF_H  */
