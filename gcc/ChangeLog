@@ -1,3 +1,17 @@
+2000-07-14  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.c (struct macro_info): Add new members.
+	(_cpp_free_definition): Delete the macro directly.
+	(count_params): Return void, with first token of
+	expansion in struct macro_info on success.
+	(parse_define): Return int.  Hoist syntax checking from
+	save_macro_expansion.  Leave call to save_expansion to
+	_cpp_create_definition.
+	(alloc_macro): Needs just 2 arguments.
+	(free_macro): Delete.
+	(save_expansion): Don't perform syntax check.
+	(_cpp_create_definition): Call save_expansion.
+
 2000-07-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genrecog.c (write_header): Split long string.
