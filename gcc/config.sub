@@ -241,7 +241,7 @@ case $basic_machine in
 		;;
 	next)
 		basic_machine=m68k-next
-		os=-sysv
+		os=-bsd
 		;;
 	amiga)
 		basic_machine=m68k-cbm
