@@ -127,16 +127,16 @@ static struct obstack util_obstack;
 char *util_firstobj;
 
 /* List of classes with list of their static instances.  */
-static tree objc_static_instances;
+static tree objc_static_instances = NULL_TREE;
 
 /* The declaration of the array administrating the static instances.  */
-static tree static_instances_decl;
+static tree static_instances_decl = NULL_TREE;
 
 /* for encode_method_def */
 #include "rtl.h"
 #include "c-parse.h"
 
-#define OBJC_VERSION	(flag_next_runtime ? 5 : 7)
+#define OBJC_VERSION	(flag_next_runtime ? 5 : 8)
 #define PROTOCOL_VERSION 2
 
 #define OBJC_ENCODE_INLINE_DEFS 	0
@@ -1367,9 +1367,12 @@ build_objc_symtab_template ()
 
   /* void *defs[cls_def_cnt + cat_def_cnt]; */
 
-  index = build_index_type (build_int_2 (imp_count + cat_count - 1,
-					 imp_count == 0 && cat_count == 0
-					 ? -1 : 0));
+  if (!flag_next_runtime)
+    index = build_index_type (build_int_2 (imp_count + cat_count, 0));
+  else
+    index = build_index_type (build_int_2 (imp_count + cat_count - 1,
+					   imp_count == 0 && cat_count == 0
+					   ? -1 : 0));
   field_decl = create_builtin_decl (FIELD_DECL,
 				    build_array_type (ptr_type_node, index),
 				    "defs");
@@ -1408,6 +1411,19 @@ init_def_list (type)
 	  }
       }
 
+  if (!flag_next_runtime)
+    {
+      /* statics = { ..., _OBJC_STATIC_INSTANCES, ... }  */
+      tree expr;
+
+      if (static_instances_decl)
+	expr = build_unary_op (ADDR_EXPR, static_instances_decl, 0);
+      else
+	expr = build_int_2 (0, 0);
+
+      initlist = tree_cons (NULL_TREE, expr, initlist);
+    }
+
   return build_constructor (type, nreverse (initlist));
 }
 
@@ -1443,8 +1459,9 @@ init_objc_symtab (type)
 
   /* cls_def = { ..., { &Foo, &Bar, ...}, ... } */
 
-  if (imp_count || cat_count)
+  if (imp_count || cat_count || static_instances_decl)
     {
+
       tree field = TYPE_FIELDS (type);
       field = TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (field))));
 
@@ -1533,17 +1550,6 @@ init_module_descriptor (type)
   expr = add_objc_string (get_identifier (input_filename), class_names);
   initlist = tree_cons (NULL_TREE, expr, initlist);
 
-
-  if (!flag_next_runtime)
-    {
-      /* statics = { ..., _OBJC_STATIC_INSTANCES, ... }  */
-      if (static_instances_decl)
-	expr = build_unary_op (ADDR_EXPR, static_instances_decl, 0);
-      else
-	expr = build_int_2 (0, 0);
-      initlist = tree_cons (NULL_TREE, expr, initlist);
-    }
-
   /* symtab = { ..., _OBJC_SYMBOLS, ... } */
 
   if (UOBJC_SYMBOLS_decl)
@@ -1594,22 +1600,6 @@ build_module_descriptor ()
   field_decl
     = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
-
-
-  if (!flag_next_runtime)
-    {
-      /* void *statics */
-
-      decl_specs = get_identifier (UTAG_STATICS);
-      decl_specs
-	= build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE, decl_specs));
-      field_decl
-	= build1 (INDIRECT_REF, NULL_TREE, get_identifier ("statics"));
-      field_decl = grokfield (input_filename, lineno, field_decl,
-			      decl_specs, NULL_TREE);
-      chainon (field_decl_chain, field_decl);
-    }
-
 
   /* struct objc_symtab *symtab; */
 
@@ -1817,6 +1807,7 @@ generate_static_references ()
 					  ridpointers[(int) RID_STATIC]));
   static_instances_decl
     = start_decl (expr_decl, decl_spec, 1, NULL_TREE, NULL_TREE);
+  TREE_USED (static_instances_decl) = 1;
   DECL_CONTEXT (static_instances_decl) = 0;
   DECL_ARTIFICIAL (static_instances_decl) = 1;
   end_temporary_allocation ();
@@ -7923,6 +7914,11 @@ finish_objc ()
   OBJC_PROLOGUE;
 #endif
 
+  /* Process the static instances here because initialization of objc_symtab
+     dependens on them. */
+  if (objc_static_instances)
+    generate_static_references ();
+
   if (implementation_context || class_names_chain
       || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
     generate_objc_symtab_decl ();
@@ -7956,9 +7952,6 @@ finish_objc ()
 
   if (protocol_chain)
     generate_protocols ();
-
-  if (objc_static_instances)
-    generate_static_references ();
 
   if (implementation_context || class_names_chain || objc_static_instances
       || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
