@@ -1,3 +1,10 @@
+2002-04-16  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc (sparcv9-solaris): Configure for 64-bit default.
+	Adjust tm_file order to get TARGET_DEFAULT set properly.
+	(sparc-solaris): Configure 2.[78] for 64-bit multilibs.
+	* doc/install.texi (sparc-solaris): Update.
+
 2002-04-16  Hartmut Penner <hpenner@de.ibm.com>
 
 	PR target/6305

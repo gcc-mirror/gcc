@@ -3072,8 +3072,8 @@ sparc-*-rtems*|sparc-*-rtemself*)
 	  thread_file='rtems'
 	fi
 	;;
-sparc64-*-solaris2*)
-	tm_file="sparc/biarch64.h sparc/sol2-64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-bi.h"
+sparc64-*-solaris2* | sparcv9-*-solaris2*)
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-64.h sparc/sol2-bi.h"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h sparc/sol2-gld-bi.h"
 	fi
@@ -3121,7 +3121,7 @@ sparc-hal-solaris2*)
         esac
 	thread_file='solaris'
         ;;
-sparc-*-solaris2* | sparcv9-*-solaris2*)
+sparc-*-solaris2*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h"
@@ -3133,17 +3133,18 @@ sparc-*-solaris2* | sparcv9-*-solaris2*)
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	case $machine in
-	sparcv9-*)
+	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
+		if test x$gnu_ld = xno; then
+			tm_file="${tm_file} sparc/sol26-sld.h"
+		fi
+		;;
+	*-*-solaris2.[789])
 		tm_file="sparc/biarch64.h ${tm_file} sparc/sol2-bi.h"
 		if test x$gnu_ld = xyes; then
 			tm_file="${tm_file} sparc/sol2-gld-bi.h"
 		fi
 		tmake_file="$tmake_file sparc/t-sol2-64"
 		;;
-	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
-		if test x$gnu_ld = xno; then
-			tm_file="${tm_file} sparc/sol26-sld.h"
-		fi
 	esac
 	xm_defines=POSIX
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
