@@ -826,6 +826,10 @@ make_decl_rtl (decl, asmspec, top_level)
 	  if (flag_volatile_global && TREE_CODE (decl) == VAR_DECL
 	      && TREE_PUBLIC (decl))
 	    TREE_SIDE_EFFECTS (decl) = 1;
+	  else if (flag_volatile_static && TREE_CODE (decl) == VAR_DECL
+	       && (TREE_PUBLIC (decl) || TREE_STATIC (decl)))
+	    TREE_SIDE_EFFECTS (decl) = 1;
+
 	  if (TREE_SIDE_EFFECTS (decl))
 	    MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
 
