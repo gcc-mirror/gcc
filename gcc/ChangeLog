@@ -1,3 +1,10 @@
+2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/6838
+	* config/cris/cris.md: Fix typos and thinkos in comments.
+	(splitter for mov_sideqi_mem, mov_sidehi_mem, mov_sidesi_mem):
+	Remove spurious mode specifier on operand 2.
+
 2002-05-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (legitimate_pic_operand_p): Do not
