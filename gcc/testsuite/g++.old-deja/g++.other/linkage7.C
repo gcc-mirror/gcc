@@ -1,4 +1,4 @@
-// Build don't link:
+// Build don't run:
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 namespace N {
