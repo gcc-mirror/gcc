@@ -1,3 +1,18 @@
+2004-09-27  Devang Patel  <dpatel@apple.com>
+
+	* expr.c (expand_expr_real_1): Handle VEC_COND_EXPR.
+	* genopinit.c (optabs): New entry for vcond_gen_code and
+	vcondu_gen_code.
+	* optabs.c (vcond_gen_code, vcondu_gen_code): New optabs.
+	(get_rtx_code): New function.
+	(vector_compare_rtx): New function.
+	(init_optabs): Initialize vcond_gen_code and vcondu_gen_code.
+	(expand_vec_cond_expr_p): New function.
+	(expand_vec_cond_expr): New function.
+	(get_vcond_icode): New function.
+	* optabs.h (expand_vec_cond_expr, expand_vec_cond_expr_p): New externs.
+	(vcond_gen_code, vcondu_gen_code): Same.
+
 2004-09-27  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (STAGESTUFF): Split into ...
@@ -45,7 +60,6 @@
 
 	* tree-pretty-print.c (dump_generic_node): Print VEC_COND_EXPR.
 	(print_call_name): Do not print VEC_COND_EXPR.
-	
 
 2004-09-27  Devang Patel  <dpatel@apple.com>
 
