@@ -382,7 +382,6 @@ static void expand_null_return_1 (rtx);
 static enum br_predictor return_prediction (rtx);
 static rtx shift_return_value (rtx);
 static void expand_value_return (rtx);
-static int tail_recursion_args (tree, tree);
 static void expand_cleanups (tree, int, int);
 static void check_seenlabel (void);
 static void do_jump_if_equal (rtx, rtx, rtx, int);
@@ -2668,39 +2667,6 @@ expand_return (tree retval)
 
   last_insn = get_last_insn ();
 
-  /* Distribute return down conditional expr if either of the sides
-     may involve tail recursion (see test below).  This enhances the number
-     of tail recursions we see.  Don't do this always since it can produce
-     sub-optimal code in some cases and we distribute assignments into
-     conditional expressions when it would help.  */
-
-  if (optimize && retval_rhs != 0
-      && frame_offset == 0
-      && TREE_CODE (retval_rhs) == COND_EXPR
-      && (TREE_CODE (TREE_OPERAND (retval_rhs, 1)) == CALL_EXPR
-	  || TREE_CODE (TREE_OPERAND (retval_rhs, 2)) == CALL_EXPR))
-    {
-      rtx label = gen_label_rtx ();
-      tree expr;
-
-      do_jump (TREE_OPERAND (retval_rhs, 0), label, NULL_RTX);
-      start_cleanup_deferral ();
-      expr = build (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (current_function_decl)),
-		    DECL_RESULT (current_function_decl),
-		    TREE_OPERAND (retval_rhs, 1));
-      TREE_SIDE_EFFECTS (expr) = 1;
-      expand_return (expr);
-      emit_label (label);
-
-      expr = build (MODIFY_EXPR, TREE_TYPE (TREE_TYPE (current_function_decl)),
-		    DECL_RESULT (current_function_decl),
-		    TREE_OPERAND (retval_rhs, 2));
-      TREE_SIDE_EFFECTS (expr) = 1;
-      expand_return (expr);
-      end_cleanup_deferral ();
-      return;
-    }
-
   result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
 
   /* If the result is an aggregate that is being returned in one (or more)
@@ -2848,114 +2814,6 @@ expand_return (tree retval)
       emit_queue ();
       expand_value_return (result_rtl);
     }
-}
-
-/* Attempt to optimize a potential tail recursion call into a goto.
-   ARGUMENTS are the arguments to a CALL_EXPR; LAST_INSN indicates
-   where to place the jump to the tail recursion label.
-
-   Return TRUE if the call was optimized into a goto.  */
-
-int
-optimize_tail_recursion (tree arguments, rtx last_insn)
-{
-  /* Finish checking validity, and if valid emit code to set the
-     argument variables for the new call.  */
-  if (tail_recursion_args (arguments, DECL_ARGUMENTS (current_function_decl)))
-    {
-      if (tail_recursion_label == 0)
-	{
-	  tail_recursion_label = gen_label_rtx ();
-	  emit_label_after (tail_recursion_label,
-			    tail_recursion_reentry);
-	}
-      emit_queue ();
-      expand_goto_internal (NULL_TREE, tail_recursion_label, last_insn);
-      emit_barrier ();
-      return 1;
-    }
-  return 0;
-}
-
-/* Emit code to alter this function's formal parms for a tail-recursive call.
-   ACTUALS is a list of actual parameter expressions (chain of TREE_LISTs).
-   FORMALS is the chain of decls of formals.
-   Return 1 if this can be done;
-   otherwise return 0 and do not emit any code.  */
-
-static int
-tail_recursion_args (tree actuals, tree formals)
-{
-  tree a = actuals, f = formals;
-  int i;
-  rtx *argvec;
-
-  /* Check that number and types of actuals are compatible
-     with the formals.  This is not always true in valid C code.
-     Also check that no formal needs to be addressable
-     and that all formals are scalars.  */
-
-  /* Also count the args.  */
-
-  for (a = actuals, f = formals, i = 0; a && f; a = TREE_CHAIN (a), f = TREE_CHAIN (f), i++)
-    {
-      if (!lang_hooks.types_compatible_p (TREE_TYPE (TREE_VALUE (a)), 
-	      TREE_TYPE (f)))
-	return 0;
-      if (GET_CODE (DECL_RTL (f)) != REG || DECL_MODE (f) == BLKmode)
-	return 0;
-    }
-  if (a != 0 || f != 0)
-    return 0;
-
-  /* Compute all the actuals.  */
-
-  argvec = alloca (i * sizeof (rtx));
-
-  for (a = actuals, i = 0; a; a = TREE_CHAIN (a), i++)
-    argvec[i] = expand_expr (TREE_VALUE (a), NULL_RTX, VOIDmode, 0);
-
-  /* Find which actual values refer to current values of previous formals.
-     Copy each of them now, before any formal is changed.  */
-
-  for (a = actuals, i = 0; a; a = TREE_CHAIN (a), i++)
-    {
-      int copy = 0;
-      int j;
-      for (f = formals, j = 0; j < i; f = TREE_CHAIN (f), j++)
-	if (reg_mentioned_p (DECL_RTL (f), argvec[i]))
-	  {
-	    copy = 1;
-	    break;
-	  }
-      if (copy)
-	argvec[i] = copy_to_reg (argvec[i]);
-    }
-
-  /* Store the values of the actuals into the formals.  */
-
-  for (f = formals, a = actuals, i = 0; f;
-       f = TREE_CHAIN (f), a = TREE_CHAIN (a), i++)
-    {
-      if (GET_MODE (DECL_RTL (f)) == GET_MODE (argvec[i]))
-	emit_move_insn (DECL_RTL (f), argvec[i]);
-      else
-	{
-	  rtx tmp = argvec[i];
-	  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_VALUE (a)));
-	  promote_mode(TREE_TYPE (TREE_VALUE (a)), GET_MODE (tmp),
-		       &unsignedp, 0);
-	  if (DECL_MODE (f) != GET_MODE (DECL_RTL (f)))
-	    {
-	      tmp = gen_reg_rtx (DECL_MODE (f));
-	      convert_move (tmp, argvec[i], unsignedp);
-	    }
-	  convert_move (DECL_RTL (f), tmp, unsignedp);
-	}
-    }
-
-  free_temp_slots ();
-  return 1;
 }
 
 /* Generate the RTL code for entering a binding contour.

@@ -50,7 +50,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int count_basic_blocks (rtx);
 static void find_basic_blocks_1 (rtx);
-static rtx find_label_refs (rtx, rtx);
 static void make_edges (rtx, basic_block, basic_block, int);
 static void make_label_edge (sbitmap *, basic_block, rtx, int);
 static void find_bb_boundaries (basic_block);
@@ -174,51 +173,6 @@ count_basic_blocks (rtx f)
     }
 
   return count;
-}
-
-/* Scan a list of insns for labels referred to other than by jumps.
-   This is used to scan the alternatives of a call placeholder.  */
-
-static rtx
-find_label_refs (rtx f, rtx lvl)
-{
-  rtx insn;
-
-  for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && GET_CODE (insn) != JUMP_INSN)
-      {
-	rtx note;
-
-	/* Make a list of all labels referred to other than by jumps
-	   (which just don't have the REG_LABEL notes).
-
-	   Make a special exception for labels followed by an ADDR*VEC,
-	   as this would be a part of the tablejump setup code.
-
-	   Make a special exception to registers loaded with label
-	   values just before jump insns that use them.  */
-
-	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	  if (REG_NOTE_KIND (note) == REG_LABEL)
-	    {
-	      rtx lab = XEXP (note, 0), next;
-
-	      if ((next = next_nonnote_insn (lab)) != NULL
-		  && GET_CODE (next) == JUMP_INSN
-		  && (GET_CODE (PATTERN (next)) == ADDR_VEC
-		      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
-		;
-	      else if (GET_CODE (lab) == NOTE)
-		;
-	      else if (GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
-		       && find_reg_note (NEXT_INSN (insn), REG_LABEL, lab))
-		;
-	      else
-		lvl = alloc_EXPR_LIST (0, XEXP (note, 0), lvl);
-	    }
-      }
-
-  return lvl;
 }
 
 /* Create an edge between two basic blocks.  FLAGS are auxiliary information
@@ -464,7 +418,6 @@ find_basic_blocks_1 (rtx f)
   rtx insn, next;
   rtx bb_note = NULL_RTX;
   rtx lvl = NULL_RTX;
-  rtx trll = NULL_RTX;
   rtx head = NULL_RTX;
   rtx end = NULL_RTX;
   basic_block prev = ENTRY_BLOCK_PTR;
@@ -525,21 +478,9 @@ find_basic_blocks_1 (rtx f)
 
 	case CODE_LABEL:
 	case JUMP_INSN:
+	case CALL_INSN:
 	case INSN:
 	case BARRIER:
-	  break;
-
-	case CALL_INSN:
-	  if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	    {
-	      /* Scan each of the alternatives for label refs.  */
-	      lvl = find_label_refs (XEXP (PATTERN (insn), 0), lvl);
-	      lvl = find_label_refs (XEXP (PATTERN (insn), 1), lvl);
-	      lvl = find_label_refs (XEXP (PATTERN (insn), 2), lvl);
-	      /* Record its tail recursion label, if any.  */
-	      if (XEXP (PATTERN (insn), 3) != NULL_RTX)
-		trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
-	    }
 	  break;
 
 	default:
@@ -588,7 +529,6 @@ find_basic_blocks_1 (rtx f)
     abort ();
 
   label_value_list = lvl;
-  tail_recursion_label_list = trll;
   clear_aux_for_blocks ();
 }
 

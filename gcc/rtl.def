@@ -1153,27 +1153,6 @@ DEF_RTL_EXPR(RANGE_VAR, "range_var", "eti", RTX_EXTRA)
    0 is the live bitmap.  Operand 1 is the original block number.  */
 DEF_RTL_EXPR(RANGE_LIVE, "range_live", "bi", RTX_EXTRA)
 
-/* A placeholder for a CALL_INSN which may be turned into a normal call,
-   a sibling (tail) call or tail recursion.
-
-   Immediately after RTL generation, this placeholder will be replaced
-   by the insns to perform the call, sibcall or tail recursion.
-
-   This RTX has 4 operands.  The first three are lists of instructions to
-   perform the call as a normal call, sibling call and tail recursion
-   respectively.  The latter two lists may be NULL, the first may never
-   be NULL.
-
-   The last operand is the tail recursion CODE_LABEL, which may be NULL if no 
-   potential tail recursive calls were found.
-
-   The tail recursion label is needed so that we can clear LABEL_PRESERVE_P
-   after we select a call method.
-
-   This method of tail-call elimination is intended to be replaced by
-   tree-based optimizations once front-end conversions are complete.  */
-DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", RTX_EXTRA)
-
 /* Describes a merge operation between two vector values.
    Operands 0 and 1 are the vectors to be merged, operand 2 is a bitmask
    that specifies where the parts of the result are taken from.  Set bits

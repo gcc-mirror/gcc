@@ -3399,7 +3399,6 @@ extern void expand_stack_alloc (tree, tree);
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);
-extern int optimize_tail_recursion (tree, rtx);
 extern void expand_start_bindings_and_block (int, tree);
 #define expand_start_bindings(flags) \
   expand_start_bindings_and_block(flags, NULL_TREE)

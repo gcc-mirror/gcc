@@ -192,26 +192,6 @@ mark_all_labels (rtx f)
   for (insn = f; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       {
-	if (GET_CODE (insn) == CALL_INSN
-	    && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	  {
-	    mark_all_labels (XEXP (PATTERN (insn), 0));
-	    mark_all_labels (XEXP (PATTERN (insn), 1));
-	    mark_all_labels (XEXP (PATTERN (insn), 2));
-
-	    /* Canonicalize the tail recursion label attached to the
-	       CALL_PLACEHOLDER insn.  */
-	    if (XEXP (PATTERN (insn), 3))
-	      {
-		rtx label_ref = gen_rtx_LABEL_REF (VOIDmode,
-						   XEXP (PATTERN (insn), 3));
-		mark_jump_label (label_ref, insn, 0);
-		XEXP (PATTERN (insn), 3) = XEXP (label_ref, 0);
-	      }
-
-	    continue;
-	  }
-
 	mark_jump_label (PATTERN (insn), insn, 0);
 	if (! INSN_DELETED_P (insn) && GET_CODE (insn) == JUMP_INSN)
 	  {

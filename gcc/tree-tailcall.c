@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
    omit the accumulator.
 
    There are three cases how the function may exit.  The first one is
-   handled in adjust_return_value, the later two in adjust_accumulator_values
+   handled in adjust_return_value, the other two in adjust_accumulator_values
    (the second case is actually a special case of the third one and we
    present it separately just for clarity):
 

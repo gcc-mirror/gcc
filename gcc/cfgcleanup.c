@@ -78,7 +78,6 @@ static bool outgoing_edges_match (int, basic_block, basic_block);
 static int flow_find_cross_jump (int, basic_block, basic_block, rtx *, rtx *);
 static bool insns_match_p (int, rtx, rtx);
 
-static bool tail_recursion_label_p (rtx);
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
 static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
 static bool try_optimize_cfg (int);
@@ -670,19 +669,6 @@ try_forward_edges (int mode, basic_block b)
   return changed;
 }
 
-/* Return true if LABEL is used for tail recursion.  */
-
-static bool
-tail_recursion_label_p (rtx label)
-{
-  rtx x;
-
-  for (x = tail_recursion_label_list; x; x = XEXP (x, 1))
-    if (label == XEXP (x, 0))
-      return true;
-
-  return false;
-}
 
 /* Blocks A and B are to be merged into a single block.  A has no incoming
    fallthru edge, so it can be moved before B without adding or modifying
@@ -809,14 +795,6 @@ static basic_block
 merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 {
   basic_block next;
-  /* If C has a tail recursion label, do not merge.  There is no
-     edge recorded from the call_placeholder back to this label, as
-     that would make optimize_sibling_and_tail_recursive_calls more
-     complex for no gain.  */
-  if ((mode & CLEANUP_PRE_SIBCALL)
-      && GET_CODE (BB_HEAD (c)) == CODE_LABEL
-      && tail_recursion_label_p (BB_HEAD (c)))
-    return NULL;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -1852,15 +1830,11 @@ try_optimize_cfg (int mode)
 		  b = c;
 		}
 
-	      /* Remove code labels no longer used.  Don't do this
-		 before CALL_PLACEHOLDER is removed, as some branches
-		 may be hidden within.  */
+	      /* Remove code labels no longer used.  */
 	      if (b->pred->pred_next == NULL
 		  && (b->pred->flags & EDGE_FALLTHRU)
 		  && !(b->pred->flags & EDGE_COMPLEX)
 		  && GET_CODE (BB_HEAD (b)) == CODE_LABEL
-		  && (!(mode & CLEANUP_PRE_SIBCALL)
-		      || !tail_recursion_label_p (BB_HEAD (b)))
 		  /* If the previous block ends with a branch to this
 		     block, we can't delete the label.  Normally this
 		     is a condjump that is yet to be simplified, but
@@ -2077,8 +2051,7 @@ cleanup_cfg (int mode)
       changed = true;
       /* We've possibly created trivially dead code.  Cleanup it right
 	 now to introduce more opportunities for try_optimize_cfg.  */
-      if (!(mode & (CLEANUP_NO_INSN_DEL
-		    | CLEANUP_UPDATE_LIFE | CLEANUP_PRE_SIBCALL))
+      if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_UPDATE_LIFE))
 	  && !reload_completed)
 	delete_trivially_dead_insns (get_insns(), max_reg_num ());
     }
@@ -2101,7 +2074,7 @@ cleanup_cfg (int mode)
 						    ? PROP_LOG_LINKS : 0)))
 	    break;
 	}
-      else if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_PRE_SIBCALL))
+      else if (!(mode & CLEANUP_NO_INSN_DEL)
 	       && (mode & CLEANUP_EXPENSIVE)
 	       && !reload_completed)
 	{

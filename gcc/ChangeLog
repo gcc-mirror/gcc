@@ -1,3 +1,37 @@
+2004-06-03  Steevn Bosscher  <stevenb@suse.de>
+
+	* basic-block.c (tail_recursion_label_list): Don't declare.
+	(CLEANUP_PRE_SIBCALL): Remove.  Renumber the other CLEANUP_*
+	accordingly.
+	* cfgbuild.c (find_label_refs): Remove.
+	(find_basic_blocks_1): Don't handle CALL_PLACEHOLDER insns.
+	* cfgcleanup.c (tail_recursion_label_p): Remove.
+	(merge_blocks_move): Do not check for tail recursion.
+	(try_optimize_cfg): Likewise.
+	(cleanup_cfg): Never handle CLEANUP_PRE_SIBCALL.
+	* cfgrtl.c (tail_recursion_label_list): Remove.
+	* except.c (remove_unreachable_regions): Don't handle
+	CALL_PLACEHOLDER insns.
+	(convert_from_eh_region_ranges_1, can_throw_internal,
+	can_throw_external): Likewise.
+	* function.c (free_after_compilation): Don't clear
+	x_tail_recursion_label.
+	(fixup_var_refs_insns): Don't handle CALL_PLACEHOLDER insns.
+	(identify_blocks_1): Don't recurse for CALL_PLACEHOLDER insns.
+	(reorder_blocks_1): Likewise.
+	* function.h (struct function): Remove x_tail_recursion_label
+	member.  Don't define tail_recursion_label.
+	* jump.c (mark_all_labels): Don't handle CALL_PLACEHOLDER insns.
+	* print-rtl.c (print_rtx): Likewise.
+	* rtl.def (CALL_PLACEHOLDER): Remove.
+	* rtl.h (sibcall_use_t): Remove enum.
+	(optimize_sibling_and_tail_recursive_calls,
+	replace_call_placeholder): Remove function prototypes.
+	* stmt.c (tail_recursion_args): Remove.
+	(optimize_tail_recursion): Remove.
+	(expand_return): Don't check for possible tail recursion.
+	* tree.h (optimize_tail_recursion): Remove prototype.
+
 2004-06-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (tree_find_edge_insert_loc):  Allow inserting before
