@@ -1261,6 +1261,10 @@ find_free_register (current_insn, last_insn, class_str, mode, reg_set)
       /* And that we don't create an extra save/restore.  */
       if (! call_used_regs[regno] && ! regs_ever_live[regno])
 	continue;
+      /* And we don't clobber traceback for noreturn functions.  */
+      if ((regno == FRAME_POINTER_REGNUM || regno == HARD_FRAME_POINTER_REGNUM)
+	  && (! reload_completed || frame_pointer_needed))
+        continue;
 
       success = 1;
       for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
