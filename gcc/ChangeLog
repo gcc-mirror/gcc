@@ -1,3 +1,8 @@
+2000-05-22  Richard Henderson  <rth@cygnus.com>
+
+	* simplify-rtx.c (simplify_ternary_operation): Try to simplify
+	IF_THEN_ELSE to a setcc form.
+
 2000-05-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (sun_malloc): Handle `calloc'.

@@ -1963,6 +1963,25 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	    return op2;
 	  else if (temp == const1_rtx)
 	    return op1;
+	  else if (temp)
+	    op0 = temp;
+
+	  /* Look for happy constants in op1 and op2.  */
+	  if (GET_CODE (op1) == CONST_INT && GET_CODE (op2) == CONST_INT)
+	    {
+	      HOST_WIDE_INT t = INTVAL (op1);
+	      HOST_WIDE_INT f = INTVAL (op2);
+	      
+	      if (t == STORE_FLAG_VALUE && f == 0)
+	        code = GET_CODE (op0);
+	      else if (t == 0 && f == STORE_FLAG_VALUE
+		       && can_reverse_comparison_p (op0, NULL_RTX))
+		code = reverse_condition (GET_CODE (op0));
+	      else
+		break;
+
+	      return gen_rtx_fmt_ee (code, mode, XEXP (op0, 0), XEXP (op0, 1));
+	    }
 	}
       break;
 
