@@ -21,9 +21,9 @@ Foo::Foo(int aa)
 
 
 struct var_Foo: public Foo
-{
+{ // ERROR -  base.*// ERROR -  in class.*
   var_Foo* operator-> () {return this;}
-};// ERROR -  base.*// ERROR -  in class.*
+};
 
 int blort(Foo& f)
 {

@@ -1,5 +1,11 @@
 2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (duplicate_tag_error): Adjust diagnostic.
+	(finish_struct): Locally set location to start of struct.
+	* decl.c (fixup_anonymous_aggr): Use cp_error_at.
+
+2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (struct binding_level): Adjust class_shadowed comments
 	to reflect reality.
 	(push_class_level_binding): Ajust comments to reflect reality.

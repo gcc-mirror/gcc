@@ -5,13 +5,13 @@
 // Date: Tue, 1 Sep 92 10:38:44 EDT
 
 class X
-{
+{ // ERROR - candidate
   private:
     int x;
   public:
     static const X x0;
     X( int );
-}; // ERROR - candidate
+};
 
 class Y
 {

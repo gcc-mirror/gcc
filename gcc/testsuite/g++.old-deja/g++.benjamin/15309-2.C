@@ -3,8 +3,8 @@
 // Build don't link: 
 // Special g++ Options: -Wnon-virtual-dtor -Weffc++
 
-class bermuda {
+class bermuda {  // WARNING - // WARNING -
 public:
   virtual int func1(int); 
   ~bermuda();
-};  // WARNING - // WARNING -
+};

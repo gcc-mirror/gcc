@@ -1,14 +1,14 @@
 // Build don't link: 
 // GROUPS passed old-abort
-class internal {
+class internal { // ERROR - candidates are
 	int field;
 	int anotherfield;
-}; // ERROR - candidates are
+};
 
-class bug {
+class bug { // ERROR - several errors
 	internal* numbers;
 	bug(int size);
-}; // ERROR - several errors
+};
 
 bug::bug(int size)
 { // ERROR - candidates

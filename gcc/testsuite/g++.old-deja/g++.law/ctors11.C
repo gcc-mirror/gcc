@@ -10,10 +10,10 @@ public:
   inline A(int x){printf("constructing A with %d\n", x);}
 };
 
-class B:public A{
+class B:public A{ // ERROR - non-default constructor
 private:
 public:
-}; // ERROR - non-default constructor
+};
 
 int main()
 {

@@ -25,9 +25,9 @@ class ccHandleBase : public ccObjectInfo
 {};
 
 class cc_CircleHdl : public virtual ccHandleBase, public ccObjectInfo
-{
+{				// WARNING - 
 public:
   virtual const ccObjectInfo& ri (int);
-};				// WARNING - 
+};
 
 class ccCircleHdl : public ccHandle <cc_CircleHdl> {};

@@ -4,9 +4,9 @@
 
 int r = 0;
 
-struct foo {
+struct foo {		        // ERROR - candidate
   foo(int x) { r = 1; }		// ERROR - candidate
-};				// ERROR - candidate
+};
 
 struct bar : foo {
   typedef int an_int;

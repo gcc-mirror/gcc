@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2316,7 +2316,7 @@ duplicate_tag_error (t)
      tree t;
 {
   cp_error ("redefinition of `%#T'", t);
-  cp_error_at ("previous definition here", t);
+  cp_error_at ("previous definition of `%#T'", t);
 
   /* Pretend we haven't defined this type.  */
 
@@ -5328,11 +5328,19 @@ tree
 finish_struct (t, attributes)
      tree t, attributes;
 {
+  char *saved_filename = input_filename;
+  int saved_lineno = lineno;
+
   /* Now that we've got all the field declarations, reverse everything
      as necessary.  */
   unreverse_member_declarations (t);
 
   cplus_decl_attributes (t, attributes, NULL_TREE);
+
+  /* Nadger the current location so that diagnostics point to the start of
+     the struct, not the end.  */
+  input_filename = DECL_SOURCE_FILE (TYPE_NAME (t));
+  lineno = DECL_SOURCE_LINE (TYPE_NAME (t));
 
   if (processing_template_decl)
     {
@@ -5341,6 +5349,9 @@ finish_struct (t, attributes)
     }
   else
     finish_struct_1 (t);
+
+  input_filename = saved_filename;
+  lineno = saved_lineno;
 
   TYPE_BEING_DEFINED (t) = 0;
 

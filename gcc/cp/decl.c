@@ -6837,7 +6837,7 @@ fixup_anonymous_aggr (t)
 
   /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
   if (TYPE_METHODS (t))
-    error ("an anonymous union cannot have function members");
+    cp_error_at ("an anonymous union cannot have function members", t);
 }
 
 /* Make sure that a declaration with no declarator is well-formed, i.e.

@@ -20,8 +20,8 @@ class lM : public M {
 class rM : public M {
 };
 
-class D : public lM, rM {
-} d;				// ERROR - ambiguous function
+class D : public lM, rM { // ERROR - ambiguous function
+} d;
 
 int main() {
   ((lM*)&d)->i = 1;

@@ -10,8 +10,8 @@ class D : private B {
   int Di;
 };
 
-class E : public virtual D, public B {
+class E : public virtual D, public B {	// WARNING - direct base inaccessible due to ambiguity
   int Ei;
-};		// WARNING - direct base inaccessible due to ambiguity
+};
 
 E e;

@@ -18,8 +18,8 @@ struct0::struct0 (int, void *)
 {
 }
 
-struct struct0_derived_struct_0 : public struct0 {
-};							// ERROR - 
+struct struct0_derived_struct_0 : public struct0 { // ERROR - 
+};
 
 // struct0_derived_struct_0 object;	// would give g++ error if compiled
 
