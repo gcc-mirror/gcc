@@ -1,3 +1,8 @@
+2004-10-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* libjava/java/lang/Class.h
+	(java::lang::Class): Correct friend class declaration.
+
 2004-10-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.am (DARWIN_CRT_SRC): New.
