@@ -1,3 +1,11 @@
+2001-11-14  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.1: Remove from CVS.
+	* Make-lang.in: Build g77.1 in $(srcdir).
+	Add --section=1 to POD2MAN command line.
+	* invoke.texi: Correct copyright years.
+	Add more sections to man page.  Add GFDL.
+
 Fri Nov  9 23:16:45 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (ffe_print_identifier): Rename.

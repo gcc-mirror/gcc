@@ -201,7 +201,7 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	  cd f && $(TEXI2DVI) -I $$s/doc/include $$s/f/g77.texi; \
 	else true; fi
 
-f/g77.1: $(srcdir)/f/g77.1 $(srcdir)/f/invoke.texi
+$(srcdir)/f/g77.1: $(srcdir)/f/invoke.texi
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
@@ -209,13 +209,11 @@ f/g77.1: $(srcdir)/f/g77.1 $(srcdir)/f/invoke.texi
 	if [ -f lang-f77 ]; then \
 	  if [ x$(GENERATED_MANPAGES) = xgenerated-manpages ]; then \
             $(TEXI2POD) < $(srcdir)/f/invoke.texi > f/g77.pod; \
-            ($(POD2MAN) f/g77.pod > f/g77.1.T$$$$ && \
-                mv -f f/g77.1.T$$$$ f/g77.1) || \
+            ($(POD2MAN) --section=1 f/g77.pod > f/g77.1.T$$$$ && \
+                mv -f f/g77.1.T$$$$ $(srcdir)/f/g77.1) || \
                 (rm -f f/g77.1.T$$$$ && exit 1); \
             rm -f f/g77.pod; \
-	  else \
-	    cp $(srcdir)/f/g77.1 f/g77.1; \
-	  fi; \
+	  else true; fi; \
 	else true; fi
 
 # This dance is all about producing accurate documentation for g77's
@@ -340,7 +338,7 @@ f77.install-info: f77.info installdirs
 
 # Make sure `installdirs' target (from gcc Makefile) has been
 # run, since we use libsubdir to store our `flag' file, lang-f77.
-f77.install-man: f/g77.1 installdirs
+f77.install-man: $(srcdir)/f/g77.1 installdirs
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) $(STAMP) $(libsubdir)/lang-f77.man;; \
 	  *) rm -f $(libsubdir)/lang-f77.man;; \
@@ -348,11 +346,11 @@ f77.install-man: f/g77.1 installdirs
 	-if [ -f $(libsubdir)/lang-f77.man -a -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
 	    rm -f $(man1dir)/$(G77_CROSS_NAME)$(manext); \
-	    $(INSTALL_DATA) f/g77.1 $(man1dir)/$(G77_CROSS_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_CROSS_NAME)$(manext); \
 	    chmod a-x $(man1dir)/$(G77_CROSS_NAME)$(manext); \
 	  else \
 	    rm -f $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
-	    $(INSTALL_DATA) f/g77.1 $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
+	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
 	    chmod a-x $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
 	  fi; \
 	else true; fi
