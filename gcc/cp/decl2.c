@@ -633,6 +633,12 @@ lang_decode_option (argc, argv)
           found = 1;
           cp_deprecated ("-fexternal-templates");
         }
+      else if (!strcmp (p, "handle-signatures"))
+        {
+          flag_handle_signatures = 1;
+          found = 1;
+          cp_deprecated ("-fhandle-signatures");
+        }
       else if (!strcmp (p, "new-abi"))
 	{
 	  flag_new_abi = 1;

@@ -1,3 +1,7 @@
+1999-08-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (lang_decode_option): Deprecate signatures.
+
 1999-08-11  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* lex.c (do_identifier): If we find a hidden type after a global
