@@ -2,7 +2,8 @@
 // PR c++/11384
 // foo<int>::_S_something was not being emitted.
 
-// { dg-do run }
+// { dg-do run { xfail *-*-aout *-*-coff *-*-hpux* *-*-hms } }
+// On targets that don't support weak symbols, we require an explicit
 
 template<typename T> 
   struct foo
