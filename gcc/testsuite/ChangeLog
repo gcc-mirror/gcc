@@ -1,3 +1,8 @@
+1999-04-24  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/u77-test.f (main): Bug involving
+	LSTAT has been fixed, so turn back on full checking.
+
 1999-04-20  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/19990419-0.f: New test.
