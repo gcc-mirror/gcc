@@ -1176,11 +1176,12 @@
 {
   rtx src_ptr = copy_to_mode_reg(Pmode,XEXP(operands[1], 0));
   rtx dst_ptr = copy_to_mode_reg(Pmode,XEXP(operands[0], 0));
-
+  int maxsize = GET_CODE (operands[2]) == CONST_INT	
+	? MAX (INTVAL (operands[2]), INTVAL (operands[3])) : 1;
   enum machine_mode mode = 
-     (INTVAL(operands[3]) >=4)  ? SImode :
-       (INTVAL(operands[3]) >=2) ? HImode :
-	 QImode;
+     (maxsize >= 4) ? SImode :
+	(maxsize >= 2) ? HImode :
+	  QImode;
 
   rtx tmpreg = gen_reg_rtx(mode);
   rtx increment =  GEN_INT(GET_MODE_SIZE(mode));
