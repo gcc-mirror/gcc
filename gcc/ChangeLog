@@ -1,3 +1,7 @@
+Thu Oct 16 15:17:54 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rs6000.h (ROUND_TYPE_ALIGN): Don't blow up if no fields in record.
+
 Thu Oct 16 11:20:30 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_return_addr_rtx): New variable.
