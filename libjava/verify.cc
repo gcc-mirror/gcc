@@ -10,6 +10,8 @@ details.  */
 
 // Written by Tom Tromey <tromey@redhat.com>
 
+// Define VERIFY_DEBUG to enable debugging output.
+
 #include <config.h>
 
 #include <jvm.h>
@@ -25,6 +27,9 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/StringBuffer.h>
 
+#ifdef VERIFY_DEBUG
+#include <stdio.h>
+#endif /* VERIFY_DEBUG */
 
 // TO DO
 // * read more about when classes must be loaded
@@ -38,6 +43,20 @@ details.  */
 // methods.
 static void verify_fail (char *msg, jint pc = -1)
   __attribute__ ((__noreturn__));
+
+static void debug_print (const char *fmt, ...)
+  __attribute__ ((format (printf, 1, 2)));
+
+static inline void
+debug_print (const char *fmt, ...)
+{
+#ifdef VERIFY_DEBUG
+  va_list ap;
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+#endif /* VERIFY_DEBUG */
+}
 
 class _Jv_BytecodeVerifier
 {
@@ -146,6 +165,11 @@ private:
     unsuitable_type,
     return_address_type,
     continuation_type,
+
+    // There is an obscure special case which requires us to note when
+    // a local variable has not been used by a subroutine.  See
+    // push_jump_merge for more information.
+    unused_by_subroutine_type,
 
     // Everything after `reference_type' must be a reference type.
     reference_type,
@@ -661,9 +685,20 @@ private:
 	{
 	  if (local_semantics)
 	    {
+	      // If we're merging into an "unused" slot, then we
+	      // simply accept whatever we're merging from.
+	      if (key == unused_by_subroutine_type)
+		{
+		  *this = old_type;
+		  changed = true;
+		}
+	      else if (old_type.key == unused_by_subroutine_type)
+		{
+		  // Do nothing.
+		}
 	      // If we already have an `unsuitable' type, then we
 	      // don't need to change again.
-	      if (key != unsuitable_type)
+	      else if (key != unsuitable_type)
 		{
 		  key = unsuitable_type;
 		  changed = true;
@@ -674,6 +709,35 @@ private:
 	}
       return changed;
     }
+
+#ifdef VERIFY_DEBUG
+    void print (void) const
+    {
+      char c = '?';
+      switch (key)
+	{
+	case boolean_type: c = 'Z'; break;
+	case byte_type: c = 'B'; break;
+	case char_type: c = 'C'; break;
+	case short_type: c = 'S'; break;
+	case int_type: c = 'I'; break;
+	case long_type: c = 'J'; break;
+	case float_type: c = 'F'; break;
+	case double_type: c = 'D'; break;
+	case void_type: c = 'V'; break;
+	case unsuitable_type: c = '-'; break;
+	case return_address_type: c = 'r'; break;
+	case continuation_type: c = '+'; break;
+	case unused_by_subroutine_type: c = '_'; break;
+	case reference_type: c = 'L'; break;
+	case null_type: c = '@'; break;
+	case unresolved_reference_type: c = 'l'; break;
+	case uninitialized_reference_type: c = 'U'; break;
+	case uninitialized_unresolved_reference_type: c = 'u'; break;
+	}
+      debug_print ("%c", c);
+    }
+#endif /* VERIFY_DEBUG */
   };
 
   // This class holds all the state information we need for a given
@@ -731,12 +795,13 @@ private:
       subroutine = 0;
     }
 
-    state (const state *orig, int max_stack, int max_locals)
+    state (const state *orig, int max_stack, int max_locals,
+	   bool ret_semantics = false)
     {
       stack = new type[max_stack];
       locals = new type[max_locals];
       local_changed = (bool *) _Jv_Malloc (sizeof (bool) * max_locals);
-      copy (orig, max_stack, max_locals);
+      copy (orig, max_stack, max_locals, ret_semantics);
       next = INVALID;
     }
 
@@ -770,7 +835,8 @@ private:
       _Jv_Free (mem);
     }
 
-    void copy (const state *copy, int max_stack, int max_locals)
+    void copy (const state *copy, int max_stack, int max_locals,
+	       bool ret_semantics = false)
     {
       stacktop = copy->stacktop;
       stackdepth = copy->stackdepth;
@@ -779,7 +845,13 @@ private:
 	stack[i] = copy->stack[i];
       for (int i = 0; i < max_locals; ++i)
 	{
-	  locals[i] = copy->locals[i];
+	  // See push_jump_merge to understand this case.
+	  if (ret_semantics)
+	    locals[i] = type (copy->local_changed[i]
+			      ? unsuitable_type
+			      : unused_by_subroutine_type);
+	  else
+	    locals[i] = copy->locals[i];
 	  local_changed[i] = copy->local_changed[i];
 	}
       // Don't modify `next'.
@@ -869,7 +941,7 @@ private:
 	  verify_fail ("uninitialized object in local variable");
     }
 
-    // Note that a local variable was accessed or modified.
+    // Note that a local variable was modified.
     void note_variable (int index)
     {
       if (subroutine > 0)
@@ -885,6 +957,38 @@ private:
       for (int i = 0; i < max_locals; ++i)
 	locals[i].set_initialized (pc);
     }
+
+    // Return true if this state is the unmerged result of a `ret'.
+    bool is_unmerged_ret_state (int max_locals) const
+    {
+      for (int i = 0; i < max_locals; ++i)
+	{
+	  if (locals[i].key == unused_by_subroutine_type)
+	    return true;
+	}
+      return false;
+    }
+
+#ifdef VERIFY_DEBUG
+    void print (const char *leader, int pc,
+		int max_stack, int max_locals) const
+    {
+      debug_print ("%s [%4d]:   [stack] ", leader, pc);
+      int i;
+      for (i = 0; i < stacktop; ++i)
+	stack[i].print ();
+      for (; i < max_stack; ++i)
+	debug_print (".");
+      debug_print ("    [local] ");
+      for (i = 0; i < max_locals; ++i)
+	locals[i].print ();
+      debug_print ("   | %p\n", this);
+    }
+#else
+    inline void print (const char *, int, int, int) const
+    {
+    }
+#endif /* VERIFY_DEBUG */
   };
 
   type pop_raw ()
@@ -980,7 +1084,6 @@ private:
 	if (! current_state->locals[index + 1].compatible (t))
 	  verify_fail ("invalid local variable", start_PC);
       }
-    current_state->note_variable (index);
     return current_state->locals[index];
   }
 
@@ -1059,14 +1162,31 @@ private:
     bool changed = true;
     if (states[npc] == NULL)
       {
-	// FIXME: what if we reach this code from a `ret'?
-	
+	// There's a weird situation here.  If are examining the
+	// branch that results from a `ret', and there is not yet a
+	// state available at the branch target (the instruction just
+	// after the `jsr'), then we have to construct a special kind
+	// of state at that point for future merging.  This special
+	// state has the type `unused_by_subroutine_type' in each slot
+	// which was not modified by the subroutine.
 	states[npc] = new state (nstate, current_method->max_stack,
-				 current_method->max_locals);
+				 current_method->max_locals, ret_semantics);
+	debug_print ("== New state in push_jump_merge\n");
+	states[npc]->print ("New", npc, current_method->max_stack,
+			    current_method->max_locals);
       }
     else
-      changed = states[npc]->merge (nstate, ret_semantics,
-				    current_method->max_locals);
+      {
+	debug_print ("== Merge states in push_jump_merge\n");
+	nstate->print ("Frm", start_PC, current_method->max_stack,
+		       current_method->max_locals);
+	states[npc]->print (" To", npc, current_method->max_stack,
+			    current_method->max_locals);
+	changed = states[npc]->merge (nstate, ret_semantics,
+				      current_method->max_locals);
+	states[npc]->print ("New", npc, current_method->max_stack,
+			    current_method->max_locals);
+      }
 
     if (changed && states[npc]->next == state::INVALID)
       {
@@ -1097,13 +1217,35 @@ private:
 
   int pop_jump ()
   {
+    int *prev_loc = &next_verify_pc;
     int npc = next_verify_pc;
-    if (npc != state::NO_NEXT)
+    bool skipped = false;
+
+    while (npc != state::NO_NEXT)
       {
-	next_verify_pc = states[npc]->next;
-	states[npc]->next = state::INVALID;
+	// If the next available PC is an unmerged `ret' state, then
+	// we aren't yet ready to handle it.  That's because we would
+	// need all kind of special cases to do so.  So instead we
+	// defer this jump until after we've processed it via a
+	// fall-through.  This has to happen because the instruction
+	// before this one must be a `jsr'.
+	if (! states[npc]->is_unmerged_ret_state (current_method->max_locals))
+	  {
+	    *prev_loc = states[npc]->next;
+	    states[npc]->next = state::INVALID;
+	    return npc;
+	  }
+
+	skipped = true;
+	prev_loc = &states[npc]->next;
+	npc = states[npc]->next;
       }
-    return npc;
+
+    // If we've skipped states and there is nothing else, that's a
+    // bug.
+    if (skipped)
+      verify_fail ("pop_jump: can't happen");
+    return state::NO_NEXT;
   }
 
   void invalidate_pc ()
@@ -1795,16 +1937,27 @@ private:
 	      {
 		// We've already visited this instruction.  So merge
 		// the states together.  If this yields no change then
-		// we don't have to re-verify.
+		// we don't have to re-verify.  However, if the new
+		// state is an the result of an unmerged `ret', we
+		// must continue through it.
+		debug_print ("== Fall through merge\n");
+		states[PC]->print ("Old", PC, current_method->max_stack,
+				   current_method->max_locals);
+		current_state->print ("Cur", PC, current_method->max_stack,
+				      current_method->max_locals);
 		if (! current_state->merge (states[PC], false,
-					    current_method->max_locals))
+					    current_method->max_locals)
+		    && ! states[PC]->is_unmerged_ret_state (current_method->max_locals))
 		  {
+		    debug_print ("== Fall through optimization\n");
 		    invalidate_pc ();
 		    continue;
 		  }
 		// Save a copy of it for later.
 		states[PC]->copy (current_state, current_method->max_stack,
 				  current_method->max_locals);
+		current_state->print ("New", PC, current_method->max_stack,
+				      current_method->max_locals);
 	      }
 	  }
 
@@ -1816,6 +1969,10 @@ private:
 	    states[PC] = new state (current_state, current_method->max_stack,
 				    current_method->max_locals);
 	  }
+
+	// Set this before handling exceptions so that debug output is
+	// sane.
+	start_PC = PC;
 
 	// Update states for all active exception handlers.  Ordinarily
 	// there are not many exception handlers.  So we simply run
@@ -1831,7 +1988,8 @@ private:
 	      }
 	  }
 
-	start_PC = PC;
+	current_state->print ("   ", PC, current_method->max_stack,
+			      current_method->max_locals);
 	java_opcode opcode = (java_opcode) bytecode[PC++];
 	switch (opcode)
 	  {
@@ -2629,6 +2787,11 @@ public:
 
   _Jv_BytecodeVerifier (_Jv_InterpMethod *m)
   {
+    // We just print the text as utf-8.  This is just for debugging
+    // anyway.
+    debug_print ("--------------------------------\n");
+    debug_print ("-- Verifying method `%s'\n", m->self->name->data);
+
     current_method = m;
     bytecode = m->bytecode ();
     exception = m->exceptions ();
