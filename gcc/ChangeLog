@@ -1,3 +1,7 @@
+2001-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.h (REG_ALLOC_ORDER): Add vrsave.
+
 2001-11-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-decl.c (pushdecl): Remove file and line.
