@@ -209,7 +209,7 @@ static void preexpand_calls	PROTO((tree));
 static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
 void do_jump_by_parts_greater_rtx PROTO((enum machine_mode, int, rtx, rtx, rtx, rtx));
 static void do_jump_by_parts_equality PROTO((tree, rtx, rtx));
-static void do_jump_by_parts_equality_rtx PROTO((rtx, rtx, rtx));
+void do_jump_by_parts_equality_rtx PROTO((rtx, rtx, rtx));
 static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
 static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
@@ -10775,7 +10775,7 @@ do_jump_by_parts_equality (exp, if_false_label, if_true_label)
    We assume that OP0 has an integer mode that is too wide
    for the available compare insns.  */
 
-static void
+void
 do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
      rtx op0;
      rtx if_false_label, if_true_label;
