@@ -1,3 +1,8 @@
+2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_arg_info): If MUST_PASS_IN_STACK,
+	skip any remaining register arguments.
+
 2003-10-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads_subreg_address): Use correct offset for
