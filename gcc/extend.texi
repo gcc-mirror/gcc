@@ -3311,14 +3311,18 @@ function as well.
 @findex sqrt
 @findex sqrtf
 @findex sqrtl
+@findex strcat
 @findex strchr
 @findex strcmp
 @findex strcpy
+@findex strcspn
 @findex strlen
+@findex strncat
 @findex strncmp
 @findex strncpy
 @findex strpbrk
 @findex strrchr
+@findex strspn
 @findex strstr
 
 GNU CC provides a large number of built-in functions other than the ones
@@ -3361,9 +3365,10 @@ corresponding versions prefixed with @code{__builtin_}.
 The following ISO C89 functions are recognized as builtins unless
 @samp{-fno-builtin} is specified: @code{abs}, @code{cos}, @code{fabs},
 @code{fputs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{memset},
-@code{printf}, @code{sin}, @code{sqrt}, @code{strchr}, @code{strcmp},
-@code{strcpy}, @code{strlen}, @code{strncmp}, @code{strncpy},
-@code{strpbrk}, @code{strrchr}, and @code{strstr}.  All of these
+@code{printf}, @code{sin}, @code{sqrt}, @code{strcat}, @code{strchr},
+@code{strcmp}, @code{strcpy}, @code{strcspn}, @code{strlen},
+@code{strncat}, @code{strncmp}, @code{strncpy}, @code{strpbrk},
+@code{strrchr}, @code{strspn}, and @code{strstr}.  All of these
 functions have corresponding versions prefixed with @code{__builtin_},
 except that the version for @code{sqrt} is called
 @code{__builtin_fsqrt}.

@@ -1,7 +1,12 @@
 2000-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	gcc.c-torture/execute/string-opt-3.c: Add more strcmp checks.
-	gcc.c-torture/execute/string-opt-8.c: Add more strncmp checks.
+	* gcc.c-torture/execute/string-opt-9.c: New test.
+	* gcc.c-torture/execute/string-opt-10.c: Likewise.
+	* gcc.c-torture/execute/string-opt-11.c: Likewise.
+	* gcc.c-torture/execute/string-opt-12.c: Likewise.
+
+	* gcc.c-torture/execute/string-opt-3.c: Add more strcmp checks.
+	* gcc.c-torture/execute/string-opt-8.c: Add more strncmp checks.
 
 2000-12-02  Geoffrey Keating  <geoffk@redhat.com>
 
