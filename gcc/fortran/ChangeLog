@@ -1,3 +1,8 @@
+2005-04-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.texi: Document BESJ0, BESJ1, BESJN, BESY0, BESY1,
+	BESYN, ATAN, COSH, ERF, ERC, SINH, TANH.
+
 2005-04-02  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: Document ALLOCATED, ANINT, ANY, ASIN; fix typos
