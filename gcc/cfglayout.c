@@ -110,6 +110,7 @@ static rtx get_next_bb_note		PARAMS ((rtx));
 static rtx get_prev_bb_note		PARAMS ((rtx));
 
 void verify_insn_chain			PARAMS ((void));
+static basic_block fixup_fallthru_exit_predecesor PARAMS ((void));
 
 /* Skip over inter-block insns occurring after BB which are typically
    associated with BB (e.g., barriers). If there are any such insns,
@@ -1041,6 +1042,30 @@ verify_insn_chain ()
       abort ();
     }
 }
+
+/* The block falling trought to exit must be last in the reordered
+   chain.  Make it happen so.  */
+static basic_block
+fixup_fallthru_exit_predecesor ()
+{
+  edge e;
+  basic_block bb = NULL;
+
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+    if (e->flags & EDGE_FALLTHRU)
+      bb = e->src;
+  if (bb && RBI (bb)->next)
+    {
+      basic_block c = BASIC_BLOCK (0);
+      while (RBI (c)->next != bb)
+	c = RBI (c)->next;
+      RBI (c)->next = RBI (bb)->next;
+      while (RBI (c)->next)
+	c = RBI (c)->next;
+      RBI (c)->next = bb;
+      RBI (bb)->next = NULL;
+    }
+}
 
 /* Main entry point to this module - initialize the datastructures for
    CFG layout changes.  */
@@ -1062,6 +1087,7 @@ cfg_layout_initialize ()
 void
 cfg_layout_finalize ()
 {
+  fixup_fallthru_exit_predecesor ();
   fixup_reorder_chain ();
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();

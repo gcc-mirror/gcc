@@ -540,6 +540,7 @@ expected_value_to_br_prob ()
 	    {
 	      ev = NOTE_EXPECTED_VALUE (insn);
 	      ev_reg = XEXP (ev, 0);
+	      delete_insn (insn);
 	    }
 	  continue;
 
