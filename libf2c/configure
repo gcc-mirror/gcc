@@ -1719,12 +1719,16 @@ fi
 echo $ac_n "checking f2c integer type""... $ac_c" 1>&6
 echo "configure:1721: checking f2c integer type" >&5
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../gcc/config"
+if test "$srcdir" = . ; then
+  ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
+else
+  ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
+fi
 if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1728 "configure"
+#line 1732 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1747,7 +1751,7 @@ rm -f conftest*
 
 if test "$g77_cv_sys_f2cinteger" = ""; then
   cat > conftest.$ac_ext <<EOF
-#line 1751 "configure"
+#line 1755 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1782,14 +1786,18 @@ ac_cpp=$late_ac_cpp
 
 
 echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
-echo "configure:1786: checking f2c long int type" >&5
+echo "configure:1790: checking f2c long int type" >&5
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../gcc/config"
+if test "$srcdir" = . ; then
+  ac_cpp="$late_ac_cpp -I../../gcc/f  -I../../gcc -I../../gcc/config"
+else
+  ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
+fi
 if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1793 "configure"
+#line 1801 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1812,7 +1820,7 @@ rm -f conftest*
 
 if test "$g77_cv_sys_f2clongint" = ""; then
   cat > conftest.$ac_ext <<EOF
-#line 1816 "configure"
+#line 1824 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
