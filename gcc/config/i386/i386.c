@@ -217,11 +217,8 @@ override_options ()
     }
 
   /* Get the architectural level.  */
-  if (ix86_cpu_string == (char *)0 && ix86_arch_string == (char *)0)
-    {
+  if (ix86_arch_string == (char *)0)
       ix86_arch_string = PROCESSOR_PENTIUM_STRING;
-      ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
-    }
 
   for (i = 0; i < ptt_size; i++)
     if (! strcmp (ix86_arch_string, processor_target_table[i].name))
@@ -235,9 +232,12 @@ override_options ()
   if (i == ptt_size)
     {
       error ("bad value (%s) for -march= switch", ix86_arch_string);
-      ix86_arch_string = PROCESSOR_DEFAULT_STRING;
+      ix86_arch_string = PROCESSOR_PENTIUM_STRING;
       ix86_arch = PROCESSOR_DEFAULT;
     }
+
+  if (ix86_cpu_string == (char *)0)
+      ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
 
   for (j = 0; j < ptt_size; j++)
     if (! strcmp (ix86_cpu_string, processor_target_table[j].name))
@@ -310,7 +310,7 @@ override_options ()
 	       i386_branch_cost);
     }
   else
-    i386_branch_cost = TARGET_PENTIUMPRO ? 4 : 1;
+    i386_branch_cost = 1;
 
   if (TARGET_OMIT_LEAF_FRAME_POINTER)	/* keep nonleaf frame pointers */
     flag_omit_frame_pointer = 1;
@@ -1725,7 +1725,7 @@ asm_output_function_prefix (file, name)
 
       if (pic_label_rtx == 0)
 	{
-      pic_label_rtx = (rtx) gen_label_rtx ();
+	  pic_label_rtx = (rtx) gen_label_rtx ();
 	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
 	  LABEL_NAME (pic_label_rtx) = pic_label_name;
 	}
@@ -3604,9 +3604,14 @@ output_float_compare (insn, operands)
   int stack_top_dies;
   rtx body = XVECEXP (PATTERN (insn), 0, 0);
   int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
-  int target_fcomi = TARGET_CMOVE && STACK_REG_P (operands[1]);
-
   rtx tmp;
+
+  if (TARGET_CMOVE && STACK_REG_P (operands[1]))
+    {
+      cc_status.flags |= CC_FCOMI;
+      cc_prev_status.flags &= ~CC_TEST_AX;
+    }
+
   if (! STACK_TOP_P (operands[0]))
     {
       tmp = operands[0];
@@ -3642,9 +3647,9 @@ output_float_compare (insn, operands)
 	 unordered float compare. */
 
       if (unordered_compare)
-	strcpy (buf, target_fcomi ? "fucomi" : "fucom");
+	strcpy (buf, (cc_status.flags & CC_FCOMI) ? "fucomi" : "fucom");
       else if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_FLOAT)
-	strcpy (buf, target_fcomi ? "fcomi" : "fcom");
+	strcpy (buf, (cc_status.flags & CC_FCOMI) ? "fcomi" : "fcom");
       else
 	strcpy (buf, "ficom");
 
@@ -3655,7 +3660,7 @@ output_float_compare (insn, operands)
 
       if (NON_STACK_REG_P (operands[1]))
 	output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
-      else if (target_fcomi) 
+      else if (cc_status.flags & CC_FCOMI) 
 	{
 	  rtx xops[3];
 	  
@@ -3739,6 +3744,13 @@ output_fp_cc0_set (insn)
       if (GET_CODE (SET_SRC (PATTERN (next))) == IF_THEN_ELSE)
 	code = GET_CODE (XEXP (SET_SRC (PATTERN (next)), 0));
       else code = GET_CODE (SET_SRC (PATTERN (next)));
+    }
+  else if (GET_CODE (PATTERN (next)) == PARALLEL
+	   && GET_CODE (XVECEXP (PATTERN (next), 0, 0)) == SET)
+    {
+      if (GET_CODE (SET_SRC (XVECEXP (PATTERN (next), 0, 0))) == IF_THEN_ELSE)
+	  code = GET_CODE (XEXP (SET_SRC (XVECEXP (PATTERN (next), 0, 0)), 0));
+      else code = GET_CODE (SET_SRC (XVECEXP (PATTERN (next), 0, 0)));
     }
   else
     abort ();
