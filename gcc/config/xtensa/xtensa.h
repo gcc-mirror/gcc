@@ -796,13 +796,13 @@ extern enum reg_class xtensa_char_to_class[256];
 /* Don't worry about compatibility with PCC.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* For Xtensa, we would like to be able to return up to 6 words in
-   memory but GCC cannot support that.  The return value must be given
-   one of the standard MODE_INT modes, and there is no 6 word mode.
-   Instead, if we try to return a 6 word structure, GCC selects the
-   next biggest mode (OImode, 8 words) and then the register allocator
-   fails because there is no 8-register group beginning with a10.  So
-   we have to fall back on the next largest size which is 4 words... */
+/* For Xtensa, up to 4 words can be returned in registers.  (It would
+   have been nice to allow up to 6 words in registers but GCC cannot
+   support that.  The return value must be given one of the standard
+   MODE_INT modes, and there is no 6 word mode.  Instead, if we try to
+   return a 6 word structure, GCC selects the next biggest mode
+   (OImode, 8 words) and then the register allocator fails because
+   there is no 8-register group beginning with a10.)  */
 #define RETURN_IN_MEMORY(TYPE)						\
   ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 4 * UNITS_PER_WORD)
 
