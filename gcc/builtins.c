@@ -1826,40 +1826,64 @@ stabilize_va_list (valist, was_ptr)
      tree valist;
      int was_ptr;
 {
-  int is_array = TREE_CODE (va_list_type_node) == ARRAY_TYPE;
-
-  if (was_ptr)
+  if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {
       /* If stdarg.h took the address of an array-type valist that was passed
          as a parameter, we'll have taken the address of the parameter itself
          rather than the array as we'd intended.  Undo this mistake.  */
-      if (is_array
-	  && TREE_CODE (valist) == ADDR_EXPR
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (valist, 0))) == POINTER_TYPE)
+
+      if (was_ptr)
 	{
+	  STRIP_NOPS (valist);
+
+	  /* Two cases: either &array, which decomposed to 
+	        <ptr <array <record> valist>>
+	     or &ptr, which turned into
+		<ptr <ptr <record>>>
+	     In the first case we'll need to put the ADDR_EXPR back
+	     after frobbing the types as if &array[0].  */
+
+	  if (TREE_CODE (valist) != ADDR_EXPR)
+	    abort ();
 	  valist = TREE_OPERAND (valist, 0);
-	  if (TREE_SIDE_EFFECTS (valist))
-	    valist = save_expr (valist);
+	}
+
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (valist))
+	  == TYPE_MAIN_VARIANT (va_list_type_node))
+	{
+	  tree pt = build_pointer_type (TREE_TYPE (va_list_type_node));
+	  valist = build1 (ADDR_EXPR, pt, valist);
+	  TREE_SIDE_EFFECTS (valist)
+	    = TREE_SIDE_EFFECTS (TREE_OPERAND (valist, 0));
 	}
       else
 	{
-	  if (TREE_SIDE_EFFECTS (valist))
-	    valist = save_expr (valist);
-	  valist = fold (build1 (INDIRECT_REF, va_list_type_node, valist));
+	  if (! POINTER_TYPE_P (TREE_TYPE (valist))
+	      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (valist)))
+		  != TYPE_MAIN_VARIANT (TREE_TYPE (va_list_type_node))))
+	    abort ();
 	}
-    }
-  else if (TREE_SIDE_EFFECTS (valist))
-    {
-      if (is_array)
+
+      if (TREE_SIDE_EFFECTS (valist))
 	valist = save_expr (valist);
-      else
+    }
+  else
+    {
+      if (! was_ptr)
 	{
-          valist = build1 (ADDR_EXPR, build_pointer_type (va_list_type_node),
-			   valist);
+	  tree pt;
+
+	  if (! TREE_SIDE_EFFECTS (valist))
+	    return valist;
+
+	  pt = build_pointer_type (va_list_type_node);
+          valist = fold (build1 (ADDR_EXPR, pt, valist));
 	  TREE_SIDE_EFFECTS (valist) = 1;
-	  valist = save_expr (valist);
-	  valist = fold (build1 (INDIRECT_REF, va_list_type_node, valist));
 	}
+      if (TREE_SIDE_EFFECTS (valist))
+        valist = save_expr (valist);
+      valist = fold (build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)),
+			     valist));
     }
 
   return valist;
@@ -2095,10 +2119,22 @@ expand_builtin_va_copy (arglist)
     }
   else
     {
-      emit_block_move (expand_expr (dst, NULL_RTX, Pmode, EXPAND_NORMAL),
-		       expand_expr (src, NULL_RTX, Pmode, EXPAND_NORMAL),
-		       expand_expr (TYPE_SIZE (va_list_type_node), NULL_RTX,
-				    VOIDmode, EXPAND_NORMAL),
+      rtx dstb, srcb, size;
+
+      /* Evaluate to pointers.  */
+      dstb = expand_expr (dst, NULL_RTX, Pmode, EXPAND_NORMAL);
+      srcb = expand_expr (src, NULL_RTX, Pmode, EXPAND_NORMAL);
+      size = expand_expr (TYPE_SIZE_UNIT (va_list_type_node), NULL_RTX,
+			  VOIDmode, EXPAND_NORMAL);
+
+      /* "Dereference" to BLKmode memories.  */
+      dstb = gen_rtx_MEM (BLKmode, dstb);
+      MEM_ALIAS_SET (dstb) = get_alias_set (TREE_TYPE (TREE_TYPE (dst)));
+      srcb = gen_rtx_MEM (BLKmode, srcb);
+      MEM_ALIAS_SET (srcb) = get_alias_set (TREE_TYPE (TREE_TYPE (src)));
+
+      /* Copy.  */
+      emit_block_move (dstb, srcb, size, 
 		       TYPE_ALIGN (va_list_type_node) / BITS_PER_UNIT);
     }
 
