@@ -1,5 +1,10 @@
 2004-04-20  Josef Zlomek  <zlomekj@suse.cz>
 
+	* function.c (assign_parms): Force
+	MEM_EXPR (DECL_INCOMING_RTL (parm)) == parm.
+
+2004-04-20  Josef Zlomek  <zlomekj@suse.cz>
+
 	* var-tracking.c (variable_part_different_p): Variable parts differ
 	when the most recent locations differ.
 
