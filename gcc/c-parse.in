@@ -1605,7 +1605,8 @@ stmt:
 		     clear_momentary during the parsing of the next stmt.  */
 		  push_momentary ();
 		  $<lineno>7 = lineno;
-		  $<filename>8 = input_filename; }
+		  $<filename>8 = input_filename;
+		  position_after_white_space (); }
 	  lineno_labeled_stmt
 		{ /* Emit the increment expression, with a line number.  */
 		  emit_line_note ($<filename>8, $<lineno>7);
