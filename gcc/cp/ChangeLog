@@ -1,3 +1,37 @@
+2001-02-18  Jason Merrill  <jason@redhat.com>
+
+	Do put the VTT parameter in DECL_ARGUMENTS.
+	* cp-tree.h (struct cp_language_function): Add x_vtt_parm.
+	(current_vtt_parm): New macro.
+	(struct lang_decl_flags): Add has_vtt_parm_p, remove vtt_parm.
+	(DECL_HAS_VTT_PARM_P): New macro.
+	(DECL_VTT_PARM): Remove.
+	(FUNCTION_FIRST_USER_PARMTYPE, FUNCTION_FIRST_USER_PARM): New macros.
+	* decl.c (duplicate_decls): Only copy the operator code if
+	appropriate.
+	(start_function): Set current_vtt_parm.
+	(lang_mark_tree): Don't mark vtt_parm.
+	* decl2.c (maybe_retrofit_in_chrg): Do add the VTT parm to 
+	DECL_ARGUMENTS.  Set DECL_HAS_VTT_PARM_P.
+	* class.c (build_clone): Maybe remove the VTT parm.
+	* optimize.c (maybe_clone_body): Set up the VTT parm.
+	* pt.c (copy_default_args_to_explicit_spec): Preserve the VTT parm.
+	* call.c (build_over_call): Just allow the VTT arg.
+	* method.c (make_thunk): Don't set DECL_VTT_PARM.
+	(do_build_copy_constructor): Use FUNCTION_FIRST_USER_PARM.
+	(synthesize_method): Use FUNCTION_FIRST_USER_PARMTYPE.
+	* decl.c (grokdeclarator, copy_args_p, grok_ctor_properties): Likewise.
+	* error.c (dump_function_decl): Likewise.
+	* call.c (build_user_type_conversion_1,	convert_like_real): Abort
+	if we try to call a constructor with in-charge or VTT parms.
+	* method.c (skip_artificial_parms_for): New fn.
+	* call.c (add_function_candidate, build_over_call): Call it.
+	* call.c (build_new_method_call): Use current_vtt_parm.
+	* init.c (expand_virtual_init): Likewise.
+	* class.c (same_signature_p): No longer static.
+	* cp-tree.h: Declare it.
+	* search.c (look_for_overrides_r): Use it.
+
 2001-02-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (build_new): Allow enumeration types for the array-bounds

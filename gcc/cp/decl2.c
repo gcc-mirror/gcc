@@ -932,7 +932,10 @@ build_artificial_parm (name, type)
 
    This function adds the "in-charge" flag to member function FN if
    appropriate.  It is called from grokclassfn and tsubst.
-   FN must be either a constructor or destructor.  */
+   FN must be either a constructor or destructor.
+
+   The in-charge flag follows the 'this' parameter, and is followed by the
+   VTT parm (if any), then the user-written parms.  */
 
 void
 maybe_retrofit_in_chrg (fn)
@@ -955,17 +958,38 @@ maybe_retrofit_in_chrg (fn)
       && !TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
     return;
 
-  /* First add it to DECL_ARGUMENTS...  */
-  parm = build_artificial_parm (in_charge_identifier, integer_type_node);
-  TREE_READONLY (parm) = 1;
-  parms = DECL_ARGUMENTS (fn);
-  TREE_CHAIN (parm) = TREE_CHAIN (parms);
-  TREE_CHAIN (parms) = parm;
-
-  /* ...and then to TYPE_ARG_TYPES.  */
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
   basetype = TREE_TYPE (TREE_VALUE (arg_types));
-  arg_types = hash_tree_chain (integer_type_node, TREE_CHAIN (arg_types));
+  arg_types = TREE_CHAIN (arg_types);
+
+  parms = TREE_CHAIN (DECL_ARGUMENTS (fn));
+
+  /* If this is a subobject constructor or destructor, our caller will
+     pass us a pointer to our VTT.  */
+  if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+    {
+      parm = build_artificial_parm (vtt_parm_identifier, vtt_parm_type);
+
+      /* First add it to DECL_ARGUMENTS between 'this' and the real args...  */
+      TREE_CHAIN (parm) = parms;
+      parms = parm;
+
+      /* ...and then to TYPE_ARG_TYPES.  */
+      arg_types = hash_tree_chain (vtt_parm_type, arg_types);
+
+      DECL_HAS_VTT_PARM_P (fn) = 1;
+    }
+
+  /* Then add the in-charge parm (before the VTT parm).  */
+  parm = build_artificial_parm (in_charge_identifier, integer_type_node);
+  TREE_CHAIN (parm) = parms;
+  parms = parm;
+  arg_types = hash_tree_chain (integer_type_node, arg_types);
+
+  /* Insert our new parameter(s) into the list.  */
+  TREE_CHAIN (DECL_ARGUMENTS (fn)) = parms;
+
+  /* And rebuild the function type.  */
   fntype = build_cplus_method_type (basetype, TREE_TYPE (TREE_TYPE (fn)),
 				    arg_types);
   if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
@@ -975,15 +999,6 @@ maybe_retrofit_in_chrg (fn)
 
   /* Now we've got the in-charge parameter.  */
   DECL_HAS_IN_CHARGE_PARM_P (fn) = 1;
-
-  /* If this is a subobject constructor or destructor, our caller will
-     pass us a pointer to our VTT.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
-    {
-      DECL_VTT_PARM (fn) = build_artificial_parm (vtt_parm_identifier, 
-						  vtt_parm_type);
-      DECL_CONTEXT (DECL_VTT_PARM (fn)) = fn;
-    }
 }
 
 /* Classes overload their constituent function names automatically.

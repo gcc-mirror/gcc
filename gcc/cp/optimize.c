@@ -981,22 +981,25 @@ maybe_clone_body (fn)
 	      splay_tree_insert (id.decl_map,
 				 (splay_tree_key) parm,
 				 (splay_tree_value) in_charge);
-
+	    }
+	  else if (DECL_ARTIFICIAL (parm)
+		   && DECL_NAME (parm) == vtt_parm_identifier)
+	    {
 	      /* For a subobject constructor or destructor, the next
 		 argument is the VTT parameter.  Remap the VTT_PARM
 		 from the CLONE to this parameter.  */
-	      if (DECL_NEEDS_VTT_PARM_P (clone))
+	      if (DECL_HAS_VTT_PARM_P (clone))
 		{
 		  splay_tree_insert (id.decl_map,
-				     (splay_tree_key) DECL_VTT_PARM (fn),
+				     (splay_tree_key) parm,
 				     (splay_tree_value) clone_parm);
 		  clone_parm = TREE_CHAIN (clone_parm);
 		}
 	      /* Otherwise, map the VTT parameter to `NULL'.  */
-	      else if (DECL_VTT_PARM (fn))
+	      else
 		{
 		  splay_tree_insert (id.decl_map,
-				     (splay_tree_key) DECL_VTT_PARM (fn),
+				     (splay_tree_key) parm,
 				     (splay_tree_value) null_pointer_node);
 		}
 	    }
