@@ -60,7 +60,6 @@ extern int errno;
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
 
-/* If not compiled with GNU C, use C alloca.  */
-#ifndef __GNUC__
+/* Always claim to use C alloca; this prevents losing if building with
+   gcc -fno-builtin ... "  */
 #define USE_C_ALLOCA
-#endif
