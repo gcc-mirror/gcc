@@ -1137,7 +1137,7 @@ static format_char_info print_char_table[] = {
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
   { "n",	1,	T_I,	NULL,	T_S,	T_L,	T_LL,	NULL,	NULL,	""		},
-  { NULL }
+  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL		}
 };
 
 static format_char_info scan_char_table[] = {
@@ -1151,7 +1151,7 @@ static format_char_info scan_char_table[] = {
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
   { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
   { "n",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	NULL,	NULL,	""	},
-  { NULL }
+  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL	}
 };
 
 /* Handle format characters recognized by glibc's strftime.c.
@@ -1176,7 +1176,7 @@ static format_char_info time_char_table[] = {
   { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
   { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
   { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
-  { NULL }
+  { NULL,		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
 typedef struct function_format_info

@@ -529,7 +529,7 @@ div_and_round_double (code, uns,
   encode (den, lden, hden);
 
   /* Special code for when the divisor < BASE.  */
-  if (hden == 0 && lden < BASE)
+  if (hden == 0 && lden < (HOST_WIDE_INT) BASE)
     {
       /* hnum != 0 already checked.  */
       for (i = 4 - 1; i >= 0; i--)

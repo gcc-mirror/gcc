@@ -762,7 +762,7 @@ debug_args[] =
 #ifdef SDB_DEBUGGING_INFO
   { "gcoff", SDB_DEBUG, 0, "Generate COFF format debug output" },
 #endif
-  { 0, 0, 0 }
+  { 0, 0, 0, 0 }
 };
 
 typedef struct
@@ -896,8 +896,9 @@ lang_independent_options f_options[] =
   {"gnu-linker", &flag_gnu_linker, 1,
    "Output GNU ld formatted global initialisers"},
   {"regmove", &flag_regmove, 1,
-   "Enables a regoster move optimisation"},
-  {"optimize-register-move", &flag_regmove, 1},
+   "Enables a register move optimisation"},
+  {"optimize-register-move", &flag_regmove, 1,
+   "Do the full regmove optimization pass"},
   {"pack-struct", &flag_pack_struct, 1,
    "Pack structure members together without holes" },
   {"stack-check", &flag_stack_check, 1,
@@ -914,7 +915,8 @@ lang_independent_options f_options[] =
    "Generate code to check every memory access" },
   {"prefix-function-name", &flag_prefix_function_name, 1,
    "Add a prefix to all function names" },
-  {"dump-unnumbered", &flag_dump_unnumbered, 1},
+  {"dump-unnumbered", &flag_dump_unnumbered, 1,
+   "Suppress output of instruction numbers and line number notes in debugging dumps"},
   {"instrument-functions", &flag_instrument_function_entry_exit, 1,
    "Instrument function entry/exit with profiling calls"},
 };
@@ -981,9 +983,9 @@ documented_lang_options[] =
   { "-Wchar-subscripts", "Warn about subscripts whose type is 'char'"},
   { "-Wno-char-subscripts", "" },
   { "-Wcomment", "Warn if nested comments are detected" },
-  { "-Wno-comment", },
-  { "-Wcomments", },
-  { "-Wno-comments", },
+  { "-Wno-comment", "" },
+  { "-Wcomments", "Warn if nested comments are detected" },
+  { "-Wno-comments", "" },
   { "-Wconversion", "Warn about possibly confusing type conversions" },
   { "-Wno-conversion", "" },
   { "-Wformat", "Warn about printf format anomalies" },
@@ -5087,7 +5089,7 @@ debug_start_source_file (filename)
 
 void
 debug_end_source_file (lineno)
-     register unsigned lineno;
+     register unsigned lineno ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_DEBUGGING_INFO
   if (write_symbols == DBX_DEBUG)

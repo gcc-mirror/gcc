@@ -1854,7 +1854,8 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
   if (SHIFT_COUNT_TRUNCATED)
     {
       if (GET_CODE (op1) == CONST_INT
-          && (unsigned HOST_WIDE_INT) INTVAL (op1) >= GET_MODE_BITSIZE (mode))
+          && ((unsigned HOST_WIDE_INT) INTVAL (op1) >=
+	      (unsigned HOST_WIDE_INT) GET_MODE_BITSIZE (mode)))
         op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
 		       % GET_MODE_BITSIZE (mode));
       else if (GET_CODE (op1) == SUBREG
@@ -2029,7 +2030,7 @@ synth_mult (alg_out, t, cost_limit)
 {
   int m;
   struct algorithm *alg_in, *best_alg;
-  unsigned int cost;
+  int cost;
   unsigned HOST_WIDE_INT q;
 
   /* Indicate that no algorithm is yet found.  If no algorithm
@@ -4292,7 +4293,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
       else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	       && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
-		   == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))
+		   == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))
 	;
       else
 	return 0;

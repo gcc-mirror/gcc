@@ -736,7 +736,7 @@ promote_mode (type, mode, punsignedp, for_call)
      tree type;
      enum machine_mode mode;
      int *punsignedp;
-     int for_call;
+     int for_call ATTRIBUTE_UNUSED;
 {
   enum tree_code code = TREE_CODE (type);
   int unsignedp = *punsignedp;

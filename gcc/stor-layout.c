@@ -144,13 +144,13 @@ mode_for_size (size, class, limit)
 {
   register enum machine_mode mode;
 
-  if (limit && size > MAX_FIXED_MODE_SIZE)
+  if (limit && size > (unsigned int)(MAX_FIXED_MODE_SIZE))
     return BLKmode;
 
   /* Get the first mode which has this size, in the specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) == size)
+    if ((unsigned int)GET_MODE_BITSIZE (mode) == size)
       return mode;
 
   return BLKmode;
@@ -170,7 +170,7 @@ smallest_mode_for_size (size, class)
      specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) >= size)
+    if ((unsigned int)GET_MODE_BITSIZE (mode) >= size)
       return mode;
 
   abort ();
@@ -1382,7 +1382,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 
 void
 save_storage_status (p)
-     struct function *p;
+     struct function *p ATTRIBUTE_UNUSED;
 {
 #if 0  /* Need not save, since always 0 and non0 (resp.) within a function.  */
   p->pending_sizes = pending_sizes;
@@ -1395,7 +1395,7 @@ save_storage_status (p)
 
 void
 restore_storage_status (p)
-     struct function *p;
+     struct function *p ATTRIBUTE_UNUSED;
 {
 #if 0
   pending_sizes = p->pending_sizes;

@@ -1252,7 +1252,7 @@ dwarf2out_frame_debug (insn)
 	{
 	  /* Setting FP from SP.  */
 	case REG:
-	  if (cfa_reg != REGNO (src))
+	  if (cfa_reg != (unsigned) REGNO (src))
 	    abort ();
 	  if (REGNO (dest) != STACK_POINTER_REGNUM
 	      && !(frame_pointer_needed
@@ -1272,7 +1272,7 @@ dwarf2out_frame_debug (insn)
 		  offset = INTVAL (XEXP (src, 1));
 		  break;
 		case REG:
-		  if (REGNO (XEXP (src, 1)) != cfa_temp_reg)
+		  if ((unsigned) REGNO (XEXP (src, 1)) != cfa_temp_reg)
 		    abort ();
 		  offset = cfa_temp_value;
 		  break;
@@ -1283,7 +1283,7 @@ dwarf2out_frame_debug (insn)
 	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
 		{
 		  /* Restoring SP from FP in the epilogue.  */
-		  if (cfa_reg != HARD_FRAME_POINTER_REGNUM)
+		  if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
 		    abort ();
 		  cfa_reg = STACK_POINTER_REGNUM;
 		}
@@ -1319,7 +1319,7 @@ dwarf2out_frame_debug (insn)
               else if (XEXP (src, 0) == hard_frame_pointer_rtx
                        && GET_CODE (XEXP (src, 1)) == CONST_INT)
                 {
-		  if (cfa_reg != HARD_FRAME_POINTER_REGNUM)
+		  if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
 		    abort ();
                   offset = INTVAL (XEXP (src, 1));
                   if (GET_CODE (src) == PLUS)
@@ -1336,7 +1336,7 @@ dwarf2out_frame_debug (insn)
 		  || XEXP (src, 1) != stack_pointer_rtx)
 		abort ();
 	      if (GET_CODE (XEXP (src, 0)) != REG
-		  || REGNO (XEXP (src, 0)) != cfa_temp_reg)
+		  || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
 		abort ();
 	      if (cfa_reg != STACK_POINTER_REGNUM)
 		abort ();
@@ -1352,8 +1352,8 @@ dwarf2out_frame_debug (insn)
 
 	case IOR:
 	  if (GET_CODE (XEXP (src, 0)) != REG
-	      || REGNO (XEXP (src, 0)) != cfa_temp_reg
-	      || REGNO (dest) != cfa_temp_reg
+	      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg
+	      || (unsigned) REGNO (dest) != cfa_temp_reg
 	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
 	    abort ();
 	  cfa_temp_value |= INTVAL (XEXP (src, 1));
@@ -1396,14 +1396,14 @@ dwarf2out_frame_debug (insn)
 	  if (GET_CODE (src) == MINUS)
 	    offset = -offset;
 
-	  if (cfa_store_reg != REGNO (XEXP (XEXP (dest, 0), 0)))
+	  if (cfa_store_reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
 	    abort ();
 	  offset -= cfa_store_offset;
 	  break;
 
 	  /* Without an offset.  */
 	case REG:
-	  if (cfa_store_reg != REGNO (XEXP (dest, 0)))
+	  if (cfa_store_reg != (unsigned) REGNO (XEXP (dest, 0)))
 	    abort();
 	  offset = -cfa_store_offset;
 	  break;
@@ -5199,7 +5199,6 @@ output_die (die)
   register unsigned long ref_offset;
   register unsigned long size;
   register dw_loc_descr_ref loc;
-  register int i;
 
   output_uleb128 (die->die_abbrev);
   if (flag_debug_asm)
@@ -5302,24 +5301,27 @@ output_die (die)
 	  break;
 
 	case dw_val_class_float:
-	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
-				  a->dw_attr_val.v.val_float.length * 4);
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s %s",
-		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
+	  {
+	    register unsigned int i;
+	    ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
+				    a->dw_attr_val.v.val_float.length * 4);
+	    if (flag_debug_asm)
+	      fprintf (asm_out_file, "\t%s %s",
+		       ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
-	  fputc ('\n', asm_out_file);
-	  for (i = 0; i < a->dw_attr_val.v.val_float.length; ++i)
-	    {
-	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-				      a->dw_attr_val.v.val_float.array[i]);
-	      if (flag_debug_asm)
-		fprintf (asm_out_file, "\t%s fp constant word %d",
-			 ASM_COMMENT_START, i);
+	    fputc ('\n', asm_out_file);
+	    for (i = 0; i < a->dw_attr_val.v.val_float.length; ++i)
+	      {
+		ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
+					a->dw_attr_val.v.val_float.array[i]);
+		if (flag_debug_asm)
+		  fprintf (asm_out_file, "\t%s fp constant word %u",
+			   ASM_COMMENT_START, i);
 
-	      fputc ('\n', asm_out_file);
-	    }
+		fputc ('\n', asm_out_file);
+	      }
 	  break;
+	  }
 
 	case dw_val_class_flag:
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, a->dw_attr_val.v.val_flag);
@@ -5362,7 +5364,7 @@ output_die (die)
 	  else
 	    ASM_OUTPUT_ASCII (asm_out_file,
 			      a->dw_attr_val.v.val_str,
-			      strlen (a->dw_attr_val.v.val_str) + 1);
+			      (int) strlen (a->dw_attr_val.v.val_str) + 1);
 	  break;
 
 	default:
@@ -5514,7 +5516,8 @@ output_pubnames ()
 	}
       else
 	{
-	  ASM_OUTPUT_ASCII (asm_out_file, pub->name, strlen (pub->name) + 1);
+	  ASM_OUTPUT_ASCII (asm_out_file, pub->name,
+			    (int) strlen (pub->name) + 1);
 	}
 
       fputc ('\n', asm_out_file);
@@ -5751,7 +5754,7 @@ output_line_info ()
 	{
 	  ASM_OUTPUT_ASCII (asm_out_file,
 			    file_table[ft_index],
-			    strlen (file_table[ft_index]) + 1);
+			    (int) strlen (file_table[ft_index]) + 1);
 	}
 
       fputc ('\n', asm_out_file);

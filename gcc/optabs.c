@@ -4451,8 +4451,8 @@ init_traps ()
 
 rtx
 gen_cond_trap (code, op1, op2, tcode)
-     enum rtx_code code;
-     rtx op1, op2, tcode;
+  enum rtx_code code ATTRIBUTE_UNUSED;
+  rtx op1, op2 ATTRIBUTE_UNUSED, tcode ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode = GET_MODE (op1);
 

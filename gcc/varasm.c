@@ -595,7 +595,7 @@ decode_reg_name (asmspec)
 	static struct { char *name; int number; } table[]
 	  = ADDITIONAL_REGISTER_NAMES;
 
-	for (i = 0; i < sizeof (table) / sizeof (table[0]); i++)
+	for (i = 0; i < (int)(sizeof (table) / sizeof (table[0])); i++)
 	  if (! strcmp (asmspec, table[i].name))
 	    return table[i].number;
       }
@@ -1134,7 +1134,7 @@ assemble_string (p, size)
 void
 assemble_variable (decl, top_level, at_end, dont_output_data)
      tree decl;
-     int top_level;
+     int top_level ATTRIBUTE_UNUSED;
      int at_end;
      int dont_output_data;
 {
@@ -1608,7 +1608,7 @@ assemble_external (decl)
 
 void
 assemble_external_libcall (fun)
-     rtx fun;
+     rtx fun ATTRIBUTE_UNUSED;
 {
 #ifdef ASM_OUTPUT_EXTERNAL_LIBCALL
   /* Declare library function name external when first used, if nec.  */
@@ -3572,8 +3572,8 @@ get_pool_size ()
 
 void
 output_constant_pool (fnname, fndecl)
-     char *fnname;
-     tree fndecl;
+  char *fnname ATTRIBUTE_UNUSED;
+  tree fndecl ATTRIBUTE_UNUSED;
 {
   struct pool_constant *pool;
   rtx x;

@@ -950,7 +950,7 @@ readescape (ignore_ptr)
 	;
       else if ((count - 1) * 4 >= TYPE_PRECISION (integer_type_node)
 	       || (count > 1
-		   && ((1 << (TYPE_PRECISION (integer_type_node) - (count - 1) * 4))
+		   && (((unsigned)1 << (TYPE_PRECISION (integer_type_node) - (count - 1) * 4))
 		       <= firstdig)))
 	pedwarn ("hex escape out of range");
       return code;
@@ -1848,7 +1848,7 @@ yylex ()
 		if (ignore)
 		  goto tryagain;
 		if (width < HOST_BITS_PER_INT
-		    && (unsigned) c >= (1 << width))
+		    && (unsigned) c >= ((unsigned)1 << width))
 		  pedwarn ("escape sequence out of range for character");
 #ifdef MAP_CHARACTER
 		if (ISPRINT (c))
@@ -2003,7 +2003,7 @@ yylex ()
 		if (ignore)
 		  goto skipnewline;
 		if (width < HOST_BITS_PER_INT
-		    && (unsigned) c >= (1 << width))
+		    && (unsigned) c >= ((unsigned)1 << width))
 		  pedwarn ("escape sequence out of range for character");
 	      }
 	    else if (c == '\n')
@@ -2063,7 +2063,7 @@ yylex ()
 		for (byte = 0; byte < WCHAR_BYTES; ++byte)
 		  {
 		    int value;
-		    if (byte >= sizeof (c))
+		    if (byte >= (int) sizeof (c))
 		      value = 0;
 		    else
 		      value = (c >> (byte * width)) & bytemask;
