@@ -1,3 +1,8 @@
+Thu Apr 19 12:49:24 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* top.c (ffe_decode_option): Do not permit language-independent
+	processing for -ffixed-line-length.
+
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* lex.c (ffelex_hash_): Avoid eating one whole line after

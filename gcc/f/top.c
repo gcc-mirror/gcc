@@ -1,5 +1,5 @@
 /* top.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1999, 2001 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -464,9 +464,15 @@ ffe_decode_option (argc, argv)
 	  char *len = &opt[2] + strlen ("fixed-line-length-");
 
 	  if (strcmp (len, "none") == 0)
-	    ffe_set_fixed_line_length (0);
+	    {
+	      ffe_set_fixed_line_length (0);
+	      return -1;
+	    }
 	  else if (ffe_is_digit_string_ (len))
-	    ffe_set_fixed_line_length (atol (len));
+	    {
+	      ffe_set_fixed_line_length (atol (len));
+	      return -1;
+	    }
 	  else
 	    return 0;
 	}

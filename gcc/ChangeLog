@@ -1,5 +1,9 @@
 2001-04-19  Mark Mitchell  <mark@codesourcery.com>
 
+	* toplev.h (struct lang_hooks): Allow decode_option to indicate
+	that language-independent processing should not be done.
+	* toplev.c (main): Adjust accordingly.
+
 	* rtl.texi (jump_insn): Expand on JUMP_LABEL documentation.
 	* loop.c (load_mems): Handle a NULL JUMP_LABEL for a JUMP_INSN.
 

@@ -4740,16 +4740,22 @@ main (argc, argv)
   /* Perform normal command line switch decoding.  */
   for (i = 1; i < argc;)
     {
-      unsigned int lang_processed;
-      unsigned int indep_processed;
+      int lang_processed;
+      int indep_processed;
 
       /* Give the language a chance to decode the option for itself.  */
       lang_processed = (*lang_hooks.decode_option) (argc - i, argv + i);
 
-      /* Now see if the option also has a language independent meaning.
-	 Some options are both language specific and language independent,
-	 eg --help.  */
-      indep_processed = independent_decode_option (argc - i, argv + i);
+      if (lang_processed >= 0)
+	/* Now see if the option also has a language independent meaning.
+	   Some options are both language specific and language independent,
+	   eg --help.  */
+	indep_processed = independent_decode_option (argc - i, argv + i);
+      else
+	{
+	  lang_processed = -lang_processed;
+	  indep_processed = 0;
+	}
 
       if (lang_processed || indep_processed)
 	i += MAX (lang_processed, indep_processed);
