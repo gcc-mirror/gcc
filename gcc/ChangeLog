@@ -1,3 +1,9 @@
+Mon 18-Sep-2000 22:12:44 BST  Neil Booth  <NeilB@earthling.net>
+
+        * cpp.texi: Update documentation, including some clarifications,
+	the treatment of various newline combinations, and space between
+	backslash and newline.
+
 Mon Sep 18 21:00:47 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* sdbout.c (PUT_SDB_DEF, PUT_SDB_TAG, PUT_SDB_EPILOGUE_END):
