@@ -1273,16 +1273,16 @@ install-float-h-cross:
 
 # Create the installation directory.
 install-dir:
-	if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi
-	if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; fi
-	if [ -d $(libdir)/gcc-lib/include ] ; then true ; else mkdir $(libdir)/gcc-lib/include ; fi
-	if [ -d $(libdir)/gcc-lib/$(target) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target) ; fi
-	if [ -d $(libdir)/gcc-lib/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version) ; fi
-	if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; fi
+	-if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi
+	-if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; fi
+	-if [ -d $(libdir)/gcc-lib/include ] ; then true ; else mkdir $(libdir)/gcc-lib/include ; fi
+	-if [ -d $(libdir)/gcc-lib/$(target) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target) ; fi
+	-if [ -d $(libdir)/gcc-lib/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version) ; fi
+	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; fi
 # We don't use mkdir -p to create the parents of mandir,
 # because some systems don't support it.
 # Instead, we use this technique to create the immediate parent of mandir.
-	parent=`echo $(mandir)|sed -e 's@/[^/]*$$@@'`; \
+	-parent=`echo $(mandir)|sed -e 's@/[^/]*$$@@'`; \
 	if [ -d $$parent ] ; then true ; else mkdir $$parent ; fi
 	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; fi
 
@@ -1385,7 +1385,7 @@ install-limits-h: limits.h limitx.h
 
 # Install the fixed headers that are the same for all machines.
 install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
-	if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
+	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
 	-chmod ugo+rx $(libsubdir)/include
 # Must compute $(libsubdir) before the cd; the awk script won't work after.
 	shelllibsubdir=$(libsubdir); \
@@ -1410,7 +1410,7 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	-cp $(srcdir)/byteorder.h .
 
 # $(libsubdir)/include:
-#	if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
+#	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
 #	-chmod ugo+rx $(libsubdir)/include
 
 # This appears not to work.  It isn't clear how to fix it.
@@ -1587,14 +1587,14 @@ stage2: force
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
 
 stage3: force
-	if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
+	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	-mv $(STAGESTUFF) stage3
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
 
 stage4: force
-	if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
+	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	-mv $(STAGESTUFF) stage4
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
@@ -1604,28 +1604,28 @@ stage4: force
 # and delete the object files.  Use this if you're just verifying a version
 # that is pretty sure to work, and you are short of disk space.
 risky-stage1: force
-	if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
+	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	-mv cc1 cpp cccp gcc stage1
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1 && $(RANLIB) stage1/libgcc.a
 	-make clean
 
 risky-stage2: force
-	if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
+	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	-mv cc1 cpp cccp gcc stage2
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2 && $(RANLIB) stage2/libgcc.a
 	-make clean
 
 risky-stage3: force
-	if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
+	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	-mv cc1 cpp cccp gcc stage3
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3 && $(RANLIB) stage3/libgcc.a
 	-make clean
 
 risky-stage4: force
-	if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
+	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	-mv cc1 cpp cccp gcc stage4
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4 && $(RANLIB) stage4/libgcc.a
