@@ -1,3 +1,7 @@
+2002-02-12  Adam Megacz <adam@xwt.org>
+
+	* win32.cc: Added two #includes to make win32.cc compile.
+
 2002-02-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* boehm.cc (initialized, obj_kind_x, obj_free_list): Removed unused
