@@ -20,7 +20,9 @@ __allocate_stack:
 ..__allocate_stack:
 	.function	..__allocate_stack
 __allocate_stack.b:
+	addi	3,3,15			# round up to 16 byte alignment
 	lwz	0,0(1)			# old stack link
+	rlwinm	3,3,0,0,28
 	srawi.	4,3,12			# get # of pages to check
 	neg	3,3			# negate so we can use stwux
 	bgt-	0,.Lcheck
