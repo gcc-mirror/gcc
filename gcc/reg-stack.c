@@ -1351,34 +1351,8 @@ find_blocks (first)
 
       if (GET_CODE (insn) == JUMP_INSN)
 	{
-	  rtx pat = PATTERN (insn);
-	  int computed_jump = 0;
-	  rtx x;
 
-	  if (GET_CODE (pat) == PARALLEL)
-	    {
-	      int len = XVECLEN (pat, 0);
-	      int has_use_labelref = 0;
-	      int i;
-
-	      for (i = len - 1; i >= 0; i--)
-		if (GET_CODE (XVECEXP (pat, 0, i)) == USE
-		    && GET_CODE (XEXP (XVECEXP (pat, 0, i), 0)) == LABEL_REF)
-		  has_use_labelref = 1;
-
-	      if (! has_use_labelref)
-		for (i = len - 1; i >= 0; i--)
-		  if (GET_CODE (XVECEXP (pat, 0, i)) == SET
-		      && SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
-		      && uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
-		    computed_jump = 1;
-	    }
-	  else if (GET_CODE (pat) == SET
-		   && SET_DEST (pat) == pc_rtx
-		   && uses_reg_or_mem (SET_SRC (pat)))
-	    computed_jump = 1;
-		    
-	  if (computed_jump)
+	  if (computed_jump_p (insn))
 	    {
 	      for (x = label_value_list; x; x = XEXP (x, 1))
 		record_label_references (insn,

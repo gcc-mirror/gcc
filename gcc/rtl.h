@@ -978,3 +978,4 @@ extern void init_alias_analysis	PROTO((void));
 extern void end_alias_analysis	PROTO((void));
 extern void mark_user_reg	PROTO((rtx));
 extern void mark_reg_pointer	PROTO((rtx, int));
+extern int computed_jump_p	PROTO((rtx));

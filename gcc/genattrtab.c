@@ -483,6 +483,8 @@ struct attr_hash *attr_hash_table[RTL_HASH_SIZE];
    codes are made.  */
 #define RTL_HASH(RTL) ((HOST_WIDE_INT) (RTL) & 0777777)
 
+rtx pc_rtx;
+
 /* Add an entry to the hash table for RTL with hash code HASHCODE.  */
 
 static void
@@ -5572,6 +5574,11 @@ main (argc, argv)
     }
 
   init_rtl ();
+
+  /* We don't use this, but it is referenced in rtlanal.c. 
+     Set it up correctly just in case someone tries to use it someday.  */
+  pc_rtx = rtx_alloc (PC);
+  PUT_MODE (pc_rtx, VOIDmode);
 
   /* Set up true and false rtx's */
   true_rtx = rtx_alloc (CONST_INT);

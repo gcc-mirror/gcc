@@ -330,12 +330,13 @@ static void insert_bct ();
 /* Auxiliary function that inserts the bct pattern into the loop */
 static void instrument_loop_bct ();
 
-/* Indirect_jump_in_function is computed once per function.  */
-int indirect_jump_in_function = 0;
-static int indirect_jump_in_function_p ();
 
 int loop_number ();
 #endif  /* HAIFA */
+
+/* Indirect_jump_in_function is computed once per function.  */
+int indirect_jump_in_function = 0;
+static int indirect_jump_in_function_p ();
 
 
 /* Relative gain of eliminating various kinds of operations.  */
@@ -507,11 +508,9 @@ loop_optimize (f, dumpfile)
   if (flag_unroll_loops && write_symbols != NO_DEBUG)
     find_loop_tree_blocks ();
 
-#ifdef HAIFA
-  /* determine if the function has indirect jump. If it does,
-     we cannot instrument loops in this function with bct */
+  /* Determine if the function has indirect jump.  On some systems
+     this prevents low overhead loop instructions from being used.  */
   indirect_jump_in_function = indirect_jump_in_function_p (f);
-#endif  /* HAIFA */
 
   /* Now scan the loops, last ones first, since this means inner ones are done
      before outer ones.  */
@@ -7592,8 +7591,12 @@ loop_number (loop_start, loop_end)
 
   return loop_num;
 }
+#endif	/* HAIFA */
 
-/* scan the function and determine whether it has indirect (computed) jump */
+/* Scan the function and determine whether it has indirect (computed) jumps.
+
+   This is taken mostly from flow.c; similar code exists elsewhere
+   in the compiler.  It may be useful to put this into rtlanal.c.  */
 static int
 indirect_jump_in_function_p (start)
      rtx start;
@@ -7601,25 +7604,8 @@ indirect_jump_in_function_p (start)
   rtx insn;
   int is_indirect_jump = 0;
 
-  for (insn = start; insn; insn = NEXT_INSN (insn)) {
-    if (GET_CODE (insn) == JUMP_INSN) {
-      if (GET_CODE (PATTERN (insn)) == SET) {
-	rtx insn_work_code = XEXP (PATTERN (insn), 1);
-
-	if (GET_CODE (insn_work_code) == LABEL_REF)
-	  continue;
-	if (GET_CODE (insn_work_code) == IF_THEN_ELSE) {
-	  rtx jump_target = XEXP (insn_work_code, 1);
-
-	  if (jump_target == pc_rtx
-	     || (GET_CODE (jump_target) == (enum rtx_code)LABEL_REF))
-	    continue;
-	}
-      }
-      is_indirect_jump = 1;
-    }
-  }
-  return is_indirect_jump;
+  for (insn = start; insn; insn = NEXT_INSN (insn))
+    if (computed_jump_p (insn))
+      return 1;
 }
-#endif	/* HAIFA */
 /* END CYGNUS LOCAL haifa */
