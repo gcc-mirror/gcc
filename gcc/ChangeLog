@@ -1,3 +1,7 @@
+2003-07-04  Neil Booth  <neil@daikokuya.co.uk>
+
+	* opts.c (common_handle_options): Negate sense of -falign- switches.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Makefile.in: Replace PWD with PWD_COMMAND.
