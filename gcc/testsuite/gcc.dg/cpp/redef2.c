@@ -1,7 +1,7 @@
 /* Test for redefining macros with significant differences.  */
 
 /* { dg-do preprocess }
-   { dg-options "-ansi -pedantic -Wall -fno-show-column" } */
+   { dg-options "-ansi -Wall -fno-show-column" } */
 
 #define mac(a, b) (a) + (b)
 #define mac(a, b) (a) * (b)
@@ -14,6 +14,9 @@
 #define va(a...) a
 #define va(...) __VA_ARGS__
 
+#define foo(x) x
+#define foo(x)x		/* { dg-bogus "redefined" "redefined foo" } */
+
 /* { dg-warning "redefined" "redef mac"     { target *-*-* } 7  }
    { dg-warning "redefined" "redef mac"     { target *-*-* } 8  }
    { dg-warning "redefined" "redef mac"     { target *-*-* } 9  }
@@ -25,6 +28,4 @@
    { dg-warning "previous"  "prev def mac"  { target *-*-* } 8  }
    { dg-warning "previous"  "prev def ro"   { target *-*-* } 11 }
    { dg-warning "previous"  "prev def va"   { target *-*-* } 14 }
-
-   { dg-warning "named var" "named variadic"  { target *-*-* } 14 }
-   { dg-warning "anonymous var" "anon variadic" { target *-*-* } 15 } */ 
+*/

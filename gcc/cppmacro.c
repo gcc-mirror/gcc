@@ -1180,9 +1180,6 @@ warn_of_redefinition (pfile, node, macro2)
   if (node->flags & NODE_WARN)
     return 1;
 
-  if (! CPP_PEDANTIC (pfile))
-    return 0;
-
   /* Redefinition of a macro is allowed if and only if the old and new
      definitions are the same.  (6.10.3 paragraph 2). */
   macro1 = node->value.macro;

@@ -1781,12 +1781,14 @@ init_dependency_output (pfile)
     }
 
   /* If dependencies go to standard output, or -MG is used, we should
-     suppress output.  The user may be requesting other stuff to
-     stdout, with -dM, -v etc.  We let them shoot themselves in the
-     foot.  */
+     suppress output, including -dM, -dI etc.  */
   if (CPP_OPTION (pfile, deps_file) == 0
       || CPP_OPTION (pfile, print_deps_missing_files))
-    CPP_OPTION (pfile, no_output) = 1;
+    {
+      CPP_OPTION (pfile, no_output) = 1;
+      CPP_OPTION (pfile, dump_macros) = 0;
+      CPP_OPTION (pfile, dump_includes) = 0;
+    }
 }
 
 static void

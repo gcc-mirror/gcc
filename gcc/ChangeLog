@@ -1,3 +1,9 @@
+2001-11-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c (warn_of_redefinition): Warn regardless of -pedantic.
+	* cppinit.c (init_dependency_output): Suppress other stdout
+	output when dumping dependencies.
+
 2001-11-19  Brad Kaiser  <bkaiser@acelink.net>
  
 	* reload1.c (elimination_effects): Use function_invariant_p
