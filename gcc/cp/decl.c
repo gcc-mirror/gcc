@@ -11152,6 +11152,26 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       type = build_cplus_array_type (TREE_TYPE (type), TYPE_DOMAIN (type));
     }
 
+  /* Detect where we're using a typedef of function type to declare a
+     function. last_function_parms will not be set, so we must create
+     it now.  */
+  
+  if (type == typedef_type && TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      tree decls = NULL_TREE;
+      tree args;
+
+      for (args = TYPE_ARG_TYPES (type); args; args = TREE_CHAIN (args))
+	{
+	  tree decl = build_decl (PARM_DECL, NULL_TREE, TREE_VALUE (args));
+
+	  TREE_CHAIN (decl) = decls;
+	  decls = decl;
+	}
+      
+      last_function_parms = nreverse (decls);
+    }
+
   /* If this is a type name (such as, in a cast or sizeof),
      compute the type and return it now.  */
 
