@@ -1054,11 +1054,6 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
   x = SET_DEST (set_a);
   a = SET_SRC (set_a);
 
-  /* X may not be mentioned between cond_earliest and the jump.  */
-  for (insn = jump; insn != if_info.cond_earliest; insn = PREV_INSN (insn))
-    if (INSN_P (insn) && reg_mentioned_p (x, insn))
-      return FALSE;
-
   /* Look for the other potential set.  Make sure we've got equivalent
      destinations.  */
   /* ??? This is overconservative.  Storing to two different mems is
@@ -1087,6 +1082,17 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 	insn_b = set_b = NULL_RTX;
     }
   b = (set_b ? SET_SRC (set_b) : x);
+
+  /* X may not be mentioned in the range (cond_earliest, jump].  */
+  for (insn = jump; insn != if_info.cond_earliest; insn = PREV_INSN (insn))
+    if (INSN_P (insn) && reg_mentioned_p (x, insn))
+      return FALSE;
+
+  /* A and B may not be modified in the range [cond_earliest, jump).  */
+  for (insn = if_info.cond_earliest; insn != jump; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& (modified_in_p (a, insn) || modified_in_p (b, insn)))
+      return FALSE;
 
   /* Only operate on register destinations, and even then avoid extending
      the lifetime of hard registers on small register class machines.  */
