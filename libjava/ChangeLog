@@ -1,3 +1,10 @@
+2005-01-11  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/18840:
+	* java/io/BufferedInputStream.java (read): Repeatedly read to
+	fill buffer.
+	(refill): Change test to see if buffer must be grown.
+
 2005-01-10  Tom Tromey  <tromey@redhat.com>
 
 	* mauve-libgcj: Exclude some swing tests.
