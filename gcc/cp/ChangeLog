@@ -1,3 +1,11 @@
+2002-05-22  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (check_tag_decl): Handle RID_THREAD.
+	(obscure_complex_init): Reject run-time init of tls.
+	(grokvardecl, grokdeclarator): Handle RID_THREAD.
+	* lex.c (reswords): Add __thread.
+	(rid_to_yy): Map RID_THREAD to SCSPEC.
+
 2002-05-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_POST_OPTIONS): Use c_common_post_options.

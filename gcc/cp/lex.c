@@ -362,6 +362,7 @@ static const struct resword reswords[] =
   { "__restrict__",	RID_RESTRICT,	0 },
   { "__signed",		RID_SIGNED,	0 },
   { "__signed__",	RID_SIGNED,	0 },
+  { "__thread",		RID_THREAD,	0 },
   { "__typeof",		RID_TYPEOF,	0 },
   { "__typeof__",	RID_TYPEOF,	0 },
   { "__volatile",	RID_VOLATILE,	0 },
@@ -467,7 +468,7 @@ const short rid_to_yy[RID_MAX] =
   /* RID_BOUNDED */	0,
   /* RID_UNBOUNDED */	0,
   /* RID_COMPLEX */	TYPESPEC,
-  /* RID_THREAD */	0,
+  /* RID_THREAD */	SCSPEC,
 
   /* C++ */
   /* RID_FRIEND */	SCSPEC,
