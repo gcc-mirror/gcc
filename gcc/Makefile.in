@@ -135,6 +135,7 @@ target= ... `configure' substitutes actual target name here.
 xmake_file= ... `configure' substitutes actual x- file name here.
 tmake_file= ... `configure' substitutes actual t- file name here.
 version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
+mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
 # Directory where sources are, from where we are.
 srcdir = .
@@ -2009,7 +2010,7 @@ gcc.xtar: distdir
 
 distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
   c-parse.c cp-parse.c objc-parse.c cexp.c
-	if grep -s "for version ${version}" gcc.texi; \
+	if grep -s "for version ${mainversion}" gcc.texi; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
 	fi
