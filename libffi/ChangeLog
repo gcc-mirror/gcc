@@ -1,3 +1,9 @@
+2004-02-25  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Change
+	ecif->cif->bytes to bytes.
+	(ffi_prep_cif_machdep): Add braces around nested if statement.
+
 2004-02-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/types.c (pointer): POWERPC64 has 8 byte pointers.
