@@ -585,6 +585,22 @@ case "${host}" in
     ;;
 esac
 
+# Save it here so that, even in case of --enable-libgcj, if the Java
+# front-end isn't enabled, we still get libgcj disabled.
+libgcj_saved=$libgcj
+case $enable_libgcj in
+yes)
+  # If we reset it here, it won't get added to noconfigdirs in the
+  # target-specific build rules, so it will be forcibly enabled
+  # (unless the Java language itself isn't enabled).
+  libgcj=
+  ;;
+no)
+  # Make sure we get it printed in the list of not supported target libs.
+  noconfigdirs="$noconfigdirs ${libgcj}"
+  ;;
+esac
+
 case "${target}" in
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
