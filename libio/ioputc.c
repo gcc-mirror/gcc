@@ -39,4 +39,6 @@ _IO_putc (c, fp)
 
 #ifdef weak_alias
 weak_alias (_IO_putc, putc)
+#elif defined(_G_STDIO_USES_LIBIO) && defined(_G_HAVE_WEAK_SYMBOL)
+int putc (int, _IO_FILE *) __attribute__ ((weak, alias("_IO_putc")));
 #endif

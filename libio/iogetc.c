@@ -45,4 +45,6 @@ _IO_getc (fp)
 
 #ifdef weak_alias
 weak_alias (_IO_getc, getc)
+#elif defined(_G_STDIO_USES_LIBIO) && defined(_G_HAVE_WEAK_SYMBOL)
+int getc (_IO_FILE *) __attribute__ ((weak, alias("_IO_getc")));
 #endif
