@@ -1,3 +1,11 @@
+Thu Oct 14 23:50:25 1999  Richard Henderson  <rth@cygnus.com>
+
+	* mips.h (SPECIAL_MODE_PREDICATES): New.
+	* mips.md (*) Use nonimmediate_operand not general_operand for outputs.
+	(movdi+1, movsi+1): Add output reload constraint.
+	(casesi_internal): Likewise.  Fix commentary.
+	(return_internal): Use pmode_register_operand.
+
 Thu Oct 14 23:19:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* 1750a.md (movstrqi): Add missing output reload constraint.
@@ -411,7 +419,7 @@ Wed Oct 13 10:07:54 1999  Richard Henderson  <rth@cygnus.com>
 
 Wed Oct 13 01:44:29 1999  Carol LePage  <carolo@hal.com>
 
-        * configure.in (sparc-hal-solaris2*): Fix xm_file, xm_defines,
+	* configure.in (sparc-hal-solaris2*): Fix xm_file, xm_defines,
 	float_format and thread_file definitions.
 	* configure: Rebuilt.
 
@@ -438,10 +446,10 @@ Tue Oct 12 17:09:38 1999  David Edelsohn  <edelsohn@gnu.org>
 
 Tue Oct 12 09:45:19 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
-        * config/rs6000/eabi-ctors.c (__do_global_ctors): Run through
-        __CTOR_LIST__ in opposite order, which is the correct order for sorted
-        constructors.
-        (__do_global_dtors): similarly for __DTOR_LIST__.
+	* config/rs6000/eabi-ctors.c (__do_global_ctors): Run through
+	__CTOR_LIST__ in opposite order, which is the correct order for sorted
+	constructors.
+	(__do_global_dtors): similarly for __DTOR_LIST__.
 
 Fri Oct  8 19:46:03 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 				Diego Novillo <dnovillo@cygnus.com>
@@ -595,10 +603,10 @@ Sun Oct 10 00:43:08 1999  Richard Henderson  <rth@cygnus.com>
 
 Sat Oct  9 23:26:55 1999  Jeffrey A Law  (law@cygnus.com)
 
-        * gcse.c (gcse_main): Avoid global optimizations if we have a
-        large number of basic blocks and the ratio of edges to blocks
-        is high.
-        (delete_null_pointer_checks): Likewise.
+	* gcse.c (gcse_main): Avoid global optimizations if we have a
+	large number of basic blocks and the ratio of edges to blocks
+	is high.
+	(delete_null_pointer_checks): Likewise.
 
 Sat Oct  9 23:16:01 1999  Ken Raeburn  <raeburn@mit.edu>
 
@@ -746,11 +754,11 @@ Thu Oct  7 23:06:50 1999  Richard Henderson  <rth@cygnus.com>
 Thu Oct  7 22:53:00 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	                  Mark Mitchell  <mark@codesourcery.com>
 
-        * tree.c (make_lang_type_fn): New funtion pointer.
-        (make_lang_type): Call it.
-        * tree.h (make_lang_type): Declare.
-        (make_lang_type_fn): Likewise.
-        * rs6000.c (rs6000_build_va_list): Use make_lang_type.
+	* tree.c (make_lang_type_fn): New funtion pointer.
+	(make_lang_type): Call it.
+	* tree.h (make_lang_type): Declare.
+	(make_lang_type_fn): Likewise.
+	* rs6000.c (rs6000_build_va_list): Use make_lang_type.
 
 Thu Oct  7 00:36:17 1999  Diego Novillo  <dnovillo@cygnus.com>
 
@@ -893,7 +901,7 @@ Tue Oct  5 11:34:52 1999  Michael Meissner  <meissner@cygnus.com>
 	* ggc-simple.c (toplevel): Ditto.
 
 Mon Oct  4 16:48:16 1999  Diego Novillo <dnovillo@cygnus.com>
-                          Jonathan Larmour  <jlarmour@cygnus.co.uk>
+	                  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* config/mips/mips.c (mips_move_2words): Split doubles if
 	ISA >= 3, !TARGET_64BIT, and destination is not an FP register.
@@ -1721,12 +1729,12 @@ Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 	* pa.c, pa.h, pa.md: Support multiple assembler dialects in
 	most assembler templates.
 
-        * pa.c (hppa_legitimize_address): Handle full offsets for PA2.0
-        FP loads and stores.
+	* pa.c (hppa_legitimize_address): Handle full offsets for PA2.0
+	FP loads and stores.
 	(following_call): Always return zero for the PA8000.
 	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Handle full offsets for PA2.0
 	FP loads and stores.
-        (LEGITIMIZE_RELOAD_ADDRESS): Similarly.
+	(LEGITIMIZE_RELOAD_ADDRESS): Similarly.
 
 	* pa.h (BRANCH_COST): Define.
 
