@@ -1,3 +1,7 @@
+2002-06-16  Douglas Rupp  <rupp@gnat.com>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
 2002-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (CFLAGS_FOR_TARGET): Add -O2.
