@@ -1,5 +1,8 @@
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.md (btsq, btrq, btcq): Fix modes.
+	(bt peepholes): Likewise.
+
 	* varasm.c (force_const_mem): Call set_mem_align.
 
 2004-12-22  Richard Henderson  <rth@redhat.com>
