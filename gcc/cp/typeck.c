@@ -5485,7 +5485,7 @@ build_reinterpret_cast (type, expr)
       return fold (build1 (NOP_EXPR, type, expr));
     }
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
-	   || (TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype)))
+	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
     {
       pedwarn ("ANSI C++ forbids casting between pointers to functions and objects");
       if (TREE_READONLY_DECL_P (expr))

@@ -1126,17 +1126,19 @@ push_local_binding (id, decl)
 {
   tree d = decl;
 
-  if (TREE_CODE (decl) == OVERLOAD)
-    /* We must put the OVERLOAD into a TREE_LIST since the
-       TREE_CHAIN of an OVERLOAD is already used.  */
-    decl = build_tree_list (NULL_TREE, decl);
-
   if (lookup_name_current_level (id))
     /* Supplement the existing binding.  */
-    add_binding (id, decl);
+    add_binding (id, d);
   else
     /* Create a new binding.  */
     push_binding (id, d, current_binding_level);
+
+  if (TREE_CODE (decl) == OVERLOAD
+      || (DECL_P (decl) && DECL_NAMESPACE_SCOPE_P (decl)))
+    /* We must put the OVERLOAD into a TREE_LIST since the
+       TREE_CHAIN of an OVERLOAD is already used.  Similarly for
+       decls that got here through a using-declaration.  */
+    decl = build_tree_list (NULL_TREE, decl);
 
   /* And put DECL on the list of things declared by the current
      binding level.  */
@@ -1423,11 +1425,12 @@ poplevel (keep, reverse, functionbody)
       else 
 	{
 	  /* Remove the binding.  */
+	  if (TREE_CODE (link) == TREE_LIST)
+	    link = TREE_VALUE (link);
 	  if (TREE_CODE_CLASS (TREE_CODE (link)) == 'd')
 	    pop_binding (DECL_NAME (link), link);
-	  else if (TREE_CODE (link) == TREE_LIST)
-	    pop_binding (DECL_NAME (OVL_FUNCTION (TREE_VALUE (link))), 
-			 TREE_VALUE (link));
+	  else if (TREE_CODE (link) == OVERLOAD)
+	    pop_binding (DECL_NAME (OVL_FUNCTION (link)), link);
 	  else 
 	    my_friendly_abort (0);
 	}
@@ -1454,11 +1457,13 @@ poplevel (keep, reverse, functionbody)
     {
       tree* d;
 
-      for (d = &BLOCK_VARS (block); 
-	   *d; 
-	   d = *d ? &TREE_CHAIN (*d) : d)
-	if (TREE_CODE (*d) == TREE_LIST)
-	  *d = TREE_CHAIN (*d);
+      for (d = &BLOCK_VARS (block); *d; )
+	{
+	  if (TREE_CODE (*d) == TREE_LIST)
+	    *d = TREE_CHAIN (*d);
+	  else
+	    d = &TREE_CHAIN (*d);
+	}
     }
 
   /* If the level being exited is the top level of a function,
@@ -2078,6 +2083,10 @@ cat_namespace_levels()
   /* The nested namespaces appear in the names list of their ancestors. */
   for (current = last; current; current = TREE_CHAIN (current))
     {
+      /* Catch simple infinite loops.  */
+      if (TREE_CHAIN (current) == current)
+	my_friendly_abort (990126);
+
       if (TREE_CODE (current) != NAMESPACE_DECL
           || DECL_NAMESPACE_ALIAS (current))
 	continue;

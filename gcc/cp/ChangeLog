@@ -1,3 +1,13 @@
+1999-01-26  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (push_local_binding): Also wrap used decls in a TREE_LIST.
+	(poplevel): Handle that.  Fix logic for removing TREE_LISTs.
+	(cat_namespace_levels): Don't loop forever.
+
+1999-01-25  Richard Henderson  <rth@cygnus.com>
+
+	* typeck.c (build_reinterpret_cast): Fix typo in duplicated test.
+
 1999-01-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (resolve_address_of_overloaded_function): Mark the
