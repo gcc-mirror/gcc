@@ -1,3 +1,35 @@
+2005-03-15  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.h (unknown_alignment_for_access_p): Replaced by
+	known_alignment_for_access_p.
+	(known_alignment_for_access_p): New.
+	(do_peeling_for_alignment): Field made int instead of bool and renamed
+	to peeling_for_alignment.
+	(LOOP_DO_PEELING_FOR_ALIGNMENT): Renamed to LOOP_PEELING_FOR_ALIGNMENT.
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): New. This
+	functionality used to be in vect_analyze_operations.
+	(vect_analyze_operations): Code to determine vectorization factor was
+	moved to vect_determine_vectorization_factor.
+	(vect_enhance_data_refs_alignment): Update to correct alignment when it
+	is known instead of -1.  Set LOOP_PEELING_FOR_ALIGNMENT to peeling
+	factor.
+	(vect_analyze_loop): Call vect_determine_vectorization_factor (used to
+	be part of vect_analyze_operations).
+	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Use fold when
+	creating the guard condition, as the number of iterations may be
+	constant.
+	(slpeel_tree_peel_loop_to_edge): Use new name of
+	LOOP_DO_PEELING_FOR_ALIGNMENT. Set it to 0 instead of false.
+	* tree-vect-transform.c (vect_gen_niters_for_prolog_loop): Handle known
+	alignment case more efficiently. Use LOOP_PEELING_FOR_ALIGNMENT.
+	(vect_do_peeling_for_alignment): Use fold.
+	(vect_transform_loop): Use new name of LOOP_DO_PEELING_FOR_ALIGNMENT.
+
+	(vect_update_inits_of_dr): Renamed to
+	vect_update_init_of_dr.
+	(vect_update_inits_of_drs): Use new name of vect_update_inits_of_dr.
+	(vectorizable_store): Fix assertion to use == instead of =.
+
 2005-03-15  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Don't clear

@@ -95,9 +95,15 @@ typedef struct _loop_vec_info {
   /* Unknown DRs according to which loop was peeled.  */
   struct data_reference *unaligned_dr;
 
-  /* If true, loop is peeled.
-   unaligned_drs show in this case DRs used for peeling.  */
-  bool do_peeling_for_alignment;
+  /* peeling_for_alignment indicates whether peeling for alignment will take
+     place, and what the peeling factor should be:
+     peeling_for_alignment = X means:
+        If X=0: Peeling for alignment will not be applied.
+        If X>0: Peel first X iterations.
+        If X=-1: Generate a runtime test to calculate the number of iterations
+                 to be peeled, using the dataref recorded in the field
+                 unaligned_dr.  */
+  int peeling_for_alignment;
 
   /* All data references in the loop that are being written to.  */
   varray_type data_ref_writes;
@@ -119,7 +125,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_DATAREF_WRITES(L) (L)->data_ref_writes
 #define LOOP_VINFO_DATAREF_READS(L)  (L)->data_ref_reads
 #define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))
-#define LOOP_DO_PEELING_FOR_ALIGNMENT(L) (L)->do_peeling_for_alignment
+#define LOOP_PEELING_FOR_ALIGNMENT(L) (L)->peeling_for_alignment
 #define LOOP_VINFO_UNALIGNED_DR(L) (L)->unaligned_dr
 #define LOOP_VINFO_LOC(L)          (L)->loop_line_number
 
@@ -242,7 +248,8 @@ vinfo_for_stmt (tree stmt)
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
 
-/* The misalignment of the memory access in bytes.  */
+/* Reflects actual alignment of first access in the vectorized loop,
+   taking into account peeling/versioning if applied.  */
 #define DR_MISALIGNMENT(DR)   (DR)->aux
 
 static inline bool
@@ -252,9 +259,9 @@ aligned_access_p (struct data_reference *data_ref_info)
 }
 
 static inline bool
-unknown_alignment_for_access_p (struct data_reference *data_ref_info)
+known_alignment_for_access_p (struct data_reference *data_ref_info)
 {
-  return (DR_MISALIGNMENT (data_ref_info) == -1);
+  return (DR_MISALIGNMENT (data_ref_info) != -1);
 }
 
 /* Perform signed modulo, always returning a non-negative value.  */

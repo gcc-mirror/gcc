@@ -50,6 +50,7 @@ static bool vect_analyze_data_refs_alignment (loop_vec_info);
 static bool vect_compute_data_refs_alignment (loop_vec_info);
 static void vect_enhance_data_refs_alignment (loop_vec_info);
 static bool vect_analyze_operations (loop_vec_info);
+static bool vect_determine_vectorization_factor (loop_vec_info);
 
 /* Utility functions for the analyses.  */
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
@@ -285,6 +286,150 @@ vect_analyze_offset_expr (tree expr,
 }
 
 
+/* Function vect_determine_vectorization_factor
+
+   Determine the vectorization factor (VF). VF is the number of data elements
+   that are operated upon in parallel in a single iteration of the vectorized
+   loop. For example, when vectorizing a loop that operates on 4byte elements,
+   on a target with vector size (VS) 16byte, the VF is set to 4, since 4
+   elements can fit in a single vector register.
+
+   We currently support vectorization of loops in which all types operated upon
+   are of the same size. Therefore this function currently sets VF according to
+   the size of the types operated upon, and fails if there are multiple sizes
+   in the loop.
+
+   VF is also the factor by which the loop iterations are strip-mined, e.g.:
+   original loop:
+        for (i=0; i<N; i++){
+          a[i] = b[i] + c[i];
+        }
+
+   vectorized loop:
+        for (i=0; i<N; i+=VF){
+          a[i:VF] = b[i:VF] + c[i:VF];
+        }
+*/
+
+static bool
+vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
+  int nbbs = loop->num_nodes;
+  block_stmt_iterator si;
+  unsigned int vectorization_factor = 0;
+  int i;
+  tree scalar_type;
+
+  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+    fprintf (vect_dump, "=== vect_determine_vectorization_factor ===");
+
+  for (i = 0; i < nbbs; i++)
+    {
+      basic_block bb = bbs[i];
+
+      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+        {
+          tree stmt = bsi_stmt (si);
+          unsigned int nunits;
+          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+          tree vectype;
+
+          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+            {
+              fprintf (vect_dump, "==> examining statement: ");
+              print_generic_expr (vect_dump, stmt, TDF_SLIM);
+            }
+
+          gcc_assert (stmt_info);
+          /* skip stmts which do not need to be vectorized.  */
+          if (!STMT_VINFO_RELEVANT_P (stmt_info))
+            continue;
+
+          if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))))
+            {
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                        LOOP_LOC (loop_vinfo)))
+                {
+                  fprintf (vect_dump, "not vectorized: vector stmt in loop:");
+                  print_generic_expr (vect_dump, stmt, TDF_SLIM);
+                }
+              return false;
+            }
+
+          if (STMT_VINFO_DATA_REF (stmt_info))
+            scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
+          else if (TREE_CODE (stmt) == MODIFY_EXPR)
+            scalar_type = TREE_TYPE (TREE_OPERAND (stmt, 0));
+          else
+            scalar_type = TREE_TYPE (stmt);
+
+          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+            {
+              fprintf (vect_dump, "get vectype for scalar type:  ");
+              print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+            }
+
+          vectype = get_vectype_for_scalar_type (scalar_type);
+          if (!vectype)
+            {
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                        LOOP_LOC (loop_vinfo)))
+                {
+                  fprintf (vect_dump, "not vectorized: unsupported data-type ");
+                  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+                }
+              return false;
+            }
+          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+            {
+              fprintf (vect_dump, "vectype: ");
+              print_generic_expr (vect_dump, vectype, TDF_SLIM);
+            }
+          STMT_VINFO_VECTYPE (stmt_info) = vectype;
+
+          nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
+          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+            fprintf (vect_dump, "nunits = %d", nunits);
+
+          if (vectorization_factor)
+            {
+              /* FORNOW: don't allow mixed units. 
+                 This restriction will be relaxed in the future.  */
+              if (nunits != vectorization_factor) 
+                {
+                  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                            LOOP_LOC (loop_vinfo)))
+                    fprintf (vect_dump, "not vectorized: mixed data-types");
+                  return false;
+                }
+            }
+          else
+            vectorization_factor = nunits;
+
+#ifdef ENABLE_CHECKING
+          gcc_assert (GET_MODE_SIZE (TYPE_MODE (scalar_type))
+                        * vectorization_factor == UNITS_PER_SIMD_WORD);
+#endif
+        }
+    }
+
+  /* TODO: Analyze cost. Decide if worth while to vectorize.  */
+
+  if (vectorization_factor <= 1)
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+                                LOOP_LOC (loop_vinfo)))
+        fprintf (vect_dump, "not vectorized: unsupported data-type");
+      return false;
+    }
+  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
+
+  return true;
+}
+
+
 /* Function vect_analyze_operations.
 
    Scan the loop stmts and make sure they are all vectorizable.  */
@@ -299,10 +444,12 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
   unsigned int vectorization_factor = 0;
   int i;
   bool ok;
-  tree scalar_type;
 
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
     fprintf (vect_dump, "=== vect_analyze_operations ===");
+
+  gcc_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+  vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
   for (i = 0; i < nbbs; i++)
     {
@@ -311,9 +458,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
 	  tree stmt = bsi_stmt (si);
-	  unsigned int nunits;
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	  tree vectype;
 
 	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
 	    {
@@ -337,49 +482,13 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      continue;
 	    }
 
-	  if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))))
-	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-                                         LOOP_LOC (loop_vinfo)))
-		{
-                  fprintf (vect_dump, "not vectorized: vector stmt in loop:");
-		  print_generic_expr (vect_dump, stmt, TDF_SLIM);
-		}
-	      return false;
-	    }
-
-          if (STMT_VINFO_DATA_REF (stmt_info))
-            scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));    
-          else if (TREE_CODE (stmt) == MODIFY_EXPR)
-	    scalar_type = TREE_TYPE (TREE_OPERAND (stmt, 0));
-	  else
-	    scalar_type = TREE_TYPE (stmt);
-
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	    {
-	      fprintf (vect_dump, "get vectype for scalar type:  ");
-	      print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
-	    }
-
-	  vectype = get_vectype_for_scalar_type (scalar_type);
-	  if (!vectype)
-	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-                                         LOOP_LOC (loop_vinfo)))
-		{
-                  fprintf (vect_dump,
-                           "not vectorized: unsupported data-type ");
-		  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
-		}
-	      return false;
-	    }
-
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	    {
-	      fprintf (vect_dump, "vectype: ");
-	      print_generic_expr (vect_dump, vectype, TDF_SLIM);
-	    }
-	  STMT_VINFO_VECTYPE (stmt_info) = vectype;
+#ifdef ENABLE_CHECKING
+          if (STMT_VINFO_RELEVANT_P (stmt_info))
+            {
+              gcc_assert (!VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
+              gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
+            }
+#endif
 
 	  ok = (vectorizable_operation (stmt, NULL, NULL)
 		|| vectorizable_assignment (stmt, NULL, NULL)
@@ -396,43 +505,10 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 		}
 	      return false;
 	    }
-
-	  nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-	    fprintf (vect_dump, "nunits = %d", nunits);
-
-	  if (vectorization_factor)
-	    {
-	      /* FORNOW: don't allow mixed units.
-	         This restriction will be relaxed in the future.  */
-	      if (nunits != vectorization_factor)
-		{
-	          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-                                             LOOP_LOC (loop_vinfo)))
-		    fprintf (vect_dump, "not vectorized: mixed data-types");
-		  return false;
-		}
-	    }
-	  else
-	    vectorization_factor = nunits;
-
-#ifdef ENABLE_CHECKING
-	  gcc_assert (GET_MODE_SIZE (TYPE_MODE (scalar_type))
-			* vectorization_factor == UNITS_PER_SIMD_WORD);
-#endif
 	}
     }
 
   /* TODO: Analyze cost. Decide if worth while to vectorize.  */
-
-  if (vectorization_factor <= 1)
-    {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-                                 LOOP_LOC (loop_vinfo)))
-        fprintf (vect_dump, "not vectorized: unsupported data-type");
-      return false;
-    }
-  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
@@ -933,7 +1009,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   varray_type loop_read_datarefs = LOOP_VINFO_DATAREF_READS (loop_vinfo);
   varray_type loop_write_datarefs = LOOP_VINFO_DATAREF_WRITES (loop_vinfo);
-  unsigned int i;
+  varray_type datarefs;
+  struct data_reference *dr0 = NULL;
+  unsigned int i, j;
 
   /*
      This pass will require a cost model to guide it whether to apply peeling 
@@ -1036,25 +1114,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_write_datarefs); i++)
     {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (loop_write_datarefs, i);
-      if (!aligned_access_p (dr))
-        {
-          LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr;
-          LOOP_DO_PEELING_FOR_ALIGNMENT (loop_vinfo) = true;
+      dr0 = VARRAY_GENERIC_PTR (loop_write_datarefs, i);
+      if (!aligned_access_p (dr0))
+	{
+	  LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
+	  LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
 	  break;
-        }
+	}
     }
-
-  if (!LOOP_VINFO_UNALIGNED_DR (loop_vinfo))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
-	fprintf (vect_dump, "Peeling for alignment will not be applied.");
-      return;
-    }
-  else
-    if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
-      fprintf (vect_dump, "Peeling for alignment will be applied.");
-
 
   /* (1.2) Update the alignment info according to the peeling factor.
 	   If the misalignment of the DR we peel for is M, then the
@@ -1063,37 +1130,54 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	   If the misalignment of the DR we peel for is unknown, then the 
 	   misalignment of each access DR_i in the loop is also unknown.
 
-	   FORNOW: set the misalignment of the accesses to unknown even
-	           if the peeling factor is known at compile time.
+           TODO: - consider accesses that are known to have the same
+                   alignment, even if that alignment is unknown.  */
 
-	   TODO: - if the peeling factor is known at compile time, use that
-		   when updating the misalignment info of the loop DRs.
-		 - consider accesses that are known to have the same 
-		   alignment, even if that alignment is unknown.  */
-   
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_write_datarefs); i++)
+  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
     {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (loop_write_datarefs, i);
-      if (dr == LOOP_VINFO_UNALIGNED_DR (loop_vinfo))
+      int mis;
+      int npeel = 0;
+
+      if (known_alignment_for_access_p (dr0))
 	{
-	  DR_MISALIGNMENT (dr) = 0;
-	  if (vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo)))
-	    fprintf (vect_dump, "Alignment of access forced using peeling.");
+	  /* Since it's known at compile time, compute the number of iterations
+	     in the peeled loop (the peeling factor) for use in updating
+	     DR_MISALIGNMENT values.  The peeling factor is the vectorization
+	     factor minus the misalignment as an element count.  */
+	  mis = DR_MISALIGNMENT (dr0);
+	  mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
+	  npeel = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - mis;
 	}
-      else
-	DR_MISALIGNMENT (dr) = -1;
-    }
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_read_datarefs); i++)
-    {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (loop_read_datarefs, i);
-      if (dr == LOOP_VINFO_UNALIGNED_DR (loop_vinfo))
+
+      datarefs = loop_write_datarefs;
+      for (j = 0; j < 2; j++)
 	{
-	  DR_MISALIGNMENT (dr) = 0;
-	  if (vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo)))
-	    fprintf (vect_dump, "Alignment of access forced using peeling.");
+	  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+	    {
+	      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
+
+	      if (dr == dr0)
+		continue;
+	      if (known_alignment_for_access_p (dr)
+		  && DR_MISALIGNMENT (dr) == DR_MISALIGNMENT (dr0))
+		DR_MISALIGNMENT (dr) = 0;
+	      else if (known_alignment_for_access_p (dr)
+		       && known_alignment_for_access_p (dr0))
+		{
+		  int drsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
+
+		  DR_MISALIGNMENT (dr) += npeel * drsize;
+		  DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
+		}
+	      else
+		DR_MISALIGNMENT (dr) = -1;
+	    }
+	  datarefs = loop_read_datarefs;
 	}
-      else
-	DR_MISALIGNMENT (dr) = -1;
+
+      DR_MISALIGNMENT (dr0) = 0;
+      if (vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo)))
+	fprintf (vect_dump, "Alignment of access forced using peeling.");
     }
 }
 
@@ -2475,6 +2559,15 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
 	fprintf (vect_dump, "bad data access.");
+      destroy_loop_vec_info (loop_vinfo);
+      return NULL;
+    }
+
+  ok = vect_determine_vectorization_factor (loop_vinfo);
+  if (!ok)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+        fprintf (vect_dump, "can't determine vectorization factor.");
       destroy_loop_vec_info (loop_vinfo);
       return NULL;
     }

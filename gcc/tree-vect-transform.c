@@ -64,7 +64,7 @@ static void vect_generate_tmps_on_preheader
 static tree vect_build_loop_niters (loop_vec_info);
 static void vect_update_ivs_after_vectorizer (loop_vec_info, tree, edge); 
 static tree vect_gen_niters_for_prolog_loop (loop_vec_info, tree);
-static void vect_update_inits_of_dr (struct data_reference *, tree niters);
+static void vect_update_init_of_dr (struct data_reference *, tree niters);
 static void vect_update_inits_of_drs (loop_vec_info, tree);
 static void vect_do_peeling_for_alignment (loop_vec_info, struct loops *);
 static void vect_do_peeling_for_loop_bound 
@@ -907,7 +907,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   alignment_support_cheme = vect_supportable_dr_alignment (dr);
   gcc_assert (alignment_support_cheme);
-  gcc_assert (alignment_support_cheme = dr_aligned);  /* FORNOW */
+  gcc_assert (alignment_support_cheme == dr_aligned);  /* FORNOW */
 
   /* Handle use - get the vectorized def from the defining stmt.  */
   vec_oprnd1 = vect_get_vec_def_for_operand (op, stmt);
@@ -1451,14 +1451,16 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 
    Set the number of iterations for the loop represented by LOOP_VINFO
    to the minimum between LOOP_NITERS (the original iteration count of the loop)
-   and the misalignment of DR - the first data reference recorded in
+   and the misalignment of DR - the data reference recorded in
    LOOP_VINFO_UNALIGNED_DR (LOOP_VINFO).  As a result, after the execution of 
    this loop, the data reference DR will refer to an aligned location.
 
    The following computation is generated:
 
-   compute address misalignment in bytes:
-   addr_mis = addr & (vectype_size - 1)
+   If the misalignment of DR is known at compile time:
+     addr_mis = int mis = DR_MISALIGNMENT (dr);
+   Else, compute address misalignment in bytes:
+     addr_mis = addr & (vectype_size - 1)
 
    prolog_niters = min ( LOOP_NITERS , (VF - addr_mis/elem_size)&(VF-1) )
    
@@ -1479,37 +1481,53 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int vectype_align = TYPE_ALIGN (vectype) / BITS_PER_UNIT;
-  tree elem_misalign;
-  tree byte_misalign;
-  tree new_stmts = NULL_TREE;
-  tree start_addr = 
-	vect_create_addr_base_for_vector_ref (dr_stmt, &new_stmts, NULL_TREE);
-  tree ptr_type = TREE_TYPE (start_addr);
-  tree size = TYPE_SIZE (ptr_type);
-  tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
-  tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
   tree vf_minus_1 = build_int_cst (unsigned_type_node, vf - 1);
   tree niters_type = TREE_TYPE (loop_niters);
-  tree elem_size_log = 
-	build_int_cst (unsigned_type_node, exact_log2 (vectype_align/vf));
-  tree vf_tree = build_int_cst (unsigned_type_node, vf);
 
   pe = loop_preheader_edge (loop); 
-  new_bb = bsi_insert_on_edge_immediate (pe, new_stmts); 
-  gcc_assert (!new_bb);
 
-  /* Create:  byte_misalign = addr & (vectype_size - 1)  */
-  byte_misalign = build2 (BIT_AND_EXPR, type, start_addr, vectype_size_minus_1);
+  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
+    {
+      int byte_misalign = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      int element_size = vectype_align/vf;
+      int elem_misalign = byte_misalign / element_size;
 
-  /* Create:  elem_misalign = byte_misalign / element_size  */
-  elem_misalign = 
-	build2 (RSHIFT_EXPR, unsigned_type_node, byte_misalign, elem_size_log);
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+        fprintf (vect_dump, "known alignment = %d.", byte_misalign);
+      iters = build_int_cst (niters_type, (vf - elem_misalign)&(vf-1));
+    }
+  else
+    {
+      tree new_stmts = NULL_TREE;
+      tree start_addr =
+        vect_create_addr_base_for_vector_ref (dr_stmt, &new_stmts, NULL_TREE);
+      tree ptr_type = TREE_TYPE (start_addr);
+      tree size = TYPE_SIZE (ptr_type);
+      tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
+      tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
+      tree elem_size_log =
+        build_int_cst (unsigned_type_node, exact_log2 (vectype_align/vf));
+      tree vf_tree = build_int_cst (unsigned_type_node, vf);
+      tree byte_misalign;
+      tree elem_misalign;
+
+      new_bb = bsi_insert_on_edge_immediate (pe, new_stmts);
+      gcc_assert (!new_bb);
   
-  /* Create:  (niters_type) (VF - elem_misalign)&(VF - 1)  */
-  iters = build2 (MINUS_EXPR, unsigned_type_node, vf_tree, elem_misalign);
-  iters = build2 (BIT_AND_EXPR, unsigned_type_node, iters, vf_minus_1);
-  iters = fold_convert (niters_type, iters);
+      /* Create:  byte_misalign = addr & (vectype_size - 1)  */
+      byte_misalign = 
+        build2 (BIT_AND_EXPR, type, start_addr, vectype_size_minus_1);
   
+      /* Create:  elem_misalign = byte_misalign / element_size  */
+      elem_misalign =
+        build2 (RSHIFT_EXPR, unsigned_type_node, byte_misalign, elem_size_log);
+
+      /* Create:  (niters_type) (VF - elem_misalign)&(VF - 1)  */
+      iters = build2 (MINUS_EXPR, unsigned_type_node, vf_tree, elem_misalign);
+      iters = build2 (BIT_AND_EXPR, unsigned_type_node, iters, vf_minus_1);
+      iters = fold_convert (niters_type, iters);
+    }
+
   /* Create:  prolog_loop_niters = min (iters, loop_niters) */
   /* If the loop bound is known at compile time we already verified that it is
      greater than vf; since the misalignment ('iters') is at most vf, there's
@@ -1517,12 +1535,17 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   if (TREE_CODE (loop_niters) != INTEGER_CST)
     iters = build2 (MIN_EXPR, niters_type, iters, loop_niters);
 
+  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+    {
+      fprintf (vect_dump, "niters for prolog loop: ");
+      print_generic_expr (vect_dump, iters, TDF_SLIM);
+    }
+
   var = create_tmp_var (niters_type, "prolog_loop_niters");
   add_referenced_tmp_var (var);
   iters_name = force_gimple_operand (iters, &stmt, false, var);
 
   /* Insert stmt on loop preheader edge.  */
-  pe = loop_preheader_edge (loop);
   if (stmt)
     {
       basic_block new_bb = bsi_insert_on_edge_immediate (pe, stmt);
@@ -1533,7 +1556,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 }
 
 
-/* Function vect_update_inits_of_dr
+/* Function vect_update_init_of_dr
 
    NITERS iterations were peeled from LOOP.  DR represents a data reference
    in LOOP.  This function updates the information recorded in DR to
@@ -1541,7 +1564,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
    executed.  Specifically, it updates the OFFSET field of stmt_info.  */
 
 static void
-vect_update_inits_of_dr (struct data_reference *dr, tree niters)
+vect_update_init_of_dr (struct data_reference *dr, tree niters)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
   tree offset = STMT_VINFO_VECT_INIT_OFFSET (stmt_info);
@@ -1574,13 +1597,13 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
   for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_write_datarefs); i++)
     {
       struct data_reference *dr = VARRAY_GENERIC_PTR (loop_write_datarefs, i);
-      vect_update_inits_of_dr (dr, niters);
+      vect_update_init_of_dr (dr, niters);
     }
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_read_datarefs); i++)
     {
       struct data_reference *dr = VARRAY_GENERIC_PTR (loop_read_datarefs, i);
-      vect_update_inits_of_dr (dr, niters);
+      vect_update_init_of_dr (dr, niters);
     }
 }
 
@@ -1618,8 +1641,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
 
   /* Update number of times loop executes.  */
   n_iters = LOOP_VINFO_NITERS (loop_vinfo);
-  LOOP_VINFO_NITERS (loop_vinfo) =
-    build2 (MINUS_EXPR, TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
+  LOOP_VINFO_NITERS (loop_vinfo) = fold (build2 (MINUS_EXPR,
+		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop));
 
   /* Update the init conditions of the access functions of all data refs.  */
   vect_update_inits_of_drs (loop_vinfo, niters_of_prolog_loop);
@@ -1656,7 +1679,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
   /* Peel the loop if there are data refs with unknown alignment.
      Only one data ref with unknown store is allowed.  */
 
-  if (LOOP_DO_PEELING_FOR_ALIGNMENT (loop_vinfo))
+  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
     vect_do_peeling_for_alignment (loop_vinfo, loops);
   
   /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
