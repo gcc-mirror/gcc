@@ -1469,6 +1469,13 @@ build_member_call (type, name, parmlist)
   int dont_use_this = 0;
   tree basetype_path, decl;
 
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR
+      && TREE_CODE (type) == NAMESPACE_DECL)
+    {
+      my_friendly_assert (is_overloaded_fn (TREE_OPERAND (name, 0)), 980519);
+      return build_x_function_call (name, parmlist, current_class_ref);
+    }
+
   if (type == std_node)
     return build_x_function_call (do_scoped_id (name, 0), parmlist,
 				  current_class_ref);

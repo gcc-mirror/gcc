@@ -1,4 +1,13 @@
+Tue May 19 02:43:25 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_member_call): Handle template_ids.
+	* parse.y (primary): Add global_scope template_id.
+
 Mon May 18 23:22:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (setup_initp, start_objects, finish_objects): New fns.
+	(do_dtors, do_ctors): Split out from...
+	(finish_file): ...here.  Support init_priority.
 
 	* decl2.c (get_sentry): Use end_temporary_allocation.
 	Don't declare permanent_obstack.
