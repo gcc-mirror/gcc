@@ -25,7 +25,7 @@
 	(pushhi1_h8300hs): Rename to pushhi1_h8300hs_advanced.
 	Adjust its caller.
 
-2004-03-02  Roche Nicolas <roche@act-europe.fr>
+2004-03-02  Nicolas Roche  <roche@act-europe.fr>
 
 	* Makefile.in (install-libgcc, install-multilib): Pass
 	mkinstalldirs var to libgcc.mk.
