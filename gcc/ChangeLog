@@ -1,3 +1,12 @@
+2003-09-22  Nathnael Nerode  <neroden@gcc.gnu.org>
+
+	* config.host: Allow unknown hosts (not targets).  Allow
+	ns32k-*-netbsdelf* as a host (not a target).  Remove redundant
+	empty clauses.  Remove useless obsolete-configuration clause.
+	Prune unsupported configuration list.  Collapse identical 
+	clauses for closely related systems.  Rewrite comment for
+	unsupported hosts list.  Reorganize a little.
+
 2003-09-22  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (c_common_signed_or_unsigned_type): Examine mode, 
