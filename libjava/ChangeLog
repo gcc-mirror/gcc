@@ -1,5 +1,8 @@
 2002-01-29  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/List.java (addNotify): Correctly check to see if peer
+	does not exist.
+
 	* java/awt/GridLayout.java (layoutContainer): Use number of rows
 	to compute height of each cell, and number of columns to compute
 	width of each cell.

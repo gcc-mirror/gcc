@@ -858,7 +858,7 @@ deselect(int index)
 public void
 addNotify()
 {
-  if (peer != null)
+  if (peer == null)
     peer = getToolkit ().createList (this);
   super.addNotify ();
 }
