@@ -1,3 +1,10 @@
+2002-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc (money_put::do_put(string):
+	Correct output iterator value.
+	* testsuite/22_locale/money_put_members_char.cc (test03): Add.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Same.
+	
 2002-01-11  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/Makefile.am, include/Makefile.in (stamp-std):  Fix typo from
