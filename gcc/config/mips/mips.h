@@ -116,7 +116,7 @@ enum block_move_type {
 
 extern char mips_reg_names[][8];	/* register names (a0 vs. $4). */
 extern char mips_print_operand_punct[];	/* print_operand punctuation chars */
-extern char *current_function_file;	/* filename current function is in */
+extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
 extern int inside_function;		/* != 0 if inside of a function */
 extern int ignore_line_number;		/* != 0 if we are to ignore next .loc */
@@ -141,11 +141,11 @@ extern int mips_isa;			/* architectural level */
 extern int mips16;			/* whether generating mips16 code */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
 extern int mips_entry;			/* generate entry/exit for mips16 */
-extern char *mips_cpu_string;		/* for -mcpu=<xxx> */
-extern char *mips_isa_string;		/* for -mips{1,2,3,4} */
-extern char *mips_abi_string;		/* for -mabi={32,n32,64} */
-extern char *mips_entry_string;		/* for -mentry */
-extern char *mips_no_mips16_string;	/* for -mno-mips16 */
+extern const char *mips_cpu_string;	/* for -mcpu=<xxx> */
+extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
+extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
+extern const char *mips_entry_string;	/* for -mentry */
+extern const char *mips_no_mips16_string;/* for -mno-mips16 */
 extern int mips_split_addresses;	/* perform high/lo_sum support */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
@@ -178,7 +178,6 @@ extern struct rtx_def *mips16_gp_pseudo_rtx; /* psuedo reg holding $gp */
 
 #endif
 
-extern void		abort_with_insn ();
 extern int		arith32_operand ();
 extern int		arith_operand ();
 extern int		cmp_op ();
@@ -212,14 +211,14 @@ extern void		mips_expand_epilogue ();
 extern void		mips_expand_prologue ();
 extern int		mips_check_split ();
 extern char	       *mips_fill_delay_slot ();
-extern char	       *mips_move_1word ();
-extern char	       *mips_move_2words ();
+extern const char       *mips_move_1word ();
+extern const char       *mips_move_2words ();
 extern void		mips_output_double ();
 extern int		mips_output_external ();
 extern void		mips_output_float ();
 extern void		mips_output_filename ();
 extern void		mips_output_lineno ();
-extern char	       *output_block_move ();
+extern const char       *output_block_move ();
 extern void		override_options ();
 extern int		pc_or_label_operand ();
 extern void		print_operand_address ();

@@ -1735,7 +1735,7 @@
    && !TARGET_MIPS16"
   "*
 {
-  static char *const madd[] = { \"madd\\t%1,%2\",    \"madd\\t%0,%1,%2\" };
+  static const char *const madd[] = { \"madd\\t%1,%2\", \"madd\\t%0,%1,%2\" };
   if (which_alternative == 2)
     return \"#\";
   return madd[which_alternative];
@@ -2241,8 +2241,6 @@
   "optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_divmodsi4_internal (operands[0], operands[1], operands[2],
 	     operands[3]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
@@ -2291,8 +2289,6 @@
   "TARGET_64BIT && optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_divmoddi4_internal (operands[0], operands[1], operands[2],
              operands[3]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
@@ -2341,8 +2337,6 @@
   "optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_udivmodsi4_internal (operands[0], operands[1], operands[2],
                                       operands[3]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
@@ -2382,8 +2376,6 @@
   "TARGET_64BIT && optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_udivmoddi4_internal (operands[0], operands[1], operands[2],
                                       operands[3]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
@@ -2512,8 +2504,6 @@
   "!optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_divsi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2555,8 +2545,6 @@
   "TARGET_64BIT && !optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_divdi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2598,8 +2586,6 @@
   "!optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_modsi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2641,8 +2627,6 @@
   "TARGET_64BIT && !optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_moddi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2684,8 +2668,6 @@
   "!optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_udivsi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2718,8 +2700,6 @@
   "TARGET_64BIT && !optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_udivdi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2752,8 +2732,6 @@
   "!optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_umodsi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -2786,8 +2764,6 @@
   "TARGET_64BIT && !optimize"
   "
 {
-  rtx label;
-
   emit_insn (gen_umoddi3_internal (operands[0], operands[1], operands[2]));
   if (!TARGET_NO_CHECK_ZERO_DIV)
     {
@@ -4664,7 +4640,7 @@ move\\t%0,%z4\\n\\
   rtx offset = const0_rtx;
   rtx addr = XEXP (operands[1], 0);
   rtx mem_addr = eliminate_constant_term (addr, &offset);
-  char *ret;
+  const char *ret;
 
   if (TARGET_STATS)
     mips_count_memory_refs (operands[1], 2);
@@ -4723,7 +4699,7 @@ move\\t%0,%z4\\n\\
   rtx offset = const0_rtx;
   rtx addr = XEXP (operands[1], 0);
   rtx mem_addr = eliminate_constant_term (addr, &offset);
-  char *ret;
+  const char *ret;
 
   if (TARGET_STATS)
     mips_count_memory_refs (operands[1], 2);
