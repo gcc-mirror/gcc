@@ -2497,9 +2497,8 @@ emit_indirect_jump (loc)
      rtx loc;
 {
   if (! ((*insn_operand_predicate[(int)CODE_FOR_indirect_jump][0])
-	 (loc, VOIDmode)))
-    loc = copy_to_mode_reg (insn_operand_mode[(int)CODE_FOR_indirect_jump][0],
-			    loc);
+	 (loc, Pmode)))
+    loc = copy_to_mode_reg (Pmode, loc);
 
   emit_jump_insn (gen_indirect_jump (loc));
   emit_barrier ();
