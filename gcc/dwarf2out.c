@@ -7656,27 +7656,16 @@ reg_loc_descriptor (rtl)
      rtx rtl;
 {
   dw_loc_descr_ref loc_result = NULL;
-  unsigned reg, i, max;
+  unsigned reg;
 
   if (REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
     return 0;
 
   reg = reg_number (rtl);
-  max = HARD_REGNO_NREGS (reg, GET_MODE (rtl));  
-  for (i = 0; i < max; ++i)
-    {
-      add_loc_descr (&loc_result,
-		     new_loc_descr (reg <= 31 ? DW_OP_reg0 + reg : DW_OP_regx,
-				    reg <= 31 ? 0 : reg,
-				    0));
-
-      if (max > 1)
-	add_loc_descr (&loc_result,
-		       new_loc_descr (DW_OP_piece,
-				      GET_MODE_SIZE (reg_raw_mode[reg]), 0));
-
-      ++reg;
-    }
+  if (reg <= 31)
+    loc_result = new_loc_descr (DW_OP_reg0 + reg, 0, 0);
+  else
+    loc_result = new_loc_descr (DW_OP_regx, reg, 0);
 
   return loc_result;
 }
