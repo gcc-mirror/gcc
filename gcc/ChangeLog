@@ -1,5 +1,8 @@
 Thu Feb 10 12:56:47 2000  Jim Wilson  <wilson@cygnus.com>
 
+	* expmed.c (store_bit_field): If op0 and fieldmode are the same size,
+	then store directly into op0.
+
 	* calls.c (expand_call): When emitting a NOTE_INSN_SETJMP, search for
 	the CALL_INSN, and emit the note immediately after it.
 
