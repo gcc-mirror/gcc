@@ -1,3 +1,27 @@
+Sun Oct 24 20:29:59 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (progname, file_buf, default_include, include_file,
+	macrodef, definition, hashval, wchar_type, user_label_prefix,
+	directive, out_fname, if_stack, safe_write, index0, get_lintcmd,
+	expand_to_temp_buffer, is_system_include, base_name,
+	absolute_filename, read_name_map, open_include_file,
+	record_control_macro, check_precompiled, check_preconditions,
+	pcfinclude, pass_thru_directive, create_definition,
+	check_macro_name, comp_def_part, collect_expansion,
+	check_assertion, read_token_list, assertion_install,
+	assertion_lookup, eval_if_expression, conditional_skip,
+	validate_else, skip_quoted_string, quote_string, macarg1,
+	error_from_errno, install, lookup, hashf, dump_defn_1,
+	perror_with_name, pfatal_with_name, main, trigraph_pcp,
+	check_white_space, rescan, handle_directive, monthnames,
+	special_symbol, do_include, remap_include_file, write_output,
+	arglist, do_assert, do_unassert, do_line, do_error, do_once,
+	do_ident, do_sccs, do_xifdef, skip_if_group,
+	output_line_directive, macroexpand, macarg, change_newlines,
+	initialize_builtins, make_definition): Constify a char*.
+
+	* pcp.h (stringdef): Likewise.
+
 Sun Oct 24 13:29:28 1999  Richard Henderson  <rth@cygnus.com>
 
 	* unroll.c (copy_loop_body): Examine SET_DEST of single_set

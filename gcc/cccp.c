@@ -110,7 +110,7 @@ HOST_WIDEST_INT parse_c_expression PROTO((char *, int));
 
 /* Name under which this program was invoked.  */
 
-static char *progname;
+static const char *progname;
 
 /* Nonzero means use extra default include directories for C++.  */
 
@@ -300,9 +300,9 @@ static int multiline_string_line = 0;
    and for expanding macro arguments.  */
 #define INPUT_STACK_MAX 400
 static struct file_buf {
-  char *fname;
+  const char *fname;
   /* Filename specified with #line directive.  */
-  char *nominal_fname;
+  const char *nominal_fname;
   /* The length of nominal_fname, which may contain embedded NULs.  */
   size_t nominal_fname_len;
   /* Include file description.  */
@@ -383,8 +383,8 @@ struct file_name_list
 /* -I directories are added to the end, then the defaults are added.  */
 /* The */
 static struct default_include {
-  char *fname;			/* The name of the directory.  */
-  char *component;		/* The component containing the directory */
+  const char *fname;		/* The name of the directory.  */
+  const char *component;	/* The component containing the directory */
   int cplusplus;		/* Only look here if we're compiling C++.  */
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
@@ -472,7 +472,7 @@ struct include_file {
      was seen in this include file, or #import was applied to the file.
      Otherwise, if it is nonzero, it is a macro name.
      Don't include the file again if that macro is defined.  */
-  U_CHAR *control_macro;
+  const U_CHAR *control_macro;
   /* Nonzero if the dependency on this include file has been output.  */
   int deps_output;
   struct stat st;
@@ -499,7 +499,7 @@ typedef struct macrodef MACRODEF;
 struct macrodef
 {
   struct definition *defn;
-  U_CHAR *symnam;
+  const U_CHAR *symnam;
   int symlen;
 };
 
@@ -542,7 +542,7 @@ struct definition {
 				/* came from the command line */
   U_CHAR *expansion;
   int line;			/* Line number of definition */
-  char *file;			/* File of definition */
+  const char *file;		/* File of definition */
   size_t file_len;		/* Length of file (which can contain NULs) */
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist {
@@ -569,7 +569,7 @@ struct definition {
 /* different kinds of things that can appear in the value field
    of a hash node.  Actually, this may be useless now.  */
 union hashval {
-  char *cpval;
+  const char *cpval;
   DEFINITION *defn;
   KEYDEF *keydef;
 };
@@ -694,7 +694,7 @@ static HASHNODE *hashtab[HASHSIZE];
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
-char * wchar_type = WCHAR_TYPE;
+static const char * wchar_type = WCHAR_TYPE;
 #undef WCHAR_TYPE
 
 /* The string value for __USER_LABEL_PREFIX__ */
@@ -702,7 +702,7 @@ char * wchar_type = WCHAR_TYPE;
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 #endif
-char * user_label_prefix = USER_LABEL_PREFIX;
+static const char * user_label_prefix = USER_LABEL_PREFIX;
 #undef USER_LABEL_PREFIX
 
 /* The string value for __REGISTER_PREFIX__ */
@@ -763,7 +763,7 @@ static int assertions_flag;
 struct directive {
   int length;			/* Length of name */
   int (*func) DO_PROTO;	/* Function to handle directive */
-  char *name;			/* Name of directive */
+  const char *name;		/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
 };
 
@@ -838,7 +838,7 @@ U_CHAR is_space[256];
 static int errors = 0;			/* Error counter for exit code */
 
 /* Name of output file, for error messages.  */
-static char *out_fname;
+static const char *out_fname;
 
 /* Nonzero to ignore \ in string constants.  Use to treat #line 1 "A:\file.h
    as a non-form feed.  If you want it to be a form feed, you must use
@@ -850,12 +850,12 @@ static int ignore_escape_flag = 1;
 
 struct if_stack {
   struct if_stack *next;	/* for chaining to the next stack frame */
-  char *fname;		/* copied from input when frame is made */
+  const char *fname;		/* copied from input when frame is made */
   size_t fname_len;		/* similarly */
   int lineno;			/* similarly */
   int if_succeeded;		/* true if a leg of this if-group
 				    has been passed through rescan */
-  U_CHAR *control_macro;	/* For #ifndef at start of file,
+  const U_CHAR *control_macro;	/* For #ifndef at start of file,
 				   this is the macro name tested.  */
   enum node_type type;		/* type of last directive seen in this group */
 };
@@ -879,13 +879,13 @@ static int deps_column;
 static int ignore_srcdir;
 
 static int safe_read PROTO((int, char *, int));
-static void safe_write PROTO((int, char *, int));
+static void safe_write PROTO((int, const char *, int));
 
 int main PROTO((int, char **));
 
 static void path_include PROTO((char *));
 
-static U_CHAR *index0 PROTO((U_CHAR *, int, size_t));
+static const U_CHAR *index0 PROTO((const U_CHAR *, int, size_t));
 
 static void trigraph_pcp PROTO((FILE_BUF *));
 static void check_white_space PROTO((FILE_BUF *));
@@ -893,66 +893,77 @@ static void check_white_space PROTO((FILE_BUF *));
 static void newline_fix PROTO((U_CHAR *));
 static void name_newline_fix PROTO((U_CHAR *));
 
-static char *get_lintcmd PROTO((U_CHAR *, U_CHAR *, U_CHAR **, int *, int *));
+static const char *get_lintcmd PROTO((const U_CHAR *, const U_CHAR *,
+				      const U_CHAR **, int *, int *));
 
 static void rescan PROTO((FILE_BUF *, int));
 
-static FILE_BUF expand_to_temp_buffer PROTO((U_CHAR *, U_CHAR *, int, int));
+static FILE_BUF expand_to_temp_buffer PROTO((const U_CHAR *, const U_CHAR *,
+					     int, int));
 
 static int handle_directive PROTO((FILE_BUF *, FILE_BUF *));
 
 static struct tm *timestamp PROTO((void));
 static void special_symbol PROTO((HASHNODE *, FILE_BUF *));
 
-static int is_system_include PROTO((char *));
-static char *base_name PROTO((char *));
-static int absolute_filename PROTO((char *));
+static int is_system_include PROTO((const char *));
+static char *base_name PROTO((const char *));
+static int absolute_filename PROTO((const char *));
 static size_t simplify_filename PROTO((char *));
 
 static char *read_filename_string PROTO((int, FILE *));
-static struct file_name_map *read_name_map PROTO((char *));
-static int open_include_file PROTO((char *, struct file_name_list *, U_CHAR *, struct include_file **));
+static struct file_name_map *read_name_map PROTO((const char *));
+static int open_include_file PROTO((char *, struct file_name_list *,
+				    const U_CHAR *, struct include_file **));
 static char *remap_include_file PROTO((char *, struct file_name_list *));
 static int lookup_ino_include PROTO((struct include_file *));
 
 static void finclude PROTO((int, struct include_file *, FILE_BUF *, int, struct file_name_list *));
-static void record_control_macro PROTO((struct include_file *, U_CHAR *));
+static void record_control_macro PROTO((struct include_file *, const U_CHAR *));
 
-static char *check_precompiled PROTO((int, struct stat *, char *, char **));
-static int check_preconditions PROTO((char *));
-static void pcfinclude PROTO((U_CHAR *, U_CHAR *, FILE_BUF *));
+static char *check_precompiled PROTO((int, struct stat *, const char *,
+				      const char **));
+static int check_preconditions PROTO((const char *));
+static void pcfinclude PROTO((U_CHAR *, const U_CHAR *, FILE_BUF *));
 static void pcstring_used PROTO((HASHNODE *));
 static void write_output PROTO((void));
-static void pass_thru_directive PROTO((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+static void pass_thru_directive PROTO((const U_CHAR *, const U_CHAR *,
+				       FILE_BUF *, struct directive *));
 
-static MACRODEF create_definition PROTO((U_CHAR *, U_CHAR *, FILE_BUF *));
+static MACRODEF create_definition PROTO((const U_CHAR *, const U_CHAR *,
+					 FILE_BUF *));
 
-static int check_macro_name PROTO((U_CHAR *, int));
+static int check_macro_name PROTO((const U_CHAR *, int));
 static int compare_defs PROTO((DEFINITION *, DEFINITION *));
-static int comp_def_part PROTO((int, U_CHAR *, int, U_CHAR *, int, int));
+static int comp_def_part PROTO((int, const U_CHAR *, int, const U_CHAR *,
+				int, int));
 
-static DEFINITION *collect_expansion  PROTO((U_CHAR *, U_CHAR *, int, struct arglist *));
+static DEFINITION *collect_expansion  PROTO((const U_CHAR *, const U_CHAR *,
+					     int, struct arglist *));
 
-int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
+int check_assertion PROTO((const U_CHAR *, int, int, struct arglist *));
 static int compare_token_lists PROTO((struct arglist *, struct arglist *));
 
-static struct arglist *read_token_list PROTO((U_CHAR **, U_CHAR *, int *));
+static struct arglist *read_token_list PROTO((const U_CHAR **, const U_CHAR *,
+					      int *));
 static void free_token_list PROTO((struct arglist *));
 
-static ASSERTION_HASHNODE *assertion_install PROTO((U_CHAR *, int, int));
-static ASSERTION_HASHNODE *assertion_lookup PROTO((U_CHAR *, int, int));
+static ASSERTION_HASHNODE *assertion_install PROTO((const U_CHAR *, int, int));
+static ASSERTION_HASHNODE *assertion_lookup PROTO((const U_CHAR *, int, int));
 static void delete_assertion PROTO((ASSERTION_HASHNODE *));
 
 static void do_once PROTO((void));
 
-static HOST_WIDEST_INT eval_if_expression PROTO((U_CHAR *, int));
-static void conditional_skip PROTO((FILE_BUF *, int, enum node_type, U_CHAR *, FILE_BUF *));
+static HOST_WIDEST_INT eval_if_expression PROTO((const U_CHAR *, int));
+static void conditional_skip PROTO((FILE_BUF *, int, enum node_type,
+				    const U_CHAR *, FILE_BUF *));
 static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
-static void validate_else PROTO((U_CHAR *, U_CHAR *));
+static void validate_else PROTO((const U_CHAR *, const U_CHAR *));
 
 static U_CHAR *skip_to_end_of_comment PROTO((FILE_BUF *, int *, int));
-static U_CHAR *skip_quoted_string PROTO((U_CHAR *, U_CHAR *, int, int *, int *, int *));
-static char *quote_string PROTO((char *, char *, size_t));
+static U_CHAR *skip_quoted_string PROTO((const U_CHAR *, const U_CHAR *,
+					 int, int *, int *, int *));
+static char *quote_string PROTO((char *, const char *, size_t));
 static U_CHAR *skip_paren_group PROTO((FILE_BUF *));
 
 /* Last arg to output_line_directive.  */
@@ -964,7 +975,7 @@ static void macroexpand PROTO((HASHNODE *, FILE_BUF *));
 struct argdata;
 static int macarg PROTO((struct argdata *, int));
 
-static U_CHAR *macarg1 PROTO((U_CHAR *, U_CHAR *, struct hashnode *, int *, int *, int *, int));
+static U_CHAR *macarg1 PROTO((U_CHAR *, const U_CHAR *, struct hashnode *, int *, int *, int *, int));
 
 static int discard_comments PROTO((U_CHAR *, int, int));
 
@@ -974,7 +985,7 @@ static void notice PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static void vnotice PROTO((const char *, va_list));
 void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 void verror PROTO((const char *, va_list));
-static void error_from_errno PROTO((char *));
+static void error_from_errno PROTO((const char *));
 void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static void vwarning PROTO((const char *, va_list));
 static void error_with_line PVPROTO((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
@@ -991,14 +1002,15 @@ static void print_containing_files PROTO((void));
 static int line_for_error PROTO((int));
 static int grow_outbuf PROTO((FILE_BUF *, int));
 
-static HASHNODE *install PROTO((U_CHAR *, int, enum node_type, char *, int));
-HASHNODE *lookup PROTO((U_CHAR *, int, int));
+static HASHNODE *install PROTO((const U_CHAR *, int, enum node_type,
+				const char *, int));
+HASHNODE *lookup PROTO((const U_CHAR *, int, int));
 static void delete_macro PROTO((HASHNODE *));
-static int hashf PROTO((U_CHAR *, int, int));
+static int hashf PROTO((const U_CHAR *, int, int));
 
 static void dump_single_macro PROTO((HASHNODE *, FILE *));
 static void dump_all_macros PROTO((void));
-static void dump_defn_1 PROTO((U_CHAR *, int, int, FILE *));
+static void dump_defn_1 PROTO((const U_CHAR *, int, int, FILE *));
 static void dump_arg_n PROTO((DEFINITION *, int, FILE *));
 
 static void initialize_char_syntax PROTO((void));
@@ -1017,8 +1029,8 @@ static void deps_output PROTO((const char *, int));
 
 void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
-static void perror_with_name PROTO((char *));
-static void pfatal_with_name PROTO((char *)) ATTRIBUTE_NORETURN;
+static void perror_with_name PROTO((const char *));
+static void pfatal_with_name PROTO((const char *)) ATTRIBUTE_NORETURN;
 static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
 
 static void memory_full PROTO((void)) ATTRIBUTE_NORETURN;
@@ -1069,7 +1081,7 @@ safe_read (desc, ptr, len)
 static void
 safe_write (desc, ptr, len)
      int desc;
-     char *ptr;
+     const char *ptr;
      int len;
 {
   int wcount, written;
@@ -1171,7 +1183,7 @@ main (argc, argv)
      char **argv;
 {
   struct stat st;
-  char *in_fname;
+  const char *in_fname;
   char *cp;
   int f, i;
   FILE_BUF *fp;
@@ -1185,7 +1197,7 @@ main (argc, argv)
   /* Record the option used with each element of pend_assertions.
      This is preparation for supporting more than one option for making
      an assertion.  */
-  char **pend_assertion_options;
+  const char **pend_assertion_options;
   int no_standard_includes = 0;
   int no_standard_cplusplus_includes = 0;
   int missing_newline = 0;
@@ -1199,7 +1211,7 @@ main (argc, argv)
      This is 0 if deps are being written to stdout.  */
   char *deps_file = 0;
   /* Fopen file mode to open deps_file with.  */
-  char *deps_mode = "a";
+  const char *deps_mode = "a";
   /* Stream on which to print the dependency information.  */
   FILE *deps_stream = 0;
   /* Target-name to write with the dependency information.  */
@@ -1234,7 +1246,8 @@ main (argc, argv)
   {
     /* Remove extension from PROGNAME.  */
     char *p;
-    char *s = progname = xstrdup (progname);
+    char *s = xstrdup (progname);
+    progname = s;
 
     if ((p = rindex (s, ';')) != 0) *p = '\0';	/* strip version number */
     if ((p = rindex (s, '.')) != 0		/* strip type iff ".exe" */
@@ -1254,7 +1267,7 @@ main (argc, argv)
   pend_undefs = (char **) xmalloc (argc * sizeof (char *));
   pend_assertions = (char **) xmalloc (argc * sizeof (char *));
   pend_includes = (char **) xmalloc (argc * sizeof (char *));
-  pend_assertion_options = (char **) xmalloc (argc * sizeof (char *));
+  pend_assertion_options = (const char **) xmalloc (argc * sizeof (char *));
 
   in_fname = NULL;
   out_fname = NULL;
@@ -1826,8 +1839,8 @@ main (argc, argv)
 	}
       }
       /* Put the usual defaults back in at the end.  */
-      bcopy ((char *) include_defaults_array,
-	     (char *) &include_defaults[num_dirs],
+      bcopy ((const PTR) include_defaults_array,
+	     (PTR) &include_defaults[num_dirs],
 	     sizeof (include_defaults_array));
     }
   }
@@ -2216,17 +2229,17 @@ path_include (path)
    If we knew we could use memchr, we could just invoke memchr (S, C, N),
    but unfortunately memchr isn't autoconfigured yet.  */
 
-static U_CHAR *
+static const U_CHAR *
 index0 (s, c, n)
-     U_CHAR *s;
+     const U_CHAR *s;
      int c;
      size_t n;
 {
-  char *p = (char *) s;
+  const char *p = (const char *) s;
   for (;;) {
-    char *q = index (p, c);
+    const char *q = index (p, c);
     if (q)
-      return (U_CHAR *) q;
+      return q;
     else {
       size_t l = strlen (p);
       if (l == n)
@@ -2251,10 +2264,11 @@ static void
 trigraph_pcp (buf)
      FILE_BUF *buf;
 {
-  register U_CHAR c, *fptr, *bptr, *sptr, *lptr;
+  register U_CHAR c, *bptr;
+  register const U_CHAR *fptr, *sptr, *lptr;
   int len;
 
-  fptr = bptr = sptr = buf->buf;
+  fptr = sptr = bptr = buf->buf;
   lptr = fptr + buf->length;
   while ((sptr = index0 (sptr, '?', (size_t) (lptr - sptr))) != NULL) {
     if (*++sptr != '?')
@@ -2298,7 +2312,7 @@ trigraph_pcp (buf)
     /* BSD doc says bcopy () works right for overlapping strings.  In ANSI
        C, this will be memmove ().  */
     if (bptr != fptr && len > 0)
-      bcopy ((char *) fptr, (char *) bptr, len);
+      bcopy ((const PTR) fptr, (PTR) bptr, len);
 
     bptr += len;
     *bptr++ = c;
@@ -2306,7 +2320,7 @@ trigraph_pcp (buf)
   }
   len = buf->length - (fptr - buf->buf);
   if (bptr != fptr && len > 0)
-    bcopy ((char *) fptr, (char *) bptr, len);
+    bcopy ((const PTR) fptr, (PTR) bptr, len);
   buf->length -= fptr - bptr;
   buf->buf[buf->length] = '\0';
   if (warn_trigraphs && fptr != bptr)
@@ -2320,9 +2334,9 @@ static void
 check_white_space (buf)
      FILE_BUF *buf;
 {
-  register U_CHAR *sptr = buf->buf;
-  register U_CHAR *lptr = sptr + buf->length;
-  register U_CHAR *nptr;
+  register const U_CHAR *sptr = buf->buf;
+  register const U_CHAR *lptr = sptr + buf->length;
+  register const U_CHAR *nptr;
   int line = 0;
 
   nptr = sptr = buf->buf;
@@ -2330,7 +2344,7 @@ check_white_space (buf)
   for (nptr = sptr;
        (nptr = index0 (nptr, '\n', (size_t) (lptr - nptr))) != NULL;
        nptr ++) {
-    register U_CHAR *p = nptr;
+    register const U_CHAR *p = nptr;
     line++;
     for (p = nptr; sptr < p; p--) {
       if (! is_hor_space[p[-1]]) {
@@ -2430,15 +2444,15 @@ name_newline_fix (bp)
    arglen long.  Note that we don't parse that arg since it will just
    be printed out again.  */
 
-static char *
+static const char *
 get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
-     register U_CHAR *ibp;
-     register U_CHAR *limit;
-     U_CHAR **argstart;		/* point to command arg */
+     register const U_CHAR *ibp;
+     register const U_CHAR *limit;
+     const U_CHAR **argstart;	/* point to command arg */
      int *arglen, *cmdlen;	/* how long they are */
 {
   HOST_WIDEST_INT linsize;
-  register U_CHAR *numptr;	/* temp for arg parsing */
+  register const U_CHAR *numptr;	/* temp for arg parsing */
 
   *arglen = 0;
 
@@ -2640,7 +2654,7 @@ do { ip = &instack[indepth];		\
 	if (*ibp == '(') {
 	  ip->bufp = ibp;
 	  skip_paren_group (ip);
-	  bcopy ((char *) ibp, (char *) obp, ip->bufp - ibp);
+	  bcopy ((const PTR) ibp, (PTR) obp, ip->bufp - ibp);
 	  obp += ip->bufp - ibp;
 	  ibp = ip->bufp;
 	}
@@ -2918,7 +2932,7 @@ do { ip = &instack[indepth];		\
 	    if (*ibp == '\n')
 	      {
 		if (put_out_comments) {
-		  bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
+		  bcopy ((const PTR) before_bp, (PTR) obp, ibp - before_bp);
 		  obp += ibp - before_bp;
 		}
 		break;
@@ -2961,9 +2975,10 @@ do { ip = &instack[indepth];		\
 
       /* If this cpp is for lint, we peek inside the comments: */
       if (for_lint) {
-	U_CHAR *argbp;
+	const U_CHAR *argbp;
 	int cmdlen, arglen;
-	char *lintcmd = get_lintcmd (ibp, limit, &argbp, &arglen, &cmdlen);
+	const char *lintcmd =
+	  get_lintcmd (ibp, limit, &argbp, &arglen, &cmdlen);
 
 	if (lintcmd != NULL) {
 	  op->bufp = obp;
@@ -3052,7 +3067,7 @@ do { ip = &instack[indepth];		\
 
 	ibp++;
 	if (put_out_comments) {
-	  bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
+	  bcopy ((const PTR) before_bp, (PTR) obp, ibp - before_bp);
 	  obp += ibp - before_bp;
 	}
       }
@@ -3547,7 +3562,7 @@ hashcollision:
  ending:
   if (if_stack != ip->if_stack)
     {
-      char *str;
+      const char *str;
 
       switch (if_stack->type)
 	{
@@ -3587,7 +3602,8 @@ hashcollision:
  */
 static FILE_BUF
 expand_to_temp_buffer (buf, limit, output_marks, assertions)
-     U_CHAR *buf, *limit;
+     const U_CHAR *buf;
+     const U_CHAR *limit;
      int output_marks, assertions;
 {
   register FILE_BUF *ip;
@@ -3606,7 +3622,7 @@ expand_to_temp_buffer (buf, limit, output_marks, assertions)
 
   buf1 = (U_CHAR *) alloca (length + 1);
   {
-    register U_CHAR *p1 = buf;
+    register const U_CHAR *p1 = buf;
     register U_CHAR *p2 = buf1;
 
     while (p1 != limit)
@@ -3800,7 +3816,7 @@ handle_directive (ip, op)
       keep_comments = traditional && kt->type == T_DEFINE;
       /* #import is defined only in Objective C, or when on the NeXT.  */
       if (kt->type == T_IMPORT
-	  && !(objc || lookup ((U_CHAR *) "__NeXT__", -1, -1)))
+	  && !(objc || lookup ((const U_CHAR *) "__NeXT__", -1, -1)))
 	break;
 
       /* Find the end of this directive (first newline not backslashed
@@ -4005,7 +4021,7 @@ handle_directive (ip, op)
 	    {
 	      int backslash_newlines_p;
 
-	      register U_CHAR *bp1
+	      register const U_CHAR *bp1
 		= skip_quoted_string (xp - 1, bp, ip->lineno,
 				      NULL_PTR, &backslash_newlines_p, 
 				      NULL_PTR);
@@ -4133,9 +4149,10 @@ timestamp ()
   return &tmbuf;
 }
 
-static char *monthnames[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-			     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-			    };
+static const  char * const monthnames[] = {
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+};
 
 /*
  * expand things like __FILE__.  Place the expansion into the output
@@ -4147,7 +4164,7 @@ special_symbol (hp, op)
      HASHNODE *hp;
      FILE_BUF *op;
 {
-  char *buf;
+  const char *buf;
   int i, len;
   int true_indepth;
   FILE_BUF *ip = NULL;
@@ -4175,13 +4192,14 @@ special_symbol (hp, op)
   case T_BASE_FILE:
     {
       FILE_BUF *p = hp->type == T_FILE ? ip : &instack[0];
-      char *string = p->nominal_fname;
+      const char *string = p->nominal_fname;
 
       if (string)
 	{
 	  size_t string_len = p->nominal_fname_len;
-	  buf = (char *) alloca (3 + 4 * string_len);
-	  quote_string (buf, string, string_len);
+	  char *newbuf = (char *) alloca (3 + 4 * string_len);
+	  quote_string (newbuf, string, string_len);
+	  buf = newbuf;
 	}
       else
 	buf = "\"\"";
@@ -4190,18 +4208,24 @@ special_symbol (hp, op)
     }
 
   case T_INCLUDE_LEVEL:
-    true_indepth = 0;
-    for (i = indepth; i >= 0; i--)
-      if (instack[i].fname != NULL)
-        true_indepth++;
-
-    buf = (char *) alloca (8);	/* Eight bytes ought to be more than enough */
-    sprintf (buf, "%d", true_indepth - 1);
+    {
+      /* Eight bytes ought to be more than enough */
+      char *newbuf =  (char *) alloca (8);
+      true_indepth = 0;
+      for (i = indepth; i >= 0; i--)
+	if (instack[i].fname != NULL)
+	  true_indepth++;
+      sprintf (newbuf, "%d", true_indepth - 1);
+      buf = newbuf;
+    }
     break;
 
   case T_VERSION:
-    buf = (char *) alloca (3 + strlen (version_string));
-    sprintf (buf, "\"%s\"", version_string);
+    {
+      char *newbuf = (char *) alloca (3 + strlen (version_string));
+      sprintf (newbuf, "\"%s\"", version_string);
+      buf = newbuf;
+    }
     break;
 
 #ifndef NO_BUILTIN_SIZE_TYPE
@@ -4246,20 +4270,26 @@ special_symbol (hp, op)
     break;
 
   case T_SPECLINE:
-    buf = (char *) alloca (10);
-    sprintf (buf, "%d", ip->lineno);
+    {
+      char *newbuf = (char *) alloca (10);
+      sprintf (newbuf, "%d", ip->lineno);
+      buf = newbuf;
+    }
     break;
 
   case T_DATE:
   case T_TIME:
-    buf = (char *) alloca (20);
-    timebuf = timestamp ();
-    if (hp->type == T_DATE)
-      sprintf (buf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
-	      timebuf->tm_mday, timebuf->tm_year + 1900);
-    else
-      sprintf (buf, "\"%02d:%02d:%02d\"", timebuf->tm_hour, timebuf->tm_min,
-	      timebuf->tm_sec);
+    {
+      char *newbuf = (char *) alloca (20);
+      timebuf = timestamp ();
+      if (hp->type == T_DATE)
+	sprintf (newbuf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
+		 timebuf->tm_mday, timebuf->tm_year + 1900);
+      else
+	sprintf (newbuf, "\"%02d:%02d:%02d\"", timebuf->tm_hour,
+		 timebuf->tm_min, timebuf->tm_sec);
+      buf = newbuf;
+    }
     break;
 
   case T_SPEC_DEFINED:
@@ -4342,7 +4372,8 @@ do_include (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  U_CHAR *importing = keyword->type == T_IMPORT ? (U_CHAR *) "" : (U_CHAR *) 0;
+  const U_CHAR *importing =
+    keyword->type == T_IMPORT ? (const U_CHAR *) "" : (const U_CHAR *) 0;
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
   static int import_warning = 0;
   char *fname;		/* Dynamically allocated fname buffer */
@@ -4367,7 +4398,7 @@ do_include (buf, limit, op, keyword)
 #endif
   int pcf = -1;
   char *pcfbuf;
-  char *pcfbuflimit;
+  const char *pcfbuflimit;
   int pcfnum;
 
   if (pedantic && !instack[indepth].system_header_p)
@@ -4441,15 +4472,15 @@ get_filename:
       for (fp = &instack[indepth]; fp >= instack; fp--)
 	{
 	  int n;
-	  char *nam;
 
-	  if ((nam = fp->nominal_fname) != NULL) {
+	  if ((fp->nominal_fname) != NULL) {
+	    char *nam;
 	    /* Found a named file.  Figure out dir of the file,
 	       and put it in front of the search list.  */
 	    dsp = ((struct file_name_list *)
 		   alloca (sizeof (struct file_name_list)
 			   + fp->nominal_fname_len));
-	    strcpy (dsp->fname, nam);
+	    strcpy (dsp->fname, fp->nominal_fname);
 	    simplify_filename (dsp->fname);
 	    nam = base_name (dsp->fname);
 	    *nam = 0;
@@ -4519,10 +4550,9 @@ get_filename:
       /* Expand buffer and then remove any newline markers.
 	 We can't just tell expand_to_temp_buffer to omit the markers,
 	 since it would put extra spaces in include file names.  */
-      FILE_BUF trybuf;
       U_CHAR *src;
       int errors_before_expansion = errors;
-      trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
+      FILE_BUF trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
       if (errors != errors_before_expansion) {
 	free (trybuf.buf);
 	goto invalid_include_file_name;
@@ -4540,7 +4570,7 @@ get_filename:
 	  case '\'':
 	  case '\"':
 	    {
-	      U_CHAR *src1 = skip_quoted_string (src - 1, trybuf.bufp, 0,
+	      const U_CHAR *src1 = skip_quoted_string (src - 1, trybuf.bufp, 0,
 						 NULL_PTR, NULL_PTR, NULL_PTR);
 	      while (src != src1)
 		*limit++ = *src++;
@@ -4788,7 +4818,7 @@ get_filename:
 
 static int
 is_system_include (filename)
-    register char *filename;
+    register const char *filename;
 {
   struct file_name_list *searchptr;
 
@@ -4803,10 +4833,10 @@ is_system_include (filename)
 
 static char *
 base_name (fname)
-     char *fname;
+     const char *fname;
 {
-  char *s = fname;
-  char *p;
+  const char *s = fname;
+  const char *p;
 #if defined (__MSDOS__) || defined (_WIN32)
   if (ISALPHA (s[0]) && s[1] == ':') s += 2;
 #endif
@@ -4815,20 +4845,20 @@ base_name (fname)
   if ((p = rindex (s, ']'))) s = p + 1;	/* Skip directory.  */
   if ((p = rindex (s, '>'))) s = p + 1;	/* Skip alternate (int'n'l) dir.  */
   if (s != fname)
-    return s;
+    return (char *) s;
 #endif
   if ((p = rindex (s, '/'))) s = p + 1;
 #ifdef DIR_SEPARATOR
   if ((p = rindex (s, DIR_SEPARATOR))) s = p + 1;
 #endif
-  return s;
+  return (char *) s;
 }
 
 /* Yield nonzero if FILENAME is absolute (i.e. not relative).  */
 
 static int
 absolute_filename (filename)
-     char *filename;
+     const char *filename;
 {
 #if defined (__MSDOS__) \
   || (defined (_WIN32) && !defined (__CYGWIN__) && !defined (_UWIN))
@@ -4993,7 +5023,7 @@ read_filename_string (ch, f)
 
 static struct file_name_map *
 read_name_map (dirname)
-     char *dirname;
+     const char *dirname;
 {
   /* This structure holds a linked list of file name maps, one per
      directory.  */
@@ -5091,7 +5121,7 @@ static int
 open_include_file (filename, searchptr, importing, pinc)
      char *filename;
      struct file_name_list *searchptr;
-     U_CHAR *importing;
+     const U_CHAR *importing;
      struct include_file **pinc;
 {
   char *fname = remap ? remap_include_file (filename, searchptr) : filename;
@@ -5171,7 +5201,7 @@ remap_include_file (filename, searchptr)
      struct file_name_list *searchptr;
 {
   register struct file_name_map *map;
-  register char *from;
+  register const char *from;
 
   if (searchptr)
     {
@@ -5360,7 +5390,7 @@ finclude (f, inc, op, system_header_p, dirptr)
 static void
 record_control_macro (inc, macro_name)
      struct include_file *inc;
-     U_CHAR *macro_name;
+     const U_CHAR *macro_name;
 {
   if (!inc->control_macro || inc->control_macro[0])
     inc->control_macro = macro_name;
@@ -5382,8 +5412,8 @@ static char *
 check_precompiled (pcf, st, fname, limit)
      int pcf;
      struct stat *st;
-     char *fname ATTRIBUTE_UNUSED;
-     char **limit;
+     const char *fname ATTRIBUTE_UNUSED;
+     const char **limit;
 {
   int length = 0;
   char *buf;
@@ -5436,10 +5466,10 @@ check_precompiled (pcf, st, fname, limit)
 
 static int 
 check_preconditions (prec)
-     char *prec;
+     const char *prec;
 {
   MACRODEF mdef;
-  char *lineend;
+  const char *lineend;
   
   while (*prec) {
     lineend = index (prec, '\n');
@@ -5452,7 +5482,8 @@ check_preconditions (prec)
       HASHNODE *hp;
       
       prec += 6;
-      mdef = create_definition ((U_CHAR *) prec, (U_CHAR *) lineend, NULL_PTR);
+      mdef = create_definition ((const U_CHAR *) prec,
+				(const U_CHAR *) lineend, NULL_PTR);
 
       if (mdef.defn == 0)
 	abort ();
@@ -5466,7 +5497,7 @@ check_preconditions (prec)
 		  || mdef.defn->expansion[1] != ' ')))
 	return 0;
     } else if (!strncmp (prec, "undef", 5)) {
-      char *name;
+      const char *name;
       int len;
       
       prec += 5;
@@ -5477,7 +5508,7 @@ check_preconditions (prec)
 	prec++;
       len = prec - name;
       
-      if (lookup ((U_CHAR *) name, len, -1))
+      if (lookup ((const U_CHAR *) name, len, -1))
 	return 0;
     } else {
       error ("Bad format encountered while reading precompiled file");
@@ -5496,7 +5527,8 @@ check_preconditions (prec)
 
 static void
 pcfinclude (buf, name, op)
-     U_CHAR *buf, *name;
+     U_CHAR *buf;
+     const U_CHAR *name;
      FILE_BUF *op;
 {
   FILE_BUF tmpbuf;
@@ -5644,14 +5676,14 @@ write_output ()
     if (next_string
 	&& cur_buf_loc - outbuf.buf == next_string->output_mark) {
       if (next_string->writeflag) {
-	len = 4 * strlen ((char *) next_string->filename) + 32;
+	len = 4 * strlen ((const char *) next_string->filename) + 32;
 	while (len > line_directive_len)
 	  line_directive = xrealloc (line_directive, 
 				     line_directive_len *= 2);
 	sprintf (line_directive, "\n# %d ", next_string->lineno);
 	strcpy (quote_string (line_directive + strlen (line_directive),
-			      (char *) next_string->filename,
-			      strlen ((char *) next_string->filename)),
+			      (const char *) next_string->filename,
+			      strlen ((const char *) next_string->filename)),
 		"\n");
 	safe_write (fileno (stdout), line_directive, strlen (line_directive));
 	safe_write (fileno (stdout),
@@ -5679,7 +5711,8 @@ write_output ()
 
 static void
 pass_thru_directive (buf, limit, op, keyword)
-     U_CHAR *buf, *limit;
+     const U_CHAR *buf;
+     const U_CHAR *limit;
      FILE_BUF *op;
      struct directive *keyword;
 {
@@ -5691,7 +5724,7 @@ pass_thru_directive (buf, limit, op, keyword)
   op->bufp += keyword_length;
   if (limit != buf && buf[0] != ' ')
     *op->bufp++ = ' ';
-  bcopy ((char *) buf, (char *) op->bufp, limit - buf);
+  bcopy ((const PTR) buf, (PTR) op->bufp, limit - buf);
   op->bufp += (limit - buf);
 #if 0
   *op->bufp++ = '\n';
@@ -5714,7 +5747,7 @@ pass_thru_directive (buf, limit, op, keyword)
 
 struct arglist {
   struct arglist *next;
-  U_CHAR *name;
+  const U_CHAR *name;
   int length;
   int argno;
   char rest_args;
@@ -5725,14 +5758,14 @@ struct arglist {
 
 static MACRODEF
 create_definition (buf, limit, op)
-     U_CHAR *buf, *limit;
+     const U_CHAR *buf, *limit;
      FILE_BUF *op;
 {
-  U_CHAR *bp;			/* temp ptr into input buffer */
-  U_CHAR *symname;		/* remember where symbol name starts */
+  const U_CHAR *bp;		/* temp ptr into input buffer */
+  const U_CHAR *symname;	/* remember where symbol name starts */
   int sym_length;		/* and how long it is */
   int line = instack[indepth].lineno;
-  char *file = instack[indepth].nominal_fname;
+  const char *file = instack[indepth].nominal_fname;
   size_t file_len = instack[indepth].nominal_fname_len;
   int rest_args = 0;
 
@@ -6018,10 +6051,10 @@ nope:
 
 static int
 check_macro_name (symname, assertion)
-     U_CHAR *symname;
+     const U_CHAR *symname;
      int assertion;
 {
-  U_CHAR *p;
+  const U_CHAR *p;
   int sym_length;
 
   for (p = symname; is_idchar[*p]; p++)
@@ -6088,12 +6121,12 @@ compare_defs (d1, d2)
 static int
 comp_def_part (first, beg1, len1, beg2, len2, last)
      int first;
-     U_CHAR *beg1, *beg2;
+     const U_CHAR *beg1, *beg2;
      int len1, len2;
      int last;
 {
-  register U_CHAR *end1 = beg1 + len1;
-  register U_CHAR *end2 = beg2 + len2;
+  register const U_CHAR *end1 = beg1 + len1;
+  register const U_CHAR *end2 = beg2 + len2;
   if (first) {
     while (beg1 != end1 && is_space[*beg1]) beg1++;
     while (beg2 != end2 && is_space[*beg2]) beg2++;
@@ -6130,17 +6163,20 @@ have already been deleted from the argument.  */
 
 static DEFINITION *
 collect_expansion (buf, end, nargs, arglist)
-     U_CHAR *buf, *end;
+     const U_CHAR *buf;
+     const U_CHAR *end;
      int nargs;
      struct arglist *arglist;
 {
   DEFINITION *defn;
-  register U_CHAR *p, *limit, *lastp, *exp_p;
+  register const U_CHAR *p;
+  register const U_CHAR *limit;
+  register U_CHAR *lastp, *exp_p;
   struct reflist *endpat = NULL;
   /* Pointer to first nonspace after last ## seen.  */
-  U_CHAR *concat = 0;
+  const U_CHAR *concat = 0;
   /* Pointer to first nonspace after last single-# seen.  */
-  U_CHAR *stringify = 0;
+  const U_CHAR *stringify = 0;
   /* How those tokens were spelled.  */
   enum sharp_token_type concat_sharp_token_type = NO_SHARP_TOKEN;
   enum sharp_token_type stringify_sharp_token_type = NO_SHARP_TOKEN;
@@ -6208,7 +6244,7 @@ collect_expansion (buf, end, nargs, arglist)
       case '%':
 	if (!expected_delimiter && *p == ':') {
 	  /* %: is not a digraph if preceded by an odd number of '<'s.  */
-	  U_CHAR *p0 = p - 1;
+	  const U_CHAR *p0 = p - 1;
 	  while (buf < p0 && p0[-1] == '<')
 	    p0--;
 	  if ((p - p0) & 1) {
@@ -6334,7 +6370,7 @@ collect_expansion (buf, end, nargs, arglist)
 
     /* Handle the start of a symbol.  */
     if (is_idchar[c] && nargs > 0) {
-      U_CHAR *id_beg = p - 1;
+      const U_CHAR *id_beg = p - 1;
       int id_len;
 
       --exp_p;
@@ -6390,7 +6426,7 @@ collect_expansion (buf, end, nargs, arglist)
 	    tpat->argno = arg->argno;
 	    tpat->nchars = exp_p - lastp;
 	    {
-	      register U_CHAR *p1 = p;
+	      register const U_CHAR *p1 = p;
 	      SKIP_WHITE_SPACE (p1);
 	      if (p1[0]=='#'
 	          ? p1[1]=='#'
@@ -6406,7 +6442,7 @@ collect_expansion (buf, end, nargs, arglist)
 
       /* If this was not a macro arg, copy it into the expansion.  */
       if (! skipped_arg) {
-	register U_CHAR *lim1 = p;
+	register const U_CHAR *lim1 = p;
 	p = id_beg;
 	while (p != lim1)
 	  *exp_p++ = *p++;
@@ -6447,8 +6483,8 @@ do_assert (buf, limit, op, keyword)
      FILE_BUF *op ATTRIBUTE_UNUSED;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  U_CHAR *bp;			/* temp ptr into input buffer */
-  U_CHAR *symname;		/* remember where symbol name starts */
+  const U_CHAR *bp;		/* temp ptr into input buffer */
+  const U_CHAR *symname;	/* remember where symbol name starts */
   int sym_length;		/* and how long it is */
   struct arglist *tokens = NULL;
 
@@ -6524,8 +6560,8 @@ do_unassert (buf, limit, op, keyword)
      FILE_BUF *op ATTRIBUTE_UNUSED;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  U_CHAR *bp;			/* temp ptr into input buffer */
-  U_CHAR *symname;		/* remember where symbol name starts */
+  const U_CHAR *bp;		/* temp ptr into input buffer */
+  const U_CHAR *symname;	/* remember where symbol name starts */
   int sym_length;		/* and how long it is */
 
   struct arglist *tokens = NULL;
@@ -6620,7 +6656,7 @@ do_unassert (buf, limit, op, keyword)
 
 int
 check_assertion (name, sym_length, tokens_specified, tokens)
-     U_CHAR *name;
+     const U_CHAR *name;
      int sym_length;
      int tokens_specified;
      struct arglist *tokens;
@@ -6686,12 +6722,12 @@ compare_token_lists (l1, l2)
 
 static struct arglist *
 read_token_list (bpp, limit, error_flag)
-     U_CHAR **bpp;
-     U_CHAR *limit;
+     const U_CHAR **bpp;
+     const U_CHAR *limit;
      int *error_flag;
 {
   struct arglist *token_ptrs = 0;
-  U_CHAR *bp = *bpp;
+  const U_CHAR *bp = *bpp;
   int depth = 1;
 
   *error_flag = 0;
@@ -6699,8 +6735,9 @@ read_token_list (bpp, limit, error_flag)
   /* Loop over the assertion value tokens.  */
   while (depth > 0) {
     struct arglist *temp;
+    U_CHAR *temp2;
     int eofp = 0;
-    U_CHAR *beg = bp;
+    const U_CHAR *beg = bp;
 
     /* Find the end of the token.  */
     if (*bp == '(') {
@@ -6719,9 +6756,10 @@ read_token_list (bpp, limit, error_flag)
 	bp++;
 
     temp = (struct arglist *) xmalloc (sizeof (struct arglist));
-    temp->name = (U_CHAR *) xmalloc (bp - beg + 1);
-    bcopy ((char *) beg, (char *) temp->name, bp - beg);
-    temp->name[bp - beg] = 0;
+    temp2 = (U_CHAR *) xmalloc (bp - beg + 1);
+    bcopy ((const PTR) beg, (PTR) temp2, bp - beg);
+    temp2[bp - beg] = 0;
+    temp->name = temp2;
     temp->next = token_ptrs;
     token_ptrs = temp;
     temp->length = bp - beg;
@@ -6755,7 +6793,7 @@ free_token_list (tokens)
 {
   while (tokens) {
     struct arglist *next = tokens->next;
-    free (tokens->name);
+    free ((PTR) tokens->name);
     free (tokens);
     tokens = next;
   }
@@ -6771,13 +6809,14 @@ free_token_list (tokens)
 
 static ASSERTION_HASHNODE *
 assertion_install (name, len, hash)
-     U_CHAR *name;
+     const U_CHAR *name;
      int len;
      int hash;
 {
   register ASSERTION_HASHNODE *hp;
   register int i, bucket;
-  register U_CHAR *p, *q;
+  register U_CHAR *p;
+  register const U_CHAR *q;
 
   i = sizeof (ASSERTION_HASHNODE) + len + 1;
   hp = (ASSERTION_HASHNODE *) xmalloc (i);
@@ -6810,7 +6849,7 @@ assertion_install (name, len, hash)
 
 static ASSERTION_HASHNODE *
 assertion_lookup (name, len, hash)
-     U_CHAR *name;
+     const U_CHAR *name;
      int len;
      int hash;
 {
@@ -6980,7 +7019,7 @@ do_line (buf, limit, op, keyword)
 
       ip->nominal_fname = hp->value.cpval = ((char *) hp) + sizeof (HASHNODE);
       ip->nominal_fname_len = hp->length = fname_length;
-      bcopy (fname, hp->value.cpval, fname_length + 1);
+      bcopy (fname, ((char *) hp) + sizeof (HASHNODE), fname_length + 1);
     }
   } else if (*bp) {
     error ("invalid format `#line' directive");
@@ -7049,7 +7088,7 @@ do_error (buf, limit, op, keyword)
 {
   int length = limit - buf;
   U_CHAR *copy = (U_CHAR *) alloca (length + 1);
-  bcopy ((char *) buf, (char *) copy, length);
+  bcopy ((const PTR) buf, (PTR) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
 
@@ -7080,7 +7119,7 @@ do_once ()
 
   for (i = indepth; i >= 0; i--)
     if (instack[i].inc) {
-      record_control_macro (instack[i].inc, (U_CHAR *) "");
+      record_control_macro (instack[i].inc, (const U_CHAR *) "");
       break;
     }
 }
@@ -7108,7 +7147,7 @@ do_ident (buf, limit, op, keyword)
   check_expand (op, 7 + len);
   bcopy ("#ident ", (char *) op->bufp, 7);
   op->bufp += 7;
-  bcopy ((char *) buf, (char *) op->bufp, len);
+  bcopy ((const PTR) buf, (PTR) op->bufp, len);
   op->bufp += len;
 
   free (buf);
@@ -7215,7 +7254,8 @@ nope:
 
 static int
 do_sccs (buf, limit, op, keyword)
-     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED;
+     U_CHAR *limit ATTRIBUTE_UNUSED;
      FILE_BUF *op ATTRIBUTE_UNUSED;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
@@ -7301,14 +7341,14 @@ do_elif (buf, limit, op, keyword)
 
 static HOST_WIDEST_INT
 eval_if_expression (buf, length)
-     U_CHAR *buf;
+     const U_CHAR *buf;
      int length;
 {
   FILE_BUF temp_obuf;
   HASHNODE *save_defined;
   HOST_WIDEST_INT value;
 
-  save_defined = install ((U_CHAR *) "defined", -1, T_SPEC_DEFINED,
+  save_defined = install ((const U_CHAR *) "defined", -1, T_SPEC_DEFINED,
 			  NULL_PTR, -1);
   pcp_inside_if = 1;
   temp_obuf = expand_to_temp_buffer (buf, buf + length, 0, 1);
@@ -7414,7 +7454,7 @@ do_xifdef (buf, limit, op, keyword)
     skip = (hp == NULL) ^ (keyword->type == T_IFNDEF);
     if (start_of_file && !skip) {
       control_macro = (U_CHAR *) xmalloc (end - buf + 1);
-      bcopy ((char *) buf, (char *) control_macro, end - buf);
+      bcopy ((const PTR) buf, (PTR) control_macro, end - buf);
       control_macro[end - buf] = 0;
     }
   }
@@ -7433,7 +7473,7 @@ conditional_skip (ip, skip, type, control_macro, op)
      FILE_BUF *ip;
      int skip;
      enum node_type type;
-     U_CHAR *control_macro;
+     const U_CHAR *control_macro;
      FILE_BUF *op;
 {
   IF_STACK_FRAME *temp;
@@ -7480,7 +7520,7 @@ skip_if_group (ip, any, op)
   int skipping_include_directive = 0;
 
   if (output_conditionals && op != 0) {
-    char *ptr = "#failed\n";
+    static const char * const ptr = "#failed\n";
     int len = strlen (ptr);
 
     if (op->bufp > op->buf && op->bufp[-1] != '\n')
@@ -7805,7 +7845,7 @@ skip_if_group (ip, any, op)
 
  done:
   if (output_conditionals && op != 0) {
-    char *ptr = "#endfailed\n";
+    static const char * const ptr = "#endfailed\n";
     int len = strlen (ptr);
 
     if (op->bufp > op->buf && op->bufp[-1] != '\n')
@@ -7814,7 +7854,7 @@ skip_if_group (ip, any, op)
 	op->lineno++;
       }
     check_expand (op, beg_of_line - beg_of_group);
-    bcopy ((char *) beg_of_group, (char *) op->bufp,
+    bcopy ((const PTR) beg_of_group, (PTR) op->bufp,
 	   beg_of_line - beg_of_group);
     op->bufp += beg_of_line - beg_of_group;
     op->lineno += ip->lineno - beg_lineno;
@@ -7943,8 +7983,8 @@ do_endif (buf, limit, op, keyword)
 
 static void
 validate_else (p, limit)
-     register U_CHAR *p;
-     register U_CHAR *limit;
+     register const U_CHAR *p;
+     register const U_CHAR *limit;
 {
   /* Advance P over whitespace and comments.  */
   while (1) {
@@ -8133,8 +8173,8 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
 
 static U_CHAR *
 skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p, eofp)
-     register U_CHAR *bp;
-     register U_CHAR *limit;
+     register const U_CHAR *bp;
+     register const U_CHAR *limit;
      int start_line;
      int *count_newlines;
      int *backslash_newlines_p;
@@ -8211,7 +8251,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
     }
 #endif
   }
-  return bp;
+  return (U_CHAR *) bp;
 }
 
 /* Place into DST a quoted string representing the string SRC.
@@ -8220,11 +8260,12 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
 
 static char *
 quote_string (dst, src, srclen)
-     char *dst, *src;
+     char *dst;
+     const char *src;
      size_t srclen;
 {
   U_CHAR c;
-  char *srclim = src + srclen;
+  const char *srclim = src + srclen;
 
   *dst++ = '\"';
   while (src != srclim)
@@ -8373,7 +8414,7 @@ output_line_directive (ip, op, conditional, file_change)
   check_expand (op, len + 1);
   if (op->bufp > op->buf && op->bufp[-1] != '\n')
     *op->bufp++ = '\n';
-  bcopy ((char *) line_directive_buf, (char *) op->bufp, len);
+  bcopy ((const PTR) line_directive_buf, (PTR) op->bufp, len);
   op->bufp += len;
   op->lineno = ip->lineno;
 }
@@ -8480,8 +8521,8 @@ macroexpand (hp, op)
 
     /* If we got one arg but it was just whitespace, call that 0 args.  */
     if (i == 1) {
-      register U_CHAR *bp = args[0].raw;
-      register U_CHAR *lim = bp + args[0].raw_length;
+      register const U_CHAR *bp = args[0].raw;
+      register const U_CHAR *lim = bp + args[0].raw_length;
       /* cpp.texi says for foo ( ) we provide one argument.
 	 However, if foo wants just 0 arguments, treat this as 0.  */
       if (nargs == 0)
@@ -8695,8 +8736,8 @@ macroexpand (hp, op)
 	  if (!traditional)
 	    xbuf[totlen++] = '\"'; /* insert ending quote */
 	} else if (ap->raw_before != 0 || ap->raw_after != 0 || traditional) {
-	  U_CHAR *p1 = arg->raw;
-	  U_CHAR *l1 = p1 + arg->raw_length;
+	  const U_CHAR *p1 = arg->raw;
+	  const U_CHAR *l1 = p1 + arg->raw_length;
 	  if (ap->raw_before != 0) {
 	    while (p1 != l1 && is_space[*p1]) p1++;
 	    while (p1 != l1 && is_idchar[*p1])
@@ -8718,7 +8759,7 @@ macroexpand (hp, op)
 	    while (p1 != l1) {
 	      if (is_space[l1[-1]]) l1--;
 	      else if (l1[-1] == '-') {
-		U_CHAR *p2 = l1 - 1;
+		const U_CHAR *p2 = l1 - 1;
 		/* If a `-' is preceded by an odd number of newlines then it
 		   and the last newline are a no-reexpansion marker.  */
 		while (p2 != p1 && p2[-1] == '\n') p2--;
@@ -8731,7 +8772,7 @@ macroexpand (hp, op)
 	    }
 	  }
 
-	  bcopy ((char *) p1, (char *) (xbuf + totlen), l1 - p1);
+	  bcopy ((const PTR) p1, (PTR) (xbuf + totlen), l1 - p1);
 	  totlen += l1 - p1;
 	  if (!traditional && ap->raw_after == 0) {
 	    /* Ordinary expanded use of the argument.
@@ -8746,7 +8787,7 @@ macroexpand (hp, op)
 	    xbuf[totlen++] = '\n';
 	    xbuf[totlen++] = ' ';
 	  }
-	  bcopy ((char *) arg->expanded, (char *) (xbuf + totlen),
+	  bcopy ((const PTR) arg->expanded, (PTR) (xbuf + totlen),
 		 arg->expand_length);
 	  totlen += arg->expand_length;
 	  if (!traditional) {
@@ -8867,7 +8908,7 @@ macarg (argptr, rest_args)
     U_CHAR *buffer = (U_CHAR *) xmalloc (bufsize + extra + 1);
     int final_start = 0;
 
-    bcopy ((char *) ip->bufp, (char *) buffer, bufsize);
+    bcopy ((const PTR) ip->bufp, (PTR) buffer, bufsize);
     ip->bufp = bp;
 
     while (bp == ip->buf + ip->length) {
@@ -8887,7 +8928,7 @@ macarg (argptr, rest_args)
       bufsize += bp - ip->bufp;
       extra += ip->lineno - lineno0;
       buffer = (U_CHAR *) xrealloc (buffer, bufsize + extra + 1);
-      bcopy ((char *) ip->bufp, (char *) (buffer + bufsize - (bp - ip->bufp)),
+      bcopy ((const PTR) ip->bufp, (PTR) (buffer + bufsize - (bp - ip->bufp)),
 	     bp - ip->bufp);
       ip->bufp = bp;
     }
@@ -8919,7 +8960,7 @@ macarg (argptr, rest_args)
      All this info goes into *ARGPTR.  */
 
   if (argptr != 0) {
-    register U_CHAR *buf, *lim;
+    register const U_CHAR *buf, *lim;
     register int totlen;
 
     buf = argptr->raw;
@@ -8966,7 +9007,7 @@ macarg (argptr, rest_args)
 static U_CHAR *
 macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
      U_CHAR *start;
-     register U_CHAR *limit;
+     register const U_CHAR *limit;
      struct hashnode *macro;
      int *depthptr, *newlines, *comments;
      int rest_args;
@@ -9263,7 +9304,7 @@ change_newlines (arg)
   int length = arg->expand_length;
   register U_CHAR *ibp;
   register U_CHAR *obp;
-  register U_CHAR *limit;
+  register const U_CHAR *limit;
   register int c;
 
   ibp = start;
@@ -9408,7 +9449,7 @@ verror (msgid, args)
 
 static void
 error_from_errno (name)
-     char *name;
+     const char *name;
 {
   int e = errno;
   int i;
@@ -9817,21 +9858,22 @@ grow_outbuf (obuf, needed)
 
 static HASHNODE *
 install (name, len, type, value, hash)
-     U_CHAR *name;
+     const U_CHAR *name;
      int len;
      enum node_type type;
-     char *value;
+     const char *value;
      int hash;
 {
   register HASHNODE *hp;
   register int i, bucket;
-  register U_CHAR *p, *q;
+  register U_CHAR *p;
+  register const U_CHAR *q;
 
   if (len < 0) {
-    p = name;
-    while (is_idchar[*p])
-      p++;
-    len = p - name;
+    q = name;
+    while (is_idchar[*q])
+      q++;
+    len = q - name;
   }
 
   if (hash < 0)
@@ -9871,11 +9913,11 @@ install (name, len, type, value, hash)
 
 HASHNODE *
 lookup (name, len, hash)
-     U_CHAR *name;
+     const U_CHAR *name;
      int len;
      int hash;
 {
-  register U_CHAR *bp;
+  register const U_CHAR *bp;
   register HASHNODE *bucket;
 
   if (len < 0) {
@@ -9946,7 +9988,7 @@ delete_macro (hp)
 
 static int
 hashf (name, len, hashsize)
-     register U_CHAR *name;
+     register const U_CHAR *name;
      register int len;
      int hashsize;
 {
@@ -10070,21 +10112,21 @@ dump_all_macros ()
 
 static void
 dump_defn_1 (base, start, length, of)
-     U_CHAR *base;
+     const U_CHAR *base;
      int start;
      int length;
      FILE *of;
 {
-  U_CHAR *p = base + start;
-  U_CHAR *limit = base + start + length;
+  const U_CHAR *p = base + start;
+  const U_CHAR *limit = base + start + length;
 
   if (traditional)
     fwrite (p, sizeof (*p), length, of);
   else {
     while (p < limit) {
       if (*p == '\"' || *p =='\'') {
-	U_CHAR *p1 = skip_quoted_string (p, limit, 0, NULL_PTR,
-					 NULL_PTR, NULL_PTR);
+	const U_CHAR *p1 = skip_quoted_string (p, limit, 0, NULL_PTR,
+					       NULL_PTR, NULL_PTR);
 	fwrite (p, sizeof (*p), p1 - p, of);
 	p = p1;
       } else {
@@ -10167,34 +10209,34 @@ initialize_builtins (inp, outp)
      FILE_BUF *inp;
      FILE_BUF *outp;
 {
-  install ((U_CHAR *) "__LINE__", -1, T_SPECLINE, NULL_PTR, -1);
-  install ((U_CHAR *) "__DATE__", -1, T_DATE, NULL_PTR, -1);
-  install ((U_CHAR *) "__FILE__", -1, T_FILE, NULL_PTR, -1);
-  install ((U_CHAR *) "__BASE_FILE__", -1, T_BASE_FILE, NULL_PTR, -1);
-  install ((U_CHAR *) "__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, NULL_PTR, -1);
-  install ((U_CHAR *) "__VERSION__", -1, T_VERSION, NULL_PTR, -1);
+  install ((const U_CHAR *) "__LINE__", -1, T_SPECLINE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__DATE__", -1, T_DATE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__FILE__", -1, T_FILE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__BASE_FILE__", -1, T_BASE_FILE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, NULL_PTR, -1);
+  install ((const U_CHAR *) "__VERSION__", -1, T_VERSION, NULL_PTR, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install ((U_CHAR *) "__SIZE_TYPE__", -1, T_SIZE_TYPE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__SIZE_TYPE__", -1, T_SIZE_TYPE, NULL_PTR, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install ((U_CHAR *) "__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, NULL_PTR, -1);
 #endif
-  install ((U_CHAR *) "__WCHAR_TYPE__", -1, T_WCHAR_TYPE, NULL_PTR, -1);
-  install ((U_CHAR *) "__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE,
+  install ((const U_CHAR *) "__WCHAR_TYPE__", -1, T_WCHAR_TYPE, NULL_PTR, -1);
+  install ((const U_CHAR *) "__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE,
 	   NULL_PTR, -1);
-  install ((U_CHAR *) "__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE,
+  install ((const U_CHAR *) "__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE,
 	   NULL_PTR, -1);
-  install ((U_CHAR *) "__IMMEDIATE_PREFIX__", -1, T_IMMEDIATE_PREFIX_TYPE,
+  install ((const U_CHAR *) "__IMMEDIATE_PREFIX__", -1, T_IMMEDIATE_PREFIX_TYPE,
 	   NULL_PTR, -1);
-  install ((U_CHAR *) "__TIME__", -1, T_TIME, NULL_PTR, -1);
+  install ((const U_CHAR *) "__TIME__", -1, T_TIME, NULL_PTR, -1);
   if (!traditional) {
-    install ((U_CHAR *) "__STDC__", -1, T_CONST, "1", -1);
-    install ((U_CHAR *) "__STDC_VERSION__", -1, T_CONST, "199409L", -1);
+    install ((const U_CHAR *) "__STDC__", -1, T_CONST, "1", -1);
+    install ((const U_CHAR *) "__STDC_VERSION__", -1, T_CONST, "199409L", -1);
   }
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
 /*  install ((U_CHAR *) "__GNUC__", -1, T_CONST, "2", -1);  */
-  install ((U_CHAR *) "__HAVE_BUILTIN_SETJMP__", -1, T_CONST, "1", -1);
+  install ((const U_CHAR *) "__HAVE_BUILTIN_SETJMP__", -1, T_CONST, "1", -1);
 
   if (debug_output)
     {
@@ -10311,7 +10353,7 @@ make_definition (str)
     while (*p) {
       if (*p == '\"' || *p == '\'') {
 	int unterminated = 0;
-	U_CHAR *p1 = skip_quoted_string (p, p + strlen ((char *) p), 0,
+	const U_CHAR *p1 = skip_quoted_string (p, p + strlen ((char *) p), 0,
 					 NULL_PTR, NULL_PTR, &unterminated);
 	if (unterminated)
 	  return;
@@ -10719,7 +10761,7 @@ fancy_abort ()
 
 static void
 perror_with_name (name)
-     char *name;
+     const char *name;
 {
   fprintf (stderr, "%s: %s: %s\n", progname, name, xstrerror (errno));
   errors++;
@@ -10727,7 +10769,7 @@ perror_with_name (name)
 
 static void
 pfatal_with_name (name)
-     char *name;
+     const char *name;
 {
   perror_with_name (name);
 #ifdef VMS
