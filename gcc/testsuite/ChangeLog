@@ -18681,7 +18681,7 @@
 
 	* gcc.dg/cpp/expr.c: New tests.
 
-2002 07-18  David Edelsohn  <edelsohn@gnu.org>
+2002-07-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/opt/pr6713.C: Add template instantiation.
 
