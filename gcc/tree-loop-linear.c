@@ -374,6 +374,7 @@ linear_transform_loops (struct loops *loops)
     }
   free_df ();
   scev_reset ();
+  rewrite_into_ssa (false);
   rewrite_into_loop_closed_ssa ();
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa ();
