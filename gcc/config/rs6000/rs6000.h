@@ -453,10 +453,16 @@ extern char *rs6000_cpu_string;
 
    On RS/6000, r1 is used for the stack and r2 is used as the TOC pointer.  
 
-   cr5 is not supposed to be used.  */
+   cr5 is not supposed to be used.
+
+   On System V implementations, r13 is fixed and not available for use.  */
+
+#ifndef FIXED_R13
+#define FIXED_R13 0
+#endif
 
 #define FIXED_REGISTERS  \
-  {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+  {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FIXED_R13, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -470,7 +476,7 @@ extern char *rs6000_cpu_string;
    Aside from that, you can include as many other registers as you like.  */
 
 #define CALL_USED_REGISTERS  \
-  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, \
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, FIXED_R13, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
