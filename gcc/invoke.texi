@@ -221,7 +221,7 @@ in the following sections.
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
 -m68060  -mcpu32 -m5200  -m68881  -mbitfield  -mc68000  -mc68020  
 -mfpa -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel
--malign-int
+-malign-int -mstrict-align
 
 @emph{VAX Options}
 -mg  -mgnu  -munix
@@ -3830,6 +3830,12 @@ using a global offset table.  At present, this option implies -fpic,
 allowing at most a 16-bit offset for pc-relative addressing.  -fPIC is
 not presently supported with -mpcrel, though this could be supported for
 68020 and higher processors.
+
+@item -mno-strict-align
+@itemx -mstrict-align
+@kindex -mstrict-align
+Do not (do) assume that unaligned memory references will be handled by
+the system.
 
 @end table
 

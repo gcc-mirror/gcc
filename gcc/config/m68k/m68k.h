@@ -132,8 +132,12 @@ extern int target_flags;
    treated as all containing an implicit PC-relative component, and hence
    cannot be used directly as addresses for memory writes.  See the comments
    in m68k.c for more information.  */
-#define MASK_PCREL	4096
+#define MASK_PCREL	8192
 #define TARGET_PCREL	(target_flags & MASK_PCREL)
+
+/* Relax strict alignment. */
+#define MASK_NO_STRICT_ALIGNMENT 16384
+#define TARGET_STRICT_ALIGNMENT  (~target_flags & MASK_NO_STRICT_ALIGNMENT)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -194,6 +198,8 @@ extern int target_flags;
     { "align-int", MASK_ALIGN_INT },					\
     { "no-align-int", -MASK_ALIGN_INT },				\
     { "pcrel", MASK_PCREL},						\
+    { "strict-align", -MASK_NO_STRICT_ALIGNMENT},			\
+    { "no-strict-align", MASK_NO_STRICT_ALIGNMENT},			\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
@@ -304,7 +310,7 @@ extern int target_flags;
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (TARGET_STRICT_ALIGNMENT)
 
 /* Maximum power of 2 that code can be aligned to.  */
 #define MAX_CODE_ALIGN	2			/* 4 byte alignment */

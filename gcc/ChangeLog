@@ -1,3 +1,17 @@
+Fri Nov 19 11:11:55 1999  Greg McGary  <gkm@gnu.org>
+			  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/m68k/m68kelf.h: Suppress '/* within comment' warning.
+
+	* config/m68k/m68k.h (MASK_PCREL): Don't use same value as
+	MASK_ALIGN_INT.
+	
+	* config/m68k/m68k.h (MASK_NO_STRICT_ALIGNMENT): New macro.
+	(TARGET_STRICT_ALIGNMENT): New macro.
+	(TARGET_SWITCHES): Add "strict-align" and "no-strict-align".
+	(STRICT_ALIGNMENT): Depend on TARGET_STRICT_ALIGNMENT.
+	* invoke.texi (M680x0 Options): Document -mstrict-align.
+
 Thu Nov 18 11:10:03 1999  Jan Hubicka  <hubicka@freesoft.cz>
 			  Richard Henderson  <rth@cygnus.com>
 
