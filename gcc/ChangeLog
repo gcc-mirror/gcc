@@ -1,3 +1,8 @@
+2003-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.c (rs6000_tls_referenced_p): Return early if
+	TARGET_HAVE_TLS is false.
+
 2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/ip2k/ip2k-protos.h: Remove the prototype for
