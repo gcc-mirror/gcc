@@ -2331,6 +2331,19 @@ stabilize_init (tree init, tree *initp)
   return true;
 }
 
+/* Like "fold", but should be used whenever we might be processing the
+   body of a template.  */
+
+tree
+fold_if_not_in_template (tree expr)
+{
+  /* In the body of a template, there is never any need to call
+     "fold".  We will call fold later when actually instantiating the
+     template.  Integral constant expressions in templates will be
+     evaluted via fold_non_dependent_expr, as necessary.  */
+  return (processing_template_decl ? expr : fold (expr));
+}
+
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that some language-specific thing hanging off a tree

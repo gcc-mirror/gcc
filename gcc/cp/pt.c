@@ -3381,6 +3381,8 @@ convert_nontype_argument (tree type, tree expr)
 
   switch (TREE_CODE (type))
     {
+      HOST_WIDE_INT saved_processing_template_decl;
+
     case INTEGER_TYPE:
     case BOOLEAN_TYPE:
     case ENUMERAL_TYPE:
@@ -3398,8 +3400,12 @@ convert_nontype_argument (tree type, tree expr)
 	  return error_mark_node;
 
       /* It's safe to call digest_init in this case; we know we're
-	 just converting one integral constant expression to another.  */
+	 just converting one integral constant expression to another.
+	 */
+      saved_processing_template_decl = processing_template_decl;
+      processing_template_decl = 0;
       expr = digest_init (type, expr, (tree*) 0);
+      processing_template_decl = saved_processing_template_decl;
 
       if (TREE_CODE (expr) != INTEGER_CST)
 	/* Curiously, some TREE_CONSTANT integral expressions do not

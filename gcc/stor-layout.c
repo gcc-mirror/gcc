@@ -330,8 +330,8 @@ layout_decl (tree decl, unsigned int known_align)
     }
   else if (DECL_SIZE_UNIT (decl) == 0)
     DECL_SIZE_UNIT (decl)
-      = convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
-				       bitsize_unit_node));
+      = fold_convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
+					    bitsize_unit_node));
 
   if (code != FIELD_DECL)
     /* For non-fields, update the alignment from the type.  */
@@ -540,7 +540,8 @@ tree
 bit_from_pos (tree offset, tree bitpos)
 {
   return size_binop (PLUS_EXPR, bitpos,
-		     size_binop (MULT_EXPR, convert (bitsizetype, offset),
+		     size_binop (MULT_EXPR, 
+				 fold_convert (bitsizetype, offset),
 				 bitsize_unit_node));
 }
 
@@ -548,9 +549,9 @@ tree
 byte_from_pos (tree offset, tree bitpos)
 {
   return size_binop (PLUS_EXPR, offset,
-		     convert (sizetype,
-			      size_binop (TRUNC_DIV_EXPR, bitpos,
-					  bitsize_unit_node)));
+		     fold_convert (sizetype,
+				   size_binop (TRUNC_DIV_EXPR, bitpos,
+					       bitsize_unit_node)));
 }
 
 void
@@ -558,9 +559,9 @@ pos_from_bit (tree *poffset, tree *pbitpos, unsigned int off_align,
 	      tree pos)
 {
   *poffset = size_binop (MULT_EXPR,
-			 convert (sizetype,
-				  size_binop (FLOOR_DIV_EXPR, pos,
-					      bitsize_int (off_align))),
+			 fold_convert (sizetype,
+				       size_binop (FLOOR_DIV_EXPR, pos,
+						   bitsize_int (off_align))),
 			 size_int (off_align / BITS_PER_UNIT));
   *pbitpos = size_binop (FLOOR_MOD_EXPR, pos, bitsize_int (off_align));
 }
@@ -580,7 +581,8 @@ normalize_offset (tree *poffset, tree *pbitpos, unsigned int off_align)
 
       *poffset
 	= size_binop (PLUS_EXPR, *poffset,
-		      size_binop (MULT_EXPR, convert (sizetype, extra_aligns),
+		      size_binop (MULT_EXPR, 
+				  fold_convert (sizetype, extra_aligns),
 				  size_int (off_align / BITS_PER_UNIT)));
 
       *pbitpos
@@ -869,9 +871,9 @@ place_field (record_layout_info rli, tree field)
 	  /* First adjust OFFSET by the partial bits, then align.  */
 	  rli->offset
 	    = size_binop (PLUS_EXPR, rli->offset,
-			  convert (sizetype,
-				   size_binop (CEIL_DIV_EXPR, rli->bitpos,
-					       bitsize_unit_node)));
+			  fold_convert (sizetype,
+					size_binop (CEIL_DIV_EXPR, rli->bitpos,
+						    bitsize_unit_node)));
 	  rli->bitpos = bitsize_zero_node;
 
 	  rli->offset = round_up (rli->offset, desired_align / BITS_PER_UNIT);
@@ -1147,9 +1149,9 @@ place_field (record_layout_info rli, tree field)
     {
       rli->offset
 	= size_binop (PLUS_EXPR, rli->offset,
-		      convert (sizetype,
-			       size_binop (CEIL_DIV_EXPR, rli->bitpos,
-					   bitsize_unit_node)));
+		      fold_convert (sizetype,
+				    size_binop (CEIL_DIV_EXPR, rli->bitpos,
+						bitsize_unit_node)));
       rli->offset
 	= size_binop (PLUS_EXPR, rli->offset, DECL_SIZE_UNIT (field));
       rli->bitpos = bitsize_zero_node;
@@ -1353,9 +1355,9 @@ finalize_type_size (tree type)
        result will fit in sizetype.  We will get more efficient code using
        sizetype, so we force a conversion.  */
     TYPE_SIZE_UNIT (type)
-      = convert (sizetype,
-		 size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
-			     bitsize_unit_node));
+      = fold_convert (sizetype,
+		      size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
+				  bitsize_unit_node));
 
   if (TYPE_SIZE (type) != 0)
     {
@@ -1638,10 +1640,10 @@ layout_type (tree type)
 	    /* The initial subtraction should happen in the original type so
 	       that (possible) negative values are handled appropriately.  */
 	    length = size_binop (PLUS_EXPR, size_one_node,
-				 convert (sizetype,
-					  fold (build2 (MINUS_EXPR,
-							TREE_TYPE (lb),
-							ub, lb))));
+				 fold_convert (sizetype,
+					       fold (build2 (MINUS_EXPR,
+							     TREE_TYPE (lb),
+							     ub, lb))));
 
 	    /* Special handling for arrays of bits (for Chill).  */
 	    element_size = TYPE_SIZE (element);
@@ -1670,7 +1672,8 @@ layout_type (tree type)
 	      length = size_binop (MAX_EXPR, length, size_zero_node);
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
-					   convert (bitsizetype, length));
+					   fold_convert (bitsizetype, 
+							 length));
 
 	    /* If we know the size of the element, calculate the total
 	       size directly, rather than do some division thing below.

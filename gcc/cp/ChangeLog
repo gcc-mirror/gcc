@@ -1,3 +1,32 @@
+2004-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17642
+	* cp-tree.h (fold_if_not_in_template): New function.
+	* call.c (build_conditional_expr): Use fold_if_not_in_template.
+	(build_cxx_call): Likewise.
+	* cvt.c (convert_to_complex): Likewise.
+	(ocp_convert): Likewise.
+	(convert): Likewise.
+	(convert_force): Likewise.
+	* decl.c (compute_array_index_type): Clear
+	processing_template_decl while folding array bounds.
+	* pt.c (convert_nontype_argument): Clear
+	processing_template_decl while processing non-type argument
+	initialization.
+	* tree.c (fold_if_not_in_template): New function.
+	* typeck.c (build_class_member_access_expr): Use
+	fold_if_not_in_template.
+	(build_array_ref): Likewise.
+	(build_binary_op): Likewise.  Do not try to optimize computations
+	when processing templates.
+	(cp_pointer_int_sum): Use fold_if_not_in_template.
+	(pointer_diff): Likewise.
+	(build_unary_op): Likewise.
+	(build_reinterpret_cast): Likewise.
+	(get_delta_difference): Likewise.
+	(expand_ptrmemfunc_cst): Likewise.
+	(dubious_conversion_warnings): Likewise.
+
 2004-09-27  Matt Austern  <austern@apple.com>
 
 	* cp/parser.c (struct cp_token): new one-bit field , implicit_extern_c

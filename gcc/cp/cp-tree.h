@@ -4207,6 +4207,7 @@ extern tree cp_add_pending_fn_decls (void*,tree);
 extern int cp_is_overload_p (tree);
 extern int cp_auto_var_in_fn_p (tree,tree);
 extern void cp_update_decl_after_saving (tree, void *);
+extern tree fold_if_not_in_template             (tree);
 
 /* in typeck.c */
 extern int string_conv_p			(tree, tree, int);
