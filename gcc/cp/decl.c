@@ -3666,7 +3666,11 @@ pushdecl (x)
       if (current_function_decl && x != current_function_decl
 	  /* A local declaration for a function doesn't constitute
              nesting.  */
-	  && (TREE_CODE (x) != FUNCTION_DECL || DECL_INITIAL (x))
+	  && !(TREE_CODE (x) == FUNCTION_DECL && !DECL_INITIAL (x))
+	  /* A local declaration for an `extern' variable is in the
+	     scoped of the current namespace, not the current
+	     function.  */
+	  && !(TREE_CODE (x) == VAR_DECL && DECL_EXTERNAL (x))
 	  /* Don't change DECL_CONTEXT of virtual methods.  */
 	  && (TREE_CODE (x) != FUNCTION_DECL || !DECL_VIRTUAL_P (x))
 	  && !DECL_CONTEXT (x))
@@ -7369,24 +7373,26 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
 
   type = TREE_TYPE (decl);
   toplev = toplevel_bindings_p ();
-  push_obstacks_nochange ();
-  if (TREE_STATIC (decl) 
-      && TYPE_NEEDS_DESTRUCTOR (type)
-      && allocation_temporary_p ())
-    end_temporary_allocation  ();
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
+  /* Handle non-variables up front.  */
+  if (TREE_CODE (decl) != VAR_DECL)
+    {
+      rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
+      return;
+    }
+
+  /* Set the DECL_ASSEMBLER_NAME for the variable.  */
+  if (asmspec)
+    DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+
+  if (DECL_VIRTUAL_P (decl))
     make_decl_rtl (decl, NULL_PTR, toplev);
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && TREE_READONLY (decl)
+  else if (TREE_READONLY (decl)
 	   && DECL_INITIAL (decl) != NULL_TREE
 	   && DECL_INITIAL (decl) != error_mark_node
 	   && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
     {
       DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
-
-      if (asmspec)
-	DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
 
       if (! toplev
 	  && TREE_STATIC (decl)
@@ -7415,12 +7421,10 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
 	    }
 	  make_decl_rtl (decl, asmspec, toplev);
 	}
-      else
+      else if (toplev)
 	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
     }
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && DECL_LANG_SPECIFIC (decl)
-	   && DECL_IN_AGGR_P (decl))
+  else if (DECL_LANG_SPECIFIC (decl) && DECL_IN_AGGR_P (decl))
     {
       my_friendly_assert (TREE_STATIC (decl), 19990828);
 
@@ -7439,10 +7443,9 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
       else
 	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
     }
-  else
+  else if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
+	   || (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)))
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
-
-  pop_obstacks ();
 }
 
 /* The old ARM scoping rules injected variables declared in the
@@ -7587,7 +7590,16 @@ emit_local_var (decl)
     my_friendly_assert (TREE_CODE (decl) == RESULT_DECL, 
 			19990828);
   else
-    expand_decl (decl);
+    {
+      if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+	/* The user must have specified an assembler name for this
+	   variable.  Set that up now.  */
+	rest_of_decl_compilation 
+	  (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+	   /*top_level=*/0, /*at_end=*/0);
+      else
+	expand_decl (decl);
+    }
 
   /* Actually do the initialization.  */
   expand_start_target_temps ();
