@@ -1,3 +1,8 @@
+2003-06-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* decl.c (start_cleanup_fn): Move static 'counter' out, mark with GTY.
+	(start_cleanup_cnt): New.
+
 2003-06-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11131
