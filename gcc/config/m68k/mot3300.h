@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    SysV68 Motorola 3300 Delta Series
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
    Written by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
 
@@ -31,11 +31,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68k/m68k.h"
 
-/* See m68k.h.  7 means 68020 with 68881.  */
+/* See m68k.h.  0407 means 68020-68040.  */
 
 #ifndef TARGET_DEFAULT
-#define	TARGET_DEFAULT 7
+#define	TARGET_DEFAULT 0407
 #endif
+
+/* -m[c]6800 requires special flag to the assembler.  */
+
+#undef ASM_SPEC
+#define ASM_SPEC "%{m68000:-p 000}%{mc68000:-p 000}"
 
 /* NYI: FP= is equivalent to -msoft-float  */
 
@@ -265,21 +270,22 @@ output_file_directive ((FILE), main_input_filename)
 /* NYI: If -mold return pointer in a0 and d0 */
 
 #undef FUNCTION_VALUE
-#define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
-
 /* sysV68 (brain damaged) cc convention support. */
 /* Commented out until we find a safe way to make it optional.  */
-#if 0
+#if 1
 #define FUNCTION_VALUE(VALTYPE,FUNC) \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881 	\
    ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)		\
    : (TREE_CODE (VALTYPE) == POINTER_TYPE 		\
       ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)		\
       : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
+#else
+#define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
 #endif
 
 /* If TARGET_68881, SF and DF values are returned in fp0 instead of d0.  */
 
+/* Is LIBCALL_VALUE never called with a pointer ? */
 #undef LIBCALL_VALUE
 #define LIBCALL_VALUE(MODE)						   \
  gen_rtx (REG, (MODE),							   \
@@ -291,14 +297,14 @@ output_file_directive ((FILE), main_input_filename)
    d0 may be used, and fp0 as well if -msoft-float is not specified.  */
 
 #undef FUNCTION_VALUE_REGNO_P
-#define FUNCTION_VALUE_REGNO_P(N) \
- ((N) == 0 || (TARGET_68881 && (N) == 16))
-
 /* sysV68 (brain damaged) cc convention support. */
 /* Commented out until we find a safe way to make it optional.  */
-#if 0
+#if 1
 #define FUNCTION_VALUE_REGNO_P(N) \
  ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
+#else
+#define FUNCTION_VALUE_REGNO_P(N) \
+ ((N) == 0 || (TARGET_68881 && (N) == 16))
 #endif 
 
 /* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
@@ -828,12 +834,48 @@ do { fprintf (asm_out_file, "\ttag\t");	\
   sprintf ((BUFFER), "~%dfake", (NUMBER));
 
 /* Define subroutines to call to handle multiply, divide, and remainder.
-   Use the subroutines that the 3b1's library provides.
+   Use the subroutines that the sysV68's library provides.
    The `*' prevents an underscore from being prepended by the compiler.  */
+/* The '*' is also used by INIT_CUMULATIVE_ARGS */
 
-#define DIVSI3_LIBCALL "*ldiv"
-#define UDIVSI3_LIBCALL "*uldiv"
-#define MODSI3_LIBCALL "*lrem"
-#define UMODSI3_LIBCALL "*ulrem"
-#define MULSI3_LIBCALL "*lmul"
-#define UMULSI3_LIBCALL "*ulmul"
+#define DIVSI3_LIBCALL "*ldiv%%"
+#define UDIVSI3_LIBCALL "*uldiv%%"
+#define MODSI3_LIBCALL "*lrem%%"
+#define UMODSI3_LIBCALL "*ulrem%%"
+#define MULSI3_LIBCALL "*lmul%%"
+
+struct sysV68_cumulative_args
+	{
+	int	offset;
+	int	libcall;
+	};
+
+#undef CUMULATIVE_ARGS
+#define CUMULATIVE_ARGS struct sysV68_cumulative_args
+
+#undef INIT_CUMULATIVE_ARGS
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+do {(CUM).offset = 0;\
+(CUM).libcall = (LIBNAME) && (*XSTR((LIBNAME), 0) == '*');} while(0)
+
+#undef FUNCTION_ARG_ADVANCE
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
+ ((CUM).offset += ((MODE) != BLKmode			\
+	    ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
+	    : (int_size_in_bytes (TYPE) + 3) & ~3))
+
+#undef FUNCTION_ARG
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+(((CUM).libcall && (CUM).offset == 0) ? gen_rtx(REG, (MODE), 0)\
+: (TARGET_REGPARM && (CUM).offset < 8) ? gen_rtx (REG, (MODE), (CUM).offset / 4) : 0)
+
+#undef FUNCTION_ARG_PARTIAL_NREGS
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
+((TARGET_REGPARM && (CUM).offset < 8				\
+  && 8 < ((CUM).offset + ((MODE) == BLKmode			\
+		      ? int_size_in_bytes (TYPE)		\
+		      : GET_MODE_SIZE (MODE))))  		\
+ ? 2 - (CUM).offset / 4 : 0)
+
+#undef FUNCTION_ARG_REGNO_P
+#define FUNCTION_ARG_REGNO_P(N) (TARGET_68020 ? 0 : (N) == 0)
