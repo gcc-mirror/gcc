@@ -56,8 +56,8 @@ Boston, MA 02111-1307, USA.  */
    A byte's size is determined by BITS_PER_UNIT in tm.h. 
 
    Sixth arg is the relative size of subunits of the object.
-   It is same as the fourth argument except for complexes,
-   since they are really made of two equal size subunits.
+   It is same as the fifth argument except for complexes and vectors,
+   since they are really made of many equal size subunits.
 
    Seventh arg is next wider natural mode of the same class.
    0 if there is none.  */
