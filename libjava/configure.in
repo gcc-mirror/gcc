@@ -176,7 +176,7 @@ LIBFFI=
 LIBFFIINCS=
 if test "$with_libffi" != no; then
    AC_DEFINE(USE_LIBFFI)
-   LIBFFI=../libffi/libfficonvenience.la
+   LIBFFI=../libffi/libffi_convenience.la
    LIBFFIINCS='-I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include'
 fi
 AC_SUBST(LIBFFI)
@@ -290,14 +290,11 @@ GCTESTSPEC=
 case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
-    GCDEPS='$(top_builddir)/../boehm-gc/libgcjgc.la'
-    # We include the path to the boehm-gc build directory.
-    # See Makefile.am to understand why.
-    GCLIBS="$GCDEPS -L\$(here)/../boehm-gc/$libsubdir"
+    GCLIBS=../boehm-gc/libgcjgc_convenience.la
     GCINCS='-I$(top_srcdir)/../boehm-gc/include'
-    GCSPEC='-lgcjgc'
     JC1GCSPEC='-fuse-boehm-gc'
     GCTESTSPEC="-L`pwd`/../boehm-gc/.libs -rpath `pwd`/../boehm-gc/.libs"
+
     dnl We also want to pick up some cpp flags required when including
     dnl boehm-config.h.  Yuck.
     GCINCS="$GCINCS `cat ../boehm-gc/boehm-cflags`"
@@ -470,9 +467,6 @@ if test -n "${with_cross_host}"; then
 
    dnl Assume we do not have getuid and friends.
    AC_DEFINE(NO_GETUID)
-
-   ZLIBSPEC=-lzgcj
-   ZLIBTESTSPEC="-L`pwd`/../zlib/.libs -rpath `pwd`/../zlib/.libs"
 
    # If Canadian cross, then don't pick up tools from the build
    # directory.
@@ -670,10 +664,7 @@ else
    SYSTEMSPEC="$SYSTEMSPEC $gcj_cv_lib_sockets"
 
    if test "$with_system_zlib" = yes; then
-      AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=-lzgcj)
-   else
-      ZLIBSPEC=-lzgcj
-      ZLIBTESTSPEC="-L`pwd`/../zlib/.libs -rpath `pwd`/../zlib/.libs"
+      AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=)
    fi
 
    # On Solaris, and maybe other architectures, the Boehm collector
@@ -730,19 +721,19 @@ CPPFLAGS=$GCJ_SAVE_CPPFLAGS
 AC_COMPILE_CHECK_SIZEOF(void *)
 
 ZLIBS=
-ZDEPS=
+SYS_ZLIBS=
 ZINCS=
-if test "x$ZLIBSPEC" = "x-lzgcj"; then
-   # We include the path to the zlib build directory.
-   # See Makefile.am to understand why.
-   ZDEPS='$(top_builddir)/../zlib/libzgcj.la'
-   ZLIBS="$ZDEPS -L\$(here)/../zlib/$libsubdir"
+
+if test -z "$ZLIBSPEC"; then
+   # Use zlib from the GCC tree.
    ZINCS='-I$(top_srcdir)/../zlib'
+   ZLIBS=../zlib/libzgcj_convenience.la
 else
-   ZLIBS="$ZLIBSPEC"
+   # System's zlib.
+   SYS_ZLIBS="$ZLIBSPEC"
 fi
 AC_SUBST(ZLIBS)
-AC_SUBST(ZDEPS)
+AC_SUBST(SYS_ZLIBS)
 AC_SUBST(ZINCS)
 AC_SUBST(DIVIDESPEC)
 AC_SUBST(EXCEPTIONSPEC)

@@ -25,14 +25,25 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
-toolexeclib_LTLIBRARIES = $(target_all)
-EXTRA_LTLIBRARIES = libgcjgc.la
-libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
+toolexeclib_LTLIBRARIES = libgcjgc.la
+noinst_LTLIBRARIES = libgcjgc_convenience.la
+
+GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
 dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
 linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
 obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
 solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
 backgraph.c win32_threads.c
+
+EXTRA_GC_SOURCES = alpha_mach_dep.s \
+mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
+sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
+
+libgcjgc_la_SOURCES = $(GC_SOURCES)
+libgcjgc_convenience_la_SOURCES = $(GC_SOURCES)
+EXTRA_libgcjgc_la_SOURCES = $(EXTRA_GC_SOURCES)
+EXTRA_libgcjgc_convenience_la_SOURCES = $(EXTRA_GC_SOURCES)
 
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
@@ -40,10 +51,8 @@ libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
-EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s \
-mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
-rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
-sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
+libgcjgc_convenience_la_LIBADD = @addobjs@
+libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@

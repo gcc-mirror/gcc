@@ -107,13 +107,13 @@ RANLIB = @RANLIB@
 STRIP = @STRIP@
 SYSDEP_SOURCES = @SYSDEP_SOURCES@
 SYSTEMSPEC = @SYSTEMSPEC@
+SYS_ZLIBS = @SYS_ZLIBS@
 THREADDEPS = @THREADDEPS@
 THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
 THREADSPEC = @THREADSPEC@
 VERSION = @VERSION@
-ZDEPS = @ZDEPS@
 ZINCS = @ZINCS@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
@@ -196,7 +196,8 @@ EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
 libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
-	$(c_files) $(GCOBJS) $(THREADOBJS) $(PLATFORMOBJS) $(LIBLTDL)
+	$(c_files) $(GCOBJS) $(THREADOBJS) $(PLATFORMOBJS) $(LIBLTDL) \
+	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 
 
 libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
@@ -205,7 +206,7 @@ libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLIBS) $(LIBLTDL) \
-	$(GCLIBS) $(ZLIBS) \
+	$(SYS_ZLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 libgcj_la_LINK = $(LIBLINK)
@@ -253,14 +254,14 @@ jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 jv_convert_LINK = $(GCJLINK)
 jv_convert_LDADD = libgcj.la -L$(here)/.libs
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+	libgcj.la libgcj.spec
 
 
 gij_SOURCES = gij.cc
 gij_LDFLAGS = -rpath $(toolexeclibdir) -shared-libgcc
 gij_LINK = $(GCJLINK)
 gij_LDADD = libgcj.la -L$(here)/.libs
-gij_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+gij_DEPENDENCIES = libgcj.la libgcj.spec
 
 rmic_SOURCES = 
 EXTRA_rmic_SOURCES = $(rmi_java_source_files)
@@ -269,7 +270,7 @@ rmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
 
 rmic_LINK = $(GCJLINK)
 rmic_LDADD = libgcj.la -L$(here)/.libs
-rmic_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+rmic_DEPENDENCIES = libgcj.la libgcj.spec
 
 rmiregistry_SOURCES = 
 EXTRA_rmiregistry_SOURCES = $(rmi_java_source_files)
@@ -278,7 +279,7 @@ rmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
 
 rmiregistry_LINK = $(GCJLINK)
 rmiregistry_LDADD = libgcj.la -L$(here)/.libs
-rmiregistry_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+rmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
 
 gen_from_JIS_SOURCES = 
 EXTRA_gen_from_JIS_SOURCES = $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c \
@@ -3256,7 +3257,7 @@ $(javao_files) $(x_javao_files): %.lo: %.java
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcj.objectlist || :) $(shell touch libgcj.objectlist) $(foreach object,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),$(shell echo $(object) >> libgcj.objectlist))
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
-	@LIBFFI@ \
+	@GCLIBS@ @LIBFFI@ @ZLIBS@ \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)

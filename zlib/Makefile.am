@@ -25,12 +25,8 @@ inffixed.h inflate.c inftrees.c inftrees.h infutil.c infutil.h trees.c \
 trees.h uncompr.c zconf.h zlib.h zutil.c zutil.h
 
 if TARGET_LIBRARY
-## We don't use `libz.la' because we don't want to conflict with a
-## system library of that name.
-toolexeclib_LTLIBRARIES = @target_all@
-EXTRA_LTLIBRARIES = libzgcj.la
-libzgcj_la_SOURCES = $(ZLIB_SOURCES)
-libzgcj_la_LDFLAGS = -version-info 0:0:0 -rpath $(toolexeclibdir)
+noinst_LTLIBRARIES = libzgcj_convenience.la
+libzgcj_convenience_la_SOURCES = $(ZLIB_SOURCES)
 else
 toolexeclib_LIBRARIES = libz.a
 libz_a_SOURCES = $(ZLIB_SOURCES)
