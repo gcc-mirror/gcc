@@ -175,6 +175,12 @@ lang_print_xnode (file, node, indent)
       print_node (file, "value", BINDING_VALUE (node), indent+4);
       print_node (file, "chain", TREE_CHAIN (node), indent+4);
       break;
+    case TEMPLATE_PARM_INDEX:
+      indent_to (file, indent + 3);
+      fprintf (file, "index %d level %d orig_level %d",
+	       TEMPLATE_PARM_IDX (node), TEMPLATE_PARM_LEVEL (node),
+	       TEMPLATE_PARM_ORIG_LEVEL (node));
+      break;
     default:
       break;
     }

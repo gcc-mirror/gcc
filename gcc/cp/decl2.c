@@ -3007,8 +3007,12 @@ finish_file ()
 
 	      /* 9.5p5: The initializer of a static member of a class has
 		 the same access rights as a member function.  */
-	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
-	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
+	      if (member_p (decl))
+		{
+		  DECL_CLASS_CONTEXT (current_function_decl)
+		    = DECL_CONTEXT (decl);
+		  DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
+		}
 
 	      if (protect)
 		{
