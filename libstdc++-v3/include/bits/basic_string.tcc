@@ -178,8 +178,9 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str)
-    : _M_dataplus(__str._M_rep()->_M_grab(_Alloc(), __str.get_allocator()),
-		 __str.get_allocator())
+    : _M_dataplus(__str._M_rep()->_M_grab(_Alloc(__str.get_allocator()),
+					  __str.get_allocator()),
+		  __str.get_allocator())
     { }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
