@@ -623,8 +623,8 @@ namespace std
   bool
   locale::operator==(const locale& __rhs) const throw()
   {
-    return((this->name() != "*" && this->name() == __rhs.name())
-	   || _M_impl == __rhs._M_impl);
+    return (_M_impl == __rhs._M_impl
+	    || (this->name() != "*" && this->name() == __rhs.name()));
   }
 
   const locale&

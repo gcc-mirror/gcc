@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,8 @@
 #include <bits/std_iostream.h>
 #include <bits/std_fstream.h>
 
-namespace std {
-
+namespace std 
+{
   // Definitions for static const data members of __ios_flags.
   const __ios_flags::__int_type __ios_flags::_S_boolalpha;
   const __ios_flags::__int_type __ios_flags::_S_dec;
@@ -159,6 +159,7 @@ namespace std {
 	__wold = wclog.rdbuf(_M_wcerr);
 	__wold->~wstreambuf();
 #endif
+	_M_synced_with_stdio = true;
       }
   }
 
@@ -237,9 +238,9 @@ namespace std {
   ios_base::_M_init()   
   {
     // NB: May be called more than once
-    _M_flags = skipws | dec;
-    _M_width = 0;
     _M_precision = 6;
+    _M_width = 0;
+    _M_flags = skipws | dec;
     _M_callbacks = 0;
     _M_words = 0;
     _M_word_limit = 0;
@@ -313,9 +314,11 @@ namespace std {
   { 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
     // 49.  Underspecification of ios_base::sync_with_stdio
-    bool __ret = __ioinit._M_cin->_M_file->get_fileno() == 0;
+    bool __ret = __ioinit._M_synced_with_stdio;
+#endif
 
-    // Turn off sync with C FILE* for cin, cout, cerr, clog.
+    // Turn off sync with C FILE* for cin, cout, cerr, clog iff
+    // currently synchronized.
     if (!__sync && __ret)
       {
 	// Need to dispose of the buffers created at initialization.
@@ -349,10 +352,10 @@ namespace std {
 	wcerr.flags(ios_base::unitbuf);
 	wclog.rdbuf(__ioinit._M_wcerr);
 #endif
+	__ioinit._M_synced_with_stdio = false;
       }
     
     return __ret; 
-#endif
   }
 
 }  // namespace std

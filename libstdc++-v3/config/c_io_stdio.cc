@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,7 @@
 //
 
 #include <bits/basic_file.h>
+#include <unistd.h>
 
 namespace std {
 
@@ -94,14 +95,17 @@ namespace std {
 
       _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
 
-      if (!this->is_open())
+      int __dupfd = dup(__fd);
+
+      if (__dupfd != -1 && !this->is_open())
 	{
-	  if ((_M_cfile = fdopen(__fd, __c_mode)))
+	  if ((_M_cfile = fdopen(__dupfd, __c_mode)))
 	    {
-	      _M_fileno = __fd;
+	      _M_fileno = __dupfd;
 	      __ret = this;
 	    }
 	}
+
       return __ret;
     }
   
@@ -225,7 +229,10 @@ namespace std {
   template<typename _CharT>
     streamoff
     __basic_file<_CharT>::sys_seek(streamoff __pos, ios_base::seekdir __way)
-    { fseek(_M_cfile, __pos, __way); return ftell(_M_cfile); }
+    { 
+      fseek(_M_cfile, __pos, __way); 
+      return ftell(_M_cfile); 
+    }
   
   // NB: Unused.
   template<typename _CharT>
