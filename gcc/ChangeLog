@@ -1,3 +1,7 @@
+2005-03-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-vectorizer.c: Fix comment typos.
+
 2005-03-30  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-scalar-evolution.c (instantiate_parameters_1): Return 
