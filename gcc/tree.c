@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1625,6 +1625,7 @@ int
 integer_pow2p (expr)
      tree expr;
 {
+  int prec;
   HOST_WIDE_INT high, low;
 
   STRIP_NOPS (expr);
@@ -1637,14 +1638,69 @@ integer_pow2p (expr)
   if (TREE_CODE (expr) != INTEGER_CST || TREE_CONSTANT_OVERFLOW (expr))
     return 0;
 
+  prec = (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
   high = TREE_INT_CST_HIGH (expr);
   low = TREE_INT_CST_LOW (expr);
+
+  /* First clear all bits that are beyond the type's precision in case
+     we've been sign extended.  */
+
+  if (prec == 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+  else
+    {
+      high = 0;
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	low &= ~((HOST_WIDE_INT) (-1) << prec);
+    }
 
   if (high == 0 && low == 0)
     return 0;
 
   return ((high == 0 && (low & (low - 1)) == 0)
 	  || (low == 0 && (high & (high - 1)) == 0));
+}
+
+/* Return the power of two represented by a tree node known to be a
+   power of two.  */
+
+int
+tree_log2 (expr)
+     tree expr;
+{
+  int prec;
+  HOST_WIDE_INT high, low;
+
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return tree_log2 (TREE_REALPART (expr));
+
+  prec = (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
+
+  high = TREE_INT_CST_HIGH (expr);
+  low = TREE_INT_CST_LOW (expr);
+
+  /* First clear all bits that are beyond the type's precision in case
+     we've been sign extended.  */
+
+  if (prec == 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+  else
+    {
+      high = 0;
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	low &= ~((HOST_WIDE_INT) (-1) << prec);
+    }
+
+  return (high != 0 ? HOST_BITS_PER_WIDE_INT + exact_log2 (high)
+	  :  exact_log2 (low));
 }
 
 /* Return 1 if EXPR is the real constant zero.  */
