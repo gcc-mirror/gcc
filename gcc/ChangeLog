@@ -1,3 +1,10 @@
+2005-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/19813
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Add assertion
+	that ref to be marked MEM_READONLY_P doesn't have base that needs
+	constructing.
+
 2005-02-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* genautomata.c (output_get_cpu_unit_code_func,

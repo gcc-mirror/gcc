@@ -1,3 +1,10 @@
+2005-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/19813
+	* decl.c (start_decl_1): Clear TREE_READONLY flag if
+	its type has TYPE_NEEDS_CONSTRUCTING.
+	(complete_vars): Likewise.
+
 2005-02-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/20028

@@ -3823,6 +3823,14 @@ start_decl_1 (tree decl)
      instantiation has occurred that TYPE_HAS_NONTRIVIAL_DESTRUCTOR
      will be set correctly.  */
   maybe_push_cleanup_level (type);
+
+  /* An object declared 'const' is only readonly after it is
+     initialized.  We don't have any way of expressing this currently,
+     so we need to be conservative and unset TREE_READONLY for types
+     with constructors.  Otherwise aliasing code will ignore stores in
+     an inline constructor.  */
+   if (TYPE_NEEDS_CONSTRUCTING (type))
+     TREE_READONLY (decl) = 0;
 }
 
 /* Handle initialization of references.  DECL, TYPE, and INIT have the
@@ -10913,6 +10921,13 @@ complete_vars (tree type)
 	  /* Complete the type of the variable.  The VAR_DECL itself
 	     will be laid out in expand_expr.  */
 	  complete_type (TREE_TYPE (var));
+	  /* An object declared 'const' is only readonly after it is
+	     initialized.  We don't have any way of expressing this currently,
+	     so we need to be conservative and unset TREE_READONLY for types
+	     with constructors.  Otherwise aliasing code will ignore stores in
+	     an inline constructor.  */
+	  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var)))
+	    TREE_READONLY (var) = 0;
 	  /* Remove this entry from the list.  */
 	  *list = TREE_CHAIN (*list);
 	}
