@@ -2664,7 +2664,6 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       && (unsignedp || !flag_trapv))
     {
       int mult_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET);
-      mult_cost = MIN (12 * add_cost[mode], mult_cost);
 
       if (choose_mult_variant (mode, INTVAL (const_op1), &algorithm, &variant,
 			       mult_cost))
