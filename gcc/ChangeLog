@@ -1,3 +1,9 @@
+2004-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (ffsdi2, clzdi2): New expanders.
+	(ffs_rex64): New splitter.
+	(ffsdi_1, ctzdi2, bsr_rex64): New instructions.
+
 2004-06-24  Andrew Pinski  <apinski@apple.com>
 
 	* config/darwin7.h (MATH_LIBRARY): Remove.
