@@ -1,3 +1,8 @@
+2003-07-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-pragma.c (maybe_apply_pragma_weak): Don't get DECL_ASSEMBLER_NAME
+	when it's not needed.
+
 2003-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.h (machine_function): Add ra_need_lr.
