@@ -538,7 +538,10 @@ global_alloc (file)
   /* Do the reloads now while the allocno data still exist, so that we can
      try to assign new hard regs to any pseudo regs that are spilled.  */
 
+#if 0 /* We need to eliminate regs even if there is no rtl code,
+	 for the sake of debugging information.  */
   if (n_basic_blocks > 0)
+#endif
     reload (basic_block_head[0], 1, file);
 }
 
