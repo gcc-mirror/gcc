@@ -1688,9 +1688,16 @@ check_explicit_specialization (tree declarator,
       break;
 
     case tsk_excessive_parms:
-      error ("too many template parameter lists in declaration of `%D'", 
-		decl);
-      return error_mark_node;
+    case tsk_insufficient_parms:
+      if (tsk == tsk_excessive_parms)
+        error ("too many template parameter lists in declaration of `%D'",
+	       decl);
+      else if (template_header_count)
+	error("too few template parameter lists in declaration of `%D'",
+	      decl);
+      else
+	error("explicit specialization of `%D' must be introduced by "
+	      "`template <>'", decl);
 
       /* Fall through.  */
     case tsk_expl_spec:
@@ -1699,32 +1706,6 @@ check_explicit_specialization (tree declarator,
 	member_specialization = 1;
       else
 	specialization = 1;
-      break;
-     
-    case tsk_insufficient_parms:
-      if (template_header_count)
-	{
-	  error("too few template parameter lists in declaration of `%D'", 
-		   decl);
-	  return decl;
-	}
-      else if (ctype != NULL_TREE
-	       && !TYPE_BEING_DEFINED (ctype)
-	       && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
-	       && !is_friend)
-	{
-	  /* For backwards compatibility, we accept:
-
-	       template <class T> struct S { void f(); };
-	       void S<int>::f() {} // Missing template <>
-
-	     That used to be valid C++.  */
-	  if (pedantic)
-	    pedwarn
-	      ("explicit specialization not preceded by `template <>'");
-	  specialization = 1;
-	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
-	}
       break;
 
     case tsk_template:

@@ -1,5 +1,11 @@
 2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/14497
+	* g++.dg/template/spec16.C: New test.
+	* g++.old-deja/g++.robertl/eb118.C: Remove.
+
+2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/509
 	* g++.dg/template/spec15.C: New test.
 

@@ -1,5 +1,12 @@
 2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/14497
+	* pt.c (check_explicit_specialization): Remove extension to accept
+	specializations without template headers. Fall-through to normal
+	processing.
+
+2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/509
 	* pt.c (determine_specialization): New parameter template_count.
 	Disambiguate between member templates and member functions counting
