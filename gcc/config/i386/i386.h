@@ -639,8 +639,7 @@ extern int ix86_arch;
    for cross-compiler testing.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((REGNO) < 2 ? 1						\
-   : (REGNO) < 4 ? 1						\
+  ((REGNO) < 4 ? 1						\
    : FP_REGNO_P (REGNO)						\
    ? (((int) GET_MODE_CLASS (MODE) == (int) MODE_FLOAT		\
        || (int) GET_MODE_CLASS (MODE) == (int) MODE_COMPLEX_FLOAT)	\
@@ -653,7 +652,10 @@ extern int ix86_arch;
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 
-#define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) == (MODE2))
+#define MODES_TIEABLE_P(MODE1, MODE2)				\
+  ((MODE1) == (MODE2)						\
+   || ((MODE1) == SImode && (MODE2) == HImode			\
+       || (MODE1) == HImode && (MODE2) == SImode))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */

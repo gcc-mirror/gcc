@@ -1,3 +1,8 @@
+Wed Jul  1 23:06:03 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.h (HARD_REGNO_MODE_OK): Kill spurrious test.
+	(MODES_TIEABLE_P): Tie SImode and HImode.
+
 1998-07-01  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
 
 	* invoke.texi (Optimize Options): Fix typo.
