@@ -35,6 +35,7 @@ tree gfc_conv_constant_to_tree (gfc_expr *);
 void gfc_conv_constant (gfc_se *, gfc_expr *);
 
 tree gfc_build_string_const (int, const char *);
+tree gfc_build_cstring_const (const char *);
 
 /* Translate a string constant for a static initializer.  */
 tree gfc_conv_string_init (tree, gfc_expr *);

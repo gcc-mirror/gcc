@@ -89,6 +89,14 @@ gfc_build_string_const (int length, const char *s)
   return str;
 }
 
+/* Build a Fortran character constant from a zero-terminated string.  */
+
+tree
+gfc_build_cstring_const (const char *s)
+{
+  return gfc_build_string_const (strlen (s) + 1, s);
+}
+
 /* Return a string constant with the given length.  Used for static
    initializers.  The constant will be padded or truncated to match 
    length.  */
@@ -147,17 +155,16 @@ gfc_init_constants (void)
   for (n = 0; n <= GFC_MAX_DIMENSIONS; n++)
     gfc_rank_cst[n] = build_int_cst (gfc_array_index_type, n);
 
-  gfc_strconst_bounds = gfc_build_string_const (21, "Array bound mismatch");
+  gfc_strconst_bounds = gfc_build_cstring_const ("Array bound mismatch");
 
   gfc_strconst_fault =
-    gfc_build_string_const (30, "Array reference out of bounds");
+    gfc_build_cstring_const ("Array reference out of bounds");
 
   gfc_strconst_wrong_return =
-    gfc_build_string_const (32, "Incorrect function return value");
+    gfc_build_cstring_const ("Incorrect function return value");
 
   gfc_strconst_current_filename =
-    gfc_build_string_const (strlen (gfc_option.source) + 1,
-			    gfc_option.source);
+    gfc_build_cstring_const (gfc_option.source);
 }
 
 /* Converts a GMP integer into a backend tree node.  */

@@ -144,7 +144,7 @@ gfc_trans_goto (gfc_code * code)
   gfc_start_block (&se.pre);
   gfc_conv_expr (&se, code->expr);
   assign_error =
-    gfc_build_string_const (37, "Assigned label is not a target label");
+    gfc_build_cstring_const ("Assigned label is not a target label");
   tmp = GFC_DECL_STRING_LEN (se.expr);
   tmp = build2 (NE_EXPR, boolean_type_node, tmp, integer_minus_one_node);
   gfc_trans_runtime_check (tmp, assign_error, &se.pre);
@@ -160,8 +160,7 @@ gfc_trans_goto (gfc_code * code)
     }
 
   /* Check the label list.  */
-  range_error =
-    gfc_build_string_const (34, "Assigned label is not in the list");
+  range_error = gfc_build_cstring_const ("Assigned label is not in the list");
 
   do
     {
