@@ -1,3 +1,21 @@
+2004-07-23  Mike Stump  <mrs@apple.com>
+
+	* boehm.c (set_bit): Improve type safety wrt unsignedness.
+	* gjavah.c (throwable_p, decode_signature_piece,
+	print_full_cxx_name, print_include, add_namelet, add_class_decl,
+	process_file): Likewise.
+	* jcf-dump.c (main): Likewise.
+	* jcf-io.c (read_zip_member): Likewise.
+	* jcf-parse.c (HANDLE_CONSTANT_Utf8, get_constant,
+	give_name_to_class, get_class_constant): Likewise.
+	* jcf-write.c (find_constant_wide, push_long_const,
+	generate_classfile): Likewise.
+	* lex.c (java_new_lexer, java_read_char, cxx_keyword_p): Likewise.
+	* parse.y (read_import_dir): Likewise.
+	* typeck.c (parse_signature_type): Likewise.
+	* verify.c (verify_jvm_instructions): Likewise.
+	* zextract.c (find_zip_file_start, read_zip_archive): Likewise.
+
 2004-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Make-lang.in: Replace rmic and rmiregistry references with

@@ -46,7 +46,7 @@ static void
 set_bit (unsigned HOST_WIDE_INT *low, unsigned HOST_WIDE_INT *high,
 	 unsigned int n)
 {
-  HOST_WIDE_INT *which;
+  unsigned HOST_WIDE_INT *which;
 
   if (n >= HOST_BITS_PER_WIDE_INT)
     {
@@ -56,7 +56,7 @@ set_bit (unsigned HOST_WIDE_INT *low, unsigned HOST_WIDE_INT *high,
   else
     which = low;
 
-  *which |= (HOST_WIDE_INT) 1 << n;
+  *which |= (unsigned HOST_WIDE_INT) 1 << n;
 }
 
 /* Recursively mark reference fields.  */

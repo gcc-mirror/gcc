@@ -1144,11 +1144,11 @@ throwable_p (const unsigned char *clname)
 				    (htab_del) free);
 
       /* Make sure the root classes show up in the tables.  */
-      str = xstrdup ("java.lang.Throwable");
+      str = (unsigned char *) xstrdup ("java.lang.Throwable");
       slot = htab_find_slot (throw_hash, str, INSERT);
       *slot = str;
 
-      str = xstrdup ("java.lang.Object");
+      str = (unsigned char *) xstrdup ("java.lang.Object");
       slot = htab_find_slot (non_throw_hash, str, INSERT);
       *slot = str;
 
@@ -1175,7 +1175,7 @@ throwable_p (const unsigned char *clname)
       void **slot;
       unsigned char *super, *tmp;
       int super_length = -1;
-      const char *classfile_name = find_class (current, strlen (current),
+      const char *classfile_name = find_class ((char *) current, strlen ((const char *) current),
 					       &jcf, 0);
 
       if (! classfile_name)
@@ -1321,10 +1321,10 @@ decode_signature_piece (FILE *stream, const unsigned char *signature,
       if (flag_jni)
 	{
 	  /* We know about certain types and special-case their names.  */
-	  if (! strncmp (signature, "Ljava/lang/String;",
+	  if (! strncmp ((const char *) signature, "Ljava/lang/String;",
 			 sizeof ("Ljava/lang/String;") -1))
 	    ctype = "jstring";
-	  else if (! strncmp (signature, "Ljava/lang/Class;",
+	  else if (! strncmp ((const char *) signature, "Ljava/lang/Class;",
 			      sizeof ("Ljava/lang/Class;") - 1))
 	    ctype = "jclass";
 	  /* Skip leading 'L' for throwable_p call.  */
@@ -1469,7 +1469,7 @@ print_full_cxx_name (FILE* stream, JCF* jcf, int name_index,
       int sig_len = JPOOL_UTF_LENGTH (jcf, signature_index);
       if (overloaded_jni_method_exists_p (JPOOL_UTF_DATA (jcf, name_index),
 					  JPOOL_UTF_LENGTH (jcf, name_index),
-					  signature, sig_len))
+					  (const char *) signature, sig_len))
 	{
 	  /* If this method is overloaded by another native method,
 	     then include the argument information in the mangled
@@ -1743,19 +1743,19 @@ print_include (FILE *out, const unsigned char *utf8, int len)
     return;
 
   if (len == -1)
-    len = strlen (utf8);
+    len = strlen ((const char *) utf8);
 
   for (incl = all_includes; incl; incl = incl->next)
     {
       /* We check the length because we might have a proper prefix.  */
       if (len == (int) strlen (incl->name)
-	  && ! strncmp (incl->name, utf8, len))
+	  && ! strncmp (incl->name, (const char *) utf8, len))
 	return;
     }
 
   incl = xmalloc (sizeof (struct include));
   incl->name = xmalloc (len + 1);
-  strncpy (incl->name, utf8, len);
+  strncpy (incl->name, (const char *) utf8, len);
   incl->name[len] = '\0';
   incl->next = all_includes;
   all_includes = incl;
@@ -1814,11 +1814,11 @@ add_namelet (const unsigned char *name, const unsigned char *name_limit,
 #define JAVAIO "java/io/"
 #define JAVAUTIL "java/util/"
       if ((name_limit - name >= (int) sizeof (JAVALANG) - 1
-	   && ! strncmp (name, JAVALANG, sizeof (JAVALANG) - 1))
+	   && ! strncmp ((const char *) name, JAVALANG, sizeof (JAVALANG) - 1))
 	  || (name_limit - name >= (int) sizeof (JAVAUTIL) - 1
-	      && ! strncmp (name, JAVAUTIL, sizeof (JAVAUTIL) - 1))
+	      && ! strncmp ((const char *) name, JAVAUTIL, sizeof (JAVAUTIL) - 1))
 	  || (name_limit - name >= (int) sizeof (JAVAIO) - 1
-	      && ! strncmp (name, JAVAIO, sizeof (JAVAIO) - 1)))
+	      && ! strncmp ((const char *) name, JAVAIO, sizeof (JAVAIO) - 1)))
 	return;
     }
 
@@ -1830,7 +1830,7 @@ add_namelet (const unsigned char *name, const unsigned char *name_limit,
     {
       /* We check the length because we might have a proper prefix.  */
       if ((int) strlen (np->name) == p - name &&
-	  ! strncmp (name, np->name, p - name))
+	  ! strncmp ((const char *) name, np->name, p - name))
 	{
 	  n = np;
 	  break;
@@ -1841,7 +1841,7 @@ add_namelet (const unsigned char *name, const unsigned char *name_limit,
     {
       n = xmalloc (sizeof (struct namelet));
       n->name = xmalloc (p - name + 1);
-      strncpy (n->name, name, p - name);
+      strncpy (n->name, (const char *) name, p - name);
       n->name[p - name] = '\0';
       n->is_class = (p == name_limit);
       n->subnamelets = NULL;
@@ -1923,7 +1923,7 @@ add_class_decl (FILE *out, JCF *jcf, JCF_u2 signature)
       /* If we see an array, then we include the array header.  */
       if (s[i] == '[')
 	{
-	  print_include (out, "gcj/array", -1);
+	  print_include (out, (const unsigned char *) "gcj/array", -1);
 	  continue;
 	}
 
@@ -2094,13 +2094,13 @@ process_file (JCF *jcf, FILE *out)
 	  for (i = 0; i < len; ++i)
 	    name[i] = jcf->classname[i] == '.' ? '/' : jcf->classname[i];
 	  name[i] = '\0';
-	  print_include (out, name, len);
+	  print_include (out, (const unsigned char *) name, len);
 	  free (name);
 
 	  if (! flag_jni)
 	    {
-	      print_include (out, "gcj/cni", -1);
-	      print_include (out, "java/lang/UnsupportedOperationException",
+	      print_include (out, (const unsigned char *) "gcj/cni", -1);
+	      print_include (out, (const unsigned char *) "java/lang/UnsupportedOperationException",
 			     -1);
 	    }
 	}

@@ -504,7 +504,7 @@ parse_signature_type (const unsigned char **ptr, const unsigned char *limit)
 	      break;
 	  }
 	*ptr = str+1;
-	type = lookup_class (unmangle_classname (start, str - start));
+	type = lookup_class (unmangle_classname ((const char *) start, str - start));
 	break;
       }
     default:

@@ -1080,7 +1080,7 @@ main (int argc, char** argv)
 		  if (jcf->read_end - jcf->read_ptr < total_length)
 		    jcf_trim_old_input (jcf);
 		  JCF_FILL (jcf, total_length);
-		  filename = jcf->read_ptr;
+		  filename = (const char *) jcf->read_ptr;
 		  JCF_SKIP (jcf, filename_length);
 		  JCF_SKIP (jcf, extra_length);
 		  if (filename_length > 0

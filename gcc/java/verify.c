@@ -1093,7 +1093,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 
 	    self_is_interface = CLASS_INTERFACE (TYPE_NAME (self_type));
 	    method_name = COMPONENT_REF_NAME (&current_jcf->cpool, index);
-	    method_type = parse_signature_string (IDENTIFIER_POINTER (sig),
+	    method_type = parse_signature_string ((const unsigned char *) IDENTIFIER_POINTER (sig),
 						  IDENTIFIER_LENGTH (sig));
 
 	    if (TREE_CODE (method_type) != FUNCTION_TYPE)

@@ -215,7 +215,7 @@ read_zip_member (JCF *jcf,  ZipDirectory *zipd, ZipFile *zipf)
       jcf->read_ptr = jcf->buffer;
       jcf->read_end = jcf->buffer_end;
       buffer = ALLOC (zipd->size);
-      d_stream.next_in = buffer;
+      d_stream.next_in = (unsigned char *) buffer;
       d_stream.avail_in = zipd->size;
       if (lseek (zipf->fd, zipd->filestart, 0) < 0
 	  || read (zipf->fd, buffer, zipd->size) != (long) zipd->size)
