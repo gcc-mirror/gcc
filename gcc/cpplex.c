@@ -1321,7 +1321,8 @@ cpp_spell_token (pfile, token, buffer)
 	unsigned char c;
 
 	if (token->flags & DIGRAPH)
-	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
+	  spelling
+	    = digraph_spellings[(int) token->type - (int) CPP_FIRST_DIGRAPH];
 	else if (token->flags & NAMED_OP)
 	  goto spell_ident;
 	else
@@ -1413,7 +1414,8 @@ cpp_output_token (token, fp)
 	const unsigned char *spelling;
 
 	if (token->flags & DIGRAPH)
-	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
+	  spelling
+	    = digraph_spellings[(int) token->type - (int) CPP_FIRST_DIGRAPH];
 	else if (token->flags & NAMED_OP)
 	  goto spell_ident;
 	else
@@ -1523,8 +1525,8 @@ cpp_can_paste (pfile, token1, token2, digraph)
   if (token2->flags & NAMED_OP)
     b = CPP_NAME;
 
-  if (a <= CPP_LAST_EQ && b == CPP_EQ)
-    return a + (CPP_EQ_EQ - CPP_EQ);
+  if ((int) a <= (int) CPP_LAST_EQ && b == CPP_EQ)
+    return (enum cpp_ttype) ((int) a + ((int) CPP_EQ_EQ - (int) CPP_EQ));
 
   switch (a)
     {
@@ -1637,12 +1639,12 @@ cpp_avoid_paste (pfile, token1, token2)
 
   c = EOF;
   if (token2->flags & DIGRAPH)
-    c = digraph_spellings[b - CPP_FIRST_DIGRAPH][0];
+    c = digraph_spellings[(int) b - (int) CPP_FIRST_DIGRAPH][0];
   else if (token_spellings[b].category == SPELL_OPERATOR)
     c = token_spellings[b].name[0];
 
   /* Quickly get everything that can paste with an '='.  */
-  if (a <= CPP_LAST_EQ && c == '=')
+  if ((int) a <= (int) CPP_LAST_EQ && c == '=')
     return 1;
 
   switch (a)

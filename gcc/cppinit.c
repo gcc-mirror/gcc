@@ -1191,7 +1191,7 @@ parse_option (input)
 		 Otherwise, return the longest option-accepting match.
 		 This loops no more than twice with current options.  */
 	      mx = md;
-	      for (; mn < N_OPTS; mn++)
+	      for (; mn < (unsigned int) N_OPTS; mn++)
 		{
 		  opt_len = cl_options[mn].opt_len;
 		  if (memcmp (input, cl_options[mn].opt_text, opt_len))
