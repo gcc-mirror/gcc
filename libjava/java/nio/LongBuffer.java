@@ -68,7 +68,7 @@ public abstract class LongBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static LongBuffer wrap (long[] array, int offset, int length)
+  public static final LongBuffer wrap (long[] array, int offset, int length)
   {
     return new LongBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
   }
@@ -77,7 +77,7 @@ public abstract class LongBuffer extends Buffer
    * Wraps a <code>long</code> array into a <code>LongBuffer</code>
    * object.
    */
-  final public static LongBuffer wrap (long[] array)
+  public static final LongBuffer wrap (long[] array)
   {
     return wrap (array, 0, array.length);
   }

@@ -1,5 +1,5 @@
 /* Buffer.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -345,7 +345,7 @@ public abstract class Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final static void checkArraySize(int arraylength, int offset, int length)
+  static final void checkArraySize(int arraylength, int offset, int length)
   {
     if ((offset < 0) ||
         (length < 0) ||

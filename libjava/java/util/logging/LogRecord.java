@@ -1,6 +1,6 @@
 /* LogRecord.java --
    A class for the state associated with individual logging events
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -388,7 +388,7 @@ public class LogRecord
    * Allocates a sequence number for a new LogRecord.  This class
    * method is only called by the LogRecord constructor.
    */
-  private synchronized static long allocateSeqNum()
+  private static synchronized long allocateSeqNum()
   {
     lastSeqNum += 1;
     return lastSeqNum;

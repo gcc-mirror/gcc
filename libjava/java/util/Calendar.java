@@ -1,4 +1,4 @@
-/* java.util.Calendar
+/* Calendar.java --
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -1057,7 +1057,7 @@ public abstract class Calendar implements Serializable, Cloneable
       }
   }
 
-  private final static String[] fieldNames = {
+  private static final String[] fieldNames = {
     ",ERA=", ",YEAR=", ",MONTH=",
     ",WEEK_OF_YEAR=", ",WEEK_OF_MONTH=",
     ",DAY_OF_MONTH=", ",DAY_OF_YEAR=", ",DAY_OF_WEEK=",

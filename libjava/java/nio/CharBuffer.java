@@ -74,7 +74,7 @@ public abstract class CharBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static CharBuffer wrap(char[] array, int offset, int length)
+  public static final CharBuffer wrap(char[] array, int offset, int length)
   {
     return new CharBufferImpl(array, 0, array.length, offset + length, offset, -1, false);
   }
@@ -86,7 +86,7 @@ public abstract class CharBuffer extends Buffer
    *
    * @return a new <code>CharBuffer</code> object
    */
-  final public static CharBuffer wrap(CharSequence seq)
+  public static final CharBuffer wrap(CharSequence seq)
   {
     return wrap(seq, 0, seq.length());
   }
@@ -103,7 +103,7 @@ public abstract class CharBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static CharBuffer wrap(CharSequence seq, int start, int end)
+  public static final CharBuffer wrap(CharSequence seq, int start, int end)
   {
     // FIXME: implement better handling of java.lang.String.
     // Probably share data with String via reflection.
@@ -131,7 +131,7 @@ public abstract class CharBuffer extends Buffer
    *
    * @return a new <code>CharBuffer</code> object
    */
-  final public static CharBuffer wrap(char[] array)
+  public static final CharBuffer wrap(char[] array)
   {
     return wrap(array, 0, array.length);
   }

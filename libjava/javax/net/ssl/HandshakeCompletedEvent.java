@@ -52,7 +52,6 @@ import javax.security.cert.X509Certificate;
  */
 public class HandshakeCompletedEvent extends java.util.EventObject
 {
-
   // Fields.
   // -------------------------------------------------------------------
 
@@ -60,7 +59,7 @@ public class HandshakeCompletedEvent extends java.util.EventObject
   private static final long serialVersionUID = 7914963744257769778L;
 
   /** The session. */
-  private transient final SSLSession session;
+  private final transient SSLSession session;
 
   // Constructor.
   // -------------------------------------------------------------------

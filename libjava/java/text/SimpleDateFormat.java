@@ -1,6 +1,7 @@
 /* SimpleDateFormat.java -- A class for parsing/formating simple 
    date constructs
-   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -419,7 +420,7 @@ public class SimpleDateFormat extends DateFormat
    * appending to the specified StringBuffer.  The input StringBuffer
    * is returned as output for convenience.
    */
-  final private void formatWithAttribute(Date date, FormatBuffer buffer, FieldPosition pos)
+  private void formatWithAttribute(Date date, FormatBuffer buffer, FieldPosition pos)
   {
     String temp;
     AttributedCharacterIterator.Attribute attribute;
@@ -584,7 +585,7 @@ public class SimpleDateFormat extends DateFormat
     buffer.append(valStr);
   }
 
-  private final boolean expect (String source, ParsePosition pos, char ch)
+  private boolean expect(String source, ParsePosition pos, char ch)
   {
     int x = pos.getIndex();
     boolean r = x < source.length() && source.charAt(x) == ch;

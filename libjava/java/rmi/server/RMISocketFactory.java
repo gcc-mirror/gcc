@@ -47,9 +47,9 @@ import java.net.Socket;
 public abstract class RMISocketFactory
   implements RMIClientSocketFactory, RMIServerSocketFactory
 {
-  static private RMISocketFactory defaultFactory;
-  static private RMISocketFactory currentFactory;
-  static private RMIFailureHandler currentHandler;
+  private static RMISocketFactory defaultFactory;
+  private static RMISocketFactory currentFactory;
+  private static RMIFailureHandler currentHandler;
 
   static
     {

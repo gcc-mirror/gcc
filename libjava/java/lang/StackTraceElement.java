@@ -1,5 +1,5 @@
 /* StackTraceElement.java -- One function call or call stack element
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -241,7 +241,7 @@ public class StackTraceElement implements Serializable
    * @param o2 the second object
    * @return o1 == null ? o2 == null : o1.equals(o2)
    */
-  private static final boolean equals(Object o1, Object o2)
+  private static boolean equals(Object o1, Object o2)
   {
     return o1 == null ? o2 == null : o1.equals(o2);
   }
@@ -252,7 +252,7 @@ public class StackTraceElement implements Serializable
    * @param o the object to hash
    * @return o1 == null ? 0 : o1.hashCode()
    */
-  private static final int hashCode(Object o)
+  private static int hashCode(Object o)
   {
     return o == null ? 0 : o.hashCode();
   }

@@ -68,7 +68,7 @@ public abstract class ShortBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static ShortBuffer wrap (short[] array, int offset, int length)
+  public static final ShortBuffer wrap (short[] array, int offset, int length)
   {
     return new ShortBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
   }
@@ -77,7 +77,7 @@ public abstract class ShortBuffer extends Buffer
    * Wraps a <code>short</code> array into a <code>ShortBuffer</code>
    * object.
    */
-  final public static ShortBuffer wrap (short[] array)
+  public static final ShortBuffer wrap (short[] array)
   {
     return wrap (array, 0, array.length);
   }

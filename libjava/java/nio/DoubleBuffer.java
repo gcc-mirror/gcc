@@ -68,7 +68,7 @@ public abstract class DoubleBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static DoubleBuffer wrap (double[] array, int offset, int length)
+  public static final DoubleBuffer wrap (double[] array, int offset, int length)
   {
     return new DoubleBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
   }
@@ -77,7 +77,7 @@ public abstract class DoubleBuffer extends Buffer
    * Wraps a <code>double</code> array into a <code>DoubleBuffer</code>
    * object.
    */
-  final public static DoubleBuffer wrap (double[] array)
+  public static final DoubleBuffer wrap (double[] array)
   {
     return wrap (array, 0, array.length);
   }
