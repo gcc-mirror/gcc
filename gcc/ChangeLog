@@ -1,3 +1,9 @@
+2005-03-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_parm_start): New function.
+	(function_arg_advance): Use rs6000_parm_start.
+	(function_arg, rs6000_arg_partial_bytes): Likewise.
+
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.c (check_case_value): Adjust comment about stripping

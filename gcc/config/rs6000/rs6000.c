@@ -4060,6 +4060,20 @@ function_arg_boundary (enum machine_mode mode, tree type)
     return PARM_BOUNDARY;
 }
 
+/* For a function parm of MODE and TYPE, return the starting word in
+   the parameter area.  NWORDS of the parameter area are already used.  */
+
+static unsigned int
+rs6000_parm_start (enum machine_mode mode, tree type, unsigned int nwords)
+{
+  unsigned int align;
+  unsigned int parm_offset;
+
+  align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
+  parm_offset = DEFAULT_ABI == ABI_V4 ? 2 : 6;
+  return nwords + (-(parm_offset + nwords) & align);
+}
+
 /* Compute the size (in words) of a function argument.  */
 
 static unsigned long
@@ -4314,15 +4328,10 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   else
     {
       int n_words = rs6000_arg_size (mode, type);
-      int align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
+      int start_words = cum->words;
+      int align_words = rs6000_parm_start (mode, type, start_words);
 
-      /* The simple alignment calculation here works because
-	 function_arg_boundary / PARM_BOUNDARY will only be 1 or 2.
-	 If we ever want to handle alignments larger than 8 bytes for
-	 32-bit or 16 bytes for 64-bit, then we'll need to take into
-	 account the offset to the start of the parm save area.  */
-      align &= cum->words;
-      cum->words += align + n_words;
+      cum->words = align_words + n_words;
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	  && TARGET_HARD_FLOAT && TARGET_FPRS)
@@ -4335,7 +4344,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  fprintf (stderr, "nargs = %4d, proto = %d, mode = %4s, ",
 		   cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode));
 	  fprintf (stderr, "named = %d, align = %d, depth = %d\n",
-		   named, align, depth);
+		   named, align_words - start_words, depth);
 	}
     }
 }
@@ -4826,8 +4835,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
   else
     {
-      int align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
-      int align_words = cum->words + (cum->words & align);
+      int align_words = rs6000_parm_start (mode, type, cum->words);
 
       if (USE_FP_FOR_ARG_P (cum, mode, type))
 	{
@@ -4940,8 +4948,6 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			  tree type, bool named)
 {
   int ret = 0;
-  int align;
-  int parm_offset;
   int align_words;
 
   if (DEFAULT_ABI == ABI_V4)
@@ -4957,9 +4963,7 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       && int_size_in_bytes (type) > 0)
     return 0;
 
-  align = function_arg_boundary (mode, type) / PARM_BOUNDARY - 1;
-  parm_offset = TARGET_32BIT ? 2 : 0;
-  align_words = cum->words + ((parm_offset - cum->words) & align);
+  align_words = rs6000_parm_start (mode, type, cum->words);
 
   if (USE_FP_FOR_ARG_P (cum, mode, type)
       /* If we are passing this arg in gprs as well, then this function
