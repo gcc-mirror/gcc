@@ -26,6 +26,11 @@ int foo;
 #endif  /* ISC_OMITS_WITH_STDC_CHECK */
 
 
+#if defined( IRIX_STDIO_DUMMY_VA_LIST_CHECK )
+extern int printf( const char *, __gnuc_va_list );
+#endif  /* IRIX_STDIO_DUMMY_VA_LIST_CHECK */
+
+
 #if defined( READ_RET_TYPE_CHECK )
 extern unsigned int fread(), fwrite();
 extern int	fclose(), fflush(), foo();
