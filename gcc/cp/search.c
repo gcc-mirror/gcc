@@ -148,7 +148,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
 	  bk = bk_proper_base;
 	  /* Fall through.  */
 	case bk_proper_base:
-	  my_friendly_assert (found == bk_not_base, 20010723);
+	  gcc_assert (found == bk_not_base);
 	  found = bk;
 	  break;
 	  
@@ -217,7 +217,7 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	*kind_ptr = bk_not_base;
       return error_mark_node;
     }
-  my_friendly_assert (TYPE_P (base), 20011127);
+  gcc_assert (TYPE_P (base));
   
   if (!TYPE_P (t))
     {
@@ -436,7 +436,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
 #ifdef GATHER_STATISTICS
       n_fields_searched++;
 #endif /* GATHER_STATISTICS */
-      my_friendly_assert (DECL_P (field), 0);
+      gcc_assert (DECL_P (field));
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	{
@@ -618,7 +618,7 @@ dfs_access_in_type (tree binfo, void *data)
 	      else if (decl_access == access_private_node)
 		access = ak_private;
 	      else
-		my_friendly_assert (false, 20030217);
+		gcc_unreachable ();
 	    }
 	}
 
@@ -1182,13 +1182,12 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
 {
   tree baselink;
 
-  my_friendly_assert (TREE_CODE (functions) == FUNCTION_DECL
-		      || TREE_CODE (functions) == TEMPLATE_DECL
-		      || TREE_CODE (functions) == TEMPLATE_ID_EXPR
-		      || TREE_CODE (functions) == OVERLOAD,
-		      20020730);
-  my_friendly_assert (!optype || TYPE_P (optype), 20020730);
-  my_friendly_assert (TREE_TYPE (functions), 20020805);
+  gcc_assert (TREE_CODE (functions) == FUNCTION_DECL
+	      || TREE_CODE (functions) == TEMPLATE_DECL
+	      || TREE_CODE (functions) == TEMPLATE_ID_EXPR
+	      || TREE_CODE (functions) == OVERLOAD);
+  gcc_assert (!optype || TYPE_P (optype));
+  gcc_assert (TREE_TYPE (functions));
 
   baselink = make_node (BASELINK);
   TREE_TYPE (baselink) = TREE_TYPE (functions);
@@ -1228,7 +1227,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 
   const char *errstr = 0;
 
-  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 20030624);
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   if (TREE_CODE (xbasetype) == TREE_BINFO)
     {
@@ -1237,7 +1236,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
     }
   else
     {
-      my_friendly_assert (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)), 20030624);
+      gcc_assert (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)));
       type = xbasetype;
       xbasetype = NULL_TREE;
     }
@@ -1491,7 +1490,7 @@ adjust_result_of_qualified_name_lookup (tree decl,
     {
       tree base;
 
-      my_friendly_assert (CLASS_TYPE_P (context_class), 20020808);
+      gcc_assert (CLASS_TYPE_P (context_class));
 
       /* Look for the QUALIFYING_SCOPE as a base of the CONTEXT_CLASS.
 	 Because we do not yet know which function will be chosen by
@@ -2505,11 +2504,11 @@ copied_binfo (tree binfo, tree here)
     }
   else
     {
-      my_friendly_assert (BINFO_TYPE (here) == BINFO_TYPE (binfo), 20030202);
+      gcc_assert (BINFO_TYPE (here) == BINFO_TYPE (binfo));
       result = here;
     }
 
-  my_friendly_assert (result, 20030202);
+  gcc_assert (result);
   return result;
 }
 

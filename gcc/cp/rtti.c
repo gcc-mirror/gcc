@@ -140,7 +140,7 @@ build_headof (tree exp)
   tree offset;
   tree index;
 
-  my_friendly_assert (TREE_CODE (type) == POINTER_TYPE, 20000112);
+  gcc_assert (TREE_CODE (type) == POINTER_TYPE);
   type = TREE_TYPE (type);
 
   if (!TYPE_POLYMORPHIC_P (type))
@@ -364,7 +364,7 @@ get_tinfo_decl (tree type)
       pushdecl_top_level_and_finish (d, NULL_TREE);
 
       /* Add decl to the global array of tinfo decls.  */
-      my_friendly_assert (unemitted_tinfo_decls != 0, 20030312);
+      gcc_assert (unemitted_tinfo_decls != 0);
       VARRAY_PUSH_TREE (unemitted_tinfo_decls, d);
     }
 
@@ -1026,7 +1026,7 @@ typeinfo_in_lib_p (tree type)
 static tree
 get_pseudo_ti_init (tree type, tree var_desc)
 {
-  my_friendly_assert (at_eof, 20021120);
+  gcc_assert (at_eof);
   switch (TREE_CODE (type))
     {
     case OFFSET_TYPE:
@@ -1274,7 +1274,7 @@ get_pseudo_ti_desc (tree type)
 static void
 create_tinfo_types (void)
 {
-  my_friendly_assert (!ti_desc_type_node, 20020609);
+  gcc_assert (!ti_desc_type_node);
 
   push_nested_namespace (abi_node);
   
@@ -1436,7 +1436,7 @@ emit_tinfo_decl (tree decl)
   int in_library = typeinfo_in_lib_p (type);
   tree var_desc, var_init;
 
-  my_friendly_assert (DECL_TINFO_P (decl), 20030307); 
+  gcc_assert (DECL_TINFO_P (decl)); 
   
   if (in_library)
     {

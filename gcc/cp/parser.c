@@ -714,7 +714,7 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
   cp_token *token;
 
   /* N is 1-based, not zero-based.  */
-  my_friendly_assert (n > 0, 20000224);
+  gcc_assert (n > 0);
 
   /* Skip ahead from NEXT_TOKEN, reading more tokens as necessary.  */
   token = lexer->next_token;
@@ -2272,7 +2272,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
   /* If we got here, this cannot be a valid variable declaration, thus
      the cp_parser_id_expression must have resolved to a plain identifier
      node (not a TYPE_DECL or TEMPLATE_ID_EXPR).  */
-  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 20030203);
+  gcc_assert (TREE_CODE (id) == IDENTIFIER_NODE);
   /* Emit a diagnostic for the invalid type.  */
   cp_parser_diagnose_invalid_type_name (parser, parser->scope, id);
   /* Skip to the end of the declaration; there's no point in
@@ -2668,9 +2668,8 @@ cp_parser_translation_unit (cp_parser* parser)
     }
 
   /* Make sure the declarator obstack was fully cleaned up.  */
-  my_friendly_assert (obstack_next_free (&declarator_obstack) ==
-		      declarator_obstack_base,
-		      20040621);
+  gcc_assert (obstack_next_free (&declarator_obstack)
+	      == declarator_obstack_base);
 
   /* All went well.  */
   return success;
@@ -8529,10 +8528,9 @@ cp_parser_template_id (cp_parser *parser,
     {
       /* If it's not a class-template or a template-template, it should be
 	 a function-template.  */
-      my_friendly_assert ((DECL_FUNCTION_TEMPLATE_P (template)
-			   || TREE_CODE (template) == OVERLOAD
-			   || BASELINK_P (template)),
-			  20010716);
+      gcc_assert ((DECL_FUNCTION_TEMPLATE_P (template)
+		   || TREE_CODE (template) == OVERLOAD
+		   || BASELINK_P (template)));
 
       template_id = lookup_template_function (template, arguments);
     }
@@ -14181,9 +14179,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     return name;
   if (BASELINK_P (name))
     {
-      my_friendly_assert ((TREE_CODE (BASELINK_FUNCTIONS (name))
-			   == TEMPLATE_ID_EXPR),
-			  20020909);
+      gcc_assert (TREE_CODE (BASELINK_FUNCTIONS (name))
+		  == TEMPLATE_ID_EXPR);
       return name;
     }
 
@@ -14213,8 +14210,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   /* By this point, the NAME should be an ordinary identifier.  If
      the id-expression was a qualified name, the qualifying scope is
      stored in PARSER->SCOPE at this point.  */
-  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE,
-		      20000619);
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   /* Perform the lookup.  */
   if (parser->scope)
@@ -14326,12 +14322,11 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       return error_mark_node;
     }
 
-  my_friendly_assert (DECL_P (decl)
-		      || TREE_CODE (decl) == OVERLOAD
-		      || TREE_CODE (decl) == SCOPE_REF
-		      || TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE
-		      || BASELINK_P (decl),
-		      20000619);
+  gcc_assert (DECL_P (decl)
+	      || TREE_CODE (decl) == OVERLOAD
+	      || TREE_CODE (decl) == SCOPE_REF
+	      || TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE
+	      || BASELINK_P (decl));
 
   /* If we have resolved the name of a member declaration, check to
      see if the declaration is accessible.  When the name resolves to
@@ -15223,7 +15218,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
   /* There should not be any class definitions in progress at this
      point; the bodies of members are only parsed outside of all class
      definitions.  */
-  my_friendly_assert (parser->num_classes_being_defined == 0, 20010816);
+  gcc_assert (parser->num_classes_being_defined == 0);
   /* While we're parsing the member functions we might encounter more
      classes.  We want to handle them right away, but we don't want
      them getting mixed up with functions that are currently in the

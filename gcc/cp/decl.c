@@ -438,20 +438,19 @@ poplevel (int keep, int reverse, int functionbody)
 
   block = NULL_TREE;
 
-  my_friendly_assert (current_binding_level->kind != sk_class, 19990916);
+  gcc_assert (current_binding_level->kind != sk_class);
 
   real_functionbody = (current_binding_level->kind == sk_cleanup
 		       ? ((functionbody = 0), tmp) : functionbody);
   subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
-  my_friendly_assert (VEC_length(cp_class_binding,
-				 current_binding_level->class_shadowed) == 0,
-		      19990414);
+  gcc_assert (!VEC_length(cp_class_binding,
+			  current_binding_level->class_shadowed));
 
   /* We used to use KEEP == 2 to indicate that the new block should go
      at the beginning of the list of blocks at this binding level,
      rather than the end.  This hack is no longer used.  */
-  my_friendly_assert (keep == 0 || keep == 1, 0);
+  gcc_assert (keep == 0 || keep == 1);
 
   if (current_binding_level->keep)
     keep = 1;
@@ -1793,8 +1792,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  /* If newdecl is not a specialization, then it is not a
 	     template-related function at all.  And that means that we
 	     should have exited above, returning 0.  */
-	  my_friendly_assert (DECL_TEMPLATE_SPECIALIZATION (newdecl),
-			      0);
+	  gcc_assert (DECL_TEMPLATE_SPECIALIZATION (newdecl));
 
 	  if (TREE_USED (olddecl))
 	    /* From [temp.expl.spec]:
@@ -2607,7 +2605,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
       error ("`%D' used without template parameters", name);
       return error_mark_node;
     }
-  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 20030802);
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   if (TREE_CODE (context) == NAMESPACE_DECL)
     {
@@ -2914,7 +2912,7 @@ cxx_init_decl_processing (void)
   current_function_decl = NULL_TREE;
   current_binding_level = NULL;
   /* Enter the global namespace.  */
-  my_friendly_assert (global_namespace == NULL_TREE, 375);
+  gcc_assert (global_namespace == NULL_TREE);
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,
                                       void_type_node);
   begin_scope (sk_namespace, global_namespace);
@@ -4139,7 +4137,7 @@ reshape_init (tree type, tree *initp)
   old_init_value = (TREE_CODE (*initp) == TREE_LIST
 		    ? TREE_VALUE (*initp) : old_init);
 
-  my_friendly_assert (old_init_value, 20030723);
+  gcc_assert (old_init_value);
 
   /* If the initializer is brace-enclosed, pull initializers from the
      enclosed elements.  Advance past the brace-enclosed initializer
@@ -4395,11 +4393,11 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 
   if (TREE_CODE (decl) == CONST_DECL)
     {
-      my_friendly_assert (TREE_CODE (decl) != REFERENCE_TYPE, 148);
+      gcc_assert (TREE_CODE (decl) != REFERENCE_TYPE);
 
       DECL_INITIAL (decl) = init;
 
-      my_friendly_assert (init != NULL_TREE, 149);
+      gcc_assert (init != NULL_TREE);
       init = NULL_TREE;
     }
   else if (!DECL_EXTERNAL (decl) && TREE_CODE (type) == REFERENCE_TYPE)
@@ -4536,11 +4534,11 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
      member.  */
   if (DECL_LANG_SPECIFIC (decl) && DECL_IN_AGGR_P (decl))
     {
-      my_friendly_assert (TREE_STATIC (decl), 19990828);
+      gcc_assert (TREE_STATIC (decl));
       /* An in-class declaration of a static data member should be
 	 external; it is only a declaration, and not a definition.  */
       if (init == NULL_TREE)
-	my_friendly_assert (DECL_EXTERNAL (decl), 20000723);
+	gcc_assert (DECL_EXTERNAL (decl));
     }
 
   /* We don't create any RTL for local variables.  */
@@ -4589,10 +4587,9 @@ initialize_local_var (tree decl, tree init)
   tree type = TREE_TYPE (decl);
   tree cleanup;
 
-  my_friendly_assert (TREE_CODE (decl) == VAR_DECL
-		      || TREE_CODE (decl) == RESULT_DECL,
-		      20021010);
-  my_friendly_assert (!TREE_STATIC (decl), 20021010);
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == RESULT_DECL);
+  gcc_assert (!TREE_STATIC (decl));
 
   if (DECL_SIZE (decl) == NULL_TREE)
     {
@@ -4613,7 +4610,7 @@ initialize_local_var (tree decl, tree init)
 	{
 	  int saved_stmts_are_full_exprs_p;
 
-	  my_friendly_assert (building_stmt_tree (), 20000906);
+	  gcc_assert (building_stmt_tree ());
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (init);
@@ -4671,7 +4668,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
       return;
     }
 
-  my_friendly_assert (TREE_CODE (decl) != RESULT_DECL, 20030619);
+  gcc_assert (TREE_CODE (decl) != RESULT_DECL);
 
   /* Assume no cleanup is required.  */
   cleanup = NULL_TREE;
@@ -4719,7 +4716,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     }
 
   /* Parameters are handled by store_parm_decls, not cp_finish_decl.  */
-  my_friendly_assert (TREE_CODE (decl) != PARM_DECL, 19990828);
+  gcc_assert (TREE_CODE (decl) != PARM_DECL);
 
   /* Take care of TYPE_DECLs up front.  */
   if (TREE_CODE (decl) == TYPE_DECL)
@@ -5142,8 +5139,8 @@ register_dtor_fn (tree decl)
 static void
 expand_static_init (tree decl, tree init)
 {
-  my_friendly_assert (TREE_CODE (decl) == VAR_DECL, 20021010);
-  my_friendly_assert (TREE_STATIC (decl), 20021010);
+  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (TREE_STATIC (decl));
 
   /* Some variables require no initialization.  */
   if (!init
@@ -5573,12 +5570,12 @@ grokfndecl (tree ctype,
                  (see template_id in parse.y). If the current class contains
                  such a name, we'll get a COMPONENT_REF here. Undo that.  */
 
-              my_friendly_assert (TREE_TYPE (TREE_OPERAND (fns, 0))
-                                  == current_class_type, 20001120);
+              gcc_assert (TREE_TYPE (TREE_OPERAND (fns, 0))
+			  == current_class_type);
               fns = TREE_OPERAND (fns, 1);
             }
-	  my_friendly_assert (TREE_CODE (fns) == IDENTIFIER_NODE
-	                      || TREE_CODE (fns) == OVERLOAD, 20001120);
+	  gcc_assert (TREE_CODE (fns) == IDENTIFIER_NODE
+		      || TREE_CODE (fns) == OVERLOAD);
 	  DECL_TEMPLATE_INFO (decl) = tree_cons (fns, args, NULL_TREE);
 
 	  if (has_default_arg)
@@ -5725,8 +5722,7 @@ grokvardecl (tree type,
 {
   tree decl;
 
-  my_friendly_assert (!name || TREE_CODE (name) == IDENTIFIER_NODE,
-		      20020808);
+  gcc_assert (!name || TREE_CODE (name) == IDENTIFIER_NODE);
 
   /* Compute the scope in which to place the variable.  */
   if (!scope)
@@ -5920,8 +5916,7 @@ build_ptrmem_type (tree class_type, tree member_type)
     }
   else
     {
-      my_friendly_assert (TREE_CODE (member_type) != FUNCTION_TYPE,
-			  20030716);
+      gcc_assert (TREE_CODE (member_type) != FUNCTION_TYPE);
       return build_offset_type (class_type, member_type);
     }
 }
@@ -6416,8 +6411,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    dname = TREE_OPERAND (dname, 1);
 		  if (TREE_CODE (dname) != IDENTIFIER_NODE)
 		    {
-		      my_friendly_assert (is_overloaded_fn (dname),
-					  19990331);
+		      gcc_assert (is_overloaded_fn (dname));
 		      dname = DECL_NAME (get_first_fn (dname));
 		    }
 		}
@@ -6437,7 +6431,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  name = IDENTIFIER_POINTER (dname);
 		else
 		  {
-		    my_friendly_assert (flags == NO_SPECIAL, 154);
+		    gcc_assert (flags == NO_SPECIAL);
 		    flags = TYPENAME_FLAG;
 		    ctor_return_type = TREE_TYPE (dname);
 		    sfk = sfk_conversion;
@@ -8297,7 +8291,7 @@ copy_fn_p (tree d)
   tree arg_type;
   int result = 1;
 
-  my_friendly_assert (DECL_FUNCTION_MEMBER_P (d), 20011208);
+  gcc_assert (DECL_FUNCTION_MEMBER_P (d));
 
   if (DECL_TEMPLATE_INFO (d) && is_member_template (DECL_TI_TEMPLATE (d)))
     /* Instantiations of template member functions are never copy
@@ -8488,7 +8482,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 	abort ();
       }
     while (0);
-  my_friendly_assert (operator_code != LAST_CPLUS_TREE_CODE, 20000526);
+  gcc_assert (operator_code != LAST_CPLUS_TREE_CODE);
   SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
 
   if (! friendp)
@@ -8892,7 +8886,7 @@ xref_tag (enum tag_types tag_code, tree name,
 
   timevar_push (TV_NAME_LOOKUP);
 
-  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   switch (tag_code)
     {
@@ -9099,8 +9093,8 @@ xref_basetypes (tree ref, tree base_list)
 
   /* The binfo slot should be empty, unless this is an (ill-formed)
      redefinition.  */
-  my_friendly_assert (!TYPE_BINFO (ref) || TYPE_SIZE (ref), 20040706);
-  my_friendly_assert (TYPE_MAIN_VARIANT (ref) == ref, 20040712);
+  gcc_assert (!TYPE_BINFO (ref) || TYPE_SIZE (ref));
+  gcc_assert (TYPE_MAIN_VARIANT (ref) == ref);
 
   binfo = make_tree_binfo (max_bases);
 
@@ -9603,8 +9597,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   tree current_function_parms;
 
   /* Sanity check.  */
-  my_friendly_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE, 160);
-  my_friendly_assert (TREE_CHAIN (void_list_node) == NULL_TREE, 161);
+  gcc_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE);
+  gcc_assert (TREE_CHAIN (void_list_node) == NULL_TREE);
 
   fntype = TREE_TYPE (decl1);
   if (TREE_CODE (fntype) == METHOD_TYPE)
@@ -9789,10 +9783,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	 between `current_class_type' and `current_class_ptr'.  */
       tree t = DECL_ARGUMENTS (decl1);
 
-      my_friendly_assert (t != NULL_TREE && TREE_CODE (t) == PARM_DECL,
-			  162);
-      my_friendly_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE,
-			  19990811);
+      gcc_assert (t != NULL_TREE && TREE_CODE (t) == PARM_DECL);
+      gcc_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE);
 
       cp_function_chain->x_current_class_ref
 	= build_indirect_ref (t, NULL);
@@ -10047,8 +10039,7 @@ save_function_data (tree decl)
 
   /* Save the language-specific per-function data so that we can
      get it back when we really expand this function.  */
-  my_friendly_assert (!DECL_PENDING_INLINE_P (decl),
-		      19990908);
+  gcc_assert (!DECL_PENDING_INLINE_P (decl));
 
   /* Make a copy.  */
   f = GGC_NEW (struct language_function);
@@ -10274,7 +10265,7 @@ finish_function (int flags)
       This caused &foo to be of type ptr-to-const-function
       which then got a warning when stored in a ptr-to-function variable.  */
 
-  my_friendly_assert (building_stmt_tree (), 20000911);
+  gcc_assert (building_stmt_tree ());
 
   /* For a cloned function, we've already got all the code we need;
      there's no need to add any extra bits.  */
@@ -10339,7 +10330,7 @@ finish_function (int flags)
 
   /* Statements should always be full-expressions at the outermost set
      of curly braces for a function.  */
-  my_friendly_assert (stmts_are_full_exprs_p (), 19990831);
+  gcc_assert (stmts_are_full_exprs_p ());
 
   /* Set up the named return value optimization, if we can.  Candidate
      variables are selected in check_return_value.  */
@@ -10562,7 +10553,7 @@ finish_method (tree decl)
     {
       if (DECL_NAME (link) != NULL_TREE)
 	pop_binding (DECL_NAME (link), link);
-      my_friendly_assert (TREE_CODE (link) != FUNCTION_DECL, 163);
+      gcc_assert (TREE_CODE (link) != FUNCTION_DECL);
       DECL_CONTEXT (link) = NULL_TREE;
     }
 
@@ -10590,7 +10581,7 @@ finish_method (tree decl)
 void
 maybe_register_incomplete_var (tree var)
 {
-  my_friendly_assert (TREE_CODE (var) == VAR_DECL, 20020406);
+  gcc_assert (TREE_CODE (var) == VAR_DECL);
 
   /* Keep track of variables with incomplete types.  */
   if (!processing_template_decl && TREE_TYPE (var) != error_mark_node
@@ -10619,7 +10610,7 @@ complete_vars (tree type)
 {
   tree *list = &incomplete_vars;
 
-  my_friendly_assert (CLASS_TYPE_P (type), 20020406);
+  gcc_assert (CLASS_TYPE_P (type));
   while (*list)
     {
       if (same_type_p (type, TREE_PURPOSE (*list)))

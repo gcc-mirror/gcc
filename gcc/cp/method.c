@@ -88,11 +88,10 @@ make_thunk (tree function, bool this_adjusting,
   HOST_WIDE_INT d;
   tree thunk;
   
-  my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 20021025);
+  gcc_assert (TREE_CODE (function) == FUNCTION_DECL);
   /* We can have this thunks to covariant thunks, but not vice versa.  */
-  my_friendly_assert (!DECL_THIS_THUNK_P (function), 20021127);
-  my_friendly_assert (!DECL_RESULT_THUNK_P (function) || this_adjusting,
-		      20031123);
+  gcc_assert (!DECL_THIS_THUNK_P (function));
+  gcc_assert (!DECL_RESULT_THUNK_P (function) || this_adjusting);
   
   /* Scale the VIRTUAL_OFFSET to be in terms of bytes.  */
   if (this_adjusting && virtual_offset)
@@ -121,12 +120,11 @@ make_thunk (tree function, bool this_adjusting,
   /* All thunks must be created before FUNCTION is actually emitted;
      the ABI requires that all thunks be emitted together with the
      function to which they transfer control.  */
-  my_friendly_assert (!TREE_ASM_WRITTEN (function), 20021025);
+  gcc_assert (!TREE_ASM_WRITTEN (function));
   /* Likewise, we can only be adding thunks to a function declared in
      the class currently being laid out.  */
-  my_friendly_assert (TYPE_SIZE (DECL_CONTEXT (function))
-		      && TYPE_BEING_DEFINED (DECL_CONTEXT (function)),
-		      20031211);
+  gcc_assert (TYPE_SIZE (DECL_CONTEXT (function))
+	      && TYPE_BEING_DEFINED (DECL_CONTEXT (function)));
 
   thunk = build_decl (FUNCTION_DECL, NULL_TREE, TREE_TYPE (function));
   DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (function);
@@ -182,7 +180,7 @@ finish_thunk (tree thunk)
   tree fixed_offset = ssize_int (THUNK_FIXED_OFFSET (thunk));
   tree virtual_offset = THUNK_VIRTUAL_OFFSET (thunk);
 
-  my_friendly_assert (!DECL_NAME (thunk) && DECL_THUNK_P (thunk), 20021127);
+  gcc_assert (!DECL_NAME (thunk) && DECL_THUNK_P (thunk));
   if (virtual_offset && DECL_RESULT_THUNK_P (thunk))
     virtual_offset = BINFO_VPTR_FIELD (virtual_offset);
   function = THUNK_TARGET (thunk);
@@ -202,7 +200,7 @@ finish_thunk (tree thunk)
 	   cov_probe; cov_probe = TREE_CHAIN (cov_probe))
 	if (DECL_NAME (cov_probe) == name)
 	  {
-	    my_friendly_assert (!DECL_THUNKS (thunk), 20031023);
+	    gcc_assert (!DECL_THUNKS (thunk));
 	    THUNK_ALIAS (thunk) = (THUNK_ALIAS (cov_probe)
 				   ? THUNK_ALIAS (cov_probe) : cov_probe);
 	    break;
@@ -317,11 +315,11 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   bool this_adjusting = DECL_THIS_THUNK_P (thunk_fndecl);
 
   /* We should have called finish_thunk to give it a name.  */
-  my_friendly_assert (DECL_NAME (thunk_fndecl), 20021127);
+  gcc_assert (DECL_NAME (thunk_fndecl));
 
   /* We should never be using an alias, always refer to the
      aliased thunk.  */
-  my_friendly_assert (!THUNK_ALIAS (thunk_fndecl), 20031023);
+  gcc_assert (!THUNK_ALIAS (thunk_fndecl));
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
@@ -355,7 +353,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       if (!this_adjusting)
 	virtual_offset = BINFO_VPTR_FIELD (virtual_offset);
       virtual_value = tree_low_cst (virtual_offset, /*pos=*/0);
-      my_friendly_assert (virtual_value, 20021026);
+      gcc_assert (virtual_value);
     }
   else
     virtual_value = 0;

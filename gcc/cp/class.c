@@ -272,11 +272,11 @@ build_base_path (enum tree_code code,
   if (want_pointer)
     probe = TYPE_MAIN_VARIANT (TREE_TYPE (probe));
 
-  my_friendly_assert (code == MINUS_EXPR
-		      ? same_type_p (BINFO_TYPE (binfo), probe)
-		      : code == PLUS_EXPR
-		      ? same_type_p (BINFO_TYPE (d_binfo), probe)
-		      : false, 20010723);
+  gcc_assert (code == MINUS_EXPR
+	      ? same_type_p (BINFO_TYPE (binfo), probe)
+	      : code == PLUS_EXPR
+	      ? same_type_p (BINFO_TYPE (d_binfo), probe)
+	      : false);
   
   if (binfo == d_binfo)
     /* Nothing to do.  */
@@ -731,7 +731,7 @@ build_primary_vtable (tree binfo, tree type)
     }
   else
     {
-      my_friendly_assert (TREE_TYPE (decl) == vtbl_type_node, 20000118);
+      gcc_assert (TREE_TYPE (decl) == vtbl_type_node);
       virtuals = NULL_TREE;
     }
 
@@ -1039,7 +1039,7 @@ alter_access (tree t, tree fdecl, tree access)
   if (!DECL_LANG_SPECIFIC (fdecl))
     retrofit_lang_decl (fdecl);
 
-  my_friendly_assert (!DECL_DISCRIMINATOR_P (fdecl), 20030624);
+  gcc_assert (!DECL_DISCRIMINATOR_P (fdecl));
 
   elem = purpose_member (t, DECL_ACCESS (fdecl));
   if (elem)
@@ -1191,7 +1191,7 @@ check_bases (tree t,
     {
       tree basetype = TREE_TYPE (base_binfo);
 
-      my_friendly_assert (COMPLETE_TYPE_P (basetype), 20040714);
+      gcc_assert (COMPLETE_TYPE_P (basetype));
       
       /* Effective C++ rule 14.  We only need to check TYPE_POLYMORPHIC_P
 	 here because the case of virtual functions but non-virtual
@@ -2081,7 +2081,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
      calling FN through BINFO.  */
   for (b = binfo; ; b = get_primary_binfo (b))
     {
-      my_friendly_assert (b, 20021227);
+      gcc_assert (b);
       if (look_for_overrides_here (BINFO_TYPE (b), target_fn))
 	break;
 
@@ -2114,7 +2114,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
       
       if (DECL_THUNK_P (fn))
 	{
-	  my_friendly_assert (DECL_RESULT_THUNK_P (fn), 20031211);
+	  gcc_assert (DECL_RESULT_THUNK_P (fn));
 	  fixed_offset = ssize_int (THUNK_FIXED_OFFSET (fn));
 	  virtual_offset = THUNK_VIRTUAL_OFFSET (fn);
 	}
@@ -2174,7 +2174,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 				   fixed_offset, virtual_offset);
     }
   else
-    my_friendly_assert (!DECL_THUNK_P (fn), 20021231);
+    gcc_assert (!DECL_THUNK_P (fn));
   
   /* Assume that we will produce a thunk that convert all the way to
      the final overrider, and not to an intermediate virtual base.  */
@@ -3561,7 +3561,7 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
   bool atend = false;
 
   /* This routine should only be used for empty classes.  */
-  my_friendly_assert (is_empty_class (basetype), 20000321);
+  gcc_assert (is_empty_class (basetype));
   alignment = ssize_int (CLASSTYPE_ALIGN_UNIT (basetype));
 
   if (!integer_zerop (BINFO_OFFSET (binfo)))
@@ -3923,7 +3923,7 @@ clone_function_decl (tree fn, int update_method_vec_p)
     }
   else
     {
-      my_friendly_assert (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn), 20000411);
+      gcc_assert (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn));
 
       /* For each destructor, we need three variants: an in-charge
 	 version, a not-in-charge version, and an in-charge deleting
@@ -3990,8 +3990,8 @@ adjust_clone_args (tree decl)
 	   decl_parms = TREE_CHAIN (decl_parms),
 	     clone_parms = TREE_CHAIN (clone_parms))
 	{
-	  my_friendly_assert (same_type_p (TREE_TYPE (decl_parms),
-					   TREE_TYPE (clone_parms)), 20010424);
+	  gcc_assert (same_type_p (TREE_TYPE (decl_parms),
+				   TREE_TYPE (clone_parms)));
 	  
 	  if (TREE_PURPOSE (decl_parms) && !TREE_PURPOSE (clone_parms))
 	    {
@@ -4021,7 +4021,7 @@ adjust_clone_args (tree decl)
 	      break;
 	    }
 	}
-      my_friendly_assert (!clone_parms, 20010424);
+      gcc_assert (!clone_parms);
     }
 }
 
@@ -4072,7 +4072,7 @@ type_requires_array_cookie (tree type)
   tree fns;
   bool has_two_argument_delete_p = false;
 
-  my_friendly_assert (CLASS_TYPE_P (type), 20010712);
+  gcc_assert (CLASS_TYPE_P (type));
 
   /* If there's a non-trivial destructor, we need a cookie.  In order
      to iterate through the array calling the destructor for each
@@ -4579,10 +4579,8 @@ include_empty_classes (record_layout_info rli)
 	rli->bitpos = round_down (rli->bitpos, BITS_PER_UNIT);
       else
 	/* The size should have been rounded to a whole byte.  */
-	my_friendly_assert (tree_int_cst_equal (rli->bitpos,
-						round_down (rli->bitpos,
-							    BITS_PER_UNIT)),
-			    20030903);
+	gcc_assert (tree_int_cst_equal
+		    (rli->bitpos, round_down (rli->bitpos, BITS_PER_UNIT)));
       rli->bitpos 
 	= size_binop (PLUS_EXPR, 
 		      rli->bitpos,
@@ -5024,21 +5022,18 @@ finish_struct_1 (tree t)
     {
       tree primary = CLASSTYPE_PRIMARY_BINFO (t);
 
-      my_friendly_assert (same_type_p (DECL_FIELD_CONTEXT (vfield),
-				       BINFO_TYPE (primary)),
-			  20010726);
+      gcc_assert (same_type_p (DECL_FIELD_CONTEXT (vfield),
+			       BINFO_TYPE (primary)));
       /* The vtable better be at the start.  */
-      my_friendly_assert (integer_zerop (DECL_FIELD_OFFSET (vfield)),
-			  20010726);
-      my_friendly_assert (integer_zerop (BINFO_OFFSET (primary)),
-			  20010726);
+      gcc_assert (integer_zerop (DECL_FIELD_OFFSET (vfield)));
+      gcc_assert (integer_zerop (BINFO_OFFSET (primary)));
       
       vfield = copy_decl (vfield);
       DECL_FIELD_CONTEXT (vfield) = t;
       TYPE_VFIELD (t) = vfield;
     }
   else
-    my_friendly_assert (!vfield || DECL_FIELD_CONTEXT (vfield) == t, 20010726);
+    gcc_assert (!vfield || DECL_FIELD_CONTEXT (vfield) == t);
 
   virtuals = modify_all_vtables (t, nreverse (virtuals));
 
@@ -5060,11 +5055,9 @@ finish_struct_1 (tree t)
       tree fn;
 
       if (BINFO_VTABLE (TYPE_BINFO (t)))
-	my_friendly_assert (DECL_VIRTUAL_P (BINFO_VTABLE (TYPE_BINFO (t))),
-			    20000116);
+	gcc_assert (DECL_VIRTUAL_P (BINFO_VTABLE (TYPE_BINFO (t))));
       if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-	my_friendly_assert (BINFO_VIRTUALS (TYPE_BINFO (t)) == NULL_TREE,
-			    20000116);
+	gcc_assert (BINFO_VIRTUALS (TYPE_BINFO (t)) == NULL_TREE);
 
       /* Add entries for virtual functions introduced by this class.  */
       BINFO_VIRTUALS (TYPE_BINFO (t))
@@ -5709,11 +5702,10 @@ resolve_address_of_overloaded_function (tree target_type,
   /* By the time we get here, we should be seeing only real
      pointer-to-member types, not the internal POINTER_TYPE to
      METHOD_TYPE representation.  */
-  my_friendly_assert (!(TREE_CODE (target_type) == POINTER_TYPE
-			&& (TREE_CODE (TREE_TYPE (target_type)) 
-			    == METHOD_TYPE)), 0);
+  gcc_assert (TREE_CODE (target_type) != POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (target_type)) != METHOD_TYPE);
 
-  my_friendly_assert (is_overloaded_fn (overload), 20030910);
+  gcc_assert (is_overloaded_fn (overload));
   
   /* Check that the TARGET_TYPE is reasonable.  */
   if (TYPE_PTRFN_P (target_type))
@@ -6037,7 +6029,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
       /* This can happen if we are forming a pointer-to-member for a
 	 member template.  */
-      my_friendly_assert (TREE_CODE (rhs) == TEMPLATE_ID_EXPR, 0);
+      gcc_assert (TREE_CODE (rhs) == TEMPLATE_ID_EXPR);
 
       /* Fall through.  */
 
@@ -6061,7 +6053,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
     case TREE_LIST:
       /* Now we should have a baselink.  */
-      my_friendly_assert (BASELINK_P (rhs), 990412);
+      gcc_assert (BASELINK_P (rhs));
 
       return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs), flags);
 
@@ -6403,12 +6395,11 @@ get_vtbl_decl_for_binfo (tree binfo)
   decl = BINFO_VTABLE (binfo);
   if (decl && TREE_CODE (decl) == PLUS_EXPR)
     {
-      my_friendly_assert (TREE_CODE (TREE_OPERAND (decl, 0)) == ADDR_EXPR,
-			  2000403);
+      gcc_assert (TREE_CODE (TREE_OPERAND (decl, 0)) == ADDR_EXPR);
       decl = TREE_OPERAND (TREE_OPERAND (decl, 0), 0);
     }
   if (decl)
-    my_friendly_assert (TREE_CODE (decl) == VAR_DECL, 20000403);
+    gcc_assert (TREE_CODE (decl) == VAR_DECL);
   return decl;
 }
 
@@ -6853,7 +6844,7 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
   inits = &TREE_CHAIN (*inits);
   if (top_level_p)
     {
-      my_friendly_assert (!BINFO_VPTR_INDEX (binfo), 20010129);
+      gcc_assert (!BINFO_VPTR_INDEX (binfo));
       BINFO_VPTR_INDEX (binfo) = *index;
     }
   *index = size_binop (PLUS_EXPR, *index, TYPE_SIZE_UNIT (ptr_type_node));
@@ -6890,7 +6881,7 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
     {
       *inits = nreverse (secondary_vptrs);
       inits = &TREE_CHAIN (secondary_vptrs);
-      my_friendly_assert (*inits == NULL_TREE, 20000517);
+      gcc_assert (*inits == NULL_TREE);
     }
 
   /* Add the secondary VTTs for virtual bases.  */
@@ -6959,7 +6950,7 @@ dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data)
   index = TREE_TYPE (l);
   if (top_level_p)
     {
-      my_friendly_assert (!BINFO_VPTR_INDEX (binfo), 20010129);
+      gcc_assert (!BINFO_VPTR_INDEX (binfo));
       BINFO_VPTR_INDEX (binfo) = index;
     }
   TREE_TYPE (l) = size_binop (PLUS_EXPR, index, 
@@ -7039,7 +7030,7 @@ build_ctor_vtbl_group (tree binfo, tree t)
   if (IDENTIFIER_GLOBAL_VALUE (id))
     return;
 
-  my_friendly_assert (!same_type_p (BINFO_TYPE (binfo), t), 20010124);
+  gcc_assert (!same_type_p (BINFO_TYPE (binfo), t));
   /* Build a version of VTBL (with the wrong type) for use in
      constructing the addresses of secondary vtables in the
      construction vtable group.  */
@@ -7096,9 +7087,7 @@ accumulate_vtbl_inits (tree binfo,
   tree base_binfo;
   int ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
 
-  my_friendly_assert (same_type_p (BINFO_TYPE (binfo),
-				   BINFO_TYPE (orig_binfo)),
-		      20000517);
+  gcc_assert (same_type_p (BINFO_TYPE (binfo), BINFO_TYPE (orig_binfo)));
 
   /* If it doesn't have a vptr, we don't do anything.  */
   if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
@@ -7378,8 +7367,8 @@ build_vtbl_initializer (tree binfo,
 	  delta = BV_DELTA (v);
 	  vcall_index = BV_VCALL_INDEX (v);
 
-	  my_friendly_assert (TREE_CODE (delta) == INTEGER_CST, 19990727);
-	  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 19990727);
+	  gcc_assert (TREE_CODE (delta) == INTEGER_CST);
+	  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
 	  /* You can't call an abstract virtual function; it's abstract.
 	     So, we replace these functions with __pure_virtual.  */
@@ -7523,12 +7512,8 @@ build_vbase_offset_vtbl_entries (tree binfo, vtbl_init_data* vid)
 	BINFO_VPTR_FIELD (b) = delta;
 
       if (binfo != TYPE_BINFO (t))
-	{
-	  /* The vbase offset had better be the same.  */
-	  my_friendly_assert (tree_int_cst_equal (delta,
-						  BINFO_VPTR_FIELD (vbase)),
-			      20030202);
-	}
+	/* The vbase offset had better be the same.  */
+	gcc_assert (tree_int_cst_equal (delta, BINFO_VPTR_FIELD (vbase)));
 
       /* The next vbase will come at a more negative offset.  */
       vid->index = size_binop (MINUS_EXPR, vid->index,
@@ -7805,7 +7790,7 @@ build_rtti_vtbl_entries (tree binfo, vtbl_init_data* vid)
       tree primary_base;
 
       primary_base = get_primary_binfo (b);
-      my_friendly_assert (BINFO_PRIMARY_BASE_OF (primary_base) == b, 20010127);
+      gcc_assert (BINFO_PRIMARY_BASE_OF (primary_base) == b);
       b = primary_base;
     }
   offset = size_diffop (BINFO_OFFSET (vid->rtti_binfo), BINFO_OFFSET (b));
