@@ -570,6 +570,9 @@ lang_decode_option (argc, argv)
   strings_processed = 0;
 #endif /* ! USE_CPPLIB */
 
+  /* Enable automatic line wrapping by default */
+  set_message_length (72);
+
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;
   else if (p[0] == '-' && p[1] == 'f')
