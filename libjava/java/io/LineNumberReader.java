@@ -54,7 +54,8 @@ package java.io;
  *
  * @author Per Bothner <bothner@cygnus.com>
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @date April 22, 1998.  
+ * @author Guilhem Lavaux <guilhem@kaffe.org>
+ * @date December 28, 2003.
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -71,6 +72,10 @@ public class LineNumberReader extends BufferedReader
 {
   /** The current line number. */
   private int lineNumber;
+  /** Whether we already found a new line in the former call. */
+  private boolean matchedNewLine;
+  /** The saved line number when calling mark() */
+  private int savedLineNumber;
 
   /**
     * Create a new <code>LineNumberReader</code> that reads from the
@@ -117,20 +122,6 @@ public class LineNumberReader extends BufferedReader
     this.lineNumber = lineNumber;
   }
 
-  private static int countLines (char[] buffer, int off, int len)
-  {
-    int count = 0;
-    char prev = '\0';
-    for (int i = 0;  i < len;  i++)
-      {
-        char ch = buffer[i+off];
-        if ((ch == '\n' && prev != '\r') || ch == '\r')
-          count++;
-        prev = ch;
-      }
-    return count;
-  }
-
   /**
     * This method marks a position in the input to which the stream can be
     * "reset" char calling the <code>reset()</code> method.  The parameter
@@ -165,11 +156,12 @@ public class LineNumberReader extends BufferedReader
 	// save that 'r', in case the next character is a '\n'.
 	if (pos + readLimit > limit)
 	  {
-	    int saveCR = (pos > 0 && buffer[pos-1] == '\r') ? 1 : 0;
+	    int saveCR = matchedNewLine ? 1 : 0;
 	    char[] old_buffer = buffer;
 	    if (readLimit > limit)
 	      buffer = new char[saveCR + readLimit];
 	    int copy_start = pos - saveCR;
+	    savedLineNumber = lineNumber;
 	    limit -= copy_start;
 	    System.arraycopy(old_buffer, copy_start, buffer, 0, limit);
 	    pos = saveCR;
@@ -195,12 +187,32 @@ public class LineNumberReader extends BufferedReader
       {
 	if (markPos < 0)
 	  throw new IOException("mark never set or invalidated");
-	if (markPos > 0 && pos > markPos && buffer[markPos-1] == '\r'
-	    && buffer[markPos] == '\n')
-	  lineNumber--;
-	lineNumber -= countLines(buffer, markPos, pos - markPos);
+	lineNumber = savedLineNumber;
 	pos = markPos;
+	matchedNewLine = (markPos > 0 && buffer[markPos-1] == '\r');
       }
+  }
+
+  /**
+   * This private method fills the input buffer whatever pos is.
+   * Consequently pos should be checked before calling this method.
+   *
+   * @return the number of bytes actually read from the input stream or
+   * -1 if end of stream.
+   * @exception IOException If an error occurs.
+   */
+  private int fill() throws IOException
+  {
+    if (markPos >= 0 && limit == buffer.length)
+      markPos = -1;
+    if (markPos < 0)
+      pos = limit = 0;
+    int count = in.read(buffer, limit, buffer.length - limit);
+    if (count <= 0)
+      return -1;
+    limit += count;
+
+    return count;
   }
 
   /**
@@ -226,30 +238,24 @@ public class LineNumberReader extends BufferedReader
     synchronized (lock)
       {
 	skipRedundantLF();
-	if (pos >= limit)
-	  {
-	    if (markPos >= 0 && limit == buffer.length)
-	      markPos = -1;
-	    if (markPos < 0)
-	      pos = limit = 0;
-	    int count = in.read(buffer, limit, buffer.length - limit);
-	    if (count <= 0)
-	      return -1;
-	    limit += count;
-	  }
+	if (pos >= limit && fill() < 0)
+	  return -1;
 	char ch = buffer[pos++];
-	if (ch == '\r' || ch == '\n')
+	
+	if ((matchedNewLine = (ch == '\r')) || ch == '\n')
 	  {
 	    lineNumber++;
 	    return '\n';
 	  }
+	matchedNewLine = false;
 	return (int) ch;
       }
   }
 
   /**
     * This method reads chars from a stream and stores them into a caller
-    * supplied buffer.  It starts storing data at index <code>offset</code> into    * the buffer and attemps to read <code>len</code> chars.  This method can
+    * supplied buffer.  It starts storing data at index <code>offset</code> into   
+    * the buffer and attemps to read <code>len</code> chars.  This method can
     * return before reading the number of chars requested.  The actual number
     * of chars read is returned as an int.  A -1 is returned to indicated the
     * end of the stream.
@@ -276,6 +282,7 @@ public class LineNumberReader extends BufferedReader
   {
     if (buf == null)
       throw new NullPointerException();
+
     if (offset + count > buf.length || offset < 0)
       throw new IndexOutOfBoundsException();
 
@@ -285,37 +292,39 @@ public class LineNumberReader extends BufferedReader
 	  throw new IndexOutOfBoundsException();
 	return 0;
       }
+
     synchronized (lock)
       {
-	int first = read();
-	if (first < 0)
+	if (pos >= limit && fill() < 0)
 	  return -1;
+	
 	int start_offset = offset;
-	buf[offset++] = (char) first;
-	if (buffer[pos-1] == '\r' && pos < limit && buffer[pos] == '\n')
-	  pos++;
-	count--;
+	boolean matched = matchedNewLine;
+	
 	while (count-- > 0 && pos < limit)
 	  {
 	    char ch = buffer[pos++];
 	    if (ch == '\r')
 	      {
 		lineNumber++;
-		ch = '\n';
-		if (pos < limit && buffer[pos] == '\n')
-		  pos++;
+		matched = true;
 	      }
-	    else if (ch == '\n')
+	    else if (ch == '\n' && !matched)
 	      lineNumber++;
+	    else
+	      matched = false;
+
 	    buf[offset++] = ch;
 	  }
+
+	matchedNewLine = matched;
 	return offset - start_offset;
       }
   }
 
   private void skipRedundantLF() throws IOException
   {
-    if (pos > 0 && buffer[pos-1] == '\r')
+    if (pos > 0 && matchedNewLine)
       {
 	if (pos < limit)
 	  { // fast case
@@ -323,16 +332,14 @@ public class LineNumberReader extends BufferedReader
 	      pos++;
 	  }
 	else
-	  { // use read() to deal with the general case.
-	    // Set pos and limit to zero to avoid infinite recursion in read.
-	    // May need to invalidate markPos if we've exceeded the buffer.  
-	    if (pos >= buffer.length)
-	      markPos = -1;
-	    pos = limit = 0;
-	    int ch = read();
-	    if (ch >= 0 && ch != '\n')
-	      pos--;
+	  { // check whether the next buffer begins with '\n'.
+	    // in that case kill the '\n'.
+	    if (fill() <= 0)
+	      return;
+	    if (buffer[pos] == '\n')
+	      pos++;
 	  }
+	matchedNewLine = true;
       }
   }
 
@@ -366,8 +373,9 @@ public class LineNumberReader extends BufferedReader
     if (pos > limit)
       --pos;
 
-    int ch;
-    if (pos > 0 && ((ch = buffer[pos - 1]) == '\n' || ch == '\r'))
+    // The only case where you mustn't increment the line number is you are
+    // at the EOS.
+    if (str != null)
       lineNumber = tmpLineNumber + 1;
 
     return str;
@@ -394,7 +402,7 @@ public class LineNumberReader extends BufferedReader
 
     int skipped;
     char[] buf = new char[1];
-   
+
     for (skipped = 0; skipped < count; skipped++)
       {
         int ch = read(buf, 0, 1);
