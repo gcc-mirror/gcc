@@ -683,7 +683,7 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
 static void
 noce_emit_move_insn (rtx x, rtx y)
 {
-  enum machine_mode outmode, inmode;
+  enum machine_mode outmode;
   rtx outer, inner;
   int bitpos;
 
@@ -696,7 +696,6 @@ noce_emit_move_insn (rtx x, rtx y)
   outer = XEXP (x, 0);
   inner = XEXP (outer, 0);
   outmode = GET_MODE (outer);
-  inmode = GET_MODE (inner);
   bitpos = SUBREG_BYTE (outer) * BITS_PER_UNIT;
   store_bit_field (inner, GET_MODE_BITSIZE (outmode), bitpos, outmode, y);
 }

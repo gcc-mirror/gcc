@@ -8,6 +8,8 @@
 
 	* fold-const.c (int_const_binop): Remove no_overflow.
 
+	* ifcvt.c (noce_emit_move_insn): Remove inmode.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
