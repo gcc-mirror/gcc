@@ -4822,9 +4822,6 @@ init_function_start (subr, filename, line)
 
   current_function_outgoing_args_size = 0;
 
-  /* Initialize the insn lengths.  */
-  init_insn_lengths ();
-
   /* Prevent ever trying to delete the first instruction of a function.
      Also tell final how to output a linenum before the function prologue.  */
   emit_line_note (filename, line);
