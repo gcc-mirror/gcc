@@ -1,3 +1,7 @@
+2004-07-19  Roger Sayle  <roger@eyesopen.com>
+
+	* rtlanal.c (reg_set_p): Add check for regs_invalidated_by_call.
+
 2004-07-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (single_incoming_edge_ignoring_loop_edges): New.

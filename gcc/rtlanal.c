@@ -941,14 +941,10 @@ reg_set_p (rtx reg, rtx insn)
   if (INSN_P (insn)
       && (FIND_REG_INC_NOTE (insn, reg)
 	  || (CALL_P (insn)
-	      /* We'd like to test call_used_regs here, but rtlanal.c can't
-		 reference that variable due to its use in genattrtab.  So
-		 we'll just be more conservative.
-
-		 ??? Unless we could ensure that the CALL_INSN_FUNCTION_USAGE
-		 information holds all clobbered registers.  */
 	      && ((REG_P (reg)
-		   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
+		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
+		   && TEST_HARD_REG_BIT (regs_invalidated_by_call,
+					 REGNO (reg)))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
     return 1;
