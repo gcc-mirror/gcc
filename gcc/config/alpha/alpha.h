@@ -901,6 +901,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
     }									\
 }
 
+/* Try to output insns to set TARGET equal to the constant C if it can be
+   done in less than N insns.  Do all computations in MODE.  Returns the place
+   where the output has been placed if it can be done and the insns have been
+   emitted.  If it would take more than N insns, zero is returned and no
+   insns and emitted.  */
+extern struct rtx_def *alpha_emit_set_const ();
+
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
 extern struct rtx_def *alpha_builtin_saveregs ();
