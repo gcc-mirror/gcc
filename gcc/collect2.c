@@ -2181,7 +2181,7 @@ locatelib (name)
 	    if (*q == ':')
 	      {
 		*q++ = 0;
-		*pp++ = p;
+		*pp++ = q;
 	      }
 	}
       /* built in directories are /lib, /usr/lib, and /usr/local/lib */
