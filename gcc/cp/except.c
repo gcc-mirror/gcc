@@ -424,7 +424,6 @@ build_eh_type_type_ref (type)
 {
   char *typestring;
   tree exp;
-  int susp;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -728,7 +727,6 @@ static void
 process_start_catch_block (declspecs, declarator)
      tree declspecs, declarator;
 {
-  rtx false_label_rtx;
   tree decl = NULL_TREE;
   tree init;
 
@@ -758,7 +756,6 @@ process_start_catch_block (declspecs, declarator)
   if (decl)
     {
       tree exp;
-      rtx call_rtx, return_value_rtx;
       tree init_type;
 
       /* Make sure we mark the catch param as used, otherwise we'll get
