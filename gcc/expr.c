@@ -6661,12 +6661,12 @@ expand_expr (exp, target, tmode, modifier)
 	/* Mark it as expanded.  */
 	TREE_OPERAND (exp, 1) = NULL_TREE;
 
-	temp = expand_expr (exp1, target, tmode, modifier);
+	store_expr (exp1, target, 0);
 
 	if (need_exception_region)
 	  (*interim_eh_hook) (NULL_TREE);
 	
-	return temp;
+	return target;
       }
 
     case INIT_EXPR:
