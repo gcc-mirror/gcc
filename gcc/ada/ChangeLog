@@ -1,3 +1,86 @@
+2001-12-19  Robert Dewar <dewar@gnat.com>
+
+	* bindgen.adb: Minor reformatting
+	
+	* cstand.adb: Minor reformatting
+	
+	* fmap.adb: Minor reformatting
+	Change name from Add for Add_To_File_Map (Add is much too generic)
+	Change Path_Name_Of to Mapped_Path_Name
+	Change File_Name_Of to Mapped_File_Name
+	Fix copyright dates in header
+	
+	* fmap.ads:
+	Change name from Add for Add_To_File_Map (Add is much too generic)
+	Change Path_Name_Of to Mapped_Path_Name
+	Change File_Name_Of to Mapped_File_Name
+	Fix copyright dates in header
+	
+	* fname-uf.adb: Minor reformatting.  New names of stuff in Fmap.
+	Add use clause for Fmap.
+	
+	* make.adb: Minor reformatting
+	
+	* osint.adb: Minor reformatting.  Change of names in Fmap.
+	Add use clause for Fmap.
+	
+	* prj-env.adb: Minor reformatting
+	
+	* prj-env.ads: Minor reformatting
+	
+	* switch.adb: Minor reformatting.  Do proper raise of Bad_Switch if 
+	error found (there were odd exceptions to this general rule in 
+	-gnatec/-gnatem processing)
+	
+2001-12-19  Olivier Hainque <hainque@gnat.com>
+
+	* raise.c (__gnat_eh_personality): Exception handling personality 
+	routine for Ada.  Still in rough state, inspired from the C++ version 
+	and still containing a bunch of debugging artifacts.
+	(parse_lsda_header, get_ttype_entry): Local (static) helpers, also 
+	inspired from the C++ library.
+	
+	* raise.c (eh_personality): Add comments. Part of work for the GCC 3 
+	exception handling integration.
+	
+2001-12-19  Arnaud Charlet <charlet@gnat.com>
+
+	* Makefile.in: Remove use of 5smastop.adb which is obsolete.
+	(HIE_SOURCES): Add s-secsta.ad{s,b}.
+	(HIE_OBJS): Add s-fat*.o
+	(RAVEN_SOURCES): Remove files that are no longer required. Add 
+	interrupt handling files.
+	(RAVEN_MOD): Removed, no longer needed.
+	
+2001-12-19  Robert Dewar <dewar@gnat.com>
+
+	* a-ngelfu.adb: Remove ??? comment for inappropriate Inline_Always
+	Add 2001 to copyright date
+	
+	* g-regpat.adb: Change pragma Inline_Always to Inline. There is no 
+	need to force universal inlining for these cases.
+	
+2001-12-19  Arnaud Charlet <charlet@gnat.com>
+
+	* s-taprob.adb: Minor clean ups so that this unit can be used in 
+	Ravenscar HI.
+	
+	* exp_ch7.adb: Allow use of secondary stack in HI mode.
+	Disallow it when pragma Restrictions (No_Secondary_Stack) is specified.
+	
+2001-12-19  Vincent Celier <celier@gnat.com>
+
+	* prj-tree.ads (Project_Node_Record): Add comments for components 
+	Pkg_Id and Case_Insensitive.
+	
+2001-12-19  Pascal Obry <obry@gnat.com>
+
+	* g-socket.adb: Minor reformatting. Found while reading code.
+	
+2001-12-19  Robert Dewar <dewar@gnat.com>
+
+	* prj-tree.ads: Minor reformatting
+
 2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config-lang.in (diff_excludes): Remove.

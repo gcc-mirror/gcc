@@ -28,7 +28,7 @@
 
 with Alloc;
 with Debug;    use Debug;
-with Fmap;
+with Fmap;     use Fmap;
 with Krunch;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -140,6 +140,7 @@ package body Fname.UF is
 
       Pname : File_Name_Type := No_File;
       Fname : File_Name_Type := No_File;
+      --  Path name and File name for mapping
 
    begin
       --  Null or error name means that some previous error occurred
@@ -149,12 +150,12 @@ package body Fname.UF is
          raise Unrecoverable_Error;
       end if;
 
-      --  Look into the mapping from unit names to file names
+      --  Look in the map from unit names to file names
 
-      Fname := Fmap.File_Name_Of (Uname);
+      Fname := Mapped_File_Name (Uname);
 
       --  If the unit name is already mapped, return the corresponding
-      --  file name.
+      --  file name from the map.
 
       if Fname /= No_File then
          return Fname;
@@ -394,7 +395,7 @@ package body Fname.UF is
                         --  Add to mapping, so that we don't do another
                         --  path search in Find_File for this file name
 
-                        Fmap.Add (Get_File_Name.Uname, Fnam, Pname);
+                        Add_To_File_Map (Get_File_Name.Uname, Fnam, Pname);
                         return Fnam;
 
                      --  This entry does not match after all, because this is

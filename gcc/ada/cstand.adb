@@ -1001,23 +1001,28 @@ package body CStand is
       Set_Size_Known_At_Compile_Time
                            (Universal_Fixed);
 
-      --  Create type declaration for Duration, using a 64-bit size.
-      --  Delta is 1 nanosecond.
-      --  Except on 32 bits machine in No_Run_Time mode, in which case Duration
-      --  is a 32 bits value whose delta is 10E-4 seconds.
+      --  Create type declaration for Duration, using a 64-bit size. The
+      --  delta value depends on the mode we are running in:
+
+      --     Normal mode or No_Run_Time mode when word size is 64 bits:
+      --       10**(-9) seconds, size is 64 bits
+
+      --     No_Run_Time mode when word size is 32 bits:
+      --       10**(-4) seconds, oize is 32 bits
 
       Build_Duration : declare
          Dlo         : Uint;
          Dhi         : Uint;
          Delta_Val   : Ureal;
          Use_32_Bits : constant Boolean :=
-           No_Run_Time and then System_Word_Size = 32;
+                         No_Run_Time and then System_Word_Size = 32;
 
       begin
          if Use_32_Bits then
             Dlo := Intval (Type_Low_Bound (Standard_Integer_32));
             Dhi := Intval (Type_High_Bound (Standard_Integer_32));
             Delta_Val := UR_From_Components (Uint_1, Uint_4, 10);
+
          else
             Dlo := Intval (Type_Low_Bound (Standard_Integer_64));
             Dhi := Intval (Type_High_Bound (Standard_Integer_64));

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.1 $
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--            Copyright (C) 2001, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,15 +38,15 @@ package Fmap is
    --  If the mapping file is incorrect (non existent file, truncated file,
    --  duplicate entries), output a warning and do not initialize the mappings.
 
-   function Path_Name_Of (File : File_Name_Type) return File_Name_Type;
+   function Mapped_Path_Name (File : File_Name_Type) return File_Name_Type;
    --  Return the path name mapped to the file name File.
    --  Return No_File if File is not mapped.
 
-   function File_Name_Of (Unit : Unit_Name_Type) return File_Name_Type;
+   function Mapped_File_Name (Unit : Unit_Name_Type) return File_Name_Type;
    --  Return the file name mapped to the unit name Unit.
    --  Return No_File if Unit is not mapped.
 
-   procedure Add
+   procedure Add_To_File_Map
      (Unit_Name : Unit_Name_Type;
       File_Name : File_Name_Type;
       Path_Name : File_Name_Type);

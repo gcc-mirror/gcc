@@ -343,16 +343,16 @@ package body Bindgen is
 
       Write_Statement_Buffer;
 
-      --  Normal case (no pragma No_Run_Time). The global values are
+      --  Normal case (not No_Run_Time mode). The global values are
       --  assigned using the runtime routine Set_Globals (we have to use
       --  the routine call, rather than define the globals in the binder
       --  file to deal with cross-library calls in some systems.
 
       if No_Run_Time_Specified then
-         --  Case of pragma No_Run_Time present. The only global variable
-         --  that might be needed (by the Ravenscar profile) is
-         --  the environment task's priority. Also no exception tables are
-         --  needed.
+
+         --  Case of No_Run_Time mode. The only global variable that might
+         --  be needed (by the Ravenscar profile) is the priority of the
+         --  environment. Also no exception tables are needed.
 
          if Main_Priority /= No_Main_Priority then
             WBI ("      Main_Priority : Integer;");
@@ -513,8 +513,9 @@ package body Bindgen is
       Write_Statement_Buffer;
 
       if No_Run_Time_Specified then
-         --  Case where No_Run_Time pragma is present.
-         --  Set __gl_main_priority if needed for the Ravenscar profile.
+
+         --  Case of No_Run_Time mode. Set __gl_main_priority if needed
+         --  for the Ravenscar profile.
 
          if Main_Priority /= No_Main_Priority then
             Set_String ("   extern int __gl_main_priority = ");
@@ -524,7 +525,7 @@ package body Bindgen is
          end if;
 
       else
-         --  Code for normal case (no pragma No_Run_Time in use)
+         --  Code for normal case (not in No_Run_Time mode)
 
          Gen_Exception_Table_C;
 

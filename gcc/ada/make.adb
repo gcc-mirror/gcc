@@ -3501,7 +3501,6 @@ package body Make is
          begin
             Delete_File (Name => Mapping_File_Name, Success => Success);
          end;
-
       end if;
 
       Exit_Program (E_Success);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.79 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -42,12 +42,8 @@ with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
 
-with Ada.Exceptions;
---  used for Raise_Exception
-
 package body System.Tasking.Protected_Objects is
 
-   use Ada.Exceptions;
    use System.Task_Primitives.Operations;
 
    -------------------------
@@ -97,7 +93,7 @@ package body System.Tasking.Protected_Objects is
       Write_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
-         Raise_Exception (Program_Error'Identity, "Ceiling Violation");
+         raise Program_Error;
       end if;
    end Lock;
 
@@ -111,7 +107,7 @@ package body System.Tasking.Protected_Objects is
       Read_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
-         Raise_Exception (Program_Error'Identity, "Ceiling Violation");
+         raise Program_Error;
       end if;
    end Lock_Read_Only;
 

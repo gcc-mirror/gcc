@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.1 $
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--            Copyright (C) 2001, Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,13 +26,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.HTable;
-with Namet;          use Namet;
-with Osint;          use Osint;
-with Output;         use Output;
+with Namet;  use Namet;
+with Osint;  use Osint;
+with Output; use Output;
 with Table;
 
 with Unchecked_Conversion;
+
+with GNAT.HTable;
 
 package body Fmap is
 
@@ -63,6 +64,7 @@ package body Fmap is
    type Header_Num is range 0 .. 1_000;
 
    function Hash (F : Unit_Name_Type) return Header_Num;
+   --  Function used to compute hash of unit name
 
    No_Entry : constant Int := -1;
    --  Signals no entry in following table
@@ -87,14 +89,15 @@ package body Fmap is
    --  Hash table to map file names to path names. Used in conjunction with
    --  table Path_Mapping above.
 
-   ---------
-   -- Add --
-   ---------
+   ---------------------
+   -- Add_To_File_Map --
+   ---------------------
 
-   procedure Add
+   procedure Add_To_File_Map
      (Unit_Name : Unit_Name_Type;
       File_Name : File_Name_Type;
-      Path_Name : File_Name_Type) is
+      Path_Name : File_Name_Type)
+   is
    begin
       File_Mapping.Increment_Last;
       Unit_Hash_Table.Set (Unit_Name, File_Mapping.Last);
@@ -102,23 +105,7 @@ package body Fmap is
       Path_Mapping.Increment_Last;
       File_Hash_Table.Set (File_Name, Path_Mapping.Last);
       Path_Mapping.Table (Path_Mapping.Last) := Path_Name;
-   end Add;
-
-   ------------------
-   -- File_Name_Of --
-   ------------------
-
-   function File_Name_Of (Unit : Unit_Name_Type) return File_Name_Type is
-      The_Index : constant Int := Unit_Hash_Table.Get (Unit);
-   begin
-      if The_Index = No_Entry then
-         return No_File;
-
-      else
-         return File_Mapping.Table (The_Index);
-      end if;
-
-   end File_Name_Of;
+   end Add_To_File_Map;
 
    ----------
    -- Hash --
@@ -174,10 +161,12 @@ package body Fmap is
 
       procedure Get_Line is
          use ASCII;
+
       begin
          Deb := Fin + 1;
 
          --  If not at the end of file, skip the end of line
+
          while Deb < SP'Last
            and then (SP (Deb) = CR
                      or else SP (Deb) = LF
@@ -213,7 +202,7 @@ package body Fmap is
          Write_Line (""" is truncated");
       end Report_Truncated;
 
-   --  start of procedure Initialize
+   --  Start of procedure Initialize
 
    begin
       Name_Len := File_Name'Length;
@@ -230,7 +219,6 @@ package body Fmap is
          SP := BS (1 .. Natural (Hi))'Unrestricted_Access;
 
          loop
-
             --  Get the unit name
 
             Get_Line;
@@ -303,30 +291,41 @@ package body Fmap is
 
             --  Add the mappings for this unit name
 
-            Add (Uname, Fname, Pname);
-
+            Add_To_File_Map (Uname, Fname, Pname);
          end loop;
-
       end if;
-
    end Initialize;
 
-   ------------------
-   -- Path_Name_Of --
-   ------------------
+   ----------------------
+   -- Mapped_File_Name --
+   ----------------------
 
-   function Path_Name_Of (File : File_Name_Type) return File_Name_Type is
+   function Mapped_File_Name (Unit : Unit_Name_Type) return File_Name_Type is
+      The_Index : constant Int := Unit_Hash_Table.Get (Unit);
+
+   begin
+      if The_Index = No_Entry then
+         return No_File;
+      else
+         return File_Mapping.Table (The_Index);
+      end if;
+   end Mapped_File_Name;
+
+   ----------------------
+   -- Mapped_Path_Name --
+   ----------------------
+
+   function Mapped_Path_Name (File : File_Name_Type) return File_Name_Type is
       Index : Int := No_Entry;
+
    begin
       Index := File_Hash_Table.Get (File);
 
       if Index = No_Entry then
          return No_File;
-
       else
          return Path_Mapping.Table (Index);
       end if;
-
-   end Path_Name_Of;
+   end Mapped_Path_Name;
 
 end Fmap;

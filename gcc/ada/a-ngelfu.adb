@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.44 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,10 +52,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    Log_Two  : constant := 0.69314_71805_59945_30941_72321_21458_17656_80755;
    Half_Log_Two : constant := Log_Two / 2;
 
-
    subtype T is Float_Type'Base;
    subtype Double is Aux.Double;
-
 
    Two_Pi     : constant T := 2.0 * Pi;
    Half_Pi    : constant T := Pi / 2.0;
@@ -67,7 +65,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    Half_Log_Epsilon    : constant T := T (1 - T'Model_Mantissa) * Half_Log_Two;
    Log_Inverse_Epsilon : constant T := T (T'Model_Mantissa - 1) * Log_Two;
    Sqrt_Epsilon        : constant T := Sqrt_Two ** (1 - T'Model_Mantissa);
-
 
    DEpsilon    : constant Double := Double (Epsilon);
    DIEpsilon   : constant Double := Double (IEpsilon);
@@ -558,7 +555,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       --  Just reuse the code for Sin. The potential small
       --  loss of speed is negligible with proper (front-end) inlining.
 
-      --  ??? Add pragma Inline_Always in spec when this is supported
       return -Sin (abs X - Cycle * 0.25, Cycle);
    end Cos;
 
@@ -716,7 +712,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       Q := ((Q3 * Z + Q2) * Z + Q1) * Z + Q0;
       R := 0.5 + P / (Q - P);
 
-
       R := Float_Type'Base'Scaling (R, Integer (XN) + 1);
 
       --  Deal with case of Exp returning IEEE infinity. If Machine_Overflows
@@ -731,7 +726,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       end if;
 
    end Exp_Strict;
-
 
    ----------------
    -- Local_Atan --

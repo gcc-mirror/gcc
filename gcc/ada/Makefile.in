@@ -1060,7 +1060,6 @@ ifeq ($(strip $(filter-out sparc sun solaris2% sunos5%,$(targ))),)
   a-intnam.ads<4sintnam.ads \
   s-inmaop.adb<7sinmaop.adb \
   s-intman.adb<5sintman.adb \
-  s-mastop.adb<5smastop.adb \
   s-osinte.adb<5sosinte.adb \
   s-osinte.ads<5sosinte.ads \
   s-osprim.adb<5posprim.adb \
@@ -1086,7 +1085,6 @@ ifeq ($(strip $(filter-out sparc sun solaris2% sunos5%,$(targ))),)
     a-intnam.ads<4sintnam.ads \
     s-inmaop.adb<7sinmaop.adb \
     s-intman.adb<5sintman.adb \
-    s-mastop.adb<5smastop.adb \
     s-osinte.adb<7sosinte.adb \
     s-osinte.ads<5tosinte.ads \
     s-osprim.adb<5posprim.adb \
@@ -1105,7 +1103,6 @@ ifeq ($(strip $(filter-out sparc sun solaris2% sunos5%,$(targ))),)
     a-intnam.ads<4sintnam.ads \
     s-inmaop.adb<7sinmaop.adb \
     s-intman.adb<7sintman.adb \
-    s-mastop.adb<5smastop.adb \
     s-osinte.adb<5iosinte.adb \
     s-osinte.ads<54osinte.ads \
     s-osprim.adb<5posprim.adb \
@@ -1909,6 +1906,8 @@ HIE_SOURCES = \
  s-fatlfl.ads \
  s-fatllf.ads \
  s-fatsfl.ads \
+ s-secsta.ads \
+ s-secsta.adb \
  a-tags.ads   \
  a-tags.adb $(EXTRA_HIE_SOURCES)
 
@@ -1923,23 +1922,19 @@ HIE_OBJS =  \
  s-stoele.o \
  s-maccod.o \
  s-unstyp.o \
+ s-fatflt.o \
+ s-fatlfl.o \
+ s-fatllf.o \
+ s-secsta.o \
  a-tags.o $(EXTRA_HIE_OBJS)
 
 # Files which are needed in ravenscar mode
 
 RAVEN_SOURCES = \
  $(HIE_SOURCES) \
- s-arit64.ads \
- s-arit64.adb \
  s-parame.ads \
  s-parame.adb \
  g-except.ads \
- s-stalib.ads \
- s-stalib.adb \
- s-soflin.ads \
- s-soflin.adb \
- s-secsta.ads \
- s-secsta.adb \
  s-osinte.ads \
  s-osinte.adb \
  s-tasinf.ads \
@@ -1948,9 +1943,12 @@ RAVEN_SOURCES = \
  s-taprop.ads \
  s-taprop.adb \
  s-taskin.ads \
+ s-taskin.adb \
  s-interr.ads \
  s-interr.adb \
- s-taskin.adb \
+ a-interr.ads \
+ a-interr.adb \
+ a-intnam.ads \
  a-reatim.ads \
  a-reatim.adb \
  a-retide.ads \
@@ -1963,33 +1961,24 @@ RAVEN_SOURCES = \
  s-tarest.ads \
  s-tarest.adb $(EXTRA_RAVEN_SOURCES)
 
-# Files that need to be preprocessed before inclusion in a ravenscar run time
-
-RAVEN_MOD = \
- s-tposen.adb \
- s-tarest.adb
-
 # Objects to generate for the ravenscar run time
 
 RAVEN_OBJS = \
  $(HIE_OBJS) \
- g-except.o  \
- s-stalib.o  \
- s-arit64.o  \
  s-parame.o  \
- s-soflin.o  \
- s-secsta.o  \
- s-tasinf.o  \
+ g-except.o  \
  s-osinte.o  \
+ s-tasinf.o  \
  s-taspri.o  \
  s-taprop.o  \
  s-taskin.o  \
- s-taprob.o  \
- s-tposen.o  \
  s-interr.o  \
  a-interr.o  \
+ a-intnam.o  \
  a-reatim.o  \
  a-retide.o  \
+ s-taprob.o  \
+ s-tposen.o  \
  s-tasres.o  \
  s-tarest.o  $(EXTRA_RAVEN_OBJS)
 
