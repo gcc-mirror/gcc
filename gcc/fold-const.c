@@ -2005,7 +2005,6 @@ fold_convert (tree type, tree arg)
 
 /* Return false if expr can be assumed not to be an value, true
    otherwise.  */
-/* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 static bool
 maybe_lvalue_p (tree x)
