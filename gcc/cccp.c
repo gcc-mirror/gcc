@@ -1176,7 +1176,7 @@ print_help ()
   printf ("  -lang-asm                 Assume that the input sources are in assembler\n");
   printf ("  -lang-chill               Assume that the input sources are in Chill\n");
   printf ("  -std=<std name>           Specify the conformance standard; one of:\n");
-  printf ("                            gnu, c89, c9x, iso9899:1990,\n");
+  printf ("                            gnu89, gnu9x, c89, c9x, iso9899:1990,\n");
   printf ("                            iso9899:199409, iso9899:199x\n");
   printf ("  -+                        Allow parsing of C++ style features\n");
   printf ("  -w                        Inhibit warning messages\n");
@@ -1498,11 +1498,12 @@ main (argc, argv)
       case 's':
 	if (!strcmp (argv[i], "-std=iso9899:1990")
 	    || !strcmp (argv[i], "-std=iso9899:199409")
-	    || !strcmp (argv[i], "-std=c89"))
+	    || !strcmp (argv[i], "-std=c89")
+	    || !strcmp (argv[i], "-std=gnu89"))
 	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
         else if (!strcmp (argv[i], "-std=iso9899:199x")
 		 || !strcmp (argv[i], "-std=c9x")
-		 || !strcmp (argv[i], "-std=gnu"))
+		 || !strcmp (argv[i], "-std=gnu9x"))
 	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
 	break;
 
