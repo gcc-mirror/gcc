@@ -233,12 +233,123 @@ public abstract class Buffer
    * Rewinds this buffer. The position is set to zero and the mark
    * is discarded.
    *
-   * @this buffer
+   * @return this buffer
    */
   public final Buffer rewind()
   {
     pos = 0;
     mark = -1;
     return this;
+  }
+
+  /**
+   * Checks for underflow. This method is used internally to check
+   * whether a buffer has enough elements left to satisfy a read 
+   * request.
+   *
+   * @exception BufferUnderflowException If there are no remaining
+   * elements in this buffer.
+   */
+  final void checkForUnderflow()
+  {
+    if (!hasRemaining())
+      throw new BufferUnderflowException();
+  }
+
+  /**
+   * Checks for underflow. This method is used internally to check
+   * whether a buffer has enough elements left to satisfy a read 
+   * request for a given number of elements.
+   *
+   * @param length The length of a sequence of elements.
+   *
+   * @exception BufferUnderflowException If there are not enough 
+   * remaining elements in this buffer.
+   */
+  final void checkForUnderflow(int length)
+  {
+    if (remaining() < length)
+      throw new BufferUnderflowException();
+  }
+
+  /**
+   * Checks for overflow. This method is used internally to check
+   * whether a buffer has enough space left to satisfy a write 
+   * request.
+   *
+   * @exception BufferOverflowException If there is no remaining
+   * space in this buffer.
+   */
+  final void checkForOverflow()
+  {
+    if (!hasRemaining())
+      throw new BufferOverflowException();
+  }
+
+  /**
+   * Checks for overflow. This method is used internally to check
+   * whether a buffer has enough space left to satisfy a write 
+   * request for a given number of elements.
+   *
+   * @param length The length of a sequence of elements.
+   *
+   * @exception BufferUnderflowException If there is not enough 
+   * remaining space in this buffer.
+   */
+  final void checkForOverflow(int length)
+  {
+    if (remaining() < length)
+      throw new BufferOverflowException();
+  }
+
+  /**
+   * Checks if index is negative or not smaller than the buffer's 
+   * limit. This method is used internally to check whether
+   * an indexed request can be fulfilled.
+   *
+   * @param index The requested position in the buffer.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
+  final void checkIndex(int index)
+  {
+    if (index < 0
+        || index >= limit ())
+      throw new IndexOutOfBoundsException ();
+  }
+
+  /**
+   * Checks if buffer is read-only. This method is used internally to
+   * check if elements can be put into a buffer.
+   *
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final void checkIfReadOnly() 
+  {
+    if (isReadOnly())
+      throw new ReadOnlyBufferException ();
+  }
+
+  /**
+   * Checks whether an array is large enough to hold the given number of
+   * elements at the given offset. This method is used internally to
+   * check if an array is big enough.
+   *
+   * @param arraylength The length of the array.
+   * @param offset The offset within the array of the first byte to be read;
+   * must be non-negative and no larger than arraylength.
+   * @param length The number of bytes to be read from the given array;
+   * must be non-negative and no larger than arraylength - offset.
+   *
+   * @exception IndexOutOfBoundsException If the preconditions on the offset
+   * and length parameters do not hold
+   */
+  final static void checkArraySize(int arraylength, int offset, int length)
+  {
+    if ((offset < 0) ||
+        (length < 0) ||
+        (arraylength < length + offset))
+      throw new IndexOutOfBoundsException ();
   }
 }
