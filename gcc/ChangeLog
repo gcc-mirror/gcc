@@ -1,3 +1,9 @@
+Thu Dec 16 11:33:57 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* regclass.c (loop_depth): Remove
+	(scan_one_insn): Do not handle LOOP_NOTE insns.
+	(regclass): Go through basic blocks and set loop_cost
+
 Thu Dec 16 02:56:25 1999  Zack Weinberg  <zack@bitmover.com>
 
 	* tree.h (DECL_FROM_INLINE): Check DECL_ABSTRACT_ORIGIN too.
