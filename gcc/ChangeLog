@@ -1,3 +1,10 @@
+2004-11-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* varasm.c (default_encode_section_info): Don't set SYMBOL_FLAG_SMALL
+	on TLS symbols.
+	* config/rs6000/rs6000.c (rs6000_elf_in_small_data_p): Remove TLS
+	check.
+
 2004-11-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* gthr-gnat.c, gthr-gnat.h, gthr.h, libgcc2.h, unwind-dw2-fde.h
