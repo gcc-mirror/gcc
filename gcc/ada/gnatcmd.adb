@@ -162,6 +162,23 @@ procedure GNATCmd is
 
    type Switches_Ptr is access constant Switches;
 
+   --------------------------------
+   -- Switches for project files --
+   --------------------------------
+
+   S_Ext_Ref      : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'    &
+                                            "-X" & '"';
+
+   S_Project_File : aliased constant S := "/PROJECT_FILE=*"               &
+                                            "-P*";
+   S_Project_Verb : aliased constant S := "/PROJECT_FILE_VERBOSITY="      &
+                                            "DEFAULT "                    &
+                                               "-vP0 "                    &
+                                            "MEDIUM "                     &
+                                               "-vP1 "                    &
+                                            "HIGH "                       &
+                                               "-vP2";
+
    ----------------------------
    -- Switches for GNAT BIND --
    ----------------------------
@@ -295,6 +312,7 @@ procedure GNATCmd is
      S_Bind_DebugX  'Access,
      S_Bind_Elab    'Access,
      S_Bind_Error   'Access,
+     S_Ext_Ref      'Access,
      S_Bind_Full    'Access,
      S_Bind_Library 'Access,
      S_Bind_Linker  'Access,
@@ -306,6 +324,8 @@ procedure GNATCmd is
      S_Bind_Output  'Access,
      S_Bind_OutputX 'Access,
      S_Bind_Pess    'Access,
+     S_Project_File 'Access,
+     S_Project_Verb 'Access,
      S_Bind_Read    'Access,
      S_Bind_ReadX   'Access,
      S_Bind_Rename  'Access,
@@ -833,11 +853,14 @@ procedure GNATCmd is
    Find_Switches : aliased constant Switches := (
       S_Find_All     'Access,
       S_Find_Expr    'Access,
+      S_Ext_Ref      'Access,
       S_Find_Full    'Access,
       S_Find_Ignore  'Access,
       S_Find_Object  'Access,
       S_Find_Print   'Access,
       S_Find_Project 'Access,
+      S_Project_File 'Access,
+      S_Project_Verb 'Access,
       S_Find_Ref     'Access,
       S_Find_Search  'Access,
       S_Find_Source  'Access);
@@ -923,10 +946,13 @@ procedure GNATCmd is
       S_Link_Bind    'Access,
       S_Link_Debug   'Access,
       S_Link_Execut  'Access,
+      S_Ext_Ref      'Access,
       S_Link_Ident   'Access,
       S_Link_Nocomp  'Access,
       S_Link_Nofiles 'Access,
       S_Link_Noinhib 'Access,
+      S_Project_File 'Access,
+      S_Project_Verb 'Access,
       S_Link_Static  'Access,
       S_Link_Verb    'Access,
       S_Link_ZZZZZ   'Access);
@@ -972,9 +998,12 @@ procedure GNATCmd is
      S_List_All     'Access,
      S_List_Current 'Access,
      S_List_Depend  'Access,
+     S_Ext_Ref      'Access,
      S_List_Nostinc 'Access,
      S_List_Object  'Access,
      S_List_Output  'Access,
+     S_Project_File 'Access,
+     S_Project_Verb 'Access,
      S_List_Search  'Access,
      S_List_Source  'Access);
 
@@ -1070,6 +1099,7 @@ procedure GNATCmd is
      S_Make_Dep     'Access,
      S_Make_Doobj   'Access,
      S_Make_Execut  'Access,
+     S_Ext_Ref      'Access,
      S_Make_Force   'Access,
      S_Make_Inplace 'Access,
      S_Make_Library 'Access,
@@ -1080,6 +1110,8 @@ procedure GNATCmd is
      S_Make_Nostlib 'Access,
      S_Make_Object  'Access,
      S_Make_Proc    'Access,
+     S_Project_File 'Access,
+     S_Project_Verb 'Access,
      S_Make_Nojobs  'Access,
      S_Make_Quiet   'Access,
      S_Make_Reason  'Access,
@@ -1260,10 +1292,13 @@ procedure GNATCmd is
 
    Xref_Switches : aliased constant Switches := (
       S_Xref_All     'Access,
+      S_Ext_Ref      'Access,
       S_Xref_Full    'Access,
       S_Xref_Global  'Access,
       S_Xref_Object  'Access,
       S_Xref_Project 'Access,
+      S_Project_File 'Access,
+      S_Project_Verb 'Access,
       S_Xref_Search  'Access,
       S_Xref_Source  'Access,
       S_Xref_Output  'Access);
