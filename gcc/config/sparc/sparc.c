@@ -7755,7 +7755,7 @@ sparc_variable_issue (dump, sched_verbose, insn, cim)
      int cim;
 {
   if (sparc_cpu == PROCESSOR_ULTRASPARC)
-    return ultrasparc_variable_issue (INSN);
+    return ultrasparc_variable_issue (insn);
   else
     return cim - 1;
 }
