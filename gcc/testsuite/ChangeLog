@@ -1,3 +1,8 @@
+2001-05-21  Geoff Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/compile/920520-1.x: Merge previous contents into
+	this file.
+
 2001-05-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* gcc.c-torture/unsorted/msp.c (A_SIZE): Define according to
