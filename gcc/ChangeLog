@@ -1,3 +1,8 @@
+2004-11-22  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18544
+	* tree-vectorizer.c (vect_analyze_data_refs): Fail if memtag not found.
+
 2004-11-22 Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config.gcc: Use t-slibgcc-elf to build libgcc_s.so on

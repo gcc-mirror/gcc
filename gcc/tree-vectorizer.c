@@ -5057,10 +5057,15 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 		case ARRAY_REF:
 		  dr = analyze_array (stmt, TREE_OPERAND (symbl, 0), 
 				      DR_IS_READ(dr));
-		  STMT_VINFO_MEMTAG (stmt_info) = 
-		     vect_get_base_and_bit_offset (dr, DR_BASE_NAME (dr), NULL_TREE,
-						   loop_vinfo, &offset, 
-						   &base_aligned_p);
+		  tag = vect_get_base_and_bit_offset (dr, DR_BASE_NAME (dr), 
+			   NULL_TREE, loop_vinfo, &offset, &base_aligned_p);
+		  if (!tag)
+		    {
+		      if (vect_debug_stats (loop) || vect_debug_details (loop))
+			fprintf (dump_file, "not vectorized: no memtag for ref.");
+		      return false;
+		    }
+		  STMT_VINFO_MEMTAG (stmt_info) = tag; 
 		  break;
 		  
 		case VAR_DECL: 
