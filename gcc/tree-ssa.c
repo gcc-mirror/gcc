@@ -1239,7 +1239,7 @@ kill_redundant_phi_nodes (void)
   tree *eq_to;
   unsigned i, old_num_ssa_names;
   basic_block bb;
-  tree phi, var, repl, stmt;
+  tree phi, repl, stmt;
 
   /* The EQ_TO[VER] holds the value by that the ssa name VER should be
      replaced.  If EQ_TO[VER] is ssa name and it is decided to replace it by
@@ -1261,10 +1261,7 @@ kill_redundant_phi_nodes (void)
   FOR_EACH_BB (bb)
     {
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  var = PHI_RESULT (phi);
-	  check_phi_redundancy (phi, eq_to);
-	}
+	check_phi_redundancy (phi, eq_to);
     }
 
   /* Now propagate the values.  */

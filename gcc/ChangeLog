@@ -1,3 +1,8 @@
+2005-03-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa.c (kill_redundant_phi_nodes): Remove local variable
+	var.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
