@@ -188,6 +188,7 @@ bool test02()
   return test;
 }
 
+#if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
   std::basic_string< A<B> >::size_type 
@@ -196,6 +197,7 @@ template
 template 
   A<B>
   std::basic_string< A<B> >::_Rep::_S_terminal;
+#endif
 
 int main()
 {

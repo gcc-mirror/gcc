@@ -132,6 +132,7 @@ void test02()
   VERIFY( test );
 }
 
+#if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
   std::basic_string<unsigned short>::size_type 
@@ -140,6 +141,7 @@ template
 template 
   unsigned short
   std::basic_string<unsigned short>::_Rep::_S_terminal;
+#endif
 
 int main()
 {
