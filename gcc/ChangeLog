@@ -1,3 +1,11 @@
+2002-04-17  Dale Johannesen <dalej@apple.com>
+
+        * config/rs6000/rs6000.c (rs6000_emit_cmove): Fail if modes of
+        comparison operands do not match each other or if modes of
+        conditions do not match result.
+        (rs6000_output_function_prologue): Compute instruction addresses.
+        (rs6000_output_function_epilogue): Likewise.
+
 2002-04-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (legitimize_pic_address): Do not generate
