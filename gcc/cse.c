@@ -5730,9 +5730,8 @@ cse_insn (insn, libcall_insn)
 	 does not yet have an elt, and if so set the elt of the set source
 	 to src_eqv_elt.  */
       for (i = 0; i < n_sets; i++)
-	if (n_sets == 1
-	    || (sets[i].rtl && sets[i].src_elt == 0
-		&& rtx_equal_p (SET_SRC (sets[i].rtl), src_eqv)))
+	if (sets[i].rtl && sets[i].src_elt == 0
+	    && rtx_equal_p (SET_SRC (sets[i].rtl), src_eqv))
 	  sets[i].src_elt = src_eqv_elt;
     }
 
@@ -5760,29 +5759,33 @@ cse_insn (insn, libcall_insn)
 	    enum machine_mode mode
 	      = GET_MODE (src) == VOIDmode ? GET_MODE (dest) : GET_MODE (src);
 
-	    /* Don't put a hard register source into the table if this is
-	       the last insn of a libcall.  */
-	    if (sets[i].src_elt == 0
-		&& (GET_CODE (src) != REG
-		    || REGNO (src) >= FIRST_PSEUDO_REGISTER
-		    || ! find_reg_note (insn, REG_RETVAL, NULL_RTX)))
+	    if (sets[i].src_elt == 0)
 	      {
-		register struct table_elt *elt;
-
-		/* Note that these insert_regs calls cannot remove
-		   any of the src_elt's, because they would have failed to
-		   match if not still valid.  */
-		if (insert_regs (src, classp, 0))
+		/* Don't put a hard register source into the table if this is
+		   the last insn of a libcall.  In this case, we only need
+		   to put src_eqv_elt in src_elt.  */
+		if (GET_CODE (src) != REG
+		    || REGNO (src) >= FIRST_PSEUDO_REGISTER
+		    || ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 		  {
-		    rehash_using_reg (src);
-		    sets[i].src_hash = HASH (src, mode);
-		  }
-		elt = insert (src, classp, sets[i].src_hash, mode);
-		elt->in_memory = sets[i].src_in_memory;
-		elt->in_struct = sets[i].src_in_struct;
-		sets[i].src_elt = classp = elt;
-	      }
+		    register struct table_elt *elt;
 
+		    /* Note that these insert_regs calls cannot remove
+		       any of the src_elt's, because they would have failed to
+		       match if not still valid.  */
+		    if (insert_regs (src, classp, 0))
+		      {
+			rehash_using_reg (src);
+			sets[i].src_hash = HASH (src, mode);
+		      }
+		    elt = insert (src, classp, sets[i].src_hash, mode);
+		    elt->in_memory = sets[i].src_in_memory;
+		    elt->in_struct = sets[i].src_in_struct;
+		    sets[i].src_elt = classp = elt;
+		  }
+		else
+		  sets[i].src_elt = classp;
+	      }
 	    if (sets[i].src_const && sets[i].src_const_elt == 0
 		&& src != sets[i].src_const
 		&& ! rtx_equal_p (sets[i].src_const, src))
