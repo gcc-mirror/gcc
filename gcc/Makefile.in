@@ -2839,6 +2839,7 @@ install-driver: installdirs xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
+	  rm -f $(bindir)/$(target_alias)-gcc-$(version); \
 	  $(LN) $(bindir)/$(GCC_CROSS_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-$(version) ; \
 	  if [ -d $(gcc_tooldir)/bin/. ] ; then \
 	    rm -f $(gcc_tooldir)/bin/gcc$(exeext); \
@@ -2847,6 +2848,7 @@ install-driver: installdirs xgcc$(exeext)
 	else \
 	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
+	  rm -f $(bindir)/$(target_alias)-gcc-$(version); \
 	  $(LN) $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-$(version) ; \
 	  rm -f $(bindir)/$(target_alias)-gcc-tmp$(exeext); \
 	  $(LN) $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-tmp$(exeext); \

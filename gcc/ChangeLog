@@ -1,5 +1,8 @@
 2002-11-24  Andreas Schwab  <schwab@suse.de>
 
+	* Makefile.in (install-driver): Remove versioned link before
+	trying to create it.
+
 	* config/m68k/m68k.c: Fix typo in last change defining
 	TARGET_ASM_CAN_OUTPUT_MI_THUNK.
 
