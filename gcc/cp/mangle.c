@@ -2392,11 +2392,7 @@ mangle_conv_op_name_for_type (type)
   /* Build the mangling for TYPE.  */
   const char *mangled_type = mangle_type_string (type);
   /* Allocate a temporary buffer for the complete name.  */
-  char *op_name = (char *) xmalloc (strlen ("operator ") 
-				    + strlen (mangled_type) + 1);
-  /* Assemble the mangling.  */
-  strcpy (op_name, "operator ");
-  strcat (op_name, mangled_type);
+  char *op_name = concat ("operator ", mangled_type, NULL);
   /* Find or create an identifier.  */
   identifier = get_identifier (op_name);
   /* Done with the temporary buffer.  */

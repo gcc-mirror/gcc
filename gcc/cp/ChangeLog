@@ -1,3 +1,8 @@
+2001-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mangle.c (mangle_conv_op_name_for_type): Use concat in lieu of
+	xmalloc/strcpy/strcat.
+
 2001-09-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (warn_extern_redeclared_static, cp_make_fname_decl):

@@ -1,3 +1,10 @@
+2001-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (main): Const-ification.
+	* gcc.c (translate_options, process_command): Use xstrdup in
+	lieu of xmalloc/strcpy.
+	(main): Use concat in lieu of xmalloc/strcpy/strcat.
+
 2001-09-14  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* doc/install.texi (Specific, alphaev5-cray-unicosmk*): Fix
