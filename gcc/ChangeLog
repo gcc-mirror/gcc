@@ -1,3 +1,8 @@
+2002-05-31  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloop.c (flow_loops_find): Initialize first and last fields
+	correctly.
+
 2002-05-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (builtin_define_std): Correct logic.
