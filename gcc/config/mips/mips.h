@@ -925,20 +925,11 @@ extern const struct mips_cpu_info *mips_tune_info;
    two-instruction gap.  */
 #define ISA_HAS_HILO_INTERLOCKS	(TARGET_MIPS5500 || TARGET_SB1)
 
-/* Switch  Recognition by gcc.c.  Add -G xx support */
+/* Add -G xx support.  */
 
 #undef  SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR)						\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
-
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   On the MIPS, it is used to handle -G.  We also use it to set up all
-   of the tables referenced in the other macros.  */
 
 #define OVERRIDE_OPTIONS override_options ()
 
@@ -1208,10 +1199,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* How to renumber registers for dbx and gdb.  */
 #define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
 
-/* The mapping from gcc register number to DWARF 2 CFA column number.
-   This mapping does not allow for tracking register 0, since SGI's broken
-   dwarf reader thinks column 0 is used for the frame address, but since
-   register 0 is fixed this is not a problem.  */
+/* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REG)				\
   (REG == GP_REG_FIRST + 31 ? DWARF_FRAME_RETURN_COLUMN : REG)
 
@@ -1248,15 +1236,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 /* Target machine storage layout */
 
-/* Define this if most significant bit is lowest numbered
-   in instructions that operate on numbered bit-fields.
-*/
 #define BITS_BIG_ENDIAN 0
-
-/* Define this if most significant byte of a word is the lowest numbered.  */
 #define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
-
-/* Define this if most significant word of a multiword number is the lowest.  */
 #define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
 /* Define this to set the endianness to use in libgcc2.c, which can
@@ -1292,11 +1273,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
 
-/* A C expression for the size in bits of the type `int' on the
-   target machine.  If you don't define this, the default is one
-   word.  */
-#define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
-
 /* Tell the preprocessor the maximum size of wchar_t.  */
 #ifndef MAX_WCHAR_TYPE_SIZE
 #ifndef WCHAR_TYPE_SIZE
@@ -1304,36 +1280,16 @@ extern const struct mips_cpu_info *mips_tune_info;
 #endif
 #endif
 
-/* A C expression for the size in bits of the type `short' on the
-   target machine.  If you don't define this, the default is half a
-   word.  (If this would be less than one storage unit, it is
-   rounded up to one unit.)  */
+/* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
-
-/* A C expression for the size in bits of the type `long' on the
-   target machine.  If you don't define this, the default is one
-   word.  */
+#define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
 #define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
-#define MAX_LONG_TYPE_SIZE 64
-
-/* A C expression for the size in bits of the type `long long' on the
-   target machine.  If you don't define this, the default is two
-   words.  */
 #define LONG_LONG_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `float' on the
-   target machine.  If you don't define this, the default is one
-   word.  */
+#define MAX_LONG_TYPE_SIZE 64
+
 #define FLOAT_TYPE_SIZE 32
-
-/* A C expression for the size in bits of the type `double' on the
-   target machine.  If you don't define this, the default is two
-   words.  */
 #define DOUBLE_TYPE_SIZE 64
-
-/* A C expression for the size in bits of the type `long double' on
-   the target machine.  If you don't define this, the default is two
-   words.  */
 #define LONG_DOUBLE_TYPE_SIZE \
   (mips_abi == ABI_N32 || mips_abi == ABI_64 ? 128 : 64)
 
@@ -1376,8 +1332,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT LONG_DOUBLE_TYPE_SIZE
 
-/* Set this nonzero if move instructions will actually fail to work
-   when given unaligned data.  */
+/* All accesses must be aligned.  */
 #define STRICT_ALIGNMENT 1
 
 /* Define this if you wish to imitate the way many other C compilers
@@ -1442,11 +1397,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #define PAD_VARARGS_DOWN (TARGET_64BIT ? BYTES_BIG_ENDIAN : !BYTES_BIG_ENDIAN)
 
-/* Define this macro if an argument declared as `char' or `short' in a
-   prototype should actually be passed as an `int'.  In addition to
-   avoiding errors in certain cases of mismatch, it also makes for
-   better code on certain machines.  */
-
+/* Arguments declared as 'char' or 'short' in a prototype should be
+   passed as 'int's.  */
 #define PROMOTE_PROTOTYPES 1
 
 /* Define if operations between registers always perform the operation
@@ -1493,26 +1445,22 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 /* Standard register usage.  */
 
-/* Number of actual hardware registers.
-   The hardware registers are assigned numbers for the compiler
-   from 0 to just below FIRST_PSEUDO_REGISTER.
-   All registers that the compiler knows about must be given numbers,
-   even those that are not normally considered general registers.
+/* Number of hardware registers.  We have:
 
-   On the Mips, we have 32 integer registers, 32 floating point
-   registers, 8 condition code registers, and the special registers
-   hi and lo.  After that we have 32 COP0 registers, 32 COP2 registers,
-   and 32 COP3 registers.  (COP1 is the floating-point processor.)
-   The 8 condition code registers are only used if mips_isa >= 4.  */
+   - 32 integer registers
+   - 32 floating point registers
+   - 8 condition code registers
+   - 2 accumulator registers (hi and lo)
+   - 32 registers each for coprocessors 0, 2 and 3
+   - 6 dummy entries that were used at various times in the past.  */
 
 #define FIRST_PSEUDO_REGISTER 176
 
-/* 1 for registers that have pervasive standard uses
-   and are not available for the register allocator.
+/* By default, fix the kernel registers ($26 and $27), the global
+   pointer ($28) and the stack pointer ($29).  This can change
+   depending on the command-line options.
 
-   On the MIPS, see conventions, page D-2  */
-
-/* Regarding coprocessor registers: without evidence to the contrary,
+   Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
    use.  This can be overridden, in, e.g., override_options() or
    CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
@@ -1537,8 +1485,10 @@ extern const struct mips_cpu_info *mips_tune_info;
 }
 
 
-/* Don't mark $31 as a call-clobbered register.  The idea is that
-   it's really the call instructions themselves which clobber $31.
+/* Set up this array for o32 by default.
+
+   Note that we don't mark $31 as a call-clobbered register.  The idea is
+   that it's really the call instructions themselves which clobber $31.
    We don't care what the called function does with it afterwards.
 
    This approach makes it easier to implement sibcalls.  Unlike normal
@@ -1564,14 +1514,8 @@ extern const struct mips_cpu_info *mips_tune_info;
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1			\
 }
 
-/* Like `CALL_USED_REGISTERS' but used to overcome a historical
-   problem which makes CALL_USED_REGISTERS *always* include
-   all the FIXED_REGISTERS.  Until this problem has been
-   resolved this macro can be used to overcome this situation.
-   In particular, block_propagate() requires this list
-   be accurate, or we can remove registers which should be live.
-   This macro is used in regs_invalidated_by_call.  */
 
+/* Define this since $28, though fixed, is call-saved in many ABIs.  */
 
 #define CALL_REALLY_USED_REGISTERS                                      \
 { /* General registers.  */                                             \
@@ -1636,8 +1580,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define HI_REGNUM	(MD_REG_FIRST + 0)
 #define LO_REGNUM	(MD_REG_FIRST + 1)
 
-/* FPSW_REGNUM is the single condition code used if mips_isa < 4.  If
-   mips_isa >= 4, it should not be used, and an arbitrary ST_REG
+/* FPSW_REGNUM is the single condition code used if !ISA_HAS_8CC.
+   If ISA_HAS_8CC, it should not be used, and an arbitrary ST_REG
    should be used instead.  */
 #define FPSW_REGNUM	ST_REG_FIRST
 
@@ -1668,24 +1612,10 @@ extern const struct mips_cpu_info *mips_tune_info;
   (COP0_REG_P (REGNO) ? '0' : COP2_REG_P (REGNO) ? '2'			\
    : COP3_REG_P (REGNO) ? '3' : '?')
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the MIPS, all general registers are one word long.  Except on
-   the R4000 with the FR bit set, the floating point uses register
-   pairs, with the second register not being allocable.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE) mips_hard_regno_nregs (REGNO, MODE)
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.  In 32 bit mode, require that DImode and DFmode be in even
-   registers.  For DImode, this makes some of the insns easier to
-   write, since you don't have to worry about a DImode value in
-   registers 3 & 4, producing a result in 4 & 5.
-
-   To make the code simpler HARD_REGNO_MODE_OK now just references an
+/* To make the code simpler, HARD_REGNO_MODE_OK just references an
    array built in override_options.  Because machmodes.h is not yet
    included before this file is processed, the MODE bound can't be
    expressed here.  */
@@ -1731,10 +1661,7 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
 
-/* If the structure value address is not passed in a register, define
-   `STRUCT_VALUE' as an expression returning an RTX for the place
-   where the address is passed.  If it returns 0, the address is
-   passed as an "invisible" first argument.  */
+/* Pass structure addresses as an "invisible" first argument.  */
 #define STRUCT_VALUE 0
 
 /* Mips registers used in prologue/epilogue code when the stack frame
@@ -2179,13 +2106,6 @@ extern enum reg_class mips_char_to_class[256];
    + (TARGET_ABICALLS && !TARGET_NEWABI					\
       ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
-/* The return address for the current frame is in r31 if this is a leaf
-   function.  Otherwise, it is on the stack.  It is at a variable offset
-   from sp/fp/ap, so we define a fake hard register rap which is a
-   pointer to the return address on the stack.  This always gets eliminated
-   during reload to be either the frame pointer or the stack pointer plus
-   an offset.  */
-
 #define RETURN_ADDR_RTX mips_return_addr
 
 /* Since the mips16 ISA mode is encoded in the least-significant bit
@@ -2200,33 +2120,7 @@ extern enum reg_class mips_char_to_class[256];
 
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
-/* If defined, this macro specifies a table of register pairs used to
-   eliminate unneeded registers that point into the stack frame.  If
-   it is not defined, the only elimination attempted by the compiler
-   is to replace references to the frame pointer with references to
-   the stack pointer.
-
-   The definition of this macro is a list of structure
-   initializations, each of which specifies an original and
-   replacement register.
-
-   On some machines, the position of the argument pointer is not
-   known until the compilation is completed.  In such a case, a
-   separate hard register must be used for the argument pointer.
-   This register can be eliminated by replacing it with either the
-   frame pointer or the argument pointer, depending on whether or not
-   the frame pointer has been eliminated.
-
-   In this case, you might specify:
-        #define ELIMINABLE_REGS  \
-        {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
-         {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM}, \
-         {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
-
-   Note that the elimination of the argument pointer with the stack
-   pointer is specified first since that is the preferred elimination.
-
-   The eliminations to $17 are only used on the mips16.  See the
+/* The eliminations to $17 are only used for mips16 code.  See the
    definition of HARD_FRAME_POINTER_REGNUM.  */
 
 #define ELIMINABLE_REGS							\
@@ -2237,82 +2131,37 @@ extern enum reg_class mips_char_to_class[256];
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 30},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 17}}
 
-/* A C expression that returns nonzero if the compiler is allowed to
-   try to replace register number FROM-REG with register number
-   TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
-   defined, and will usually be the constant 1, since most of the
-   cases preventing register elimination are things that the compiler
-   already knows about.
+/* We can always eliminate to the hard frame pointer.  We can eliminate
+   to the stack pointer unless a frame pointer is needed.
 
-   When not in mips16 and mips64, we can always eliminate to the
-   frame pointer.  We can eliminate to the stack pointer unless
-   a frame pointer is needed.  In mips16 mode, we need a frame
-   pointer for a large frame; otherwise, reload may be unable
-   to compute the address of a local variable, since there is
-   no way to add a large constant to the stack pointer
+   In mips16 mode, we need a frame pointer for a large frame; otherwise,
+   reload may be unable to compute the address of a local variable,
+   since there is no way to add a large constant to the stack pointer
    without using a temporary register.
 
-   In mips16, for some instructions (eg lwu), we can't eliminate the
+   Also, for some mips16 instructions (eg lwu), we can't eliminate the
    frame pointer for the stack pointer.  These instructions are
-   only generated in TARGET_64BIT mode.
-   */
-
+   only generated in TARGET_64BIT mode.  */
 #define CAN_ELIMINATE(FROM, TO)						\
-   (((TO) == HARD_FRAME_POINTER_REGNUM 				        \
-	  || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed	\
-	      && ! (TARGET_MIPS16 && TARGET_64BIT)			\
-	      && (! TARGET_MIPS16					\
-	          || compute_frame_size (get_frame_size ()) < 32768))))
+  ((TO) == HARD_FRAME_POINTER_REGNUM 				        \
+   || ((TO) == STACK_POINTER_REGNUM && !frame_pointer_needed		\
+       && !(TARGET_MIPS16 && TARGET_64BIT)				\
+       && (!TARGET_MIPS16						\
+	   || compute_frame_size (get_frame_size ()) < 32768)))
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
-	(OFFSET) = mips_initial_elimination_offset ((FROM), (TO))
+  (OFFSET) = mips_initial_elimination_offset ((FROM), (TO))
 
-/* If defined, the maximum amount of space required for outgoing
-   arguments will be computed and placed into the variable
-   `current_function_outgoing_args_size'.  No space will be pushed
-   onto the stack for each call; instead, the function prologue
-   should increase the stack frame size by this amount.
-
-   It is not proper to define both `PUSH_ROUNDING' and
-   `ACCUMULATE_OUTGOING_ARGS'.  */
+/* Allocate stack space for arguments at the beginning of each function.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* Offset from the argument pointer register to the first argument's
-   address.  On some machines it may depend on the data type of the
-   function.
-
-   If `ARGS_GROW_DOWNWARD', this is the offset to the location above
-   the first argument's address.
-
-   On the MIPS, we must skip the first argument position if we are
-   returning a structure or a union, to account for its address being
-   passed in $4.  However, at the current time, this produces a compiler
-   that can't bootstrap, so comment it out for now.  */
-
-#if 0
-#define FIRST_PARM_OFFSET(FNDECL)					\
-  (FNDECL != 0								\
-   && TREE_TYPE (FNDECL) != 0						\
-   && TREE_TYPE (TREE_TYPE (FNDECL)) != 0				\
-   && (TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == RECORD_TYPE	\
-       || TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == UNION_TYPE)	\
-		? UNITS_PER_WORD					\
-		: 0)
-#else
+/* The argument pointer always points to the first argument.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0
-#endif
 
-/* When a parameter is passed in a register, stack space is still
-   allocated for it.  For the MIPS, stack space must be allocated, cf
-   Asm Lang Prog Guide page 7-8.
-
-   BEWARE that some space is also allocated for non existing arguments
-   in register. In case an argument list is of form GF used registers
-   are a0 (a2,a3), but we should push over a1...  */
-
-#define REG_PARM_STACK_SPACE(FNDECL) 					 \
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64)				 \
-   ? (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD) - FIRST_PARM_OFFSET (FNDECL) \
+/* o32 and o64 reserve stack space for all argument registers.  */
+#define REG_PARM_STACK_SPACE(FNDECL) 			\
+  ((mips_abi == ABI_32 || mips_abi == ABI_O64)		\
+   ? (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD)		\
    : 0)
 
 /* Define this if it is the responsibility of the caller to
@@ -2327,34 +2176,7 @@ extern enum reg_class mips_char_to_class[256];
    ? 64 : 128)
 
 
-/* A C expression that should indicate the number of bytes of its
-   own arguments that a function pops on returning, or 0
-   if the function pops no arguments and the caller must therefore
-   pop them all after the function returns.
-
-   FUNDECL is the declaration node of the function (as a tree).
-
-   FUNTYPE is a C variable whose value is a tree node that
-   describes the function in question.  Normally it is a node of
-   type `FUNCTION_TYPE' that describes the data type of the function.
-   From this it is possible to obtain the data types of the value
-   and arguments (if known).
-
-   When a call to a library function is being considered, FUNTYPE
-   will contain an identifier node for the library function.  Thus,
-   if you need to distinguish among various library functions, you
-   can do so by their names.  Note that "library function" in this
-   context means a function used to perform arithmetic, whose name
-   is known specially in the compiler and was not mentioned in the
-   C code being compiled.
-
-   STACK-SIZE is the number of bytes of arguments passed on the
-   stack.  If a variable number of bytes is passed, it is zero, and
-   argument popping will always be the responsibility of the
-   calling function.  */
-
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
-
 
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
@@ -2376,18 +2198,8 @@ extern enum reg_class mips_char_to_class[256];
 #define FP_ARG_FIRST (FP_REG_FIRST + 12)
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  Because we define
-   PROMOTE_FUNCTION_RETURN, we must promote the mode just as
-   PROMOTE_MODE does.  */
-
 #define LIBCALL_VALUE(MODE) \
   mips_function_value (NULL_TREE, NULL, (MODE))
-
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   mips_function_value ((VALTYPE), (FUNC), VOIDmode)
@@ -2410,26 +2222,7 @@ extern enum reg_class mips_char_to_class[256];
 	&& ((N) % FP_INC == 0) && mips_abi != ABI_O64))		\
    && !fixed_regs[N])
 
-/* A C expression which can inhibit the returning of certain function
-   values in registers, based on the type of value.  A nonzero value says
-   to return the function value in memory, just as large structures are
-   always returned.  Here TYPE will be a C expression of type
-   `tree', representing the data type of the value.
-
-   Note that values of mode `BLKmode' must be explicitly
-   handled by this macro.  Also, the option `-fpcc-struct-return'
-   takes effect regardless of this macro.  On most systems, it is
-   possible to leave the macro undefined; this causes a default
-   definition to be used, whose value is the constant 1 for BLKmode
-   values, and 0 otherwise.
-
-   GCC normally converts 1 byte structures into chars, 2 byte
-   structs into shorts, and 4 byte structs into ints, and returns
-   them this way.  Defining the following macro overrides this,
-   to give us MIPS cc compatibility.  */
-
-#define RETURN_IN_MEMORY(TYPE)	\
-	mips_return_in_memory (TYPE)
+#define RETURN_IN_MEMORY(TYPE) mips_return_in_memory (TYPE)
 
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
 	(PRETEND_SIZE) = mips_setup_incoming_varargs (&(CUM), (MODE),	\
@@ -2437,19 +2230,12 @@ extern enum reg_class mips_char_to_class[256];
 
 #define STRICT_ARGUMENT_NAMING (mips_abi != ABI_32 && mips_abi != ABI_O64)
 
-/* Define a data type for recording info about an argument list
-   during the scan of that argument list.  This data type should
-   hold all necessary information about the function itself
-   and about the args processed so far, enough to enable macros
-   such as FUNCTION_ARG to determine where the next arg should go.
-
-   This structure has to cope with two different argument allocation
+/* This structure has to cope with two different argument allocation
    schemes.  Most MIPS ABIs view the arguments as a struct, of which the
    first N words go in registers and the rest go on the stack.  If I < N,
    the Ith word might go in Ith integer argument register or the
-   Ith floating-point one.  In some cases, it has to go in both (see
-   function_arg).  For these ABIs, we only need to remember the number
-   of words passed so far.
+   Ith floating-point one.  For these ABIs, we only need to remember
+   the number of words passed so far.
 
    The EABI instead allocates the integer and floating-point arguments
    separately.  The first N words of FP arguments go in FP registers,

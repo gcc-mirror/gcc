@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for MIPS
+/* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
@@ -310,8 +310,7 @@ struct mips_frame_info GTY(())
 
 struct machine_function GTY(()) {
   /* Pseudo-reg holding the address of the current function when
-     generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS,
-     used by mips_finalize_pic if it was created.  */
+     generating embedded PIC code.  */
   rtx embedded_pic_fnaddr_rtx;
 
   /* Pseudo-reg holding the value of $28 in a mips16 function which
@@ -436,9 +435,7 @@ struct mips_integer_op {
 /* Global variables for machine-dependent things.  */
 
 /* Threshold for data being put into the small data/bss area, instead
-   of the normal data area (references to the small data/bss area take
-   1 instruction, and use the global pointer, references to the normal
-   data area takes 2 instructions).  */
+   of the normal data area.  */
 int mips_section_threshold = -1;
 
 /* Count the number of .file directives, so that .loc is up to date.  */
@@ -491,10 +488,10 @@ const struct mips_cpu_info *mips_arch_info;
 enum processor_type mips_tune;
 const struct mips_cpu_info *mips_tune_info;
 
-/* which instruction set architecture to use.  */
+/* Which instruction set architecture to use.  */
 int mips_isa;
 
-/* which abi to use.  */
+/* Which ABI to use.  */
 int mips_abi;
 
 /* Strings to hold which cpu and instruction set architecture to use.  */
@@ -1320,8 +1317,7 @@ const_arith_operand (op, mode)
 }
 
 
-/* Return truth value of whether OP can be used as an operands
-   where a 16 bit integer is needed  */
+/* Return true if OP is a register operand or a signed 16-bit constant.  */
 
 int
 arith_operand (op, mode)
@@ -1342,8 +1338,8 @@ small_int (op, mode)
 }
 
 /* Return truth value of whether OP is a register or the constant 0.
-   In mips16 mode, we only accept a register, since the mips16 does
-   not have $0.  */
+   Do not accept 0 in mips16 mode since $0 is not one of the core 8
+   registers.  */
 
 int
 reg_or_0_operand (op, mode)
@@ -1542,7 +1538,7 @@ consttable_operand (op, mode)
   return CONSTANT_P (op);
 }
 
-/* Returns 1 if OP is a symbolic operand, i.e. a symbol_ref or a label_ref,
+/* Return 1 if OP is a symbolic operand, i.e. a symbol_ref or a label_ref,
    possibly with an offset.  */
 
 int
@@ -2058,7 +2054,7 @@ mips_legitimize_move (mode, dest, src)
 
 
 /* Convert GOT and GP-relative accesses back into their original form.
-   Used by bothh TARGET_DELEGITIMIZE_ADDRESS and FIND_BASE_TERM.  */
+   Used by both TARGET_DELEGITIMIZE_ADDRESS and FIND_BASE_TERM.  */
 
 rtx
 mips_delegitimize_address (x)
@@ -2318,8 +2314,8 @@ mips_rtx_costs (x, code, outer_code, total)
             *total = COSTS_N_INSNS (1);
           return true;
         }
-      /* We can use cmpi for an xor with an unsigned 16 bit value.  */
 
+      /* We can use cmpi for an xor with an unsigned 16 bit value.  */
       if ((outer_code) == XOR
           && INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
         {
@@ -3248,7 +3244,7 @@ gen_conditional_branch (operands, test_code)
 }
 
 /* Emit the common code for conditional moves.  OPERANDS is the array
-   of operands passed to the conditional move defined_expand.  */
+   of operands passed to the conditional move define_expand.  */
 
 void
 gen_conditional_move (operands)
@@ -3334,8 +3330,8 @@ gen_conditional_move (operands)
 						operands[2], operands[3])));
 }
 
-/* Emit the common code for conditional moves.  OPERANDS is the array
-   of operands passed to the conditional move defined_expand.  */
+/* Emit a conditional trap.  OPERANDS is the array of operands passed to
+   the conditional_trap expander.  */
 
 void
 mips_gen_conditional_trap (operands)
@@ -3379,7 +3375,7 @@ mips_gen_conditional_trap (operands)
    function, ARGS_SIZE is the size of the arguments and AUX is
    the value passed to us by mips_function_arg.  SIBCALL_P is true
    if we are expanding a sibling call, false if we're expanding
-   normal call.  */
+   a normal call.  */
 
 void
 mips_expand_call (result, addr, args_size, aux, sibcall_p)
@@ -4473,11 +4469,11 @@ mips_va_arg (valist, type)
 
 		 TOP be the top of the register save area;
 		 OFF be the offset from TOP of the next register;
-		 ADDR_RTX be the address of the argument; and
+		 ADDR_RTX be the address of the argument;
 		 RSIZE be the number of bytes used to store the argument
-		   when it's in the register save area
+		   when it's in the register save area;
 		 OSIZE be the number of bytes used to store it when it's
-		   in the stack overflow area
+		   in the stack overflow area; and
 		 PADDING be (BYTES_BIG_ENDIAN ? OSIZE - RSIZE : 0)
 
 	     The code we want is:
@@ -5040,12 +5036,7 @@ override_options ()
   mips_dbx_regno[HI_REGNUM] = MD_DBX_FIRST + 0;
   mips_dbx_regno[LO_REGNUM] = MD_DBX_FIRST + 1;
 
-  /* Set up array giving whether a given register can hold a given mode.
-     At present, restrict ints from being in FP registers, because reload
-     is a little enthusiastic about storing extra values in FP registers,
-     and this is not good for things like OS kernels.  Also, due to the
-     mandatory delay, it is as fast to load from cached memory as to move
-     from the FP register.  */
+  /* Set up array giving whether a given register can hold a given mode.  */
 
   for (mode = VOIDmode;
        mode != MAX_MACHINE_MODE;
@@ -5249,31 +5240,11 @@ mips_debugger_offset (addr, offset)
   return offset;
 }
 
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  X is an RTL
-   expression.
+/* Implement the PRINT_OPERAND macro.  The MIPS-specific operand codes are:
 
-   CODE is a value that can be used to specify one of several ways
-   of printing the operand.  It is used when identical operands
-   must be printed differently depending on the context.  CODE
-   comes from the `%' specification that was used to request
-   printing of the operand.  If the specification was just `%DIGIT'
-   then CODE is 0; if the specification was `%LTR DIGIT' then CODE
-   is the ASCII code for LTR.
-
-   If X is a register, this macro should print the register's name.
-   The names can be found in an array `reg_names' whose type is
-   `char *[]'.  `reg_names' is initialized from `REGISTER_NAMES'.
-
-   When the machine description has a specification `%PUNCT' (a `%'
-   followed by a punctuation character), this macro is called with
-   a null pointer for X and the punctuation character for CODE.
-
-   The MIPS specific codes are:
-
-   'X'  X is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
-   'x'  X is CONST_INT, prints 16 bits in hexadecimal format = "0x%04x",
-   'h'  X is HIGH, prints %hi(X),
+   'X'  OP is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
+   'x'  OP is CONST_INT, prints 16 bits in hexadecimal format = "0x%04x",
+   'h'  OP is HIGH, prints %hi(X),
    'd'  output integer constant in decimal,
    'z'	if the operand is 0, use $0 instead of normal operand.
    'D'  print second part of double-word register or memory operand.
@@ -5283,13 +5254,16 @@ mips_debugger_offset (addr, offset)
    'F'  print part of opcode for a floating-point branch condition.
    'N'  print part of opcode for a branch condition, inverted.
    'W'  print part of opcode for a floating-point branch condition, inverted.
-   'S'  X is CODE_LABEL, print with prefix of "LS" (for embedded switch).
+   'S'  OP is CODE_LABEL, print with prefix of "LS" (for embedded switch).
    'B'  print 'z' for EQ, 'n' for NE
    'b'  print 'n' for EQ, 'z' for NE
    'T'  print 'f' for EQ, 't' for NE
    't'  print 't' for EQ, 'f' for NE
    'Z'  print register and a comma, but print nothing for $fcc0
    'R'  print the reloc associated with LO_SUM
+
+   The punctuation characters are:
+
    '('	Turn on .set noreorder
    ')'	Turn on .set reorder
    '['	Turn on .set noat
@@ -5911,13 +5885,7 @@ mips_output_ascii (stream, string_param, len)
   fprintf (stream, "\"\n");
 }
 
-/* Output at beginning of assembler file.
-
-   If we are optimizing to use the global pointer, create a temporary file to
-   hold all of the text stuff, and write it out to the end. This is needed
-   because the MIPS assembler is evidently one pass, and if it hasn't seen the
-   relevant .comm/.lcomm/.extern/.sdata declaration when the code is
-   processed, it generates a two instruction sequence.  */
+/* Implement TARGET_ASM_FILE_START.  */
 
 static void
 mips_file_start ()
@@ -6007,10 +5975,8 @@ mips_output_aligned_bss (stream, decl, name, size, align)
 }
 #endif
 
-/* If we are optimizing the global pointer, emit the text section now and any
-   small externs which did not have .comm, etc that are needed.  Also, give a
-   warning if the data area is more than 32K and -pic because 3 instructions
-   are needed to reference the data pointers.  */
+/* Implement TARGET_ASM_FILE_END.  When using assembler macros, emit
+   .externs for any small-data variables that turned out to be external.  */
 
 static void
 mips_file_end ()
@@ -7827,11 +7793,10 @@ mips_encode_section_info (decl, rtl, first)
 
   default_encode_section_info (decl, rtl, first);
 }
-
-
 
-/* Return register to use for a function return value with VALTYPE for
-   function FUNC.  MODE is used instead of VALTYPE for LIBCALLs.  */
+/* Implement FUNCTION_VALUE and LIBCALL_VALUE.  For normal calls,
+   VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
+   VALTYPE is null and MODE is the mode of the return value.  */
 
 rtx
 mips_function_value (valtype, func, mode)
@@ -9908,6 +9873,9 @@ mips_adjust_cost (insn, link, dep, cost)
   return cost;
 }
 
+/* Implement HARD_REGNO_NREGS.  The size of FP registers are controlled
+   by UNITS_PER_FPREG.  All other registers are word sized.  */
+
 unsigned int
 mips_hard_regno_nregs (regno, mode)
     int regno;
@@ -9919,15 +9887,16 @@ mips_hard_regno_nregs (regno, mode)
     return ((GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG);
 }
 
+/* Implement RETURN_IN_MEMORY.  Under the old (i.e., 32 and O64 ABIs)
+   all BLKmode objects are returned in memory.  Under the new (N32 and
+   64-bit MIPS ABIs) small structures are returned in a register.
+   Objects with varying size must still be returned in memory, of
+   course.  */
+
 int
 mips_return_in_memory (type)
      tree type;
 {
-  /* Under the old (i.e., 32 and O64 ABIs) all BLKmode objects are
-     returned in memory.  Under the new (N32 and 64-bit MIPS ABIs) small
-     structures are returned in a register.  Objects with varying size
-     must still be returned in memory, of course.  */
-
   if (mips_abi == ABI_32 || mips_abi == ABI_O64)
     return (TYPE_MODE (type) == BLKmode);
   else
