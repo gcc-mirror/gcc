@@ -1,3 +1,12 @@
+2005-03-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000-protos.h: Replace "struct rtx_def *"
+	throughout with its typedef, "rtx".
+	* config/rs6000/rs6000.c: Likewise.  Formatting fixes.
+	(rs6000_tls_symbol_ref_1): Remove inline keyword.
+	* config/rs6000/rs6000.h (REG_ALLOC_ORDER): Formatting.  Reorder
+	regs in comment to match code.
+
 2005-03-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* except.c (check_handled): Make it static.

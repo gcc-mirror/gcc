@@ -944,29 +944,28 @@ extern const char *rs6000_warn_altivec_long_switch;
 	fp0		(not saved or used for anything)
 	fp13 - fp2	(not saved; incoming fp arg registers)
 	fp1		(not saved; return value)
- 	fp31 - fp14	(saved; order given to save least number)
+	fp31 - fp14	(saved; order given to save least number)
 	cr7, cr6	(not saved or special)
 	cr1		(not saved, but used for FP operations)
 	cr0		(not saved, but used for arithmetic operations)
 	cr4, cr3, cr2	(saved)
-        r0		(not saved; cannot be base reg)
+	r0		(not saved; cannot be base reg)
 	r9		(not saved; best for TImode)
 	r11, r10, r8-r4	(not saved; highest used first to make less conflict)
-	r3     		(not saved; return value register)
+	r3		(not saved; return value register)
 	r31 - r13	(saved; order given to save least number)
 	r12		(not saved; if used for DImode or DFmode would use r13)
 	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
-        cr5, r1, r2, ap, xer, vrsave, vscr (fixed)
+	cr5, r1, r2, ap, xer (fixed)
+	v0 - v1		(not saved or used for anything)
+	v13 - v3	(not saved; incoming vector arg registers)
+	v2		(not saved; incoming vector arg reg; return value)
+	v19 - v14	(not saved or used for anything)
+	v31 - v20	(saved; order given to save least number)
+	vrsave, vscr	(fixed)
 	spe_acc, spefscr (fixed)
-
-	AltiVec registers:
-	v0 - v1         (not saved or used for anything)
-	v13 - v3        (not saved; incoming vector arg registers)
-	v2              (not saved; incoming vector arg reg; return value)
-	v19 - v14       (not saved or used for anything)
-	v31 - v20       (saved; order given to save least number)
 */
 
 #if FIXED_R2 == 1
@@ -977,28 +976,28 @@ extern const char *rs6000_warn_altivec_long_switch;
 #define MAYBE_R2_FIXED
 #endif
 
-#define REG_ALLOC_ORDER					\
-  {32, 							\
-   45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34,	\
-   33,							\
-   63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,	\
-   50, 49, 48, 47, 46, 					\
-   75, 74, 69, 68, 72, 71, 70,				\
-   0, MAYBE_R2_AVAILABLE				\
-   9, 11, 10, 8, 7, 6, 5, 4,				\
-   3,							\
-   31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,	\
-   18, 17, 16, 15, 14, 13, 12,				\
-   64, 66, 65, 						\
-   73, 1, MAYBE_R2_FIXED 67, 76,			\
-   /* AltiVec registers.  */				\
-   77, 78,						\
-   90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80,		\
-   79,							\
-   96, 95, 94, 93, 92, 91,				\
-   108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98,	\
-   97, 109, 110						\
-   , 111, 112                                              \
+#define REG_ALLOC_ORDER						\
+  {32,								\
+   45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34,		\
+   33,								\
+   63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,		\
+   50, 49, 48, 47, 46,						\
+   75, 74, 69, 68, 72, 71, 70,					\
+   0, MAYBE_R2_AVAILABLE					\
+   9, 11, 10, 8, 7, 6, 5, 4,					\
+   3,								\
+   31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,		\
+   18, 17, 16, 15, 14, 13, 12,					\
+   64, 66, 65,							\
+   73, 1, MAYBE_R2_FIXED 67, 76,				\
+   /* AltiVec registers.  */					\
+   77, 78,							\
+   90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80,			\
+   79,								\
+   96, 95, 94, 93, 92, 91,					\
+   108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97,	\
+   109, 110,							\
+   111, 112							\
 }
 
 /* True if register is floating-point.  */

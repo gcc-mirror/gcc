@@ -46,8 +46,8 @@ extern bool legitimate_constant_pool_address_p (rtx);
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
 
-extern struct rtx_def *rs6000_got_register (rtx);
-extern struct rtx_def *find_addr_reg (rtx);
+extern rtx rs6000_got_register (rtx);
+extern rtx find_addr_reg (rtx);
 extern int word_offset_memref_operand (rtx, enum machine_mode);
 extern rtx gen_easy_vector_constant_add_self (rtx);
 extern const char *output_vec_const_move (rtx *);
@@ -83,9 +83,9 @@ extern int rs6000_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_emit_minmax (rtx, enum rtx_code, rtx, rtx);
 extern void output_toc (FILE *, rtx, int, enum machine_mode);
 extern void rs6000_initialize_trampoline (rtx, rtx, rtx);
-extern struct rtx_def *rs6000_longcall_ref (rtx);
+extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
-extern struct rtx_def *create_TOC_reference (rtx);
+extern rtx create_TOC_reference (rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_address (rtx, rtx, enum machine_mode);
@@ -108,11 +108,10 @@ extern unsigned int rs6000_special_round_type_align (tree, int, int);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, int, int);
 extern int function_arg_boundary (enum machine_mode, tree);
-extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
-				     enum machine_mode, tree, int);
+extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern rtx rs6000_function_value (tree, tree);
 extern rtx rs6000_libcall_value (enum machine_mode);
-extern struct rtx_def *rs6000_va_arg (tree, tree);
+extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 #ifdef ARGS_SIZE_RTX

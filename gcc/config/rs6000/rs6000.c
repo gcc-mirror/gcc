@@ -723,7 +723,7 @@ static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static void rs6000_parse_float_gprs_option (void);
 static int first_altivec_reg_to_save (void);
 static unsigned int compute_vrsave_mask (void);
-static void compute_save_world_info(rs6000_stack_t *info_ptr);
+static void compute_save_world_info (rs6000_stack_t *info_ptr);
 static void is_altivec_return_reg (rtx, void *);
 static rtx generate_set_vrsave (rtx, rs6000_stack_t *, int);
 int easy_vector_constant (rtx, enum machine_mode);
@@ -732,7 +732,7 @@ static rtx rs6000_dwarf_register_span (rtx);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
 static rtx rs6000_tls_get_addr (void);
 static rtx rs6000_got_sym (void);
-static inline int rs6000_tls_symbol_ref_1 (rtx *, void *);
+static int rs6000_tls_symbol_ref_1 (rtx *, void *);
 static const char *rs6000_get_some_local_dynamic_name (void);
 static int rs6000_get_some_local_dynamic_name_1 (rtx *, void *);
 static rtx rs6000_complex_function_value (enum machine_mode);
@@ -2265,7 +2265,7 @@ small_data_operand (rtx op ATTRIBUTE_UNUSED,
 	 that must be 32k from _SDA_BASE_, not just the symbol.  */
       summand = INTVAL (XEXP (sum, 1));
       if (summand < 0 || (unsigned HOST_WIDE_INT) summand > g_switch_value)
-       return 0;
+	return 0;
 
       sym_ref = XEXP (sum, 0);
     }
@@ -2312,7 +2312,7 @@ gpr_or_gpr_p (rtx op0, rtx op1)
 static int
 constant_pool_expr_1 (rtx op, int *have_sym, int *have_toc)
 {
-  switch (GET_CODE(op))
+  switch (GET_CODE (op))
     {
     case SYMBOL_REF:
       if (RS6000_SYMBOL_REF_TLS_P (op))
@@ -2488,7 +2488,7 @@ bool
 macho_lo_sum_memory_operand (rtx x, enum machine_mode mode)
 {
   if (!TARGET_MACHO || !flag_pic
-      || mode != SImode || GET_CODE(x) != MEM)
+      || mode != SImode || GET_CODE (x) != MEM)
     return false;
   x = XEXP (x, 0);
 
@@ -2924,7 +2924,7 @@ rs6000_tls_referenced_p (rtx x)
 /* Return 1 if *X is a thread-local symbol.  This is the same as
    rs6000_tls_symbol_ref except for the type of the unused argument.  */
 
-static inline int
+static int
 rs6000_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
   return RS6000_SYMBOL_REF_TLS_P (*x);
@@ -4359,7 +4359,7 @@ spe_build_register_parallel (enum machine_mode mode, int gregno)
       r3 = gen_rtx_EXPR_LIST (VOIDmode, r3, GEN_INT (8));
       return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r3));
     }
-  abort();
+  abort ();
   return NULL_RTX;
 }
 
@@ -4677,7 +4677,7 @@ rs6000_mixed_function_arg (enum machine_mode mode, tree type, int align_words)
    with MODE and TYPE set to that of the pointer to the arg, not the arg
    itself.  */
 
-struct rtx_def *
+rtx
 function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      tree type, int named)
 {
@@ -5071,14 +5071,14 @@ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
 
   for (i = 0; i < nregs; i++)
     {
-      rtx tem = adjust_address_nv (x, reg_mode, i*GET_MODE_SIZE(reg_mode));
+      rtx tem = adjust_address_nv (x, reg_mode, i * GET_MODE_SIZE (reg_mode));
       if (reload_completed)
 	{
 	  if (! strict_memory_address_p (reg_mode, XEXP (tem, 0)))
 	    tem = NULL_RTX;
 	  else
 	    tem = simplify_gen_subreg (reg_mode, x, BLKmode,
-				       i * GET_MODE_SIZE(reg_mode));
+				       i * GET_MODE_SIZE (reg_mode));
 	}
       else
 	tem = replace_equiv_address (tem, XEXP (tem, 0));
@@ -7642,9 +7642,9 @@ altivec_init_builtins (void)
          targetm.vectorize.builtin_mask_for_load.  */
 
       decl = lang_hooks.builtin_function ("__builtin_altivec_mask_for_load",
-                               v16qi_ftype_long_pcvoid,
-                               ALTIVEC_BUILTIN_MASK_FOR_LOAD,
-                               BUILT_IN_MD, NULL, NULL_TREE);
+					  v16qi_ftype_long_pcvoid,
+					  ALTIVEC_BUILTIN_MASK_FOR_LOAD,
+					  BUILT_IN_MD, NULL, NULL_TREE);
       /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
       altivec_builtin_mask_for_load = decl;
     }
@@ -7872,7 +7872,7 @@ rs6000_common_init_builtins (void)
 	      type = v16qi_ftype_v16qi_v16qi_v16qi;
 	      break;
 	    default:
-	      abort();
+	      abort ();
 	    }
 	}
       else if (mode0 == mode1 && mode1 == mode2 && mode3 == V16QImode)
@@ -7892,7 +7892,7 @@ rs6000_common_init_builtins (void)
 	      type = v16qi_ftype_v16qi_v16qi_v16qi;
 	      break;
 	    default:
-	      abort();
+	      abort ();
 	    }
 	}
       else if (mode0 == V4SImode && mode1 == V16QImode && mode2 == V16QImode
@@ -8975,7 +8975,7 @@ ccr_bit (rtx op, int scc_p)
 
 /* Return the GOT register.  */
 
-struct rtx_def *
+rtx
 rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
 {
   /* The second flow pass currently (June 1999) can't update
@@ -9194,7 +9194,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'B':
       /* If the low-order bit is zero, write 'r'; otherwise, write 'l'
 	 for 64-bit mask direction.  */
-      putc (((INT_LOWPART(x) & 1) == 0 ? 'r' : 'l'), file);
+      putc (((INT_LOWPART (x) & 1) == 0 ? 'r' : 'l'), file);
       return;
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
@@ -12213,7 +12213,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
 
   if (INTVAL (todec) != -size)
     {
-      warning("stack frame too large");
+      warning ("stack frame too large");
       emit_insn (gen_trap ());
       return;
     }
@@ -12261,7 +12261,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, int copy_r12)
       if (size > 32767)
 	{
 	  /* Need a note here so that try_split doesn't get confused.  */
-	  if (get_last_insn() == NULL_RTX)
+	  if (get_last_insn () == NULL_RTX)
 	    emit_note (NOTE_INSN_DELETED);
 	  insn = emit_move_insn (tmp_reg, todec);
 	  try_split (PATTERN (insn), insn, 0);
@@ -14180,7 +14180,7 @@ rs6000_hash_constant (rtx k)
 	else
 	  {
 	    size_t i;
-	    for (i = 0; i < sizeof(HOST_WIDE_INT)/sizeof(unsigned); i++)
+	    for (i = 0; i < sizeof (HOST_WIDE_INT) / sizeof (unsigned); i++)
 	      result = result * 613 + (unsigned) (XWINT (k, fidx)
 						  >> CHAR_BIT * i);
 	  }
@@ -14223,7 +14223,7 @@ toc_hash_eq (const void *h1, const void *h2)
    to whether or not an object is a vtable.  */
 
 #define VTABLE_NAME_P(NAME)				\
-  (strncmp ("_vt.", name, strlen("_vt.")) == 0		\
+  (strncmp ("_vt.", name, strlen ("_vt.")) == 0		\
   || strncmp ("_ZTV", name, strlen ("_ZTV")) == 0	\
   || strncmp ("_ZTT", name, strlen ("_ZTT")) == 0	\
   || strncmp ("_ZTI", name, strlen ("_ZTI")) == 0	\
@@ -15285,7 +15285,7 @@ get_next_active_insn (rtx insn, rtx tail)
 
   while (next_insn
   	 && next_insn != tail
-	 && (GET_CODE(next_insn) == NOTE
+	 && (GET_CODE (next_insn) == NOTE
 	     || GET_CODE (PATTERN (next_insn)) == USE
 	     || GET_CODE (PATTERN (next_insn)) == CLOBBER))
     {
@@ -15424,7 +15424,7 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
 
       while (can_issue_more > 0)
 	{
-	  nop = gen_nop();
+	  nop = gen_nop ();
 	  emit_insn_before (nop, next_insn);
 	  can_issue_more--;
 	}
@@ -15582,7 +15582,7 @@ redefine_groups (FILE *dump, int sched_verbose, rtx prev_head_insn, rtx tail)
 	}
 
       if (GET_MODE (next_insn) == TImode && can_issue_more)
-	PUT_MODE(next_insn, VOIDmode);
+	PUT_MODE (next_insn, VOIDmode);
       else if (!can_issue_more && GET_MODE (next_insn) != TImode)
 	PUT_MODE (next_insn, TImode);
 
@@ -15638,7 +15638,7 @@ pad_groups (FILE *dump, int sched_verbose, rtx prev_head_insn, rtx tail)
 	      && !insn_terminates_group_p (insn, current_group)
 	      && !insn_terminates_group_p (next_insn, previous_group))
 	    {
-	      if (!is_branch_slot_insn(next_insn))
+	      if (!is_branch_slot_insn (next_insn))
 		can_issue_more--;
 
 	      while (can_issue_more)
@@ -15942,7 +15942,7 @@ rs6000_set_default_type_attributes (tree type)
 /* Return a reference suitable for calling a function with the
    longcall attribute.  */
 
-struct rtx_def *
+rtx
 rs6000_longcall_ref (rtx call_ref)
 {
   const char *call_name;
@@ -16097,7 +16097,7 @@ rs6000_elf_in_small_data_p (tree decl)
    register by this routine since our caller will try to
    increment the returned register via an "la" instruction.  */
 
-struct rtx_def *
+rtx
 find_addr_reg (rtx addr)
 {
   while (GET_CODE (addr) == PLUS)
@@ -16335,7 +16335,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
       fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
 
       label++;
-      local_label_0 = alloca (sizeof("\"L0000000000$spb\""));
+      local_label_0 = alloca (sizeof ("\"L0000000000$spb\""));
       sprintf (local_label_0, "\"L%011d$spb\"", label);
 
       fprintf (file, "\tmflr r0\n");
@@ -16377,7 +16377,7 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
    position-independent addresses go into a reg.  This is REG if non
    zero, otherwise we allocate register(s) as necessary.  */
 
-#define SMALL_INT(X) ((unsigned) (INTVAL(X) + 0x8000) < 0x10000)
+#define SMALL_INT(X) ((unsigned) (INTVAL (X) + 0x8000) < 0x10000)
 
 rtx
 rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
@@ -16470,7 +16470,7 @@ rs6000_darwin_file_start (void)
   const char *cpu_id = "";
   size_t i;
 
-  rs6000_file_start();
+  rs6000_file_start ();
 
   /* Determine the argument to -mcpu=.  Default to G3 if not specified.  */
   for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
