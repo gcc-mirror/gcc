@@ -1010,7 +1010,8 @@ do {									\
     %{mcall-solaris: -mno-eabi } \
     %{mcall-linux: -mno-eabi }}} \
 %{msdata: -msdata=default} \
-%{mno-sdata: -msdata=none}"
+%{mno-sdata: -msdata=none} \
+%{profile: -p}"
 
 /* Don't put -Y P,<path> for cross compilers */
 #undef LINK_PATH_SPEC
@@ -1107,7 +1108,7 @@ do {									\
 #define CPP_SYSV_SPEC \
 "%{mrelocatable*: -D_RELOCATABLE} \
 %{fpic: -D__PIC__=1 -D__pic__=1} \
-%{fPIC: -D__PIC__=2 -D__pic__=2} \
+%{!fpic: %{fPIC: -D__PIC__=2 -D__pic__=2}} \
 %{mcall-sysv: -D_CALL_SYSV} %{mcall-nt: -D_CALL_NT} \
 %{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
 %{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %{!mcall-nt: %(cpp_sysv_default) }}}} \
@@ -1304,7 +1305,14 @@ do {									\
 
 /* GNU/Linux support.  */
 #ifndef	LIB_LINUX_SPEC
-#define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } %{!mnewlib: -lc }"
+#ifdef USE_GNULIBC_1
+#define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
+%{!mnewlib: -lc }"
+#else
+#define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
+%{!mnewlib: %{shared:-lc} %{!shared: %{pthread:-lpthread } \
+%{profile:-lc_p} %{!profile:-lc}}}"
+#endif
 #endif
 
 #ifndef	STARTFILE_LINUX_SPEC
@@ -1329,9 +1337,15 @@ do {									\
 #endif
 
 #ifndef CPP_OS_LINUX_SPEC
+#ifdef USE_GNULIBC_1
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
 %{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}} \
 -Asystem(unix) -Asystem(posix)"
+#else
+#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
+%{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}} \
+-Asystem(unix) -Asystem(posix) %{pthread:-D_REENTRANT}"
+#endif
 #endif
 
 /* Solaris support.  */
