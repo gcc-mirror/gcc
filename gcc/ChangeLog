@@ -1,5 +1,9 @@
 2000-05-01  Richard Henderson  <rth@cygnus.com>
 
+	* calls.c (expand_call): Don't emit reg notes for a sibcall.
+
+2000-05-01  Richard Henderson  <rth@cygnus.com>
+
 	* ifcvt.c (if_convert): Only verify_flow_info if ENABLE_CHECKING.
 
 2000-05-01  Jason Merrill  <jason@casey.cygnus.com>
