@@ -1,3 +1,7 @@
+2002-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* com.c (ffe_type_for_mode): Handle long double.
+
 2002-08-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* target.h (FFETARGET_32bit_longs): Don't define for powerpc64 or
@@ -60,7 +64,7 @@ Mon Apr 15 10:59:14 2002  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (f/target.o): Depend on diagnostic.h.
 	* target.c: Include diagnostic.h.
- 	(ffetarget_memcpy_): Call sorry if host and target endians are
+	(ffetarget_memcpy_): Call sorry if host and target endians are
 	not matching.
 
 2002-04-13  Toon Moene  <toon@moene.indiv.nluug.nl>
@@ -112,7 +116,7 @@ Mon Mar 18 18:43:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* intrin.def: Use 'N' constraints in table of intrinsics.
 	* intdoc.c: Document this constraint.
 	* intdoc.texi: Regenerated.
-	
+
 2002-02-04  Philipp Thomas  <pthomas@suse.de>
 
 	* implic.c lex.c stb.c ste.c stu.c: Update copyright dates.
