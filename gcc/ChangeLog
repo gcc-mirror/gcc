@@ -1,3 +1,9 @@
+2005-01-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/19334
+	* config/darwin.c (machopic_select_section): Use TYPE_SIZE_UNIT instead
+	of TYPE_SIZE where we mean the number of bytes.
+
 2005-01-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* function.c (assign_parm_setup_block): Relax condition on
