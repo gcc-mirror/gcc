@@ -1,5 +1,7 @@
 Fri Aug  6 23:08:44 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* extend.texi, install.texi: Fix spelling mistakes.
+
 	* Makefile.in (PREMADE_ATTRTAB_MD, PREMADE_ATTRTAB): Delete.
 	(s-attrtab); No longer try to use pre-made insn-attrtab file.
 	* mips/t-bsd: Delete references to obsolete PREMADE_ATTRTAB and

@@ -3109,7 +3109,7 @@ specify the @samp{-O} option.
 
 In the past, the GNU C++ compiler was extended to experiment with new
 features, at a time when the C++ language was still evolving. Now that
-the C++ standard is complete, some of those features are superceded by
+the C++ standard is complete, some of those features are superseded by
 superior alternatives. Using the old features might cause a warning in
 some cases that the feature will be dropped in the future. In other
 cases, the feature might be gone already.

@@ -5,7 +5,7 @@
 @c The text of this file appears in the file INSTALL
 @c in the GCC distribution, as well as in the GCC manual.
 
-Note most of this information is out of date and superceded by the EGCS
+Note most of this information is out of date and superseded by the EGCS
 install procedures.  It is provided for historical reference only.
 
 @ifclear INSTALLONLY
