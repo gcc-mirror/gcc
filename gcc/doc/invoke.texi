@@ -273,7 +273,7 @@ in the following sections.
 -fmove-all-movables  -fnew-ra -fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
--funsafe-math-optimizations -fno-trapping-math @gol
+-funsafe-math-optimizations -ffinite-math-only -fno-trapping-math @gol
 -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
@@ -3408,7 +3408,8 @@ performed when this option is not used.
 @item -ffast-math
 @opindex ffast-math
 Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
-@option{-fno-trapping-math} and @option{-fno-signaling-nans}.
+@option{-fno-trapping-math}, @option{-ffinite-math-only} and @*
+@option{-fno-signaling-nans}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
@@ -3445,6 +3446,17 @@ an exact implementation of IEEE or ISO rules/specifications for
 math functions.
 
 The default is @option{-fno-unsafe-math-optimizations}.
+
+@item -ffinite-math-only
+@opindex ffinite-math-only
+Allow optimizations for floating-point arithmetic that assume
+that arguments and results are not NaNs or +-Infs.
+
+This option should never be turned on by any @option{-O} option since
+it can result in incorrect output for programs which depend on
+an exact implementation of IEEE or ISO rules/specifications.
+
+The default is @option{-fno-finite-math-only}.
 
 @item -fno-trapping-math
 @opindex fno-trapping-math

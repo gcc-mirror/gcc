@@ -359,6 +359,10 @@ extern int flag_errno_math;
 
 extern int flag_unsafe_math_optimizations;
 
+/* Nonzero means that no NaNs or +-Infs are expected.  */
+
+extern int flag_finite_math_only;
+
 /* Zero means that floating-point math operations cannot generate a
    (user-visible) trap.  This is the case, for example, in nonstop
    IEEE 754 arithmetic.  */
@@ -672,7 +676,7 @@ extern int flag_signaling_nans;
    disabled for modes with NaNs.  The user can ask for them to be
    done anyway using the -funsafe-math-optimizations switch.  */
 #define HONOR_NANS(MODE) \
-  (MODE_HAS_NANS (MODE) && !flag_unsafe_math_optimizations)
+  (MODE_HAS_NANS (MODE) && !flag_finite_math_only)
 
 /* Like HONOR_NANs, but true if we honor signaling NaNs (or sNaNs).  */
 #define HONOR_SNANS(MODE) (flag_signaling_nans && HONOR_NANS (MODE))
@@ -680,7 +684,7 @@ extern int flag_signaling_nans;
 /* As for HONOR_NANS, but true if the mode can represent infinity and
    the treatment of infinite values is important.  */
 #define HONOR_INFINITIES(MODE) \
-  (MODE_HAS_INFINITIES (MODE) && !flag_unsafe_math_optimizations)
+  (MODE_HAS_INFINITIES (MODE) && !flag_finite_math_only)
 
 /* Like HONOR_NANS, but true if the given mode distinguishes between
    postive and negative zero, and the sign of zero is important.  */

@@ -4385,6 +4385,8 @@ cb_register_builtins (pfile)
     cpp_define (pfile, "__NO_INLINE__");
   if (flag_signaling_nans)
     cpp_define (pfile, "__SUPPORT_SNAN__");
+  if (flag_finite_math_only)
+    cpp_define (pfile, "__FINITE_MATH_ONLY__");
 
   if (flag_iso)
     cpp_define (pfile, "__STRICT_ANSI__");
