@@ -73,15 +73,16 @@
 ;; Note that we can do sign extensions in both FP and integer registers.
 ;; However, the result must be in the same type of register as the input.
 ;; The register preferencing code can't handle this case very well, so, for
-;; now, don't let the FP case show up here for preferencing.
+;; now, don't let the FP case show up here for preferencing.  Also,
+;; sign-extends in FP registers take two instructions.
 (define_insn "extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,f")
-	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,f")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,*f")
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,*f")))]
   ""
   "@
    addl %1,$31,%0
    ldl %0,%1
-   cvtlq %1,%0"
+   cvtql %1,%0\;cvtlq %0,%0"
   [(set_attr "type" "iaddlog,ld,fpop")])
 
 (define_insn "addsi3"
