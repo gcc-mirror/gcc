@@ -1,3 +1,7 @@
+2003-10-26  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in: Remove duplicated lines.
+
 2003-10-24  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* gnatvsn.ads (Gnat_Static_Version_String): New constant, used to
@@ -20,7 +24,7 @@
 
 2003-10-24  Jose Ruiz  <ruiz@act-europe.fr>
 
-	* exp_disp.adb: 
+	* exp_disp.adb:
 	Remove the test against being in No_Run_Time_Mode before generating a
 	call to Register_Tag. It is redundant with the test against the
 	availability of the function Register_Tag.
@@ -42,19 +46,19 @@
 	information, check that the source exists and, if it does, that the path
 	is the actual path of a source of a project.
 
-	* prj-env.adb: 
+	* prj-env.adb:
 	(File_Name_Of_Library_Unit_Body): New Boolean parameter Full_Path. When
 	Full_Path is True, return the full path instead of the simple file name.
 	(Project_Of): New function
 
-	* prj-env.ads: 
+	* prj-env.ads:
 	(File_Name_Of_Library_Unit_Body): New Boolean parameter Full_Path,
 	defaulted to False.
 	(Project_Of): New function
 
 2003-10-24  Arnaud Charlet  <charlet@act-europe.fr>
 
-	* Makefile.generic: 
+	* Makefile.generic:
 	Ensure objects of main project are always checked and rebuilt if needed.
 	Set CC to gcc by default.
 	Prepare new handling of link by creating a global archive (not activated
@@ -68,10 +72,10 @@
 
 	* sem_ch12.adb: Minor reformatting
 
-	* sem_ch3.adb: 
+	* sem_ch3.adb:
 	Minor reformatting (including new function return style throughout)
 
-	* sem_ch3.ads: 
+	* sem_ch3.ads:
 	Minor reformatting (including new function return style throughout)
 
 2003-10-24  Arnaud Charlet  <charlet@act-europe.fr>
@@ -149,7 +153,7 @@
 	(__gnat_is_symbolic_link): Likewise.
 	(__gnat_portable_spawn): Likewise.  Cast last arg of spawnvp to match
 	declaration
-	(__gnat_file_time_name): Don't declare struct stat statbuf when 
+	(__gnat_file_time_name): Don't declare struct stat statbuf when
 	not needed.
 	(__gnat_is_absolute_path): Add parenthesis around condition of
 	'if' statement to avoid warning.
@@ -191,11 +195,11 @@
 
 2003-10-21  Gary Dismukes  <dismukes@gnat.com>
 
-	* exp_ch3.adb: 
+	* exp_ch3.adb:
 	(Component_Needs_Simple_Initialization): Return False when the type is a
 	packed bit array. Revise spec comments to document this case.
 
-	* exp_prag.adb: 
+	* exp_prag.adb:
 	(Expand_Pragma_Import): Set any expression on the imported object to
 	empty to avoid initializing imported objects (in particular this
 	covers the case of zero-initialization of bit arrays).
@@ -203,7 +207,7 @@
 
 2003-10-21  Ed Schonberg  <schonberg@gnat.com>
 
-	* sem_ch12.adb: 
+	* sem_ch12.adb:
 	(Load_Parent_Of_Generic): If parent is compilation unit, stop search,
 	a subunit is missing.
 	(Instantiate_Subprogram_Body): If body of function is missing, set type
@@ -211,16 +215,16 @@
 	errors when a subunit is missing.
 	Fixes PR 5677.
 
-	* sem_ch3.adb: 
+	* sem_ch3.adb:
 	(Access_Subprogram_Declaration): Verify that return type is valid.
 	Fixes PR 8693.
 
-	* sem_elab.adb: 
+	* sem_elab.adb:
 	(Check_Elab_Calls): Do not apply elaboration checks if the main unit is
 	generic.
 	Fixes PR 12318.
 
-	* sem_util.adb: 
+	* sem_util.adb:
 	(Corresponding_Discriminant): If the scope of the discriminant is a
 	private type without discriminant, use its full view.
 	Fixes PR 8247.
