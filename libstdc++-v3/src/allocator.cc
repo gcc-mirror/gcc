@@ -51,7 +51,7 @@ namespace __gnu_cxx
     return _S_free_list + __i;
   }
 
-  __gthread_mutex_t&
+  mutex_type&
   __pool_base::_M_get_mutex()
   { return __gnu_internal::palloc_init_mutex; }
 

@@ -100,7 +100,7 @@ namespace __gnu_cxx
       _Obj* volatile*
       _M_get_free_list(size_t __bytes);
     
-      __gthread_mutex_t&
+      mutex_type&
       _M_get_mutex();
 
       // Returns an object of size __n, and optionally adds to size __n
