@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 4.
-   Copyright (C) 1991, 1993, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
