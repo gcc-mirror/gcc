@@ -468,6 +468,7 @@ read_class (tree name)
   JCF this_jcf, *jcf;
   tree icv, class = NULL_TREE;
   tree save_current_class = current_class;
+  tree save_output_class = output_class;
   location_t save_location = input_location;
   JCF *save_current_jcf = current_jcf;
 
@@ -545,7 +546,8 @@ read_class (tree name)
       load_inner_classes (class);
     }
 
-  output_class = current_class = save_current_class;
+  output_class = save_output_class;
+  current_class = save_current_class;
   input_location = save_location;
   current_jcf = save_current_jcf;
   return 1;

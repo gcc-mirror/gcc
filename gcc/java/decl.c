@@ -1820,8 +1820,7 @@ java_expand_body (tree fndecl)
 
   current_function_decl = fndecl;
   input_location = DECL_SOURCE_LOCATION (fndecl);
-  output_class = DECL_CONTEXT (current_function_decl);
-  current_class = DECL_CONTEXT (fndecl);
+  output_class = current_class = DECL_CONTEXT (fndecl);
 
   timevar_push (TV_EXPAND);
 

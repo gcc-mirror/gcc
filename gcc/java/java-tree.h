@@ -1117,8 +1117,7 @@ struct lang_type GTY(())
 /* Possible values to pass to lookup_argument_method_generic.  */
 #define SEARCH_INTERFACE      1
 #define SEARCH_SUPER          2
-#define SEARCH_ONLY_INTERFACE 4
-#define SEARCH_VISIBLE        8
+#define SEARCH_VISIBLE        4
 
 extern void java_parse_file (int);
 extern bool java_mark_addressable (tree);
