@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -446,17 +446,88 @@ extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 
 extern enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
+/* Define functions given in optabs.c.  */
+
 /* Expand a binary operation given optab and rtx operands.  */
-extern rtx expand_binop PROTO((enum machine_mode, optab, rtx, rtx, rtx, int, enum optab_methods));
+extern rtx expand_binop PROTO((enum machine_mode, optab, rtx, rtx, rtx,
+			       int, enum optab_methods));
 
 /* Expand a binary operation with both signed and unsigned forms.  */
-extern rtx sign_expand_binop PROTO((enum machine_mode, optab, optab, rtx, rtx, rtx, int, enum optab_methods));
+extern rtx sign_expand_binop PROTO((enum machine_mode, optab, optab, rtx,
+				    rtx, rtx, int, enum optab_methods));
+
+/* Generate code to perform an operation on two operands with two results.  */
+extern int expand_twoval_binop PROTO((optab, rtx, rtx, rtx, rtx, int));
 
 /* Expand a unary arithmetic operation given optab rtx operand.  */
 extern rtx expand_unop PROTO((enum machine_mode, optab, rtx, rtx, int));
 
 /* Expand the complex absolute value operation.  */
 extern rtx expand_complex_abs PROTO((enum machine_mode, rtx, rtx, int));
+
+/* Generate an instruction with a given INSN_CODE with an output and
+   an input.  */
+extern void emit_unop_insn PROTO((int, rtx, rtx, enum rtx_code));
+
+/* Emit code to perform a series of operations on a multi-word quantity, one
+   word at a time.  */
+extern rtx emit_no_conflict_block PROTO((rtx, rtx, rtx, rtx, rtx));
+
+/* Emit code to make a call to a constant function or a library call. */
+extern void emit_libcall_block PROTO((rtx, rtx, rtx, rtx));
+
+/* Emit one rtl instruction to store zero in specified rtx.  */
+extern void emit_clr_insn PROTO((rtx));
+
+/* Emit one rtl insn to store 1 in specified rtx assuming it contains 0.  */
+extern void emit_0_to_1_insn PROTO((rtx));
+
+/* Emit one rtl insn to compare two rtx's.  */
+extern void emit_cmp_insn PROTO((rtx, rtx, enum rtx_code, rtx,
+				 enum machine_mode, int, int));
+
+/* Nonzero if a compare of mode MODE can be done straightforwardly
+   (without splitting it into pieces).  */
+extern int can_compare_p PROTO((enum machine_mode));
+
+/* Generate code to indirectly jump to a location given in the rtx LOC.  */
+extern void emit_indirect_jump PROTO((rtx));
+
+/* Create but don't emit one rtl instruction to add one rtx into another.
+   Modes must match; operands must meet the operation's predicates.
+   Likewise for subtraction and for just copying.
+   These do not call protect_from_queue; caller must do so.  */
+extern rtx gen_add2_insn PROTO((rtx, rtx));
+extern rtx gen_sub2_insn PROTO((rtx, rtx));
+extern rtx gen_move_insn PROTO((rtx, rtx));
+extern int have_add2_insn PROTO((enum machine_mode));
+extern int have_sub2_insn PROTO((enum machine_mode));
+
+/* Return the INSN_CODE to use for an extend operation.  */
+extern enum insn_code can_extend_p PROTO((enum machine_mode,
+					  enum machine_mode, int));
+
+/* Generate the body of an insn to extend Y (with mode MFROM)
+   into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
+extern rtx gen_extend_insn PROTO((rtx, rtx, enum machine_mode,
+				  enum machine_mode, int));
+
+/* Initialize the tables that control conversion between fixed and
+   floating values.  */
+extern void init_fixtab PROTO((void));
+extern void init_floattab PROTO((void));
+
+/* Generate code for a FLOAT_EXPR.  */
+extern void expand_float PROTO((rtx, rtx, int));
+
+/* Generate code for a FIX_EXPR.  */
+extern void expand_fix PROTO((rtx, rtx, int));
+
+/* Call this once to initialize the contents of the optabs
+   appropriately for the current target machine.  */
+extern void init_optabs	PROTO((void));
+
+/* Functions from expmed.c:  (/
 
 /* Arguments MODE, RTX: return an rtx for the negation of that value.
    May emit insns.  */
@@ -466,48 +537,29 @@ extern rtx negate_rtx PROTO((enum machine_mode, rtx));
 extern rtx expand_and PROTO((rtx, rtx, rtx));
 
 /* Emit a store-flag operation.  */
-extern rtx emit_store_flag PROTO((rtx, enum rtx_code, rtx, rtx, enum machine_mode, int, int));
+extern rtx emit_store_flag PROTO((rtx, enum rtx_code, rtx, rtx,
+				  enum machine_mode, int, int));
 
+/* Functions from loop.c:  */
 
 /* Given a JUMP_INSN, return a description of the test being made.  */
 extern rtx get_condition PROTO((rtx, rtx *));
+
+/* Functions from expr.c:  */
 
-/* Return the INSN_CODE to use for an extend operation.  */
-extern enum insn_code can_extend_p PROTO((enum machine_mode, enum machine_mode, int));
+/* This is run once per compilation to set up which modes can be used
+   directly in memory and to initialize the block move optab.  */
+extern void init_expr_once PROTO((void));
 
-/* Initialize the tables that control conversion between fixed and
-   floating values.  */
-extern void init_fixtab PROTO((void));
-extern void init_floattab PROTO((void));
+/* This is run at the start of compiling a function.  */
+extern void init_expr PROTO((void));
 
-/* Generate code for a FIX_EXPR.  */
-extern void expand_fix PROTO((rtx, rtx, int));
+/* Use protect_from_queue to convert a QUEUED expression
+   into something that you can put immediately into an instruction.  */
+extern rtx protect_from_queue PROTO((rtx, int));
 
-/* Generate code for a FLOAT_EXPR.  */
-extern void expand_float PROTO((rtx, rtx, int));
-
-/* Create but don't emit one rtl instruction to add one rtx into another.
-   Modes must match; operands must meet the operation's predicates.
-   Likewise for subtraction and for just copying.
-   These do not call protect_from_queue; caller must do so.  */
-extern rtx gen_add2_insn PROTO((rtx, rtx));
-extern rtx gen_sub2_insn PROTO((rtx, rtx));
-extern rtx gen_move_insn PROTO((rtx, rtx));
-
-/* Emit one rtl instruction to store zero in specified rtx.  */
-extern void emit_clr_insn PROTO((rtx));
-
-/* Emit one rtl insn to store 1 in specified rtx assuming it contains 0.  */
-extern void emit_0_to_1_insn PROTO((rtx));
-
-/* Emit one rtl insn to compare two rtx's.  */
-extern void emit_cmp_insn PROTO((rtx, rtx, enum rtx_code, rtx, enum machine_mode, int, int));
-
-/* Emit insns to set X from Y, with no frills.  */
-extern rtx emit_move_insn_1 PROTO ((rtx, rtx));
-
-/* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
-extern rtx compare_from_rtx PROTO((rtx, rtx, enum rtx_code, int, enum machine_mode, rtx, int));
+/* Perform all the pending incrementations.  */
+extern void emit_queue PROTO((void));
 
 /* Emit some rtl insns to move data between rtx's, converting machine modes.
    Both modes must be floating or both fixed.  */
@@ -516,16 +568,103 @@ extern void convert_move PROTO((rtx, rtx, int));
 /* Convert an rtx to specified machine mode and return the result.  */
 extern rtx convert_to_mode PROTO((enum machine_mode, rtx, int));
 
-/* Emit code to push some arguments and call a library routine,
-   storing the value in a specified place.  Calling sequence is
-   complicated.  */
+/* Emit code to move a block Y to a block X.
+extern void emit_block_move PROTO((rtx, rtx, rtx, int));
+
+/* Copy all or part of a value X into registers starting at REGNO.
+   The number of registers to be filled is NREGS.  */
+extern void move_block_to_reg PROTO((int, rtx, int, enum machine_mode));
+
+/* Copy all or part of a BLKmode value X out of registers starting at REGNO.
+   The number of registers to be filled is NREGS.  */
+extern void move_block_from_reg PROTO((int, rtx, int));
+
+/* Mark NREGS consecutive regs, starting at REGNO, as being live now.  */
+extern void use_regs PROTO((int, int));
+
+/* Write zeros through the storage of OBJECT.
+   If OBJECT has BLKmode, SIZE is its length in bytes.  */
+extern void clear_storage PROTO((rtx, int));
+
+/* Emit insns to set X from Y.  */
+extern rtx emit_move_insn PROTO((rtx, rtx));
+
+/* Emit insns to set X from Y, with no frills.  */
+extern rtx emit_move_insn_1 PROTO ((rtx, rtx));
+
+/* Push a block of length SIZE (perhaps variable)
+   and return an rtx to address the beginning of the block.  */
+extern rtx push_block PROTO((rtx, int, int));
+
+/* Make an operand to push someting on the stack.  */
+extern rtx gen_push_operand PROTO((void));
+
+#ifdef TREE_CODE
+/* Generate code to push something onto the stack, given its mode and type.  */
+extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int,
+				  int, rtx, int, rtx, rtx));
+
+/* Emit library call.  These cannot have accurate prototypes since they have
+   a variable number of args.  */
 extern void emit_library_call ();
+extern void emit_library_call_value ();
+
+/* Expand an assignment that stores the value of FROM into TO. */
+extern rtx expand_assignment PROTO((tree, tree, int, int));
+
+/* Generate code for computing expression EXP,
+   and storing the value into TARGET.
+   If SUGGEST_REG is nonzero, copy the value through a register
+   and return that register, if that is possible.  */
+extern rtx store_expr PROTO((tree, rtx, int));
+#endif
 
 /* Given an rtx that may include add and multiply operations,
    generate them as insns and return a pseudo-reg containing the value.
    Useful after calling expand_expr with 1 as sum_ok.  */
 extern rtx force_operand PROTO((rtx, rtx));
 
+#ifdef TREE_CODE
+/* Generate code for computing expression EXP.
+   An rtx for the computed value is returned.  The value is never null.
+   In the case of a void EXP, const0_rtx is returned.  */
+extern rtx expand_expr PROTO((tree, rtx, enum machine_mode,
+			      enum expand_modifier));
+#endif
+
+/* At the start of a function, record that we have no previously-pushed
+   arguments waiting to be popped.  */
+extern void init_pending_stack_adjust PROTO((void));
+
+/* When exiting from function, if safe, clear out any pending stack adjust
+   so the adjustment won't get done.  */
+extern void clear_pending_stack_adjust PROTO((void));
+
+/* Pop any previously-pushed arguments that have not been popped yet.  */
+extern void do_pending_stack_adjust PROTO((void));
+
+#ifdef TREE_CODE
+/* Expand all cleanups up to OLD_CLEANUPS.  */
+extern void expand_cleanups_to PROTO((tree));
+
+/* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
+extern void jumpifnot PROTO((tree, rtx));
+
+/* Generate code to evaluate EXP and jump to LABEL if the value is nonzero.  */
+extern void jumpif PROTO((tree, rtx));
+
+/* Generate code to evaluate EXP and jump to IF_FALSE_LABEL if
+   the result is zero, or IF_TRUE_LABEL if the result is one.  */
+extern void do_jump PROTO((tree, rtx, rtx));
+#endif
+
+/* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
+extern rtx compare_from_rtx PROTO((rtx, rtx, enum rtx_code, int,
+				   enum machine_mode, rtx, int));
+
+/* Generate a tablejump instruction (used for switch statements).  */
+extern void do_tablejump PROTO((rtx, enum machine_mode, rtx, rtx, rtx));
+
 #ifdef TREE_CODE
 /* rtl.h and tree.h were included.  */
 /* Return an rtx for the size in bytes of the value of an expr.  */
@@ -544,22 +683,14 @@ extern rtx trampoline_address PROTO((tree));
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_function_value PROTO((tree, tree));
 
-/* Generate code for computing expression EXP,
-   and storing the value into TARGET.
-   If SUGGEST_REG is nonzero, copy the value through a register
-   and return that register, if that is possible.  */
-extern rtx store_expr PROTO((tree, rtx, int));
 
 extern rtx prepare_call_address PROTO((rtx, tree, rtx*));
 
 extern rtx expand_call PROTO((tree, rtx, int));
 extern void emit_call_1 PROTO((rtx, tree, int, int, rtx, rtx, int, rtx, int));
 
-extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int, int, rtx, int, rtx, rtx));
 extern rtx expand_shift PROTO((enum tree_code, enum machine_mode, rtx, tree, rtx, int));
 extern rtx expand_divmod PROTO((int, enum tree_code, enum machine_mode, rtx, rtx, rtx, int));
-extern void jumpif PROTO((tree, rtx));
-extern void do_jump PROTO((tree, rtx, rtx));
 extern void locate_and_pad_parm PROTO((enum machine_mode, tree, int, tree, struct args_size *, struct args_size *, struct args_size *));
 extern rtx expand_inline_function PROTO((tree, tree, rtx, int, tree, rtx));
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
@@ -581,27 +712,17 @@ extern rtx trampoline_address ();
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_function_value ();
 
-/* Generate code for computing expression EXP,
-   and storing the value into TARGET.
-   If SUGGEST_REG is nonzero, copy the value through a register
-   and return that register, if that is possible.  */
-extern rtx store_expr ();
-
 extern rtx prepare_call_address ();
 extern rtx expand_call ();
 extern void emit_call_1 ();
-extern void emit_push_insn ();
 extern rtx expand_shift ();
 extern rtx expand_divmod ();
-extern void jumpif ();
-extern void do_jump ();
 extern void locate_and_pad_parm ();
 extern rtx expand_inline_function ();
 
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
 extern rtx label_rtx ();
 #endif
-
 
 /* Indicate how an input argument register was promoted.  */
 extern rtx promoted_input_arg ();
@@ -699,23 +820,13 @@ extern void copy_function_value ();
    of STACK_BOUNDARY / BITS_PER_UNIT.  */
 extern rtx round_push PROTO((rtx));
 
-/* Push a block of length SIZE (perhaps variable)
-   and return an rtx to address the beginning of the block.  */
-extern rtx push_block PROTO((rtx, int, int));
-
 extern void emit_block_move PROTO((rtx, rtx, rtx, int));
-extern void use_regs PROTO((int, int));
-extern void move_block_to_reg PROTO((int, rtx, int, enum machine_mode));
 
 extern rtx store_bit_field PROTO((rtx, int, int, enum machine_mode, rtx, int, int));
 extern rtx extract_bit_field PROTO((rtx, int, int, int, rtx, enum machine_mode, enum machine_mode, int, int));
 extern rtx expand_mult PROTO((enum machine_mode, rtx, rtx, rtx, int));
 extern rtx expand_mult_add PROTO((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_stmt_expr ();
-extern rtx emit_no_conflict_block PROTO((rtx, rtx, rtx, rtx, rtx));
-extern void emit_libcall_block PROTO((rtx, rtx, rtx, rtx));
-
-extern void jumpifnot ();
 
 extern rtx assemble_static_space PROTO((int));
 
