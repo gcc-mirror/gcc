@@ -196,14 +196,14 @@ extern int mode_unit_size[];
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
 
-#define GET_MODE_MASK(MODE)  \
-   ((GET_MODE_BITSIZE (MODE) >= HOST_BITS_PER_WIDE_INT)  \
-    ?(HOST_WIDE_INT) ~0 : (((HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (MODE)) - 1))
+extern const unsigned HOST_WIDE_INT mode_mask_array[];
+
+#define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
-extern enum machine_mode mode_wider_mode[];
-#define GET_MODE_WIDER_MODE(MODE)	(mode_wider_mode[(int) (MODE)])
+extern unsigned char mode_wider_mode[];
+#define GET_MODE_WIDER_MODE(MODE)	((enum machine_mode)mode_wider_mode[(int) (MODE)])
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.

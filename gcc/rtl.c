@@ -58,13 +58,15 @@ char *rtx_name[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  NAME,
 
-char *mode_name[(int) MAX_MACHINE_MODE] = {
+char *mode_name[(int) MAX_MACHINE_MODE + 1] = {
 #include "machmode.def"
 
 #ifdef EXTRA_CC_MODES
-  EXTRA_CC_NAMES
+  EXTRA_CC_NAMES,
 #endif
-
+  /* Add an extra field to avoid a core dump if someone tries to convert
+     MAX_MACHINE_MODE to a string.   */
+  ""
 };
 
 #undef DEF_MACHMODE
@@ -107,13 +109,22 @@ int mode_unit_size[(int) MAX_MACHINE_MODE] = {
    use this.  */
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  \
-  (enum machine_mode) WIDER,
+  (unsigned char) WIDER,
 
-enum machine_mode mode_wider_mode[(int) MAX_MACHINE_MODE] = {
+unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
 #undef DEF_MACHMODE
+
+#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  \
+  ((SIZE) * BITS_PER_UNIT >= HOST_BITS_PER_WIDE_INT) ? ~(unsigned HOST_WIDE_INT)0 : ((unsigned HOST_WIDE_INT) 1 << (SIZE) * BITS_PER_UNIT) - 1,
+
+/* Indexed by machine mode, gives mask of significant bits in mode.  */
+
+const unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
+#include "machmode.def"
+};
 
 /* Indexed by mode class, gives the narrowest mode for each class.  */
 
@@ -892,8 +903,8 @@ init_rtl ()
       mode_class[i] = MODE_CC;
       mode_size[i] = mode_size[(int) CCmode];
       mode_unit_size[i] = mode_unit_size[(int) CCmode];
-      mode_wider_mode[i - 1] = (enum machine_mode) i;
-      mode_wider_mode[i] = VOIDmode;
+      mode_wider_mode[i - 1] = i;
+      mode_wider_mode[i] = (unsigned char)VOIDmode;
     }
 #endif
 

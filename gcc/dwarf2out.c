@@ -642,24 +642,26 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
     }
   else
     {
+      int last_end = 100;
       --n_ranges;
       t = build_int_2 (ranges[n_ranges].size, 0);
-      size = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
-      for (; n_ranges--; )
+      do
 	{
-	  if ((DWARF_FRAME_REGNUM (ranges[n_ranges].end)
-	       - DWARF_FRAME_REGNUM (ranges[n_ranges].beg))
-	      != ranges[n_ranges].end - ranges[n_ranges].beg)
+	  int beg = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
+	  int end = DWARF_FRAME_REGNUM (ranges[n_ranges].end);
+	  if (beg < 0)
+	    continue;
+	  if (end >= last_end)
 	    abort ();
-	  if (DWARF_FRAME_REGNUM (ranges[n_ranges].beg) >= size)
+	  last_end = end;
+	  if (end - beg != ranges[n_ranges].end - ranges[n_ranges].beg)
 	    abort ();
-	  size = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
 	  t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
-			    build_int_2 (DWARF_FRAME_REGNUM
-					 (ranges[n_ranges].end), 0)));
+			    build_int_2 (end, 0)));
 	  t = fold (build (COND_EXPR, integer_type_node, t2,
 			   build_int_2 (ranges[n_ranges].size, 0), t));
 	}
+      while (--n_ranges > 0);
     }
   return expand_expr (t, target, Pmode, 0);
 }

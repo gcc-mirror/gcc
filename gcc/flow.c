@@ -3605,13 +3605,7 @@ void
 sbitmap_copy (dst, src)
      sbitmap dst, src;
 {
-  int i;
-  sbitmap_ptr d,s;
-
-  s = src->elms;
-  d = dst->elms;
-  for (i = 0; i < dst->size; i++)
-    *d++ = *s++;
+  bcopy (src->elms, dst->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
 }
 
 /* Zero all elements in a bitmap.  */
