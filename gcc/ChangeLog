@@ -1,3 +1,10 @@
+2002-04-05  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/freebsd.h (ENDFILE_SPEC): Add crtfastmath bits.
+	* config.gcc (sparc64-wrs-vxworks, sparc-*-chorusos,
+	sparc-*-rtems*, sparclite-*-elf* sparc86x-*-elf*, sparc64-*-elf*,
+	{sparc64,ultrasparc}-*-freebsd*): Add sparc/t-crtfm to tmake_file.
+
 2002-04-05  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (emit_no_conflict_block, emit_libcall_block): Avoid nesting
