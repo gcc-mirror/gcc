@@ -191,8 +191,7 @@ _cpp_builtin_macro_text (pfile, node)
 	enum c_lang lang = CPP_OPTION (pfile, lang);
 	if (CPP_IN_SYSTEM_HEADER (pfile)
 	    && CPP_OPTION (pfile, stdc_0_in_system_headers)
-	    && !(lang == CLK_STDC89 || lang == CLK_STDC94
-		 || lang == CLK_STDC99))  /* || lang == CLK_CXX98 ? */
+	    && !CPP_OPTION (pfile,std))
 	  number = 0;
 	else
 	  number = 1;
@@ -672,7 +671,20 @@ collect_args (pfile, node)
       if (argc == 1 && macro->paramc == 0 && args[0].count == 0)
 	argc = 0;
       if (_cpp_arguments_ok (pfile, macro, node, argc))
-	return base_buff;
+	{
+	  /* GCC has special semantics for , ## b where b is a varargs
+	     parameter: we remove the comma if b was omitted entirely.
+	     If b was merely an empty argument, the comma is retained.
+	     If the macro takes just one (varargs) parameter, then we
+	     retain the comma only if we are standards conforming.
+
+	     If FIRST is NULL replace_args () swallows the comma.  */
+	  if (macro->variadic && (argc < macro->paramc
+				  || (argc == 1 && args[0].count == 0
+				      && !CPP_OPTION (pfile, std))))
+	    args[macro->paramc - 1].first = NULL;
+	  return base_buff;
+	}
     }
 
   /* An error occurred.  */
@@ -861,15 +873,13 @@ replace_args (pfile, node, macro, args)
 	  count = arg->count, from = arg->first;
 	  if (dest != first)
 	    {
-	      /* GCC has special semantics for , ## b where b is a
-		 varargs parameter: the comma disappears if b was
-		 given no actual arguments (not merely if b is an
-		 empty argument); otherwise the paste flag is removed.  */
 	      if (dest[-1]->type == CPP_COMMA
 		  && macro->variadic
 		  && src->val.arg_no == macro->paramc)
 		{
-		  if (count == 0)
+		  /* Swallow a pasted comma if from == NULL, otherwise
+		     drop the paste flag.  */
+		  if (from == NULL)
 		    dest--;
 		  else
 		    paste_flag = dest - 1;

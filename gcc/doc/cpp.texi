@@ -1620,7 +1620,7 @@ The @code{eprintf} macro above could be written
 @end example
 
 @noindent
-using this extension.  You cannot use @code{__VA_ARGS__} and this
+using this extension.  You cannot use @code{@w{__VA_ARGS__}} and this
 extension in the same macro.
 
 You can have named arguments as well as variable arguments in a variadic
@@ -1669,6 +1669,15 @@ the token preceding @samp{##} is anything other than a comma.
 eprintf ("success!\n")
      @expansion{} fprintf(stderr, "success!\n");
 @end example
+
+@noindent
+The above explanation is ambiguous about the case where the only macro
+parameter is a variable arguments parameter, as it is meaningless to
+try to distinguish whether no argument at all is an empty argument or
+a missing argument.  In this case the C99 standard is clear that the
+comma must remain, however the existing GCC extension used to swallow
+the comma.  So CPP retains the comma when conforming to a specific C
+standard, and drops it otherwise.
 
 C99 mandates that the only place the identifier @code{@w{__VA_ARGS__}}
 can appear is in the replacement list of a variadic macro.  It may not
