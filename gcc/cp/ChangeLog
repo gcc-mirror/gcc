@@ -1,3 +1,39 @@
+2004-07-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_user_type_conversion_1, build_new_op,
+	check_constructor_callable, build_temp,
+	perform_direct_initialization_of_possible): Pass type directly to
+	lookup_fnfields & build_special_member_call.
+	(build_special_member_call): Accept a type, and complete it.
+	* class.c (finish_stuct_bits): Copy the BINFOs here.
+	* cvt.c (ocp_convert): Pass type directly to
+	build_special_member_call.
+	* decl.c (build_ptrmemfunc_type): Call xref_bastypes here.
+	(xref_basetypes): Allocate the binfo here. Adjust.
+	* init.c (build_init, build_new_1): Pass type directly to
+	build_special_member_call.
+	* lex.c (cxx_make_type): Do not allocate binfo here.
+	* name-lookup.c (arg_assoc_class): Incomplete types have no binfo.
+	* parser.c (cp_parser_class_head): Always call xref_basetypes.
+	* pt.c (instantiate_class_template): Likewise. Inhibit access
+	checking for template friends.
+	* ptree.c (cxx_print_type): Adjust record printing.
+	* search.c (lookup_base): When taking a type, complete it before
+	looking for a binfo.
+	(lookup_member): Delay completing a type.
+	(push_class_decls): Don't walk an incomplete type.
+	(lookup_conversions): Likewise.
+	* semantics.c (finish_stmt_expr_expr): Pass type directly to
+	build_special_member_call.
+	* tree.c (copy_base_binfos): Adjust.
+	(make_binfo): Likewise.
+	* typeck.c (build_modify_expr): Pass type directly to
+	build_special_member_call.
+	* typeck2.c (process_init_constructor): Check a binfo exists.
+	(build_m_component_ref): Allow accessing an incomplete type.
+	(build_functional_cast): Pass type directly to
+	build_special_member_call.
+
 2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/2204

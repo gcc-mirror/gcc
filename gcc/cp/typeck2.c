@@ -954,7 +954,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      return error_mark_node;
 	    }
 
-	  if (BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
 	    {
 	      sorry ("initializer list for object of class with base classes");
 	      return error_mark_node;
@@ -1304,6 +1304,7 @@ build_m_component_ref (tree datum, tree component)
   tree objtype;
   tree type;
   tree binfo;
+  tree ctype;
 
   datum = decay_conversion (datum);
 
@@ -1327,16 +1328,28 @@ build_m_component_ref (tree datum, tree component)
     }
 
   type = TYPE_PTRMEM_POINTED_TO_TYPE (ptrmem_type);
-  binfo = lookup_base (objtype, TYPE_PTRMEM_CLASS_TYPE (ptrmem_type),
-		       ba_check, NULL);
-  if (!binfo)
+  ctype = complete_type (TYPE_PTRMEM_CLASS_TYPE (ptrmem_type));
+
+  if (!COMPLETE_TYPE_P (ctype))
     {
-      error ("member type `%T::' incompatible with object type `%T'",
-	     type, objtype);
-      return error_mark_node;
+      if (!same_type_p (ctype, objtype))
+	goto mismatch;
+      binfo = NULL;
     }
-  else if (binfo == error_mark_node)
-    return error_mark_node;
+  else
+    {
+      binfo = lookup_base (objtype, ctype, ba_check, NULL);
+      
+      if (!binfo)
+	{
+	mismatch:
+	  error ("pointer to member type `%T' incompatible with object type `%T'",
+		 type, objtype);
+	  return error_mark_node;
+	}
+      else if (binfo == error_mark_node)
+	return error_mark_node;
+    }
 
   if (TYPE_PTRMEM_P (ptrmem_type))
     {
@@ -1347,12 +1360,17 @@ build_m_component_ref (tree datum, tree component)
       type = cp_build_qualified_type (type,
 				      (cp_type_quals (type)  
 				       | cp_type_quals (TREE_TYPE (datum))));
+
+      datum = build_address (datum);
+      
+      /* Convert object to the correct base.  */
+      if (binfo)
+	datum = build_base_path (PLUS_EXPR, datum, binfo, 1);
+      
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       datum = build (PLUS_EXPR, build_pointer_type (type),
-		     build_base_path (PLUS_EXPR, build_address (datum), 
-				      binfo, 1),
-		     build_nop (ptrdiff_type_node, component));
+		     datum, build_nop (ptrdiff_type_node, component));
       return build_indirect_ref (datum, 0);
     }
   else
@@ -1420,7 +1438,7 @@ build_functional_cast (tree exp, tree parms)
     }
 
   exp = build_special_member_call (NULL_TREE, complete_ctor_identifier, parms,
-				   TYPE_BINFO (type), LOOKUP_NORMAL);
+				   type, LOOKUP_NORMAL);
 
   if (exp == error_mark_node)
     return error_mark_node;

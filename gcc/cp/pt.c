@@ -5286,6 +5286,7 @@ instantiate_class_template (tree type)
   tree template, args, pattern, t, member;
   tree typedecl;
   tree pbinfo;
+  tree base_list;
   
   if (type == error_mark_node)
     return error_mark_node;
@@ -5419,9 +5420,9 @@ instantiate_class_template (tree type)
     abort ();
 #endif
 
+  base_list = NULL_TREE;
   if (BINFO_BASE_BINFOS (pbinfo))
     {
-      tree base_list = NULL_TREE;
       tree pbases = BINFO_BASE_BINFOS (pbinfo);
       tree paccesses = BINFO_BASE_ACCESSES (pbinfo);
       tree context = TYPE_CONTEXT (type);
@@ -5457,13 +5458,13 @@ instantiate_class_template (tree type)
       /* The list is now in reverse order; correct that.  */
       base_list = nreverse (base_list);
 
-      /* Now call xref_basetypes to set up all the base-class
-	 information.  */
-      xref_basetypes (type, base_list);
-
       if (pop_p)
 	pop_scope (context ? context : global_namespace);
     }
+  /* Now call xref_basetypes to set up all the base-class
+     information.  */
+  xref_basetypes (type, base_list);
+
 
   /* Now that our base classes are set up, enter the scope of the
      class, so that name lookups into base classes, etc. will work
@@ -5647,11 +5648,18 @@ instantiate_class_template (tree type)
 	      tree r;
 
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
-		++processing_template_decl;
+		{
+		  ++processing_template_decl;
+		  push_deferring_access_checks (dk_no_check);
+		}
+	      
 	      r = tsubst_friend_function (t, args);
-	      if (TREE_CODE (t) == TEMPLATE_DECL)
-		--processing_template_decl;
 	      add_friend (type, r, /*complain=*/false);
+	      if (TREE_CODE (t) == TEMPLATE_DECL)
+		{
+		  pop_deferring_access_checks ();
+		  --processing_template_decl;
+		}
 	    }
 	}
     }

@@ -602,7 +602,7 @@ copy_base_binfos (tree binfo, tree t, tree prev)
       tree base_binfo = TREE_VEC_ELT (binfos, ix);
       tree new_binfo = NULL_TREE;
 
-      if (!CLASS_TYPE_P (BINFO_TYPE (base_binfo)))
+      if (BINFO_DEPENDENT_BASE_P (base_binfo))
 	{
 	  my_friendly_assert (binfo == TYPE_BINFO (t), 20030204);
 	  
@@ -777,13 +777,12 @@ make_binfo (tree offset, tree binfo, tree vtable, tree virtuals)
   if (TREE_CODE (binfo) == TREE_BINFO)
     {
       type = BINFO_TYPE (binfo);
-      BINFO_DEPENDENT_BASE_P (new_binfo) = BINFO_DEPENDENT_BASE_P (binfo);
+      my_friendly_assert (!BINFO_DEPENDENT_BASE_P (binfo), 20040706);
     }
   else
     {
       type = binfo;
       binfo = NULL_TREE;
-      BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
     }
 
   TREE_TYPE (new_binfo) = TYPE_MAIN_VARIANT (type);
@@ -791,8 +790,7 @@ make_binfo (tree offset, tree binfo, tree vtable, tree virtuals)
   BINFO_VTABLE (new_binfo) = vtable;
   BINFO_VIRTUALS (new_binfo) = virtuals;
 
-  if (binfo && !BINFO_DEPENDENT_BASE_P (binfo)
-      && BINFO_BASE_BINFOS (binfo) != NULL_TREE)
+  if (binfo && BINFO_BASE_BINFOS (binfo))
     {
       BINFO_BASE_BINFOS (new_binfo) = copy_node (BINFO_BASE_BINFOS (binfo));
       /* We do not need to copy the accesses, as they are read only.  */

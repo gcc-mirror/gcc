@@ -5852,6 +5852,8 @@ build_ptrmemfunc_type (tree type)
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
   t = make_aggr_type (RECORD_TYPE);
+  xref_basetypes (t, NULL_TREE);
+  
   /* Let the front-end know this is a pointer to member function...  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
   /* ... and not really an aggregate.  */
@@ -9037,13 +9039,8 @@ xref_basetypes (tree ref, tree base_list)
   if (ref == error_mark_node)
     return;
 
-  if (TREE_CODE (ref) == UNION_TYPE)
-    {
-      error ("derived union `%T' invalid", ref);
-      return;
-    }
-
-  tag_code = (CLASSTYPE_DECLARED_CLASS (ref) ? class_type : record_type);
+  tag_code = TREE_CODE (ref) == UNION_TYPE ? union_type
+    : (CLASSTYPE_DECLARED_CLASS (ref) ? class_type : record_type);
 
   /* First, make sure that any templates in base-classes are
      instantiated.  This ensures that if we call ourselves recursively
@@ -9053,6 +9050,7 @@ xref_basetypes (tree ref, tree base_list)
   while (*basep) 
     {
       tree basetype = TREE_VALUE (*basep);
+      
       if (!(processing_template_decl && uses_template_parms (basetype))
 	  && !complete_type_or_else (basetype, NULL))
 	/* An incomplete type.  Remove it from the list.  */
@@ -9063,6 +9061,11 @@ xref_basetypes (tree ref, tree base_list)
 
   SET_CLASSTYPE_MARKED (ref);
   i = list_length (base_list);
+  /* The binfo slot should be empty, unless this is an (ill-formed)
+     redefinition.  */
+  my_friendly_assert (!TYPE_BINFO (ref) || TYPE_SIZE (ref), 20040706);
+  TYPE_BINFO (ref) = make_binfo (size_zero_node, ref, NULL_TREE, NULL_TREE);
+  
   if (i)
     {
       tree binfo = TYPE_BINFO (ref);
@@ -9115,14 +9118,22 @@ xref_basetypes (tree ref, tree base_list)
 	  if (CLASS_TYPE_P (basetype))
 	    {
 	      base_binfo = TYPE_BINFO (basetype);
-	      /* This flag will be in the binfo of the base type, we must
-	     	 clear it after copying the base binfos.  */
-	      BINFO_DEPENDENT_BASE_P (base_binfo)
-		= dependent_type_p (basetype);
+
+	      if (dependent_type_p (basetype))
+		{
+		  base_binfo = make_binfo (size_zero_node, basetype,
+					   NULL_TREE, NULL_TREE);
+		  BINFO_DEPENDENT_BASE_P (base_binfo) = 1;
+		}
+	      else
+		my_friendly_assert (base_binfo, 20040706);
 	    }
 	  else
-	    base_binfo = make_binfo (size_zero_node, basetype,
-				     NULL_TREE, NULL_TREE);
+	    {
+	      base_binfo = make_binfo (size_zero_node, basetype,
+				       NULL_TREE, NULL_TREE);
+	      BINFO_DEPENDENT_BASE_P (base_binfo) = 1;
+	    }
 	  
 	  TREE_VEC_ELT (binfos, i) = base_binfo;
 	  TREE_VEC_ELT (accesses, i) = access;
@@ -9182,6 +9193,12 @@ xref_basetypes (tree ref, tree base_list)
      inheritance order chain.  */
   copy_base_binfos (TYPE_BINFO (ref), ref, NULL_TREE);
 
+  if (TREE_CODE (ref) == UNION_TYPE)
+    {
+      if (i)
+	error ("derived union `%T' invalid", ref);
+    }
+
   if (TYPE_FOR_JAVA (ref))
     {
       if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
@@ -9193,14 +9210,12 @@ xref_basetypes (tree ref, tree base_list)
   /* Unmark all the types.  */
   while (i--)
     {
-      tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (ref), i));
+      tree binfo = BINFO_BASE_BINFO (TYPE_BINFO (ref), i);
+      tree basetype = BINFO_TYPE (binfo);
       
       CLEAR_CLASSTYPE_MARKED (basetype);
-      if (CLASS_TYPE_P (basetype))
-	{
-	  BINFO_VIRTUAL_P (TYPE_BINFO (basetype)) = 0;
-	  BINFO_DEPENDENT_BASE_P (TYPE_BINFO (basetype)) = 0;
-	}
+      if (!BINFO_DEPENDENT_BASE_P (binfo))
+	BINFO_VIRTUAL_P (TYPE_BINFO (basetype)) = 0;
     }
   CLEAR_CLASSTYPE_MARKED (ref);
 }

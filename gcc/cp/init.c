@@ -1145,7 +1145,7 @@ build_init (tree decl, tree init, int flags)
   else if (CLASS_TYPE_P (TREE_TYPE (decl)))
     expr = build_special_member_call (decl, complete_ctor_identifier,
 				      build_tree_list (NULL_TREE, init),
-				      TYPE_BINFO (TREE_TYPE (decl)),
+				      TREE_TYPE (decl),
 				      LOOKUP_NORMAL|flags);
   else
     expr = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
@@ -2088,7 +2088,7 @@ build_new_1 (tree exp)
 	{
 	  init_expr = build_special_member_call (init_expr, 
 						 complete_ctor_identifier,
-						 init, TYPE_BINFO (true_type),
+						 init, true_type,
 						 LOOKUP_NORMAL);
 	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}

@@ -1490,7 +1490,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 	      expr = build_special_member_call
 		(NULL_TREE, complete_ctor_identifier,
 		 build_tree_list (NULL_TREE, expr),
-		 TYPE_BINFO (type), LOOKUP_NORMAL);
+		 type, LOOKUP_NORMAL);
 	      expr = build_cplus_new (type, expr);
 	      my_friendly_assert (TREE_CODE (expr) == TARGET_EXPR, 20030729);
 	    }
