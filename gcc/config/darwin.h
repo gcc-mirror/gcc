@@ -222,7 +222,7 @@ do { text_section ();							\
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   do {									\
        STRIP_NAME_ENCODING (NAME, NAME);  \
-       if (NAME[0] == '&')						\
+       if (NAME[0] == '&' || NAME[0] == '*')				\
          {								\
            int len = strlen (NAME);					\
 	   if (len > 6 && !strcmp ("$stub", NAME + len - 5))		\
@@ -242,6 +242,13 @@ do { text_section ();							\
        else								\
          fprintf (FILE, "_%s", NAME);					\
   } while (0)
+
+/* The standard fillin directives are unaligned.  */
+
+#define UNALIGNED_SHORT_ASM_OP          "\t.short\t"
+#define UNALIGNED_INT_ASM_OP            "\t.long\t"
+/* Don't try to use this before the assembler knows about it.  */
+/* #define UNALIGNED_DOUBLE_INT_ASM_OP     "\t.quad\t"  */
 
 #undef	ALIGN_ASM_OP
 #define ALIGN_ASM_OP		".align"

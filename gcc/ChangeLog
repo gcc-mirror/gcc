@@ -1,3 +1,9 @@
+2001-08-28  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Handle '*' names.
+	(UNALIGNED_SHORT_ASM_OP): Define.
+	(UNALIGNED_INT_ASM_OP): Define.
+
 2001-08-28  Will Cohen  <wcohen@redhat.com>
 
 	* config/rs6000/rs6000.md (store_multiple): Correct RTL
