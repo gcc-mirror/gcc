@@ -1,3 +1,13 @@
+2003-10-13  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/execute/_cmd.m: Fix typo.
+	* objc.dg/image-info.m, objc.dg/symtab-1.m:
+	Relax 'scan-assembler' regexp.
+	* objc.dg/try-catch-1.m, objc.dg/try-catch-3.m,
+	objc.dg/try-catch-4.m: Run on non-Darwin targets.
+	* objc.dg/zero-link-2.m: Remove blank line.
+	* objc.dg/zero-link-3.m: New test case.
+	
 2003-10-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* g77.f-torture/execute/980520-1.x: XFAIL at -O0.

@@ -1,11 +1,10 @@
 /* Test if the compiler accepts @throw / @try..@catch..@finally 
-   syntax.  This will only be usable on MacOS X 10.3 and later.  */
+   syntax.  This will only be usable on MacOS X 10.3 and later,
+   but may be compiled on all targets.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fobjc-exceptions" } */
-/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-options "-fnext-runtime -fobjc-exceptions" } */
+/* { dg-do compile } */
 
-#include <objc/objc.h>
-#include <objc/objc-runtime.h>
 #include <objc/Object.h>
 #include <stdio.h>
 #include <setjmp.h>

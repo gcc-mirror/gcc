@@ -25,4 +25,3 @@ int main(void) {
 
 /* { dg-final { scan-assembler "_OBJC_CLASS_REFERENCES_0" } } */
 /* { dg-final { scan-assembler-not "objc_getClass" } } */
-
