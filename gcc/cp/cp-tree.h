@@ -969,7 +969,8 @@ struct lang_decl_flags
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
   unsigned comdat : 1;
-  unsigned dummy : 4;
+  unsigned needs_final_overrider : 1;
+  unsigned dummy : 3;
 
   tree access;
   tree context;
@@ -1075,6 +1076,10 @@ struct lang_decl
 /* Nonzero for FUNCTION_DECL means that this member function
    exists as part of an abstract class's interface.  */
 #define DECL_ABSTRACT_VIRTUAL_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.abstract_virtual)
+
+/* Nonzero for FUNCTION_DECL means that this member function
+   must be overridden by derived classes.  */
+#define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.needs_final_overrider)
 
 /* Nonzero if allocated on permanent_obstack.  */
 #define LANG_DECL_PERMANENT(LANGDECL) ((LANGDECL)->decl_flags.permanent_attr)
