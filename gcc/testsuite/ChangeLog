@@ -2,6 +2,8 @@
 
 	* g++.dg/other/stdarg1.C: New test.
 
+	* gcc.c-torture/compile/20011130-2.c: New test.
+
 2001-12-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.c-torture/execute/builtin-prefetch-1.c: New test.

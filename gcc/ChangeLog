@@ -1,5 +1,12 @@
 2001-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* flow.c (ior_reg_cond): Return NULL if ! add and rtx wasn't optimized.
+	Return correct value if one of the subexpressions was optimized to
+	0 resp. 1.  Optimize (x | A) | x and (x & A) | x.
+	(and_reg_cond): Similarly.
+
+2001-12-04  Jakub Jelinek  <jakub@redhat.com>
+
 	* function.c (assign_parms): Set last_named only for last named
 	argument.
 
