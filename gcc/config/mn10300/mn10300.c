@@ -1974,19 +1974,6 @@ mn10300_address_cost_1 (rtx x, int *unsig)
     case LABEL_REF:
       return 8;
 
-    case ADDRESSOF:
-      switch (GET_CODE (XEXP (x, 0)))
-	{
-	case MEM:
-	  return mn10300_address_cost (XEXP (x, 0));
-
-	case REG:
-	  return 1;
-
-	default:
-	  abort ();
-	}
-
     default:
       abort ();
 

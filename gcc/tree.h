@@ -3465,17 +3465,14 @@ extern void build_common_tree_nodes_2 (int);
 extern tree build_range_type (tree, tree, tree);
 
 /* In function.c */
-extern void setjmp_protect_args (void);
-extern void setjmp_protect (tree);
 extern void expand_main_function (void);
 extern void init_dummy_function_start (void);
 extern void expand_dummy_function_end (void);
 extern void init_function_for_compilation (void);
 extern void allocate_struct_function (tree);
 extern void init_function_start (tree);
+extern bool use_register_for_decl (tree);
 extern void assign_parms (tree);
-extern void put_var_into_stack (tree, int);
-extern void flush_addressof (tree);
 extern void setjmp_vars_warning (tree);
 extern void setjmp_args_warning (void);
 extern void init_temp_slots (void);

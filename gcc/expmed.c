@@ -945,8 +945,6 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 					       ? GET_MODE (value)
 					       : word_mode, value));
     }
-  else if (GET_CODE (value) == ADDRESSOF)
-    value = copy_to_reg (value);
 
   while (bitsdone < bitsize)
     {

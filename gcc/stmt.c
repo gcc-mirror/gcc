@@ -1600,7 +1600,6 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 		}
 	      if (REG_P (op)
 		  || GET_CODE (op) == SUBREG
-		  || GET_CODE (op) == ADDRESSOF
 		  || GET_CODE (op) == CONCAT)
 		{
 		  tree qual_type = build_qualified_type (type,
@@ -3070,14 +3069,7 @@ expand_decl (tree decl)
       set_mem_attributes (x, decl, 1);
       SET_DECL_RTL (decl, x);
     }
-  else if (DECL_MODE (decl) != BLKmode
-	   /* If -ffloat-store, don't put explicit float vars
-	      into regs.  */
-	   && !(flag_float_store
-		&& TREE_CODE (type) == REAL_TYPE)
-	   && ! TREE_THIS_VOLATILE (decl)
-	   && ! DECL_NONLOCAL (decl)
-	   && (DECL_REGISTER (decl) || DECL_ARTIFICIAL (decl) || optimize))
+  else if (use_register_for_decl (decl))
     {
       /* Automatic variable that can go in a register.  */
       int unsignedp = TYPE_UNSIGNED (type);
@@ -3103,10 +3095,6 @@ expand_decl (tree decl)
 	}
 
       maybe_set_unchanging (DECL_RTL (decl), decl);
-
-      /* If something wants our address, try to use ADDRESSOF.  */
-      if (TREE_ADDRESSABLE (decl))
-	put_var_into_stack (decl, /*rescan=*/false);
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST

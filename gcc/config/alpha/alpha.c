@@ -806,7 +806,6 @@ input_operand (rtx op, enum machine_mode mode)
 	      && local_symbolic_operand (XEXP (op, 0), mode));
 
     case REG:
-    case ADDRESSOF:
       return 1;
 
     case SUBREG:
@@ -1725,9 +1724,6 @@ alpha_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 	      && CONSTANT_ADDRESS_P (ofs))
 	    return true;
 	}
-      else if (GET_CODE (x) == ADDRESSOF
-	       && GET_CODE (ofs) == CONST_INT)
-	return true;
     }
 
   /* If we're managing explicit relocations, LO_SUM is valid, as
@@ -4486,39 +4482,6 @@ alpha_expand_block_move (rtx operands[])
 	}
     }
 
-  /* Load the entire block into registers.  */
-  if (GET_CODE (XEXP (orig_src, 0)) == ADDRESSOF)
-    {
-      enum machine_mode mode;
-
-      tmp = XEXP (XEXP (orig_src, 0), 0);
-
-      /* Don't use the existing register if we're reading more than
-	 is held in the register.  Nor if there is not a mode that
-	 handles the exact size.  */
-      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 1);
-      if (GET_CODE (tmp) == REG
-	  && mode != BLKmode
-	  && GET_MODE_SIZE (GET_MODE (tmp)) >= bytes)
-	{
-	  if (mode == TImode)
-	    {
-	      data_regs[nregs] = gen_lowpart (DImode, tmp);
-	      data_regs[nregs + 1] = gen_highpart (DImode, tmp);
-	      nregs += 2;
-	    }
-	  else
-	    data_regs[nregs++] = gen_lowpart (mode, tmp);
-
-	  goto src_done;
-	}
-
-      /* No appropriate mode; fall back on memory.  */
-      orig_src = replace_equiv_address (orig_src,
-					copy_addr_to_reg (XEXP (orig_src, 0)));
-      src_align = GET_MODE_BITSIZE (GET_MODE (tmp));
-    }
-
   ofs = 0;
   if (src_align >= 64 && bytes >= 8)
     {
@@ -4603,65 +4566,12 @@ alpha_expand_block_move (rtx operands[])
       ofs += 1;
     }
 
- src_done:
-
   if (nregs > ARRAY_SIZE (data_regs))
     abort ();
 
   /* Now save it back out again.  */
 
   i = 0, ofs = 0;
-
-  if (GET_CODE (XEXP (orig_dst, 0)) == ADDRESSOF)
-    {
-      enum machine_mode mode;
-      tmp = XEXP (XEXP (orig_dst, 0), 0);
-
-      mode = mode_for_size (orig_bytes * BITS_PER_UNIT, MODE_INT, 1);
-      if (GET_CODE (tmp) == REG && GET_MODE (tmp) == mode)
-	{
-	  if (nregs == 1)
-	    {
-	      emit_move_insn (tmp, data_regs[0]);
-	      i = 1;
-	      goto dst_done;
-	    }
-
-	  else if (nregs == 2 && mode == TImode)
-	    {
-	      /* Undo the subregging done above when copying between
-		 two TImode registers.  */
-	      if (GET_CODE (data_regs[0]) == SUBREG
-		  && GET_MODE (SUBREG_REG (data_regs[0])) == TImode)
-		emit_move_insn (tmp, SUBREG_REG (data_regs[0]));
-	      else
-		{
-		  rtx seq;
-
-		  start_sequence ();
-		  emit_move_insn (gen_lowpart (DImode, tmp), data_regs[0]);
-		  emit_move_insn (gen_highpart (DImode, tmp), data_regs[1]);
-		  seq = get_insns ();
-		  end_sequence ();
-
-		  emit_no_conflict_block (seq, tmp, data_regs[0],
-					  data_regs[1], NULL_RTX);
-		}
-
-	      i = 2;
-	      goto dst_done;
-	    }
-	}
-
-      /* ??? If nregs > 1, consider reconstructing the word in regs.  */
-      /* ??? Optimize mode < dst_mode with strict_low_part.  */
-
-      /* No appropriate mode; fall back on memory.  We can speed things
-	 up by recognizing extra alignment information.  */
-      orig_dst = replace_equiv_address (orig_dst,
-					copy_addr_to_reg (XEXP (orig_dst, 0)));
-      dst_align = GET_MODE_BITSIZE (GET_MODE (tmp));
-    }
 
   /* Write out the data in whatever chunks reading the source allowed.  */
   if (dst_align >= 64)
@@ -4751,8 +4661,6 @@ alpha_expand_block_move (rtx operands[])
       ofs += 1;
     }
 
- dst_done:
-
   if (i != nregs)
     abort ();
 
@@ -4797,21 +4705,6 @@ alpha_expand_block_clear (rtx operands[])
           else if (a >= 16)
 	    align = a, alignofs = 2 - c % 2;
 	}
-    }
-  else if (GET_CODE (tmp) == ADDRESSOF)
-    {
-      enum machine_mode mode;
-
-      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 1);
-      if (GET_MODE (XEXP (tmp, 0)) == mode)
-	{
-	  emit_move_insn (XEXP (tmp, 0), const0_rtx);
-	  return 1;
-	}
-
-      /* No appropriate mode; fall back on memory.  */
-      orig_dst = replace_equiv_address (orig_dst, copy_addr_to_reg (tmp));
-      align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
     }
 
   /* Handle an unaligned prefix first.  */

@@ -1,3 +1,7 @@
+2004-04-07  Richard Henderson  <rth@redhat.com>
+
+	* treetree.c (tree_mark_addressable):  Don't put_var_into_stack.
+
 2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* treetree.c (tree_lang_signed_or_unsigned_type): Use TYPE_UNSIGNED,

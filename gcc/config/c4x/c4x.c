@@ -3812,12 +3812,6 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
   	case MEM:
 	  break;
 	  
-	  /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
-	     into a stack slot memory address comprising a PLUS and a
-	     constant.  */
-	case ADDRESSOF:
-	  break;
-	  
 	default:
 	  fatal_insn ("c4x_valid_operands: Internal error", op2);
 	  break;
@@ -3860,12 +3854,6 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
 
 	  /* Any valid memory operand screened by src_operand is OK.  */      
 	case MEM:
-	  break;
-	  
-	  /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
-	     into a stack slot memory address comprising a PLUS and a
-	     constant.  */
-	case ADDRESSOF:
 	  break;
 	  
 	default:
@@ -4863,8 +4851,6 @@ c4x_expand_builtin (tree exp, rtx target,
       if (TARGET_C3X)
 	break;
       arg0 = TREE_VALUE (arglist);
-      if (TREE_CODE (arg0) == VAR_DECL || TREE_CODE (arg0) == PARM_DECL)
-	put_var_into_stack (arg0, /*rescan=*/true);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
       r0 = protect_from_queue (r0, 0);
       if (register_operand (r0, QFmode))

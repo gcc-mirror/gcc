@@ -2578,7 +2578,7 @@ do {									\
 {"icc_or_fcc_reg_operand", {REG}},					\
 {"call_operand", {MEM}},						\
 {"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE,	\
-	ADDRESSOF, SUBREG, REG, PLUS, LO_SUM, CONST_INT}},		\
+	SUBREG, REG, PLUS, LO_SUM, CONST_INT}},				\
 {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
 {"symbolic_memory_operand", {SUBREG, MEM}},				\
 {"label_ref_operand", {LABEL_REF}},					\

@@ -5013,7 +5013,6 @@ copy_insn_1 (rtx orig)
     case CODE_LABEL:
     case PC:
     case CC0:
-    case ADDRESSOF:
       return orig;
     case CLOBBER:
       if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)

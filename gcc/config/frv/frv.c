@@ -4370,9 +4370,6 @@ move_destination_operand (rtx op, enum machine_mode mode)
       return TRUE;
 
     case MEM:
-      if (GET_CODE (XEXP (op, 0)) == ADDRESSOF)
-        return TRUE;
-
       return frv_legitimate_memory_operand (op, mode, FALSE);
     }
 
@@ -4463,9 +4460,6 @@ move_source_operand (rtx op, enum machine_mode mode)
       return TRUE;
 
     case MEM:
-      if (GET_CODE (XEXP (op, 0)) == ADDRESSOF)
-        return TRUE;
-
       return frv_legitimate_memory_operand (op, mode, FALSE);
     }
 
@@ -4505,9 +4499,6 @@ condexec_dest_operand (rtx op, enum machine_mode mode)
       return TRUE;
 
     case MEM:
-      if (GET_CODE (XEXP (op, 0)) == ADDRESSOF)
-        return TRUE;
-
       return frv_legitimate_memory_operand (op, mode, TRUE);
     }
 
@@ -4551,9 +4542,6 @@ condexec_source_operand (rtx op, enum machine_mode mode)
       return TRUE;
 
     case MEM:
-      if (GET_CODE (XEXP (op, 0)) == ADDRESSOF)
-        return TRUE;
-
       return frv_legitimate_memory_operand (op, mode, TRUE);
     }
 
@@ -5237,9 +5225,6 @@ condexec_memory_operand (rtx op, enum machine_mode mode)
     return FALSE;
 
   addr = XEXP (op, 0);
-  if (GET_CODE (addr) == ADDRESSOF)
-    return TRUE;
-
   return frv_legitimate_address_p (mode, addr, reload_completed, TRUE, FALSE);
 }
 

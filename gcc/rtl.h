@@ -1115,12 +1115,6 @@ enum label_kind
 
 #define LABEL_ALT_ENTRY_P(LABEL) (LABEL_KIND (LABEL) != LABEL_NORMAL)
 
-/* The original regno this ADDRESSOF was built for.  */
-#define ADDRESSOF_REGNO(RTX) XCUINT (RTX, 1, ADDRESSOF)
-
-/* The variable in the register we took the address of.  */
-#define ADDRESSOF_DECL(RTX) XCTREE (RTX, 2, ADDRESSOF)
-
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
    be decremented and possibly the label can be deleted.  */
@@ -1801,9 +1795,6 @@ extern rtx simplify_replace_rtx (rtx, rtx, rtx);
 extern rtx simplify_rtx (rtx);
 extern rtx avoid_constant_pool_reference (rtx);
 
-/* In function.c  */
-extern rtx gen_mem_addressof (rtx, tree, int);
-
 /* In regclass.c  */
 extern enum machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 					       bool);
@@ -2280,7 +2271,6 @@ extern int prologue_epilogue_contains (rtx);
 extern int sibcall_epilogue_contains (rtx);
 extern void mark_temp_addr_taken (rtx);
 extern void update_temp_slot_address (rtx, rtx);
-extern void purge_addressof (rtx);
 extern void purge_hard_subreg_sets (rtx);
 
 /* In stmt.c */

@@ -906,15 +906,6 @@ DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s00", RTX_CONST_OBJ)
    pretend to be looking at the entire value and comparing it.  */
 DEF_RTL_EXPR(CC0, "cc0", "", RTX_OBJ)
 
-/* Reference to the address of a register.  Removed by purge_addressof after
-   CSE has elided as many as possible.
-   1st operand: the register we may need the address of.
-   2nd operand: the original pseudo regno we were generated for.
-   3rd operand: the decl for the object in the register, for
-     put_reg_in_stack.  */
-
-DEF_RTL_EXPR(ADDRESSOF, "addressof", "eit", RTX_OBJ)
-
 /* =====================================================================
    A QUEUED expression really points to a member of the queue of instructions
    to be output later for postincrement/postdecrement.

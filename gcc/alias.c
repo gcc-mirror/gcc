@@ -1256,11 +1256,6 @@ rtx_equal_for_memref_p (rtx x, rtx y)
 	 comparison for these nodes.  */
       return 0;
 
-    case ADDRESSOF:
-      return (XINT (x, 1) == XINT (y, 1)
-	      && rtx_equal_for_memref_p (XEXP (x, 0),
-					 XEXP (y, 0)));
-
     default:
       break;
     }
@@ -1501,9 +1496,6 @@ find_base_term (rtx x)
     case SYMBOL_REF:
     case LABEL_REF:
       return x;
-
-    case ADDRESSOF:
-      return REG_BASE_VALUE (frame_pointer_rtx);
 
     default:
       return 0;
@@ -1824,18 +1816,6 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (GET_CODE (x) == AND || xsize < -INTVAL (XEXP (y, 1)))
 	ysize = -1;
       return memrefs_conflict_p (xsize, x, ysize, canon_rtx (XEXP (y, 0)), c);
-    }
-
-  if (GET_CODE (x) == ADDRESSOF)
-    {
-      if (y == frame_pointer_rtx
-	  || GET_CODE (y) == ADDRESSOF)
-	return xsize <= 0 || ysize <= 0;
-    }
-  if (GET_CODE (y) == ADDRESSOF)
-    {
-      if (x == frame_pointer_rtx)
-	return xsize <= 0 || ysize <= 0;
     }
 
   if (CONSTANT_P (x))
