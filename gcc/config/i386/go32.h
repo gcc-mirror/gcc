@@ -3,6 +3,8 @@
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
+#define HANDLE_SYSV_PRAGMA
+
 #define YES_UNDERSCORES
 
 #include "i386/gas.h"
