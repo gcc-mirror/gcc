@@ -346,7 +346,7 @@ decide_peel_completely (loops, loop, flags)
       return;
     }
 
-  /* npeel = number of iterations to peel. */
+  /* npeel = number of iterations to peel.  */
   npeel = PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS) / loop->ninsns;
   if (npeel > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
     npeel = PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES);
@@ -974,7 +974,7 @@ decide_peel_simple (loops, loop, flags)
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Considering simply peeling loop\n");
 
-  /* npeel = number of iterations to peel. */
+  /* npeel = number of iterations to peel.  */
   npeel = PARAM_VALUE (PARAM_MAX_PEELED_INSNS) / loop->ninsns;
   if (npeel > (unsigned) PARAM_VALUE (PARAM_MAX_PEEL_TIMES))
     npeel = PARAM_VALUE (PARAM_MAX_PEEL_TIMES);

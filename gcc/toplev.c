@@ -1967,7 +1967,7 @@ wrapup_global_declarations (vec, len)
       decl = vec[i];
 
       /* We're not deferring this any longer.  Assignment is
-	 conditional to avoid needlessly dirtying PCH pages. */
+	 conditional to avoid needlessly dirtying PCH pages.  */
       if (DECL_DEFER_OUTPUT (decl) != 0)
 	DECL_DEFER_OUTPUT (decl) = 0;
 
@@ -3542,7 +3542,7 @@ rest_of_compilation (decl)
       open_dump_file (DFI_bbro, decl);
 
       /* Last attempt to optimize CFG, as scheduling, peepholing and insn
-	 splitting possibly introduced more crossjumping opportunities. */
+	 splitting possibly introduced more crossjumping opportunities.  */
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE
 		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
 

@@ -875,7 +875,7 @@ loop_delete_branch_edge (e, really_delete)
   else
     {
       /* Cannot happen -- we are using this only to remove an edge
-	 from branch. */
+	 from branch.  */
       abort ();
     }
 
@@ -1411,7 +1411,7 @@ create_preheader (loop, dom, flags)
 
   add_to_dominance_info (dom, fallthru->dest);
   
-  /* Redirect edges. */
+  /* Redirect edges.  */
   for (e = dummy->pred; e; e = e->pred_next)
     {
       src = e->src;
