@@ -3909,10 +3909,14 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  CLASSTYPE_GOT_SEMICOLON (t) = 1;
 	  SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
 	  TYPE_FOR_JAVA (t) = TYPE_FOR_JAVA (template_type);
+
+	  /* A local class.  Make sure the decl gets registered properly.  */
+	  if (context == current_function_decl)
+	    pushtag (DECL_NAME (template), t, 0);
 	}
 
-      /* If we called start_enum above, this information will already
-	 be set up.  */
+      /* If we called start_enum or pushtag above, this information
+	 will already be set up.  */
       if (!TYPE_NAME (t))
 	{
 	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
@@ -7317,8 +7321,7 @@ tsubst_expr (t, args, complain, in_decl)
     case TAG_DEFN:
       prep_stmt (t);
       t = TREE_TYPE (t);
-      if (TREE_CODE (t) == ENUMERAL_TYPE)
-	tsubst (t, args, complain, NULL_TREE);
+      tsubst (t, args, complain, NULL_TREE);
       break;
 
     default:

@@ -7063,12 +7063,17 @@ layout_var_decl (decl)
       cp_error ("storage size of `%D' isn't known", decl);
       TREE_TYPE (decl) = error_mark_node;
     }
+#if 0
+  /* Keep this code around in case we later want to control debug info
+     based on whether a type is "used".  (jason 1999-11-11) */
+
   else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
     /* Let debugger know it should output info for this type.  */
     note_debug_info_needed (ttype);
 
   if (TREE_STATIC (decl) && DECL_CLASS_SCOPE_P (decl))
     note_debug_info_needed (DECL_CONTEXT (decl));
+#endif
 
   if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
       && DECL_SIZE (decl) != NULL_TREE
@@ -13443,6 +13448,10 @@ finish_function (lineno, flags)
 	  tree ttype = target_type (fntype);
 	  tree parmdecl;
 
+#if 0
+	  /* Keep this code around in case we later want to control debug info
+	     based on whether a type is "used".  (jason 1999-11-11) */
+
 	  if (IS_AGGR_TYPE (ttype))
 	    /* Let debugger know it should output info for this type.  */
 	    note_debug_info_needed (ttype);
@@ -13454,6 +13463,7 @@ finish_function (lineno, flags)
 		/* Let debugger know it should output info for this type.  */
 		note_debug_info_needed (ttype);
 	    }
+#endif
 	}
 
       /* Clean house because we will need to reorder insns here.  */
@@ -13643,8 +13653,13 @@ finish_function (lineno, flags)
 	  mark_inline_for_output (fndecl);
 	}
 
+#if 0
+      /* Keep this code around in case we later want to control debug info
+	 based on whether a type is "used".  (jason 1999-11-11) */
+
       if (ctype && TREE_ASM_WRITTEN (fndecl))
 	note_debug_info_needed (ctype);
+#endif
 
       returns_null |= can_reach_end;
 

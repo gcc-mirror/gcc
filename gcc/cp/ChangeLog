@@ -1,3 +1,20 @@
+1999-11-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* class.c (finish_struct): If we're a local class in a template
+	function, add a TAG_DEFN.
+	* pt.c (lookup_template_class): If this is a local class in a
+	template function, call pushtag.
+	(tsubst_expr, case TAG_DEFN): Handle classes, too.
+
+	Emit debug info with the vtable.
+	* search.c (maybe_suppress_debug_info): New function...
+	* class.c (finish_struct_1): ...split out from here.
+	* cp-tree.h: Declare it.
+	* decl2.c (finish_vtable_vardecl): Override TYPE_DECL_SUPPRESS_DEBUG
+	if we're writing out the vtable.
+	* decl.c, search.c (dfs_debug_mark, dfs_debug_unmarked_p, 
+	note_debug_info_needed): #if 0 out.
+
 1999-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_LOCAL_FUCNTION_P): New macro.

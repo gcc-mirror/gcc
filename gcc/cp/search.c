@@ -103,8 +103,10 @@ static tree marked_new_vtablep PROTO((tree, void *));
 static tree unmarked_new_vtablep PROTO((tree, void *));
 static tree marked_pushdecls_p PROTO((tree, void *));
 static tree unmarked_pushdecls_p PROTO((tree, void *));
+#if 0
 static tree dfs_debug_unmarkedp PROTO((tree, void *));
 static tree dfs_debug_mark PROTO((tree, void *));
+#endif
 static tree dfs_find_vbases PROTO((tree, void *));
 static tree dfs_clear_vbase_slots PROTO((tree, void *));
 static tree dfs_init_vbase_pointers PROTO((tree, void *));
@@ -2301,7 +2303,6 @@ unmarked_pushdecls_p (binfo, data)
 #if 0
 static int dfs_search_slot_nonempty_p (binfo) tree binfo;
 { return CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) != 0; }
-#endif
 
 static tree 
 dfs_debug_unmarkedp (binfo, data) 
@@ -2311,6 +2312,7 @@ dfs_debug_unmarkedp (binfo, data)
   return (!CLASSTYPE_DEBUG_REQUESTED (BINFO_TYPE (binfo)) 
 	  ? binfo : NULL_TREE);
 }
+#endif
 
 /* The worker functions for `dfs_walk'.  These do not need to
    test anything (vis a vis marking) if they are paired with
@@ -2351,8 +2353,10 @@ dfs_unmark_new_vtable (binfo) tree binfo;
 static void
 dfs_clear_search_slot (binfo) tree binfo;
 { CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) = 0; }
-#endif
 
+/* Keep this code around in case we later want to control debug info
+   based on whether a type is "used".  Currently, we only suppress debug
+   info if we can emit it with the vtable.  jason 1999-11-11) */
 static tree
 dfs_debug_mark (binfo, data)
      tree binfo;
@@ -2360,47 +2364,18 @@ dfs_debug_mark (binfo, data)
 {
   tree t = BINFO_TYPE (binfo);
 
-  /* Use heuristic that if there are virtual functions,
-     ignore until we see a non-inline virtual function.  */
-  tree methods = CLASSTYPE_METHOD_VEC (t);
-
   CLASSTYPE_DEBUG_REQUESTED (t) = 1;
-
-  if (methods == 0)
-    return NULL_TREE;
 
   /* If interface info is known, either we've already emitted the debug
      info or we don't need to.  */
   if (CLASSTYPE_INTERFACE_KNOWN (t))
     return NULL_TREE;
 
-  /* If debug info is requested from this context for this type, supply it.
-     If debug info is requested from another context for this type,
-     see if some third context can supply it.  */
-  if (current_function_decl == NULL_TREE
-      || DECL_CLASS_CONTEXT (current_function_decl) != t)
-    {
-      if (TREE_VEC_ELT (methods, 1))
-	methods = TREE_VEC_ELT (methods, 1);
-      else if (TREE_VEC_ELT (methods, 0))
-	methods = TREE_VEC_ELT (methods, 0);
-      else
-	methods = TREE_VEC_ELT (methods, 2);
-      methods = OVL_CURRENT (methods);
-      while (methods)
-	{
-	  if (DECL_VINDEX (methods)
-	      && DECL_THIS_INLINE (methods) == 0
-	      && DECL_ABSTRACT_VIRTUAL_P (methods) == 0)
-	    {
-	      /* Somebody, somewhere is going to have to define this
-		 virtual function.  When they do, they will provide
-		 the debugging info.  */
-	      return NULL_TREE;
-	    }
-	  methods = TREE_CHAIN (methods);
-	}
-    }
+  /* If the class has virtual functions, we'll emit the debug info
+     with the vtable.  */
+  if (TYPE_VIRTUAL_P (t))
+    return NULL_TREE;
+
   /* We cannot rely on some alien method to solve our problems,
      so we must write out the debug info ourselves.  */
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
@@ -2408,6 +2383,7 @@ dfs_debug_mark (binfo, data)
 
   return NULL_TREE;
 }
+#endif
 
 struct vbase_info 
 {
@@ -2933,6 +2909,41 @@ get_vbase_types (type)
   return vbase_types;
 }
 
+/* Debug info for C++ classes can get very large; try to avoid
+   emitting it everywhere.
+
+   As it happens, this optimization wins even when the target supports
+   BINCL (though only slightly), so we always do it. */
+
+void
+maybe_suppress_debug_info (t)
+     tree t;
+{
+  /* We don't bother with this for dwarf1, which shouldn't be used for C++
+     anyway.  */
+  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG
+      || write_symbols == NO_DEBUG)
+    return;
+
+  /* If we already know how we're handling this class, handle debug info
+     the same way.  */
+  if (CLASSTYPE_INTERFACE_ONLY (t))
+    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
+  else if (CLASSTYPE_INTERFACE_KNOWN (t))
+    /* Don't set it.  */;
+  /* If the class has virtual functions, write out the debug info
+     along with the vtable.  */
+  else if (TYPE_VIRTUAL_P (t))
+    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
+
+  /* Otherwise, just emit the debug info normally.  */
+}
+
+#if 0
+/* Keep this code around in case we later want to control debug info
+   based on whether a type is "used".  Currently, we only suppress debug
+   info if we can emit it with the vtable.  jason 1999-11-11) */
+
 /* If we want debug info for a type TYPE, make sure all its base types
    are also marked as being potentially interesting.  This avoids
    the problem of not writing any debug info for intermediate basetypes
@@ -2952,10 +2963,9 @@ note_debug_info_needed (type)
     return;
 
   /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
-     does not support name references between translation units.  Well, we
-     could, but that would mean putting global labels in the debug output
-     before each exported type and each of its functions and static data
-     members.  */
+     does not support name references between translation units.  It supports
+     symbolic references between translation units, but only within a single
+     executable or shared library.  */
   if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG
       || write_symbols == NO_DEBUG)
     return;
@@ -2970,6 +2980,7 @@ note_debug_info_needed (type)
 	note_debug_info_needed (ttype);
     }
 }
+#endif
 
 /* Subroutines of push_class_decls ().  */
 
@@ -3333,7 +3344,9 @@ types_overlap_p (empty_type, next_type)
   return oi.found_overlap;
 }
 
-/* Given a vtable VAR, determine which binfo it comes from.  */
+/* Given a vtable VAR, determine which binfo it comes from.
+
+   FIXME What about secondary vtables?  */
 
 tree
 binfo_for_vtable (var)
