@@ -1,5 +1,5 @@
 /* Implement string-related runtime actions for CHILL.
-   Copyright (C) 1992,1993 Free Software Foundation, Inc.
+   Copyright (C) 1992,1993,2000 Free Software Foundation, Inc.
    Author: Bill Cox
 
 This file is part of GNU CC.
@@ -25,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
    to be covered by the GNU General Public License.
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
+
+#include <stdlib.h>
+#include <string.h>
 
 #define MIN(a, b)  ((a) < (b) ? (a) : (b))
 

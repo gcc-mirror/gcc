@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
    the executable file might be covered by the GNU General Public License.  */
 
 #include <stdio.h>
+#include <string.h>
 #include "rtltypes.h"
 #include "rts.h"
 

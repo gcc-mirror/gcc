@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #define __CHILL_LIB__
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <setjmp.h>
 #include "rtltypes.h"
 

@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
+#include <string.h>
+
 extern void cause_exception (char *exname, char *file, int lineno);
 
 /*
