@@ -60,8 +60,6 @@ import java.io.ObjectOutputStream;
  * @author         Jon Zeppieri
  * @author         Jochen Hoenicke
  * @author	   Bryce McKinlay
- * @version        $Revision: 1.4 $
- * @modified       $Id: HashMap.java,v 1.4 2000/12/21 02:00:15 bryce Exp $
  */
 public class HashMap extends AbstractMap
   implements Map, Cloneable, Serializable
@@ -160,14 +158,16 @@ public class HashMap extends AbstractMap
    * 
    * @throws   IllegalArgumentException    if (initialCapacity < 0) ||
    *                                          (initialLoadFactor > 1.0) ||
-   *                                          (initialLoadFactor <= 0.0)
    */
   public HashMap(int initialCapacity, float loadFactor)
     throws IllegalArgumentException
   {
-    if (initialCapacity < 0 || loadFactor <= 0 || loadFactor > 1)
-      throw new IllegalArgumentException();
-    
+    if (initialCapacity < 0)
+      throw new IllegalArgumentException("Illegal Initial Capacity: " 
+      					 + initialCapacity);    
+    if (loadFactor <= 0)
+      throw new IllegalArgumentException("Illegal Load Factor: " + loadFactor);
+  
     buckets = new Entry[initialCapacity];
     this.loadFactor = loadFactor;
     this.threshold = (int) (initialCapacity * loadFactor);
@@ -619,8 +619,6 @@ public class HashMap extends AbstractMap
    * keys, values, or entries.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.4 $
-   * @modified     $Id: HashMap.java,v 1.4 2000/12/21 02:00:15 bryce Exp $
    */
   class HashIterator implements Iterator
   {

@@ -1,3 +1,10 @@
+2001-02-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Fix for PR java/2040:
+	* java/util/HashMap.java (HashMap): Don't throw exception for 
+	loadFactor > 1. Add exception messages.
+	* java/util/Hashtable.java (Hashtable): Likewise.
+
 2001-02-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/PipedWriter.java (flush): Throw exception if stream
