@@ -17,22 +17,16 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _ATOMICITY_H
-#define _ATOMICITY_H	1
+#ifndef _BITS_ATOMICITY_H
+#define _BITS_ATOMICITY_H	1
 
-#ifdef _GLIBCPP_HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-typedef unsigned int	uint32_t;
-typedef int 		int32_t;
-#endif
+typedef long _Atomic_word;
 
-
-static inline int
+static inline _Atomic_word
 __attribute__ ((unused))
-exchange_and_add (volatile uint32_t *mem, int val)
+__exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
-  uint32_t tmp1, tmp2;
+  _Atomic_word __tmp1, __tmp2;
 
   __asm__ __volatile__("1:	lduw	[%2], %0\n\t"
 		       "	add	%0, %3, %1\n\t"
@@ -40,17 +34,17 @@ exchange_and_add (volatile uint32_t *mem, int val)
 		       "	sub	%0, %1, %0\n\t"
 		       "	brnz,pn	%0, 1b\n\t"
 		       "	 nop"
-		       : "=&r" (tmp1), "=&r" (tmp2)
-		       : "r" (mem), "r" (val)
+		       : "=&r" (__tmp1), "=&r" (__tmp2)
+		       : "r" (__mem), "r" (__val)
 		       : "memory");
-  return tmp2;
+  return __tmp2;
 }
 
 static inline void
 __attribute__ ((unused))
-atomic_add (volatile uint32_t *mem, int val)
+__atomic_add (volatile _Atomic_word* __mem, int __val)
 {
-  uint32_t tmp1, tmp2;
+  _Atomic_word __tmp1, __tmp2;
 
   __asm__ __volatile__("1:	lduw	[%2], %0\n\t"
 		       "	add	%0, %3, %1\n\t"
@@ -58,16 +52,17 @@ atomic_add (volatile uint32_t *mem, int val)
 		       "	sub	%0, %1, %0\n\t"
 		       "	brnz,pn	%0, 1b\n\t"
 		       "	 nop"
-		       : "=&r" (tmp1), "=&r" (tmp2)
-		       : "r" (mem), "r" (val)
+		       : "=&r" (__tmp1), "=&r" (__tmp2)
+		       : "r" (__mem), "r" (__val)
 		       : "memory");
 }
 
 static inline int
 __attribute__ ((unused))
-compare_and_swap (volatile long int *p, long int oldval, long int newval)
+__compare_and_swap (volatile long *__p, long __oldval, long __newval)
 {
-  register long int tmp, tmp2;
+  register int __tmp, 
+  register long __tmp2;
 
   __asm__ __volatile__("1:	ldx	[%4], %0\n\t"
 		       "	mov	%2, %1\n\t"
@@ -79,10 +74,10 @@ compare_and_swap (volatile long int *p, long int oldval, long int newval)
 		       "	brnz,pn	%0, 1b\n\t"
 		       "	 mov	1, %0\n\t"
 		       "2:"
-		       : "=&r" (tmp), "=&r" (tmp2)
-		       : "r" (newval), "r" (oldval), "r" (p)
+		       : "=&r" (__tmp), "=&r" (__tmp2)
+		       : "r" (__newval), "r" (__oldval), "r" (__p)
 		       : "memory");
-  return tmp;
+  return __tmp;
 }
 
 #endif /* atomicity.h */

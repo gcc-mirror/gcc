@@ -17,16 +17,10 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _ATOMICITY_H
-#define _ATOMICITY_H	1
+#ifndef _BITS_ATOMICITY_H
+#define _BITS_ATOMICITY_H	1
 
-#ifdef _GLIBCPP_HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-typedef unsigned int	uint32_t;
-typedef int 		int32_t;
-#endif
-
+typedef int _Atomic_word;
 
 #if BROKEN_PPC_ASM_CR0
 # define __ATOMICITY_INLINE /* nothing */
@@ -34,38 +28,38 @@ typedef int 		int32_t;
 # define __ATOMICITY_INLINE inline
 #endif
 
-static __ATOMICITY_INLINE int
+static __ATOMICITY_INLINE _Atomic_word
 __attribute__ ((unused))
-exchange_and_add (volatile uint32_t *mem, int val)
+__exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
-  int tmp, result;
+  _Atomic_word __tmp, __result;
   __asm__ ("\
 0:	lwarx	%0,0,%2
 	add%I3	%1,%0,%3
 	stwcx.	%1,0,%2
 	bne-	0b
-" : "=&b"(result), "=&r"(tmp) : "r" (mem), "Ir"(val) : "cr0", "memory");
-  return result;
+" : "=&b"(__result), "=&r"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
+  return __result;
 }
 
 static __ATOMICITY_INLINE void
 __attribute__ ((unused))
-atomic_add (volatile uint32_t *mem, int val)
+__atomic_add (volatile _Atomic_word *__mem, int __val)
 {
-  int tmp;
+  _Atomic_word __tmp;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	add%I2	%0,%0,%2
 	stwcx.	%0,0,%1
 	bne-	0b
-" : "=&b"(tmp) : "r" (mem), "Ir"(val) : "cr0", "memory");
+" : "=&b"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
 }
 
 static __ATOMICITY_INLINE int
 __attribute__ ((unused))
-compare_and_swap (volatile long int *p, long int oldval, long int newval)
+__compare_and_swap (volatile long *p, long int __oldval, long int __newval)
 {
-  int result;
+  int __result;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	sub%I2c.	%0,%0,%2
@@ -74,28 +68,30 @@ compare_and_swap (volatile long int *p, long int oldval, long int newval)
 	stwcx.	%3,0,%1
 	bne-	0b
 1:
-" : "=&b"(result) : "r"(p), "Ir"(oldval), "r"(newval) : "cr0", "memory");
-  return result >> 5;
+" : "=&b"(__result) 
+  : "r"(__p), "Ir"(__oldval), "r"(__newval) 
+  : "cr0", "memory");
+  return __result >> 5;
 }
 
-static __ATOMICITY_INLINE long int
+static __ATOMICITY_INLINE long
 __attribute__ ((unused))
-always_swap (volatile long int *p, long int newval)
+__always_swap (volatile long *__p, long int __newval)
 {
-  long int result;
+  long __result;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	stwcx.	%2,0,%1
 	bne-	0b
-" : "=&r"(result) : "r"(p), "r"(newval) : "cr0", "memory");
-  return result;
+" : "=&r"(__result) : "r"(__p), "r"(__newval) : "cr0", "memory");
+  return __result;
 }
 
 static __ATOMICITY_INLINE int
 __attribute__ ((unused))
-test_and_set (volatile long int *p, long int newval)
+__test_and_set (volatile long *__p, long int __newval)
 {
-  int result;
+  int __result;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	cmpwi	%0,0
@@ -103,8 +99,8 @@ test_and_set (volatile long int *p, long int newval)
 	stwcx.	%2,0,%1
 	bne-	0b
 1:
-" : "=&r"(result) : "r"(p), "r"(newval) : "cr0", "memory");
-  return result;
+" : "=&r"(__result) : "r"(__p), "r"(__newval) : "cr0", "memory");
+  return __result;
 }
 
 #endif /* atomicity.h */

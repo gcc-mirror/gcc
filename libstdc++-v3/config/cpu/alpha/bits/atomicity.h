@@ -17,22 +17,16 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _ATOMICITY_H
-#define _ATOMICITY_H	1
+#ifndef _BITS_ATOMICITY_H
+#define _BITS_ATOMICITY_H	1
 
-#ifdef _GLIBCPP_HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-typedef unsigned int	uint32_t;
-typedef int 		int32_t;
-#endif
+typedef int _Atomic_word;
 
-
-static inline int
+static inline _Atomic_word
 __attribute__ ((unused))
-exchange_and_add (volatile uint32_t *mem, int val)
+__exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
-  register int result, tmp;
+  register int __result, __tmp;
 
   __asm__ __volatile__ (
 	"/* Inline exchange & add */\n"
@@ -47,17 +41,17 @@ exchange_and_add (volatile uint32_t *mem, int val)
 	".previous\n\t"
 	"mb\n\t"
 	"/* End exchange & add */"
-	: "=&r"(result), "=&r"(tmp), "=m"(*mem)
-	: "m" (*mem), "r"(val));
+	: "=&r"(__result), "=&r"(__tmp), "=m"(*__mem)
+	: "m" (*__mem), "r"(__val));
 
-  return result;
+  return __result;
 }
 
 static inline void
 __attribute__ ((unused))
-atomic_add (volatile uint32_t *mem, int val)
+__atomic_add (volatile _Atomic_word* __mem, int __val)
 {
-  register int result;
+  register _Atomic_word __result;
 
   __asm__ __volatile__ (
 	"/* Inline exchange & add */\n"
@@ -72,15 +66,15 @@ atomic_add (volatile uint32_t *mem, int val)
 	".previous\n\t"
 	"mb\n\t"
 	"/* End exchange & add */"
-	: "=&r"(result), "=m"(*mem)
-	: "m" (*mem), "r"(val));
+	: "=&r"(__result), "=m"(*__mem)
+	: "m" (*__mem), "r"(__val));
 }
 
-static inline long
+static inline intint
 __attribute__ ((unused))
-compare_and_swap (volatile long int *p, long int oldval, long int newval)
+__compare_and_swap (volatile long *__p, long __oldval, long __newval)
 {
-  long int ret;
+  int __ret;
 
   __asm__ __volatile__ (
 	"/* Inline compare & swap */\n"
@@ -98,16 +92,10 @@ compare_and_swap (volatile long int *p, long int oldval, long int newval)
 	"3:\t"
 	"mb\n\t"
 	"/* End compare & swap */"
-	: "=&r"(ret), "=m"(*p)
-	: "r"(oldval), "r"(newval), "m"(*p));
+	: "=&r"(__ret), "=m"(*__p)
+	: "r"(__oldval), "r"(__newval), "m"(*__p));
 
-  return ret;
+  return __ret;
 }
 
 #endif /* atomicity.h */
-
-
-
-
-
-

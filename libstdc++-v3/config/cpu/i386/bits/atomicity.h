@@ -17,46 +17,42 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _ATOMICITY_H
-#define _ATOMICITY_H	1
+#ifndef _BITS_ATOMICITY_H
+#define _BITS_ATOMICITY_H	1
 
-#ifdef _GLIBCPP_HAVE_INTTYPES_H
-#include <inttypes.h>
-#else
-typedef unsigned int	uint32_t;
-typedef int 		int32_t;
-#endif
+typedef int _Atomic_word;
 
-
-static inline int
+static inline _Atomic_word 
 __attribute__ ((unused))
-exchange_and_add (volatile uint32_t *mem, int val)
+__exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
-  register int result;
+  register _Atomic_word __result;
   __asm__ __volatile__ ("lock; xaddl %0,%2"
-			: "=r" (result) : "0" (val), "m" (*mem) : "memory");
-  return result;
+			: "=r" (__result) 
+                        : "0" (__val), "m" (*__mem) 
+                        : "memory");
+  return __result;
 }
 
 static inline void
 __attribute__ ((unused))
-atomic_add (volatile uint32_t *mem, int val)
+__atomic_add (volatile _Atomic_word* __mem, int __val)
 {
   __asm__ __volatile__ ("lock; addl %0,%1"
-			: : "ir" (val), "m" (*mem) : "memory");
+			: : "ir" (__val), "m" (*__mem) : "memory");
 }
 
 static inline char
 __attribute__ ((unused))
-compare_and_swap (volatile long int *p, long int oldval, long int newval)
+__compare_and_swap (volatile long* __p, long __oldval, long __newval)
 {
-  char ret;
-  long int readval;
+  char __ret;
+  long __readval;
 
   __asm__ __volatile__ ("lock; cmpxchgl %3, %1; sete %0"
-                        : "=q" (ret), "=m" (*p), "=a" (readval)
-                        : "r" (newval), "m" (*p), "a" (oldval));
-  return ret;
+                        : "=q" (__ret), "=m" (*__p), "=a" (__readval)
+                        : "r" (__newval), "m" (*__p), "a" (__oldval));
+  return __ret;
 }
 
 #endif /* atomicity.h */
