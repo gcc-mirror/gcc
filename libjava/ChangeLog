@@ -1,3 +1,8 @@
+2002-11-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URL.java: Merge with Classpath (partly).
+	* java/net/URLStreamHandler: Merge with Classpath.
+
 2002-11-22  Michael Koch <konqueror@gmx.de>
 
 	* include/posix.h:
