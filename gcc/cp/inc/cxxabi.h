@@ -437,6 +437,24 @@ void *__cxa_vec_new (__SIZE_TYPE__ __element_count,
                      void (*__constructor) (void *),
                      void (*__destructor) (void *));
 
+extern "C"
+void *__cxa_vec_new2 (__SIZE_TYPE__ __element_count,
+                      __SIZE_TYPE__ __element_size,
+                      __SIZE_TYPE__ __padding_size,
+                      void (*__constructor) (void *),
+                      void (*__destructor) (void *),
+                      void *(*__alloc) (__SIZE_TYPE__),
+                      void (*__dealloc) (void *));
+
+extern "C"
+void *__cxa_vec_new3 (__SIZE_TYPE__ __element_count,
+                      __SIZE_TYPE__ __element_size,
+                      __SIZE_TYPE__ __padding_size,
+                      void (*__constructor) (void *),
+                      void (*__destructor) (void *),
+                      void *(*__alloc) (__SIZE_TYPE__),
+                      void (*__dealloc) (void *, __SIZE_TYPE__));
+
 /* construct array */
 extern "C"
 void __cxa_vec_ctor (void *__array_address,
@@ -467,6 +485,20 @@ void __cxa_vec_delete (void *__array_address,
                        __SIZE_TYPE__ __padding_size,
                        void (*__destructor) (void *));
 
+extern "C"
+void __cxa_vec_delete2 (void *__array_address,
+                        __SIZE_TYPE__ __element_size,
+                        __SIZE_TYPE__ __padding_size,
+                        void (*__destructor) (void *),
+                        void (*__dealloc) (void *));
+                  
+extern "C"
+void __cxa_vec_delete3 (void *__array_address,
+                        __SIZE_TYPE__ __element_size,
+                        __SIZE_TYPE__ __padding_size,
+                        void (*__destructor) (void *),
+                        void (*__dealloc) (void *, __SIZE_TYPE__));
+                  
 /* demangling routines */
 
 extern "C" 
