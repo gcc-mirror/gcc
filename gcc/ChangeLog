@@ -1,3 +1,10 @@
+2000-11-07  David O'Brien  <obrien@dragon.nuxi.com>
+
+	* config/alpha/freebsd.h: New file -- FreeBSD/alpha architecture file.
+	* POTFILES.in: Add config/alpha/freebsd.h
+	* configure.in: Add alpha*-freebsd support.
+	* configure: Regenerate.
+
 2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* tree.c (build_common_tree_nodes_2): Make va_list_type_node be a

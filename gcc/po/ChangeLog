@@ -1,3 +1,7 @@
+2000-11-07  David O'Brien  <obrien@dragon.nuxi.com>
+
+	* POTFILES.in: Add config/alpha/freebsd.h
+
 2000-10-21  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* POTFILES.in: Add config/i386/netware.h and config/netware.h.

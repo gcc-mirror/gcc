@@ -86,6 +86,7 @@ config/alpha/alpha.c
 config/alpha/alpha.h
 config/alpha/alpha32.h
 config/alpha/elf.h
+config/alpha/freebsd.h
 config/alpha/linux-ecoff.h
 config/alpha/linux-elf.h
 config/alpha/linux.h
