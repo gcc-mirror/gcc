@@ -524,22 +524,6 @@
 
 	* doc/install.texi: Update for switch of boehm-gc to autoconf 2.57.
 
-2003-02-23  Matt Austern  <austern@apple.com >
-
-	* config/darwin.h (SUBTARGET_OPTIONS): Add -mmacosx= option.
-	(macosx_version_min_required): Declare global variable.
-	* config/darwin-protos.h (darwin_parse_macosx_version_name): Declare.
-	* config/darwin.c (macosx_version_min_required): Define variable.
-	(darwin_macosx_vers_tbl): Define. Table mapping text strings of
-	OS versions to numerical codes.
-	(darwin_parse_macosx_version_name): Define.  Parse -mmacosx=,
-	set macosx_version_min_required appropriately.
-	* config/i386/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Define.
-	Invoke darwin_parse_macosx_version_name.
-	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Add
-	darwin_parse_macosx_version_name to Darwin option handling.
-	* doc/invoke.texi (-mmacosx=): Document.
-	
 2004-02-23  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000.md (movsf_hardfloat): Add POWER form of nop.
