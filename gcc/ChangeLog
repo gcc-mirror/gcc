@@ -1,5 +1,18 @@
 Tue Nov 30 15:20:52 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.c (ix86_expand_move): Never add clobbers to move patterns.
+	* i386.md (movsi_xor): New.
+	(movsi_or): New.
+	(movsi_1, movhi_1, movqi_1): Remove.
+	(movsi_2): Rename to movsi_1.
+	(movhi_2): Rename to movhi_1.
+	(movqi_2): Rename to movqi_1.
+	(movdi_1): Remove; remove splitter.
+	(movdi_2): Rename to movdi_1.
+	(divmodsi4 splitter): Do not emit clobbers for move patterns.
+	(long move peep2): Do not create QI or HI mode mov0s
+	(mov -1,reg -> or peep2s): Enable again, rewrite to single peephole.
+
 	* i386.md (zero_extend?i?i2): Rewrite to expanders; new patterns,
 	rewrite splitters.
 
