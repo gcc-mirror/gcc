@@ -1460,6 +1460,7 @@ tsubst (t, args, nargs, in_decl)
 	tree r;
 	r = build_decl (PARM_DECL, DECL_NAME (t), type);
 	DECL_INITIAL (r) = TREE_TYPE (r);
+	DECL_ARTIFICIAL (r) = DECL_ARTIFICIAL (t);
 	if (TREE_CHAIN (t))
 	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args, nargs, TREE_CHAIN (t));
 	return r;
