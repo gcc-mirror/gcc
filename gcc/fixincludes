@@ -459,6 +459,23 @@ sed -e '/[ 	]size_t.*;/i\
   fi
 fi
 
+# Fix HP's use of ../machine/inline.h to refer to
+# /usr/include/machine/inline.h
+file=sys/spinlock.h
+if [ ! -r ${LIB}/$file ] ; then
+  cp $file ${LIB}/$file
+fi
+if [ -r ${LIB}/$file ] ; then
+  echo Fixing $file
+  sed -e 's,"../machine/inline.h",<machine/inline.h>,' \
+    -e 's,"../machine/psl.h",<machine/psl.h>,' \
+  ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  fi
+fi
+
 # Fix an error in this file: the #if says _cplusplus, not the double
 # underscore __cplusplus that it should be
 file=tinfo.h
