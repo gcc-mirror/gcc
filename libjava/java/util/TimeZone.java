@@ -989,9 +989,13 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    * Sets the identifier of this time zone. For instance, PST for
    * Pacific Standard Time.
    * @param id the new time zone ID.
+   * @throws NullPointerException if <code>id</code> is <code>null</code>
    */
   public void setID(String id)
   {
+    if (id == null)
+      throw new NullPointerException();
+    
     this.ID = id;
   }
 
