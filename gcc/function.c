@@ -132,6 +132,11 @@ int current_function_has_nonlocal_goto;
 
 int current_function_contains_functions;
 
+/* Nonzero if the current function is a thunk (a lightweight function that
+   just adjusts one of its arguments and forwards to another function), so
+   we should try to cut corners where we can.  */
+int current_function_is_thunk;
+
 /* Nonzero if function being compiled can call alloca,
    either as a subroutine or builtin.  */
 
@@ -489,6 +494,7 @@ push_function_context_to (context)
   p->has_nonlocal_label = current_function_has_nonlocal_label;
   p->has_nonlocal_goto = current_function_has_nonlocal_goto;
   p->contains_functions = current_function_contains_functions;
+  p->is_thunk = current_function_is_thunk;
   p->args_size = current_function_args_size;
   p->pretend_args_size = current_function_pretend_args_size;
   p->arg_offset_rtx = current_function_arg_offset_rtx;
@@ -568,6 +574,7 @@ pop_function_context_from (context)
   current_function_calls_alloca = p->calls_alloca;
   current_function_has_nonlocal_label = p->has_nonlocal_label;
   current_function_has_nonlocal_goto = p->has_nonlocal_goto;
+  current_function_is_thunk = p->is_thunk;
   current_function_args_size = p->args_size;
   current_function_pretend_args_size = p->pretend_args_size;
   current_function_arg_offset_rtx = p->arg_offset_rtx;
@@ -4971,6 +4978,7 @@ init_function_start (subr, filename, line)
   current_function_has_nonlocal_label = 0;
   current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
+  current_function_is_thunk = 0;
 
   current_function_returns_pcc_struct = 0;
   current_function_returns_struct = 0;

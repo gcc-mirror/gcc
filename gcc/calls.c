@@ -1025,14 +1025,19 @@ expand_call (exp, target, ignore)
 #endif
 	  )
 	{
+	  /* If we're compiling a thunk, pass through invisible
+             references instead of making a copy.  */
+	  if (current_function_is_thunk
 #ifdef FUNCTION_ARG_CALLEE_COPIES
-	  if (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type), type,
-					  argpos < n_named_args)
-	      /* If it's in a register, we must make a copy of it too.  */
-	      /* ??? Is this a sufficient test?  Is there a better one? */
-	      && !(TREE_CODE (args[i].tree_value) == VAR_DECL
-		   && REG_P (DECL_RTL (args[i].tree_value)))
-	      && ! TREE_ADDRESSABLE (type))
+	      || (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type),
+					     type, argpos < n_named_args)
+		  /* If it's in a register, we must make a copy of it too.  */
+		  /* ??? Is this a sufficient test?  Is there a better one? */
+		  && !(TREE_CODE (args[i].tree_value) == VAR_DECL
+		       && REG_P (DECL_RTL (args[i].tree_value)))
+		  && ! TREE_ADDRESSABLE (type))
+#endif
+	      )
 	    {
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
@@ -1040,7 +1045,6 @@ expand_call (exp, target, ignore)
 	      type = build_pointer_type (type);
 	    }
 	  else
-#endif
 	    {
 	      /* We make a copy of the object and pass the address to the
 		 function being called.  */
