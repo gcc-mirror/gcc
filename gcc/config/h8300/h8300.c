@@ -2183,8 +2183,8 @@ static const enum shift_alg shift_alg_qi[3][3][8] = {
   {
     /* TARGET_H8300S  */
     /*  0    1    2    3    4    5    6    7  */
-    { INL, INL, INL, INL, INL, INL, INL, ROT }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, INL, INL, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, ROT, ROT }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, SPC }  /* SHIFT_ASHIFTRT */
   }
 };
@@ -2272,15 +2272,15 @@ static const enum shift_alg shift_alg_si[3][3][32] = {
     /* 24   25   26   27   28   29   30   31  */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
       SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
       SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
   }
 };
@@ -2516,7 +2516,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	}
       else if ((TARGET_H8300 && count == 16)
 	       || (TARGET_H8300H && 16 <= count && count <= 19)
-	       || (TARGET_H8300S && 16 <= count && count <= 20))
+	       || (TARGET_H8300S && 16 <= count && count <= 21))
 	{
 	  info->remainder = count - 16;
 
