@@ -1,4 +1,8 @@
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* io.c: Add 2004 to copyright years.
+
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Andrew Vaught  <andyv@firstinter.net>
 
 	* gfortran.h (gfc_gsymbol): New typedef.
