@@ -1,3 +1,8 @@
+2004-10-04  Sergey Rybin  <rybin@act-europe.fr>
+
+	* g-dirope.ads (Base_Name): Clarify the meaning of the Suffix parameter
+	in the documentation.
+
 2004-10-04  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch5.adb (Unblocked_Exit_Count): Now used for blocks as well as

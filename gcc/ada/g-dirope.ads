@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1998-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2004 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,15 +123,20 @@ package GNAT.Directory_Operations is
    function Base_Name
      (Path   : Path_Name;
       Suffix : String := "") return String;
-   --  Any directory prefix is removed. If Suffix is non-empty and is a
-   --  suffix of Path, it is removed. This is equivalent to the UNIX basename
-   --  command. The following rule is always true:
+   --  Any directory prefix is removed. A directory prefix is defined as
+   --  text up to and including the last directory separator character in
+   --  the input string. In addition if Path ends with the string given for
+   --  Suffix, then it is also removed. Note that Suffix here can be an
+   --  arbitrary string (it is not required to be a file extension). This
+   --  is equivalent to the UNIX basename command. The following rule is
+   --  always true:
    --
    --    'Path' and 'Dir_Name (Path) & Directory_Separator & Base_Name (Path)'
    --    represent the same file.
    --
-   --  This function is not case-sensitive on systems that have a non
-   --  case-sensitive file system like Windows and OpenVMS.
+   --  The comparison of Suffix is case-insensitive on systems such as Windows
+   --  and VMS where the file search is case-insensitive (e.g. on such systems,
+   --  Base_Name ("/Users/AdaCore/BB12.patch", ".Patch") returns "BB12").
 
    function File_Extension (Path : Path_Name) return String;
    --  Return the file extension. This is defined as the string after the
