@@ -1,3 +1,10 @@
+2002-10-02  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/6627
+	* lang.c (java_init): If storing the vbit in function
+	pointers, ensure that force_align_functions_log is atleast
+	one to aid compatability with g++ vtables.
+
 2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* jcf-dump.c (print_constant, case CONSTANT_float): Don't fall

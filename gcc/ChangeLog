@@ -1,3 +1,17 @@
+2002-10-02  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/6627
+	* toplev.c (force_align_functions_log): New global variable.
+	* flags.h (force_align_functions_log): Add extern prototype.
+	* varasm.c (assemble_start_function): Use it to force minimum
+	function alignment.
+	* config/i386/i386.h (FUNCTION_BOUNDARY): Set the correct
+	minimum function alignment to one byte.
+	(TARGET_PTRMEMFUNC_VBIT_LOCATION): Store the virtual bit in
+	the least significant bit of vtable member function pointers.
+	* tree.h (enum ptrmemfunc_vbit_where_t): Move definition to
+	here from cp/cp-tree.h.
+
 2002-10-02  Matt Austern  <austern@apple.com>
 	* cp/decl.c (walk_vtables_r): Fixed typo that caused result to
 	never get a nonzero value.
