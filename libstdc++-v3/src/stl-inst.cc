@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,5 +39,5 @@ namespace std
   template class allocator<char>;
   template class allocator<wchar_t>;
 
-  template class __default_alloc_template<true, 0>;
+  template class __pool_alloc<true, 0>;
 } // namespace std

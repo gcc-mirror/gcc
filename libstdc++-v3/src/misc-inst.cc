@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -70,20 +70,5 @@ namespace std
 #endif
 #ifdef _GLIBCPP_INST_ATOMICITY_LOCK
   template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
-#endif
-
-#if 1
-  // XXX
-  // 2002-05-24 These are no longer needed and should eventually be deleted.
-  template 
-    string* 
-    __uninitialized_fill_n_aux<string*, size_t, string>
-    (string*, size_t, string const &, __false_type);
-
-  template 
-    string* 
-    __uninitialized_copy_aux<vector<string>::const_iterator, string *>
-    (vector<string>::const_iterator, vector<string>::const_iterator, 
-     string*, __false_type);
 #endif
 } // namespace std
