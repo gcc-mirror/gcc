@@ -45,8 +45,8 @@ public class WindowAttributes
   {
     WindowAttributes attributes = (WindowAttributes) super.clone();
     // In case of an exception before the stucture is copied.
-    attributes.in  = 0;
-    attributes.out = 0;
+    attributes.in  = null;
+    attributes.out = null;
     
     // FIXME: do anything else?
 	
@@ -77,13 +77,13 @@ public class WindowAttributes
    * Reference to XWindowAttribute structure containing attributes
    * read from a window.
    */
-  RawData in = 0;
+  RawData in = null;
 
   /**
    * Reference to XSetWindowAttribute structure containing attributes
    * to be applied to a window.
    */
-  RawData out = 0;
+  RawData out = null;
 
   long mask;
 

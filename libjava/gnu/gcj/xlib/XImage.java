@@ -141,7 +141,7 @@ public class XImage
   protected native void finalize();
 
   boolean ownsData = false;
-  RawData structure = 0;
+  RawData structure = null;
 
   public final native int getWidth();
   public final native int getHeight();
