@@ -4027,6 +4027,11 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
   if (codel == REFERENCE_TYPE
       && comptypes (TREE_TYPE (type), TREE_TYPE (rhs)) == 1)
     {
+      if (!lvalue_p (rhs))
+	{
+	  error ("cannot pass rvalue to reference parameter");
+	  return error_mark_node;
+	}
       if (mark_addressable (rhs) == 0)
 	return error_mark_node;
       rhs = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (rhs)), rhs);
@@ -4146,7 +4151,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 
   /* Conversions among pointers */
   else if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
-	   && (coder == POINTER_TYPE || coder == REFERENCE_TYPE))
+	   && (coder == codel))
     {
       tree ttl = TREE_TYPE (type);
       tree ttr = TREE_TYPE (rhstype);

@@ -1,3 +1,9 @@
+2002-03-12  Jason Merrill  <jason@redhat.com>
+
+	* c-typeck.c (convert_for_assignment): Don't allow conversions
+	between pointers and references.  Only allow lvalues to convert to
+	reference.
+
 2002-03-13  Hartmut Penner  <hpenner@de.ibm.com>
 
         * config/s390/s390.h (PROFILE_BEFORE_PROLOGUE): Emit profile code
