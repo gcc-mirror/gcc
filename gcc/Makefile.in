@@ -150,7 +150,8 @@ PREMADE_ATTRTAB =
 target= ... `configure' substitutes actual target name here.
 xmake_file= ... `configure' substitutes actual x- file name here.
 tmake_file= ... `configure' substitutes actual t- file name here.
-out_file= ... `configure' substitutes actual out- file name here.
+out_file= ... `configure' substitutes actual out file name here.
+out_object_file= ... `configure' substitutes actual out object file name here.
 md_file= ... `configure' substitutes actual md file name here.
 tm_file= ... `configure' substitutes actual tm file name here.
 build_xm_file= ... `configure' substitutes actual build xm- file name here.
@@ -492,7 +493,7 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  regclass.o local-alloc.o global.o reload.o reload1.o caller-save.o \
  insn-peep.o reorg.o sched.o final.o recog.o reg-stack.o \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o \
- insn-attrtab.o aux-output.o getpwd.o convert.o $(EXTRA_OBJS)
+ insn-attrtab.o $(out_object_file) getpwd.o convert.o $(EXTRA_OBJS)
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1204,11 +1205,10 @@ recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
 reg-stack.o : reg-stack.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
    regs.h hard-reg-set.h flags.h insn-config.h
 
-aux-output.o : $(out_file) $(CONFIG_H) \
+$(out_object_file): $(out_file) $(CONFIG_H) \
    $(RTL_H) regs.h hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  -o $@ \
-	 $(MAYBE_TARGET_DEFAULT) $(out_file)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(out_file)
 
 # Build auxiliary files that support ecoff format.
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
