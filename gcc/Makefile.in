@@ -746,12 +746,12 @@ LIB2FUNCS_EH = _eh
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
     _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
-    _sf_to_df _thenan_sf _sf_to_usi _df_to_usi
+    _sf_to_df _thenan_sf _sf_to_usi
 
 DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
     _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
     _lt_df _le_df _unord_df _si_to_df _df_to_si _negate_df _make_df \
-    _df_to_sf _thenan_df _sf_to_usi _df_to_usi
+    _df_to_sf _thenan_df _df_to_usi
 
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
@@ -1015,6 +1015,7 @@ stmp-multilib: libgcc2.ready libgcc.mk
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
 	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
+	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  -f libgcc.mk all
 	touch stmp-multilib
 
