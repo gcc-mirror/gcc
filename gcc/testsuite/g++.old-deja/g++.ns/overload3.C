@@ -1,8 +1,7 @@
 // Build don't link:
-// Declarations after the first one don't affect the set of used decls.
 
 namespace A{
-  void f();         // ERROR - .*
+  void f();
 }
 
 using A::f;
@@ -15,5 +14,5 @@ using A::f;
 
 void g()
 {
-  f(4);            // ERROR - too many arguments
+  f(4);
 }
