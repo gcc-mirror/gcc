@@ -13862,16 +13862,26 @@ finish_destructor_body ()
 	       vbases = TREE_CHAIN (vbases))
 	    {
 	      tree vbase = TREE_VALUE (vbases);
+	      tree base_type = BINFO_TYPE (vbase);
 
-	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (vbase)))
+	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (base_type))
 		{
-		  tree vb = get_vbase
-		    (BINFO_TYPE (vbase),
-		     TYPE_BINFO (current_class_type));
-		  finish_expr_stmt
-		    (build_scoped_method_call
-		     (current_class_ref, vb, base_dtor_identifier,
-		      NULL_TREE));
+                  tree base_ptr_type = build_pointer_type (base_type);
+	          tree expr = current_class_ptr;
+	          
+	          /* Convert to the basetype here, as we know the layout is
+                     fixed. What is more, if we let build_method_call do it,
+                     it will use the vtable, which may have been clobbered
+                     by the deletion of our primary base.  */
+                  
+                  expr = build1 (NOP_EXPR, base_ptr_type, expr);
+	          expr = build (PLUS_EXPR, base_ptr_type, expr,
+	                        BINFO_OFFSET (vbase));
+	          expr = build_indirect_ref (expr, NULL);
+	          expr = build_method_call (expr, base_dtor_identifier,
+	                                    NULL_TREE, vbase,
+	                                    LOOKUP_NORMAL);
+		  finish_expr_stmt (expr);
 		}
 	    }
 

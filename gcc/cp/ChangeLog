@@ -1,5 +1,9 @@
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (finish_destructor_body): Convert to vbase pointer here.
+
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* semantics.c (begin_class_definition): Check we're not inside a
 	template parm list.
 
