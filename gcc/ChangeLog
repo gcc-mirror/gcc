@@ -1,5 +1,15 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("logicalsi3_zexthi"): Fix constraints
+	and split of AND operation to clear the upper bits.
+	("*logicalsi3_zextqi"): Likewise.
+	("*logicallhi3_zexthi_ashift8"): Likewise.
+	("*logicalsi3_silshr16"): Likewise.
+	("logicalsi3_silshl16"): Likewise.
+	("anddi3", "iordi3", "xordi3" splits): Remove constraints.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_symbolic_p): New function.
 	(m68hc11_indirect_p): New function.
 	(m68hc11_override_options): Must set MASK_NO_DIRECT_MODE for 68HC12.
