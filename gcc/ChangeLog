@@ -1,3 +1,21 @@
+2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-decl.c (pending_invalid_xref_file): Remove.
+	(pending_invalid_xref_line): Remove.
+	(pending_invalid_xref_location): New.
+	(lookup_label): Use location_t and input_location directly.
+	(lookup_tag): Likewise.
+	(pending_xref_error): Likewise.
+	(c_expand_body_1): Likewise.
+	* c-common.c (x_expand_start_cond): Likewise.
+	* c-semantics.c (genrtl_for_stmt): Likewise.
+	(find_reachable_label): Likewise.
+	* expr.c (expand_expr): Likewise.
+	* integrate.c (output_inline_function): Likewise.
+	* tree-inline.c (find_alloca_call): Likewise.
+	(find_builtin_longjmp_call): Likewise.
+	* gcc.c (input_filename): Make static.
+	
 2003-05-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Fix comment typo.

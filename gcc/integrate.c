@@ -3040,8 +3040,7 @@ output_inline_function (fndecl)
 
   /* Make sure warnings emitted by the optimizers (e.g. control reaches
      end of non-void function) is not wildly incorrect.  */
-  input_filename = DECL_SOURCE_FILE (fndecl);
-  input_line = DECL_SOURCE_LINE (fndecl);
+  input_location = DECL_SOURCE_LOCATION (fndecl);
 
   /* Compile this function all the way down to assembly code.  As a
      side effect this destroys the saved RTL representation, but

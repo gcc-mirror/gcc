@@ -918,8 +918,7 @@ c_expand_start_cond (cond, compstmt_count, if_stmt)
 
   /* Record this if statement.  */
   if_stack[if_stack_pointer].compstmt_count = compstmt_count;
-  if_stack[if_stack_pointer].locus.file = input_filename;
-  if_stack[if_stack_pointer].locus.line = input_line;
+  if_stack[if_stack_pointer].locus = input_location;
   if_stack[if_stack_pointer].needs_warning = 0;
   if_stack[if_stack_pointer].if_stmt = if_stmt;
   if_stack_pointer++;

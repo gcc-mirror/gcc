@@ -4150,7 +4150,7 @@ set_collect_gcc_options ()
    sans all directory names, and basename_length is the number
    of characters starting there excluding the suffix .c or whatever.  */
 
-const char *input_filename;
+static const char *input_filename;
 static int input_file_number;
 size_t input_filename_length;
 static int basename_length;

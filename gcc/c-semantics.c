@@ -543,8 +543,7 @@ genrtl_for_stmt (t)
      tree t;
 {
   tree cond = FOR_COND (t);
-  const char *saved_filename;
-  int saved_lineno;
+  location_t saved_loc;
 
   if (NEW_FOR_SCOPE_P (t))
     genrtl_do_pushlevel ();
@@ -562,8 +561,7 @@ genrtl_for_stmt (t)
 
   /* Save the filename and line number so that we expand the FOR_EXPR
      we can reset them back to the saved values.  */
-  saved_filename = input_filename;
-  saved_lineno = input_line;
+  saved_loc = input_location;
 
   /* Expand the condition.  */
   if (cond && !integer_nonzerop (cond))
@@ -578,8 +576,7 @@ genrtl_for_stmt (t)
   expand_stmt (FOR_BODY (t));
 
   /* Expand the increment expression.  */
-  input_filename = saved_filename;
-  input_line = saved_lineno;
+  input_location = saved_loc;
   emit_line_note (input_filename, input_line);
   if (FOR_EXPR (t))
     {
@@ -952,11 +949,9 @@ static tree
 find_reachable_label (exp)
      tree exp;
 {
-  int line = input_line;
-  const char *file = input_filename;
+  location_t saved_loc = input_location;
   tree ret = walk_tree (&exp, find_reachable_label_1, NULL, NULL);
-  input_filename = file;
-  input_line = line;
+  input_location = saved_loc;
   return ret;
 }
 

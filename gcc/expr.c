@@ -6932,16 +6932,14 @@ expand_expr (exp, target, tmode, modifier)
     case EXPR_WITH_FILE_LOCATION:
       {
 	rtx to_return;
-	const char *saved_input_filename = input_filename;
-	int saved_lineno = input_line;
+	location_t saved_loc = input_location;
 	input_filename = EXPR_WFL_FILENAME (exp);
 	input_line = EXPR_WFL_LINENO (exp);
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
 	  emit_line_note (input_filename, input_line);
 	/* Possibly avoid switching back and forth here.  */
 	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
-	input_filename = saved_input_filename;
-	input_line = saved_lineno;
+	input_location = saved_loc;
 	return to_return;
       }
 
