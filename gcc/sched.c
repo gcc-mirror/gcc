@@ -4678,20 +4678,38 @@ schedule_insns (dump_file)
 			   regno, reg_live_length[regno],
 			   sched_reg_live_length[regno]);
 
-		if (reg_n_calls_crossed[regno]
-		    && ! sched_reg_n_calls_crossed[regno])
-		  fprintf (dump_file,
-			   ";; register %d no longer crosses calls\n", regno);
-		else if (! reg_n_calls_crossed[regno]
-			 && sched_reg_n_calls_crossed[regno])
+		if (! reg_n_calls_crossed[regno]
+		    && sched_reg_n_calls_crossed[regno])
 		  fprintf (dump_file,
 			   ";; register %d now crosses calls\n", regno);
+		else if (reg_n_calls_crossed[regno]
+			 && ! sched_reg_n_calls_crossed[regno]
+			 && reg_basic_block[regno] != REG_BLOCK_GLOBAL)
+		  fprintf (dump_file,
+			   ";; register %d no longer crosses calls\n", regno);
+
 	      }
 	    /* Negative values are special; don't overwrite the current
 	       reg_live_length value if it is negative.  */
 	    if (reg_live_length[regno] >= 0)
 	      reg_live_length[regno] = sched_reg_live_length[regno];
-	    reg_n_calls_crossed[regno] = sched_reg_n_calls_crossed[regno];
+
+	    /* We can't change the value of reg_n_calls_crossed to zero for
+	       pseudos which are live in more than one block.
+
+	       This is because combine might have made an optimization which
+	       invalidated basic_block_live_at_start and reg_n_calls_crossed,
+	       but it does not update them.  If we update reg_n_calls_crossed
+	       here, the two variables are now inconsistent, and this might
+	       confuse the caller-save code into saving a register that doesn't
+	       need to be saved.  This is only a problem when we zero calls
+	       crossed for a pseudo live in multiple basic blocks.
+
+	       Alternatively, we could try to correctly update basic block live
+	       at start here in sched, but that seems complicated.  */
+	    if (sched_reg_n_calls_crossed[regno]
+		|| reg_basic_block[regno] != REG_BLOCK_GLOBAL)
+	      reg_n_calls_crossed[regno] = sched_reg_n_calls_crossed[regno];
 	  }
     }
 }
