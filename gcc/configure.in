@@ -860,6 +860,13 @@ for machine in $build $host $target; do
 		tm_file=i386/go32.h
 		tmake_file=i386/t-go32
 		;;
+	i[[3456]]86-pc-msdosdjgpp*)
+		xm_file=i386/xm-go32.h
+		tm_file=i386/go32.h
+		tmake_file=i386/t-go32
+		gnu_ld=yes
+		gas=yes
+		;;
 	i[[3456]]86-moss-msdos* | i[[3456]]86-*-moss*)
 		tm_file=i386/moss.h
 		tmake_file=t-libc-ok
