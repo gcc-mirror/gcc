@@ -103,12 +103,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC       "%{v*: -v}"
 
 #undef  LINK_SPEC
-#define LINK_SPEC      "\
+#define LINK_SPEC      "%{v*: -v} \
 %{!melf:	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
-		%{nostdlib} %{noshrlib} %{glue} %{v*: -v}} \
-%{melf:		%{dy} %{dn: } %{glue: } \
+		%{nostdlib} %{noshrlib} %{glue}} \
+%{melf:		%{dy} %{dn} %{glue: } \
 		%{!dy: %{!dn: \
-			%{noshrlib: } %{pic-none: } \
+			%{noshrlib: -dn } %{pic-none: -dn } \
 			%{!noshrlib: %{!pic-none: -dy}}}}}"
 
 #undef  LIB_SPEC
