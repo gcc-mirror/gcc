@@ -1,3 +1,8 @@
+2004-10-31  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_cannot_change_mode_class): Use a stricter
+	mode check.
+
 2004-10-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c: Fix a comment typo.
