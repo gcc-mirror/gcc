@@ -307,7 +307,9 @@ implies that the host defaults to @var{target}.
 @heading Options specification
 
 Use @var{options} to override several configure time options for
-GCC@.  A partial list of supported @var{options}:
+GCC@.  A list of supported @var{options} follows; @command{configure
+--help} may list other options, but those not listed below may not
+work and should not normally be used.
 
 @table @code
 @item --prefix=@var{dirname}
@@ -708,6 +710,10 @@ inferior @code{catgets} interface, the GCC build procedure normally
 ignores @code{catgets} and instead uses GCC's copy of the GNU
 @code{gettext} library.  The @option{--with-catgets} option causes the
 build procedure to use the host's @code{catgets} in this situation.
+
+@item --with-system-zlib
+Use installed zlib rather than that included with GCC@.  This option
+only applies if the Java front end is being built.
 @end table
 
 Some options which only apply to building cross compilers:

@@ -1,3 +1,8 @@
+2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: Document that configure options not listed in
+	this file are unsupported.  Document --with-system-zlib.
+
 2001-11-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (load_toc_aix_{si,di}): Mark r2 as used.
