@@ -3050,6 +3050,37 @@
 
 ;; Return peepholes.  First the "normal" ones
 
+;; ??? There are QImode, HImode, and SImode versions of this pattern.
+;; It might be possible to write one more general pattern instead of three.
+
+(define_insn ""
+  [(set (match_operand:QI 0 "restore_operand" "")
+	(match_operand:QI 1 "arith_operand" "rI"))
+   (return)]
+  "! TARGET_EPILOGUE"
+  "*
+{
+  if (current_function_returns_struct)
+    return \"jmp %%i7+12\;restore %%g0,%1,%Y0\";
+  else
+    return \"ret\;restore %%g0,%1,%Y0\";
+}"
+  [(set_attr "type" "multi")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "restore_operand" "")
+	(match_operand:HI 1 "arith_operand" "rI"))
+   (return)]
+  "! TARGET_EPILOGUE"
+  "*
+{
+  if (current_function_returns_struct)
+    return \"jmp %%i7+12\;restore %%g0,%1,%Y0\";
+  else
+    return \"ret\;restore %%g0,%1,%Y0\";
+}"
+  [(set_attr "type" "multi")])
+
 (define_insn ""
   [(set (match_operand:SI 0 "restore_operand" "")
 	(match_operand:SI 1 "arith_operand" "rI"))
