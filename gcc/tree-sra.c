@@ -1513,6 +1513,55 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
     }
 }
 
+/* Find all variables within the gimplified statement that were not previously
+   visible to the function and add them to the referenced variables list.  */
+
+static tree
+find_new_referenced_vars_1 (tree *tp, int *walk_subtrees,
+			    void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+
+  if (TREE_CODE (t) == VAR_DECL && !var_ann (t))
+    add_referenced_tmp_var (t);
+
+  if (DECL_P (t) || TYPE_P (t))
+    *walk_subtrees = 0;
+
+  return NULL;
+}
+
+static inline void
+find_new_referenced_vars (tree *stmt_p)
+{
+  walk_tree (stmt_p, find_new_referenced_vars_1, NULL, NULL);
+}
+
+/* Generate an assignment VAR = INIT, where INIT may need gimplification.
+   Add the result to *LIST_P.  */
+
+static void
+generate_one_element_init (tree var, tree init, tree *list_p)
+{
+  tree stmt;
+
+  /* The replacement can be almost arbitrarily complex.  Gimplify.  */
+  stmt = build (MODIFY_EXPR, void_type_node, var, init);
+  gimplify_stmt (&stmt);
+
+  /* The replacement can expose previously unreferenced variables.  */
+  if (TREE_CODE (stmt) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i;
+      for (i = tsi_start (stmt); !tsi_end_p (i); tsi_next (&i))
+	find_new_referenced_vars (tsi_stmt_ptr (i));
+    }
+  else
+    find_new_referenced_vars (&stmt);
+
+  append_to_statement_list (stmt, list_p);
+}
+
 /* Generate a set of assignment statements in *LIST_P to set all instantiated
    elements under ELT with the contents of the initializer INIT.  In addition,
    mark all assigned elements VISITED; this allows easy coordination with
@@ -1536,8 +1585,7 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
     {
       if (elt->replacement)
 	{
-	  t = build (MODIFY_EXPR, void_type_node, elt->replacement, init);
-	  append_to_statement_list (t, list_p);
+	  generate_one_element_init (elt->replacement, init, list_p);
 	  elt->visited = true;
 	}
       return result;
@@ -1774,7 +1822,11 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
 
   /* Generate initialization statements for all members extant in the RHS.  */
   if (rhs)
-    result = generate_element_init (lhs_elt, rhs, &list);
+    {
+      push_gimplify_context ();
+      result = generate_element_init (lhs_elt, rhs, &list);
+      pop_gimplify_context (NULL);
+    }
 
   /* CONSTRUCTOR is defined such that any member not mentioned is assigned
      a zero value.  Initialize the rest of the instantiated elements.  */

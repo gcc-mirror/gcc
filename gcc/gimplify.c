@@ -3816,6 +3816,11 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	    ret = GS_ALL_DONE;
 	  break;
 
+	case SSA_NAME:
+	  /* Allow callbacks into the gimplifier during optimization.  */
+	  ret = GS_ALL_DONE;
+	  break;
+
 	default:
 	  /* If this is a comparison of objects of aggregate type, handle
 	     it specially (by converting to a call to memcmp).  It would be

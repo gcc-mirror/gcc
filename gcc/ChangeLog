@@ -1,3 +1,12 @@
+2004-07-11  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/16422
+	* tree-sra.c (generate_one_element_init): New.
+	(generate_element_init): Use it.
+	(scalarize_init): Push/pop gimplify context around it.
+	(find_new_referenced_vars_1, find_new_referenced_vars): New.
+	* gimplify.c (gimplify_expr): Allow SSA_NAME.
+
 2004-07-11  Roger Sayle  <roger@eyesopen.com>
 
 	* rtlanal.c (insn_rtx_cost): New function, moved and renamed from
