@@ -2,6 +2,7 @@
 
 	* configure.host: Pass -fno-omit-frame-pointer for i386.
 	* configure.in: Likewise.
+	* configure: Regenerate.
 
 2004-03-01  Per Bothner  <per@bothner.com>
 
