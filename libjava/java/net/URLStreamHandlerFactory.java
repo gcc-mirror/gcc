@@ -61,7 +61,7 @@ public interface URLStreamHandlerFactory
     *
     * @return The <code>URLStreamHandler</code> for the specified protocol
     */
-  public URLStreamHandler createURLStreamHandler(String protocol);
+  URLStreamHandler createURLStreamHandler (String protocol);
 
 } // interface URLStreamHandlerFactory
 

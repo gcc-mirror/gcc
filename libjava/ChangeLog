@@ -1,5 +1,18 @@
 2003-10-13  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/java/net/URLStreamHandlerFactory.java
+	(createURLStreamHandler): Removed redundant "public" modifier.
+	* java/sql/DatabaseMetaData.java:
+	(DatabaseMetaData):  Readded accidently removed "public" modifier.
+	* java/sql/ParameterMetaData.java:
+	(ParameterMetaData): Readded accidently removed "public" modifier.
+	* java/sql/PreparedStatement.java:
+	(PreparedStatement): Readded accidently removed "public" modifier.
+	* java/sql/Ref.java:
+	(Ref): Readded accidently removed "public" modifier.
+
+2003-10-13  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/Buffer.java
 	(hasRemaining): Made implementation more clear.
 	* java/nio/MappedByteBuffer.java

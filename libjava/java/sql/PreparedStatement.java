@@ -51,7 +51,7 @@ import java.util.Calendar;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-interface PreparedStatement extends Statement 
+public interface PreparedStatement extends Statement 
 {
   /**
    * This method executes a prepared SQL query and returns its ResultSet.

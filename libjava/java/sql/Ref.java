@@ -46,7 +46,7 @@ import java.util.Map;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.2
  */
-interface Ref 
+public interface Ref 
 {
   /**
    * This method returns the fully qualified name of the SQL structured
