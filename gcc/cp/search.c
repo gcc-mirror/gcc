@@ -1887,14 +1887,14 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		      cp_error_at ("  overriding definition as `%#D'", tmp);
 		      SET_IDENTIFIER_ERROR_LOCUS (name, basetype);
 		    }
-		  break;
+
+		  /* FNDECL overrides this function.  We continue to
+		     check all the other functions in order to catch
+		     errors; it might be that in some other baseclass
+		     a virtual function was declared with the same
+		     parameter types, but a different return type.  */
+		  best = tmp;
 		}
-	    }
-	  /* If not at the end */
-	  if (tmps)
-	    {
-	      best = tmp;
-	      break;
 	    }
 	}
 
