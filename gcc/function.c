@@ -2622,10 +2622,14 @@ instantiate_decls (fndecl, valid_only)
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
-      instantiate_decl (DECL_RTL (decl), int_size_in_bytes (TREE_TYPE (decl)),
-			valid_only);	
-      instantiate_decl (DECL_INCOMING_RTL (decl),
-			int_size_in_bytes (TREE_TYPE (decl)), valid_only);
+      int size = int_size_in_bytes (TREE_TYPE (decl));
+      instantiate_decl (DECL_RTL (decl), size, valid_only);	
+
+      /* If the parameter was promoted, then the incoming RTL mode may be
+	 larger than the declared type size.  We must use the larger of
+	 the two sizes.  */
+      size = MAX (GET_MODE_SIZE (GET_MODE (DECL_INCOMING_RTL (decl))), size);
+      instantiate_decl (DECL_INCOMING_RTL (decl), size, valid_only);
     }
 
   /* Now process all variables defined in the function or its subblocks.  */
