@@ -1798,13 +1798,16 @@ nonoverlapping_memrefs_p (x, y)
   if (GET_CODE (basey) == PLUS && GET_CODE (XEXP (basey, 1)) == CONST_INT)
     offsety = INTVAL (XEXP (basey, 1)), basey = XEXP (basey, 0);
 
-  /* If the bases are both constant and they are different, we know these
-     do not overlap.  If they are both registers, we can only deduce
-     something if they are the same register.  */
-  if (CONSTANT_P (basex) && CONSTANT_P (basey) && ! rtx_equal_p (basex, basey))
-    return 1;
-  else if (! rtx_equal_p (basex, basey))
-    return 0;
+  /* If the bases are different, we know they do not overlap if both
+     are constants or if one is a constant and the other a pointer into the 
+     stack frame.  Otherwise a different base means we can't tell if they
+     overlap or not.  */
+  if (! rtx_equal_p (basex, basey))
+      return ((CONSTANT_P (basex) && CONSTANT_P (basey))
+	      || (CONSTANT_P (basex) && REG_P (basey)
+		  && REGNO (basey) <= LAST_VIRTUAL_REGISTER)
+	      || (CONSTANT_P (basey) && REG_P (basex)
+		  && REGNO (basex) <= LAST_VIRTUAL_REGISTER));
 
   sizex = (REG_P (rtlx) ? GET_MODE_SIZE (GET_MODE (rtlx))
 	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
@@ -1816,9 +1819,9 @@ nonoverlapping_memrefs_p (x, y)
   /* If we have an offset or size for either memref, it can update the values
      computed above.  */
   if (MEM_OFFSET (x))
-    offsetx += INTVAL (MEM_OFFSET (x));
+    offsetx += INTVAL (MEM_OFFSET (x)), sizex -= INTVAL (MEM_OFFSET (x));
   if (MEM_OFFSET (y))
-    offsety += INTVAL (MEM_OFFSET (y));
+    offsety += INTVAL (MEM_OFFSET (y)), sizey -= INTVAL (MEM_OFFSET (y));
 
   if (MEM_SIZE (x))
     sizex = INTVAL (MEM_SIZE (x));
