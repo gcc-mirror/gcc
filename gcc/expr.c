@@ -6211,7 +6211,7 @@ expand_var (tree var)
 	  set_mem_attributes (x, var, 1);
 	  SET_DECL_RTL (var, x);
 	}
-      else if ((*lang_hooks.expand_decl) (var))
+      else if (lang_hooks.expand_decl (var))
 	/* OK.  */;
       else if (TREE_CODE (var) == VAR_DECL && !TREE_STATIC (var))
 	expand_decl (var);
@@ -6860,7 +6860,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      {
 		if (TREE_USED (block))
 		  abort ();
-		(*lang_hooks.decls.insert_block) (block);
+		lang_hooks.decls.insert_block (block);
 	      }
 	  }
 
@@ -7617,10 +7617,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	{
 	  if (DECL_BUILT_IN_CLASS (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
 	      == BUILT_IN_FRONTEND)
-	  /* ??? Use (*fun) form because expand_expr is a macro.  */
-	    return (*lang_hooks.expand_expr) (exp, original_target,
-					      tmode, modifier,
-					      alt_rtl);
+	    return lang_hooks.expand_expr (exp, original_target,
+					   tmode, modifier,
+					   alt_rtl);
 	  else
 	    return expand_builtin (exp, target, subtarget, tmode, ignore);
 	}
@@ -9365,9 +9364,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return const0_rtx;
 
     default:
-      /* ??? Use (*fun) form because expand_expr is a macro.  */
-      return (*lang_hooks.expand_expr) (exp, original_target, tmode,
-					modifier, alt_rtl);
+      return lang_hooks.expand_expr (exp, original_target, tmode,
+				     modifier, alt_rtl);
     }
 
   /* Here to do an ordinary binary operator, generating an instruction

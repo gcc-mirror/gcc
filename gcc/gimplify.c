@@ -2229,7 +2229,7 @@ gimple_boolify (tree expr)
 
   /* If this is the predicate of a COND_EXPR, it might not even be a
      truthvalue yet.  */
-  expr = (*lang_hooks.truthvalue_conversion) (expr);
+  expr = lang_hooks.truthvalue_conversion (expr);
 
   switch (TREE_CODE (expr))
     {
@@ -2693,7 +2693,7 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	  recompute_tree_invarant_for_addr_expr (expr);
 
 	  /* Mark the RHS addressable.  */
-	  (*lang_hooks.mark_addressable) (TREE_OPERAND (expr, 0));
+	  lang_hooks.mark_addressable (TREE_OPERAND (expr, 0));
 	}
       break;
     }
@@ -2736,7 +2736,7 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
 			       &allows_mem, &allows_reg, &is_inout);
 
       if (!allows_reg && allows_mem)
-	(*lang_hooks.mark_addressable) (TREE_VALUE (link));
+	lang_hooks.mark_addressable (TREE_VALUE (link));
 
       tret = gimplify_expr (&TREE_VALUE (link), pre_p, post_p,
 			    is_inout ? is_gimple_min_lval : is_gimple_lvalue,
@@ -2786,7 +2786,7 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
       /* If the operand is a memory input, it should be an lvalue.  */
       if (!allows_reg && allows_mem)
 	{
-	  (*lang_hooks.mark_addressable) (TREE_VALUE (link));
+	  lang_hooks.mark_addressable (TREE_VALUE (link));
 	  tret = gimplify_expr (&TREE_VALUE (link), pre_p, post_p,
 				is_gimple_lvalue, fb_lvalue | fb_mayfail);
 	  if (tret == GS_ERROR)
@@ -3100,7 +3100,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	}
 
       /* Do any language-specific gimplification.  */
-      ret = (*lang_hooks.gimplify_expr) (expr_p, pre_p, post_p);
+      ret = lang_hooks.gimplify_expr (expr_p, pre_p, post_p);
       if (ret == GS_OK)
 	{
 	  if (*expr_p == NULL_TREE)

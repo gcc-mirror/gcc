@@ -1919,7 +1919,7 @@ static void
 dump_alias_stats (FILE *file)
 {
   const char *funcname
-    = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    = lang_hooks.decl_printable_name (current_function_decl, 2);
   fprintf (file, "\nAlias statistics for %s\n\n", funcname);
   fprintf (file, "Total alias queries:\t%u\n", alias_stats.alias_queries);
   fprintf (file, "Total alias mayalias results:\t%u\n", 
@@ -1948,7 +1948,7 @@ dump_alias_info (FILE *file)
 {
   size_t i;
   const char *funcname
-    = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    = lang_hooks.decl_printable_name (current_function_decl, 2);
 
   fprintf (file, "\nAlias information for %s\n\n", funcname);
 
@@ -2031,7 +2031,7 @@ dump_points_to_info (FILE *file)
   block_stmt_iterator si;
   size_t i;
   const char *fname =
-    (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    lang_hooks.decl_printable_name (current_function_decl, 2);
 
   fprintf (file, "\n\nPointed-to sets for pointers in %s\n\n", fname);
 

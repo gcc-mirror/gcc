@@ -508,13 +508,19 @@ extern rtx store_expr (tree, rtx, int);
    Useful after calling expand_expr with 1 as sum_ok.  */
 extern rtx force_operand (rtx, rtx);
 
+/* Work horse for expand_expr.  */
+extern rtx expand_expr_real (tree, rtx, enum machine_mode, 
+			     enum expand_modifier, rtx *);
+
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
    In the case of a void EXP, const0_rtx is returned.  */
-#define expand_expr(EXP, TARGET, MODE, MODIFIER) \
-  expand_expr_real((EXP), (TARGET), (MODE), (MODIFIER), NULL)
-extern rtx expand_expr_real (tree, rtx, enum machine_mode, 
-			     enum expand_modifier, rtx *);
+static inline rtx
+expand_expr (tree exp, rtx target, enum machine_mode mode,
+	     enum expand_modifier modifier)
+{
+  return expand_expr_real(exp, target, mode, modifier, NULL);
+}
 
 extern void expand_var (tree);
 

@@ -605,7 +605,7 @@ dump_immediate_uses (FILE *file)
   basic_block bb;
   block_stmt_iterator si;
   const char *funcname
-    = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    = lang_hooks.decl_printable_name (current_function_decl, 2);
 
   fprintf (file, "\nDef-use edges for function %s\n", funcname);
 
@@ -682,7 +682,7 @@ dump_dfa_stats (FILE *file)
   const char * const fmt_str_1 = "%-30s%13lu%11lu%c\n";
   const char * const fmt_str_3 = "%-43s%11lu%c\n";
   const char *funcname
-    = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    = lang_hooks.decl_printable_name (current_function_decl, 2);
 
   collect_dfa_stats (&dfa_stats);
 

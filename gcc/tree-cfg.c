@@ -2141,7 +2141,7 @@ dump_tree_cfg (FILE *file, int flags)
   if (flags & TDF_DETAILS)
     {
       const char *funcname
-	= (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+	= lang_hooks.decl_printable_name (current_function_decl, 2);
 
       fputc ('\n', file);
       fprintf (file, ";; Function %s\n\n", funcname);
@@ -2172,7 +2172,7 @@ dump_cfg_stats (FILE *file)
   const char * const fmt_str_1 = "%-30s%13lu%11lu%c\n";
   const char * const fmt_str_3 = "%-43s%11lu%c\n";
   const char *funcname
-    = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    = lang_hooks.decl_printable_name (current_function_decl, 2);
 
 
   fprintf (file, "\nCFG Statistics for %s\n\n", funcname);
@@ -2237,7 +2237,7 @@ tree_cfg2vcg (FILE *file)
   edge e;
   basic_block bb;
   const char *funcname
-    = (*lang_hooks.decl_printable_name) (current_function_decl, 2);
+    = lang_hooks.decl_printable_name (current_function_decl, 2);
 
   /* Write the file header.  */
   fprintf (file, "graph: { title: \"%s\"\n", funcname);
@@ -4062,7 +4062,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   basic_block bb;
   tree chain;
 
-  fprintf (file, "%s (", (*lang_hooks.decl_printable_name) (fn, 2));
+  fprintf (file, "%s (", lang_hooks.decl_printable_name (fn, 2));
 
   arg = DECL_ARGUMENTS (fn);
   while (arg)

@@ -52,8 +52,8 @@ static void dump_generic_bb_buff (pretty_printer *, basic_block, int, int);
 
 #define PRINT_FUNCTION_NAME(NODE)  pp_printf             \
   (buffer, "%s", TREE_CODE (NODE) == NOP_EXPR ?              \
-   (*lang_hooks.decl_printable_name) (TREE_OPERAND (NODE, 0), 1) : \
-   (*lang_hooks.decl_printable_name) (NODE, 1))
+   lang_hooks.decl_printable_name (TREE_OPERAND (NODE, 0), 1) : \
+   lang_hooks.decl_printable_name (NODE, 1))
 
 #define MASK_POINTER(P)	((unsigned)((unsigned long)(P) & 0xffff))
 

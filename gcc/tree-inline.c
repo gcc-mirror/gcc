@@ -394,7 +394,7 @@ remap_block (tree *block, inline_data *id)
     /* We're building a clone; DECL_INITIAL is still
        error_mark_node, and current_binding_level is the parm
        binding level.  */
-    (*lang_hooks.decls.insert_block) (new_block);
+    lang_hooks.decls.insert_block (new_block);
   else
     {
       /* Attach this new block after the DECL_INITIAL block for the
@@ -1930,7 +1930,7 @@ save_body (tree fn, tree *arg_copy)
   for (parg = arg_copy; *parg; parg = &TREE_CHAIN (*parg))
     {
       tree new = copy_node (*parg);
-      (*lang_hooks.dup_lang_specific_decl) (new);
+      lang_hooks.dup_lang_specific_decl (new);
       DECL_ABSTRACT_ORIGIN (new) = DECL_ORIGIN (*parg);
       insert_decl_map (&id, *parg, new);
       TREE_CHAIN (new) = TREE_CHAIN (*parg);
@@ -2017,8 +2017,8 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	return NULL_TREE;
     }
 
-  result = (*lang_hooks.tree_inlining.walk_subtrees) (tp, &walk_subtrees, func,
-						      data, htab);
+  result = lang_hooks.tree_inlining.walk_subtrees (tp, &walk_subtrees, func,
+						   data, htab);
   if (result || ! walk_subtrees)
     return result;
 
@@ -2056,7 +2056,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	}
 #endif
 
-      if ((*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp))
+      if (lang_hooks.tree_inlining.tree_chain_matters_p (*tp))
 	/* Check our siblings.  */
 	WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
     }

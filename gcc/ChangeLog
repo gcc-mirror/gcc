@@ -1,3 +1,33 @@
+2004-05-15  Steven Bosscher  <stevenb@suse.de>
+
+	* c-gimplify.c (c_genericize):
+	Replace calls via (*lang_hooks.foo) with lang_hooks.foo.
+	* c-parse.in <expr_no_commas>: Likewise.
+	<if_prefix>: Likewise.
+	<select_or_iter_stmt>: Likewise.
+	* expr.c (expand_var, expand_expr_real_1): Likewise.
+	* expr.h (expand_expr): Make it a static inline function.
+	Move prototype for expand_expr_real up before this.
+	* fold-const.c (fold_relational_hi_lo, fold_relational_const):
+	Likewise.
+	* gimplify.c (gimple_boolify, gimplify_addr_expr,
+	gimplify_asm_expr, gimplify_expr): Likewise.
+	* tree-cfg.c (dump_tree_cfg, dump_cfg_stats, tree_cfg2vcg,
+	dump_function_to_file): Likewise.
+	* tree-dfa.c (dump_immediate_uses, dump_dfa_stats): Likewise.
+	* tree-inline.c (remap_block, save_body, walk_tree): Likewise.
+	* tree-into-ssa.c (dump_tree_ssa): Likewise.
+	* tree-mudflap.c (mf_varname_tree, mf_file_function_line_tree):
+	Likewise.
+	* tree-optimize.c (execute_one_pass): Likewise.
+	* tree-pretty-print.c (dump_generic_bb_buff): Likewise.
+	* tree-ssa-alias.c (dump_alias_stats, dump_alias_info): Likewise.
+
+	* objc/objc-act.c (objc_build_try_enter_fragment,
+	objc_build_try_epilogue, objc_build_catch_stmt,
+	objc_build_finally_prologue): Replace calls via (*lang_hooks.foo)
+	with lang_hooks.foo ().
+
 2004-05-15  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (simplify_builtin_strcpy): Avoid use of chainon, so
