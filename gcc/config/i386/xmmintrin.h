@@ -30,6 +30,10 @@
 #ifndef _XMMINTRIN_H_INCLUDED
 #define _XMMINTRIN_H_INCLUDED
 
+#ifndef __SSE__
+# error "SSE instruction set not enabled"
+#else
+
 /* We need type definitions from the MMX header file.  */
 #include <mmintrin.h>
 
@@ -1082,8 +1086,158 @@ typedef int __v4si __attribute__ ((mode (V4SI)));
 typedef int __v8hi __attribute__ ((mode (V8HI)));
 typedef int __v16qi __attribute__ ((mode (V16QI)));
 
+/* Create a selector for use with the SHUFPD instruction.  */
+#define _MM_SHUFFLE2(fp1,fp0) \
+ (((fp1) << 1) | (fp0))
+
 #define __m128i __v2di
 #define __m128d __v2df
+
+/* Create a vector with element 0 as *P and the rest zero.  */
+static __inline __m128d
+_mm_load_sd (double *__P)
+{
+  return (__m128d) __builtin_ia32_loadsd (__P);
+}
+
+/* Create a vector with all two elements equal to *P.  */
+static __inline __m128d
+_mm_load1_pd (double *__P)
+{
+  __v2df __tmp = __builtin_ia32_loadsd (__P);
+  return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,0));
+}
+
+static __inline __m128d
+_mm_load_pd1 (double *__P)
+{
+  return _mm_load1_pd (__P);
+}
+
+/* Load two DPFP values from P.  The addresd must be 16-byte aligned.  */
+static __inline __m128d
+_mm_load_pd (double *__P)
+{
+  return (__m128d) __builtin_ia32_loadapd (__P);
+}
+
+/* Load two DPFP values from P.  The addresd need not be 16-byte aligned.  */
+static __inline __m128d
+_mm_loadu_pd (double *__P)
+{
+  return (__m128d) __builtin_ia32_loadupd (__P);
+}
+
+/* Load two DPFP values in reverse order.  The addresd must be aligned.  */
+static __inline __m128d
+_mm_loadr_pd (double *__P)
+{
+  __v2df __tmp = __builtin_ia32_loadapd (__P);
+  return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,1));
+}
+
+/* Create a vector with element 0 as F and the rest zero.  */
+static __inline __m128d
+_mm_set_sd (double __F)
+{
+  return (__m128d) __builtin_ia32_loadsd (&__F);
+}
+
+/* Create a vector with all two elements equal to F.  */
+static __inline __m128d
+_mm_set1_pd (double __F)
+{
+  __v2df __tmp = __builtin_ia32_loadsd (&__F);
+  return (__m128d) __builtin_ia32_shufpd (__tmp, __tmp, _MM_SHUFFLE2 (0,0));
+}
+
+static __inline __m128d
+_mm_set_pd1 (double __F)
+{
+  return _mm_set1_pd (__F);
+}
+
+/* Create the vector [Z Y].  */
+static __inline __m128d
+_mm_set_pd (double __Z, double __Y)
+{
+  union {
+    double __a[2];
+    __m128d __v;
+  } __u;
+
+  __u.__a[0] = __Y;
+  __u.__a[1] = __Z;
+
+  return __u.__v;
+}
+
+/* Create the vector [Y Z].  */
+static __inline __m128d
+_mm_setr_pd (double __Z, double __Y)
+{
+  return _mm_set_pd (__Y, __Z);
+}
+
+/* Create a vector of zeros.  */
+static __inline __m128d
+_mm_setzero_pd (void)
+{
+  return (__m128d) __builtin_ia32_setzeropd ();
+}
+
+/* Stores the lower DPFP value.  */
+static __inline void
+_mm_store_sd (double *__P, __m128d __A)
+{
+  __builtin_ia32_storesd (__P, (__v2df)__A);
+}
+
+/* Store the lower DPFP value acrosd two words.  */
+static __inline void
+_mm_store1_pd (double *__P, __m128d __A)
+{
+  __v2df __va = (__v2df)__A;
+  __v2df __tmp = __builtin_ia32_shufpd (__va, __va, _MM_SHUFFLE2 (0,0));
+  __builtin_ia32_storeapd (__P, __tmp);
+}
+
+static __inline void
+_mm_store_pd1 (double *__P, __m128d __A)
+{
+  _mm_store1_pd (__P, __A);
+}
+
+/* Store two DPFP values.  The addresd must be 16-byte aligned.  */
+static __inline void
+_mm_store_pd (double *__P, __m128d __A)
+{
+  __builtin_ia32_storeapd (__P, (__v2df)__A);
+}
+
+/* Store two DPFP values.  The addresd need not be 16-byte aligned.  */
+static __inline void
+_mm_storeu_pd (double *__P, __m128d __A)
+{
+  __builtin_ia32_storeupd (__P, (__v2df)__A);
+}
+
+/* Store two DPFP values in reverse order.  The addresd must be aligned.  */
+static __inline void
+_mm_storer_pd (double *__P, __m128d __A)
+{
+  __v2df __va = (__v2df)__A;
+  __v2df __tmp = __builtin_ia32_shufpd (__va, __va, _MM_SHUFFLE2 (0,1));
+  __builtin_ia32_storeapd (__P, __tmp);
+}
+
+/* Sets the low DPFP value of A from the low value of B.  */
+static __inline __m128d
+_mm_move_sd (__m128d __A, __m128d __B)
+{
+  return (__m128d) __builtin_ia32_movsd ((__v2df)__A, (__v2df)__B);
+}
+
 
 static __inline __m128d
 _mm_add_pd (__m128d __A, __m128d __B)
@@ -2013,6 +2167,7 @@ _mm_mfence (void)
   __builtin_ia32_mfence ();
 }
 
-#endif /* __SSE2_BUILTINS__  */
+#endif /* __SSE2__  */
 
+#endif /* __SSE__ */
 #endif /* _XMMINTRIN_H_INCLUDED */
