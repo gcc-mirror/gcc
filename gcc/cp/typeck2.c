@@ -669,10 +669,6 @@ store_init_value (decl, init)
 	}
     }
 
-  if (TYPE_PTRMEMFUNC_P (type) && TREE_CODE (init) == CONSTRUCTOR
-      && TREE_TYPE (init) == NULL_TREE)
-    cp_pedwarn ("initializer list for `%T'", type);
-
   /* End of special C++ code.  */
 
   /* Digest the specified initializer into an expression.  */
@@ -763,24 +759,9 @@ digest_init (type, init, tail)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
-  if (init && TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (type))
-    init = default_conversion (init);
-
-  if (init && TYPE_PTRMEMFUNC_P (type)
-      && ((TREE_CODE (init) == ADDR_EXPR
-	   && ((TREE_CODE (TREE_TYPE (init)) == POINTER_TYPE
-		&& TREE_CODE (TREE_TYPE (TREE_TYPE (init))) == METHOD_TYPE)
-	       || TREE_CODE (TREE_OPERAND (init, 0)) == TREE_LIST))
-	  || TREE_CODE (init) == TREE_LIST
-	  || integer_zerop (init)
-	  || (TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (TREE_TYPE (init)))))
-    {
-      return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), init, 0);
-    }
-
   raw_constructor = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
 
-  if (init && raw_constructor
+  if (raw_constructor
       && CONSTRUCTOR_ELTS (init) != 0
       && TREE_CHAIN (CONSTRUCTOR_ELTS (init)) == 0)
     {
@@ -790,41 +771,6 @@ digest_init (type, init, tail)
 	element = TREE_OPERAND (element, 0);
       if (element == error_mark_node)
 	return element;
-    }
-
-  /* Any type can be initialized from an expression of the same type,
-     optionally with braces.  */
-
-  if (init && TREE_TYPE (init)
-      && (TYPE_MAIN_VARIANT (TREE_TYPE (init)) == type
-	  || (code == ARRAY_TYPE && comptypes (TREE_TYPE (init), type, 1))))
-    {
-      if (pedantic && code == ARRAY_TYPE
-	  && TREE_CODE (init) != STRING_CST)
-	pedwarn ("ANSI C++ forbids initializing array from array expression");
-      if (TREE_CODE (init) == CONST_DECL)
-	init = DECL_INITIAL (init);
-      else if (TREE_READONLY_DECL_P (init))
-	init = decl_constant_value (init);
-      else if (IS_AGGR_TYPE (type) && TYPE_NEEDS_CONSTRUCTING (type))
-	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
-			    LOOKUP_NORMAL);
-      return init;
-    }
-
-  if (element && (TREE_TYPE (element) == type
-		  || (code == ARRAY_TYPE && TREE_TYPE (element)
-		      && comptypes (TREE_TYPE (element), type, 1))))
-    {
-      if (pedantic && code == ARRAY_TYPE)
-	pedwarn ("ANSI C++ forbids initializing array from array expression");
-      if (pedantic && (code == RECORD_TYPE || code == UNION_TYPE))
-	pedwarn ("ANSI C++ forbids single nonscalar initializer with braces");
-      if (TREE_CODE (element) == CONST_DECL)
-	element = DECL_INITIAL (element);
-      else if (TREE_READONLY_DECL_P (element))
-	element = decl_constant_value (element);
-      return element;
     }
 
   /* Initialization of an array of chars from a string constant
@@ -858,11 +804,6 @@ digest_init (type, init, tail)
 	      return error_mark_node;
 	    }
 
-	  if (pedantic
-	      && typ1 != char_type_node
-	      && typ1 != signed_char_type_node
-	      && typ1 != unsigned_char_type_node)
-	    pedwarn ("ANSI C++ forbids string initializer except for `char' elements");
 	  TREE_TYPE (string) = type;
 	  if (TYPE_DOMAIN (type) != 0
 	      && TREE_CONSTANT (TYPE_SIZE (type)))
@@ -887,6 +828,7 @@ digest_init (type, init, tail)
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
       || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
+      || TYPE_PTRMEMFUNC_P (type)
       || (code == RECORD_TYPE && ! raw_constructor
 	  && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type))))
     {
@@ -899,9 +841,7 @@ digest_init (type, init, tail)
 	    }
 	  init = element;
 	}
-      while (TREE_CODE (init) == CONSTRUCTOR
-	     && ! (TREE_TYPE (init)
-		   && TYPE_PTRMEMFUNC_P (TREE_TYPE (init))))
+      while (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
 	{
 	  cp_pedwarn ("braces around scalar initializer for `%T'", type);
 	  init = CONSTRUCTOR_ELTS (init);
@@ -933,15 +873,9 @@ digest_init (type, init, tail)
 	}
       else if (raw_constructor)
 	return process_init_constructor (type, init, (tree *)0);
-      else if (TYPE_NON_AGGREGATE_CLASS (type))
-	{
-	  int flags = LOOKUP_NORMAL;
-	  /* Initialization from { } is copy-initialization.  */
-	  if (tail)
-	    flags |= LOOKUP_ONLYCONVERTING;
-	  return convert_for_initialization (0, type, init, flags,
-					     "initialization", NULL_TREE, 0);
-	}
+      else if (can_convert_arg (type, TREE_TYPE (init), init)
+	       || TYPE_NON_AGGREGATE_CLASS (type))
+	/* These are never initialized from multiple constructor elements.  */;
       else if (tail != 0)
 	{
 	  *tail = old_tail_contents;
@@ -949,8 +883,15 @@ digest_init (type, init, tail)
 	}
 
       if (code != ARRAY_TYPE)
-	return convert_for_initialization (NULL_TREE, type, init, LOOKUP_NORMAL,
-					   "initialization", NULL_TREE, 0);
+	{
+	  int flags = LOOKUP_NORMAL;
+	  /* Initialization from { } is copy-initialization.  */
+	  if (tail)
+	    flags |= LOOKUP_ONLYCONVERTING;
+
+	  return convert_for_initialization (NULL_TREE, type, init, flags,
+					     "initialization", NULL_TREE, 0);
+	}
     }
 
   error ("invalid initializer");

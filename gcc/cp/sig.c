@@ -880,7 +880,6 @@ build_signature_pointer_constructor (lhs, rhs)
       result = tree_cons (NULL_TREE, optr_expr,
 			  build_tree_list (NULL_TREE, sptr_expr));
       result = build_nt (CONSTRUCTOR, NULL_TREE, result);
-      TREE_HAS_CONSTRUCTOR (result) = 1;
       result = digest_init (lhstype, result, 0);
     }
   else

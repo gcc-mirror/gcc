@@ -1,3 +1,15 @@
+Thu Apr  9 02:40:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* sig.c (build_signature_pointer_constructor): Don't set
+	TREE_HAS_CONSTRUCTOR for a signature pointer.
+	* cvt.c (ocp_convert): Don't force a temporary for internal structs.
+	* init.c (resolve_offset_ref): Warn about implicit & on pmfs 
+	here, too.
+	* typeck.c (build_unary_op): Only allow taking the address of a 
+	real constructor.
+	* typeck2.c (digest_init): Simplify.
+	(store_init_value): Don't pedwarn about using { } for pmfs.
+
 Thu Apr  9 22:16:57 1998  Per Bothner  <bothner@cygnus.com>
 
         * cp-tree.h (start_decl):  Update prototype.
