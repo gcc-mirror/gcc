@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 # unicode-muncher.pl -- generate Unicode database for java.lang.Character
-# Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1998, 2002, 2004  Free Software Foundation, Inc.
 #
 # This file is part of GNU Classpath.
 #
@@ -36,18 +36,22 @@
 # obligated to do so.  If you do not wish to do so, delete this
 # exception statement from your version.
 
-# Code for reading UnicodeData.txt and generating the code for
-# gnu.java.lang.CharData.  For now, the relevant Unicode definition files
-# are found in libjava/gnu/gcj/convert/.
+# Code for reading UnicodeData-3.0.0.txt and SpecialCasing-2.txt to generate
+# the code for gnu.java.lang.CharData. The relevant files can be found here:
+#
+#   http://www.unicode.org/Public/3.0-Update/UnicodeData-3.0.0.txt
+#   http://www.unicode.org/Public/3.0-Update/SpecialCasing-2.txt
 #
 # Inspired by code from Jochen Hoenicke.
 # author Eric Blake <ebb9@email.byu.edu>
 #
-# Usage: ./unicode-muncher <UnicodeData.txt> <CharData.java>
+# Usage: ./unicode-muncher <UnicodeData.txt> <SpecialCasing> <CharData.java>
 #   where <UnicodeData.txt> is obtained from www.unicode.org (named
-#   UnicodeData-3.0.0.txt for Unicode version 3.0.0), and <CharData.java>
-#   is the final location for the Java interface gnu.java.lang.CharData.
-#   As of JDK 1.4, use Unicode version 3.0.0 for best results.
+#   UnicodeData-3.0.0.txt for Unicode version 3.0.0), <SpecialCasing>
+#   is obtained from www.unicode too (named SpecialCasing-2.txt for Unicode
+#   version 3.0.0), and <CharData.java> is the final location for the Java
+#   interface gnu.java.lang.CharData. As of JDK 1.4, use Unicode version 3.0.0
+#   for best results.
 
 ##
 ## Convert a 16-bit integer to a Java source code String literal character
@@ -75,20 +79,42 @@ my @DIRCODES = qw(L R AL EN ES ET AN CS NSM BN B S WS ON LRE LRO RLE RLO PDF);
 my $NOBREAK_FLAG  = 32;
 my $MIRRORED_FLAG = 64;
 
+my %special = ();
 my @info = ();
 my $titlecase = "";
 my $count = 0;
 my $range = 0;
 
-die "Usage: $0 <UnicodeData.txt> <CharData.java>" unless @ARGV == 2;
-open (UNICODE, "< $ARGV[0]") || die "Can't open Unicode attribute file: $!\n";
+die "Usage: $0 <UnicodeData.txt> <SpecialCasing.txt> <CharData.java>"
+    unless @ARGV == 3;
+$| = 1;
+print "GNU Classpath Unicode Attribute Database Generator 2.1\n";
+print "Copyright (C) 1998, 2002 Free Software Foundation, Inc.\n";
+
+# Stage 0: Parse the special casing file
+print "Parsing special casing file\n";
+open (SPECIAL, "< $ARGV[1]") || die "Can't open special casing file: $!\n";
+while (<SPECIAL>) {
+    next if /^\#/;
+    my ($ch, undef, undef, $upper) = split / *; */;
+
+    # This grabs only the special casing for multi-char uppercase. Note that
+    # there are no multi-char lowercase, and that Sun ignores multi-char
+    # titlecase rules. This script omits 3 special cases in Unicode 3.0.0,
+    # which must be hardcoded in java.lang.String:
+    #  \u03a3 (Sun ignores this special case)
+    #  \u0049 - lowercases to \u0131, but only in Turkish locale
+    #  \u0069 - uppercases to \u0130, but only in Turkish locale
+    next unless defined $upper and $upper =~ / /;
+    $special{hex $ch} = [map {hex} split ' ', $upper];
+}
+
+close SPECIAL;
 
 # Stage 1: Parse the attribute file
-$| = 1;
-print "GNU Classpath Unicode Attribute Database Generator 2.0\n";
-print "Copyright (C) 1998, 2002 Free Software Foundation, Inc.\n";
 print "Parsing attributes file";
-while(<UNICODE>) {
+open (UNICODE, "< $ARGV[0]") || die "Can't open Unicode attribute file: $!\n";
+while (<UNICODE>) {
     print "." unless $count++ % 1000;
     chomp;
     s/\r//g;
@@ -142,6 +168,8 @@ while(<UNICODE>) {
             last;
         }
     }
+    $direction <<= 2;
+    $direction += $#{$special{$ch}} if defined $special{$ch};
 
     if ($range) {
         die "Expecting end of range at $ch\n" unless $name =~ /Last>$/;
@@ -167,9 +195,7 @@ my @charinfo = ();
 
 for my $ch (0 .. 0xffff) {
     print "." unless $count++ % 0x1000;
-    if (! defined $info[$ch]) {
-        $info[$ch] = pack("n5", 0, -1, 0, 0, -1);
-    }
+    $info[$ch] = pack("n5", 0, -1, 0, 0, -4) unless defined $info[$ch];
 
     my ($type, $numVal, $upper, $lower, $direction) = unpack("n5", $info[$ch]);
     if (! exists $charhash{$info[$ch]}) {
@@ -209,7 +235,7 @@ for my $i (3 .. 8) {
     for ($j = $blksize - 1; $j > 0; $j--) {
         my %tails = ();
         for $k (0 .. $#blkarray) {
-            next if ! defined $blkarray[$k];
+            next unless defined $blkarray[$k];
             my $len = length $blkarray[$k];
             my $tail = substr $blkarray[$k], $len - $j * 2;
             if (exists $tails{$tail}) {
@@ -222,12 +248,12 @@ for my $i (3 .. 8) {
         # tails are calculated, now calculate the heads and merge.
       BLOCK:
         for $k (0 .. $#blkarray) {
-            next if ! defined $blkarray[$k];
+            next unless defined $blkarray[$k];
             my $tomerge = $k;
             while (1) {
                 my $head = substr($blkarray[$tomerge], 0, $j * 2);
                 my $entry = $tails{$head};
-                next BLOCK if ! defined $entry;
+                next BLOCK unless defined $entry;
 
                 my $other = shift @{$entry};
                 if ($other == $tomerge) {
@@ -297,10 +323,10 @@ die "UTF-8 limit of blocks may be exceeded: " . scalar(@blocks) . "\n"
 die "UTF-8 limit of data may be exceeded: " . length($bestblkstr) . "\n"
     if length($bestblkstr) > 0xffff / 3;
 {
-    print "Generating $ARGV[1] with shift of $bestshift";
+    print "Generating $ARGV[2] with shift of $bestshift";
     my ($i, $j);
 
-    open OUTPUT, "> $ARGV[1]" or die "Failed creating output file: $!\n";
+    open OUTPUT, "> $ARGV[2]" or die "Failed creating output file: $!\n";
     print OUTPUT <<EOF;
 /* gnu/java/lang/CharData -- Database for java.lang.Character Unicode info
    Copyright (C) 2002 Free Software Foundation, Inc.
@@ -345,8 +371,9 @@ package gnu.java.lang;
 /**
  * This contains the info about the unicode characters, that
  * java.lang.Character needs.  It is generated automatically from
- * <code>$ARGV[0]</code>, by some
- * perl scripts. This Unicode definition file can be found on the
+ * <code>$ARGV[0]</code> and
+ * <code>$ARGV[1]</code>, by some
+ * perl scripts. These Unicode definition files can be found on the
  * <a href="http://www.unicode.org">http://www.unicode.org</a> website.
  * JDK 1.4 uses Unicode version 3.0.0.
  *
@@ -358,13 +385,18 @@ package gnu.java.lang;
  * into the attribute tables <code>UPPER</code>, <code>LOWER</code>,
  * <code>NUM_VALUE</code>, and <code>DIRECTION</code>.  Notice that the
  * attribute tables are much smaller than 0xffff entries; as many characters
- * in Unicode share common attributes.  Finally, there is a listing for
- * <code>TITLE</code> exceptions (most characters just have the same
- * title case as upper case).
+ * in Unicode share common attributes.  The DIRECTION table also contains
+ * a field for detecting characters with multi-character uppercase expansions.
+ * Next, there is a listing for <code>TITLE</code> exceptions (most characters
+ * just have the same title case as upper case).  Finally, there are two
+ * tables for multi-character capitalization, <code>UPPER_SPECIAL</code>
+ * which lists the characters which are special cased, and
+ * <code>UPPER_EXPAND</code>, which lists their expansion.
  *
  * \@author scripts/unicode-muncher.pl (written by Jochen Hoenicke,
  *         Eric Blake)
  * \@see Character
+ * \@see String
  */
 public interface CharData
 {
@@ -417,7 +449,7 @@ EOF
         print OUTPUT $i ? "\n    + \"" : "    = \"";
         for $j (0 .. 10) {
             last if $len <= $i * 11 + $j;
-            my $val = unpack "n", substr($bestblkstr, 2 * ($i*11 + $j), 2);
+            my $val = unpack "n", substr($bestblkstr, 2 * ($i * 11 + $j), 2);
             print OUTPUT javaChar($val);
         }
         print OUTPUT "\"";
@@ -451,10 +483,12 @@ EOF
 ;
 
   /**
-   * This is the attribute table for computing the uppercase representation
-   * of a character.  The value is the signed difference between the
-   * character and its uppercase version.  Note that this is stored as an
-   * unsigned char since this is a String literal.
+   * This is the attribute table for computing the single-character uppercase
+   * representation of a character.  The value is the signed difference
+   * between the character and its uppercase version.  Note that this is
+   * stored as an unsigned char since this is a String literal.  When
+   * capitalizing a String, you must first check if a multi-character uppercase
+   * sequence exists before using this character.
    */
   String UPPER
 EOF
@@ -483,11 +517,11 @@ EOF
 EOF
 
     $len = @charinfo;
-    for ($i = 0; $i < $len / 11; $i++) {
+    for ($i = 0; $i < $len / 13; $i++) {
         print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 10) {
-            last if $len <= $i * 11 + $j;
-            my $val = $charinfo[$i * 11 + $j][2];
+        for $j (0 .. 12) {
+            last if $len <= $i * 13 + $j;
+            my $val = $charinfo[$i * 13 + $j][2];
             print OUTPUT javaChar($val);
         }
         print OUTPUT "\"";
@@ -498,19 +532,25 @@ EOF
 
   /**
    * This is the attribute table for computing the directionality class
-   * of a character.  At present, the value is in the range 0 - 18 if the
-   * character has a direction, otherwise it is -1.  Note that this is
-   * stored as an unsigned char since this is a String literal.
+   * of a character, as well as a marker of characters with a multi-character
+   * capitalization.  The direction is taken by performing a signed shift
+   * right by 2 (where a result of -1 means an unknown direction, such as
+   * for undefined characters). The lower 2 bits form a count of the
+   * additional characters that will be added to a String when performing
+   * multi-character uppercase expansion. This count is also used, along with
+   * the offset in UPPER_SPECIAL, to determine how much of UPPER_EXPAND to use
+   * when performing the case conversion. Note that this information is stored
+   * as an unsigned char since this is a String literal.
    */
   String DIRECTION
 EOF
 
     $len = @charinfo;
-    for ($i = 0; $i < $len / 11; $i++) {
+    for ($i = 0; $i < $len / 17; $i++) {
         print OUTPUT $i ? "\n    + \"" : "    = \"";
-        for $j (0 .. 10) {
-            last if $len <= $i * 11 + $j;
-            my $val = $charinfo[$i * 11 + $j][3];
+        for $j (0 .. 16) {
+            last if $len <= $i * 17 + $j;
+            my $val = $charinfo[$i * 17 + $j][3];
             print OUTPUT javaChar($val);
         }
         print OUTPUT "\"";
@@ -520,10 +560,10 @@ EOF
 ;
 
   /**
-   * This is the listing of titlecase special cases (all other character
+   * This is the listing of titlecase special cases (all other characters
    * can use <code>UPPER</code> to determine their titlecase).  The listing
-   * is a sequence of character pairs; converting the first character of the
-   * pair to titlecase produces the second character.
+   * is a sorted sequence of character pairs; converting the first character
+   * of the pair to titlecase produces the second character.
    */
   String TITLE
 EOF
@@ -533,7 +573,64 @@ EOF
         print OUTPUT $i ? "\n    + \"" : "    = \"";
         for $j (0 .. 10) {
             last if $len <= $i * 11 + $j;
-            my $val = unpack "n", substr($titlecase, 2 * ($i*11 + $j), 2);
+            my $val = unpack "n", substr($titlecase, 2 * ($i * 11 + $j), 2);
+            print OUTPUT javaChar($val);
+        }
+        print OUTPUT "\"";
+    }
+
+    print OUTPUT <<EOF;
+;
+
+  /**
+   * This is a listing of characters with multi-character uppercase sequences.
+   * A character appears in this list exactly when it has a non-zero entry
+   * in the low-order 2-bit field of DIRECTION.  The listing is a sorted
+   * sequence of pairs (hence a binary search on the even elements is an
+   * efficient way to lookup a character). The first element of a pair is the
+   * character with the expansion, and the second is the index into
+   * UPPER_EXPAND where the expansion begins. Use the 2-bit field of
+   * DIRECTION to determine where the expansion ends.
+   */
+  String UPPER_SPECIAL
+EOF
+
+    my @list = sort {$a <=> $b} keys %special;
+    my $expansion = "";
+    my $offset = 0;
+    $len = @list;
+    for ($i = 0; $i < $len / 5; $i++) {
+        print OUTPUT $i ? "\n    + \"" : "    = \"";
+        for $j (0 .. 4) {
+            last if $len <= $i * 5 + $j;
+            my $ch = $list[$i * 5 + $j];
+            print OUTPUT javaChar($ch);
+            print OUTPUT javaChar($offset);
+            $offset += @{$special{$ch}};
+            $expansion .= pack "n*", @{$special{$ch}};
+        }
+        print OUTPUT "\"";
+    }
+
+    print OUTPUT <<EOF;
+;
+
+  /**
+   * This is the listing of special case multi-character uppercase sequences.
+   * Characters listed in UPPER_SPECIAL index into this table to find their
+   * uppercase expansion. Remember that you must also perform special-casing
+   * on two single-character sequences in the Turkish locale, which are not
+   * covered here in CharData.
+   */
+  String UPPER_EXPAND
+EOF
+
+    $len = length($expansion) / 2;
+    for ($i = 0; $i < $len / 11; $i++) {
+        print OUTPUT $i ? "\n    + \"" : "    = \"";
+        for $j (0 .. 10) {
+            last if $len <= $i * 11 + $j;
+            my $val = unpack "n", substr($expansion, 2 * ($i * 11 + $j), 2);
             print OUTPUT javaChar($val);
         }
         print OUTPUT "\"";
