@@ -7652,6 +7652,8 @@ sh_expand_builtin (exp, target, subtarget, mode, ignore)
       if (! signature_args[signature][i])
 	break;
       arg = TREE_VALUE (arglist);
+      if (arg == error_mark_node)
+	return const0_rtx;
       arglist = TREE_CHAIN (arglist);
       opmode = insn_data[icode].operand[nop].mode;
       argmode = TYPE_MODE (TREE_TYPE (arg));

@@ -1,3 +1,8 @@
+Thu Sep  5 16:27:47 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_expand_builtin): Return early if encountering an
+	error_mark for a type.
+
 2002-09-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_plus_operand): Do not require
