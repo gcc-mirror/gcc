@@ -2573,11 +2573,10 @@ extern enum reg_class mips_char_to_class[256];
 /* For o64 we should be checking the mode for SFmode as well.  */
 
 #define FUNCTION_ARG_REGNO_P(N)					\
-  ((((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)			\
-    || ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST		\
-	&& (((N) % FP_INC) == 0					\
-	    && (! mips_abi == ABI_O64)))			\
-   && !fixed_regs[N]))
+  ((IN_RANGE((N), GP_ARG_FIRST, GP_ARG_LAST)			\
+    || (IN_RANGE((N), FP_ARG_FIRST, FP_ARG_LAST)		\
+	&& ((N) % FP_INC == 0) && mips_abi != ABI_O64))		\
+   && !fixed_regs[N])
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  A nonzero value says

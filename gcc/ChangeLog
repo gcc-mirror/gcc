@@ -1,3 +1,7 @@
+2002-07-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (FUNCTION_ARG_REGNO_P): Fix parentheses.
+
 2002-06-30  Devang Patel  <dpatel@apple.com>
 
 	* objc/objc-act.c (finish_file): Avoid finish_objc() if
