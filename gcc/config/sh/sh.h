@@ -798,22 +798,31 @@ extern int current_function_anonymous_args;
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  (REGNO (X) <= 16 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) <= 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) == 0 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) == 0 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+
+/* Nonzero if X/OFFSET is a hard reg that can be used as an index
+   or if X is a pseudo reg.  */
+#define SUBREG_OK_FOR_INDEX_P(X, OFFSET) \
+  ((REGNO (X) == 0 && OFFSET == 0) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 #else
 
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-	REGNO_OK_FOR_BASE_P (REGNO (X))
+  REGNO_OK_FOR_BASE_P (REGNO (X))
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  	REGNO_OK_FOR_INDEX_P (REGNO (X))
+  REGNO_OK_FOR_INDEX_P (REGNO (X))
+
+/* Nonzero if X/OFFSET is a hard reg that can be used as an index.  */
+#define SUBREG_OK_FOR_INDEX_P(X, OFFSET) \
+  (REGNO_OK_FOR_INDEX_P (REGNO (X)) && OFFSET == 0)
 
 #endif
 
@@ -843,11 +852,14 @@ extern int current_function_anonymous_args;
        && GET_CODE (SUBREG_REG (X)) == REG		\
        && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
 
+/* Since this must be r0, which is a single register class, we must check
+   SUBREGs more carefully, to be sure that we don't accept one that extends
+   outside the class.  */
 #define INDEX_REGISTER_RTX_P(X)				\
   ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))	\
    || (GET_CODE (X) == SUBREG				\
        && GET_CODE (SUBREG_REG (X)) == REG		\
-       && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
+       && SUBREG_OK_FOR_INDEX_P (SUBREG_REG (X), SUBREG_WORD (X))))
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
    REG_OK_STRICT into account when deciding about valid registers, but it uses
