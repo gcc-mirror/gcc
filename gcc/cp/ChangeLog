@@ -1,3 +1,22 @@
+1999-02-09  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (get_template_base): Don't declare.
+	(dfs_walk): Declare.
+	(dfs_unmark): Likewise.
+	(markedp): Likewise.
+	* pt.c (unify): Remove duplicate declaration.  Pass tparms and
+	targs to get_template_base.
+	(get_template_base_recursive): Move here from search.c.  Check to
+	see that the base found can be instantiated to form the desired
+	type.
+	(get_template_base): Likewise.
+	(get_class_bindings): Simplify.
+	* search.c (get_template_base_recursive): Move to pt.c.
+	(get_template_base): Likewise.
+	(markedp): Make it global.
+	(dfs_walk): Likewise.
+	(dfs_unmark): Likewise.
+	
 1999-02-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (maybe_process_partial_specialization): Complain about

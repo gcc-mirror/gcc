@@ -3147,8 +3147,10 @@ extern void init_search_processing		PROTO((void));
 extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
-extern tree get_template_base			PROTO((tree, tree));
 extern tree binfo_for_vtable			PROTO((tree));
+extern void dfs_walk                            PROTO((tree, void (*) (tree), int (*) (tree)));
+extern void dfs_unmark                          PROTO((tree));
+extern int  markedp                             PROTO((tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));
