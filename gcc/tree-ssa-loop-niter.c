@@ -36,6 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
+#include "tree-data-ref.h"
 #include "params.h"
 #include "flags.h"
 #include "tree-inline.h"
@@ -943,24 +944,10 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
 
 */
 
-/* The structure describing a bound on number of iterations of a loop.  */
-
-struct nb_iter_bound
-{
-  tree bound;		/* The expression whose value is an upper bound on the
-			   number of executions of anything after ...  */
-  tree at_stmt;		/* ... this statement during one execution of loop.  */
-  tree additional;	/* A conjunction of conditions the operands of BOUND
-			   satisfy.  The additional information about the value
-			   of the bound may be derived from it.  */
-  struct nb_iter_bound *next;
-			/* The next bound in a list.  */
-};
-
 /* Records that AT_STMT is executed at most BOUND times in LOOP.  The
    additional condition ADDITIONAL is recorded with the bound.  */
 
-static void
+void
 record_estimate (struct loop *loop, tree bound, tree additional, tree at_stmt)
 {
   struct nb_iter_bound *elt = xmalloc (sizeof (struct nb_iter_bound));
@@ -1010,8 +997,14 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
     }
   free (exits);
   
-  /* TODO Here we could use other possibilities, like bounds of arrays accessed
-     in the loop.  */
+  /* Analyzes the bounds of arrays accessed in the loop.  */
+  if (loop->estimated_nb_iterations == NULL_TREE)
+    {
+      varray_type datarefs;
+      VARRAY_GENERIC_PTR_INIT (datarefs, 3, "datarefs");
+      find_data_references_in_loop (loop, &datarefs);
+      free_data_refs (datarefs);
+    }
 }
 
 /* Records estimates on numbers of iterations of LOOPS.  */

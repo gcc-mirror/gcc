@@ -79,10 +79,9 @@ struct subscript
   tree conflicting_iterations_in_a;
   tree conflicting_iterations_in_b;
   
-  /* These fields store the information about the iteration domain
+  /* This field stores the information about the iteration domain
      validity of the dependence relation.  */
-  tree last_conflict_in_a;
-  tree last_conflict_in_b;
+  tree last_conflict;
   
   /* Distance from the iteration that access a conflicting element in
      A to the iteration that access this same conflicting element in
@@ -93,8 +92,7 @@ struct subscript
 
 #define SUB_CONFLICTS_IN_A(SUB) SUB->conflicting_iterations_in_a
 #define SUB_CONFLICTS_IN_B(SUB) SUB->conflicting_iterations_in_b
-#define SUB_LAST_CONFLICT_IN_A(SUB) SUB->last_conflict_in_a
-#define SUB_LAST_CONFLICT_IN_B(SUB) SUB->last_conflict_in_b
+#define SUB_LAST_CONFLICT(SUB) SUB->last_conflict
 #define SUB_DISTANCE(SUB) SUB->distance
 
 /* A data_dependence_relation represents a relation between two
@@ -105,6 +103,10 @@ struct data_dependence_relation
   
   struct data_reference *a;
   struct data_reference *b;
+
+  /* When the dependence relation is affine, it can be represented by
+     a distance vector.  */
+  bool affine_p;
 
   /* A "yes/no/maybe" field for the dependence relation:
      
@@ -124,6 +126,9 @@ struct data_dependence_relation
      the data_dependence_relation.  */
   varray_type subscripts;
 
+  /* The size of the direction/distance vectors.  */
+  int size_vect;
+
   /* The classic direction vector.  */
   lambda_vector dir_vect;
 
@@ -133,26 +138,32 @@ struct data_dependence_relation
 
 #define DDR_A(DDR) DDR->a
 #define DDR_B(DDR) DDR->b
+#define DDR_AFFINE_P(DDR) DDR->affine_p
 #define DDR_ARE_DEPENDENT(DDR) DDR->are_dependent
 #define DDR_SUBSCRIPTS(DDR) DDR->subscripts
 #define DDR_SUBSCRIPTS_VECTOR_INIT(DDR, N) \
   VARRAY_GENERIC_PTR_INIT (DDR_SUBSCRIPTS (DDR), N, "subscripts_vector");
 #define DDR_SUBSCRIPT(DDR, I) VARRAY_GENERIC_PTR (DDR_SUBSCRIPTS (DDR), I)
 #define DDR_NUM_SUBSCRIPTS(DDR) VARRAY_ACTIVE_SIZE (DDR_SUBSCRIPTS (DDR))
+#define DDR_SIZE_VECT(DDR) DDR->size_vect
 #define DDR_DIR_VECT(DDR) DDR->dir_vect
 #define DDR_DIST_VECT(DDR) DDR->dist_vect
 
 
 
-struct data_dependence_relation *initialize_data_dependence_relation 
+extern tree find_data_references_in_loop (struct loop *, varray_type *);
+extern struct data_dependence_relation *initialize_data_dependence_relation 
 (struct data_reference *, struct data_reference *);
-void compute_affine_dependence (struct data_dependence_relation *);
+extern void compute_affine_dependence (struct data_dependence_relation *);
 extern void analyze_all_data_dependences (struct loops *);
 extern void compute_data_dependences_for_loop (unsigned, struct loop *, 
 					       varray_type *, varray_type *);
 extern struct data_reference * init_data_ref (tree, tree, tree, tree, bool);
 extern struct data_reference *analyze_array (tree, tree, bool);
 
+extern void dump_subscript (FILE *, struct subscript *);
+extern void dump_ddrs (FILE *, varray_type);
+extern void dump_dist_dir_vectors (FILE *, varray_type);
 extern void dump_data_reference (FILE *, struct data_reference *);
 extern void dump_data_references (FILE *, varray_type);
 extern void dump_data_dependence_relation (FILE *, 
@@ -161,10 +172,11 @@ extern void dump_data_dependence_relations (FILE *, varray_type);
 extern void dump_data_dependence_direction (FILE *, 
 					    enum data_dependence_direction);
 extern bool array_base_name_differ_p (struct data_reference *, 
-				      struct data_reference *, bool *p);
+				      struct data_reference *, bool *);
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (varray_type);
 extern void free_data_refs (varray_type);
+
 
 
 
