@@ -485,7 +485,11 @@ extern char *rs6000_cpu_string;
 
    On the RS/6000, bump this up a bit.  */
 
-#define MEMORY_MOVE_COST(MODE)  6
+#define MEMORY_MOVE_COST(MODE)		\
+  ((GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+    && (rs6000_cpu == PROCESSOR_RIOS1 || rs6000_cpu == PROCESSOR_PPC601) \
+    ? 3 : 2) \
+   + 4)
 
 /* Specify the cost of a branch insn; roughly the number of extra insns that
    should be added to avoid a branch.
