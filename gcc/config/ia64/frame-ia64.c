@@ -40,32 +40,14 @@ Boston, MA 02111-1307, USA.  */
 /* ??? This is not a good solution, since prototypes may be required in
    some cases for correct code.  See also libgcc2.c/crtstuff.c.  */
 #ifndef inhibit_libc
-/* fixproto guarantees these system headers exist. */
 #include <stdlib.h>
 #include <unistd.h>
-
 #else
 #include <stddef.h>
-#ifndef malloc
-extern void *malloc (size_t);
-#endif
-#ifndef free
-extern void free (void *);
-#endif
 #endif
 
 #include "defaults.h"
-#include "gthr.h"
-
-/* Define a mutex for frame information modification. */
-#ifdef __GTHREAD_MUTEX_INIT
-static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
-#else
-static __gthread_mutex_t object_mutex;
-#endif
-
-/* This is undefined below if we need it to be an actual function.  */
-#define init_object_mutex_once()
+#include "frame-ia64.h"
 
 /* Some types used by the DWARF 2 spec.  */
 
@@ -75,140 +57,7 @@ typedef unsigned int  uaddr __attribute__ ((mode (pointer)));
 typedef          int  saddr __attribute__ ((mode (pointer)));
 typedef unsigned char ubyte;
 
-static void bad_record (unsigned char*, int) __attribute__ ((__noreturn__));
-
-#if __GTHREADS
-#ifdef __GTHREAD_MUTEX_INIT_FUNCTION
-
-/* Helper for init_object_mutex_once.  */
-
-static void
-init_object_mutex (void)
-{
-  __GTHREAD_MUTEX_INIT_FUNCTION (&object_mutex);
-}
-
-/* Call this to arrange to initialize the object mutex.  */
-
-#undef init_object_mutex_once
-static void
-init_object_mutex_once (void)
-{
-  static __gthread_once_t once = __GTHREAD_ONCE_INIT;
-  __gthread_once (&once, init_object_mutex);
-}
-
-#endif /* __GTHREAD_MUTEX_INIT_FUNCTION */
-#endif /* __GTHREADS */
-
-/* This structure represents a single unwind table entry.  We lie and say
-   its the dwarf_fde structure to use the common object in frame.h */
-
-typedef struct dwarf_fde
-{
-  long start_offset;
-  long end_offset;
-  long unwind_offset;
-} unwind_table_entry;
-  
-/* Defining dwarf_fde allows us to use the common object registration.  */
-typedef unwind_table_entry dwarf_fde;
-typedef unwind_table_entry fde;
-
 #include "frame.h" 
-
-static struct object *objects = NULL;
-
-static inline saddr
-fde_compare (fde *x, fde *y)
-{
-  return (saddr)x->start_offset - (saddr)y->start_offset;
-}
-
-#include "frame.c"
-
-/* called from crtend.o to register the end of the unwind info for an
-   object.  */
-void
-__register_frame_info_aux (struct dwarf_fde *end)
-{
-  objects->fde_end = end;
-}
-  
-static void
-frame_init (struct object *ob)
-{
-  int count = 0;  /* reserve one for the dummy last entry.  */
-  fde_accumulator accu;
-  unwind_table_entry *ptr = ob->fde_begin;
-
-  if (ptr == 0)
-    return;
-
-  /* Count the number of entries objects.  */
-  for ( ; ptr < ob->fde_end; ptr++)
-    count++;
-
-  ob->pc_begin = (void *)(uaddr) - 1;
-  ob->pc_end = 0;
-
-  start_fde_sort (&accu, count);
-  for (ptr = ob->fde_begin; ptr < ob->fde_end; ptr++)
-  {
-    if (ob->pc_base + ptr->start_offset < ob->pc_begin)
-      ob->pc_begin = ob->pc_base + ptr->start_offset;
-    if (ob->pc_base + ptr->end_offset > ob->pc_end)
-      ob->pc_end = ob->pc_base + ptr->end_offset;
-    fde_insert (&accu, (fde *)ptr);
-  }
-
-  ob->fde_array = end_fde_sort (&accu, count);
-  ob->count = count;
-}
-
-/* Return a pointer to the FDE for the function containing PC.  */
-
-static fde *
-find_fde (void *pc, void **pc_base)
-{
-  struct object *ob;
-  size_t lo, hi;
-
-  *pc_base = NULL;
-
-  init_object_mutex_once ();
-  __gthread_mutex_lock (&object_mutex);
-
-  for (ob = objects; ob; ob = ob->next)
-    {
-      if (ob->pc_begin == 0)
-	frame_init (ob);
-      if (pc >= ob->pc_begin && pc < ob->pc_end)
-	break;
-    }
-
-  __gthread_mutex_unlock (&object_mutex);
-
-  if (ob == 0)
-    return 0;
-
-  *pc_base = ob->pc_base;
-  /* Standard binary search algorithm.  */
-  for (lo = 0, hi = ob->count; lo < hi; )
-    {
-      size_t i = (lo + hi) / 2;
-      fde *f = ob->fde_array[i];
-
-      if (pc - ob->pc_base < f->start_offset)
-	hi = i;
-      else if (pc - ob->pc_base >= f->end_offset)
-	lo = i + 1;
-      else
-	return f;
-    }
-
-  return 0;
-}
 
 /* Decode the unsigned LEB128 constant at BUF and return it. The value at
    MEM is updated to reflect the next position in the buffer.  */
@@ -232,60 +81,9 @@ read_uleb128 (unsigned char **mem)
   return result;
 }
 
-static void
-bad_record (ptr, offset)
-     unsigned char *ptr;
-     int offset;
-{
-#if 0
-  printf ("Bad unwind record format value '%x' at offset %d in record %p\n",
-  	  *(ptr + offset), offset , ptr);
-#endif  
-  abort ();
-}
-
-static unsigned char *read_R_record (unwind_record *, unsigned char, unsigned char *);
-static unsigned char *read_X_record (unwind_record *, unsigned char, unsigned char *);
-static unsigned char *read_B_record (unwind_record *, unsigned char, unsigned char *);
-static unsigned char *read_P_record (unwind_record *, unsigned char, unsigned char *, unwind_record *);
-
-
-/* This routine will determine what type of record the memory pointer
-   is refering to, and fill in the appropriate fields for that record type. 
-   HEADER is a pointer to the last region header unwind record.
-   DATA is a pointer to an unwind record which will be filled in.
-   PTR is a pointer to the current location in the unwind table where we
-   will read the next record from.  
-   The return value is the start of the next record.  */
-
-extern unsigned char *
-get_unwind_record (header, data, ptr)
-     unwind_record *header;
-     unwind_record *data;
-     unsigned char *ptr;
-{
-  unsigned char val = *ptr++;
-
-  if ((val & 0x80) == 0)
-    {
-      return read_R_record (data, val, ptr);
-    }
-
-  if (val == UNW_X1 || val == UNW_X2 || val == UNW_X3 || val == UNW_X4)
-    return read_X_record (data, val, ptr);
-
-  if (header->type != body)
-    return read_P_record (data, val, ptr, header);
-  else
-    return read_B_record (data, val, ptr);
-}
-
 
 static unsigned char *
-read_R_record (data, val, ptr)
-     unwind_record *data;
-     unsigned char val;
-     unsigned char *ptr;
+read_R_record (unwind_record *data, unsigned char val, unsigned char *ptr)
 {
   if ((val & 0x40) == 0)
     {
@@ -321,17 +119,15 @@ read_R_record (data, val, ptr)
         if (val == 1)
 	  data->type = body;
 	else
-	  bad_record (ptr - 1, 0);
+	  abort ();
       data->record.r.rlen = read_uleb128 (&ptr);
       return ptr;
     }
-  bad_record (ptr - 1, 0);
+  abort ();
 }
 
 static void
-process_a_b_reg_code(data, val)
-     unwind_record *data;
-     unsigned char val;
+process_a_b_reg_code(unwind_record *data, unsigned char val)
 {
   int code = (val & 0x60) >> 5;
   int reg = (val & 0x1f);
@@ -354,10 +150,7 @@ process_a_b_reg_code(data, val)
 }
 
 static unsigned char *
-read_X_record (data, val, ptr)
-     unwind_record *data;
-     unsigned char val;
-     unsigned char *ptr;
+read_X_record (unwind_record *data, unsigned char val, unsigned char *ptr)
 {
   unsigned long tmp;
   int byte1, byte2;
@@ -407,7 +200,7 @@ read_X_record (data, val, ptr)
 	        data->record.x.treg = BR_REG (treg);
 	        break;
 	      case 3:
-	        bad_record (ptr - 3, 2);
+	        abort ();
 	    }
 	  data->record.x.t = read_uleb128 (&ptr);
         }
@@ -431,16 +224,13 @@ read_X_record (data, val, ptr)
 	  }	
 	return ptr;
       default:
-	bad_record (ptr - 1, 0);
+	abort ();
     }
   return NULL;
 }
 
 static unsigned char *
-read_B_record (data, val, ptr)
-     unwind_record *data;
-     unsigned char val;
-     unsigned char *ptr;
+read_B_record (unwind_record *data, unsigned char val, unsigned char *ptr)
 {
   if ((val & 0xc0) == 0x80)
     {
@@ -486,21 +276,21 @@ read_B_record (data, val, ptr)
       data->record.b.label = read_uleb128 (&ptr);
       return ptr;
     }
-
-  bad_record (ptr - 1, 0);
-
+  abort ();
 }
 
 /* This array is used to set the TYPE field for format P3.  */
-static unw_record_type P3_record_types[] = {
+static unw_record_type const P3_record_types[] = {
   psp_gr, rp_gr, pfs_gr, preds_gr, unat_gr, lc_gr, rp_br, rnat_gr,
-  bsp_gr, bspstore_gr, fpsr_gr, priunat_gr };
+  bsp_gr, bspstore_gr, fpsr_gr, priunat_gr
+};
 
 /* This array is used to set the TYPE field for format P7.  */
-static unw_record_type P7_record_types[] = {
+static unw_record_type const P7_record_types[] = {
   mem_stack_f, mem_stack_v, spill_base, psp_sprel, rp_when, rp_psprel,
   pfs_when, pfs_psprel, preds_when, preds_psprel, lc_when, lc_psprel,
-  unat_when, unat_psprel, fpsr_when, fpsr_psprel };
+  unat_when, unat_psprel, fpsr_when, fpsr_psprel
+};
 
 /* These values and the array are used to determine which additional ULEB128
    fields are required for the P7 format.  */
@@ -508,36 +298,36 @@ static unw_record_type P7_record_types[] = {
 #define P7_T		1
 #define P7_PSPOFF       2
 #define P7_SPOFF	3
-static unsigned char P7_additional_fields [] = {
+static unsigned char const P7_additional_fields [] = {
    P7_T_SIZE, P7_T, P7_PSPOFF, P7_SPOFF, P7_T, P7_PSPOFF, 
-   P7_T, P7_PSPOFF, P7_T, P7_PSPOFF, P7_T, P7_PSPOFF, P7_T, P7_PSPOFF };
+   P7_T, P7_PSPOFF, P7_T, P7_PSPOFF, P7_T, P7_PSPOFF, P7_T, P7_PSPOFF
+};
 
 /* This array is used to set the TYPE field for format P8. 
    Note that entry 0 is not used in this array, so it is filled with
    rp_spel for completely arbitrary reasons.  */
-static unw_record_type P8_record_types[] = {
+static unw_record_type const P8_record_types[] = {
   rp_sprel, rp_sprel, pfs_sprel, preds_sprel, lc_sprel, unat_sprel, fpsr_sprel, 
   bsp_when, bsp_psprel, bsp_sprel, bspstore_when, bspstore_psprel,
   bspstore_sprel, rnat_when, rnat_psprel, rnat_sprel, priunat_when_gr,
-  priunat_psprel, priunat_sprel, priunat_when_mem };
+  priunat_psprel, priunat_sprel, priunat_when_mem
+};
 
 /* These values and the array are used to determine which additional ULEB128
    fields are required for the P8 format.  */
 #define P8_T		0
 #define P8_PSPOFF       1
 #define P8_SPOFF	2
-static unsigned char P8_additional_fields [] = {
+static unsigned char const P8_additional_fields [] = {
   P8_SPOFF, P8_SPOFF, P8_SPOFF, P8_SPOFF, P8_SPOFF, P8_SPOFF,
   P8_T, P8_PSPOFF, P8_SPOFF, P8_T, P8_PSPOFF, P8_SPOFF,
-  P8_T, P8_PSPOFF, P8_SPOFF, P8_T, P8_PSPOFF, P8_SPOFF, P8_T };
+  P8_T, P8_PSPOFF, P8_SPOFF, P8_T, P8_PSPOFF, P8_SPOFF, P8_T
+};
 
 
 static unsigned char *
-read_P_record (data, val, ptr, header)
-     unwind_record *data;
-     unsigned char val;
-     unsigned char *ptr;
-     unwind_record *header;
+read_P_record (unwind_record *data, unsigned char val, unsigned char *ptr,
+	       unwind_record *header)
 {
   if ((val & 0xe0) == 0x80)
     {
@@ -553,7 +343,7 @@ read_P_record (data, val, ptr, header)
       int byte1;
       data->type = br_gr;
       byte1 = *ptr++;
-      data->record.p.brmask = (val & 0x0f) << 1 + (byte1 >> 7);
+      data->record.p.brmask = ((val & 0x0f) << 1) + (byte1 >> 7);
       data->record.p.gr = GR_REG (byte1 & 0x7f);
       return ptr;
     }
@@ -569,7 +359,7 @@ read_P_record (data, val, ptr, header)
       else
         data->record.p.gr = GR_REG (byte1 & 0x7f);
       if (r > 11)
-        bad_record (ptr - 2, 0);
+        abort ();
       return ptr;
     }
 
@@ -579,8 +369,7 @@ read_P_record (data, val, ptr, header)
       int size = (header->record.r.rlen * 2 + 7) / 8;
 
       data->type = spill_mask;
-      data->record.p.imask = (unsigned char *) malloc (size);
-      memcpy (data->record.p.imask, ptr, size);
+      data->record.p.imask = ptr;
       return ptr+size;
     }
 
@@ -664,24 +453,49 @@ read_P_record (data, val, ptr, header)
   
   if (val == UNW_P10)
     {
+#if 0
       /* P10 format.  */
-      int abi = *ptr++;
-      int context = *ptr++;
+      int abi = ptr[0];
+      int context = ptr[1];
       /* TODO. something about abi entries.  */
-      return ptr;
+#endif
+      return ptr + 2;
     }
 
   return ptr;
 }
 
+/* This routine will determine what type of record the memory pointer
+   is refering to, and fill in the appropriate fields for that record type. 
+   HEADER is a pointer to the last region header unwind record.
+   DATA is a pointer to an unwind record which will be filled in.
+   PTR is a pointer to the current location in the unwind table where we
+   will read the next record from.  
+   The return value is the start of the next record.  */
+
+static unsigned char *
+get_unwind_record (unwind_record *header, unwind_record *data,
+		   unsigned char *ptr)
+{
+  unsigned char val = *ptr++;
+
+  if ((val & 0x80) == 0)
+    return read_R_record (data, val, ptr);
+
+  if (val == UNW_X1 || val == UNW_X2 || val == UNW_X3 || val == UNW_X4)
+    return read_X_record (data, val, ptr);
+
+  if (header->type != body)
+    return read_P_record (data, val, ptr, header);
+  else
+    return read_B_record (data, val, ptr);
+}
 
 /* Frame processing routines.  */
 
 /* Initialize a single register structure.  */
 static inline void 
-init_ia64_reg_loc (reg, size)
-     ia64_reg_loc *reg;
-     short size;
+init_ia64_reg_loc (ia64_reg_loc *reg, short size)
 {
   reg->when = -1;
   reg->loc_type = IA64_UNW_LOC_TYPE_NONE;
@@ -691,8 +505,7 @@ init_ia64_reg_loc (reg, size)
 
 /* Iniitialize an entire frame to the default of nothing.  */
 static void
-init_ia64_unwind_frame (frame) 
-     ia64_frame_state *frame;
+init_ia64_unwind_frame (ia64_frame_state *frame) 
 {
   int x;
   
@@ -726,15 +539,13 @@ init_ia64_unwind_frame (frame)
    the return value is a pointer to the start of the next descriptor.  */
 
 static void *
-execute_one_ia64_descriptor (addr, frame, len)
-     void *addr;
-     ia64_frame_state *frame;
-     long *len;
+execute_one_ia64_descriptor (void *addr, ia64_frame_state *frame, long *len)
 {
-  unwind_record r;
   /* The last region_header.  Needed to distinguish between prologue and body
      descriptors.  Also needed for length of P4 format.  */
   static unwind_record region_header;
+
+  unwind_record r;
   ia64_reg_loc *loc_ptr = NULL;
   int grmask = 0, frmask = 0;
 
@@ -750,7 +561,7 @@ execute_one_ia64_descriptor (addr, frame, len)
       case prologue:
       case body:
 	*len = r.record.r.rlen;
-	memcpy (&region_header, &r, sizeof (unwind_record));
+	region_header = r;
 	break;
       case prologue_gr:
         {
@@ -783,7 +594,7 @@ execute_one_ia64_descriptor (addr, frame, len)
 	      frame->pr.loc_type  = IA64_UNW_LOC_TYPE_GR;
 	      frame->pr.l.regno = reg++;
 	    }
-	  memcpy (&region_header, &r, sizeof (unwind_record));
+	  region_header = r;
 	  break;
 	}
       case mem_stack_f:
@@ -1048,7 +859,8 @@ rse_address_add(unsigned char *addr, int nslots)
 
   new_addr = addr + 8 * (nslots + mandatory_nat_slots);
 
-  if (((long)new_addr >> 9)  != ((long)(addr + 8 * 64 * mandatory_nat_slots) >> 9))
+  if (((long)new_addr >> 9)
+      != ((long)(addr + 8 * 64 * mandatory_nat_slots) >> 9))
     new_addr += 8 * direction;
 
   if (IS_NaT_COLLECTION_ADDR(new_addr))
@@ -1061,9 +873,7 @@ rse_address_add(unsigned char *addr, int nslots)
 /* Normalize a record to originate in either a register or memory 
    location.  */
 static void
-normalize_reg_loc (frame, reg)
-     ia64_frame_state *frame;
-     ia64_reg_loc *reg;
+normalize_reg_loc (ia64_frame_state *frame, ia64_reg_loc *reg)
 {
   unsigned char *tmp;
   switch (reg->loc_type)
@@ -1122,10 +932,8 @@ normalize_reg_loc (frame, reg)
    It is executed if it is exectued at START time. It is NOT
    executed if it happens at END time. */
 static void 
-maybe_normalize_reg_loc (frame, reg, start, end)
-     ia64_frame_state *frame;
-     ia64_reg_loc *reg;
-     int start, end;
+maybe_normalize_reg_loc (ia64_frame_state *frame, ia64_reg_loc *reg,
+			 long start, long end)
 {
   if (reg->loc_type != IA64_UNW_LOC_TYPE_NONE 
       && reg->when >= start && reg->when < end)
@@ -1135,8 +943,7 @@ maybe_normalize_reg_loc (frame, reg, start, end)
 
 /* Only works for 8 byte or less registers.  */
 void *
-__get_real_reg_value (reg)
-     ia64_reg_loc *reg;
+__get_real_reg_value (ia64_reg_loc *reg)
 {
   if (reg->loc_type == IA64_UNW_LOC_TYPE_MEM)
     return *((void **)(reg->l.mem));
@@ -1147,9 +954,7 @@ __get_real_reg_value (reg)
 }
 
 void
-__set_real_reg_value (reg, val) 
-     ia64_reg_loc *reg;
-     void *val;
+__set_real_reg_value (ia64_reg_loc *reg, void *val) 
 {
   if (reg->loc_type == IA64_UNW_LOC_TYPE_MEM)
     {
@@ -1161,9 +966,7 @@ __set_real_reg_value (reg, val)
 }
 
 static void
-copy_reg_value (src, dest)
-     ia64_reg_loc *src;
-     ia64_reg_loc *dest;
+copy_reg_value (ia64_reg_loc *src, ia64_reg_loc *dest)
 {
   void **p = dest->l.mem;
   if (src->loc_type == IA64_UNW_LOC_TYPE_NONE)
@@ -1190,9 +993,7 @@ copy_reg_value (src, dest)
 /* Copy the values of any relevant saved registers in one frame 
    to another for unwinding.  */
 void 
-__copy_saved_reg_state (dest, src)
-     ia64_frame_state *dest;
-     ia64_frame_state *src;
+__copy_saved_reg_state (ia64_frame_state *dest, ia64_frame_state *src)
 {
   int x;
   for (x = 0; x < 4 ; x++)
@@ -1213,9 +1014,7 @@ __copy_saved_reg_state (dest, src)
 
 
 static void 
-process_state_between (frame, start, end)
-     ia64_frame_state *frame;
-     int start, end;
+process_state_between (ia64_frame_state *frame, long start, long end)
 {
   int x;
   /* PSP, RP, SP, and PFS are handled seperately from here. */
@@ -1253,9 +1052,7 @@ process_state_between (frame, start, end)
      that has a WHEN record beyond this time is cleared since it
      isn't relevant.  */
 static void
-frame_translate (frame, unwind_time)
-     ia64_frame_state *frame;
-     long unwind_time;
+frame_translate (ia64_frame_state *frame, long unwind_time)
 {
   /* ??? Is this supposed to mark the end of the stack?  */
   if (frame->rp.loc_type == IA64_UNW_LOC_TYPE_NONE)
@@ -1324,11 +1121,8 @@ frame_translate (frame, unwind_time)
    frame is the frame_state structure to be set up.
    Returns a pointer to the unwind info pointer for the frame.  */
 unwind_info_ptr *
-__build_ia64_frame_state (pc, frame, bsp, sp, pc_base_ptr)
-     unsigned char *pc;
-     ia64_frame_state *frame;
-     void *bsp, *sp;
-     void **pc_base_ptr;
+__build_ia64_frame_state (unsigned char *pc, ia64_frame_state *frame,
+			  void *bsp, void *sp, void **pc_base_ptr)
 {
   long len;
   int region_offset = 0;
@@ -1340,7 +1134,7 @@ __build_ia64_frame_state (pc, frame, bsp, sp, pc_base_ptr)
   int pc_offset;
   struct unwind_info_ptr *unw_info_ptr;
 
-  entry = find_fde (pc, &pc_base);
+  entry = __ia64_find_fde (pc, &pc_base);
   if (!entry)
     return 0;
 
@@ -1378,8 +1172,7 @@ __build_ia64_frame_state (pc, frame, bsp, sp, pc_base_ptr)
 
 /* Given an unwind info pointer, return the personality routine.  */
 void *
-__get_personality (ptr)
-     unwind_info_ptr *ptr;
+__get_personality (unwind_info_ptr *ptr)
 {
   void **p;
 
@@ -1396,8 +1189,7 @@ __get_personality (ptr)
 
 /* Given an unwind info pointer, return the exception table.  */
 void *
-__get_except_table (ptr)
-     unwind_info_ptr *ptr;
+__get_except_table (unwind_info_ptr *ptr)
 {
   void *table;
 
@@ -1415,9 +1207,7 @@ __get_except_table (ptr)
 
 /* Given a PFS value, and the current BSp, calculate the BSp of the caller.  */
 void *
-__calc_caller_bsp (pfs, bsp)
-     long pfs;
-     unsigned char *bsp;
+__calc_caller_bsp (long pfs, unsigned char *bsp)
 {
   int size_of_locals;
 
@@ -1459,6 +1249,8 @@ ia64_backtrace_helper (void **array, ia64_frame_state *throw_frame,
 }
 
 /* This is equivalent to glibc's backtrace(). */
+
+extern int __ia64_backtrace (void **array, int size);
   
 int
 __ia64_backtrace (void **array, int size)
@@ -1478,195 +1270,3 @@ __ia64_backtrace (void **array, int size)
   return ia64_backtrace_helper (array, &my_frame, &originator, bsp,
 				stack_pointer, size);
 }
-
-
-
-#ifndef inhibit_libc
-
-#if 0
-#undef NULL;
-#include <stdio.h>
-
-/* Routines required to generate debug info for the ia64
-   unwind descriptors.  */
-
-static unsigned char *record_name[] = { 
-  "prologue", "prologue_gr", "body", "mem_stack_f", "mem_stack_v", "psp_gr", 
-  "psp_sprel", "rp_when", "rp_gr", "rp_br", "rp_psprel", "rp_sprel", 
-  "pfs_when", "pfs_gr", "pfs_psprel", "pfs_sprel", "preds_when", "preds_gr", 
-  "preds_psprel", "preds_sprel", "fr_mem", "frgr_mem", "gr_gr", "gr_mem", 
-  "br_mem", "br_gr", "spill_base", "spill_mask", "unat_when", "unat_gr", 
-  "unat_psprel", "unat_sprel", "lc_when", "lc_gr", "lc_psprel", "lc_sprel", 
-  "fpsr_when", "fpsr_gr", "fpsr_psprel", "fpsr_sprel", "priunat_when_gr", 
-  "priunat_when_mem", "priunat_gr", "priunat_psprel", "priunat_sprel", 
-  "bsp_when", "bsp_gr", "bsp_psprel", "bsp_sprel", "bspstore_when", 
-  "bspstore_gr", "bspstore_psprel", "bspstore_sprel", "rnat_when", "rnat_gr", 
-  "rnat_psprel", "rnat_sprel", "epilogue", "label_state", "copy_state", 
-  "spill_psprel", "spill_sprel", "spill_reg", "spill_psprel_p", 
-  "spill_sprel_p","spill_reg_p" 
-};
-
-
-
-static void
-print_record (f, ptr)
-     FILE *f;
-     unwind_record *ptr;
-{
-  fprintf (f, " %s ",record_name[ptr->type]);
-  switch (ptr->type) 
-    {
-      case prologue:
-      case body:
-	fprintf (f, "(R1) rlen = %d", ptr->record.r.rlen);
-	break;
-      case prologue_gr:
-	fprintf (f, "(R2) rlen = %d : ", ptr->record.r.rlen);
-	fprintf (f, "grmask = %x, grsave = r%d", ptr->record.r.mask, 
-						 ptr->record.r.grsave);
-	break;
-      case mem_stack_f:
-	fprintf (f, "(P7) t = %d, size = %d", ptr->record.p.t, 
-					 ptr->record.p.size);
-	break;
-      case mem_stack_v:
-	fprintf (f, "(P7) t = %d", ptr->record.p.t);
-	break;
-      case psp_gr:
-      case rp_gr:
-      case pfs_gr:
-      case preds_gr:
-      case unat_gr:
-      case lc_gr:
-      case fpsr_gr:
-      case priunat_gr:
-      case bsp_gr:
-      case bspstore_gr:
-      case rnat_gr:
-	fprintf (f, "(P3) r%d", ptr->record.p.gr);
-	break;
-      case rp_br:
-	fprintf (f, "(P3) b%d", ptr->record.p.br);
-	break;
-      case psp_sprel:
-	fprintf (f, "(P7) spoff = %d", ptr->record.p.spoff);
-	break;
-      case rp_when:
-      case pfs_when:
-      case preds_when:
-      case unat_when:
-      case lc_when:
-      case fpsr_when:
-	fprintf (f, "(P7) t = %d", ptr->record.p.t);
-	break;
-      case rp_psprel:
-      case pfs_psprel:
-      case preds_psprel:
-      case unat_psprel:
-      case lc_psprel:
-      case fpsr_psprel:
-      case spill_base:
-	fprintf (f, "(P7) pspoff = %d", ptr->record.p.pspoff, 0);
-	break;
-      case rp_sprel:
-      case pfs_sprel:
-      case preds_sprel:
-      case unat_sprel:
-      case lc_sprel:
-      case fpsr_sprel:
-      case priunat_sprel:
-      case bsp_sprel:
-      case bspstore_sprel:
-      case rnat_sprel:
-	fprintf (f, "(P8) spoff = %d", ptr->record.p.spoff);
-	break;
-      case fr_mem:
-      case gr_mem:
-	fprintf (f, "(P6) rmask = %x", ptr->record.p.rmask);
-	break;
-      case frgr_mem:
-	fprintf (f, "(P5) grmask = %x,  frmask = %x", ptr->record.p.grmask, 
-						 ptr->record.p.frmask);
-	break;
-      case gr_gr:
-	fprintf (f, "(P9) grmask = %x  gr = r%d\n", ptr->record.p.grmask, 
-					       ptr->record.p.gr);
-	break;
-      case br_mem:
-	fprintf (f, "(P1) brmask = %x", ptr->record.p.brmask);
-	break;
-      case br_gr:
-	fprintf (f, "(P2) brmask = %x,  gr = r%d", ptr->record.p.brmask, 
-					      ptr->record.p.gr);
-	break;
-      case spill_mask:
-	fprintf (f, "spill mask....  unimplemented");
-	break;
-      case priunat_when_gr:
-      case priunat_when_mem:
-      case bsp_when:
-      case bspstore_when:
-      case rnat_when:
-	fprintf (f, "(P8) t = %d\n", ptr->record.p.t);
-	break;
-      case priunat_psprel:
-      case bsp_psprel:
-      case bspstore_psprel:
-      case rnat_psprel:
-	fprintf (f, "(P8) pspoff = %d", ptr->record.p.pspoff);
-	break;
-      case epilogue:
-	fprintf (f, "epilogue record unimplemented.");
-	break;
-      case label_state:
-	fprintf (f, "label_state record unimplemented.");
-	break;
-      case copy_state:
-	fprintf (f, "copy_state record unimplemented.");
-	break;
-      case spill_psprel:
-      case spill_sprel:
-      case spill_reg:
-      case spill_psprel_p:
-      case spill_sprel_p:
-      case spill_reg_p:
-	fprintf (f, "spill_* record unimplemented.");
-	break;
-      default:
-	fprintf (f, "record_type_not_valid");
-	break;
-    }
-  fprintf (f, "\n");
-  
-}
-
-static void
-print_all_records (f, mem, size)
-     FILE *f;
-     unsigned char *mem;
-     int size;
-{
-  unsigned char *end = mem + size;
-  unwind_record r;
-  static unwind_record region_header;
-
-  fprintf (f, "UNWIND IMAGE:\n");
-  while (mem < end) 
-    {
-      mem = get_unwind_record (&region_header, &r, mem);
-      print_record (f, &r);
-      switch (r.type)
-	{
-	case prologue:
-	case body:
-	case prologue_gr:
-	  memcpy (region_header, r, sizeof (unwind_record));
-	  break;
-	default:
-	  break;
-	}
-    }
-  fprintf (f, "--end unwind image--\n\n");
-}
-#endif /* If 0 */
-#endif /* inhibit_libc */
