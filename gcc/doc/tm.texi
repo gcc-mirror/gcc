@@ -3733,16 +3733,18 @@ The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
 @end deftypefn
 
-@defmac FUNCTION_ARG_CALLEE_COPIES (@var{cum}, @var{mode}, @var{type}, @var{named})
-If defined, a C expression that indicates when it is the called function's
-responsibility to make a copy of arguments passed by invisible reference.
-Normally, the caller makes a copy and passes the address of the copy to the
-routine being called.  When @code{FUNCTION_ARG_CALLEE_COPIES} is defined and is
-nonzero, the caller does not make a copy.  Instead, it passes a pointer to the
-``live'' value.  The called function must not modify this value.  If it can be
-determined that the value won't be modified, it need not make a copy;
-otherwise a copy must be made.
-@end defmac
+@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
+The function argument described by the parameters to this hook is
+known to be passed by reference.  The hook should return true if the
+function argument should be copied by the callee instead of copied
+by the caller.
+
+For any argument for which the hook returns true, if it can be 
+determined that the argument is not modified, then a copy need
+not be generated.
+
+The default version of this hook always returns false.
+@end deftypefn
 
 @defmac CUMULATIVE_ARGS
 A C type for declaring a variable that is used as the first argument of

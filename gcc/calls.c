@@ -974,8 +974,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	  tree base;
 
 	  callee_copies
-	    = FUNCTION_ARG_CALLEE_COPIES (*args_so_far, TYPE_MODE (type),
-					  type, argpos < n_named_args);
+	    = reference_callee_copied (args_so_far, TYPE_MODE (type),
+				       type, argpos < n_named_args);
 
 	  /* If we're compiling a thunk, pass through invisible references
 	     instead of making a copy.  */
@@ -3333,8 +3333,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       if (pass_by_reference (&args_so_far, mode, NULL_TREE, 1))
 	{
 	  rtx slot;
-	  int must_copy = ! FUNCTION_ARG_CALLEE_COPIES (args_so_far, mode,
-							NULL_TREE, 1);
+	  int must_copy
+	    = !reference_callee_copied (&args_so_far, mode, NULL_TREE, 1);
 
 	  /* loop.c won't look at CALL_INSN_FUNCTION_USAGE of const/pure
 	     functions, so we have to pretend this isn't such a function.  */

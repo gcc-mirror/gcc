@@ -1951,6 +1951,18 @@ pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
   return targetm.calls.pass_by_reference (ca, mode, type, named_arg);
 }
 
+/* Return true if TYPE, which is passed by reference, should be callee
+   copied instead of caller copied.  */
+
+bool
+reference_callee_copied (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+			 tree type, bool named_arg)
+{
+  if (type && TREE_ADDRESSABLE (type))
+    return false;
+  return targetm.calls.callee_copies (ca, mode, type, named_arg);
+}
+
 /* Structures to communicate between the subroutines of assign_parms.
    The first holds data persistent across all parameters, the second
    is cleared out for each parameter.  */
@@ -2766,9 +2778,8 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
     {
       tree type = TREE_TYPE (data->passed_type);
     
-      if (FUNCTION_ARG_CALLEE_COPIES (all->args_so_far, TYPE_MODE (type),
-				      type, data->named_arg)
-	   && !TREE_ADDRESSABLE (type))
+      if (reference_callee_copied (&all->args_so_far, TYPE_MODE (type),
+				   type, data->named_arg))
 	{
 	  rtx copy;
 

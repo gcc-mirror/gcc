@@ -720,8 +720,6 @@ enum reg_class
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)	\
  mmix_function_arg (&(CUM), MODE, TYPE, NAMED, 1)
 
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
-
 typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \

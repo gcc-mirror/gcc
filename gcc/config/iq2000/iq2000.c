@@ -199,6 +199,8 @@ static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_RETURN_IN_MEMORY		iq2000_return_in_memory
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE	iq2000_pass_by_reference
+#undef  TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES		hook_callee_copies_named
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	iq2000_setup_incoming_varargs

@@ -184,17 +184,6 @@ default_cxx_get_cookie_size (tree type)
   return cookie_size;
 }
 
-/* This version of the TARGET_PASS_BY_REFERENCE hook adds no conditions
-   beyond those mandated by generic code.  */
-
-bool
-hook_pass_by_reference_false (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
-	enum machine_mode mode ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED,
-	bool named_arg ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
 /* Return true if a parameter must be passed by reference.  This version
    of the TARGET_PASS_BY_REFERENCE hook uses just MUST_PASS_IN_STACK.  */
 
@@ -206,6 +195,16 @@ hook_pass_by_reference_must_pass_in_stack (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
   return targetm.calls.must_pass_in_stack (mode, type);
 }
 
+/* Return true if a parameter follows callee copies conventions.  This
+   version of the hook is true for all named arguments.  */
+
+bool
+hook_callee_copies_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  tree type ATTRIBUTE_UNUSED, bool named)
+{
+  return named;
+}
 
 /* Emit any directives required to unwind this instruction.  */
 
@@ -261,4 +260,22 @@ default_scalar_mode_supported_p (enum machine_mode mode)
     default:
       abort ();
     }
+}
+
+bool
+hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
+	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+	enum machine_mode mode ATTRIBUTE_UNUSED,
+	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+bool
+hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
+	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+	enum machine_mode mode ATTRIBUTE_UNUSED,
+	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+{
+  return true;
 }

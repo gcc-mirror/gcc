@@ -97,6 +97,8 @@ static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_RETURN_IN_MEMORY mn10300_return_in_memory
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE mn10300_pass_by_reference
+#undef TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs

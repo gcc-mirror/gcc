@@ -773,8 +773,6 @@ struct cum_arg { int nbytes; int anonymous_args; };
    space allocated by the caller.  */
 #define OUTGOING_REG_PARM_STACK_SPACE
 
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
-
 /* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(N) (N >= 6 && N <= 9)

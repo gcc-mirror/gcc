@@ -696,15 +696,6 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
    registers.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
-/* A C expression that indicates when it is the called function's
-   responsibility to make copies of arguments passed by reference.
-   If the callee can determine that the argument won't be modified, it can
-   avoid the copy.  */
-/* ??? We'd love to be able to use NAMED here.  Unfortunately, it doesn't
-   include the last named argument so we keep track of the args ourselves.  */
-
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
-
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */

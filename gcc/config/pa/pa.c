@@ -280,6 +280,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE pa_pass_by_reference
+#undef TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs

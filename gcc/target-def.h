@@ -383,12 +383,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_SPLIT_COMPLEX_ARG NULL
 
 #define TARGET_GIMPLIFY_VA_ARG_EXPR std_gimplify_va_arg_expr
-
-#define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_false
-
+#define TARGET_PASS_BY_REFERENCE hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
 #define TARGET_LATE_RTL_PROLOGUE_EPILOGUE false
-
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size_or_pad
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
 
 #define TARGET_CALLS {						\
    TARGET_PROMOTE_FUNCTION_ARGS,				\
@@ -403,7 +401,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_STRICT_ARGUMENT_NAMING,				\
    TARGET_PRETEND_OUTGOING_VARARGS_NAMED,			\
    TARGET_SPLIT_COMPLEX_ARG,					\
-   TARGET_MUST_PASS_IN_STACK					\
+   TARGET_MUST_PASS_IN_STACK,					\
+   TARGET_CALLEE_COPIES						\
    }
 
 

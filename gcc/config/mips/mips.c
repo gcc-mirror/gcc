@@ -349,6 +349,8 @@ static tree mips_build_builtin_va_list (void);
 static tree mips_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
+static bool mips_callee_copies (CUMULATIVE_ARGS *, enum machine_mode mode,
+				tree, bool);
 static bool mips_vector_mode_supported_p (enum machine_mode);
 static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
@@ -785,6 +787,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE mips_pass_by_reference
+#undef TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES mips_callee_copies
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P mips_vector_mode_supported_p
@@ -6806,6 +6810,14 @@ mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
       /* If we have a variable-sized parameter, we have no choice.  */
       return targetm.calls.must_pass_in_stack (mode, type);
     }
+}
+
+static bool
+mips_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    tree type ATTRIBUTE_UNUSED, bool named)
+{
+  return mips_abi == ABI_EABI && named;
 }
 
 /* Return the class of registers for which a mode change from FROM to TO

@@ -272,6 +272,8 @@ static int nb_soft_regs;
 #define TARGET_STRUCT_VALUE_RTX m68hc11_struct_value_rtx
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY m68hc11_return_in_memory
+#undef TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES hook_callee_copies_named
 
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING m68hc11_strip_name_encoding
