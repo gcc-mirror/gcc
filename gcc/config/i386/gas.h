@@ -83,13 +83,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_ALIGN_CODE
 #define ASM_OUTPUT_ALIGN_CODE(FILE) \
-  fprintf ((FILE), "\t.align %d,0x90\n", 1 << i386_align_jumps)
+  fprintf ((FILE), "\t.align %d,0x90\n", i386_align_jumps)
 
 /* Align start of loop at 4-byte boundary.  */
 
 #undef ASM_OUTPUT_LOOP_ALIGN
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  fprintf ((FILE), "\t.align %d,0x90\n", 1 << i386_align_loops)
+  fprintf ((FILE), "\t.align %d,0x90\n", i386_align_loops)
 
 
 /* A C statement or statements which output an assembler instruction
