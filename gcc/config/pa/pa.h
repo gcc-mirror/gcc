@@ -1096,7 +1096,6 @@ extern int may_call_alloca;
       emit_insn (gen_dcacheflush (start_addr, end_addr, line_length));	\
       emit_insn (gen_icacheflush (start_addr, end_addr, line_length,	\
 				  gen_reg_rtx (Pmode),			\
-				  gen_reg_rtx (Pmode),			\
 				  gen_reg_rtx (Pmode)));		\
     }									\
   else									\
@@ -1128,7 +1127,6 @@ extern int may_call_alloca;
       emit_move_insn (line_length, GEN_INT (MIN_CACHELINE_SIZE));	\
       emit_insn (gen_dcacheflush (start_addr, end_addr, line_length));	\
       emit_insn (gen_icacheflush (start_addr, end_addr, line_length,	\
-				  gen_reg_rtx (Pmode),			\
 				  gen_reg_rtx (Pmode),			\
 				  gen_reg_rtx (Pmode)));		\
     }									\
