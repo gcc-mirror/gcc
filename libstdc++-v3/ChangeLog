@@ -1,5 +1,10 @@
 2001-02-28  Benjamin Kosnik  <bkoz@redhat.com>
 
+	libstdc++/2064
+	* configure.target: Change irix* to irix6.5* in target_os table.
+
+2001-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
 	libstdc++/2103
 	* include/bits/c++config (__GLIBCPP__): Bump number in
 	anticipation of 2.92.
