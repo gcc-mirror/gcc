@@ -5987,8 +5987,10 @@ output_init_element (value, type, field, pending)
 	      output_constant (digest_init (type, value, 0, 0),
 			       int_size_in_bytes (type));
 
-	      /* For a record, keep track of end position of last field.  */
-	      if (TREE_CODE (constructor_type) == RECORD_TYPE)
+	      /* For a record or union,
+		 keep track of end position of last field.  */
+	      if (TREE_CODE (constructor_type) == RECORD_TYPE
+		  || TREE_CODE (constructor_type) == UNION_TYPE)
 		{
 		  tree temp = size_binop (PLUS_EXPR,
 					  DECL_FIELD_BITPOS (constructor_fields),
