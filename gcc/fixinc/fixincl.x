@@ -983,9 +983,10 @@ tTestDesc aArm_WcharTests[] = {
 /*
  *  Fix Command Arguments for Arm_Wchar
  */
-const char* apzArm_WcharPatch[] = { "sed",
-    "-e", "s/\\(#[ \t]*ifndef[ \t]*\\)__wchar_t/\\1_GCC_WCHAR_T/",
-    "-e", "s/\\(#[ \t]*define[ \t]*\\)__wchar_t/\\1_GCC_WCHAR_T/",
+const char* apzArm_WcharPatch[] = {
+    "format",
+    "%1_GCC_WCHAR_T",
+    "(#[ \t]*(ifndef|define)[ \t]+)__wchar_t",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1048,8 +1049,15 @@ tSCC zAvoid_Bool_DefineList[] =
 tSCC zAvoid_Bool_DefineSelect0[] =
        "#[ \t]*define[ \t]+bool[ \t]";
 
-#define    AVOID_BOOL_DEFINE_TEST_CT  1
+/*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zAvoid_Bool_DefineBypass0[] =
+       "we must use the C\\+\\+ compiler's type";
+
+#define    AVOID_BOOL_DEFINE_TEST_CT  2
 tTestDesc aAvoid_Bool_DefineTests[] = {
+  { TT_NEGREP,   zAvoid_Bool_DefineBypass0, (regex_t*)NULL },
   { TT_EGREP,    zAvoid_Bool_DefineSelect0, (regex_t*)NULL }, };
 
 /*
@@ -1087,8 +1095,15 @@ tSCC zAvoid_Bool_TypeList[] =
 tSCC zAvoid_Bool_TypeSelect0[] =
        "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;";
 
-#define    AVOID_BOOL_TYPE_TEST_CT  1
+/*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zAvoid_Bool_TypeBypass0[] =
+       "we must use the C\\+\\+ compiler's type";
+
+#define    AVOID_BOOL_TYPE_TEST_CT  2
 tTestDesc aAvoid_Bool_TypeTests[] = {
+  { TT_NEGREP,   zAvoid_Bool_TypeBypass0, (regex_t*)NULL },
   { TT_EGREP,    zAvoid_Bool_TypeSelect0, (regex_t*)NULL }, };
 
 /*
@@ -1925,8 +1940,9 @@ tTestDesc aHpux_SystimeTests[] = {
 /*
  *  Fix Command Arguments for Hpux_Systime
  */
-const char* apzHpux_SystimePatch[] = { "sed",
-    "-e", "s/^extern struct sigevent;/struct sigevent;/",
+const char* apzHpux_SystimePatch[] = {
+    "format",
+    "struct sigevent;",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2135,9 +2151,9 @@ tTestDesc aLimits_IfndefsTests[] = {
 const char* apzLimits_IfndefsPatch[] = {
     "format",
     "#ifndef %1\n\
-%0#endif\n",
-    "^[ \t]*#[ \t]*define[ \t]+((FLT|DBL)_(MIN|MAX|DIG))[ \t][^\n\
-]*\n",
+%0\n\
+#endif",
+    "^[ \t]*#[ \t]*define[ \t]+((FLT|DBL)_(MIN|MAX|DIG))[ \t].*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2360,7 +2376,7 @@ tSCC zMachine_Ansi_H_Va_ListList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zMachine_Ansi_H_Va_ListSelect0[] =
-       "_BSD_VA_LIST_";
+       "define[ \t]+_BSD_VA_LIST_[ \t]";
 
 /*
  *  content bypass pattern - skip fix if pattern found
@@ -2376,8 +2392,10 @@ tTestDesc aMachine_Ansi_H_Va_ListTests[] = {
 /*
  *  Fix Command Arguments for Machine_Ansi_H_Va_List
  */
-const char* apzMachine_Ansi_H_Va_ListPatch[] = { "sed",
-    "-e", "s/\\(_BSD_VA_LIST_[ \t][ \t]*\\).*$/\\1__builtin_va_list/",
+const char* apzMachine_Ansi_H_Va_ListPatch[] = {
+    "format",
+    "%1__builtin_va_list",
+    "(define[ \t]+_BSD_VA_LIST_[ \t]+).*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2520,7 +2538,7 @@ tSCC zMath_Huge_Val_IfndefName[] =
  *  File name selection pattern
  */
 tSCC zMath_Huge_Val_IfndefList[] =
-  "|math/math.h|";
+  "|math.h|math/math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2530,7 +2548,7 @@ tSCC zMath_Huge_Val_IfndefList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zMath_Huge_Val_IfndefSelect0[] =
-       "define[ \t]*HUGE_VAL";
+       "define[ \t]+HUGE_VAL";
 
 #define    MATH_HUGE_VAL_IFNDEF_TEST_CT  1
 tTestDesc aMath_Huge_Val_IfndefTests[] = {
@@ -2539,11 +2557,12 @@ tTestDesc aMath_Huge_Val_IfndefTests[] = {
 /*
  *  Fix Command Arguments for Math_Huge_Val_Ifndef
  */
-const char* apzMath_Huge_Val_IfndefPatch[] = { "sed",
-    "-e", "/define[ \t]HUGE_VAL[ \t]/i\\\n\
-#ifndef HUGE_VAL\n",
-    "-e", "/define[ \t]HUGE_VAL[ \t]/a\\\n\
-#endif\n",
+const char* apzMath_Huge_Val_IfndefPatch[] = {
+    "format",
+    "#ifndef HUGE_VAL\n\
+%0\n\
+#endif",
+    "^[ \t]*#[ \t]*define[ \t]+HUGE_VAL[ \t].*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2697,7 +2716,7 @@ tSCC zNews_Os_RecursionList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zNews_Os_RecursionSelect0[] =
-       "#include <stdlib.h>";
+       "#include <stdlib\\.h>";
 
 #define    NEWS_OS_RECURSION_TEST_CT  1
 tTestDesc aNews_Os_RecursionTests[] = {
@@ -2706,11 +2725,11 @@ tTestDesc aNews_Os_RecursionTests[] = {
 /*
  *  Fix Command Arguments for News_Os_Recursion
  */
-const char* apzNews_Os_RecursionPatch[] = { "sed",
-    "-e", "/^#include <stdlib.h>/i\\\n\
-#ifdef BOGUS_RECURSION\n",
-    "-e", "/^#include <stdlib.h>/a\\\n\
-#endif\n",
+const char* apzNews_Os_RecursionPatch[] = {
+    "format",
+    "#ifdef BOGUS_RECURSION\n\
+%0\n\
+#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2735,7 +2754,7 @@ tSCC zNext_Math_PrefixList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zNext_Math_PrefixSelect0[] =
-       "^extern.*double.*__const__.*";
+       "^extern[ \t]+double[ \t]+__const__[ \t]";
 
 #define    NEXT_MATH_PREFIX_TEST_CT  1
 tTestDesc aNext_Math_PrefixTests[] = {
@@ -2744,12 +2763,10 @@ tTestDesc aNext_Math_PrefixTests[] = {
 /*
  *  Fix Command Arguments for Next_Math_Prefix
  */
-const char* apzNext_Math_PrefixPatch[] = { "sed",
-    "-e", "/^extern.*double.*__const__.*sqrt(/s/__const__//",
-    "-e", "/^extern.*double.*__const__.*fabs(/s/__const__//",
-    "-e", "/^extern.*double.*__const__.*cos(/s/__const__//",
-    "-e", "/^extern.*double.*__const__.*hypot(/s/__const__//",
-    "-e", "/^extern.*double.*__const__.*sin(/s/__const__//",
+const char* apzNext_Math_PrefixPatch[] = {
+    "format",
+    "extern double %1(",
+    "^extern[ \t]+double[ \t]+__const__[ \t]+([a-z]+)\\(",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2774,7 +2791,7 @@ tSCC zNext_TemplateList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zNext_TemplateSelect0[] =
-       "template";
+       "[ \t]template\\)";
 
 #define    NEXT_TEMPLATE_TEST_CT  1
 tTestDesc aNext_TemplateTests[] = {
@@ -2783,9 +2800,10 @@ tTestDesc aNext_TemplateTests[] = {
 /*
  *  Fix Command Arguments for Next_Template
  */
-const char* apzNext_TemplatePatch[] = { "sed",
-    "-e", "/\\(.*template\\)/s/template//",
-    "-e", "/extern.*volatile.*void.*abort/s/volatile//",
+const char* apzNext_TemplatePatch[] = {
+    "format",
+    "(%1)",
+    "\\(([^)]*)[ \t]template\\)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2810,7 +2828,7 @@ tSCC zNext_VolitileList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zNext_VolitileSelect0[] =
-       "volatile";
+       "^extern[ \t]+volatile[ \t]+void[ \t]";
 
 #define    NEXT_VOLITILE_TEST_CT  1
 tTestDesc aNext_VolitileTests[] = {
@@ -2819,9 +2837,10 @@ tTestDesc aNext_VolitileTests[] = {
 /*
  *  Fix Command Arguments for Next_Volitile
  */
-const char* apzNext_VolitilePatch[] = { "sed",
-    "-e", "/extern.*volatile.*void.*exit/s/volatile//",
-    "-e", "/extern.*volatile.*void.*abort/s/volatile//",
+const char* apzNext_VolitilePatch[] = {
+    "format",
+    "extern void %1(",
+    "^extern[ \t]+volatile[ \t]+void[ \t]+(exit|abort)\\(",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4831,7 +4850,7 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          113
+#define REGEX_COUNT          115
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            121
 
@@ -4933,7 +4952,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zArm_WcharName,    zArm_WcharList,
      apzArm_WcharMachs,
-     ARM_WCHAR_TEST_CT, FD_MACH_ONLY,
+     ARM_WCHAR_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aArm_WcharTests,   apzArm_WcharPatch },
 
   {  zAux_AsmName,    zAux_AsmList,
@@ -5058,7 +5077,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zHpux_SystimeName,    zHpux_SystimeList,
      apzHpux_SystimeMachs,
-     HPUX_SYSTIME_TEST_CT, FD_MACH_ONLY,
+     HPUX_SYSTIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux_SystimeTests,   apzHpux_SystimePatch },
 
   {  zIp_Missing_SemiName,    zIp_Missing_SemiList,
@@ -5118,7 +5137,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zMachine_Ansi_H_Va_ListName,    zMachine_Ansi_H_Va_ListList,
      apzMachine_Ansi_H_Va_ListMachs,
-     MACHINE_ANSI_H_VA_LIST_TEST_CT, FD_MACH_ONLY,
+     MACHINE_ANSI_H_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aMachine_Ansi_H_Va_ListTests,   apzMachine_Ansi_H_Va_ListPatch },
 
   {  zMachine_NameName,    zMachine_NameList,
@@ -5138,7 +5157,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zMath_Huge_Val_IfndefName,    zMath_Huge_Val_IfndefList,
      apzMath_Huge_Val_IfndefMachs,
-     MATH_HUGE_VAL_IFNDEF_TEST_CT, FD_MACH_ONLY,
+     MATH_HUGE_VAL_IFNDEF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aMath_Huge_Val_IfndefTests,   apzMath_Huge_Val_IfndefPatch },
 
   {  zNested_MotorolaName,    zNested_MotorolaList,
@@ -5163,22 +5182,22 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zNews_Os_RecursionName,    zNews_Os_RecursionList,
      apzNews_Os_RecursionMachs,
-     NEWS_OS_RECURSION_TEST_CT, FD_MACH_ONLY,
+     NEWS_OS_RECURSION_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aNews_Os_RecursionTests,   apzNews_Os_RecursionPatch },
 
   {  zNext_Math_PrefixName,    zNext_Math_PrefixList,
      apzNext_Math_PrefixMachs,
-     NEXT_MATH_PREFIX_TEST_CT, FD_MACH_ONLY,
+     NEXT_MATH_PREFIX_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aNext_Math_PrefixTests,   apzNext_Math_PrefixPatch },
 
   {  zNext_TemplateName,    zNext_TemplateList,
      apzNext_TemplateMachs,
-     NEXT_TEMPLATE_TEST_CT, FD_MACH_ONLY,
+     NEXT_TEMPLATE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aNext_TemplateTests,   apzNext_TemplatePatch },
 
   {  zNext_VolitileName,    zNext_VolitileList,
      apzNext_VolitileMachs,
-     NEXT_VOLITILE_TEST_CT, FD_MACH_ONLY,
+     NEXT_VOLITILE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aNext_VolitileTests,   apzNext_VolitilePatch },
 
   {  zNext_Wait_UnionName,    zNext_Wait_UnionList,

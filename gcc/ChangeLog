@@ -24,6 +24,7 @@
 
 	* fixinc/inclhack.def:  more applications of c_fix=format + tests
 	* fixinc/check.diff:  regenerated
+	* fixinc/fixincl.x:  regenerated
 
 Sat May 20 09:30:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
