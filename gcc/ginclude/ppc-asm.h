@@ -12,6 +12,11 @@
  * they apply.
  */
 
+
+/* Under winnt, 1) gas suppports the following as names and 2) in particular
+   defining "toc" breaks the FUNC_START macro as ".toc" becomes ".2" */
+
+#if !defined(__WINNT__)
 #define r0	0
 #define sp	1
 #define toc	2
@@ -44,6 +49,7 @@
 #define r29	29
 #define r30	30
 #define r31	31
+#endif
 
 /*
  * Macros to glue together two tokens.
