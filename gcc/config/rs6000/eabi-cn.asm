@@ -91,7 +91,7 @@ __SBSS_END__:
 	.type	__SDATA2_END__,@object
 __SDATA2_END__:
 
-	.section ".sbss2","aw",@nobits
+	.section ".sbss2","aw"
 	.globl	__SBSS2_END__
 	.type	__SBSS2_END__,@object
 __SBSS2_END__:
