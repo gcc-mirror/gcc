@@ -9,6 +9,7 @@
 	Simplify comparison of `low'.
 	(add_operand): Fix formatting.
 	(non_add_cint_operand): Use CONST_OK_FOR_LETTER_P.
+	(mask_operand): Disallow mask to wrap in 64-bit mode.
 	(rs6000_stack_info): Remove redundant test setting push_p.
 	(output_toc): Fix formatting.
 	* config/rs6000/rs6000.md (boolsi3, boolcsi3 splitters): Use
