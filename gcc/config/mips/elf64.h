@@ -306,7 +306,7 @@ void FN ()                                                            \
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)                             \
   do {                                                                \
     ctors_section ();                                                 \
-    fprintf (FILE, "\t%s\t", TARGET_LONG64 ? ".dword" : ".word");     \
+    fprintf (FILE, "\t%s\t", (Pmode == SImode) ? ".word" : ".dword"); \
     assemble_name (FILE, NAME);                                       \
     fprintf (FILE, "\n");                                             \
   } while (0)
@@ -317,7 +317,7 @@ void FN ()                                                            \
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)                              \
   do {                                                                \
     dtors_section ();                                                 \
-    fprintf (FILE, "\t%s\t", TARGET_LONG64 ? ".dword" : ".word");     \
+    fprintf (FILE, "\t%s\t", (Pmode == SImode) ? ".word" : ".dword"); \
     assemble_name (FILE, NAME);                                       \
     fprintf (FILE, "\n");                                             \
   } while (0)
