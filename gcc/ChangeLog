@@ -1,3 +1,8 @@
+2004-12-05  Daniel Berlin <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (create_global_var): Use void_type_node,
+	not size_type_node.
+
 2004-12-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (expand_expr_real_1): Abort on COND_EXPR of
