@@ -1,3 +1,49 @@
+Wed Aug 18 18:20:40 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* expmed.c (emit_store_flag): If UNSIGNEDP, call unsigned_condition
+	on CODE.
+	(emit_store_flag_force): Use do_compare_rtx_and_jump.
+	(do_cmp_and_jump): Formatting fixes.
+	* expr.c (do_compare_and_jump): Renamed from compare; changed to call
+	do_compare_rtx_and_jump instead of compare_from_rtx.
+	(do_compare_rtx_and_jump): New function; mostly copied from
+	compare_from_rtx.
+	(do_jump_for_compare): Delete.
+	(expand_expr): Use do_compare_rtx_and_jump when handling MAX_EXPR and
+	MIN_EXPR.
+	(do_jump): Use do_compare_and_jump or do_compare_rtx_and_jump instead
+	of compare/do_jump_for_compare pairs.
+	(do_jump_by_parts_greater): Use do_jump_by_parts_greater_rtx.
+	(do_jump_by_parts_greater_rtx): Use do_compare_rtx_and_jump instead of
+	compare_from_rtx/do_jump_for_compare pairs.
+	(do_jump_by_parts_equality): Likewise.
+	(do_jump_by_parts_equality_rtx): Likewise.
+	* expr.h (do_compare_rtx_and_jump): Declare.
+	* optabs.c (prepare_cmp_insn): New function, contains most of the code
+	that used to be in emit_cmp_insn.
+	(cmp_available_p): New function.
+	(prepare_operand): New function.
+	(emit_cmp_and_jump_insn_1): New function, contains some code that used
+	to be in emit_cmp_insn.
+	(prepare_float_lib_cmp): Renamed from emit_float_lib_cmp; change some
+	parameters to be pointers; don't emit final compare but modify some of
+	the values pointed to by the args so the caller can perform the
+	correct comparison.
+	(expand_binop): Call emit_store_flag_force with signed forms of
+	comparison code.
+	(expand_abs): Use do_compare_rtx_and_jump instead of compare_from_rtx/
+	emit_jump_insn pair.
+	(emit_cmp_and_jump_insn): Use prepare_cmp_insn and
+	emit_cmp_and_jump_insn_1.  Call emit_queue.
+	(emit_cmp_insn): Just call emit_cmp_and_jump_insns with zero for LABEL
+	arg.
+	* flow.c (tidy_fallthru_edge): If HAVE_cc0, verify insn before a
+	jump sets cc0 before deleting it.
+	* integrate.c (expand_inline_function): Likewise.
+	* unroll.c (unroll_loop): Similar changes in several places.
+	(copy_loop_body): If HAVE_cc0, verify insn before a jump sets cc0
+	before deleting it.
+
 Wed Aug 18 06:37:44 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* Makefile.in (insn-recog.o): Update dependencies.

@@ -1958,8 +1958,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  if (condjump_p (insn) && ! simplejump_p (insn) && map->last_pc_value)
 	    {
 #ifdef HAVE_cc0
-	      /* The previous insn set cc0 for us.  So delete it.  */
-	      delete_insn (PREV_INSN (copy));
+	      /* If the previous insn set cc0 for us, delete it.  */
+	      if (sets_cc0_p (PREV_INSN (copy)))
+		delete_insn (PREV_INSN (copy));
 #endif
 
 	      /* If this is now a no-op, delete it.  */

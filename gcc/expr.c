@@ -152,8 +152,7 @@ static rtx expand_increment	PROTO((tree, int, int));
 static void preexpand_calls	PROTO((tree));
 static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
 static void do_jump_by_parts_equality PROTO((tree, rtx, rtx));
-static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
-static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
+static void do_compare_and_jump	PROTO((tree, enum rtx_code, enum rtx_code, rtx, rtx));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 
 /* Record for each mode whether we can move a register directly to or
@@ -7297,7 +7296,7 @@ expand_expr (exp, target, tmode, modifier)
 
       /* If this mode is an integer too wide to compare properly,
 	 compare word by word.  Rely on cse to optimize constant cases.  */
-      if (GET_MODE_CLASS (mode) == MODE_INT && !can_compare_p (mode))
+      if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode))
 	{
 	  if (code == MAX_EXPR)
 	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type),
@@ -7305,29 +7304,15 @@ expand_expr (exp, target, tmode, modifier)
 	  else
 	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type),
 					  op1, target, NULL_RTX, op0);
-	  emit_move_insn (target, op1);
 	}
       else
 	{
-	  if (code == MAX_EXPR)
-	    temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
-		    ? compare_from_rtx (target, op1, GEU, 1, mode, NULL_RTX, 0)
-		    : compare_from_rtx (target, op1, GE, 0, mode, NULL_RTX, 0));
-	  else
-	    temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
-		    ? compare_from_rtx (target, op1, LEU, 1, mode, NULL_RTX, 0)
-		    : compare_from_rtx (target, op1, LE, 0, mode, NULL_RTX, 0));
-	  if (temp == const0_rtx)
-	    emit_move_insn (target, op1);
-	  else if (temp != const_true_rtx)
-	    {
-	      if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
-		emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op0));
-	      else
-		abort ();
-	      emit_move_insn (target, op1);
-	    }
+	  int unsignedp = TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)));
+	  do_compare_rtx_and_jump (target, op1, code == MAX_EXPR ? GE : LE,
+				   unsignedp, mode, NULL_RTX, 0, NULL_RTX,
+				   op0);
 	}
+      emit_move_insn (target, op1);
       emit_label (op0);
       return target;
 
@@ -8626,7 +8611,6 @@ do_jump (exp, if_false_label, if_true_label)
      These cases set DROP_THROUGH_LABEL nonzero.  */
   rtx drop_through_label = 0;
   rtx temp;
-  rtx comparison = 0;
   int i;
   tree type;
   enum machine_mode mode;
@@ -8692,10 +8676,10 @@ do_jump (exp, if_false_label, if_true_label)
 
     case MINUS_EXPR:
       /* Non-zero iff operands of minus differ.  */
-      comparison = compare (build (NE_EXPR, TREE_TYPE (exp),
-				   TREE_OPERAND (exp, 0),
-				   TREE_OPERAND (exp, 1)),
-			    NE, NE);
+      do_compare_and_jump (build (NE_EXPR, TREE_TYPE (exp),
+				  TREE_OPERAND (exp, 0),
+				  TREE_OPERAND (exp, 1)),
+			   NE, NE, if_false_label, if_true_label);
       break;
 
     case BIT_AND_EXPR:
@@ -8854,7 +8838,7 @@ do_jump (exp, if_false_label, if_true_label)
 		 && !can_compare_p (TYPE_MODE (inner_type)))
 	  do_jump_by_parts_equality (exp, if_false_label, if_true_label);
 	else
-	  comparison = compare (exp, EQ, EQ);
+	  do_compare_and_jump (exp, EQ, EQ, if_false_label, if_true_label);
 	break;
       }
 
@@ -8894,7 +8878,7 @@ do_jump (exp, if_false_label, if_true_label)
 		 && !can_compare_p (TYPE_MODE (inner_type)))
 	  do_jump_by_parts_equality (exp, if_true_label, if_false_label);
 	else
-	  comparison = compare (exp, NE, NE);
+	  do_compare_and_jump (exp, NE, NE, if_false_label, if_true_label);
 	break;
       }
 
@@ -8904,7 +8888,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	do_jump_by_parts_greater (exp, 1, if_false_label, if_true_label);
       else
-	comparison = compare (exp, LT, LTU);
+	do_compare_and_jump (exp, LT, LTU, if_false_label, if_true_label);
       break;
 
     case LE_EXPR:
@@ -8913,7 +8897,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	do_jump_by_parts_greater (exp, 0, if_true_label, if_false_label);
       else
-	comparison = compare (exp, LE, LEU);
+	do_compare_and_jump (exp, LE, LEU, if_false_label, if_true_label);
       break;
 
     case GT_EXPR:
@@ -8922,7 +8906,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	do_jump_by_parts_greater (exp, 0, if_false_label, if_true_label);
       else
-	comparison = compare (exp, GT, GTU);
+	do_compare_and_jump (exp, GT, GTU, if_false_label, if_true_label);
       break;
 
     case GE_EXPR:
@@ -8931,7 +8915,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	do_jump_by_parts_greater (exp, 1, if_true_label, if_false_label);
       else
-	comparison = compare (exp, GE, GEU);
+	do_compare_and_jump (exp, GE, GEU, if_false_label, if_true_label);
       break;
 
     default:
@@ -8947,41 +8931,27 @@ do_jump (exp, if_false_label, if_true_label)
 	temp = copy_to_reg (temp);
 #endif
       do_pending_stack_adjust ();
-      if (GET_CODE (temp) == CONST_INT)
-	comparison = (temp == const0_rtx ? const0_rtx : const_true_rtx);
-      else if (GET_CODE (temp) == LABEL_REF)
-	comparison = const_true_rtx;
+      /* Do any postincrements in the expression that was tested.  */
+      emit_queue ();
+
+      if (GET_CODE (temp) == CONST_INT || GET_CODE (temp) == LABEL_REF)
+	{
+	  rtx target = temp == const0_rtx ? if_false_label : if_true_label;
+	  if (target)
+	    emit_jump (target);
+	}
       else if (GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT
-	       && !can_compare_p (GET_MODE (temp)))
+	       && ! can_compare_p (GET_MODE (temp)))
 	/* Note swapping the labels gives us not-equal.  */
 	do_jump_by_parts_equality_rtx (temp, if_true_label, if_false_label);
       else if (GET_MODE (temp) != VOIDmode)
-	comparison = compare_from_rtx (temp, CONST0_RTX (GET_MODE (temp)),
-				       NE, TREE_UNSIGNED (TREE_TYPE (exp)),
-				       GET_MODE (temp), NULL_RTX, 0);
+	do_compare_rtx_and_jump (temp, CONST0_RTX (GET_MODE (temp)),
+				 NE, TREE_UNSIGNED (TREE_TYPE (exp)),
+				 GET_MODE (temp), NULL_RTX, 0,
+				 if_false_label, if_true_label);
       else
 	abort ();
     }
-
-  /* Do any postincrements in the expression that was tested.  */
-  emit_queue ();
-
-  /* If COMPARISON is nonzero here, it is an rtx that can be substituted
-     straight into a conditional jump instruction as the jump condition.
-     Otherwise, all the work has been done already.  */
-
-  if (comparison == const_true_rtx)
-    {
-      if (if_true_label)
-	emit_jump (if_true_label);
-    }
-  else if (comparison == const0_rtx)
-    {
-      if (if_false_label)
-	emit_jump (if_false_label);
-    }
-  else if (comparison)
-    do_jump_for_compare (comparison, if_false_label, if_true_label);
 
   if (drop_through_label)
     {
@@ -9007,57 +8977,9 @@ do_jump_by_parts_greater (exp, swap, if_false_label, if_true_label)
   rtx op0 = expand_expr (TREE_OPERAND (exp, swap), NULL_RTX, VOIDmode, 0);
   rtx op1 = expand_expr (TREE_OPERAND (exp, !swap), NULL_RTX, VOIDmode, 0);
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
-  int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
-  rtx drop_through_label = 0;
   int unsignedp = TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
-  int i;
 
-  if (! if_true_label || ! if_false_label)
-    drop_through_label = gen_label_rtx ();
-  if (! if_true_label)
-    if_true_label = drop_through_label;
-  if (! if_false_label)
-    if_false_label = drop_through_label;
-
-  /* Compare a word at a time, high order first.  */
-  for (i = 0; i < nwords; i++)
-    {
-      rtx comp;
-      rtx op0_word, op1_word;
-
-      if (WORDS_BIG_ENDIAN)
-	{
-	  op0_word = operand_subword_force (op0, i, mode);
-	  op1_word = operand_subword_force (op1, i, mode);
-	}
-      else
-	{
-	  op0_word = operand_subword_force (op0, nwords - 1 - i, mode);
-	  op1_word = operand_subword_force (op1, nwords - 1 - i, mode);
-	}
-
-      /* All but high-order word must be compared as unsigned.  */
-      comp = compare_from_rtx (op0_word, op1_word,
-			       (unsignedp || i > 0) ? GTU : GT,
-			       unsignedp, word_mode, NULL_RTX, 0);
-      if (comp == const_true_rtx)
-	emit_jump (if_true_label);
-      else if (comp != const0_rtx)
-	do_jump_for_compare (comp, NULL_RTX, if_true_label);
-
-      /* Consider lower words only if these are equal.  */
-      comp = compare_from_rtx (op0_word, op1_word, NE, unsignedp, word_mode,
-			       NULL_RTX, 0);
-      if (comp == const_true_rtx)
-	emit_jump (if_false_label);
-      else if (comp != const0_rtx)
-	do_jump_for_compare (comp, NULL_RTX, if_false_label);
-    }
-
-  if (if_false_label)
-    emit_jump (if_false_label);
-  if (drop_through_label)
-    emit_label (drop_through_label);
+  do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true_label);
 }
 
 /* Compare OP0 with OP1, word at a time, in mode MODE.
@@ -9100,21 +9022,13 @@ do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true
 	}
 
       /* All but high-order word must be compared as unsigned.  */
-      comp = compare_from_rtx (op0_word, op1_word,
-			       (unsignedp || i > 0) ? GTU : GT,
-			       unsignedp, word_mode, NULL_RTX, 0);
-      if (comp == const_true_rtx)
-	emit_jump (if_true_label);
-      else if (comp != const0_rtx)
-	do_jump_for_compare (comp, NULL_RTX, if_true_label);
+      do_compare_rtx_and_jump (op0_word, op1_word, GT,
+			       (unsignedp || i > 0), word_mode, NULL_RTX, 0,
+			       NULL_RTX, if_true_label);
 
       /* Consider lower words only if these are equal.  */
-      comp = compare_from_rtx (op0_word, op1_word, NE, unsignedp, word_mode,
-			       NULL_RTX, 0);
-      if (comp == const_true_rtx)
-	emit_jump (if_false_label);
-      else if (comp != const0_rtx)
-	do_jump_for_compare (comp, NULL_RTX, if_false_label);
+      do_compare_rtx_and_jump (op0_word, op1_word, NE, unsignedp, word_mode,
+			       NULL_RTX, 0, NULL_RTX, if_false_label);
     }
 
   if (if_false_label)
@@ -9142,16 +9056,11 @@ do_jump_by_parts_equality (exp, if_false_label, if_true_label)
     drop_through_label = if_false_label = gen_label_rtx ();
 
   for (i = 0; i < nwords; i++)
-    {
-      rtx comp = compare_from_rtx (operand_subword_force (op0, i, mode),
-				   operand_subword_force (op1, i, mode),
-				   EQ, TREE_UNSIGNED (TREE_TYPE (exp)),
-				   word_mode, NULL_RTX, 0);
-      if (comp == const_true_rtx)
-	emit_jump (if_false_label);
-      else if (comp != const0_rtx)
-	do_jump_for_compare (comp, if_false_label, NULL_RTX);
-    }
+    do_compare_rtx_and_jump (operand_subword_force (op0, i, mode),
+			     operand_subword_force (op1, i, mode),
+			     EQ, TREE_UNSIGNED (TREE_TYPE (exp)),
+			     word_mode, NULL_RTX, 0, if_false_label,
+			     NULL_RTX);
 
   if (if_true_label)
     emit_jump (if_true_label);
@@ -9187,15 +9096,8 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
 
   if (part != 0)
     {
-      rtx comp = compare_from_rtx (part, const0_rtx, EQ, 1, word_mode,
-				   NULL_RTX, 0);
-
-      if (comp == const_true_rtx)
-	emit_jump (if_false_label);
-      else if (comp == const0_rtx)
-	emit_jump (if_true_label);
-      else
-	do_jump_for_compare (comp, if_false_label, if_true_label);
+      do_compare_rtx_and_jump (part, const0_rtx, EQ, 1, word_mode,
+			       NULL_RTX, 0, if_false_label, if_true_label);
 
       return;
     }
@@ -9205,15 +9107,9 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
     drop_through_label = if_false_label = gen_label_rtx ();
 
   for (i = 0; i < nwords; i++)
-    {
-      rtx comp = compare_from_rtx (operand_subword_force (op0, i,
-							  GET_MODE (op0)),
-				   const0_rtx, EQ, 1, word_mode, NULL_RTX, 0);
-      if (comp == const_true_rtx)
-	emit_jump (if_false_label);
-      else if (comp != const0_rtx)
-	do_jump_for_compare (comp, if_false_label, NULL_RTX);
-    }
+    do_compare_rtx_and_jump (operand_subword_force (op0, i, GET_MODE (op0)),
+			     const0_rtx, EQ, 1, word_mode, NULL_RTX, 0,
+			     if_false_label, NULL_RTX);
 
   if (if_true_label)
     emit_jump (if_true_label);
@@ -9221,169 +9117,14 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
   if (drop_through_label)
     emit_label (drop_through_label);
 }
-
-/* Given a comparison expression in rtl form, output conditional branches to
-   IF_TRUE_LABEL, IF_FALSE_LABEL, or both.  */
-
-static void
-do_jump_for_compare (comparison, if_false_label, if_true_label)
-     rtx comparison, if_false_label, if_true_label;
-{
-  if (if_true_label)
-    {
-      if (bcc_gen_fctn[(int) GET_CODE (comparison)] != 0)
-	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)])
-			  (if_true_label));
-      else
-	abort ();
-
-      if (if_false_label)
-	emit_jump (if_false_label);
-    }
-  else if (if_false_label)
-    {
-      rtx first = get_last_insn (), insn, branch;
-      int br_count;
-
-      /* Output the branch with the opposite condition.  Then try to invert
-	 what is generated.  If more than one insn is a branch, or if the
-	 branch is not the last insn written, abort. If we can't invert
-	 the branch, emit make a true label, redirect this jump to that,
-	 emit a jump to the false label and define the true label.  */
-      /* ??? Note that we wouldn't have to do any of this nonsense if
-	 we passed both labels into a combined compare-and-branch. 
-	 Ah well, jump threading does a good job of repairing the damage.  */
-
-      if (bcc_gen_fctn[(int) GET_CODE (comparison)] != 0)
-	emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (comparison)])
-			  (if_false_label));
-      else
-	abort ();
-
-      /* Here we get the first insn that was just emitted.  It used to be the
-	 case that, on some machines, emitting the branch would discard
-	 the previous compare insn and emit a replacement.  This isn't
-	 done anymore, but abort if we see that FIRST is deleted.  */
-
-      if (first == 0)
-	first = get_insns ();
-      else if (INSN_DELETED_P (first))
-	abort ();
-      else
-	first = NEXT_INSN (first);
-
-      /* Look for multiple branches in this sequence, as might be generated
-	 for a multi-word integer comparison.  */
-
-      br_count = 0;
-      branch = NULL_RTX;
-      for (insn = first; insn ; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == JUMP_INSN)
-	  {
-	    branch = insn;
-	    br_count += 1;
-	  }
-
-      /* If we've got one branch at the end of the sequence,
-	 we can try to reverse it.  */
-
-      if (br_count == 1 && NEXT_INSN (branch) == NULL_RTX)
-	{
-	  rtx insn_label;
-	  insn_label = XEXP (condjump_label (branch), 0);
-	  JUMP_LABEL (branch) = insn_label;
-
-	  if (insn_label != if_false_label)
-	    abort ();
-
-	  if (invert_jump (branch, if_false_label))
-	    return;
-	}
-
-      /* Multiple branches, or reversion failed.  Convert to branches
-	 around an unconditional jump.  */
-
-      if_true_label = gen_label_rtx ();
-      for (insn = first; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == JUMP_INSN)
-	  {
-	    rtx insn_label;
-	    insn_label = XEXP (condjump_label (insn), 0);
-	    JUMP_LABEL (insn) = insn_label;
-
-	    if (insn_label == if_false_label)
-	      redirect_jump (insn, if_true_label);
-	  }
-	emit_jump (if_false_label);
-	emit_label (if_true_label);
-    }
-}
 
-/* Generate code for a comparison expression EXP
+/* Generate code for a comparison of OP0 and OP1 with rtx code CODE.
    (including code to compute the values to be compared)
    and set (CC0) according to the result.
-   SIGNED_CODE should be the rtx operation for this comparison for
-   signed data; UNSIGNED_CODE, likewise for use if data is unsigned.
+   The decision as to signed or unsigned comparison must be made by the caller.
 
    We force a stack adjustment unless there are currently
-   things pushed on the stack that aren't yet used.  */
-
-static rtx
-compare (exp, signed_code, unsigned_code)
-     register tree exp;
-     enum rtx_code signed_code, unsigned_code;
-{
-  register rtx op0, op1;
-  register tree type;
-  register enum machine_mode mode;
-  int unsignedp;
-  enum rtx_code code;
-
-  /* Don't crash if the comparison was erroneous.  */
-  op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
-  if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
-    return op0;
-  
-  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
-  type = TREE_TYPE (TREE_OPERAND (exp, 0));
-  mode = TYPE_MODE (type);
-  unsignedp = TREE_UNSIGNED (type);
-  code = unsignedp ? unsigned_code : signed_code;
-
-#ifdef HAVE_canonicalize_funcptr_for_compare
-  /* If function pointers need to be "canonicalized" before they can
-     be reliably compared, then canonicalize them.  */
-  if (HAVE_canonicalize_funcptr_for_compare
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
-      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	  == FUNCTION_TYPE))
-    {
-      rtx new_op0 = gen_reg_rtx (mode);
-
-      emit_insn (gen_canonicalize_funcptr_for_compare (new_op0, op0));
-      op0 = new_op0;
-    }
-
-  if (HAVE_canonicalize_funcptr_for_compare
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
-      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
-	  == FUNCTION_TYPE))
-    {
-      rtx new_op1 = gen_reg_rtx (mode);
-
-      emit_insn (gen_canonicalize_funcptr_for_compare (new_op1, op1));
-      op1 = new_op1;
-    }
-#endif
-
-  return compare_from_rtx (op0, op1, code, unsignedp, mode,
-			   ((mode == BLKmode)
-			    ? expr_size (TREE_OPERAND (exp, 0)) : NULL_RTX),
-			   TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
-}
-
-/* Like compare but expects the values to compare as two rtx's.
-   The decision as to signed or unsigned comparison must be made by the caller.
+   things pushed on the stack that aren't yet used.
 
    If MODE is BLKmode, SIZE is an RTX giving the size of the objects being
    compared.
@@ -9451,6 +9192,181 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
   emit_cmp_insn (op0, op1, code, size, mode, unsignedp, align);
 
   return gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
+}
+
+/* Like do_compare_and_jump but expects the values to compare as two rtx's.
+   The decision as to signed or unsigned comparison must be made by the caller.
+
+   If MODE is BLKmode, SIZE is an RTX giving the size of the objects being
+   compared.
+
+   If ALIGN is non-zero, it is the alignment of this type; if zero, the
+   size of MODE should be used.  */
+
+void
+do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size, align,
+			 if_false_label, if_true_label)
+     register rtx op0, op1;
+     enum rtx_code code;
+     int unsignedp;
+     enum machine_mode mode;
+     rtx size;
+     int align;
+     rtx if_false_label, if_true_label;
+{
+  rtx tem;
+  int dummy_true_label = 0;
+
+  /* Reverse the comparison if that is safe and we want to jump if it is
+     false.  */
+  if (! if_true_label && ! FLOAT_MODE_P (mode))
+    {
+      if_true_label = if_false_label;
+      if_false_label = 0;
+      code = reverse_condition (code);
+    }
+
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
+
+  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
+      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
+    {
+      tem = op0;
+      op0 = op1;
+      op1 = tem;
+      code = swap_condition (code);
+    }
+
+  if (flag_force_mem)
+    {
+      op0 = force_not_mem (op0);
+      op1 = force_not_mem (op1);
+    }
+
+  do_pending_stack_adjust ();
+
+  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT
+      && (tem = simplify_relational_operation (code, mode, op0, op1)) != 0)
+    {
+      if (tem == const_true_rtx)
+	{
+	  if (if_true_label)
+	    emit_jump (if_true_label);
+	}
+      else
+	{
+	  if (if_false_label)
+	    emit_jump (if_false_label);
+	}
+      return;
+    }
+
+#if 0
+  /* There's no need to do this now that combine.c can eliminate lots of
+     sign extensions.  This can be less efficient in certain cases on other
+     machines.  */
+
+  /* If this is a signed equality comparison, we can do it as an
+     unsigned comparison since zero-extension is cheaper than sign
+     extension and comparisons with zero are done as unsigned.  This is
+     the case even on machines that can do fast sign extension, since
+     zero-extension is easier to combine with other operations than
+     sign-extension is.  If we are comparing against a constant, we must
+     convert it to what it would look like unsigned.  */
+  if ((code == EQ || code == NE) && ! unsignedp
+      && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT)
+    {
+      if (GET_CODE (op1) == CONST_INT
+	  && (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0))) != INTVAL (op1))
+	op1 = GEN_INT (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0)));
+      unsignedp = 1;
+    }
+#endif
+
+  if (! if_true_label)
+    {
+      dummy_true_label = 1;
+      if_true_label = gen_label_rtx ();
+    }
+
+  emit_cmp_and_jump_insns (op0, op1, code, size, mode, unsignedp, align,
+			   if_true_label);
+
+  if (if_false_label)
+    emit_jump (if_false_label);
+  if (dummy_true_label)
+    emit_label (if_true_label);
+}
+
+/* Generate code for a comparison expression EXP (including code to compute
+   the values to be compared) and a conditional jump to IF_FALSE_LABEL and/or
+   IF_TRUE_LABEL.  One of the labels can be NULL_RTX, in which case the
+   generated code will drop through.
+   SIGNED_CODE should be the rtx operation for this comparison for
+   signed data; UNSIGNED_CODE, likewise for use if data is unsigned.
+
+   We force a stack adjustment unless there are currently
+   things pushed on the stack that aren't yet used.  */
+
+static void
+do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
+		     if_true_label)
+     register tree exp;
+     enum rtx_code signed_code, unsigned_code;
+     rtx if_false_label, if_true_label;
+{
+  register rtx op0, op1;
+  register tree type;
+  register enum machine_mode mode;
+  int unsignedp;
+  enum rtx_code code;
+
+  /* Don't crash if the comparison was erroneous.  */
+  op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+  if (TREE_CODE (TREE_OPERAND (exp, 0)) == ERROR_MARK)
+    return;
+
+  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+  type = TREE_TYPE (TREE_OPERAND (exp, 0));
+  mode = TYPE_MODE (type);
+  unsignedp = TREE_UNSIGNED (type);
+  code = unsignedp ? unsigned_code : signed_code;
+
+#ifdef HAVE_canonicalize_funcptr_for_compare
+  /* If function pointers need to be "canonicalized" before they can
+     be reliably compared, then canonicalize them.  */
+  if (HAVE_canonicalize_funcptr_for_compare
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	  == FUNCTION_TYPE))
+    {
+      rtx new_op0 = gen_reg_rtx (mode);
+
+      emit_insn (gen_canonicalize_funcptr_for_compare (new_op0, op0));
+      op0 = new_op0;
+    }
+
+  if (HAVE_canonicalize_funcptr_for_compare
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
+	  == FUNCTION_TYPE))
+    {
+      rtx new_op1 = gen_reg_rtx (mode);
+
+      emit_insn (gen_canonicalize_funcptr_for_compare (new_op1, op1));
+      op1 = new_op1;
+    }
+#endif
+
+  /* Do any postincrements in the expression that was tested.  */
+  emit_queue ();
+
+  do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode,
+			   ((mode == BLKmode)
+			    ? expr_size (TREE_OPERAND (exp, 0)) : NULL_RTX),
+			   TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT,
+			   if_false_label, if_true_label);
 }
 
 /* Generate code to calculate EXP using a store-flag instruction

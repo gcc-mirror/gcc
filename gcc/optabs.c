@@ -267,6 +267,15 @@ static void init_floating_libfuncs PROTO((optab, const char *, int));
 #ifdef HAVE_conditional_trap
 static void init_traps PROTO((void));
 #endif
+static int cmp_available_p PROTO((enum machine_mode, enum rtx_code, int));
+static void emit_cmp_and_jump_insn_1 PROTO((rtx, rtx, enum machine_mode,
+					    enum rtx_code, int, rtx));
+static void prepare_cmp_insn PROTO((rtx *, rtx *, enum rtx_code, rtx,
+				    enum machine_mode *, int *, int));
+static rtx prepare_operand PROTO((int, rtx, int, enum machine_mode,
+				  enum machine_mode, int));
+static void prepare_float_lib_cmp PROTO((rtx *, rtx *, enum rtx_code,
+					 enum machine_mode *, int *));
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -1326,7 +1335,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      carry_out = gen_reg_rtx (word_mode);
 	      carry_out = emit_store_flag_force (carry_out,
 						 (binoptab == add_optab
-						  ? LTU : GTU),
+						  ? LT : GT),
 						 x, op0_piece,
 						 word_mode, 1, normalizep);
 	    }
@@ -1349,7 +1358,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		  /* Get out carry from adding/subtracting carry in.  */
 		  carry_tmp = emit_store_flag_force (carry_tmp,
 						     binoptab == add_optab
-						     ? LTU : GTU,
+						     ? LT : GT,
 						     x, carry_in,
 						     word_mode, 1, normalizep);
 
@@ -2463,19 +2472,8 @@ expand_abs (mode, op0, target, safe)
     do_jump_by_parts_greater_rtx (mode, 0, target, const0_rtx, 
 				  NULL_RTX, op1);
   else
-    {
-      temp = compare_from_rtx (target, CONST0_RTX (mode), GE, 0, mode,
-			       NULL_RTX, 0);
-      if (temp == const1_rtx)
-	return target;
-      else if (temp != const0_rtx)
-	{
-	  if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
-	    emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op1));
-	  else
-	    abort ();
-	}
-    }
+    do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
+			     NULL_RTX, 0, NULL_RTX, op1);
 
   op0 = expand_unop (mode, neg_optab, target, target, 0);
   if (op0 != target)
@@ -2983,31 +2981,57 @@ emit_0_to_1_insn (x)
   emit_move_insn (x, const1_rtx);
 }
 
-/* Generate code to compare X with Y
-   so that the condition codes are set.
+/* Nonzero if we can perform a comparison of mode MODE for a conditional jump
+   straightforwardly.  */
 
-   MODE is the mode of the inputs (in case they are const_int).
-   UNSIGNEDP nonzero says that X and Y are unsigned;
+static int
+cmp_available_p (mode, code, can_use_tst_p)
+     enum machine_mode mode;
+     enum rtx_code code;
+     int can_use_tst_p;
+{
+  do
+    {
+      if (cmp_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing
+	  || (can_use_tst_p
+	      && tst_optab->handlers[(int)mode].insn_code != CODE_FOR_nothing))
+	return 1;
+      mode = GET_MODE_WIDER_MODE (mode);
+    } while (mode != VOIDmode);
+
+  return 0;
+}
+
+/* This function is called when we are going to emit a compare instruction that
+   compares the values found in *PX and *PY, using the rtl operator COMPARISON.
+
+   *PMODE is the mode of the inputs (in case they are const_int).
+   *PUNSIGNEDP nonzero says that the operands are unsigned;
    this matters if they need to be widened.
 
-   If they have mode BLKmode, then SIZE specifies the size of both X and Y,
-   and ALIGN specifies the known shared alignment of X and Y.
+   If they have mode BLKmode, then SIZE specifies the size of both operands,
+   and ALIGN specifies the known shared alignment of the operands.
 
-   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
-   It is ignored for fixed-point and block comparisons;
-   it is used only for floating-point comparisons.  */
+   This function performs all the setup necessary so that the caller only has
+   to emit a single comparison insn.  This setup can involve doing a BLKmode
+   comparison or emitting a library call to perform the comparison if no insn
+   is available to handle it.
+   The values which are passed in through pointers can be modified; the caller
+   should perform the comparison on the modified values.  */
 
 void
-emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
-     rtx x, y;
+prepare_cmp_insn (px, py, comparison, size, pmode, punsignedp, align)
+     rtx *px, *py;
      enum rtx_code comparison;
      rtx size;
-     enum machine_mode mode;
-     int unsignedp;
+     enum machine_mode *pmode;
+     int *punsignedp;
      int align;
 {
+  enum machine_mode mode = *pmode;
+  rtx x = *px, y = *py;
+  int unsignedp = *punsignedp;
   enum mode_class class;
-  enum machine_mode wider_mode;
 
   class = GET_MODE_CLASS (mode);
 
@@ -3046,6 +3070,9 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 
   if (mode == BLKmode)
     {
+      rtx result;
+      enum machine_mode result_mode;
+
       emit_queue ();
       x = protect_from_queue (x, 0);
       y = protect_from_queue (y, 0);
@@ -3057,12 +3084,9 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  && GET_CODE (size) == CONST_INT
 	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (QImode)))
 	{
-	  enum machine_mode result_mode
-	    = insn_operand_mode[(int) CODE_FOR_cmpstrqi][0];
-	  rtx result = gen_reg_rtx (result_mode);
+	  result_mode = insn_operand_mode[(int) CODE_FOR_cmpstrqi][0];
+	  result = gen_reg_rtx (result_mode);
 	  emit_insn (gen_cmpstrqi (result, x, y, size, GEN_INT (align)));
-	  emit_cmp_insn (result, const0_rtx, comparison, NULL_RTX,
-			 result_mode, 0, 0);
 	}
       else
 #endif
@@ -3071,33 +3095,25 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  && GET_CODE (size) == CONST_INT
 	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (HImode)))
 	{
-	  enum machine_mode result_mode
-	    = insn_operand_mode[(int) CODE_FOR_cmpstrhi][0];
-	  rtx result = gen_reg_rtx (result_mode);
+	  result_mode = insn_operand_mode[(int) CODE_FOR_cmpstrhi][0];
+	  result = gen_reg_rtx (result_mode);
 	  emit_insn (gen_cmpstrhi (result, x, y, size, GEN_INT (align)));
-	  emit_cmp_insn (result, const0_rtx, comparison, NULL_RTX,
-			 result_mode, 0, 0);
 	}
       else
 #endif
 #ifdef HAVE_cmpstrsi
       if (HAVE_cmpstrsi)
 	{
-	  enum machine_mode result_mode
-	    = insn_operand_mode[(int) CODE_FOR_cmpstrsi][0];
-	  rtx result = gen_reg_rtx (result_mode);
+	  result_mode = insn_operand_mode[(int) CODE_FOR_cmpstrsi][0];
+	  result = gen_reg_rtx (result_mode);
 	  size = protect_from_queue (size, 0);
 	  emit_insn (gen_cmpstrsi (result, x, y,
 				   convert_to_mode (SImode, size, 1),
 				   GEN_INT (align)));
-	  emit_cmp_insn (result, const0_rtx, comparison, NULL_RTX,
-			 result_mode, 0, 0);
 	}
       else
 #endif
 	{
-	  rtx result;
-
 #ifdef TARGET_MEM_FUNCTIONS
 	  emit_library_call (memcmp_libfunc, 0,
 			     TYPE_MODE (integer_type_node), 3,
@@ -3119,83 +3135,24 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	     register so reload doesn't clobber the value if it needs
 	     the return register for a spill reg.  */
 	  result = gen_reg_rtx (TYPE_MODE (integer_type_node));
+	  result_mode = TYPE_MODE (integer_type_node);
 	  emit_move_insn (result,
-			  hard_libcall_value (TYPE_MODE (integer_type_node)));
-	  emit_cmp_insn (result,
-			 const0_rtx, comparison, NULL_RTX,
-			 TYPE_MODE (integer_type_node), 0, 0);
+			  hard_libcall_value (result_mode));
 	}
+      *px = result;
+      *py = const0_rtx;
+      *pmode = result_mode;
       return;
     }
 
-  /* Handle some compares against zero.  */
-
-  if (y == CONST0_RTX (mode)
-      && tst_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
-    {
-      int icode = (int) tst_optab->handlers[(int) mode].insn_code;
-
-      emit_queue ();
-      x = protect_from_queue (x, 0);
-      y = protect_from_queue (y, 0);
-
-      /* Now, if insn does accept these operands, put them into pseudos.  */
-      if (! (*insn_operand_predicate[icode][0])
-	  (x, insn_operand_mode[icode][0]))
-	x = copy_to_mode_reg (insn_operand_mode[icode][0], x);
-
-      emit_insn (GEN_FCN (icode) (x));
-      return;
-    }
-
-  /* Handle compares for which there is a directly suitable insn.  */
-
-  if (cmp_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
-    {
-      int icode = (int) cmp_optab->handlers[(int) mode].insn_code;
-
-      emit_queue ();
-      x = protect_from_queue (x, 0);
-      y = protect_from_queue (y, 0);
-
-      /* Now, if insn doesn't accept these operands, put them into pseudos.  */
-      if (! (*insn_operand_predicate[icode][0])
-	  (x, insn_operand_mode[icode][0]))
-	x = copy_to_mode_reg (insn_operand_mode[icode][0], x);
-
-      if (! (*insn_operand_predicate[icode][1])
-	  (y, insn_operand_mode[icode][1]))
-	y = copy_to_mode_reg (insn_operand_mode[icode][1], y);
-
-      emit_insn (GEN_FCN (icode) (x, y));
-      return;
-    }
-
-  /* Try widening if we can find a direct insn that way.  */
-
-  if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
-    {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
-	{
-	  if (cmp_optab->handlers[(int) wider_mode].insn_code
-	      != CODE_FOR_nothing)
-	    {
-	      x = protect_from_queue (x, 0);
-	      y = protect_from_queue (y, 0);
-	      x = convert_modes (wider_mode, mode, x, unsignedp);
-	      y = convert_modes (wider_mode, mode, y, unsignedp);
-	      emit_cmp_insn (x, y, comparison, NULL_RTX,
-			     wider_mode, unsignedp, align);
-	      return;
-	    }
-	}
-    }
+  *px = x;
+  *py = y;
+  if (cmp_available_p (mode, comparison, y == CONST0_RTX (mode)))
+    return;
 
   /* Handle a lib call just for the mode we are using.  */
 
-  if (cmp_optab->handlers[(int) mode].libfunc
-      && class != MODE_FLOAT)
+  if (cmp_optab->handlers[(int) mode].libfunc && class != MODE_FLOAT)
     {
       rtx libfunc = cmp_optab->handlers[(int) mode].libfunc;
       rtx result;
@@ -3217,16 +3174,97 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
       /* Integer comparison returns a result that must be compared against 1,
 	 so that even if we do an unsigned compare afterward,
 	 there is still a value that can represent the result "less than".  */
-      emit_cmp_insn (result, const1_rtx,
-		     comparison, NULL_RTX, word_mode, unsignedp, 0);
+      *px = result;
+      *py = const1_rtx;
+      *pmode = word_mode;
       return;
     }
 
   if (class == MODE_FLOAT)
-    emit_float_lib_cmp (x, y, comparison);
+    prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp);
 
   else
     abort ();
+}
+
+/* Before emitting an insn with code ICODE, make sure that X, which is going
+   to be used for operand OPNUM of the insn, is converted from mode MODE to
+   WIDER_MODE (UNSIGNEDP determines whether it is a unsigned conversion), and
+   that it is accepted by the operand predicate.  Return the new value.  */
+static rtx
+prepare_operand (icode, x, opnum, mode, wider_mode, unsignedp)
+     int icode;
+     rtx x;
+     int opnum;
+     enum machine_mode mode, wider_mode;
+     int unsignedp;
+{
+  x = protect_from_queue (x, 0);
+
+  if (mode != wider_mode)
+    x = convert_modes (wider_mode, mode, x, unsignedp);
+
+  if (! (*insn_operand_predicate[icode][opnum])
+      (x, insn_operand_mode[icode][opnum]))
+    x = copy_to_mode_reg (insn_operand_mode[icode][opnum], x);
+  return x;
+}
+
+/* Subroutine of emit_cmp_and_jump_insns; this function is called when we know
+   we can do the comparison.
+   The arguments are the same as for emit_cmp_and_jump_insns; but LABEL may
+   be NULL_RTX which indicates that only a comparison is to be generated.  */
+
+static void
+emit_cmp_and_jump_insn_1 (x, y, mode, comparison, unsignedp, label)
+     rtx x, y;
+     enum machine_mode mode;
+     enum rtx_code comparison;
+     int unsignedp;
+     rtx label;
+{
+  rtx test = gen_rtx_fmt_ee (comparison, mode, x, y);
+  enum mode_class class = GET_MODE_CLASS (mode);
+  enum machine_mode wider_mode = mode;
+
+  /* Try combined insns first.  */
+  do
+    {
+      enum insn_code icode;
+      PUT_MODE (test, wider_mode);
+
+      /* Handle some compares against zero.  */
+      icode = (int) tst_optab->handlers[(int) wider_mode].insn_code;
+      if (y == CONST0_RTX (mode) && icode != CODE_FOR_nothing)
+	{
+	  x = prepare_operand (icode, x, 0, mode, wider_mode, unsignedp);
+	  emit_insn (GEN_FCN (icode) (x));
+	  if (label)
+	    emit_jump_insn ((*bcc_gen_fctn[(int) comparison]) (label));
+	  return;
+	}
+
+      /* Handle compares for which there is a directly suitable insn.  */
+
+      icode = (int) cmp_optab->handlers[(int) wider_mode].insn_code;
+      if (icode != CODE_FOR_nothing)
+	{
+	  x = prepare_operand (icode, x, 0, mode, wider_mode, unsignedp);
+	  y = prepare_operand (icode, y, 1, mode, wider_mode, unsignedp);
+	  emit_insn (GEN_FCN (icode) (x, y));
+	  if (label)
+	    emit_jump_insn ((*bcc_gen_fctn[(int) comparison]) (label));
+	  return;
+	}
+
+      if (class != MODE_INT && class != MODE_FLOAT
+	  && class != MODE_COMPLEX_FLOAT)
+	break;
+
+      wider_mode = GET_MODE_WIDER_MODE (wider_mode);
+    } while (wider_mode != VOIDmode);
+
+  abort ();
 }
 
 /* Generate code to compare X with Y so that the condition codes are
@@ -3281,11 +3319,24 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
     op0 = force_reg (mode, op0);
 #endif
 
-  emit_cmp_insn (op0, op1, comparison, size, mode, unsignedp, align);
-
+  emit_queue ();
   if (unsignedp)
     comparison = unsigned_condition (comparison);
-  emit_jump_insn ((*bcc_gen_fctn[(int) comparison]) (label));
+  prepare_cmp_insn (&op0, &op1, comparison, size, &mode, &unsignedp, align);
+  emit_cmp_and_jump_insn_1 (op0, op1, mode, comparison, unsignedp, label);
+}
+
+/* Like emit_cmp_and_jump_insns, but generate only the comparison.  */
+void
+emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
+     rtx x, y;
+     enum rtx_code comparison;
+     rtx size;
+     enum machine_mode mode;
+     int unsignedp;
+     int align;
+{
+  emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, 0);
 }
 
 
@@ -3310,10 +3361,13 @@ can_compare_p (mode)
    COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).  */
 
 void
-emit_float_lib_cmp (x, y, comparison)
-     rtx x, y;
+prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp)
+     rtx *px, *py;
      enum rtx_code comparison;
+     enum machine_mode *pmode;
+     int *punsignedp;
 {
+  rtx x = *px, y = *py;
   enum machine_mode mode = GET_MODE (x);
   rtx libfunc = 0;
   rtx result;
@@ -3481,9 +3535,9 @@ emit_float_lib_cmp (x, y, comparison)
 	    {
 	      x = protect_from_queue (x, 0);
 	      y = protect_from_queue (y, 0);
-	      x = convert_to_mode (wider_mode, x, 0);
-	      y = convert_to_mode (wider_mode, y, 0);
-	      emit_float_lib_cmp (x, y, comparison);
+	      *px = convert_to_mode (wider_mode, x, 0);
+	      *py = convert_to_mode (wider_mode, y, 0);
+	      prepare_float_lib_cmp (px, py, comparison, pmode, punsignedp);
 	      return;
 	    }
 	}
@@ -3501,9 +3555,10 @@ emit_float_lib_cmp (x, y, comparison)
      the return register for a spill reg.  */
   result = gen_reg_rtx (word_mode);
   emit_move_insn (result, hard_libcall_value (word_mode));
-
-  emit_cmp_insn (result, const0_rtx, comparison,
-		 NULL_RTX, word_mode, 0, 0);
+  *px = result;
+  *py = const0_rtx;
+  *pmode = word_mode;
+  *punsignedp = 0;
 }
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
