@@ -142,12 +142,12 @@ EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 
+libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
+	$(THREADOBJS) $(libffi_files)
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
-libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS) $(THREADLIBS) $(libffi_files) $(LIBLTDL)
 libgcj_la_LDFLAGS = -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
-	-rpath $(toolexeclibdir) \
+	-rpath $(toolexeclibdir) $(THREADLIBS) $(LIBLTDL) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
@@ -261,6 +261,19 @@ $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 ## FIXME: GNU make.
 $(javao_files) $(x_javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
+
+## Pass the list of object files to libtool in a temporary file to 
+## avoid tripping platform command line length limits.
+libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
+	@echo $(libgcj_la_OBJECTS) > libgcj.objectlist;
+	@echo $(libgcj_la_LIBADD) >> libgcj.objectlist;
+	$(libgcj_la_LINK) -objectlist libgcj.objectlist -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
+
+libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
+	@echo $(libgcjx_la_OBJECTS) > libgcjx.objectlist;
+	@echo $(libgcjx_la_LIBADD) >> libgcjx.objectlist;
+	$(libgcjx_la_LINK) -objectlist libgcjx.objectlist -rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(LIBS)
+
 
 ## ################################################################
 
