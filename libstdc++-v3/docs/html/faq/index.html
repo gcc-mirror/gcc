@@ -73,6 +73,7 @@
          <li><a href="#3_6">OS X ctype.h is broken!  How can I hack it?</a></li>
          <li><a href="#3_7">Threading is broken on i386</a></li>
          <li><a href="#3_8">Recent GNU/Linux glibc required?</a></li>
+         <li><a href="#3_9">Can't use wchar_t/wstring on FreeBSD</a></li>
       </ol>
    </li>
 
@@ -520,7 +521,23 @@ which is no longer available, thanks deja...-->
          glibc version 2.3.x available now.
       </p>
       <p>The guideline is simple:  the more recent the C++ library, the
-         more recent the C library.
+         more recent the C library.  (This is also documented in the main
+         GCC installation instructions.)
+      </p>
+
+<hr />
+   <h2><a name="3_9">3.9 Can't use wchar_t/wstring on FreeBSD</a></h2>
+      <p>At the moment there are a few problems in FreeBSD's support for
+         wide character functions, and as a result the libstdc++ configury
+         decides that wchar_t support should be disabled.  Once the underlying
+         problems are fixed in FreeBSD (soon), the library support will
+         automatically enable itself.
+      </p>
+      <p>You can fix the problems yourself, and learn more about the situation,
+         by reading
+         <a href="http://gcc.gnu.org/ml/libstdc++/2003-02/subjects.html#00286">
+         this short thread</a> (&quot;_GLIBCPP_USE_WCHAR_T undefined in
+         FreeBSD's c++config.h?&quot;).
       </p>
 
 <hr />
