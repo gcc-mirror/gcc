@@ -1,3 +1,11 @@
+2001-01-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lang-options.h (-Wunsupported-jdk11): Removed.
+	* lang.c (flag_not_overriding): Deleted.
+	(flag_static_local_jdk1_1): Likewise.
+	(lang_W_options): Removed "unsupported-jdk11" entry.
+	* parse.y (java_check_methods): Removed dead code.
+
 2001-01-17  Tom Tromey  <tromey@redhat.com>
 
 	Changes suggested by Per Bothner:
