@@ -62,6 +62,13 @@ extern int rtems_gxx_mutex_trylock (__gthread_mutex_t *mutex);
 extern int rtems_gxx_mutex_unlock (__gthread_mutex_t *mutex);
 
 
+/* RTEMS threading is always active */
+static inline int
+__gthread_active_p (void)
+{
+  return 1;
+}
+
 /* Wrapper calls */
 static inline int
 __gthread_once (__gthread_once_t *once, void (*func) ())

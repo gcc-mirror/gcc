@@ -1,3 +1,9 @@
+2001-07-24  Joel Sherrill <joel@OARcorp.com>
+
+	* configure.in: Add rtems as a supported thread model.
+	* gthr-rtems.h: Add missing entry point __gthread_active_p.
+	* configure: Rebuilt.
+
 2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/irix6-libc-compat.c: New file.
@@ -453,15 +459,15 @@ Thu Jun 28 00:31:24 2001  Denis Chertykov  <denisc@overta.ru>
 
 2001-06-26  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/sh/sh.md (interrupt_function): Use
-        current_function_interrupt.
-        (define_delay): Schedule in delay slot if TARGET_SH3, even if it is
-        an interrupt function.
+	* config/sh/sh.md (interrupt_function): Use
+	current_function_interrupt.
+	(define_delay): Schedule in delay slot if TARGET_SH3, even if it is
+	an interrupt function.
 
-        * config/sh/sh.h (current_function_interrupt): Define extern.
+	* config/sh/sh.h (current_function_interrupt): Define extern.
 
-        * config/sh/sh.c (current_function_interrupt): New global.
-        (sh_expand_prologue): Set current_function_interrupt.
+	* config/sh/sh.c (current_function_interrupt): New global.
+	(sh_expand_prologue): Set current_function_interrupt.
 
 2001-06-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -565,7 +571,7 @@ Thu Jun 28 00:31:24 2001  Denis Chertykov  <denisc@overta.ru>
 
 20010617 Release Manager
 
-        * GCC 3.0 Released.
+	* GCC 3.0 Released.
 
 2001-06-15  Andreas Jaeger  <aj@suse.de>
 

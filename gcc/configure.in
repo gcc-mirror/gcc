@@ -288,7 +288,7 @@ case x${enable_threads_flag} in
 		target_thread_file=''
 		;;
 	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-	xsolaris | xwin32 | xdce | xvxworks | xaix)
+	xsolaris | xwin32 | xdce | xrtems| xvxworks | xaix)
 		target_thread_file=$enable_threads_flag
 		;;
 	*)
