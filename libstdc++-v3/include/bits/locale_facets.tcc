@@ -33,6 +33,8 @@
 #ifndef _CPP_BITS_LOCFACETS_TCC
 #define _CPP_BITS_LOCFACETS_TCC 1
 
+#pragma GCC system_header
+
 #include <cerrno>
 #include <clocale>   // For localeconv
 #include <cstdlib>   // For strof, strtold

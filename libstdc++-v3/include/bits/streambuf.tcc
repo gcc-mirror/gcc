@@ -35,6 +35,8 @@
 #ifndef _CPP_BITS_STREAMBUF_TCC
 #define _CPP_BITS_STREAMBUF_TCC 1
 
+#pragma GCC system_header
+
 namespace std 
 {
   template<typename _CharT, typename _Traits>

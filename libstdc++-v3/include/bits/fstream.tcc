@@ -35,6 +35,8 @@
 #ifndef _CPP_BITS_FSTREAM_TCC
 #define _CPP_BITS_FSTREAM_TCC 1
 
+#pragma GCC system_header
+
 namespace std
 {
   template<typename _CharT, typename _Traits>
