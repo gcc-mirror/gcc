@@ -1,3 +1,7 @@
+2004-09-27  Devang Patel  <dpatel@apple.com>
+
+	* tree-pretty-print.c (dump_generic_node): Print VEC_COND_EXPR.
+	
 2004-09-27  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (athlon_cost, k8_cost): Set BRANCH_COST to 5.
