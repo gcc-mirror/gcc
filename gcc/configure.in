@@ -229,7 +229,7 @@ fi)
 AC_ARG_ENABLE(c-mbchar,
 [  --enable-c-mbchar       Enable multibyte characters for C and C++.],
 if [[[ x$enable_c_mbchar != xno ]]]; then
-  extra_c_flags=-DMULTIBYTE_CHARS=1
+  extra_c_flags="${extra_c_flags} -DMULTIBYTE_CHARS=1"
 fi)
   
 # Enable threads

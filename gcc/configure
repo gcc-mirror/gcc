@@ -838,7 +838,7 @@ fi
 if test "${enable_c_mbchar+set}" = set; then
   enableval="$enable_c_mbchar"
   if [ x$enable_c_mbchar != xno ]; then
-  extra_c_flags=-DMULTIBYTE_CHARS=1
+  extra_c_flags="${extra_c_flags} -DMULTIBYTE_CHARS=1"
 fi
 fi
 

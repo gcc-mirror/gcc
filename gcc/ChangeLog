@@ -1,3 +1,7 @@
+Fri Oct  8 16:12:42 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (c-mbchar): Append, don't overwrite, `extra_c_flags'.
+
 Fri Oct  8 11:58:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* lists.c (init_EXPR_INSN_LIST_cache): Don't need to zap the
