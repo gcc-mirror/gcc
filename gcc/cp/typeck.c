@@ -57,7 +57,6 @@ static int comp_array_types PARAMS ((int (*) (tree, tree, int), tree,
 static tree common_base_type PARAMS ((tree, tree));
 static tree lookup_anon_field PARAMS ((tree, tree));
 static tree pointer_diff PARAMS ((tree, tree, tree));
-static tree build_component_addr PARAMS ((tree, tree));
 static tree qualify_type_recursive PARAMS ((tree, tree));
 static tree get_delta_difference PARAMS ((tree, tree, int));
 static int comp_cv_target_types PARAMS ((tree, tree, int));
@@ -3741,50 +3740,6 @@ pointer_diff (op0, op1, ptrtype)
   return folded;
 }
 
-/* Handle the case of taking the address of a COMPONENT_REF.
-   Called by `build_unary_op'.
-
-   ARG is the COMPONENT_REF whose address we want.
-   ARGTYPE is the pointer type that this address should have. */
-
-static tree
-build_component_addr (arg, argtype)
-     tree arg, argtype;
-{
-  tree field = TREE_OPERAND (arg, 1);
-  tree basetype = decl_type_context (field);
-  tree rval = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0);
-
-  my_friendly_assert (TREE_CODE (field) == FIELD_DECL, 981018);
-
-  if (DECL_C_BIT_FIELD (field))
-    {
-      error ("attempt to take address of bit-field structure member `%D'",
-                field);
-      return error_mark_node;
-    }
-
-  if (TREE_CODE (field) == FIELD_DECL
-      && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
-    {
-      /* Can't convert directly to ARGTYPE, since that
-	 may have the same pointer type as one of our
-	 baseclasses.  */
-      tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (rval)), basetype,
-				ba_check, NULL);
-
-      rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
-      rval = build1 (NOP_EXPR, argtype, rval);
-      TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
-    }
-  else
-    /* This conversion is harmless.  */
-    rval = convert_force (argtype, rval, 0);
-
-  return fold (build (PLUS_EXPR, argtype, rval,
-		      cp_convert (argtype, byte_position (field))));
-}
-   
 /* Construct and perhaps optimize a tree representation
    for a unary operation.  CODE, a tree_code, specifies the operation
    and XARG is the operand.  */
@@ -4290,8 +4245,13 @@ build_unary_op (code, xarg, noconvert)
       {
 	tree addr;
 
-	if (TREE_CODE (arg) == COMPONENT_REF)
-	  addr = build_component_addr (arg, argtype);
+	if (TREE_CODE (arg) == COMPONENT_REF
+	    && DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
+	  {
+	    error ("attempt to take address of bit-field structure member `%D'",
+		   TREE_OPERAND (arg, 1));
+	    return error_mark_node;
+	  }
 	else
 	  addr = build1 (ADDR_EXPR, argtype, arg);
 
