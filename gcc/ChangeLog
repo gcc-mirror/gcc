@@ -1,3 +1,7 @@
+2002-08-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in ($(BUILD_PREFIX_1)varray.o): Depend on $(GGC_H).
+
 2002-08-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gengtype-lex.l (ID): Allow underscore as first character.
