@@ -378,7 +378,7 @@ fix_char_macro_uses (text, str)
   /* This regexp looks for a traditional-syntax #define (# in column 1)
      of an object-like macro.  */
   static const char pat[] =
-    "^#[ \t]*define[ \t]+[A-Za-z][A-Za-z0-9]*[ \t]+";
+    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+";
   static regex_t re;
 
   regmatch_t rm[1];
@@ -486,6 +486,7 @@ fix_char_macro_defines (text, str)
 	{
 	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
 	    goto found;
+	  p++;
 	}
       while (isalpha (*p) || isalnum (*p) || *p == '_');
       /* Hit end of macro name without finding the string.  */

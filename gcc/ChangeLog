@@ -1,3 +1,9 @@
+2000-01-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* fixinc/fixfixes.c (fix_char_macro_uses): Correct regular
+	expression to allow underscores in macro names.
+	(fix_char_macro_defines): Increment scanning pointer.
+
 2000-01-23  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/osf.h (TARGET_HAS_XFLOATING_LIBS): Define.
