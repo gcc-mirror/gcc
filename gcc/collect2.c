@@ -493,12 +493,18 @@ main (argc, argv)
   if (argc < 2)
     fatal ("no arguments");
 
-  signal (SIGQUIT, handler);
-  signal (SIGINT,  handler);
-  signal (SIGALRM, handler);
-  signal (SIGHUP,  handler);
-  signal (SIGSEGV, handler);
-  signal (SIGBUS,  handler);
+  if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
+    signal (SIGQUIT, handler);
+  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
+    signal (SIGINT, handler);
+  if (signal (SIGALRM, SIG_IGN) != SIG_IGN)
+    signal (SIGALRM, handler);
+  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
+    signal (SIGHUP, handler);
+  if (signal (SIGSEGV, SIG_IGN) != SIG_IGN)
+    signal (SIGSEGV, handler);
+  if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
+    signal (SIGBUS, handler);
 
   /* Try to discover a valid linker/assembler/nm/strip to use.  */
   len = strlen (argv[0]);
@@ -886,8 +892,6 @@ fork_execute (prog, argv)
      char **argv;
 {
   int pid;
-  void (*int_handler) ();
-  void (*quit_handler) ();
 
   if (vflag || debug)
     {
@@ -914,13 +918,7 @@ fork_execute (prog, argv)
       fatal_perror ("executing %s", prog);
     }
 
-  int_handler  = (void (*) ())signal (SIGINT,  SIG_IGN);
-  quit_handler = (void (*) ())signal (SIGQUIT, SIG_IGN);
-
   do_wait (prog);
-
-  signal (SIGINT,  int_handler);
-  signal (SIGQUIT, quit_handler);
 }
 
 
