@@ -22,7 +22,7 @@ import java.util.Locale;
  * Status:  Complete to 1.3.
  */
 
-public final class String implements Serializable, Comparable
+public final class String implements Serializable, Comparable, CharSequence
 {
   private Object data;
   private int boffset; // Note this is a byte offset - don't use in Java code!
@@ -295,6 +295,28 @@ public final class String implements Serializable, Comparable
 	if (startsWith(str, fromIndex))
 	  return fromIndex;
       }
+  }
+
+  /**
+   * Creates a substring of this String, starting at a specified index
+   * and ending at one character before a specified index.
+   * <p>
+   * To implement <code>CharSequence</code>.
+   * Calls <code>substring(beginIndex, endIndex)</code>.
+   *
+   * @param beginIndex index to start substring (base 0)
+   * @param endIndex index after the last character to be 
+   *   copied into the substring
+   * 
+   * @return new String which is a substring of this String
+   *
+   * @exception StringIndexOutOfBoundsException 
+   *   if (beginIndex < 0 || endIndex > this.length() || beginIndex > endIndex)
+   */
+  public CharSequence subSequence(int beginIndex, int endIndex)
+    throws IndexOutOfBoundsException
+  {
+    return substring(beginIndex, endIndex);
   }
 
   public String substring (int beginIndex)
