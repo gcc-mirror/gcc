@@ -1,3 +1,11 @@
+1999-09-22  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (define_case_label): Don't crash if we're not in a switch.
+
+	* decl2.c (lang_decode_option): Don't bother explicitly ignoring flags.
+	* lang-options.h: Restore -fthis-is-variable.  Remove help strings
+	for unsupported flags.
+
 1999-09-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (lang_decode_option): Accept and ignore -finit-priority.

@@ -1,5 +1,5 @@
 /* Definitions for switches for C++.
-   Copyright (C) 1995, 96-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 96-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,7 +25,7 @@ DEFINE_LANG_NAME ("C++")
 
   { "-faccess-control", "" },
   { "-fno-access-control", "Do not obey access control semantics" },
-  { "-fall-virtual", "Make all member functions virtual" },
+  { "-fall-virtual", "" },
   { "-fno-all-virtual", "" },
   { "-falt-external-templates", "Change when template instances are emitted" },
   { "-fno-alt-external-templates", "" },
@@ -66,7 +66,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-implicit-templates", "Only emit explicit template instatiations" },
   { "-fimplicit-inline-templates", "" },
   { "-fno-implicit-inline-templates", "Only emit explicit instatiations of inline templates" },
-  { "-finit-priority", "Handle the init_priority attribute" },
+  { "-finit-priority", "" },
   { "-fno-init-priority", "" },
   { "-flabels-ok", "Labels can be used as first class objects" },
   { "-fno-labels-ok", "" },
@@ -78,7 +78,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fnew-abi", "Enable experimental ABI changes" },
   { "-fno-new-abi", "" },
   { "-fnonnull-objects", "" },
-  { "-fno-nonnull-objects", "Do not assume that a reference is always valid" },
+  { "-fno-nonnull-objects", "" },
   { "-foperator-names", "Recognise and/bitand/bitor/compl/not/or/xor" },
   { "-fno-operator-names", "" },
   { "-foptional-diags", "" },
@@ -96,6 +96,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fstrict-prototype", "" },
   { "-fno-strict-prototype", "Do not assume that empty prototype means no args" },
   { "-ftemplate-depth-", "Specify maximum template instantiation depth"},
+  { "-fthis-is-variable", "Make 'this' not be type '* const'"  },
+  { "-fno-this-is-variable", "" },
   { "-fvtable-gc", "Discard unused virtual functions" },
   { "-fno-vtable-gc", "" },
   { "-fvtable-thunks", "Implement vtables using thunks" },
