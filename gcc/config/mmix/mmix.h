@@ -169,7 +169,7 @@ extern int target_flags;
    address goes in a global register.  When addressing, it's more like
    "base address plus offset", with the offset being 0..255 from the base,
    which itself can be a symbol plus an offset.  The effect is like having
-   a constant pool in global registers, code offseting from those
+   a constant pool in global registers, code offsetting from those
    registers (automatically causing a request for a suitable constant base
    address register) without having to know the specific register or the
    specific offset.  The setback is that there's a limited number of

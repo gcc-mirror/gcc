@@ -178,7 +178,7 @@
           first regular expression *and* the reservation described by
           the second regular expression *and* etc.
 
-       4. "*" is used for convinience and simply means sequence in
+       4. "*" is used for convenience and simply means sequence in
           which the regular expression are repeated NUMBER times with
           cycle advancing (see ",").
 
@@ -461,7 +461,7 @@
 (define_reservation "1_F" "1_F0|1_F1|1_F2")
 
 ;;; "Each B slot in MBB or BBB bundle disperses to the corresponding B
-;;; unit. That is, a B slot in 1st position is despersed to B0.  In the
+;;; unit. That is, a B slot in 1st position is dispersed to B0.  In the
 ;;; 2nd position it is dispersed to B2".
 (define_reservation "1_NB"
     "1_0b.bb+1_unb0|1_0bb.b+1_unb1|1_0bbb.+1_unb2\
@@ -908,7 +908,7 @@
 
 ;; Bypasses:
 (define_bypass  1 "1_fcmp" "1_br,1_scall")
-;; ??? I found 7 cycle dealy for 1_fmac -> 1_fcmp for Itanium1
+;; ??? I found 7 cycle delay for 1_fmac -> 1_fcmp for Itanium1
 (define_bypass  7 "1_fmac" "1_fmisc,1_fcvtfx,1_xmpy,1_fcmp")
 
 ;; ???
@@ -1235,7 +1235,7 @@
     |1b_1mf.i+1_5+1b_uf1|1b_1mf.b+1_5+1b_uf1")
 
 ;;; "Each B slot in MBB or BBB bundle disperses to the corresponding B
-;;; unit. That is, a B slot in 1st position is despersed to B0.  In the
+;;; unit. That is, a B slot in 1st position is dispersed to B0.  In the
 ;;; 2nd position it is dispersed to B2".
 (define_reservation "1b_NB"
     "1b_0b.bb+1_1+1b_unb0|1b_0bb.b+1_2+1b_unb1|1b_0bbb.+1_3+1b_unb2\

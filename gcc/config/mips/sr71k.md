@@ -2,7 +2,7 @@
 ;;
 ;; DFA-based pipeline description for Sandcraft SR3 (MIPS64 based)
 ;;
-;; The SR3 is describeds as:
+;; The SR3 is described as:
 ;;     - nine-stage pipeline, insn buffering with out-of-order issue to
 ;;       multiple function units, with an average dispatch rate of 2
 ;;       insn.s per cycle (max 6 insns: 2 fpu, 4 cpu).
@@ -22,8 +22,8 @@
 ;;
 ;;
 ;; Reservation model is based on:
-;;   1) Figure 6-1, from the 1.0 specicification.
-;;   2) Chapter 19, from the 1.0 specificication.
+;;   1) Figure 6-1, from the 1.0 specification.
+;;   2) Chapter 19, from the 1.0 specification.
 ;;   3) following questions(Red Hat)/answers(Sandcraft):
 ;;     RH> From Section 19.1
 ;;     RH>      1) In terms of figure 6-1, are all the instructions in

@@ -53,7 +53,7 @@ For example, the emitted code for the case of LT is
 which is, in effect, "branch if ordered and less than."
 
 We also need insns for the reverse branches. These have the PC and
-the label ref opereands reversed. Thus the reverse bgt has a pattern:
+the label ref operands reversed. Thus the reverse bgt has a pattern:
 
  (set (pc)
 	(if_then_else (gt (cc0)

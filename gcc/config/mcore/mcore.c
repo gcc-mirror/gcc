@@ -2651,7 +2651,7 @@ typedef struct
 
 /* The maximum number of constants that can fit into one pool, since
    the pc relative range is 0...1020 bytes and constants are at least 4
-   bytes long.  We subtact 4 from the range to allow for the case where
+   bytes long.  We subtract 4 from the range to allow for the case where
    we need to add a branch/align before the constant pool.  */
 
 #define MAX_COUNT 1016

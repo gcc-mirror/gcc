@@ -667,7 +667,7 @@
 			      (eq_attr "type" "sseadd"))
 			 "athlon-double,athlon-fpsched,(athlon-fadd*2)")
 
-;; Conversions behaves very irregulary and the scheduling is critical here.
+;; Conversions behaves very irregularly and the scheduling is critical here.
 ;; Take each instruction separately.  Assume that the mode is always set to the
 ;; destination one and athlon_decode is set to the K8 versions.
 
