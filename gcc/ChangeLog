@@ -1,5 +1,6 @@
 2002-04-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR opt/5120
 	* sibcall.c (optimize_sibling_and_tail_recursive_call): Clear
 	RTX_UNCHANGING_P for the functions arguments when a tail call
 	is made.
