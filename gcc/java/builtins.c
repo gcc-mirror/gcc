@@ -66,9 +66,6 @@ enum builtin_type
 static tree max_builtin (tree, tree);
 static tree min_builtin (tree, tree);
 static tree abs_builtin (tree, tree);
-static tree cos_builtin (tree, tree);
-static tree sin_builtin (tree, tree);
-static tree sqrt_builtin (tree, tree);
 
 static tree java_build_function_call_expr (tree, tree);
 static void define_builtin (enum built_in_function, const char *,
@@ -97,17 +94,24 @@ struct builtin_record GTY(())
   union string_or_tree GTY ((desc ("1"))) class_name;
   union string_or_tree GTY ((desc ("1"))) method_name;
   builtin_creator_function * GTY((skip (""))) creator;
+  enum built_in_function builtin_code;
 };
 
 static GTY(()) struct builtin_record java_builtins[] =
 {
-  { { "java.lang.Math" }, { "min" }, min_builtin },
-  { { "java.lang.Math" }, { "max" }, max_builtin },
-  { { "java.lang.Math" }, { "abs" }, abs_builtin },
-  { { "java.lang.Math" }, { "cos" }, cos_builtin },
-  { { "java.lang.Math" }, { "sin" }, sin_builtin },
-  { { "java.lang.Math" }, { "sqrt" }, sqrt_builtin },
-  { { NULL }, { NULL }, NULL }
+  { { "java.lang.Math" }, { "min" }, min_builtin, 0 },
+  { { "java.lang.Math" }, { "max" }, max_builtin, 0 },
+  { { "java.lang.Math" }, { "abs" }, abs_builtin, 0 },
+  { { "java.lang.Math" }, { "atan" }, NULL, BUILT_IN_ATAN },
+  { { "java.lang.Math" }, { "atan2" }, NULL, BUILT_IN_ATAN2 },
+  { { "java.lang.Math" }, { "cos" }, NULL, BUILT_IN_COS },
+  { { "java.lang.Math" }, { "exp" }, NULL, BUILT_IN_EXP },
+  { { "java.lang.Math" }, { "log" }, NULL, BUILT_IN_LOG },
+  { { "java.lang.Math" }, { "pow" }, NULL, BUILT_IN_POW },
+  { { "java.lang.Math" }, { "sin" }, NULL, BUILT_IN_SIN },
+  { { "java.lang.Math" }, { "sqrt" }, NULL, BUILT_IN_SQRT },
+  { { "java.lang.Math" }, { "tan" }, NULL, BUILT_IN_TAN },
+  { { NULL }, { NULL }, NULL, END_BUILTINS }
 };
 
 /* This is only used transiently, so we don't mark it as roots for the
@@ -120,24 +124,24 @@ static tree builtin_types[(int) BT_LAST];
 static tree
 max_builtin (tree method_return_type, tree method_arguments)
 {
-  return build (MAX_EXPR, method_return_type,
-		TREE_VALUE (method_arguments),
-		TREE_VALUE (TREE_CHAIN (method_arguments)));
+  return fold (build (MAX_EXPR, method_return_type,
+		      TREE_VALUE (method_arguments),
+		      TREE_VALUE (TREE_CHAIN (method_arguments))));
 }
 
 static tree
 min_builtin (tree method_return_type, tree method_arguments)
 {
-  return build (MIN_EXPR, method_return_type,
-		TREE_VALUE (method_arguments),
-		TREE_VALUE (TREE_CHAIN (method_arguments)));
+  return fold (build (MIN_EXPR, method_return_type,
+		      TREE_VALUE (method_arguments),
+		      TREE_VALUE (TREE_CHAIN (method_arguments))));
 }
 
 static tree
 abs_builtin (tree method_return_type, tree method_arguments)
 {
-  return build1 (ABS_EXPR, method_return_type,
-		 TREE_VALUE (method_arguments));
+  return fold (build1 (ABS_EXPR, method_return_type,
+		       TREE_VALUE (method_arguments)));
 }
 
 /* Mostly copied from ../builtins.c.  */
@@ -150,37 +154,7 @@ java_build_function_call_expr (tree fn, tree arglist)
   call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		     call_expr, arglist);
   TREE_SIDE_EFFECTS (call_expr) = 1;
-  return call_expr;
-}
-
-static tree
-cos_builtin (tree method_return_type ATTRIBUTE_UNUSED, tree method_arguments)
-{
-  /* FIXME: this assumes that jdouble and double are the same.  */
-  tree fn = built_in_decls[BUILT_IN_COS];
-  if (fn == NULL_TREE)
-    return NULL_TREE;
-  return java_build_function_call_expr (fn, method_arguments);
-}
-
-static tree
-sin_builtin (tree method_return_type ATTRIBUTE_UNUSED, tree method_arguments)
-{
-  /* FIXME: this assumes that jdouble and double are the same.  */
-  tree fn = built_in_decls[BUILT_IN_SIN];
-  if (fn == NULL_TREE)
-    return NULL_TREE;
-  return java_build_function_call_expr (fn, method_arguments);
-}
-
-static tree
-sqrt_builtin (tree method_return_type ATTRIBUTE_UNUSED, tree method_arguments)
-{
-  /* FIXME: this assumes that jdouble and double are the same.  */
-  tree fn = built_in_decls[BUILT_IN_SQRT];
-  if (fn == NULL_TREE)
-    return NULL_TREE;
-  return java_build_function_call_expr (fn, method_arguments);
+  return fold (call_expr);
 }
 
 
@@ -263,7 +237,7 @@ initialize_builtins (void)
 {
   int i;
 
-  for (i = 0; java_builtins[i].creator != NULL; ++i)
+  for (i = 0; java_builtins[i].builtin_code != END_BUILTINS; ++i)
     {
       tree klass_id = get_identifier (java_builtins[i].class_name.s);
       tree m = get_identifier (java_builtins[i].method_name.s);
@@ -331,13 +305,20 @@ check_for_builtin (tree method, tree call)
       tree method_name = DECL_NAME (method);
       tree method_return_type = TREE_TYPE (TREE_TYPE (method));
 
-      for (i = 0; java_builtins[i].creator != NULL; ++i)
+      for (i = 0; java_builtins[i].builtin_code != END_BUILTINS; ++i)
 	{
 	  if (method_class == java_builtins[i].class_name.t
 	      && method_name == java_builtins[i].method_name.t)
 	    {
-	      return (*java_builtins[i].creator) (method_return_type,
-						  method_arguments);
+	      tree fn;
+
+	      if (java_builtins[i].creator != NULL)
+		return (*java_builtins[i].creator) (method_return_type,
+						    method_arguments);
+	      fn = built_in_decls[java_builtins[i].builtin_code];
+	      if (fn == NULL_TREE)
+		return NULL_TREE;
+	      return java_build_function_call_expr (fn, method_arguments);
 	    }
 	}
     }
