@@ -1,3 +1,8 @@
+2004-01-13  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (new_alias_set): Construct the alias_set varray.
+	(init_alias_once): Don't do it here.
+
 2004-01-12  Marc Espie <espie@openbsd.org>
 
 	* system.h: handle YYBYACC like YYBISON.
