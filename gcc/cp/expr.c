@@ -151,8 +151,9 @@ cplus_expand_expr (exp, target, tmode, modifier)
 		extern int flag_access_control;
 		int old_ac = flag_access_control;
 
-		tree init = build (RTL_EXPR, type, 0, return_target);
+		tree init = build_decl (VAR_DECL, 0, type);
 		TREE_ADDRESSABLE (init) = 1;
+		DECL_RTL (init) = return_target;
 
 		flag_access_control = 0;
 		expand_aggr_init (slot, init, 0, LOOKUP_ONLYCONVERTING);
@@ -160,8 +161,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
 		if (TYPE_NEEDS_DESTRUCTOR (type))
 		  {
-		    init = build (RTL_EXPR, build_reference_type (type), 0,
-				  XEXP (return_target, 0));
+		    init = build_decl (VAR_DECL, 0,
+				       build_reference_type (type));
+		    DECL_RTL (init) = XEXP (return_target, 0);
+
 		    init = maybe_build_cleanup (convert_from_reference (init));
 		    if (init != NULL_TREE)
 		      expand_expr (init, 0, 0, 0);

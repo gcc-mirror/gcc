@@ -1452,6 +1452,8 @@ tsubst (t, args, nargs, in_decl)
 	DECL_INTERFACE_KNOWN (r) = 0;
 	DECL_INLINE (r) = DECL_INLINE (t);
 	DECL_THIS_INLINE (r) = DECL_THIS_INLINE (t);
+	TREE_READONLY (r) = TREE_READONLY (t);
+	TREE_THIS_VOLATILE (r) = TREE_THIS_VOLATILE (t);
 	{
 #if 0				/* Maybe later.  -jason  */
 	  struct tinst_level *til = tinst_for_decl();
@@ -2412,7 +2414,7 @@ do_pending_expansions ()
 	     If `interface', ext ref.  */
 	  if (CLASSTYPE_INTERFACE_KNOWN (context))
 	    DECIDE (!CLASSTYPE_INTERFACE_ONLY (context));
-#if 0 /* This doesn't get us stuff needed only by the file initializer.  */
+#if 1 /* This doesn't get us stuff needed only by the file initializer.  */
 	  DECIDE (TREE_USED (t));
 #else /* This compiles too much stuff, but that's probably better in
 	 most cases than never compiling the stuff we need.  */

@@ -2315,6 +2315,11 @@ duplicate_decls (newdecl, olddecl)
 				 olddecl);
 		  }
 	      }
+
+	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl)
+	      && TREE_ADDRESSABLE (olddecl))
+	    cp_pedwarn ("`%#D' was used before it was declared inline",
+			newdecl);
 	}
       /* These bits are logically part of the type for non-functions.  */
       else if (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
@@ -3660,6 +3665,30 @@ define_label (filename, line, name)
     }
 }
 
+struct cp_switch
+{
+  struct binding_level *level;
+  struct cp_switch *next;
+};
+
+static struct cp_switch *switch_stack;
+
+void
+push_switch ()
+{
+  struct cp_switch *p
+    = (struct cp_switch *) oballoc (sizeof (struct cp_switch));
+  p->level = current_binding_level;
+  p->next = switch_stack;
+  switch_stack = p;
+}
+
+void
+pop_switch ()
+{
+  switch_stack = switch_stack->next;
+}
+
 /* Same, but for CASE labels.  If DECL is NULL_TREE, it's the default.  */
 /* XXX Note decl is never actually used. (bpk) */
 void
@@ -3667,16 +3696,43 @@ define_case_label (decl)
      tree decl;
 {
   tree cleanup = last_cleanup_this_contour ();
+  struct binding_level *b = current_binding_level;
+  int identified = 0;
+
   if (cleanup)
     {
       static int explained = 0;
-      cp_error_at ("destructor needed for `%#D'", TREE_PURPOSE (cleanup));
-      error ("where case label appears here");
+      cp_warning_at ("destructor needed for `%#D'", TREE_PURPOSE (cleanup));
+      warning ("where case label appears here");
       if (!explained)
 	{
-	  error ("(enclose actions of previous case statements requiring");
-	  error ("destructors in their own binding contours.)");
+	  warning ("(enclose actions of previous case statements requiring");
+	  warning ("destructors in their own binding contours.)");
 	  explained = 1;
+	}
+    }
+
+  for (; b && b != switch_stack->level; b = b->level_chain)
+    {
+      tree new_decls = b->names;
+      for (; new_decls; new_decls = TREE_CHAIN (new_decls))
+	{
+	  if (TREE_CODE (new_decls) == VAR_DECL
+	      /* Don't complain about crossing initialization
+		 of internal entities.  They can't be accessed,
+		 and they should be cleaned up
+		 by the time we get to the label.  */
+	      && ! DECL_ARTIFICIAL (new_decls)
+	      && ((DECL_INITIAL (new_decls) != NULL_TREE
+		   && DECL_INITIAL (new_decls) != error_mark_node)
+		  || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls))))
+	    {
+	      if (! identified)
+		error ("jump to case label");
+	      identified = 1;
+	      cp_error_at ("  crosses initialization of `%#D'",
+			   new_decls);
+	    }
 	}
     }
 
@@ -8426,6 +8482,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		     ? "references" : "pointers");
 	      declarator = TREE_OPERAND (declarator, 0);
 	      continue;
+	    }
+
+	  if (TREE_CODE (type) == OFFSET_TYPE
+	      && (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE
+		  || TREE_CODE (TREE_TYPE (type)) == REFERENCE_TYPE))
+	    {
+	      cp_error ("cannot declare pointer to `%#T' member",
+			TREE_TYPE (type));
+	      type = TREE_TYPE (type);
 	    }
 
 	  /* Merge any constancy or volatility into the target type

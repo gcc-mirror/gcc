@@ -975,6 +975,13 @@ process_init_constructor (type, init, elts)
 	      tree tail1 = tail;
 	      next1 = digest_init (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
 				   TREE_VALUE (tail), &tail1);
+	      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type))
+		  && TYPE_MAIN_VARIANT (TREE_TYPE (type)) != TYPE_MAIN_VARIANT (TREE_TYPE (next1)))
+		{
+		  /* The fact this needs to be done suggests this code needs
+		     to be totally rewritten.  */
+		  next1 = convert_for_initialization (NULL_TREE, TREE_TYPE (type), next1, LOOKUP_NORMAL, "initialization", NULL_TREE, 0);
+		}
 	      my_friendly_assert (tail1 == 0
 				  || TREE_CODE (tail1) == TREE_LIST, 319);
 	      if (tail == tail1 && len < 0)
@@ -1529,37 +1536,7 @@ build_functional_cast (exp, parms)
   if (expr_as_ctor == error_mark_node)
     return error_mark_node;
 
-  if (current_function_decl)
-    return build_cplus_new (type, expr_as_ctor, 1);
-
-  {
-    register tree parm = TREE_OPERAND (expr_as_ctor, 1);
-
-    /* Initializers for static variables and parameters have
-       to handle doing the initialization and cleanup themselves.  */
-    my_friendly_assert (TREE_CODE (expr_as_ctor) == CALL_EXPR, 322);
-#if 0
-    /* The following assertion fails in cases where we are initializing
-       a static member variable of a particular instance of a template
-       class with a call to a constructor of the given instance, as in:
-       
-       TMPL<int> object = TMPL<int>();
-       
-       Curiously, the assertion does not fail if we do the same thing
-       for a static member of a non-template class, as in:
-       
-       T object = T();
-       
-       I can't see why we should care here whether or not the initializer
-       expression involves a call to `new', so for the time being, it
-       seems best to just avoid doing this assertion.  */
-    my_friendly_assert (TREE_CALLS_NEW (TREE_VALUE (parm)), 323);
-#endif
-    TREE_VALUE (parm) = NULL_TREE;
-    expr_as_ctor = build_indirect_ref (expr_as_ctor, NULL_PTR);
-    TREE_HAS_CONSTRUCTOR (expr_as_ctor) = 1;
-  }
-  return expr_as_ctor;
+  return build_cplus_new (type, expr_as_ctor, 1);
 }
 
 /* Return the character string for the name that encodes the

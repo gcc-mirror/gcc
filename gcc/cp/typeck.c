@@ -51,6 +51,7 @@ static tree convert_sequence ();
 static tree get_delta_difference PROTO((tree, tree, int));
 
 extern rtx original_result_rtx;
+extern int warn_synth;
 
 /* Return the target type of TYPE, which meas return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -2359,6 +2360,12 @@ build_function_call_real (function, params, require_complete, flags)
 	  pedwarn ("ANSI C++ forbids calling `main' from within program");
 	}
 
+      if (pedantic && DECL_THIS_INLINE (function) && ! DECL_INITIAL (function)
+	  && ! DECL_ARTIFICIAL (function)
+	  && ! DECL_PENDING_INLINE_INFO (function))
+	cp_pedwarn ("inline function `%#D' called before definition",
+		    function);
+
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
 	 needs to be separately compiled).  */
@@ -2403,7 +2410,7 @@ build_function_call_real (function, params, require_complete, flags)
 	 && TREE_CODE (TREE_TYPE (fntype)) == FUNCTION_TYPE)
 	|| is_method))
     {
-      error ("called object is not a function");
+      cp_error ("`%E' cannot be used as a function", function);
       return error_mark_node;
     }
 
@@ -4617,9 +4624,21 @@ build_conditional_expr (ifexp, op1, op2)
       code2 = TREE_CODE (type2);
     }
 
+  if (code1 == RECORD_TYPE && code2 == RECORD_TYPE
+      && real_lvalue_p (op1) && real_lvalue_p (op2)
+      && comptypes (type1, type2, -1))
+    {
+      type1 = build_reference_type (type1);
+      type2 = build_reference_type (type2);
+      result_type = common_type (type1, type2);
+      op1 = convert_to_reference (result_type, op1, CONV_IMPLICIT,
+				  LOOKUP_NORMAL, NULL_TREE);
+      op2 = convert_to_reference (result_type, op2, CONV_IMPLICIT,
+				  LOOKUP_NORMAL, NULL_TREE);
+    }
   /* Quickly detect the usual case where op1 and op2 have the same type
      after promotion.  */
-  if (TYPE_MAIN_VARIANT (type1) == TYPE_MAIN_VARIANT (type2))
+  else if (TYPE_MAIN_VARIANT (type1) == TYPE_MAIN_VARIANT (type2))
     {
       if (type1 == type2)
 	result_type = type1;
@@ -4814,7 +4833,8 @@ build_conditional_expr (ifexp, op1, op2)
   if (TREE_CONSTANT (ifexp))
     return integer_zerop (ifexp) ? op2 : op1;
 
-  return fold (build (COND_EXPR, result_type, ifexp, op1, op2));
+  return convert_from_reference
+    (fold (build (COND_EXPR, result_type, ifexp, op1, op2)));
 }
 
 /* Handle overloading of the ',' operator when needed.  Otherwise,
@@ -5630,7 +5650,14 @@ build_modify_expr (lhs, modifycode, rhs)
 	cp_error ("`%T' does not define operator=", lhstype);
       else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (lhstype)
 	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
-	/* Do the default thing */;
+	{
+	  if (warn_synth)
+	    /* If we care about this, do overload resolution.  */
+	    build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
+			    lhs, rhs, make_node (NOP_EXPR));
+
+	  /* Do the default thing */;
+	}
       else
 	{
 	  result = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,

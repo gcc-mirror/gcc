@@ -1797,13 +1797,13 @@ cons_up_default_function (type, full_name, kind)
   if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
       DECL_INTERFACE_KNOWN (fn) = 1;
-      DECL_EXTERNAL (fn) = (CLASSTYPE_INTERFACE_ONLY (type)
-			    || ! flag_implement_inlines);
-      TREE_STATIC (fn) = ! DECL_EXTERNAL (fn);
+      DECL_NOT_REALLY_EXTERN (fn) = (!CLASSTYPE_INTERFACE_ONLY (type)
+				     && flag_implement_inlines);
     }
   else
     DECL_NOT_REALLY_EXTERN (fn) = 1;
 
+#if 0
   /* When on-the-fly synthesis works properly, remove the second and third
      conditions here.  */
   if (flag_keep_inline_functions
@@ -1822,6 +1822,7 @@ cons_up_default_function (type, full_name, kind)
       store_pending_inline (fn, t);
     }
   else
+#endif
     mark_inline_for_output (fn);
 
 #ifdef DEBUG_DEFAULT_FUNCTIONS

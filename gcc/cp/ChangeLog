@@ -1,3 +1,97 @@
+Fri Apr 28 07:58:41 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* lex.c (cons_up_default_function): Fix linkage of #pragma
+	implemented functions.
+
+Thu Apr 27 16:56:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* method.c (build_overload_name): Simplify and fix repeated type
+	folding.
+
+	* decl.c (grokdeclarator): Prohibit pointers to void or reference
+        members.
+
+Thu Apr 27 09:49:07 1995  Mike Stump  <mrs@cygnus.com>
+
+	* typeck2.c (process_init_constructor): Make sure initializers are
+	fully digested.
+
+Thu Apr 27 01:11:55 1995  Jason Merrill  <jason@python.cygnus.com>
+
+	* lex.c (cons_up_default_function): Always defer synthesis.
+
+Thu Apr 27 00:20:37 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (mark_inline_for_output): Don't play with pending_inline
+	stuff.
+
+Wed Apr 26 17:48:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (user_harshness): New function; like build_type_conversion,
+	but doesn't actually build anything.
+	(compute_conversion_costs): Use it instead of build_type_conversion.
+
+Wed Apr 26 17:11:25 1995  Jason Merrill  <jason@deneb.cygnus.com>
+
+	* typeck.c (build_function_call_real): Improve error message for
+	calling a non-function.
+
+	* method.c (hack_identifier): Lose check for calling a data member.
+
+Wed Apr 26 16:59:13 1995  Mike Stump  <mrs@cygnus.com>
+
+	* typeck2.c (build_functional_cast): Remove very old cruft.
+	Seems like good code is generated without it.
+
+Wed Apr 26 00:47:16 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* method.c (do_build_assign_ref): Fix handling of anonymous unions.
+	(do_build_copy_constructor): Ditto.
+
+	* parse.y (simple_stmt, SWITCH): Call {push,pop}_switch.
+
+	* decl.c (push_switch): New function.
+	(pop_switch): Ditto.
+	(define_case_label): Check for jumping over initialization.
+
+	* call.c (build_method_call): Check for an inline function being
+	called before its definition has been seen.
+	* typeck.c (build_function_call_real): Ditto.
+
+	* decl.c (duplicate_decls): Check for a function being redeclared
+	inline after its address has been taken.
+
+	* typeck.c (build_conditional_expr): Handle related class lvalues.
+
+Tue Apr 25 13:20:45 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* pt.c (do_pending_expansions): Don't expand unused templates.
+
+	* parse.y (component_decl): Accept a lone semicolon.
+
+Tue Apr 25 00:25:56 1995  Jason Merrill  <jason@rtl.cygnus.com>
+
+	* call.c (build_method_call): Don't allow an RTL_EXPR to serve as the
+	object parameter anymore.
+
+	* expr.c (cplus_expand_expr): Don't create RTL_EXPRs with no insns.
+
+Mon Apr 24 12:35:48 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* parse.y (simple_stmt, decl case): Clear prefix_attributes.
+	(lang_extdef): Ditto.
+
+	* parse.y (maybe_parmlist): New rule for use in declarators where
+	this could either be a list of expressions or parameters.  Calls
+	suspend_momentary before deciding which.
+	(direct_after_type_declarator): Use it.
+	(complex_direct_notype_declarator): Use it.
+
+	* pt.c (tsubst): Propagate attributes const and noreturn.
+
+	* typeck.c (build_modify_expr): If warn_synth, call build_opfncall
+	before doing the default thing.
+
 Thu Apr 27 21:49:36 1995  Doug Evans  <dje@cygnus.com>
 
 	* typeck.c (common_type): Call lookup_attribute instead of
