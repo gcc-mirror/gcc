@@ -3307,9 +3307,15 @@ libraries.  On other systems, this option has no effect.
 
 @item -shared
 Produce a shared object which can then be linked with other objects to
-form an executable.  Not all systems support this option.  You must
-also specify @samp{-fpic} or @samp{-fPIC} on some systems when
-you specify this option.
+form an executable.  Not all systems support this option.  For predictable
+results, you must also specify the same set of options that were used to 
+generate code (@samp{-fpic}, @samp{-fPIC}, or model suboptions)
+when you specify this option.@footnote{On some systems, @code{gcc -shared}
+needs to build supplementary stub code for constructors to work. On
+multi-libbed systems, @code{gcc -shared} must select the correct support
+libraries to link against.  Failing to supply the correct flags may lead
+to subtle defects. Supplying them in cases where they are not necessary
+is innocuous.}
 
 @item -symbolic
 Bind references to global symbols when building a shared object.  Warn
