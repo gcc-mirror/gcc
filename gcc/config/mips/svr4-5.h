@@ -71,9 +71,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
-/* Some RISCOS assemblers misassemble \n in a .ascii,
-   so we use \X0A instead.  */
-#define ASM_OUTPUT_NEWLINE(STREAM) \
-  fputs ("\\X0A", (STREAM));
-
 #include "mips/mips.h"
+
+/* Some assemblers have a bug that causes backslash escaped chars in .ascii
+   to be misassembled, so we just completely avoid it.  */
+#undef ASM_OUTPUT_ASCII
+#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
+do {							\
+  unsigned char *s;					\
+  int i;						\
+  for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
+    {							\
+      if ((i % 8) == 0)					\
+	fputs ("\n\t.byte\t", (FILE));			\
+      fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
+    }							\
+  fputs ("\n", (FILE));					\
+} while (0)
