@@ -1,5 +1,9 @@
 2002-06-24  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/bits/stl_alloc.h:  Reformat as per C++STYLE.
+
+2002-06-24  Phil Edwards  <pme@gcc.gnu.org>
+
 	* config/cpu/*/bits/*:  Move header files up a level.  Remove bits.
 	* config/os/*/bits/*:  Likewise.
 	* configure.in:  Update.
