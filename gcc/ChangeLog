@@ -1,3 +1,14 @@
+2005-01-13  Ralf Corsepius  <ralf.corsepius@rtems.org>
+	    Joel Sherrill  <joel@oarcorp.com>
+
+	PR target/19399
+	* gthr-rtems.h (__gthread_recursive_mutex_t): New type.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION): Define to
+	rtems_gxx_recursive_mutex_init.
+	(__gthread_recursive_mutex_lock): New function.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+
 2005-01-13  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config/i386/t-rtems-i386: Multilib on -mtune instead of -mcpu.
