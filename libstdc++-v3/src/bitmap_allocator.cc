@@ -1,6 +1,6 @@
 // Bitmap Allocator. Out of line function definitions. -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -96,7 +96,7 @@ namespace __gnu_cxx
 	    *__ret = __sz;
 	    return __ret + 1;
 	  }
-	__throw_exception_again std::bad_alloc();
+	std::__throw_bad_alloc();
       }
     else
       {
