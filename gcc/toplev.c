@@ -423,8 +423,13 @@ int flag_schedule_insns_after_reload = 0;
 int flag_inhibit_size_directive = 0;
 
 /* -fgnu-linker specifies use of the GNU linker for initializations.
-   -fno-gnu-linker says that collect will be used.  */
+   (Or, more generally, a linker that handles initializations.)
+   -fno-gnu-linker says that collect2 will be used.  */
+#ifdef USE_COLLECT2
+int flag_gnu_linker = 0;
+#else
 int flag_gnu_linker = 1;
+#endif
 
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -2919,7 +2924,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	      else if (level == 0)
 		write_symbols = NO_DEBUG;
 	      else
-		debug_info_level = level;
+		debug_info_level = (enum debug_info_level) level;
 	    }
 	  else if (!strcmp (str, "o"))
 	    {
