@@ -353,8 +353,7 @@ record_use (struct def *def, rtx *use, rtx insn)
 
   if (GET_CODE (*use) == SUBREG)
     use = &SUBREG_REG (*use);
-  if (!REG_P (*use))
-    abort ();
+  gcc_assert (REG_P (*use));
 
   u->pos = use;
   u->insn = insn;

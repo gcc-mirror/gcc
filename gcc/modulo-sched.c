@@ -546,8 +546,7 @@ normalize_sched_times (partial_schedule_ptr ps)
       ddg_node_ptr u = &g->nodes[i];
       int normalized_time = SCHED_TIME (u) - amount;
 
-      if (normalized_time < 0)
-	abort ();
+      gcc_assert (normalized_time >= 0);
 
       SCHED_TIME (u) = normalized_time;
       SCHED_ROW (u) = normalized_time % ii;
@@ -714,8 +713,8 @@ generate_prolog_epilog (partial_schedule_ptr ps, rtx orig_loop_beg,
       label = XEXP (SET_SRC (cmp), 1);
       cond = XEXP (SET_SRC (cmp), 0);
 
-      if (! c_reg || GET_CODE (cond) != NE)
-        abort ();
+      gcc_assert (c_reg);
+      gcc_assert (GET_CODE (cond) == NE);
 
       XEXP (label, 0) = precond_exit_label;
       JUMP_LABEL (orig_loop_bct) = precond_exit_label_insn;
@@ -1025,8 +1024,8 @@ sms_schedule (FILE *dump_file)
 	}
 
       /* Make sure this is a doloop.  */
-      if ( !(count_reg = doloop_register_get (tail, &comp)))
-	abort ();
+      count_reg = doloop_register_get (tail, &comp);
+      gcc_assert (count_reg);
 
       /* This should be NULL_RTX if the count is unknown at compile time.  */
       count_init = const_iteration_count (count_reg, pre_header, &loop_count);
@@ -1457,8 +1456,9 @@ check_nodes_order (int *node_order, int num_nodes)
     {
       int u = node_order[i];
 
-      if (u >= num_nodes || u < 0 || TEST_BIT (tmp, u))
-	abort ();
+      gcc_assert (u < num_nodes);
+      gcc_assert (u >= 0);
+      gcc_assert (!TEST_BIT (tmp, u));
 
       SET_BIT (tmp, u);
     }

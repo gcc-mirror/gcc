@@ -121,8 +121,8 @@ open_dump_file (enum tree_dump_index index, tree decl)
 
   timevar_push (TV_DUMP);
 
-  if (dump_file != NULL || dump_file_name != NULL)
-    abort ();
+  gcc_assert (!dump_file);
+  gcc_assert (!dump_file_name);
 
   dump_file_name = get_dump_file_name (index);
   initializing_dump = !dump_initialized_p (index);
@@ -289,11 +289,9 @@ rest_of_handle_final (void)
        different from the DECL_NAME name used in the source file.  */
 
     x = DECL_RTL (current_function_decl);
-    if (!MEM_P (x))
-      abort ();
+    gcc_assert (MEM_P (x));
     x = XEXP (x, 0);
-    if (GET_CODE (x) != SYMBOL_REF)
-      abort ();
+    gcc_assert (GET_CODE (x) == SYMBOL_REF);
     fnname = XSTR (x, 0);
 
     assemble_start_function (current_function_decl, fnname);
