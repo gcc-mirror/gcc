@@ -732,6 +732,11 @@ extern void emit_group_load PROTO((rtx, rtx, int, int));
    PARALLEL.  */
 extern void emit_group_store PROTO((rtx, rtx, int, int));
 
+#ifdef TREE_CODE
+/* Copy BLKmode object from a set of registers. */
+extern rtx copy_blkmode_from_reg PROTO((rtx,rtx,tree));
+#endif
+
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 extern void use_reg PROTO((rtx *, rtx));
 /* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
