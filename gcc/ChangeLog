@@ -1,3 +1,7 @@
+2002-04-25  Richard Henderson  <rth@redhat.com>
+
+	* doc/invoke.texi: Document -gdwarf{,-2} vs debug level.
+
 2002-04-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_epilogue): Always restore registers

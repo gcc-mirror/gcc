@@ -2796,8 +2796,6 @@ supported).  This is the format used by DEBUG on VMS systems.
 @itemx -gstabs@var{level}
 @itemx -gcoff@var{level}
 @itemx -gxcoff@var{level}
-@itemx -gdwarf@var{level}
-@itemx -gdwarf-2@var{level}
 @itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
 much information.  The default level is 2.
@@ -2810,6 +2808,11 @@ about local variables and no line numbers.
 Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
 you use @option{-g3}.
+
+Note that in order to avoid confusion between DWARF1 debug level 2,
+and DWARF2, neither @option{-gdwarf} nor @option{-gdwarf-2} accept
+a concatenated debug level.  Instead use an additional @option{-g@var{level}}
+option to change the debug level for DWARF1 or DWARF2.
 
 @cindex @code{prof}
 @item -p
