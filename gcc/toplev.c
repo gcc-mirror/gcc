@@ -161,6 +161,7 @@ void abort ();
 #endif
 void set_target_switch ();
 static char *decl_name ();
+static void display_help ();
 
 void print_version ();
 int print_single_switch ();
@@ -614,177 +615,332 @@ int flag_check_memory_usage = 0;
    -fcheck-memory-usage.  */
 int flag_prefix_function_name = 0;
 
+/* Table of supported debugging formats.  */
+static struct
+{
+  char * arg;
+  /* Since PREFERRED_DEBUGGING_TYPE isn't necessarily a
+     constant expression, we use NO_DEBUG in its place.  */
+  enum debug_info_type debug_type;
+  int use_extensions_p;
+  char * description;
+} *da,
+debug_args[] =
+{
+  { "g",    NO_DEBUG, DEFAULT_GDB_EXTENSIONS,
+    "Generate default debug format output" },
+  { "ggdb", NO_DEBUG, 1, "Generate default extended debug format output" },
+#ifdef DBX_DEBUGGING_INFO
+  { "gstabs",  DBX_DEBUG, 0, "Generate STABS format debug output" },
+  { "gstabs+", DBX_DEBUG, 1, "Generate extended STABS format debug output" },
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+  { "gdwarf",  DWARF_DEBUG, 0, "Generate DWARF-1 format debug output"},
+  { "gdwarf+", DWARF_DEBUG, 1,
+    "Generated extended DWARF-1 format debug output" },
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+  { "gdwarf-2", DWARF2_DEBUG, 0, "Enable DWARF-2 debug output" },
+#endif
+#ifdef XCOFF_DEBUGGING_INFO
+  { "gxcoff",  XCOFF_DEBUG, 0, "Generate XCOFF format debug output" },
+  { "gxcoff+", XCOFF_DEBUG, 1, "Generate extended XCOFF format debug output" },
+#endif
+#ifdef SDB_DEBUGGING_INFO
+  { "gcoff", SDB_DEBUG, 0, "Generate COFF format debug output" },
+#endif
+  { 0, 0, 0 }
+};
+
+typedef struct
+{
+  char * string;
+  int *  variable;
+  int    on_value;
+  char * description;
+}
+lang_independent_options;
+
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-struct { char *string; int *variable; int on_value;} f_options[] =
+lang_independent_options f_options[] =
 {
-  {"float-store", &flag_float_store, 1},
-  {"volatile", &flag_volatile, 1},
-  {"volatile-global", &flag_volatile_global, 1},
-  {"volatile-static", &flag_volatile_static, 1},
-  {"defer-pop", &flag_defer_pop, 1},
-  {"omit-frame-pointer", &flag_omit_frame_pointer, 1},
-  {"cse-follow-jumps", &flag_cse_follow_jumps, 1},
-  {"cse-skip-blocks", &flag_cse_skip_blocks, 1},
-  {"expensive-optimizations", &flag_expensive_optimizations, 1},
-  {"thread-jumps", &flag_thread_jumps, 1},
-  {"strength-reduce", &flag_strength_reduce, 1},
-  {"unroll-loops", &flag_unroll_loops, 1},
-  {"unroll-all-loops", &flag_unroll_all_loops, 1},
-  {"writable-strings", &flag_writable_strings, 1},
-  {"peephole", &flag_no_peephole, 0},
-  {"force-mem", &flag_force_mem, 1},
-  {"force-addr", &flag_force_addr, 1},
-  {"function-cse", &flag_no_function_cse, 0},
-  {"inline-functions", &flag_inline_functions, 1},
-  {"keep-inline-functions", &flag_keep_inline_functions, 1},
-  {"inline", &flag_no_inline, 0},
-  {"keep-static-consts", &flag_keep_static_consts, 1},
-  {"syntax-only", &flag_syntax_only, 1},
-  {"shared-data", &flag_shared_data, 1},
-  {"caller-saves", &flag_caller_saves, 1},
-  {"pcc-struct-return", &flag_pcc_struct_return, 1},
-  {"reg-struct-return", &flag_pcc_struct_return, 0},
-  {"delayed-branch", &flag_delayed_branch, 1},
-  {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1},
-  {"pretend-float", &flag_pretend_float, 1},
-  {"schedule-insns", &flag_schedule_insns, 1},
-  {"schedule-insns2", &flag_schedule_insns_after_reload, 1},
-  {"optimize-register-move", &flag_regmove, 1},
-  {"pic", &flag_pic, 1},
-  {"PIC", &flag_pic, 2},
-  {"exceptions", &flag_exceptions, 1},
-  {"sjlj-exceptions", &exceptions_via_longjmp, 1},
-  {"asynchronous-exceptions", &asynchronous_exceptions, 1},
-  {"profile-arcs", &profile_arc_flag, 1},
-  {"test-coverage", &flag_test_coverage, 1},
-  {"branch-probabilities", &flag_branch_probabilities, 1},
-  {"fast-math", &flag_fast_math, 1},
-  {"common", &flag_no_common, 0},
-  {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
-  {"function-sections", &flag_function_sections, 1},
-  {"verbose-asm", &flag_verbose_asm, 1},
-  {"gnu-linker", &flag_gnu_linker, 1},
-  {"pack-struct", &flag_pack_struct, 1},
-  {"stack-check", &flag_stack_check, 1},
-  {"bytecode", &output_bytecode, 1},
-  {"check-memory-usage", &flag_check_memory_usage, 1},
-  {"prefix-function-name", &flag_prefix_function_name, 1}
+  {"float-store", &flag_float_store, 1,
+   "Do not store floats in registers" },
+  {"volatile", &flag_volatile, 1,
+   "Consider all mem refs through pointers as volatile"},
+  {"volatile-global", &flag_volatile_global, 1,
+   "Consider all mem refs to global data to be volatile" },
+  {"volatile-static", &flag_volatile_static, 1,
+   "Consider all static data to be volatile" },
+  {"defer-pop", &flag_defer_pop, 1,
+   "Defer popping functions args from stack until later" },
+  {"omit-frame-pointer", &flag_omit_frame_pointer, 1,
+   "When possible do not generate stack frames"},
+  {"cse-follow-jumps", &flag_cse_follow_jumps, 1,
+   "When running CSE, follow jumps to their targets" },
+  {"cse-skip-blocks", &flag_cse_skip_blocks, 1,
+   "When running CSE, follow conditional jumps" },
+  {"expensive-optimizations", &flag_expensive_optimizations, 1,
+   "Perform a number of minor, expensive optimisations" },
+  {"thread-jumps", &flag_thread_jumps, 1,
+   "Perform jump threading optimisations"},
+  {"strength-reduce", &flag_strength_reduce, 1,
+   "Perform strength reduction optimisations" },
+  {"unroll-loops", &flag_unroll_loops, 1,
+   "Perform loop unrolling when interation count is known" },
+  {"unroll-all-loops", &flag_unroll_all_loops, 1,
+   "Perform loop onrolling for all loops" },
+  {"writable-strings", &flag_writable_strings, 1,
+   "Store strings in writable data section" },
+  {"peephole", &flag_no_peephole, 0,
+   "Enable machine specific peephole optimisations" },
+  {"force-mem", &flag_force_mem, 1,
+   "Copy memory operands into registers before using" },
+  {"force-addr", &flag_force_addr, 1,
+   "Copy memory address constants into regs before using" },
+  {"function-cse", &flag_no_function_cse, 0,
+   "Allow function addresses to be held in registers" },
+  {"inline-functions", &flag_inline_functions, 1,
+   "Integrate simple functions into their callers" },
+  {"keep-inline-functions", &flag_keep_inline_functions, 1,
+   "Generate code for funcs even if they are fully inlined" },
+  {"inline", &flag_no_inline, 0,
+   "Pay attention to the 'inline' keyword"},
+  {"keep-static-consts", &flag_keep_static_consts, 1,
+   "Emit static const variables even if they are not used" },
+  {"syntax-only", &flag_syntax_only, 1,
+   "Check for syntax errors, then stop" },
+  {"shared-data", &flag_shared_data, 1,
+   "Mark data as shared rather than private" },
+  {"caller-saves", &flag_caller_saves, 1,
+   "Enable saving registers around function calls" },
+  {"pcc-struct-return", &flag_pcc_struct_return, 1,
+   "Return 'short' aggregates in memory, not registers" },
+  {"reg-struct-return", &flag_pcc_struct_return, 0,
+   "Return 'short' aggregates in registers" },
+  {"delayed-branch", &flag_delayed_branch, 1,
+   "Attempt to fill delay slots of branch instructions" },
+  {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1,
+   "Run CSE pass after loop optimisations"},
+  {"pretend-float", &flag_pretend_float, 1,
+   "Pretend that host and target use the same FP format"},
+  {"schedule-insns", &flag_schedule_insns, 1,
+   "Reschedule instructions to avoid pipeline stalls"},
+  {"schedule-insns2", &flag_schedule_insns_after_reload, 1,
+  "Run two passes of the instruction scheduler"},
+  {"optimize-register-move", &flag_regmove, 1,
+   "Enables a register move optimisation"},
+  {"pic", &flag_pic, 1,
+   "Generate position independent code, if possible"},
+  {"PIC", &flag_pic, 2, ""},
+  {"exceptions", &flag_exceptions, 1,
+   "Enable exception handling" },
+  {"sjlj-exceptions", &exceptions_via_longjmp, 1,
+   "Use setjmp/longjmp to handle exceptions" },
+  {"asynchronous-exceptions", &asynchronous_exceptions, 1,
+   "Support asynchronous exceptions" },
+  {"profile-arcs", &profile_arc_flag, 1,
+   "Insert arc based program profiling code" },
+  {"test-coverage", &flag_test_coverage, 1,
+   "Create data files needed by gcov" },
+  {"branch-probabilities", &flag_branch_probabilities, 1,
+   "Use profiling information for branch porbabilities" },
+  {"fast-math", &flag_fast_math, 1,
+   "Improve FP speed by violating ANSI & IEEE rules" },
+  {"common", &flag_no_common, 0,
+   "Do not put unitialised globals in the common section" },
+  {"inhibit-size-directive", &flag_inhibit_size_directive, 1,
+   "Do not generate .size directives" },
+  {"function-sections", &flag_function_sections, 1,
+   "place each function into its own section" },
+  {"verbose-asm", &flag_verbose_asm, 1,
+   "Add extra commentry to assembler output"},
+  {"gnu-linker", &flag_gnu_linker, 1,
+   "Output GNU ld formatted global initialisers"},
+  {"pack-struct", &flag_pack_struct, 1,
+   "Pack structure members together without holes" },
+  {"stack-check", &flag_stack_check, 1,
+   "Insert stack checking code into the program" },
+  {"bytecode", &output_bytecode, 1,},
+  {"check-memory-usage", &flag_check_memory_usage, 1,
+   "Generate code to check every memory access" },
+  {"prefix-function-name", &flag_prefix_function_name, 1,
+   "Add a prefix to all function names" },
 };
+
+#define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))
+
 
 /* Table of language-specific options.  */
 
-char *lang_options[] =
+static struct lang_opt
 {
-  "-ansi",
-  "-fallow-single-precision",
+  char *option;
+  char *description;
+}
+documented_lang_options[] =
+{
+  /* In order not to overload the --help output, the convention
+     used here is to only describe those options which are not
+     enabled by default.  */
 
-  "-fsigned-bitfields",
-  "-funsigned-bitfields",
-  "-fno-signed-bitfields",
-  "-fno-unsigned-bitfields",
-  "-fsigned-char",
-  "-funsigned-char",
-  "-fno-signed-char",
-  "-fno-unsigned-char",
+#define START_LANG ((char *)0x12345678)
+#define END_LANG   ((char *)0x87654321)
+  
+#define DEFINE_LANG_NAME(NAME) { START_LANG, NAME },
+#define END_LANG_SECTION       { END_LANG, NULL },
 
-  "-ftraditional",
-  "-traditional",
-  "-fnotraditional",
-  "-fno-traditional",
+  DEFINE_LANG_NAME ("C")
+  
+  { "--help", "" },
+  { "-ansi", "Compile just for ANSI C" },
+  { "-fallow-single-precision",
+    "Do not promote floats to double if using -traditional" },
 
-  "-fasm",
-  "-fno-asm",
-  "-fbuiltin",
-  "-fno-builtin",
-  "-fhosted",
-  "-fno-hosted",
-  "-ffreestanding",
-  "-fno-freestanding",
-  "-fcond-mismatch",
-  "-fno-cond-mismatch",
-  "-fdollars-in-identifiers",
-  "-fno-dollars-in-identifiers",
-  "-fident",
-  "-fno-ident",
-  "-fshort-double",
-  "-fno-short-double",
-  "-fshort-enums",
-  "-fno-short-enums",
+  { "-fsigned-bitfields", "" },
+  { "-funsigned-bitfields","Make bitfields by unsigned by default" },
+  { "-fno-signed-bitfields", "" },
+  { "-fno-unsigned-bitfields","" },
+  { "-fsigned-char", "Make 'char' be signed by default"},
+  { "-funsigned-char", "Make 'char' be unsigned by default"},
+  { "-fno-signed-char", "" },
+  { "-fno-unsigned-char", "" },
 
-  "-Wall",
-  "-Wbad-function-cast",
-  "-Wno-bad-function-cast",
-  "-Wcast-qual",
-  "-Wno-cast-qual",
-  "-Wchar-subscripts",
-  "-Wno-char-subscripts",
-  "-Wcomment",
-  "-Wno-comment",
-  "-Wcomments",
-  "-Wno-comments",
-  "-Wconversion",
-  "-Wno-conversion",
-  "-Wformat",
-  "-Wno-format",
-  "-Wimport",
-  "-Wno-import",
-  "-Wimplicit-function-declaration",
-  "-Wno-implicit-function-declaration",
-  "-Werror-implicit-function-declaration",
-  "-Wimplicit-int",
-  "-Wno-implicit-int",
-  "-Wimplicit",
-  "-Wno-implicit",
-  "-Wmain",
-  "-Wno-main",
-  "-Wmissing-braces",
-  "-Wno-missing-braces",
-  "-Wmissing-declarations",
-  "-Wno-missing-declarations",
-  "-Wmissing-prototypes",
-  "-Wno-missing-prototypes",
-  "-Wnested-externs",
-  "-Wno-nested-externs",
-  "-Wparentheses",
-  "-Wno-parentheses",
-  "-Wpointer-arith",
-  "-Wno-pointer-arith",
-  "-Wredundant-decls",
-  "-Wno-redundant-decls",
-  "-Wsign-compare",
-  "-Wno-sign-compare",
-  "-Wstrict-prototypes",
-  "-Wno-strict-prototypes",
-  "-Wtraditional",
-  "-Wno-traditional",
-  "-Wtrigraphs",
-  "-Wno-trigraphs",
-  "-Wundef",
-  "-Wno-undef",
-  "-Wwrite-strings",
-  "-Wno-write-strings",
+  { "-ftraditional", "" },
+  { "-traditional", "Attempt to support traditional K&R style C"},
+  { "-fnotraditional", "" },
+  { "-fno-traditional", "" },
 
-  /* these are for obj c */
-  "-lang-objc",
-  "-gen-decls",
-  "-fgnu-runtime",
-  "-fno-gnu-runtime",
-  "-fnext-runtime",
-  "-fno-next-runtime",
-  "-Wselector",
-  "-Wno-selector",
-  "-Wprotocol",
-  "-Wno-protocol",
-  "-print-objc-runtime-info",
+  { "-fasm", "" },
+  { "-fno-asm", "Do not recognise the 'asm' keyword" },
+  { "-fbuiltin", "" },
+  { "-fno-builtin", "Do not recognise any built in functions" },
+  { "-fhosted", "Assume normal C execution environment" },
+  { "-fno-hosted", "" },
+  { "-ffreestanding",
+    "Assume that standard libraries & main might not exist" },
+  { "-fno-freestanding", "" },
+  { "-fcond-mismatch", "Allow different types as args of ? operator"},
+  { "-fno-cond-mismatch", "" },
+  { "-fdollars-in-identifiers", "Allow the use of $ inside indentifiers" },
+  { "-fno-dollars-in-identifiers", "" },
+  { "-fident", "" },
+  { "-fno-ident", "Ignore #ident directives" },
+  { "-fshort-double", "Use the same size for double as for float" },
+  { "-fno-short-double", "" },
+  { "-fshort-enums", "Use the smallest fitting integer to hold enums"},
+  { "-fno-short-enums", "" },
+
+  { "-Wall", "Enable most warning messages" },
+  { "-Wbad-function-cast",
+    "Warn about casting functions to incompatible types" },
+  { "-Wno-bad-function-cast", "" },
+  { "-Wcast-qual", "Warn about casts which discard qualifiers"},
+  { "-Wno-cast-qual", "" },
+  { "-Wchar-subscripts", "Warn about subscripts whoes type is 'char'"},
+  { "-Wno-char-subscripts", "" },
+  { "-Wconversion", "Warn about possibly confusing type conversions" },
+  { "-Wno-conversion", "" },
+  { "-Wcomment", "" },
+  { "-Wno-comment", "" },
+  { "-Wcomments", "" },
+  { "-Wno-comments", "" },
+  { "-Wformat", "Warn about printf format anomalies" },
+  { "-Wno-format", "" },
+  { "-Wimport", "" },
+  { "-Wno-import", "" },
+  { "-Wimplicit-function-declaration",
+    "Warn about implicit function declarations" },
+  { "-Wno-implicit-function-declaration", "" },
+  { "-Werror-implicit-function-declaration", "" },
+  { "-Wimplicit-int", "Warn when a declaration does not specify a type"},
+  { "-Wno-implicit-int", "" },
+  { "-Wimplicit", "" },
+  { "-Wno-implicit", "" },
+  { "-Wmain", "Warn about suspicious declarations of main" },
+  { "-Wno-main", "" },
+  { "-Wmissing-braces",
+    "Warn about possibly missing braces around initialisers" },
+  { "-Wno-missing-braces", "" },
+  { "-Wmissing-declarations",
+    "Warn about global funcs without previous declarations"},
+  { "-Wno-missing-declarations", "" },
+  { "-Wmissing-prototypes", "Warn about global funcs without prototypes" },
+  { "-Wno-missing-prototypes", "" },
+  { "-Wnested-externs", "Warn about externs not at file scope level" },
+  { "-Wno-nested-externs", "" },
+  { "-Wparentheses", "Warn about possible missing parentheses" },
+  { "-Wno-parentheses", "" },
+  { "-Wpointer-arith", "Warn about function pointer arithmetic" },
+  { "-Wno-pointer-arith", "" },
+  { "-Wredundant-decls",
+    "Warn about multiple declarations of the same object" },
+  { "-Wno-redundant-decls", "" },
+  { "-Wsign-compare", "Warn about signed/unsigned comparisons" },
+  { "-Wno-sign-compare", "" },
+  { "-Wstrict-prototypes", "Warn about non-prototyped function decls" },
+  { "-Wno-strict-prototypes", "" },
+  { "-Wtraditional", "Warn about constructs whoes meaning change in ANSI C"},
+  { "-Wno-traditional", "" },
+  { "-Wtrigraphs", "" },
+  { "-Wno-trigraphs", "" },
+  { "-Wundef", "" },
+  { "-Wno-undef", "" },
+  { "-Wwrite-strings", "Mark strings as 'const char *'"},
+  { "-Wno-write-strings", "" },
+
+  /* These are for obj c.  */
+  DEFINE_LANG_NAME ("Objective C")
+  
+  { "-lang-objc", "" },
+  { "-gen-decls", "Dump decls to a .decl file" },
+  { "-fgnu-runtime", "Generate code for GNU runtime envrionment" },
+  { "-fno-gnu-runtime", "" },
+  { "-fnext-runtime", "Generate code for NeXT runtime environment" },
+  { "-fno-next-runtime", "" },
+  { "-Wselector", "Warn if a selector has multiple methods" },
+  { "-Wno-selector", "" },
+  { "-Wprotocol", "" },
+  { "-Wno-protocol", "Do not warn if inherited methods are unimplemented"},
+  { "-print-objc-runtime-info",
+    "Generate C header of platform specific features" },
+
+  END_LANG_SECTION
 
 #include "options.h"
-  0
+  
 };
+
+/* Here is a table, controlled by the tm.h file, listing each -m switch
+   and which bits in `target_switches' it should set or clear.
+   If VALUE is positive, it is bits to set.
+   If VALUE is negative, -VALUE is bits to clear.
+   (The sign bit is not used so there is no confusion.)  */
+
+struct
+{
+  char *name;
+  int value;
+  char *description;
+}
+target_switches [] = TARGET_SWITCHES;
+
+/* This table is similar, but allows the switch to have a value.  */
+
+#ifdef TARGET_OPTIONS
+struct
+{
+  char *prefix;
+  char **variable;
+  char *description;
+}
+target_options [] = TARGET_OPTIONS;
+#endif
 
 /* Options controlling warnings */
 
@@ -851,16 +1007,21 @@ int warn_aggregate_return;
 
 /* Likewise for -W.  */
 
-struct { char *string; int *variable; int on_value;} W_options[] =
+lang_independent_options W_options[] =
 {
-  {"unused", &warn_unused, 1},
-  {"error", &warnings_are_errors, 1},
-  {"shadow", &warn_shadow, 1},
-  {"switch", &warn_switch, 1},
-  {"aggregate-return", &warn_aggregate_return, 1},
-  {"cast-align", &warn_cast_align, 1},
-  {"uninitialized", &warn_uninitialized, 1},
-  {"inline", &warn_inline, 1}
+  {"unused", &warn_unused, 1, "Warn when a variable is unused" },
+  {"error", &warnings_are_errors, 1, ""},
+  {"shadow", &warn_shadow, 1, "Warn when one local variable shadows another" },
+  {"switch", &warn_switch, 1,
+   "Warn about enumerated switches missing a specific case" },
+  {"aggregate-return", &warn_aggregate_return, 1,
+   "Warn about returning structures, unions or arrays" },
+  {"cast-align", &warn_cast_align, 1,
+   "Warn about pointer casts which increase alignment" },
+  {"uninitialized", &warn_uninitialized, 1,
+   "Warn about unitialized automatic variables"},
+  {"inline", &warn_inline, 1,
+   "Warn when an inlined function cannot be inlined"}
 };
 
 /* Output files for assembler code (real compiler output)
@@ -3753,6 +3914,271 @@ rest_of_compilation (decl)
   parse_time -= get_run_time () - start_time;
 }
 
+typedef enum
+{
+  LANG_UNKNOWN,
+  LANG_START,
+  LANG_END,
+  LANG_OPTION,
+  LANG_DESCRIPTION
+}
+option_state;
+
+static void
+show_lang_option (const char * option)
+{
+  static option_state state = LANG_UNKNOWN;
+  static const char * opt = NULL;
+
+  /* Ignore null strings.  */
+  if (option == NULL)
+    {
+      /* assert (state != LANG_START); */
+
+      /* An option without a description must still be displayed.  */
+      if (state == LANG_DESCRIPTION)
+	{
+	  /* assert (opt != NULL); */
+	  printf ("  %-23.23s\n", opt);
+	  state = LANG_OPTION;
+	}
+	
+      return;
+    }
+  /* If the string is actually the START_LANG magic value, then change
+     our state to LANG_START, so that we are now expecting the name of
+     the language as our next input.  */
+  else if (option == START_LANG)
+    state = LANG_START;
+  /* If the string is actually the END_LANG magic value, then change our
+     state back to LANG_UNKNOWN - we have now finished displaying options
+     for a particular language.  */
+  else if (option == END_LANG)
+    /* assert (state == LANG_OPTION);  */
+    state = LANG_END;
+  /* If we have an ordinary string, but we do not know the specific
+     language for which it is an option, then the string must have come
+     from an old style lang-options.h header file.  Just display it and
+     continue.  */
+  else if (state == LANG_UNKNOWN)
+    printf ("  %-23.23s\n", option);
+  /* If we are expecting the name of a specific language, then we have
+     now received that name.  Display it and switch to display option/
+     description pairs.  */
+  else if (state == LANG_START)
+    {
+      printf ("\n Options for %s:\n", option);
+      state = LANG_OPTION;
+    }
+  else if (state == LANG_END)
+    {
+      printf ("\n Other options:\n");
+      state = LANG_UNKNOWN;
+      printf ("  %-23.23s\n", option);
+    }
+  /* If we are expecting a language specifc command line option then
+     we have now received it.  Remember it here, but do not display it
+     until we have the description for it as well.  */
+  else if (state == LANG_OPTION)
+    {
+      opt   = option;
+      state = LANG_DESCRIPTION;
+    }
+  /* Display the option/description pair, unless the description is an
+     empty string, in which case treat this as a hidden option.  */
+  else /* state == LANG_DESCRIPTION */
+    {
+      if (* option != 0)
+	printf ("  %-23.23s %s\n", opt, option);
+      state = LANG_OPTION;
+    }
+}
+
+static void
+display_help ()
+{
+  int i;
+
+#ifndef USE_CPPLIB
+  printf ("Usage: %s input [switches]\n", progname);
+  printf ("Switches:\n");
+#endif
+  printf ("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n");
+  printf ("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n");
+  printf ("  -fcall-saved-<register> Mark <register> as being preserved across functions\n");
+
+  for (i = NUM_ELEM (f_options); i--;)
+    {
+      char *description = f_options[i].description;
+      
+      if (description != NULL && * description != 0)
+	printf ("  -f%-21s %s\n",
+		f_options[i].string, description);
+    }
+  
+  printf ("  -O[number]              Set optimisation level to [number]\n");
+  printf ("  -Os                     Optimise for space rather than speed\n");
+  printf ("  -pedantic               Issue warnings needed by strict compliance to ANSI C\n");
+  printf ("  -pedantic-errors        Like -pedantic except that errors are produced\n");
+  printf ("  -w                      Suppress warnings \n");
+  printf ("  -W                      Enable extra warnings\n");
+  
+  for (i = NUM_ELEM (W_options); i--;)
+    {
+      char *description = W_options[i].description;
+      
+      if (description != NULL && * description != 0)
+	printf ("  -W%-21s %s\n",
+		W_options[i].string, description);
+    }
+  
+  printf ("  -Wid-clash-<num>        Warn if 2 identifiers have the same first <num> chars\n");
+  printf ("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n");
+  printf ("  -p                      Enable function profiling\n");
+#if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER)
+  printf ("  -a                      Enable block profiling \n");
+#endif  
+#if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER) || defined FUNCTION_BLOCK_PROFILER_EXIT
+  printf ("  -ax                     Enable jump profiling \n");
+#endif  
+  printf ("  -o <file>               Place output into <file> \n");
+  printf ("  -G <number>             Put global and static data smaller than <number>\n");
+  printf ("                           bytes into a special section (on some targets)\n");
+  
+  for (i = NUM_ELEM (debug_args); i--;)
+    {
+      if (debug_args[i].description != NULL)
+	printf ("  -%-22s %s\n", debug_args[i].arg, debug_args[i].description);
+    }
+  
+  printf ("  -aux-info <file>        Emit declaration info into <file>.X\n");
+  printf ("  -quiet                  Do not display functions compiled or elapsed time\n");
+  printf ("  -version                Display the compiler's version\n");
+  printf ("  -d[letters]             Enable dumps from specific passes of the compiler\n");
+  printf ("  -dumpbase <file>        Base name to be used for dumps from specific passes\n");
+  printf ("  --help                  Display this information\n");
+
+  /* Display descriptions of language specific options.
+     If there is no description, note that there is an undocumented option.
+     If the description is empty, do not display anything.  (This allows
+     options to be deliberately undocumented, for whatever reason).
+     If the option string is missing, then this is a marker, indicating
+     that the description string is in fact the name of a language, whoes
+     language specific options are to follow.  */
+  
+  if (NUM_ELEM (documented_lang_options) > 1)
+    {
+      for (i = 0; i < NUM_ELEM (documented_lang_options); i++)
+	{
+	  char *description = documented_lang_options[i].description;
+	  char *option = documented_lang_options[i].option;
+
+	  show_lang_option (option);
+	  show_lang_option (description);
+	}
+    }
+
+  if (NUM_ELEM (target_switches) > 1
+#ifdef TARGET_OPTIONS
+      || NUM_ELEM (target_options) > 1
+#endif
+      )
+    {
+      show_lang_option (START_LANG);
+      show_lang_option ("target specific behaviour");
+
+      for (i = NUM_ELEM (target_switches); i--;)
+	{
+	  char *option = target_switches[i].name;
+	  char *description = target_switches[i].description;
+
+	  if (description == NULL)
+	    description = " ";
+	  
+	  show_lang_option (option);
+	  show_lang_option (description);
+	}
+      
+#ifdef TARGET_OPTIONS      
+      for (i = NUM_ELEM (target_options); i--;)
+	{
+	  char *option = target_options[i].prefix;
+	  char *description = target_options[i].description;
+
+	  if (description == NULL)
+	    description = " ";
+	  
+	  show_lang_option (option);
+	  show_lang_option (description);
+	}
+#endif
+    }
+}
+
+/* Compare the user specified 'option' with the language
+   specific 'lang_option'.  Return true if they match, or
+   if 'option' is a viable prefix of 'lang_option'.  */
+
+static int
+check_lang_option (option, lang_option)
+     char *option;
+     char *lang_option;
+{
+  lang_independent_options *indep_options;
+  int len, k;
+
+  /* Ignore null entries.  */
+  if (option == NULL || option == START_LANG || option == END_LANG
+      || lang_option == START_LANG || lang_option == END_LANG
+      || lang_option == NULL  || *lang_option == 0)
+    return 0;
+
+  len = strlen (lang_option);
+
+  /* If they do not match to the first n characters then fail.  */
+  if (strncmp (option, lang_option, len) != 0)
+    return 0;
+	  
+  /* Do not accept a lang option, if it matches a normal -f or -W
+     option.  An exact match is OK  */
+  if (strlen (option) == len)
+    return 1;
+
+  /* If it is not an -f or -W option allow the match */
+  if (option[0] != '-')
+    return 1;
+
+  switch (option[1])
+    {
+    case 'f': indep_options = f_options; break;
+    case 'W': indep_options = W_options; break;
+    default:  return 1;
+    }
+
+  /* The option is a -f or -W option.
+     Skip past the prefix and search for the remainder in the
+     appropriate table of options.  */
+  option += 2;
+	  
+  if (option[0] == 'n' && option[1] == 'o' && option[2] == '-')
+    option += 3;
+
+  for (k = NUM_ELEM (indep_options); k--;)
+    {
+      if (!strcmp (option, indep_options[k].string))
+	{
+	  /* The option matched a language independent option,
+	     do not allow the language specific match.  */
+
+	  return 0;
+	}
+    }
+
+  /* The option matches the start of the langauge specific option
+     and it is not an exact match for a language independent option.  */
+  return 1;
+}
+
 /* Entry point of cc1/c++.  Decode command args, then call compile_file.
    Exit code is 35 if can't open files, 34 if fatal error,
    33 if had nonfatal errors, else success.  */
@@ -3889,14 +4315,30 @@ main (argc, argv, envp)
       int j;
       /* If this is a language-specific option,
 	 decode it in a language-specific way.  */
-      for (j = 0; lang_options[j] != 0; j++)
-	if (!strncmp (argv[i], lang_options[j],
-		      strlen (lang_options[j])))
-	  break;
-      if (lang_options[j] != 0)
+      for (j = NUM_ELEM (documented_lang_options); j--;)
+	{
+	  if (check_lang_option (argv[i], documented_lang_options[j].option))
+	    break;
+
+	  /* Old style lang-options.h header files will put half of
+	     their options into the description field of the structure!  */
+	  if (check_lang_option (argv[i],
+				 documented_lang_options[j].description))
+	    break;
+	}
+      
+      if (j != -1)
+	{
 	/* If the option is valid for *some* language,
 	   treat it as valid even if this language doesn't understand it.  */
 	lang_decode_option (argv[i]);
+	  
+	  if (!strcmp (argv[i], "--help"))
+	    {
+	      display_help ();
+	      exit (0);
+	    }
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *str = argv[i] + 1;
@@ -4173,38 +4615,9 @@ main (argc, argv, envp)
 		 -g and -ggdb don't explicitly set the debugging format so
 		 -gdwarf -g3 is equivalent to -gdwarf3.  */
 	      static int type_explicitly_set_p = 0;
-	      /* Table of supported debugging formats.  */
-	      static struct {
-		char *arg;
-		/* Since PREFERRED_DEBUGGING_TYPE isn't necessarily a
-		   constant expression, we use NO_DEBUG in its place.  */
-		enum debug_info_type debug_type;
-		int use_extensions_p;
-	      } *da, debug_args[] = {
-		{ "g", NO_DEBUG, DEFAULT_GDB_EXTENSIONS },
-		{ "ggdb", NO_DEBUG, 1 },
-#ifdef DBX_DEBUGGING_INFO
-		{ "gstabs", DBX_DEBUG, 0 },
-		{ "gstabs+", DBX_DEBUG, 1 },
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-		{ "gdwarf", DWARF_DEBUG, 0 },
-		{ "gdwarf+", DWARF_DEBUG, 1 },
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-		{ "gdwarf-2", DWARF2_DEBUG, 0 },
-#endif
-#ifdef XCOFF_DEBUGGING_INFO
-		{ "gxcoff", XCOFF_DEBUG, 0 },
-		{ "gxcoff+", XCOFF_DEBUG, 1 },
-#endif
-#ifdef SDB_DEBUGGING_INFO
-		{ "gcoff", SDB_DEBUG, 0 },
-#endif
-		{ 0, 0, 0 }
-	      };
 	      /* Indexed by enum debug_info_type.  */
-	      static char *debug_type_names[] = {
+	      static char *debug_type_names[] =
+	      {
 		"none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
 	      };
 
@@ -4310,6 +4723,11 @@ main (argc, argv, envp)
 	    {
 	      flag_gen_aux_info = 1;
 	      aux_info_file_name = (str[8] != '\0' ? str+8 : argv[++i]);
+	    }
+	  else if (!strcmp (str, "-help"))
+	    {
+	      display_help ();
+	      exit (0);
 	    }
 	  else
 	    error ("Invalid option `%s'", argv[i]);
@@ -4432,23 +4850,6 @@ main (argc, argv, envp)
 }
 
 /* Decode -m switches.  */
-
-/* Here is a table, controlled by the tm.h file, listing each -m switch
-   and which bits in `target_switches' it should set or clear.
-   If VALUE is positive, it is bits to set.
-   If VALUE is negative, -VALUE is bits to clear.
-   (The sign bit is not used so there is no confusion.)  */
-
-struct {char *name; int value;} target_switches []
-  = TARGET_SWITCHES;
-
-/* This table is similar, but allows the switch to have a value.  */
-
-#ifdef TARGET_OPTIONS
-struct {char *prefix; char ** variable;} target_options []
-  = TARGET_OPTIONS;
-#endif
-
 /* Decode the switch -mNAME.  */
 
 void
