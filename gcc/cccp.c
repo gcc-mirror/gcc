@@ -9795,7 +9795,7 @@ new_include_prefix (prev_file_name, prefix, name)
 
     /* Ignore a nonexistent directory.  */
     if (stat (len ? dir->fname : ".", &dir->st) != 0) {
-      if (errno != ENOENT)
+      if (errno != ENOENT && errno != ENOTDIR)
 	error_from_errno (dir->fname);
       free (dir);
       return 0;
