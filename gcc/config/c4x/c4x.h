@@ -2554,8 +2554,8 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 #define DBR_OUTPUT_SEQEND(FILE)		\
 if (final_sequence != NULL_RTX)		\
 {					\
- int count;				\
- int laj = GET_CODE (XEXP (XEXP (final_sequence, 0), 0)) == CALL_INSN; \
+ int count;
+ int laj = GET_CODE (XVECEXP (final_sequence, 0, 0)) == CALL_INSN; \
 					\
  count = dbr_sequence_length();		\
  while (count < (laj ? 2 : 3))		\
