@@ -155,11 +155,14 @@ struct arglist {
 
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 
-HOST_WIDE_INT parse_c_expression PROTO((char *));
+HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
 static int yylex PROTO((void));
 static void yyerror PROTO((char *)) __attribute__ ((noreturn));
 static HOST_WIDE_INT expression_value;
+#ifdef TEST_EXP_READER
+static int expression_signedp;
+#endif
 
 static jmp_buf parse_return_error;
 
@@ -169,6 +172,9 @@ static int keyword_parsing = 0;
 /* Nonzero means do not evaluate this expression.
    This is a count, since unevaluated expressions can nest.  */
 static int skip_evaluation;
+
+/* Nonzero means warn if undefined identifiers are evaluated.  */
+static int warn_undef;
 
 /* some external tables of character types */
 extern unsigned char is_idstart[], is_idchar[], is_space[];
@@ -181,9 +187,6 @@ extern int traditional;
 
 /* Flag for -lang-c89.  */
 extern int c89;
-
-/* Flag for -Wundef.  */
-extern int warn_undef;
 
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
@@ -286,7 +289,12 @@ static void integer_overflow PROTO((void));
 %%
 
 start   :	exp1
-		{ expression_value = $1.value; }
+		{
+		  expression_value = $1.value;
+#ifdef TEST_EXP_READER
+		  expression_signedp = $1.signedp;
+#endif
+		}
 	;
 
 /* Expressions, including the comma operator.  */
@@ -698,7 +706,7 @@ yylex ()
        It is mostly copied from c-lex.c.  */
     {
       register HOST_WIDE_INT result = 0;
-      register num_chars = 0;
+      register int num_chars = 0;
       unsigned width = MAX_CHAR_TYPE_SIZE;
       int max_chars;
       char *token_buffer;
@@ -1056,17 +1064,20 @@ right_shift (a, b)
 /* This page contains the entry point to this file.  */
 
 /* Parse STRING as an expression, and complain if this fails
-   to use up all of the contents of STRING.  */
-/* STRING may contain '\0' bytes; it is terminated by the first '\n'
-   outside a string constant, so that we can diagnose '\0' properly.  */
-/* We do not support C comments.  They should be removed before
+   to use up all of the contents of STRING.
+   STRING may contain '\0' bytes; it is terminated by the first '\n'
+   outside a string constant, so that we can diagnose '\0' properly.
+   If WARN_UNDEFINED is nonzero, warn if undefined identifiers are evaluated.
+   We do not support C comments.  They should be removed before
    this function is called.  */
 
 HOST_WIDE_INT
-parse_c_expression (string)
+parse_c_expression (string, warn_undefined)
      char *string;
+     int warn_undefined;
 {
   lexptr = string;
+  warn_undef = warn_undefined;
 
   /* if there is some sort of scanning error, just return 0 and assume
      the parsing routine has printed an error message somewhere.
@@ -1094,6 +1105,7 @@ int traditional;
 
 int main PROTO((int, char **));
 static void initialize_random_junk PROTO((void));
+static void print_unsigned_host_wide_int PROTO((unsigned_HOST_WIDE_INT));
 
 /* Main program for testing purposes.  */
 int
@@ -1103,6 +1115,7 @@ main (argc, argv)
 {
   int n, c;
   char buf[1024];
+  unsigned_HOST_WIDE_INT u;
 
   pedantic = 1 < argc;
   traditional = 2 < argc;
@@ -1118,10 +1131,33 @@ main (argc, argv)
       n++;
     if (c == EOF)
       break;
-    printf ("parser returned %ld\n", (long) parse_c_expression (buf));
+    parse_c_expression (buf, 1);
+    printf ("parser returned ");
+    u = (unsigned_HOST_WIDE_INT) expression_value;
+    if (expression_value < 0 && expression_signedp) {
+      u = -u;
+      printf ("-");
+    }
+    if (u == 0)
+      printf ("0");
+    else
+      print_unsigned_host_wide_int (u);
+    if (! expression_signedp)
+      printf("u");
+    printf ("\n");
   }
 
   return 0;
+}
+
+static void
+print_unsigned_host_wide_int (u)
+     unsigned_HOST_WIDE_INT u;
+{
+  if (u) {
+    print_unsigned_host_wide_int (u / 10);
+    putchar ('0' + (int) (u % 10));
+  }
 }
 
 /* table to tell if char can be part of a C identifier. */
