@@ -2,6 +2,22 @@
 
 	* search.c: Follow spelling conventions.
 
+2004-09-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (struct lang_type_class): Make pure_virtuals a
+	VEC(tree).
+	(CLASSTYPE_INLINE_FRIENDS, CLASSTYPE_PURE_VIRTUALS): Update
+	comments.
+	* call.c (build_new_method_call): Don't confirm a pure virtual is
+	in CLASSTYPE_PURE_VIRTUALS.  Reorder checks. Make it a warning.
+	* class.c (check_methods): CLASSTYPE_INLINE_FRIENDS is a VEC(tree).
+	(fixup_inline_methods, finish_struct): Likewise.
+	* decl.c (finish_method): Likewise.
+	* search.c (dfs_get_pure_virtuals, get_pure_virtuals):
+	CLASSTYPE_PURE_VIRTUALS is a VEC(tree).
+	* typeck2.c (abstract_virtuals_error): Likewise. Truncate the
+	vector to avoid repeating the list in error messages.
+
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_COMDAT_GROUP): Define.
