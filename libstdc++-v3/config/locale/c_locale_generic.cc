@@ -48,7 +48,7 @@ namespace std
 	char* __sanity;
 	errno = 0;
 	long __l = strtol(__s, &__sanity, __base);
-	if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	  __v = __l;
 	else
 	  __err |= ios_base::failbit;
@@ -65,7 +65,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  unsigned long __ul = strtoul(__s, &__sanity, __base);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ul;
 	  else
 	    __err |= ios_base::failbit;
@@ -83,7 +83,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  long long __ll = strtoll(__s, &__sanity, __base);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ll;
 	  else
 	    __err |= ios_base::failbit;
@@ -100,7 +100,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  unsigned long long __ull = strtoull(__s, &__sanity, __base);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ull;
 	  else
 	    __err |= ios_base::failbit;
@@ -124,7 +124,7 @@ namespace std
 #else
 	  float __f = static_cast<float>(strtod(__s, &__sanity));
 #endif
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __f;
 	  else
 	    __err |= ios_base::failbit;
@@ -144,7 +144,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  double __d = strtod(__s, &__sanity);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __d;
 	  else
 	    __err |= ios_base::failbit;
@@ -165,7 +165,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  long double __ld = strtold(__s, &__sanity);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ld;
 #else
 	  typedef char_traits<char>::int_type int_type;
