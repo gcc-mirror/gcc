@@ -1915,11 +1915,9 @@ staticp (arg)
   switch (TREE_CODE (arg))
     {
     case FUNCTION_DECL:
-      /* Nested functions aren't static.  Since taking their address
+      /* Nested functions aren't static, since taking their address
 	 involves a trampoline.  */
-      if (decl_function_context (arg) != 0)
-	return 0;
-      /* ... fall through ... */
+       return decl_function_context (arg) == 0;
     case VAR_DECL:
       return TREE_STATIC (arg) || DECL_EXTERNAL (arg);
 
