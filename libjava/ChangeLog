@@ -1,3 +1,9 @@
+1999-05-12  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Look for -ldl when using the Boehm collector.
+	Look for sched_yield in -lposix4.
+
 1999-05-12  Per Bothner  <bothner@cygnus.com>
 
 	* java/io/File.java (mkdirs):  Handle a null parent directory.
