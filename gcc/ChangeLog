@@ -1,3 +1,9 @@
+2004-10-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/extend.texi (Extended Asm): Warn and provide example
+	solution for using a call-clobbered asm register.
+	(Local Reg Vars): Similar.  Cross-reference example.
+
 2004-10-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-cfg.c (group_case_labels): Look at the second to last

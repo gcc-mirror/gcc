@@ -3585,6 +3585,23 @@ register int *result asm ("r0");
 asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
 @end smallexample
 
+@anchor{Example of asm with clobbered asm reg}
+In the above example, beware that a register that is call-clobbered by
+the target ABI will be overwritten by any function call in the
+assignment, including library calls for arithmetic operators.
+Assuming it is a call-clobbered register, this may happen to @code{r0}
+above by the assignment to @code{p2}.  If you have to use such a
+register, use temporary variables for expressions between the register
+assignment and use:
+
+@smallexample
+int t1 = @dots{};
+register int *p1 asm ("r0") = @dots{};
+register int *p2 asm ("r1") = t1;
+register int *result asm ("r0");
+asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
+@end smallexample
+
 Some instructions clobber specific hard registers.  To describe this,
 write a third colon after the input operands, followed by the names of
 the clobbered hard registers (given as strings).  Here is a realistic
@@ -4140,6 +4157,20 @@ for the operand.
 Stores into local register variables may be deleted when they appear to be dead
 according to dataflow analysis.  References to local register variables may
 be deleted or moved or simplified.
+
+As for global register variables, it's recommended that you choose a
+register which is normally saved and restored by function calls on
+your machine, so that library routines will not clobber it.  A common
+pitfall is to initialize multiple call-clobbered registers with
+arbitrary expressions, where a function call or library call for an
+arithmetic operator will overwrite a register value from a previous
+assignment, for example @code{r0} below:
+@smallexample
+register int *p1 asm ("r0") = @dots{};
+register int *p2 asm ("r1") = @dots{};
+@end smallexample
+In those cases, a solution is to use a temporary variable for
+each arbitrary expression.   @xref{Example of asm with clobbered asm reg}.
 
 @node Alternate Keywords
 @section Alternate Keywords
