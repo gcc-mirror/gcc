@@ -2608,8 +2608,9 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
   size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
   if (stack_parm == 0)
     {
+      DECL_ALIGN (parm) = MAX (DECL_ALIGN (parm), BITS_PER_WORD);
       stack_parm = assign_stack_local (BLKmode, size_stored,
-				       TYPE_ALIGN (data->passed_type));
+				       DECL_ALIGN (parm));
       if (GET_MODE_SIZE (GET_MODE (entry_parm)) == size)
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
