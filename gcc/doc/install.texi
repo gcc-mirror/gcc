@@ -191,7 +191,7 @@ not yet been merged into the main part of this manual.
 @end ifhtml
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -245,7 +245,7 @@ components of the binutils you intend to build alongside the compiler
 @file{opcodes}, @dots{}) to the directory containing the GCC sources.
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -362,7 +362,6 @@ subdirectory of @var{objdir} or vice versa.
 These additional options control where certain parts of the distribution
 are installed.  Normally you should not need to use these options.
 @table @code
-
 @item --exec-prefix=@var{dirname}
 Specify the toplevel installation directory for architecture-dependent
 files.  The default is @file{@var{prefix}}.
@@ -646,7 +645,6 @@ predefined set of them.
 Some targets provide finer-grained control over which multilibs are built
 (e.g., @option{--disable-softfloat}):
 @table @code
-
 @item arc-*-elf*
 biendian.
 
@@ -911,7 +909,7 @@ Note that each @option{--enable} option has a corresponding
 corresponding @option{--without} option.
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -1153,7 +1151,7 @@ Currently, when compiling the Ada front end, you cannot use the parallel
 build feature described in the previous section.
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -1311,7 +1309,7 @@ few failing testcases are possible even on released versions and you
 should look here first if you think your results are unreasonable.
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -1423,7 +1421,7 @@ Free Software Foundation}, though such manuals may not be for the most
 recent version of GCC@.
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -1519,7 +1517,7 @@ bootstrapping the compiler.  An updated version of that disk is in the
 works.
 
 @html
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -1702,7 +1700,7 @@ GNU Compiler Collection on your machine.
 
 @html
 <!-- -------- host/target specific issues start here ---------------- -->
-<hr>
+<hr />
 @end html
 @heading @anchor{alpha*-*-*}alpha*-*-*
 
@@ -1717,8 +1715,7 @@ debugging information, not the least of which is incorrect linking of
 shared libraries.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{alpha*-dec-osf*}alpha*-dec-osf*
 Systems using processors that implement the DEC Alpha architecture and
@@ -1802,8 +1799,7 @@ DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{alphaev5-cray-unicosmk*}alphaev5-cray-unicosmk*
 Cray T3E systems running Unicos/Mk.
@@ -1830,16 +1826,14 @@ be able to work around this by doing @samp{make all} after getting this
 failure.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{arc-*-elf}arc-*-elf
 Argonaut ARC processor.
 This configuration is intended for embedded systems.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{arm-*-aout}arm-*-aout
 Advanced RISC Machines ARM-family processors.  These are often used in
@@ -1851,23 +1845,20 @@ You may need to make a variant of the file @file{arm.h} for your particular
 configuration.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{arm-*-elf}arm-*-elf
 This configuration is intended for embedded systems.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{arm*-*-linux-gnu}arm*-*-linux-gnu
 
 We require GNU binutils 2.10 or newer.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{avr}avr
 
@@ -1904,8 +1895,7 @@ The following error:
 indicates that you should upgrade to a newer version of the binutils.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{c4x}c4x
 
@@ -1935,8 +1925,7 @@ can also be obtained from:
 @end itemize
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{cris}CRIS
 
@@ -1974,8 +1963,7 @@ information about this platform is available at
 @uref{http://developer.axis.com/}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{dos}DOS
 
@@ -1987,15 +1975,13 @@ compilation package DJGPP, which includes binaries as well as sources,
 and includes all the necessary compilation tools and libraries.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{dsp16xx}dsp16xx
 A port to the AT&T DSP1610 family of processors.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{*-*-freebsd*}*-*-freebsd*
 
@@ -2043,8 +2029,7 @@ the very least, both boehm-gc and libffi.
 Shared @file{libgcc_s.so} is now built and installed by default.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{h8300-hms}h8300-hms
 Hitachi H8/300 series of processors.
@@ -2057,8 +2042,7 @@ first three arguments in function calls in registers.  Structures are no
 longer a multiple of 2 bytes.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{hppa*-hp-hpux*}hppa*-hp-hpux*
 
@@ -2093,8 +2077,7 @@ default scheduling model is desired.
 More specific information to @samp{hppa*-hp-hpux*} targets follows.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{hppa*-hp-hpux9}hppa*-hp-hpux9
 
@@ -2110,8 +2093,7 @@ and @env{SHELL} to @file{/bin/ksh} in your environment.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{hppa*-hp-hpux10}hppa*-hp-hpux10
 
@@ -2142,8 +2124,7 @@ bootstrap}.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{hppa*-hp-hpux11}hppa*-hp-hpux11
 
@@ -2182,16 +2163,14 @@ have been problems reported with various binary distributions.  This
 port still is undergoing significant development.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{i370-*-*}i370-*-*
 This port is very preliminary and has many known bugs.  We hope to
 have a higher-quality port for this machine soon.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{*-*-linux-gnu}*-*-linux-gnu
 
@@ -2201,7 +2180,6 @@ The patch @uref{glibc-2.2.patch,,glibc-2.2.patch}, that is to be
 applied in the GCC source tree, fixes the compatibility problems.
 
 @html
-</p>
 @end html
 
 @html
@@ -2218,8 +2196,7 @@ glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
 2.2.3 with GCC 3.0, just do not try to recompile it.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ix86-*-linux*aout}i?86-*-linux*aout
 Use this configuration to generate @file{a.out} binaries on Linux-based
@@ -2227,8 +2204,7 @@ GNU systems.  This configuration is being superseded.  You must use
 gas/binutils version 2.5.2 or later.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ix86-*-linux*}i?86-*-linux*
 
@@ -2239,23 +2215,20 @@ possible you have a hardware problem.  Further information on this can be
 found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ix86-*-sco}i?86-*-sco
 Compilation with RCC is recommended.  Also, it may be a good idea to
 link with GNU malloc instead of the malloc that comes with the system.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ix86-*-sco3.2v4}i?86-*-sco3.2v4
 Use this configuration for SCO release 3.2 version 4.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ix86-*-sco3.2v5*}i?86-*-sco3.2v5*
 Use this for the SCO OpenServer Release 5 family of operating systems.
@@ -2330,8 +2303,7 @@ engineering and will hopefully be addressed in later releases.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ix86-*-udk}i?86-*-udk
 
@@ -2367,8 +2339,7 @@ have installed.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ia64-*-linux}ia64-*-linux
 IA-64 processor (also known as IPF, or Itanium Processor Family)
@@ -2392,8 +2363,7 @@ GCC 3.0.2 is believed to be fully ABI compliant, and hence no more major
 ABI changes are expected.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{*-lynx-lynxos}*-lynx-lynxos
 LynxOS 2.2 and earlier comes with GCC 1.x already installed as
@@ -2404,8 +2374,7 @@ COFF format object files and executables;  otherwise GCC will use the
 installed tools, which produce @file{a.out} format executables.
 
 @html
-</p>
-<hr>
+<hr />
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
 @end html
 @heading @anchor{*-ibm-aix*}*-ibm-aix*
@@ -2514,8 +2483,7 @@ A default can be specified with the @option{-mcpu=@var{cpu_type}}
 switch and using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{ip2k-*-elf}ip2k-*-elf
 Ubicom IP2022 micro controller.
@@ -2525,16 +2493,14 @@ There are no standard Unix configurations.
 Use @samp{configure --target=ip2k-elf --enable-languages=c} to configure GCC@.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m32r-*-elf}m32r-*-elf
 Mitsubishi M32R processor.
 This configuration is intended for embedded systems.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68000-hp-bsd}m68000-hp-bsd
 HP 9000 series 200 running BSD@.  Note that the C compiler that comes
@@ -2542,24 +2508,21 @@ with this system cannot compile GCC; contact @email{law@@cygnus.com}
 to get binaries of GCC for bootstrapping.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m6811-elf}m6811-elf
 Motorola 68HC11 family micro controllers.  These are used in embedded
 applications.  There are no standard Unix configurations.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m6812-elf}m6812-elf
 Motorola 68HC12 family micro controllers.  These are used in embedded
 applications.  There are no standard Unix configurations.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68k-att-sysv}m68k-att-sysv
 AT&T 3b1, a.k.a.@: 7300 PC@.  This version of GCC cannot
@@ -2569,8 +2532,7 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 @uref{ftp://archive.cis.ohio-state.edu/pub/att7300/}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68k-crds-unos}m68k-crds-unos
 Use @samp{configure unos} for building on Unos.
@@ -2609,8 +2571,7 @@ If linking @file{cc1} fails, try putting the object files into a library
 and linking from that library.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68k-hp-hpux}m68k-hp-hpux
 HP 9000 series 300 or 400 running HP-UX@.  HP-UX version 8.0 has a bug in
@@ -2668,8 +2629,7 @@ to look like:
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68k-ncr-*}m68k-ncr-*
 On the Tower models 4@var{n}0 and 6@var{n}0, by default a process is not
@@ -2685,8 +2645,7 @@ MAXUMEM = 4096
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68k-sun}m68k-sun
 Sun 3.  We do not provide a configuration file to use the Sun FPA by
@@ -2694,8 +2653,7 @@ default, because programs that establish signal handlers for floating
 point traps inherently cannot work with the FPA@.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{m68k-sun-sunos4.1.1}m68k-sun-sunos4.1.1
 
@@ -2703,8 +2661,7 @@ It is reported that you may need the GNU assembler on this platform.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{mips-*-*}mips-*-*
 If on a MIPS system you get an error message saying ``does not have gp
@@ -2759,8 +2716,7 @@ however, you may have success with @command{smake} on IRIX 5.2 if you do
 not have GNU @command{make} available.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
 
@@ -2859,8 +2815,7 @@ See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
 information about using GCC on IRIX platforms.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc*-*-*}powerpc-*-*
 
@@ -2868,8 +2823,7 @@ You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-darwin*}powerpc-*-darwin*
 PowerPC running Darwin (Mac OS X kernel).
@@ -2902,15 +2856,13 @@ number of extensions not available in a standard GCC release.  These
 extensions are generally specific to Mac programming.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-elf}powerpc-*-elf, powerpc-*-sysv4
 PowerPC system in big endian mode, running System V.4.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-linux-gnu*}powerpc-*-linux-gnu*
 
@@ -2919,8 +2871,7 @@ You will need
 or newer for a working GCC@.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-netbsd*}powerpc-*-netbsd*
 PowerPC system in big endian mode running NetBSD@.  To build the
@@ -2928,74 +2879,64 @@ documentation you will need Texinfo version 4.1 (NetBSD 1.5.1 included
 Texinfo version 3.12).
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-eabiaix}powerpc-*-eabiaix
 Embedded PowerPC system in big endian mode with @option{-mcall-aix} selected as
 the default.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-eabisim}powerpc-*-eabisim
 Embedded PowerPC system in big endian mode for use in running under the
 PSIM simulator.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpc-*-eabi}powerpc-*-eabi
 Embedded PowerPC system in big endian mode.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpcle-*-elf}powerpcle-*-elf, powerpcle-*-sysv4
 PowerPC system in little endian mode, running System V.4.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpcle-*-eabisim}powerpcle-*-eabisim
 Embedded PowerPC system in little endian mode for use in running under
 the PSIM simulator.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpcle-*-eabi}powerpcle-*-eabi
 Embedded PowerPC system in little endian mode.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{powerpcle-*-winnt}powerpcle-*-winnt, powerpcle-*-pe
 PowerPC system in little endian mode running Windows NT@.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{s390-*-linux*}s390-*-linux*
 S/390 system running Linux for S/390@.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{s390x-*-linux*}s390x-*-linux*
 zSeries system (64-bit) running Linux for zSeries@.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @c Please use Solaris 2 to refer to all release of Solaris, starting
 @c with 2.0 until 2.6, 7, and 8.  Solaris 1 was a marketing name for
@@ -3048,8 +2989,7 @@ There are patches for Solaris 2.6 (105633-56 or newer for SPARC,
 108653-22 for Intel) that fix this bug.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparc-sun-solaris2*}sparc-sun-solaris2*
 
@@ -3084,8 +3024,7 @@ that supports only 32-bit binaries, one must configure with
 64-bit target libraries.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparc-sun-solaris2.7}sparc-sun-solaris2.7
 
@@ -3127,7 +3066,7 @@ the Solaris 7 Recommended Patch Cluster.
 
 @html
 <p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparc-sun-sunos4*}sparc-sun-sunos4*
 
@@ -3146,8 +3085,7 @@ be due to a bug in @command{sh}.  You can probably get around it by running
 @command{make}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparc-unknown-linux-gnulibc1}sparc-unknown-linux-gnulibc1
 
@@ -3157,8 +3095,7 @@ for this platform, too.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparc-*-linux*}sparc-*-linux*
 
@@ -3168,8 +3105,7 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparc64-*-*}sparc64-*-*
 
@@ -3180,8 +3116,7 @@ invocation with an environment that causes @command{configure} to
 recognize (via @samp{uname -a}) the system as @samp{sparc-*-*} instead.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{sparcv9-*-solaris2*}sparcv9-*-solaris2*
 
@@ -3196,8 +3131,7 @@ step in order to bootstrap this target with the Sun compiler:
 specifies the v9 architecture to the Sun linker and assembler.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{#*-*-sysv*}*-*-sysv*
 On System V release 3, you may get this error message
@@ -3231,16 +3165,14 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 @file{/usr/ucb} uses libraries which have bugs.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{vax-dec-ultrix}vax-dec-ultrix
 Don't try compiling with VAX C (@code{vcc}).  It produces incorrect code
 in some cases (for example, when @code{alloca} is used).
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{xtensa-*-elf}xtensa-*-elf
 
@@ -3258,8 +3190,7 @@ downloaded files include a customized copy of this header file,
 which you can use to replace the default header file.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{xtensa-*-linux*}xtensa-*-linux*
 
@@ -3271,8 +3202,7 @@ respects, this target is the same as the
 @uref{#xtensa-*-elf,,@samp{xtensa-*-elf}} target.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{windows}Microsoft Windows (32-bit)
 
@@ -3283,8 +3213,7 @@ Current (as of early 2001) snapshots of GCC will build under Cygwin
 without modification.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{os2}OS/2
 
@@ -3297,8 +3226,7 @@ An older copy of GCC 2.8.1 is included with the EMX tools available at
 ftp://ftp.leo.org/pub/comp/os/os2/leo/devtools/emx+gcc/}.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{older}Older systems
 
@@ -3344,8 +3272,7 @@ about GCC on such systems (which may no longer be applicable to
 current GCC) is to be found in the GCC texinfo manual.
 
 @html
-</p>
-<hr>
+<hr />
 @end html
 @heading @anchor{elf_targets}all ELF targets (SVR4, Solaris 2, etc.)
 
@@ -3356,8 +3283,7 @@ automatically.
 
 
 @html
-</p>
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -3369,8 +3295,7 @@ automatically.
 @ifset oldhtml
 @include install-old.texi
 @html
-</p>
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
@@ -3382,8 +3307,7 @@ automatically.
 @ifset gfdlhtml
 @include fdl.texi
 @html
-</p>
-<hr>
+<hr />
 <p>
 @end html
 @ifhtml
