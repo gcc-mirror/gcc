@@ -30,6 +30,7 @@
 #include <ext/iterator>
 #include <ext/memory>
 #include <ext/numeric>
+#include <ext/rb_tree>
 #include <ext/rope>
 #include <ext/slist>
 

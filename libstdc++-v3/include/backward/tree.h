@@ -45,9 +45,9 @@
 #define _CPP_EXT_TREE 1
 
 #include "backward_warning.h"
-#include <bits/stl_tree.h>
+#include <ext/rb_tree>
 
-using std::rb_tree;
+using __gnu_cxx::rb_tree;
 
 #endif 
 // Local Variables:

@@ -1288,23 +1288,6 @@ bool _Rb_tree<_Key,_Value,_KeyOfValue,_Compare,_Alloc>::__rb_verify() const
   return true;
 }
 
-// Class rb_tree is not part of the C++ standard.  It is provided for
-// compatibility with the HP STL.
-
-template <class _Key, class _Value, class _KeyOfValue, class _Compare,
-          class _Alloc = allocator<_Value> >
-struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
-{
-  typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
-  typedef typename _Base::allocator_type allocator_type;
-
-  rb_tree(const _Compare& __comp = _Compare(),
-          const allocator_type& __a = allocator_type())
-    : _Base(__comp, __a) {}
-  
-  ~rb_tree() {}
-};
-
 } // namespace std 
 
 #endif /* __GLIBCPP_INTERNAL_TREE_H */
