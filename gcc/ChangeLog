@@ -1,3 +1,7 @@
+2004-06-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/extend.texi (Function Attributes): Alphabetize.
+
 2004-06-23  Richard Henderson  <rth@redhat.com>
 
 	* c-gimplify.c (gimplify_decl_stmt): Update gimplify_type_sizes call.
@@ -3107,6 +3111,7 @@
 	(expand_return): Don't check for possible tail recursion.
 	* tree.h (optimize_tail_recursion): Remove prototype.
 
+>>>>>>> 2.4079
 2004-06-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (tree_find_edge_insert_loc):  Allow inserting before
