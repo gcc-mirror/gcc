@@ -2962,6 +2962,19 @@ do {									\
   fprintf ((FILE), ",%u,\"bss\",%u\n",					\
 	   (SIZE), ((ALIGNED) / BITS_PER_UNIT)))
 
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
+  do {								\
+    fputs (".globl ", (FILE));					\
+    assemble_name ((FILE), (NAME));				\
+    fputs ("\n", (FILE));					\
+    ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
+  } while (0)
+
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */

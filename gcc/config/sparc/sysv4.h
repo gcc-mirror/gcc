@@ -270,5 +270,6 @@ do { long value[4];							\
    NAME whose size is SIZE bytes and alignment is ALIGN bytes.
    Try to use asm_output_aligned_bss to implement this macro.  */
 
+#undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
