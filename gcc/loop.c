@@ -4480,7 +4480,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		}
     
 	      v->last_use = last_use_insn;
-	      v->lifetime = INSN_LUID (v->insn) - INSN_LUID (last_use_insn);
+	      v->lifetime = INSN_LUID (last_use_insn) - INSN_LUID (v->insn);
 	      /* If the lifetime is zero, it means that this register is really
 		 a dead store.  So mark this as a giv that can be ignored.
 		 This will not prevent the biv from being eliminated.  */
