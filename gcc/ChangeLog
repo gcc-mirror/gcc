@@ -1,3 +1,10 @@
+2004-12-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (WERROR): New variable.
+	(STRICT2_WARN): Use it.
+	(STAGE2_FLAGS_TO_PASS): Likewise.
+	* config/i386/x-mingw32 (WERROR): Add -Wno-format.
+
 2004-12-01  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (get_inner_reference): Fix thinko in REAL/IMAGPART_EXPR
