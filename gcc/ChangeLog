@@ -43,6 +43,8 @@ Tue Feb  9 10:10:31 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	
 1999-02-08  Nick Clifton  <nickc@cygnus.com>
 
+	* config/v850/v850.md: Replace \\n\\t with \\;
+	
 	* config/v850/v850.md: Enforce TARGET_LONG_CALLS option.
 	* config/v850/v850.c (construct_restore_jr, construct_save_jarl):
 	Enforce TARGET_LONG_CALLS option. 
