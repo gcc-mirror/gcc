@@ -1,5 +1,12 @@
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* output.h (unlikely_section_label): Delete declaration.
+	(unlikely_text_section_name): Likewise.
+	* varasm.c (unlikely_section_label_printed): Make static.
+	(unlikely_section_label): Likewise.
+	(unlikely_text_section_name): Likewise.
+	(assemble_start_function): Use reconcat.
+
 	* rtl.def (REG): Add comment to describe third field.
 
 2004-09-10  Andrew Pinski  <apinski@apple.com>
@@ -230,7 +237,6 @@
 	* config/cris/cris.md ("return"): For location of return address,
 	also check cris_return_address_on_stack.
 
->>>>>>> 2.5354
 2004-09-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-outof-ssa.c (coalesce_abnormal_edges): Fix typo in
@@ -1287,7 +1293,6 @@
 	config/rs6000/linux64.h: Likewise.  Split out get_sigcontext
 	function.  Use ARG_POINTER_REGNUM for 32-bit temp reg too.
 
->>>>>>> 2.5334
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (fold_rtx):  Avoid building of

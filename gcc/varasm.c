@@ -104,19 +104,19 @@ tree last_assemble_variable_decl;
    partitions hot and cold basic blocks into separate sections of the .o
    file.  */
 
-bool unlikely_section_label_printed = false;
+static bool unlikely_section_label_printed = false;
 
 /* The following global variable indicates the label name to be put at
    the start of the first cold section within each function, when
    partitioning basic blocks into hot and cold sections.  */
 
-char *unlikely_section_label = NULL;
+static char *unlikely_section_label = NULL;
  
 /* The following global variable indicates the section name to be used
    for the current cold section, when partitioning hot and cold basic
    blocks into separate sections.  */
 
-char *unlikely_text_section_name = NULL;
+static char *unlikely_text_section_name = NULL;
 
 /* We give all constants their own alias set.  Perhaps redundant with
    MEM_READONLY_P, but pre-dates it.  */
@@ -1187,10 +1187,8 @@ assemble_start_function (tree decl, const char *fnname)
   unlikely_section_label_printed = false;
   unlikely_text_section_name = NULL;
   
-  if (unlikely_section_label)
-    free (unlikely_section_label);
-  unlikely_section_label = xmalloc ((strlen (fnname) + 18) * sizeof (char));
-  sprintf (unlikely_section_label, "%s_unlikely_section", fnname);
+  unlikely_section_label = reconcat (unlikely_section_label, 
+				     fnname, ".unlikely_section", NULL);
   
   /* The following code does not need preprocessing in the assembler.  */
 
