@@ -1,3 +1,18 @@
+2003-06-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/scalar-by-value-3_main.c: New file.
+	* gcc.dg/compat/scalar-by-value-3_x.c: New file.
+	* gcc.dg/compat/scalar-by-value-3_y.c: New file.
+	* gcc.dg/compat/scalar-by-value-4_main.c: New file.
+	* gcc.dg/compat/scalar-by-value-4_x.c: New file.
+	* gcc.dg/compat/scalar-by-value-4_y.c: New file.
+	* gcc.dg/compat/scalar-return-3_main.c: New file.
+	* gcc.dg/compat/scalar-return-3_x.c: New file.
+	* gcc.dg/compat/scalar-return-3_y.c: New file.
+	* gcc.dg/compat/scalar-return-4_main.c: New file.
+	* gcc.dg/compat/scalar-return-4_x.c: New file.
+	* gcc.dg/compat/scalar-return-4_y.c: New file.
+
 2003-06-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/compat/fp2-struct-check.h: New file.
