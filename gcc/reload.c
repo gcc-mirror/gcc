@@ -1320,6 +1320,7 @@ push_reload (in, out, inloc, outloc, class,
 	reload_outmode[i] = outmode;
       if (in != 0)
 	{
+	  rtx in_reg = inloc ? *inloc : 0;
 	  /* If we merge reloads for two distinct rtl expressions that
 	     are identical in content, there might be duplicate address
 	     reloads.  Remove the extra set now, so that if we later find
@@ -1333,12 +1334,13 @@ push_reload (in, out, inloc, outloc, class,
 		{
 		  remove_address_replacements (in);
 		  in = reload_in[i];
+		  in_reg = reload_in_reg[i];
 		}
 	      else
 		remove_address_replacements (reload_in[i]);
 	    }
 	  reload_in[i] = in;
-	  reload_in_reg[i] = inloc ? *inloc : 0;
+	  reload_in_reg[i] = in_reg;
 	}
       if (out != 0)
 	{
