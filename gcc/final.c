@@ -1972,8 +1972,7 @@ final (first, file, optimize, prescan)
 		     && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last)
 		     && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last)))
 	      {
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
+		delete_note (insn);
 		continue;
 	      }
 	    last = insn;
@@ -2719,9 +2718,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	       (It would not be recognized.)  */
 	    if (SET_SRC (body) == pc_rtx)
 	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
+	        delete_insn (insn);
 		break;
 	      }
 	    else if (GET_CODE (SET_SRC (body)) == RETURN)
@@ -2780,11 +2777,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		  else if (result == 2)
 		    INSN_CODE (insn) = -1;
 		  if (SET_DEST (set) == SET_SRC (set))
-		    {
-		      PUT_CODE (insn, NOTE);
-		      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		      NOTE_SOURCE_FILE (insn) = 0;
-		    }
+		    delete_insn (insn);
 		}
 		break;
 
@@ -2902,10 +2895,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		 prev = PREV_INSN (prev))
 	      {
 		if (GET_CODE (prev) == NOTE)
-		  {
-		    NOTE_LINE_NUMBER (prev) = NOTE_INSN_DELETED;
-		    NOTE_SOURCE_FILE (prev) = 0;
-		  }
+		  delete_insn (prev);	/* Use delete_note.  */
 	      }
 
 	    return prev;

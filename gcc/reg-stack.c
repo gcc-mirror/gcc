@@ -420,7 +420,6 @@ reg_to_stack (first, file)
 {
   int i;
   int max_uid;
-  block_info bi;
 
   /* Clean up previous run.  */
   if (stack_regs_mentioned_data)
@@ -449,18 +448,16 @@ reg_to_stack (first, file)
   mark_dfs_back_edges ();
 
   /* Set up block info for each basic block.  */
-  bi = (block_info) xcalloc ((n_basic_blocks + 1), sizeof (*bi));
+  alloc_aux_for_blocks (sizeof (struct block_info_def));
   for (i = n_basic_blocks - 1; i >= 0; --i)
     {
       edge e;
       basic_block bb = BASIC_BLOCK (i);
-      bb->aux = bi + i;
       for (e = bb->pred; e; e=e->pred_next)
 	if (!(e->flags & EDGE_DFS_BACK)
 	    && e->src != ENTRY_BLOCK_PTR)
 	  BLOCK_INFO (bb)->predecesors++;
     }
-  EXIT_BLOCK_PTR->aux = bi + n_basic_blocks;
 
   /* Create the replacement registers up front.  */
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
@@ -500,7 +497,7 @@ reg_to_stack (first, file)
 
   convert_regs (file);
 
-  free (bi);
+  free_aux_for_blocks ();
 }
 
 /* Check PAT, which is in INSN, for LABEL_REFs.  Add INSN to the

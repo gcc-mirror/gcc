@@ -807,9 +807,7 @@ scan_loop (loop, flags)
 		    = replace_rtx (REG_NOTES (regs->array[regno].single_usage),
 				   SET_DEST (set), copy_rtx (SET_SRC (set)));
 
-		  PUT_CODE (p, NOTE);
-		  NOTE_LINE_NUMBER (p) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (p) = 0;
+		  delete_insn (p);
 		  regs->array[regno].set_in_loop = 0;
 		  continue;
 		}
@@ -9340,11 +9338,10 @@ loop_delete_insns (first, last)
 {
   while (1)
     {
-      PUT_CODE (first, NOTE);
-      NOTE_LINE_NUMBER (first) = NOTE_INSN_DELETED;
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, ", deleting init_insn (%d)",
 		 INSN_UID (first));
+      delete_insn (first);
 
       /* If this was the LAST instructions we're supposed to delete,
 	 we're done.  */

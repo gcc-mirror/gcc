@@ -1263,7 +1263,6 @@ reload (first, global)
   /* Free all the insn_chain structures at once.  */
   obstack_free (&reload_obstack, reload_startobj);
   unused_insn_chains = 0;
-  compute_bb_for_insn (get_max_uid ());
   fixup_abnormal_edges ();
 
   return failure;
@@ -1465,9 +1464,7 @@ calculate_needs_all_insns (global)
 		  && GET_CODE (SET_SRC (set)) == REG
 		  && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER)
 		{
-		  PUT_CODE (insn, NOTE);
-		  NOTE_SOURCE_FILE (insn) = 0;
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		  delete_insn (insn);
 		  /* Delete it from the reload chain */
 		  if (chain->prev)
 		    chain->prev->next = next;
@@ -1851,17 +1848,9 @@ delete_caller_save_insns ()
 	  struct insn_chain *next = c->next;
 	  rtx insn = c->insn;
 
-	  if (insn == BLOCK_HEAD (c->block))
-	    BLOCK_HEAD (c->block) = NEXT_INSN (insn);
-	  if (insn == BLOCK_END (c->block))
-	    BLOCK_END (c->block) = PREV_INSN (insn);
 	  if (c == reload_insn_chain)
 	    reload_insn_chain = next;
-
-	  if (NEXT_INSN (insn) != 0)
-	    PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-	  if (PREV_INSN (insn) != 0)
-	    NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	  delete_insn (insn);
 
 	  if (next)
 	    next->prev = c->prev;
@@ -3908,9 +3897,7 @@ reload_as_needed (live_known)
 		    {
 		      error_for_asm (insn,
 				     "`asm' operand requires impossible reload");
-		      PUT_CODE (p, NOTE);
-		      NOTE_SOURCE_FILE (p) = 0;
-		      NOTE_LINE_NUMBER (p) = NOTE_INSN_DELETED;
+		      delete_insn (p);
 		    }
 	    }
 
@@ -6941,8 +6928,6 @@ emit_reload_insns (chain)
   rtx insn = chain->insn;
 
   register int j;
-  rtx following_insn = NEXT_INSN (insn);
-  rtx before_insn = PREV_INSN (insn);
 
   CLEAR_HARD_REG_SET (reg_reloaded_died);
 
@@ -7018,19 +7003,10 @@ emit_reload_insns (chain)
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      emit_insns_before (outaddr_address_reload_insns[j], following_insn);
-      emit_insns_before (output_address_reload_insns[j], following_insn);
-      emit_insns_before (output_reload_insns[j], following_insn);
-      emit_insns_before (other_output_reload_insns[j], following_insn);
-    }
-
-  /* Keep basic block info up to date.  */
-  if (n_basic_blocks)
-    {
-      if (BLOCK_HEAD (chain->block) == insn)
-	BLOCK_HEAD (chain->block) = NEXT_INSN (before_insn);
-      if (BLOCK_END (chain->block) == insn)
-	BLOCK_END (chain->block) = PREV_INSN (following_insn);
+      rtx x = emit_insns_after (outaddr_address_reload_insns[j], insn);
+      x = emit_insns_after (output_address_reload_insns[j], x);
+      x = emit_insns_after (output_reload_insns[j], x);
+      emit_insns_after (other_output_reload_insns[j], x);
     }
 
   /* For all the spill regs newly reloaded in this instruction,
@@ -7669,9 +7645,7 @@ delete_output_reload (insn, j, last_reload_reg)
 	      /* Some other ref remains; just delete the output reload we
 		 know to be dead.  */
 	      delete_address_reloads (output_reload_insn, insn);
-	      PUT_CODE (output_reload_insn, NOTE);
-	      NOTE_SOURCE_FILE (output_reload_insn) = 0;
-	      NOTE_LINE_NUMBER (output_reload_insn) = NOTE_INSN_DELETED;
+	      delete_insn (output_reload_insn);
 	      return;
 	    }
 	}
@@ -7686,9 +7660,7 @@ delete_output_reload (insn, j, last_reload_reg)
 	      delete_address_reloads (i2, insn);
 	      /* This might be a basic block head,
 		 thus don't use delete_insn.  */
-	      PUT_CODE (i2, NOTE);
-	      NOTE_SOURCE_FILE (i2) = 0;
-	      NOTE_LINE_NUMBER (i2) = NOTE_INSN_DELETED;
+	      delete_insn (i2);
 	    }
 	  if (GET_CODE (i2) == CODE_LABEL
 	      || GET_CODE (i2) == JUMP_INSN)
@@ -7701,9 +7673,7 @@ delete_output_reload (insn, j, last_reload_reg)
       alter_reg (REGNO (reg), -1);
     }
   delete_address_reloads (output_reload_insn, insn);
-  PUT_CODE (output_reload_insn, NOTE);
-  NOTE_SOURCE_FILE (output_reload_insn) = 0;
-  NOTE_LINE_NUMBER (output_reload_insn) = NOTE_INSN_DELETED;
+  delete_insn (output_reload_insn);
 
 }
 
@@ -7852,10 +7822,7 @@ delete_address_reloads_1 (dead_insn, x, current_insn)
     }
   delete_address_reloads_1 (prev, SET_SRC (set), current_insn);
   reg_reloaded_contents[REGNO (dst)] = -1;
-  /* Can't use delete_insn here because PREV might be a basic block head.  */
-  PUT_CODE (prev, NOTE);
-  NOTE_LINE_NUMBER (prev) = NOTE_INSN_DELETED;
-  NOTE_SOURCE_FILE (prev) = 0;
+  delete_insn (prev);
 }
 
 /* Output reload-insns to reload VALUE into RELOADREG.
@@ -8026,11 +7993,7 @@ reload_cse_delete_noop_set (insn, value)
       REG_NOTES (insn) = NULL_RTX;
     }
   else
-    {
-      PUT_CODE (insn, NOTE);
-      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-      NOTE_SOURCE_FILE (insn) = 0;
-    }
+    delete_insn (insn);
 }
 
 /* See whether a single set SET is a noop.  */
@@ -8782,9 +8745,7 @@ reload_combine ()
 		  rtx *np;
 
 		  /* Delete the reg-reg addition.  */
-		  PUT_CODE (insn, NOTE);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
+		  delete_insn (insn);
 
 		  if (reg_state[regno].offset != const0_rtx)
 		    /* Previous REG_EQUIV / REG_EQUAL notes for PREV
@@ -9226,14 +9187,7 @@ reload_cse_move2add (first)
 			  = validate_change (next, &PATTERN (next),
 					     gen_add2_insn (reg, new_src), 0);
 		      if (success)
-			{
-			  /* INSN might be the first insn in a basic block
-			     if the preceding insn is a conditional jump
-			     or a possible-throwing call.  */
-			  PUT_CODE (insn, NOTE);
-			  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-			  NOTE_SOURCE_FILE (insn) = 0;
-			}
+			delete_insn (insn);
 		      insn = next;
 		      reg_mode[regno] = GET_MODE (reg);
 		      reg_offset[regno] = sext_for_mode (GET_MODE (reg),

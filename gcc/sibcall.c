@@ -555,9 +555,7 @@ replace_call_placeholder (insn, use)
     LABEL_PRESERVE_P (XEXP (PATTERN (insn), 3)) = 0;
   
   /* "Delete" the placeholder insn.  */
-  PUT_CODE (insn, NOTE);
-  NOTE_SOURCE_FILE (insn) = 0;
-  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+  remove_insn (insn);
 }
 
 /* Given a (possibly empty) set of potential sibling or tail recursion call

@@ -3528,7 +3528,7 @@ emit_insns_after (first, after)
     abort ();
 
   if (!first)
-    return first;
+    return after;
 
   if (basic_block_for_insn
       && (unsigned int)INSN_UID (after) < basic_block_for_insn->num_elements
