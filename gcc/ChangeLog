@@ -1,3 +1,10 @@
+2003-08-31  Steven Bosscher  <steven@gcc.gnu.org>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/11823
+	* stmt.c (expand_end_case_type): Only use jump tables for dense
+	switch statements when optimizing for size.
+
 2003-08-31  Olivier Hainque  <hainque@act-europe.fr>
 
         * builtins.c (expand_builtin_setjmp): Use emit_jump to jump around
