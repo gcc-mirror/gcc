@@ -98,3 +98,16 @@ int switch_table_difference_label_flag;
     asm_fprintf (FILE, "%s%%%d:\n", PREFIX, NUM);	\
   else							\
     asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)
+
+/* Define how to generate (in the callee) the output value of a function
+   and how to find (in the caller) the value returned by a function.  VALTYPE
+   is the data type of the value (as a tree).  If the precise function being
+   called is known, FUNC is its FUNCTION_DECL; otherwise, FUNC is 0.
+   For the Atari generate the result in d0 or fp0 as appropriate. */
+
+#undef FUNCTION_VALUE
+#define FUNCTION_VALUE(VALTYPE, FUNC)			\
+(TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881	\
+ ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)		\
+ : gen_rtx (REG, TYPE_MODE (VALTYPE), 0))
+
