@@ -1213,7 +1213,7 @@ public final strictfp class StrictMath
    */
   public static double toRadians(double degrees)
   {
-    return degrees * (PI / 180);
+    return (degrees * PI) / 180;
   }
 
   /**
@@ -1226,7 +1226,7 @@ public final strictfp class StrictMath
    */
   public static double toDegrees(double rads)
   {
-    return rads * (180 / PI);
+    return (rads * 180) / PI;
   }
 
   /**

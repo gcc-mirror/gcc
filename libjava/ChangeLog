@@ -1,3 +1,15 @@
+2003-10-08  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/StrictMath.java (toDegrees): Multiply before
+	dividing.
+	(toRadians): Likewise.
+
+2003-10-08  C. Brian Jones  <cbj@gnu.org>
+
+	* java/lang/Math.java
+	(toRadians): multiply before dividing to reduce decimal error
+	(toDegrees): ditto
+
 2003-10-08  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/gcj/protocol/core/Connection.java,
