@@ -3634,7 +3634,7 @@ expand_expr (exp, target, tmode, modifier)
 	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
 			    VOIDmode, modifier);
 
-      target = 0, original_target = 0;
+      target = 0;
     }
 
   /* If will do cse, generate all results into pseudo registers
@@ -5812,7 +5812,7 @@ expand_expr (exp, target, tmode, modifier)
       return const0_rtx;
 
     default:
-      return (*lang_expand_expr) (exp, target, tmode, modifier);
+      return (*lang_expand_expr) (exp, original_target, tmode, modifier);
     }
 
   /* Here to do an ordinary binary operator, generating an instruction
