@@ -2433,8 +2433,7 @@ expand_builtin_strlen (tree arglist, rtx target,
 
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
-      pat = memory_address (BLKmode,
-			    expand_expr (src, src_reg, ptr_mode, EXPAND_SUM));
+      pat = expand_expr (src, src_reg, ptr_mode, EXPAND_NORMAL);
       if (pat != src_reg)
 	emit_move_insn (src_reg, pat);
       pat = get_insns ();
@@ -3045,8 +3044,10 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
      terminator.  If the caller requested a mempcpy-like return value,
      adjust it.  */
   if (endp == 1 && target != const0_rtx)
-    emit_move_insn (target, plus_constant (gen_lowpart (GET_MODE (target),
-							end), 1));
+    {
+      rtx tem = plus_constant (gen_lowpart (GET_MODE (target), end), 1);
+      emit_move_insn (target, force_operand (tem, NULL_RTX));
+    }
 
   return target;
 }
@@ -3156,9 +3157,8 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 		  if (GET_MODE (target) != GET_MODE (ret))
 		    ret = gen_lowpart (GET_MODE (target), ret);
 
-		  ret = emit_move_insn (target,
-					plus_constant (ret,
-						       INTVAL (len_rtx)));
+		  ret = plus_constant (ret, INTVAL (len_rtx));
+		  ret = emit_move_insn (target, force_operand (ret, NULL_RTX));
 		  gcc_assert (ret);
 
 		  return target;

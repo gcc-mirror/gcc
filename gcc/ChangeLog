@@ -1,3 +1,10 @@
+2004-09-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* builtins.c (expand_builtin_strlen): Do not call emit_move_insn
+	with a PLUS as source operand.
+	(expand_movstr): Likewise.
+	(expand_builtin_stpcpy): Likewise.
+
 2004-09-29  Richard Henderson  <rth@redhat.com>
 
 	PR 17739
