@@ -1,3 +1,8 @@
+Mon Oct 19 11:40:56 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* libgcc2.c (eh_context_static): Do not call malloc to allocate the
+	static eh_context structure.
+
 Mon Oct 19 10:45:40 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
 
 	* combine.c (recog_for_combine): Lose PADDED_SCRATCHES arg.  All
