@@ -127,12 +127,17 @@ extern int target_flags;
 
 /* Hack macros for tuning code generation */
 #define TARGET_MOVE	((target_flags & MASK_NO_MOVE) == 0)	/* Don't generate memory->memory */
-#define TARGET_LEAVE (ix86_cpu == PROCESSOR_I386)
-#define TARGET_386_ALIGNMENT (ix86_cpu == PROCESSOR_I386)
+#define TARGET_386 (ix86_cpu == PROCESSOR_I386)
+#define TARGET_486 (ix86_cpu == PROCESSOR_I486)
+#define TARGET_PENTIUM (ix86_cpu == PROCESSOR_PENTIUM)
+#define TARGET_USE_LEAVE (ix86_cpu == PROCESSOR_I386)
 #define TARGET_PUSH_MEMORY (ix86_cpu == PROCESSOR_I386)
 #define TARGET_ZERO_EXTEND_WITH_AND (ix86_cpu != PROCESSOR_I386)
 #define TARGET_DOUBLE_WITH_ADD (ix86_cpu != PROCESSOR_I386)
-#define TARGET_BIT_TEST (ix86_cpu == PROCESSOR_I386)
+#define TARGET_USE_BIT_TEST (ix86_cpu == PROCESSOR_I386)
+#define TARGET_UNROLL_STRLEN (ix86_cpu != PROCESSOR_I386)
+#define TARGET_USE_Q_REG (ix86_cpu == PROCESSOR_PENTIUM)
+#define TARGET_USE_ANY_REG (ix86_cpu == PROCESSOR_I486)
 
 #define TARGET_SWITCHES							\
 { { "80387",			 MASK_80387 },				\
@@ -1924,6 +1929,7 @@ extern void init_cumulative_args ();
 extern void function_arg_advance ();
 extern struct rtx_def *function_arg ();
 extern int function_arg_partial_nregs ();
+extern char *output_strlen_unroll ();
 extern void output_op_from_reg ();
 extern void output_to_reg ();
 extern char *singlemove_string ();
