@@ -72,7 +72,8 @@ static _Jv_Utf8Const *finit_leg_name = _Jv_makeUtf8Const ("$finit$", 7);
 
 
 jclass
-java::lang::Class::forName (jstring className, java::lang::ClassLoader *loader)
+java::lang::Class::forName (jstring className, jboolean initialize,
+                            java::lang::ClassLoader *loader)
 {
   if (! className)
     JvThrow (new java::lang::NullPointerException);
@@ -90,10 +91,11 @@ java::lang::Class::forName (jstring className, java::lang::ClassLoader *loader)
 		  ? _Jv_FindClassFromSignature (name->data, loader)
 		  : _Jv_FindClass (name, loader));
 
-  if (klass)
+  if (klass == NULL)
+    throw new java::lang::ClassNotFoundException (className);
+ 
+  if (initialize)
     _Jv_InitClass (klass);
-  else
-    JvThrow (new java::lang::ClassNotFoundException (className));
 
   return klass;
 }
@@ -102,7 +104,7 @@ jclass
 java::lang::Class::forName (jstring className)
 {
   // FIXME: should use class loader from calling method.
-  return forName (className, NULL);
+  return forName (className, true, NULL);
 }
 
 java::lang::reflect::Constructor *

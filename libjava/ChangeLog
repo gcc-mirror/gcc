@@ -1,3 +1,46 @@
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/Class.h (_Jv_Self): New union type.
+	(Class): Manipulate vtable pointer via _Jv_Self union. Thanks to
+	Jeff Sturm and Fergus Henderson.
+
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Fix PR libgcj/2237:
+	* java/io/ObjectStreamClass.java (setClass): Calculate 
+	serialVersionUID for local class and compare it against the UID
+	from the Object Stream. Throw InvalidClassException upon mismatch.
+	(setUID): Renamed to...
+	(getClassUID): this. Return the calculated class UID rather than 
+	setting uid field directly.
+	(getDefinedSUID): Removed.
+	* java/io/ObjectInputStream.java (resolveClass): Use the 
+	three-argument Class.forName(). 
+	* java/io/InvalidClassException.java (toString): Don't include 
+	classname in result if it is null.
+
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/Class.h (forName): Add initialize parameter. Fixes 
+	declaration to comply with JDK spec.
+	* java/lang/natClass.cc (forName): Correct declaration of the three-arg
+	variant. Honour "initialize" flag.
+	* java/lang/Class.java: Fix forName() declaration.
+        * java/lang/ClassLoader.java (getParent): Now final.
+        (findSystemClass): Now final.
+        (getSystemResourceAsStream): Remove redundant "final" modifier.
+        (getSystemResource): Remove redundant "final" modifier.
+        (getResources): Now final.
+        (getSystemClassLoader): Now non-native.
+        * java/util/ResourceBundle.java (tryGetSomeBundle): Use the correct
+        arguments for Class.forName().
+         * gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): Removed.
+        (instance): Static initialize singleton.
+        (findClass): Override this, not findSystemClass.
+        * java/lang/natClassLoader.cc (findClass): Renamed from 
+	findSystemClass. Call the interpreter via URLClassLoader.findClass if 
+	loading class via dlopen fails.
+
 2001-05-03  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds

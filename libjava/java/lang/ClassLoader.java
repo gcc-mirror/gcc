@@ -1,6 +1,6 @@
 // ClassLoader.java - Define policies for loading Java classes.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -25,18 +25,23 @@ import java.util.Stack;
  * @author  Kresten Krab Thorup
  */
 
-public abstract class ClassLoader {
-
+public abstract class ClassLoader
+{
   static private ClassLoader system;
   private ClassLoader parent;
 
-  public ClassLoader getParent ()
+  public final ClassLoader getParent ()
   {
     /* FIXME: security */
     return parent;
   }
-    
-  public static native ClassLoader getSystemClassLoader ();
+
+  public static ClassLoader getSystemClassLoader ()
+  {
+    if (system == null)
+      system = gnu.gcj.runtime.VMClassLoader.instance;
+    return system;
+  }
 
   /**
    * Creates a <code>ClassLoader</code> with no parent.
@@ -55,6 +60,7 @@ public abstract class ClassLoader {
    * <code>checkCreateClassLoader</code> on the current 
    * security manager. 
    * @exception java.lang.SecurityException if not allowed
+   * @since 1.2
    */
   protected ClassLoader(ClassLoader parent) 
   {
@@ -71,12 +77,12 @@ public abstract class ClassLoader {
    * @see       ClassLoader#loadClass(String,boolean)
    * @exception java.lang.ClassNotFoundException 
    */ 
-  public Class loadClass(String name) 
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+  public Class loadClass(String name)
+    throws java.lang.ClassNotFoundException
   { 
     return loadClass (name, false);
   }
-
+  
   /** 
    * Loads the class by the given name.  The default implementation
    * will search for the class in the following order (similar to jdk 1.2)
@@ -96,7 +102,7 @@ public abstract class ClassLoader {
    * @deprecated 
    */ 
   protected Class loadClass(String name, boolean link)
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+    throws java.lang.ClassNotFoundException
   {
     Class c = findLoadedClass (name);
 
@@ -106,7 +112,7 @@ public abstract class ClassLoader {
 	  if (parent != null)
 	    return parent.loadClass (name, link);
 	  else
-	    c = findSystemClass (name);
+	    c = system.findClass (name);
 	} catch (ClassNotFoundException ex) {
 	  /* ignore, we'll try findClass */;
 	}
@@ -130,6 +136,7 @@ public abstract class ClassLoader {
    * @param name Name of the class to find.
    * @return     The class found.
    * @exception  java.lang.ClassNotFoundException
+   * @since 1.2
    */
   protected Class findClass (String name)
     throws ClassNotFoundException
@@ -201,7 +208,7 @@ public abstract class ClassLoader {
       throw new java.lang.LinkageError ("class " 
 					+ name 
 					+ " already loaded");
-
+    
     try {
       // Since we're calling into native code here, 
       // we better make sure that any generated
@@ -232,7 +239,6 @@ public abstract class ClassLoader {
 				     int len)
     throws ClassFormatError;
 
-
   /** 
    * Link the given class.  This will bring the class to a state where
    * the class initializer can be run.  Linking involves the following
@@ -262,13 +268,11 @@ public abstract class ClassLoader {
    * @exception java.lang.LinkageError
    */
   protected final void resolveClass(Class clazz)
-    throws java.lang.LinkageError
   {
     resolveClass0(clazz);
   }
 
   static void resolveClass0(Class clazz)
-    throws java.lang.LinkageError
   {
     synchronized (clazz)
       {
@@ -288,14 +292,12 @@ public abstract class ClassLoader {
 
   /** Internal method.  Calls _Jv_PrepareClass and
    * _Jv_PrepareCompiledClass.  This is only called from resolveClass.  */ 
-  private static native void linkClass0(Class clazz)
-    throws java.lang.LinkageError;
+  private static native void linkClass0(Class clazz);
 
   /** Internal method.  Marks the given clazz to be in an erroneous
    * state, and calls notifyAll() on the class object.  This should only
    * be called when the caller has the lock on the class object.  */
   private static native void markClassErrorState0(Class clazz);
-
 
   /** 
    * Returns a class found in a system-specific way, typically
@@ -307,14 +309,14 @@ public abstract class ClassLoader {
    * @exception java.lang.LinkageError 
    * @exception java.lang.ClassNotFoundException 
    */
-  protected Class findSystemClass(String name) 
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+  protected final Class findSystemClass(String name) 
+    throws java.lang.ClassNotFoundException
   {
     return getSystemClassLoader ().loadClass (name);
   }
 
   /*
-   * Does currently nothing.
+   * Does currently nothing. FIXME.
    */ 
   protected final void setSigners(Class claz, Object[] signers) {
     /* claz.setSigners (signers); */
@@ -328,13 +330,13 @@ public abstract class ClassLoader {
    * @param     name  class to find.
    * @return    the class loaded, or null.
    */ 
-  protected native Class findLoadedClass(String name);
+  protected final native Class findLoadedClass(String name);
 
-  public static final InputStream getSystemResourceAsStream(String name) {
+  public static InputStream getSystemResourceAsStream(String name) {
     return getSystemClassLoader().getResourceAsStream (name);
   }
 
-  public static final URL getSystemResource(String name) {
+  public static URL getSystemResource(String name) {
     return getSystemClassLoader().getResource (name);
   }
 
@@ -397,7 +399,7 @@ public abstract class ClassLoader {
     return null;
   }
 
-  public Enumeration getResources (String name) throws IOException
+  public final Enumeration getResources (String name) throws IOException
   {
     // The rules say search the parent class if non-null,
     // otherwise search the built-in class loader (assumed to be

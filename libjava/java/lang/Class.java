@@ -30,7 +30,9 @@ public final class Class implements Serializable
 {
   public static native Class forName (String className)
     throws ClassNotFoundException;
-  public static native Class forName (String className, ClassLoader loader)
+  /** @since 1.2 */
+  public static native Class forName (String className, boolean initialize,
+				      ClassLoader loader)
     throws ClassNotFoundException;
   public native Class[] getClasses ();
   public native ClassLoader getClassLoader ();

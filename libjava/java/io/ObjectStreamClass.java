@@ -246,12 +246,26 @@ public class ObjectStreamClass implements Serializable
     this.fields = fields;
   }
 
-
-  void setClass (Class clazz)
+  void setClass (Class cl) throws InvalidClassException
   {
-    this.clazz = clazz;
+    this.clazz = cl;
+    long class_uid = getClassUID (cl);
+    if (uid == 0)
+      {
+       uid = class_uid;
+       return;
+      }
+    
+    // Check that the actual UID of the resolved class matches the UID from 
+    // the stream.    
+    if (uid != class_uid)
+      {
+       String msg = cl + 
+	 ": Local class not compatible: stream serialVersionUID="
+	 + uid + ", local serialVersionUID=" + class_uid;
+       throw new InvalidClassException (msg);
+      }
   }
-
 
   void setSuperclass (ObjectStreamClass osc)
   {
@@ -308,7 +322,7 @@ public class ObjectStreamClass implements Serializable
     name = cl.getName ();
     setFlags (cl);
     setFields (cl);
-    setUID (cl);
+    uid = getClassUID (cl);
     superClass = lookup (cl.getSuperclass ());
   }
 
@@ -396,24 +410,24 @@ public class ObjectStreamClass implements Serializable
     calculateOffsets ();
   }
 
-  // Sets uid to be serial version UID defined by class, or if that
+  // Returns the serial version UID defined by class, or if that
   // isn't present, calculates value of serial version UID.
-  private void setUID (Class cl)
+  private long getClassUID (Class cl)
   {
     try
     {
       Field suid = cl.getDeclaredField ("serialVersionUID");
       int modifiers = suid.getModifiers ();
 
-      if (Modifier.isStatic (modifiers)
-	  && Modifier.isFinal (modifiers))
-      {
-	uid = getDefinedSUID (cl);
-	return;
-      }
+      if (Modifier.isStatic (modifiers) && Modifier.isFinal (modifiers))
+	return suid.getLong (null);	  
     }
     catch (NoSuchFieldException ignore)
-    {}
+    {
+    }
+    catch (IllegalAccessException ignore)
+    {
+    }
 
     // cl didn't define serialVersionUID, so we have to compute it
     try
@@ -534,7 +548,7 @@ public class ObjectStreamClass implements Serializable
       for (int i=0; i < len; i++)
 	result += (long)(sha[i] & 0xFF) << (8 * i);
 
-      uid = result;
+      return result;
     }
     catch (NoSuchAlgorithmException e)
     {
@@ -545,31 +559,6 @@ public class ObjectStreamClass implements Serializable
     {
       throw new RuntimeException (ioe.getMessage ());
     }
-  }
-
-
-  // Returns the value of CLAZZ's final static long field named
-  // `serialVersionUID'.
-  private long getDefinedSUID (Class clazz)
-  {
-    long l = 0;
-    try
-      {
-	// Use getDeclaredField rather than getField, since serialVersionUID
-	// may not be public AND we only want the serialVersionUID of this
-	// class, not a superclass or interface.
-	Field f = clazz.getDeclaredField ("serialVersionUID");
-	l = f.getLong (null);
-      }
-    catch (java.lang.NoSuchFieldException e)
-      {
-      }
-
-    catch (java.lang.IllegalAccessException e)
-      {
-      }
-
-    return l;
   }
 
   // Returns the value of CLAZZ's private static final field named
