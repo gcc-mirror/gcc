@@ -516,7 +516,7 @@ objc_init (void)
 }
 
 void
-finish_file (void)
+objc_finish_file (void)
 {
   mark_referenced_methods ();
 
@@ -9086,4 +9086,3 @@ lookup_objc_ivar (tree id)
 }
 
 #include "gt-objc-objc-act.h"
-#include "gtype-objc.h"

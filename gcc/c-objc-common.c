@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "tree-mudflap.h"
 #include "target.h"
+#include "c-objc-common.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *);
 

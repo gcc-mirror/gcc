@@ -729,7 +729,7 @@ TREE_FLOW_H = tree-flow.h tree-flow-inline.h tree-ssa-operands.h \
 TREE_SSA_LIVE_H = tree-ssa-live.h $(PARTITION_H)
 PRETTY_PRINT_H = pretty-print.h input.h $(OBSTACK_H)
 DIAGNOSTIC_H = diagnostic.h diagnostic.def $(PRETTY_PRINT_H)
-C_PRETTY_PRINT_H = $(PRETTY_PRINT_H) $(C_COMMON_H) $(TREE_H)
+C_PRETTY_PRINT_H = c-pretty-print.h $(PRETTY_PRINT_H) $(C_COMMON_H) $(TREE_H)
 SCEV_H = tree-scalar-evolution.h $(GGC_H) tree-chrec.h
 
 #
@@ -1371,7 +1371,8 @@ c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(
     langhooks.h
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(C_PRETTY_PRINT_H) $(DIAGNOSTIC_H) \
-    $(GGC_H) langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-c.h
+    $(GGC_H) langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-c.h \
+    c-objc-common.h
 stub-objc.o : stub-objc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(GGC_H) $(C_COMMON_H)
 c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -1381,9 +1382,9 @@ c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(C_COMMON_H) $(TREE_H) $(CPPLIB_H) $(srcdir)/../libcpp/internal.h $(TM_P_H) $(C_PRAGMA_H)
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-    $(C_TREE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) $(EXPR_H) $(C_TREE_H) \
+    $(C_TREE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) $(EXPR_H) \
     $(FLAGS_H) toplev.h tree-inline.h $(DIAGNOSTIC_H) $(VARRAY_H) \
-    langhooks.h $(GGC_H) $(TARGET_H) cgraph.h
+    langhooks.h $(GGC_H) $(TARGET_H) cgraph.h $(C_PRETTY_PRINT_H) c-objc-common.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(FLAGS_H) toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
