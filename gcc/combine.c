@@ -8357,7 +8357,7 @@ simplify_comparison (code, pop0, pop1)
 	      && GET_CODE (XEXP (op0, 0)) == ASHIFT
 	      && XEXP (op0, 1) == XEXP (XEXP (op0, 0), 1)
 	      && (tmode = mode_for_size (mode_width - INTVAL (XEXP (op0, 1)),
-					 MODE_INT, 1)) != VOIDmode
+					 MODE_INT, 1)) != BLKmode
 	      && ((unsigned HOST_WIDE_INT) const_op <= GET_MODE_MASK (tmode)
 		  || ((unsigned HOST_WIDE_INT) - const_op
 		      <= GET_MODE_MASK (tmode))))
