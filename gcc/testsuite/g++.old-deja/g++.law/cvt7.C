@@ -10,8 +10,8 @@
 class A
 {
 public:
-    A(int j) { i = j; }		// ERROR - candidate
-    A(A& a) { i = a.i; }	// ERROR - candidate
+    A(int j) { i = j; }
+    A(A& a) { i = a.i; }
     operator int() { return i; }
 
     void assign(int v) { i = v; }
@@ -37,10 +37,10 @@ B::run()
     // Replacing above with "switch (int(in))" removes the error.
     {
     case 0:
-        out = 1;		// ERROR - no usable copy ctor
+        out = 1;
         break;
     default:
-        out = 0;		// ERROR - no usable copy ctor
+        out = 0;
         break;
     }
 }
