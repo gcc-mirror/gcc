@@ -8,4 +8,4 @@ struct S
   virtual void vm (void) {};
 } x;
 
-// { dg-final { scan-assembler-not "section.*_ZTV1S.*\"\[^w\"\]*\"" } }
+// { dg-final { scan-assembler-not "section\[^\n\r\]*_ZTV1S\[^\n\r\]*\"\[^w\"\n\r\]*\"" } }

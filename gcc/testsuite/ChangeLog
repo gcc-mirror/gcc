@@ -1,3 +1,7 @@
+2002-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/vt1.C: Fix regexp.
+
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020615-1.c: Correct bug-description.
