@@ -98,4 +98,13 @@ extern jclass _Jv_FindClassFromSignature (char *,
 
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims);
 
+/* Checked divide subroutines. */
+extern "C"
+{
+  jint _Jv_divI (jint, jint);
+  jint _Jv_remI (jint, jint);
+  jlong _Jv_divJ (jlong, jlong);
+  jlong _Jv_remJ (jlong, jlong);
+}
+
 #endif /* __JAVA_JVM_H__ */

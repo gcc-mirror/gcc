@@ -5,3 +5,6 @@
 #
 %rename lib liborig
 *lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(liborig)
+
+%rename cc1 cc1orig
+*cc1:  @DIVIDESPEC@ %(cc1orig)

@@ -43,14 +43,17 @@ AM_RUNTESTFLAGS=
 
 echo "$target"
 
+DIVIDESPEC=-fuse-divide-subroutine
+
 case "${host}" in
   mips-tx39-*|mipstx39-unknown-*)
 	libgcj_flags="${libgcj_flags} -G 0"
 	LDFLAGS="$LDFLAGS -Tjmr3904dram.ld"
-	AM_RUNTESTFLAGS="--target_board=jmr3904-sim"
+	AM_RUNTESTFLAGS="--target_board=jmr3904-sim"	
 	;;
   i686-*|i586-*)
 	libgcj_flags="${libgcj_flags} -ffloat-store"
+	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
   *)
 	;;
