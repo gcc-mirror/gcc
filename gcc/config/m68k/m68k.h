@@ -194,8 +194,8 @@ extern int target_flags;
 
 /* Align ints to a word boundary.  This breaks compatibility with the 
    published ABI's for structures containing ints, but produces faster
-   code on cpus with 32 bit busses (020, 030, 040, 060, CPU32+, coldfire).
-   It's required for coldfire cpus without a misalignment module.  */
+   code on cpus with 32-bit busses (020, 030, 040, 060, CPU32+, ColdFire).
+   It's required for ColdFire cpus without a misalignment module.  */
 #define MASK_ALIGN_INT	(1<<13)
 #define TARGET_ALIGN_INT (target_flags & MASK_ALIGN_INT)
 
@@ -229,7 +229,7 @@ extern int target_flags;
 #define MASK_COLDFIRE	(MASK_5200|MASK_528x|MASK_CFV3|MASK_CFV4)
 #define TARGET_COLDFIRE	(target_flags & MASK_COLDFIRE)
 
-/* Which bits can be set by specifying a coldfire */
+/* Which bits can be set by specifying a ColdFire */
 #define MASK_ALL_CF_BITS	(MASK_COLDFIRE|MASK_CF_HWDIV)
 
 /* Macro to define tables used to set the flags.
@@ -423,9 +423,9 @@ extern int target_flags;
 
 /* No data type wants to be aligned rounder than this. 
    Most published ABIs say that ints should be aligned on 16 bit
-   boundaries, but cpus with 32 bit busses get better performance
-   aligned on 32 bit boundaries.  Coldfires without a misalignment
-   module require 32 bit alignment.  */
+   boundaries, but cpus with 32-bit busses get better performance
+   aligned on 32-bit boundaries.  ColdFires without a misalignment
+   module require 32-bit alignment.  */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_INT ? 32 : 16)
 
 /* Set this nonzero if move instructions will actually fail to work
@@ -808,7 +808,7 @@ enum reg_class {
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
    On the 68000, sp@- in a byte insn really pushes a word.
-   On the 5200 (coldfire), sp@- in a byte insn pushes just a byte.  */
+   On the 5200 (ColdFire), sp@- in a byte insn pushes just a byte.  */
 #define PUSH_ROUNDING(BYTES) (TARGET_COLDFIRE ? BYTES : ((BYTES) + 1) & ~1)
 
 /* We want to avoid trying to push bytes.  */
@@ -1237,7 +1237,7 @@ __transfer_from_trampoline ()					\
 	  && (TARGET_68020 || (unsigned) INTVAL (XEXP (X, 0)) + 0x80 < 0x100))		\
 	{ rtx go_temp = XEXP (X, 1); GO_IF_INDEXING (go_temp, ADDR); } } }
 
-/* coldfire/5200 does not allow HImode index registers.  */
+/* ColdFire/5200 does not allow HImode index registers.  */
 #define LEGITIMATE_INDEX_REG_P(X)   \
   ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))	\
    || (! TARGET_COLDFIRE					\
