@@ -1,5 +1,5 @@
 /* gtkcheckboxpeer.c -- Native implementation of GtkCheckboxPeer
-   Copyright (C) 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -230,7 +230,6 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetLabel
 static void
 item_toggled (GtkToggleButton *item, jobject peer)
 {
-  //g_print ("toggled\n");
   (*gdk_env)->CallVoidMethod (gdk_env, peer,
 			      postItemEventID,
 			      peer,

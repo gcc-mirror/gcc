@@ -1,5 +1,5 @@
 /* gtkfiledialogpeer.c -- Native implementation of GtkFileDialogPeer
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -156,7 +156,7 @@ window_closed (GtkDialog *dialog __attribute__((unused)),
   static jmethodID disposeID;
   void *ptr;
 
-  // We only need this for the case when the user closed the window
+  /* We only need this for the case when the user closed the window. */
   if (responseId != GTK_RESPONSE_DELETE_EVENT)
     return;
 

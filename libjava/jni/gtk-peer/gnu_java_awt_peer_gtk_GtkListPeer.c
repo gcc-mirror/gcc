@@ -1,5 +1,5 @@
 /* gtklistpeer.c -- Native implementation of GtkListPeer
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -324,7 +324,6 @@ item_select (GtkCList *list __attribute__((unused)),
 	     GdkEventButton *event __attribute__((unused)), 
 	     jobject peer_obj)
 {
-  //g_print ("select_row\n");
   (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
 			      postListItemEventID,
 			      row,
@@ -338,7 +337,6 @@ item_unselect (GtkCList *list __attribute__((unused)),
 	       GdkEventButton *event __attribute__((unused)),
 	       jobject peer_obj)
 {
-  //g_print ("unselect_row\n");
   (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
 			      postListItemEventID,
 			      row,

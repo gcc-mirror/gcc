@@ -1,5 +1,22 @@
 2004-04-21  Mark Wielaard  <mark@klomp.org>
 
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c:
+	Changed C++ comments into C comments. Removed commented out code.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	Likewise.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c:
+	Likewise.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c:
+	Likewise.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c:
+	Likewise.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c:
+	Likewise.
+	* native/jni/gtk-peer/gthread-jni.c:
+	Likewise.
+
+2004-04-21  Mark Wielaard  <mark@klomp.org>
+
 	* javax/awt/JFrame.java: Implement WindowConstants. Remove final
 	static fields defined in interface.
 	* javax/awt/JDialog.java: Likewise.
