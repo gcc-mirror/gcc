@@ -1,5 +1,8 @@
 2001-12-07  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/ThreadGroup.java (uncaughtException): Print message to
+	System.err.  Required by spec.
+
 	* verify.cc (_Jv_BytecodeVerifier::branch_prepass): Set start_PC
 	earlier, for error handling.
 	(_Jv_BytecodeVerifier::note_branch_target): Fixed branch target

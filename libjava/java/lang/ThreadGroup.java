@@ -510,17 +510,18 @@ public class ThreadGroup
     else if (! (t instanceof ThreadDeath))
       {
         if (thread != null)
-          System.out.print("Exception in thread \"" + thread.getName() + "\" ");
+          System.err.print ("Exception in thread \""
+			    + thread.getName() + "\" ");
 	try
 	  {
-	    t.printStackTrace();
+	    t.printStackTrace(System.err);
 	  }
 	catch (Throwable x)
 	  {
 	    // This means that something is badly screwed up with the runtime,
 	    // or perhaps someone is messing with the SecurityManager. In any
 	    // case, try to deal with it gracefully.
-	    System.out.println(t);
+	    System.err.println(t);
 	    System.err.println("*** Got " + x.toString() + 
 			       " while trying to print stack trace");
 	  }
