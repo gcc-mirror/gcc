@@ -1,5 +1,13 @@
 2002-01-30  Paolo Carlini  <pcarlini@unitus.it>
 
+	* config/locale/numpunct_members_gnu.cc
+	(numpunct<char, wchar_t>::_M_initialize_numpunct()):
+	Fix initialization of _M_grouping for locales which have
+	_M_thousands_sep == '\0'(L'\0', respectively).
+	* testsuite/22_locale/numpunct_byname.cc (test02): Add test.
+
+2002-01-30  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/27_io/ostream_inserter_arith.cc (test03):
 	Better fix for 32/64 bit architectures, avoiding the
 	implicit assumption that CHAR_BIT == 8.

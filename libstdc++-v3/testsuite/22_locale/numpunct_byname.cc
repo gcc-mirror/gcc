@@ -72,9 +72,26 @@ void test01()
   VERIFY( dp1 != dp3 );
 }
 
+void test02()
+{
+  using namespace std;
+  
+  bool test = true;
+
+  locale loc_it("it_IT");
+
+  const numpunct<char>& nump_it = use_facet<numpunct<char> >(loc_it); 
+
+  string g = nump_it.grouping();
+
+  VERIFY( g == "" );
+}
+
+
 int main()
 {
   test01();
+  test02();
 
   return 0;
 }
