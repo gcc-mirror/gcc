@@ -6980,6 +6980,29 @@ expand_expr (exp, target, tmode, modifier)
 					   TYPE_MODE (TREE_TYPE (exp)));
 
     case COMPLEX_CST:
+      /* Handle evaluating a complex constant in a CONCAT target.  */
+      if (original_target && GET_CODE (original_target) == CONCAT)
+	{
+	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	  rtx rtarg, itarg;
+
+	  rtarg = XEXP (original_target, 0);
+	  itarg = XEXP (original_target, 1);
+
+	  /* Move the real and imaginary parts separately.  */
+	  op0 = expand_expr (TREE_REALPART (exp), rtarg, mode, 0);
+	  op1 = expand_expr (TREE_IMAGPART (exp), itarg, mode, 0);
+
+	  if (op0 != rtarg)
+	    emit_move_insn (rtarg, op0);
+	  if (op1 != itarg)
+	    emit_move_insn (itarg, op1);
+
+	  return original_target;
+	}
+
+      /* ... fall through ... */
+
     case STRING_CST:
       temp = output_constant_def (exp, 1);
 
