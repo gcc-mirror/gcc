@@ -92,18 +92,26 @@ compilation is specified by a string called a "spec".  */
 extern int getrusage PARAMS ((int, struct rusage *));
 #endif
 
-/* By default there is no special suffix for executables.  */
-#ifdef EXECUTABLE_SUFFIX
-#define HAVE_EXECUTABLE_SUFFIX
+/* By default there is no special suffix for target executables.  */
+/* FIXME: when autoconf is fixed, remove the host check - dj */
+#if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
+#define HAVE_TARGET_EXECUTABLE_SUFFIX
 #else
-#define EXECUTABLE_SUFFIX ""
+#define TARGET_EXECUTABLE_SUFFIX ""
 #endif
 
-/* By default, the suffix for object files is ".o".  */
-#ifdef OBJECT_SUFFIX
-#define HAVE_OBJECT_SUFFIX
+/* By default there is no special suffix for host executables.  */
+#ifdef HOST_EXECUTABLE_SUFFIX
+#define HAVE_HOST_EXECUTABLE_SUFFIX
 #else
-#define OBJECT_SUFFIX ".o"
+#define HOST_EXECUTABLE_SUFFIX ""
+#endif
+
+/* By default, the suffix for target object files is ".o".  */
+#ifdef TARGET_OBJECT_SUFFIX
+#define HAVE_TARGET_OBJECT_SUFFIX
+#else
+#define TARGET_OBJECT_SUFFIX ".o"
 #endif
 
 #ifndef VMS
@@ -721,7 +729,7 @@ static struct user_specs *user_specs_head, *user_specs_tail;
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
 #endif
 
-#ifdef HAVE_EXECUTABLE_SUFFIX
+#ifdef HAVE_TARGET_EXECUTABLE_SUFFIX
 /* This defines which switches stop a full compilation.  */
 #define DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR) \
   ((CHAR) == 'c' || (CHAR) == 'S')
@@ -2232,8 +2240,8 @@ make_relative_prefix (progname, bin_prefix, prefix)
 		    }
 		  strcat (nstore, progname);
 		  if (! access (nstore, X_OK)
-#ifdef HAVE_EXECUTABLE_SUFFIX
-                      || ! access (strcat (nstore, EXECUTABLE_SUFFIX), X_OK)
+#ifdef HAVE_HOST_EXECUTABLE_SUFFIX
+                      || ! access (strcat (nstore, HOST_EXECUTABLE_SUFFIX), X_OK)
 #endif
 		      )
 		    {
@@ -2352,7 +2360,7 @@ find_a_file (pprefix, name, mode)
      int mode;
 {
   char *temp;
-  const char *file_suffix = ((mode & X_OK) != 0 ? EXECUTABLE_SUFFIX : "");
+  const char *file_suffix = ((mode & X_OK) != 0 ? HOST_EXECUTABLE_SUFFIX : "");
   struct prefix_list *pl;
   int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
 
@@ -2807,7 +2815,7 @@ static int warn_std;
 /* Gives value to pass as "warn" to add_prefix for standard prefixes.  */
 static int *warn_std_ptr = 0;
 
-#if defined(HAVE_OBJECT_SUFFIX) || defined(HAVE_EXECUTABLE_SUFFIX)
+#if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
 
 /* Convert NAME to a new name if it is the standard suffix.  DO_EXE
    is true if we should look for an executable suffix as well.  */
@@ -2825,22 +2833,22 @@ convert_filename (name, do_exe)
 
   len = strlen (name);
 
-#ifdef HAVE_OBJECT_SUFFIX
-  /* Convert x.o to x.obj if OBJECT_SUFFIX is ".obj".  */
+#ifdef HAVE_TARGET_OBJECT_SUFFIX
+  /* Convert x.o to x.obj if TARGET_OBJECT_SUFFIX is ".obj".  */
   if (len > 2
       && name[len - 2] == '.'
       && name[len - 1] == 'o')
     {
       obstack_grow (&obstack, name, len - 2);
-      obstack_grow0 (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
+      obstack_grow0 (&obstack, TARGET_OBJECT_SUFFIX, strlen (TARGET_OBJECT_SUFFIX));
       name = obstack_finish (&obstack);
     }
 #endif
 
-#if defined(HAVE_EXECUTABLE_SUFFIX) && !defined(NO_AUTO_EXE_SUFFIX)
+#if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
   /* If there is no filetype, make it the executable suffix (which includes
      the ".").  But don't get confused if we have just "-o".  */
-  if (! do_exe || EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
+  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
     return name;
 
   for (i = len - 1; i >= 0; i--)
@@ -2852,7 +2860,7 @@ convert_filename (name, do_exe)
       return name;
 
   obstack_grow (&obstack, name, len);
-  obstack_grow0 (&obstack, EXECUTABLE_SUFFIX, strlen (EXECUTABLE_SUFFIX));
+  obstack_grow0 (&obstack, TARGET_EXECUTABLE_SUFFIX, strlen (TARGET_EXECUTABLE_SUFFIX));
   name = obstack_finish (&obstack);
 #endif
 
@@ -3445,7 +3453,7 @@ process_command (argc, argv)
 
 	    case 'o':
 	      have_o = 1;
-#if defined(HAVE_EXECUTABLE_SUFFIX)
+#if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
 	      if (! have_c)
 		{
 		  int skip;
@@ -3474,7 +3482,7 @@ process_command (argc, argv)
 		    }
 		}
 #endif
-#if defined(HAVE_EXECUTABLE_SUFFIX) || defined(HAVE_OBJECT_SUFFIX)
+#if defined(HAVE_TARGET_EXECUTABLE_SUFFIX) || defined(HAVE_TARGET_OBJECT_SUFFIX)
 	      if (p[1] == 0)
 		argv[i + 1] = convert_filename (argv[i + 1], ! have_c);
 	      else
@@ -3823,7 +3831,7 @@ process_command (argc, argv)
 	}
       else
 	{
-#ifdef HAVE_OBJECT_SUFFIX
+#ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  argv[i] = convert_filename (argv[i], 0);
 #endif
 
@@ -4246,17 +4254,17 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    if (*p == '.' || ISALPHA ((unsigned char) *p))
 		      abort ();
 		    if (suffix_length == 0)
-		      suffix = OBJECT_SUFFIX;
+		      suffix = TARGET_OBJECT_SUFFIX;
 		    else
 		      {
 			saved_suffix
 			  = (char *) xmalloc (suffix_length
-					      + strlen (OBJECT_SUFFIX));
+					      + strlen (TARGET_OBJECT_SUFFIX));
 			strncpy (saved_suffix, suffix, suffix_length);
 			strcpy (saved_suffix + suffix_length,
-				OBJECT_SUFFIX);
+				TARGET_OBJECT_SUFFIX);
 		      }
-		    suffix_length += strlen (OBJECT_SUFFIX);
+		    suffix_length += strlen (TARGET_OBJECT_SUFFIX);
 		  }
 
 		/* See if we already have an association of %g/%u/%U and
@@ -4335,7 +4343,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    }
 
 	  case 'O':
-	    obstack_grow (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
+	    obstack_grow (&obstack, TARGET_OBJECT_SUFFIX, strlen (TARGET_OBJECT_SUFFIX));
 	    arg_going = 1;
 	    break;
 

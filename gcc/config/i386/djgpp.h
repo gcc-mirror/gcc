@@ -150,11 +150,6 @@ Boston, MA 02111-1307, USA.  */
    unless user explicitly requests it.  */
 #undef LOCAL_INCLUDE_DIR
 
-/* Do not make only .exe if no executable file suffix was specified.  */
-/* Let the linker handle that.  */
-#undef NO_AUTO_EXE_SUFFIX
-#define NO_AUTO_EXE_SUFFIX
-
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_ctor, in_dtor
 

@@ -56,8 +56,8 @@ static int process_option_with_no PARAMS ((char *,
 					   struct string_option *,
 					   int));
 
-#ifndef OBJECT_SUFFIX
-# define OBJECT_SUFFIX ".o"
+#ifndef TARGET_OBJECT_SUFFIX
+# define TARGET_OBJECT_SUFFIX ".o"
 #endif
 
 /* Table indexed by tree code giving a string containing a character
@@ -408,7 +408,7 @@ init_parse (filename)
 	      else
 		{
 		  char *buf = (char *) xmalloc (dot - filename +
-						3 + sizeof (OBJECT_SUFFIX));
+						3 + sizeof (TARGET_OBJECT_SUFFIX));
 		  strncpy (buf, filename, dot - filename);
 
 		  /* If emitting class files, we might have multiple
@@ -421,7 +421,7 @@ init_parse (filename)
 		    jcf_dependency_set_target (NULL);
 		  else
 		    {
-		      strcpy (buf + (dot - filename), OBJECT_SUFFIX);
+		      strcpy (buf + (dot - filename), TARGET_OBJECT_SUFFIX);
 		      jcf_dependency_set_target (buf);
 		    }
 

@@ -170,5 +170,5 @@ Boston, MA 02111-1307, USA.  */
  #pragma message disable (undefescap)
 #endif
 
-#define OBJECT_SUFFIX ".obj"
-#define EXECUTABLE_SUFFIX ".exe"
+#define HOST_EXECUTABLE_SUFFIX ".exe"
+#define HOST_OBJECT_SUFFIX ".obj"

@@ -4116,23 +4116,31 @@ character constant specifying that character.  When GCC displays file
 names, the character you specify will be used.  GCC will test for
 both slash and the character you specify when parsing filenames.
 
-@findex OBJECT_SUFFIX
-@item OBJECT_SUFFIX
+@findex TARGET_OBJECT_SUFFIX
+@item TARGET_OBJECT_SUFFIX
 Define this macro to be a C string representing the suffix for object
-files on your machine.  If you do not define this macro, GCC will use
-@samp{.o} as the suffix for object files.
+files on your target machine.  If you do not define this macro, GCC will
+use @samp{.o} as the suffix for object files.
 
-@findex EXECUTABLE_SUFFIX
-@item EXECUTABLE_SUFFIX
-Define this macro to be a C string representing the suffix for executable
-files on your machine.  If you do not define this macro, GCC will use
-the null string as the suffix for object files.
+@findex TARGET_EXECUTABLE_SUFFIX
+@item TARGET_EXECUTABLE_SUFFIX
+Define this macro to be a C string representing the suffix to be
+automatically added to executable files on your target machine.  If you
+do not define this macro, GCC will use the null string as the suffix for
+executable files.
 
-@findex NO_AUTO_EXE_SUFFIX
-@item NO_AUTO_EXE_SUFFIX
-Define this macro if executable files on your machine have a suffix, but 
-the compiler driver should not automatically append it to the output file
-name, if user hasn't specified one.
+@findex HOST_OBJECT_SUFFIX
+@item HOST_OBJECT_SUFFIX
+Define this macro to be a C string representing the suffix for object
+files on your host machine (@samp{xm-*.h}).  If you do not define this
+macro, GCC will use @samp{.o} as the suffix for object files.
+
+@findex HOST_EXECUTABLE_SUFFIX
+@item HOST_EXECUTABLE_SUFFIX
+Define this macro to be a C string representing the suffix for
+executable files on your host machine (@samp{xm-*.h}).  If you do not
+define this macro, GCC will use the null string as the suffix for
+executable files.
 
 @findex HOST_BIT_BUCKET
 @item HOST_BIT_BUCKET

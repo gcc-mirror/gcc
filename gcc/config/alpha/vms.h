@@ -20,6 +20,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define OPEN_VMS 1
 
+#define TARGET_OBJECT_SUFFIX ".obj"
+#define TARGET_EXECUTABLE_SUFFIX ".exe"
+
 /* This enables certain macros in alpha.h, which will make an indirect
    reference to an external symbol an invalid address.  This needs to be
    defined before we include alpha.h, since it determines which macros
