@@ -63,16 +63,16 @@ struct fun_macro
   unsigned int argc;
 };
 
-/* Lexing TODO: Maybe handle -CC and space in escaped newlines.  Stop
-   cpplex.c from recognizing comments and directives during its lexing
-   pass.  Get rid of line_base usage - seems pointless?  */
+/* Lexing TODO: Maybe handle space in escaped newlines.  Stop cpplex.c
+   from recognizing comments and directives during its lexing pass.  */
 
 static const uchar *handle_newline PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_escaped_newlines PARAMS ((cpp_reader *,
 						   const uchar *));
-static const uchar *skip_whitespace PARAMS ((cpp_reader *, const uchar *));
+static const uchar *skip_whitespace PARAMS ((cpp_reader *, const uchar *,
+					     int));
 static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
-static const uchar *copy_comment PARAMS ((cpp_reader *, const uchar *));
+static const uchar *copy_comment PARAMS ((cpp_reader *, const uchar *, int));
 static void scan_out_logical_line PARAMS ((cpp_reader *pfile, cpp_macro *));
 static void check_output_buffer PARAMS ((cpp_reader *, size_t));
 static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
@@ -95,7 +95,7 @@ check_output_buffer (pfile, n)
      size_t n;
 {
   /* We might need two bytes to terminate an unterminated comment, and
-     one more to terminate with a NUL.  */
+     one more to terminate the line with a NUL.  */
   n += 2 + 1;
 
   if (n > (size_t) (pfile->out.limit - pfile->out.cur))
@@ -111,8 +111,10 @@ check_output_buffer (pfile, n)
 }
 
 /* To be called whenever a newline character is encountered in the
-   input file, at CUR.  Handles DOS, MAC and Unix ends of line, and
-   returns the character after the newline sequence.  */
+   input file, at CUR.  Handles DOS, Mac and Unix ends of line, and
+   increments pfile->line.
+
+   Returns a pointer the character after the newline sequence.  */
 static const uchar *
 handle_newline (pfile, cur)
      cpp_reader *pfile;
@@ -121,50 +123,53 @@ handle_newline (pfile, cur)
   pfile->line++;
   if (cur[0] + cur[1] == '\r' + '\n')
     cur++;
-  pfile->buffer->line_base = cur + 1;
   return cur + 1;
 }
 
 /* CUR points to any character in the buffer, not necessarily a
    backslash.  Advances CUR until all escaped newlines are skipped,
-   and returns the new position.  */
+   and returns the new position.
+
+   Warns if a file buffer ends in an escaped newline.  */
 static const uchar *
 skip_escaped_newlines (pfile, cur)
      cpp_reader *pfile;
      const uchar *cur;
 {
-  if (*cur == '\\' && is_vspace (cur[1]))
-    {
-      do
-	cur = handle_newline (pfile, cur + 1);
-      while (*cur == '\\' && is_vspace (cur[1]));
+  const uchar *orig_cur = cur;
 
-      if (cur == RLIMIT (pfile->context))
-	cpp_error (pfile, DL_PEDWARN,
-		   "backslash-newline at end of file");
-    }
+  while (*cur == '\\' && is_vspace (cur[1]))
+    cur = handle_newline (pfile, cur + 1);
+
+  if (cur != orig_cur && cur == RLIMIT (pfile->context) && pfile->buffer->inc)
+    cpp_error (pfile, DL_PEDWARN, "backslash-newline at end of file");
 
   return cur;
 }
 
-/* CUR points to the character after the asterisk introducing a
-   comment in the input buffer.  The remaining comment is copied to
-   the buffer pointed to by pfile->out.cur, which must be of
-   sufficient size, and pfile->out.cur is updated.  Unterminated
-   comments are diagnosed, and correctly terminated in the output.
+/* CUR points to the asterisk introducing a comment in the input
+   buffer.  IN_DEFINE is true if we are in the replacement text
+   of a macro.
+
+   The asterisk and following comment is copied to the buffer pointed
+   to by pfile->out.cur, which must be of sufficient size.
+   Unterminated comments are diagnosed, and correctly terminated in
+   the output.  pfile->out.cur is updated depending upon IN_DEFINE,
+   -C, -CC and pfile->state.in_directive.
 
    Returns a pointer to the first character after the comment in the
    input buffer.  */
 static const uchar *
-copy_comment (pfile, cur)
+copy_comment (pfile, cur, in_define)
      cpp_reader *pfile;
      const uchar *cur;
+     int in_define;
 {
   unsigned int from_line = pfile->line;
   const uchar *limit = RLIMIT (pfile->context);
   uchar *out = pfile->out.cur;
 
-  while (cur < limit)
+  do
     {
       unsigned int c = *cur++;
       *out++ = c;
@@ -172,7 +177,7 @@ copy_comment (pfile, cur)
       if (c == '/')
 	{
 	  /* An immediate slash does not terminate the comment.  */
-	  if (out[-2] == '*' && out > pfile->out.cur + 1)
+	  if (out[-2] == '*' && out - 2 > pfile->out.cur)
 	    goto done;
 
 	  if (*cur == '*' && cur[1] != '/'
@@ -190,55 +195,91 @@ copy_comment (pfile, cur)
 	    out[-1] = '\n';
 	}
     }
+  while (cur < limit);
 
   cpp_error_with_line (pfile, DL_ERROR, from_line, 0, "unterminated comment");
   *out++ = '*';
   *out++ = '/';
 
  done:
-  pfile->out.cur = out;
+  /* Comments in directives become spaces so that tokens are properly
+     separated when the ISO preprocessor re-lexes the line.  The
+     exception is #define.  */
+  if (pfile->state.in_directive)
+    {
+      if (in_define)
+	{
+	  if (CPP_OPTION (pfile, discard_comments_in_macro_exp))
+	    pfile->out.cur--;
+	  else
+	    pfile->out.cur = out;
+	}
+      else
+	pfile->out.cur[-1] = ' ';
+    }
+  else if (CPP_OPTION (pfile, discard_comments))
+    pfile->out.cur--;
+  else
+    pfile->out.cur = out;
+
   return cur;
 }
 
-/* Skip any horizontal whitespace and comments beginning at CUR,
-   returning the following character.  */
+/* CUR points to any character in the input buffer.  Skips over all
+   contiguous horizontal white space and NULs, including comments if
+   SKIP_COMMENTS, until reaching the first non-horizontal-whitespace
+   character or the end of the current context.  Escaped newlines are
+   removed.
+
+   The whitespace is copied verbatim to the output buffer, except that
+   comments are handled as described in copy_comment().
+   pfile->out.cur is updated.
+
+   Returns a pointer to the first character after the whitespace in
+   the input buffer.  */
 static const uchar *
-skip_whitespace (pfile, cur)
+skip_whitespace (pfile, cur, skip_comments)
      cpp_reader *pfile;
      const uchar *cur;
+     int skip_comments;
 {
-  const uchar *tmp;
+  uchar *out = pfile->out.cur;
 
   for (;;)
     {
-      while (is_nvspace (*cur) && *cur != 0)
-	cur++;
+      unsigned int c = *cur++;
+      *out++ = c;
 
-      if (*cur == '\0' && cur != RLIMIT (pfile->context))
+      if (is_nvspace (c) && c)
 	continue;
 
-      if (*cur == '\\')
-	{
-	  tmp = cur;
-	  cur = skip_escaped_newlines (pfile, cur);
-	  if (tmp != cur)
-	    continue;
-	}
+      if (!c && cur != RLIMIT (pfile->context))
+	continue;
 
-      if (*cur == '/')
+      if (*cur == '/' && skip_comments)
 	{
-	  tmp = skip_escaped_newlines (pfile, cur + 1);
+	  const uchar *tmp = skip_escaped_newlines (pfile, cur);
 	  if (*tmp == '*')
 	    {
-	      cur = copy_comment (pfile, tmp + 1);
+	      pfile->out.cur = out;
+	      cur = copy_comment (pfile, tmp, false /* in_define */);
+	      out = pfile->out.cur;
 	      continue;
 	    }
+	}
+
+      out--;
+      if (c == '\\' && is_vspace (*cur))
+	{
+	  cur = skip_escaped_newlines (pfile, cur);
+	  continue;
 	}
 
       break;
     }
 
-  return cur;
+  pfile->out.cur = out;
+  return cur - 1;
 }
 
 /* Lexes and outputs an identifier starting at CUR, which is assumed
@@ -283,10 +324,8 @@ _cpp_overlay_buffer (pfile, start, len)
 
   buffer->saved_cur = buffer->cur;
   buffer->saved_rlimit = buffer->rlimit;
-  buffer->saved_line_base = buffer->line_base;
 
   buffer->cur = start;
-  buffer->line_base = start;
   buffer->rlimit = start + len;
 
   pfile->saved_line = pfile->line;
@@ -301,7 +340,6 @@ _cpp_remove_overlay (pfile)
 
   buffer->cur = buffer->saved_cur;
   buffer->rlimit = buffer->saved_rlimit;
-  buffer->line_base = buffer->saved_line_base;
 
   pfile->line = pfile->saved_line;
 }
@@ -474,20 +512,9 @@ scan_out_logical_line (pfile, macro)
 	      cur = skip_escaped_newlines (pfile, cur);
 	      if (*cur == '*')
 		{
-		  *out = '*';
-		  pfile->out.cur = out + 1;
-		  cur = copy_comment (pfile, cur + 1);
-
-		  /* Comments in directives become spaces so that
-		     tokens are properly separated when the ISO
-		     preprocessor re-lexes the line.  The exception
-		     is #define.  */
-		  if (pfile->state.in_directive && !macro)
-		    out[-1] = ' ';
-		  else if (CPP_OPTION (pfile, discard_comments))
-		    out -= 1;
-		  else
-		    out = pfile->out.cur;
+		  pfile->out.cur = out;
+		  cur = copy_comment (pfile, cur, macro != 0);
+		  out = pfile->out.cur;
 		}
 	    }
 	  break;
@@ -763,14 +790,15 @@ scan_parameters (pfile, macro)
 
   for (;;)
     {
-      cur = skip_whitespace (pfile, cur);
+      cur = skip_whitespace (pfile, cur, true /* skip_comments */);
 
       if (is_idstart (*cur))
 	{
 	  ok = false;
 	  if (_cpp_save_parameter (pfile, macro, lex_identifier (pfile, cur)))
 	    break;
-	  cur = skip_whitespace (pfile, CUR (pfile->context));
+	  cur = skip_whitespace (pfile, CUR (pfile->context),
+				 true /* skip_comments */);
 	  if (*cur == ',')
 	    {
 	      cur++;
@@ -871,7 +899,9 @@ _cpp_create_trad_definition (pfile, macro)
     }
 
   /* Skip leading whitespace in the replacement text.  */
-  CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
+  CUR (pfile->context)
+    = skip_whitespace (pfile, CUR (pfile->context),
+		       CPP_OPTION (pfile, discard_comments_in_macro_exp));
 
   pfile->state.prevent_expansion++;
   scan_out_logical_line (pfile, macro);
