@@ -1568,12 +1568,12 @@
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
-;; For pic
+;; For loading the address of a label while generating PIC code.
 ;; Note since this pattern can be created at reload time (via movsi), all
 ;; the same rules for movsi apply here.  (no new pseudos, no temporaries).
-(define_insn "pic_load_label"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(match_operand:SI 1 "pic_label_operand" ""))]
+(define_insn ""
+  [(set (match_operand 0 "register_operand" "=a")
+	(match_operand 1 "pic_label_operand" ""))]
   ""
   "*
 {

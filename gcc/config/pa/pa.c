@@ -628,7 +628,16 @@ legitimize_pic_address (orig, mode, reg)
   /* Labels need special handling.  */
   if (pic_label_operand (orig))
     {
-      emit_insn (gen_pic_load_label (reg, orig));
+      /* We do not want to go through the movXX expanders here since that
+	 would create recursion.
+
+	 Nor do we really want to call a generator for a named pattern
+	 since that requires multiple patterns if we want to support
+	 multiple word sizes.
+
+	 So instead we just emit the raw set, which avoids the movXX
+	 expanders completely.  */
+      emit_insn (gen_rtx_SET (VOIDmode, reg, orig));
       current_function_uses_pic_offset_table = 1;
       return reg;
     }
