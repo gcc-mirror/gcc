@@ -34,14 +34,14 @@ using std::filebuf;
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
-using std::streampos
+using std::streampos;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
 using std::wfilebuf;
 using std::wifstream;
 using std::wofstream;
 using std::wfstream;
-using std::wstreampos
+using std::wstreampos;
 #endif
 
 #endif
