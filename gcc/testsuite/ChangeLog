@@ -1,5 +1,7 @@
 2004-12-09  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/loop-3.c: Don't use i386 tuning for amd64.
+
 	* gcc.c-torture/execute/ieee/fp-cmp-4q.c: Remove.
 	* gcc.c-torture/execute/ieee/fp-cmp-8q.c: Remove.
 
