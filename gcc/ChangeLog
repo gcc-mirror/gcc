@@ -1,3 +1,8 @@
+2003-02-13  Josef Zlomek  <zlomekj@suse.cz>
+
+	* cfgcleanup.c (outgoing_edges_match): When there is single outgoing
+	edge and block ends with a jump insn it must be simple jump.
+
 2003-02-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR9275 and PR8694
