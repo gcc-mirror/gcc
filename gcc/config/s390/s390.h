@@ -1228,8 +1228,10 @@ CUMULATIVE_ARGS;
 /* On s390, copy between fprs and gprs is expensive.  */
 
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)                        \
-  (((CLASS1 != CLASS2) &&                                               \
-   (CLASS1 == FP_REGS || CLASS2 == FP_REGS)) ? 10 : 1)
+  ((   (   reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
+        && reg_classes_intersect_p ((CLASS2), FP_REGS))			\
+    || (   reg_classes_intersect_p ((CLASS1), FP_REGS)			\
+        && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))) ? 10 : 1)
 
 
 /* A C expression for the cost of moving data of mode M between a
