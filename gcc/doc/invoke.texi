@@ -164,7 +164,7 @@ in the following sections.
 @gccoptlist{
 -ansi  -std=@var{standard}  -aux-info @var{filename} @gol
 -fno-asm  -fno-builtin -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding @gol
+-fhosted  -ffreestanding  -fms-extensions @gol
 -trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch @gol
 -fsigned-bitfields  -fsigned-char @gol
@@ -1140,6 +1140,10 @@ This is equivalent to @option{-fno-hosted}.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 freestanding and hosted environments.
+
+@item -fms-extensions
+@opindex fms-extensions
+Accept some non-standard constructs used in Microsoft header files.
 
 @item -trigraphs
 @opindex trigraphs

@@ -1,5 +1,16 @@
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
+	* g++.dg/ext/anon-struct1.C: New.
+	* g++.dg/ext/anon-struct2.C: New.
+	* g++.dg/ext/anon-struct3.C: New.
+	* gcc.dg/anon-struct-1.c: New.
+	* gcc.dg/anon-struct-2.c: New.
+	* gcc.dg/anon-struct-3.c: New.
+	* gcc.dg/20011008-1.c: Adjust warning text.
+	* gcc.dg/20020527-1.c: Add -fms-extensions.
+
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/20020531-1.c: Add LL specifier to avoid warning.
 
 2002-06-15  Hans-Peter Nilsson  <hp@axis.com>

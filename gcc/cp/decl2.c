@@ -299,10 +299,6 @@ int warn_deprecated = 1;
 #endif
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 
-/* Nonzero means allow Microsoft extensions without a pedwarn.  */
-
-int flag_ms_extensions;
-
 /* C++ specific flags.  */   
 
 /* Nonzero means we should attempt to elide constructors when possible.  */

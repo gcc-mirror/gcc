@@ -2,7 +2,7 @@
    Test whether an unnamed field with user defined type - struct or union is
    accepted.  */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fms-extensions" } */
 
 typedef struct {
   unsigned short a;
