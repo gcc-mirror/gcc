@@ -1,3 +1,30 @@
+2004-12-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/19072
+	* Makefile.in (enable_shared): New substitute.
+	(LTTARGETLIB): New.
+	(PREFIXTARGETLIB): New.
+	(LTTESTLIB): New.
+	(PREFIXTESTLIB): New.
+	(CCLD): New.
+	(LINK): New.
+	($(TARGETLIB)): Use $(LINK) to create libraries and create
+	targets by hand.
+	($(TESTLIB)): Likewise.
+	(mostlyclean): Don't remove .libs. Remove the libtool object
+	directory.
+
+	* config.table (enable_shared): Removed.
+
+	* configure.ac (enable_static): Set to yes.
+	(AC_PROG_LIBTOOL): Removed.
+	(AM_DISABLE_SHARED): Uncommented.
+	(AM_PROG_LIBTOOL): Likewise.
+	(LIBOBJS): Add `./' to avoid VPATH.
+	(LTLIBOBJS): Likewise.
+	(enable_shared): Substitute.
+	* configure: Regenerated.
+
 2004-12-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (top_builddir): Set to `.'.
