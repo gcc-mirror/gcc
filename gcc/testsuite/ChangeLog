@@ -1,5 +1,10 @@
 2003-08-04  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/11771
+	* gcc.c-torture/compile/20030804-1.c: New test case.
+
+2003-08-04  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.dg/20030804-1.c: New test case.
 
 2003-08-04  Alexandre Oliva  <aoliva@redhat.com>

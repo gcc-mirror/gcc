@@ -1,5 +1,12 @@
 2003-08-04  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/11771
+	* fold-const.c (negate_expr_p <MINUS_EXPR>): Change to match the
+	logic in negate_expr, i.e. we don't invert (A-B) for floating
+	point types unless flag_unsafe_math_optimizations.
+
+2003-08-04  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold <PLUS_EXPR>): Transform x+x into x*2.0.
 	Optimize x*c+x and x+x*c into x*(c+1) and x*c1+x*c2 into x*(c1+c2)
 	for floating point expressions with -ffast-math.

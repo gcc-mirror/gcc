@@ -841,8 +841,11 @@ negate_expr_p (tree t)
 
     case REAL_CST:
     case NEGATE_EXPR:
-    case MINUS_EXPR:
       return true;
+
+    case MINUS_EXPR:
+      /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
+      return ! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations;
 
     default:
       break;
