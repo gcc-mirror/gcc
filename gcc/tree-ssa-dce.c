@@ -855,6 +855,8 @@ perform_tree_ssa_dce (bool aggressive)
     }
 
   tree_dce_done (aggressive);
+
+  free_edge_list (el);
 }
 
 /* Pass entry points.  */
