@@ -56,7 +56,7 @@ loop_optimizer_init (FILE *dumpfile)
 
   /* Find the loops.  */
 
-  if (flow_loops_find (loops, LOOP_TREE) <= 1)
+  if (flow_loops_find (loops) <= 1)
     {
       /* No loops.  */
       flow_loops_free (loops);

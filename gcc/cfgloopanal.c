@@ -565,3 +565,32 @@ global_cost_for_size (unsigned size, unsigned regs_used, unsigned n_uses)
   return cost;
 }
 
+/* Sets EDGE_LOOP_EXIT flag for all exits of LOOPS.  */
+
+void
+mark_loop_exit_edges (struct loops *loops)
+{
+  basic_block bb;
+  edge e;
+ 
+  if (loops->num <= 1)
+    return;
+
+  FOR_EACH_BB (bb)
+    {
+      edge_iterator ei;
+
+      /* Do not mark exits from the fake outermost loop.  */
+      if (!bb->loop_father->outer)
+	continue;
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if (loop_exit_edge_p (bb->loop_father, e))
+	    e->flags |= EDGE_LOOP_EXIT;
+	  else
+	    e->flags &= ~EDGE_LOOP_EXIT;
+	}
+    }
+}
+

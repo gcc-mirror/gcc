@@ -1315,7 +1315,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 				  edge update_e)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  basic_block exit_bb = loop->exit_edges[0]->dest;
+  basic_block exit_bb = loop->single_exit->dest;
   tree phi, phi1;
   basic_block update_bb = update_e->dest;
 
@@ -1398,6 +1398,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct loop *new_loop;
   edge update_e;
+  basic_block preheader;
 #ifdef ENABLE_CHECKING
   int loop_num;
 #endif
@@ -1413,14 +1414,10 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   vect_generate_tmps_on_preheader (loop_vinfo, &ni_name,
 				   &ratio_mult_vf_name, ratio);
 
-  /* Update loop info.  */
-  loop->pre_header = loop_preheader_edge (loop)->src;
-  loop->pre_header_edges[0] = loop_preheader_edge (loop);
-
 #ifdef ENABLE_CHECKING
   loop_num  = loop->num; 
 #endif
-  new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, loop->exit_edges[0],
+  new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, loop->single_exit,
 					    ratio_mult_vf_name, ni_name, false);
 #ifdef ENABLE_CHECKING
   gcc_assert (new_loop);
@@ -1434,10 +1431,11 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
      is a bb after NEW_LOOP, where these IVs are not used.  Find the edge that
      is on the path where the LOOP IVs are used and need to be updated.  */
 
-  if (EDGE_PRED (new_loop->pre_header, 0)->src == loop->exit_edges[0]->dest)
-    update_e = EDGE_PRED (new_loop->pre_header, 0);
+  preheader = loop_preheader_edge (new_loop)->src;
+  if (EDGE_PRED (preheader, 0)->src == loop->single_exit->dest)
+    update_e = EDGE_PRED (preheader, 0);
   else
-    update_e = EDGE_PRED (new_loop->pre_header, 1);
+    update_e = EDGE_PRED (preheader, 1);
 
   /* Update IVs of original loop as if they were advanced 
      by ratio_mult_vf_name steps.  */
