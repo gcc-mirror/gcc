@@ -1,3 +1,13 @@
+2000-05-18  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Change to
+	--enable-cshadow-headers. Add output messages.
+	(GCC_ENABLE_LONG_LONG): Change to --enable-long-long, no
+	underscores (like the rest of the enable options.) Add output messages.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.in: Touch.
+	
 2000-05-17  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* mkcheck.in: Enable shared library testing.

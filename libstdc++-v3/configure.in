@@ -188,12 +188,3 @@ AC_OUTPUT_COMMANDS([cp $srcdir/config/$THREADH $blddir/bits/c++threads.h])
 # Generate bits/c++io.h and src/c++io.cc
 AC_OUTPUT_COMMANDS([cp $srcdir/config/$CSTDIO_H $blddir/bits/c++io.h])
 AC_OUTPUT_COMMANDS([cp $srcdir/config/$CSTDIO_CC $blddir/src/c++io.cc])
-
-
-
-
-
-
-
-
-
