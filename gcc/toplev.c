@@ -612,6 +612,8 @@ char *lang_options[] =
   "-Wno-overloaded-virtual",
   "-Wenum-clash",
   "-Wno-enum-clash",
+  "-Wtemplate-debugging",
+  "-Wno-template-debugging",
 
   /* these are for obj c */
   "-lang-objc",
@@ -3222,12 +3224,18 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	filename = argv[i];
     }
 
-  /* Inlining does not work if not optimizing,
-     so force it not to be done.  */
   if (optimize == 0)
     {
+      /* Inlining does not work if not optimizing,
+	 so force it not to be done.  */
       flag_no_inline = 1;
       warn_inline = 0;
+
+      /* The c_decode_option and lang_decode_option functions set
+	 this to `2' if -Wall is used, so we can avoid giving out
+	 lots of errors for people who don't realize what -Wall does.  */
+      if (warn_uninitialized == 1)
+	warning ("-Wuninitialized is not supported without -O");
     }
 
 #ifdef OVERRIDE_OPTIONS
