@@ -1,3 +1,7 @@
+1999-09-13 17:03 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* config/gmicro/gmicro.md: Disable move DF->DI anonymous pattern.
+
 Mon Sep 13 15:21:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (call_insn_operand): Reject const_int.
