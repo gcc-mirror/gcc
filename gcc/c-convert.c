@@ -375,7 +375,7 @@ convert (type, expr)
       || TREE_CODE (expr) == ERROR_MARK)
     return expr;
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
-    return build1 (NOP_EXPR, type, expr);
+    return fold (build1 (NOP_EXPR, type, expr));
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
   if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
