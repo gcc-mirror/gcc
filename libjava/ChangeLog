@@ -1,3 +1,8 @@
+2001-02-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libgcj.spec.in: Insert %(libgcc) before %(liborig) to fix static
+	linking.
+
 2001-02-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR java/2040:
