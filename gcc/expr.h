@@ -153,33 +153,10 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define PRETEND_OUTGOING_VARARGS_NAMED 0
 #endif
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.
-   We cannot do so in the following cases:
-
-   - if the type has variable size
-   - if the type is marked as addressable (it is required to be constructed
-     into the stack)
-   - if the padding and mode of the type is such that a copy into a register
-     would put it into the wrong part of the register.
-
-   Which padding can't be supported depends on the byte endianness.
-
-   A value in a register is implicitly padded at the most significant end.
-   On a big-endian machine, that is the lower end in memory.
-   So a value padded in memory at the upper end can't go in a register.
-   For a little-endian machine, the reverse is true.  */
-
+/* Nonzero if we do not know how to pass TYPE solely in registers.  */
 #ifndef MUST_PASS_IN_STACK
-#define MUST_PASS_IN_STACK(MODE,TYPE)			\
-  ((TYPE) != 0						\
-   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
-       || TREE_ADDRESSABLE (TYPE)			\
-       || ((MODE) == BLKmode 				\
-	   && ! ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST \
-		 && 0 == (int_size_in_bytes (TYPE)	\
-			  % (PARM_BOUNDARY / BITS_PER_UNIT))) \
-	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
-	       == (BYTES_BIG_ENDIAN ? upward : downward)))))
+extern bool default_must_pass_in_stack PARAMS((enum machine_mode, tree));
+#define MUST_PASS_IN_STACK(MODE,TYPE) default_must_pass_in_stack(MODE, TYPE)
 #endif
 
 /* Nonzero if type TYPE should be returned in memory.
