@@ -210,7 +210,6 @@ void
 reset_lists (void)
 {
   struct dlist *d;
-  unsigned int i;
 
   gcc_assert (!WEBS(SIMPLIFY));
   gcc_assert (!WEBS(SIMPLIFY_SPILL));
@@ -249,13 +248,17 @@ reset_lists (void)
 
 #ifdef ENABLE_CHECKING
   /* Sanity check, that we only have free, initial or precolored webs. */
-  for (i = 0; i < num_webs; i++)
-    {
-      struct web *web = ID2WEB (i);
-      
-      gcc_assert (web->type == INITIAL || web->type == FREE
-		  || web->type == PRECOLORED);
-    }
+  {
+    unsigned int i;
+
+    for (i = 0; i < num_webs; i++)
+      {
+	struct web *web = ID2WEB (i);
+
+	gcc_assert (web->type == INITIAL || web->type == FREE
+		    || web->type == PRECOLORED);
+      }
+  }
 #endif
   free_dlist (&mv_worklist);
   free_dlist (&mv_coalesced);
@@ -1260,7 +1263,7 @@ colorize_one_web (struct web *web, int hard)
   HARD_REG_SET bias;
 
   CLEAR_HARD_REG_SET (fat_colors);
-  
+
   if (web->regno >= max_normal_pseudo)
     hard = 0;
 
@@ -1973,11 +1976,11 @@ check_colors (void)
       struct web *web = id2web[i];
       struct web *aweb = alias (web);
       struct conflict_link *wl;
-      int nregs, c;
+      int nregs;
 
       if (web->regno >= max_normal_pseudo)
 	continue;
-      
+
       switch (aweb->type)
 	{
 	case SPILLED:
@@ -1996,9 +1999,12 @@ check_colors (void)
 	}
 
 #ifdef ENABLE_CHECKING
-      /* The color must be valid for the original usable_regs.  */
-      for (c = 0; c < nregs; c++)
-	gcc_assert (TEST_HARD_REG_BIT (web->usable_regs, aweb->color + c));
+	/* The color must be valid for the original usable_regs.  */
+      {
+	int c;
+	for (c = 0; c < nregs; c++)
+	  gcc_assert (TEST_HARD_REG_BIT (web->usable_regs, aweb->color + c));
+      }
 #endif
       /* Search the original (pre-coalesce) conflict list.  In the current
 	 one some imprecise conflicts may be noted (due to combine() or

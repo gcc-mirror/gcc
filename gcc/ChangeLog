@@ -1,3 +1,10 @@
+2004-09-09  Eric Christopher  <echristo@redhat.com>
+
+	* ra-colorize.c (reset_lists): Move variable declaration inside
+	ENABLE_CHECKING to avoid unused variable warnings when
+	not --enable-checking.
+	(check_colors): Ditto.
+
 2004-09-09  Mike Stump  <mrs@apple.com>
 
 	* version.c (version_string): Bump to 4.0.0.
@@ -25,7 +32,7 @@
 
 2004-09-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* reload.c (find_reloads_address): Pass correct operand to 
+	* reload.c (find_reloads_address): Pass correct operand to
 	maybe_memory_address_p.
 
 2004-09-09  Daniel Berlin  <dberlin@dberlin.org>
@@ -55,7 +62,7 @@
 	(dump_alias_stats): Ditto.
 	* doc/passes.texi: Remove blurb about points-to analysis.
 	* fortran/Make-lang.in: Remove tree-alias-*.o.
-	
+
 2004-09-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* genattrtab.c (write_insn_cases): New function, split out from
