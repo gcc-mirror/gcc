@@ -43,7 +43,7 @@ extern char * getenv ();
 
 #ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
-#endif rindex
+#endif
 extern char *getpwd PROTO((void));
 
 static tree repo_get_id PROTO((tree));
