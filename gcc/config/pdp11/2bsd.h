@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for a PDP with 2BSD
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -17,8 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-#include "pdp11/pdp11.h"
 
 /* This macro generates the assembly code for function entry. */
 #undef FUNCTION_PROLOGUE
