@@ -1,3 +1,18 @@
+1999-05-14  Tom Tromey  <tromey@cygnus.com>
+
+	* java-except.h (struct eh_range): Removed unused `next' member.
+	* verify.c (verify_jvm_instructions): Call check_nested_ranges
+	after adding all exception handlers.  Sort exception ranges in
+	order of start PC.
+	(struct pc_index): New structure.
+	(start_pc_cmp): New function.
+	* except.c (add_handler): Return `void'.  Don't call link_handler;
+	instead construct an ordinary linked list and do range
+	coalescing.
+	(check_nested_ranges): New function.
+	(link_handler): Changed interface to allow merging of eh_ranges.
+	Split overlapping ranges.  Return `void'.
+
 Mon May 17 19:20:24 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (constructor_block_end:): New rule, tagged <node>.
