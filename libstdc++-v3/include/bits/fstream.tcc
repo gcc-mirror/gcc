@@ -139,7 +139,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::__filebuf_type* 
+    typename basic_filebuf<_CharT, _Traits>::__filebuf_type* 
     basic_filebuf<_CharT, _Traits>::
     open(const char* __s, ios_base::openmode __mode)
     {
@@ -166,7 +166,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::__filebuf_type* 
+    typename basic_filebuf<_CharT, _Traits>::__filebuf_type* 
     basic_filebuf<_CharT, _Traits>::
     close()
     {
@@ -232,7 +232,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::int_type 
+    typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
     underflow()
     {
@@ -303,7 +303,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::int_type 
+    typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
     pbackfail(int_type __i)
     {
@@ -371,7 +371,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::int_type 
+    typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
     overflow(int_type __c)
     {
@@ -396,7 +396,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::int_type 
+    typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
     _M_really_overflow(int_type __c)
     {
@@ -475,7 +475,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::__streambuf_type* 
+    typename basic_filebuf<_CharT, _Traits>::__streambuf_type* 
     basic_filebuf<_CharT, _Traits>::
     setbuf(char_type* __s, streamsize __n)
     {
@@ -503,7 +503,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::pos_type
+    typename basic_filebuf<_CharT, _Traits>::pos_type
     basic_filebuf<_CharT, _Traits>::
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
@@ -559,7 +559,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_filebuf<_CharT, _Traits>::pos_type
+    typename basic_filebuf<_CharT, _Traits>::pos_type
     basic_filebuf<_CharT, _Traits>::
     seekpos(pos_type __pos, ios_base::openmode __mode)
     {

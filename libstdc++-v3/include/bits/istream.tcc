@@ -465,7 +465,7 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits>
-    basic_istream<_CharT, _Traits>::int_type
+    typename basic_istream<_CharT, _Traits>::int_type
     basic_istream<_CharT, _Traits>::
     get(void)
     {
@@ -720,7 +720,7 @@ namespace std
     }
   
   template<typename _CharT, typename _Traits>
-    basic_istream<_CharT, _Traits>::int_type
+    typename basic_istream<_CharT, _Traits>::int_type
     basic_istream<_CharT, _Traits>::
     peek(void)
     {

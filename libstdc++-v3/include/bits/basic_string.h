@@ -118,7 +118,7 @@ namespace std
       struct _Rep
       {
 	// Types:
-	typedef typename _Alloc::rebind<char>::other _Raw_bytes_alloc;
+	typedef typename _Alloc::template rebind<char>::other _Raw_bytes_alloc;
 
 	// (Public) Data members: 
 
