@@ -1,5 +1,10 @@
 2002-07-27  Roger Sayle  <roger@eyesopen.com>
 
+	* decl.c (builtin_function_1): No need to explicitly mark
+	BUILT_IN_RETURN and BUILT_IN_EH_RETURN as noreturn.
+
+2002-07-27  Roger Sayle  <roger@eyesopen.com>
+
 	* decl2.c (cxx_decode_option): Support -fno-builtin-foo.
 
 2002-07-26  Jason Merrill  <jason@redhat.com>

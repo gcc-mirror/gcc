@@ -1,5 +1,16 @@
 2002-07-27  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.def [DEF_GCC_BUILTIN]: Require an explicit ATTRS
+	argument.  Mark BUILT_IN_RETURN, BUILT_IN_EH_RETURN,
+	BUILT_IN_LONGJMP and BUILT_IN_TRAP as noreturn, the ISO C99
+	floating point unordered comparisons (e.g. __builtin_isgreater)
+	as const, and leave the remaining GCC_BUILTINs unchanged.
+
+	* c-decl.c (builtin_function): No need to explicitly mark
+	BUILT_IN_RETURN and BUILT_IN_EH_RETURN as noreturn.
+
+2002-07-27  Roger Sayle  <roger@eyesopen.com>
+
 	* Makefile.in: rtlanal.o now depends upon real.h.
 
 	* flags.h [flag_signaling_nans]: New flag.
