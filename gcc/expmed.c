@@ -1031,25 +1031,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
   if (tmode == VOIDmode)
     tmode = mode;
+
   while (GET_CODE (op0) == SUBREG)
     {
-      int outer_size = GET_MODE_BITSIZE (GET_MODE (op0));
-      int inner_size = GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)));
-
-      offset += SUBREG_BYTE (op0) / UNITS_PER_WORD;
-
-      inner_size = MIN (inner_size, BITS_PER_WORD);
-
-      if (BYTES_BIG_ENDIAN && (outer_size < inner_size))
+      bitpos += SUBREG_BYTE (op0) * BITS_PER_UNIT;
+      if (bitpos > unit)
 	{
-	  bitpos += inner_size - outer_size;
-	  if (bitpos > unit)
-	    {
-	      offset += (bitpos / unit);
-	      bitpos %= unit;
-	    }
+	  offset += (bitpos / unit);
+	  bitpos %= unit;
 	}
-
       op0 = SUBREG_REG (op0);
     }
 
@@ -1086,9 +1076,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       set_mem_expr (op0, 0);
     }
 
-  /* ??? We currently assume TARGET is at least as big as BITSIZE.
-     If that's wrong, the solution is to test for it and set TARGET to 0
-     if needed.  */
+  /* Extraction of a full-word or multi-word value from a structure
+     in a register or aligned memory can be done with just a SUBREG.
+     A subword value in the least significant part of a register
+     can also be extracted with a SUBREG.  For this, we need the
+     byte offset of the value in op0.  */
+
+  byte_offset = bitpos / BITS_PER_UNIT + offset * UNITS_PER_WORD;
 
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
@@ -1098,14 +1092,9 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
     bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
 
-  /* Extracting a full-word or multi-word value
-     from a structure in a register or aligned memory.
-     This can be done with just SUBREG.
-     So too extracting a subword value in
-     the least significant part of the register.  */
-
-  byte_offset = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-                + (offset * UNITS_PER_WORD);
+  /* ??? We currently assume TARGET is at least as big as BITSIZE.
+     If that's wrong, the solution is to test for it and set TARGET to 0
+     if needed.  */
 
   mode1  = (VECTOR_MODE_P (tmode)
 	    ? mode
