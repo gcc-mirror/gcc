@@ -96,6 +96,12 @@ package System.Partition_Interface is
    --  Use by the main subprogram to check that a remote receiver
    --  unit has has the same version than the caller's one.
 
+   function Same_Partition
+      (Left  : access RACW_Stub_Type;
+       Right : access RACW_Stub_Type) return Boolean;
+   --  Determine whether Left and Right correspond to objects instantiated
+   --  on the same partition, for enforcement of E.4(19).
+
    function Get_Active_Partition_ID (Name : Unit_Name) return RPC.Partition_ID;
    --  Similar in some respects to RCI_Locator.Get_Active_Partition_ID
 
