@@ -1893,6 +1893,9 @@ do { long l;						\
 #define BC_OUTPUT_COMMON(FP, NAME, SIZE, ROUNDED) \
   do { bc_emit_common(NAME, ROUNDED); bc_globalize_label(NAME); } while (0)
 
+#define BC_OUTPUT_BSS(FP, NAME, SIZE, ROUNDED) \
+  do { bc_data (); bc_emit_labeldef(NAME); bc_emit_skip (SIZE); } while (0)
+
 #define BC_OUTPUT_LOCAL(FP, NAME, SIZE, ROUNDED) \
   bc_emit_common(NAME, ROUNDED)
 
