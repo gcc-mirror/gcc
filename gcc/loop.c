@@ -4817,6 +4817,9 @@ loop_givs_reduce (loop, bl)
 	    {
 	      rtx insert_before;
 
+	      /* Skip if location is the same as a previous one.  */
+	      if (tv->same)
+		continue;
 	      if (! auto_inc_opt)
 		insert_before = NEXT_INSN (tv->insn);
 	      else if (auto_inc_opt == 1)
@@ -5724,6 +5727,7 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
   v->always_computable = ! not_every_iteration;
   v->always_executed = ! not_every_iteration;
   v->maybe_multiple = maybe_multiple;
+  v->same = 0;
 
   /* Add this to the reg's iv_class, creating a class
      if this is the first incrementation of the reg.  */
@@ -5760,6 +5764,17 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
 
       /* Put it in the array of biv register classes.  */
       REG_IV_CLASS (ivs, REGNO (dest_reg)) = bl;
+    }
+  else
+    {
+      /* Check if location is the same as a previous one.  */
+      struct induction *induction;
+      for (induction = bl->biv; induction; induction = induction->next_iv)
+	if (location == induction->location)
+	  {
+	    v->same = induction;
+	    break;
+	  }
     }
 
   /* Update IV_CLASS entry for this biv.  */
