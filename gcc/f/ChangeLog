@@ -1,3 +1,10 @@
+2001-11-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: egcs was not a `@command'.
+	* invoke.texi: Ditto.
+	* news.texi: Substitute `@command' for `@code'
+	and `@option' for `@samp' where appropriate.
+
 2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
 
 	* Make-lang.in: Complete ``Build g77.1 in $(srcdir)''.

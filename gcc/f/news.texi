@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001
 
-@set last-update-news 2001-11-08
+@set last-update-news 2001-11-20
 
 @include root.texi
 
@@ -40,15 +40,15 @@ this copyright notice and permission notice.
 @cindex changes, user-visible
 @cindex user-visible changes
 
-This chapter describes changes to @code{g77} that are visible
+This chapter describes changes to @command{g77} that are visible
 to the programmers who actually write and maintain Fortran
-code they compile with @code{g77}.
+code they compile with @command{g77}.
 Information on changes to installation procedures,
 changes to the documentation, and bug fixes is
 not provided here, unless it is likely to affect how
-users use @code{g77}.
+users use @command{g77}.
 @xref{News,,News About GNU Fortran}, for information on
-such changes to @code{g77}.
+such changes to @command{g77}.
 @end ifset
 
 @ifclear USERVISONLY
@@ -93,7 +93,7 @@ This order is not strict---for example, some items
 involve a combination of these elements.
 @end ifclear
 
-Note that two variants of @code{g77} are tracked below.
+Note that two variants of @command{g77} are tracked below.
 The @code{egcs} variant is described vis-a-vis
 previous versions of @code{egcs} and/or
 an official FSF version, as appropriate.
@@ -107,31 +107,31 @@ of what a particular @code{egcs} version contains
 somewhat more difficult.
 
 @ifset DOC-G77
-For information on bugs in the @value{which-g77} version of @code{g77},
+For information on bugs in the @value{which-g77} version of @command{g77},
 see @ref{Known Bugs,,Known Bugs In GNU Fortran}.
 @end ifset
 
 @ifset DOC-BUGS
-For information on bugs in the @value{which-g77} version of @code{g77},
+For information on bugs in the @value{which-g77} version of @command{g77},
 see @file{@value{path-g77}/BUGS}.
 @end ifset
 
 @ifset DEVELOPMENT
 @emph{Warning:} The information below is still under development,
-and might not accurately reflect the @code{g77} code base
+and might not accurately reflect the @command{g77} code base
 of which it is a part.
 Efforts are made to keep it somewhat up-to-date,
 but they are particularly concentrated
 on any version of this information
-that is distributed as part of a @emph{released} @code{g77}.
+that is distributed as part of a @emph{released} @command{g77}.
 
 In particular, while this information is intended to apply to
-the @value{which-g77} version of @code{g77},
+the @value{which-g77} version of @command{g77},
 only an official @emph{release} of that version
 is expected to contain documentation that is
-most consistent with the @code{g77} product in that version.
+most consistent with the @command{g77} product in that version.
 
-Nevertheless, information on @emph{previous} releases of @code{g77}, below,
+Nevertheless, information on @emph{previous} releases of @command{g77}, below,
 is likely to be more up-to-date and accurate
 than the equivalent information that accompanied
 those releases,
@@ -139,13 +139,13 @@ assuming the last-updated date of the information below
 is later than the dates of those releases.
 
 That's due to attempts to keep this development version
-of news about previous @code{g77} versions up-to-date.
+of news about previous @command{g77} versions up-to-date.
 @end ifset
 
 @ifclear USERVISONLY
 An online, ``live'' version of this document
 (derived directly from the mainline, development version
-of @code{g77} within @code{gcc})
+of @command{g77} within @command{gcc})
 is available at
 @uref{http://www.gnu.org/software/gcc/onlinedocs/g77_news.html}.
 @end ifclear
@@ -155,11 +155,11 @@ The following information was last updated on @value{last-update-news}:
 @heading In development, 0.5.27, @code{GCC} 3.1 versus @code{GCC} 3.0:
 @itemize @bullet
 @item
-g77 now has its man page generated from the texinfo documentation,
+@command{g77} now has its man page generated from the texinfo documentation,
 to guarantee that it remains up to date.
 
 @item
-g77 used to reject the following program on 32-bit targets:
+@command{g77} used to reject the following program on 32-bit targets:
 @smallexample
 PROGRAM PROG
 DIMENSION A(140 000 000)
@@ -182,7 +182,7 @@ than 1 Gbyte statically, i.e.@: @code{g77 -static ...}.
 @item
 Based on work done by Juergen Pfeifer (@email{juergen.pfeifer@@gmx.net})
 libf2c is now a shared library.  One can still link in all objects with
-the program by specifying the @code{-static} option.
+the program by specifying the @option{-static} option.
 
 @item
 Robert Anderson (@email{rwa@@alumni.princeton.edu}) thought up a two
@@ -198,7 +198,7 @@ Note the use of array elements in the bounds of the adjustable array A.
 
 @item
 George Helffrich (@email{george@@geo.titech.ac.jp}) implemented a change
-in substring index checking (when specifying @code{-fbounds-check})
+in substring index checking (when specifying @option{-fbounds-check})
 that permits the use of zero length substrings of the form
 @code{string(1:0)}.
 
@@ -218,7 +218,7 @@ the @code{ftruncate} OS function.  Thanks go to the GAMESS developers
 for bringing this to our attention.
 
 @item
-Using options @code{-g}, @code{-ggdb} or @code{-gdwarf[-2]} (where
+Using options @option{-g}, @option{-ggdb} or @option{-gdwarf[-2]} (where
 appropriate for your target) now also enables debugging information
 for COMMON BLOCK and EQUIVALENCE items to be emitted.
 Thanks go to Andrew Vaught (@email{andy@@xena.eas.asu.edu}) and
@@ -226,7 +226,7 @@ George Helffrich (@email{george@@geology.bristol.ac.uk}) for
 fixing this longstanding problem.
 
 @item
-It is not necessary anymore to use the option @code{-femulate-complex}
+It is not necessary anymore to use the option @option{-femulate-complex}
 to compile Fortran code using COMPLEX arithmetic, even on 64-bit machines
 (like the Alpha).  This will improve code generation.
 
@@ -264,7 +264,7 @@ not necessarily starting at @samp{K(6)}.
 @itemize @bullet
 @ifclear USERVISONLY
 @item
-@code{g77} no longer generates bad code for assignments,
+@command{g77} no longer generates bad code for assignments,
 or other conversions,
 of @code{REAL} or @code{COMPLEX} constant expressions
 to type @code{INTEGER(KIND=2)}
@@ -275,7 +275,7 @@ For example, @samp{INTEGER*8 J; J = 4E10} now works as documented.
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer truncates @code{INTEGER(KIND=2)}
+@command{g77} no longer truncates @code{INTEGER(KIND=2)}
 (usually @code{INTEGER*8})
 subscript expressions when evaluating array references
 on systems with pointers widers than @code{INTEGER(KIND=1)}
@@ -284,7 +284,7 @@ on systems with pointers widers than @code{INTEGER(KIND=1)}
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer generates bad code
+@command{g77} no longer generates bad code
 for an assignment to a @code{COMPLEX} variable or array
 that partially overlaps one or more of the sources
 of the same assignment
@@ -325,7 +325,7 @@ on big-endian systems.
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} so it no longer crashes when compiling
+Fix @command{g77} so it no longer crashes when compiling
 I/O statements using keywords that define @code{INTEGER} values,
 such as @samp{IOSTAT=@var{j}},
 where @var{j} is other than default @code{INTEGER}
@@ -335,34 +335,34 @@ Instead, it issues a diagnostic.
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} so it properly handles @samp{DATA A/@var{rpt}*@var{val}/},
+Fix @command{g77} so it properly handles @samp{DATA A/@var{rpt}*@var{val}/},
 where @var{rpt} is not default @code{INTEGER}, such as @code{INTEGER*2},
 instead of producing a spurious diagnostic.
 Also fix @samp{DATA (A(I),I=1,N)},
 where @samp{N} is not default @code{INTEGER}
-to work instead of crashing @code{g77}.
+to work instead of crashing @command{g77}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-The @samp{-ax} option is now obeyed when compiling Fortran programs.
+The @option{-ax} option is now obeyed when compiling Fortran programs.
 (It is passed to the @file{f771} driver.)
 @end ifclear
 
 @item
-The new @samp{-fbounds-check} option
-causes @code{g77} to compile run-time bounds checks
+The new @option{-fbounds-check} option
+causes @command{g77} to compile run-time bounds checks
 of array subscripts, as well as of substring start and end points.
 
 @item
 @code{libg2c} now supports building as multilibbed library,
 which provides better support for systems
-that require options such as @samp{-mieee}
+that require options such as @option{-mieee}
 to work properly.
 
 @item
 Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
-now are recognized by @code{g77}
+now are recognized by @command{g77}
 as if they ended in @samp{.for} and @samp{.fpp}, respectively.
 
 @item
@@ -376,7 +376,7 @@ making these consistent with the other subroutine forms
 of @code{libU77} intrinsics.
 
 @item
-@code{g77} now warns about a reference to an intrinsic
+@command{g77} now warns about a reference to an intrinsic
 that has an interface that is not Year 2000 (Y2K) compliant.
 Also, @code{libg2c} has been changed to increase the likelihood
 of catching references to the implementations of these intrinsics
@@ -389,13 +389,13 @@ using the @code{EXTERNAL} mechanism
 
 @ifclear USERVISONLY
 @item
-@code{g77} now warns about a reference to a function
+@command{g77} now warns about a reference to a function
 when the corresponding @emph{subsequent} function program unit
 disagrees with the reference concerning the type of the function.
 @end ifclear
 
 @item
-@samp{-fno-emulate-complex} is now the default option.
+@option{-fno-emulate-complex} is now the default option.
 This should result in improved performance
 of code that uses the @code{COMPLEX} data type.
 
@@ -403,35 +403,35 @@ of code that uses the @code{COMPLEX} data type.
 @cindex double-precision performance
 @cindex -malign-double
 @item
-The @samp{-malign-double} option
+The @option{-malign-double} option
 now reliably aligns @emph{all} double-precision variables and arrays
 on Intel x86 targets.
 
 @ifclear USERVISONLY
 @item
-Even without the @samp{-malign-double} option,
-@code{g77} reliably aligns local double-precision variables
+Even without the @option{-malign-double} option,
+@command{g77} reliably aligns local double-precision variables
 that are not in @code{EQUIVALENCE} areas
 and not @code{SAVE}'d.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-@code{g77} now open-codes (``inlines'') division of @code{COMPLEX} operands
+@command{g77} now open-codes (``inlines'') division of @code{COMPLEX} operands
 instead of generating a run-time call to
 the @code{libf2c} routines @code{c_div} or @code{z_div},
-unless the @samp{-Os} option is specified.
+unless the @option{-Os} option is specified.
 @end ifclear
 
 @item
-@code{g77} no longer generates code to maintain @code{errno},
+@command{g77} no longer generates code to maintain @code{errno},
 a C-language concept,
 when performing operations such as the @code{SqRt} intrinsic.
 
 @ifclear USERVISONLY
 @item
-@code{g77} developers can temporarily use
-the @samp{-fflatten-arrays} option
+@command{g77} developers can temporarily use
+the @option{-fflatten-arrays} option
 to compare how the compiler handles code generation
 using C-like constructs as compared to the
 Fortran-like method constructs normally used.
@@ -439,17 +439,17 @@ Fortran-like method constructs normally used.
 
 @ifclear USERVISONLY
 @item
-A substantial portion of the @code{g77} front end's code-generation component
+A substantial portion of the @command{g77} front end's code-generation component
 was rewritten.
 It now generates code using facilities more robustly supported
-by the @code{gcc} back end.
+by the @command{gcc} back end.
 One effect of this rewrite is that some codes no longer produce
 a spurious ``label @var{lab} used before containing binding contour''
 message.
 @end ifclear
 
 @item
-Support for the @samp{-fugly} option has been removed.
+Support for the @option{-fugly} option has been removed.
 
 @ifclear USERVISONLY
 @item
@@ -466,12 +466,12 @@ Upgrade to @code{libf2c} as of 1999-05-10.
 
 @heading In 0.5.24 versus 0.5.23:
 
-There is no @code{g77} version 0.5.24 at this time,
+There is no @command{g77} version 0.5.24 at this time,
 or planned.
 0.5.24 is the version number designated for bug fixes and,
 perhaps, some new features added,
 to 0.5.23.
-Version 0.5.23 requires @code{gcc} 2.8.1,
+Version 0.5.23 requires @command{gcc} 2.8.1,
 as 0.5.24 was planned to require.
 
 Due to @code{EGCS} becoming @code{GCC}
@@ -480,14 +480,14 @@ and @code{EGCS} 1.2 becoming officially designated @code{GCC} 2.95,
 there seems to be no need for an actual 0.5.24 release.
 
 To reduce the confusion already resulting from use of 0.5.24
-to designate @code{g77} versions within @code{EGCS} versions 1.0 and 1.1,
-as well as in versions of @code{g77} documentation and notices
+to designate @command{g77} versions within @code{EGCS} versions 1.0 and 1.1,
+as well as in versions of @command{g77} documentation and notices
 during that period,
-``mainline'' @code{g77} version numbering resumes
+``mainline'' @command{g77} version numbering resumes
 at 0.5.25 with @code{GCC} 2.95 (@code{EGCS} 1.2),
 skipping over 0.5.24 as a placeholder version number.
 
-To repeat, there is no @code{g77} 0.5.24, but there is now a 0.5.25.
+To repeat, there is no @command{g77} 0.5.24, but there is now a 0.5.25.
 Please remain calm and return to your keypunch units.
 
 @c 1999-03-15: EGCS 1.1.2 released.
@@ -530,21 +530,21 @@ Fix @code{libg2c} so it performs an implicit @code{ENDFILE} operation
 whenever a @code{REWIND} is done.
 
 (This bug was introduced in 0.5.23 and @code{egcs} 1.1 in
-@code{g77}'s version of @code{libf2c}.)
+@command{g77}'s version of @code{libf2c}.)
 
 @item
 Fix @code{libg2c} so it no longer crashes with a spurious diagnostic
 upon doing any I/O following a direct formatted write.
 
 (This bug was introduced in 0.5.23 and @code{egcs} 1.1 in
-@code{g77}'s version of @code{libf2c}.)
+@command{g77}'s version of @code{libf2c}.)
 
 @item
-Fix @code{g77} so it no longer crashes compiling references
+Fix @command{g77} so it no longer crashes compiling references
 to the @code{Rand} intrinsic on some systems.
 
 @item
-Fix @code{g77} portion of installation process so it works
+Fix @command{g77} portion of installation process so it works
 better on some systems
 (those with shells requiring @samp{else true} clauses
 on @code{if} constructs
@@ -569,12 +569,12 @@ that overwrote their arguments.
 @item
 Assumed arrays with negative bounds
 (such as @samp{REAL A(-1:*)})
-no longer elicit spurious diagnostics from @code{g77},
+no longer elicit spurious diagnostics from @command{g77},
 even on systems with pointers having
 different sizes than integers.
 
 This bug is not known to have existed in any
-recent version of @code{gcc}.
+recent version of @command{gcc}.
 It was introduced in an early release of @code{egcs}.
 @end ifclear
 
@@ -586,19 +586,19 @@ without explicitly giving it a type,
 and, in a subsequent program unit,
 referencing that external as
 an external function with a different type
-no longer crash @code{g77}.
+no longer crash @command{g77}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-@code{CASE DEFAULT} no longer crashes @code{g77}.
+@code{CASE DEFAULT} no longer crashes @command{g77}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-The @samp{-Wunused} option no longer issues a spurious
+The @option{-Wunused} option no longer issues a spurious
 warning about the ``master'' procedure generated by
-@code{g77} for procedures containing @code{ENTRY} statements.
+@command{g77} for procedures containing @code{ENTRY} statements.
 @end ifclear
 
 @item
@@ -606,9 +606,9 @@ Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
 compile-time constant @code{INTEGER} expression.
 
 @item
-Fix @code{g77} @samp{-g} option so procedures that
+Fix @command{g77} @option{-g} option so procedures that
 use @code{ENTRY} can be stepped through, line by line,
-in @code{gdb}.
+in @command{gdb}.
 
 @item
 Allow any @code{REAL} argument to intrinsics
@@ -621,7 +621,7 @@ so that the @code{TMPDIR} environment variable,
 if present, is used.
 
 @item
-@code{g77}'s version of @code{libf2c} separates out
+@command{g77}'s version of @code{libf2c} separates out
 the setting of global state
 (such as command-line arguments and signal handling)
 from @file{main.o} into distinct, new library
@@ -634,7 +634,7 @@ when @code{libf2c} (now @code{libg2c}) is a shared library.
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer installs the @file{f77} command
+@command{g77} no longer installs the @file{f77} command
 and @file{f77.1} man page
 in the @file{/usr} or @file{/usr/local} heirarchy,
 even if the @file{f77-install-ok} file exists
@@ -644,7 +644,7 @@ See the installation documentation for more information.
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer installs the @file{libf2c.a} library
+@command{g77} no longer installs the @file{libf2c.a} library
 and @file{f2c.h} include file
 in the @file{/usr} or @file{/usr/local} heirarchy,
 even if the @file{f2c-install-ok} or @file{f2c-exists-ok} files exist
@@ -654,9 +654,9 @@ See the installation documentation for more information.
 
 @ifclear USERVISONLY
 @item
-The @file{libf2c.a} library produced by @code{g77} has been
+The @file{libf2c.a} library produced by @command{g77} has been
 renamed to @file{libg2c.a}.
-It is installed only in the @code{gcc} ``private''
+It is installed only in the @command{gcc} ``private''
 directory heirarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the @code{libf2c} library from @code{netlib} they
@@ -666,9 +666,9 @@ See the installation documentation for more information.
 
 @ifclear USERVISONLY
 @item
-The @file{f2c.h} include (header) file produced by @code{g77}
+The @file{f2c.h} include (header) file produced by @command{g77}
 has been renamed to @file{g2c.h}.
-It is installed only in the @code{gcc} ``private''
+It is installed only in the @command{gcc} ``private''
 directory heirarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the include file from @code{netlib} they
@@ -677,15 +677,15 @@ See the installation documentation for more information.
 @end ifclear
 
 @item
-The @code{g77} command now expects the run-time library
+The @command{g77} command now expects the run-time library
 to be named @code{libg2c.a} instead of @code{libf2c.a},
 to ensure that a version other than the one built and
-installed as part of the same @code{g77} version is picked up.
+installed as part of the same @command{g77} version is picked up.
 
 @ifclear USERVISONLY
 @item
 During the configuration and build process,
-@code{g77} creates subdirectories it needs only as it
+@command{g77} creates subdirectories it needs only as it
 needs them.
 Other cleaning up of the configuration and build process
 has been performed as well.
@@ -694,7 +694,7 @@ has been performed as well.
 @ifclear USERVISONLY
 @item
 @code{install-info} now used to update the directory of
-Info documentation to contain an entry for @code{g77}
+Info documentation to contain an entry for @command{g77}
 (during installation).
 @end ifclear
 
@@ -732,7 +732,7 @@ as well.
 @end itemize
 
 @c 1998-09-03: EGCS 1.1 released.
-@heading In @code{EGCS} 1.1 versus @code{g77} 0.5.23:
+@heading In @code{EGCS} 1.1 versus @command{g77} 0.5.23:
 @itemize @bullet
 @ifclear USERVISONLY
 @cindex DNRM2
@@ -741,7 +741,7 @@ as well.
 @cindex -O2
 @item
 Fix a code-generation bug that afflicted
-Intel x86 targets when @samp{-O2} was specified
+Intel x86 targets when @option{-O2} was specified
 compiling, for example, an old version of
 the @code{DNRM2} routine.
 
@@ -752,7 +752,7 @@ and @code{ASSIGN}.
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer produces incorrect code
+@command{g77} no longer produces incorrect code
 and initial values
 for @code{EQUIVALENCE} and @code{COMMON}
 aggregates that, due to ``unnatural'' ordering of members
@@ -761,39 +761,39 @@ vis-a-vis their types, require initial padding.
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash compiling code
+Fix @command{g77} crash compiling code
 containing the construct @samp{CMPLX(0.)} or similar.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer crashes when compiling code
+@command{g77} no longer crashes when compiling code
 containing specification statements such as
 @samp{INTEGER(KIND=7) PTR}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer crashes when compiling code
+@command{g77} no longer crashes when compiling code
 such as @samp{J = SIGNAL(1, 2)}.
 @end ifclear
 
 @item
-@code{g77} now treats @samp{%LOC(@var{expr})} and
+@command{g77} now treats @samp{%LOC(@var{expr})} and
 @samp{LOC(@var{expr})} as ``ordinary'' expressions
 when they are used as arguments in procedure calls.
 This change applies only to global (filewide) analysis,
 making it consistent with
-how @code{g77} actually generates code
+how @command{g77} actually generates code
 for these cases.
 
-Previously, @code{g77} treated these expressions
+Previously, @command{g77} treated these expressions
 as denoting special ``pointer'' arguments
 for the purposes of filewide analysis.
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash
+Fix @command{g77} crash
 (or apparently infinite run-time)
 when compiling certain complicated expressions
 involving @code{COMPLEX} arithmetic
@@ -806,27 +806,27 @@ involving @code{COMPLEX} arithmetic
 @item
 Align static double-precision variables and arrays
 on Intel x86 targets
-regardless of whether @samp{-malign-double} is specified.
+regardless of whether @option{-malign-double} is specified.
 
 Generally, this affects only local variables and arrays
 having the @code{SAVE} attribute
 or given initial values via @code{DATA}.
 
 @item
-The @code{g77} driver now ensures that @samp{-lg2c}
+The @command{g77} driver now ensures that @option{-lg2c}
 is specified in the link phase prior to any
-occurrence of @samp{-lm}.
+occurrence of @option{-lm}.
 This prevents accidentally linking to a routine
-in the SunOS4 @samp{-lm} library
+in the SunOS4 @option{-lm} library
 when the generated code wants to link to the one
 in @code{libf2c} (@code{libg2c}).
 
 @item
-@code{g77} emits more debugging information when
-@samp{-g} is used.
+@command{g77} emits more debugging information when
+@option{-g} is used.
 
 This new information allows, for example,
-@kbd{which __g77_length_a} to be used in @code{gdb}
+@kbd{which __g77_length_a} to be used in @command{gdb}
 to determine the type of the phantom length argument
 supplied with @code{CHARACTER} variables.
 
@@ -873,54 +873,54 @@ for such information.
 @itemize @bullet
 @item
 This release contains several regressions against
-version 0.5.22 of @code{g77}, due to using the
-``vanilla'' @code{gcc} back end instead of patching
+version 0.5.22 of @command{g77}, due to using the
+``vanilla'' @command{gcc} back end instead of patching
 it to fix a few bugs and improve performance in a
 few cases.
 
 Features that have been dropped from this version
-of @code{g77} due to their being implemented
-via @code{g77}-specific patches to the @code{gcc}
+of @command{g77} due to their being implemented
+via @command{g77}-specific patches to the @command{gcc}
 back end in previous releases include:
 
 @itemize @minus
 @item
 Support for @code{__restrict__} keyword,
-the options @samp{-fargument-alias}, @samp{-fargument-noalias},
-and @samp{-fargument-noalias-global},
+the options @option{-fargument-alias}, @option{-fargument-noalias},
+and @option{-fargument-noalias-global},
 and the corresponding alias-analysis code.
 
 (@code{egcs} has the alias-analysis
 code, but not the @code{__restrict__} keyword.
-@code{egcs} @code{g77} users benefit from the alias-analysis
+@code{egcs} @command{g77} users benefit from the alias-analysis
 code despite the lack of the @code{__restrict__} keyword,
 which is a C-language construct.)
 
 @item
 Support for the GNU compiler options
-@samp{-fmove-all-movables},
-@samp{-freduce-all-givs},
-and @samp{-frerun-loop-opt}.
+@option{-fmove-all-movables},
+@option{-freduce-all-givs},
+and @option{-frerun-loop-opt}.
 
 (@code{egcs} supports these options.
-@code{g77} users of @code{egcs} benefit from them even if
+@command{g77} users of @code{egcs} benefit from them even if
 they are not explicitly specified,
-because the defaults are optimized for @code{g77} users.)
+because the defaults are optimized for @command{g77} users.)
 
 @item
-Support for the @samp{-W} option warning about
+Support for the @option{-W} option warning about
 integer division by zero.
 
 @item
-The Intel x86-specific option @samp{-malign-double}
+The Intel x86-specific option @option{-malign-double}
 applying to stack-allocated data
 as well as statically-allocate data.
 @end itemize
 
 @ifclear USERVISONLY
 Note that the @file{gcc/f/gbe/} subdirectory has been removed
-from this distribution as a result of @code{g77} no longer
-including patches for the @code{gcc} back end.
+from this distribution as a result of @command{g77} no longer
+including patches for the @command{gcc} back end.
 @end ifclear
 
 @ifclear USERVISONLY
@@ -934,20 +934,20 @@ that overwrote their arguments.
 @end ifclear
 
 @item
-Support @code{gcc} version 2.8,
-and remove support for prior versions of @code{gcc}.
+Support @command{gcc} version 2.8,
+and remove support for prior versions of @command{gcc}.
 
 @cindex -@w{}-driver option
-@cindex @code{g77} options, -@w{}-driver
+@cindex @command{g77} options, -@w{}-driver
 @cindex options, -@w{}-driver
 @item
-Remove support for the @samp{--driver} option,
-as @code{g77} now does all the driving,
-just like @code{gcc}.
+Remove support for the @option{--driver} option,
+as @command{g77} now does all the driving,
+just like @command{gcc}.
 
 @ifclear USERVISONLY
 @item
-@code{CASE DEFAULT} no longer crashes @code{g77}.
+@code{CASE DEFAULT} no longer crashes @command{g77}.
 @end ifclear
 
 @ifclear USERVISONLY
@@ -958,12 +958,12 @@ without explicitly giving it a type,
 and, in a subsequent program unit,
 referencing that external as
 an external function with a different type
-no longer crash @code{g77}.
+no longer crash @command{g77}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer installs the @file{f77} command
+@command{g77} no longer installs the @file{f77} command
 and @file{f77.1} man page
 in the @file{/usr} or @file{/usr/local} heirarchy,
 even if the @file{f77-install-ok} file exists
@@ -973,7 +973,7 @@ See the installation documentation for more information.
 
 @ifclear USERVISONLY
 @item
-@code{g77} no longer installs the @file{libf2c.a} library
+@command{g77} no longer installs the @file{libf2c.a} library
 and @file{f2c.h} include file
 in the @file{/usr} or @file{/usr/local} heirarchy,
 even if the @file{f2c-install-ok} or @file{f2c-exists-ok} files exist
@@ -983,9 +983,9 @@ See the installation documentation for more information.
 
 @ifclear USERVISONLY
 @item
-The @file{libf2c.a} library produced by @code{g77} has been
+The @file{libf2c.a} library produced by @command{g77} has been
 renamed to @file{libg2c.a}.
-It is installed only in the @code{gcc} ``private''
+It is installed only in the @command{gcc} ``private''
 directory heirarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the @code{libf2c} library from @code{netlib} they
@@ -995,9 +995,9 @@ See the installation documentation for more information.
 
 @ifclear USERVISONLY
 @item
-The @file{f2c.h} include (header) file produced by @code{g77}
+The @file{f2c.h} include (header) file produced by @command{g77}
 has been renamed to @file{g2c.h}.
-It is installed only in the @code{gcc} ``private''
+It is installed only in the @command{gcc} ``private''
 directory heirarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the include file from @code{netlib} they
@@ -1006,20 +1006,20 @@ See the installation documentation for more information.
 @end ifclear
 
 @item
-The @code{g77} command now expects the run-time library
+The @command{g77} command now expects the run-time library
 to be named @code{libg2c.a} instead of @code{libf2c.a},
 to ensure that a version other than the one built and
-installed as part of the same @code{g77} version is picked up.
+installed as part of the same @command{g77} version is picked up.
 
 @ifclear USERVISONLY
 @item
-The @samp{-Wunused} option no longer issues a spurious
+The @option{-Wunused} option no longer issues a spurious
 warning about the ``master'' procedure generated by
-@code{g77} for procedures containing @code{ENTRY} statements.
+@command{g77} for procedures containing @code{ENTRY} statements.
 @end ifclear
 
 @item
-@code{g77}'s version of @code{libf2c} separates out
+@command{g77}'s version of @code{libf2c} separates out
 the setting of global state
 (such as command-line arguments and signal handling)
 from @file{main.o} into distinct, new library
@@ -1033,7 +1033,7 @@ when @code{libf2c} (now @code{libg2c}) is a shared library.
 @ifclear USERVISONLY
 @item
 During the configuration and build process,
-@code{g77} creates subdirectories it needs only as it
+@command{g77} creates subdirectories it needs only as it
 needs them, thus avoiding unnecessary creation of, for example,
 @file{stage1/f/runtime} when doing a non-bootstrap build.
 Other cleaning up of the configuration and build process
@@ -1043,7 +1043,7 @@ has been performed as well.
 @ifclear USERVISONLY
 @item
 @code{install-info} now used to update the directory of
-Info documentation to contain an entry for @code{g77}
+Info documentation to contain an entry for @command{g77}
 (during installation).
 @end ifclear
 
@@ -1090,7 +1090,7 @@ For example, @samp{DO 10 J=2,J} now is compiled correctly.
 @cindex -O2
 @item
 Fix a code-generation bug that afflicted
-Intel x86 targets when @samp{-O2} was specified
+Intel x86 targets when @option{-O2} was specified
 compiling, for example, an old version of
 the @code{DNRM2} routine.
 
@@ -1118,7 +1118,7 @@ machines such as Alphas.
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} version of @code{libf2c} so it no longer
+Fix @command{g77} version of @code{libf2c} so it no longer
 produces a spurious @samp{I/O recursion} diagnostic at run time
 when an I/O operation (such as @samp{READ *,I}) is interrupted
 in a manner that causes the program to be terminated
@@ -1127,19 +1127,19 @@ via the @code{f_exit} routine (such as via @kbd{C-c}).
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash triggered by @code{CASE} statement with
+Fix @command{g77} crash triggered by @code{CASE} statement with
 an omitted lower or upper bound.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash compiling references to @code{CPU_Time}
+Fix @command{g77} crash compiling references to @code{CPU_Time}
 intrinsic.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash
+Fix @command{g77} crash
 (or apparently infinite run-time)
 when compiling certain complicated expressions
 involving @code{COMPLEX} arithmetic
@@ -1148,14 +1148,14 @@ involving @code{COMPLEX} arithmetic
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash on statements such as
+Fix @command{g77} crash on statements such as
 @samp{PRINT *, (REAL(Z(I)),I=1,2)}, where
 @samp{Z} is @code{DOUBLE COMPLEX}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix a @code{g++} crash.
+Fix a @command{g++} crash.
 @end ifclear
 
 @item
@@ -1163,13 +1163,13 @@ Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
 compile-time constant @code{INTEGER} expression.
 
 @item
-Fix @code{g77} @samp{-g} option so procedures that
+Fix @command{g77} @option{-g} option so procedures that
 use @code{ENTRY} can be stepped through, line by line,
-in @code{gdb}.
+in @command{gdb}.
 
 @ifclear USERVISONLY
 @item
-Fix a profiling-related bug in @code{gcc} back end for
+Fix a profiling-related bug in @command{gcc} back end for
 Intel x86 architecture.
 @end ifclear
 
@@ -1188,7 +1188,7 @@ so that the @code{TMPDIR} environment variable,
 if present, is used.
 
 @item
-Rename the @code{gcc} keyword @code{restrict} to
+Rename the @command{gcc} keyword @code{restrict} to
 @code{__restrict__}, to avoid rejecting valid, existing,
 C programs.
 Support for @code{restrict} is now more like support
@@ -1196,19 +1196,19 @@ for @code{complex}.
 
 @ifclear USERVISONLY
 @item
-Fix @samp{-fpedantic} to not reject procedure invocations
+Fix @option{-fpedantic} to not reject procedure invocations
 such as @samp{I=J()} and @samp{CALL FOO()}.
 @end ifclear
 
 @item
-Fix @samp{-fugly-comma} to affect invocations of
+Fix @option{-fugly-comma} to affect invocations of
 only external procedures.
 Restore rejection of gratuitous trailing omitted
 arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
 
 @item
-Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
-@samp{-fbadu77-intrinsics-*} options.
+Fix compiler so it accepts @option{-fgnu-intrinsics-*} and
+@option{-fbadu77-intrinsics-*} options.
 
 @ifclear USERVISONLY
 @item
@@ -1217,10 +1217,10 @@ so it is more likely that the printing of the
 active format string is limited to the string,
 with no trailing garbage being printed.
 
-(Unlike @code{f2c}, @code{g77} did not append
+(Unlike @command{f2c}, @command{g77} did not append
 a null byte to its compiled form of every
 format string specified via a @code{FORMAT} statement.
-However, @code{f2c} would exhibit the problem
+However, @command{f2c} would exhibit the problem
 anyway for a statement like @samp{PRINT '(I)garbage', 1}
 by printing @samp{(I)garbage} as the format string.)
 @end ifclear
@@ -1268,13 +1268,13 @@ This fixes a formatted-I/O bug that afflicted
 @itemize @bullet
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash triggered by @code{CASE} statement with
+Fix @command{g77} crash triggered by @code{CASE} statement with
 an omitted lower or upper bound.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} crash on statements such as
+Fix @command{g77} crash on statements such as
 @samp{PRINT *, (REAL(Z(I)),I=1,2)}, where
 @samp{Z} is @code{DOUBLE COMPLEX}.
 @end ifclear
@@ -1285,28 +1285,28 @@ Fix @code{g77} crash on statements such as
 @cindex -fPIC option
 @cindex options, -fPIC
 @item
-Fix @samp{-fPIC} (such as compiling for ELF targets)
+Fix @option{-fPIC} (such as compiling for ELF targets)
 on the Intel x86 architecture target
 so invalid assembler code is no longer produced.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @samp{-fpedantic} to not reject procedure invocations
+Fix @option{-fpedantic} to not reject procedure invocations
 such as @samp{I=J()} and @samp{CALL FOO()}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @samp{-fugly-comma} to affect invocations of
+Fix @option{-fugly-comma} to affect invocations of
 only external procedures.
 Restore rejection of gratuitous trailing omitted
 arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
 @end ifclear
 
 @item
-Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
-@samp{-fbadu77-intrinsics-*} options.
+Fix compiler so it accepts @option{-fgnu-intrinsics-*} and
+@option{-fbadu77-intrinsics-*} options.
 @end itemize
 
 @c 1998-01-06: EGCS 1.0.1 released.
@@ -1320,20 +1320,20 @@ machines such as Alphas.
 @end ifclear
 
 @c 1997-12-03: EGCS 1.0 released.
-@heading In @code{EGCS} 1.0 versus @code{g77} 0.5.21:
+@heading In @code{EGCS} 1.0 versus @command{g77} 0.5.21:
 @itemize @bullet
 @item
 Version 1.0 of @code{egcs}
 contains several regressions against
-version 0.5.21 of @code{g77},
+version 0.5.21 of @command{g77},
 due to using the
-``vanilla'' @code{gcc} back end instead of patching
+``vanilla'' @command{gcc} back end instead of patching
 it to fix a few bugs and improve performance in a
 few cases.
 
 Features that have been dropped from this version
-of @code{g77} due to their being implemented
-via @code{g77}-specific patches to the @code{gcc}
+of @command{g77} due to their being implemented
+via @command{g77}-specific patches to the @command{gcc}
 back end in previous releases include:
 
 @itemize @minus
@@ -1341,20 +1341,20 @@ back end in previous releases include:
 Support for the C-language @code{restrict} keyword.
 
 @item
-Support for the @samp{-W} option warning about
+Support for the @option{-W} option warning about
 integer division by zero.
 
 @item
-The Intel x86-specific option @samp{-malign-double}
+The Intel x86-specific option @option{-malign-double}
 applying to stack-allocated data
 as well as statically-allocate data.
 @end itemize
 
 @ifclear USERVISONLY
 Note that the @file{gcc/f/gbe/} subdirectory has been removed
-from this distribution as a result of @code{g77}
+from this distribution as a result of @command{g77}
 being fully integrated with
-the @code{egcs} variant of the @code{gcc} back end.
+the @code{egcs} variant of the @command{gcc} back end.
 @end ifclear
 
 @ifclear USERVISONLY
@@ -1375,9 +1375,9 @@ results to integer values (on some systems).
 @item
 @c Toon Moene discovered these.
 Some Fortran code, miscompiled
-by @code{g77} built on @code{gcc} version 2.8.1
+by @command{g77} built on @command{gcc} version 2.8.1
 on m68k-next-nextstep3 configurations
-when using the @samp{-O2} option,
+when using the @option{-O2} option,
 is now compiled correctly.
 It is believed that a C function known to miscompile
 on that configuration
@@ -1387,16 +1387,16 @@ also is now compiled correctly.
 
 @ifclear USERVISONLY
 @item
-Remove support for non-@code{egcs} versions of @code{gcc}.
+Remove support for non-@code{egcs} versions of @command{gcc}.
 @end ifclear
 
 @cindex -@w{}-driver option
-@cindex @code{g77} options, -@w{}-driver
+@cindex @command{g77} options, -@w{}-driver
 @cindex options, -@w{}-driver
 @item
-Remove support for the @samp{--driver} option,
-as @code{g77} now does all the driving,
-just like @code{gcc}.
+Remove support for the @option{--driver} option,
+as @command{g77} now does all the driving,
+just like @command{gcc}.
 
 @item
 Allow any numeric argument to intrinsics
@@ -1409,7 +1409,7 @@ so it is more likely that the printing of the
 active format string is limited to the string,
 with no trailing garbage being printed.
 
-(Unlike @code{f2c}, @code{g77} did not append
+(Unlike @command{f2c}, @command{g77} did not append
 a null byte to its compiled form of every
 format string specified via a @code{FORMAT} statement.
 However, @code{f2c} would exhibit the problem
@@ -1433,9 +1433,9 @@ This fixes a formatted-I/O bug that afflicted
 @item
 Fix a code-generation bug introduced by 0.5.20
 caused by loop unrolling (by specifying
-@samp{-funroll-loops} or similar).
+@option{-funroll-loops} or similar).
 This bug afflicted all code compiled by
-version 2.7.2.2.f.2 of @code{gcc} (C, C++,
+version 2.7.2.2.f.2 of @command{gcc} (C, C++,
 Fortran, and so on).
 @end ifclear
 
@@ -1446,7 +1446,7 @@ combining local @code{EQUIVALENCE} with a
 @code{DATA} statement that follows
 the first executable statement (or is
 treated as an executable-context statement
-as a result of using the @samp{-fpedantic}
+as a result of using the @option{-fpedantic}
 option).
 @end ifclear
 
@@ -1454,17 +1454,17 @@ option).
 @item
 Fix a compiler crash that occured when an
 integer division by a constant zero is detected.
-Instead, when the @samp{-W} option is specified,
-the @code{gcc} back end issues a warning about such a case.
+Instead, when the @option{-W} option is specified,
+the @command{gcc} back end issues a warning about such a case.
 This bug afflicted all code compiled by
-version 2.7.2.2.f.2 of @code{gcc} (C, C++,
+version 2.7.2.2.f.2 of @command{gcc} (C, C++,
 Fortran, and so on).
 @end ifclear
 @ifset USERVISONLY
 @item
-When the @samp{-W} option is specified, @code{gcc}, @code{g77},
-and other GNU compilers that incorporate the @code{gcc}
-back end as modified by @code{g77}, issue
+When the @option{-W} option is specified, @command{gcc}, @command{g77},
+and other GNU compilers that incorporate the @command{gcc}
+back end as modified by @command{g77}, issue
 a warning about integer division by constant zero.
 @end ifset
 
@@ -1506,17 +1506,17 @@ Such dual use of a name in a program is allowed by
 the standard.
 @end ifclear
 
-@c @code{g77}'s version of @code{libf2c} has been modified
+@c @command{g77}'s version of @code{libf2c} has been modified
 @c so that the external names of library's procedures do not
 @c conflict with names used for Fortran procedures compiled
-@c by @code{g77}.
+@c by @command{g77}.
 @c An additional layer of jacket procedures has been added
 @c to @code{libf2c} to map the old names to the new names,
 @c for automatic use by programs that interface to the
 @c library procedures via the external-procedure mechanism.
 @c 
 @c For example, the intrinsic @code{FPUTC} previously was
-@c implemented by @code{g77} as a call to the @code{libf2c}
+@c implemented by @command{g77} as a call to the @code{libf2c}
 @c routine @code{fputc_}.
 @c This would conflict with a Fortran procedure named @code{FPUTC}
 @c (using default compiler options), and this conflict
@@ -1534,20 +1534,20 @@ the standard.
 @ifclear USERVISONLY
 @item
 Place automatic arrays on the stack, even if
-@code{SAVE} or the @samp{-fno-automatic} option
+@code{SAVE} or the @option{-fno-automatic} option
 is in effect.
 This avoids a compiler crash in some cases.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-The @samp{-malign-double} option now reliably aligns
+The @option{-malign-double} option now reliably aligns
 @code{DOUBLE PRECISION} optimally on Pentium and
-Pentium Pro architectures (586 and 686 in @code{gcc}).
+Pentium Pro architectures (586 and 686 in @command{gcc}).
 @end ifclear
 
 @item
-New option @samp{-Wno-globals} disables warnings
+New option @option{-Wno-globals} disables warnings
 about ``suspicious'' use of a name both as a global
 name and as the implicit name of an intrinsic, and
 warnings about disagreements over the number or natures of
@@ -1555,10 +1555,10 @@ arguments passed to global procedures, or the
 natures of the procedures themselves.
 
 The default is to issue such warnings, which are
-new as of this version of @code{g77}.
+new as of this version of @command{g77}.
 
 @item
-New option @samp{-fno-globals} disables diagnostics
+New option @option{-fno-globals} disables diagnostics
 about potentially fatal disagreements
 analysis problems, such as disagreements over the
 number or natures of arguments passed to global
@@ -1567,7 +1567,7 @@ procedures, or the natures of those procedures themselves.
 The default is to issue such diagnostics and flag
 the compilation as unsuccessful.
 With this option, the diagnostics are issued as
-warnings, or, if @samp{-Wno-globals} is specified,
+warnings, or, if @option{-Wno-globals} is specified,
 are not issued at all.
 
 This option also disables inlining of global procedures,
@@ -1585,7 +1585,7 @@ This avoids a compiler crash.
 
 @ifclear USERVISONLY
 @item
-Fix parsing bug whereby @code{g77} rejected a
+Fix parsing bug whereby @command{g77} rejected a
 second initialization specification immediately
 following the first's closing @samp{/} without
 an intervening comma in a @code{DATA} statement,
@@ -1594,7 +1594,7 @@ and the second specification was an implied-DO list.
 
 @ifclear USERVISONLY
 @item
-Improve performance of the @code{gcc} back end so
+Improve performance of the @command{gcc} back end so
 certain complicated expressions involving @code{COMPLEX}
 arithmetic (especially multiplication) don't appear to
 take forever to compile.
@@ -1602,7 +1602,7 @@ take forever to compile.
 
 @ifclear USERVISONLY
 @item
-Fix a couple of profiling-related bugs in @code{gcc}
+Fix a couple of profiling-related bugs in @command{gcc}
 back end.
 @end ifclear
 
@@ -1615,8 +1615,8 @@ These fixes are circa version 3.10p of GNAT.
 
 @ifclear USERVISONLY
 @item
-Include some other @code{gcc} fixes that seem useful in
-@code{g77}'s version of @code{gcc}.
+Include some other @command{gcc} fixes that seem useful in
+@command{g77}'s version of @command{gcc}.
 (See @file{gcc/ChangeLog} for details---compare it
 to that file in the vanilla @code{gcc-2.7.2.3.tar.gz}
 distribution.)
@@ -1664,8 +1664,8 @@ Improve @code{libU77} so it is more portable.
 @end ifclear
 
 @item
-Add options @samp{-fbadu77-intrinsics-delete},
-@samp{-fbadu77-intrinsics-hide}, and so on.
+Add options @option{-fbadu77-intrinsics-delete},
+@option{-fbadu77-intrinsics-hide}, and so on.
 
 @ifclear USERVISONLY
 @item
@@ -1674,7 +1674,7 @@ Fix crashes involving diagnosed or invalid code.
 
 @ifclear USERVISONLY
 @item
-@code{g77} and @code{gcc} now do a somewhat better
+@command{g77} and @command{gcc} now do a somewhat better
 job detecting and diagnosing arrays that are too
 large to handle before these cause diagnostics
 during the assembler or linker phase, a compiler
@@ -1688,33 +1688,33 @@ Make some fixes to alias analysis code.
 
 @ifclear USERVISONLY
 @item
-Add support for @code{restrict} keyword in @code{gcc}
+Add support for @code{restrict} keyword in @command{gcc}
 front end.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Support @code{gcc} version 2.7.2.3
-(modified by @code{g77} into version 2.7.2.3.f.1),
+Support @command{gcc} version 2.7.2.3
+(modified by @command{g77} into version 2.7.2.3.f.1),
 and remove
-support for prior versions of @code{gcc}.
+support for prior versions of @command{gcc}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Incorporate GNAT's patches to the @code{gcc} back
-end into @code{g77}'s, so GNAT users do not need
-to apply GNAT's patches to build both GNAT and @code{g77}
+Incorporate GNAT's patches to the @command{gcc} back
+end into @command{g77}'s, so GNAT users do not need
+to apply GNAT's patches to build both GNAT and @command{g77}
 from the same source tree.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Modify @code{make} rules and related code so that
+Modify @command{make} rules and related code so that
 generation of Info documentation doesn't require
-compilation using @code{gcc}.
+compilation using @command{gcc}.
 Now, any ANSI C compiler should be adequate to
-produce the @code{g77} documentation (in particular,
+produce the @command{g77} documentation (in particular,
 the tables of intrinsics) from scratch.
 @end ifclear
 
@@ -1739,12 +1739,12 @@ the type of an intrinsic invocation.
 
 @ifclear USERVISONLY
 @item
-Support @samp{*f771} entry in @code{gcc} @file{specs} file.
+Support @samp{*f771} entry in @command{gcc} @file{specs} file.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix typo in @code{make} rule @code{g77-cross}, used only for
+Fix typo in @command{make} rule @command{g77-cross}, used only for
 cross-compiling.
 @end ifclear
 
@@ -1756,27 +1756,27 @@ if previous attempt to archive was interrupted.
 
 @ifclear USERVISONLY
 @item
-Change @code{gcc} to unroll loops only during the last
+Change @command{gcc} to unroll loops only during the last
 invocation (of as many as two invocations) of loop
 optimization.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Improve handling of @samp{-fno-f2c} so that code that
+Improve handling of @option{-fno-f2c} so that code that
 attempts to pass an intrinsic as an actual argument,
 such as @samp{CALL FOO(ABS)}, is rejected due to the fact
 that the run-time-library routine is, effectively,
-compiled with @samp{-ff2c} in effect.
+compiled with @option{-ff2c} in effect.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} driver to recognize @samp{-fsyntax-only}
-as an option that inhibits linking, just like @samp{-c} or
-@samp{-S}, and to recognize and properly handle the
-@samp{-nostdlib}, @samp{-M}, @samp{-MM}, @samp{-nodefaultlibs},
-and @samp{-Xlinker} options.
+Fix @command{g77} driver to recognize @option{-fsyntax-only}
+as an option that inhibits linking, just like @option{-c} or
+@option{-S}, and to recognize and properly handle the
+@option{-nostdlib}, @option{-M}, @option{-MM}, @option{-nodefaultlibs},
+and @option{-Xlinker} options.
 @end ifclear
 
 @ifclear USERVISONLY
@@ -1791,17 +1791,17 @@ recursive I/O (at run time).
 @end ifclear
 
 @item
-@code{g77} driver now prints version information (such as produced
+@command{g77} driver now prints version information (such as produced
 by @kbd{g77 -v}) to @code{stderr} instead of @code{stdout}.
 
 @item
 The @samp{.r} suffix now designates a Ratfor source file,
-to be preprocessed via the @code{ratfor} command, available
+to be preprocessed via the @command{ratfor} command, available
 separately.
 
 @ifclear USERVISONLY
 @item
-Fix some aspects of how @code{gcc} determines what kind of
+Fix some aspects of how @command{gcc} determines what kind of
 system is being configured and what kinds are supported.
 For example, GNU Linux/Alpha ELF systems now are directly
 supported.
@@ -1821,7 +1821,7 @@ Improve documentation and indexing.
 @item
 Include all pertinent files for @code{libf2c} that come
 from @code{netlib.bell-labs.com}; give any such files
-that aren't quite accurate in @code{g77}'s version of
+that aren't quite accurate in @command{g77}'s version of
 @code{libf2c} the suffix @samp{.netlib}.
 @end ifclear
 
@@ -1835,32 +1835,32 @@ Reserve @code{INTEGER(KIND=0)} for future use.
 @heading In 0.5.20:
 @itemize @bullet
 @item
-The @samp{-fno-typeless-boz} option is now the default.
+The @option{-fno-typeless-boz} option is now the default.
 
 This option specifies that non-decimal-radix
 constants using the prefixed-radix form (such as @samp{Z'1234'})
 are to be interpreted as @code{INTEGER(KIND=1)} constants.
-Specify @samp{-ftypeless-boz} to cause such
+Specify @option{-ftypeless-boz} to cause such
 constants to be interpreted as typeless.
 
-(Version 0.5.19 introduced @samp{-fno-typeless-boz} and
+(Version 0.5.19 introduced @option{-fno-typeless-boz} and
 its inverse.)
 
 @ifset DOC-G77
 @xref{Fortran Dialect Options,,Options Controlling Fortran Dialect},
-for information on the @samp{-ftypeless-boz} option.
+for information on the @option{-ftypeless-boz} option.
 @end ifset
 
 @item
-Options @samp{-ff90-intrinsics-enable} and
-@samp{-fvxt-intrinsics-enable} now are the
+Options @option{-ff90-intrinsics-enable} and
+@option{-fvxt-intrinsics-enable} now are the
 defaults.
 
 Some programs might use names that clash with
 intrinsic names defined (and now enabled) by these
 options or by the new @code{libU77} intrinsics.
 Users of such programs might need to compile them
-differently (using, for example, @samp{-ff90-intrinsics-disable})
+differently (using, for example, @option{-ff90-intrinsics-disable})
 or, better yet, insert appropriate @code{EXTERNAL}
 statements specifying that these names are not intended
 to be names of intrinsics.
@@ -1873,7 +1873,7 @@ I/O performance, especially over NFS.
 @emph{Note:} If you have code that depends on the behavior
 of @code{libf2c} when built with @code{ALWAYS_FLUSH} defined,
 you will have to modify @code{libf2c} accordingly before
-building it from this and future versions of @code{g77}.
+building it from this and future versions of @command{g77}.
 
 @ifset DOC-G77
 @xref{Output Assumed To Flush}, for more information.
@@ -1882,44 +1882,44 @@ building it from this and future versions of @code{g77}.
 @item
 Dave Love's implementation of @code{libU77} has been
 added to the version of @code{libf2c} distributed with
-and built as part of @code{g77}.
-@code{g77} now knows about the routines in this library
+and built as part of @command{g77}.
+@command{g77} now knows about the routines in this library
 as intrinsics.
 
 @item
-New option @samp{-fvxt} specifies that the
+New option @option{-fvxt} specifies that the
 source file is written in VXT Fortran, instead of GNU Fortran.
 
 @ifset DOC-G77
 @xref{VXT Fortran}, for more information on the constructs
-recognized when the @samp{-fvxt} option is specified.
+recognized when the @option{-fvxt} option is specified.
 @end ifset
 
 @item
-The @samp{-fvxt-not-f90} option has been deleted,
-along with its inverse, @samp{-ff90-not-vxt}.
+The @option{-fvxt-not-f90} option has been deleted,
+along with its inverse, @option{-ff90-not-vxt}.
 
 If you used one of these deleted options, you should
 re-read the pertinent documentation to determine which
 options, if any, are appropriate for compiling your
-code with this version of @code{g77}.
+code with this version of @command{g77}.
 
 @ifset DOC-G77
 @xref{Other Dialects}, for more information.
 @end ifset
 
 @item
-The @samp{-fugly} option now issues a warning, as it
+The @option{-fugly} option now issues a warning, as it
 likely will be removed in a future version.
 
-(Enabling all the @samp{-fugly-*} options is unlikely
+(Enabling all the @option{-fugly-*} options is unlikely
 to be feasible, or sensible, in the future,
 so users should learn to specify only those
-@samp{-fugly-*} options they really need for a
+@option{-fugly-*} options they really need for a
 particular source file.)
 
 @item
-The @samp{-fugly-assumed} option, introduced in
+The @option{-fugly-assumed} option, introduced in
 version 0.5.19, has been changed to
 better accommodate old and new code.
 
@@ -1929,11 +1929,11 @@ better accommodate old and new code.
 
 @ifclear USERVISONLY
 @item
-Make a number of fixes to the @code{g77} front end and
-the @code{gcc} back end to better support Alpha (AXP)
+Make a number of fixes to the @command{g77} front end and
+the @command{gcc} back end to better support Alpha (AXP)
 machines.
 This includes providing at least one bug-fix to the
-@code{gcc} back end for Alphas.
+@command{gcc} back end for Alphas.
 @end ifclear
 
 @item
@@ -1954,34 +1954,34 @@ instead of the more common @code{INTEGER(KIND=1)}
 (often referred to as @code{INTEGER*4}).
 
 @item
-Emulate @code{COMPLEX} arithmetic in the @code{g77} front
+Emulate @code{COMPLEX} arithmetic in the @command{g77} front
 end, to avoid bugs in @code{complex} support in the
-@code{gcc} back end.
-New option @samp{-fno-emulate-complex}
-causes @code{g77} to revert the 0.5.19 behavior.
+@command{gcc} back end.
+New option @option{-fno-emulate-complex}
+causes @command{g77} to revert the 0.5.19 behavior.
 
 @ifclear USERVISONLY
 @item
 Fix bug whereby @samp{REAL A(1)}, for example, caused
-a compiler crash if @samp{-fugly-assumed} was in effect
+a compiler crash if @option{-fugly-assumed} was in effect
 and @var{A} was a local (automatic) array.
 That case is no longer affected by the new
-handling of @samp{-fugly-assumed}.
+handling of @option{-fugly-assumed}.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Fix @code{g77} command driver so that @samp{g77 -o foo.f}
+Fix @command{g77} command driver so that @samp{g77 -o foo.f}
 no longer deletes @file{foo.f} before issuing other
-diagnostics, and so the @samp{-x} option is properly
+diagnostics, and so the @option{-x} option is properly
 handled.
 @end ifclear
 
 @ifclear USERVISONLY
 @item
-Enable inlining of subroutines and functions by the @code{gcc}
+Enable inlining of subroutines and functions by the @command{gcc}
 back end.
-This works as it does for @code{gcc} itself---program units
+This works as it does for @command{gcc} itself---program units
 may be inlined for invocations that follow them in the same
 program unit, as long as the appropriate compile-time
 options are specified.
@@ -1995,18 +1995,18 @@ these are defined (assigned to) by Fortran code.
 
 This can result in faster and/or smaller programs when
 compiling with optimization enabled, though on some
-systems this effect is observed only when @samp{-fforce-addr}
+systems this effect is observed only when @option{-fforce-addr}
 also is specified.
 
-New options @samp{-falias-check}, @samp{-fargument-alias},
-@samp{-fargument-noalias},
-and @samp{-fno-argument-noalias-global} control the
-way @code{g77} handles potential aliasing.
+New options @option{-falias-check}, @option{-fargument-alias},
+@option{-fargument-noalias},
+and @option{-fno-argument-noalias-global} control the
+way @command{g77} handles potential aliasing.
 
 @ifset DOC-G77
 @xref{Aliasing Assumed To Work}, for detailed information on why the
 new defaults might result in some programs no longer working the way they
-did when compiled by previous versions of @code{g77}.
+did when compiled by previous versions of @command{g77}.
 @end ifset
 
 @ifclear USERVISONLY
@@ -2018,7 +2018,7 @@ are compiled in-line.
 @ifclear USERVISONLY
 @item
 The bug-fix for 0.5.19.1 has been re-done.
-The @code{g77} compiler has been changed back to
+The @command{g77} compiler has been changed back to
 assume @code{libf2c} has no aliasing problems in
 its implementations of the @code{COMPLEX} (and
 @code{DOUBLE COMPLEX}) intrinsics.
@@ -2031,7 +2031,7 @@ or all cases, due to this change alone.
 
 @emph{Note:} This change requires version 0.5.20 of
 @code{libf2c}, at least, when linking code produced
-by any versions of @code{g77} other than 0.5.19.1.
+by any versions of @command{g77} other than 0.5.19.1.
 Use @samp{g77 -v} to determine the version numbers
 of the @code{libF77}, @code{libI77}, and @code{libU77}
 components of the @code{libf2c} library.
@@ -2043,11 +2043,11 @@ version of @code{libf2c}.)
 @end ifclear
 
 @item
-New option @samp{-fugly-assign} specifies that the
+New option @option{-fugly-assign} specifies that the
 same memory locations are to be used to hold the
 values assigned by both statements @samp{I = 3} and
 @samp{ASSIGN 10 TO I}, for example.
-(Normally, @code{g77} uses a separate memory location
+(Normally, @command{g77} uses a separate memory location
 to hold assigned statement labels.)
 
 @ifset DOC-G77
@@ -2074,7 +2074,7 @@ Fix crashes involving diagnosed or invalid code.
 Change approach to building @code{libf2c} archive
 (@file{libf2c.a}) so that members are added to it
 only when truly necessary, so the user that installs
-an already-built @code{g77} doesn't need to have write
+an already-built @command{g77} doesn't need to have write
 access to the build tree (whereas the user doing the
 build might not have access to install new software
 on the system).
@@ -2082,10 +2082,10 @@ on the system).
 
 @ifclear USERVISONLY
 @item
-Support @code{gcc} version 2.7.2.2
-(modified by @code{g77} into version 2.7.2.2.f.2),
+Support @command{gcc} version 2.7.2.2
+(modified by @command{g77} into version 2.7.2.2.f.2),
 and remove
-support for prior versions of @code{gcc}.
+support for prior versions of @command{gcc}.
 @end ifclear
 
 @ifclear USERVISONLY
@@ -2096,7 +2096,7 @@ fix up some of the build procedures.
 
 @ifclear USERVISONLY
 @item
-Improve general build procedures for @code{g77},
+Improve general build procedures for @command{g77},
 fixing minor bugs (such as deletion of any file
 named @file{f771} in the parent directory of @code{gcc/}).
 @end ifclear
@@ -2105,13 +2105,13 @@ named @file{f771} in the parent directory of @code{gcc/}).
 Enable full support of @code{INTEGER(KIND=2)}
 (often referred to as @code{INTEGER*8})
 available in
-@code{libf2c} and @file{f2c.h} so that @code{f2c} users
-may make full use of its features via the @code{g77}
+@code{libf2c} and @file{f2c.h} so that @command{f2c} users
+may make full use of its features via the @command{g77}
 version of @file{f2c.h} and the @code{INTEGER(KIND=2)}
-support routines in the @code{g77} version of @code{libf2c}.
+support routines in the @command{g77} version of @code{libf2c}.
 
 @item
-Improve @code{g77} driver and @code{libf2c} so that @samp{g77 -v}
+Improve @command{g77} driver and @code{libf2c} so that @samp{g77 -v}
 yields version information on the library.
 
 @item
@@ -2136,9 +2136,9 @@ Complain about industry-wide ambiguous references
 @samp{REAL(@var{expr})} and @samp{AIMAG(@var{expr})},
 where @var{expr} is @code{DOUBLE COMPLEX} (or any
 complex type other than @code{COMPLEX}), unless
-@samp{-ff90} option specifies Fortran 90 interpretation
-or new @samp{-fugly-complex} option, in conjunction with
-@samp{-fnot-f90}, specifies @code{f2c} interpretation.
+@option{-ff90} option specifies Fortran 90 interpretation
+or new @option{-fugly-complex} option, in conjunction with
+@option{-fnot-f90}, specifies @command{f2c} interpretation.
 
 @ifclear USERVISONLY
 @item
@@ -2214,38 +2214,38 @@ A temporary kludge option provides bare-bones information on
 @code{COMMON} and @code{EQUIVALENCE} members at debug time.
 
 @item
-New @samp{-fonetrip} option specifies FORTRAN-66-style
+New @option{-fonetrip} option specifies FORTRAN-66-style
 one-trip @code{DO} loops.
 
 @item
-New @samp{-fno-silent} option causes names of program units
+New @option{-fno-silent} option causes names of program units
 to be printed as they are compiled, in a fashion similar to
-UNIX @code{f77} and @code{f2c}.
+UNIX @command{f77} and @command{f2c}.
 
 @item
-New @samp{-fugly-assumed} option specifies that arrays
+New @option{-fugly-assumed} option specifies that arrays
 dimensioned via @samp{DIMENSION X(1)}, for example, are to be
 treated as assumed-size.
 
 @item
-New @samp{-fno-typeless-boz} option specifies that non-decimal-radix
+New @option{-fno-typeless-boz} option specifies that non-decimal-radix
 constants using the prefixed-radix form (such as @samp{Z'1234'})
 are to be interpreted as @code{INTEGER} constants.
 
 @item
-New @samp{-ff66} option is a ``shorthand'' option that specifies
+New @option{-ff66} option is a ``shorthand'' option that specifies
 behaviors considered appropriate for FORTRAN 66 programs.
 
 @item
-New @samp{-ff77} option is a ``shorthand'' option that specifies
-behaviors considered appropriate for UNIX @code{f77} programs.
+New @option{-ff77} option is a ``shorthand'' option that specifies
+behaviors considered appropriate for UNIX @command{f77} programs.
 
 @item
-New @samp{-fugly-comma} and @samp{-fugly-logint} options provided
-to perform some of what @samp{-fugly} used to do.
-@samp{-fugly} and @samp{-fno-ugly} are now ``shorthand'' options,
+New @option{-fugly-comma} and @option{-fugly-logint} options provided
+to perform some of what @option{-fugly} used to do.
+@option{-fugly} and @option{-fno-ugly} are now ``shorthand'' options,
 in that they do nothing more than enable (or disable) other
-@samp{-fugly-*} options.
+@option{-fugly-*} options.
 
 @item
 Fix parsing of assignment statements involving targets that
@@ -2262,7 +2262,7 @@ of valid Fortran programs are not misdiagnosed as improperly
 extending the area backwards.
 
 @item
-Support @code{gcc} version 2.7.2.1.
+Support @command{gcc} version 2.7.2.1.
 
 @item
 Upgrade to @code{libf2c} as of 1996-09-26, and
@@ -2289,23 +2289,23 @@ Modify @code{fseek_()} in @code{libf2c} to be more portable
 matters) and to catch invalid @code{whence} arguments.
 
 @item
-Some useless warnings from the @samp{-Wunused} option have
+Some useless warnings from the @option{-Wunused} option have
 been eliminated.
 
 @item
 Fix a problem building the @file{f771} executable
-on AIX systems by linking with the @samp{-bbigtoc} option.
+on AIX systems by linking with the @option{-bbigtoc} option.
 
 @item
-Abort configuration if @code{gcc} has not been patched
+Abort configuration if @command{gcc} has not been patched
 using the patch file provided in the @file{gcc/f/gbe/}
 subdirectory.
 
 @item
-Add options @samp{--help} and @samp{--version} to the
-@code{g77} command, to conform to GNU coding guidelines.
-Also add printing of @code{g77} version number when
-the @samp{--verbose} (@samp{-v}) option is used.
+Add options @option{--help} and @option{--version} to the
+@command{g77} command, to conform to GNU coding guidelines.
+Also add printing of @command{g77} version number when
+the @option{--verbose} (@option{-v}) option is used.
 
 @item
 Change internally generated name for local @code{EQUIVALENCE}
@@ -2324,7 +2324,7 @@ Improvements to documentation and indexing.
 Add some rudimentary support for @code{INTEGER*1},
 @code{INTEGER*2}, @code{INTEGER*8},
 and their @code{LOGICAL} equivalents.
-(This support works on most, maybe all, @code{gcc} targets.)
+(This support works on most, maybe all, @command{gcc} targets.)
 
 Thanks to Scott Snyder (@email{snyder@@d0sgif.fnal.gov})
 for providing the patch for this!
@@ -2367,18 +2367,18 @@ in some cases significantly (though, again, this
 is only a subset of the general problem to be
 addressed in 0.6).
 
-A new option, @samp{-fzeros}, is introduced to
+A new option, @option{-fzeros}, is introduced to
 enable the traditional treatment of zeros as any
 other value.
 
 @item
-With @samp{-ff90} in force, @code{g77} incorrectly
+With @option{-ff90} in force, @command{g77} incorrectly
 interpreted @samp{REAL(Z)} as returning a @code{REAL}
 result, instead of as a @code{DOUBLE PRECISION}
 result.
 (Here, @samp{Z} is @code{DOUBLE COMPLEX}.)
 
-With @samp{-fno-f90} in force, the interpretation remains
+With @option{-fno-f90} in force, the interpretation remains
 unchanged, since this appears to be how at least some
 F77 code using the @code{DOUBLE COMPLEX} extension expected
 it to work.
@@ -2413,9 +2413,9 @@ triggered in a long time.
 
 @item
 Introduce three new options that
-implement optimizations in the @code{gcc} back end (GBE).
-These options are @samp{-fmove-all-movables}, @samp{-freduce-all-givs},
-and @samp{-frerun-loop-opt}, which are enabled, by default,
+implement optimizations in the @command{gcc} back end (GBE).
+These options are @option{-fmove-all-movables}, @option{-freduce-all-givs},
+and @option{-frerun-loop-opt}, which are enabled, by default,
 for Fortran compilations.
 These optimizations are intended to help toon Fortran programs.
 
@@ -2424,19 +2424,19 @@ Patch the GBE to do a better job optimizing certain
 kinds of references to array elements.
 
 @item
-Due to patches to the GBE, the version number of @code{gcc}
+Due to patches to the GBE, the version number of @command{gcc}
 also is patched to make it easier to manage installations,
-especially useful if it turns out a @code{g77} change to the
+especially useful if it turns out a @command{g77} change to the
 GBE has a bug.
 
-The @code{g77}-modified version number is the @code{gcc}
+The @command{g77}-modified version number is the @command{gcc}
 version number with the string @samp{.f.@var{n}} appended,
 where @samp{f} identifies the version as enhanced for
 Fortran, and @var{n} is @samp{1} for the first Fortran
-patch for that version of @code{gcc}, @samp{2} for the
+patch for that version of @command{gcc}, @samp{2} for the
 second, and so on.
 
-So, this introduces version 2.7.2.f.1 of @code{gcc}.
+So, this introduces version 2.7.2.f.1 of @command{gcc}.
 
 @item
 Make several improvements and fixes to diagnostics, including
@@ -2444,21 +2444,21 @@ the removal of two that were inappropriate or inadequate.
 
 @item
 Warning about two successive arithmetic operators, produced
-by @samp{-Wsurprising}, now produced @emph{only} when both
+by @option{-Wsurprising}, now produced @emph{only} when both
 operators are, indeed, arithmetic (not relational/boolean).
 
 @item
-@samp{-Wsurprising} now warns about the remaining cases
+@option{-Wsurprising} now warns about the remaining cases
 of using non-integral variables for implied-@code{DO}
-loops, instead of these being rejected unless @samp{-fpedantic}
-or @samp{-fugly} specified.
+loops, instead of these being rejected unless @option{-fpedantic}
+or @option{-fugly} specified.
 
 @item
 Allow @code{SAVE} of a local variable or array, even after
 it has been given an initial value via @code{DATA}, for example.
 
 @item
-Introduce an Info version of @code{g77} documentation, which
+Introduce an Info version of @command{g77} documentation, which
 supercedes @file{gcc/f/CREDITS}, @file{gcc/f/DOC}, and
 @file{gcc/f/PROJECTS}.
 These files will be removed in a future release.
@@ -2471,8 +2471,8 @@ This effort was inspired by a first pass at translating
 David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
 @item
-New @samp{-fno-second-underscore} option to specify
-that, when @samp{-funderscoring} is in effect, a second
+New @option{-fno-second-underscore} option to specify
+that, when @option{-funderscoring} is in effect, a second
 underscore is not to be appended to Fortran names already
 containing an underscore.
 
@@ -2486,20 +2486,20 @@ the result of the calculation is always converted to
 the default @code{INTEGER} type.
 
 (This should have no effect on existing code compiled
-by @code{g77}, but code written to assume that use
+by @command{g77}, but code written to assume that use
 of a @emph{wider} type for the @code{DO} variable
 will result in an iteration count being fully calculated
 using that wider type (wider
 than default @code{INTEGER}) must be rewritten.)
 
 @item
-Support @code{gcc} version 2.7.2.
+Support @command{gcc} version 2.7.2.
 
 @item
 Upgrade to @code{libf2c} as of 1996-03-23, and
 fix up some of the build procedures.
 
-Note that the email addresses related to @code{f2c}
+Note that the email addresses related to @command{f2c}
 have changed---the distribution site now is
 named @code{netlib.bell-labs.com}, and the
 maintainer's new address is @email{dmg@@bell-labs.com}.
@@ -2526,8 +2526,8 @@ various applications and programs exhibiting sudden, strange
 behaviors.
 
 I sincerely apologize for not realizing the
-implications of the fact that when @samp{g77 -v} runs the @code{ld} command
-with @samp{-o /dev/null} that @code{ld} tries to @emph{remove} the executable
+implications of the fact that when @samp{g77 -v} runs the @command{ld} command
+with @samp{-o /dev/null} that @command{ld} tries to @emph{remove} the executable
 it is supposed to build (especially if it reports unresolved
 references, which it should in this case)!
 
@@ -2549,10 +2549,10 @@ never happen).
 
 @item
 Make @code{libf2c} build procedures work on more systems again by
-eliminating unnecessary invocations of @samp{ld -r -x} and @code{mv}.
+eliminating unnecessary invocations of @samp{ld -r -x} and @command{mv}.
 
 @item
-Fix omission of @samp{-funix-intrinsics-@dots{}} options in list of permitted
+Fix omission of @option{-funix-intrinsics-@dots{}} options in list of permitted
 options to compiler.
 
 @item
@@ -2566,12 +2566,12 @@ in the back end) involving exponentiation with a large @code{INTEGER}
 constant for the right-hand operator (e.g. @samp{I**32767}).
 
 @item
-Fix build procedures so cross-compiling @code{g77} (the @code{fini}
+Fix build procedures so cross-compiling @command{g77} (the @command{fini}
 utility in particular) is properly built using the host compiler.
 
 @item
-Add new @samp{-Wsurprising} option to warn about constructs that are
-interpreted by the Fortran standard (and @code{g77}) in ways that
+Add new @option{-Wsurprising} option to warn about constructs that are
+interpreted by the Fortran standard (and @command{g77}) in ways that
 are surprising to many programmers.
 
 @item
@@ -2582,12 +2582,12 @@ Add @code{ERF()} and @code{ERFC()} as generic intrinsics mapping to existing
 specify @samp{INTRINSIC ERF,ERFC} in any code where you might use
 these as generic intrinsics, to improve likelihood of diagnostics
 (instead of subtle run-time bugs) when using a compiler that
-doesn't support these as intrinsics (e.g. @code{f2c}).
+doesn't support these as intrinsics (e.g. @command{f2c}).
 
 @item
-Remove from @samp{-fno-pedantic} the diagnostic about @code{DO}
+Remove from @option{-fno-pedantic} the diagnostic about @code{DO}
 with non-@code{INTEGER} index variable; issue that under
-@samp{-Wsurprising} instead.
+@option{-Wsurprising} instead.
 
 @item
 Clarify some diagnostics that say things like ``ignored'' when that's
@@ -2606,7 +2606,7 @@ Minor improvement to code generation for some @code{DO} loops on some
 machines.
 
 @item
-Support @code{gcc} version 2.7.1.
+Support @command{gcc} version 2.7.1.
 
 @item
 Upgrade to @code{libf2c} as of 1995-11-15.
@@ -2621,14 +2621,14 @@ not involving @code{COMMON}.
 
 @item
 Fix code-generation bugs involving invoking ``gratis'' library procedures
-in @code{libf2c} from code compiled with @samp{-fno-f2c} by making these
-procedures known to @code{g77} as intrinsics (not affected by -fno-f2c).
+in @code{libf2c} from code compiled with @option{-fno-f2c} by making these
+procedures known to @command{g77} as intrinsics (not affected by -fno-f2c).
 This is known to fix code invoking @code{ERF()}, @code{ERFC()},
 @code{DERF()}, and @code{DERFC()}.
 
 @item
 Update @code{libf2c} to include netlib patches through 1995-08-16, and
-@code{#define} @code{WANT_LEAD_0} to 1 to make @code{g77}-compiled code more
+@code{#define} @code{WANT_LEAD_0} to 1 to make @command{g77}-compiled code more
 consistent with other Fortran implementations by outputting
 leading zeros in formatted and list-directed output.
 
@@ -2636,7 +2636,7 @@ leading zeros in formatted and list-directed output.
 Fix a code-generation bug involving adjustable dummy arrays with high
 bounds whose primaries are changed during procedure execution, and
 which might well improve code-generation performance for such arrays
-compared to @code{f2c} plus @code{gcc} (but apparently only when using
+compared to @command{f2c} plus @command{gcc} (but apparently only when using
 @file{gcc-2.7.0} or later).
 
 @item
@@ -2649,8 +2649,8 @@ that overlaps one or more of the arguments to the invocation or divide.
 @item
 Fix crash by not generating new optimal code for @samp{X**I} if @samp{I} is
 nonconstant and the expression is used to dimension a dummy
-array, since the @code{gcc} back end does not support the necessary
-mechanics (and the @code{gcc} front end rejects the equivalent
+array, since the @command{gcc} back end does not support the necessary
+mechanics (and the @command{gcc} front end rejects the equivalent
 construct, as it turns out).
 
 @item
@@ -2677,25 +2677,25 @@ area when any member of area has initial value (via @code{DATA},
 for example).
 
 @item
-Fix installation bug that prevented installation of @code{g77} driver.
-Provide for easy selection of whether to install copy of @code{g77}
-as @code{f77} to replace the broken code.
+Fix installation bug that prevented installation of @command{g77} driver.
+Provide for easy selection of whether to install copy of @command{g77}
+as @command{f77} to replace the broken code.
 
 @item
-Fix @code{gcc} driver (affects @code{g77} thereby) to not
+Fix @command{gcc} driver (affects @command{g77} thereby) to not
 gratuitously invoke the
-@code{f771} program (e.g. when @samp{-E} is specified).
+@code{f771} program (e.g. when @option{-E} is specified).
 
 @item
 Fix diagnostic to point to correct source line when it immediately
 follows an @code{INCLUDE} statement.
 
 @item
-Support more compiler options in @code{gcc}/@code{g77} when
+Support more compiler options in @command{gcc}/@command{g77} when
 compiling Fortran files.
-These options include @samp{-p}, @samp{-pg}, @samp{-aux-info}, @samp{-P},
+These options include @option{-p}, @option{-pg}, @option{-aux-info}, @option{-P},
 correct setting of version-number macros for preprocessing, full
-recognition of @samp{-O0}, and
+recognition of @option{-O0}, and
 automatic insertion of configuration-specific linker specs.
 
 @item
@@ -2718,15 +2718,15 @@ Move @code{LOC()} intrinsic out of the @code{vxt} group to the new
 @code{unix} group.
 
 @item
-Improve @code{g77} so that @samp{g77 -v} by itself (or with
-certain other options, including @samp{-B}, @samp{-b}, @samp{-i},
-@samp{-nostdlib}, and @samp{-V}) reports lots more useful
-version info, and so that long-form options @code{gcc} accepts are
-understood by @code{g77} as well (even in truncated, unambiguous forms).
+Improve @command{g77} so that @samp{g77 -v} by itself (or with
+certain other options, including @option{-B}, @option{-b}, @option{-i},
+@option{-nostdlib}, and @option{-V}) reports lots more useful
+version info, and so that long-form options @command{gcc} accepts are
+understood by @command{g77} as well (even in truncated, unambiguous forms).
 
 @item
-Add new @code{g77} option @samp{--driver=name} to specify driver when
-default, @code{gcc}, isn't appropriate.
+Add new @command{g77} option @option{--driver=name} to specify driver when
+default, @command{gcc}, isn't appropriate.
 
 @item
 Add support for @samp{#} directives (as output by the preprocessor) in the
@@ -2735,14 +2735,14 @@ preprocessor (when compiling @samp{.F} files) so diagnostics and debugging
 info are more useful to users of the preprocessor.
 
 @item
-Produce better diagnostics, more like @code{gcc}, with info such as
+Produce better diagnostics, more like @command{gcc}, with info such as
 @samp{In function `foo':} and @samp{In file included from...:}.
 
 @item
-Support @code{gcc}'s @samp{-fident} and @samp{-fno-ident} options.
+Support @command{gcc}'s @option{-fident} and @option{-fno-ident} options.
 
 @item
-When @samp{-Wunused} in effect, don't warn about local variables used as
+When @option{-Wunused} in effect, don't warn about local variables used as
 statement-function dummy arguments or @code{DATA} implied-@code{DO} iteration
 variables, even though, strictly speaking, these are not uses
 of the variables themselves.
@@ -2750,19 +2750,19 @@ of the variables themselves.
 @item
 When @samp{-W -Wunused} in effect, don't warn about unused dummy arguments
 at all, since there's no way to turn this off for individual
-cases (@code{g77} might someday start warning about these)---applies
-to @code{gcc} versions 2.7.0 and later, since earlier versions didn't
+cases (@command{g77} might someday start warning about these)---applies
+to @command{gcc} versions 2.7.0 and later, since earlier versions didn't
 warn about unused dummy arguments.
 
 @item
-New option @samp{-fno-underscoring} that inhibits transformation of names
+New option @option{-fno-underscoring} that inhibits transformation of names
 (by appending one or two underscores) so users may experiment
 with implications of such an environment.
 
 @item
 Minor improvement to @file{gcc/f/info} module to make it easier to build
-@code{g77} using the native (non-@code{gcc}) compiler on certain machines
-(but definitely not all machines nor all non-@code{gcc} compilers).
+@command{g77} using the native (non-@command{gcc}) compiler on certain machines
+(but definitely not all machines nor all non-@command{gcc} compilers).
 Please
 do not report bugs showing problems compilers have with
 macros defined in @file{gcc/f/target.h} and used in places like
@@ -2772,14 +2772,14 @@ macros defined in @file{gcc/f/target.h} and used in places like
 Add warning to be printed for each invocation of the compiler
 if the target machine @code{INTEGER}, @code{REAL}, or @code{LOGICAL} size
 is not 32 bits,
-since @code{g77} is known to not work well for such cases.
+since @command{g77} is known to not work well for such cases.
 
 @item
 Lots of new documentation (though work is still needed to put it into
 canonical GNU format).
 
 @item
-Build @code{libf2c} with @samp{-g0}, not @samp{-g2}, in effect
+Build @code{libf2c} with @option{-g0}, not @option{-g2}, in effect
 (by default), to produce
 smaller library without lots of debugging clutter.
 @end itemize
@@ -2789,7 +2789,7 @@ smaller library without lots of debugging clutter.
 @itemize @bullet
 @item
 Fix bad code generation involving @samp{X**I} and temporary, internal variables
-generated by @code{g77} and the back end (such as for @code{DO} loops).
+generated by @command{g77} and the back end (such as for @code{DO} loops).
 
 @item
 Fix crash given @samp{CHARACTER A;DATA A/.TRUE./}.
@@ -2806,26 +2806,26 @@ Fix crash or other erratic behavior involving diagnosed code.
 
 @item
 Fix code generation for external functions returning type @code{REAL} when
-the @samp{-ff2c} option is in force (which it is by default) so that
-@code{f2c} compatibility is indeed provided.
+the @option{-ff2c} option is in force (which it is by default) so that
+@command{f2c} compatibility is indeed provided.
 
 @item
 Disallow @samp{COMMON I(10)} if @samp{I} has previously been specified
 with an array declarator.
 
 @item
-New @samp{-ffixed-line-length-@var{n}} option, where @var{n} is the
+New @option{-ffixed-line-length-@var{n}} option, where @var{n} is the
 maximum length
 of a typical fixed-form line, defaulting to 72 columns, such
 that characters beyond column @var{n} are ignored, or @var{n} is @samp{none},
 meaning no characters are ignored.
 does not affect lines
 with @samp{&} in column 1, which are always processed as if
-@samp{-ffixed-line-length-none} was in effect.
+@option{-ffixed-line-length-none} was in effect.
 
 @item
 No longer generate better code for some kinds of array references,
-as @code{gcc} back end is to be fixed to do this even better, and it
+as @command{gcc} back end is to be fixed to do this even better, and it
 turned out to slow down some code in some cases after all.
 
 @item
@@ -2833,7 +2833,7 @@ In @code{COMMON} and @code{EQUIVALENCE} areas with any members given initial
 values (e.g. via @code{DATA}), uninitialized members now always
 initialized to binary zeros (though this is not required by
 the standard, and might not be done in future versions
-of @code{g77}).
+of @command{g77}).
 Previously, in some @code{COMMON}/@code{EQUIVALENCE} areas
 (essentially those with members of more than one type), the
 uninitialized members were initialized to spaces, to
@@ -2877,7 +2877,7 @@ Fix crash on @code{DCMPLX()} with a single @code{INTEGER} argument.
 Fix various crashes involving code with diagnosed errors.
 
 @item
-Support @samp{-I} option for @code{INCLUDE} statement, plus @code{gcc}'s
+Support @option{-I} option for @code{INCLUDE} statement, plus @command{gcc}'s
 @file{header.gcc} facility for handling systems like MS-DOS.
 
 @item
@@ -2890,13 +2890,13 @@ fixes a bug involving infinite loops reading EOF with empty list-directed
 I/O list.
 
 @item
-Remove all the @code{g77}-specific auto-configuration scripts, code,
+Remove all the @command{g77}-specific auto-configuration scripts, code,
 and so on,
 except for temporary substitutes for bsearch() and strtoul(), as
 too many configure/build problems were reported in these areas.
 People will have to fix their systems' problems themselves, or at
-least somewhere other than @code{g77}, which expects a working ANSI C
-environment (and, for now, a GNU C compiler to compile @code{g77} itself).
+least somewhere other than @command{g77}, which expects a working ANSI C
+environment (and, for now, a GNU C compiler to compile @command{g77} itself).
 
 @item
 Complain if initialized common redeclared as larger in subsequent program
@@ -2907,40 +2907,40 @@ Warn if blank common initialized, since its size can vary and hence
 related warnings that might be helpful won't be seen.
 
 @item
-New @samp{-fbackslash} option, on by default, that causes @samp{\}
+New @option{-fbackslash} option, on by default, that causes @samp{\}
 within @code{CHARACTER}
 and Hollerith constants to be interpreted a la GNU C.
 Note that
-this behavior is somewhat different from @code{f2c}'s, which supports only
+this behavior is somewhat different from @command{f2c}'s, which supports only
 a limited subset of backslash (escape) sequences.
 
 @item
-Make @samp{-fugly-args} the default.
+Make @option{-fugly-args} the default.
 
 @item
-New @samp{-fugly-init} option, on by default, that allows typeless/Hollerith
+New @option{-fugly-init} option, on by default, that allows typeless/Hollerith
 to be specified as initial values for variables or named constants
 (@code{PARAMETER}), and also allows character<->numeric conversion in
-those contexts---turn off via @samp{-fno-ugly-init}.
+those contexts---turn off via @option{-fno-ugly-init}.
 
 @item
-New @samp{-finit-local-zero} option to initialize
+New @option{-finit-local-zero} option to initialize
 local variables to binary zeros.
 This does not affect whether they are @code{SAVE}d, i.e. made
 automatic or static.
 
 @item
-New @samp{-Wimplicit} option to warn about implicitly typed variables, arrays,
+New @option{-Wimplicit} option to warn about implicitly typed variables, arrays,
 and functions.
 (Basically causes all program units to default to @code{IMPLICIT NONE}.)
 
 @item
-@samp{-Wall} now implies @samp{-Wuninitialized} as with @code{gcc}
-(i.e. unless @samp{-O} not specified, since @samp{-Wuninitialized}
-requires @samp{-O}), and implies @samp{-Wunused} as well.
+@option{-Wall} now implies @option{-Wuninitialized} as with @command{gcc}
+(i.e. unless @option{-O} not specified, since @option{-Wuninitialized}
+requires @option{-O}), and implies @option{-Wunused} as well.
 
 @item
-@samp{-Wunused} no longer gives spurious messages for unused
+@option{-Wunused} no longer gives spurious messages for unused
 @code{EXTERNAL} names (since they are assumed to refer to block data
 program units, to make use of libraries more reliable).
 
@@ -2951,7 +2951,7 @@ Support @code{%LOC()} and @code{LOC()} of character arguments.
 Support null (zero-length) character constants and expressions.
 
 @item
-Support @code{f2c}'s @code{IMAG()} generic intrinsic.
+Support @command{f2c}'s @code{IMAG()} generic intrinsic.
 
 @item
 Support @code{ICHAR()}, @code{IACHAR()}, and @code{LEN()} of
@@ -2959,7 +2959,7 @@ character expressions that are valid in assignments but
 not normally as actual arguments.
 
 @item
-Support @code{f2c}-style @samp{&} in column 1 to mean continuation line.
+Support @command{f2c}-style @samp{&} in column 1 to mean continuation line.
 
 @item
 Allow @code{NAMELIST}, @code{EXTERNAL}, @code{INTRINSIC}, and @code{VOLATILE}
@@ -2991,9 +2991,9 @@ too small, otherwise fully intact if constant wider the @code{INTEGER}
 type) instead of by value.
 @end itemize
 
-@strong{Warning:} @code{f2c} differs on the
+@strong{Warning:} @command{f2c} differs on the
 interpretation of @samp{CALL FOO(1HX)}, which it treats exactly the
-same as @samp{CALL FOO('X')}, but which the standard and @code{g77} treat
+same as @samp{CALL FOO('X')}, but which the standard and @command{g77} treat
 as @samp{CALL FOO(%REF('X   '))} (padded with as many spaces as necessary
 to widen to @code{INTEGER}), essentially.
 
@@ -3040,7 +3040,7 @@ Remove redundant message about zero-step-count @code{DO} loops.
 Clean up diagnostic messages, shortening many of them.
 
 @item
-Fix typo in @code{g77} man page.
+Fix typo in @command{g77} man page.
 
 @item
 Clarify implications of constant-handling bugs in @file{f/BUGS}.
@@ -3051,7 +3051,7 @@ type @code{INTEGER}.
 
 @item
 Generate better code for @code{SQRT()} and @code{DSQRT()},
-also when @samp{-ffast-math}
+also when @option{-ffast-math}
 specified, enable better code generation for @code{SIN()} and @code{COS()}.
 
 @item
