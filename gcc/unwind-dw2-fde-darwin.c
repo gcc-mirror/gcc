@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -104,8 +104,23 @@ live_image_destructor (struct live_images *image)
 {
   if (image->object_info)
     {
-      /* Free any sorted arrays.  */
-      __deregister_frame_info_bases (image->fde);
+      struct km_object_info *the_obj_info;
+
+      the_obj_info =
+	_keymgr_get_and_lock_processwide_ptr (KEYMGR_GCC3_DW2_OBJ_LIST);
+      if (the_obj_info)
+	{
+	  seen_objects = the_obj_info->seen_objects;
+	  unseen_objects = the_obj_info->unseen_objects;
+
+	  /* Free any sorted arrays.  */
+	  __deregister_frame_info_bases (image->fde);
+
+	  the_obj_info->seen_objects = seen_objects;
+	  the_obj_info->unseen_objects = unseen_objects;
+	}
+      _keymgr_set_and_unlock_processwide_ptr (KEYMGR_GCC3_DW2_OBJ_LIST,
+					      the_obj_info);
 
       free (image->object_info);
       image->object_info = NULL;
@@ -166,20 +181,28 @@ examine_objects (void *pc, struct dwarf_eh_bases *bases, int dont_alloc)
 	    ob->s.b.encoding = DW_EH_PE_omit;
 	    ob->fde_end = real_fde + sz;
 	    
+	    image->fde = real_fde;
+	    
+	    result = search_object (ob, pc);
+	    
 	    if (! dont_alloc)
 	      {
-		ob->next = unseen_objects;
-		unseen_objects = ob;
-		
+		struct object **p;
+
 		image->destructor = live_image_destructor;
 		image->object_info = ob;
 		
 		image->examined_p |= (EXAMINED_IMAGE_MASK 
 				      | DESTRUCTOR_MAY_BE_CALLED_LIVE);
+
+		/* Insert the object into the classified list.  */
+		for (p = &seen_objects; *p ; p = &(*p)->next)
+		  if ((*p)->pc_begin < ob->pc_begin)
+		    break;
+		ob->next = *p;
+		*p = ob;
 	      }
-	    image->fde = real_fde;
-	    
-	    result = search_object (ob, pc);
+
 	    if (result)
 	      {
 		int encoding;
@@ -234,8 +257,8 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
     {
       the_obj_info->seen_objects = seen_objects;
       the_obj_info->unseen_objects = unseen_objects;
-      _keymgr_set_and_unlock_processwide_ptr (KEYMGR_GCC3_DW2_OBJ_LIST,
-					      the_obj_info);
     }
+  _keymgr_set_and_unlock_processwide_ptr (KEYMGR_GCC3_DW2_OBJ_LIST,
+					  the_obj_info);
   return ret;
 }

@@ -1,5 +1,13 @@
 2003-07-14  Geoffrey Keating  <geoffk@apple.com>
 
+	* unwind-dw2-fde-darwin.c (live_image_destructor): Get seen_objects
+	and unseen_objects from the global data before calling
+	__deregister_frame_info_bases.
+	(examine_objects): Insert objects into the seen_objects list,
+	not unseen_objects.
+	(_Unwind_Find_FDE): Always unlock the global object lists, even if
+	we couldn't allocate a data structure to put in it.
+
 	* objc/objc-act.h (CLASS_SUPER_NAME): Add a little typechecking.
 	(TYPE_PROTOCOL_LIST): Share use of type.context with C frontend.
 	(SET_TYPE_PROTOCOL_LIST): New.
