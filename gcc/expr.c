@@ -6441,7 +6441,8 @@ expand_expr (exp, target, tmode, modifier)
       {
 	rtx temp;
 	temp = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	TREE_OPERAND (exp, 0) = unsave_expr_now (TREE_OPERAND (exp, 0));
+	TREE_OPERAND (exp, 0)
+	  = (*lang_hooks.unsave_expr_now) (TREE_OPERAND (exp, 0));
 	return temp;
       }
 

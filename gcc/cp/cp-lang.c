@@ -52,6 +52,8 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
+#undef LANG_HOOKS_UNSAVE_EXPR_NOW
+#define LANG_HOOKS_UNSAVE_EXPR_NOW cxx_unsave_expr_now
 #undef LANG_HOOKS_PRINT_STATISTICS
 #define LANG_HOOKS_PRINT_STATISTICS cxx_print_statistics
 #undef LANG_HOOKS_PRINT_XNODE

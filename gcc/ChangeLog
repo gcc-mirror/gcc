@@ -1,3 +1,17 @@
+2002-03-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* expr.c (expand_expr): Use unsave lang hook.
+	* langhooks-def.h (LANG_HOOKS_UNSAVE): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): New hook unsave.
+	* tree.c (lang_unsave, lang_unsave_expr_now): Remove.
+	(unsave_expr_1): Remove unused lang_unsave_expr_now.
+	(unsave_expr_now_r): Rename lhd_unsave.  Update. Return input.
+	(unsave_expr_now): Remove.
+	* tree.h (unsave_expr_now, lang_unsave,
+	lang_unsave_expr_now): Remove.
+	(lhd_unsave): New.
+
 2002-03-08  Andreas Jaeger  <aj@suse.de>
 
 	* flow.c (propagate_block_delete_insn): Remove unused variable.

@@ -44,7 +44,6 @@ static tree no_linkage_helper PARAMS ((tree *, int *, void *));
 static tree build_srcloc PARAMS ((const char *, int));
 static tree mark_local_for_remap_r PARAMS ((tree *, int *, void *));
 static tree cp_unsave_r PARAMS ((tree *, int *, void *));
-static void cp_unsave PARAMS ((tree *));
 static tree build_target_expr PARAMS ((tree, tree));
 static tree count_trees_r PARAMS ((tree *, int *, void *));
 static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
@@ -2297,7 +2296,6 @@ void
 init_tree ()
 {
   make_lang_type_fn = cp_make_lang_type;
-  lang_unsave = cp_unsave;
   lang_statement_code_p = cp_statement_code_p;
   lang_set_decl_assembler_name = mangle_decl;
   list_hash_table = htab_create (31, list_hash, list_hash_eq, NULL);
@@ -2389,12 +2387,11 @@ cp_unsave_r (tp, walk_subtrees, data)
   return NULL_TREE;
 }
 
-/* Called by unsave_expr_now whenever an expression (*TP) needs to be
-   unsaved.  */
+/* Called whenever an expression needs to be unsaved.  */
 
-static void
-cp_unsave (tp)
-     tree *tp;
+tree
+cxx_unsave_expr_now (tp)
+     tree tp;
 {
   splay_tree st;
 
@@ -2403,13 +2400,15 @@ cp_unsave (tp)
   st = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
 
   /* Walk the tree once figuring out what needs to be remapped.  */
-  walk_tree (tp, mark_local_for_remap_r, st, NULL);
+  walk_tree (&tp, mark_local_for_remap_r, st, NULL);
 
   /* Walk the tree again, copying, remapping, and unsaving.  */
-  walk_tree (tp, cp_unsave_r, st, NULL);
+  walk_tree (&tp, cp_unsave_r, st, NULL);
 
   /* Clean up.  */
   splay_tree_delete (st);
+
+  return tp;
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)

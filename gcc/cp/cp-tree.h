@@ -4222,6 +4222,7 @@ extern void replace_defarg			PARAMS ((tree, tree));
 extern void end_input				PARAMS ((void));
 
 /* in tree.c */
+extern tree cxx_unsave_expr_now		PARAMS ((tree));
 extern void init_tree			        PARAMS ((void));
 extern int pod_type_p				PARAMS ((tree));
 extern tree canonical_type_variant              PARAMS ((tree));

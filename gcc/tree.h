@@ -2550,18 +2550,6 @@ extern tree unsave_expr			PARAMS ((tree));
 
 extern void unsave_expr_1               PARAMS ((tree));
 
-/* Like unsave_expr_1, but recurses into all subtrees.  */
-
-extern tree unsave_expr_now		PARAMS ((tree));
-
-/* If non-null, these are language-specific helper functions for
-   unsave_expr_now.  If present, LANG_UNSAVE is called before its
-   argument (an UNSAVE_EXPR) is to be unsaved, and all other
-   processing in unsave_expr_now is aborted.  LANG_UNSAVE_EXPR_NOW is
-   called from unsave_expr_1 for language-specific tree codes.  */
-extern void (*lang_unsave)              PARAMS ((tree *));
-extern void (*lang_unsave_expr_now)     PARAMS ((tree));
-
 /* Return 0 if it is safe to evaluate EXPR multiple times,
    return 1 if it is safe if EXPR is unsaved afterward, or
    return 2 if it is completely unsafe.  */
@@ -2756,6 +2744,8 @@ extern tree get_set_constructor_bytes		PARAMS ((tree,
 extern tree get_callee_fndecl                   PARAMS ((tree));
 extern void set_decl_assembler_name             PARAMS ((tree));
 extern int type_num_arguments                   PARAMS ((tree));
+extern tree lhd_unsave_expr_now		PARAMS ((tree));
+
 
 /* In stmt.c */
 
