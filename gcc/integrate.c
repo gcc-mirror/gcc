@@ -924,8 +924,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (GET_CODE (parm_insns) == NOTE
       && NOTE_LINE_NUMBER (parm_insns) > 0)
     {
-      rtx note = emit_line_note (NOTE_SOURCE_FILE (parm_insns),
-				 NOTE_LINE_NUMBER (parm_insns));
+      rtx note = emit_note_copy (parm_insns);
+
       if (note)
 	RTX_INTEGRATED_P (note) = 1;
     }
@@ -1682,18 +1682,16 @@ copy_insn_list (insns, map, static_chain_value)
 
 	     NOTE_INSN_DELETED notes aren't useful.  */
 
-	  if (NOTE_LINE_NUMBER (insn) > 0)
-	    copy = emit_line_note (NOTE_SOURCE_FILE (insn),
-				   NOTE_LINE_NUMBER (insn));
-	  else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END
+	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_BEG
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
 	    {
-	      copy = emit_note (NOTE_LINE_NUMBER (insn));
-	      NOTE_DATA (copy) = NOTE_DATA (insn);
-	      if ((NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
-		   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
-		  && NOTE_BLOCK (insn))
+	      copy = emit_note_copy (insn);
+	      if (!copy)
+		/*Copied a line note, but line numbering is off*/;
+	      else if ((NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
+			|| NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
+		       && NOTE_BLOCK (insn))
 		{
 		  tree *mapped_block_p;
 
