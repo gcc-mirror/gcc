@@ -1,3 +1,12 @@
+2001-02-15  Rodney Brown  <RodneyBrown@mynd.com>
+
+        * acinclude.m4 (GLIBCPP_CHECK_MATH_DECL_1):
+        Include ieeefp.h for fpclass on UnixWare{2,7}.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+        * mkcheck.in (size_command): Do without GNU-grep when using
+        size from binutils.
+
 2001-02-15  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove old ABI support from libsupc++.
