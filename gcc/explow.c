@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "ggc.h"
 #include "recog.h"
+#include "langhooks.h"
 
 static rtx break_out_memory_refs	PARAMS ((rtx));
 static void emit_stack_probe		PARAMS ((rtx));
@@ -285,20 +286,13 @@ rtx
 expr_size (exp)
      tree exp;
 {
-  tree size;
-
-  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
-      && DECL_SIZE_UNIT (exp) != 0)
-    size = DECL_SIZE_UNIT (exp);
-  else
-    size = size_in_bytes (TREE_TYPE (exp));
+  tree size = (*lang_hooks.expr_size) (exp);
 
   if (TREE_CODE (size) != INTEGER_CST
       && contains_placeholder_p (size))
     size = build (WITH_RECORD_EXPR, sizetype, size, exp);
 
   return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
-
 }
 
 /* Return a copy of X in which all memory references

@@ -5077,8 +5077,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	   except that the RHS goes through a save-expr
 	   so the code to compute it is only emitted once.  */
 	tree cond;
+	tree preeval = NULL_TREE;
 
-	rhs = save_expr (rhs);
+	rhs = stabilize_expr (rhs, &preeval);
 	
 	/* Check this here to avoid odd errors when trying to convert
 	   a throw to the type of the COND_EXPR.  */
@@ -5098,10 +5099,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	  return cond;
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
-	return build (COMPOUND_EXPR, TREE_TYPE (lhs),
-		      /* Cast to void to suppress warning
-			 from warn_if_unused_value.  */
-		      cp_convert (void_type_node, rhs), cond);
+	return build (COMPOUND_EXPR, TREE_TYPE (lhs), preeval, cond);
       }
       
     case OFFSET_REF:

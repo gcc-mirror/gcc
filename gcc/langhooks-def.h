@@ -62,6 +62,7 @@ extern void lhd_set_decl_assembler_name PARAMS ((tree));
 extern bool lhd_warn_unused_global_decl PARAMS ((tree));
 extern void lhd_incomplete_type_error PARAMS ((tree, tree));
 extern tree lhd_type_promotes_to PARAMS ((tree));
+extern tree lhd_expr_size PARAMS ((tree));
 
 /* Declarations of default tree inlining hooks.  */
 tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
@@ -109,6 +110,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_PRINT_IDENTIFIER	lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION lhd_print_error_function
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
+#define LANG_HOOKS_EXPR_SIZE		lhd_expr_size
 
 #define LANG_HOOKS_FUNCTION_INIT	lhd_do_nothing_f
 #define LANG_HOOKS_FUNCTION_FINAL	lhd_do_nothing_f
@@ -247,6 +249,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_PRINT_IDENTIFIER, \
   LANG_HOOKS_DECL_PRINTABLE_NAME, \
   LANG_HOOKS_PRINT_ERROR_FUNCTION, \
+  LANG_HOOKS_EXPR_SIZE, \
   LANG_HOOKS_ATTRIBUTE_TABLE, \
   LANG_HOOKS_COMMON_ATTRIBUTE_TABLE, \
   LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE, \

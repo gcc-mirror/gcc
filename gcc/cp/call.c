@@ -4111,9 +4111,12 @@ convert_arg_to_ellipsis (arg)
   
   if (arg != error_mark_node && ! pod_type_p (TREE_TYPE (arg)))
     {
-      /* Undefined behaviour [expr.call] 5.2.2/7.  */
-      warning ("cannot pass objects of non-POD type `%#T' through `...'",
-		  TREE_TYPE (arg));
+      /* Undefined behaviour [expr.call] 5.2.2/7.  We used to just warn
+	 here and do a bitwise copy, but now cp_expr_size will abort if we
+	 try to do that.  */
+      error ("cannot pass objects of non-POD type `%#T' through `...'",
+	     TREE_TYPE (arg));
+      arg = error_mark_node;
     }
 
   return arg;
@@ -4436,15 +4439,8 @@ build_over_call (cand, args, flags)
 	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
-      else if ((!real_lvalue_p (arg)
-		|| TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
-	       /* Empty classes have padding which can be hidden
-	          inside an (empty) base of the class. This must not
-	          be touched as it might overlay things. When the
-	          gcc core learns about empty classes, we can treat it
-	          like other classes. */
-	       && !(is_empty_class (DECL_CONTEXT (fn))
-		    && TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn))))
+      else if (!real_lvalue_p (arg)
+	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	{
 	  tree address;
 	  tree to = stabilize_reference
@@ -4466,24 +4462,7 @@ build_over_call (cand, args, flags)
 	(build_indirect_ref (TREE_VALUE (converted_args), 0));
 
       arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
-      if (is_empty_class (TREE_TYPE (to)))
-	{
-	  TREE_USED (arg) = 1;
-
-	  val = build (COMPOUND_EXPR, DECL_CONTEXT (fn), arg, to);
-	  /* Even though the assignment may not actually result in any
-	     code being generated, we do not want to warn about the
-	     assignment having no effect.  That would be confusing to
-	     users who may be performing the assignment as part of a
-	     generic algorithm, for example.
-	     
-	     Ideally, the notions of having side-effects and of being
-	     useless would be orthogonal.  */
-	  TREE_SIDE_EFFECTS (val) = 1;
-	  TREE_NO_UNUSED_WARNING (val) = 1;
-	}
-      else
-	val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+      val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
       return val;
     }
 
