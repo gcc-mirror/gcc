@@ -1,3 +1,8 @@
+2000-05-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/inclhack.def (sun_malloc): Handle `calloc'.
+	(sun_malloc, sysz_stdtypes_for_sun): Add test_text.
+
 Sun May 21 16:42:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (try_combine): Handle i3_subst_into_i2 case when I2 is
