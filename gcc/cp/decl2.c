@@ -2067,7 +2067,7 @@ get_temp_regvar (type, init)
    returns a VAR_DECL whose size is the same as the size of the
    ANON_DECL, if one is available.  */
 
-tree 
+static tree 
 build_anon_union_vars (anon_decl, elems, static_p, external_p)
      tree anon_decl;
      tree* elems;
@@ -2472,6 +2472,14 @@ import_export_class (ctype)
   int import_export = 0;
 
   if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+    return;
+
+  /* If MULTIPLE_SYMBOL_SPACES is defined and we saw a #pragma interface,
+     we will have CLASSTYPE_INTERFACE_ONLY set but not
+     CLASSTYPE_INTERFACE_KNOWN.  In that case, we don't want to use this
+     heuristic because someone will supply a #pragma implementation
+     elsewhere, and deducing it here would produce a conflict.  */
+  if (CLASSTYPE_INTERFACE_ONLY (ctype))
     return;
 
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE

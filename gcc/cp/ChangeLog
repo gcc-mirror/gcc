@@ -1,3 +1,11 @@
+1999-03-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c, decl2.c, method.c, pt.c: Add 'static' to make SunOS 4
+	cc happy.
+
+	* decl2.c (import_export_class): Also return if
+	CLASSTYPE_INTERFACE_ONLY is set.
+
 1999-03-03  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (push_overloaded_decl): Only overwrite the old binding if

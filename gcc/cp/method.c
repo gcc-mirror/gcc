@@ -326,7 +326,7 @@ flush_repeats (nrepeats, type)
 /* Returns nonzero iff this is a type to which we will want to make
    back-references (using the `B' code).  */
 
-int
+static int
 is_back_referenceable_type (type)
      tree type;
 {
@@ -1040,7 +1040,7 @@ build_qualified_name (decl)
    non-zero, mangled names for structure/union types are intentionally
    mangled differently from the method described in the ARM.  */
 
-void 
+static void 
 build_mangled_name_for_type_with_Gcode (type, extra_Gcode)
      tree type;
      int extra_Gcode;
@@ -1055,7 +1055,7 @@ build_mangled_name_for_type_with_Gcode (type, extra_Gcode)
 /* Like build_mangled_name_for_type_with_Gcode, but never outputs the
    `G'.  */
 
-void
+static void
 build_mangled_name_for_type (type)
      tree type;
 {
@@ -1203,7 +1203,7 @@ build_mangled_name (parmtypes, begin, end)
 
 /* Emit modifiers such as constant, read-only, and volatile.  */
 
-void 
+static void 
 process_modifiers (parmtype) 
      tree parmtype;
 {
@@ -1231,7 +1231,7 @@ process_modifiers (parmtype)
    so, return 1 and emit a backreference to TYPE.  Otherwise, add TYPE
    to the list of back-referenceable types and return 0.  */
 
-int 
+static int 
 check_btype (type) 
      tree type;
 {
