@@ -1,3 +1,8 @@
+2003-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/20020227-1.x: Update specific XFAIL
+	conditions for SPARC targets.
+
 2003-02-05  Release Manager
 
 	* GCC 3.2.2 Released.
