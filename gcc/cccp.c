@@ -4351,6 +4351,11 @@ get_filename:
 	}
       }
 #endif /* VMS */
+      /* ??? There are currently 3 separate mechanisms for avoiding processing
+	 of redundant include files: #import, #pragma once, and
+	 redundant_include_p.  It would be nice if they were unified.  */
+      if (redundant_include_p (fname))
+	return 0;
       if (importing)
 	f = lookup_import (fname, searchptr);
       else
@@ -4361,10 +4366,6 @@ get_filename:
       else if (f == -1 && errno == EACCES)
 	warning ("Header file %s exists, but is not readable", fname);
 #endif
-      if (redundant_include_p (fname)) {
-	close (f);
-	return 0;
-      }
       if (f >= 0)
 	break;
     }
@@ -4424,8 +4425,6 @@ get_filename:
     else
       error ("No include path in which to find %s", fname);
   } else {
-    struct stat stat_f;
-
     /* Check to see if this include file is a once-only include file.
        If so, give up.  */
 
@@ -4476,34 +4475,38 @@ get_filename:
     pcfbuf = 0;
     pcfnum = 0;
 
-    fstat (f, &stat_f);
-
     if (!no_precomp)
-      do {
-	sprintf (pcftry, "%s%d", fname, pcfnum++);
-	
-	pcf = open (pcftry, O_RDONLY, 0666);
-	if (pcf != -1)
-	  {
-	    struct stat s;
+      {
+	struct stat stat_f;
 
-	    fstat (pcf, &s);
-	    if (bcmp ((char *) &stat_f.st_ino, (char *) &s.st_ino,
-		      sizeof (s.st_ino))
-		|| stat_f.st_dev != s.st_dev)
-	      {
-		pcfbuf = check_precompiled (pcf, fname, &pcfbuflimit);
-		/* Don't need it any more.  */
-		close (pcf);
-	      }
-	    else
-	      {
-		/* Don't need it at all.  */
-		close (pcf);
-		break;
-	      }
-	  }
-      } while (pcf != -1 && !pcfbuf);
+	fstat (f, &stat_f);
+
+	do {
+	  sprintf (pcftry, "%s%d", fname, pcfnum++);
+
+	  pcf = open (pcftry, O_RDONLY, 0666);
+	  if (pcf != -1)
+	    {
+	      struct stat s;
+
+	      fstat (pcf, &s);
+	      if (bcmp ((char *) &stat_f.st_ino, (char *) &s.st_ino,
+			sizeof (s.st_ino))
+		  || stat_f.st_dev != s.st_dev)
+		{
+		  pcfbuf = check_precompiled (pcf, fname, &pcfbuflimit);
+		  /* Don't need it any more.  */
+		  close (pcf);
+		}
+	      else
+		{
+		  /* Don't need it at all.  */
+		  close (pcf);
+		  break;
+		}
+	    }
+	} while (pcf != -1 && !pcfbuf);
+      }
     
     /* Actually process the file */
     if (pcfbuf) {
