@@ -165,6 +165,240 @@ namespace std
       _Tp operator()(const _Tp& __t) const { return sqrt(__t); }
   };
 
+  // In the past, we used to tailor operator applications semantics
+  // to the specialization of standard function objects (i.e. plus<>, etc.)
+  // That is incorrect.  Therefore we provide our own surrogates.
+
+  struct __unary_plus
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __t) const { return +__t; }
+  };
+
+  struct __negate
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __t) const { return -__t; }
+  };
+
+  struct __bitwise_not
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __t) const { return ~__t; }
+  };
+
+  struct __plus
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x + __y; }
+  };
+
+  struct __minus
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x - __y; }
+  };
+
+  struct __multiplies
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x * __y; }
+  };
+
+  struct __divides
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x / __y; }
+  };
+
+  struct __modulus
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x % __y; }
+  };
+
+  struct __bitwise_xor
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x ^ __y; }
+  };
+
+  struct __bitwise_and
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x & __y; }
+  };
+
+  struct __bitwise_or
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x | __y; }
+  };
+
+  struct __shift__left
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x << __y; }
+  };
+
+  struct __shift_right
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x >> __y; }
+  };
+
+  struct __logical_and
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x && __y; }
+  };
+
+  struct __logical_or
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x || __y; }
+  };
+
+  struct __logical_not
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x) const { return !__x; }
+  };
+
+  struct __equal_to
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x == __y; }
+  };
+
+  struct __not_equal_to
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x == __y; }
+  };
+
+  struct __less
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x < __y; }
+  };
+
+  struct __greater
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x > __y; }
+  };
+
+  struct __less_equal
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x <= __y; }
+  };
+
+  struct __greater_equal
+  {
+    template<typename _Tp>
+      bool operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x >= __y; }
+  };
+
+  // The few binary functions we miss.
+  struct __atan2
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return atan2(__x, __y); }
+  };
+
+  struct __pow
+  {
+    template<typename _Tp>
+      _Tp operator()(const _Tp& __x, const _Tp& __y) const
+      { return pow(__x, __y); }
+  };
+
+
+  // We need these bits in order to recover the return type of
+  // some functions/operators now that we're no longer using
+  // function templates.
+  template<typename, typename _Tp>
+    struct __fun
+    {
+      typedef _Tp result_type;
+    };
+
+  // several specializations for relational operators.
+  template<typename _Tp>
+    struct __fun<__logical_not, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__logical_and, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__logical_or, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__less, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__greater, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__less_equal, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__greater_equal, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__equal_to, _Tp>
+    {
+      typedef bool result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun<__not_equal_to, _Tp>
+    {
+      typedef bool result_type;
+    };
+
   template<template<class, class> class _Meta, class _Dom, typename _Op>
     class _UnFunClos;
     

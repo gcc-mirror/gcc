@@ -1,3 +1,14 @@
+2002-08-02  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* include/bits/valarray_meta.h (__unary_plus, __negate,
+	__bitwise_not, __plus, __minus, __multiplies, __divides,
+	__modulus, __bitwise_xor, __bitwise_or, __bitwise_and,
+	__shift_left, __shift_right, __logical_and, __logical_or,
+	__logical_not, __equal_to, __not_equal_to, __less, __less_equal,
+	__greater_equal, __greater, __atan2, __pow): New function object
+	classes. 
+	(__fun<>):  New function traits class.
+
 2002-08-01  Rick Danos  <rdanos@hotmail.com>
 
 	PR libstdc++/7461
