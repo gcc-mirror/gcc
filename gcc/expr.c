@@ -86,6 +86,9 @@ int inhibit_defer_pop;
    function calls being expanded by expand_call.  */
 tree cleanups_this_call;
 
+/* Similarly for __builtin_apply_args.  */
+static rtx apply_args_value;
+
 /* Nonzero means __builtin_saveregs has already been done in this function.
    The value is the pseudoreg containing the value __builtin_saveregs
    returned.  */
@@ -128,6 +131,12 @@ static int get_pointer_alignment PROTO((tree, unsigned));
 static tree string_constant	PROTO((tree, tree *));
 static tree c_strlen		PROTO((tree));
 static rtx expand_builtin  PROTO((tree, rtx, rtx, enum machine_mode, int));
+static int apply_args_size	PROTO((void));
+static int apply_result_size	PROTO((void));
+static rtx result_vector	PROTO((int, rtx));
+static rtx expand_builtin_apply_args PROTO((void));
+static rtx expand_builtin_apply	PROTO((rtx, rtx, rtx));
+static void expand_builtin_return PROTO((rtx));
 static rtx expand_increment	PROTO((tree, int));
 static void preexpand_calls	PROTO((tree));
 static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
@@ -164,6 +173,14 @@ static enum insn_code movstr_optab[NUM_MACHINE_MODES];
 
 #ifndef SLOW_UNALIGNED_ACCESS
 #define SLOW_UNALIGNED_ACCESS 0
+#endif
+
+/* Register mappings for target machines without register windows.  */
+#ifndef INCOMING_REGNO
+#define INCOMING_REGNO(OUT) (OUT)
+#endif
+#ifndef OUTGOING_REGNO
+#define OUTGOING_REGNO(IN) (IN)
 #endif
 
 /* This is run once per compilation to set up which modes can be used
@@ -267,6 +284,7 @@ init_expr ()
   inhibit_defer_pop = 0;
   cleanups_this_call = 0;
   saveregs_value = 0;
+  apply_args_value = 0;
   forced_labels = 0;
 }
 
@@ -284,12 +302,14 @@ save_expr_status (p)
   p->inhibit_defer_pop = inhibit_defer_pop;
   p->cleanups_this_call = cleanups_this_call;
   p->saveregs_value = saveregs_value;
+  p->apply_args_value = apply_args_value;
   p->forced_labels = forced_labels;
 
   pending_stack_adjust = 0;
   inhibit_defer_pop = 0;
   cleanups_this_call = 0;
   saveregs_value = 0;
+  apply_args_value = 0;
   forced_labels = 0;
 }
 
@@ -304,6 +324,7 @@ restore_expr_status (p)
   inhibit_defer_pop = p->inhibit_defer_pop;
   cleanups_this_call = p->cleanups_this_call;
   saveregs_value = p->saveregs_value;
+  apply_args_value = p->apply_args_value;
   forced_labels = p->forced_labels;
 }
 
@@ -6175,6 +6196,83 @@ expand_builtin (exp, target, subtarget, mode, ignore)
  
       return target;
 
+      /* __builtin_apply_args returns block of memory allocated on
+	 the stack into which is stored the arg pointer, structure
+	 value address, static chain, and all the registers that might
+	 possibly be used in performing a function call.  The code is
+	 moved to the start of the function so the incoming values are
+	 saved.  */
+    case BUILT_IN_APPLY_ARGS:
+      /* Don't do __builtin_apply_args more than once in a function.
+	 Save the result of the first call and reuse it.  */
+      if (apply_args_value != 0)
+	return apply_args_value;
+      {
+	/* When this function is called, it means that registers must be
+	   saved on entry to this function.  So we migrate the
+	   call to the first insn of this function.  */
+	rtx temp;
+	rtx seq;
+
+	start_sequence ();
+	temp = expand_builtin_apply_args ();
+	seq = get_insns ();
+	end_sequence ();
+
+	apply_args_value = temp;
+
+	/* Put the sequence after the NOTE that starts the function.
+	   If this is inside a SEQUENCE, make the outer-level insn
+	   chain current, so the code is placed at the start of the
+	   function.  */
+	push_topmost_sequence ();
+	emit_insns_before (seq, NEXT_INSN (get_insns ()));
+	pop_topmost_sequence ();
+	return temp;
+      }
+
+      /* __builtin_apply (FUNCTION, ARGUMENTS, ARGSIZE) invokes
+	 FUNCTION with a copy of the parameters described by
+	 ARGUMENTS, and ARGSIZE.  It returns a block of memory
+	 allocated on the stack into which is stored all the registers
+	 that might possibly be used for returning the result of a
+	 function.  ARGUMENTS is the value returned by
+	 __builtin_apply_args.  ARGSIZE is the number of bytes of
+	 arguments that must be copied.  ??? How should this value be
+	 computed?  We'll also need a safe worst case value for varargs
+	 functions.  */
+    case BUILT_IN_APPLY:
+      if (arglist == 0
+	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || TREE_CHAIN (arglist) == 0
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
+	return const0_rtx;
+      else
+	{
+	  int i;
+	  tree t;
+	  rtx ops[3];
+
+	  for (t = arglist, i = 0; t; t = TREE_CHAIN (t), i++)
+	    ops[i] = expand_expr (TREE_VALUE (t), NULL_RTX, VOIDmode, 0);
+
+	  return expand_builtin_apply (ops[0], ops[1], ops[2]);
+	}
+
+      /* __builtin_return (RESULT) causes the function to return the
+	 value described by RESULT.  RESULT is address of the block of
+	 memory returned by __builtin_apply.  */
+    case BUILT_IN_RETURN:
+      if (arglist
+	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+	  && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE)
+	expand_builtin_return (expand_expr (TREE_VALUE (arglist),
+					    NULL_RTX, VOIDmode, 0));
+      return const0_rtx;
+
     case BUILT_IN_SAVEREGS:
       /* Don't do __builtin_saveregs more than once in a function.
 	 Save the result of the first call and reuse it.  */
@@ -6218,17 +6316,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	saveregs_value = temp;
 
-	/* This won't work inside a SEQUENCE--it really has to be
-	   at the start of the function.  */
-	if (in_sequence_p ())
-	  {
-	    /* Better to do this than to crash.  */
-	    error ("`va_start' used within `({...})'");
-	    return temp;
-	  }
-
-	/* Put the sequence after the NOTE that starts the function.  */
+	/* Put the sequence after the NOTE that starts the function.
+	   If this is inside a SEQUENCE, make the outer-level insn
+	   chain current, so the code is placed at the start of the
+	   function.  */
+	push_topmost_sequence ();
 	emit_insns_before (seq, NEXT_INSN (get_insns ()));
+	pop_topmost_sequence ();
 	return temp;
       }
 
@@ -6753,6 +6847,435 @@ expand_builtin (exp, target, subtarget, mode, ignore)
      to be called normally.  */
 
   return expand_call (exp, target, ignore);
+}
+
+/* Built-in functions to perform an untyped call and return.  */
+
+/* For each register that may be used for calling a function, this
+   gives a mode used to copy the register's value.  VOIDmode indicates
+   the register is not used for calling a function.  If the machine
+   has register windows, this gives only the outbound registers.
+   INCOMING_REGNO gives the corresponding inbound register.  */
+static enum machine_mode apply_args_mode[FIRST_PSEUDO_REGISTER];
+
+/* For each register that may be used for returning values, this gives
+   a mode used to copy the register's value.  VOIDmode indicates the
+   register is not used for returning values.  If the machine has
+   register windows, this gives only the outbound registers.
+   INCOMING_REGNO gives the corresponding inbound register.  */
+static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
+
+/* Return the size required for the block returned by __builtin_apply_args,
+   and initialize apply_args_mode.  */
+static int
+apply_args_size ()
+{
+  static int size = -1;
+  int align, regno;
+  enum machine_mode mode;
+
+  /* The values computed by this function never change.  */
+  if (size < 0)
+    {
+      /* The first value is the incoming arg-pointer.  */
+      size = GET_MODE_SIZE (Pmode);
+
+      /* The second value is the structure value address unless this is
+	 passed as an "invisible" first argument.  */
+      if (struct_value_rtx)
+	size += GET_MODE_SIZE (Pmode);
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (FUNCTION_ARG_REGNO_P (regno))
+	  {
+	    /* Search for the proper mode for copying this register's
+	       value.  I'm not sure this is right, but it works so far.  */
+	    enum machine_mode best_mode = VOIDmode;
+
+	    for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+		 mode != VOIDmode;
+		 mode = GET_MODE_WIDER_MODE (mode))
+	      if (HARD_REGNO_MODE_OK (regno, mode)
+		  && HARD_REGNO_NREGS (regno, mode) == 1)
+		best_mode = mode;
+
+	    if (best_mode == VOIDmode)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
+		if (HARD_REGNO_MODE_OK (regno, mode)
+		    && (mov_optab->handlers[(int) mode].insn_code
+			!= CODE_FOR_nothing))
+		  best_mode = mode;
+
+	    mode = best_mode;
+	    if (mode == VOIDmode)
+	      abort ();
+
+	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+	    if (size % align != 0)
+	      size = CEIL (size, align) * align;
+	    size += GET_MODE_SIZE (mode);
+	    apply_args_mode[regno] = mode;
+	  }
+	else
+	  apply_args_mode[regno] = VOIDmode;
+    }
+  return size;
+}
+
+/* Return the size required for the block returned by __builtin_apply,
+   and initialize apply_result_mode.  */
+static int
+apply_result_size ()
+{
+  static int size = -1;
+  int align, regno;
+  enum machine_mode mode;
+
+  /* The values computed by this function never change.  */
+  if (size < 0)
+    {
+      size = 0;
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (FUNCTION_VALUE_REGNO_P (regno))
+	  {
+	    /* Search for the proper mode for copying this register's
+	       value.  I'm not sure this is right, but it works so far.  */
+	    enum machine_mode best_mode = VOIDmode;
+
+	    for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+		 mode != TImode;
+		 mode = GET_MODE_WIDER_MODE (mode))
+	      if (HARD_REGNO_MODE_OK (regno, mode))
+		best_mode = mode;
+
+	    if (best_mode == VOIDmode)
+	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+		   mode != VOIDmode;
+		   mode = GET_MODE_WIDER_MODE (mode))
+		if (HARD_REGNO_MODE_OK (regno, mode)
+		    && (mov_optab->handlers[(int) mode].insn_code
+			!= CODE_FOR_nothing))
+		  best_mode = mode;
+
+	    mode = best_mode;
+	    if (mode == VOIDmode)
+	      abort ();
+
+	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+	    if (size % align != 0)
+	      size = CEIL (size, align) * align;
+	    size += GET_MODE_SIZE (mode);
+	    apply_result_mode[regno] = mode;
+	  }
+	else
+	  apply_result_mode[regno] = VOIDmode;
+
+      /* Allow targets that use untyped_call and untyped_return to override
+	 the size so that machine-specific information can be stored here.  */
+#ifdef APPLY_RESULT_SIZE
+      size = APPLY_RESULT_SIZE;
+#endif
+    }
+  return size;
+}
+
+#if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
+/* Create a vector describing the result block RESULT.  If SAVEP is true,
+   the result block is used to save the values; otherwise it is used to
+   restore the values.  */
+static rtx
+result_vector (savep, result)
+     int savep;
+     rtx result;
+{
+  int regno, size, align, nelts;
+  enum machine_mode mode;
+  rtx reg, mem;
+  rtx *savevec = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
+  
+  size = nelts = 0;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if ((mode = apply_result_mode[regno]) != VOIDmode)
+      {
+	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+	if (size % align != 0)
+	  size = CEIL (size, align) * align;
+	reg = gen_rtx (REG, mode, savep ? INCOMING_REGNO (regno) : regno);
+	mem = change_address (result, mode,
+			      plus_constant (XEXP (result, 0), size));
+	savevec[nelts++] = (savep
+			    ? gen_rtx (SET, VOIDmode, mem, reg)
+			    : gen_rtx (SET, VOIDmode, reg, mem));
+	size += GET_MODE_SIZE (mode);
+      }
+  return gen_rtx (PARALLEL, VOIDmode, gen_rtvec_v (nelts, savevec));
+}
+#endif /* HAVE_untyped_call or HAVE_untyped_return */
+
+
+/* Save the state required to perform an untyped call with the same
+   arguments as were passed to the current function.  */
+static rtx
+expand_builtin_apply_args ()
+{
+  rtx registers;
+  int size, align, regno;
+  enum machine_mode mode;
+
+  /* Create a block where the arg-pointer, structure value address,
+     and argument registers can be saved.  */
+  registers = assign_stack_local (BLKmode, apply_args_size (), -1);
+
+  /* Walk past the arg-pointer and structure value address.  */
+  size = GET_MODE_SIZE (Pmode);
+  if (struct_value_rtx)
+    size += GET_MODE_SIZE (Pmode);
+
+  /* Save each register used in calling a function to the block.  */
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if ((mode = apply_args_mode[regno]) != VOIDmode)
+      {
+	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+	if (size % align != 0)
+	  size = CEIL (size, align) * align;
+	emit_move_insn (change_address (registers, mode,
+					plus_constant (XEXP (registers, 0),
+						       size)),
+			gen_rtx (REG, mode, INCOMING_REGNO (regno)));
+	size += GET_MODE_SIZE (mode);
+      }
+
+  /* Save the arg pointer to the block.  */
+  emit_move_insn (change_address (registers, Pmode, XEXP (registers, 0)),
+		  copy_to_reg (virtual_incoming_args_rtx));
+  size = GET_MODE_SIZE (Pmode);
+
+  /* Save the structure value address unless this is passed as an
+     "invisible" first argument.  */
+  if (struct_value_incoming_rtx)
+    {
+      emit_move_insn (change_address (registers, Pmode,
+				      plus_constant (XEXP (registers, 0),
+						     size)),
+		      copy_to_reg (struct_value_incoming_rtx));
+      size += GET_MODE_SIZE (Pmode);
+    }
+
+  /* Return the address of the block.  */
+  return copy_addr_to_reg (XEXP (registers, 0));
+}
+
+/* Perform an untyped call and save the state required to perform an
+   untyped return of whatever value was returned by the given function.  */
+static rtx
+expand_builtin_apply (function, arguments, argsize)
+     rtx function, arguments, argsize;
+{
+  int size, align, regno;
+  enum machine_mode mode;
+  rtx incoming_args, result, reg, dest, call_insn;
+  rtx old_stack_level = 0;
+  rtx use_insns = 0;
+
+  /* Create a block where the return registers can be saved.  */
+  result = assign_stack_local (BLKmode, apply_result_size (), -1);
+
+  /* ??? The argsize value should be adjusted here.  */
+
+  /* Fetch the arg pointer from the ARGUMENTS block.  */
+  incoming_args = gen_reg_rtx (Pmode);
+  emit_move_insn (incoming_args,
+		  gen_rtx (MEM, Pmode, arguments));
+#ifndef STACK_GROWS_DOWNWARD
+  incoming_args = expand_binop (Pmode, add_optab, incoming_args, argsize,
+				incoming_args, 0, OPTAB_LIB_WIDEN);
+#endif
+
+  /* Perform postincrements before actually calling the function.  */
+  emit_queue ();
+
+  /* Push a new argument block and copy the arguments.  */
+  do_pending_stack_adjust ();
+  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+
+  /* Push a block of memory onto the stack to store the memory arguments.
+     Save the address in a register, and copy the memory arguments.  ??? I
+     haven't figured out how the calling convention macros effect this,
+     but it's likely that the source and/or destination addresses in
+     the block copy will need updating in machine specific ways.  */
+  dest = copy_addr_to_reg (push_block (argsize, 0, 0));
+  emit_block_move (gen_rtx (MEM, BLKmode, dest),
+		   gen_rtx (MEM, BLKmode, incoming_args),
+		   argsize,
+		   PARM_BOUNDARY / BITS_PER_UNIT);
+
+  /* Refer to the argument block.  */
+  apply_args_size ();
+  arguments = gen_rtx (MEM, BLKmode, arguments);
+
+  /* Walk past the arg-pointer and structure value address.  */
+  size = GET_MODE_SIZE (Pmode);
+  if (struct_value_rtx)
+    size += GET_MODE_SIZE (Pmode);
+
+  /* Restore each of the registers previously saved.  Make USE insns
+     for each of these registers for use in making the call.  */
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if ((mode = apply_args_mode[regno]) != VOIDmode)
+      {
+	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+	if (size % align != 0)
+	  size = CEIL (size, align) * align;
+	reg = gen_rtx (REG, mode, regno);
+	emit_move_insn (reg,
+			change_address (arguments, mode,
+					plus_constant (XEXP (arguments, 0),
+						       size)));
+
+	push_to_sequence (use_insns);
+	emit_insn (gen_rtx (USE, VOIDmode, reg));
+	use_insns = get_insns ();
+	end_sequence ();
+	size += GET_MODE_SIZE (mode);
+      }
+
+  /* Restore the structure value address unless this is passed as an
+     "invisible" first argument.  */
+  size = GET_MODE_SIZE (Pmode);
+  if (struct_value_rtx)
+    {
+      rtx value = gen_reg_rtx (Pmode);
+      emit_move_insn (value,
+		      change_address (arguments, Pmode,
+				      plus_constant (XEXP (arguments, 0),
+						     size)));
+      emit_move_insn (struct_value_rtx, value);
+      if (GET_CODE (struct_value_rtx) == REG)
+	{
+	  push_to_sequence (use_insns);
+	  emit_insn (gen_rtx (USE, VOIDmode, struct_value_rtx));
+	  use_insns = get_insns ();
+	  end_sequence ();
+	}
+      size += GET_MODE_SIZE (Pmode);
+    }
+
+  /* All arguments and registers used for the call are set up by now!  */
+  function = prepare_call_address (function, NULL_TREE, &use_insns);
+
+  /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
+     and we don't want to load it into a register as an optimization,
+     because prepare_call_address already did it if it should be done.  */
+  if (GET_CODE (function) != SYMBOL_REF)
+    function = memory_address (FUNCTION_MODE, function);
+
+  /* Generate the actual call instruction and save the return value.  */
+#ifdef HAVE_untyped_call
+  if (HAVE_untyped_call)
+    emit_call_insn (gen_untyped_call (gen_rtx (MEM, FUNCTION_MODE, function),
+				      result, result_vector (1, result)));
+  else
+#endif
+#ifdef HAVE_call_value
+  if (HAVE_call_value)
+    {
+      rtx valreg = 0;
+
+      /* Locate the unique return register.  It is not possible to
+	 express a call that sets more than one return register using
+	 call_value; use untyped_call for that.  In fact, untyped_call
+	 only needs to save the return registers in the given block.  */
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if ((mode = apply_result_mode[regno]) != VOIDmode)
+	  {
+	    if (valreg)
+	      abort (); /* HAVE_untyped_call required.  */
+	    valreg = gen_rtx (REG, mode, regno);
+	  }
+
+      emit_call_insn (gen_call_value (valreg,
+				      gen_rtx (MEM, FUNCTION_MODE, function),
+				      const0_rtx, NULL_RTX, const0_rtx));
+
+      emit_move_insn (change_address (result, GET_MODE (valreg),
+				      XEXP (result, 0)),
+		      valreg);
+    }
+  else
+#endif
+    abort ();
+
+  /* Find the CALL insn we just emitted and write the USE insns before it.  */
+  for (call_insn = get_last_insn ();
+       call_insn && GET_CODE (call_insn) != CALL_INSN;
+       call_insn = PREV_INSN (call_insn))
+    ;
+
+  if (! call_insn)
+    abort ();
+
+  /* Put the USE insns before the CALL.  */
+  emit_insns_before (use_insns, call_insn);
+
+  /* Restore the stack.  */
+  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+
+  /* Return the address of the result block.  */
+  return copy_addr_to_reg (XEXP (result, 0));
+}
+
+/* Perform an untyped return.  */
+static void
+expand_builtin_return (result)
+     rtx result;
+{
+  int size, align, regno;
+  enum machine_mode mode;
+  rtx reg;
+  rtx use_insns = 0;
+
+  apply_result_size ();
+  result = gen_rtx (MEM, BLKmode, result);
+
+#ifdef HAVE_untyped_return
+  if (HAVE_untyped_return)
+    {
+      emit_jump_insn (gen_untyped_return (result, result_vector (0, result)));
+      emit_barrier ();
+      return;
+    }
+#endif
+
+  /* Restore the return value and note that each value is used.  */
+  size = 0;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if ((mode = apply_result_mode[regno]) != VOIDmode)
+      {
+	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+	if (size % align != 0)
+	  size = CEIL (size, align) * align;
+	reg = gen_rtx (REG, mode, INCOMING_REGNO (regno));
+	emit_move_insn (reg,
+			change_address (result, mode,
+					plus_constant (XEXP (result, 0),
+						       size)));
+
+	push_to_sequence (use_insns);
+	emit_insn (gen_rtx (USE, VOIDmode, reg));
+	use_insns = get_insns ();
+	end_sequence ();
+	size += GET_MODE_SIZE (mode);
+      }
+
+  /* Put the USE insns before the return.  */
+  emit_insns (use_insns);
+
+  /* Return whatever values was restored by jumping directly to the end
+     of the function.  */
+  expand_null_return ();
 }
 
 /* Expand code for a post- or pre- increment or decrement
