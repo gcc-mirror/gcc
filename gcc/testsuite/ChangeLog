@@ -1,3 +1,15 @@
+2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* g++.old-deja/g++.abi/vbase1.C: Fix comment typos.
+	* g++.old-deja/g++.abi/vtable3.h: Likewise.
+	* g++.old-deja/g++.law/code-gen5.C: Likewise.
+	* g++.old-deja/g++.other/union2.C: Likewise.
+	* gcc.dg/c90-const-expr-2.c: Likewise.
+	* gcc.dg/c90-const-expr-3.c: Likewise.
+	* gcc.dg/c99-const-expr-2.c: Likewise.
+	* gcc.dg/c99-const-expr-3.c: Likewise.
+	* gcc.dg/concat.c: Likewise.
+
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9559

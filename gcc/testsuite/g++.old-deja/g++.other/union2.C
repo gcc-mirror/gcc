@@ -1,5 +1,5 @@
 // { dg-do run  }
-// Bug: g++ crashed on empty intializers for unions.
+// Bug: g++ crashed on empty initializers for unions.
 // Bug: gcc and g++ didn't zero unions with empty initializers.
 // Submitted by J"orn Rennecke <amylaar@cygnus.co.uk>
 

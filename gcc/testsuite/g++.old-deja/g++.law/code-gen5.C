@@ -34,7 +34,7 @@ class VectorInt
 
 	VectorInt *refer();
 	void unrefer();
-	int count;				/* Number of Vector's refering to me */
+	int count;				/* Number of Vector's referring to me */
 
 	VEC *vec;
 
