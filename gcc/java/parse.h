@@ -941,6 +941,7 @@ ATTRIBUTE_NORETURN
 #endif
 ;
 extern void java_expand_classes (void);
+extern void java_finish_classes (void);
 
 extern GTY(()) struct parser_ctxt *ctxp;
 extern GTY(()) struct parser_ctxt *ctxp_for_generation;

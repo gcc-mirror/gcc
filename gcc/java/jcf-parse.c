@@ -42,6 +42,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "debug.h"
 #include "assert.h"
 #include "tm_p.h"
+#include "cgraph.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -1119,6 +1120,13 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   java_expand_classes ();
   if (!java_report_errors () && !flag_syntax_only)
     {
+      if (flag_unit_at_a_time)
+	{
+	  cgraph_finalize_compilation_unit ();
+	  cgraph_optimize ();
+	  java_finish_classes ();
+	}
+
       emit_register_classes ();
       if (flag_indirect_dispatch)
 	emit_offset_symbol_table ();

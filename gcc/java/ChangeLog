@@ -1,3 +1,32 @@
+2003-09-03  Jeff Sturm  <jsturm@one-point.com>
+
+	* decl.c (java_expand_body): New function.
+	* expr.c (build_class_init): Set DECL_IGNORED_P.
+	* java-tree.h (start_complete_expand_method,
+	java_expand_body): Declare.
+	* jcf-parse.c (cgraph.h): Include.
+	(java_parse_file): Handle flag_unit_at_a_time.
+	* lang.c (LANG_HOOKS_TREE_INLINING_START_INLINING,
+	LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Define.
+	(java_estimate_num_insns): Use walk_tree_without_duplicates.
+	(java_start_inlining): New function.
+	* parse.h (java_finish_classes): Declare.
+	* parse.y: Include cgraph.h.
+	(block): Don't special-case empty block production.
+	(craft_constructor): Set DECL_INLINE.
+	(source_end_java_method): Handle flag_unit_at_a_time.
+	Replace inline code with call to java_expand_body.
+	(start_complete_expand_method): Remove static modifier.
+	(java_expand_method_bodies): Patch function tree for
+	class initialization and/or synchronization as needed.
+	Don't begin RTL expansion yet.
+	(java_expand_classes): Check flag_unit_at_a_time before
+	calling finish_class.
+	(java_finish_classes): New function.
+	(java_complete_lhs): Ensure COMPOUND_EXPR has non-NULL type.
+	(patch_assignment): Set DECL_CONTEXT on temporary variable.
+	(emit_test_initialization): Set DECL_IGNORED_P.
+
 2003-09-03  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (enum builtin_type): Delete unused enumeration.

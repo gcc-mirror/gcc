@@ -1297,6 +1297,9 @@ extern void compile_resource_file (const char *, const char *);
 extern void write_resource_constructor (void);
 extern void init_resource_processing (void);
 
+extern void start_complete_expand_method (tree);
+extern void java_expand_body (tree);
+
 
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
