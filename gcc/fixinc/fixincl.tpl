@@ -26,6 +26,8 @@ FOR fix =]
  *  Description of [=
     (set! Hack (string-capitalize! (get "hackname")))
     (set! HACK (string-upcase!     (get "hackname")))
+    (if (and (not (exist? "test_text")) (not (exist? "replace")))
+        (error (sprintf "include fix '%s' has no test text" Hack )) )
     (. Hack)=] fix
  */[=
 
@@ -33,7 +35,6 @@ FOR fix =]
   some C fix wishes to refer to the regexps it is paired with.
   See commentary at the top of fixfixes.c.
 =]
-#define [=(sprintf "%-32s" (string-append HACK "_FIXIDX"))=] [=(for-index)=]
 tSCC z[=(. Hack)=]Name[] =
      "[=hackname=]";
 
@@ -180,6 +181,18 @@ static const char* apz[=(. Hack)=]Patch[] = {[=
 #define REGEX_COUNT          [= (. re-ct) =]
 #define MACH_LIST_SIZE_LIMIT [= (+ 128 max-mach) =]
 #define FIX_COUNT            [= (count "fix") =]
+
+/*
+ *  Enumerate the fixes[= # in a way that minimizes diffs :-) =]
+ */
+typedef enum {[=
+
+FOR fix "," =]
+    [=(string-upcase! (get "hackname"))=]_FIXIDX[=
+ENDFOR
+
+=]
+} t_fixinc_idx;
 
 tFixDesc fixDescList[ FIX_COUNT ] = {[=
 

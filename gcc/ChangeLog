@@ -1,3 +1,19 @@
+2001-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * fixinc/fixtests.c: Declare entries in ENV_TABLE.
+
+2001-05-27  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/check.tpl(HACK) add and use a Scheme variable
+	(has no test text): error out if no "test_text" is defined
+	* fixinc/fixincl.tpl: likewise
+	(FIXIDX): make it an enumeration so we minimize diffs
+	* fixinc/inclhack.def: re-alphabetize and add sort instructions
+	* fixinc/fixincl.x: regenerate
+	* fixinc/tests/base/stdio.h: test output got moved due to
+	the alphabetizing
+	* README-fixinc: rewrite (mostly)
+
 2001-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (run_directive): Set pfile->directive.
