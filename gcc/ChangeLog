@@ -1,3 +1,8 @@
+Sat Apr  3 06:13:43 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (simplify_comparison, case ASHIFTRT): Recognize
+	sign-extension of a PLUS.
+
 Fri Apr  2 11:26:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stmt.c (pushcase{,_range}): Convert to NOMINAL_TYPE after
