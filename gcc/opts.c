@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "options.h"
 #include "flags.h"
 #include "toplev.h"
+#include "params.h"
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 unsigned HOST_WIDE_INT g_switch_value;
@@ -40,8 +41,13 @@ bool exit_after_options;
 /* If -version.  */
 bool version_flag;
 
+/* Hack for cooperation between set_Wunused and set_Wextra.  */
+static bool maybe_warn_unused_parameter;
+
 static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);
+static void handle_param (const char *);
+static void set_Wextra (int);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS on
@@ -281,6 +287,10 @@ common_handle_option (size_t scode, const char *arg,
       exit_after_options = true;
       break;
 
+    case OPT__param:
+      handle_param (arg);
+      break;
+
     case OPT__target_help:
       display_target_options ();
       exit_after_options = true;
@@ -294,6 +304,24 @@ common_handle_option (size_t scode, const char *arg,
     case OPT_G:
       g_switch_value = value;
       g_switch_set = true;
+      break;
+
+    case OPT_O:
+    case OPT_Os:
+      /* Currently handled in a prescan.  */
+      break;
+
+    case OPT_W:
+      /* For backward compatibility, -W is the same as -Wextra.  */
+      set_Wextra (value);
+      break;
+
+    case OPT_Wextra:
+      set_Wextra (value);
+      break;
+
+    case OPT_Wunused:
+      set_Wunused (value);
       break;
 
     case OPT_aux_info:
@@ -321,6 +349,10 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_dumpbase:
       dump_base_name = arg;
+      break;
+
+    case OPT_m:
+      set_target_switch (arg);
       break;
 
     case OPT_o:
@@ -353,4 +385,64 @@ common_handle_option (size_t scode, const char *arg,
     }
 
   return 1;
+}
+
+/* Handle --param NAME=VALUE.  */
+static void
+handle_param (const char *carg)
+{
+  char *equal, *arg;
+  int value;
+
+  arg = xstrdup (carg);
+  equal = strchr (arg, '=');
+  if (!equal)
+    error ("%s: --param arguments should be of the form NAME=VALUE", arg);
+  else
+    {
+      value = integral_argument (equal + 1);
+      if (value == -1)
+	error ("invalid --param value `%s'", equal + 1);
+      else
+	{
+	  *equal = '\0';
+	  set_param_value (arg, value);
+	}
+    }
+
+  free (arg);
+}
+
+/* Handle -W and -Wextra.  */
+static void
+set_Wextra (int setting)
+{
+  extra_warnings = setting;
+  warn_unused_value = setting;
+  warn_unused_parameter = (setting && maybe_warn_unused_parameter);
+
+  /* We save the value of warn_uninitialized, since if they put
+     -Wuninitialized on the command line, we need to generate a
+     warning about not using it without also specifying -O.  */
+  if (setting == 0)
+    warn_uninitialized = 0;
+  else if (warn_uninitialized != 1)
+    warn_uninitialized = 2;
+}
+
+/* Initialize unused warning flags.  */
+void
+set_Wunused (int setting)
+{
+  warn_unused_function = setting;
+  warn_unused_label = setting;
+  /* Unused function parameter warnings are reported when either
+     ``-Wextra -Wunused'' or ``-Wunused-parameter'' is specified.
+     Thus, if -Wextra has already been seen, set warn_unused_parameter;
+     otherwise set maybe_warn_extra_parameter, which will be picked up
+     by set_Wextra.  */
+  maybe_warn_unused_parameter = setting;
+  warn_unused_parameter = (setting && extra_warnings);
+  warn_unused_variable = setting;
+  warn_unused_value = setting;
 }

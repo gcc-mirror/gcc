@@ -25,6 +25,9 @@
 -help
 Common
 
+-param
+Common Separate
+
 -target-help
 Common
 
@@ -33,6 +36,21 @@ Common
 
 G
 Common Joined Separate UInteger
+
+O
+Common JoinedOrMissing
+
+Os
+Common
+
+W
+Common RejectNegative
+
+Wextra
+Common
+
+Wunused
+Common
 
 aux-info
 Common Separate
@@ -51,6 +69,9 @@ Common Joined
 
 dumpbase
 Common Separate
+
+m
+Common Joined
 
 o
 Common Joined Separate

@@ -113,8 +113,6 @@ static int lang_dependent_init (const char *);
 static void init_asm_output (const char *);
 static void finalize (void);
 
-static void set_target_switch (const char *);
-
 static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void setup_core_dumping (void);
 static void compile_file (void);
@@ -122,8 +120,7 @@ static void compile_file (void);
 static int decode_f_option (const char *);
 static int decode_W_option (const char *);
 static int decode_g_option (const char *);
-static unsigned int independent_decode_option (int, char **);
-static void set_Wextra (int);
+static unsigned int independent_decode_option (char **);
 
 static int print_single_switch (FILE *, int, int, const char *,
 				const char *, const char *,
@@ -1503,9 +1500,6 @@ int warn_unused_parameter;
 int warn_unused_variable;
 int warn_unused_value;
 
-/* Used for cooperation between set_Wunused and set_Wextra.  */
-static int maybe_warn_unused_parameter;
-
 /* Nonzero to warn about code which is never reached.  */
 
 int warn_notreached;
@@ -1634,40 +1628,6 @@ static const lang_independent_options W_options[] =
   {"strict-aliasing", &warn_strict_aliasing, 1,
    N_ ("Warn about code which might break the strict aliasing rules") }
 };
-
-/* Initialize unused warning flags.  */
-void
-set_Wunused (int setting)
-{
-  warn_unused_function = setting;
-  warn_unused_label = setting;
-  /* Unused function parameter warnings are reported when either
-     ``-Wextra -Wunused'' or ``-Wunused-parameter'' is specified.
-     Thus, if -Wextra has already been seen, set warn_unused_parameter;
-     otherwise set maybe_warn_extra_parameter, which will be picked up
-     by set_Wextra.  */
-  maybe_warn_unused_parameter = setting;
-  warn_unused_parameter = (setting && extra_warnings);
-  warn_unused_variable = setting;
-  warn_unused_value = setting;
-}
-
-/* Initialize more unused warning flags.  */
-static void
-set_Wextra (int setting)
-{
-  extra_warnings = setting;
-  warn_unused_value = setting;
-  warn_unused_parameter = (setting && maybe_warn_unused_parameter);
-
-  /* We save the value of warn_uninitialized, since if they put
-     -Wuninitialized on the command line, we need to generate a
-     warning about not using it without also specifying -O.  */
-  if (setting == 0)
-    warn_uninitialized = 0;
-  else if (warn_uninitialized != 1)
-    warn_uninitialized = 2;
-}
 
 /* The following routines are useful in setting all the flags that
    -ffast-math and -fno-fast-math imply.  */
@@ -4426,22 +4386,6 @@ decode_W_option (const char *arg)
 
       warn_larger_than = larger_than_size != -1;
     }
-  else if (!strcmp (arg, "unused"))
-    {
-      set_Wunused (1);
-    }
-  else if (!strcmp (arg, "no-unused"))
-    {
-      set_Wunused (0);
-    }
-  else if (!strcmp (arg, "extra"))
-    {
-      set_Wextra (1);
-    }
-  else if (!strcmp (arg, "no-extra"))
-    {
-      set_Wextra (0);
-    }
   else
     return 0;
 
@@ -4578,7 +4522,7 @@ ignoring option `%s' due to invalid debug level specification",
    Return the number of strings consumed.  */
 
 static unsigned int
-independent_decode_option (int argc, char **argv)
+independent_decode_option (char **argv)
 {
   char *arg = argv[0];
 
@@ -4587,52 +4531,10 @@ independent_decode_option (int argc, char **argv)
 
   arg++;
 
-  /* Handle '--param <name>=<value>'.  */
-  if (strcmp (arg, "-param") == 0)
-    {
-      char *equal;
-
-      if (argc == 1)
-	{
-	  error ("-param option missing argument");
-	  return 1;
-	}
-
-      /* Get the '<name>=<value>' parameter.  */
-      arg = argv[1];
-      /* Look for the `='.  */
-      equal = strchr (arg, '=');
-      if (!equal)
-	error ("invalid --param option: %s", arg);
-      else
-	{
-	  int val;
-
-	  /* Zero out the `=' sign so that we get two separate strings.  */
-	  *equal = '\0';
-	  /* Figure out what value is specified.  */
-	  val = read_integral_parameter (equal + 1, NULL, INVALID_PARAM_VAL);
-	  if (val != INVALID_PARAM_VAL)
-	    set_param_value (arg, val);
-	  else
-	    error ("invalid parameter value `%s'", equal + 1);
-	}
-
-      return 2;
-    }
-
   switch (*arg)
     {
     default:
       return 0;
-
-    case 'O':
-      /* Already been treated in main (). Do nothing.  */
-      break;
-
-    case 'm':
-      set_target_switch (arg + 1);
-      break;
 
     case 'f':
       return decode_f_option (arg + 1);
@@ -4641,21 +4543,14 @@ independent_decode_option (int argc, char **argv)
       return decode_g_option (arg + 1);
 
     case 'W':
-      /* For backward compatibility, -W is the same as -Wextra.  */
-      if (arg[1] == 0)
-	set_Wextra (1);
-      else
-	return decode_W_option (arg + 1);
-      break;
+      return decode_W_option (arg + 1);
     }
-
-  return 1;
 }
 
 /* Decode -m switches.  */
 /* Decode the switch -mNAME.  */
 
-static void
+void
 set_target_switch (const char *name)
 {
   size_t j;
@@ -5117,7 +5012,7 @@ parse_options_and_default_flags (int argc, char **argv)
 	/* Now see if the option also has a language independent meaning.
 	   Some options are both language specific and language independent,
 	   eg --help.  */
-	indep_processed = independent_decode_option (argc - i, argv + i);
+	indep_processed = independent_decode_option (argv + i);
       else
 	{
 	  lang_processed = -lang_processed;
