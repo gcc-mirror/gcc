@@ -1,3 +1,8 @@
+Tue Mar  3 07:36:37 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* reorg.c (fill_eager_delay_slots): Add new argument delay_list
+	in call to fill_slots_from_thread.
+
 Mon Mar  2 13:45:03 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/linux.h (CPP_PREDEFINES): Correct connecting whitespace 
