@@ -2770,6 +2770,8 @@ do { ip = &instack[indepth];		\
 
     case '#':
       if (assertions_flag) {
+	if (ident_length)
+	  goto specialchar;
 	/* Copy #foo (bar lose) without macro expansion.  */
 	obp[-1] = '#';	/* In case it was '%'. */
 	SKIP_WHITE_SPACE (ibp);
@@ -2783,6 +2785,7 @@ do { ip = &instack[indepth];		\
 	  obp += ip->bufp - ibp;
 	  ibp = ip->bufp;
 	}
+	break;
       }
 
       /* If this is expanding a macro definition, don't recognize
