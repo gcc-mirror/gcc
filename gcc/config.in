@@ -41,6 +41,9 @@
 /* Define if you have the bzero function.  */
 #undef HAVE_BZERO
 
+/* Define if you have the getrlimit function.  */
+#undef HAVE_GETRLIMIT
+
 /* Define if you have the index function.  */
 #undef HAVE_INDEX
 
@@ -55,6 +58,9 @@
 
 /* Define if you have the rindex function.  */
 #undef HAVE_RINDEX
+
+/* Define if you have the setrlimit function.  */
+#undef HAVE_SETRLIMIT
 
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
