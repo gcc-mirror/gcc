@@ -147,13 +147,13 @@ struct _factor { int factor, count; } factors[NUM_FACTORS]
 enum unroll_types { UNROLL_COMPLETELY, UNROLL_MODULO, UNROLL_NAIVE };
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"
 #include "regs.h"
 #include "flags.h"
 #include "expr.h"
-#include <stdio.h>
 #include "loop.h"
 
 /* This controls which loops are unrolled, and by how much we unroll

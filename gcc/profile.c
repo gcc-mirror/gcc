@@ -41,12 +41,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    achieve this, see Dain Sample's UC Berkeley thesis.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "flags.h"
 #include "insn-flags.h"
 #include "insn-config.h"
 #include "output.h"
-#include <stdio.h>
 #include "tree.h"
 #include "output.h"
 #include "gcov-io.h"

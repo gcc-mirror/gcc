@@ -19,12 +19,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
 #include "obstack.h"
-#include <stdio.h>
 #include <ctype.h>
 
 #ifndef WCHAR_TYPE_SIZE

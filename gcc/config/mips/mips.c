@@ -27,6 +27,9 @@ Boston, MA 02111-1307, USA.  */
    be replaced with something better designed.  */
 
 #include "config.h"
+
+#include <stdio.h>
+
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -42,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #undef MAX			/* sys/param.h may also define these */
 #undef MIN
 
-#include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/file.h>

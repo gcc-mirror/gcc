@@ -32,9 +32,9 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HALF_PIC_INIT
 
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
-#include <stdio.h>
 #include "obstack.h"
 
 #define obstack_chunk_alloc xmalloc

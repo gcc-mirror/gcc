@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
    is the kind of rtx's they make and what arguments they use.  */
 
 #include "config.h"
+#include <stdio.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -57,8 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #include "bc-typecd.h"
 #include "bc-optab.h"
 #include "bc-emit.h"
-
-#include <stdio.h>
 
 /* Opcode names */
 #ifdef BCDEBUG_PRINT_CODE

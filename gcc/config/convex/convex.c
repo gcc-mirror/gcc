@@ -19,6 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -30,9 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "output.h"
 #include "expr.h"
-
-#undef NULL
-#include <stdio.h>
 
 /* Tables used in convex.h */
 
