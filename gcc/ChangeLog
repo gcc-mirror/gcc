@@ -1,3 +1,9 @@
+2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/m68k/netbsd-elf.h (LONG_DOUBLE_TYPE_SIZE): Compute
+	at run-time.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Set to 96 if not __mc68010__.
+
 2002-05-30  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_expand_unop_builtin): Return

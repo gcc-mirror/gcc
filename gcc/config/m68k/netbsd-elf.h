@@ -42,13 +42,15 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Don't try using XFmode on the 68010.  */ 
-#if TARGET_DEFAULT == 0
 #undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 64
-#endif
+#define LONG_DOUBLE_TYPE_SIZE			\
+  ((TARGET_68020 || TARGET_68040 || TARGET_68040_ONLY || \
+    TARGET_68060) ? 96 : 64)
 
 #ifdef __mc68010__
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
 #endif
 
 #define EXTRA_SPECS \
