@@ -1,3 +1,13 @@
+1999-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (lookup_tag): Remove code no longer needed after
+	name-lookup improvements.
+	* decl2.c (handle_class_head): Make error-recovery more robust.
+	* friend.c (make_friend_class): Reject templated typename types.
+	* lex.c (is_global): A template parameter isn't global.
+	* parse.y (class_head): Robustify.
+	* parse.c: Regenerated.
+	
 1999-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (for_each_template_parm): Walk into TYPENAME_TYPEs,

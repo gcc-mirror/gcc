@@ -2165,10 +2165,12 @@ structsp:
 		}
 	| class_head  %prec EMPTY
 		{
-		  if ($1.new_type_flag)
+		  if ($1.new_type_flag && $1.t != error_mark_node)
 		    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL ($1.t)));
 		  $$.new_type_flag = 0;
-		  if (TYPE_BINFO ($1.t) == NULL_TREE)
+		  if ($1.t == error_mark_node)
+		    $$.t = $1.t;
+		  else if (TYPE_BINFO ($1.t) == NULL_TREE)
 		    {
 		      cp_error ("%T is not a class type", $1.t);
 		      $$.t = error_mark_node;

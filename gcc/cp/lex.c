@@ -2831,6 +2831,12 @@ is_global (d)
       case TREE_LIST: d = TREE_VALUE (d); continue;
       default:
         my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (d)) == 'd', 980629);
+
+	/* A template parameter is not really global, even though it
+	   has no enclosing scope.  */
+	if (DECL_TEMPLATE_PARM_P (d))
+	  return 0;
+
         d = CP_DECL_CONTEXT (d);
         return TREE_CODE (d) == NAMESPACE_DECL;
       }
