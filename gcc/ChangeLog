@@ -1,3 +1,9 @@
+Tue Apr 13 14:26:31 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.md (movsf_push): Handle memory to memory case too, new splitter.
+	(movdf_push, movxf_push): Likewise.
+	(movsf_push_memory, movdf_push_memory, movxf_push_memory): Remove.
+
 Tue Apr 13 14:14:06 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* i386.md: Do not output mov %0,reg on AMD K6.
