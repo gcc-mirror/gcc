@@ -2868,7 +2868,7 @@ __do_global_ctors ()
   }
 #endif
   DO_GLOBAL_CTORS_BODY;
-  atexit (__do_global_dtors, 0);
+  atexit (__do_global_dtors);
 }
 #endif /* no HAS_INIT_SECTION */
 

@@ -1,3 +1,10 @@
+Thu Sep 16 18:44:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libgcc2.c (__do_global_ctors): Call atexit with one arg.
+
+	* sparc/sunos4.h (on_exit): Wrap prototype parameters in PARAMS().
+	Define HAVE_ON_EXIT.
+
 Thu Sep 16 18:06:35 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (CTYPE_CONV, TOUPPER, TOLOWER): New macros.  Use

@@ -49,6 +49,8 @@ Boston, MA 02111-1307, USA.  */
 	       : "r" (ms_flags), "r" (ms_saveret));
 
 /* SunOS has on_exit instead of atexit.  */
-extern int on_exit (void *, void *);	/* The man page says it returns int. */
+/* The man page says it returns int. */
+extern int on_exit PARAMS ((void *, void *));
 #define ON_EXIT(FUNC) on_exit ((FUNC), 0)
 #define NEED_ATEXIT
+#define HAVE_ON_EXIT
