@@ -56,9 +56,6 @@ The Ada runtime library.
 @item libbanshee
 The @code{libbanshee} library, used for Andersen-style points-to analysis.
 
-@item libf2c
-The Fortran 77 runtime library.
-
 @item libgfortran
 The Fortran runtime library.
 

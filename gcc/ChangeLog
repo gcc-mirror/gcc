@@ -1,3 +1,7 @@
+2004-07-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* doc/sourcebuild.texi: Remove libf2c entry.
+
 2004-07-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/i386/i386.md (movv16qi_internal): Fix typo.
