@@ -1522,6 +1522,7 @@ output_function_prologue (file, size, leaf_function)
       for (i = 26, arg_offset = -36; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
 	  print_ldw (file, i, arg_offset, 4);
+      print_ldw (file, 2, -20, 4);
     }
 
   /* Normal register save. */
