@@ -551,6 +551,20 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 11)),	\
 		  plus_constant (FNADDR, 2));				\
 }
+
+/* Byte offset of return address in a stack frame.  The "saved PC" field
+   is in element [4] when treating the frame as an array of longwords.  */
+
+#define RETURN_ADDRESS_OFFSET	(4 * UNITS_PER_WORD)	/* 16 */
+
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.
+   FRAMEADDR is already the frame pointer of the COUNT frame, so we
+   can ignore COUNT.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)	\
+  gen_rtx (MEM, Pmode, plus_constant (FRAME, RETURN_ADDRESS_OFFSET))
+
 
 /* Addressing modes, and classification of registers for them.  */
 
