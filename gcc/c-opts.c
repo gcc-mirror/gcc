@@ -36,7 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-incpath.h"
 #include "debug.h"		/* For debug_hooks.  */
 #include "opts.h"
-#include "options.h"
+#include "c-options.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true

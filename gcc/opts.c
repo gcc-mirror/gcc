@@ -26,9 +26,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "langhooks.h"
 #include "opts.h"
-#include "options.h"
 
-static enum opt_code find_opt (const char *, int);
+static size_t find_opt (const char *, int);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS on
@@ -41,16 +40,16 @@ static enum opt_code find_opt (const char *, int);
    doesn't match any alternatives for the true front end, the index of
    the matched switch is returned anyway.  The caller should check for
    this case.  */
-static enum opt_code
+static size_t
 find_opt (const char *input, int lang_mask)
 {
   size_t md, mn, mx;
   size_t opt_len;
-  enum opt_code result = N_OPTS;
+  size_t result = cl_options_count;
   int comp;
 
   mn = 0;
-  mx = N_OPTS;
+  mx = cl_options_count;
 
   while (mx > mn)
     {
@@ -84,7 +83,7 @@ find_opt (const char *input, int lang_mask)
 		  /* If subsequently we don't find a better match,
 		     return this and let the caller report it as a bad
 		     match.  */
-		  result = (enum opt_code) md;
+		  result = md;
 		  continue;
 		}
 
@@ -97,7 +96,7 @@ find_opt (const char *input, int lang_mask)
 		 return the longest valid option-accepting match (mx).
 		 This loops at most twice with current options.  */
 	      mx = md;
-	      for (md = md + 1; md < N_OPTS; md++)
+	      for (md = md + 1; md < cl_options_count; md++)
 		{
 		  opt_len = cl_options[md].opt_len;
 		  if (strncmp (input, cl_options[md].opt_text, opt_len))
@@ -137,7 +136,7 @@ handle_option (int argc, char **argv, int lang_mask)
   /* Interpret "-" or a non-switch as a file name.  */
   if (opt[0] != '-' || opt[1] == '\0')
     {
-      opt_index = N_OPTS;
+      opt_index = cl_options_count;
       arg = opt;
       result = 1;
     }
@@ -159,7 +158,7 @@ handle_option (int argc, char **argv, int lang_mask)
 
       /* Skip over '-'.  */
       opt_index = find_opt (opt + 1, lang_mask);
-      if (opt_index == N_OPTS)
+      if (opt_index == cl_options_count)
 	goto done;
 
       option = &cl_options[opt_index];

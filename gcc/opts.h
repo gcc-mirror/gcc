@@ -23,6 +23,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 extern int handle_option (int argc, char **argv, int lang_mask);
 
+struct cl_option
+{
+  const char *opt_text;
+  unsigned char opt_len;
+  unsigned char flags;
+};
+
+extern const struct cl_option cl_options[];
+extern const unsigned int cl_options_count;
+
 #define CL_C			(1 << 0) /* Only C.  */
 #define CL_OBJC			(1 << 1) /* Only ObjC.  */
 #define CL_CXX			(1 << 2) /* Only C++.  */
