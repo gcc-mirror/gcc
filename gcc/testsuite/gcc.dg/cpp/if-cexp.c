@@ -10,4 +10,5 @@
 #error OK	/* { dg-error "OK" "nested ? : with parens" } */
 #endif
 
-
+#if 2:		/* { dg-error "':' without" "immediate :" } */
+#endif

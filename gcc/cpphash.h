@@ -413,7 +413,7 @@ extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
 extern void _cpp_maybe_push_include_file PARAMS ((cpp_reader *));
 
 /* In cpplib.c */
-extern int _cpp_test_assertion PARAMS ((cpp_reader *, int *));
+extern int _cpp_test_assertion PARAMS ((cpp_reader *, unsigned int *));
 extern int _cpp_handle_directive PARAMS ((cpp_reader *, int));
 extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
 extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));

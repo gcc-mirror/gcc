@@ -1652,7 +1652,7 @@ find_answer (node, candidate)
 int
 _cpp_test_assertion (pfile, value)
      cpp_reader *pfile;
-     int *value;
+     unsigned int *value;
 {
   struct answer *answer;
   cpp_hashnode *node;
