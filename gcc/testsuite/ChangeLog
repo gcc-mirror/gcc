@@ -1,3 +1,8 @@
+2004-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/20030
+	* gfortran.fortran-torture/execute/character_passing.f90: New test.
+
 2005-02-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/20008
