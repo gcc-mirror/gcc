@@ -1,3 +1,8 @@
+2003-07-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* crontab: Update invocation of gcc_release according to the
+	previous changes there.  Add automatic 3.4 snapshots from mainline.
+
 2003-07-23  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (usage): Document that -s now takes symbolic name
