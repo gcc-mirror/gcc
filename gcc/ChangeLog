@@ -1,3 +1,10 @@
+2002-07-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppexp.c (ALWAYS_EVAL): Remove.
+	(optab, reduce): Always evaluate.
+	(num_unary_op, num_binary_op, num_div_op): Issue diagnostics
+	only if not skipping evaluation.
+
 2002-07-19  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (debug_hard_reg_set): Remove.
