@@ -1,7 +1,7 @@
 #ifdef STACK_SIZE
 #define SIZE STACK_SIZE / 8
 #else
-#define STACK_SIZE 10000000
+#define SIZE 10000000
 #endif
 
 struct foo
