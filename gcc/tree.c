@@ -2990,6 +2990,7 @@ build VPROTO((enum tree_code code, tree tt, ...))
   register tree t;
   register int length;
   register int i;
+  int fro;
 
   VA_START (p, tt);
 
@@ -3002,6 +3003,12 @@ build VPROTO((enum tree_code code, tree tt, ...))
   length = tree_code_length[(int) code];
   TREE_TYPE (t) = tt;
 
+  /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_RAISED for
+     the result based on those same flags for the arguments.  But, if
+     the arguments aren't really even `tree' expressions, we shouldn't
+     be trying to do this.  */
+  fro = first_rtl_op (code);
+
   if (length == 2)
     {
       /* This is equivalent to the loop below, but faster.  */
@@ -3009,11 +3016,20 @@ build VPROTO((enum tree_code code, tree tt, ...))
       register tree arg1 = va_arg (p, tree);
       TREE_OPERAND (t, 0) = arg0;
       TREE_OPERAND (t, 1) = arg1;
-      if ((arg0 && TREE_SIDE_EFFECTS (arg0))
-	  || (arg1 && TREE_SIDE_EFFECTS (arg1)))
-	TREE_SIDE_EFFECTS (t) = 1;
-      TREE_RAISES (t)
-	= (arg0 && TREE_RAISES (arg0)) || (arg1 && TREE_RAISES (arg1));
+      if (arg0 && fro > 0)
+	{
+	  if (TREE_SIDE_EFFECTS (arg0))
+	    TREE_SIDE_EFFECTS (t) = 1;
+	  if (TREE_RAISES (arg0))
+	    TREE_RAISES (t) = 1;
+	}
+      if (arg1 && fro > 1)
+	{
+	  if (TREE_SIDE_EFFECTS (arg1))
+	    TREE_SIDE_EFFECTS (t) = 1;
+	  if (TREE_RAISES (arg1))
+	    TREE_RAISES (t) = 1;
+	}
     }
   else if (length == 1)
     {
@@ -3023,9 +3039,12 @@ build VPROTO((enum tree_code code, tree tt, ...))
       if (TREE_CODE_CLASS (code) != 's')
 	abort ();
       TREE_OPERAND (t, 0) = arg0;
-      if (arg0 && TREE_SIDE_EFFECTS (arg0))
-	TREE_SIDE_EFFECTS (t) = 1;
-      TREE_RAISES (t) = (arg0 && TREE_RAISES (arg0));
+      if (fro > 0)
+	{
+	  if (arg0 && TREE_SIDE_EFFECTS (arg0))
+	    TREE_SIDE_EFFECTS (t) = 1;
+	  TREE_RAISES (t) = (arg0 && TREE_RAISES (arg0));
+	}
     }
   else
     {
@@ -3033,7 +3052,7 @@ build VPROTO((enum tree_code code, tree tt, ...))
 	{
 	  register tree operand = va_arg (p, tree);
 	  TREE_OPERAND (t, i) = operand;
-	  if (operand)
+	  if (operand && fro > i)
 	    {
 	      if (TREE_SIDE_EFFECTS (operand))
 		TREE_SIDE_EFFECTS (t) = 1;
@@ -3090,7 +3109,7 @@ build1 (code, type, node)
     TREE_PERMANENT (t) = 1;
 
   TREE_OPERAND (t, 0) = node;
-  if (node)
+  if (node && first_rtl_op (code) != 0)
     {
       if (TREE_SIDE_EFFECTS (node))
 	TREE_SIDE_EFFECTS (t) = 1;
