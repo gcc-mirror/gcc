@@ -87,12 +87,7 @@ Boston, MA 02111-1307, USA.  */
 -Amachine(arm) -D__ELF__ -Darm_elf"
 
 #ifndef SUBTARGET_DEFAULT_APCS26
-#undef  CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
-/* On 32-bit machine it is always safe to assume we have the "new"
-   floating point system.  */
-#undef  FP_DEFAULT
-#define FP_DEFAULT FP_SOFT3
 #endif
 
 /* Allow #sccs in preprocessor.  */
@@ -240,3 +235,11 @@ const_section ()							\
 
 #include "arm/elf.h"
 #include "arm/linux-gas.h"
+
+#ifndef SUBTARGET_DEFAULT_APCS26
+/* On 32-bit machine it is always safe to assume we have the "new"
+   floating point system.  
+   ?? Make this happen for all targets when NWFPE is better established.  */
+#undef  FP_DEFAULT
+#define FP_DEFAULT FP_SOFT3
+#endif
