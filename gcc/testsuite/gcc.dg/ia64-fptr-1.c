@@ -1,4 +1,4 @@
-/* { dg-do run { target ia64-*-* } } */
+/* { dg-do run { target ia64-*-linux* } } */
 /* { dg-options "-O2" } */
 
 /* Test function descriptor access.  */
