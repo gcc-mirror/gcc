@@ -1,3 +1,7 @@
+2002-06-07  H.J. Lu  (hjl@gnu.org)
+
+	* decl2.c (flag_use_cxa_atexit): Set to DEFAULT_USE_CXA_ATEXIT.
+
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_POST_OPTIONS): Use c_common_post_options.

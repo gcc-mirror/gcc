@@ -259,6 +259,18 @@ elif test x$withval != xno; then
   cpp_install_dir=$withval
 fi])
 
+# Enable __cxa_atexit for C++.
+AC_ARG_ENABLE(__cxa_atexit,
+[  --enable-__cxa_atexit   enable __cxa_atexit for C++],
+[], [])
+if test x$enable___cxa_atexit = xyes; then
+  AC_DEFINE(DEFAULT_USE_CXA_ATEXIT, 1,
+  [Define if you want to use __cxa_atexit, rather than atexit, to
+   register C++ destructors for local statics and global objects.
+   This is essential for fully standards-compliant handling of
+   destructors, but requires __cxa_atexit in libc.])
+fi
+  
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
 [  --enable-c-mbchar       enable multibyte characters for C and C++],

@@ -296,6 +296,12 @@
    every opportunity.  This is extremely expensive. */
 #undef ENABLE_GC_ALWAYS_COLLECT
 
+/* Define if you want to use __cxa_atexit, rather than atexit, to
+   register C++ destructors for local statics and global objects.
+   This is essential for fully standards-compliant handling of
+   destructors, but requires __cxa_atexit in libc. */
+#undef DEFAULT_USE_CXA_ATEXIT
+
 /* Define if you want the C and C++ compilers to support multibyte
    character sets for source code. */
 #undef MULTIBYTE_CHARS

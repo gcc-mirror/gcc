@@ -462,4 +462,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define MODE_BASE_REG_CLASS(MODE) BASE_REG_CLASS
 #endif
 
+/* Determine whether __cxa_atexit, rather than atexit, is used to
+   register C++ destructors for local statics and global objects. */
+#ifndef DEFAULT_USE_CXA_ATEXIT
+#define DEFAULT_USE_CXA_ATEXIT 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
