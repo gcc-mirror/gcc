@@ -5636,7 +5636,9 @@ vector unsigned int vec_mulo (vector unsigned short,
 vector signed int vec_mulo (vector signed short, vector signed short);
 
 vector float vec_nmsub (vector float, vector float, vector float);
+@end smallexample
 
+@smallexample
 vector float vec_nor (vector float, vector float);
 vector signed int vec_nor (vector signed int, vector signed int);
 vector unsigned int vec_nor (vector unsigned int, vector unsigned int);
@@ -6202,7 +6204,9 @@ vector signed int vec_any_eq (vector signed char, vector unsigned char);
 
 vector signed int vec_any_eq (vector signed char, vector signed char);
 vector signed int vec_any_eq (vector unsigned char, vector signed char);
+@end smallexample
 
+@smallexample
 vector signed int vec_any_eq (vector unsigned char,
                               vector unsigned char);
 vector signed int vec_any_eq (vector signed short,

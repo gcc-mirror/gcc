@@ -1,3 +1,8 @@
+2003-04-02  Mike Stump  <mrs@apple.com>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Split up
+	some to avoid faulting makeinfo --html.
+
 2003-04-02  Richard Henderson  <rth@redhat.com>
 
         * libgcc-std.ver (_Unwind_GetCFA): New.
