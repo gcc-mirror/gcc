@@ -1,5 +1,8 @@
 2003-11-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (cp_make_fname_decl): When creating a top-level
+	__FUNCTION__-like symbol, do register it with pushdecl.
+
 	* decl.c (finish_case_label): Do not check that we are within a
 	switch statement here.
 	* parser.c (struct cp_parser): Add in_iteration_statement_p and

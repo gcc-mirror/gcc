@@ -3157,9 +3157,10 @@ cp_make_fname_decl (tree id, int type_dep)
       while (b->level_chain->kind != sk_function_parms)
 	b = b->level_chain;
       pushdecl_with_scope (decl, b);
+      cp_finish_decl (decl, init, NULL_TREE, LOOKUP_ONLYCONVERTING);
     }
-
-  cp_finish_decl (decl, init, NULL_TREE, LOOKUP_ONLYCONVERTING);
+  else
+    pushdecl_top_level_and_finish (decl, init);
       
   return decl;
 }
