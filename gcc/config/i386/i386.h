@@ -693,7 +693,7 @@ extern int x86_prefetch_sse;
 #define TARGET_CPU_DEFAULT_k8 13
 #define TARGET_CPU_DEFAULT_pentium_m 14
 #define TARGET_CPU_DEFAULT_prescott 15
-#define TARGET_CPU_DEFAULT_nocona 15
+#define TARGET_CPU_DEFAULT_nocona 16
 
 #define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
 				  "pentiumpro", "pentium2", "pentium3", \
