@@ -1,3 +1,39 @@
+Wed May 13 12:54:30 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (lex.o): Depend on output.h.
+	
+	* call.c (add_function_candidate): Remove unused variable `cand'.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	
+	* cp-tree.h: Add prototype for `types_overlap_p'.
+
+	* decl.c (signal_catch): Mark parameter `sig' with ATTRIBUTE_UNUSED.
+
+	* decl2.c (merge_functions): Remove unused variables `tmp' and
+	`tempn'.
+
+	* error.c (expr_as_string): Mark parameter `v' with ATTRIBUTE_UNUSED.
+	(code_as_string): Likewise.
+	(language_as_string): Likewise.
+	(parm_as_string): Likewise.
+	(op_as_string): Likewise.
+	(assop_as_string): Likewise.
+	(cv_as_string): Likewise.
+
+	* lex.c: Include output.h.
+
+	* pt.c (type_unification): Cast first argument of `bzero' to a char*.
+
+	* search.c (dfs_no_overlap_yet): Mark parameter `t' with
+	ATTRIBUTE_UNUSED.
+
+	* tinfo.cc (__class_type_info::dcast): Change the type of variable
+	`i' from int to size_t.
+
+	* typeck.c (language_lvalue_valid): Mark parameter `exp' with
+	ATTRIBUTE_UNUSED.
+
 Tue May 12 21:37:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* error.c (dump_simple_decl): Use DECL_CLASS_SCOPE_P and/or

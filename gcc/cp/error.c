@@ -1706,7 +1706,7 @@ type_as_string (typ, v)
 char *
 expr_as_string (decl, v)
      tree decl;
-     int v;
+     int v ATTRIBUTE_UNUSED;
 {
   OB_INIT ();
 
@@ -1804,7 +1804,7 @@ cp_line_of (t)
 char *
 code_as_string (c, v)
      enum tree_code c;
-     int v;
+     int v ATTRIBUTE_UNUSED;
 {
   return tree_code_name [c];
 }
@@ -1812,7 +1812,7 @@ code_as_string (c, v)
 char *
 language_as_string (c, v)
      enum languages c;
-     int v;
+     int v ATTRIBUTE_UNUSED;
 {
   switch (c)
     {
@@ -1832,7 +1832,8 @@ language_as_string (c, v)
 
 char *
 parm_as_string (p, v)
-     int p, v;
+     int p;
+     int v ATTRIBUTE_UNUSED;
 {
   if (p < 0)
     return "`this'";
@@ -1844,7 +1845,7 @@ parm_as_string (p, v)
 char *
 op_as_string (p, v)
      enum tree_code p;
-     int v;
+     int v ATTRIBUTE_UNUSED;
 {
   static char buf[] = "operator                ";
 
@@ -1858,7 +1859,7 @@ op_as_string (p, v)
 char *
 assop_as_string (p, v)
      enum tree_code p;
-     int v;
+     int v ATTRIBUTE_UNUSED;
 {
   static char buf[] = "operator                ";
 
@@ -1897,7 +1898,7 @@ args_as_string (p, v)
 char *
 cv_as_string (p, v)
      tree p;
-     int v;
+     int v ATTRIBUTE_UNUSED;
 {
   OB_INIT ();
 

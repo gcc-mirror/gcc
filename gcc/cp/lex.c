@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "c-pragma.h"
 #include "toplev.h"
+#include "output.h"
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after

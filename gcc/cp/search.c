@@ -3868,7 +3868,7 @@ dfs_check_overlap (empty_binfo)
 
 static int
 dfs_no_overlap_yet (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
   return found_overlap == 0;
 }

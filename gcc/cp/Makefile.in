@@ -234,7 +234,8 @@ spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
   $(PARSE_H) $(srcdir)/../flags.h lex.h $(srcdir)/../system.h
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
   $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h \
-  $(srcdir)/../c-pragma.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(srcdir)/../c-pragma.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
+  $(srcdir)/../output.h
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
   $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h

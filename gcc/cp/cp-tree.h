@@ -2570,6 +2570,7 @@ extern tree build_dynamic_cast			PROTO((tree, tree));
 extern void synthesize_tinfo_fn			PROTO((tree));
 
 /* in search.c */
+extern int types_overlap_p			PROTO((tree, tree));
 extern void push_memoized_context		PROTO((tree, int));
 extern void pop_memoized_context		PROTO((int));
 extern tree get_vbase				PROTO((tree, tree));

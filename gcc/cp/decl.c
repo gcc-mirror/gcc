@@ -5002,7 +5002,7 @@ lookup_name_current_level (name)
 
 static void
 signal_catch (sig)
-     int sig;
+     int sig ATTRIBUTE_UNUSED;
 {
   signal (SIGSEGV, SIG_DFL);
 #ifdef SIGIOT

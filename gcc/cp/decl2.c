@@ -3743,7 +3743,6 @@ merge_functions (s1, s2)
      tree s1;
      tree s2;
 {
-  tree tmp, tempn;
   if (TREE_CODE (s2) == OVERLOAD)
     while (s2)
       {
