@@ -103,7 +103,7 @@ JAVAC = $(GCJ_WITH_FLAGS) -C
 
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 
-WARNINGS = -W -Wall
+WARNINGS = -Wextra -Wall
 ## We need _GNU_SOURCE defined for some Linux builds.  It doesn't hurt
 ## to always define it.
 AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
