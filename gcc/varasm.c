@@ -326,30 +326,6 @@ named_section (decl, name, reloc)
     }
 }
 
-#ifdef ASM_OUTPUT_SECTION_NAME
-#ifndef UNIQUE_SECTION
-#define UNIQUE_SECTION(DECL,RELOC)				\
-do {								\
-  int len;							\
-  const char *name;						\
-  char *string;							\
-								\
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
-  /* Strip off any encoding in name.  */			\
-  STRIP_NAME_ENCODING (name, name);				\
-								\
-  len = strlen (name) + 1;					\
-  string = alloca (len + 1);					\
-  sprintf (string, ".%s", name);				\
-								\
-  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-} while (0)
-#endif
-#ifndef UNIQUE_SECTION_P
-#define UNIQUE_SECTION_P(DECL) 0
-#endif
-#endif
-
 #ifdef BSS_SECTION_ASM_OP
 
 /* Tell the assembler to switch to the bss section.  */
