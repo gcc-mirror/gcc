@@ -396,9 +396,6 @@ static struct named_label_list *named_label_uses = NULL;
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
 
-/* Nonzero if we lookup name inside template argument.  */
-int arg_looking_for_template;
-
 /* -- end of C++ */
 
 /* Two expressions that are constants with value zero.
@@ -4679,13 +4676,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  val = from_obj;
 	}
 
-      if (TREE_CODE (val) == TEMPLATE_DECL && arg_looking_for_template)
-	{
-	  /* TEMPLATE_TEMPLATE_PARM node is preferred over TEMPLATE_DECL.  */
-	  if (DECL_TEMPLATE_TEMPLATE_PARM_P (val))
-	  	val = TREE_TYPE (val);
-	}
-      else if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
+      if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
 	  || TREE_CODE (val) == TYPE_DECL || prefer_type <= 0)
 	;
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))

@@ -312,22 +312,18 @@ yylex ()
 	    {
 	    case TYPENAME:
 	    case SELFNAME:
-	      lastiddecl = trrr;
-	      if (got_scope)
-		tmp_token.yylval.ttype = trrr;
-	      break;
-	    case PFUNCNAME:
-	    case IDENTIFIER:
-	      lastiddecl = trrr;
-	      break;
-	    case PTYPENAME:
-	      lastiddecl = NULL_TREE;
-	      break;
 	    case NSNAME:
 	      lastiddecl = trrr;
 	      if (got_scope)
 		tmp_token.yylval.ttype = trrr;
 	      break;
+
+	    case PFUNCNAME:
+	    case IDENTIFIER:
+	    case PTYPENAME:
+	      lastiddecl = trrr;
+	      break;
+
 	    default:
 	      my_friendly_abort (101);
 	    }

@@ -1,3 +1,11 @@
+Tue Feb  3 22:43:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c: Lose arg_looking_for_template.
+	(lookup_name_real): Likewise.
+	* parse.y: Lose processing_template_arg, template_arg1
+	(primary): Likewise.
+	* spew.c (yylex): Set lastiddecl for PTYPENAMEs, too.
+
 Tue Feb  3 22:04:01 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* error.c (dump_decl): Fix type of default arguments for template
