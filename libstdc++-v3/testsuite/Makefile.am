@@ -40,11 +40,15 @@ RUNTESTFLAGS =
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
 ## Do the same thing as `testsuite_flags --build-cxx`
-CXX_build = @glibcpp_CXX@ 
-CXX=`echo "$(CXX_build)" | sed 's,gcc/xgcc ,gcc/g++ ,'`
+testsuite_flags_script=${glibcpp_builddir}/testsuite_flags
+CXX=`${testsuite_flags_script} --build-cxx`
+
+GLIBGCC_DIR=`$(CC) -print-libgcc-file-name | sed 's,/[^/]*$$,,'`
+GLIBCXX_DIR=${glibcpp_builddir}/src/.libs
+
 CXXLINK = \
-	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
+	-R $(GLIBGCC_DIR) -R $(GLIBCXX_DIR) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
 INCLUDES = \
