@@ -1549,6 +1549,11 @@ powerpc-*-beos*)
 powerpc-*-darwin*)
 	tm_file="${tm_file} rs6000/darwin.h"
 	tmake_file="${tmake_file} rs6000/t-darwin"
+	case ${target} in
+	  *-darwin1[0-9]*) tmake_file="${tmake_file} rs6000/t-darwin8" ;;
+	  *-darwin[0-7]*) ;;
+	  *-darwin[8-9]*) tmake_file="${tmake_file} rs6000/t-darwin8" ;;
+	esac
 	extra_headers=altivec.h
 	;;
 powerpc*-*-freebsd*)
