@@ -406,7 +406,11 @@ save_call_clobbered_regs (insn_mode)
 	 saved because we restore all of them before the end of the basic
 	 block.  */
 
-      COPY_HARD_REG_SET (hard_regs_live, *regs_live);
+#ifdef HARD_REG_SET
+      hard_regs_live = *regs_live;
+#else
+      COPY_HARD_REG_SET (hard_regs_live, regs_live);
+#endif
 
       CLEAR_HARD_REG_SET (hard_regs_saved);
       CLEAR_HARD_REG_SET (hard_regs_need_restore);
