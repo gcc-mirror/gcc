@@ -1,3 +1,8 @@
+Tue Apr 14 22:00:39 1998  John Carr <jfc@mit.edu>
+
+	* genattrtab.c (check_attr_test): Handle MATCH_INSN like MATCH_OPERAND.
+	(write_test_expr): Allow MATCH_INSN.
+
 Tue Apr 14 21:57:57 1998  Paul Eggert <eggert@twinsun.com>
 
 	* install.texi: Update section on warnings that can be safely ignored.
