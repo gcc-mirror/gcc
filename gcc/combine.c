@@ -7622,13 +7622,25 @@ num_sign_bit_copies (x, mode)
     return MAX (1, (num_sign_bit_copies (x, GET_MODE (x))
 		    - (GET_MODE_BITSIZE (GET_MODE (x)) - bitwidth)));
      
+  if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_BITSIZE (GET_MODE (x)))
+    {
 #ifndef WORD_REGISTER_OPERATIONS
   /* If this machine does not do all register operations on the entire
      register and MODE is wider than the mode of X, we can say nothing
      at all about the high-order bits.  */
-  if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_BITSIZE (GET_MODE (x)))
-    return 1;
+      return 1;
+#else
+      /* Likewise on machines that do, if the mode of the object is smaller
+	 than a word and loads of that size don't sign extend, we can say
+	 nothing about the high order bits.  */
+      if (GET_MODE_BITSIZE (GET_MODE (x)) < BITS_PER_WORD
+#ifdef LOAD_EXTEND_OP
+	  && LOAD_EXTEND_OP (GET_MODE (x)) != SIGN_EXTEND
 #endif
+	  )
+	return 1;
+#endif
+    }
 
   switch (code)
     {
