@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+@c Copyright (C) 1988, 1989, 1992, 1994, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -308,16 +308,16 @@ Operands of expressions are accessed using the macros @code{XEXP},
 two arguments: an expression-pointer (RTX) and an operand number
 (counting from zero).  Thus,
 
-@example
+@smallexample
 XEXP (@var{x}, 2)
-@end example
+@end smallexample
 
 @noindent
 accesses operand 2 of expression @var{x}, as an expression.
 
-@example
+@smallexample
 XINT (@var{x}, 2)
-@end example
+@end smallexample
 
 @noindent
 accesses the same operand as an integer.  @code{XSTR}, used in the same
@@ -1850,9 +1850,9 @@ Represents the signed product of the values represented by @var{x} and
 Some machines support a multiplication that generates a product wider
 than the operands.  Write the pattern for this as
 
-@example
+@smallexample
 (mult:@var{m} (sign_extend:@var{m} @var{x}) (sign_extend:@var{m} @var{y}))
-@end example
+@end smallexample
 
 where @var{m} is wider than the modes of @var{x} and @var{y}, which need
 not be the same.
@@ -1874,9 +1874,9 @@ Some machines have division instructions in which the operands and
 quotient widths are not all the same; you should represent
 such instructions using @code{truncate} and @code{sign_extend} as in,
 
-@example
+@smallexample
 (truncate:@var{m1} (div:@var{m2} @var{x} (sign_extend:@var{m2} @var{y})))
-@end example
+@end smallexample
 
 @findex udiv
 @cindex unsigned division
@@ -2232,9 +2232,9 @@ operation requires two operands of the same machine mode.
 Therefore, the byte-sized operand is enclosed in a conversion
 operation, as in
 
-@example
+@smallexample
 (plus:SI (sign_extend:SI (reg:QI 34)) (reg:SI 80))
-@end example
+@end smallexample
 
 The conversion operation is not a mere placeholder, because there
 may be more than one way of converting from a given starting mode
@@ -2567,10 +2567,10 @@ side effect expressions---expressions of code @code{set}, @code{call},
 side-effects are computed, and second all the actual side-effects are
 performed.  For example,
 
-@example
+@smallexample
 (parallel [(set (reg:SI 1) (mem:SI (reg:SI 1)))
            (set (mem:SI (reg:SI 1)) (reg:SI 1))])
-@end example
+@end smallexample
 
 @noindent
 says unambiguously that the values of hard register 1 and the memory
@@ -2583,13 +2583,13 @@ expect the result of one @code{set} to be available for the next one.
 For example, people sometimes attempt to represent a jump-if-zero
 instruction this way:
 
-@example
+@smallexample
 (parallel [(set (cc0) (reg:SI 34))
            (set (pc) (if_then_else
                         (eq (cc0) (const_int 0))
                         (label_ref @dots{})
                         (pc)))])
-@end example
+@end smallexample
 
 @noindent
 But this is incorrect, because it says that the jump condition depends
@@ -2716,9 +2716,9 @@ by is the length in bytes of the machine mode of the containing memory
 reference of which this expression serves as the address.  Here is an
 example of its use:
 
-@example
+@smallexample
 (mem:DF (pre_dec:SI (reg:SI 39)))
-@end example
+@end smallexample
 
 @noindent
 This says to decrement pseudo register 39 by the length of a @code{DFmode}
@@ -2878,16 +2878,16 @@ chain delimited by these insns, the @code{NEXT_INSN} and
 @code{PREV_INSN} pointers must always correspond: if @var{insn} is not
 the first insn,
 
-@example
+@smallexample
 NEXT_INSN (PREV_INSN (@var{insn})) == @var{insn}
-@end example
+@end smallexample
 
 @noindent
 is always true and if @var{insn} is not the last insn,
 
-@example
+@smallexample
 PREV_INSN (NEXT_INSN (@var{insn})) == @var{insn}
-@end example
+@end smallexample
 
 @noindent
 is always true.
@@ -3459,9 +3459,9 @@ RTL expression code, @code{call}.
 @cindex @code{call} usage
 A @code{call} expression has two operands, as follows:
 
-@example
+@smallexample
 (call (mem:@var{fm} @var{addr}) @var{nbytes})
-@end example
+@end smallexample
 
 @noindent
 Here @var{nbytes} is an operand that represents the number of bytes of
@@ -3479,10 +3479,10 @@ For a subroutine that returns a value whose mode is not @code{BLKmode},
 the value is returned in a hard register.  If this register's number is
 @var{r}, then the body of the call insn looks like this:
 
-@example
+@smallexample
 (set (reg:@var{m} @var{r})
      (call (mem:@var{fm} @var{addr}) @var{nbytes}))
-@end example
+@end smallexample
 
 @noindent
 This RTL expression makes it clear (to the optimizer passes) that the

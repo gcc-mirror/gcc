@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003 Free Software Foundation, Inc.
+@c 2002, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -356,12 +356,12 @@ used.
 
 The @file{config/rs6000/rs6000.h} target file defines:
 
-@example
+@smallexample
 #define EXTRA_SPECS \
   @{ "cpp_sysv_default", CPP_SYSV_DEFAULT @},
 
 #define CPP_SYS_DEFAULT ""
-@end example
+@end smallexample
 
 The @file{config/rs6000/sysv.h} target file defines:
 @smallexample
@@ -561,7 +561,7 @@ operating system, code the component name as @samp{0}.
 
 For example, here is the definition used for VAX/VMS:
 
-@example
+@smallexample
 #define INCLUDE_DEFAULTS \
 @{                                       \
   @{ "GNU_GXX_INCLUDE:", "G++", 1, 1@},   \
@@ -570,7 +570,7 @@ For example, here is the definition used for VAX/VMS:
   @{ ".", 0, 0, 0@},                      \
   @{ 0, 0, 0, 0@}                         \
 @}
-@end example
+@end smallexample
 @end defmac
 
 Here is the order of prefixes tried for exec files:
@@ -1253,7 +1253,7 @@ If your aim is to make GCC use the same conventions for laying out
 bit-fields as are used by another compiler, here is how to investigate
 what the other compiler does.  Compile and run this program:
 
-@example
+@smallexample
 struct foo1
 @{
   char x;
@@ -1276,7 +1276,7 @@ main ()
           sizeof (struct foo2));
   exit (0);
 @}
-@end example
+@end smallexample
 
 If this prints 2 and 5, then the compiler's behavior is what you would
 get from @code{PCC_BITFIELD_TYPE_MATTERS}.
@@ -1712,7 +1712,7 @@ int}.
 The C++ compiler represents a pointer-to-member-function with a struct
 that looks like:
 
-@example
+@smallexample
   struct @{
     union @{
       void (*fn)();
@@ -1720,7 +1720,7 @@ that looks like:
     @};
     ptrdiff_t delta;
   @};
-@end example
+@end smallexample
 
 @noindent
 The C++ compiler must use one bit to indicate whether the function that
@@ -2288,9 +2288,9 @@ in many of the tables described below.
 @defmac N_REG_CLASSES
 The number of distinct register classes, defined as follows:
 
-@example
+@smallexample
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
-@end example
+@end smallexample
 @end defmac
 
 @defmac REG_CLASS_NAMES
@@ -2409,9 +2409,9 @@ to use when it is necessary to copy value @var{x} into a register in class
 another, smaller class.  On many machines, the following definition is
 safe:
 
-@example
+@smallexample
 #define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
-@end example
+@end smallexample
 
 Sometimes returning a more restrictive class makes better code.  For
 example, on the 68000, when @var{x} is an integer constant that is in range
@@ -2623,11 +2623,11 @@ does not store the low-order 32 bits, as would be the case for a normal
 register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
 as below:
 
-@example
+@smallexample
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
    ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
-@end example
+@end smallexample
 @end defmac
 
 Three other special macros describe which operands fit which constraint
@@ -3347,12 +3347,12 @@ replacing it with either the frame pointer or the argument pointer,
 depending on whether or not the frame pointer has been eliminated.
 
 In this case, you might specify:
-@example
+@smallexample
 #define ELIMINABLE_REGS  \
 @{@{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM@}, \
  @{ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM@}, \
  @{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM@}@}
-@end example
+@end smallexample
 
 Note that the elimination of the argument pointer with the stack pointer is
 specified first since that is the preferred elimination.
@@ -3413,18 +3413,18 @@ stack when an instruction attempts to push @var{npushed} bytes.
 
 On some machines, the definition
 
-@example
+@smallexample
 #define PUSH_ROUNDING(BYTES) (BYTES)
-@end example
+@end smallexample
 
 @noindent
 will suffice.  But on other machines, instructions that appear
 to push one byte actually push two bytes in an attempt to maintain
 alignment.  Then the definition should be
 
-@example
+@smallexample
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
-@end example
+@end smallexample
 @end defmac
 
 @findex current_function_outgoing_args_size
@@ -3901,9 +3901,9 @@ second of a pair (for a value of type @code{double}, say) need not be
 recognized by this macro.  So for most machines, this definition
 suffices:
 
-@example
+@smallexample
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
-@end example
+@end smallexample
 
 If the machine has register windows, so that the caller and the called
 function use different registers for the return value, this macro
@@ -4284,9 +4284,9 @@ A function like @code{TARGET_ASM_OUTPUT_MI_THUNK}, except that if
 after adding @code{delta}.  In particular, if @var{p} is the
 adjusted pointer, the following adjustment should be made:
 
-@example
+@smallexample
 p += (*((ptrdiff_t **)p))[vcall_offset/sizeof(ptrdiff_t)]
-@end example
+@end smallexample
 
 @noindent
 If this function is defined, it will always be used in place of
@@ -4907,9 +4907,9 @@ A C compound statement that attempts to replace @var{x} with a valid
 memory address for an operand of mode @var{mode}.  @var{win} will be a
 C statement label elsewhere in the code; the macro definition may use
 
-@example
+@smallexample
 GO_IF_LEGITIMATE_ADDRESS (@var{mode}, @var{x}, @var{win});
-@end example
+@end smallexample
 
 @noindent
 to avoid further processing if the address has become legitimate.
@@ -6275,9 +6275,9 @@ the address of this pool entry.  The definition of this macro is
 responsible for outputting the label definition at the proper place.
 Here is how to do this:
 
-@example
+@smallexample
 @code{(*targetm.asm_out.internal_label)} (@var{file}, "LC", @var{labelno});
-@end example
+@end smallexample
 
 When you output a pool entry specially, you should end with a
 @code{goto} to the label @var{jumpto}.  This will prevent the same pool
@@ -6936,9 +6936,9 @@ support a @dfn{.init} section which is executed at program startup,
 parts of @file{crtstuff.c} are compiled into that section.  The
 program is linked by the @command{gcc} driver like this:
 
-@example
+@smallexample
 ld -o @var{output_file} crti.o crtbegin.o @dots{} -lgcc crtend.o crtn.o
-@end example
+@end smallexample
 
 The prologue of a function (@code{__init}) appears in the @code{.init}
 section of @file{crti.o}; the epilogue appears in @file{crtn.o}.  Likewise
@@ -7357,10 +7357,10 @@ definitions of these labels are output using
 @code{(*targetm.asm_out.internal_label)}, and they must be printed in the same
 way here.  For example,
 
-@example
+@smallexample
 fprintf (@var{stream}, "\t.word L%d-L%d\n",
          @var{value}, @var{rel})
-@end example
+@end smallexample
 
 You must provide this macro on machines where the addresses in a
 dispatch table are relative to the table's own address.  If defined, GCC
@@ -7379,9 +7379,9 @@ a label.  @var{value} is the number of an internal label whose
 definition is output using @code{(*targetm.asm_out.internal_label)}.
 For example,
 
-@example
+@smallexample
 fprintf (@var{stream}, "\t.word L%d\n", @var{value})
-@end example
+@end smallexample
 @end defmac
 
 @defmac ASM_OUTPUT_CASE_LABEL (@var{stream}, @var{prefix}, @var{num}, @var{table})

@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003 Free Software Foundation, Inc.
+@c 2002, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -181,7 +181,7 @@ this pattern.  @xref{Insn Attributes}.
 
 Here is an actual example of an instruction pattern, for the 68000/68020.
 
-@example
+@smallexample
 (define_insn "tstsi"
   [(set (cc0)
         (match_operand:SI 0 "general_operand" "rm"))]
@@ -192,12 +192,12 @@ Here is an actual example of an instruction pattern, for the 68000/68020.
     return \"tstl %0\";
   return \"cmpl #0,%0\";
 @}")
-@end example
+@end smallexample
 
 @noindent
 This can also be written using braced strings:
 
-@example
+@smallexample
 (define_insn "tstsi"
   [(set (cc0)
         (match_operand:SI 0 "general_operand" "rm"))]
@@ -207,7 +207,7 @@ This can also be written using braced strings:
     return "tstl %0";
   return "cmpl #0,%0";
 @})
-@end example
+@end smallexample
 
 This is an instruction that sets the condition codes based on the value of
 a general operand.  It has no condition, so any insn whose RTL description
@@ -3548,24 +3548,24 @@ Every machine description must have a named pattern for each of the
 conditional branch names @samp{b@var{cond}}.  The recognition template
 must always have the form
 
-@example
+@smallexample
 (set (pc)
      (if_then_else (@var{cond} (cc0) (const_int 0))
                    (label_ref (match_operand 0 "" ""))
                    (pc)))
-@end example
+@end smallexample
 
 @noindent
 In addition, every machine description must have an anonymous pattern
 for each of the possible reverse-conditional branches.  Their templates
 look like
 
-@example
+@smallexample
 (set (pc)
      (if_then_else (@var{cond} (cc0) (const_int 0))
                    (pc)
                    (label_ref (match_operand 0 "" ""))))
-@end example
+@end smallexample
 
 @noindent
 They are necessary because jump optimization can turn direct-conditional
@@ -3575,7 +3575,7 @@ It is often convenient to use the @code{match_operator} construct to
 reduce the number of patterns that must be specified for branches.  For
 example,
 
-@example
+@smallexample
 (define_insn ""
   [(set (pc)
         (if_then_else (match_operator 0 "comparison_operator"
@@ -3584,20 +3584,20 @@ example,
                       (label_ref (match_operand 1 "" ""))))]
   "@var{condition}"
   "@dots{}")
-@end example
+@end smallexample
 
 In some cases machines support instructions identical except for the
 machine mode of one or more operands.  For example, there may be
 ``sign-extend halfword'' and ``sign-extend byte'' instructions whose
 patterns are
 
-@example
+@smallexample
 (set (match_operand:SI 0 @dots{})
      (extend:SI (match_operand:HI 1 @dots{})))
 
 (set (match_operand:SI 0 @dots{})
      (extend:SI (match_operand:QI 1 @dots{})))
-@end example
+@end smallexample
 
 @noindent
 Constant integers do not specify a machine mode, so an instruction to
@@ -3910,26 +3910,26 @@ A machine that has an instruction that performs a bitwise logical-and of one
 operand with the bitwise negation of the other should specify the pattern
 for that instruction as
 
-@example
+@smallexample
 (define_insn ""
   [(set (match_operand:@var{m} 0 @dots{})
         (and:@var{m} (not:@var{m} (match_operand:@var{m} 1 @dots{}))
                      (match_operand:@var{m} 2 @dots{})))]
   "@dots{}"
   "@dots{}")
-@end example
+@end smallexample
 
 @noindent
 Similarly, a pattern for a ``NAND'' instruction should be written
 
-@example
+@smallexample
 (define_insn ""
   [(set (match_operand:@var{m} 0 @dots{})
         (ior:@var{m} (not:@var{m} (match_operand:@var{m} 1 @dots{}))
                      (not:@var{m} (match_operand:@var{m} 2 @dots{}))))]
   "@dots{}"
   "@dots{}")
-@end example
+@end smallexample
 
 In both cases, it is not necessary to include patterns for the many
 logically equivalent RTL expressions.
@@ -3944,9 +3944,9 @@ and @code{(not:@var{m} (xor:@var{m} @var{x} @var{y}))}.
 The sum of three items, one of which is a constant, will only appear in
 the form
 
-@example
+@smallexample
 (plus:@var{m} (plus:@var{m} @var{x} @var{y}) @var{constant})
-@end example
+@end smallexample
 
 @item
 On machines that do not use @code{cc0},

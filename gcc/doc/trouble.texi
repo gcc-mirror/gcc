@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -374,11 +374,11 @@ because of problems in DEC's versions of the X11 header files
 @option{-I/usr/include/mit} to use the MIT versions of the header files,
 or fixing the header files by adding this:
 
-@example
+@smallexample
 #ifdef __STDC__
 #define NeedFunctionPrototypes 0
 #endif
-@end example
+@end smallexample
 
 @item
 On various 386 Unix systems derived from System V, including SCO, ISC,
@@ -393,17 +393,17 @@ is available as a separate package, and also in the file
 If you have installed GNU malloc as a separate library package, use this
 option when you relink GCC:
 
-@example
+@smallexample
 MALLOC=/usr/local/lib/libgmalloc.a
-@end example
+@end smallexample
 
 Alternatively, if you have compiled @file{gmalloc.c} from Emacs 19, copy
 the object file to @file{gmalloc.o} and use this option when you relink
 GCC:
 
-@example
+@smallexample
 MALLOC=gmalloc.o
-@end example
+@end smallexample
 @end itemize
 
 @node Incompatibilities
@@ -454,9 +454,9 @@ Negating this value yields 2147483648 again.
 GCC does not substitute macro arguments when they appear inside of
 string constants.  For example, the following macro in GCC
 
-@example
+@smallexample
 #define foo(a) "a"
-@end example
+@end smallexample
 
 @noindent
 will produce output @code{"a"} regardless of what the argument @var{a} is.
@@ -469,7 +469,7 @@ variables guaranteed to remain valid are those declared
 @code{volatile}.  This is a consequence of automatic register
 allocation.  Consider this function:
 
-@example
+@smallexample
 jmp_buf j;
 
 foo ()
@@ -484,7 +484,7 @@ foo ()
   /* @r{@code{longjmp (j)} may occur in @code{fun3}.} */
   return a + fun3 ();
 @}
-@end example
+@end smallexample
 
 Here @code{a} may or may not be restored to its first value when the
 @code{longjmp} occurs.  If @code{a} is allocated in a register, then
@@ -500,13 +500,13 @@ Programs that use preprocessing directives in the middle of macro
 arguments do not work with GCC@.  For example, a program like this
 will not work:
 
-@example
+@smallexample
 @group
 foobar (
 #define luser
         hack)
 @end group
-@end example
+@end smallexample
 
 ISO C does not permit such a construct.
 
@@ -530,10 +530,10 @@ rest of the file even if it happens within a block.
 In traditional C, you can combine @code{long}, etc., with a typedef name,
 as shown here:
 
-@example
+@smallexample
 typedef int foo;
 typedef long foo bar;
-@end example
+@end smallexample
 
 In ISO C, this is not allowed: @code{long} and other type modifiers
 require an explicit @code{int}.
@@ -546,10 +546,10 @@ PCC allows typedef names to be used as function parameters.
 Traditional C allows the following erroneous pair of declarations to
 appear together in a given scope:
 
-@example
+@smallexample
 typedef int foo;
 typedef foo foo;
-@end example
+@end smallexample
 
 @item
 GCC treats all characters of identifiers as significant.  According to
@@ -574,11 +574,11 @@ comments enclosed in conditionals that are guaranteed to fail; if these
 comments contain apostrophes, GCC will probably report an error.  For
 example, this code would produce an error:
 
-@example
+@smallexample
 #if 0
 You can't expect this to work.
 #endif
-@end example
+@end smallexample
 
 The best solution to such a problem is to put the text into an actual
 C comment delimited by @samp{/*@dots{}*/}.
@@ -758,14 +758,14 @@ executable and your source code, when you use optimization.
 Users often think it is a bug when GCC reports an error for code
 like this:
 
-@example
+@smallexample
 int foo (struct mumble *);
 
 struct mumble @{ @dots{} @};
 
 int foo (struct mumble *x)
 @{ @dots{} @}
-@end example
+@end smallexample
 
 This code really is erroneous, because the scope of @code{struct
 mumble} in the prototype is limited to the argument list containing it.
@@ -866,14 +866,14 @@ give rise to questions of this sort.
 When a class has static data members, it is not enough to @emph{declare}
 the static member; you must also @emph{define} it.  For example:
 
-@example
+@smallexample
 class Foo
 @{
   @dots{}
   void method();
   static int bar;
 @};
-@end example
+@end smallexample
 
 This declaration only establishes that the class @code{Foo} has an
 @code{int} named @code{Foo::bar}, and a member function named
@@ -882,9 +882,9 @@ This declaration only establishes that the class @code{Foo} has an
 standard, you must supply an initializer in one (and only one) source
 file, such as:
 
-@example
+@smallexample
 int Foo::bar = 0;
-@end example
+@end smallexample
 
 Other C++ compilers may not correctly implement the standard behavior.
 As a result, when you switch to @command{g++} from one of these compilers,
@@ -908,7 +908,7 @@ template parameters.  This shorter term will also be used in the rest of
 this section.}  Only names that are dependent are looked up at the point
 of instantiation.  For example, consider
 
-@example
+@smallexample
   void foo(double);
 
   struct A @{
@@ -923,7 +923,7 @@ of instantiation.  For example, consider
 
     static const int N;
   @};
-@end example
+@end smallexample
 
 Here, the names @code{foo} and @code{N} appear in a context that does
 not depend on the type of @code{T}.  The compiler will thus require that
@@ -947,7 +947,7 @@ since version 3.4.
 Two-stage name lookup sometimes leads to situations with behavior
 different from non-template codes. The most common is probably this:
 
-@example
+@smallexample
   template <typename T> struct Base @{
     int i;
   @};
@@ -955,7 +955,7 @@ different from non-template codes. The most common is probably this:
   template <typename T> struct Derived : public Base<T> @{
     int get_i() @{ return i; @}
   @};
-@end example
+@end smallexample
 
 In @code{get_i()}, @code{i} is not used in a dependent context, so the
 compiler will look for a name declared at the enclosing namespace scope
@@ -976,7 +976,7 @@ into scope by a @code{using}-declaration.
 Another, similar example involves calling member functions of a base
 class: 
 
-@example
+@smallexample
   template <typename T> struct Base @{
       int f();
   @};
@@ -984,7 +984,7 @@ class:
   template <typename T> struct Derived : Base<T> @{
       int g() @{ return f(); @};
   @};
-@end example
+@end smallexample
 
 Again, the call to @code{f()} is not dependent on template arguments
 (there are no arguments that depend on the type @code{T}, and it is also
@@ -993,13 +993,13 @@ Thus a global declaration of such a function must be available, since
 the one in the base class is not visible until instantiation time.  The
 compiler will consequently produce the following error message:
 
-@example
+@smallexample
   x.cc: In member function `int Derived<T>::g()':
   x.cc:6: error: there are no arguments to `f' that depend on a template
      parameter, so a declaration of `f' must be available
   x.cc:6: error: (if you use `-fpermissive', G++ will accept your code, but
      allowing the use of an undeclared name is deprecated)
-@end example
+@end smallexample
 
 To make the code valid either use @code{this->f()}, or
 @code{Base<T>::f()}.  Using the @code{-fpermissive} flag will also let
@@ -1035,7 +1035,7 @@ For example, a program may use a function @code{strfunc} that returns
 @code{string} objects, and another function @code{charfunc} that
 operates on pointers to @code{char}:
 
-@example
+@smallexample
 string strfunc ();
 void charfunc (const char *);
 
@@ -1048,7 +1048,7 @@ f ()
   @dots{}
   charfunc (p);
 @}
-@end example
+@end smallexample
 
 @noindent
 In this situation, it may seem reasonable to save a pointer to the C
@@ -1067,10 +1067,10 @@ The safe way to write such code is to give the temporary a name, which
 forces it to remain until the end of the scope of the name.  For
 example:
 
-@example
+@smallexample
 string& tmp = strfunc ();
 charfunc (tmp.c_str ());
-@end example
+@end smallexample
 
 @node Copy Assignment
 @subsection Implicit Copy-Assignment for Virtual Bases
@@ -1080,7 +1080,7 @@ belongs to each full object.  Also, the constructors and destructors are
 invoked only once, and called from the most-derived class.  However, such
 objects behave unspecified when being assigned.  For example:
 
-@example
+@smallexample
 struct Base@{
   char *name;
   Base(char *n) : name(strdup(n))@{@}
@@ -1108,7 +1108,7 @@ void func(Derived &d1, Derived &d2)
 @{
   d1 = d2;
 @}
-@end example
+@end smallexample
 
 The C++ standard specifies that @samp{Base::Base} is only called once
 when constructing or copy-constructing a Derived object.  It is
@@ -1404,12 +1404,12 @@ It is never safe to depend on the order of evaluation of side effects.
 For example, a function call like this may very well behave differently
 from one compiler to another:
 
-@example
+@smallexample
 void func (int, int);
 
 int i = 2;
 func (i++, i++);
-@end example
+@end smallexample
 
 There is no guarantee (in either the C or the C++ standard language
 definitions) that the increments will be evaluated in any particular

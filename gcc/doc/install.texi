@@ -513,11 +513,11 @@ affected by this requirement, see
 
 To configure GCC:
 
-@example
+@smallexample
    % mkdir @var{objdir}
    % cd @var{objdir}
    % @var{srcdir}/configure [@var{options}] [@var{target}]
-@end example
+@end smallexample
 
 
 @heading Target specification
@@ -999,9 +999,9 @@ Specify that only a particular subset of compilers and
 their runtime libraries should be built.  For a list of valid values for
 @var{langN} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@*
-@example
+@smallexample
 grep language= */config-lang.in
-@end example
+@end smallexample
 Currently, you can use any of the following:
 @code{ada}, @code{c}, @code{c++}, @code{f77}, @code{java}, @code{objc}.
 Building the Ada compiler has special requirements, see below.@*
@@ -1294,10 +1294,10 @@ without debugging information as in the following example.  This will save
 roughly 40% of disk space both for the bootstrap and the final installation.
 (Libraries will still contain debugging information.)
 
-@example
+@smallexample
      make CFLAGS='-O' LIBCFLAGS='-g -O2' \
        LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap
-@end example
+@end smallexample
 
 If you wish to use non-default GCC flags when compiling the stage2 and
 stage3 compilers, set @code{BOOT_CFLAGS} on the command line when doing
@@ -1441,7 +1441,7 @@ library would be the same as the one built for the cross compiler.
 For example, you can build a native Ada compiler by issuing the
 following commands (assuming @command{make} is GNU make):
 
-@example
+@smallexample
     cd @var{objdir}
     @var{srcdir}/configure --enable-languages=c,ada
     cd @var{objdir}
@@ -1449,7 +1449,7 @@ following commands (assuming @command{make} is GNU make):
     cd gcc
     make gnatlib_and_tools
     cd ..
-@end example
+@end smallexample
 
 Currently, when compiling the Ada front end, you cannot use the parallel
 build feature described in the previous section.
@@ -1519,10 +1519,10 @@ installed are not in the @env{PATH}, you may need to set the following
 environment variables appropriately, as in the following example (which
 assumes that DejaGnu has been installed under @file{/usr/local}):
 
-@example
+@smallexample
      TCL_LIBRARY = /usr/local/share/tcl8.0
      DEJAGNULIBS = /usr/local/share/dejagnu
-@end example
+@end smallexample
 
 (On systems such as Cygwin, these paths are required to be actual
 paths, not mounts or links; presumably this is due to some lack of
@@ -1530,9 +1530,9 @@ portability in the DejaGnu code.)
 
 
 Finally, you can run the testsuite (which may take a long time):
-@example
+@smallexample
      cd @var{objdir}; make -k check
-@end example
+@end smallexample
 
 This will test various components of GCC, such as compiler
 front ends and runtime libraries.  While running the testsuite, DejaGnu
@@ -1551,16 +1551,16 @@ just run @samp{make check} in a subdirectory of the object directory.
 A more selective way to just run all @command{gcc} execute tests in the
 testsuite is to use
 
-@example
+@smallexample
     make check-gcc RUNTESTFLAGS="execute.exp @var{other-options}"
-@end example
+@end smallexample
 
 Likewise, in order to run only the @command{g++} ``old-deja'' tests in
 the testsuite with filenames matching @samp{9805*}, you would use
 
-@example
+@smallexample
     make check-g++ RUNTESTFLAGS="old-deja.exp=9805* @var{other-options}"
-@end example
+@end smallexample
 
 The @file{*.exp} files are located in the testsuite directories of the GCC
 source, the most important ones being @file{compile.exp},
@@ -1576,9 +1576,9 @@ You can pass multiple options to the testsuite using the
 @samp{RUNTESTFLAGS}, or directly to @command{runtest} if you prefer to
 work outside the makefiles.  For example,
 
-@example
+@smallexample
     make check-g++ RUNTESTFLAGS="--target_board=unix/-O3/-fno-strength-reduce"
-@end example
+@end smallexample
 
 will run the standard @command{g++} testsuites (``unix'' is the target name
 for a standard native testsuite situation), passing
@@ -1588,15 +1588,15 @@ slashes separate options.
 You can run the testsuites multiple times using combinations of options
 with a syntax similar to the brace expansion of popular shells:
 
-@example
+@smallexample
     @dots{}"--target_board=arm-sim@{-mhard-float,-msoft-float@}@{-O1,-O2,-O3,@}"
-@end example
+@end smallexample
 
 (Note the empty option caused by the trailing comma in the final group.)
 The following will run each testsuite eight times using the @samp{arm-sim}
 target, as if you had specified all possible combinations yourself:
 
-@example
+@smallexample
     --target_board=arm-sim/-mhard-float/-O1
     --target_board=arm-sim/-mhard-float/-O2
     --target_board=arm-sim/-mhard-float/-O3
@@ -1605,14 +1605,14 @@ target, as if you had specified all possible combinations yourself:
     --target_board=arm-sim/-msoft-float/-O2
     --target_board=arm-sim/-msoft-float/-O3
     --target_board=arm-sim/-msoft-float
-@end example
+@end smallexample
 
 They can be combined as many times as you wish, in arbitrary ways.  This
 list:
 
-@example
+@smallexample
     @dots{}"--target_board=unix/-Wextra@{-O3,-fno-strength-reduce@}@{-fomit-frame-pointer,@}"
-@end example
+@end smallexample
 
 will generate four combinations, all involving @samp{-Wextra}.
 
@@ -1623,15 +1623,15 @@ parallel by having the shell perform the combinations and @command{make}
 do the parallel runs.  Instead of using @samp{--target_board}, use a
 special makefile target:
 
-@example
+@smallexample
     make -j@var{N} check-@var{testsuite}//@var{test-target}/@var{option1}/@var{option2}/@dots{}
-@end example
+@end smallexample
 
 For example,
 
-@example
+@smallexample
     make -j3 check-gcc//sh-hms-sim/@{-m1,-m2,-m3,-m3e,-m4@}/@{,-nofpu@}
-@end example
+@end smallexample
 
 will run three concurrent ``make-gcc'' testsuites, eventually testing all
 ten combinations as described above.  Note that this is currently only
@@ -1693,10 +1693,10 @@ problem in future releases.
 If you want to report the results to the GCC project, use the
 @file{contrib/test_summary} shell script.  Start it in the @var{objdir} with
 
-@example
+@smallexample
     @var{srcdir}/contrib/test_summary -p your_commentary.txt \
         -m gcc-testresults@@gcc.gnu.org |sh
-@end example
+@end smallexample
 
 This script uses the @command{Mail} program to send the results, so
 make sure it is in your @env{PATH}.  The file @file{your_commentary.txt} is
@@ -1725,9 +1725,9 @@ messages may be automatically processed.
 @end ifnothtml
 
 Now that GCC has been built (and optionally tested), you can install it with
-@example
+@smallexample
 cd @var{objdir}; make install
-@end example
+@end smallexample
 
 We strongly recommend to install into a target directory where there is
 no previous version of GCC present.
@@ -1755,9 +1755,9 @@ binutils, including assembler and linker.
 Installation into a temporary staging area or into a @command{chroot}
 jail can be achieved with the command
 
-@example
+@smallexample
 make DESTDIR=@var{path-to-rootdir} install
-@end example
+@end smallexample
 
 @noindent where @var{path-to-rootdir} is the absolute path of
 a directory relative to which all installation paths will be
@@ -2158,15 +2158,15 @@ we need to use the old assembler, invoked via the barely documented
 @option{-oldas} option.  To bootstrap GCC, you either need to use the
 Compaq C Compiler:
 
-@example
+@smallexample
    % CC=cc @var{srcdir}/configure [@var{options}] [@var{target}]
-@end example
+@end smallexample
 
 or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
 
-@example
+@smallexample
    % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{options}] [@var{target}]
-@end example
+@end smallexample
 
 As of GNU binutils 2.11.2, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
@@ -2231,10 +2231,10 @@ need to tell GCC where to find the assembler and the linker.  The
 simplest way to do so is by providing @option{--with-as} and
 @option{--with-ld} to @file{configure}, e.g.@:
 
-@example
+@smallexample
     configure --with-as=/opt/ctl/bin/cam --with-ld=/opt/ctl/bin/cld \
       --enable-languages=c
-@end example
+@end smallexample
 
 The comparison test during @samp{make bootstrap} fails on Unicos/Mk
 because the assembler inserts timestamps into object files.  You should
@@ -2306,9 +2306,9 @@ can also be obtained from:
 We @emph{strongly} recommend using binutils 2.13 or newer.
 
 The following error:
-@example
+@smallexample
   Error: register required
-@end example
+@end smallexample
 
 indicates that you should upgrade to a newer version of the binutils.
 
@@ -2712,10 +2712,10 @@ from the right place) while making the tools not think we're actually
 building a cross compiler.   The easiest way to do this is with a configure
 command like this:
 
-@example
+@smallexample
     CC=/udk/usr/ccs/bin/cc @var{/your/path/to}/gcc/configure \
       --host=i686-pc-udk --target=i686-pc-udk --program-prefix=udk-
-@end example
+@end smallexample
 
 @emph{You should substitute @samp{i686} in the above command with the appropriate
 processor for your host.}
@@ -2803,21 +2803,21 @@ multilib @file{libstdc++.a} installed:
 
 Extract the shared object from each the GCC 3.1 @file{libstdc++.a}
 archive:
-@example
+@smallexample
    % ar -x libstdc++.a libstdc++.so.4
-@end example
+@end smallexample
 
 Enable the @samp{F_LOADONLY} flag so that the shared object will be
 available for runtime dynamic loading, but not linking:
-@example
+@smallexample
    % strip -e libstdc++.so.4
-@end example
+@end smallexample
 
 Archive the runtime-only shared object in the GCC 3.2
 @file{libstdc++.a} archive:
-@example
+@smallexample
    % ar -q libstdc++.a libstdc++.so.4
-@end example
+@end smallexample
 
 Linking executables and shared libraries may produce warnings of
 duplicate symbols.  The assembly files generated by GCC for AIX always
@@ -2950,16 +2950,16 @@ encounter this problem, upgrade your operating system or use BASH (the
 GNU shell) to run @command{fixproto}.  This bug will cause the fixproto
 program to report an error of the form:
 
-@example
+@smallexample
 ./fixproto: sh internal 1K buffer overflow
-@end example
+@end smallexample
 
 To fix this, you can also change the first line of the fixproto script
 to look like:
 
-@example
+@smallexample
 #!/bin/ksh
-@end example
+@end smallexample
 
 @html
 <hr />
@@ -3042,21 +3042,21 @@ ensure that the N32 ABI is in use.  To test this, compile a simple C
 file with @command{cc} and then run @command{file} on the
 resulting object file.  The output should look like:
 
-@example
+@smallexample
 test.o: ELF N32 MSB @dots{}
-@end example
+@end smallexample
 
 If you see:
 
-@example
+@smallexample
 test.o: ELF 32-bit MSB @dots{}
-@end example
+@end smallexample
 
 or
 
-@example
+@smallexample
 test.o: ELF 64-bit MSB @dots{}
-@end example
+@end smallexample
 
 then your version of @command{cc} uses the O32 or N64 ABI by default.  You
 should set the environment variable @env{CC} to @samp{cc -n32}
@@ -3070,15 +3070,15 @@ the ISA depending on the machine where GCC is built.  Using one of them
 as the bootstrap compiler may result in mips4 code, which won't run at
 all on mips3-only systems.  For the test program above, you should see:
 
-@example
+@smallexample
 test.o: ELF N32 MSB mips-3 @dots{}
-@end example
+@end smallexample
 
 If you get:
 
-@example
+@smallexample
 test.o: ELF N32 MSB mips-4 @dots{}
-@end example
+@end smallexample
 
 instead, you should set the environment variable @env{CC} to @samp{cc
 -n32 -mips3} or @samp{gcc -mips3} respectively before configuring GCC@.
@@ -3407,9 +3407,9 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 The following compiler flags must be specified in the configure
 step in order to bootstrap this target with the Sun compiler:
 
-@example
+@smallexample
    % CC="cc -xildoff -xarch=v9" @var{srcdir}/configure [@var{options}] [@var{target}]
-@end example
+@end smallexample
 
 @option{-xildoff} turns off the incremental linker, and @option{-xarch=v9}
 specifies the SPARC-V9 architecture to the Sun linker and assembler.
@@ -3443,10 +3443,10 @@ is said to work.  Smaller values may also work.
 
 On System V, if you get an error like this,
 
-@example
+@smallexample
 /usr/local/lib/bison.simple: In function `yyparse':
 /usr/local/lib/bison.simple:625: virtual memory exhausted
-@end example
+@end smallexample
 
 @noindent
 that too indicates a problem with disk space, ulimit, or @code{MAXUMEM}.

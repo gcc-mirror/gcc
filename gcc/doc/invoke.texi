@@ -807,7 +807,7 @@ Specify explicitly the @var{language} for the following input files
 (rather than letting the compiler choose a default based on the file
 name suffix).  This option applies to all following input files until
 the next @option{-x} option.  Possible values for @var{language} are:
-@example
+@smallexample
 c  c-header  cpp-output
 c++  c++-header  c++-cpp-output
 objective-c  objective-c-header  objc-cpp-output
@@ -816,7 +816,7 @@ ada
 f77  f77-cpp-input  ratfor
 java
 treelang
-@end example
+@end smallexample
 
 @item -x none
 Turn off any specification of a language, so that subsequent files are
@@ -1247,9 +1247,9 @@ for C++ programs; but you can also use most of the GNU compiler options
 regardless of what language your program is in.  For example, you
 might compile a file @code{firstClass.C} like this:
 
-@example
+@smallexample
 g++ -g -frepo -O -c firstClass.C
-@end example
+@end smallexample
 
 @noindent
 In this example, only @option{-frepo} is an option meant
@@ -1735,9 +1735,9 @@ for Objective-C programs, but you can also use most of the GNU compiler
 options regardless of what language your program is in.  For example,
 you might compile a file @code{some_class.m} like this:
 
-@example
+@smallexample
 gcc -g -fgnu-runtime -O -c some_class.m
-@end example
+@end smallexample
 
 @noindent
 In this example, @option{-fgnu-runtime} is an option meant only for
@@ -3513,9 +3513,9 @@ Same as @option{-print-file-name=libgcc.a}.
 This is useful when you use @option{-nostdlib} or @option{-nodefaultlibs}
 but you do want to link with @file{libgcc.a}.  You can do
 
-@example
+@smallexample
 gcc -nostdlib @var{files}@dots{} `gcc -print-libgcc-file-name`
-@end example
+@end smallexample
 
 @item -print-search-dirs
 @opindex print-search-dirs
@@ -4217,7 +4217,7 @@ example, an @code{unsigned int} can alias an @code{int}, but not a
 type.
 
 Pay special attention to code like this:
-@example
+@smallexample
 union a_union @{
   int i;
   double d;
@@ -4228,13 +4228,13 @@ int f() @{
   t.d = 3.0;
   return t.i;
 @}
-@end example
+@end smallexample
 The practice of reading from a different union member than the one most
 recently written to (called ``type-punning'') is common.  Even with
 @option{-fstrict-aliasing}, type-punning is allowed, provided the memory
 is accessed through the union type.  So, the code above will work as
 expected.  However, this code might not:
-@example
+@smallexample
 int f() @{
   a_union t;
   int* ip;
@@ -4242,7 +4242,7 @@ int f() @{
   ip = &t.i;
   return *ip;
 @}
-@end example
+@end smallexample
 
 Every language that wishes to perform language-specific alias analysis
 should define a function that computes, given an @code{tree}
@@ -11094,12 +11094,12 @@ function and its call site.  (On some platforms,
 function, so the call site information may not be available to the
 profiling functions otherwise.)
 
-@example
+@smallexample
 void __cyg_profile_func_enter (void *this_fn,
                                void *call_site);
 void __cyg_profile_func_exit  (void *this_fn,
                                void *call_site);
-@end example
+@end smallexample
 
 The first argument is the address of the start of the current function,
 which may be looked up exactly in the symbol table.
@@ -11579,10 +11579,10 @@ appropriate options and the option @option{-aux-info}.  Then run
 the existing @samp{.X} file because it is newer than the source file.
 For example:
 
-@example
+@smallexample
 gcc -Dfoo=bar file1.c -aux-info file1.X
 protoize *.c
-@end example
+@end smallexample
 
 @noindent
 You need to include the special files along with the rest in the
