@@ -1371,8 +1371,27 @@ static tree
 build_constructor (type, elts)
      tree type, elts;
 {
-  tree constructor = build (CONSTRUCTOR, type, NULL_TREE, elts);
+  tree constructor, f, e;
 
+  /* ??? Most of the places that we build constructors, we don't fill in
+     the type of integers properly.  Convert them all en masse.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      f = TREE_TYPE (type);
+      if (TREE_CODE (f) == POINTER_TYPE || TREE_CODE (f) == INTEGER_TYPE)
+	for (e = elts; e ; e = TREE_CHAIN (e))
+	  TREE_VALUE (e) = convert (f, TREE_VALUE (e));
+    }
+  else
+    {
+      f = TYPE_FIELDS (type);
+      for (e = elts; e ; e = TREE_CHAIN (e), f = TREE_CHAIN (f))
+	if (TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE
+	    || TREE_CODE (TREE_TYPE (f)) == INTEGER_TYPE)
+	  TREE_VALUE (e) = convert (TREE_TYPE (f), TREE_VALUE (e));
+    }
+
+  constructor = build (CONSTRUCTOR, type, NULL_TREE, elts);
   TREE_CONSTANT (constructor) = 1;
   TREE_STATIC (constructor) = 1;
   TREE_READONLY (constructor) = 1;
