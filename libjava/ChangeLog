@@ -1,5 +1,7 @@
 2000-07-20  Tom Tromey  <tromey@cygnus.com>
 
+	* scripts/showval.java: New file.
+
 	* scripts/classes.pl (scan): Print inner classes properly.
 	* gcj/javaprims.h: Updated class list.
 
