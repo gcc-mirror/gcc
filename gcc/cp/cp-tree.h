@@ -2560,7 +2560,7 @@ extern void finish_return_stmt                  PROTO((tree));
 extern tree begin_for_stmt                      PROTO((void));
 extern void finish_for_init_stmt                PROTO((tree));
 extern void finish_for_cond                     PROTO((tree, tree));
-extern void finish_for_expression               PROTO((tree, tree));
+extern void finish_for_expr                     PROTO((tree, tree));
 extern void finish_for_stmt                     PROTO((tree, tree));
 extern void finish_break_stmt                   PROTO((void));
 extern void finish_continue_stmt                PROTO((void));
