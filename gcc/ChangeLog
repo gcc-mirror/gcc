@@ -32,6 +32,87 @@ Wed May 31 13:17:20 2000  Philippe De Muyter  <phdm@macqel.be>
 
 Wed May 31 08:07:52 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (c-decl.o): Depend on rtl.h and expr.h.
+	* alias.c (struct alias_entry): alias_set is HOST_WIDE_INT.
+	(REG_BASE_VALUE): Remove unneeded cast to unsigned.
+	(get_alias_set_entry): ALIAS_SET arg is HOST_WIDE_INT.
+	(find_base_decl): New function, from c_find_base_decl in c-common.c.
+	(new_alias_set): Moved from tree.c; return is HOST_WIDE_INT.
+	(get_alias_set): Likewise.
+	Major rework to do more things and allow language-specific code
+	to just handle special-cases.
+	(record_alias_subset): Args are HOST_WIDE_INT.
+	(record_component_alias): Local vars are HOST_WIDE_INT.
+	Don't handle COMPLEX_EXPR.
+	(get_varargs_alias_set): Moved from builtins.c.
+	(get_frame_alias_set): New function.
+	* builtins.c (expand_builtin_return_address): Use frame alias set.
+	(expand_builtin_setjmp, expand_builtin_longjmp): Use alias set
+	for setjmp buffer.
+	(get_memory_rtx): Rework to use set_mem_attributes.
+	(get_varargs_alias_set): Deleted from here.
+	* c-common.c (c_apply_type_quals_to_decl): Alias sets now HOST_WIDE_INT.
+	(c_find_base_decl): Deleted from here.
+	(c_get_alias_set): Remove many cases and rework to just handle
+	C-specific cases.
+	* c-common.h (c_get_alias_set): Returns HOST_WIDE_INT.
+	* c-decl.c (rtl.h, expr.h): Now included.
+	(init_decl_processing): Call record_component_aliases on array types.
+	(grokdeclarator): Likewise.
+	Set TREE_ADDRESSABLE for all fields that are not bitfields.
+	* c-typeck.c (common_type): Call record_component_aliases for array.
+	* caller-save.c (setup_save_areas): Rework register loop for unsigned.
+	Set all save areas to the frame alias set.
+	* calls.c (initialie_argument_information): Call set_mem_attributes.
+	(compute_argument_addresses, expand_call): Likewise.
+	* explow.c (set_mem_attributes): New function.
+	(stabilize): Use MEM_COPY_ATTRIBUTES and force_reg.
+	* expr.c (struct move_by_pieces): Remove {to,from}_{struct,readonly}.
+	LEN and OFFSET now HOST_WIDE_INT.
+	(clear_by_pieces): Similar changes.
+	(move_by_pieces): LEN now HOST_WIDE_INT; don't set deleted fields.
+	(move_by_pieces_ninsns): Now returns unsigned HOST_WIDE_INT.
+	(move_by_pieces_1): Don't use deleted fields, use MEM_COPY_ATTRIBUTES.
+	(clear_by_pieces_1): Likewise.
+	(emit_push_insn): Call set_mem_attributes.
+	(expand_expr, case INDIRECT_REF): Likewise.
+	(expand_expr, case VAR_DECL): Call change_address.
+	* expr.h (ADD_PARM_SIZE, SUB_PARM_SIZE): Use host_integerp and
+	tree_low_cst.
+	(get_varargs_alias_set, get_frame_alias_set): New decls.
+	(record_base_value, record_alias_subset, lang_get_alias_set): Likewise.
+	(new_alias_set, set_mem_attributes): Likewse.
+	* function.c (struct temp_slot): ALIAS_SET is HOST_WIDE_INT.
+	(assign_stack_temp_for_type): Likewise.
+	Can split slot even if alias set since can copy.
+	Set MEM_ALIAS_SET and MEM_SET_IN_STRUCT_P.
+	(assign_temp): Use host_integerp and tree_low_cst.
+	(put_var_into_stack): Properly handle SAVE_EXPR.
+	(put_addressof_into_stack): Likewise.
+	(assign_parms): Call set_mem_attributes.
+	Delete #if 0 code.
+	(fix_lexical_address): Put reference to chain into frame alias set.
+	(expand_function_start): Call set_mem_attributes.
+	* integrate.c (expand_inline_function): Likewise.
+	* recog.c (adj_offsettable_operand): Use MEM_COPY_ATTRIBUTES.
+	* regmove.c (try_apply_stack_adjustment): Likewise.
+	* reload.c (push_reload, make_memloc): Likewise.
+	* reload1.c (alter_reg): Make alias sets for spilled pseudos.
+	* rtl.def (MEM): Update comment.
+	* rtl.h (MEM_ALIAS_SET): Now uses XCWINT.
+	(move_by_pieces): Change length to HOST_WIDE_INT.
+	(record_base_value, record_alias_subset): Delete from here.
+	* stmt.c (expand_decl): Call set_mem_attributes.
+	* stor-layout.c (finish_record_layout): Call record_component_aliases.i
+	* toplev.c (compile_file): Call init_alias_once earlier.
+	* tree.c (lang_get_alias_set, get_alias_set, new_alias_set): Deleted
+	from here: now in alias.c.
+	* tree.h (struct tree_type): alias_set is HOST_WIDE_INT.
+	(struct tree_decl): Likewise.
+	(get_alias_set, new_alias_set, lang_get_alias_set): Deleted from here.
+	* varasm.c (make_function_rtl, make_decl_rtl): Call set_mem_attributes.
+	(output_constant_def, force_const_mem): Likewise.
+	
 	* flow.c (propagate_block): If block has no successors, stores to
 	frame are dead if not used.
 

@@ -1913,13 +1913,18 @@ alter_reg (i, from_reg)
 	    adjust = inherent_size - total_size;
 
 	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
+
+	  /* Nothing can alias this slot except this pseudo.  */
+	  MEM_ALIAS_SET (x) = new_alias_set ();
 	}
+
       /* Reuse a stack slot if possible.  */
       else if (spill_stack_slot[from_reg] != 0
 	       && spill_stack_slot_width[from_reg] >= total_size
 	       && (GET_MODE_SIZE (GET_MODE (spill_stack_slot[from_reg]))
 		   >= inherent_size))
 	x = spill_stack_slot[from_reg];
+
       /* Allocate a bigger slot.  */
       else
 	{
@@ -1927,6 +1932,7 @@ alter_reg (i, from_reg)
 	     and for total size.  */
 	  enum machine_mode mode = GET_MODE (regno_reg_rtx[i]);
 	  rtx stack_slot;
+
 	  if (spill_stack_slot[from_reg])
 	    {
 	      if (GET_MODE_SIZE (GET_MODE (spill_stack_slot[from_reg]))
@@ -1935,10 +1941,18 @@ alter_reg (i, from_reg)
 	      if (spill_stack_slot_width[from_reg] > total_size)
 		total_size = spill_stack_slot_width[from_reg];
 	    }
+
 	  /* Make a slot with that size.  */
 	  x = assign_stack_local (mode, total_size,
 				  inherent_size == total_size ? 0 : -1);
 	  stack_slot = x;
+
+	  /* All pseudos mapped to this slot can alias each other.  */
+	  if (spill_stack_slot[from_reg])
+	    MEM_ALIAS_SET (x) = MEM_ALIAS_SET (spill_stack_slot[from_reg]);
+	  else
+	    MEM_ALIAS_SET (x) = new_alias_set ();
+
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      /* Cancel the  big-endian correction done in assign_stack_local.
@@ -1952,6 +1966,7 @@ alter_reg (i, from_reg)
 							 MODE_INT, 1),
 					  plus_constant (XEXP (x, 0), adjust));
 	    }
+
 	  spill_stack_slot[from_reg] = stack_slot;
 	  spill_stack_slot_width[from_reg] = total_size;
 	}
@@ -1965,16 +1980,11 @@ alter_reg (i, from_reg)
 	 wrong mode, make a new stack slot.  */
       if (adjust != 0 || GET_MODE (x) != GET_MODE (regno_reg_rtx[i]))
 	{
-	  x = gen_rtx_MEM (GET_MODE (regno_reg_rtx[i]),
-			   plus_constant (XEXP (x, 0), adjust));
+	  rtx new = gen_rtx_MEM (GET_MODE (regno_reg_rtx[i]),
+				 plus_constant (XEXP (x, 0), adjust));
 
-	  /* If this was shared among registers, must ensure we never
-	     set it readonly since that can cause scheduling
-	     problems.  Note we would only have in this adjustment
-	     case in any event, since the code above doesn't set it.  */
-
-	  if (from_reg == -1)
-	    RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
+	  MEM_COPY_ATTRIBUTES (new, x);
+	  x = new;
 	}
 
       /* Save the stack slot for later.   */
@@ -2496,9 +2506,7 @@ eliminate_regs (x, mem_mode, insn)
       if (new != XEXP (x, 0))
 	{
 	  new = gen_rtx_MEM (GET_MODE (x), new);
-	  new->volatil = x->volatil;
-	  new->unchanging = x->unchanging;
-	  new->in_struct = x->in_struct;
+	  MEM_COPY_ATTRIBUTES (new, x);
 	  return new;
 	}
       else

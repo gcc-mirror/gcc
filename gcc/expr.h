@@ -94,8 +94,8 @@ struct args_size
 
 #define ADD_PARM_SIZE(TO, INC)	\
 { tree inc = (INC);				\
-  if (TREE_CODE (inc) == INTEGER_CST)		\
-    (TO).constant += TREE_INT_CST_LOW (inc);	\
+  if (host_integerp (inc, 0))			\
+    (TO).constant += tree_low_cst (inc, 0);	\
   else if ((TO).var == 0)			\
     (TO).var = inc;				\
   else						\
@@ -103,8 +103,8 @@ struct args_size
 
 #define SUB_PARM_SIZE(TO, DEC)	\
 { tree dec = (DEC);				\
-  if (TREE_CODE (dec) == INTEGER_CST)		\
-    (TO).constant -= TREE_INT_CST_LOW (dec);	\
+  if (host_integerp (dec, 0))			\
+    (TO).constant -= tree_low_cst (dec, 0);	\
   else if ((TO).var == 0)			\
     (TO).var = size_binop (MINUS_EXPR, ssize_int (0), dec); \
   else						\
@@ -915,7 +915,16 @@ extern rtx expand_builtin_va_arg PARAMS ((tree, tree));
 extern rtx expand_builtin_setjmp PARAMS ((rtx, rtx, rtx, rtx));
 extern void expand_builtin_longjmp PARAMS ((rtx, rtx));
 extern rtx expand_builtin_saveregs PARAMS ((void));
-extern int get_varargs_alias_set PARAMS ((void));
+extern HOST_WIDE_INT get_varargs_alias_set PARAMS ((void));
+extern HOST_WIDE_INT get_frame_alias_set PARAMS ((void));
+extern void record_base_value		PARAMS ((unsigned int, rtx, int));
+extern void record_alias_subset         PARAMS ((HOST_WIDE_INT,
+						 HOST_WIDE_INT));
+#ifdef TREE_CODE
+extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));
+extern HOST_WIDE_INT (*lang_get_alias_set)	PARAMS ((tree));
+#endif
+extern HOST_WIDE_INT new_alias_set		PARAMS ((void));
 
 /* Functions from expr.c:  */
 
@@ -1013,10 +1022,9 @@ extern void emit_push_insn PARAMS ((rtx, enum machine_mode, tree, rtx,
 				    int, rtx));
 
 /* Emit library call.  */
-extern void emit_library_call PARAMS ((rtx orgfun, int no_queue,
-  enum machine_mode outmode, int nargs, ...));
-extern rtx emit_library_call_value PARAMS ((rtx orgfun, rtx value, int no_queue,
-  enum machine_mode outmode, int nargs, ...));
+extern void emit_library_call PARAMS ((rtx, int, enum machine_mode, int, ...));
+extern rtx emit_library_call_value PARAMS ((rtx, rtx, int, enum machine_mode,
+					    int, ...));
 
 /* Expand an assignment that stores the value of FROM into TO. */
 extern rtx expand_assignment PARAMS ((tree, tree, int, int));
@@ -1100,10 +1108,17 @@ extern rtx prepare_call_address	PARAMS ((rtx, tree, rtx *, int));
 
 extern rtx expand_call PARAMS ((tree, rtx, int));
 
-extern rtx expand_shift PARAMS ((enum tree_code, enum machine_mode, rtx, tree, rtx, int));
-extern rtx expand_divmod PARAMS ((int, enum tree_code, enum machine_mode, rtx, rtx, rtx, int));
-extern void locate_and_pad_parm PARAMS ((enum machine_mode, tree, int, tree, struct args_size *, struct args_size *, struct args_size *, struct args_size *));
+extern rtx expand_shift PARAMS ((enum tree_code, enum machine_mode, rtx, tree,
+				 rtx, int));
+extern rtx expand_divmod PARAMS ((int, enum tree_code, enum machine_mode, rtx,
+				  rtx, rtx, int));
+extern void locate_and_pad_parm PARAMS ((enum machine_mode, tree, int, tree,
+					 struct args_size *,
+					 struct args_size *,
+					 struct args_size *,
+					 struct args_size *));
 extern rtx expand_inline_function PARAMS ((tree, tree, rtx, int, tree, rtx));
+
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
 extern rtx label_rtx PARAMS ((tree));
 #endif
@@ -1132,8 +1147,14 @@ extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
 
 /* Return a memory reference like MEMREF, but which is known to have a
    valid address.  */
-
 extern rtx validize_mem PARAMS ((rtx));
+
+#ifdef TREE_CODE
+/* Given REF, a MEM, and T, either the type of X or the expression
+   corresponding to REF, set the memory attributes.  OBJECTP is nonzero
+   if we are making a new object of this type.  */
+extern void set_mem_attributes PARAMS ((rtx, tree, int));
+#endif
 
 /* Assemble the static constant template for function entry trampolines.  */
 extern rtx assemble_trampoline_template PARAMS ((void));

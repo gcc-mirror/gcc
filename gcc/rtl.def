@@ -628,7 +628,7 @@ DEF_RTL_EXPR(CONCAT, "concat", "ee", 'o')
 
 /* A memory location; operand is the address.  Can be nested inside a
    VOLATILE.  The second operand is the alias set to which this MEM
-   belongs.  We use `0' instead of `i' for this field so that the
+   belongs.  We use `0' instead of `w' for this field so that the
    field need not be specified in machine descriptions.  */
 DEF_RTL_EXPR(MEM, "mem", "e0", 'o')
 

@@ -246,10 +246,6 @@ static int next_decl_uid;
 /* Unique id for next type created.  */
 static int next_type_uid = 1;
 
-/* The language-specific function for alias analysis.  If NULL, the
-   language does not do any special alias analysis.  */
-int (*lang_get_alias_set) PARAMS ((tree));
-
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
@@ -5614,38 +5610,6 @@ tree_class_check_failed (node, cl, file, line, function)
 
 #endif /* ENABLE_TREE_CHECKING */
 
-/* Return the alias set for T, which may be either a type or an
-   expression.  */
-
-int
-get_alias_set (t)
-     tree t;
-{
-  /* If we're not doing any lanaguage-specific alias analysis, just
-     assume everything aliases everything else.  */
-  if (! flag_strict_aliasing || lang_get_alias_set == 0)
-    return 0;
-
-  /* If this is a type with a known alias set, return it since this must
-     be the correct thing to do.  */
-  else if (TYPE_P (t) && TYPE_ALIAS_SET_KNOWN_P (t))
-    return TYPE_ALIAS_SET (t);
-  else
-    return (*lang_get_alias_set) (t);
-}
-
-/* Return a brand-new alias set.  */
-
-int
-new_alias_set ()
-{
-  static int last_alias_set;
-
-  if (flag_strict_aliasing)
-    return ++last_alias_set;
-  else
-    return 0;
-}
 
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT

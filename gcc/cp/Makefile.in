@@ -256,7 +256,7 @@ lex.o : lex.c $(CXX_TREE_H) \
   $(srcdir)/../output.h $(srcdir)/../mbchar.h $(GGC_H) \
   $(srcdir)/../input.h operators.def
 decl.o : decl.c $(CXX_TREE_H) $(srcdir)/../flags.h \
-  lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
+  lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h $(srcdir)/../expr.h \
   $(srcdir)/../except.h $(srcdir)/../toplev.h \
   $(srcdir)/../hash.h $(GGC_H) $(RTL_H) operators.def
 decl2.o : decl2.c $(CXX_TREE_H) $(srcdir)/../flags.h \

@@ -3792,7 +3792,8 @@ expand_decl (decl)
 	/* An initializer is going to decide the size of this array.
 	   Until we know the size, represent its address with a reg.  */
 	DECL_RTL (decl) = gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode));
-      MEM_SET_IN_STRUCT_P (DECL_RTL (decl), AGGREGATE_TYPE_P (type));
+
+      set_mem_attributes (DECL_RTL (decl), decl, 1);
     }
   else if (DECL_MODE (decl) != BLKmode
 	   /* If -ffloat-store, don't put explicit float vars
@@ -3817,6 +3818,8 @@ expand_decl (decl)
 	mark_reg_pointer (DECL_RTL (decl),
 			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
 			  
+      if (TREE_READONLY (decl))
+	RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
@@ -3841,8 +3844,6 @@ expand_decl (decl)
 	}
 
       DECL_RTL (decl) = assign_temp (TREE_TYPE (decl), 1, 1, 1);
-      MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
-			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
 
       /* Set alignment we actually gave this decl.  */
       DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT
@@ -3854,20 +3855,6 @@ expand_decl (decl)
 	  if (addr != oldaddr)
 	    emit_move_insn (oldaddr, addr);
 	}
-
-      /* If this is a memory ref that contains aggregate components,
-	 mark it as such for cse and loop optimize.  */
-      MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
-			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
-#if 0
-      /* If this is in memory because of -ffloat-store,
-	 set the volatile bit, to prevent optimizations from
-	 undoing the effects.  */
-      if (flag_float_store && TREE_CODE (type) == REAL_TYPE)
-	MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
-#endif
-
-      MEM_ALIAS_SET (DECL_RTL (decl)) = get_alias_set (decl);
     }
   else
     /* Dynamic-size object: must push space on the stack.  */
@@ -3905,10 +3892,7 @@ expand_decl (decl)
       /* Reference the variable indirect through that rtx.  */
       DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl), address);
 
-      /* If this is a memory ref that contains aggregate components,
-	 mark it as such for cse and loop optimize.  */
-      MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
-			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
+      set_mem_attributes (DECL_RTL (decl), decl, 1);
 
       /* Indicate the alignment we actually gave this variable.  */
 #ifdef STACK_BOUNDARY
@@ -3917,12 +3901,6 @@ expand_decl (decl)
       DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
 #endif
     }
-
-  if (TREE_THIS_VOLATILE (decl))
-    MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
-
-  if (TREE_READONLY (decl))
-    RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
 }
 
 /* Emit code to perform the initialization of a declaration DECL.  */

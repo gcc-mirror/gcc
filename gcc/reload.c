@@ -860,10 +860,20 @@ push_reload (in, out, inloc, outloc, class,
     {
       if (GET_CODE (XEXP (in, 0)) == POST_INC
 	  || GET_CODE (XEXP (in, 0)) == POST_DEC)
-	in = gen_rtx_MEM (GET_MODE (in), XEXP (XEXP (in, 0), 0));
+	{
+	  rtx new = gen_rtx_MEM (GET_MODE (in), XEXP (XEXP (in, 0), 0));
+
+	  MEM_COPY_ATTRIBUTES (new, in);
+	  in = new;
+	}
       if (GET_CODE (XEXP (in, 0)) == PRE_INC
 	  || GET_CODE (XEXP (in, 0)) == PRE_DEC)
-	out = gen_rtx_MEM (GET_MODE (out), XEXP (XEXP (out, 0), 0));
+	{
+	  rtx new = gen_rtx_MEM (GET_MODE (out), XEXP (XEXP (out, 0), 0));
+
+	  MEM_COPY_ATTRIBUTES (new, out);
+	  out = new;
+	}
     }
 
   /* If we are reloading a (SUBREG constant ...), really reload just the
@@ -4344,7 +4354,7 @@ make_memloc (ad, regno)
     tem = copy_rtx (tem);
 
   tem = gen_rtx_MEM (GET_MODE (ad), tem);
-  RTX_UNCHANGING_P (tem) = RTX_UNCHANGING_P (regno_reg_rtx[regno]);
+  MEM_COPY_ATTRIBUTES (tem, reg_equiv_memory_loc[regno]);
   return tem;
 }
 

@@ -288,6 +288,7 @@ expand_builtin_return_addr (fndecl_code, count, tem)
 #endif
       tem = memory_address (Pmode, tem);
       tem = copy_to_reg (gen_rtx_MEM (Pmode, tem));
+      MEM_ALIAS_SET (tem) = get_frame_alias_set ();
     }
 
   /* For __builtin_frame_address, return what we've got.  */
@@ -302,9 +303,13 @@ expand_builtin_return_addr (fndecl_code, count, tem)
   tem = memory_address (Pmode,
 			plus_constant (tem, GET_MODE_SIZE (Pmode)));
   tem = gen_rtx_MEM (Pmode, tem);
+  MEM_ALIAS_SET (tem) = get_frame_alias_set ();
 #endif
   return tem;
 }
+
+/* Alias set used for setjmp buffer.  */
+static HOST_WIDE_INT setjmp_alias_set = -1;
 
 /* __builtin_setjmp is passed a pointer to an array of five words (not
    all will be used on all machines).  It operates similarly to the C
@@ -326,8 +331,12 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
   enum machine_mode value_mode;
   rtx stack_save;
+  rtx mem;
 
   value_mode = TYPE_MODE (integer_type_node);
+
+  if (setjmp_alias_set == -1)
+    setjmp_alias_set = new_alias_set ();
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   buf_addr = convert_memory_address (Pmode, buf_addr);
@@ -349,17 +358,20 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
 #define BUILTIN_SETJMP_FRAME_VALUE virtual_stack_vars_rtx
 #endif
 
-  emit_move_insn (gen_rtx_MEM (Pmode, buf_addr),
-		  BUILTIN_SETJMP_FRAME_VALUE);
-  emit_move_insn (validize_mem
-		  (gen_rtx_MEM (Pmode,
-				plus_constant (buf_addr,
-					       GET_MODE_SIZE (Pmode)))),
+  mem = gen_rtx_MEM (Pmode, buf_addr);
+  MEM_ALIAS_SET (mem) = setjmp_alias_set;
+  emit_move_insn (mem, BUILTIN_SETJMP_FRAME_VALUE);
+
+  mem = gen_rtx_MEM (Pmode, plus_constant (buf_addr, GET_MODE_SIZE (Pmode))),
+  MEM_ALIAS_SET (mem) = setjmp_alias_set;
+
+  emit_move_insn (validize_mem (mem),
 		  force_reg (Pmode, gen_rtx_LABEL_REF (Pmode, lab1)));
 
   stack_save = gen_rtx_MEM (sa_mode,
 			    plus_constant (buf_addr,
 					   2 * GET_MODE_SIZE (Pmode)));
+  MEM_ALIAS_SET (stack_save) = setjmp_alias_set;
   emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
 
   /* If there is further processing to do, do it.  */
@@ -464,6 +476,9 @@ expand_builtin_longjmp (buf_addr, value)
   rtx fp, lab, stack;
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 
+  if (setjmp_alias_set == -1)
+    setjmp_alias_set = new_alias_set ();
+
 #ifdef POINTERS_EXTEND_UNSIGNED
   buf_addr = convert_memory_address (Pmode, buf_addr);
 #endif
@@ -489,6 +504,8 @@ expand_builtin_longjmp (buf_addr, value)
 
       stack = gen_rtx_MEM (sa_mode, plus_constant (buf_addr,
 						   2 * GET_MODE_SIZE (Pmode)));
+      MEM_ALIAS_SET (fp) = MEM_ALIAS_SET (lab) = MEM_ALIAS_SET (stack)
+	= setjmp_alias_set;
 
       /* Pick up FP, label, and SP from the block and jump.  This code is
 	 from expand_goto in stmt.c; see there for detailed comments.  */
@@ -513,53 +530,34 @@ expand_builtin_longjmp (buf_addr, value)
     }
 }
 
-/* Get a MEM rtx for expression EXP which can be used in a string instruction
-   (cmpstrsi, movstrsi, ..).  */
+/* Get a MEM rtx for expression EXP which is the address of an operand
+   to be used to be used in a string instruction (cmpstrsi, movstrsi, ..).  */
+
 static rtx
 get_memory_rtx (exp)
      tree exp;
 {
-  rtx mem;
-  int is_aggregate;
+  rtx mem = gen_rtx_MEM (BLKmode,
+			 memory_address (BLKmode,
+					 expand_expr (exp, NULL_RTX,
+						      ptr_mode, EXPAND_SUM)));
 
-  mem = gen_rtx_MEM (BLKmode,
-		     memory_address (BLKmode,
-				     expand_expr (exp, NULL_RTX,
-						  ptr_mode, EXPAND_SUM)));
+  /* Get an expression we can use to find the attributes to assign to MEM.
+     If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
+     we can.  First remove any nops.  */
+  while ((TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
+	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
+	 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
+    exp = TREE_OPERAND (exp, 0);
 
-  RTX_UNCHANGING_P (mem) = TREE_READONLY (exp);
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    exp = TREE_OPERAND (exp, 0);
+  else if (POINTER_TYPE_P (TREE_TYPE (exp)))
+    exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
+  else
+    return mem;
 
-  /* Figure out the type of the object pointed to.  Set MEM_IN_STRUCT_P
-     if the value is the address of a structure or if the expression is
-     cast to a pointer to structure type.  */
-  is_aggregate = 0;
-
-  while (TREE_CODE (exp) == NOP_EXPR)
-    {
-      tree cast_type = TREE_TYPE (exp);
-      if (TREE_CODE (cast_type) == POINTER_TYPE
-	  && AGGREGATE_TYPE_P (TREE_TYPE (cast_type)))
-	{
-	  is_aggregate = 1;
-	  break;
-	}
-      exp = TREE_OPERAND (exp, 0);
-    }
-
-  if (is_aggregate == 0)
-    {
-      tree type;
-
-      if (TREE_CODE (exp) == ADDR_EXPR)
-	/* If this is the address of an object, check whether the
-	   object is an array.  */
-	type = TREE_TYPE (TREE_OPERAND (exp, 0));
-      else
-	type = TREE_TYPE (TREE_TYPE (exp));
-      is_aggregate = AGGREGATE_TYPE_P (type);
-    }
-
-  MEM_SET_IN_STRUCT_P (mem, is_aggregate);
+  set_mem_attributes (mem, exp, 0);
   return mem;
 }
 
@@ -1306,6 +1304,7 @@ expand_builtin_mathfn (exp, target, subtarget)
    if we failed the caller should emit a normal call, otherwise
    try to get the result in TARGET, if convenient (and in mode MODE if that's
    convenient).  */
+
 static rtx
 expand_builtin_strlen (exp, target, mode)
      tree exp;
@@ -1377,8 +1376,9 @@ expand_builtin_strlen (exp, target, mode)
 			   TYPE_MODE (integer_type_node));
 
       char_rtx = const0_rtx;
-      char_mode = insn_data[(int)icode].operand[2].mode;
-      if (! (*insn_data[(int)icode].operand[2].predicate) (char_rtx, char_mode))
+      char_mode = insn_data[(int) icode].operand[2].mode;
+      if (! (*insn_data[(int) icode].operand[2].predicate) (char_rtx,
+							    char_mode))
 	char_rtx = copy_to_mode_reg (char_mode, char_rtx);
 
       pat = GEN_FCN (icode) (result, gen_rtx_MEM (BLKmode, src_reg),
@@ -1390,7 +1390,7 @@ expand_builtin_strlen (exp, target, mode)
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
       pat = memory_address (BLKmode, 
-		expand_expr (src, src_reg, ptr_mode, EXPAND_SUM));
+			    expand_expr (src, src_reg, ptr_mode, EXPAND_SUM));
       if (pat != src_reg)
 	emit_move_insn (src_reg, pat);
       pat = gen_sequence ();
@@ -1814,6 +1814,7 @@ expand_builtin_saveregs ()
 /* __builtin_args_info (N) returns word N of the arg space info
    for the current function.  The number and meanings of words
    is controlled by the definition of CUMULATIVE_ARGS.  */
+
 static rtx
 expand_builtin_args_info (exp)
      tree exp;
@@ -2007,19 +2008,9 @@ expand_builtin_va_start (stdarg_p, arglist)
   return const0_rtx;
 }
 
-/* Allocate an alias set for use in storing and reading from the varargs
-   spill area.  */
-int
-get_varargs_alias_set ()
-{
-  static int set = -1;
-  if (set == -1)
-    set = new_alias_set ();
-  return set;
-}
-
 /* The "standard" implementation of va_arg: read the value from the
    current (padded) address and increment by the (padded) size.  */
+
 rtx
 std_expand_builtin_va_arg (valist, type)
      tree valist, type;
@@ -2063,6 +2054,7 @@ std_expand_builtin_va_arg (valist, type)
 
 /* Expand __builtin_va_arg, which is not really a builtin function, but
    a very special sort of operator.  */
+
 rtx
 expand_builtin_va_arg (valist, type)
      tree valist, type;
@@ -2146,6 +2138,7 @@ expand_builtin_va_arg (valist, type)
 }
 
 /* Expand ARGLIST, from a call to __builtin_va_end.  */
+
 static rtx
 expand_builtin_va_end (arglist)
      tree arglist;
@@ -2168,6 +2161,7 @@ expand_builtin_va_end (arglist)
 /* Expand ARGLIST, from a call to __builtin_va_copy.  We do this as a 
    builtin rather than just as an assignment in stdarg.h because of the
    nastiness of array-type va_list types.  */
+
 static rtx
 expand_builtin_va_copy (arglist)
      tree arglist;

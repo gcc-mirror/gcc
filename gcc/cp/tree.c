@@ -500,7 +500,10 @@ build_cplus_array_type_1 (elt_type, index_type)
       TYPE_DOMAIN (t) = index_type;
     }
   else
-    t = build_array_type (elt_type, index_type);
+    {
+      t = build_array_type (elt_type, index_type);
+      record_component_aliases (t);
+    }
 
   /* Push these needs up so that initialization takes place
      more easily.  */

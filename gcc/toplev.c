@@ -2090,13 +2090,13 @@ compile_file (name)
 		  || flag_test_coverage
 		  || warn_notreached);
   init_regs ();
+  init_alias_once ();
   init_decl_processing ();
   init_optabs ();
   init_stmt ();
   init_eh ();
   init_loop ();
   init_reload ();
-  init_alias_once ();
   init_function_once ();
   init_stor_layout_once ();
   init_varasm_once ();

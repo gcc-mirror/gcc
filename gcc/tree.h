@@ -1114,7 +1114,7 @@ struct tree_type
   union tree_node *noncopied_parts;
   union tree_node *context;
   struct obstack *obstack;
-  int alias_set;
+  HOST_WIDE_INT alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_type *lang_specific;
 };
@@ -1620,7 +1620,7 @@ struct tree_decl
   } u2;
 
   union tree_node *vindex;
-  int pointer_alias_set;
+  HOST_WIDE_INT pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
 };
@@ -2373,9 +2373,6 @@ extern tree get_file_function_name_long 	PARAMS ((const char *));
 extern tree get_set_constructor_bits		PARAMS ((tree, char *, int));
 extern tree get_set_constructor_bytes		PARAMS ((tree,
 						       unsigned char *, int));
-extern int get_alias_set                        PARAMS ((tree));
-extern int new_alias_set			PARAMS ((void));
-extern int (*lang_get_alias_set)                PARAMS ((tree));
 extern tree get_callee_fndecl                   PARAMS ((tree));
 
 /* In stmt.c */

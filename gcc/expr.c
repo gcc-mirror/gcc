@@ -115,16 +115,12 @@ struct move_by_pieces
   rtx to_addr;
   int autinc_to;
   int explicit_inc_to;
-  int to_struct;
-  int to_readonly;
   rtx from;
   rtx from_addr;
   int autinc_from;
   int explicit_inc_from;
-  int from_struct;
-  int from_readonly;
-  int len;
-  int offset;
+  unsigned HOST_WIDE_INT len;
+  HOST_WIDE_INT offset;
   int reverse;
 };
 
@@ -137,9 +133,8 @@ struct clear_by_pieces
   rtx to_addr;
   int autinc_to;
   int explicit_inc_to;
-  int to_struct;
-  int len;
-  int offset;
+  unsigned HOST_WIDE_INT len;
+  HOST_WIDE_INT offset;
   int reverse;
 };
 
@@ -148,10 +143,13 @@ extern struct obstack permanent_obstack;
 static rtx get_push_address	PARAMS ((int));
 
 static rtx enqueue_insn		PARAMS ((rtx, rtx));
-static int move_by_pieces_ninsns PARAMS ((unsigned int, unsigned int));
+static unsigned HOST_WIDE_INT move_by_pieces_ninsns
+				PARAMS ((unsigned HOST_WIDE_INT,
+					 unsigned int));
 static void move_by_pieces_1	PARAMS ((rtx (*) (rtx, ...), enum machine_mode,
 					 struct move_by_pieces *));
-static void clear_by_pieces	PARAMS ((rtx, int, unsigned int));
+static void clear_by_pieces	PARAMS ((rtx, unsigned HOST_WIDE_INT,
+					 unsigned int));
 static void clear_by_pieces_1	PARAMS ((rtx (*) (rtx, ...),
 					 enum machine_mode,
 					 struct clear_by_pieces *));
@@ -1381,7 +1379,7 @@ convert_modes (mode, oldmode, x, unsignedp)
 void
 move_by_pieces (to, from, len, align)
      rtx to, from;
-     int len;
+     unsigned HOST_WIDE_INT len;
      unsigned int align;
 {
   struct move_by_pieces data;
@@ -1409,11 +1407,6 @@ move_by_pieces (to, from, len, align)
     = (GET_CODE (to_addr) == PRE_DEC || GET_CODE (to_addr) == POST_DEC);
   if (data.reverse) data.offset = len;
   data.len = len;
-
-  data.to_struct = MEM_IN_STRUCT_P (to);
-  data.from_struct = MEM_IN_STRUCT_P (from);
-  data.to_readonly = RTX_UNCHANGING_P (to);
-  data.from_readonly = RTX_UNCHANGING_P (from);
 
   /* If copying requires more than two move insns,
      copy addresses to registers (to make displacements shorter)
@@ -1489,13 +1482,13 @@ move_by_pieces (to, from, len, align)
 /* Return number of insns required to move L bytes by pieces.
    ALIGN (in bytes) is maximum alignment we can assume.  */
 
-static int
+static unsigned HOST_WIDE_INT
 move_by_pieces_ninsns (l, align)
-     unsigned int l;
+     unsigned HOST_WIDE_INT l;
      unsigned int align;
 {
-  register int n_insns = 0;
-  unsigned int max_size = MOVE_MAX + 1;
+  unsigned HOST_WIDE_INT n_insns = 0;
+  unsigned HOST_WIDE_INT max_size = MOVE_MAX + 1;
 
   if (! SLOW_UNALIGNED_ACCESS (word_mode, align)
       || align > MOVE_MAX * BITS_PER_UNIT || align >= BIGGEST_ALIGNMENT)
@@ -1534,29 +1527,31 @@ move_by_pieces_1 (genfun, mode, data)
      enum machine_mode mode;
      struct move_by_pieces *data;
 {
-  register int size = GET_MODE_SIZE (mode);
-  register rtx to1, from1;
+  unsigned int size = GET_MODE_SIZE (mode);
+  rtx to1, from1;
 
   while (data->len >= size)
     {
-      if (data->reverse) data->offset -= size;
+      if (data->reverse)
+	data->offset -= size;
 
-      to1 = (data->autinc_to
-	     ? gen_rtx_MEM (mode, data->to_addr)
-	     : copy_rtx (change_address (data->to, mode,
-					 plus_constant (data->to_addr,
-							data->offset))));
-      MEM_IN_STRUCT_P (to1) = data->to_struct;
-      RTX_UNCHANGING_P (to1) = data->to_readonly;
+      if (data->autinc_to)
+	{
+	  to1 = gen_rtx_MEM (mode, data->to_addr);
+	  MEM_COPY_ATTRIBUTES (to1, data->to);
+	}
+      else
+	to1 = change_address (data->to, mode,
+			      plus_constant (data->to_addr, data->offset));
 
-      from1
-	= (data->autinc_from
-	   ? gen_rtx_MEM (mode, data->from_addr)
-	   : copy_rtx (change_address (data->from, mode,
-				       plus_constant (data->from_addr,
-						      data->offset))));
-      MEM_IN_STRUCT_P (from1) = data->from_struct;
-      RTX_UNCHANGING_P (from1) = data->from_readonly;
+      if (data->autinc_from)
+	{
+	  from1 = gen_rtx_MEM (mode, data->from_addr);
+	  MEM_COPY_ATTRIBUTES (from1, data->from);
+	}
+      else
+	from1 = change_address (data->from, mode,
+				plus_constant (data->from_addr, data->offset));
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
@@ -1564,12 +1559,14 @@ move_by_pieces_1 (genfun, mode, data)
 	emit_insn (gen_add2_insn (data->from_addr, GEN_INT (-size)));
 
       emit_insn ((*genfun) (to1, from1));
+
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
       if (HAVE_POST_INCREMENT && data->explicit_inc_from > 0)
 	emit_insn (gen_add2_insn (data->from_addr, GEN_INT (size)));
 
-      if (! data->reverse) data->offset += size;
+      if (! data->reverse)
+	data->offset += size;
 
       data->len -= size;
     }
@@ -2243,12 +2240,12 @@ use_group_regs (call_fusage, regs)
 static void
 clear_by_pieces (to, len, align)
      rtx to;
-     int len;
+     unsigned HOST_WIDE_INT len;
      unsigned int align;
 {
   struct clear_by_pieces data;
   rtx to_addr = XEXP (to, 0);
-  unsigned int max_size = MOVE_MAX_PIECES + 1;
+  unsigned HOST_WIDE_INT max_size = MOVE_MAX_PIECES + 1;
   enum machine_mode mode = VOIDmode, tmode;
   enum insn_code icode;
 
@@ -2264,8 +2261,6 @@ clear_by_pieces (to, len, align)
     = (GET_CODE (to_addr) == PRE_DEC || GET_CODE (to_addr) == POST_DEC);
   if (data.reverse) data.offset = len;
   data.len = len;
-
-  data.to_struct = MEM_IN_STRUCT_P (to);
 
   /* If copying requires more than two move insns,
      copy addresses to registers (to make displacements shorter)
@@ -2285,13 +2280,16 @@ clear_by_pieces (to, len, align)
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = -1;
 	}
-      if (USE_STORE_POST_INCREMENT (mode) && ! data.reverse && ! data.autinc_to)
+
+      if (USE_STORE_POST_INCREMENT (mode) && ! data.reverse
+	  && ! data.autinc_to)
 	{
 	  data.to_addr = copy_addr_to_reg (to_addr);
 	  data.autinc_to = 1;
 	  data.explicit_inc_to = 1;
 	}
-      if (!data.autinc_to && CONSTANT_P (to_addr))
+
+      if ( !data.autinc_to && CONSTANT_P (to_addr))
 	data.to_addr = copy_addr_to_reg (to_addr);
     }
 
@@ -2334,28 +2332,33 @@ clear_by_pieces_1 (genfun, mode, data)
      enum machine_mode mode;
      struct clear_by_pieces *data;
 {
-  register int size = GET_MODE_SIZE (mode);
-  register rtx to1;
+  unsigned int size = GET_MODE_SIZE (mode);
+  rtx to1;
 
   while (data->len >= size)
     {
-      if (data->reverse) data->offset -= size;
+      if (data->reverse)
+	data->offset -= size;
 
-      to1 = (data->autinc_to
-	     ? gen_rtx_MEM (mode, data->to_addr)
-	     : copy_rtx (change_address (data->to, mode,
-					 plus_constant (data->to_addr,
-							data->offset))));
-      MEM_IN_STRUCT_P (to1) = data->to_struct;
+      if (data->autinc_to)
+	{
+	  to1 = gen_rtx_MEM (mode, data->to_addr);
+	  MEM_COPY_ATTRIBUTES (to1, data->to);
+	}
+      else 
+	to1 = change_address (data->to, mode,
+			      plus_constant (data->to_addr, data->offset));
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
 
       emit_insn ((*genfun) (to1, const0_rtx));
+
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
 
-      if (! data->reverse) data->offset += size;
+      if (! data->reverse)
+	data->offset += size;
 
       data->len -= size;
     }
@@ -2627,17 +2630,17 @@ emit_move_insn_1 (x, y)
 	     regardless of machine's endianness.  */
 #ifdef STACK_GROWS_DOWNWARD
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, (XEXP (x, 0))),
+		     (gen_rtx_MEM (submode, XEXP (x, 0)),
 		      gen_imagpart (submode, y)));
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, (XEXP (x, 0))),
+		     (gen_rtx_MEM (submode, XEXP (x, 0)),
 		      gen_realpart (submode, y)));
 #else
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, (XEXP (x, 0))),
+		     (gen_rtx_MEM (submode, XEXP (x, 0)),
 		      gen_realpart (submode, y)));
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, (XEXP (x, 0))),
+		     (gen_rtx_MEM (submode, XEXP (x, 0)),
 		      gen_imagpart (submode, y)));
 #endif
 	}
@@ -2866,7 +2869,7 @@ push_block (size, extra, below)
 			      - INTVAL (size) - (below ? 0 : extra));
       else if (extra != 0 && !below)
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-			negate_rtx (Pmode, plus_constant (size, extra)));
+			     negate_rtx (Pmode, plus_constant (size, extra)));
       else
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
 			     negate_rtx (Pmode, size));
@@ -3105,6 +3108,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  if (GET_CODE (size) == CONST_INT
 	      && MOVE_BY_PIECES_P ((unsigned) INTVAL (size), align))
 	    {
+	      rtx target = gen_rtx_MEM (BLKmode, temp);
+
+	      if (type != 0)
+		set_mem_attributes (target, type, 1);
+
 	      move_by_pieces (gen_rtx_MEM (BLKmode, temp), xinner,
 			      INTVAL (size), align);
 	      goto ret;
@@ -3114,6 +3122,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      rtx opalign = GEN_INT (align / BITS_PER_UNIT);
 	      enum machine_mode mode;
 	      rtx target = gen_rtx_MEM (BLKmode, temp);
+
+	      if (type != 0)
+		set_mem_attributes (target, type, 1);
 
 	      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 		   mode != VOIDmode;
@@ -3251,6 +3262,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
     {
       rtx addr;
       rtx target = NULL_RTX;
+      rtx dest;
 
       /* Push padding now if padding above and stack grows down,
 	 or if padding below and stack grows up.
@@ -3279,7 +3291,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  target = addr;
 	}
 
-      emit_move_insn (gen_rtx_MEM (mode, addr), x);
+      dest = gen_rtx_MEM (mode, addr);
+      if (type != 0)
+	set_mem_attributes (dest, type, 1);
+
+      emit_move_insn (dest, x);
 
       if (current_function_check_memory_usage && ! in_check_memory_usage)
 	{
@@ -3994,6 +4010,10 @@ store_expr (exp, target, want_value)
 
 	      if (size != const0_rtx)
 		{
+		  rtx dest = gen_rtx_MEM (BLKmode, addr);
+
+		  MEM_COPY_ATTRIBUTES (dest, target);
+
 		  /* Be sure we can write on ADDR.  */
 		  in_check_memory_usage = 1;
 		  if (current_function_check_memory_usage)
@@ -4003,7 +4023,7 @@ store_expr (exp, target, want_value)
  				       GEN_INT (MEMORY_USE_WO), 
 				       TYPE_MODE (integer_type_node));
 		  in_check_memory_usage = 0;
-		  clear_storage (gen_rtx_MEM (BLKmode, addr), size, align);
+		  clear_storage (target, size, align);
 		}
 
 	      if (label)
@@ -5980,10 +6000,11 @@ expand_expr (exp, target, tmode, modifier)
 	    abort ();
 	  addr = XEXP (DECL_RTL (exp), 0);
 	  if (GET_CODE (addr) == MEM)
-	    addr = gen_rtx_MEM (Pmode,
-				fix_lexical_addr (XEXP (addr, 0), exp));
+	    addr = change_address (addr, Pmode, 
+				   fix_lexical_addr (XEXP (addr, 0), exp));
 	  else
 	    addr = fix_lexical_addr (addr, exp);
+
 	  temp = change_address (DECL_RTL (exp), mode, addr);
 	}
 
@@ -6418,7 +6439,6 @@ expand_expr (exp, target, tmode, modifier)
     case INDIRECT_REF:
       {
 	tree exp1 = TREE_OPERAND (exp, 0);
-	tree exp2;
 	tree index;
  	tree string = string_constant (exp1, &index);
  
@@ -6456,19 +6476,7 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	temp = gen_rtx_MEM (mode, op0);
-	/* If address was computed by addition,
-	   mark this as an element of an aggregate.  */
-	if (TREE_CODE (exp1) == PLUS_EXPR
-	    || (TREE_CODE (exp1) == SAVE_EXPR
-		&& TREE_CODE (TREE_OPERAND (exp1, 0)) == PLUS_EXPR)
-	    || AGGREGATE_TYPE_P (TREE_TYPE (exp))
-	    || (TREE_CODE (exp1) == ADDR_EXPR
-		&& (exp2 = TREE_OPERAND (exp1, 0))
-		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
-	  MEM_SET_IN_STRUCT_P (temp, 1);
-
-	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
-	MEM_ALIAS_SET (temp) = get_alias_set (exp);
+	set_mem_attributes (temp, exp, 0);
 
 	/* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY
 	   here, because, in C and C++, the fact that a location is accessed
@@ -6893,13 +6901,10 @@ expand_expr (exp, target, tmode, modifier)
 				plus_constant (XEXP (op0, 0),
 					       (bitpos / BITS_PER_UNIT)));
 
-	if (GET_CODE (op0) == MEM)
-	  MEM_ALIAS_SET (op0) = get_alias_set (exp);
- 
+	set_mem_attributes (op0, exp, 0);
 	if (GET_CODE (XEXP (op0, 0)) == REG)
 	  mark_reg_pointer (XEXP (op0, 0), alignment);
 
-	MEM_SET_IN_STRUCT_P (op0, 1);
 	MEM_VOLATILE_P (op0) |= volatilep;
 	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode
 	    || modifier == EXPAND_CONST_ADDRESS
