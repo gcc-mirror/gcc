@@ -39,6 +39,8 @@ extern void annotate_all_with_locus (tree *, location_t);
    the basic form of the expression, they don't recurse to make sure that
    underlying nodes are also of the right form.  */
 
+typedef bool (*gimple_predicate)(tree);
+
 /* Returns true iff T is a valid GIMPLE statement.  */
 extern bool is_gimple_stmt (tree);
 
@@ -59,8 +61,15 @@ extern bool is_gimple_lvalue (tree);
 extern bool is_gimple_min_invariant (tree);
 /* Returns true iff T is a GIMPLE rvalue.  */
 extern bool is_gimple_val (tree);
-/* Returns true iff T is a valid rhs for a MODIFY_EXPR.  */
-extern bool is_gimple_rhs (tree);
+/* Returns true iff T is a valid rhs for a MODIFY_EXPR where the LHS is a
+   GIMPLE temporary, a renamed user variable, or something else,
+   respectively.  */
+extern bool is_gimple_tmp_rhs (tree);
+extern bool is_gimple_reg_rhs (tree);
+extern bool is_gimple_mem_rhs (tree);
+/* Returns the appropriate one of the above three predicates for the LHS
+   T.  */
+extern gimple_predicate rhs_predicate_for (tree);
 
 /* Returns true iff T is a valid if-statement condition.  */
 extern bool is_gimple_condexpr (tree);

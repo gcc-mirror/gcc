@@ -1,3 +1,11 @@
+2004-07-13  Jason Merrill  <jason@redhat.com>
+
+	* tree-gimple.c (is_gimple_reg_rhs, is_gimple_mem_rhs): New fns.
+	(rhs_test_for): New fn.
+	(is_gimple_tmp_rhs): Rename from is_gimple_rhs.
+	* tree-gimple.h: Declare them.
+	* gimplify.c (gimplify_modify_expr): Use the new fns.
+
 2004-07-14  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm-protos.h (arm_va_arg): Remove.

@@ -446,7 +446,7 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
   tree t, mod;
   char class;
 
-  gimplify_expr (&val, pre_p, post_p, is_gimple_rhs, fb_rvalue);
+  gimplify_expr (&val, pre_p, post_p, is_gimple_tmp_rhs, fb_rvalue);
 
   t = lookup_tmp_var (val, is_formal);
 
@@ -2610,7 +2610,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    ctor = build (COMPLEX_EXPR, type, r, i);
 	    TREE_OPERAND (*expr_p, 1) = ctor;
 	    ret = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p, post_p,
-				 is_gimple_rhs, fb_rvalue);
+				 is_gimple_tmp_rhs, fb_rvalue);
 	  }
       }
       break;
@@ -2780,7 +2780,8 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   if (ret == GS_ERROR)
     return ret;
 
-  ret = gimplify_expr (from_p, pre_p, post_p, is_gimple_rhs, fb_rvalue);
+  ret = gimplify_expr (from_p, pre_p, post_p,
+		       rhs_predicate_for (*to_p), fb_rvalue);
   if (ret == GS_ERROR)
     return ret;
 
@@ -2791,33 +2792,10 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
     return ret;
 
   /* If the destination is already simple, nothing else needed.  */
-  if (is_gimple_tmp_var (*to_p))
+  if (is_gimple_tmp_var (*to_p) || !want_value)
     ret = GS_ALL_DONE;
   else
-    {
-      /* If the RHS of the MODIFY_EXPR may throw or make a nonlocal goto and
-	 the LHS is a user variable, then we need to introduce a temporary.
-	 ie temp = RHS; LHS = temp.
-
-	 This way the optimizers can determine that the user variable is
-	 only modified if evaluation of the RHS does not throw.
-
-	 FIXME this should be handled by the is_gimple_rhs predicate.  */
-
-      if (aggregate_value_p (TREE_TYPE (*from_p), NULL_TREE))
-	/* Don't force a temp of a large aggregate type; the copy could be
-	   arbitrarily expensive.  Instead we will generate a V_MAY_DEF for
-	   the assignment.  */;
-      else if (TREE_CODE (*from_p) == CALL_EXPR
-	       || (flag_non_call_exceptions && tree_could_trap_p (*from_p))
-	       /* If we're dealing with a renamable type, either source or dest
-		  must be a renamed variable.  */
-	       || (is_gimple_reg_type (TREE_TYPE (*from_p))
-		   && !is_gimple_reg (*to_p)))
-	gimplify_expr (from_p, pre_p, post_p, is_gimple_val, fb_rvalue);
-
-      ret = want_value ? GS_OK : GS_ALL_DONE;
-    }
+    ret = GS_OK;
 
   if (want_value)
     {
@@ -3975,7 +3953,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
       gimplify_expr (&tmp, pre_p, post_p, is_gimple_reg, fb_rvalue);
       *expr_p = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (tmp)), tmp);
     }
-  else if ((fallback & fb_rvalue) && is_gimple_rhs (*expr_p))
+  else if ((fallback & fb_rvalue) && is_gimple_tmp_rhs (*expr_p))
     {
 #if defined ENABLE_CHECKING
       if (VOID_TYPE_P (TREE_TYPE (*expr_p)))
