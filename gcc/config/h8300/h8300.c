@@ -1627,6 +1627,117 @@ output_logical_op (mode, code, operands)
     }
   return "";
 }
+
+unsigned int
+compute_logical_op_length (mode, code, operands)
+     enum machine_mode mode;
+     enum rtx_code code;
+     rtx *operands;
+{
+  /* Pretend that every byte is affected if both operands are registers.  */
+  unsigned HOST_WIDE_INT intval =
+    (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
+			      ? INTVAL (operands[2]) : 0x55555555);
+  /* The determinant of the algorithm.  If we perform an AND, 0
+     affects a bit.  Otherwise, 1 affects a bit.  */
+  unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
+  /* Insn length.  */
+  unsigned int length = 0;
+
+  switch (mode)
+    {
+    case HImode:
+      /* First, see if we can finish with one insn.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
+	  && ((det & 0x00ff) != 0)
+	  && ((det & 0xff00) != 0))
+	{
+	  if (REG_P (operands[2]))
+	    length += 2;
+	  else
+	    length += 4;
+	}
+      else
+	{
+	  /* Take care of the lower byte.  */
+	  if ((det & 0x00ff) != 0)
+	    length += 2;
+
+	  /* Take care of the upper byte.  */
+	  if ((det & 0xff00) != 0)
+	    length += 2;
+	}
+      break;
+    case SImode:
+      /* First, see if we can finish with one insn.
+
+	 If code is either AND or XOR, we exclude two special cases,
+	 0xffffff00 and 0xffff00ff, because insns like sub.w or not.w
+	 can do a better job.  */
+      if ((TARGET_H8300H || TARGET_H8300S)
+	  && ((det & 0x0000ffff) != 0)
+	  && ((det & 0xffff0000) != 0)
+	  && (code == IOR || det != 0xffffff00)
+	  && (code == IOR || det != 0xffff00ff))
+	{
+	  if (REG_P (operands[2]))
+	    length += 4;
+	  else
+	    length += 6;
+	}
+      else
+	{
+	  /* Take care of the lower and upper words individually.  For
+	     each word, we try different methods in the order of
+
+	     1) the special insn (in case of AND or XOR),
+	     2) the word-wise insn, and
+	     3) The byte-wise insn.  */
+	  if ((det & 0x0000ffff) == 0x0000ffff
+	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
+	    {
+	      length += 2;
+	    }
+	  else if ((TARGET_H8300H || TARGET_H8300S)
+		   && ((det & 0x000000ff) != 0)
+		   && ((det & 0x0000ff00) != 0))
+	    {
+	      length += 4;
+	    }
+	  else
+	    {
+	      if ((det & 0x000000ff) != 0)
+		length += 2;
+
+	      if ((det & 0x0000ff00) != 0)
+		length += 2;
+	    }
+
+	  if ((det & 0xffff0000) == 0xffff0000
+	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
+	    {
+	      length += 2;
+	    }
+	  else if (TARGET_H8300H || TARGET_H8300S)
+	    {
+	      if ((det & 0xffff0000) != 0)
+		length += 4;
+	    }
+	  else
+	    {
+	      if ((det & 0x00ff0000) != 0)
+		length += 2;
+
+	      if ((det & 0xff000000) != 0)
+		length += 2;
+	    }
+	}
+      break;
+    default:
+      abort ();
+    }
+  return length;
+}
 
 /* Shifts.
 
