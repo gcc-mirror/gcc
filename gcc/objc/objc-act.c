@@ -681,7 +681,9 @@ build_objc_symtab_template ()
 
   /* void *defs[cls_def_cnt + cat_def_cnt]; */
 
-  index = build_index_type (build_int_2 (imp_count + cat_count - 1, 0));
+  index = build_index_type (build_int_2 (imp_count + cat_count - 1,
+					 imp_count == 0 && cat_count == 0
+					 ? -1 : 0));
   field_decl = create_builtin_decl (FIELD_DECL,
 				    build_array_type (ptr_type_node, index),
 				    "defs");
@@ -2858,6 +2860,7 @@ build_objc_method_call (super_flag, method_prototype, lookup_object, object,
     {
       method_params = tree_cons (NULLT, lookup_object,
 				 tree_cons (NULLT, selector, method_params));
+      assemble_external (sender);
       return build_function_call (sender, method_params);
     }
   else
@@ -2885,6 +2888,7 @@ build_objc_method_call (super_flag, method_prototype, lookup_object, object,
 	 This will do type checking using the arg types for this method.  */
       method_params = tree_cons (NULLT, lookup_object,
 				 tree_cons (NULLT, selector, method_params));
+      assemble_external (sender);
       retval = build_function_call (sender, method_params);
 
       /* Restore SENDER's return/argument types.  */
@@ -2902,6 +2906,7 @@ build_objc_method_call (super_flag, method_prototype, lookup_object, object,
   object = save_expr (object);
   selector = save_expr (selector);
 
+  assemble_external (sender);
   method
     = build_function_call (sender,
 			   tree_cons (NULLT, lookup_object,
@@ -2922,6 +2927,7 @@ build_objc_method_call (super_flag, method_prototype, lookup_object, object,
 	= build_pointer_type (build_function_type (ptr_type_node, NULLT));
     }
   /* Pass the object to the method.  */
+  assemble_external (method);
   return build_function_call (method,
 			      tree_cons (NULLT, object,
 					 tree_cons (NULLT, selector,
@@ -3405,6 +3411,7 @@ get_class_reference (interface)
 			    my_build_string (IDENTIFIER_LENGTH (CLASS_NAME (interface)) + 1,
 					     IDENTIFIER_POINTER (CLASS_NAME (interface))));
 
+  assemble_external (objc_getClass_decl);
   return build_function_call (objc_getClass_decl, params);
 }
 
@@ -4355,9 +4362,15 @@ get_super_receiver ()
 						     IDENTIFIER_POINTER (super_name)));
 
 	  if (TREE_CODE (method_context) == INSTANCE_METHOD_DECL)
-	    funcCall = build_function_call (objc_getClass_decl, params);
+	    {
+	      assemble_external (objc_getClass_decl);
+	      funcCall = build_function_call (objc_getClass_decl, params);
+	    }
 	  else
-	    funcCall = build_function_call (objc_getMetaClass_decl, params);
+	    {
+	      assemble_external (objc_getMetaClass_decl);
+	      funcCall = build_function_call (objc_getMetaClass_decl, params);
+	    }
 
 	  /* cast! */
 	  TREE_TYPE (funcCall) = TREE_TYPE (_clsSuper_ref);
@@ -5122,7 +5135,7 @@ handle_class_ref (chain)
   rest_of_decl_compilation (decl, 0, 0, 0);
 
   /* Make following constant read-only (why not)?  */
-  text_section ();
+  readonly_data_section ();
 
   /* Inform the assembler about this new external thing.  */
   assemble_external (decl);
