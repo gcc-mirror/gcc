@@ -4892,7 +4892,7 @@ cpp_start_read (pfile, fname)
 	  else
 	    nstore[endp-startp] = '\0';
 
-	  include_defaults[num_dirs].fname = savestring (nstore);
+	  include_defaults[num_dirs].fname = xstrdup (nstore);
 	  include_defaults[num_dirs].component = 0;
 	  include_defaults[num_dirs].cplusplus = opts->cplusplus;
 	  include_defaults[num_dirs].cxx_aware = 1;
@@ -4915,7 +4915,7 @@ cpp_start_read (pfile, fname)
   if (!opts->no_standard_includes) {
     struct default_include *p = include_defaults;
     char *specd_prefix = opts->include_prefix;
-    char *default_prefix = savestring (GCC_INCLUDE_DIR);
+    char *default_prefix = xstrdup (GCC_INCLUDE_DIR);
     int default_len = 0;
     /* Remove the `include' from /usr/local/lib/gcc.../include.  */
     if (!strcmp (default_prefix + strlen (default_prefix) - 8, "/include")) {
@@ -6164,20 +6164,6 @@ cpp_read_check_assertion (pfile)
   return result;
 }
 
-/* FIXME: savestring() should be renamed strdup() and should
-   be moved into cppalloc.c.  We can't do that right now because
-   then we'd get multiple-symbol clashes with toplev.c and several
-   other people. */
-char *
-savestring (input)
-     char *input;
-{
-  unsigned size = strlen (input);
-  char *output = xmalloc (size + 1);
-  strcpy (output, input);
-  return output;
-}
-
 /* Initialize PMARK to remember the current position of PFILE.  */
 
 void

@@ -725,8 +725,6 @@ extern int finclude			PROTO ((cpp_reader *, int,
 extern void deps_output			PROTO ((cpp_reader *, char *, int));
 extern struct include_hash *include_hash PROTO ((cpp_reader *, char *, int));
 
-/* Bleargh. */
-extern char *savestring			PROTO ((char *));
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif

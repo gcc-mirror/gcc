@@ -65,3 +65,13 @@ xrealloc (old, size)
     memory_full ();
   return ptr;
 }
+
+char *
+xstrdup (input)
+  const char *input;
+{
+  unsigned size = strlen (input);
+  char *output = xmalloc (size + 1);
+  strcpy (output, input);
+  return output;
+}

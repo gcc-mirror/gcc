@@ -1,5 +1,13 @@
 1998-12-15  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
+	* cppalloc.c: Add xstrdup here.
+	* cpplib.h: Remove savestring prototype.
+	* cpplib.c: Remove savestring function. s/savestring/xstrdup/
+	  throughout. 
+	* cppfiles.c: s/savestring/xstrdup/ throughout.
+
+1998-12-15  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
 	* cpplib.c: Make all directive handlers read their own
           arguments.
 	  (struct directive): Remove last two arguments from FUNC
