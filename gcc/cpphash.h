@@ -1,5 +1,3 @@
-enum node_type;
-
 /* different kinds of things that can appear in the value field
    of a hash node.  Actually, this may be useless now. */
 union hashval {
