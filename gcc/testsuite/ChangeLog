@@ -1,3 +1,7 @@
+2004-09-17  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
+
+	* gcc.c-torture/execute/20040917-1.c: New test.
+
 2004-09-17  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17319
