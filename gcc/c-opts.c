@@ -33,6 +33,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static cpp_options *cpp_opts;
 
+/* Filename and stream for preprocessed output.  */
+static const char *out_fname;
+static FILE *out_stream;
+
+/* Append dependencies to deps_file.  */
+static bool deps_append;
+
 static void missing_arg PARAMS ((size_t));
 static size_t find_opt PARAMS ((const char *, int));
 static void set_Wimplicit PARAMS ((int));
@@ -43,6 +50,7 @@ static void handle_OPT_d PARAMS ((const char *));
 static void set_std_cxx98 PARAMS ((int));
 static void set_std_c89 PARAMS ((int, int));
 static void set_std_c99 PARAMS ((int));
+static void check_deps_environment_vars PARAMS ((void));
 
 #define CL_C_ONLY	(1 << 0) /* Only C.  */
 #define CL_OBJC_ONLY	(1 << 1) /* Only ObjC.  */
@@ -456,8 +464,8 @@ c_common_decode_option (argc, argv)
     {
       if (!cpp_opts->in_fname)
 	cpp_opts->in_fname = opt;
-      else if (!cpp_opts->out_fname)
-	cpp_opts->out_fname = opt;
+      else if (!out_fname)
+	out_fname = opt;
       else
 	{
 	  error ("too many filenames given.  Type %s --help for usage",
@@ -1110,8 +1118,8 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_o:
-      if (!cpp_opts->out_fname)
-	cpp_opts->out_fname = arg;
+      if (!out_fname)
+	out_fname = arg;
       else
 	{
 	  error ("output filename specified twice");
@@ -1196,6 +1204,21 @@ c_common_decode_option (argc, argv)
 bool
 c_common_post_options ()
 {
+  /* Canonicalize the output filename.  */
+  if (out_fname == NULL || !strcmp (out_fname, "-"))
+    out_fname = "";
+
+  if (cpp_opts->print_deps == 0)
+    check_deps_environment_vars ();
+
+  /* If we're not outputting dependencies, complain if other -M
+     options have been given.  */
+  if (!cpp_opts->print_deps
+      && (cpp_opts->print_deps_missing_files
+	  || cpp_opts->deps_file
+	  || cpp_opts->deps_phony_targets))
+      error ("you must additionally specify either -M or -MM");
+
   cpp_post_options (parse_in);
 
   flag_inline_trees = 1;
@@ -1239,6 +1262,56 @@ c_common_post_options ()
   return flag_preprocess_only;
 }
 
+/* Preprocess the input file to out_stream.  */
+void
+preprocess_file ()
+{
+  /* Open the output now.  We must do so even if no_output is on,
+     because there may be other output than from the actual
+     preprocessing (e.g. from -dM).  */
+  if (out_fname[0] == '\0')
+    out_stream = stdout;
+  else
+    out_stream = fopen (out_fname, "w");
+
+  if (out_stream == NULL)
+    fatal_io_error ("opening output file %s", out_fname);
+  else
+    cpp_preprocess_file (parse_in, out_stream);
+}
+
+/* Common finish hook for the C, ObjC and C++ front ends.  */
+void
+c_common_finish ()
+{
+  FILE *deps_stream = NULL;
+
+  if (cpp_opts->print_deps)
+    {
+      /* If -M or -MM was seen without -MF, default output to the
+	 output stream.  */
+      if (!cpp_opts->deps_file)
+	deps_stream = out_stream;
+      else
+	{
+	  deps_stream = fopen (cpp_opts->deps_file, deps_append ? "a": "w");
+	  if (!deps_stream)
+	    fatal_io_error ("opening dependency file %s", cpp_opts->deps_file);
+	}
+    }
+
+  /* For performance, avoid tearing down cpplib's internal structures
+     with cpp_destroy ().  */
+  errorcount += cpp_finish (parse_in, deps_stream);
+
+  if (deps_stream && deps_stream != out_stream
+      && (ferror (deps_stream) || fclose (deps_stream)))
+    fatal_io_error ("closing dependency file %s", cpp_opts->deps_file);
+
+  if (out_stream && (ferror (out_stream) || fclose (out_stream)))
+    fatal_io_error ("when writing output to %s", out_fname);
+}
+
 /* Set the C 89 standard (with 1994 amendments if C94, without GNU
    extensions if ISO).  There is no concept of gnu94.  */
 static void
@@ -1254,6 +1327,46 @@ set_std_c89 (c94, iso)
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_writable_strings = 0;
+}
+
+/* Either of two environment variables can specify output of
+   dependencies.  Their value is either "OUTPUT_FILE" or "OUTPUT_FILE
+   DEPS_TARGET", where OUTPUT_FILE is the file to write deps info to
+   and DEPS_TARGET is the target to mention in the deps.  They also
+   result in dependency information being appended to the output file
+   rather than overwriting it.  */
+static void
+check_deps_environment_vars ()
+{
+  char *spec;
+
+  GET_ENVIRONMENT (spec, "DEPENDENCIES_OUTPUT");
+  if (spec)
+    cpp_opts->print_deps = 1;
+  else
+    {
+      GET_ENVIRONMENT (spec, "SUNPRO_DEPENDENCIES");
+      if (spec)
+	cpp_opts->print_deps = 2;
+    }
+
+  if (spec)
+    {
+      /* Find the space before the DEPS_TARGET, if there is one.  */
+      char *s = strchr (spec, ' ');
+      if (s)
+	{
+	  /* Let the caller perform MAKE quoting.  */
+	  cpp_add_dependency_target (parse_in, s + 1, 0);
+	  *s = '\0';
+	}
+
+      /* Command line -MF overrides environment variables and default.  */
+      if (!cpp_opts->deps_file)
+	cpp_opts->deps_file = spec;
+
+      cpp_opts->print_deps_append = 1;
+    }
 }
 
 /* Set the C 99 standard (without GNU extensions if ISO).  */

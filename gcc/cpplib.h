@@ -223,7 +223,6 @@ struct cpp_options
 {
   /* Name of input and output files.  */
   const char *in_fname;
-  const char *out_fname;
 
   /* Characters between tab stops.  */
   unsigned int tabstop;
@@ -398,9 +397,6 @@ struct cpp_options
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
-  /* True if only preprocessing and not compiling.  */
-  unsigned char preprocess_only;
-
   /* Target-specific features set by the front end or client.  */
 
   /* Precision for target CPP arithmetic, target characters, target
@@ -508,6 +504,14 @@ extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
    command line options).  */
 extern void cpp_set_lang PARAMS ((cpp_reader *, enum c_lang));
 
+/* Add a dependency TARGET.  Quote it for "make" if QUOTE.  Can be
+   called any number of times before cpp_read_main_file().  If no
+   targets have been added before cpp_read_main_file(), then the
+   default target is used.  */
+extern void cpp_add_dependency_target PARAMS ((cpp_reader *,
+					       const char * target,
+					       int quote));
+
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
    cpp_finish on that reader.  You can either edit the callbacks
@@ -553,7 +557,7 @@ extern void cpp_finish_options PARAMS ((cpp_reader *));
 /* Call this to release the handle at the end of preprocessing.  Any
    use of the handle after this function returns is invalid.  Returns
    cpp_errors (pfile).  */
-extern int cpp_destroy PARAMS ((cpp_reader *));
+extern void cpp_destroy PARAMS ((cpp_reader *));
 
 /* Error count.  */
 extern unsigned int cpp_errors PARAMS ((cpp_reader *));
@@ -567,7 +571,7 @@ extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
 					 void (*) PARAMS ((cpp_reader *))));
 
-extern void cpp_finish PARAMS ((cpp_reader *));
+extern int cpp_finish PARAMS ((cpp_reader *, FILE *));
 extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
 				    const cpp_token *));
 extern const cpp_token *cpp_get_token PARAMS ((cpp_reader *));
@@ -722,7 +726,7 @@ extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 
 /* In cppmain.c */
-extern void cpp_preprocess_file PARAMS ((cpp_reader *));
+extern void cpp_preprocess_file PARAMS ((cpp_reader *, FILE *));
 
 #ifdef __cplusplus
 }

@@ -4914,7 +4914,7 @@ c_common_init (filename)
   /* NULL is passed up to toplev.c and we exit quickly.  */
   if (flag_preprocess_only)
     {
-      cpp_preprocess_file (parse_in);
+      preprocess_file ();
       return NULL;
     }
 
@@ -4928,17 +4928,6 @@ c_common_init (filename)
     c_init_attributes ();
 
   return filename;
-}
-
-/* Common finish hook for the C, ObjC and C++ front ends.  */
-void
-c_common_finish ()
-{
-  cpp_finish (parse_in);
-
-  /* For performance, avoid tearing down cpplib's internal structures.
-     Call cpp_errors () instead of cpp_destroy ().  */
-  errorcount += cpp_errors (parse_in);
 }
 
 static void
