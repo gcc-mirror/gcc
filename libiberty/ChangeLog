@@ -1,3 +1,7 @@
+Tue Oct 28 23:41:15 1997  Judy Goldberg  <jodyg@idt.net>
+
+	* Makefile.in (CFILES): Add pexecute.c.
+
 Wed Oct 15 19:13:48 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 	* asprintf.c: Consistently use either stdarg or varargs.

@@ -151,7 +151,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c bzero.c \
 	 getcwd.c getopt.c getopt1.c getpagesize.c getruntime.c \
          floatformat.c hex.c index.c insque.c \
 	 memchr.c memcmp.c memcpy.c memmove.c memset.c objalloc.c \
-         obstack.c random.c rename.c rindex.c sigsetmask.c spaces.c \
+         obstack.c pexecute.c random.c rename.c rindex.c sigsetmask.c spaces.c \
 	 strcasecmp.c strncasecmp.c \
          strchr.c strdup.c strerror.c strrchr.c strsignal.c \
          strstr.c strtod.c strtol.c strtoul.c tmpnam.c \
