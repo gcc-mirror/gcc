@@ -1,3 +1,8 @@
+2003-05-02  Nathan Myers  <ncm@cantrip.org>
+	    Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/streambuf.tcc (__copy_streambufs): Rewrote.
+
 2003-05-02  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/basic_string.h (swap): Remove redundant template

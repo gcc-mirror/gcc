@@ -183,61 +183,33 @@ namespace std
     __copy_streambufs(basic_ios<_CharT, _Traits>& __ios,
 		      basic_streambuf<_CharT, _Traits>* __sbin,
 		      basic_streambuf<_CharT, _Traits>* __sbout) 
-  {
-      typedef typename _Traits::int_type	int_type;
-
+    {
       streamsize __ret = 0;
       try 
 	{
-	  for (;;)
-  	    {
-	      streamsize __xtrct;
-	      const ptrdiff_t __avail = __sbin->_M_in_end
-		                        - __sbin->_M_in_cur;
- 	      if (__avail)
+	  typename _Traits::int_type __c = __sbin->sgetc();
+	  while (!_Traits::eq_int_type(__c, _Traits::eof()))
+	    {
+	      const size_t __n = __sbin->_M_in_end - __sbin->_M_in_cur;
+	      if (__n > 1)
 		{
-		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __avail);
-		  __ret += __xtrct;
-		  __sbin->_M_move_in_cur(__xtrct);
-		  if (__xtrct != __avail)
+		  const size_t __wrote = __sbout->sputn(__sbin->_M_in_cur,
+							__n);
+		  __sbin->_M_move_in_cur(__wrote);
+		  __ret += __wrote;
+		  if (__wrote < __n)
 		    break;
+		  __c = __sbin->underflow();
 		}
- 	      else 
+	      else 
 		{
-		  streamsize __charsread;
-		  const size_t __size = __sbout->_M_out_end
-		                        - __sbout->_M_out_cur;
-		  if (__size)
-		    {
-		      _CharT* __buf =
-			static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							      * __size));
-		      // Since the next sputn cannot fail sgetn can be
-		      // safely used.
-		      __charsread = __sbin->sgetn(__buf, __size);
-		      __xtrct = __sbout->sputn(__buf, __charsread);
-		    }
-		  else
-		    {
-		      __xtrct = __charsread = 0;
-		      const int_type __c = __sbin->sgetc();
-		      if (!_Traits::eq_int_type(__c, _Traits::eof()))
-			{
-			  ++__charsread;
-			  if (_Traits::eq_int_type(__sbout->overflow(__c),
-						   _Traits::eof()))
-			    break;
-			  ++__xtrct;
-			  __sbin->sbumpc();
-			}
-		    }		      
-		  __ret += __xtrct;
-		  if (__xtrct != __charsread)
+		  __c = __sbout->sputc(_Traits::to_char_type(__c));
+		  if (_Traits::eq_int_type(__c, _Traits::eof()))
 		    break;
+		  ++__ret;
+		  __c = __sbin->snextc();
 		}
- 	      if (_Traits::eq_int_type(__sbin->sgetc(), _Traits::eof()))
-  		break;
-  	    }
+	    }
 	}
       catch(exception& __fail) 
 	{
