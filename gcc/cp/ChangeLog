@@ -1,3 +1,11 @@
+2004-11-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* cp-gimplify.c: Include pointer-set.h
+	(cp_genericize_r): Use pointer_sets instead of a hashtable.
+	Also instert the new statement for CLEANUP_STMT.
+	(cp_genericize): Use pointer_sets instead of a hashtable.
+	* Make-lang.in (cp-gimplify.o): Depend on pointer-set.h.
+
 2004-11-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	Friend class name lookup 1/n, PR c++/18471

@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tree-gimple.h"
 #include "hashtab.h"
+#include "pointer-set.h"
 
 /* Genericize a TRY_BLOCK.  */
 
@@ -274,8 +275,7 @@ static tree
 cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 {
   tree stmt = *stmt_p;
-  htab_t htab = (htab_t) data;
-  void **slot;
+  struct pointer_set_t *p_set = (struct pointer_set_t*) data;
 
   if (is_invisiref_parm (stmt))
     {
@@ -285,8 +285,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     }
 
   /* Other than invisiref parms, don't walk the same tree twice.  */
-  slot = htab_find_slot (htab, stmt, INSERT);
-  if (*slot)
+  if (pointer_set_insert (p_set, stmt))
     {
       *walk_subtrees = 0;
       return NULL_TREE;
@@ -310,13 +309,15 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
      to lower this construct before scanning it, so we need to lower these
      before doing anything else.  */
   else if (TREE_CODE (stmt) == CLEANUP_STMT)
-    *stmt_p = build2 (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR
-					     : TRY_FINALLY_EXPR,
-		      void_type_node,
-		      CLEANUP_BODY (stmt),
-		      CLEANUP_EXPR (stmt));
-
-  *slot = *stmt_p;
+    {
+      *stmt_p = build2 (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR
+					       : TRY_FINALLY_EXPR,
+			void_type_node,
+			CLEANUP_BODY (stmt),
+			CLEANUP_EXPR (stmt));
+      pointer_set_insert (p_set, *stmt_p);
+    }
+  
   return NULL;
 }
 
@@ -324,7 +325,7 @@ void
 cp_genericize (tree fndecl)
 {
   tree t;
-  htab_t htab;
+  struct pointer_set_t *p_set;
 
   /* Fix up the types of parms passed by invisible reference.  */
   for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
@@ -356,9 +357,9 @@ cp_genericize (tree fndecl)
 
   /* We do want to see every occurrence of the parms, so we can't just use
      walk_tree's hash functionality.  */
-  htab = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
-  walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, htab, NULL);
-  htab_delete (htab);
+  p_set = pointer_set_create ();
+  walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, p_set, NULL);
+  pointer_set_destroy (p_set);
 
   /* Do everything else.  */
   c_genericize (fndecl);
