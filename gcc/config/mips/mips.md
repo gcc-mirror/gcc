@@ -546,6 +546,8 @@
 {
   if (ISA_HAS_COND_TRAP)
     return \"teq\\t$0,$0\";
+  else if (TARGET_MIPS16)
+    return \"break 0\";
   else
     return \"break\";
 }")
