@@ -563,7 +563,7 @@ convert_move (to, from, unsignedp)
 
   if (to_real)
     {
-      rtx value;
+      rtx value, insns;
 
       if (GET_MODE_BITSIZE (from_mode) < GET_MODE_BITSIZE (to_mode))
 	{
@@ -803,9 +803,13 @@ convert_move (to, from, unsignedp)
 	/* This conversion is not implemented yet.  */
 	abort ();
 
+      start_sequence ();
       value = emit_library_call_value (libcall, NULL_RTX, 1, to_mode,
 				       1, from, from_mode);
-      emit_move_insn (to, value);
+      insns = get_insns ();
+      end_sequence ();
+      emit_libcall_block (insns, to, value, gen_rtx_FLOAT_TRUNCATE (to_mode,
+								    from));
       return;
     }
 
