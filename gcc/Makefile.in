@@ -379,7 +379,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # Header files that are made available under the same name
 # to programs compiled with gcc.
 USER_H = assert.h va-hp800.h va-i860.h va-mips.h va-pyr.h va-sparc.h \
-    va-spur.h va-m88k.h proto.h
+    va-spur.h va-m88k.h va-i960.h proto.h
 
 # All the header files that are installed for users from GCC itself.
 INSTALLED_H = float.h stddef.h stdarg.h varargs.h $(USER_H) limits.h
