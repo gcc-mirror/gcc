@@ -1,3 +1,8 @@
+2003-01-23  Richard Henderson  <rth@redhat.com>
+
+        * ifcvt.c (noce_process_if_block): Re-add check vs X being changed
+        in no-else-block case.  Add commentary.
+
 2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Revert last change.
