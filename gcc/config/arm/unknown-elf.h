@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
   do									\
     {									\
-      if (IN_NAMED_SECTION (DECL))					\
+      if ((DECL) != NULL && IN_NAMED_SECTION (DECL))			\
 	named_section (DECL, NULL, 0);					\
       else								\
 	bss_section ();							\
