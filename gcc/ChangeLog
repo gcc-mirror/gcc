@@ -1,3 +1,14 @@
+2002-02-26  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300-protos.h: Update the prototype for
+	compute_logical_op_length.  Add the prototype for
+	compute_logical_op_cc.
+	* config/h8300/h8300.c (compute_logical_op_length): Figure out
+	code from operands.
+	(compute_logical_op_cc): New.
+	* config/h8300/h8300.md: Combine all the logical op patterns
+	in HImode and SImode.  Use compute_logical_op_cc.
+
 2002-02-26  Kelley Cook  <kelleycook@comcast.net>
 
 	* config/i386/i386.c (print_operand): Don't append ATT-style
