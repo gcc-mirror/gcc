@@ -7830,6 +7830,16 @@ expand_expr (exp, target, tmode, modifier)
       return expand_divmod (0, code, mode, op0, op1, target, unsignedp);
 
     case RDIV_EXPR:
+      /* Emit a/b as a*(1/b).  Later we may manage CSE the reciprocal saving
+         expensive divide.  If not, combine will rebuild the original
+         computation.  */
+      if (flag_unsafe_math_optimizations && optimize && !optimize_size
+	  && !real_onep (TREE_OPERAND (exp, 0)))
+        return expand_expr (build (MULT_EXPR, type, TREE_OPERAND (exp, 0),
+				   build (RDIV_EXPR, type,
+					  build_real (type, dconst1),
+					  TREE_OPERAND (exp, 1))),
+			    target, tmode, unsignedp);
       this_optab = flodiv_optab;
       goto binop;
 
