@@ -194,7 +194,6 @@ void
 java::net::PlainDatagramSocketImpl::bind (jint lport,
 					  java::net::InetAddress *host)
 {
-  // FIXME: prob. need to do a setsockopt with SO_BROADCAST to allow multicast.
   union SockAddr u;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
   // FIXME: Use getaddrinfo() to get actual protocol instead of assuming ipv4.
@@ -232,6 +231,11 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
       else if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
         localPort = ntohs (u.address.sin_port);
       else
+        goto error;
+      /* Allow broadcast by default. */
+      int broadcast = 1;
+      if (::setsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &broadcast, 
+                        sizeof (broadcast)) != 0)
         goto error;
       return;
     }
