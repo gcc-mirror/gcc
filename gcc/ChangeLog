@@ -1,3 +1,8 @@
+Thu Sep 23 17:41:47 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/mips/mips.c (function_arg_pass_by_reference): Define
+	unconditionally, since it's called unconditionally.
+
 Thu Sep 23 13:40:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (documented_lang_options): Add -fshort-wchar.
