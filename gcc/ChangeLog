@@ -1,5 +1,8 @@
 Sat Dec 26 09:17:04 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gengenrtl.c (gencode): Always use bzero to clear memory instead
+	of dangerous casts and stores.
+
 	* Makefile.in (compare, gnucompare): Add missing else true clauses.
 
 Fri Dec 25 23:00:56 1998  Jeffrey A Law  (law@cygnus.com)
