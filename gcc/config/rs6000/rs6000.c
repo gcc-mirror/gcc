@@ -1254,6 +1254,7 @@ init_cumulative_args (cum, fntype, libname, incoming)
   cum->fregno = FP_ARG_MIN_REG;
   cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
   cum->call_cookie = CALL_NORMAL;
+  cum->sysv_gregno = GP_ARG_MIN_REG;
 
   if (incoming)
     cum->nargs_prototype = 1000;		/* don't return a PARALLEL */
@@ -1339,7 +1340,8 @@ function_arg_boundary (mode, type)
      enum machine_mode mode;
      tree type;
 {
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && mode == DImode)
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      && (mode == DImode || mode == DFmode))
     return 64;
 
   if (DEFAULT_ABI != ABI_NT || TARGET_64BIT)
@@ -1362,48 +1364,85 @@ function_arg_advance (cum, mode, type, named)
      tree type;
      int named;
 {
-  int align = (TARGET_32BIT && (cum->words & 1) != 0
-	       && function_arg_boundary (mode, type) == 64) ? 1 : 0;
-  cum->words += align;
   cum->nargs_prototype--;
 
   if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
-      /* Long longs must not be split between registers and stack */
-      if ((GET_MODE_CLASS (mode) != MODE_FLOAT || TARGET_SOFT_FLOAT)
-	  && type && !AGGREGATE_TYPE_P (type)
-	  && cum->words < GP_ARG_NUM_REG
-	  && cum->words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
+      if (TARGET_HARD_FLOAT
+	  && (mode == SFmode || mode == DFmode))
 	{
-	  cum->words = GP_ARG_NUM_REG;
+	  if (cum->fregno <= FP_ARG_V4_MAX_REG)
+	    cum->fregno++;
+	  else
+	    {
+	      if (mode == DFmode)
+	        cum->words += cum->words & 1;
+	      cum->words += RS6000_ARG_SIZE (mode, type, 1);
+	    }
+	}
+      else
+	{
+	  int n_words;
+	  int gregno = cum->sysv_gregno;
+
+	  /* Aggregates and IEEE quad get passed by reference.  */
+	  if ((type && AGGREGATE_TYPE_P (type))
+	      || mode == TFmode)
+	    n_words = 1;
+	  else 
+	    n_words = RS6000_ARG_SIZE (mode, type, 1);
+
+	  /* Long long is put in odd registers.  */
+	  if (n_words == 2 && (gregno & 1) == 0)
+	    gregno += 1;
+
+	  /* Long long is not split between registers and stack.  */
+	  if (gregno + n_words - 1 > GP_ARG_MAX_REG)
+	    {
+	      /* Long long is aligned on the stack.  */
+	      if (n_words == 2)
+		cum->words += cum->words & 1;
+	      cum->words += n_words;
+	    }
+
+	  /* Note: continuing to accumulate gregno past when we've started
+	     spilling to the stack indicates the fact that we've started
+	     spilling to the stack to expand_builtin_saveregs.  */
+	  cum->sysv_gregno = gregno + n_words;
 	}
 
-      /* Aggregates get passed as pointers */
-      if (type && AGGREGATE_TYPE_P (type))
-	cum->words++;
-
-      /* Floats go in registers, & don't occupy space in the GP registers
-	 like they do for AIX unless software floating point.  */
-      else if (GET_MODE_CLASS (mode) == MODE_FLOAT
-	       && TARGET_HARD_FLOAT
-	       && cum->fregno <= FP_ARG_V4_MAX_REG)
-	cum->fregno++;
-
-      else
-	cum->words += RS6000_ARG_SIZE (mode, type, 1);
+      if (TARGET_DEBUG_ARG)
+	{
+	  fprintf (stderr, "function_adv: words = %2d, fregno = %2d, ",
+		   cum->words, cum->fregno);
+	  fprintf (stderr, "gregno = %2d, nargs = %4d, proto = %d, ",
+		   cum->sysv_gregno, cum->nargs_prototype, cum->prototype);
+	  fprintf (stderr, "mode = %4s, named = %d\n",
+		   GET_MODE_NAME (mode), named);
+	}
     }
   else
-    if (named)
-      {
-	cum->words += RS6000_ARG_SIZE (mode, type, named);
-	if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
-	  cum->fregno++;
-      }
+    {
+      int align = (TARGET_32BIT && (cum->words & 1) != 0
+		   && function_arg_boundary (mode, type) == 64) ? 1 : 0;
+      cum->words += align;
 
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr,
-	     "function_adv: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d, align = %d\n",
-	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named, align);
+      if (named)
+	{
+	  cum->words += RS6000_ARG_SIZE (mode, type, named);
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
+	    cum->fregno++;
+	}
+
+      if (TARGET_DEBUG_ARG)
+	{
+	  fprintf (stderr, "function_adv: words = %2d, fregno = %2d, ",
+		   cum->words, cum->fregno);
+	  fprintf (stderr, "nargs = %4d, proto = %d, mode = %4s, ",
+		   cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode));
+	  fprintf (stderr, "named = %d, align = %d\n", named, align);
+	}
+    }
 }
 
 /* Determine where to put an argument to a function.
@@ -1436,22 +1475,14 @@ function_arg (cum, mode, type, named)
      tree type;
      int named;
 {
-  int align = (TARGET_32BIT && (cum->words & 1) != 0
-	       && function_arg_boundary (mode, type) == 64) ? 1 : 0;
-  int align_words = cum->words + align;
+  enum rs6000_abi abi = DEFAULT_ABI;
 
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr,
-	     "function_arg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d, align = %d\n",
-	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named, align);
-
-  /* Return a marker to indicate whether CR1 needs to set or clear the bit that V.4
-     uses to say fp args were passed in registers.  Assume that we don't need the
-     marker for software floating point, or compiler generated library calls.  */
+  /* Return a marker to indicate whether CR1 needs to set or clear the bit
+     that V.4 uses to say fp args were passed in registers.  Assume that we
+     don't need the marker for software floating point, or compiler generated
+     library calls.  */
   if (mode == VOIDmode)
     {
-      enum rs6000_abi abi = DEFAULT_ABI;
-
       if ((abi == ABI_V4 || abi == ABI_SOLARIS)
 	  && TARGET_HARD_FLOAT
 	  && cum->nargs_prototype < 0
@@ -1466,31 +1497,65 @@ function_arg (cum, mode, type, named)
       return GEN_INT (cum->call_cookie);
     }
 
-  if (!named)
+  if (abi == ABI_V4 || abi == ABI_SOLARIS)
     {
-      if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
-	return NULL_RTX;
+      if (TARGET_HARD_FLOAT
+	  && (mode == SFmode || mode == DFmode))
+	{
+	  if (cum->fregno <= FP_ARG_V4_MAX_REG)
+	    return gen_rtx_REG (mode, cum->fregno);
+	  else
+	    return NULL;
+	}
+      else
+	{
+	  int n_words;
+	  int gregno = cum->sysv_gregno;
+
+	  /* Aggregates and IEEE quad get passed by reference.  */
+	  if ((type && AGGREGATE_TYPE_P (type))
+	      || mode == TFmode)
+	    n_words = 1;
+	  else 
+	    n_words = RS6000_ARG_SIZE (mode, type, 1);
+
+	  /* Long long is put in odd registers.  */
+	  if (n_words == 2 && (gregno & 1) == 0)
+	    gregno += 1;
+
+	  /* Long long is not split between registers and stack.  */
+	  if (gregno + n_words - 1 <= GP_ARG_MAX_REG)
+	    return gen_rtx_REG (mode, gregno);
+	  else
+	    return NULL;
+	}
     }
-
-  if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    return NULL_RTX;
-
-  if (USE_FP_FOR_ARG_P (*cum, mode, type))
+  else
     {
-      if (DEFAULT_ABI == ABI_V4 /* V.4 never passes FP values in GP registers */
-	  || DEFAULT_ABI == ABI_SOLARIS
-	  || ! type
-	  || ((cum->nargs_prototype > 0)
-	      /* IBM AIX extended its linkage convention definition always to
-		 require FP args after register save area hole on the stack.  */
-	      && (DEFAULT_ABI != ABI_AIX
-		  || ! TARGET_XL_CALL
-		  || (align_words < GP_ARG_NUM_REG))))
-	return gen_rtx_REG (mode, cum->fregno);
+      int align = (TARGET_32BIT && (cum->words & 1) != 0
+	           && function_arg_boundary (mode, type) == 64) ? 1 : 0;
+      int align_words = cum->words + align;
 
-      return gen_rtx_PARALLEL (mode,
-		      gen_rtvec
-		      (2,
+      if (!named)
+	return NULL_RTX;
+
+      if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+        return NULL_RTX;
+
+      if (USE_FP_FOR_ARG_P (*cum, mode, type))
+	{
+	  if (! type
+	      || ((cum->nargs_prototype > 0)
+	          /* IBM AIX extended its linkage convention definition always
+		     to require FP args after register save area hole on the
+		     stack.  */
+	          && (DEFAULT_ABI != ABI_AIX
+		      || ! TARGET_XL_CALL
+		      || (align_words < GP_ARG_NUM_REG))))
+	    return gen_rtx_REG (mode, cum->fregno);
+
+          return gen_rtx_PARALLEL (mode,
+	    gen_rtvec (2,
 		       gen_rtx_EXPR_LIST (VOIDmode,
 				((align_words >= GP_ARG_NUM_REG)
 				 ? NULL_RTX
@@ -1508,21 +1573,12 @@ function_arg (cum, mode, type, named)
 		       gen_rtx_EXPR_LIST (VOIDmode,
 				gen_rtx_REG (mode, cum->fregno),
 				const0_rtx)));
+	}
+      else if (align_words < GP_ARG_NUM_REG)
+	return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
+      else
+	return NULL_RTX;
     }
-
-  /* Long longs won't be split between register and stack;
-     FP arguments get passed on the stack if they didn't get a register.  */
-  else if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) &&
-	   (align_words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG
-	    || (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)))
-    {
-      return NULL_RTX;
-    }
-
-  else if (align_words < GP_ARG_NUM_REG)
-    return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
-
-  return NULL_RTX;
 }
 
 /* For an arg passed partly in registers and partly in memory,
@@ -1577,7 +1633,8 @@ function_arg_pass_by_reference (cum, mode, type, named)
      int named ATTRIBUTE_UNUSED;
 {
   if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-      && type && AGGREGATE_TYPE_P (type))
+      && ((type && AGGREGATE_TYPE_P (type))
+	  || mode == TFmode))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: aggregate\n");
@@ -1612,73 +1669,87 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
      int no_rtl;
 
 {
-  rtx save_area = virtual_incoming_args_rtx;
-  int reg_size	= TARGET_32BIT ? 4 : 8;
-
-  if (TARGET_DEBUG_ARG)
-    fprintf (stderr,
-	     "setup_vararg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, no_rtl= %d\n",
-	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), no_rtl);
+  CUMULATIVE_ARGS next_cum;
+  int reg_size = TARGET_32BIT ? 4 : 8;
+  rtx save_area;
+  int first_reg_offset;
 
   if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
+      tree fntype;
+      int stdarg_p;
+
+      fntype = TREE_TYPE (current_function_decl);
+      stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
+		  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		      != void_type_node));
+
+      /* For varargs, we do not want to skip the dummy va_dcl argument.
+         For stdargs, we do want to skip the last named argument.  */
+      next_cum = *cum;
+      if (stdarg_p)
+	function_arg_advance (&next_cum, mode, type, 1);
+
+      /* Indicate to allocate space on the stack for varargs save area.  */
+      /* ??? Does this really have to be located at a magic spot on the
+	 stack, or can we allocate this with assign_stack_local instead.  */
       rs6000_sysv_varargs_p = 1;
       if (! no_rtl)
 	save_area = plus_constant (virtual_stack_vars_rtx,
 				   - RS6000_VARARGS_SIZE);
+
+      first_reg_offset = next_cum.sysv_gregno - GP_ARG_MIN_REG;
     }
   else
-    rs6000_sysv_varargs_p = 0;
-
-  if (cum->words < 8)
     {
-      int first_reg_offset = cum->words;
+      save_area = virtual_incoming_args_rtx;
+      rs6000_sysv_varargs_p = 0;
 
+      first_reg_offset = cum->words;
       if (MUST_PASS_IN_STACK (mode, type))
 	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (type), type, 1);
+    }
 
-      if (first_reg_offset > GP_ARG_NUM_REG)
-	first_reg_offset = GP_ARG_NUM_REG;
+  if (!no_rtl && first_reg_offset < GP_ARG_NUM_REG)
+    {
+      move_block_from_reg
+	(GP_ARG_MIN_REG + first_reg_offset,
+	 gen_rtx_MEM (BLKmode,
+		      plus_constant (save_area, first_reg_offset * reg_size)),
+	 GP_ARG_NUM_REG - first_reg_offset,
+	 (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
 
-      if (!no_rtl && first_reg_offset != GP_ARG_NUM_REG)
-	move_block_from_reg
-	  (GP_ARG_MIN_REG + first_reg_offset,
-	   gen_rtx_MEM (BLKmode,
-		    plus_constant (save_area, first_reg_offset * reg_size)),
-	   GP_ARG_NUM_REG - first_reg_offset,
-	   (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
-
+      /* ??? Does ABI_V4 need this at all?  */
       *pretend_size = (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD;
     }
 
   /* Save FP registers if needed.  */
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && TARGET_HARD_FLOAT && !no_rtl)
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+      && TARGET_HARD_FLOAT && !no_rtl
+      && next_cum.fregno <= FP_ARG_V4_MAX_REG)
     {
-      int fregno     = cum->fregno;
-      int num_fp_reg = FP_ARG_V4_MAX_REG + 1 - fregno;
+      int fregno = next_cum.fregno;
+      rtx cr1 = gen_rtx_REG (CCmode, 69);
+      rtx lab = gen_label_rtx ();
+      int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG) * 8);
 
-      if (num_fp_reg >= 0)
-	{
-	  rtx cr1 = gen_rtx_REG (CCmode, 69);
-	  rtx lab = gen_label_rtx ();
-	  int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG) * 8);
-
-	  emit_jump_insn (gen_rtx_SET (VOIDmode,
+      emit_jump_insn (gen_rtx_SET (VOIDmode,
 				   pc_rtx,
 				   gen_rtx_IF_THEN_ELSE (VOIDmode,
-					    gen_rtx_NE (VOIDmode, cr1, const0_rtx),
+					    gen_rtx_NE (VOIDmode, cr1,
+						        const0_rtx),
 					    gen_rtx_LABEL_REF (VOIDmode, lab),
 					    pc_rtx)));
 
-	  while ( num_fp_reg-- >= 0)
-	    {
-	      emit_move_insn (gen_rtx_MEM (DFmode, plus_constant (save_area, off)),
-			      gen_rtx_REG (DFmode, fregno++));
-	      off += 8;
-	    }
-
-	  emit_label (lab);
+      while (fregno <= FP_ARG_V4_MAX_REG)
+	{
+	  emit_move_insn (gen_rtx_MEM (DFmode, plus_constant (save_area, off)),
+			  gen_rtx_REG (DFmode, fregno));
+	  fregno++;
+	  off += 8;
 	}
+
+      emit_label (lab);
     }
 }
 
@@ -1734,9 +1805,18 @@ expand_builtin_saveregs (args)
 						     2 * UNITS_PER_WORD));
 
   /* Construct the two characters of `gpr' and `fpr' as a unit.  */
-  words = current_function_args_info.words - !stdarg_p;
-  gpr = (words > 8 ? 8 : words);
-  fpr = current_function_args_info.fregno - 33;
+  words = current_function_args_info.words;
+  gpr = current_function_args_info.sysv_gregno - GP_ARG_MIN_REG;
+  fpr = current_function_args_info.fregno - FP_ARG_MIN_REG;
+
+  /* Varargs has the va_dcl argument, but we don't count it.  */
+  if (!stdarg_p)
+    {
+      if (gpr > GP_ARG_NUM_REG)
+        words -= 1;
+      else
+        gpr -= 1;
+    }
 
   if (BYTES_BIG_ENDIAN)
     {
@@ -1755,12 +1835,9 @@ expand_builtin_saveregs (args)
   emit_move_insn (mem_gpr_fpr, tmp);
 
   /* Find the overflow area.  */
-  if (words <= 8)
-    tmp = virtual_incoming_args_rtx;
-  else
-    tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
-		        GEN_INT ((words - 8) * UNITS_PER_WORD),
-		        mem_overflow, 0, OPTAB_WIDEN);
+  tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
+		      GEN_INT (words * UNITS_PER_WORD),
+		      mem_overflow, 0, OPTAB_WIDEN);
   if (tmp != mem_overflow)
     emit_move_insn (mem_overflow, tmp);
 
@@ -1774,7 +1851,6 @@ expand_builtin_saveregs (args)
   /* Return the address of the va_list constructor.  */
   return XEXP (block, 0);
 }
-
 
 /* Generate a memory reference for expand_block_move, copying volatile,
    and other bits from an original memory reference.  */

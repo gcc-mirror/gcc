@@ -2,6 +2,29 @@ Sat Aug  7 00:06:30 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.texi: Update bug reporting text.
 
+	Tue Jul 20 17:07:54 1999  Richard Henderson  <rth@cygnus.com>
+	* rs6000.h (struct rs6000_args): Add sysv_gregno.
+	* rs6000.c (init_cumulative_args): Init sysv_gregno.
+	(function_arg_boundary): Align DFmode.
+	(function_arg_advance): Restructure for ABI_V4; use sysv_gregno
+	to get fp reg and stack overflow correct.
+	(function_arg): Likewise.
+	(function_arg_pass_by_reference): True for TFmode for ABI_V4.
+	(setup_incoming_varargs): Restructure for ABI_V4; use
+	function_arg_advance to skip final named argument.
+	(expand_builtin_saveregs): Properly unskip the last integer arg
+	when doing varargs.  Adjust overflow location calculation.
+	* ginclude/va-ppc.h (struct __va_list_tag): Make gpr and fpr
+	explicitly unsigned.
+	(__VA_FP_REGSAVE): Use new OFS argument instead of AP->fpr directly.
+	(__VA_GP_REGSAVE): Similarly.
+	(__va_longlong_p): Delete.
+	(__va_arg_type_violation): New declaration.
+	(va_arg): Restructure.  Flag promotion errors.  Align double.
+	TFmode passed by reference.
+	* rs6000.md (movdi_32+1): Use GEN_INT after arithmetic
+	in the HOST_BITS_PER_WIDE_INT > 32 case.
+
 1999-08-6 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* reg-stack.c (change_stack) Fixed problem with negative array index.
