@@ -1,3 +1,8 @@
+Thu Jan 17 15:28:26 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* attribs.c (decl_attributes): Clear ATTR_FLAG_TYPE_IN_PLACE
+	if type_required and passed decl.
+
 2002-01-17  Aldy Hernandez  <aldyh@redhat.com>
 
         * config.gcc (cpu_type): Include altivec.h in powerpc
