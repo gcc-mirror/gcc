@@ -2321,7 +2321,7 @@ input_operand (rtx op, enum machine_mode mode)
 /* Darwin, AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 
-int
+unsigned int
 rs6000_special_round_type_align (tree type, int computed, int specified)
 {
   tree field = TYPE_FIELDS (type);
