@@ -1,3 +1,17 @@
+2002-02-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sparc/sparc.c (const64_high_operand): Zero-extend
+	operands of SPARC_SETHI_P.
+	(input_operand): Likewise.
+	(sparc_emit_set_const32): Likewise.
+	* config/sparc/sparc.h (SPARC_SETHI_P): Disregard TARGET_ARCH64.
+	(SPARC_SETHI32_P): Zero-extend operand from 32 bits.
+	(CONST_OK_FOR_LETTER_P): Use SETHI32 for `K'.  Add `N' as SETHI.
+	* config/sparc/sparc.md (movdi_insn_sp64_novis): Use `N'.
+	(movdi_insn_sp64_vis): Likewise.
+	(movdi split, movdf split): Use SETHI32.
+	* doc/md.texi: Document SPARC constraints L, M and N.
+
 2002-02-25  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.md ("get_vrsave_internal"): New.

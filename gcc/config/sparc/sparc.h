@@ -1393,7 +1393,8 @@ extern const char leaf_reg_remap[];
    `J' is used for the range which is just zero (since that is R0).
    `K' is used for constants which can be loaded with a single sethi insn.
    `L' is used for the range of constants supported by the movcc insns.
-   `M' is used for the range of constants supported by the movrcc insns.  */
+   `M' is used for the range of constants supported by the movrcc insns.
+   `N' is like K, but for constants wider than 32 bits.  */
 
 #define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x200 < 0x400)
 #define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x400 < 0x800)
@@ -1405,15 +1406,18 @@ extern const char leaf_reg_remap[];
 #define SMALL_INT32(X) (SPARC_SIMM13_P (trunc_int_for_mode \
 					(INTVAL (X), SImode)))
 #define SPARC_SETHI_P(X) \
-(((unsigned HOST_WIDE_INT) (X) & \
-  (TARGET_ARCH64 ? ~(unsigned HOST_WIDE_INT) 0xfffffc00 : 0x3ff)) == 0)
+  (((unsigned HOST_WIDE_INT) (X) \
+    & ((unsigned HOST_WIDE_INT) 0x3ff - GET_MODE_MASK (SImode) - 1)) == 0)
+#define SPARC_SETHI32_P(X) \
+  (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'I' ? SPARC_SIMM13_P (VALUE)			\
    : (C) == 'J' ? (VALUE) == 0				\
-   : (C) == 'K' ? SPARC_SETHI_P (VALUE)			\
+   : (C) == 'K' ? SPARC_SETHI32_P (VALUE)		\
    : (C) == 'L' ? SPARC_SIMM11_P (VALUE)		\
    : (C) == 'M' ? SPARC_SIMM10_P (VALUE)		\
+   : (C) == 'N' ? SPARC_SETHI_P (VALUE)			\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.

@@ -2515,7 +2515,7 @@
 
 (define_insn "*movdi_insn_sp64_novis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m")
-        (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e"))]
+        (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,m,e"))]
   "TARGET_ARCH64 && ! TARGET_VIS
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -2533,7 +2533,7 @@
 
 (define_insn "*movdi_insn_sp64_vis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m,b")
-        (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e,J"))]
+        (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,m,e,J"))]
   "TARGET_ARCH64 && TARGET_VIS &&
    (register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))"
@@ -2791,7 +2791,7 @@
   /* Slick... but this trick loses if this subreg constant part
      can be done in one insn.  */
   if (CONST_DOUBLE_LOW (operands[1]) == CONST_DOUBLE_HIGH (operands[1])
-      && !(SPARC_SETHI_P (CONST_DOUBLE_HIGH (operands[1]))
+      && !(SPARC_SETHI32_P (CONST_DOUBLE_HIGH (operands[1]))
 	   || SPARC_SIMM13_P (CONST_DOUBLE_HIGH (operands[1]))))
     {
       emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
@@ -3403,7 +3403,7 @@
       /* Slick... but this trick loses if this subreg constant part
          can be done in one insn.  */
       if (l[1] == l[0]
-          && !(SPARC_SETHI_P (l[0])
+          && !(SPARC_SETHI32_P (l[0])
 	       || SPARC_SIMM13_P (l[0])))
         {
           emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
