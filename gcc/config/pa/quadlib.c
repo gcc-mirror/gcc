@@ -1,5 +1,5 @@
 /* Subroutines for long double support.
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,17 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* HPUX TFmode compare requires a library call to _U_Qfcmp, which takes a
+   magic number as its third argument, that indicates what to do.
+   The return value is an integer to be compared against zero.  */
+enum qfcmp_magic {
+  QCMP_INV = 1,		/* Raise FP_INVALID on SNaN as a side effect.  */
+  QCMP_UNORD = 2,
+  QCMP_EQ = 4,
+  QCMP_LT = 8,
+  QCMP_GT = 16
+} magic;
+
 int _U_Qfcmp (long double a, long double b, int);
 long _U_Qfcnvfxt_quad_to_sgl (long double);
 
@@ -36,8 +47,19 @@ int _U_Qfgt (long double, long double);
 int _U_Qfge (long double, long double);
 int _U_Qflt (long double, long double);
 int _U_Qfle (long double, long double);
+int _U_Qfltgt (long double, long double);
+int _U_Qfunle (long double, long double);
+int _U_Qfunlt (long double, long double);
+int _U_Qfunge (long double, long double);
+int _U_Qfungt (long double, long double);
+int _U_Qfuneq (long double, long double);
+int _U_Qfunord (long double, long double);
+int _U_Qford (long double, long double);
+
 int _U_Qfcomp (long double, long double);
+
 long double _U_Qfneg (long double);
+
 #ifdef __LP64__
 int __U_Qfcnvfxt_quad_to_sgl (long double);
 #endif
@@ -47,49 +69,98 @@ unsigned long long _U_Qfcnvfxt_quad_to_udbl(long double);
 int
 _U_Qfeq (long double a, long double b)
 {
-  return (_U_Qfcmp (a, b, 4) != 0);
+  return (_U_Qfcmp (a, b, QCMP_EQ) != 0);
 }
 
 int
 _U_Qfne (long double a, long double b)
 {
-  return (_U_Qfcmp (a, b, 4) == 0);
+  return (_U_Qfcmp (a, b, QCMP_EQ) == 0);
 }
 	
 int
 _U_Qfgt (long double a, long double b)
 {
-  return (_U_Qfcmp (a, b, 17) != 0);
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_GT) != 0);
 }
 
 int
 _U_Qfge (long double a, long double b)
 {
-  return (_U_Qfcmp (a, b, 21) != 0);
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_EQ | QCMP_GT) != 0);
 }
 
 int
 _U_Qflt (long double a, long double b)
 {
-  return (_U_Qfcmp (a, b, 9) != 0);
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_LT) != 0);
 }
 
 int
 _U_Qfle (long double a, long double b)
 {
-  return (_U_Qfcmp (a, b, 13) != 0);
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_EQ | QCMP_LT) != 0);
+}
+
+int
+_U_Qfltgt (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_LT | QCMP_GT) != 0);
+}
+
+int
+_U_Qfunle (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_UNORD | QCMP_EQ | QCMP_LT) != 0);
+}
+
+int
+_U_Qfunlt (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_UNORD | QCMP_LT) != 0);
+}
+
+int
+_U_Qfunge (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_UNORD | QCMP_EQ | QCMP_GT) != 0);
+}
+
+int
+_U_Qfungt (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_UNORD | QCMP_GT) != 0);
+}
+
+int
+_U_Qfuneq (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_UNORD | QCMP_EQ) != 0);
+}
+
+int
+_U_Qfunord (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_UNORD) != 0);
+}
+
+int
+_U_Qford (long double a, long double b)
+{
+  return (_U_Qfcmp (a, b, QCMP_INV | QCMP_EQ | QCMP_LT | QCMP_GT) != 0);
 }
 
 int
 _U_Qfcomp (long double a, long double b)
 {
-  if (_U_Qfcmp (a, b, 4) == 0)
+  if (_U_Qfcmp (a, b, QCMP_EQ) == 0)
     return 0;
 
-  return (_U_Qfcmp (a, b, 22) != 0 ? 1 : -1);
+  return (_U_Qfcmp (a, b, QCMP_UNORD | QCMP_EQ | QCMP_GT) != 0 ? 1 : -1);
 }
 
 
+/* This violates the IEEE standard.  It is better to multiply by -1.0L.  */
 long double
 _U_Qfneg (long double a)
 {

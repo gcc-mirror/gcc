@@ -1,5 +1,11 @@
 2004-06-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.c (pa_hpux_init_libfunc): Add support for unord_optab.
+	* pa/quadlib.c (enum qfcmp_magic): Define magic values for call to
+	_U_Qfcmp library function.
+	(_U_Qfltgt, _U_Qfunle, _U_Qfunlt, _U_Qfunge, _U_Qfungt, _U_Qfuneq,
+	_U_Qfunord, _U_Qford): Add more TFmode builtin compare functions.
+
 	* pa.c (legitimize_pic_address): Use UNSPEC_DLTIND14R to identify
 	unspec used for loading address from DLT.
 	* pa.md: Define constants for the uses of UNSPEC and UNSPEC_VOLATILE.
