@@ -1,3 +1,8 @@
+2001-03-07  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (remove_unnecessary_notes): Verify proper nesting
+	of block notes and exception handling notes.
+
 2001-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/Makefile.in (FIXINC_DEFS): Add -DHAVE_CONFIG_H.
