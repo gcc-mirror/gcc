@@ -124,7 +124,7 @@ Tue Apr 28 17:30:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* mips.h (HOST_WIDE_INT): Define if not already.
 	(compute_frame_size, mips_debugger_offset): Return HOST_WIDE_INT.
 	(DEBUGGER_{AUTO,ARG}_OFFSET): Cast second arg to HOST_WIDE_INT.
-	* /mips.c (mips_debugger_offset): Now returns HOST_WIDE_INT.
+	* mips.c (mips_debugger_offset): Now returns HOST_WIDE_INT.
 	Likewise for internal variable frame_size.
 
 	* final.c (alter_subreg): Make new SUBREG if reload replacement
