@@ -916,14 +916,6 @@ free_temp_slots ()
 void
 push_temp_slots ()
 {
-  /* For GNU C++, we must allow a sequence to be emitted anywhere in
-     the level where the sequence was started.  By not changing levels
-     when the compiler is inside a sequence, the temporaries for the
-     sequence and the temporaries will not unwittingly conflict with
-     the temporaries for other sequences and/or code at that level.  */
-  if (in_sequence_p ())
-    return;
-
   temp_slot_level++;
 }
 
@@ -934,11 +926,6 @@ void
 pop_temp_slots ()
 {
   struct temp_slot *p;
-
-  /* See comment in push_temp_slots about why we don't change levels
-     in sequences.  */
-  if (in_sequence_p ())
-    return;
 
   for (p = temp_slots; p; p = p->next)
     if (p->in_use && p->level == temp_slot_level)
