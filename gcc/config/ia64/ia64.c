@@ -8926,6 +8926,7 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   reload_completed = 1;
   epilogue_completed = 1;
   no_new_pseudos = 1;
+  reset_block_changes ();
 
   /* Set things up as ia64_expand_prologue might.  */
   last_scratch_gr_reg = 15;

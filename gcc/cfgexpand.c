@@ -412,6 +412,9 @@ tree_expand_cfg (void)
     walk_tree (&TREE_TYPE (current_function_decl), set_save_expr_context,
 	       current_function_decl, NULL);
 
+  /* Prepare the rtl middle end to start recording block changes.  */
+  reset_block_changes ();
+
   /* Expand the variables recorded during gimple lowering.  This must
      occur before the call to expand_function_start to ensure that
      all used variables are expanded before we expand anything on the

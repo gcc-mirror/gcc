@@ -7070,6 +7070,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Pretend to be a post-reload pass while generating rtl.  */
   no_new_pseudos = 1;
   reload_completed = 1;
+  reset_block_changes ();
 
   /* Pick a global pointer for -mabicalls.  Use $15 rather than $28
      for TARGET_NEWABI since the latter is a call-saved register.  */
