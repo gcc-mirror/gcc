@@ -2729,19 +2729,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-/* A symbol name in DBX-format debugging information is normally
-   continued (split into two separate `.stabs' directives) when it
-   exceeds a certain length (by default, 80 characters).  On some
-   operating systems, DBX requires this splitting; on others,
-   splitting must not be done.  You can inhibit splitting by defining
-   this macro with the value zero.  You can override the default
-   splitting-length by defining this macro as an expression for the
-   length you desire.
-
-   The AIX assembler has a hard limit of 4096 characters per
-   line.  */
-#define DBX_CONTIN_LENGTH 4000
-
 /* Text to write out after a CALL that may be replaced by glue code by
    the loader.  This depends on the AIX version.  */
 #define RS6000_CALL_GLUE "cror 31,31,31"
