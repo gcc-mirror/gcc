@@ -172,6 +172,8 @@ static bool       mcore_return_in_memory	(tree, tree);
 #define TARGET_ATTRIBUTE_TABLE 		mcore_attribute_table
 #undef  TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION 	mcore_unique_section
+#undef  TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO 	mcore_encode_section_info
 #undef  TARGET_STRIP_NAME_ENCODING

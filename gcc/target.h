@@ -132,6 +132,10 @@ struct gcc_target
        for SELECT_SECTION.  */
     void (* unique_section) (tree, int);
 
+    /* Tell assembler to switch to the readonly data section associated
+       with function DECL.  */
+    void (* function_rodata_section) (tree); 
+
     /* Output a constructor for a symbol with a given priority.  */
     void (* constructor) (rtx, int);
 

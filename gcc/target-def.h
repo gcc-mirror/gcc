@@ -87,6 +87,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_UNIQUE_SECTION default_unique_section
 #endif
 
+#ifndef TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION default_function_rodata_section
+#endif
+
 #ifndef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION default_select_rtx_section
 #endif
@@ -212,6 +216,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_SELECT_SECTION,		\
 			TARGET_ASM_SELECT_RTX_SECTION,		\
 			TARGET_ASM_UNIQUE_SECTION,		\
+			TARGET_ASM_FUNCTION_RODATA_SECTION,	\
 			TARGET_ASM_CONSTRUCTOR,			\
 			TARGET_ASM_DESTRUCTOR,                  \
                         TARGET_ASM_OUTPUT_MI_THUNK,             \

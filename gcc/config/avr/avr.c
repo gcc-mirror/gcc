@@ -233,6 +233,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
 #undef TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION avr_unique_section
+#undef TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS

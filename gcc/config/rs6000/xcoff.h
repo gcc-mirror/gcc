@@ -172,6 +172,7 @@ toc_section (void)					\
 #define TARGET_ASM_SELECT_SECTION  rs6000_xcoff_select_section
 #define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section
 #define TARGET_ASM_UNIQUE_SECTION  rs6000_xcoff_unique_section
+#define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 #define TARGET_STRIP_NAME_ENCODING  rs6000_xcoff_strip_name_encoding
 #define TARGET_SECTION_TYPE_FLAGS  rs6000_xcoff_section_type_flags
 

@@ -1966,7 +1966,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		{
 		  int log_align;
 
-		  readonly_data_section ();
+		  targetm.asm_out.function_rodata_section (current_function_decl);
 
 #ifdef ADDR_VEC_ALIGN
 		  log_align = ADDR_VEC_ALIGN (NEXT_INSN (insn));

@@ -501,6 +501,8 @@ extern void default_elf_select_section_1 (tree, int,
 					  unsigned HOST_WIDE_INT, int);
 extern void default_unique_section (tree, int);
 extern void default_unique_section_1 (tree, int, int);
+extern void default_function_rodata_section (tree);
+extern void default_no_function_rodata_section (tree);
 extern void default_select_rtx_section (enum machine_mode, rtx,
 					unsigned HOST_WIDE_INT);
 extern void default_elf_select_rtx_section (enum machine_mode, rtx,

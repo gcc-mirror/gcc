@@ -101,6 +101,9 @@ const struct attribute_spec ip2k_attribute_table[];
 #undef TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION unique_section
 
+#undef TARGET_ASM_FUNCTION_RODATA_SECTION
+#define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
+
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ip2k_attribute_table
 
