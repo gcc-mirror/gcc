@@ -1,3 +1,7 @@
+2001-06-15  Dennis Bjorklund  <db@zigo.dhs.org>
+
+	* sv.po: Updated.  Approximately 1100 of 3600 strings translated.
+
 2001-06-11  Zack Weinberg  <zackw@stanford.edu>
 
 	* POTFILES.in: Comment out config/float-*.
