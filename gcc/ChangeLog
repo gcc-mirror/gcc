@@ -1,3 +1,7 @@
+2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+ 
+        * doc/install.texi (avr): Update outdated URL.
+
 2002-01-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (c_expand_body): Reset input_filename from
