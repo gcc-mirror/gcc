@@ -1,4 +1,4 @@
-/* Definitions for the data structures and codes used in VMS debugging.  */
+/* Definitions for the data structures and codes used in VMS debugging.
    Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -46,8 +46,8 @@ typedef struct _DST_HEADER
     } dst__header_length;
   union
     {
-      ENUM_BITFIELD (_DST_DTYPE) dst_w_type : 16;
-      ENUM_BITFIELD (_DST_DTYPE) dst_x_type : 16;
+      ENUM_BITFIELD (_DST_TYPE) dst_w_type : 16;
+      ENUM_BITFIELD (_DST_TYPE) dst_x_type : 16;
     } dst__header_type;
 } DST_HEADER;
 #define DST_K_DST_HEADER_SIZE sizeof 4
