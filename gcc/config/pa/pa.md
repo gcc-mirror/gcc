@@ -3886,6 +3886,286 @@
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
+;; Generating a fused multiply sequence is a win for this case as it will
+;; reduce the latency for the fused case without impacting the plain
+;; multiply case.
+;;
+;; Similar possibilities exist for fnegabs, shadd and other insns which
+;; perform two operations with the result of the first feeding the second.
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			  (match_operand:DF 2 "register_operand" "f"))
+		 (match_operand:DF 3 "register_operand" "f")))
+   (set (match_operand:DF 4 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+;; We want to split this up during scheduling since we want both insns
+;; to schedule independently.
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			  (match_operand:DF 2 "register_operand" "f"))
+		 (match_operand:DF 3 "register_operand" "f")))
+   (set (match_operand:DF 4 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:DF (mult:DF (match_dup 1) (match_dup 2))
+			       (match_dup 3)))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			  (match_operand:SF 2 "register_operand" "f"))
+		 (match_operand:SF 3 "register_operand" "f")))
+   (set (match_operand:SF 4 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+;; We want to split this up during scheduling since we want both insns
+;; to schedule independently.
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			  (match_operand:SF 2 "register_operand" "f"))
+		 (match_operand:SF 3 "register_operand" "f")))
+   (set (match_operand:SF 4 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:SF (mult:SF (match_dup 1) (match_dup 2))
+			       (match_dup 3)))]
+  "")
+
+;; Negating a multiply can be faked by adding zero in a fused multiply-add
+;; instruction.
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			 (match_operand:DF 2 "register_operand" "f"))))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "fmpynfadd,dbl %1,%2,0,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			 (match_operand:SF 2 "register_operand" "f"))))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "fmpynfadd,sgl %1,%2,0,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			 (match_operand:DF 2 "register_operand" "f"))))
+   (set (match_operand:DF 3 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			 (match_operand:DF 2 "register_operand" "f"))))
+   (set (match_operand:DF 3 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 3) (mult:DF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (neg:DF (mult:DF (match_dup 1) (match_dup 2))))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			 (match_operand:SF 2 "register_operand" "f"))))
+   (set (match_operand:SF 3 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			 (match_operand:SF 2 "register_operand" "f"))))
+   (set (match_operand:SF 3 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 3) (mult:SF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (neg:SF (mult:SF (match_dup 1) (match_dup 2))))]
+  "")
+
+;; Now fused multiplies with the result of the multiply negated.
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+				  (match_operand:DF 2 "register_operand" "f")))
+		 (match_operand:DF 3 "register_operand" "f")))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "fmpynfadd,dbl %1,%2,%3,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			 (match_operand:SF 2 "register_operand" "f")))
+		 (match_operand:SF 3 "register_operand" "f")))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "fmpynfadd,sgl %1,%2,%3,%0"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+				  (match_operand:DF 2 "register_operand" "f")))
+		 (match_operand:DF 3 "register_operand" "f")))
+   (set (match_operand:DF 4 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+				  (match_operand:DF 2 "register_operand" "f")))
+		 (match_operand:DF 3 "register_operand" "f")))
+   (set (match_operand:DF 4 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:DF (neg:DF (mult:DF (match_dup 1) (match_dup 2)))
+			       (match_dup 3)))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+				  (match_operand:SF 2 "register_operand" "f")))
+		 (match_operand:SF 3 "register_operand" "f")))
+   (set (match_operand:SF 4 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+				  (match_operand:SF 2 "register_operand" "f")))
+		 (match_operand:SF 3 "register_operand" "f")))
+   (set (match_operand:SF 4 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:SF (neg:SF (mult:SF (match_dup 1) (match_dup 2)))
+			       (match_dup 3)))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(minus:DF (match_operand:DF 3 "register_operand" "f")
+		  (mult:DF (match_operand:DF 1 "register_operand" "f")
+			   (match_operand:DF 2 "register_operand" "f"))))
+   (set (match_operand:DF 4 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(minus:DF (match_operand:DF 3 "register_operand" "f")
+		  (mult:DF (match_operand:DF 1 "register_operand" "f")
+			   (match_operand:DF 2 "register_operand" "f"))))
+   (set (match_operand:DF 4 "register_operand" "=&f")
+	(mult:DF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (minus:DF (match_dup 3)
+				(mult:DF (match_dup 1) (match_dup 2))))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(minus:SF (match_operand:SF 3 "register_operand" "f")
+		  (mult:SF (match_operand:SF 1 "register_operand" "f")
+			   (match_operand:SF 2 "register_operand" "f"))))
+   (set (match_operand:SF 4 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(minus:SF (match_operand:SF 3 "register_operand" "f")
+		  (mult:SF (match_operand:SF 1 "register_operand" "f")
+			   (match_operand:SF 2 "register_operand" "f"))))
+   (set (match_operand:SF 4 "register_operand" "=&f")
+	(mult:SF (match_dup 1) (match_dup 2)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (minus:SF (match_dup 3)
+				(mult:SF (match_dup 1) (match_dup 2))))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (abs:DF (match_operand:DF 1 "register_operand" "f"))))
+   (set (match_operand:DF 2 "register_operand" "=&f") (abs:DF (match_dup 1)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (abs:DF (match_operand:DF 1 "register_operand" "f"))))
+   (set (match_operand:DF 2 "register_operand" "=&f") (abs:DF (match_dup 1)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 2) (abs:DF (match_dup 1)))
+   (set (match_dup 0) (neg:DF (abs:DF (match_dup 1))))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (abs:SF (match_operand:SF 1 "register_operand" "f"))))
+   (set (match_operand:SF 2 "register_operand" "=&f") (abs:SF (match_dup 1)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  "#"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (abs:SF (match_operand:SF 1 "register_operand" "f"))))
+   (set (match_operand:SF 2 "register_operand" "=&f") (abs:SF (match_dup 1)))]
+  "! TARGET_SOFT_FLOAT && TARGET_PA_20"
+  [(set (match_dup 2) (abs:SF (match_dup 1)))
+   (set (match_dup 0) (neg:SF (abs:SF (match_dup 1))))]
+  "")
 
 ;;- Shift instructions
 
