@@ -1,3 +1,90 @@
+2004-04-01  Robert Dewar  <dewar@gnat.com>
+
+	* checks.adb: Minor reformatting throughout
+	Note that prev checkin added RM reference to alignment warning
+
+2004-04-01  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_aggr.adb (Get_Component_Val): Treat a string literal as
+	non-static when building aggregate for bit-packed array.
+
+	* exp_ch4.adb (Expand_N_Slice): If a packed slice is an actual of a
+	function call that is itself the actual in a procedure call, build
+	temporary for it.
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): If right-hand side is
+	a string literal, create a temporary for it, constant folding only
+	handles scalars here.
+
+2004-04-01  Vincent Celier  <celier@gnat.com>
+
+	* ali-util.adb (Post_Scan, Error_Msg, Error_Msg_S, Error_Msg_SC,
+	Error_Msg_SP): New empty procedures to instantiate the Scanner.
+	(Style, Scanner): Instantiations of Styleg and Scng to be able to scan
+	tokens.
+	(Accumulate_Checksum, Initialize_Checksum): Remove procedures.
+	(Get_File_Checksum): Use the instantiated scanner to scan all the tokens
+	and get the checksum.
+
+	* make.adb (Gnatmake): Do not insert into Q the Main_Source if it is
+	already in the Q.
+	Increase the Marking_Label at the end of the Multiple_Main_Loop,
+	instead of at the beginning.
+
+	* osint.adb (Lib_File_Name): Use Multi_Unit_Index_Character, not '~'
+	directly.
+	(Osint package elaboration): Change Multi_Unit_Index_Character to '$' if
+	on VMS.
+
+	* osint.ads (Multi_Unit_Index_Character): New Character global variable
+
+	* osint-c.adb (Set_Library_Info_Name): Use Multi_Unit_Index_Character,
+	not '~' directly.
+
+	* par.adb: Remove test on file name to detect language defined units.
+	Add test on unit name, after parsing, to detect language defined units
+	that are not compiled with -gnatg (except System.RPC and its children)
+
+	* par-ch10.adb (P_Compilation_Unit): In multi-unit sources, scan the
+	following units without style checking.
+
+	* switch-c.adb: Change -gnatC to -gnateI
+
+	* usage.adb: Document new switch -gnateInnn
+
+	* scng.adb (Accumulate_Token_Checksum): New procedure
+	(Scan): Call Accumulate_Token_Checksum after each identifier, reserved
+	word or literal number.
+	(Scan.Nlit.Scan_Integer): Do not accumulate internal '_' in litteral
+	numbers.
+
+2004-04-01  Thomas Quinot  <quinot@act-europe.fr>
+
+	* a-tasatt.adb,
+	g-comlin.adb, sinput-c.adb, s-secsta.adb, s-tpobop.adb,
+	switch-m.adb, 56taprop.adb, 5ginterr.adb, 5gmastop.adb,
+	5staprop.adb, 5vinterr.adb, 5vtaprop.adb, 5vtpopde.adb,
+	5vtpopde.adb: Add missing 'constant' keywords.
+
+2004-04-01  Javier Miranda  <miranda@gnat.com>
+
+	* par-ch4.adb: (P_Allocator): Code cleanup
+
+	* sem_ch3.adb (Access_Definition): Properly set the null-excluding
+	attribute.
+
+	* sinfo.ads: Complete documentation of previous change
+
+2004-04-01  Pascal Obry  <obry@gnat.com>
+
+	* gnatlink.adb (Process_Binder_File): Remove duplicate linker options
+	only on VMS.  This special handling was done because an old GNU/ld bug
+	on Windows which has been fixed.
+
+2004-04-01  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (gnat_to_gnu_entity, make_type_from_size):

@@ -2338,16 +2338,8 @@ package body Ch4 is
 
       --  Scan Null_Exclusion if present (Ada 0Y (AI-231))
 
-      if Extensions_Allowed then
-         Null_Exclusion_Present := P_Null_Exclusion;
-         Set_Null_Exclusion_Present (Alloc_Node, Null_Exclusion_Present);
-
-      --  If Ada 95, null exclusion never present
-
-      else
-         Null_Exclusion_Present := False;
-      end if;
-
+      Null_Exclusion_Present := P_Null_Exclusion;
+      Set_Null_Exclusion_Present (Alloc_Node, Null_Exclusion_Present);
       Type_Node := P_Subtype_Mark_Resync;
 
       if Token = Tok_Apostrophe then

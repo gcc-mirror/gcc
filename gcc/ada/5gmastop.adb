@@ -288,7 +288,7 @@ package body System.Machine_State_Operations is
    is
       pragma Warnings (Off, Info);
 
-      Scp : Sigcontext_Ptr := To_Sigcontext_Ptr (M);
+      Scp : constant Sigcontext_Ptr := To_Sigcontext_Ptr (M);
 
       procedure Exc_Unwind (Scp : Sigcontext_Ptr; Fde : Long_Integer := 0);
       pragma Import (C, Exc_Unwind, "exc_unwind");

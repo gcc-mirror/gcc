@@ -238,8 +238,7 @@ package body Checks is
    function Guard_Access
      (Cond    : Node_Id;
       Loc     : Source_Ptr;
-      Ck_Node : Node_Id)
-      return    Node_Id;
+      Ck_Node : Node_Id) return Node_Id;
    --  In the access type case, guard the test with a test to ensure
    --  that the access value is non-null, since the checks do not
    --  not apply to null access values.
@@ -256,8 +255,7 @@ package body Checks is
      (Ck_Node    : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
-      Warn_Node  : Node_Id)
-      return       Check_Result;
+      Warn_Node  : Node_Id) return Check_Result;
    --  Like Apply_Selected_Length_Checks, except it doesn't modify
    --  anything, just returns a list of nodes as described in the spec of
    --  this package for the Range_Check function.
@@ -266,8 +264,7 @@ package body Checks is
      (Ck_Node    : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
-      Warn_Node  : Node_Id)
-      return       Check_Result;
+      Warn_Node  : Node_Id) return Check_Result;
    --  Like Apply_Selected_Range_Checks, except it doesn't modify anything,
    --  just returns a list of nodes as described in the spec of this package
    --  for the Range_Check function.
@@ -2098,8 +2095,7 @@ package body Checks is
 
    function Build_Discriminant_Checks
      (N     : Node_Id;
-      T_Typ : Entity_Id)
-      return Node_Id
+      T_Typ : Entity_Id) return Node_Id
    is
       Loc      : constant Source_Ptr := Sloc (N);
       Cond     : Node_Id;
@@ -3487,8 +3483,7 @@ package body Checks is
    is
       function Within_Range_Of
         (Target_Type : Entity_Id;
-         Check_Type  : Entity_Id)
-         return        Boolean;
+         Check_Type  : Entity_Id) return Boolean;
       --  Given a requirement for checking a range against Target_Type, and
       --  and a range Check_Type against which a check has already been made,
       --  determines if the check against check type is sufficient to ensure
@@ -3500,8 +3495,7 @@ package body Checks is
 
       function Within_Range_Of
         (Target_Type : Entity_Id;
-         Check_Type  : Entity_Id)
-         return        Boolean
+         Check_Type  : Entity_Id) return Boolean
       is
       begin
          if Target_Type = Check_Type then
@@ -4191,8 +4185,7 @@ package body Checks is
    function Guard_Access
      (Cond    : Node_Id;
       Loc     : Source_Ptr;
-      Ck_Node : Node_Id)
-      return    Node_Id
+      Ck_Node : Node_Id) return Node_Id
    is
    begin
       if Nkind (Cond) = N_Or_Else then
@@ -4480,8 +4473,7 @@ package body Checks is
      (Ck_Node    : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id := Empty;
-      Warn_Node  : Node_Id   := Empty)
-      return       Check_Result
+      Warn_Node  : Node_Id   := Empty) return Check_Result
    is
    begin
       return Selected_Range_Checks
@@ -4607,8 +4599,7 @@ package body Checks is
      (Ck_Node    : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
-      Warn_Node  : Node_Id)
-      return       Check_Result
+      Warn_Node  : Node_Id) return Check_Result
    is
       Loc         : constant Source_Ptr := Sloc (Ck_Node);
       S_Typ       : Entity_Id;
@@ -4626,6 +4617,7 @@ package body Checks is
 
       function Get_E_Length (E : Entity_Id; Indx : Nat) return Node_Id;
       function Get_N_Length (N : Node_Id; Indx : Nat) return Node_Id;
+      --  Comments required ???
 
       function Same_Bounds (L : Node_Id; R : Node_Id) return Boolean;
       --  True for equal literals and for nodes that denote the same constant
@@ -4636,16 +4628,14 @@ package body Checks is
       function Length_E_Cond
         (Exptyp : Entity_Id;
          Typ    : Entity_Id;
-         Indx   : Nat)
-         return   Node_Id;
+         Indx   : Nat) return Node_Id;
       --  Returns expression to compute:
       --    Typ'Length /= Exptyp'Length
 
       function Length_N_Cond
         (Expr : Node_Id;
          Typ  : Entity_Id;
-         Indx : Nat)
-         return Node_Id;
+         Indx : Nat) return Node_Id;
       --  Returns expression to compute:
       --    Typ'Length /= Expr'Length
 
@@ -4812,8 +4802,7 @@ package body Checks is
       function Length_E_Cond
         (Exptyp : Entity_Id;
          Typ    : Entity_Id;
-         Indx   : Nat)
-         return   Node_Id
+         Indx   : Nat) return Node_Id
       is
       begin
          return
@@ -4830,8 +4819,7 @@ package body Checks is
       function Length_N_Cond
         (Expr : Node_Id;
          Typ  : Entity_Id;
-         Indx : Nat)
-         return Node_Id
+         Indx : Nat) return Node_Id
       is
       begin
          return
@@ -5113,8 +5101,7 @@ package body Checks is
      (Ck_Node    : Node_Id;
       Target_Typ : Entity_Id;
       Source_Typ : Entity_Id;
-      Warn_Node  : Node_Id)
-      return       Check_Result
+      Warn_Node  : Node_Id) return Check_Result
    is
       Loc         : constant Source_Ptr := Sloc (Ck_Node);
       S_Typ       : Entity_Id;
@@ -5132,8 +5119,7 @@ package body Checks is
 
       function Discrete_Range_Cond
         (Expr : Node_Id;
-         Typ  : Entity_Id)
-         return Node_Id;
+         Typ  : Entity_Id) return Node_Id;
       --  Returns expression to compute:
       --    Low_Bound (Expr) < Typ'First
       --      or else
@@ -5141,8 +5127,7 @@ package body Checks is
 
       function Discrete_Expr_Cond
         (Expr : Node_Id;
-         Typ  : Entity_Id)
-         return Node_Id;
+         Typ  : Entity_Id) return Node_Id;
       --  Returns expression to compute:
       --    Expr < Typ'First
       --      or else
@@ -5151,8 +5136,7 @@ package body Checks is
       function Get_E_First_Or_Last
         (E    : Entity_Id;
          Indx : Nat;
-         Nam  : Name_Id)
-         return Node_Id;
+         Nam  : Name_Id) return Node_Id;
       --  Returns expression to compute:
       --    E'First or E'Last
 
@@ -5172,16 +5156,14 @@ package body Checks is
       function Range_Equal_E_Cond
         (Exptyp : Entity_Id;
          Typ    : Entity_Id;
-         Indx   : Nat)
-         return   Node_Id;
+         Indx   : Nat) return Node_Id;
       --  Returns expression to compute:
       --    Exptyp'First /= Typ'First or else Exptyp'Last /= Typ'Last
 
       function Range_N_Cond
         (Expr : Node_Id;
          Typ  : Entity_Id;
-         Indx : Nat)
-         return Node_Id;
+         Indx : Nat) return Node_Id;
       --  Return expression to compute:
       --    Expr'First < Typ'First or else Expr'Last > Typ'Last
 
@@ -5211,8 +5193,7 @@ package body Checks is
 
       function Discrete_Expr_Cond
         (Expr : Node_Id;
-         Typ  : Entity_Id)
-         return Node_Id
+         Typ  : Entity_Id) return Node_Id
       is
       begin
          return
@@ -5243,8 +5224,7 @@ package body Checks is
 
       function Discrete_Range_Cond
         (Expr : Node_Id;
-         Typ  : Entity_Id)
-         return Node_Id
+         Typ  : Entity_Id) return Node_Id
       is
          LB : Node_Id := Low_Bound (Expr);
          HB : Node_Id := High_Bound (Expr);
@@ -5318,8 +5298,7 @@ package body Checks is
       function Get_E_First_Or_Last
         (E    : Entity_Id;
          Indx : Nat;
-         Nam  : Name_Id)
-         return Node_Id
+         Nam  : Name_Id) return Node_Id
       is
          N     : Node_Id;
          LB    : Node_Id;
@@ -5432,7 +5411,6 @@ package body Checks is
                Duplicate_Subexpr_No_Checks (N, Name_Req => True),
              Expressions => New_List (
                Make_Integer_Literal (Loc, Indx)));
-
       end Get_N_First;
 
       ----------------
@@ -5448,7 +5426,6 @@ package body Checks is
                Duplicate_Subexpr_No_Checks (N, Name_Req => True),
              Expressions => New_List (
               Make_Integer_Literal (Loc, Indx)));
-
       end Get_N_Last;
 
       ------------------
@@ -5458,8 +5435,7 @@ package body Checks is
       function Range_E_Cond
         (Exptyp : Entity_Id;
          Typ    : Entity_Id;
-         Indx   : Nat)
-         return   Node_Id
+         Indx   : Nat) return Node_Id
       is
       begin
          return
@@ -5483,8 +5459,7 @@ package body Checks is
       function Range_Equal_E_Cond
         (Exptyp : Entity_Id;
          Typ    : Entity_Id;
-         Indx   : Nat)
-         return   Node_Id
+         Indx   : Nat) return Node_Id
       is
       begin
          return
@@ -5506,8 +5481,7 @@ package body Checks is
       function Range_N_Cond
         (Expr : Node_Id;
          Typ  : Entity_Id;
-         Indx : Nat)
-         return Node_Id
+         Indx : Nat) return Node_Id
       is
       begin
          return

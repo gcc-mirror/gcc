@@ -1406,7 +1406,7 @@ package body Osint is
       end loop;
 
       if Munit_Index /= 0 then
-         Add_Char_To_Name_Buffer ('~');
+         Add_Char_To_Name_Buffer (Multi_Unit_Index_Character);
          Add_Nat_To_Name_Buffer (Munit_Index);
       end if;
 
@@ -2132,7 +2132,7 @@ package body Osint is
          type Actual_Source_Ptr is access Actual_Source_Buffer;
          --  This is the pointer type for the physical buffer allocated
 
-         Actual_Ptr : Actual_Source_Ptr := new Actual_Source_Buffer;
+         Actual_Ptr : constant Actual_Source_Ptr := new Actual_Source_Buffer;
          --  And this is the actual physical buffer
 
       begin
@@ -2753,6 +2753,13 @@ begin
    begin
       Identifier_Character_Set := Get_Default_Identifier_Character_Set;
       Maximum_File_Name_Length := Get_Maximum_File_Name_Length;
+
+      --  On VMS, '~' is not allowed in file names. Change the multi unit
+      --  index character to '$'.
+
+      if Hostparm.OpenVMS then
+         Multi_Unit_Index_Character := '$';
+      end if;
 
       --  Following should be removed by having above function return
       --  Integer'Last as indication of no maximum instead of -1 ???

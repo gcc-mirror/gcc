@@ -220,12 +220,6 @@ package body Switch.C is
                   ASIS_Mode := True;
                end if;
 
-            --  Processing for C switch
-
-            when 'C' =>
-               Ptr := Ptr + 1;
-               Scan_Pos (Switch_Chars, 999, Ptr, Multiple_Unit_Index);
-
             --  Processing for d switch
 
             when 'd' =>
@@ -387,6 +381,12 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Full_Path_Name_For_Brief_Errors := True;
                      return;
+
+                  --  -gnateI (index of unit in multi-unit source)
+
+                  when 'I' =>
+                     Ptr := Ptr + 1;
+                     Scan_Pos (Switch_Chars, 999, Ptr, Multiple_Unit_Index);
 
                   --  -gnatem (mapping file)
 

@@ -1875,7 +1875,7 @@ package Sinfo is
       --------------------------------
 
       --  SUBTYPE_DECLARATION ::=
-      --    subtype DEFINING_IDENTIFIER is SUBTYPE_INDICATION;
+      --    subtype DEFINING_IDENTIFIER is [NULL_EXCLUSION] SUBTYPE_INDICATION;
 
       --  The subtype indication field is set to Empty for subtypes
       --  declared in package Standard (Positive, Natural).
@@ -1897,6 +1897,11 @@ package Sinfo is
       --  Note: if no constraint is present, the subtype indication appears
       --  directly in the tree as a subtype mark. The N_Subtype_Indication
       --  node is used only if a constraint is present.
+
+      --  Note: [For Ada 0Y (AI-231)]: Because Ada 0Y extends this rule with
+      --  the null-exclusion part (see AI-231), we had to introduce a new
+      --  attribute in all the parents of subtype_indication nodes to indicate
+      --  if the null-exclusion is present.
 
       --  Note: the reason that this node has expression fields is that a
       --  subtype indication can appear as an operand of a membership test.
@@ -1947,7 +1952,7 @@ package Sinfo is
 
       --  OBJECT_DECLARATION ::=
       --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
-      --      SUBTYPE_INDICATION [:= EXPRESSION];
+      --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
       --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
       --      ARRAY_TYPE_DEFINITION [:= EXPRESSION];
       --  | SINGLE_TASK_DECLARATION
@@ -2037,7 +2042,8 @@ package Sinfo is
       ----------------------------------
 
       --  DERIVED_TYPE_DEFINITION ::=
-      --    [abstract] new parent_SUBTYPE_INDICATION [RECORD_EXTENSION_PART]
+      --    [abstract] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
+      --    [RECORD_EXTENSION_PART]
 
       --  Note: ABSTRACT, record extension part not permitted in Ada 83 mode
 
@@ -2327,7 +2333,7 @@ package Sinfo is
       -------------------------------
 
       --  COMPONENT_DEFINITION ::=
-      --    [aliased] SUBTYPE_INDICATION | ACCESS_DEFINITION
+      --    [aliased] [NULL_EXCLUSION] SUBTYPE_INDICATION | ACCESS_DEFINITION
 
       --  Note: although the syntax does not permit a component definition to
       --  be an anonymous array (and the parser will diagnose such an attempt
@@ -2398,7 +2404,7 @@ package Sinfo is
       -------------------------------------
 
       --  DISCRIMINANT_SPECIFICATION ::=
-      --    DEFINING_IDENTIFIER_LIST : SUBTYPE_MARK
+      --    DEFINING_IDENTIFIER_LIST : [NULL_EXCLUSION] SUBTYPE_MARK
       --      [:= DEFAULT_EXPRESSION]
       --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
       --      [:= DEFAULT_EXPRESSION]
@@ -2636,12 +2642,19 @@ package Sinfo is
       --    ACCESS_TO_OBJECT_DEFINITION
       --  | ACCESS_TO_SUBPROGRAM_DEFINITION
 
+      --------------------------
+      -- 3.10  Null Exclusion --
+      --------------------------
+
+      --  NULL_EXCLUSION ::= not null
+
       ---------------------------------------
       -- 3.10  Access To Object Definition --
       ---------------------------------------
 
       --  ACCESS_TO_OBJECT_DEFINITION ::=
-      --    access [GENERAL_ACCESS_MODIFIER] SUBTYPE_INDICATION
+      --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER]
+      --    SUBTYPE_INDICATION
 
       --  N_Access_To_Object_Definition
       --  Sloc points to ACCESS
@@ -2667,8 +2680,9 @@ package Sinfo is
       -------------------------------------------
 
       --  ACCESS_TO_SUBPROGRAM_DEFINITION
-      --    access [protected] procedure PARAMETER_PROFILE
-      --  | access [protected] function PARAMETER_AND_RESULT_PROFILE
+      --    [NULL_EXCLUSION] access [protected] procedure PARAMETER_PROFILE
+      --  | [NULL_EXCLUSION] access [protected] function
+      --    PARAMETER_AND_RESULT_PROFILE
 
       --  Note: access to subprograms are not permitted in Ada 83 mode
 
@@ -2689,7 +2703,8 @@ package Sinfo is
       -- 3.10  Access Definition --
       -----------------------------
 
-      --  ACCESS_DEFINITION ::= access SUBTYPE_MARK
+      --  ACCESS_DEFINITION ::=
+      --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
 
       --  N_Access_Definition
       --  Sloc points to ACCESS
@@ -3485,7 +3500,7 @@ package Sinfo is
       --------------------
 
       --  ALLOCATOR ::=
-      --    new SUBTYPE_INDICATION | new QUALIFIED_EXPRESSION
+      --    new [NULL_EXCLUSION] SUBTYPE_INDICATION | new QUALIFIED_EXPRESSION
 
       --  Sprint syntax (when storage pool present)
       --    new xxx (storage_pool = pool)
@@ -3990,7 +4005,7 @@ package Sinfo is
       ----------------------------------
 
       --  PARAMETER_SPECIFICATION ::=
-      --    DEFINING_IDENTIFIER_LIST : MODE SUBTYPE_MARK
+      --    DEFINING_IDENTIFIER_LIST : MODE [NULL_EXCLUSION] SUBTYPE_MARK
       --      [:= DEFAULT_EXPRESSION]
       --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
       --      [:= DEFAULT_EXPRESSION]

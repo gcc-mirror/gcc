@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,7 +144,7 @@ package body GNAT.Command_Line is
 
       S    : String (1 .. 1024);
       Last : Natural;
-      It   : Pointer := Iterator'Unrestricted_Access;
+      It   : constant Pointer := Iterator'Unrestricted_Access;
 
       Current : Depth := It.Current_Depth;
       NL      : Positive;

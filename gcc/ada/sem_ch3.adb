@@ -690,24 +690,22 @@ package body Sem_Ch3 is
       --  Ada 95 semantics. In Ada 0Y, anonymous access must specify if the
       --  null value is allowed; in Ada 95 the null value is not allowed
 
-      if Extensions_Allowed
-        and then Null_Exclusion_Present (N)
-      then
-         Set_Can_Never_Be_Null (Anon_Type);
+      if Extensions_Allowed then
+         Set_Can_Never_Be_Null (Anon_Type, Null_Exclusion_Present (N));
       else
-         Set_Can_Never_Be_Null (Anon_Type);
+         Set_Can_Never_Be_Null (Anon_Type, True);
       end if;
 
       --  The anonymous access type is as public as the discriminated type or
       --  subprogram that defines it. It is imported (for back-end purposes)
       --  if the designated type is.
 
-      Set_Is_Public          (Anon_Type, Is_Public (Scope (Anon_Type)));
+      Set_Is_Public (Anon_Type, Is_Public (Scope (Anon_Type)));
 
       --  Ada 0Y (AI-50217): Propagate the attribute that indicates that the
       --  designated type comes from the limited view (for back-end purposes).
 
-      Set_From_With_Type     (Anon_Type, From_With_Type (Desig_Type));
+      Set_From_With_Type (Anon_Type, From_With_Type (Desig_Type));
 
       --  Ada 0Y (AI-231): Propagate the access-constant attribute
 

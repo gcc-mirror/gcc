@@ -5352,6 +5352,10 @@ package body Exp_Ch4 is
          loop
             if Nkind (Par) = N_Procedure_Call_Statement then
                return True;
+
+            elsif Nkind (Par) = N_Function_Call then
+               return False;
+
             else
                Par := Parent (Par);
             end if;

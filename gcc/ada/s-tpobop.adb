@@ -519,7 +519,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Mode                : Call_Modes;
       Block               : out Communication_Block)
    is
-      Self_ID             : Task_ID  := STPO.Self;
+      Self_ID             : constant Task_ID  := STPO.Self;
       Entry_Call          : Entry_Call_Link;
       Initially_Abortable : Boolean;
       Ceiling_Violation   : Boolean;

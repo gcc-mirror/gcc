@@ -394,8 +394,8 @@ package body Ada.Task_Attributes is
      (T    : Task_Identification.Task_Id := Task_Identification.Current_Task)
       return Attribute_Handle
    is
-      TT            : Task_ID := To_Task_ID (T);
-      Error_Message : constant String := "Trying to get the reference of a ";
+      TT            : constant Task_ID := To_Task_ID (T);
+      Error_Message : constant String  := "Trying to get the reference of a ";
 
    begin
       if TT = null then
@@ -484,8 +484,8 @@ package body Ada.Task_Attributes is
    procedure Reinitialize
      (T : Task_Identification.Task_Id := Task_Identification.Current_Task)
    is
-      TT : Task_ID := To_Task_ID (T);
-      Error_Message : constant String := "Trying to Reinitialize a ";
+      TT            : constant Task_ID := To_Task_ID (T);
+      Error_Message : constant String  := "Trying to Reinitialize a ";
 
    begin
       if TT = null then
@@ -554,8 +554,8 @@ package body Ada.Task_Attributes is
      (Val : Attribute;
       T   : Task_Identification.Task_Id := Task_Identification.Current_Task)
    is
-      TT            : Task_ID := To_Task_ID (T);
-      Error_Message : constant String := "Trying to Set the Value of a ";
+      TT            : constant Task_ID := To_Task_ID (T);
+      Error_Message : constant String  := "Trying to Set the Value of a ";
 
    begin
       if TT = null then
@@ -640,11 +640,11 @@ package body Ada.Task_Attributes is
    -----------
 
    function Value
-     (T    : Task_Identification.Task_Id := Task_Identification.Current_Task)
+     (T : Task_Identification.Task_Id := Task_Identification.Current_Task)
       return Attribute
    is
-      TT            : Task_ID := To_Task_ID (T);
-      Error_Message : constant String := "Trying to get the Value of a ";
+      TT            : constant Task_ID := To_Task_ID (T);
+      Error_Message : constant String  := "Trying to get the Value of a ";
 
    begin
       if TT = null then

@@ -1465,7 +1465,7 @@ package body System.Task_Primitives.Operations is
    function Check_Sleep (Reason : Task_States) return Boolean is
       pragma Unreferenced (Reason);
 
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       P       : Lock_Ptr;
 
    begin

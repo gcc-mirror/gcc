@@ -84,7 +84,7 @@ package body System.Task_Primitives.Operations.DEC is
 
    procedure Interrupt_AST_Handler (ID : Address) is
       Result      : Interfaces.C.int;
-      AST_Self_ID : Task_ID := To_Task_ID (ID);
+      AST_Self_ID : constant Task_ID := To_Task_ID (ID);
    begin
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -95,7 +95,7 @@ package body System.Task_Primitives.Operations.DEC is
    ---------------------
 
    procedure RMS_AST_Handler (ID : Address) is
-      AST_Self_ID : Task_ID := To_Task_Id (To_FAB_RAB (ID).CTX);
+      AST_Self_ID : constant Task_ID := To_Task_Id (To_FAB_RAB (ID).CTX);
       Result      : Interfaces.C.int;
 
    begin
@@ -109,7 +109,7 @@ package body System.Task_Primitives.Operations.DEC is
    ----------
 
    function Self return Unsigned_Longword is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
    begin
       Self_ID.Common.LL.AST_Pending := True;
       return To_Unsigned_Longword (Self);
@@ -121,7 +121,7 @@ package body System.Task_Primitives.Operations.DEC is
 
    procedure Starlet_AST_Handler (ID : Address) is
       Result      : Interfaces.C.int;
-      AST_Self_ID : Task_ID := To_Task_ID (ID);
+      AST_Self_ID : constant Task_ID := To_Task_ID (ID);
    begin
       AST_Self_ID.Common.LL.AST_Pending := False;
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
