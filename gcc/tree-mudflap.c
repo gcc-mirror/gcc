@@ -740,13 +740,16 @@ mx_register_decls (tree decl, tree *stmt_list)
   while (decl != NULL_TREE)
     {
       /* Eligible decl?  */
-      if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL) &&
-          (! TREE_STATIC (decl)) && /* auto variable */
-          (! DECL_EXTERNAL (decl)) && /* not extern variable */
-          (TREE_TYPE (decl) != error_mark_node) && /* not decl with error */
-          (COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))) && /* complete type */
-          (! mf_marked_p (decl)) && /* not already processed */
-          (TREE_ADDRESSABLE (decl))) /* has address taken */
+      if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+	  /* It must be a non-external, automatic variable.  */
+	  && ! DECL_EXTERNAL (decl)
+	  && ! TREE_STATIC (decl)
+	  /* The decl must have its address taken.  */
+	  && TREE_ADDRESSABLE (decl)
+	  /* The type of the variable must be complete.  */
+	  && COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))
+	  /* Don't process the same decl twice.  */
+	  && ! mf_marked_p (decl))
         {
           tree size = NULL_TREE, variable_name;
           tree unregister_fncall, unregister_fncall_params;
@@ -860,7 +863,7 @@ mx_register_decls (tree decl, tree *stmt_list)
           /* Add the __mf_register call at the current appending point.  */
           if (tsi_end_p (initially_stmts))
             internal_error ("mudflap ran off end of BIND_EXPR body");
-          tsi_link_before (& initially_stmts, register_fncall, TSI_SAME_STMT);
+          tsi_link_before (&initially_stmts, register_fncall, TSI_SAME_STMT);
 
           /* Accumulate the FINALLY piece. */
           append_to_statement_list (unregister_fncall, &finally_stmts);
