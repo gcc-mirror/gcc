@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -21,23 +21,23 @@ Boston, MA 02111-1307, USA.  */
 
 /* declarations */
 #ifdef RTX_CODE
-extern int arith_operand PARAMS ((rtx, enum machine_mode));
-extern int const_immediate_operand PARAMS ((rtx, enum machine_mode));
-extern int expand_shift_operand PARAMS ((rtx, enum machine_mode));
-extern int immediate15_operand PARAMS ((rtx, enum machine_mode));
-extern int simple_memory_operand PARAMS ((rtx, enum machine_mode));
-extern int comp_operator PARAMS ((rtx, enum machine_mode));
+extern int arith_operand (rtx, enum machine_mode);
+extern int const_immediate_operand (rtx, enum machine_mode);
+extern int expand_shift_operand (rtx, enum machine_mode);
+extern int immediate15_operand (rtx, enum machine_mode);
+extern int simple_memory_operand (rtx, enum machine_mode);
+extern int comp_operator (rtx, enum machine_mode);
 
-extern int legitimate_address_p PARAMS ((enum machine_mode, rtx));
-extern void notice_update_cc_on_set PARAMS ((rtx, rtx));
-extern void output_addr_const_pdp11 PARAMS ((FILE *, rtx));
-extern const char *output_move_double PARAMS ((rtx *));
-extern const char *output_move_quad PARAMS ((rtx *));
-extern const char *output_block_move PARAMS ((rtx *));
-extern void print_operand_address PARAMS ((FILE *, rtx));
-extern int register_move_cost PARAMS ((enum reg_class, enum reg_class));
-extern int comparison_operator_index PARAMS ((rtx));
+extern int legitimate_address_p (enum machine_mode, rtx);
+extern void notice_update_cc_on_set (rtx, rtx);
+extern void output_addr_const_pdp11 (FILE *, rtx);
+extern const char *output_move_double (rtx *);
+extern const char *output_move_quad (rtx *);
+extern const char *output_block_move (rtx *);
+extern void print_operand_address (FILE *, rtx);
+extern int register_move_cost (enum reg_class, enum reg_class);
+extern int comparison_operator_index (rtx);
 #endif /* RTX_CODE */
 
-extern void output_ascii PARAMS ((FILE *, const char *, int));
-extern const char *output_jump PARAMS ((const char *, const char *, int));
+extern void output_ascii (FILE *, const char *, int);
+extern const char *output_jump (const char *, const char *, int);

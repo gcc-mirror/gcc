@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "tm_p.h"
 
-static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
+static int c4x_parse_pragma (const char *, tree *, tree *);
 
 /* Handle machine specific pragmas for compatibility with existing
    compilers for the C3x/C4x.

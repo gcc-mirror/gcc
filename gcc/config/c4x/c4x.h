@@ -1519,9 +1519,9 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
   FINI_SECTION_FUNCTION
 
 #define INIT_SECTION_FUNCTION					\
-extern void init_section PARAMS ((void));			\
+extern void init_section (void);				\
 void								\
-init_section ()							\
+init_section (void)						\
 {								\
   if (in_section != in_init)					\
     {								\
