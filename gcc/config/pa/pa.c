@@ -7145,22 +7145,30 @@ function_arg (cum, mode, type, named, incoming)
 					 gen_rtx_REG (DImode, gpr_reg_base),
 					 GEN_INT (8))));
     }
-  /* Determine if the register needs to be passed in both general and
+  /* Determine if the argument needs to be passed in both general and
      floating point registers.  */
-  if ((TARGET_PORTABLE_RUNTIME || TARGET_64BIT || TARGET_ELF32)
-      /* If we are doing soft-float with portable runtime, then there
-	 is no need to worry about FP regs.  */
-      && ! TARGET_SOFT_FLOAT
-      /* The parameter must be some kind of float, else we can just
-	 pass it in integer registers.  */
-      && FLOAT_MODE_P (mode)
-      /* The target function must not have a prototype.  */
-      && cum->nargs_prototype <= 0
-      /* libcalls do not need to pass items in both FP and general
-	 registers.  */
-      && type != NULL_TREE
-      /* All this hair applies to outgoing args only.  */
-      && !incoming)
+  if (((TARGET_PORTABLE_RUNTIME || TARGET_64BIT || TARGET_ELF32)
+       /* If we are doing soft-float with portable runtime, then there
+	  is no need to worry about FP regs.  */
+       && ! TARGET_SOFT_FLOAT
+       /* The parameter must be some kind of float, else we can just
+	  pass it in integer registers.  */
+       && FLOAT_MODE_P (mode)
+       /* The target function must not have a prototype.  */
+       && cum->nargs_prototype <= 0
+       /* libcalls do not need to pass items in both FP and general
+	  registers.  */
+       && type != NULL_TREE
+       /* All this hair applies to outgoing args only.  */
+       && ! incoming)
+      /* Also pass outgoing floating arguments in both registers in indirect
+	 calls with the 32 bit ABI and the HP assembler since there is no
+	 way to the specify argument locations in static functions.  */
+      || (! TARGET_64BIT
+	  && ! TARGET_GAS
+	  && ! incoming
+	  && cum->indirect
+	  && FLOAT_MODE_P (mode)))
     {
       retval
 	= gen_rtx_PARALLEL
