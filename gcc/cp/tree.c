@@ -32,6 +32,17 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 
+extern void compiler_error ();
+
+static tree get_identifier_list PROTO((tree));
+static tree bot_manip PROTO((tree));
+static tree perm_manip PROTO((tree));
+static tree build_cplus_array_type_1 PROTO((tree, tree));
+static void list_hash_add PROTO((int, tree));
+static int list_hash PROTO((tree, tree, tree));
+static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
+				    tree));
+
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
 /* Return nonzero if REF is an lvalue valid for this language.
@@ -1291,25 +1302,6 @@ is_aggr_type_2 (t1, t2)
     return 0;
   return IS_AGGR_TYPE (t1) && IS_AGGR_TYPE (t2);
 }
-
-/* Give message using types TYPE1 and TYPE2 as arguments.
-   PFN is the function which will print the message;
-   S is the format string for PFN to use.  */
-
-void
-message_2_types (pfn, s, type1, type2)
-     void (*pfn) ();
-     char *s;
-     tree type1, type2;
-{
-  tree name1 = TYPE_NAME (type1);
-  tree name2 = TYPE_NAME (type2);
-  if (TREE_CODE (name1) == TYPE_DECL)
-    name1 = DECL_NAME (name1);
-  if (TREE_CODE (name2) == TYPE_DECL)
-    name2 = DECL_NAME (name2);
-  (*pfn) (s, IDENTIFIER_POINTER (name1), IDENTIFIER_POINTER (name2));
-}
 
 #define PRINT_RING_SIZE 4
 
@@ -1406,7 +1398,7 @@ build_exception_variant (type, raises)
 tree
 mapcar (t, func)
      tree t;
-     tree (*func)();
+     tree (*func) PROTO((tree));
 {
   tree tmp;
 
@@ -2013,7 +2005,8 @@ cp_tree_equal (t1, t2)
       return 0;
 
     case TEMPLATE_CONST_PARM:
-      return TEMPLATE_CONST_IDX (t1) == TEMPLATE_CONST_IDX (t2);
+      return TEMPLATE_CONST_IDX (t1) == TEMPLATE_CONST_IDX (t2)
+	&& TEMPLATE_CONST_LEVEL (t1) == TEMPLATE_CONST_LEVEL (t2);
 
     case SIZEOF_EXPR:
       if (TREE_CODE (TREE_OPERAND (t1, 0)) != TREE_CODE (TREE_OPERAND (t2, 0)))

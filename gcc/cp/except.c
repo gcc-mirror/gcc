@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "function.h"
+#include "defaults.h"
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -44,6 +45,13 @@ tree builtin_return_address_fndecl;
 /* Used to cache a call to __builtin_return_address.  */
 static tree BuiltinReturnAddress;
      
+static void easy_expand_asm PROTO((char *));
+static void push_eh_cleanup PROTO((void));
+static void do_unwind PROTO((rtx));
+static rtx do_function_call PROTO((tree, tree, tree));
+static tree build_eh_type_type PROTO((tree));
+static tree build_eh_type PROTO((tree));
+static void expand_end_eh_spec PROTO((tree));
 
 static void
 easy_expand_asm (str)
@@ -156,9 +164,6 @@ asm (TEXT_SECTION_ASM_OP);
      
      ===================================================================== */
 
-extern rtx emit_insn		PROTO((rtx));
-extern rtx gen_nop		PROTO(());
-
 /* local globals for function calls
    ====================================================================== */
 
@@ -230,7 +235,6 @@ do_function_call (func, params, return_type)
 void
 init_exception_processing ()
 {
-  extern tree define_function ();
   tree unexpected_fndecl, terminate_fndecl;
   tree set_unexpected_fndecl, set_terminate_fndecl;
   tree catch_match_fndecl;
@@ -606,7 +610,8 @@ do_unwind (inner_throw_label)
      rtx inner_throw_label;
 {
 #if defined (SPARC_STACK_ALIGN) /* was sparc */
-  /* This doesn't work for the flat model sparc, I bet.  */
+  /* This doesn't work for the flat model sparc, nor does it need to
+     as the default unwinder is only used to unwind non-flat frames.  */
   tree fcall;
   tree params;
   rtx next_pc;
@@ -701,6 +706,7 @@ do_unwind (inner_throw_label)
 void
 expand_builtin_throw ()
 {
+#ifndef DWARF2_UNWIND_INFO
   tree fcall;
   tree params;
   rtx handler;
@@ -894,6 +900,7 @@ expand_builtin_throw ()
   pop_momentary ();
 
   finish_function (lineno, 0, 0);
+#endif /* DWARF2_UNWIND_INFO */
 }
 
 
@@ -1139,27 +1146,13 @@ expand_throw (exp)
 	  object = build_indirect_ref (exp, NULL_PTR);
 	  throw_type = build_eh_type (object);
 
-	  start_sequence ();
-	  object = build_reinterpret_cast (TREE_TYPE (exp), saved_throw_value);
-	  object = build_indirect_ref (object, NULL_PTR);
-	  cleanup = maybe_build_cleanup_and_delete (object);
-	  end_sequence ();
-
-	  if (cleanup)
-	    {
-	      cleanup = start_anon_func ();
-
-	      expand_expr (maybe_build_cleanup_and_delete (object),
-			   const0_rtx, VOIDmode, 0);
-
-	      end_anon_func ();
-
-	      mark_addressable (cleanup);
-	    }
-	  else
-	    {
-	      cleanup = empty_fndecl;
-	    }
+       	  /* Build __tcf_ function. */
+	  cleanup = start_anon_func ();
+	  object = build_delete (TREE_TYPE (exp), saved_throw_value, 
+				 integer_three_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
+	  expand_expr (object, const0_rtx, VOIDmode, 0);
+	  end_anon_func ();
+	  mark_addressable (cleanup);
 	}
 
       if (cleanup == empty_fndecl)

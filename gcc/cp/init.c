@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 
+extern void compiler_error ();
+
 /* In C++, structures with well-defined constructors are initialized by
    those constructors, unasked.  CURRENT_BASE_INIT_LIST
    holds a list of stmts for a BASE_INIT term in the grammar.
@@ -41,15 +43,23 @@ Boston, MA 02111-1307, USA.  */
    line.  Perhaps this was not intended.  */
 tree current_base_init_list, current_member_init_list;
 
-void emit_base_init ();
-void check_base_init ();
-static void expand_aggr_vbase_init ();
-void expand_member_init ();
-void expand_aggr_init ();
-
-static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int, int));
+static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
+static void expand_aggr_vbase_init PROTO((tree, tree, tree, tree));
+static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int,
+				      int));
+static void expand_default_init PROTO((tree, tree, tree, tree, int,
+				       int));
+static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
+				      int));
+static void perform_member_init PROTO((tree, tree, tree, int));
+static void sort_base_init PROTO((tree, tree *, tree *));
+static tree build_builtin_call PROTO((tree, tree, tree));
+static tree build_array_eh_cleanup PROTO((tree, tree, tree));
+static int member_init_ok_or_else PROTO((tree, tree, char *));
 static void expand_virtual_init PROTO((tree, tree));
-tree expand_vec_init ();
+static tree sort_member_init PROTO((tree));
+static tree build_partial_cleanup_for PROTO((tree));
+static tree initializing_context PROTO((tree));
 
 /* Cache _builtin_new and _builtin_delete exprs.  */
 static tree BIN, BID, BIVN, BIVD;

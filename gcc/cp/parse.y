@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "cp-tree.h"
 #include "output.h"
+#include "except.h"
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  (fnf) */
@@ -61,8 +62,6 @@ extern tree last_tree;
 extern tree strip_attrs		PROTO((tree));
 /* END FSF LOCAL */
 
-void yyerror ();
-
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
 
@@ -73,11 +72,11 @@ void yyerror ();
    error message if the user supplies an empty conditional expression.  */
 static char *cond_stmt_keyword;
 
+static tree empty_parms PROTO((void));
+
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
 int used_extern_spec;
-
-void yyhook ();
 
 /* Cons up an empty parameter list.  */
 #ifdef __GNUC__
@@ -89,10 +88,7 @@ empty_parms ()
   tree parms;
 
   if (strict_prototype
-      /* Only go ahead with using the void list node if we're actually
-	 parsing a class in C++, not a struct in extern "C" mode.  */
-      || (current_class_type != NULL
-	  && current_lang_name == lang_name_cplusplus))
+      || current_class_type != NULL)
     parms = void_list_node;
   else
     parms = NULL_TREE;
@@ -301,7 +297,7 @@ static tree current_aggr;
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint ();
+extern void yyprint			PROTO((FILE *, int, YYSTYPE));
 extern tree combine_strings		PROTO((tree));
 %}
 
@@ -703,6 +699,22 @@ fn.def2:
 		  $$ = start_method (specs, $2); goto rest_of_mdef; }
 	| constructor_declarator
 		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
+        | template_header fn.def2 
+                { 
+		  end_template_decl (); 
+		  if ($2 && DECL_TEMPLATE_INFO ($2))
+		    {
+		      $$ = DECL_TI_TEMPLATE ($2); 
+		      check_member_template ($$);
+		    }
+		  else if ($2)
+		    $$ = $2;
+		  else 
+		    {
+		      cp_error("invalid member template declaration");
+		      $$ = NULL_TREE;
+		    }
+		}
 	;
 
 return_id:
@@ -818,8 +830,9 @@ identifier_defn:
 	;
 
 explicit_instantiation:
-	  TEMPLATE aggr template_type
-		{ do_type_instantiation ($3, NULL_TREE); }
+	  TEMPLATE typespec ';'
+		{ do_type_instantiation ($2.t, NULL_TREE);
+		  yyungetc (';', 1); }
 	| TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($2.t);
 		  do_decl_instantiation (specs, $3, NULL_TREE); }
@@ -827,8 +840,9 @@ explicit_instantiation:
 		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
 	| TEMPLATE constructor_declarator
 		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
-	| SCSPEC TEMPLATE aggr template_type
-		{ do_type_instantiation ($4, $1); }
+	| SCSPEC TEMPLATE typespec ';'
+		{ do_type_instantiation ($3.t, $1);
+		  yyungetc (';', 1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($3.t);
 		  do_decl_instantiation (specs, $4, $1); }
@@ -2215,7 +2229,7 @@ structsp:
 		  if (! semi)
 		    check_for_missing_semicolon ($1); 
 		  if (current_scope () == current_function_decl)
-		    do_pending_defargs ($1);
+		    do_pending_defargs ();
 		}
 	  pending_defargs
 		{
@@ -2280,16 +2294,17 @@ named_complex_class_head_sans_basetype:
 	  aggr nested_name_specifier identifier
 		{
 		  current_aggr = $1;
-		  if (TREE_CODE ($3) == TYPE_DECL)
-		    $$ = $3;
-		  else
-		    {
-		      cp_error ("`%T' does not have a nested type named `%D'",
-				$2, $3);
-		      $$ = xref_tag
-			(current_aggr, make_anon_name (), NULL_TREE, 1);
-		      $$ = TYPE_MAIN_DECL ($$);
-		    }
+		  $$ = handle_class_head ($1, $2, $3);
+		}
+	| aggr global_scope nested_name_specifier identifier
+		{
+		  current_aggr = $1;
+		  $$ = handle_class_head ($1, $3, $4);
+		}
+	| aggr global_scope identifier
+		{
+		  current_aggr = $1;
+		  $$ = handle_class_head ($1, NULL_TREE, $3);
 		}
 	| aggr template_type
 		{ current_aggr = $$; $$ = $2; }
@@ -2712,7 +2727,22 @@ component_decl_1:
 				  build_tree_list ($3, NULL_TREE)); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
-	;
+        | template_header component_decl_1 
+                { 
+		  end_template_decl (); 
+		  if ($2 && DECL_TEMPLATE_INFO ($2))
+		    {
+		      $$ = DECL_TI_TEMPLATE ($2); 
+		      check_member_template ($$);
+		    }
+		  else if ($2)
+		    $$ = $2;
+		  else
+		    {
+		      cp_error("invalid member template declaration");
+		      $$ = NULL_TREE;
+		    }
+		}
 
 /* The case of exactly one component is handled directly by component_decl.  */
 /* ??? Huh? ^^^ */

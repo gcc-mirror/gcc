@@ -36,10 +36,26 @@ Boston, MA 02111-1307, USA.  */
 #include "decl.h"
 #include "lex.h"
 #include "output.h"
+#include "except.h"
 
 extern tree get_file_function_name ();
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+static tree get_sentry PROTO((tree));
+static void mark_vtable_entries PROTO((tree));
+static void import_export_template PROTO((tree));
 static void grok_function_init PROTO((tree, tree));
-void import_export_decl ();
+static int finish_vtable_vardecl PROTO((tree, tree));
+static int prune_vtable_vardecl PROTO((tree, tree));
+static void finish_sigtable_vardecl PROTO((tree, tree));
+
 extern int current_class_depth;
 
 /* A list of virtual function tables we must make sure to write out.  */
@@ -305,7 +321,9 @@ int flag_memoize_lookups; int flag_save_memoized_contexts;
 
 int write_virtuals;
 
-/* Nonzero means we should attempt to elide constructors when possible.  */
+/* Nonzero means we should attempt to elide constructors when possible.
+   FIXME: This flag is obsolete, and should be torn out along with the
+   old overloading code.  */
 
 int flag_elide_constructors;
 
@@ -1264,6 +1282,59 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     }
 }
 
+/* Report an error if the indicated template declaration is not the
+   sort of thing that should be a member template.  */
+
+void
+check_member_template (tmpl)
+     tree tmpl;
+{
+  tree decl;
+
+  my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 0);
+  decl = DECL_TEMPLATE_RESULT (tmpl);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL) 
+    {
+      if (current_function_decl)
+	/* 14.5.2.2 [temp.mem]
+	   
+	   A local class shall not have member templates. */
+	cp_error ("declaration of of member template `%#D' in local class",
+		  decl);
+      
+      if (DECL_VIRTUAL_P (decl)) 
+	{
+	  /* 14.5.2.3 [temp.mem]
+
+	     A member function template shall not be virtual.  */
+	  cp_error 
+	    ("invalid use of `virtual' in template declaration of `%#D'",
+	     decl);
+	  DECL_VIRTUAL_P (decl) = 0;
+	}
+
+      /* The debug-information generating code doesn't know what to do
+	 with member templates.  */ 
+      DECL_IGNORED_P (tmpl) = 1;
+    } 
+  else if (TREE_CODE (decl) == TYPE_DECL &&
+	   AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+    {
+      if (current_function_decl)
+	/* 14.5.2.2 [temp.mem]
+
+	   A local class shall not have member templates.  */
+	cp_error ("declaration of of member template `%#D' in local class",
+		  decl);
+
+      /* We don't handle member template classes yet. */
+      sorry ("member templates classes");
+    }
+  else
+    cp_error ("template declaration of `%#D'", decl);
+}
+
 /* Sanity check: report error if this function FUNCTION is not
    really a member of the class (CTYPE) it is supposed to belong to.
    CNAME is the same here as it is for grokclassfn above.  */
@@ -1277,6 +1348,7 @@ check_classfn (ctype, function)
   tree method_vec = CLASSTYPE_METHOD_VEC (complete_type (ctype));
   tree *methods = 0;
   tree *end = 0;
+  tree templates = NULL_TREE;
 
   if (method_vec != 0)
     {
@@ -1293,6 +1365,7 @@ check_classfn (ctype, function)
 
       while (++methods != end)
 	{
+	  fndecl = *methods;
 	  if (fn_name == DECL_NAME (*methods))
 	    {
 	    got_it:
@@ -1324,14 +1397,39 @@ check_classfn (ctype, function)
 				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
 			  && compparms (p1, p2, 3))
 			return fndecl;
+
+		      if (is_member_template (fndecl)) 
+			/* This function might be an instantiation
+			   or specialization of fndecl.  */
+			templates = 
+			  tree_cons (NULL_TREE, fndecl, templates);
 		    }
 #endif
 		  fndecl = DECL_CHAIN (fndecl);
 		}
 	      break;		/* loser */
 	    }
+	  else if (TREE_CODE (fndecl) == TEMPLATE_DECL 
+		   && IDENTIFIER_TYPENAME_P (DECL_NAME (fndecl))
+		   && IDENTIFIER_TYPENAME_P (fn_name))
+	    /* The method in the class is a member template
+	       conversion operator.  We are declaring another
+	       conversion operator.  It is possible that even though
+	       the names don't match, there is some specialization
+	       occurring.  */
+	    templates = 
+	      tree_cons (NULL_TREE, fndecl, templates);
 	}
     }
+
+  if (templates)
+    /* This function might be an instantiation or a specialization.
+       We should verify that this is possible.  If it is, we must
+       somehow add the new declaration to the method vector for the
+       class.  Perhaps we should use add_method?  For now, we simply
+       return NULL_TREE, which lets the caller know that this
+       function is new, but we don't print an error message.  */
+    return NULL_TREE;
 
   if (methods != end)
     {
@@ -2324,7 +2422,11 @@ mark_vtable_entries (decl)
       tree fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
       if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
-	TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
+	{
+	  TREE_OPERAND (fnaddr, 0) = fn = copy_node (fn);
+	  DECL_RTL (fn) = DECL_RTL (abort_fndecl);
+	  mark_used (abort_fndecl);
+	}
       if (TREE_CODE (fn) == THUNK_DECL && DECL_EXTERNAL (fn))
 	{
 	  DECL_EXTERNAL (fn) = 0;
@@ -2520,8 +2622,8 @@ prune_vtable_vardecl (prev, vars)
 
 int
 walk_vtables (typedecl_fn, vardecl_fn)
-     register void (*typedecl_fn)();
-     register int (*vardecl_fn)();
+     register void (*typedecl_fn) PROTO ((tree, tree));
+     register int (*vardecl_fn) PROTO ((tree, tree));
 {
   tree prev, vars;
   int flag = 0;
@@ -2568,8 +2670,8 @@ finish_sigtable_vardecl (prev, vars)
 
 void
 walk_sigtables (typedecl_fn, vardecl_fn)
-     register void (*typedecl_fn)();
-     register void (*vardecl_fn)();
+     register void (*typedecl_fn) PROTO((tree, tree));
+     register void (*vardecl_fn) PROTO((tree, tree));
 {
   tree prev, vars;
 
@@ -2697,7 +2799,6 @@ extern tree pending_templates;
 extern tree maybe_templates;
 
 extern struct obstack permanent_obstack;
-extern tree get_id_2 ();
 
 static tree
 get_sentry (base)
@@ -2771,7 +2872,7 @@ finish_file ()
 
   for (fnname = maybe_templates; fnname; fnname = TREE_CHAIN (fnname))
     {
-      tree *args, fn, decl = TREE_VALUE (fnname);
+      tree args, fn, decl = TREE_VALUE (fnname);
 
       if (DECL_INITIAL (decl))
 	continue;
@@ -2779,7 +2880,6 @@ finish_file ()
       fn = TREE_PURPOSE (fnname);
       args = get_bindings (fn, decl);
       fn = instantiate_template (fn, args);
-      free (args);
       instantiate_decl (fn);
     }
 
@@ -2814,7 +2914,8 @@ finish_file ()
 
   /* Walk to mark the inline functions we need, then output them so
      that we can pick up any other tdecls that those routines need.  */
-  walk_vtables ((void (*)())0, finish_prevtable_vardecl);
+  walk_vtables ((void (*) PROTO ((tree, tree))) 0,
+		finish_prevtable_vardecl);
 
   for (vars = pending_statics; vars; vars = TREE_CHAIN (vars))
     {
@@ -2833,7 +2934,7 @@ finish_file ()
       rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
   vars = static_aggregates;
 
-  if (static_ctors || vars || exception_table_p ())
+  if (static_ctors || vars || register_exception_table_p ())
     needs_messing_up = 1;
   if (static_dtors)
     needs_cleaning = 1;
@@ -2932,7 +3033,7 @@ finish_file ()
       push_momentary ();
       expand_start_bindings (0);
 
-      if (exception_table_p ())
+      if (register_exception_table_p ())
 	register_exception_table ();
 
       while (vars)
@@ -3056,7 +3157,8 @@ finish_file ()
   start_time = get_run_time ();
 
   if (flag_handle_signatures)
-    walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
+    walk_sigtables ((void (*) PROTO ((tree, tree))) 0,
+		    finish_sigtable_vardecl);
 
   for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
     {
@@ -3082,7 +3184,8 @@ finish_file ()
 	SET_DECL_ARTIFICIAL (vars);
 	pushdecl (vars);
 
-	reconsider |= walk_vtables ((void (*)())0, finish_vtable_vardecl);
+	reconsider |= walk_vtables ((void (*) PROTO((tree, tree))) 0, 
+				    finish_vtable_vardecl);
 
 	while (*p)
 	  {
@@ -3138,7 +3241,8 @@ finish_file ()
   /* Now delete from the chain of variables all virtual function tables.
      We output them all ourselves, because each will be treated specially.  */
 
-  walk_vtables ((void (*)())0, prune_vtable_vardecl);
+  walk_vtables ((void (*) PROTO((tree, tree))) 0,
+		prune_vtable_vardecl);
 
   for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {
@@ -3709,4 +3813,23 @@ mark_used (decl)
     synthesize_method (decl);
   if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
     instantiate_decl (decl);
+}
+
+/* Helper function for named_class_head_sans_basetype nonterminal.  */
+
+tree
+handle_class_head (aggr, scope, id)
+     tree aggr, scope, id;
+{
+  if (TREE_CODE (id) == TYPE_DECL)
+    return id;
+
+  if (scope)
+    cp_error ("`%T' does not have a nested type named `%D'", scope, id);
+  else
+    cp_error ("no file-scope type named `%D'", id);
+
+  id = xref_tag
+    (aggr, make_anon_name (), NULL_TREE, 1);
+  return TYPE_MAIN_DECL (id);
 }

@@ -54,7 +54,7 @@ T_CFLAGS =
 X_CPPFLAGS =
 T_CPPFLAGS =
 
-CC = cc
+CC = @CC@
 BISON = bison
 BISONFLAGS =
 LEX = flex
@@ -83,14 +83,15 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.
 
-target= ... `configure' substitutes actual target name here.
-xmake_file= ... `configure' substitutes actual x- file name here.
-tmake_file= ... `configure' substitutes actual t- file name here.
+target=@target@
+xmake_file=@dep_host_xmake_file@
+tmake_file=@dep_tmake_file@
 #version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 #mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
 # Directory where sources are, from where we are.
-srcdir = .
+srcdir = @srcdir@
+VPATH = @srcdir@
 
 # Additional system libraries to link with.
 CLIB=
@@ -113,16 +114,21 @@ all: all.indirect
 
 # sed inserts variable overrides after the following line.
 ####target overrides
+@target_overrides@
 ####host overrides
+@host_overrides@
 ####cross overrides
+@cross_defines@
+@cross_overrides@
 ####build overrides
+@build_overrides@
 #
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../cc1plus
 
 # IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
-INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
+INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
 
 # This is the variable actually used when we compile.
 ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)

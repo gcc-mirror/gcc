@@ -33,7 +33,19 @@ Boston, MA 02111-1307, USA.  */
 #include "class.h"
 #include "convert.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 extern tree static_aggregates;
+
+static tree build_thunk PROTO((tree, tree));
+static tree convert_fn_ptr PROTO((tree, tree));
+static tree cp_convert_to_pointer PROTO((tree, tree));
+static tree convert_to_pointer_force PROTO((tree, tree));
+static tree build_up_reference PROTO((tree, tree, int, int));
+static tree build_type_conversion_1 PROTO((tree, tree, tree, tree,
+					   int));
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -780,7 +792,7 @@ convert_to_aggr (type, expr, msgp, protect)
 	  qsort (candidates,	/* char *base */
 		 cp - candidates, /* int nel */
 		 sizeof (struct candidate), /* int width */
-		 rank_for_overload); /* int (*compar)() */
+		 (int (*) PROTO((const void *, const void *))) rank_for_overload); /* int (*compar)() */
 
 	--cp;
 	if (cp->h.code & EVIL_CODE)

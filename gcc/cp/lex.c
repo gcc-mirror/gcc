@@ -44,6 +44,21 @@ Boston, MA 02111-1307, USA.  */
 #include <locale.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#ifndef MULTIBYTE_CHARS
+#include <stdlib.h>
+#endif
+#else
+extern double atof ();
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+extern char *index ();
+extern char *rindex ();
+#endif
+
 #ifndef errno
 extern int errno;		/* needed for VAX.  */
 #endif
@@ -54,9 +69,27 @@ extern int errno;		/* needed for VAX.  */
 extern struct obstack permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
 
-extern double atof ();
+extern void yyprint PROTO((FILE *, int, YYSTYPE));
+extern void set_float_handler PROTO((jmp_buf));
+extern void compiler_error PROTO((char *, HOST_WIDE_INT,
+				  HOST_WIDE_INT));
 
-extern char *get_directive_line ();	/* In c-common.c */
+static tree get_time_identifier PROTO((char *));
+static int check_newline PROTO((void));
+static int skip_white_space PROTO((int));
+static int yynextch PROTO((void));
+static void finish_defarg PROTO((void));
+static int my_get_run_time PROTO((void));
+static int get_last_nonwhite_on_line PROTO((void));
+static int interface_strcmp PROTO((char *));
+static int readescape PROTO((int *));
+static char *extend_token_buffer PROTO((char *));
+static void consume_string PROTO((struct obstack *, int));
+static void set_typedecl_interface_info PROTO((tree, tree));
+static void feed_defarg PROTO((tree, tree));
+static int set_vardecl_interface_info PROTO((tree, tree));
+static void store_pending_inline PROTO((tree, struct pending_inline *));
+static void reinit_parse_for_expr PROTO((struct obstack *));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -64,10 +97,6 @@ extern char *get_directive_line ();	/* In c-common.c */
 #define FILE_NAME_NONDIRECTORY(X)		\
  (rindex (X, '/') != 0 ? rindex (X, '/') + 1 : X)
 #endif
-
-extern char *index ();
-extern char *rindex ();
-void yyerror ();
 
 /* This obstack is needed to hold text.  It is not safe to use
    TOKEN_BUFFER because `check_newline' calls `yylex'.  */
@@ -123,7 +152,6 @@ tree ridpointers[(int) RID_MAX];
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
-static tree get_time_identifier ();
 static tree filename_times;
 static tree this_filename_time;
 
@@ -272,12 +300,9 @@ char *token_buffer;		/* Pointer to token buffer.
 
 #include "hash.h"
 
-static int check_newline ();
 
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag = 0;
-
-static int skip_white_space ();
 
 static tree
 get_time_identifier (name)
@@ -402,12 +427,9 @@ reinit_lang_specific ()
 }
 #endif
 
-int *init_parse ();
-
 void
 init_lex ()
 {
-  extern char *(*decl_printable_name) ();
   extern int flag_no_gnu_keywords;
   extern int flag_operator_names;
 
@@ -641,7 +663,7 @@ init_lex ()
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_REGISTER],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_REGISTER]));
-  ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
+  ridpointers[(int) RID_COMPLEX] = get_identifier ("__complex");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_COMPLEX],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_COMPLEX]));
 
@@ -811,8 +833,6 @@ init_lex ()
       UNSET_RESERVED_WORD ("signature");
       UNSET_RESERVED_WORD ("sigof");
     }
-  if (flag_no_gnu_keywords)
-    UNSET_RESERVED_WORD ("complex");
   if (flag_no_asm || flag_no_gnu_keywords)
     UNSET_RESERVED_WORD ("typeof");
   if (! flag_operator_names)
@@ -1170,6 +1190,8 @@ do_pending_inlines ()
   context = hack_decl_function_context (t->fndecl);
   if (context)
     push_cp_function_context (context);
+  if (is_member_template (t->fndecl))
+    begin_member_template_processing (t->fndecl);
   if (t->len > 0)
     {
       feed_input (t->buf, t->len);
@@ -1206,7 +1228,9 @@ process_next_inline (t)
 {
   tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
-  context = hack_decl_function_context (i->fndecl);
+  context = hack_decl_function_context (i->fndecl);  
+  if (is_member_template (i->fndecl))
+    end_member_template_processing ();
   if (context)
     pop_cp_function_context (context);
   i = i->next;
@@ -1229,6 +1253,8 @@ process_next_inline (t)
       context = hack_decl_function_context (i->fndecl);
       if (context)
 	push_cp_function_context (context);
+      if (is_member_template (i->fndecl))
+	begin_member_template_processing (i->fndecl);
       feed_input (i->buf, i->len);
       lineno = i->lineno;
       input_filename = i->filename;
@@ -1414,8 +1440,6 @@ store_pending_inline (decl, t)
   pending_inlines = t;
 }
 
-static void reinit_parse_for_block PROTO((int, struct obstack *));
-
 void
 reinit_parse_for_method (yychar, decl)
      int yychar;
@@ -1465,7 +1489,7 @@ reinit_parse_for_method (yychar, decl)
 /* Consume a block -- actually, a method beginning
    with `:' or `{' -- and save it away on the specified obstack.  */
 
-static void
+void
 reinit_parse_for_block (pyychar, obstackp)
      int pyychar;
      struct obstack *obstackp;
@@ -1849,6 +1873,8 @@ do_pending_defargs ()
 
 	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
 	  pushlevel (0);
+	  if (is_member_template (defarg_fn))
+	    begin_member_template_processing (defarg_fn);
 
 	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	    {
@@ -1875,6 +1901,8 @@ do_pending_defargs ()
 	    return;
 	  }
 
+      if (is_member_template (defarg_fn))
+	end_member_template_processing ();
       poplevel (0, 0, 0);
       pop_nested_class (1);
     }
@@ -2159,9 +2187,9 @@ get_last_nonwhite_on_line ()
 int linemode;
 
 #ifdef HANDLE_SYSV_PRAGMA
-static int handle_sysv_pragma ();
+static int handle_sysv_pragma PROTO((FILE *, int));
 #endif
-static int handle_cp_pragma ();
+static int handle_cp_pragma PROTO((char *));
 
 static int
 check_newline ()
@@ -2691,7 +2719,6 @@ readescape (ignore_ptr)
 int looking_for_typename = 0;
 
 #ifdef __GNUC__
-extern __inline int identifier_type ();
 __inline
 #endif
 int
@@ -3122,7 +3149,7 @@ real_yylex ()
 		  p = extend_token_buffer (p);
 
 		*p++ = c;
-		c = getch (finput);
+		c = getch ();
 	      }
 
 	    if (linemode && c == '\n')
@@ -3293,30 +3320,6 @@ real_yylex ()
 #endif
 
 	    yylval.ttype = tmp;
-
-	    /* A user-invisible read-only initialized variable
-	       should be replaced by its value.  We only handle strings
-	       since that's the only case used in C (and C++).  */
-	    /* Note we go right after the local value for the identifier
-	       (e.g., __FUNCTION__ or __PRETTY_FUNCTION__).  We used to
-	       call lookup_name, but that could result in an error about
-	       ambiguities.  */
-	    tmp = IDENTIFIER_LOCAL_VALUE (yylval.ttype);
-	    if (tmp != NULL_TREE
-		&& TREE_CODE (tmp) == VAR_DECL
-		&& DECL_IGNORED_P (tmp)
-		&& TREE_READONLY (tmp)
-		&& DECL_INITIAL (tmp) != NULL_TREE
-		&& TREE_CODE (DECL_INITIAL (tmp)) == STRING_CST)
-	      {
-		tree stringval = DECL_INITIAL (tmp);
-	      
-		/* Copy the string value so that we won't clobber anything
-		   if we put something in the TREE_CHAIN of this one.  */
-		yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
-					     TREE_STRING_POINTER (stringval));
-		value = STRING;
-	      }
 	  }
 	if (value == NEW && ! global_bindings_p ())
 	  {
@@ -3633,7 +3636,7 @@ real_yylex ()
 		      p = extend_token_buffer (p);
 		    *p++ = c;
 		    *p = 0;
-		    c = getch (finput);
+		    c = getch ();
 		  }
 
 		/* The second argument, machine_mode, of REAL_VALUE_ATOF
@@ -3741,7 +3744,7 @@ real_yylex ()
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
-		c = getch (finput);
+		c = getch ();
 	      }
 
 	    /* If the constant is not long long and it won't fit in an
@@ -3824,7 +3827,7 @@ real_yylex ()
 					 cp_convert (integer_type_node,
 						     yylval.ttype));
 		    else
-		      error ("complex integer constant is too wide for `complex int'");
+		      error ("complex integer constant is too wide for `__complex int'");
 		  }
 	      }
 

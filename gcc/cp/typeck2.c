@@ -36,8 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 
-static tree process_init_constructor ();
-extern void pedwarn (), error ();
+static tree process_init_constructor PROTO((tree, tree, tree *));
 
 extern int errorcount;
 extern int sorrycount;

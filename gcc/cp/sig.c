@@ -32,12 +32,22 @@ extern struct obstack *current_obstack;
 extern struct obstack permanent_obstack;
 extern struct obstack *saveable_obstack;
 
-extern void error ();
-extern void sorry ();
 extern void compiler_error ();
-extern void make_decl_rtl			PROTO((tree, char *, int));
 
-static tree build_sptr_ref			PROTO((tree));
+static tree save_this PROTO((tree));
+static tree build_sptr_ref PROTO((tree));
+static tree build_member_function_pointer PROTO((tree));
+static void undo_casts PROTO((tree));
+static tree build_signature_pointer_or_reference_name
+	PROTO((tree, int, int, int));
+static void build_signature_pointer_or_reference_decl
+	PROTO((tree, tree));
+static tree build_signature_pointer_or_reference_type 
+	PROTO((tree, int, int, int));
+static tree get_sigtable_name PROTO((tree, tree));
+static tree build_signature_table_constructor PROTO((tree, tree));
+static int match_method_types PROTO((tree, tree));
+static tree build_sigtable PROTO((tree, tree, tree));
 
 /* Used to help generate globally unique names for signature tables.  */
 
