@@ -18,6 +18,11 @@
    Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA.  */
 
+#ifndef GCC_CFGLAYOUT_H
+#define GCC_CFGLAYOUT_H
+
+#include "basic-block.h"
+
 extern rtx cfg_layout_function_footer;
 
 extern void cfg_layout_initialize (void);
@@ -29,3 +34,5 @@ extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      edge *, unsigned, edge *, struct loop *);
 extern bool scan_ahead_for_unlikely_executed_note (rtx);
 extern rtx duplicate_insn_chain (rtx, rtx);
+
+#endif /* GCC_CFGLAYOUT_H */

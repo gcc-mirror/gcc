@@ -20,6 +20,13 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_DF_H
+#define GCC_DF_H
+
+#include "bitmap.h"
+#include "sbitmap.h"
+#include "basic-block.h"
+
 #define DF_RD		1	/* Reaching definitions.  */
 #define DF_RU		2	/* Reaching uses.  */
 #define DF_LR		4	/* Live registers.  */
@@ -358,3 +365,5 @@ extern void iterative_dataflow_bitmap (bitmap *, bitmap *, bitmap *,
 				       transfer_function_bitmap,
 				       int *, void *);
 extern bool read_modify_subreg_p (rtx);
+
+#endif /* GCC_DF_H */

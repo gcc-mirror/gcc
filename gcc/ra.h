@@ -18,6 +18,14 @@
    with GCC; see the file COPYING.  If not, write to the Free Software
    Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_RA_H
+#define GCC_RA_H
+
+#include "bitmap.h"
+#include "sbitmap.h"
+#include "hard-reg-set.h"
+#include "insn-modes.h"
+
 /* Double linked list to implement the per-type lists of webs
    and moves.  */
 struct dlist
@@ -627,3 +635,5 @@ extern void emit_colors (struct df *);
 extern void delete_moves (void);
 extern void setup_renumber (int);
 extern void remove_suspicious_death_notes (void);
+
+#endif /* GCC_RA_H */

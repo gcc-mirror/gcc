@@ -23,7 +23,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_DDG_H
 #define GCC_DDG_H
 
-
+/* For sbitmap.  */
+#include "sbitmap.h"
+/* For basic_block.  */
+#include "basic-block.h"
+/* For struct df.  */
+#include "df.h"
+ 
 typedef struct ddg_node *ddg_node_ptr;
 typedef struct ddg_edge *ddg_edge_ptr;
 typedef struct ddg *ddg_ptr;

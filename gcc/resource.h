@@ -18,6 +18,11 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_RESOURCE_H
+#define GCC_RESOURCE_H
+
+#include "hard-reg-set.h"
+
 /* Macro to clear all resources.  */
 #define CLEAR_RESOURCE(RES)	\
  do { (RES)->memory = (RES)->unch_memory = (RES)->volatil = (RES)->cc = 0; \
@@ -49,3 +54,5 @@ extern void incr_ticks_for_insn (rtx);
 extern void mark_end_of_function_resources (rtx, int);
 extern void init_resource_info (rtx);
 extern void free_resource_info (void);
+
+#endif /* GCC_RESOURCE_H */

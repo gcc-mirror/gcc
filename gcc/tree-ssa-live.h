@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _TREE_SSA_LIVE_H
 #define _TREE_SSA_LIVE_H 1
 
+#include "partition.h"
+
 /* Used to create the variable mapping when we go out of SSA form.  */
 typedef struct _var_map
 {
