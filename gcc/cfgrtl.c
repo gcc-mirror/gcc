@@ -703,7 +703,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 
   if (tmp || !onlyjump_p (insn))
     return false;
-  if ((!optimize || reload_completed) && tablejump_p (insn, NULL, NULL))
+  if ((!optimize || flow2_completed) && tablejump_p (insn, NULL, NULL))
     return false;
 
   /* Avoid removing branch with side effects.  */
@@ -793,7 +793,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       /* Recognize a tablejump that we are converting to a
 	 simple jump and remove its associated CODE_LABEL
 	 and ADDR_VEC or ADDR_DIFF_VEC.  */
-      if (tablejump_p (insn, &label, &table))
+      if (! reload_completed && tablejump_p (insn, &label, &table))
 	delete_insn_chain (label, table);
 
       barrier = next_nonnote_insn (BB_END (src));
