@@ -832,6 +832,32 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
     }
 }
 
+/* Finish a label with the indicated NAME.  */
+
+void
+finish_label_stmt (name)
+     tree name;
+{
+  tree decl;
+
+  if (processing_template_decl)
+    {
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      decl = build_decl (LABEL_DECL, name, void_type_node);
+      pop_obstacks ();
+      DECL_SOURCE_LINE (decl) = lineno;
+      DECL_SOURCE_FILE (decl) = input_filename;
+      add_tree (decl);
+    }
+  else
+    {
+      decl = define_label (input_filename, lineno, name);
+      if (decl)
+	expand_label (decl);
+    }
+}
+
 /* Finish a parenthesized expression EXPR.  */
 
 tree

@@ -3397,18 +3397,13 @@ handler_args:
 
 label_colon:
 	  IDENTIFIER ':'
-		{ tree label;
-		do_label:
-		  label = define_label (input_filename, lineno, $1);
-		  if (label && ! minimal_parse_mode)
-		    expand_label (label);
-		}
+                { finish_label_stmt ($1); }
 	| PTYPENAME ':'
-		{ goto do_label; }
+                { finish_label_stmt ($1); }
 	| TYPENAME ':'
-		{ goto do_label; }
+                { finish_label_stmt ($1); }
 	| SELFNAME ':'
-		{ goto do_label; }
+                { finish_label_stmt ($1); }
 	;
 
 for.init.statement:

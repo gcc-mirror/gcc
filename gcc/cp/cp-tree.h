@@ -2262,8 +2262,6 @@ struct tinst_level
   struct tinst_level *next;
 };
 
-extern int minimal_parse_mode;
-
 extern void maybe_print_template_context	PROTO ((void));
 
 /* in class.c */
@@ -3305,6 +3303,7 @@ extern void finish_handler                      PROTO((tree));
 extern tree begin_compound_stmt                 PROTO((int));
 extern tree finish_compound_stmt                PROTO((int, tree));
 extern void finish_asm_stmt                     PROTO((tree, tree, tree, tree, tree));
+extern void finish_label_stmt                   PROTO((tree));
 extern tree finish_parenthesized_expr           PROTO((tree));
 extern tree begin_stmt_expr                     PROTO((void));
 extern tree finish_stmt_expr                    PROTO((tree, tree));

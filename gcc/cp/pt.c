@@ -68,8 +68,6 @@ static tree *template_tail = &pending_templates;
 static tree maybe_templates;
 static tree *maybe_template_tail = &maybe_templates;
 
-int minimal_parse_mode;
-
 int processing_specialization;
 int processing_explicit_instantiation;
 int processing_template_parmlist;
@@ -7233,10 +7231,9 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case LABEL_DECL:
-      t = define_label (DECL_SOURCE_FILE (t), DECL_SOURCE_LINE (t),
-			DECL_NAME (t));
-      if (t)
-	expand_label (t);
+      lineno = DECL_SOURCE_LINE (t);
+      input_filename = DECL_SOURCE_FILE (t);
+      finish_label_stmt (DECL_NAME (t));
       break;
 
     case GOTO_STMT:
