@@ -173,7 +173,7 @@ extern int flag_use_boehm_gc;
 extern int flag_hash_synchronization;
 
 /* Encoding used for source files.  */
-extern char *current_encoding;
+extern const char *current_encoding;
 
 /* The Java .class file that provides main_class;  the main input file. */
 extern struct JCF *current_jcf;

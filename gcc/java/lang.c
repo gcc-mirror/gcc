@@ -123,7 +123,7 @@ int flag_hash_synchronization;
 int flag_jni = 0;
 
 /* The encoding of the source file.  */
-char *current_encoding = NULL;
+const char *current_encoding = NULL;
 
 /* When non zero, report the now deprecated empty statements.  */
 int flag_extraneous_semicolon;

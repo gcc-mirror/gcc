@@ -34,7 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 const char main_method_prefix[] = "main__";
 const char main_method_suffix[] = "Pt6JArray1ZPQ34java4lang6String";
-const char class_mangling_suffix[] = ".class$";
+const char class_mangling_suffix[] = "class$";
 
 struct obstack name_obstack;
 
@@ -155,8 +155,13 @@ main (int argc, const char **argv)
     }
   fprintf (stream, "  0\n};\n\n");
 
-  fprintf (stream, "extern int class __attribute__ ((alias (\"_%s%s\")));\n",
+#ifndef NO_DOLLAR_IN_LABEL
+  fprintf (stream, "extern int class __attribute__ ((alias (\"_%s$%s\")));\n",
 	   mangled_classname, class_mangling_suffix);
+#else
+  fprintf (stream, "extern int class __attribute__ ((alias (\"_%s.%s\")));\n",
+	   mangled_classname, class_mangling_suffix);
+#endif
   fprintf (stream, "int main (int argc, const char **argv)\n");
   fprintf (stream, "{\n");
   fprintf (stream, "   _Jv_Compiler_Properties = props;\n");
