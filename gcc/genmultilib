@@ -62,16 +62,15 @@
 #   genmultilib "m68000/m68020 msoft-float" "m68000 m68020 msoft-float"
 #		"m68000=mc68000"
 # This produces:
-#   #define MULTILIB_SELECT "\
-#   . !m68000 !mc68000 !m68020 !msoft-float;\
-#   m68000 m68000 !m68020 !msoft-float;\
-#   m68000 mc60000 !m68020 !msoft-float;\
-#   m68020 !m68000 !mc68000 m68020 !msoft-float;\
-#   msoft-float !m68000 !mc68000 !m68020 msoft-float;\
-#   m68000/msoft-float m68000 !m68020 msoft-float;\
-#   m68000/msoft-float mc68000 !m68020 msoft-float;\
-#   m68020/msoft-float !m68000 !mc68000 m68020 msoft-float;\
-#   "
+#   ". !m68000 !mc68000 !m68020 !msoft-float;",
+#   "m68000 m68000 !m68020 !msoft-float;",
+#   "m68000 mc60000 !m68020 !msoft-float;",
+#   "m68020 !m68000 !mc68000 m68020 !msoft-float;",
+#   "msoft-float !m68000 !mc68000 !m68020 msoft-float;",
+#   "m68000/msoft-float m68000 !m68020 msoft-float;",
+#   "m68000/msoft-float mc68000 !m68020 msoft-float;",
+#   "m68020/msoft-float !m68000 !mc68000 m68020 msoft-float;",
+#
 # The effect is that `gcc -msoft-float' (for example) will append
 # msoft-float to the directory name when searching for libraries or
 # startup files, and `gcc -m68000 -msoft-float' (for example) will
@@ -185,7 +184,7 @@ cat >tmpmultilib2 <<\EOF
 # ${dirout} is the directory name and ${optout} is the current list of
 # options.
 if [ "$#" = "0" ]; then
-  echo "${dirout} ${optout};\\"
+  echo "\"${dirout} ${optout};\","
 else
   first=$1
   shift
@@ -200,9 +199,6 @@ fi
 EOF
 chmod +x tmpmultilib2
 
-# We are ready to start output.
-echo '#define MULTILIB_SELECT "\'
-
 # Start with the current directory, which includes only negations.
 optout=
 for set in ${options}; do
@@ -214,7 +210,7 @@ optout=`echo ${optout} | sed -e 's/^ //'`
 if [ -n "${matchnegations}" ]; then
   optout=`echo ";${optout};" | sed -e 's/ /;/g' ${matchnegations} -e 's/^;//' -e 's/;$//' -e 's/;/ /g'`
 fi
-echo ". ${optout};\\"
+echo "\". ${optout};\","
 
 # Work over the list of combinations.  We have to translate each one
 # to use the directory names rather than the option names, we have to
@@ -254,9 +250,9 @@ for combo in ${combinations}; do
   dirout="${dirout}" optout="${optout}" ./tmpmultilib2 ${matches}
 done
 
-rm -f tmpmultilib2
+# Terminate the list of string.
+echo "NULL"
 
-# That's it.
-echo '"'
+rm -f tmpmultilib2
 
 exit 0
