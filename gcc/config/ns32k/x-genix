@@ -1,5 +1,4 @@
 # Makefile modifications for compilation on Genix.
-INSTALL=cp
 ALLOCA=alloca.o
 MALLOC = malloc.o
 
