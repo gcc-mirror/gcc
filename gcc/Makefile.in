@@ -2136,6 +2136,21 @@ compare3: force
 	done
 	-rm -f tmp-foo*
 
+# Compare the object files in the current directory with those in the
+# stage2 directory.  Use gnu cmp (diffutils v2.4 or later) to avoid
+# running tail and the overhead of twice copying each object file.
+
+gnucompare: force
+	for file in *.o; do \
+	  cmp --ignore-initial=16 $$file stage2/$$file || true ; \
+	done
+
+# Similar, but compare with stage3 directory
+gnucompare3: force
+	for file in *.o; do \
+	  cmp --ignore-initial=16 $$file stage3/$$file || true ; \
+	done
+
 # Copy the object files from a particular stage into a subdirectory.
 stage1: force
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
