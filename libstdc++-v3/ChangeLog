@@ -1,5 +1,14 @@
 2004-07-29  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/14220
+	* include/bits/locale_facets.tcc (num_put<>::_M_insert_float):
+	Don't clip the precision passed down to __convert_from_v:
+	22.2.2.2.2 nowhere says so.
+	* testsuite/22_locale/num_put/put/char/14220.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.c: Likewise.
+
+2004-07-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 31.
 
 2004-07-29  Paolo Carlini  <pcarlini@suse.de>
