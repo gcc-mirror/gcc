@@ -73,6 +73,30 @@ namespace __gnu_test
     }
     
   };
+
+  // Used to check if basic_streambuf::pubsync() has been called.
+  // This is useful for checking if a function creates [io]stream::sentry
+  // objects, since the sentry constructors call tie()->flush().
+  class sync_streambuf : public std::streambuf
+  {
+  private:
+    bool m_sync_called;
+    
+  public:
+    sync_streambuf()
+    : m_sync_called(false)
+    { }
+
+    bool sync_called() const
+    { return m_sync_called; }
+
+  protected:
+    int sync()
+    {
+      m_sync_called = true;
+      return 0;
+    }
+  };
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_IO_H

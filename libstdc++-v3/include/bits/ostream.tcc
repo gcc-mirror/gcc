@@ -64,21 +64,10 @@ namespace std
     basic_ostream<_CharT, _Traits>::
     operator<<(__ostream_type& (*__pf)(__ostream_type&))
     {
-      sentry __cerb(*this);
-      if (__cerb)
-	{ 
-	  try 
-	    { __pf(*this); }
-	  catch(...)
-	    {
-	      // 27.6.2.5.1 Common requirements.
-	      // Turn this on without causing an ios::failure to be thrown.
-	      this->_M_setstate(ios_base::badbit);
-	      if ((this->exceptions() & ios_base::badbit) != 0)
-		__throw_exception_again;
-	    }
-	}
-      return *this;
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 60. What is a formatted input function?
+      // The inserters for manipulators are *not* formatted output functions.
+      return __pf(*this);
     }
   
   template<typename _CharT, typename _Traits>
@@ -86,20 +75,10 @@ namespace std
     basic_ostream<_CharT, _Traits>::
     operator<<(__ios_type& (*__pf)(__ios_type&))
     {
-      sentry __cerb(*this);
-      if (__cerb)
-	{ 
-	  try 
-	    { __pf(*this); }
-	  catch(...)
-	    {
-	      // 27.6.2.5.1 Common requirements.
-	      // Turn this on without causing an ios::failure to be thrown.
-	      this->_M_setstate(ios_base::badbit);
-	      if ((this->exceptions() & ios_base::badbit) != 0)
-		__throw_exception_again;
-	    }
-	}
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 60. What is a formatted input function?
+      // The inserters for manipulators are *not* formatted output functions.
+      __pf(*this);
       return *this;
     }
 
@@ -108,20 +87,10 @@ namespace std
     basic_ostream<_CharT, _Traits>::
     operator<<(ios_base& (*__pf)(ios_base&))
     {
-      sentry __cerb(*this);
-      if (__cerb)
-	{ 
-	  try 
-	    { __pf(*this); }
-	  catch(...)
-	    {
-	      // 27.6.2.5.1 Common requirements.
-	      // Turn this on without causing an ios::failure to be thrown.
-	      this->_M_setstate(ios_base::badbit);
-	      if ((this->exceptions() & ios_base::badbit) != 0)
-		__throw_exception_again;
-	    }
-	}
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 60. What is a formatted input function?
+      // The inserters for manipulators are *not* formatted output functions.
+      __pf(*this);
       return *this;
     }
 
@@ -378,12 +347,27 @@ namespace std
     basic_ostream<_CharT, _Traits>&
     basic_ostream<_CharT, _Traits>::put(char_type __c)
     { 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 60. What is a formatted input function?
+      // basic_ostream::put(char_type) is an unformatted output function.
+      // DR 63. Exception-handling policy for unformatted output.
+      // Unformatted output functions should catch exceptions thrown
+      // from streambuf members.
       sentry __cerb(*this);
       if (__cerb) 
 	{
-	  int_type __put = this->rdbuf()->sputc(__c); 
-	  if (traits_type::eq_int_type(__put, traits_type::eof()))
-	    this->setstate(ios_base::badbit);
+	  try
+	    {
+	      int_type __put = this->rdbuf()->sputc(__c); 
+	      if (traits_type::eq_int_type(__put, traits_type::eof()))
+		this->setstate(ios_base::badbit);
+	    }
+	  catch (...)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      if ((this->exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
+	    }
 	}
       return *this;  
     }
@@ -392,9 +376,25 @@ namespace std
     basic_ostream<_CharT, _Traits>&
     basic_ostream<_CharT, _Traits>::write(const _CharT* __s, streamsize __n)
     {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 60. What is a formatted input function?
+      // basic_ostream::write(const char_type*, streamsize) is an
+      // unformatted output function.
+      // DR 63. Exception-handling policy for unformatted output.
+      // Unformatted output functions should catch exceptions thrown
+      // from streambuf members.
       sentry __cerb(*this);
       if (__cerb)
-	_M_write(__s, __n);
+	{
+	  try
+	    { _M_write(__s, __n); }
+	  catch (...)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      if ((this->exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
+	    }
+	}
       return *this;
     }
 
@@ -402,12 +402,11 @@ namespace std
     basic_ostream<_CharT, _Traits>&
     basic_ostream<_CharT, _Traits>::flush()
     {
-      sentry __cerb(*this);
-      if (__cerb) 
-	{
-	  if (this->rdbuf() && this->rdbuf()->pubsync() == -1)
-	    this->setstate(ios_base::badbit);
-	}
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 60. What is a formatted input function?
+      // basic_ostream::flush() is *not* an unformatted output function.
+      if (this->rdbuf() && this->rdbuf()->pubsync() == -1)
+	this->setstate(ios_base::badbit);
       return *this;
     }
   
