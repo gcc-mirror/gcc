@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -446,7 +446,7 @@ short_cint_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == CONST_INT
-	  && (unsigned) (INTVAL (op) + 0x8000) < 0x10000);
+	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000);
 }
 
 /* Similar for a unsigned D field.  */
@@ -467,7 +467,7 @@ non_short_cint_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == CONST_INT
-	  && (unsigned) (INTVAL (op) + 0x8000) >= 0x10000);
+	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000);
 }
 
 /* Returns 1 if OP is a register that is not special (i.e., not MQ,
@@ -791,7 +791,7 @@ non_add_cint_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == CONST_INT
-	  && (unsigned) (INTVAL (op) + 0x8000) >= 0x10000
+	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000
 	  && (INTVAL (op) & 0xffff) != 0);
 }
 
@@ -1893,7 +1893,7 @@ includes_rshift_p (shiftop, andop)
      register rtx shiftop;
      register rtx andop;
 {
-  unsigned shift_mask = ~(unsigned)0;
+  unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
 
   shift_mask >>= INTVAL (shiftop);
 
