@@ -1,3 +1,10 @@
+Tue Feb 17 22:56:14 1998  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (simplify_rtx): Obey CLASS_CANNOT_CHANGE_SIZE when
+	simplifying a subreg of a hard reg.
+	(expand_compound_operation): Likewise.
+	(force_to_mode): Likewise.
+
 Sun Feb 15 21:07:48 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* arm/netbsd.h (DWARF2_UNWIND_INFO): Define as zero for now.

@@ -3367,6 +3367,13 @@ simplify_rtx (x, op0_mode, last, in_dest)
 
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+	  && (! (TEST_HARD_REG_BIT
+		 (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+		  REGNO (SUBREG_REG (x))))
+	      || (GET_MODE_SIZE (mode)
+		  == GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+#endif
 	  && REGNO (SUBREG_REG (x)) != FRAME_POINTER_REGNUM
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
 	  && REGNO (SUBREG_REG (x)) != HARD_FRAME_POINTER_REGNUM
@@ -4979,6 +4986,20 @@ expand_compound_operation (x)
   int modewidth;
   rtx tem;
 
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+  /* When dealing with hard regs that cannot change size, don't even try
+     expanding to shifts, since we wind up violating the rule.  */
+  if (GET_RTX_CLASS (GET_CODE (x)) == '1'
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
+      && (TEST_HARD_REG_BIT
+	  (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+	   REGNO (SUBREG_REG (x))))
+      && (GET_MODE_SIZE (GET_MODE (x))
+	  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+    return x;
+#endif
+
   switch (GET_CODE (x))
     {
     case ZERO_EXTEND:
@@ -6085,6 +6106,17 @@ force_to_mode (x, mode, mask, reg, just_select)
       break;
 
     case SUBREG:
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+      if (GET_CODE (SUBREG_REG (x)) == REG
+	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
+	  && (TEST_HARD_REG_BIT
+	      (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+	       REGNO (SUBREG_REG (x))))
+	  && (GET_MODE_SIZE (GET_MODE (x))
+	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	return x;
+#endif
+
       if (subreg_lowpart_p (x)
 	  /* We can ignore the effect of this SUBREG if it narrows the mode or
 	     if the constant masks to zero all the bits the mode doesn't
