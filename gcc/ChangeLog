@@ -1,3 +1,9 @@
+Mon Aug 17 09:23:42 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.c (output_move_simode_const): Use subl to move a zero into an
+	address register.
+	(output_move_[hq]imode): Likewise.
+
 Mon Aug 17 09:15:47 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (main): Enable -fstrict-aliasing for -O2 and above.
