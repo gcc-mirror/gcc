@@ -1,0 +1,88 @@
+/****************************************************************************
+ *                                                                          *
+ *                         GNAT COMPILER COMPONENTS                         *
+ *                                                                          *
+ *                       GNAT-SPECIFIC GCC TREE CODES                       *
+ *                                                                          *
+ *                              Specification                               *
+ *                                                                          *
+ *                            $Revision: 1.1 $
+ *                                                                          *
+ *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *                                                                          *
+ * GNAT is free software;  you can  redistribute it  and/or modify it under *
+ * terms of the  GNU General Public License as published  by the Free Soft- *
+ * ware  Foundation;  either version 2,  or (at your option) any later ver- *
+ * sion.  GNAT is distributed in the hope that it will be useful, but WITH- *
+ * OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY *
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License *
+ * for  more details.  You should have  received  a copy of the GNU General *
+ * Public License  distributed with GNAT;  see file COPYING.  If not, write *
+ * to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, *
+ * MA 02111-1307, USA.                                                      *
+ *                                                                          *
+ * GNAT was originally developed  by the GNAT team at  New York University. *
+ * It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). *
+ *                                                                          *
+ ****************************************************************************/
+
+/* A GNAT tree node to transform to a GCC tree.  This is only used when the
+   node would generate code, rather then just a tree, and we are in the global
+   context.
+
+   The only field used is TREE_COMPLEXITY, which contains the GNAT node
+   number.  */
+
+DEFTREECODE (TRANSFORM_EXPR, "transform_expr", 'e', 0)
+
+/* Perform an unchecked conversion between the input and the output. 
+   if TREE_ADDRESSABLE is set, it means this is in an LHS; in that case,
+   we can only use techniques, such as pointer punning, that leave the
+   expression a "name".  */
+
+DEFTREECODE (UNCHECKED_CONVERT_EXPR, "unchecked_convert_expr", '1', 1)
+
+/* Dynamically allocate on the stack a number of bytes of memory given
+   by operand 0 at the alignment given by operand 1 and return the
+   address of the resulting memory.  */
+
+DEFTREECODE (ALLOCATE_EXPR, "allocate_expr", '2', 2)
+
+/* A type that is an unconstrained array itself.  This node is never passed
+   to GCC. TREE_TYPE is the type of the fat pointer and TYPE_OBJECT_RECORD_TYPE
+   is the type of a record containing the template and data.  */
+
+DEFTREECODE (UNCONSTRAINED_ARRAY_TYPE, "unconstrained_array_type", 't', 0)
+
+/* A reference to an unconstrained array.  This node only exists as an
+   intermediate node during the translation of a GNAT tree to a GCC tree;
+   it is never passed to GCC.  The only field used is operand 0, which
+   is the fat pointer object.  */
+
+DEFTREECODE (UNCONSTRAINED_ARRAY_REF, "unconstrained_array_ref", 'r', 1)
+
+/* An expression that returns an RTL suitable for its type.  Operand 0
+   is an expression to be evaluated for side effects only.  */
+
+DEFTREECODE (NULL_EXPR, "null_expr", 'e', 1)
+
+/* An expression that emits a USE for its single operand.  */
+
+DEFTREECODE (USE_EXPR, "use_expr", 'e', 1)
+
+/* Same as ADDR_EXPR, except that if the operand represents a bit field,
+   return the address of the byte containing the bit.  This is used
+   for the 'Address attribute and never shows up in the tree.  */
+DEFTREECODE (ATTR_ADDR_EXPR, "attr_addr_expr", 'r', 1)
+
+/* An expression that is treated as a conversion while generating code, but is
+   used to prevent infinite recursion when conversions of biased types are
+   involved.  */
+
+DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", '1', 1)
+
+/* This is used as a place to store the ID of a loop.
+
+   ??? This should be redone at some point.  */
+
+DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 1)
