@@ -1,3 +1,9 @@
+2000-11-04  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* hashtab.h (struct htab): Add member return_allocation_failure.
+	(htab_try_create): New prototype.  Mention which functions may
+	return NULL when this is used.
+
 2000-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* hashtab.h: Change void * to PTR where necessary.
