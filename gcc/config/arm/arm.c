@@ -845,23 +845,37 @@ arm_override_options (void)
       flag_schedule_insns = 0;
     }
 
-  /* If optimizing for space, don't synthesize constants.
-     For processors with load scheduling, it never costs more than 2 cycles
-     to load a constant, and the load scheduler may well reduce that to 1.  */
-  if (optimize_size || (tune_flags & FL_LDSCHED))
-    arm_constant_limit = 1;
-  
-  if (arm_tune_xscale)
-    arm_constant_limit = 2;
-
-  /* If optimizing for size, bump the number of instructions that we
-     are prepared to conditionally execute (even on a StrongARM). 
-     Otherwise for the StrongARM, which has early execution of branches,
-     a sequence that is worth skipping is shorter.  */
   if (optimize_size)
-    max_insns_skipped = 6;
-  else if (arm_is_strong)
-    max_insns_skipped = 3;
+    {
+      /* If optimizing for space, we let the compiler synthesize constants
+         with up to 2 insns, which uses the same space as a load from memory.
+         This gives the opportunity to take even less space when different
+         offsets can be factorized into multiple pre-indexed loads or stores. */
+      arm_constant_limit = 2;
+
+      /* If optimizing for size, bump the number of instructions that we
+         are prepared to conditionally execute (even on a StrongARM). */
+      max_insns_skipped = 6;
+    }
+  else
+    {
+      /* For processors with load scheduling, it never costs more than
+         2 cycles to load a constant, and the load scheduler may well
+	 reduce that to 1.  */
+      if (tune_flags & FL_LDSCHED)
+        arm_constant_limit = 1;
+
+      /* On XScale the longer latency of a load makes it more difficult
+         to achieve a good schedule, so it's faster to synthesize
+	 constants that can be done in two insns. */
+      if (arm_tune_xscale)
+        arm_constant_limit = 2;
+
+      /* StrongARM has early execution of branches, so a sequence
+         that is worth skipping is shorter.  */
+      if (arm_is_strong)
+        max_insns_skipped = 3;
+    }
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();

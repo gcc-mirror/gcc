@@ -1,3 +1,9 @@
+2003-10-20  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/arm.c (arm_override_options): Set arm_constant_limit
+	to 2 instead of 1 when optimize_size is true.  Gather code based on
+	optimize_size together.  Add comment about XScale load latency.
+
 2003-10-21  Gunther Nikl  <gni@gecko.de>
 
 	* config/m68k/m68k.c (m68k_output_function_prologue): Remove
