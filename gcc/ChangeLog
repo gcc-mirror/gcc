@@ -1,3 +1,10 @@
+2005-03-30  James E. Wilson  <wilson@specifixinc.com>
+
+	PR debug/20268
+	* dwarf2out.c (add_high_low_attributes): New function, extracted from
+	gen_lexical_block_die.
+	(gen_lexical_block_die, gen_inlined_subroutine_die): Call it.
+
 2005-03-31  Jan Hubicka  <jh@suse.cz>
 
 	2004-11-02  Jan Hubicka  <jh@suse.cz>
