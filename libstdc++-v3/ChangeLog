@@ -1,3 +1,7 @@
+2001-04-24  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+        * include/ext/slist: Include required header files. 
+
 2001-04-23  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/c_std/bits/std_cerrno.h (errno): Define macro from
@@ -7,9 +11,9 @@
 
 2001-04-23  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 
-	* acinclude.m4 (CXX): Set to CXX so that in-directory
+	* acinclude.m4 (CXX): Set to glibcpp_CXX so that in-directory
 	re-configures find the build compiler.
-	(GLIBCPP_ENABLE_C99): Do all tests with 0.0, not 0. Fixes
+	(GLIBCPP_ENABLE_C99): Do all fp-tests with 0.0, not 0. Fixes
 	libstdc++/2609.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
