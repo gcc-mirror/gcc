@@ -54,25 +54,24 @@ extern tree poplevel ();
   (8 * (8 + list_length (DECL_ARGUMENTS (DECL))))
 #endif
 
-/* Save any constant pool constants in an insn.  */
-static void save_constants ();
+static rtx initialize_for_inline PROTO((tree, int, int, int, int));
+static void finish_inline	PROTO((tree, rtx));
+static void adjust_copied_decl_tree PROTO((tree));
+static tree copy_decl_list	PROTO((tree));
+static tree copy_decl_tree	PROTO((tree));
+static void copy_decl_rtls	PROTO((tree));
+static void save_constants	PROTO((rtx *));
+static void note_modified_parmregs PROTO((rtx, rtx));
+static rtx copy_for_inline	PROTO((rtx));
+static void integrate_parm_decls PROTO((tree, struct inline_remap *, rtvec));
+static void integrate_decl_tree	PROTO((tree, int, struct inline_remap *));
+static void subst_constants	PROTO((rtx *, rtx, struct inline_remap *));
+static void restore_constants	PROTO((rtx *));
+static void set_block_origin_self PROTO((tree));
+static void set_decl_origin_self PROTO((tree));
+static void set_block_abstract_flags PROTO((tree, int));
 
-/* Note when parameter registers are the destination of a SET.  */
-static void note_modified_parmregs ();
-
-/* Copy an rtx for save_for_inline_copying.  */
-static rtx copy_for_inline ();
-
-/* Make copies of MEMs in DECL_RTLs.  */
-static void copy_decl_rtls ();
-
-static tree copy_decl_tree ();
-static tree copy_decl_list ();
-
-static void integrate_parm_decls ();
-static void integrate_decl_tree ();
-
-static void subst_constants ();
+void set_decl_abstract_flags	PROTO((tree, int));
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
    is safe and reasonable to integrate into other functions.
@@ -909,7 +908,7 @@ copy_for_inline (orig)
 	  REAL_VALUE_TYPE d;
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  return immed_real_const_1 (d, GET_MODE (x));
+	  return CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (x));
 	}
       else
 	return immed_double_const (CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x),
@@ -2179,7 +2178,7 @@ copy_rtx_and_substitute (orig, map)
 	  REAL_VALUE_TYPE d;
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, orig);
-	  return immed_real_const_1 (d, GET_MODE (orig));
+	  return CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (orig));
 	}
       else
 	return immed_double_const (CONST_DOUBLE_LOW (orig),
@@ -2664,7 +2663,8 @@ subst_constants (loc, insn, map)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	if (new != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
 	  new = ((new == const0_rtx) ? CONST0_RTX (GET_MODE (x))
-		 : immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, GET_MODE (x)));
+		 : CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
+						 GET_MODE (x)));
 #endif
 	break;
       }
@@ -2747,7 +2747,7 @@ restore_constants (px)
 	  REAL_VALUE_TYPE d;
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  *px = immed_real_const_1 (d, GET_MODE (x));
+	  *px = CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (x));
 	}
       else
 	*px = immed_double_const (CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x),
@@ -2803,8 +2803,6 @@ restore_constants (px)
    therein whose DECL_ABSTRACT_ORIGINs or BLOCK_ABSTRACT_ORIGINs are also
    still NULL, set *their* DECL_ABSTRACT_ORIGIN or BLOCK_ABSTRACT_ORIGIN
    values to point to themselves.  */
-
-static void set_decl_origin_self ();
 
 static void
 set_block_origin_self (stmt)
@@ -2868,8 +2866,6 @@ set_decl_origin_self (decl)
    "abstract" flags to, set that value into the BLOCK_ABSTRACT flag for
    the given block, and for all local decls and all local sub-blocks
    (recursively) which are contained therein.  */
-
-void set_decl_abstract_flags ();
 
 static void
 set_block_abstract_flags (stmt, setting)
