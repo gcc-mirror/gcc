@@ -1,5 +1,6 @@
 /* Primary expression subroutines
-   Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2005 Free Software Foundation,
+   Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -114,7 +115,7 @@ check_digit (int c, int radix)
       break;
 
     case 16:
-      r = ('0' <= c && c <= '9') || ('a' <= c && c <= 'f');
+      r = ISXDIGIT (c);
       break;
 
     default:
