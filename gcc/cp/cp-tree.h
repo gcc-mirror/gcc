@@ -2351,7 +2351,7 @@ extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
 extern tree current_template_args		PROTO((void));
-extern void push_template_decl			PROTO((tree));
+extern tree push_template_decl			PROTO((tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree, tree));
 extern tree lookup_template_function            PROTO((tree, tree));
 extern int uses_template_parms			PROTO((tree));

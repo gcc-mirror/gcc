@@ -1685,7 +1685,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
   if (processing_template_decl && ! current_function_decl
       && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
-    push_template_decl (value);
+    value = push_template_decl (value);
 
   if (attrlist)
     cplus_decl_attributes (value, TREE_PURPOSE (attrlist),
@@ -1693,38 +1693,37 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 
   if (TREE_CODE (value) == VAR_DECL)
     {
+      my_friendly_assert (TREE_PUBLIC (value), 0);
+
       /* We cannot call pushdecl here, because that would
 	 fill in the value of our TREE_CHAIN.  Instead, we
 	 modify cp_finish_decl to do the right thing, namely, to
 	 put this decl out straight away.  */
-      if (TREE_PUBLIC (value))
+      /* current_class_type can be NULL_TREE in case of error.  */
+      if (asmspec == 0 && current_class_type)
 	{
-	  /* current_class_type can be NULL_TREE in case of error.  */
-	  if (asmspec == 0 && current_class_type)
-	    {
-	      TREE_PUBLIC (value) = 1;
-	      DECL_INITIAL (value) = error_mark_node;
-	      DECL_ASSEMBLER_NAME (value)
-		= build_static_name (current_class_type, DECL_NAME (value));
-	    }
-	  if (! processing_template_decl)
-	    pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
-
-	  /* Static consts need not be initialized in the class definition.  */
-	  if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (value)))
-	    {
-	      static int explanation = 0;
-
-	      error ("initializer invalid for static member with constructor");
-	      if (explanation++ == 0)
-		error ("(you really want to initialize it separately)");
-	      init = 0;
-	    }
-	  /* Force the compiler to know when an uninitialized static
-	     const member is being used.  */
-	  if (TYPE_READONLY (value) && init == 0)
-	    TREE_USED (value) = 1;
+	  TREE_PUBLIC (value) = 1;
+	  DECL_INITIAL (value) = error_mark_node;
+	  DECL_ASSEMBLER_NAME (value)
+	    = build_static_name (current_class_type, DECL_NAME (value));
 	}
+      if (! processing_template_decl)
+	pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
+      
+      /* Static consts need not be initialized in the class definition.  */
+      if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (value)))
+	{
+	  static int explanation = 0;
+	  
+	  error ("initializer invalid for static member with constructor");
+	  if (explanation++ == 0)
+	    error ("(you really want to initialize it separately)");
+	  init = 0;
+	}
+      /* Force the compiler to know when an uninitialized static
+	 const member is being used.  */
+      if (TYPE_READONLY (value) && init == 0)
+	TREE_USED (value) = 1;
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       DECL_CONTEXT (value) = current_class_type;
