@@ -156,21 +156,6 @@ grok_method_quals (tree ctype, tree function, tree quals)
   return this_quals;
 }
 
-/* Warn when -fexternal-templates is used and #pragma
-   interface/implementation is not used all the times it should be,
-   inform the user.  */
-
-void
-warn_if_unknown_interface (tree decl)
-{
-  static int already_warned = 0;
-  if (already_warned++)
-    return;
-
-  cp_warning_at ("template `%#D' defined in file without #pragma interface",
-		 decl);
-}
-
 /* A subroutine of the parser, to handle a component list.  */
 
 void

@@ -347,7 +347,9 @@ cp_expr_size (tree exp)
 	abort ();
       /* This would be wrong for a type with virtual bases, but they are
 	 caught by the abort above.  */
-      return CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp));
+      return (is_empty_class (TREE_TYPE (exp))
+	      ? size_zero_node 
+	      : CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp)));
     }
   else
     /* Use the default code.  */

@@ -310,7 +310,23 @@ c_cpp_builtins (cpp_reader *pfile)
 
   /* represents the C++ ABI version, always defined so it can be used while
      preprocessing C and assembler.  */
-  cpp_define (pfile, "__GXX_ABI_VERSION=102");
+  if (flag_abi_version == 0)
+    /* Use a very large value so that:
+
+         #if __GXX_ABI_VERSION >= <value for version X>
+
+       will work whether the user explicitly says "-fabi-version=x" or
+       "-fabi-version=0".  Do not use INT_MAX because that will be
+       different from system to system.  */
+    builtin_define_with_int_value ("__GXX_ABI_VERSION", 999999);
+  else if (flag_abi_version == 1)
+    /* Due to an historical accident, this version had the value
+       "102".  */
+    builtin_define_with_int_value ("__GXX_ABI_VERSION", 102);
+  else
+    /* Newer versions have values 1002, 1003, ... */
+    builtin_define_with_int_value ("__GXX_ABI_VERSION", 
+				   1000 + flag_abi_version);
 
   /* libgcc needs to know this.  */
   if (USING_SJLJ_EXCEPTIONS)

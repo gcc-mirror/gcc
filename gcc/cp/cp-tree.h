@@ -3710,7 +3710,6 @@ extern GTY(()) tree last_function_parms;
 /* in decl2.c */
 extern bool check_java_method (tree);
 extern int grok_method_quals (tree, tree, tree);
-extern void warn_if_unknown_interface (tree);
 extern void grok_x_components (tree);
 extern void maybe_retrofit_in_chrg (tree);
 extern void maybe_make_one_only	(tree);

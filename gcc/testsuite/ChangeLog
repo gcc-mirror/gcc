@@ -1,3 +1,20 @@
+2003-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/macro0.C: New test.
+	* g++.dg/abi/macro1.C: Likewise.
+	* g++.dg/abi/macro2.C: Likewise.
+
+	* g++.dg/abi/bitfield5.C: Add explicit -fabi-version=1 option.
+	* g++.dg/abi/bitfield7.C: Likewise.
+	* g++.dg/abi/dtor2.C: Likewise.
+	* g++.dg/abi/mangle11.C: Likewise.
+	* g++.dg/abi/mangle12.C: Likewise.
+	* g++.dg/abi/mangle14.C: Likewise.
+	* g++.dg/abi/mangle17.C: Likewise.
+	* g++.dg/abi/vbase10.C: Likewise.
+	* g++.dg/abi/vbase14.C: Likewise.
+	* g++.dg/template/qualttp17.C: Likewise.
+
 2003-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/11995

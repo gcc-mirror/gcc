@@ -1274,11 +1274,12 @@ Here is a list of options that are @emph{only} for compiling C++ programs:
 
 @item -fabi-version=@var{n}
 @opindex fabi-version
-Use version @var{n} of the C++ ABI.  Version 1 is the version of the C++
-ABI that first appeared in G++ 3.2.  Version 0 will always be the
-version that conforms most closely to the C++ ABI specification.
-Therefore, the ABI obtained using version 0 will change as ABI bugs are
-fixed.
+Use version @var{n} of the C++ ABI.  Version 2 is the version of the
+C++ ABI that first appeared in G++ 3.4.  Version 1 is the version of
+the C++ ABI that first appeared in G++ 3.2.  Version 0 will always be
+the version that conforms most closely to the C++ ABI specification.
+Therefore, the ABI obtained using version 0 will change as ABI bugs
+are fixed.
 
 The default is version 1.
 

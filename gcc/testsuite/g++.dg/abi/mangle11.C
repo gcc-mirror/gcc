@@ -1,4 +1,4 @@
-// { dg-options "-Wabi" }
+// { dg-options "-Wabi -fabi-version=1" }
 
 template <typename Q>
 void f (typename Q::X) {}
