@@ -72,9 +72,14 @@ private:
 
     charT* data () { return reinterpret_cast<charT *>(this + 1); }
     charT& operator[] (size_t s) { return data () [s]; }
-    charT* grab () { if (selfish) return clone (); ++ref; return data (); }
 #if defined __i486__ || defined __i586__ || defined __i686__
-    void release ()
+    charT* grab () { if (selfish) return clone (); 
+      asm ("lock; addl %0, (%1)"
+           : : "a" (1), "d" (&ref)
+           : "memory");
+      return data (); }
+
+    void release () 
       {
 	size_t __val;
 	// This opcode exists as a .byte instead of as a mnemonic for the
@@ -90,6 +95,7 @@ private:
 	  delete this;
       }
 #elif defined __sparc_v9__
+    charT* grab () { if (selfish) return clone (); ++ref; return data (); }
     void release ()
       {
 	size_t __newval, __oldval = ref;
@@ -111,6 +117,7 @@ private:
 	  delete this;
       }
 #else
+    charT* grab () { if (selfish) return clone (); ++ref; return data (); }
     void release () { if (--ref == 0) delete this; }
 #endif
 
