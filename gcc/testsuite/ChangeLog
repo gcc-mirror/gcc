@@ -1,4 +1,4 @@
-2003-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+2004-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13797
 	* g++.dg/template/nontype4.C: New test.
