@@ -1,3 +1,8 @@
+2003-05-09  DJ Delorie  <dj@redhat.com>
+
+	* g++.dg/other/stdarg1.C: Make sure arg "3" is passed as a
+	long, and not an int.
+
 2003-05-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10555, c++/10576
