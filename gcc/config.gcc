@@ -1030,9 +1030,8 @@ i[34567]86-*-solaris2*)
 	esac
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
-	  no:*:*) ;;
-	  *:yes:* ) thread_file=posix ;;
-	  yes:*:* | *:*:yes ) thread_file=solaris ;;
+	  "":yes:* | yes:yes:* ) thread_file=posix ;;
+	  "":*:yes | yes:*:yes ) thread_file=solaris ;;
 	esac
 	;;
 i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
@@ -1883,9 +1882,8 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	tm_p_file="${tm_p_file} sol2-protos.h"
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
-	  no:*:*) ;;
-	  *:yes:* ) thread_file=posix ;;
-	  yes:*:* | *:*:yes ) thread_file=solaris ;;
+	  "":yes:* | yes:yes:* ) thread_file=posix ;;
+	  "":*:yes | yes:*:yes ) thread_file=solaris ;;
 	esac
 	need_64bit_hwint=yes
 	;;
@@ -1927,9 +1925,8 @@ sparc-*-solaris2*)
 	tm_p_file="${tm_p_file} sol2-protos.h"
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
-	  no:*:*) ;;
-	  *:yes:* ) thread_file=posix ;;
-	  yes:*:* | *:*:yes ) thread_file=solaris ;;
+	  "":yes:* | yes:yes:* ) thread_file=posix ;;
+	  "":*:yes | yes:*:yes ) thread_file=solaris ;;
 	esac
 	;;
 sparc-*-sysv4*)

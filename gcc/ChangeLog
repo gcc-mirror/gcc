@@ -1,3 +1,11 @@
+2004-10-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/17443
+	* config.gcc (i?86-*-solaris2*): Restore correct logic
+	for --enable-threads option.
+	(sparc64-*-solaris2*): Likewise.
+	(sparc-*-solaris2*): Likewise.
+
 2004-10-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux.h (TARGET_C99_FUNCTIONS): Define.
