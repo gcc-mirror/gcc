@@ -1,3 +1,7 @@
+2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in: Set RAW_CXX_FOR_TARGET if unset.
