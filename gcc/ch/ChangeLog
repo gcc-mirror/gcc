@@ -1,3 +1,7 @@
+2001-05-26  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure: Remove obsolete file.
+
 2001-05-25  Sam TH  <sam@uchicago.edu>
 
 	* ch-tree.h tasking.h: Fix header include guards.
