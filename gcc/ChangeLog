@@ -1,3 +1,8 @@
+Thu Sep  3 11:41:40 1998  Robert Lipe   <robertl@dgii.com>
+
+	* fixinc.sco: Borrow code to wrap 'bool' typedefs from tinfo.h
+	and term.h from fixinc.wrap.
+
 Thu Sep  3 09:47:31 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (GCC_HEADER_STRING): New macro to detect if it is
