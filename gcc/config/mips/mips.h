@@ -150,13 +150,28 @@ extern struct rtx_def *mips_load_reg3;	/* 3rd reg to check for load delay */
 extern struct rtx_def *mips_load_reg4;	/* 4th reg to check for load delay */
 extern struct rtx_def *embedded_pic_fnaddr_rtx;	/* function address */
 
-/* Functions within mips.c that we reference.  */
+/* Functions within mips.c that we reference.  Some of these return  type
+   HOST_WIDE_INT, so define that here.  This is a copy of code in machmode.h.
+
+   ??? It would be good to try to put this as common code someplace.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
 
 extern void		abort_with_insn ();
 extern int		arith32_operand ();
 extern int		arith_operand ();
 extern int		cmp_op ();
-extern long		compute_frame_size ();
+extern HOST_WIDE_INT	compute_frame_size ();
 extern int		epilogue_reg_mentioned_p ();
 extern void		expand_block_move ();
 extern int		equality_op ();
@@ -177,7 +192,7 @@ extern void		mips_asm_file_end ();
 extern void		mips_asm_file_start ();
 extern int		mips_const_double_ok ();
 extern void		mips_count_memory_refs ();
-extern int		mips_debugger_offset ();
+extern HOST_WIDE_INT	mips_debugger_offset ();
 extern void		mips_declare_object ();
 extern int		mips_epilogue_delay_slots ();
 extern void		mips_expand_epilogue ();
@@ -201,7 +216,7 @@ extern int		reg_or_0_operand ();
 extern int		simple_epilogue_p ();
 extern int		simple_memory_operand ();
 extern int		small_int ();
-extern void		trace();
+extern void		trace ();
 extern int		uns_arith_operand ();
 extern struct rtx_def *	embedded_pic_offset ();
 
@@ -1130,9 +1145,10 @@ do {							\
    the frame pointer to be the stack pointer after the initial
    adjustment.  */
 
-#define DEBUGGER_AUTO_OFFSET(X)		mips_debugger_offset (X, 0)
-#define DEBUGGER_ARG_OFFSET(OFFSET, X)	mips_debugger_offset (X, OFFSET)
-
+#define DEBUGGER_AUTO_OFFSET(X)  \
+  mips_debugger_offset (X, (HOST_WIDE_INT) 0)
+#define DEBUGGER_ARG_OFFSET(OFFSET, X)  \
+  mips_debugger_offset (X, (HOST_WIDE_INT) OFFSET)
 
 /* Tell collect that the object format is ECOFF */
 #ifndef OBJECT_FORMAT_ROSE
