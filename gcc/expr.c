@@ -144,7 +144,6 @@ static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
 static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
 			tree, enum machine_mode, int, tree, int);
-static rtx var_rtx (tree);
 
 static unsigned HOST_WIDE_INT highest_pow2_factor (tree);
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (tree, tree);
@@ -5898,22 +5897,6 @@ safe_from_p (rtx x, tree exp, int top_p)
   return 1;
 }
 
-/* Subroutine of expand_expr: return rtx if EXP is a
-   variable or parameter; else return 0.  */
-
-static rtx
-var_rtx (tree exp)
-{
-  STRIP_NOPS (exp);
-  switch (TREE_CODE (exp))
-    {
-    case PARM_DECL:
-    case VAR_DECL:
-      return DECL_RTL (exp);
-    default:
-      return 0;
-    }
-}
 
 /* Return the highest power of two that EXP is known to be a multiple of.
    This is used in updating alignment of MEMs in array references.  */
@@ -6536,26 +6519,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	expand_goto (TREE_OPERAND (exp, 0));
       else
 	expand_computed_goto (TREE_OPERAND (exp, 0));
-      return const0_rtx;
-
-    /* These are lowered during gimplification, so we should never ever
-       see them here.  */
-    case LOOP_EXPR:
-    case EXIT_EXPR:
-      abort ();
-
-    case LABELED_BLOCK_EXPR:
-      if (LABELED_BLOCK_BODY (exp))
-	expand_expr_stmt (LABELED_BLOCK_BODY (exp));
-      /* Should perhaps use expand_label, but this is simpler and safer.  */
-      do_pending_stack_adjust ();
-      emit_label (label_rtx (LABELED_BLOCK_LABEL (exp)));
-      return const0_rtx;
-
-    case EXIT_BLOCK_EXPR:
-      if (EXIT_BLOCK_RETURN (exp))
-	sorry ("returned value in block_exit_expr");
-      expand_goto (LABELED_BLOCK_LABEL (EXIT_BLOCK_LABELED_BLOCK (exp)));
       return const0_rtx;
 
     case CONSTRUCTOR:
@@ -7827,34 +7790,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  return temp;
 	}
 
-      /* If no set-flag instruction, must generate a conditional
-	 store into a temporary variable.  Drop through
-	 and handle this like && and ||.  */
-
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-      if (! ignore
-	  && (target == 0
-	      || modifier == EXPAND_STACK_PARM
-	      || ! safe_from_p (target, exp, 1)
-	      /* Make sure we don't have a hard reg (such as function's return
-		 value) live across basic blocks, if not optimizing.  */
-	      || (!optimize && REG_P (target)
-		  && REGNO (target) < FIRST_PSEUDO_REGISTER)))
-	target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-
-      if (target)
-	emit_clr_insn (target);
-
-      op1 = gen_label_rtx ();
-      jumpifnot (exp, op1);
-
-      if (target)
-	emit_0_to_1_insn (target);
-
-      emit_label (op1);
-      return ignore ? const0_rtx : target;
-
     case TRUTH_NOT_EXPR:
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
@@ -7866,12 +7801,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (temp == 0)
 	abort ();
       return temp;
-
-    case COMPOUND_EXPR:
-      expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
-      return expand_expr_real (TREE_OPERAND (exp, 1),
-			       (ignore ? const0_rtx : target),
-			       VOIDmode, modifier, alt_rtl);
 
     case STATEMENT_LIST:
       {
@@ -7890,350 +7819,66 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (VOID_TYPE_P (TREE_TYPE (exp)))
 	{
 	  tree pred = TREE_OPERAND (exp, 0);
-	  tree then_ = TREE_OPERAND (exp, 1);
-	  tree else_ = TREE_OPERAND (exp, 2);
+  	  tree then_ = TREE_OPERAND (exp, 1);
+  	  tree else_ = TREE_OPERAND (exp, 2);
+  
+	  if (TREE_CODE (then_) != GOTO_EXPR
+	      || TREE_CODE (GOTO_DESTINATION (then_)) != LABEL_DECL
+	      || TREE_CODE (else_) != GOTO_EXPR
+	      || TREE_CODE (GOTO_DESTINATION (else_)) != LABEL_DECL)
+	    abort ();
+  
+	  jumpif (pred, label_rtx (GOTO_DESTINATION (then_)));
+	  return expand_expr (else_, const0_rtx, VOIDmode, 0);
+  	}
+  
+        /* Note that COND_EXPRs whose type is a structure or union
+  	 are required to be constructed to contain assignments of
+  	 a temporary variable, so that we can evaluate them here
+  	 for side effect only.  If type is void, we must do likewise.  */
 
-	  if (TREE_CODE (then_) == GOTO_EXPR
-	      && TREE_CODE (GOTO_DESTINATION (then_)) == LABEL_DECL)
-	    {
-	      jumpif (pred, label_rtx (GOTO_DESTINATION (then_)));
-	      return expand_expr (else_, const0_rtx, VOIDmode, 0);
-	    }
-	  else if (TREE_CODE (else_) == GOTO_EXPR
-		   && TREE_CODE (GOTO_DESTINATION (else_)) == LABEL_DECL)
-	    {
-	      jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_)));
-	      return expand_expr (then_, const0_rtx, VOIDmode, 0);
-	    }
-
-	  /* Just use the 'if' machinery.  */
-	  expand_start_cond (pred, 0);
-	  expand_expr (then_, const0_rtx, VOIDmode, 0);
-
-	  exp = else_;
-
-	  /* Iterate over 'else if's instead of recursing.  */
-	  for (; TREE_CODE (exp) == COND_EXPR; exp = TREE_OPERAND (exp, 2))
-	    {
-	      expand_start_else ();
-	      if (EXPR_HAS_LOCATION (exp))
-		{
-		  emit_line_note (EXPR_LOCATION (exp));
-		  record_block_change (TREE_BLOCK (exp));
-		}
-	      expand_elseif (TREE_OPERAND (exp, 0));
-	      expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, 0);
-	    }
-	  /* Don't emit the jump and label if there's no 'else' clause.  */
-	  if (TREE_SIDE_EFFECTS (exp))
-	    {
-	      expand_start_else ();
-	      expand_expr (exp, const0_rtx, VOIDmode, 0);
-	    }
-	  expand_end_cond ();
-	  return const0_rtx;
-	}
-
-      /* If we would have a "singleton" (see below) were it not for a
-	 conversion in each arm, bring that conversion back out.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 1)) == NOP_EXPR
-	  && TREE_CODE (TREE_OPERAND (exp, 2)) == NOP_EXPR
-	  && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 1), 0))
-	      == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 2), 0))))
-	{
-	  tree iftrue = TREE_OPERAND (TREE_OPERAND (exp, 1), 0);
-	  tree iffalse = TREE_OPERAND (TREE_OPERAND (exp, 2), 0);
-
-	  if ((TREE_CODE_CLASS (TREE_CODE (iftrue)) == '2'
-	       && operand_equal_p (iffalse, TREE_OPERAND (iftrue, 0), 0))
-	      || (TREE_CODE_CLASS (TREE_CODE (iffalse)) == '2'
-		  && operand_equal_p (iftrue, TREE_OPERAND (iffalse, 0), 0))
-	      || (TREE_CODE_CLASS (TREE_CODE (iftrue)) == '1'
-		  && operand_equal_p (iffalse, TREE_OPERAND (iftrue, 0), 0))
-	      || (TREE_CODE_CLASS (TREE_CODE (iffalse)) == '1'
-		  && operand_equal_p (iftrue, TREE_OPERAND (iffalse, 0), 0)))
-	    return expand_expr (build1 (NOP_EXPR, type,
-					build3 (COND_EXPR, TREE_TYPE (iftrue),
-						TREE_OPERAND (exp, 0),
-						iftrue, iffalse)),
-				target, tmode, modifier);
-	}
-
-      {
-	/* Note that COND_EXPRs whose type is a structure or union
-	   are required to be constructed to contain assignments of
-	   a temporary variable, so that we can evaluate them here
-	   for side effect only.  If type is void, we must do likewise.  */
-
-	/* If an arm of the branch requires a cleanup,
-	   only that cleanup is performed.  */
-
-	tree singleton = 0;
-	tree binary_op = 0, unary_op = 0;
-
-	/* If this is (A ? 1 : 0) and A is a condition, just evaluate it and
-	   convert it to our mode, if necessary.  */
-	if (integer_onep (TREE_OPERAND (exp, 1))
-	    && integer_zerop (TREE_OPERAND (exp, 2))
-	    && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<')
-	  {
-	    if (ignore)
-	      {
-		expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-			     modifier);
-		return const0_rtx;
-	      }
-
-	    if (modifier == EXPAND_STACK_PARM)
-	      target = 0;
-	    op0 = expand_expr (TREE_OPERAND (exp, 0), target, mode, modifier);
-	    if (GET_MODE (op0) == mode)
-	      return op0;
-
-	    if (target == 0)
-	      target = gen_reg_rtx (mode);
-	    convert_move (target, op0, unsignedp);
-	    return target;
-	  }
-
-	/* Check for X ? A + B : A.  If we have this, we can copy A to the
-	   output and conditionally add B.  Similarly for unary operations.
-	   Don't do this if X has side-effects because those side effects
-	   might affect A or B and the "?" operation is a sequence point in
-	   ANSI.  (operand_equal_p tests for side effects.)  */
-
-	if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 1))) == '2'
-	    && operand_equal_p (TREE_OPERAND (exp, 2),
-				TREE_OPERAND (TREE_OPERAND (exp, 1), 0), 0))
-	  singleton = TREE_OPERAND (exp, 2), binary_op = TREE_OPERAND (exp, 1);
-	else if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 2))) == '2'
-		 && operand_equal_p (TREE_OPERAND (exp, 1),
-				     TREE_OPERAND (TREE_OPERAND (exp, 2), 0), 0))
-	  singleton = TREE_OPERAND (exp, 1), binary_op = TREE_OPERAND (exp, 2);
-	else if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 1))) == '1'
-		 && operand_equal_p (TREE_OPERAND (exp, 2),
-				     TREE_OPERAND (TREE_OPERAND (exp, 1), 0), 0))
-	  singleton = TREE_OPERAND (exp, 2), unary_op = TREE_OPERAND (exp, 1);
-	else if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 2))) == '1'
-		 && operand_equal_p (TREE_OPERAND (exp, 1),
-				     TREE_OPERAND (TREE_OPERAND (exp, 2), 0), 0))
-	  singleton = TREE_OPERAND (exp, 1), unary_op = TREE_OPERAND (exp, 2);
-
-	/* If we are not to produce a result, we have no target.  Otherwise,
-	   if a target was specified use it; it will not be used as an
-	   intermediate target unless it is safe.  If no target, use a
-	   temporary.  */
-
-	if (ignore)
-	  temp = 0;
-	else if (modifier == EXPAND_STACK_PARM)
-	  temp = assign_temp (type, 0, 0, 1);
-	else if (original_target
-		 && (safe_from_p (original_target, TREE_OPERAND (exp, 0), 1)
-		     || (singleton && REG_P (original_target)
-			 && REGNO (original_target) >= FIRST_PSEUDO_REGISTER
-			 && original_target == var_rtx (singleton)))
-		 && GET_MODE (original_target) == mode
+        if (TREE_ADDRESSABLE (type)
+ 	  || ignore
+ 	  || TREE_TYPE (TREE_OPERAND (exp, 1)) == void_type_node
+ 	  || TREE_TYPE (TREE_OPERAND (exp, 2)) == void_type_node)
+ 	abort ();
+       
+       /* If we are not to produce a result, we have no target.  Otherwise,
+ 	 if a target was specified use it; it will not be used as an
+ 	 intermediate target unless it is safe.  If no target, use a
+ 	 temporary.  */
+       
+       if (modifier != EXPAND_STACK_PARM
+ 	  && original_target
+ 	  && safe_from_p (original_target, TREE_OPERAND (exp, 0), 1)
+ 	  && GET_MODE (original_target) == mode
 #ifdef HAVE_conditional_move
-		 && (! can_conditionally_move_p (mode)
-		     || REG_P (original_target)
-		     || TREE_ADDRESSABLE (type))
+ 	  && (! can_conditionally_move_p (mode)
+ 	      || REG_P (original_target))
 #endif
-		 && (!MEM_P (original_target)
-		     || TREE_ADDRESSABLE (type)))
-	  temp = original_target;
-	else if (TREE_ADDRESSABLE (type))
-	  abort ();
-	else
-	  temp = assign_temp (type, 0, 0, 1);
-
-	/* If we had X ? A + C : A, with C a constant power of 2, and we can
-	   do the test of X as a store-flag operation, do this as
-	   A + ((X != 0) << log C).  Similarly for other simple binary
-	   operators.  Only do for C == 1 if BRANCH_COST is low.  */
-	if (temp && singleton && binary_op
-	    && (TREE_CODE (binary_op) == PLUS_EXPR
-		|| TREE_CODE (binary_op) == MINUS_EXPR
-		|| TREE_CODE (binary_op) == BIT_IOR_EXPR
-		|| TREE_CODE (binary_op) == BIT_XOR_EXPR)
-	    && (BRANCH_COST >= 3 ? integer_pow2p (TREE_OPERAND (binary_op, 1))
-		: integer_onep (TREE_OPERAND (binary_op, 1)))
-	    && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<')
-	  {
-	    rtx result;
-	    tree cond;
-	    optab boptab = (TREE_CODE (binary_op) == PLUS_EXPR
-			    ? (TYPE_TRAP_SIGNED (TREE_TYPE (binary_op))
-			       ? addv_optab : add_optab)
-			    : TREE_CODE (binary_op) == MINUS_EXPR
-			    ? (TYPE_TRAP_SIGNED (TREE_TYPE (binary_op))
-			       ? subv_optab : sub_optab)
-			    : TREE_CODE (binary_op) == BIT_IOR_EXPR ? ior_optab
-			    : xor_optab);
-
-	    /* If we had X ? A : A + 1, do this as A + (X == 0).  */
-	    if (singleton == TREE_OPERAND (exp, 1))
-	      cond = invert_truthvalue (TREE_OPERAND (exp, 0));
-	    else
-	      cond = TREE_OPERAND (exp, 0);
-
-	    result = do_store_flag (cond, (safe_from_p (temp, singleton, 1)
-					   ? temp : NULL_RTX),
-				    mode, BRANCH_COST <= 1);
-
-	    if (result != 0 && ! integer_onep (TREE_OPERAND (binary_op, 1)))
-	      result = expand_shift (LSHIFT_EXPR, mode, result,
-				     build_int_2 (tree_log2
-						  (TREE_OPERAND
-						   (binary_op, 1)),
-						  0),
-				     (safe_from_p (temp, singleton, 1)
-				      ? temp : NULL_RTX), 0);
-
-	    if (result)
-	      {
-		op1 = expand_expr (singleton, NULL_RTX, VOIDmode, 0);
-		return expand_binop (mode, boptab, op1, result, temp,
-				     unsignedp, OPTAB_LIB_WIDEN);
-	      }
-	  }
-
-	do_pending_stack_adjust ();
-	NO_DEFER_POP;
-	op0 = gen_label_rtx ();
-
-	if (singleton && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0)))
-	  {
-	    if (temp != 0)
-	      {
-		/* If the target conflicts with the other operand of the
-		   binary op, we can't use it.  Also, we can't use the target
-		   if it is a hard register, because evaluating the condition
-		   might clobber it.  */
-		if ((binary_op
-		     && ! safe_from_p (temp, TREE_OPERAND (binary_op, 1), 1))
-		    || (REG_P (temp)
-			&& REGNO (temp) < FIRST_PSEUDO_REGISTER))
-		  temp = gen_reg_rtx (mode);
-		store_expr (singleton, temp,
-			    modifier == EXPAND_STACK_PARM ? 2 : 0);
-	      }
-	    else
-	      expand_expr (singleton,
-			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    if (singleton == TREE_OPERAND (exp, 1))
-	      jumpif (TREE_OPERAND (exp, 0), op0);
-	    else
-	      jumpifnot (TREE_OPERAND (exp, 0), op0);
-
-	    if (binary_op && temp == 0)
-	      /* Just touch the other operand.  */
-	      expand_expr (TREE_OPERAND (binary_op, 1),
-			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    else if (binary_op)
-	      store_expr (build2 (TREE_CODE (binary_op), type,
-				  make_tree (type, temp),
-				  TREE_OPERAND (binary_op, 1)),
-			  temp, modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    else
-	      store_expr (build1 (TREE_CODE (unary_op), type,
-				  make_tree (type, temp)),
-			  temp, modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    op1 = op0;
-	  }
-	/* Check for A op 0 ? A : FOO and A op 0 ? FOO : A where OP is any
-	   comparison operator.  If we have one of these cases, set the
-	   output to A, branch on A (cse will merge these two references),
-	   then set the output to FOO.  */
-	else if (temp
-		 && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<'
-		 && integer_zerop (TREE_OPERAND (TREE_OPERAND (exp, 0), 1))
-		 && operand_equal_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
-				     TREE_OPERAND (exp, 1), 0)
-		 && (! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
-		     || TREE_CODE (TREE_OPERAND (exp, 1)) == SAVE_EXPR)
-		 && safe_from_p (temp, TREE_OPERAND (exp, 2), 1))
-	  {
-	    if (REG_P (temp)
-		&& REGNO (temp) < FIRST_PSEUDO_REGISTER)
-	      temp = gen_reg_rtx (mode);
-	    store_expr (TREE_OPERAND (exp, 1), temp,
-			modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    jumpif (TREE_OPERAND (exp, 0), op0);
-
-	    if (TREE_TYPE (TREE_OPERAND (exp, 2)) != void_type_node)
-	      store_expr (TREE_OPERAND (exp, 2), temp,
-			  modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    else
-	      expand_expr (TREE_OPERAND (exp, 2),
-			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    op1 = op0;
-	  }
-	else if (temp
-		 && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<'
-		 && integer_zerop (TREE_OPERAND (TREE_OPERAND (exp, 0), 1))
-		 && operand_equal_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
-				     TREE_OPERAND (exp, 2), 0)
-		 && (! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
-		     || TREE_CODE (TREE_OPERAND (exp, 2)) == SAVE_EXPR)
-		 && safe_from_p (temp, TREE_OPERAND (exp, 1), 1))
-	  {
-	    if (REG_P (temp)
-		&& REGNO (temp) < FIRST_PSEUDO_REGISTER)
-	      temp = gen_reg_rtx (mode);
-	    store_expr (TREE_OPERAND (exp, 2), temp,
-			modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    jumpifnot (TREE_OPERAND (exp, 0), op0);
-
-	    if (TREE_TYPE (TREE_OPERAND (exp, 1)) != void_type_node)
-	      store_expr (TREE_OPERAND (exp, 1), temp,
-			  modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    else
-	      expand_expr (TREE_OPERAND (exp, 1),
-			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    op1 = op0;
-	  }
-	else
-	  {
-	    op1 = gen_label_rtx ();
-	    jumpifnot (TREE_OPERAND (exp, 0), op0);
-
-	    /* One branch of the cond can be void, if it never returns. For
-	       example A ? throw : E  */
-	    if (temp != 0
-		&& TREE_TYPE (TREE_OPERAND (exp, 1)) != void_type_node)
-	      store_expr (TREE_OPERAND (exp, 1), temp,
-			  modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    else
-	      expand_expr (TREE_OPERAND (exp, 1),
-			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    emit_jump_insn (gen_jump (op1));
-	    emit_barrier ();
-	    emit_label (op0);
-	    if (temp != 0
-		&& TREE_TYPE (TREE_OPERAND (exp, 2)) != void_type_node)
-	      store_expr (TREE_OPERAND (exp, 2), temp,
-			  modifier == EXPAND_STACK_PARM ? 2 : 0);
-	    else
-	      expand_expr (TREE_OPERAND (exp, 2),
-			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	  }
-
-	emit_label (op1);
-	OK_DEFER_POP;
-
-	return temp;
-      }
-
-    case INIT_EXPR:
-      {
-	tree lhs = TREE_OPERAND (exp, 0);
-	tree rhs = TREE_OPERAND (exp, 1);
-
-	temp = expand_assignment (lhs, rhs, ! ignore);
-	return temp;
-      }
-
+ 	  && !MEM_P (original_target))
+ 	temp = original_target;
+       else
+ 	temp = assign_temp (type, 0, 0, 1);
+       
+       do_pending_stack_adjust ();
+       NO_DEFER_POP;
+       op0 = gen_label_rtx ();
+       op1 = gen_label_rtx ();
+       jumpifnot (TREE_OPERAND (exp, 0), op0);
+       store_expr (TREE_OPERAND (exp, 1), temp,
+ 		  modifier == EXPAND_STACK_PARM ? 2 : 0);
+       
+       emit_jump_insn (gen_jump (op1));
+       emit_barrier ();
+       emit_label (op0);
+       store_expr (TREE_OPERAND (exp, 2), temp,
+ 		  modifier == EXPAND_STACK_PARM ? 2 : 0);
+       
+       emit_label (op1);
+       OK_DEFER_POP;
+       return temp;
+  
     case MODIFY_EXPR:
       {
 	/* If lhs is complex, expand calls in rhs before computing it.
@@ -8466,47 +8111,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
       return gen_imagpart (mode, op0);
 
-    case CONJ_EXPR:
-      {
-	enum machine_mode partmode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
-	rtx imag_t;
-	rtx insns;
-
-	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
-
-	if (! target)
-	  target = gen_reg_rtx (mode);
-
-	start_sequence ();
-
-	/* Store the realpart and the negated imagpart to target.  */
-	emit_move_insn (gen_realpart (partmode, target),
-			gen_realpart (partmode, op0));
-
-	imag_t = gen_imagpart (partmode, target);
-	temp = expand_unop (partmode,
-			    ! unsignedp && flag_trapv
-			    && (GET_MODE_CLASS(partmode) == MODE_INT)
-			    ? negv_optab : neg_optab,
-			    gen_imagpart (partmode, op0), imag_t, 0);
-	if (temp != imag_t)
-	  emit_move_insn (imag_t, temp);
-
-	insns = get_insns ();
-	end_sequence ();
-
-	/* Conjugate should appear as a single unit
-	   If TARGET is a CONCAT, we got insns like RD = RS, ID = - IS,
-	   each with a separate pseudo as destination.
-	   It's not correct for flow to treat them as a unit.  */
-	if (GET_CODE (target) != CONCAT)
-	  emit_no_conflict_block (insns, target, op0, NULL_RTX, NULL_RTX);
-	else
-	  emit_insn (insns);
-
-	return target;
-      }
-
     case RESX_EXPR:
       expand_resx_expr (exp);
       return const0_rtx;
@@ -8524,6 +8128,19 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case CASE_LABEL_EXPR:
     case VA_ARG_EXPR:
     case BIND_EXPR:
+    case INIT_EXPR:
+    case CONJ_EXPR:
+    case COMPOUND_EXPR:
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case LOOP_EXPR:
+    case EXIT_EXPR:
+    case LABELED_BLOCK_EXPR:
+    case EXIT_BLOCK_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
       /* Lowered by gimplify.c.  */
       abort ();
 
@@ -8533,10 +8150,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case FILTER_EXPR:
       return get_exception_filter (cfun);
 
-    case PREINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
     case FDESC_EXPR:
       /* Function descriptors are not valid except for as
 	 initialization constants, and should not be expanded.  */

@@ -435,12 +435,6 @@ extern void emit_unop_insn (int, rtx, rtx, enum rtx_code);
    word at a time.  */
 extern rtx emit_no_conflict_block (rtx, rtx, rtx, rtx, rtx);
 
-/* Emit one rtl instruction to store zero in specified rtx.  */
-extern void emit_clr_insn (rtx);
-
-/* Emit one rtl insn to store 1 in specified rtx assuming it contains 0.  */
-extern void emit_0_to_1_insn (rtx);
-
 /* Emit one rtl insn to compare two rtx's.  */
 extern void emit_cmp_insn (rtx, rtx, enum rtx_code, rtx, enum machine_mode,
 			   int);
