@@ -1,5 +1,22 @@
 2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR java/15715.
+	* parse.y (create_interface): Set correct access modifiers for
+	interfaces.
+	* jcf-write.c (get_classfile_modifiers): New function.
+	(generate_classfile): Use get_classfile_modifiers, not 
+	get_access_flags.
+
+2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* parse.y (register_incomplete_type): Set JDEP_ENCLOSING for "super"
+	dependency to current parser context, not NULL_TREE, for top-level
+	classes.
+	(jdep_resolve_class): Enable member access check for all inner
+	class dependencies.
+
+2004-06-26  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* parse.y (qualify_and_find): Pass type decl, not identifier, to 
 	load_class.
 
