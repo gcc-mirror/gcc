@@ -1,3 +1,11 @@
+Sun Apr 12 20:47:37 1998  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* cccp.c (eprint_string): New function.
+	(do_elif, do_else, verror): Use it instead of fwrite(,,,stderr).
+	(error_from_errno, vwarning): Likewise.
+	({verror,vwarning,pedwarn}_with_line): Likewise.
+	(pedwarn_with_file_and_line, print_containing_files): Likewise.
+
 Sun Apr 12 20:40:44 1998  Richard Henderson  <rth@dot.cygnus.com>
 
 	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.
