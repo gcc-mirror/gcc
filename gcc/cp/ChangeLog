@@ -1,3 +1,12 @@
+Thu Dec 18 14:43:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.def: Add AGGR_INIT_EXPR.
+	* error.c, tree.c, typeck.c: Replace uses of NEW_EXPR with
+	AGGR_INIT_EXPR where appropriate.
+	* expr.c (cplus_expand_expr): Likewise.  Simplify.
+
+	* decl2.c (finish_file): Remove call to register_exception_table.
+
 Wed Dec 17 17:08:52 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* pt.c (instantiate_class_template): Don't do injection when

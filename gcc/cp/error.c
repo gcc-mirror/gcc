@@ -1205,7 +1205,7 @@ dump_expr (t, nop)
 	}
       break;
 
-    case NEW_EXPR:
+    case AGGR_INIT_EXPR:
       OB_PUTID (TYPE_IDENTIFIER (TREE_TYPE (t)));
       OB_PUTC ('(');
       if (TREE_OPERAND (t, 1))

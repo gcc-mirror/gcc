@@ -1559,18 +1559,6 @@ exception_table_p ()
   return 0;
 }
 
-/* 1 if we need a static constructor to register EH table info.  */
-
-int
-register_exception_table_p ()
-{
-#if defined (DWARF2_UNWIND_INFO)
-  return 0;
-#endif
-
-  return exception_table_p ();
-}
-
 /* Output the entry of the exception table corresponding to to the
    exception region numbered N to file FILE. 
 
@@ -1627,18 +1615,6 @@ output_exception_table ()
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
   putc ('\n', asm_out_file);		/* blank line */
-}
-
-/* Generate code to initialize the exception table at program startup
-   time.  */
-
-void
-register_exception_table ()
-{
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__register_exceptions"), 0,
-		     VOIDmode, 1,
-		     gen_rtx (SYMBOL_REF, Pmode, "__EXCEPTION_TABLE__"),
-		     Pmode);
 }
 
 /* Emit code to get EH context.
