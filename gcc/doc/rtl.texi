@@ -725,7 +725,7 @@ Stored in the @code{integrated} field and printed as @samp{/i}.
 @item MEM_READONLY_P (@var{x})
 Nonzero in a @code{mem}, if the memory is statically allocated and read-only.
 
-Read-only in this context never modified during the lifetime of the
+Read-only in this context means never modified during the lifetime of the
 program, not necessarily in ROM or in write-disabled pages.  A common
 example of the later is a shared library's global offset table.  This
 table is initialized by the runtime loader, so the memory is technically
