@@ -3177,11 +3177,13 @@ subst (x, from, to, in_dest, unique_copy)
 	  )
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
-      /* If we are narrowing the object, we need to see if we can simplify
-	 the expression for the object knowing that we only need the
+      /* If we are narrowing an integral object, we need to see if we can
+	 simplify the expression for the object knowing that we only need the
 	 low-order bits.  */
 
-      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
 	  && subreg_lowpart_p (x))
 	return force_to_mode (SUBREG_REG (x), mode, GET_MODE_MASK (mode),
 			      NULL_RTX);
