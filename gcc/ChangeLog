@@ -1,3 +1,14 @@
+2001-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	* config/sparc/linux.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	* config/sparc/linux64.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	(CC1_SPEC): Don't default to -gstabs+ if -m32.
+
+2001-12-05  David O'Brien  <obrien@FreeBSD.org>
+
+	* elfos.h (PREFERRED_DEBUGGING_TYPE): Change to DWARF2_DEBUG.
+
 2001-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* po/gcc.pot: Regenerate.

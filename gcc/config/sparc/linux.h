@@ -32,9 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #define MULTIBYTE_CHARS 1
 #endif
 
-/* Use stabs instead of DWARF debug format.  */
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
@@ -194,11 +191,6 @@ Boston, MA 02111-1307, USA.  */
 /* Same as sparc.h */
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
-/* We use stabs-in-elf for debugging, because that is what the native
-   toolchain uses.  XXX */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\

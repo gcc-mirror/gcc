@@ -249,7 +249,6 @@ Boston, MA 02111-1307, USA.  */
 %{m64:-mptr64 -mstack-bias -mlong-double-128 \
   %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=ultrasparc}}}}}}} \
   %{!mno-vis:%{!mcpu=v9:-mvis}}} \
-%{!m64:%{g*:%{!gs*:%{!gd*:%{!gx*:%{!gc*:-gstabs+}}}}}} \
 "
 #else
 #define CC1_SPEC "\
@@ -258,8 +257,7 @@ Boston, MA 02111-1307, USA.  */
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}} \
-  %{g*:%{!gs*:%{!gd*:%{!gx*:%{!gc*:-gstabs+}}}}}} \
+  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \
 %{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}} \
 "
@@ -314,9 +312,6 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO
-
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
