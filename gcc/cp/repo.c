@@ -137,7 +137,13 @@ repo_template_used (t)
   else if (DECL_P (t))
     {
       if (IDENTIFIER_REPO_CHOSEN (id))
-	mark_decl_instantiated (t, 0);
+	/* It doesn't make sense to instantiate a clone, so we
+	   instantiate the cloned function instead.  Note that this
+	   approach will not work correctly if collect2 assigns
+	   different clones to different files -- but it shouldn't.  */
+	mark_decl_instantiated (DECL_CLONED_FUNCTION_P (t)
+				? DECL_CLONED_FUNCTION (t) : t, 
+				0);
     }
   else
     my_friendly_abort (1);
