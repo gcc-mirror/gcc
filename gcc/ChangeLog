@@ -1,3 +1,11 @@
+2003-04-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* alias.c (find_base_term): Export.
+	* rtl.h (find_base_term): Declare.
+	* gcse.c (find_moveable_store): Test for flag_non_call_exceptions
+	instead of flag_exceptions.  Move test for parameter passing ...
+	(store_killed_in_insn): ... here.
+
 2003-04-05  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	PR bootstrap/10267
