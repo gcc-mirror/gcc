@@ -37,7 +37,7 @@ static rtx skip_copy_to_return_value	PARAMS ((rtx, rtx, rtx));
 static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
 static rtx skip_stack_adjustment	PARAMS ((rtx));
 static rtx skip_jump_insn		PARAMS ((rtx));
-static int uses_addressof		PARAMS ((rtx));
+static int uses_addressof		PARAMS ((rtx, int));
 static int sequence_uses_addressof	PARAMS ((rtx));
 static void purge_reg_equiv_notes	PARAMS ((void));
 
@@ -235,12 +235,18 @@ skip_jump_insn (orig_insn)
   return orig_insn;
 }
 
-/* Scan the rtx X for an ADDRESSOF expressions.  Return nonzero if an ADDRESSOF
-   expresion is found, else return zero.  */
+/* Scan the rtx X for ADDRESSOF expressions or
+   current_function_internal_arg_pointer registers.
+   INMEM argument should be 1 if we're looking at inner part of some
+   MEM expression, otherwise 0.
+   Return nonzero if an ADDRESSOF expresion is found or if
+   current_function_internal_arg_pointer is found outside of some MEM
+   expression, else return zero.  */
 
 static int
-uses_addressof (x)
+uses_addressof (x, inmem)
      rtx x;
+     int inmem;
 {
   RTX_CODE code;
   int i, j;
@@ -254,19 +260,25 @@ uses_addressof (x)
   if (code == ADDRESSOF)
     return 1;
 
+  if (x == current_function_internal_arg_pointer && ! inmem)
+    return 1;
+
+  if (code == MEM)
+    return uses_addressof (XEXP (x, 0), 1);
+
   /* Scan all subexpressions. */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
       if (*fmt == 'e')
 	{
-	  if (uses_addressof (XEXP (x, i)))
+	  if (uses_addressof (XEXP (x, i), inmem))
 	    return 1;
 	}
       else if (*fmt == 'E')
 	{
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (uses_addressof (XVECEXP (x, i, j)))
+	    if (uses_addressof (XVECEXP (x, i, j), inmem))
 	      return 1;
 	}
     }
@@ -274,8 +286,10 @@ uses_addressof (x)
 }
 
 /* Scan the sequence of insns in SEQ to see if any have an ADDRESSOF
-   rtl expression.  If an ADDRESSOF expression is found, return nonzero,
-   else return zero.
+   rtl expression or current_function_internal_arg_pointer occurences
+   not enclosed within a MEM.  If an ADDRESSOF expression or
+   current_function_internal_arg_pointer is found, return nonzero, otherwise
+   return zero.
 
    This function handles CALL_PLACEHOLDERs which contain multiple sequences
    of insns.  */
@@ -304,8 +318,8 @@ sequence_uses_addressof (seq)
 		&& sequence_uses_addressof (XEXP (PATTERN (insn), 2)))
 	      return 1;
 	  }
-	else if (uses_addressof (PATTERN (insn))
-		 || (REG_NOTES (insn) && uses_addressof (REG_NOTES (insn))))
+	else if (uses_addressof (PATTERN (insn), 0)
+		 || (REG_NOTES (insn) && uses_addressof (REG_NOTES (insn), 0)))
 	  return 1;
       }
   return 0;
