@@ -6106,32 +6106,37 @@ mips_asm_file_start (stream)
   if (TARGET_MIPS_AS && optimize && flag_delayed_branch)
     fprintf (stream, "\t.set\tnobopt\n");
 
-#ifdef OBJECT_FORMAT_ELF
-  /* Generate a special section to describe the ABI switches used to produce
-     the resultant binary.  This used to be done by the assembler setting bits
-     in the ELF header's flags field, but we have run out of bits.  GDB needs
-     this information in order to be able to correctly debug these binaries.
-     See the function mips_gdbarch_init() in gdb/mips-tdep.c.  */
-  switch (mips_abi)
+  if (TARGET_GAS)
     {
-    case ABI_32:   abi_string = "abi32"; break;
-    case ABI_N32:  abi_string = "abiN32"; break;
-    case ABI_64:   abi_string = "abi64"; break;
-    case ABI_O64:  abi_string = "abiO64"; break;
-    case ABI_EABI: abi_string = TARGET_64BIT ? "eabi64" : "eabi32"; break;
-    case ABI_MEABI:abi_string = TARGET_64BIT ? "meabi64" : "meabi32"; break;
-    default:
-      abort ();
-    }
-  /* Note - we use fprintf directly rather than called named_section()
-     because in this way we can avoid creating an allocated section.  We
-     do not want this section to take up any space in the running
-     executable.  */
-  fprintf (stream, "\t.section .mdebug.%s\n", abi_string);
+#if defined(OBJECT_FORMAT_ELF)
+      /* Generate a special section to describe the ABI switches used to
+	 produce the resultant binary.  This used to be done by the assembler
+	 setting bits in the ELF header's flags field, but we have run out of
+	 bits.  GDB needs this information in order to be able to correctly
+	 debug these binaries. See the function mips_gdbarch_init() in
+	 gdb/mips-tdep.c.  */
 
-  /* Restore the default section.  */
-  fprintf (stream, "\t.previous\n");
+      switch (mips_abi)
+	{
+	case ABI_32:   abi_string = "abi32"; break;
+	case ABI_N32:  abi_string = "abiN32"; break;
+	case ABI_64:   abi_string = "abi64"; break;
+	case ABI_O64:  abi_string = "abiO64"; break;
+	case ABI_EABI: abi_string = TARGET_64BIT ? "eabi64" : "eabi32"; break;
+	case ABI_MEABI:abi_string = TARGET_64BIT ? "meabi64" : "meabi32"; break;
+	default:
+	  abort ();
+	}
+      /* Note - we use fprintf directly rather than called named_section()
+	 because in this way we can avoid creating an allocated section.  We
+	 do not want this section to take up any space in the running
+	 executable.  */
+      fprintf (stream, "\t.section .mdebug.%s\n", abi_string);
+
+      /* Restore the default section.  */
+      fprintf (stream, "\t.previous\n");
 #endif
+    }
 
 
 
