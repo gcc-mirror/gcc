@@ -1,5 +1,5 @@
 # Makefile for GNU C compiler.
-#   Copyright (C) 1987, 88, 90-95, 1996 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-96, 1997 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -502,6 +502,7 @@ FLAGS_TO_PASS = \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"RANLIB_TEST_FOR_TARGET=$(RANLIB_TEST_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
+	"STAGE_PREFIX=set-by-configure" \
 	"exeext=$(exeext)" \
 	"objext=$(objext)" \
 	"exec_prefix=$(exec_prefix)" \
