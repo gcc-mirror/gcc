@@ -1,3 +1,13 @@
+2001-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi: Don't include install-old.texi.  Adjust menu
+	description for Trouble section.
+	* doc/install-old.texi: Adjust for inclusion as chapter of new
+	installation manual.
+	* doc/install.texi, doc/include/fdl.texi, doc/install.texi2html:
+	Adjust to include old installation chapter as chapter of new
+	installation manual.
+
 Fri Dec  7 11:07:35 EST 2001  John Wehle  (john@feith.com)
 
 	* rtl.h (get_jump_table_offset): Declare.
