@@ -792,7 +792,7 @@ TAGS: do-TAGS
 .PHONY: configure-build-[+module+] maybe-configure-build-[+module+]
 maybe-configure-build-[+module+]:
 configure-build-[+module+]: $(BUILD_SUBDIR)/[+module+]/Makefile
-@build_prefix@$(BUILD_SUBDIR)/[+module+]/Makefile: config.status
+$(BUILD_SUBDIR)/[+module+]/Makefile: config.status
 	@[ -d $(BUILD_SUBDIR)/[+module+] ] || mkdir $(BUILD_SUBDIR)/[+module+];\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \

@@ -1235,7 +1235,7 @@ TAGS: do-TAGS
 .PHONY: configure-build-libiberty maybe-configure-build-libiberty
 maybe-configure-build-libiberty:
 configure-build-libiberty: $(BUILD_SUBDIR)/libiberty/Makefile
-@build_prefix@$(BUILD_SUBDIR)/libiberty/Makefile: config.status
+$(BUILD_SUBDIR)/libiberty/Makefile: config.status
 	@[ -d $(BUILD_SUBDIR)/libiberty ] || mkdir $(BUILD_SUBDIR)/libiberty;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
