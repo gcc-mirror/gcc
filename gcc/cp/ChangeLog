@@ -1,5 +1,11 @@
 2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
 
+	* error.c (print_whitespace): Remove.
+	* g++spec.c (LIBUNWIND): Move.
+	* mangle.c (mangled_position, write_signed_number): Remove.
+
+2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
+
 	* decl2.c (cxx_decode_option): Similarly.
 
 2002-07-25  Gabriel Dos Reis  <gdr@nerim.net>

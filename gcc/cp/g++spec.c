@@ -43,10 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define LIBSTDCXX_PROFILE "-lstdc++"
 #endif
 
-#ifndef LIBUNWIND
-#define LIBUNWIND "-lunwind"
-#endif
-
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
@@ -277,6 +273,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       arglist[j++] = saw_profile_flag ? LIBSTDCXX_PROFILE : LIBSTDCXX;
       added_libraries++;
 #ifdef USE_LIBUNWIND_EXCEPTIONS
+# ifndef LIBUNWIND
+#  define LIBUNWIND "-lunwind"
+# endif
       arglist[j++] = LIBUNWIND;
       added_libraries++;
 #endif

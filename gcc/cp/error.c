@@ -45,11 +45,6 @@ enum pad { none, before, after };
    print_non_consecutive_character ((BUFFER), '<')
 #define print_template_argument_list_end(BUFFER)  \
    print_non_consecutive_character ((BUFFER), '>')
-#define print_whitespace(BUFFER, TFI)        \
-   do {                                      \
-     output_add_space (BUFFER);              \
-     put_whitespace (TFI) = none;            \
-   } while (0)
 #define print_tree_identifier(BUFFER, TID) \
    output_add_string ((BUFFER), IDENTIFIER_POINTER (TID))
 #define print_identifier(BUFFER, ID) output_add_string ((BUFFER), (ID))

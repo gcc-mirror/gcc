@@ -214,11 +214,6 @@ static void write_java_integer_type_codes PARAMS ((tree));
 #define write_string(STRING)                                          \
   obstack_grow (&G.name_obstack, (STRING), strlen (STRING))
 
-/* Return the position at which the next character will be appended to
-   the mangled representation.  */
-#define mangled_position()                                              \
-  obstack_object_size (&G.name_obstack)
-
 /* Non-zero if NODE1 and NODE2 are both TREE_LIST nodes and have the
    same purpose (context, which may be a type) and value (template
    decl).  See write_template_prefix for more information on what this
@@ -230,10 +225,6 @@ static void write_java_integer_type_codes PARAMS ((tree));
         && same_type_p (TREE_PURPOSE (NODE1), TREE_PURPOSE (NODE2)))\
        || TREE_PURPOSE (NODE1) == TREE_PURPOSE (NODE2))             \
    && TREE_VALUE (NODE1) == TREE_VALUE (NODE2))
-
-/* Write out a signed quantity in base 10.  */
-#define write_signed_number(NUMBER) \
-  write_number ((NUMBER), /*unsigned_p=*/0, 10)
 
 /* Write out an unsigned quantity in base 10.  */
 #define write_unsigned_number(NUMBER) \
