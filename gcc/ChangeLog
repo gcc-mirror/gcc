@@ -1,3 +1,11 @@
+Wed Sep 17 18:19:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* libgcc2.c (find_exception_handler): Subtract one from our PC when
+ 	looking for a handler, to avoid hitting the beginning of the next
+ 	region.
+
+	* except.c (expand_builtin_set_return_addr_reg): Use force_operand.
+
 Wed Sep 17 18:33:59 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mips/abi64.h (LONG_MAX_SPEC): Define.
