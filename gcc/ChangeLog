@@ -1,3 +1,8 @@
+Sat Oct 16 00:07:01 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcse.c (hash_expr_1): Add in MEM_ALIAS_SET.
+	(expr_equiv_p): Reject memories with different alias sets.
+
 Fri Oct 15 15:17:29 1999  Greg McGary  <gkm@gnu.org>
 
 	* flags.h (flag_bounds_check, flag_bounded_pointers): New extern decls.
