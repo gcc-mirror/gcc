@@ -13,7 +13,8 @@ static integer c__5 = 5;
 {
     /* System generated locals */
     address a__1[5];
-    integer i__1, i__2[5];
+    longint i__1;
+    integer i__2[5];
     char ch__1[24];
 
     /* Builtin functions */
@@ -21,7 +22,7 @@ static integer c__5 = 5;
 
     /* Local variables */
     static char cbuf[24];
-    extern integer G77_time_0 ();
+    extern longint G77_time_0 ();
     extern /* Character */ VOID G77_ctime_0 ();
 
     i__1 = G77_time_0 ();
