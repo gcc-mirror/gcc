@@ -5975,73 +5975,28 @@ beq\t%2,%.,1b\;\
 ;;
 
 
-(define_expand "prefetch"
-  [(prefetch (match_operand 0 "address_operand")
-	     (match_operand 1 "const_int_operand")
-	     (match_operand 2 "const_int_operand"))]
-  "ISA_HAS_PREFETCH"
+(define_insn "prefetch"
+  [(prefetch (match_operand:QI 0 "address_operand" "p")
+	     (match_operand 1 "const_int_operand" "n")
+	     (match_operand 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCH && TARGET_EXPLICIT_RELOCS"
 {
-  if (symbolic_operand (operands[0], GET_MODE (operands[0])))
-    operands[0] = force_reg (GET_MODE (operands[0]), operands[0]);
-})
-
-(define_insn "prefetch_si_address"
-  [(prefetch (plus:SI (match_operand:SI 0 "register_operand" "r")
-		      (match_operand:SI 3 "const_int_operand" "I"))
-	     (match_operand:SI 1 "const_int_operand" "n")
-	     (match_operand:SI 2 "const_int_operand" "n"))]
-  "ISA_HAS_PREFETCH && Pmode == SImode"
-  { return mips_emit_prefetch (operands); }
-  [(set_attr "type" "prefetch")])
-
-(define_insn "prefetch_indexed_si"
-  [(prefetch (plus:SI (match_operand:SI 0 "register_operand" "r")
-		      (match_operand:SI 3 "register_operand" "r"))
-	     (match_operand:SI 1 "const_int_operand" "n")
-	     (match_operand:SI 2 "const_int_operand" "n"))]
-  "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && Pmode == SImode"
-  { return mips_emit_prefetch (operands); }
-  [(set_attr "type" "prefetchx")])
-
-(define_insn "prefetch_si"
-  [(prefetch (match_operand:SI 0 "register_operand" "r")
-	     (match_operand:SI 1 "const_int_operand" "n")
-	     (match_operand:SI 2 "const_int_operand" "n"))]
-  "ISA_HAS_PREFETCH && Pmode == SImode"
-{
-  operands[3] = const0_rtx;
-  return mips_emit_prefetch (operands);
+  operands[1] = mips_prefetch_cookie (operands[1], operands[2]);
+  return "pref\t%1,%a0";
 }
   [(set_attr "type" "prefetch")])
 
-(define_insn "prefetch_di_address"
-  [(prefetch (plus:DI (match_operand:DI 0 "register_operand" "r")
-		      (match_operand:DI 3 "const_int_operand" "I"))
-	     (match_operand:DI 1 "const_int_operand" "n")
-	     (match_operand:DI 2 "const_int_operand" "n"))]
-  "ISA_HAS_PREFETCH && Pmode == DImode"
-  { return mips_emit_prefetch (operands); }
-  [(set_attr "type" "prefetch")])
-
-(define_insn "prefetch_indexed_di"
-  [(prefetch (plus:DI (match_operand:DI 0 "register_operand" "r")
-		      (match_operand:DI 3 "register_operand" "r"))
-	     (match_operand:DI 1 "const_int_operand" "n")
-	     (match_operand:DI 2 "const_int_operand" "n"))]
-  "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && Pmode == DImode"
-  { return mips_emit_prefetch (operands); }
-  [(set_attr "type" "prefetchx")])
-
-(define_insn "prefetch_di"
-  [(prefetch (match_operand:DI 0 "register_operand" "r")
-	     (match_operand:DI 1 "const_int_operand" "n")
-	     (match_operand:DI 2 "const_int_operand" "n"))]
-  "ISA_HAS_PREFETCH && Pmode == DImode"
+(define_insn "*prefetch_indexed_<mode>"
+  [(prefetch (plus:P (match_operand:P 0 "register_operand" "d")
+		     (match_operand:P 1 "register_operand" "d"))
+	     (match_operand 2 "const_int_operand" "n")
+	     (match_operand 3 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
-  operands[3] = const0_rtx;
-  return mips_emit_prefetch (operands);
+  operands[2] = mips_prefetch_cookie (operands[2], operands[3]);
+  return "prefx\t%2,%1(%0)";
 }
-  [(set_attr "type" "prefetch")])
+  [(set_attr "type" "prefetchx")])
 
 (define_insn "nop"
   [(const_int 0)]

@@ -4836,6 +4836,10 @@ print_operand_address (FILE *file, rtx x)
 	return;
 
       case ADDRESS_CONST_INT:
+	output_addr_const (file, x);
+	fprintf (file, "(%s)", reg_names[0]);
+	return;
+
       case ADDRESS_SYMBOLIC:
 	output_addr_const (file, x);
 	return;
@@ -9080,26 +9084,22 @@ mips_multipass_dfa_lookahead (void)
   return 0;
 }
 
+/* Given that we have an rtx of the form (prefetch ... WRITE LOCALITY),
+   return the first operand of the associated "pref" or "prefx" insn.  */
 
-const char *
-mips_emit_prefetch (rtx *operands)
+rtx
+mips_prefetch_cookie (rtx write, rtx locality)
 {
-  int write = INTVAL (operands[1]);
-  int locality = INTVAL (operands[2]);
-  int indexed = GET_CODE (operands[3]) == REG;
-  int code;
-  char buffer[30];
+  /* store_streamed / load_streamed.  */
+  if (INTVAL (locality) <= 0)
+    return GEN_INT (INTVAL (write) + 4);
 
-  if (locality <= 0)
-    code = (write ? 5 : 4);	/* store_streamed / load_streamed.  */
-  else if (locality <= 2)
-    code = (write ? 1 : 0);	/* store / load.  */
-  else
-    code = (write ? 7 : 6);	/* store_retained / load_retained.  */
+  /* store / load.  */
+  if (INTVAL (locality) <= 2)
+    return write;
 
-  sprintf (buffer, "%s\t%d,%%3(%%0)", indexed ? "prefx" : "pref", code);
-  output_asm_insn (buffer, operands);
-  return "";
+  /* store_retained / load_retained.  */
+  return GEN_INT (INTVAL (write) + 6);
 }
 
 #include "gt-mips.h"
