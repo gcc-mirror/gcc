@@ -96,21 +96,6 @@ static int is_extended_char PARAMS ((int));
 static int is_extended_char_1 PARAMS ((int));
 static void init_operators PARAMS ((void));
 
-/* Given a file name X, return the nondirectory portion.
-   Keep in mind that X can be computed more than once.  */
-char *
-file_name_nondirectory (x)
-     const char *x;
-{
-  char *tmp = (char *) rindex (x, '/');
-  if (DIR_SEPARATOR != '/' && ! tmp)
-    tmp = (char *) rindex (x, DIR_SEPARATOR);
-  if (tmp)
-    return (char *) (tmp + 1);
-  else
-    return (char *) x;
-}
-
 /* This obstack is needed to hold text.  It is not safe to use
    TOKEN_BUFFER because `check_newline' calls `yylex'.  */
 struct obstack inline_text_obstack;

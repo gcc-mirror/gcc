@@ -422,6 +422,10 @@ tree (*lang_expand_constant) PARAMS ((tree)) = 0;
 
 void (*incomplete_decl_finalize_hook) PARAMS ((tree)) = 0;
 
+/* Nonzero if doing dwarf2 duplicate elimination.  */
+
+int flag_eliminate_dwarf2_dups = 0;
+
 /* Nonzero if generating code to do profiling.  */
 
 int profile_flag = 0;
@@ -944,6 +948,8 @@ const char *user_label_prefix;
 
 lang_independent_options f_options[] =
 {
+  {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1, 
+   "Perform DWARF2 duplicate elimination"},
   {"float-store", &flag_float_store, 1,
    "Do not store floats in registers" },
   {"volatile", &flag_volatile, 1,
@@ -1654,6 +1660,21 @@ strip_off_ending (name, len)
 	  break;
 	}
     }
+}
+
+/* Given a file name X, return the nondirectory portion.  */
+
+char *
+file_name_nondirectory (x)
+     const char *x;
+{
+  char *tmp = (char *) rindex (x, '/');
+  if (DIR_SEPARATOR != '/' && ! tmp)
+    tmp = (char *) rindex (x, DIR_SEPARATOR);
+  if (tmp)
+    return (char *) (tmp + 1);
+  else
+    return (char *) x;
 }
 
 /* Output a quoted string.  */
@@ -2560,6 +2581,10 @@ rest_of_type_compilation (type, toplev)
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
     sdbout_symbol (TYPE_STUB_DECL (type), !toplev);
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG && toplev)
+    dwarf2out_decl (TYPE_STUB_DECL (type));
 #endif
   timevar_pop (TV_SYMOUT);
 }
@@ -4973,8 +4998,7 @@ debug_start_source_file (filename)
     dwarfout_start_new_source_file (filename);
 #endif /* DWARF_DEBUGGING_INFO  */
 #ifdef DWARF2_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG)
     dwarf2out_start_source_file (filename);
 #endif /* DWARF2_DEBUGGING_INFO  */
 #ifdef SDB_DEBUGGING_INFO
@@ -5000,8 +5024,7 @@ debug_end_source_file (lineno)
     dwarfout_resume_previous_source_file (lineno);
 #endif /* DWARF_DEBUGGING_INFO  */
 #ifdef DWARF2_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG)
     dwarf2out_end_source_file ();
 #endif /* DWARF2_DEBUGGING_INFO  */
 #ifdef SDB_DEBUGGING_INFO

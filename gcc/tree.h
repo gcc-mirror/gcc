@@ -2435,6 +2435,7 @@ extern tree builtin_function			PARAMS ((const char *, tree, int,
 
 /* In tree.c */
 extern char *perm_calloc			PARAMS ((int, long));
+extern void clean_symbol_name			PARAMS ((char *));
 extern tree get_file_function_name		PARAMS ((int));
 extern tree get_file_function_name_long 	PARAMS ((const char *));
 extern tree get_set_constructor_bits		PARAMS ((tree, char *, int));
