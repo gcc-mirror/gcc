@@ -79,7 +79,7 @@ static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
 
 rtx m68hc11_soft_tmp_reg;
 
-/* Must be set to 1 to produce debug messages. */
+/* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
 
 extern FILE *asm_out_file;
@@ -299,7 +299,7 @@ m68hc11_conditional_register_usage ()
 }
 
 
-/* Reload and register operations. */
+/* Reload and register operations.  */
 
 static const char *const reg_class_names[] = REG_CLASS_NAMES;
 
@@ -689,7 +689,7 @@ m68hc11_reload_operands (operands)
 
   mode = GET_MODE (operands[1]);
 
-  /* Input reload of indirect addressing (MEM (PLUS (REG) (CONST))). */
+  /* Input reload of indirect addressing (MEM (PLUS (REG) (CONST))).  */
   if (A_REG_P (operands[0]) && memory_reload_operand (operands[1], mode))
     {
       rtx big_offset = XEXP (XEXP (operands[1], 0), 1);
@@ -771,7 +771,7 @@ m68hc11_reload_operands (operands)
 	}
     }
 
-  /* Use the normal gen_movhi pattern. */
+  /* Use the normal gen_movhi pattern.  */
   return 0;
 }
 
@@ -1201,7 +1201,7 @@ m68hc11_function_arg_pass_by_reference (cum, mode, type, named)
      int named ATTRIBUTE_UNUSED;
 {
   return ((type && TREE_CODE (type) == ARRAY_TYPE)
-	  /* Consider complex values as aggregates, so care for TCmode. */
+	  /* Consider complex values as aggregates, so care for TCmode.  */
 	  /*|| GET_MODE_SIZE (mode) > 4 SCz, temporary */
 	  /*|| (type && AGGREGATE_TYPE_P (type))) */ );
 }
@@ -2005,7 +2005,7 @@ dead_register_here (x, reg)
       }
 
   /* Scan forward to see if the register is set in some insns and never
-     used since then. */
+     used since then.  */
   for (p = x /*NEXT_INSN (x) */ ; p; p = NEXT_INSN (p))
     {
       rtx body;
@@ -2029,7 +2029,7 @@ dead_register_here (x, reg)
 	    return 1;
 	}
 
-      /* Register is used (may be in source or in dest). */
+      /* Register is used (may be in source or in dest).  */
       if (reg_mentioned_p (reg, p)
 	  || (x_reg != 0 && GET_MODE (p) == SImode
 	      && reg_mentioned_p (x_reg, p)))
@@ -2085,7 +2085,7 @@ asm_print_register (file, regno)
    't' generate the temporary scratch register.  The operand is
        ignored.
    'T' generate the low-part temporary scratch register.  The operand is
-       ignored.   */
+       ignored.  */
 
 void
 print_operand (file, op, letter)
@@ -2781,7 +2781,7 @@ m68hc11_emit_logical (mode, code, operands)
 	}
     }
 
-  /* The logical operation is similar to a copy. */
+  /* The logical operation is similar to a copy.  */
   else if (need_copy)
     {
       rtx src;
@@ -3063,7 +3063,7 @@ m68hc11_gen_movhi (insn, operands)
     }
   /* Some moves to a hard register are special. Not all of them
      are really supported and we have to use a temporary
-     location to provide them (either the stack of a temp var). */
+     location to provide them (either the stack of a temp var).  */
   if (H_REG_P (operands[0]))
     {
       switch (REGNO (operands[0]))
@@ -3093,7 +3093,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
-		  /* %t means *ZTMP scratch register. */
+		  /* %t means *ZTMP scratch register.  */
 		  output_asm_insn ("sty\t%t1", operands);
 		  output_asm_insn ("ldd\t%t1", operands);
 		}
@@ -3339,7 +3339,7 @@ m68hc11_gen_movqi (insn, operands)
 {
   /* Move a register or memory to the same location.
      This is possible because such insn can appear
-     in a non-optimizing mode. */
+     in a non-optimizing mode.  */
   if (operands[0] == operands[1] || rtx_equal_p (operands[0], operands[1]))
     {
       cc_status = cc_prev_status;
@@ -3811,7 +3811,7 @@ m68hc11_notice_keep_cc (reg)
 
 
 
-/* Machine Specific Reorg. */
+/* Machine Specific Reorg.  */
 
 /* Z register replacement:
 
@@ -3884,7 +3884,7 @@ int z_replacement_completed = 0;
 /* Analyze the insn to find out which replacement register to use and
    the boundaries of the replacement.
    Returns 0 if we reached the last insn to be replaced, 1 if we can
-   continue replacement in next insns. */
+   continue replacement in next insns.  */
 
 static int
 m68hc11_check_z_replacement (insn, info)
@@ -4672,7 +4672,7 @@ m68hc11_z_replacement (insn)
 		fatal_insn ("Cannot do z-register replacement", insn);
 	    }
 
-	  /* Likewise for (REG:QI Z). */
+	  /* Likewise for (REG:QI Z).  */
 	  if (reg_mentioned_p (z_reg, insn))
 	    {
 	      if (replace_reg_qi == NULL_RTX)
@@ -4905,7 +4905,7 @@ m68hc11_reorg (first)
 
 /* Cost functions.  */
 
-/* Cost of moving memory. */
+/* Cost of moving memory.  */
 int
 m68hc11_memory_move_cost (mode, class, in)
      enum machine_mode mode;
@@ -4962,7 +4962,7 @@ m68hc11_address_cost (addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      /* Make the cost of hard registers and specially SP, FP small. */
+      /* Make the cost of hard registers and specially SP, FP small.  */
       if (REGNO (addr) < FIRST_PSEUDO_REGISTER)
 	cost = 0;
       else
@@ -5205,7 +5205,7 @@ m68hc11_rtx_costs (x, code, outer_code)
 
 
 /* print_options - called at the start of the code generation for a
-   module. */
+   module.  */
 
 extern char *asm_file_name;
 
