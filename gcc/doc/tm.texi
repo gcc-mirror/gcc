@@ -5512,7 +5512,7 @@ for multiplications, @code{COSTS_N_INSNS (7)} for division and modulus
 operations, and @code{COSTS_N_INSNS (1)} for all other operations.
 
 When optimizing for code size, i.e@. when @code{optimize_size} is
-non-zero, this target hook should be used to estimate the relative
+nonzero, this target hook should be used to estimate the relative
 size cost of an expression, again relative to @code{COSTS_N_INSNS}.
 
 The hook returns true when all subexpressions of @var{x} have been
@@ -8398,7 +8398,7 @@ to perform initial processing of the @samp{dllimport} and
 @end deftypefn
 
 @defmac TARGET_DECLSPEC
-Define this macro to a non-zero value if you want to treat
+Define this macro to a nonzero value if you want to treat
 @code{__declspec(X)} as equivalent to @code{__attribute((X))}.  By
 default, this behavior is enabled only for targets that define
 @code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  The current implementation
