@@ -2963,7 +2963,79 @@ function_arg (cum, mode, type, named)
       if (regbase == -1)
 	abort ();
 
-      ret = gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+      if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
+	  || ! named)
+	ret = gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+      else
+	{
+	  /* The Irix 6 n32/n64 ABIs say that if any 64 bit chunk of the
+	     structure contains a double in its entirety, then that 64 bit
+	     chunk is passed in a floating point register.  */
+	  tree field;
+
+	  /* First check to see if there is any such field.  */
+	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
+		&& (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
+		    % BITS_PER_WORD == 0))
+	      break;
+
+	  if (! field)
+	    ret = gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+	  else
+	    {
+	      /* Now handle the special case by returning a PARALLEL
+		 indicating where each 64 bit chunk goes.  */
+	      int chunks;
+	      int bitpos;
+	      int regno;
+	      int i;
+
+	      /* ??? If this is a packed structure, then the last hunk won't
+		 be 64 bits.  */
+
+	      /* ??? If this is a structure with a single double field,
+		 it would be more convenient to return (REG:DI %fX) than
+		 a parallel.  However, we would have to modify the mips
+		 backend to allow DImode values in fp registers.  */
+
+	      chunks = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_WORD;
+	      if (chunks + cum->arg_words + bias > MAX_ARGS_IN_REGISTERS)
+		chunks = MAX_ARGS_IN_REGISTERS - cum->arg_words - bias;
+
+	      /* assign_parms checks the mode of ENTRY_PARM, so we must
+		 use the actual mode here.  */
+	      ret = gen_rtx (PARALLEL, mode, rtvec_alloc (chunks));
+
+	      bitpos = 0;
+	      regno = regbase + cum->arg_words + bias;
+	      field = TYPE_FIELDS (type);
+	      for (i = 0; i < chunks; i++)
+		{
+		  rtx reg;
+
+		  for (; field; field = TREE_CHAIN (field))
+		    if (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)) >= bitpos)
+		      break;
+
+		  if (field
+		      && TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)) == bitpos
+		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
+		    reg = gen_rtx (REG, DFmode,
+				   regno + FP_ARG_FIRST - GP_ARG_FIRST);
+		  else
+		    reg = gen_rtx (REG, word_mode, regno);
+
+		  XVECEXP (ret, 0, i) = gen_rtx (EXPR_LIST, VOIDmode, reg,
+						 GEN_INT (bitpos / BITS_PER_UNIT));
+
+		  bitpos += 64;
+		  regno++;
+		}
+	    }
+	}
 
       if (TARGET_DEBUG_E_MODE)
 	fprintf (stderr, "%s%s\n", reg_names[regbase + cum->arg_words + bias],
@@ -5497,44 +5569,6 @@ mips_select_section (decl, reloc)
 #ifdef MIPS_ABI_DEFAULT
 /* Support functions for the 64 bit ABI.  */
 
-/* Return the register to be used for word INDEX of a variable with type TYPE
-   being passed starting at general purpose reg REGNO.
-
-   If the word being passed is a single field of a structure which has type
-   double, then pass it in a floating point reg instead of a general purpose
-   reg.  Otherwise, we return the default value REGNO + INDEX.  */
-
-rtx
-type_dependent_reg (regno, index, type)
-     int regno;
-     int index;
-     tree type;
-{
-  tree field;
-  tree offset;
-
-  /* If type isn't a structure type, return the default value now.  */
-  if (! type || TREE_CODE (type) != RECORD_TYPE || mips_isa < 3)
-    return gen_rtx (REG, word_mode, regno + index);
-
-  /* Iterate through the structure fields to find which one corresponds to
-     this index.  */
-  offset = size_int (index * BITS_PER_WORD);
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    {
-      if (! tree_int_cst_lt (DECL_FIELD_BITPOS (field), offset))
-	break;
-    }
-
-  if (field && tree_int_cst_equal (DECL_FIELD_BITPOS (field), offset)
-      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
-      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
-    return gen_rtx (REG, DFmode,
-		    regno + index + FP_ARG_FIRST - GP_ARG_FIRST);
-  else
-    return gen_rtx (REG, word_mode, regno + index);
-}
-
 /* Return register to use for a function return value with VALTYPE for function
    FUNC.  */
 
@@ -5547,6 +5581,7 @@ mips_function_value (valtype, func)
   enum machine_mode mode = TYPE_MODE (valtype);
   enum mode_class mclass = GET_MODE_CLASS (mode);
 
+  /* ??? How should we return complex float?  */
   if (mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT)
     reg = FP_RETURN;
   else if (TREE_CODE (valtype) == RECORD_TYPE && mips_abi != ABI_32)
@@ -5559,13 +5594,40 @@ mips_function_value (valtype, func)
       for (i = 0, field = TYPE_FIELDS (valtype); field;
 	   field = TREE_CHAIN (field), i++)
 	{
+	  /* ??? For C++, must ignore everything that isn't a FIELD_DECL.  */
 	  if (TREE_CODE (TREE_TYPE (field)) != REAL_TYPE || i >= 2)
 	    break;
 	}
 	  
       /* Must check i, so that we reject structures with no elements.  */
-      if (! field && i > 0)
-	reg = FP_RETURN;
+      if (! field)
+	{
+	  if (i == 1)
+	    {
+	      mode = TYPE_MODE (TYPE_FIELDS (valtype));
+	      reg = FP_RETURN;
+	    }
+	  else if (i == 2)
+	    {
+	      enum machine_mode first_mode
+		= TYPE_MODE (TREE_TYPE (TYPE_FIELDS (valtype)));
+	      enum machine_mode second_mode
+		= TYPE_MODE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (valtype))));
+	      int first_offset
+		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TYPE_FIELDS (valtype)));
+	      int second_offset
+		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TREE_CHAIN (TYPE_FIELDS (valtype))));
+
+	      return gen_rtx (PARALLEL, mode,
+			      gen_rtvec (2,
+					 gen_rtx (EXPR_LIST, VOIDmode,
+						  gen_rtx (REG, first_mode, FP_RETURN),
+						  GEN_INT (first_offset / BITS_PER_UNIT)),
+					 gen_rtx (EXPR_LIST, VOIDmode,
+						  gen_rtx (REG, second_mode, FP_RETURN + 2),
+						  GEN_INT (second_offset / BITS_PER_UNIT))));
+	    }
+	}
     }
 
   return gen_rtx (REG, mode, reg);
