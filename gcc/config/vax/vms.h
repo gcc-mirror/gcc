@@ -86,14 +86,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   if (newsize >= 64) fprintf (FILE, "\tmovab %d(sp),sp\n", -newsize);\
   else fprintf (FILE, "\tsubl2 $%d,sp\n", newsize); }
 
-#define __MAIN_NAME " main ("
+#define __MAIN_NAME " main("
 /*
  * The MAYBE_VMS_FUNCTION_PROLOGUE macro works for both gcc and g++.  It
  * first checks to see if the current routine is "main", which will only
  * happen for GCC, and add the jsb if it is.  If is not the case then try and 
  * see if __MAIN_NAME is part of current_function_name, which will only happen
  * if we are running g++, and add the jsb if it is.  In gcc there should never
- * be a space in the function name, and in g++ there is always a "(" in the
+ * be a paren in the function name, and in g++ there is always a "(" in the
  * function name, thus there should never be any confusion.
  *
  * Adjusting the stack pointer by 4 before calling C$MAIN_ARGS is required
