@@ -1600,55 +1600,6 @@ output_block_move(rtx *operands)
     return "";
 }
 
-/* for future use */
-int
-comparison_operator_index(rtx op)
-{
-    switch (GET_CODE(op))
-    {
-      case NE:
-	return 0;
-	
-      case EQ:
-	return 1;
-	
-      case GE:
-	return 2;
-	
-      case GT:
-	return 3;
-	
-      case LE:
-	return 4;
-	
-      case LT:
-	return 5;
-	
-      case GEU:
-	return 6;
-	
-      case GTU:
-	return 7;
-
-      case LEU:
-	return 8;
-	
-      case LTU:
-	return 9;
-	
-      default:
-	return -1;
-    }
-}    
-	
-/* tests whether the rtx is a comparison operator */
-int
-comp_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-    return comparison_operator_index(op) >= 0;
-}
-
-    
 int
 legitimate_address_p (enum machine_mode mode, rtx address)
 {

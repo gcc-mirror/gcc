@@ -26,7 +26,6 @@ extern int const_immediate_operand (rtx, enum machine_mode);
 extern int expand_shift_operand (rtx, enum machine_mode);
 extern int immediate15_operand (rtx, enum machine_mode);
 extern int simple_memory_operand (rtx, enum machine_mode);
-extern int comp_operator (rtx, enum machine_mode);
 
 extern int legitimate_address_p (enum machine_mode, rtx);
 extern int legitimate_const_double_p (rtx);
@@ -37,7 +36,6 @@ extern const char *output_move_quad (rtx *);
 extern const char *output_block_move (rtx *);
 extern void print_operand_address (FILE *, rtx);
 extern int register_move_cost (enum reg_class, enum reg_class);
-extern int comparison_operator_index (rtx);
 #endif /* RTX_CODE */
 
 extern void output_ascii (FILE *, const char *, int);
