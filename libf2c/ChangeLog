@@ -1,3 +1,10 @@
+Tue Dec 23 22:56:01 1997  Craig Burley  <burley@gnu.org>
+
+	* libF77/signal_.c (G77_signal_0): Return type is
+	now `void *', to cope with returning previous signal
+	handler on 64-bit systems like Alphas.
+	* f2cext.c (signal_): Changed accordingly.
+
 Tue Sep 30 00:41:39 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	Do a better job of printing the offending FORMAT string

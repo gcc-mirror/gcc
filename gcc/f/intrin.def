@@ -3038,8 +3038,8 @@ DEFSPEC (NONE,
      3    (Same size as CHARACTER*1)
      4    (Twice the size of 2)
      6    (Twice the size as 3)
+     7    (Same size as `char *')
      C    Like 1 (F77), except (F90), if COL is COMPLEX, uses kind type of COL
-     p    ffecom_pointer_kind_
 
    <return-modifier> is:
 
@@ -3309,7 +3309,7 @@ DEFIMP	(LONG,		"LONG",		,,,		"I1:-:A=I6")
 DEFIMP  (LSTAT_func,	"LSTAT_func",	LSTAT,,,	"I1:-:File=A1,SArray=I1(13)w")
 DEFIMP  (LSTAT_subr,	"LSTAT_subr",	LSTAT,,,	"--:-:File=A1,SArray=I1(13)w,Status=?I1w")
 DEFIMP  (LTIME,		"LTIME",	LTIME,,,	"--:-:STime=I1,TArray=I1(9)w")
-DEFIMP	(LOC,		"LOC",		,,,		"Ip:-:Entity=-*&&")
+DEFIMP	(LOC,		"LOC",		,,,		"I7:-:Entity=-*&&")
 DEFIMP	(LSHIFT,	"LSHIFT",	,,,		"I=:0:I=I*,Shift=I*")
 DEFIMP  (MCLOCK,	"MCLOCK",	MCLOCK,,,	"I1:-:")
 DEFIMP  (MCLOCK8,	"MCLOCK8",	MCLOCK,,,	"I2:-:")
@@ -3326,8 +3326,8 @@ DEFIMP  (SECNDS,	"SECNDS",	SECNDS,,,	"R1:-:T=R1")
 DEFIMP  (SECOND_func,	"SECOND_func",	SECOND,SECOND,,	"R1:-:")
 DEFIMP  (SECOND_subr,	"SECOND_subr",	SECOND,,,	"--:-:Seconds=R1w")
 DEFIMP	(SHORT,		"SHORT",	,,,		"I6:-:A=I*")
-DEFIMP	(SIGNAL_func,	"SIGNAL_func",	L_SIGNAL,,,	"I1:-:Number=I*,Handler=s*")
-DEFIMP	(SIGNAL_subr,	"SIGNAL_subr",	L_SIGNAL,,,	"--:-:Number=I*,Handler=s*,Status=?I1w")
+DEFIMP	(SIGNAL_func,	"SIGNAL_func",	L_SIGNAL,,,	"I7:-:Number=I*,Handler=s*")
+DEFIMP	(SIGNAL_subr,	"SIGNAL_subr",	L_SIGNAL,,,	"--:-:Number=I*,Handler=s*,Status=?I7w")
 DEFIMP	(SLEEP,		"SLEEP",	SLEEP,,,	"--:-:Seconds=I1")
 DEFIMP  (SRAND,		"SRAND",	SRAND,,,	"--:-:Seed=I*")
 DEFIMP  (STAT_func,	"STAT_func",	STAT,,,		"I1:-:File=A1,SArray=I1(13)w")

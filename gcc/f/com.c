@@ -345,6 +345,7 @@ tree ffecom_f2c_ptr_to_ftnint_type_node;
 typedef enum
   {
     FFECOM_rttypeVOID_,
+    FFECOM_rttypeVOIDSTAR_,	/* C's `void *' type. */
     FFECOM_rttypeFTNINT_,	/* f2c's `ftnint' type. */
     FFECOM_rttypeINTEGER_,	/* f2c's `integer' type. */
     FFECOM_rttypeLONGINT_,	/* f2c's `longint' type. */
@@ -7448,6 +7449,10 @@ ffecom_make_gfrt_ (ffecomGfrt ix)
       ttype = void_type_node;
       break;
 
+    case FFECOM_rttypeVOIDSTAR_:
+      ttype = TREE_TYPE (null_pointer_node);	/* `void *'. */
+      break;
+
     case FFECOM_rttypeFTNINT_:
       ttype = ffecom_f2c_ftnint_type_node;
       break;
@@ -11632,6 +11637,7 @@ ffecom_gfrt_basictype (ffecomGfrt gfrt)
   switch (ffecom_gfrt_type_[gfrt])
     {
     case FFECOM_rttypeVOID_:
+    case FFECOM_rttypeVOIDSTAR_:
       return FFEINFO_basictypeNONE;
 
     case FFECOM_rttypeFTNINT_:
@@ -11678,6 +11684,7 @@ ffecom_gfrt_kindtype (ffecomGfrt gfrt)
   switch (ffecom_gfrt_type_[gfrt])
     {
     case FFECOM_rttypeVOID_:
+    case FFECOM_rttypeVOIDSTAR_:
       return FFEINFO_kindtypeNONE;
 
     case FFECOM_rttypeFTNINT_:

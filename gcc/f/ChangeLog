@@ -14,6 +14,45 @@ Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
 	* stb.c (ffestb_R10014_, ffestb_R10016_, ffestb_R10018_,
 	ffestb_R100110_): Restructure `for' loop for style.
 
+Tue Dec 23 14:58:04 1997  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_gfrt_basictype):
+	(ffecom_gfrt_kindtype):
+	(ffecom_make_gfrt_):
+	(FFECOM_rttypeVOIDSTAR_): New return type `void *', for
+	the SIGNAL intrinsic.
+	* com-rt.def (FFECOM_rttypeSIGNAL): Now returns `void *'.
+	* intdoc.c: Replace `p' kind specifier with `7'.
+	* intrin.c (ffeintrin_check_, ffeintrin_init_0): Replace
+	`p' kind specifier with `7'.
+	* intrin.def (FFEINTRIN_impLOC, FFEINTRIN_impSIGNAL_func,
+	FFEINTRIN_impSIGNAL_subr): Replace `p' specifier with `7'.
+	Also, SIGNAL now returns a `void *' status, not `int'.
+
+Mon Dec 22 12:41:07 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_init_0): Remove duplicate
+	check for `!'.
+
+Sun Dec 14 02:49:58 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_init_0): Fix up indentation a bit.
+	Fix bug that prevented checking of arguments other
+	than the first.
+
+	* intdoc.c: Fix up indentation a bit.
+
+Mon Dec  1 19:12:36 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_check_): Fix up indentation a bit more.
+
+Sun Nov 30 22:22:22 1997  Craig Burley  <burley@gnu.org>
+
+	* intdoc.c: Minor fix-ups.
+
+	* intrin.c (ffeintrin_check_): Fix up indentation a bit.
+
+
 Fri Oct 10 13:00:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* ste.c (ffeste_begin_iterdo_): Fix loop setup so iteration

@@ -27,6 +27,15 @@ involve a combination of these elements.
 @heading In 0.5.22:
 @itemize @bullet
 @item
+Fix @code{SIGNAL} intrinsic so it offers portable
+support for 64-bit systems (such as Digital Alphas
+running GNU/Linux).
+
+@item
+Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
+compile-time constant @code{INTEGER} expression.
+
+@item
 Fix code generation for iterative @code{DO} loops that
 have one or more references to the iteration variable,
 or to aliases of it, in their control expressions.
