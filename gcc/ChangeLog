@@ -1,3 +1,7 @@
+Tue Mar  3 00:06:45 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for 1.0.2 prerelease diffs.
+
 Sun Mar  1 18:14:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* ginclude/va-ppc.h (va_arg): Fix typo in long long support.
