@@ -1,3 +1,8 @@
+Mon Dec 15 08:48:24 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (expand_asm_operands): If an ASM has no outputs, then treat
+	it as volatile.
+
 Mon Dec 15 00:04:48 1997  Jeffrey A Law  (law@cygnus.com)
 
         * haifa-sched.c (remove_dependencies): Set RTX_INTEGRATED_P on

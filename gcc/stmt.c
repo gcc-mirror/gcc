@@ -1421,6 +1421,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* The insn we have emitted.  */
   rtx insn;
 
+  /* An ASM with no outputs needs to be treated as volatile.  */
+  if (noutputs == 0)
+    vol = 1;
+
   if (output_bytecode)
     {
       error ("`asm' is invalid when generating bytecode");
