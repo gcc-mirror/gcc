@@ -2324,7 +2324,7 @@ finish_stmt_tree (t)
   /* Remove unused decls from the stmt tree.  walk_tree messes with
      the line number, so save/restore it.  */
   old_lineno = lineno;
-  walk_tree (t, prune_unused_decls, 0);
+  walk_tree_without_duplicates (t, prune_unused_decls, NULL);
   lineno = old_lineno;
 
   if (cfun)
@@ -2639,7 +2639,9 @@ expand_body (fn)
     }
 
   /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
-  walk_tree (&DECL_SAVED_TREE (fn), simplify_aggr_init_exprs_r, NULL);
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+				simplify_aggr_init_exprs_r,
+				NULL);
 
   /* If this is a constructor or destructor body, we have to clone it
      under the new ABI.  */

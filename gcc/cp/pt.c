@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "defaults.h"
 #include "ggc.h"
-#include "hashtab.h"
 #include "timevar.h"
 
 /* The type of functions taking a tree, and some additional data, and
@@ -4276,7 +4275,9 @@ for_each_template_parm (t, fn, data)
   pfd.data = data;
 
   /* Walk the tree.  */
-  return walk_tree (&t, for_each_template_parm_r, &pfd) != NULL_TREE;
+  return walk_tree_without_duplicates (&t, 
+				       for_each_template_parm_r, 
+				       &pfd) != NULL_TREE;
 }
 
 int

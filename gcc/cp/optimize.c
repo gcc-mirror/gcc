@@ -109,8 +109,8 @@ remap_decl (decl, id)
       /* The decl T could be a dynamic array or other variable size type,
 	 in which case some fields need to be remapped because they may
 	 contain SAVE_EXPRs.  */
-      walk_tree (&DECL_SIZE (t), copy_body_r, id);
-      walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id);
+      walk_tree (&DECL_SIZE (t), copy_body_r, id, NULL);
+      walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id, NULL);
       if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
 	  && TYPE_DOMAIN (TREE_TYPE (t)))
 	{
@@ -118,7 +118,7 @@ remap_decl (decl, id)
 	  TYPE_DOMAIN (TREE_TYPE (t)) 
 	    = copy_node (TYPE_DOMAIN (TREE_TYPE (t)));
 	  walk_tree (&TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))),
-		     copy_body_r, id);
+		     copy_body_r, id, NULL);
 	}
 
       /* Remember it, so that if we encounter this local entity
@@ -356,7 +356,7 @@ copy_body (id)
   tree body;
 
   body = DECL_SAVED_TREE (VARRAY_TOP_TREE (id->fns));
-  walk_tree (&body, copy_body_r, id);
+  walk_tree (&body, copy_body_r, id, NULL);
 
   return body;
 }
@@ -636,7 +636,8 @@ expand_call_inline (tp, walk_subtrees, data)
 	{
 	  if (i == 2)
 	    ++id->in_target_cleanup_p;
-	  walk_tree (&TREE_OPERAND (*tp, i), expand_call_inline, data);
+	  walk_tree (&TREE_OPERAND (*tp, i), expand_call_inline, data,
+		     NULL);
 	  if (i == 2)
 	    --id->in_target_cleanup_p;
 	}
@@ -792,7 +793,7 @@ expand_calls_inline (tp, id)
 {
   /* Search through *TP, replacing all calls to inline functions by
      appropriate equivalents.  */
-  walk_tree (tp, expand_call_inline, id);
+  walk_tree (tp, expand_call_inline, id, NULL);
 }
 
 /* Optimize the body of FN.  */
@@ -879,8 +880,9 @@ int
 calls_setjmp_p (fn)
      tree fn;
 {
-  return (walk_tree (&DECL_SAVED_TREE (fn), calls_setjmp_r, NULL) 
-	  != NULL_TREE);
+  return walk_tree_without_duplicates (&DECL_SAVED_TREE (fn), 
+				       calls_setjmp_r, 
+				       NULL) != NULL_TREE;
 }
 
 /* FN is a function that has a complete body.  Clone the body as
