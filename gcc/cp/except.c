@@ -143,7 +143,7 @@ init_exception_processing ()
   tree vtype = build_function_type (void_type_node, void_list_node);
   
   if (flag_honor_std)
-    push_namespace (get_identifier ("std"));
+    push_namespace (std_identifier);
   terminate_node = build_cp_library_fn_ptr ("terminate", vtype);
   TREE_THIS_VOLATILE (terminate_node) = 1;
   TREE_NOTHROW (terminate_node) = 1;

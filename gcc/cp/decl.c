@@ -267,8 +267,10 @@ tree cp_global_trees[CPTI_MAX];
 
 static tree global_type_node;
 
-/* Namespace std.  */
-int in_std;
+/* If non-zero, this is the number of times we have entered the `std'
+   namespace when we are treating that namespace as an alias for the
+   global namespace.  */
+static int in_fake_std;
 
 /* Expect only namespace names now. */
 static int only_namespace_names;
@@ -353,15 +355,6 @@ int flag_noniso_default_format_attributes = 1;
 /* Nonzero means give `double' the same size as `float'.  */
 
 extern int flag_short_double;
-
-/* Nonzero means don't recognize any builtin functions.  */
-
-extern int flag_no_builtin;
-
-/* Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.  */
-
-extern int flag_no_nonansi_builtin;
 
 /* Nonzero if we want to conserve space in the .o files.  We do this
    by putting uninitialized data and runtime initialized data into
@@ -1829,7 +1822,7 @@ walk_namespaces_r (namespace, f, data)
       if (!DECL_LANG_SPECIFIC (current))
 	{
 	  /* Hmm. std. */
-	  my_friendly_assert (current == std_node, 393);
+	  my_friendly_assert (current == fake_std_node, 393);
 	  continue;
 	}
 
@@ -2324,9 +2317,10 @@ push_namespace (name)
       implicit_use = 1;
     }
   else if (current_namespace == global_namespace
-	   && name == DECL_NAME (std_node))
+	   && !flag_honor_std
+	   && name == std_identifier)
     {
-      in_std++;
+      in_fake_std++;
       return;
     }
   else
@@ -2376,8 +2370,8 @@ pop_namespace ()
 {
   if (current_namespace == global_namespace)
     {
-      my_friendly_assert (in_std>0, 980421);
-      in_std--;
+      my_friendly_assert (in_fake_std > 0, 980421);
+      in_fake_std--;
       return;
     }
   current_namespace = CP_DECL_CONTEXT (current_namespace);
@@ -5888,7 +5882,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
         flags |= LOOKUP_TEMPLATES_EXPECTED;
 
       /* std:: becomes :: for now.  */
-      if (got_scope == std_node)
+      if (got_scope && got_scope == fake_std_node)
 	got_scope = void_type_node;
 
       if (got_scope)
@@ -6364,6 +6358,22 @@ init_decl_processing ()
   NAMESPACE_LEVEL (global_namespace) = global_binding_level;
   declare_namespace_level ();
 
+  /* Create the `std' namespace.  */
+  if (flag_honor_std)
+    {
+      push_namespace (std_identifier);
+      std_node = current_namespace;
+      pop_namespace ();
+      fake_std_node = error_mark_node;
+    }
+  else
+    {
+      fake_std_node = build_decl (NAMESPACE_DECL,
+				  std_identifier,
+				  void_type_node);
+      pushdecl (fake_std_node);
+    }
+  
   /* Define `int' and `char' first so that dbx will output them first.  */
   record_builtin_type (RID_INT, NULL_PTR, integer_type_node);
   record_builtin_type (RID_CHAR, "char", char_type_node);
@@ -6519,7 +6529,7 @@ init_decl_processing ()
     = build_pointer_type (build_qualified_type (void_type_node,
 						TYPE_QUAL_CONST));
   vtt_parm_type = build_pointer_type (const_ptr_type_node);
-  c_common_nodes_and_builtins (1, flag_no_builtin, flag_no_nonansi_builtin);
+  c_common_nodes_and_builtins ();
   lang_type_promotes_to = convert_type_from_ellipsis;
 
   void_ftype_ptr
@@ -6615,12 +6625,6 @@ init_decl_processing ()
   layout_type (vtbl_ptr_type_node);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
 
-  std_node = build_decl (NAMESPACE_DECL,
-			 flag_honor_std 
-			 ? get_identifier ("fake std") : std_identifier,
-			 void_type_node);
-  pushdecl (std_node);
-  
   if (flag_new_abi)
     {
       push_namespace (get_identifier ("__cxxabiv1"));
@@ -6637,7 +6641,7 @@ init_decl_processing ()
   {
     tree bad_alloc_type_node, newtype, deltype;
     if (flag_honor_std)
-      push_namespace (get_identifier ("std"));
+      push_namespace (std_identifier);
     bad_alloc_type_node = xref_tag
       (class_type_node, get_identifier ("bad_alloc"), 1);
     if (flag_honor_std)
@@ -6801,10 +6805,20 @@ builtin_function (name, type, code, class, libname)
 
   my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
 
+  /* All builtins that don't begin with an `_' should go in the `std'
+     namespace.  */
+  if (flag_honor_std && name[0] != '_') 
+    {
+      push_namespace (std_identifier);
+      DECL_CONTEXT (decl) = std_node;
+    }
+  pushdecl (decl);
+  if (flag_honor_std && name[0] != '_')
+    pop_namespace ();
+
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,
      we cannot change DECL_ASSEMBLER_NAME until we have installed this
      function in the namespace.  */
-  pushdecl (decl);
   if (libname)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (libname);
   make_function_rtl (decl);

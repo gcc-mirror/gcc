@@ -606,7 +606,7 @@ dequeue_and_dump (di)
     case NAMESPACE_DECL:
       /* The fake `::std' namespace does not have DECL_LANG_SPECIFIC,
 	 and therefore many other macros do not work on it.  */
-      if (t == std_node)
+      if (t == fake_std_node)
 	break;
       if (DECL_NAMESPACE_ALIAS (t))
 	dump_child ("alis", DECL_NAMESPACE_ALIAS (t));

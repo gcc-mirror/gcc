@@ -159,15 +159,6 @@ int flag_no_asm;
 
 int flag_no_gnu_keywords;
 
-/* Nonzero means don't recognize the non-ANSI builtin functions.  */
-
-int flag_no_builtin;
-
-/* Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.  */
-
-int flag_no_nonansi_builtin;
-
 /* Nonzero means do some things the same way PCC does.  Only provided so
    the compiler will link.  */
 
@@ -4600,7 +4591,7 @@ set_decl_namespace (decl, scope, friendp)
      int friendp;
 {
   tree old;
-  if (scope == std_node)
+  if (scope == fake_std_node)
     scope = global_namespace;
   /* Get rid of namespace aliases. */
   scope = ORIGINAL_NAMESPACE (scope);
@@ -5107,7 +5098,7 @@ validate_nonmember_using_decl (decl, scope, name)
      tree *name;
 {
   if (TREE_CODE (decl) == SCOPE_REF
-      && TREE_OPERAND (decl, 0) == std_node)
+      && TREE_OPERAND (decl, 0) == fake_std_node)
     {
       if (namespace_bindings_p ()
 	  && current_namespace == global_namespace)
@@ -5353,7 +5344,7 @@ void
 do_using_directive (namespace)
      tree namespace;
 {
-  if (namespace == std_node)
+  if (namespace == fake_std_node)
     return;
   /* using namespace A::B::C; */
   if (TREE_CODE (namespace) == SCOPE_REF)
@@ -5452,7 +5443,7 @@ handle_class_head (aggr, scope, id)
   
       if (current == NULL_TREE)
         current = current_namespace;
-      if (scope == std_node)
+      if (scope == fake_std_node)
         scope = global_namespace;
       if (scope == NULL_TREE)
         scope = global_namespace;

@@ -343,15 +343,6 @@ int flag_short_wchar;
 
 int flag_no_asm;
 
-/* Nonzero means don't recognize any builtin functions.  */
-
-int flag_no_builtin;
-
-/* Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.  */
-
-int flag_no_nonansi_builtin;
-
 /* Nonzero means do some things the same way PCC does.  */
 
 int flag_traditional;
@@ -3144,7 +3135,7 @@ init_decl_processing ()
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
   unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
 
-  c_common_nodes_and_builtins (0, flag_no_builtin, flag_no_nonansi_builtin);
+  c_common_nodes_and_builtins ();
 
   endlink = void_list_node;
   ptr_ftype_void = build_function_type (ptr_type_node, endlink);

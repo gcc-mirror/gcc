@@ -1,3 +1,17 @@
+2000-10-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (flag_no_builtin): Declare.
+	(flag_no_nonansi_builtin): Likewise.
+	(c_common_nodes_and_builtins): Change prototype.
+	* c-common.c (flag_no_builtin): New variable.
+	(flag_no_nonansi_builtin): Likewise.
+	(c_common_nodes_and_builtins): Remove parameters.  Adjust
+	accordingly.
+	* c-decl.c (flag_no_builtin): Remove.
+	(flag_no_nonansi_builtin): Likewise.
+	(init_decl_processing): Adjust call to
+	c_common_nodes_and_builtins.
+	
 2000-10-18  Marc Espie <espie@openbsd.org>
 
 	* tm.texi (LIBGCC_SPEC): Synch with reality.

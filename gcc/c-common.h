@@ -370,6 +370,15 @@ extern int flag_hosted;
 
 extern int flag_noniso_default_format_attributes;
 
+/* Nonzero means don't recognize any builtin functions.  */
+
+extern int flag_no_builtin;
+
+/* Nonzero means don't recognize the non-ANSI builtin functions.
+   -ansi sets this.  */
+
+extern int flag_no_nonansi_builtin;
+
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;
@@ -454,7 +463,7 @@ extern tree c_build_qualified_type              PARAMS ((tree, int));
 
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
-extern void c_common_nodes_and_builtins		PARAMS ((int, int, int));
+extern void c_common_nodes_and_builtins		PARAMS ((void));
 
 extern tree build_va_arg			PARAMS ((tree, tree));
 

@@ -1,3 +1,31 @@
+2000-10-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cp_tree_index): Add CPTI_FAKE_STD.
+	(fake_std_node): New macro.
+	* decl.c (in_std): Rename to ...
+	(in_fake_std): ... this.
+	(flag_no_builtin): Remove.
+	(flag_no_nonansi_builtin): Likewise.
+	(walk_namespaces_r): Use fake_std_node.
+	(push_namespace): Use std_identifier.
+	(pop_namespace): Use in_fake_std.
+	(lookup_name_real): Use fake_std_node.
+	(init_decl_processing): When -fhonor-std, create the `std'
+	namespace.  Don't create a dummy fake_std_node in that case.
+	Adjust call to c_common_nodes_and_builtins.  Use std_identifier.
+	(builtin_function): Put builtins whose names don't begin
+	with `_' in the std namespace.
+	* decl2.c (flag_no_builtin): Remove.
+	(flag_no_nonansi_builtin): Likewise.
+	(set_decl_namespace): Use fake_std_node.
+	(validate_nonmember_using_decl): Likewise.
+	(do_using_directive): Likewise.
+	(handle_class_head): Likewise.
+	* dump.c (dequeue_and_dump): Likewise.
+	* except.c (init_exception_processing): Use std_identifier.
+	* init.c (build_member_call): Use fake_std_node.
+	* rtti.c (init_rtti_processing): Use std_identifier.
+	 
 2000-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (back_end_hook): Remove declaration.
