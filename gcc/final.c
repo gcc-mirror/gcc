@@ -2229,12 +2229,12 @@ output_addr_const (file, x)
 
     case LABEL_REF:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-      assemble_name (asm_out_file, buf);
+      assemble_name (file, buf);
       break;
 
     case CODE_LABEL:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
-      assemble_name (asm_out_file, buf);
+      assemble_name (file, buf);
       break;
 
     case CONST_INT:
