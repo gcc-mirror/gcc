@@ -9,6 +9,10 @@
 	PR fortran/15140
 	* gfortran.dg/pr15140.f90: New test.
 
+	PR fortran/13792
+	* gfortran.fortran-torture/execute/bounds.f90: Add check for
+	compile-time simplification.
+
 2004-07-14  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/20020426-2.c: Improve type safety wrt unsignedness.

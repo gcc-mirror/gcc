@@ -1892,9 +1892,9 @@ gfc_simplify_bound (gfc_expr * array, gfc_expr * dim, int upper)
   
   i = mpz_get_si (dim->value.integer);
   if (upper) 
-    return as->upper[i-1];
+    return gfc_copy_expr (as->upper[i-1]);
   else
-    return as->lower[i-1];
+    return gfc_copy_expr (as->lower[i-1]);
 }
 
 

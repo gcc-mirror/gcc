@@ -5,6 +5,9 @@ program testbounds
    integer, dimension(5) :: j
    integer i
 
+   ! Check compile time simplification
+   if (lbound(j,1).ne.1 .or. ubound(j,1).ne.5) call abort ()
+
    allocate (a(3:8, 6:7))
 
    ! With one parameter
