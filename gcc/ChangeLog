@@ -1,3 +1,35 @@
+Fri Jan 24 23:03:32 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (DEF_BUILTIN): Accept 10 arguments.
+	(implicit_built_in_decls): New global array.
+	(mathfn_built_in): New global function.
+	(fold_trunc_transparent_mathfn): New static function
+	(expand_builtin_strstr, expand_bultin_strchr,
+	expand_builtin_strpbrk, expand_builtin_strcpy,
+	expand_builtin_strncpy, expand_bultin_strcmp,
+	expand_bultin_strncat, expand_builtin_fputs): Use
+	implicint_built_in_decls.
+	(fold_builtin): Fold floor/trunc/round/ceil/nearbyint.
+	* builtins.def: Fix comments.
+	(DEF_GCC_BUILTIN, DEF_FALLBACK_BUILTIN, DEF_EXT_FALLBACK_BUILTIN,
+	DEF_LIB_BUILTIN, DEF_LIB_ALWAYS_BUILTIN, DEF_EXT_LIB_BUILTIN,
+	DEF_C99_BULTIN, DEF_FRONT_END_LIB_BUILTIN,
+	DEF_EXT_FRONT_END_LIB_BUILTIN): Pass implicit as needed.
+	(DEF_C99_C90RES_BULTIN): New.
+	(*f, *l builtins): Update.
+	* c-common.c (DEF_BUILTIN): Initialize implicit array.
+	(c_expand_builtin_printf, c_expand_builtin_fprintf): Update.
+	* convert.c (strip_float_extensions): New global function.
+	* tree.h (DEF_BUILTIN): Accept 10 arguments.
+	(implicit_built_in_decls, mathfn_built_in, strip_float_extension):
+	Declare.
+	* java/builtins.c (define_builtin): Handle implicit.
+	(DEF_BUILTIN): Update.
+	* tm.texi (TARGET_C99_FUNCTIONS): Document.
+	* defaults.h (TARGET_C99_FUNCTIONS): Default to 0.
+	* config/linux.h (TARGET_C99_FUNCTIONS): Default to 1
+	when using glibc2.
+
 2003-01-24  Bob Wilson  <bob.wilson@acm.org>
 
 	* config.gcc (xtensa-*-elf*): Removed assignments to with_newlib,

@@ -638,4 +638,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define EXTRA_CONSTRAINT_STR(OP, C,STR) EXTRA_CONSTRAINT (OP, C)
 #endif
 
+/* Determine whether the the entire c99 runtime
+   is present in the runtime library.  */
+#ifndef TARGET_C99_FUNCTIONS
+#define TARGET_C99_FUNCTIONS 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

@@ -4779,6 +4779,15 @@ Define this macro if GCC should generate calls to the ISO C
 (and System V) library functions @code{memcpy}, @code{memmove} and
 @code{memset} rather than the BSD functions @code{bcopy} and @code{bzero}.
 
+@findex TARGET_C99_FUNCTIONS
+@cindex C99 math functions, implicit usage
+@item TARGET_C99_FUNCTIONS
+When this macro is nonzero, GCC will implicitly optimize @code{sin} calls into
+@code{sinf} and similary for other functions defined by C99 standard.  The
+default is nonzero that should be proper value for most modern systems, however
+number of existing systems lacks support for these functions in the runtime so
+they needs this macro to be redefined to 0.
+
 @findex LIBGCC_NEEDS_DOUBLE
 @item LIBGCC_NEEDS_DOUBLE
 Define this macro if @code{float} arguments cannot be passed to library

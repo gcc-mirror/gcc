@@ -84,7 +84,7 @@ extern const char *const built_in_class_names[4];
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
 
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT) ENUM,
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM) ENUM,
 enum built_in_function
 {
 #include "builtins.def"
@@ -99,6 +99,7 @@ extern const char *const built_in_names[(int) END_BUILTINS];
 
 /* An array of _DECL trees for the above.  */
 extern GTY(()) tree built_in_decls[(int) END_BUILTINS];
+extern GTY(()) tree implicit_built_in_decls[(int) END_BUILTINS];
 
 /* The definition of tree nodes fills the next several pages.  */
 
@@ -2928,6 +2929,8 @@ extern tree invert_truthvalue	PARAMS ((tree));
 extern tree fold_builtin				PARAMS ((tree));
 extern enum built_in_function builtin_mathfn_code	PARAMS ((tree));
 extern tree build_function_call_expr			PARAMS ((tree, tree));
+extern tree mathfn_built_in				PARAMS ((tree, enum built_in_function fn));
+extern tree strip_float_extensions			PARAMS ((tree));
 
 /* In convert.c */
 extern tree strip_float_extensions			PARAMS ((tree));

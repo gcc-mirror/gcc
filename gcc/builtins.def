@@ -22,7 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Before including this file, you should define a macro:
 
      DEF_BUILTIN (ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P,
-                  FALLBACK_P, NONANSI_P, ATTRS)
+                  FALLBACK_P, NONANSI_P, ATTRS, IMPLICIT)
 
    This macro will be called once for each builtin function.  The
    ENUM will be of type `enum built_in_function', and will indicate
@@ -53,7 +53,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    exist when compiling in ANSI conformant mode.
 
    ATTRs is an attribute list as defined in builtin-attrs.def that
-   describes the attributes of this builtin function.  */
+   describes the attributes of this builtin function.  
+
+   IMPLICIT specifies condition when the builtin can be produced by
+   compiler.  For instance C90 reserves floorf function, but does not
+   define it's meaning.  When user uses floorf we may assume that the
+   floorf has the meaning we expect, but we can't produce floorf by
+   simplifing floor((double)float) since runtime don't need to implement it.  */
    
 /* A GCC builtin (like __builtin_saveregs) is provided by the
    compiler, but does not correspond to a function in the standard
@@ -61,7 +67,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_GCC_BUILTIN
 #define DEF_GCC_BUILTIN(ENUM, NAME, TYPE, ATTRS)		\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, BT_LAST,	\
-               false, false, false, ATTRS)
+               false, false, false, ATTRS, true)
 
 
 /* A fallback builtin is a builtin (like __builtin_puts) that falls
@@ -71,7 +77,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_FALLBACK_BUILTIN				
 #define DEF_FALLBACK_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       false, true, false, ATTRS)
+	       false, true, false, ATTRS, true)
 
 /* Like DEF_FALLBACK_BUILTIN, except that the function is not one that
    is specified by ANSI/ISO C.  So, when we're being fully conformant
@@ -80,7 +86,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_EXT_FALLBACK_BUILTIN
 #define DEF_EXT_FALLBACK_BUILTIN(ENUM, NAME, TYPE)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       false, true, true, ATTR_NOTHROW_LIST)
+	       false, true, true, ATTR_NOTHROW_LIST, true)
 
 /* A library builtin (like __builtin_strchr) is a builtin equivalent
    of an ANSI/ISO standard library function.  In addition to the
@@ -91,14 +97,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_LIB_BUILTIN					
 #define DEF_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-	       true, true, false, ATTRS)
+	       true, true, false, ATTRS, true)
 
 /* Like DEF_LIB_BUILTIN, except that a call to the builtin should
    never fall back to the library version.  */
 #undef DEF_LIB_ALWAYS_BUILTIN				
 #define DEF_LIB_ALWAYS_BUILTIN(ENUM, NAME, TYPE)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-    	       true, false, true, ATTR_CONST_NOTHROW_LIST)
+    	       true, false, true, ATTR_CONST_NOTHROW_LIST, true)
 
 /* Like DEF_LIB_BUILTIN, except that the function is not one that is
    specified by ANSI/ISO C.  So, when we're being fully conformant we
@@ -107,21 +113,29 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_EXT_LIB_BUILTIN				
 #define DEF_EXT_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, true, ATTRS)
+   	       true, true, true, ATTRS, false)
 
 /* Like DEF_LIB_BUILTIN, except that the function is only a part of
    the standard in C99 or above.  */
 #undef DEF_C99_BUILTIN					
 #define DEF_C99_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
-   	       true, true, !flag_isoc99, ATTRS)
+   	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS)
+
+/* Builtin that is specified by C99 and C90 reserve the name for future use.
+   We can still recognize the builtin in C90 mode but we can't produce it
+   implicitly.  */
+#undef DEF_C99_C90RES_BUILTIN					
+#define DEF_C99_C90RES_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
+  DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
+   	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS)
 
 /* Like DEF_LIB_BUILTIN, except that the function is expanded in the
    front-end.  */
 #undef DEF_FRONT_END_LIB_BUILTIN			
 #define DEF_FRONT_END_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
-	       true, true, false, ATTRS)
+	       true, true, false, ATTRS, true)
 
 /* Like DEF_FRONT_END_LIB_BUILTIN, except that the function is not one
    that is specified by ANSI/ISO C.  So, when we're being fully
@@ -130,13 +144,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef DEF_EXT_FRONT_END_LIB_BUILTIN			
 #define DEF_EXT_FRONT_END_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
-	       true, true, true, ATTRS)
+	       true, true, true, ATTRS, true)
 
 /* A built-in that is not currently used.  */
 #undef DEF_UNUSED_BUILTIN					
 #define DEF_UNUSED_BUILTIN(X)					\
   DEF_BUILTIN (X, (const char *) NULL, NOT_BUILT_IN, BT_LAST,	\
-	       BT_LAST, false, false, false, ATTR_NOTHROW_LIST)
+	       BT_LAST, false, false, false, ATTR_NOTHROW_LIST, false)
 
 /* If SMALL_STACK is defined, then `alloca' is only defined in its
    `__builtin' form.  */
@@ -173,27 +187,27 @@ DEF_LIB_BUILTIN(BUILT_IN_FLOOR,
                 "__builtin_floor",
                 BT_FN_DOUBLE_DOUBLE,
 		ATTR_CONST_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_FLOORF,
-                "__builtin_floorf",
-                BT_FN_FLOAT_FLOAT,
-		ATTR_CONST_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_FLOORL,
-                "__builtin_floorl",
-                BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		ATTR_CONST_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_FLOORF,
+		       "__builtin_floorf",
+		       BT_FN_FLOAT_FLOAT,
+		       ATTR_CONST_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_FLOORL,
+		       "__builtin_floorl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       ATTR_CONST_NOTHROW_LIST)
 
 DEF_LIB_BUILTIN(BUILT_IN_CEIL,
                 "__builtin_ceil",
                 BT_FN_DOUBLE_DOUBLE,
 		ATTR_CONST_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_CEILF,
-                "__builtin_ceilf",
-                BT_FN_FLOAT_FLOAT,
-		ATTR_CONST_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_CEILL,
-		"__builtin_ceill",
-		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		ATTR_CONST_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_CEILF,
+		       "__builtin_ceilf",
+		       BT_FN_FLOAT_FLOAT,
+		       ATTR_CONST_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_CEILL,
+		       "__builtin_ceill",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       ATTR_CONST_NOTHROW_LIST)
 
 DEF_C99_BUILTIN(BUILT_IN_ROUND,
 		"__builtin_round",
@@ -295,14 +309,14 @@ DEF_BUILTIN (BUILT_IN_BZERO,
 	     BT_FN_VOID_PTR_SIZE, 
 	     BT_FN_VOID_VAR,
 	     true, true, true,
-	     ATTR_NOTHROW_LIST)
+	     ATTR_NOTHROW_LIST, false)
 DEF_BUILTIN (BUILT_IN_BCMP,
 	     "__builtin_bcmp",
 	     BUILT_IN_NORMAL,
 	     BT_FN_INT_CONST_PTR_CONST_PTR_SIZE,
 	     BT_FN_INT_VAR,
 	     true, true, true,
-	     ATTR_PURE_NOTHROW_LIST)
+	     ATTR_PURE_NOTHROW_LIST, false)
 
 DEF_EXT_LIB_BUILTIN(BUILT_IN_FFS,
 		    "__builtin_ffs",
@@ -414,68 +428,68 @@ DEF_LIB_BUILTIN(BUILT_IN_LOG,
 				: (flag_unsafe_math_optimizations
 				   ? ATTR_CONST_NOTHROW_LIST
 				   : ATTR_PURE_NOTHROW_LIST))
-DEF_LIB_BUILTIN(BUILT_IN_SQRTF,
-		"__builtin_sqrtf",
-		BT_FN_FLOAT_FLOAT,
-		flag_errno_math ? ATTR_NOTHROW_LIST
-				: (flag_unsafe_math_optimizations
-				   ? ATTR_CONST_NOTHROW_LIST
-				   : ATTR_PURE_NOTHROW_LIST))
-DEF_LIB_BUILTIN(BUILT_IN_SINF,
-		"__builtin_sinf",
-		BT_FN_FLOAT_FLOAT,
-		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
-					       : ATTR_PURE_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_COSF,
-		"__builtin_cosf",
-		BT_FN_FLOAT_FLOAT,
-		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
-					       : ATTR_PURE_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_EXPF,
-		"__builtin_expf",
-		BT_FN_FLOAT_FLOAT,
-		flag_errno_math ? ATTR_NOTHROW_LIST
-				: (flag_unsafe_math_optimizations
-				   ? ATTR_CONST_NOTHROW_LIST
-				   : ATTR_PURE_NOTHROW_LIST))
-DEF_LIB_BUILTIN(BUILT_IN_LOGF,
-		"__builtin_logf",
-		BT_FN_FLOAT_FLOAT,
-		flag_errno_math ? ATTR_NOTHROW_LIST
-				: (flag_unsafe_math_optimizations
-				   ? ATTR_CONST_NOTHROW_LIST
-				   : ATTR_PURE_NOTHROW_LIST))
-DEF_LIB_BUILTIN(BUILT_IN_SQRTL,
-		"__builtin_sqrtl",
-		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		flag_errno_math ? ATTR_NOTHROW_LIST
-				: (flag_unsafe_math_optimizations
-				   ? ATTR_CONST_NOTHROW_LIST
-				   : ATTR_PURE_NOTHROW_LIST))
-DEF_LIB_BUILTIN(BUILT_IN_SINL,
-		"__builtin_sinl",
-		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
-					       : ATTR_PURE_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_COSL,
-		"__builtin_cosl",
-		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
-					       : ATTR_PURE_NOTHROW_LIST)
-DEF_LIB_BUILTIN(BUILT_IN_EXPL,
-		"__builtin_expl",
-		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		flag_errno_math ? ATTR_NOTHROW_LIST
-				: (flag_unsafe_math_optimizations
-				   ? ATTR_CONST_NOTHROW_LIST
-				   : ATTR_PURE_NOTHROW_LIST))
-DEF_LIB_BUILTIN(BUILT_IN_LOGL,
-		"__builtin_logl",
-		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
-		flag_errno_math ? ATTR_NOTHROW_LIST
-				: (flag_unsafe_math_optimizations
-				   ? ATTR_CONST_NOTHROW_LIST
-				   : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_SQRTF,
+		       "__builtin_sqrtf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_SINF,
+		       "__builtin_sinf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_COSF,
+		       "__builtin_cosf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_EXPF,
+		       "__builtin_expf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_LOGF,
+		       "__builtin_logf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_SQRTL,
+		       "__builtin_sqrtl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_SINL,
+		       "__builtin_sinl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_COSL,
+		       "__builtin_cosl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_EXPL,
+		       "__builtin_expl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_LOGL,
+		       "__builtin_logl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
 
 DEF_GCC_BUILTIN(BUILT_IN_INF,
 		"__builtin_inf",
@@ -616,7 +630,7 @@ DEF_BUILTIN (BUILT_IN_FPUTS,
 	     BUILT_IN_NORMAL,
 	     BT_FN_INT_CONST_STRING_PTR,
 	     BT_FN_INT_VAR,
-	     true, true, false, ATTR_NOTHROW_LIST)
+	     true, true, false, ATTR_NOTHROW_LIST, true)
 DEF_FALLBACK_BUILTIN(BUILT_IN_FWRITE,
 		     "__builtin_fwrite",
 		     BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR,
@@ -650,7 +664,7 @@ DEF_BUILTIN (BUILT_IN_FPUTS_UNLOCKED,
 	     BUILT_IN_NORMAL,
 	     BT_FN_INT_CONST_STRING_PTR,
 	     BT_FN_INT_VAR,
-	     true, true, true, ATTR_NOTHROW_LIST)
+	     true, true, true, ATTR_NOTHROW_LIST, true)
 DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FWRITE_UNLOCKED,
 			 "__builtin_fwrite_unlocked",
 			 BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR)
@@ -755,7 +769,7 @@ DEF_BUILTIN (BUILT_IN_ABORT,
 	     BT_FN_VOID,
 	     BT_FN_VOID,
 	     1, 0, 0,
-	     ATTR_NORETURN_NOTHROW_LIST)
+	     ATTR_NORETURN_NOTHROW_LIST, true)
 
 DEF_BUILTIN (BUILT_IN_EXIT,
 	     "__builtin_exit",
@@ -763,7 +777,7 @@ DEF_BUILTIN (BUILT_IN_EXIT,
 	     BT_FN_VOID_INT,
 	     BT_FN_VOID_INT,
 	     1, 0, 0,
-	     ATTR_NORETURN_NOTHROW_LIST)
+	     ATTR_NORETURN_NOTHROW_LIST, true)
 
 DEF_BUILTIN (BUILT_IN__EXIT,
 	     "__builtin__exit",
@@ -771,7 +785,7 @@ DEF_BUILTIN (BUILT_IN__EXIT,
 	     BT_FN_VOID_INT,
 	     BT_FN_VOID_INT,
 	     1, 0, 1,
-	     ATTR_NORETURN_NOTHROW_LIST)
+	     ATTR_NORETURN_NOTHROW_LIST, false)
 
 DEF_BUILTIN (BUILT_IN__EXIT2,
 	     "__builtin__Exit",
@@ -779,5 +793,5 @@ DEF_BUILTIN (BUILT_IN__EXIT2,
 	     BT_FN_VOID_INT,
 	     BT_FN_VOID_INT,
 	     1, 0, !flag_isoc99,
-	     ATTR_NORETURN_NOTHROW_LIST)
+	     ATTR_NORETURN_NOTHROW_LIST, false)
 
