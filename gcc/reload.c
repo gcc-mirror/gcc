@@ -2340,7 +2340,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		break;
 
 	      case '%':
-		commutative = i;
+		/* The last operand should not be marked commutative.  */
+		if (i != noperands - 1)
+		  commutative = i;
 		break;
 
 	      case '?':
