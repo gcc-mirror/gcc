@@ -1435,7 +1435,7 @@ branch_target_load_optimize (rtx insns, bool after_prologue_epilogue_gen)
       /* Dominator info is also needed for migrate_btr_def.  */
       calculate_dominance_info (CDI_DOMINATORS);
       migrate_btr_defs (class,
-		       ((*targetm.branch_target_register_callee_saved)
+		       (targetm.branch_target_register_callee_saved
 			(after_prologue_epilogue_gen)));
 
       free_dominance_info (CDI_DOMINATORS);

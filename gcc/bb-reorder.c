@@ -1075,7 +1075,7 @@ reorder_basic_blocks (void)
   if (n_basic_blocks <= 1)
     return;
 
-  if ((* targetm.cannot_modify_jumps_p) ())
+  if (targetm.cannot_modify_jumps_p ())
     return;
 
   timevar_push (TV_REORDER_BLOCKS);

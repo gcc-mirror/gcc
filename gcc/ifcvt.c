@@ -3263,7 +3263,7 @@ if_convert (int x_life_data_ok)
   num_true_changes = 0;
   life_data_ok = (x_life_data_ok != 0);
 
-  if (! (* targetm.cannot_modify_jumps_p) ())
+  if (! targetm.cannot_modify_jumps_p ())
     mark_loop_exit_edges ();
 
   /* Free up basic_block_for_insn so that we don't have to keep it

@@ -926,8 +926,8 @@ create_coverage (void)
   current_function_decl = NULL_TREE;
 
   if (targetm.have_ctors_dtors)
-    (* targetm.asm_out.constructor) (XEXP (DECL_RTL (ctor), 0),
-				     DEFAULT_INIT_PRIORITY);
+    targetm.asm_out.constructor (XEXP (DECL_RTL (ctor), 0),
+				 DEFAULT_INIT_PRIORITY);
 }
 
 /* Perform file-level initialization. Read in data file, generate name

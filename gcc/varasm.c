@@ -375,7 +375,7 @@ named_section (tree decl, const char *name, int reloc)
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
-  flags = (* targetm.section_type_flags) (decl, name, reloc);
+  flags = targetm.section_type_flags (decl, name, reloc);
 
   /* Sanity check user variables for flag changes.  Non-user
      section flag changes will abort in named_section_flags.
@@ -727,7 +727,7 @@ make_decl_rtl (tree decl, const char *asmspec)
       /* Let the target reassign the RTL if it wants.
 	 This is necessary, for example, when one machine specific
 	 decl attribute overrides another.  */
-      (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
+      targetm.encode_section_info (decl, DECL_RTL (decl), false);
       return;
     }
 
@@ -827,7 +827,7 @@ make_decl_rtl (tree decl, const char *asmspec)
      such as that it is a function name.
      If the name is changed, the macro ASM_OUTPUT_LABELREF
      will have to know how to strip this information.  */
-  (* targetm.encode_section_info) (decl, DECL_RTL (decl), true);
+  targetm.encode_section_info (decl, DECL_RTL (decl), true);
 }
 
 /* Make the rtl for variable VAR be volatile.
@@ -1013,7 +1013,7 @@ notice_global_symbol (tree decl)
       char *name;
       rtx decl_rtl = DECL_RTL (decl);
 
-      p = (* targetm.strip_name_encoding) (XSTR (XEXP (decl_rtl, 0), 0));
+      p = targetm.strip_name_encoding (XSTR (XEXP (decl_rtl, 0), 0));
       name = xstrdup (p);
 
       *type = name;
@@ -1657,7 +1657,7 @@ assemble_name (FILE *file, const char *name)
   const char *real_name;
   tree id;
 
-  real_name = (* targetm.strip_name_encoding) (name);
+  real_name = targetm.strip_name_encoding (name);
 
   id = maybe_get_identifier (real_name);
   if (id)
@@ -4204,7 +4204,7 @@ maybe_assemble_visibility (tree decl)
   enum symbol_visibility vis = DECL_VISIBILITY (decl);
 
   if (vis != VISIBILITY_DEFAULT)
-    (* targetm.asm_out.visibility) (decl, vis);
+    targetm.asm_out.visibility (decl, vis);
 }
 
 /* Returns 1 if the target configuration supports defining public symbols
@@ -4754,7 +4754,7 @@ default_unique_section_1 (tree decl, int reloc, int shlib)
   plen = strlen (prefix);
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = (* targetm.strip_name_encoding) (name);
+  name = targetm.strip_name_encoding (name);
   nlen = strlen (name);
 
   string = alloca (nlen + plen + 1);
