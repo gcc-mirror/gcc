@@ -1,3 +1,7 @@
+1999-09-28  Nick Clifton  <nickc@cygnus.com>
+
+	* compile/990928-1.c: New test.
+
 1999-09-23  Nick Clifton  <nickc@cygnus.com>
 
 	* execute/990923-1.c: New test.
