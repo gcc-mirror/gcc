@@ -1,3 +1,9 @@
+2005-01-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/19642
+	* config/locale/generic/c_locale.h (__convert_from_v): Switch only
+	LC_NUMERIC, and only when actually != "C".
+
 2005-01-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (is_function): Minor consistency tweaks.
