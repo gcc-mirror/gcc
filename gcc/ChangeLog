@@ -1,4 +1,11 @@
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	    Diego Novillo  <dnovillo@redhat.com>	    
+
+	PR/18662, also backported from tree-cleanup-branch.
+	* tree-ssa-ccp.c (substitute_and_fold): If replaced anything,
+	always call maybe_clean_eh_stmt and modify_stmt.
+
+2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR/18664
 	* tree-ssa-operands.c (build_ssa_operands, case MODIFY_EXPR):
