@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA. */
 #include "insn-attr.h"
 #include "tree.h"
 #include "flags.h"
+#include "except.h"
 #include "function.h"
 
 #ifdef EXTRA_CONSTRAINT
