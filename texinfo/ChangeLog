@@ -1,3 +1,9 @@
+Thu Jul  1 01:44:00 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* acconfig.h (_, N_): Macros removed.
+	* lib/system.h (_, N_): Macro definitions moved here.
+	* config.h.in: File regenerated.
+
 Tue Jun 29 03:20:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* config.h.in: Rebuilt.
