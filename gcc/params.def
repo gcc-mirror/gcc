@@ -95,6 +95,15 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_RTL,
 	  "The maximum number of instructions for the RTL inliner",
 	  600)
 
+/* Limit the number of expansions created by the variable expansion
+   optimization to avoid register pressure.  */
+DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,
+	  "max-variable-expansions-in-unroller",
+	  "If -fvariable-expansion-in-unroller is used, the maximum number of \
+           times that an individual variable will be expanded \
+           during loop unrolling",
+          1)
+     
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
    number of instructions is searched, the time savings from filling

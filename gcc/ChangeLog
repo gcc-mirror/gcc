@@ -1,3 +1,30 @@
+2004-10-18  Revital Eres  <eres@il.ibm.com>
+
+	* Makefile.in (loop-unroll.o): Add VARRAY_H dependency.
+	* loop-unroll.c: Include varray.h.
+	(struct var_to_expand, struct opt_info): Rename split_ivs_info to
+	opt_info and expand it to support variable expansion.
+	(analyze_insns_in_loop): Rename analyze_ivs_to_split and
+	expand it to support variable expansion.
+	(pt_info_start_duplication): Rename si_info_start_duplication.
+	(apply_opt_in_copies): Rename split_ivs_in_copies and add support
+	to the variable expansion optimization.
+	(free_opt_info): Rename free_si_info.
+	(analyze_insn_to_expand_var, referenced_in_one_insn_in_loop_p,
+	expand_var_during_unrolling, insert_var_expansion_initialization,
+	combine_var_copies_in_loop_exit, release_var_copies,
+	get_expansion): New functions.
+	(peel_loop_completely, unroll_loop_constant_iterations,
+	unroll_loop_runtime_iterations, peel_loop_simple,
+	unroll_loop_stupid): Change uses of struct si_info
+	to struct opt_info
+	and add uses of fvariable-expansion-in-unroller flag.
+	* params.def: Add parameter to restrict the number of expansions.
+	* params.h: (MAX_VARIABLE_EXPANSIONS): New define to restrict
+	the number of expansions.
+	* common.opt: (fvariable-expansion-in-unroller): New flag. 
+	* doc/invoke.texi: (fvariable-expansion-in-unroller): Document.
+
 2004-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (TARGET_OS_CPP_BUILTINS): Define
