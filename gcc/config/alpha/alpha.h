@@ -41,6 +41,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 
+/* No point in running CPP on our assembler output.  */
+#define ASM_SPEC "-nocpp"
+
 /* Right now Alpha OSF/1 doesn't seem to have debugging or profiled 
    libraries.  */
 
@@ -808,31 +811,31 @@ extern char *alpha_function_name;
    of a trampoline, leaving space for the variable parts.
 
    The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.  We
-   use $28 (at) as a temporary.  Note that $27 has been set to the
-   address of the trampoline, so we can use it for addressability
-   of the two data items.  Trampolines are always aligned to
-   FUNCTION_BOUNDARY, which is 64 bits.  */
+   into the trampoline and should branch to the specified routine.  
+   Note that $27 has been set to the address of the trampoline, so we can
+   use it for addressability of the two data items.  Trampolines are always
+   aligned to FUNCTION_BOUNDARY, which is 64 bits.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE)		\
 {						\
-  fprintf (FILE, "\tbis $27,$27,$28\n");	\
+  fprintf (FILE, "\tldq $1,24($27)\n");		\
   fprintf (FILE, "\tldq $27,16($27)\n");	\
-  fprintf (FILE, "\tldq $1,20($28)\n");		\
-  fprintf (FILE, "\tjmp $31,0($27),0\n");	\
+  fprintf (FILE, "\tjmp $31,($27),0\n");	\
+  fprintf (FILE, "\tnop\n");			\
   fprintf (FILE, "\t.quad 0,0\n");		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE    24
+#define TRAMPOLINE_SIZE    32
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  We assume
    here that a function will be called many more times than its address
    is taken (e.g., it might be passed to qsort), so we take the trouble 
-   to initialize the "hint" field in the JMP insn.  */
+   to initialize the "hint" field in the JMP insn.  Note that the hint
+   field is PC (new) + 4 * bits 13:0.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
@@ -840,20 +843,49 @@ extern char *alpha_function_name;
 									\
   _addr = memory_address (Pmode, plus_constant ((TRAMP), 16));		\
   emit_move_insn (gen_rtx (MEM, Pmode, _addr), (FNADDR));		\
-  _addr = memory_address (Pmode, plus_constant ((TRAMP), 20));		\
+  _addr = memory_address (Pmode, plus_constant ((TRAMP), 24));		\
   emit_move_insn (gen_rtx (MEM, Pmode, _addr), (CXT));			\
 									\
-  _temp = expand_shift (RSHIFT_EXPR, Pmode, (FNADDR),			\
+  _temp = force_operand (plus_constant ((TRAMP), 12), NULL_RTX);	\
+  _temp = expand_binop (DImode, sub_optab, (FNADDR), _temp, _temp, 1,	\
+			OPTAB_WIDEN);					\
+  _temp = expand_shift (RSHIFT_EXPR, Pmode, _temp,			\
 			build_int_2 (2, 0), NULL_RTX, 1);		\
-  _temp = expand_and (_temp, GEN_INT (0x1fff), 0); 			\
+  _temp = expand_and (gen_lowpart (SImode, _temp),			\
+		      GEN_INT (0x3fff), 0); 				\
 									\
-  _addr = memory_address (SImode, plus_constant ((TRAMP), 12));		\
+  _addr = memory_address (SImode, plus_constant ((TRAMP), 8));		\
   _temp1 = force_reg (SImode, gen_rtx (MEM, SImode, _addr));		\
-  _temp1 = expand_and (_temp, GEN_INT (0xfffe000), NULL_RTX);		\
+  _temp1 = expand_and (_temp1, GEN_INT (0xffffc000), NULL_RTX);		\
   _temp1 = expand_binop (SImode, ior_optab, _temp1, _temp, _temp1, 1,	\
 			 OPTAB_WIDEN);					\
 									\
   emit_move_insn (gen_rtx (MEM, SImode, _addr), _temp1);		\
+									\
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode,			\
+			      "__enable_execute_stack"),		\
+		     0, VOIDmode, 1,_addr, Pmode);			\
+									\
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
+		      gen_rtvec (1, const0_rtx), 0));			\
+}
+
+/* Attempt to turn on access permissions for the stack.  */
+
+#define TRANSFER_FROM_TRAMPOLINE					\
+									\
+void									\
+__enable_execute_stack (addr)						\
+     void *addr;							\
+{									\
+  long size = getpagesize ();						\
+  long mask = ~(size-1);						\
+  char *page = (char *) (((long) addr) & mask);				\
+  char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
+									\
+  /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */				\
+  if (mprotect (page, end - page, 7) < 0)				\
+    perror ("mprotect of trampoline code");				\
 }
 
 /* Addressing modes, and classification of registers for them.  */
