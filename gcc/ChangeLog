@@ -1,3 +1,11 @@
+2003-01-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_logical_op): Simplify and
+	optimize the handling of SImode.
+	* config/h8300/h8300.c (compute_logical_op_length): Update
+	accordingly.
+	* config/h8300/h8300.c (compute_logical_op_cc): Likewise.
+
 2003-01-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_va_arg): In the EABI code, apply the
