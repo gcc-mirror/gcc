@@ -308,10 +308,7 @@ procedure conftest is begin null; end conftest;
 EOF
 gcc_cv_prog_adac=no
 # Have to do ac_tool_prefix and user overrides by hand.
-user_adac=$ADAC
-user_cc=$CC
-for cand in ${ac_tool_prefix}$user_adac	$user_adac	\
-	    ${ac_tool_prefix}$user_cc	$user_cc	\
+for cand in ${ADAC+"$ADAC"} ${CC+"$CC"}	\
 	    ${ac_tool_prefix}gcc	gcc		\
 	    ${ac_tool_prefix}cc		cc		\
 	    ${ac_tool_prefix}gnatgcc	gnatgcc		\
