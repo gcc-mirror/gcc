@@ -1694,10 +1694,17 @@ ext_register_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  int regno;
   if ((!TARGET_64BIT || GET_MODE (op) != DImode)
       && GET_MODE (op) != SImode && GET_MODE (op) != HImode)
     return 0;
-  return register_operand (op, VOIDmode);
+
+  if (!register_operand (op, VOIDmode))
+    return 0;
+
+  /* Be curefull to accept only registers having upper parts.  */
+  regno = REG_P (op) ? REGNO (op) : REGNO (SUBREG_REG (op));
+  return (regno > LAST_VIRTUAL_REGISTER || regno < 4);
 }
 
 /* Return 1 if this is a valid binary floating-point operation.
