@@ -1,3 +1,7 @@
+2002-02-13  Richard Smith <richard@ex-parrot.com>
+
+	* g++.old-deja/g++.other/thunk1.C: New test.
+
 2002-02-12  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* g++.dg/warn/weak1.C: weak attributes not supported on cygwin
