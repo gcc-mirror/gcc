@@ -5031,6 +5031,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ANSI C forbids const or volatile functions");
 
+	if (pedantic
+	    && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl))) == void_type_node
+	    && (TYPE_READONLY (TREE_TYPE (TREE_TYPE (decl)))
+		|| TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (decl))))
+	    && ! DECL_IN_SYSTEM_HEADER (decl))
+	  pedwarn ("ANSI C forbids const or volatile void function return type");
+
 	if (volatilep
 	    && TREE_TYPE (TREE_TYPE (decl)) != void_type_node)
 	  warning ("`noreturn' function returns non-void value");
