@@ -1,3 +1,7 @@
+2000-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* MAINTAINERS: Pair cccp with cpplib maintainership.
+
 2000-01-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (CXX_FOR_TARGET): Use g++, not xgcc, to invoke
