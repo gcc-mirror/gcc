@@ -2685,7 +2685,7 @@ install-common: native $(EXTRA_PARTS) lang.install-common
 	    rm -f $(bindir)/gcov$(exeext); \
 	    $(INSTALL_PROGRAM) gcov$(exeext) $(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	fi
-	$(INSTALL_PROGRAM) gccbug $(bindir)/$(GCCBUG_INSTALL_NAME)
+	$(INSTALL_SCRIPT) gccbug $(bindir)/$(GCCBUG_INSTALL_NAME)
 
 # Install the driver program as $(target_alias)-gcc
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
