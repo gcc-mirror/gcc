@@ -1,3 +1,12 @@
+Thu Apr  8 01:26:05 1999  Arg Haas (ahaas@neosoft.com)
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* freebsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Avoid ambigious
+	else statement.
+	* gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* openbsd.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
 Wed Apr  7 22:40:19 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* i960/i960.c (i960_function_prologue): Don't save static chain
