@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 1988, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -361,16 +361,6 @@ init_reg_sets_1 ()
   CONDITIONAL_REGISTER_USAGE;
 #endif
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i])
-      {
-	if (call_used_regs[i] && ! fixed_regs[i])
-	  warning ("call-clobbered register used for global register variable");
-	fixed_regs[i] = 1;
-	/* Prevent saving/restoring of this reg.  */
-	call_used_regs[i] = 1;
-      }
-
   /* Initialize "constant" tables.  */
 
   CLEAR_HARD_REG_SET (fixed_reg_set);
@@ -433,6 +423,35 @@ fix_register (name, fixed, call_used)
     {
       warning ("unknown register name: %s", name);
     }
+}
+
+/* Mark register number I as global.  */
+
+void
+globalize_reg (i)
+     int i;
+{
+  if (global_regs[i])
+    {
+      warning ("register used for two global register variables");
+      return;
+    }
+
+  if (call_used_regs[i] && ! fixed_regs[i])
+    warning ("call-clobbered register used for global register variable");
+
+  global_regs[i] = 1;
+
+  /* If already fixed, nothing else to do.  */
+  if (fixed_regs[i])
+    return;
+
+  fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1;
+  n_non_fixed_regs--;
+
+  SET_HARD_REG_BIT (fixed_reg_set, i);
+  SET_HARD_REG_BIT (call_used_reg_set, i);
+  SET_HARD_REG_BIT (call_fixed_reg_set, i);
 }
 
 /* Now the data and code for the `regclass' pass, which happens
