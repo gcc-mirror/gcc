@@ -2,7 +2,7 @@
 
    - some flags HAVE_... saying which simple standard instructions are
    available for this machine.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -123,11 +123,13 @@ gen_insn (insn)
   struct obstack *obstack_ptr;
   int len;
 
-  /* Don't mention instructions whose names are the null string.
-     They are in the machine description just to be recognized.  */
-  len = strlen (name);
-  if (len == 0)
+  /* Don't mention instructions whose names are the null string
+     or begin with '*'.  They are in the machine description just
+     to be recognized.  */
+  if (name[0] == 0 || name[0] == '*')
     return;
+
+  len = strlen (name);
 
   if (len > max_id_len)
     max_id_len = len;
