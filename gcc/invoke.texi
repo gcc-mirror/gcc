@@ -111,7 +111,7 @@ in the following sections.
 -fhuge-objects -fno-implicit-templates -finit-priority
 -fno-implement-inlines -fname-mangling-version-@var{n}
 -fno-default-inline -fno-operator-names -fno-optional-diags -fpermissive
--frepo -fstrict-prototype -fsquangle -ftemplate-depth-@var{n}
+-frepo -fsquangle -ftemplate-depth-@var{n}
 -fuse-cxa-atexit -fvtable-thunks -nostdinc++ -Wctor-dtor-privacy
 -Wno-deprecated -Weffc++ -Wno-non-template-friend -Wnon-virtual-dtor
 -Wold-style-cast -Woverloaded-virtual -Wno-pmf-conversions -Wreorder
@@ -1208,19 +1208,6 @@ functions for use by the C++ runtime type identification features
 of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but it will generate it as
 needed.
-
-@item -fstrict-prototype
-Within an @samp{extern "C"} linkage specification, treat a function
-declaration with no arguments, such as @samp{int foo ();}, as declaring
-the function to take no arguments.  Normally, such a declaration means
-that the function @code{foo} can take any combination of arguments, as
-in C.  @samp{-pedantic} implies @samp{-fstrict-prototype} unless
-overridden with @samp{-fno-strict-prototype}.
-
-Specifying this option will also suppress implicit declarations of
-functions.
-
-This flag no longer affects declarations with C++ linkage.
 
 @item -fsquangle
 @itemx -fno-squangle
