@@ -43,13 +43,13 @@ Boston, MA 02111-1307, USA.  */
    this to pull in CPP specs that all NetBSD configurations need.  */
 
 #undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC "%(netbsd_cpp_spec)"
+#define CPP_SUBTARGET_SPEC NETBSD_CPP_SPEC
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },	\
   { "netbsd_link_spec", NETBSD_LINK_SPEC_ELF },	\
-  { "netbsd_entry_point", NETBSD_ENTRY_POINT },
+  { "netbsd_entry_point", NETBSD_ENTRY_POINT },	\
+  { "netbsd_endfile_spec", NETBSD_ENDFILE_SPEC },
 
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/alpha ELF target.  */
@@ -72,8 +72,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC		\
   "%{ffast-math|funsafe-math-optimizations:crtfm%O%s} \
-   %{!shared:crtend%O%s} %{shared:crtendS%O%s} \
-   %:if-exists(crtn%O%s)"
+   %(netbsd_endfile_spec)"
 
 
 /* Attempt to enable execute permissions on the stack.  */
