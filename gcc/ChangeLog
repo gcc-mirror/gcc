@@ -1,3 +1,8 @@
+2003-01-14  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_mov): Use correct mode
+	for force_const_mem.
+
 2003-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattr.c (main): Rearrange output to avoid prototype warning.
