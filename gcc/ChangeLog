@@ -1,3 +1,8 @@
+2005-04-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/t-darwin (TARGET_LIBGCC2_CFLAGS): Add -pipe.
+	* config/t-darwin (TARGET_LIBGCC2_CFLAGS): Likewise.
+
 2005-04-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* gcc/config/vax/vax.md: Spellcheck, fix whitespace.
