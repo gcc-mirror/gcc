@@ -475,7 +475,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU check-local
+	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
 check: check-am
 all-am: Makefile $(LIBRARIES) all-local
 installdirs:
@@ -554,17 +554,16 @@ ps-am:
 uninstall-am: uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am all-local check check-DEJAGNU check-am \
-	check-local clean clean-generic clean-libtool \
-	clean-noinstLIBRARIES ctags distclean distclean-DEJAGNU \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-info-am
+	clean clean-generic clean-libtool clean-noinstLIBRARIES ctags \
+	distclean distclean-DEJAGNU distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-info-am
 
 
 all-local: stamp_wchar stamp_thread
@@ -606,12 +605,6 @@ site.exp: Makefile
 	@test ! -f site.exp || mv site.exp site.bak
 	@mv site.tmp site.exp
 
-# This is automatically run after the generated check-DEJAGNU rule.
-check-local: check-abi
-
-current_symbols.txt: ${extract_symvers} ../src/.libs/libstdc++.so
-	  -@(${extract_symvers} ../src/.libs/libstdc++.so current_symbols.txt)
-
 baseline_symbols:
 	-@(output=${baseline_file}; \
 	  if test ! -f $${output}; then \
@@ -632,7 +625,7 @@ new-abi-baseline:
 
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
-@GLIBCXX_TEST_ABI_TRUE@check-abi: baseline_symbols current_symbols.txt site.exp
+@GLIBCXX_TEST_ABI_TRUE@check-abi: baseline_symbols site.exp
 @GLIBCXX_TEST_ABI_TRUE@	-@runtest --tool libstdc++ abi.exp
 @GLIBCXX_TEST_ABI_FALSE@check-abi:
 check-script: ${survey_script}

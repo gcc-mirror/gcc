@@ -14,10 +14,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# If there is no current_symbols.txt file, then skip this test.
-if { ![file exists "current_symbols.txt"] } {
+# If there is no baseline file, or we can't find the library, skip
+# this test.
+if { ![info exists baseline_file] \
+	 || ![file exists $baseline_file] \
+	 || ![file exists "../src/.libs/libstdc++.so"] } {
     return
 }
+
+# Figure out what symbols are defined by the active build of the library.
+remote_exec "build" "$srcdir/../scripts/extract_symvers" \
+    [list "../src/.libs/libstdc++.so" "current_symbols.txt"]
 
 # Build the support objects.
 v3-build_support
