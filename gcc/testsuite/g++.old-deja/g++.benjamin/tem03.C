@@ -83,7 +83,7 @@ public:
 template <class T10, int i> struct Xfour {// ERROR - .*
   int T10; // ERROR - .*
   void f(){
-    char T10; // ERROR - .*
+    char T10;
   }
 };
 
