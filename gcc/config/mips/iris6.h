@@ -144,9 +144,10 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SET_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
 
-/* This is how to equate one symbol to another symbol.  The syntax used is
-   `SYM1=SYM2'.  Note that this is different from the way equates are done
-   with most svr4 assemblers, where the syntax is `.set SYM1,SYM2'.  */
+#if 0
+/* This is *NOT* how to equate one symbol to another symbol.  The assembler
+   '=' syntax just equates a name to a constant expression.
+   See ASM_OUTPUT_WEAK_ALIAS.  */
 
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
  do {	fprintf ((FILE), "\t");						\
@@ -155,6 +156,28 @@ Boston, MA 02111-1307, USA.  */
 	assemble_name (FILE, LABEL2);					\
 	fprintf (FILE, "\n");						\
   } while (0)
+#endif
+
+/* Define the strings used for the special svr4 .type and .size directives.  */
+
+#define TYPE_ASM_OP	".type"
+#define SIZE_ASM_OP	".size"
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
+ do {						\
+  fputs ("\t.weakext\t", FILE);			\
+  assemble_name (FILE, NAME);			\
+  if (VALUE)					\
+    {						\
+      fputc (' ', FILE);			\
+      assemble_name (FILE, VALUE);		\
+    }						\
+  fputc ('\n', FILE);				\
+ } while (0)
+
+#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)
 
 #define POPSECTION_ASM_OP	".popsection"
 
@@ -195,6 +218,7 @@ Boston, MA 02111-1307, USA.  */
    and dtor lists this way, so we use -init and -fini to invoke the
    do_global_* functions instead of running collect2.  */
 
+#define BSS_SECTION_ASM_OP	".section\t.bss"
 #define CONST_SECTION_ASM_OP_32	"\t.rdata"
 #define CONST_SECTION_ASM_OP_64	".section\t.rodata"
 #define CTORS_SECTION_ASM_OP	".section\t.ctors,1,2,0,4"
@@ -323,21 +347,68 @@ while (0)
 
 /* ??? SGI assembler gives warning whenever .lcomm is used.  */
 #undef ASM_OUTPUT_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)	\
-do								\
-  {								\
-    if (mips_abi != ABI_32)					\
-      {								\
-	fputs ("\t.section\t.bss\n", STREAM);			\
-	ASM_DECLARE_OBJECT_NAME (STREAM, NAME, 0);		\
-	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\
-	ASM_OUTPUT_SKIP (STREAM, SIZE);				\
-	fprintf (STREAM, "\t%s\n", POPSECTION_ASM_OP);		\
-      }								\
-    else							\
+#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)		   \
+do									   \
+  {									   \
+    if (mips_abi != ABI_32)						   \
+      {									   \
+	fprintf (STREAM, "%s\n", BSS_SECTION_ASM_OP);			   \
+	mips_declare_object (STREAM, NAME, "", ":\n", 0);		   \
+	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	   \
+	ASM_OUTPUT_SKIP (STREAM, SIZE);					   \
+	fprintf (STREAM, "\t%s\n", POPSECTION_ASM_OP);			   \
+      }									   \
+    else								   \
       mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE)); \
-  }								\
+  }									   \
 while (0)
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
+/* Write the extra assembler code needed to declare an object properly.  */
+
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
+do									\
+ {									\
+   size_directive_output = 0;						\
+   if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
+     {									\
+       size_directive_output = 1;					\
+       fprintf (STREAM, "\t%s\t ", SIZE_ASM_OP);			\
+       assemble_name (STREAM, NAME);					\
+       fprintf (STREAM, ",%d\n", int_size_in_bytes (TREE_TYPE (DECL)));	\
+     }									\
+   mips_declare_object (STREAM, NAME, "", ":\n", 0);			\
+ }									\
+while (0)
+
+/* Output the size directive for a decl in rest_of_decl_compilation
+   in the case where we did not do so before the initializer.
+   Once we find the error_mark_node, we know that the value of
+   size_directive_output was set
+   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
+
+#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
+do {									 \
+     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
+         && ! AT_END && TOP_LEVEL					 \
+	 && DECL_INITIAL (DECL) == error_mark_node			 \
+	 && !size_directive_output)					 \
+       {								 \
+	 size_directive_output = 1;					 \
+	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
+	 assemble_name (FILE, name);					 \
+	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
+       }								 \
+   } while (0)
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX (mips_abi == ABI_32 ? "$" : ".")

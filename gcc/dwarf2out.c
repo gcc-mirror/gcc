@@ -252,19 +252,6 @@ pubname_entry;
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* Define a macro which returns non-zero for any tagged type which is used
-   (directly or indirectly) in the specification of either some function's
-   return type or some formal parameter of some function. We use this macro
-   when we are operating in "terse" mode to help us know what tagged types
-   have to be represented in Dwarf (even in terse mode) and which ones don't.
-   A flag bit with this meaning really should be a part of the normal GCC
-   ..._TYPE nodes, but at the moment, there is no such bit defined for these
-   nodes.  For now, we have to just fake it.  It it safe for us to simply
-   return zero for all complete tagged types (which will get forced out
-   anyway if they were used in the specification of some formal or return
-   type) and non-zero for all incomplete tagged types.  */
-#define TYPE_USED_FOR_FUNCTION(tagged_type) (TYPE_SIZE (tagged_type) == 0)
-
 /* Define a macro which returns non-zero for a TYPE_DECL which was
    implicitly generated for a tagged type.
 
@@ -6089,7 +6076,8 @@ scope_die_for (t, context_die)
 	{
 	  assert (scope_die == comp_unit_die);
 	  assert (TREE_CODE_CLASS (TREE_CODE (containing_scope)) == 't');
-	  assert (TREE_ASM_WRITTEN (containing_scope));
+	  if (debug_info_level > DINFO_LEVEL_TERSE)
+	    assert (TREE_ASM_WRITTEN (containing_scope));
 	}
     }
   return scope_die;
@@ -6533,7 +6521,6 @@ gen_subprogram_die (decl, context_die)
   register dw_die_ref subr_die;
   register dw_loc_descr_ref fp_loc = NULL;
   register unsigned fp_reg;
-  register tree type;
   register tree fn_arg_types;
   register tree outer_scope;
   dw_die_ref old_die = lookup_decl_die (decl);
@@ -6581,9 +6568,12 @@ gen_subprogram_die (decl, context_die)
       if (TREE_PUBLIC (decl))
 	add_AT_flag (subr_die, DW_AT_external, 1);
       add_name_and_src_coords_attributes (subr_die, decl);
-      type = TREE_TYPE (decl);
-      add_prototyped_attribute (subr_die, type);
-      add_type_attribute (subr_die, TREE_TYPE (type), 0, 0, context_die);
+      if (debug_info_level > DINFO_LEVEL_TERSE)
+	{
+	  register tree type = TREE_TYPE (decl);
+	  add_prototyped_attribute (subr_die, type);
+	  add_type_attribute (subr_die, TREE_TYPE (type), 0, 0, context_die);
+	}
       add_pure_or_virtual_attribute (subr_die, decl);
       if (DECL_ARTIFICIAL (decl))
 	add_AT_flag (subr_die, DW_AT_artificial, 1);
@@ -6668,7 +6658,9 @@ gen_subprogram_die (decl, context_die)
   /* In the case where we are describing a mere function declaration, all we
      need to do here (and all we *can* do here) is to describe the *types* of 
      its formal parameters.  */
-  if (DECL_INITIAL (decl) == NULL_TREE)
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    /* do nothing */;
+  else if (DECL_INITIAL (decl) == NULL_TREE)
     {
       gen_formal_types_die (TREE_TYPE (decl), subr_die);
     }
@@ -7009,11 +7001,8 @@ gen_compile_unit_die (main_input_filename)
      that the object file is stripped and has no debugging information.
      To get the MIPS/SGI debugger to believe that there is debugging
      information in the object file, we add a -g to the producer string.  */
-  if (write_symbols != NO_DEBUG)
-    {
-       strcat (producer, " -g");
-    }
-
+  if (debug_info_level > DINFO_LEVEL_TERSE)
+    strcat (producer, " -g");
 #endif
 
   add_AT_string (comp_unit_die, DW_AT_producer, producer);
@@ -7548,7 +7537,8 @@ gen_decl_die (decl, context_die)
 
       /* Before we describe the FUNCTION_DECL itself, make sure that we have
          described its return type.  */
-      gen_type_die (TREE_TYPE (TREE_TYPE (decl)), context_die);
+      if (debug_info_level > DINFO_LEVEL_TERSE)
+	gen_type_die (TREE_TYPE (TREE_TYPE (decl)), context_die);
 
       /* Now output a DIE to represent the function itself.  */
       gen_subprogram_die (decl, context_die);
@@ -7556,18 +7546,9 @@ gen_decl_die (decl, context_die)
 
     case TYPE_DECL:
       /* If we are in terse mode, don't generate any DIEs to represent any
-         actual typedefs.  Note that even when we are in terse mode, we must
-         still output DIEs to represent those tagged types which are used
-         (directly or indirectly) in the specification of either a return
-         type or a formal parameter type of some function.  */
+         actual typedefs.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	{
-	  if (! TYPE_DECL_IS_STUB (decl)
-	      || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
-	    {
-	      break;
-	    }
-	}
+	break;
 
       /* In the special case of a TYPE_DECL node representing the 
          declaration of some type tag, if the given TYPE_DECL is marked as
@@ -7752,18 +7733,9 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	}
 
       /* If we are in terse mode, don't generate any DIEs to represent any
-         actual typedefs.  Note that even when we are in terse mode, we must
-         still output DIEs to represent those tagged types which are used
-         (directly or indirectly) in the specification of either a return
-         type or a formal parameter type of some function.  */
+         actual typedefs.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	{
-	  if (! TYPE_DECL_IS_STUB (decl)
-	      || !TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
-	    {
-	      return;
-	    }
-	}
+	return;
       break;
 
     default:
@@ -8204,7 +8176,8 @@ dwarfout_init (asm_out_file, main_input_filename)
   gen_compile_unit_die (main_input_filename);
 
   /* clear the association between base types and their DIE's */
-  init_base_type_table ();
+  if (debug_info_level > DINFO_LEVEL_TERSE)
+    init_base_type_table ();
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
 }
