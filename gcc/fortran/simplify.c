@@ -1766,16 +1766,18 @@ gfc_simplify_kind (gfc_expr * e)
 
 
 static gfc_expr *
-gfc_simplify_bound (gfc_expr * array, gfc_expr * dim, int upper)
+simplify_bound (gfc_expr * array, gfc_expr * dim, int upper)
 {
   gfc_ref *ref;
   gfc_array_spec *as;
-  int i;
+  gfc_expr *e;
+  int d;
 
   if (array->expr_type != EXPR_VARIABLE)
     return NULL;
 
   if (dim == NULL)
+    /* TODO: Simplify constant multi-dimensional bounds.  */
     return NULL;
 
   if (dim->expr_type != EXPR_CONSTANT)
@@ -1783,29 +1785,66 @@ gfc_simplify_bound (gfc_expr * array, gfc_expr * dim, int upper)
 
   /* Follow any component references.  */
   as = array->symtree->n.sym->as;
-  ref = array->ref;
-  while (ref->next != NULL)
+  for (ref = array->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_COMPONENT)
-	as = ref->u.c.sym->as;
-      ref = ref->next;
+      switch (ref->type)
+	{
+	case REF_ARRAY:
+	  switch (ref->u.ar.type)
+	    {
+	    case AR_ELEMENT:
+	      as = NULL;
+	      continue;
+
+	    case AR_FULL:
+	      /* We're done because 'as' has already been set in the
+		 previous iteration.  */
+	      goto done;
+
+	    case AR_SECTION:
+	    case AR_UNKNOWN:
+	      return NULL;
+	    }
+
+	  gcc_unreachable ();
+
+	case REF_COMPONENT:
+	  as = ref->u.c.component->as;
+	  continue;
+
+	case REF_SUBSTRING:
+	  continue;
+	}
+    }
+ 
+  gcc_unreachable ();
+
+ done:
+  if (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE)
+    return NULL;
+
+  d = mpz_get_si (dim->value.integer);
+
+  if (d < 1 || d > as->rank
+      || (d == as->rank && as->type == AS_ASSUMED_SIZE && upper))
+    {
+      gfc_error ("DIM argument at %L is out of bounds", &dim->where);
+      return &gfc_bad_expr;
     }
 
-  if (ref->type != REF_ARRAY || ref->u.ar.type != AR_FULL)
+  e = upper ? as->upper[d-1] : as->lower[d-1];
+
+  if (e->expr_type != EXPR_CONSTANT)
     return NULL;
-  
-  i = mpz_get_si (dim->value.integer);
-  if (upper) 
-    return gfc_copy_expr (as->upper[i-1]);
-  else
-    return gfc_copy_expr (as->lower[i-1]);
+
+  return gfc_copy_expr (e);
 }
 
 
 gfc_expr *
 gfc_simplify_lbound (gfc_expr * array, gfc_expr * dim)
 {
-  return gfc_simplify_bound (array, dim, 0);
+  return simplify_bound (array, dim, 0);
 }
 
 
@@ -3578,7 +3617,7 @@ gfc_simplify_trim (gfc_expr * e)
 gfc_expr *
 gfc_simplify_ubound (gfc_expr * array, gfc_expr * dim)
 {
-  return gfc_simplify_bound (array, dim, 1);
+  return simplify_bound (array, dim, 1);
 }
 
 

@@ -1,3 +1,10 @@
+2005-02-28  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	(port from g95)
+
+	PR fortran/19479
+	* simplify.c (gfc_simplify_bound): Rename to ...
+	(simplify_bound): ... this and overhaul.
+
 2005-02-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_iargc): remove boolean argument.
