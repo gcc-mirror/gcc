@@ -1,7 +1,7 @@
 inline int f ()
 {
-  static int k;
-  return ++k;
+  static int i;
+  return ++i;
 }
 
 int g ()
