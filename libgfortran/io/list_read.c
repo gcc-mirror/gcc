@@ -1043,7 +1043,7 @@ read_real (int length)
 	  goto got_repeat;
 
 	CASE_SEPARATORS:
-          if (c != '\n')
+          if (c != '\n' &&  c != ',')
             unget_char (c);    /* Real number that is just a digit-string.  */
 	  goto done;
 
