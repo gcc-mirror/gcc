@@ -1,3 +1,8 @@
+2003-11-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* cppfiles.c (_cpp_find_file): Make 'one or more PCH files were found'
+	message comply with GNU standards.
+
 2003-11-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR/6552
