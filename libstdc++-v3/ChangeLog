@@ -1,3 +1,8 @@
+2003-07-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/stl_list.h:  Document more functions.
+	* docs/doxygen/TODO:  Update c23 todo.
+
 2003-07-14  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/gnu/c_locale.h (__convert_from_v): One more

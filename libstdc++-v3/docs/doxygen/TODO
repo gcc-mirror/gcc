@@ -26,8 +26,7 @@ c21             Untouched (top-level class note for basic_string done),
                 Note B
 c22             Untouched; see docs/html/22_locale/*
 c23             See doxygroups.cc and Note B.  Notes on what invalidates
-                iterators need to be added.  std::list-specific memfns need
-                to be filled out.
+                iterators need to be added.
 c24             stl_iterator.h (__normal_iterator, other small TODO bits)
                 stream iterators
 c25             stl_algo.h (lots of stuff)
