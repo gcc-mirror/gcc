@@ -35,7 +35,8 @@
 	builtin_define ("_BIGMODEL");		\
       if (!TARGET_MEMPARM)			\
 	builtin_define ("_REGPARM");		\
-      if (flag_inline_functions)		\
+      if (flag_inline_functions			\
+	  || flag_inline_trees)			\
 	builtin_define ("_INLINE");		\
       if (TARGET_C3X)				\
 	{					\
