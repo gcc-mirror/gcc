@@ -52,6 +52,28 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   return __result;
 }
 
+#elif defined(__rtems__)
+  /*
+   * TAS/JBNE is unsafe on systems with strict priority-based scheduling.
+   * Disable interrupts, which we can do only from supervisor mode.
+   */
+static inline _Atomic_word
+__attribute__ ((__unused__))
+__exchange_and_add (volatile _Atomic_word *__mem, int __val)
+{
+  _Atomic_word __result;
+  short __level, __tmpsr;
+  __asm__ __volatile__ ("move%.w %%sr,%0\n\tor%.l %0,%1\n\tmove%.w %1,%%sr"
+                       : "=d"(__level), "=d"(__tmpsr) : "1"(0x700));
+
+  __result = *__mem;
+  *__mem = __result + __val;
+
+  __asm__ __volatile__ ("move%.w %0,%%sr" : : "d"(__level));
+
+  return __result;
+}
+
 #elif !defined(__mcf5200__) && !defined(__mcf5300__)
 // 68000, 68010, cpu32 and 5400 support test-and-set.
 
@@ -84,12 +106,10 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   return __result;
 }
 
-#else
-// These variants do not support any atomic operations at all.
+#elif defined(__vxWorks__) || defined(__embedded__)
 // The best we can hope for is to disable interrupts, which we
 // can only do from supervisor mode.
 
-#if defined(__rtems__) || defined(__vxWorks__) || defined(__embedded__)
 static inline _Atomic_word 
 __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word *__mem, int __val)
@@ -106,7 +126,10 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 
   return __result;
 }
+
 #else
+// These variants do not support any atomic operations at all.
+
 #warning "__exchange_and_add is not atomic for this target"
 
 static inline _Atomic_word
@@ -121,8 +144,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   return __result;
 }
 
-#endif /* embedded */
-#endif /* CAS / TAS / IRQ */
+#endif /* CAS / IRQ / TAS */
 
 static inline void
 __attribute__ ((__unused__))

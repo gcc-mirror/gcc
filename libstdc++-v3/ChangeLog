@@ -1,3 +1,8 @@
+2001-02-14	Joel Sherrill <joel@OARcorp.com>
+
+	* config/cpu/m68k/bits/atomicity.h: Corrected for RTEMS targets which
+	do not have a CAS instruction.
+
 2002-02-14  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS):  New macro, initial revision.
