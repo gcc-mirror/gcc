@@ -1,3 +1,17 @@
+ 2003-12-16 Guilhem Lavaux <guilhem@kaffe.org>
+  
+	* java/io/ObjectInputStream.java (setBooleanField):
+	Throw an InvalidClassException if the field hasn't the required type,
+	documentation added.
+	(setByteField) Likewise.
+	(setCharField) Likewise.
+	(setDoubleField) Likewise.
+	(setFloatField) Likewise.
+	(setIntField) Likewise.
+	(setShortField) Likewise.
+	(setLongField) Likewise.
+	(setObjectField) Likewise.
+
 2003-12-16 Guilhem Lavaux <guilhem@kaffe.org>
            Helmer Kraemer <hkraemer@freenet.de>
  
