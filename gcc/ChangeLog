@@ -1,3 +1,14 @@
+2004-12-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/18841
+	* config/alpha/alpha.md (UNSPECV_SETJMPR_ER): New.
+	(builtin_setjmp_receiver_er_sl_1): Use it.
+	(builtin_setjmp_receiver_er_1): Likewise.
+	(builtin_setjmp_receiver_er, exception_receiver_er): Remove.
+	(builtin_setjmp_receiver): Don't split for explicit relocs until
+	after reload.
+	(exception_receiver): Likewise.
+
 2004-12-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	2003-10-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
