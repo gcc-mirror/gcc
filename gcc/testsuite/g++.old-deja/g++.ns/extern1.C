@@ -5,8 +5,6 @@
 // An extern declaration of an undeclared object within a function
 // introduces the object into the enclosing namespace [basic.link]/7
 
-// excess errors test - XFAIL *-*-*
-
 namespace {
   void foo() {
     extern int xx;

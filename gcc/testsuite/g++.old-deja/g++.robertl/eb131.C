@@ -10,12 +10,11 @@ struct a {
 	void bar( double );
 	void bar( float );
 
-	void foo( void (a::*member)(float) ); // ERROR - 
+	void foo( void (a::*member)(float) );
 };
 
 a::a()
 {
 	foo( &junk ); // ERROR - junk is an unqualified-id.
-	foo( &bar );  // ERROR - bar is an unqualified-id. XFAIL *-*-*
+	foo( &bar );  // ERROR - bar is an unqualified-id.
 }
-
