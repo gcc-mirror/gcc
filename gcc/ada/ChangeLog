@@ -1,19 +1,13 @@
-Tue Oct 23 19:00:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-10-25  Pascal Obry <obry@gnat.com>
 
-	* misc.c (gnat_init, gnat_init_options, gnat_decode_option):
-	Now static.
-	(LANG_HOOKS_GET_ALIAS_SET): New macro.
-	(gnat_expand_expr, case NULL_EXPR): Always call set_mem_attributes.
-	(gnat_get_alias_set): Renamed from lang_get_alias_set.
-	* gigi.h (gnat_decode_option, gnat_init_option, gnat_init):
-	Delete declarations.
-	(gnat_get_alias_set): Likewise.
+	* g-awk.ads: Move all pragma inlines next to the routine 
+	 declarations. This is more uniform with other GNAT spec.
 
-2001-10-22  Geert Bosh  <bosch@gnat.com>
+2001-10-22  Geert Bosch  <bosch@gnat.com>
 
 	* Make-lang.in (gnattools, cross-gnattools): Remove gnatmem.
 
-2001-10-19  Geert Bosh  <bosch@gnat.com>
+2001-10-19  Geert Bosch  <bosch@gnat.com>
 
 	* Makefile.in (tools, gnattools): Remove gnatmem.
 
