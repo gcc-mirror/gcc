@@ -4,7 +4,6 @@
 
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* g++.old-deja/g++.pt/inherit2.C: Remove XFAIL.
 	* g++.old-deja/g++.pt/crash66.C: New test.
 
 2001-05-15  Benjamin Kosnik  <bkoz@redhat.com>
