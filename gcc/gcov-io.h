@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCOV_IO_H
 #define GCOV_IO_H
 #include <stdio.h>
+#include <sys/types.h>
 
 /* These routines only work for signed values. */
 
