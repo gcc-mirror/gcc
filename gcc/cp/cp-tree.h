@@ -498,7 +498,16 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
 
+/* Nonzero if T is a class (or struct or union) type.  Also nonzero
+   for template type parameters.  Despite its name, this macro has
+   nothing to do with the definition of aggregate given in the
+   standard.  Think of this macro as MAYBE_CLASS_TYPE_P.  */
 #define IS_AGGR_TYPE(t)		(TYPE_LANG_FLAG_5 (t))
+
+/* Nonzero if T is a class type.  Zero for template type parameters.  */
+#define CLASS_TYPE_P(t) \
+  (IS_AGGR_TYPE (t) && TREE_CODE (t) != TEMPLATE_TYPE_PARM)
+
 #define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE)
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
   (TREE_CODE (TYPE1) == TREE_CODE (TYPE2)	\

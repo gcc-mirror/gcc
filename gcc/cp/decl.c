@@ -10444,7 +10444,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   but not both.  If it appears in the class, the member is
 		   a member constant.  The file-scope definition is always
 		   required.  */
-		if (IS_AGGR_TYPE (type)
+		if (CLASS_TYPE_P (type)
 		    || TREE_CODE (type) == REFERENCE_TYPE)
 		  {
 		    cp_error ("in-class initialization of static data member of non-integral type `%T'", 
