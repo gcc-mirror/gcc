@@ -1,3 +1,10 @@
+2001-08-18  Graham Stott  <grahams@redhat.com>
+
+	* config/mips/mips.md (adddi3_internal_2+1): Remove contraints from
+	define_split.
+	(adddi3_internal_2+2): Likewise.
+	(eh_set_lr_di+1): Likewise.
+
 2001-08-17  Richard Henderson  <rth@redhat.com>
 
 	* defaults.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
