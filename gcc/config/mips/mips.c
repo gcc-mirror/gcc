@@ -5443,8 +5443,25 @@ mips_expand_prologue ()
 	  if (tsize > 32767)
 	    {
 	      tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
-	      insn = emit_move_insn (tmp_rtx, tsize_rtx);
-	      RTX_FRAME_RELATED_P (insn) = 1;
+
+	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
+		 bit, so make sure that we don't emit anything that can be
+		 split.  */
+	      if (large_int (tsize_rtx))
+		{
+		  insn = emit_move_insn (tmp_rtx,
+					 GEN_INT (tsize & 0xffff0000));
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  insn = emit_insn (gen_iorsi3 (tmp_rtx, tmp_rtx,
+						GEN_INT (tsize & 0x0000ffff)));
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+		  insn = emit_move_insn (tmp_rtx, tsize_rtx);
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		}
+
 	      tsize_rtx = tmp_rtx;
 	    }
 
