@@ -1,3 +1,14 @@
+2000-03-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (layout_empty_base): Handle empty bases with non-byte
+	alignment.
+	(build_base_field): Likewise.
+	(layout_virtual_bases): Likewise.
+
+	* class.c (finish_struct_1): Fix typo in this change:
+	
+	Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
 2000-03-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Count partial specializations when

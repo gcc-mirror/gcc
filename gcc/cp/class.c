@@ -4267,8 +4267,9 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
 }
 
 /* Layout the empty base BINFO.  EOC indicates the byte currently just
-   past the end of the class; BINFO_OFFSETS gives the offsets of the
-   other bases allocated so far.  */
+   past the end of the class, and should be correctly aligned for a
+   class of the type indicated by BINFO; BINFO_OFFSETS gives the
+   offsets of the other bases allocated so far.  */
 
 static void
 layout_empty_base (binfo, eoc, binfo_offsets)
@@ -4276,16 +4277,12 @@ layout_empty_base (binfo, eoc, binfo_offsets)
      tree eoc;
      varray_type binfo_offsets;
 {
+  tree alignment;
   tree basetype = BINFO_TYPE (binfo);
   
   /* This routine should only be used for empty classes.  */
   my_friendly_assert (is_empty_class (basetype), 20000321);
-
-  /* This code assumes that zero-sized classes have one-byte
-     alignment.  There might someday be a system where that's not
-     true.  */
-  my_friendly_assert (TYPE_ALIGN (basetype) == BITS_PER_UNIT, 
-		      20000314);
+  alignment = ssize_int (CLASSTYPE_ALIGN (basetype));
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
@@ -4301,7 +4298,7 @@ layout_empty_base (binfo, eoc, binfo_offsets)
 	    break;
 
 	  /* There's overlap here, too.  Bump along to the next spot.  */
-	  propagate_binfo_offsets (binfo, ssize_int (1));
+	  propagate_binfo_offsets (binfo, alignment);
 	}
     }
 }
@@ -4360,7 +4357,15 @@ build_base_field (rli, binfo, empty_p, base_align, v)
       layout_nonempty_base_or_field (rli, decl, binfo, *v);
     }
   else
-    layout_empty_base (binfo, rli_size_unit_so_far (rli), *v);
+    {
+      unsigned HOST_WIDE_INT eoc;
+
+      /* On some platforms (ARM), even empty classes will not be
+	 byte-aligned.  */
+      eoc = tree_low_cst (rli_size_unit_so_far (rli), 0);
+      eoc = CEIL (eoc, DECL_ALIGN (decl)) * DECL_ALIGN (decl);
+      layout_empty_base (binfo, size_int (eoc), *v);
+    }
 
   /* Check for inaccessible base classes.  If the same base class
      appears more than once in the hierarchy, but isn't virtual, then
@@ -4847,6 +4852,19 @@ layout_virtual_bases (t, base_offsets)
 
 	basetype = BINFO_TYPE (vbase);
 
+	if (flag_new_abi)
+	  desired_align = CLASSTYPE_ALIGN (basetype);
+	else
+	  /* Under the old ABI, virtual bases were aligned as for the
+	     entire base object (including its virtual bases).  That's
+	     wasteful, in general.  */
+	  desired_align = TYPE_ALIGN (basetype);
+	TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), desired_align);
+
+	/* Add padding so that we can put the virtual base class at an
+	   appropriately aligned offset.  */
+	dsize = CEIL (dsize, desired_align) * desired_align;
+
 	/* Under the new ABI, we try to squish empty virtual bases in
 	   just like ordinary empty bases.  */
 	if (flag_new_abi && is_empty_class (basetype))
@@ -4855,18 +4873,6 @@ layout_virtual_bases (t, base_offsets)
 			     *base_offsets);
 	else
 	  {
-	    if (flag_new_abi)
-	      desired_align = CLASSTYPE_ALIGN (basetype);
-	    else
-	      /* Under the old ABI, virtual bases were aligned as for
-		 the entire base object (including its virtual bases).
-		 That's wasteful, in general.  */
-	      desired_align = TYPE_ALIGN (basetype);
-	    TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), desired_align);
-
-	    /* Add padding so that we can put the virtual base class at an
-	       appropriately aligned offset.  */
-	    dsize = CEIL (dsize, desired_align) * desired_align;
 	    /* And compute the offset of the virtual base.  */
 	    propagate_binfo_offsets (vbase, 
 				     ssize_int (CEIL (dsize, BITS_PER_UNIT)));
@@ -5262,14 +5268,15 @@ finish_struct_1 (t)
   if (vfield != NULL_TREE
       && DECL_FIELD_CONTEXT (vfield) != t)
     {
+      tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
+
       vfield = copy_node (vfield);
       copy_lang_decl (vfield);
 
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_FIELD_OFFSET (vfield)
 	= size_binop (PLUS_EXPR,
-		      BINFO_OFFSET (get_binfo (DECL_FIELD_CONTEXT (vfield),
-					       t, 0)),
+		      BINFO_OFFSET (binfo),
 		      DECL_FIELD_OFFSET (vfield));
       TYPE_VFIELD (t) = vfield;
     }
