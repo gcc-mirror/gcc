@@ -1,3 +1,8 @@
+2004-05-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor_field): Don't call store_constructor
+	if bitsize is not a multiple of a byte.
+
 2004-05-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* reload1.c (inherit_piecemeal_p): New function.
