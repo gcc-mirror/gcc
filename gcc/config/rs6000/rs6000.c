@@ -3675,8 +3675,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 	{
 	  rtx offset = gen_rtx_CONST (Pmode,
 			 gen_rtx_MINUS (Pmode, x,
-			   gen_rtx_SYMBOL_REF (Pmode,
-			     machopic_function_base_name ())));
+					machopic_function_base_sym ()));
 	  x = gen_rtx_LO_SUM (GET_MODE (x),
 		gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 		  gen_rtx_HIGH (Pmode, offset)), offset);
@@ -10092,8 +10091,8 @@ print_operand (FILE *file, rtx x, int code)
 	  const char *name = XSTR (x, 0);
 #if TARGET_MACHO
 	  if (MACHOPIC_INDIRECT
-	      && machopic_classify_name (name) == MACHOPIC_UNDEFINED_FUNCTION)
-	    name = machopic_stub_name (name);
+	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION)
+	    name = machopic_indirection_name (x, /*stub_p=*/true);
 #endif
 	  assemble_name (file, name);
 	}
@@ -12958,8 +12957,7 @@ rs6000_emit_prologue (void)
       && flag_pic && current_function_uses_pic_offset_table)
     {
       rtx lr = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
-      const char *picbase = machopic_function_base_name ();
-      rtx src = gen_rtx_SYMBOL_REF (Pmode, picbase);
+      rtx src = machopic_function_base_sym ();
 
       rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (lr, src)));
 
@@ -14456,12 +14454,9 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 #if TARGET_MACHO
       /* For PIC code, set up a stub and collect the caller's address
 	 from r0, which is where the prologue puts it.  */
-      if (MACHOPIC_INDIRECT)
-	{
-	  mcount_name = machopic_stub_name (mcount_name);
-	  if (current_function_uses_pic_offset_table)
-	    caller_addr_regno = 0;
-	}
+      if (MACHOPIC_INDIRECT
+	  && current_function_uses_pic_offset_table)
+	caller_addr_regno = 0;
 #endif
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mcount_name),
 			 0, VOIDmode, 1,
@@ -15902,8 +15897,7 @@ macho_branch_islands (void)
       const char *label =
 	IDENTIFIER_POINTER (BRANCH_ISLAND_LABEL_NAME (branch_island));
       const char *name  =
-	darwin_strip_name_encoding (
-	  IDENTIFIER_POINTER (BRANCH_ISLAND_FUNCTION_NAME (branch_island)));
+	IDENTIFIER_POINTER (BRANCH_ISLAND_FUNCTION_NAME (branch_island));
       char name_buf[512];
       /* Cheap copy of the details from the Darwin ASM_OUTPUT_LABELREF().  */
       if (name[0] == '*' || name[0] == '&')
