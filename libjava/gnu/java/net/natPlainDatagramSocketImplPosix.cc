@@ -516,12 +516,12 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
         if (::setsockopt (native_fd, SOL_SOCKET, SO_BROADCAST, (char *) &val,
                           val_len) != 0)
           goto error;
-	break;
+	return;
 	
       case _Jv_SO_OOBINLINE_ :
         throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_OOBINLINE: not valid for UDP"));
-        break;
+        return;
 	
       case _Jv_SO_SNDBUF_ :
       case _Jv_SO_RCVBUF_ :
@@ -590,12 +590,12 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
       case _Jv_IP_MULTICAST_IF2_ :
         throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF2: not yet implemented"));
-        break;
+        return;
 	
       case _Jv_IP_MULTICAST_LOOP_ :
         throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_LOOP: not yet implemented"));
-        break;
+        return;
 	
       case _Jv_IP_TOS_ :
         if (::setsockopt (native_fd, SOL_SOCKET, IP_TOS, (char *) &val,

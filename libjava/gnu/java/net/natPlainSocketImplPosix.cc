@@ -622,18 +622,18 @@ gnu::java::net::PlainSocketImpl::setOption (jint optID, ::java::lang::Object *va
         if (::setsockopt (native_fd, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
                           val_len) != 0)
           goto error;
-        break;
+        return;
       
       case _Jv_SO_BROADCAST_ :
         throw new ::java::net::SocketException
           (JvNewStringUTF ("SO_BROADCAST not valid for TCP"));
-        break;
+        return;
 	
       case _Jv_SO_OOBINLINE_ :
         if (::setsockopt (native_fd, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
                           val_len) != 0)
           goto error;
-        break;
+        return;
 
       case _Jv_SO_LINGER_ :
 #ifdef SO_LINGER
@@ -676,18 +676,18 @@ gnu::java::net::PlainSocketImpl::setOption (jint optID, ::java::lang::Object *va
       case _Jv_IP_MULTICAST_IF2_ :
         throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF2: not valid for TCP"));
-        break;
+        return;
 	
       case _Jv_IP_MULTICAST_LOOP_ :
         throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_LOOP: not valid for TCP"));
-        break;
+        return;
 	
       case _Jv_IP_TOS_ :
         if (::setsockopt (native_fd, SOL_SOCKET, IP_TOS, (char *) &val,
                           val_len) != 0)
           goto error;    
-        break;
+        return;
 	
       case _Jv_SO_REUSEADDR_ :
         throw new ::java::net::SocketException (

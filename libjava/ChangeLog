@@ -1,3 +1,10 @@
+2003-10-29  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
+	(setOption): Directly return if no error occured.
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	(setOption): Likewise.
+
 2003-10-28  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Always assign a
