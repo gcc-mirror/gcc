@@ -1,3 +1,8 @@
+Mon Oct  6 12:04:24 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (check-g77): New test target.
+	(CHECK-TARGETS): Add check-g77.
+
 Fri Oct  3 15:49:27 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* flow.c (print_rtl_with_bb): Cast alloca return value for
