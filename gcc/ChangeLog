@@ -1,3 +1,7 @@
+2003-06-22  Andreas Jaeger  <aj@suse.de>
+
+	* calls.c (emit_call_1): Readd lost ATTRIBUTE_UNUSED.
+
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Document dumps, .btl, .cfg, and .bypass.
