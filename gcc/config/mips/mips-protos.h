@@ -106,8 +106,11 @@ extern void mips_output_lineno (FILE *, int);
 extern void mips_output_ascii (FILE *, const char *, size_t, const char *);
 extern void mips_output_aligned_bss (FILE *, tree, const char *,
 				     unsigned HOST_WIDE_INT, int);
+extern void mips_output_aligned_decl_common (FILE *, tree, const char *,
+					     unsigned HOST_WIDE_INT,
+					     unsigned int);
 extern void mips_declare_object (FILE *, const char *, const char *,
-				 const char *, int);
+				 const char *, ...);
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
 

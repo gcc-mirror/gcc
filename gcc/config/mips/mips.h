@@ -3206,28 +3206,7 @@ while (0)
 
 /* This says how to define a global common symbol.  */
 
-#define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGN) \
-  do {									\
-    /* If the target wants uninitialized const declarations in		\
-       .rdata then don't put them in .comm */				\
-    if (TARGET_EMBEDDED_DATA && TARGET_UNINIT_CONST_IN_RODATA		\
-	&& TREE_CODE (DECL) == VAR_DECL && TREE_READONLY (DECL)		\
-	&& (DECL_INITIAL (DECL) == 0					\
-	    || DECL_INITIAL (DECL) == error_mark_node))			\
-      {									\
-	if (TREE_PUBLIC (DECL) && DECL_NAME (DECL))			\
-	  (*targetm.asm_out.globalize_label) (STREAM, NAME);		\
-	    								\
-	readonly_data_section ();					\
-	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\
-	mips_declare_object (STREAM, NAME, "", ":\n\t.space\t%u\n",	\
-	    (SIZE));							\
-      }									\
-    else								\
-	mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n",	\
-	  (SIZE));							\
-  } while (0)
-
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON mips_output_aligned_decl_common
 
 /* This says how to define a local common symbol (ie, not visible to
    linker).  */
