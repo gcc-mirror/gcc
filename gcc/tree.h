@@ -353,7 +353,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0)))))	\
-    (EXP) = TREE_OPERAND (EXP, 0);
+    (EXP) = TREE_OPERAND (EXP, 0)
 
 /* Like STRIP_NOPS, but don't let the signedness change either.  */
 
@@ -366,7 +366,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
 	 && (TREE_UNSIGNED (TREE_TYPE (EXP))			\
 	     == TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
-    (EXP) = TREE_OPERAND (EXP, 0);
+    (EXP) = TREE_OPERAND (EXP, 0)
 
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
 
@@ -377,7 +377,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TREE_TYPE (EXP)					\
 	     == TREE_TYPE (TREE_OPERAND (EXP, 0))))		\
-    (EXP) = TREE_OPERAND (EXP, 0);
+    (EXP) = TREE_OPERAND (EXP, 0)
 
 /* Nonzero if TYPE represents an integral type.  Note that we do not
    include COMPLEX types here.  */
@@ -463,7 +463,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 
 /* Nonzero if this type is complete or is an array with unspecified bound.  */
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
-  (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : NODE))
+  (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : (NODE)))
 
 /* Nonzero if TYPE represents a type.  */
 
