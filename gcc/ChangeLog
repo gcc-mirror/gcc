@@ -1,5 +1,8 @@
 Fri May 11 15:50:13 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (insert_insn_end_bb): Do not search for assignments to
+	non-argumment registers that are mentioned in CALL_INSN_FUNCTION_USAGE.
+
 	* toplev.c (compile_file): Move comment for opening output
 	file to just before the code that opens the output file.
 
