@@ -3792,6 +3792,13 @@ commutative_tree_code (enum tree_code code)
     case BIT_AND_EXPR:
     case NE_EXPR:
     case EQ_EXPR:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_XOR_EXPR:
+    case TRUTH_OR_EXPR:
       return true;
 
     default:

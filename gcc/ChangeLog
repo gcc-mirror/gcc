@@ -1,3 +1,12 @@
+2004-06-21  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (operand_equal_p): Pass flags in recursive calls for
+	binary and relational operations.  Add support for TRUTH_ANDIF_EXPR,
+	TRUTH_ORIF_EXPR, TRUTH_AND_EXPR, TRUTH_OR_EXPR and TRUTH_XOR_EXPR.
+	* tree.c (commutative_tree_code): Also list UNORDERED_EXPR,
+	ORDERED_EXPR, UNEQ_EXPR, LTGT_EXPR, TRUTH_AND_EXPR, TRUTH_OR_EXPR
+	and TRUTH_XOR_EXPR.
+
 2004-06-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* rtlanal.c (may_trap_p): Mark LTGT as trapping.
