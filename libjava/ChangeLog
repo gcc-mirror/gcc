@@ -1,5 +1,10 @@
 2003-10-08  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/LinkedList.java:
+	Removed whitespace to match classpath's version again.
+
+2003-10-08  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/prefs/Preferences.java
 	(defaultFactoryClass): Fixed class name.
 	(getFactory): Create instance of class returned by Class.forName(),
