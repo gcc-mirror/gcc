@@ -115,7 +115,8 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/varargs.h $(srcdir)/ginclude/va-alpha.h \
     $(srcdir)/ginclude/va-h8300.h $(srcdir)/ginclude/va-i860.h \
     $(srcdir)/ginclude/va-i960.h $(srcdir)/ginclude/va-mips.h \
-    $(srcdir)/ginclude/va-m88k.h $(srcdir)/ginclude/va-pa.h \
+    $(srcdir)/ginclude/va-m88k.h $(srcdir)/ginclude/va-mn10300.h \
+    $(srcdir)/ginclude/va-pa.h \
     $(srcdir)/ginclude/va-pyr.h $(srcdir)/ginclude/va-sparc.h \
     $(srcdir)/ginclude/va-clipper.h $(srcdir)/ginclude/va-spur.h \
     $(srcdir)/ginclude/va-m32r.h $(srcdir)/ginclude/va-sh.h \
