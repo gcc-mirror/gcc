@@ -35,9 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.net;
 
 import gnu.classpath.Configuration;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -49,12 +51,12 @@ import java.io.Serializable;
  * constructor.  Instead, new instances of this objects are created
  * using the static methods getLocalHost(), getByName(), and
  * getAllByName().
- * <p>
- * This class fulfills the function of the C style functions gethostname(),
- * gethostbyname(), and gethostbyaddr().  It resolves Internet DNS names
- * into their corresponding numeric addresses and vice versa.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * <p>This class fulfills the function of the C style functions gethostname(),
+ * gethostbyname(), and gethostbyaddr().  It resolves Internet DNS names
+ * into their corresponding numeric addresses and vice versa.</p>
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Per Bothner
  *
  * @specnote This class is not final since JK 1.4
@@ -71,7 +73,7 @@ public class InetAddress implements Serializable
   private static final byte[] loopbackAddress = { 127, 0, 0, 1 };
 
   private static final InetAddress loopback 
-    = new InetAddress (loopbackAddress, "localhost");
+    = new Inet4Address(loopbackAddress, "localhost");
 
   private static InetAddress localhost = null;
 
@@ -79,12 +81,10 @@ public class InetAddress implements Serializable
   {
     // load the shared library needed for name resolution
     if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary ("javanet");
-      }
+      System.loadLibrary("javanet");
     
     byte[] zeros = { 0, 0, 0, 0 };
-    ANY_IF = new InetAddress (zeros, "0.0.0.0");
+    ANY_IF = new Inet4Address(zeros, "0.0.0.0");
   }
 
   /**
@@ -119,27 +119,15 @@ public class InetAddress implements Serializable
    * only by static methods in this class.
    *
    * @param ipaddr The IP number of this address as an array of bytes
-   */
-  InetAddress(byte[] address)
-  {
-    this (address, null);
-  }
-
-  /**
-   * Initializes this object's addr instance variable from the passed in
-   * int array.  Note that this constructor is protected and is called
-   * only by static methods in this class.
-   *
-   * @param ipaddr The IP number of this address as an array of bytes
    * @param hostname The hostname of this IP address.
    */
-  InetAddress(byte[] address, String hostname)
+  InetAddress(byte[] ipaddr, String hostname)
   {
-    addr = address;
+    addr = ipaddr;
     hostName = hostname;
     
-    if (address != null)
-      family = getFamily (address);
+    if (ipaddr != null)
+      family = getFamily(ipaddr);
   }
 
   /**
@@ -304,9 +292,12 @@ public class InetAddress implements Serializable
    */
   public String getHostName()
   {
-    if (hostName == null)
-      lookup (null, this, false);
+    if (hostName != null)
+      return hostName;
 
+    // Lookup hostname and set field.
+    lookup (null, this, false);
+    
     return hostName;
   }
 
@@ -422,13 +413,13 @@ public class InetAddress implements Serializable
     
     for ( ; ; )
       {
-        sb.append (addr [i] & 0xff);
-	i++;
+        sb.append(addr[i] & 0xff);
+        i++;
 	
-	if (i == len)
-	  break;
+        if (i == len)
+          break;
 	
-	sb.append ('.');
+        sb.append('.');
       }
 
     return sb.toString();

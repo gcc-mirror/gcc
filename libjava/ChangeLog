@@ -1,5 +1,12 @@
 2004-09-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java: Reformatted.
+	(loopback): Initialize with Inet4Address object.
+	(static): Initialize ANY_IF with Inet4Address object.
+	(InetAddress): Removed unused package-private constructor.
+
+2004-09-30  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/Beans.java,
 	java/beans/EventHandler.java,
 	java/beans/EventSetDescriptor.java,
