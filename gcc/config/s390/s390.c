@@ -2855,7 +2855,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
-        emit_insn ((*gen_short) (dst, src, GEN_INT (INTVAL (len) - 1)));
+        emit_insn (gen_short (dst, src, GEN_INT (INTVAL (len) - 1)));
     }
 
   else if (TARGET_MVCLE)
@@ -2873,7 +2873,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
       convert_move (gen_lowpart (single_mode, reg0), len, 1);
       convert_move (gen_lowpart (single_mode, reg1), len, 1);
 
-      emit_insn ((*gen_long) (reg0, reg1, reg0, reg1));
+      emit_insn (gen_long (reg0, reg1, reg0, reg1));
     }
 
   else
@@ -2887,7 +2887,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
       if (mode == VOIDmode)
         mode = word_mode;
 
-      type = (*lang_hooks.types.type_for_mode) (mode, 1);
+      type = lang_hooks.types.type_for_mode (mode, 1);
       if (!type)
         abort ();
 
@@ -2918,7 +2918,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 					   make_tree (type, blocks),
 					   make_tree (type, const0_rtx)));
 
-      emit_insn ((*gen_short) (dst, src, GEN_INT (255)));
+      emit_insn (gen_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
       s390_load_address (src_addr,
@@ -2930,7 +2930,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 
       expand_end_loop ();
 
-      emit_insn ((*gen_short) (dst, src, convert_to_mode (word_mode, count, 1)));
+      emit_insn (gen_short (dst, src, convert_to_mode (word_mode, count, 1)));
       emit_label (end_label);
     }
 }
@@ -2949,7 +2949,7 @@ s390_expand_clrstr (rtx dst, rtx len)
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
-        emit_insn ((*gen_short) (dst, GEN_INT (INTVAL (len) - 1)));
+        emit_insn (gen_short (dst, GEN_INT (INTVAL (len) - 1)));
     }
 
   else if (TARGET_MVCLE)
@@ -2966,7 +2966,7 @@ s390_expand_clrstr (rtx dst, rtx len)
       emit_move_insn (gen_highpart (single_mode, reg1), const0_rtx);
       emit_move_insn (gen_lowpart (single_mode, reg1), const0_rtx);
 
-      emit_insn ((*gen_long) (reg0, reg1, reg0));
+      emit_insn (gen_long (reg0, reg1, reg0));
     }
 
   else
@@ -2980,7 +2980,7 @@ s390_expand_clrstr (rtx dst, rtx len)
       if (mode == VOIDmode)
         mode = word_mode;
 
-      type = (*lang_hooks.types.type_for_mode) (mode, 1);
+      type = lang_hooks.types.type_for_mode (mode, 1);
       if (!type)
         abort ();
 
@@ -3009,7 +3009,7 @@ s390_expand_clrstr (rtx dst, rtx len)
 					   make_tree (type, blocks),
 					   make_tree (type, const0_rtx)));
 
-      emit_insn ((*gen_short) (dst, GEN_INT (255)));
+      emit_insn (gen_short (dst, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
 
@@ -3019,7 +3019,7 @@ s390_expand_clrstr (rtx dst, rtx len)
 
       expand_end_loop ();
 
-      emit_insn ((*gen_short) (dst, convert_to_mode (word_mode, count, 1)));
+      emit_insn (gen_short (dst, convert_to_mode (word_mode, count, 1)));
       emit_label (end_label);
     }
 }
@@ -3045,8 +3045,8 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
     {
       if (INTVAL (len) > 0)
         {
-          emit_insn ((*gen_short) (op0, op1, GEN_INT (INTVAL (len) - 1)));
-          emit_insn ((*gen_result) (target));
+          emit_insn (gen_short (op0, op1, GEN_INT (INTVAL (len) - 1)));
+          emit_insn (gen_result (target));
         }
       else
         emit_move_insn (target, const0_rtx);
@@ -3067,8 +3067,8 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       convert_move (gen_lowpart (single_mode, reg0), len, 1);
       convert_move (gen_lowpart (single_mode, reg1), len, 1);
 
-      emit_insn ((*gen_long) (reg0, reg1, reg0, reg1));
-      emit_insn ((*gen_result) (target));
+      emit_insn (gen_long (reg0, reg1, reg0, reg1));
+      emit_insn (gen_result (target));
     }
 
 #if 0
@@ -3085,7 +3085,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       if (mode == VOIDmode)
         mode = word_mode;
 
-      type = (*lang_hooks.types.type_for_mode) (mode, 1);
+      type = lang_hooks.types.type_for_mode (mode, 1);
       if (!type)
         abort ();
 
@@ -3116,7 +3116,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 					   make_tree (type, blocks),
 					   make_tree (type, const0_rtx)));
 
-      emit_insn ((*gen_short) (op0, op1, GEN_INT (255)));
+      emit_insn (gen_short (op0, op1, GEN_INT (255)));
       temp = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCSmode, 33), const0_rtx);
       temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
 			gen_rtx_LABEL_REF (VOIDmode, end_label), pc_rtx);
@@ -3134,10 +3134,10 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
       expand_end_loop ();
 
-      emit_insn ((*gen_short) (op0, op1, convert_to_mode (word_mode, count, 1)));
+      emit_insn (gen_short (op0, op1, convert_to_mode (word_mode, count, 1)));
       emit_label (end_label);
 
-      emit_insn ((*gen_result) (target));
+      emit_insn (gen_result (target));
     }
 #endif
 }
@@ -4696,13 +4696,13 @@ s390_output_constant_pool (rtx start_label, rtx end_label)
     {
       readonly_data_section ();
       ASM_OUTPUT_ALIGN (asm_out_file, 3);
-      (*targetm.asm_out.internal_label) (asm_out_file, "L",
-					 CODE_LABEL_NUMBER (start_label));
+      targetm.asm_out.internal_label (asm_out_file, "L",
+				      CODE_LABEL_NUMBER (start_label));
     }
   else
     {
-      (*targetm.asm_out.internal_label) (asm_out_file, "L",
-					 CODE_LABEL_NUMBER (start_label));
+      targetm.asm_out.internal_label (asm_out_file, "L",
+				      CODE_LABEL_NUMBER (start_label));
       ASM_OUTPUT_ALIGN (asm_out_file, 2);
     }
 
@@ -4714,8 +4714,8 @@ s390_output_constant_pool (rtx start_label, rtx end_label)
   else
     {
       ASM_OUTPUT_ALIGN (asm_out_file, 1);
-      (*targetm.asm_out.internal_label) (asm_out_file, "L",
-					 CODE_LABEL_NUMBER (end_label));
+      targetm.asm_out.internal_label (asm_out_file, "L",
+				      CODE_LABEL_NUMBER (end_label));
     }
 }
 
@@ -5883,7 +5883,7 @@ s390_build_va_list (void)
 {
   tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
 
-  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  record = lang_hooks.types.make_type (RECORD_TYPE);
 
   type_decl =
     build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
@@ -6401,7 +6401,7 @@ s390_function_profiler (FILE *file, int labelno)
       output_asm_insn ("bras\t%2,%l6", op);
       output_asm_insn (".long\t%4", op);
       output_asm_insn (".long\t%3", op);
-      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[6]));
+      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[6]));
       output_asm_insn ("l\t%0,0(%2)", op);
       output_asm_insn ("l\t%2,4(%2)", op);
       output_asm_insn ("basr\t%0,%0", op);
@@ -6414,10 +6414,10 @@ s390_function_profiler (FILE *file, int labelno)
 
       output_asm_insn ("st\t%0,%1", op);
       output_asm_insn ("bras\t%2,%l6", op);
-      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[5]));
+      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[5]));
       output_asm_insn (".long\t%4-%l5", op);
       output_asm_insn (".long\t%3-%l5", op);
-      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[6]));
+      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[6]));
       output_asm_insn ("lr\t%0,%2", op);
       output_asm_insn ("a\t%0,0(%2)", op);
       output_asm_insn ("a\t%2,4(%2)", op);
@@ -6562,19 +6562,19 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       if (op[5])
 	{
 	  output_asm_insn (".align\t4", op);
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[5]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[5]));
 	}
       if (op[6])
 	{
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[6]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[6]));
 	  output_asm_insn (".long\t%2", op);
 	}
       if (op[7])
 	{
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[7]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[7]));
 	  output_asm_insn (".long\t%3", op);
 	}
     }
@@ -6589,8 +6589,8 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[5]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[5]));
 	}
 
       /* Add DELTA to this pointer.  */
@@ -6640,8 +6640,8 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	     Re-setup the base pointer (with a different base).  */
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[5]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[5]));
 	}
 
       /* Jump to target.  */
@@ -6679,7 +6679,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  SYMBOL_REF_FLAGS (op[0]) = SYMBOL_FLAG_LOCAL;
 	}
 
-      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (op[8]));
+      targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (op[8]));
       if (!flag_pic)
 	output_asm_insn (".long\t%0", op);
       else
@@ -6687,14 +6687,14 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
       if (op[6])
 	{
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[6]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[6]));
 	  output_asm_insn (".long\t%2", op);
 	}
       if (op[7])
 	{
-	  (*targetm.asm_out.internal_label) (file, "L",
-					     CODE_LABEL_NUMBER (op[7]));
+	  targetm.asm_out.internal_label (file, "L",
+					  CODE_LABEL_NUMBER (op[7]));
 	  output_asm_insn (".long\t%3", op);
 	}
     }
