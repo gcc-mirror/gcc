@@ -136,16 +136,15 @@ static void
 compute_global_livein (bitmap livein, bitmap def_blocks)
 {
   basic_block bb, *worklist, *tos;
+  int i;
 
   tos = worklist
     = (basic_block *) xmalloc (sizeof (basic_block) * (last_basic_block + 1));
 
-  /* Initialize the worklist.  */
-  FOR_EACH_BB (bb)
+  EXECUTE_IF_SET_IN_BITMAP (livein, 0, i,
     {
-      if (bitmap_bit_p (livein, bb->index))
-	*tos++ = bb;
-    }
+	*tos++ = BASIC_BLOCK (i);
+    });
 
   /* Iterate until the worklist is empty.  */
   while (tos != worklist)
@@ -244,8 +243,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
     {
       tree *use_p = VUSE_OP_PTR (vuses, i);
 
-      if (prepare_operand_for_rename (use_p, &uid)
-	  && !TEST_BIT (kills, uid))
+      if (prepare_operand_for_rename (use_p, &uid))
 	set_livein_block (*use_p, bb);
     }
 
@@ -264,8 +262,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
 	{
 	  VDEF_RESULT (vdefs, i) = VDEF_OP (vdefs, i);
 
-	  if (!TEST_BIT (kills, uid))
-	    set_livein_block (VDEF_OP (vdefs, i), bb);
+	  set_livein_block (VDEF_OP (vdefs, i), bb);
 	  set_def_block (VDEF_RESULT (vdefs, i), bb);
 	}
     }
