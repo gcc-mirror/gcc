@@ -1,5 +1,5 @@
 // Functions for Exception Support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -191,8 +191,9 @@ __cp_push_exception (void *value, void *type, cleanup_fn cleanup)
    current catch block.  */
 
 extern "C" void
-__cp_pop_exception (cp_eh_info *p)
+__cp_pop_exception (void* v)
 {
+  cp_eh_info *p;
   cp_eh_info **stack = __get_eh_info ();
   cp_eh_info **q = stack;
 
