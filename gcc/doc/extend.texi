@@ -2048,6 +2048,8 @@ typedef void voidfn ();
 volatile voidfn fatal;
 @end smallexample
 
+This approach does not work in GNU C++.
+
 @cindex @code{noinline} function attribute
 @item noinline
 This function attribute prevents a function from being considered for
