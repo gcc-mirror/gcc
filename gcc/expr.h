@@ -119,6 +119,12 @@ extern int pending_stack_adjust;
 #ifdef TREE_CODE   /* Don't lose if tree.h not included.  */
 extern tree cleanups_this_call;
 #endif
+
+/* When temporaries are created by TARGET_EXPRs, they are created at
+   this level of temp_slot_level, so that they can remain allocated
+   until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
+   of TARGET_EXPRs.  */
+extern int target_temp_slot_level;
 
 #ifdef TREE_CODE /* Don't lose if tree.h not included.  */
 /* Structure to record the size of a sequence of arguments

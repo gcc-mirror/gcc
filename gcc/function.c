@@ -771,9 +771,10 @@ assign_outer_stack_local (mode, size, align, function)
    SIZE is the size in units of the space required.  We do no rounding here
    since assign_stack_local will do any required rounding.
 
-   KEEP is non-zero if this slot is to be retained after a call to
-   free_temp_slots.  Automatic variables for a block are allocated with this
-   flag.  */
+   KEEP is 1 if this slot is to be retained after a call to
+   free_temp_slots.  Automatic variables for a block are allocated
+   with this flag.  KEEP is 2, if we allocate a longer term temporary,
+   whose lifetime is controlled by CLEANUP_POINT_EXPRs.  */
 
 rtx
 assign_stack_temp (mode, size, keep)
@@ -845,8 +846,16 @@ assign_stack_temp (mode, size, keep)
 
   p->in_use = 1;
   p->rtl_expr = sequence_rtl_expr;
-  p->level = temp_slot_level;
-  p->keep = keep;
+  if (keep == 2)
+    {
+      p->level = target_temp_slot_level;
+      p->keep = 0;
+    }
+  else
+    {
+      p->level = temp_slot_level;
+      p->keep = keep;
+    }
   return p->slot;
 }
 
@@ -4615,6 +4624,7 @@ init_function_start (subr, filename, line)
   /* We have not allocated any temporaries yet.  */
   temp_slots = 0;
   temp_slot_level = 0;
+  target_temp_slot_level = 0;
 
   /* Within function body, compute a type's size as soon it is laid out.  */
   immediate_size_expand++;
