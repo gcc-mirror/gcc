@@ -1,3 +1,15 @@
+2005-02-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/cpp_type_traits.h: Rename _M_type fields to
+	__value, except for __enable_if, _M_type -> __type, consistently
+	with the other traits.
+	* include/bits/stl_algobase.h: Tweak consistently.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/valarray_array.h: Likewise.
+	* include/c_std/std_cmath.h: Likewise.
+	* include/debug/safe_iterator.h: Likewise.
+	* include/std/std_complex.h: Likewise.
+
 2005-01-31  Brad Spencer  <spencer@infointeractive.com>
 
 	* crossconfig.m4: Repair Solaris cross bits for strtold and strtof.

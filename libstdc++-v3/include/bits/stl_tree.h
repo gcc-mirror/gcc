@@ -392,7 +392,7 @@ namespace std
 
     protected:
       template<typename _Key_compare, 
-	       bool _Is_pod_comparator = std::__is_pod<_Key_compare>::_M_type>
+	       bool _Is_pod_comparator = std::__is_pod<_Key_compare>::__value>
         struct _Rb_tree_impl : public _Node_allocator
         {
 	  _Key_compare		_M_key_compare;

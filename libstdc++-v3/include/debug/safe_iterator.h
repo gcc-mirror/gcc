@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004
+// Copyright (C) 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -139,8 +139,8 @@ namespace __gnu_debug
           typename std::__enable_if<
                      _Sequence,
                      (std::__are_same<_MutableIterator,
-                      typename _Sequence::iterator::_Base_iterator>::_M_type)
-                   >::_M_type>& __x)
+                      typename _Sequence::iterator::_Base_iterator>::__value)
+                   >::__type>& __x)
 	: _Safe_iterator_base(__x, _M_constant()), _M_current(__x.base())
         {
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular(),
