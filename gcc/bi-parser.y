@@ -81,7 +81,7 @@ variations:
 
 variation:
   '(' opt_string ')'
-    { $$ = makevar($2, (struct node *) NULL, (struct node *) NULL, (struct node *) NULL); }
+    { $$ = makevar ($2, (struct node *) NULL, (struct node *) NULL, (struct node *) NULL); }
   | '(' opt_string ',' list ')'
     { $$ = makevar ($2, $4, (struct node *) NULL, (struct node *) NULL); }
   | '(' opt_string ',' list ',' list ')'
@@ -164,6 +164,6 @@ void
 yyerror (s)
      char *s;
 {
-  fprintf (stderr, "syntax error in input");
+  fprintf (stderr, "syntax error in input\n");
   exit (1);
 }
