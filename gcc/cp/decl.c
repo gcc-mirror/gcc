@@ -7091,7 +7091,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  dname = decl;
 	  decl = NULL_TREE;
 
-	  if (IDENTIFIER_OPNAME_P (dname))
+	  if (! IDENTIFIER_OPNAME_P (dname)
+	      /* Linux headers use '__op'.  Arrgh.  */
+	      || IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname))
+	    name = IDENTIFIER_POINTER (dname);
+	  else
 	    {
 	      if (IDENTIFIER_TYPENAME_P (dname))
 		{
@@ -7102,8 +7106,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		}
 	      name = operator_name_string (dname);
 	    }
-	  else
-	    name = IDENTIFIER_POINTER (dname);
 	  break;
 
 	case RECORD_TYPE:
@@ -7688,17 +7690,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		break;
   	    }
 
-	  if (scanner == IDENTIFIER_AS_LIST (ridpointers [(int) RID_TYPEDEF]))
-	    {
-	      if (previous_declspec)
-		TREE_CHAIN (previous_declspec)
-		  = IDENTIFIER_AS_LIST (ridpointers [(int) RID_STATIC]);
-	      else
-		declspecs
-		  = IDENTIFIER_AS_LIST (ridpointers [(int) RID_STATIC]);
-	    }
+	  if (previous_declspec)
+	    TREE_CHAIN (previous_declspec) = TREE_CHAIN (scanner);
 	  else
-	    TREE_VALUE (scanner) = ridpointers[(int) RID_STATIC];
+	    declspecs = TREE_CHAIN (scanner);
+
+	  declspecs = tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC],
+				 declspecs);
 
 	  /* In the recursive call to grokdeclarator we need to know
 	     whether we are working on a signature-local typedef.  */
@@ -7707,6 +7705,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
   
 	  loc_typedecl =
 	    grokdeclarator (declarator, declspecs, FIELD, 0, NULL_TREE);
+
+	  if (previous_declspec)
+	    TREE_CHAIN (previous_declspec) = scanner;
   
 	  if (loc_typedecl != error_mark_node)
   	    {
@@ -7714,6 +7715,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      register int *pi;
   
 	      TREE_SET_CODE (loc_typedecl, TYPE_DECL);
+	      /* This is the same field as DECL_ARGUMENTS, which is set for
+		 function typedefs by the above grokdeclarator.  */
+	      DECL_NESTED_TYPENAME (loc_typedecl) = 0;
   
 	      pi = (int *) permalloc (sizeof (struct lang_decl_flags));
 	      while (i > 0)
@@ -11529,20 +11533,19 @@ finish_function (lineno, call_poplevel)
   /* So we can tell if jump_optimize sets it to 1.  */
   can_reach_end = 0;
 
-  /* ??? Compensate for Sun brain damage in dealing with data segments
-     of PIC code.  */
-  if (flag_pic
-      && (DECL_CONSTRUCTOR_P (fndecl)
-	  || DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
-      && CLASSTYPE_NEEDS_VIRTUAL_REINIT (TYPE_METHOD_BASETYPE (fntype)))
-    DECL_INLINE (fndecl) = 0;
-
   if (DECL_EXTERNAL (fndecl)
       /* This function is just along for the ride.  If we can make
 	 it inline, that's great.  Otherwise, just punt it.  */
       && (DECL_INLINE (fndecl) == 0
 	  || flag_no_inline
-	  || function_cannot_inline_p (fndecl)))
+	  || function_cannot_inline_p (fndecl)
+	  /* ??? Compensate for Sun brain damage in dealing with
+	     data segments of PIC code.  */
+	  || (flag_pic
+	      && (DECL_CONSTRUCTOR_P (fndecl)
+		  || DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+	      && CLASSTYPE_NEEDS_VIRTUAL_REINIT (TYPE_METHOD_BASETYPE (fntype)))))
+
     {
       extern int rtl_dump_and_exit;
       int old_rtl_dump_and_exit = rtl_dump_and_exit;

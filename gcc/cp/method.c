@@ -463,9 +463,9 @@ build_overload_identifier (name)
       icat (nparms);
       for (i = 0; i < nparms; i++)
 	{
-	  tree parm = TREE_VEC_ELT (parmlist, i);
+	  tree parm = TREE_VALUE (TREE_VEC_ELT (parmlist, i));
 	  tree arg = TREE_VEC_ELT (arglist, i);
-	  if (TREE_CODE (parm) == IDENTIFIER_NODE)
+	  if (TREE_CODE (parm) == TYPE_DECL)
 	    {
 	      /* This parameter is a type.  */
 	      OB_PUTC ('Z');

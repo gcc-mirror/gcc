@@ -2100,8 +2100,16 @@ finish_anon_union (anon_union_decl)
     }
   if (static_p)
     {
-      make_decl_rtl (main_decl, 0, global_bindings_p ());
-      DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
+      if (main_decl)
+	{
+	  make_decl_rtl (main_decl, 0, global_bindings_p ());
+	  DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
+	}
+      else
+	{
+	  warning ("anonymous union with no members");
+	  return;
+	}
     }
 
   /* The following call assumes that there are never any cleanups
@@ -2712,7 +2720,6 @@ finish_file ()
 		    }
 		}
 	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
-		  || init == 0
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 		expand_aggr_init (decl, init, 0);
 	      else if (TREE_CODE (init) == TREE_VEC)

@@ -425,10 +425,11 @@ build_up_reference (type, arg, flags, checkconst)
       break;
 
     case PARM_DECL:
+#if 0
       if (targ == current_class_decl)
 	{
 	  error ("address of `this' not available");
-#if 0
+/* #if 0 */	  
 	  /* This code makes the following core dump the compiler on a sun4,
 	     if the code below is used.
 
@@ -465,16 +466,18 @@ build_up_reference (type, arg, flags, checkconst)
 	  TREE_ADDRESSABLE (targ) = 1; /* so compiler doesn't die later */
 	  put_var_into_stack (targ);
 	  break;
-#else
+/* #else */
 	  return error_mark_node;
-#endif
+/* #endif */	  
 	}
+#endif
       /* Fall through.  */
     case VAR_DECL:
     case CONST_DECL:
-      if (DECL_REGISTER (targ) && !TREE_ADDRESSABLE (targ))
-	warning ("address needed to build reference for `%s', which is declared `register'",
-		 IDENTIFIER_POINTER (DECL_NAME (targ)));
+      if (DECL_REGISTER (targ) && !TREE_ADDRESSABLE (targ)
+	  && !DECL_ARTIFICIAL (targ))
+	cp_warning ("address needed to build reference for `%D', which is declared `register'",
+		    targ);
       else if (staticp (targ))
 	literal_flag = 1;
 
@@ -1206,6 +1209,9 @@ cp_convert (type, expr, convtype, flags)
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
 
+  if (TREE_CODE (e) == OFFSET_REF)
+    e = resolve_offset_ref (e);
+
   if (TREE_READONLY_DECL_P (e))
     e = decl_constant_value (e);
 
@@ -1223,10 +1229,7 @@ cp_convert (type, expr, convtype, flags)
 	  if (flag_pedantic_errors)
 	    return error_mark_node;
 	}
-      if (form == OFFSET_TYPE)
-	cp_error_at ("pointer-to-member expression object not composed with type `%D' object",
-		     TYPE_NAME (TYPE_OFFSET_BASETYPE (intype)));
-      else if (IS_AGGR_TYPE (intype))
+      if (IS_AGGR_TYPE (intype))
 	{
 	  tree rval;
 	  rval = build_type_conversion (CONVERT_EXPR, type, e, 1);

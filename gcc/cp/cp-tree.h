@@ -2254,7 +2254,6 @@ extern tree copy_binfo				PROTO((tree));
 extern tree binfo_value				PROTO((tree, tree));
 extern tree reverse_path			PROTO((tree));
 extern tree virtual_member			PROTO((tree, tree));
-extern tree virtual_offset			PROTO((tree, tree, tree));
 extern void debug_binfo				PROTO((tree));
 extern int decl_list_length			PROTO((tree));
 extern int count_functions			PROTO((tree));

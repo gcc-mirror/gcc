@@ -1604,21 +1604,15 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (parms)
 	error ("destructors take no parameters");
       basetype = TREE_TYPE (instance);
-      if (IS_AGGR_TYPE (basetype))
+      if (! ((IS_AGGR_TYPE (basetype)
+	      && name == constructor_name (basetype))
+	     || basetype == get_type_value (name)))
 	{
-	  if (name == constructor_name (basetype))
-	    goto huzzah;
+	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
+		    name, basetype);
+	  return void_zero_node;
 	}
-      else
-	{
-	  if (basetype == get_type_value (name))
-	    goto huzzah;
-	}
-      cp_error ("destructor name `~%D' does not match type `%T' of expression",
-		name, basetype);
-      return void_zero_node;
 
-    huzzah:
       if (! TYPE_HAS_DESTRUCTOR (basetype))
 	return void_zero_node;
       instance = default_conversion (instance);

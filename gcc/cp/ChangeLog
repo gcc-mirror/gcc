@@ -1,18 +1,148 @@
+Fri Aug  5 01:12:20 1994  Mike Stump  (mrs@cygnus.com)
+
+	* class.c (get_class_offset_1, get_class_offset): New routine to
+	find the offset of the class where a virtual function is defined,
+	from the complete type.
+	* class.c (modify_one_vtable, fixup_vtable_deltas): Use
+	get_class_offset instead of virtual_offset as get_class_offset will
+	always provide the right answer.
+	* tree.c (virtual_offset): Remove.  It only ever worked some of the
+	time.
+
+Tue Aug  2 12:44:21 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c (build_method_call): Put back unary_complex_lvalue call
+	that I thought was redundant.
+
+	* typeck.c (c_expand_return): Fix a case I missed before.
+
+Sun Jul 31 17:54:02 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (unify): Strip cv-quals from template type arguments (when
+	'const T*' is matched to 'const char*', that does not mean that T is
+	'const char').
+
+Fri Jul 29 01:03:06 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (do_type_instantiation): Instantiate nested TAGS, not
+	typedefs.  Third time's the charm?
+
+	* parse.y (template_parm): Support default template parms.
+	* pt.c (process_template_parm): Ditto.
+	(end_template_parm_list): Ditto.
+	(coerce_template_parms): Ditto.
+	(mangle_class_name_for_template): Ditto.
+	(push_template_decls): Ditto.
+	(unify): Ditto.
+	* method.c (build_overload_identifier): Ditto.
+	* error.c (dump_decl): Ditto.
+
+Wed Jul 27 17:47:00 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (do_type_instantiation): Only instantiate nested *classes*.
+
+Tue Jul 26 13:22:40 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* search.c (note_debug_info_needed): Also emit debugging information
+	for the types of fields.
+
+Mon Jul 25 00:34:44 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (lookup_template_class): Pass 'template' to
+	coerce_template_parms instead of 'in_decl', since it's a more
+	meaningful context.
+
+	* typeck.c (c_expand_return): Make sure any cleanups for the return
+	expression get run.
+	(build_c_cast): Use CONVERT_EXPR for conversion to void.
+
+	* pt.c (do_type_instantiation): Also instantiate nested types.
+
+	* typeck.c (convert_for_assignment): Don't die when comparing
+	pointers with different levels of indirection.
+
+	* decl.c (grokdeclarator): The sub-call to grokdeclarator for
+	class-local typedefs sets DECL_ARGUMENTS, so we need to clear it
+	out.
+
+	* decl2.c (finish_anon_union): Don't die if the union has no
+	members.
+
+	* decl.c (grokdeclarator): Undo changes to declspecs when we're done
+	so that 'typedef int foo, bar;' will work.
+
+	* decl2.c (finish_file): Don't call expand_aggr_init for
+	non-aggregates.
+
+Mon Jul 25 00:03:10 1994  Teemu Torma  (tot@trema.fi)
+
+	* decl.c (finish_function): We can't inline constructors and
+	destructors under some conditions with -fpic, but don't unset
+	DECL_INLINE.
+
+Mon Jul 25 00:03:10 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_object_ref): Make sure 'datum' is a valid object.
+
+Sun Jul 24 14:19:31 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* class.c (finish_struct): Don't set DECL_FIELD_BITPOS on
+	non-fields.
+	(finish_struct_methods): Use copy_assignment_arg_p.
+
+	* cvt.c (cp_convert): If expr is an OFFSET_REF, resolve it instead
+	of giving an error.
+
+	* typeck.c (build_binary_op_nodefault): Don't set result_type if we
+	don't know how to compare the operands.
+
+	* decl.c (grokdeclarator): Avoid seg fault when someone uses '__op'
+	as a declarator-id in their program.  Like the Linux headers do.
+	Arrgh.
+
+	* tree.c (lvalue_p): Treat calls to functions returning objects by
+	value as lvalues again.
+
+	* typeck.c (build_component_addr): Use convert_force to convert the
+	pointer in case the component type is also a private base class.
+
+	* search.c (get_matching_virtual): Fix bogus warning of overloaded
+	virtual.
+
+	* pt.c (overload_template_name): Set DECL_ARTIFICIAL on the created
+	TYPE_DECL to fix bogus shadowing warnings.
+
+Fri Jul 22 01:15:32 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* init.c (expand_aggr_init_1): const and volatile mismatches do not
+	prevent a TARGET_EXPR from initializing an object directly.
+
+Tue Jul 19 17:55:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* cvt.c (build_up_reference): Allow building up references to
+	`this', don't warn about making references to artificial variables
+	(like `this').
+
+	* tree.c (lvalue_p): `this' is not an lvalue.
+
+	* call.c (build_method_call): Accept using a typedef name (or
+	template type parameter) for explicit destructor calls.
+
 Wed Jul 13 03:57:54 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
-        * method.c (hack_identifier): Put back old code so lists of
-        non-functions will be handled properly.
+	* method.c (hack_identifier): Put back old code so lists of
+	non-functions will be handled properly.
 
-        * cp-tree.h (TYPE_NEEDS_CONSTRUCTING): #if 0 out; this macro is now
-        defined in the language-independent tree.h.
+	* cp-tree.h (TYPE_NEEDS_CONSTRUCTING): #if 0 out; this macro is now
+	defined in the language-independent tree.h.
 
-        * tree.c (count_functions): Avoid bogus warning when compiling this
-        function.
+	* tree.c (count_functions): Avoid bogus warning when compiling this
+	function.
 
 Mon Jul 11 18:37:20 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
-        * decl.c (grok_reference_init): Always save the initializer of a
-        reference.
+	* decl.c (grok_reference_init): Always save the initializer of a
+	reference.
 
 Fri Jul  8 17:41:46 1994  Mike Stump  (mrs@cygnus.com)
 
@@ -36,7 +166,7 @@ Fri Jul  8 02:27:41 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (push_overloaded_decl): Don't create overloads of one when
 	shadowing a class type.
-	* typeck.c (build_x_function_call): Complain about overloads of one
+	* typeck.c (build_x_function_call): Complain about overloads of one.
 
 	* decl.c (grokdeclarator): Don't try to treat a char* as a tree.
 	(grokdeclarator): Fix setting of TREE_STATIC.

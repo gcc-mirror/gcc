@@ -671,13 +671,22 @@ dump_decl (t, v)
 	for (i = 0; i < len; i++)
 	  {
 	    tree arg = TREE_VEC_ELT (args, i);
-	    if (TREE_CODE (arg) == IDENTIFIER_NODE)
+	    tree defval = TREE_PURPOSE (arg);
+	    arg = TREE_VALUE (arg);
+	    if (TREE_CODE (arg) == TYPE_DECL)
 	      {
 		OB_PUTS ("class ");
-		OB_PUTID (arg);
+		OB_PUTID (DECL_NAME (arg));
 	      }
 	    else
 	      dump_decl (arg, 1);
+
+	    if (defval)
+	      {
+		OB_PUTS (" = ");
+		dump_decl (defval, 1);
+	      }
+		
 	    OB_PUTC2 (',', ' ');
 	  }
 	OB_UNPUT (2);
