@@ -1,3 +1,16 @@
+Fri Apr  3 17:02:13 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+ 
+ 	* tree.def (EXPR_WITH_FILE_LOCATION): New tree node definition.
+ 	* tree.h (EXPR_WFL_{NODE,FILENAME,FILENAME_NODE,LINENO,
+ 	COLNO,LINECOL,SET_LINECOL,EMIT_LINE_NOTE}): New macros.
+ 	(build_expr_wfl): New prototype declaration.
+ 	* tree.c (build_expr_wfl): New function, to build
+  	EXPR_WITH_FILE_LOCATION nodes.
+ 	(copy_node): Don't zero TREE_CHAIN if copying a
+  	EXPR_WITH_FILE_LOCATION node.
+ 	* print-tree.c (print_node): Handle EXPR_WITH_FILE_LOCATION.
+ 	* expr.c (expand_expr): Handle EXPR_WITH_FILE_LOCATION.
+
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (x86-dg-dgux): Run fixinc.dgux.

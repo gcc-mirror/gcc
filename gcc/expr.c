@@ -5171,6 +5171,11 @@ expand_expr (exp, target, tmode, modifier)
 			       copy_rtx (XEXP (TREE_CST_RTL (exp), 0)));
       return TREE_CST_RTL (exp);
 
+    case EXPR_WITH_FILE_LOCATION:
+      if (EXPR_WFL_EMIT_LINE_NOTE (exp))
+	emit_line_note (EXPR_WFL_FILENAME (exp), EXPR_WFL_LINENO (exp));
+      return expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
+
     case SAVE_EXPR:
       context = decl_function_context (exp);
 

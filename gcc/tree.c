@@ -1185,7 +1185,9 @@ copy_node (node)
   for (i = length / sizeof (int) * sizeof (int); i < length; i++)
     ((char *) t)[i] = ((char *) node)[i];
 
-  TREE_CHAIN (t) = 0;
+  /* EXPR_WITH_FILE_LOCATION must keep filename info stored in TREE_CHAIN */
+  if (TREE_CODE (node) != EXPR_WITH_FILE_LOCATION)
+    TREE_CHAIN (t) = 0;
   TREE_ASM_WRITTEN (t) = 0;
 
   if (TREE_CODE_CLASS (code) == 'd')
@@ -3217,6 +3219,26 @@ build_block (vars, tags, subblocks, supercontext, chain)
   BLOCK_SUPERCONTEXT (block) = supercontext;
   BLOCK_CHAIN (block) = chain;
   return block;
+}
+
+/* EXPR_WITH_FILE_LOCATION are used to keep track of the exact
+   location where an expression or an identifier were encountered. It
+   is necessary for languages where the frontend parser will handle
+   recursively more than one file (Java is one of them).  */
+
+tree
+build_expr_wfl (node, file, line, col)
+     tree node;
+     char *file;
+     int line, col;
+{
+  register tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
+  EXPR_WFL_NODE (wfl) = node;
+  EXPR_WFL_FILENAME_NODE (wfl) = get_identifier (file);
+  EXPR_WFL_SET_LINECOL (wfl, line, col);
+  TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
+  TREE_TYPE (wfl) = TREE_TYPE (node);
+  return wfl;
 }
 
 /* Return a declaration like DDECL except that its DECL_MACHINE_ATTRIBUTE
