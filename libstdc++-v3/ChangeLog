@@ -1,3 +1,11 @@
+2002-07-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/7186
+	* include/bits/stl_deque.h (_Deque_iterator::operator-):
+	Make non-member, as already happens for the comparison
+	operators in accord with DR179 (Ready).
+	* testsuite/23_containers/deque_operators.cc: Add test02.
+
 2002-07-04  Benjamin Kosnik  <bkoz@redhat.com>
             Jack Reeves  <jackw_reeves@hotmail.com>
 
