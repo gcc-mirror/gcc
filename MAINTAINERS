@@ -10,7 +10,7 @@ mn10300 port		Jeff Law		law@cygnus.com
 hppa port		Jeff Law		law@cygnus.com
 m68k port (?)		Jeff Law		law@cygnus.com
 rs6000 port		Michael Meissner	meissner@cygnus.com
-*rs6000 port		David Edelsohn		dje@watson.ibm.com
+rs6000 port		David Edelsohn		dje@watson.ibm.com
 mips port		Jim Wilson		wilson@cygnus.com
 i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
