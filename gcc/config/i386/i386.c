@@ -11853,7 +11853,7 @@ ix86_init_mmx_sse_builtins ()
     = build_function_type_list (integer_type_node,
 				V4HI_type_node, integer_type_node, NULL_TREE);
   tree v4hi_ftype_v4hi_int_int
-    = build_function_type_list (V4HI_type_node,
+    = build_function_type_list (V4HI_type_node, V4HI_type_node,
 				integer_type_node, integer_type_node,
 				NULL_TREE);
   /* Miscellaneous.  */
@@ -11872,8 +11872,7 @@ ix86_init_mmx_sse_builtins ()
 				V4HI_type_node, V4HI_type_node, NULL_TREE);
   tree v4hi_ftype_v4hi_int
     = build_function_type_list (V4HI_type_node,
-				V4HI_type_node, V4HI_type_node,
-				integer_type_node, NULL_TREE);
+				V4HI_type_node, integer_type_node, NULL_TREE);
   tree v4hi_ftype_v4hi_di
     = build_function_type_list (V4HI_type_node,
 				V4HI_type_node, long_long_unsigned_type_node,
