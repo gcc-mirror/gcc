@@ -1,3 +1,11 @@
+1998-08-24  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* cp-tree.h: Declare.
+	* pt.c (decl_template_parm_p): New function.
+	* decl.c (pushdecl): Check decls for redeclaring template parms.
+	(xref_tag): Make redeclaration an error, print decl.
+	* decl2.c (grokfield): Check field_decls for redeclaration as well.
+
 1998-08-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (primary): Fix up the type of string constants.
