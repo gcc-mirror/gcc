@@ -1,3 +1,12 @@
+2004-01-20  Geoffrey Keating  <geoffk@apple.com>
+
+	* alias.c (new_alias_set): Mark last_alias_set for PCH.
+	(get_varargs_alias_set): Rename 'set' to 'varargs_set' and mark it
+	for PCH.
+	(get_frame_alias_set): Likewise, except rename it to 'frame_set'.
+	* config/rs6000/rs6000.c (rs6000_sr_alias_set): Mark for PCH.
+	(get_TOC_alias_set): Mark 'set' for PCH.
+
 2004-01-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_load_call_address): Make the call insn
