@@ -176,7 +176,12 @@ public abstract class Reference
    */
   public void clear()
   {
-    cleared = true;
+    // Must synchronize so changes are visible in finalizer thread.
+    synchronized (lock)
+      {
+        referent = null;
+        cleared = true;
+      }
   }
 
   /**
