@@ -1,3 +1,7 @@
+2005-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (fold_rtx): Call equiv_constant only when necessary.
+
 2005-01-26  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* function.c (expand_function_end): If current_function_calls_alloca,
