@@ -1,3 +1,12 @@
+2001-10-20  Brendan Kehoe  <brendan@zen.org>
+
+	* include/bits/type_traits.h (__Boolean): Renamed template from _Bool.
+	(__true_type, __false_type): Change usage.
+	* src/string-inst.cc (__destroy_aux): Change third parm to be
+	__false_type instead of _Bool<false>.
+	* src/misc-inst.cc (__uninitialized_fill_n_aux,
+	__uninitialized_copy_aux): Likewise.
+
 2001-10-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* mkcheck.in (static_fail): Remove older memory limit functionality.
