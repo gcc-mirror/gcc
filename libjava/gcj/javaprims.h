@@ -338,6 +338,7 @@ extern "Java"
       class RandomAccess;
       class RandomAccessSubList;
       class ResourceBundle;
+      class ResourceBundle$BundleKey;
       class Set;
       class SimpleTimeZone;
       class SortedMap;
