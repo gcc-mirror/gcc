@@ -1,3 +1,16 @@
+2001-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_THIS_INLINE): Rename to DECL_DECLARED_INLINE_P.
+	* decl.c (duplicate_decls): Adjust accordingly.
+	(maybe_commonize_var): Likewise.
+	(grokfndecl): Likewise.
+	(start_function): Likewise.
+	(start_method): Likewise.
+	* decl2.c (key_method): Likewise.
+	(import_export_decl): Likewise.
+	* method.c (implicitly_declare_fn): Likewise.
+	* optimize.c (maybe_clone_body): Likewise.
+	
 2001-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* optimize.c (expand_call_inline): Only add newly inlined statements

@@ -2407,7 +2407,7 @@ key_method (type)
   for (method = TYPE_METHODS (type); method != NULL_TREE;
        method = TREE_CHAIN (method))
     if (DECL_VINDEX (method) != NULL_TREE
-	&& ! DECL_THIS_INLINE (method)
+	&& ! DECL_DECLARED_INLINE_P (method)
 	&& ! DECL_PURE_VIRTUAL_P (method))
       return method;
 
@@ -2659,7 +2659,8 @@ import_export_decl (decl)
       if ((DECL_IMPLICIT_INSTANTIATION (decl)
 	   || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
 	  && (flag_implicit_templates
-	      || (flag_implicit_inline_templates && DECL_THIS_INLINE (decl))))
+	      || (flag_implicit_inline_templates 
+		  && DECL_DECLARED_INLINE_P (decl))))
 	{
 	  if (!TREE_PUBLIC (decl))
 	    /* Templates are allowed to have internal linkage.  See 
@@ -2673,7 +2674,7 @@ import_export_decl (decl)
     }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
-      if (!DECL_THIS_INLINE (decl))
+      if (!DECL_DECLARED_INLINE_P (decl))
 	{
 	  tree ctype = DECL_CONTEXT (decl);
 	  import_export_class (ctype);
@@ -2681,7 +2682,8 @@ import_export_decl (decl)
 	    {
 	      DECL_NOT_REALLY_EXTERN (decl)
 		= ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		     || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines
+		     || (DECL_DECLARED_INLINE_P (decl) 
+			 && ! flag_implement_inlines
 			 && !DECL_VINDEX (decl)));
 
 	      /* Always make artificials weak.  */
@@ -2716,7 +2718,8 @@ import_export_decl (decl)
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines
+		 || (DECL_DECLARED_INLINE_P (decl) 
+		     && ! flag_implement_inlines
 		     && !DECL_VINDEX (decl)));
 
 	  /* Always make artificials weak.  */

@@ -3397,7 +3397,8 @@ duplicate_decls (newdecl, olddecl)
 		  }
 	      }
 
-	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl)
+	  if (DECL_DECLARED_INLINE_P (newdecl) 
+	      && ! DECL_DECLARED_INLINE_P (olddecl)
 	      && TREE_ADDRESSABLE (olddecl) && warn_inline)
 	    {
 	      cp_warning ("`%#D' was used before it was declared inline",
@@ -3652,7 +3653,7 @@ duplicate_decls (newdecl, olddecl)
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
 	}
-      DECL_THIS_INLINE (newdecl) |= DECL_THIS_INLINE (olddecl);
+      DECL_DECLARED_INLINE_P (newdecl) |= DECL_DECLARED_INLINE_P (olddecl);
 
       /* If either decl says `inline', this fn is inline, unless its
          definition was passed already.  */
@@ -7554,7 +7555,7 @@ maybe_commonize_var (decl)
       && ! DECL_ARTIFICIAL (decl)
       && current_function_decl
       && DECL_CONTEXT (decl) == current_function_decl
-      && (DECL_THIS_INLINE (current_function_decl)
+      && (DECL_DECLARED_INLINE_P (current_function_decl)
 	  || DECL_TEMPLATE_INSTANTIATION (current_function_decl))
       && TREE_PUBLIC (current_function_decl))
     {
@@ -8822,7 +8823,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     }
 
   if (inlinep)
-    DECL_THIS_INLINE (decl) = DECL_INLINE (decl) = 1;
+    DECL_DECLARED_INLINE_P (decl) = DECL_INLINE (decl) = 1;
 
   DECL_EXTERNAL (decl) = 1;
   if (quals != NULL_TREE && TREE_CODE (type) == FUNCTION_TYPE)
@@ -13512,7 +13513,7 @@ start_function (declspecs, declarator, attrs, flags)
       if (DECL_NOT_REALLY_EXTERN (decl1))
 	DECL_EXTERNAL (decl1) = 0;
 
-      if (ctx != NULL_TREE && DECL_THIS_INLINE (ctx)
+      if (ctx != NULL_TREE && DECL_DECLARED_INLINE_P (ctx)
 	  && TREE_PUBLIC (ctx))
 	/* This is a function in a local class in an extern inline
 	   function.  */
@@ -13525,12 +13526,14 @@ start_function (declspecs, declarator, attrs, flags)
 	   && (! DECL_TEMPLATE_INSTANTIATION (decl1)
 	       || flag_alt_external_templates))
     {
-      if (DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1)
+      if (DECL_DECLARED_INLINE_P (decl1) 
+	  || DECL_TEMPLATE_INSTANTIATION (decl1)
 	  || processing_template_decl)
 	{
 	  DECL_EXTERNAL (decl1)
 	    = (interface_only
-	       || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines
+	       || (DECL_DECLARED_INLINE_P (decl1) 
+		   && ! flag_implement_inlines
 		   && !DECL_VINDEX (decl1)));
 
 	  /* For WIN32 we also want to put these in linkonce sections.  */
@@ -13561,7 +13564,8 @@ start_function (declspecs, declarator, attrs, flags)
 	 So clear DECL_EXTERNAL.  */
       DECL_EXTERNAL (decl1) = 0;
 
-      if ((DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1))
+      if ((DECL_DECLARED_INLINE_P (decl1) 
+	   || DECL_TEMPLATE_INSTANTIATION (decl1))
 	  && ! DECL_INTERFACE_KNOWN (decl1)
 	  /* Don't try to defer nested functions for now.  */
 	  && ! decl_function_context (decl1))
@@ -14077,7 +14081,7 @@ start_method (declspecs, declarator, attrlist)
 
   check_template_shadow (fndecl);
 
-  DECL_THIS_INLINE (fndecl) = 1;
+  DECL_DECLARED_INLINE_P (fndecl) = 1;
 
   if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;

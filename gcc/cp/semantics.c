@@ -2390,7 +2390,7 @@ expand_body (fn)
 
   /* Compute the appropriate object-file linkage for inline
      functions.  */
-  if (DECL_INLINE (fn))
+  if (DECL_DECLARED_INLINE_P (fn))
     import_export_decl (fn);
 
   /* Emit any thunks that should be emitted at the same time as FN.  */

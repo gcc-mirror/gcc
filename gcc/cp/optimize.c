@@ -1031,7 +1031,7 @@ maybe_clone_body (fn)
       DECL_SOURCE_FILE (clone) = DECL_SOURCE_FILE (fn);
       DECL_SOURCE_LINE (clone) = DECL_SOURCE_LINE (fn);
       DECL_INLINE (clone) = DECL_INLINE (fn);
-      DECL_THIS_INLINE (clone) = DECL_THIS_INLINE (fn);
+      DECL_DECLARED_INLINE_P (clone) = DECL_DECLARED_INLINE_P (fn);
       DECL_COMDAT (clone) = DECL_COMDAT (fn);
       DECL_WEAK (clone) = DECL_WEAK (fn);
       DECL_ONE_ONLY (clone) = DECL_ONE_ONLY (fn);

@@ -3000,7 +3000,7 @@ extern int flag_new_for_scope;
 /* This function was declared inline.  This flag controls the linkage
    semantics of 'inline'; whether or not the function is inlined is
    controlled by DECL_INLINE.  */
-#define DECL_THIS_INLINE(NODE) \
+#define DECL_DECLARED_INLINE_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.declared_inline)
 
 /* DECL_EXTERNAL must be set on a decl until the decl is actually emitted,
