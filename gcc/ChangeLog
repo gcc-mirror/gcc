@@ -1,3 +1,31 @@
+2002-08-04  Bernd Schmidt  <bernds@redhat.com>
+
+	Contribute a port developed primarily by Michael Meissner,
+	Catherine Moore, and Richard Sandiford <rsandifo@redhat.com>.
+	* config.gcc: Add frv-elf target.
+	* config/frv/cmovd.c: New file.
+	* config/frv/cmovh.c: New file.
+	* config/frv/cmovw.c: New file.
+	* config/frv/frv-abi.h: New file.
+	* config/frv/frv-asm.h: New file.
+	* config/frv/frv-modes.def: New file.
+	* config/frv/frv-protos.h: New file.
+	* config/frv/frv.c: New file.
+	* config/frv/frv.h: New file.
+	* config/frv/frv.md: New file.
+	* config/frv/frvbegin.c: New file.
+	* config/frv/frvend.c: New file.
+	* config/frv/lib1funcs.asm: New file.
+	* config/frv/media.h: New file.
+	* config/frv/modi.c: New file.
+	* config/frv/t-frv: New file.
+	* config/frv/uitod.c: New file.
+	* config/frv/uitof.c: New file.
+	* config/frv/ulltod.c: New file.
+	* config/frv/ulltof.c: New file.
+	* config/frv/umodi.c: New file.
+	* config/frv/xm-frv.h: New file.
+		
 2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c (bb_file_time): New static variable.
