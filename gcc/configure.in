@@ -1055,7 +1055,7 @@ for machine in $build $host $target; do
 		fi
 		;;
 	i386-*-vsta)			# Intel 80386's running VSTa kernel
-		xm_file=i386/xm-vsta.h
+		xm_file="${xm_file} i386/xm-vsta.h"
 		tm_file=i386/vsta.h
 		tmake_file=i386/t-vsta
 		xmake_file=i386/x-vsta
