@@ -2014,6 +2014,12 @@ final (first, file, optimize, prescan)
   for (insn = NEXT_INSN (first); insn;)
     {
 #ifdef HAVE_ATTR_length
+#ifdef ENABLE_CHECKING
+      /* This can be triggered by bugs elsewhere in the compiler if
+	 new insns are created after init_insn_lengths is called.  */
+      if (INSN_UID (insn) >= insn_lengths_max_uid)
+	abort ();
+#endif
       insn_current_address = insn_addresses[INSN_UID (insn)];
 #endif
       insn = final_scan_insn (insn, file, optimize, prescan, 0);
