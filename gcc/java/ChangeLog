@@ -1,3 +1,7 @@
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.c (version_flag): Rename to v_flag to avoid clash w/ toplev.h.
+
 2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang-specs.h: Rewrite -MD and -MMD to append an underscore.

@@ -41,7 +41,55 @@
 
 ; Please try to keep this file in ASCII collating order.
 
+-help
+Common
+
+-target-help
+Common
+
+-version
+Common
+
+G
+Common Joined Separate
+
+aux-info
+Common Separate
+
+aux-info=
+Common Joined
+
+auxbase
+Common Separate
+
+auxbase-strip
+Common Separate
+
+d
+Common Joined
+
+dumpbase
+Common Separate
+
+o
+Common Joined Separate
+
+p
+Common
+
+pedantic
+Common
+
+pedantic-errors
+Common
+
 quiet
+Common
+
+version
+Common
+
+w
 Common
 
 ; This comment is to ensure we retain the blank line above.
