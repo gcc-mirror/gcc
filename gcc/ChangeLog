@@ -1,5 +1,11 @@
 2004-12-23  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (one_cmpl<mode>2, and<mode>3, andnot<mode>3,
+	ior<mode>3, iornot<mode>3, xor<mode>3, xornot<mode>3): New macroized
+	vector operate patterns.
+
+2004-12-23  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_expand_vector_move): Tidy.
 	(ix86_expand_vector_move_misalign): New.
 	(ix86_misaligned_mem_ok): Remove.
