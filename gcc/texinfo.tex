@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.209 1997/07/03 20:52:37 karl Exp rms $
+%% $Id: texinfo.tex,v 2.210 1997/07/04 00:07:28 rms Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.209 $
+\deftexinfoversion$Revision: 2.210 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -189,7 +189,7 @@
         % Only leave this space if the footline is nonempty.
         % (We lessened \vsize for it in \oddfootingxxx.)
         % The \baselineskip=24pt in plain's \makefootline has no effect.
-        \vskip\baselineskip
+        \vskip 2\baselineskip
         \unvbox\footlinebox
       \fi
       %
@@ -1357,18 +1357,27 @@ where each line of input produces a line of output.}
 % @kbd is like @code, except that if the argument is just one @key command,
 % then @kbd has no effect.
 
-% Font to use for @kbd, ordinarily.
-\let\kbdfont\t
-% Font to use for @kbd, when inside @example.
-\let\kbdexamplefont\t
+% @kbdinputstyle -- arg is `distinct' (@kbd uses slanted tty font always),
+%   `example' (@kbd uses ttsl only inside of @example and friends),
+%   or `code' (@kbd uses normal tty font always).
+\def\kbdinputstyle{\parsearg\kbdinputstylexxx}
+\def\kbdinputstylexxx#1{%
+  \def\arg{#1}%
+  \ifx\arg\worddistinct
+    \gdef\kbdexamplefont{\ttsl}\gdef\kbdfont{\ttsl}%
+  \else\ifx\arg\wordexample
+    \gdef\kbdexamplefont{\ttsl}\gdef\kbdfont{\tt}%
+  \else\ifx\arg\wordcode
+    \gdef\kbdexamplefont{\tt}\gdef\kbdfont{\tt}%
+  \fi\fi\fi
+}
+\def\worddistinct{distinct}
+\def\wordexample{example}
+\def\wordcode{code}
 
-% If you use @setkbdinputdistinct, then @kbd produces slanted tty font.
-\def\setkbdinputdistinct{\let\kbdfont\ttsl
-\let\kbdexamplefont\ttsl}
-
-% If you use @setkbdinputexample, then @kbd produces slanted tty font
-% only inside of @example and friends.
-\def\setkbdinputexample{\gdef\kbdexamplefont\ttsl}
+% Default is kbdinputdistinct.  (Too much of a hassle to call the macro,
+% the catcodes are wrong for parsearg to work.)
+\gdef\kbdexamplefont{\ttsl}\gdef\kbdfont{\ttsl}
 
 \def\xkey{\key}
 \def\kbdfoo#1#2#3\par{\def\one{#1}\def\three{#3}\def\threex{??}%
@@ -4368,29 +4377,27 @@ width0pt\relax} \fi
 % Read the last existing aux file, if any.  No error if none exists.
 \def\readauxfile{\begingroup
   \catcode`\^^@=\other
-  \catcode`\=\other
-  \catcode`\=\other
+  \catcode`\^^A=\other
+  \catcode`\^^B=\other
   \catcode`\^^C=\other
   \catcode`\^^D=\other
   \catcode`\^^E=\other
   \catcode`\^^F=\other
   \catcode`\^^G=\other
   \catcode`\^^H=\other
-  \catcode`\=\other
+  \catcode`\^^K=\other
   \catcode`\^^L=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode`\=\other
-  \catcode26=\other
+  \catcode`\^^N=\other
+  \catcode`\^^P=\other
+  \catcode`\^^Q=\other
+  \catcode`\^^R=\other
+  \catcode`\^^S=\other
+  \catcode`\^^T=\other
+  \catcode`\^^U=\other
+  \catcode`\^^V=\other
+  \catcode`\^^W=\other
+  \catcode`\^^X=\other
+  \catcode`\^^Z=\other
   \catcode`\^^[=\other
   \catcode`\^^\=\other
   \catcode`\^^]=\other
@@ -4468,7 +4475,7 @@ width0pt\relax} \fi
 % space to prevent strange expansion errors.)
 \def\supereject{\par\penalty -20000\footnoteno =0 }
 
-% @footnotestyle is meaningful for info output only..
+% @footnotestyle is meaningful for info output only.
 \let\footnotestyle=\comment
 
 \let\ptexfootnote=\footnote
