@@ -1,3 +1,9 @@
+Mon Oct 17 15:56:11 1994  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_start_catch_block): Make sure the false label
+	gets onto the permanent obstack, as it is used for the exception
+	table.
+
 Fri Oct 14 18:54:48 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (modify_one_vtable): Since the DECL_CONTEXT of fndecl can
