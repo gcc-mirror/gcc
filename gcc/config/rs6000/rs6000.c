@@ -11134,14 +11134,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	      dst = gen_rtx_MEM (mode, breg);
 	    }
 	  else if (! offsettable_memref_p (dst))
-	    {
-	      rtx newdst, basereg;
-	      basereg = gen_rtx_REG (Pmode, reg);
-	      emit_insn (gen_rtx_SET (VOIDmode, basereg, XEXP (dst, 0)));
-	      newdst = gen_rtx_MEM (GET_MODE (dst), basereg);
-	      MEM_COPY_ATTRIBUTES (newdst, dst);
-	      dst = newdst;
-	    }
+	    abort ();
 	}
 
       for (i = 0; i < nregs; i++)
