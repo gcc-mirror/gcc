@@ -957,7 +957,10 @@ branch_prob (f, dump_file)
   /* For each arc not on the spanning tree, add counting code as rtl.  */
 
   if (profile_arc_flag)
-    instrument_arcs (f, num_blocks, dump_file);
+    {
+      instrument_arcs (f, num_blocks, dump_file);
+      allocate_reg_info (max_reg_num (), FALSE, FALSE);
+    }
 
   /* Execute the rest only if doing branch probabilities.  */
   if (! flag_branch_probabilities)
