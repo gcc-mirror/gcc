@@ -309,6 +309,9 @@ end_final (filename)
 
       /* Output the table of addresses.  */
       readonly_data_section ();
+      /* Realign in new section */
+      ASM_OUTPUT_ALIGN (asm_out_file,
+			floor_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 3);
       for (i = 0; i < count_basic_blocks; i++)
 	{
