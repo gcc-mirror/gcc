@@ -5154,16 +5154,14 @@ finish_struct (t, attributes)
    or not.
 
    *NONNULL is set iff INSTANCE can be known to be nonnull, regardless
-   of our knowledge of its type.  */
+   of our knowledge of its type.  *NONNULL should be initialized
+   before this function is called.  */
 
 static tree
 fixed_type_or_null (instance, nonnull)
      tree instance;
      int *nonnull;
 {
-  if (nonnull)
-    *nonnull = 0;
-
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
@@ -5266,7 +5264,8 @@ fixed_type_or_null (instance, nonnull)
    or not.
 
    *NONNULL is set iff INSTANCE can be known to be nonnull, regardless
-   of our knowledge of its type.  */
+   of our knowledge of its type.  *NONNULL should be initialized
+   before this function is called.  */
 
 int
 resolves_to_fixed_type_p (instance, nonnull)

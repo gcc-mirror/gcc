@@ -255,7 +255,7 @@ build_x_typeid (exp)
 {
   tree cond = NULL_TREE;
   tree type;
-  int nonnull;
+  int nonnull = 0;
 
   if (! flag_rtti)
     {
