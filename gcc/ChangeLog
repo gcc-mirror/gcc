@@ -1,3 +1,22 @@
+Wed Apr 22 10:53:49 EDT 1998 Andrew MacLeod  <amacleod@cygnus.com>
+
+	* cplus-dem.c (struct work stuff): Add field for B and K mangle codes.
+	(cplus_demangle_opname): Call mop_up_squangle.
+	(cplus_demangle): Initialize squangle info, then call 
+	internal_cplus_demangle. (Most code moved there as well)
+	(internal_cplus_demangle): New function, performs most of what use 
+	to be done in cplus_demangle, but is only called with this file.
+	(squangle_mop_up): New function to clean up B and K code data.
+	(mop_up): set pointers to NULL after freeing.
+	(demangle_signature, demangle_template, demangle_class): Add 
+	switch elements to handle K and B codes.
+	(demangle_prefix, gnu_special, demangle_qualified): Add
+	code to handle K and B codes.
+	(do_type, demangle_fund_type): Handle B and K codes.
+	(remember_Ktype): New function to store K info.
+	(register_Btype, remember_Btype): New functions for B codes.
+	(forget_B_and_K_types): New function to destroy B and K info.
+
 1998-04-21  Jim Wilson  <wilson@cygnus.com>
 
 	* stmt.c (check_seenlabel): When search for line number note for
