@@ -246,7 +246,7 @@ _cpp_make_hashnode (name, len, type, hash)
      const U_CHAR *name;
      size_t len;
      enum node_type type;
-     unsigned long hash;
+     unsigned int hash;
 {
   HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE));
   U_CHAR *p = xmalloc (len + 1);
@@ -263,11 +263,7 @@ _cpp_make_hashnode (name, len, type, hash)
   return hp;
 }
 
-/* Find the hash node for name "name", which ends at the first
-   non-identifier char.
-
-   If LEN is >= 0, it is the length of the name.
-   Otherwise, compute the length now.  */
+/* Find the hash node for name "name", of length LEN.  */
 
 HASHNODE *
 _cpp_lookup (pfile, name, len)
@@ -277,12 +273,6 @@ _cpp_lookup (pfile, name, len)
 {
   const U_CHAR *bp;
   HASHNODE dummy;
-
-  if (len < 0)
-    {
-      for (bp = name; is_idchar (*bp); bp++);
-      len = bp - name;
-    }
 
   dummy.name = name;
   dummy.length = len;
@@ -300,30 +290,18 @@ _cpp_lookup_slot (pfile, name, len, insert, hash)
      const U_CHAR *name;
      int len;
      enum insert_option insert;
-     unsigned long *hash;
+     unsigned int hash;
 {
   const U_CHAR *bp;
   HASHNODE dummy;
-  HASHNODE **slot;
-
-  if (len < 0)
-    {
-      for (bp = name; is_idchar (*bp); bp++)
-	;
-
-      len = bp - name;
-    }
 
   dummy.name = name;
   dummy.length = len;
-  dummy.hash = _cpp_calc_hash (name, len);
+  dummy.hash = hash;
 
-  slot = (HASHNODE **) htab_find_slot_with_hash (pfile->hashtab,
+  return (HASHNODE **) htab_find_slot_with_hash (pfile->hashtab,
 						 (void *) &dummy,
 						 dummy.hash, insert);
-  if (insert)
-    *hash = dummy.hash;
-  return slot;
 }
 
 /* Init the hash table.  In here so it can see the hash and eq functions.  */

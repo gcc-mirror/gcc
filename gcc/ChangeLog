@@ -1,3 +1,16 @@
+2000-04-30  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (redundant_include_p): Provide length of token to
+	cpp_defined.
+	* cpphash.c (_cpp_make_hashnode, _cpp_lookup_slot): Hash
+	values are unsigned int.
+	(_cpp_lookup, _cpp_lookup_slot): Do not calculate the length.
+	(_cpp_lookup_slot): Do not calculate the hash, either.
+	* cpphash.h: Update prototypes.
+	* cpplib.c (do_define, do_undef, do_pragma_poison, do_assert):
+	Hashes are unsigned int.  Calculate hash here, pass by value
+	to _cpp_lookup_slot.
+
 2000-04-30  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* simplify-rtx.c (check_value_useless): Delete function.

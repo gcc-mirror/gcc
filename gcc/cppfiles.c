@@ -132,7 +132,8 @@ redundant_include_p (pfile, ihash, ilist)
 	    included again if the string is the name of a defined macro. */
 	 return (i->control_macro
 		 && (i->control_macro[0] == '\0'
-		     || cpp_defined (pfile, i->control_macro, -1)))
+		     || cpp_defined (pfile, i->control_macro, 
+				     strlen (i->control_macro))))
 	     ? (IHASH *)-1 : i;
 
   return 0;

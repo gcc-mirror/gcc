@@ -103,7 +103,7 @@ struct ihash
      Used for include_next */
   struct file_name_list *foundhere;
 
-  unsigned long hash;		/* save hash value for future reference */
+  unsigned int hash;		/* save hash value for future reference */
   const char *nshort;		/* name of file as referenced in #include;
 				   points into name[]  */
   const U_CHAR *control_macro;	/* macro, if any, preventing reinclusion -
@@ -212,14 +212,14 @@ extern unsigned char _cpp_IStable[256];
 /* In cpphash.c */
 extern HASHNODE *_cpp_make_hashnode	PARAMS ((const U_CHAR *, size_t,
 						 enum node_type,
-						 unsigned long));
+						 unsigned int));
 extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
 extern HASHNODE *_cpp_lookup		PARAMS ((cpp_reader *,
 						 const U_CHAR *, int));
 extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,
 						 const U_CHAR *, int,
 						 enum insert_option,
-						 unsigned long *));
+						 unsigned int));
 extern void _cpp_free_definition	PARAMS ((HASHNODE *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *,
 						 cpp_toklist *, HASHNODE *));
