@@ -431,6 +431,18 @@ processItemEvent(ItemEvent event)
     item_listeners.itemStateChanged(event);
 }
 
+void
+dispatchEventImpl(AWTEvent e)
+{
+  if (e.id <= ItemEvent.ITEM_LAST
+      && e.id >= ItemEvent.ITEM_FIRST
+      && (item_listeners != null 
+	  || (eventMask & AWTEvent.ITEM_EVENT_MASK) != 0))
+    processEvent(e);
+  else
+    super.dispatchEventImpl(e);
+}
+
 /*************************************************************************/
 
 /**

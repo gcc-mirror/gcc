@@ -80,7 +80,7 @@ private boolean enabled;
 /**
   * @serial The mask of events that are enabled for this menu item.
   */
-private long eventMask;
+long eventMask;
 
 /**
   * @serial This menu item's label

@@ -660,6 +660,18 @@ processAdjustmentEvent(AdjustmentEvent event)
     adjustment_listeners.adjustmentValueChanged(event);
 }
 
+void
+dispatchEventImpl(AWTEvent e)
+{
+  if (e.id <= AdjustmentEvent.ADJUSTMENT_LAST 
+      && e.id >= AdjustmentEvent.ADJUSTMENT_FIRST
+      && (adjustment_listeners != null 
+	  || (eventMask & AWTEvent.ADJUSTMENT_EVENT_MASK) != 0))
+    processEvent(e);
+  else
+    super.dispatchEventImpl(e);
+}
+
 /*************************************************************************/
 
 /**
