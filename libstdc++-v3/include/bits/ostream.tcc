@@ -185,7 +185,7 @@ namespace std
 	      if (_M_check_facet(_M_fnumput))
 		{
 		  bool __b = false;
-		  if (__fmt & ios_base::oct || __fmt & ios_base::hex)
+		  if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
 		    {
 		      unsigned long __l = static_cast<unsigned long>(__n);
 		      __b = _M_fnumput->put(*this, *this, __c, __l).failed();
@@ -248,7 +248,7 @@ namespace std
 	      if (_M_check_facet(_M_fnumput))
 		{
 		  bool __b = false;
-		  if (__fmt & ios_base::oct || __fmt & ios_base::hex)
+		  if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
 		    {
 		      unsigned long long __l;
 		      __l = static_cast<unsigned long long>(__n);
