@@ -1,3 +1,10 @@
+2005-03-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/20557
+	* bb-reorder.c (duplicate_computed_gotos): Use can_duplicate_block_p
+	to determine whether a block can be duplicated, rather than test
+	whether the block contains noncopyable insns ourselves.
+
 2005-03-21  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* tree-ssa-loop.c (gate_tree_complete_unroll): Run complete
