@@ -1,3 +1,10 @@
+2001-06-14  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_ASCII): Rename local variables
+	to avoid shadowing parameters.
+
+	* config/mips/mips.md (exception_receiver): New.
+
 2001-06-14  Daniel J. Berlin <dan@cgsoftware.com>
 
 	* doc/gcc.texi:  Update passes documentation to be more in tune

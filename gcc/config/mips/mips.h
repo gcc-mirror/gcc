@@ -4386,69 +4386,69 @@ do {									\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
 do {									\
-  register int i, c, len = (LEN), cur_pos = 17;				\
-  register const unsigned char *string =				\
+  register int i_, len_ = (LEN), cur_pos_ = 17;				\
+  register const unsigned char *string_ =				\
     (const unsigned char *)(STRING);					\
   fprintf ((STREAM), "\t.ascii\t\"");					\
-  for (i = 0; i < len; i++)						\
+  for (i_ = 0; i_ < len_; i_++)						\
     {									\
-      register int c = string[i];					\
+      register int c_ = string_[i_];					\
 									\
-      switch (c)							\
+      switch (c_)							\
 	{								\
 	case '\"':							\
 	case '\\':							\
 	  putc ('\\', (STREAM));					\
-	  putc (c, (STREAM));						\
-	  cur_pos += 2;							\
+	  putc (c_, (STREAM));						\
+	  cur_pos_ += 2;						\
 	  break;							\
 									\
 	case TARGET_NEWLINE:						\
 	  fputs ("\\n", (STREAM));					\
-	  if (i+1 < len							\
-	      && (((c = string[i+1]) >= '\040' && c <= '~')		\
-		  || c == TARGET_TAB))					\
-	    cur_pos = 32767;		/* break right here */		\
+	  if (i_+1 < len_						\
+	      && (((c_ = string_[i_+1]) >= '\040' && c_ <= '~')		\
+		  || c_ == TARGET_TAB))					\
+	    cur_pos_ = 32767;		/* break right here */		\
 	  else								\
-	    cur_pos += 2;						\
+	    cur_pos_ += 2;						\
 	  break;							\
 									\
 	case TARGET_TAB:						\
 	  fputs ("\\t", (STREAM));					\
-	  cur_pos += 2;							\
+	  cur_pos_ += 2;						\
 	  break;							\
 									\
 	case TARGET_FF:							\
 	  fputs ("\\f", (STREAM));					\
-	  cur_pos += 2;							\
+	  cur_pos_ += 2;						\
 	  break;							\
 									\
 	case TARGET_BS:							\
 	  fputs ("\\b", (STREAM));					\
-	  cur_pos += 2;							\
+	  cur_pos_ += 2;						\
 	  break;							\
 									\
 	case TARGET_CR:							\
 	  fputs ("\\r", (STREAM));					\
-	  cur_pos += 2;							\
+	  cur_pos_ += 2;						\
 	  break;							\
 									\
 	default:							\
-	  if (c >= ' ' && c < 0177)					\
+	  if (c_ >= ' ' && c_ < 0177)					\
 	    {								\
-	      putc (c, (STREAM));					\
-	      cur_pos++;						\
+	      putc (c_, (STREAM));					\
+	      cur_pos_++;						\
 	    }								\
 	  else								\
 	    {								\
-	      fprintf ((STREAM), "\\%03o", c);				\
-	      cur_pos += 4;						\
+	      fprintf ((STREAM), "\\%03o", c_);				\
+	      cur_pos_ += 4;						\
 	    }								\
 	}								\
 									\
-      if (cur_pos > 72 && i+1 < len)					\
+      if (cur_pos_ > 72 && i_+1 < len_)					\
 	{								\
-	  cur_pos = 17;							\
+	  cur_pos_ = 17;						\
 	  fprintf ((STREAM), "\"\n\t.ascii\t\"");			\
 	}								\
     }									\
