@@ -1,3 +1,8 @@
+2002-05-19  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.md (ashrdi3_no_power): New.
+	(ashrdi3): Use it.
+
 2002-05-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in (AC_CHECK_FUNCS): Add checks for scandir and
