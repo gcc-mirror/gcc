@@ -75,8 +75,10 @@ __all_l4 (gfc_array_l4 * retarray, gfc_array_l4 *array, index_type *pdim)
             retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
         }
 
-      retarray->data = internal_malloc (sizeof (GFC_LOGICAL_4) * 
-                                        (retarray->dim[rank-1].stride * extent[rank-1]));
+      retarray->data
+	 = internal_malloc_size (sizeof (GFC_LOGICAL_4)
+		 		 * retarray->dim[rank-1].stride
+				 * extent[rank-1]);
       retarray->base = 0;
     }
           

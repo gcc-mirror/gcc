@@ -76,7 +76,8 @@ __matmul_l8 (gfc_array_l8 * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
           retarray->dim[1].stride = retarray->dim[0].ubound+1;
         }
           
-      retarray->data = internal_malloc (sizeof (GFC_LOGICAL_8) * size0 (retarray));
+      retarray->data
+	= internal_malloc_size (sizeof (GFC_LOGICAL_8) * size0 (retarray));
       retarray->base = 0;
     }
 
@@ -178,4 +179,3 @@ __matmul_l8 (gfc_array_l8 * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
       dest += rystride - (rxstride * xcount);
     }
 }
-

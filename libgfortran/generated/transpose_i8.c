@@ -51,7 +51,7 @@ __transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source)
       ret->dim[1].ubound = source->dim[0].ubound - source->dim[0].lbound;
       ret->dim[1].stride = ret->dim[0].ubound+1;
 
-      ret->data = internal_malloc (sizeof (GFC_INTEGER_8) * size0 (ret));
+      ret->data = internal_malloc_size (sizeof (GFC_INTEGER_8) * size0 (ret));
       ret->base = 0;
     }
 

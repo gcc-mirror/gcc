@@ -77,7 +77,8 @@ void
           retarray->dim[1].stride = retarray->dim[0].ubound+1;
         }
           
-      retarray->data = internal_malloc (sizeof (rtype_name) * size0 (retarray));
+      retarray->data
+	= internal_malloc_size (sizeof (rtype_name) * size0 (retarray));
       retarray->base = 0;
     }
 
@@ -180,4 +181,3 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       dest += rystride - (rxstride * xcount);
     }
 }
-
