@@ -966,17 +966,11 @@ Use this configuration for SCO release 3.2 version 4.
 Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2, 
 5.0.4, Internet FastStart 1.0, and Internet FastStart 1.1.
 
-GNU CC can generate ELF binaries (if you specify @samp{-melf}) or COFF 
-binaries (the default).  If you are going to build your compiler in ELF 
-mode (once you have bootstrapped the first stage compiler) you 
-@strong{must} specify @samp{-melf} as part of @code{CC},
-@emph{not} @code{CFLAGS}, for example as
-@samp{CC="stage1/xgcc -melf -Bstage1/" }.  If you do not do this, the
-bootstrap will generate incorrect versions of @file{libgcc.a}.
-
-You must have TLS597 (from ftp.sco.com/TLS) installed for ELF
-binaries to work correctly. Note that Open Server 5.0.2 @emph{does}
-need TLS597 installed.
+GNU CC can generate either ELF or COFF binaries.   ELF is the default.
+To get COFF output, you must specify @samp{-mcoff}) on the command line.
+  
+For 5.0.0 and 5.0.2, you must install TLS597 from ftp.sco.com/TLS.
+5.0.4 and later do not require this patch.
 
 @emph{NOTE:} You must follow the instructions about invoking
 @samp{make bootstrap} because the native OpenServer compiler builds
