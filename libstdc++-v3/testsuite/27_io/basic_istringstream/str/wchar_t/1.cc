@@ -1,6 +1,4 @@
-// 2000-01-10 bkoz
-
-// Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,12 +24,12 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  std::istringstream is01;
-  const std::string str00; 
-  const std::string str01 = "123";
-  std::string str02;
+  std::wistringstream is01;
+  const std::wstring str00; 
+  const std::wstring str01 = L"123";
+  std::wstring str02;
   const int i01 = 123;
-  int a,b;
+  int a, b;
 
   std::ios_base::iostate state1, state2, statefail, stateeof;
   statefail = std::ios_base::failbit;

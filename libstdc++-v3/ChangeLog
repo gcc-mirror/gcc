@@ -1,7 +1,20 @@
+2004-08-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istringstream/rdbuf/wchar_t/2832.cc: New.
+	* testsuite/27_io/basic_istringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/rdbuf/wchar_t/2832.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/2.cc: Likewise.
+
+	* testsuite/27_io/basic_istringstream/rdbuf/char/2832.cc: Trim excess
+	newlines.
+	* testsuite/27_io/basic_istringstream/str/char/1.cc: Likewise.
+
 2004-08-22  Matthias Klose  <doko@debian.org>
 
-        * config/abi/m68k-linux-gnu/baseline_symbols.txt: New.
-        * config/abi/sparc-linux-gnu/baseline_symbols.txt: Update to 3.4.0.
+	* config/abi/m68k-linux-gnu/baseline_symbols.txt: New.
+	* config/abi/sparc-linux-gnu/baseline_symbols.txt: Update to 3.4.0.
 
 2004-08-23  Paolo Carlini  <pcarlini@suse.de>
 
@@ -1399,8 +1412,8 @@
 2004-05-18  Jan Beulich  <jbeulich@novell.com>
  
         PR libstdc++/15489
-        * scripts/create_testsuite_files: Also find source files through
-          symbolic links.
+	* scripts/create_testsuite_files: Also find source files through
+	symbolic links.
 
 2004-05-18  Jan Beulich  <jbeulich@novell.com>
 
