@@ -934,8 +934,20 @@
 
 ;; For all symbolic operands *except* function addresses and read-only
 ;; operands (which live in TEXT space and do not require relocation).  
+;;
+;; The constraints are a little strange.  
+;; The basic idea is to prefer %r1 as much as possible for register 
+;; allocation (hence we do not allow regclass to know about the general
+;; register case (via *r).
+;; We also want to avoid spilling %r1 as that will cause every use
+;; of %r1 to be reloaded, so we make the %r1 case very expensive
+;; as far as reload is concerned (via !a).
+;;
+;; The real solution is to not spill all pseudos allocated to %r1
+;; when %r1 is needed as a spill register, but that is considerably
+;; more difficult than coercing decent behavior via constraints.
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a,!*r")
+  [(set (match_operand:SI 0 "register_operand" "=!a,*r")
 	(high:SI (match_operand 1 "" "")))]
   "! TARGET_KERNEL && symbolic_operand(operands[1], Pmode)
    && ! function_label_operand (operands[1])
