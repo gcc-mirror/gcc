@@ -1,3 +1,10 @@
+2001-04-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* Makefile.in (CFLAGS, BOOT_CFLAGS): Partly revert 2000-10-27 patch.
+	(stage1_build): Instead pass down STAGE1_CFLAGS here. Pass down
+	MAKEINFO and MAKEINFOFLAGS too.
+	(stage4_build): Correctly order -B flags.
+
 2001-04-12  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.md (extendsfdf2, extendsftf2, extenddftf2): Simplify
