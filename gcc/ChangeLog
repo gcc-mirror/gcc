@@ -21,8 +21,6 @@
 	defined by config.h.  Do not define _REGEX_RE_COMP.
 	(regcomp): Allocate and initialize a fastmap.
 	* fixinc/gnu-regex.h: Do not define _REGEX_RE_COMP.
-	
-	
 
 2000-01-20  Brad Lucier  <lucier@math.purdue.edu>
 
