@@ -1,3 +1,14 @@
+2004-10-05  Andrew Haley  <aph@redhat.com>
+
+	PR java/17779
+	* jcf-parse.c (parse_zip_file_entries): If a class has a
+	superclass and a TYPE_SIZE of zero, lay it out.
+
+2004-09-30  Andrew Haley  <aph@redhat.com>
+
+	PR java/17733
+	* jcf-parse.c (compute_class_name): Rewrite.
+
 2004-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* java.c (java_expand_body): Update call of tree_rest_of_compilation.
