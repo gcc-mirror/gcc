@@ -711,6 +711,9 @@
 /* Define if you have the <stdlib.h> header file.  */
 #undef HAVE_STDLIB_H
 
+/* Define if you have the <string.h> header file.  */
+#undef HAVE_STRING_H
+
 /* Define if you have the <sys/isa_defs.h> header file.  */
 #undef HAVE_SYS_ISA_DEFS_H
 
@@ -719,9 +722,6 @@
 
 /* Define if you have the <sys/resource.h> header file.  */
 #undef HAVE_SYS_RESOURCE_H
-
-/* Define if you have the <sys/stat.h> header file.  */
-#undef HAVE_SYS_STAT_H
 
 /* Define if you have the <sys/types.h> header file.  */
 #undef HAVE_SYS_TYPES_H

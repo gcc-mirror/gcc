@@ -1,3 +1,10 @@
+2002-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (AC_CHECK_HEADERS): Check for string.h & stdlib.h.
+	* libsupc++/Makefile.am (LTCOMPILE): Add $(DEFS).
+
+	* Makefile.in, config.h.in, configure: Regenerate.
+
 2002-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6549.
