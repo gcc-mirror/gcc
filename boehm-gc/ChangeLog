@@ -1,3 +1,7 @@
+2004-11-27  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* include/gc_config.h.in: Add comment. Define only THREAD_LOCAL_ALLOC.
+
 2004-11-26  Bryce McKinlay  <mckinlay@redhat.com>
 
 	Fix "PACKAGE_NAME redefined" errors.
