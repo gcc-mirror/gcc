@@ -18,7 +18,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include <f2c.h>
-typedef int (*sig_proc)(int);
+typedef void *sig_proc;	/* For now, this will have to do. */
 
 #ifdef Labort
 int abort_ (void) {
@@ -98,8 +98,8 @@ ftnint iargc_ (void) {
 #endif
 
 #ifdef Lsignal
-ftnint signal_ (integer *sigp, sig_proc proc) {
-    extern ftnint G77_signal_0 (integer *sigp, sig_proc proc);
+void *signal_ (integer *sigp, sig_proc proc) {
+    extern void *G77_signal_0 (integer *sigp, sig_proc proc);
     return G77_signal_0 (sigp, proc);
 }
 #endif

@@ -23,15 +23,20 @@ AC_INIT(libF77/Version.c)
 
 AC_REVISION(1.10)
 
-dnl Checks for programs.
-# For g77 we'll set CC to point at the built gcc, but this will get it into
-# the makefiles
-AC_PROG_CC
 dnl AC_C_CROSS
 dnl Gives misleading `(cached)' message from the check.
 if test "$CROSS";then
+  if test "$CC_FOR_TARGET"; then
+    CC="$CC_FOR_TARGET"
+  else
+    CC="../../xgcc -B../../xgcc/"
+  fi
   ac_cv_c_cross=yes
 else
+  dnl Checks for programs.
+  # For g77 we'll set CC to point at the built gcc, but this will get it into
+  # the makefiles
+  AC_PROG_CC
   ac_cv_c_cross=no
 fi
 
@@ -171,6 +176,8 @@ dnl AC_CHECK_FUNCS(symlink getcwd lstat)
 dnl test $ac_cv_func_symlink = yes && SYMLNK=symlnk_.o
 dnl test $ac_cv_func_lstat = yes && SYMLNK="$SYMLNK lstat_.o"
 dnl AC_SUBST(SYMLNK)
+
+AC_CHECK_FUNCS(tempnam)
 
 # posix will guarantee the right behaviour for sprintf, else we can't be
 # sure; HEADER_STDC wouldn't be the right check in sunos4, for instance.

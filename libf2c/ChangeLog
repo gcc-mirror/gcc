@@ -1,3 +1,61 @@
+Sat Feb 28 15:32:15 1998  Craig Burley  <burley@gnu.org>
+
+	* libI77/open.c (f_open): Use sizeof(buf) instead of
+	256, for the usual reasons.
+
+Tue Dec 23 22:56:01 1997  Craig Burley  <burley@gnu.org>
+
+	* libF77/signal_.c (G77_signal_0): Return type is
+	now `void *', to cope with returning previous signal
+	handler on 64-bit systems like Alphas.
+	* f2cext.c (signal_): Changed accordingly.
+
+Wed Oct 29 01:01:04 1997  Mumit Khan  <khan@brahma.xraylith.wisc.edu>
+
+	* configure.in: Set CC to CC_FOR_TARGET when cross-compiling.
+
+Fri Oct 24 11:15:22 1997  Mumit Khan <khan@brahma.xraylith.wisc.edu>
+
+	* libI77/close.c (f_exit): Reset f__init so that f_clos does not
+	(incorrectly) think there is an I/O recursion when program is
+	interrupted.
+
+Wed Oct 15 10:06:29 1997  Richard Henderson  <rth@cygnus.com>
+
+	* libI77/fio.h: Include <string.h> if STDC_HEADERS.
+	* libU77/chmod_.c: Likewise.
+
+Tue Sep 30 00:41:39 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Do a better job of printing the offending FORMAT string
+	when producing a diagnostic:
+	* libI77/err.c (f__fmtlen): New variable to hold operating
+	length of format string.
+	(f__fatal): Use new variable to limit length of printed string.
+	* libI77/fmt.c (f_s): Don't skip spaces after closing paren,
+	so nicer message results (and nested case already skips them).
+	(pars_f): Record operating length of format string as indicated
+	by a successful call to f_s, or ad-hoc-calculate it if failure,
+	limiting the length to 80 characters (and stopping at NUL).
+	(do_fio): Use new variable to limit length of printed string.
+	* libI77/fmt.h (f__fmtlen): Declare new variable.
+	* libI77/lread.c (c_le): Set new variable to known length.
+
+Mon Sep 29 16:30:31 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Update to Netlib version of 1997-09-23:
+	* libF77/dtime_.c (dtime_), libF77/etime_.c (dtime_):
+	Return `double' instead of `float' (these are not used
+	in g77's version of libf2c).
+	* libI77/fmt.c, libI77/fmt.h, libI77/rdfmt.c, libI77/wrtfmt.c:
+	Support machines with 64-bit pointers and 32-bit ints (e.g.
+	Linux on DEC Alpha).
+
+1997-09-19  Dave Love  <d.love@dl.ac.uk>
+
+	* libU77/dtime_.c (G77_dtime_0): Fix types in HAVE_GETRUSAGE case
+ 	so as not to truncate results to integer values.
+
 Tue Sep  9 00:33:24 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* Version 0.5.21 released.
@@ -489,6 +547,12 @@ Thu Oct 31 22:27:45 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 	
 	* libI77/Version.c: Use <stdio.h>, not "stdio.h".
 	* libF77/Version.c: Likewise.
+
+1997-10-03  Dave Love  <d.love@dl.ac.uk>
+
+	* configure.in: Check for tempnam (best because it obeys TMPDIR).
+	* libI77/open.c: Use it.
+	* libI77/err.c: New message # 132.
 
 Wed Aug 28 13:25:29 1996  Dave Love  <d.love@dl.ac.uk>
 

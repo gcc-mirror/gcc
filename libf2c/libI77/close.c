@@ -75,6 +75,13 @@ f_exit(void)
 	static cllist xx;
 	if (! (f__init & 1))
 		return;		/* Not initialized, so no open units. */
+	/* I/O no longer in progress.  If, during an I/O operation (such
+	   as waiting for the user to enter a line), there is an
+	   interrupt (such as ^C to stop the program on a UNIX system),
+	   f_exit() is called, but there is no longer any I/O in
+	   progress.  Without turning off this flag, f_clos() would
+	   think that there is an I/O recursion in this circumstance. */
+	f__init &= ~2;
 	if (!xx.cerr) {
 		xx.cerr=1;
 		xx.csta=NULL;

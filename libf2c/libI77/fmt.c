@@ -18,7 +18,7 @@
 	/* special quote character for stu */
 extern int f__cursor,f__scale;
 extern flag f__cblank,f__cplus;	/*blanks in I and compulsory plus*/
-struct syl f__syl[SYLMX];
+static struct syl f__syl[SYLMX];
 int f__parenlvl,f__pc,f__revloc;
 
  static
@@ -53,8 +53,8 @@ op_gen(int a, int b, int c, int d)
 	}
 	p->op=a;
 	p->p1=b;
-	p->p2=c;
-	p->p3=d;
+	p->p2.i[0]=c;
+	p->p2.i[1]=d;
 	return(f__pc++);
 }
 #ifdef KR_headers
@@ -103,7 +103,6 @@ char *f_s(char *s, int curloc)
 	{
 		return(NULL);
 	}
-	skip(s);
 	return(s);
 }
 
@@ -160,7 +159,7 @@ ne_d(char *s, char **p)
 		case 'H':
 		case 'h':
 			sp = &f__syl[op_gen(H,n,0,0)];
-			*(char **)&sp->p2 = s + 1;
+			sp->p2.s = s + 1;
 			s+=n;
 			break;
 		}
@@ -169,7 +168,7 @@ ne_d(char *s, char **p)
 	case '"':
 	case '\'':
 		sp = &f__syl[op_gen(APOS,0,0,0)];
-		*(char **)&sp->p2 = s;
+		sp->p2.s = s;
 		if((*p = ap_end(s)) == NULL)
 			return(0);
 		return(1);
@@ -365,11 +364,39 @@ pars_f(s) char *s;
 pars_f(char *s)
 #endif
 {
+	char *e;
+
 	f__parenlvl=f__revloc=f__pc=0;
-	if(f_s(s,0) == NULL)
+	if((e=f_s(s,0)) == NULL)
 	{
+		/* Try and delimit the format string.  Parens within
+		   hollerith and quoted strings have to match for this
+		   to work, but it's probably adequate for most needs.
+		   Note that this is needed because a valid CHARACTER
+		   variable passed for FMT= can contain '(I)garbage',
+		   where `garbage' is billions and billions of junk
+		   characters, and it's up to the run-time library to
+		   know where the format string ends by counting parens.
+		   Meanwhile, still treat NUL byte as "hard stop", since
+		   f2c still appends that at end of FORMAT-statement
+		   strings.  */
+
+		int level=0;
+
+		for (f__fmtlen=0;
+			((*s!=')') || (--level > 0))
+				&& (*s!='\0')
+				&& (f__fmtlen<80);
+			++s, ++f__fmtlen)
+		{
+			if (*s=='(')
+				++level;
+		}
+		if (*s==')')
+			++f__fmtlen;
 		return(-1);
 	}
+	f__fmtlen = e - s;
 	return(0);
 }
 #define STKSZ 10
@@ -421,8 +448,8 @@ integer do_fio(ftnint *number, char *ptr, ftnlen len)
 loop:	switch(type_f((p= &f__syl[f__pc])->op))
 	{
 	default:
-		fprintf(stderr,"unknown code in do_fio: %d\n%s\n",
-			p->op,f__fmtbuf);
+		fprintf(stderr,"unknown code in do_fio: %d\n%.*s\n",
+			p->op,f__fmtlen,f__fmtbuf);
 		err(f__elist->cierr,100,"do_fio");
 	case NED:
 		if((*f__doned)(p))

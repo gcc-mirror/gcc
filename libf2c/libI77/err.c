@@ -27,6 +27,7 @@ icilist *f__svic;	/*active internal io list*/
 flag f__reading;	/*1 if reading, 0 if writing*/
 flag f__cplus,f__cblank;
 char *f__fmtbuf;
+int f__fmtlen;
 flag f__external;	/*1 if external io, 0 if internal */
 #ifdef KR_headers
 int (*f__doed)(),(*f__doned)();
@@ -79,7 +80,8 @@ char *F_err[] =
 	"'new' file exists",				/* 128 */
 	"can't append to file",				/* 129 */
 	"non-positive record number",			/* 130 */
-	"I/O started while already doing I/O"		/* 131 */
+	"I/O started while already doing I/O",		/* 131 */
+	"Temporary file name (TMPDIR?) too long"        /* 132 */
 };
 #define MAXERR (sizeof(F_err)/sizeof(char *)+100)
 
@@ -167,7 +169,7 @@ f__fatal(int n, char *s)
 		else
 			fprintf(stderr,"apparent state: internal I/O\n");
 		if (f__fmtbuf)
-			fprintf(stderr,"last format: %s\n",f__fmtbuf);
+			fprintf(stderr,"last format: %.*s\n",f__fmtlen,f__fmtbuf);
 		fprintf(stderr,"lately %s %s %s %s",f__reading?"reading":"writing",
 			f__sequential?"sequential":"direct",f__formatted?"formatted":"unformatted",
 			f__external?"external":"internal");
