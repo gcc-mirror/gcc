@@ -1,5 +1,6 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -311,7 +312,7 @@ do {									\
 									\
       if (ptr2_ == 0)							\
 	{								\
-	  /* If there are no more elements in BITMAP2, exit loop now.*/	\
+	  /* If there are no more elements in BITMAP2, exit loop now.  */ \
 	  ptr1_ = (bitmap_element *)0;					\
 	  break;							\
 	}								\

@@ -2106,7 +2106,7 @@ dwarf2out_end_epilogue ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   /* Output a label to mark the endpoint of the code generated for this
-     function.        */
+     function.  */
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   fde = &fde_table[fde_table_in_use - 1];
@@ -8193,7 +8193,7 @@ loc_descriptor_from_tree (loc, addressp)
 			  TREE_OPERAND (loc, 0), TREE_OPERAND (loc, 1)),
 		   TREE_OPERAND (loc, 1), TREE_OPERAND (loc, 0));
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case COND_EXPR:
       {
@@ -8971,7 +8971,7 @@ add_bound_info (subrange_die, bound_attr, bound)
     case ERROR_MARK:
       return;
 
-    /* All fixed-bounds are represented by INTEGER_CST nodes.        */
+    /* All fixed-bounds are represented by INTEGER_CST nodes.  */
     case INTEGER_CST:
       if (! host_integerp (bound, 0)
 	  || (bound_attr == DW_AT_lower_bound

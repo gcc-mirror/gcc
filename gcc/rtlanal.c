@@ -301,7 +301,7 @@ rtx_addr_varies_p (x, for_alias)
 /* Return the value of the integer term in X, if one is apparent;
    otherwise return 0.
    Only obvious integer terms are detected.
-   This is used in cse.c with the `related_value' field.*/
+   This is used in cse.c with the `related_value' field.  */
 
 HOST_WIDE_INT
 get_integer_term (x)

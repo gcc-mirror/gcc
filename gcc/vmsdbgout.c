@@ -72,7 +72,7 @@ dst_file_info_entry;
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* Maximum size (in bytes) of an artificially generated label.   */
+/* Maximum size (in bytes) of an artificially generated label.  */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
 
 /* Make sure we know the sizes of the various types debug can describe. These
@@ -1331,7 +1331,7 @@ vmsdbgout_end_epilogue ()
   if (debug_info_level > DINFO_LEVEL_NONE)
     {
       /* Output a label to mark the endpoint of the code generated for this
-         function.        */
+         function.  */
       ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
 				   current_funcdef_number);
       ASM_OUTPUT_LABEL (asm_out_file, label);

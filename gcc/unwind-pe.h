@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,7 +22,7 @@
    compatibility problems with the base ABI.  This is slightly better
    than duplicating code, however.  */
 
-/* If using C++, references to abort have to be qualified with std::. */
+/* If using C++, references to abort have to be qualified with std::.  */
 #if __cplusplus
 #define __gxx_abort std::abort
 #else

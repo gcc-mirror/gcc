@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -1197,7 +1197,7 @@ rm_line_notes (head, tail)
 }
 
 /* Save line number notes for each insn in block B.  HEAD and TAIL are
-   the boundaries of the block in which notes should be processed.*/
+   the boundaries of the block in which notes should be processed.  */
 
 void
 save_line_notes (b, head, tail)
@@ -1225,7 +1225,7 @@ save_line_notes (b, head, tail)
 
 /* After a block was scheduled, insert line notes into the insns list.
    HEAD and TAIL are the boundaries of the block in which notes should
-   be processed.*/
+   be processed.  */
 
 void
 restore_line_notes (head, tail)

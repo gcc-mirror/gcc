@@ -1,5 +1,6 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,7 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern void init_pragma PARAMS ((void));
 
 /* Duplicate prototypes for the register_pragma stuff and the typedef for
-   cpp_reader, to avoid dragging cpplib.h in almost everywhere... */
+   cpp_reader, to avoid dragging cpplib.h in almost everywhere...  */
 #ifndef GCC_CPPLIB_H
 typedef struct cpp_reader cpp_reader;
 

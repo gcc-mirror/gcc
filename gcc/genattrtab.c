@@ -1,6 +1,6 @@
 /* Generate code from machine description to compute values of attributes.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -231,7 +231,7 @@ struct function_unit
   struct function_unit_op *ops;	/* Pointer to first operation type.  */
   int needs_conflict_function;	/* Nonzero if a conflict function required.  */
   int needs_blockage_function;	/* Nonzero if a blockage function required.  */
-  int needs_range_function;	/* Nonzero if blockage range function needed.*/
+  int needs_range_function;	/* Nonzero if blockage range function needed.  */
   rtx default_cost;		/* Conflict cost, if constant.  */
   struct range issue_delay;	/* Range of issue delay values.  */
   int max_blockage;		/* Maximum time an insn blocks the unit.  */

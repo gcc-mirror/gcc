@@ -6019,7 +6019,7 @@ main (argc, argv)
 
   if (target_help_flag)
    {
-      /* Print if any target specific options.*/
+      /* Print if any target specific options.  */
 
       /* We do not exit here. Instead we have created a fake input file
          called 'target-dummy' which needs to be compiled, and we pass this

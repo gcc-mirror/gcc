@@ -5139,7 +5139,7 @@ promoted_input_arg (regno, pmode, punsignedp)
 /*  offset_ptr will be negative for ARGS_GROW_DOWNWARD case;
     initial_offset_ptr is positive because locate_and_pad_parm's
     callers pass in the total size of args so far as
-    initial_offset_ptr. arg_size_ptr is always positive.*/
+    initial_offset_ptr. arg_size_ptr is always positive.  */
 
 void
 locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
@@ -7164,7 +7164,7 @@ struct epi_info
 {
   rtx sp_equiv_reg;		/* REG that SP is set from, perhaps SP.  */
   HOST_WIDE_INT sp_offset;	/* Offset from SP_EQUIV_REG of present SP.  */
-  rtx new_sp_equiv_reg;		/* REG to be used at end of insn.   */
+  rtx new_sp_equiv_reg;		/* REG to be used at end of insn.  */
   HOST_WIDE_INT new_sp_offset;	/* Offset to be used at end of insn.  */
   rtx equiv_reg_src;		/* If nonzero, the value that SP_EQUIV_REG
 				   should be set to once we no longer need
@@ -7184,7 +7184,7 @@ keep_stack_depressed (seq)
   int i, j;
   struct epi_info info;
 
-  /* If the epilogue is just a single instruction, it ust be OK as is.   */
+  /* If the epilogue is just a single instruction, it ust be OK as is.  */
 
   if (GET_CODE (seq) != SEQUENCE)
     return seq;

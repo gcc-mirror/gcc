@@ -7057,7 +7057,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 
     case NEG:
       /* If we just want the low-order bit, the NEG isn't needed since it
-	 won't change the low-order bit.    */
+	 won't change the low-order bit.  */
       if (mask == 1)
 	return force_to_mode (XEXP (x, 0), mode, mask, reg, just_select);
 

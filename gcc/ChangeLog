@@ -1,3 +1,24 @@
+2002-01-18  Kazu Hirata  <kazu@hxi.com>
+
+	* bitmap.h: Fix comment formatting.
+	* combine.c: Likewise.
+	* cppfiles.c: Likewise.
+	* c-pragma.h: Likewise.
+	* c-typeck.c: Likewise.
+	* df.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* function.c: Likewise.
+	* gcc.c: Likewise.
+	* genattrtab.c: Likewise.
+	* gthr-win32.h: Likewise.
+	* haifa-sched.c: Likewise.
+	* predict.c: Likewise.
+	* rtlanal.c: Likewise.
+	* rtl.h: Likewise.
+	* unwind-dw2-fde.h: Likewise.
+	* unwind-pe.h: Likewise.
+	* vmsdbgout.c: Likewise.
+
 Thu Jan 17 15:28:26 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* attribs.c (decl_attributes): Clear ATTR_FLAG_TYPE_IN_PLACE
