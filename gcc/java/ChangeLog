@@ -1,3 +1,10 @@
+2005-01-10  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/19277
+	* check-init.c (check_init): Take care of references that do not
+	have an explicit final variable declaration (e.g. array length
+	access) for pre/post in/de-crement operators.
+
 2005-01-08  Mark Wielaard  <mark@klomp.org>
 
 	* parse.y (process_imports): Allocate (and free) original_name only

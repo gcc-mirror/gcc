@@ -1,5 +1,6 @@
 /* Code to test for "definitive [un]assignment".
-   Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005 Free Software Foundation,
+   Inc.
 
 This file is part of GCC.
 
@@ -832,7 +833,14 @@ check_init (tree exp, words before)
     case POSTINCREMENT_EXPR:
       tmp = get_variable_decl (TREE_OPERAND (exp, 0));
       if (tmp != NULL_TREE && DECL_FINAL (tmp))
-	final_assign_error (DECL_NAME (tmp));      
+	final_assign_error (DECL_NAME (tmp));
+      else if (TREE_CODE (tmp = TREE_OPERAND (exp, 0)) == COMPONENT_REF)
+        {
+          /* Take care of array length accesses too.  */
+          tree decl = TREE_OPERAND (tmp, 1);
+          if (DECL_FINAL (decl))
+            final_assign_error (DECL_NAME (decl));
+        }
 
       /* Avoid needless recursion.  */
       exp = TREE_OPERAND (exp, 0);
