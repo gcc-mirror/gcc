@@ -118,7 +118,7 @@ GNAT1_C_OBJS = ada/b_gnat1.o ada/adadecode.o ada/adaint.o ada/cstreams.o \
 # Object files from Ada sources that are used by gnat1
 
 GNAT_ADA_OBJS = ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
- ada/a-ioexce.o \
+ ada/a-elchha.o ada/a-ioexce.o \
  ada/s-memory.o ada/s-carun8.o ada/s-casuti.o ada/s-strcom.o ada/s-purexc.o \
  ada/s-htable.o ada/s-traceb.o ada/s-mastop.o ada/s-except.o ada/ali.o \
  ada/alloc.o ada/atree.o ada/butil.o ada/casing.o ada/checks.o ada/comperr.o \
@@ -173,6 +173,7 @@ GNATBIND_OBJS = \
  ada/tracebak.o   \
  ada/a-except.o   \
  ada/ada.o        \
+ ada/a-elchha.o   \
  ada/ali-util.o   \
  ada/ali.o        \
  ada/alloc.o      \

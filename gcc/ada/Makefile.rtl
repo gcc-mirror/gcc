@@ -87,6 +87,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-diocst$(objext) \
   a-direio$(objext) \
   a-einuoc$(objext) \
+  a-elchha$(objext) \
   a-except$(objext) \
   a-exctra$(objext) \
   a-filico$(objext) \

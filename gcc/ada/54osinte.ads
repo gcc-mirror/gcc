@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 2000-2002 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,6 +156,8 @@ package System.OS_Interface is
    end record;
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
+
+   SA_SIGINFO : constant := 16#0008#;
 
    SIG_BLOCK   : constant := 1;
    SIG_UNBLOCK : constant := 2;

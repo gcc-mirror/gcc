@@ -50,6 +50,14 @@ package body Exception_Traces is
    pragma Export
      (Ada, Raise_Hook_Initialized, "__gnat_exception_actions_initialized");
 
+   procedure Last_Chance_Handler
+     (Except :  Exception_Occurrence);
+   pragma Import
+     (C, Last_Chance_Handler, "__gnat_last_chance_handler");
+   pragma No_Return (Last_Chance_Handler);
+   --  Users can replace the default version of this routine,
+   --  Ada.Exceptions.Last_Chance_Handler.
+
    function To_Action is new Unchecked_Conversion
      (Raise_Action, Exception_Action);
 
@@ -94,11 +102,6 @@ package body Exception_Traces is
    --  that the exception propagation can properly find these routines
 
    pragma Propagate_Exceptions;
-
-   procedure Unhandled_Terminate;
-   pragma No_Return (Unhandled_Terminate);
-   pragma Import (C, Unhandled_Terminate, "__gnat_unhandled_terminate");
-   --  Perform system dependent shutdown code
 
    ----------------------
    -- Notify_Exception --
@@ -186,89 +189,8 @@ package body Exception_Traces is
       --  could be overwritten if an exception is raised during finalization
       --  (even if that exception is caught).
 
-      Msg : constant String := Excep.Msg (1 .. Excep.Msg_Length);
-
-      Max_Static_Exc_Info : constant := 1024;
-      --  That should be enough for most exception information cases
-      --  eventhough tailorising introduces some uncertainty.  the
-      --  name+message should not exceed 320 chars, so that leaves at
-      --  least 35 backtrace slots (each slot needs 19 chars for
-      --  representing a 64 bit address).
-      --  And what happens on overflow ???
-
-      subtype Exc_Info_Type is String (1 .. Max_Static_Exc_Info);
-      type Str_Ptr is access Exc_Info_Type;
-      Exc_Info : Str_Ptr;
-      Exc_Info_Last : Natural := 0;
-      --  Buffer that is allocated to store the tailored exception
-      --  information while Adafinal is run. This buffer is allocated
-      --  on the heap only when it is needed. It is better to allocate
-      --  on the heap than on the stack since stack overflows are more
-      --  common that heap overflows.
-
-   --  Start of processing for Unhandled_Exception_Terminate
-
    begin
-      --  First allocate & store the exception info in a buffer when
-      --  we know it will be needed. This needs to be done before
-      --  Adafinal because it implicitly uses the secondary stack.
-
-      if Excep.Id.Full_Name.all (1) /= '_'
-        and then Excep.Num_Tracebacks /= 0
-      then
-         Exc_Info := new Exc_Info_Type;
-         if Exc_Info /= null then
-            Tailored_Exception_Information
-              (Excep.all, Exc_Info.all, Exc_Info_Last);
-         end if;
-      end if;
-
-      --  Let's shutdown the runtime now. The rest of the procedure
-      --  needs to be careful not to use anything that would require
-      --  runtime support. In particular, function returing strings
-      --  are banned since the sec stack is not functional anymore
-
-      System.Standard_Library.Adafinal;
-
-      --  Check for special case of raising _ABORT_SIGNAL, which is not
-      --  really an exception at all. We recognize this by the fact that
-      --  it is the only exception whose name starts with underscore.
-
-      if Excep.Id.Full_Name.all (1) = '_' then
-         To_Stderr (Nline);
-         To_Stderr ("Execution terminated by abort of environment task");
-         To_Stderr (Nline);
-
-      --  If no tracebacks, we print the unhandled exception in the old style
-      --  (i.e. the style used before ZCX was implemented). We do this to
-      --  retain compatibility, especially with the nightly scripts, but
-      --  this can be removed at some point ???
-
-      elsif Excep.Num_Tracebacks = 0 then
-         To_Stderr (Nline);
-         To_Stderr ("raised ");
-         To_Stderr (Excep.Id.Full_Name.all (1 .. Excep.Id.Name_Length - 1));
-
-         if Msg'Length /= 0 then
-            To_Stderr (" : ");
-            To_Stderr (Msg);
-         end if;
-
-         To_Stderr (Nline);
-
-      else
-         --  Traceback exists
-
-         --  Note we can have this whole information output twice if
-         --  this occurrence gets reraised up to here.
-
-         To_Stderr (Nline);
-         To_Stderr ("Execution terminated by unhandled exception");
-         To_Stderr (Nline);
-         To_Stderr (Exc_Info (1 .. Exc_Info_Last));
-      end if;
-
-      Unhandled_Terminate;
+      Last_Chance_Handler (Excep.all);
    end Unhandled_Exception_Terminate;
 
    ---------------

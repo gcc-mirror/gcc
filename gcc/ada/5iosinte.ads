@@ -196,6 +196,8 @@ package System.OS_Interface is
    end record;
    type Machine_State_Ptr is access all Machine_State;
 
+   SA_SIGINFO  : constant := 16#04#;
+
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
    SIG_SETMASK : constant := 2;

@@ -171,6 +171,8 @@ package System.OS_Interface is
    SIG_DFL : constant := 0;
    SIG_IGN : constant := 1;
 
+   SA_SIGINFO : constant := 16#0040#;
+
    function sigaction
      (sig  : Signal;
       act  : struct_sigaction_ptr;

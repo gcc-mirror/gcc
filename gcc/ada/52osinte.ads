@@ -153,6 +153,8 @@ package System.OS_Interface is
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
 
+   SA_SIGINFO  : constant := 16#80#;
+
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
    SIG_SETMASK : constant := 2;
