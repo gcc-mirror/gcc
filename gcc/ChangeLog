@@ -1,3 +1,8 @@
+2001-08-29  Geoffrey Keating  <geoffk@redhat.com>
+
+	* reload1.c (move2add_note_store): Correct typo checking for
+	argument pushes.
+
 2001-08-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcse.c (compute_hash_table): The SRC part of an insn with a RETVAL
