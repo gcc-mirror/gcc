@@ -1,5 +1,12 @@
 2003-06-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/ObjectStreamField.java
+	(unshared): new member variable.
+	(ObjectStreamField): New constructor.
+	(isUnshared): New method.
+
+2003-06-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URLStreamHandler.java
 	(hostsEqual): Rewritten.
 

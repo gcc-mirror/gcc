@@ -41,13 +41,25 @@ package java.io;
 import gnu.java.lang.reflect.TypeSignature;
 
 // XXX doc
-public class ObjectStreamField implements java.lang.Comparable
+public class ObjectStreamField implements Comparable
 {
+  private String name;
+  private Class type;
+  private String typename;
+  private int offset = -1; // XXX make sure this is correct
+  private boolean unshared;
+  
   public ObjectStreamField (String name, Class type)
+  {
+    this (name, type, false);
+  }
+
+  public ObjectStreamField (String name, Class type, boolean unshared)
   {
     this.name = name;
     this.type = type;
     this.typename = TypeSignature.getEncodingOfClass(type);
+    this.unshared = unshared;
   }
  
   /**
@@ -99,6 +111,11 @@ public class ObjectStreamField implements java.lang.Comparable
     offset = off;
   }
 
+  public boolean isUnshared ()
+  {
+    return unshared;
+  }
+
   public boolean isPrimitive ()
   {
     return type.isPrimitive ();
@@ -123,10 +140,5 @@ public class ObjectStreamField implements java.lang.Comparable
   {
     return "ObjectStreamField< " + type + " " + name + " >";
   }
-
-  private String name;
-  private Class type;
-  private String typename;
-  private int offset = -1; // XXX make sure this is correct
 }
 
