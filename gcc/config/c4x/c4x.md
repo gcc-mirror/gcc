@@ -1885,7 +1885,7 @@
 ; may be allocated to reload the PLUS and thus gen_reload will
 ; emit an add insn that may clobber CC.
 (define_insn "*addqi3_noclobber_reload"
-  [(set (match_operand:QI 0 "dst_operand" "=c,c,c")
+  [(set (match_operand:QI 0 "reg_operand" "=a!r,a!r,a!r")
         (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
   "reload_in_progress"
