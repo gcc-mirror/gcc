@@ -1,3 +1,7 @@
+2002-04-11  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/lio.h: Treat INTEGER*1 as signed char.
+
 2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* libF77/Version.c:  Fix misplaced leading blanks on first line.
