@@ -1337,7 +1337,7 @@ EOF
 			as_ver=`echo $as_ver | sed -e 's/.* //'`
 			as_major=`echo $as_ver | sed 's/\..*//'`
 changequote(,)dnl
-			as_minor=`echo $as_ver | sed 's/[^.]*.\([^.]*\).*/\1/'`
+			as_minor=`echo $as_ver | sed 's/[^.]*.\([0-9]*\).*/\1/'`
 changequote([,])dnl
 			if test $as_major -eq 2 -a $as_minor -lt 11; then
 				gcc_cv_as_leb128="no"
