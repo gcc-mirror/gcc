@@ -12,3 +12,6 @@ BOOT_CFLAGS = -O $(CFLAGS) -Iinclude
 
 # Don't run fixproto
 STMP_FIXPROTO =
+
+# Don't install "assert.h" in gcc. We use the one in glibc.
+INSTALL_ASSERT_H =
