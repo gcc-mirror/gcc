@@ -3739,7 +3739,7 @@ const struct real_format i370_double_format =
     false
   };
 
-/* The "twos-compliment" c4x format is officially defined as
+/* The "twos-complement" c4x format is officially defined as
 
 	x = s(~s).f * 2**e
 

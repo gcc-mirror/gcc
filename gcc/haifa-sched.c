@@ -389,7 +389,7 @@ static rtx last_scheduled_insn;
 
 /* Compute the function units used by INSN.  This caches the value
    returned by function_units_used.  A function unit is encoded as the
-   unit number if the value is non-negative and the compliment of a
+   unit number if the value is non-negative and the complement of a
    mask if the value is negative.  A function unit index is the
    non-negative encoding.  The scheduler using only DFA description
    should never use the following function.  */

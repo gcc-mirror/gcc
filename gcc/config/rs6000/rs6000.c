@@ -7389,7 +7389,7 @@ print_operand (file, x, code)
 
     case 'G':
       /* X is a constant integer.  If it is negative, print "m",
-	 otherwise print "z".  This is to make a aze or ame insn.  */
+	 otherwise print "z".  This is to make an aze or ame insn.  */
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%G value");
       else if (INTVAL (x) >= 0)

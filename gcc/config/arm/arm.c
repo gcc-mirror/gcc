@@ -8055,7 +8055,7 @@ emit_sfm (base_reg, count)
    current stack pointer -> |    | /
                               --
 
-  For a given function some or all of these stack compomnents
+  For a given function some or all of these stack components
   may not be needed, giving rise to the possibility of
   eliminating some of the registers.
 

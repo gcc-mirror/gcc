@@ -2921,7 +2921,7 @@ print_operand (file, x, code)
       fprintf (file, "%d", value);
       return;
 
-    case 'S': /* compliment the value and then... */
+    case 'S': /* complement the value and then... */
       value = ~value;
     case 's': /* print the width and offset values forming the integer
 		 constant with a SET instruction.  See integer_ok_for_set. */

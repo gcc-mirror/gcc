@@ -6057,7 +6057,7 @@ Mon Jul 17 06:41:19 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* xm-alpha.h (sbrk): Add declaration.
 
-	* convert.c (convert_to_integer): If TYPE is a enumeral type or
+	* convert.c (convert_to_integer): If TYPE is an enumeral type or
 	if its precision is not the same as the size of its mode,
 	convert in two steps.
 

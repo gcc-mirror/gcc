@@ -4,7 +4,7 @@
 ;;
 ;; The SR3 is describeds as:
 ;;     - nine-stage pipeline, insn buffering with out-of-order issue to
-;;       multiple function units, with a average dispatch rate of 2
+;;       multiple function units, with an average dispatch rate of 2
 ;;       insn.s per cycle (max 6 insns: 2 fpu, 4 cpu).
 ;;
 ;;  The details on this are scant except for a diagram in

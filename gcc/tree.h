@@ -1826,7 +1826,7 @@ struct tree_decl GTY(())
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
        DECL_FUNCTION_CODE.  */
     enum built_in_function f;
-    /* In a FUNCITON_DECL for which DECL_BUILT_IN does not hold, this
+    /* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this
        is used by language-dependent code.  */
     HOST_WIDE_INT i;
     /* DECL_ALIGN and DECL_OFFSET_ALIGN.  (These are not used for

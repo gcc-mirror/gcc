@@ -1753,7 +1753,7 @@ frv_function_epilogue (file, size)
 
 
 /* Called after register allocation to add any instructions needed for the
-   epilogue.  Using a epilogue insn is favored compared to putting all of the
+   epilogue.  Using an epilogue insn is favored compared to putting all of the
    instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
    to intermix instructions with the saves of the caller saved registers.  In
    some cases, it might be necessary to emit a barrier instruction as the last
@@ -2701,7 +2701,7 @@ frv_print_operand_jump_hint (insn)
 }
 
 
-/* Print an operand to a assembler instruction.
+/* Print an operand to an assembler instruction.
 
    `%' followed by a letter and a digit says to output an operand in an
    alternate fashion.  Four letters have standard, built-in meanings described
@@ -7672,7 +7672,7 @@ frv_initialize_trampoline (addr, fnaddr, static_chain)
    registers can only be copied to memory and not to another class of
    registers.  In that case, secondary reload registers are not needed and
    would not be helpful.  Instead, a stack location must be used to perform the
-   copy and the `movM' pattern should use memory as a intermediate storage.
+   copy and the `movM' pattern should use memory as an intermediate storage.
    This case often occurs between floating-point and general registers.  */
 
 enum reg_class
