@@ -295,11 +295,6 @@ do {									 \
 
 /* Storage layout.  */
 
-/* We don't have to worry about binary compatibility with older C++ code,
-   but there is a big known bug with vtable thunks which has not been
-   fixed yet, so DON'T activate it by default.  */
-/* #define DEFAULT_VTABLE_THUNKS 1 */
-
 
 /* Otherwise, since we support weak, gthr.h erroneously tries to use
    #pragma weak.  */

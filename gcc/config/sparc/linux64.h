@@ -26,9 +26,6 @@ Boston, MA 02111-1307, USA.  */
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-
 #include <sparc/sysv4.h>
 
 #undef MD_EXEC_PREFIX

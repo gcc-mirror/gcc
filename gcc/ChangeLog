@@ -1,3 +1,21 @@
+2001-07-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/tm.texi: Remove DEFAULT_VTABLE_THUNKS.
+	* config/freebsd.h: Likewise.
+	* config/linux.h: Likewise.
+	* config/openbsd.h: Likewise.
+	* config/alpha/linux-elf.h: Likewise.
+	* config/arm/linux-elf.h: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/fr30/fr30.h: Likewise.
+	* config/ia64/aix.h: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/mips/linux.h: Likewise.
+	* config/pj/pj.h: Likewise.
+	* config/rs6000/linux.h: Likewise.
+	* config/sparc/linux.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+
 2001-07-20  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixincl.c(test_for_changes): force unsigned char comparisons

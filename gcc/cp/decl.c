@@ -162,28 +162,13 @@ tree error_mark_list;
 
 	tree vtable_entry_type;
 	tree delta_type_node;
-#if 0
-   Old rtti stuff.
-	tree __baselist_desc_type_node;
-	tree __i_desc_type_node, __m_desc_type_node;
-	tree __t_desc_array_type, __i_desc_array_type, __m_desc_array_type;
-#endif
 	tree __t_desc_type_node;
-#if 0
-	tree __tp_desc_type_node;
-#endif
         tree ti_desc_type_node;
 	tree bltn_desc_type_node, ptr_desc_type_node;
 	tree ary_desc_type_node, func_desc_type_node, enum_desc_type_node;
 	tree class_desc_type_node, si_class_desc_type_node, vmi_class_desc_type_node;
 	tree ptm_desc_type_node;
 	tree base_desc_type_node;
-#if 0
-   Not needed yet?  May be needed one day?
-	tree __bltn_desc_array_type, __user_desc_array_type, __class_desc_array_type;
-	tree __ptr_desc_array_type, __attr_dec_array_type, __func_desc_array_type;
-	tree __ptmf_desc_array_type, __ptmd_desc_array_type;
-#endif
 
 	tree class_type_node, record_type_node, union_type_node, enum_type_node;
 	tree unknown_type_node;
@@ -6304,14 +6289,11 @@ initialize_predefined_identifiers ()
     { "__comp_dtor", &complete_dtor_identifier, 1 },
     { "__base_dtor", &base_dtor_identifier, 1 },
     { "__deleting_dtor", &deleting_dtor_identifier, 1 },
-    { VTABLE_DELTA2_NAME, &delta2_identifier, 0 },
-    { VTABLE_DELTA_NAME, &delta_identifier, 0 },
     { IN_CHARGE_NAME, &in_charge_identifier, 0 },
-    { VTABLE_INDEX_NAME, &index_identifier, 0 },
     { "nelts", &nelts_identifier, 0 },
     { THIS_NAME, &this_identifier, 0 },
+    { VTABLE_DELTA_NAME, &delta_identifier, 0 },
     { VTABLE_PFN_NAME, &pfn_identifier, 0 },
-    { "__pfn_or_delta2", &pfn_or_delta2_identifier, 0 },
     { "_vptr", &vptr_identifier, 0 },
     { "__vtt_parm", &vtt_parm_identifier, 0 },
     { "std", &std_identifier, 0 },
@@ -6334,14 +6316,8 @@ initialize_predefined_identifiers ()
 void
 init_decl_processing ()
 {
-  tree fields[20];
   tree void_ftype;
   tree void_ftype_ptr;
-
-  /* Check to see that the user did not specify an invalid combination
-     of command-line options.  */
-  if (!flag_vtable_thunks)
-    error ("the ABI requires vtable thunks");
 
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();
@@ -6487,41 +6463,16 @@ init_decl_processing ()
   TYPE_POINTER_TO (unknown_type_node) = unknown_type_node;
   TYPE_REFERENCE_TO (unknown_type_node) = unknown_type_node;
 
-  if (flag_vtable_thunks)
-    {
-      /* Make sure we get a unique function type, so we can give
-	 its pointer type a name.  (This wins for gdb.) */
-      tree vfunc_type = make_node (FUNCTION_TYPE);
-      TREE_TYPE (vfunc_type) = integer_type_node;
-      TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
-      layout_type (vfunc_type);
+  {
+    /* Make sure we get a unique function type, so we can give
+       its pointer type a name.  (This wins for gdb.) */
+    tree vfunc_type = make_node (FUNCTION_TYPE);
+    TREE_TYPE (vfunc_type) = integer_type_node;
+    TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
+    layout_type (vfunc_type);
 
-      vtable_entry_type = build_pointer_type (vfunc_type);
-    }
-  else
-    {
-      vtable_entry_type = make_aggr_type (RECORD_TYPE);
-      fields[0] = build_decl (FIELD_DECL, delta_identifier,
-			      delta_type_node);
-      fields[1] = build_decl (FIELD_DECL, index_identifier,
-			      delta_type_node);
-      fields[2] = build_decl (FIELD_DECL, pfn_identifier,
-			      ptr_type_node);
-      finish_builtin_type (vtable_entry_type, VTBL_PTR_TYPE, fields, 2,
-			   double_type_node);
-
-      /* Make this part of an invisible union.  */
-      fields[3] = copy_node (fields[2]);
-      TREE_TYPE (fields[3]) = delta_type_node;
-      DECL_NAME (fields[3]) = delta2_identifier;
-      DECL_MODE (fields[3]) = TYPE_MODE (delta_type_node);
-      DECL_SIZE (fields[3]) = TYPE_SIZE (delta_type_node);
-      DECL_SIZE_UNIT (fields[3]) = TYPE_SIZE_UNIT (delta_type_node);
-      TREE_UNSIGNED (fields[3]) = 0;
-      TREE_CHAIN (fields[2]) = fields[3];
-      vtable_entry_type = build_qualified_type (vtable_entry_type,
-						TYPE_QUAL_CONST);
-    }
+    vtable_entry_type = build_pointer_type (vfunc_type);
+  }
   record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
 
   vtbl_type_node

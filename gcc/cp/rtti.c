@@ -113,7 +113,6 @@ build_headof (exp)
      tree exp;
 {
   tree type = TREE_TYPE (exp);
-  tree aref;
   tree offset;
   tree index;
 
@@ -133,12 +132,7 @@ build_headof (exp)
   /* The offset-to-top field is at index -2 from the vptr.  */
   index = build_int_2 (-2, -1);
 
-  aref = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
-
-  if (flag_vtable_thunks)
-    offset = aref;
-  else
-    offset = build_component_ref (aref, delta_identifier, NULL_TREE, 0);
+  offset = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
 
   type = build_qualified_type (ptr_type_node, 
 			       CP_TYPE_QUALS (TREE_TYPE (exp)));
@@ -227,7 +221,7 @@ get_tinfo_decl_dynamic (exp)
 
       /* The RTTI information is at index -1.  */
       index = integer_minus_one_node;
-      t = build_vfn_ref ((tree *) 0, exp, index);
+      t = build_vfn_ref (exp, index);
       TREE_TYPE (t) = build_pointer_type (tinfo_decl_type);
       return t;
     }
