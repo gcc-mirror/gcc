@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-c -O2 -fdump-tree-ifcvt-stats" { target *-*-* } } */
+/* { dg-options "-c -O2 -ftree-vectorize -fdump-tree-ifcvt-stats" { target *-*-* } } */
 
 typedef float afloat __attribute__ ((__aligned__(16)));
 void foo(const afloat * __restrict__ zr_in,

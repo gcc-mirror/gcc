@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-c -O2 -fdump-tree-ifcvt-stats" { target *-*-* } } */
+/* { dg-options "-c -O2 -ftree-vectorize -fdump-tree-ifcvt-stats" { target *-*-* } } */
 
 #include <stdarg.h>
 #include <signal.h>
