@@ -3546,21 +3546,14 @@ assign_parms (fndecl, second_time)
 
 	      if (TYPE_SIZE (type) == 0
 		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-		{
-		  /* This is a variable sized object.  */
-		  /* ??? Can we use expr_size here?  */
-		  rtx size_rtx = expand_expr (size_in_bytes (type), NULL_RTX,
-					      TYPE_MODE (sizetype), 0);
-
-		  copy = gen_rtx (MEM, BLKmode,
-				  allocate_dynamic_stack_space (size_rtx, NULL_RTX,
-								TYPE_ALIGN (type)));
-		}
+		/* This is a variable sized object.  */
+		copy = gen_rtx (MEM, BLKmode,
+				allocate_dynamic_stack_space
+				(expand_size (parm), NULL_RTX,
+				 TYPE_ALIGN (type)));
 	      else
-		{
-		  int size = int_size_in_bytes (type);
-		  copy = assign_stack_temp (TYPE_MODE (type), size, 1);
-		}
+		copy = assign_stack_temp (TYPE_MODE (type),
+					  int_size_in_bytes (type), 1);
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
