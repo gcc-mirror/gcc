@@ -887,20 +887,20 @@ echo "configure:887: checking whether ln works" >&5
 if eval "test \"`echo '$''{'gcc_cv_prog_LN'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  rm -f conftestdata_to
-echo >conftestdata_from
-if ln conftestdata_from conftestdata_to 2>/dev/null
+  rm -f conftestdata_t
+echo >conftestdata_f
+if ln conftestdata_f conftestdata_t 2>/dev/null
 then
   gcc_cv_prog_LN="ln"
 else
-  if ln -s conftestdata_from conftestdata_to 2>/dev/null
+  if ln -s conftestdata_f conftestdata_t 2>/dev/null
   then
     gcc_cv_prog_LN="ln -s"
   else
     gcc_cv_prog_LN=cp
   fi
 fi
-rm -f conftestdata_from conftestdata_to
+rm -f conftestdata_f conftestdata_t
 
 fi
 LN="$gcc_cv_prog_LN"
@@ -919,20 +919,20 @@ echo "configure:919: checking whether ln -s works" >&5
 if eval "test \"`echo '$''{'gcc_cv_prog_LN_S'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  rm -f conftestdata_to
-echo >conftestdata_from
-if ln -s conftestdata_from conftestdata_to 2>/dev/null
+  rm -f conftestdata_t
+echo >conftestdata_f
+if ln -s conftestdata_f conftestdata_t 2>/dev/null
 then
   gcc_cv_prog_LN_S="ln -s"
 else
-  if ln conftestdata_from conftestdata_to 2>/dev/null
+  if ln conftestdata_f conftestdata_t 2>/dev/null
   then
     gcc_cv_prog_LN_S=ln
   else
     gcc_cv_prog_LN_S=cp
   fi
 fi
-rm -f conftestdata_from conftestdata_to
+rm -f conftestdata_f conftestdata_t
 
 fi
 LN_S="$gcc_cv_prog_LN_S"
