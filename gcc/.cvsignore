@@ -9,3 +9,5 @@ gcc.info*
 cpp.info*
 c-tree.info*
 cppinternals.info*
+cscope.files
+cscope.out
