@@ -23,15 +23,11 @@ libiberty.olb: config.h alloca-conf.h $(OBJS)
 	purge
 	lib/create libiberty *.obj
 
-alloca-conf.h: alloca-norm.h
-	$(CP) $< $@
-
 config.h: config.h-vms
 	$(CP) $< $@
 
 clean:
 	$$ purge
-	$(RM) alloca-conf.h;
 	$(RM) config.h;
 	$(RM) *.obj;
 	$(RM) libiberty.olb;

@@ -20,10 +20,6 @@ BUGS
 #include "ansidecl.h"
 #include "libiberty.h"
 
-#include "config.h"
-
-#ifdef NEED_basename
-
 char *
 basename (name)
      const char *name;
@@ -39,5 +35,3 @@ basename (name)
     }
   return (char *) base;
 }
-
-#endif

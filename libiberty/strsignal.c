@@ -64,12 +64,12 @@ struct signal_info
 {
   int value;		/* The numeric value from <signal.h> */
   const char *name;	/* The equivalent symbolic value */
-#ifdef NEED_sys_siglist
+#ifndef HAVE_SYS_SIGLIST
   const char *msg;	/* Short message about this value */
 #endif
 };
 
-#ifdef NEED_sys_siglist
+#ifndef HAVE_SYS_SIGLIST
 #   define ENTRY(value, name, msg)	{value, name, msg}
 #else
 #   define ENTRY(value, name, msg)	{value, name}
@@ -236,7 +236,7 @@ static int num_signal_names = 0;
    same name, it differs from other implementations in that it is dynamically
    initialized rather than statically initialized. */
 
-#ifdef NEED_sys_siglist
+#ifndef HAVE_SYS_SIGLIST
 
 static int sys_nsig;
 static const char **sys_siglist;
@@ -319,7 +319,7 @@ init_signal_tables ()
 	}
     }
 
-#ifdef NEED_sys_siglist
+#ifndef HAVE_SYS_SIGLIST
 
   /* Now attempt to allocate the sys_siglist table, zero it out, and then
      initialize it from the statically initialized signal_table. */
@@ -414,7 +414,7 @@ DESCRIPTION
 
 */
 
-#ifdef NEED_strsignal
+#ifndef HAVE_STRSIGNAL
 
 const char *
 strsignal (signo)
@@ -423,7 +423,7 @@ strsignal (signo)
   const char *msg;
   static char buf[32];
 
-#ifdef NEED_sys_siglist
+#ifndef HAVE_SYS_SIGLIST
 
   if (signal_names == NULL)
     {
@@ -452,7 +452,7 @@ strsignal (signo)
   return (msg);
 }
 
-#endif /* NEED_strsignal */
+#endif /* ! HAVE_STRSIGNAL */
 
 /*
 
@@ -580,7 +580,7 @@ DESCRIPTION
 	followed by a newline.
 */
 
-#ifdef NEED_psignal
+#ifndef HAVE_PSIGNAL
 
 void
 psignal (signo, message)
@@ -601,7 +601,7 @@ psignal (signo, message)
     }
 }
 
-#endif	/* NEED_psignal */
+#endif	/* ! HAVE_PSIGNAL */
 
 
 /* A simple little main that does nothing but print all the signal translations

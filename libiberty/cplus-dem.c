@@ -890,7 +890,8 @@ demangle_signature (work, mangled, declp)
 	    {
 	      remember_type (work, oldmangled, *mangled - oldmangled);
 	    }
-	  string_append(&tname, (work -> options & DMGL_JAVA) ? "." : "::");
+	    string_append (&tname, "::");
+
 	  string_prepends(declp, &tname);
 	  if (work -> destructor & 1)
 	    {
@@ -1374,7 +1375,6 @@ demangle_template (work, mangled, tname, trawname, is_type)
   int need_comma = 0;
   int success = 0;
   const char *start;
-  int is_java_array = 0;
   string temp;
 
   (*mangled)++;
@@ -1418,16 +1418,10 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	    }
 	  if (trawname)
 	    string_appendn (trawname, *mangled, r);
-	  is_java_array = (work -> options & DMGL_JAVA)
-	    && strncmp (*mangled, "JArray1Z", 8) == 0;
-	  if (! is_java_array)
-	    {
 	      string_appendn (tname, *mangled, r);
-	    }
 	  *mangled += r;
 	}
     }
-  if (!is_java_array)
     string_append (tname, "<");
   /* get size of template parameter list */
   if (!get_count (mangled, &r))
@@ -1555,11 +1549,6 @@ demangle_template (work, mangled, tname, trawname, is_type)
 	}
       need_comma = 1;
     }
-  if (is_java_array)
-    {
-      string_append (tname, "[]");
-    }
-  else
     {
       if (tname->p[-1] == '>')
 	string_append (tname, " ");
@@ -1723,7 +1712,7 @@ demangle_class (work, mangled, declp)
 	}
       remember_Ktype (work, class_name.b, LEN_STRING(&class_name));
       remember_Btype (work, class_name.b, LEN_STRING(&class_name), btype);
-      string_prepend (declp, (work -> options & DMGL_JAVA) ? "." : "::");
+	string_prepend (declp, "::");
       string_prepends (declp, &class_name);
       success = 1;
     }
@@ -2025,8 +2014,7 @@ gnu_special (work, mangled, declp)
 	    {
 	      if (p != NULL)
 		{
-		  string_append (declp,
-				 (work -> options & DMGL_JAVA) ? "." : "::");
+		    string_append (declp, "::");
 		  (*mangled)++;
 		}
 	    }
@@ -2064,7 +2052,7 @@ gnu_special (work, mangled, declp)
 	  /* Consumed everything up to the cplus_marker, append the
 	     variable name.  */
 	  (*mangled)++;
-	  string_append (declp, (work -> options & DMGL_JAVA) ? "." : "::");
+	    string_append (declp, "::");
 	  n = strlen (*mangled);
 	  string_appendn (declp, *mangled, n);
 	  (*mangled) += n;
@@ -2361,7 +2349,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 
       if (qualifiers > 0)
         {
-          string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
+	    string_append (&temp, "::");
         }
     }
 
@@ -2372,7 +2360,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 
   if (isfuncname && (work->constructor & 1 || work->destructor & 1))
     {
-      string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
+	string_append (&temp, "::");
       if (work -> destructor & 1)
 	{
 	  string_append (&temp, "~");
@@ -2391,7 +2379,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
     {
       if (!STRING_EMPTY (result))
 	{
-	  string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
+	    string_append (&temp, "::");
 	}
       string_prepends (result, &temp);
     }
@@ -2486,7 +2474,6 @@ do_type (work, mangled, result)
 	case 'P':
 	case 'p':
 	  (*mangled)++;
-	  if (! (work -> options & DMGL_JAVA))
 	    string_prepend (&decl, "*");
 	  break;
 
@@ -2569,7 +2556,7 @@ do_type (work, mangled, result)
 	      }
 
 	    string_append (&decl, ")");
-	    string_prepend (&decl, (work -> options & DMGL_JAVA) ? "." : "::");
+	      string_prepend (&decl, "::");
 	    if (isdigit (**mangled)) 
 	      {
 		n = consume_count (mangled);
@@ -3622,7 +3609,6 @@ static struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
   {"format", required_argument, 0, 's'},
   {"help", no_argument, 0, 'h'},
-  {"java", no_argument, 0, 'j'},
   {"no-strip-underscores", no_argument, 0, 'n'},
   {"version", no_argument, 0, 'v'},
   {0, no_argument, 0, 0}
@@ -3666,9 +3652,6 @@ main (argc, argv)
 	  exit (0);
 	case '_':
 	  strip_underscore = 1;
-	  break;
-	case 'j':
-	  flags |= DMGL_JAVA;
 	  break;
 	case 's':
 	  if (strcmp (optarg, "gnu") == 0)
