@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.717 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1327,6 +1327,10 @@ package body Sem_Res is
    --  Start of processing for Resolve
 
    begin
+      if N = Error then
+         return;
+      end if;
+
       --  Access attribute on remote subprogram cannot be used for
       --  a non-remote access-to-subprogram type.
 
@@ -3496,6 +3500,11 @@ package body Sem_Res is
 
       else
          R := Range_Expression (Constraint (N));
+
+         if R = Error then
+            return;
+         end if;
+
          Analyze (R);
 
          if Base_Type (S) /= Base_Type (Typ) then

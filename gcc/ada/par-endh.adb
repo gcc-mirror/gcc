@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.61 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -791,7 +791,7 @@ package body Endh is
 
       --  Suppress message if error was posted on opening label
 
-      if Present (Error_Msg_Node_1)
+      if Error_Msg_Node_1 > Empty_Or_Error
         and then Error_Posted (Error_Msg_Node_1)
       then
          return;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.430 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -6210,18 +6210,23 @@ package Sinfo is
    -- Empty --
    -----------
 
-   --  N_Empty
-   --  Chars (Name1) is set to No_Name
    --  Used as the contents of the Nkind field of the dummy Empty node
    --  and in some other situations to indicate an uninitialized value.
+
+   --  N_Empty
+   --  Chars (Name1) is set to No_Name
 
    -----------
    -- Error --
    -----------
 
+   --  Used as the contents of the Nkind field of the dummy Error node.
+   --  Has an Etype field, which gets set to Any_Type later on, to help
+   --  error recovery (Error_Posted is also set in the Error node).
+
    --  N_Error
    --  Chars (Name1) is set to Error_Name
-   --  Used as the contents of the Nkind field of the dummy Error node
+   --  Etype (Node5-Sem)
 
    --------------------------
    -- Node Type Definition --
@@ -6248,9 +6253,11 @@ package Sinfo is
 
       --  N_Has_Chars
       N_Empty,
-      N_Error,
       N_Pragma,
       N_Pragma_Argument_Association,
+
+      --  N_Has_Etype
+      N_Error,
 
       --  N_Entity, N_Has_Etype, N_Has_Chars
       N_Defining_Character_Literal,
@@ -6587,7 +6594,7 @@ package Sinfo is
    --  Warning: DOES NOT INCLUDE N_Freeze_Entity!
 
    subtype N_Has_Etype is Node_Kind range
-     N_Defining_Character_Literal ..
+     N_Error ..
      N_Subtype_Indication;
 
    subtype N_Later_Decl_Item is Node_Kind range

@@ -1,3 +1,22 @@
+2001-10-08  Robert Dewar <dewar@gnat.com>
+
+	* atree.adb: Set Error_Posted in Error node, helps error recovery.
+	
+	* par-endh.adb (Output_End_Expected): We should also not test 
+	Error_Posted on the Error node, since now it is always set.
+	
+	* cstand.adb (Create_Standard): Set Etype of Error to Any_Type 
+	to help error recovery. Part of general work on 9407-004.
+	
+	* par.adb: Add ??? for misuse of error
+	
+	* sem_res.adb:
+	(Resolve): Defend against Error, fixes 9407-003.
+	(Resolve_Discrete_Subtype_Indication): Defend against Error.
+	
+	* sinfo.ads (N_Error): Now has Etype field (which will be set 
+	to Any_Type to help error recovery).
+
 2001-10-08  Richard Kenner (kenner@gnat.com)
 
 	* misc.c (gnat_expand_expr, case UNCHECKED_CONVERT_EXPR):

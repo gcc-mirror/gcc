@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.126 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -396,6 +396,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  field references an N_Defining_Program_Unit_Name node for the name.
       --  For cases other than LOOP or BEGIN, the Label field is set to Error,
       --  indicating that it is an error to have a label on the end line.
+      --  (this is really a misuse of Error since there is no Error ???)
 
       Decl : List_Id;
       --  Points to the list of declarations (i.e. the declarative part)
