@@ -1604,6 +1604,35 @@ typedef struct ix86_args {
        || ! FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (DECL)))) \
        || FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (cfun->decl))))))
 
+/* Perform any needed actions needed for a function that is receiving a
+   variable number of arguments.
+
+   CUM is as above.
+
+   MODE and TYPE are the mode and type of the current parameter.
+
+   PRETEND_SIZE is a variable that should be set to the amount of stack
+   that must be pushed by the prolog to pretend that our caller pushed
+   it.
+
+   Normally, this macro will push all remaining incoming registers on the
+   stack and set PRETEND_SIZE to the length of the registers pushed.  */
+
+#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
+  ix86_setup_incoming_varargs (&CUM, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
+
+/* Define the `__builtin_va_list' type for the ABI.  */
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = ix86_build_va_list ()
+
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  ix86_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  ix86_va_arg (valist, type)
+
 /* This macro is invoked at the end of compilation.  It is used here to
    output code for -fpic that will load the return address into %ebx.  */
 
@@ -2774,6 +2803,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	((N) < 2 ? (N) : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 2)
+
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
