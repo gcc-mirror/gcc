@@ -1,0 +1,8 @@
+# Multilibs for VxWorks.
+
+#GCC does not have an arch=pentium3 setting, so we cannot build PENTIUM3gnu
+MULTILIB_OPTIONS  = \
+  march=i486/march=pentium/march=pentiumpro/march=pentium4
+MULTILIB_DIRNAMES = \
+  I80486 PENTIUMgnu PENTIUM2gnu PENTIUM4gnu
+

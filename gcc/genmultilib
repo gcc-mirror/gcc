@@ -63,10 +63,15 @@
 # for the rule to exclude a set. Options can be preceded with a '!' to
 # match a logical NOT.
 
-# The optional sevenths argument is a list of OS subdirectory names.
-# The format is the same as of the second argument.
-# The difference is that second argument describes multilib directories
-# in GCC conventions, while this one the OS multilib convention.
+# The optional seventh argument is a list of OS subdirectory names.
+# The format is either the same as of the second argument, or a set of
+# mappings. When it is the same as the second argument, it describes
+# the multilib directories using OS conventions, rather than GCC
+# conventions.  When it is a set of mappings of the form gccdir=osdir,
+# the left side gives the GCC convention and the right gives the
+# equivalent OS defined location.  If the osdir part begins with a !,
+# the os directory names are used exclusively.  Use the mapping when
+# there is no one-to-one equivalence between GCC levels and the OS.
 
 # The last option should be "yes" if multilibs are enabled.  If it is not
 # "yes", all GCC multilib dir names will be ".".
@@ -216,24 +221,44 @@ fi
 # Construct a sed pattern which will convert option names to OS directory
 # names.
 toosdirnames=
+defaultosdirname=
 if [ -n "${osdirnames}" ]; then
   set x ${osdirnames}
   shift
-  for set in ${options}; do
-    for opts in `echo ${set} | sed -e 's|/| |'g`; do
-      patt="/"
-      for opt in `echo ${opts} | sed -e 's_|_ _'g`; do
-        if [ "$1" != "${opt}" ]; then
-          toosdirnames="${toosdirnames} -e s|/${opt}/|/${1}/|g"
-	  patt="${patt}${1}/"
-	  if [ "${patt}" != "/${1}/" ]; then
-	    toosdirnames="${toosdirnames} -e s|${patt}|/${1}/|g"
-          fi
-        fi
-      done
-      shift
-    done
+  while [ $# != 0 ] ; do
+    case "$1" in
+      .=*)
+        defaultosdirname=`echo $1 | sed 's|^.=|:|'`
+	shift
+	;;
+      *=*)
+	patt=`echo $1 | sed -e 's|=|/$=/|'`
+        toosdirnames="${toosdirnames} -e s=^/${patt}/="
+	shift
+        ;;
+      *)
+        break
+	;;
+    esac
   done
+  
+  if [ $# != 0 ]; then
+    for set in ${options}; do
+      for opts in `echo ${set} | sed -e 's|/| |'g`; do
+        patt="/"
+        for opt in `echo ${opts} | sed -e 's_|_ _'g`; do
+          if [ "$1" != "${opt}" ]; then
+            toosdirnames="${toosdirnames} -e s|/${opt}/|/${1}/|g"
+	    patt="${patt}${1}/"
+	    if [ "${patt}" != "/${1}/" ]; then
+	      toosdirnames="${toosdirnames} -e s|${patt}|/${1}/|g"
+            fi
+          fi
+        done
+        shift
+      done
+    done
+  fi
 fi
 
 # We need another recursive shell script to correctly handle positive
@@ -275,7 +300,7 @@ for set in ${options}; do
   done
 done
 optout=`echo ${optout} | sed -e 's/^ //'`
-echo "\". ${optout};\","
+echo "\".${defaultosdirname} ${optout};\","
 
 # Work over the list of combinations.  We have to translate each one
 # to use the directory names rather than the option names, we have to
@@ -299,7 +324,14 @@ for combo in ${combinations}; do
     if [ "x${enable_multilib}" != xyes ]; then
       dirout=".:${osdirout}"
     else
-      dirout="${dirout}:${osdirout}"
+      case "${osdirout}" in
+        !*)
+	  dirout=`echo ${osdirout} | sed 's/^!//'`
+	  ;;
+	*)
+	  dirout="${dirout}:${osdirout}"
+	  ;;
+      esac
     fi
   else
     if [ "x${enable_multilib}" != xyes ]; then
