@@ -100,6 +100,17 @@ struct lang_type
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */
 #define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_NONCOPIED_PARTS (NODE)
+
+/* Nonzero if the type T promotes to itself.
+   ANSI C states explicitly the list of types that promote;
+   in particular, short promotes to int even if they have the same width.  */
+#define C_PROMOTING_INTEGER_TYPE_P(t)				\
+  (TREE_CODE ((t)) == INTEGER_TYPE				\
+   && (TYPE_MAIN_VARIANT (t) == char_type_node			\
+       || TYPE_MAIN_VARIANT (t) == signed_char_type_node	\
+       || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node	\
+       || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
+       || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
 
 /* in c-typecheck.c */
 extern tree build_component_ref (), build_conditional_expr (), build_compound_expr ();
