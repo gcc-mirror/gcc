@@ -1,3 +1,11 @@
+2000-10-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* dwarf2out.c (build_cfa_loc): Correct to use DW_OP_regx or
+	DW_OP_bregx when cfa->reg > 31.
+
+	* frame-dwarf2.c (decode_stack_op) [case DW_OP_regx]: Add missing
+	break.
+
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (warn_missing_noreturn): Remove.
