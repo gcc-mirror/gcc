@@ -1,3 +1,7 @@
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* g++.dg/bprob/bprob.exp: Disable test on arm-elf configs.
+
 2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/10239
