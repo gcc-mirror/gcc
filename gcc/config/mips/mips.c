@@ -86,12 +86,6 @@ struct mips_arg_info;
 static enum internal_test map_test_to_internal_test	PARAMS ((enum rtx_code));
 static int mips16_simple_memory_operand		PARAMS ((rtx, rtx,
 							enum machine_mode));
-int coprocessor_operand 			PARAMS ((rtx,
-							enum machine_mode));
-int coprocessor2_operand 			PARAMS ((rtx,
-							enum machine_mode));
-int symbolic_operand				PARAMS ((rtx,
-							 enum machine_mode));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
 static void block_move_loop			PARAMS ((rtx, rtx,
 							 unsigned int,
