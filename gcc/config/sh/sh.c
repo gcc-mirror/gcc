@@ -3489,8 +3489,8 @@ split_branches (first)
 	
 		if (beyond
 		    && (GET_CODE (beyond) == JUMP_INSN
-			|| (GET_CODE (beyond = next_active_insn (beyond))
-			    == JUMP_INSN))
+			|| ((beyond = next_active_insn (beyond))
+			    && GET_CODE (beyond) == JUMP_INSN))
 		    && GET_CODE (PATTERN (beyond)) == SET
 		    && recog_memoized (beyond) == CODE_FOR_jump
 		    && ((INSN_ADDRESSES

@@ -1,3 +1,8 @@
+2000-12-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (split_branches): Don't dereference re-computed
+	`beyond' before checking it's non-NULL.
+
 
 2000-12-29  Robert Lipe <robertl@sco.com>
 
