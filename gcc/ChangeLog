@@ -1,3 +1,8 @@
+Mon Oct 26 13:35:02 1998  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (subst): Process the inputs to a parallel asm_operands
+	only once.
+
 Mon Oct 26 13:32:31 1998  Richard Henderson  <rth@cygnus.com>
 
 	* stmt.c (expand_asm_operands): Accept `=' or `+' at any position.
