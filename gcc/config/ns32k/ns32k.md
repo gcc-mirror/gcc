@@ -1,14 +1,5 @@
-; BUGS:
-;; Insert no-op between an insn with memory read-write operands
-;;   following by a scale-indexing operation.
-;; The Sequent assembler does not allow addresses to be used
-;;   except in insns which explicitly compute an effective address.
-;;   I.e., one cannot say "cmpd _p,@_x"
-;; Implement unsigned multiplication??
-
-;;- Machine description for GNU compiler
-;;- ns32000 Version
-;;   Copyright (C) 1988 Free Software Foundation, Inc.
+;;- Machine description for GNU compiler, ns32000 Version
+;;   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 ;;   Contributed by Michael Tiemann (tiemann@mcc.com)
 
 ;; This file is part of GNU CC.
@@ -27,6 +18,14 @@
 ;; along with GNU CC; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
+
+; BUGS:
+;; Insert no-op between an insn with memory read-write operands
+;;   following by a scale-indexing operation.
+;; The Sequent assembler does not allow addresses to be used
+;;   except in insns which explicitly compute an effective address.
+;;   I.e., one cannot say "cmpd _p,@_x"
+;; Implement unsigned multiplication??
 
 ;;- Instruction patterns.  When multiple patterns apply,
 ;;- the first one in the file is chosen.
@@ -341,15 +340,19 @@
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);
-      if (i <= 7 && i >= -8)
-	return \"movqd %1,%0\";
-      if (i < 0x4000 && i >= -0x4000 && ! TARGET_32532)
+      if (! TARGET_32532)
+	{
+	  if (i <= 7 && i >= -8)
+	    return \"movqd %1,%0\";
+	  if (i < 0x4000 && i >= -0x4000)
 #if defined (GNX_V3) || defined (UTEK_ASM)
-	return \"addr %c1,%0\";
+	    return \"addr %c1,%0\";
 #else
-	return \"addr @%c1,%0\";
+	    return \"addr @%c1,%0\";
 #endif
-      return \"movd %1,%0\";
+	}
+      else
+        return output_move_dconst(i, \"%$%1,%0\");
     }
   else if (GET_CODE (operands[1]) == REG)
     {
@@ -373,6 +376,7 @@
     }
   else if (GET_CODE (operands[1]) == MEM)
     return \"movd %1,%0\";
+
   /* Check if this effective address can be
      calculated faster by pulling it apart.  */
   if (REG_P (operands[0])
@@ -2590,7 +2594,104 @@
   ""
   "slsb %0")
 
-;; Speed up stack adjust followed by a fullword fixedpoint push.
+;; ffs instructions
+
+(define_insn "ffsqi2"
+  [(set (match_operand:QI 0 "general_operand" "=g")
+	(ffs:QI (match_operand:SI 1 "general_operand" "g")))]
+  ""
+  "*
+{
+  return \"movqb 0,%0; ffsd %1,%0; bfs 1f; addqb 1,%0; 1:\";
+}")
+
+(define_insn "ffshi2"
+  [(set (match_operand:HI 0 "general_operand" "=g")
+	(ffs:HI (match_operand:SI 1 "general_operand" "g")))]
+  ""
+  "*
+{
+  return \"movqw 0,%0; ffsd %1,%0; bfs 1f; addqw 1,%0; 1:\";
+}")
+
+(define_insn "ffssi2"
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(ffs:SI (match_operand:SI 1 "general_operand" "g")))]
+  ""
+  "*
+{
+  return \"movqd 0,%0; ffsd %1,%0; bfs 1f; addqd 1,%0; 1:\";
+}")
+
+;; Speed up stack adjust followed by a HI fixedpoint push.
+
+(define_peephole
+  [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int -2)))
+   (set (match_operand:HI 0 "push_operand" "=m")
+	(match_operand:HI 1 "general_operand" "g"))]
+  "! reg_mentioned_p (stack_pointer_rtx, operands[1])"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,tos\"),
+			 operands);
+  else
+	output_asm_insn (\"movzwd %1,tos\", operands);
+  return \"\";
+}")
+
+;; Speed up stack adjust followed by a zero_extend:HI(QI) fixedpoint push.
+
+(define_peephole
+  [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int -2)))
+   (set (match_operand:HI 0 "push_operand" "=m")
+	(zero_extend:HI (match_operand:QI 1 "general_operand" "g")))]
+  "! reg_mentioned_p (stack_pointer_rtx, operands[1])"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,tos\"),
+			 operands);
+  else
+	output_asm_insn (\"movzbd %1,tos\", operands);
+  return \"\";
+}")
+
+;; Speed up stack adjust followed by a sign_extend:HI(QI) fixedpoint push.
+
+(define_peephole
+  [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int -2)))
+   (set (match_operand:HI 0 "push_operand" "=m")
+	(sign_extend:HI (match_operand:QI 1 "general_operand" "g")))]
+  "! reg_mentioned_p (stack_pointer_rtx, operands[1])"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,tos\"),
+			 operands);
+  else
+	output_asm_insn (\"movxbd %1,tos\", operands);
+  return \"\";
+}")
+
+;; Speed up stack adjust followed by a QI fixedpoint push.
+
+(define_peephole
+  [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int -3)))
+   (set (match_operand:QI 0 "push_operand" "=m")
+	(match_operand:QI 1 "general_operand" "g"))]
+  "! reg_mentioned_p (stack_pointer_rtx, operands[1])"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,tos\"),
+			 operands);
+  else
+	output_asm_insn (\"movzbd %1,tos\", operands);
+  return \"\";
+}")
+
+;; Speed up stack adjust followed by a SI fixedpoint push.
 
 (define_peephole
   [(set (reg:SI 17) (plus:SI (reg:SI 17) (const_int 4)))
@@ -2599,7 +2700,12 @@
   "! reg_mentioned_p (stack_pointer_rtx, operands[1])"
   "*
 {
-  return \"movd %1,0(sp)\";
+  if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,0(sp)\"),
+			 operands);
+  else
+	output_asm_insn (\"movd %1,0(sp)\", operands);
+  return \"\";
 }")
 
 ;; Speed up stack adjust followed by two fullword fixedpoint pushes.
@@ -2614,6 +2720,16 @@
    && ! reg_mentioned_p (stack_pointer_rtx, operands[3])"
   "*
 {
-  return \"movd %1,4(sp); movd %3,0(sp)\";
-}")
+  if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,4(sp)\"),
+			 operands);
+  else
+	output_asm_insn (\"movd %1,4(sp)\", operands);
 
+  if (GET_CODE (operands[3]) == CONST_INT)
+	output_asm_insn (output_move_dconst (INTVAL (operands[3]), \"%$%3,0(sp)\"),
+			 operands);
+  else
+	output_asm_insn (\"movd %3,0(sp)\", operands);
+  return \"\";
+}")
