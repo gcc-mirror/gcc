@@ -1,6 +1,6 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,7 @@
 
 #include <cstring> // for memset, memcmp
 #include <streambuf>
+#include <string>
 #include <ostream>
 #include <debug_assert.h>
 
@@ -232,6 +233,98 @@ void test03()
 #endif
 }
 
+class setpbuf : public std::streambuf
+{
+  char 		buffer[4];
+  std::string 	result;
+
+public:
+
+  std::string&
+  get_result()
+  { return result; }
+
+  setpbuf()
+  {
+    char foo [32];
+    setp(foo, foo + 32);
+    setp(buffer, buffer + 4);
+  }
+
+  ~setpbuf()
+  { sync(); }
+
+  virtual int_type 
+  overflow(int_type n)
+  {
+    if (sync() != 0)
+      return traits_type::eof();
+    
+    result += traits_type::to_char_type(n);
+    
+    return n;
+  }
+  
+  virtual int 
+  sync()
+  {
+    result.append(pbase(), pptr());
+    setp(buffer, buffer + 4);
+    return 0;
+  }
+};
+
+// libstdc++/1057
+void test04()
+{
+  bool test = true;
+  std::string text = "abcdefghijklmn";
+  
+  // 01
+  setpbuf sp1;
+  // Here xsputn writes over sp1.result
+  sp1.sputn(text.c_str(), text.length());
+
+  // This crashes when result is accessed
+  sp1.pubsync();
+  VERIFY( sp1.get_result() == text );
+  
+
+  // 02
+  setpbuf sp2;
+  for (std::string::size_type i = 0; i < text.length(); ++i)
+    {
+      // sputc also writes over result
+      sp2.sputc(text[i]);
+    }
+  
+  // Crash here
+  sp2.pubsync();
+  VERIFY( sp2.get_result() == text );
+}
+
+class nullsetpbuf : public std::streambuf
+{
+  char foo[64];
+public:
+  nullsetpbuf()
+  {
+    setp(foo, foo + 64);
+    setp(NULL, NULL);
+  }
+};
+
+// libstdc++/1057
+void test05()
+{
+    std::string text1 = "abcdefghijklmn";
+
+    nullsetpbuf nsp;
+    // Immediate crash as xsputn writes to null pointer
+    nsp.sputn(text1.c_str(), text1.length());
+    // ditto
+    nsp.sputc('a');
+}
 
 int main() 
 {
@@ -239,6 +332,8 @@ int main()
   test02();
   test03();
 
+  test04();
+  test05();
   return 0;
 }
 

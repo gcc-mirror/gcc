@@ -1,6 +1,6 @@
 // 1999-07-01 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <debug_assert.h>
 
 bool test01(void)
@@ -287,6 +288,23 @@ void test07(void)
 #endif
 }
 
+// libstdc++/1019
+void test08()
+{
+  using namespace std;
+
+  bool 		test = true;
+  istringstream istrm("enero:2001");
+  int 		year;
+  char 		sep;
+  string 	month;
+  
+  istrm >> setw(5) >> month >> sep >> year;
+  VERIFY( month.size() == 5 );
+  VERIFY( sep == ':' );
+  VERIFY( year == 2001 );
+}
+
 int main()
 { 
   test01();
@@ -302,6 +320,7 @@ int main()
   test06();
   test07();
 
+  test08();
   return 0;
 }
 

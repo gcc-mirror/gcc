@@ -1,6 +1,6 @@
 // 1999-07-22 bkoz
 
-// Copyright (C) 1994, 1999 Free Software Foundation, Inc.
+// Copyright (C) 1994, 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,7 +70,7 @@ bool test01(void)
   VERIFY( !iss02.eof() );
 
   iss01 >> std::ws;
-  VERIFY( !iss01.fail() );
+  VERIFY( iss01.fail() );
   VERIFY( iss01.eof() );
 
 #ifdef DEBUG_ASSERT
