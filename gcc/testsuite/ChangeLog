@@ -1,5 +1,9 @@
 2000-09-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/format-diag-1.c: New test.
+
+2000-09-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/c90-printf-1.c, gcc.dg/c90-printf-2.c,
 	gcc.dg/c90-scanf-1.c, gcc.dg/c90-scanf-2.c, gcc.dg/c99-printf-1.c,
 	gcc.dg/c99-scanf-1.c, gcc.dg/format-ext-1.c,

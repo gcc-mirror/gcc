@@ -1,3 +1,27 @@
+2000-09-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.h (enum c_tree_index): Add CTI_C_SIZE_TYPE.
+	(c_size_type_node): Define.
+	* c-decl.c (init_decl_processing): Initialize c_size_type_node.
+	* c-common.c (enum format_lengths, enum format_std_version,
+	format_length_info, format_type_detail, BADLEN, NOLENGTHS,
+	format_kind_info, printf_length_specs, scanf_length_specs, T89_I,
+	T99_I, T89_L, T99_LL, TEX_LL, T89_S, T89_UI, T99_UI, T89_UL,
+	T99_ULL, TEX_ULL, T89_US, T89_F, T99_F, T89_D, T99_D, T89_LD,
+	T99_LD, T89_C, T99_SC, T99_UC, T89_V, T94_W, TEX_W, T94_WI,
+	TEX_WI, T99_ST, T99_SST, T99_PD, T99_UPD, T99_IM, T99_UIM,
+	format_types): Define.
+	(format_char_info, print_char_table, scan_char_table,
+	time_char_table): Rearrange for new organization of information
+	about format length modifiers and standard versions.
+	(T_ST): Redefine to use c_size_type_node.
+	(check_format_info): Obtain information about length modifiers and
+	standard versions from tables.  Adjust warning message wordings.
+	Use the name from the user's program for `ll' and `hh' length
+	modifiers in warning messages.  Use more informative names for
+	wanted types where available (for wchar_t, wint_t, size_t, signed
+	size_t, ptrdiff_t, unsigned ptrdiff_t, intmax_t and uintmax_t).
+
 2000-09-01  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (check_final_value): Check for biv use before checking for
