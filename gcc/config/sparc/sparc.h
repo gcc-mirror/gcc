@@ -324,7 +324,12 @@ extern int target_flags;
 #define MASK_HARD_QUAD 0x800
 #define TARGET_HARD_QUAD (target_flags & MASK_HARD_QUAD)
 
-/* Bit 0x1000 currently unused.  */
+/* Non-zero on little-endian machines.  */
+/* ??? Little endian support currently only exists for sparclet-aout and
+   sparc64-elf configurations.  May eventually want to expand the support
+   to all targets, but for now it's kept local to only those two.  */
+#define MASK_LITTLE_ENDIAN 0x1000
+#define TARGET_LITTLE_ENDIAN (target_flags & MASK_LITTLE_ENDIAN)
 
 /* Nonzero if ints are 64 bits.
    This automatically implies longs are 64 bits too.
@@ -530,14 +535,19 @@ extern struct sparc_cpu_select sparc_select[];
 #define BITS_BIG_ENDIAN 1
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
-/* This is true on the SPARC.  */
 #define BYTES_BIG_ENDIAN 1
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
-/* Doubles are stored in memory with the high order word first.  This
-   matters when cross-compiling.  */
 #define WORDS_BIG_ENDIAN 1
+
+/* Define this to set the endianness to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#if defined (__LITTLE_ENDIAN__)
+#define LIBGCC2_WORDS_BIG_ENDIAN 0
+#else
+#define LIBGCC2_WORDS_BIG_ENDIAN 1
+#endif
 
 /* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
