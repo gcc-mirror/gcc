@@ -1,3 +1,9 @@
+2000-04-04  Philippe De Muyter  <phdm@macqel.be>
+
+	* cpphash.c (_cpp_free_definition): Test argnames, not nargs >= 0,
+	before freeing argnames.
+	* cpplib.c (do_ifndef): Cast return value of xstrdup.
+
 2000-04-05  Michael Meissner  <meissner@redhat.com>
 
 	* config/rs6000/rs6000.c (print_operand): Patch from Jonathan

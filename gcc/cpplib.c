@@ -1309,7 +1309,7 @@ do_ifndef (pfile)
   skip = parse_ifdef (pfile, dtable[T_IFNDEF].name);
 
   if (start_of_file && !skip)
-    control_macro = xstrdup (CPP_PWRITTEN (pfile));
+    control_macro = (U_CHAR *) xstrdup (CPP_PWRITTEN (pfile));
 
   conditional_skip (pfile, skip, T_IFNDEF, control_macro);
   return 0;

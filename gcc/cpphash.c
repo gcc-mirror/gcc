@@ -256,7 +256,7 @@ _cpp_free_definition (d)
       nextap = ap->next;
       free (ap);
     }
-  if (d->nargs >= 0)
+  if (d->argnames)
     free (d->argnames);
   free (d);
 }
