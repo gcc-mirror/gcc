@@ -8131,7 +8131,8 @@ maybe_eliminate_biv (bl, loop_start, end, eliminate_p, threshold, insn_count)
 		{
 		  int regno = REGNO (SET_DEST (set));
 
-		  if (REG_IV_TYPE (regno) == GENERAL_INDUCT
+		  if (regno < max_reg_before_loop
+		      && REG_IV_TYPE (regno) == GENERAL_INDUCT
 		      && REG_IV_INFO (regno)->src_reg == bl->biv->src_reg)
 		    p = last;
 		}
