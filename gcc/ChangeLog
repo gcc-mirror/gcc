@@ -1,3 +1,9 @@
+2001-08-30  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (zero_extendqihi2): Changes to
+	define_expand to accomodate target-specific attributes.
+	(anonymous zero_extendqihi2 patterns): New.
+
 Thu Aug 30 18:10:56 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* h8300.md (*andorhi3): New pattern.
