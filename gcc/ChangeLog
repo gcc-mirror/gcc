@@ -1,3 +1,10 @@
+2003-05-27  Denis Chertykov  <denisc@overta.ru>
+
+	* cselib.c (cselib_invalidate_regno): Abort if hardreg have a
+	VOIDmode.
+	* cselib.c (cselib_process_insn): Pass reg_raw_mode for hardreg in
+	call of cselib_invalidate_regno.
+
 2003-05-28  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/mips/linux.h (LIB_SPEC): Add missing -lc and correct

@@ -1019,8 +1019,11 @@ cselib_invalidate_regno (regno, mode)
      pseudos, only REGNO is affected.  For hard regs, we must take MODE
      into account, and we must also invalidate lower register numbers
      if they contain values that overlap REGNO.  */
-  if (regno < FIRST_PSEUDO_REGISTER && mode != VOIDmode) 
+  if (regno < FIRST_PSEUDO_REGISTER)
     {
+      if (mode == VOIDmode)
+	abort ();
+      
       if (regno < max_value_regs)
 	i = 0;
       else
@@ -1427,7 +1430,7 @@ cselib_process_insn (insn)
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (call_used_regs[i])
-	  cselib_invalidate_regno (i, VOIDmode);
+	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       if (! CONST_OR_PURE_CALL_P (insn))
 	cselib_invalidate_mem (callmem);
