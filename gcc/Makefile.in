@@ -150,7 +150,7 @@ libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
 # Directory for header file assert.h.
-includedir = $(prefix)/include
+includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
 assertdir = $(includedir)
 # Extension (if any) to put in installed man-page filename.
