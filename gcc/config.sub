@@ -128,7 +128,8 @@ esac
 case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
-	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
+	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm \
+		| arme[lb] | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
 		| powerpc | powerpcle | sparc64 | 1750a | dsp16xx | mips64 | mipsel \
@@ -718,6 +719,9 @@ else
 case $basic_machine in
 	*-acorn)
 		os=-riscix1.2
+		;;
+	arm*-semi)
+		os=-aout
 		;;
         pdp11-*)
 		os=-none
