@@ -1,3 +1,8 @@
+2000-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (store_parm_decls): Don't build cleanups for parameters
+	while processing_template_decl.
+
 2000-02-07  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cp-tree.h (struct saved_scope): Add incomplete field.
