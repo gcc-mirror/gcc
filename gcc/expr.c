@@ -4417,6 +4417,16 @@ expand_expr (exp, target, tmode, modifier)
     case ABS_EXPR:
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
 
+      /* Handle complex values specially.  */
+      {
+	enum machine_mode opmode
+	  = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+
+	if (GET_MODE_CLASS (opmode) == MODE_COMPLEX_INT
+	    || GET_MODE_CLASS (opmode) == MODE_COMPLEX_FLOAT)
+	  return expand_complex_abs (opmode, op0, target, unsignedp);
+      }
+
       /* Unsigned abs is simply the operand.  Testing here means we don't
 	 risk generating incorrect code below.  */
       if (TREE_UNSIGNED (type))
@@ -5130,8 +5140,8 @@ expand_expr (exp, target, tmode, modifier)
 	  emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
 
 	/* Move the real (op0) and imaginary (op1) parts to their location.  */
-	emit_move_insn (gen_lowpart  (mode, target), op0);
-	emit_move_insn (gen_highpart (mode, target), op1);
+	emit_move_insn (gen_realpart (mode, target), op0);
+	emit_move_insn (gen_imagpart (mode, target), op1);
 
 	/* Complex construction should appear as a single unit.  */
 	group_insns (prev);
@@ -5140,24 +5150,12 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case REALPART_EXPR:
-      {
-	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
-	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
-	if (! target)
-	  target = gen_reg_rtx (mode);
-	emit_move_insn (target, gen_lowpart (mode, op0));
-	return target;
-      }		
+      op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+      return gen_realpart (mode, op0);
       
     case IMAGPART_EXPR:
-      {
-	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
-	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
-	if (! target)
-	  target = gen_reg_rtx (mode);
-	emit_move_insn (target, gen_highpart (mode, op0));
-	return target;
-      }		
+      op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+      return gen_imagpart (mode, op0);
 
     case CONJ_EXPR:
       {
@@ -5177,11 +5175,11 @@ expand_expr (exp, target, tmode, modifier)
 	  emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
 
 	/* Store the realpart and the negated imagpart to target.  */
-	emit_move_insn (gen_lowpart (mode, target), gen_lowpart (mode, op0));
+	emit_move_insn (gen_realpart (mode, target), gen_realpart (mode, op0));
 
-	imag_t = gen_highpart (mode, target);
+	imag_t = gen_imagpart (mode, target);
 	temp   = expand_unop (mode, neg_optab,
-			      gen_highpart (mode, op0), imag_t, 0);
+			      gen_imagpart (mode, op0), imag_t, 0);
 	if (temp != imag_t)
 	  emit_move_insn (imag_t, temp);
 
