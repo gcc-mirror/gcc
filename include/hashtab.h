@@ -145,6 +145,9 @@ extern htab_hash htab_hash_pointer;
 /* An equality function for pointers.  */
 extern htab_eq htab_eq_pointer;
 
+/* A hash function for null-terminated strings.  */
+extern hashval_t htab_hash_string PARAMS ((const PTR));
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
