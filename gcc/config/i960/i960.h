@@ -820,6 +820,10 @@ extern struct rtx_def *i960_function_arg ();
 #define RETURN_IN_MEMORY(TYPE) \
   (TYPE_MODE (TYPE) == BLKmode || int_size_in_bytes (TYPE) > 16)
 
+/* Don't default to pcc-struct-return, because we have already specified
+   exactly how to return structures in the RETURN_IN_MEMORY macro.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    This never happens on 80960.  */

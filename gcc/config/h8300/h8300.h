@@ -461,6 +461,10 @@ enum reg_class { NO_REGS, LONG_REGS, GENERAL_REGS, SP_REG, ALL_REGS, LIM_REG_CLA
 #define RETURN_IN_MEMORY(X) \
   (TYPE_MODE (X) == BLKmode || GET_MODE_SIZE (TYPE_MODE (X)) > 4)
 
+/* Don't default to pcc-struct-return, because we have already specified
+   exactly how to return structures in the RETURN_IN_MEMORY macro.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
 /* When defined, the compiler allows registers explicitly used in the
    rtl to be used as spill registers but prevents the compiler from
    extending the lifetime of these registers.  */
