@@ -526,10 +526,42 @@ void _Jv_ClassReader::read_one_method_attribute (int method_index)
 
   if (is_attribute_name (name, "Exceptions"))
     {
-      /* we ignore this for now */
-      skip (length);
+      _Jv_Method *method = reinterpret_cast<_Jv_Method *>
+	(&def->methods[method_index]);
+      if (method->throws != NULL)
+	throw_class_format_error ("only one Exceptions attribute allowed per method");
+
+      int num_exceptions = read2u ();
+      // We use malloc here because the GC won't scan the method
+      // objects.  FIXME this means a memory leak if we GC a class.
+      // (Currently we never do.)
+      _Jv_Utf8Const **exceptions =
+	(_Jv_Utf8Const **) _Jv_Malloc ((num_exceptions + 1) * sizeof (_Jv_Utf8Const *));
+
+      int out = 0;
+      _Jv_word *pool_data = def->constants.data;
+      for (int i = 0; i < num_exceptions; ++i)
+	{
+	  try
+	    {
+	      int ndx = read2u ();
+	      // JLS 2nd Ed. 4.7.5 requires that the tag not be 0.
+	      if (ndx != 0)
+		{
+		  check_tag (ndx, JV_CONSTANT_Class);
+		  exceptions[out++] = pool_data[ndx].utf8; 
+		}
+	    }
+	  catch (java::lang::Throwable *exc)
+	    {
+	      _Jv_Free (exceptions);
+	      throw exc;
+	    }
+	}
+      exceptions[out] = NULL;
+      method->throws = exceptions;
     }
-  
+
   else if (is_attribute_name (name, "Code"))
     {
       int start_off = pos;
@@ -1206,6 +1238,7 @@ void _Jv_ClassReader::handleMethod
 
   // intialize...
   method->ncode = 0;
+  method->throws = NULL;
   
   if (verify)
     {

@@ -64,10 +64,18 @@ struct _Jv_Constants
 
 struct _Jv_Method
 {
+  // Method name.
   _Jv_Utf8Const *name;
+  // Method signature.
   _Jv_Utf8Const *signature;
+  // Access flags.
   _Jv_ushort accflags;
+  // Pointer to underlying function.
   void *ncode;
+  // NULL-terminated list of exception class names; can be NULL if
+  // there are none such.
+  _Jv_Utf8Const **throws;
+
   _Jv_Method *getNextMethod ()
   { return this + 1; }
 };
