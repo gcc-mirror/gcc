@@ -265,7 +265,15 @@ public abstract class URLStreamHandler
       return true;
     // This comparison is very conservative.  It assumes that any
     // field can be null.
-    if (url1 == null || url2 == null || url1.getPort() != url2.getPort())
+    if (url1 == null || url2 == null)
+      return false;
+    int p1 = url1.getPort ();
+    if (p1 == -1)
+      p1 = url1.handler.getDefaultPort ();
+    int p2 = url2.getPort ();
+    if (p2 == -1)
+      p2 = url2.handler.getDefaultPort ();
+    if (p1 != p2)
       return false;
     String s1, s2;
     s1 = url1.getProtocol();
