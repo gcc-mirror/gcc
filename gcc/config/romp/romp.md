@@ -26,7 +26,7 @@
 ;; Insn type.  Used to default other attribute values.
 
 (define_attr "type"
-  "branch,return,fp,load,loadz,store,call,address,arith,compare,multi,misc"
+  "branch,ibranch,return,fp,load,loadz,store,call,address,arith,compare,multi,misc"
   (const_string "arith"))
 
 ;; Length in bytes.
@@ -39,7 +39,7 @@
 				(const_int 254)))
 		       (const_int 2)
 		       (const_int 4))
-	 (eq_attr "type" "return")	(const_int 2)
+	 (eq_attr "type" "return,ibranch") (const_int 2)
 	 (eq_attr "type" "fp")		(const_int 10)
 	 (eq_attr "type" "call")	(const_int 4)
 	 (eq_attr "type" "load")
@@ -60,12 +60,19 @@
 
 (define_attr "in_delay_slot" "yes,no" 
   (cond [(eq_attr "length" "8,10,38")			(const_string "no")
-	 (eq_attr "type" "branch,return,call,multi")	(const_string "no")]
+	 (eq_attr "type" "branch,ibranch,return,call,multi")
+	 (const_string "no")]
 	(const_string "yes")))
 
-;; Whether insn needs a delay slot.
+;; Whether insn needs a delay slot.  We have to say that two-byte
+;; branches do not need a delay slot.  Otherwise, branch shortening will
+;; try to do something with delay slot insns (we want it to on the PA).
+;; This is a kludge, which should be cleaned up at some point.
+
 (define_attr "needs_delay_slot" "yes,no"
-  (if_then_else (eq_attr "type" "branch,return,call")
+  (if_then_else (ior (and (eq_attr "type" "branch")
+			  (eq_attr "length" "4"))
+		     (eq_attr "type" "ibranch,return,call"))
 		(const_string "yes") (const_string "no")))
 
 ;; What insn does to the condition code.
@@ -75,7 +82,7 @@
   (cond [(eq_attr "type" "load,loadz")		(const_string "change0")
 	 (eq_attr "type" "store")		(const_string "none")
 	 (eq_attr "type" "fp,call")		(const_string "clobber")
-	 (eq_attr "type" "branch,return")	(const_string "none")
+	 (eq_attr "type" "branch,ibranch,return") (const_string "none")
 	 (eq_attr "type" "address")		(const_string "change0")
 	 (eq_attr "type" "compare")		(const_string "compare")
 	 (eq_attr "type" "arith")		(const_string "sets")]
@@ -2711,8 +2718,7 @@
   [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
   ""
   "br%# %0"
-  [(set_attr "type" "branch")
-   (set_attr "length" "2")])
+  [(set_attr "type" "ibranch")])
 
 ;; Table jump for switch statements:
 (define_insn "tablejump"
@@ -2721,8 +2727,7 @@
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "br%# %0"
-  [(set_attr "type" "branch")
-   (set_attr "length" "2")])
+  [(set_attr "type" "ibranch")])
 
 ;;- Local variables:
 ;;- mode:emacs-lisp
