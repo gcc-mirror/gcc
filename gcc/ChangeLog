@@ -1,3 +1,7 @@
+Thu Jul  9 22:58:59 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (alias.o): Depend on $(EXPR_H).
+
 Thu Jul  9 18:24:56 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): If using an equivalence from
