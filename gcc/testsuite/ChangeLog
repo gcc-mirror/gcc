@@ -1,3 +1,12 @@
+2003-06-04  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-2.c: Add tests for tan(atan(x)).
+	* gcc.dg/builtins-3.c: Add tests for tan(0.0) and atan(0.0).
+	* gcc.dg/builtins-7.c: Add tests for tan(atan(x)) == x.
+	* gcc.dg/builtins-17.c: New test case.
+	* gcc.dg/i386-387-4.c: New test case.
+	* gcc.c-torture/execute/ieee/mzero4.c: New test case.
+
 2003-06-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/ultrasp9.c: New test.

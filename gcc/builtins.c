@@ -79,6 +79,11 @@ tree built_in_decls[(int) END_BUILTINS];
    required to implement the function call in all cases.  */
 tree implicit_built_in_decls[(int) END_BUILTINS];
 
+/* Trigonometric and mathematical constants used in builtin folding.  */
+static bool builtin_dconsts_init = 0;
+static REAL_VALUE_TYPE dconstpi;
+static REAL_VALUE_TYPE dconste;
+
 static int get_pointer_alignment	PARAMS ((tree, unsigned int));
 static tree c_strlen			PARAMS ((tree));
 static const char *c_getstr		PARAMS ((tree));
@@ -171,7 +176,22 @@ static tree fold_trunc_transparent_mathfn PARAMS ((tree));
 static bool readonly_data_expr		PARAMS ((tree));
 static rtx expand_builtin_fabs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_cabs		PARAMS ((tree, rtx));
+static void init_builtin_dconsts	PARAMS ((void));
 
+/* Initialize mathematical constants for constant folding builtins.
+   These constants need to be given to atleast 160 bits precision.  */
+
+static void
+init_builtin_dconsts ()
+{
+  real_from_string (&dconstpi,
+    "3.1415926535897932384626433832795028841971693993751058209749445923078");
+  real_from_string (&dconste,
+    "2.7182818284590452353602874713526624977572470936999595749669676277241");
+
+  builtin_dconsts_init = true;
+}
+  
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
    The alignment returned is, by default, the alignment of the thing that
@@ -5213,7 +5233,7 @@ fold_builtin (exp)
 
 	  /* Optimize sin(0.0) = 0.0.  */
 	  if (real_zerop (arg))
-	    return build_real (type, dconst0);
+	    return arg;
 	}
       break;
 
@@ -5241,6 +5261,41 @@ fold_builtin (exp)
 	  /* Optimize exp(0.0) = 1.0.  */
 	  if (real_zerop (arg))
 	    return build_real (type, dconst1);
+
+	  /* Optimize exp(1.0) = e.  */
+	  if (real_onep (arg))
+	    {
+	      REAL_VALUE_TYPE cst;
+
+	      if (! builtin_dconsts_init)
+		init_builtin_dconsts ();
+	      real_convert (&cst, TYPE_MODE (type), &dconste);
+	      return build_real (type, cst);
+	    }
+
+	  /* Attempt to evaluate exp at compile-time.  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (arg))
+	    {
+	      REAL_VALUE_TYPE cint;
+	      REAL_VALUE_TYPE c;
+	      HOST_WIDE_INT n;
+
+	      c = TREE_REAL_CST (arg);
+	      n = real_to_integer (&c);
+	      real_from_integer (&cint, VOIDmode, n,
+				 n < 0 ? -1 : 0, 0);
+	      if (real_identical (&c, &cint))
+		{
+		  REAL_VALUE_TYPE x;
+
+		  if (! builtin_dconsts_init)
+		    init_builtin_dconsts ();
+		  real_powi (&x, TYPE_MODE (type), &dconste, n);
+		  return build_real (type, x);
+		}
+	    }
 
 	  /* Optimize exp(log(x)) = x.  */
 	  fcode = builtin_mathfn_code (arg);
@@ -5297,6 +5352,53 @@ fold_builtin (exp)
 	      arglist = build_tree_list (NULL_TREE, arg0);
 	      logfn = build_function_call_expr (fndecl, arglist);
 	      return fold (build (MULT_EXPR, type, arg1, logfn));
+	    }
+	}
+      break;
+
+    case BUILT_IN_TAN:
+    case BUILT_IN_TANF:
+    case BUILT_IN_TANL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	{
+	  enum built_in_function fcode;
+	  tree arg = TREE_VALUE (arglist);
+
+	  /* Optimize tan(0.0) = 0.0.  */
+	  if (real_zerop (arg))
+	    return arg;
+
+	  /* Optimize tan(atan(x)) = x.  */
+	  fcode = builtin_mathfn_code (arg);
+	  if (flag_unsafe_math_optimizations
+	      && (fcode == BUILT_IN_ATAN
+		  || fcode == BUILT_IN_ATANF
+		  || fcode == BUILT_IN_ATANL))
+	    return TREE_VALUE (TREE_OPERAND (arg, 1));
+	}
+      break;
+
+    case BUILT_IN_ATAN:
+    case BUILT_IN_ATANF:
+    case BUILT_IN_ATANL:
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	{
+	  tree arg = TREE_VALUE (arglist);
+
+	  /* Optimize atan(0.0) = 0.0.  */
+	  if (real_zerop (arg))
+	    return arg;
+
+	  /* Optimize atan(1.0) = pi/4.  */
+	  if (real_onep (arg))
+	    {
+	      REAL_VALUE_TYPE cst;
+
+	      if (! builtin_dconsts_init)
+		init_builtin_dconsts ();
+	      real_convert (&cst, TYPE_MODE (type), &dconstpi);
+	      cst.exp -= 2;
+	      return build_real (type, cst);
 	    }
 	}
       break;
@@ -5387,7 +5489,7 @@ fold_builtin (exp)
 		  REAL_VALUE_TYPE cint;
 		  HOST_WIDE_INT n;
 
-		  n = real_to_integer(&c);
+		  n = real_to_integer (&c);
 		  real_from_integer (&cint, VOIDmode, n,
 				     n < 0 ? -1 : 0, 0);
 		  if (real_identical (&c, &cint))
