@@ -1,5 +1,8 @@
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
+	* pa.c (hppa_init_pic_save): Set rtx_unchanging for
+	PIC_OFFSET_TABLE_SAVE_RTX.
+
 	* pa.c (uint32_operand): Don't use long constant >= 2^32.
 	(emit_move_sequence): Use HOST_WIDE_INT constants.  Don't worry
 	about 32->64 bit sign extension if 32 bit HOST_WIDE_INTs.
