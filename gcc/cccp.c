@@ -2195,6 +2195,33 @@ path_include (path)
     }
 }
 
+/* Return the address of the first character in S that equals C.
+   S is an array of length N, possibly containing '\0's, and followed by '\0'.
+   Return 0 if there is no such character.  Assume that C itself is not '\0'.
+   If we knew we could use memchr, we could just invoke memchr (S, C, N),
+   but unfortunately memchr isn't autoconfigured yet.  */
+
+static U_CHAR *
+index0 (s, c, n)
+     U_CHAR *s;
+     int c;
+     int n;
+{
+  for (;;) {
+    char *q = index (s, c);
+    if (q)
+      return (U_CHAR *) q;
+    else {
+      int l = strlen (s);
+      if (l == n)
+	return 0;
+      l++;
+      s += l;
+      n -= l;
+    }
+  }
+}
+
 /* Pre-C-Preprocessor to translate ANSI trigraph idiocy in BUF
    before main CCCP processing.  Name `pcp' is also in honor of the
    drugs the trigraph designers must have been on.
@@ -2208,11 +2235,12 @@ static void
 trigraph_pcp (buf)
      FILE_BUF *buf;
 {
-  register U_CHAR c, *fptr, *bptr, *sptr;
+  register U_CHAR c, *fptr, *bptr, *sptr, *lptr;
   int len;
 
   fptr = bptr = sptr = buf->buf;
-  while ((sptr = (U_CHAR *) index (sptr, '?')) != NULL) {
+  lptr = fptr + buf->length;
+  while ((sptr = (U_CHAR *) index0 (sptr, '?', lptr - sptr)) != NULL) {
     if (*++sptr != '?')
       continue;
     switch (*++sptr) {
