@@ -1229,10 +1229,6 @@ typedef struct rs6000_stack {
 /* Align an address */
 #define RS6000_ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
 
-/* Initialize data used by insn expanders.  This is called from
-   init_emit, once for each function, before code is generated. */
-#define INIT_EXPANDERS rs6000_init_expanders ()
-
 /* Size of V.4 varargs area in bytes */
 #define RS6000_VARARGS_SIZE \
   ((GP_ARG_NUM_REG * (TARGET_32BIT ? 4 : 8)) + (FP_ARG_NUM_REG * 8) + 8)
@@ -1388,6 +1384,10 @@ typedef struct machine_function
 {
   /* Whether a System V.4 varargs area was created.  */
   int sysv_varargs_p;
+  /* Set if a return address rtx for loading from LR was created.  */
+  struct rtx_def *ra_rtx;
+  /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
+  int ra_needs_full_frame;
 } machine_function;
 
 /* Define a data type for recording info about an argument list
@@ -1649,17 +1649,12 @@ typedef struct rs6000_args
 /* The current return address is in link register (65).  The return address
    of anything farther back is accessed normally at an offset of 8 from the
    frame pointer.  */
-#define RETURN_ADDR_RTX(COUNT, FRAME)			\
-  (((COUNT) == -1)					\
-   ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)		\
-   : gen_rtx_MEM (Pmode,				\
-		  memory_address			\
-		  (Pmode, 				\
-		   plus_constant (copy_to_reg		\
-				  (gen_rtx_MEM (Pmode,	\
-						memory_address (Pmode, \
-								(FRAME)))), \
-				  RETURN_ADDRESS_OFFSET))))
+#define RETURN_ADDR_RTX(COUNT, FRAME)                 \
+  (rs6000_return_addr (COUNT, FRAME))
+
+extern struct rtx_def* rs6000_return_addr (int, struct rtx_def *rtx);
+
+
 
 /* Definitions for register eliminations.
 

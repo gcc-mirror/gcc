@@ -122,6 +122,8 @@ static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static void rs6000_free_machine_status PARAMS ((struct function *));
 static void rs6000_init_machine_status PARAMS ((struct function *));
+static void rs6000_mark_machine_status PARAMS ((struct function *));
+static int rs6000_ra_ever_killed PARAMS ((void));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -399,6 +401,11 @@ rs6000_override_options (default_cpu)
 
   if (TARGET_TOC) 
     ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
+
+  /* Arrange to save and restore machine status around nested functions.  */
+  init_machine_status = rs6000_init_machine_status;
+  mark_machine_status = rs6000_mark_machine_status;
+  free_machine_status = rs6000_free_machine_status;
 }
 
 void
@@ -3619,7 +3626,7 @@ rs6000_got_register (value)
   return pic_offset_table_rtx;
 }
 
-/* Functions to save and restore sysv_varargs_p.
+/* Functions to init, mark and free struct machine_function.
    These will be called, via pointer variables,
    from push_function_context and pop_function_context.  */
 
@@ -3627,9 +3634,15 @@ static void
 rs6000_init_machine_status (p)
      struct function *p;
 {
-  p->machine = (machine_function *) xmalloc (sizeof (machine_function));
+  p->machine = (machine_function *) xcalloc (1, sizeof (machine_function));
+}
 
-  p->machine->sysv_varargs_p = 0;
+static void
+rs6000_mark_machine_status (p)
+     struct function *p;
+{
+  if (p->machine)
+    ggc_mark_rtx (p->machine->ra_rtx);
 }
 
 static void
@@ -3641,17 +3654,6 @@ rs6000_free_machine_status (p)
 
   free (p->machine);
   p->machine = NULL;
-}
-
-
-/* Do anything needed before RTL is emitted for each function.  */
-
-void
-rs6000_init_expanders ()
-{
-  /* Arrange to save and restore machine status around nested functions.  */
-  init_machine_status = rs6000_init_machine_status;
-  free_machine_status = rs6000_free_machine_status;
 }
 
 
@@ -4824,10 +4826,11 @@ rs6000_stack_info ()
   info_ptr->fp_size = 8 * (64 - info_ptr->first_fp_reg_save);
 
   /* Does this function call anything? */
-  info_ptr->calls_p = ! current_function_is_leaf;
+  info_ptr->calls_p = (! current_function_is_leaf
+		       || cfun->machine->ra_needs_full_frame);
 
   /* Determine if we need to save the link register */
-  if (regs_ever_live[LINK_REGISTER_REGNUM]
+  if (rs6000_ra_ever_killed ()
       || (DEFAULT_ABI == ABI_AIX && profile_flag)
 #ifdef TARGET_RELOCATABLE
       || (TARGET_RELOCATABLE && (get_pool_size () != 0))
@@ -5042,6 +5045,66 @@ debug_stack_info (info)
     fprintf (stderr, "\treg_size            = %5d\n", info->reg_size);
 
   fprintf (stderr, "\n");
+}
+
+rtx
+rs6000_return_addr (count, frame)
+     int count;
+     rtx frame;
+{
+  rtx init, reg;
+
+  /* Currently we don't optimize very well between prolog and body code and
+     for PIC code the code can be actually quite bad, so don't try to be
+     too clever here.  */
+  if (count != 0 || flag_pic != 0)
+    {
+      cfun->machine->ra_needs_full_frame = 1;
+      return
+	gen_rtx_MEM (Pmode,
+	  memory_address (Pmode,
+			  plus_constant (copy_to_reg (gen_rtx_MEM (Pmode,
+								   memory_address (Pmode, frame))),
+					 RETURN_ADDRESS_OFFSET)));
+    }
+
+  reg = cfun->machine->ra_rtx;
+  if (reg == NULL)
+    {
+      /* No rtx yet.  Invent one, and initialize it from LR in
+         the prologue.  */
+      reg = gen_reg_rtx (Pmode);
+      cfun->machine->ra_rtx = reg;
+      init = gen_rtx_SET (VOIDmode, reg,
+			  gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+
+      /* Emit the insn to the prologue with the other argument copies.  */
+      push_topmost_sequence ();
+      emit_insn_after (init, get_insns ());
+      pop_topmost_sequence ();
+    }
+
+  return reg;
+}
+
+static int
+rs6000_ra_ever_killed ()
+{
+  rtx top;
+
+#ifdef ASM_OUTPUT_MI_THUNK
+  if (current_function_is_thunk)
+    return 0;
+#endif
+  if (!cfun->machine->ra_rtx || cfun->machine->ra_needs_full_frame)
+    return regs_ever_live[LINK_REGISTER_REGNUM];
+
+  push_topmost_sequence ();
+  top = get_insns ();
+  pop_topmost_sequence ();
+
+  return reg_set_between_p (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM), 
+			    top, NULL_RTX);
 }
 
 /* Add a REG_MAYBE_DEAD note to the insn.  */
@@ -5553,7 +5616,7 @@ rs6000_emit_prologue()
 
   /* If we use the link register, get it into r0.  */
   if (info->lr_save_p)
-    emit_move_insn (gen_rtx_REG (Pmode, 0), 
+    emit_move_insn (gen_rtx_REG (Pmode, 0),
 		    gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
 
   /* If we need to save CR, put it into r12.  */
