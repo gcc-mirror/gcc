@@ -973,8 +973,8 @@ fp_prec_to_size (int prec)
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) == prec)
-      return GET_MODE_SIZE (mode) * BITS_PER_UNIT;
+    if (GET_MODE_PRECISION (mode) == prec)
+      return GET_MODE_BITSIZE (mode);
 
   abort ();
 }
@@ -986,8 +986,8 @@ fp_size_to_prec (int size)
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_SIZE (mode) * BITS_PER_UNIT == size)
-      return GET_MODE_BITSIZE (mode);
+    if (GET_MODE_BITSIZE (mode) == size)
+      return GET_MODE_PRECISION (mode);
 
   abort ();
 }

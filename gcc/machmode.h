@@ -76,15 +76,15 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 #define SCALAR_FLOAT_MODE_P(MODE)		\
   (GET_MODE_CLASS (MODE) == MODE_FLOAT)
 
-/* Get the size in bytes of an object of mode MODE.  */
+/* Get the size in bytes and bits of an object of mode MODE.  */
 
 extern CONST_MODE_SIZE unsigned char mode_size[NUM_MACHINE_MODES];
-#define GET_MODE_SIZE(MODE)   mode_size[MODE]
+#define GET_MODE_SIZE(MODE)    ((unsigned short) mode_size[MODE])
+#define GET_MODE_BITSIZE(MODE) ((unsigned short) (GET_MODE_SIZE (MODE) * BITS_PER_UNIT))
 
-/* Get the size in bits of an object of mode MODE.  */
-
-extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
-#define GET_MODE_BITSIZE(MODE)  mode_bitsize[MODE]
+/* Get the number of value bits of an object of mode MODE.  */
+extern const unsigned short mode_precision[NUM_MACHINE_MODES];
+#define GET_MODE_PRECISION(MODE)  mode_precision[MODE]
 
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */

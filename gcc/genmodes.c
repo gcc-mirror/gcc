@@ -56,7 +56,7 @@ struct mode_data
 
   const char *name;		/* printable mode name -- SI, not SImode */
   enum mode_class class;	/* this mode class */
-  unsigned int bitsize;		/* size in bits, equiv to TYPE_PRECISION */
+  unsigned int precision;	/* size in bits, equiv to TYPE_PRECISION */
   unsigned int bytesize;	/* storage size in addressable units */
   unsigned int ncomponents;	/* number of subunits */
   unsigned int alignment;	/* mode alignment */
@@ -262,13 +262,13 @@ enum requirement { SET, UNSET, OPTIONAL };
 
 static void
 validate_mode (struct mode_data *m,
-	       enum requirement r_bitsize,
+	       enum requirement r_precision,
 	       enum requirement r_bytesize,
 	       enum requirement r_component,
 	       enum requirement r_ncomponents,
 	       enum requirement r_format)
 {
-  validate_field (m, bitsize);
+  validate_field (m, precision);
   validate_field (m, bytesize);
   validate_field (m, component);
   validate_field (m, ncomponents);
@@ -304,7 +304,7 @@ complete_mode (struct mode_data *m)
 
       validate_mode (m, UNSET, UNSET, UNSET, UNSET, UNSET);
 
-      m->bitsize = 0;
+      m->precision = 0;
       m->bytesize = 0;
       m->ncomponents = 0;
       m->component = 0;
@@ -349,8 +349,8 @@ complete_mode (struct mode_data *m)
       /* Complex modes should have a component indicated, but no more.  */
       validate_mode (m, UNSET, UNSET, SET, UNSET, UNSET);
       m->ncomponents = 2;
-      if (m->component->bitsize != (unsigned int)-1)
-	m->bitsize = 2 * m->component->bitsize;
+      if (m->component->precision != (unsigned int)-1)
+	m->precision = 2 * m->component->precision;
       m->bytesize = 2 * m->component->bytesize;
       break;
 
@@ -358,8 +358,8 @@ complete_mode (struct mode_data *m)
     case MODE_VECTOR_FLOAT:
       /* Vector modes should have a component and a number of components.  */
       validate_mode (m, UNSET, UNSET, SET, SET, UNSET);
-      if (m->component->bitsize != (unsigned int)-1)
-	m->bitsize = m->ncomponents * m->component->bitsize;
+      if (m->component->precision != (unsigned int)-1)
+	m->precision = m->ncomponents * m->component->precision;
       m->bytesize = m->ncomponents * m->component->bytesize;
       break;
 
@@ -413,7 +413,7 @@ make_complex_modes (enum mode_class class,
   for (m = modes[class]; m; m = m->next)
     {
       /* Skip BImode.  FIXME: BImode probably shouldn't be MODE_INT.  */
-      if (m->bitsize == 1)
+      if (m->precision == 1)
 	continue;
 
       if (strlen (m->name) >= sizeof buf)
@@ -479,7 +479,7 @@ make_vector_modes (enum mode_class class, unsigned int width,
 	 not be necessary.  */
       if (class == MODE_FLOAT && m->bytesize == 1)
 	continue;
-      if (class == MODE_INT && m->bitsize == 1)
+      if (class == MODE_INT && m->precision == 1)
 	continue;
 
       if ((size_t)snprintf (buf, sizeof buf, "V%u%s", ncomponents, m->name)
@@ -515,12 +515,12 @@ make_special_mode (enum mode_class class, const char *name,
 
 static void
 make_int_mode (const char *name,
-	       unsigned int bitsize, unsigned int bytesize,
+	       unsigned int precision, unsigned int bytesize,
 	       const char *file, unsigned int line)
 {
   struct mode_data *m = new_mode (MODE_INT, name, file, line);
   m->bytesize = bytesize;
-  m->bitsize = bitsize;
+  m->precision = precision;
 }
 
 #define FLOAT_MODE(N, Y, F)             FRACTIONAL_FLOAT_MODE (N, -1, Y, F)
@@ -529,13 +529,13 @@ make_int_mode (const char *name,
 
 static void
 make_float_mode (const char *name,
-		 unsigned int bitsize, unsigned int bytesize,
+		 unsigned int precision, unsigned int bytesize,
 		 const char *format,
 		 const char *file, unsigned int line)
 {
   struct mode_data *m = new_mode (MODE_FLOAT, name, file, line);
   m->bytesize = bytesize;
-  m->bitsize = bitsize;
+  m->precision = precision;
   m->format = format;
 }
 
@@ -565,7 +565,7 @@ reset_float_format (const char *name, const char *format,
   make_partial_integer_mode (#M, "P" #M, -1, __FILE__, __LINE__)
 static void ATTRIBUTE_UNUSED
 make_partial_integer_mode (const char *base, const char *name,
-			   unsigned int bitsize,
+			   unsigned int precision,
 			   const char *file, unsigned int line)
 {
   struct mode_data *m;
@@ -582,7 +582,7 @@ make_partial_integer_mode (const char *base, const char *name,
     }
   
   m = new_mode (MODE_PARTIAL_INT, name, file, line);
-  m->bitsize = bitsize;
+  m->precision = precision;
   m->component = component;
 }
 
@@ -645,18 +645,18 @@ create_modes (void)
 /* Processing.  */
 
 /* Sort a list of modes into the order needed for the WIDER field:
-   major sort by bitsize, minor sort by component bitsize.
+   major sort by precision, minor sort by component precision.
 
    For instance:
      QI < HI < SI < DI < TI
      V4QI < V2HI < V8QI < V4HI < V2SI.
 
-   If the bitsize is not set, sort by the bytesize.  A mode with
-   bitsize set gets sorted before a mode without bitsize set, if
+   If the precision is not set, sort by the bytesize.  A mode with
+   precision set gets sorted before a mode without precision set, if
    they have the same bytesize; this is the right thing because
-   the bitsize must always be smaller than the bytesize * BITS_PER_UNIT.
+   the precision must always be smaller than the bytesize * BITS_PER_UNIT.
    We don't have to do anything special to get this done -- an unset
-   bitsize shows up as (unsigned int)-1, i.e. UINT_MAX.  */
+   precision shows up as (unsigned int)-1, i.e. UINT_MAX.  */
 static int
 cmp_modes (const void *a, const void *b)
 {
@@ -668,9 +668,9 @@ cmp_modes (const void *a, const void *b)
   else if (m->bytesize < n->bytesize)
     return -1;
 
-  if (m->bitsize > n->bitsize)
+  if (m->precision > n->precision)
     return 1;
-  else if (m->bitsize < n->bitsize)
+  else if (m->precision < n->precision)
     return -1;
 
   if (!m->component && !n->component)
@@ -681,9 +681,9 @@ cmp_modes (const void *a, const void *b)
   else if (m->component->bytesize < n->component->bytesize)
     return -1;
 
-  if (m->component->bitsize > n->component->bitsize)
+  if (m->component->precision > n->component->precision)
     return 1;
-  else if (m->component->bitsize < n->component->bitsize)
+  else if (m->component->precision < n->component->precision)
     return -1;
 
   return 0;
@@ -802,7 +802,7 @@ enum machine_mode\n{");
 	 end will try to use it for bitfields in structures and the
 	 like, which we do not want.  Only the target md file should
 	 generate BImode widgets.  */
-      if (first && first->bitsize == 1)
+      if (first && first->precision == 1)
 	first = first->next;
 
       if (first && last)
@@ -892,16 +892,16 @@ emit_mode_class (void)
 }
 
 static void
-emit_mode_bitsize (void)
+emit_mode_precision (void)
 {
   enum mode_class c;
   struct mode_data *m;
 
-  print_decl ("unsigned short", "mode_bitsize", "NUM_MACHINE_MODES");
+  print_decl ("unsigned short", "mode_precision", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
-    if (m->bitsize != (unsigned int)-1)
-      tagged_printf ("%u", m->bitsize, m->name);
+    if (m->precision != (unsigned int)-1)
+      tagged_printf ("%u", m->precision, m->name);
     else
       tagged_printf ("%u*BITS_PER_UNIT", m->bytesize, m->name);
 
@@ -968,8 +968,8 @@ emit_mode_mask (void)
    : ((unsigned HOST_WIDE_INT) 1 << (m)) - 1\n");
 
   for_all_modes (c, m)
-    if (m->bitsize != (unsigned int)-1)
-      tagged_printf ("MODE_MASK (%u)", m->bitsize, m->name);
+    if (m->precision != (unsigned int)-1)
+      tagged_printf ("MODE_MASK (%u)", m->precision, m->name);
     else
       tagged_printf ("MODE_MASK (%u*BITS_PER_UNIT)", m->bytesize, m->name);
 
@@ -1020,7 +1020,7 @@ emit_class_narrowest_mode (void)
     /* Bleah, all this to get the comment right for MIN_MODE_INT.  */
     tagged_printf ("MIN_%s", mode_class_names[c],
 		   modes[c]
-		   ? (modes[c]->bitsize != 1
+		   ? (modes[c]->precision != 1
 		      ? modes[c]->name
 		      : (modes[c]->next
 			 ? modes[c]->next->name
@@ -1156,7 +1156,7 @@ emit_insn_modes_c (void)
   emit_insn_modes_c_header ();
   emit_mode_name ();
   emit_mode_class ();
-  emit_mode_bitsize ();
+  emit_mode_precision ();
   emit_mode_size ();
   emit_mode_nunits ();
   emit_mode_wider ();
