@@ -44,14 +44,12 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
   (JNIEnv *env, jobject obj)
 {
   GtkWidget *label;
-  GtkContainer *ebox;
 
   gdk_threads_enter ();
-  ebox = GTK_CONTAINER (gtk_type_new (gtk_event_box_get_type ()));
-  label = GTK_WIDGET (gtk_type_new (gtk_label_get_type ()));
-  gtk_container_add (ebox, label);
-  gtk_widget_show (label);
+
+  label = gtk_label_new (NULL);
+
   gdk_threads_leave ();
 
-  NSA_SET_PTR (env, obj, ebox);
+  NSA_SET_PTR (env, obj, label);
 }
