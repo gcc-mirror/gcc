@@ -2014,6 +2014,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			      REG_NOTES (i1) = REG_NOTES (temp);
 			      delete_insn (temp);
 			    }
+			  if (new_start == 0)
+			    new_start = first;
 			}
 		      if (m->savemode != VOIDmode)
 			{
