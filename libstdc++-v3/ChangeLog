@@ -1,5 +1,11 @@
 2004-01-23  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/13838
+	* include/debug/bitset (operator|=): Fix typo.
+	* testsuite/23_containers/bitset/operations/13838.cc: New.
+
+2004-01-23  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.tcc (insert(size_type,
 	const _CharT*, size_type __n)): Fix length_error check.
 	(replace(size_type, size_type, const _CharT*, size_type):
