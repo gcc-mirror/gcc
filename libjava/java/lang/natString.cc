@@ -154,7 +154,7 @@ java::lang::String::intern()
   strhash_count++;
   *ptr = this;
   // When string is GC'd, clear the slot in the hash table.
-  _Jv_RegisterFinalizer ((void *) this, unintern);
+  // _Jv_RegisterFinalizer ((void *) this, unintern);
   return this;
 }
 
