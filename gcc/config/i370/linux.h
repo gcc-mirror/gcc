@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 /* TODO: convert include to ${tm_file} list in config.gcc.  */
 #include "i370/i370.h"
 
-/* Target OS preprocessor built-ins.  */	\
+/* Target OS preprocessor built-ins.  */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define_std ("unix");		\
