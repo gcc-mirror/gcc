@@ -1,3 +1,11 @@
+2003-09-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.host: New file.
+	* config.gcc: Remove some host-specific stuff and some
+	logic needed only for repeated invocation.
+	* configure.in: Use config.host.
+	* configure: Regenerate.
+
 2003-09-01  Josef Zlomek  <zlomekj@suse.cz>
 
 	* c-typeck.c (build_binary_op): Kill BIT_ANDTC_EXPR.
