@@ -5738,7 +5738,8 @@ expand_expr (exp, target, tmode, modifier)
 	      left_cleanups = integer_zero_node;
 	    if (! right_cleanups)
 	      right_cleanups = integer_zero_node;
-	    new_cleanups = build (COND_EXPR, void_type_node, cond,
+	    new_cleanups = build (COND_EXPR, void_type_node,
+				  truthvalue_conversion (cond),
 				  left_cleanups, right_cleanups);
 	    new_cleanups = fold (new_cleanups);
 
