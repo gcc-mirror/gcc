@@ -1,5 +1,10 @@
 2003-02-05  Richard Henderson  <rth@redhat.com>
 
+        * integrate.c (output_inline_function): Reset input_filename
+        and lineno from the decl before rest_of_compilation.
+
+2003-02-05  Richard Henderson  <rth@redhat.com>
+
 	* defaults.h (CLZ_DEFINED_VALUE_AT_ZERO): New.
 	(CTZ_DEFINED_VALUE_AT_ZERO): New.
 	* doc/rtl.texi, doc/tm.texi: Document them.
