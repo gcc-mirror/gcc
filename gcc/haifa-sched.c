@@ -2117,6 +2117,16 @@ check_live_1 (src, x)
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
+  if (GET_CODE (reg) == PARALLEL
+      && GET_MODE (reg) == BLKmode)
+    {
+      register int i;
+      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
+	if (check_live_1 (src, XVECEXP (reg, 0, i)))
+	  return 1;
+      return 0;
+    }
+
   if (GET_CODE (reg) != REG)
     return 1;
 
@@ -2184,6 +2194,15 @@ update_live_1 (src, x)
 	 || GET_CODE (reg) == SIGN_EXTRACT
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
+
+  if (GET_CODE (reg) == PARALLEL
+      && GET_MODE (reg) == BLKmode)
+    {
+      register int i;
+      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
+	update_live_1 (src, XVECEXP (reg, 0, i));
+      return;
+    }
 
   if (GET_CODE (reg) != REG)
     return;
@@ -3288,6 +3307,17 @@ sched_analyze_1 (x, insn)
   if (dest == 0)
     return;
 
+  if (GET_CODE (dest) == PARALLEL
+      && GET_MODE (dest) == BLKmode)
+    {
+      register int i;
+      for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+	sched_analyze_1 (XVECEXP (dest, 0, i), insn);
+      if (GET_CODE (x) == SET)
+	sched_analyze_2 (SET_SRC (x), insn);
+      return;
+    }
+
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SUBREG
       || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
     {
@@ -3982,6 +4012,15 @@ sched_note_set (x, death)
   if (reg == 0)
     return;
 
+  if (GET_CODE (reg) == PARALLEL
+      && GET_MODE (reg) == BLKmode)
+    {
+      register int i;
+      for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
+	sched_note_set (XVECEXP (reg, 0, i), death);
+      return;
+    }
+
   while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == STRICT_LOW_PART
 	 || GET_CODE (reg) == SIGN_EXTRACT || GET_CODE (reg) == ZERO_EXTRACT)
     {
@@ -4215,18 +4254,31 @@ birthing_insn_p (pat)
     return 0;
 
   if (GET_CODE (pat) == SET
-      && GET_CODE (SET_DEST (pat)) == REG)
+      && (GET_CODE (SET_DEST (pat)) == REG
+	  || (GET_CODE (SET_DEST (pat)) == PARALLEL
+	      && GET_MODE (SET_DEST (pat)) == BLKmode)))
     {
       rtx dest = SET_DEST (pat);
-      int i = REGNO (dest);
+      int i;
 
       /* It would be more accurate to use refers_to_regno_p or
-         reg_mentioned_p to determine when the dest is not live before this
-         insn.  */
-
-      if (REGNO_REG_SET_P (bb_live_regs, i))
-	return (REG_N_SETS (i) == 1);
-
+	 reg_mentioned_p to determine when the dest is not live before this
+	 insn.  */
+      if (GET_CODE (dest) == REG)
+	{
+	  i = REGNO (dest);
+	  if (REGNO_REG_SET_P (bb_live_regs, i))
+	    return (REG_N_SETS (i) == 1);
+	}
+      else
+	{
+	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+	    {
+	      int regno = REGNO (SET_DEST (XVECEXP (dest, 0, i)));
+	      if (REGNO_REG_SET_P (bb_live_regs, regno))
+		return (REG_N_SETS (regno) == 1);
+	    }
+	}
       return 0;
     }
   if (GET_CODE (pat) == PARALLEL)
@@ -4638,6 +4690,16 @@ attach_deaths (x, insn, set_p)
       attach_deaths (XEXP (x, 2), insn, 0);
       return;
 
+    case PARALLEL:
+      if (set_p
+	  && GET_MODE (x) == BLKmode)
+	{
+	  for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	    attach_deaths (SET_DEST (XVECEXP (x, 0, i)), insn, 1);
+	  return;
+	}
+
+      /* fallthrough */
     default:
       /* Other cases: walk the insn.  */
       fmt = GET_RTX_FORMAT (code);

@@ -6,6 +6,16 @@ Fri Sep 11 23:55:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	(count_reg_sets_1): Likewise.
 	(count_reg_references):	Likewise.
 	* rtlanal.c (note_stores): Likewise.
+	(reg_overlap_mentioned_p): Likewise.
+	* haifa-sched.c (check_live_1): Likewise.
+	(update_live_1): Likewise.
+	(sched_analyze_1): Likewise.
+	(sched_note_set): Likewise.
+	(birthing_insn_p): Likewise.
+	(attach_deaths): Likewise.
+
+	* config/sparc/sparc.md (movdf_const_intreg_sp64): Disable.
+
 
 Fri Sep 11 22:57:55 1998  Eric Dumazet  <dumazet@cosmosbay.com>
 

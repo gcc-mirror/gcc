@@ -851,6 +851,18 @@ reg_overlap_mentioned_p (x, in)
   else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
 	   || GET_CODE (x) == CC0)
     return reg_mentioned_p (x, in);
+  else if (GET_CODE (x) == PARALLEL
+	   && GET_MODE (x) == BLKmode)
+    {
+      register int i;
+
+      /* If any register in here refers to it
+	 we return true.  */
+      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	if (reg_overlap_mentioned_p (SET_DEST (XVECEXP (x, 0, i)), in))
+	  return 1;
+      return 0;
+    }
   else
     abort ();
 
