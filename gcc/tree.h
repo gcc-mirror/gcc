@@ -1402,6 +1402,8 @@ extern void pushlevel				PROTO((int));
      REVERSE -- reverse the order of decls before returning them.
      FUNCTIONBODY -- nonzero if this level is the body of a function.  */
 extern tree poplevel				PROTO((int, int, int));
+/* Return the BLOCK node for the current scope level.  */
+extern tree current_block			PROTO((void));
 /* Function to add a decl to the current scope level.
    Takes one argument, a decl to add.
    Returns that decl, or, if the same symbol is already declared, may
