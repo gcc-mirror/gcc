@@ -92,7 +92,7 @@ static int issue_ktype PARAMS ((tree));
 static void build_overload_scope_ref PARAMS ((tree));
 static void build_mangled_template_parm_index PARAMS ((const char *, tree));
 #if HOST_BITS_PER_WIDE_INT >= 64
-static void build_mangled_C9x_name PARAMS ((int));
+static void build_mangled_C99_name PARAMS ((int));
 #endif
 static int is_back_referenceable_type PARAMS ((tree));
 static int check_btype PARAMS ((tree));
@@ -652,7 +652,7 @@ build_mangled_template_parm_index (s, index)
 }
 
 
-/* Mangling for C9X integer types (and Cygnus extensions for 128-bit
+/* Mangling for C99 integer types (and Cygnus extensions for 128-bit
    and other types) is based on the letter "I" followed by the hex
    representations of the bitsize for the type in question. For
    encodings that result in larger than two digits, a leading and
@@ -674,7 +674,7 @@ build_mangled_template_parm_index (s, index)
 
 #if HOST_BITS_PER_WIDE_INT >= 64
 static void
-build_mangled_C9x_name (bits)
+build_mangled_C99_name (bits)
      int bits;
 {
   char mangled[10] = "";
@@ -1454,7 +1454,7 @@ process_overload_item (parmtype, extra_Gcode)
       else
 	{
 	  int bits = TREE_INT_CST_LOW (TYPE_SIZE (parmtype));
-	  build_mangled_C9x_name (bits);
+	  build_mangled_C99_name (bits);
 	}
 #else
       else

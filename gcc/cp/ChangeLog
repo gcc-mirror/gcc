@@ -1,3 +1,9 @@
+2000-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* method.c (build_mangled_C9x_name): Rename to
+	build_mangled_C99_name.  Change C9X references in comments to
+	refer to C99.
+
 2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parse.y (unary_expr): Move VA_ARG from here ...

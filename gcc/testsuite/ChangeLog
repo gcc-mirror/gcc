@@ -1,3 +1,9 @@
+2000-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/execute/memcheck/driver.c,
+	gcc.c-torture/execute/memcheck/driver.h, gcc.dg/cpp/if-3.c: Change
+	C9X references to refer to C99.
+
 2000-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/ultrasp3.c: New test.
