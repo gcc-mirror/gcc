@@ -1,3 +1,10 @@
+2004-12-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/15486
+	* varasm.c (asm_emit_uninitialised): Return early if
+	a custom section is requested.
+	(assemble_variable): Revert 2002-03-15 patch.
+
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
 	* stor-layout.c (layout_decl): Use unshare_expr, not unsave_expr.
