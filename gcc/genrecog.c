@@ -1,50 +1,53 @@
 /* Generate code from machine description to recognize rtl as insns.
    Copyright (C) 1987, 88, 92-95, 97-98, 1999 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+   This file is part of GNU CC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GNU CC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GNU CC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GNU CC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 
-/* This program is used to produce insn-recog.c, which contains
-   a function called `recog' plus its subroutines.
-   These functions contain a decision tree
-   that recognizes whether an rtx, the argument given to recog,
-   is a valid instruction.
+/* This program is used to produce insn-recog.c, which contains a
+   function called `recog' plus its subroutines.  These functions
+   contain a decision tree that recognizes whether an rtx, the
+   argument given to recog, is a valid instruction.
 
-   recog returns -1 if the rtx is not valid.
-   If the rtx is valid, recog returns a nonnegative number
-   which is the insn code number for the pattern that matched.
-   This is the same as the order in the machine description of the
-   entry that matched.  This number can be used as an index into various
-   insn_* tables, such as insn_template, insn_outfun, and insn_n_operands
-   (found in insn-output.c).
+   recog returns -1 if the rtx is not valid.  If the rtx is valid,
+   recog returns a nonnegative number which is the insn code number
+   for the pattern that matched.  This is the same as the order in the
+   machine description of the entry that matched.  This number can be
+   used as an index into various insn_* tables, such as insn_template,
+   insn_outfun, and insn_n_operands (found in insn-output.c).
 
-   The third argument to recog is an optional pointer to an int.
-   If present, recog will accept a pattern if it matches except for
+   The third argument to recog is an optional pointer to an int.  If
+   present, recog will accept a pattern if it matches except for
    missing CLOBBER expressions at the end.  In that case, the value
    pointed to by the optional pointer will be set to the number of
    CLOBBERs that need to be added (it should be initialized to zero by
    the caller).  If it is set nonzero, the caller should allocate a
-   PARALLEL of the appropriate size, copy the initial entries, and call
-   add_clobbers (found in insn-emit.c) to fill in the CLOBBERs.
+   PARALLEL of the appropriate size, copy the initial entries, and
+   call add_clobbers (found in insn-emit.c) to fill in the CLOBBERs.
 
-   This program also generates the function `split_insns',
-   which returns 0 if the rtl could not be split, or
-   it returns the split rtl in a SEQUENCE.  */
+   This program also generates the function `split_insns', which
+   returns 0 if the rtl could not be split, or it returns the split
+   rtl in a SEQUENCE.
+
+   This program also generates the function `peephole2_insns', which
+   returns 0 if the rtl could not be matched.  If there was a match,
+   the new rtl is returned in a SEQUENCE, and LAST_INSN will point
+   to the last recognized insn in the old sequence.  */
 
 #include "hconfig.h"
 #include "system.h"
@@ -65,49 +68,78 @@ struct obstack *rtl_obstack = &obstack;
 static char **insn_name_ptr = 0;
 static int insn_name_ptr_size = 0;
 
-/* Data structure for a listhead of decision trees.  The alternatives
-   to a node are kept in a doublely-linked list so we can easily add nodes
-   to the proper place when merging.  */
+/* A listhead of decision trees.  The alternatives to a node are kept
+   in a doublely-linked list so we can easily add nodes to the proper
+   place when merging.  */
 
-struct decision_head { struct decision *first, *last; };
+struct decision_head
+{
+  struct decision *first;
+  struct decision *last;
+};
+    
+/* A single test.  The two accept types aren't tests per-se, but
+   their equality (or lack thereof) does affect tree merging so
+   it is convenient to keep them here.  */
 
-/* Data structure for decision tree for recognizing
-   legitimate instructions.  */
+struct decision_test
+{
+  /* A linked list through the tests attached to a node.  */
+  struct decision_test *next;
+
+  /* These types are roughly in the order in which we'd like to test them.  */
+  enum decision_type {
+    DT_mode, DT_code, DT_veclen,
+    DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide,
+    DT_dup, DT_pred, DT_c_test, 
+    DT_accept_op, DT_accept_insn
+  } type;
+
+  union
+  {
+    enum machine_mode mode;	/* Machine mode of node.  */
+    RTX_CODE code;		/* Code to test.  */
+
+    struct
+    {
+      const char *name;		/* Predicate to call.  */
+      int index;		/* Index into `preds' or -1.  */
+      enum machine_mode mode;	/* Machine mode for node.  */
+    } pred;
+
+    const char *c_test;		/* Additional test to perform.  */
+    int veclen;			/* Length of vector.  */
+    int dup;			/* Number of operand to compare against.  */
+    HOST_WIDE_INT intval;	/* Value for XINT for XWINT.  */
+    int opno;			/* Operand number matched.  */
+
+    struct {
+      int code_number;		/* Insn number matched.  */
+      int num_clobbers_to_add;	/* Number of CLOBBERs to be added.  */
+    } insn;
+  } u;
+};
+
+/* Data structure for decision tree for recognizing legitimate insns.  */
 
 struct decision
 {
+  struct decision_head success;	/* Nodes to test on success.  */
+  struct decision *next;	/* Node to test on failure.  */
+  struct decision *prev;	/* Node whose failure tests us.  */
+  struct decision *afterward;	/* Node to test on success,
+				   but failure of successor nodes.  */
+
+  const char *position;		/* String denoting position in pattern.  */
+
+  struct decision_test *tests;	/* The tests for this node.  */
+
   int number;			/* Node number, used for labels */
-  char *position;		/* String denoting position in pattern */
-  RTX_CODE code;		/* Code to test for or UNKNOWN to suppress */
-  char ignore_code;		/* If non-zero, need not test code */
-  char ignore_mode;		/* If non-zero, need not test mode */
-  int veclen;			/* Length of vector, if nonzero */
-  enum machine_mode mode;	/* Machine mode of node */
-  char enforce_mode;		/* If non-zero, test `mode' */
-  char retest_code, retest_mode; /* See write_tree_1 */
-  int test_elt_zero_int;	/* Nonzero if should test XINT (rtl, 0) */
-  int elt_zero_int;		/* Required value for XINT (rtl, 0) */
-  int test_elt_one_int;		/* Nonzero if should test XINT (rtl, 1) */
-  int elt_one_int;		/* Required value for XINT (rtl, 1) */
-  int test_elt_zero_wide;	/* Nonzero if should test XWINT (rtl, 0) */
-  HOST_WIDE_INT elt_zero_wide;	/* Required value for XWINT (rtl, 0) */
-  const char *tests;		/* If nonzero predicate to call */
-  int pred;			/* `preds' index of predicate or -1 */
-  char *c_test;			/* Additional test to perform */
-  struct decision_head success;	/* Nodes to test on success */
-  int insn_code_number;		/* Insn number matched, if success */
-  int num_clobbers_to_add;	/* Number of CLOBBERs to be added to pattern */
-  struct decision *next;	/* Node to test on failure */
-  struct decision *prev;	/* Node whose failure tests us */
-  struct decision *afterward;	/* Node to test on success, but failure of
-				   successor nodes */
-  int opno;			/* Operand number, if >= 0 */
-  int dupno;			/* Number of operand to compare against */
-  int label_needed;		/* Nonzero if label needed when writing tree */
   int subroutine_number;	/* Number of subroutine this node starts */
+  int need_label;		/* Label needs to be output.  */
 };
 
-#define SUBROUTINE_THRESHOLD 50
+#define SUBROUTINE_THRESHOLD	100
 
 static int next_subroutine_number;
 
@@ -115,9 +147,11 @@ static int next_subroutine_number;
    one to split insns, and one for peephole-type optimizations.  This
    defines which type is being written.  */
 
-enum routine_type {RECOG, SPLIT, PEEPHOLE2};
+enum routine_type {
+  RECOG, SPLIT, PEEPHOLE2
+};
 
-#define IS_SPLIT(X) ((X) == SPLIT || (X)==PEEPHOLE2)
+#define IS_SPLIT(X) ((X) != RECOG)
 
 /* Next available node number for tree nodes.  */
 
@@ -138,7 +172,7 @@ static int next_index;
 static int max_depth;
 
 /* This table contains a list of the rtl codes that can possibly match a
-   predicate defined in recog.c.  The function `not_both_true' uses it to
+   predicate defined in recog.c.  The function `maybe_both_true' uses it to
    deduce that there are no expressions that can be matches by certain pairs
    of tree nodes.  Also, if a predicate can match only one code, we can
    hardwire that code into the node testing the predicate.  */
@@ -147,201 +181,149 @@ static struct pred_table
 {
   const char *name;
   RTX_CODE codes[NUM_RTX_CODE];
-} preds[]
-  = {{"general_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			  LABEL_REF, SUBREG, REG, MEM}},
+} preds[] = {
+  {"general_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+		       LABEL_REF, SUBREG, REG, MEM}},
 #ifdef PREDICATE_CODES
-     PREDICATE_CODES
+  PREDICATE_CODES
 #endif
-     {"address_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			  LABEL_REF, SUBREG, REG, MEM, PLUS, MINUS, MULT}},
-     {"register_operand", {SUBREG, REG}},
-     {"scratch_operand", {SCRATCH, REG}},
-     {"immediate_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			    LABEL_REF}},
-     {"const_int_operand", {CONST_INT}},
-     {"const_double_operand", {CONST_INT, CONST_DOUBLE}},
-     {"nonimmediate_operand", {SUBREG, REG, MEM}},
-     {"nonmemory_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-			    LABEL_REF, SUBREG, REG}},
-     {"push_operand", {MEM}},
-     {"pop_operand", {MEM}},
-     {"memory_operand", {SUBREG, MEM}},
-     {"indirect_operand", {SUBREG, MEM}},
-     {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU}},
-     {"mode_independent_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
-				   LABEL_REF, SUBREG, REG, MEM}}};
+  {"address_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+		       LABEL_REF, SUBREG, REG, MEM, PLUS, MINUS, MULT}},
+  {"register_operand", {SUBREG, REG}},
+  {"scratch_operand", {SCRATCH, REG}},
+  {"immediate_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+			 LABEL_REF}},
+  {"const_int_operand", {CONST_INT}},
+  {"const_double_operand", {CONST_INT, CONST_DOUBLE}},
+  {"nonimmediate_operand", {SUBREG, REG, MEM}},
+  {"nonmemory_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+			 LABEL_REF, SUBREG, REG}},
+  {"push_operand", {MEM}},
+  {"pop_operand", {MEM}},
+  {"memory_operand", {SUBREG, MEM}},
+  {"indirect_operand", {SUBREG, MEM}},
+  {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU}},
+  {"mode_independent_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
+				LABEL_REF, SUBREG, REG, MEM}}
+};
 
 #define NUM_KNOWN_PREDS (sizeof preds / sizeof preds[0])
 
-static struct decision_head make_insn_sequence PROTO((rtx, enum routine_type));
-static struct decision *add_to_sequence PROTO((rtx, struct decision_head *,
-					       const char *,
-					       enum routine_type, int));
-static int not_both_true	PROTO((struct decision *, struct decision *,
-				       int));
-static int position_merit	PROTO((struct decision *, enum machine_mode,
-				       enum rtx_code));
-static struct decision_head merge_trees PROTO((struct decision_head,
-					       struct decision_head));
-static int break_out_subroutines PROTO((struct decision_head,
-					enum routine_type, int));
-static void write_subroutine	PROTO((struct decision *, enum routine_type));
-static void write_tree_1	PROTO((struct decision *, const char *,
-				       struct decision *, enum routine_type));
-static void print_code		PROTO((enum rtx_code));
-static int same_codes		PROTO((struct decision *, enum rtx_code));
-static void clear_codes		PROTO((struct decision *));
-static int same_modes		PROTO((struct decision *, enum machine_mode));
-static void clear_modes		PROTO((struct decision *));
-static void write_tree		PROTO((struct decision *, const char *,
-				       struct decision *, int,
-				       enum routine_type));
-static void change_state	PROTO((const char *, const char *, int,
-				       struct decision *));
+static struct decision *new_decision
+  PROTO((const char *, struct decision_head *));
+static struct decision_test *new_decision_test
+  PROTO((enum decision_type, struct decision_test ***));
+static struct decision *add_to_sequence
+  PROTO((rtx, struct decision_head *, const char *, enum routine_type, int));
+
+static int maybe_both_true_2
+  PROTO((struct decision_test *, struct decision_test *));
+static int maybe_both_true_1
+  PROTO((struct decision_test *, struct decision_test *));
+static int maybe_both_true
+  PROTO((struct decision *, struct decision *, int));
+
+static int nodes_identical_1
+  PROTO((struct decision_test *, struct decision_test *));
+static int nodes_identical
+  PROTO((struct decision *, struct decision *));
+static void merge_accept_insn
+  PROTO((struct decision *, struct decision *));
+static void merge_trees
+  PROTO((struct decision_head *, struct decision_head *));
+
+static void factor_tests
+  PROTO((struct decision_head *));
+static void simplify_tests
+  PROTO((struct decision_head *));
+static int break_out_subroutines
+  PROTO((struct decision_head *, int));
+static void find_afterward
+  PROTO((struct decision_head *, struct decision *));
+
+static void change_state
+  PROTO((const char *, const char *, struct decision *, const char *));
+static void print_code
+  PROTO((enum rtx_code));
+static void write_afterward
+  PROTO((struct decision *, struct decision *, const char *));
+static struct decision *write_switch
+  PROTO((struct decision *, int));
+static void write_cond
+  PROTO((struct decision_test *, int, enum routine_type));
+static void write_action
+  PROTO((struct decision_test *, int, int, struct decision *,
+	 enum routine_type));
+static int is_unconditional
+  PROTO((struct decision_test *, enum routine_type));
+static int write_node
+  PROTO((struct decision *, int, enum routine_type));
+static void write_tree_1
+  PROTO((struct decision_head *, int, enum routine_type));
+static void write_tree
+  PROTO((struct decision_head *, const char *, enum routine_type, int));
+static void write_subroutine
+  PROTO((struct decision_head *, enum routine_type));
+static void write_subroutines
+  PROTO((struct decision_head *, enum routine_type));
+static void write_header
+  PROTO((void));
+
+static struct decision_head make_insn_sequence
+  PROTO((rtx, enum routine_type));
+static void process_tree
+  PROTO((struct decision_head *, enum routine_type));
+  
+static void record_insn_name
+  PROTO((int, const char *));
+
+static void debug_decision_1
+  PROTO((struct decision *, int));
+static void debug_decision_2
+  PROTO((struct decision_test *));
+extern void debug_decision
+  PROTO((struct decision *));
 
-/* Construct and return a sequence of decisions
-   that will recognize INSN.
+/* Create a new node in sequence after LAST.  */
 
-   TYPE says what type of routine we are recognizing (RECOG or SPLIT).  */
-
-static struct decision_head
-make_insn_sequence (insn, type)
-     rtx insn;
-     enum routine_type type;
+static struct decision *
+new_decision (position, last)
+     const char *position;
+     struct decision_head *last;
 {
-  rtx x;
-  char *c_test = XSTR (insn, type == RECOG ? 2 : 1);
-  struct decision *last;
-  struct decision_head head;
+  register struct decision *new
+    = (struct decision *) xmalloc (sizeof (struct decision));
 
-  {
-    static const char *last_real_name = "insn";
-    static int last_real_code = 0;
-    char *name = 0;
+  memset (new, 0, sizeof (*new));
+  new->success = *last;
+  new->position = xstrdup (position);
+  new->number = next_number++;
 
-    if (insn_name_ptr_size <= next_insn_code)
-      {
-	int new_size;
-	new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
-	insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
-	memset (insn_name_ptr + insn_name_ptr_size, 0,
-		sizeof(char *) * (new_size - insn_name_ptr_size));
-	insn_name_ptr_size = new_size;
-      }
-
-    if (type == RECOG)
-      name = XSTR (insn, 0);
-    if (!name || name[0] == '\0')
-      {
-	name = xmalloc (strlen (last_real_name) + 10);
-	sprintf (name, "%s+%d", last_real_name,
-		 next_insn_code - last_real_code);
-      }
-    else
-      {
-	last_real_name = name;
-	last_real_code = next_insn_code;
-      }
-
-    insn_name_ptr[next_insn_code] = name;
-  }
-
-  if (type == PEEPHOLE2)
-    {
-      int i, j;
-
-      /* peephole2 gets special treatment:
-	 - X always gets an outer parallel even if it's only one entry
-	 - we remove all traces of outer-level match_scratch and match_dup
-           expressions here.  */
-      x = rtx_alloc (PARALLEL);
-      PUT_MODE (x, VOIDmode);
-      XVEC (x, 0) = rtvec_alloc (XVECLEN (insn, 0));
-      for (i = j = 0; i < XVECLEN (insn, 0); i++)
-	{
-	  rtx tmp = XVECEXP (insn, 0, i);
-	  if (GET_CODE (tmp) != MATCH_SCRATCH && GET_CODE (tmp) != MATCH_DUP)
-	    {
-	      XVECEXP (x, 0, j) = tmp;
-	      j++;
-	    }
-	}
-      XVECLEN (x, 0) = j;
-    }
-  else if (XVECLEN (insn, type == RECOG) == 1)
-    x = XVECEXP (insn, type == RECOG, 0);
-  else
-    {
-      x = rtx_alloc (PARALLEL);
-      XVEC (x, 0) = XVEC (insn, type == RECOG);
-      PUT_MODE (x, VOIDmode);
-    }
-
-  last = add_to_sequence (x, &head, "", type, 1);
-
-  if (c_test[0])
-    last->c_test = c_test;
-  last->insn_code_number = next_insn_code;
-  last->num_clobbers_to_add = 0;
-
-  /* If this is not a DEFINE_SPLIT and X is a PARALLEL, see if it ends with a
-     group of CLOBBERs of (hard) registers or MATCH_SCRATCHes.  If so, set up
-     to recognize the pattern without these CLOBBERs.  */
-
-  if (type == RECOG && GET_CODE (x) == PARALLEL)
-    {
-      int i;
-
-      for (i = XVECLEN (x, 0); i > 0; i--)
-	if (GET_CODE (XVECEXP (x, 0, i - 1)) != CLOBBER
-	    || (GET_CODE (XEXP (XVECEXP (x, 0, i - 1), 0)) != REG
-		&& GET_CODE (XEXP (XVECEXP (x, 0, i - 1), 0)) != MATCH_SCRATCH))
-	  break;
-
-      if (i != XVECLEN (x, 0))
-	{
-	  rtx new;
-	  struct decision_head clobber_head;
-
-	  if (i == 1)
-	    new = XVECEXP (x, 0, 0);
-	  else
-	    {
-	      int j;
-
-	      new = rtx_alloc (PARALLEL);
-	      XVEC (new, 0) = rtvec_alloc (i);
-	      for (j = i - 1; j >= 0; j--)
-		XVECEXP (new, 0, j) = XVECEXP (x, 0, j);
-	    }
-
-	  last = add_to_sequence (new, &clobber_head, "", type, 1);
-
-	  if (c_test[0])
-	    last->c_test = c_test;
-	  last->insn_code_number = next_insn_code;
-	  last->num_clobbers_to_add = XVECLEN (x, 0) - i;
-
-	  head = merge_trees (head, clobber_head);
-	}
-    }
-
-  next_insn_code++;
-
-  if (type == SPLIT)
-    /* Define the subroutine we will call below and emit in genemit.  */
-    printf ("extern rtx gen_split_%d PROTO ((rtx *));\n",
-	    last->insn_code_number);
-
-  else if (type == PEEPHOLE2)
-    /* Define the subroutine we will call below and emit in genemit.  */
-    printf ("extern rtx gen_peephole2_%d PROTO ((rtx, rtx *));\n",
-	    last->insn_code_number);
-
-  return head;
+  last->first = last->last = new;
+  return new;
 }
-
+
+/* Create a new test and link it in at PLACE.  */
+
+static struct decision_test *
+new_decision_test (type, pplace)
+     enum decision_type type;
+     struct decision_test ***pplace;
+{
+  struct decision_test **place = *pplace;
+  struct decision_test *test;
+
+  test = (struct decision_test *) xmalloc (sizeof (*test));
+  test->next = *place;
+  test->type = type;
+  *place = test;
+
+  place = &test->next;
+  *pplace = place;
+
+  return test;
+}
+
 /* Create a chain of nodes to verify that an rtl expression matches
    PATTERN.
 
@@ -362,58 +344,30 @@ add_to_sequence (pattern, last, position, insn_type, top)
      enum routine_type insn_type;
      int top;
 {
-  register RTX_CODE code;
-  register struct decision *new
-    = (struct decision *) xmalloc (sizeof (struct decision));
-  struct decision *this;
-  char *newpos;
-  register const char *fmt;
+  RTX_CODE code;
+  struct decision *this, *sub;
+  struct decision_test *test;
+  struct decision_test **place;
+  char *subpos;
   register size_t i;
+  register const char *fmt;
   int depth = strlen (position);
   int len;
+  enum machine_mode mode;
 
   if (depth > max_depth)
     max_depth = depth;
 
-  new->number = next_number++;
-  new->position = xstrdup (position);
-  new->ignore_code = 0;
-  new->ignore_mode = 0;
-  new->enforce_mode = 1;
-  new->retest_code = new->retest_mode = 0;
-  new->veclen = 0;
-  new->test_elt_zero_int = 0;
-  new->test_elt_one_int = 0;
-  new->test_elt_zero_wide = 0;
-  new->elt_zero_int = 0;
-  new->elt_one_int = 0;
-  new->elt_zero_wide = 0;
-  new->tests = 0;
-  new->pred = -1;
-  new->c_test = 0;
-  new->success.first = new->success.last = 0;
-  new->insn_code_number = -1;
-  new->num_clobbers_to_add = 0;
-  new->next = 0;
-  new->prev = 0;
-  new->afterward = 0;
-  new->opno = -1;
-  new->dupno = -1;
-  new->label_needed = 0;
-  new->subroutine_number = 0;
+  subpos = (char *) alloca (depth + 2);
+  strcpy (subpos, position);
+  subpos[depth + 1] = 0;
 
-  this = new;
-
-  last->first = last->last = new;
-
-  newpos = (char *) alloca (depth + 2);
-  strcpy (newpos, position);
-  newpos[depth + 1] = 0;
+  sub = this = new_decision (position, last);
+  place = &this->tests;
 
  restart:
-
-  new->mode = GET_MODE (pattern);
-  new->code = code = GET_CODE (pattern);
+  mode = GET_MODE (pattern);
+  code = GET_CODE (pattern);
 
   switch (code)
     {
@@ -421,131 +375,164 @@ add_to_sequence (pattern, last, position, insn_type, top)
       /* Toplevel peephole pattern. */
       if (insn_type == PEEPHOLE2 && top)
 	{
-	  struct decision_head *place = last;
+	  /* We don't need the node we just created -- unlink it.  */
+	  last->first = last->last = NULL;
 
 	  for (i = 0; i < (size_t) XVECLEN (pattern, 0); i++)
 	    {
 	      /* Which insn we're looking at is represented by A-Z. We don't
 	         ever use 'A', however; it is always implied. */
-	      if (i > 0)
-		newpos[depth] = 'A' + i;
-	      else
-		newpos[depth] = 0;
-	      new = add_to_sequence (XVECEXP (pattern, 0, i),
-				     place, newpos, insn_type, 0);
-	      place = &new->success;
+
+	      subpos[depth] = (i > 0 ? 'A' + i : 0);
+	      sub = add_to_sequence (XVECEXP (pattern, 0, i),
+				     last, subpos, insn_type, 0);
+	      last = &sub->success;
 	    }
-	  return new;
+	  return sub;
 	}
+
+      /* Else nothing special.  */
       break;
+
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
     case MATCH_OPERATOR:
     case MATCH_PARALLEL:
     case MATCH_INSN:
-      new->opno = XINT (pattern, 0);
-      new->code = (code == MATCH_PARALLEL ? PARALLEL : UNKNOWN);
-      new->enforce_mode = 0;
+      {
+	const char *pred_name;
+	RTX_CODE was_code = code;
 
-      if (code == MATCH_SCRATCH)
-	new->tests = "scratch_operand";
-      else
-	new->tests = XSTR (pattern, 1);
+	if (code == MATCH_SCRATCH)
+	  {
+	    pred_name = "scratch_operand";
+	    code = UNKNOWN;
+	  }
+	else
+	  {
+	    pred_name = XSTR (pattern, 1);
+	    if (code == MATCH_PARALLEL)
+	      code = PARALLEL;
+	    else
+	      code = UNKNOWN;
+	  }
 
-      if (*new->tests == 0)
-	new->tests = 0;
+	/* We know exactly what const_int_operand matches -- any CONST_INT.  */
+	if (strcmp ("const_int_operand", pred_name) == 0)
+	  {
+	    code = CONST_INT;
+	    mode = VOIDmode;
+	  }
+	else if (pred_name[0] != 0)
+	  {
+	    test = new_decision_test (DT_pred, &place);
+	    test->u.pred.name = pred_name;
+	    test->u.pred.mode = mode;
 
-      /* See if we know about this predicate and save its number.  If we do,
-	 and it only accepts one code, note that fact.  The predicate
-	 `const_int_operand' only tests for a CONST_INT, so if we do so we
-	 can avoid calling it at all.
+	    /* See if we know about this predicate and save its number.  If
+	       we do, and it only accepts one code, note that fact.  The
+	       predicate `const_int_operand' only tests for a CONST_INT, so
+	       if we do so we can avoid calling it at all.
 
-	 Finally, if we know that the predicate does not allow CONST_INT, we
-	 know that the only way the predicate can match is if the modes match
-	 (here we use the kludge of relying on the fact that "address_operand"
-	 accepts CONST_INT; otherwise, it would have to be a special case),
-	 so we can test the mode (but we need not).  This fact should
-	 considerably simplify the generated code.  */
+	       Finally, if we know that the predicate does not allow
+	       CONST_INT, we know that the only way the predicate can match
+	       is if the modes match (here we use the kludge of relying on
+	       the fact that "address_operand" accepts CONST_INT; otherwise,
+	       it would have to be a special case), so we can test the mode
+	       (but we need not).  This fact should considerably simplify the
+	       generated code.  */
 
-      if (new->tests)
-	{
-	  for (i = 0; i < NUM_KNOWN_PREDS; i++)
-	    if (! strcmp (preds[i].name, new->tests))
-	      {
-		int j;
-		int allows_const_int = 0;
-
-		new->pred = i;
-
-		if (preds[i].codes[1] == 0 && new->code == UNKNOWN)
-		  {
-		    new->code = preds[i].codes[0];
-		    if (! strcmp ("const_int_operand", new->tests))
-		      new->tests = 0, new->pred = -1;
-		  }
-
-		for (j = 0; j < NUM_RTX_CODE && preds[i].codes[j] != 0; j++)
-		  if (preds[i].codes[j] == CONST_INT)
-		    allows_const_int = 1;
-
-		if (! allows_const_int)
-		  new->enforce_mode = new->ignore_mode= 1;
-
+	    for (i = 0; i < NUM_KNOWN_PREDS; i++)
+	      if (! strcmp (preds[i].name, pred_name))
 		break;
+
+	    if (i < NUM_KNOWN_PREDS)
+	      {
+		int allows_const_int, j;
+
+		test->u.pred.index = i;
+
+		if (preds[i].codes[1] == 0 && code == UNKNOWN)
+		  code = preds[i].codes[0];
+
+		allows_const_int = 0;
+		for (j = 0; preds[i].codes[j] != 0; j++)
+		  if (preds[i].codes[j] == CONST_INT)
+		    {
+		      allows_const_int = 1;
+		      break;
+		    }
+
+		/* Can't enforce a mode if we allow const_int.  */
+		if (allows_const_int)
+		  mode = VOIDmode;
 	      }
-
+	    else
+	      {
+		test->u.pred.index = -1;
 #ifdef PREDICATE_CODES
-	  /* If the port has a list of the predicates it uses but omits
-	     one, warn.  */
-	  if (i == NUM_KNOWN_PREDS)
-	    fprintf (stderr, "Warning: `%s' not in PREDICATE_CODES\n",
-		     new->tests);
+		/* If the port has a list of the predicates it uses but
+		   omits one, warn.  */
+		fprintf (stderr, "Warning: `%s' not in PREDICATE_CODES\n",
+			 pred_name);
 #endif
-	}
+	      }
+	  }
 
-      if (code == MATCH_OPERATOR || code == MATCH_PARALLEL)
-	{
-	  for (i = 0; i < (size_t) XVECLEN (pattern, 2); i++)
-	    {
-	      newpos[depth] = i + (code == MATCH_OPERATOR ? '0': 'a');
-	      new = add_to_sequence (XVECEXP (pattern, 2, i),
-				     &new->success, newpos, insn_type, 0);
-	    }
-	}
+	/* Accept the operand, ie. record it in `operands'.  */
+	test = new_decision_test (DT_accept_op, &place);
+	test->u.opno = XINT (pattern, 0);
 
-      return new;
+	if (was_code == MATCH_OPERATOR || was_code == MATCH_PARALLEL)
+	  {
+	    char base = (was_code == MATCH_OPERATOR ? '0' : 'a');
+	    for (i = 0; i < (size_t) XVECLEN (pattern, 2); i++)
+	      {
+		subpos[depth] = i + base;
+		sub = add_to_sequence (XVECEXP (pattern, 2, i),
+				       &sub->success, subpos, insn_type, 0);
+	      }
+	  }
+	goto fini;
+      }
 
     case MATCH_OP_DUP:
-      new->opno = XINT (pattern, 0);
-      new->dupno = XINT (pattern, 0);
-      new->code = UNKNOWN;
-      new->tests = 0;
+      code = UNKNOWN;
+
+      test = new_decision_test (DT_dup, &place);
+      test->u.dup = XINT (pattern, 0);
+
+      test = new_decision_test (DT_accept_op, &place);
+      test->u.opno = XINT (pattern, 0);
+
       for (i = 0; i < (size_t) XVECLEN (pattern, 1); i++)
 	{
-	  newpos[depth] = i + '0';
-	  new = add_to_sequence (XVECEXP (pattern, 1, i),
-				 &new->success, newpos, insn_type, 0);
+	  subpos[depth] = i + '0';
+	  sub = add_to_sequence (XVECEXP (pattern, 1, i),
+				 &sub->success, subpos, insn_type, 0);
 	}
-      return new;
+      goto fini;
 
     case MATCH_DUP:
     case MATCH_PAR_DUP:
-      new->dupno = XINT (pattern, 0);
-      new->code = UNKNOWN;
-      new->enforce_mode = 0;
-      return new;
+      code = UNKNOWN;
+
+      test = new_decision_test (DT_dup, &place);
+      test->u.dup = XINT (pattern, 0);
+      goto fini;
 
     case ADDRESS:
       pattern = XEXP (pattern, 0);
       goto restart;
 
     case SET:
-      /* The operands of a SET must have the same mode unless one is VOIDmode.  */
+      /* The operands of a SET must have the same mode unless one
+	 is VOIDmode.  */
       if (GET_MODE (SET_SRC (pattern)) != VOIDmode
 	  && GET_MODE (SET_DEST (pattern)) != VOIDmode
 	  && GET_MODE (SET_SRC (pattern)) != GET_MODE (SET_DEST (pattern))
-	  /* The mode of an ADDRESS_OPERAND is the mode of the memory reference,
-	     not the mode of the address.  */
+	  /* The mode of an ADDRESS_OPERAND is the mode of the memory
+	     reference, not the mode of the address.  */
 	  && ! (GET_CODE (SET_SRC (pattern)) == MATCH_OPERAND
 		&& ! strcmp (XSTR (SET_SRC (pattern), 1), "address_operand")))
 	{
@@ -553,134 +540,252 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	  fputc ('\n', stderr);
 	  fatal ("mode mismatch in SET");
 	}
-      newpos[depth] = '0';
-      new = add_to_sequence (SET_DEST (pattern), &new->success, newpos,
-			     insn_type, 0);
-      this->success.first->enforce_mode = 1;
-      newpos[depth] = '1';
-      new = add_to_sequence (SET_SRC (pattern), &new->success, newpos,
-			     insn_type, 0);
 
-      /* If set are setting CC0 from anything other than a COMPARE, we
-	 must enforce the mode so that we do not produce ambiguous insns.  */
-      if (GET_CODE (SET_DEST (pattern)) == CC0
-	  && GET_CODE (SET_SRC (pattern)) != COMPARE)
-	this->success.first->enforce_mode = 1;
-      return new;
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-    case STRICT_LOW_PART:
-      newpos[depth] = '0';
-      new = add_to_sequence (XEXP (pattern, 0), &new->success, newpos,
-			     insn_type, 0);
-      this->success.first->enforce_mode = 1;
-      return new;
-
-    case SUBREG:
-      this->test_elt_one_int = 1;
-      this->elt_one_int = XINT (pattern, 1);
-      newpos[depth] = '0';
-      new = add_to_sequence (XEXP (pattern, 0), &new->success, newpos,
-			     insn_type, 0);
-      this->success.first->enforce_mode = 1;
-      return new;
-
-    case ZERO_EXTRACT:
-    case SIGN_EXTRACT:
-      newpos[depth] = '0';
-      new = add_to_sequence (XEXP (pattern, 0), &new->success, newpos,
-			     insn_type, 0);
-      this->success.first->enforce_mode = 1;
-      newpos[depth] = '1';
-      new = add_to_sequence (XEXP (pattern, 1), &new->success, newpos,
-			     insn_type, 0);
-      newpos[depth] = '2';
-      new = add_to_sequence (XEXP (pattern, 2), &new->success, newpos,
-			     insn_type, 0);
-      return new;
-
-    case EQ:   case NE:   case LE:   case LT:   case GE:  case GT:
-    case LEU:  case LTU:  case GEU:  case GTU:
-      /* If the first operand is (cc0), we don't have to do anything
-	 special.  */
-      if (GET_CODE (XEXP (pattern, 0)) == CC0)
-	break;
-
-      /* ... fall through ...  */
-
-    case COMPARE:
-      /* Enforce the mode on the first operand to avoid ambiguous insns.  */
-      newpos[depth] = '0';
-      new = add_to_sequence (XEXP (pattern, 0), &new->success, newpos,
-			     insn_type, 0);
-      this->success.first->enforce_mode = 1;
-      newpos[depth] = '1';
-      new = add_to_sequence (XEXP (pattern, 1), &new->success, newpos,
-			     insn_type, 0);
-      return new;
-
+      /* Everything else is standard.  */
+      break;
+      
     default:
       break;
     }
 
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
+
+  /* Do tests against the current node first.  */
   for (i = 0; i < (size_t) len; i++)
     {
-      newpos[depth] = '0' + i;
-      if (fmt[i] == 'e' || fmt[i] == 'u')
-	new = add_to_sequence (XEXP (pattern, i), &new->success, newpos,
-			       insn_type, 0);
-      else if (fmt[i] == 'i' && i == 0)
+      if (fmt[i] == 'i')
 	{
-	  this->test_elt_zero_int = 1;
-	  this->elt_zero_int = XINT (pattern, i);
+	  if (i == 0)
+	    {
+	      test = new_decision_test (DT_elt_zero_int, &place);
+	      test->u.intval = XINT (pattern, i);
+	    }
+	  else if (i == 1)
+	    {
+	      test = new_decision_test (DT_elt_one_int, &place);
+	      test->u.intval = XINT (pattern, i);
+	    }
+	  else
+	    abort ();
 	}
-      else if (fmt[i] == 'i' && i == 1)
+      else if (fmt[i] == 'w')
 	{
-	  this->test_elt_one_int = 1;
-	  this->elt_one_int = XINT (pattern, i);
-	}
-      else if (fmt[i] == 'w' && i == 0)
-	{
-	  this->test_elt_zero_wide = 1;
-	  this->elt_zero_wide = XWINT (pattern, i);
+	  if (i != 0)
+	    abort ();
+
+	  test = new_decision_test (DT_elt_zero_wide, &place);
+	  test->u.intval = XWINT (pattern, i);
 	}
       else if (fmt[i] == 'E')
 	{
-	  register int j;
-	  /* We do not handle a vector appearing as other than
-	     the first item, just because nothing uses them
-	     and by handling only the special case
-	     we can use one element in newpos for either
-	     the item number of a subexpression
-	     or the element number in a vector.  */
 	  if (i != 0)
 	    abort ();
-	  this->veclen = XVECLEN (pattern, i);
-	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    {
-	      newpos[depth] = 'a' + j;
-	      new = add_to_sequence (XVECEXP (pattern, i, j),
-				     &new->success, newpos, insn_type, 0);
-	    }
+
+	  test = new_decision_test (DT_veclen, &place);
+	  test->u.veclen = XVECLEN (pattern, i);
 	}
-      else if (fmt[i] != '0')
-	abort ();
     }
-  return new;
+
+  /* Now test our sub-patterns.  */
+  for (i = 0; i < (size_t) len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  subpos[depth] = '0' + i;
+	  sub = add_to_sequence (XEXP (pattern, i), &sub->success,
+				 subpos, insn_type, 0);
+	  break;
+
+	case 'E':
+	  {
+	    register int j;
+	    for (j = 0; j < XVECLEN (pattern, i); j++)
+	      {
+		subpos[depth] = 'a' + j;
+		sub = add_to_sequence (XVECEXP (pattern, i, j),
+				       &sub->success, subpos, insn_type, 0);
+	      }
+	    break;
+	  }
+
+	case 'i': case 'w':
+	  /* Handled above.  */
+	  break;
+	case '0':
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+ fini:
+  /* Insert nodes testing mode and code, if they're still relevant,
+     before any of the nodes we may have added above.  */
+  if (code != UNKNOWN)
+    {
+      place = &this->tests;
+      test = new_decision_test (DT_code, &place);
+      test->u.code = code;
+    }
+
+  if (mode != VOIDmode)
+    {
+      place = &this->tests;
+      test = new_decision_test (DT_mode, &place);
+      test->u.mode = mode;
+    }
+
+  /* If we didn't insert any tests or accept nodes, hork.  */
+  if (this->tests == NULL)
+    abort ();
+
+  return sub;
 }
 
-/* Return 1 if we can prove that there is no RTL that can match both
-   D1 and D2.  Otherwise, return 0 (it may be that there is an RTL that
+/* A subroutine of maybe_both_true; examines only one test.
+   Returns > 0 for "definitely both true" and < 0 for "maybe both true".  */
+
+static int
+maybe_both_true_2 (d1, d2)
+     struct decision_test *d1, *d2;
+{
+  if (d1->type == d2->type)
+    {
+      switch (d1->type)
+	{
+	case DT_mode:
+	  return d1->u.mode == d2->u.mode;
+
+	case DT_code:
+	  return d1->u.code == d2->u.code;
+
+	case DT_veclen:
+	  return d1->u.veclen == d2->u.veclen;
+
+	case DT_elt_zero_int:
+	case DT_elt_one_int:
+	case DT_elt_zero_wide:
+	  return d1->u.intval == d2->u.intval;
+
+	default:
+	  break;
+	}
+    }
+
+  /* If either has a predicate that we know something about, set
+     things up so that D1 is the one that always has a known
+     predicate.  Then see if they have any codes in common.  */
+
+  if (d1->type == DT_pred || d2->type == DT_pred)
+    {
+      if (d2->type == DT_pred)
+	{
+	  struct decision_test *tmp;
+	  tmp = d1, d1 = d2, d2 = tmp;
+	}
+
+      /* If D2 tests a mode, see if it matches D1.  */
+      if (d1->u.pred.mode != VOIDmode)
+	{
+	  if (d2->type == DT_mode)
+	    {
+	      if (d1->u.pred.mode != d2->u.mode)
+		return 0;
+	    }
+	  else if (d2->type == DT_pred)
+	    {
+	      if (d2->u.pred.mode != VOIDmode
+		  && d1->u.pred.mode != d2->u.pred.mode)
+		return 0;
+	    }
+	}
+
+      if (d1->u.pred.index >= 0)
+	{
+	  /* If D2 tests a code, see if it is in the list of valid
+	     codes for D1's predicate.  */
+	  if (d2->type == DT_code)
+	    {
+	      const RTX_CODE *c = &preds[d1->u.pred.index].codes[0];
+	      while (*c != 0)
+		{
+		  if (*c == d2->u.code)
+		    break;
+		  ++c;
+		}
+	      if (*c == 0)
+		return 0;
+	    }
+
+	  /* Otherwise see if the predicates have any codes in common.  */
+	  else if (d2->type == DT_pred && d2->u.pred.index >= 0)
+	    {
+	      const RTX_CODE *c1 = &preds[d1->u.pred.index].codes[0];
+	      int common = 0;
+
+	      while (*c1 != 0 && !common)
+		{
+		  const RTX_CODE *c2 = &preds[d2->u.pred.index].codes[0];
+		  while (*c2 != 0 && !common)
+		    {
+		      common = (*c1 == *c2);
+		      ++c2;
+		    }
+		  ++c1;
+		}
+
+	      if (!common)
+		return 0;
+	    }
+	}
+    }
+
+  return -1;
+}
+
+/* A subroutine of maybe_both_true; examines all the tests for a given node.
+   Returns > 0 for "definitely both true" and < 0 for "maybe both true".  */
+
+static int
+maybe_both_true_1 (d1, d2)
+     struct decision_test *d1, *d2;
+{
+  struct decision_test *t1, *t2;
+
+  /* A match_operand with no predicate can match anything.  Recognize
+     this by the existance of a lone DT_accept_op test.  */
+  if (d1->type == DT_accept_op || d2->type == DT_accept_op)
+    return 1;
+
+  /* Eliminate pairs of tests while they can exactly match.  */
+  while (d1 && d2 && d1->type == d2->type)
+    {
+      if (maybe_both_true_2 (d1, d2) == 0)
+	return 0;
+      d1 = d1->next, d2 = d2->next;
+    }
+
+  /* After that, consider all pairs.  */
+  for (t1 = d1; t1 ; t1 = t1->next)
+    for (t2 = d2; t2 ; t2 = t2->next)
+      if (maybe_both_true_2 (t1, t2) == 0)
+	return 0;
+
+  return -1;
+}
+
+/* Return 0 if we can prove that there is no RTL that can match both
+   D1 and D2.  Otherwise, return 1 (it may be that there is an RTL that
    can match both or just that we couldn't prove there wasn't such an RTL).
 
    TOPLEVEL is non-zero if we are to only look at the top level and not
    recursively descend.  */
 
 static int
-not_both_true (d1, d2, toplevel)
+maybe_both_true (d1, d2, toplevel)
      struct decision *d1, *d2;
      int toplevel;
 {
@@ -718,1105 +823,448 @@ not_both_true (d1, d2, toplevel)
       if (d1->success.first == 0)
 	return 0;
       for (p1 = d1->success.first; p1; p1 = p1->next)
-	if (! not_both_true (p1, d2, 0))
-	  return 0;
+	if (maybe_both_true (p1, d2, 0))
+	  return 1;
 
-      return 1;
+      return 0;
     }
 
-  /* If they are both to test modes and the modes are different, they aren't
-     both true.  Similarly for codes, integer elements, and vector lengths.  */
+  /* Test the current level.  */
+  cmp = maybe_both_true_1 (d1->tests, d2->tests);
+  if (cmp >= 0)
+    return cmp;
 
-  if ((d1->enforce_mode && d2->enforce_mode
-       && d1->mode != VOIDmode && d2->mode != VOIDmode && d1->mode != d2->mode)
-      || (d1->code != UNKNOWN && d2->code != UNKNOWN && d1->code != d2->code)
-      || (d1->test_elt_zero_int && d2->test_elt_zero_int
-	  && d1->elt_zero_int != d2->elt_zero_int)
-      || (d1->test_elt_one_int && d2->test_elt_one_int
-	  && d1->elt_one_int != d2->elt_one_int)
-      || (d1->test_elt_zero_wide && d2->test_elt_zero_wide
-	  && d1->elt_zero_wide != d2->elt_zero_wide)
-      || (d1->veclen && d2->veclen && d1->veclen != d2->veclen))
-    return 1;
-
-  /* If either is a wild-card MATCH_OPERAND without a predicate, it can match
-     absolutely anything, so we can't say that no intersection is possible.
-     This case is detected by having a zero TESTS field with a code of
-     UNKNOWN.  */
-
-  if ((d1->tests == 0 && d1->code == UNKNOWN)
-      || (d2->tests == 0 && d2->code == UNKNOWN))
-    return 0;
-
-  /* If either has a predicate that we know something about, set things up so
-     that D1 is the one that always has a known predicate.  Then see if they
-     have any codes in common.  */
-
-  if (d1->pred >= 0 || d2->pred >= 0)
-    {
-      int i, j;
-
-      if (d2->pred >= 0)
-	p1 = d1, d1 = d2, d2 = p1;
-
-      /* If D2 tests an explicit code, see if it is in the list of valid codes
-	 for D1's predicate.  */
-      if (d2->code != UNKNOWN)
-	{
-	  for (i = 0; i < NUM_RTX_CODE && preds[d1->pred].codes[i] != 0; i++)
-	    if (preds[d1->pred].codes[i] == d2->code)
-	      break;
-
-	  if (preds[d1->pred].codes[i] == 0)
-	    return 1;
-	}
-
-      /* Otherwise see if the predicates have any codes in common.  */
-
-      else if (d2->pred >= 0)
-	{
-	  for (i = 0; i < NUM_RTX_CODE && preds[d1->pred].codes[i] != 0; i++)
-	    {
-	      for (j = 0; j < NUM_RTX_CODE; j++)
-		if (preds[d2->pred].codes[j] == 0
-		    || preds[d2->pred].codes[j] == preds[d1->pred].codes[i])
-		  break;
-
-	      if (preds[d2->pred].codes[j] != 0)
-		break;
-	    }
-
-	  if (preds[d1->pred].codes[i] == 0)
-	    return 1;
-	}
-    }
-
-  /* If we got here, we can't prove that D1 and D2 cannot both be true.
-     If we are only to check the top level, return 0.  Otherwise, see if
-     we can prove that all choices in both successors are mutually
-     exclusive.  If either does not have any successors, we can't prove
-     they can't both be true.  */
+  /* We can't prove that D1 and D2 cannot both be true.  If we are only
+     to check the top level, return 1.  Otherwise, see if we can prove
+     that all choices in both successors are mutually exclusive.  If
+     either does not have any successors, we can't prove they can't both
+     be true.  */
 
   if (toplevel || d1->success.first == 0 || d2->success.first == 0)
-    return 0;
+    return 1;
 
   for (p1 = d1->success.first; p1; p1 = p1->next)
     for (p2 = d2->success.first; p2; p2 = p2->next)
-      if (! not_both_true (p1, p2, 0))
-	return 0;
+      if (maybe_both_true (p1, p2, 0))
+	return 1;
 
-  return 1;
+  return 0;
 }
-
-/* Assuming that we can reorder all the alternatives at a specific point in
-   the tree (see discussion in merge_trees), we would prefer an ordering of
-   nodes where groups of consecutive nodes test the same mode and, within each
-   mode, groups of nodes test the same code.  With this order, we can
-   construct nested switch statements, the inner one to test the code and
-   the outer one to test the mode.
 
-   We would like to list nodes testing for specific codes before those
-   that test predicates to avoid unnecessary function calls.  Similarly,
-   tests for specific modes should precede nodes that allow any mode.
-
-   This function returns the merit (with 0 being the best) of inserting
-   a test involving the specified MODE and CODE after node P.  If P is
-   zero, we are to determine the merit of inserting the test at the front
-   of the list.  */
+/* A subroutine of nodes_identical.  Examine two tests for equivalence.  */
 
 static int
-position_merit (p, mode, code)
-     struct decision *p;
-     enum machine_mode mode;
-     enum rtx_code code;
+nodes_identical_1 (d1, d2)
+     struct decision_test *d1, *d2;
 {
-  enum machine_mode p_mode;
+  switch (d1->type)
+    {
+    case DT_mode:
+      return d1->u.mode == d2->u.mode;
 
-  /* The only time the front of the list is anything other than the worst
-     position is if we are testing a mode that isn't VOIDmode.  */
-  if (p == 0)
-    return mode == VOIDmode ? 3 : 2;
+    case DT_code:
+      return d1->u.code == d2->u.code;
 
-  p_mode = p->enforce_mode ? p->mode : VOIDmode;
+    case DT_pred:
+      return (d1->u.pred.mode == d2->u.pred.mode
+	      && strcmp (d1->u.pred.name, d2->u.pred.name) == 0);
 
-  /* The best case is if the codes and modes both match.  */
-  if (p_mode == mode && p->code== code)
-    return 0;
+    case DT_c_test:
+      return strcmp (d1->u.c_test, d2->u.c_test) == 0;
 
-  /* If the codes don't match, the next best case is if the modes match.
-     In that case, the best position for this node depends on whether
-     we are testing for a specific code or not.  If we are, the best place
-     is after some other test for an explicit code and our mode or after
-     the last test in the previous mode if every test in our mode is for
-     an unknown code.
+    case DT_veclen:
+      return d1->u.veclen == d2->u.veclen;
 
-     If we are testing for UNKNOWN, then the next best case is at the end of
-     our mode.  */
+    case DT_dup:
+      return d1->u.dup == d2->u.dup;
 
-  if ((code != UNKNOWN
-       && ((p_mode == mode && p->code != UNKNOWN)
-	   || (p_mode != mode && p->next
-	       && (p->next->enforce_mode ? p->next->mode : VOIDmode) == mode
-	       && (p->next->code == UNKNOWN))))
-      || (code == UNKNOWN && p_mode == mode
-	  && (p->next == 0
-	      || (p->next->enforce_mode ? p->next->mode : VOIDmode) != mode)))
-    return 1;
+    case DT_elt_zero_int:
+    case DT_elt_one_int:
+    case DT_elt_zero_wide:
+      return d1->u.intval == d2->u.intval;
 
-  /* The third best case occurs when nothing is testing MODE.  If MODE
-     is not VOIDmode, then the third best case is after something of any
-     mode that is not VOIDmode.  If we are testing VOIDmode, the third best
-     place is the end of the list.  */
+    case DT_accept_op:
+      return d1->u.opno == d2->u.opno;
 
-  if (p_mode != mode
-      && ((mode != VOIDmode && p_mode != VOIDmode)
-	  || (mode == VOIDmode && p->next == 0)))
-    return 2;
+    case DT_accept_insn:
+      /* Differences will be handled in merge_accept_insn.  */
+      return 1;
 
-  /* Otherwise, we have the worst case.  */
-  return 3;
+    default:
+      abort ();
+    }
 }
-
-/* Merge two decision tree listheads OLDH and ADDH,
-   modifying OLDH destructively, and return the merged tree.  */
 
-static struct decision_head
-merge_trees (oldh, addh)
-     register struct decision_head oldh, addh;
+/* True iff the two nodes are identical (on one level only).  Due
+   to the way these lists are constructed, we shouldn't have to 
+   consider different orderings on the tests.  */
+
+static int
+nodes_identical (d1, d2)
+     struct decision *d1, *d2;
 {
-  struct decision *add, *next;
+  struct decision_test *t1, *t2;
 
-  if (oldh.first == 0)
-    return addh;
+  for (t1 = d1->tests, t2 = d2->tests; t1 && t2; t1 = t1->next, t2 = t2->next)
+    {
+      if (t1->type != t2->type)
+	return 0;
+      if (! nodes_identical_1 (t1, t2))
+	return 0;
+    }
 
-  if (addh.first == 0)
-    return oldh;
+  /* For success, they should now both be null.  */
+  return t1 == t2;
+}
 
-  /* If we are adding things at different positions, something is wrong.  */
-  if (strcmp (oldh.first->position, addh.first->position))
+/* A subroutine of merge_trees; given two nodes that have been declared
+   identical, cope with two insn accept states.  If they differ in the
+   number of clobbers, then the conflict was created by make_insn_sequence
+   and we can drop the with-clobbers version on the floor.  If both 
+   nodes have no additional clobbers, we have found an ambiguity in the
+   source machine description.  */
+
+static void
+merge_accept_insn (oldd, addd)
+     struct decision *oldd, *addd;
+{
+  struct decision_test *old, *add;
+
+  for (old = oldd->tests; old; old = old->next)
+    if (old->type == DT_accept_insn)
+      break;
+  if (old == NULL)
+    return;
+
+  for (add = addd->tests; add; add = add->next)
+    if (add->type == DT_accept_insn)
+      break;
+  if (add == NULL)
+    return;
+
+  /* If one node is for a normal insn and the second is for the base
+     insn with clobbers stripped off, the second node should be ignored.  */
+
+  if (old->u.insn.num_clobbers_to_add == 0
+      && add->u.insn.num_clobbers_to_add > 0)
+    {
+      /* Nothing to do here.  */
+    }
+  else if (old->u.insn.num_clobbers_to_add > 0
+	   && add->u.insn.num_clobbers_to_add == 0)
+    {
+      /* In this case, replace OLD with ADD.  */
+      old->u.insn = add->u.insn;
+    }
+  else
+    {
+      fatal ("Two actions at one point in tree for insns \"%s\" (%d) and \"%s\" (%d)",
+	     get_insn_name (old->u.insn.code_number),
+	     old->u.insn.code_number,
+	     get_insn_name (add->u.insn.code_number),
+	     add->u.insn.code_number);
+    }
+}
+
+/* Merge two decision trees OLDH and ADDH, modifying OLDH destructively.  */
+
+static void
+merge_trees (oldh, addh)
+     struct decision_head *oldh, *addh;
+{
+  struct decision *next, *add;
+
+  if (addh->first == 0)
+    return;
+  if (oldh->first == 0)
+    {
+      *oldh = *addh;
+      return;
+    }
+
+  /* Trying to merge bits at different positions isn't possible.  */
+  if (strcmp (oldh->first->position, addh->first->position))
     abort ();
 
-  for (add = addh.first; add; add = next)
+  for (add = addh->first; add ; add = next)
     {
-      enum machine_mode add_mode = add->enforce_mode ? add->mode : VOIDmode;
-      struct decision *best_position = 0;
-      int best_merit = 4;
-      struct decision *old;
+      struct decision *old, *insert_before = NULL;
 
       next = add->next;
 
-      /* The semantics of pattern matching state that the tests are done in
-	 the order given in the MD file so that if an insn matches two
-	 patterns, the first one will be used.  However, in practice, most,
-	 if not all, patterns are unambiguous so that their order is
-	 independent.  In that case, we can merge identical tests and
-	 group all similar modes and codes together.
+      /* The semantics of pattern matching state that the tests are
+	 done in the order given in the MD file so that if an insn
+	 matches two patterns, the first one will be used.  However,
+	 in practice, most, if not all, patterns are unambiguous so
+	 that their order is independent.  In that case, we can merge
+	 identical tests and group all similar modes and codes together.
 
 	 Scan starting from the end of OLDH until we reach a point
-	 where we reach the head of the list or where we pass a pattern
-	 that could also be true if NEW is true.  If we find an identical
-	 pattern, we can merge them.  Also, record the last node that tests
-	 the same code and mode and the last one that tests just the same mode.
+	 where we reach the head of the list or where we pass a
+	 pattern that could also be true if NEW is true.  If we find
+	 an identical pattern, we can merge them.  Also, record the
+	 last node that tests the same code and mode and the last one
+	 that tests just the same mode.
 
 	 If we have no match, place NEW after the closest match we found.  */
-
-      for (old = oldh.last; old; old = old->prev)
+	 
+      for (old = oldh->last; old; old = old->prev)
 	{
-	  int our_merit;
-
-	  /* If we don't have anything to test except an additional test,
-	     do not consider the two nodes equal.  If we did, the test below
-	     would cause an infinite recursion.  */
-	  if (old->tests == 0 && old->test_elt_zero_int == 0
-	      && old->test_elt_one_int == 0 && old->veclen == 0
-	      && old->test_elt_zero_wide == 0
-	      && old->dupno == -1 && old->mode == VOIDmode
-	      && old->code == UNKNOWN
-	      && (old->c_test != 0 || add->c_test != 0))
-	    ;
-
-	  else if ((old->tests == add->tests
-		    || (old->pred >= 0 && old->pred == add->pred)
-		    || (old->tests && add->tests
-			&& !strcmp (old->tests, add->tests)))
-		   && old->test_elt_zero_int == add->test_elt_zero_int
-		   && old->elt_zero_int == add->elt_zero_int
-		   && old->test_elt_one_int == add->test_elt_one_int
-		   && old->elt_one_int == add->elt_one_int
-		   && old->test_elt_zero_wide == add->test_elt_zero_wide
-		   && old->elt_zero_wide == add->elt_zero_wide
-		   && old->veclen == add->veclen
-		   && old->dupno == add->dupno
-		   && old->opno == add->opno
-		   && old->code == add->code
-		   && old->enforce_mode == add->enforce_mode
-		   && old->mode == add->mode)
+	  if (nodes_identical (old, add))
 	    {
-	      /* If the additional test is not the same, split both nodes
-		 into nodes that just contain all things tested before the
-		 additional test and nodes that contain the additional test
-		 and actions when it is true.  This optimization is important
-		 because of the case where we have almost identical patterns
-		 with different tests on target flags.  */
-
-	      if (old->c_test != add->c_test
-		  && ! (old->c_test && add->c_test
-			&& !strcmp (old->c_test, add->c_test)))
-		{
-		  if (old->insn_code_number >= 0 || old->opno >= 0)
-		    {
-		      struct decision *split
-			= (struct decision *) xmalloc (sizeof (struct decision));
-
-		      memcpy (split, old, sizeof (struct decision));
-
-		      old->success.first = old->success.last = split;
-		      old->c_test = 0;
-		      old->opno = -1;
-		      old->insn_code_number = -1;
-		      old->num_clobbers_to_add = 0;
-
-		      split->number = next_number++;
-		      split->next = split->prev = 0;
-		      split->mode = VOIDmode;
-		      split->code = UNKNOWN;
-		      split->veclen = 0;
-		      split->test_elt_zero_int = 0;
-		      split->test_elt_one_int = 0;
-		      split->test_elt_zero_wide = 0;
-		      split->tests = 0;
-		      split->pred = -1;
-		      split->dupno = -1;
-		    }
-
-		  if (add->insn_code_number >= 0 || add->opno >= 0)
-		    {
-		      struct decision *split
-			= (struct decision *) xmalloc (sizeof (struct decision));
-
-		      memcpy (split, add, sizeof (struct decision));
-
-		      add->success.first = add->success.last = split;
-		      add->c_test = 0;
-		      add->opno = -1;
-		      add->insn_code_number = -1;
-		      add->num_clobbers_to_add = 0;
-
-		      split->number = next_number++;
-		      split->next = split->prev = 0;
-		      split->mode = VOIDmode;
-		      split->code = UNKNOWN;
-		      split->veclen = 0;
-		      split->test_elt_zero_int = 0;
-		      split->test_elt_one_int = 0;
-		      split->test_elt_zero_wide = 0;
-		      split->tests = 0;
-		      split->pred = -1;
-		      split->dupno = -1;
-		    }
-		}
-
-	      if (old->insn_code_number >= 0 && add->insn_code_number >= 0)
-		{
-		  /* If one node is for a normal insn and the second is
-		     for the base insn with clobbers stripped off, the
-		     second node should be ignored.  */
-
-		  if (old->num_clobbers_to_add == 0
-		      && add->num_clobbers_to_add > 0)
-		    /* Nothing to do here.  */
-		    ;
-		  else if (old->num_clobbers_to_add > 0
-			   && add->num_clobbers_to_add == 0)
-		    {
-		      /* In this case, replace OLD with ADD.  */
-		      old->insn_code_number = add->insn_code_number;
-		      old->num_clobbers_to_add = 0;
-		    }
-		  else
-		    fatal ("Two actions at one point in tree for insns \"%s\" (%d) and \"%s\" (%d)",
-			   insn_name_ptr[old->insn_code_number],
-			   old->insn_code_number,
-			   insn_name_ptr[add->insn_code_number],
-			   add->insn_code_number);
-		}
-
-	      if (old->insn_code_number == -1)
-		old->insn_code_number = add->insn_code_number;
-	      old->success = merge_trees (old->success, add->success);
-	      add = 0;
-	      break;
+	      merge_accept_insn (old, add);
+	      merge_trees (&old->success, &add->success);
+	      goto merged_nodes;
 	    }
 
-	  /* Unless we have already found the best possible insert point,
-	     see if this position is better.  If so, record it.  */
-
-	  if (best_merit != 0
-	      && ((our_merit = position_merit (old, add_mode, add->code))
-		  < best_merit))
-	    best_merit = our_merit, best_position = old;
-
-	  if (! not_both_true (old, add, 0))
+	  if (maybe_both_true (old, add, 0))
 	    break;
+
+	  /* Insert the nodes in DT test type order, which is roughly
+	     how expensive/important the test is.  Given that the tests
+	     are also ordered within the list, examining the first is
+	     sufficient.  */
+	  if (add->tests->type < old->tests->type)
+	    insert_before = old;
 	}
 
-      /* If ADD was duplicate, we are done.  */
-      if (add == 0)
-	continue;
-
-      /* Otherwise, find the best place to insert ADD.  Normally this is
-	 BEST_POSITION.  However, if we went all the way to the top of
-	 the list, it might be better to insert at the top.  */
-
-      if (best_position == 0)
-	abort ();
-
-      if (old == 0
-	  && position_merit (NULL_PTR, add_mode, add->code) < best_merit)
+      if (insert_before == NULL)
 	{
-	  add->prev = 0;
-	  add->next = oldh.first;
-	  oldh.first->prev = add;
-	  oldh.first = add;
+	  add->next = NULL;
+	  add->prev = oldh->last;
+	  oldh->last->next = add;
+	  oldh->last = add;
 	}
-
       else
 	{
-	  add->prev = best_position;
-	  add->next = best_position->next;
-	  best_position->next = add;
-	  if (best_position == oldh.last)
-	    oldh.last = add;
+	  if ((add->prev = insert_before->prev) != NULL)
+	    add->prev->next = add;
 	  else
-	    add->next->prev = add;
+	    oldh->first = add;
+	  add->next = insert_before;
+	  insert_before->prev = add;
+	}
+
+    merged_nodes:;
+    }
+}
+
+/* Walk the tree looking for sub-nodes that perform common tests.  
+   Factor out the common test into a new node.  This enables us
+   (depending on the test type) to emit switch statements later.  */
+
+static void
+factor_tests (head)
+     struct decision_head *head;
+{
+  struct decision *first, *next;
+
+  for (first = head->first; first && first->next; first = next)
+    {
+      enum decision_type type;
+      struct decision *new, *old_last;
+
+      type = first->tests->type;
+      next = first->next;
+
+      /* Want at least two compatible sequential nodes.  */
+      if (next->tests->type != type)
+	continue;
+
+      /* Don't want all node types, just those we can turn into 
+	 switch statements.  */
+      if (type != DT_mode
+	  && type != DT_code
+	  && type != DT_veclen
+	  && type != DT_elt_zero_int
+	  && type != DT_elt_one_int
+	  && type != DT_elt_zero_wide)
+	continue;
+
+      /* If we'd been performing more than one test, create a new node
+         below our first test.  */
+      if (first->tests->next != NULL)
+	{
+	  new = new_decision (first->position, &first->success);
+	  new->tests = first->tests->next;
+	  first->tests->next = NULL;
+	}
+	
+      /* Crop the node tree off after our first test.  */
+      first->next = NULL;
+      old_last = head->last;
+      head->last = first;
+
+      /* For each compatible test, adjust to perform only one test in
+	 the top level node, then merge the node back into the tree.  */
+      do
+	{
+	  struct decision_head h;
+
+	  if (next->tests->next != NULL)
+	    {
+	      new = new_decision (next->position, &next->success);
+	      new->tests = next->tests->next;
+	      next->tests->next = NULL;
+	    }
+	  new = next;
+	  next = next->next;
+	  new->next = NULL;
+	  h.first = h.last = new;
+
+	  merge_trees (head, &h);
+	}
+      while (next && next->tests->type == type);
+
+      /* After we run out of compatible tests, graft the remaining nodes
+	 back onto the tree.  */
+      if (next)
+	{
+	  next->prev = head->last;
+	  head->last->next = next;
+	  head->last = old_last;
 	}
     }
 
-  return oldh;
+  /* Recurse.  */
+  for (first = head->first; first; first = first->next)
+    factor_tests (&first->success);
 }
-
+
+/* After factoring, try to simplify the tests on any one node.
+   Tests that are useful for switch statements are recognizable
+   by having only a single test on a node -- we'll be manipulating
+   nodes with multiple tests:
+
+   If we have mode tests or code tests that are redundant with
+   predicates, remove them.  */
+
+static void
+simplify_tests (head)
+     struct decision_head *head;
+{
+  struct decision *tree;
+
+  for (tree = head->first; tree; tree = tree->next)
+    {
+      struct decision_test *a, *b;
+
+      a = tree->tests;
+      b = a->next;
+      if (b == NULL)
+	continue;
+
+      /* Find a predicate node.  */
+      while (b && b->type != DT_pred)
+	b = b->next;
+      if (b)
+	{
+	  /* Due to how these tests are constructed, we don't even need
+	     to check that the mode and code are compatible -- they were
+	     generated from the predicate in the first place.  */
+	  while (a->type == DT_mode || a->type == DT_code)
+	    a = a->next;
+	  tree->tests = a;
+	}
+    }
+
+  /* Recurse.  */
+  for (tree = head->first; tree; tree = tree->next)
+    simplify_tests (&tree->success);
+}
+
 /* Count the number of subnodes of HEAD.  If the number is high enough,
    make the first node in HEAD start a separate subroutine in the C code
-   that is generated.
-
-   TYPE gives the type of routine we are writing.
-
-   INITIAL is non-zero if this is the highest-level node.  We never write
-   it out here.  */
+   that is generated.  */
 
 static int
-break_out_subroutines (head, type, initial)
-     struct decision_head head;
-     enum routine_type type;
+break_out_subroutines (head, initial)
+     struct decision_head *head;
      int initial;
 {
   int size = 0;
   struct decision *sub;
 
-  for (sub = head.first; sub; sub = sub->next)
-    size += 1 + break_out_subroutines (sub->success, type, 0);
+  for (sub = head->first; sub; sub = sub->next)
+    size += 1 + break_out_subroutines (&sub->success, 0);
 
   if (size > SUBROUTINE_THRESHOLD && ! initial)
     {
-      head.first->subroutine_number = ++next_subroutine_number;
-      write_subroutine (head.first, type);
+      head->first->subroutine_number = ++next_subroutine_number;
       size = 1;
     }
   return size;
 }
-
-/* Write out a subroutine of type TYPE to do comparisons starting at node
-   TREE.  */
+
+/* For each node p, find the next alternative that might be true
+   when p is true.  */
 
 static void
-write_subroutine (tree, type)
-     struct decision *tree;
-     enum routine_type type;
+find_afterward (head, real_afterward)
+     struct decision_head *head;
+     struct decision *real_afterward;
 {
-  int i;
+  struct decision *p, *q, *afterward;
 
-  if (type == PEEPHOLE2)
-    printf ("extern rtx peephole2");
-  else if (type == SPLIT)
-    printf ("extern rtx split");
-  else
-    printf ("extern int recog");
-  if (tree != 0 && tree->subroutine_number > 0)
-    printf ("_%d", tree->subroutine_number);
-  else if (type == SPLIT)
-    printf ("_insns");
-  printf (" PROTO ((rtx, rtx");
-  if (type == RECOG)
-    printf (", int *");
-  else if (type == PEEPHOLE2)
-    printf (", rtx *");
-  printf ("));\n");
+  /* We can't propogate alternatives across subroutine boundaries. 
+     This is not incorrect, merely a minor optimization loss.  */
 
-  if (type == PEEPHOLE2)
-    printf ("rtx\npeephole2");
-  else if (type == SPLIT)
-    printf ("rtx\nsplit");
-  else
-    printf ("int\nrecog");
+  p = head->first;
+  afterward = (p->subroutine_number > 0 ? NULL : real_afterward);
 
-  if (tree != 0 && tree->subroutine_number > 0)
-    printf ("_%d", tree->subroutine_number);
-  else if (IS_SPLIT (type))
-    printf ("_insns");
-
-  printf (" (x0, insn");
-  if (type == RECOG)
-    printf (", pnum_clobbers");
-  else if (type == PEEPHOLE2)
-    printf (", _plast_insn");
-
-  printf (")\n");
-  /* The peephole2 pass uses the insn argument to determine which
-     hard registers are available at that point. */
-  printf ("     register rtx x0;\n     rtx insn ATTRIBUTE_UNUSED;\n");
-  if (type == RECOG)
-    printf ("     int *pnum_clobbers ATTRIBUTE_UNUSED;\n");
-  else if (type == PEEPHOLE2)
-    printf ("     rtx *_plast_insn ATTRIBUTE_UNUSED;\n");
-
-  printf ("{\n");
-  printf ("  register rtx *ro = &recog_data.operand[0];\n");
-
-  printf ("  register rtx ");
-  for (i = 1; i < max_depth; i++)
-    printf ("x%d ATTRIBUTE_UNUSED, ", i);
-
-  printf ("x%d ATTRIBUTE_UNUSED;\n", max_depth);
-  if (type == PEEPHOLE2)
-    printf ("  register rtx _last_insn = insn;\n");
-  printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
-  write_tree (tree, "", NULL_PTR, 1, type);
-  if (type == PEEPHOLE2)
-    printf (" ret1:\n  *_plast_insn = _last_insn;\n  return tem;\n");
-  printf (" ret0:\n  return %d;\n}\n\n", IS_SPLIT (type) ? 0 : -1);
-}
-
-/* This table is used to indent the recog_* functions when we are inside
-   conditions or switch statements.  We only support small indentations
-   and always indent at least two spaces.  */
-
-static const char *indents[]
-  = {"  ", "  ", "  ", "   ", "    ", "     ", "      ", "       ",
-     "\t", "\t ", "\t  ", "\t   ", "\t    ", "\t     ", "\t      ",
-     "\t\t", "\t\t ", "\t\t  ", "\t\t   ", "\t\t    ", "\t\t     "};
-
-/* Write out C code to perform the decisions in TREE for a subroutine of
-   type TYPE.  If all of the choices fail, branch to node AFTERWARD, if
-   non-zero, otherwise return.  PREVPOS is the position of the node that
-   branched to this test.
-
-   When we merged all alternatives, we tried to set up a convenient order.
-   Specifically, tests involving the same mode are all grouped together,
-   followed by a group that does not contain a mode test.  Within each group
-   of the same mode, we also group tests with the same code, followed by a
-   group that does not test a code.
-
-   Occasionally, we cannot arbitrarily reorder the tests so that multiple
-   sequence of groups as described above are present.
-
-   We generate two nested switch statements, the outer statement for
-   testing modes, and the inner switch for testing RTX codes.  It is
-   not worth optimizing cases when only a small number of modes or
-   codes is tested, since the compiler can do that when compiling the
-   resulting function.   We do check for when every test is the same mode
-   or code.  */
-
-static void
-write_tree_1 (tree, prevpos, afterward, type)
-     struct decision *tree;
-     const char *prevpos;
-     struct decision *afterward;
-     enum routine_type type;
-{
-  register struct decision *p, *p1;
-  register int depth = tree ? strlen (tree->position) : 0;
-  enum machine_mode switch_mode = VOIDmode;
-  RTX_CODE switch_code = UNKNOWN;
-  int uncond = 0;
-  char modemap[NUM_MACHINE_MODES];
-  char codemap[NUM_RTX_CODE];
-  int indent = 2;
-  int i;
-
-  /* One tricky area is what is the exact state when we branch to a
-     node's label.  There are two cases where we branch: when looking at
-     successors to a node, or when a set of tests fails.
-
-     In the former case, we are always branching to the first node in a
-     decision list and we want all required tests to be performed.  We
-     put the labels for such nodes in front of any switch or test statements.
-     These branches are done without updating the position to that of the
-     target node.
-
-     In the latter case, we are branching to a node that is not the first
-     node in a decision list.  We have already checked that it is possible
-     for both the node we originally tested at this level and the node we
-     are branching to to both match some pattern.  That means that they
-     usually will be testing the same mode and code.  So it is normally safe
-     for such labels to be inside switch statements, since the tests done
-     by virtue of arriving at that label will usually already have been
-     done.  The exception is a branch from a node that does not test a
-     mode or code to one that does.  In such cases, we set the `retest_mode'
-     or `retest_code' flags.  That will ensure that we start a new switch
-     at that position and put the label before the switch.
-
-     The branches in the latter case must set the position to that of the
-     target node.  */
-
-
-  printf ("\n");
-  if (tree && tree->subroutine_number == 0)
+  for ( ; p ; p = p->next)
     {
-      OUTPUT_LABEL ("  ", tree->number);
-      tree->label_needed = 0;
+      /* Find the next node that might be true if this one fails.  */
+      for (q = p->next; q ; q = q->next)
+	if (maybe_both_true (p, q, 1))
+	  break;
+
+      /* If we reached the end of the list without finding one, 
+	 use the incoming afterward position.  */
+      if (!q)
+	q = afterward;
+      p->afterward = q;
+      if (q)
+	q->need_label = 1;
     }
 
-  if (tree)
-    {
-      change_state (prevpos, tree->position, 2, afterward);
-      prevpos = tree->position;
-    }
-
-  for (p = tree; p; p = p->next)
-    {
-      enum machine_mode mode = p->enforce_mode ? p->mode : VOIDmode;
-      int need_bracket;
-      int wrote_bracket = 0;
-      int inner_indent;
-
-      if (p->success.first == 0 && p->insn_code_number < 0)
-	abort ();
-
-      /* Find the next alternative to p that might be true when p is true.
-	 Test that one next if p's successors fail.  */
-
-      for (p1 = p->next; p1 && not_both_true (p, p1, 1); p1 = p1->next)
-	;
-      p->afterward = p1;
-
-      if (p1)
-	{
-	  if (mode == VOIDmode && p1->enforce_mode && p1->mode != VOIDmode)
-	    p1->retest_mode = 1;
-	  if (p->code == UNKNOWN && p1->code != UNKNOWN)
-	    p1->retest_code = 1;
-	  p1->label_needed = 1;
-	}
-
-      /* If we have a different code or mode than the last node and
-	 are in a switch on codes, we must either end the switch or
-	 go to another case.  We must also end the switch if this
-	 node needs a label and to retest either the mode or code.  */
-
-      if (switch_code != UNKNOWN
-	  && (switch_code != p->code || switch_mode != mode
-	      || (p->label_needed && (p->retest_mode || p->retest_code))))
-	{
-	  enum rtx_code code = p->code;
-
-	  /* If P is testing a predicate that we know about and we haven't
-	     seen any of the codes that are valid for the predicate, we
-	     can write a series of "case" statement, one for each possible
-	     code.  Since we are already in a switch, these redundant tests
-	     are very cheap and will reduce the number of predicate called.  */
-
-	  if (p->pred >= 0)
-	    {
-	      for (i = 0; i < NUM_RTX_CODE && preds[p->pred].codes[i] != 0; i++)
-		if (codemap[(int) preds[p->pred].codes[i]])
-		  break;
-
-	      if (preds[p->pred].codes[i] == 0)
-		code = MATCH_OPERAND;
-	    }
-
-	  if (code == UNKNOWN || codemap[(int) code]
-	      || switch_mode != mode
-	      || (p->label_needed && (p->retest_mode || p->retest_code)))
-	    {
-	      printf ("%s}\n", indents[indent - 2]);
-	      switch_code = UNKNOWN;
-	      indent -= 4;
-	    }
-	  else
-	    {
-	      if (! uncond)
-		printf ("%sbreak;\n", indents[indent]);
-
-	      if (code == MATCH_OPERAND)
-		{
-		  for (i = 0; i < NUM_RTX_CODE && preds[p->pred].codes[i] != 0; i++)
-		    {
-		      printf ("%scase ", indents[indent - 2]);
-		      print_code (preds[p->pred].codes[i]);
-		      printf (":\n");
-		      codemap[(int) preds[p->pred].codes[i]] = 1;
-		    }
-		}
-	      else
-		{
-		  printf ("%scase ", indents[indent - 2]);
-		  print_code (code);
-		  printf (":\n");
-		  codemap[(int) p->code] = 1;
-		}
-
-	      switch_code = code;
-	    }
-
-	  uncond = 0;
-	}
-
-      /* If we were previously in a switch on modes and now have a different
-	 mode, end at least the case, and maybe end the switch if we are
-	 not testing a mode or testing a mode whose case we already saw.  */
-
-      if (switch_mode != VOIDmode
-	  && (switch_mode != mode || (p->label_needed && p->retest_mode)))
-	{
-	  if (mode == VOIDmode || modemap[(int) mode]
-	      || (p->label_needed && p->retest_mode))
-	    {
-	      printf ("%s}\n", indents[indent - 2]);
-	      switch_mode = VOIDmode;
-	      indent -= 4;
-	    }
-	  else
-	    {
-	      if (! uncond)
-		printf ("      break;\n");
-	      printf ("    case %smode:\n", GET_MODE_NAME (mode));
-	      switch_mode = mode;
-	      modemap[(int) mode] = 1;
-	    }
-
-	  uncond = 0;
-	}
-
-      /* If we are about to write dead code, something went wrong.  */
-      if (! p->label_needed && uncond)
-	abort ();
-
-      /* If we need a label and we will want to retest the mode or code at
-	 that label, write the label now.  We have already ensured that
-	 things will be valid for the test.  */
-
-      if (p->label_needed && (p->retest_mode || p->retest_code))
-	{
-	  OUTPUT_LABEL (indents[indent - 2], p->number);
-	  p->label_needed = 0;
-	}
-
-      uncond = 0;
-
-      /* If we are not in any switches, see if we can shortcut things
-	 by checking for identical modes and codes.  */
-
-      if (switch_mode == VOIDmode && switch_code == UNKNOWN)
-	{
-	  /* If p and its alternatives all want the same mode,
-	     reject all others at once, first, then ignore the mode.  */
-
-	  if (mode != VOIDmode && p->next && same_modes (p, mode))
-	    {
-	      printf ("  if (GET_MODE (x%d) != %smode)\n",
-		      depth, GET_MODE_NAME (p->mode));
-	      if (afterward)
-		{
-		  printf ("    {\n");
-		  change_state (p->position, afterward->position, 6,
-				afterward);
-		  printf ("      goto L%d;\n    }\n", afterward->number);
-		}
-	      else
-		printf ("    goto ret0;\n");
-	      clear_modes (p);
-	      mode = VOIDmode;
-	    }
-
-	  /* If p and its alternatives all want the same code,
-	     reject all others at once, first, then ignore the code.  */
-
-	  if (p->code != UNKNOWN && p->next && same_codes (p, p->code))
-	    {
-	      printf ("  if (GET_CODE (x%d) != ", depth);
-	      print_code (p->code);
-	      printf (")\n");
-	      if (afterward)
-		{
-		  printf ("    {\n");
-		  change_state (p->position, afterward->position, indent + 4,
-				afterward);
-		  printf ("    goto L%d;\n    }\n", afterward->number);
-		}
-	      else
-		printf ("    goto ret0;\n");
-	      clear_codes (p);
-	    }
-	}
-
-      /* If we are not in a mode switch and we are testing for a specific
-	 mode, start a mode switch unless we have just one node or the next
-	 node is not testing a mode (we have already tested for the case of
-	 more than one mode, but all of the same mode).  */
-
-      if (switch_mode == VOIDmode && mode != VOIDmode && p->next != 0
-	  && p->next->enforce_mode && p->next->mode != VOIDmode)
-	{
-	  memset (modemap, 0, sizeof modemap);
-	  printf ("%sswitch (GET_MODE (x%d))\n", indents[indent], depth);
-	  printf ("%s{\n", indents[indent + 2]);
-	  indent += 4;
-	  printf ("%sdefault:\n%sbreak;\n", indents[indent - 2],
-		  indents[indent]);
-	  printf ("%scase %smode:\n", indents[indent - 2],
-		  GET_MODE_NAME (mode));
-	  modemap[(int) mode] = 1;
-	  switch_mode = mode;
-	}
-
-      /* Similarly for testing codes.  */
-
-      if (switch_code == UNKNOWN && p->code != UNKNOWN && ! p->ignore_code
-	  && p->next != 0 && p->next->code != UNKNOWN)
-	{
-	  memset (codemap, 0, sizeof codemap);
-	  printf ("%sswitch (GET_CODE (x%d))\n", indents[indent], depth);
-	  printf ("%s{\n", indents[indent + 2]);
-	  indent += 4;
-	  printf ("%sdefault:\n%sbreak;\n", indents[indent - 2],
-		  indents[indent]);
-	  printf ("%scase ", indents[indent - 2]);
-	  print_code (p->code);
-	  printf (":\n");
-	  codemap[(int) p->code] = 1;
-	  switch_code = p->code;
-	}
-
-      /* Now that most mode and code tests have been done, we can write out
-	 a label for an inner node, if we haven't already.  */
-      if (p->label_needed)
-	OUTPUT_LABEL (indents[indent - 2], p->number);
-
-      inner_indent = indent;
-
-      /* The only way we can have to do a mode or code test here is if
-	 this node needs such a test but is the only node to be tested.
-	 In that case, we won't have started a switch.  Note that this is
-	 the only way the switch and test modes can disagree.  */
-
-      if ((mode != switch_mode && ! p->ignore_mode)
-	  || (p->code != switch_code && p->code != UNKNOWN && ! p->ignore_code)
-	  || p->test_elt_zero_int || p->test_elt_one_int
-	  || p->test_elt_zero_wide || p->veclen
-	  || p->dupno >= 0 || p->tests || p->num_clobbers_to_add)
-	{
-	  printf ("%sif (", indents[indent]);
-
-	  if (mode != switch_mode && ! p->ignore_mode)
-	    printf ("GET_MODE (x%d) == %smode && ",
-		    depth, GET_MODE_NAME (mode));
-	  if (p->code != switch_code && p->code != UNKNOWN && ! p->ignore_code)
-	    {
-	      printf ("GET_CODE (x%d) == ", depth);
-	      print_code (p->code);
-	      printf (" && ");
-	    }
-
-	  if (p->test_elt_zero_int)
-	    printf ("XINT (x%d, 0) == %d && ", depth, p->elt_zero_int);
-	  if (p->test_elt_one_int)
-	    printf ("XINT (x%d, 1) == %d && ", depth, p->elt_one_int);
-	  if (p->test_elt_zero_wide)
-	    {
-	      /* Set offset to 1 iff the number might get propagated to
-	         unsigned long by ANSI C rules, else 0.
-	         Prospective hosts are required to have at least 32 bit
-	         ints, and integer constants in machine descriptions
-	         must fit in 32 bit, thus it suffices to check only
-	         for 1 << 31 .  */
-	      HOST_WIDE_INT offset = p->elt_zero_wide == -2147483647 - 1;
-	      printf ("XWINT (x%d, 0) == ", depth);
-	      printf (HOST_WIDE_INT_PRINT_DEC, p->elt_zero_wide + offset);
-	      printf ("%s && ", offset ? "-1" : "");
-	    }
-	  if (p->veclen)
-	    printf ("XVECLEN (x%d, 0) == %d && ", depth, p->veclen);
-	  if (p->dupno >= 0)
-	    printf ("rtx_equal_p (x%d, ro[%d]) && ", depth, p->dupno);
-	  if (p->num_clobbers_to_add)
-	    printf ("pnum_clobbers != 0 && ");
-	  if (p->tests)
-	    printf ("%s (x%d, %smode)", p->tests, depth,
-		    GET_MODE_NAME (p->mode));
-	  else
-	    printf ("1");
-
-	  printf (")\n");
-	  inner_indent += 2;
-	}
-      else
-	uncond = 1;
-
-      need_bracket = ! uncond;
-
-      if (p->opno >= 0)
-	{
-	  if (need_bracket)
-	    {
-	      printf ("%s{\n", indents[inner_indent]);
-	      inner_indent += 2;
-	      wrote_bracket = 1;
-	      need_bracket = 0;
-	    }
-
-	  printf ("%sro[%d] = x%d;\n", indents[inner_indent], p->opno, depth);
-	}
-
-      if (p->c_test)
-	{
-	  printf ("%sif (%s)\n", indents[inner_indent], p->c_test);
-	  inner_indent += 2;
-	  uncond = 0;
-	  need_bracket = 1;
-	}
-
-      if (p->insn_code_number >= 0)
-	{
-	  if (type == SPLIT)
-	    {
-	      printf ("%sreturn gen_split_%d (operands);\n",
-		      indents[inner_indent], p->insn_code_number);
-	    }
-	  else if (type == PEEPHOLE2)
-	    {
-	      printf ("%s{\n", indents[inner_indent]);
-	      inner_indent += 2;
-
-	      printf ("%stem = gen_peephole2_%d (insn, operands);\n",
-		      indents[inner_indent], p->insn_code_number);
-	      printf ("%sif (tem != 0) goto ret1;\n", indents[inner_indent]);
-	      inner_indent -= 2;
-	      printf ("%s}\n", indents[inner_indent]);
-	    }
-	  else
-	    {
-	      if (p->num_clobbers_to_add)
-		{
-		  if (need_bracket)
-		    {
-		      printf ("%s{\n", indents[inner_indent]);
-		      inner_indent += 2;
-		    }
-
-		  printf ("%s*pnum_clobbers = %d;\n",
-			  indents[inner_indent], p->num_clobbers_to_add);
-		  printf ("%sreturn %d;\n",
-			  indents[inner_indent], p->insn_code_number);
-
-		  if (need_bracket)
-		    {
-		      inner_indent -= 2;
-		      printf ("%s}\n", indents[inner_indent]);
-		    }
-		}
-	      else
-		printf ("%sreturn %d;\n",
-			indents[inner_indent], p->insn_code_number);
-	    }
-	}
-      else
-	printf ("%sgoto L%d;\n", indents[inner_indent],
-		p->success.first->number);
-
-      if (wrote_bracket)
-	printf ("%s}\n", indents[inner_indent - 2]);
-    }
-
-  /* We have now tested all alternatives.  End any switches we have open
-     and branch to the alternative node unless we know that we can't fall
-     through to the branch.  */
-
-  if (switch_code != UNKNOWN)
-    {
-      printf ("%s}\n", indents[indent - 2]);
-      indent -= 4;
-      uncond = 0;
-    }
-
-  if (switch_mode != VOIDmode)
-    {
-      printf ("%s}\n", indents[indent - 2]);
-      indent -= 4;
-      uncond = 0;
-    }
-
-  if (indent != 2)
-    abort ();
-
-  if (uncond)
-    return;
-
-  if (afterward)
-    {
-      change_state (prevpos, afterward->position, 2, afterward);
-      printf ("  goto L%d;\n", afterward->number);
-    }
-  else
-    printf ("  goto ret0;\n");
-}
-
-static void
-print_code (code)
-     enum rtx_code code;
-{
-  register const char *p1;
-  for (p1 = GET_RTX_NAME (code); *p1; p1++)
-    putchar (TOUPPER(*p1));
-}
-
-static int
-same_codes (p, code)
-     register struct decision *p;
-     register enum rtx_code code;
-{
-  for (; p; p = p->next)
-    if (p->code != code)
-      return 0;
-
-  return 1;
-}
-
-static void
-clear_codes (p)
-     register struct decision *p;
-{
-  for (; p; p = p->next)
-    p->ignore_code = 1;
-}
-
-static int
-same_modes (p, mode)
-     register struct decision *p;
-     register enum machine_mode mode;
-{
-  for (; p; p = p->next)
-    if ((p->enforce_mode ? p->mode : VOIDmode) != mode)
-      return 0;
-
-  return 1;
-}
-
-static void
-clear_modes (p)
-     register struct decision *p;
-{
-  for (; p; p = p->next)
-    p->enforce_mode = 0;
-}
-
-/* Write out the decision tree starting at TREE for a subroutine of type TYPE.
-
-   PREVPOS is the position at the node that branched to this node.
-
-   INITIAL is nonzero if this is the first node we are writing in a subroutine.
-
-   If all nodes are false, branch to the node AFTERWARD.  */
-
-static void
-write_tree (tree, prevpos, afterward, initial, type)
-     struct decision *tree;
-     const char *prevpos;
-     struct decision *afterward;
-     int initial;
-     enum routine_type type;
-{
-  register struct decision *p;
-  const char *name_prefix;
-  const char *call_suffix;
-
-  switch (type)
-    {
-    case SPLIT:
-      name_prefix = "split";
-      call_suffix = "";
-      break;
-    case PEEPHOLE2:
-      name_prefix = "peephole2";
-      call_suffix = ", _plast_insn";
-      break;
-    case RECOG:
-      name_prefix = "recog";
-      call_suffix = ", pnum_clobbers";
-      break;
-    default:
-      abort();
-    }
-  if (! initial && tree->subroutine_number > 0)
-    {
-      OUTPUT_LABEL (" ", tree->number);
-
-      if (afterward)
-	{
-	  printf ("  tem = %s_%d (x0, insn%s);\n",
-		  name_prefix, tree->subroutine_number, call_suffix);
-	  if (IS_SPLIT (type))
-	    printf ("  if (tem != 0) return tem;\n");
-	  else
-	    printf ("  if (tem >= 0) return tem;\n");
-	  change_state (tree->position, afterward->position, 2, afterward);
-	  printf ("  goto L%d;\n", afterward->number);
-	}
-      else
-	printf ("  return %s_%d (x0, insn%s);\n",
-		name_prefix, tree->subroutine_number, call_suffix);
-      return;
-    }
-
-  write_tree_1 (tree, prevpos, afterward, type);
-
-  for (p = tree; p; p = p->next)
+  /* Recurse.  */
+  for (p = head->first; p ; p = p->next)
     if (p->success.first)
-      write_tree (p->success.first, p->position,
-		  p->afterward ? p->afterward : afterward, 0, type);
-}
+      find_afterward (&p->success, p->afterward);
 
+  /* When we are generating a subroutine, record the real afterward
+     position in the first node where write_tree can find it, and we
+     can do the right thing at the subroutine call site.  */
+  p = head->first;
+  if (p->subroutine_number > 0)
+    p->afterward = real_afterward;
+}
 
 /* Assuming that the state of argument is denoted by OLDPOS, take whatever
-   actions are necessary to move to NEWPOS. If we fail to move to the
+   actions are necessary to move to NEWPOS.  If we fail to move to the
    new state, branch to node AFTERWARD if non-zero, otherwise return.
 
-   INDENT says how many blanks to place at the front of lines.
-
    Failure to move to the new state can only occur if we are trying to
-   match multiple insns and we try to step past the end of the
-   stream. */
+   match multiple insns and we try to step past the end of the stream. */
 
 static void
-change_state (oldpos, newpos, indent, afterward)
+change_state (oldpos, newpos, afterward, indent)
      const char *oldpos;
      const char *newpos;
-     int indent;
      struct decision *afterward;
+     const char *indent;
 {
   int odepth = strlen (oldpos);
-  int depth = odepth;
   int ndepth = strlen (newpos);
-  int basedepth;
+  int depth;
   int old_has_insn, new_has_insn;
 
   /* Pop up as many levels as necessary.  */
+  for (depth = odepth; strncmp (oldpos, newpos, depth) != 0; --depth)
+    continue;
 
-  while (strncmp (oldpos, newpos, depth))
-    --depth;
-  basedepth = depth;
-
-  /* Make sure to reset the _last_insn pointer when popping back up.  */
+  /* Hunt for the last [A-Z] in both strings.  */
   for (old_has_insn = odepth - 1; old_has_insn >= 0; --old_has_insn)
     if (oldpos[old_has_insn] >= 'A' && oldpos[old_has_insn] <= 'Z')
       break;
@@ -1824,11 +1272,11 @@ change_state (oldpos, newpos, indent, afterward)
     if (newpos[new_has_insn] >= 'A' && newpos[new_has_insn] <= 'Z')
       break;
 
+  /* Make sure to reset the _last_insn pointer when popping back up.  */
   if (old_has_insn >= 0 && new_has_insn < 0)
-    printf ("%s_last_insn = insn;\n", indents[indent]);
+    printf ("%s_last_insn = insn;\n", indent);
 
   /* Go down to desired level.  */
-
   while (depth < ndepth)
     {
       /* It's a different insn from the first one. */
@@ -1837,35 +1285,971 @@ change_state (oldpos, newpos, indent, afterward)
 	  /* We can only fail if we're moving down the tree.  */
 	  if (old_has_insn >= 0 && oldpos[old_has_insn] >= newpos[depth])
 	    {
-	      printf ("%s_last_insn = recog_next_insn (insn, %d);\n",
-		      indents[indent], newpos[depth] - 'A');
+	      printf ("%s_last_insn = recog_next_insn (insn, %d);\n", 
+		      indent, newpos[depth] - 'A');
 	    }
 	  else
 	    {
-	      printf ("%stem = recog_next_insn (insn, %d);\n",
-		      indents[indent], newpos[depth] - 'A');
-
-	      printf ("%sif (tem == NULL_RTX)\n", indents[indent]);
+	      printf ("%stem = recog_next_insn (insn, %d);\n", 
+		      indent, newpos[depth] - 'A');
+	      printf ("%sif (tem == NULL_RTX)\n", indent);
 	      if (afterward)
-		printf ("%sgoto L%d;\n", indents[indent + 2],
-			afterward->number);
+		printf ("%s  goto L%d;\n", indent, afterward->number);
 	      else
-		printf ("%sgoto ret0;\n", indents[indent + 2]);
-
-	      printf ("%s_last_insn = tem;\n", indents[indent]);
+		printf ("%s  goto ret0;\n", indent);
+	      printf ("%s_last_insn = tem;\n", indent);
 	    }
-	  printf ("%sx%d = PATTERN (_last_insn);\n",
-		  indents[indent], depth + 1);
+	  printf ("%sx%d = PATTERN (_last_insn);\n", indent, depth + 1);
 	}
       else if (newpos[depth] >= 'a' && newpos[depth] <= 'z')
 	printf ("%sx%d = XVECEXP (x%d, 0, %d);\n",
-		indents[indent], depth + 1, depth, newpos[depth] - 'a');
+		indent, depth + 1, depth, newpos[depth] - 'a');
       else
 	printf ("%sx%d = XEXP (x%d, %c);\n",
-		indents[indent], depth + 1, depth, newpos[depth]);
+		indent, depth + 1, depth, newpos[depth]);
       ++depth;
     }
 }
+
+/* Print the enumerator constant for CODE -- the upcase version of
+   the name.  */
+
+static void
+print_code (code)
+     enum rtx_code code;
+{
+  register const char *p;
+  for (p = GET_RTX_NAME (code); *p; p++)
+    putchar (TOUPPER (*p));
+}
+
+/* Emit code to cross an afterward link -- change state and branch.  */
+
+static void
+write_afterward (start, afterward, indent)
+     struct decision *start;
+     struct decision *afterward;
+     const char *indent;
+{
+  if (!afterward || start->subroutine_number > 0)
+    printf("%sgoto ret0;\n", indent);
+  else
+    {
+      change_state (start->position, afterward->position, NULL, indent);
+      printf ("%sgoto L%d;\n", indent, afterward->number);
+    }
+}
+
+/* Emit a switch statement, if possible, for an initial sequence of 
+   nodes at START.  Return the first node yet untested.  */
+
+static struct decision *
+write_switch (start, depth)
+     struct decision *start;
+     int depth;
+{
+  struct decision *p = start;
+  enum decision_type type = p->tests->type;
+
+  /* If we have two or more nodes in sequence that test the same one
+     thing, we may be able to use a switch statement.  */
+
+  if (!p->next
+      || p->tests->next
+      || p->next->tests->type != type
+      || p->next->tests->next)
+    return p;
+
+  /* DT_code is special in that we can do interesting things with
+     known predicates at the same time.  */
+  if (type == DT_code)
+    {
+      char codemap[NUM_RTX_CODE];
+      struct decision *ret;
+
+      memset (codemap, 0, sizeof(codemap));
+
+      printf ("  switch (GET_CODE (x%d))\n    {\n", depth);
+      do 
+	{
+	  RTX_CODE code = p->tests->u.code;
+	  printf ("    case ");
+	  print_code (code);
+	  printf (":\n      goto L%d;\n", p->success.first->number);
+	  p->success.first->need_label = 1;
+
+	  codemap[code] = 1;
+	  p = p->next;
+	}
+      while (p && p->tests->type == DT_code && !p->tests->next);
+
+      /* If P is testing a predicate that we know about and we haven't
+	 seen any of the codes that are valid for the predicate, we can
+	 write a series of "case" statement, one for each possible code.
+	 Since we are already in a switch, these redundant tests are very
+	 cheap and will reduce the number of predicates called.  */
+
+      /* Note that while we write out cases for these predicates here,
+	 we don't actually write the test here, as it gets kinda messy.
+	 It is trivial to leave this to later by telling our caller that
+	 we only processed the CODE tests.  */
+      ret = p;
+
+      while (p && p->tests->type == DT_pred
+	     && p->tests->u.pred.index >= 0)
+	{
+	  const RTX_CODE *c;
+
+	  for (c = &preds[p->tests->u.pred.index].codes[0]; *c ; ++c)
+	    if (codemap[(int) *c] != 0)
+	      goto pred_done;
+
+	  for (c = &preds[p->tests->u.pred.index].codes[0]; *c ; ++c)
+	    {
+	      printf ("    case ");
+	      print_code (*c);
+	      printf (":\n");
+	      codemap[(int) *c] = 1;
+	    }
+
+	  printf ("      goto L%d;\n", p->number);
+	  p->need_label = 1;
+	  p = p->next;
+	}
+
+    pred_done:
+      /* Make the default case skip the predicates we managed to match.  */
+
+      printf ("    default:\n");
+      if (p != ret)
+	{
+	  if (p)
+	    {
+	      printf ("      goto L%d;\n", p->number);
+	      p->need_label = 1;
+	    }
+	  else
+	    write_afterward (start, start->afterward, "      ");
+	}
+      else
+	printf ("     break;\n");
+      printf ("   }\n");
+
+      return ret;
+    }
+  else if (type == DT_mode
+	   || type == DT_veclen
+	   || type == DT_elt_zero_int
+	   || type == DT_elt_one_int
+	   || type == DT_elt_zero_wide)
+    {
+      const char *str;
+
+      printf ("  switch (");
+      switch (type)
+	{
+	case DT_mode:
+	  str = "GET_MODE (x%d)";
+	  break;
+	case DT_veclen:
+	  str = "XVECLEN (x%d, 0)";
+	  break;
+	case DT_elt_zero_int:
+	  str = "XINT (x%d, 0)";
+	  break;
+	case DT_elt_one_int:
+	  str = "XINT (x%d, 1)";
+	  break;
+	case DT_elt_zero_wide:
+	  str = "XWINT (x%d, 0)";
+	  break;
+	default:
+	  abort ();
+	}
+      printf (str, depth);
+      printf (")\n    {\n");
+
+      do
+	{
+	  printf ("    case ");
+	  switch (type)
+	    {
+	    case DT_mode:
+	      printf ("%smode", GET_MODE_NAME (p->tests->u.mode));
+	      break;
+	    case DT_veclen:
+	      printf ("%d", p->tests->u.veclen);
+	      break;
+	    case DT_elt_zero_int:
+	    case DT_elt_one_int:
+	    case DT_elt_zero_wide:
+	      printf (HOST_WIDE_INT_PRINT_DEC, p->tests->u.intval);
+	      break;
+	    default:
+	      abort ();
+	    }
+	  printf (":\n      goto L%d;\n", p->success.first->number);
+	  p->success.first->need_label = 1;
+
+	  p = p->next;
+	}
+      while (p && p->tests->type == type && !p->tests->next);
+      
+      printf ("    default:\n      break;\n    }\n");
+
+      return p;
+    }
+  else
+    {
+      /* None of the other tests are ameanable.  */
+      return p;
+    }
+}
+
+/* Emit code for one test.  */
+
+static void
+write_cond (p, depth, subroutine_type)
+     struct decision_test *p;
+     int depth;
+     enum routine_type subroutine_type;
+{
+  switch (p->type)
+    {
+    case DT_mode:
+      printf ("GET_MODE (x%d) == %smode", depth, GET_MODE_NAME (p->u.mode));
+      break;
+
+    case DT_code:
+      printf ("GET_CODE (x%d) == ", depth);
+      print_code (p->u.code);
+      break;
+
+    case DT_veclen:
+      printf ("XVECLEN (x%d, 0) == %d", depth, p->u.veclen);
+      break;
+
+    case DT_elt_zero_int:
+      printf ("XINT (x%d, 0) == %d", depth, (int) p->u.intval);
+      break;
+
+    case DT_elt_one_int:
+      printf ("XINT (x%d, 1) == %d", depth, (int) p->u.intval);
+      break;
+
+    case DT_elt_zero_wide:
+      printf ("XWINT (x%d, 0) == ", depth);
+      printf (HOST_WIDE_INT_PRINT_DEC, p->u.intval);
+      break;
+
+    case DT_dup:
+      printf ("rtx_equal_p (x%d, operands[%d])", depth, p->u.dup);
+      break;
+
+    case DT_pred:
+      printf ("%s (x%d, %smode)", p->u.pred.name, depth,
+	      GET_MODE_NAME (p->u.pred.mode));
+      break;
+
+    case DT_c_test:
+      printf ("(%s)", p->u.c_test);
+      break;
+
+    case DT_accept_insn:
+      switch (subroutine_type)
+	{
+	case RECOG:
+	  if (p->u.insn.num_clobbers_to_add == 0)
+	    abort ();
+	  printf ("pnum_clobbers != NULL");
+	  break;
+
+	default:
+	  abort ();
+	}
+      break;
+
+    default:
+      abort ();
+    }
+}
+
+/* Emit code for one action.  The previous tests have succeeded;
+   TEST is the last of the chain.  In the normal case we simply
+   perform a state change.  For the `accept' tests we must do more work.  */
+
+static void
+write_action (test, depth, uncond, success, subroutine_type)
+     struct decision_test *test;
+     int depth, uncond;
+     struct decision *success;
+     enum routine_type subroutine_type;
+{
+  const char *indent;
+  int want_close = 0;
+
+  if (uncond)
+    indent = "  ";
+  else if (test->type == DT_accept_op || test->type == DT_accept_insn)
+    {
+      fputs ("    {\n", stdout);
+      indent = "      ";
+      want_close = 1;
+    }
+  else
+    indent = "    ";
+
+  if (test->type == DT_accept_op)
+    {
+      printf("%soperands[%d] = x%d;\n", indent, test->u.opno, depth);
+
+      /* Only allow DT_accept_insn to follow.  */
+      if (test->next)
+	{
+	  test = test->next;
+	  if (test->type != DT_accept_insn)
+	    abort ();
+	}
+    }
+
+  /* Sanity check that we're now at the end of the list of tests.  */
+  if (test->next)
+    abort ();
+
+  if (test->type == DT_accept_insn)
+    {
+      switch (subroutine_type)
+	{
+	case RECOG:
+	  if (test->u.insn.num_clobbers_to_add != 0)
+	    printf ("%s*pnum_clobbers = %d;\n",
+		    indent, test->u.insn.num_clobbers_to_add);
+	  printf ("%sreturn %d;\n", indent, test->u.insn.code_number);
+	  break;
+
+	case SPLIT:
+	  printf ("%sreturn gen_split_%d (operands);\n",
+		  indent, test->u.insn.code_number);
+	  break;
+
+	case PEEPHOLE2:
+	  printf ("%stem = gen_peephole2_%d (insn, operands);\n",
+		  indent, test->u.insn.code_number);
+	  printf ("%sif (tem != 0)\n%s  goto ret1;\n", indent, indent);
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+  else
+    {
+      printf("%sgoto L%d;\n", indent, success->number);
+      success->need_label = 1;
+    }
+
+  if (want_close)
+    fputs ("    }\n", stdout);
+}
+
+/* Return 1 if the test is always true and has no fallthru path.  Return -1
+   if the test does have a fallthru path, but requires that the condition be
+   terminated.  Otherwise return 0 for a normal test.  */
+/* ??? is_unconditional is a stupid name for a tri-state function.  */
+
+static int
+is_unconditional (t, subroutine_type)
+     struct decision_test *t;
+     enum routine_type subroutine_type;
+{
+  if (t->type == DT_accept_op)
+    return 1;
+
+  if (t->type == DT_accept_insn)
+    {
+      switch (subroutine_type)
+	{
+	case RECOG:
+	  return (t->u.insn.num_clobbers_to_add == 0);
+	case SPLIT:
+	  return 1;
+	case PEEPHOLE2:
+	  return -1;
+	default:
+	  abort ();
+	}
+    }
+
+  return 0;
+}
+
+/* Emit code for one node -- the conditional and the accompanying action.
+   Return true if there is no fallthru path.  */
+
+static int
+write_node (p, depth, subroutine_type)
+     struct decision *p;
+     int depth;
+     enum routine_type subroutine_type;
+{
+  struct decision_test *test, *last_test;
+  int uncond;
+
+  last_test = test = p->tests;
+  uncond = is_unconditional (test, subroutine_type);
+  if (uncond == 0)
+    {
+      printf ("  if (");
+      write_cond (test, depth, subroutine_type);
+
+      while ((test = test->next) != NULL)
+	{
+	  int uncond2;
+
+	  last_test = test;
+	  uncond2 = is_unconditional (test, subroutine_type);
+	  if (uncond2 != 0)
+	    break;
+
+	  printf ("\n      && ");
+	  write_cond (test, depth, subroutine_type);
+	}
+
+      printf (")\n");
+    }
+
+  write_action (last_test, depth, uncond, p->success.first, subroutine_type);
+
+  return uncond > 0;
+}
+
+/* Emit code for all of the sibling nodes of HEAD.  */
+
+static void
+write_tree_1 (head, depth, subroutine_type)
+     struct decision_head *head;
+     int depth;
+     enum routine_type subroutine_type;
+{
+  struct decision *p, *next;
+  int uncond = 0;
+
+  for (p = head->first; p ; p = next)
+    {
+      /* The label for the first element was printed in write_tree.  */
+      if (p != head->first && p->need_label)
+	OUTPUT_LABEL (" ", p->number);
+
+      /* Attempt to write a switch statement for a whole sequence.  */
+      next = write_switch (p, depth);
+      if (p != next)
+	uncond = 0;
+      else
+	{
+	  /* Failed -- fall back and write one node.  */
+	  uncond = write_node (p, depth, subroutine_type);
+	  next = p->next;
+	}
+    }
+
+  /* Finished with this chain.  Close a fallthru path by branching
+     to the afterward node.  */
+  if (! uncond)
+    write_afterward (head->last, head->last->afterward, "  ");
+}
+
+/* Write out the decision tree starting at HEAD.  PREVPOS is the
+   position at the node that branched to this node.  */
+
+static void
+write_tree (head, prevpos, type, initial)
+     struct decision_head *head;
+     const char *prevpos;
+     enum routine_type type;
+     int initial;
+{
+  register struct decision *p = head->first;
+
+  putchar ('\n');
+  if (p->need_label)
+    OUTPUT_LABEL (" ", p->number);
+
+  if (! initial && p->subroutine_number > 0)
+    {
+      static const char * const name_prefix[] = {
+	  "recog", "split", "peephole2"
+      };
+
+      static const char * const call_suffix[] = {
+	  ", pnum_clobbers", "", ", _plast_insn"
+      };
+
+      /* This node has been broken out into a separate subroutine.
+	 Call it, test the result, and branch accordingly.  */
+
+      if (p->afterward)
+	{
+	  printf ("  tem = %s_%d (x0, insn%s);\n",
+		  name_prefix[type], p->subroutine_number, call_suffix[type]);
+	  if (IS_SPLIT (type))
+	    printf ("  if (tem != 0)\n    return tem;\n");
+	  else
+	    printf ("  if (tem >= 0)\n    return tem;\n");
+
+	  change_state (p->position, p->afterward->position, NULL, "  ");
+	  printf ("  goto L%d;\n", p->afterward->number);
+	}
+      else
+	{
+	  printf ("  return %s_%d (x0, insn%s);\n",
+		  name_prefix[type], p->subroutine_number, call_suffix[type]);
+	}
+    }
+  else
+    {
+      int depth = strlen (p->position);
+
+      change_state (prevpos, p->position, head->last->afterward, "  ");
+      write_tree_1 (head, depth, type);
+
+      for (p = head->first; p; p = p->next)
+        if (p->success.first)
+          write_tree (&p->success, p->position, type, 0);
+    }
+}
+
+/* Write out a subroutine of type TYPE to do comparisons starting at
+   node TREE.  */
+
+static void
+write_subroutine (head, type)
+     struct decision_head *head;
+     enum routine_type type;
+{
+  static const char * const proto_pattern[] = {
+    "%sint recog%s PROTO ((rtx, rtx, int *));\n",
+    "%srtx split%s PROTO ((rtx, rtx));\n",
+    "%srtx peephole2%s PROTO ((rtx, rtx, rtx *));\n"
+  };
+
+  static const char * const decl_pattern[] = {
+"%sint\n\
+recog%s (x0, insn, pnum_clobbers)\n\
+     register rtx x0;\n\
+     rtx insn ATTRIBUTE_UNUSED;\n\
+     int *pnum_clobbers ATTRIBUTE_UNUSED;\n",
+
+"%srtx\n\
+split%s (x0, insn)\n\
+     register rtx x0;\n\
+     rtx insn ATTRIBUTE_UNUSED;\n",
+
+"%srtx\n\
+peephole2%s (x0, insn, _plast_insn)\n\
+     register rtx x0;\n\
+     rtx insn ATTRIBUTE_UNUSED;\n\
+     rtx *_plast_insn ATTRIBUTE_UNUSED;\n"
+  };
+     
+  int subfunction = head->first->subroutine_number;
+  const char *s_or_e;
+  char extension[32];
+  int i;
+  
+  s_or_e = subfunction ? "static " : "";
+
+  if (subfunction)
+    sprintf (extension, "_%d", subfunction);
+  else if (type == RECOG)
+    extension[0] = '\0';
+  else
+    strcpy (extension, "_insns");
+
+  printf (proto_pattern[type], s_or_e, extension);
+  printf (decl_pattern[type], s_or_e, extension);
+
+  printf ("{\n  register rtx * const operands = &recog_data.operand[0];\n");
+  for (i = 1; i <= max_depth; i++)
+    printf ("  register rtx x%d ATTRIBUTE_UNUSED;\n", i);
+
+  if (type == PEEPHOLE2)
+    printf ("  register rtx _last_insn = insn;\n");
+  printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
+
+  write_tree (head, "", type, 1);
+
+  if (type == PEEPHOLE2)
+    printf (" ret1:\n  *_plast_insn = _last_insn;\n  return tem;\n");
+  printf (" ret0:\n  return %d;\n}\n\n", IS_SPLIT (type) ? 0 : -1);
+}
+
+/* In break_out_subroutines, we discovered the boundaries for the
+   subroutines, but did not write them out.  Do so now.  */
+
+static void
+write_subroutines (head, type)
+     struct decision_head *head;
+     enum routine_type type;
+{
+  struct decision *p;
+
+  for (p = head->first; p ; p = p->next)
+    if (p->success.first)
+      write_subroutines (&p->success, type);
+
+  if (head->first->subroutine_number > 0)
+    write_subroutine (head, type);
+}
+
+/* Begin the output file.  */
+
+static void
+write_header ()
+{
+  puts ("\
+/* Generated automatically by the program `genrecog' from the target\n\
+   machine description file.  */\n\
+\n\
+#include \"config.h\"\n\
+#include \"system.h\"\n\
+#include \"rtl.h\"\n\
+#include \"tm_p.h\"\n\
+#include \"function.h\"\n\
+#include \"insn-config.h\"\n\
+#include \"recog.h\"\n\
+#include \"real.h\"\n\
+#include \"output.h\"\n\
+#include \"flags.h\"\n\
+\n");
+
+  puts ("\n\
+/* `recog' contains a decision tree that recognizes whether the rtx\n\
+   X0 is a valid instruction.\n\
+\n\
+   recog returns -1 if the rtx is not valid.  If the rtx is valid, recog\n\
+   returns a nonnegative number which is the insn code number for the\n\
+   pattern that matched.  This is the same as the order in the machine\n\
+   description of the entry that matched.  This number can be used as an\n\
+   index into `insn_data' and other tables.\n\
+\n\
+   The third argument to recog is an optional pointer to an int.  If\n\
+   present, recog will accept a pattern if it matches except for missing\n\
+   CLOBBER expressions at the end.  In that case, the value pointed to by\n\
+   the optional pointer will be set to the number of CLOBBERs that need\n\
+   to be added (it should be initialized to zero by the caller).  If it\n\
+   is set nonzero, the caller should allocate a PARALLEL of the\n\
+   appropriate size, copy the initial entries, and call add_clobbers\n\
+   (found in insn-emit.c) to fill in the CLOBBERs.\n\
+");
+
+  puts ("\n\
+   The function split_insns returns 0 if the rtl could not\n\
+   be split or the split rtl in a SEQUENCE if it can be.\n\
+\n\
+   The function peephole2_insns returns 0 if the rtl could not\n\
+   be matched. If there was a match, the new rtl is returned in a SEQUENCE,\n\
+   and LAST_INSN will point to the last recognized insn in the old sequence.\n\
+*/\n\n");
+}
+
+
+/* Construct and return a sequence of decisions
+   that will recognize INSN.
+
+   TYPE says what type of routine we are recognizing (RECOG or SPLIT).  */
+
+static struct decision_head
+make_insn_sequence (insn, type)
+     rtx insn;
+     enum routine_type type;
+{
+  rtx x;
+  const char *c_test = XSTR (insn, type == RECOG ? 2 : 1);
+  struct decision *last;
+  struct decision_test *test, **place;
+  struct decision_head head;
+
+  record_insn_name (next_insn_code, (type == RECOG ? XSTR (insn, 0) : NULL));
+
+  if (type == PEEPHOLE2)
+    {
+      int i, j;
+
+      /* peephole2 gets special treatment:
+	 - X always gets an outer parallel even if it's only one entry
+	 - we remove all traces of outer-level match_scratch and match_dup
+           expressions here.  */
+      x = rtx_alloc (PARALLEL);
+      PUT_MODE (x, VOIDmode);
+      XVEC (x, 0) = rtvec_alloc (XVECLEN (insn, 0));
+      for (i = j = 0; i < XVECLEN (insn, 0); i++)
+	{
+	  rtx tmp = XVECEXP (insn, 0, i);
+	  if (GET_CODE (tmp) != MATCH_SCRATCH && GET_CODE (tmp) != MATCH_DUP)
+	    {
+	      XVECEXP (x, 0, j) = tmp;
+	      j++;
+	    }
+	}
+      XVECLEN (x, 0) = j;
+    }
+  else if (XVECLEN (insn, type == RECOG) == 1)
+    x = XVECEXP (insn, type == RECOG, 0);
+  else
+    {
+      x = rtx_alloc (PARALLEL);
+      XVEC (x, 0) = XVEC (insn, type == RECOG);
+      PUT_MODE (x, VOIDmode);
+    }
+
+  memset(&head, 0, sizeof(head));
+  last = add_to_sequence (x, &head, "", type, 1);
+
+  /* Find the end of the test chain on the last node.  */
+  for (test = last->tests; test->next; test = test->next)
+    continue;
+  place = &test->next;
+
+  if (c_test[0])
+    {
+      /* Need a new node if we have another test to add.  */
+      if (test->type == DT_accept_op)
+	{
+	  last = new_decision ("", &last->success);
+	  place = &last->tests;
+	}
+      test = new_decision_test (DT_c_test, &place);
+      test->u.c_test = c_test;
+    }
+
+  test = new_decision_test (DT_accept_insn, &place);
+  test->u.insn.code_number = next_insn_code;
+  test->u.insn.num_clobbers_to_add = 0;
+
+  switch (type)
+    {
+    case RECOG:
+      /* If this is an DEFINE_INSN and X is a PARALLEL, see if it ends
+	 with a group of CLOBBERs of (hard) registers or MATCH_SCRATCHes.
+	 If so, set up to recognize the pattern without these CLOBBERs.  */
+
+      if (GET_CODE (x) == PARALLEL)
+	{
+	  int i;
+
+	  /* Find the last non-clobber in the parallel.  */
+	  for (i = XVECLEN (x, 0); i > 0; i--)
+	    {
+	      rtx y = XVECEXP (x, 0, i - 1);
+	      if (GET_CODE (y) != CLOBBER
+		  || (GET_CODE (XEXP (y, 0)) != REG
+		      && GET_CODE (XEXP (y, 0)) != MATCH_SCRATCH))
+		break;
+	    }
+
+	  if (i != XVECLEN (x, 0))
+	    {
+	      rtx new;
+	      struct decision_head clobber_head;
+
+	      /* Build a similar insn without the clobbers.  */
+	      if (i == 1)
+		new = XVECEXP (x, 0, 0);
+	      else
+		{
+		  int j;
+
+		  new = rtx_alloc (PARALLEL);
+		  XVEC (new, 0) = rtvec_alloc (i);
+		  for (j = i - 1; j >= 0; j--)
+		    XVECEXP (new, 0, j) = XVECEXP (x, 0, j);
+		}
+
+	      /* Recognize it.  */
+	      memset (&clobber_head, 0, sizeof(clobber_head));
+	      last = add_to_sequence (new, &clobber_head, "", type, 1);
+
+	      /* Find the end of the test chain on the last node.  */
+	      for (test = last->tests; test->next; test = test->next)
+		continue;
+
+	      /* We definitely have a new test to add -- create a new
+		 node if needed.  */
+	      place = &test->next;
+	      if (test->type == DT_accept_op)
+		{
+		  last = new_decision ("", &last->success);
+		  place = &last->tests;
+		}
+
+	      if (c_test[0])
+		{
+		  test = new_decision_test (DT_c_test, &place);
+		  test->u.c_test = c_test;
+		}
+
+	      test = new_decision_test (DT_accept_insn, &place);
+	      test->u.insn.code_number = next_insn_code;
+	      test->u.insn.num_clobbers_to_add = XVECLEN (x, 0) - i;
+
+	      merge_trees (&head, &clobber_head);
+	    }
+	}
+      break;
+
+    case SPLIT:
+      /* Define the subroutine we will call below and emit in genemit.  */
+      printf ("extern rtx gen_split_%d PROTO ((rtx *));\n", next_insn_code);
+      break;
+
+    case PEEPHOLE2:
+      /* Define the subroutine we will call below and emit in genemit.  */
+      printf ("extern rtx gen_peephole2_%d PROTO ((rtx, rtx *));\n",
+	      next_insn_code);
+      break;
+    }
+  next_insn_code++;
+
+  return head;
+}
+
+static void
+process_tree (head, subroutine_type)
+     struct decision_head *head;
+     enum routine_type subroutine_type;
+{
+  if (head->first == NULL)
+    return;
+
+  factor_tests (head);
+  simplify_tests (head);
+
+  next_subroutine_number = 0;
+  break_out_subroutines (head, 1);
+  find_afterward (head, NULL);
+
+  write_subroutines (head, subroutine_type);
+  write_subroutine (head, subroutine_type);
+}
+
+int
+main (argc, argv)
+     int argc;
+     char **argv;
+{
+  rtx desc;
+  struct decision_head recog_tree, split_tree, peephole2_tree, h;
+  FILE *infile;
+  register int c;
+
+  progname = "genrecog";
+  obstack_init (rtl_obstack);
+
+  memset (&recog_tree, 0, sizeof recog_tree);
+  memset (&split_tree, 0, sizeof split_tree);
+  memset (&peephole2_tree, 0, sizeof peephole2_tree);
+
+  if (argc <= 1)
+    fatal ("No input file name.");
+
+  infile = fopen (argv[1], "r");
+  if (infile == 0)
+    {
+      perror (argv[1]);
+      return FATAL_EXIT_CODE;
+    }
+
+  next_insn_code = 0;
+  next_index = 0;
+
+  write_header ();
+
+  /* Read the machine description.  */
+
+  while (1)
+    {
+      c = read_skip_spaces (infile);
+      if (c == EOF)
+	break;
+      ungetc (c, infile);
+
+      desc = read_rtx (infile);
+      if (GET_CODE (desc) == DEFINE_INSN)
+	{
+	  h = make_insn_sequence (desc, RECOG);
+	  merge_trees (&recog_tree, &h);
+	}
+      else if (GET_CODE (desc) == DEFINE_SPLIT)
+	{
+	  h = make_insn_sequence (desc, SPLIT);
+	  merge_trees (&split_tree, &h);
+	}
+      else if (GET_CODE (desc) == DEFINE_PEEPHOLE2)
+	{
+	  h = make_insn_sequence (desc, PEEPHOLE2);
+	  merge_trees (&peephole2_tree, &h);
+	}
+	
+      if (GET_CODE (desc) == DEFINE_PEEPHOLE
+	  || GET_CODE (desc) == DEFINE_EXPAND)
+	next_insn_code++;
+      next_index++;
+    }
+
+  puts ("\n\n");
+
+  process_tree (&recog_tree, RECOG);
+  process_tree (&split_tree, SPLIT);
+  process_tree (&peephole2_tree, PEEPHOLE2);
+
+  fflush (stdout);
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+}
+
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+const char *
+get_insn_name (code)
+     int code;
+{
+  if (code < insn_name_ptr_size)
+    return insn_name_ptr[code];
+  else
+    return NULL;
+}
+
+static void
+record_insn_name (code, name)
+     int code;
+     const char *name;
+{
+  static const char *last_real_name = "insn";
+  static int last_real_code = 0;
+  char *new;
+
+  if (insn_name_ptr_size <= code)
+    {
+      int new_size;
+      new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
+      insn_name_ptr =
+	(char **) xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+      memset (insn_name_ptr + insn_name_ptr_size, 0, 
+	      sizeof(char *) * (new_size - insn_name_ptr_size));
+      insn_name_ptr_size = new_size;
+    }
+
+  if (!name || name[0] == '\0')
+    {
+      new = xmalloc (strlen (last_real_name) + 10);
+      sprintf (new, "%s+%d", last_real_name, code - last_real_code);
+    }
+  else
+    {
+      last_real_name = new = xstrdup (name);
+      last_real_code = code;
+    }
+  
+  insn_name_ptr[code] = new;
+}  
 
 char *
 xstrdup (input)
@@ -1902,139 +2286,119 @@ xmalloc (size)
     fatal ("virtual memory exhausted");
   return val;
 }
-
-extern int main PROTO ((int, char **));
-
-int
-main (argc, argv)
-     int argc;
-     char **argv;
+
+static void
+debug_decision_2 (test)
+     struct decision_test *test;
 {
-  rtx desc;
-  struct decision_head recog_tree;
-  struct decision_head split_tree;
-  struct decision_head peephole2_tree;
-  FILE *infile;
-  register int c;
-
-  progname = "genrecog";
-  obstack_init (rtl_obstack);
-  recog_tree.first = recog_tree.last = split_tree.first = split_tree.last = 0;
-  peephole2_tree.first = peephole2_tree.last = 0;
-
-  if (argc <= 1)
-    fatal ("No input file name.");
-
-  infile = fopen (argv[1], "r");
-  if (infile == 0)
+  switch (test->type)
     {
-      perror (argv[1]);
-      return (FATAL_EXIT_CODE);
+    case DT_mode:
+      fprintf (stderr, "mode=%s", GET_MODE_NAME (test->u.mode));
+      break;
+    case DT_code:
+      fprintf (stderr, "code=%s", GET_RTX_NAME (test->u.code));
+      break;
+    case DT_veclen:
+      fprintf (stderr, "veclen=%d", test->u.veclen);
+      break;
+    case DT_elt_zero_int:
+      fprintf (stderr, "elt0_i=%d", (int) test->u.intval);
+      break;
+    case DT_elt_one_int:
+      fprintf (stderr, "elt1_i=%d", (int) test->u.intval);
+      break;
+    case DT_elt_zero_wide:
+      fprintf (stderr, "elt0_w=");
+      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, test->u.intval);
+      break;
+    case DT_dup:
+      fprintf (stderr, "dup=%d", test->u.dup);
+      break;
+    case DT_pred:
+      fprintf (stderr, "pred=(%s,%s)",
+	       test->u.pred.name, GET_MODE_NAME(test->u.pred.mode));
+      break;
+    case DT_c_test:
+      {
+	char sub[16+4];
+	strncpy (sub, test->u.c_test, sizeof(sub));
+	memcpy (sub+16, "...", 4);
+	fprintf (stderr, "c_test=\"%s\"", sub);
+      }
+      break;
+    case DT_accept_op:
+      fprintf (stderr, "A_op=%d", test->u.opno);
+      break;
+    case DT_accept_insn:
+      fprintf (stderr, "A_insn=(%d,%d)", 
+	       test->u.insn.code_number, test->u.insn.num_clobbers_to_add);
+      break;
+
+    default:
+      abort ();
     }
-
-  next_insn_code = 0;
-  next_index = 0;
-
-  printf ("/* Generated automatically by the program `genrecog'\n\
-from the machine description file `md'.  */\n\n");
-
-  printf ("#include \"config.h\"\n");
-  printf ("#include \"system.h\"\n");
-  printf ("#include \"rtl.h\"\n");
-  printf ("#include \"tm_p.h\"\n");
-  printf ("#include \"function.h\"\n");
-  printf ("#include \"insn-config.h\"\n");
-  printf ("#include \"recog.h\"\n");
-  printf ("#include \"real.h\"\n");
-  printf ("#include \"output.h\"\n");
-  printf ("#include \"flags.h\"\n");
-  printf ("\n");
-
-  /* Read the machine description.  */
-
-  while (1)
-    {
-      c = read_skip_spaces (infile);
-      if (c == EOF)
-	break;
-      ungetc (c, infile);
-
-      desc = read_rtx (infile);
-      if (GET_CODE (desc) == DEFINE_INSN)
-	recog_tree = merge_trees (recog_tree,
-				  make_insn_sequence (desc, RECOG));
-      else if (GET_CODE (desc) == DEFINE_SPLIT)
-	split_tree = merge_trees (split_tree,
-				  make_insn_sequence (desc, SPLIT));
-      else if (GET_CODE (desc) == DEFINE_PEEPHOLE2)
-	peephole2_tree = merge_trees (peephole2_tree,
-				      make_insn_sequence (desc, PEEPHOLE2));
-
-      if (GET_CODE (desc) == DEFINE_PEEPHOLE
-	  || GET_CODE (desc) == DEFINE_EXPAND)
-	next_insn_code++;
-      next_index++;
-    }
-
-  printf ("\n\
-/* `recog' contains a decision tree\n\
-   that recognizes whether the rtx X0 is a valid instruction.\n\
-\n\
-   recog returns -1 if the rtx is not valid.\n\
-   If the rtx is valid, recog returns a nonnegative number\n\
-   which is the insn code number for the pattern that matched.\n");
-  printf ("   This is the same as the order in the machine description of\n\
-   the entry that matched.  This number can be used as an index into various\n\
-   insn_* tables, such as insn_templates, insn_outfun, and insn_n_operands\n\
-   (found in insn-output.c).\n\n");
-  printf ("   The third argument to recog is an optional pointer to an int.\n\
-   If present, recog will accept a pattern if it matches except for\n\
-   missing CLOBBER expressions at the end.  In that case, the value\n\
-   pointed to by the optional pointer will be set to the number of\n\
-   CLOBBERs that need to be added (it should be initialized to zero by\n\
-   the caller).  If it is set nonzero, the caller should allocate a\n\
-   PARALLEL of the appropriate size, copy the initial entries, and call\n\
-   add_clobbers (found in insn-emit.c) to fill in the CLOBBERs.");
-
-  if (split_tree.first)
-    printf ("\n\n   The function split_insns returns 0 if the rtl could not\n\
-   be split or the split rtl in a SEQUENCE if it can be.");
-
-  if (peephole2_tree.first)
-    printf ("\n\n   The function peephole2_insns returns 0 if the rtl could not\n\
-   be matched. If there was a match, the new rtl is returned in a SEQUENCE,\n\
-   and LAST_INSN will point to the last recognized insn in the old sequence.");
-
-  printf ("*/\n\n");
-
-  printf ("#define operands recog_data.operand\n\n");
-
-  next_subroutine_number = 0;
-  break_out_subroutines (recog_tree, RECOG, 1);
-  write_subroutine (recog_tree.first, RECOG);
-
-  next_subroutine_number = 0;
-  break_out_subroutines (split_tree, SPLIT, 1);
-  write_subroutine (split_tree.first, SPLIT);
-
-  if (peephole2_tree.first)
-    {
-      next_subroutine_number = 0;
-      break_out_subroutines (peephole2_tree, PEEPHOLE2, 1);
-      write_subroutine (peephole2_tree.first, PEEPHOLE2);
-    }
-
-  fflush (stdout);
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
-/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
-const char *
-get_insn_name (code)
-     int code;
+static void
+debug_decision_1 (d, indent)
+     struct decision *d;
+     int indent;
 {
-  if (code < insn_name_ptr_size)
-    return insn_name_ptr[code];
-  else
-    return NULL;
+  int i;
+  struct decision_test *test;
+
+  if (d == NULL)
+    {
+      for (i = 0; i < indent; ++i)
+	putc (' ', stderr);
+      fputs ("(nil)\n", stderr);
+      return;
+    }
+
+  for (i = 0; i < indent; ++i)
+    putc (' ', stderr);
+
+  putc ('{', stderr);
+  test = d->tests;
+  if (test)
+    {
+      debug_decision_2 (test);
+      while ((test = test->next) != NULL)
+	{
+	  fputs (" + ", stderr);
+	  debug_decision_2 (test);
+	}
+    }
+  fprintf (stderr, "} %d\n", d->number);
+}
+
+static void
+debug_decision_0 (d, indent, maxdepth)
+     struct decision *d;
+     int indent, maxdepth;
+{
+  struct decision *n;
+  int i;
+
+  if (maxdepth < 0)
+    return;
+  if (d == NULL)
+    {
+      for (i = 0; i < indent; ++i)
+	putc (' ', stderr);
+      fputs ("(nil)\n", stderr);
+      return;
+    }
+
+  debug_decision_1 (d, indent);
+  for (n = d->success.first; n ; n = n->next)
+    debug_decision_0 (n, indent + 2, maxdepth - 1);
+}
+
+void
+debug_decision (d)
+     struct decision *d;
+{
+  debug_decision_0 (d, 0, 1000000);
 }
