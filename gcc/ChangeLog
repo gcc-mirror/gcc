@@ -1,3 +1,8 @@
+Fri Feb  5 06:55:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* unroll.c (entire file): Remove tabs / spaces at end of lines.
+	Replace spaces with tabs where appropriate.
+
 Thu Feb  4 15:12:41 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (scan_loop): New argument loop_cont.  Changed caller.

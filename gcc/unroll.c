@@ -99,11 +99,11 @@ Boston, MA 02111-1307, USA.  */
        int iterations = (len + 1) >> 1;
        int i;
        for (p; p < q; p++, q--;)
-         {
-           tmp = *q;
-           *q = *p;
-           *p = tmp;
-         }
+	 {
+	   tmp = *q;
+	   *q = *p;
+	   *p = tmp;
+	 }
      }
    Note that:
      start value = p = &buffer + current_iteration
@@ -141,7 +141,7 @@ Boston, MA 02111-1307, USA.  */
 
 struct _factor { int factor, count; } factors[NUM_FACTORS]
   = { {2, 0}, {3, 0}, {5, 0}, {7, 0}};
-      
+
 /* Describes the different types of loop unrolling performed.  */
 
 enum unroll_types { UNROLL_COMPLETELY, UNROLL_MODULO, UNROLL_NAIVE };
@@ -309,7 +309,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   if (loop_dump_stream && loop_info->n_iterations > 0)
     {
       fputs ("Loop unrolling: ", loop_dump_stream);
-      fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, 
+      fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC,
 	       loop_info->n_iterations);
       fputs (" iterations.\n", loop_dump_stream);
     }
@@ -899,7 +899,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  /* Calculate the difference between the final and initial values.
 	     Final value may be a (plus (reg x) (const_int 1)) rtx.
 	     Let the following cse pass simplify this if initial value is
-	     a constant. 
+	     a constant.
 
 	     We must copy the final and initial values here to avoid
 	     improperly shared rtl.  */
@@ -929,7 +929,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
 	  if (loop_info->comparison_code != NE)
 	    {
-	      emit_cmp_and_jump_insns (initial_value, final_value, 
+	      emit_cmp_and_jump_insns (initial_value, final_value,
 				       neg_inc ? LE : GE,
 				       NULL_RTX, mode, 0, 0, labels[1]);
 	      JUMP_LABEL (get_last_insn ()) = labels[1];
@@ -987,7 +987,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	     For the negative increment case, the branch here could easily
 	     be merged with the `0' case branch above.  For the positive
 	     increment case, it is not clear how this can be simplified.  */
-	     
+
 	  if (abs_inc != 1)
 	    {
 	      int cmp_const;
@@ -1013,7 +1013,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  sequence = gen_sequence ();
 	  end_sequence ();
 	  emit_insn_before (sequence, loop_start);
-	  
+
 	  /* Only the last copy of the loop body here needs the exit
 	     test, so set copy_end to exclude the compare/branch here,
 	     and then reset it inside the loop when get to the last
@@ -1213,7 +1213,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	{
 	  insn = PREV_INSN (copy_start);
 	  pattern = PATTERN (insn);
-	  
+
 	  tem = get_label_from_map (map,
 				    CODE_LABEL_NUMBER
 				    (XEXP (SET_SRC (pattern), 0)));
@@ -1244,7 +1244,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   else
     safety_label = emit_label_after (gen_label_rtx (), copy_end);
 
-  /* Delete all of the original loop instructions.  Don't delete the 
+  /* Delete all of the original loop instructions.  Don't delete the
      LOOP_BEG note, or the first code label in the loop.  */
 
   insn = NEXT_INSN (copy_start);
@@ -1404,7 +1404,7 @@ precondition_loop_p (loop_start, loop_info,
      such as "while (i-- > 0)", the initial value will be one too small.
      In this case, loop_iteration_var could be used to determine
      the correct initial value, provided the loop has not been reversed.
-     
+
      Also note that the absolute values of initial_value and
      final_value are unimportant as only their difference is used for
      calculating the number of loop iterations.  */
@@ -1488,7 +1488,7 @@ calculate_giv_inc (pattern, src_insn, regno)
       pattern = PATTERN (src_insn);
       if (GET_CODE (SET_SRC (pattern)) != PLUS)
 	abort ();
-		  
+
       /* The last insn emitted is not needed, so delete it to avoid confusing
 	 the second cse pass.  This insn sets the giv unnecessarily.  */
       delete_insn (get_last_insn ());
@@ -1512,11 +1512,11 @@ calculate_giv_inc (pattern, src_insn, regno)
       /* Some ports store large constants in memory and add a REG_EQUAL
 	 note to the store insn.  */
       else if (GET_CODE (increment) == MEM)
-        {
-          rtx note = find_reg_note (src_insn, REG_EQUAL, 0);
-          if (note)
-            increment = XEXP (note, 0);
-        }
+	{
+	  rtx note = find_reg_note (src_insn, REG_EQUAL, 0);
+	  if (note)
+	    increment = XEXP (note, 0);
+	}
 
       else if (GET_CODE (increment) == IOR
 	       || GET_CODE (increment) == ASHIFT
@@ -1546,7 +1546,7 @@ calculate_giv_inc (pattern, src_insn, regno)
 
       if (GET_CODE (increment) != CONST_INT)
 	abort ();
-		  
+
       /* The insn loading the constant into a register is no longer needed,
 	 so delete it.  */
       delete_insn (get_last_insn ());
@@ -1630,7 +1630,7 @@ final_reg_note_copy (notes, map)
 
 /* Copy each instruction in the loop, substituting from map as appropriate.
    This is very similar to a loop in expand_inline_function.  */
-  
+
 static void
 copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		unroll_type, start_label, loop_end, insert_before,
@@ -1661,35 +1661,35 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
     {
       final_label = gen_label_rtx ();
       set_label_in_map (map, CODE_LABEL_NUMBER (start_label),
-			final_label); 
+			final_label);
     }
   else
     set_label_in_map (map, CODE_LABEL_NUMBER (start_label), start_label);
 
   start_sequence ();
-  
+
   insn = copy_start;
   do
     {
       insn = NEXT_INSN (insn);
-      
+
       map->orig_asm_operands_vector = 0;
-      
+
       switch (GET_CODE (insn))
 	{
 	case INSN:
 	  pattern = PATTERN (insn);
 	  copy = 0;
 	  giv_inc = 0;
-	  
+
 	  /* Check to see if this is a giv that has been combined with
-	     some split address givs.  (Combined in the sense that 
+	     some split address givs.  (Combined in the sense that
 	     `combine_givs' in loop.c has put two givs in the same register.)
 	     In this case, we must search all givs based on the same biv to
 	     find the address givs.  Then split the address givs.
 	     Do this before splitting the giv, since that may map the
 	     SET_DEST to a new register.  */
-	  
+
 	  if ((set = single_set (insn))
 	      && GET_CODE (SET_DEST (set)) == REG
 	      && addr_combined_regs[REGNO (SET_DEST (set))])
@@ -1697,10 +1697,10 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      struct iv_class *bl;
 	      struct induction *v, *tv;
 	      int regno = REGNO (SET_DEST (set));
-	      
+
 	      v = addr_combined_regs[REGNO (SET_DEST (set))];
 	      bl = reg_biv_class[REGNO (v->src_reg)];
-	      
+
 	      /* Although the giv_inc amount is not needed here, we must call
 		 calculate_giv_inc here since it might try to delete the
 		 last insn emitted.  If we wait until later to call it,
@@ -1727,24 +1727,24 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		    if (tv->mult_val != v->mult_val)
 		      this_giv_inc = (this_giv_inc / INTVAL (v->mult_val)
 				      * INTVAL (tv->mult_val));
-		       
+
 		    tv->dest_reg = plus_constant (tv->dest_reg, this_giv_inc);
 		    *tv->location = tv->dest_reg;
-		    
+
 		    if (last_iteration && unroll_type != UNROLL_COMPLETELY)
 		      {
 			/* Must emit an insn to increment the split address
 			   giv.  Add in the const_adjust field in case there
 			   was a constant eliminated from the address.  */
 			rtx value, dest_reg;
-			
+
 			/* tv->dest_reg will be either a bare register,
 			   or else a register plus a constant.  */
 			if (GET_CODE (tv->dest_reg) == REG)
 			  dest_reg = tv->dest_reg;
 			else
 			  dest_reg = XEXP (tv->dest_reg, 0);
-			
+
 			/* Check for shared address givs, and avoid
 			   incrementing the shared pseudo reg more than
 			   once.  */
@@ -1763,7 +1763,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 			    emit_unrolled_add (dest_reg, XEXP (value, 0),
 					       XEXP (value, 1));
 			  }
-			
+
 			/* Reset the giv to be just the register again, in case
 			   it is used after the set we have just emitted.
 			   We must subtract the const_adjust factor added in
@@ -1774,23 +1774,23 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		      }
 		  }
 	    }
-	  
+
 	  /* If this is a setting of a splittable variable, then determine
 	     how to split the variable, create a new set based on this split,
 	     and set up the reg_map so that later uses of the variable will
 	     use the new split variable.  */
-	  
+
 	  dest_reg_was_split = 0;
-	  
+
 	  if ((set = single_set (insn))
 	      && GET_CODE (SET_DEST (set)) == REG
 	      && splittable_regs[REGNO (SET_DEST (set))])
 	    {
 	      int regno = REGNO (SET_DEST (set));
 	      int src_regno;
-	      
+
 	      dest_reg_was_split = 1;
-	      
+
 	      giv_dest_reg = SET_DEST (set);
 	      if (derived_regs[regno])
 		{
@@ -1815,7 +1815,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		{
 		  /* Completely unrolling the loop.  Set the induction
 		     variable to a known constant value.  */
-		  
+
 		  /* The value in splittable_regs may be an invariant
 		     value, so we must use plus_constant here.  */
 		  splittable_regs[regno]
@@ -1843,7 +1843,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		     be a constant plus the original register.  Except
 		     on the last iteration, when the result has to
 		     go back into the original iteration var register.  */
-		  
+
 		  /* Handle bivs which must be mapped to a new register
 		     when split.  This happens for bivs which need their
 		     final value set before loop entry.  The new register
@@ -1856,18 +1856,18 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		      giv_src_reg = reg_biv_class[regno]->biv->src_reg;
 		      giv_dest_reg = giv_src_reg;
 		    }
-		  
+
 #if 0
 		  /* If non-reduced/final-value givs were split, then
 		     this would have to remap those givs also.  See
 		     find_splittable_regs.  */
 #endif
-		  
+
 		  splittable_regs[regno]
 		    = GEN_INT (INTVAL (giv_inc)
 			       + INTVAL (splittable_regs[src_regno]));
 		  giv_inc = splittable_regs[regno];
-		  
+
 		  /* Now split the induction variable by changing the dest
 		     of this insn to a new register, and setting its
 		     reg_map entry to point to this new register.
@@ -1911,7 +1911,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      copy = emit_insn (pattern);
 	    }
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
-	  
+
 #ifdef HAVE_cc0
 	  /* If this insn is setting CC0, it may need to look at
 	     the insn that uses CC0 to see what type of insn it is.
@@ -1952,7 +1952,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).age = -1;
 	    }
 	  break;
-	  
+
 	case JUMP_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_jump_insn (pattern);
@@ -1996,7 +1996,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		    abort ();
 		}
 	    }
-	  
+
 #ifdef HAVE_cc0
 	  if (cc0_insn)
 	    try_constants (cc0_insn, map);
@@ -2034,10 +2034,10 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		     for a switch statement.  This label must have been mapped,
 		     so just use the label_map to get the new jump label.  */
 		  JUMP_LABEL (copy)
-		    = get_label_from_map (map, 
-					  CODE_LABEL_NUMBER (JUMP_LABEL (insn))); 
+		    = get_label_from_map (map,
+					  CODE_LABEL_NUMBER (JUMP_LABEL (insn)));
 		}
-	  
+
 	      /* If this is a non-local jump, then must increase the label
 		 use count so that the label will not be deleted when the
 		 original jump is deleted.  */
@@ -2084,7 +2084,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		emit_barrier ();
 	    }
 	  break;
-	  
+
 	case CALL_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_call_insn (pattern);
@@ -2106,7 +2106,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    VARRAY_CONST_EQUIV (map->const_equiv_varray, i).rtx = 0;
 	  break;
-	  
+
 	case CODE_LABEL:
 	  /* If this is the loop start label, then we don't need to emit a
 	     copy of this label since no one will use it.  */
@@ -2118,15 +2118,15 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      map->const_age++;
 	    }
 	  break;
-	  
+
 	case BARRIER:
 	  copy = emit_barrier ();
 	  break;
-	  
+
 	case NOTE:
 	  /* VTOP notes are valid only before the loop exit test.  If placed
 	     anywhere else, loop may generate bad code.  */
-	     
+
 	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
 	      && (NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
 		  || (last_iteration && unroll_type != UNROLL_COMPLETELY)))
@@ -2135,16 +2135,16 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  else
 	    copy = 0;
 	  break;
-	  
+
 	default:
 	  abort ();
 	  break;
 	}
-      
+
       map->insn_map[INSN_UID (insn)] = copy;
     }
   while (insn != copy_end);
-  
+
   /* Now finish coping the REG_NOTES.  */
   insn = copy_start;
   do
@@ -2239,7 +2239,7 @@ back_branch_in_range_p (insn, loop_start, loop_end)
       if (GET_CODE (p) == JUMP_INSN)
 	{
 	  target_insn = JUMP_LABEL (p);
-	  
+
 	  /* Search from loop_start to insn, to see if one of them is
 	     the target_insn.  We can't use INSN_LUID comparisons here,
 	     since insn may not have an LUID entry.  */
@@ -2305,7 +2305,7 @@ fold_rtx_mult_add (mult1, mult2, add1, mode)
    Returns the increment value as an rtx, simplified as much as possible,
    if it can be calculated.  Otherwise, returns 0.  */
 
-rtx 
+rtx
 biv_total_increment (bl, loop_start, loop_end)
      struct iv_class *bl;
      rtx loop_start, loop_end;
@@ -2416,7 +2416,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
       bl = reg_biv_class[REGNO (v->src_reg)];
       *initial_value = fold_rtx_mult_add (v->mult_val, bl->initial_value,
 					  v->add_val, v->mode);
-      
+
       /* Increment value is mult_val times the increment value of the biv.  */
 
       *increment = biv_total_increment (bl, loop_start, loop_end);
@@ -2694,7 +2694,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  && (! v->always_computable
 	      || back_branch_in_range_p (v->insn, loop_start, loop_end)))
 	continue;
-      
+
       /* The giv increment value must be a constant.  */
       giv_inc = fold_rtx_mult_add (v->mult_val, increment, const0_rtx,
 				   v->mode);
@@ -2706,7 +2706,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	 the loop, or else the final value of the giv must be known.
 	 Otherwise, it is not safe to split the giv since it may not have the
 	 proper value on loop exit.  */
-	  
+
       /* The used outside loop test will fail for DEST_ADDR givs.  They are
 	 never used outside the loop anyways, so it is always safe to split a
 	 DEST_ADDR giv.  */
@@ -2754,11 +2754,11 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  emit_insn_before (gen_move_insn (tem, v->dest_reg), loop_start);
 	  emit_insn_before (gen_move_insn (v->dest_reg, final_value),
 			    loop_start);
-	  
+
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "Giv %d mapped to %d for split.\n",
 		     REGNO (v->dest_reg), REGNO (tem));
-	  
+
 	  v->src_reg = tem;
 	}
 #endif
@@ -2832,7 +2832,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 				    v->add_val, tem, loop_start);
 		  value = tem;
 		}
-		
+
 	      splittable_regs[REGNO (v->new_reg)] = value;
 	      derived_regs[REGNO (v->new_reg)] = v->derived_from != 0;
 	    }
@@ -2914,7 +2914,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  /* If the address giv has a constant in its new_reg value,
 		     then this constant can be pulled out and put in value,
 		     instead of being part of the initialization code.  */
-		  
+
 		  if (GET_CODE (new_reg) == PLUS
 		      && GET_CODE (XEXP (new_reg, 1)) == CONST_INT)
 		    {
@@ -2943,7 +2943,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		    }
 		  else
 		    v->dest_reg = tem;
-		  
+
 		  /* If the address hasn't been checked for validity yet, do so
 		     now, and fail completely if either the first or the last
 		     unrolled copy of the address is not a valid address
@@ -2964,7 +2964,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
 		  v->new_reg = new_reg;
 		  v->same = same;
-		  
+
 		  /* We set this after the address check, to guarantee that
 		     the register will be initialized.  */
 		  v->unrolled = 1;
@@ -3003,7 +3003,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	      else
 		{
 		  v->dest_reg = value;
-		  
+
 		  /* Check the resulting address for validity, and fail
 		     if the resulting address would be invalid.  */
 		  if (! verify_addresses (v, giv_inc, unroll_number))
@@ -3028,29 +3028,29 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		    }
 
 		}
-	      
+
 	      /* Store the value of dest_reg into the insn.  This sharing
 		 will not be a problem as this insn will always be copied
 		 later.  */
-	      
+
 	      *v->location = v->dest_reg;
-	      
+
 	      /* If this address giv is combined with a dest reg giv, then
 		 save the base giv's induction pointer so that we will be
 		 able to handle this address giv properly.  The base giv
 		 itself does not have to be splittable.  */
-	      
+
 	      if (v->same && v->same->giv_type == DEST_REG)
 		addr_combined_regs[REGNO (v->same->new_reg)] = v->same;
-	      
+
 	      if (GET_CODE (v->new_reg) == REG)
 		{
 		  /* This giv maybe hasn't been combined with any others.
 		     Make sure that it's giv is marked as splittable here.  */
-		  
+
 		  splittable_regs[REGNO (v->new_reg)] = value;
 		  derived_regs[REGNO (v->new_reg)] = v->derived_from != 0;
-		  
+
 		  /* Make it appear to depend upon itself, so that the
 		     giv will be properly split in the main loop above.  */
 		  if (! v->same)
@@ -3073,7 +3073,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	     it makes sense to reduce&split givs when possible, as this will
 	     result in simpler instructions, and will not require that a reg
 	     be live across loop iterations.  */
-	  
+
 	  splittable_regs[REGNO (v->dest_reg)] = value;
 	  fprintf (stderr, "Giv %d at insn %d not reduced\n",
 		   REGNO (v->dest_reg), INSN_UID (v->insn));
@@ -3081,7 +3081,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  continue;
 #endif
 	}
-      
+
       /* Unreduced givs are only updated once by definition.  Reduced givs
 	 are updated as many times as their biv is.  Mark it so if this is
 	 a splittable register.  Don't need to do anything for address givs
@@ -3102,11 +3102,11 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	}
 
       result++;
-      
+
       if (loop_dump_stream)
 	{
 	  int regnum;
-	  
+
 	  if (GET_CODE (v->dest_reg) == CONST_INT)
 	    regnum = -1;
 	  else if (GET_CODE (v->dest_reg) != REG)
@@ -3143,7 +3143,7 @@ reg_dead_after_loop (reg, loop_start, loop_end)
      all exits of inner nested loops that would exit this loop.  We don't
      have any way to identify those, so we just give up if there are any
      such inner loop exits.  */
-     
+
   for (label = loop_number_exit_labels[this_loop_num]; label;
        label = LABEL_NEXTREF (label))
     label_count++;
@@ -3201,7 +3201,7 @@ reg_dead_after_loop (reg, loop_start, loop_end)
 
 /* Try to calculate the final value of the biv, the value it will have at
    the end of the loop.  If we can do it, return that value.  */
-  
+
 rtx
 final_biv_value (bl, loop_start, loop_end, n_iterations)
      struct iv_class *bl;
@@ -3224,7 +3224,7 @@ final_biv_value (bl, loop_start, loop_end, n_iterations)
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
 		 "Final biv value for %d, reversed biv.\n", bl->regno);
-		 
+
       return const0_rtx;
     }
 
@@ -3239,7 +3239,7 @@ final_biv_value (bl, loop_start, loop_end, n_iterations)
       && invariant_p (bl->initial_value))
     {
       increment = biv_total_increment (bl, loop_start, loop_end);
-      
+
       if (increment && invariant_p (increment))
 	{
 	  /* Can calculate the loop exit value, emit insns after loop
@@ -3257,7 +3257,7 @@ final_biv_value (bl, loop_start, loop_end, n_iterations)
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
 		     "Final biv value for %d, calculated.\n", bl->regno);
-	  
+
 	  return tem;
 	}
     }
@@ -3308,7 +3308,7 @@ final_giv_value (v, loop_start, loop_end, n_iterations)
   /* Try to calculate the final value as a function of the biv it depends
      upon.  The only exit from the loop must be the fall through at the bottom
      (otherwise it may not have its final value when the loop exits).  */
-      
+
   /* ??? Can calculate the final giv value by subtracting off the
      extra biv increments times the giv's mult_val.  The loop must have
      only one exit for this to work, but the loop iterations does not need
@@ -3335,7 +3335,7 @@ final_giv_value (v, loop_start, loop_end, n_iterations)
 	{
 	  /* Can calculate the loop exit value of its biv as
 	     (n_iterations * increment) + initial_value */
-	      
+
 	  /* The loop exit value of the giv is then
 	     (final_biv_value - extra increments) * mult_val + add_val.
 	     The extra increments are any increments to the biv which
@@ -3369,11 +3369,11 @@ final_giv_value (v, loop_start, loop_end, n_iterations)
 		    emit_insn_before (seq, insert_before);
 		  }
 	    }
-	  
+
 	  /* Now calculate the giv's final value.  */
 	  emit_iv_add_mult (tem, v->mult_val, v->add_val, tem,
 			    insert_before);
-	  
+
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
 		     "Final giv value for %d, calc from biv's value.\n",
@@ -3413,13 +3413,13 @@ loop_find_equiv_value (loop_start, reg)
 {
   rtx insn, set;
   rtx ret;
-  
+
   ret = reg;
   for (insn = PREV_INSN (loop_start); insn ; insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) == CODE_LABEL)
 	break;
-      
+
       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	       && reg_set_p (reg, insn))
 	{
@@ -3430,7 +3430,7 @@ loop_find_equiv_value (loop_start, reg)
 		  && (SET_DEST (set) == reg))
 	    {
 	      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-	      
+
 	      /* Only use the REG_EQUAL note if it is a constant.
 		 Other things, divide in particular, will cause
 		 problems later if we use them.  */
@@ -3551,7 +3551,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   last_loop_insn = PREV_INSN (loop_end);
 
   /* ??? We should probably try harder to find the jump insn
-     at the end of the loop.  The following code assumes that 
+     at the end of the loop.  The following code assumes that
      the last loop insn is a jump to the top of the loop.  */
   if (GET_CODE (last_loop_insn) != JUMP_INSN)
     {
@@ -3574,7 +3574,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   /* Find the iteration variable.  If the last insn is a conditional
      branch, and the insn before tests a register value, make that the
      iteration variable.  */
-  
+
   comparison = get_condition_for_loop (last_loop_insn);
   if (comparison == 0)
     {
@@ -3590,7 +3590,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   comparison_code = GET_CODE (comparison);
   iteration_var = XEXP (comparison, 0);
   comparison_value = XEXP (comparison, 1);
-  
+
   /* Check if there is a NOTE_INSN_LOOP_VTOP note.  If there is,
      that means that this is a for or while style loop, with
      a loop exit test at the start.  Thus, we can assume that
@@ -3694,7 +3694,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   /* Save the calculated values describing this loop's bounds, in case
      precondition_loop_p will need them later.  These values can not be
      recalculated inside precondition_loop_p because strength reduction
-     optimizations may obscure the loop's structure.  
+     optimizations may obscure the loop's structure.
 
      These values are only required by precondition_loop_p and insert_bct
      whenever the number of iterations cannot be computed at compile time.
@@ -3769,7 +3769,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 	    }
 	}
     }
-  
+
   /* If have initial_value = reg + const1 and final_value = reg +
      const2, then replace initial_value with const1 and final_value
      with const2.  This should be safe since we are protected by the
@@ -3779,7 +3779,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 
      ??? Without a vtop we could still perform the optimization if we check
      the initial and final values carefully.  */
-  if (loop_info->vtop 
+  if (loop_info->vtop
       && (reg_term = find_common_reg_term (initial_value, final_value)))
     {
       initial_value = subtract_reg_term (initial_value, reg_term);
@@ -3788,7 +3788,7 @@ loop_iterations (loop_start, loop_end, loop_info)
 
   loop_info->initial_equiv_value = initial_value;
   loop_info->final_equiv_value = final_value;
-  
+
   if (increment == 0)
     {
       if (loop_dump_stream)
@@ -3869,7 +3869,7 @@ loop_iterations (loop_start, loop_end, loop_info)
      will overflow before the loop exits), 4 infinite loop cases, and 15
      immediate exit (0 or 1 iteration depending on loop type) cases.
      Only try to optimize the normal cases.  */
-     
+
   /* (compare_dir/final_larger/increment_dir)
      Normal cases: (0/-1/-1), (0/1/1), (-1/-1/-1), (1/1/1)
      Reverse cases: (0/-1/1), (0/1/-1), (-1/-1/1), (1/1/-1)
@@ -3969,7 +3969,7 @@ remap_split_bivs (x)
 	  && REG_IV_TYPE (REGNO (x)) == BASIC_INDUCT)
 	return reg_biv_class[REGNO (x)]->biv->src_reg;
       break;
-      
+
     default:
       break;
     }
