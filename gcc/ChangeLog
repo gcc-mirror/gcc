@@ -1,3 +1,7 @@
+2000-04-20  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.c (alpha_emit_floatuns): Emit missing barrier.
+
 2000-04-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-common.c (decl_attributes) [A_ALIAS]: Set TREE_USED on the
