@@ -101,6 +101,29 @@ if test x = y ; then
 fi
 ])
 
+dnl 'make compare' can be significantly faster, if cmp itself can
+dnl skip bytes instead of using tail.  The test being performed is
+dnl "if cmp --ignore-initial=2 t1 t2 && ! cmp --ignore-initial=1 t1 t2"
+dnl but we need to sink errors and handle broken shells.
+AC_DEFUN(gcc_AC_PROG_CMP_IGNORE_INITIAL,
+[AC_CACHE_CHECK([for cmp's capabilities], gcc_cv_prog_cmp_skip,
+[ echo abfoo >t1
+  echo cdfoo >t2
+  if cmp --ignore-initial=2 t1 t2 > /dev/null 2>&1; then
+    if cmp --ignore-initial=1 t1 t2 > /dev/null 2>&1; then
+      gcc_cv_prog_cmp_skip=slowcompare
+    else
+      gcc_cv_prog_cmp_skip=gnucompare
+    fi
+  else
+    gcc_cv_prog_cmp_skip=slowcompare
+  fi
+  rm t1 t2
+])
+make_compare_target=$gcc_cv_prog_cmp_skip
+AC_SUBST(make_compare_target)
+])
+
 dnl See if the printf functions in libc support %p in format strings.
 AC_DEFUN(gcc_AC_FUNC_PRINTF_PTR,
 [AC_CACHE_CHECK(whether the printf functions support %p,

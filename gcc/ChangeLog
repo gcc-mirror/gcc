@@ -1,3 +1,9 @@
+2003-08-12  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* configure.in (make_compare_target): Move test to ...
+	* aclocal.m4 (gcc_AC_PROG_CMP_IGNORE_INITIAL): here.
+	* configure: Regenerate.
+
 2003-08-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/iris6.h: Convert to C90 prototypes.
