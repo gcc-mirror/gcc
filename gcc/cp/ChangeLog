@@ -1,3 +1,8 @@
+2002-12-30  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config-lang.in, Make-lang.in, operators.def, cp-tree.def:  
+	GCC, not GNU CC.
+
 2002-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Diagnost "extern thread" and "static
