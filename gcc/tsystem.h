@@ -121,4 +121,14 @@ extern int errno;
 #undef alloca
 #define alloca(x) __builtin_alloca(x)
 
+#ifdef ENABLE_RUNTIME_CHECKING
+#define gcc_assert(EXPR) ((void)(!(EXPR) ? abort (), 0 : 0))
+#else
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define gcc_assert(EXPR) ((void)(0 && (EXPR)))
+#endif
+/* Use gcc_unreachable() to mark unreachable locations (like an
+   unreachable default case of a switch.  Do not use gcc_assert(0).  */
+#define gcc_unreachable() (abort ())
+
 #endif /* ! GCC_TSYSTEM_H */

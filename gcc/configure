@@ -868,7 +868,7 @@ Optional Features:
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: assert,fold,gc,gcac,misc,
-			  rtlflag,rtl,tree,valgrind,release,yes,all;
+			  rtlflag,rtl,runtime,tree,valgrind,release,yes,all;
   --enable-mapped-location   location_t is fileline integer cookie
   --enable-coverage=LEVEL
 			  enable compiler's code coverage collection.
@@ -6278,6 +6278,7 @@ ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
 ac_rtlflag_checking=
+ac_runtime_checking=1
 ac_gc_checking=
 ac_gc_always_collect=
 ac_fold_checking=
@@ -6287,16 +6288,17 @@ do
 	case $check in
 	yes)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_tree_checking=1 ; ac_gc_checking=1 ;
-			ac_rtlflag_checking=1 ;;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;;
 	no)		ac_assert_checking= ; ac_checking= ;
 			ac_tree_checking= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_fold_checking= ;;
 	all)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_tree_checking=1 ; ac_rtl_checking=1 ;
-			ac_rtlflag_checking=1 ; ac_gc_checking=1 ;
-			ac_gc_always_collect=1 ; ac_fold_checking=1 ;;
-        release)	ac_assert_checking=1 ;;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1;
+			ac_gc_checking=1 ; ac_gc_always_collect=1 ;
+			ac_fold_checking=1 ;;
+        release)	ac_assert_checking=1 ; ac_runtime_checking=1 ;;
 	assert) 	ac_assert_checking=1 ;;
 	fold)		ac_fold_checking=1 ;;
 	gc)		ac_gc_checking=1 ;;
@@ -6304,6 +6306,7 @@ do
 	misc)		ac_checking=1 ;;
 	rtlflag)	ac_rtlflag_checking=1 ;;
 	rtl)		ac_rtl_checking=1 ;;
+	runtime)	ac_runtime_checking=1 ;;
 	tree)		ac_tree_checking=1 ;;
 	valgrind)	ac_checking_valgrind=1 ;;
 	*)	{ { echo "$as_me:$LINENO: error: unknown check category $check" >&5
@@ -6327,6 +6330,13 @@ if test x$ac_assert_checking != x ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define ENABLE_ASSERT_CHECKING 1
+_ACEOF
+
+fi
+if test x$ac_runtime_checking != x ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define ENABLE_RUNTIME_CHECKING 1
 _ACEOF
 
 fi

@@ -54,6 +54,9 @@
    that are supported for each access macro. This is relatively cheap. */
 #undef ENABLE_RTL_FLAG_CHECKING
 
+/* Define if you want runtime assertions enabled. This is a cheap check. */
+#undef ENABLE_RUNTIME_CHECKING
+
 /* Define if you want all operations on trees (the basic data structure of the
    front ends) to be checked for dynamic type safety at runtime. This is
    moderately expensive. The tree browser debugging routines will also be
