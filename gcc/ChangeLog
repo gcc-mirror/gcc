@@ -5,6 +5,10 @@ Wed Jul 28 12:50:48 1999  Geoff Keating  <geoffk@cygnus.com>
 
 Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (indirect_jump): Remove mode from match_operand.  Verify
+	proper mode in the condition string.
+	(icacheflush, dcacheflush): Remove modes from match_operands.
+
         * pa.c (emit_move_sequence): Always convert scratch_reg to the
         proper mode before using it.
 
