@@ -1,3 +1,7 @@
+2001-07-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md: Remove unused constraints from define_split's.
+
 2001-04-14  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (find_cond_trap): Test for exit block.
