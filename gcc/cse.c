@@ -6195,7 +6195,7 @@ cse_insn (insn, in_libcall_block)
 
   /* Records what this insn does to set CC0.  */
   rtx this_insn_cc0 = 0;
-  enum machine_mode this_insn_cc0_mode;
+  enum machine_mode this_insn_cc0_mode = VOIDmode;
   struct write_data writes_memory;
   static struct write_data init = {0, 0, 0, 0};
 
