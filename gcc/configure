@@ -9576,7 +9576,9 @@ gcc_cv_ld_gld_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/ld
 gcc_cv_ld_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
-elif test -x "$LD"; then
+elif test -x "$LD_FOR_TARGET"; then
+        gcc_cv_ld="$LD_FOR_TARGET"
+elif test -x "$LD" && test x$host = x$target; then
 	gcc_cv_ld="$LD"
 elif test -x collect-ld$host_exeext; then
 	# Build using linker in the current directory.
