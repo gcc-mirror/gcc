@@ -2425,11 +2425,12 @@ mark_vtable_entries (decl)
 
       fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
-      if (DECL_THUNK_P (fn) && DECL_EXTERNAL (fn))
-	{
-	  DECL_EXTERNAL (fn) = 0;
-	  emit_thunk (fn);
-	}
+      /* When we don't have vcall offsets, we output thunks whenever
+	 we output the vtables that contain them.  With vcall offsets,
+	 we know all the thunks we'll need when we emit a virtual
+	 function, so we emit the thunks there instead.  */
+      if (DECL_THUNK_P (fn)) 
+	use_thunk (fn, THUNK_GENERATE_WITH_VTABLE_P (fn));
       mark_used (fn);
     }
 }

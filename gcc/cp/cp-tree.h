@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
       SCOPE_BEGIN_P (in SCOPE_STMT)
       CTOR_BEGIN_P (in CTOR_STMT)
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
+      BV_USE_VCALL_INDEX_P (in the BINFO_VIRTUALS TREE_LIST)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -57,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
       ICS_ELLIPSIS_FLAG (in _CONV)
       STMT_IS_FULL_EXPR_P (in _STMT)
       BINFO_ACCESS (in BINFO)
+      BV_GENERATE_THUNK_WITH_VTABLE_P (in TREE_LIST)
    2: IDENTIFIER_OPNAME_P.
       TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
@@ -128,7 +130,9 @@ Boston, MA 02111-1307, USA.  */
      the this pointer points to an object of the base class.
 
      The BV_VCALL_INDEX of each node, if non-NULL, gives the vtable
-     index of the vcall offset for this entry.
+     index of the vcall offset for this entry.  If
+     BV_USE_VCALL_INDEX_P then the corresponding vtable entry should
+     use a virtual thunk, as opposed to an ordinary thunk.
 
      The BV_FN is the declaration for the virtual function itself.
      When CLASSTYPE_COM_INTERFACE_P does not hold, the first entry
@@ -1841,6 +1845,15 @@ struct lang_type
 /* The function to call.  */
 #define BV_FN(NODE) (TREE_VALUE (NODE))
 
+/* Nonzero if we should use a virtual thunk for this entry.  */
+#define BV_USE_VCALL_INDEX_P(NODE) \
+   (TREE_LANG_FLAG_0 (NODE))
+
+/* Nonzero if we should generate this thunk when the vtable that
+   references it is emitted, rather than with the final overrider.  */
+#define BV_GENERATE_THUNK_WITH_VTABLE_P(NODE) \
+  (TREE_LANG_FLAG_1 (NODE))
+
 /* The most derived class.  */
 
 
@@ -1901,7 +1914,8 @@ struct lang_decl_flags
   unsigned tinfo_fn_p : 1;
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
-  unsigned dummy : 2;
+  unsigned generate_with_vtable_p : 1;
+  unsigned dummy : 1;
 
   tree context;
 
@@ -1924,7 +1938,7 @@ struct lang_decl_flags
 
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
        THUNK_VCALL_OFFSET.  */
-    HOST_WIDE_INT vcall_offset;
+    tree vcall_offset;
   } u2;
 };
 
@@ -3141,6 +3155,10 @@ extern int flag_new_for_scope;
 #define THUNK_VCALL_OFFSET(DECL) \
   (DECL_LANG_SPECIFIC (DECL)->decl_flags.u2.vcall_offset)
 
+/* Nonzero if this thunk should be generated with the vtable that
+   references it.  */
+#define THUNK_GENERATE_WITH_VTABLE_P(DECL) \
+  (DECL_LANG_SPECIFIC (DECL)->decl_flags.generate_with_vtable_p)
 
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
@@ -4244,8 +4262,8 @@ extern tree build_overload_with_type		PARAMS ((tree, tree));
 extern tree build_destructor_name		PARAMS ((tree));
 extern tree build_opfncall			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PARAMS ((tree, tree));
-extern tree make_thunk				PARAMS ((tree, int, int));
-extern void emit_thunk				PARAMS ((tree));
+extern tree make_thunk				PARAMS ((tree, tree, tree, int));
+extern void use_thunk				PARAMS ((tree, int));
 extern void synthesize_method			PARAMS ((tree));
 extern tree get_id_2				PARAMS ((const char *, tree));
 extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
@@ -4718,7 +4736,7 @@ extern tree mangle_typeinfo_string_for_type     PARAMS ((tree));
 extern tree mangle_vtbl_for_type                PARAMS ((tree));
 extern tree mangle_vtt_for_type                 PARAMS ((tree));
 extern tree mangle_ctor_vtbl_for_type           PARAMS ((tree, tree));
-extern tree mangle_thunk                        PARAMS ((tree, int, int)); 
+extern tree mangle_thunk                        PARAMS ((tree, tree, tree)); 
 extern tree mangle_conv_op_name_for_type        PARAMS ((tree));
 extern tree mangle_guard_variable               PARAMS ((tree));
 

@@ -15063,6 +15063,8 @@ lang_mark_tree (t)
 	      && !DECL_GLOBAL_DTOR_P (t)
 	      && !DECL_THUNK_P (t))
 	    ggc_mark_tree (ld->decl_flags.u2.access);
+	  else if (DECL_THUNK_P (t))
+	    ggc_mark_tree (ld->decl_flags.u2.vcall_offset);
 	  ggc_mark_tree (ld->decl_flags.context);
 	  if (TREE_CODE (t) != NAMESPACE_DECL)
 	    ggc_mark_tree (ld->decl_flags.u.template_info);

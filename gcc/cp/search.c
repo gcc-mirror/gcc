@@ -2295,9 +2295,9 @@ dfs_get_pure_virtuals (binfo, data)
       for (virtuals = BINFO_VIRTUALS (binfo);
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
-	if (DECL_PURE_VIRTUAL_P (TREE_VALUE (virtuals)))
+	if (DECL_PURE_VIRTUAL_P (BV_FN (virtuals)))
 	  CLASSTYPE_PURE_VIRTUALS (type) 
-	    = tree_cons (NULL_TREE, TREE_VALUE (virtuals),
+	    = tree_cons (NULL_TREE, BV_FN (virtuals),
 			 CLASSTYPE_PURE_VIRTUALS (type));
     }
   
@@ -2341,7 +2341,7 @@ get_pure_virtuals (type)
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
 	{
-	  tree base_fndecl = TREE_VALUE (virtuals);
+	  tree base_fndecl = BV_FN (virtuals);
 	  if (DECL_NEEDS_FINAL_OVERRIDER_P (base_fndecl))
 	    cp_error ("`%#D' needs a final overrider", base_fndecl);
 	}

@@ -1,3 +1,54 @@
+2000-06-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (BV_USE_VCALL_INDEX_P): New macro.
+	(BV_GENERATE_THUNK_WITH_VTABLE_P): Likewise.
+	(lang_decl_flags): Add generate_with_vtable_p.  Make vcall_offset
+	a tree, not an int.
+	(THUNK_GENERATE_WITH_VTABLE_P): New macro.
+	(make_thunk): Change prototype.
+	(emit_thunk): Rename to use_thunk.
+	(mangle_thunk): Change prototype.
+	* class.c (get_derived_offset): Simplify.
+	(copy_virtuals): Clear BV_USE_VCALL_INDEX_P and
+	BV_GENERATE_THUNK_WITH_VTABLE_P.
+	(build_primary_vtable): Simplify.
+	(add_virtual_function): Use BV_FN, rather than TREE_VALUE.
+	(dfs_find_base): Remove.
+	(update_vtable_entry_for_fn): Correct bug in finding the base
+	where a virtual function was first declared.  Figure out whether
+	or not to emit a vcall-thunk with the vtables in which it appears.
+	Correct logic for deciding whether to use an ordinary thunk, or a
+	vcall thunk.
+	(finish_struct_1): Remove unnecssary code.
+	(build_vtbl_initializer): Use ssize_int for the running counter of
+	negative indices.
+	(build_vtbl_initializer): Only use vcall thunks where necessary.
+	Mark thunks as needing to be emitted with their vtables, or not.
+	(build_vbase_offset_vtbl_entries): Adjust for use of ssize_int in
+	indices.  Use size_binop.
+	(dfs_build_vcall_offset_vtbl_entries): Don't rely on
+	BINFO_PRIMARY_MARKED_P here.  Use BV_FN consistently.  Use
+	size_binop.
+	(build_rtti_vtbl_entries): Adjust call to build_vtable_entry.
+	(build_vtable_entry): Mark thunks as needing to be emitted with
+	their vtables, or not.
+	* decl.c (lang_mark_tree): Mark the vcall_offset in a thunk.
+	* decl2.c (mark_vtable_entries): Use use_thunk instead of
+	emit_thunk.
+	* dump.c (dequeue_and_dump): Remove dead code.  Dump new thunk
+	information.
+	* error.c (dump_expr): Use BV_FN.
+	* mangle.c (mangle_thunk): Adjust now that vcall_offset is a tree,
+	not an int.
+	* method.c (make_thunk): Likewise.
+	(emit_thunk): Rename to use_thunk.  Allow callers to decide
+	whether or not to actually emit the thunk.  Adjust for changes in
+	representation of vcall offsets.
+	* search.c (dfs_get_pure_virtuals): Use BV_FN.
+	* semantics.c (emit_associated_thunks): New function.
+	(expand_body): Use it.
+	* ir.texi: Adjust decriptions of thunks.
+	
 2000-06-22  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_decl, case FUNCTION_DECL): Clear DECL_SAVED_TREE.
