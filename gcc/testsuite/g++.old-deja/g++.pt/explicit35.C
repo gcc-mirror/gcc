@@ -1,5 +1,6 @@
 // Build don't run:
 // GROUPS passed templates
+// Special g++ Options: -ansi -pedantic-errors -w
 struct S 
 {
   template <class T>
