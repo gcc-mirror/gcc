@@ -65,16 +65,20 @@ proc v3-init { args } {
     # Find the existing LD_LIBRARY_PATH.
     if [info exists env(LD_LIBRARY_PATH)] {
 	set original_ld_library_path $env(LD_LIBRARY_PATH)
+	# For HP-UX
+    } elseif [info exists env(SHLIB_PATH)] {
+	set original_ld_library_path $env(SHLIB_PATH)
+	# For Darwin:
+    } elseif [info exists env(DYLD_LIBRARY_PATH)] {
+	set original_ld_library_path $env(DYLD_LIBRARY_PATH)
+	# For Solaris 32 bit:
+    } elseif [info exists env(LD_LIBRARY_PATH_32)] {
+	set original_ld_library_path $env(LD_LIBRARY_PATH_32)
+	# For Solaris 64 bit:
+    } elseif [info exists env(LD_LIBRARY_PATH_64)] {
+	set original_ld_library_path $env(LD_LIBRARY_PATH_64)
     } else {
-	if [info exists env(SHLIB_PATH)] {
-	    set original_ld_library_path $env(SHLIB_PATH)
-	} else {
-	    if [info exists env(DYLD_LIBRARY_PATH)] {
-		set original_ld_library_path $env(DYLD_LIBRARY_PATH)
-	    } else {
-		set original_ld_library_path ""
-	    }
-	}
+	set original_ld_library_path ""
     }
 
     # Locate libgcc.a so we don't need to account for different values of
@@ -107,13 +111,16 @@ proc v3-init { args } {
     # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
     # (for the 64-bit ABI).  The right way to do this would be to modify
     # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.  We really only need to do 
-    # this on IRIX, but it shouldn't hurt to do it anywhere else.
+    # proper, so we do it here.
+    # The same applies to darwin (DYLD_LIBRARY_PATH), solaris 32 bit
+    # (LD_LIBRARY_PATH_32), solaris 64 bit (LD_LIBRARY_PATH_64), and HP-UX
+    # (SHLIB_PATH).
     setenv  LD_LIBRARY_PATH     "$ld_library_path:$original_ld_library_path"
     setenv  SHLIB_PATH          "$ld_library_path:$original_ld_library_path"
     setenv  LD_LIBRARYN32_PATH  "$ld_library_path:$original_ld_library_path"
     setenv  LD_LIBRARY64_PATH   "$ld_library_path:$original_ld_library_path"
     setenv  LD_RUN_PATH         "$ld_library_path:$original_ld_library_path"
+    setenv  LD_LIBRARY_PATH_32  "$ld_library_path:$original_ld_library_path"
     setenv  LD_LIBRARY_PATH_64  "$ld_library_path:$original_ld_library_path"
     setenv  DYLD_LIBRARY_PATH   "$ld_library_path:$original_ld_library_path"
     verbose -log "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
