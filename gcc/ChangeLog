@@ -1,5 +1,12 @@
 2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/ns32k/ns32k.c (TARGET_STRUCT_VALUE_RTX): New.
+	(ns32k_struct_value_rtx): Likewise.
+	* config/ns32k/ns32k.h (STRUCT_VALUE_REGNUM): Rename to
+	NS32K_STRUCT_VALUE_REGNUM.
+
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arm/arm.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
 	(TARGET_PROMOTE_PROTOTYPES): Likewise.
 	(TARGET_STRUCT_VALUE_RTX): Likewise.

@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -73,6 +73,7 @@ static void ns32k_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void ns32k_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool ns32k_rtx_costs (rtx, int, int, int *);
 static int ns32k_address_cost (rtx);
+static rtx ns32k_struct_value_rtx (tree, int);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -95,6 +96,9 @@ static int ns32k_address_cost (rtx);
 #define TARGET_RTX_COSTS ns32k_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ns32k_address_cost
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX ns32k_struct_value_rtx
 
 #undef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF true
@@ -1556,4 +1560,11 @@ output_move_dconst (int n, const char *s)
     strcpy (r, "movd ");
   strcat (r, s);
   return r;
+}
+
+static rtx
+ns32k_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+			int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, NS32K_STRUCT_VALUE_REGNUM);
 }
