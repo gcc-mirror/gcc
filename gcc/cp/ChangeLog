@@ -1,3 +1,10 @@
+1999-03-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (setup_initp): Give statics with no priority the default
+	priority here.
+	(do_dtors, do_ctors, finish_file): Remove special handling of
+	non-prioritized statics.
+
 1999-03-05  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (ANON_UNION_TYPE_P): Robustify.

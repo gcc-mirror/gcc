@@ -2859,10 +2859,13 @@ static void
 setup_initp ()
 {
   tree t, *p, next_t;
+  tree default_pri = build_int_2 (DEFAULT_INIT_PRIORITY, 0);
+  int saw_default;
 
   /* First, remove any entries from static_aggregates that are also in
-     static_aggregates_initp, and update the entries in _initp to
-     include the initializer.  */
+     static_aggregates_initp, and update the entries in _initp to include
+     the initializer.  For entries not in static_aggregates_initp, update
+     them in place to look the same way.  */
   p = &static_aggregates;
   for (; *p; )
     {
@@ -2870,22 +2873,40 @@ setup_initp ()
 
       if (t)
 	{
+	  /* We found an entry in s_a_initp; replace that entry with the
+	     format we want and remove the entry in s_a.  */
 	  TREE_VALUE (t) = *p;
 	  *p = TREE_CHAIN (*p);
 	  TREE_CHAIN (TREE_VALUE (t)) = NULL_TREE;
 	}
       else
-	p = &TREE_CHAIN (*p);
+	{
+	  /* We didn't find an entry in s_a_i; replace the entry in s_a
+	     with the format we want.  */
+	  *p = perm_tree_cons (default_pri, *p, TREE_CHAIN (*p));
+	  TREE_CHAIN (TREE_VALUE (*p)) = NULL_TREE;
+	  p = &TREE_CHAIN (*p);
+	}
     }
+
+  /* And then attach the two lists.  By doing it this way, ctors with an
+     explicit priority equal to the default are run before ctors with no
+     explicit priority (i.e. the ones in s_a).  */
+  static_aggregates_initp = chainon (static_aggregates,
+				     static_aggregates_initp);
+  static_aggregates = NULL_TREE;
 
   /* Then, group static_aggregates_initp.  After this step, there will only
      be one entry for each priority, with a chain coming off it.  */
   t = static_aggregates_initp;
   static_aggregates_initp = NULL_TREE;
 
+  saw_default = 0;
   for (; t; t = next_t)
     {
       next_t = TREE_CHAIN (t);
+      if (TREE_INT_CST_LOW (TREE_PURPOSE (t)) == DEFAULT_INIT_PRIORITY)
+	saw_default = 1;
 
       for (p = &static_aggregates_initp; ; p = &TREE_CHAIN (*p))
 	{
@@ -2904,6 +2925,10 @@ setup_initp ()
 	    }
 	}
     }
+
+  if (! saw_default)
+    static_aggregates_initp = perm_tree_cons (default_pri, error_mark_node,
+					      static_aggregates_initp);
 
   /* Reverse each list to preserve the order (currently reverse declaration
      order, for destructors).  */
@@ -3027,18 +3052,10 @@ do_dtors (start)
   tree vars;
   int initp;
 
-  if (start)
-    {
-      initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
-      vars = TREE_VALUE (start);
-    }
-  else
-    {
-      initp = DEFAULT_INIT_PRIORITY;
-      vars = static_aggregates;
-    }
+  initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
+  vars = TREE_VALUE (start);
 
-  for (; vars; vars = TREE_CHAIN (vars))
+  for (; vars && vars != error_mark_node; vars = TREE_CHAIN (vars))
     {
       tree decl = TREE_VALUE (vars);
       tree type = TREE_TYPE (decl);
@@ -3115,21 +3132,13 @@ do_ctors (start)
   tree vars;
   int initp;
 
-  if (start)
-    {
-      initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
-      vars = TREE_VALUE (start);
-    }
-  else
-    {
-      initp = DEFAULT_INIT_PRIORITY;
-      vars = static_aggregates;
-    }
+  initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
+  vars = TREE_VALUE (start);
 
   /* Reverse the list so it's in the right order for ctors.  */
   vars = nreverse (vars);
 
-  for (; vars; vars = TREE_CHAIN (vars))
+  for (; vars && vars != error_mark_node; vars = TREE_CHAIN (vars))
     {
       tree decl = TREE_VALUE (vars);
       tree init = TREE_PURPOSE (vars);
@@ -3322,21 +3331,13 @@ finish_file ()
   /* After setup_initp, the aggregates are listed in reverse declaration
      order, for cleaning.  */
   if (needs_cleaning)
-    {
-      do_dtors (NULL_TREE);
-
-      for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
-	do_dtors (vars);
-    }
+    for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
+      do_dtors (vars);
 
   /* do_ctors will reverse the lists for messing up.  */
   if (needs_messing_up)
-    {
-      do_ctors (NULL_TREE);
-
-      for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
-	do_ctors (vars);
-  }
+    for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
+      do_ctors (vars);
 
   permanent_allocation (1);
 
