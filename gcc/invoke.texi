@@ -1030,6 +1030,11 @@ your code with this flag (including the C++ library, if you use it).
 
 This flag is not useful when compiling with -fvtable-thunks.
 
+@item -finit-priority
+Support @samp{__attribute__ ((init_priority (n)))} for controlling the
+order of initialization of file-scope objects.  On ELF targets, this
+requires GNU ld 2.10 or later.
+
 @item -fno-implement-inlines
 To save space, do not emit out-of-line copies of inline functions
 controlled by @samp{#pragma implementation}.  This will cause linker

@@ -173,6 +173,14 @@ int flag_alt_external_templates;
 
 int flag_implicit_templates = 1;
 
+/* Nonzero means allow numerical priorities on constructors.  */
+
+#ifdef USE_INIT_PRIORITY
+int flag_init_priority = 1;
+#else
+int flag_init_priority;
+#endif
+
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;
@@ -492,6 +500,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
+  {"init-priority", &flag_init_priority, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
@@ -2929,18 +2938,104 @@ get_sentry (base)
   return sentry;
 }
 
+/* A list of objects which have constructors or destructors
+   which reside in the global scope.  The decl is stored in
+   the TREE_VALUE slot and the initializer is stored
+   in the TREE_PURPOSE slot.  */
+extern tree static_aggregates_initp;
+
+/* Set up the static_aggregates* lists for processing.  Subroutine of
+   finish_file.  Note that this function changes the format of
+   static_aggregates_initp, from (priority . decl) to
+   (priority . ((initializer . decl) ...)).  */
+
+static void
+setup_initp ()
+{
+  tree t, *p, next_t;
+
+  if (! flag_init_priority)
+    {
+      for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
+	cp_warning ("init_priority for `%#D' ignored without -finit-priority",
+		    TREE_VALUE (t));
+      return;
+    }
+
+  /* First, remove any entries from static_aggregates that are also in
+     static_aggregates_initp, and update the entries in _initp to
+     include the initializer.  */
+  p = &static_aggregates;
+  for (; *p; )
+    {
+      t = value_member (TREE_VALUE (*p), static_aggregates_initp);
+
+      if (t)
+	{
+	  TREE_VALUE (t) = *p;
+	  *p = TREE_CHAIN (*p);
+	  TREE_CHAIN (TREE_VALUE (t)) = NULL_TREE;
+	}
+      else
+	p = &TREE_CHAIN (*p);
+    }
+
+  /* Then, group static_aggregates_initp.  After this step, there will only
+     be one entry for each priority, with a chain coming off it.  */
+  t = static_aggregates_initp;
+  static_aggregates_initp = NULL_TREE;
+
+  for (; t; t = next_t)
+    {
+      next_t = TREE_CHAIN (t);
+
+      for (p = &static_aggregates_initp; ; p = &TREE_CHAIN (*p))
+	{
+	  if (*p == NULL_TREE
+	      || tree_int_cst_lt (TREE_PURPOSE (*p), TREE_PURPOSE (t)))
+	    {
+	      TREE_CHAIN (t) = *p;
+	      *p = t;
+	      break;
+	    }
+	  else if (tree_int_cst_equal (TREE_PURPOSE (*p), TREE_PURPOSE (t)))
+	    {
+	      TREE_CHAIN (TREE_VALUE (t)) = TREE_VALUE (*p);
+	      TREE_VALUE (*p) = TREE_VALUE (t);
+	      break;
+	    }
+	}
+    }
+
+  /* Reverse each list to preserve the order (currently reverse declaration
+     order, for destructors).  */
+  for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
+    TREE_VALUE (t) = nreverse (TREE_VALUE (t));
+}
+
 /* Start the process of running a particular set of global constructors
    or destructors.  Subroutine of do_[cd]tors.  */
 
 static void
-start_objects (method_type)
-     int method_type;
+start_objects (method_type, initp)
+     int method_type, initp;
 {
   tree fnname;
+  char type[10];
 
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
 
-  fnname = get_file_function_name (method_type);
+  if (flag_init_priority)
+    {
+      if (initp == 0)
+	initp = DEFAULT_INIT_PRIORITY;
+
+      sprintf (type, "%c%c%.5u", method_type, JOINER, initp);
+    }
+  else
+    sprintf (type, "%c", method_type);
+
+  fnname = get_file_function_name_long (type);
 
   start_function (void_list_node,
 		  make_call_declarator (fnname, void_list_node, NULL_TREE,
@@ -2958,18 +3053,21 @@ start_objects (method_type)
    or destructors.  Subroutine of do_[cd]tors.  */
 
 static void
-finish_objects (method_type)
-     int method_type;
+finish_objects (method_type, initp)
+     int method_type, initp;
 {
   char *fnname;
 
-  tree list = (method_type == 'I' ? static_ctors : static_dtors);
+  if (! initp)
+    {
+      tree list = (method_type == 'I' ? static_ctors : static_dtors);
 
-  if (! current_function_decl && list)
-    start_objects (method_type);
+      if (! current_function_decl && list)
+	start_objects (method_type, initp);
 
-  for (; list; list = TREE_CHAIN (list))
-    expand_expr_stmt (build_function_call (TREE_VALUE (list), NULL_TREE));
+      for (; list; list = TREE_CHAIN (list))
+	expand_expr_stmt (build_function_call (TREE_VALUE (list), NULL_TREE));
+    }
 
   if (! current_function_decl)
     return;
@@ -2982,19 +3080,56 @@ finish_objects (method_type)
   pop_momentary ();
   finish_function (lineno, 0, 0);
 
-  if (method_type == 'I')
-    assemble_constructor (fnname);
-  else
-    assemble_destructor (fnname);
+  if (! flag_init_priority)
+    {
+      if (method_type == 'I')
+	assemble_constructor (fnname);
+      else
+	assemble_destructor (fnname);
+    }
+
+#ifdef ASM_OUTPUT_SECTION_NAME
+  /* If we're using init priority we can't use assemble_*tor, but on ELF
+     targets we can stick the references into named sections for GNU ld
+     to collect.  */
+  if (flag_init_priority)
+    {
+      char buf[15];
+      if (initp == 0)
+	initp = DEFAULT_INIT_PRIORITY;
+      sprintf (buf, ".%ctors.%.5u", method_type == 'I' ? 'c' : 'd',
+	       /* invert the numbering so the linker puts us in the proper
+		  order; constructors are run from right to left, and the
+		  linker sorts in increasing order.  */
+	       MAX_INIT_PRIORITY - initp);
+      named_section (NULL_TREE, buf, 0);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, fnname),
+			POINTER_SIZE / BITS_PER_UNIT, 1);
+    }
+#endif
 }
 
-/* Generate a function to run a set of global destructors.  Subroutine of
-   finish_file.  */
+/* Generate a function to run a set of global destructors.  START is either
+   NULL_TREE or a node indicating a set of destructors with the same
+   init priority.  Subroutine of finish_file.  */
 
 static void
-do_dtors ()
+do_dtors (start)
+     tree start;
 {
-  tree vars = static_aggregates;
+  tree vars;
+  int initp;
+
+  if (start)
+    {
+      initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
+      vars = TREE_VALUE (start);
+    }
+  else
+    {
+      initp = 0;
+      vars = static_aggregates;
+    }
 
   for (; vars; vars = TREE_CHAIN (vars))
     {
@@ -3010,7 +3145,7 @@ do_dtors ()
 						|| DECL_WEAK (decl)));
 
 	  if (! current_function_decl)
-	    start_objects ('D');
+	    start_objects ('D', initp);
 
 	  /* Because of:
 
@@ -3053,16 +3188,30 @@ do_dtors ()
 	}
     }
 
-  finish_objects ('D');
+  finish_objects ('D', initp);
 }
 
-/* Generate a function to run a set of global constructors.  Subroutine of
-   finish_file.  */
+/* Generate a function to run a set of global constructors.  START is
+   either NULL_TREE or a node indicating a set of constructors with the
+   same init priority.  Subroutine of finish_file.  */
 
 static void
-do_ctors ()
+do_ctors (start)
+     tree start;
 {
-  tree vars = static_aggregates;
+  tree vars;
+  int initp;
+
+  if (start)
+    {
+      initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
+      vars = TREE_VALUE (start);
+    }
+  else
+    {
+      initp = 0;
+      vars = static_aggregates;
+    }
 
   /* Reverse the list so it's in the right order for ctors.  */
   vars = nreverse (vars);
@@ -3088,7 +3237,7 @@ do_ctors ()
 						|| DECL_WEAK (decl)));
 
 	  if (! current_function_decl)
-	    start_objects ('I');
+	    start_objects ('I', initp);
 
 	  /* Set these global variables so that GDB at least puts
 	     us near the declaration which required the initialization.  */
@@ -3148,7 +3297,7 @@ do_ctors ()
 	my_friendly_abort (22);
     }
 
-  finish_objects ('I');
+  finish_objects ('I', initp);
 }
 
 /* This routine is called from the last rule in yyparse ().
@@ -3262,17 +3411,28 @@ finish_file ()
   if (static_dtors || vars)
     needs_cleaning = 1;
 
-  /* The aggregates are listed in reverse declaration order, for cleaning.  */
+  setup_initp ();
+
+  /* After setup_initp, the aggregates are listed in reverse declaration
+     order, for cleaning.  */
   if (needs_cleaning)
     {
-      do_dtors ();
+      do_dtors (NULL_TREE);
+
+      if (flag_init_priority)
+	for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
+	  do_dtors (vars);
     }
 
   /* do_ctors will reverse the lists for messing up.  */
   if (needs_messing_up)
     {
-      do_ctors ();
-    }
+      do_ctors (NULL_TREE);
+
+      if (flag_init_priority)
+	for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
+	  do_ctors (vars);
+  }
 
   permanent_allocation (1);
 

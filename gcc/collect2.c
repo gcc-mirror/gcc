@@ -137,7 +137,7 @@ extern char *make_temp_file PROTO ((char *));
 
 /* Default flags to pass to nm.  */
 #ifndef NM_FLAGS
-#define NM_FLAGS "-p"
+#define NM_FLAGS "-n"
 #endif
 
 #endif /* OBJECT_FORMAT_NONE */
@@ -280,6 +280,8 @@ static void do_wait		PROTO((char *));
 static void fork_execute	PROTO((char *, char **));
 static void maybe_unlink	PROTO((char *));
 static void add_to_list		PROTO((struct head *, char *));
+static int  extract_init_priority PROTO((char *));
+static void sort_ids		PROTO((struct head *));
 static void write_list		PROTO((FILE *, char *, struct id *));
 #ifdef COLLECT_EXPORT_LIST
 static void dump_list		PROTO((FILE *, char *, struct id *));
@@ -1483,6 +1485,10 @@ main (argc, argv)
       return 0;
     }
 
+  /* Sort ctor and dtor lists by priority. */
+  sort_ids (&constructors);
+  sort_ids (&destructors);
+
   maybe_unlink(output_file);
   outf = fopen (c_file, "w");
   if (outf == (FILE *) 0)
@@ -1697,6 +1703,8 @@ maybe_unlink (file)
 }
 
 
+static long sequence_number = 0;
+
 /* Add a name to a linked list.  */
 
 static void
@@ -1707,7 +1715,6 @@ add_to_list (head_ptr, name)
   struct id *newid
     = (struct id *) xcalloc (sizeof (struct id) + strlen (name), 1);
   struct id *p;
-  static long sequence_number = 0;
   strcpy (newid->name, name);
 
   if (head_ptr->first)
@@ -1730,6 +1737,67 @@ add_to_list (head_ptr, name)
   newid->sequence = ++sequence_number;
   head_ptr->last = newid;
   head_ptr->number++;
+}
+
+/* Grab the init priority number from an init function name that
+   looks like "_GLOBAL_.I.12345.foo".  */
+
+static int
+extract_init_priority (name)
+     char *name;
+{
+  int pos = 0;
+
+  while (name[pos] == '_')
+    ++pos;
+  pos += 10; /* strlen ("GLOBAL__X_") */
+
+  /* Extract init_p number from ctor/dtor name. */
+  return strtoul(name + pos, NULL, 10);
+}
+
+/* Insertion sort the ids from ctor/dtor list HEAD_PTR in descending order.
+   ctors will be run from right to left, dtors from left to right.  */
+
+static void
+sort_ids (head_ptr)
+     struct head *head_ptr;
+{
+  /* id holds the current element to insert.  id_next holds the next
+     element to insert.  id_ptr iterates through the already sorted elements
+     looking for the place to insert id.  */
+  struct id *id, *id_next, **id_ptr;
+  int i;
+
+  id = head_ptr->first;
+
+  /* We don't have any sorted elements yet.  */
+  head_ptr->first = NULL;
+
+  for (; id; id = id_next)
+    {
+      id_next = id->next;
+      id->sequence = extract_init_priority (id->name);
+
+      for (id_ptr = &(head_ptr->first); ; id_ptr = &((*id_ptr)->next))
+	if (*id_ptr == NULL
+	    /* If the sequence numbers are the same, we put the id from the
+	       file later on the command line later in the list.  */
+	    || id->sequence > (*id_ptr)->sequence
+	    /* Hack: do lexical compare, too.
+	    || (id->sequence == (*id_ptr)->sequence
+	        && strcmp (id->name, (*id_ptr)->name) > 0) */
+	    )
+	  {
+	    id->next = *id_ptr;
+	    *id_ptr = id;
+	    break;
+	  }
+    }
+
+  /* Now set the sequence numbers properly so write_c_file works.  */
+  for (id = head_ptr->first; id; id = id->next)
+    id->sequence = ++sequence_number;
 }
 
 /* Write: `prefix', the names on list LIST, `suffix'.  */
