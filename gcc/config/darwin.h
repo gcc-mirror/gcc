@@ -234,6 +234,10 @@ do { text_section ();							\
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
         || DECL_INITIAL (DECL))                                         \
       machopic_define_name (xname);                                     \
+    if ((TREE_STATIC (DECL)                                             \
+	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
+        || DECL_INITIAL (DECL))                                         \
+      ENCODE_SECTION_INFO (DECL);  \
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
   } while (0)
 
@@ -243,6 +247,7 @@ do { text_section ();							\
 #undef	ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   do {									\
+       STRIP_NAME_ENCODING (NAME, NAME);  \
        if (NAME[0] == '&')						\
          {								\
            int len = strlen (NAME);					\
@@ -280,6 +285,10 @@ do { text_section ();							\
     fputs (".lcomm ", (FILE));				\
     assemble_name ((FILE), (NAME));			\
     fprintf ((FILE), ",%u,%u\n", (SIZE), floor_log2 ((ALIGN) / BITS_PER_UNIT)); \
+    if ((DECL) && ((TREE_STATIC (DECL)                                             \
+	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
+        || DECL_INITIAL (DECL)))                                         \
+      ENCODE_SECTION_INFO (DECL);  \
     if ((DECL) && ((TREE_STATIC (DECL)                                             \
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
         || DECL_INITIAL (DECL)))                                         \
@@ -705,6 +714,16 @@ enum machopic_addr_class {
 #define MACHOPIC_JUST_INDIRECT (flag_pic == 1)
 #define MACHOPIC_PURE          (flag_pic == 2)
 
+#define ENCODE_SECTION_INFO(DECL)  \
+  darwin_encode_section_info (DECL)
+
+/* Be conservative and always redo the encoding.  */
+
+#define REDO_SECTION_INFO_P(DECL) (1)
+
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)  \
+  ((VAR) = ((SYMBOL_NAME[0] == '!') ? (SYMBOL_NAME) + 4 : (SYMBOL_NAME)))
+
 #define GEN_BINDER_NAME_FOR_STUB(BUF,STUB,STUB_LENGTH)		\
   do {								\
     const char *stub_ = (STUB);					\
@@ -741,6 +760,7 @@ enum machopic_addr_class {
   do {								\
     const char *symbol_ = (SYMBOL);				\
     char *buffer_ = (BUF);					\
+    STRIP_NAME_ENCODING (symbol_, symbol_);  \
     if (symbol_[0] == '"')					\
       {								\
         strcpy (buffer_, "\"L");					\
