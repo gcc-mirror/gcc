@@ -677,6 +677,16 @@ struct macrodef
 static struct macrodef create_definition ();
 
 
+enum sharp_token_type {
+  NO_SHARP_TOKEN,		/* token not present */
+
+  SHARP_TOKEN = '#',		/* token spelled with # only */
+  WHITE_SHARP_TOKEN,		/* token spelled with # and white space */
+
+  PERCENT_COLON_TOKEN = '%',	/* token spelled with %: only */
+  WHITE_PERCENT_COLON_TOKEN	/* token spelled with %: and white space */
+};
+
 /* Structure allocated for every #define.  For a simple replacement
    such as
    	#define foo bar ,
@@ -711,12 +721,9 @@ struct definition {
   struct reflist {
     struct reflist *next;
 
-    /* The following three members have the value '#' if spelled with "#",
-       and '%' if spelled with "%:".  */
-    char stringify;		/* nonzero if this arg was preceded by a
-				   # operator. */
-    char raw_before;		/* Nonzero if a ## operator before arg. */
-    char raw_after;		/* Nonzero if a ## operator after arg. */
+    enum sharp_token_type stringify;	/* set if a # operator before arg */
+    enum sharp_token_type raw_before;	/* set if a ## operator before arg */
+    enum sharp_token_type raw_after;	/* set if a ## operator after arg */
 
     char rest_args;		/* Nonzero if this arg. absorbs the rest */
     int nchars;			/* Number of literal chars to copy before
@@ -5757,9 +5764,9 @@ collect_expansion (buf, end, nargs, arglist)
   U_CHAR *concat = 0;
   /* Pointer to first nonspace after last single-# seen.  */
   U_CHAR *stringify = 0;
-  /* How those tokens were spelled: 0, '#', or '%' (meaning %:).  */
-  char concat_spelling = 0;
-  char stringify_spelling = 0;
+  /* How those tokens were spelled.  */
+  enum sharp_token_type concat_sharp_token_type = NO_SHARP_TOKEN;
+  enum sharp_token_type stringify_sharp_token_type = NO_SHARP_TOKEN;
   int maxsize;
   int expected_delimiter = '\0';
 
@@ -5843,11 +5850,11 @@ collect_expansion (buf, end, nargs, arglist)
 	    /* Treat %:%: as ## and %: as #.  */
 	    if (p[1] == '%' && p[2] == ':') {
 	      p += 2;
-	      goto hash_hash_token;
+	      goto sharp_sharp_token;
 	    }
 	    if (nargs >= 0) {
 	      p++;
-	      goto hash_token;
+	      goto sharp_token;
 	    }
 	  }
 	}
@@ -5858,7 +5865,7 @@ collect_expansion (buf, end, nargs, arglist)
 	if (expected_delimiter)
 	  break;
 	if (*p == '#') {
-	hash_hash_token:
+	sharp_sharp_token:
 	  /* ##: concatenate preceding and following tokens.  */
 	  /* Take out the first #, discard preceding whitespace.  */
 	  exp_p--;
@@ -5866,24 +5873,30 @@ collect_expansion (buf, end, nargs, arglist)
 	    --exp_p;
 	  /* Skip the second #.  */
 	  p++;
-	  /* Discard following whitespace.  */
-	  SKIP_WHITE_SPACE (p);
+	  concat_sharp_token_type = c;
+	  if (is_hor_space[*p]) {
+	    concat_sharp_token_type++;
+	    p++;
+	    SKIP_WHITE_SPACE (p);
+	  }
 	  concat = p;
-	  concat_spelling = c;
 	  if (p == limit)
 	    error ("`##' at end of macro definition");
 	} else if (nargs >= 0) {
 	  /* Single #: stringify following argument ref.
 	     Don't leave the # in the expansion.  */
-	hash_token:
+	sharp_token:
 	  exp_p--;
-	  SKIP_WHITE_SPACE (p);
+	  stringify_sharp_token_type = c;
+	  if (is_hor_space[*p]) {
+	    stringify_sharp_token_type++;
+	    p++;
+	    SKIP_WHITE_SPACE (p);
+	  }
 	  if (! is_idstart[*p] || nargs == 0)
 	    error ("`#' operator is not followed by a macro argument name");
-	  else {
+	  else
 	    stringify = p;
-	    stringify_spelling = c;
-	  }
 	}
 	break;
       }
@@ -5965,11 +5978,13 @@ collect_expansion (buf, end, nargs, arglist)
 	       the pat list */
 	    tpat = (struct reflist *) xmalloc (sizeof (struct reflist));
 	    tpat->next = NULL;
-	    tpat->raw_before = concat == id_beg ? concat_spelling : 0;
-	    tpat->raw_after = 0;
+	    tpat->raw_before
+	      = concat == id_beg ? concat_sharp_token_type : NO_SHARP_TOKEN;
+	    tpat->raw_after = NO_SHARP_TOKEN;
 	    tpat->rest_args = arg->rest_args;
-	    tpat->stringify = (traditional ? expected_delimiter != '\0'
-			       : stringify == id_beg) ? stringify_spelling : 0;
+	    tpat->stringify
+	      = ((traditional ? expected_delimiter : stringify == id_beg)
+		 ? stringify_sharp_token_type : NO_SHARP_TOKEN);
 
 	    if (endpat == NULL)
 	      defn->pattern = tpat;
@@ -5985,7 +6000,7 @@ collect_expansion (buf, end, nargs, arglist)
 	      if (p1[0]=='#'
 	          ? p1[1]=='#'
 		  : p1[0]=='%' && p1[1]==':' && p1[2]=='%' && p1[3]==':')
-		tpat->raw_after = p1[0];
+		tpat->raw_after = p1[0] + (p != p1);
 	    }
 	    lastp = exp_p;	/* place to start copying from next time */
 	    skipped_arg = 1;
@@ -7105,14 +7120,14 @@ skip_if_group (ip, any, op)
       while (bp[0] == '\\' && bp[1] == '\n')
 	bp += 2;
       if (*bp == ':')
-	goto hash_token;
+	goto sharp_token;
       break;
     case '#':
       /* # keyword: a # must be first nonblank char on the line */
       if (beg_of_line == 0)
 	break;
       ip->bufp = bp - 1;
-    hash_token:
+    sharp_token:
       /* Scan from start of line, skipping whitespace, comments
 	 and backslash-newlines, and see if we reach this #.
 	 If not, this # is not special.  */
@@ -9153,15 +9168,41 @@ dump_single_macro (hp, of)
     if (!traditional) {
       if (ap->nchars != 0)
 	concat = 0;
-      if (ap->stringify)
-	fprintf (of, ap->stringify == '#' ? " #" : " %:");
-      if (ap->raw_before && !concat)
-	fprintf (of, ap->raw_before == '#' ? " ## " : " %:%: ");
+      if (ap->stringify) {
+	switch (ap->stringify) {
+	 case SHARP_TOKEN: fprintf (of, "#"); break;
+	 case WHITE_SHARP_TOKEN: fprintf (of, "# "); break;
+	 case PERCENT_COLON_TOKEN: fprintf (of, "%:"); break;
+	 case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%: "); break;
+	}
+      }
+      if (ap->raw_before) {
+	if (concat) {
+	  switch (ap->raw_before) {
+	   case WHITE_SHARP_TOKEN:
+	   case WHITE_PERCENT_COLON_TOKEN:
+	    fprintf (of, " ");
+	    break;
+	  }
+	} else {
+	  switch (ap->raw_before) {
+	   case SHARP_TOKEN: fprintf (of, "##"); break;
+	   case WHITE_SHARP_TOKEN: fprintf (of, "## "); break;
+	   case PERCENT_COLON_TOKEN: fprintf (of, "%:%:"); break;
+	   case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%:%: "); break;
+	  }
+	}
+      }
       concat = 0;
     }
     dump_arg_n (defn, ap->argno, of);
     if (!traditional && ap->raw_after) {
-      fprintf (of, ap->raw_after == '#' ? " ## " : " %:%: ");
+      switch (ap->raw_after) {
+       case SHARP_TOKEN: fprintf (of, "##"); break;
+       case WHITE_SHARP_TOKEN: fprintf (of, " ##"); break;
+       case PERCENT_COLON_TOKEN: fprintf (of, "%:%:"); break;
+       case WHITE_PERCENT_COLON_TOKEN: fprintf (of, " %:%:"); break;
+      }
       concat = 1;
     }
   }
