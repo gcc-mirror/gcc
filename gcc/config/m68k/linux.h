@@ -270,10 +270,10 @@ Boston, MA 02111-1307, USA.  */
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881			\
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)				\
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16)				\
    : (POINTER_TYPE_P (VALTYPE)						\
-      ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)				\
-      : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
+      ? gen_rtx_REG (TYPE_MODE (VALTYPE), 8)				\
+      : gen_rtx_REG (TYPE_MODE (VALTYPE), 0)))
 
 /* For compatibility with the large body of existing code which does
    not always properly declare external functions returning pointer
@@ -299,8 +299,8 @@ do {									\
 #define LIBCALL_VALUE(MODE)						\
   ((((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)		\
     && TARGET_68881)							\
-   ? gen_rtx (REG, (MODE), 16)						\
-   : gen_rtx (REG, (MODE), 0))
+   ? gen_rtx_REG (MODE, 16)						\
+   : gen_rtx_REG (MODE, 0))
 
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is
    an operand of a function call. */
@@ -330,7 +330,7 @@ do {									\
 
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)					\
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__clear_cache"),	\
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
 		     0, VOIDmode, 2, TRAMP, Pmode,			\
 		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);
 
