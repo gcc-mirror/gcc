@@ -63,7 +63,7 @@ static void cselib_invalidate_regno	PARAMS ((unsigned int,
 static int cselib_mem_conflict_p	PARAMS ((rtx, rtx));
 static int cselib_invalidate_mem_1	PARAMS ((void **, void *));
 static void cselib_invalidate_mem	PARAMS ((rtx));
-static void cselib_invalidate_rtx	PARAMS ((rtx, rtx, void *));
+static void cselib_invalidate_rtx_note_stores PARAMS ((rtx, rtx, void *));
 static void cselib_record_set		PARAMS ((rtx, cselib_val *,
 						 cselib_val *));
 static void cselib_record_sets		PARAMS ((rtx));
@@ -1143,15 +1143,11 @@ cselib_invalidate_mem (mem_rtx)
   htab_traverse (hash_table, cselib_invalidate_mem_1, mem_rtx);
 }
 
-/* Invalidate DEST, which is being assigned to or clobbered.  The second and
-   the third parameter exist so that this function can be passed to
-   note_stores; they are ignored.  */
+/* Invalidate DEST, which is being assigned to or clobbered.  */
 
-static void
-cselib_invalidate_rtx (dest, ignore, data)
+void
+cselib_invalidate_rtx (dest)
      rtx dest;
-     rtx ignore ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
 {
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SIGN_EXTRACT
 	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG)
@@ -1167,7 +1163,18 @@ cselib_invalidate_rtx (dest, ignore, data)
      invalidate the stack pointer correctly.  Note that invalidating
      the stack pointer is different from invalidating DEST.  */
   if (push_operand (dest, GET_MODE (dest)))
-    cselib_invalidate_rtx (stack_pointer_rtx, NULL_RTX, NULL);
+    cselib_invalidate_rtx (stack_pointer_rtx);
+}
+
+/* A wrapper for cselib_invalidate_rtx to be called via note_stores.  */
+
+static void
+cselib_invalidate_rtx_note_stores (dest, ignore, data)
+     rtx dest;
+     rtx ignore ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  cselib_invalidate_rtx (dest);
 }
 
 /* Record the result of a SET instruction.  DEST is being set; the source
@@ -1293,7 +1300,7 @@ cselib_record_sets (insn)
   /* Invalidate all locations written by this insn.  Note that the elts we
      looked up in the previous loop aren't affected, just some of their
      locations may go away.  */
-  note_stores (body, cselib_invalidate_rtx, NULL);
+  note_stores (body, cselib_invalidate_rtx_note_stores, NULL);
 
   /* Now enter the equivalences in our tables.  */
   for (i = 0; i < n_sets; i++)
@@ -1358,7 +1365,7 @@ cselib_process_insn (insn)
      unlikely to help.  */
   for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
     if (REG_NOTE_KIND (x) == REG_INC)
-      cselib_invalidate_rtx (XEXP (x, 0), NULL_RTX, NULL);
+      cselib_invalidate_rtx (XEXP (x, 0));
 #endif
 
   /* Look for any CLOBBERs in CALL_INSN_FUNCTION_USAGE, but only
@@ -1366,7 +1373,7 @@ cselib_process_insn (insn)
   if (GET_CODE (insn) == CALL_INSN)
     for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
-	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0), NULL_RTX, NULL);
+	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
 
   cselib_current_insn = 0;
 
