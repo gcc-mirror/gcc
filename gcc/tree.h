@@ -906,13 +906,13 @@ struct tree_type
   union tree_node *size;
   union tree_node *size_unit;
   union tree_node *attributes;
-  unsigned uid;
+  unsigned int uid;
 
-  unsigned char precision;
+  unsigned int precision : 9;
 #ifdef ONLY_INT_FIELDS
-  unsigned int mode : 8;
+  unsigned int mode : 7;
 #else
-  enum machine_mode mode : 8;
+  enum machine_mode mode : 7;
 #endif
 
   unsigned string_flag : 1;
