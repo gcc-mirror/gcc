@@ -1,3 +1,7 @@
+2000-03-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (special_symbol): Fix thinko in previous commit.
+
 2000-03-07  Neil Booth  <NeilB@earthling.net>
 
 	* cppexp.c (struct operation, left_shift, right_shift,
