@@ -1,3 +1,8 @@
+2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13407
+	* g++.dg/parse/typename6.C: New test.
+
 2004-01-15  Geoffrey Keating  <geoffk@apple.com>
 
 	PR pch/13361
