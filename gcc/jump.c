@@ -2091,7 +2091,9 @@ redirect_jump (jump, nlabel, delete_unused)
       && NOTE_LINE_NUMBER (NEXT_INSN (olabel)) == NOTE_INSN_FUNCTION_END)
     emit_note_after (NOTE_INSN_FUNCTION_END, nlabel);
 
-  if (olabel && --LABEL_NUSES (olabel) == 0 && delete_unused)
+  if (olabel && --LABEL_NUSES (olabel) == 0 && delete_unused
+      /* Undefined labels will remain outside the insn stream.  */
+      && INSN_UID (olabel))
     delete_related_insns (olabel);
 
   return 1;

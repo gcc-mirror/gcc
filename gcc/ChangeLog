@@ -1,3 +1,8 @@
+Thu Feb 21 22:43:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* jump.c (redirect_jump): If old label has no UID, don't try to
+	delete it.
+
 Thu Feb 21 21:17:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (insv): Provide byte offsets for gen_rtx_SUBREG.
