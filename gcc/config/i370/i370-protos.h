@@ -51,8 +51,6 @@ extern int mvs_check_alias PARAMS ((const char *, char *));
 extern void check_label_emit PARAMS ((void));
 extern void mvs_free_label_list PARAMS ((void));
 
-#ifdef GCC_C_PRAGMA_H
-extern void i370_pr_map PARAMS ((cpp_reader *));
-#endif
+extern void i370_pr_map PARAMS ((struct cpp_reader *));
 
 #endif /* ! GCC_I370_PROTOS_H */

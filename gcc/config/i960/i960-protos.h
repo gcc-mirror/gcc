@@ -98,9 +98,7 @@ extern int compute_frame_size PARAMS ((int));
 extern void output_function_profiler PARAMS ((FILE *, int));
 extern void i960_scan_opcode PARAMS ((const char *));
 
-#ifdef GCC_C_PRAGMA_H
-extern void i960_pr_align PARAMS ((cpp_reader *));
-extern void i960_pr_noalign PARAMS ((cpp_reader *));
-#endif
+extern void i960_pr_align PARAMS ((struct cpp_reader *));
+extern void i960_pr_noalign PARAMS ((struct cpp_reader *));
 
 #endif /* ! GCC_I960_PROTOS_H  */
