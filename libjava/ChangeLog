@@ -1,3 +1,14 @@
+1999-05-20  Andrew Haley  <aph@cygnus.com>
+
+	* libjava/prims.cc (catch_fpe): Call to HANDLE_DIVIDE_OVERFLOW
+	added.
+	* include/i386-signal.h (HANDLE_DIVIDE_OVERFLOW): New macro.
+	(INIT_FPE): Exception string made more informative.
+	* include/sparc-signal.h (INIT_FPE): Exception string made more
+	informative.
+	* testsuite/libjava.lang/Divide_1.java: New file.
+	* testsuite/libjava.lang/Divide_1.out: New file.
+
 1999-05-19  Tom Tromey  <tromey@cygnus.com>
 
 	* aclocal.m4, configure: Rebuilt.
