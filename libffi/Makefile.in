@@ -151,6 +151,7 @@ MULTICLEAN = true
 @USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = libffi.la
+noinst_LTLIBRARIES = libfficonvenience.la
 
 noinst_PROGRAMS = ffitest
 
@@ -182,6 +183,16 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @M68K_TRUE@libffi_la_SOURCES = @M68K_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
 @POWERPC_TRUE@libffi_la_SOURCES = @POWERPC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
 @ARM_TRUE@libffi_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+@MIPS_GCC_TRUE@libfficonvenience_la_SOURCES = @MIPS_GCC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
+@MIPS_SGI_TRUE@libfficonvenience_la_SOURCES = @MIPS_SGI_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
+@X86_TRUE@libfficonvenience_la_SOURCES = @X86_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
+@X86_WIN32_TRUE@libfficonvenience_la_SOURCES = @X86_WIN32_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
+@SPARC_TRUE@libfficonvenience_la_SOURCES = @SPARC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
+@ALPHA_TRUE@libfficonvenience_la_SOURCES = @ALPHA_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
+@IA64_TRUE@libfficonvenience_la_SOURCES = @IA64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
+@M68K_TRUE@libfficonvenience_la_SOURCES = @M68K_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
+@POWERPC_TRUE@libfficonvenience_la_SOURCES = @POWERPC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
+@ARM_TRUE@libfficonvenience_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 
 AM_CFLAGS = -fexceptions
 
@@ -192,13 +203,48 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = fficonfig.h
 CONFIG_CLEAN_FILES = 
-LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES =  $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+libfficonvenience_la_LDFLAGS = 
+libfficonvenience_la_LIBADD = 
+@SPARC_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@SPARC_TRUE@src/sparc/ffi.lo src/sparc/v8.lo src/sparc/v9.lo
+@MIPS_SGI_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@MIPS_SGI_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@MIPS_SGI_TRUE@src/java_raw_api.lo src/mips/ffi.lo src/mips/o32.lo \
+@MIPS_SGI_TRUE@src/mips/n32.lo
+@IA64_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo
+@MIPS_GCC_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@MIPS_GCC_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@MIPS_GCC_TRUE@src/java_raw_api.lo src/mips/ffi.lo src/mips/o32.lo \
+@MIPS_GCC_TRUE@src/mips/n32.lo
+@M68K_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@M68K_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@M68K_TRUE@src/m68k/ffi.lo src/m68k/sysv.lo
+@ALPHA_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@ALPHA_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@ALPHA_TRUE@src/alpha/ffi.lo src/alpha/osf.lo
+@X86_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@X86_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@X86_TRUE@src/x86/ffi.lo src/x86/sysv.lo
+@ARM_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@ARM_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@ARM_TRUE@src/arm/sysv.lo src/arm/ffi.lo
+@POWERPC_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@POWERPC_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@POWERPC_TRUE@src/java_raw_api.lo src/powerpc/ffi.lo \
+@POWERPC_TRUE@src/powerpc/sysv.lo src/powerpc/ppc_closure.lo
+@X86_WIN32_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@X86_WIN32_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@X86_WIN32_TRUE@src/java_raw_api.lo src/x86/ffi.lo src/x86/win32.lo
 libffi_la_LIBADD = 
 @SPARC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
@@ -250,8 +296,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libffi_la_SOURCES) $(ffitest_SOURCES)
-OBJECTS = $(libffi_la_OBJECTS) $(ffitest_OBJECTS)
+SOURCES = $(libfficonvenience_la_SOURCES) $(libffi_la_SOURCES) $(ffitest_SOURCES)
+OBJECTS = $(libfficonvenience_la_OBJECTS) $(libffi_la_OBJECTS) $(ffitest_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -298,6 +344,15 @@ distclean-hdr:
 	-rm -f fficonfig.h
 
 maintainer-clean-hdr:
+
+mostlyclean-noinstLTLIBRARIES:
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+
+distclean-noinstLTLIBRARIES:
+
+maintainer-clean-noinstLTLIBRARIES:
 
 mostlyclean-toolexeclibLTLIBRARIES:
 
@@ -349,6 +404,9 @@ clean-libtool:
 distclean-libtool:
 
 maintainer-clean-libtool:
+
+libfficonvenience.la: $(libfficonvenience_la_OBJECTS) $(libfficonvenience_la_DEPENDENCIES)
+	$(LINK)  $(libfficonvenience_la_LDFLAGS) $(libfficonvenience_la_OBJECTS) $(libfficonvenience_la_LIBADD) $(LIBS)
 
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES)
 	$(LINK) -rpath $(toolexeclibdir) $(libffi_la_LDFLAGS) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)
@@ -559,29 +617,31 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLTLIBRARIES \
-		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-noinstPROGRAMS mostlyclean-tags \
-		mostlyclean-generic
+mostlyclean-am:  mostlyclean-hdr mostlyclean-noinstLTLIBRARIES \
+		mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-noinstPROGRAMS \
+		mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-toolexeclibLTLIBRARIES clean-compile \
+clean-am:  clean-hdr clean-noinstLTLIBRARIES \
+		clean-toolexeclibLTLIBRARIES clean-compile \
 		clean-libtool clean-noinstPROGRAMS clean-tags \
 		clean-generic mostlyclean-am
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-toolexeclibLTLIBRARIES \
-		distclean-compile distclean-libtool \
-		distclean-noinstPROGRAMS distclean-tags \
-		distclean-generic clean-am
+distclean-am:  distclean-hdr distclean-noinstLTLIBRARIES \
+		distclean-toolexeclibLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-noinstPROGRAMS \
+		distclean-tags distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
 maintainer-clean-am:  maintainer-clean-hdr \
+		maintainer-clean-noinstLTLIBRARIES \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
@@ -593,6 +653,8 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-noinstLTLIBRARIES distclean-noinstLTLIBRARIES \
+clean-noinstLTLIBRARIES maintainer-clean-noinstLTLIBRARIES \
 mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
 clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \

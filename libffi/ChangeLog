@@ -1,3 +1,8 @@
+2001-04-12  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am: Make a libtool convenience library.
+	* Makefile.in: Rebuilt.
+
 2001-03-29  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* configure.in: Use different syntax for subdirectory creation.
