@@ -349,7 +349,7 @@ _cpp_handle_directive (pfile, indented)
 	    }
 	}
     }
-  else if (dname.type != CPP_EOF && ! pfile->skipping)
+  else if (dname.type != CPP_EOF && ! buffer->was_skipping)
     {
       /* An unknown directive.  Don't complain about it in assembly
 	 source: we don't know where the comments are, and # may
