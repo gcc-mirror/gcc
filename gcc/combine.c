@@ -3654,7 +3654,11 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       {
 	enum machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
 	if (cmp_mode == VOIDmode)
-	  cmp_mode = GET_MODE (XEXP (x, 1));
+	  {
+	    cmp_mode = GET_MODE (XEXP (x, 1));
+	    if (cmp_mode == VOIDmode)
+	      cmp_mode = op0_mode;
+	  }
 	temp = simplify_relational_operation (code, cmp_mode,
 					      XEXP (x, 0), XEXP (x, 1));
       }

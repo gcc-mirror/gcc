@@ -1,3 +1,9 @@
+2001-01-24  DJ Delorie  <dj@redhat.com>
+
+	* combine.c (combine_simplify_rtx): If the modes are all VOIDmode,
+	check the original operand's mode also.
+	* simplify-rtx.c (simplify_ternary_operation): Ditto.
+
 2001-01-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-parse.in (cast_expr): Move compound literals from here ...
