@@ -145,25 +145,25 @@ package body Sem_Ch4 is
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  For the four varieties of concatenation.
+   --  For the four varieties of concatenation
 
    procedure Find_Equality_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  Ditto for equality operators.
+   --  Ditto for equality operators
 
    procedure Find_Boolean_Types
      (L, R  : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  Ditto for binary logical operations.
+   --  Ditto for binary logical operations
 
    procedure Find_Negation_Types
      (R     : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  Find consistent interpretation for operand of negation operator.
+   --  Find consistent interpretation for operand of negation operator
 
    procedure Find_Non_Universal_Interpretations
      (N     : Node_Id;
@@ -181,7 +181,7 @@ package body Sem_Ch4 is
      (R     : Node_Id;
       Op_Id : Entity_Id;
       N     : Node_Id);
-   --  Unary arithmetic types: plus, minus, abs.
+   --  Unary arithmetic types: plus, minus, abs
 
    procedure Check_Arithmetic_Pair
      (T1, T2 : Entity_Id;
@@ -211,6 +211,14 @@ package body Sem_Ch4 is
    --  set for every type compatible with the operator, even if the operator
    --  for the type is not directly visible. The routine uses this type to emit
    --  a more informative message.
+
+   procedure Process_Implicit_Dereference_Prefix
+     (E : Entity_Id; P : Node_Id);
+   --  Called when P is the prefix of an implicit dereference, denoting
+   --  an object E. If in semantics only mode (-gnatc), record that P
+   --  is a reference to E. Normally, such a reference is generated only
+   --  when the implicit dereference is expanded into an explicit one.
+   --  E may be empty, in which case this procedure does nothing.
 
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
@@ -1235,7 +1243,7 @@ package body Sem_Ch4 is
 
          End_Interp_List;
 
-         --  Error if no interpretation of the prefix has an access type.
+         --  Error if no interpretation of the prefix has an access type
 
          if Etype (N) = Any_Type then
             Error_Msg_N
@@ -1371,7 +1379,7 @@ package body Sem_Ch4 is
          Exp          : Node_Id;
          Array_Type   : Entity_Id;
          Index        : Node_Id;
-         Entry_Family : Entity_Id;
+         Pent         : Entity_Id := Empty;
 
       begin
          Exp := First (Exprs);
@@ -1382,38 +1390,32 @@ package body Sem_Ch4 is
          else
             Array_Type := Etype (P);
 
-            --  Prefix must be appropriate for an array type.
-            --  Dereference the prefix if it is an access type.
+            if Is_Entity_Name (P) then
+               Pent := Entity (P);
+            elsif Nkind (P) = N_Selected_Component
+              and then Is_Entity_Name (Selector_Name (P))
+            then
+               Pent := Entity (Selector_Name (P));
+            end if;
+
+            --  Prefix must be appropriate for an array type, taking into
+            --  account a possible implicit dereference.
 
             if Is_Access_Type (Array_Type) then
                Array_Type := Designated_Type (Array_Type);
                Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+               Process_Implicit_Dereference_Prefix (Pent, P);
             end if;
 
             if Is_Array_Type (Array_Type) then
                null;
 
-            elsif (Is_Entity_Name (P)
-                     and then
-                   Ekind (Entity (P)) = E_Entry_Family)
-               or else
-                 (Nkind (P) = N_Selected_Component
-                    and then
-                  Is_Entity_Name (Selector_Name (P))
-                    and then
-                  Ekind (Entity (Selector_Name (P))) = E_Entry_Family)
-            then
-               if Is_Entity_Name (P) then
-                  Entry_Family := Entity (P);
-               else
-                  Entry_Family := Entity (Selector_Name (P));
-               end if;
-
+            elsif Present (Pent) and then Ekind (Pent) = E_Entry_Family then
                Analyze (Exp);
                Set_Etype (N, Any_Type);
 
                if not Has_Compatible_Type
-                 (Exp, Entry_Index_Type (Entry_Family))
+                 (Exp, Entry_Index_Type (Pent))
                then
                   Error_Msg_N ("invalid index type in entry name", N);
 
@@ -1439,13 +1441,7 @@ package body Sem_Ch4 is
 
             else
                if Nkind (Parent (N)) = N_Requeue_Statement
-                 and then
-                   ((Is_Entity_Name (P)
-                        and then Ekind (Entity (P)) = E_Entry)
-                    or else
-                     (Nkind (P) = N_Selected_Component
-                       and then Is_Entity_Name (Selector_Name (P))
-                       and then Ekind (Entity (Selector_Name (P))) = E_Entry))
+                 and then Present (Pent) and then Ekind (Pent) = E_Entry
                then
                   Error_Msg_N
                     ("REQUEUE does not permit parameters", First (Exprs));
@@ -2471,6 +2467,7 @@ package body Sem_Ch4 is
       Comp        : Entity_Id;
       Entity_List : Entity_Id;
       Prefix_Type : Entity_Id;
+      Pent        : Entity_Id := Empty;
       Act_Decl    : Node_Id;
       In_Scope    : Boolean;
       Parent_N    : Node_Id;
@@ -2522,6 +2519,14 @@ package body Sem_Ch4 is
 
          else
             Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+            if Is_Entity_Name (Name) then
+               Pent := Entity (Name);
+            elsif Nkind (Name) = N_Selected_Component
+              and then Is_Entity_Name (Selector_Name (Name))
+            then
+               Pent := Entity (Selector_Name (Name));
+            end if;
+            Process_Implicit_Dereference_Prefix (Pent, Name);
          end if;
 
          Prefix_Type := Designated_Type (Prefix_Type);
@@ -3961,10 +3966,9 @@ package body Sem_Ch4 is
 
             Find_Non_Universal_Interpretations (N, R, Op_Id, T1);
 
+            --  Case of operator was not visible, Etype still set to Any_Type
+
             if Etype (N) = Any_Type then
-
-               --  Operator was not visible.
-
                Found := False;
             end if;
          end if;
@@ -4353,6 +4357,27 @@ package body Sem_Ch4 is
       end if;
    end Operator_Check;
 
+   -----------------------------------------
+   -- Process_Implicit_Dereference_Prefix --
+   -----------------------------------------
+
+   procedure Process_Implicit_Dereference_Prefix
+     (E : Entity_Id; P : Entity_Id)
+   is
+      Ref : Node_Id;
+   begin
+      if Operating_Mode = Check_Semantics and then Present (E) then
+         --  We create a dummy reference to E to ensure that the reference
+         --  is not considered as part of an assignment (an implicit
+         --  dereference can never assign to its prefix). The Comes_From_Source
+         --  attribute needs to be propagated for accurate warnings.
+
+         Ref := New_Reference_To (E, Sloc (P));
+         Set_Comes_From_Source (Ref, Comes_From_Source (P));
+         Generate_Reference (E, Ref);
+      end if;
+   end Process_Implicit_Dereference_Prefix;
+
    --------------------------------
    -- Remove_Abstract_Operations --
    --------------------------------
@@ -4540,7 +4565,7 @@ package body Sem_Ch4 is
 
             if No (It.Nam) then
 
-               --  Removal of abstract operation left no viable candidate.
+               --  Removal of abstract operation left no viable candidate
 
                Set_Etype (N, Any_Type);
                Error_Msg_Sloc := Sloc (Abstract_Op);
@@ -4886,14 +4911,14 @@ package body Sem_Ch4 is
         (Call_Node       : Node_Id;
          Node_To_Replace : Node_Id) return Boolean
       is
-         Dummy          : Node_Id;
-         Elmt           : Elmt_Id;
-         Prim_Op        : Entity_Id;
-         Prim_Op_Ref    : Node_Id;
-         Success        : Boolean;
+         Dummy       : Node_Id;
+         Elmt        : Elmt_Id;
+         Prim_Op     : Entity_Id;
+         Prim_Op_Ref : Node_Id;
+         Success     : Boolean;
 
       begin
-         --  Look for the subprogram in the list of primitive operations.
+         --  Look for the subprogram in the list of primitive operations
 
          Elmt := First_Elmt (Primitive_Operations (Obj_Type));
          while Present (Elmt) loop
