@@ -2340,10 +2340,17 @@ combine_stack_adjustments_for_block (bb)
 	     turn it into a direct store.  Obviously we can't do this if
 	     there were any intervening uses of the stack pointer.  */
 	  if (memlist == NULL
-	      && (last_sp_adjust
-		  == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest)))
 	      && GET_CODE (dest) == MEM
-	      && GET_CODE (XEXP (dest, 0)) == PRE_DEC
+	      && ((GET_CODE (XEXP (dest, 0)) == PRE_DEC
+		   && (last_sp_adjust
+		       == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest))))
+		  || (GET_CODE (XEXP (dest, 0)) == PRE_MODIFY
+		      && GET_CODE (XEXP (XEXP (dest, 0), 1)) == PLUS
+		      && XEXP (XEXP (XEXP (dest, 0), 1), 0) == stack_pointer_rtx
+		      && (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1))
+		          == CONST_INT)
+		      && (INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1))
+		          == -last_sp_adjust)))
 	      && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx
 	      && ! reg_mentioned_p (stack_pointer_rtx, src)
 	      && memory_address_p (GET_MODE (dest), stack_pointer_rtx)
