@@ -4592,59 +4592,59 @@ do									\
     else								\
       {									\
 	add_optab->handlers[(int) SFmode].libfunc =			\
-	  gen_rtx (SYMBOL_REF, Pmode, "__mips16_addsf3");		\
+	  init_one_libfunc ("__mips16_addsf3");				\
 	sub_optab->handlers[(int) SFmode].libfunc =			\
-	  gen_rtx (SYMBOL_REF, Pmode, "__mips16_subsf3");		\
+	  init_one_libfunc ("__mips16_subsf3");				\
 	smul_optab->handlers[(int) SFmode].libfunc =			\
-	  gen_rtx (SYMBOL_REF, Pmode, "__mips16_mulsf3");		\
+	  init_one_libfunc ("__mips16_mulsf3");				\
 	flodiv_optab->handlers[(int) SFmode].libfunc =			\
-	  gen_rtx (SYMBOL_REF, Pmode, "__mips16_divsf3");		\
+	  init_one_libfunc ("__mips16_divsf3");				\
 									\
-	eqsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__mips16_eqsf2");	\
-	nesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__mips16_nesf2");	\
-	gtsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__mips16_gtsf2");	\
-	gesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__mips16_gesf2");	\
-	ltsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__mips16_ltsf2");	\
-	lesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__mips16_lesf2");	\
+	eqsf2_libfunc = init_one_libfunc ("__mips16_eqsf2");		\
+	nesf2_libfunc = init_one_libfunc ("__mips16_nesf2");		\
+	gtsf2_libfunc = init_one_libfunc ("__mips16_gtsf2");		\
+	gesf2_libfunc = init_one_libfunc ("__mips16_gesf2");		\
+	ltsf2_libfunc = init_one_libfunc ("__mips16_ltsf2");		\
+	lesf2_libfunc = init_one_libfunc ("__mips16_lesf2");		\
 									\
 	floatsisf_libfunc =						\
-	  gen_rtx (SYMBOL_REF, Pmode, "__mips16_floatsisf");		\
+	  init_one_libfunc ("__mips16_floatsisf");			\
 	fixsfsi_libfunc =						\
-	  gen_rtx (SYMBOL_REF, Pmode, "__mips16_fixsfsi");		\
+	  init_one_libfunc ("__mips16_fixsfsi");			\
 									\
 	if (TARGET_DOUBLE_FLOAT)					\
 	  {								\
 	    add_optab->handlers[(int) DFmode].libfunc =			\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_adddf3");		\
+	      init_one_libfunc ("__mips16_adddf3");			\
 	    sub_optab->handlers[(int) DFmode].libfunc =			\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_subdf3");		\
+	      init_one_libfunc ("__mips16_subdf3");			\
 	    smul_optab->handlers[(int) DFmode].libfunc =		\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_muldf3");		\
+	      init_one_libfunc ("__mips16_muldf3");			\
 	    flodiv_optab->handlers[(int) DFmode].libfunc =		\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_divdf3");		\
+	      init_one_libfunc ("__mips16_divdf3");			\
 									\
 	    extendsfdf2_libfunc =					\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_extendsfdf2");	\
+	      init_one_libfunc ("__mips16_extendsfdf2");		\
 	    truncdfsf2_libfunc =					\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_truncdfsf2");	\
+	      init_one_libfunc ("__mips16_truncdfsf2");			\
 									\
 	    eqdf2_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_eqdf2");		\
+	      init_one_libfunc ("__mips16_eqdf2");			\
 	    nedf2_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_nedf2");		\
+	      init_one_libfunc ("__mips16_nedf2");			\
 	    gtdf2_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_gtdf2");		\
+	      init_one_libfunc ("__mips16_gtdf2");			\
 	    gedf2_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_gedf2");		\
+	      init_one_libfunc ("__mips16_gedf2");			\
 	    ltdf2_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_ltdf2");		\
+	      init_one_libfunc ("__mips16_ltdf2");			\
 	    ledf2_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_ledf2");		\
+	      init_one_libfunc ("__mips16_ledf2");			\
 									\
 	    floatsidf_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_floatsidf");	\
+	      init_one_libfunc ("__mips16_floatsidf");			\
 	    fixdfsi_libfunc =						\
-	      gen_rtx (SYMBOL_REF, Pmode, "__mips16_fixdfsi");		\
+	      init_one_libfunc ("__mips16_fixdfsi");			\
 	  }								\
       }									\
   }									\
