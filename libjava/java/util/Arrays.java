@@ -1,5 +1,6 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -968,6 +969,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -1028,7 +1031,7 @@ public class Arrays
     if (count <= 7)
       {
         for (int i = from + 1; i < from + count; i++)
-          for (int j = i; j > 0 && array[j - 1] > array[j]; j--)
+          for (int j = i; j > from && array[j - 1] > array[j]; j--)
             swap(j, j - 1, array);
         return;
       }
@@ -1130,6 +1133,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -1190,7 +1195,7 @@ public class Arrays
     if (count <= 7)
       {
         for (int i = from + 1; i < from + count; i++)
-          for (int j = i; j > 0 && array[j - 1] > array[j]; j--)
+          for (int j = i; j > from && array[j - 1] > array[j]; j--)
             swap(j, j - 1, array);
         return;
       }
@@ -1292,6 +1297,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -1352,8 +1359,8 @@ public class Arrays
     if (count <= 7)
       {
         for (int i = from + 1; i < from + count; i++)
-          for (int j = i; j > 0 && array[j - 1] > array[j]; j--)
-            swap(j, j - 1, array);
+	  for (int j = i; j > from && array[j - 1] > array[j]; j--)
+	    swap(j, j - 1, array);
         return;
       }
 
@@ -1454,6 +1461,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -1526,7 +1535,7 @@ public class Arrays
     if (count <= 7)
       {
         for (int i = from + 1; i < from + count; i++)
-          for (int j = i; j > 0 && array[j - 1] > array[j]; j--)
+          for (int j = i; j > from && array[j - 1] > array[j]; j--)
             swap(j, j - 1, array);
         return;
       }
@@ -1628,6 +1637,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -1700,7 +1711,7 @@ public class Arrays
     if (count <= 7)
       {
         for (int i = from + 1; i < from + count; i++)
-          for (int j = i; j > 0 && array[j - 1] > array[j]; j--)
+          for (int j = i; j > from && array[j - 1] > array[j]; j--)
             swap(j, j - 1, array);
         return;
       }
@@ -1802,6 +1813,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -1865,7 +1878,7 @@ public class Arrays
       {
         for (int i = from + 1; i < from + count; i++)
           for (int j = i;
-               j > 0 && Float.compare(array[j - 1], array[j]) > 0;
+               j > from && Float.compare(array[j - 1], array[j]) > 0;
                j--)
             {
               swap(j, j - 1, array);
@@ -1970,6 +1983,8 @@ public class Arrays
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
     qsort(a, fromIndex, toIndex - fromIndex);
   }
 
@@ -2033,7 +2048,7 @@ public class Arrays
       {
         for (int i = from + 1; i < from + count; i++)
           for (int j = i;
-               j > 0 && Double.compare(array[j - 1], array[j]) > 0;
+               j > from && Double.compare(array[j - 1], array[j]) > 0;
                j--)
             {
               swap(j, j - 1, array);
@@ -2203,6 +2218,8 @@ public class Arrays
     if (fromIndex > toIndex)
       throw new IllegalArgumentException("fromIndex " + fromIndex
                                          + " > toIndex " + toIndex);
+    if (fromIndex < 0)
+      throw new ArrayIndexOutOfBoundsException();
 
     // In general, the code attempts to be simple rather than fast, the
     // idea being that a good optimising JIT will be able to optimise it

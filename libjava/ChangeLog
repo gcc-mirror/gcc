@@ -1,3 +1,22 @@
+2004-08-29  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/Arrays.java
+	(sort(byte[], int, int)): Check fromIndex < 0.
+	(sort(char[], int, int)): Likewise.
+	(sort(short[], int, int)): Likewise.
+	(sort(int[], int, int)): Likewise.
+	(sort(long[], int, int)): Likewise.
+	(sort(float[], int, int)): Likewise.
+	(sort(double[], int, int)): Likewise.
+	(sort(Object[], int, int, Comparator)): Likewise.
+	(qsort(byte[], int, int)): Honor lower bound from in insertion sort.
+	(qsort(char[], int, int)): Likewise.
+	(qsort(short[], int, int)): Likewise.
+	(qsort(int[], int, int)): Likewise.
+	(qsort(long[], int, int)): Likewise.
+	(qsort(float[], int, int)): Likewise.
+	(qsort(double[], int, int)): Likewise.
+
 2004-08-29  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* java/util/AbstractCollection.java, java/util/AbstractList.java,
