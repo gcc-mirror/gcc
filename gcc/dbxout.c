@@ -559,7 +559,7 @@ dbxout_source_line (file, filename, lineno)
 #ifdef ASM_OUTPUT_SOURCE_LINE
   ASM_OUTPUT_SOURCE_LINE (file, lineno);
 #else
-  fprintf (file, "\t%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
+  fprintf (file, "%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
 #endif
 }
 
