@@ -10,6 +10,10 @@
 @c When this manual is copyrighted.
 @set copyrights-gcj 2001
 
+@c Versions
+@set version-gcc 3.1
+@set which-gcj GCC-@value{version-gcc}
+
 @ifinfo
 @format
 @dircategory Programming
@@ -64,7 +68,7 @@ Free Software Foundation instead of in the original English.
 @vskip 0pt plus 1filll
 Copyright @copyright{} @value{copyrights-gcj} Free Software Foundation, Inc.
 @sp 2
-For the @value{which-g77} Version*
+For the @value{which-gcj} Version*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
