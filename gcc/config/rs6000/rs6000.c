@@ -650,7 +650,7 @@ static bool rs6000_elf_in_small_data_p (tree);
 #endif
 #if TARGET_XCOFF
 static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
-static void rs6000_xcoff_asm_named_section (const char *, unsigned int);
+static void rs6000_xcoff_asm_named_section (const char *, unsigned int, tree);
 static void rs6000_xcoff_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void rs6000_xcoff_unique_section (tree, int);
 static void rs6000_xcoff_select_rtx_section (enum machine_mode, rtx,

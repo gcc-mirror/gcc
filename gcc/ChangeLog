@@ -1,3 +1,8 @@
+2004-09-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section): Update
+	prototype.
+
 2004-09-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/11572
