@@ -564,8 +564,9 @@ public final class StringBuffer implements Serializable, CharSequence
       throw new StringIndexOutOfBoundsException();
     if (len == 0)
       return "";
-    // Share the char[] unless 3/4 empty.
-    shared = (len << 2) >= value.length;
+    // Share unless substring is smaller than 1/4 of the buffer.
+    if ((len << 2) >= value.length)
+      shared = true;
     // Package constructor avoids an array copy.
     return new String(value, beginIndex, len, shared);
   }
