@@ -1,3 +1,8 @@
+2001-06-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* contrib.texi: Updated entries for Mark Mitchell, Joseph S. Myers,
+	Gerald Pfeifer, Bernd Schmidt, and Dean Wakerley.
+
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* install.texi: Remove libgcc1 documentation.
