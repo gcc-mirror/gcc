@@ -10807,14 +10807,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   the definition of `S<int>::f'.  */
 		if (CLASSTYPE_TEMPLATE_INFO (t)
 		    && (CLASSTYPE_TEMPLATE_INSTANTIATION (t)
-			|| uses_template_parms (CLASSTYPE_TI_ARGS (t))))
+			|| uses_template_parms (CLASSTYPE_TI_ARGS (t)))
+	            && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
 		  template_count += 1;
 
 		t = TYPE_MAIN_DECL (t);
-		if (DECL_LANG_SPECIFIC (t))
-		  t = DECL_CONTEXT (t);
-		else
-		  t = NULL_TREE;
+		t = DECL_CONTEXT (t);
 	      }
 
 	    if (sname == NULL_TREE)

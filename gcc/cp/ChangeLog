@@ -1,5 +1,11 @@
 2001-01-23  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (grokdeclarator): Don't presume DECL_LANG_SPECIFIC
+	indicates anything special about template depth. Make sure we
+	only count the user visible template classes.
+
+2001-01-23  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (build_conv): Typo in comment.
 	(add_builtin_candidate): Add more explanation.
 	Remove extra test for ENUMERAL_TYPE in {PRE,POST}INCREMENT_EXPR.
