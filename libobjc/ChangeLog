@@ -1,3 +1,8 @@
+2002-06-09  Andreas Jaeger  <aj@suse.de>
+
+	* encoding.c (objc_layout_structure_next_member): Remove unused
+	variable.
+
 2002-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (SHELL): Set to @SHELL@.
@@ -181,14 +186,14 @@ Wed Jan  3 00:49:10 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	function. This can alleviate problems __builtin_apply() and
 	friends have on various platforms. (Solution suggested by Helge
 	Hess.)
-	
+
 	* objc/objc-api.h: Define __objc_msg_forward.
 
 	* sendmsg.c: Define gen_rtx_REG.
 
 2000-12-06      Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
-	* thr-rtems.c: New file. Stub to compile. 
+	* thr-rtems.c: New file. Stub to compile.
 
 2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -230,7 +235,7 @@ Sun Aug  6 22:51:16 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 Fri Jul 28 08:58:02 2000  Nicola Pero  <nicola@brainstorm.co.uk>
 
-	* configure.in: Added libtool support; build shared libraries 
+	* configure.in: Added libtool support; build shared libraries
 	if --enable-shared was passed on command line.
 	* Makefile.in: Modified most compilation commands to use libtool.
 	* aclocal.m4: New symbolic link to the ../libtool.m4, from the
@@ -291,7 +296,7 @@ Tue Sep 21 07:47:10 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (gc.o, gc_gc.o): Do not pass -fgnu-runtime to
 	the compiler when building C code.
-	
+
 Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
 
 	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
@@ -370,7 +375,7 @@ Sat Oct 17 05:21:31 1998  Ovidiu Predescu  <ovidiu@slip.net>
 Mon Oct 11 21:25:27 1998  Ovidiu Predescu  <ovidiu@slip.net>
 
 	* encoding.c: Redefine get_inner_array_type to get the first entry
- 	in the structure.
+	in the structure.
 
 Thu Oct  8 12:21:14 1998  Richard Frith-Macdonald <richard@brainstorm.co.uk>
 
@@ -435,4 +440,3 @@ Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 1998-09-21  Ben Elliston  <bje@cygnus.com>
 
 	* New directory.  Moved files from ../gcc/objc.
-
