@@ -1,3 +1,7 @@
+2002-11-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/c90-idem-qual-2.c, gcc.dg/c99-idem-qual-2.c: New tests.
+
 2002-11-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/compat.exp (compat-execute): Fix logic error in last
