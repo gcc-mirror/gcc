@@ -47,6 +47,7 @@ details.  */
 #endif // DISABLE_GETENV_PROPERTIES
 
 #include <java/lang/Class.h>
+#include <java/lang/ClassLoader.h>
 #include <java/lang/Runtime.h>
 #include <java/lang/String.h>
 #include <java/lang/Thread.h>
@@ -906,6 +907,9 @@ _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
 
   if (is_jar)
     {
+      // name specifies a jar file.  We must now extract the
+      // Main-Class attribute from the jar's manifest file.  This is
+      // done by gnu.gcj.runtime.FirstThread.main.
       _Jv_Jar_Class_Path = strdup (name);
       arg_vec = JvConvertArgv (1, &_Jv_Jar_Class_Path);
 
@@ -915,7 +919,14 @@ _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
       main_thread->start();
       _Jv_ThreadWait ();
       
+      // FirstThread.main extracts the main class name and stores it
+      // here.
       class_name = gnu::gcj::runtime::FirstThread::jarMainClassName;
+
+      // We need a new ClassLoader because the classpath must be the
+      // jar file only.  The easiest way to do this is to lose our
+      // reference to the previous classloader.
+      java::lang::ClassLoader::system = NULL;
     }
   else
     class_name = JvNewStringLatin1 (name);

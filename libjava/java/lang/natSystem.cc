@@ -348,34 +348,31 @@ java::lang::System::init_properties (void)
 	}
     }
 
-  // FIXME: find libgcj.zip and append its path?
-  char *classpath = ::getenv("CLASSPATH");
-  jstring cp = properties->getProperty (JvNewStringLatin1("java.class.path"));
-  java::lang::StringBuffer *sb = new java::lang::StringBuffer ();
-
   if (_Jv_Jar_Class_Path)
-    {
-      sb->append (JvNewStringLatin1 (_Jv_Jar_Class_Path));
-#ifdef WIN32
-      sb->append ((jchar) ';');
-#else
-      sb->append ((jchar) ':');
-#endif;
-    }
-  if (classpath)
-    {
-      sb->append (JvNewStringLatin1 (classpath));
-#ifdef WIN32
-      sb->append ((jchar) ';');
-#else
-      sb->append ((jchar) ':');
-#endif;
-    }
-  if (cp != NULL)
-    sb->append (cp);
+    properties->put(JvNewStringLatin1 ("java.class.path"),
+		    JvNewStringLatin1 (_Jv_Jar_Class_Path));
   else
-    sb->append ((jchar) '.');
-
-  properties->put(JvNewStringLatin1 ("java.class.path"),
-		  sb->toString ());
+    {
+      // FIXME: find libgcj.zip and append its path?
+      char *classpath = ::getenv("CLASSPATH");
+      jstring cp = properties->getProperty (JvNewStringLatin1("java.class.path"));
+      java::lang::StringBuffer *sb = new java::lang::StringBuffer ();
+      
+      if (classpath)
+	{
+	  sb->append (JvNewStringLatin1 (classpath));
+#ifdef WIN32
+	  sb->append ((jchar) ';');
+#else
+	  sb->append ((jchar) ':');
+#endif;
+	}
+      if (cp != NULL)
+	sb->append (cp);
+      else
+	sb->append ((jchar) '.');
+      
+      properties->put(JvNewStringLatin1 ("java.class.path"),
+		      sb->toString ());
+    }
 }
