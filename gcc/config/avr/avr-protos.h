@@ -141,6 +141,7 @@ extern int    compare_eq_p           PARAMS ((rtx insn));
 extern void   out_shift_with_cnt     PARAMS ((const char *template, rtx insn,
 					      rtx operands[], int *len,
 					      int t_len));
+extern int    avr_io_address_p	     PARAMS ((rtx x, int size));
 extern int    const_int_pow2_p       PARAMS ((rtx x));
 extern int    avr_peep2_scratch_safe PARAMS ((rtx reg_rtx));
 #endif /* RTX_CODE */

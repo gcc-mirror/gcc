@@ -1,3 +1,14 @@
+2002-05-10  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (print_operand): Check that addr is a SYMBOL_REF
+	before using SYMBOL_REF_FLAG (addr).
+
+	* config/avr/avr-protos.h (avr_io_address_p): Declare.
+	* config/avr/avr.c (io_address_p): Rename to avr_io_address_p.
+	Make non-static.  Update all callers.
+	* config/avr/avr.md (*cbi, *sbi, *sbix_branch, *sbix_branch_bit7):
+	New insns to clear/set/test a single bit in I/O address space.
+
 2002-05-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (ENABLE_RTL_FLAG_CHECKING): Also check for gcc >= 2.7.
