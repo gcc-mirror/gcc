@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,1997 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,97,1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -6236,7 +6236,7 @@ debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
 
 When the user specifies @samp{-ggdb}, GNU CC normally also uses the
 value of this macro to select the debugging output format, but with two
-exceptions: If @code{DWARF2_DEBUGGING_INFO} is defined and
+exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined and
 @code{LINKER_DOES_NOT_WORK_WITH_DWARF2} is not defined, GNU CC uses the
 value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
 defined, GNU CC uses @code{DBX_DEBUG}.
@@ -6574,8 +6574,8 @@ as appropriate from @code{FUNCTION_PROLOGUE} if you don't.
 @item LINKER_DOES_NOT_WORK_WITH_DWARF2
 Define this macro if the linker does not work with Dwarf version 2.
 Normally, if the user specifies only @samp{-ggdb} GNU CC will use Dwarf
-version 2 if available; this macro causes GNU CC to use the format
-specified by @code{PREFERRED_DEBUGGING_TYPE} instead.
+version 2 if available; this macro disables this.  See the description
+of the @code{PREFERRED_DEBUGGING_TYPE} macro for more details.
 
 @findex PUT_SDB_@dots{}
 @item PUT_SDB_@dots{}
