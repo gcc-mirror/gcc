@@ -129,7 +129,7 @@ parse_fn_proto (char *start, char *end, struct fn_decl *fn)
 }
 
 int
-main (int argc, char **argv)
+main (int argc ATTRIBUTE_UNUSED, char **argv)
 {
   FILE *inf = stdin;
   FILE *outf = stdout;
