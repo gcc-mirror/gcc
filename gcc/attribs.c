@@ -283,7 +283,7 @@ decl_attributes (node, attributes, flags)
       tree *anode = node;
       const struct attribute_spec *spec = NULL;
       bool no_add_attrs = 0;
-      int i;
+      size_t i;
 
       for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
 	{
