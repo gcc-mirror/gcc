@@ -2736,6 +2736,8 @@ process_command (argc, argv)
 	  init_spec ();
 	  for (sl = specs; sl; sl = sl->next)
 	    printf ("*%s:\n%s\n\n", sl->name, *(sl->ptr_spec));
+          if (link_command_spec)
+            printf ("*link_command:\n%s\n\n", link_command_spec);
 	  exit (0);
 	}
       else if (! strcmp (argv[i], "-dumpversion"))
