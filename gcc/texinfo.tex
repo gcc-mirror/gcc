@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.243 1998/06/23 21:36:39 karl Exp karl $
+% $Id: texinfo.tex,v 2.244 1998/06/24 21:46:43 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.243 $
+\deftexinfoversion$Revision: 2.244 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1501,8 +1501,7 @@ where each line of input produces a line of output.}
 \def\ifmonospace{\ifdim\fontdimen3\font=0pt }
 
 % Typeset a dimension, e.g., `in' or `pt'.  The only reason for the
-% argument is to make the input look right: @dmn{pt} instead of
-% @dmn{}pt.
+% argument is to make the input look right: @dmn{pt} instead of @dmn{}pt.
 %
 \def\dmn#1{\thinspace #1}
 
@@ -1513,10 +1512,13 @@ where each line of input produces a line of output.}
 % Polish suppressed-l.  --karl, 22sep96.
 %\def\l#1{{\li #1}\null}
 
+% Explicit font changes: @r, @sc, undocumented @ii.
 \def\r#1{{\rm #1}}              % roman font
-% Use of \lowercase was suggested.
 \def\sc#1{{\smallcaps#1}}       % smallcaps font
 \def\ii#1{{\it #1}}             % italic font
+
+% @acronym downcases the argument and prints in smallcaps.
+\def\acronym#1{{\smallcaps \lowercase{#1}}}
 
 % @pounds{} is a sterling sign.
 \def\pounds{{\it\$}}
