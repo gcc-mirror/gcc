@@ -2447,11 +2447,13 @@ changequote([,])dnl
 
   powerpc*-*-*)
     case $target in
-      *-*-aix) conftest_s='	.csect .text[PR]';;
-      *)       conftest_s='	.text';;
+      *-*-aix*) conftest_s='	.csect .text[[PR]]
+	mfcr 3,128';;
+      *-*-darwin*) conftest_s='	.text
+	mfcr r3,128';;
+      *)       conftest_s='	.text
+	mfcr 3,128';;
     esac
-    conftest_s="$conftest_s
-	mfcr 3,128"
 
     gcc_GAS_CHECK_FEATURE([mfcr field support],
       gcc_cv_as_powerpc_mfcrf, [2,14,0],,

@@ -10909,11 +10909,13 @@ fi
 
   powerpc*-*-*)
     case $target in
-      *-*-aix) conftest_s='	.csect .textPR';;
-      *)       conftest_s='	.text';;
+      *-*-aix*) conftest_s='	.csect .text[PR]
+	mfcr 3,128';;
+      *-*-darwin*) conftest_s='	.text
+	mfcr r3,128';;
+      *)       conftest_s='	.text
+	mfcr 3,128';;
     esac
-    conftest_s="$conftest_s
-	mfcr 3,128"
 
     echo "$as_me:$LINENO: checking assembler for mfcr field support" >&5
 echo $ECHO_N "checking assembler for mfcr field support... $ECHO_C" >&6
