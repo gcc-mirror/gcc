@@ -1,5 +1,11 @@
 2001-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* varasm.c (make_decl_rtl): Don't append var_labelno discriminator
+	to variable names where DECL_NAME is different from
+	DECL_ASSEMBLER_NAME.
+
+2001-03-26  Jakub Jelinek  <jakub@redhat.com>
+
 	* reg-stack.c (stack_result): Re-add 2001-03-14 changes which were
 	lost during the 2001-03-14 lazy DECL_RTL commit.
 

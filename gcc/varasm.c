@@ -716,7 +716,8 @@ make_decl_rtl (decl, asmspec)
      Concatenate a distinguishing number.  */
   if (!top_level && !TREE_PUBLIC (decl)
       && ! (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
-      && asmspec == 0)
+      && asmspec == 0
+      && name == IDENTIFIER_POINTER (DECL_NAME (decl)))
     {
       char *label;
       ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
