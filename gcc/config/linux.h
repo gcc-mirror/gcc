@@ -83,8 +83,14 @@ Boston, MA 02111-1307, USA.  */
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
 /* This is for -profile to use -lc_p instead of -lc. */
-#undef  CC1_SPEC
+#ifndef CC1_SPEC
 #define CC1_SPEC "%{profile:-p}"
+#endif
+
+#ifndef USE_GNULIBC_1
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+#endif
 
 #undef	LIB_SPEC
 /* We no longer link with libc_p.a or libg.a by default. If you

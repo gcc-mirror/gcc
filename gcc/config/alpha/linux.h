@@ -48,6 +48,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-nocpp"
 
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+
 /* Can't do stabs */
 #undef SDB_DEBUGGING_INFO
 
