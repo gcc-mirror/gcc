@@ -987,6 +987,9 @@
   [(set_attr "length" "1")])
 
 ;; Sneaky ways of using index modes
+;; We don't use unscaled modes since they can't be used unless we can tell
+;; which of the registers is the base and which is the index, due to PA's
+;; idea of segment selection using the top bits of the base register.
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -998,28 +1001,18 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
-   (set (match_dup 1)
-	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-			  (const_int 4))
-		 (match_dup 1)))]
-  ""
-  "ldwx,sm %2(0,%1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
-   (set (match_dup 1)
-	(plus:SI (match_dup 1)
-		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
-  "ldwx,m %2(0,%1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+; this will never match
+;(define_insn ""
+;  [(set (match_operand:SI 0 "register_operand" "=r")
+;	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
+;   (set (match_dup 1)
+;	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+;			  (const_int 4))
+;		 (match_dup 1)))]
+;  ""
+;  "ldwx,sm %2(0,%1),%0"
+;  [(set_attr "type" "move")
+;   (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -1031,37 +1024,18 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (match_operand:SI 1 "register_operand" "+r")))
-   (set (match_dup 1)
-	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-			  (const_int 2))
-		 (match_dup 1)))]
-  ""
-  "ldhx,sm %2(0,%1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (match_operand:SI 1 "register_operand" "+r")))
-   (set (match_dup 1)
-	(plus:SI (match_dup 1)
-		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
-  "ldhx,m %2(0,%1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(mem:QI (match_operand:SI 1 "register_operand" "+r")))
-   (set (match_dup 1)
-	(plus:SI (match_dup 1)
-		 (match_operand:SI 2 "register_operand" "r")))]
-  ""
-  "ldbx,m %2(0,%1),%0")
+; this will never match
+;(define_insn ""
+;  [(set (match_operand:HI 0 "register_operand" "=r")
+;	(mem:HI (match_operand:SI 1 "register_operand" "+r")))
+;   (set (match_dup 1)
+;	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+;			  (const_int 2))
+;		 (match_dup 1)))]
+;  ""
+;  "ldhx,sm %2(0,%1),%0"
+;  [(set_attr "type" "move")
+;   (set_attr "length" "1")])
 
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice
@@ -1580,8 +1554,8 @@
 ;; The mulsi3 insns set up registers for the millicode call.
 
 (define_expand "mulsi3"
-  [(set (reg:SI 26) (match_operand:SI 1 "register_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "arith32_operand" ""))
+  [(set (reg:SI 26) (match_operand:SI 1 "srcsi_operand" ""))
+   (set (reg:SI 25) (match_operand:SI 2 "srcsi_operand" ""))
    (parallel [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
 	      (clobber (match_scratch:SI 3 ""))
 	      (clobber (reg:SI 26))
@@ -1591,9 +1565,11 @@
   ""
   "
 {
-  if (TARGET_SNAKE && !(CONSTANT_P (operands[1]) || CONSTANT_P (operands[2])))
+  if (TARGET_SNAKE)
     {
       rtx scratch = gen_reg_rtx (DImode);
+      operands[1] = force_reg (SImode, operands[1]);
+      operands[2] = force_reg (SImode, operands[2]);
       emit_insn (gen_umulsidi3 (scratch, operands[1], operands[2]));
       emit_insn (gen_rtx (SET, VOIDmode,
 			  operands[0],
