@@ -8,9 +8,7 @@ Wed Aug 27 01:24:25 1997  H.J. Lu   (hjl@gnu.ai.mit.edu)
 	* config/linux.h (DEFAULT_VTABLE_THUNKS): New. Defined as 1 if
 	USE_GNULIBC_1 is not defined.
 
-	* config/alpha/linux.h (DEFAULT_VTABLE_THUNKS): New. Defined
-	as 1.
-	* config/rs6000/linux.h (DEFAULT_VTABLE_THUNKS): Ditto.
+	* config/rs6000/linux.h (DEFAULT_VTABLE_THUNKS): New.  Defined as 1.
 
 	* config/sparc/linux.h (DEFAULT_VTABLE_THUNKS): New. Defined
 	as 1 if USE_GNULIBC_1 is not defined.
