@@ -2119,6 +2119,8 @@ extern int rtx_to_tree_code (enum rtx_code);
 extern int delete_trivially_dead_insns (rtx, int);
 extern int cse_main (rtx, int, int, FILE *);
 extern void cse_condition_code_reg (void);
+extern int exp_equiv_p (rtx, rtx, int, bool);
+extern unsigned hash_rtx (rtx x, enum machine_mode, int *, int *, bool);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
@@ -2265,7 +2267,9 @@ extern bool can_copy_p (enum machine_mode);
 extern rtx fis_get_condition (rtx);
 extern int gcse_main (rtx, FILE *);
 extern int bypass_jumps (FILE *);
-extern void gcse_after_reload_main (rtx, FILE *);
+
+/* In postreload-gcse.c */
+extern void gcse_after_reload_main (rtx);
 
 /* In global.c */
 extern void mark_elimination (int, int);

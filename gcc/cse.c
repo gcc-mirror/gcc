@@ -489,6 +489,12 @@ struct table_elt
   ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X)))	\
   : canon_hash (X, M)) & HASH_MASK)
 
+/* Like HASH, but without side-effects.  */
+#define SAFE_HASH(X, M)	\
+ ((REG_P (X) && REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+  ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X)))	\
+  : safe_hash (X, M)) & HASH_MASK)
+
 /* Determine whether register number N is considered a fixed register for the
    purpose of approximating register costs.
    It is desirable to replace other regs with fixed regs, to reduce need for
@@ -625,10 +631,11 @@ static void rehash_using_reg (rtx);
 static void invalidate_memory (void);
 static void invalidate_for_call (void);
 static rtx use_related_value (rtx, struct table_elt *);
-static unsigned canon_hash (rtx, enum machine_mode);
-static unsigned canon_hash_string (const char *);
-static unsigned safe_hash (rtx, enum machine_mode);
-static int exp_equiv_p (rtx, rtx, int, int);
+
+static inline unsigned canon_hash (rtx, enum machine_mode);
+static inline unsigned safe_hash (rtx, enum machine_mode);
+static unsigned hash_rtx_string (const char *);
+
 static rtx canon_reg (rtx, rtx);
 static void find_best_addr (rtx, rtx *, enum machine_mode);
 static enum rtx_code find_comparison_args (enum rtx_code, rtx *, rtx *,
@@ -1324,7 +1331,7 @@ lookup (rtx x, unsigned int hash, enum machine_mode mode)
 
   for (p = table[hash]; p; p = p->next_same_hash)
     if (mode == p->mode && ((x == p->exp && REG_P (x))
-			    || exp_equiv_p (x, p->exp, !REG_P (x), 0)))
+			    || exp_equiv_p (x, p->exp, !REG_P (x), false)))
       return p;
 
   return 0;
@@ -1352,7 +1359,8 @@ lookup_for_remove (rtx x, unsigned int hash, enum machine_mode mode)
   else
     {
       for (p = table[hash]; p; p = p->next_same_hash)
-	if (mode == p->mode && (x == p->exp || exp_equiv_p (x, p->exp, 0, 0)))
+	if (mode == p->mode
+	    && (x == p->exp || exp_equiv_p (x, p->exp, 0, false)))
 	  return p;
     }
 
@@ -1366,7 +1374,7 @@ static rtx
 lookup_as_function (rtx x, enum rtx_code code)
 {
   struct table_elt *p
-    = lookup (x, safe_hash (x, VOIDmode) & HASH_MASK, GET_MODE (x));
+    = lookup (x, SAFE_HASH (x, VOIDmode), GET_MODE (x));
 
   /* If we are looking for a CONST_INT, the mode doesn't really matter, as
      long as we are narrowing.  So if we looked in vain for a mode narrower
@@ -1376,7 +1384,7 @@ lookup_as_function (rtx x, enum rtx_code code)
     {
       x = copy_rtx (x);
       PUT_MODE (x, word_mode);
-      p = lookup (x, safe_hash (x, VOIDmode) & HASH_MASK, word_mode);
+      p = lookup (x, SAFE_HASH (x, VOIDmode), word_mode);
     }
 
   if (p == 0)
@@ -1385,7 +1393,7 @@ lookup_as_function (rtx x, enum rtx_code code)
   for (p = p->first_same_value; p; p = p->next_same_value)
     if (GET_CODE (p->exp) == code
 	/* Make sure this is a valid entry in the table.  */
-	&& exp_equiv_p (p->exp, p->exp, 1, 0))
+	&& exp_equiv_p (p->exp, p->exp, 1, false))
       return p->exp;
 
   return 0;
@@ -1568,7 +1576,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
       if (subexp != 0)
 	{
 	  /* Get the integer-free subexpression in the hash table.  */
-	  subhash = safe_hash (subexp, mode) & HASH_MASK;
+	  subhash = SAFE_HASH (subexp, mode);
 	  subelt = lookup (subexp, subhash, mode);
 	  if (subelt == 0)
 	    subelt = insert (subexp, NULL, subhash, mode);
@@ -1622,7 +1630,7 @@ merge_equiv_classes (struct table_elt *class1, struct table_elt *class2)
       /* Remove old entry, make a new one in CLASS1's class.
 	 Don't do this for invalid entries as we cannot find their
 	 hash code (it also isn't necessary).  */
-      if (REG_P (exp) || exp_equiv_p (exp, exp, 1, 0))
+      if (REG_P (exp) || exp_equiv_p (exp, exp, 1, false))
 	{
 	  bool need_rehash = false;
 
@@ -1917,8 +1925,8 @@ rehash_using_reg (rtx x)
       {
 	next = p->next_same_hash;
 	if (reg_mentioned_p (x, p->exp)
-	    && exp_equiv_p (p->exp, p->exp, 1, 0)
-	    && i != (hash = safe_hash (p->exp, p->mode) & HASH_MASK))
+	    && exp_equiv_p (p->exp, p->exp, 1, false)
+	    && i != (hash = SAFE_HASH (p->exp, p->mode)))
 	  {
 	    if (p->next_same_hash)
 	      p->next_same_hash->prev_same_hash = p->prev_same_hash;
@@ -2017,7 +2025,7 @@ use_related_value (rtx x, struct table_elt *elt)
       rtx subexp = get_related_value (x);
       if (subexp != 0)
 	relt = lookup (subexp,
-		       safe_hash (subexp, GET_MODE (subexp)) & HASH_MASK,
+		       SAFE_HASH (subexp, GET_MODE (subexp)),
 		       GET_MODE (subexp));
     }
 
@@ -2068,7 +2076,7 @@ use_related_value (rtx x, struct table_elt *elt)
 
 /* Hash a string.  Just add its bytes up.  */
 static inline unsigned
-canon_hash_string (const char *ps)
+hash_rtx_string (const char *ps)
 {
   unsigned hash = 0;
   const unsigned char *p = (const unsigned char *) ps;
@@ -2085,23 +2093,26 @@ canon_hash_string (const char *ps)
    MODE is used in hashing for CONST_INTs only;
    otherwise the mode of X is used.
 
-   Store 1 in do_not_record if any subexpression is volatile.
+   Store 1 in DO_NOT_RECORD_P if any subexpression is volatile.
 
-   Store 1 in hash_arg_in_memory if X contains a MEM rtx
-   which does not have the MEM_READONLY_P bit set.
+   If HASH_ARG_IN_MEMORY_P is not NULL, store 1 in it if X contains
+   a MEM rtx which does not have the RTX_UNCHANGING_P bit set.
 
    Note that cse_insn knows that the hash code of a MEM expression
    is just (int) MEM plus the hash code of the address.  */
 
-static unsigned
-canon_hash (rtx x, enum machine_mode mode)
+unsigned
+hash_rtx (rtx x, enum machine_mode mode, int *do_not_record_p,
+	  int *hash_arg_in_memory_p, bool have_reg_qty)
 {
   int i, j;
   unsigned hash = 0;
   enum rtx_code code;
   const char *fmt;
 
-  /* repeat is used to turn tail-recursion into iteration.  */
+  /* Used to turn recursion into iteration.  We can't rely on GCC's
+     tail-recursion elimination since we need to keep accumulating values
+     in HASH.  */
  repeat:
   if (x == 0)
     return hash;
@@ -2112,48 +2123,52 @@ canon_hash (rtx x, enum machine_mode mode)
     case REG:
       {
 	unsigned int regno = REGNO (x);
-	bool record;
 
-	/* On some machines, we can't record any non-fixed hard register,
-	   because extending its life will cause reload problems.  We
-	   consider ap, fp, sp, gp to be fixed for this purpose.
-
-	   We also consider CCmode registers to be fixed for this purpose;
-	   failure to do so leads to failure to simplify 0<100 type of
-	   conditionals.
-
-	   On all machines, we can't record any global registers.
-	   Nor should we record any register that is in a small
-	   class, as defined by CLASS_LIKELY_SPILLED_P.  */
-
-	if (regno >= FIRST_PSEUDO_REGISTER)
-	  record = true;
-	else if (x == frame_pointer_rtx
-		 || x == hard_frame_pointer_rtx
-		 || x == arg_pointer_rtx
-		 || x == stack_pointer_rtx
-		 || x == pic_offset_table_rtx)
-	  record = true;
-	else if (global_regs[regno])
-	  record = false;
-	else if (fixed_regs[regno])
-	  record = true;
-	else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
-	  record = true;
-	else if (SMALL_REGISTER_CLASSES)
-	  record = false;
-	else if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno)))
-	  record = false;
-	else
-	  record = true;
-
-	if (!record)
+	if (!reload_completed)
 	  {
-	    do_not_record = 1;
-	    return 0;
+	    /* On some machines, we can't record any non-fixed hard register,
+	       because extending its life will cause reload problems.  We
+	       consider ap, fp, sp, gp to be fixed for this purpose.
+
+	       We also consider CCmode registers to be fixed for this purpose;
+	       failure to do so leads to failure to simplify 0<100 type of
+	       conditionals.
+
+	       On all machines, we can't record any global registers.
+	       Nor should we record any register that is in a small
+	       class, as defined by CLASS_LIKELY_SPILLED_P.  */
+	    bool record;
+
+	    if (regno >= FIRST_PSEUDO_REGISTER)
+	      record = true;
+	    else if (x == frame_pointer_rtx
+		     || x == hard_frame_pointer_rtx
+		     || x == arg_pointer_rtx
+		     || x == stack_pointer_rtx
+		     || x == pic_offset_table_rtx)
+	      record = true;
+	    else if (global_regs[regno])
+	      record = false;
+	    else if (fixed_regs[regno])
+	      record = true;
+	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
+	      record = true;
+	    else if (SMALL_REGISTER_CLASSES)
+	      record = false;
+	    else if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno)))
+	      record = false;
+	    else
+	      record = true;
+
+	    if (!record)
+	      {
+		*do_not_record_p = 1;
+		return 0;
+	      }
 	  }
 
-	hash += ((unsigned) REG << 7) + (unsigned) REG_QTY (regno);
+	hash += ((unsigned int) REG << 7);
+        hash += (have_reg_qty ? (unsigned) REG_QTY (regno) : regno);
 	return hash;
       }
 
@@ -2164,7 +2179,7 @@ canon_hash (rtx x, enum machine_mode mode)
       {
 	if (REG_P (SUBREG_REG (x)))
 	  {
-	    hash += (((unsigned) SUBREG << 7)
+	    hash += (((unsigned int) SUBREG << 7)
 		     + REGNO (SUBREG_REG (x))
 		     + (SUBREG_BYTE (x) / UNITS_PER_WORD));
 	    return hash;
@@ -2173,21 +2188,19 @@ canon_hash (rtx x, enum machine_mode mode)
       }
 
     case CONST_INT:
-      {
-	unsigned HOST_WIDE_INT tem = INTVAL (x);
-	hash += ((unsigned) CONST_INT << 7) + (unsigned) mode + tem;
-	return hash;
-      }
+      hash += (((unsigned int) CONST_INT << 7) + (unsigned int) mode
+               + (unsigned int) INTVAL (x));
+      return hash;
 
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
-      hash += (unsigned) code + (unsigned) GET_MODE (x);
+      hash += (unsigned int) code + (unsigned int) GET_MODE (x);
       if (GET_MODE (x) != VOIDmode)
 	hash += real_hash (CONST_DOUBLE_REAL_VALUE (x));
       else
-	hash += ((unsigned) CONST_DOUBLE_LOW (x)
-		 + (unsigned) CONST_DOUBLE_HIGH (x));
+	hash += ((unsigned int) CONST_DOUBLE_LOW (x)
+		 + (unsigned int) CONST_DOUBLE_HIGH (x));
       return hash;
 
     case CONST_VECTOR:
@@ -2200,7 +2213,8 @@ canon_hash (rtx x, enum machine_mode mode)
 	for (i = 0; i < units; ++i)
 	  {
 	    elt = CONST_VECTOR_ELT (x, i);
-	    hash += canon_hash (elt, GET_MODE (elt));
+	    hash += hash_rtx (elt, GET_MODE (elt), do_not_record_p,
+			      hash_arg_in_memory_p, have_reg_qty);
 	  }
 
 	return hash;
@@ -2208,23 +2222,39 @@ canon_hash (rtx x, enum machine_mode mode)
 
       /* Assume there is only one rtx object for any given label.  */
     case LABEL_REF:
-      hash += ((unsigned) LABEL_REF << 7) + (unsigned long) XEXP (x, 0);
+      /* We don't hash on the address of the CODE_LABEL to avoid bootstrap
+	 differences and differences between each stage's debugging dumps.  */
+	 hash += (((unsigned int) LABEL_REF << 7)
+		  + CODE_LABEL_NUMBER (XEXP (x, 0)));
       return hash;
 
     case SYMBOL_REF:
-      hash += ((unsigned) SYMBOL_REF << 7) + (unsigned long) XSTR (x, 0);
-      return hash;
+      {
+	/* Don't hash on the symbol's address to avoid bootstrap differences.
+	   Different hash values may cause expressions to be recorded in
+	   different orders and thus different registers to be used in the
+	   final assembler.  This also avoids differences in the dump files
+	   between various stages.  */
+	unsigned int h = 0;
+	const unsigned char *p = (const unsigned char *) XSTR (x, 0);
+
+	while (*p)
+	  h += (h << 7) + *p++; /* ??? revisit */
+
+	hash += ((unsigned int) SYMBOL_REF << 7) + h;
+	return hash;
+      }
 
     case MEM:
       /* We don't record if marked volatile or if BLKmode since we don't
 	 know the size of the move.  */
       if (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode)
 	{
-	  do_not_record = 1;
+	  *do_not_record_p = 1;
 	  return 0;
 	}
-      if (!MEM_READONLY_P (x))
-	hash_arg_in_memory = 1;
+      if (hash_arg_in_memory_p && !MEM_READONLY_P (x))
+	*hash_arg_in_memory_p = 1;
 
       /* Now that we have already found this special case,
 	 might as well speed it up as much as possible.  */
@@ -2236,15 +2266,16 @@ canon_hash (rtx x, enum machine_mode mode)
       /* A USE that mentions non-volatile memory needs special
 	 handling since the MEM may be BLKmode which normally
 	 prevents an entry from being made.  Pure calls are
-	 marked by a USE which mentions BLKmode memory.  */
+	 marked by a USE which mentions BLKmode memory.
+	 See calls.c:emit_call_1.  */
       if (MEM_P (XEXP (x, 0))
 	  && ! MEM_VOLATILE_P (XEXP (x, 0)))
 	{
 	  hash += (unsigned) USE;
 	  x = XEXP (x, 0);
 
-	  if (!MEM_READONLY_P (x))
-	    hash_arg_in_memory = 1;
+	  if (hash_arg_in_memory_p && !MEM_READONLY_P (x))
+	    *hash_arg_in_memory_p = 1;
 
 	  /* Now that we have already found this special case,
 	     might as well speed it up as much as possible.  */
@@ -2264,34 +2295,36 @@ canon_hash (rtx x, enum machine_mode mode)
     case CC0:
     case CALL:
     case UNSPEC_VOLATILE:
-      do_not_record = 1;
+      *do_not_record_p = 1;
       return 0;
 
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	{
-	  do_not_record = 1;
+	  *do_not_record_p = 1;
 	  return 0;
 	}
       else
 	{
 	  /* We don't want to take the filename and line into account.  */
 	  hash += (unsigned) code + (unsigned) GET_MODE (x)
-	    + canon_hash_string (ASM_OPERANDS_TEMPLATE (x))
-	    + canon_hash_string (ASM_OPERANDS_OUTPUT_CONSTRAINT (x))
+	    + hash_rtx_string (ASM_OPERANDS_TEMPLATE (x))
+	    + hash_rtx_string (ASM_OPERANDS_OUTPUT_CONSTRAINT (x))
 	    + (unsigned) ASM_OPERANDS_OUTPUT_IDX (x);
 
 	  if (ASM_OPERANDS_INPUT_LENGTH (x))
 	    {
 	      for (i = 1; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 		{
-		  hash += (canon_hash (ASM_OPERANDS_INPUT (x, i),
-				       GET_MODE (ASM_OPERANDS_INPUT (x, i)))
-			   + canon_hash_string (ASM_OPERANDS_INPUT_CONSTRAINT
-						(x, i)));
+		  hash += (hash_rtx (ASM_OPERANDS_INPUT (x, i),
+				     GET_MODE (ASM_OPERANDS_INPUT (x, i)),
+				     do_not_record_p, hash_arg_in_memory_p,
+				     have_reg_qty)
+			   + hash_rtx_string
+				(ASM_OPERANDS_INPUT_CONSTRAINT (x, i)));
 		}
 
-	      hash += canon_hash_string (ASM_OPERANDS_INPUT_CONSTRAINT (x, 0));
+	      hash += hash_rtx_string (ASM_OPERANDS_INPUT_CONSTRAINT (x, 0));
 	      x = ASM_OPERANDS_INPUT (x, 0);
 	      mode = GET_MODE (x);
 	      goto repeat;
@@ -2312,48 +2345,59 @@ canon_hash (rtx x, enum machine_mode mode)
     {
       if (fmt[i] == 'e')
 	{
-	  rtx tem = XEXP (x, i);
-
 	  /* If we are about to do the last recursive call
 	     needed at this level, change it into iteration.
 	     This function  is called enough to be worth it.  */
 	  if (i == 0)
 	    {
-	      x = tem;
+	      x = XEXP (x, i);
 	      goto repeat;
 	    }
-	  hash += canon_hash (tem, 0);
+
+	  hash += hash_rtx (XEXP (x, i), 0, do_not_record_p,
+			    hash_arg_in_memory_p, have_reg_qty);
 	}
+
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  hash += canon_hash (XVECEXP (x, i, j), 0);
+	  {
+	    hash += hash_rtx (XVECEXP (x, i, j), 0, do_not_record_p,
+			      hash_arg_in_memory_p, have_reg_qty);
+	  }
+
       else if (fmt[i] == 's')
-	hash += canon_hash_string (XSTR (x, i));
+	hash += hash_rtx_string (XSTR (x, i));
       else if (fmt[i] == 'i')
-	{
-	  unsigned tem = XINT (x, i);
-	  hash += tem;
-	}
+	hash += (unsigned int) XINT (x, i);
       else if (fmt[i] == '0' || fmt[i] == 't')
 	/* Unused.  */
 	;
       else
 	abort ();
     }
+
   return hash;
 }
 
-/* Like canon_hash but with no side effects.  */
+/* Hash an rtx X for cse via hash_rtx.
+   Stores 1 in do_not_record if any subexpression is volatile.
+   Stores 1 in hash_arg_in_memory if X contains a mem rtx which
+   does not have the RTX_UNCHANGING_P bit set.  */
 
-static unsigned
+static inline unsigned
+canon_hash (rtx x, enum machine_mode mode)
+{
+  return hash_rtx (x, mode, &do_not_record, &hash_arg_in_memory, true);
+}
+
+/* Like canon_hash but with no side effects, i.e. do_not_record
+   and hash_arg_in_memory are not changed.  */
+
+static inline unsigned
 safe_hash (rtx x, enum machine_mode mode)
 {
-  int save_do_not_record = do_not_record;
-  int save_hash_arg_in_memory = hash_arg_in_memory;
-  unsigned hash = canon_hash (x, mode);
-  hash_arg_in_memory = save_hash_arg_in_memory;
-  do_not_record = save_do_not_record;
-  return hash;
+  int dummy_do_not_record;
+  return hash_rtx (x, mode, &dummy_do_not_record, NULL, true);
 }
 
 /* Return 1 iff X and Y would canonicalize into the same thing,
@@ -2363,16 +2407,10 @@ safe_hash (rtx x, enum machine_mode mode)
    and Y was found in the hash table.  We check register refs
    in Y for being marked as valid.
 
-   If EQUAL_VALUES is nonzero, we allow a register to match a constant value
-   that is known to be in the register.  Ordinarily, we don't allow them
-   to match, because letting them match would cause unpredictable results
-   in all the places that search a hash table chain for an equivalent
-   for a given value.  A possible equivalent that has different structure
-   has its hash code computed from different data.  Whether the hash code
-   is the same as that of the given value is pure luck.  */
+   If FOR_GCSE is true, we compare X and Y for equivalence for GCSE.  */
 
-static int
-exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
+int
+exp_equiv_p (rtx x, rtx y, int validate, bool for_gcse)
 {
   int i, j;
   enum rtx_code code;
@@ -2382,42 +2420,13 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
      if VALIDATE is nonzero.  */
   if (x == y && !validate)
     return 1;
+
   if (x == 0 || y == 0)
     return x == y;
 
   code = GET_CODE (x);
   if (code != GET_CODE (y))
-    {
-      if (!equal_values)
-	return 0;
-
-      /* If X is a constant and Y is a register or vice versa, they may be
-	 equivalent.  We only have to validate if Y is a register.  */
-      if (CONSTANT_P (x) && REG_P (y)
-	  && REGNO_QTY_VALID_P (REGNO (y)))
-	{
-	  int y_q = REG_QTY (REGNO (y));
-	  struct qty_table_elem *y_ent = &qty_table[y_q];
-
-	  if (GET_MODE (y) == y_ent->mode
-	      && rtx_equal_p (x, y_ent->const_rtx)
-	      && (! validate || REG_IN_TABLE (REGNO (y)) == REG_TICK (REGNO (y))))
-	    return 1;
-	}
-
-      if (CONSTANT_P (y) && code == REG
-	  && REGNO_QTY_VALID_P (REGNO (x)))
-	{
-	  int x_q = REG_QTY (REGNO (x));
-	  struct qty_table_elem *x_ent = &qty_table[x_q];
-
-	  if (GET_MODE (x) == x_ent->mode
-	      && rtx_equal_p (y, x_ent->const_rtx))
-	    return 1;
-	}
-
-      return 0;
-    }
+    return 0;
 
   /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.  */
   if (GET_MODE (x) != GET_MODE (y))
@@ -2437,29 +2446,48 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
       return XSTR (x, 0) == XSTR (y, 0);
 
     case REG:
-      {
-	unsigned int regno = REGNO (y);
-	unsigned int endregno
-	  = regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-		     : hard_regno_nregs[regno][GET_MODE (y)]);
-	unsigned int i;
+      if (for_gcse)
+	return REGNO (x) == REGNO (y);
+      else
+	{
+	  unsigned int regno = REGNO (y);
+	  unsigned int i;
+	  unsigned int endregno
+	    = regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
+		       : hard_regno_nregs[regno][GET_MODE (y)]);
 
-	/* If the quantities are not the same, the expressions are not
-	   equivalent.  If there are and we are not to validate, they
-	   are equivalent.  Otherwise, ensure all regs are up-to-date.  */
+	  /* If the quantities are not the same, the expressions are not
+	     equivalent.  If there are and we are not to validate, they
+	     are equivalent.  Otherwise, ensure all regs are up-to-date.  */
 
-	if (REG_QTY (REGNO (x)) != REG_QTY (regno))
-	  return 0;
-
-	if (! validate)
-	  return 1;
-
-	for (i = regno; i < endregno; i++)
-	  if (REG_IN_TABLE (i) != REG_TICK (i))
+	  if (REG_QTY (REGNO (x)) != REG_QTY (regno))
 	    return 0;
 
-	return 1;
-      }
+	  if (! validate)
+	    return 1;
+
+	  for (i = regno; i < endregno; i++)
+	    if (REG_IN_TABLE (i) != REG_TICK (i))
+	      return 0;
+
+	  return 1;
+	}
+
+    case MEM:
+      if (for_gcse)
+	{
+	  /* Can't merge two expressions in different alias sets, since we
+	     can decide that the expression is transparent in a block when
+	     it isn't, due to it being set with the different alias set.  */
+	  if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
+	    return 0;
+
+	  /* A volatile mem should not be considered equivalent to any
+	     other.  */
+	  if (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
+	    return 0;
+	}
+      break;
 
     /*  For commutative operations, check both orders.  */
     case PLUS:
@@ -2469,13 +2497,14 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
     case XOR:
     case NE:
     case EQ:
-      return ((exp_equiv_p (XEXP (x, 0), XEXP (y, 0), validate, equal_values)
+      return ((exp_equiv_p (XEXP (x, 0), XEXP (y, 0),
+			     validate, for_gcse)
 	       && exp_equiv_p (XEXP (x, 1), XEXP (y, 1),
-			       validate, equal_values))
+				validate, for_gcse))
 	      || (exp_equiv_p (XEXP (x, 0), XEXP (y, 1),
-			       validate, equal_values)
+				validate, for_gcse)
 		  && exp_equiv_p (XEXP (x, 1), XEXP (y, 0),
-				  validate, equal_values)));
+				   validate, for_gcse)));
 
     case ASM_OPERANDS:
       /* We don't use the generic code below because we want to
@@ -2498,7 +2527,7 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
 	  for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
 	    if (! exp_equiv_p (ASM_OPERANDS_INPUT (x, i),
 			       ASM_OPERANDS_INPUT (y, i),
-			       validate, equal_values)
+			       validate, for_gcse)
 		|| strcmp (ASM_OPERANDS_INPUT_CONSTRAINT (x, i),
 			   ASM_OPERANDS_INPUT_CONSTRAINT (y, i)))
 	      return 0;
@@ -2511,7 +2540,7 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
     }
 
   /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.  */
+     fail to match, return 0 for the whole thing.  */
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -2519,7 +2548,8 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
       switch (fmt[i])
 	{
 	case 'e':
-	  if (! exp_equiv_p (XEXP (x, i), XEXP (y, i), validate, equal_values))
+	  if (! exp_equiv_p (XEXP (x, i), XEXP (y, i),
+			      validate, for_gcse))
 	    return 0;
 	  break;
 
@@ -2528,7 +2558,7 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
 	    return 0;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    if (! exp_equiv_p (XVECEXP (x, i, j), XVECEXP (y, i, j),
-			       validate, equal_values))
+				validate, for_gcse))
 	      return 0;
 	  break;
 
@@ -2827,7 +2857,7 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
 	    if (! p->flag)
 	      {
 		if ((REG_P (p->exp)
-		     || exp_equiv_p (p->exp, p->exp, 1, 0))
+		     || exp_equiv_p (p->exp, p->exp, 1, false))
 		    && ((exp_cost = address_cost (p->exp, mode)) < best_addr_cost
 			|| (exp_cost == best_addr_cost
 			    && ((p->cost + 1) >> 1) > best_rtx_cost)))
@@ -2903,7 +2933,7 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
 	       p = p->next_same_value, count++)
 	    if (! p->flag
 		&& (REG_P (p->exp)
-		    || exp_equiv_p (p->exp, p->exp, 1, 0)))
+		    || exp_equiv_p (p->exp, p->exp, 1, false)))
 	      {
 		rtx new = simplify_gen_binary (GET_CODE (*loc), Pmode,
 					       p->exp, op1);
@@ -3012,8 +3042,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
       if (x == 0)
 	/* Look up ARG1 in the hash table and see if it has an equivalence
 	   that lets us see what is being compared.  */
-	p = lookup (arg1, safe_hash (arg1, GET_MODE (arg1)) & HASH_MASK,
-		    GET_MODE (arg1));
+	p = lookup (arg1, SAFE_HASH (arg1, GET_MODE (arg1)), GET_MODE (arg1));
       if (p)
 	{
 	  p = p->first_same_value;
@@ -3038,7 +3067,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 #endif
 
 	  /* If the entry isn't valid, skip it.  */
-	  if (! exp_equiv_p (p->exp, p->exp, 1, 0))
+	  if (! exp_equiv_p (p->exp, p->exp, 1, false))
 	    continue;
 
 	  if (GET_CODE (p->exp) == COMPARE
@@ -3235,7 +3264,7 @@ fold_rtx (rtx x, rtx insn)
 
 		if (GET_CODE (elt->exp) == SUBREG
 		    && GET_MODE (SUBREG_REG (elt->exp)) == mode
-		    && exp_equiv_p (elt->exp, elt->exp, 1, 0))
+		    && exp_equiv_p (elt->exp, elt->exp, 1, false))
 		  return copy_rtx (SUBREG_REG (elt->exp));
 	      }
 
@@ -3264,8 +3293,6 @@ fold_rtx (rtx x, rtx insn)
 	{
 	  struct table_elt *elt;
 
-	  /* We can use HASH here since we know that canon_hash won't be
-	     called.  */
 	  elt = lookup (folded_arg0,
 			HASH (folded_arg0, GET_MODE (folded_arg0)),
 			GET_MODE (folded_arg0));
@@ -3370,7 +3397,7 @@ fold_rtx (rtx x, rtx insn)
 		         && GET_MODE (SUBREG_REG (elt->exp)) == mode
 		         && (GET_MODE_SIZE (GET_MODE (folded_arg0))
 			     <= UNITS_PER_WORD)
-		         && exp_equiv_p (elt->exp, elt->exp, 1, 0))
+		         && exp_equiv_p (elt->exp, elt->exp, 1, false))
 		  new = copy_rtx (SUBREG_REG (elt->exp));
 
 	        if (new)
@@ -3829,11 +3856,11 @@ fold_rtx (rtx x, rtx insn)
 		      && (REG_QTY (REGNO (folded_arg0))
 			  == REG_QTY (REGNO (folded_arg1))))
 		  || ((p0 = lookup (folded_arg0,
-				    (safe_hash (folded_arg0, mode_arg0)
-				     & HASH_MASK), mode_arg0))
+				    SAFE_HASH (folded_arg0, mode_arg0),
+				    mode_arg0))
 		      && (p1 = lookup (folded_arg1,
-				       (safe_hash (folded_arg1, mode_arg0)
-					& HASH_MASK), mode_arg0))
+				       SAFE_HASH (folded_arg1, mode_arg0),
+				       mode_arg0))
 		      && p0->first_same_value == p1->first_same_value))
 		{
 		  /* Sadly two equal NaNs are not equivalent.  */
@@ -4007,8 +4034,7 @@ fold_rtx (rtx x, rtx insn)
 	    {
 	      rtx new_const = GEN_INT (-INTVAL (const_arg1));
 	      struct table_elt *p
-		= lookup (new_const, safe_hash (new_const, mode) & HASH_MASK,
-			  mode);
+		= lookup (new_const, SAFE_HASH (new_const, mode), mode);
 
 	      if (p)
 		for (p = p->first_same_value; p; p = p->next_same_value)
@@ -4195,7 +4221,7 @@ equiv_constant (rtx x)
       if (CONSTANT_P (x))
 	return x;
 
-      elt = lookup (x, safe_hash (x, GET_MODE (x)) & HASH_MASK, GET_MODE (x));
+      elt = lookup (x, SAFE_HASH (x, GET_MODE (x)), GET_MODE (x));
       if (elt == 0)
 	return 0;
 
@@ -5182,7 +5208,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  /* If the expression is not valid, ignore it.  Then we do not
 	     have to check for validity below.  In most cases, we can use
 	     `rtx_equal_p', since canonicalization has already been done.  */
-	  if (code != REG && ! exp_equiv_p (p->exp, p->exp, 1, 0))
+	  if (code != REG && ! exp_equiv_p (p->exp, p->exp, 1, false))
 	    continue;
 
 	  /* Also skip paradoxical subregs, unless that's what we're
@@ -5279,7 +5305,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 	  /* Skip invalid entries.  */
 	  while (elt && !REG_P (elt->exp)
-		 && ! exp_equiv_p (elt->exp, elt->exp, 1, 0))
+		 && ! exp_equiv_p (elt->exp, elt->exp, 1, false))
 	    elt = elt->next_same_value;
 
 	  /* A paradoxical subreg would be bad here: it'll be the right
@@ -6006,7 +6032,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 		/* Ignore invalid entries.  */
 		if (!REG_P (elt->exp)
-		    && ! exp_equiv_p (elt->exp, elt->exp, 1, 0))
+		    && ! exp_equiv_p (elt->exp, elt->exp, 1, false))
 		  continue;
 
 		/* We may have already been playing subreg games.  If the
@@ -6059,7 +6085,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		/* Ignore invalid entries.  */
 		while (classp
 		       && !REG_P (classp->exp)
-		       && ! exp_equiv_p (classp->exp, classp->exp, 1, 0))
+		       && ! exp_equiv_p (classp->exp, classp->exp, 1, false))
 		  classp = classp->next_same_value;
 	      }
 	  }

@@ -841,10 +841,10 @@ rest_of_handle_sched2 (void)
 static void
 rest_of_handle_gcse2 (void)
 {
-  timevar_push (TV_RELOAD_CSE_REGS);
+  timevar_push (TV_GCSE_AFTER_RELOAD);
   open_dump_file (DFI_gcse2, current_function_decl);
 
-  gcse_after_reload_main (get_insns (), dump_file);
+  gcse_after_reload_main (get_insns ());
   rebuild_jump_labels (get_insns ());
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
   close_dump_file (DFI_gcse2, print_rtl_with_bb, get_insns ());
@@ -855,7 +855,7 @@ rest_of_handle_gcse2 (void)
   verify_flow_info ();
 #endif
 
-  timevar_pop (TV_RELOAD_CSE_REGS);
+  timevar_pop (TV_GCSE_AFTER_RELOAD);
 }
 
 /* Register allocation pre-pass, to reduce number of moves necessary
