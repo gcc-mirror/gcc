@@ -4028,7 +4028,7 @@ mark_set_1 (needed, dead, x, insn, significant, flags)
 	          /* Count (weighted) references, stores, etc.  This counts a
 		     register twice if it is modified, but that is correct.  */
 	          REG_N_SETS (regno)++;
-	          REG_N_REFS (regno) += loop_depth;
+	          REG_N_REFS (regno) += loop_depth + 1;
 		  
 	          /* The insns where a reg is live are normally counted
 		     elsewhere, but we want the count to include the insn
@@ -4281,7 +4281,7 @@ find_auto_inc (needed, x, insn)
 	      /* Count an extra reference to the reg.  When a reg is
 		 incremented, spilling it is worse, so we want to make
 		 that less likely.  */
-	      REG_N_REFS (regno) += loop_depth;
+	      REG_N_REFS (regno) += loop_depth + 1;
 
 	      /* Count the increment as a setting of the register,
 		 even though it isn't a SET in rtl.  */
@@ -4502,7 +4502,7 @@ mark_used_regs (needed, live, x, flags, insn)
 
 		/* Count (weighted) number of uses of each reg.  */
 
-		REG_N_REFS (regno) += loop_depth;
+		REG_N_REFS (regno) += loop_depth + 1;
 	      }
 	  }
 
@@ -4745,7 +4745,7 @@ try_pre_increment_1 (insn)
 	 less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  REG_N_REFS (regno) += loop_depth;
+	  REG_N_REFS (regno) += loop_depth + 1;
 	  REG_N_SETS (regno)++;
 	}
       return 1;
@@ -5372,8 +5372,7 @@ count_reg_sets_1 (x)
 	  /* Count (weighted) references, stores, etc.  This counts a
 	     register twice if it is modified, but that is correct.  */
 	  REG_N_SETS (regno)++;
-
-	  REG_N_REFS (regno) += loop_depth;
+	  REG_N_REFS (regno) += loop_depth + 1;
 	}
     }
 }
@@ -5452,7 +5451,7 @@ count_reg_references (x)
 
     case REG:
       if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
-	REG_N_REFS (REGNO (x)) += loop_depth;
+	REG_N_REFS (REGNO (x)) += loop_depth + 1;
       return;
 
     case SET:
@@ -5551,9 +5550,10 @@ count_reg_references (x)
    More accurate reference counts generally lead to better register allocation.
 
    F is the first insn to be scanned.
+
    LOOP_STEP denotes how much loop_depth should be incremented per
-   loop nesting level in order to increase the ref count more for references
-   in a loop.
+   loop nesting level in order to increase the ref count more for
+   references in a loop.
 
    It might be worthwhile to update REG_LIVE_LENGTH, REG_BASIC_BLOCK and
    possibly other information which is used by the register allocators.  */
@@ -5577,7 +5577,6 @@ recompute_reg_usage (f, loop_step)
 
   /* Scan each insn in the chain and count how many times each register is
      set/used.  */
-  loop_depth = 1;
   for (index = 0; index < n_basic_blocks; index++)
     {
       basic_block bb = BASIC_BLOCK (index);
@@ -6819,7 +6818,7 @@ static int
 flow_loops_level_compute (loops)
      struct loops *loops;
 {
-  return flow_loop_level_compute (loops->tree, 0);
+  return flow_loop_level_compute (loops->tree, 1);
 }
 
 
@@ -6862,7 +6861,7 @@ flow_loops_find (loops)
   num_loops = 0;
   for (b = 0; b < n_basic_blocks; b++)
     {
-      BASIC_BLOCK (b)->loop_depth = 1;
+      BASIC_BLOCK (b)->loop_depth = 0;
       for (e = BASIC_BLOCK (b)->pred; e; e = e->pred_next)
 	{
 	  basic_block latch = e->src;
