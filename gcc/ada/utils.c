@@ -359,8 +359,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	      && !DECL_ARTIFICIAL (decl))))
     TYPE_NAME (TREE_TYPE (decl)) = decl;
 
-  if (TREE_CODE (decl) != CONST_DECL)
-    rest_of_decl_compilation (decl, global_bindings_p (), 0);
+  /*  if (TREE_CODE (decl) != CONST_DECL)
+      rest_of_decl_compilation (decl, global_bindings_p (), 0); */
 }
 
 /* Do little here.  Set up the standard declarations later after the
@@ -804,156 +804,181 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
     }
 
   if (!defer_debug)
+    write_record_type_debug_info (record_type);
+}
+
+/* Output the debug information associated to a record type.  */
+
+void
+write_record_type_debug_info (tree record_type)
+{
+  tree fieldlist = TYPE_FIELDS (record_type);
+  tree field;
+  bool var_size = false;
+
+  for (field = fieldlist; field; field = TREE_CHAIN (field))
     {
-      /* If this record is of variable size, rename it so that the
-	 debugger knows it is and make a new, parallel, record
-	 that tells the debugger how the record is laid out.  See
-	 exp_dbug.ads.  But don't do this for records that are padding
-	 since they confuse GDB.  */
-      if (var_size
-	  && !(TREE_CODE (record_type) == RECORD_TYPE
-	       && TYPE_IS_PADDING_P (record_type)))
+      /* We need to make an XVE/XVU record if any field has variable size,
+	 whether or not the record does.  For example, if we have an union,
+	 it may be that all fields, rounded up to the alignment, have the
+	 same size, in which case we'll use that size.  But the debug
+	 output routines (except Dwarf2) won't be able to output the fields,
+	 so we need to make the special record.  */
+      if (TREE_CODE (DECL_SIZE (field)) != INTEGER_CST)
 	{
-	  tree new_record_type
-	    = make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
-			 ? UNION_TYPE : TREE_CODE (record_type));
-	  tree orig_name = TYPE_NAME (record_type);
-	  tree orig_id
-	    = (TREE_CODE (orig_name) == TYPE_DECL ? DECL_NAME (orig_name)
-	       : orig_name);
-	  tree new_id
-	    = concat_id_with_name (orig_id,
-				   TREE_CODE (record_type) == QUAL_UNION_TYPE
-				   ? "XVU" : "XVE");
-	  tree last_pos = bitsize_zero_node;
-	  tree old_field;
-	  tree prev_old_field = 0;
+	  var_size = true;
+	  break;
+	}
+    }
 
-	  TYPE_NAME (new_record_type) = new_id;
-	  TYPE_ALIGN (new_record_type) = BIGGEST_ALIGNMENT;
-	  TYPE_STUB_DECL (new_record_type)
-	    = build_decl (TYPE_DECL, NULL_TREE, new_record_type);
-	  DECL_ARTIFICIAL (TYPE_STUB_DECL (new_record_type)) = 1;
-	  DECL_IGNORED_P (TYPE_STUB_DECL (new_record_type))
-	    = DECL_IGNORED_P (TYPE_STUB_DECL (record_type));
-	  TYPE_SIZE (new_record_type) = size_int (TYPE_ALIGN (record_type));
-	  TYPE_SIZE_UNIT (new_record_type)
-  	    = size_int (TYPE_ALIGN (record_type) / BITS_PER_UNIT);
+  /* If this record is of variable size, rename it so that the
+     debugger knows it is and make a new, parallel, record
+     that tells the debugger how the record is laid out.  See
+     exp_dbug.ads.  But don't do this for records that are padding
+     since they confuse GDB.  */
+  if (var_size
+      && !(TREE_CODE (record_type) == RECORD_TYPE
+	   && TYPE_IS_PADDING_P (record_type)))
+    {
+      tree new_record_type
+	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
+		     ? UNION_TYPE : TREE_CODE (record_type));
+      tree orig_name = TYPE_NAME (record_type);
+      tree orig_id
+	= (TREE_CODE (orig_name) == TYPE_DECL ? DECL_NAME (orig_name)
+	   : orig_name);
+      tree new_id
+	= concat_id_with_name (orig_id,
+			       TREE_CODE (record_type) == QUAL_UNION_TYPE
+			       ? "XVU" : "XVE");
+      tree last_pos = bitsize_zero_node;
+      tree old_field;
+      tree prev_old_field = 0;
 
-	  /* Now scan all the fields, replacing each field with a new
-	     field corresponding to the new encoding.  */
-	  for (old_field = TYPE_FIELDS (record_type); old_field;
-	       old_field = TREE_CHAIN (old_field))
+      TYPE_NAME (new_record_type) = new_id;
+      TYPE_ALIGN (new_record_type) = BIGGEST_ALIGNMENT;
+      TYPE_STUB_DECL (new_record_type)
+	= build_decl (TYPE_DECL, NULL_TREE, new_record_type);
+      DECL_ARTIFICIAL (TYPE_STUB_DECL (new_record_type)) = 1;
+      DECL_IGNORED_P (TYPE_STUB_DECL (new_record_type))
+	= DECL_IGNORED_P (TYPE_STUB_DECL (record_type));
+      TYPE_SIZE (new_record_type) = size_int (TYPE_ALIGN (record_type));
+      TYPE_SIZE_UNIT (new_record_type)
+	= size_int (TYPE_ALIGN (record_type) / BITS_PER_UNIT);
+
+      /* Now scan all the fields, replacing each field with a new
+	 field corresponding to the new encoding.  */
+      for (old_field = TYPE_FIELDS (record_type); old_field;
+	   old_field = TREE_CHAIN (old_field))
+	{
+	  tree field_type = TREE_TYPE (old_field);
+	  tree field_name = DECL_NAME (old_field);
+	  tree new_field;
+	  tree curpos = bit_position (old_field);
+	  bool var = false;
+	  unsigned int align = 0;
+	  tree pos;
+
+	  /* See how the position was modified from the last position.
+
+	  There are two basic cases we support: a value was added
+	  to the last position or the last position was rounded to
+	  a boundary and they something was added.  Check for the
+	  first case first.  If not, see if there is any evidence
+	  of rounding.  If so, round the last position and try
+	  again.
+
+	  If this is a union, the position can be taken as zero. */
+
+	  if (TREE_CODE (new_record_type) == UNION_TYPE)
+	    pos = bitsize_zero_node, align = 0;
+	  else
+	    pos = compute_related_constant (curpos, last_pos);
+
+	  if (!pos && TREE_CODE (curpos) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (curpos, 1)) == INTEGER_CST)
 	    {
-	      tree field_type = TREE_TYPE (old_field);
-	      tree field_name = DECL_NAME (old_field);
-	      tree new_field;
-	      tree curpos = bit_position (old_field);
-	      bool var = false;
-	      unsigned int align = 0;
-	      tree pos;
-
-	      /* See how the position was modified from the last position.
-
-		 There are two basic cases we support: a value was added
-		 to the last position or the last position was rounded to
-		 a boundary and they something was added.  Check for the
-		 first case first.  If not, see if there is any evidence
-		 of rounding.  If so, round the last position and try
-		 again.
-
-		 If this is a union, the position can be taken as zero. */
-
-	      if (TREE_CODE (new_record_type) == UNION_TYPE)
-		pos = bitsize_zero_node, align = 0;
-	      else
-		pos = compute_related_constant (curpos, last_pos);
-
-	      if (!pos && TREE_CODE (curpos) == MULT_EXPR
-		  && TREE_CODE (TREE_OPERAND (curpos, 1)) == INTEGER_CST)
-		{
-		  align = TREE_INT_CST_LOW (TREE_OPERAND (curpos, 1));
-		  pos = compute_related_constant (curpos,
-						  round_up (last_pos, align));
-		}
-	      else if (!pos && TREE_CODE (curpos) == PLUS_EXPR
-		       && TREE_CODE (TREE_OPERAND (curpos, 1)) == INTEGER_CST
-		       && TREE_CODE (TREE_OPERAND (curpos, 0)) == MULT_EXPR
-		       && host_integerp (TREE_OPERAND
-					 (TREE_OPERAND (curpos, 0), 1),
-					 1))
-		{
-		  align
-		    = tree_low_cst
-		      (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1);
-		  pos = compute_related_constant (curpos,
-						  round_up (last_pos, align));
-		}
- 	      else if (potential_alignment_gap (prev_old_field, old_field,
-						pos))
- 		{
- 		  align = TYPE_ALIGN (field_type);
- 		  pos = compute_related_constant (curpos,
- 						  round_up (last_pos, align));
- 		}
-
-	      /* If we can't compute a position, set it to zero.
-
-		 ??? We really should abort here, but it's too much work
-		 to get this correct for all cases.  */
-
-	      if (!pos)
-		pos = bitsize_zero_node;
-
-	      /* See if this type is variable-size and make a new type
-		 and indicate the indirection if so.  */
-	      if (TREE_CODE (DECL_SIZE (old_field)) != INTEGER_CST)
-		{
-		  field_type = build_pointer_type (field_type);
-		  var = true;
-		}
-
-	      /* Make a new field name, if necessary.  */
-	      if (var || align != 0)
-		{
-		  char suffix[6];
-
-		  if (align != 0)
-		    sprintf (suffix, "XV%c%u", var ? 'L' : 'A',
-			     align / BITS_PER_UNIT);
-		  else
-		    strcpy (suffix, "XVL");
-
-		  field_name = concat_id_with_name (field_name, suffix);
-		}
-
-	      new_field = create_field_decl (field_name, field_type,
-					     new_record_type, 0,
-					     DECL_SIZE (old_field), pos, 0);
-	      TREE_CHAIN (new_field) = TYPE_FIELDS (new_record_type);
-	      TYPE_FIELDS (new_record_type) = new_field;
-
-	      /* If old_field is a QUAL_UNION_TYPE, take its size as being
-		 zero.  The only time it's not the last field of the record
-		 is when there are other components at fixed positions after
-		 it (meaning there was a rep clause for every field) and we
-		 want to be able to encode them.  */
-	      last_pos = size_binop (PLUS_EXPR, bit_position (old_field),
-				     (TREE_CODE (TREE_TYPE (old_field))
-				      == QUAL_UNION_TYPE)
-				     ? bitsize_zero_node
-				     : DECL_SIZE (old_field));
- 	      prev_old_field = old_field;
+	      align = TREE_INT_CST_LOW (TREE_OPERAND (curpos, 1));
+	      pos = compute_related_constant (curpos,
+					      round_up (last_pos, align));
+	    }
+	  else if (!pos && TREE_CODE (curpos) == PLUS_EXPR
+		   && TREE_CODE (TREE_OPERAND (curpos, 1)) == INTEGER_CST
+		   && TREE_CODE (TREE_OPERAND (curpos, 0)) == MULT_EXPR
+		   && host_integerp (TREE_OPERAND
+				     (TREE_OPERAND (curpos, 0), 1),
+				     1))
+	    {
+	      align
+		= tree_low_cst
+		(TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1);
+	      pos = compute_related_constant (curpos,
+					      round_up (last_pos, align));
+	    }
+	  else if (potential_alignment_gap (prev_old_field, old_field,
+					    pos))
+	    {
+	      align = TYPE_ALIGN (field_type);
+	      pos = compute_related_constant (curpos,
+					      round_up (last_pos, align));
 	    }
 
-	  TYPE_FIELDS (new_record_type)
-	    = nreverse (TYPE_FIELDS (new_record_type));
+	  /* If we can't compute a position, set it to zero.
 
-	  rest_of_type_compilation (new_record_type, global_bindings_p ());
+	  ??? We really should abort here, but it's too much work
+	  to get this correct for all cases.  */
+
+	  if (!pos)
+	    pos = bitsize_zero_node;
+
+	  /* See if this type is variable-size and make a new type
+	     and indicate the indirection if so.  */
+	  if (TREE_CODE (DECL_SIZE (old_field)) != INTEGER_CST)
+	    {
+	      field_type = build_pointer_type (field_type);
+	      var = true;
+	    }
+
+	  /* Make a new field name, if necessary.  */
+	  if (var || align != 0)
+	    {
+	      char suffix[6];
+
+	      if (align != 0)
+		sprintf (suffix, "XV%c%u", var ? 'L' : 'A',
+			 align / BITS_PER_UNIT);
+	      else
+		strcpy (suffix, "XVL");
+
+	      field_name = concat_id_with_name (field_name, suffix);
+	    }
+
+	  new_field = create_field_decl (field_name, field_type,
+					 new_record_type, 0,
+					 DECL_SIZE (old_field), pos, 0);
+	  TREE_CHAIN (new_field) = TYPE_FIELDS (new_record_type);
+	  TYPE_FIELDS (new_record_type) = new_field;
+
+	  /* If old_field is a QUAL_UNION_TYPE, take its size as being
+	     zero.  The only time it's not the last field of the record
+	     is when there are other components at fixed positions after
+	     it (meaning there was a rep clause for every field) and we
+	     want to be able to encode them.  */
+	  last_pos = size_binop (PLUS_EXPR, bit_position (old_field),
+				 (TREE_CODE (TREE_TYPE (old_field))
+				  == QUAL_UNION_TYPE)
+				 ? bitsize_zero_node
+				 : DECL_SIZE (old_field));
+	  prev_old_field = old_field;
 	}
 
-      rest_of_type_compilation (record_type, global_bindings_p ());
+      TYPE_FIELDS (new_record_type)
+	= nreverse (TYPE_FIELDS (new_record_type));
+
+      rest_of_type_compilation (new_record_type, global_bindings_p ());
     }
+
+  rest_of_type_compilation (record_type, global_bindings_p ());
 }
 
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
@@ -2451,28 +2476,12 @@ update_pointer_to (tree old_type, tree new_type)
       for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
 	for (ptr1 = TYPE_MAIN_VARIANT (ptr); ptr1;
 	     ptr1 = TYPE_NEXT_VARIANT (ptr1))
-	  {
-	    TREE_TYPE (ptr1) = new_type;
+	  TREE_TYPE (ptr1) = new_type;
 
-	    if (TYPE_NAME (ptr1)
-		&& TREE_CODE (TYPE_NAME (ptr1)) == TYPE_DECL
-		&& TREE_CODE (new_type) != ENUMERAL_TYPE)
-	      rest_of_decl_compilation (TYPE_NAME (ptr1),
-					global_bindings_p (), 0);
-	  }
-
-      for (; ref; ref = TYPE_NEXT_PTR_TO (ref))
+      for (; ref; ref = TYPE_NEXT_REF_TO (ref))
 	for (ref1 = TYPE_MAIN_VARIANT (ref); ref1;
 	     ref1 = TYPE_NEXT_VARIANT (ref1))
-	  {
-	    TREE_TYPE (ref1) = new_type;
-
-	    if (TYPE_NAME (ref1)
-		&& TREE_CODE (TYPE_NAME (ref1)) == TYPE_DECL
-		&& TREE_CODE (new_type) != ENUMERAL_TYPE)
-	      rest_of_decl_compilation (TYPE_NAME (ref1),
-					global_bindings_p (), 0);
-	  }
+	  TREE_TYPE (ref1) = new_type;
     }
 
   /* Now deal with the unconstrained array case. In this case the "pointer"
@@ -2919,10 +2928,13 @@ convert (tree type, tree expr)
 	    {
 	      if (TREE_TYPE (tem) == etype)
 		return build1 (CONVERT_EXPR, type, expr);
-	      else if (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
-		       && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
-			   || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
-		       && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype)
+
+	      /* Accept slight type variations.  */
+	      if (TREE_TYPE (tem) == TYPE_MAIN_VARIANT (etype)
+		  || (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
+		      && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
+			  || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
+		      && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype))
 		return build1 (CONVERT_EXPR, type,
 			       convert (TREE_TYPE (tem), expr));
 	    }
