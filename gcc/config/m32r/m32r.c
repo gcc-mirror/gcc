@@ -366,11 +366,15 @@ m32r_select_section (decl, reloc)
 */
 
 void
-m32r_encode_section_info (decl)
+m32r_encode_section_info (decl, first)
      tree decl;
+     int first;
 {
   char prefix = 0;
   tree model = 0;
+
+  if (!first)
+    return;
 
   switch (TREE_CODE (decl))
     {

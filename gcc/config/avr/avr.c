@@ -4741,12 +4741,14 @@ avr_progmem_p (decl)
 /* Encode section information about tree DECL */
   
 void
-encode_section_info (decl)
+encode_section_info (decl, first)
      tree decl;
+     int first;
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-  else if ((TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+  else if (first
+	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
 	   && TREE_CODE (decl) == VAR_DECL
 	   && avr_progmem_p (decl))
     {

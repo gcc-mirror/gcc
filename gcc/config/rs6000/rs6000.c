@@ -10954,9 +10954,13 @@ rs6000_unique_section (decl, reloc)
    to read the prefixes.  */
 
 void
-rs6000_encode_section_info (decl)
+rs6000_encode_section_info (decl, first)
      tree decl;
+     int first;
 {
+  if (!first)
+    return;
+
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       rtx sym_ref = XEXP (DECL_RTL (decl), 0);

@@ -1139,7 +1139,7 @@ extern const char *arc_text_section, *arc_data_section, *arc_rodata_section;
    Branch to absolute address insns take an address that is right-shifted
    by 2.  We encode the fact that we have a function here, and then emit a
    special assembler op when outputting the address.  */
-#define ENCODE_SECTION_INFO(DECL) \
+#define ENCODE_SECTION_INFO(DECL, FIRST)		\
 do {							\
   if (TREE_CODE (DECL) == FUNCTION_DECL)		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\

@@ -2593,7 +2593,8 @@ do {							\
    The usual thing for this macro to do is to record a flag in the `symbol_ref'
    (such as `SYMBOL_REF_FLAG') or to store a modified name string in the
    `symbol_ref' (if one bit is not enough information).  */
-#define ENCODE_SECTION_INFO(DECL)  xstormy16_encode_section_info(DECL)
+#define ENCODE_SECTION_INFO(DECL, FIRST) \
+  xstormy16_encode_section_info(DECL, FIRST)
 
 /* Decode SYM_NAME and store the real name part in VAR, sans the characters
    that encode section info.  Define this macro if `ENCODE_SECTION_INFO' alters

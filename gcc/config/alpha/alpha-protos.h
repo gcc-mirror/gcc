@@ -165,7 +165,7 @@ extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_output_mi_thunk_osf PARAMS ((FILE *, tree,
 					       HOST_WIDE_INT, tree));
-extern void alpha_encode_section_info PARAMS ((tree));
+extern void alpha_encode_section_info PARAMS ((tree, int));
 #endif /* TREE CODE */
 
 #ifdef RTX_CODE

@@ -1394,8 +1394,9 @@ xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
 /* Mark functions with SYMBOL_REF_FLAG.  */
 
 void
-xstormy16_encode_section_info (decl)
+xstormy16_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;

@@ -851,14 +851,11 @@ make_decl_rtl (decl, asmspec)
 
       /* ??? Another way to do this would be to do what halfpic.c does
 	 and maintain a hashed table of such critters.  */
-      /* ??? Another way to do this would be to pass a flag bit to
-	 ENCODE_SECTION_INFO saying whether this is a new decl or not.  */
       /* Let the target reassign the RTL if it wants.
 	 This is necessary, for example, when one machine specific
 	 decl attribute overrides another.  */
-#ifdef REDO_SECTION_INFO_P
-      if (REDO_SECTION_INFO_P (decl))
-	ENCODE_SECTION_INFO (decl);
+#ifdef ENCODE_SECTION_INFO
+      ENCODE_SECTION_INFO (decl, false);
 #endif
       return;
     }
@@ -984,7 +981,7 @@ make_decl_rtl (decl, asmspec)
      If the name is changed, the macro ASM_OUTPUT_LABELREF
      will have to know how to strip this information.  */
 #ifdef ENCODE_SECTION_INFO
-  ENCODE_SECTION_INFO (decl);
+  ENCODE_SECTION_INFO (decl, true);
 #endif
 }
 
@@ -3320,7 +3317,7 @@ output_constant_def (exp, defer)
      encoded in it.  */
   if (! found)
     {
-      ENCODE_SECTION_INFO (exp);
+      ENCODE_SECTION_INFO (exp, true);
       desc->rtl = rtl;
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }

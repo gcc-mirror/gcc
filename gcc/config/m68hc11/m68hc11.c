@@ -1173,8 +1173,9 @@ m68hc11_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
    handle calls to traps in a special manner (by issuing the trap).
    This information is stored in SYMBOL_REF_FLAG.  */
 void
-m68hc11_encode_section_info (decl)
+m68hc11_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   tree func_attr;
   int trap_handler;

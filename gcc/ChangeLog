@@ -1,3 +1,39 @@
+2002-03-02  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (make_decl_rtl): Remove call to REDO_SECTION_INFO_P;
+	invoke ENCODE_SECTION_INFO with first call flag.
+
+	* config/darwin-protos.h, config/darwin.c, config/darwin.h,
+	config/a29k/a29k.h, config/alpha/alpha-protos.h, config/alpha/alpha.c,
+	config/alpha/alpha.h, config/arc/arc.h, config/arm/arm-protos.h, 
+	config/arm/arm.h, config/arm/pe.c, config/arm/pe.h,
+	config/avr/avr-protos.h, config/avr/avr.c, config/avr/avr.h,
+	config/c4x/c4x-protos.h, config/c4x/c4x.c, config/c4x/c4x.h,
+	config/cris/cris-protos.h, config/cris/cris.c, config/cris/cris.h,
+	config/d30v/d30v.h, config/h8300/h8300.h, config/i370/i370.h,
+	config/i386/cygwin.h, config/i386/i386-interix.h, config/i386/i386.h,
+	config/i386/osfrose.h, config/i386/win32.h, config/i386/winnt.c,
+	config/ia64/ia64-protos.h, config/ia64/ia64.c, config/ia64/ia64.h,
+	config/m32r/m32r-protos.h, config/m32r/m32r.c, config/m32r/m32r.h,
+	config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c, 
+	config/m68hc11/m68hc11.h, config/m88k/m88k.h, 
+	config/mcore/mcore-protos.h, config/mcore/mcore.c,
+	config/mcore/mcore.h, config/mips/mips.h, config/ns32k/ns32k.h,
+	config/pa/pa.h, config/romp/romp.h, config/rs6000/linux64.h,
+	config/rs6000/rs6000-protos.h, config/rs6000/rs6000.c, 
+	config/rs6000/sysv4.h, config/rs6000/xcoff.h, config/s390/s390.h,
+	config/sh/sh.h, config/sparc/sparc.h,
+	config/stormy16/stormy16-protos.h, config/stormy16/stormy16.c,
+	config/stormy16/stormy16.h, config/v850/v850.h, config/vax/vms.h,
+	config/xtensa/xtensa.h, doc/tm.texi: ENCODE_SECTION_INFO now takes
+	FIRST argument.  As needed, examine it and do nothing.
+
+	* config/darwin.h, config/alpha/alpha.h, config/arm/pe.h, 
+	config/i386/cygwin.h, config/ia64/ia64.h, config/m68hc11/m68hc11.h,
+	config/mcore/mcore.h: Remove REDO_SECTION_INFO_P.
+
+	* config/arm/t-pe (pe.o): Add dependencies.
+
 2002-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* a29k.h, alpha.h, arc.h, arm.h, avr.h, clipper.h, convex.h,

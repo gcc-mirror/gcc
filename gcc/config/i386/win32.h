@@ -115,9 +115,8 @@ Boston, MA 02111-1307, USA.  */
    the number of bytes of arguments passed to the function, if it has the 
    attribute STDCALL.  */
 
-#ifdef ENCODE_SECTION_INFO
 #undef ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL) 					\
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
 do									\
   {									\
     if (flag_pic)							\
@@ -128,14 +127,13 @@ do									\
 	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
 	     || ! TREE_PUBLIC (DECL));					\
       }									\
-    if (TREE_CODE (DECL) == FUNCTION_DECL) 				\
+    if ((FIRST) && TREE_CODE (DECL) == FUNCTION_DECL) 			\
       if (lookup_attribute ("stdcall",					\
 			    TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
         XEXP (DECL_RTL (DECL), 0) = 					\
           gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
   }									\
 while (0)
-#endif
 
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard

@@ -5545,25 +5545,31 @@ readonly data section is used.
 This macro is irrelevant if there is no separate readonly data section.
 
 @findex ENCODE_SECTION_INFO
-@item ENCODE_SECTION_INFO (@var{decl})
+@item ENCODE_SECTION_INFO (@var{decl}, @var{new_decl_p})
 Define this macro if references to a symbol or a constant must be
 treated differently depending on something about the variable or
 function named by the symbol (such as what section it is in).
 
 The macro definition, if any, is executed under two circumstances.  One
 is immediately after the rtl for @var{decl} that represents a variable
-or a function has been created and stored in @code{DECL_RTL
-(@var{decl})}.  The value of the rtl will be a @code{mem} whose address
-is a @code{symbol_ref}.  The other is immediately after the rtl for
-@var{decl} that represents a constant has been created and stored in
-@code{TREE_CST_RTL (@var{decl})}.  The macro is called once for each
-distinct constant in a source file.
+or a function has been created and stored in @code{DECL_RTL(@var{decl})}.
+The value of the rtl will be a @code{mem} whose address is a @code{symbol_ref}.
+The other is immediately after the rtl for @var{decl} that represents a
+constant has been created and stored in @code{TREE_CST_RTL (@var{decl})}.
+The macro is called once for each distinct constant in a source file.
+
+The @var{new_decl_p} argument will be true if this is the first time that
+@code{ENCODE_SECTION_INFO} has been invoked on this decl.  It will
+be false for subsequent invocations, which will happen for duplicate
+declarations.  Whether or not anything must be done for the duplicate
+declaration depends on whether @code{ENCODE_SECTION_INFO} examines
+@code{DECL_ATTRIBUTES}.
 
 @cindex @code{SYMBOL_REF_FLAG}, in @code{ENCODE_SECTION_INFO}
 The usual thing for this macro to do is to record a flag in the
 @code{symbol_ref} (such as @code{SYMBOL_REF_FLAG}) or to store a
-modified name string in the @code{symbol_ref} (if one bit is not enough
-information).
+modified name string in the @code{symbol_ref} (if one bit is not
+enough information).
 
 @findex STRIP_NAME_ENCODING
 @item STRIP_NAME_ENCODING (@var{var}, @var{sym_name})

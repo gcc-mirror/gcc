@@ -369,9 +369,13 @@ gen_stdcall_suffix (decl)
 /* Cover function to implement ENCODE_SECTION_INFO.  */
 
 void
-i386_pe_encode_section_info (decl)
+i386_pe_encode_section_info (decl, first)
      tree decl;
+     int first;
 {
+  if (!first)
+    return;
+
   /* This bit is copied from i386.h.  */
   if (optimize > 0 && TREE_CONSTANT (decl)
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))

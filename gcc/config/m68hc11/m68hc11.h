@@ -1146,11 +1146,8 @@ typedef struct m68hc11_args
    handle calls to traps in a special manner (by issuing the trap).
    This information is stored in SYMBOL_REF_FLAG.  */
 
-#define ENCODE_SECTION_INFO(DECL) m68hc11_encode_section_info (DECL)
-
-/* Override what GCC does for section info to let us recognize traps.  */
-
-#define REDO_SECTION_INFO_P(DECL) 1
+#define ENCODE_SECTION_INFO(DECL, FIRST) \
+  m68hc11_encode_section_info (DECL, FIRST)
 
 /* `INIT_TARGET_OPTABS'
      Define this macro as a C statement that declares additional library

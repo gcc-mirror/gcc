@@ -2383,10 +2383,10 @@ do {                                                                    \
    In the Embedded Medium/Anywhere code model, %g4 points to the data segment
    so we must not add it to function addresses.  */
 
-#define ENCODE_SECTION_INFO(DECL) \
-  do {							\
-    if (TARGET_CM_EMBMEDANY && TREE_CODE (DECL) == FUNCTION_DECL) \
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
+  do {									\
+    if (TARGET_CM_EMBMEDANY && TREE_CODE (DECL) == FUNCTION_DECL)	\
+      SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;			\
   } while (0)
 
 /* Specify the machine mode that this machine uses

@@ -1161,8 +1161,6 @@ switch_to_section (section, decl)				\
 #undef  UNIQUE_SECTION
 #define UNIQUE_SECTION(DECL, RELOC) mcore_unique_section (DECL, RELOC)
 
-#define REDO_SECTION_INFO_P(DECL) 1
-
 #define MULTIPLE_SYMBOL_SPACES 1
 
 #define SUPPORTS_ONE_ONLY 1
@@ -1315,7 +1313,8 @@ extern long mcore_current_compilation_timestamp;
 /* We must mark dll symbols specially.  Definitions of dllexport'd objects
    install some info in the .drective (PE) or .exports (ELF) sections.   */
 #undef  ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL) mcore_encode_section_info (DECL)
+#define ENCODE_SECTION_INFO(DECL, FIRST) \
+  mcore_encode_section_info (DECL, FIRST)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

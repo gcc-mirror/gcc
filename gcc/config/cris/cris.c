@@ -2999,8 +2999,9 @@ restart:
    functions.  */
 
 void
-cris_encode_section_info (exp)
+cris_encode_section_info (exp, first)
      tree exp;
+     int first ATTRIBUTE_UNUSED;
 {
   if (flag_pic)
     {

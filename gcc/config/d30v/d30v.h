@@ -2794,19 +2794,6 @@ extern const char *d30v_branch_cost_string;
    This macro is irrelevant if there is no separate readonly data section.  */
 /* #define JUMP_TABLES_IN_TEXT_SECTION */
 
-/* Define this macro if references to a symbol must be treated differently
-   depending on something about the variable or function named by the symbol
-   (such as what section it is in).
-
-   The macro definition, if any, is executed immediately after the rtl for DECL
-   has been created and stored in `DECL_RTL (DECL)'.  The value of the rtl will
-   be a `mem' whose address is a `symbol_ref'.
-
-   The usual thing for this macro to do is to record a flag in the `symbol_ref'
-   (such as `SYMBOL_REF_FLAG') or to store a modified name string in the
-   `symbol_ref' (if one bit is not enough information).  */
-/* #define ENCODE_SECTION_INFO(DECL) */
-
 /* Decode SYM_NAME and store the real name part in VAR, sans the characters
    that encode section info.  Define this macro if `ENCODE_SECTION_INFO' alters
    the symbol's name string.  */

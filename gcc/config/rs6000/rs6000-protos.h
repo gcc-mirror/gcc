@@ -144,7 +144,7 @@ extern void setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 					    int *, int));
 extern struct rtx_def *rs6000_va_arg PARAMS ((tree, tree));
 extern void output_mi_thunk PARAMS ((FILE *, tree, int, tree));
-extern void rs6000_encode_section_info PARAMS ((tree));
+extern void rs6000_encode_section_info PARAMS ((tree, int));
 extern void rs6000_select_section PARAMS ((tree, int));
 extern void rs6000_unique_section PARAMS ((tree, int));
 #ifdef ARGS_SIZE_RTX

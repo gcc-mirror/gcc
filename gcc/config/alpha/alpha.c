@@ -1554,8 +1554,9 @@ decl_in_text_section (decl)
    then add "@s" instead.  */
 
 void
-alpha_encode_section_info (decl)
+alpha_encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   const char *symbol_str;
   bool is_local, is_small;

@@ -1064,7 +1064,7 @@ __transfer_from_trampoline ()		\
    symbol or a code symbol. These symbols are referenced via pc
    and not via sb. */
 
-#define ENCODE_SECTION_INFO(DECL) \
+#define ENCODE_SECTION_INFO(DECL, FIRST)				\
 do									\
   {									\
     extern int flag_pic;						\

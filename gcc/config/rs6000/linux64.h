@@ -218,7 +218,7 @@ Boston, MA 02111-1307, USA.  */
    call.  Do not set this flag if the function is weakly defined.  */
 
 #undef  ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL)				\
+#define ENCODE_SECTION_INFO(DECL, FIRST)			\
   if (TREE_CODE (DECL) == FUNCTION_DECL				\
       && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))	\
       && ! DECL_WEAK (DECL))					\
