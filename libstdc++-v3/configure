@@ -18038,7 +18038,7 @@ rm -f conftest*
     fi
     fi
 
-        if test $ctype_default ="yes"; then 
+        if test $ctype_default = "yes"; then 
     echo $ac_n "checking <ctype> for IRIX""... $ac_c" 1>&6
 echo "configure:18044: checking <ctype> for IRIX" >&5
     cat > conftest.$ac_ext <<EOF
