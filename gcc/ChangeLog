@@ -1,3 +1,7 @@
+Sun Apr 12 21:59:27 1998  Jeffrey A. Law  <law@cygnus.com>
+
+	* calls.c (expand_call): Fix typo in STRICT_ARGUMENT_NAMING.
+
 Sun Apr 12 21:42:23 1998  D. Karthikeyan  <karthik@cdotd.ernet.in>
 
 	* m68k.h (TARGET_SWITCHES): Add missing comma.
