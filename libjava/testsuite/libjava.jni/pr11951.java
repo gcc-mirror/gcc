@@ -11,4 +11,8 @@ public class pr11951
   {
     nmethod();
   }
+
+  static {
+    System.loadLibrary("pr11951");
+  }  
 }
