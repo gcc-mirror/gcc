@@ -4,18 +4,23 @@ $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $!
 $!	Build the GNU "C" pre-processor on VMS
 $!
+$!  Note:  to build with DEC's VAX C compiler, uncomment the 2nd CC, CFLAGS,
+$!	   and LIBS alternatives, and also execute the following command:
+$!	DEFINE SYS SYS$LIBRARY:
 $
 $!
 $!	C compiler
 $!
 $ CC	:=	gcc
+$! CC	:=	cc	!uncomment for VAXC
 $ BISON	:=	bison
 $ RENAME :=	rename
 $ LINK	:=	link
 $!
 $!	Compiler options
 $!
-$ CFLAGS =	"/debug/inc=([],[.config])"
+$ CFLAGS =	"/debug/incl=([],[.config])"
+$! CFLAGS =	"/noopt/incl=([],[.config])"	!uncomment for VAXC
 $!
 $!	Link options
 $!
@@ -23,7 +28,9 @@ $ LDFLAGS :=	/nomap
 $!
 $!	Link libraries
 $!
-$ LIBS :=	gnu_cc:[000000]gcclib/libr,sys$share:vaxcrtl/libr
+$ LIBS :=	gnu_cc:[000000]gcclib.olb/libr,sys$library:vaxcrtl.olb/libr
+$! LIBS :=	alloca.obj,sys$library:vaxcrtl.olb/libr	!uncomment for VAXC
+$
 $ if "''p1'" .eqs. "LINK" then goto Link
 $ 'CC 'CFLAGS cccp.c
 $ t1:='f$search("CEXP.C")'
@@ -38,13 +45,13 @@ $ bison cexp.y
 $ rename cexp_tab.c cexp.c
 $ 20$:
 $!
+$ if f$locate("alloca.obj",f$edit(LIBS,"lowercase")).lt.f$length(LIBS) then -
+  'CC 'CFLAGS /define="STACK_DIRECTION=(-1)" alloca.c
+$!
 $ 'CC 'CFLAGS cexp.c
 $ 'CC 'CFLAGS version.c
 $ Link:
 $ link 'LDFLAGS /exe=gcc-cpp cccp,cexp,version,version.opt/opt,'LIBS'
-$!
-$! CAUTION: If you want to link gcc-cpp to the sharable image library
-$! VAXCRTL, see the notes in gcc.texinfo (or INSTALL) first.
 $!
 $!	Done
 $!
