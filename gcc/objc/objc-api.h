@@ -127,6 +127,8 @@ objc_error_handler objc_set_error_handler(objc_error_handler func);
 
 #define OBJC_ERR_UNIMPLEMENTED 30      /* Method is not implemented */
 
+#define OBJC_ERR_BAD_STATE 40          /* Bad thread state */
+
 /*
 ** Set this variable nonzero to print a line describing each
 ** message that is sent.  (this is currently disabled)
@@ -443,12 +445,6 @@ BOOL sel_is_mapped (SEL aSel);
 
 extern id class_create_instance(Class class);
 
-/* You should call this function immediately after a bundle has loaded the
-   code. This function sends the +load message to all classes/categories
-   just loaded and then calls the _objc_load_callback function for each
-   class/category. */
-extern void objc_send_load (void);
-
 static inline const char *
 class_get_class_name(Class class)
 {
@@ -506,6 +502,12 @@ method_get_imp(Method_t method)
 }
 
 IMP get_imp (Class class, SEL sel);
+
+/* Redefine on NeXTSTEP so as not to conflict with system function */
+#ifdef __NeXT__
+#define object_copy	gnu_object_copy
+#define object_dispose	gnu_object_dispose
+#endif
 
 id object_copy(id object);
 
