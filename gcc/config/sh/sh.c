@@ -2595,6 +2595,7 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	       || reg == MACH_REG
 	       || reg == MACL_REG)
 	      && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
+	      && reg != RETURN_ADDRESS_POINTER_REGNUM
 	      && reg != T_REG && reg != GBR_REG)
 	    {
 	      if (reg >= 32)
