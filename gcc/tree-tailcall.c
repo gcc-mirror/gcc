@@ -730,7 +730,17 @@ eliminate_tail_call (struct tailcall *t)
       if (!phi)
 	{
 	  tree name = var_ann (param)->default_def;
-	  tree new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
+	  tree new_name;
+
+	  if (!name)
+	    {
+	      /* It may happen that the tag does not have a default_def in case
+		 when all uses of it are dominated by a MUST_DEF.  This however
+		 means that it is not necessary to add a phi node for this
+		 tag.  */
+	      continue;
+	    }
+	  new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
 
 	  var_ann (param)->default_def = new_name;
 	  phi = create_phi_node (name, first);
