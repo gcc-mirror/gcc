@@ -1206,23 +1206,42 @@ print_operand (file, x, code)
 	case MEM:
 	  {
 	    rtx addr = XEXP (x, 0);
+	    int eightbit_ok = ((GET_CODE (addr) == SYMBOL_REF
+				&& SYMBOL_REF_FLAG (addr))
+			       || EIGHTBIT_CONSTANT_ADDRESS_P (addr));
+	    int tiny_ok = ((GET_CODE (addr) == SYMBOL_REF
+			    && TINY_DATA_NAME_P (XSTR (addr, 0)))
+			   || TINY_CONSTANT_ADDRESS_P (addr));
 
 	    fprintf (file, "@");
 	    output_address (addr);
 
-	    /* If this is an 'R' operand (reference into the 8-bit
-	       area), then specify a symbolic address as "foo:8",
-	       otherwise if operand is still in eight bit section, use
-	       "foo:16".  */
-	    if (GET_CODE (addr) == SYMBOL_REF
-		&& SYMBOL_REF_FLAG (addr))
-	      fprintf (file, (code == 'R' ? ":8" : ":16"));
-	    else if (GET_CODE (addr) == SYMBOL_REF
-		     && TINY_DATA_NAME_P (XSTR (addr, 0)))
-	      fprintf (file, ":16");
-	    else if ((code == 'R')
-		     && EIGHTBIT_CONSTANT_ADDRESS_P (addr))
-	      fprintf (file, ":8");
+	    /* We fall back from smaller addressing to larger
+	       addressing in various ways depending on CODE.  */
+	    switch (code)
+	      {
+	      case 'R':
+		/* Used for mov.b and bit operations.  */
+		if (eightbit_ok)
+		  {
+		    fprintf (file, ":8");
+		    break;
+		  }
+
+		/* Fall through.  We should not get here if we are
+		   processing bit operations on H8/300 or H8/300H
+		   because 'U' constraint does not allow bit
+		   operations on the tiny area on these machines.  */
+
+	      case 'T':
+	      case 'S':
+		/* Used for mov.w and mov.l.  */
+		if (tiny_ok)
+		  fprintf (file, ":16");
+		break;
+	      default:
+		break;
+	      }
 	  }
 	  break;
 
