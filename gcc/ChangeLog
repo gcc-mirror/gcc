@@ -1,3 +1,9 @@
+Fri Jan 26 11:37:26 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa-64.h (text_section): Remove declaration.
+
+	* pa.md (return_internal): Remove mode on PIC register use.
+
 2001-01-25  lars brinkhoff  <lars@nocrew.org>
 
 	* tm.texi (DATA_ALIGNMENT, LOCAL_ALIGNMENT, ASM_OPEN_PAREN,

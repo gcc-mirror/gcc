@@ -225,8 +225,6 @@ do {  \
 
 #define READONLY_DATA_SECTION() const_section ()
 
-extern void text_section ();
-
 #define CONST_SECTION_FUNCTION						\
 void									\
 const_section ()							\
