@@ -13,6 +13,9 @@ Tue Apr  6 17:49:49 1999  Philip Blundell  <pb@nexus.co.uk>
 
 Wed Apr  7 14:07:34 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* h8300.c (h8300_adjust_insn_length): Also avoid recognizing
+	ADDR_VEC and ADDR_DIFF_VEC insns.
+
 	* h8300.c (h8300_adjust_insn_length): Avoid trying to recognize
 	USE, CLOBBER or SEQUENCE insns.
 
