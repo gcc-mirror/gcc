@@ -50,7 +50,7 @@ int mult_is_very_cheap;
 static int sdiv_pow2_cheap, smod_pow2_cheap;
 
 /* Cost of various pieces of RTL.  */
-static int add_cost, mult_cost, negate_cost;
+static int add_cost, mult_cost, negate_cost, zero_cost;
 static int shift_cost[BITS_PER_WORD];
 static int shiftadd_cost[BITS_PER_WORD];
 static int shiftsub_cost[BITS_PER_WORD];
@@ -58,36 +58,63 @@ static int shiftsub_cost[BITS_PER_WORD];
 void
 init_expmed ()
 {
-  char *free_point = (char *) oballoc (1);
+  char *free_point;
   /* This is "some random pseudo register" for purposes of calling recog
      to see what insns exist.  */
   rtx reg = gen_rtx (REG, word_mode, FIRST_PSEUDO_REGISTER);
-  rtx pow2 = GEN_INT (32);
-  rtx shift_tmp, shiftadd_tmp, shiftsub_tmp;
+  rtx shift_insn, shiftadd_insn, shiftsub_insn;
   int dummy;
   int m;
 
+  start_sequence ();
+
+  /* Since we are on the permanent obstack, we must be sure we save this
+     spot AFTER we call start_sequence, since it will reuse the rtl it
+     makes.  */
+
+  free_point = (char *) oballoc (0);
+
+  zero_cost = rtx_cost (const0_rtx);
   add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
 
-  shift_tmp = gen_rtx (ASHIFT, word_mode, reg, const0_rtx);
-  shiftadd_tmp = gen_rtx (PLUS, word_mode, gen_rtx (MULT, word_mode, reg, const0_rtx), reg);
-  shiftsub_tmp = gen_rtx (MINUS, word_mode, gen_rtx (MULT, word_mode, reg, const0_rtx), reg);
+  shift_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
+				   gen_rtx (ASHIFT, word_mode, reg,
+					    const0_rtx)));
+
+  shiftadd_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
+				      gen_rtx (PLUS, word_mode,
+					       gen_rtx (MULT, word_mode,
+							reg, const0_rtx),
+					       reg)));
+
+  shiftsub_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
+				      gen_rtx (MINUS, word_mode,
+					       gen_rtx (MULT, word_mode,
+							 reg, const0_rtx),
+						reg)));
 
   init_recog ();
-  /* Using 0 as second argument of recog in the loop is not quite right,
-     but what else is there to do?  */
+
+  shift_cost[0] = 0;
+  shiftadd_cost[0] = shiftsub_cost[0] = add_cost;
+
   for (m = 1; m < BITS_PER_WORD; m++)
     {
       shift_cost[m] = shiftadd_cost[m] = shiftsub_cost[m] = 32000;
-      XEXP (shift_tmp, 1) = GEN_INT (m);
-      if (recog (gen_rtx (SET, VOIDmode, reg, shift_tmp), 0, &dummy) >= 0)
-	shift_cost[m] = rtx_cost (shift_tmp, SET);
-      XEXP (XEXP (shiftadd_tmp, 0), 1) = GEN_INT ((HOST_WIDE_INT) 1 << m);
-      if (recog (gen_rtx (SET, VOIDmode, reg, shiftadd_tmp), 0, &dummy) >= 0)
-	shiftadd_cost[m] = rtx_cost (shiftadd_tmp, SET);
-      XEXP (XEXP (shiftsub_tmp, 0), 1) = GEN_INT ((HOST_WIDE_INT) 1 << m);
-      if (recog (gen_rtx (SET, VOIDmode, reg, shiftsub_tmp), 0, &dummy) >= 0)
-	shiftsub_cost[m] = rtx_cost (shiftsub_tmp, SET);
+
+      XEXP (SET_SRC (PATTERN (shift_insn)), 1) = GEN_INT (m);
+      if (recog (PATTERN (shift_insn), shift_insn, &dummy) >= 0)
+	shift_cost[m] = rtx_cost (SET_SRC (PATTERN (shift_insn)), SET);
+
+      XEXP (XEXP (SET_SRC (PATTERN (shiftadd_insn)), 0), 1)
+	= GEN_INT ((HOST_WIDE_INT) 1 << m);
+      if (recog (PATTERN (shiftadd_insn), shiftadd_insn, &dummy) >= 0)
+	shiftadd_cost[m] = rtx_cost (PATTERN (SET_SRC (shiftadd_insn)), SET);
+
+      XEXP (XEXP (SET_SRC (PATTERN (shiftsub_insn)), 0), 1)
+	= GEN_INT ((HOST_WIDE_INT) 1 << m);
+      if (recog (PATTERN (shiftsub_insn), shiftsub_insn, &dummy) >= 0)
+	shiftsub_cost[m] = rtx_cost (PATTERN (SET_SRC (shiftsub_insn)), SET);
     }
 
   mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg), SET);
@@ -99,11 +126,14 @@ init_expmed ()
        < rtx_cost (gen_rtx (ASHIFT, word_mode, reg, GEN_INT (7)), SET));
 
   sdiv_pow2_cheap
-    = rtx_cost (gen_rtx (DIV, word_mode, reg, pow2), SET) <= 2 * add_cost;
+    = (rtx_cost (gen_rtx (DIV, word_mode, reg, GEN_INT (32)), SET)
+       <= 2 * add_cost);
   smod_pow2_cheap
-    = rtx_cost (gen_rtx (MOD, word_mode, reg, pow2), SET) <= 2 * add_cost;
+    = (rtx_cost (gen_rtx (MOD, word_mode, reg, GEN_INT (32)), SET)
+       <= 2 * add_cost);
 
   /* Free the objects we just allocated.  */
+  end_sequence ();
   obfree (free_point);
 }
 
@@ -1718,18 +1748,21 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
   return temp;
 }
 
-enum alg_code { alg_none, alg_shift,
+enum alg_code { alg_zero, alg_m, alg_shift,
 		  alg_add_t_m2, alg_sub_t_m2,
 		  alg_add_factor, alg_sub_factor,
 		  alg_add_t2_m, alg_sub_t2_m,
-alg_add, alg_subtract, alg_factor, alg_shiftop };
+		  alg_add, alg_subtract, alg_factor, alg_shiftop };
 
 /* This structure records a sequence of operations.
    `ops' is the number of operations recorded.
    `cost' is their total cost.
    The operations are stored in `op' and the corresponding
-   integer coefficients in `coeff'.
+   logarithms of the integer coefficients in `log'.
+
    These are the operations:
+   alg_zero		total := 0;
+   alg_m		total := multiplicand;
    alg_shift		total := total * coeff
    alg_add_t_m2		total := total + multiplicand * coeff;
    alg_sub_t_m2		total := total - multiplicand * coeff;
@@ -1737,7 +1770,8 @@ alg_add, alg_subtract, alg_factor, alg_shiftop };
    alg_sub_factor	total := total * coeff - total;
    alg_add_t2_m		total := total * coeff + multiplicand;
    alg_sub_t2_m		total := total * coeff - multiplicand;
-*/
+
+   The first operand must be either alg_zero or alg_m.  */
 
 #ifndef MAX_BITS_PER_WORD
 #define MAX_BITS_PER_WORD BITS_PER_WORD
@@ -1747,13 +1781,13 @@ struct algorithm
 {
   short cost;
   short ops;
-/* The size of the OP and COEFF fields are not directly related to the
-   word size, but the worst-case algorithms will be if we have few
-   consecutive ones or zeros, i.e., a multiplicand like 10101010101...
-   In that case we will generate shift-by-2, add, shift-by-2, add,...,
-   in total wordsize operations.  */
+  /* The size of the OP and LOG fields are not directly related to the
+     word size, but the worst-case algorithms will be if we have few
+     consecutive ones or zeros, i.e., a multiplicand like 10101010101...
+     In that case we will generate shift-by-2, add, shift-by-2, add,...,
+     in total wordsize operations.  */
   enum alg_code op[MAX_BITS_PER_WORD];
-  char coeff[MAX_BITS_PER_WORD];
+  char log[MAX_BITS_PER_WORD];
 };
 
 /* Compute and return the best algorithm for multiplying by T.
@@ -1781,13 +1815,33 @@ synth_mult (t, cost_limit)
   if (cost_limit <= 0)
     return *best_alg;
 
-  if (t <= 1)
+  /* t == 1 can be done in zero cost.  */
+  if (t == 1)
     {
-      /* t == 0 or t == 1 takes no instructions.  */
-      best_alg->ops = 0;
+      best_alg->ops = 1;
       best_alg->cost = 0;
+      best_alg->op[0] = alg_m;
       return *best_alg;
     }
+
+  /* t == 0 sometimes has a cost.  If it does and it exceeds our limit,
+     fail now.  */
+
+  else if (t == 0)
+    {
+      if (zero_cost >= cost_limit)
+	return *best_alg;
+      else
+	{
+	  best_alg->ops = 1;
+	  best_alg->cost = zero_cost;
+	  best_alg->op[0] = alg_zero;
+	  return *best_alg;
+	}
+    }
+
+  /* If we have a group of zero bits at the low-order part of T, try
+     multiplying by the remaining bits and then doing a shift.  */
 
   if ((t & 1) == 0)
     {
@@ -1803,7 +1857,7 @@ synth_mult (t, cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
-	      best_alg->coeff[best_alg->ops] = m;
+	      best_alg->log[best_alg->ops] = m;
 	      best_alg->op[best_alg->ops++] = alg_shift;
 	      best_alg->cost = cost_limit = cost;
 	    }
@@ -1827,11 +1881,7 @@ synth_mult (t, cost_limit)
       d = ((unsigned HOST_WIDE_INT) 1 << m) + 1;
       if (t % d == 0 && t > d)
 	{
-	  if (shiftadd_cost[m] <= add_cost + shift_cost[m])
-	    cost = shiftadd_cost[m];
-	  else
-	    cost = add_cost + shift_cost[m];
-
+	  cost = MIN (shiftadd_cost[m], add_cost + shift_cost[m]);
 	  *alg_in = synth_mult (t / d, cost_limit - cost);
 
 	  cost += alg_in->cost;
@@ -1839,7 +1889,7 @@ synth_mult (t, cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
-	      best_alg->coeff[best_alg->ops] = m;
+	      best_alg->log[best_alg->ops] = m;
 	      best_alg->op[best_alg->ops++] = alg_add_factor;
 	      best_alg->cost = cost_limit = cost;
 	    }
@@ -1848,11 +1898,7 @@ synth_mult (t, cost_limit)
       d = ((unsigned HOST_WIDE_INT) 1 << m) - 1;
       if (t % d == 0 && t > d)
 	{
-	  if (shiftsub_cost[m] <= add_cost + shift_cost[m])
-	    cost = shiftsub_cost[m];
-	  else
-	    cost = add_cost + shift_cost[m];
-
+	  cost = MIN (shiftsub_cost[m], add_cost + shift_cost[m]);
 	  *alg_in = synth_mult (t / d, cost_limit - cost);
 
 	  cost += alg_in->cost;
@@ -1860,7 +1906,7 @@ synth_mult (t, cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
-	      best_alg->coeff[best_alg->ops] = m;
+	      best_alg->log[best_alg->ops] = m;
 	      best_alg->op[best_alg->ops++] = alg_sub_factor;
 	      best_alg->cost = cost_limit = cost;
 	    }
@@ -1875,38 +1921,32 @@ synth_mult (t, cost_limit)
       q = q & -q;
       m = exact_log2 (q);
       cost = shiftadd_cost[m];
-      if (cost < cost_limit)
-	{
-	  *alg_in = synth_mult ((t - 1) >> m, cost_limit - cost);
+      *alg_in = synth_mult ((t - 1) >> m, cost_limit - cost);
 
-	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
-	    {
-	      struct algorithm *x;
-	      x = alg_in, alg_in = best_alg, best_alg = x;
-	      best_alg->coeff[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_add_t2_m;
-	      best_alg->cost = cost_limit = cost;
-	    }
+      cost += alg_in->cost;
+      if (cost < best_alg->cost)
+	{
+	  struct algorithm *x;
+	  x = alg_in, alg_in = best_alg, best_alg = x;
+	  best_alg->log[best_alg->ops] = m;
+	  best_alg->op[best_alg->ops++] = alg_add_t2_m;
+	  best_alg->cost = cost_limit = cost;
 	}
 
       q = t + 1;
       q = q & -q;
       m = exact_log2 (q);
       cost = shiftsub_cost[m];
-      if (cost < cost_limit)
-	{
-	  *alg_in = synth_mult ((t + 1) >> m, cost_limit - cost);
+      *alg_in = synth_mult ((t + 1) >> m, cost_limit - cost);
 
-	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
-	    {
-	      struct algorithm *x;
-	      x = alg_in, alg_in = best_alg, best_alg = x;
-	      best_alg->coeff[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_sub_t2_m;
-	      best_alg->cost = cost_limit = cost;
-	    }
+      cost += alg_in->cost;
+      if (cost < best_alg->cost)
+	{
+	  struct algorithm *x;
+	  x = alg_in, alg_in = best_alg, best_alg = x;
+	  best_alg->log[best_alg->ops] = m;
+	  best_alg->op[best_alg->ops++] = alg_sub_t2_m;
+	  best_alg->cost = cost_limit = cost;
 	}
     }
 
@@ -1926,15 +1966,10 @@ synth_mult (t, cost_limit)
 	/* There are many bits in a row.  Make 'em by subtraction.  */
 
 	m = exact_log2 (q);
-	if (m == 0)
-	  cost = add_cost;
-	else
-	  {
-	    /* Don't use shiftsub_cost here, this operation
-	       scales wrong operand.  */
-	    cost = add_cost + shift_cost[m];
-	  }
 
+	/* Don't use shiftsub_cost here, this operation
+	   scales wrong operand.  */
+	cost = add_cost + shift_cost[m];
 	*alg_in = synth_mult (t + q, cost_limit - cost);
 
 	cost += alg_in->cost;
@@ -1942,7 +1977,7 @@ synth_mult (t, cost_limit)
 	  {
 	    struct algorithm *x;
 	    x = alg_in, alg_in = best_alg, best_alg = x;
-	    best_alg->coeff[best_alg->ops] = m;
+	    best_alg->log[best_alg->ops] = m;
 	    best_alg->op[best_alg->ops++] = alg_sub_t_m2;
 	    best_alg->cost = cost_limit = cost;
 	  }
@@ -1952,16 +1987,7 @@ synth_mult (t, cost_limit)
 	/* There's only one or two bit at the left.  Make it by addition.  */
 
 	m = exact_log2 (q);
-	if (m == 0)
-	  cost = add_cost;
-	else
-	  {
-	    if (shiftadd_cost[m] <= add_cost + shift_cost[m])
-	      cost = shiftadd_cost[m];
-	    else
-	      cost = add_cost + shift_cost[m];
-	  }
-
+	cost = MIN (shiftadd_cost[m], add_cost + shift_cost[m]);
 	*alg_in = synth_mult (t - q, cost_limit - cost);
 
 	cost += alg_in->cost;
@@ -1969,7 +1995,7 @@ synth_mult (t, cost_limit)
 	  {
 	    struct algorithm *x;
 	    x = alg_in, alg_in = best_alg, best_alg = x;
-	    best_alg->coeff[best_alg->ops] = m;
+	    best_alg->log[best_alg->ops] = m;
 	    best_alg->op[best_alg->ops++] = alg_add_t_m2;
 	    best_alg->cost = cost_limit = cost;
 	  }
@@ -2015,12 +2041,15 @@ expand_mult (mode, op0, op1, target, unsignedp)
      produce a smaller program when -O is not used.
      But this causes such a terrible slowdown sometimes
      that it seems better to use synth_mult always.  */
+
   if (GET_CODE (const_op1) == CONST_INT && ! mult_is_very_cheap)
     {
       struct algorithm alg;
       struct algorithm neg_alg;
       int negate = 0;
       HOST_WIDE_INT val = INTVAL (op1);
+      HOST_WIDE_INT val_so_far;
+      rtx insn;
 
       /* Try to do the computation two ways: multiply by the negative of OP1
 	 and then negate, or do the multiplication directly.  The latter is
@@ -2050,128 +2079,108 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	  if (GET_CODE (op0) == MEM)
 	    op0 = force_reg (mode, op0);
 
-	  if (alg.ops == 0)
-	    accum = copy_to_mode_reg (mode, op0);
-	  else
+	  /* ACCUM starts out either as OP0 or as a zero, depending on
+	     the first operation.  */
+
+	  if (alg.op[0] == alg_zero)
 	    {
-	      int log = alg.coeff[0];
-	      enum alg_code op = alg.op[0];
-	      if (op == alg_shift)
-		{
-		  accum = expand_shift (LSHIFT_EXPR, mode, op0,
-					build_int_2 (log, 0), NULL_RTX, 0);
-		}
-	      else if (op == alg_add_t2_m)
-		{
-		  accum = expand_shift (LSHIFT_EXPR, mode, op0,
-					build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (PLUS, mode, accum, op0),
-					 accum);
-		}
-	      else if (op == alg_sub_t2_m)
-		{
-		  accum = expand_shift (LSHIFT_EXPR, mode, op0,
-					build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (MINUS, mode, accum, op0),
-					 accum);
-		}
-	      else
-		abort ();
+	      accum = copy_to_mode_reg (mode, const0_rtx);
+	      val_so_far = 0;
 	    }
+	  else if (alg.op[0] == alg_m)
+	    {
+	      accum  = copy_to_mode_reg (mode, op0);
+	      val_so_far = 1;
+	    }
+	  else
+	    abort ();
 
 	  for (opno = 1; opno < alg.ops; opno++)
 	    {
-	      int log = alg.coeff[opno];
+	      int log = alg.log[opno];
+	      rtx shift_subtarget = preserve_subexpressions_p () ? 0 : accum;
+	      rtx add_target = opno == alg.ops - 1 && target != 0 ? target : 0;
+
 	      switch (alg.op[opno])
 		{
 		case alg_shift:
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
 					build_int_2 (log, 0), NULL_RTX, 0);
+		  val_so_far <<= log;
 		  break;
 
 		case alg_add_t_m2:
-		  if (log != 0)
-		    {
-		      tem = expand_shift (LSHIFT_EXPR, mode, op0,
-					  build_int_2 (log, 0), NULL_RTX, 0);
-		      accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
-					     accum);
-		    }
-		  else
-		    {
-		      accum = force_operand (gen_rtx (PLUS, mode, accum, op0),
-					     accum);
-		    }
+		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
+				      build_int_2 (log, 0), NULL_RTX, 0);
+		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
+					 add_target ? add_target : accum);
+		  val_so_far += (HOST_WIDE_INT) 1 << log;
 		  break;
 
 		case alg_sub_t_m2:
-		  if (log != 0)
-		    {
-		      tem = expand_shift (LSHIFT_EXPR, mode, op0,
-					  build_int_2 (log, 0), NULL_RTX, 0);
-		      accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
-					     accum);
-		    }
-		  else
-		    {
-		      accum = force_operand (gen_rtx (MINUS, mode, accum, op0),
-					     accum);
-		    }
+		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
+				      build_int_2 (log, 0), NULL_RTX, 0);
+		  accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
+					 add_target ? add_target : accum);
+		  val_so_far -= (HOST_WIDE_INT) 1 << log;
 		  break;
 
 		case alg_add_t2_m:
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
-					build_int_2 (log, 0), NULL_RTX, 0);
+					build_int_2 (log, 0), accum, 0);
 		  accum = force_operand (gen_rtx (PLUS, mode, accum, op0),
-					 accum);
+					 add_target ? add_target : accum);
+		  val_so_far = (val_so_far << log) + 1;
 		  break;
 
 		case alg_sub_t2_m:
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
-					build_int_2 (log, 0), NULL_RTX, 0);
+					build_int_2 (log, 0), accum, 0);
 		  accum = force_operand (gen_rtx (MINUS, mode, accum, op0),
-					 accum);
+					 add_target ? add_target : accum);
+		  val_so_far = (val_so_far << log) - 1;
 		  break;
 
 		case alg_add_factor:
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (PLUS, mode, tem, accum),
-					 tem);
+		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
+					 add_target ? add_target : accum);
+		  val_so_far += val_so_far << log;
 		  break;
 
 		case alg_sub_factor:
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx (MINUS, mode, tem, accum),
-					 tem);
+					 add_target ? add_target : tem);
+		  val_so_far = (val_so_far << log) - val_so_far;
 		  break;
+
+		default:
+		  abort ();;
 		}
-	    }
 
-	  /* Write a REG_EQUAL note on the last insn so that we can cse
-	     multiplication sequences.  We need not do this if we were
-	     multiplying by a power of two, since only one insn would have
-	     been generated.
+	      /* Write a REG_EQUAL note on the last insn so that we can cse
+		 multiplication sequences.  */
 
-	     ??? We could also write REG_EQUAL notes on the last insn of
-	     each sequence that uses a single temporary, but it is not
-	     clear how to calculate the partial product so far.
-
-	     Torbjorn: Can you do this?  */
-
-	  if (exact_log2 (val) < 0)
-	    {
-	      rtx last = get_last_insn ();
-	      REG_NOTES (last)
+	      insn = get_last_insn ();
+	      REG_NOTES (insn)
 		= gen_rtx (EXPR_LIST, REG_EQUAL,
-			   gen_rtx (MULT, mode, op0,
-				    negate ? GEN_INT (val) : op1),
-			   REG_NOTES (last));
+			   gen_rtx (MULT, mode, op0, GEN_INT (val_so_far)),
+			   REG_NOTES (insn));
 	    }
 
-	  return (negate ? expand_unop (mode, neg_optab, accum, target, 0)
-		  : accum);
+	  if (negate)
+	    {
+	      val_so_far = - val_so_far;
+	      accum = expand_unop (mode, neg_optab, accum, target, 0);
+	    }
+
+	  if (val != val_so_far)
+	    abort ();
+
+	  return accum;
 	}
     }
 
