@@ -1,0 +1,2036 @@
+@c Copyright (C) 1995-1997 Free Software Foundation, Inc.
+@c This is part of the G77 manual.
+@c For copying conditions, see the file g77.texi.
+
+@c The text of this file appears in the file INSTALL
+@c in the G77 distribution, as well as in the G77 manual.
+
+@c 1997-08-11
+
+@ifclear INSTALLONLY
+@node Installation
+@chapter Installing GNU Fortran
+@end ifclear
+@cindex installing GNU Fortran
+
+The following information describes how to install @code{g77}.
+
+The information in this file generally pertains to dealing
+with @emph{source} distributions of @code{g77} and @code{gcc}.
+It is possible that some of this information will be applicable
+to some @emph{binary} distributions of these products---however,
+since these distributions are not made by the maintainers of
+@code{g77}, responsibility for binary distributions rests with
+whoever built and first distributed them.
+
+Nevertheless, efforts to make @code{g77} easier to both build
+and install from source and package up as a binary distribution
+are ongoing.
+
+@menu
+* Prerequisites::          Make sure your system is ready for @code{g77}.
+* Problems Installing::    Known trouble areas.
+* Settings::               Changing @code{g77} internals before building.
+* Quick Start::            The easier procedure for non-experts.
+* Complete Installation::  For experts, or those who want to be: the details.
+* Distributing Binaries::  If you plan on distributing your @code{g77}.
+@end menu
+
+@node Prerequisites
+@section Prerequisites
+@cindex prerequisites
+
+The procedures described to unpack, configure, build, and
+install @code{g77} assume your system has certain programs
+already installed.
+
+The following prerequisites should be met by your
+system before you follow the @code{g77} installation instructions:
+
+@table @asis
+@item @code{gzip}
+To unpack the @code{gcc} and @code{g77} distributions,
+you'll need the @code{gunzip} utility in the @code{gzip}
+distribution.
+Most UNIX systems already have @code{gzip} installed.
+If yours doesn't, you can get it from the FSF.
+
+Note that you'll need @code{tar} and other utilities
+as well, but all UNIX systems have these.
+There are GNU versions of all these available---in fact,
+a complete GNU UNIX system can be put together on
+most systems, if desired.
+
+@item @file{gcc-2.7.2.2.tar.gz}
+You need to have this, or some other applicable, version
+of @code{gcc} on your system.
+The version should be an exact copy of a distribution
+from the FSF.
+It is approximately 7MB large.
+
+If you've already unpacked @file{gcc-2.7.2.2.tar.gz} into a
+directory (named @file{gcc-2.7.2.2}) called the @dfn{source tree}
+for @code{gcc}, you can delete the distribution
+itself, but you'll need to remember to skip any instructions to unpack
+this distribution.
+
+Without an applicable @code{gcc} source tree, you cannot
+build @code{g77}.
+You can obtain an FSF distribution of @code{gcc} from the FSF.
+
+@item @file{g77-0.5.21.tar.gz}
+You probably have already unpacked this distribution,
+or you are reading an advanced copy of this manual,
+which is contained in this distribution.
+This distribution approximately 1MB large.
+
+You can obtain an FSF distribution of @code{g77} from the FSF,
+the same way you obtained @code{gcc}.
+
+@item 100MB disk space
+For a complete @dfn{bootstrap} build, about 100MB
+of disk space is required for @code{g77} by the author's
+current GNU/Linux system.
+
+Some juggling can reduce the amount of space needed;
+during the bootstrap process, once Stage 3 starts,
+during which the version of @code{gcc} that has been copied
+into the @file{stage2/} directory is used to rebuild the
+system, you can delete the @file{stage1/} directory
+to free up some space.
+
+It is likely that many systems don't require the complete
+bootstrap build, as they already have a recent version of
+@code{gcc} installed.
+Such systems might be able to build @code{g77} with only
+about 75MB of free space.
+
+@item @code{patch}
+Although you can do everything @code{patch} does yourself,
+by hand, without much trouble, having @code{patch} installed
+makes installation of new versions of GNU utilities such as
+@code{g77} so much easier that it is worth getting.
+You can obtain @code{patch} the same way you obtained
+@code{gcc} and @code{g77}.
+
+In any case, you can apply patches by hand---patch files
+are designed for humans to read them.
+
+@item @code{make}
+Your system must have @code{make}, and you will probably save
+yourself a lot of trouble if it is GNU @code{make} (sometimes
+referred to as @code{gmake}).
+
+@item @code{cc}
+Your system must have a working C compiler.
+
+@xref{Installation,,Installing GNU CC,gcc,Using and Porting GNU CC},
+for more information on prerequisites for installing @code{gcc}.
+
+@item @code{bison}
+If you do not have @code{bison} installed, you can usually
+work around any need for it, since @code{g77} itself does
+not use it, and @code{gcc} normally includes all files
+generated by running it in its distribution.
+You can obtain @code{bison} the same way you obtained
+@code{gcc} and @code{g77}.
+
+@xref{Missing bison?},
+for information on how to work around not having @code{bison}.
+
+@item @code{makeinfo}
+If you are missing @code{makeinfo}, you can usually work
+around any need for it.
+You can obtain @code{makeinfo} the same way you obtained
+@code{gcc} and @code{g77}.
+
+@xref{Missing makeinfo?},
+for information on getting around the lack of @code{makeinfo}.
+
+@item @code{root} access
+To perform the complete installation procedures on a system,
+you need to have @code{root} access to that system, or
+equivalent access.
+
+Portions of the procedure (such as configuring and building
+@code{g77}) can be performed by any user with enough disk
+space and virtual memory.
+
+However, these instructions are oriented towards less-experienced
+users who want to install @code{g77} on their own personal
+systems.
+
+System administrators with more experience will want to
+determine for themselves how they want to modify the
+procedures described below to suit the needs of their
+installation.
+@end table
+
+@node Problems Installing
+@section Problems Installing
+@cindex problems installing
+@cindex installation problems
+
+This is a list of problems (and some apparent problems which don't
+really mean anything is wrong) that show up when configuring,
+building, installing, or porting GNU Fortran.
+
+@xref{Installation Problems,,,gcc,Using and Porting GNU CC},
+for more information on installation problems that can afflict
+either @code{gcc} or @code{g77}.
+
+@menu
+* General Problems::         Problems afflicting most or all systems.
+* Cross-compiler Problems::  Problems afflicting cross-compilation setups.
+@end menu
+
+@node General Problems
+@subsection General Problems
+
+These problems can occur on most or all systems.
+
+@menu
+* GNU C Required::	       Why even ANSI C is not enough.
+* Patching GNU CC Necessary::  Why @code{gcc} must be patched first.
+* Building GNU CC Necessary::  Why you can't build @emph{just} Fortran.
+* Missing strtoul::	       If linking @code{f771} fails due to an
+                                unresolved reference to @code{strtoul}.
+* Object File Differences::    It's okay that @samp{make compare} will
+                                flag @file{f/zzz.o}.
+* Cleanup Kills Stage Directories::  A minor nit for @code{g77} developers.
+* Missing gperf?::             When building requires @code{gperf}.
+@end menu
+
+@node GNU C Required
+@subsubsection GNU C Required
+@cindex GNU C required
+@cindex requirements, GNU C
+
+Compiling @code{g77} requires GNU C, not just ANSI C.
+Fixing this wouldn't
+be very hard (just tedious), but the code using GNU extensions to
+the C language is expected to be rewritten for 0.6 anyway,
+so there are no plans for an interim fix.
+
+This requirement does not mean you must already have @code{gcc}
+installed to build @code{g77}.
+As long as you have a working C compiler, you can use a
+bootstrap build to automate the process of first building
+@code{gcc} using the working C compiler you have, then building
+@code{g77} and rebuilding @code{gcc} using that just-built @code{gcc},
+and so on.
+
+@node Patching GNU CC Necessary
+@subsubsection Patching GNU CC Necessary
+@cindex patch files
+@cindex GBE
+
+@code{g77} currently requires application of a patch file to the gcc compiler
+tree.
+The necessary patches should be folded in to the mainline gcc distribution.
+
+Some combinations
+of versions of @code{g77} and @code{gcc} might actually @emph{require} no
+patches, but the patch files will be provided anyway as long as
+there are more changes expected in subsequent releases.
+These patch files might contain
+unnecessary, but possibly helpful, patches.
+As a result, it is possible this issue might never be
+resolved, except by eliminating the need for the person
+configuring @code{g77} to apply a patch by hand, by going
+to a more automated approach (such as configure-time patching).
+
+@node Building GNU CC Necessary
+@subsubsection Building GNU CC Necessary
+@cindex gcc, building
+@cindex building gcc
+
+It should be possible to build the runtime without building @code{cc1}
+and other non-Fortran items, but, for now, an easy way to do that
+is not yet established.
+
+@node Missing strtoul
+@subsubsection Missing strtoul
+@cindex strtoul
+@cindex _strtoul
+@cindex undefined reference (_strtoul)
+@cindex f771, linking error for
+@cindex linking error for f771
+@cindex ld error for f771
+@cindex ld can't find _strtoul
+@cindex SunOS4
+
+On SunOS4 systems, linking the @code{f771} program produces
+an error message concerning an undefined symbol named
+@samp{_strtoul}.
+
+This is not a @code{g77} bug.
+@xref{Patching GNU Fortran}, for information on
+a workaround provided by @code{g77}.
+
+The proper fix is either to upgrade your system to one that
+provides a complete ANSI C environment, or improve @code{gcc} so
+that it provides one for all the languages and configurations it supports.
+
+@emph{Note:} In earlier versions of @code{g77}, an automated
+workaround for this problem was attempted.
+It worked for systems without @samp{_strtoul}, substituting
+the incomplete-yet-sufficient version supplied with @code{g77}
+for those systems.
+However, the automated workaround failed mysteriously for systems
+that appeared to have conforming ANSI C environments, and it
+was decided that, lacking resources to more fully investigate
+the problem, it was better to not punish users of those systems
+either by requiring them to work around the problem by hand or
+by always substituting an incomplete @code{strtoul()} implementation
+when their systems had a complete, working one.
+Unfortunately, this meant inconveniencing users of systems not
+having @code{strtoul()}, but they're using obsolete (and generally
+unsupported) systems anyway.
+
+@node Object File Differences
+@subsubsection Object File Differences
+@cindex zzz.o
+@cindex zzz.c
+@cindex object file, differences
+@cindex differences between object files
+@cindex make compare
+
+A comparison of object files after building Stage 3 during a
+bootstrap build will result in @file{gcc/f/zzz.o} being flagged
+as different from the Stage 2 version.
+That is because it
+contains a string with an expansion of the @code{__TIME__} macro,
+which expands to the current time of day.
+It is nothing to worry about, since
+@file{gcc/f/zzz.c} doesn't contain any actual code.
+It does allow you to override its use of @code{__DATE__} and
+@code{__TIME__} by defining macros for the compilation---see the
+source code for details.
+
+@node Cleanup Kills Stage Directories
+@subsubsection Cleanup Kills Stage Directories
+@cindex stage directories
+@cindex make clean
+
+It'd be helpful if @code{g77}'s @file{Makefile.in} or @file{Make-lang.in}
+would create the various @file{stage@var{n}} directories and their
+subdirectories, so developers and expert installers wouldn't have to
+reconfigure after cleaning up.
+
+@node Missing gperf?
+@subsubsection Missing @code{gperf}?
+@cindex @code{gperf}
+@cindex missing @code{gperf}
+
+If a build aborts trying to invoke @code{gperf}, that
+strongly suggests an improper method was used to
+create the @code{gcc} source directory,
+such as the UNIX @samp{cp -r} command instead
+of @samp{cp -pr}, since this problem very likely
+indicates that the date-time-modified information on
+the @code{gcc} source files is incorrect.
+
+The proper solution is to recreate the @code{gcc} source
+directory from a @code{gcc} distribution known to be
+provided by the FSF.
+
+It is possible you might be able to temporarily
+work around the problem, however, by trying these
+commands:
+
+@example
+sh# @kbd{cd gcc}
+sh# @kbd{touch c-gperf.h}
+sh#
+@end example
+
+These commands update the date-time-modified information for
+the file produced by the invocation of @code{gperf}
+in the current versions of @code{gcc}, so that @code{make} no
+longer believes it needs to update it.
+This file should already exist in a @code{gcc}
+distribution, but mistakes made when copying the @code{gcc}
+directory can leave the modification information
+set such that the @code{gperf} input files look more ``recent''
+than the corresponding output files.
+
+If the above does not work, definitely start from scratch
+and avoid copying the @code{gcc} using any method that does
+not reliably preserve date-time-modified information, such
+as the UNIX @samp{cp -r} command.
+
+@node Cross-compiler Problems
+@subsection Cross-compiler Problems
+@cindex cross-compiler, problems
+
+@code{g77} has been in alpha testing since September of
+1992, and in public beta testing since February of 1995.
+Alpha testing was done by a small number of people worldwide on a fairly
+wide variety of machines, involving self-compilation in most or
+all cases.
+Beta testing has been done primarily via self-compilation,
+but in more and more cases, cross-compilation (and ``criss-cross
+compilation'', where a version of a compiler is built on one machine
+to run on a second and generate code that runs on a third) has
+been tried and has succeeded, to varying extents.
+
+Generally, @code{g77} can be ported to any configuration to which
+@code{gcc}, @code{f2c}, and @code{libf2c} can be ported and made
+to work together, aside from the known problems described in this
+manual.
+If you want to port @code{g77} to a particular configuration,
+you should first make sure @code{gcc} and @code{libf2c} can be
+ported to that configuration before focusing on @code{g77}, because
+@code{g77} is so dependent on them.
+
+Even for cases where @code{gcc} and @code{libf2c} work,
+you might run into problems with cross-compilation on certain machines,
+for several reasons.
+
+@itemize @bullet
+@item
+There is one known bug
+(a design bug to be fixed in 0.6) that prevents configuration of
+@code{g77} as a cross-compiler in some cases,
+though there are assumptions made during
+configuration that probably make doing non-self-hosting builds
+a hassle, requiring manual intervention.
+
+@item
+@code{gcc} might still have some trouble being configured
+for certain combinations of machines.
+For example, it might not know how to handle floating-point
+constants.
+
+@item
+Improvements to the way @code{libf2c} is built could make
+building @code{g77} as a cross-compiler easier---for example,
+passing and using @samp{LD} and @samp{AR} in the appropriate
+ways.
+
+@item
+There are still some challenges putting together the right
+run-time libraries (needed by @code{libf2c}) for a target
+system, depending on the systems involved in the configuration.
+(This is a general problem with cross-compilation, and with
+@code{gcc} in particular.)
+@end itemize
+
+@node Settings
+@section Changing Settings Before Building
+
+Here are some internal @code{g77} settings that can be changed
+by editing source files in @file{gcc/f/} before building.
+
+This information, and perhaps even these settings, represent
+stop-gap solutions to problems people doing various ports
+of @code{g77} have encountered.
+As such, none of the following information is expected to
+be pertinent in future versions of @code{g77}.
+
+@menu
+* Larger File Unit Numbers::     Raising @samp{MXUNIT}.
+* Always Flush Output::          Synchronizing write errors.
+* Maximum Stackable Size::       Large arrays are forced off the stack frame.
+* Floating-point Bit Patterns::  Possible programs building cross-compiler.
+* Large Initialization::         Large arrays with @code{DATA} initialization.
+* Alpha Problems Fixed::         Problems 64-bit systems like Alphas now fixed?
+@end menu
+
+@node Larger File Unit Numbers
+@subsection Larger File Unit Numbers
+@cindex MXUNIT
+@cindex unit numbers
+@cindex maximum unit number
+@cindex illegal unit number
+@cindex increasing maximum unit number
+
+As distributed, whether as part of @code{f2c} or @code{g77},
+@code{libf2c} accepts file unit numbers only in the range
+0 through 99.
+For example, a statement such as @samp{WRITE (UNIT=100)} causes
+a run-time crash in @code{libf2c}, because the unit number,
+100, is out of range.
+
+If you know that Fortran programs at your installation require
+the use of unit numbers higher than 99, you can change the
+value of the @samp{MXUNIT} macro, which represents the maximum unit
+number, to an appropriately higher value.
+
+To do this, edit the file @file{f/runtime/libI77/fio.h} in your
+@code{g77} source tree, changing the following line:
+
+@example
+#define MXUNIT 100
+@end example
+
+Change the line so that the value of @samp{MXUNIT} is defined to be
+at least one @emph{greater} than the maximum unit number used by
+the Fortran programs on your system.
+
+(For example, a program that does @samp{WRITE (UNIT=255)} would require
+@samp{MXUNIT} set to at least 256 to avoid crashing.)
+
+Then build or rebuild @code{g77} as appropriate.
+
+@emph{Note:} Changing this macro has @emph{no} effect on other limits
+your system might place on the number of files open at the same time.
+That is, the macro might allow a program to do @samp{WRITE (UNIT=100)},
+but the library and operating system underlying @code{libf2c} might
+disallow it if many other files have already been opened (via @code{OPEN} or
+implicitly via @code{READ}, @code{WRITE}, and so on).
+Information on how to increase these other limits should be found
+in your system's documentation.
+
+@node Always Flush Output
+@subsection Always Flush Output
+@cindex ALWAYS_FLUSH
+@cindex synchronous write errors
+@cindex disk full
+@cindex flushing output
+@cindex fflush()
+@cindex I/O, flushing
+@cindex output, flushing
+@cindex writes, flushing
+@cindex NFS
+@cindex network file system
+
+Some Fortran programs require output
+(writes) to be flushed to the operating system (under UNIX,
+via the @code{fflush()} library call) so that errors,
+such as disk full, are immediately flagged via the relevant
+@code{ERR=} and @code{IOSTAT=} mechanism, instead of such
+errors being flagged later as subsequent writes occur, forcing
+the previously written data to disk, or when the file is
+closed.
+
+Essentially, the difference can be viewed as synchronous error
+reporting (immediate flagging of errors during writes) versus
+asynchronous, or, more precisely, buffered error reporting
+(detection of errors might be delayed).
+
+@code{libf2c} supports flagging write errors immediately when
+it is built with the @samp{ALWAYS_FLUSH} macro defined.
+This results in a @code{libf2c} that runs slower, sometimes
+quite a bit slower, under certain circumstances---for example,
+accessing files via the networked file system NFS---but the
+effect can be more reliable, robust file I/O.
+
+If you know that Fortran programs requiring this level of precision
+of error reporting are to be compiled using the
+version of @code{g77} you are building, you might wish to
+modify the @code{g77} source tree so that the version of
+@code{libf2c} is built with the @samp{ALWAYS_FLUSH} macro
+defined, enabling this behavior.
+
+To do this, find this line in @file{f/runtime/configure.in} in
+your @code{g77} source tree:
+
+@example
+dnl AC_DEFINE(ALWAYS_FLUSH)
+@end example
+
+Remove the leading @samp{dnl@w{ }}, so the line begins with
+@samp{AC_DEFINE(}, and run @code{autoconf} in that file's directory.
+(Or, if you don't have @code{autoconf}, you can modify @file{f2c.h.in}
+in the same directory to include the line @samp{#define ALWAYS_FLUSH}
+after @samp{#define F2C_INCLUDE}.)
+
+Then build or rebuild @code{g77} as appropriate.
+
+@node Maximum Stackable Size
+@subsection Maximum Stackable Size
+@vindex FFECOM_sizeMAXSTACKITEM
+@cindex code, stack variables
+@cindex maximum stackable size
+@cindex stack allocation
+@cindex segmentation violation
+@code{g77}, on most machines, puts many variables and arrays on the stack
+where possible, and can be configured (by changing
+@samp{FFECOM_sizeMAXSTACKITEM} in @file{gcc/f/com.c}) to force
+smaller-sized entities into static storage (saving
+on stack space) or permit larger-sized entities to be put on the
+stack (which can improve run-time performance, as it presents
+more opportunities for the GBE to optimize the generated code).
+
+@emph{Note:} Putting more variables and arrays on the stack
+might cause problems due to system-dependent limits on stack size.
+Also, the value of @samp{FFECOM_sizeMAXSTACKITEM} has no
+effect on automatic variables and arrays.
+@xref{But-bugs}, for more information.
+
+@node Floating-point Bit Patterns
+@subsection Floating-point Bit Patterns
+
+@cindex cross-compiler, building
+@cindex floating-point bit patterns
+@cindex bit patterns
+The @code{g77} build will crash if an attempt is made to build
+it as a cross-compiler
+for a target when @code{g77} cannot reliably determine the bit pattern of
+floating-point constants for the target.
+Planned improvements for g77-0.6
+will give it the capabilities it needs to not have to crash the build
+but rather generate correct code for the target.
+(Currently, @code{g77}
+would generate bad code under such circumstances if it didn't crash
+during the build, e.g. when compiling a source file that does
+something like @samp{EQUIVALENCE (I,R)} and @samp{DATA R/9.43578/}.)
+
+@node Large Initialization
+@subsection Initialization of Large Aggregate Areas
+
+@cindex speed, compiler
+@cindex slow compiler
+@cindex memory utilization
+@cindex large initialization
+@cindex aggregate initialization
+A warning message is issued when @code{g77} sees code that provides
+initial values (e.g. via @code{DATA}) to an aggregate area (@code{COMMON}
+or @code{EQUIVALENCE}, or even a large enough array or @code{CHARACTER}
+variable)
+that is large enough to increase @code{g77}'s compile time by roughly
+a factor of 10.
+
+This size currently is quite small, since @code{g77}
+currently has a known bug requiring too much memory
+and time to handle such cases.
+In @file{gcc/f/data.c}, the macro
+@samp{FFEDATA_sizeTOO_BIG_INIT_} is defined
+to the minimum size for the warning to appear.
+The size is specified in storage units,
+which can be bytes, words, or whatever, on a case-by-case basis.
+
+After changing this macro definition, you must
+(of course) rebuild and reinstall @code{g77} for
+the change to take effect.
+
+Note that, as of version 0.5.18, improvements have
+reduced the scope of the problem for @emph{sparse}
+initialization of large arrays, especially those
+with large, contiguous uninitialized areas.
+However, the warning is issued at a point prior to
+when @code{g77} knows whether the initialization is sparse,
+and delaying the warning could mean it is produced
+too late to be helpful.
+
+Therefore, the macro definition should not be adjusted to
+reflect sparse cases.
+Instead, adjust it to generate the warning when densely
+initialized arrays begin to cause responses noticeably slower
+than linear performance would suggest.
+
+@node Alpha Problems Fixed
+@subsection Alpha Problems Fixed
+
+@cindex Alpha, support
+@cindex 64-bit systems
+@code{g77} used to warn when it was used to compile Fortran code
+for a target configuration that is not basically a 32-bit
+machine (such as an Alpha, which is a 64-bit machine, especially
+if it has a 64-bit operating system running on it).
+That was because @code{g77} was known to not work
+properly on such configurations.
+
+As of version 0.5.20, @code{g77} is believed to work well
+enough on such systems.
+So, the warning is no longer needed or provided.
+
+However, support for 64-bit systems, especially in
+areas such as cross-compilation and handling of
+intrinsics, is still incomplete.
+The symptoms
+are believed to be compile-time diagnostics rather
+than the generation of bad code.
+It is hoped that version 0.6 will completely support 64-bit
+systems.
+
+@node Quick Start
+@section Quick Start
+@cindex quick start
+
+This procedure configures, builds, and installs @code{g77}
+``out of the box'' and works on most UNIX systems.
+Each command is identified by a unique number,
+used in the explanatory text that follows.
+For the most part, the output of each command is not shown,
+though indications of the types of responses are given in a
+few cases.
+
+To perform this procedure, the installer must be logged
+in as user @code{root}.
+Much of it can be done while not logged in as @code{root},
+and users experienced with UNIX administration should be
+able to modify the procedure properly to do so.
+
+Following traditional UNIX conventions, it is assumed that
+the source trees for @code{g77} and @code{gcc} will be
+placed in @file{/usr/src}.
+It also is assumed that the source distributions themselves
+already reside in @file{/usr/FSF}, a naming convention
+used by the author of @code{g77} on his own system:
+
+@example
+/usr/FSF/gcc-2.7.2.2.tar.gz
+/usr/FSF/g77-0.5.21.tar.gz
+@end example
+
+@c (You can use @file{gcc-2.7.2.1.tar.gz} instead, or
+@c the equivalent of it obtained by applying the
+@c patch distributed as @file{gcc-2.7.2-2.7.2.1.diff.gz}
+@c to version 2.7.2 of @code{gcc},
+@c if you remember to make the appropriate adjustments in the
+@c instructions below.)
+
+@cindex SunOS4
+Users of the following systems should not blindly follow
+these quick-start instructions, because of problems their
+systems have coping with straightforward installation of
+@code{g77}:
+
+@itemize @bullet
+@item
+SunOS4
+@end itemize
+
+Instead, see @ref{Complete Installation}, for detailed information
+on how to configure, build, and install @code{g77} for your
+particular system.
+Also, see @ref{Trouble,,Known Causes of Trouble with GNU Fortran},
+for information on bugs and other problems known to afflict the
+installation process, and how to report newly discovered ones.
+
+If your system is @emph{not} on the above list, and @emph{is}
+a UNIX system or one of its variants, you should be able to
+follow the instructions below.
+If you vary @emph{any} of the steps below, you might run into
+trouble, including possibly breaking existing programs for
+other users of your system.
+Before doing so, it is wise to review the explanations of some
+of the steps.
+These explanations follow this list of steps.
+
+@example
+sh[ 1]# @kbd{cd /usr/src}
+@set source-dir 1
+sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -}
+[Might say "Broken pipe"...that is normal on some systems.]
+@set unpack-gcc 2
+sh[ 3]# @kbd{gunzip -c < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
+["Broken pipe" again possible.]
+@set unpack-g77 3
+sh[ 4]# @kbd{ln -s gcc-2.7.2.2 gcc}
+@set link-gcc 4
+sh[ 5]# @kbd{ln -s g77-0.5.21 g77}
+@set link-g77 5
+sh[ 6]# @kbd{mv -i g77/* gcc}
+[No questions should be asked by mv here; or, you made a mistake.]
+@set merge-g77 6
+sh[ 7]# @kbd{patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.2.diff}
+[Unless patch complains about rejected patches, this step worked.]
+@set apply-patch 7
+sh[ 8]# @kbd{cd gcc}
+sh[ 9]# @kbd{touch f77-install-ok}
+[Do not do the above if your system already has an f77
+command, unless you've checked that overwriting it
+is okay.]
+@set f77-install-ok 9
+sh[10]# @kbd{touch f2c-install-ok}
+[Do not do the above if your system already has an f2c
+command, unless you've checked that overwriting it
+is okay.  Else, @kbd{touch f2c-exists-ok}.]
+@set f2c-install-ok 10
+sh[11]# @kbd{./configure --prefix=/usr}
+[Do not do the above if gcc is not installed in /usr/bin.
+You might need a different @kbd{--prefix=@dots{}}, as
+described below.]
+@set configure-gcc 11
+sh[12]# @kbd{make bootstrap}
+[This takes a long time, and is where most problems occur.]
+@set build-gcc 12
+sh[13]# @kbd{make compare}
+[This verifies that the compiler is `sane'.  Only
+the file `f/zzz.o' (aka `tmp-foo1' and `tmp-foo2')
+should be in the list of object files this command
+prints as having different contents.  If other files
+are printed, you have likely found a g77 bug.]
+@set compare-gcc 13
+sh[14]# @kbd{rm -fr stage1}
+@set rm-stage1 14
+sh[15]# @kbd{make -k install}
+[The actual installation.]
+@set install-g77 15
+sh[16]# @kbd{g77 -v}
+[Verify that g77 is installed, obtain version info.]
+@set show-version 16
+sh[17]#
+@set end-procedure 17
+@end example
+
+@xref{Updating Documentation,,Updating Your Info Directory}, for
+information on how to update your system's top-level @code{info}
+directory to contain a reference to this manual, so that
+users of @code{g77} can easily find documentation instead
+of having to ask you for it.
+
+Elaborations of many of the above steps follows:
+
+@table @asis
+@item Step @value{source-dir}: @kbd{cd /usr/src}
+You can build @code{g77} pretty much anyplace.
+By convention, this manual assumes @file{/usr/src}.
+It might be helpful if other users on your system
+knew where to look for the source code for the
+installed version of @code{g77} and @code{gcc} in any case.
+
+@c @item Step @value{unpack-gcc}: @kbd{gunzip -d @dots{}}
+@c Here, you might wish to use @file{gcc-2.7.2.1.tar.gz}
+@c instead, or apply @file{gcc-2.7.2-2.7.2.1.diff.gz} to achieve
+@c similar results.
+
+@item Step @value{unpack-g77}: @kbd{gunzip -d < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
+It is not always necessary to obtain the latest version of
+@code{g77} as a complete @file{.tar.gz} file if you have
+a complete, earlier distribution of @code{g77}.
+If appropriate, you can unpack that earlier
+version of @code{g77}, and then apply the appropriate patches
+to achieve the same result---a source tree containing version
+0.5.21 of @code{g77}.
+
+@item Step @value{link-gcc}: @kbd{ln -s gcc-2.7.2.2 gcc}
+@item Step @value{link-g77}: @kbd{ln -s g77-0.5.21 g77}
+These commands mainly help reduce typing,
+and help reduce visual clutter in examples
+in this manual showing what to type to install @code{g77}.
+
+@c Of course, if appropriate, @kbd{ln -s gcc-2.7.2.1 gcc} or
+@c similar.
+
+@xref{Unpacking}, for information on
+using distributions of @code{g77} made by organizations
+other than the FSF.
+
+@item Step @value{merge-g77}: @kbd{mv -i g77/* gcc}
+After doing this, you can, if you like, type
+@samp{rm g77} and @samp{rmdir g77-0.5.21} to remove
+the empty directory and the symbol link to it.
+But, it might be helpful to leave them around as
+quick reminders of which version(s) of @code{g77} are
+installed on your system.
+
+@xref{Unpacking}, for information
+on the contents of the @file{g77} directory (as merged
+into the @file{gcc} directory).
+
+@item Step @value{apply-patch}: @kbd{patch -p1 @dots{}}
+@c (Or `@kbd{@dots{} < gcc/f/gbe/2.7.2.1.diff}', if appropriate.)
+@c
+This can produce a wide variety of printed output,
+from @samp{Hmm, I can't seem to find a patch in there anywhere...}
+to long lists of messages indicated that patches are
+being found, applied successfully, and so on.
+
+If messages about ``fuzz'', ``offset'', or
+especially ``reject files'' are printed, it might
+mean you applied the wrong patch file.
+If you believe this is the case, it is best to restart
+the sequence after deleting (or at least renaming to unused
+names) the top-level directories for @code{g77} and @code{gcc}
+and their symbolic links.
+
+After this command finishes, the @code{gcc} directory might
+have old versions of several files as saved by @code{patch}.
+To remove these, after @kbd{cd gcc}, type @kbd{rm -i *.~*~}.
+
+@xref{Merging Distributions}, for more information.
+
+@item Step @value{f77-install-ok}: @kbd{touch f77-install-ok}
+Don't do this if you don't want to overwrite an existing
+version of @code{f77} (such as a native compiler, or a
+script that invokes @code{f2c}).
+Otherwise, installation will overwrite the @code{f77} command
+and the @code{f77} man pages with copies of the corresponding
+@code{g77} material.
+
+@xref{Installing f77,,Installing @code{f77}}, for more
+information.
+
+@item Step @value{f2c-install-ok}: @kbd{touch f2c-install-ok}
+Don't do this if you don't want to overwrite an existing
+installation of @code{libf2c} (though, chances are, you do).
+Instead, @kbd{touch f2c-exists-ok} to allow the installation
+to continue without any error messages about @file{/usr/lib/libf2c.a}
+already existing.
+
+@xref{Installing f2c,,Installing @code{f2c}}, for more
+information.
+
+@item Step @value{configure-gcc}: @kbd{./configure --prefix=/usr}
+This is where you specify that the @file{g77} executable is to be
+installed in @file{/usr/bin/}, the @file{libf2c.a} library is
+to be installed in @file{/usr/lib/}, and so on.
+
+You should ensure that any existing installation of the @file{gcc}
+executable is in @file{/usr/bin/}.
+Otherwise, installing @code{g77} so that it does not fully
+replace the existing installation of @code{gcc} is likely
+to result in the inability to compile Fortran programs.
+
+@xref{Where to Install,,Where in the World Does Fortran (and GNU CC) Go?},
+for more information on determining where to install @code{g77}.
+@xref{Configuring gcc}, for more information on the
+configuration process triggered by invoking the @file{./configure}
+script.
+
+@item Step @value{build-gcc}: @kbd{make bootstrap}
+@xref{Installation,,Installing GNU CC,
+gcc,Using and Porting GNU CC}, for information
+on the kinds of diagnostics you should expect during
+this procedure.
+
+@xref{Building gcc}, for complete @code{g77}-specific
+information on this step.
+
+@item Step @value{compare-gcc}: @kbd{make compare}
+@xref{Bug Lists,,Where to Port Bugs}, for information
+on where to report that you observed more than
+@file{f/zzz.o} having different contents during this
+phase.
+
+@xref{Bug Reporting,,How to Report Bugs}, for
+information on @emph{how} to report bugs like this.
+
+@item Step @value{rm-stage1}: @kbd{rm -fr stage1}
+You don't need to do this, but it frees up disk space.
+
+@item Step @value{install-g77}: @kbd{make -k install}
+If this doesn't seem to work, try:
+
+@example
+make -k install install-libf77 install-f2c-all
+@end example
+
+@xref{Installation of Binaries}, for more information.
+
+@xref{Updating Documentation,,Updating Your Info Directory},
+for information on entering this manual into your
+system's list of texinfo manuals.
+
+@item Step @value{show-version}: @kbd{g77 -v}
+If this command prints approximately 25 lines of output,
+including the GNU Fortran Front End version number (which
+should be the same as the version number for the version
+of @code{g77} you just built and installed) and the
+version numbers for the three parts of the @code{libf2c}
+library (@code{libF77}, @code{libI77}, @code{libU77}), and
+those version numbers are all in agreement, then there is
+a high likelihood that the installation has been successfully
+completed.
+
+You might consider doing further testing.
+For example, log in as a non-privileged user, then create
+a small Fortran program, such as:
+
+@example
+      PROGRAM SMTEST
+      DO 10 I=1, 10
+         PRINT *, 'Hello World #', I
+10    CONTINUE
+      END
+@end example
+
+Compile, link, and run the above program, and, assuming you named
+the source file @file{smtest.f}, the session should look like this:
+
+@example
+sh# @kbd{g77 -o smtest smtest.f}
+sh# @kbd{./smtest}
+ Hello World # 1
+ Hello World # 2
+ Hello World # 3
+ Hello World # 4
+ Hello World # 5
+ Hello World # 6
+ Hello World # 7
+ Hello World # 8
+ Hello World # 9
+ Hello World # 10
+sh#
+@end example
+
+After proper installation, you don't
+need to keep your gcc and g77 source and build directories
+around anymore.
+Removing them can free up a lot of disk space.
+@end table
+
+@node Complete Installation
+@section Complete Installation
+
+Here is the complete @code{g77}-specific information on how
+to configure, build, and install @code{g77}.
+
+@menu
+* Unpacking::
+* Merging Distributions::
+* f77: Installing f77.
+* f2c: Installing f2c.
+* Patching GNU Fortran::
+* Where to Install::
+* Configuring gcc::
+* Building gcc::
+* Pre-installation Checks::
+* Installation of Binaries::
+* Updating Documentation::
+* bison: Missing bison?.
+* makeinfo: Missing makeinfo?.
+@end menu
+
+@node Unpacking
+@subsection Unpacking
+@cindex unpacking distributions
+@cindex distributions, unpacking
+@cindex code, source
+@cindex source code
+@cindex source tree
+@cindex packages
+
+The @code{gcc} source distribution is a stand-alone distribution.
+It is designed to be unpacked (producing the @code{gcc}
+source tree) and built as is, assuming certain
+prerequisites are met (including the availability of compatible
+UNIX programs such as @code{make}, @code{cc}, and so on).
+
+However, before building @code{gcc}, you will want to unpack
+and merge the @code{g77} distribution in with it, so that you
+build a Fortran-capable version of @code{gcc}, which includes
+the @code{g77} command, the necessary run-time libraries,
+and this manual.
+
+Unlike @code{gcc}, the @code{g77} source distribution
+is @emph{not} a stand-alone distribution.
+It is designed to be unpacked and, afterwards, immediately merged
+into an applicable @code{gcc} source tree.
+That is, the @code{g77} distribution @emph{augments} a
+@code{gcc} distribution---without @code{gcc}, generally
+only the documentation is immediately usable.
+
+A sequence of commands typically used to unpack @code{gcc}
+and @code{g77} is:
+
+@example
+sh# @kbd{cd /usr/src}
+sh# @kbd{gunzip -d < /usr/FSF/gcc-2.7.2.2.tar.gz | tar xf -}
+sh# @kbd{gunzip -d < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
+sh# @kbd{ln -s gcc-2.7.2.2 gcc}
+sh# @kbd{ln -s g77-0.5.21 g77}
+sh# @kbd{mv -i g77/* gcc}
+@end example
+
+@emph{Notes:} The commands beginning with @samp{gunzip@dots{}} might
+print @samp{Broken pipe@dots{}} as they complete.
+That is nothing to worry about, unless you actually
+@emph{hear} a pipe breaking.
+The @code{ln} commands are helpful in reducing typing
+and clutter in installation examples in this manual.
+Hereafter, the top level of @code{gcc} source tree is referred to
+as @file{gcc}, and the top level of just the @code{g77}
+source tree (prior to issuing the @code{mv} command, above)
+is referred to as @file{g77}.
+
+There are three top-level names in a @code{g77} distribution:
+
+@example
+g77/COPYING.g77
+g77/README.g77
+g77/f
+@end example
+
+All three entries should be moved (or copied) into a @code{gcc}
+source tree (typically named after its version number and
+as it appears in the FSF distributions---e.g. @file{gcc-2.7.2.2}).
+
+@file{g77/f} is the subdirectory containing all of the
+code, documentation, and other information that is specific
+to @code{g77}.
+The other two files exist to provide information on @code{g77}
+to someone encountering a @code{gcc} source tree with @code{g77}
+already present, who has not yet read these installation
+instructions and thus needs help understanding that the
+source tree they are looking at does not come from a single
+FSF distribution.
+They also help people encountering an unmerged @code{g77} source
+tree for the first time.
+
+@cindex modifying @code{g77}
+@cindex code, modifying
+@cindex Pentium optimizations
+@cindex optimizations, Pentium
+@emph{Note:} Please use @strong{only} @code{gcc} and @code{g77}
+source trees as distributed by the FSF.
+Use of modified versions, such as the Pentium-specific-optimization
+port of @code{gcc}, is likely to result in problems that appear to be
+in the @code{g77} code but, in fact, are not.
+Do not use such modified versions
+unless you understand all the differences between them and the versions
+the FSF distributes---in which case you should be able to modify the
+@code{g77} (or @code{gcc}) source trees appropriately so @code{g77}
+and @code{gcc} can coexist as they do in the stock FSF distributions.
+
+@node Merging Distributions
+@subsection Merging Distributions
+@cindex merging distributions
+@cindex @code{gcc} versions supported by @code{g77}
+@cindex versions of @code{gcc}
+@cindex support for @code{gcc} versions
+
+After merging the @code{g77} source tree into the @code{gcc}
+source tree, the final merge step is done by applying the
+pertinent patches the @code{g77} distribution provides for
+the @code{gcc} source tree.
+
+Read the file @file{gcc/f/gbe/README}, and apply the appropriate
+patch file for the version of the GNU CC compiler you have, if
+that exists.
+If the directory exists but the appropriate file
+does not exist, you are using either an old, unsupported version,
+or a release one that is newer than the newest @code{gcc} version
+supported by the version of @code{g77} you have.
+
+@cindex gcc version numbering
+@cindex version numbering
+@cindex g77 version number
+@cindex GNU version numbering
+As of version 0.5.18, @code{g77} modifies the version number
+of @code{gcc} via the pertinent patches.
+This is done because the resulting version of @code{gcc} is
+deemed sufficiently different from the vanilla distribution
+to make it worthwhile to present, to the user, information
+signaling the fact that there are some differences.
+
+GNU version numbers make it easy to figure out whether a
+particular version of a distribution is newer or older than
+some other version of that distribution.
+The format is,
+generally, @var{major}.@var{minor}.@var{patch}, with
+each field being a decimal number.
+(You can safely ignore
+leading zeros; for example, 1.5.3 is the same as 1.5.03.)@ 
+The @var{major} field only increases with time.
+The other two fields are reset to 0 when the field to
+their left is incremented; otherwise, they, too, only
+increase with time.
+So, version 2.6.2 is newer than version 2.5.8, and
+version 3.0 is newer than both.
+(Trailing @samp{.0} fields often are omitted in
+announcements and in names for distributions and
+the directories they create.)
+
+If your version of @code{gcc} is older than the oldest version
+supported by @code{g77} (as casually determined by listing
+the contents of @file{gcc/f/gbe/}), you should obtain a newer,
+supported version of @code{gcc}.
+(You could instead obtain an older version of @code{g77},
+or try and get your @code{g77} to work with the old
+@code{gcc}, but neither approach is recommended, and
+you shouldn't bother reporting any bugs you find if you
+take either approach, because they're probably already
+fixed in the newer versions you're not using.)
+
+If your version of @code{gcc} is newer than the newest version
+supported by @code{g77}, it is possible that your @code{g77}
+will work with it anyway.
+If the version number for @code{gcc} differs only in the
+@var{patch} field, you might as well try applying the @code{g77} patch
+that is for the newest version of @code{gcc} having the same
+@var{major} and @var{minor} fields, as this is likely to work.
+
+So, for example, if a particular version of @code{g77} has support for
+@code{gcc} versions 2.7.0 and 2.7.1,
+it is likely that @file{gcc-2.7.2} would work well with @code{g77}
+by using the @file{2.7.1.diff} patch file provided
+with @code{g77} (aside from some offsets reported by @code{patch},
+which usually are harmless).
+
+However, @file{gcc-2.8.0} would almost certainly
+not work with that version of @code{g77} no matter which patch file was
+used, so a new version of @code{g77} would be needed (and you should
+wait for it rather than bothering the maintainers---@pxref{Changes,,
+User-Visible Changes}).
+
+@cindex distributions, why separate
+@cindex separate distributions
+@cindex why separate distributions
+This complexity is the result of @code{gcc} and @code{g77} being
+separate distributions.
+By keeping them separate, each product is able to be independently
+improved and distributed to its user base more frequently.
+
+However, @code{g77} often requires changes to contemporary
+versions of @code{gcc}.
+Also, the GBE interface defined by @code{gcc} typically
+undergoes some incompatible changes at least every time the
+@var{minor} field of the version number is incremented,
+and such changes require corresponding changes to
+the @code{g77} front end (FFE).
+
+It is hoped that the GBE interface, and the @code{gcc} and
+@code{g77} products in general, will stabilize sufficiently
+for the need for hand-patching to disappear.
+
+Invoking @code{patch} as described in @file{gcc/f/gbe/README}
+can produce a wide variety of printed output,
+from @samp{Hmm, I can't seem to find a patch in there anywhere...}
+to long lists of messages indicated that patches are
+being found, applied successfully, and so on.
+
+If messages about ``fuzz'', ``offset'', or
+especially ``reject files'' are printed, it might
+mean you applied the wrong patch file.
+If you believe this is the case, it is best to restart
+the sequence after deleting (or at least renaming to unused
+names) the top-level directories for @code{g77} and @code{gcc}
+and their symbolic links.
+That is because @code{patch} might have partially patched
+some @code{gcc} source files, so reapplying the correct
+patch file might result in the correct patches being
+applied incorrectly (due to the way @code{patch} necessarily
+works).
+
+After @code{patch} finishes, the @code{gcc} directory might
+have old versions of several files as saved by @code{patch}.
+To remove these, after @kbd{cd gcc}, type @kbd{rm -i *.~*~}.
+
+@pindex config-lang.in
+@emph{Note:} @code{g77}'s configuration file @file{gcc/f/config-lang.in}
+ensures that the source code for the version of @code{gcc}
+being configured has at least one indication of being patched
+as required specifically by @code{g77}.
+This configuration-time
+checking should catch failure to apply the correct patch and,
+if so caught, should abort the configuration with an explanation.
+@emph{Please} do not try to disable the check,
+otherwise @code{g77} might well appear to build
+and install correctly, and even appear to compile correctly,
+but could easily produce broken code.
+
+@cindex creating patch files
+@cindex patch files, creating
+@pindex gcc/f/gbe/
+@samp{diff -rcp2N} is used to create the patch files
+in @file{gcc/f/gbe/}.
+
+@node Installing f77
+@subsection Installing @code{f77}
+@cindex f77 command
+@cindex commands, f77
+@cindex native compiler
+
+You should decide whether you want installation of @code{g77}
+to also install an @code{f77} command.
+On systems with a native @code{f77}, this is not
+normally desired, so @code{g77} does not do this by
+default.
+
+@pindex f77-install-ok
+@vindex F77_INSTALL_FLAG
+If you want @code{f77} installed, create the file @file{f77-install-ok}
+(e.g. via the UNIX command @samp{touch f77-install-ok}) in the
+source or build top-level directory (the same directory in
+which the @code{g77} @file{f} directory resides, not the @file{f} directory
+itself), or edit @file{gcc/f/Make-lang.in} and change the definition
+of the @samp{F77_INSTALL_FLAG} macro appropriately.
+
+Usually, this means that, after typing @samp{cd gcc}, you
+would type @samp{touch f77-install-ok}.
+
+When you enable installation of @code{f77}, either a link to or a
+direct copy of the @code{g77} command is made.
+Similarly, @file{f77.1} is installed as a man page.
+
+(The @code{uninstall} target in the @file{gcc/Makefile} also tests
+this macro and file, when invoked, to determine whether to delete the
+installed copies of @code{f77} and @file{f77.1}.)
+
+@emph{Note:} No attempt is yet made
+to install a program (like a shell script) that provides
+compatibility with any other @code{f77} programs.
+Only the most rudimentary invocations of @code{f77} will
+work the same way with @code{g77}.
+
+@node Installing f2c
+@subsection Installing @code{f2c}
+
+Currently, @code{g77} does not include @code{f2c} itself in its
+distribution.
+However, it does include a modified version of the @code{libf2c}.
+This version is normally compatible with @code{f2c}, but has been
+modified to meet the needs of @code{g77} in ways that might possibly
+be incompatible with some versions or configurations of @code{f2c}.
+
+Decide how installation of @code{g77} should affect any existing installation
+of @code{f2c} on your system.
+
+@pindex f2c
+@pindex f2c.h
+@pindex libf2c.a
+@pindex libF77.a
+@pindex libI77.a
+If you do not have @code{f2c} on your system (e.g. no @file{/usr/bin/f2c},
+no @file{/usr/include/f2c.h}, and no @file{/usr/lib/libf2c.a},
+@file{/usr/lib/libF77.a}, or @file{/usr/lib/libI77.a}), you don't need to
+be concerned with this item.
+
+If you do have @code{f2c} on your system, you need to decide how users
+of @code{f2c} will be affected by your installing @code{g77}.
+Since @code{g77} is
+currently designed to be object-code-compatible with @code{f2c} (with
+very few, clear exceptions), users of @code{f2c} might want to combine
+@code{f2c}-compiled object files with @code{g77}-compiled object files in a
+single executable.
+
+To do this, users of @code{f2c} should use the same copies of @file{f2c.h} and
+@file{libf2c.a} that @code{g77} uses (and that get built as part of
+@code{g77}).
+
+If you do nothing here, the @code{g77} installation process will not
+overwrite the @file{include/f2c.h} and @file{lib/libf2c.a} files with its
+own versions, and in fact will not even install @file{libf2c.a} for use
+with the newly installed versions of @code{gcc} and @code{g77} if it sees
+that @file{lib/libf2c.a} exists---instead, it will print an explanatory
+message and skip this part of the installation.
+
+@pindex f2c-install-ok
+@vindex F2C_INSTALL_FLAG
+To install @code{g77}'s versions of @file{f2c.h} and @file{libf2c.a}
+in the appropriate
+places, create the file @file{f2c-install-ok} (e.g. via the UNIX
+command @samp{touch f2c-install-ok}) in the source or build top-level
+directory (the same directory in which the @code{g77} @file{f} directory
+resides, not the @file{f} directory itself), or edit @file{gcc/f/Make-lang.in}
+and change the definition of the @samp{F2C_INSTALL_FLAG} macro appropriately.
+
+Usually, this means that, after typing @samp{cd gcc}, you
+would type @samp{touch f2c-install-ok}.
+
+Make sure that when you enable the overwriting of @file{f2c.h}
+and @file{libf2c.a}
+as used by @code{f2c}, you have a recent and properly configured version of
+@file{bin/f2c} so that it generates code that is compatible with @code{g77}.
+
+@pindex f2c-exists-ok
+@vindex F2CLIBOK
+If you don't want installation of @code{g77} to overwrite @code{f2c}'s existing
+installation, but you do want @code{g77} installation to proceed with
+installation of its own versions of @file{f2c.h} and @file{libf2c.a} in places
+where @code{g77} will pick them up (even when linking @code{f2c}-compiled
+object files---which might lead to incompatibilities), create
+the file @file{f2c-exists-ok} (e.g. via the UNIX command
+@samp{touch f2c-exists-ok}) in the source or build top-level directory,
+or edit @file{gcc/f/Make-lang.in} and change the definition of the
+@samp{F2CLIBOK} macro appropriately.
+
+@node Patching GNU Fortran
+@subsection Patching GNU Fortran
+
+If you're using a SunOS4 system, you'll need to make the following
+change to @file{gcc/f/proj.h}: edit the line reading
+
+@example
+#define FFEPROJ_STRTOUL 1  @dots{}
+@end example
+
+@noindent
+by replacing the @samp{1} with @samp{0}.
+Or, you can avoid editing the source by adding
+@example
+CFLAGS='-DFFEPROJ_STRTOUL=0 -g -O'
+@end example
+to the command line for @code{make} when you invoke it.
+(@samp{-g} is the default for @samp{CFLAGS}.)
+
+This causes a minimal version of @code{strtoul()} provided
+as part of the @code{g77} distribution to be compiled and
+linked into whatever @code{g77} programs need it, since
+some systems (like SunOS4 with only the bundled compiler and its
+runtime) do not provide this function in their system libraries.
+
+Similarly, a minimal version of @code{bsearch()} is available
+and can be enabled by editing a line similar to the one
+for @code{strtoul()} above in @file{gcc/f/proj.h}, if
+your system libraries lack @code{bsearch()}.
+The method of overriding @samp{X_CFLAGS} may also be used.
+
+These are not problems with @code{g77}, which requires an
+ANSI C environment.
+You should upgrade your system to one that provides
+a full ANSI C environment, or encourage the maintainers
+of @code{gcc} to provide one to all @code{gcc}-based
+compilers in future @code{gcc} distributions.
+
+@xref{Problems Installing}, for more information on
+why @code{strtoul()} comes up missing and on approaches
+to dealing with this problem that have already been tried.
+
+@node Where to Install
+@subsection Where in the World Does Fortran (and GNU CC) Go?
+@cindex language f77 not recognized
+@cindex gcc will not compile Fortran programs
+
+Before configuring, you should make sure you know
+where you want the @code{g77} and @code{gcc}
+binaries to be installed after they're built,
+because this information is given to the configuration
+tool and used during the build itself.
+
+A @code{g77} installation necessarily requires installation of
+a @code{g77}-aware version of @code{gcc}, so that the @code{gcc}
+command recognizes Fortran source files and knows how to compile
+them.
+
+For this to work, the version of @code{gcc} that you will be building
+as part of @code{g77} @strong{must} be installed as the ``active''
+version of @code{gcc} on the system.
+
+Sometimes people make the mistake of installing @code{gcc} as
+@file{/usr/local/bin/gcc},
+leaving an older, non-Fortran-aware version in @file{/usr/bin/gcc}.
+(Or, the opposite happens.)@ 
+This can result in @code{g77} being unable to compile Fortran
+source files, because when it calls on @code{gcc} to do the
+actual compilation, @code{gcc} complains that it does not
+recognize the language, or the file name suffix.
+
+So, determine whether @code{gcc} already is installed on your system,
+and, if so, @emph{where} it is installed, and prepare to configure the
+new version of @code{gcc} you'll be building so that it installs
+over the existing version of @code{gcc}.
+
+You might want to back up your existing copy of @file{bin/gcc}, and
+the entire @file{lib/} directory, before
+you perform the actual installation (as described in this manual).
+
+Existing @code{gcc} installations typically are
+found in @file{/usr} or @file{/usr/local}.
+If you aren't certain where the currently
+installed version of @code{gcc} and its
+related programs reside, look at the output
+of this command:
+
+@example
+gcc -v -o /tmp/delete-me -xc /dev/null -xnone
+@end example
+
+All sorts of interesting information on the locations of various
+@code{gcc}-related programs and data files should be visible
+in the output of the above command.
+(The output also is likely to include a diagnostic from
+the linker, since there's no @samp{main_()} function.)
+However, you do have to sift through it yourself; @code{gcc}
+currently provides no easy way to ask it where it is installed
+and where it looks for the various programs and data files it
+calls on to do its work.
+
+Just @emph{building} @code{g77} should not overwrite any installed
+programs---but, usually, after you build @code{g77}, you will want
+to install it, so backing up anything it might overwrite is
+a good idea.
+(This is true for any package, not just @code{g77},
+though in this case it is intentional that @code{g77} overwrites
+@code{gcc} if it is already installed---it is unusual that
+the installation process for one distribution intentionally
+overwrites a program or file installed by another distribution.)
+
+Another reason to back up the existing version first,
+or make sure you can restore it easily, is that it might be
+an older version on which other users have come to depend
+for certain behaviors.
+However, even the new version of @code{gcc} you install
+will offer users the ability to specify an older version of
+the actual compilation programs if desired, and these
+older versions need not include any @code{g77} components.
+@xref{Target Options,,Specifying Target Machine and Compiler Version,
+gcc,Using and Porting GNU CC}, for information on the @samp{-V}
+option of @code{gcc}.
+
+@node Configuring gcc
+@subsection Configuring GNU CC
+
+@code{g77} is configured automatically when you configure
+@code{gcc}.
+There are two parts of @code{g77} that are configured in two
+different ways---@code{g77}, which ``camps on'' to the
+@code{gcc} configuration mechanism, and @code{libf2c}, which
+uses a variation of the GNU @code{autoconf} configuration
+system.
+
+Generally, you shouldn't have to be concerned with
+either @code{g77} or @code{libf2c} configuration, unless
+you're configuring @code{g77} as a cross-compiler.
+In this case, the @code{libf2c} configuration, and possibly the
+@code{g77} and @code{gcc} configurations as well,
+might need special attention.
+(This also might be the case if you're porting @code{gcc} to
+a whole new system---even if it is just a new operating system
+on an existing, supported CPU.)
+
+To configure the system, see
+@ref{Installation,,Installing GNU CC,gcc,Using and Porting GNU CC},
+following the instructions for running @file{./configure}.
+Pay special attention to the @samp{--prefix=} option, which
+you almost certainly will need to specify.
+
+(Note that @code{gcc} installation information is provided
+as a straight text file in @file{gcc/INSTALL}.)
+
+The information printed by the invocation of @file{./configure}
+should show that the @file{f} directory (the Fortran language)
+has been configured.
+If it does not, there is a problem.
+
+@emph{Note:} Configuring with the @samp{--srcdir} argument is known
+to work with GNU @code{make}, but it is not known to work with
+other variants of @code{make}.
+Irix5.2 and SunOS4.1 versions of @code{make} definitely
+won't work outside the source directory at present.
+@code{g77}'s
+portion of the @file{configure} script issues a warning message
+about this when you configure for building binaries outside
+the source directory.
+
+@node Building gcc
+@subsection Building GNU CC
+@cindex building @code{gcc}
+@cindex building @code{g77}
+
+@vindex LANGUAGES
+Building @code{g77} requires building enough of @code{gcc} that
+these instructions assume you're going to build all of
+@code{gcc}, including @code{g++}, @code{protoize}, and so on.
+You can save a little time and disk space by changes the
+@samp{LANGUAGES} macro definition in @code{gcc/Makefile.in}
+or @code{gcc/Makefile}, but if you do that, you're on your own.
+One change is almost @emph{certainly} going to cause failures:
+removing @samp{c} or @samp{f77} from the definition of the
+@samp{LANGUAGES} macro.
+
+After configuring @code{gcc}, which configures @code{g77} and
+@code{libf2c} automatically, you're ready to start the actual
+build by invoking @code{make}.
+
+@pindex configure
+@emph{Note:} You @strong{must} have run @file{./configure}
+before you run @code{make}, even if you're
+using an already existing @code{gcc} development directory, because
+@file{./configure} does the work to recognize that you've added
+@code{g77} to the configuration.
+
+There are two general approaches to building GNU CC from
+scratch:
+
+@table @dfn
+@item bootstrap
+This method uses minimal native system facilities to
+build a barebones, unoptimized @code{gcc}, that is then
+used to compile (``bootstrap'') the entire system.
+
+@item straight
+This method assumes a more complete native system
+exists, and uses that just once to build the entire
+system.
+@end table
+
+On all systems without a recent version of @code{gcc}
+already installed, the @i{bootstrap} method must be
+used.
+In particular, @code{g77} uses extensions to the C
+language offered, apparently, only by @code{gcc}.
+
+On most systems with a recent version of @code{gcc}
+already installed, the @i{straight} method can be
+used.
+This is an advantage, because it takes less CPU time
+and disk space for the build.
+However, it does require that the system have fairly
+recent versions of many GNU programs and other
+programs, which are not enumerated here.
+
+@menu
+* Bootstrap Build::  For all systems.
+* Straight Build::   For systems with a recent version of @code{gcc}.
+@end menu
+
+@node Bootstrap Build
+@subsubsection Bootstrap Build
+@cindex bootstrap build
+@cindex build, bootstrap
+
+A complete bootstrap build is done by issuing a command
+beginning with @samp{make bootstrap @dots{}}, as
+described in @ref{Installation,,Installing GNU CC,
+gcc,Using and Porting GNU CC}.
+This is the most reliable form of build, but it does require
+the most disk space and CPU time, since the complete system
+is built twice (in Stages 2 and 3), after an initial build
+(during Stage 1) of a minimal @code{gcc} compiler using
+the native compiler and libraries.
+
+You might have to, or want to, control the way a bootstrap
+build is done by entering the @code{make} commands to build
+each stage one at a time, as described in the @code{gcc}
+manual.
+For example, to save time or disk space, you might want
+to not bother doing the Stage 3 build, in which case you
+are assuming that the @code{gcc} compiler you have built
+is basically sound (because you are giving up the opportunity
+to compare a large number of object files to ensure they're
+identical).
+
+To save some disk space during installation, after Stage 2
+is built, you can type @samp{rm -fr stage1} to remove the
+binaries built during Stage 1.
+
+@emph{Note:} @xref{Object File Differences}, for information on
+expected differences in object files produced during Stage 2 and
+Stage 3 of a bootstrap build.
+These differences will be encountered as a result of using
+the @samp{make compare} or similar command sequence recommended
+by the GNU CC installation documentation.
+
+Also, @xref{Installation,,Installing GNU CC,gcc,Using and Porting GNU CC},
+for important information on building @code{gcc} that is
+not described in this @code{g77} manual.
+For example, explanations of diagnostic messages
+and whether they're expected, or indicate trouble,
+are found there.
+
+@node Straight Build
+@subsubsection Straight Build
+@cindex straight build
+@cindex build, straight
+
+If you have a recent version of @code{gcc}
+already installed on your system, and if you're
+reasonably certain it produces code that is
+object-compatible with the version of @code{gcc}
+you want to build as part of building @code{g77},
+you can save time and disk space by doing a straight
+build.
+
+To build just the C and Fortran compilers and the
+necessary run-time libraries, issue the following
+command:
+
+@example
+make -k CC=gcc LANGUAGES=f77 all g77
+@end example
+
+(The @samp{g77} target is necessary because the @code{gcc}
+build procedures apparently do not automatically build
+command drivers for languages in subdirectories.
+It's the @samp{all} target that triggers building
+everything except, apparently, the @code{g77} command
+itself.)
+
+If you run into problems using this method, you have
+two options:
+
+@itemize @bullet
+@item
+Abandon this approach and do a bootstrap build.
+
+@item
+Try to make this approach work by diagnosing the
+problems you're running into and retrying.
+@end itemize
+
+Especially if you do the latter, you might consider
+submitting any solutions as bug/fix reports.
+@xref{Trouble,,Known Causes of Trouble with GNU Fortran}.
+
+However, understand that many problems preventing a
+straight build from working are not @code{g77} problems,
+and, in such cases, are not likely to be addressed in
+future versions of @code{g77}.
+
+@node Pre-installation Checks
+@subsection Pre-installation Checks
+@cindex pre-installation checks
+@cindex installing, checking before
+
+Before installing the system, which includes installing
+@code{gcc}, you might want to do some minimum checking
+to ensure that some basic things work.
+
+Here are some commands you can try, and output typically
+printed by them when they work:
+
+@example
+sh# @kbd{cd /usr/src/gcc}
+sh# @kbd{./g77 --driver=./xgcc -B./ -v}
+g77 version 0.5.21
+ ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 @dots{}
+Reading specs from ./specs
+gcc version 2.7.2.2.f.3
+ ./cpp -lang-c -v -isystem ./include -undef @dots{}
+GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+#include "..." search starts here:
+#include <...> search starts here:
+ ./include
+ /usr/local/include
+ /usr/alpha-unknown-linux/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+ /usr/include
+End of search list.
+ ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase @dots{}
+GNU F77 version 2.7.2.2.f.3 (Linux/Alpha) compiled @dots{}
+GNU Fortran Front End version 0.5.21 compiled: @dots{}
+ as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
+ ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. @dots{}
+__G77_LIBF77_VERSION__: 0.5.21
+@@(#)LIBF77 VERSION 19970404
+__G77_LIBI77_VERSION__: 0.5.21
+@@(#) LIBI77 VERSION pjw,dmg-mods 19970527
+__G77_LIBU77_VERSION__: 0.5.21
+@@(#) LIBU77 VERSION 19970609
+sh# @kbd{./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone}
+Reading specs from ./specs
+gcc version 2.7.2.2.f.3
+ ./cpp -lang-c -v -isystem ./include -undef @dots{}
+GNU CPP version 2.7.2.2.f.3 (Linux/Alpha)
+#include "..." search starts here:
+#include <...> search starts here:
+ ./include
+ /usr/local/include
+ /usr/alpha-unknown-linux/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.2.f.3/include
+ /usr/include
+End of search list.
+ ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version @dots{}
+GNU C version 2.7.2.2.f.3 (Linux/Alpha) compiled @dots{}
+ as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
+ ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. @dots{}
+/usr/lib/crt0.o: In function `__start':
+crt0.S:110: undefined reference to `main'
+/usr/lib/crt0.o(.lita+0x28): undefined reference to `main'
+sh#
+@end example
+
+(Note that long lines have been truncated, and @samp{@dots{}}
+used to indicate such truncations.)
+
+The above two commands test whether @code{g77} and @code{gcc},
+respectively, are able to compile empty (null) source files,
+whether invocation of the C preprocessor works, whether libraries
+can be linked, and so on.
+
+If the output you get from either of the above two commands
+is noticeably different, especially if it is shorter or longer
+in ways that do not look consistent with the above sample
+output, you probably should not install @code{gcc} and @code{g77}
+until you have investigated further.
+
+For example, you could try compiling actual applications and
+seeing how that works.
+(You might want to do that anyway, even if the above tests
+work.)
+
+To compile using the not-yet-installed versions of @code{gcc}
+and @code{g77}, use the following commands to invoke them.
+
+To invoke @code{g77}, type:
+
+@example
+/usr/src/gcc/g77 --driver=/usr/src/gcc/xgcc -B/usr/src/gcc/ @dots{}
+@end example
+
+To invoke @code{gcc}, type:
+
+@example
+/usr/src/gcc/xgcc -B/usr/src/gcc/ @dots{}
+@end example
+
+@node Installation of Binaries
+@subsection Installation of Binaries
+@cindex installation of binaries
+@cindex @code{g77}, installation of
+@cindex @code{gcc}, installation of
+
+After configuring, building, and testing @code{g77} and @code{gcc},
+when you are ready to install them on your system, type:
+
+@example
+make -k CC=gcc LANGUAGES=f77 install
+@end example
+
+As described in @ref{Installation,,Installing GNU CC,
+gcc,Using and Porting GNU CC}, the values for
+the @samp{CC} and @samp{LANGUAGES} macros should
+be the same as those you supplied for the build
+itself.
+
+So, the details of the above command might vary
+if you used a bootstrap build (where you might be
+able to omit both definitions, or might have to
+supply the same definitions you used when building
+the final stage) or if you deviated from the
+instructions for a straight build.
+
+If the above command does not install @file{libf2c.a}
+as expected, try this:
+
+@example
+make -k @dots{} install install-libf77 install-f2c-all
+@end example
+
+We don't know why some non-GNU versions of @code{make} sometimes
+require this alternate command, but they do.
+(Remember to supply the appropriate definitions for @samp{CC} and
+@samp{LANGUAGES} where you see @samp{@dots{}} in the above command.)
+
+Note that using the @samp{-k} option tells @code{make} to
+continue after some installation problems, like not having
+@code{makeinfo} installed on your system.
+It might not be necessary for your system.
+
+@node Updating Documentation
+@subsection Updating Your Info Directory
+@cindex updating info directory
+@cindex info, updating directory
+@cindex directory, updating info
+@pindex /usr/info/dir
+@pindex g77.info
+@cindex texinfo
+@cindex documentation
+
+As part of installing @code{g77}, you should make sure users
+of @code{info} can easily access this manual on-line.
+Do this by making sure a line such as the following exists
+in @file{/usr/info/dir}, or in whatever file is the top-level
+file in the @code{info} directory on your system (perhaps
+@file{/usr/local/info/dir}:
+
+@example
+* g77: (g77).           The GNU Fortran programming language.
+@end example
+
+If the menu in @file{dir} is organized into sections, @code{g77}
+probably belongs in a section with a name such as one of
+the following:
+
+@itemize @bullet
+@item
+Fortran Programming
+
+@item
+Writing Programs
+
+@item
+Programming Languages
+
+@item
+Languages Other Than C
+
+@item
+Scientific/Engineering Tools
+
+@item
+GNU Compilers
+@end itemize
+
+@node Missing bison?
+@subsection Missing @code{bison}?
+@cindex @code{bison}
+@cindex missing @code{bison}
+
+If you cannot install @code{bison}, make sure you have started
+with a @emph{fresh} distribution of @code{gcc}, do @emph{not}
+do @samp{make maintainer-clean} (in other versions of @code{gcc},
+this was called @samp{make realclean}), and, to ensure that
+@code{bison} is not invoked by @code{make} during the build,
+type these commands:
+
+@example
+sh# @kbd{cd gcc}
+sh# @kbd{touch bi-parser.c bi-parser.h c-parse.c c-parse.h cexp.c}
+sh# @kbd{touch cp/parse.c cp/parse.h objc-parse.c}
+sh#
+@end example
+
+These commands update the date-time-modified information for
+all the files produced by the various invocations of @code{bison}
+in the current versions of @code{gcc}, so that @code{make} no
+longer believes it needs to update them.
+All of these files should already exist in a @code{gcc}
+distribution, but the application of patches to upgrade
+to a newer version can leave the modification information
+set such that the @code{bison} input files look more ``recent''
+than the corresponding output files.
+
+@emph{Note:} New versions of @code{gcc} might change the set of
+files it generates by invoking @code{bison}---if you cannot figure
+out for yourself how to handle such a situation, try an
+older version of @code{gcc} until you find someone who can
+(or until you obtain and install @code{bison}).
+
+@node Missing makeinfo?
+@subsection Missing @code{makeinfo}?
+@cindex @code{makeinfo}
+@cindex missing @code{makeinfo}
+
+If you cannot install @code{makeinfo}, either use the @code{-k} option when
+invoking make to specify any of the @samp{install} or related targets,
+or specify @samp{MAKEINFO=echo} on the @code{make} command line.
+
+If you fail to do one of these things, some files, like @file{libf2c.a},
+might not be installed, because the failed attempt by @code{make} to
+invoke @code{makeinfo} causes it to cancel any further processing.
+
+@node Distributing Binaries
+@section Distributing Binaries
+@cindex binaries, distributing
+@cindex code, distributing
+
+If you are building @code{g77} for distribution to others in binary form,
+first make sure you are aware of your legal responsibilities (read
+the file @file{gcc/COPYING} thoroughly).
+
+Then, consider your target audience and decide where @code{g77} should
+be installed.
+
+For systems like GNU/Linux that have no native Fortran compiler (or
+where @code{g77} could be considered the native compiler for Fortran and
+@code{gcc} for C, etc.), you should definitely configure
+@code{g77} for installation
+in @file{/usr/bin} instead of @file{/usr/local/bin}.
+Specify the
+@samp{--prefix=/usr} option when running @file{./configure}.
+You might
+also want to set up the distribution so the @code{f77} command is a
+link to @code{g77}---just make an empty file named @file{f77-install-ok} in
+the source or build directory (the one in which the @file{f} directory
+resides, not the @file{f} directory itself) when you specify one of the
+@file{install} or @file{uninstall} targets in a @code{make} command.
+
+For a system that might already have @code{f2c} installed, you definitely
+will want to make another empty file (in the same directory) named
+either @file{f2c-exists-ok} or @file{f2c-install-ok}.
+Use the former if you
+don't want your distribution to overwrite @code{f2c}-related files in existing
+systems; use the latter if you want to improve the likelihood that
+users will be able to use both @code{f2c} and @code{g77} to compile code for a
+single program without encountering link-time or run-time
+incompatibilities.
+
+(Make sure you clearly document, in the ``advertising'' for
+your distribution, how installation of your distribution will
+affect existing installations of @code{gcc}, @code{f2c},
+@code{f77}, @file{libf2c.a}, and so on.
+Similarly, you should clearly document any requirements
+you assume are met by users of your distribution.)
+
+For other systems with native @code{f77} (and @code{cc}) compilers,
+configure @code{g77} as you (or most of your audience) would
+configure @code{gcc} for their installations.
+Typically this is for installation in
+@file{/usr/local}, and would not include a copy of
+@code{g77} named @code{f77}, so
+users could still use the native @code{f77}.
+
+In any case, for @code{g77} to work properly, you @strong{must} ensure
+that the binaries you distribute include:
+
+@table @file
+@item bin/g77
+This is the command most users use to compile Fortran.
+
+@item bin/gcc
+This is the command all users use to compile Fortran, either
+directly or indirectly via the @code{g77} command.
+The @file{bin/gcc} executable file must have been built
+from a @code{gcc} source tree into which a @code{g77} source
+tree was merged and configured, or it will not know how
+to compile Fortran programs.
+
+@item bin/f77
+In installations with no non-GNU native Fortran
+compiler, this is the same as @file{bin/g77}.
+Otherwise, it should be omitted from the distribution,
+so the one on already on a particular system does
+not get overwritten.
+
+@item info/g77.info*
+This is the documentation for @code{g77}.
+If it is not included, users will have trouble understanding
+diagnostics messages and other such things, and will send
+you a lot of email asking questions.
+
+Please edit this documentation (by editing @file{gcc/f/*.texi}
+and doing @samp{make doc} from the @file{/usr/src/gcc} directory)
+to reflect any changes you've made to @code{g77}, or at
+least to encourage users of your binary distribution to
+report bugs to you first.
+
+Also, whether you distribute binaries or install @code{g77}
+on your own system, it might be helpful for everyone to
+add a line listing this manual by name and topic to the
+top-level @code{info} node in @file{/usr/info/dir}.
+That way, users can find @code{g77} documentation more
+easily.
+@xref{Updating Documentation,,Updating Your Info Directory}.
+
+@item man/man1/g77.1
+This is the short man page for @code{g77}.
+It is out of date, but you might as well include it
+for people who really like man pages.
+
+@item man/man1/f77.1
+In installations where @code{f77} is the same as @code{g77},
+this is the same as @file{man/man1/g77.1}.
+Otherwise, it should be omitted from the distribution,
+so the one already on a particular system does not
+get overwritten.
+
+@item lib/gcc-lib/@dots{}/f771
+This is the actual Fortran compiler.
+
+@item lib/gcc-lib/@dots{}/libf2c.a
+This is the run-time library for @code{g77}-compiled programs.
+@end table
+
+Whether you want to include the slightly updated (and possibly
+improved) versions of @code{cc1}, @code{cc1plus}, and whatever other
+binaries get rebuilt with the changes the GNU Fortran distribution
+makes to the GNU back end, is up to you.
+These changes are
+highly unlikely to break any compilers, and it is possible
+they'll fix back-end bugs that can be demonstrated using front
+ends other than GNU Fortran's.
+
+Please assure users that unless
+they have a specific need for their existing,
+older versions of @code{gcc} command,
+they are unlikely to experience any problems by overwriting
+it with your version---though they could certainly protect
+themselves by making backup copies first!
+Otherwise, users might try and install your binaries
+in a ``safe'' place, find they cannot compile Fortran
+programs with your distribution (because, perhaps, they're
+picking up their old version of the @code{gcc} command,
+which does not recognize Fortran programs), and assume
+that your binaries (or, more generally, GNU Fortran
+distributions in general) are broken, at least for their
+system.
+
+Finally, @strong{please} ask for bug reports to go to you first, at least
+until you're sure your distribution is widely used and has been
+well tested.
+This especially goes for those of you making any
+changes to the @code{g77} sources to port @code{g77}, e.g. to OS/2.
+@email{fortran@@gnu.ai.mit.edu} has received a fair number of bug
+reports that turned out to be problems with other peoples' ports
+and distributions, about which nothing could be done for the
+user.
+Once you are quite certain a bug report does not involve
+your efforts, you can forward it to us.

@@ -1,0 +1,251 @@
+# Makefile for GNU F77 compiler runtime.
+#   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+#   Contributed by Dave Love (d.love@dl.ac.uk).
+#
+#This file is part of GNU Fortran.
+#
+#GNU Fortran is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+#
+#GNU Fortran is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with GNU Fortran; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+#02111-1307, USA.
+
+#### Start of system configuration section. ####
+
+# $(srcdir) must be set to the g77 runtime source directory
+# (g77/f/runtime/).
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+top_srcdir = @top_srcdir@
+
+INSTALL = @INSTALL@		# installs aren't actually done from here
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+RANLIB = @RANLIB@
+RANLIB_TEST = @RANLIB_TEST@
+
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@ @DEFS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+CGFLAGS = -g0
+
+GCC_FOR_TARGET = @CC@
+CC = $(GCC_FOR_TARGET)
+
+CROSS = @CROSS@
+
+objext = .o
+
+transform=@program_transform_name@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+AR = ar
+AR_FLAGS = rc
+
+# Directory in which to install scripts.
+bindir = $(exec_prefix)/bin
+
+# Directory in which to install library files.
+libdir = $(prefix)/lib
+
+# Directory in which to install documentation info files.
+infodir = $(prefix)/info
+
+#### End of system configuration section. ####
+
+SHELL = /bin/sh
+
+lib = ../../libf2c.a
+
+SUBDIRS = libI77 libF77 libU77
+
+MISC =	libF77/F77_aloc.o libF77/VersionF.o libF77/main.o libF77/s_rnge.o \
+	libF77/abort_.o libF77/getarg_.o libF77/iargc_.o libF77/getenv_.o \
+	libF77/signal_.o libF77/s_stop.o libF77/s_paus.o libF77/system_.o \
+	libF77/cabs.o libF77/derf_.o libF77/derfc_.o libF77/erf_.o \
+	libF77/erfc_.o libF77/sig_die.o libF77/exit_.o
+POW =	libF77/pow_ci.o libF77/pow_dd.o libF77/pow_di.o libF77/pow_hh.o \
+	libF77/pow_ii.o  libF77/pow_ri.o libF77/pow_zi.o libF77/pow_zz.o \
+	libF77/pow_qq.o
+CX =	libF77/c_abs.o libF77/c_cos.o libF77/c_div.o libF77/c_exp.o \
+	libF77/c_log.o libF77/c_sin.o libF77/c_sqrt.o
+DCX =	libF77/z_abs.o libF77/z_cos.o libF77/z_div.o libF77/z_exp.o \
+	libF77/z_log.o libF77/z_sin.o libF77/z_sqrt.o
+REAL =	libF77/r_abs.o libF77/r_acos.o libF77/r_asin.o libF77/r_atan.o \
+	libF77/r_atn2.o libF77/r_cnjg.o libF77/r_cos.o libF77/r_cosh.o \
+	libF77/r_dim.o libF77/r_exp.o libF77/r_imag.o libF77/r_int.o \
+	libF77/r_lg10.o libF77/r_log.o libF77/r_mod.o libF77/r_nint.o \
+	libF77/r_sign.o libF77/r_sin.o libF77/r_sinh.o libF77/r_sqrt.o \
+	libF77/r_tan.o libF77/r_tanh.o
+DBL =	libF77/d_abs.o libF77/d_acos.o libF77/d_asin.o libF77/d_atan.o \
+	libF77/d_atn2.o libF77/d_cnjg.o libF77/d_cos.o libF77/d_cosh.o \
+	libF77/d_dim.o libF77/d_exp.o libF77/d_imag.o libF77/d_int.o \
+	libF77/d_lg10.o libF77/d_log.o libF77/d_mod.o libF77/d_nint.o \
+	libF77/d_prod.o libF77/d_sign.o libF77/d_sin.o libF77/d_sinh.o \
+	libF77/d_sqrt.o libF77/d_tan.o libF77/d_tanh.o
+INT =	libF77/i_abs.o libF77/i_dim.o libF77/i_dnnt.o libF77/i_indx.o \
+	libF77/i_len.o libF77/i_mod.o libF77/i_nint.o libF77/i_sign.o
+HALF =	libF77/h_abs.o libF77/h_dim.o libF77/h_dnnt.o libF77/h_indx.o \
+	libF77/h_len.o libF77/h_mod.o  libF77/h_nint.o libF77/h_sign.o
+CMP =	libF77/l_ge.o libF77/l_gt.o libF77/l_le.o libF77/l_lt.o \
+	libF77/hl_ge.o libF77/hl_gt.o libF77/hl_le.o libF77/hl_lt.o
+EFL =	libF77/ef1asc_.o libF77/ef1cmc_.o
+CHAR =	libF77/s_cat.o libF77/s_cmp.o libF77/s_copy.o
+F90BIT = libF77/lbitbits.o libF77/lbitshft.o libF77/qbitbits.o \
+	libF77/qbitshft.o
+FOBJ = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) $(HALF) $(CMP) \
+ $(EFL) $(CHAR) $(F90BIT)
+
+IOBJ =	libI77/VersionI.o libI77/backspace.o libI77/close.o libI77/dfe.o \
+	libI77/dolio.o libI77/due.o libI77/endfile.o libI77/err.o \
+	libI77/fmt.o libI77/fmtlib.o libI77/iio.o libI77/ilnw.o \
+	libI77/inquire.o libI77/lread.o libI77/lwrite.o libI77/open.o \
+	libI77/rdfmt.o libI77/rewind.o libI77/rsfe.o libI77/rsli.o \
+	libI77/rsne.o libI77/sfe.o libI77/sue.o libI77/typesize.o \
+	libI77/uio.o libI77/util.o libI77/wref.o libI77/wrtfmt.o \
+	libI77/wsfe.o libI77/wsle.o libI77/wsne.o libI77/xwsne.o \
+	libI77/ftell_.o
+
+UOBJ =  libU77/VersionU.o libU77/gerror_.o libU77/perror_.o libU77/ierrno_.o \
+	libU77/itime_.o libU77/time_.o libU77/unlink_.o libU77/fnum_.o \
+	libU77/getpid_.o libU77/getuid_.o libU77/getgid_.o libU77/kill_.o \
+	libU77/rand_.o libU77/srand_.o libU77/irand_.o libU77/sleep_.o \
+	libU77/idate_.o libU77/ctime_.o libU77/etime_.o libU77/dtime_.o \
+	libU77/isatty_.o libU77/ltime_.o libU77/fstat_.o libU77/stat_.o \
+	libU77/lstat_.o libU77/access_.o libU77/link_.o libU77/getlog_.o \
+	libU77/ttynam_.o libU77/getcwd_.o libU77/vxttime_.o \
+	libU77/vxtidate_.o libU77/gmtime_.o libU77/fdate_.o libU77/secnds_.o \
+	libU77/bes.o libU77/dbes.o libU77/chdir_.o libU77/chmod_.o \
+	libU77/lnblnk_.o libU77/hostnm_.o libU77/rename_.o libU77/fgetc_.o \
+	libU77/fputc_.o libU77/umask_.o libU77/system_clock_.o libU77/date_.o \
+	libU77/second_.o libU77/flush1_.o libU77/alarm_.o
+
+F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
+	signal system flush ftell fseek access besj0 besj1 besjn besy0 besy1 \
+	besyn chdir chmod ctime date dbesj0 dbesj1 dbesjn dbesy0 dbesy1 dbesyn \
+	dtime etime fdate fgetc fget flush1 fnum fputc fput fstat gerror \
+	getcwd getgid getlog getpid getuid gmtime hostnm idate ierrno irand \
+	isatty itime kill link lnblnk lstat ltime mclock perror rand rename \
+	secnds second sleep srand stat symlnk sclock time ttynam umask unlink \
+	vxtidt vxttim alarm
+
+# flags_to_pass to recursive makes & configure (hence the quoting style)
+FLAGS_TO_PASS = \
+	CROSS="$(CROSS)" \
+	AR_FLAGS="$(AR_FLAGS)" \
+	AR="$(AR)" \
+	GCCFLAGS="$(GCCFLAGS)" \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	CC="$(GCC_FOR_TARGET)" \
+	LDFLAGS="$(LDFLAGS)" \
+	RANLIB="$(RANLIB)" \
+	RANLIB_TEST="$(RANLIB_TEST)" \
+	SHELL="$(SHELL)"
+
+CROSS_FLAGS_TO_PASS = \
+	CROSS="$(CROSS)" \
+	AR_FLAGS="$(AR_FLAGS)" \
+	AR="$(AR)" \
+	GCCFLAGS="$(GCCFLAGS)" \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	CC="$(GCC_FOR_TARGET)" \
+	LDFLAGS="$(LDFLAGS)" \
+	RANLIB="$(RANLIB)" \
+	RANLIB_TEST="$(RANLIB_TEST)" \
+	SHELL="$(SHELL)"
+
+all: ../../include/f2c.h libi77 libf77 libu77 $(lib)
+
+$(lib): stamp-lib ; @true
+stamp-lib: $(FOBJ) $(IOBJ) $(UOBJ)
+	rm -f stamp-lib
+	$(AR) $(AR_FLAGS) $(lib) $?
+	for name in $(F2CEXT); \
+	do \
+	  echo $${name}; \
+	  $(GCC_FOR_TARGET) -c -I. -I$(srcdir) -I../../include $(CPPFLAGS) $(CFLAGS) $(CGFLAGS) \
+	    -DL$${name} $(srcdir)/f2cext.c; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	  mv f2cext$(objext) L$${name}$(objext); \
+	  $(AR) $(AR_FLAGS) $(lib) L$${name}$(objext); \
+	  rm -f L$${name}$(objext); \
+	done
+	if $(RANLIB_TEST); then $(RANLIB) $(lib); \
+	  else true; fi
+	touch stamp-lib
+
+libi77: libI77/Makefile
+	if test "$(CROSS)"; then \
+	  cd libI77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
+	else \
+	  cd libI77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
+	fi
+
+libf77: libF77/Makefile
+	if test "$(CROSS)"; then \
+	  cd libF77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
+	else \
+	  cd libF77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
+	fi
+
+libu77: libU77/Makefile
+	if test "$(CROSS)"; then \
+	  cd libU77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
+	else \
+	  cd libU77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
+	fi
+
+${srcdir}/configure: ${srcdir}/configure.in
+	rm -f config.cache && cd ${srcdir} && autoconf && rm -f config.cache
+${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
+	rm -f libU77/config.cache && cd ${srcdir}/libU77 && autoconf && rm -f config.cache
+#../include/f2c.h libI77/Makefile libF77/Makefile libU77/Makefile Makefile: ${srcdir}/Makefile.in \
+#  config.status libU77/config.status
+#	$(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status
+#	cd libU77; $(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status
+
+# Extra dependencies for the targets above:
+libI77/Makefile: $(srcdir)/libI77/Makefile.in
+libF77/Makefile: $(srcdir)/libF77/Makefile.in
+libU77/Makefile: $(srcdir)/libU77/Makefile.in
+../../include/f2c.h: $(srcdir)/f2c.h.in
+
+#config.status: ${srcdir}/configure
+#	$(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status --recheck
+#libU77/config.status: ${srcdir}/libU77/configure
+#	cd libU77; $(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status --recheck
+
+mostlyclean:
+	for i in libI77 libF77 libU77; do cd $$i; $(MAKE) -f Makefile mostlyclean; cd ..;  done
+
+clean:
+	-rm -f config.log config.cache
+	for i in libI77 libF77 libU77; do cd $$i; $(MAKE) -f Makefile clean; cd ..;  done
+
+distclean: clean
+	-rm -f Makefile lib?77/Makefile config.status libU77/config.status ../../include/f2c.h
+
+maintainer-clean: distclean
+	-rm -f $(srcdir)/configure $(srcdir)/libU77/configure
+
+uninstall:
+	rm ../../include/f2c.h
+
+rebuilt: ${srcdir}/configure ${srcdir}/libU77/configure
+
+.PHONY: libf77 libi77 libu77 rebuilt mostlyclean clean distclean maintainer-clean \
+  uninstall all

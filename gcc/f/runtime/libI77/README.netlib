@@ -1,0 +1,225 @@
+If your compiler does not recognize ANSI C headers,
+compile with KR_headers defined:  either add -DKR_headers
+to the definition of CFLAGS in the makefile, or insert
+
+#define KR_headers
+
+at the top of f2c.h and fmtlib.c .
+
+
+If you have a really ancient K&R C compiler that does not understand
+void, add -Dvoid=int to the definition of CFLAGS in the makefile.
+
+If you use a C++ compiler, first create a local f2c.h by appending
+f2ch.add to the usual f2c.h, e.g., by issuing the command
+	make f2c.h
+which assumes f2c.h is installed in /usr/include .
+
+If your system lacks /usr/include/fcntl.h , then you
+should simply create an empty fcntl.h in this directory.
+If your compiler then complains about creat and open not
+having a prototype, compile with OPEN_DECL defined.
+On many systems, open and creat are declared in fcntl.h .
+
+If your system has /usr/include/fcntl.h, you may need to add
+-D_POSIX_SOURCE to the makefile's definition of CFLAGS.
+
+If your system's sprintf does not work the way ANSI C
+specifies -- specifically, if it does not return the
+number of characters transmitted -- then insert the line
+
+#define USE_STRLEN
+
+at the end of fmt.h .  This is necessary with
+at least some versions of Sun and DEC software.
+In particular, if you get a warning about an improper
+pointer/integer combination in compiling wref.c, then
+you need to compile with -DUSE_STRLEN .
+
+If your system's fopen does not like the ANSI binary
+reading and writing modes "rb" and "wb", then you should
+compile open.c with NON_ANSI_RW_MODES #defined.
+
+If you get error messages about references to cf->_ptr
+and cf->_base when compiling wrtfmt.c and wsfe.c or to
+stderr->_flag when compiling err.c, then insert the line
+
+#define NON_UNIX_STDIO
+
+at the beginning of fio.h, and recompile everything (or
+at least those modules that contain NON_UNIX_STDIO).
+
+Unformatted sequential records consist of a length of record
+contents, the record contents themselves, and the length of
+record contents again (for backspace).  Prior to 17 Oct. 1991,
+the length was of type int; now it is of type long, but you
+can change it back to int by inserting
+
+#define UIOLEN_int
+
+at the beginning of fio.h.  This affects only sue.c and uio.c .
+
+On VAX, Cray, or Research Tenth-Edition Unix systems, you may
+need to add -DVAX, -DCRAY, or -DV10 (respectively) to CFLAGS
+to make fp.h work correctly.  Alternatively, you may need to
+edit fp.h to suit your machine.
+
+You may need to supply the following non-ANSI routines:
+
+  fstat(int fileds, struct stat *buf) is similar
+to stat(char *name, struct stat *buf), except that
+the first argument, fileds, is the file descriptor
+returned by open rather than the name of the file.
+fstat is used in the system-dependent routine
+canseek (in the libI77 source file err.c), which
+is supposed to return 1 if it's possible to issue
+seeks on the file in question, 0 if it's not; you may
+need to suitably modify err.c .  On non-UNIX systems,
+you can avoid references to fstat and stat by compiling
+with NON_UNIX_STDIO defined; in that case, you may need
+to supply access(char *Name,0), which is supposed to
+return 0 if file Name exists, nonzero otherwise.
+
+  char * mktemp(char *buf) is supposed to replace the
+6 trailing X's in buf with a unique number and then
+return buf.  The idea is to get a unique name for
+a temporary file.
+
+On non-UNIX systems, you may need to change a few other,
+e.g.: the form of name computed by mktemp() in endfile.c and
+open.c; the use of the open(), close(), and creat() system
+calls in endfile.c, err.c, open.c; and the modes in calls on
+fopen() and fdopen() (and perhaps the use of fdopen() itself
+-- it's supposed to return a FILE* corresponding to a given
+an integer file descriptor) in err.c and open.c (component ufmt
+of struct unit is 1 for formatted I/O -- text mode on some systems
+-- and 0 for unformatted I/O -- binary mode on some systems).
+Compiling with -DNON_UNIX_STDIO omits all references to creat()
+and almost all references to open() and close(), the exception
+being in the function f__isdev() (in open.c).
+
+For MS-DOS, compile all of libI77 with -DMSDOS (which implies
+-DNON_UNIX_STDIO).  You may need to make other compiler-dependent
+adjustments; for example, for Turbo C++ you need to adjust the mktemp
+invocations and to #undef ungetc in lread.c and rsne.c .
+
+If you want to be able to load against libI77 but not libF77,
+then you will need to add sig_die.o (from libF77) to libI77.
+
+If you wish to use translated Fortran that has funny notions
+of record length for direct unformatted I/O (i.e., that assumes
+RECL= values in OPEN statements are not bytes but rather counts
+of some other units -- e.g., 4-character words for VMS), then you
+should insert an appropriate #define for url_Adjust at the
+beginning of open.c .  For VMS Fortran, for example,
+#define url_Adjust(x) x *= 4
+would suffice.
+
+To check for transmission errors, issue the command
+	make check
+This assumes you have the xsum program whose source, xsum.c,
+is distributed as part of "all from f2c/src".  If you do not
+have xsum, you can obtain xsum.c by sending the following E-mail
+message to netlib@netlib.bell-labs.com
+	send xsum.c from f2c/src
+
+The makefile assumes you have installed f2c.h in a standard
+place (and does not cause recompilation when f2c.h is changed);
+f2c.h comes with "all from f2c" (the source for f2c) and is
+available separately ("f2c.h from f2c").
+
+By default, Fortran I/O units 5, 6, and 0 are pre-connected to
+stdin, stdout, and stderr, respectively.  You can change this
+behavior by changing f_init() in err.c to suit your needs.
+Note that f2c assumes READ(*... means READ(5... and WRITE(*...
+means WRITE(6... .  Moreover, an OPEN(n,... statement that does
+not specify a file name (and does not specify STATUS='SCRATCH')
+assumes FILE='fort.n' .  You can change this by editing open.c
+and endfile.c suitably.
+
+Unless you adjust the "#define MXUNIT" line in fio.h, Fortran units
+0, 1, ..., 99 are available, i.e., the highest allowed unit number
+is MXUNIT - 1.
+
+Lines protected from compilation by #ifdef Allow_TYQUAD
+are for a possible extension to 64-bit integers in which
+integer = int = 32 bits and longint = long = 64 bits.
+
+Extensions (Feb. 1993) to NAMELIST processing:
+ 1. Reading a ? instead of &name (the start of a namelist) causes
+the namelist being sought to be written to stdout (unit 6);
+to omit this feature, compile rsne.c with -DNo_Namelist_Questions.
+ 2. Reading the wrong namelist name now leads to an error message
+and an attempt to skip input until the right namelist name is found;
+to omit this feature, compile rsne.c with -DNo_Bad_Namelist_Skip.
+ 3. Namelist writes now insert newlines before each variable; to omit
+this feature, compile xwsne.c with -DNo_Extra_Namelist_Newlines.
+ 4. (Sept. 1995) When looking for the &name that starts namelist
+input, lines whose first non-blank character is something other
+than &, $, or ? are treated as comment lines and ignored, unless
+rsne.c is compiled with -DNo_Namelist_Comments.
+
+Nonstandard extension (Feb. 1993) to open: for sequential files,
+ACCESS='APPEND' (or access='anything else starting with "A" or "a"')
+causes the file to be positioned at end-of-file, so a write will
+append to the file.
+
+Some buggy Fortran programs use unformatted direct I/O to write
+an incomplete record and later read more from that record than
+they have written.  For records other than the last, the unwritten
+portion of the record reads as binary zeros.  The last record is
+a special case: attempting to read more from it than was written
+gives end-of-file -- which may help one find a bug.  Some other
+Fortran I/O libraries treat the last record no differently than
+others and thus give no help in finding the bug of reading more
+than was written.  If you wish to have this behavior, compile
+uio.c with -DPad_UDread .
+
+If you want to be able to catch write failures (e.g., due to a
+disk being full) with an ERR= specifier, compile dfe.c, due.c,
+sfe.c, sue.c, and wsle.c with -DALWAYS_FLUSH.  This will lead to
+slower execution and more I/O, but should make ERR= work as
+expected, provided fflush returns an error return when its
+physical write fails.
+
+Carriage controls are meant to be interpreted by the UNIX col
+program (or a similar program).  Sometimes it's convenient to use
+only ' ' as the carriage control character (normal single spacing).
+If you compile lwrite.c and wsfe.c with -DOMIT_BLANK_CC, formatted
+external output lines will have an initial ' ' quietly omitted,
+making use of the col program unnecessary with output that only
+has ' ' for carriage control.
+
+The Fortran 77 Standard leaves it up to the implementation whether
+formatted writes of floating-point numbers of absolute value < 1 have
+a zero before the decimal point.  By default, libI77 omits such
+superfluous zeros, but you can cause them to appear by compiling
+lwrite.c, wref.c, and wrtfmt.c with -DWANT_LEAD_0 .
+
+If your system lacks a ranlib command, you don't need it.
+Either comment out the makefile's ranlib invocation, or install
+a harmless "ranlib" command somewhere in your PATH, such as the
+one-line shell script
+
+	exit 0
+
+or (on some systems)
+
+	exec /usr/bin/ar lts $1 >/dev/null
+
+Most of the routines in libI77 are support routines for Fortran
+I/O.  There are a few exceptions, summarized below -- I/O related
+functions and subroutines that appear to your program as ordinary
+external Fortran routines.
+
+1.	CALL FLUSH flushes all buffers.
+
+2.	FTELL(i) is an INTEGER function that returns the current
+	offset of Fortran unit i (or -1 if unit i is not open).
+
+3.	CALL FSEEK(i, offset, whence, *errlab) attemps to move
+	Fortran unit i to the specified offset: absolute offset
+	if whence = 0; relative to the current offset if whence = 1;
+	relative to the end of the file if whence = 2.  It branches
+	to label errlab if unit i is not open or if the call
+	otherwise fails.
