@@ -1239,7 +1239,8 @@ public class ObjectOutputStream extends OutputStream
 
 
   // Toggles writing primitive data to block-data buffer.
-  private boolean setBlockDataMode(boolean on) throws IOException
+  // Package-private to avoid a trampoline constructor.
+  boolean setBlockDataMode(boolean on) throws IOException
   {
     if (on == writeDataAsBlocks)
       return on;
@@ -1563,7 +1564,8 @@ public class ObjectOutputStream extends OutputStream
   private byte[] blockData;
   private int blockDataCount;
   private Object currentObject;
-  private ObjectStreamClass currentObjectStreamClass;
+  // Package-private to avoid a trampoline.
+  ObjectStreamClass currentObjectStreamClass;
   private PutField currentPutField;
   private boolean fieldsAlreadyWritten;
   private boolean replacementEnabled;
