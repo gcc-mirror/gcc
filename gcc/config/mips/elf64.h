@@ -71,3 +71,18 @@ do {							\
   extern FILE *asm_out_text_file;			\
   fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));	\
 } while (0)
+
+/* A C statement to output something to the assembler file to switch to section
+   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
+   define this macro in such cases.  */
+
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+do {								\
+  if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+    fprintf (FILE, "\t.section %s,\"ax\",@progbits\n", (NAME));	\
+  else if (TREE_READONLY (DECL))				\
+    fprintf (FILE, "\t.section %s,\"a\",@progbits\n", (NAME));	\
+  else								\
+    fprintf (FILE, "\t.section %s,\"aw\",@progbits\n", (NAME));	\
+} while (0)
