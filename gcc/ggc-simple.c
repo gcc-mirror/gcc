@@ -37,7 +37,7 @@ struct ggc_root
   void *base;
   int nelt;
   int size;
-  void (*cb)(void *);
+  void (*cb) PROTO ((void *));
 };
 
 static struct ggc_root *roots;
@@ -524,7 +524,7 @@ ggc_collect ()
     {
       char *elt = x->base;
       int s = x->size, n = x->nelt;
-      void (*cb)(void *) = x->cb;
+      void (*cb) PROTO ((void *)) = x->cb;
       int i;
 
       for (i = 0; i < n; ++i, elt += s)
