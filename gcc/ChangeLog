@@ -1,5 +1,7 @@
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* dwarf2out.c (add_bound_info): Also ignore COND_EXPR.
+
 	* combine.c (struct undo): Change int to unsigned int.
 	(do_SUBST_INT): Args are unsigned int.
 	(make_extraction, force_to_mode): Use proper type when forming mask.
