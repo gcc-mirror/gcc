@@ -922,18 +922,25 @@ non_logical_cint_operand (op, mode)
 	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
 }
 
-/* Return 1 if C is a constant that can be encoded in a mask on the
+/* Return 1 if C is a constant that can be encoded in a 32-bit mask on the
    RS/6000.  It is if there are no more than two 1->0 or 0->1 transitions.
    Reject all ones and all zeros, since these should have been optimized
    away and confuse the making of MB and ME.  */
 
 int
-mask_constant (c)
-     register HOST_WIDE_INT c;
+mask_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  HOST_WIDE_INT c;
   int i;
   int last_bit_value;
   int transitions = 0;
+
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+
+  c = INTVAL (op);
 
   if (c == 0 || c == ~0)
     return 0;
@@ -945,16 +952,6 @@ mask_constant (c)
       last_bit_value ^= 1, transitions++;
 
   return transitions <= 2;
-}
-
-/* Return 1 if the operand is a constant that is a mask on the RS/6000. */
-
-int
-mask_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return GET_CODE (op) == CONST_INT && mask_constant (INTVAL (op));
 }
 
 /* Return 1 if the operand is a constant that is a PowerPC64 mask.
