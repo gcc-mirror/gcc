@@ -2,6 +2,13 @@
 
 	* java/util/BitSet.java: Updated @specnote.
 
+	* java/io/Reader.java: Merge docs from classpath.
+	(skip): Synchronize on `lock'.
+	* java/io/FileReader.java: Import correct implementation from 
+	classpath.
+	* java/io/StringReader.java: Merge docs from classpath.
+	(ready): Throw IOException if stream is closed.
+
 2000-10-29  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/AbstractCollection.java (addAll): Use size() instead of
