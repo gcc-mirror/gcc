@@ -1,3 +1,8 @@
+Thu Jan  7 09:25:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* jump.c (delete_computation): Don't trust location of REG_DEAD
+	note within a basic block.
+
 Sat Dec 26 06:31:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cse.c (cse_insn): Always make SET a nop if dest is hard regster and
