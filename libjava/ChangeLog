@@ -1,3 +1,28 @@
+2001-12-06  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (_Jv_BytecodeVerifier::type_val): Added
+	unused_by_subroutine_type.
+	(_Jv_BytecodeVerifier::type::merge): Handle
+	unused_by_subroutine_type.
+	(_Jv_BytecodeVerifier::state::state): Added `ret_semantics'
+	argument.
+	(_Jv_BytecodeVerifier::state::copy): Likewise.
+	(_Jv_BytecodeVerifier::push_jump_merge): Pass `ret_semantics' to
+	state constructor.
+	(_Jv_BytecodeVerifier::state::is_unmerged_ret_state): New method.
+	(_Jv_BytecodeVerifier::pop_jump): Don't accept a jump which is
+	from an unmerged ret.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Don't let an
+	unmerged ret state skip verification in the fall-through case.
+	(debug_print): New function.
+	(_Jv_BytecodeVerifier::type::print): New method.
+	(_Jv_BytecodeVerifier::state::print): New method.
+	(_Jv_BytecodeVerifier::push_jump_merge): Print state.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Likewise.
+	(_Jv_BytecodeVerifier::get_variable): Don't call note_variable.
+	(_Jv_BytecodeVerifier::_Jv_BytecodeVerifier): Print debug
+	information.
+
 2001-12-05  Tom Tromey  <tromey@redhat.com>
 
 	* defineclass.cc (character): Removed.
