@@ -1,5 +1,8 @@
 Tue Jul 21 00:31:01 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in: Fix minor problems with gas feature detection code.
+	* configure: Rebuilt.
+
 	* gcc.c (do_spec): Issue a warning for '%[]' usage.
 
 	* Undo this change.
