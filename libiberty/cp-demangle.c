@@ -3600,10 +3600,18 @@ char *
 cplus_demangle_v3 (mangled)
      const char* mangled;
 {
+  dyn_string_t demangled;
+  status_t status;
+
+  /* If this isn't a mangled name, don't pretend to demangle it.  */
+  if (strncmp (mangled, "_Z", 2) != 0)
+    return NULL;
+
   /* Create a dyn_string to hold the demangled name.  */
-  dyn_string_t demangled = dyn_string_new (0);
+  demangled = dyn_string_new (0);
   /* Attempt the demangling.  */
-  status_t status = cp_demangle ((char *) mangled, demangled);
+  status = cp_demangle ((char *) mangled, demangled);
+
   if (STATUS_NO_ERROR (status))
     /* Demangling succeeded.  */
     {
