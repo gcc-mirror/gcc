@@ -1,8 +1,16 @@
+Wed Apr 22 17:07:35 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* loop.c (note_addr_stored): Correct function to take 2 arguments,
+	instead of 1.
+
+	* rtl.def (MATCH_INSN2): Add new matching pattern.
+	* genrecog.c (add_to_sequence): Support MATCH_INSN2. 
+
 Wed Apr 22 15:52:22 1998  John Carr  <jfc@mit.edu>
 
 	* emit-rtl.c (gen_highpart): The high part of a CONST_INT is not zero
 	if HOST_BITS_PER_WIDE_INT is larger than BITS_PER_WORD.
-
+    
 	* final.c (split_double): Sign extend both halves of a split CONST_INT.
 
 Wed Apr 22 10:42:45 1998  Jeffrey A Law  (law@cygnus.com)
