@@ -1,5 +1,6 @@
 2004-07-09  Diego Novillo  <dnovillo@redhat.com>
 
+	Fix PR tree-optimization/15555
 	* tree-dfa.c (dump_variable): If the variable is a pointer
 	SSA_NAME, also dump its points-to information.
 	* tree-flow.h (struct ptr_info_def): Add field
