@@ -1,3 +1,9 @@
+2004-08-31  Richard Henderson  <rth@redhat.com>
+
+	PR c++/17221
+	* pt.c (tsubst_expr): Move OFFSETOF_EXPR handling ...
+	(tsubst_copy_and_build): ... here.
+
 2004-08-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (initialize_artificial_var): Declare.

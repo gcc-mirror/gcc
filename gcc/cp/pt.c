@@ -8085,11 +8085,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
       break;
 
-    case OFFSETOF_EXPR:
-      t = tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				 in_decl, false);
-      return fold_offsetof (t);
-
     default:
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));
       
@@ -8629,6 +8624,9 @@ tsubst_copy_and_build (tree t,
       return build_x_va_arg (RECUR (TREE_OPERAND (t, 0)),
 			     tsubst_copy (TREE_TYPE (t), args, complain, 
 					  in_decl));
+
+    case OFFSETOF_EXPR:
+      return fold_offsetof (RECUR (TREE_OPERAND (t, 0)));
 
     default:
       return tsubst_copy (t, args, complain, in_decl);
