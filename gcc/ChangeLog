@@ -1,3 +1,8 @@
+2002-06-14  Jeff Sturm  <jsturm@one-point.com>
+
+	* config/sparc/sparc.h (DYNAMIC_CHAIN_ADDRESS): Add
+	SPARC_STACK_BIAS.
+
 2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
 
 	* loop.c (check_final_value): Use v->always_executed

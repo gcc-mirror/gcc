@@ -1958,7 +1958,8 @@ do {									\
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.
    ??? -mflat support? */
-#define DYNAMIC_CHAIN_ADDRESS(frame) plus_constant (frame, 14 * UNITS_PER_WORD)
+#define DYNAMIC_CHAIN_ADDRESS(frame)	\
+  plus_constant (frame, 14 * UNITS_PER_WORD + SPARC_STACK_BIAS)
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the
