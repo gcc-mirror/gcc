@@ -70,7 +70,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	-Dmemcpy=__builtin_memcpy \
 	-Dmemcmp=__builtin_memcmp \
 	-Dstrcpy=__builtin_strcpy \
-	-Dstrcmp=__builtin_strcmp \
 	-Dstrlen=__builtin_strlen }}}"
 
 #ifdef  CC1_SPEC
