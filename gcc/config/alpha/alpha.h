@@ -137,6 +137,7 @@ extern int target_flags;
 extern enum alpha_trap_precision alpha_tp;
 extern enum alpha_fp_rounding_mode alpha_fprm;
 extern enum alpha_fp_trap_mode alpha_fptm;
+extern int alpha_tls_size;
 
 /* This means that floating-point support exists in the target implementation
    of the Alpha architecture.  This is usually the default.  */
@@ -208,6 +209,10 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_SMALL_DATA (1 << 13)
 #define TARGET_SMALL_DATA (target_flags & MASK_SMALL_DATA)
 
+/* This means emit thread pointer loads for kernel not user.  */
+#define MASK_TLS_KERNEL	(1 << 14)
+#define TARGET_TLS_KERNEL (target_flags & MASK_TLS_KERNEL)
+
 /* This means that the processor is an EV5, EV56, or PCA56.
    Unlike alpha_cpu this is not affected by -mtune= setting.  */
 #define MASK_CPU_EV5	(1 << 28)
@@ -251,6 +256,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #ifndef TARGET_FIXUP_EV5_PREFETCH
 #define TARGET_FIXUP_EV5_PREFETCH 0
 #endif
+#ifndef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
+#endif
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -293,6 +301,8 @@ extern enum alpha_fp_trap_mode alpha_fptm;
      N_("Emit 16-bit relocations to the small data areas")},		\
     {"large-data", -MASK_SMALL_DATA,					\
      N_("Emit 32-bit relocations to the small data areas")},		\
+    {"tls-kernel", MASK_TLS_KERNEL,					\
+     N_("Emit rdval instead of rduniq for thread pointer")},		\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT				\
 	 | TARGET_DEFAULT_EXPLICIT_RELOCS, ""} }
 
@@ -316,6 +326,7 @@ extern const char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
 extern const char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
 extern const char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
 extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
+extern const char *alpha_tls_size_string; /* For -mtls-size= */
 
 #define TARGET_OPTIONS					\
 {							\
@@ -331,6 +342,8 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    N_("Control the precision given to fp exceptions")},	\
   {"memory-latency=",	&alpha_mlat_string,		\
    N_("Tune expected memory latency")},			\
+  {"tls-size=",		&alpha_tls_size_string,		\
+   N_("Specify bit size of immediate TLS offsets")},	\
 }
 
 /* This macro defines names of additional specifications to put in the
@@ -681,7 +694,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    class that represents their union.  */
    
 enum reg_class {
-  NO_REGS, R24_REG, R25_REG, R27_REG,
+  NO_REGS, R0_REG, R24_REG, R25_REG, R27_REG,
   GENERAL_REGS, FLOAT_REGS, ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -690,8 +703,8 @@ enum reg_class {
 
 /* Give names of register classes as strings for dump file.  */
 
-#define REG_CLASS_NAMES				\
- {"NO_REGS", "R24_REG", "R25_REG", "R27_REG",	\
+#define REG_CLASS_NAMES					\
+ {"NO_REGS", "R0_REG", "R24_REG", "R25_REG", "R27_REG",	\
   "GENERAL_REGS", "FLOAT_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
@@ -700,6 +713,7 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS				\
 { {0x00000000, 0x00000000},	/* NO_REGS */		\
+  {0x00000001, 0x00000000},	/* R0_REG */		\
   {0x01000000, 0x00000000},	/* R24_REG */		\
   {0x02000000, 0x00000000},	/* R25_REG */		\
   {0x08000000, 0x00000000},	/* R27_REG */		\
@@ -713,7 +727,8 @@ enum reg_class {
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO)			\
- ((REGNO) == 24 ? R24_REG			\
+ ((REGNO) == 0 ? R0_REG				\
+  : (REGNO) == 24 ? R24_REG			\
   : (REGNO) == 25 ? R25_REG			\
   : (REGNO) == 27 ? R27_REG			\
   : (REGNO) >= 32 && (REGNO) <= 62 ? FLOAT_REGS	\
@@ -730,6 +745,7 @@ enum reg_class {
   : (C) == 'b' ? R25_REG		\
   : (C) == 'c' ? R27_REG		\
   : (C) == 'f' ? FLOAT_REGS		\
+  : (C) == 'v' ? R0_REG			\
   : NO_REGS)
 
 /* Define this macro to change register usage conditional on target flags.  */
@@ -1710,7 +1726,7 @@ do {									     \
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
 do {						\
   const char *name_ = NAME;			\
-  if (*name_ == '@')				\
+  if (*name_ == '@' || *name == '%')		\
     name_ += 2;					\
   if (*name_ == '*')				\
     name_++;					\
@@ -1893,7 +1909,7 @@ do {						\
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '/' || (CODE) == ',' || (CODE) == '-' || (CODE) == '~' \
-   || (CODE) == '#' || (CODE) == '*')
+   || (CODE) == '#' || (CODE) == '*' || (CODE) == '&')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -1929,6 +1945,12 @@ do {						\
   {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"small_symbolic_operand", {SYMBOL_REF, CONST}},			\
   {"global_symbolic_operand", {SYMBOL_REF, CONST}},			\
+  {"dtp16_symbolic_operand", {CONST}},					\
+  {"dtp32_symbolic_operand", {CONST}},					\
+  {"gotdtp_symbolic_operand", {CONST}},					\
+  {"tp16_symbolic_operand", {CONST}},					\
+  {"tp32_symbolic_operand", {CONST}},					\
+  {"gottp_symbolic_operand", {CONST}},					\
   {"call_operand", {REG, SYMBOL_REF}},					\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
 		     SYMBOL_REF, CONST, LABEL_REF, HIGH}},		\

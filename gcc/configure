@@ -7399,6 +7399,28 @@ conftest_s=
 tls_first_major=
 tls_first_minor=
 case "$target" in
+  alpha*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	ldq	$27,__tls_get_addr($29)		!literal!1
+	lda	$16,foo($29)			!tlsgd!1
+	jsr	$26,($27),__tls_get_addr	!lituse_tlsgd!1
+	ldq	$27,__tls_get_addr($29)		!literal!2
+	lda	$16,foo($29)			!tlsldm!2
+	jsr	$26,($27),__tls_get_addr	!lituse_tlsldm!2
+	ldq	$1,foo($29)			!gotdtprel
+	ldah	$2,foo($29)			!dtprelhi
+	lda	$3,foo($2)			!dtprello
+	lda	$4,foo($29)			!dtprel
+	ldq	$1,foo($29)			!gottprel
+	ldah	$2,foo($29)			!tprelhi
+	lda	$3,foo($2)			!tprello
+	lda	$4,foo($29)			!tprel'
+	tls_first_major=2
+	tls_first_minor=13
+	;;
   i[34567]86-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -7463,7 +7485,7 @@ case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
     echo $ac_n "checking assembler supports explicit relocations""... $ac_c" 1>&6
-echo "configure:7467: checking assembler supports explicit relocations" >&5
+echo "configure:7489: checking assembler supports explicit relocations" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_explicit_relocs'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7513,7 +7535,7 @@ EOF
     ;;
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:7517: checking assembler .register pseudo-op support" >&5
+echo "configure:7539: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7541,7 +7563,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:7545: checking assembler supports -relax" >&5
+echo "configure:7567: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7569,7 +7591,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
-echo "configure:7573: checking assembler and linker support unaligned pc related relocs" >&5
+echo "configure:7595: checking assembler and linker support unaligned pc related relocs" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7596,7 +7618,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler and linker support unaligned pc related relocs against hidden symbols""... $ac_c" 1>&6
-echo "configure:7600: checking assembler and linker support unaligned pc related relocs against hidden symbols" >&5
+echo "configure:7622: checking assembler and linker support unaligned pc related relocs against hidden symbols" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel_hidden'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7637,7 +7659,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:7641: checking for assembler offsetable %lo() support" >&5
+echo "configure:7663: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7677,7 +7699,7 @@ EOF
 
   i[34567]86-*-* | x86_64-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:7681: checking assembler instructions" >&5
+echo "configure:7703: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7704,7 +7726,7 @@ EOF
     echo "$ac_t""$gcc_cv_as_instructions" 1>&6
 
     echo $ac_n "checking assembler GOTOFF in data directives""... $ac_c" 1>&6
-echo "configure:7708: checking assembler GOTOFF in data directives" >&5
+echo "configure:7730: checking assembler GOTOFF in data directives" >&5
     gcc_cv_as_gotoff_in_data=no
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x
     then
@@ -7734,7 +7756,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:7738: checking assembler dwarf2 debug_line support" >&5
+echo "configure:7760: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -7790,7 +7812,7 @@ fi
 echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
 
 echo $ac_n "checking assembler --gdwarf2 support""... $ac_c" 1>&6
-echo "configure:7794: checking assembler --gdwarf2 support" >&5
+echo "configure:7816: checking assembler --gdwarf2 support" >&5
 gcc_cv_as_gdwarf2_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -7819,7 +7841,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
 
 echo $ac_n "checking assembler --gstabs support""... $ac_c" 1>&6
-echo "configure:7823: checking assembler --gstabs support" >&5
+echo "configure:7845: checking assembler --gstabs support" >&5
 gcc_cv_as_gstabs_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -7847,7 +7869,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
 
 echo $ac_n "checking linker PT_GNU_EH_FRAME support""... $ac_c" 1>&6
-echo "configure:7851: checking linker PT_GNU_EH_FRAME support" >&5
+echo "configure:7873: checking linker PT_GNU_EH_FRAME support" >&5
 gcc_cv_ld_eh_frame_hdr=no
 if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 12 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8010,7 +8032,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8014: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8036: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

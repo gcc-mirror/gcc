@@ -1725,6 +1725,28 @@ tls_first_major=
 tls_first_minor=
 case "$target" in
 changequote(,)dnl
+  alpha*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	ldq	$27,__tls_get_addr($29)		!literal!1
+	lda	$16,foo($29)			!tlsgd!1
+	jsr	$26,($27),__tls_get_addr	!lituse_tlsgd!1
+	ldq	$27,__tls_get_addr($29)		!literal!2
+	lda	$16,foo($29)			!tlsldm!2
+	jsr	$26,($27),__tls_get_addr	!lituse_tlsldm!2
+	ldq	$1,foo($29)			!gotdtprel
+	ldah	$2,foo($29)			!dtprelhi
+	lda	$3,foo($2)			!dtprello
+	lda	$4,foo($29)			!dtprel
+	ldq	$1,foo($29)			!gottprel
+	ldah	$2,foo($29)			!tprelhi
+	lda	$3,foo($2)			!tprello
+	lda	$4,foo($29)			!tprel'
+	tls_first_major=2
+	tls_first_minor=13
+	;;
   i[34567]86-*-*)
 changequote([,])dnl
     conftest_s='
