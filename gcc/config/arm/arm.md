@@ -6012,7 +6012,7 @@
 )
 
 (define_insn "*call_value_indirect"
-  [(set (match_operand 0 "" "=l")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:SI 1 "register_operand" "l*r"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
@@ -6051,7 +6051,7 @@
 )
 
 (define_insn "*call_value_reg"
-  [(set (match_operand 0 "" "=ryfv")
+  [(set (match_operand 0 "" "")
         (call (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
@@ -6065,7 +6065,7 @@
 )
 
 (define_insn "*call_value_mem"
-  [(set (match_operand 0 "" "=ryfv")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:SI 1 "memory_operand" "m"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
@@ -6082,7 +6082,7 @@
 ;; The 'a' causes the operand to be treated as an address, i.e. no '#' output.
 
 (define_insn "*call_symbol"
-  [(call (mem:SI (match_operand:SI 0 "" "X"))
+  [(call (mem:SI (match_operand:SI 0 "" ""))
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6097,8 +6097,8 @@
 )
 
 (define_insn "*call_value_symbol"
-  [(set (match_operand 0 "s_register_operand" "=ryfv")
-	(call (mem:SI (match_operand:SI 1 "" "X"))
+  [(set (match_operand 0 "s_register_operand" "")
+	(call (mem:SI (match_operand:SI 1 "" ""))
 	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6113,7 +6113,7 @@
 )
 
 (define_insn "*call_insn"
-  [(call (mem:SI (match_operand:SI 0 "" "X"))
+  [(call (mem:SI (match_operand:SI 0 "" ""))
 	 (match_operand:SI 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6126,8 +6126,8 @@
 )
 
 (define_insn "*call_value_insn"
-  [(set (match_operand 0 "register_operand" "=l")
-	(call (mem:SI (match_operand 1 "" "X"))
+  [(set (match_operand 0 "register_operand" "")
+	(call (mem:SI (match_operand 1 "" ""))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6180,7 +6180,7 @@
 )
 
 (define_insn "*sibcall_value_insn"
- [(set (match_operand 0 "s_register_operand" "=ryfv")
+ [(set (match_operand 0 "s_register_operand" "")
        (call (mem:SI (match_operand:SI 1 "" "X"))
 	     (match_operand 2 "" "")))
   (return)
