@@ -2973,7 +2973,7 @@ build_ivar_reference (id)
 #define HASH_ALLOC_LIST_SIZE	170
 #define ATTR_ALLOC_LIST_SIZE	170
 #define SIZEHASHTABLE 		257
-#define HASHFUNCTION(key)	((int)key >> 2) 	/* divide by 4 */
+#define HASHFUNCTION(key)	((int)key & 0x7fffffff)	/* make positive */
 
 static void
 hash_init ()
