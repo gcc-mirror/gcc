@@ -230,8 +230,10 @@ RANLIB_TEST_FOR_TARGET = \
   || ( [ "$(host_canonical)" = "$(target)" ] \
        && [ -f /usr/bin/ranlib -o -f /bin/ranlib ] )
 NM_FOR_TARGET = ` \
-  if [ -f $(objdir)/../binutils/nm ] ; then \
-    echo $(objdir)/../binutils/nm ; \
+  if [ -f ./nm ] ; then \
+    echo ./nm ; \
+  elif [ -f $(objdir)/../binutils/nm-new ] ; then \
+    echo $(objdir)/../binutils/nm-new ; \
   else \
     if [ "$(host_canonical)" = "$(target)" ] ; then \
       echo nm; \
