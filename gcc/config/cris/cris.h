@@ -1023,14 +1023,6 @@ struct cum_args {int regs;};
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
  error ("no FUNCTION_PROFILER for CRIS")
 
-/* No profiling for the time being.  */
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)	\
- error ("no FUNCTION_BLOCK_PROFILER for CRIS")
-
-/* No profiling for the time being.  */
-#define BLOCK_PROFILER(FILE, BLOCKNO)	\
- error ("no BLOCK_PROFILER for CRIS")
-
 /* FIXME: Some of the undefined macros might be mandatory.  If so, fix
    documentation.  */
 
