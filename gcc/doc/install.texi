@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.9 2001/05/31 08:15:15 gerald Exp $
+@comment $Id: install.texi,v 1.10 2001/06/01 18:08:19 gerald Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -297,9 +297,6 @@ subdirectory of @var{objdir} or vice versa.
 These additional options control where certain parts of the distribution
 are installed.  Normally you should not need to use these options.
 @itemize @bullet
-@item
-@option{--with-local-prefix=}@var{dirname} @minus{}@minus{} Specify the installation
-directory for local include files.  The default is @file{/usr/local}.
 
 @item
 @option{--with-gxx-include-dir=}@var{dirname} @minus{}@minus{} Specify
@@ -307,6 +304,41 @@ the installation directory for g++ header files.  The default is
 @file{/usr/local/include/g++}.
   
 @end itemize
+
+@item
+@option{--with-local-prefix=}@var{dirname} @minus{}@minus{} Specify the
+installation directory for local include files.  The default is
+@file{/usr/local}.  Specify this option if you want the compiler to
+search directory @file{@var{dirname}/include} for locally installed
+header files @emph{instead} of @file{/usr/local/include}.
+
+You should specify @option{--with-local-prefix} @strong{only} if your
+site has a different convention (not @file{/usr/local}) for where to put
+site-specific files.
+
+The default value for @option{--with-local-prefix} is @file{/usr/local}
+regardless of the value of @option{--prefix}.  Specifying
+@option{--prefix} has no effect on which directory GCC searches for
+local header files.  This may seem counterintuitive, but actually it is
+logical.
+
+The purpose of @option{--prefix} is to specify where to @emph{install
+GCC}.  The local header files in @file{/usr/local/include}---if you put
+any in that directory---are not part of GCC.  They are part of other
+programs---perhaps many others.  (GCC installs its own header files in
+another directory which is based on the @option{--prefix} value.)
+
+@strong{Do not} specify @file{/usr} as the @option{--with-local-prefix}!
+The directory you use for @option{--with-local-prefix} @strong{must not}
+contain any of the system's standard header files.  If it did contain
+them, certain programs would be miscompiled (including GNU Emacs, on
+certain targets), because this would override and nullify the header
+file corrections made by the @code{fixincludes} script.
+
+Indications are that people who use this option use it based on mistaken
+ideas of what it is for.  People use it as if it specified where to
+install part of GCC.  Perhaps they make this assumption because
+installing GCC creates the directory.
 
 @item
 @option{--enable-shared} @minus{}@minus{} Build shared versions of the
@@ -375,12 +407,16 @@ conventions, etc.  This is the default.
 @option{--enable-threads} @minus{}@minus{} Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime
 library, and exception handling for other languages like C++ and Java.
+On some systems, this is the default.
 
 @item
 @option{--enable-threads=}@var{lib} @minus{}@minus{} Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
 compiler and runtime library, and exception handling for other languages
-like C++ and Java.
+like C++ and Java.  The possibilities for @var{lib} are @samp{aix},
+@samp{dce}, @samp{decosf1}, @samp{irix}, @samp{mach}, @samp{os2},
+@samp{posix}, @samp{pthreads}, @samp{single}, @samp{solaris},
+@samp{vxworks} and @samp{win32}.
 
 @item
 @option{--with-cpu=}@var{cpu} @minus{}@minus{} Specify which cpu variant the
@@ -405,6 +441,15 @@ CPP should be integrated into the compiler itself.  This option is
 not supported by snapshots since November 2000.  In snapshots where
 it is supported, it is not enabled by default, except for snapshots
 very close to November 2000.
+
+@item
+@option{--enable-maintainer-mode} @minus{}@minus{} The build rules that
+regenerate the GCC master message catalog @code{gcc.pot} are normally
+disabled. This is because it can only be rebuilt if the complete source
+tree is present. If you have changed the sources and want to rebuild the
+catalog, configuring with @option{--enable-maintainer-mode} will enable
+this. Note that you need a recent version of the @code{gettext} tools
+to do so.
 
 @item
 @option{--without-fast-fixincludes} @minus{}@minus{} Specify that the
