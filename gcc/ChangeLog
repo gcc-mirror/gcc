@@ -49,6 +49,7 @@ Fri Oct 17 13:39:56 1997  Doug Evans  <dje@canuck.cygnus.com>
 	(function_arg,function_arg_partial_nregs): New functions.
 	(function_arg_{pass_by_reference,advance}): New functions.
 	(function_arg_padding): New function.
+	* ginclude/va-sparc.h: Rewrite v9 support.
 
 Fri Oct 17 12:29:48 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
 
