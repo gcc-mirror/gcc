@@ -1049,12 +1049,15 @@ do {							\
 
 #define PROMOTE_PROTOTYPES
 
-/* Define this macro if an instruction to load a value narrower
-   than a word from memory into a register also zero-extends the
-   value to the whole  register.  */
+/* Define if operations between registers always perform the operation
+   on the full register even if a narrower mode is specified.  */
+#define WORD_REGISTER_OPERATIONS
 
-#define BYTE_LOADS_ZERO_EXTEND
-
+/* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
+   will either zero-extend or sign-extend.  The value of this macro should
+   be the code that says which one of the two operations is implicitly
+   done, NIL if none.  */
+#define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
 /* Standard register usage.  */
 

@@ -902,9 +902,15 @@ extern int current_function_anonymous_args;
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
-/* Define if normal loads of shorter-than-word items from sign extends
-   the rest of the bigs in the register. */
-#define BYTE_LOADS_SIGN_EXTEND  1
+/* Define if operations between registers always perform the operation
+   on the full register even if a narrower mode is specified.  */
+#define WORD_REGISTER_OPERATIONS
+
+/* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
+   will either zero-extend or sign-extend.  The value of this macro should
+   be the code that says which one of the two operations is implicitly
+   done, NIL if none.  */
+#define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
 /* Define this if zero-extension is slow (more than one real instruction).
    On the SH, it's only one instruction */

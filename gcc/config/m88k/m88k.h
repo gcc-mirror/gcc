@@ -1508,9 +1508,15 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
-/* Define if normal loads of shorter-than-word items from memory clears
-   the rest of the bigs in the register.  */
-#define BYTE_LOADS_ZERO_EXTEND
+/* Define if operations between registers always perform the operation
+   on the full register even if a narrower mode is specified.  */
+#define WORD_REGISTER_OPERATIONS
+
+/* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
+   will either zero-extend or sign-extend.  The value of this macro should
+   be the code that says which one of the two operations is implicitly
+   done, NIL if none.  */
+#define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
 /* Zero if access to memory by bytes is faster.  */
 #define SLOW_BYTE_ACCESS 1
