@@ -150,6 +150,9 @@ __negtf2 (){ abort(); }
 __netf2 (){ abort(); }
 __subtf3 (){ abort(); }
 __trunctfdf2 (){ abort(); }
+__gexf2 (){ abort(); }
+__fixxfsi (){ abort(); }
+__floatsixf (){ abort(); }
 #else	/* !EXTENDED_FLOAT_STUBS, rest of file */
 
 

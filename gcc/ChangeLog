@@ -1,5 +1,8 @@
 1998-07-08  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
+	* config/fp-bit.c (__gexf2, __fixxfsi, __floatsixf): Add function
+	stubs.
+
 	* toplev.c (lang_options): Add -Wlong-long, -Wno-long-long
 	options.
 	* c-decl.c (warn_long_long): Define.
