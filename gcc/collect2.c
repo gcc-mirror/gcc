@@ -1193,7 +1193,13 @@ fork_execute (prog, argv)
 
   pid = vfork ();
   if (pid == -1)
-    fatal_perror ("vfork");
+    {
+#ifdef vfork
+      fatal_perror ("fork");
+#else
+      fatal_perror ("vfork");
+#endif
+    }
 
   if (pid == 0)			/* child context */
     {
@@ -1363,7 +1369,13 @@ scan_prog_file (prog_name, which_pass)
   /* Spawn child nm on pipe */
   pid = vfork ();
   if (pid == -1)
-    fatal_perror ("vfork");
+    {
+#ifdef vfork
+      fatal_perror ("fork");
+#else
+      fatal_perror ("vfork");
+#endif
+    }
 
   if (pid == 0)			/* child context */
     {
