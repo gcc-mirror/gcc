@@ -728,6 +728,32 @@ emit_move_sequence (operands, mode, scratch_reg)
 			  operand1));
       return 1;
     }
+  /* Handle secondary reloads for loads of FP registers from constant
+     expressions by forcing the constant into memory.
+
+     use scratch_reg to hold the address of the memory location. 
+
+     ??? The proper fix is to change PREFERRED_RELOAD_CLASS to return 
+     NO_REGS when presented with a const_int and an register class 
+     containing only FP registers.  Doing so unfortunately creates
+     more problems than it solves.   Fix this for 2.5.  */
+  else if (fp_reg_operand (operand0, mode)
+	   && CONSTANT_P (operand1)
+	   && scratch_reg)
+    {
+      rtx xoperands[2];
+
+      /* Force the constant into memory and put the address of the
+	 memory location into scratch_reg.  */
+      xoperands[0] = scratch_reg;
+      xoperands[1] = XEXP (force_const_mem (mode, operand1), 0);
+      emit_move_sequence (xoperands, mode, 0);
+
+      /* Now load the destination register.  */
+      emit_insn (gen_rtx (SET, mode, operand0,
+			  gen_rtx (MEM, mode, scratch_reg)));
+      return 1;
+    }
   /* Handle secondary reloads for SAR.  These occur when trying to load
      the SAR from memory or from a FP register.  */
   else if (GET_CODE (operand0) == REG
