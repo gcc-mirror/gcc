@@ -1,3 +1,8 @@
+2004-06-30  Richard Henderson  <rth@redhat.com>
+
+	* init.c (build_new_1): Fill in TYPE_DOMAIN, TYPE_SIZE and
+	TYPE_SIZE_UNIT of full_type.
+
 2004-06-30  Per Bothner  <per@bothner.com>
 
 	Conditionally compile support for --enable-mapped_location.
