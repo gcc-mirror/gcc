@@ -386,6 +386,10 @@ extern int target_flags;
    registers cannot hold floating-point values and the accumulators cannot
    hold integer values.
 
+   DImode and larger values should start at an even register just like
+   DFmode values, even though the instruction set doesn't require it, in order
+   to prevent reload from aborting due to a modes_equiv_for_class_p failure.
+
    (I'd like to use the "?:" syntax to make this more readable, but Sun's
    compiler doesn't seem to accept it.)  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)  				\
@@ -396,8 +400,7 @@ extern int target_flags;
        && GET_MODE_CLASS (MODE) != MODE_FLOAT				\
        && GET_MODE_CLASS (MODE) != MODE_COMPLEX_FLOAT)			\
    || ((REGNO) < R_BP							\
-       && ((((REGNO) & 1) == 0) || GET_MODE_CLASS (MODE) == MODE_INT	\
-	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT			\
+       && ((((REGNO) & 1) == 0)						\
 	   || GET_MODE_UNIT_SIZE (MODE) <= UNITS_PER_WORD)))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
