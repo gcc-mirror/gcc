@@ -1,4 +1,4 @@
-foo (a, c)
+int foo (a, c)
 {
   int b;
 
@@ -7,7 +7,8 @@ foo (a, c)
   return 0;
 }
 
-bar (a)
+void bar (a)
+     int a;
 {
   if (foo (a, 10) & 0x80000000)
     printf ("y");
@@ -15,7 +16,7 @@ bar (a)
     printf ("n");
 }
 
-main ()
+int main ()
 {
   bar (0);
   bar (1);
@@ -28,4 +29,5 @@ main ()
   bar (-0x7fffffff);
 
   puts ("");
+  return 0;
 }

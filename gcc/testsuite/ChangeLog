@@ -1,3 +1,10 @@
+2004-10-20  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/unsorted/call386.c (foo): Fix return type.
+	(main): Return success.
+	* gcc.c-torture/unsorted/subcc.c (foo, bar): Fix return types.
+	(main): Return success.
+
 2004-10-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13495

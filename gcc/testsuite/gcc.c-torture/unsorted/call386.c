@@ -1,7 +1,6 @@
+void foo () {}
 
-foo () {}
-
-main ()
+int main ()
 {
   int i;
   for (i = 100000; i >= 0; i--)
@@ -17,4 +16,5 @@ main ()
       foo ();
       foo ();
     }
+  return 0;
 }
