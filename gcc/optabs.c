@@ -2307,14 +2307,14 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	libfunc = ucmp_optab->handlers[(int) mode].libfunc;
 
       emit_library_call (libfunc, 1,
-			 SImode, 2, x, mode, y, mode);
+			 word_mode, 2, x, mode, y, mode);
 
       /* Integer comparison returns a result that must be compared against 1,
 	 so that even if we do an unsigned compare afterward,
 	 there is still a value that can represent the result "less than".  */
 
-      emit_cmp_insn (hard_libcall_value (SImode), const1_rtx,
-		     comparison, NULL_RTX, SImode, unsignedp, 0);
+      emit_cmp_insn (hard_libcall_value (word_mode), const1_rtx,
+		     comparison, NULL_RTX, word_mode, unsignedp, 0);
       return;
     }
 
@@ -2484,10 +2484,10 @@ emit_float_lib_cmp (x, y, comparison)
     }
 
   emit_library_call (libfunc, 1,
-		     SImode, 2, x, mode, y, mode);
+		     word_mode, 2, x, mode, y, mode);
 
-  emit_cmp_insn (hard_libcall_value (SImode), const0_rtx, comparison,
-		 NULL_RTX, SImode, 0, 0);
+  emit_cmp_insn (hard_libcall_value (word_mode), const0_rtx, comparison,
+		 NULL_RTX, word_mode, 0, 0);
 }
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
