@@ -3193,7 +3193,7 @@ eh_context_specific (void)
 
   return eh;
 }
-#endif __GTHREADS
+#endif /* __GTHREADS */
 
 /* Support routines for setjmp/longjmp exception handling.  */
 
