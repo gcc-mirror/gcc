@@ -1,3 +1,17 @@
+2004-05-20  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* Makefile.in (GTFILES): Add $(srcdir)/reload.h.
+	* gengtype.c (open_base_files): Include reload.h in ifiles.
+	* reload.h (reg_equiv_memory_loc_varray): Declare.
+	* reload1.c (reg_equiv_memory_loc_varray): New variable.
+	(init_reload): Initialize it.
+	(reload): Instead of freeing reg_equiv_memory_loc, 'grow'
+	reg_equiv_memory_loc_varray to size 0.
+	* ra.c (reg_alloc): Allocate reg_equiv_memory_loc by
+	growing reg_equiv_memory_loc_varray to the desired size.
+	* passes.c (rest_of_handle_old_regalloc): Likewise.
+	* reload.c: Amend comment on calling init_reload.
+
 2004-05-20  Nick Clifton  <nickc@redhat.com>
 
 	* config/c4x/c4x.h (INITIALIZE_TRAMPOLINE): Replace 'tramp'
