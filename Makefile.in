@@ -370,6 +370,8 @@ BASE_FLAGS_TO_PASS = \
 	"libdir=$(libdir)" \
 	"libexecdir=$(libexecdir)" \
 	"lispdir=$(lispdir)" \
+	"libstdcxx_incdir=$(libstdcxx_incdir)" \
+	"libsubdir=$(libsubdir)" \
 	"localstatedir=$(localstatedir)" \
 	"mandir=$(mandir)" \
 	"oldincludedir=$(oldincludedir)" \
@@ -382,8 +384,7 @@ BASE_FLAGS_TO_PASS = \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"gcc_version=$(gcc_version)" \
 	"gcc_version_trigger=$(gcc_version_trigger)" \
-	"target_alias=$(target_alias)" \
-	"libsubdir=$(libsubdir)"
+	"target_alias=$(target_alias)" 
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
