@@ -24,7 +24,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall,
-# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -61,7 +61,7 @@ F77 f77: f771$(exeext)
   f77.install-normal \
   f77.install-common f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
-  f77.extraclean f77.maintainer-clean f77.rebuilt \
+  f77.maintainer-clean f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4 \
   f77.stageprofile f77.stagefeedback
 
@@ -313,7 +313,6 @@ f77.clean:
 	-rm -f g77spec.o
 f77.distclean:
 	-rm -f f/Makefile
-f77.extraclean:
 f77.maintainer-clean:
 	-rm -f f/g77.info* f/g77.*aux f/TAGS f/TAGS.sub f/BUGS f/NEWS f/intdoc.texi
 #

@@ -1,4 +1,4 @@
-@c Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+@c Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -25,9 +25,6 @@ That, and all the other files built by @samp{make all}.
 
 @item distclean
 That, and all the files created by @command{configure}.
-
-@item extraclean
-That, and any temporary or intermediate files, like emacs backup files.
 
 @item maintainer-clean
 Distclean plus any file that can be generated from other files.  Note

@@ -602,14 +602,11 @@ anything.
 @item mostlyclean
 @itemx clean
 @itemx distclean
-@itemx extraclean
 @itemx maintainer-clean
-Except for @code{extraclean}, the language parts of the standard GNU
+The language parts of the standard GNU
 @samp{*clean} targets. @xref{Standard Targets, , Standard Targets for
 Users, standards, GNU Coding Standards}, for details of the standard
-targets.  @code{extraclean} does @code{distclean} and also deletes
-anything likely to be found in the source directory that shouldn't be
-in the distribution.  For GCC, @code{maintainer-clean} should delete
+targets.  For GCC, @code{maintainer-clean} should delete
 all generated files in the source directory that are not checked into
 CVS, but should not delete anything checked into CVS@.
 @item stage1

@@ -1,5 +1,9 @@
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* Make-lang.in (f77.extraclean): Delete.
+
+2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* Make-lang.in (check-f77, lang_checks): Add.
 
 2003-11-16  Jason Merrill  <jason@redhat.com>

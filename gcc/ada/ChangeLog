@@ -1,3 +1,7 @@
+2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* Make-lang.in (ada.extraclean): Delete.
+
 2003-11-19  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* gnatmem.adb: Clean up verbose output.

@@ -941,7 +941,7 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 # all.cross, start.encap, rest.encap,
 # install-normal, install-common, install-info, install-man,
 # uninstall,
-# mostlyclean, clean, distclean, extraclean, maintainer-clean,
+# mostlyclean, clean, distclean, maintainer-clean,
 # stage1, stage2, stage3, stage4
 #
 # Each language is linked in with a series of hooks.  The name of each
@@ -2846,24 +2846,6 @@ distclean: clean lang.distclean
 # Delete po/*.gmo only if we are not building in the source directory.
 	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
 	-rmdir ada cp f java objc fixinc intl po testsuite 2>/dev/null
-
-# Delete anything likely to be found in the source directory
-# that shouldn't be in the distribution.
-extraclean: distclean lang.extraclean
-	-rm -rf =* ./"#"* *~* config/=* config/"#"* config/*~*
-	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
-	-rm -f config/*/=* config/*/"#"* config/*/*~*
-	-rm -f config/*/*.orig config/*/*.rej
-	-rm -f *.dvi *.ps *.oaux *.d *.[zZ] *.gz
-	-rm -f *.tar *.xtar *diff *.diff.* *.tar.* *.xtar.* *diffs
-	-rm -f *lose config/*lose config/*/*lose
-	-rm -f *.s *.s[0-9] *.i config/ChangeLog
-	-rm -f y.tab.c yacc.*
-	-rm -f */=* */"#"* */*~*
-	-rm -f */patch* */*.orig */*.rej
-	-rm -f */*.dvi */*.oaux */*.d */*.[zZ] */*.gz
-	-rm -f */*.tar */*.xtar */*diff */*.diff.* */*.tar.* */*.xtar.* */*diffs
-	-rm -f */*lose */*.s */*.s[0-9] */*.i
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
