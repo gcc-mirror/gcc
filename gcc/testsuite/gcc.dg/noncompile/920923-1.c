@@ -96,6 +96,8 @@ int hash_size;
      }
 }
 
+extern void *calloc(__SIZE_TYPE__, __SIZE_TYPE__);
+
 void
 init_mem()
 {
