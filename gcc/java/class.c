@@ -1225,6 +1225,7 @@ finish_class ()
       method = TREE_CHAIN (method);
     }
 
+  current_function_decl = NULL_TREE;
   make_class_data (current_class);
   register_class ();
   rest_of_decl_compilation (TYPE_NAME (current_class), (char*) 0, 1, 0);
