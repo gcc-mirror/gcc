@@ -1,3 +1,9 @@
+2002-11-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (add_implicitly_declared_members): Put implicitly
+	declared functions at the end of TYPE_METHODs when -fabi-version
+	is at least 2.
+
 2002-11-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* decl2.c (finish_file): Correct spelling.

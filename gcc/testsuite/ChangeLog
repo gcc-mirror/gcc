@@ -1,3 +1,8 @@
+2002-11-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/g++.dg/abi/dtor1.C: New test.
+	* testsuite/g++.dg/abi/dtor2.C: Likewise.
+
 2002-11-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.old-deja/g++.eh/badalloc1.C: XFAIL excess errors test on

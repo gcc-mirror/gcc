@@ -125,7 +125,7 @@ static void finish_struct_methods PARAMS ((tree));
 static void maybe_warn_about_overly_private_class PARAMS ((tree));
 static int field_decl_cmp PARAMS ((const tree *, const tree *));
 static int method_name_cmp PARAMS ((const tree *, const tree *));
-static tree add_implicitly_declared_members PARAMS ((tree, int, int, int));
+static void add_implicitly_declared_members PARAMS ((tree, int, int, int));
 static tree fixed_type_or_null PARAMS ((tree, int *, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
 							  int, int, tree));
@@ -2742,7 +2742,7 @@ maybe_add_class_template_decl_list (type, t, friend_p)
    reference, respectively.  If a virtual destructor is created, its
    DECL is returned; otherwise the return value is NULL_TREE.  */
 
-static tree
+static void
 add_implicitly_declared_members (t, cant_have_default_ctor,
 				 cant_have_const_cctor,
 				 cant_have_const_assignment)
@@ -2817,12 +2817,23 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
       add_method (t, *f, /*error_p=*/0);
       maybe_add_class_template_decl_list (current_class_type, *f, /*friend_p=*/0);
     }
-  *f = TYPE_METHODS (t);
-  TYPE_METHODS (t) = implicit_fns;
+  if (abi_version_at_least (2))
+    /* G++ 3.2 put the implicit destructor at the *beginning* of the
+       list, which cause the destructor to be emitted in an incorrect
+       location in the vtable.  */
+    TYPE_METHODS (t) = chainon (TYPE_METHODS (t), implicit_fns);
+  else
+    {
+      if (warn_abi && virtual_dtor)
+	warning ("vtable layout for class `%T' may not be ABI-compliant "
+		 "and may change in a future version of GCC due to implicit "
+		 "virtual destructor",
+		 t);
+      *f = TYPE_METHODS (t);
+      TYPE_METHODS (t) = implicit_fns;
+    }
 
   --adding_implicit_members;
-
-  return virtual_dtor;
 }
 
 /* Subroutine of finish_struct_1.  Recursively count the number of fields
