@@ -170,25 +170,25 @@ convert_to_integer (type, expr)
       else if (outprec >= inprec)
 	return build1 (NOP_EXPR, type, expr);
 
-/* Here detect when we can distribute the truncation down past some arithmetic.
-   For example, if adding two longs and converting to an int,
-   we can equally well convert both to ints and then add.
-   For the operations handled here, such truncation distribution
-   is always safe.
-   It is desirable in these cases:
-   1) when truncating down to full-word from a larger size
-   2) when truncating takes no work.
-   3) when at least one operand of the arithmetic has been extended
-   (as by C's default conversions).  In this case we need two conversions
-   if we do the arithmetic as already requested, so we might as well
-   truncate both and then combine.  Perhaps that way we need only one.
+      /* Here detect when we can distribute the truncation down past some
+	 arithmetic.  For example, if adding two longs and converting to an
+	 int, we can equally well convert both to ints and then add.
+	 For the operations handled here, such truncation distribution
+	 is always safe.
+	 It is desirable in these cases:
+	 1) when truncating down to full-word from a larger size
+	 2) when truncating takes no work.
+	 3) when at least one operand of the arithmetic has been extended
+	 (as by C's default conversions).  In this case we need two conversions
+	 if we do the arithmetic as already requested, so we might as well
+	 truncate both and then combine.  Perhaps that way we need only one.
 
-   Note that in general we cannot do the arithmetic in a type
-   shorter than the desired result of conversion, even if the operands
-   are both extended from a shorter type, because they might overflow
-   if combined in that type.  The exceptions to this--the times when
-   two narrow values can be combined in their narrow type even to
-   make a wider result--are handled by "shorten" in build_binary_op.  */
+	 Note that in general we cannot do the arithmetic in a type
+	 shorter than the desired result of conversion, even if the operands
+	 are both extended from a shorter type, because they might overflow
+	 if combined in that type.  The exceptions to this--the times when
+	 two narrow values can be combined in their narrow type even to
+	 make a wider result--are handled by "shorten" in build_binary_op.  */
 
       switch (ex_form)
 	{
@@ -196,7 +196,9 @@ convert_to_integer (type, expr)
 	  /* We can pass truncation down through right shifting
 	     when the shift count is a nonpositive constant.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && tree_int_cst_lt (TREE_OPERAND (expr, 1), integer_one_node))
+	      && tree_int_cst_lt (TREE_OPERAND (expr, 1),
+				  convert (TREE_TYPE (TREE_OPERAND (expr, 1)),
+					   integer_one_node)))
 	    goto trunc1;
 	  break;
 
@@ -204,7 +206,7 @@ convert_to_integer (type, expr)
 	  /* We can pass truncation down through left shifting
 	     when the shift count is a nonnegative constant.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && ! tree_int_cst_lt (TREE_OPERAND (expr, 1), integer_zero_node)
+	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) >= 0
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      /* If shift count is less than the width of the truncated type,
