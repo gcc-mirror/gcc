@@ -1,3 +1,9 @@
+2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17925
+	* cfgexpand.c (expand_gimple_cond_expr): Emit line notes for next basic
+	block if there is a goto with a locus.
+
 2004-10-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/elfos.h, config/gofast.h, config/interix.h,
