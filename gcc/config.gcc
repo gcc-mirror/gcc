@@ -830,14 +830,13 @@ hppa1.0-*-hpux10*)
 	use_collect2=yes
 	;;
 hppa*64*-*-hpux11*)
-	target_cpu_default="MASK_PA_11"
 	xm_file=pa/xm-pa64hpux.h
 	xmake_file=pa/x-pa-hpux
 	tmake_file=pa/t-pa
 	tm_file="pa/pa64-start.h ${tm_file} pa/pa64-regs.h pa/long_double.h pa/elf.h pa/pa-hpux.h pa/pa-hpux11.h pa/pa-64.h"
 	float_format=i128
 	tmake_file=pa/t-pa64
-	target_cpu_default="(MASK_PA_11|MASK_PA_20)"
+	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
 
 	if [ x$gas = xyes ]
 	then
