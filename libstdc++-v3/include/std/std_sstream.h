@@ -124,7 +124,7 @@ namespace std
 	// NB: Start ostringstream buffers at 512 bytes. This is an
 	// experimental value (pronounced "arbitrary" in some of the
 	// hipper english-speaking countries), and can be changed to
-	// suite particular needs.
+	// suit particular needs.
 	_M_buf_size_opt = 512;
 	_M_mode = __mode;
 	if (_M_mode & (ios_base::ate | ios_base::app))

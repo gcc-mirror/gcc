@@ -36,7 +36,6 @@
 #include <istream>
 #include <ostream>
 #include <vector>
-#include <memory>      // for auto_ptr
 #ifdef _GLIBCPP_USE_WCHAR_T  
 # include <cwctype>     // for towupper, etc.
 #endif
