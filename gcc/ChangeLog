@@ -1,5 +1,7 @@
 Sun Feb 25 08:34:23 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/i386/i386-protos.h (ix86_set_move_mem_attrs): Move decl.
+	* config/i386/i386.c (ix86_set_move_mem_attrs_1): Fix typo.
 	* config/i386/i386.md (movstrsi): Handle FAIL case.
 
 Sat Feb 24 20:25:29 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
