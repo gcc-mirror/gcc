@@ -171,6 +171,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Tell function_prologue in mips.c that we have already output the .ent/.end
    pseudo-ops.  */
+#undef FUNCTION_NAME_ALREADY_DECLARED
 #define FUNCTION_NAME_ALREADY_DECLARED 1
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		\
