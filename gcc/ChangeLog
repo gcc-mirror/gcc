@@ -1,5 +1,8 @@
 Tue Feb 16 21:29:38 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i386/freebsd-elf.h, i386/gas.h, i386/linux.h: Fix minor spacing
+	errors.
+
 	* calls.c (store_one_arg): Mark any slots used for the argument
 	as in-use immediately after we're done saving any slots which
 	will be overwritten by this argument. 
