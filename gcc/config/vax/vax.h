@@ -1173,6 +1173,17 @@ do { char dstr[30];							\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
+/* When debugging, we want to output an extra dummy label so that gas
+   can distinguish between D_float and G_float prior to processing the
+   .stabs directive identifying type double.  */
+
+#define ASM_IDENTIFY_LANGUAGE(FILE)	\
+  do {								\
+    output_lang_identify (FILE);				\
+    if (write_symbols == DBX_DEBUG)				\
+      fprintf (FILE, "___vax_%c_doubles:\n", ASM_DOUBLE_CHAR);	\
+  } while (0)
+
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
