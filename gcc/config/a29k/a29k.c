@@ -806,8 +806,13 @@ incoming_reg (start, count)
 	CLEAR_HARD_REG_BIT (call_fixed_reg_set, i);
       }
 
-  /* Shorten the maximum size of the frame.  */
-  for (i = R_AR (0) - start - count; i < R_AR (0) - start; i++)
+  /* Shorten the maximum size of the frame.
+     Remember that R_AR(-1,-2) are place holders for the caller's lr0,lr1.
+     Make sure to keep the frame rounded to an even boundary.  Rounding up
+     to an 8 byte boundary will use a slot.  Otherwise a frame with 121 local
+     regs and 5 arguments will overrun the stack (121+1 + 5 + 2 > 128).  */
+  /* ??? An alternative would be to never allocate one reg.  */
+  for (i = (R_AR (0) - 2 - start - count) & ~1; i < R_AR (0) - 2 - start; i++)
     {
       fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1;
       SET_HARD_REG_BIT (fixed_reg_set, i);
