@@ -1696,26 +1696,28 @@
 
 (define_expand "maxsf3"
   [(set (match_dup 3)
-	(le:DF (match_operand:SF 1 "reg_or_fp0_operand" "")
+	(le:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" ""))
 	       (float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" ""))))
    (set (match_operand:SF 0 "register_operand" "")
-	(if_then_else:SF (eq (match_dup 3) (const_int 0))
+	(if_then_else:SF (eq (match_dup 3) (match_dup 4))
 			 (match_dup 1) (match_dup 2)))]
   "TARGET_FP"
   "
-{ operands[3] = gen_reg_rtx (SFmode);
+{ operands[3] = gen_reg_rtx (DFmode);
+  operands[4] = CONST0_RTX (DFmode);
 }")
 
 (define_expand "minsf3"
   [(set (match_dup 3)
-	(lt:DF (match_operand:SF 1 "reg_or_fp0_operand" "")
+	(lt:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" ""))
 	       (float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" ""))))
    (set (match_operand:SF 0 "register_operand" "")
 	(if_then_else:SF (ne (match_dup 3) (const_int 0))
 		      (match_dup 1) (match_dup 2)))]
   "TARGET_FP"
   "
-{ operands[3] = gen_reg_rtx (SFmode);
+{ operands[3] = gen_reg_rtx (DFmode);
+  operands[4] = CONST0_RTX (DFmode);
 }")
 
 (define_insn ""
