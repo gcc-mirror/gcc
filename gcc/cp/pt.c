@@ -7461,16 +7461,14 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 		    == error_mark_node)
 		  return 1;
 	  
-		/* Deduce arguments T, i from TT<T> or TT<i>.  */
+		/* Deduce arguments T, i from TT<T> or TT<i>.  
+		   We check each element of PARMVEC and ARGVEC individually
+		   rather than the whole TREE_VEC since they can have
+		   different number of elements.  */
+
 		for (i = 0; i < TREE_VEC_LENGTH (parmvec); ++i)
 		  {
 		    tree t = TREE_VEC_ELT (parmvec, i);
-		    if (TREE_CODE (t) != TEMPLATE_TYPE_PARM
-			&& TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM
-			&& TREE_CODE (t) != TEMPLATE_PARM_INDEX)
-		      continue;
-
-		    /* This argument can be deduced.  */
 
 		    if (unify (tparms, targs, t, 
 			       TREE_VEC_ELT (argvec, i), 

@@ -456,11 +456,15 @@ build_dynamic_cast_1 (type, expr)
      tree type, expr;
 {
   enum tree_code tc = TREE_CODE (type);
-  tree exprtype = TREE_TYPE (expr);
+  tree exprtype;
   enum tree_code ec;
   tree dcast_fn;
   tree old_expr = expr;
 
+  if (TREE_CODE (expr) == OFFSET_REF)
+    expr = resolve_offset_ref (expr);
+  
+  exprtype = TREE_TYPE (expr);
   assert (exprtype != NULL_TREE);
   ec = TREE_CODE (exprtype);
 

@@ -1519,9 +1519,18 @@ copy_template_template_parm (t)
      tree t;
 {
   tree template = TYPE_NAME (t);
-  tree t2 = make_lang_type (TEMPLATE_TEMPLATE_PARM);
+  tree t2;
+
+  /* Make sure these end up on the permanent_obstack.  */
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
+  
+  t2 = make_lang_type (TEMPLATE_TEMPLATE_PARM);
   template = copy_node (template);
   copy_lang_decl (template);
+
+  pop_obstacks ();
+
   TREE_TYPE (template) = t2;
   TYPE_NAME (t2) = template;
   TYPE_STUB_DECL (t2) = template;
