@@ -1,3 +1,8 @@
+2003-07-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/mkfixinc.sh: Remove winnt support.
+	* fixinc/fixinc.winnt: Delete with extreme prejudice.
+
 2003-07-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.

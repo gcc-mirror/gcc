@@ -51,11 +51,6 @@ case $machine in
         fixincludes=fixinc.wrap
         ;;
 
-    alpha*-*-winnt* | \
-    i?86-*-winnt3*)
-        fixincludes=fixinc.winnt
-        ;;
-
     i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
         fixincludes=fixinc.ptx
         ;;
