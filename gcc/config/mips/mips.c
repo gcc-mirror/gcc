@@ -5058,7 +5058,6 @@ irix_output_external_libcall (rtx fun)
 void
 mips_output_filename (FILE *stream, const char *name)
 {
-  char ltext_label_name[100];
 
   /* If we are emitting DWARF-2, let dwarf2out handle the ".file"
      directives.  */
