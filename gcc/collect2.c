@@ -55,13 +55,16 @@ char *strerror();
 #define COLLECT
 
 #include "config.h"
+#include "demangle.h"
 
-#ifndef __STDC__
-#define generic char
+#include "obstack.h"
+
+/* Obstack allocation and deallocation routines.  */
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
+
+#if !defined (__STDC__) && !defined (const)
 #define const
-
-#else
-#define generic void
 #endif
 
 #ifdef USG
@@ -193,8 +196,14 @@ char *strerror();
 #define SYMBOL__MAIN __main
 #endif
 
-#if defined (LDD_SUFFIX) || defined (SUNOS4_SHARED_LIBRARIES)
+#if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES
 #define SCAN_LIBRARIES
+#endif
+
+#ifdef USE_COLLECT2
+int do_collecting = 1;
+#else
+int do_collecting = 0;
 #endif
 
 /* Linked lists of constructor and destructor names. */
@@ -228,11 +237,11 @@ extern char *sys_siglist[];
 #endif
 extern char *version_string;
 
-static int vflag;			/* true if -v */
+int vflag;				/* true if -v */
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
 
-static int debug;			/* true if -debug */
+int debug;				/* true if -debug */
 
 static int shared_obj;		        /* true if -shared */
 
@@ -240,13 +249,22 @@ static int   temp_filename_length;	/* Length of temp_filename */
 static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list. */
 static char *o_file;			/* <xxx>.o for constructor/destructor list. */
+char *ldout;				/* File for ld errors.  */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
 static char *ldd_file_name;		/* pathname of ldd (or equivalent) */
 static char *strip_file_name;		/* pathname of strip */
+char *c_file_name;		        /* pathname of gcc */
 
 static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
+
+struct obstack temporary_obstack;
+struct obstack permanent_obstack;
+char * temporary_firstobj;
+
+/* Defined in the automatically-generated underscore.c.  */
+extern int prepends_underscore;
 
 extern char *getenv ();
 extern char *mktemp ();
@@ -268,7 +286,9 @@ struct path_prefix
   char *name;                 /* Name of this list (used in config stuff) */
 };
 
-static void my_exit		PROTO((int));
+void collect_exit		PROTO((int));
+void collect_execute		PROTO((char *, char **, char *));
+void dump_file			PROTO((char *));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((char *));
 static void choose_temp_base	PROTO((void));
@@ -286,11 +306,12 @@ static void write_c_file	PROTO((FILE *, char *));
 static void scan_prog_file	PROTO((char *, enum pass));
 static void scan_libraries	PROTO((char *));
 
-generic *xcalloc ();
-generic *xmalloc ();
+char *xcalloc ();
+char *xmalloc ();
 
 extern char *index ();
 extern char *rindex ();
+extern void free ();
 
 #ifdef NO_DUP2
 int
@@ -338,8 +359,8 @@ my_strerror (e)
 
 /* Delete tempfiles and exit function.  */
 
-static void
-my_exit (status)
+void
+collect_exit (status)
      int status;
 {
   if (c_file != 0 && c_file[0])
@@ -347,6 +368,12 @@ my_exit (status)
 
   if (o_file != 0 && o_file[0])
     maybe_unlink (o_file);
+
+  if (ldout != 0 && ldout[0])
+    {
+      dump_file (ldout);
+      maybe_unlink (ldout);
+    }
 
   if (status != 0 && output_file != 0 && output_file[0])
     maybe_unlink (output_file);
@@ -357,7 +384,7 @@ my_exit (status)
 
 /* Die when sys call fails. */
 
-static void
+void
 fatal_perror (string, arg1, arg2, arg3)
      char *string, *arg1, *arg2, *arg3;
 {
@@ -366,24 +393,24 @@ fatal_perror (string, arg1, arg2, arg3)
   fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
   fprintf (stderr, ": %s\n", my_strerror (e));
-  my_exit (1);
+  collect_exit (1);
 }
 
 /* Just die. */
 
-static void
+void
 fatal (string, arg1, arg2, arg3)
      char *string, *arg1, *arg2, *arg3;
 {
   fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
   fprintf (stderr, "\n");
-  my_exit (1);
+  collect_exit (1);
 }
 
 /* Write error message.  */
 
-static void
+void
 error (string, arg1, arg2, arg3, arg4)
      char *string, *arg1, *arg2, *arg3, *arg4;
 {
@@ -412,33 +439,54 @@ handler (signo)
   if (o_file != 0 && o_file[0])
     maybe_unlink (o_file);
 
+  if (ldout != 0 && ldout[0])
+    maybe_unlink (ldout);
+
   signal (signo, SIG_DFL);
   kill (getpid (), signo);
 }
 
 
-generic *
+char *
 xcalloc (size1, size2)
      int size1, size2;
 {
-  generic *ptr = (generic *) calloc (size1, size2);
+  char *ptr = (char *) calloc (size1, size2);
   if (ptr)
     return ptr;
 
   fatal ("out of memory");
-  return (generic *)0;
+  return (char *)0;
 }
 
-generic *
+char *
 xmalloc (size)
-     int size;
+     unsigned size;
 {
-  generic *ptr = (generic *) malloc (size);
+  char *ptr = (char *) malloc (size);
   if (ptr)
     return ptr;
 
   fatal ("out of memory");
-  return (generic *)0;
+  return (char *)0;
+}
+
+char *
+xrealloc (ptr, size)
+     char *ptr;
+     unsigned size;
+{
+  register char *value = (char *) realloc (ptr, size);
+  if (value == 0)
+    fatal ("virtual memory exhausted");
+  return value;
+}
+
+int
+file_exists (name)
+     char *name;
+{
+  return access (name, R_OK) == 0;
 }
 
 /* Make a copy of a string INPUT with size SIZE.  */
@@ -452,6 +500,63 @@ savestring (input, size)
   bcopy (input, output, size);
   output[size] = 0;
   return output;
+}
+
+void
+dump_file (name)
+     char *name;
+{
+  FILE *stream = fopen (name, "r");
+  int no_demangle = !! getenv ("COLLECT_NO_DEMANGLE");
+
+  if (stream == 0)
+    return;
+  while (1)
+    {
+      int c;
+      while (c = getc (stream),
+	     c != EOF && (isalnum (c) || c == '_' || c == '$' || c == '.'))
+	obstack_1grow (&temporary_obstack, c);
+      if (obstack_object_size (&temporary_obstack) > 0)
+	{
+	  char *word, *p, *result;
+	  obstack_1grow (&temporary_obstack, '\0');
+	  word = obstack_finish (&temporary_obstack);
+
+	  if (*word == '.')
+	    ++word, putc ('.', stderr);
+	  p = word;
+	  if (*p == '_' && prepends_underscore)
+	    ++p;
+
+	  if (no_demangle)
+	    result = 0;
+	  else
+	    result = cplus_demangle (p, DMGL_PARAMS | DMGL_ANSI);
+
+	  if (result)
+	    {
+	      int diff;
+	      fputs (result, stderr);
+
+	      diff = strlen (word) - strlen (result);
+	      while (diff > 0)
+		--diff, putc (' ', stderr);
+	      while (diff < 0 && c == ' ')
+		++diff, c = getc (stream);
+
+	      free (result);
+	    }
+	  else
+	    fputs (word, stderr);
+
+	  fflush (stderr);
+	  obstack_free (&temporary_obstack, temporary_firstobj);
+	}
+      if (c == EOF)
+	break;
+      putc (c, stderr);
+    }
 }
 
 /* Decide whether the given symbol is:
@@ -799,10 +904,7 @@ main (argc, argv)
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
   char *full_real_ld_suffix = real_ld_suffix;
-#if 0
-  char *gld_suffix	= "gld";
-  char *full_gld_suffix	= gld_suffix;
-#endif
+  char *collect_ld_suffix = "collect-ld";
   char *nm_suffix	= "nm";
   char *full_nm_suffix	= nm_suffix;
   char *gnm_suffix	= "gnm";
@@ -818,7 +920,6 @@ main (argc, argv)
   char *arg;
   FILE *outf;
   char *ld_file_name;
-  char *c_file_name;
   char *collect_name;
   char *collect_names;
   char *p;
@@ -839,6 +940,11 @@ main (argc, argv)
 #endif
 
   output_file = "a.out";
+
+  obstack_begin (&temporary_obstack, 0);
+  obstack_begin (&permanent_obstack, 0);
+  temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
+  current_demangling_style = gnu_demangling;
 
   /* We must check that we do not call ourselves in an infinite
      recursion loop. We append the name used for us to the COLLECT_NAMES
@@ -992,21 +1098,11 @@ main (argc, argv)
   ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
   if (ld_file_name == 0)
 #endif
-#if 0
-  /* Search the (target-specific) compiler dirs for `gld'.  */
-  ld_file_name = find_a_file (&cpath, gld_suffix);
-  /* Search the ordinary system bin directories
-     for `gld' (if native linking) or `TARGET-gld' (if cross).  */
+  /* Search the (target-specific) compiler dirs for ld'.  */
+  ld_file_name = find_a_file (&cpath, real_ld_suffix);
+  /* Likewise for `collect-ld'.  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&path, full_gld_suffix);
-#else
-  ld_file_name = 0;
-#endif
-  /* Likewise for `real-ld'.  */
-  if (ld_file_name == 0)
-    ld_file_name = find_a_file (&cpath, real_ld_suffix);
-  if (ld_file_name == 0)
-    ld_file_name = find_a_file (&path, full_real_ld_suffix);
+    ld_file_name = find_a_file (&cpath, collect_ld_suffix);
   /* Search the compiler directories for `ld'.  We have protection against
      recursive calls in find_a_file.  */
   if (ld_file_name == 0)
@@ -1087,6 +1183,8 @@ main (argc, argv)
   choose_temp_base ();
   c_file = xcalloc (temp_filename_length + sizeof (".c"), 1);
   o_file = xcalloc (temp_filename_length + sizeof (".o"), 1);
+  ldout = xmalloc (temp_filename_length + sizeof (".ld"));
+  sprintf (ldout, "%s.ld", temp_filename);
   sprintf (c_file, "%s.c", temp_filename);
   sprintf (o_file, "%s.o", temp_filename);
   *c_ptr++ = c_file_name;
@@ -1144,7 +1242,7 @@ main (argc, argv)
 	      break;
 
 	    case 's':
-	      if (arg[2] == '\0')
+	      if (arg[2] == '\0' && do_collecting)
 		{
 		  /* We must strip after the nm run, otherwise C++ linking
 		     won't work.  Thus we strip in the second ld run, or
@@ -1206,7 +1304,7 @@ main (argc, argv)
     }
 
   *c_ptr++ = c_file;
-  *c_ptr = *ld1 = *ld2 = (char *)0;
+  *object = *c_ptr = *ld1 = *ld2 = (char *)0;
 
   if (vflag)
     {
@@ -1260,16 +1358,21 @@ main (argc, argv)
       fprintf (stderr, "\n");
     }
 
-  /* Load the program, searching all libraries.
-     Examine the namelist with nm and search it for static constructors
+  /* Load the program, searching all libraries.  */
+
+  collect_execute ("ld", ld1_argv, ldout);
+  do_wait ("ld");
+  dump_file (ldout);
+  unlink (ldout);
+
+  /* If -r or they'll be run via some other method, don't build the
+     constructor or destructor list, just return now. */
+  if (rflag || ! do_collecting)
+    return 0;
+
+  /* Examine the namelist with nm and search it for static constructors
      and destructors to call.
      Write the constructor and destructor tables to a .s file and reload. */
-
-  fork_execute ("ld", ld1_argv);
-
-  /* If -r, don't build the constructor or destructor list, just return now. */
-  if (rflag)
-    return 0;
 
 #ifdef COLLECT_SCAN_OBJECTS
   /* The AIX linker will discard static constructors in object files if
@@ -1347,8 +1450,8 @@ main (argc, argv)
 
 /* Wait for a process to finish, and exit if a non-zero status is found. */
 
-static void
-do_wait (prog)
+int
+collect_wait (prog)
      char *prog;
 {
   int status;
@@ -1372,28 +1475,35 @@ do_wait (prog)
 		 (status & 0200) ? ", core dumped" : "");
 #endif
 
-	  my_exit (127);
+	  collect_exit (127);
 	}
 
       if (WIFEXITED (status))
-	{
-	  int ret = WEXITSTATUS (status);
-	  if (ret != 0)
-	    {
-	      error ("%s returned %d exit status", prog, ret);
-	      my_exit (ret);
-	    }
-	}
+	return WEXITSTATUS (status);
+    }
+  return 0;
+}
+
+static void
+do_wait (prog)
+     char *prog;
+{
+  int ret = collect_wait (prog);
+  if (ret != 0)
+    {
+      error ("%s returned %d exit status", prog, ret);
+      collect_exit (ret);
     }
 }
 
 
 /* Fork and execute a program, and wait for the reply.  */
 
-static void
-fork_execute (prog, argv)
+void
+collect_execute (prog, argv, redir)
      char *prog;
      char **argv;
+     char *redir;
 {
   int pid;
 
@@ -1434,13 +1544,28 @@ fork_execute (prog, argv)
 
   if (pid == 0)			/* child context */
     {
+      if (redir)
+	{
+	  unlink (redir);
+	  if (freopen (redir, "a", stdout) == NULL)
+	    fatal_perror ("redirecting stdout");
+	  if (freopen (redir, "a", stderr) == NULL)
+	    fatal_perror ("redirecting stderr");
+	}
+
       execvp (argv[0], argv);
       fatal_perror ("executing %s", prog);
     }
-
-  do_wait (prog);
 }
 
+static void
+fork_execute (prog, argv)
+     char *prog;
+     char **argv;
+{
+  collect_execute (prog, argv, NULL);
+  do_wait (prog);
+}
 
 /* Unlink a file unless we are debugging.  */
 
@@ -1831,7 +1956,7 @@ scan_prog_file (prog_name, which_pass)
 #endif
 }
 
-#ifdef SUNOS4_SHARED_LIBRARIES
+#if SUNOS4_SHARED_LIBRARIES
 
 /* Routines to scan the SunOS 4 _DYNAMIC structure to find shared libraries
    that the output file depends upon and their initialization/finalization
@@ -3000,10 +3125,10 @@ end_file (ptr)
 	    fatal ("wrote %ld bytes, expected %ld, to %s", len, ptr->size, ptr->name);
 	}
 
-      free ((generic *)ptr->start);
+      free (ptr->start);
     }
 
-  free ((generic *)ptr);
+  free (ptr);
 }
 
 #endif /* OBJECT_FORMAT_ROSE */
