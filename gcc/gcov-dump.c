@@ -184,6 +184,13 @@ dump_file (const char *filename)
       printf ("%s:warning:current version is `%.4s'\n", filename, e);
   }
 
+  /* stamp */
+  {
+    unsigned stamp = gcov_read_unsigned ();
+
+    printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
+  }
+  
   while (1)
     {
       gcov_position_t base, position = gcov_position ();

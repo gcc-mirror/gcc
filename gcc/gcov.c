@@ -269,6 +269,9 @@ static time_t bbg_file_time;
 
 static char *bbg_file_name;
 
+/* Stamp of the bbg file */
+static unsigned bbg_stamp;
+
 /* Name and file pointer of the input file for the arc count data.  */
 
 static char *da_file_name;
@@ -583,6 +586,7 @@ release_structures ()
   free (da_file_name);
   da_file_name = bbg_file_name = NULL;
   bbg_file_time = 0;
+  bbg_stamp = 0;
   
   while ((src = sources))
     {
@@ -740,7 +744,8 @@ read_graph_file ()
       fnotice (stderr, "%s:version `%.4s', prefer `%.4s'\n",
 	       bbg_file_name, v, e);
     }
-  
+  bbg_stamp = gcov_read_unsigned ();
+
   while ((tag = gcov_read_unsigned ()))
     {
       unsigned length = gcov_read_unsigned ();
@@ -1007,6 +1012,12 @@ read_count_file ()
 	}
       fnotice (stderr, "%s:version `%.4s', prefer version `%.4s'\n",
 	       da_file_name, v, e);
+    }
+  tag = gcov_read_unsigned ();
+  if (tag != bbg_stamp)
+    {
+      fnotice (stderr, "%s:stamp mismatch with graph file\n", da_file_name);
+      goto cleanup;
     }
   
   while ((tag = gcov_read_unsigned ()))

@@ -1,5 +1,21 @@
 2003-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcov-io.h: Add a local time stamp.
+	(struct gcov_info): Add stamp field.
+	(gcov_truncate): New.
+	* coverage.c (read_counts_file): Skip the stamp.
+	(coverage_begin_output): Write the stamp.
+	(build_gcov_info): Declare and init the stamp.
+	(coverage_finish): Only unlink data file, if stamp is zero.
+	* gcov-dump.c (dump_file): Dump the stamp.
+	* gcov.c (bbg_stamp): New.
+	(release_structures): Clear bbg_stamp.
+	(read_graph_file): Read stamp.
+	(read_count_file): Check stamp.
+	* libgcov.c (gcov_exit): Check stamp and truncate if needed.
+
+2003-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* tree.h (default_flag_random_seed): Remove.
 	* toplev.h (local_tick): Declare.
 	* tree.c (flag_random_seed, default_flag_random_seed): Move to
