@@ -14,10 +14,11 @@ details.  */
 
 #pragma interface
 
-#include <stdio.h>
+#include <stddef.h>
 #include <java/lang/Object.h>
 #include <java/lang/String.h>
 #include <java/net/URL.h>
+#include <java/lang/reflect/Modifier.h>
 
 // We declare these here to avoid including gcj/cni.h.
 extern "C" void _Jv_InitClass (jclass klass);
@@ -173,7 +174,10 @@ public:
 
   jboolean isAssignableFrom (jclass cls);
   jboolean isInstance (jobject obj);
-  jboolean isInterface (void);
+  jboolean isInterface (void)
+  {
+    return (accflags & java::lang::reflect::Modifier::INTERFACE) != 0;
+  }
   
   inline jboolean isPrimitive (void)
     {
@@ -192,52 +196,32 @@ public:
   // finalization
   void finalize ();
 
-  // For the initialization of primitive types: some constructors as
-  // required by prims.cc:init_prim_class(), and the prototype of
-  // method to perform a lightweight initialization of a Class object.
-  Class (void) {}
-  Class (const Class& x) : Object () {
+  // This constructor is used to create Class object for the primitive
+  // types.
+  Class (jobject cname, jbyte sig, jint len, jobject array_vtable) {
     
+    using namespace java::lang::reflect;
+    _Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
+
     // C++ ctors are fixing the vtbl in a way that doesn't fit Java.
     // We can fix the C++ compiler, or we can hack our runtime. What's
     // below fix the vtable so that it starts at -2.
     void *p =  ((void **)this)[0];
     ((void **)this)[0] = (void *)((char *)p-2*sizeof (void *));
 
-    _Jv_VTable *avtable = x.vtable;
-
-    // We must initialize every field of the class.  We do this in
-    // the same order they are declared in Class.h.
-    next = NULL;
-    name = x.name;
-    accflags = x.accflags;
-    superclass = NULL;
-    constants.size = 0;
-    constants.tags = NULL;
-    constants.data = NULL;
-    methods = NULL;
-    method_count = x.method_count;
-    vtable_method_count = 0;
-    fields = NULL;
-    size_in_bytes = x.size_in_bytes;
-    field_count = 0;
-    static_field_count = 0;
+    // We must initialize every field of the class.  We do this in the
+    // same order they are declared in Class.h, except for fields that
+    // are initialized to NULL.
+    name = _Jv_makeUtf8Const ((char *) cname, -1);
+    accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
+    method_count = sig;
+    size_in_bytes = len;
     vtable = JV_PRIMITIVE_VTABLE;
-    interfaces = NULL;
-    loader = NULL;
-    interface_count = 0;
     state = JV_STATE_DONE;
-    thread = NULL;
     depth = -1;
-    ancestors = NULL;
-    idt = NULL;
-
     if (method_count != 'V')
-      _Jv_NewArrayClass (this, NULL, avtable);
-    else
-      arrayclass = NULL;
+      _Jv_NewArrayClass (this, NULL, (_Jv_VTable *) array_vtable);
   }
-  void initializePrim (jobject cname, jbyte sig, jint len, jobject avtable);
 
   static java::lang::Class class$;
 

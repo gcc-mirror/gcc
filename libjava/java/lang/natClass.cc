@@ -633,12 +633,6 @@ java::lang::Class::isInstance (jobject obj)
   return _Jv_IsAssignableFrom (this, JV_CLASS (obj));
 }
 
-jboolean
-java::lang::Class::isInterface (void)
-{
-  return (accflags & java::lang::reflect::Modifier::INTERFACE) != 0;
-}
-
 jobject
 java::lang::Class::newInstance (void)
 {
@@ -1407,21 +1401,4 @@ java::lang::Class::getPrivateMethod (jstring name, JArray<jclass> *param_types)
 	}
     }
   JvThrow (new java::lang::NoSuchMethodException);
-}
-
-// Perform a lightweight initialization of a Class object, for the
-// purpose of creating the Class object of primitive types.
-
-void
-java::lang::Class::initializePrim (jobject cname, jbyte sig, jint len, jobject avtable)
-{
-  using namespace java::lang::reflect;
-
-  name = _Jv_makeUtf8Const ((char *) cname, -1);
-  accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
-  method_count = sig;
-  size_in_bytes = len;
-  // We temporarily store `avtable' in the `vtable' field, so that the
-  // copy constructor can correctly invoke _Jv_FindArrayClass.
-  vtable = (_Jv_VTable *) avtable;
 }
