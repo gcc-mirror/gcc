@@ -38,13 +38,16 @@ package System.VxWorks is
 
    --  Floating point context record. x86 version
 
-   --  For now this is a dummy implementation (more work needed ???)
+   --  There are two kinds of FP_CONTEXT for this architecture, corresponding
+   --  to newer and older processors. The type is defined in fppI86lib.h as a
+   --  union. The form used depends on the versions of the save and restore
+   --  routines that are selected by the user (these versions are provided in
+   --  vxwork.ads). Since we do not examine the contents of these objects, it
+   --  is sufficient to declare the type as of the required size: 512 bytes.
 
-   type FP_CONTEXT is record
-      Dummy : Integer;
-   end record;
-
+   type FP_CONTEXT is array (1 .. 128) of Integer;
    for FP_CONTEXT'Alignment use 4;
+   for FP_CONTEXT'Size use 512 * Storage_Unit;
    pragma Convention (C, FP_CONTEXT);
 
    Num_HW_Interrupts : constant := 256;
