@@ -9912,16 +9912,12 @@ thumb_unexpanded_epilogue ()
     return "";
 
   for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
-    if (regs_ever_live[regno] && !call_used_regs[regno]
-	&& !(TARGET_SINGLE_PIC_BASE && (regno == arm_pic_register)))
+    if (THUMB_REG_PUSHED_P (regno))
       live_regs_mask |= 1 << regno;
 
   for (regno = 8; regno < 13; regno++)
-    {
-      if (regs_ever_live[regno] && !call_used_regs[regno]
-	  && !(TARGET_SINGLE_PIC_BASE && (regno == arm_pic_register)))
-	high_regs_pushed++;
-    }
+    if (THUMB_REG_PUSHED_P (regno))
+      high_regs_pushed++;
 
   /* The prolog may have pushed some high registers to use as
      work registers.  eg the testuite file:
@@ -9966,8 +9962,7 @@ thumb_unexpanded_epilogue ()
 	  ("no low registers available for popping high registers");
       
       for (next_hi_reg = 8; next_hi_reg < 13; next_hi_reg++)
-	if (regs_ever_live[next_hi_reg] && !call_used_regs[next_hi_reg]
-	    && !(TARGET_SINGLE_PIC_BASE && (next_hi_reg == arm_pic_register)))
+	if (THUMB_REG_PUSHED_P (next_hi_reg))
 	  break;
 
       while (high_regs_pushed)
@@ -9996,10 +9991,7 @@ thumb_unexpanded_epilogue ()
 			       regno);
 		  
 		  for (next_hi_reg++; next_hi_reg < 13; next_hi_reg++)
-		    if (regs_ever_live[next_hi_reg]
-			&& !call_used_regs[next_hi_reg]
-			&& !(TARGET_SINGLE_PIC_BASE 
-			     && (next_hi_reg == arm_pic_register)))
+		    if (THUMB_REG_PUSHED_P (next_hi_reg))
 		      break;
 		}
 	    }
@@ -10166,14 +10158,12 @@ thumb_expand_prologue ()
 	     been pushed at the start of the prologue and so we can corrupt
 	     it now.  */
 	  for (regno = LAST_ARG_REGNUM + 1; regno <= LAST_LO_REGNUM; regno++)
-	    if (regs_ever_live[regno]
-		&& !call_used_regs[regno] /* Paranoia */
-		&& !(TARGET_SINGLE_PIC_BASE && (regno == arm_pic_register))
+	    if (THUMB_REG_PUSHED_P (regno)
 		&& !(frame_pointer_needed
 		     && (regno == THUMB_HARD_FRAME_POINTER_REGNUM)))
 	      break;
 
-	  if (regno > LAST_LO_REGNUM) /* Very unlikely */
+	  if (regno > LAST_LO_REGNUM) /* Very unlikely.  */
 	    {
 	      rtx spare = gen_rtx (REG, SImode, IP_REGNUM);
 
@@ -10323,8 +10313,7 @@ thumb_output_function_prologue (f, size)
     }
 
   for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
-    if (regs_ever_live[regno] && !call_used_regs[regno]
-	&& !(TARGET_SINGLE_PIC_BASE && (regno == arm_pic_register)))
+    if (THUMB_REG_PUSHED_P (regno))
       live_regs_mask |= 1 << regno;
 
   if (live_regs_mask || !leaf_function_p () || thumb_far_jump_used_p (1))
@@ -10426,8 +10415,7 @@ thumb_output_function_prologue (f, size)
 
   for (regno = 8; regno < 13; regno++)
     {
-      if (regs_ever_live[regno] && !call_used_regs[regno]
-	  && !(TARGET_SINGLE_PIC_BASE && (regno == arm_pic_register)))
+      if (THUMB_REG_PUSHED_P (regno))
 	high_regs_pushed++;
     }
 
@@ -10439,9 +10427,7 @@ thumb_output_function_prologue (f, size)
 
       for (next_hi_reg = 12; next_hi_reg > LAST_LO_REGNUM; next_hi_reg--)
 	{
-	  if (regs_ever_live[next_hi_reg] && !call_used_regs[next_hi_reg]
-	      && !(TARGET_SINGLE_PIC_BASE
-		   && (next_hi_reg == arm_pic_register)))
+	  if (THUMB_REG_PUSHED_P (next_hi_reg))
 	    break;
 	}
 
@@ -10450,8 +10436,7 @@ thumb_output_function_prologue (f, size)
       if (pushable_regs == 0)
 	{
 	  /* Desperation time -- this probably will never happen.  */
-	  if (regs_ever_live[LAST_ARG_REGNUM]
-	      || !call_used_regs[LAST_ARG_REGNUM])
+	  if (THUMB_REG_PUSHED_P (LAST_ARG_REGNUM))
 	    asm_fprintf (f, "\tmov\t%r, %r\n", IP_REGNUM, LAST_ARG_REGNUM);
 	  mask = 1 << LAST_ARG_REGNUM;
 	}
@@ -10467,15 +10452,12 @@ thumb_output_function_prologue (f, size)
 		  high_regs_pushed--;
 		  
 		  if (high_regs_pushed)
-		    for (next_hi_reg--; next_hi_reg > LAST_LO_REGNUM;
-			 next_hi_reg--)
-		      {
-			if (regs_ever_live[next_hi_reg]
-			    && !call_used_regs[next_hi_reg]
-			    && !(TARGET_SINGLE_PIC_BASE 
-				 && (next_hi_reg == arm_pic_register)))
+		    {
+		      for (next_hi_reg--; next_hi_reg > LAST_LO_REGNUM;
+			   next_hi_reg--)
+			if (THUMB_REG_PUSHED_P (next_hi_reg))
 			  break;
-		      }
+		    }
 		  else
 		    {
 		      mask &= ~((1 << regno) - 1);
@@ -10488,8 +10470,7 @@ thumb_output_function_prologue (f, size)
 	}
 
       if (pushable_regs == 0
-	  && (regs_ever_live[LAST_ARG_REGNUM]
-	      || !call_used_regs[LAST_ARG_REGNUM]))
+	  && (THUMB_REG_PUSHED_P (LAST_ARG_REGNUM)))
 	asm_fprintf (f, "\tmov\t%r, %r\n", LAST_ARG_REGNUM, IP_REGNUM);
     }
 }

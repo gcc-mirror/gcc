@@ -1621,7 +1621,13 @@ typedef struct
    ((TO) == ARM_HARD_FRAME_POINTER_REGNUM && TARGET_THUMB) ? 0 :	\
    ((TO) == THUMB_HARD_FRAME_POINTER_REGNUM && TARGET_ARM) ? 0 :	\
    1)
-   								 
+
+#define THUMB_REG_PUSHED_P(reg)					\
+  (regs_ever_live [reg]						\
+   && (! call_used_regs [reg]					\
+       || (flag_pic && (reg) == PIC_OFFSET_TABLE_REGNUM))	\
+   && !(TARGET_SINGLE_PIC_BASE && ((reg) == arm_pic_register)))
+     
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
 #define ARM_INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)		\
@@ -1640,13 +1646,13 @@ typedef struct
       int count_regs = 0;						\
       int regno;							\
       for (regno = 8; regno < 13; regno ++)				\
-	if (regs_ever_live[regno] && ! call_used_regs[regno])		\
-	  count_regs ++;						\
+        if (THUMB_REG_PUSHED_P (regno))					\
+          count_regs ++;						\
       if (count_regs)							\
 	(OFFSET) += 4 * count_regs;					\
       count_regs = 0;							\
       for (regno = 0; regno <= LAST_LO_REGNUM; regno ++)		\
-	if (regs_ever_live[regno] && ! call_used_regs[regno])		\
+        if (THUMB_REG_PUSHED_P (regno))					\
 	  count_regs ++;						\
       if (count_regs || ! leaf_function_p () || thumb_far_jump_used_p (0))\
 	(OFFSET) += 4 * (count_regs + 1);				\
