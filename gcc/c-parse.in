@@ -1680,8 +1680,9 @@ stmt:
 		{ expand_end_cond ();
 		  /* This warning is here instead of in simple_if, because we
 		     do not want a warning if an empty if is followed by an
-		     else statement.  */
-		  if (extra_warnings && stmt_count == $<itype>1)
+		     else statement.  Increment stmt_count so we don't
+		     give a second error if this is a nested `if'.  */
+		  if (extra_warnings && stmt_count++ == $<itype>1)
 		    warning_with_file_and_line (if_stmt_file, if_stmt_line,
 						"empty body in an if-statement"); }
 /* Make sure expand_end_cond is run once
