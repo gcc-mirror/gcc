@@ -1,3 +1,8 @@
+1998-05-20  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in ($(lib)): Use shell loop instead of unportable
+	make variable substitution.
+
 Tue May 19 12:50:27 1998  Craig Burley  <burley@gnu.org>
 
 	Break up main() into separate .o's so making and
