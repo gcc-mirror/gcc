@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -751,7 +751,8 @@ namespace std
        *  Appends n copies of c to this string.
        */
       basic_string&
-      append(size_type __n, _CharT __c);
+      append(size_type __n, _CharT __c)
+      { return _M_replace_aux(_M_iend(), _M_iend(), __n, __c); }
 
       /**
        *  @brief  Append a range of characters.
@@ -837,7 +838,7 @@ namespace std
        */
       basic_string&
       assign(size_type __n, _CharT __c)
-      { return this->replace(_M_ibegin(), _M_iend(), __n, __c); }
+      { return _M_replace_aux(_M_ibegin(), _M_iend(), __n, __c); }
 
       /**
        *  @brief  Set value to a range of characters.
@@ -1362,11 +1363,7 @@ namespace std
 	basic_string&
 	_M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1,
 			    _InputIterator __k2, __false_type)
-        { 
-	  typedef typename iterator_traits<_InputIterator>::iterator_category
-	    _Category;
-	  return _M_replace(__i1, __i2, __k1, __k2, _Category());
-	}
+        { return _M_replace(__i1, __i2, __k1, __k2); }
 
       basic_string&
       _M_replace_aux(iterator __i1, iterator __i2, size_type __n2, _CharT __c);
@@ -1374,7 +1371,7 @@ namespace std
       template<class _InputIterator>
         basic_string&
         _M_replace(iterator __i1, iterator __i2, _InputIterator __k1,
-		   _InputIterator __k2, input_iterator_tag);
+		   _InputIterator __k2);
 
       template<class _ForwardIterator>
         basic_string&
