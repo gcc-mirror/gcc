@@ -6898,6 +6898,14 @@ expand_increment (exp, post)
       || TREE_CODE (exp) == PREDECREMENT_EXPR)
     this_optab = sub_optab;
 
+  /* Convert decrement by a constant into a negative increment.  */
+  if (this_optab == sub_optab
+      && GET_CODE (op1) == CONST_INT)
+    {
+      op1 = GEN_INT (- INTVAL (op1));
+      this_optab = add_optab;
+    }
+
   /* For a preincrement, see if we can do this with a single instruction.  */
   if (!post)
     {
@@ -6924,21 +6932,14 @@ expand_increment (exp, post)
 	 in which case it was stabilized above, or (2) it is an array_ref
 	 with constant index in an array in a register, which is
 	 safe to reevaluate.  */
-      tree newexp = build ((this_optab == add_optab
-			    ? PLUS_EXPR : MINUS_EXPR),
+      tree newexp = build (((TREE_CODE (exp) == POSTDECREMENT_EXPR
+			     || TREE_CODE (exp) == PREDECREMENT_EXPR)
+			    ? MINUS_EXPR : PLUS_EXPR),
 			   TREE_TYPE (exp),
 			   incremented,
 			   TREE_OPERAND (exp, 1));
       temp = expand_assignment (incremented, newexp, ! post, 0);
       return post ? op0 : temp;
-    }
-
-  /* Convert decrement by a constant into a negative increment.  */
-  if (this_optab == sub_optab
-      && GET_CODE (op1) == CONST_INT)
-    {
-      op1 = GEN_INT (- INTVAL (op1));
-      this_optab = add_optab;
     }
 
   if (post)
