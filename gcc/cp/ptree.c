@@ -73,9 +73,10 @@ print_lang_type (file, node, indent)
      register tree node;
      int indent;
 {
-  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (node) == TEMPLATE_TEMPLATE_PARM)
+  switch (TREE_CODE (node))
     {
+    case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
       indent_to (file, indent + 3);
       fputs ("index ", file);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, TEMPLATE_TYPE_IDX (node));
@@ -84,7 +85,24 @@ print_lang_type (file, node, indent)
       fputs (" orig_level ", file);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, TEMPLATE_TYPE_ORIG_LEVEL (node));
       return;
+
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      if (TYPE_RAISES_EXCEPTIONS (node))
+	print_node (file, "throws", TYPE_RAISES_EXCEPTIONS (node), indent + 4);
+      return;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      break;
+
+    default:
+      return;
     }
+
+  if (TYPE_PTRMEMFUNC_P (node))
+    print_node (file, "ptrmemfunc fn type", TYPE_PTRMEMFUNC_FN_TYPE (node),
+		indent + 4);
 
   if (! CLASS_TYPE_P (node))
     return;
