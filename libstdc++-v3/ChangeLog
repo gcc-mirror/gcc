@@ -1,3 +1,12 @@
+2002-07-10  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* include/bits/valarray_meta.h (_UnFunBase): Take a second
+	template parameter. Remove _M_func data member.
+	(_UnFunClos): Take a third template parameter.
+	(__abs, __cos, __acos, __cosh, __sin, __asin, __sinh, __tan,
+	__atan, __tanh, __exp, __log, __log10, __sqrt): New classes.
+	(_DEFINE_EXPR_UNARY_OPERATOR): Adjust definition.
+
 2002-07-08  Eric Christopher  <echristo@redhat.com>
 
 	* configure.target: Fix comment for mips atomicity. Add
