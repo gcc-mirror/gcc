@@ -1,3 +1,9 @@
+2001-01-25  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* gcc.c-torture/execute/ieee/20000320-1.c (main): For MIPS, change
+	floating point number rounding mode to round to the nearest
+	representable mode.
+
 2001-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/mangle2.C: New test.
