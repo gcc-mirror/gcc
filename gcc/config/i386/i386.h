@@ -2370,22 +2370,21 @@ while (0)
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
-    return (unsigned) INTVAL (RTX) < 256 ? 0 : 1;		\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
-    return flag_pic && SYMBOLIC_CONST (RTX) ? 2 : 1;		\
+    return flag_pic && SYMBOLIC_CONST (RTX) ? 1 : 0;		\
 								\
   case CONST_DOUBLE:						\
     {								\
       int code;							\
       if (GET_MODE (RTX) == VOIDmode)				\
-	return 2;						\
+	return 0;						\
 								\
       code = standard_80387_constant_p (RTX);			\
-      return code == 1 ? 0 :					\
-	     code == 2 ? 1 :					\
-			 2;					\
+      return code == 1 ? 1 :					\
+	     code == 2 ? 2 :					\
+			 3;					\
     }
 
 /* Delete the definition here when TOPLEVEL_COSTS_N_INSNS gets added to cse.c */
