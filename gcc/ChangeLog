@@ -1,3 +1,9 @@
+2002-03-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (alpha_assert): Fix assert macro in Tru64
+	UNIX assert.h.
+	* fixinc/fixincl.x: Regenerate.
+
 2002-03-20  Jason Merrill  <jason@redhat.com>
 
 	* config/i386/cygwin.h (DWARF2_UNWIND_INFO): Define to 0.
