@@ -1,3 +1,19 @@
+2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in: Require at least texinfo 4.0.  Check for whether
+	Pod::Man is sufficiently recent to regenerate GCC manpages.
+	* configure:  Regenerate.
+	* Makefile.in (TEXI2POD): Call perl explicitly rather than relying
+	on #!.
+	(GENERATED_MANPAGES): Define.
+	(generated-manpages): New target.  Depend on cpp.1 as well as
+	gcov.1.
+	(install-man): Depend on $(GENERATED_MANPAGES) (defined by
+	configure to generated-manpages or empty) rather than on the
+	manpages directly.  Remove execute permission from installed
+	gcov.1 as well as cpp.1.
+	* cpp.1, gcov.1: Regenerate.
+
 2001-01-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strncmp): Use host_integerp and
