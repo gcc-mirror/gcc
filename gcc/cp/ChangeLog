@@ -1,3 +1,12 @@
+2003-03-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6440
+	* pt.c (maybe_process_partial_specialization): Handle
+	member class template when enclosing class template is
+	explicit specialized.
+	(most_general_template): Stop looking when DECL is already
+	specialized.
+
 2003-03-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9420
