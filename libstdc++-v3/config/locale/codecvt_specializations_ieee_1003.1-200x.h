@@ -85,7 +85,7 @@
     : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
     {
       // __intc_end = whatever we are using internally, which is
-      // UCS4 (linux) 
+      // UCS4 (linux, solaris) 
       // UCS2 == UNICODE  (microsoft, java, aix, whatever...)
       // XXX Currently don't know how to get this data from target system...
       strcpy(_M_int_enc, "UCS4");
@@ -121,27 +121,32 @@
 
     ~__enc_traits()
     {
-      iconv_close(_M_in_desc);
-      iconv_close(_M_out_desc);
+      __desc_type __err = reinterpret_cast<iconv_t>(-1);
+      if (_M_in_desc && _M_in_desc != __err) 
+	iconv_close(_M_in_desc);
+      if (_M_out_desc && _M_out_desc != __err) 
+	iconv_close(_M_out_desc);
     } 
 
-    // Initializes
     void
     _M_init()
     {
+      __desc_type __err = reinterpret_cast<iconv_t>(-1);
       _M_in_desc = iconv_open(_M_int_enc, _M_ext_enc);
+      if (_M_in_desc == __err)
+	__throw_runtime_error("creating iconv input descriptor failed.");
       _M_out_desc = iconv_open(_M_ext_enc, _M_int_enc);
-      if (_M_out_desc == iconv_t(-1) || _M_in_desc == iconv_t(-1))
-	{
-	  // XXX Extended error checking.
-	}
+      if (_M_out_desc == __err)
+	__throw_runtime_error("creating iconv output descriptor failed.");
     }
 
     bool
     _M_good()
     { 
-      return _M_out_desc && _M_in_desc 
-	     && _M_out_desc != iconv_t(-1) && _M_in_desc != iconv_t(-1);
+      __desc_type __err = reinterpret_cast<iconv_t>(-1);
+      bool __test = _M_in_desc && _M_in_desc != __err; 
+      __test &=  _M_out_desc && _M_out_desc != __err;
+      return __test;
     }
 
     const __desc_type* 
