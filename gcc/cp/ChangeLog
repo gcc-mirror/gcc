@@ -1,3 +1,9 @@
+2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17797
+	* typeck.c (build_reinterpret_cast): Return if the inner type
+	is error_mark_node.
+
 2004-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* semantics.c (expand_body): Update call of tree_rest_of_compilation.
