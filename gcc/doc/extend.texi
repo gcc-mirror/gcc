@@ -2283,10 +2283,10 @@ this option to work correctly.
 
 @item interrupt
 @cindex interrupt handler functions
-Use this option on the ARM, AVR and M32R/D ports to indicate that the
-specified function is an interrupt handler.  The compiler will generate
-function entry and exit sequences suitable for use in an interrupt
-handler when this attribute is present.
+Use this option on the ARM, AVR, M32R/D and Xstormy16 ports to indicate
+that the specified function is an interrupt handler.  The compiler will
+generate function entry and exit sequences suitable for use in an
+interrupt handler when this attribute is present.
 
 Note, interrupt handlers for the H8/300, H8/300H and SH processors can
 be specified via the @code{interrupt_handler} attribute.

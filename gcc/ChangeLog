@@ -1,3 +1,12 @@
+2002-01-13  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/md.texi (Modifiers): Document the '*' constraint for the
+	user.
+
+	* doc/md.texi (Machine Constraints): Add constraints for xstormy16.
+	* doc/extend.texi (Function Attributes): 'interrupt' is valid
+	for xstormy16 too.
+
 2002-01-13  Richard Henderson  <rth@redhat.com>
 
 	* reload.c (find_reloads): Use a hard reg destination as reload reg
