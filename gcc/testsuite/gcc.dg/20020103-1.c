@@ -1,6 +1,6 @@
 /* Verify that constant equivalences get reloaded properly, either by being
    spilled to the stack, or regenerated, but not dropped to memory.  */
-/* { dg-do compile { target i?86-*-* powerpc-*-* rs6000-*-* alpha*-*-* } } */
+/* { dg-do compile { target i?86-*-* powerpc-*-* rs6000-*-* alpha*-*-* x86_64-*-*} } */
 /* { dg-options "-O2 -fpic -fno-omit-frame-pointer" } */
 /* { dg-final { scan-assembler-not "LC" } } */
 
@@ -16,6 +16,9 @@
 #define clobber \
   asm volatile("#asm" : : : "$9", "$10", "$11", "$12", "$13", "$14", \
 	       "$f2", "$f3", "$f4", "$f5", "$f6", "$f7", "$f8", "$f9")
+#elif defined(__x86_64__)
+#define clobber \
+  asm volatile("#asm" : : : "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11")
 #else
 #error no clobber macro defined
 #endif
