@@ -80,22 +80,11 @@ proc g++_include_flags { paths } {
       return "${flags}"
     }
 
-    set dir [lookfor_file ${srcdir} libg++]
-    if { ${dir} != "" } {
-      append flags "-I${dir} -I${dir}/src "
-    }
-
     set gccpath ${paths}
 
-    if { ${HAVE_LIBSTDCXX_V3} } {
-      set odir_v3 [lookfor_file ${gccpath} libstdc++-v3]
-      if { ${odir_v3} != "" } {
-        append flags [exec sh ${odir_v3}/testsuite_flags --build-includes]
-      }
-    } else {
-      set odir_v2 [lookfor_file ${gccpath} libstdc++]
-      set sdir_v2 [lookfor_file ${srcdir} libstdc++]
-      append flags "-I${sdir_v2} -I${sdir_v2}/stl "
+    set odir [lookfor_file ${gccpath} libstdc++-v3]
+    if { ${odir} != "" } {
+      append flags [exec sh ${odir}/scripts/testsuite_flags --build-includes]  
     }
 
     return "$flags"
