@@ -1591,7 +1591,6 @@ delete_insn_for_stacker (insn)
   PUT_CODE (insn, NOTE);
   NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
   NOTE_SOURCE_FILE (insn) = 0;
-  INSN_DELETED_P (insn) = 1;
 }
 
 /* Emit an insn to pop virtual register REG before or after INSN.
