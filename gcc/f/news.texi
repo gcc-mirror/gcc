@@ -155,6 +155,13 @@ The following information was last updated on @value{last-update-news}:
 @itemize @bullet
 @ifclear USERVISONLY
 @item
+Using options @code{-g}, @code{-ggdb} or @code{-gdwarf[-2]} (where
+appropriate for your target) now also enables debugging information
+for COMMON BLOCK items to be emitted.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
 The @code{TtyNam} intrinsics now set @var{Name} to all spaces (at run time)
 if the system has no @code{ttyname} implementation available.
 @end ifclear

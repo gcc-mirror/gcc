@@ -1,3 +1,9 @@
+2000-05-28  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* bugs.texi: Note that debugging information for
+	common block items is emitted now.
+	* news.texi: Ditto.
+
 2000-05-18  Chris Demetriou  <cgd@sibyte.com>
 
 	* com.h (FFECOM_f2cINTEGER, FFECOM_f2cLONGINT): Note that
