@@ -4371,7 +4371,7 @@ rs6000_va_arg (tree valist, tree type)
       else
 	{
 	  /* Altivec arguments must be aligned to a 128-bit boundary.  */
-	  if (TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (TYPE_MODE (type)))
+	  if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (TYPE_MODE (type)))
 	    {
 	      tree vtype = TREE_TYPE (valist);
 	      tree new_valist, modify;
