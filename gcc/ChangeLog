@@ -1,3 +1,9 @@
+2005-04-04  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/16104
+	* fold-const.c (fold_unary): Fix folding of vector conversions.
+
 2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (xstormy16-*-elf): Set extra_options.
