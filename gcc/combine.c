@@ -7857,8 +7857,9 @@ num_sign_bit_copies (x, mode)
       return MAX (1, result);
 
     case UDIV:
-      /* The result must be <= the first operand.  */
-      return num_sign_bit_copies (XEXP (x, 0), mode);
+      /* The result must be <= the first operand, but the high bit may be on
+	 in the first operand.  */
+      return 1;
 
     case UMOD:
       /* The result must be <= the scond operand.  */
