@@ -1,3 +1,9 @@
+1998-06-23  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/backspace.c, libI77/dfe.c, libI77/due.c, libI77/iio.c,
+	libI77/lread.c, libI77/ sfe.c, libI77/sue.c, libI77/wsfe.c: Update
+	to Netlib version of 1998-06-18.
+
 Sat Jun 13 03:46:40 1998  Craig Burley  <burley@gnu.org>
 
 	* Makefile.in (install): Don't install if $(libsubdir)
