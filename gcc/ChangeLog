@@ -1,3 +1,7 @@
+2003-07-11  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (stage1_build): Force OBJS-onestep=OBJS.
+
 2003-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (make_decl_rtl): Treat decls with a DECL_CONTEXT of
