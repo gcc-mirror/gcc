@@ -27,8 +27,12 @@ Boston, MA 02111-1307, USA. */
 
 #define YES_UNDERSCORES
 
-#include "i386/gas.h"
+#define DBX_DEBUGGING_INFO 
+#define SDB_DEBUGGING_INFO 
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#include "i386/gas.h"
+#include "dbxcoff.h"
 
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
@@ -157,11 +161,6 @@ while (0)
 #define TARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE) 
 
-#define DBX_DEBUGGING_INFO 
-#define SDB_DEBUGGING_INFO 
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
@@ -169,39 +168,6 @@ while (0)
 
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
   fprintf (FILE, "\t.section %s\n", NAME)
-
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)				\
-do									\
-  {									\
-    static int sym_lineno = 1;						\
-    fprintf (file, "\t.stabn 68,0,%d,LM%d-",				\
-	     line, sym_lineno);						\
-    assemble_name (file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
-    fprintf (file, "\nLM%d:\n", sym_lineno);				\
-    sym_lineno += 1;							\
-  }									\
-while (0)
-
-/* Generate a blank trailing N_SO to mark the end of the .o file, since
-   we can't depend upon the linker to mark .o file boundaries with
-   embedded stabs.  */
-
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
-
-/* Make LBRAC and RBRAC addresses relative to the start of the
-   function.  The native Solaris stabs debugging format works this
-   way, gdb expects it, and it reduces the number of relocation
-   entries.  */
-
-#define DBX_BLOCKS_FUNCTION_RELATIVE 1
-
-/* In order for relative line numbers to work, we must output the
-   stabs entry for the function name first.  */
-
-#define DBX_FUNCTION_FIRST
 
 /* This is how to output an assembler line
    that says to advance the location counter
