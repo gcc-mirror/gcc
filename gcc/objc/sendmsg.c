@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime message lookup 
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* The uninstalled dispatch table */
-struct sarray* __objc_uninstalled_dtable = 0;
+struct sarray* __objc_uninstalled_dtable = 0;   /* !T:MUTEX */
 
 /* Send +initialize to class */
 static void __objc_send_initialize(Class);
@@ -76,7 +76,9 @@ get_imp (Class class, SEL sel)
   void* res = sarray_get (class->dtable, (size_t) sel->sel_id);
   if(res == __objc_init_install_dtable)
     {
+      objc_mutex_lock(__objc_runtime_mutex);
       __objc_install_dispatch_table_for_class (class);
+      objc_mutex_unlock(__objc_runtime_mutex);
       res = sarray_get (class->dtable, (size_t) sel->sel_id);
     }
   if (res == 0)
@@ -96,7 +98,9 @@ __objc_responds_to (id object, SEL sel)
   void* res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
   if(res == __objc_init_install_dtable)
     {
+      objc_mutex_lock(__objc_runtime_mutex);
       __objc_install_dispatch_table_for_class (object->class_pointer);
+      objc_mutex_unlock(__objc_runtime_mutex);
       res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
     }
   return (res != 0);
@@ -172,6 +176,8 @@ static void __objc_init_install_dtable(id receiver, SEL op)
   if(receiver->class_pointer->dtable != __objc_uninstalled_dtable)
     goto already_initialized;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   if(CLS_ISCLASS(receiver->class_pointer))
     {
       /* receiver is an ordinary object */
@@ -198,6 +204,7 @@ static void __objc_init_install_dtable(id receiver, SEL op)
       else
 	CLS_SETINITIALIZED((Class)receiver);
     }
+  objc_mutex_unlock(__objc_runtime_mutex);
 
 already_initialized:
   
@@ -269,6 +276,7 @@ static void __objc_send_initialize(Class class)
     }
 }  
 
+/* Assumes that __objc_runtime_mutex is locked down. */
 static void
 __objc_install_dispatch_table_for_class (Class class)
 {
@@ -289,7 +297,9 @@ __objc_install_dispatch_table_for_class (Class class)
   /* Allocate dtable if necessary */
   if (super == 0)
     {
+      objc_mutex_lock(__objc_runtime_mutex);
       class->dtable = sarray_new (__objc_selector_max_index, 0);
+      objc_mutex_unlock(__objc_runtime_mutex);
     }
   else
     class->dtable = sarray_lazy_copy (super->dtable);
@@ -311,25 +321,31 @@ __objc_install_dispatch_table_for_class (Class class)
 void __objc_update_dispatch_table_for_class (Class class)
 {
   Class next;
+  struct sarray *arr;
 
   /* not yet installed -- skip it */
   if (class->dtable == __objc_uninstalled_dtable) 
     return;
 
-  sarray_free (class->dtable);	/* release memory */
+  objc_mutex_lock(__objc_runtime_mutex);
+
+  arr = class->dtable;
   __objc_install_premature_dtable (class); /* someone might require it... */
+  sarray_free (arr);			   /* release memory */
+
   __objc_install_dispatch_table_for_class (class); /* could have been lazy... */
 
   if (class->subclass_list)	/* Traverse subclasses */
     for (next = class->subclass_list; next; next = next->sibling_class)
       __objc_update_dispatch_table_for_class (next);
 
+  objc_mutex_unlock(__objc_runtime_mutex);
 }
 
 
 /* This function adds a method list to a class.  This function is
    typically called by another function specific to the run-time.  As
-   such this function does not worry about thread safe issued.
+   such this function does not worry about thread safe issues.
 
    This one is only called for categories. Class objects have their
    methods installed right away, and their selectors are made into
@@ -338,7 +354,8 @@ void
 class_add_method_list (Class class, MethodList_t list)
 {
   int i;
-  static SEL initialize_sel = 0;
+  static SEL initialize_sel = 0;                /* !T:SAFE2 */
+
   if (!initialize_sel)
     initialize_sel = sel_register_name ("initialize");
 
@@ -482,7 +499,7 @@ static retval_t
 __objc_forward (id object, SEL sel, arglist_t args)
 {
   IMP imp;
-  static SEL frwd_sel = 0;
+  static SEL frwd_sel = 0;                      /* !T:SAFE2 */
   SEL err_sel;
 
   /* first try if the object understands forward:: */
@@ -534,6 +551,9 @@ __objc_forward (id object, SEL sel, arglist_t args)
 void __objc_print_dtable_stats()
 {
   int total = 0;
+
+  objc_mutex_lock(__objc_runtime_mutex);
+
   printf("memory usage: (%s)\n",
 #ifdef OBJC_SPARSE2
 	 "2-level sparse arrays"
@@ -552,6 +572,8 @@ void __objc_print_dtable_stats()
   printf("-----------------------------------\n");
   printf("total: %d bytes\n", total);
   printf("===================================\n");
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 }
 
 
