@@ -300,7 +300,9 @@ static void scan_libraries	PARAMS ((const char *));
 static int is_in_args		PARAMS ((const char *, const char **, const char **));
 #endif
 #ifdef COLLECT_EXPORT_LIST
+#if 0
 static int is_in_list		PARAMS ((const char *, struct id *));
+#endif
 static void write_aix_file	PARAMS ((FILE *, struct id *));
 static char *resolve_lib_name	PARAMS ((const char *));
 static int ignore_library	PARAMS ((const char *));
@@ -1754,6 +1756,7 @@ is_in_args (string, args_begin, args_end)
 
 #ifdef COLLECT_EXPORT_LIST
 /* This function is really used only on AIX, but may be useful.  */
+#if 0
 static int
 is_in_list (prefix, list)
      const char *prefix;
@@ -1767,6 +1770,7 @@ is_in_list (prefix, list)
     return 0;
 }
 #endif
+#endif /* COLLECT_EXPORT_LIST */
 
 /* Added for debugging purpose.  */
 #ifdef COLLECT_EXPORT_LIST
