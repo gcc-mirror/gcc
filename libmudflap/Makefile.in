@@ -46,7 +46,7 @@ DIST_COMMON = $(am__configure_deps) $(include_HEADERS) \
 	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/mf-runtime.h.in $(top_srcdir)/configure ChangeLog
+	$(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/gcc-version.m4 \
@@ -57,7 +57,6 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = mf-runtime.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -347,8 +346,6 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-mf-runtime.h: $(top_builddir)/config.status $(srcdir)/mf-runtime.h.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexeclibdir)"

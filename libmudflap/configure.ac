@@ -231,5 +231,5 @@ else
   multilib_arg=
 fi
 
-AC_CONFIG_FILES([Makefile testsuite/Makefile testsuite/mfconfig.exp mf-runtime.h])
+AC_CONFIG_FILES([Makefile testsuite/Makefile testsuite/mfconfig.exp])
 AC_OUTPUT

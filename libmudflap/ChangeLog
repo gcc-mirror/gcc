@@ -1,3 +1,15 @@
+2004-01-02  Greg McGary  <greg@mcgary.org>
+
+	* mf-impl.h (uintptr_t): Get typedef via stdint.h or define explicitly.
+	* mf-runtime.h: New file, replaces mf-runtime.h.in.
+	* configure.ac (AC_CONFIG_FILES): mf-runtime.h is no longer generated.
+	* Makefile.in: Ditto.
+	* testsuite/lib/libmudflap.exp: Add -I${srcdir}/.. to get mf-runtime.h
+	* testsuite/libmudflap.c/pass32-frag.c: s/uintptr_t/__mf_uintptr_t/
+	* testsuite/libmudflap.c/fail36-frag.c: New test.
+	* testsuite/libmudflap.c/fail37-frag.c: New test.
+	* testsuite/libmudflap.c/fail38-frag.c: New test.
+
 2004-12-08  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Add ../config to ACLOCAL_AMFLAGS.
