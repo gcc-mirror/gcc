@@ -1,3 +1,31 @@
+2002-08-14  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/alpha-protos.h: Update.
+
+	* config/alpha/alpha.c: (LINKAGE_SYMBOL_REF_P): New macro.
+	(alpha_legitimate_address_p): Test LINKAGE_SYMBOL_REF_P.
+	(alpha_linkage_symbol_p): New static function.
+	(print_operand_address): Print linkage operand.
+
+	(alpha_funcs_num, alpha_funcs_tree, alpha_links_tree): New static
+	variables.
+	(reloc_kind): New enum.
+	(struct alpha_funcs): New struct.
+	(struct alpha_links): Add reloc_kind field. Rename links_kind field.
+
+	(alpha_need_linkage): Rewrite.
+	(alpha_use_linkage): New global function.
+	(alpha_write_linkage): Rewrite and make static.
+	(alpha_write_one_linkage): Rewrite
+
+	(alpha_start_function): Remove procedure descriptor output.
+	(alpha_end_function): Write linkages at end of each function.
+
+	* config/alpha/alpha.md (call_vms, call_value_vms): Rewrite.
+	(call_vms_1, call_value_vms_1): Rewrite.
+
+	* config/alpha/vms.h (ASM_FILE_END): Remove.
+
 2002-08-14  Richard Henderson  <rth@redhat.com>
 
 	* ggc-page.c (RTL_SIZE): New.
