@@ -199,7 +199,7 @@ static int inf_skip_spaces PARAMS ((int));
 static int inf_read_upto PARAMS ((sstring *, int));
 static int inf_scan_ident PARAMS ((sstring *, int));
 static int check_protection PARAMS ((int *, int *));
-static void cb_change_file PARAMS ((cpp_reader *, const cpp_file_change *));
+static void cb_file_change PARAMS ((cpp_reader *, const cpp_file_change *));
 
 static void
 add_symbols (flags, names)
@@ -598,7 +598,7 @@ check_macro_names (pfile, names)
 }
 
 static void
-cb_change_file (pfile, fc)
+cb_file_change (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
@@ -620,7 +620,7 @@ read_scan_file (in_fname, argc, argv)
   obstack_init (&scan_file_obstack); 
 
   scan_in = cpp_create_reader (CLK_GNUC89);
-  scan_in->cb.change_file = cb_change_file;
+  scan_in->cb.file_change = cb_file_change;
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */

@@ -108,8 +108,6 @@ static cpp_hashnode *parse_assertion PARAMS ((cpp_reader *, struct answer **,
 static struct answer ** find_answer PARAMS ((cpp_hashnode *,
 					     const struct answer *));
 static void handle_assertion	PARAMS ((cpp_reader *, const char *, int));
-static void do_file_change	PARAMS ((cpp_reader *, enum cpp_fc_reason,
-					 const char *, unsigned int));
 
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
@@ -768,10 +766,8 @@ do_line (pfile)
 				 buffer->nominal_fname);
 		}
 	    }
-
-	  cpp_make_system_header (pfile, sysp, sysp == 2);
+	  buffer->sysp = sysp;
 	}
-
       buffer->nominal_fname = fname;
     }
   else if (token.type != CPP_EOF)
@@ -783,37 +779,47 @@ do_line (pfile)
 
   /* Our line number is incremented after the directive is processed.  */
   buffer->lineno = new_lineno - 1;
-
-  if (reason == FC_RENAME)
-    {
-      /* Special case for file "foo.i" with "# 1 foo.c" on first line.  */
-      if (! buffer->prev && pfile->directive_pos.line == 1)
-	filename = 0;
-      do_file_change (pfile, reason, filename, lineno);
-    }
+  _cpp_do_file_change (pfile, reason, filename, lineno);
 }
 
 /* Arrange the file_change callback.  */
-static void
-do_file_change (pfile, reason, from_file, from_lineno)
+void
+_cpp_do_file_change (pfile, reason, from_file, from_lineno)
      cpp_reader *pfile;
      enum cpp_fc_reason reason;
      const char *from_file;
      unsigned int from_lineno;
 {
-  if (pfile->cb.change_file)
+  if (pfile->cb.file_change)
     {
       cpp_file_change fc;
       cpp_buffer *buffer = pfile->buffer;
 
       fc.reason = reason;
-      fc.from.filename = from_file;
-      fc.from.lineno = from_lineno;
       fc.to.filename = buffer->nominal_fname;
       fc.to.lineno = buffer->lineno + 1;
       fc.sysp = buffer->sysp;
       fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->sysp == 2;
-      pfile->cb.change_file (pfile, &fc);
+
+      /* Caller doesn't need to handle FC_ENTER.  */
+      if (reason == FC_ENTER)
+	{
+	  if (buffer->prev)
+	    {
+	      from_file = buffer->prev->nominal_fname;
+	      from_lineno = buffer->prev->lineno;
+	    }
+	  else
+	    from_file = 0;
+	}
+      /* Special case for file "foo.i" with "# 1 foo.c" on first line.  */
+      else if (reason == FC_RENAME && ! buffer->prev
+	       && pfile->directive_pos.line == 1)
+	from_file = 0;
+
+      fc.from.filename = from_file;
+      fc.from.lineno = from_lineno;
+      pfile->cb.file_change (pfile, &fc);
     }
 }
 
@@ -1708,9 +1714,9 @@ handle_assertion (pfile, str, type)
   run_directive (pfile, type, BUF_CL_OPTION, str, count);
 }
 
-/* Push a new buffer on the buffer stack.  Buffer can be NULL, but
-   then LEN should be 0.  Returns the new buffer; it doesn't fail.  */
-
+/* Push a new buffer on the buffer stack.  Returns the new buffer; it
+   doesn't fail.  It does not generate a file change call back; that
+   is the responsibility of the caller.  */
 cpp_buffer *
 cpp_push_buffer (pfile, buffer, len, type, filename)
      cpp_reader *pfile;
@@ -1741,6 +1747,7 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
 
       new->line_base = new->buf = new->cur = buffer;
       new->rlimit = buffer + len;
+      new->sysp = 0;
 
       /* No read ahead or extra char initially.  */
       new->read_ahead = EOF;
@@ -1758,38 +1765,26 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
   new->prev = pfile->buffer;
   new->pfile = pfile;
   new->include_stack_listed = 0;
+  new->lineno = 1;
 
   pfile->state.next_bol = 1;
   pfile->buffer_stack_depth++;
   pfile->buffer = new;
 
-  if (type == BUF_FILE || type == BUF_FAKE)
-    {
-      const char *filename = 0;
-      unsigned int lineno = 0;
-
-      if (new->prev)
-	{
-	  filename = new->prev->nominal_fname;
-	  lineno = new->prev->lineno;
-	}
-      new->lineno = 0;
-      do_file_change (pfile, FC_ENTER, filename, lineno);
-    }
-
-  new->lineno = 1;
   return new;
 }
 
+/* If called from do_line, pops a single buffer.  Otherwise pops all
+   buffers until a real file is reached.  Generates appropriate
+   call-backs.  */
 cpp_buffer *
 cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer;
   struct if_stack *ifs;
-  int in_do_line = pfile->directive == &dtable[T_LINE];
 
-  do
+  for (;;)
     {
       buffer = pfile->buffer;
       /* Walk back up the conditional stack till we reach its level at
@@ -1799,28 +1794,34 @@ cpp_pop_buffer (pfile)
 			     "unterminated #%s", dtable[ifs->type].name);
 
       if (buffer->type == BUF_FAKE)
-	{
-	  if (!in_do_line)
-	    cpp_warning (pfile, "file \"%s\" entered but not left",
-			 buffer->nominal_fname);
-
-	  buffer->prev->cur = buffer->cur;
-	}
+	buffer->prev->cur = buffer->cur;
       else if (buffer->type == BUF_FILE)
 	_cpp_pop_file_buffer (pfile, buffer);
 
       pfile->buffer = buffer->prev;
       pfile->buffer_stack_depth--;
 
-      if ((buffer->type == BUF_FILE || buffer->type == BUF_FAKE)
-	  && pfile->buffer)
-	{
-	  do_file_change (pfile, FC_LEAVE, buffer->nominal_fname,
-			  buffer->lineno);
-	  pfile->buffer->include_stack_listed = 0;
-	}
+      /* Callbacks only generated for faked or real files.  */
+      if (buffer->type != BUF_FILE && buffer->type != BUF_FAKE)
+	break;
+	  
+      /* No callback for EOF of last file.  */
+      if (!pfile->buffer)
+	break;
+
+      /* do_line does its own call backs.  */
+      pfile->buffer->include_stack_listed = 0;
+      if (pfile->directive == &dtable[T_LINE])
+	break;
+
+      _cpp_do_file_change (pfile, FC_LEAVE, buffer->nominal_fname,
+			   buffer->lineno);
+      if (pfile->buffer->type == BUF_FILE)
+	break;
+
+      cpp_warning (pfile, "file \"%s\" entered but not left",
+		   buffer->nominal_fname);
     }
-  while (pfile->buffer && pfile->buffer->type == BUF_FAKE && !in_do_line);
 
   obstack_free (pfile->buffer_ob, buffer);
   return pfile->buffer;

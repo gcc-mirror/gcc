@@ -590,7 +590,7 @@ struct cpp_reader
 
   /* Call backs.  */
   struct {
-    void (*change_file) PARAMS ((cpp_reader *, const cpp_file_change *));
+    void (*file_change) PARAMS ((cpp_reader *, const cpp_file_change *));
     void (*include) PARAMS ((cpp_reader *, const unsigned char *,
 			     const cpp_token *));
     void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));

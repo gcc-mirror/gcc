@@ -90,7 +90,7 @@ static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
 static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
-static void cb_change_file    PARAMS ((cpp_reader *, const cpp_file_change *));
+static void cb_file_change    PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma	PARAMS ((cpp_reader *));
 
 const char *
@@ -120,7 +120,7 @@ init_c_lex (filename)
 #endif
 
   parse_in->cb.ident = cb_ident;
-  parse_in->cb.change_file = cb_change_file;
+  parse_in->cb.file_change = cb_file_change;
   parse_in->cb.def_pragma = cb_def_pragma;
 
   if (filename == 0 || !strcmp (filename, "-"))
@@ -226,7 +226,7 @@ cb_ident (pfile, str)
 }
 
 static void
-cb_change_file (pfile, fc)
+cb_file_change (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {

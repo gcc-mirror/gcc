@@ -245,21 +245,19 @@ stack_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
 {
+  size_t len = 0;
   cpp_buffer *fp;
 
   /* Not in cache?  */
   if (! inc->buffer)
     read_include_file (pfile, inc);
 
-  /* Push a null buffer.  */
-  fp = cpp_push_buffer (pfile, NULL, 0, BUF_FILE, inc->name);
-  fp->inc = inc;
-  fp->buf = inc->buffer;
-  fp->rlimit = fp->buf;
   if (! DO_NOT_REREAD (inc))
-    fp->rlimit += inc->st.st_size;
-  fp->cur = fp->buf;
-  fp->line_base = fp->buf;
+    len = inc->st.st_size;
+
+  /* Push a buffer.  */
+  fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name);
+  fp->inc = inc;
   fp->inc->refcnt++;
   if (inc->foundhere)
     fp->sysp = inc->foundhere->sysp;
@@ -273,6 +271,11 @@ stack_include_file (pfile, inc)
   pfile->mi_state = MI_OUTSIDE;
   pfile->mi_cmacro = 0;
   pfile->include_depth++;
+
+  /* Generate the call back.  */
+  fp->lineno = 0;
+  _cpp_do_file_change (pfile, FC_ENTER, 0, 0);
+  fp->lineno = 1;
 }
 
 /* Read the file referenced by INC into the file cache.
