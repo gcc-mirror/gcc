@@ -1,5 +1,8 @@
 2000-04-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* dwarf2out.c (DWARF_CIE_DATA_ALIGNMENT): Adjust, now that
+	UNITS_PER_WORD is unsigned.
+
 	* tree.h (struct tree_common): Remove misleading comment.
 
 2000-04-16  Dave Pitts  <dpitts@cozx.com>
