@@ -2400,25 +2400,12 @@
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])
 
-;; The use of operand 2 helps us distinguish case table jumps
+;; The use of operand 1 / 2 helps us distinguish case table jumps
 ;; which can be present in structured code from indirect jumps which can not
 ;; be present in structured code.  This allows -fprofile-arcs to work.
 
-(define_expand "casesi_jump"
-  [(parallel [(set (pc) (match_operand:SI 0 "register_operand" "r"))
-	      (use (label_ref (match_operand 2 "" "")))])]
-  ""
-  "
-{
-  if (TARGET_SH2)
-    operands[0] = gen_rtx (PLUS, Pmode, operands[0],
-			   gen_rtx (LABEL_REF, VOIDmode, operands[1]));
-  else
-    emit_insn (gen_addsi3 (operands[0], operands[0], gen_rtx (REG, Pmode, 0)));
-}");
-
 ;; For SH1 processors.
-(define_insn "*casesi_jump_1"
+(define_insn "casesi_jump_1"
   [(set (pc)
 	(match_operand:SI 0 "register_operand" "r"))
    (use (label_ref (match_operand 1 "" "")))]
@@ -2428,7 +2415,7 @@
    (set_attr "type" "jump_ind")])
 
 ;; For all later processors.
-(define_insn "*casesi_jump_2"
+(define_insn "casesi_jump_2"
   [(set (pc) (plus:SI (match_operand:SI 0 "register_operand" "r")
 		      (match_operand 1 "braf_label_ref_operand" "")))
    (use (label_ref (match_operand 2 "" "")))]
@@ -2513,15 +2500,25 @@
   ""
   "
 {
-  rtx lab = gen_label_rtx ();
   rtx reg = gen_reg_rtx (SImode);
   /* If optimizing, casesi_worker depends on the mode of the instruction
      before label it 'uses' - operands[3].  */
   emit_insn (gen_casesi_0 (operands[0], operands[1], operands[2], operands[3],
 			   operands[4], reg));
-  emit_jump_insn (gen_casesi_jump (reg, lab, operands[3]));
   if (TARGET_SH2)
-    emit_label (lab);
+    {
+      rtx lab = gen_label_rtx ();
+      emit_jump_insn (gen_casesi_jump_2 (reg,
+					 gen_rtx (LABEL_REF, VOIDmode, lab),
+				         operands[3]));
+      emit_label (lab);
+    }
+  else
+    {
+      emit_insn (gen_addsi3 (reg, reg, gen_rtx (REG, Pmode, 0)));
+      emit_jump_insn (gen_casesi_jump_1 (reg, operands[3]));
+    }
+
   /* For SH2 and newer, the ADDR_DIFF_VEC is not actually relative to
      operands[3], but to lab.  We will fix this up in
      machine_dependent_reorg.  */
