@@ -2167,10 +2167,12 @@ extern struct rtx_def *hppa_save_pic_table_rtx;
 			    CONST_DOUBLE, CONST, HIGH}},
 #endif
 
+/* We want __gcc_plt_call to appear in every program built by
+   gcc, so we make a reference to it out of __main.  */
 #define DO_GLOBAL_DTORS_BODY \
 do { \
   extern void __gcc_plt_call (); \
-  volatile int reference = &__gcc_plt_call; \
+  void (*reference)() = &__gcc_plt_call; \
   func_ptr *p; \
   for (p = __DTOR_LIST__ + 1; *p; ) \
     (*p++) (); \
