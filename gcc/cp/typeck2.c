@@ -49,7 +49,7 @@ error_not_base_type (basetype, type)
      tree basetype, type;
 {
   if (TREE_CODE (basetype) == FUNCTION_DECL)
-    basetype = DECL_CLASS_CONTEXT (basetype);
+    basetype = DECL_CONTEXT (basetype);
   cp_error ("type `%T' is not a base type for type `%T'", basetype, type);
   return error_mark_node;
 }

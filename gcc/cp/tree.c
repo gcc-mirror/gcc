@@ -1773,20 +1773,6 @@ vec_binfo_member (elem, vec)
   return NULL_TREE;
 }
 
-/* Kludge around the fact that DECL_CONTEXT for virtual functions returns
-   the wrong thing for decl_function_context.  Hopefully the uses in the
-   backend won't matter, since we don't need a static chain for local class
-   methods.  FIXME!  */
-
-tree
-hack_decl_function_context (decl)
-     tree decl;
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (decl))
-    return decl_function_context (TYPE_MAIN_DECL (DECL_CLASS_CONTEXT (decl)));
-  return decl_function_context (decl);
-}
-
 /* Returns the namespace that contains DECL, whether directly or
    indirectly.  */
 

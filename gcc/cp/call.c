@@ -2504,7 +2504,7 @@ build_new_function_call (fn, args)
 	      (candidates, t, args, LOOKUP_NORMAL);
 
 	  if (candidates != old_candidates)
-	    candidates->basetype_path = DECL_REAL_CONTEXT (t);
+	    candidates->basetype_path = CP_DECL_CONTEXT (t);
 	}
 
       if (! any_viable (candidates))
@@ -4030,7 +4030,7 @@ build_over_call (cand, args, flags)
     /* Do things the hard way.  */;
   else if (DECL_CONSTRUCTOR_P (fn)
 	   && TREE_VEC_LENGTH (convs) == 1
-      && copy_args_p (fn))
+	   && copy_args_p (fn))
     {
       tree targ;
       arg = TREE_CHAIN (converted_args);
@@ -4098,7 +4098,7 @@ build_over_call (cand, args, flags)
 	     and we will call a destructor for it, which is wrong,
 	     because we will also destroy TO, but will never have
 	     constructed it.  */
-	  val = build (is_empty_class (DECL_CLASS_CONTEXT (fn))
+	  val = build (is_empty_class (DECL_CONTEXT (fn))
 		       ? MODIFY_EXPR : INIT_EXPR, 
 		       DECL_CONTEXT (fn), to, arg);
 	  address = build_unary_op (ADDR_EXPR, val, 0);
@@ -4110,7 +4110,7 @@ build_over_call (cand, args, flags)
     }
   else if (DECL_NAME (fn) == ansi_opname[MODIFY_EXPR]
 	   && copy_args_p (fn)
-	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CLASS_CONTEXT (fn)))
+	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CONTEXT (fn)))
     {
       tree to = stabilize_reference
 	(build_indirect_ref (TREE_VALUE (converted_args), 0));

@@ -692,7 +692,12 @@ current_scope ()
     return current_class_type;
   if (current_class_type == NULL_TREE)
     return current_function_decl;
-  if (DECL_CLASS_CONTEXT (current_function_decl) == current_class_type)
+  if ((DECL_FUNCTION_MEMBER_P (current_function_decl)
+       && same_type_p (DECL_CONTEXT (current_function_decl),
+		       current_class_type))
+      || (DECL_FRIEND_CONTEXT (current_function_decl)
+	  && same_type_p (DECL_FRIEND_CONTEXT (current_function_decl),
+			  current_class_type)))
     return current_function_decl;
 
   return current_class_type;
@@ -721,7 +726,7 @@ context_for_name_lookup (decl)
      definition, the members of the anonymous union are considered to
      have been defined in the scope in which teh anonymous union is
      declared.  */ 
-  tree context = DECL_REAL_CONTEXT (decl);
+  tree context = CP_DECL_CONTEXT (decl);
 
   while (TYPE_P (context) && ANON_AGGR_TYPE_P (context))
     context = TYPE_CONTEXT (context);
@@ -1064,8 +1069,9 @@ friend_accessible_p (scope, type, decl, binfo)
     {
       /* Perhaps this SCOPE is a member of a class which is a 
 	 friend.  */ 
-      if (friend_accessible_p (DECL_CLASS_CONTEXT (scope), type,
-			       decl, binfo))
+      if (DECL_CLASS_SCOPE_P (decl)
+	  && friend_accessible_p (DECL_CONTEXT (scope), type,
+				  decl, binfo))
 	return 1;
 
       /* Or an instantiation of something which is a friend.  */
@@ -1280,7 +1286,7 @@ lookup_fnfields_here (type, name)
   fndecls = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
   while (fndecls)
     {
-      if (TYPE_MAIN_VARIANT (DECL_CLASS_CONTEXT (OVL_CURRENT (fndecls)))
+      if (TYPE_MAIN_VARIANT (DECL_CONTEXT (OVL_CURRENT (fndecls)))
 	  == TYPE_MAIN_VARIANT (type))
 	return idx;
       fndecls = OVL_CHAIN (fndecls);
@@ -2044,7 +2050,7 @@ check_final_overrider (overrider, basefn)
       cp_error_at ("conflicting return type specified for `virtual %#D'", overrider);
       cp_error_at ("  overriding `virtual %#D'", basefn);
       SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider),
-                                  DECL_CLASS_CONTEXT (overrider));
+                                  DECL_CONTEXT (overrider));
       return 0;
     }
   
@@ -2810,11 +2816,11 @@ init_vbase_pointers (type, decl_ptr)
 }
 
 /* get the virtual context (the vbase that directly contains the
-   DECL_CLASS_CONTEXT of the FNDECL) that the given FNDECL is declared in,
+   DECL_CONTEXT of the FNDECL) that the given FNDECL is declared in,
    or NULL_TREE if there is none.
 
-   FNDECL must come from a virtual table from a virtual base to ensure that
-   there is only one possible DECL_CLASS_CONTEXT.
+   FNDECL must come from a virtual table from a virtual base to ensure
+   that there is only one possible DECL_CONTEXT.
 
    We know that if there is more than one place (binfo) the fndecl that the
    declared, they all refer to the same binfo.  See get_class_offset_1 for
@@ -2825,10 +2831,10 @@ virtual_context (fndecl, t, vbase)
      tree fndecl, t, vbase;
 {
   tree path;
-  if (get_base_distance (DECL_CLASS_CONTEXT (fndecl), t, 0, &path) < 0)
+  if (get_base_distance (DECL_CONTEXT (fndecl), t, 0, &path) < 0)
     {
-      /* DECL_CLASS_CONTEXT can be ambiguous in t.  */
-      if (get_base_distance (DECL_CLASS_CONTEXT (fndecl), vbase, 0, &path) >= 0)
+      /* DECL_CONTEXT can be ambiguous in t.  */
+      if (get_base_distance (DECL_CONTEXT (fndecl), vbase, 0, &path) >= 0)
 	{
 	  while (path)
 	    {

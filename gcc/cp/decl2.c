@@ -922,7 +922,7 @@ maybe_retrofit_in_chrg (fn)
   tree basetype, arg_types, parms, parm, fntype;
 
   if (DECL_CONSTRUCTOR_P (fn)
-      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CLASS_CONTEXT (fn))
+      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn))
       && ! DECL_CONSTRUCTOR_FOR_VBASE_P (fn))
     /* OK */;
   else if (! DECL_CONSTRUCTOR_P (fn)
@@ -1017,7 +1017,7 @@ grokclassfn (ctype, function, flags, quals)
   DECL_ARGUMENTS (function) = last_function_parms;
   /* First approximations.  */
   DECL_CONTEXT (function) = ctype;
-  DECL_CLASS_CONTEXT (function) = ctype;
+  DECL_VIRTUAL_CONTEXT (function) = ctype;
 
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
     maybe_retrofit_in_chrg (function);
@@ -1517,7 +1517,6 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
   DECL_INITIAL (decl) = init;
   DECL_IN_AGGR_P (decl) = 1;
   DECL_CONTEXT (decl) = current_class_type;
-  DECL_CLASS_CONTEXT (decl) = current_class_type;
 
   cp_finish_decl (decl, init, asmspec_tree, flags);
 }
@@ -1601,7 +1600,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     {
       DECL_NONLOCAL (value) = 1;
       DECL_CONTEXT (value) = current_class_type;
-      DECL_CLASS_CONTEXT (value) = current_class_type;
 
       /* Now that we've updated the context, we need to remangle the
 	 name for this TYPE_DECL.  */
@@ -2182,7 +2180,6 @@ finish_builtin_type (type, name, fields, len, align_type)
       TREE_CHAIN (fields[i]) = fields[i+1];
     }
   DECL_FIELD_CONTEXT (fields[i]) = type;
-  DECL_CLASS_CONTEXT (fields[i]) = type;
   TYPE_ALIGN (type) = TYPE_ALIGN (align_type);
   layout_type (type);
 #if 0 /* not yet, should get fixed properly later */
@@ -2551,7 +2548,7 @@ finish_vtable_vardecl (t, data)
 
   if (! DECL_EXTERNAL (vars)
       && (DECL_NEEDED_P (vars)
-	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
+	  || (decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
       if (TREE_TYPE (vars) == void_type_node)
@@ -2660,7 +2657,7 @@ import_export_decl (decl)
     }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
-      tree ctype = DECL_CLASS_CONTEXT (decl);
+      tree ctype = DECL_CONTEXT (decl);
       import_export_class (ctype);
       if (CLASSTYPE_INTERFACE_KNOWN (ctype)
 	  && (flag_new_abi
@@ -3109,7 +3106,7 @@ start_static_initialization_or_destruction (decl, initp)
      which the DECL is a member.  */
   if (member_p (decl))
     {
-      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
+      DECL_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
       DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
     }
   
@@ -3174,7 +3171,7 @@ finish_static_initialization_or_destruction (sentry_if_stmt)
 
   /* Now that we're done with DECL we don't need to pretend to be a
      member of its class any longer.  */
-  DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
+  DECL_CONTEXT (current_function_decl) = NULL_TREE;
   DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
 }
 
@@ -5202,8 +5199,10 @@ mark_used (decl)
   assemble_external (decl);
 
   /* Is it a synthesized method that needs to be synthesized?  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_CLASS_CONTEXT (decl)
-      && DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && DECL_ARTIFICIAL (decl) 
+      && ! DECL_INITIAL (decl)
       /* Kludge: don't synthesize for default args.  */
       && current_function_decl)
     synthesize_method (decl);

@@ -1131,9 +1131,8 @@ dump_function_decl (t, flags)
   fntype = TREE_TYPE (t);
   parmtypes = TYPE_ARG_TYPES (fntype);
 
-  /* Friends have DECL_CLASS_CONTEXT set, but not DECL_CONTEXT.  */
   if (DECL_CLASS_SCOPE_P (t))
-    cname = DECL_CLASS_CONTEXT (t);
+    cname = DECL_CONTEXT (t);
   /* this is for partially instantiated template methods */
   else if (TREE_CODE (fntype) == METHOD_TYPE)
     cname = TREE_TYPE (TREE_VALUE (parmtypes));
@@ -2148,12 +2147,7 @@ lang_decl_name (decl, v)
 
   if (v == 1 && DECL_CLASS_SCOPE_P (decl))
     {
-      tree cname;
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	cname = DECL_CLASS_CONTEXT (decl);
-      else
-	cname = DECL_CONTEXT (decl);
-      dump_type (cname, TS_PLAIN);
+      dump_type (CP_DECL_CONTEXT (decl), TS_PLAIN);
       OB_PUTS ("::");
     }
 
