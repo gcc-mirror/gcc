@@ -308,6 +308,21 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
+	  if [ -f gnatchop-cross$(shext) ] ; \
+	  then \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(shext); \
+	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(shext); \
+	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
+	       rm -f $(DESTDIR)$(tooldir)/bin/gnatchop$(shext); \
+	       $(INSTALL_PROGRAM) gnatchop$(shext) $(DESTDIR)$(tooldir)/bin/gnatchop$(exeext); \
+            fi; \
+	  else \
+	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(shext); \
+	    $(INSTALL_PROGRAM) $(srcdir)/ada/gnatchop$(shext) $(DESTDIR)$(bindir)/gnatchop$(shext); \
+	  fi ; \
+	fi
+	-if [ -f gnat1$(exeext) ] ; \
+	then \
 	  if [ -f gnatchop-cross$(exeext) ] ; \
 	  then \
 	    $(RM) $(DESTDIR)$(bindir)/$(target_alias)-gnatchop$(exeext); \
@@ -498,6 +513,13 @@ ada.install-common:
 	    $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
 	    $(INSTALL_PROGRAM) gnatdll$(exeext) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
 	fi
+	-if [ -f gnat1$(exeext) ] ; \
+	then \
+	  if [ -f gnatchop$(exeext) ] ; \
+	  then \
+	    $(RM) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
+	    $(INSTALL_PROGRAM) gnatchop$(exeext) $(DESTDIR)$(bindir)/gnatchop$(exeext); \
+	  fi ; \
 #
 # Finally, install the library
 #

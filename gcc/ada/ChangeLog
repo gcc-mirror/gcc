@@ -2715,3 +2715,14 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-02  Geert Bosch  <bosch@gnat.com>
 
 	* misc.c (insert_default_attributes): Add dummy version.
+2003-01-27  Christian Cornelssen <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (ada.install-common): Let $(DESTDIR)$(bindir)
+	be created if necessary.  Remove erroneous and redundant
+	gnatchop installation commands.  Test for gnatdll before
+	attempting to install it.  Use initial tab instead of spaces
+	in continuation lines.
+	(ada.uninstall): Uninstall gnat instead of gnatcmd.
+	Also uninstall gnatfind, gnatxref, gnatlbr, and gnatdll
+	from all plausible locations.
+
