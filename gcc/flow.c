@@ -5991,7 +5991,7 @@ verify_flow_info ()
 
       if (GET_RTX_CLASS (GET_CODE (x)) == 'i'
 	  && GET_CODE (x) == JUMP_INSN
-	  && returnjump_p (x)
+	  && returnjump_p (x) && ! condjump_p (x)
 	  && ! (NEXT_INSN (x) && GET_CODE (NEXT_INSN (x)) == BARRIER))
 	    fatal_insn ("Return not followed by barrier", x);
 
