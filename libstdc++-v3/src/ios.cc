@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -302,7 +302,7 @@ namespace std
     return __old;
   }
 
-  ios_base::ios_base() : _M_callbacks(0), _M_word(0)
+  ios_base::ios_base() : _M_callbacks(0), _M_word(0), _M_locale_cache(0)
   {
     // Do nothing: basic_ios::init() does it.  
     // NB: _M_callbacks and _M_word must be zero for non-initialized

@@ -1,3 +1,32 @@
+2003-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_ios.tcc (copyfmt): Copy locale data as well.
+	* testsuite/27_io/ios_members.cc (test03): New.
+
+2003-02-17  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/basic_ios.h (basic_ios::_M_cache_locale): Declare.
+	(basic_ios::_M_cache_facets): Move into above.
+	* include/bits/basic_ios.tcc (basic_ios::copyfmt): Rebuild locale
+	cache.
+	(basic_ios::imbue): Force locale cache to be built.
+	(basic_ios::_M_init): Create and initialize locale cache.
+	* include/bits/ios_base.h (__locale_cache_base): Declare.
+	(ios_base::_M_locale_cache): New.
+	(ios_base::_M_cache): Define.
+	* include/bits/locale_facets.h:	(__num_base): Fix comment.  Add
+	_S_end.
+        (__locale_cache_base,__locale_cache<_CharT>):  New classes.
+	(__locale_cache<char>, __locale_cache<wchar_t>): New specializations.
+	* include/bits/locale_facets.tcc (num_put::_M_convert_int): Use locale
+	cache literal string, grouping flag, thousands separator.
+	(__locale_cache<_CharT>::__locale_cache): New.
+	(__locale_cache<_CharT>::_M_init): New.
+	(__locale_cache<_CharT>::_M_populate): New.
+	* src/ios.cc: Clear _M_locale_cache in constructor.
+	* src/locale-inst.cc (__locale_cache<char>, __locale_cache<_char_t>):
+	New.
+
 2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
 
 	* src/locale-inst.cc: Do not include <cassert>.

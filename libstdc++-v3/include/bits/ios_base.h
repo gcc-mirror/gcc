@@ -146,6 +146,8 @@ namespace std
 
   enum _Ios_Seekdir { _M_ios_seekdir_end = 1L << 16 };
 
+  class __locale_cache_base;
+
   // 27.4.2  Class ios_base
   /**
    *  @brief  The very top of the I/O class hierarchy.
@@ -430,6 +432,10 @@ namespace std
     // Members for locale and locale caching.
     locale 		_M_ios_locale;
 
+    // Cache of locale and facet data.
+    // Cast this to __locale_cache<_CharT>*
+    auto_ptr<__locale_cache_base>	_M_locale_cache;
+
     void 
     _M_init();
 
@@ -635,6 +641,11 @@ namespace std
 			? _M_word[__ix] : _M_grow_words(__ix);
       return __word._M_pword;
     }
+
+    // Access to the cache.  Not safe to call until basic_ios::_M_init() has
+    // happened.
+    __locale_cache_base&
+    _M_cache() { return *_M_locale_cache; }
 
     // Destructor
     /**

@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,15 +40,15 @@ void test01()
   std::ios_base::fmtflags flag02, flag03;
   const std::ios_base::fmtflags flag01 = std::ios_base::skipws 
     					 | std::ios_base::dec;
-
-  const std::locale glocale = std::locale();
+ 
+  const std::locale c_loc = std::locale::classic();
 
   std::ios ios_01(NULL);
   std::ios::char_type ct01;
   std::ios::char_type ct02('x');;
 
   // 27.4.2.3 locales
-  ios_01.imbue(glocale);
+  ios_01.imbue(c_loc);
 
   // char narrow(char_type c, char dfault) const;
   char c1 = ios_01.narrow(ct02, 0);
@@ -57,10 +57,6 @@ void test01()
   // char_type widen(char c) const;
   ct01 = ios_01.widen('c');
   VERIFY( ct01 == 'c' );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 // 27.4.4.3 basic_ios iostate flags function
@@ -75,8 +71,6 @@ void test02()
   iostate iostate02, iostate03;
   const iostate iostate01 = std::ios_base::badbit | std::ios_base::eofbit;
   const iostate iostate04 = std::ios_base::badbit;
-
-  const std::locale glocale = std::locale();
 
   std::ios ios_01(NULL);
   std::ios::char_type ct01;
@@ -135,14 +129,45 @@ void test02()
   catch(...) {
     VERIFY( false );
   }
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
-int main() {
+// copyfmt and locales.
+void test03()
+{
+  bool test = true;
+
+  using namespace std;
+
+  typedef std::ios_base::fmtflags fmtflags;
+  typedef std::ios_base::iostate iostate;
+  locale loc_c = locale::classic();
+  locale loc_de("de_DE");
+  std::ios ios_01(NULL);
+  std::ios ios_02(NULL);
+  ios_01.imbue(loc_c);
+  ios_02.imbue(loc_de);
+  ios_02.setstate(ios_base::badbit);
+  VERIFY( loc_c == ios_01.getloc() );
+  VERIFY( loc_de == ios_02.getloc() );
+
+  iostate ios1 = ios_01.rdstate();
+  iostate ios2 = ios_02.rdstate();
+  streambuf* sb1 = ios_01.rdbuf();
+  streambuf* sb2 = ios_02.rdbuf();
+  ios_01.copyfmt(ios_02);
+
+  VERIFY( loc_de == ios_01.getloc() );
+  VERIFY( ios_01.getloc() == ios_02.getloc() );
+  VERIFY( ios1 == ios_01.rdstate() );
+  VERIFY( ios2 == ios_02.rdstate() );
+  VERIFY( sb1 == ios_01.rdbuf() );
+  VERIFY( sb2 == ios_02.rdbuf() );
+}
+
+int main() 
+{
   test01();
   test02();
+  test03();
   return 0;
 }
