@@ -472,19 +472,23 @@ lookup_field_1 (tree type, tree name, bool want_type)
 
 	      /* We might have a nested class and a field with the
 		 same name; we sorted them appropriately via
-		 field_decl_cmp, so just look for the last field with
-		 this name.  */
-	      while (true)
+		 field_decl_cmp, so just look for the first or last
+		 field with this name.  */
+	      if (want_type)
 		{
-		  if (!want_type 
-		      || TREE_CODE (fields[i]) == TYPE_DECL
-		      || DECL_CLASS_TEMPLATE_P (fields[i]))
-		    field = fields[i];
-		  if (i + 1 == hi || DECL_NAME (fields[i+1]) != name)
-		    break;
-		  i++;
+		  do
+		    field = fields[i--];
+		  while (i >= lo && DECL_NAME (fields[i]) == name);
+		  if (TREE_CODE (field) != TYPE_DECL
+		      && !DECL_CLASS_TEMPLATE_P (field))
+		    field = NULL_TREE;
 		}
-
+	      else
+		{
+		  do
+		    field = fields[i++];
+		  while (i < hi && DECL_NAME (fields[i]) == name);
+		}
 	      return field;
 	    }
 	}
