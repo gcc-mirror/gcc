@@ -494,6 +494,7 @@ build_call (function, result_type, parms)
 {
   int is_constructor = 0;
   tree tmp;
+  tree decl;
 
   function = build_addr_func (function);
 
@@ -504,23 +505,28 @@ build_call (function, result_type, parms)
     }
 
   if (TREE_CODE (function) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL
-      && DECL_CONSTRUCTOR_P (TREE_OPERAND (function, 0)))
+      && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)
+    decl = TREE_OPERAND (function, 0);
+  else
+    decl = NULL_TREE;
+
+  if (decl && DECL_CONSTRUCTOR_P (decl))
     is_constructor = 1;
 
-  /* Don't actually pass empty class objects to a function.  This is useful
+  /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
      We don't need to handle other cases of copying empty classes.  */
-  for (tmp = parms; tmp; tmp = TREE_CHAIN (tmp))
-    if (is_empty_class (TREE_TYPE (TREE_VALUE (tmp)))
-	&& ! TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (tmp))))
-      {
-	tree t = make_node (RTL_EXPR);
-	TREE_TYPE (t) = TREE_TYPE (TREE_VALUE (tmp));
-	RTL_EXPR_RTL (t) = const0_rtx;
-	RTL_EXPR_SEQUENCE (t) = NULL_RTX;
-	TREE_VALUE (tmp) = t;
-      }
+  if (! decl || ! DECL_BUILT_IN (decl))
+    for (tmp = parms; tmp; tmp = TREE_CHAIN (tmp))
+      if (is_empty_class (TREE_TYPE (TREE_VALUE (tmp)))
+	  && ! TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (tmp))))
+	{
+	  tree t = make_node (RTL_EXPR);
+	  TREE_TYPE (t) = TREE_TYPE (TREE_VALUE (tmp));
+	  RTL_EXPR_RTL (t) = const0_rtx;
+	  RTL_EXPR_SEQUENCE (t) = NULL_RTX;
+	  TREE_VALUE (tmp) = t;
+	}
 
   function = build_nt (CALL_EXPR, function, parms, NULL_TREE);
   TREE_HAS_CONSTRUCTOR (function) = is_constructor;
