@@ -1,3 +1,8 @@
+Sat Jun  5 23:50:36 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Describe a few more missing features people
+	have emailed me about.
+
 Sat Jun  5 17:03:23 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:

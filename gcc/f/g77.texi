@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-06-04
+@set last-update 1999-06-06
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -11413,6 +11413,7 @@ GNU Fortran dialects:
 * Suppressing Space Padding::
 * Fortran Preprocessor::
 * Bit Operations on Floating-point Data::
+* Really Ugly Character Assignments::
 
 New facilities:
 * POSIX Standard::
@@ -11421,6 +11422,7 @@ New facilities:
 * Large Automatic Arrays::
 * Support for Threads::
 * Increasing Precision/Range::
+* Enabling Debug Lines::
 
 Better diagnostics:
 * Better Warnings::
@@ -11440,6 +11442,8 @@ Better diagnostics:
 Run-time facilities:
 * Uninitialized Variables at Run Time::
 * Portable Unformatted Files::
+* Better List-directed I/O::
+* Default to Console I/O::
 
 Debugging:
 * Labels Visible to Debugger::
@@ -12090,6 +12094,24 @@ PRINT *, IAND(A, B)
 END
 @end smallexample
 
+@node Really Ugly Character Assignments
+@subsection Really Ugly Character Assignments
+
+An option such as @samp{-fugly-char} should be provided
+to allow
+
+@smallexample
+REAL*8 A1
+DATA A1 / '12345678' /
+@end smallexample
+
+and:
+
+@smallexample
+REAL*8 A1
+A1 = 'ABCDEFGH'
+@end smallexample
+
 @node POSIX Standard
 @subsection @code{POSIX} Standard
 
@@ -12169,6 +12191,17 @@ are thread-safe, nor does @code{g77} have support for parallel processing
 (other than the instruction-level parallelism available on some
 processors).
 A package such as PVM might help here.
+
+@node Enabling Debug Lines
+@subsection Enabling Debug Lines
+@cindex debug line
+@cindex comment line, debug
+
+An option such as @samp{-fdebug-lines} should be provided
+to turn fixed-form lines beginning with @samp{D}
+to be treated as if they began with a space,
+instead of as if they began with a @samp{C}
+(as comment lines).
 
 @node Better Warnings
 @subsection Better Warnings
@@ -12464,6 +12497,49 @@ say, CDF or XDR, HDF-like systems write in the native number formats and
 only incur overhead when they are read on a system with a different
 format.)  A future @code{g77} runtime library should use such
 techniques.
+
+@node Better List-directed I/O
+@subsection Better List-directed I/O
+
+Values output using list-directed I/O
+(@samp{PRINT *, R, D})
+should be written with a field width, precision, and so on
+appropriate for the type (precision) of each value.
+
+(Currently, no distinction is made between single-precision
+and double-precision values
+by @code{libf2c}.)
+
+It is likely this item will require the @code{libg77} project
+to be undertaken.
+
+In the meantime, use of formatted I/O is recommended.
+While it might be of little consolation,
+@code{g77} does support @samp{FORMAT(F<WIDTH>.4)}, for example,
+as long as @samp{WIDTH} is defined as a named constant
+(via @code{PARAMETER}).
+That at least allows some compile-time specification
+of the precision of a data type,
+perhaps controlled by preprocessing directives.
+
+@node Default to Console I/O
+@subsection Default to Console I/O
+
+The default I/O units,
+specified by @samp{READ @var{fmt}},
+@samp{READ (UNIT=*)},
+@samp{WRITE (UNIT=*)}, and
+@samp{PRINT @var{fmt}},
+should not be units 5 (input) and 6 (output),
+but, rather, unit numbers not normally available
+for use in statements such as @code{OPEN} and @code{CLOSE}.
+
+Changing this would allow a program to connect units 5 and 6
+to files via @code{OPEN},
+but still use @samp{READ (UNIT=*)} and @samp{PRINT}
+to do I/O to the ``console''.
+
+This change probably requires the @code{libg77} project.
 
 @node Labels Visible to Debugger
 @subsection Labels Visible to Debugger
