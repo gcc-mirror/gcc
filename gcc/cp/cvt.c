@@ -507,10 +507,10 @@ convert_to_reference (tree reftype, tree expr, int convtype,
       /* B* bp; A& ar = (A&)bp; is valid, but it's probably not what they
          meant.  */
       if (TREE_CODE (intype) == POINTER_TYPE
-	  && (comptypes (TREE_TYPE (intype), type, 
-			 COMPARE_BASE | COMPARE_RELAXED )))
+	  && (comptypes (TREE_TYPE (intype), type,
+			 COMPARE_BASE | COMPARE_DERIVED)))
 	warning ("casting `%T' to `%T' does not dereference pointer",
-		    intype, reftype);
+		 intype, reftype);
 	  
       rval = build_unary_op (ADDR_EXPR, expr, 0);
       if (rval != error_mark_node)

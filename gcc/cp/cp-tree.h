@@ -3367,15 +3367,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define COMPARE_STRICT        0 /* Just check if the types are the
 				   same.  */
 #define COMPARE_BASE          1 /* Check to see if the second type is
-				   derived from the first, or if both
-				   are pointers (or references) and
-				   the types pointed to by the second
-				   type is derived from the pointed to
-				   by the first.  */
-#define COMPARE_RELAXED       2 /* Like COMPARE_DERIVED, but in
-				   reverse.  Also treat enumeration
-				   types as the same as integer types
-				   of the same width.  */
+				   derived from the first.  */
+#define COMPARE_DERIVED       2 /* Like COMPARE_BASE, but in
+				   reverse.  */
 #define COMPARE_REDECLARATION 4 /* The comparsion is being done when
 				   another declaration of an existing
 				   entity is seen.  */
@@ -3982,7 +3976,6 @@ extern bool dependent_template_p                (tree);
 extern bool type_dependent_expression_p         (tree);
 extern bool value_dependent_expression_p        (tree);
 extern tree resolve_typename_type               (tree, bool);
-extern tree resolve_typename_type_in_current_instantiation (tree);
 extern tree template_for_substitution           (tree);
 
 /* in repo.c */
@@ -4204,7 +4197,7 @@ extern tree error_type				(tree);
 extern tree build_zc_wrapper			(struct z_candidate *);
 extern int varargs_function_p			(tree);
 extern int really_overloaded_fn			(tree);
-extern int cp_tree_equal			(tree, tree);
+extern bool cp_tree_equal			(tree, tree);
 extern tree no_linkage_check			(tree);
 extern void debug_binfo				(tree);
 extern tree build_dummy_object			(tree);
@@ -4247,7 +4240,7 @@ extern int type_unknown_p			(tree);
 extern tree commonparms				(tree, tree);
 extern tree original_type			(tree);
 extern int comp_except_specs			(tree, tree, int);
-extern int comptypes				(tree, tree, int);
+extern bool comptypes				(tree, tree, int);
 extern int comp_target_types			(tree, tree, int);
 extern int compparms				(tree, tree);
 extern int comp_cv_qualification                (tree, tree);

@@ -3811,7 +3811,7 @@ template_args_equal (ot, nt)
   else if (TREE_CODE (ot) == TREE_VEC || TYPE_P (ot))
     return 0;
   else
-    return (cp_tree_equal (ot, nt) > 0);
+    return cp_tree_equal (ot, nt);
 }
 
 /* Returns 1 iff the OLDARGS and NEWARGS are in fact identical sets
@@ -9638,22 +9638,14 @@ unify (tparms, targs, parm, arg, strict)
 	  != template_decl_level (tparm))
 	/* The PARM is not one we're trying to unify.  Just check
 	   to see if it matches ARG.  */
-	return (TREE_CODE (arg) == TREE_CODE (parm)
-		&& cp_tree_equal (parm, arg) > 0) ? 0 : 1;
+	return !(TREE_CODE (arg) == TREE_CODE (parm)
+		 && cp_tree_equal (parm, arg));
 
       idx = TEMPLATE_PARM_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
 
       if (targ)
-	{
-	  int i = (cp_tree_equal (targ, arg) > 0);
-	  if (i == 1)
-	    return 0;
-	  else if (i == 0)
-	    return 1;
-	  else
-	    abort ();
-	}
+	return !cp_tree_equal (targ, arg);
 
       /* [temp.deduct.type] If, in the declaration of a function template
 	 with a non-type template-parameter, the non-type
@@ -11796,15 +11788,6 @@ resolve_typename_type (tree type, bool only_current_p)
   pop_scope (scope);
 
   return type;
-}
-
-tree
-resolve_typename_type_in_current_instantiation (tree type)
-{
-  tree t;
-
-  t = resolve_typename_type (type, /*only_current_p=*/true);
-  return (t != error_mark_node) ? t : type;
 }
 
 #include "gt-cp-pt.h"

@@ -54,8 +54,7 @@ static int comp_ptr_ttypes_real PARAMS ((tree, tree, int));
 static int comp_ptr_ttypes_const PARAMS ((tree, tree));
 static int comp_ptr_ttypes_reinterpret PARAMS ((tree, tree));
 static int comp_except_types PARAMS ((tree, tree, int));
-static int comp_array_types PARAMS ((int (*) (tree, tree, int), tree,
-				   tree, int));
+static bool comp_array_types PARAMS ((tree, tree, int));
 static tree common_base_type PARAMS ((tree, tree));
 static tree lookup_anon_field PARAMS ((tree, tree));
 static tree pointer_diff PARAMS ((tree, tree, tree));
@@ -837,12 +836,10 @@ comp_except_specs (t1, t2, exact)
   return !exact || base == NULL_TREE || length == list_length (t1);
 }
 
-/* Compare the array types T1 and T2, using CMP as the type comparison
-   function for the element types.  STRICT is as for comptypes.  */
+/* Compare the array types T1 and T2.  STRICT is as for comptypes.  */
 
-static int
-comp_array_types (cmp, t1, t2, strict)
-     register int (*cmp) PARAMS ((tree, tree, int));
+static bool
+comp_array_types (t1, t2, strict)
      tree t1, t2;
      int strict;
 {
@@ -853,16 +850,15 @@ comp_array_types (cmp, t1, t2, strict)
     return 1;
 
   /* The type of the array elements must be the same.  */
-  if (!(TREE_TYPE (t1) == TREE_TYPE (t2)
-	|| (*cmp) (TREE_TYPE (t1), TREE_TYPE (t2), 
-		   strict & ~COMPARE_REDECLARATION)))
-    return 0;
+  if (!comptypes (TREE_TYPE (t1), TREE_TYPE (t2), 
+		 strict & ~COMPARE_REDECLARATION))
+    return false;
 
   d1 = TYPE_DOMAIN (t1);
   d2 = TYPE_DOMAIN (t2);
 
   if (d1 == d2)
-    return 1;
+    return true;
 
   /* If one of the arrays is dimensionless, and the other has a
      dimension, they are of different types.  However, it is valid to
@@ -880,103 +876,85 @@ comp_array_types (cmp, t1, t2, strict)
     return strict & COMPARE_REDECLARATION;
 
   /* Check that the dimensions are the same.  */
-  return (cp_tree_equal (TYPE_MIN_VALUE (d1),
-			 TYPE_MIN_VALUE (d2))
-	  && cp_tree_equal (TYPE_MAX_VALUE (d1),
-			    TYPE_MAX_VALUE (d2)));
+  return (cp_tree_equal (TYPE_MIN_VALUE (d1), TYPE_MIN_VALUE (d2))
+	  && cp_tree_equal (TYPE_MAX_VALUE (d1), TYPE_MAX_VALUE (d2)));
 }
 
-/* Return 1 if T1 and T2 are compatible types for assignment or
-   various other operations.  STRICT is a bitwise-or of the COMPARE_*
-   flags.  */
+/* Return true if T1 and T2 are related as allowed by STRICT.  STRICT
+   is a bitwise-or of the COMPARE_* flags.  */
 
-int
+bool
 comptypes (t1, t2, strict)
      tree t1;
      tree t2;
      int strict;
 {
-  int attrval, val;
   int orig_strict = strict;
 
-  /* The special exemption for redeclaring array types without an
-     array bound only applies at the top level:
-
-       extern int (*i)[];
-       int (*i)[8];
-
-     is invalid, for example.  */
-  strict &= ~COMPARE_REDECLARATION;
-
-  /* Suppress errors caused by previously reported errors */
   if (t1 == t2)
-    return 1;
+    return true;
+
+  strict &= ~(COMPARE_REDECLARATION | COMPARE_BASE | COMPARE_DERIVED);
 
   /* This should never happen.  */
   my_friendly_assert (t1 != error_mark_node, 307);
 
+  /* Suppress errors caused by previously reported errors */
   if (t2 == error_mark_node)
-    return 0;
+    return false;
 
-  /* If either type is the internal version of sizetype, return the
+  /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
+     current instantiation.  */
+  if (TREE_CODE (t1) == TYPENAME_TYPE)
+    {
+      tree resolved = resolve_typename_type (t1, /*only_current_p=*/true);
+
+      if (resolved != error_mark_node)
+	t1 = resolved;
+    }
+  
+  if (TREE_CODE (t2) == TYPENAME_TYPE)
+    {
+      tree resolved = resolve_typename_type (t2, /*only_current_p=*/true);
+
+      if (resolved != error_mark_node)
+	t2 = resolved;
+    }
+
+  /* If either type is the internal version of sizetype, use the
      language version.  */
   if (TREE_CODE (t1) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t1)
-      && TYPE_DOMAIN (t1) != 0)
+      && TYPE_DOMAIN (t1))
     t1 = TYPE_DOMAIN (t1);
 
   if (TREE_CODE (t2) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t2)
-      && TYPE_DOMAIN (t2) != 0)
+      && TYPE_DOMAIN (t2))
     t2 = TYPE_DOMAIN (t2);
-
-  if (strict & COMPARE_RELAXED)
-    {
-      /* Treat an enum type as the unsigned integer type of the same width.  */
-
-      if (TREE_CODE (t1) == ENUMERAL_TYPE)
-	t1 = c_common_type_for_size (TYPE_PRECISION (t1), 1);
-      if (TREE_CODE (t2) == ENUMERAL_TYPE)
-	t2 = c_common_type_for_size (TYPE_PRECISION (t2), 1);
-
-      if (t1 == t2)
-	return 1;
-    }
 
   if (TYPE_PTRMEMFUNC_P (t1))
     t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
   if (TYPE_PTRMEMFUNC_P (t2))
     t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
 
-  /* TYPENAME_TYPEs should be resolved if the qualifying scope is the
-     current instantiation.  */
-  if (TREE_CODE (t1) == TYPENAME_TYPE)
-    t1 = resolve_typename_type_in_current_instantiation (t1);
-  if (TREE_CODE (t2) == TYPENAME_TYPE)
-    t2 = resolve_typename_type_in_current_instantiation (t2);
-
   /* Different classes of types can't be compatible.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
-    return 0;
+    return false;
 
   /* Qualifiers must match.  */
   if (cp_type_quals (t1) != cp_type_quals (t2))
-    return 0;
-  if (strict == COMPARE_STRICT 
-      && TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
-    return 0;
+    return false;
+  if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
+    return false;
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
      qualifiers (just above).  */
 
   if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-    return 1;
+    return true;
 
-  /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  if (! (attrval = (*targetm.comp_type_attributes) (t1, t2)))
-    return 0;
-
-  /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  val = 0;
+  if (!(*targetm.comp_type_attributes) (t1, t2))
+    return false;
 
   switch (TREE_CODE (t1))
     {
@@ -984,79 +962,67 @@ comptypes (t1, t2, strict)
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
 	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
-	return 0;
-      if (! comp_template_parms
-	      (DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t1)),
-	       DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t2))))
-	return 0;
+	return false;
+      if (!comp_template_parms
+	  (DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t1)),
+	   DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t2))))
+	return false;
       if (TREE_CODE (t1) == TEMPLATE_TEMPLATE_PARM)
-	return 1;
+	return true;
       /* Don't check inheritance.  */
-      strict = COMPARE_STRICT;
+      orig_strict = COMPARE_STRICT;
       /* fall through */
 
     case RECORD_TYPE:
     case UNION_TYPE:
       if (TYPE_TEMPLATE_INFO (t1) && TYPE_TEMPLATE_INFO (t2)
 	  && (TYPE_TI_TEMPLATE (t1) == TYPE_TI_TEMPLATE (t2)
-	      || TREE_CODE (t1) == BOUND_TEMPLATE_TEMPLATE_PARM))
-	val = comp_template_args (TYPE_TI_ARGS (t1),
-				  TYPE_TI_ARGS (t2));
-    look_hard:
-      if ((strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
-	val = 1;
-      else if ((strict & COMPARE_RELAXED) && DERIVED_FROM_P (t2, t1))
-	val = 1;
-      break;
+	      || TREE_CODE (t1) == BOUND_TEMPLATE_TEMPLATE_PARM)
+	  && comp_template_args (TYPE_TI_ARGS (t1), TYPE_TI_ARGS (t2)))
+	return true;
+      
+      if ((orig_strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
+	return true;
+      else if ((orig_strict & COMPARE_DERIVED) && DERIVED_FROM_P (t2, t1))
+	return true;
+      
+      return false;
 
     case OFFSET_TYPE:
-      val = (comptypes (build_pointer_type (TYPE_OFFSET_BASETYPE (t1)),
-			build_pointer_type (TYPE_OFFSET_BASETYPE (t2)), strict)
-	     && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict));
-      break;
+      if (!comptypes (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2),
+		      orig_strict))
+	return false;
+      return comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict);
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      t1 = TREE_TYPE (t1);
-      t2 = TREE_TYPE (t2);
-      /* first, check whether the referred types match with the
-         required level of strictness */
-      val = comptypes (t1, t2, strict);
-      if (val)
-	break;
-      if (TREE_CODE (t1) == RECORD_TYPE 
-	  && TREE_CODE (t2) == RECORD_TYPE)
-	goto look_hard;
-      break;
+      return comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict);
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
-      val = ((TREE_TYPE (t1) == TREE_TYPE (t2)
-	      || comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict))
-	     && compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)));
-      break;
+      if (!comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict))
+	return false;
+      return compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
 
     case ARRAY_TYPE:
       /* Target types must match incl. qualifiers.  We use ORIG_STRICT
 	 here since this is the one place where
 	 COMPARE_REDECLARATION should be used.  */
-      val = comp_array_types (comptypes, t1, t2, orig_strict);
-      break;
+      return comp_array_types (t1, t2, orig_strict & COMPARE_REDECLARATION);
 
     case TEMPLATE_TYPE_PARM:
-      return TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2)
-	&& TEMPLATE_TYPE_LEVEL (t1) == TEMPLATE_TYPE_LEVEL (t2);
+      return (TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2)
+	      && TEMPLATE_TYPE_LEVEL (t1) == TEMPLATE_TYPE_LEVEL (t2));
 
     case TYPENAME_TYPE:
-      if (cp_tree_equal (TYPENAME_TYPE_FULLNAME (t1),
-                         TYPENAME_TYPE_FULLNAME (t2)) < 1)
-        return 0;
+      if (!cp_tree_equal (TYPENAME_TYPE_FULLNAME (t1),
+			  TYPENAME_TYPE_FULLNAME (t2)))
+        return false;
       return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
 
     case UNBOUND_CLASS_TEMPLATE:
-      if (cp_tree_equal (TYPE_IDENTIFIER (t1),
-                         TYPE_IDENTIFIER (t2)) < 1)
-        return 0;
+      if (!cp_tree_equal (TYPE_IDENTIFIER (t1), TYPE_IDENTIFIER (t2)))
+        return false;
       return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
 
     case COMPLEX_TYPE:
@@ -1065,7 +1031,7 @@ comptypes (t1, t2, strict)
     default:
       break;
     }
-  return attrval == 2 && val == 1 ? 2 : val;
+  return false;
 }
 
 /* Subroutine of comp_target-types.  Make sure that the cv-quals change
@@ -1166,9 +1132,8 @@ comp_target_types (ttl, ttr, nptrs)
       return comp_cv_target_types (ttl, ttr, nptrs - 1);
     }
 
-  if (TREE_CODE (ttr) == ARRAY_TYPE)
-    return comp_array_types (comp_target_types, ttl, ttr, COMPARE_STRICT);
-  else if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
+  my_friendly_assert (TREE_CODE (ttr) != ARRAY_TYPE, 20030617);
+  if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
     {
       tree argsl, argsr;
       int saw_contra = 0;
@@ -1263,11 +1228,9 @@ comp_target_types (ttl, ttr, nptrs)
     {
       if (nptrs < 0)
 	return 0;
-      if (same_or_base_type_p (build_pointer_type (ttl), 
-			       build_pointer_type (ttr)))
+      if (same_or_base_type_p (ttl, ttr))
 	return 1;
-      if (same_or_base_type_p (build_pointer_type (ttr), 
-			       build_pointer_type (ttl)))
+      if (same_or_base_type_p (ttr, ttl))
 	return -1;
       return 0;
     }
@@ -1454,9 +1417,8 @@ comp_target_parms (parms1, parms2)
     {
       tree p1, p2;
 
-      /* If one parmlist is shorter than the other,
-	 they fail to match, unless STRICT is <= 0.  */
-      if (t1 == 0 || t2 == 0)
+      /* If one parmlist is shorter than the other, they fail to match.  */
+      if (!t1 || !t2)
 	return 0;
       p1 = TREE_VALUE (t1);
       p2 = TREE_VALUE (t2);
@@ -6313,8 +6275,6 @@ maybe_warn_about_returning_address_of_local (retval)
       if (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
 	  || TREE_CODE (whats_returned) == TARGET_EXPR)
 	{
-	  /* Get the target.  */
-	  whats_returned = TREE_OPERAND (whats_returned, 0);
 	  warning ("returning reference to temporary");
 	  return;
 	}
@@ -6402,7 +6362,8 @@ check_return_expr (retval)
      that's supposed to return a value.  */
   if (!retval && fn_returns_value_p)
     {
-      pedwarn ("return-statement with no value, in function declared with a non-void return type");
+      pedwarn ("return-statement with no value, in function returning `%D'",
+	       valtype);
       /* Clear this, so finish_function won't say that we reach the
 	 end of a non-void function (which we don't, we gave a
 	 return!).  */
@@ -6418,7 +6379,8 @@ check_return_expr (retval)
 	   its side-effects.  */
 	  finish_expr_stmt (retval);
       else
-	pedwarn ("return-statement with a value, in function declared with a void return type");
+	pedwarn ("return-statement with a value, in function returning `%D'",
+		 retval);
 
       current_function_returns_null = 1;
 
@@ -6610,7 +6572,7 @@ ptr_reasonably_similar (to, from)
       if (TREE_CODE (from) == OFFSET_TYPE
 	  && comptypes (TYPE_OFFSET_BASETYPE (to),
 			TYPE_OFFSET_BASETYPE (from), 
-			COMPARE_BASE | COMPARE_RELAXED))
+			COMPARE_BASE | COMPARE_DERIVED))
 	continue;
 
       if (TREE_CODE (to) == INTEGER_TYPE
@@ -6623,7 +6585,7 @@ ptr_reasonably_similar (to, from)
       if (TREE_CODE (to) != POINTER_TYPE)
 	return comptypes
 	  (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 
-	   COMPARE_BASE | COMPARE_RELAXED);
+	   COMPARE_BASE | COMPARE_DERIVED);
     }
 }
 
