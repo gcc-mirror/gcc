@@ -1546,10 +1546,10 @@ This is used for branch prediction.
 
 Used to represent a C++ @code{catch} block.  The @code{HANDLER_TYPE}
 is the type of exception that will be caught by this handler; it is
-equal (by pointer equality) to @code{CATCH_ALL_TYPE} if this handler
-is for all types.  @code{HANDLER_PARMS} is the @code{DECL_STMT} for
-the catch parameter, and @code{HANDLER_BODY} is the
-@code{COMPOUND_STMT} for the block itself.
+equal (by pointer equality) to @code{NULL} if this handler is for all
+types.  @code{HANDLER_PARMS} is the @code{DECL_STMT} for the catch
+parameter, and @code{HANDLER_BODY} is the @code{COMPOUND_STMT} for the
+block itself. 
 
 @item IF_STMT
 
