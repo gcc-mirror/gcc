@@ -2529,8 +2529,14 @@ function_arg (cum, mode, type, named)
 			: FP_ARG_FIRST;
       break;
 
-    case VOIDmode:
     case BLKmode:
+      if (type != (tree)0 && TYPE_ALIGN (type) > BITS_PER_WORD)
+	cum->arg_words += (cum->arg_words & 1);
+
+      regbase = GP_ARG_FIRST;
+      break;
+
+    case VOIDmode:
     case QImode:
     case HImode:
     case SImode:
