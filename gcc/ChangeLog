@@ -1,3 +1,8 @@
+2000-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (build_function_call_expr): New function.  Use it
+	everywhere in lieu of manually constructing a CALL_EXPR.
+
 2000-12-27  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* calls.c (store_one_arg):  If parm is passed both in stack and in

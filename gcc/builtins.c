@@ -146,6 +146,7 @@ static rtx expand_builtin_fputs		PARAMS ((tree, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 static tree fold_builtin_constant_p	PARAMS ((tree));
+static tree build_function_call_expr	PARAMS ((tree, tree));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -1598,7 +1599,7 @@ expand_builtin_strstr (arglist, target, mode)
   else
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
-      tree call_expr, fn;
+      tree fn;
       const char *p1, *p2;
 
       p2 = c_getstr (s2);
@@ -1634,12 +1635,8 @@ expand_builtin_strstr (arglist, target, mode)
       arglist =
 	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
-      call_expr = build1 (ADDR_EXPR,
-			  build_pointer_type (TREE_TYPE (fn)), fn);
-      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			 call_expr, arglist, NULL_TREE);
-      TREE_SIDE_EFFECTS (call_expr) = 1;
-      return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+      return expand_expr (build_function_call_expr (fn, arglist),
+			  target, mode, EXPAND_NORMAL);
     }
 }
 
@@ -1712,7 +1709,7 @@ expand_builtin_strrchr (arglist, target, mode)
   else
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
-      tree call_expr, fn;
+      tree fn;
       const char *p1;
 
       if (TREE_CODE (s2) != INTEGER_CST)
@@ -1746,12 +1743,8 @@ expand_builtin_strrchr (arglist, target, mode)
 	return 0;
 
       /* Transform strrchr(s1, '\0') to strchr(s1, '\0').  */
-      call_expr = build1 (ADDR_EXPR,
-			  build_pointer_type (TREE_TYPE (fn)), fn);
-      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			 call_expr, arglist, NULL_TREE);
-      TREE_SIDE_EFFECTS (call_expr) = 1;
-      return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+      return expand_expr (build_function_call_expr (fn, arglist),
+			  target, mode, EXPAND_NORMAL);
     }
 }
 
@@ -1774,7 +1767,7 @@ expand_builtin_strpbrk (arglist, target, mode)
   else
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
-      tree call_expr, fn;
+      tree fn;
       const char *p1, *p2;
 
       p2 = c_getstr (s2);
@@ -1816,12 +1809,8 @@ expand_builtin_strpbrk (arglist, target, mode)
       arglist =
 	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
-      call_expr = build1 (ADDR_EXPR,
-			  build_pointer_type (TREE_TYPE (fn)), fn);
-      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			 call_expr, arglist, NULL_TREE);
-      TREE_SIDE_EFFECTS (call_expr) = 1;
-      return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+      return expand_expr (build_function_call_expr (fn, arglist),
+			  target, mode, EXPAND_NORMAL);
     }
 }
 
@@ -2558,7 +2547,7 @@ expand_builtin_strncat (arglist, target, mode)
       if (TREE_CODE (len) == INTEGER_CST && p
 	  && compare_tree_int (len, strlen (p)) >= 0)
         {
-	  tree call_expr, newarglist = 
+	  tree newarglist =
 	    tree_cons (NULL_TREE, dst, build_tree_list (NULL_TREE, src)),
 	    fn = built_in_decls[BUILT_IN_STRCAT];
 	  
@@ -2567,12 +2556,8 @@ expand_builtin_strncat (arglist, target, mode)
 	  if (!fn)
 	    return 0;
 
-	  call_expr = build1 (ADDR_EXPR,
-			      build_pointer_type (TREE_TYPE (fn)), fn);
-	  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			     call_expr, newarglist, NULL_TREE);
-	  TREE_SIDE_EFFECTS (call_expr) = 1;
-	  return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+	  return expand_expr (build_function_call_expr (fn, newarglist),
+			      target, mode, EXPAND_NORMAL);
 	}
       return 0;
     }
@@ -2667,7 +2652,7 @@ expand_builtin_strcspn (arglist, target, mode)
       /* If the second argument is "", return __builtin_strlen(s1).  */
       if (p2 && *p2 == '\0')
         {
-	  tree call_expr, newarglist = build_tree_list (NULL_TREE, s1),
+	  tree newarglist = build_tree_list (NULL_TREE, s1),
 	    fn = built_in_decls[BUILT_IN_STRLEN];
 	  
 	  /* If the replacement _DECL isn't initialized, don't do the
@@ -2675,12 +2660,8 @@ expand_builtin_strcspn (arglist, target, mode)
 	  if (!fn)
 	    return 0;
 
-	  call_expr = build1 (ADDR_EXPR,
-			      build_pointer_type (TREE_TYPE (fn)), fn);
-	  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			     call_expr, newarglist, NULL_TREE);
-	  TREE_SIDE_EFFECTS (call_expr) = 1;
-	  return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+	  return expand_expr (build_function_call_expr (fn, newarglist),
+			      target, mode, EXPAND_NORMAL);
 	}
       return 0;
     }
@@ -3238,7 +3219,7 @@ expand_builtin_fputs (arglist, ignore)
      tree arglist;
      int ignore;
 {
-  tree call_expr, len, fn, fn_fputc = built_in_decls[BUILT_IN_FPUTC],
+  tree len, fn, fn_fputc = built_in_decls[BUILT_IN_FPUTC],
     fn_fwrite = built_in_decls[BUILT_IN_FWRITE];
 
   /* If the return value is used, or the replacement _DECL isn't
@@ -3305,11 +3286,8 @@ expand_builtin_fputs (arglist, ignore)
       abort();
     }
   
-  call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		     call_expr, arglist, NULL_TREE);
-  TREE_SIDE_EFFECTS (call_expr) = 1;
-  return expand_expr (call_expr, (ignore ? const0_rtx : NULL_RTX),
+  return expand_expr (build_function_call_expr (fn, arglist),
+		      (ignore ? const0_rtx : NULL_RTX),
 		      VOIDmode, EXPAND_NORMAL);
 }
 
@@ -3787,4 +3765,17 @@ fold_builtin (exp)
     }
 
   return 0;
+}
+
+static tree
+build_function_call_expr (fn, arglist)
+     tree fn, arglist;
+{
+  tree call_expr;
+
+  call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+		     call_expr, arglist);
+  TREE_SIDE_EFFECTS (call_expr) = 1;
+  return fold (call_expr);
 }
