@@ -255,14 +255,15 @@ in the following sections.
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
 @smallexample
--A@var{question}(@var{answer})  -C  -dD  -dM  -dN
+-$  -A@var{question}=@var{answer}  -A-@var{question}[=@var{answer}]
+-C  -dD  -dI  -dM  -dN
 -D@var{macro}@r{[}=@var{defn}@r{]}  -E  -H
 -idirafter @var{dir}
 -include @var{file}  -imacros @var{file}
 -iprefix @var{file}  -iwithprefix @var{dir}
 -iwithprefixbefore @var{dir}  -isystem @var{dir} -isystem-c++ @var{dir}
--M  -MD  -MM  -MMD  -MG  -nostdinc  -P  -trigraphs
--undef  -U@var{macro}  -Wp,@var{option}
+-M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  -P  -remap
+-trigraphs  -undef  -U@var{macro}  -Wp,@var{option}
 @end smallexample
 
 @item Assembler Option
@@ -3222,12 +3223,8 @@ Process @var{file} as input, discarding the resulting output, before
 processing the regular input file.  Because the output generated from
 @var{file} is discarded, the only effect of @samp{-imacros @var{file}}
 is to make the macros defined in @var{file} available for use in the
-main input.
-
-Any @samp{-D} and @samp{-U} options on the command line are always
-processed before @samp{-imacros @var{file}}, regardless of the order in
-which they are written.  All the @samp{-include} and @samp{-imacros}
-options are processed in the order in which they are written.
+main input.  All the @samp{-include} and @samp{-imacros} options are
+processed in the order in which they are written.
 
 @item -idirafter @var{dir}
 @cindex second include path
@@ -3266,6 +3263,15 @@ Options}, for information on @samp{-I}.
 By using both @samp{-nostdinc} and @samp{-I-}, you can limit the include-file
 search path to only those directories you specify explicitly.
 
+@item -remap
+@findex -remap
+When searching for a header file in a directory, remap file names if a
+file named @file{header.gcc} exists in that directory.  This can be used
+to work around limitations of file systems with file name restrictions.
+The @file{header.gcc} file should contain a series of lines with two
+tokens on each line: the first token is the name to map, and the second
+token is the actual name to use.
+
 @item -undef
 Do not predefine any nonstandard macros.  (Including architecture flags).
 
@@ -3285,44 +3291,86 @@ Used with the @samp{-E} option.
 @cindex make
 @cindex dependencies, make
 @item -M
-Tell the preprocessor to output a rule suitable for @code{make}
-describing the dependencies of each object file.  For each source file,
-the preprocessor outputs one @code{make}-rule whose target is the object
-file name for that source file and whose dependencies are all the
-@code{#include} header files it uses.  This rule may be a single line or
-may be continued with @samp{\}-newline if it is long.  The list of rules
-is printed on standard output instead of the preprocessed C program.
+@findex -M
+Instead of outputting the result of preprocessing, output a rule
+suitable for @code{make} describing the dependencies of the main source
+file.  The preprocessor outputs one @code{make} rule containing the
+object file name for that source file, a colon, and the names of all the
+included files.  If there are many included files then the rule is split
+into several lines using @samp{\}-newline.
 
 @samp{-M} implies @samp{-E}.
+
+@item -MM
+@findex -MM
+Like @samp{-M}, but mention only the files included with @samp{#include
+"@var{file}"}.  System header files included with @samp{#include
+<@var{file}>} are omitted.
+
+@item -MF @var{file}
+@findex -MF
+When used with @samp{-M} or @samp{-MM}, specifies a file to write the
+dependencies to.  This allows the preprocessor to write the preprocessed
+file to stdout normally.  If no @samp{-MF} switch is given, CPP sends
+the rules to stdout and suppresses normal preprocessed output.
 
 Another way to specify output of a @code{make} rule is by setting
 the environment variable @code{DEPENDENCIES_OUTPUT} (@pxref{Environment
 Variables}).
 
-@item -MM
-Like @samp{-M} but the output mentions only the user header files
-included with @samp{#include "@var{file}"}.  System header files
-included with @samp{#include <@var{file}>} are omitted.
-
-@item -MD
-Like @samp{-M} but the dependency information is written to a file made by
-replacing ".c" with ".d" at the end of the input file names.
-This is in addition to compiling the file as specified---@samp{-MD} does
-not inhibit ordinary compilation the way @samp{-M} does.
-
-In Mach, you can use the utility @code{md} to merge multiple dependency
-files into a single dependency file suitable for using with the @samp{make}
-command.
-
-@item -MMD
-Like @samp{-MD} except mention only user header files, not system
-header files.
-
 @item -MG
-Treat missing header files as generated files and assume they live in the
-same directory as the source file.  If you specify @samp{-MG}, you
-must also specify either @samp{-M} or @samp{-MM}.  @samp{-MG} is not
-supported with @samp{-MD} or @samp{-MMD}.
+@findex -MG
+When used with @samp{-M} or @samp{-MM}, @samp{-MG} says to treat missing
+header files as generated files and assume they live in the same
+directory as the source file.  It suppresses preprocessed output, as a
+missing header file is ordinarily an error.
+
+This feature is used in automatic updating of makefiles.
+
+@item -MP
+@findex -MP
+This option instructs CPP to add a phony target for each dependency
+other than the main file, causing each to depend on nothing.  These
+dummy rules work around errors @code{make} gives if you remove header
+files without updating the @code{Makefile} to match.
+
+This is typical output:-
+
+@smallexample
+/tmp/test.o: /tmp/test.c /tmp/test.h
+
+/tmp/test.h:
+@end smallexample
+
+@item -MQ @var{target}
+@item -MT @var{target}
+@findex -MQ
+@findex -MT
+By default CPP uses the main file name, including any path, and appends
+the object suffix, normally ``.o'', to it to obtain the name of the
+target for dependency generation.  With @samp{-MT} you can specify a
+target yourself, overriding the default one.
+
+If you want multiple targets, you can specify them as a single argument
+to @samp{-MT}, or use multiple @samp{-MT} options.
+
+The targets you specify are output in the order they appear on the
+command line.  @samp{-MQ} is identical to @samp{-MT}, except that the
+target name is quoted for Make, but with @samp{-MT} it isn't.  For
+example, -MT '$(objpfx)foo.o' gives
+
+@smallexample
+$(objpfx)foo.o: /tmp/foo.c
+@end smallexample
+
+but -MQ '$(objpfx)foo.o' gives
+
+@smallexample
+$$(objpfx)foo.o: /tmp/foo.c
+@end smallexample
+
+The default target is automatically quoted, as if it were given with
+@samp{-MQ}.
 
 @item -H
 Print the name of each header file used, in addition to other normal
@@ -3341,10 +3389,18 @@ Define macro @var{macro} with the string @samp{1} as its definition.
 Define macro @var{macro} as @var{defn}.  All instances of @samp{-D} on
 the command line are processed before any @samp{-U} options.
 
+Any @samp{-D} and @samp{-U} options on the command line are processed in
+order, and always before @samp{-imacros @var{file}}, regardless of the
+order in which they are written.
+
 @item -U@var{macro}
 Undefine macro @var{macro}.  @samp{-U} options are evaluated after all
 @samp{-D} options, but before any @samp{-include} and @samp{-imacros}
 options.
+
+Any @samp{-D} and @samp{-U} options on the command line are processed in
+order, and always before @samp{-imacros @var{file}}, regardless of the
+order in which they are written.
 
 @item -dM
 Tell the preprocessor to output only a list of the macro definitions
@@ -3359,8 +3415,54 @@ their proper sequence in the rest of the output.
 Like @samp{-dD} except that the macro arguments and contents are omitted.
 Only @samp{#define @var{name}} is included in the output.
 
+@item -dI
+@findex -dI
+Output @samp{#include} directives in addition to the result of
+preprocessing.
+
 @item -trigraphs
-Support ISO C trigraphs.  The @samp{-ansi} option also has this effect.
+@findex -trigraphs
+Process ISO standard trigraph sequences.  These are three-character
+sequences, all starting with @samp{??}, that are defined by ISO C to
+stand for single characters.  For example, @samp{??/} stands for
+@samp{\}, so @samp{'??/n'} is a character constant for a newline.  By
+default, GCC ignores trigraphs, but in standard-conforming modes it
+converts them.  See the @samp{-std} and @samp{-ansi} options.
+
+The nine trigraph sequences are
+@table @samp
+@item ??(
+-> @samp{[}
+
+@item ??)
+-> @samp{]}
+
+@item ??<
+-> @samp{@{}
+
+@item ??>
+-> @samp{@}}
+
+@item ??=
+-> @samp{#}
+
+@item ??/
+-> @samp{\}
+
+@item ??'
+-> @samp{^}
+
+@item ??!
+-> @samp{|}
+
+@item ??-
+-> @samp{~}
+
+@end table
+
+Trigraph support is not popular, so many compilers do not implement it
+properly.  Portable code should not rely on trigraphs being either
+converted or ignored.
 
 @item -Wp,@var{option}
 Pass @var{option} as an option to the preprocessor.  If @var{option}

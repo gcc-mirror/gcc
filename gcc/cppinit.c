@@ -1042,9 +1042,11 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("H",                        0,      OPT_H)                          \
   DEF_OPT("I",                        no_dir, OPT_I)                          \
   DEF_OPT("M",                        0,      OPT_M)                          \
+  DEF_OPT("MD",                       no_fil, OPT_MD)                         \
   DEF_OPT("MF",                       no_fil, OPT_MF)                         \
   DEF_OPT("MG",                       0,      OPT_MG)                         \
   DEF_OPT("MM",                       0,      OPT_MM)                         \
+  DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
   DEF_OPT("MP",                       0,      OPT_MP)                         \
   DEF_OPT("MQ",                       no_tgt, OPT_MQ)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
@@ -1461,6 +1463,21 @@ cpp_handle_option (pfile, argc, argv)
 	  deps_add_target (pfile->deps, arg, opt_code == OPT_MQ);
 	  break;
 
+	  /* -MD and -MMD for cpp0 are deprecated and undocumented
+	     (use -M or -MM with -MF instead), and probably should be
+	     removed with the next major GCC version.  For the moment
+	     we allow these for the benefit of Automake 1.4, which
+	     uses these when dependency tracking is enabled.  Automake
+	     1.5 will fix this.  */
+	case OPT_MD:
+	  CPP_OPTION (pfile, print_deps) = 2;
+	  CPP_OPTION (pfile, deps_file) = arg;
+	  break;
+	case OPT_MMD:
+	  CPP_OPTION (pfile, print_deps) = 1;
+	  CPP_OPTION (pfile, deps_file) = arg;
+	  break;
+
 	case OPT_A:
 	  if (arg[0] == '-')
 	    {
@@ -1673,12 +1690,13 @@ cpp_post_options (pfile)
      set its callbacks correctly before calling cpp_start_read.  */
   init_dependency_output (pfile);
 
-  /* -MG doesn't select the form of output and must be specified with
-     one of -M or -MM.  -MG doesn't make sense unless preprocessed
-     output (and compilation) is inhibited.  */
-  if (CPP_OPTION (pfile, print_deps_missing_files)
-      && CPP_OPTION (pfile, print_deps) == 0)
-    cpp_fatal (pfile, "-MG must be specified with one of -M or -MM");
+  /* After checking the environment variables, check if -M or -MM has
+     not been specified, but other -M options have.  */
+  if (CPP_OPTION (pfile, print_deps) == 0 &&
+      (CPP_OPTION (pfile, print_deps_missing_files)
+       || CPP_OPTION (pfile, deps_file)
+       || CPP_OPTION (pfile, deps_phony_targets)))
+    cpp_fatal (pfile, "you must additionally specify either -M or -MM");
 }
 
 /* Set up dependency-file output.  */
@@ -1726,10 +1744,12 @@ init_dependency_output (pfile)
       CPP_OPTION (pfile, print_deps_append) = 1;
     }
 
-  /* If dependencies go to standard output, we need to suppress
-     output.  The user may be requesting other stuff to stdout, with
-     -dM, -v etc.  We let them shoot themselves in the foot.  */
-  if (CPP_OPTION (pfile, deps_file) == 0)
+  /* If dependencies go to standard output, or -MG is used, we should
+     suppress output.  The user may be requesting other stuff to
+     stdout, with -dM, -v etc.  We let them shoot themselves in the
+     foot.  */
+  if (CPP_OPTION (pfile, deps_file) == 0
+      || CPP_OPTION (pfile, print_deps_missing_files))
     CPP_OPTION (pfile, no_output) = 1;
 }
 

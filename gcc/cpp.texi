@@ -3092,7 +3092,8 @@ cpp [@samp{-P}] [@samp{-C}] [@samp{-gcc}] [@samp{-traditional}]
     [@samp{-W}@var{warn}...] [@samp{-I}@var{dir}...]
     [@samp{-D}@var{macro}[=@var{defn}]...] [@samp{-U}@var{macro}]
     [@samp{-A}@var{predicate}(@var{answer})]
-    [@samp{-M}|@samp{-MM}|@samp{-MD}|@samp{-MMD} [@samp{-MG}]]
+    [@samp{-M}|@samp{-MM}][@samp{-MG}][@samp{-MF}@var{filename}]
+    [@samp{-MP}][@samp{-MQ}@var{target}...][@samp{-MT}@var{target}...]
     [@samp{-x} @var{language}] [@samp{-std=}@var{standard}]
     @var{infile} @var{outfile}
 
@@ -3347,6 +3348,9 @@ Do not search the standard system directories for header files.
 Only the directories you have specified with @samp{-I} options
 (and the current directory, if appropriate) are searched.
 
+By using both @samp{-nostdinc} and @samp{-I-}, you can limit the include-file
+search path to only those directories you specify explicitly.
+
 @item -nostdinc++
 @findex -nostdinc++
 Do not search for header files in the C++-specific standard directories,
@@ -3375,11 +3379,17 @@ spaces that have a meaning in the shell syntax.  If you use more than
 one @samp{-D} for the same @var{name}, the rightmost definition takes
 effect.
 
+Any @samp{-D} and @samp{-U} options on the command line are processed in
+order, and always before @samp{-imacros @var{file}}, regardless of the
+order in which they are written.
+
 @item -U @var{name}
 @findex -U
-Do not predefine @var{name}.  If both @samp{-U} and @samp{-D} are
-specified for one name, whichever one appears later on the command line
-wins.
+Do not predefine @var{name}.
+
+Any @samp{-D} and @samp{-U} options on the command line are processed in
+order, and always before @samp{-imacros @var{file}}, regardless of the
+order in which they are written.
 
 @item -undef
 @findex -undef
@@ -3436,7 +3446,7 @@ Like @samp{-dD}, but emit only the macro names, not their expansions.
 Output @samp{#include} directives in addition to the result of
 preprocessing.
 
-@item -M [-MG]
+@item -M
 @findex -M
 Instead of outputting the result of preprocessing, output a rule
 suitable for @code{make} describing the dependencies of the main source
@@ -3445,43 +3455,34 @@ object file name for that source file, a colon, and the names of all the
 included files.  If there are many included files then the rule is split
 into several lines using @samp{\}-newline.
 
-@samp{-MG} says to treat missing header files as generated files and
-assume they live in the same directory as the source file.  It must be
-specified in addition to @samp{-M}.
-
-This feature is used in automatic updating of makefiles.
-
-@item -MM [-MG]
+@item -MM
 @findex -MM
-Like @samp{-M} but mention only the files included with @samp{#include
+Like @samp{-M}, but mention only the files included with @samp{#include
 "@var{file}"}.  System header files included with @samp{#include
 <@var{file}>} are omitted.
 
-@item -MD @var{file}
-@findex -MD
-Like @samp{-M} but the dependency information is written to @var{file}.
-This is in addition to compiling the file as specified --- @samp{-MD}
-does not inhibit ordinary compilation the way @samp{-M} does.
+@item -MF @var{file}
+@findex -MF
+When used with @samp{-M} or @samp{-MM}, specifies a file to write the
+dependencies to.  This allows the preprocessor to write the preprocessed
+file to stdout normally.  If no @samp{-MF} switch is given, CPP sends
+the rules to stdout and suppresses normal preprocessed output.
 
-When invoking @code{gcc}, do not specify the @var{file} argument.
-@code{gcc} will create file names made by replacing ".c" with ".d" at
-the end of the input file names.
+@item -MG
+@findex -MG
+When used with @samp{-M} or @samp{-MM}, @samp{-MG} says to treat missing
+header files as generated files and assume they live in the same
+directory as the source file.  It suppresses preprocessed output, as a
+missing header file is ordinarily an error.
 
-In Mach, you can use the utility @code{md} to merge multiple dependency
-files into a single dependency file suitable for using with the
-@samp{make} command.
-
-@item -MMD @var{file}
-@findex -MMD
-Like @samp{-MD} except mention only user header files, not system
-header files.
+This feature is used in automatic updating of makefiles.
 
 @item -MP
 @findex -MP
 This option instructs CPP to add a phony target for each dependency
 other than the main file, causing each to depend on nothing.  These
-dummy rules work around errors MAKE gives if you remove header files
-without updating the Makefile to match.
+dummy rules work around errors @code{make} gives if you remove header
+files without updating the @code{Makefile} to match.
 
 This is typical output:-
 
@@ -3493,8 +3494,8 @@ This is typical output:-
 
 @item -MQ @var{target}
 @item -MT @var{target}
-@findex -MT
 @findex -MQ
+@findex -MT
 By default CPP uses the main file name, including any path, and appends
 the object suffix, normally ``.o'', to it to obtain the name of the
 target for dependency generation.  With @samp{-MT} you can specify a
