@@ -1,3 +1,9 @@
+Fri May  8 14:13:21 1998  H.J. Lu  (hjl@gnu.org)
+
+	* reload1.c (emit_reload_insns): When performing expensive
+	optimizations, do not output the last reload insn if OLD is
+	not the dest of NSN and is in the src and is clobbered by INSN.
+
 Fri May  8 13:59:31 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* dwarf2out.c: Don't assume that `.section ".text"' causes the
