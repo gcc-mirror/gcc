@@ -2976,7 +2976,7 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
       /* If they don't overlap, the result is the first range.  If the
 	 second range is a subset of the first, we can't describe this as
 	 a single range unless both ranges end at the same place.  If both
-	 ranges also start in the same place, then the result is false.
+	 ranges start in the same place, then the result is false.
 	 Otherwise, we go from the start of the first range to just before
 	 the start of the second.  */
       if (no_overlap)
@@ -2985,9 +2985,8 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
 	       && integer_zerop (range_binop (EQ_EXPR, integer_type_node,
 					      high0, 1, high1, 0)))
 	return 0;
-      else if (subset
-	       && integer_onep (range_binop (EQ_EXPR, integer_type_node,
-					     low0, 0, low1, 0)))
+      else if (integer_onep (range_binop (EQ_EXPR, integer_type_node,
+					  low0, 0, low1, 0)))
 	in_p = 0, low = high = 0;
       else
 	{
