@@ -1,3 +1,9 @@
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/15569
+	PR rtl-optimization/15681
+	* gcc.dg/20040609-1.c: New test.
+
 2004-06-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/14649
