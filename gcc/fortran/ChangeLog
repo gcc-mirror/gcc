@@ -1,3 +1,8 @@
+2005-04-06  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* expr.c (gfc_check_assign): Don't allow NULL as rhs in a
+	non-pointer assignment.
+
 2005-04-05  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/15959
