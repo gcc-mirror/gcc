@@ -1,3 +1,12 @@
+1999-11-22  Andrew Haley  <aph@cygnus.com>
+
+        * varasm.c (function_defined): Remove.
+        (make_function_rtl): Don't set function_defined.
+        (make_decl_rtl): Remove global register warning.
+        * regclass.c (no_global_reg_vars): New variable.
+        (globalize_reg): Warn if function has already been defined.
+        (regclass_init): Set no_global_reg_vars.
+
 Mon Nov 22 14:42:22 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* regclass.c (reg_pref): New structure and static variable
