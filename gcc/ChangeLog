@@ -1,3 +1,7 @@
+2002-03-24  Richard Henderson  <rth@redhat.com>
+
+	* mips.c (mips_function_value): Only promote_mode for non-libcalls.
+
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	preprocessor/3951
