@@ -4334,6 +4334,14 @@ simplify_set (x)
       && (GET_MODE_SIZE (GET_MODE (src))
 	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
 #endif
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+      && ! (GET_CODE (dest) == REG && REGNO (dest) < FIRST_PSEUDO_REGISTER
+	    && (TEST_HARD_REG_BIT
+		(reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+		 REGNO (dest)))
+	    && (GET_MODE_SIZE (GET_MODE (src))
+		!= GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
+#endif				  
       && (GET_CODE (dest) == REG
 	  || (GET_CODE (dest) == SUBREG
 	      && GET_CODE (SUBREG_REG (dest)) == REG)))
