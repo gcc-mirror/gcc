@@ -1,9 +1,16 @@
 Tue Aug 19 09:34:57 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (move_insn): Reemit notes for SCHED_GROUP_P
+	insns too.
+	(schedule_block): When adjusting basic_block_{head,end}, account
+	for movement of SCHED_GROUP_P insns too.
+
+	* haifa-sched.c (debug_dependencies): Fix thinko.
+
 	* Makefile.in (EXPECT, RUNTEST, RUNTESTFLAGS): Define.
 	(site.exp, check, check-g++, check-gcc): New targets.
 
-	* haifa-sched.c: Make lots of variable static.
+	* haifa-sched.c: Make lots of variables static.
 
 Tue Aug 19 07:18:34 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
