@@ -1,3 +1,7 @@
+2002-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020426-2.c: New test.
+
 2002-04-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/if-mop.c: Update.

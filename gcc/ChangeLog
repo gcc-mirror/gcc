@@ -1,3 +1,10 @@
+2002-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/6475
+	* reload1.c (alter_reg): Only call set_mem_expr if I is home pseudo
+	register of REGNO_DECL (i).
+	* Makefile.in (reload1.o): Add $(TREE_H).
+
 2002-04-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppexp.c (lex): Update to use state.skip_eval.
