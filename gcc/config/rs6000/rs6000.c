@@ -167,7 +167,6 @@ static void rs6000_parse_abi_options PARAMS ((void));
 static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
-static void is_gpr_return_reg PARAMS ((rtx, void *));
 int vrsave_operation PARAMS ((rtx, enum machine_mode));
 static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
 static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
