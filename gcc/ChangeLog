@@ -1,3 +1,9 @@
+2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-typeck.c (build_c_cast): Only copy overflow from expr nodes.
+	* tree.h (IS_NON_TYPE_CODE_CLASS): Simplify.
+	(struct tree_common): Update public_flag documentation.
+
 2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
@@ -1681,7 +1687,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√É  <tfautre@pandora.be>
+	    Tanguy Fautr√  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
