@@ -1,3 +1,19 @@
+2003-12-17  Neil Booth  <neil@daikokuya.co.uk>
+            Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/3347
+	* c-decl.c (enum_decl_context): Remove BITFIELD.
+	(grokdeclarator): Take bit-field width as an input.
+	Perform bit-field width validation with
+	check_bitfield_type_and_width rather than waiting for
+	finish_struct.
+	(groktypename, groktypename_in_parm_context, start_decl,
+	push_parm_decl, grokfield, start_function): Update calls to
+	grokdeclarator.
+	(check_bitfield_type_and_width): New function.
+	(finish_struct): Move bit-field validation to grokdeclarator
+	and check_bitfield_type_and_width.
+
 2003-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR bootstrap/13386
