@@ -111,7 +111,7 @@ public abstract class URLStreamHandler
 	if (previous >= 0)
 	  file = file.substring(0, previous) + file.substring(index + 3);
 	else
-	  file = file.substring(index + 3);
+	  break;
       }
     
     u.set(u.getProtocol(), host, port, file, u.getRef());

@@ -1,3 +1,8 @@
+2001-03-19  Per Bothner  <per@bothner.com>
+
+	* java/net/URLStreamHandler.java (parseURL):  Fix bug which would
+	"canonicalize" "../../xxx" to "/xxx".
+
 2001-03-19  Mark Wielaard <mark@klomp.org>
 
 	* java/util/ArrayList.java: Remove RCS keywords from comments
