@@ -116,10 +116,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gcc 3.4.0\n"
+"Project-Id-Version: GNU cpplib 4.0-b20041128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-11-27 19:38+0000\n"
-"PO-Revision-Date: 2004-05-24 20:00-0500\n"
+"PO-Revision-Date: 2004-12-02 20:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -563,9 +563,8 @@ msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "l'élément lexical « %s » n'est pas valide dans les expressions pour le préprocesseur"
 
 #: expr.c:753
-#, fuzzy
 msgid "missing expression between '(' and ')'"
-msgstr "expression void entre parenthèses"
+msgstr "expression manquante entre '(' et ')'"
 
 #: expr.c:756
 msgid "#if with no expression"
@@ -718,9 +717,9 @@ msgid "trigraph ??%c converted to %c"
 msgstr "trigraphe ??%c converti en %c"
 
 #: lex.c:301
-#, fuzzy, c-format
+#, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
-msgstr "trigraphe ??%c ignoré"
+msgstr "trigraphe ??%c ignoré, utilisez -trigraphs pour le permettre"
 
 #: lex.c:347
 msgid "\"/*\" within comment"
