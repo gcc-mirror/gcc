@@ -872,6 +872,8 @@ char *lang_options[] =
   "-Wno-missing-declarations",
   "-Wmissing-prototypes",
   "-Wno-missing-prototypes",
+  "-Wmultichar",
+  "-Wno-multichar",
   "-Wnested-externs",
   "-Wno-nested-externs",
   "-Wparentheses",

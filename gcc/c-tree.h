@@ -505,6 +505,10 @@ extern int warn_missing_braces;
 
 extern int warn_sign_compare;
 
+/* Warn about multicharacter constants.  */
+
+extern int warn_multichar;
+
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;

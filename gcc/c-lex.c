@@ -1872,7 +1872,7 @@ yylex ()
 	    num_chars = max_chars;
 	    error ("character constant too long");
 	  }
-	else if (num_chars != 1 && ! flag_traditional)
+	else if (num_chars != 1 && ! flag_traditional && warn_multichar)
 	  warning ("multi-character character constant");
 
 	/* If char type is signed, sign-extend the constant.  */

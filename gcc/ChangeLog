@@ -1,3 +1,12 @@
+Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-decl.c: Add warn_multichar.
+	(c_decode_option): Handle -Wno-multichar.
+	* c-lex.c (yylex): Check it.
+	* c-tree.h: Declare it.
+	* toplev.c (lang_options): Add it.
+	* invoke.texi: Document it.
+
 Mon Jul  6 22:47:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* gcse.c (hash_scan_insn): New argument IN_LIBCALL_BLOCK.  Changed
