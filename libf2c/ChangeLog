@@ -1,12 +1,17 @@
+1998-09-28  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/open.c: Back out part of last Netlib update affecting
+	scratch files which clashed with the g77 variations and broke
+	implicit endfile on rewind.
+
 1998-09-21  Dave Love  <d.love@dl.ac.uk>
 
 	* libI77/Version.c: Update.
 
 Sat Sep  5 23:06:56 1998  Craig Burley  <burley@gnu.org>
 
-	* libI77/sfe.c (e_wdfe): Restore resetting of f__init
-	before returning, to avoid spurious recursive-I/O
-	diagnostic.
+	* libI77/sfe.c (e_wdfe): Set f__init to avoid spurious recursive
+	i/o error from formatted direct i/o.
 
 Tue Sep  1 10:06:06 1998  Craig Burley  <burley@gnu.org>
 
