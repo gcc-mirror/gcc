@@ -1,5 +1,12 @@
 2004-01-19  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13651
+	* parser.c (cp_parser_postfix_expression): When encountering
+	incomplete type on left-hand side of "->" or ".", treat the entire
+	expression as erroneous.
+
+2004-01-19  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13592
 	* call.c (build_field_call): Remove.
 	(n_build_method_call): Likewise.
