@@ -102,7 +102,7 @@ OLDAR = ar
 # install-headers-tar or install-headers-cpio.
 INSTALL_HEADERS_DIR = install-headers-tar
 
-# The GCC to use for compiling libgcc2.a, enquire, and cross-test.
+# The GCC to use for compiling libgcc2.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
 GCC_FOR_TARGET = ./xgcc -B./
@@ -236,8 +236,8 @@ LIBGCC2_DEPS =
 # build it.)
 ENQUIRE = enquire
 
-# Cross-test target (must also be overridable for a target)
-CROSS_TEST = cross-test
+# libgcc1-test target (must also be overridable for a target)
+LIBGCC1_TEST = libgcc1-test
 
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
@@ -589,7 +589,7 @@ all.internal: start.encap rest.encap
 # Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
 all.cross: native gcc-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) \
-	$(CROSS_TEST) $(ENQUIRE) $(EXTRA_PARTS) lang.all.cross
+	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
@@ -624,12 +624,13 @@ config.status:
 # This does the things that can't be done on the host machine.
 rest.cross: $(LIBGCC) gfloat.h specs
 
-# Verify that it works to compile and link cross-test.
+# Verify that it works to compile and link libgcc1-test.
 # If it does, then there are sufficient replacements for libgcc1.a.
-cross-test: cross-test.o native gcc-cross $(LIBGCC) $(GCC_PARTS)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) cross-test.o -o cross-test
-cross-test.o: cross-test.c native gcc-cross
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/cross-test.c
+libgcc1-test: libgcc1-test.o native $(GCC_PARTS)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
+	  -nostartfiles -nostdlib `$(GCC_FOR_TARGET) --print-libgcc-file-name`
+libgcc1-test.o: libgcc1-test.c native xgcc
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/libgcc1-test.c
 
 # Recompile all the language-independent object files.
 # This is used only if the user explicitly asks for it.
