@@ -108,7 +108,7 @@ extern char *reg_names[FIRST_PSEUDO_REGISTER];
    It is sometimes adjusted for subsequent changes during loop,
    but not adjusted by cse even if cse invalidates it.  */
 
-extern short *regno_first_uid;
+extern int *regno_first_uid;
 
 /* Vector indexed by regno; gives uid of last insn using that reg.
    This is computed by reg_scan for use by cse and loop.
@@ -116,7 +116,7 @@ extern short *regno_first_uid;
    but not adjusted by cse even if cse invalidates it.
    This is harmless since cse won't scan through a loop end.  */
 
-extern short *regno_last_uid;
+extern int *regno_last_uid;
 
 /* Vector indexed by regno; contains 1 for a register is considered a pointer.
    Reloading, etc. will use a pointer register rather than a non-pointer
