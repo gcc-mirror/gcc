@@ -1,5 +1,7 @@
 Tue May 26 23:40:40 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.dg/980523-1.c: Change "ppc" to "powerpc".
+
 	* gcc.c-torture/execute/980526-1.c: New test.
 
 1998-05-26  Dave Love  <d.love@dl.ac.uk>
