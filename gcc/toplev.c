@@ -1048,7 +1048,8 @@ report_error_function (file)
   (*print_error_function) (file);
 
   if (input_file_stack && input_file_stack->next != 0
-      && input_file_stack_tick != last_error_tick)
+      && input_file_stack_tick != last_error_tick
+      && file == input_filename)
     {
       fprintf (stderr, "In file included");
       for (p = input_file_stack->next; p; p = p->next)
