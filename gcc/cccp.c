@@ -4468,8 +4468,15 @@ get_filename:
 	}
 	break;
       }
+#ifdef VMS
+      /* Our VMS hacks can produce invalid filespecs, so don't worry
+	 about errors other than EACCES.  */
+      if (errno == EACCES)
+	break;
+#else
       if (errno != ENOENT)
 	break;
+#endif
     }
   }
 
@@ -9790,6 +9797,9 @@ new_include_prefix (prev_file_name, prefix, name)
       return 0;
     }
 
+#ifndef VMS
+    /* VMS can't stat dir prefixes, so skip these optimizations in VMS.  */
+
     /* Ignore a nonexistent directory.  */
     if (stat (len ? dir->fname : ".", &dir->st) != 0) {
       if (errno != ENOENT)
@@ -9808,6 +9818,7 @@ new_include_prefix (prev_file_name, prefix, name)
       free (dir);
       return 0;
     }
+#endif /* ! VMS */
 
     dir->next = 0;
     dir->c_system_include_path = 0;
