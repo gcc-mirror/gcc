@@ -1944,20 +1944,17 @@ compute_movstrsi_length (insn)
   if (align > 4)
     align = 4;
 
-  /* The basic opying loop.  */
+  /* The basic copying loop.  */
   n_insns = 6;
 
   /* Residuals.  */
   if (n_bytes % (2 * align) != 0)
     {
-      /* Any residual caused by unrolling the copy loop.  */
-      if (n_bytes % (2 * align) > align)
-	n_insns += 1;
+      if ((n_bytes % (2 * align)) >= align)
+	n_insns += 2;
 
-      /* Any residual because the number of bytes was not a
-	 multiple of the alignment.  */
-      if (n_bytes % align != 0)
-	n_insns += 1;
+      if ((n_bytes % align) != 0)
+	n_insns += 2;
     }
 
   /* Lengths are expressed in bytes now; each insn is 4 bytes.  */
