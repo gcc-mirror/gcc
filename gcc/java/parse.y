@@ -7561,6 +7561,7 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
   tree atl = end_params_node;		/* Arg Type List */
   tree method, signature, list, node;
   const char *candidates;		/* Used for error report */
+  char *dup;
 
   /* Fix the arguments */
   for (node = arg_list; node; node = TREE_CHAIN (node))
@@ -7610,14 +7611,13 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
   method = make_node (FUNCTION_TYPE);
   TYPE_ARG_TYPES (method) = atl;
   signature = build_java_argument_signature (method);
-  parse_error_context (cl, "Can't find %s `%s(%s)' in class `%s'%s",
+  dup = strdup (lang_printable_name (class, 0));
+  parse_error_context (cl, "Can't find %s `%s(%s)' in type `%s'%s",
 		       (lc ? "constructor" : "method"),
-		       (lc ? 
-			IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))) :
-			IDENTIFIER_POINTER (name)),
-		       IDENTIFIER_POINTER (signature),
-		       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))),
+		       (lc ? dup : IDENTIFIER_POINTER (name)),
+		       IDENTIFIER_POINTER (signature), dup,
 		       (candidates ? candidates : ""));
+  free (dup);
   return NULL_TREE;
 }
 
