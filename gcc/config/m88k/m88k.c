@@ -21,6 +21,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <sys/types.h>
 #include <time.h>
 #include <ctype.h>
@@ -46,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.12.1 09/12/92 07:06:48";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.13.1 10/07/92 06:31:13";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -369,22 +370,57 @@ legitimize_address (pic, orig, reg)
 #define MOVSTR_QI	16 /* __movstrQI16x16 .. __movstrQI16x2 */
 #define MOVSTR_HI	48 /* __movstrHI48x48 .. __movstrHI48x4 */
 #define MOVSTR_SI	96 /* __movstrSI96x96 .. __movstrSI96x8 */
+#define MOVSTR_DI	96 /* __movstrDI96x96 .. __movstrDI96x16 */
+#define MOVSTR_ODD_HI	16 /* __movstrHI15x15 .. __movstrHI15x5 */
 #define MOVSTR_ODD_SI	48 /* __movstrSI47x47 .. __movstrSI47x11,
 			      __movstrSI46x46 .. __movstrSI46x10,
 			      __movstrSI45x45 .. __movstrSI45x9 */
-#define MOVSTR_ODD_HI	16 /* __movstrHI15x15 .. __movstrHI15x5 */
+#define MOVSTR_ODD_DI	48 /* __movstrDI47x47 .. __movstrDI47x23,
+			      __movstrDI46x46 .. __movstrDI46x22,
+			      __movstrDI45x45 .. __movstrDI45x21,
+			      __movstrDI44x44 .. __movstrDI44x20,
+			      __movstrDI43x43 .. __movstrDI43x19,
+			      __movstrDI42x42 .. __movstrDI42x18,
+			      __movstrDI41x41 .. __movstrDI41x17 */
 
-/* Break even points where memcpy will do just as well.  */
-#define MOVSTR_QI_LIMIT	13
-#define MOVSTR_HI_LIMIT	38
-#define MOVSTR_SI_LIMIT	MOVSTR_SI
+/* Limits for using the non-looping movstr functions.  For the m88100
+   processor, we assume the source and destination are word aligned.
+   The QImode and HImode limits are the break even points where memcpy
+   does just as well and beyond which memcpy does better.  For the
+   m88110, we tend to assume double word alignment, but also analyze
+   the word aligned cases.  The analysis is complicated because memcpy
+   may use the cache control instructions for better performance.  */
 
-static enum machine_mode mode_from_bytes[] =
-			      {VOIDmode, QImode, HImode, VOIDmode, SImode};
-static int max_from_bytes[] = {0, MOVSTR_QI, MOVSTR_HI, 0, MOVSTR_SI};
-static int all_from_bytes[] = {0, MOVSTR_QI, MOVSTR_ODD_HI, 0, MOVSTR_ODD_SI};
-static int best_from_bytes[] =
-		{0, MOVSTR_QI_LIMIT, MOVSTR_HI_LIMIT, 0, MOVSTR_SI_LIMIT};
+#define MOVSTR_QI_LIMIT_88100   13
+#define MOVSTR_HI_LIMIT_88100   38
+#define MOVSTR_SI_LIMIT_88100   MOVSTR_SI
+#define MOVSTR_DI_LIMIT_88100   MOVSTR_SI
+  
+#define MOVSTR_QI_LIMIT_88000   16
+#define MOVSTR_HI_LIMIT_88000   38
+#define MOVSTR_SI_LIMIT_88000   72
+#define MOVSTR_DI_LIMIT_88000   72
+
+#define MOVSTR_QI_LIMIT_88110   16
+#define MOVSTR_HI_LIMIT_88110   38
+#define MOVSTR_SI_LIMIT_88110   72
+#define MOVSTR_DI_LIMIT_88110   72
+
+static enum machine_mode mode_from_align[] =
+			      {VOIDmode, QImode, HImode, VOIDmode, SImode,
+			       VOIDmode, VOIDmode, VOIDmode, DImode};
+static int max_from_align[] = {0, MOVSTR_QI, MOVSTR_HI, 0, MOVSTR_SI,
+			       0, 0, 0, MOVSTR_DI};
+static int all_from_align[] = {0, MOVSTR_QI, MOVSTR_ODD_HI, 0, MOVSTR_ODD_SI,
+			       0, 0, 0, MOVSTR_ODD_DI};
+
+static int best_from_align[3][9] =
+  {0, MOVSTR_QI_LIMIT_88100, MOVSTR_HI_LIMIT_88100, 0, MOVSTR_SI_LIMIT_88100, 
+   0, 0, 0, MOVSTR_DI_LIMIT_88100,
+   0, MOVSTR_QI_LIMIT_88110, MOVSTR_HI_LIMIT_88110, 0, MOVSTR_SI_LIMIT_88110, 
+   0, 0, 0, MOVSTR_DI_LIMIT_88110,  
+   0, MOVSTR_QI_LIMIT_88000, MOVSTR_HI_LIMIT_88000, 0, MOVSTR_SI_LIMIT_88000,
+   0, 0, 0, MOVSTR_DI_LIMIT_88000};
 
 static void block_move_loop ();
 static void block_move_no_loop ();
@@ -406,12 +442,17 @@ expand_block_move (dest_mem, src_mem, operands)
   int align = INTVAL (operands[3]);
   int constp = (GET_CODE (operands[2]) == CONST_INT);
   int bytes = (constp ? INTVAL (operands[2]) : 0);
+  int target = (int) m88k_cpu;
+
+  assert (CPU_M88100 == 0);
+  assert (CPU_M88110 == 1);
+  assert (CPU_M88000 == 2);
 
   if (constp && bytes <= 0)
     return;
 
   /* Determine machine mode to do move with.  */
-  if (align > 4)
+  if (align > 4 && !TARGET_88110)
     align = 4;
   else if (align <= 0 || align == 3)
     abort ();	/* block move invalid alignment.  */
@@ -420,11 +461,11 @@ expand_block_move (dest_mem, src_mem, operands)
     block_move_sequence (operands[0], dest_mem, operands[1], src_mem,
 			 bytes, align, 0);
 
-  else if (constp && bytes <= best_from_bytes[align])
+  else if (constp && bytes <= best_from_align[target][align])
     block_move_no_loop (operands[0], dest_mem, operands[1], src_mem,
 			bytes, align);
 
-  else if (constp && align == 4)
+  else if (constp && align == 4 && TARGET_88100)
     block_move_loop (operands[0], dest_mem, operands[1], src_mem,
 		     bytes, align);
 
@@ -488,7 +529,7 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
 
   remainder = size - count * MOVSTR_LOOP - units * align;
 
-  mode = mode_from_bytes[align];
+  mode = mode_from_align[align];
   sprintf (entry, "__movstr%s%dn%d",
 	   GET_MODE_NAME (mode), MOVSTR_LOOP, units * align);
   entry_name = get_identifier (entry);
@@ -527,24 +568,24 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
      int size;
      int align;
 {
-  enum machine_mode mode = mode_from_bytes[align];
+  enum machine_mode mode = mode_from_align[align];
   int units = size / align;
   int remainder = size - units * align;
   int most;
-  int evenp;
+  int value_reg;
   rtx offset_rtx;
   rtx value_rtx;
   char entry[30];
   tree entry_name;
 
-  if (remainder && size <= all_from_bytes[align])
+  if (remainder && size <= all_from_align[align])
     {
-      most = all_from_bytes[align] - (align - remainder);
+      most = all_from_align[align] - (align - remainder);
       remainder = 0;
     }
   else
     {
-      most = max_from_bytes[align];
+      most = max_from_align[align];
     }
 
   sprintf (entry, "__movstr%s%dx%d",
@@ -561,12 +602,13 @@ block_move_no_loop (dest, dest_mem, src, src_mem, size, align)
   MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
   MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
 
-  evenp = ((most - (size - remainder)) / align) & 1;
+  value_reg = ((((most - (size - remainder)) / align) & 1) == 0
+	       ? (align == 8 ? 6 : 5) : 4);
 
   emit_insn (gen_call_block_move
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
 	      dest, src, offset_rtx, value_rtx,
-	      gen_rtx (REG, GET_MODE (value_rtx), (evenp ? 4 : 5))));
+	      gen_rtx (REG, GET_MODE (value_rtx), value_reg)));
 
   if (remainder)
     block_move_sequence (gen_rtx (REG, Pmode, 2), dest_mem,
@@ -601,7 +643,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
   /* Establish parameters for the first load and for the second load if
      it is known to be the same mode as the first.  */
   amount[0] = amount[1] = align;
-  mode[0] = mode_from_bytes[align];
+  mode[0] = mode_from_align[align];
   temp[0] = gen_reg_rtx (mode[0]);
   if (size >= 2 * align)
     {
@@ -620,8 +662,8 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 	  /* Change modes as the sequence tails off.  */
 	  if (size < amount[next])
 	    {
-	      amount[next] = (size >= 2 ? 2 : 1);
-	      mode[next] = mode_from_bytes[amount[next]];
+	      amount[next] = (size >= 4 ? 4 : (size >= 2 ? 2 : 1));
+	      mode[next] = mode_from_align[amount[next]];
 	      temp[next] = gen_reg_rtx (mode[next]);
 	    }
 	  size -= amount[next];
@@ -794,6 +836,12 @@ output_call (operands, addr)
 			    : (flag_pic ? "bsr.n %0#plt" : "bsr.n %0")),
 			   operands);
 
+#ifdef USE_GAS
+	  last = (delta < 0
+		  ? "subu %#r1,%#r1,.-%l0+4"
+		  : "addu %#r1,%#r1,%l0-.-4");
+	  operands[0] = dest;
+#else
 	  operands[0] = gen_label_rtx ();
 	  operands[1] = gen_label_rtx ();
 	  if (delta < 0)
@@ -813,6 +861,7 @@ output_call (operands, addr)
 	  sb_name = gen_rtx (EXPR_LIST, VOIDmode, operands[0], sb_name);
 	  sb_high = gen_rtx (EXPR_LIST, VOIDmode, high, sb_high);
 	  sb_low = gen_rtx (EXPR_LIST, VOIDmode, low, sb_low);
+#endif /* Don't USE_GAS */
 
 	  return last;
 	}
