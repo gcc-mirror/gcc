@@ -28,6 +28,7 @@
 ;  the Free Software Foundation, 59 Temple Place - Suite 330,
 ;  Boston, MA 02111-1307, USA.
 
+#if !defined(__pro__) && !defined(__rtems__)
 	.SPACE $PRIVATE$
 	.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31
 	.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82
@@ -35,10 +36,14 @@
 	.SUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44
 	.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY
 	.SUBSPA $MILLICODE$,QUAD=0,ALIGN=8,ACCESS=44,SORT=8
-
+#endif
 	.IMPORT $$dyncall,MILLICODE
+#if !defined(__pro__) && !defined(__rtems__)
 	.SPACE $TEXT$
 	.SUBSPA $CODE$
+#else
+	.text
+#endif
 
 ; Simply call with the address of the desired import stub in %r22 and
 ; arguments in the normal place (%r26-%r23 and stack slots).
