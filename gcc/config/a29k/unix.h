@@ -40,6 +40,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC "-T default.gld%s"
 
+/* Define the magic numbers that we recognize as COFF.  */
+
+#define MY_ISCOFF(magic) ((magic) == SIPFBOMAGIC || (magic) == SIPRBOMAGIC)
+
 /* For some systems, it is best if double-word objects are aligned on a 
    doubleword boundary.  We want to maintain compatibility with MetaWare in
    a29k.h, but do not feel constrained to do so here.  */
