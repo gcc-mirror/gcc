@@ -4452,6 +4452,7 @@ instantiate_class_template (type)
 {
   tree template, args, pattern, t;
   tree typedecl;
+  int is_partial_instantiation;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -4465,29 +4466,52 @@ instantiate_class_template (type)
      argument coercion and such is simply lost.  */
   push_momentary ();
 
+  /* Figure out which template is being instantiated.  */
   template = most_general_template (CLASSTYPE_TI_TEMPLATE (type));
-  args = CLASSTYPE_TI_ARGS (type);
   my_friendly_assert (TREE_CODE (template) == TEMPLATE_DECL, 279);
-  t = most_specialized_class (template, args);
 
-  if (t == error_mark_node)
+  /* Figure out which arguments are being used to do the
+     instantiation.  */
+  args = CLASSTYPE_TI_ARGS (type);
+  is_partial_instantiation = uses_template_parms (args);
+
+  if (is_partial_instantiation)
+    /* There's no telling which specialization is appropriate at this
+       point.  Since all peeking at the innards of this partial
+       instantiation are extensions (like the "implicit typename"
+       extension, which allows users to omit the keyword `typename' on
+       names that are declared as types in template base classes), we
+       are free to do what we please.
+
+       Trying to figure out which partial instantiation to use can
+       cause a crash.  (Some of the template arguments don't even have
+       types.)  So, we just use the most general version.  */
+    t = NULL_TREE;
+  else
     {
-      char *str = "candidates are:";
-      cp_error ("ambiguous class template instantiation for `%#T'", type);
-      for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; t = TREE_CHAIN (t))
+      t = most_specialized_class (template, args);
+
+      if (t == error_mark_node)
 	{
-	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
-				  args))
+	  char *str = "candidates are:";
+	  cp_error ("ambiguous class template instantiation for `%#T'", type);
+	  for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; 
+	       t = TREE_CHAIN (t))
 	    {
-	      cp_error_at ("%s %+#T", str, TREE_TYPE (t));
-	      str = "               ";
+	      if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
+				      args))
+		{
+		  cp_error_at ("%s %+#T", str, TREE_TYPE (t));
+		  str = "               ";
+		}
 	    }
+	  TYPE_BEING_DEFINED (type) = 1;
+	  type = error_mark_node;
+	  goto end;
 	}
-      TYPE_BEING_DEFINED (type) = 1;
-      type = error_mark_node;
-      goto end;
     }
-  else if (t)
+
+  if (t)
     pattern = TREE_TYPE (t);
   else
     pattern = TREE_TYPE (template);
@@ -4523,14 +4547,14 @@ instantiate_class_template (type)
 	args = inner_args;
     }
 
-  if (pedantic && uses_template_parms (args))
+  if (pedantic && is_partial_instantiation)
     {
-      /* If there are still template parameters amongst the args, then
-	 we can't instantiate the type; there's no telling whether or not one
-	 of the template parameters might eventually be instantiated to some
-	 value that results in a specialization being used.  We do the
-	 type as complete so that, for example, declaring one of its
-	 members to be a friend will not be rejected.  */
+      /* If this is a partial instantiation, then we can't instantiate
+	 the type; there's no telling whether or not one of the
+	 template parameters might eventually be instantiated to some
+	 value that results in a specialization being used.  We do
+	 mark the type as complete so that, for example, declaring one
+	 of its members to be a friend will not be rejected.  */
       TYPE_SIZE (type) = integer_zero_node;
       goto end;
     }
@@ -4603,7 +4627,7 @@ instantiate_class_template (type)
   /* If this is a partial instantiation, don't tsubst anything.  We will
      only use this type for implicit typename, so the actual contents don't
      matter.  All that matters is whether a particular name is a type.  */
-  if (uses_template_parms (type))
+  if (is_partial_instantiation)
     {
       TYPE_BINFO_BASETYPES (type) = TYPE_BINFO_BASETYPES (pattern);
       TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
@@ -7335,7 +7359,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
     return 0;
 
   /* If PARM uses template parameters, then we can't bail out here,
-     even in ARG == PARM, since we won't record unifications for the
+     even if ARG == PARM, since we won't record unifications for the
      template parameters.  We might need them if we're trying to
      figure out which of two things is more specialized.  */
   if (arg == parm && !uses_template_parms (parm))
