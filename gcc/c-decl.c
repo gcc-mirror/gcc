@@ -3098,7 +3098,7 @@ c_make_fname_decl (id, type_dep)
 	   build_index_type (size_int (length)));
 
   decl = build_decl (VAR_DECL, id, type);
-  /* We don't push the decl, so have to set its context here. */
+  /* We don't push the decl, so have to set its context here.  */
   DECL_CONTEXT (decl) = current_function_decl;
   
   TREE_STATIC (decl) = 1;

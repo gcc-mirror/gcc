@@ -4619,7 +4619,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	}
 
       /*  If parm is passed both in stack and in register and offset is 
-	  greater than reg_parm_stack_space, split the offset. */
+	  greater than reg_parm_stack_space, split the offset.  */
       if (arg->reg && arg->pass_on_stack)
 	{
 	  if (arg->offset.constant < reg_parm_stack_space && arg->offset.var)

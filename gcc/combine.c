@@ -84,7 +84,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "insn-config.h"
 #include "function.h"
-/* Include expr.h after insn-config.h so we get HAVE_conditional_move. */
+/* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
 #include "insn-attr.h"
 #include "recog.h"
@@ -2469,7 +2469,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
     }
 #ifdef HAVE_cc0
   /* If I2 is the setter CC0 and I3 is the user CC0 then check whether
-     they are adjacent to each other or not. */
+     they are adjacent to each other or not.  */
   {
     rtx p = prev_nonnote_insn (i3);
     if (p && p != i2 && GET_CODE (p) == INSN && newi2pat
@@ -3056,7 +3056,7 @@ find_split_point (loc, insn)
 
 	case NE:
 	  /* if STORE_FLAG_VALUE is -1, this is (NE X 0) and only one bit of X
-	     is known to be on, this can be converted into a NEG of a shift. */
+	     is known to be on, this can be converted into a NEG of a shift.  */
 	  if (STORE_FLAG_VALUE == -1 && XEXP (SET_SRC (x), 1) == const0_rtx
 	      && GET_MODE (SET_SRC (x)) == GET_MODE (XEXP (SET_SRC (x), 0))
 	      && 1 <= (pos = exact_log2

@@ -447,7 +447,7 @@ skip_whitespace (pfile, c)
 	break;
       c = *buffer->cur++;
     }
-  /* We only want non-vertical space, i.e. ' ' \t \f \v \0. */
+  /* We only want non-vertical space, i.e. ' ' \t \f \v \0.  */
   while (is_nvspace (c));
 
   /* Remember the next character.  */
@@ -960,7 +960,7 @@ _cpp_lex_token (pfile, result)
     case '$':
       if (!CPP_OPTION (pfile, dollars_in_ident))
 	goto random_char;
-      /* Fall through... */
+      /* Fall through...  */
 
     case '_':
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':

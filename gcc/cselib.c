@@ -992,7 +992,7 @@ cselib_mem_conflict_p (mem_base, val)
   code = GET_CODE (val);
   switch (code)
     {
-      /* Get rid of a few simple cases quickly. */
+      /* Get rid of a few simple cases quickly.  */
     case REG:
     case PC:
     case CC0:

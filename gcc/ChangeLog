@@ -1,3 +1,29 @@
+2001-08-01  Kazu Hirata  <kazu@hxi.com>
+
+	* alias.c: Fix comment formatting.
+	* bitmap.c: Likewise.
+	* builtins.c: Likewise.
+	* calls.c: Likewise.
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-lex.c: Likewise.
+	* collect2.c: Likewise.
+	* combine.c: Likewise.
+	* conflict.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cppinit.c: Likewise.
+	* cpplex.c: Likewise.
+	* cpplib.c: Likewise.
+	* cppmacro.c: Likewise.
+	* cppspec.c: Likewise.
+	* c-pragma.c: Likewise.
+	* crtstuff.c: Likewise.
+	* cse.c: Likewise.
+	* cselib.c: Likewise.
+	* c-semantics.c: Likewise.
+	* c-typeck.c: Likewise.
+
 2001-08-01  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/linux.h (ASM_OUTPUT_IDENT): Defined.

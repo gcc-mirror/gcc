@@ -53,7 +53,7 @@ static struct align_stack * alignment_stack = NULL;
    #pragma pack(push,<n>) is encountered, this stores the value of 
    maximum_field_alignment in effect.  When the final pop_alignment() 
    happens, we restore the value to this, not to a value of 0 for
-   maximum_field_alignment.  Value is in bits. */
+   maximum_field_alignment.  Value is in bits.  */
 static int  default_alignment;
 #define SET_GLOBAL_ALIGNMENT(ALIGN) \
 (default_alignment = maximum_field_alignment = (ALIGN))
@@ -84,7 +84,7 @@ push_alignment (alignment, id)
       
       /* The current value of maximum_field_alignment is not necessarily 
 	 0 since there may be a #pragma pack(<n>) in effect; remember it 
-	 so that we can restore it after the final #pragma pop(). */
+	 so that we can restore it after the final #pragma pop().  */
       if (alignment_stack == NULL)
 	default_alignment = maximum_field_alignment;
       

@@ -510,7 +510,7 @@ expand_builtin_setjmp_setup (buf_addr, receiver_label)
   current_function_calls_setjmp = 1;
 
   /* Set this so all the registers get saved in our frame; we need to be
-     able to copy the saved values for any registers from frames we unwind. */
+     able to copy the saved values for any registers from frames we unwind.  */
   current_function_has_nonlocal_label = 1;
 }
 
@@ -757,7 +757,7 @@ get_memory_rtx (exp)
     return mem;
 
   set_mem_attributes (mem, exp, 0);
-  /* memcpy, memset and other builtin stringops can alias with anything. */
+  /* memcpy, memset and other builtin stringops can alias with anything.  */
   set_mem_alias_set (mem, 0);
   return mem;
 }
@@ -2480,7 +2480,7 @@ expand_builtin_strncat (arglist, target, mode)
 	    fn = built_in_decls[BUILT_IN_STRCAT];
 	  
 	  /* If the replacement _DECL isn't initialized, don't do the
-	     transformation. */
+	     transformation.  */
 	  if (!fn)
 	    return 0;
 
@@ -2574,7 +2574,7 @@ expand_builtin_strcspn (arglist, target, mode)
 	    fn = built_in_decls[BUILT_IN_STRLEN];
 	  
 	  /* If the replacement _DECL isn't initialized, don't do the
-	     transformation. */
+	     transformation.  */
 	  if (!fn)
 	    return 0;
 
@@ -3141,7 +3141,7 @@ expand_builtin_ffs (arglist, target, subtarget)
 }
 
 /* If the string passed to fputs is a constant and is one character
-   long, we attempt to transform this call into __builtin_fputc(). */
+   long, we attempt to transform this call into __builtin_fputc().  */
 
 static rtx
 expand_builtin_fputs (arglist, ignore)
@@ -3152,11 +3152,11 @@ expand_builtin_fputs (arglist, ignore)
     fn_fwrite = built_in_decls[BUILT_IN_FWRITE];
 
   /* If the return value is used, or the replacement _DECL isn't
-     initialized, don't do the transformation. */
+     initialized, don't do the transformation.  */
   if (!ignore || !fn_fputc || !fn_fwrite)
     return 0;
 
-  /* Verify the arguments in the original call. */
+  /* Verify the arguments in the original call.  */
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
       || current_function_check_memory_usage)
     return 0;

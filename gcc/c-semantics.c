@@ -278,7 +278,7 @@ emit_local_var (decl)
     expand_end_target_temps ();
 }
 
-/* Helper for generating the RTL at the beginning of a scope. */
+/* Helper for generating the RTL at the beginning of a scope.  */
 
 void
 genrtl_do_pushlevel ()
@@ -287,7 +287,7 @@ genrtl_do_pushlevel ()
   clear_last_expr ();
 }
 
-/* Generate the RTL for DESTINATION, which is a GOTO_STMT. */
+/* Generate the RTL for DESTINATION, which is a GOTO_STMT.  */
 
 void
 genrtl_goto_stmt (destination)
@@ -312,7 +312,7 @@ genrtl_goto_stmt (destination)
     expand_computed_goto (destination);
 }
 
-/* Generate the RTL for EXPR, which is an EXPR_STMT. */
+/* Generate the RTL for EXPR, which is an EXPR_STMT.  */
 
 void 
 genrtl_expr_stmt (expr)
@@ -333,7 +333,7 @@ genrtl_expr_stmt (expr)
     }
 }
 
-/* Generate the RTL for T, which is a DECL_STMT. */
+/* Generate the RTL for T, which is a DECL_STMT.  */
 
 void
 genrtl_decl_stmt (t)
@@ -368,7 +368,7 @@ genrtl_decl_stmt (t)
     (*lang_expand_decl_stmt) (t);
 }
 
-/* Generate the RTL for T, which is an IF_STMT. */
+/* Generate the RTL for T, which is an IF_STMT.  */
 
 void
 genrtl_if_stmt (t)
@@ -389,7 +389,7 @@ genrtl_if_stmt (t)
   expand_end_cond ();
 }
 
-/* Generate the RTL for T, which is a WHILE_STMT. */
+/* Generate the RTL for T, which is a WHILE_STMT.  */
 
 void
 genrtl_while_stmt (t)
@@ -411,7 +411,7 @@ genrtl_while_stmt (t)
   expand_end_loop ();
 }
 
-/* Generate the RTL for T, which is a DO_STMT. */
+/* Generate the RTL for T, which is a DO_STMT.  */
 
 void
 genrtl_do_stmt (t)
@@ -445,7 +445,7 @@ genrtl_do_stmt (t)
     }
 }
 
-/* Build the node for a return statement and return it. */
+/* Build the node for a return statement and return it.  */
 
 tree
 build_return_stmt (expr)
@@ -454,7 +454,7 @@ build_return_stmt (expr)
   return (build_stmt (RETURN_STMT, expr));
 }
 
-/* Generate the RTL for STMT, which is a RETURN_STMT. */
+/* Generate the RTL for STMT, which is a RETURN_STMT.  */
 
 void
 genrtl_return_stmt (stmt)
@@ -481,7 +481,7 @@ genrtl_return_stmt (stmt)
     }
 }
 
-/* Generate the RTL for T, which is a FOR_STMT. */
+/* Generate the RTL for T, which is a FOR_STMT.  */
 
 void
 genrtl_for_stmt (t)
@@ -527,7 +527,7 @@ genrtl_for_stmt (t)
   expand_end_loop ();
 }
 
-/* Build a break statement node and return it. */
+/* Build a break statement node and return it.  */
 
 tree
 build_break_stmt ()
@@ -535,7 +535,7 @@ build_break_stmt ()
   return (build_stmt (BREAK_STMT));
 }
 
-/* Generate the RTL for a BREAK_STMT. */
+/* Generate the RTL for a BREAK_STMT.  */
 
 void
 genrtl_break_stmt ()
@@ -545,7 +545,7 @@ genrtl_break_stmt ()
     error ("break statement not within loop or switch");
 }
 
-/* Build a continue statement node and return it. */
+/* Build a continue statement node and return it.  */
 
 tree
 build_continue_stmt ()
@@ -553,7 +553,7 @@ build_continue_stmt ()
   return (build_stmt (CONTINUE_STMT));
 }
 
-/* Generate the RTL for a CONTINUE_STMT. */
+/* Generate the RTL for a CONTINUE_STMT.  */
 
 void
 genrtl_continue_stmt ()
@@ -563,7 +563,7 @@ genrtl_continue_stmt ()
     error ("continue statement not within a loop");   
 }
 
-/* Generate the RTL for T, which is a SCOPE_STMT. */
+/* Generate the RTL for T, which is a SCOPE_STMT.  */
 
 void
 genrtl_scope_stmt (t)
@@ -608,7 +608,7 @@ genrtl_scope_stmt (t)
     }
 }
 
-/* Generate the RTL for T, which is a SWITCH_STMT. */
+/* Generate the RTL for T, which is a SWITCH_STMT.  */
 
 void
 genrtl_switch_stmt (t)
@@ -620,7 +620,7 @@ genrtl_switch_stmt (t)
   cond = expand_cond (SWITCH_COND (t));
   if (cond == error_mark_node)
     /* The code is in error, but we don't want expand_end_case to
-       crash. */
+       crash.  */
     cond = boolean_false_node;
 
   emit_line_note (input_filename, lineno);
@@ -629,7 +629,7 @@ genrtl_switch_stmt (t)
   expand_end_case (cond);
 }
 
-/* Create a CASE_LABEL tree node and return it. */
+/* Create a CASE_LABEL tree node and return it.  */
 
 tree
 build_case_label (low_value, high_value, label_decl)
@@ -641,7 +641,7 @@ build_case_label (low_value, high_value, label_decl)
 }
 
 
-/* Generate the RTL for a CASE_LABEL. */
+/* Generate the RTL for a CASE_LABEL.  */
 
 void 
 genrtl_case_label (case_label)
@@ -668,7 +668,7 @@ genrtl_case_label (case_label)
 		 CASE_LABEL_DECL (case_label), &duplicate);
 }
 
-/* Generate the RTL for T, which is a COMPOUND_STMT. */
+/* Generate the RTL for T, which is a COMPOUND_STMT.  */
 
 void
 genrtl_compound_stmt (t)
@@ -687,7 +687,7 @@ genrtl_compound_stmt (t)
 #endif
 }
 
-/* Generate the RTL for an ASM_STMT. */
+/* Generate the RTL for an ASM_STMT.  */
 
 void
 genrtl_asm_stmt (cv_qualifier, string, output_operands,
@@ -716,7 +716,7 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
 			   input_filename, lineno);
 }
 
-/* Generate the RTL for a DECL_CLEANUP. */
+/* Generate the RTL for a DECL_CLEANUP.  */
 
 void 
 genrtl_decl_cleanup (decl, cleanup)
@@ -740,7 +740,7 @@ prep_stmt (t)
 }
 
 /* Generate the RTL for the statement T, its substatements, and any
-   other statements at its nesting level. */
+   other statements at its nesting level.  */
 
 void
 expand_stmt (t)

@@ -352,7 +352,7 @@ objects_must_conflict_p (t1, t2)
       != (t2 != 0 && AGGREGATE_TYPE_P (t2)))
     return 0;
 
-  /* Otherwise they conflict only if the alias sets conflict. */
+  /* Otherwise they conflict only if the alias sets conflict.  */
   return alias_sets_conflict_p (t1 ? get_alias_set (t1) : 0,
 				t2 ? get_alias_set (t2) : 0);
 }
@@ -758,7 +758,7 @@ find_base_value (src)
       if (GET_CODE (src) != PLUS && GET_CODE (src) != MINUS)
 	break;
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case PLUS:
     case MINUS:
@@ -807,7 +807,7 @@ find_base_value (src)
 
     case AND:
       /* If the second operand is constant set the base
-	 address to the first operand. */
+	 address to the first operand.  */
       if (GET_CODE (XEXP (src, 1)) == CONST_INT && INTVAL (XEXP (src, 1)) != 0)
 	return find_base_value (XEXP (src, 0));
       return 0;
@@ -1344,7 +1344,7 @@ base_alias_check (x, y, x_mode, y_mode)
   if (flag_argument_noalias > 1)
     return 0;
 
-  /* Weak noalias assertion (arguments are distinct, but may match globals). */
+  /* Weak noalias assertion (arguments are distinct, but may match globals).  */
   return ! (GET_MODE (x_base) == VOIDmode && GET_MODE (y_base) == VOIDmode);
 }
 
@@ -2103,7 +2103,7 @@ init_alias_once ()
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     /* Check whether this register can hold an incoming pointer
        argument.  FUNCTION_ARG_REGNO_P tests outgoing register
-       numbers, so translate if necessary due to register windows. */
+       numbers, so translate if necessary due to register windows.  */
     if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
 	&& HARD_REGNO_MODE_OK (i, Pmode))
       SET_HARD_REG_BIT (argument_registers, i);
@@ -2231,7 +2231,7 @@ init_alias_analysis ()
 
 	      /* If this insn has a noalias note, process it,  Otherwise,
 	         scan for sets.  A simple set will have no side effects
-	         which could change the base value of any other register. */
+	         which could change the base value of any other register.  */
 
 	      if (GET_CODE (PATTERN (insn)) == SET
 		  && REG_NOTES (insn) != 0

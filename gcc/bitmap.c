@@ -38,8 +38,8 @@ static int bitmap_obstack_init = FALSE;
 #endif
 
 /* Global data */
-bitmap_element bitmap_zero_bits;	/* An element of all zero bits. */
-static bitmap_element *bitmap_free;	/* Freelist of bitmap elements. */
+bitmap_element bitmap_zero_bits;	/* An element of all zero bits.  */
+static bitmap_element *bitmap_free;	/* Freelist of bitmap elements.  */
 
 static void bitmap_element_free		PARAMS ((bitmap, bitmap_element *));
 static bitmap_element *bitmap_element_allocate PARAMS ((void));
@@ -583,7 +583,7 @@ bitmap_operation (to, from1, from2, operation)
 	}
 
       /* Find the appropriate element from TO.  Begin by discarding
-	 elements that we've skipped. */
+	 elements that we've skipped.  */
       while (to_ptr && to_ptr->indx < indx)
 	{
 	  changed = 1;
@@ -671,7 +671,7 @@ bitmap_equal_p (a, b)
 }
 
 /* Or into bitmap TO bitmap FROM1 and'ed with the complement of
-   bitmap FROM2. */
+   bitmap FROM2.  */
 
 void
 bitmap_ior_and_compl (to, from1, from2)

@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #  define SIGCHLD SIGCLD
 #endif
 
-#ifdef vfork /* Autoconf may define this to fork for us. */
+#ifdef vfork /* Autoconf may define this to fork for us.  */
 # define VFORK_STRING "fork"
 #else
 # define VFORK_STRING "vfork"
@@ -258,7 +258,7 @@ struct path_prefix
 };
 
 #ifdef COLLECT_EXPORT_LIST
-/* Lists to keep libraries to be scanned for global constructors/destructors. */
+/* Lists to keep libraries to be scanned for global constructors/destructors.  */
 static struct head libs;                    /* list of libraries */
 static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
 static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
@@ -1435,7 +1435,7 @@ main (argc, argv)
       return 0;
     }
 
-  /* Sort ctor and dtor lists by priority. */
+  /* Sort ctor and dtor lists by priority.  */
   sort_ids (&constructors);
   sort_ids (&destructors);
 
@@ -1711,7 +1711,7 @@ extract_init_priority (name)
     ++pos;
   pos += 10; /* strlen ("GLOBAL__X_") */
 
-  /* Extract init_p number from ctor/dtor name. */
+  /* Extract init_p number from ctor/dtor name.  */
   pri = atoi (name + pos);
   return pri ? pri : DEFAULT_INIT_PRIORITY;
 }
@@ -2957,7 +2957,7 @@ static const char *aix_std_libs[] = {
 };
 
 /* This function checks the filename and returns 1
-   if this name matches the location of a standard AIX library. */
+   if this name matches the location of a standard AIX library.  */
 static int
 ignore_library (name)
      const char *name;

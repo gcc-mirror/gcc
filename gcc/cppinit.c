@@ -38,7 +38,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Windows does not natively support inodes, and neither does MSDOS.
    Cygwin's emulation can generate non-unique inodes, so don't use it.
-   VMS has non-numeric inodes. */
+   VMS has non-numeric inodes.  */
 #ifdef VMS
 # define INO_T_EQ(a, b) (!memcmp (&(a), &(b), sizeof (a)))
 #else
@@ -198,7 +198,7 @@ path_include (pfile, list, path)
 }
 
 /* Append DIR to include path PATH.  DIR must be permanently allocated
-   and writable. */
+   and writable.  */
 static void
 append_include_chain (pfile, dir, path, cxx_aware)
      cpp_reader *pfile;
@@ -241,7 +241,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
   new->dev  = st.st_dev;
   /* Both systm and after include file lists should be treated as system
      include files since these two lists are really just a concatenation
-     of one "system" list. */
+     of one "system" list.  */
   if (path == SYSTEM || path == AFTER)
 #ifdef NO_IMPLICIT_EXTERN_C
     new->sysp = 1;
@@ -468,7 +468,7 @@ init_library ()
     }
 }
 
-/* Initialize a cpp_reader structure. */
+/* Initialize a cpp_reader structure.  */
 cpp_reader *
 cpp_create_reader (table, lang)
      hash_table *table;
@@ -809,7 +809,7 @@ init_standard_includes (pfile)
   if (specd_prefix != 0 && cpp_GCC_INCLUDE_DIR_len)
     {
       /* Remove the `include' from /usr/local/lib/gcc.../include.
-	 GCC_INCLUDE_DIR will always end in /include. */
+	 GCC_INCLUDE_DIR will always end in /include.  */
       int default_len = cpp_GCC_INCLUDE_DIR_len;
       char *default_prefix = (char *) alloca (default_len + 1);
       int specd_len = strlen (specd_prefix);
@@ -1399,7 +1399,7 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, no_standard_includes) = 1;
 	  break;
 	case OPT_nostdincplusplus:
-	  /* -nostdinc++ causes no default C++-specific include directories. */
+	  /* -nostdinc++ causes no default C++-specific include directories.  */
 	  CPP_OPTION (pfile, no_standard_cplusplus_includes) = 1;
 	  break;
 	case OPT_o:
@@ -1696,7 +1696,7 @@ cpp_post_options (pfile)
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
 
-  /* Set this if it hasn't been set already. */
+  /* Set this if it hasn't been set already.  */
   if (CPP_OPTION (pfile, user_label_prefix) == NULL)
     CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
 
@@ -1780,7 +1780,7 @@ print_help ()
 {
   fprintf (stderr, _("Usage: %s [switches] input output\n"), progname);
   /* To keep the lines from getting too long for some compilers, limit
-     to about 500 characters (6 lines) per chunk. */
+     to about 500 characters (6 lines) per chunk.  */
   fputs (_("\
 Switches:\n\
   -include <file>           Include the contents of <file> before other files\n\

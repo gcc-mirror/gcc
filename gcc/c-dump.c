@@ -139,9 +139,9 @@ queue_and_dump_type (di, t)
 }
 
 /* Dump column control */
-#define SOL_COLUMN 25		/* Start of line column. */
-#define EOL_COLUMN 55		/* End of line column. */
-#define COLUMN_ALIGNMENT 15	/* Alignment. */
+#define SOL_COLUMN 25		/* Start of line column.  */
+#define EOL_COLUMN 55		/* End of line column.  */
+#define COLUMN_ALIGNMENT 15	/* Alignment.  */
 
 /* Insert a new line in the dump output, and indent to an appropriate
    place to start printing more fields.  */
@@ -736,7 +736,7 @@ dequeue_and_dump (di)
 }
 
 /* Return non-zero if FLAG has been specified for the dump, and NODE
-   is not the root node of the dump. */
+   is not the root node of the dump.  */
 
 int dump_flag (di, flag, node)
      dump_info_p di;
@@ -786,16 +786,16 @@ dump_node (t, flags, stream)
   splay_tree_delete (di.nodes);
 }
 
-/* Define a tree dump switch. */
+/* Define a tree dump switch.  */
 struct dump_file_info
 {
-  const char *suffix;		/* suffix to give output file. */
+  const char *suffix;		/* suffix to give output file.  */
   const char *swtch;		/* command line switch */
   int flags;			/* user flags */
   int state;			/* state of play */
 };
 
-/* Table of tree dump switches. */
+/* Table of tree dump switches.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
   {".tu", "dump-translation-unit", 0, 0},
@@ -808,7 +808,7 @@ static struct dump_file_info dump_files[TDI_end] =
 /* Begin a tree dump for PHASE. Stores any user supplied flag in
    *FLAG_PTR and returns a stream to write to. If the dump is not
    enabled, returns NULL.
-   Multiple calls will reopen and append to the dump file. */
+   Multiple calls will reopen and append to the dump file.  */
 
 FILE *
 dump_begin (phase, flag_ptr)
@@ -834,7 +834,7 @@ dump_begin (phase, flag_ptr)
   return stream;
 }
 
-/* Returns non-zero if tree dump PHASE is enabled. */
+/* Returns non-zero if tree dump PHASE is enabled.  */
 
 int
 dump_enabled_p (phase)
@@ -843,7 +843,7 @@ dump_enabled_p (phase)
   return dump_files[phase].state;
 }
 
-/* Returns the switch name of PHASE. */
+/* Returns the switch name of PHASE.  */
 
 const char *
 dump_flag_name (phase)
@@ -853,7 +853,7 @@ dump_flag_name (phase)
 }
 
 /* Finish a tree dump for PHASE. STREAM is the stream created by
-   dump_begin. */
+   dump_begin.  */
 
 void
 dump_end (phase, stream)
@@ -864,7 +864,7 @@ dump_end (phase, stream)
 }
 
 /* Parse ARG as a dump switch. Return non-zero if it is, and store the
-   relevant details in the dump_files array. */
+   relevant details in the dump_files array.  */
 
 int
 dump_switch_p (arg)
