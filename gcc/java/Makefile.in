@@ -218,6 +218,7 @@ EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 # Separating PARSE_DIR from PARSE_RELDIR lets us easily change the
 # code to support building parse.c in the build directory, at some
 # expense in readability.
+# This code must be kept in sync with Make-lang.in.
 PARSE_DIR = $(srcdir)
 PARSE_RELDIR = .
 PARSE_C = $(PARSE_DIR)/parse.c
