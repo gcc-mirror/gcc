@@ -43,7 +43,18 @@ for TEST in ${TESTS} ; do
   echo '	diff -c $(srcdir)/'"${TEST}.exp ${TEST}.out"  >>Makefile
   CHECK="${CHECK} check-${TEST}"
 done
-if [ -d ${srcdir}/../../gcc ] ; then
+
+if [ "${srcdir}" = "." ] ; then
+  if [ "${with_target_subdir}" != "." ] ; then
+    topsrcdir=${with_multisrctop}../../..
+  else
+    topsrcdir=${with_multisrctop}../..
+  fi
+else
+  topsrcdir=${srcdir}/../..
+fi
+
+if [ -d ${topsrcdir}/gcc ] ; then
   echo "
 check:
 check-old: ${CHECK}" >>Makefile
@@ -51,5 +62,3 @@ else
   echo "
 check: ${CHECK}" >>Makefile
 fi
-
-
