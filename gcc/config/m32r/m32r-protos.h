@@ -44,7 +44,6 @@ extern int    function_arg_partial_nregs	PARAMS ((CUMULATIVE_ARGS *, Mmode, tree
 #ifdef RTX_CODE
 extern int    easy_di_const			PARAMS ((rtx));
 extern int    easy_df_const			PARAMS ((rtx));
-extern int    m32r_select_cc_mode		PARAMS ((int, rtx, rtx));
 extern rtx    gen_compare			PARAMS ((enum rtx_code, rtx, rtx, int));
 extern rtx    gen_split_move_double		PARAMS ((rtx *));
 extern int    m32r_address_code			PARAMS ((rtx));
