@@ -1,3 +1,11 @@
+Sun Oct 31 20:27:45 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_value_return): Fix typo in this change:
+
+	Thu Oct 28 18:06:50 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	(expand_value_return): Correctly convert VAL when promoting function
+	return; support RETURN_REG being a PARALLEL.
+	
 Sun Oct 31 20:25:42 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* expr.c (readonly_fields_p): Ignore everything except FIELD_DECLs.
