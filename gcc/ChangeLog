@@ -1,3 +1,8 @@
+2001-06-12  lars brinkhoff  <lars@nocrew.org>
+
+	* gcc.texi (HOST_BITS_PER_LONGLONG): Document.
+	(DIR_SEPARATOR_2): Likewise.
+
 2001-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (grokdeclarator): Use INTEGRAL_TYPE_P.

@@ -3694,6 +3694,11 @@ machine.
 A C expression for the number of bits in @code{long} on the host
 machine.
 
+@findex HOST_BITS_PER_LONGLONG
+@item HOST_BITS_PER_LONGLONG
+A C expression for the number of bits in @code{long long} on the host
+machine.
+
 @findex ONLY_INT_FIELDS
 @item ONLY_INT_FIELDS
 Define this macro to indicate that the host compiler only supports
@@ -3776,6 +3781,14 @@ directory names within a file specification, define this macro to be a C
 character constant specifying that character.  When GCC displays file
 names, the character you specify will be used.  GCC will test for
 both slash and the character you specify when parsing filenames.
+
+@findex DIR_SEPARATOR_2
+@item DIR_SEPARATOR_2
+If your system uses an alternative character other than
+@samp{DIR_SEPARATOR} to separate directory names within a file
+specification, define this macro to be a C character constant specifying
+that character.  If you define this macro, GCC will test for slash,
+@samp{DIR_SEPARATOR}, and @samp{DIR_SEPARATOR_2} when parsing filenames.
 
 @findex OBJECT_SUFFIX
 @item OBJECT_SUFFIX
