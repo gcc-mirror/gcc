@@ -66,7 +66,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 libexecdir=@libexecdir@
 # Directory in which the compiler finds libraries, etc.
-libsubdir=${libdir}/gcc-lib/${target_noncanonical}/${version}
+libsubdir=${libdir}/gcc/${target_noncanonical}/${version}
 # Directory in which the compiler finds executables
 libexecsubdir=${libexecdir}/gcc/${target_noncanonical}/${version}
 # Since gcc_tooldir does not exist at build-time, use -B${build_tooldir}/bin/

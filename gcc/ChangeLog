@@ -1,3 +1,8 @@
+2004-07-31  Andrew Pinski  <apinski@apple.com>
+
+	PR other/16842
+	* mkheaders.in (libsubdir): s/gcc-lib/gcc/.
+
 2004-07-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md ("move_from_CR_gt_bit"): Rename to
