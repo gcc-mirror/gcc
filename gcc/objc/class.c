@@ -25,7 +25,7 @@ You should have received a copy of the GNU General Public License along with
    covered by the GNU General Public License.  */
 
 #include "runtime.h"		/* the kitchen sink */
-
+#include "sarray.h"
 
 /* The table of classname->class.  Used for objc_lookup_class and friends */
 static cache_ptr __objc_class_hash = 0;
@@ -211,140 +211,122 @@ void __objc_resolve_class_links()
 }
 
 
-/* This is a incomplete implementation of posing.   This function does the
-   bulk of the work but does not initialize the class method caches.  That is
-   a run-time specific operation.
 
-I implement posing by hiding SUPER_CLASS, creating new class and meta class
-   structures, initializing it with IMPOSTOR, and changing it such that it is
-   identified as SUPER_CLASS. SUPER_CLASS remains in the hierarchy but is
-   inaccessible by the means. The class hierarchy is then re arranged such
-   that all of the subclasses of SUPER_CLASS now inherit from the new class
-   structures -- except the impostor itself. The only dramatic effect on the
-   application is that subclasses of SUPER_CLASS cannot do a [ ....
-   super_class ] and expect their real super class. */
+#define CLASSOF(c) ((c)->class_pointer)
+
 Class*
 class_pose_as (Class* impostor, Class* super_class)
 {
-  Class* new_class = (Class*) __objc_xcalloc (1, sizeof (Class));
-  MetaClass* new_meta_class =
-    (MetaClass*) __objc_xmalloc(sizeof (MetaClass));
-  char *new_name = (char *)__objc_xmalloc ((size_t)strlen ((char*)super_class->name) + 12);
+  if (!CLS_ISRESOLV (impostor))
+    __objc_resolve_class_links ();
 
-  /* We must know the state of the hierachy.  Do initial setup if needed */
-  if(!CLS_ISRESOLV(impostor))
-    __objc_resolve_class_links();
-
-  assert (new_class);
-  assert (new_meta_class);
-  assert (new_name);
-
-  assert (CLS_ISCLASS(impostor));
-  assert (CLS_ISCLASS(super_class));
-
+  /* preconditions */
+  assert (impostor);
+  assert (super_class);
+  assert (impostor->super_class == super_class);
+  assert (CLS_ISCLASS (impostor));
+  assert (CLS_ISCLASS (super_class));
   assert (impostor->instance_size == super_class->instance_size);
 
-  /* Create the impostor class.  */
-  new_class->class_pointer = new_meta_class;
-  new_class->super_class = super_class;
-  new_class->name = super_class->name;
-  new_class->version = super_class->version;
-  new_class->info = super_class->info;
-  new_class->instance_size = super_class->instance_size;
-  new_class->ivars = super_class->ivars;
-  new_class->methods = impostor->methods;
-  new_class->dtable = impostor->dtable;
-
-  /* Create the impostor meta class.  */
-  new_meta_class->class_pointer = super_class->class_pointer->class_pointer;
-  new_meta_class->super_class = super_class->class_pointer->super_class;
-  new_meta_class->name = super_class->class_pointer->name;
-  new_meta_class->version = super_class->class_pointer->version;
-  new_meta_class->info = super_class->class_pointer->info;
-  new_meta_class->instance_size = super_class->class_pointer->instance_size;
-  new_meta_class->ivars = super_class->class_pointer->ivars;
-  new_meta_class->methods = impostor->class_pointer->methods;
-  new_meta_class->dtable = impostor->class_pointer->dtable;
-
-  /* Now change super/subclass links of all related classes.  This is rather
-     complex, since we have both super_class link, and subclass_list for the
-     involved classes. */
   {
-    Class* *classpp;
-    MetaClass* *metaclasspp;
+    Class **subclass = &(super_class->subclass_list);
+    BOOL super_is_base_class = NO;
 
-    /* Remove impostor from subclass list of super_class */
-    for (classpp = &(super_class->subclass_list);
-         *classpp;
-         classpp = &((*classpp)->sibling_class))
+    /* move subclasses of super_class to impostor */
+    while (*subclass)
       {
-        if (*classpp == impostor)
-          *classpp = (*classpp)->sibling_class;
-        if (*classpp == 0)
-          break;
+	Class *nextSub = (*subclass)->sibling_class;
+
+	/* this happens when super_class is a base class */
+	if (*subclass == CLASSOF (super_class))
+	  {
+	    super_is_base_class = YES;
+	  }
+	else if (*subclass != impostor)
+	  {
+	    Class *sub = *subclass;
+
+	    /* classes */
+	    sub->sibling_class = impostor->subclass_list;
+	    sub->super_class = impostor;
+	    impostor->subclass_list = sub;
+	    
+	    /* meta classes */
+	    CLASSOF (sub)->sibling_class = CLASSOF (impostor)->subclass_list;
+	    CLASSOF (sub)->super_class = CLASSOF (impostor);
+	    CLASSOF (impostor)->subclass_list = CLASSOF (sub);
+	  }
+
+	*subclass = nextSub;
       }
 
-    /* Do the same for the meta classes */
+    /* set subclasses of superclass to be impostor only */
+    super_class->subclass_list = impostor;
+    CLASSOF (super_class)->subclass_list = CLASSOF (impostor);
+    
+    /* set impostor to have no sibling classes */
+    impostor->sibling_class = 0;
+    CLASSOF (impostor)->sibling_class = 0;
 
-    for (metaclasspp = &(super_class->class_pointer->subclass_list);
-         *metaclasspp;
-         metaclasspp = &((*metaclasspp)->sibling_class))
+    /* impostor has a sibling... */
+    if (super_is_base_class)
       {
-        if (*metaclasspp == impostor->class_pointer)
-          *metaclasspp = (*metaclasspp)->sibling_class;
-        if (*metaclasspp == 0)
-          break;
+	CLASSOF (super_class)->sibling_class = 0;
+	impostor->sibling_class = CLASSOF (super_class);
+      }
+  }
+  
+  /* check relationship of impostor and super_class */
+  assert (impostor->super_class == super_class);
+  assert (CLASSOF (impostor)->super_class == CLASSOF (super_class));
+
+  /* by now, the re-organization of the class hierachy 
+     is done.  We only need to update various tables. */
+
+  /* First, we change the names in the hash table.
+     This will change the behavior of objc_get_class () */
+  {
+    char* buffer = (char*) __objc_xmalloc(strlen (super_class->name) + 2);
+
+    strcpy (buffer+1, super_class->name);
+    buffer[0] = '*';
+
+    /* keep on prepending '*' until the name is unique */
+    while (hash_value_for_key (__objc_class_hash, buffer))
+      {
+	char *bbuffer = (char*) __objc_xmalloc (strlen (buffer)+2);
+
+	strcpy (bbuffer+1, buffer);
+	bbuffer[0] = '*';
+	free (buffer);
+	buffer = bbuffer;
       }
 
-    /* From the loop above, classpp now points to the sibling_class entry */
-    /* of the last element in the list of subclasses for super_class */
+    hash_remove (__objc_class_hash, super_class->name);
+    hash_add (&__objc_class_hash, buffer, super_class);
+    hash_add (&__objc_class_hash, super_class->name, impostor);
 
-    /* Append the subclass list of impostor to the subclass list of */
-    /* superclass, and excange those two and set subclass of */
-    /* super_class to be impostor only */
-
-    *classpp = impostor->subclass_list;
-    new_class->subclass_list = super_class->subclass_list;
-    super_class->subclass_list = new_class;
-    new_class->sibling_class = 0;
-
-    /* Do the same thing for the meta classes */
-    *metaclasspp = impostor->class_pointer->subclass_list;
-    new_meta_class->subclass_list = super_class->class_pointer->subclass_list;
-    super_class->class_pointer->subclass_list = new_meta_class;
-    new_meta_class->sibling_class = 0;
-
-    /* Update superclass links for all subclasses of new_class */
-    for (classpp = &(new_class->subclass_list); *classpp;
-         classpp = &((*classpp)->sibling_class))
-      (*classpp)->super_class = new_class;
-
-    for (metaclasspp = &(new_meta_class->subclass_list); *metaclasspp;
-         metaclasspp = &((*metaclasspp)->sibling_class))
-      (*metaclasspp)->super_class = new_meta_class;
-
+    /* Note that -name and +name will still respond with
+       the same strings as before.  This way any
+       -isKindOfGivenName: will always work.         */
   }
 
-  /* Delete the class from the hash table, change its name so that it can no
-     longer be found, then place it back into the hash table using its new
-     name.
-  
-  Don't worry about the class number.  It is already assigned.
-     memory is lost with the hash key.) */
-  hash_remove (__objc_class_hash, super_class->name);
-  sprintf (new_name, "%s*", super_class->name);
-  super_class->name = new_name;
-  super_class->class_pointer->name = new_name;
-  hash_add (&__objc_class_hash, super_class->name, super_class);
+  /* next, we update the dispatch tables... */
+  {
+    Class *subclass;
 
-  /* Place the impostor class in class hash table and assign it a class
-     number.  */
-  __objc_add_class_to_hash (new_class);
+    for (subclass = impostor->subclass_list;
+	 subclass; subclass = subclass->sibling_class)
+      {
+	/* we use the opportunity to check what we did */
+	assert (subclass->super_class == impostor);
+	assert (CLASSOF (subclass)->super_class == CLASSOF (impostor));
 
-  /* Now update dispatch tables for new_class and it's subclasses */
-  __objc_update_dispatch_table_for_class ((Class*) new_meta_class);
-  __objc_update_dispatch_table_for_class (new_class);
+	__objc_update_dispatch_table_for_class (CLASSOF (subclass));
+	__objc_update_dispatch_table_for_class (subclass);
+      }
+  }
 
-  return new_class;
+  return impostor;
 }
-
+  
