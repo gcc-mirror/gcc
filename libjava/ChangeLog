@@ -1,3 +1,12 @@
+2003-02-16  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/util/Properties.java (store): Move the code formerly in
+	list(), into this method.
+	(list (PrintStream)): Just call list (PrintWriter) with a 
+	PrintWriter object constructed from the given PrintStream object.
+	(list (PrintWriter)): Emulate the output of Properties.list()
+	as found in JDK 1.3/1.4.
+
 2003-02-16  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::pop_jump): Removed unused
