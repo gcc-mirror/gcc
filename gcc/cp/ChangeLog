@@ -1,5 +1,12 @@
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (layout_var_decl): Change prototype.  Don't complete
+	types for external objects.
+	(check_initializer): Likewise.  Tidy.
+	(initialize_local_var): Complete types here.
+	(cp_finish_decl): Not here.  Reorganize a little.
+	(grokvardecl): Don't complete types here.
+
 	* decl.c (start_function): Clear last_dtor_insn and
 	last_parm_cleanup_insn. 
 	(push_cp_function_context): Just copy over a little of
