@@ -1,3 +1,9 @@
+2003-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9420
+	* search.c (lookup_conversions): Call complete_type here.
+	* call.c (implicit_conversion): Not here.
+
 2003-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (do_nonmember_using_decl): Correct handling of
