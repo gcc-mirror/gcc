@@ -299,6 +299,15 @@ struct function
      commences.  */
   int x_whole_function_mode_p;
 
+  /* Nonzero if the back-end should not keep track of expressions that
+     determine the size of variable-sized objects.  Normally, such
+     expressions are saved away, and then expanded when the next
+     function is started.  For example, if a parameter has a
+     variable-sized type, then the size of the parameter is computed
+     when the function body is entered.  However, some front-ends do
+     not desire this behavior.  */
+  int x_dont_save_pending_sizes_p;
+
   /* List (chain of TREE_LIST) of LABEL_DECLs for all nonlocal labels
      (labels to which there can be nonlocal gotos from nested functions)
      in this function.  */
