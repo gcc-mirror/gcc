@@ -1,3 +1,9 @@
+Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* cse.c (cse_insn): Supply proper SUBREG_BYTE to simplify_gen_subreg.
+	Get mode from dest.
+	If simplify_gen_subreg fails, try next equivalent.
+
 2002-07-09  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h: #include location.h

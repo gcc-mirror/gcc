@@ -6196,14 +6196,29 @@ cse_insn (insn, libcall_insn)
 		rtx new_src = 0;
 		unsigned src_hash;
 		struct table_elt *src_elt;
+		int byte = 0;
 
 		/* Ignore invalid entries.  */
 		if (GET_CODE (elt->exp) != REG
 		    && ! exp_equiv_p (elt->exp, elt->exp, 1, 0))
 		  continue;
 
-		new_src
-		  = simplify_gen_subreg (new_mode, elt->exp, elt->mode, 0);
+		/* Calculate big endian correction for the SUBREG_BYTE
+		   (or equivalent).  We have already checked that M1
+		   ( GET_MODE (dest) ) is not narrower than M2 (new_mode).  */
+		if (BYTES_BIG_ENDIAN)
+		  byte = (GET_MODE_SIZE (GET_MODE (dest))
+			  - GET_MODE_SIZE (new_mode));
+		new_src = simplify_gen_subreg (new_mode, elt->exp,
+					       GET_MODE (dest), byte);
+		/* The call to simplify_gen_subreg fails if the value
+		   is VOIDmode, yet we can't do any simplification, e.g.
+		   for EXPR_LISTs denoting function call results.
+		   It is invalid to construct a SUBREG with a VOIDmode
+		   SUBREG_REG, hence a zero new_src means we can't do
+		   this substitution.  */
+		if (! new_src)
+		  continue;
 
 		src_hash = HASH (new_src, new_mode);
 		src_elt = lookup (new_src, src_hash, new_mode);
