@@ -1,3 +1,15 @@
+Sun Aug  6 00:54:42 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/objc-act.c: New command line option -fconstant-string-class
+	to allow specifying a user defined constant string class,
+	different from NXConstantString.
+
+	* toplev.c: Moved the Objective-C specific options to
+	objc/lang-options.h.
+
+	* objc/lang-options.h: Moved the Objective-C specific options from
+	toplev.c. Added -fconstant-string-class.
+
 2000-08-05  Chris Demetriou  <cgd@sibyte.com>
 
 	* mips/elf.h (CTOR_LIST_BEGIN, CTOR_LIST_END,
