@@ -742,8 +742,11 @@ expand_goto_internal (body, label, last_insn)
    If LAST_INSN is nonzero, we pretend that the jump appears
    after insn LAST_INSN instead of at the current point in the insn stream.
 
-   The fixup will be used later to insert insns at this point
-   to restore the stack level as appropriate for the target label.
+   The fixup will be used later to insert insns just before the goto.
+   Those insns will restore the stack level as appropriate for the
+   target label, and will (in the case of C++) also invoke any object
+   destructors which have to be invoked when we exit the scopes which
+   are exited by the goto.
 
    Value is nonzero if a fixup is made.  */
 
@@ -820,10 +823,30 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	 someone does it!  */
       if (last_insn == 0)
 	do_pending_stack_adjust ();
-      fixup->before_jump = last_insn ? last_insn : get_last_insn ();
       fixup->target = tree_label;
       fixup->target_rtl = rtl_label;
-      fixup->context = current_block ();
+
+      /* Create a BLOCK node and a corresponding matched set of
+	 NOTE_INSN_BEGIN_BLOCK and NOTE_INSN_END_BLOCK notes at
+	 this point.  The notes will encapsulate any and all fixup
+	 code which we might later insert at this point in the insn
+	 stream.  Also, the BLOCK node will be the parent (i.e. the
+	 `SUPERBLOCK') of any other BLOCK nodes which we might create
+	 later on when we are expanding the fixup code.  */
+
+      {
+        register rtx original_before_jump
+          = last_insn ? last_insn : get_last_insn ();
+
+        start_sequence ();
+        pushlevel (0);
+        fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+        last_block_end_note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+        fixup->context = poplevel (1, 0, 0);  /* Create the BLOCK node now! */
+        end_sequence ();
+        emit_insns_after (fixup->before_jump, original_before_jump);
+      }
+
       fixup->block_start_count = block_start_count;
       fixup->stack_level = 0;
       fixup->cleanup_list_list
@@ -885,7 +908,6 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
       else if (PREV_INSN (f->target_rtl) != 0)
 	{
 	  register rtx cleanup_insns;
-	  tree newblock;
 
 	  /* Get the first non-label after the label
 	     this goto jumps to.  If that's before this scope begins,
@@ -921,7 +943,12 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 
 	  start_sequence ();
 
+	  /* Temporarily restore the lexical context where we will
+	     logically be inserting the fixup code.  We do this for the
+	     sake of getting the debugging information right.  */
+
 	  pushlevel (0);
+	  set_block (f->context);
 
 	  /* Expand the cleanups for blocks this jump exits.  */
 	  if (f->cleanup_list_list)
@@ -955,15 +982,11 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	     destructed are still "in scope".  */
 
 	  cleanup_insns = get_insns ();
-	  newblock = poplevel (1, 0, 0);
+	  poplevel (1, 0, 0);
 
 	  end_sequence ();
 	  emit_insns_after (cleanup_insns, f->before_jump);
 
-	  /* Put the new block into its proper context.  */
-	  BLOCK_SUBBLOCKS (f->context) 
-	    = chainon (BLOCK_SUBBLOCKS (f->context), newblock);
-	  BLOCK_SUPERCONTEXT (newblock) = f->context;
 
 	  f->before_jump = 0;
 	}
