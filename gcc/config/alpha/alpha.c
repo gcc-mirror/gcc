@@ -707,6 +707,22 @@ any_memory_operand (op, mode)
 	      && REGNO (SUBREG_REG (op)) >= FIRST_PSEUDO_REGISTER));
 }
 
+/* Return 1 is OP is a memory location that is not an reference (using
+   an AND) to an unaligned location.  Take into account what reload
+   will do.  */
+
+int
+normal_memory_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (reload_in_progress && GET_CODE (op) == REG
+      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+    op = reg_equiv_mem[REGNO (op)];
+
+  return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) != AND;
+}
+
 /* REF is an alignable memory location.  Place an aligned SImode
    reference into *PALIGNED_MEM and the number of bits to shift into
    *PBITNUM.  */
