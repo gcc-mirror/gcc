@@ -1,3 +1,8 @@
+2000-02-01  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (_Jv_JNI_GetField): Specialize for jobject.
+	(_Jv_JNI_GetStaticField): Likewise.
+
 2000-01-31  Tom Tromey  <tromey@cygnus.com>
 
 	* prims.cc (_Jv_MallocUnchecked): New function.
