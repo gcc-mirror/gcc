@@ -4517,7 +4517,7 @@ get_file_function_name_long (const char *type)
 	file = input_filename;
 
       len = strlen (file);
-      q = alloca (9 * 2 + len);
+      q = alloca (9 * 2 + len + 1);
       memcpy (q, file, len + 1);
       clean_symbol_name (q);
 
