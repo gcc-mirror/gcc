@@ -5873,20 +5873,13 @@ tsubst_decl (t, args, type, in_decl)
       break;
 
     case TYPE_DECL:
-      if (DECL_IMPLICIT_TYPEDEF_P (t))
+      if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
+	  || t == TYPE_MAIN_DECL (TREE_TYPE (t)))
 	{
-	  /* For an implicit typedef, we just want the implicit
-	     typedef for the tsubst'd type.  We've already got the
-	     tsubst'd type, as TYPE, so we just need it's associated
-	     declaration.  */
-	  r = TYPE_NAME (type);
-	  break;
-	}
-      else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-	       || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
-	{
-	  /* For a template type parameter, we don't have to do
-	     anything special.  */
+	  /* If this is the canonical decl, we don't have to mess with
+             instantiations, and often we can't (for typename, template
+	     type parms and such).  Note that TYPE_NAME is not correct for
+	     the above test if we've copied the type for a typedef.  */
 	  r = TYPE_NAME (type);
 	  break;
 	}
