@@ -355,6 +355,8 @@ global_alloc (FILE *file)
       else if (cannot_elim)
 	error ("%s cannot be used in asm here",
 	       reg_names[eliminables[i].from]);
+      else
+	regs_ever_live[eliminables[i].from] = 1;
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   if (!regs_asm_clobbered[HARD_FRAME_POINTER_REGNUM])
@@ -366,6 +368,8 @@ global_alloc (FILE *file)
   else if (need_fp)
     error ("%s cannot be used in asm here",
 	   reg_names[HARD_FRAME_POINTER_REGNUM]);
+  else
+    regs_ever_live[HARD_FRAME_POINTER_REGNUM] = 1;
 #endif
 
 #else
@@ -377,6 +381,8 @@ global_alloc (FILE *file)
     }
   else if (need_fp)
     error ("%s cannot be used in asm here", reg_names[FRAME_POINTER_REGNUM]);
+  else
+    regs_ever_live[FRAME_POINTER_REGNUM] = 1;
 #endif
 
   /* Track which registers have already been used.  Start with registers

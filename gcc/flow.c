@@ -2468,7 +2468,9 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
       {
 	int i;
 
-	for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	/* We must scan forwards.  If we have an asm, we need to set
+	   the PROP_ASM_SCAN flag before scanning the clobbers.  */
+	for (i = 0; i < XVECLEN (x, 0); i++)
 	  {
 	    rtx sub = XVECEXP (x, 0, i);
 	    switch (code = GET_CODE (sub))
@@ -2493,6 +2495,10 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
 	      case CLOBBER:
 	      mark_clob:
 		mark_set_1 (pbi, code, SET_DEST (sub), cond, insn, flags);
+		break;
+
+	      case ASM_OPERANDS:
+		flags |= PROP_ASM_SCAN;
 		break;
 
 	      default:
