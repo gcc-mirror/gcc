@@ -1,3 +1,8 @@
+2003-01-26  Gabriel Dos Reis  <gdr@soliton.integrable-solutions.net>
+
+	* timevar.def (TV_OVERLOAD, TV_TEMPLATE_INSTANTIATION): New
+	timevar_id enumerations.
+
 2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c: Fix formatting.
