@@ -1,5 +1,10 @@
 2000-08-01  Alexandre Oliva  <aoliva@redhat.com>
 
+	* ltconfig, ltmain.sh: Update from libtool multi-language branch.
+	* ltcf-c.sh (need_lc): Fix test message.  Set wl for archive_cmds.
+	(ac_cv_prog_cc_pic): Don't print `cached' without `checking'.
+	* ltcf-cxx.sh (need_lc): Set based on postdeps.
+
 	* configure.in (qCXX_FOR_TARGET): Use echo instead of expr.
 
 2000-07-31  Alexandre Oliva  <aoliva@redhat.com>

@@ -1,6 +1,6 @@
 #### This script is meant to be sourced by ltconfig.
 
-# $Id: ltcf-c.sh,v 1.1.2.9 2000/07/24 05:28:14 oliva Exp $
+# $Id: ltcf-c.sh,v 1.1 2000/07/28 18:04:21 bkoz Exp $
 
 # ltcf-c.sh - Create a C compiler specific configuration
 #
@@ -520,7 +520,7 @@ fi
 
 ## Compiler Characteristics: PIC flags, static flags, etc
 if test "X${ac_cv_prog_cc_pic+set}" = Xset; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  :
 else
   ac_cv_prog_cc_pic=
   ac_cv_prog_cc_shlib=
@@ -653,27 +653,28 @@ if test "$enable_shared" = yes && test "$with_gcc" = yes; then
     # Test whether the compiler implicitly links with -lc since on some
     # systems, -lgcc has to come before -lc. If gcc already passes -lc
     # to ld, don't add -lc before -lgcc.
-    echo $ac_n "checking whether -lc is implicitly linked in... $ac_c" 1>&6
+    echo $ac_n "checking whether -lc should be explicitly linked in... $ac_c" 1>&6
     if eval "test \"`echo '$''{'ac_cv_archive_cmds_needs_lc'+set}'`\" = set"; then
       echo $ac_n "(cached) $ac_c" 1>&6
       need_lc=$ac_cv_archive_cmds_needs_lc
     else
       $rm conftest*
       echo "static int dummy;" > conftest.$ac_ext
-      if { (eval echo $progname:@LINENO@: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>conftest.err; }; then
+      if { (eval echo ltcf-c.sh:need_lc: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>conftest.err; }; then
 	# Append any warnings to the config.log.
 	cat conftest.err 1>&5
 	soname=conftest
 	lib=conftest
 	libobjs=conftest.o
 	deplibs=
+	wl=$ac_cv_prog_cc_wl
 	compiler_flags=-v
 	linker_flags=-v
 	verstring=
 	output_objdir=.
 	libname=conftest
 	allow_undefined_flag=
-	if { (eval echo $progname:@LINENO@: \"$archive_cmds\") 1>&5; (eval $archive_cmds) 2>&1 | grep " -lc " 1>&5 ; }; then
+	if { (eval echo ltcf-c.sh:need_lc: \"$archive_cmds\") 1>&5; (eval $archive_cmds) 2>&1 | grep " -lc " 1>&5 ; }; then
 	  need_lc=no
 	fi
       else

@@ -1,6 +1,6 @@
 #### This script is meant to be sourced by ltconfig.
 
-# $Id: ltcf-cxx.sh,v 1.1.2.18 2000/07/24 06:10:27 oliva Exp $
+# $Id: ltcf-cxx.sh,v 1.1 2000/07/28 18:04:21 bkoz Exp $
 
 # ltcf-cxx.sh - Create a C++ compiler specific configuration
 #
@@ -874,47 +874,7 @@ fi
 
 $rm -f confest.$objext
 
-need_lc=yes
-if test "$enable_shared" = yes && test "$with_gcc" = yes; then
-  case "$archive_cmds" in
-  *'~'*)
-    # FIXME: we may have to deal with multi-command sequences.
-    ;;
-  '$CC '*)
-    # Test whether the compiler implicitly links with -lc since on some
-    # systems, -lgcc has to come before -lc. If gcc already passes -lc
-    # to ld, don't add -lc before -lgcc.
-    echo $ac_n "checking whether -lc is implicitly linked in... $ac_c" 1>&6
-    if eval "test \"`echo '$''{'ac_cv_cxx_archive_cmds_needs_lc'+set}'`\" = set"; then
-      echo $ac_n "(cached) $ac_c" 1>&6
-      need_lc=$ac_cv_cxx_archive_cmds_needs_lc
-    else
-      $rm conftest*
-      echo "static int dummy;" > conftest.$ac_ext
-      if { (eval echo $progname:@LINENO@: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>conftest.err; }; then
-	# Append any warnings to the config.log.
-	cat conftest.err 1>&5
-
-	soname=conftest
-	lib=conftest
-	libobjs=conftest.o
-	deplibs=
-	compiler_flags=-v
-	linker_flags=-v
-	verstring=
-	output_objdir=.
-	libname=conftest
-	allow_undefined_flag=
-	if { (eval echo $progname:@LINENO@: \"$archive_cmds\") 1>&5; (eval $archive_cmds) 2>&1 | grep " -lc " 1>&5 ; }; then
-	  need_lc=no
-	fi
-      else
-	cat conftest.err 1>&5
-      fi
-    fi
-    $rm conftest*
-    echo "$ac_t$need_lc" 1>&6
-    ;;
-  esac
-fi
-ac_cv_cxx_archive_cmds_needs_lc=$need_lc
+case " $postdeps " in
+*" -lc "*) need_lc=no ;;
+*) need_lc=yes ;;
+esac

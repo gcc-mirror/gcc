@@ -55,7 +55,7 @@ modename="$progname"
 PROGRAM=ltmain.sh
 PACKAGE=libtool
 VERSION=1.4a
-TIMESTAMP=" (1.641.2.74 2000/07/26 04:31:03)"
+TIMESTAMP=" (1.641.2.77 2000/08/01 04:25:15)"
 
 default_mode=
 help="Try \`$progname --help' for more information."
@@ -4023,7 +4023,7 @@ relink_command=\"$relink_command\""
     # install_prog (especially on Windows NT).
     if test "$nonopt" = "$SHELL" || test "$nonopt" = /bin/sh ||
        # Allow the use of GNU shtool's install command.
-       expr "X$nonopt" : "X.*shtool.*" > /dev/null; then
+       $echo "X$nonopt" | $Xsed | grep shtool > /dev/null; then
       # Aesthetically quote it.
       arg=`$echo "X$nonopt" | $Xsed -e "$sed_quote_subst"`
       case "$arg" in
