@@ -7879,7 +7879,7 @@ EOF
     *-windiss*)
       os_include_dir="config/os/windiss"
       ;;
-    *-qnx6.12*)
+    *-qnx6.[12]*)
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
        
       
