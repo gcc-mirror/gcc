@@ -1,3 +1,7 @@
+2004-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20041018-1.c: New test.
+
 2004-10-18  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.dg/ppc-sdata-1.c: Update to consider the possibility of the
