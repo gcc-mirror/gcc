@@ -1032,8 +1032,8 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 }
 
 
-/* Create a symbol node for this intrinsic.  The symbol form the frontend
-   is for the generic name.  */
+/* Create a symbol node for this intrinsic.  The symbol from the frontend
+   has the generic name.  */
 
 static gfc_symbol *
 gfc_get_symbol_for_expr (gfc_expr * expr)
