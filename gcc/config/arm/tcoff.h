@@ -49,7 +49,7 @@ extern int arm_structure_size_boundary;
 #define LOCAL_LABEL_PREFIX "."
 
 #undef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX "_"
+#define USER_LABEL_PREFIX ""
 
 /* A C statement to output assembler commands which will identify the
    object file as having been compiled with GNU CC (or another GNU

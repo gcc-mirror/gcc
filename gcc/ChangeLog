@@ -1,3 +1,7 @@
+Tue Jul 14 07:41:59 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm/tcoff.h (USER_LABEL_PREFIX): Make it empty to match coff.h.
+
 Tue Jul 14 03:02:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump again to distinguish mainline tree from the
