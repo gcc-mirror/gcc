@@ -3250,8 +3250,6 @@ const_uint32_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
@@ -3271,8 +3269,6 @@ const_sint32_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));
