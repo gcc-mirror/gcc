@@ -25,6 +25,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-u -mpwr"
 
+/* These are not necessary when we pass -u to the assembler, and undefining
+   them saves a great deal of space in object files.  */
+
+#undef ASM_OUTPUT_EXTERNAL
+#undef ASM_OUTPUT_EXTERNAL_LIBCALL
+
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
    %{static:-bnso -bI:/lib/syscalls.exp} %{g*:-bexport:/usr/lib/libg.exp}\
