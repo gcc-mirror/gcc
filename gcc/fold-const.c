@@ -113,7 +113,7 @@ static tree make_range (tree, int *, tree *, tree *);
 static tree build_range_check (tree, tree, int, tree, tree);
 static int merge_ranges (int *, tree *, tree *, int, tree, tree, int, tree,
 			 tree);
-static tree fold_range_test (tree);
+static tree fold_range_test (enum tree_code, tree, tree, tree);
 static tree fold_cond_expr_with_comparison (tree, tree, tree, tree);
 static tree unextend (tree, int, int, tree);
 static tree fold_truthop (enum tree_code, tree, tree, tree);
@@ -4414,14 +4414,14 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
    merge it into some range test.  Return the new tree if so.  */
 
 static tree
-fold_range_test (tree exp)
+fold_range_test (enum tree_code code, tree type, tree op0, tree op1)
 {
-  int or_op = (TREE_CODE (exp) == TRUTH_ORIF_EXPR
-	       || TREE_CODE (exp) == TRUTH_OR_EXPR);
+  int or_op = (code == TRUTH_ORIF_EXPR
+	       || code == TRUTH_OR_EXPR);
   int in0_p, in1_p, in_p;
   tree low0, low1, low, high0, high1, high;
-  tree lhs = make_range (TREE_OPERAND (exp, 0), &in0_p, &low0, &high0);
-  tree rhs = make_range (TREE_OPERAND (exp, 1), &in1_p, &low1, &high1);
+  tree lhs = make_range (op0, &in0_p, &low0, &high0);
+  tree rhs = make_range (op1, &in1_p, &low1, &high1);
   tree tem;
 
   /* If this is an OR operation, invert both sides; we will invert
@@ -4436,7 +4436,7 @@ fold_range_test (tree exp)
   if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = (build_range_check (TREE_TYPE (exp),
+      && 0 != (tem = (build_range_check (type,
 					 lhs != 0 ? lhs
 					 : rhs != 0 ? rhs : integer_zero_node,
 					 in_p, low, high))))
@@ -4447,33 +4447,32 @@ fold_range_test (tree exp)
      is the same, make a non-short-circuit operation.  */
   else if (LOGICAL_OP_NON_SHORT_CIRCUIT
 	   && lhs != 0 && rhs != 0
-	   && (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
-	       || TREE_CODE (exp) == TRUTH_ORIF_EXPR)
+	   && (code == TRUTH_ANDIF_EXPR
+	       || code == TRUTH_ORIF_EXPR)
 	   && operand_equal_p (lhs, rhs, 0))
     {
       /* If simple enough, just rewrite.  Otherwise, make a SAVE_EXPR
 	 unless we are at top level or LHS contains a PLACEHOLDER_EXPR, in
 	 which cases we can't do this.  */
       if (simple_operand_p (lhs))
-	return build2 (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
+	return build2 (code == TRUTH_ANDIF_EXPR
 		       ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
-		       TREE_TYPE (exp), TREE_OPERAND (exp, 0),
-		       TREE_OPERAND (exp, 1));
+		       type, op0, op1);
 
       else if (lang_hooks.decls.global_bindings_p () == 0
 	       && ! CONTAINS_PLACEHOLDER_P (lhs))
 	{
 	  tree common = save_expr (lhs);
 
-	  if (0 != (lhs = build_range_check (TREE_TYPE (exp), common,
+	  if (0 != (lhs = build_range_check (type, common,
 					     or_op ? ! in0_p : in0_p,
 					     low0, high0))
-	      && (0 != (rhs = build_range_check (TREE_TYPE (exp), common,
+	      && (0 != (rhs = build_range_check (type, common,
 						 or_op ? ! in1_p : in1_p,
 						 low1, high1))))
-	    return build2 (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
+	    return build2 (code == TRUTH_ANDIF_EXPR
 			   ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
-			   TREE_TYPE (exp), lhs, rhs);
+			   type, lhs, rhs);
 	}
     }
 
@@ -8619,7 +8618,7 @@ fold_binary (tree expr)
 	}
 
       /* See if we can build a range comparison.  */
-      if (0 != (tem = fold_range_test (t)))
+      if (0 != (tem = fold_range_test (code, type, op0, op1)))
 	return tem;
 
       /* Check for the possibility of merging component references.  If our
