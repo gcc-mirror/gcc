@@ -1,5 +1,10 @@
 Fri Dec 12 01:19:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* alpha/osf2or3.h (LIB_SPEC): Restore missing defn.
+
+	* pa.h (TEXT_SPACE_P): Use TREE_CODE_CLASS.
+	* pa.md (iorsi3): Add missing args to *_operand calls.
+
 	* except.c (call_get_eh_context): Don't mess with sequences.
 	(emit_eh_context): Include the call in the sequence here.
 

@@ -21,3 +21,4 @@ Boston, MA 02111-1307, USA.  */
 /* In OSF 2 or 3, linking with -lprof1 doesn't require -lpdf.  */
 
 #undef LIB_SPEC
+#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
