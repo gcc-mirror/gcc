@@ -1789,7 +1789,7 @@ PREPROCESSOR_DEFINES = \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\"
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o \
-		cpphash.o cpperror.o cppinit.o cppulp.o cppdefault.o \
+		cpphash.o cpperror.o cppinit.o cppdefault.o \
 		mkdeps.o prefix.o version.o mbchar.o @extra_cpp_objs@
 
 LIBCPP_DEPS =	cpplib.h cpphash.h intl.h system.h
@@ -1807,7 +1807,6 @@ cpp0$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
 
 cppmain.o:  cppmain.c  $(CONFIG_H) cpplib.h intl.h system.h
 
-cppulp.o:   cppulp.c   $(CONFIG_H) system.h output.h
 cpperror.o: cpperror.c $(CONFIG_H) $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpplex.o:   cpplex.c   $(CONFIG_H) $(LIBCPP_DEPS)
