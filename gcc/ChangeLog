@@ -16,9 +16,12 @@ Thu Nov 26 15:16:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	specified.
 	(c4x_output_cbranch): Handle a sequence of insns rather than a
  	single insn.
-	(c4x_rptb_insert): Don not emit a RPTB insn if the RC register
+	(c4x_rptb_insert): Do not emit a RPTB insn if the RC register
 	has not been allocated as the loop counter.
-	(c4x_address_conflict): 
+	(c4x_address_conflict): Do not allow two volatile memory references.
+	(valid_parallel_operands_4, valid_parallel_operands_5,
+ 	valid_parallel_operands_6): Reject pattern if the register destination
+	of the first set is used as part of an address in the second set.
 	
 
 Thu Nov 26 14:56:32 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>

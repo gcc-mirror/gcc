@@ -159,9 +159,6 @@ tree interrupt_tree = NULL_TREE;
 void
 c4x_override_options ()
 {
-  /* Convert foo / 8.0 into foo * 0.125, etc.  */
-  flag_fast_math = 1;
-
   if (c4x_rpts_cycles_string)
     c4x_rpts_cycles = atoi (c4x_rpts_cycles_string);
   else
@@ -204,8 +201,21 @@ c4x_override_options ()
   else
     target_flags &= ~C3X_FLAG;
 
+  /* Convert foo / 8.0 into foo * 0.125, etc.  */
+  flag_fast_math = 1;
+
+  /* We should phase out the following at some stage.
+     This provides compatibility with the old -mno-rptb option.  */
+  if (!TARGET_RPTB && flag_branch_on_count_reg)
+    flag_branch_on_count_reg = 0;
+
+  /* We should phase out the following at some stage.
+     This provides compatibility with the old -mno-aliases option.  */
+  if (!TARGET_ALIASES && !flag_argument_noalias)
+    flag_argument_noalias = 1;
 }
 
+/* This is called before c4x_override_options.  */
 void
 c4x_optimization_options (level, size)
      int level;
@@ -213,7 +223,7 @@ c4x_optimization_options (level, size)
 {
   /* When optimizing, enable use of RPTB instruction.  */
   if (level >= 1)
-      flag_branch_on_count_reg = 1;
+    flag_branch_on_count_reg = 1;
 }
 
 /* Write an ASCII string.  */
@@ -1419,30 +1429,26 @@ c4x_gen_compare_reg (code, x, y)
 }
 
 char *
-c4x_output_cbranch (reversed, insn)
-     int reversed;
-     rtx insn;
+c4x_output_cbranch (form, seq)
+     char *form;
+     rtx seq;
 {
   int delayed = 0;
   int annultrue = 0;
   int annulfalse = 0;
   rtx delay;
   char *cp;
-  static char str[20];
+  static char str[100];
   
   if (final_sequence)
     {
       delay = XVECEXP (final_sequence, 0, 1);
-      delayed = !INSN_ANNULLED_BRANCH_P (insn);
-      annultrue = INSN_ANNULLED_BRANCH_P (insn) && !INSN_FROM_TARGET_P (delay);
-      annulfalse = INSN_ANNULLED_BRANCH_P (insn) && INSN_FROM_TARGET_P (delay);
+      delayed = !INSN_ANNULLED_BRANCH_P (seq);
+      annultrue = INSN_ANNULLED_BRANCH_P (seq) && !INSN_FROM_TARGET_P (delay);
+      annulfalse = INSN_ANNULLED_BRANCH_P (seq) && INSN_FROM_TARGET_P (delay);
     }
-  cp = str;
-  *cp++ = 'b';
-  *cp++ = '%';
-  if (reversed)
-    *cp++ = 'I';
-  *cp++ = '0';
+  strcpy (str, form);
+  cp = &str [strlen (str)];
   if (delayed)
     {
       *cp++ = '%';
@@ -1465,7 +1471,6 @@ c4x_output_cbranch (reversed, insn)
   *cp = 0;
   return str;
 }
-
 
 void
 c4x_print_operand (file, op, letter)
@@ -2040,10 +2045,19 @@ c4x_rptb_insert (insn)
 {
   rtx end_label;
   rtx start_label;
-  
+  rtx count_reg;
+
+  /* If the count register has not been allocated to RC, say if
+     there is a movstr pattern in the loop, then do not insert a
+     RPTB instruction.  Instead we emit a decrement and branch
+     at the end of the loop.  */
+  count_reg = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 0), 0);
+  if (REGNO (count_reg) != RC_REGNO)
+    return;
+
   /* Extract the start label from the jump pattern (rptb_end).  */
   start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0);
-
+  
   /* We'll have to update the basic blocks.  */
   end_label = gen_label_rtx ();
   emit_label_after (end_label, insn);
@@ -3123,6 +3137,9 @@ c4x_address_conflict (op0, op1, store0, store1)
   int disp0;
   int disp1;
   
+  if (MEM_VOLATILE_P (op0) && MEM_VOLATILE_P (op1))
+    return 1;
+
   c4x_S_address_parse (op0, &base0, &incdec0, &index0, &disp0);
   c4x_S_address_parse (op1, &base1, &incdec1, &index1, &disp1);
 
@@ -3137,12 +3154,7 @@ c4x_address_conflict (op0, op1, store0, store1)
 	 have an aliased address if both locations are not marked
 	 volatile, it is probably safer to flag a potential conflict
 	 if either location is volatile.  */
-      if (!TARGET_ALIASES)
-	{
-	  if (MEM_VOLATILE_P (op0) && MEM_VOLATILE_P (op1))
-	    return 1;
-	}
-      else
+      if (!flag_argument_alias)
 	{
 	  if (MEM_VOLATILE_P (op0) || MEM_VOLATILE_P (op1))
 	    return 1;
@@ -3222,6 +3234,14 @@ valid_parallel_operands_4 (operands, mode)
      par_ind_operand() operands.  Thus of the 4 operands, only 2
      should be REGs and the other 2 should be MEMs.  */
 
+  /* This test prevents the multipack pass from using this pattern if
+     op0 is used as an index or base register in op3, since this combination
+     will require reloading.  */
+  if (GET_CODE (op0) == REG
+      && GET_CODE (op3) == MEM
+      && reg_mentioned_p (op0, XEXP (op3, 0)))
+    return 0;
+
   /* LDI||LDI  */
   if (GET_CODE (op0) == REG && GET_CODE (op2) == REG)
     return (REGNO (op0) != REGNO (op2))
@@ -3246,6 +3266,7 @@ valid_parallel_operands_4 (operands, mode)
   return 0;
 }
 
+
 /* We only use this to check operands 1 and 2 since these may be
    commutative.  It will need extending for the C32 opcodes.  */
 int
@@ -3254,23 +3275,36 @@ valid_parallel_operands_5 (operands, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int regs = 0;
-  rtx op0 = operands[1];
-  rtx op1 = operands[2];
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op3 = operands[3];
 
   if (GET_CODE (op0) == SUBREG)
     op0 = SUBREG_REG (op0);
-  if (GET_CODE (op1) == SUBREG)
-    op1 = SUBREG_REG (op1);
+  if (GET_CODE (op2) == SUBREG)
+    op2 = SUBREG_REG (op2);
 
   /* The patterns should only allow ext_low_reg_operand() or
      par_ind_operand() operands. */
 
   if (GET_CODE (op0) == REG)
     regs++;
-  if (GET_CODE (op1) == REG)
+  if (GET_CODE (op2) == REG)
     regs++;
 
-  return regs == 1;
+  if (regs != 1)
+    return 0;
+
+  /* This test prevents the multipack pass from using this pattern if
+     op0 is used as an index or base register in op3, since this combination
+     will require reloading.  */
+  if (GET_CODE (op0) == REG
+      && GET_CODE (op3) == MEM
+      && reg_mentioned_p (op0, XEXP (op3, 0)))
+    return 0;
+
+  return 1;
 }
 
 
@@ -3280,47 +3314,48 @@ valid_parallel_operands_6 (operands, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int regs = 0;
-  rtx op0 = operands[1];
-  rtx op1 = operands[2];
-  rtx op2 = operands[4];
-  rtx op3 = operands[5];
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx op4 = operands[4];
+  rtx op5 = operands[5];
 
-  if (GET_CODE (op0) == SUBREG)
-    op0 = SUBREG_REG (op0);
   if (GET_CODE (op1) == SUBREG)
     op1 = SUBREG_REG (op1);
   if (GET_CODE (op2) == SUBREG)
     op2 = SUBREG_REG (op2);
-  if (GET_CODE (op3) == SUBREG)
-    op3 = SUBREG_REG (op3);
+  if (GET_CODE (op4) == SUBREG)
+    op4 = SUBREG_REG (op4);
+  if (GET_CODE (op5) == SUBREG)
+    op5 = SUBREG_REG (op5);
 
   /* The patterns should only allow ext_low_reg_operand() or
      par_ind_operand() operands.  Thus of the 4 input operands, only 2
      should be REGs and the other 2 should be MEMs.  */
 
-  if (GET_CODE (op0) == REG)
-    regs++;
   if (GET_CODE (op1) == REG)
     regs++;
   if (GET_CODE (op2) == REG)
     regs++;
-  if (GET_CODE (op3) == REG)
+  if (GET_CODE (op4) == REG)
+    regs++;
+  if (GET_CODE (op5) == REG)
     regs++;
 
   /* The new C30/C40 silicon dies allow 3 regs of the 4 input operands. 
      Perhaps we should count the MEMs as well?  */
-  return regs == 2;
-}
+  if (regs != 2)
+    return 0;
 
+  /* This test prevents the multipack pass from using this pattern if
+     op0 is used as an index or base register in op4 or op5, since
+     this combination will require reloading.  */
+  if (GET_CODE (op0) == REG
+      && ((GET_CODE (op4) == MEM && reg_mentioned_p (op0, XEXP (op4, 0)))
+	  || (GET_CODE (op5) == MEM && reg_mentioned_p (op0, XEXP (op5, 0)))))
+    return 0;
 
-int
-legitimize_parallel_operands_6 (operands, mode)
-     rtx *operands;
-     enum machine_mode mode;
-{
-  /* It's gonna be hard to legitimize operands for a parallel
-     instruction... TODO...  */
-  return valid_parallel_operands_6 (operands, mode);
+  return 1;
 }
 
 
