@@ -5037,7 +5037,11 @@ lang_get_alias_set (t)
      tree t;
 {
   tree u;
-
+  
+  /* We know nothing about vector types */
+  if (TREE_CODE (t) == VECTOR_TYPE)
+    return 0;          
+  
   /* Permit type-punning when accessing a union, provided the access
      is directly through the union.  For example, this code does not
      permit taking the address of a union member and then storing
