@@ -1969,6 +1969,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 		      size_t size)
 {
   unsigned order;
+  static const char emptyBytes[256];
 
   if (size <= 256)
     order = size_lookup[size];
@@ -1982,11 +1983,30 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
   if (fwrite (x, size, 1, f) != 1)
     fatal_error ("can't write PCH file: %m");
 
-  /* In the current implementation, SIZE is always equal to
-     OBJECT_SIZE (order) and so the fseek is never executed.  */
-  if (size != OBJECT_SIZE (order)
-      && fseek (f, OBJECT_SIZE (order) - size, SEEK_CUR) != 0)
-    fatal_error ("can't write PCH file: %m");
+  /* If SIZE is not the same as OBJECT_SIZE(order), then we need to pad the
+     object out to OBJECT_SIZE(order).  This happens for strings. */
+
+  if (size != OBJECT_SIZE (order))
+    {
+      unsigned padding = OBJECT_SIZE(order) - size;
+
+      /* To speed small writes, we use a nulled-out array that's larger
+         than most padding requests as the source for our null bytes.  This
+         permits us to do the padding with fwrite() rather than fseek(), and
+         limits the chance the the OS may try to flush any outstanding
+         writes. */
+      if (padding <= sizeof(emptyBytes))
+        {
+          if (fwrite (emptyBytes, 1, padding, f) != padding)
+            fatal_error ("can't write PCH file");
+        }
+      else
+        {
+          /* Larger than our buffer?  Just default to fseek. */
+          if (fseek (f, padding, SEEK_CUR) != 0)
+            fatal_error ("can't write PCH file");
+        }
+    }
 
   d->written[order]++;
   if (d->written[order] == d->d.totals[order]
