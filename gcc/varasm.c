@@ -1883,7 +1883,11 @@ void
 mark_decl_referenced (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_mark_needed_node (cgraph_node (decl));
+    {
+      /* Extern inline functions don't become needed when referenced.  */
+      if (!DECL_EXTERNAL (decl))
+        cgraph_mark_needed_node (cgraph_node (decl));
+    }
   else if (TREE_CODE (decl) == VAR_DECL)
     cgraph_varpool_mark_needed_node (cgraph_varpool_node (decl));
   /* else do nothing - we can get various sorts of CST nodes here,
