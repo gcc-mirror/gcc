@@ -3011,6 +3011,7 @@ build_unary_op (code, xarg, noconvert)
 	    case FIX_FLOOR_EXPR:
 	    case FIX_ROUND_EXPR:
 	    case FIX_CEIL_EXPR:
+	      pedantic_lvalue_warning (CONVERT_EXPR);
 	      /* If the real type has the same machine representation
 		 as the type it is cast to, we can make better output
 		 by adding directly to the inside of the cast.  */
@@ -3022,7 +3023,6 @@ build_unary_op (code, xarg, noconvert)
 	      else
 		{
 		  tree incremented, modify, value;
-		  pedantic_lvalue_warning (CONVERT_EXPR);
 		  arg = stabilize_reference (arg);
 		  if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
 		    value = arg;
