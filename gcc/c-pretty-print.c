@@ -336,18 +336,18 @@ pp_c_bool_literal (c_pretty_printer ppi, tree b)
 {
   if (b == boolean_false_node || integer_zerop (b))
     {
-      if (c_language == clk_cplusplus)
+      if (c_dialect_cxx ())
 	pp_c_identifier (ppi, "false");
-      else if (c_language == clk_c && flag_isoc99)
+      else if (flag_isoc99)
 	pp_c_identifier (ppi, "_False");
       else
 	pp_unsupported_tree (ppi, b);
     }
   else if (b == boolean_true_node)
     {
-      if (c_language == clk_cplusplus)
+      if (c_dialect_cxx ())
 	pp_c_identifier (ppi, "true");
-      else if (c_language == clk_c && flag_isoc99)
+      else if (flag_isoc99)
 	pp_c_identifier (ppi, "_True");
       else
 	pp_unsupported_tree (ppi, b);

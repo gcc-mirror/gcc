@@ -665,7 +665,7 @@ lex_charconst (const cpp_token *token)
     type = wchar_type_node;
   /* In C, a character constant has type 'int'.
      In C++ 'char', but multi-char charconsts have type 'int'.  */
-  else if ((c_language == clk_c) || chars_seen > 1)
+  else if (!c_dialect_cxx () || chars_seen > 1)
     type = integer_type_node;
   else
     type = char_type_node;

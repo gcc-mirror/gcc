@@ -50,8 +50,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define TARGET_EBCDIC 0
 #endif
 
-static const int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
-
 static int saved_lineno;
 
 /* CPP's options.  */
@@ -213,25 +211,38 @@ defer_opt (enum opt_code code, const char *arg)
 
 /* Common initialization before parsing options.  */
 int
-c_common_init_options (enum c_language_kind lang)
+c_common_init_options (void)
 {
-  c_language = lang;
-  parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89 : CLK_GNUCXX,
+  static const int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
+
+  /* This is conditionalized only because that is the way the front
+     ends used to do it.  Maybe this should be unconditional?  */
+  if (c_dialect_cxx ())
+    {
+      /* By default wrap lines at 80 characters.  Is getenv
+	 ("COLUMNS") preferable?  */
+      diagnostic_line_cutoff (global_dc) = 80;
+      /* By default, emit location information once for every
+	 diagnostic message.  */
+      diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+    }
+
+  parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash);
+
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
+  cpp_opts->objc = c_dialect_objc ();
 
   /* Reset to avoid warnings on internal definitions.  We set it just
      before passing on command-line options to cpplib.  */
   cpp_opts->warn_dollars = 0;
 
-  if (flag_objc)
-    cpp_opts->objc = 1;
+  flag_const_strings = c_dialect_cxx ();
+  flag_exceptions = c_dialect_cxx ();
+  warn_pointer_arith = c_dialect_cxx ();
 
-  flag_const_strings = (lang == clk_cplusplus);
-  warn_pointer_arith = (lang == clk_cplusplus);
-
-  return lang_flags[(c_language << 1) + flag_objc];
+  return lang_flags[c_language];
 }
 
 /* Handle switch SCODE with argument ARG.  ON is true, unless no-
@@ -366,7 +377,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_parentheses = value;
       warn_return_type = value;
       warn_sequence_point = value;	/* Was C only.  */
-      if (c_language == clk_cplusplus)
+      if (c_dialect_cxx ())
 	warn_sign_compare = value;
       warn_switch = value;
       warn_strict_aliasing = value;
@@ -381,7 +392,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (warn_uninitialized != 1)
 	warn_uninitialized = (value ? 2 : 0);
 
-      if (c_language == clk_c)
+      if (!c_dialect_cxx ())
 	/* We set this to 2 here, but 1 in -Wmain, so -ffreestanding
 	   can turn it off only if it's not explicit.  */
 	warn_main = value * 2;
@@ -644,14 +655,14 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wwrite_strings:
-      if (c_language == clk_c)
+      if (!c_dialect_cxx ())
 	flag_const_strings = value;
       else
 	warn_write_strings = value;
       break;
 
     case OPT_ansi:
-      if (c_language == clk_c)
+      if (!c_dialect_cxx ())
 	set_std_c89 (false, true);
       else
 	set_std_cxx98 (true);
@@ -662,7 +673,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fcond_mismatch:
-      if (c_language == clk_c)
+      if (!c_dialect_cxx ())
 	{
 	  flag_cond_mismatch = value;
 	  break;
@@ -1053,8 +1064,7 @@ c_common_post_options (const char **pfilename)
   sanitize_cpp_opts ();
 
   register_include_chains (parse_in, sysroot, iprefix,
-			   std_inc, std_cxx_inc && c_language == clk_cplusplus,
-			   verbose);
+			   std_inc, std_cxx_inc && c_dialect_cxx (), verbose);
 
   flag_inline_trees = 1;
 

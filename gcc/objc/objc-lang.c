@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static int objc_init_options                   PARAMS ((void));
+enum c_language_kind c_language = clk_objc;
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU Objective-C"
@@ -40,7 +40,7 @@ static int objc_init_options                   PARAMS ((void));
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH c_common_finish
 #undef LANG_HOOKS_INIT_OPTIONS
-#define LANG_HOOKS_INIT_OPTIONS objc_init_options
+#define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
 #undef LANG_HOOKS_POST_OPTIONS
@@ -165,10 +165,3 @@ const char * const tree_code_name[] = {
 #include "objc-tree.def"
 };
 #undef DEFTREECODE
-
-static int 
-objc_init_options ()
-{
-  flag_objc = 1;
-  return c_common_init_options (clk_c);
-}

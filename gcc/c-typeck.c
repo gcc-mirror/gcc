@@ -560,7 +560,7 @@ comptypes (tree type1, tree type2)
       }
 
     case RECORD_TYPE:
-      if (flag_objc && objc_comptypes (t1, t2, 0) == 1)
+      if (c_dialect_objc () && objc_comptypes (t1, t2, 0) == 1)
 	val = 1;
       break;
 
@@ -3492,7 +3492,7 @@ build_c_cast (tree type, tree expr)
   /* The ObjC front-end uses TYPE_MAIN_VARIANT to tie together types differing
      only in <protocol> qualifications.  But when constructing cast expressions,
      the protocols do matter and must be kept around.  */
-  if (!flag_objc || !objc_is_id (type))
+  if (!c_dialect_objc () || !objc_is_id (type))
     type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3902,7 +3902,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype, tree fundecl, 
       /* Check for Objective-C protocols.  This will automatically
 	 issue a warning if there are protocol violations.  No need to
 	 use the return value.  */
-      if (flag_objc)
+      if (c_dialect_objc ())
 	objc_comptypes (type, rhstype, 0);
       return rhs;
     }

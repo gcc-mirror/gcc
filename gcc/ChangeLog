@@ -1,3 +1,34 @@
+2003-06-30  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.c (enum c_language_kind, flag_objc): Remove.
+	(fix_string_type, check_case_value, c_common_nodes_and_builtins,
+	c_add_case_label, finish_label_addr_expr, boolean_increment):
+	Use c_dialect_ macros.
+	* c-common.h (enum c_language_kind): Extend.
+	(c_dialect_cxx, c_dialect_objc): New.
+	(flag_objc): Remove.
+	(c_common_init_options): Update prototype.
+	* c-cppbuiltin.c (define__GNUC__, c_cpp_builtins): Use c_dialect_
+	macros.
+	* c-decl.c (finsih_decl, grokfield, finish_struct): Use c_dialect_
+	macros.
+	* c-format.c (C_STD_VER, C_STD_NAME): Similarly.
+	* c-lang.c (c_init_options): Remove.
+	(c_language): Define.
+	(LANG_HOOKS_INIT_OPTIONS): Use common hook.
+	* c-lex.c (lex_charconst): Use c_dialect_ macros.
+	* c-opts.c (lang_flags): Make function-local.
+	(c_common_init_options): Use c_dialect_ macros.  Handle
+	C++ diagnostic requirements.
+	(c_common_handle_option, c_common_post_options): Use flag_cxx.
+	* c-parse.in (init_reswords): Use c_dialect_objc ().
+	* c-pch.c (get_ident): Use c_language.
+	* c-pretty-print.c (pp_c_bool_literal): Use c_dialect_ macros.
+	* c-typeck.c (comptypes, build_c_cast): Similarly.
+	* objc/objc-lang.c (c_language): Define.
+	(LANG_HOOKS_INIT_OPTIONS): Use common hook.
+	(objc_init_options): Remove.
+
 2003-06-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/alpha/alpha.h (FUNCTION_ARG_PADDING): Remove.

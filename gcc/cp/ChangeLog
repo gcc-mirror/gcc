@@ -1,3 +1,12 @@
+2003-06-30  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+	* cp-lang.c (c_language): Define.
+	(LANG_HOOKS_INIT_OPTIONS): Use common hook.
+	* cp-tree.h (cxx_init_options): Remove.
+	* lex.c: Don't include diagnostic.h.
+	(cxx_init_options): Remove.
+
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/4933

@@ -60,14 +60,11 @@ get_ident(void)
 {
   static char result[IDENT_LENGTH];
   static const char template[IDENT_LENGTH] = "gpch.011";
+  static const char c_language_chars[] = "Co+O";
   
   memcpy (result, template, IDENT_LENGTH);
-  if (c_language == clk_c)
-    result[4] = flag_objc ? 'o' : 'C';
-  else if (c_language == clk_cplusplus)
-    result[4] = flag_objc ? 'O' : '+';
-  else
-    abort ();
+  result[4] = c_language_chars[c_language];
+
   return result;
 }
 

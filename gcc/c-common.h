@@ -233,10 +233,19 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 typedef enum c_language_kind
 {
-  clk_c = 0,      /* A dialect of C: K&R C, ANSI/ISO C89, C2000, etc.  */
-  clk_cplusplus   /* ANSI/ISO C++ */
+  clk_c		= 0,		/* C90, C94 or C99 */
+  clk_objc	= 1,		/* clk_c with ObjC features.  */
+  clk_cxx	= 2,		/* ANSI/ISO C++ */
+  clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
 }
 c_language_kind;
+
+/* To test for a specific language use c_language, defined by each
+   front end.  For "ObjC features" or "not C++" use the macros.  */
+extern c_language_kind c_language;
+
+#define c_dialect_cxx()		(c_language & clk_cxx)
+#define c_dialect_objc()	(c_language & clk_objc)
 
 /* Information about a statement tree.  */
 
@@ -351,11 +360,6 @@ struct c_lang_decl GTY(()) {
 #define DECL_NUM_STMTS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 
-/* The variant of the C language being processed.  Each C language
-   front-end defines this variable.  */
-
-extern c_language_kind c_language;
-
 /* Nonzero if we can read a PCH file now.  */
 
 extern int allow_pch;
@@ -393,9 +397,6 @@ extern const char *pch_file;
    user's namespace.  */
 
 extern int flag_iso;
-
-/* Nonzero whenever Objective-C functionality is being used.  */
-extern int flag_objc;
 
 /* Nonzero if -undef was given.  It suppresses target built-in macros
    and assertions.  */
@@ -952,7 +953,7 @@ extern void disable_builtin_function (const char *);
 
 extern tree build_va_arg (tree, tree);
 
-extern int c_common_init_options (enum c_language_kind);
+extern int c_common_init_options (void);
 extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);
 extern void c_common_finish (void);

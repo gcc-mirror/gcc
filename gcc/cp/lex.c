@@ -38,7 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "tm_p.h"
 #include "timevar.h"
-#include "diagnostic.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -147,22 +146,6 @@ int interface_unknown;		/* whether or not we know this class
 				   to behave according to #pragma interface.  */
 
 
-/* Initialization before switch parsing.  */
-int
-cxx_init_options (void)
-{
-  /* Default exceptions on.  */
-  flag_exceptions = 1;
-  /* By default wrap lines at 80 characters.  Is getenv ("COLUMNS")
-     preferable?  */
-  diagnostic_line_cutoff (global_dc) = 80;
-  /* By default, emit location information once for every
-     diagnostic message.  */
-  diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-
-  return c_common_init_options (clk_cplusplus);
-}
-
 void
 cxx_finish (void)
 {
