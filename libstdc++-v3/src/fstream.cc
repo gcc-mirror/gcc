@@ -41,10 +41,10 @@ namespace std
     basic_filebuf<char>::_M_underflow_common(bool __bump)
     {
       int_type __ret = traits_type::eof();
-      bool __testin = _M_mode & ios_base::in;
-      bool __testout = _M_mode & ios_base::out;
+      const bool __testin = _M_mode & ios_base::in;
+      const bool __testout = _M_mode & ios_base::out;
       // Sync with stdio.
-      bool __sync = _M_buf_size <= 1;
+      const bool __sync = _M_buf_size <= 1;
 
       if (__testin)
 	{
@@ -54,7 +54,7 @@ namespace std
 	  if (_M_pback_init)
 	    _M_pback_destroy();
 
-	  if (_M_in_cur && _M_in_cur < _M_in_end)
+	  if (_M_in_cur < _M_in_end)
 	    {
 	      __ret = traits_type::to_int_type(*_M_in_cur);
 	      if (__bump)
@@ -64,8 +64,8 @@ namespace std
 
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
-	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
-	  bool __testinit = _M_is_indeterminate();
+	  const bool __testget = _M_in_beg < _M_in_cur;
+	  const bool __testinit = _M_is_indeterminate();
 	  if (__testget)
 	    {
 	      if (__testout)
@@ -123,10 +123,10 @@ namespace std
     basic_filebuf<wchar_t>::_M_underflow_common(bool __bump)
     {
       int_type __ret = traits_type::eof();
-      bool __testin = _M_mode & ios_base::in;
-      bool __testout = _M_mode & ios_base::out;
+      const bool __testin = _M_mode & ios_base::in;
+      const bool __testout = _M_mode & ios_base::out;
       // Sync with stdio.
-      bool __sync = _M_buf_size <= 1;
+      const bool __sync = _M_buf_size <= 1;
 
       if (__testin)
 	{
@@ -136,7 +136,7 @@ namespace std
 	  if (_M_pback_init)
 	    _M_pback_destroy();
 
-	  if (_M_in_cur && _M_in_cur < _M_in_end)
+	  if (_M_in_cur < _M_in_end)
 	    {
 	      __ret = traits_type::to_int_type(*_M_in_cur);
 	      if (__bump)
@@ -146,8 +146,8 @@ namespace std
 
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
-	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
-	  bool __testinit = _M_is_indeterminate();
+	  const bool __testget = _M_in_beg < _M_in_cur;
+	  const bool __testinit = _M_is_indeterminate();
 	  if (__testget)
 	    {
 	      if (__testout)

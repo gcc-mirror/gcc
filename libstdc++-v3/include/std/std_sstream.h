@@ -190,7 +190,7 @@ namespace std
       virtual int_type
       underflow()
       {
-	if (this->_M_in_cur && this->_M_in_cur < this->_M_in_end)
+	if (this->_M_in_cur < this->_M_in_end)
 	  return traits_type::to_int_type(*gptr());
 	else
 	  return traits_type::eof();
@@ -260,8 +260,8 @@ namespace std
       virtual void
       _M_really_sync(char_type* __base, __size_type __i, __size_type __o)
       {
-	bool __testin = this->_M_mode & ios_base::in;
-	bool __testout = this->_M_mode & ios_base::out;
+	const bool __testin = this->_M_mode & ios_base::in;
+	const bool __testout = this->_M_mode & ios_base::out;
 	__size_type __len = _M_string.size();
 
 	this->_M_buf = __base;
