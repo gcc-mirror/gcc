@@ -1,3 +1,7 @@
+2001-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c (stringify_arg): Null terminate strings.
+
 2001-03-27  Zack Weinberg  <zackw@stanford.edu>
 
 	* config.gcc (m68hc11-*-*, m68hc12-*-*): Convert to new tm.h

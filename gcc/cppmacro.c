@@ -296,7 +296,7 @@ stringify_arg (pfile, arg)
       if (escape_it)
 	/* Worst case is each char is octal.  */
 	len *= 4;
-      len++;			/* Room for initial space.  */
+      len += 2;			/* Room for initial space and final NUL.  */
 
       dest = &start[total_len];
       if (dest + len > POOL_LIMIT (pool))
@@ -334,7 +334,9 @@ stringify_arg (pfile, arg)
       total_len--;
     }
 
-  POOL_COMMIT (pool, total_len);
+  /* Null terminate, and commit the memory.  */
+  start[total_len] = '\0';
+  POOL_COMMIT (pool, total_len + 1);
 
   arg->stringified = xnew (cpp_token);
   arg->stringified->flags = 0;
