@@ -3153,74 +3153,71 @@ instantiate_class_template (type)
 	grok_op_properties (t, DECL_VIRTUAL_P (t), 0);
     }
 
-  /* Construct the DECL_FRIENDLIST for the new class type.  */
-  typedecl = TYPE_MAIN_DECL (type);
-  for (t = DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern));
-       t != NULL_TREE;
-       t = TREE_CHAIN (t))
-    {
-      tree friends;
-
-      DECL_FRIENDLIST (typedecl)
-	= tree_cons (TREE_PURPOSE (t), NULL_TREE, 
-		     DECL_FRIENDLIST (typedecl));
-
-      for (friends = TREE_VALUE (t);
-	   friends != NULL_TREE;
-	   friends = TREE_CHAIN (friends))
-	{
-	  if (TREE_PURPOSE (friends) == error_mark_node)
-	    {
-	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		= tree_cons (error_mark_node, 
-			     tsubst_friend_function (TREE_VALUE (friends),
-						     args),
-			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
-	    }
-	  else
-	    {
-	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		= tree_cons (tsubst (TREE_PURPOSE (friends), args, NULL_TREE),
-			     NULL_TREE,
-			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
-
-	    }
-	}
-    }
-
-  {
-    tree d = CLASSTYPE_FRIEND_CLASSES (type)
-      = tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args, NULL_TREE);
-
-    /* This does injection for friend classes.  */
-    for (; d; d = TREE_CHAIN (d))
-      TREE_VALUE (d) = xref_tag_from_type (TREE_VALUE (d), NULL_TREE, 1);
-
-    /* This does injection for friend functions. */
-    if (!processing_template_decl)
-      {
-	d = tsubst (DECL_TEMPLATE_INJECT (template), args, NULL_TREE);
-
-	for (; d; d = TREE_CHAIN (d))
-	  {
-	    tree t = TREE_VALUE (d);
-
-	    if (TREE_CODE (t) == TYPE_DECL)
-	      /* Already injected.  */;
-	    else
-	      pushdecl (t);
-	  }
-      } 
-  }
-
   if (! uses_template_parms (type))
     {
-      tree tmp;
-      for (tmp = TYPE_FIELDS (type); tmp; tmp = TREE_CHAIN (tmp))
-	if (TREE_CODE (tmp) == FIELD_DECL)
+      /* Construct the DECL_FRIENDLIST for the new class type.  */
+      typedecl = TYPE_MAIN_DECL (type);
+      for (t = DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern));
+	   t != NULL_TREE;
+	   t = TREE_CHAIN (t))
+	{
+	  tree friends;
+
+	  DECL_FRIENDLIST (typedecl)
+	    = tree_cons (TREE_PURPOSE (t), NULL_TREE, 
+			 DECL_FRIENDLIST (typedecl));
+
+	  for (friends = TREE_VALUE (t);
+	       friends != NULL_TREE;
+	       friends = TREE_CHAIN (friends))
+	    {
+	      if (TREE_PURPOSE (friends) == error_mark_node)
+		{
+		  TREE_VALUE (DECL_FRIENDLIST (typedecl))
+		    = tree_cons (error_mark_node, 
+				 tsubst_friend_function (TREE_VALUE (friends),
+							 args),
+				 TREE_VALUE (DECL_FRIENDLIST (typedecl)));
+		}
+	      else
+		{
+		  TREE_VALUE (DECL_FRIENDLIST (typedecl))
+		    = tree_cons (tsubst (TREE_PURPOSE (friends), args, NULL_TREE),
+				 NULL_TREE,
+				 TREE_VALUE (DECL_FRIENDLIST (typedecl)));
+
+		}
+	    }
+	}
+
+      t = CLASSTYPE_FRIEND_CLASSES (type)
+	= tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args, NULL_TREE);
+
+      /* This does injection for friend classes.  */
+      for (; t; t = TREE_CHAIN (t))
+	TREE_VALUE (t) = xref_tag_from_type (TREE_VALUE (t), NULL_TREE, 1);
+
+      /* This does injection for friend functions. */
+      if (!processing_template_decl)
+	{
+	  t = tsubst (DECL_TEMPLATE_INJECT (template), args, NULL_TREE);
+
+	  for (; t; t = TREE_CHAIN (t))
+	    {
+	      tree d = TREE_VALUE (t);
+
+	      if (TREE_CODE (d) == TYPE_DECL)
+		/* Already injected.  */;
+	      else
+		pushdecl (d);
+	    }
+	} 
+
+      for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
+	if (TREE_CODE (t) == FIELD_DECL)
 	  {
-	    TREE_TYPE (tmp) = complete_type (TREE_TYPE (tmp));
-	    require_complete_type (tmp);
+	    TREE_TYPE (t) = complete_type (TREE_TYPE (t));
+	    require_complete_type (t);
 	  }
 
       type = finish_struct_1 (type, 0);
