@@ -837,12 +837,10 @@ maybe_both_true_2 (d1, d2)
 	      if (d1->u.pred.mode != d2->u.mode)
 		return 0;
 	    }
-	  else if (d2->type == DT_pred)
-	    {
-	      if (d2->u.pred.mode != VOIDmode
-		  && d1->u.pred.mode != d2->u.pred.mode)
-		return 0;
-	    }
+	  /* Don't check two predicate modes here, because if both predicates
+	     accept CONST_INT, then both can still be true even if the modes
+	     are different.  If they don't accept CONST_INT, there will be a
+	     separate DT_mode that will make maybe_both_true_1 return 0.  */
 	}
 
       if (d1->u.pred.index >= 0)
@@ -2270,17 +2268,28 @@ process_tree (head, subroutine_type)
      struct decision_head *head;
      enum routine_type subroutine_type;
 {
-  if (head->first != NULL)
+  if (head->first == NULL)
+    {
+      /* We can elide peephole2_insns, but not recog or split_insns.  */
+      if (subroutine_type == PEEPHOLE2)
+	return;
+    }
+  else
     {
       factor_tests (head);
-      simplify_tests (head);
 
       next_subroutine_number = 0;
       break_out_subroutines (head, 1);
       find_afterward (head, NULL);
 
+      /* We run this after find_afterward, because find_afterward needs
+	 the redundant DT_mode tests on predicates to determine whether
+	 two tests can both be true or not.  */
+      simplify_tests(head);
+
       write_subroutines (head, subroutine_type);
     }
+
   write_subroutine (head, subroutine_type);
 }
 
@@ -2527,7 +2536,9 @@ debug_decision_1 (d, indent)
 	  debug_decision_2 (test);
 	}
     }
-  fprintf (stderr, "} %d\n", d->number);
+  fprintf (stderr, "} %d n %d a %d\n", d->number,
+	   (d->next ? d->next->number : -1),
+	   (d->afterward ? d->afterward->number : -1));
 }
 
 static void
