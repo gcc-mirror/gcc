@@ -8,8 +8,8 @@ template <class T> struct A {
 template <class T> T A<T>::t = 0;
 static template struct A<int>;
 
-// { dg-final { scan-assembler "\n_?_ZN1AIiE1tE(:|\n)" } }
+// { dg-final { scan-assembler "\n_?_ZN1AIiE1tE(:|\n|\t)" } }
 void test_int() { A<int>::t = 42; }
 
-// { dg-final { scan-assembler-not "\n_?_ZN1AIcE1tE(:|\n)" } }
+// { dg-final { scan-assembler-not "\n_?_ZN1AIcE1tE(:|\n|\t)" } }
 void test_char() { A<char>::t = 42; }

@@ -1,5 +1,8 @@
 2002-03-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* g++.dg/ext/instantiate1.C, g++.dg/ext/instantiate2.C,
+	g++.dg/ext/instantiate3.C: Tweak match patterns.
+
 	* g++.old-deja/g++.pt/static11.C: Skip on mmix-knuth-mmixware.
 	* g++.dg/other/static11.C: Copy g++.old-deja/g++.pt/static11.C for
 	-da test.
