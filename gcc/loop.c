@@ -2270,10 +2270,13 @@ find_and_verify_loops (f)
 	       and move the block of code to the spot we found.  */
 
 	    if (GET_CODE (p) == JUMP_INSN
-		    && JUMP_LABEL (p) != 0
-		    && condjump_p (p)
-		    && ! simplejump_p (p)
-		    && next_real_insn (JUMP_LABEL (p)) == our_next)
+		&& JUMP_LABEL (p) != 0
+		/* Just ignore jumps to labels that were never emitted.
+		   These always indicate compilation errors.  */
+		&& INSN_UID (JUMP_LABEL (p)) != 0
+		&& condjump_p (p)
+		&& ! simplejump_p (p)
+		&& next_real_insn (JUMP_LABEL (p)) == our_next)
 	      {
 		rtx target
 		  = JUMP_LABEL (insn) ? JUMP_LABEL (insn) : get_last_insn ();
