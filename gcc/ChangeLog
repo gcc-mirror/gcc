@@ -1,3 +1,8 @@
+Fri Apr 12 15:42:59 2002  Jeffrey A Law  (law@redhat.com)
+
+	* pa.c (pa_can_combine_p): Call insn_extract before calling
+	constrain_operands.
+
 2002-04-12  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/i386/i386-interix.h (EH_FRAME_IN_DATA_SECTION): Define.
