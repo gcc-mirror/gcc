@@ -11546,13 +11546,33 @@ Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
 5--48.  At the time of writing this is available online under
 @uref{http://docs.sun.com} and there is a supplemented version at
 @uref{http://www.validgh.com/}.  Information related to the IEEE 754
-floating point standard by a leading light can be found at
+floating-point standard by a leading light can be found at
 @uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status }; see also
 slides from the short course referenced from
 @uref{http://http.cs.berkeley.edu/%7Efateman/}.
 @uref{http://www.suburbia.net/%7Ebillm/floating-point/} has a brief
 guide to IEEE 754, a somewhat x86 GNU/Linux-specific FAQ and library
 code for GNU/Linux x86 systems.
+
+Also see `Differences Among IEEE 754 Implementations' by
+David Goldberg, available online at
+@uref{http://www.validgh.com/goldberg/addendum.html}.
+This document explores some of the issues surrounding computing
+of extended (80-bit) results on processors such as the x86,
+especially when those results are arbitrarily truncated
+to 32-bit or 64-bit values by the compiler
+as ``spills''.
+
+@cindex spills of floating-point results
+@cindex 80-bit spills
+@cindex truncation of floating-point values
+(@code{g77} specifically, and @code{gcc} generally, does
+arbitrarily truncate 80-bit results during spills
+as of this writing.
+It is not yet clear whether a future version of
+the GNU compiler suite will offer 80-bit spills
+as an option, or as the default behavior.)
+
 @c xref would be different between editions:
 The GNU C library provides routines for controlling the FPU, and other
 documentation about this.
