@@ -1,3 +1,7 @@
+2003-12-08  Stuart Hastings  <stuart@apple.com>
+
+	* config/i386/i386.md: Typo in split of fp-valued if_then_else.
+	
 2003-12-08  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/13132
