@@ -4269,6 +4269,31 @@ output_constructor (exp, size)
     assemble_zeros (size - total_bytes);
 }
 
+#ifdef HANDLE_PRAGMA_WEAK
+/* Add function NAME to the weak symbols list.  VALUE is a weak alias
+   associatd with NAME.  */
+   
+int
+add_weak (name, value)
+     char *name;
+     char *value;
+{
+  struct weak_syms *weak;
+
+  weak = (struct weak_syms *) permalloc (sizeof (struct weak_syms));
+
+  if (weak == NULL)
+    return 0;
+
+  weak->next = weak_decls;
+  weak->name = name;
+  weak->value = value;
+  weak_decls = weak;
+
+  return 1;
+}
+#endif /* HANDLE_PRAGMA_WEAK */
+
 /* Declare DECL to be a weak symbol.  */
 
 void
@@ -4281,6 +4306,9 @@ declare_weak (decl)
     error_with_decl (decl, "weak declaration of `%s' must precede definition");
   else if (SUPPORTS_WEAK)
     DECL_WEAK (decl) = 1;
+#ifdef HANDLE_PRAGMA_WEAK
+   add_weak (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), NULL);
+#endif
 }
 
 /* Emit any pending weak declarations.  */

@@ -1,3 +1,11 @@
+Fri Feb 26 02:24:57 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* c-pragma.c (add_weak); Delete.  Moved into...
+	* varasm.c (add_weak): New external function.
+	(declare_weak): If HANDLE_PRAGMA_WEAK, then add the function to
+	the list of weak functions.
+	* c-pragma (add_weak): Declare.
+
 Thu Feb 25 23:43:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	Flow rewrite to use basic block structures and edge lists:
