@@ -1,0 +1,4 @@
+1998-09-21  Ben Elliston  <bje@cygnus.com>
+
+	* New directory.  Moved files from ../gcc/objc.
+
