@@ -1,3 +1,8 @@
+2004-07-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12170
+	* g++.dg/template/ttp9.C: New test.
+
 2004-07-19  Daniel Jacobowitz  <dan@debian.org>
 
 	* gcc.dg/format/cmn-err-1.c: New test.
