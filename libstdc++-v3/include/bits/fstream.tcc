@@ -610,7 +610,6 @@ namespace std
 		  __computed_off += _M_ext_buf + __gptr_off - _M_ext_end;
 		}
 	    }
-	  
 	  __ret = _M_seek(__computed_off, __way);
 	}
       _M_last_overflowed = false;	

@@ -673,8 +673,7 @@ namespace std
 	  // 25. String operator<< uses width() value wrong
 	  if (__w > __len)
 	    {
-	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								   * __w));
+	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
 	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, __s,
 					     __w, __len, false);
 	      __s = __cs;
