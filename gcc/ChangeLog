@@ -1,3 +1,18 @@
+2004-12-03  Richard Henderson  <rth@redhat.com>
+
+	2004-09-24  Richard Henderson  <rth@redhat.com>
+	PR rtl-opt/17503
+	* regclass.c (subregs_of_mode): Turn into an htab.  Make static.
+	(som_hash, som_eq): New.
+	(init_subregs_of_mode, record_subregs_of_mode): New.
+	(cannot_change_mode_set_regs): Rewrite for htab implementation.
+	(invalid_mode_change_p): Likewise.
+	* combine.c (gen_lowpart_for_combine): Use record_subregs_of_mode.
+	* flow.c (mark_used_regs): Likewise.
+	(life_analysis): Use init_subregs_of_mode.
+	* regs.h (subregs_of_mode): Remove.
+	* rtl.h (init_subregs_of_mode, record_subregs_of_mode): Declare.
+
 2004-12-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/9908
@@ -20,7 +35,7 @@
 	regs_invalidated_by_call.
 
 2004-11-27  Falk Hueffner  <falk@debian.org>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/18577
 	* unroll.c (unroll_loop): Test both REGNO_LAST_UID and
@@ -78,16 +93,16 @@
 
 2004-09-30  Richard Henderson  <rth@redhat.com>
  
-        * config/alpha/qrnnd.asm: Mark for noexecstack.
+	* config/alpha/qrnnd.asm: Mark for noexecstack.
  
 2004-09-30  Richard Henderson  <rth@redhat.com>
   
-        * unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.
-        * doc/tm.texi (DWARF_ZERO_REG): New.
+	* unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.
+	* doc/tm.texi (DWARF_ZERO_REG): New.
   
-        * config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
-        alpha_expand_epilogue): Revert 2003-09-30 change to store zero.
-        * config/alpha/alpha.h (DWARF_ZERO_REG): New.
+	* config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
+	alpha_expand_epilogue): Revert 2003-09-30 change to store zero.
+	* config/alpha/alpha.h (DWARF_ZERO_REG): New.
 
 2004-09-30  Release Manager
 
@@ -110,12 +125,12 @@
 
 2004-09-13  Richard Henderson  <rth@redhat.com>
 
-        PR inline-asm/6806
-        * cselib.c (cselib_invalidate_rtx): Export.  Remove unused args.
-        (cselib_invalidate_rtx_note_stores): New.
-        (cselib_record_sets, cselib_process_insn): Update to match.
-        * cselib.h (cselib_invalidate_rtx): Declare.
-        * reload1.c (reload_cse_simplify): Invalidate asm clobbers.
+	PR inline-asm/6806
+	* cselib.c (cselib_invalidate_rtx): Export.  Remove unused args.
+	(cselib_invalidate_rtx_note_stores): New.
+	(cselib_record_sets, cselib_process_insn): Update to match.
+	* cselib.h (cselib_invalidate_rtx): Declare.
+	* reload1.c (reload_cse_simplify): Invalidate asm clobbers.
 
 2004-08-29  Jonathan Wakely  <redi@gcc.gnu.org>
 
@@ -174,7 +189,7 @@
 2004-07-25  Andreas Jaeger  <aj@suse.de>
 
 	Backport from mainline:
-        * libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.
+	* libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.
 
 2004-07-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -246,14 +261,14 @@
 	side-effect of having a length greater or equal to 3.
 
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Lloyd Parkes  <lloyd@must-have-coffee.gen.nz>
+	    Lloyd Parkes  <lloyd@must-have-coffee.gen.nz>
 
 	PR target/15186
 	* config/sparc/sol2-bi.h (LINK_ARCH64_SPEC_BASE): Pass
 	/usr/ucblib/sparcv9 as -R path when -compat-bsd is specified.
 
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Martin Sebor  <sebor@roguewave.com>
+	    Martin Sebor  <sebor@roguewave.com>
 
 	PR target/12602
 	* doc/invoke.texi (SPARC options): Document -threads
@@ -343,18 +358,18 @@
 
 	Backport from mainline:
 	2004-01-19  Richard Henderson  <rth@redhat.com>
-        * alpha.md (UNSPEC_NT_LDA): Renumber.
-        (UNSPEC_CVTLQ, cvtlq): New.
-        (extendsidi2_1): Rename from extendsidi2_nofix; remove f/f.
-        (extendsidi2_fix): Remove.
-        (extendsidi2 splitter): Use cvtlq.
-        (extendsidi2 fp peepholes): Remove.
-        (cvtql): Use SFmode instead of SImode.
-        (fix_trunc?fsi): Update to match.
-        (floatsisf2_ieee, floatsisf2, floatsidf2_ieee, floatsidf2): New.
-        (movsi): Rename from movsi_nofix, remove f alternatives.
-        (movsi_nt_vms): Similarly.
-        (movsi_fix, movsi_nt_vms_fix): Remove.
+	* alpha.md (UNSPEC_NT_LDA): Renumber.
+	(UNSPEC_CVTLQ, cvtlq): New.
+	(extendsidi2_1): Rename from extendsidi2_nofix; remove f/f.
+	(extendsidi2_fix): Remove.
+	(extendsidi2 splitter): Use cvtlq.
+	(extendsidi2 fp peepholes): Remove.
+	(cvtql): Use SFmode instead of SImode.
+	(fix_trunc?fsi): Update to match.
+	(floatsisf2_ieee, floatsisf2, floatsidf2_ieee, floatsidf2): New.
+	(movsi): Rename from movsi_nofix, remove f alternatives.
+	(movsi_nt_vms): Similarly.
+	(movsi_fix, movsi_nt_vms_fix): Remove.
 
 2004-05-26  Hans-Peter Nilsson  <hp@axis.com>
 

@@ -2120,6 +2120,8 @@ extern void regclass			PARAMS ((rtx, int, FILE *));
 extern void reg_scan			PARAMS ((rtx, unsigned int, int));
 extern void reg_scan_update		PARAMS ((rtx, rtx, unsigned int));
 extern void fix_register		PARAMS ((const char *, int, int));
+extern void init_subregs_of_mode	PARAMS ((void));
+extern void record_subregs_of_mode	PARAMS ((rtx));
 #ifdef HARD_CONST
 extern void cannot_change_mode_set_regs PARAMS ((HARD_REG_SET *,
 						 enum machine_mode,
