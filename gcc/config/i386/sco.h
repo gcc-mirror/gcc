@@ -62,7 +62,8 @@
 
 #undef VALUE_REGNO
 #define VALUE_REGNO(MODE) \
-  ((TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode))
+  ((TARGET_80387
+     && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)
    ? FIRST_FLOAT_REG : 0)
 
 #undef HARD_REGNO_MODE_OK
