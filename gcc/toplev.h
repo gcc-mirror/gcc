@@ -68,6 +68,9 @@ extern void rest_of_decl_compilation (tree, const char *, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void rest_of_compilation (tree);
 extern void tree_rest_of_compilation (tree, bool);
+extern void init_optimization_passes (void);
+extern void finish_optimization_passes (void);
+extern bool enable_rtl_dump_file (int);
 
 extern void announce_function (tree);
 
