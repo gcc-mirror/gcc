@@ -1,3 +1,13 @@
+2003-03-07  Matthias Klose  <doko@debian.org> 
+
+	* Makefile.am (AM_MAKEFLAGS): Also pass gxx_include_dir. 
+	FLAGS_TO_PASS: Set to AM_MAKEFLAGS 
+	* Makefile.in: Regenerate. 
+	* libsupc++/Makefile.am: Express glibcppinstalldir in terms 
+	of gxx_include_dir. 
+	AM_MAKEFLAGS: Pass gxx_include_dir. 
+	* libsupc++/Makefile.in: Regenerate. 
+
 2003-03-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/ios.cc (ios_base::_M_init): Remove _M_word_size.

@@ -156,6 +156,7 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" \
+	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
 	"LD=$(LD)" \
