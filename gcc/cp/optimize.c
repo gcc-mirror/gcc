@@ -862,7 +862,7 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Our function now has more statements than it did before.  */
   DECL_NUM_STMTS (VARRAY_TREE (id->fns, 0)) += DECL_NUM_STMTS (fn);
-  id->inlined_stmts += DECL_NUM_STMTS (VARRAY_TREE (id->fns, 0));
+  id->inlined_stmts += DECL_NUM_STMTS (fn);
 
   /* Recurse into the body of the just inlined function.  */
   expand_calls_inline (inlined_body, id);
