@@ -5458,15 +5458,23 @@ finalization code.  If not defined, GCC will assume such a section does
 not exist.
 
 @findex CRT_CALL_STATIC_FUNCTION
-@item CRT_CALL_STATIC_FUNCTION
-If defined, a C statement that calls the function named as the sole
-argument of this macro.  This is used in @file{crtstuff.c} if
-@code{INIT_SECTION_ASM_OP} or @code{FINI_SECTION_ASM_OP} to calls to
-initialization and finalization functions from the init and fini
-sections.  By default, this macro is a simple function call.  Some
+@item CRT_CALL_STATIC_FUNCTION (@var{section_op}, @var{function})
+If defined, an ASM statement that switches to a different section
+via @var{section_op}, calls @var{function}, and switches back to
+the text section.  This is used in @file{crtstuff.c} if
+@code{INIT_SECTION_ASM_OP} or @code{FINI_SECTION_ASM_OP} to calls
+to initialization and finalization functions from the init and fini
+sections.  By default, this macro uses a simple function call.  Some
 ports need hand-crafted assembly code to avoid dependencies on
 registers initialized in the function prologue or to ensure that
 constant pools don't end up too far way in the text section.
+
+@findex FORCE_CODE_SECTION_ALIGN
+@item FORCE_CODE_SECTION_ALIGN
+If defined, an ASM statement that aligns a code section to some
+arbitrary boundary.  This is used to force all fragments of the
+@code{.init} and @code{.fini} sections to have to same alignment
+and thus prevent the linker from having to add any padding.
 
 @findex EXTRA_SECTIONS
 @findex in_text
