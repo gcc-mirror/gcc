@@ -532,7 +532,7 @@ typedef struct {
 static format_char_info print_char_table[] = {
   { "di",	0,	T_I,	T_I,	T_L,	T_LL,	T_LL,	"-wp0 +"	},
   { "oxX",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	NULL,	"-wp0"		},
+  { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	"-wp0"		},
 /* Two GNU extensions.  */
   { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	NULL,	"-wp0"		},
   { "m",	0,	T_UI,	T_UI,	T_UL,	NULL,	NULL,	"-wp"		},
