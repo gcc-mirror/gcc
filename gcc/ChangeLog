@@ -1,3 +1,8 @@
+2003-10-21  Eric Christopher  <echristo@redhat.com>
+
+	* config/frv/frv.c (frv_adjust_field_align): Check DECL_ARTIFICIAL
+	for too large bitfields.
+
 2003-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in ($(docobjdir)/%.info): Honor BUILD_INFO.

@@ -7799,7 +7799,7 @@ frv_adjust_field_align (field, computed)
 
   /* Make sure that the bitfield is not wider than the type.  */
   if (DECL_BIT_FIELD (field)
-      && tree_int_cst_compare (DECL_SIZE (field), TYPE_SIZE (type)) <= 0)
+      && !DECL_ARTIFICIAL (field))
     {
       tree parent = DECL_CONTEXT (field);
       tree prev = NULL_TREE;
