@@ -1,8 +1,6 @@
 LIBGCC1 = libgcc1.null
 T_CFLAGS = -DDONT_HAVE_STDIO -DDONT_HAVE_SETJMP  -Dinhibit_libc
 LIBGCC2_CFLAGS=-g -fno-omit-frame-pointer -O2 $(GCC_CFLAGS) 
-LANGUAGES=c
-COMPILERS=cc1
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... [taken from t-ose68k]
