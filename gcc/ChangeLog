@@ -1,3 +1,7 @@
+2003-10-16  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* objc/Make-lang.in (objc-parse.o): Honor $(parsedir) for objc-parse.c.
+
 2003-10-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (ASM_OUTPUT_DEF_FROM_DECLS): Define.
@@ -51,6 +55,7 @@
 	(machopic_legitimize_pic_address): Improve codegen in dynamic-no-pic
 	case.
 
+>>>>>>> 2.1435
 2003-10-15  Gábor Lóki  <alga@rgai.hu>
 
 	* fold-const.c (tree_swap_operands_p): Disable some features
