@@ -1,3 +1,10 @@
+2004-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/6123
+	* config/sol2.h (TARGET_OS_CPP_BUILTINS): Define __PIC__ and
+	__pic__ if PIC.
+
 2004-11-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* regmove.c (regmove_optimize): Use lowpart_subreg instead of
