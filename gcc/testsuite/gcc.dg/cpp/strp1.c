@@ -16,7 +16,7 @@ static const char t1[] = "1.1";
 #define f h
 #define h(a) a+f
 static const char s2[] = S( f(1)(2) );
-static const char t2[] = "1+f(2)";
+static const char t2[] = "1+h(2)";
 
 #undef I
 #undef f

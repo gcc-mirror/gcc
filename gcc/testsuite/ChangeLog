@@ -1,3 +1,7 @@
+2001-01-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/macro3.c,macro4.c,strp1.c: Update.
+
 2001-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20010119-1.c: New test.
