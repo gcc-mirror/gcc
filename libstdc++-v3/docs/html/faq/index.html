@@ -512,13 +512,51 @@ which is no longer available, thanks deja...-->
 <!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
 
 <pre>
-New in 3.0.97:
+New:
 ---
+(post 3.0.97)
+- more doxygen documentation
+- more named locale fixups
+- stdio_filebuf that takes fd, FILE
+- io performance tuning
+- allocation tuning, valgrind fixups
+- __cxa_demangle now supported
+(3.0.97)
 - more doxygen documentation.
 - more named locale bug fixes
 - support for symbol versioning when using GNU ld &gt;= 2.12
 - wide-io
 - tuning for executable size
+(3.0.96)
+- more doxygen documentation.
+- extensions moved out of namespace std
+- HPUX long long support
+- more string optimizations
+- support for NetBSD cross compiles
+- concept_check merge from boost
+- header simplification
+- named locale bug shakeout
+- thread testsuite
+(3.0.95)
+- add S390, m68k, x86-64 support.
+- doxygen documentation has been extended, including man pages.
+- verbose terminate handling has been added.
+- some libsupc++ tweaks
+- warnings for deprecated headers now active.
+- dejagnu testsuite preliminary documentation.
+- dejagnu testsuite default.
+- dejagnu testsuite cross compiler, multilib safe.
+- long long iostreams on by default, rework of ISO C99 support.
+- iterator re-write and testsuites.
+- container testsuites.
+- allocator revamp and testsuites.
+- more concept-checking work.
+- basic_string optimization and MT fixes.
+- new limits implementation.
+- update -fno-exceptions code, verify it works.
+- full named locale support fpr all facets, choice of gnu,
+  ieee_1003.1-200x (POSIX 2), or generic models. Full support depends
+  on target OS and underlying &quot;C&quot; library support.
 </pre>
 
 
