@@ -580,6 +580,16 @@ at_class_scope_p (void)
   return cs && TYPE_P (cs);
 }
 
+/* Returns true if the innermost active scope is a namespace scope.  */
+
+bool
+at_namespace_scope_p (void)
+{
+  /* We are in a namespace scope if we are not it a class scope or a
+     function scope.  */
+  return !current_scope();
+}
+
 /* Return the scope of DECL, as appropriate when doing name-lookup.  */
 
 tree
