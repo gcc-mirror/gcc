@@ -1,3 +1,7 @@
+2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/wtr-conversion-1.c: New testcase.
+
 2001-04-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/warn6.C: New test.

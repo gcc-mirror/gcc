@@ -1676,19 +1676,25 @@ convert_arguments (typelist, values, name, fundecl)
 	    {
 	      /* Optionally warn about conversions that
 		 differ from the default conversions.  */
-	      if (warn_conversion)
+	      if (warn_conversion || warn_traditional)
 		{
 		  int formal_prec = TYPE_PRECISION (type);
 
 		  if (INTEGRAL_TYPE_P (type)
 		      && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
 		    warn_for_assignment ("%s as integer rather than floating due to prototype", (char *) 0, name, parmnum + 1);
+		  if (INTEGRAL_TYPE_P (type)
+		      && TREE_CODE (TREE_TYPE (val)) == COMPLEX_TYPE)
+		    warn_for_assignment ("%s as integer rather than complex due to prototype", (char *) 0, name, parmnum + 1);
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
 			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
 		    warn_for_assignment ("%s as complex rather than floating due to prototype", (char *) 0, name, parmnum + 1);
 		  else if (TREE_CODE (type) == REAL_TYPE
 			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
 		    warn_for_assignment ("%s as floating rather than integer due to prototype", (char *) 0, name, parmnum + 1);
+		  else if (TREE_CODE (type) == COMPLEX_TYPE
+			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
+		    warn_for_assignment ("%s as complex rather than integer due to prototype", (char *) 0, name, parmnum + 1);
 		  else if (TREE_CODE (type) == REAL_TYPE
 			   && TREE_CODE (TREE_TYPE (val)) == COMPLEX_TYPE)
 		    warn_for_assignment ("%s as floating rather than complex due to prototype", (char *) 0, name, parmnum + 1);
@@ -1749,10 +1755,15 @@ convert_arguments (typelist, values, name, fundecl)
 		      else if (TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type)
 			       && TREE_UNSIGNED (TREE_TYPE (val)))
 			;
-		      else if (TREE_UNSIGNED (type))
-			warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
-		      else
-			warn_for_assignment ("%s as signed due to prototype", (char *) 0, name, parmnum + 1);
+		      /* These warnings are only activated with
+                         -Wconversion, not with -Wtraditional.  */
+		      else if (warn_conversion)
+		        {
+			  if (TREE_UNSIGNED (type))
+			    warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
+			  else
+			    warn_for_assignment ("%s as signed due to prototype", (char *) 0, name, parmnum + 1);
+			}
 		    }
 		}
 

@@ -1,3 +1,11 @@
+2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-typeck.c (convert_arguments): -Wtraditional now activates
+	-Wconversion warnings, except for changes in signed-ness.
+	Detect complex<->int & int<->complex conversions as well.
+
+	* invoke.texi (-Wtraditional): Document it.
+
 Wed Apr  4 00:28:23 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sparc/sol2-sld-64.h (STARTFILE_SPEC): Added missing blank.
