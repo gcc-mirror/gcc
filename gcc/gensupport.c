@@ -26,6 +26,9 @@
 #include "gensupport.h"
 
 
+/* In case some macros used by files we include need it, define this here.  */
+int target_flags;
+
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 

@@ -1,3 +1,7 @@
+Tue Oct 23 21:45:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gensupport.c (target_flags): Add.
+
 Tue Oct 23 13:05:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.
 
 	* builtins.c (expand_builtin_setjmp): Only call convert_memory_address
