@@ -1,3 +1,7 @@
+Fri Mar  6 23:27:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* method.c: Fix typo.
+
 Fri Mar  6 10:06:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * method.c: Include "system.h" to get stdlib.h, stdio.h,
