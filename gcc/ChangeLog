@@ -1,5 +1,9 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/md.texi: Use TeX dashes and quotes.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/rtl.texi: Reference manual chapter about trees.
 
 2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
