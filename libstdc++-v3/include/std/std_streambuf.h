@@ -161,16 +161,6 @@ namespace std
     protected:
       /**
        *  @if maint
-       *  Pointer to the beginning of internally-allocated space.  Filebuf
-       *  manually allocates/deallocates this, whereas stringstreams attempt
-       *  to use the built-in intelligence of the string class.  If you are
-       *  managing memory, set this.  If not, leave it NULL.
-       *  @endif
-      */
-      char_type*		_M_buf; 	
-
-      /**
-       *  @if maint
        *  True iff _M_in_* and _M_out_* buffers should always point to
        *  the same place.  True for fstreams, false for sstreams.
        *  @endif
@@ -245,7 +235,7 @@ namespace std
       // __n + _M_out_[cur, lim] <= _M_out_end
       // Assuming all _M_out_[beg, cur, lim] pointers are operating on
       // the same range:
-      // _M_buf <= _M_*_ <= _M_out_end
+      // _M_out_beg <= _M_*_ <= _M_out_end
       void 
       _M_move_out_cur(off_type __n) // argument needs to be +-
       {
@@ -467,10 +457,10 @@ namespace std
        *  - this is not an error
       */
       basic_streambuf()
-      : _M_buf(NULL), _M_buf_unified(false),
-      _M_in_beg(0), _M_in_cur(0), _M_in_end(0), _M_out_beg(0),
-      _M_out_cur(0), _M_out_end(0), _M_out_lim(0),
-      _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()) 
+      : _M_buf_unified(false), _M_in_beg(0), _M_in_cur(0),
+      _M_in_end(0), _M_out_beg(0), _M_out_cur(0), _M_out_end(0),
+      _M_out_lim(0), _M_mode(ios_base::openmode(0)),
+      _M_buf_locale(locale()) 
       { }
 
       // [27.5.2.3.1] get area access

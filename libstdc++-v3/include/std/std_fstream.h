@@ -116,6 +116,13 @@ namespace std
 
       /**
        *  @if maint
+       *  Pointer to the beginning of internally-allocated space.
+       *  @endif
+      */
+      char_type*		_M_buf; 	
+
+      /**
+       *  @if maint
        *  Actual size of internal buffer.
        *  @endif
       */

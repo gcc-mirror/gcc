@@ -1,3 +1,15 @@
+2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_streambuf.h (_M_buf): is currently
+	used only for basic_filebuf, therefore move it there.
+	(basic_streambuf(), ~basic_streambuf()): Adjust.
+	* include/std/std_fstream.h (_M_buf): Moved here.
+	* include/std/std_sstream.h (setbuf): Don't set _M_buf,
+	is actually redundant for basic_stringbuf.
+	(_M_really_sync): Likewise.
+	* include/bits/fstream.tcc (basic_filebuf()): Adjust.
+	* include/bits/sstream.tcc (seekoff): Adjust.
+
 2003-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/localename.cc: Standardize exception strings.
