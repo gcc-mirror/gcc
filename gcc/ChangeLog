@@ -1,3 +1,9 @@
+2002-05-06  Bernd Schmidt  <bernds@redhat.com>
+
+	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Define __SSE2_BUILTINS__ if	
+	-msse2.
+	* config/i386/xmmintrin.h: Use it to conditionalize SSE2 support.
+	
 2002-05-06  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (lshift-double): Cast the high word to an unsigned
