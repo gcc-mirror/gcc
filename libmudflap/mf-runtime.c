@@ -2247,22 +2247,6 @@ static mfsplay_tree_node mfsplay_tree_splay_helper (mfsplay_tree,
                                                 mfsplay_tree_node *,
                                                 mfsplay_tree_node *,
                                                 mfsplay_tree_node *);
-static void *mfsplay_tree_xmalloc (size_t size);
-static void mfsplay_tree_free (void *object);
-
-
-
-/* Inline comparison function specialized for libmudflap's key type.  */
-static inline int
-compare_uintptr_t (mfsplay_tree_key k1, mfsplay_tree_key k2)
-{
-  if ((uintptr_t) k1 < (uintptr_t) k2)
-    return -1;
-  else if ((uintptr_t) k1 > (uintptr_t) k2)
-    return 1;
-  else
-    return 0;
-}
 
 
 /* Help splay SP around KEY.  PARENT and GRANDPARENT are the parent
@@ -2284,7 +2268,7 @@ mfsplay_tree_splay_helper (mfsplay_tree sp,
   if (!n)
     return *parent;
 
-  comparison = compare_uintptr_t (key, n->key);
+  comparison = ((key > n->key) ? 1 : ((key < n->key) ? -1 : 0));
 
   if (comparison == 0)
     /* We've found the target.  */
@@ -2454,7 +2438,7 @@ mfsplay_tree_splay (mfsplay_tree sp, mfsplay_tree_key key)
 
   /* If we just splayed the tree with the same key, do nothing.  */
   if (sp->last_splayed_key_p &&
-      compare_uintptr_t (sp->last_splayed_key, key) == 0)
+      (sp->last_splayed_key == key))
     return;
 
   /* Compute a maximum recursion depth for a splay tree with NUM nodes.
@@ -2514,7 +2498,8 @@ mfsplay_tree_insert (mfsplay_tree sp, mfsplay_tree_key key, mfsplay_tree_value v
   mfsplay_tree_splay (sp, key);
 
   if (sp->root)
-    comparison = compare_uintptr_t (sp->root->key, key);
+    comparison = ((sp->root->key > key) ? 1 :
+                  ((sp->root->key < key) ? -1 : 0));
 
   if (sp->root && comparison == 0)
     {
@@ -2560,7 +2545,7 @@ mfsplay_tree_remove (mfsplay_tree sp, mfsplay_tree_key key)
 {
   mfsplay_tree_splay (sp, key);
   sp->last_splayed_key_p = 0;
-  if (sp->root && compare_uintptr_t (sp->root->key, key) == 0)
+  if (sp->root && (sp->root->key == key))
     {
       mfsplay_tree_node left, right;
       left = sp->root->left;
@@ -2594,7 +2579,7 @@ static mfsplay_tree_node
 mfsplay_tree_lookup (mfsplay_tree sp, mfsplay_tree_key key)
 {
   mfsplay_tree_splay (sp, key);
-  if (sp->root && compare_uintptr_t (sp->root->key, key) == 0)
+  if (sp->root && (sp->root->key == key))
     return sp->root;
   else
     return 0;
@@ -2615,7 +2600,9 @@ mfsplay_tree_predecessor (mfsplay_tree sp, mfsplay_tree_key key)
   /* Splay the tree around KEY.  That will leave either the KEY
      itself, its predecessor, or its successor at the root.  */
   mfsplay_tree_splay (sp, key);
-  comparison = compare_uintptr_t (sp->root->key, key);
+  comparison = ((sp->root->key > key) ? 1 :
+                ((sp->root->key < key) ? -1 : 0));
+
   /* If the predecessor is at the root, just return it.  */
   if (comparison < 0)
     return sp->root;
@@ -2641,7 +2628,8 @@ mfsplay_tree_successor (mfsplay_tree sp, mfsplay_tree_key key)
   /* Splay the tree around KEY.  That will leave either the KEY
      itself, its predecessor, or its successor at the root.  */
   mfsplay_tree_splay (sp, key);
-  comparison = compare_uintptr_t (sp->root->key, key);
+  comparison = ((sp->root->key > key) ? 1 :
+                ((sp->root->key < key) ? -1 : 0));
   /* If the successor is at the root, just return it.  */
   if (comparison > 0)
     return sp->root;
