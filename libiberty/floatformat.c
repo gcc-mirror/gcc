@@ -39,8 +39,8 @@ static int floatformat_always_valid PARAMS ((const struct floatformat *fmt,
 
 static int
 floatformat_always_valid (fmt, from)
-     const struct floatformat *fmt;
-     const char *from;
+     const struct floatformat *fmt ATTRIBUTE_UNUSED;
+     const char *from ATTRIBUTE_UNUSED;
 {
   return 1;
 }
