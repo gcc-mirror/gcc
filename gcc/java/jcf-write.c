@@ -3429,7 +3429,7 @@ write_classfile (tree clas)
 	fatal_error ("error closing %s: %m", temporary_file_name);
 
       /* If a file named by the string pointed to by `new' exists
-         prior to the call to the `rename' function, the bahaviour
+         prior to the call to the `rename' function, the behavior
          is implementation-defined.  ISO 9899-1990 7.9.4.2.
 
          For example, on Win32 with MSVCRT, it is an error. */
