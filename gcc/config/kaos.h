@@ -19,8 +19,12 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__kaOS__"
+/* Specify predefined symbols in preprocessor.  */
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__kaOS__");	\
+    } while (0)
+
 
 /* do not link any library implicitly for kaOS target.  */
 #undef LIB_SPEC
