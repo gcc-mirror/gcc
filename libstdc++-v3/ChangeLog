@@ -1,3 +1,12 @@
+2003-02-12  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/cpu/generic/atomicity.h (_Atomic_add_mutex):  Fix declaration.
+	(_GLIBCPP_NEED_GENERIC_MUTEX):  Define for this file.
+	(_Atomic_add_mutex_once, __gthread_atomic_add_mutex_once):  Declare
+	when we don't have static mutex initialization.
+	(__exchange_and_add):  Use _Atomic_add_mutex_once.
+	* src/misc-inst.cc:  Definitions of all the above.
+
 2003-02-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9563
