@@ -1,3 +1,8 @@
+2001-01-09  Alan Lehotsky  <lehotsky@tiac.net>
+
+	* reload.c (find_reloads_address): Check for eliminable registers
+		  when substituting a constant expression for a pseudo.
+	
 2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (enum format_type): Add format_type_error.

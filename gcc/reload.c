@@ -4487,10 +4487,14 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
     {
       regno = REGNO (ad);
 
-      if (reg_equiv_constant[regno] != 0
-	  && strict_memory_address_p (mode, reg_equiv_constant[regno]))
+      /* If the register is equivalent to an invariant expression, substitute
+	 the invariant, and eliminate any eliminable register references. */
+      tem = reg_equiv_constant[regno];
+      if (tem != 0
+	  && (tem = eliminate_regs (tem, mode, insn))
+	  && strict_memory_address_p (mode, tem))
 	{
-	  *loc = ad = reg_equiv_constant[regno];
+	  *loc = ad = tem;
 	  return 0;
 	}
 
