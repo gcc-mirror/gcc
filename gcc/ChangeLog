@@ -1,3 +1,8 @@
+2004-09-18  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (legitimize_pic_address): Fix splitting of PLUS with
+	huge offset.
+
 2004-09-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove.
