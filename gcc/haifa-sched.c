@@ -473,6 +473,7 @@ static void split_hard_reg_notes PROTO ((rtx, rtx, rtx));
 static void new_insn_dead_notes PROTO ((rtx, rtx, rtx, rtx));
 static void update_n_sets PROTO ((rtx, int));
 static void update_flow_info PROTO ((rtx, rtx, rtx, rtx));
+static char *safe_concat PROTO ((char *, char *, char *));
 
 /* Main entry point of this file.  */
 void schedule_insns PROTO ((FILE *));
@@ -825,7 +826,7 @@ free_list (listp, unused_listp)
   *listp = 0;
 }
 
-rtx
+static rtx
 alloc_INSN_LIST (val, next)
      rtx val, next;
 {
@@ -845,7 +846,7 @@ alloc_INSN_LIST (val, next)
   return r;
 }
 
-rtx
+static rtx
 alloc_EXPR_LIST (kind, val, next)
      int kind;
      rtx val, next;
@@ -5564,6 +5565,28 @@ init_block_visualization ()
 
 #define BUF_LEN 256
 
+static char *
+safe_concat (buf, cur, str)
+     char *buf;
+     char *cur;
+     char *str;
+{
+  char *end = buf + BUF_LEN - 2;	/* leave room for null */
+  int c;
+
+  if (cur > end)
+    {
+      *end = '\0';
+      return end;
+    }
+
+  while (cur < end && (c = *str++) != '\0')
+    *cur++ = c;
+
+  *cur = '\0';
+  return cur;
+}
+
 /* This recognizes rtx, I classified as expressions. These are always */
 /* represent some action on values or results of other expression, */
 /* that may be stored in objects representing values.  */
@@ -5574,332 +5597,335 @@ print_exp (buf, x, verbose)
      rtx x;
      int verbose;
 {
-  char t1[BUF_LEN], t2[BUF_LEN], t3[BUF_LEN];
+  char tmp[BUF_LEN];
+  char *st[4];
+  char *cur = buf;
+  char *fun = (char *)0;
+  char *sep;
+  rtx op[4];
+  int i;
+
+  for (i = 0; i < 4; i++)
+    {
+      st[i] = (char *)0;
+      op[i] = NULL_RTX;
+    }
 
   switch (GET_CODE (x))
     {
     case PLUS:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s+%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "+";
+      op[1] = XEXP (x, 1);
       break;
     case LO_SUM:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%sl+%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "+low(";
+      op[1] = XEXP (x, 1);
+      st[2] = ")";
       break;
     case MINUS:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s-%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "-";
+      op[1] = XEXP (x, 1);
       break;
     case COMPARE:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s??%s", t1, t2);
+      fun = "cmp";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case NEG:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "-%s", t1);
+      st[0] = "-";
+      op[0] = XEXP (x, 0);
       break;
     case MULT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s*%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "*";
+      op[1] = XEXP (x, 1);
       break;
     case DIV:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s/%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "/";
+      op[1] = XEXP (x, 1);
       break;
     case UDIV:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%su/%s", t1, t2);
+      fun = "udiv";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case MOD:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s%%%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "%";
+      op[1] = XEXP (x, 1);
       break;
     case UMOD:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%su%%%s", t1, t2);
+      fun = "umod";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case SMIN:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "smin (%s, %s)", t1, t2);
+      fun = "smin";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case SMAX:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "smax(%s,%s)", t1, t2);
+      fun = "smax";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case UMIN:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "umin (%s, %s)", t1, t2);
+      fun = "umin";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case UMAX:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "umax(%s,%s)", t1, t2);
+      fun = "umax";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case NOT:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "!%s", t1);
+      st[0] = "!";
+      op[0] = XEXP (x, 0);
       break;
     case AND:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s&%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "&";
+      op[1] = XEXP (x, 1);
       break;
     case IOR:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s|%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "|";
+      op[1] = XEXP (x, 1);
       break;
     case XOR:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s^%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "^";
+      op[1] = XEXP (x, 1);
       break;
     case ASHIFT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s<<%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "<<";
+      op[1] = XEXP (x, 1);
       break;
     case LSHIFTRT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s0>%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = " 0>>";
+      op[1] = XEXP (x, 1);
       break;
     case ASHIFTRT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s>>%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = ">>";
+      op[1] = XEXP (x, 1);
       break;
     case ROTATE:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s<-<%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "<-<";
+      op[1] = XEXP (x, 1);
       break;
     case ROTATERT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s>->%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = ">->";
+      op[1] = XEXP (x, 1);
       break;
     case ABS:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "abs(%s)", t1);
+      fun = "abs";
+      op[0] = XEXP (x, 0);
       break;
     case SQRT:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "sqrt(%s)", t1);
+      fun = "sqrt";
+      op[0] = XEXP (x, 0);
       break;
     case FFS:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "ffs(%s)", t1);
+      fun = "ffs";
+      op[0] = XEXP (x, 0);
       break;
     case EQ:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s == %s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "==";
+      op[1] = XEXP (x, 1);
       break;
     case NE:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s!=%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "!=";
+      op[1] = XEXP (x, 1);
       break;
     case GT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s>%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = ">";
+      op[1] = XEXP (x, 1);
       break;
     case GTU:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s>u%s", t1, t2);
+      fun = "gtu";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case LT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s<%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "<";
+      op[1] = XEXP (x, 1);
       break;
     case LTU:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s<u%s", t1, t2);
+      fun = "ltu";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case GE:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s>=%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = ">=";
+      op[1] = XEXP (x, 1);
       break;
     case GEU:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s>=u%s", t1, t2);
+      fun = "geu";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case LE:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s<=%s", t1, t2);
+      op[0] = XEXP (x, 0);
+      st[1] = "<=";
+      op[1] = XEXP (x, 1);
       break;
     case LEU:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      sprintf (buf, "%s<=u%s", t1, t2);
+      fun = "leu";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
       break;
     case SIGN_EXTRACT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      print_value (t3, XEXP (x, 2), verbose);
-      if (verbose)
-	sprintf (buf, "sign_extract(%s,%s,%s)", t1, t2, t3);
-      else
-	sprintf (buf, "sxt(%s,%s,%s)", t1, t2, t3);
+      fun = (verbose) ? "sign_extract" : "sxt";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
+      op[2] = XEXP (x, 2);
       break;
     case ZERO_EXTRACT:
-      print_value (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      print_value (t3, XEXP (x, 2), verbose);
-      if (verbose)
-	sprintf (buf, "zero_extract(%s,%s,%s)", t1, t2, t3);
-      else
-	sprintf (buf, "zxt(%s,%s,%s)", t1, t2, t3);
+      fun = (verbose) ? "zero_extract" : "zxt";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
+      op[2] = XEXP (x, 2);
       break;
     case SIGN_EXTEND:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "sign_extend(%s)", t1);
-      else
-	sprintf (buf, "sxn(%s)", t1);
+      fun = (verbose) ? "sign_extend" : "sxn";
+      op[0] = XEXP (x, 0);
       break;
     case ZERO_EXTEND:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "zero_extend(%s)", t1);
-      else
-	sprintf (buf, "zxn(%s)", t1);
+      fun = (verbose) ? "zero_extend" : "zxn";
+      op[0] = XEXP (x, 0);
       break;
     case FLOAT_EXTEND:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "float_extend(%s)", t1);
-      else
-	sprintf (buf, "fxn(%s)", t1);
+      fun = (verbose) ? "float_extend" : "fxn";
+      op[0] = XEXP (x, 0);
       break;
     case TRUNCATE:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "trunc(%s)", t1);
-      else
-	sprintf (buf, "trn(%s)", t1);
+      fun = (verbose) ? "trunc" : "trn";
+      op[0] = XEXP (x, 0);
       break;
     case FLOAT_TRUNCATE:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "float_trunc(%s)", t1);
-      else
-	sprintf (buf, "ftr(%s)", t1);
+      fun = (verbose) ? "float_trunc" : "ftr";
+      op[0] = XEXP (x, 0);
       break;
     case FLOAT:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "float(%s)", t1);
-      else
-	sprintf (buf, "flt(%s)", t1);
+      fun = (verbose) ? "float" : "flt";
+      op[0] = XEXP (x, 0);
       break;
     case UNSIGNED_FLOAT:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "uns_float(%s)", t1);
-      else
-	sprintf (buf, "ufl(%s)", t1);
+      fun = (verbose) ? "uns_float" : "ufl";
+      op[0] = XEXP (x, 0);
       break;
     case FIX:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "fix(%s)", t1);
+      fun = "fix";
+      op[0] = XEXP (x, 0);
       break;
     case UNSIGNED_FIX:
-      print_value (t1, XEXP (x, 0), verbose);
-      if (verbose)
-	sprintf (buf, "uns_fix(%s)", t1);
-      else
-	sprintf (buf, "ufx(%s)", t1);
+      fun = (verbose) ? "uns_fix" : "ufx";
+      op[0] = XEXP (x, 0);
       break;
     case PRE_DEC:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "--%s", t1);
+      st[0] = "--";
+      op[0] = XEXP (x, 0);
       break;
     case PRE_INC:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "++%s", t1);
+      st[0] = "++";
+      op[0] = XEXP (x, 0);
       break;
     case POST_DEC:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "%s--", t1);
+      op[0] = XEXP (x, 0);
+      st[1] = "--";
       break;
     case POST_INC:
-      print_value (t1, XEXP (x, 0), verbose);
-      sprintf (buf, "%s++", t1);
+      op[0] = XEXP (x, 0);
+      st[1] = "++";
       break;
     case CALL:
-      print_value (t1, XEXP (x, 0), verbose);
+      st[0] = "call ";
+      op[0] = XEXP (x, 0);
       if (verbose)
 	{
-	  print_value (t2, XEXP (x, 1), verbose);
-	  sprintf (buf, "call %s argc:%s", t1, t2);
+	  st[1] = " argc:";
+	  op[1] = XEXP (x, 1);
 	}
-      else
-	sprintf (buf, "call %s", t1);
       break;
     case IF_THEN_ELSE:
-      print_exp (t1, XEXP (x, 0), verbose);
-      print_value (t2, XEXP (x, 1), verbose);
-      print_value (t3, XEXP (x, 2), verbose);
-      sprintf (buf, "{(%s)?%s:%s}", t1, t2, t3);
+      st[0] = "{(";
+      op[0] = XEXP (x, 0);
+      st[1] = ")?";
+      op[1] = XEXP (x, 1);
+      st[2] = ":";
+      op[2] = XEXP (x, 2);
+      st[3] = "}";
       break;
     case TRAP_IF:
-      print_value (t1, TRAP_CONDITION (x), verbose);
-      sprintf (buf, "trap_if %s", t1);
+      fun = "trap_if";
+      op[0] = TRAP_CONDITION (x);
       break;
     case UNSPEC:
-      {
-	int i;
-
-	sprintf (t1, "unspec{");
-	for (i = 0; i < XVECLEN (x, 0); i++)
-	  {
-	    print_pattern (t2, XVECEXP (x, 0, i), verbose);
-	    sprintf (t3, "%s%s;", t1, t2);
-	    strcpy (t1, t3);
-	  }
-	sprintf (buf, "%s}", t1);
-      }
-      break;
     case UNSPEC_VOLATILE:
       {
-	int i;
-
-	sprintf (t1, "unspec/v{");
+	cur = safe_concat (buf, cur, "unspec");
+	if (GET_CODE (x) == UNSPEC_VOLATILE)
+	  cur = safe_concat (buf, cur, "/v");
+	cur = safe_concat (buf, cur, "[");
+	sep = "";
 	for (i = 0; i < XVECLEN (x, 0); i++)
 	  {
-	    print_pattern (t2, XVECEXP (x, 0, i), verbose);
-	    sprintf (t3, "%s%s;", t1, t2);
-	    strcpy (t1, t3);
+	    print_pattern (tmp, XVECEXP (x, 0, i), verbose);
+	    cur = safe_concat (buf, cur, sep);
+	    cur = safe_concat (buf, cur, tmp);
+	    sep = ",";
 	  }
-	sprintf (buf, "%s}", t1);
+	cur = safe_concat (buf, cur, "] ");
+	sprintf (tmp, "%d", XINT (x, 1));
+	cur = safe_concat (buf, cur, tmp);
       }
       break;
     default:
-/*    if (verbose) debug_rtx (x); else sprintf (buf, "$$$"); */
-      sprintf (buf, "$$$");
+/*    if (verbose) debug_rtx (x); */
+      st[0] = GET_RTX_NAME (x);
+      break;
     }
-}				/* print_exp */
+
+  /* Print this as a function? */
+  if (fun)
+    {
+      cur = safe_concat (buf, cur, fun);
+      cur = safe_concat (buf, cur, "(");
+    }
+
+  for (i = 0; i < 4; i++)
+    {
+      if (st[i])
+	cur = safe_concat (buf, cur, st[i]);
+
+      if (op[i])
+	{
+	  if (fun && i != 0)
+	    cur = safe_concat (buf, cur, ",");
+
+	  print_value (tmp, op[i], verbose);
+	  cur = safe_concat (buf, cur, tmp);
+	}
+    }
+
+  if (fun)
+    cur = safe_concat (buf, cur, ")");
+}		/* print_exp */
 
 /* Prints rtxes, i customly classified as values. They're constants, */
 /* registers, labels, symbols and memory accesses.  */
@@ -5911,60 +5937,84 @@ print_value (buf, x, verbose)
      int verbose;
 {
   char t[BUF_LEN];
+  char *cur = buf;
 
   switch (GET_CODE (x))
     {
     case CONST_INT:
-      sprintf (buf, "%Xh", INTVAL (x));
+      sprintf (t, "0x%lx", (long)INTVAL (x));
+      cur = safe_concat (buf, cur, t);
       break;
     case CONST_DOUBLE:
-      print_value (t, XEXP (x, 0), verbose);
-      sprintf (buf, "<%s>", t);
+      sprintf (t, "<0x%lx,0x%lx>", (long)XWINT (x, 2), (long)XWINT (x, 3));
+      cur = safe_concat (buf, cur, t);
       break;
     case CONST_STRING:
-      sprintf (buf, "\"%s\"", (char *) XEXP (x, 0));
+      cur = safe_concat (buf, cur, "\"");
+      cur = safe_concat (buf, cur, XSTR (x, 0));
+      cur = safe_concat (buf, cur, "\"");
       break;
     case SYMBOL_REF:
-      sprintf (buf, "`%s'", (char *) XEXP (x, 0));
+      cur = safe_concat (buf, cur, "`");
+      cur = safe_concat (buf, cur, XSTR (x, 0));
+      cur = safe_concat (buf, cur, "'");
       break;
     case LABEL_REF:
-      sprintf (buf, "L%d", INSN_UID (XEXP (x, 0)));
+      sprintf (t, "L%d", INSN_UID (XEXP (x, 0)));
+      cur = safe_concat (buf, cur, t);
       break;
     case CONST:
-      print_value (buf, XEXP (x, 0), verbose);
+      print_value (t, XEXP (x, 0), verbose);
+      cur = safe_concat (buf, cur, "const(");
+      cur = safe_concat (buf, cur, t);
+      cur = safe_concat (buf, cur, ")");
       break;
     case HIGH:
-      print_value (buf, XEXP (x, 0), verbose);
+      print_value (t, XEXP (x, 0), verbose);
+      cur = safe_concat (buf, cur, "high(");
+      cur = safe_concat (buf, cur, t);
+      cur = safe_concat (buf, cur, ")");
       break;
     case REG:
-      if (GET_MODE (x) == SFmode
-	  || GET_MODE (x) == DFmode
-	  || GET_MODE (x) == XFmode
-	  || GET_MODE (x) == TFmode)
-	strcpy (t, "fr");
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+	{
+	  int c = reg_names[ REGNO (x) ][0];
+	  if (c >= '0' && c <= '9')
+	    cur = safe_concat (buf, cur, "%");
+
+	  cur = safe_concat (buf, cur, reg_names[ REGNO (x) ]);
+	}
       else
-	strcpy (t, "r");
-      sprintf (buf, "%s%d", t, REGNO (x));
+	{
+	  sprintf (t, "r%d", REGNO (x));
+	  cur = safe_concat (buf, cur, t);
+	}
       break;
     case SUBREG:
-      print_value (t, XEXP (x, 0), verbose);
-      sprintf (buf, "%s#%d", t, SUBREG_WORD (x));
+      print_value (t, SUBREG_REG (x), verbose);
+      cur = safe_concat (buf, cur, t);
+      sprintf (t, "#%d", t, SUBREG_WORD (x));
+      cur = safe_concat (buf, cur, t);
       break;
     case SCRATCH:
-      sprintf (buf, "scratch");
+      cur = safe_concat (buf, cur, "scratch");
       break;
     case CC0:
-      sprintf (buf, "cc0");
+      cur = safe_concat (buf, cur, "cc0");
       break;
     case PC:
-      sprintf (buf, "pc");
+      cur = safe_concat (buf, cur, "pc");
       break;
     case MEM:
       print_value (t, XEXP (x, 0), verbose);
-      sprintf (buf, "[%s]", t);
+      cur = safe_concat (buf, cur, "[");
+      cur = safe_concat (buf, cur, t);
+      cur = safe_concat (buf, cur, "]");
       break;
     default:
-      print_exp (buf, x, verbose);
+      print_exp (t, x, verbose);
+      cur = safe_concat (buf, cur, t);
+      break;
     }
 }				/* print_value */
 
