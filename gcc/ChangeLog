@@ -1,3 +1,7 @@
+2004-11-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_step_help): Support const vector types.
+
 2004-11-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18298

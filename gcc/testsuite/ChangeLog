@@ -1,3 +1,7 @@
+2004-11-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/ext/altivec-13.C: New test.
+
 2004-11-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18298
