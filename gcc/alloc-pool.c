@@ -71,8 +71,10 @@ typedef struct allocation_object_def
 #define USER_PTR_FROM_ALLOCATION_OBJECT_PTR(X)				\
    ((void *) (((allocation_object *) (X))->u.data))
 
+#ifdef ENABLE_CHECKING
 /* Last used ID.  */
 static ALLOC_POOL_ID_TYPE last_id;
+#endif
 
 /* Create a pool of things of size SIZE, with NUM in each block we
    allocate.  */
