@@ -783,8 +783,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
 ((CUM) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
  ? gen_rtx(REG, (MODE),				\
-	   (CUM) + 16 + (TARGET_FPREGS		\
-			 && GET_MODE_CLASS (MODE) == MODE_FLOAT) * 32) : 0)
+	   (CUM) + 16 + ((TARGET_FPREGS		\
+			  && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT  \
+			      || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+			 * 32))			\
+ : 0)
 
 /* Specify the padding direction of arguments.
 
