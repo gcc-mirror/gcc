@@ -141,7 +141,7 @@ pop_alignment (id)
     {
       entry = alignment_stack->prev;
 
-      if (entry == NULL || entry->alignment > 4)
+      if (entry == NULL)
 	maximum_field_alignment = 0;
       else
 	maximum_field_alignment = entry->alignment * 8;
@@ -163,6 +163,7 @@ insert_pack_attributes (node, attributes, prefix)
      tree * prefix;
 {
   tree a;
+  int field_alignment;
 
   /* If we are not packing, then there is nothing to do.  */
   if (maximum_field_alignment == 0
@@ -173,12 +174,16 @@ insert_pack_attributes (node, attributes, prefix)
   if (TREE_CODE_CLASS (TREE_CODE (node)) != 'd'
       || TREE_CODE (node) != FIELD_DECL)
     return;
+  
+  field_alignment = TYPE_ALIGN (TREE_TYPE (node));
+  if (field_alignment <= 0 || field_alignment > maximum_field_alignment)
+    field_alignment = maximum_field_alignment;
 
   /* Add a 'packed' attribute.  */
   * attributes = tree_cons (get_identifier ("packed"), NULL, * attributes);
   
   /* If the alignment is > 8 then add an alignment attribute as well.  */
-  if (maximum_field_alignment > 8)
+  if (field_alignment > 8)
     {
       /* If the aligned attribute is already present then do not override it.  */
       for (a = * attributes; a; a = TREE_CHAIN (a))
@@ -201,7 +206,7 @@ insert_pack_attributes (node, attributes, prefix)
 	  * attributes = tree_cons
 	      (get_identifier ("aligned"),
 	       tree_cons (NULL,
-			  build_int_2 (maximum_field_alignment / 8, 0),
+			  build_int_2 (field_alignment / 8, 0),
 			  NULL),
 	       * attributes);
 	}
