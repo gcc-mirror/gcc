@@ -2610,7 +2610,6 @@ genrtl_start_function (fn)
   ++function_depth;
 
   /* Create a binding level for the parameters.  */
-  expand_start_bindings (2);
   expand_function_start (fn, /*parms_have_cleanups=*/0);
   /* If this function is `main'.  */
   if (DECL_MAIN_P (fn))
@@ -2667,7 +2666,7 @@ genrtl_finish_function (fn)
   immediate_size_expand = 1;
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, lineno, 1);
+  expand_function_end (input_filename, lineno, 0);
 
   /* If this is a nested function (like a template instantiation that
      we're compiling in the midst of compiling something else), push a

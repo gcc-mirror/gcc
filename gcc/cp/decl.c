@@ -13790,7 +13790,6 @@ store_parm_decls (current_function_parms)
 {
   register tree fndecl = current_function_decl;
   register tree parm;
-  tree cleanups = NULL_TREE;
 
   /* This is a chain of any other decls that came in among the parm
      declarations.  If a parm is declared with  enum {foo, bar} x;
@@ -13821,20 +13820,11 @@ store_parm_decls (current_function_parms)
 	  next = TREE_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
-	      tree cleanup;
-
 	      if (DECL_NAME (parm) == NULL_TREE
 		  || TREE_CODE (parm) != VOID_TYPE)
 		pushdecl (parm);
 	      else
 		error ("parameter `%D' declared void", parm);
-
-	      cleanup = (processing_template_decl
-			 ? NULL_TREE
-			 : maybe_build_cleanup (parm));
-
-	      if (cleanup)
-		cleanups = tree_cons (parm, cleanup, cleanups);
 	    }
 	  else
 	    {
@@ -13859,16 +13849,6 @@ store_parm_decls (current_function_parms)
      Put the enumerators in as well, at the front so that
      DECL_ARGUMENTS is not modified.  */
   storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
-
-  /* Now that we have initialized the parms, we can start their
-     cleanups.  We cannot do this before, since expand_decl_cleanup
-     should not be called before the parm can be used.  */
-  while (cleanups)
-    {
-      finish_decl_cleanup (TREE_PURPOSE (cleanups),
-			   TREE_VALUE (cleanups));
-      cleanups = TREE_CHAIN (cleanups);
-    }
 
   /* Do the starting of the exception specifications, if we have any.  */
   if (flag_exceptions && !processing_template_decl
