@@ -128,7 +128,6 @@ AC_PROG_MAKE_SET
 # Find some useful tools
 AC_PROG_AWK
 AC_PROG_LEX
-AC_PROG_LN_S
 AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_INSTALL
@@ -2754,7 +2753,7 @@ version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
 
 # Are we using gcc as the native compiler?
 case $host in
-*linux*)	# All Linux's use gcc as the native compiler.
+*linux* | *cygwin32* | *mingw32*)
 	if [[ x$prefix = xNONE ]]; then
 		prefix=$native_prefix
 	fi
@@ -2802,6 +2801,7 @@ then
 	cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 else
+	symbolic_link="cp -p"
 	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
 	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
 fi
@@ -3074,6 +3074,7 @@ AC_SUBST(will_use_collect2)
 AC_SUBST(maybe_use_collect2)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(stage_prefix_set_by_configure)
+AC_SUBST(symbolic_link)
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
@@ -3118,7 +3119,7 @@ AC_OUTPUT($all_outputs,
 [
 . $srcdir/configure.lang
 case x$CONFIG_HEADERS in
-xconfig.h:config.in)
+xauto-config.h:config.in)
 echo > cstamp-h ;;
 esac
 ],
