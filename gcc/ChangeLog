@@ -1,5 +1,8 @@
 1998-04-23  Jim Wilson  <wilson@cygnus.com>
 
+	* frame.c, libgcc2.c (stdlib.h, unistd.h): Don't include when
+	inhibit_libc is defined.
+
 	* c-aux-info.c (gen_type): Use DECL_NAME only for TYPE_DECL.
 
 Thu Apr 23 19:09:33 1998  Jim Wilson  <wilson@cygnus.com>

@@ -32,9 +32,15 @@ Boston, MA 02111-1307, USA.  */
 
 #include "tconfig.h"
 
+/* We disable this when inhibit_libc, so that gcc can still be built without
+   needing header files first.  */
+/* ??? This is not a good solution, since prototypes may be required in
+   some cases for correct code.  See also frame.c.  */
+#ifndef inhibit_libc
 /* fixproto guarantees these system headers exist. */
 #include <stdlib.h>
 #include <unistd.h>
+#endif
 
 #include "machmode.h"
 #include "defaults.h" 
