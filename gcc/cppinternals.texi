@@ -94,12 +94,13 @@ Identifiers, macro expansion, hash nodes, lexing.
 * Hash Nodes::      All identifiers are hashed.
 * Macro Expansion:: Macro expansion algorithm.
 * Files::	    File handling.
-* Concept Index::   Index of concepts and terms.
 * Index::           Index.
 @end menu
 
 @node Conventions, Lexer, Top, Top
 @unnumbered Conventions
+@cindex interface
+@cindex header files
 
 cpplib has two interfaces - one is exposed internally only, and the
 other is for both internal and external use.
@@ -107,7 +108,9 @@ other is for both internal and external use.
 The convention is that functions and types that are exposed to multiple
 files internally are prefixed with @samp{_cpp_}, and are to be found in
 the file @samp{cpphash.h}.  Functions and types exposed to external
-clients are in @samp{cpplib.h}, and prefixed with @samp{cpp_}.
+clients are in @samp{cpplib.h}, and prefixed with @samp{cpp_}.  For
+historical reasons this is no longer quite true, but we should strive to
+stick to it.
 
 We are striving to reduce the information exposed in cpplib.h to the
 bare minimum necessary, and then to keep it there.  This makes clear
@@ -118,6 +121,8 @@ behaviour.
 
 @node Lexer, Whitespace, Conventions, Top
 @unnumbered The Lexer
+@cindex lexer
+@cindex tokens
 
 The lexer is contained in the file @samp{cpplex.c}.  We want to have a
 lexer that is single-pass, for efficiency reasons.  We would also like
@@ -186,10 +191,10 @@ we don't allow the terminators of header names to be escaped; the first
 
 Interpretation of some character sequences depends upon whether we are
 lexing C, C++ or Objective C, and on the revision of the standard in
-force.  For example, @samp{@@foo} is a single identifier token in
-objective C, but two separate tokens @samp{@@} and @samp{foo} in C or
-C++.  Such cases are handled in the main function @samp{_cpp_lex_token},
-based upon the flags set in the @samp{cpp_options} structure.
+force.  For example, @samp{::} is a single token in C++, but two
+separate @samp{:} tokens, and almost certainly a syntax error, in C.
+Such cases are handled in the main function @samp{_cpp_lex_token}, based
+upon the flags set in the @samp{cpp_options} structure.
 
 Note we have almost, but not quite, achieved the goal of not stepping
 backwards in the input stream.  Currently @samp{skip_escaped_newlines}
@@ -201,6 +206,11 @@ buffer it and continue to treat it as 3 separate characters.
 
 @node Whitespace, Hash Nodes, Lexer, Top
 @unnumbered Whitespace
+@cindex whitespace
+@cindex newlines
+@cindex escaped newlines
+@cindex paste avoidance
+@cindex line numbers
 
 The lexer has been written to treat each of @samp{\r}, @samp{\n},
 @samp{\r\n} and @samp{\n\r} as a single new line indicator.  This allows
@@ -221,8 +231,70 @@ characters, and @samp{skip_escaped_newlines} takes care of arbitrarily
 long sequences of escaped newlines, deferring to @samp{handle_newline}
 to handle the newlines themselves.
 
+Another whitespace issue only concerns the stand-alone preprocessor: we
+want to guarantee that re-reading the preprocessed output results in an
+identical token stream.  Without taking special measures, this might not
+be the case because of macro substitution.  We could simply insert a
+space between adjacent tokens, but ideally we would like to keep this to
+a minimum, both for aesthetic reasons and because it causes problems for
+people who still try to abuse the preprocessor for things like Fortran
+source and Makefiles.
+
+The token structure contains a flags byte, and two flags are of interest
+here: @samp{PREV_WHITE} and @samp{AVOID_LPASTE}.  @samp{PREV_WHITE}
+indicates that the token was preceded by whitespace; if this is the case
+we need not worry about it incorrectly pasting with its predecessor.
+The @samp{AVOID_LPASTE} flag is set by the macro expansion routines, and
+indicates that paste avoidance by insertion of a space to the left of
+the token may be necessary.  Recursively, the first token of a macro
+substitution, the first token after a macro substitution, the first
+token of a substituted argument, and the first token after a substituted
+argument are all flagged @samp{AVOID_LPASTE} by the macro expander.
+
+If a token flagged in this way does not have a @samp{PREV_WHITE} flag,
+and the routine @var{cpp_avoid_paste} determines that it might be
+misinterpreted by the lexer if a space is not inserted between it and
+the immediately preceding token, then stand-alone CPP's output routines
+will insert a space between them.  To avoid excessive spacing,
+@var{cpp_avoid_paste} tries hard to only request a space if one is
+likely to be necessary, but for reasons of efficiency it is slightly
+conservative and might recommend a space where one is not strictly
+needed.
+
+Finally, the preprocessor takes great care to ensure it keeps track of
+both the position of a token in the source file, for diagnostic
+purposes, and where it should appear in the output file, because using
+CPP for other languages like assembler requires this.  The two positions
+may differ for the following reasons:
+
+@itemize @bullet
+@item
+Escaped newlines are deleted, so lines spliced in this way are joined to
+form a single logical line.
+
+@item
+A macro expansion replaces the tokens that form its invocation, but any
+newlines appearing in the macro's arguments are interpreted as a single
+space, with the result that the macro's replacement appears in full on
+the same line that the macro name appeared in the source file.  This is
+particularly important for stringification of arguments - newlines
+embedded in the arguments must appear in the string as spaces.
+@end itemize
+
+The source file location is maintained in the @var{lineno} member of the
+@var{cpp_buffer} structure, and the column number inferred from the
+current position in the buffer relative to the @var{line_base} buffer
+variable, which is updated with every newline whether escaped or not.
+
+TODO: Finish this.
+
 @node Hash Nodes, Macro Expansion, Whitespace, Top
 @unnumbered Hash Nodes
+@cindex hash table
+@cindex identifiers
+@cindex macros
+@cindex assertions
+@cindex named operators
 
 When cpplib encounters an "identifier", it generates a hash code for it
 and stores it in the hash table.  By "identifier" we mean tokens with
@@ -279,24 +351,17 @@ argument, and which argument it is, is also an O(1) operation.  Further,
 each directive name, such as @samp{endif}, has an associated directive
 enum stored in its hash node, so that directive lookup is also O(1).
 
-Later, CPP may also store C front-end information in its identifier hash
-table, such as a @samp{tree} pointer.
-
 @node Macro Expansion, Files, Hash Nodes, Top
 @unnumbered Macro Expansion Algorithm
 @printindex cp
 
-@node Files, Concept Index, Macro Expansion, Top
+@node Files, Index, Macro Expansion, Top
 @unnumbered File Handling
 @printindex cp
 
-@node Concept Index, Index, Files, Top
-@unnumbered Concept Index
+@node Index,, Files, Top
+@unnumbered Index
 @printindex cp
-
-@node Index,, Concept Index, Top
-@unnumbered Index of Directives, Macros and Options
-@printindex fn
 
 @contents
 @bye
