@@ -1958,15 +1958,11 @@ namespace std
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
 
-      char_type __c = *__beg;
       size_t __i = 0;
       string __digits;
-      while (__i < 4 && __beg != __end && __ctype.is(ctype_base::digit, __c))
-	{
-	  __digits += __ctype.narrow(__c, 0);
-	  __c = *(++__beg);
-	  ++__i;
-	}
+      for (; __i < 4 && __beg != __end
+	     && __ctype.is(ctype_base::digit, *__beg); ++__beg, ++__i)
+	__digits += __ctype.narrow(*__beg, 0);
       if (__i == 2 || __i == 4)
 	{
 	  long __l;
@@ -1994,32 +1990,30 @@ namespace std
       const locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       for (; __beg != __end; ++__beg)
-	{
-	  if (__ctype.narrow(*__beg, 0) != '%')
-	    {
-	      *__s = *__beg;
-	      ++__s;
-	    }
-	  else if (++__beg != __end)
-	    {
-	      char __format;
-	      char __mod = 0;
-	      const char __c = __ctype.narrow(*__beg, 0);
-	      if (__c != 'E' && __c != 'O')
-		__format = __c;
-	      else if (++__beg != __end)
-		{
-		  __mod = __c;
-		  __format = __ctype.narrow(*__beg, 0);
-		}
-	      else
-		break;
-	      __s = this->do_put(__s, __io, __fill, __tm,
-				 __format, __mod);
-	    }
-	  else
-	    break;
-	}
+	if (__ctype.narrow(*__beg, 0) != '%')
+	  {
+	    *__s = *__beg;
+	    ++__s;
+	  }
+	else if (++__beg != __end)
+	  {
+	    char __format;
+	    char __mod = 0;
+	    const char __c = __ctype.narrow(*__beg, 0);
+	    if (__c != 'E' && __c != 'O')
+	      __format = __c;
+	    else if (++__beg != __end)
+	      {
+		__mod = __c;
+		__format = __ctype.narrow(*__beg, 0);
+	      }
+	    else
+	      break;
+	    __s = this->do_put(__s, __io, __fill, __tm,
+			       __format, __mod);
+	  }
+	else
+	  break;
       return __s;
     }
 
@@ -2115,7 +2109,7 @@ namespace std
 	}
     }
 
- template<typename _CharT>
+  template<typename _CharT>
     typename collate<_CharT>::string_type
     collate<_CharT>::
     do_transform(const _CharT* __lo, const _CharT* __hi) const
@@ -2159,7 +2153,7 @@ namespace std
 	}
     }
 
- template<typename _CharT>
+  template<typename _CharT>
     long
     collate<_CharT>::
     do_hash(const _CharT* __lo, const _CharT* __hi) const
@@ -2265,20 +2259,20 @@ namespace std
     __add_grouping(_CharT* __s, _CharT __sep,  
 		   const char* __gbeg, const char* __gend, 
 		   const _CharT* __first, const _CharT* __last)
-    {
-      if (__last - __first > *__gbeg)
-        {
-	  const bool __bump = __gbeg + 1 != __gend;
-          __s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
-				    __gend, __first, __last - *__gbeg);
-          __first = __last - *__gbeg;
-          *__s++ = __sep;
-        }
-      do
-	*__s++ = *__first++;
-      while (__first != __last);
-      return __s;
-    }
+  {
+    if (__last - __first > *__gbeg)
+      {
+	const bool __bump = __gbeg + 1 != __gend;
+	__s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
+				  __gend, __first, __last - *__gbeg);
+	__first = __last - *__gbeg;
+	*__s++ = __sep;
+      }
+    do
+      *__s++ = *__first++;
+    while (__first != __last);
+    return __s;
+  }
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
