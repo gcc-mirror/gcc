@@ -505,8 +505,13 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 	  ASM_OPERANDS_INPUT_VEC (copy) = map->copy_asm_operands_vector;
 	  ASM_OPERANDS_INPUT_CONSTRAINT_VEC (copy)
 	    = map->copy_asm_constraints_vector;
+#ifdef USE_MAPPED_LOCATION
+	  ASM_OPERANDS_SOURCE_LOCATION (copy)
+	    = ASM_OPERANDS_SOURCE_LOCATION (orig);
+#else
 	  ASM_OPERANDS_SOURCE_FILE (copy) = ASM_OPERANDS_SOURCE_FILE (orig);
 	  ASM_OPERANDS_SOURCE_LINE (copy) = ASM_OPERANDS_SOURCE_LINE (orig);
+#endif
 	  return copy;
 	}
       break;

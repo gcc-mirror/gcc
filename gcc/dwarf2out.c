@@ -10501,10 +10501,11 @@ add_pure_or_virtual_attribute (dw_die_ref die, tree func_decl)
 static void
 add_src_coords_attributes (dw_die_ref die, tree decl)
 {
-  unsigned file_index = lookup_filename (DECL_SOURCE_FILE (decl));
+  expanded_location s = expand_location (DECL_SOURCE_LOCATION (decl));
+  unsigned file_index = lookup_filename (s.file);
 
   add_AT_unsigned (die, DW_AT_decl_file, file_index);
-  add_AT_unsigned (die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
+  add_AT_unsigned (die, DW_AT_decl_line, s.line);
 }
 
 /* Add a DW_AT_name attribute and source coordinate attribute for the
@@ -11199,7 +11200,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
     }
   else if (old_die)
     {
-      unsigned file_index = lookup_filename (DECL_SOURCE_FILE (decl));
+      expanded_location s = expand_location (DECL_SOURCE_LOCATION (decl));
+      unsigned file_index = lookup_filename (s.file);
 
       if (!get_AT_flag (old_die, DW_AT_declaration)
 	  /* We can have a normal definition following an inline one in the
@@ -11228,7 +11230,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  && (DECL_ARTIFICIAL (decl)
 	      || (get_AT_unsigned (old_die, DW_AT_decl_file) == file_index
 		  && (get_AT_unsigned (old_die, DW_AT_decl_line)
-		      == (unsigned) DECL_SOURCE_LINE (decl)))))
+		      == (unsigned) s.line))))
 	{
 	  subr_die = old_die;
 
@@ -11247,9 +11249,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  if (get_AT_unsigned (old_die, DW_AT_decl_file) != file_index)
 	    add_AT_unsigned (subr_die, DW_AT_decl_file, file_index);
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
-	      != (unsigned) DECL_SOURCE_LINE (decl))
+	      != (unsigned) s.line)
 	    add_AT_unsigned
-	      (subr_die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
+	      (subr_die, DW_AT_decl_line, s.line);
 	}
     }
   else
@@ -11476,16 +11478,16 @@ gen_variable_die (tree decl, dw_die_ref context_die)
       add_AT_specification (var_die, old_die);
       if (DECL_NAME (decl))
 	{
-	  unsigned file_index = lookup_filename (DECL_SOURCE_FILE (decl));
+	  expanded_location s = expand_location (DECL_SOURCE_LOCATION (decl));
+	  unsigned file_index = lookup_filename (s.file);
 
 	  if (get_AT_unsigned (old_die, DW_AT_decl_file) != file_index)
 	    add_AT_unsigned (var_die, DW_AT_decl_file, file_index);
 
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
-	      != (unsigned) DECL_SOURCE_LINE (decl))
+	      != (unsigned) s.line)
 
-	    add_AT_unsigned (var_die, DW_AT_decl_line,
-			     DECL_SOURCE_LINE (decl));
+	    add_AT_unsigned (var_die, DW_AT_decl_line, s.line);
 	}
     }
   else
@@ -12776,6 +12778,7 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
   dw_die_ref imported_die, at_import_die;
   dw_die_ref scope_die;
   unsigned file_index;
+  expanded_location xloc;
   
   if (debug_info_level <= DINFO_LEVEL_TERSE)
     return;
@@ -12807,10 +12810,11 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
     imported_die = new_die (DW_TAG_imported_module, scope_die, context);
   else
     imported_die = new_die (DW_TAG_imported_declaration, scope_die, context);
-  
-  file_index = lookup_filename (input_filename);
+
+  xloc = expand_location (input_location);
+  file_index = lookup_filename (xloc.file);
   add_AT_unsigned (imported_die, DW_AT_decl_file, file_index);
-  add_AT_unsigned (imported_die, DW_AT_decl_line, input_line);
+  add_AT_unsigned (imported_die, DW_AT_decl_line, xloc.line);
   add_AT_die_ref (imported_die, DW_AT_import, at_import_die);
 }
 
@@ -12898,7 +12902,7 @@ dwarf2out_decl (tree decl)
 
       /* Don't bother trying to generate any DIEs to represent any of the
 	 normal built-in types for the language we are compiling.  */
-      if (DECL_SOURCE_LINE (decl) == 0)
+      if (DECL_IS_BUILTIN (decl))
 	{
 	  /* OK, we need to generate one for `bool' so GDB knows what type
 	     comparisons have.  */

@@ -173,13 +173,13 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
 #undef DEFINE_DIAGNOSTIC_KIND
     "must-not-happen"
   };
-   if (diagnostic->kind >= DK_LAST_DIAGNOSTIC_KIND)
-     abort();
+  expanded_location s = expand_location (diagnostic->location);
+  if (diagnostic->kind >= DK_LAST_DIAGNOSTIC_KIND)
+    abort();
 
-  return diagnostic->location.file
+  return s.file
     ? build_message_string ("%s:%d: %s",
-                            diagnostic->location.file,
-                            diagnostic->location.line,
+                            s.file, s.line,
                             _(diagnostic_kind_text[diagnostic->kind]))
     : build_message_string ("%s: %s", progname,
                             _(diagnostic_kind_text[diagnostic->kind]));
@@ -206,8 +206,9 @@ diagnostic_count_diagnostic (diagnostic_context *context,
 	   || diagnostic_kind_count (context, DK_SORRY) > 0)
 	  && !context->abort_on_error)
 	{
+	  expanded_location s = expand_location (diagnostic->location);
 	  fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
-		   diagnostic->location.file, diagnostic->location.line);
+		   s.file, s.line);
 	  exit (FATAL_EXIT_CODE);
 	}
 #endif
@@ -313,16 +314,20 @@ diagnostic_report_current_module (diagnostic_context *context)
       pp_needs_newline (context->printer) = false;
     }
 
-  if (input_file_stack && diagnostic_last_module_changed (context))
+  p = input_file_stack;
+  if (p && diagnostic_last_module_changed (context))
     {
-      p = input_file_stack;
+      expanded_location xloc = expand_location (p->location);
       pp_verbatim (context->printer,
                    "In file included from %s:%d",
-                   p->location.file, p->location.line);
+		   xloc.file, xloc.line);
       while ((p = p->next) != NULL)
-	pp_verbatim (context->printer,
-                     ",\n                 from %s:%d",
-                     p->location.file, p->location.line);
+	{
+	  xloc = expand_location (p->location);
+	  pp_verbatim (context->printer,
+		       ",\n                 from %s:%d",
+		       xloc.file, xloc.line);
+	}
       pp_verbatim (context->printer, ":\n");
       diagnostic_set_last_module (context);
     }

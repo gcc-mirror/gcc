@@ -54,6 +54,31 @@
 	* c-ppoutput.c:  Use new source_location typedef instead of fileline.
 	* c-semantics.c:  Use new macros.
 	* c-typeck.c:  Likewise.
+	* cfgexpand.c:  Handle USE_MAPPED_LOCATION case for function_end_locus.
+	* cfglayout.c (insn_locators_initialize):  Const cleanup.  New macros.
+	* cfgrtl.c (delete_insn):  Use new NOTE_DELETED_LABEL_NAME macro.
+	* print-rtl.c (print_rtx):  Likewise.
+	* emit-rtl.c:  Don't clear NOTE_SOURCE_FILE if USE_MAPPED_LOCATION.
+	* combine.c:  Use new SET_INSN_DELETED macro.
+	* flow.c:  Likewise.
+	* haifa-sched.c:  Likewise.
+	* ifcvt.c:  Likewise.
+	* recog.c:  Likewise.
+	* reload1.c:  Likewise.
+	* diagnostic.c:  Use expand_location macro.
+	* pretty-print.c (pp_base_format_text):  Likewise.
+	* profile.c:  Likewise.
+ 	* dwarf2out.c:  Likewise.  Also use expand_location, DECL_IS_BUILTIN.
+ 	* dwarf2out.c (dwarf2out_decl:  Use BUILTINS_LOCATION.
+	* emit-rtl.c (emit_line_note):  Simplify if USE_MAPPED_LOCATION.
+	(force_next_line_note, insn_emit):  Handle USE_MAPPED_LOCATION case.
+	* final.c (final):  Likewise.
+	* haifa-sched.c:  Likewise.
+	* integrate.c:  Likewise.
+	* jump.c:  Likewise.
+	* rtl-error.c:  Likewise.
+	* stmt.c (check_seenlabel):  Likewise.
+	* tree-pretty-print.c:  Likewise.
 
 2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
 	    Eric Christopher  <echristo@redhat.com>

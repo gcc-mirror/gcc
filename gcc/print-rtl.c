@@ -272,10 +272,13 @@ print_rtx (rtx in_rtx)
 		break;
 
 	      case NOTE_INSN_DELETED_LABEL:
-		if (NOTE_SOURCE_FILE (in_rtx))
-		  fprintf (outfile, " (\"%s\")", NOTE_SOURCE_FILE (in_rtx));
-		else
-		  fprintf (outfile, " \"\"");
+		{
+		  const char *label = NOTE_DELETED_LABEL_NAME (in_rtx);
+		  if (label)
+		    fprintf (outfile, " (\"%s\")", label);
+		  else
+		    fprintf (outfile, " \"\"");
+		}
 		break;
 
 	      case NOTE_INSN_PREDICTION:

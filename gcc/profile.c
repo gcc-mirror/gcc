@@ -922,23 +922,26 @@ branch_prob (void)
 		    ignore_next_note = 0;
 		  else
 		    {
+		      expanded_location s;
+
 		      if (!offset)
 			{
 			  offset = gcov_write_tag (GCOV_TAG_LINES);
 			  gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
 			}
 
+		      NOTE_EXPANDED_LOCATION (s, insn);
+
 		      /* If this is a new source file, then output the
 			 file's name to the .bb file.  */
 		      if (!prev_file_name
-			  || strcmp (NOTE_SOURCE_FILE (insn),
-				     prev_file_name))
+			  || strcmp (s.file, prev_file_name))
 			{
-			  prev_file_name = NOTE_SOURCE_FILE (insn);
+			  prev_file_name = s.file;
 			  gcov_write_unsigned (0);
 			  gcov_write_string (prev_file_name);
 			}
-		      gcov_write_unsigned (NOTE_LINE_NUMBER (insn));
+		      gcov_write_unsigned (s.line);
 		    }
 		}
 	      insn = NEXT_INSN (insn);

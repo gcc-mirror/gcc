@@ -4131,7 +4131,9 @@ emit_note_before (int subtype, rtx before)
 {
   rtx note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
+#ifndef USE_MAPPED_LOCATION
   NOTE_SOURCE_FILE (note) = 0;
+#endif
   NOTE_LINE_NUMBER (note) = subtype;
   BLOCK_FOR_INSN (note) = NULL;
 
@@ -4354,7 +4356,9 @@ emit_note_after (int subtype, rtx after)
 {
   rtx note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
+#ifndef USE_MAPPED_LOCATION
   NOTE_SOURCE_FILE (note) = 0;
+#endif
   NOTE_LINE_NUMBER (note) = subtype;
   BLOCK_FOR_INSN (note) = NULL;
   add_insn_after (note, after);
@@ -4629,10 +4633,15 @@ emit_line_note (location_t location)
   
   set_file_and_line_for_stmt (location);
   
+#ifdef USE_MAPPED_LOCATION
+  if (location == last_location)
+    return NULL_RTX;
+#else
   if (location.file && last_location.file
       && !strcmp (location.file, last_location.file)
       && location.line == last_location.line)
     return NULL_RTX;
+#endif
   last_location = location;
   
   if (no_line_numbers)
@@ -4641,8 +4650,12 @@ emit_line_note (location_t location)
       return NULL_RTX;
     }
 
+#ifdef USE_MAPPED_LOCATION
+  note = emit_note ((int) location);
+#else
   note = emit_note (location.line);
   NOTE_SOURCE_FILE (note) = location.file;
+#endif
   
   return note;
 }
@@ -4694,7 +4707,11 @@ emit_note (int note_no)
 void
 force_next_line_note (void)
 {
+#ifdef USE_MAPPED_LOCATION
+  last_location = -1;
+#else
   last_location.line = -1;
+#endif
 }
 
 /* Place a note of KIND on insn INSN with DATUM as the datum. If a
@@ -5154,8 +5171,7 @@ init_emit (void)
   seq_rtl_expr = NULL;
   cur_insn_uid = 1;
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
-  last_location.line = 0;
-  last_location.file = 0;
+  last_location = UNKNOWN_LOCATION;
   first_label_num = label_num;
   last_label_num = 0;
   seq_stack = NULL;

@@ -1059,11 +1059,7 @@ reload (rtx first, int global)
 	      else if (reg_set_p (regno_reg_rtx[i], PATTERN (equiv_insn)))
 		delete_dead_insn (equiv_insn);
 	      else
-		{
-		  PUT_CODE (equiv_insn, NOTE);
-		  NOTE_SOURCE_FILE (equiv_insn) = 0;
-		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
-		}
+		SET_INSN_DELETED (equiv_insn);
 	    }
 	}
     }
@@ -1911,9 +1907,7 @@ delete_dead_insn (rtx insn)
       && ! side_effects_p (SET_SRC (PATTERN (prev))))
     delete_dead_insn (prev);
 
-  PUT_CODE (insn, NOTE);
-  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-  NOTE_SOURCE_FILE (insn) = 0;
+  SET_INSN_DELETED (insn);
 }
 
 /* Modify the home of pseudo-reg I.

@@ -1520,8 +1520,13 @@ final (rtx first, FILE *file, int optimize, int prescan)
 	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
 	  {
 	    if (last != 0
+#ifdef USE_MAPPED_LOCATION
+		&& NOTE_SOURCE_LOCATION (insn) == NOTE_SOURCE_LOCATION (last)
+#else
 		&& NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last)
-		&& NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last))
+		&& NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last)
+#endif)
+	      )
 	      {
 		delete_insn (insn);	/* Use delete_note.  */
 		continue;

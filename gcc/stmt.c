@@ -1565,7 +1565,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 				: GET_MODE (output_rtx[0])),
 			       TREE_STRING_POINTER (string),
 			       empty_string, 0, argvec, constraintvec,
-			       locus.file, locus.line);
+			       locus);
 
   MEM_VOLATILE_P (body) = vol;
 
@@ -1715,7 +1715,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 			   (GET_MODE (output_rtx[i]),
 			    TREE_STRING_POINTER (string),
 			    constraints[i], i, argvec, constraintvec,
-			    locus.file, locus.line));
+			    locus));
 
 	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i))) = vol;
 	}
@@ -3871,8 +3871,12 @@ check_seenlabel (void)
 	      if (insn)
                 {
                   location_t locus;
+#ifdef USE_MAPPED_LOCATION
+                  locus = NOTE_SOURCE_LOCATION (insn);
+#else
                   locus.file = NOTE_SOURCE_FILE (insn);
                   locus.line = NOTE_LINE_NUMBER (insn);
+#endif
                   warning ("%Hunreachable code at beginning of %s", &locus,
                            case_stack->data.case_stmt.printname);
                 }
