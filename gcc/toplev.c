@@ -3586,7 +3586,8 @@ rest_of_compilation (decl)
 	 confuse some debugging output writers.  */
       for (parent = DECL_CONTEXT (current_function_decl);
 	   parent != 0; parent = DECL_CONTEXT (parent))
-	if (DECL_INLINE (parent) && DECL_EXTERNAL (parent))
+	if (TREE_CODE (parent) == FUNCTION_DECL
+	    && DECL_INLINE (parent) && DECL_EXTERNAL (parent))
 	  {
 	    DECL_INITIAL (decl) = 0;
 	    goto exit_rest_of_compilation;
