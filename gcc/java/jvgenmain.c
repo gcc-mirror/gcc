@@ -34,30 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static char * do_mangle_classname PARAMS ((const char *string));
 
-const char class_mangling_suffix[] = "class$";
-
 struct obstack name_obstack;
-
-extern void error			PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1;
-
-void
-error VPARAMS ((const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
- 
-  VA_START (ap, msgid);
- 
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
- 
-  vfprintf (stderr, msgid, ap);
-  va_end (ap);
-}
 
 void
 gcc_obstack_init (obstack)
@@ -153,12 +130,11 @@ main (int argc, const char **argv)
     }
   fprintf (stream, "  0\n};\n\n");
 
-  fprintf (stream, "extern int class __attribute__ ((alias (\"%s\")));\n",
-	   mangled_classname);
+  fprintf (stream, "extern int %s;\n", mangled_classname);
   fprintf (stream, "int main (int argc, const char **argv)\n");
   fprintf (stream, "{\n");
   fprintf (stream, "   _Jv_Compiler_Properties = props;\n");
-  fprintf (stream, "   JvRunMain (&class, argc, argv);\n");
+  fprintf (stream, "   JvRunMain (&%s, argc, argv);\n", mangled_classname);
   fprintf (stream, "}\n");
   if (stream != stdout && fclose (stream) != 0)
     {
