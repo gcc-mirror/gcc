@@ -2447,13 +2447,13 @@ do { long l;						\
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  fprintf (FILE, "\tpushl e%s\n", reg_names[REGNO])
+  fprintf (FILE, "\tpushl %%e%s\n", reg_names[REGNO])
 
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  fprintf (FILE, "\tpopl e%s\n", reg_names[REGNO])
+  fprintf (FILE, "\tpopl %%e%s\n", reg_names[REGNO])
 
 /* This is how to output an element of a case-vector that is absolute.
      */
