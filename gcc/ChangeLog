@@ -1,3 +1,8 @@
+Mon Jun  5 14:06:18 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.c (short_branch): Correct error in range
+	computation.
+
 2000-06-05  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* fixinc/inclhack.def: New include hacks for ultrix.

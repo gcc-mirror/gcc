@@ -2625,10 +2625,12 @@ int
 short_branch (uid1, uid2)
      int uid1, uid2;
 {
-  unsigned int delta = insn_addresses[uid1] - insn_addresses[uid2];
-  if (delta + 1024 < 2048)
+  int delta = insn_addresses[uid1] - insn_addresses[uid2];
+
+  /* Leave a few words of "slop".  */
+  if (delta >= -1023 && delta <= 1022)
     return 1;
-  /* warning ("long branch, distance %d", delta); */
+
   return 0;
 }
 
