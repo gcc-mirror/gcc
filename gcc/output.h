@@ -465,6 +465,11 @@ extern struct rtx_def *current_insn_predicate;
 /* Last insn processed by final_scan_insn.  */
 extern struct rtx_def *current_output_insn;
 
+/* Nonzero while outputting an `asm' with operands.
+   This means that inconsistencies are the user's fault, so don't abort.
+   The precise value is the insn being output, to pass to error_for_asm.  */
+extern rtx this_is_asm_operands;
+
 /* Decide whether DECL needs to be in a writable section.  RELOC is the same
    as for SELECT_SECTION.  */
 

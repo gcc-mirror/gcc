@@ -5995,6 +5995,8 @@ print_operand (file, x, code)
       else if (CONSTANT_ADDRESS_P (x) && code =='P'
 	       && GET_CODE (x) != CONST_INT)
 	output_addr_const (file, x);
+      else if (this_is_asm_operands && ! address_operand (x, VOIDmode))
+	output_operand_lossage ("invalid constraints for operand");
       else
 	output_address (x);
     }
