@@ -1,3 +1,9 @@
+2003-09-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c++/11595
+	* decl.c (define_label): Remove unreachable timevar pop.
+	Always return the decl, even if the definition is invalid.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11786
