@@ -369,6 +369,16 @@ while (0)
   OSF1. GDB doesn't need it and kdb doesn't like it */
 #define ASM_IDENTIFY_GCC(FILE)
 
+/* Identify the front-end which produced this file.  To keep symbol
+   space down, and not confuse kdb, only do this if the language is
+   not C.  */
+
+#define ASM_IDENTIFY_LANGUAGE(STREAM)					\
+{									\
+  if (strcmp (lang_identify (), "c") != 0)				\
+    output_lang_identify (STREAM);					\
+}
+
 /* This is how to output an assembler line defining a `double' constant.
    Use "word" pseudos to avoid printing NaNs, infinity, etc.  */
 
