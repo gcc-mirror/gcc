@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
+import java.lang.ClassNotFoundException;
+import java.lang.reflect.Proxy;
 
 public class RMIObjectInputStream
 	extends ObjectInputStream {
@@ -56,20 +58,80 @@ public RMIObjectInputStream(InputStream strm, UnicastConnectionManager man) thro
 	enableResolveObject(true);
 }
 
+public RMIObjectInputStream(InputStream strm) throws IOException {
+	this(strm, UnicastConnectionManager.getInstance(0, null));
+}
+
 protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-//System.out.println("Resolving class: " + desc.getName());
-	String annotation = (String)readObject();
-	if (annotation == null) {
-		return (super.resolveClass(desc));
+	String annotation = (String)getAnnotation();
+	try{
+		return super.resolveClass(desc);
+	}catch(ClassNotFoundException _){};
+	
+	try {
+		if(annotation == null)
+		    return (RMIClassLoader.loadClass(desc.getName()));
+		else
+		    return (RMIClassLoader.loadClass(annotation, desc.getName()));
 	}
-	else {
-		try {
-			return (RMIClassLoader.loadClass(new URL(annotation), desc.getName()));
-		}
-		catch (MalformedURLException _) {
-			throw new ClassNotFoundException(desc.getName());
-		}
+	catch (MalformedURLException _) {
+		throw new ClassNotFoundException(desc.getName());
 	}
+}
+
+//Separate it for override by MarshalledObject
+protected Object getAnnotation()
+	    throws IOException, ClassNotFoundException
+{
+    return readObject();
+}
+	
+protected Class resolveProxyClass(String intfs[])
+        throws IOException, ClassNotFoundException
+{
+    String annotation = (String)getAnnotation();
+    try{
+		return super.resolveProxyClass(intfs);
+	}catch(ClassNotFoundException _){};
+	
+    Class clss[] = new Class[intfs.length];
+    if(annotation == null)
+        clss[0] = RMIClassLoader.loadClass(intfs[0]);
+    else
+        clss[0] = RMIClassLoader.loadClass(annotation, intfs[0]);
+    //assume all interfaces can be loaded by the same classloader
+    ClassLoader loader = clss[0].getClassLoader();
+    if(loader == null)
+        for(int i = 1; i < intfs.length; i++)
+            clss[i] = Class.forName(intfs[i]);    
+    else
+        for(int i = 1; i < intfs.length; i++)
+            clss[i] = loader.loadClass(intfs[i]);    
+    return Proxy.getProxyClass(loader, clss);
+}
+
+protected Object readValue(Class valueClass) throws IOException, ClassNotFoundException {
+    if(valueClass.isPrimitive()){
+        if(valueClass == Boolean.TYPE)
+            return new Boolean(readBoolean());
+        if(valueClass == Byte.TYPE)
+            return new Byte(readByte());
+        if(valueClass == Character.TYPE)
+            return new Character(readChar());
+        if(valueClass == Short.TYPE)
+            return new Short(readShort());
+        if(valueClass == Integer.TYPE)
+            return new Integer(readInt());
+        if(valueClass == Long.TYPE)
+            return new Long(readLong());
+        if(valueClass == Float.TYPE)
+            return new Float(readFloat());
+        if(valueClass == Double.TYPE)
+            return new Double(readDouble());
+        else
+            throw new Error("Unsupported primitive class: " + valueClass);
+    } else
+        return readObject();
 }
 
 }

@@ -57,9 +57,12 @@ public class UnicastConnectionManager
 	implements Runnable, ProtocolConstants {
 
 private static String localhost;
+// use different maps for server/client type UnicastConnectionManager
 private static Hashtable servers = new Hashtable();
+private static Hashtable clients = new Hashtable();
 
-private Thread serverThread;
+// make serverThread volatile for poll
+private volatile Thread serverThread;
 private ServerSocket ssock;
 String serverName;
 int serverPort;
@@ -68,7 +71,9 @@ private RMIClientSocketFactory clientFactory;
 
 static {
         try {
-                localhost = InetAddress.getLocalHost().getHostName();
+                //Use host address instead of host name to avoid name resolving issues
+                //localhost = InetAddress.getLocalHost().getHostName();
+                localhost = InetAddress.getLocalHost().getHostAddress();
         }
         catch (UnknownHostException _) {
                 localhost = "localhost";
@@ -112,11 +117,16 @@ public static synchronized UnicastConnectionManager getInstance(String host, int
 	if (csf == null) {
 		csf = RMISocketFactory.getSocketFactory();
 	}
+	// change host name to host address to avoid name resolving issues
+	try{
+    	host = InetAddress.getByName(host).getHostAddress();
+    }catch(Exception _){}
+    
 	TripleKey key = new TripleKey(host, port, csf);
-	UnicastConnectionManager man = (UnicastConnectionManager)servers.get(key);
+	UnicastConnectionManager man = (UnicastConnectionManager)clients.get(key);
 	if (man == null) {
 		man = new UnicastConnectionManager(host, port, csf);
-		servers.put(key, man);
+		clients.put(key, man);
 	}
 	return (man);
 }
@@ -199,17 +209,33 @@ public void startServer() {
 }
 
 /**
+ * Stop a server on this manager
+ */
+public void stopServer() {
+    synchronized(this) {
+    	if(serverThread != null){
+    	    serverThread = null;
+    	    try{
+    	        ssock.close();
+    	    }catch(Exception _){}
+    	}
+    }
+}
+
+/**
  * Server thread for connection manager.
  */
 public void run() {
-	for (;;) {
+	for (;serverThread != null;) { // if serverThread==null, then exit thread
 		try {
 //System.out.println("Waiting for connection on " + serverPort);
 			UnicastConnection conn = getServerConnection();
-			(new Thread(conn)).start();
+			// use a thread pool to improve performance
+			// (new Thread(conn)).start();
+			ConnectionRunnerPool.dispatchConnection(conn);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 }

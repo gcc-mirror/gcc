@@ -71,7 +71,7 @@ public class SecureClassLoader extends ClassLoader
      @param b the data representing the classfile, in classfile format.
      @param off the offset into the data where the classfile starts.
      @param len the length of the classfile data in the array.
-     @param cs the CodeSource for the class
+     @param cs the CodeSource for the class or null when unknown.
 
      @return the class that was defined and optional CodeSource.
 
@@ -81,16 +81,14 @@ public class SecureClassLoader extends ClassLoader
 				    CodeSource cs)
   {
     // FIXME: Need to cache ProtectionDomains according to 1.3 docs.
-    ProtectionDomain protectionDomain =
-      new ProtectionDomain(cs, getPermissions(cs));
-    try
+    if (cs != null)
       {
+	ProtectionDomain protectionDomain
+		= new ProtectionDomain(cs, getPermissions(cs));
 	return super.defineClass(name, b, off, len, protectionDomain);
-      }
-    catch (ClassFormatError cfe)
-      {
-	return null;
-      }
+      } 
+    else
+      return super.defineClass(name, b, off, len);
   }
 
   /**

@@ -1,3 +1,32 @@
+2002-09-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/ObjectInputStream.java (resolveProxyClass): New method
+	from Classpath.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (rmi_java_source_files): Added new files.
+	* gnu/java/rmi/RMIMarshalledObjectInputStream.java,
+	gnu/java/rmi/RMIMarshalledObjectOutputStream.java,
+	gnu/java/rmi/server/ConnectionRunnerPool.java: New files from
+	Classpath.
+	* gnu/java/rmi/dgc/DGCImpl.java,
+	gnu/java/rmi/dgc/DGCImpl_Skel.java,
+	gnu/java/rmi/dgc/DGCImpl_Stub.java,
+	gnu/java/rmi/registry/RegistryImpl_Skel.java,
+	gnu/java/rmi/registry/RegistryImpl_Stub.java,
+	gnu/java/rmi/server/RMIHashes.java,
+	gnu/java/rmi/server/RMIObjectInputStream.java,
+	gnu/java/rmi/server/RMIObjectOutputStream.java,
+	gnu/java/rmi/server/UnicastConnection.java,
+	gnu/java/rmi/server/UnicastConnectionManager.java,
+	gnu/java/rmi/server/UnicastRef.java,
+	gnu/java/rmi/server/UnicastServer.java,
+	gnu/java/rmi/server/UnicastServerRef.java,
+	java/rmi/MarshalledObject.java,
+	java/rmi/server/RMIClassLoader.java,
+	java/rmi/server/RemoteObject.java,
+	java/rmi/server/UnicastRemoteObject.java,
+	java/security/SecureClassLoader.java: Merged from Classpath.
+
 2002-09-29  Anthony Green  <green@redhat.com>
 
 	* java/lang/reflect/UndeclaredThrowableException.java: New file.

@@ -39,13 +39,56 @@ package gnu.java.rmi.server;
 
 import java.lang.reflect.Method;
 import java.lang.Class;
-import gnu.java.security.provider.SHA;
+import gnu.java.io.NullOutputStream;
+import gnu.java.lang.reflect.TypeSignature;
+import java.security.MessageDigest;
+import java.security.DigestOutputStream;
+import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
 
 public class RMIHashes
 {
+  //There're other places using DigestOutputStream to generate hash in classpath, but I think the way I used
+  //here is more efficient, anyway, you can switch to DigestOutputStream by doing like "//or:" comments say.
+  
+  //or:add this statement: private static final NullOutputStream nullOutputStream = new NullOutputStream ();
   public static long getMethodHash(Method meth)
   {
-    return meth.hashCode ();
+    //Object Serialization Spec 8.3
+    try
+    {
+        MessageDigest md = MessageDigest.getInstance ("SHA");
+        //or:remove this statement: DigestOutputStream digest_out = new DigestOutputStream (nullOutputStream, md);
+        ByteArrayOutputStream digest_out = new ByteArrayOutputStream();
+        DataOutputStream data_out = new DataOutputStream (digest_out);
+        
+        StringBuffer sbuf = new StringBuffer();
+        sbuf.append(meth.getName());
+        sbuf.append('(');
+        Class params[] = meth.getParameterTypes();
+        for(int i = 0; i < params.length; i++)
+            sbuf.append(TypeSignature.getEncodingOfClass(params[i]));
+        sbuf.append(')');
+        Class rcls = meth.getReturnType();
+        if(rcls != Void.TYPE)
+            sbuf.append(TypeSignature.getEncodingOfClass(rcls));
+        else
+            sbuf.append('V');
+        
+        data_out.writeUTF (sbuf.toString());
+        data_out.flush();
+        data_out.close ();
+
+        md.update(digest_out.toByteArray()); //or:remove this statement
+        byte[] sha = md.digest ();
+        long result = 0;
+        int len = sha.length < 8 ? sha.length : 8;
+        for (int i=0; i < len; i++)
+            result += (long)(sha[i] & 0xFF) << (8 * i);
+        return result;
+    }catch(Exception _){
+        return -1L;
+        }
   }
 
   public static long getInterfaceHash(Class clazz)
@@ -53,3 +96,4 @@ public class RMIHashes
     return clazz.hashCode ();
   }
 }
+
