@@ -1,3 +1,9 @@
+2004-07-30  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md: New peephole2's to convert imul by 3, 5 or
+	9 into the equivalent lea instruction.
+
 2004-07-30  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (gimplify_expr) <case CONST_DECL>: Don't replace
