@@ -1,3 +1,12 @@
+Sat Nov 14 17:19:18 1998  Per Bothner  <bothner@cygnus.com>
+
+	Allow uses of interface types to verify.  This is not really
+	type-safe, but it matches what Sun does, and is OK as long as
+	there are appropriate run-time checks.
+	* verify.c (merge_types):  If merging two interface types,
+	just set the result to java.lang.Object.
+	* expr.c (pop_type):  Any interface is matches by java.lang.Object.
+
 1998-11-13  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (main): Handle --output-class-directory argument.
