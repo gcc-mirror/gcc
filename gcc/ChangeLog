@@ -1,5 +1,7 @@
 Sun Dec 13 00:09:47 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* i386/next.h (ASM_OUTPUT_ALIGN): Use 0x90 for fill character.
+
 	* h8300.c (h8300_encode_label): Use '&' for tiny data items.
 	* h8300.h (TINY_DATA_NAME_P): Likewise.
 	(STRIP_NAME_ENCODING): Handle '&'.

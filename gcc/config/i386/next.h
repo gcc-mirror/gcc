@@ -224,3 +224,10 @@ Boston, MA 02111-1307, USA.  */
               == void_type_node))) ? (SIZE) : 0)
 
 /* END Calling Convention CHANGES */
+
+/* NeXT still uses old binutils that don't insert nops by default
+   when the .align directive demands to insert extra space in the text
+   segment.  */
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+  if ((LOG)!=0) fprintf ((FILE), "\t.align %d,0x90\n", (LOG))
