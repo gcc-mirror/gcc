@@ -25,14 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT MASK_FLOAT64|MASK_64BIT
 #define MIPS_ISA_DEFAULT 3
 
-#ifndef MULTILIB_DEFAULTS
-#if TARGET_ENDIAN_DEFAULT == 0
-#define MULTILIB_DEFAULTS { "EL", "mips3" }
-#else
-#define MULTILIB_DEFAULTS { "EB", "mips3" }
-#endif
-#endif
-
 /* Until we figure out what MIPS ELF targets normally use, just do
    stabs in ELF.  */
 #ifndef PREFERRED_DEBUGGING_TYPE
@@ -44,6 +36,15 @@ Boston, MA 02111-1307, USA.  */
 #define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
 
 #include "mips/mips.h"
+
+/* This must be done after mips.h, because mips.h defines
+   TARGET_ENDIAN_DEFAULT.  */
+#undef MULTILIB_DEFAULTS
+#if TARGET_ENDIAN_DEFAULT == 0
+#define MULTILIB_DEFAULTS { "EL", "mips3" }
+#else
+#define MULTILIB_DEFAULTS { "EB", "mips3" }
+#endif
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000"
