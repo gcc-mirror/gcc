@@ -8521,11 +8521,12 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
       enum rtx_code code = GET_CODE (p);
       basic_block where_bb = 0;
       rtx where_insn = threshold >= insn_count ? 0 : p;
+      rtx note;
 
       /* If this is a libcall that sets a giv, skip ahead to its end.  */
       if (GET_RTX_CLASS (code) == 'i')
 	{
-	  rtx note = find_reg_note (p, REG_LIBCALL, NULL_RTX);
+	  note = find_reg_note (p, REG_LIBCALL, NULL_RTX);
 
 	  if (note)
 	    {
@@ -8543,6 +8544,8 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 		}
 	    }
 	}
+
+      /* Closely examine the insn if the biv is mentioned.  */
       if ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
 	  && reg_mentioned_p (reg, PATTERN (p))
 	  && ! maybe_eliminate_biv_1 (loop, PATTERN (p), p, bl,
@@ -8554,6 +8557,12 @@ maybe_eliminate_biv (loop, bl, eliminate_p, threshold, insn_count)
 		     bl->regno, INSN_UID (p));
 	  break;
 	}
+
+      /* If we are eliminating, kill REG_EQUAL notes mentioning the biv.  */
+      if (eliminate_p
+	  && (note = find_reg_note (p, REG_EQUAL, NULL_RTX)) != NULL_RTX
+	  && reg_mentioned_p (reg, XEXP (note, 0)))
+	remove_note (p, note);
     }
 
   if (p == loop->end)

@@ -1,3 +1,7 @@
+2002-12-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20021219-1.c: New test.
+
 2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8442
