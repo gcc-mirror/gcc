@@ -357,11 +357,9 @@ cpp_reader *pfile;
 	else
 	    max_chars = MAX_LONG_TYPE_SIZE / width;
 
-	while (1)
+	++ptr;
+	while (ptr < tok_end && ((c = *ptr++) != '\''))
 	  {
-	    if (ptr >= CPP_PWRITTEN (pfile) || (c = *ptr++) == '\'')
-	      break;
-
 	    if (c == '\\')
 	      {
 		c = cpp_parse_escape (pfile, &ptr);
