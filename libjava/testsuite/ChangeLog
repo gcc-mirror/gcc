@@ -1,5 +1,10 @@
 2002-03-27  Anthony Green  <green@redhat.com>
 
+	* libjava.lang/InvokeReturn.java: Modify test for targets
+	which do not yet support reflection.
+
+2002-03-27  Anthony Green  <green@redhat.com>
+
 	* libjava.jni/jni.exp (gcj_jni_run): Fix cross build test.
 
 2002-03-27  Anthony Green  <green@redhat.com>
