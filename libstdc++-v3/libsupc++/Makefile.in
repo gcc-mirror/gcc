@@ -96,7 +96,6 @@ USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
-WFMT_FLAGS = @WFMT_FLAGS@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_basedir = @glibcpp_basedir@
@@ -137,7 +136,7 @@ CONFIG_CXXFLAGS = \
 
 # Warning flags to use.
 WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES

@@ -17,7 +17,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   glibcpp_basedir=$auxdir/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
 
-  AM_INIT_AUTOMAKE(libstdc++, 2.90.8)
+  AM_INIT_AUTOMAKE(libstdc++, 2.91)
 
   # Never versions of autoconf add an underscore to these functions.
   # Prevent future problems ...
@@ -168,10 +168,10 @@ if test ! -f stamp-sanity-compiler; then
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   AC_EGREP_CPP(ok, [
-  #if (__GNUC__ > 2) || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
+  #if __GNUC__ >= 3
     ok
   #endif
-  ], gpp_satisfactory=yes, AC_MSG_ERROR([please upgrade to gcc-2.95 or above]))
+  ], gpp_satisfactory=yes, AC_MSG_ERROR([please upgrade to GCC 3.0 or above]))
   AC_LANG_RESTORE
   AC_MSG_RESULT($gpp_satisfactory)
   touch stamp-sanity-compiler
@@ -184,8 +184,6 @@ dnl Test for newer compiler features, or features that are present in newer
 dnl compiler version but not older compiler versions should be placed
 dnl here.
 dnl
-dnl Define WFMT_FLAGS='-fdiagnostics-show-location=once' if possible
-dnl 
 dnl Define WERROR='-Werror' if requested and possible; g++'s that lack the
 dnl new inlining code or the new system_header pragma will die on -Werror.
 dnl Leave it out by default and use maint-mode to use it.
@@ -209,22 +207,6 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
     WERROR='-Werror'
   fi
 
-  # Check for more sophisticated diagnostic control.
-  AC_MSG_CHECKING([for g++ that supports -fdiagnostics-show-location=once])
-  CXXFLAGS='-Werror -fdiagnostics-show-location=once'
-  AC_TRY_COMPILE(, [int foo;
-  ], [ac_gabydiags=yes], [ac_gabydiags=no])
-  if test "$ac_test_CXXFLAGS" = set; then
-    CXXFLAGS="$ac_save_CXXFLAGS"
-  else
-    # this is the suspicious part
-    CXXFLAGS=''
-  fi
-  if test x"$ac_gabydiags" = x"yes"; then
-    WFMT_FLAGS='-fdiagnostics-show-location=once'
-  fi
-  AC_MSG_RESULT($ac_gabydiags)
-
   # Check for -ffunction-sections -fdata-sections
   AC_MSG_CHECKING([for g++ that supports -ffunction-sections -fdata-sections])
   CXXFLAGS='-Werror -ffunction-sections -fdata-sections'
@@ -243,7 +225,6 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
 
   AC_LANG_RESTORE
   AC_SUBST(WERROR)
-  AC_SUBST(WFMT_FLAGS)
   AC_SUBST(SECTION_FLAGS)
 ])
 

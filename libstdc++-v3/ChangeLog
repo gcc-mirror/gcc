@@ -1,5 +1,21 @@
 2001-02-26  Phil Edwards  <pme@sources.redhat.com>
 
+	* acinclude.m4 (GLIBCPP_CONFIGURE):  Update required compiler version.
+	  (GLIBCPP_CHECK_COMPILER_FEATURES):  Can safely assume new
+	  diagnostics.  Remove WFMT_FLAGS.
+	* configure.in:  Replace WFMT_FLAGS with diagnostics options.
+	* libsupc++/Makefile.am:  Likewise.
+	* src/Makefile.am:  Likewise.
+	* aclocal.m4:  Regenerated.
+	* configure:  Regenerated.
+	* Makefile.in:  Regenerated.
+	* libio/Makefile.in:  Regenerated.
+	* libmath/Makefile.in:  Regenerated.
+	* libsupc++/Makefile.in:  Regenerated.
+	* src/Makefile.in:  Regenerated.
+
+2001-02-26  Phil Edwards  <pme@sources.redhat.com>
+
 	Fixes libstdc++/2079
 	* include/backward/iomanip.h:  Expose <ios> manipulators to global
 	  namespace.
