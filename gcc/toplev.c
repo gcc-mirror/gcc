@@ -3109,10 +3109,12 @@ rest_of_compilation (decl)
     }
 
   if (optimize > 0 && flag_thread_jumps)
-    /* This pass of jump threading straightens out code
-       that was kinked by loop optimization.  */
-    TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
-
+    {
+      /* This pass of jump threading straightens out code
+         that was kinked by loop optimization.  */
+      TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
+      TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
+    }
   /* Dump rtl code after cse, if we are doing that.  */
 
   if (cse2_dump)
