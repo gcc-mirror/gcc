@@ -1,3 +1,31 @@
+2004-02-26  Eric Christopher  <echristo@redhat.com>
+
+	* lib/target-supports.exp (check-iconv-available): New function.
+	* lib/gcc-dg.exp (dg-require-iconv): New function.
+	Use above.
+        * gcc.dg/charset: New directory.
+        * gcc.dg/charset/charset.exp: New file.
+        * gcc.dg/charset/asm1.c: Ditto.
+        * gcc.dg/charset/asm2.c: Ditto.
+        * gcc.dg/charset/asm3.c: Ditto.
+        * gcc.dg/charset/asm4.c: Ditto.
+        * gcc.dg/charset/asm5.c: Ditto.
+        * gcc.dg/charset/attribute1.c: Ditto.
+        * gcc.dg/charset/attribute2.c: Ditto.
+        * gcc.dg/charset/string1.c: Ditto.
+        * g++.dg/charset: New directory.
+        * g++.dg/dg.exp: Add here. Special options.
+        * g++.dg/charset/charset.exp: New file.
+        * g++.dg/charset/asm1.c: Ditto.
+        * g++.dg/charset/asm2.c: Ditto.
+        * g++.dg/charset/asm3.c: Ditto.
+        * g++.dg/charset/asm4.c: Ditto.
+        * g++.dg/charset/attribute1.c: Ditto.
+        * g++.dg/charset/attribute2.c: Ditto.
+        * g++.dg/charset/extern1.cc: Ditto.
+        * g++.dg/charset/extern2.cc: Ditto.
+        * g++.dg/charset/string1.c: Ditto.
+
 2004-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14278
@@ -89,7 +117,7 @@
 	* gcc.dg/altivec-6.c: New test case.
 	* gcc.dg/altivec-[7-9].c: Generalize target triple; add
 	type casts as needed.
-	* gcc.dg/altivec-10.c: Include altivec_check.h and call 
+	* gcc.dg/altivec-10.c: Include altivec_check.h and call
 	altivec_check().
 	* gcc.dg/altivec-12.c: New test case.
 	* gcc.dg/altivec-varargs-1.c: Generalize target triple;
@@ -21063,5 +21091,3 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
-
-
