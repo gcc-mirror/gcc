@@ -166,9 +166,112 @@ struct tree_common
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  /* There is room for two more flags.  */
+  /* There is room for three more flags.  */
 };
 
+/* The following table lists the uses of each of the above flags and
+   for which types of nodes they are defined.  Note that expressions
+   include decls.
+
+   addressable_flag:
+
+       TREE_ADDRESSABLE in
+   	   VAR_DECL, FUNCTION_DECL, CONSTRUCTOR, LABEL_DECL, ..._TYPE
+	   IDENTIFIER_NODE
+
+   static_flag:
+
+       TREE_STATIC in
+           VAR_DECL, FUNCTION_DECL, CONSTRUCTOR
+       TREE_NO_UNUSED_WARNING in
+           CONVERT_EXPR, NOP_EXPR, COMPOUND_EXPR
+       TREE_VIA_VIRTUAL in
+           TREE_LIST or TREE_VEC
+       TREE_CONSTANT_OVERFLOW in
+           INTEGER_CST, REAL_CST, COMPLEX_CST
+       TREE_SYMBOL_REFERENCED in
+           IDENTIFIER_NODE
+
+   public_flag:
+
+       TREE_OVERFLOW in
+           INTEGER_CST, REAL_CST, COMPLEX_CST
+       TREE_PUBLIC in
+           VAR_DECL or FUNCTION_DECL
+       TREE_VIA_PUBLIC in
+           TREE_LIST or TREE_VEC
+
+   private_flag:
+
+       TREE_VIA_PRIVATE in
+           TREE_LIST or TREE_VEC
+       TREE_PRIVATE in
+           ??? unspecified nodes
+
+   protected_flag:
+
+       TREE_VIA_PROTECTED in
+           TREE_LIST
+       TREE_PROTECTED in
+           BLOCK
+	   ??? unspecified nodes
+
+   side_effects_flag:
+
+       TREE_SIDE_EFFECTS in
+           all expressions
+
+   volatile_flag:
+
+       TREE_THIS_VOLATILE in
+           all expressions
+       TYPE_VOLATILE in
+           ..._TYPE
+
+   readonly_flag:
+
+       TREE_READONLY in
+           VAR_DECL, PARM_DECL, FIELD_DECL, ..._REF
+       ITERATOR_BOUND_P in
+           VAR_DECL if iterator (C)
+       TYPE_READONLY in
+           ..._TYPE
+
+   constant_flag:
+
+       TREE_CONSTANT in
+           all expressions
+
+   permanent_flag: TREE_PERMANENT in all nodes
+
+   unsigned_flag:
+
+       TREE_UNSIGNED in
+           INTEGER_TYPE, ENUMERAL_TYPE, FIELD_DECL
+       CONSTRUCTOR_TARGET_CLEARED_P in
+           CONSTRUCTOR
+       DECL_BUILT_IN_NONANSI in
+           FUNCTION_DECL
+       TREE_PARMLIST in
+           TREE_PARMLIST (C++)
+
+   asm_written_flag:
+
+       TREE_ASM_WRITTEN in
+           VAR_DECL, FUNCTION_DECL, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE
+	   BLOCK
+
+   used_flag:
+
+       TREE_USED in
+           expressions, IDENTIFIER_NODE
+
+   raises_flag:
+
+       TREE_RAISES in
+           expressions
+
+							  */
 /* Define accessors for the fields that all tree nodes have
    (though some fields are not used for all kinds of nodes).  */
 
@@ -905,12 +1008,16 @@ struct tree_type
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) ((NODE)->decl.external_flag)
    
 
-/* In VAR_DECL and PARM_DECL nodes, nonzero means declared `register'.
-   In LABEL_DECL nodes, nonzero means that an error message about
-   jumping into such a binding contour has been printed for this label.  */
+/* In VAR_DECL and PARM_DECL nodes, nonzero means declared `register'.  */
 #define DECL_REGISTER(NODE) ((NODE)->decl.regdecl_flag)
+/* In LABEL_DECL nodes, nonzero means that an error message about
+   jumping into such a binding contour has been printed for this label.  */
+#define DECL_ERROR_ISSUED(NODE) ((NODE)->decl.regdecl_flag)
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) ((NODE)->decl.regdecl_flag)
+/* In a FUNCTION_DECL with a non-zero DECL_CONTEXT, indicates that a
+   static chain is not needed.  */
+#define DECL_NO_STATIC_CHAIN(NODE) ((NODE)->decl.regdecl_flag)
 
 /* Nonzero in a ..._DECL means this variable is ref'd from a nested function.
    For VAR_DECL nodes, PARM_DECL nodes, and FUNCTION_DECL nodes.
