@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version.
-   Copyright (C) 1991, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,23 +28,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define STARTFILE_SPEC	"%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
 
-#define CPP_SPEC "\
-%{!ansi:-D__EXTENSIONS__} -D_MIPSEB -D_SYSTYPE_SYSV \
-%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.s:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D_LANGUAGE_OBJECTIVE_C} \
-%{!.S: %{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}} \
-%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3 -D__mips64} \
-%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
-%{msingle-float:%{!msoft-float:-D__mips_single_float}} \
-%{m4650:%{!msoft-float:-D__mips_single_float}} \
-%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
-%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
+#define SUBTARGET_CPP_SPEC "\
+%{!ansi:-D__EXTENSIONS__} -D_MIPSEB -D_SYSTYPE_SYSV"
 
 #define LIB_SPEC	\
 	"%{!p:%{!pg:%{!static:%{!g*:-lc_s}} -lc}}%{p:-lc_p}%{pg:-lc_p} crtn.o%s"
