@@ -249,9 +249,10 @@ Every Makefile should define the variable @code{INSTALL}, which is the
 basic command for installing a file into the system.
 
 Every Makefile should also define the variables @code{INSTALL_PROGRAM}
-and @code{INSTALL_DATA}.  (The default for each of these should be
-@code{$(INSTALL)}.)  Then it should use those variables as the commands
-for actual installation, for executables and nonexecutables
+and @code{INSTALL_DATA}.  (The default for @code{INSTALL_PROGRAM} should
+be @code{$(INSTALL)}; the default for @code{INSTALL_DATA} should be
+@code{$@{INSTALL@} -m 644}.)  Then it should use those variables as the
+commands for actual installation, for executables and nonexecutables
 respectively.  Use these variables as follows:
 
 @example
@@ -289,19 +290,21 @@ These two variables set the root for the installation.  All the other
 installation directories should be subdirectories of one of these two,
 and nothing should be directly installed into these two directories.
 
-@table @samp
+@table @code
 @item prefix
+@vindex prefix
 A prefix used in constructing the default values of the variables listed
 below.  The default value of @code{prefix} should be @file{/usr/local}.
 When building the complete GNU system, the prefix will be empty and
 @file{/usr} will be a symbolic link to @file{/}.
 (If you are using Autoconf, write it as @samp{@@prefix@@}.)
 
-Running @samp{make install} with a different value of @code{prefix}
-from the one used to build the program should @var{not} recompile
-the program.
+Running @samp{make install} with a different value of @code{prefix} from
+the one used to build the program should @emph{not} recompile the
+program.
 
 @item exec_prefix
+@vindex exec_prefix
 A prefix used in constructing the default values of some of the
 variables listed below.  The default value of @code{exec_prefix} should
 be @code{$(prefix)}.
@@ -312,20 +315,22 @@ machine-specific files (such as executables and subroutine libraries),
 while @code{$(prefix)} is used directly for other directories.
 
 Running @samp{make install} with a different value of @code{exec_prefix}
-from the one used to build the program should @var{not} recompile the
+from the one used to build the program should @emph{not} recompile the
 program.
 @end table
 
 Executable programs are installed in one of the following directories.
 
-@table @samp
+@table @code
 @item bindir
+@vindex bindir
 The directory for installing executable programs that users can run.
 This should normally be @file{/usr/local/bin}, but write it as
 @file{$(exec_prefix)/bin}.
 (If you are using Autoconf, write it as @samp{@@bindir@@}.)
 
 @item sbindir
+@vindex sbindir
 The directory for installing executable programs that can be run from
 the shell, but are only generally useful to system administrators.  This
 should normally be @file{/usr/local/sbin}, but write it as
@@ -333,6 +338,7 @@ should normally be @file{/usr/local/sbin}, but write it as
 (If you are using Autoconf, write it as @samp{@@sbindir@@}.)
 
 @item libexecdir
+@vindex libexecdir
 @comment This paragraph adjusted to avoid overfull hbox --roland 5jul94
 The directory for installing executable programs to be run by other
 programs rather than by users.  This directory should normally be
@@ -625,13 +631,22 @@ the installation commands.  @xref{Install Command Categories}.
 
 @item install-strip
 Like @code{install}, but strip the executable files while installing
-them.  In many cases, the definition of this target can be very simple:
+them.  In simple cases, this target can use the @code{install} target in
+a simple way:
 
 @smallexample
 install-strip:
         $(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' \
                 install
 @end smallexample
+
+But if the package installs scripts as well as real executables, the
+@code{install-strip} target can't just refer to the @code{install}
+target; it has to strip the executables but not the scripts.
+
+@code{install-strip} should not strip the executables in the build
+directory which are being copied for installation.  It should only strip
+the copies that are installed.
 
 Normally we do not recommend stripping an executable unless you are sure
 the program has no bugs.  However, it can be reasonable to install a

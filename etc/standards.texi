@@ -3,7 +3,7 @@
 @setfilename standards.info
 @settitle GNU Coding Standards
 @c This date is automagically updated when you save this file:
-@set lastupdate May 13, 2000
+@set lastupdate December  1, 2000
 @c %**end of header
 
 @ifinfo
@@ -17,6 +17,12 @@ END-INFO-DIR-ENTRY
 @c @setchapternewpage odd
 @setchapternewpage off
 
+@c Put everything in one index (arbitrarily chosen to be the concept index).
+@syncodeindex fn cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex vr cp
+
 @c This is used by a cross ref in make-stds.texi
 @set CODESTD  1
 @iftex
@@ -28,7 +34,7 @@ END-INFO-DIR-ENTRY
 
 @ifinfo
 GNU Coding Standards
-Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -59,7 +65,7 @@ by the Free Software Foundation.
 @page
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+Copyright @copyright{} 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -92,6 +98,7 @@ Last updated @value{lastupdate}.
 * Documentation::           Documenting Programs
 * Managing Releases::       The Release Process
 * References::              References to Non-Free Software or Documentation
+* Index::
 @end menu
 
 @node Preface
@@ -106,7 +113,7 @@ even if you write in another programming language.  The rules often
 state reasons for writing in a certain way.
 
 Corrections or suggestions for this document should be sent to
-@email{gnu@@gnu.org}.  If you make a suggestion, please include a
+@email{bug-standards@@gnu.org}.  If you make a suggestion, please include a
 suggested new wording for it; our time is limited.  We prefer a context
 diff to the @file{standards.texi} or @file{make-stds.texi} files, but if
 you don't have those files, please mail your suggestion anyway.
@@ -114,8 +121,20 @@ you don't have those files, please mail your suggestion anyway.
 This release of the GNU Coding Standards was last updated
 @value{lastupdate}.
 
+@cindex where to obtain @code{standards.texi}
+@cindex downloading this manual
+If you did not obtain this file directly from the GNU project and
+recently, please check for a newer version.  You can ftp the GNU Coding
+Standards from any GNU FTP host in the directory
+@file{/pub/gnu/standards/}.  The GNU Coding Standards are available
+there in several different formats: @file{standards.text},
+@file{standards.texi}, @file{standards.info}, and @file{standards.dvi}.
+The GNU Coding Standards are also available on the GNU World Wide Web
+server: @uref{http://www.gnu.org/prep/standards_toc.html}.
+
 @node Legal Issues
 @chapter Keeping Free Software Free
+@cindex legal aspects
 
 This @value{CHAPTER} discusses how you can make sure that GNU software
 avoids legal difficulties, and other related issues.
@@ -128,6 +147,8 @@ avoids legal difficulties, and other related issues.
 
 @node Reading Non-Free Code
 @section Referring to Proprietary Programs
+@cindex proprietary programs
+@cindex avoiding proprietary code
 
 Don't in any circumstances refer to Unix source code for or during
 your work on GNU!  (Or to any other proprietary programs.)
@@ -161,6 +182,8 @@ to free memory, or use a new GNU facility such as obstacks.
 
 @node Contributions
 @section Accepting Contributions
+@cindex legal papers
+@cindex accepting contributions
 
 If the program you are working on is copyrighted by the Free Software
 Foundation, then when someone else sends you a piece of code to add to
@@ -205,6 +228,7 @@ released or not), please ask us for a copy.
 
 @node Trademarks
 @section Trademarks
+@cindex trademarks
 
 Please do not include any trademark acknowledgements in GNU software
 packages or documentation.
@@ -226,6 +250,7 @@ language.
 
 @node Design Advice
 @chapter General Program Design
+@cindex program design
 
 This @value{CHAPTER} discusses some of the issues you should take into
 account when designing your program.
@@ -238,15 +263,18 @@ account when designing your program.
 @c making  minor changes.   In 1990  ANSI then  re-adopted  ISO standard
 @c C. This version of C is known as either ANSI C or Standard C.
 
+@c A major revision of the C Standard appeared in 1999.
+
 @menu
 * Source Language::             Which languges to use.
 * Compatibility::               Compatibility with other implementations
 * Using Extensions::            Using non-standard features
-* Standard C::                  Using Standard (ANSI 1989) C features
+* Standard C::                  Using Standard C features
 @end menu
 
 @node Source Language
 @section Which Languages to Use
+@cindex programming languges
 
 When you want to use a language that gets compiled and runs at high
 speed, the best language to use is C.  Using another language is like
@@ -260,7 +288,7 @@ C has one other advantage over C++ and other compiled languages: more
 people know C, so more people will find it easy to read and modify the
 program if it is written in C.
 
-So in general it is much better to use use C, rather than the
+So in general it is much better to use C, rather than the
 comparable alternatives.
 
 But there are two exceptions to that conclusion:
@@ -283,6 +311,7 @@ for a language that is higher level than C.  Often much of the program
 is written in that language, too.  The Emacs editor pioneered this
 technique.
 
+@cindex GUILE
 The standard extensibility interpreter for GNU software is GUILE, which
 implements the language Scheme (an especially clean and simple dialect
 of Lisp).  @uref{http://www.gnu.org/software/guile/}.  We don't reject
@@ -292,23 +321,27 @@ the GNU system.
 
 @node Compatibility
 @section Compatibility with Other Implementations
+@cindex compatibility with C and @sc{posix} standards
+@cindex @sc{posix} compatibility
 
 With occasional exceptions, utility programs and libraries for GNU
 should be upward compatible with those in Berkeley Unix, and upward
-compatible with 1989 Standard C if 1989 Standard C specifies their
+compatible with Standard C if Standard C specifies their
 behavior, and upward compatible with @sc{posix} if @sc{posix} specifies
 their behavior.
 
 When these standards conflict, it is useful to offer compatibility
 modes for each of them.
 
-1989 Standard C and @sc{posix} prohibit many kinds of extensions.  Feel
+@cindex options for compatibility
+Standard C and @sc{posix} prohibit many kinds of extensions.  Feel
 free to make the extensions anyway, and include a @samp{--ansi},
 @samp{--posix}, or @samp{--compatible} option to turn them off.
 However, if the extension has a significant chance of breaking any real
 programs or scripts, then it is not really upward compatible.  So you
 should try to redesign its interface to make it upward compatible.
 
+@cindex @code{POSIXLY_CORRECT}, environment variable
 Many GNU programs suppress extensions that conflict with @sc{posix} if the
 environment variable @code{POSIXLY_CORRECT} is defined (even if it is
 defined with a null value).  Please make your program recognize this
@@ -325,6 +358,7 @@ there is any precedent for them.
 
 @node Using Extensions
 @section Using Non-standard Features
+@cindex non-standard extensions
 
 Many GNU facilities that already exist support a number of convenient
 extensions over the comparable Unix facilities.  Whether to use these
@@ -355,16 +389,21 @@ compiler, then no one can compile them without having them installed
 already.  That would be extremely troublesome in certain cases.
 
 @node Standard C
-@section 1989 Standard C and Pre-Standard C
+@section Standard C and Pre-Standard C
+@cindex @sc{ansi} C standard
 
 1989 Standard C is widespread enough now that it is ok to use its
 features in new programs.  There is one exception: do not ever use the
-``trigraph'' feature of 1989 Standard C.
+``trigraph'' feature of Standard C.
+
+1999 Standard C is not widespread yet, so please do not require its
+features in programs.  It is ok to use its features if they are present.
 
 However, it is easy to support pre-standard compilers in most programs,
 so if you know how to do that, feel free.  If a program you are
 maintaining has such support, you should try to keep it working.
 
+@cindex function prototypes
 To support pre-standard C, instead of writing function definitions in
 standard prototype form,
 
@@ -433,19 +472,24 @@ command line interface, and how libraries should behave.
 * Semantics::                   Writing robust programs
 * Libraries::                   Library behavior
 * Errors::                      Formatting error messages
-* User Interfaces::             Standards for command line interfaces
-* Option Table::                Table of long options.
+* User Interfaces::             Standards about interfaces generally
+* Graphical Interfaces::        Standards for graphical interfaces
+* Command-Line Interfaces::     Standards for command line interfaces
+* Option Table::                Table of long options
 * Memory Usage::                When and how to care about memory needs
+* File Usage::                  Which files to use, and where
 @end menu
 
 @node Semantics
 @section Writing Robust Programs
 
+@cindex arbitrary limits on data
 Avoid arbitrary limits on the length or number of @emph{any} data
 structure, including file names, lines, files, and symbols, by allocating
 all data structures dynamically.  In most Unix utilities, ``long lines
 are silently truncated''.  This is not acceptable in a GNU utility.
 
+@cindex @code{NUL} characters
 Utilities reading files should not drop NUL characters, or any other
 nonprinting characters @emph{including those with codes above 0177}.
 The only sensible exceptions would be utilities specifically intended
@@ -455,6 +499,7 @@ Whenever possible, try to make programs work properly with
 sequences of bytes that represent multibyte characters, using encodings
 such as UTF-8 and others.
 
+@cindex error messages
 Check every system call for an error return, unless you know you wish to
 ignore errors.  Include the system error text (from @code{perror} or
 equivalent) in @emph{every} error message resulting from a failing
@@ -462,6 +507,8 @@ system call, as well as the name of the file if any and the name of the
 utility.  Just ``cannot open foo.c'' or ``stat failed'' is not
 sufficient.
 
+@cindex @code{malloc} return value
+@cindex memory allocation failure
 Check every call to @code{malloc} or @code{realloc} to see if it
 returned zero.  Check @code{realloc} even if you are making the block
 smaller; in a system that rounds block sizes to a power of 2,
@@ -483,6 +530,7 @@ user), it is better to abort the command and return to the command
 reader loop.  This allows the user to kill other processes to free up
 virtual memory, and then try the command again.
 
+@cindex command-line arguments, decoding
 Use @code{getopt_long} to decode arguments, unless the argument syntax
 makes this unreasonable.
 
@@ -497,6 +545,7 @@ are less likely to work compatibly.  If you need to find all the files
 in a directory, use @code{readdir} or some other high-level interface.
 These are supported compatibly by GNU.
 
+@cindex signal handling
 The preferred signal handling facilities are the BSD variant of
 @code{signal}, and the @sc{posix} @code{sigaction} function; the
 alternative USG @code{signal} interface is an inferior design.
@@ -508,6 +557,7 @@ systems running GNU libc version 1, you should include
 behavior.  It is up to you whether to support systems where
 @code{signal} has only the USG behavior, or give up on them.
 
+@cindex impossible conditions
 In error checks that detect ``impossible'' conditions, just abort.
 There is usually no point in printing any message.  These checks
 indicate the existence of bugs.  Whoever wants to fix the bugs will have
@@ -522,14 +572,15 @@ bits (0 through 255).  A single run of the program might have 256
 errors; if you try to return 256 as the exit status, the parent process
 will see 0 as the status, and it will appear that the program succeeded.
 
+@cindex temporary files
+@cindex @code{TMPDIR} environment variable
 If you make temporary files, check the @code{TMPDIR} environment
 variable; if that variable is defined, use the specified directory
 instead of @file{/tmp}.
 
 In addition, be aware that there is a possible security problem when
-creating temporary files in directories world-writable directories.  In
-C, you can avoid this problem by creating temporary files in this
-manner:
+creating temporary files in world-writable directories.  In C, you can
+avoid this problem by creating temporary files in this manner:
 
 @example
 fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
@@ -542,6 +593,7 @@ In bash, use @code{set -C} to avoid this problem.
 
 @node Libraries
 @section Library Behavior
+@cindex libraries
 
 Try to make library functions reentrant.  If they need to do dynamic
 storage allocation, at least try to avoid any nonreentrancy aside from
@@ -561,16 +613,18 @@ together, so that no reasonable program could use one without the
 other; then they can both go in the same file.
 
 External symbols that are not documented entry points for the user
-should have names beginning with @samp{_}.  They should also contain
-the chosen name prefix for the library, to prevent collisions with
-other libraries.  These can go in the same files with user entry
-points if you like.
+should have names beginning with @samp{_}.  The @samp{_} should be
+followed by the chosen name prefix for the library, to prevent
+collisions with other libraries.  These can go in the same files with
+user entry points if you like.
 
 Static functions and variables can be used as you like and need not
 fit any naming convention.
 
 @node Errors
 @section Formatting Error Messages
+@cindex formatting error messages
+@cindex error messages, formatting
 
 Error messages from compilers should look like this:
 
@@ -630,8 +684,10 @@ usage messages, should start with a capital letter.  But they should not
 end with a period.
 
 @node User Interfaces
-@section Standards for Command Line Interfaces
+@section Standards for Interfaces Generally
 
+@cindex program name and its behavior
+@cindex behavior, dependent on program's name
 Please don't make the behavior of a utility depend on the name used
 to invoke it.  It is useful sometimes to make a link to a utility
 with a different name, and that should not change what it does.
@@ -639,6 +695,7 @@ with a different name, and that should not change what it does.
 Instead, use a run time option or a compilation switch or both
 to select among the alternate behaviors.
 
+@cindex output device and program's behavior
 Likewise, please don't make the behavior of the program depend on the
 type of output device it is used with.  Device independence is an
 important principle of the system's design; do not compromise it merely
@@ -660,6 +717,34 @@ output device type.  For example, we provide a @code{dir} program much
 like @code{ls} except that its default output format is always
 multi-column format.
 
+@node Graphical Interfaces
+@section Standards for Graphical Interfaces
+@cindex graphical user interface
+
+@cindex gtk
+When you write a program that provides a graphical user interface,
+please make it work with X Windows and the GTK toolkit unless the
+functionality specifically requires some alternative (for example,
+``displaying jpeg images while in console mode'').
+
+In addition, please provide a command-line interface to control the
+functionality.  (In many cases, the graphical user interface can be a
+separate program which invokes the command-line program.)  This is
+so that the same jobs can be done from scripts.
+
+@cindex corba
+@cindex gnome
+Please also consider providing a CORBA interface (for use from GNOME), a
+library interface (for use from C), and perhaps a keyboard-driven
+console interface (for use by users from console mode).  Once you are
+doing the work to provide the functionality and the graphical interface,
+these won't be much extra work.
+
+@node Command-Line Interfaces
+@section Standards for Command Line Interfaces
+@cindex command-line interface
+
+@findex getopt
 It is a good idea to follow the @sc{posix} guidelines for the
 command-line options of a program.  The easiest way to do this is to use
 @code{getopt} to parse them.  Note that the GNU version of @code{getopt}
@@ -667,6 +752,7 @@ will normally permit options anywhere among the arguments unless the
 special argument @samp{--} is used.  This is not what @sc{posix}
 specifies; it is a GNU extension.
 
+@cindex long-named options
 Please define long-named options that are equivalent to the
 single-letter Unix-style options.  We hope to make GNU more user
 friendly this way.  This is easy to do with the GNU function
@@ -686,16 +772,20 @@ file name as an ordinary argument for compatibility, try to provide an
 option as another way to specify it.  This will lead to more consistency
 among GNU utilities, and fewer idiosyncracies for users to remember.
 
+@cindex standard command-line options
 All programs should support two standard options: @samp{--version}
 and @samp{--help}.
 
 @table @code
+@cindex @samp{--version} option
 @item --version
 This option should direct the program to print information about its name,
 version, origin and legal status, all on standard output, and then exit
 successfully.  Other options and arguments should be ignored once this
 is seen, and the program should not perform its normal function.
 
+@cindex canonical name of a program
+@cindex program's canonical name
 The first line is meant to be easy for a program to parse; the version
 number proper starts after the last space.  In addition, it contains
 the canonical name for this program, in this format:
@@ -768,12 +858,15 @@ versions' changes.  You don't have to mention the name of the program in
 these notices, if that is inconvenient, since it appeared in the first
 line.
 
+@cindex @samp{--help} option
 @item --help
 This option should output brief documentation for how to invoke the
 program, on standard output, then exit successfully.  Other options and
 arguments should be ignored once this is seen, and the program should
 not perform its normal function.
 
+@cindex address for bug reports
+@cindex bug reports
 Near the end of the @samp{--help} option's output there should be a line
 that says where to mail bug reports.  It should have this format:
 
@@ -784,11 +877,13 @@ Report bugs to @var{mailing-address}.
 
 @node Option Table
 @section Table of Long Options
+@cindex long option names
+@cindex table of long options
 
 Here is a table of long options used by GNU programs.  It is surely
 incomplete, but we aim to list all the options that a new program might
 want to be compatible with.  If you use names not already in the table,
-please send @email{gnu@@gnu.org} a list of them, with their
+please send @email{bug-standards@@gnu.org} a list of them, with their
 meanings, so we can update the table.
 
 @c Please leave newlines between items in this table; it's much easier
@@ -1901,8 +1996,9 @@ Print the version number.
 
 @node Memory Usage
 @section Memory Usage
+@cindex memory usage
 
-If it typically uses just a few meg of memory, don't bother making any
+If a program typically uses just a few meg of memory, don't bother making any
 effort to reduce memory usage.  For example, if it is impractical for
 other reasons to operate on files more than a few meg long, it is
 reasonable to read entire input files into core to operate on them.
@@ -1917,6 +2013,23 @@ files that are bigger than will fit in core all at once.
 
 If your program creates complicated data structures, just make them in
 core and give a fatal error if @code{malloc} returns zero.
+
+@node File Usage
+@section File Usage
+@cindex file usage
+
+Programs should be prepared to operate when @file{/usr} and @file{/etc}
+are read-only file systems.  Thus, if the program manages log files,
+lock files, backup files, score files, or any other files which are
+modified for internal purposes, these files should not be stored in
+@file{/usr} or @file{/etc}.
+
+There are two exceptions.  @file{/etc} is used to store system
+configuration information; it is reasonable for a program to modify
+files in @file{/etc} when its job is to update the system configuration.
+Also, if the user explicitly asks to modify one file in a directory, it
+is reasonable for the program to store other files in the same
+directory.
 
 @node Writing C
 @chapter Making The Best Use of C
@@ -1938,7 +2051,10 @@ when writing GNU software.
 
 @node Formatting
 @section Formatting Your Source Code
+@cindex formatting source code
 
+@cindex open brace
+@cindex braces, in C source
 It is important to put the open-brace that starts the body of a C
 function in column zero, and avoid putting any other open-brace or
 open-parenthesis or open-bracket in column zero.  Several tools look
@@ -1982,7 +2098,15 @@ lots_of_args (int an_integer, long a_long, short a_short,
 @end example
 
 The rest of this section gives our recommendations for other aspects of
-C formatting style.  We don't think of them as requirements, because it
+C formatting style, which is also the default style of the @code{indent}
+program in version 1.2 and newer.  It corresponds to the options
+
+@smallexample
+-nbad -bap -nbc -bbo -bl -bli2 -bls -ncdb -nce -cp1 -cs -di2
+-ndj -nfc1 -nfca -hnl -i2 -ip5 -lp -pcs -psl -nsc -nsob
+@end smallexample
+
+We don't think of these recommendations as requirements, because it
 causes no problems for users if two different programs have different
 formatting styles.
 
@@ -2007,12 +2131,14 @@ else
   @}
 @end example
 
+@cindex spaces before open-paren
 We find it easier to read a program when it has spaces before the
 open-parentheses and after the commas.  Especially after the commas.
 
 When you split an expression into multiple lines, split it
 before an operator, not after one.  Here is the right way:
 
+@cindex expressions, splitting
 @example
 if (foo_this_is_long && bar > win (x, y, z)
     && remaining_condition)
@@ -2062,6 +2188,8 @@ do
 while (a > 0);
 @end example
 
+@cindex formfeed
+@cindex control-L
 Please use formfeed characters (control-L) to divide the program into
 pages at logical places (but not within a function).  It does not matter
 just how long the pages are, since they do not have to fit on a printed
@@ -2069,6 +2197,7 @@ page.  The formfeeds should appear alone on lines by themselves.
 
 @node Comments
 @section Commenting Your Work
+@cindex commenting
 
 Every program should start with a comment saying briefly what it is for.
 Example: @samp{fmt - filter for simple filling of text}.
@@ -2120,6 +2249,8 @@ There should be a comment on each static variable as well, like this:
 int truncate_lines;
 @end example
 
+@cindex conditionals, comments for
+@cindex @code{#endif}, commenting
 Every @samp{#endif} should have a comment, except in the case of short
 conditionals (just a few lines) that are not nested.  The comment should
 state the condition of the conditional that is ending, @emph{including
@@ -2161,10 +2292,17 @@ but, by contrast, write the comments this way for a @samp{#ifndef}:
 
 @node Syntactic Conventions
 @section Clean Use of C Constructs
+@cindex syntactic conventions
 
-Please explicitly declare all arguments to functions.
-Don't omit them just because they are @code{int}s.
+@cindex implicit @code{int}
+@cindex function argument, declaring
+Please explicitly declare the types of all objects.  For example, you
+should explicitly declare all arguments to functions, and you should
+declare functions to return @code{int} rather than omitting the
+@code{int}.
 
+@cindex compiler warnings
+@cindex @samp{-Wall} compiler option
 Some programmers like to use the GCC @samp{-Wall} option, and change the
 code whenever it issues a warning.  If you want to do this, then do.
 Other programmers prefer not to use @samp{-Wall}, because it gives
@@ -2178,6 +2316,7 @@ source file should all go in one place near the beginning of the file
 should go in a header file.  Don't put @code{extern} declarations inside
 functions.
 
+@cindex temporary variables
 It used to be common practice to use the same local variables (with
 names like @code{tem}) over and over for different values within one
 function.  Instead of doing this, it is better declare a separate local
@@ -2189,6 +2328,7 @@ all its uses.  This makes the program even cleaner.
 
 Don't use local variables or parameters that shadow global identifiers.
 
+@cindex multiple variables in a line
 Don't declare multiple variables in one declaration that spans lines.
 Start a new declaration on each line, instead.  For example, instead
 of this:
@@ -2289,6 +2429,7 @@ if (foo == 0)
   fatal ("virtual memory exhausted");
 @end example
 
+@pindex lint
 Don't make the program ugly to placate @code{lint}.  Please don't insert any
 casts to @code{void}.  Zero without a cast is perfectly fine as a null
 pointer constant, except when calling a varargs function.
@@ -2296,6 +2437,7 @@ pointer constant, except when calling a varargs function.
 @node Names
 @section Naming Variables and Functions
 
+@cindex names of variables and functions
 The names of global variables and functions in a program serve as
 comments of a sort.  So don't choose terse names---instead, look for
 names that give useful information about the meaning of the variable or
@@ -2333,30 +2475,41 @@ When you want to define names with constant integer values, use
 @code{enum} rather than @samp{#define}.  GDB knows about enumeration
 constants.
 
-Use file names of 14 characters or less, to avoid creating gratuitous
-problems on older System V systems.  You can use the program
-@code{doschk} to test for this.  @code{doschk} also tests for potential
-name conflicts if the files were loaded onto an MS-DOS file
-system---something you may or may not care about.
+@cindex file-name limitations
+@pindex doschk
+You might want to make sure that none of the file names would conflict
+the files were loaded onto an MS-DOS file system which shortens the
+names.  You can use the program @code{doschk} to test for this.
+
+Some GNU programs were designed to limit themselves to file names of 14
+characters or less, to avoid file name conflicts if they are read into
+older System V systems.  Please preserve this feature in the existing
+GNU programs that have it, but there is no need to do this in new GNU
+programs.  @code{doschk} also reports file names longer than 14
+characters.
 
 @node System Portability
 @section Portability between System Types
+@cindex portability, between system types
 
 In the Unix world, ``portability'' refers to porting to different Unix
 versions.  For a GNU program, this kind of portability is desirable, but
 not paramount.
 
 The primary purpose of GNU software is to run on top of the GNU kernel,
-compiled with the GNU C compiler, on various types of @sc{cpu}.  The
-amount and kinds of variation among GNU systems on different @sc{cpu}s
-will be comparable to the variation among Linux-based GNU systems or
-among BSD systems today.  So the kinds of portability that are absolutely
-necessary are quite limited.
+compiled with the GNU C compiler, on various types of @sc{cpu}.  So the
+kinds of portability that are absolutely necessary are quite limited.
+But it is important to support Linux-based GNU systems, since they
+are the form of GNU that is popular.
 
-But many users do run GNU software on non-GNU Unix or Unix-like systems.
-So supporting a variety of Unix-like systems is desirable, although not
-paramount.
+Beyond that, it is good to support the other free operating systems
+(*BSD), and it is nice to support other Unix-like systems if you want
+to.  Supporting a variety of Unix-like systems is desirable, although
+not paramount.  It is usually not too hard, so you may as well do it.
+But you don't have to consider it an obligation, if it does turn out to
+be hard.
 
+@pindex autoconf
 The easiest way to achieve portability to most Unix-like systems is to
 use Autoconf.  It's unlikely that your program needs to know more
 information about the host platform than Autoconf can provide, simply
@@ -2366,6 +2519,7 @@ written.
 Avoid using the format of semi-internal data bases (e.g., directories)
 when there is a higher-level alternative (@code{readdir}).
 
+@cindex non-@sc{posix} systems, and portability
 As for systems that are not like Unix, such as MSDOS, Windows, the
 Macintosh, VMS, and MVS, supporting them is often a lot of work.  When
 that is the case, it is better to spend your time adding features that
@@ -2387,12 +2541,33 @@ to move your code into other GNU programs.
 @node CPU Portability
 @section Portability between @sc{cpu}s
 
+@cindex data types, and portability
+@cindex portability, and data types
 Even GNU systems will differ because of differences among @sc{cpu}
 types---for example, difference in byte ordering and alignment
 requirements.  It is absolutely essential to handle these differences.
 However, don't make any effort to cater to the possibility that an
 @code{int} will be less than 32 bits.  We don't support 16-bit machines
 in GNU.
+
+Similarly, don't make any effort to cater to the possibility that
+@code{long} will be smaller than predefined types like @code{size_t}.
+For example, the following code is ok:
+
+@example
+printf ("size = %lu\n", (unsigned long) sizeof array);
+printf ("diff = %ld\n", (long) (pointer2 - pointer1));
+@end example
+
+1989 Standard C requires this to work, and we know of only one
+counterexample: 64-bit programs on Microsoft Windows IA-64.  We will
+leave it to those who want to port GNU programs to that environment
+to figure out how to do it.
+
+Predefined file-size types like @code{off_t} are an exception: they are
+longer than @code{long} on many platforms, so code like the above won't
+work with them.  One way to print an @code{off_t} value portably is to
+print its digits yourself, one by one.
 
 Don't assume that the address of an @code{int} object is also the
 address of its least-significant byte.  This is false on big-endian
@@ -2408,7 +2583,7 @@ while ((c = getchar()) != EOF)
 When calling functions, you need not worry about the difference between
 pointers of various types, or between pointers and integers.  On most
 machines, there's no difference anyway.  As for the few machines where
-there is a difference, all of them support 1989 Standard C, so you can
+there is a difference, all of them support Standard C prototypes, so you can
 use prototypes (perhaps conditionalized to be active only in Standard C)
 to make the code work on those systems.
 
@@ -2433,10 +2608,11 @@ the widest possible kind of argument; it is much simpler than any
 ``correct'' alternative.  Be sure @emph{not} to use a prototype for such
 functions.
 
-If you have decided to use 1989 Standard C, then you can instead define
+If you have decided to use Standard C, then you can instead define
 @code{error} using @file{stdarg.h}, and pass the arguments along to
 @code{vfprintf}.
 
+@cindex casting pointers to integers
 Avoid casting pointers to integers if you can.  Such casts greatly
 reduce portability, and in most programs they are easy to avoid.  In the
 cases where casting pointers to integers is essential---such as, a Lisp
@@ -2448,8 +2624,10 @@ from zero.
 
 @node System Functions
 @section Calling System Functions
+@cindex library functions, and portability
+@cindex portability, and library functions
 
-C implementations differ substantially.  1989 Standard C reduces but does
+C implementations differ substantially.  Standard C reduces but does
 not eliminate the incompatibilities; meanwhile, many GNU packages still
 support pre-standard compilers because this is not hard to do.  This
 chapter gives recommendations for how to use the more-or-less standard C
@@ -2468,6 +2646,7 @@ Be aware that @code{vfprintf} is not always available.
 terminate either by calling @code{exit} or by returning the integer
 status code; make sure it cannot ever return an undefined value.
 
+@cindex declaration for system functions
 @item
 Don't declare system functions explicitly.
 
@@ -2506,6 +2685,7 @@ exceptional systems (mostly 64-bit machines), you can use
 @code{realloc}---or put these declarations in configuration files
 specific to those systems.
 
+@cindex string library functions
 @item
 The string functions require special treatment.  Some Unix systems have
 a header file @file{string.h}; others have @file{strings.h}.  Neither
@@ -2572,7 +2752,9 @@ One way to get them properly defined is to use Autoconf.
 
 @node Internationalization
 @section Internationalization
+@cindex internationalization
 
+@pindex gettext
 GNU has a library called GNU gettext that makes it easy to translate the
 messages in a program into various languages.  You should use this
 library in every program.  Use English for the messages as they appear
@@ -2599,6 +2781,7 @@ translations for this package from the translations for other packages.
 Normally, the text domain name should be the same as the name of the
 package---for example, @samp{fileutils} for the GNU file utilities.
 
+@cindex message text, and internationalization
 To enable gettext to work well, avoid writing code that makes
 assumptions about the structure of words or sentences.  When you want
 the precise text of a sentence to vary depending on the data, use two or
@@ -2670,6 +2853,7 @@ printf (f->tried_implicit
 
 @node Mmap
 @section Mmap
+@findex mmap
 
 Don't assume that @code{mmap} either works on all files or fails
 for all files.  It may work on some files and fail on others.
@@ -2686,11 +2870,19 @@ all these kinds of files.
 
 @node Documentation
 @chapter Documenting Programs
+@cindex documentation
+
+A GNU program should ideally come with full free documentation, adequate
+for both reference and tutorial purposes.  If the package can be
+programmed or extended, the documentation should cover programming or
+extending it, as well as just using it.
 
 @menu
 * GNU Manuals::                 Writing proper manuals.
+* Doc Strings and Manuals::     Compiling doc strings doesn't make a manual.
 * Manual Structure Details::    Specific structure conventions.
 * License for Manuals::         Writing the distribution terms for a manual.
+* Manual Credits::              Giving credit to documentation contributors.
 * NEWS File::                   NEWS files supplement manuals.
 * Change Logs::                 Recording Changes
 * Man Pages::                   Man pages are secondary.
@@ -2701,13 +2893,18 @@ all these kinds of files.
 @node GNU Manuals
 @section GNU Manuals
 
-The preferred way to document part of the GNU system is to write a
-manual in the Texinfo formatting language.  This makes it possible to
-produce a good quality formatted book, using @TeX{}, and to generate an
-Info file.  It is also possible to generate HTML output from Texinfo
-source.  See the Texinfo manual, either the hardcopy, or the on-line
-version available through @code{info} or the Emacs Info subsystem
-(@kbd{C-h i}).
+The preferred document format for the GNU system is the Texinfo
+formatting language.  Every GNU package should (ideally) have
+documentation in Texinfo both for reference and for learners.  Texinfo
+makes it possible to produce a good quality formatted book, using
+@TeX{}, and to generate an Info file.  It is also possible to generate
+HTML output from Texinfo source.  See the Texinfo manual, either the
+hardcopy, or the on-line version available through @code{info} or the
+Emacs Info subsystem (@kbd{C-h i}).
+
+Nowadays some other formats such as Docbook and Sgmltexi can be
+converted automatically into Texinfo.  It is ok to produce the Texinfo
+documentation by conversion this way, as long as it gives good results.
 
 Programmers often find it most natural to structure the documentation
 following the structure of the implementation, which they know.  But
@@ -2736,9 +2933,9 @@ have one manual for ``comparison of files'' which covers both of those
 programs, as well as @code{cmp}.  By documenting these programs
 together, we can make the whole subject clearer.
 
-The manual which discusses a program should document all of the
-program's command-line options and all of its commands.  It should give
-examples of their use.  But don't organize the manual as a list of
+The manual which discusses a program should certainly document all of
+the program's command-line options and all of its commands.  It should
+give examples of their use.  But don't organize the manual as a list of
 features.  Instead, organize it logically, by subtopics.  Address the
 questions that a user will ask when thinking about the job that the
 program does.
@@ -2763,10 +2960,19 @@ are purely tutorial and cover the basics of the subject.  These provide
 the framework for a beginner to understand the rest of the manual.  The
 Bison manual provides a good example of how to do this.
 
+To serve as a reference, a manual should have an Index that list all the
+functions, variables, options, and important concepts that are part of
+the program.  One combined Index should do for a short manual, but
+sometimes for a complex package it is better to use multiple indices.
+The Texinfo manual includes advice on preparing good index entries, see
+@ref{Index Entries, , Making Index Entries, texinfo, The GNU Texinfo
+Manual}, and see @ref{Indexing Commands, , Defining the Entries of an
+Index, texinfo, The GNU Texinfo manual}.
+
 Don't use Unix man pages as a model for how to write GNU documentation;
 most of them are terse, badly structured, and give inadequate
-explanation of the underlying concepts.  (There are, of course
-exceptions.)  Also Unix man pages use a particular format which is
+explanation of the underlying concepts.  (There are, of course, some
+exceptions.)  Also, Unix man pages use a particular format which is
 different from what we use in GNU manuals.
 
 Please include an email address in the manual for where to report
@@ -2778,10 +2984,38 @@ documentation; use ``file name'' (two words) instead.  We use the term
 
 Please do not use the term ``illegal'' to refer to erroneous input to a
 computer program.  Please use ``invalid'' for this, and reserve the term
-``illegal'' for violations of law.
+``illegal'' for activities punishable by law.
+
+@node Doc Strings and Manuals
+@section Doc Strings and Manuals
+
+Some programming systems, such as Emacs, provide a documentation string
+for each function, command or variable.  You may be tempted to write a
+reference manual by compiling the documentation strings and writing a
+little additional text to go around them---but you must not do it.  That
+approach is a fundamental mistake.  The text of well-written
+documentation strings will be entirely wrong for a manual.
+
+A documentation string needs to stand alone---when it appears on the
+screen, there will be no other text to introduce or explain it.
+Meanwhile, it can be rather informal in style.
+
+The text describing a function or variable in a manual must not stand
+alone; it appears in the context of a section or subsection.  Other text
+at the beginning of the section should explain some of the concepts, and
+should often make some general points that apply to several functions or
+variables.  The previous descriptions of functions and variables in the
+section will also have given information about the topic.  A description
+written to stand alone would repeat some of that information; this
+redundance looks bad.  Meanwhile, the informality that is acceptable in
+a documentation string is totally unacceptable in a manual.
+
+The only good way to use documentation strings in writing a good manual
+is to use them as a source of information for writing good text.
 
 @node Manual Structure Details
 @section Manual Structure Details
+@cindex manual structure
 
 The title page of the manual should state the version of the programs or
 packages documented in the manual.  The Top node of the manual should
@@ -2801,26 +3035,44 @@ Alternatively, put a menu item in some menu whose item name fits one of
 the above patterns.  This identifies the node which that item points to
 as the node for this purpose, regardless of the node's actual name.
 
-There will be automatic features for specifying a program name and
-quickly reading just this part of its manual.
+The @samp{--usage} feature of the Info reader looks for such a node
+or menu item in order to find the relevant text, so it is essential
+for every Texinfo file to have one.
 
 If one manual describes several programs, it should have such a node for
-each program described.
+each program described in the manual.
 
 @node License for Manuals
 @section License for Manuals
+@cindex license for manuals
 
-If the manual contains a copy of the GNU GPL or GNU LGPL, or if it
-contains chapters that make political or personal statements, please
-copy the distribution terms of the GNU Emacs Manual, and adapt it by
-modifying appropriately the list of special chapters that may not be
-modified or deleted.
+Please use the GNU Free Documentation License for all GNU manuals that
+are more than a few pages long.  Likewise for a collection of short
+documents---you only need one copy of the GNU FDL for the whole
+collection.  For a single short document, you can use a very permissive
+non-copyleft license, to avoid taking up space with a long license.
 
-If the manual does not contain any such chapters, then imitate the
-simpler distribution terms of the Texinfo manual.
+See @uref{http://www.gnu.org/copyleft/fdl-howto.html} for more explanation
+of how to employ the GFDL.
+
+Note that it is not obligatory to include a copy of the GNU GPL or GNU
+LGPL in a manual whose license is neither the GPL nor the LGPL.  It can
+be a good idea to include the program's license in a large manual; in a
+short manual, whose size would be increased considerably by including
+the program's license, it is probably better not to include it.
+
+@node Manual Credits
+@section Manual Credits
+@cindex credits for manuals
+
+Please credit the principal human writers of the manual as the authors,
+on the title page of the manual.  If a company sponsored the work, thank
+the company in a suitable place in the manual, but do not cite the
+company as an author.
 
 @node NEWS File
 @section The NEWS File
+@cindex @file{NEWS} file
 
 In addition to its manual, the package should have a file named
 @file{NEWS} which contains a list of user-visible changes worth
@@ -2835,6 +3087,7 @@ user to that file.
 
 @node Change Logs
 @section Change Logs
+@cindex change logs
 
 Keep a change log to describe all the changes made to program source
 files.  The purpose of this is so that people investigating bugs in the
@@ -2849,6 +3102,7 @@ history of how the conflicting concepts arose and who they came from.
 * Style of Change Logs::        
 * Simple Changes::              
 * Conditional Changes::         
+* Indicating the Part Changed::
 @end menu
 
 @node Change Log Concepts
@@ -2889,10 +3143,16 @@ Then describe the changes you made to that function or variable.
 
 @node Style of Change Logs
 @subsection Style of Change Logs
+@cindex change logs, style
 
-Here are some examples of change log entries:
+Here are some simple examples of change log entries, starting with the
+header line that says who made the change and when, followed by
+descriptions of specific changes.  (These examples are drawn from Emacs
+and GCC.)
 
 @example
+1998-08-17  Richard Stallman  <rms@@gnu.org>
+
 * register.el (insert-register): Return nil.
 (jump-to-register): Likewise.
 
@@ -2923,6 +3183,15 @@ entries represent parts of the same change, so that they work together,
 then don't put blank lines between them.  Then you can omit the file
 name and the asterisk when successive entries are in the same file.
 
+Break long lists of function names by closing continued lines with
+@samp{)}, rather than @samp{,}, and opening the continuation with
+@samp{(} as in this example:
+
+@example
+* keyboard.c (menu_bar_items, tool_bar_items)
+(Fexecute_extended_command): Deal with `keymap' property.
+@end example
+
 @node Simple Changes
 @subsection Simple Changes
 
@@ -2930,9 +3199,10 @@ Certain simple kinds of changes don't need much detail in the change
 log.
 
 When you change the calling sequence of a function in a simple fashion,
-and you change all the callers of the function, there is no need to make
-individual entries for all the callers that you changed.  Just write in
-the entry for the function being called, ``All callers changed.''
+and you change all the callers of the function to use the new calling
+sequence, there is no need to make individual entries for all the
+callers that you changed.  Just write in the entry for the function
+being called, ``All callers changed''---like this:
 
 @example
 * keyboard.c (Fcommand_execute): New arg SPECIAL.
@@ -2952,6 +3222,8 @@ documentation says with the way the program actually works.
 
 @node Conditional Changes
 @subsection Conditional Changes
+@cindex conditional changes, and change logs
+@cindex change logs, conditional changes
 
 C programs often contain compile-time @code{#if} conditionals.  Many
 changes are conditional; sometimes you add a new definition which is
@@ -2991,8 +3263,23 @@ a certain macro is @emph{not} defined:
 (gethostname) [!HAVE_SOCKETS]: Replace with winsock version.
 @end example
 
+@node Indicating the Part Changed
+@subsection Indicating the Part Changed
+
+Indicate the part of a function which changed by using angle brackets
+enclosing an indication of what the changed part does.  Here is an entry
+for a change in the part of the function @code{sh-while-getopts} that
+deals with @code{sh} commands:
+
+@example
+* progmodes/sh-script.el (sh-while-getopts) <sh>: Handle case that
+user-specified option string is empty.
+@end example
+
+
 @node Man Pages
 @section Man Pages
+@cindex man pages
 
 In the GNU project, man pages are secondary.  It is not necessary or
 expected for every GNU program to have a man page, but some of them do.
@@ -3039,6 +3326,7 @@ with the FSF about the individual case.
 
 @node Managing Releases
 @chapter The Release Process
+@cindex releasing
 
 Making a release is more than just bundling up your source files in a
 tar file and putting it up for FTP.  You should set up your software so
@@ -3056,7 +3344,9 @@ all GNU software.
 
 @node Configuration
 @section How Configuration Should Work
+@cindex program configuration
 
+@pindex configure
 Each GNU distribution should come with a shell script named
 @code{configure}.  This script is given arguments which describe the
 kind of machine and system you want to compile the program for.
@@ -3124,13 +3414,14 @@ The @code{configure} script needs to be able to decode all plausible
 alternatives for how to describe a machine.  Thus, @samp{sun3-sunos4.1}
 would be a valid alias.  For many programs, @samp{vax-dec-ultrix} would
 be an alias for @samp{vax-dec-bsd}, simply because the differences
-between Ultrix and @sc{BSD} are rarely noticeable, but a few programs
+between Ultrix and @sc{bsd} are rarely noticeable, but a few programs
 might need to distinguish them.
 @c Real 4.4BSD now runs on some Suns.
 
 There is a shell script called @file{config.sub} that you can use
 as a subroutine to validate system types and canonicalize aliases.
 
+@cindex optional features, configure-time
 Other options are permitted to specify in more detail the software
 or hardware present on the machine, and include or exclude optional
 parts of the package:
@@ -3166,17 +3457,6 @@ and
 Do not use a @samp{--with} option to specify the file name to use to
 find certain files.  That is outside the scope of what @samp{--with}
 options are for.
-
-@item --nfp
-The target machine has no floating point processor.
-
-@item --gas
-The target machine assembler is GAS, the GNU assembler.
-This is obsolete; users should use @samp{--with-gnu-as} instead.
-
-@item --x
-The target machine has the X Window System installed.
-This is obsolete; users should use @samp{--with-x} instead.
 @end table
 
 All @code{configure} scripts should accept all of these ``detail''
@@ -3192,27 +3472,36 @@ you might think of.  That is deliberate.  We want to limit the possible
 configuration options in GNU software.  We do not want GNU programs to
 have idiosyncratic configuration options.
 
-Packages that perform part of the compilation process may support cross-compilation.
-In such a case, the host and target machines for the program may be
-different.  The @code{configure} script should normally treat the
-specified type of system as both the host and the target, thus producing
-a program which works for the same type of machine that it runs on.
+Packages that perform part of the compilation process may support
+cross-compilation.  In such a case, the host and target machines for the
+program may be different.
 
-The way to build a cross-compiler, cross-assembler, or what have you, is
-to specify the option @samp{--host=@var{hosttype}} when running
-@code{configure}.  This specifies the host system without changing the
-type of target system.  The syntax for @var{hosttype} is the same as
-described above.
+The @code{configure} script should normally treat the specified type of
+system as both the host and the target, thus producing a program which
+works for the same type of machine that it runs on.
+
+To configure a cross-compiler, cross-assembler, or what have you, you
+should specify a target different from the host, using the configure
+option @samp{--target=@var{targettype}}.  The syntax for
+@var{targettype} is the same as for the host type.  So the command would
+look like this:
+
+@example
+./configure @var{hosttype} --target=@var{targettype}
+@end example
+
+Programs for which cross-operation is not meaningful need not accept the
+@samp{--target} option, because configuring an entire operating system for
+cross-operation is not a meaningful operation.
 
 Bootstrapping a cross-compiler requires compiling it on a machine other
 than the host it will run on.  Compilation packages accept a
-configuration option @samp{--build=@var{hosttype}} for specifying the
-configuration on which you will compile them, in case that is different
-from the host.
-
-Programs for which cross-operation is not meaningful need not accept the
-@samp{--host} option, because configuring an entire operating system for
-cross-operation is not a meaningful thing.
+configuration option @samp{--build=@var{buildtype}} for specifying the
+configuration on which you will compile them, but the configure script
+should normally guess the build machine type (using
+@file{config.guess}), so this option is probably not necessary.  The
+host and target types normally default from the build type, so in
+bootstrapping a cross-compiler you must specify them both explicitly.
 
 Some programs have ways of configuring themselves automatically.  If
 your program is set up to do this, your @code{configure} script can simply
@@ -3227,6 +3516,7 @@ ignore most of its arguments.
 
 @node Releases
 @section Making Releases
+@cindex packaging
 
 Package the distribution of @code{Foo version 69.96} up in a gzipped tar
 file with the name @file{foo-69.96.tar.gz}.  It should unpack into a
@@ -3239,6 +3529,7 @@ files} and @dfn{non-source files}.  Source files are written by humans
 and never changed automatically; non-source files are produced from
 source files by programs under the control of the Makefile.
 
+@cindex @file{README} file
 The distribution should contain a file named @file{README} which gives
 the name of the package, and a general description of what it does.  It
 is also good to explain the purpose of each of the first-level
@@ -3297,6 +3588,7 @@ characters both before and after the period.  Thus,
 are truncated to @file{foobarha.c} and @file{foobarha.o}, which are
 distinct.
 
+@cindex @file{texinfo.tex}, in a distribution
 Include in your distribution a copy of the @file{texinfo.tex} you used
 to test print any @file{*.texinfo} or @file{*.texi} files.
 
@@ -3308,6 +3600,7 @@ other files to get.
 
 @node References
 @chapter References to Non-Free Software and Documentation
+@cindex references to non-free material
 
 A GNU program should not recommend use of any non-free program.  We
 can't stop some people from writing proprietary programs, or stop other
@@ -3331,6 +3624,10 @@ we are serious about the need for free documentation, we must not
 undermine our position by recommending use of documentation that isn't
 free.
 
+@node Index
+@unnumbered Index
+@printindex cp
+
 @contents
 
 @bye
@@ -3339,4 +3636,5 @@ update-date-leading-regexp: "@c This date is automagically updated when you save
 update-date-trailing-regexp: ""
 eval: (load "/gd/gnuorg/update-date.el")
 eval: (add-hook 'write-file-hooks 'update-date)
+compile-command: "make just-standards"
 End:
