@@ -45,7 +45,7 @@ AC_PROG_LIBTOOL
 TARGETDIR="unknown"
 case "$host" in
 mips-sgi-irix5.* | mips-sgi-irix6.*) TARGET=MIPS; TARGETDIR=mips;;
-i*86-pc-linux*) TARGET=X86; TARGETDIR=x86;;
+i*86-*-linux*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-solaris*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
 sparc-sun-4*) TARGET=SPARC; TARGETDIR=sparc;;

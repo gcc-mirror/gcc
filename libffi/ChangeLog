@@ -1,3 +1,8 @@
+2000-04-16  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Change i*86-pc-linux* to i*86-*-linux*.
+
 2000-04-14  Jakub Jelinek  <jakub@redhat.com>
 
         * include/ffi.h.in (SPARC64): Define for 64bit SPARC builds.
