@@ -2171,6 +2171,7 @@ This describes the stack layout and calling conventions.
 * Function Entry::
 * Profiling::
 * Inlining::
+* Tail Calling::
 @end menu
 
 @node Frame Layout
@@ -3683,6 +3684,24 @@ defines the @samp{FUNCTION_ATTRIBUTE_INLINABLE_P} macro.  This macro
 takes one argument, a @samp{DECL} describing the function.  It should
 return non-zero if the function can be inlined, otherwise it should
 return 0.
+
+@node Tail Calling
+@subsection Permitting tail calls to functions
+@cindex tail calls
+@cindex sibling calls
+
+@table @code
+@findex FUNCTION_OK_FOR_SIBCALL
+@item FUNCTION_OK_FOR_SIBCALL (@var{decl})
+A C expression that evaluates to true if it is ok to perform a sibling
+call to @var{decl}.  
+
+It is not uncommon for limitations of calling conventions to prevent
+tail calls to functions outside the current unit of translation, or
+during PIC compilation.  Use this macro to enforce these restrictions,
+as the @code{sibcall} md pattern can not fail, or fall over to a 
+``normal'' call.
+@end table
 
 @node Varargs
 @section Implementing the Varargs Macros
