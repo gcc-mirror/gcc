@@ -1,3 +1,8 @@
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (builtin_define_with_hex_fp_value): New.
+	(builtin_define_float_constants): Use it.  Fix H_FLOAT mant_dig.
+
 2002-09-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (-fshort-wchar): Move to Code Generation Options.
