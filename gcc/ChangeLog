@@ -1,5 +1,10 @@
 2003-10-10  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (compute_record_mode): Don't force BLKmode if
+	field is zero-length BLKmode.
+	* expr.c (expand_expr, case COMPONENT_REF): Handle case of BLKmode
+	zero-size references.
+
 	* combine.c (distribute_links): Properly test for REG being set.
 
 	* config/alpha/alpha.c (alpha_expand_block_mode): Don't use
