@@ -1,3 +1,9 @@
+Thu Nov 13 00:06:58 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* fold-const.c (fold_truthop): When changing a one-bit comparison
+	against zero into a comparison against mask, do a proper sign
+	extension.
+
 Wed Nov 12 09:37:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* except.c: Do not include "assert.h".
