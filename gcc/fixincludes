@@ -303,8 +303,8 @@ while [ $# != 0 ]; do
 	  }
 	  /^#define.NULL[ 	]/	i\
 		#undef NULL
-	' $2/$file > $2/$file.sed
-	mv $2/$file.sed $2/$file
+	' $2/$file > $2/$file.
+	mv $2/$file. $2/$file
 	if cmp $file $2/$file >/dev/null 2>&1; then
 	   rm $2/$file
 	else
@@ -734,8 +734,8 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e 's/\#ifdef __i386__ || __vax__/\#if __i386__ || __vax__/g' \
-    ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    ${LIB}/$file > ${LIB}/${file}.
+  rm -f ${LIB}/$file; mv ${LIB}/${file}. ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
   fi
@@ -791,8 +791,8 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, incorrect \#include
   sed -e 's@"../machine/endian.h"@<machine/endian.h>@' \
-    ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    ${LIB}/$file > ${LIB}/${file}.
+  rm -f ${LIB}/$file; mv ${LIB}/${file}. ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
   fi
