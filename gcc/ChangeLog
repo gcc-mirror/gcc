@@ -1,3 +1,11 @@
+2004-01-09  J. Brobecker  <brobecker@gnat.com>
+
+	* dwarf2out.c (gen_enumeration_type_die): Return the DIE that
+	we just created.
+	(is_ada_subrange_type): DIEs for enumeration subtypes should be
+	emitted as subrange types too.
+	(subrange_type_die): Add handling of enumeration subtypes.
+
 2004-01-08  Richard Henderson  <rth@redhat.com>
 
 	PR opt/12441

@@ -3755,7 +3755,7 @@ static void gen_entry_point_die (tree, dw_die_ref);
 static void gen_inlined_enumeration_type_die (tree, dw_die_ref);
 static void gen_inlined_structure_type_die (tree, dw_die_ref);
 static void gen_inlined_union_type_die (tree, dw_die_ref);
-static void gen_enumeration_type_die (tree, dw_die_ref);
+static dw_die_ref gen_enumeration_type_die (tree, dw_die_ref);
 static dw_die_ref gen_formal_parameter_die (tree, dw_die_ref);
 static void gen_unspecified_parameters_die (tree, dw_die_ref);
 static void gen_formal_types_die (tree, dw_die_ref);
@@ -7807,12 +7807,28 @@ simple_type_size_in_bits (tree type)
 static inline bool
 is_ada_subrange_type (tree type)
 {
-  /* We do this for INTEGER_TYPEs that have names, parent types, and when
-     we are compiling Ada code.  */
-  return (TREE_CODE (type) == INTEGER_TYPE
-	  && TYPE_NAME (type) != 0 && TREE_TYPE (type) != 0
-	  && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
-	  && TREE_UNSIGNED (TREE_TYPE (type)) && is_ada ());
+  /* We should use a subrange type in the following situations:
+     - For Ada modular types: These types are stored as integer subtypes
+       of an unsigned integer type;
+     - For subtypes of an Ada enumeration type: These types are stored
+       as integer subtypes of enumeral types.
+     
+     This subrange type is mostly for the benefit of debugger users.
+     A nameless type would therefore not be very useful, so no need
+     to generate a subrange type in these cases.  */
+  tree subtype = TREE_TYPE (type);
+
+  if (is_ada ()
+      && TREE_CODE (type) == INTEGER_TYPE
+      && TYPE_NAME (type) != NULL_TREE
+      && subtype != NULL_TREE)
+    {
+      if (TREE_CODE (subtype) == INTEGER_TYPE && TREE_UNSIGNED (subtype))
+        return true;
+      if (TREE_CODE (subtype) == ENUMERAL_TYPE)
+        return true;
+    }
+  return false;
 }
 
 /*  Given a pointer to a tree node for a subrange type, return a pointer
@@ -7828,7 +7844,10 @@ subrange_type_die (tree type, dw_die_ref context_die)
   if (context_die == NULL)
     context_die = comp_unit_die;
 
-  subtype_die = base_type_die (TREE_TYPE (type));
+  if (TREE_CODE (TREE_TYPE (type)) == ENUMERAL_TYPE)
+    subtype_die = gen_enumeration_type_die (TREE_TYPE (type), context_die);
+  else
+    subtype_die = base_type_die (TREE_TYPE (type));
 
   if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
@@ -10346,7 +10365,7 @@ gen_inlined_union_type_die (tree type, dw_die_ref context_die)
    enumerated type name/value is listed as a child of the enumerated type
    DIE.  */
 
-static void
+static dw_die_ref
 gen_enumeration_type_die (tree type, dw_die_ref context_die)
 {
   dw_die_ref type_die = lookup_type_die (type);
@@ -10359,7 +10378,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
       add_name_attribute (type_die, type_tag (type));
     }
   else if (! TYPE_SIZE (type))
-    return;
+    return type_die;
   else
     remove_AT (type_die, DW_AT_declaration);
 
@@ -10402,6 +10421,8 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
     }
   else
     add_AT_flag (type_die, DW_AT_declaration, 1);
+
+  return type_die;
 }
 
 /* Generate a DIE to represent either a real live formal parameter decl or to
