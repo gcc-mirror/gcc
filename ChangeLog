@@ -1,3 +1,8 @@
+2002-12-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl (do-info): Depend on maybe-all-texinfo, not all-texinfo.
+	* Makefile.in: Regenerate.
+
 2002-12-17  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config.sub: Import from master repository
