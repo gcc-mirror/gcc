@@ -1,25 +1,24 @@
 
 /*  A Bison parser, made from cexp.y
- by  GNU Bison version 1.25
-  */
+    by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
-#define	INT	258
-#define	CHAR	259
-#define	NAME	260
-#define	ERROR	261
-#define	OR	262
-#define	AND	263
-#define	EQUAL	264
-#define	NOTEQUAL	265
-#define	LEQ	266
-#define	GEQ	267
-#define	LSH	268
-#define	RSH	269
-#define	UNARY	270
+#define	INT	257
+#define	CHAR	258
+#define	NAME	259
+#define	ERROR	260
+#define	OR	261
+#define	AND	262
+#define	EQUAL	263
+#define	NOTEQUAL	264
+#define	LEQ	265
+#define	GEQ	266
+#define	LSH	267
+#define	RSH	268
+#define	UNARY	269
 
-#line 27 "cexp.y"
+#line 28 "cexp.y"
 
 #include "config.h"
 
@@ -146,7 +145,7 @@ static void integer_overflow PARAMS ((void));
 #define SIGNED (~0)
 #define UNSIGNED 0
 
-#line 154 "cexp.y"
+#line 155 "cexp.y"
 typedef union {
   struct constant {HOST_WIDEST_INT value; int signedp;} integer;
   struct name {U_CHAR *address; int length;} name;
@@ -166,7 +165,7 @@ typedef union {
 #define	YYFLAG		-32768
 #define	YYNTBASE	34
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 270 ? yytranslate[x] : 43)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 269 ? yytranslate[x] : 43)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -194,8 +193,8 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
-     6,    10,    11,    15,    16,    19,    20,    21,    22,    28
+     2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
+    10,    11,    15,    16,    19,    20,    21,    22,    28
 };
 
 #if YYDEBUG != 0
@@ -227,10 +226,10 @@ static const short yyrhs[] = {    35,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   184,   194,   195,   202,   207,   210,   212,   215,   219,   221,
-   226,   231,   244,   261,   274,   280,   286,   292,   298,   301,
-   304,   311,   318,   325,   332,   335,   338,   341,   344,   347,
-   350,   353,   355,   358,   361,   363,   365,   373,   375,   388
+   185,   195,   196,   203,   208,   211,   213,   216,   220,   222,
+   227,   232,   245,   262,   275,   281,   287,   293,   299,   302,
+   305,   312,   319,   326,   333,   336,   339,   342,   345,   348,
+   351,   354,   356,   359,   362,   364,   366,   374,   376,   389
 };
 #endif
 
@@ -336,7 +335,8 @@ static const short yycheck[] = {     4,
     26,    27,    23,    24,    25,    26,    27,     0,     9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/cygnus/TBD-TBD/share/bison.simple"
+#line 3 "/usr/lib/bison.simple"
+/* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -353,46 +353,66 @@ static const short yycheck[] = {     4,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
    This special exception was added by the Free Software Foundation
    in version 1.24 of Bison.  */
 
-#ifndef alloca
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
-#include <alloca.h>
-#else /* not sparc */
-#if defined (MSDOS) && !defined (__TURBOC__)
-#include <malloc.h>
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-#include <malloc.h>
- #pragma alloca
-#else /* not MSDOS, __TURBOC__, or _AIX */
-#ifdef __hpux
-#ifdef __cplusplus
-extern "C" {
-void *alloca (unsigned int);
-};
-#else /* not __cplusplus */
-void *alloca ();
-#endif /* not __cplusplus */
-#endif /* __hpux */
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc.  */
-#endif /* not GNU C.  */
-#endif /* alloca not defined.  */
-
 /* This is the parser code that is written into each bison parser
   when the %semantic_parser declaration is not specified in the grammar.
   It was written by Richard Stallman by simplifying the hairy parser
   used when %semantic_parser is specified.  */
+
+#ifndef YYSTACK_USE_ALLOCA
+#ifdef alloca
+#define YYSTACK_USE_ALLOCA
+#else /* alloca not defined */
+#ifdef __GNUC__
+#define YYSTACK_USE_ALLOCA
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
+#define YYSTACK_USE_ALLOCA
+#include <alloca.h>
+#else /* not sparc */
+/* We think this test detects Watcom and Microsoft C.  */
+/* This used to test MSDOS, but that is a bad idea
+   since that symbol is in the user namespace.  */
+#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
+#if 0 /* No need for malloc.h, which pollutes the namespace;
+	 instead, just don't use alloca.  */
+#include <malloc.h>
+#endif
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+/* I don't know what this was needed for, but it pollutes the namespace.
+   So I turned it off.   rms, 2 May 1997.  */
+/* #include <malloc.h>  */
+ #pragma alloca
+#define YYSTACK_USE_ALLOCA
+#else /* not MSDOS, or __TURBOC__, or _AIX */
+#if 0
+#ifdef __hpux /* haible@ilog.fr says this works for HPUX 9.05 and up,
+		 and on HPUX 10.  Eventually we can turn this on.  */
+#define YYSTACK_USE_ALLOCA
+#define alloca __builtin_alloca
+#endif /* __hpux */
+#endif
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc */
+#endif /* not GNU C */
+#endif /* alloca not defined */
+#endif /* YYSTACK_USE_ALLOCA not defined */
+
+#ifdef YYSTACK_USE_ALLOCA
+#define YYSTACK_ALLOC alloca
+#else
+#define YYSTACK_ALLOC malloc
+#endif
 
 /* Note: there must be only one dollar sign in this file.
    It is replaced by the list of actions, each action
@@ -402,8 +422,8 @@ void *alloca ();
 #define yyclearin	(yychar = YYEMPTY)
 #define YYEMPTY		-2
 #define YYEOF		0
-#define YYACCEPT	return(0)
-#define YYABORT 	return(1)
+#define YYACCEPT	goto yyacceptlab
+#define YYABORT 	goto yyabortlab
 #define YYERROR		goto yyerrlab1
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -484,12 +504,12 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-int yyparse (void);
-#endif
 
+/* Define __yy_memcpy.  Note that the size argument
+   should be passed with type unsigned int, because that is what the non-GCC
+   definitions require.  With GCC, __builtin_memcpy takes an arg
+   of type size_t, but it can handle unsigned int.  */
+
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
 #define __yy_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
@@ -501,7 +521,7 @@ static void
 __yy_memcpy (to, from, count)
      char *to;
      char *from;
-     int count;
+     unsigned int count;
 {
   register char *f = from;
   register char *t = to;
@@ -516,10 +536,10 @@ __yy_memcpy (to, from, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_memcpy (char *to, char *from, int count)
+__yy_memcpy (char *to, char *from, unsigned int count)
 {
-  register char *f = from;
   register char *t = to;
+  register char *f = from;
   register int i = count;
 
   while (i-- > 0)
@@ -529,7 +549,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/cygnus/TBD-TBD/share/bison.simple"
+#line 217 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -549,6 +569,15 @@ __yy_memcpy (char *to, char *from, int count)
 #define YYPARSE_PARAM_ARG
 #define YYPARSE_PARAM_DECL
 #endif /* not YYPARSE_PARAM */
+
+/* Prevent warning if -Wstrict-prototypes.  */
+#ifdef __GNUC__
+#ifdef YYPARSE_PARAM
+int yyparse (void *);
+#else
+int yyparse (void);
+#endif
+#endif
 
 int
 yyparse(YYPARSE_PARAM_ARG)
@@ -578,6 +607,7 @@ yyparse(YYPARSE_PARAM_ARG)
 #endif
 
   int yystacksize = YYINITDEPTH;
+  int yyfree_stacks = 0;
 
 #ifdef YYPURE
   int yychar;
@@ -662,18 +692,32 @@ yynewstate:
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  yyerror("parser stack overflow");
+	  if (yyfree_stacks)
+	    {
+	      free (yyss);
+	      free (yyvs);
+#ifdef YYLSP_NEEDED
+	      free (yyls);
+#endif
+	    }
 	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
-      __yy_memcpy ((char *)yyss, (char *)yyss1, size * sizeof (*yyssp));
-      yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
-      __yy_memcpy ((char *)yyvs, (char *)yyvs1, size * sizeof (*yyvsp));
+#ifndef YYSTACK_USE_ALLOCA
+      yyfree_stacks = 1;
+#endif
+      yyss = (short *) YYSTACK_ALLOC (yystacksize * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss, (char *)yyss1,
+		   size * (unsigned int) sizeof (*yyssp));
+      yyvs = (YYSTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs, (char *)yyvs1,
+		   size * (unsigned int) sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
-      yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
-      __yy_memcpy ((char *)yyls, (char *)yyls1, size * sizeof (*yylsp));
+      yyls = (YYLTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls, (char *)yyls1,
+		   size * (unsigned int) sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -834,7 +878,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 185 "cexp.y"
+#line 186 "cexp.y"
 {
 		  expression_value = yyvsp[0].integer.value;
 #ifdef TEST_EXP_READER
@@ -843,55 +887,55 @@ case 1:
 		;
     break;}
 case 3:
-#line 196 "cexp.y"
+#line 197 "cexp.y"
 { if (pedantic)
 			    pedwarn ("comma operator in operand of `#if'");
 			  yyval.integer = yyvsp[0].integer; ;
     break;}
 case 4:
-#line 203 "cexp.y"
+#line 204 "cexp.y"
 { yyval.integer.value = - yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[0].integer.signedp;
 			  if ((yyval.integer.value & yyvsp[0].integer.value & yyval.integer.signedp) < 0)
 			    integer_overflow (); ;
     break;}
 case 5:
-#line 208 "cexp.y"
+#line 209 "cexp.y"
 { yyval.integer.value = ! yyvsp[0].integer.value;
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 6:
-#line 211 "cexp.y"
+#line 212 "cexp.y"
 { yyval.integer = yyvsp[0].integer; ;
     break;}
 case 7:
-#line 213 "cexp.y"
+#line 214 "cexp.y"
 { yyval.integer.value = ~ yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[0].integer.signedp; ;
     break;}
 case 8:
-#line 216 "cexp.y"
+#line 217 "cexp.y"
 { yyval.integer.value = check_assertion (yyvsp[0].name.address, yyvsp[0].name.length,
 						      0, NULL_PTR);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 9:
-#line 220 "cexp.y"
+#line 221 "cexp.y"
 { keyword_parsing = 1; ;
     break;}
 case 10:
-#line 222 "cexp.y"
+#line 223 "cexp.y"
 { yyval.integer.value = check_assertion (yyvsp[-4].name.address, yyvsp[-4].name.length,
 						      1, yyvsp[-1].keywords);
 			  keyword_parsing = 0;
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 11:
-#line 227 "cexp.y"
+#line 228 "cexp.y"
 { yyval.integer = yyvsp[-1].integer; ;
     break;}
 case 12:
-#line 232 "cexp.y"
+#line 233 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (yyval.integer.signedp)
 			    {
@@ -906,7 +950,7 @@ case 12:
 					* yyvsp[0].integer.value); ;
     break;}
 case 13:
-#line 245 "cexp.y"
+#line 246 "cexp.y"
 { if (yyvsp[0].integer.value == 0)
 			    {
 			      if (!skip_evaluation)
@@ -925,7 +969,7 @@ case 13:
 					/ yyvsp[0].integer.value); ;
     break;}
 case 14:
-#line 262 "cexp.y"
+#line 263 "cexp.y"
 { if (yyvsp[0].integer.value == 0)
 			    {
 			      if (!skip_evaluation)
@@ -940,7 +984,7 @@ case 14:
 					% yyvsp[0].integer.value); ;
     break;}
 case 15:
-#line 275 "cexp.y"
+#line 276 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value + yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (overflow_sum_sign (yyvsp[-2].integer.value, yyvsp[0].integer.value,
@@ -948,7 +992,7 @@ case 15:
 			    integer_overflow (); ;
     break;}
 case 16:
-#line 281 "cexp.y"
+#line 282 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value - yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (overflow_sum_sign (yyval.integer.value, yyvsp[0].integer.value,
@@ -956,7 +1000,7 @@ case 16:
 			    integer_overflow (); ;
     break;}
 case 17:
-#line 287 "cexp.y"
+#line 288 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp;
 			  if ((yyvsp[0].integer.value & yyvsp[0].integer.signedp) < 0)
 			    yyval.integer.value = right_shift (&yyvsp[-2].integer, -yyvsp[0].integer.value);
@@ -964,7 +1008,7 @@ case 17:
 			    yyval.integer.value = left_shift (&yyvsp[-2].integer, yyvsp[0].integer.value); ;
     break;}
 case 18:
-#line 293 "cexp.y"
+#line 294 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp;
 			  if ((yyvsp[0].integer.value & yyvsp[0].integer.signedp) < 0)
 			    yyval.integer.value = left_shift (&yyvsp[-2].integer, -yyvsp[0].integer.value);
@@ -972,17 +1016,17 @@ case 18:
 			    yyval.integer.value = right_shift (&yyvsp[-2].integer, yyvsp[0].integer.value); ;
     break;}
 case 19:
-#line 299 "cexp.y"
+#line 300 "cexp.y"
 { yyval.integer.value = (yyvsp[-2].integer.value == yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 20:
-#line 302 "cexp.y"
+#line 303 "cexp.y"
 { yyval.integer.value = (yyvsp[-2].integer.value != yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 21:
-#line 305 "cexp.y"
+#line 306 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value <= yyvsp[0].integer.value;
@@ -991,7 +1035,7 @@ case 21:
 					<= yyvsp[0].integer.value); ;
     break;}
 case 22:
-#line 312 "cexp.y"
+#line 313 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value >= yyvsp[0].integer.value;
@@ -1000,7 +1044,7 @@ case 22:
 					>= yyvsp[0].integer.value); ;
     break;}
 case 23:
-#line 319 "cexp.y"
+#line 320 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value < yyvsp[0].integer.value;
@@ -1009,7 +1053,7 @@ case 23:
 					< yyvsp[0].integer.value); ;
     break;}
 case 24:
-#line 326 "cexp.y"
+#line 327 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value > yyvsp[0].integer.value;
@@ -1018,64 +1062,64 @@ case 24:
 					> yyvsp[0].integer.value); ;
     break;}
 case 25:
-#line 333 "cexp.y"
+#line 334 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value & yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 26:
-#line 336 "cexp.y"
+#line 337 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value ^ yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 27:
-#line 339 "cexp.y"
+#line 340 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value | yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 28:
-#line 342 "cexp.y"
+#line 343 "cexp.y"
 { skip_evaluation += !yyvsp[-1].integer.value; ;
     break;}
 case 29:
-#line 344 "cexp.y"
+#line 345 "cexp.y"
 { skip_evaluation -= !yyvsp[-3].integer.value;
 			  yyval.integer.value = (yyvsp[-3].integer.value && yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 30:
-#line 348 "cexp.y"
+#line 349 "cexp.y"
 { skip_evaluation += !!yyvsp[-1].integer.value; ;
     break;}
 case 31:
-#line 350 "cexp.y"
+#line 351 "cexp.y"
 { skip_evaluation -= !!yyvsp[-3].integer.value;
 			  yyval.integer.value = (yyvsp[-3].integer.value || yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 32:
-#line 354 "cexp.y"
+#line 355 "cexp.y"
 { skip_evaluation += !yyvsp[-1].integer.value; ;
     break;}
 case 33:
-#line 356 "cexp.y"
+#line 357 "cexp.y"
 { skip_evaluation += !!yyvsp[-4].integer.value - !yyvsp[-4].integer.value; ;
     break;}
 case 34:
-#line 358 "cexp.y"
+#line 359 "cexp.y"
 { skip_evaluation -= !!yyvsp[-6].integer.value;
 			  yyval.integer.value = yyvsp[-6].integer.value ? yyvsp[-3].integer.value : yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-3].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 35:
-#line 362 "cexp.y"
+#line 363 "cexp.y"
 { yyval.integer = yylval.integer; ;
     break;}
 case 36:
-#line 364 "cexp.y"
+#line 365 "cexp.y"
 { yyval.integer = yylval.integer; ;
     break;}
 case 37:
-#line 366 "cexp.y"
+#line 367 "cexp.y"
 { if (warn_undef && !skip_evaluation)
 			    warning ("`%.*s' is not defined",
 				     yyvsp[0].name.length, yyvsp[0].name.address);
@@ -1083,11 +1127,11 @@ case 37:
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 38:
-#line 374 "cexp.y"
+#line 375 "cexp.y"
 { yyval.keywords = 0; ;
     break;}
 case 39:
-#line 376 "cexp.y"
+#line 377 "cexp.y"
 { struct arglist *temp;
 			  yyval.keywords = (struct arglist *) xmalloc (sizeof (struct arglist));
 			  yyval.keywords->next = yyvsp[-2].keywords;
@@ -1102,7 +1146,7 @@ case 39:
 			  temp->next->length = 1; ;
     break;}
 case 40:
-#line 389 "cexp.y"
+#line 390 "cexp.y"
 { yyval.keywords = (struct arglist *) xmalloc (sizeof (struct arglist));
 			  yyval.keywords->name = yyvsp[-1].name.address;
 			  yyval.keywords->length = yyvsp[-1].name.length;
@@ -1110,7 +1154,7 @@ case 40:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/cygnus/TBD-TBD/share/bison.simple"
+#line 543 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1305,8 +1349,32 @@ yyerrhandle:
 
   yystate = yyn;
   goto yynewstate;
+
+ yyacceptlab:
+  /* YYACCEPT comes here.  */
+  if (yyfree_stacks)
+    {
+      free (yyss);
+      free (yyvs);
+#ifdef YYLSP_NEEDED
+      free (yyls);
+#endif
+    }
+  return 0;
+
+ yyabortlab:
+  /* YYABORT comes here.  */
+  if (yyfree_stacks)
+    {
+      free (yyss);
+      free (yyvs);
+#ifdef YYLSP_NEEDED
+      free (yyls);
+#endif
+    }
+  return 1;
 }
-#line 394 "cexp.y"
+#line 395 "cexp.y"
 
 
 /* During parsing of a C expression, the pointer to the next character
