@@ -4036,11 +4036,10 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  && ! reg_used_between_p (giv, giv_insn, loop_end))
 		{
 		  rtx p;
+		  rtx next;
 
-		  for (;;)
+		  for (next = NEXT_INSN (dominator); ; next = NEXT_INSN (next))
 		    {
-		      rtx next = NEXT_INSN (dominator);
-
 		      if ((GET_RTX_CLASS (GET_CODE (next)) == 'i'
 			   && (reg_mentioned_p (giv, PATTERN (next))
 			       || reg_set_p (bl2->biv->src_reg, next)))
