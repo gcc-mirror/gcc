@@ -624,19 +624,12 @@ int flag_schedule_insns_after_reload = 0;
    flag_schedule_speculative_load means allow speculative motion of some
    load insns.
    flag_schedule_speculative_load_dangerous allows speculative motion of more
-   load insns.
-   flag_schedule_reverse_before_reload means try to reverse original order
-   of insns (S).
-   flag_schedule_reverse_after_reload means try to reverse original order
-   of insns (R).  */
+   load insns.  */
 
 int flag_schedule_interblock = 1;
 int flag_schedule_speculative = 1;
 int flag_schedule_speculative_load = 0;
 int flag_schedule_speculative_load_dangerous = 0;
-int flag_schedule_reverse_before_reload = 0;
-int flag_schedule_reverse_after_reload = 0;
-
 
 /* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register. */
@@ -751,8 +744,6 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"sched-spec",&flag_schedule_speculative, 1},
   {"sched-spec-load",&flag_schedule_speculative_load, 1},
   {"sched-spec-load-dangerous",&flag_schedule_speculative_load_dangerous, 1},
-  {"sched-reverse-S",&flag_schedule_reverse_before_reload, 1},
-  {"sched-reverse-R",&flag_schedule_reverse_after_reload, 1},
   {"branch-count-reg",&flag_branch_on_count_reg, 1},
 #endif  /* HAIFA */
   {"pic", &flag_pic, 1},
