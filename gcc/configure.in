@@ -2263,9 +2263,9 @@ elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
   echo '.byte 1' >> conftest2.s
   echo '.section "myfoosect", "a"' > conftest3.s
   echo '.byte 0' >> conftest3.s
-  if $gcc_cv_as -o conftest1.o conftest1.s \
-     && $gcc_cv_as -o conftest2.o conftest2.s \
-     && $gcc_cv_as -o conftest3.o conftest3.s \
+  if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
+     && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
+     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1 \
      && $gcc_cv_ld -shared -o conftest1.so conftest1.o \
 	conftest2.o conftest3.o; then
     gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
