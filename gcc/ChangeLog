@@ -1,3 +1,10 @@
+Fri Feb 16 12:41:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cse.c (new_label_ref): New variable.
+	(insert): Set it instead of recorded_label_ref.
+	(cse_basic_block): Set recorded_label_ref if new_label_ref use, has
+	CODE_LABEL for this function, and not already in REG_LABEL note.
+
 2001-02-16  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* resource.c (mark_referenced_resources): Fix typo in introductory
