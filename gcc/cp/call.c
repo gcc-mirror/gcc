@@ -3318,7 +3318,8 @@ implicit_conversion (to, from, expr, flags)
 
   if (conv)
     ;
-  else if ((IS_AGGR_TYPE (non_reference (from))
+  else if (expr != NULL_TREE
+	   && (IS_AGGR_TYPE (non_reference (from))
 	    || IS_AGGR_TYPE (non_reference (to)))
 	   && (flags & LOOKUP_NO_CONVERSION) == 0)
     {

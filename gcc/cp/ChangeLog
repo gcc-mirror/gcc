@@ -1,3 +1,12 @@
+Sun Dec 14 20:38:35 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (implicit_conversion): Don't call
+	build_user_type_conversion_1 with a NULL expr, since it will
+	crash. 
+
+	* pt.c (unify): Don't try to unify array bounds if either array is
+	unbounded.
+
 Fri Dec 12 16:09:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* errfn.c (cp_pedwarn, cp_pedwarn_at, cp_error_at, cp_warning_at): 

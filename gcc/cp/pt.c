@@ -3873,8 +3873,12 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
     case ARRAY_TYPE:
       if (TREE_CODE (arg) != ARRAY_TYPE)
 	return 1;
-      if (unify (tparms, targs, ntparms, TYPE_DOMAIN (parm), TYPE_DOMAIN (arg),
-		 nsubsts, strict) != 0)
+      if ((TYPE_DOMAIN (parm) == NULL_TREE)
+	  != (TYPE_DOMAIN (arg) == NULL_TREE))
+	return 1;
+      if (TYPE_DOMAIN (parm) != NULL_TREE
+	  && unify (tparms, targs, ntparms, TYPE_DOMAIN (parm),
+		    TYPE_DOMAIN (arg), nsubsts, strict) != 0)
 	return 1;
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), TREE_TYPE (arg),
 		    nsubsts, strict);
