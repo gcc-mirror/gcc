@@ -2343,16 +2343,7 @@ gen_v9_scc (compare_code, operands)
 	  || GET_MODE (operands[0]) == DImode))
     return 0;
 
-  /* Handle the case where operands[0] == sparc_compare_op0.
-     We "early clobber" the result.  */
-  if (REGNO (operands[0]) == REGNO (sparc_compare_op0))
-    {
-      op0 = gen_reg_rtx (GET_MODE (sparc_compare_op0));
-      emit_move_insn (op0, sparc_compare_op0);
-    }
-  else
-    op0 = sparc_compare_op0;
-  /* For consistency in the following.  */
+  op0 = sparc_compare_op0;
   op1 = sparc_compare_op1;
 
   /* Try to use the movrCC insns.  */
@@ -2362,14 +2353,12 @@ gen_v9_scc (compare_code, operands)
       && v9_regcmp_p (compare_code))
     {
       /* Special case for op0 != 0.  This can be done with one instruction if
-	 operands[0] == sparc_compare_op0.  We don't assume they are equal
-	 now though.  */
+	 operands[0] == sparc_compare_op0.  */
 
       if (compare_code == NE
 	  && GET_MODE (operands[0]) == DImode
-	  && GET_MODE (op0) == DImode)
+	  && rtx_equal_p (op0, operands[0]))
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, operands[0], op0));
 	  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			      gen_rtx_IF_THEN_ELSE (DImode,
 				       gen_rtx_fmt_ee (compare_code, DImode,
@@ -2377,6 +2366,14 @@ gen_v9_scc (compare_code, operands)
 				       const1_rtx,
 				       operands[0])));
 	  return 1;
+	}
+
+      if (reg_overlap_mentioned_p (operands[0], op0))
+	{
+	  /* Handle the case where operands[0] == sparc_compare_op0.
+	     We "early clobber" the result.  */
+	  op0 = gen_reg_rtx (GET_MODE (sparc_compare_op0));
+	  emit_move_insn (op0, sparc_compare_op0);
 	}
 
       emit_insn (gen_rtx_SET (VOIDmode, operands[0], const0_rtx));
