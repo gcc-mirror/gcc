@@ -1,3 +1,9 @@
+2000-12-30  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* defaults.h (BUILD_VA_LIST_TYPE): New definition.
+	* tree.c (build_common_tree_nodes_2): Ensure the va_list_type_node
+	is a copy, not an alias.
+
 2000-12-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (calls_function_1, case CONSTRUCTOR): New case.

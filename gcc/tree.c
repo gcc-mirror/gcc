@@ -4837,11 +4837,11 @@ build_common_tree_nodes_2 (short_double)
   TREE_TYPE (complex_long_double_type_node) = long_double_type_node;
   layout_type (complex_long_double_type_node);
 
-#ifdef BUILD_VA_LIST_TYPE
-  BUILD_VA_LIST_TYPE (va_list_type_node);
-#else
-  va_list_type_node = build_type_copy (ptr_type_node);
-#endif
+  {
+    tree t;
+    BUILD_VA_LIST_TYPE (t);
+    va_list_type_node = build_type_copy (t);
+  }
 
   V4SF_type_node = make_node (VECTOR_TYPE);
   TREE_TYPE (V4SF_type_node) = float_type_node;
