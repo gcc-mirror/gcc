@@ -1268,6 +1268,12 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      case 'p':
 		allows_addr = 1;
 		win = address_operand (op, GET_MODE (op));
+		/* We know this operand is an address, so we want it to be
+		   allocated to a register that can be the base of an
+		   address, ie BASE_REG_CLASS.  */
+		classes[i]
+		  = reg_class_subunion[(int) classes[i]]
+		    [(int) BASE_REG_CLASS];
 		break;
 
 	      case 'm':  case 'o':  case 'V':
@@ -1399,7 +1405,12 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	    {
 	      if (classes[i] == NO_REGS)
 		{
-		  if (! allows_addr)
+		    /* We must always fail if the operand is a REG, but
+		       we did not find a suitable class.
+
+		       Otherwise we may perform an uninitialized read
+		       from this_op_costs after the `continue' statement
+		       below.  */
 		    alt_fail = 1;
 		}
 	      else
