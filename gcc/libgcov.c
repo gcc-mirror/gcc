@@ -110,14 +110,14 @@ gcov_exit (void)
     {
       struct gcov_summary object;
       struct gcov_summary local_prg;
+      int error;
       int merging;
-      long base;
+      unsigned long base;
       const struct function_info *fn_info;
       gcov_type **counters;
       gcov_type *count_ptr;
       gcov_type object_max_one = 0;
-      gcov_type count;
-      unsigned tag, length, flength, checksum;
+      unsigned tag, length;
       unsigned arc_data_index, f_sect_index, sect_index;
 
       ptr->wkspc = 0;
@@ -167,7 +167,7 @@ gcov_exit (void)
       if (merging > 0)
 	{
 	  /* Merge data from file.  */
-	  if (gcov_read_unsigned (&tag) || tag != GCOV_DATA_MAGIC)
+	  if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
 	    {
 	      fprintf (stderr, "profiling:%s:Not a gcov data file\n",
 		       ptr->filename);
@@ -176,7 +176,8 @@ gcov_exit (void)
 	      ptr->filename = 0;
 	      continue;
 	    }
-	  if (gcov_read_unsigned (&length) || length != GCOV_VERSION)
+	  length = gcov_read_unsigned ();
+	  if (length != GCOV_VERSION)
 	    {
 	      gcov_version_mismatch (ptr, length);
 	      goto read_fatal;
@@ -186,13 +187,8 @@ gcov_exit (void)
 	  for (ix = ptr->n_functions, fn_info = ptr->functions;
 	       ix--; fn_info++)
 	    {
-	      if (gcov_read_unsigned (&tag) || gcov_read_unsigned (&length))
-		{
-		read_error:;
-		  fprintf (stderr, "profiling:%s:Error merging\n",
-			   ptr->filename);
-		  goto read_fatal;
-		}
+	      tag = gcov_read_unsigned ();
+	      length = gcov_read_unsigned ();
 
 	      /* Check function */
 	      if (tag != GCOV_TAG_FUNCTION)
@@ -203,12 +199,8 @@ gcov_exit (void)
 		  goto read_fatal;
 		}
 
-	      if (gcov_read_unsigned (&flength)
-		  || gcov_skip_string (flength)
-		  || gcov_read_unsigned (&checksum))
-		goto read_error;
-	      if (flength != strlen (fn_info->name)
-		  || checksum != fn_info->checksum)
+	      if (strcmp (gcov_read_string (), fn_info->name)
+		  || gcov_read_unsigned () != fn_info->checksum)
 		goto read_mismatch;
 
 	      /* Counters.  */
@@ -218,9 +210,9 @@ gcov_exit (void)
 		{
 		  unsigned n_counters;
 
-		  if (gcov_read_unsigned (&tag)
-		      || gcov_read_unsigned (&length))
-		    goto read_error;
+		  tag = gcov_read_unsigned ();
+		  length = gcov_read_unsigned ();
+		  
 		  for (sect_index = 0;
 		       sect_index < ptr->n_counter_sections;
 		       sect_index++)
@@ -235,40 +227,42 @@ gcov_exit (void)
 		    goto read_mismatch;
 		 
 		  for (jx = 0; jx < n_counters; jx++)
-	    	    if (gcov_read_counter (&count))
-    		      goto read_error;
-		    else
-		      counters[sect_index][jx] += count;
+		    counters[sect_index][jx] += gcov_read_counter ();
+		  
 		  counters[sect_index] += n_counters;
 		}
+	      if ((error = gcov_is_error ()))
+		goto read_error;
 	    }
 
 	  /* Check object summary */
-	  if (gcov_read_unsigned (&tag) || gcov_read_unsigned (&length))
-	    goto read_error;
-	  if (tag != GCOV_TAG_OBJECT_SUMMARY)
+	  if (gcov_read_unsigned () != GCOV_TAG_OBJECT_SUMMARY)
 	    goto read_mismatch;
-	  if (gcov_read_summary (&object))
-	    goto read_error;
+	  gcov_read_unsigned ();
+	  gcov_read_summary (&object);
 
 	  /* Check program summary */
-	  while (1)
+	  while (!gcov_is_eof ())
 	    {
-	      long base = gcov_save_position ();
+	      unsigned long base = gcov_position ();
 	      
-	      if (gcov_read_unsigned (&tag)
-		  || gcov_read_unsigned (&length))
-		{
-		  if (gcov_eof ())
-		    break;
-		  goto read_error;
-		}
+	      tag = gcov_read_unsigned ();
+	      gcov_read_unsigned ();
 	      if (tag != GCOV_TAG_PROGRAM_SUMMARY
 		  && tag != GCOV_TAG_PLACEHOLDER_SUMMARY
 		  && tag != GCOV_TAG_INCORRECT_SUMMARY)
 		goto read_mismatch;
-	      if (gcov_read_summary (&local_prg))
-		goto read_error;
+	      gcov_read_summary (&local_prg);
+	      if ((error = gcov_is_error ()))
+		{
+		read_error:;
+		  fprintf (stderr, error < 0 ?
+			   "profiling:%s:Overflow merging\n" :
+			   "profiling:%s:Error merging\n",
+			   ptr->filename);
+		  goto read_fatal;
+		}
+	      
 	      if (local_prg.checksum != program.checksum)
 		continue;
 	      if (tag == GCOV_TAG_PLACEHOLDER_SUMMARY)
@@ -294,7 +288,7 @@ gcov_exit (void)
 	      ptr->wkspc = base;
 	      break;
 	    }
-	  gcov_resync (0, 0);
+	  gcov_seek (0, 0);
 	}
 
       object.runs++;
@@ -305,17 +299,8 @@ gcov_exit (void)
       object.arc_sum_max += object_max_one;
       
       /* Write out the data.  */
-      if (/* magic */
-	  gcov_write_unsigned (GCOV_DATA_MAGIC)
-	  /* version number */
-	  || gcov_write_unsigned (GCOV_VERSION))
-	{
-	write_error:;
-	  gcov_close ();
-	  fprintf (stderr, "profiling:%s:Error writing\n", ptr->filename);
-	  ptr->filename = 0;
-	  continue;
-	}
+      gcov_write_unsigned (GCOV_DATA_MAGIC);
+      gcov_write_unsigned (GCOV_VERSION);
       
       /* Write execution counts for each function.  */
       for (ix = 0; ix < ptr->n_counter_sections; ix++)
@@ -323,14 +308,10 @@ gcov_exit (void)
       for (ix = ptr->n_functions, fn_info = ptr->functions; ix--; fn_info++)
 	{
 	  /* Announce function.  */
-	  if (gcov_write_unsigned (GCOV_TAG_FUNCTION)
-	      || !(base = gcov_reserve_length ())
-	      /* function name */
-	      || gcov_write_string (fn_info->name)
-	      /* function checksum */
-	      || gcov_write_unsigned (fn_info->checksum)
-	      || gcov_write_length (base))
-	    goto write_error;
+	  base = gcov_write_tag (GCOV_TAG_FUNCTION);
+	  gcov_write_string (fn_info->name);
+	  gcov_write_unsigned (fn_info->checksum);
+	  gcov_write_length (base);
 
 	  /* counters.  */
 	  for (f_sect_index = 0;
@@ -346,10 +327,7 @@ gcov_exit (void)
 	      if (sect_index == ptr->n_counter_sections)
 		abort ();
 
-	      if (gcov_write_unsigned (tag)
-		  || !(base = gcov_reserve_length ()))
-		goto write_error;
-	  
+	      base = gcov_write_tag (tag);
     	      for (jx = fn_info->counter_sections[f_sect_index].n_counters; jx--;)
 		{
 		  gcov_type count = *counters[sect_index]++;
@@ -360,41 +338,33 @@ gcov_exit (void)
 		      if (object.arc_max_sum < count)
 			object.arc_max_sum = count;
 		    }
-		  if (gcov_write_counter (count))
-		    goto write_error; /* RIP Edsger Dijkstra */
+		  gcov_write_counter (count);
 		}
-	      if (gcov_write_length (base))
-		goto write_error;
+	      gcov_write_length (base);
 	    }
 	}
 
       /* Object file summary.  */
-      if (gcov_write_summary (GCOV_TAG_OBJECT_SUMMARY, &object))
-	goto write_error;
+      gcov_write_summary (GCOV_TAG_OBJECT_SUMMARY, &object);
 
       if (merging)
 	{
 	  ptr->wkspc = gcov_seek_end ();
-	  if (gcov_write_summary (GCOV_TAG_PLACEHOLDER_SUMMARY,
-				  &program))
-	    goto write_error;
+	  gcov_write_summary (GCOV_TAG_PLACEHOLDER_SUMMARY, &program);
 	}
       else if (ptr->wkspc)
 	{
 	  /* Zap trailing program summary */
-	  if (gcov_resync (ptr->wkspc, 0))
-	    goto write_error;
+	  gcov_seek (ptr->wkspc, 0);
 	  if (!local_prg.runs)
 	    ptr->wkspc = 0;
-	  if (gcov_write_unsigned (local_prg.runs
-				   ? GCOV_TAG_PLACEHOLDER_SUMMARY
-				   : GCOV_TAG_INCORRECT_SUMMARY))
-	    goto write_error;
+	  gcov_write_unsigned (local_prg.runs
+			       ? GCOV_TAG_PLACEHOLDER_SUMMARY
+			       : GCOV_TAG_INCORRECT_SUMMARY);
 	}
-
       if (gcov_close ())
 	{
-	  fprintf (stderr, "profiling:%s:Error closing\n", ptr->filename);
+	  fprintf (stderr, "profiling:%s:Error writing\n", ptr->filename);
 	  ptr->filename = 0;
 	}
       else
@@ -427,11 +397,10 @@ gcov_exit (void)
 	    continue;
 	  }
 	
-	if (gcov_resync (ptr->wkspc, 0)
- 	    || gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &program))
- 	  fprintf (stderr, "profiling:%s:Error writing\n", ptr->filename);
+	gcov_seek (ptr->wkspc, 0);
+	gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &program);
 	if (gcov_close ())
-	  fprintf (stderr, "profiling:%s:Error closing\n", ptr->filename);
+	  fprintf (stderr, "profiling:%s:Error writing\n", ptr->filename);
       }
 }
 

@@ -1652,8 +1652,8 @@ cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h $(EXPR_H) coretypes.h $(TM_H)
 cfgloopmanip.o : cfgloopmanip.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h output.h coretypes.h $(TM_H)
-loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) gcov-io.h \
-   gcov-iov.h $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h profile.h \
+loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
+   $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h profile.h \
    coretypes.h $(TM_H)
 loop-unswitch.o : loop-unswitch.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h params.h \

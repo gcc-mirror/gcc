@@ -321,7 +321,7 @@ static void print_usage PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void print_version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void process_file PARAMS ((const char *));
 static void create_file_names PARAMS ((const char *));
-static source_t *find_source PARAMS ((char *));
+static source_t *find_source PARAMS ((const char *));
 static int read_graph_file PARAMS ((void));
 static int read_count_file PARAMS ((void));
 static void solve_flow_graph PARAMS ((function_t *));
@@ -673,31 +673,29 @@ create_file_names (file_name)
   return;
 }
 
-/* Find or create a source file structure for FILE_NAME. Free
-   FILE_NAME appropriately */
+/* Find or create a source file structure for FILE_NAME. Copies
+   FILE_NAME on creation */
 
 static source_t *
 find_source (file_name)
-     char *file_name;
+     const char *file_name;
 {
-
   source_t *src;
+
+  if (!file_name)
+    file_name = "<unknown>";
   
   for (src = sources; src; src = src->next)
     if (!strcmp (file_name, src->name))
-      {
-	free (file_name);
-	break;
-      }
-  if (!src)
-    {
-      src = (source_t *)xcalloc (1, sizeof (source_t));
-      src->name = file_name;
-      src->coverage.name = file_name;
-      src->index = sources ? sources->index + 1 : 1;
-      src->next = sources;
-      sources = src;
-    }
+      return src;
+  
+  src = (source_t *)xcalloc (1, sizeof (source_t));
+  src->name = xstrdup (file_name);
+  src->coverage.name = src->name;
+  src->index = sources ? sources->index + 1 : 1;
+  src->next = sources;
+  sources = src;
+
   return src;
 }
 
@@ -706,9 +704,8 @@ find_source (file_name)
 static int
 read_graph_file ()
 {
-  unsigned magic, version;
+  unsigned version;
   unsigned current_tag = 0;
-  unsigned tag;
   struct function_info *fn = NULL;
   source_t *src = NULL;
   unsigned ix;
@@ -719,52 +716,46 @@ read_graph_file ()
       return 1;
     }
   bbg_file_time = gcov_time ();
-  if (gcov_read_unsigned (&magic) || magic != GCOV_GRAPH_MAGIC)
+  if (gcov_read_unsigned () != GCOV_GRAPH_MAGIC)
     {
       fnotice (stderr, "%s:not a gcov graph file\n", bbg_file_name);
       gcov_close ();
       return 1;
     }
 
-  if (gcov_read_unsigned (&version) || version != GCOV_VERSION)
+  version = gcov_read_unsigned ();
+  if (version != GCOV_VERSION)
     {
       char v[4], e[4];
-
-      magic = GCOV_VERSION;
+      unsigned required = GCOV_VERSION;
       
-      for (ix = 4; ix--; magic >>= 8, version >>= 8)
+      for (ix = 4; ix--; required >>= 8, version >>= 8)
 	{
 	  v[ix] = version;
-	  e[ix] = magic;
+	  e[ix] = required;
 	}
       fnotice (stderr, "%s:version `%.4s', prefer `%.4s'\n",
 	       bbg_file_name, v, e);
     }
   
-  while (!gcov_read_unsigned (&tag))
+  while (!gcov_is_eof ())
     {
-      unsigned length;
-      long base;
-
-      if (gcov_read_unsigned (&length))
-	goto corrupt;
-
-      base = gcov_save_position ();
-
+      unsigned tag = gcov_read_unsigned ();
+      unsigned length = gcov_read_unsigned ();
+      unsigned long base = gcov_position ();
+      
       if (tag == GCOV_TAG_FUNCTION)
 	{
-	  char *function_name = NULL;
-	  char *function_file = NULL;
+	  char *function_name;
 	  unsigned checksum, lineno;
 	  source_t *src;
 	  function_t *probe, *prev;
 
-	  if (gcov_read_string (&function_name)
-	      || gcov_read_unsigned (&checksum)
-	      || gcov_read_string (&function_file)
-	      || gcov_read_unsigned (&lineno))
-	    goto corrupt;
-	  src = find_source (function_file);
+	  function_name = xstrdup (gcov_read_string ());
+	  checksum = gcov_read_unsigned ();
+	  src = find_source (gcov_read_string ());
+	  lineno = gcov_read_unsigned ();
+	  
 	  fn = (function_t *)xcalloc (1, sizeof (function_t));
 	  fn->name = function_name;
 	  fn->checksum = checksum;
@@ -803,33 +794,24 @@ read_graph_file ()
 	      fn->blocks
 		= (block_t *)xcalloc (fn->num_blocks, sizeof (block_t));
 	      for (ix = 0; ix != num_blocks; ix++)
-		{
-		  unsigned flags;
-		  
-		  if (gcov_read_unsigned (&flags))
-		    goto corrupt;
-		  fn->blocks[ix].flags = flags;
-		}
+		fn->blocks[ix].flags = gcov_read_unsigned ();
 	    }
 	}
       else if (fn && tag == GCOV_TAG_ARCS)
 	{
-	  unsigned src;
+	  unsigned src = gcov_read_unsigned ();
 	  unsigned num_dests = (length - 4) / 8;
-	  unsigned dest, flags;
 
-	  if (gcov_read_unsigned (&src)
-	      || src >= fn->num_blocks
-	      || fn->blocks[src].succ)
+	  if (src >= fn->num_blocks || fn->blocks[src].succ)
 	    goto corrupt;
 	  
 	  while (num_dests--)
 	    {
 	      struct arc_info *arc;
+	      unsigned dest = gcov_read_unsigned ();
+	      unsigned flags = gcov_read_unsigned ();
 	      
-	      if (gcov_read_unsigned (&dest)
-		  || gcov_read_unsigned (&flags)
-		  || dest >= fn->num_blocks)
+	      if (dest >= fn->num_blocks)
 		goto corrupt;
 	      arc = (arc_t *) xcalloc (1, sizeof (arc_t));
 	      
@@ -875,21 +857,17 @@ read_graph_file ()
 	}
       else if (fn && tag == GCOV_TAG_LINES)
 	{
-	  unsigned blockno;
+	  unsigned blockno = gcov_read_unsigned ();
 	  unsigned *line_nos
 	    = (unsigned *)xcalloc ((length - 4) / 4, sizeof (unsigned));
 
-	  if (gcov_read_unsigned (&blockno)
-	      || blockno >= fn->num_blocks
-	      || fn->blocks[blockno].u.line.encoding)
+	  if (blockno >= fn->num_blocks || fn->blocks[blockno].u.line.encoding)
 	    goto corrupt;
 	  
 	  for (ix = 0; ;  )
 	    {
-	      unsigned lineno;
+	      unsigned lineno = gcov_read_unsigned ();
 	      
-	      if (gcov_read_unsigned (&lineno))
-		goto corrupt;
 	      if (lineno)
 		{
 		  if (!ix)
@@ -903,10 +881,8 @@ read_graph_file ()
 		}
 	      else
 		{
-		  char *file_name = NULL;
+		  const char *file_name = gcov_read_string ();
 		  
-		  if (gcov_read_string (&file_name))
-		    goto corrupt;
 		  if (!file_name)
 		    break;
 		  src = find_source (file_name);
@@ -924,7 +900,8 @@ read_graph_file ()
 	  fn = NULL;
 	  current_tag = 0;
 	}
-      if (gcov_resync (base, length))
+      gcov_seek (base, length);
+      if (gcov_is_error ())
 	{
 	corrupt:;
 	  fnotice (stderr, "%s:corrupted\n", bbg_file_name);
@@ -994,8 +971,7 @@ static int
 read_count_file ()
 {
   unsigned ix;
-  char *function_name_buffer = NULL;
-  unsigned magic, version;
+  unsigned version;
   function_t *fn = NULL;
 
   if (!gcov_open (da_file_name, 1))
@@ -1003,63 +979,44 @@ read_count_file ()
       fnotice (stderr, "%s:cannot open data file\n", da_file_name);
       return 1;
     }
-  if (gcov_read_unsigned (&magic) || magic != GCOV_DATA_MAGIC)
+  if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
     {
       fnotice (stderr, "%s:not a gcov data file\n", da_file_name);
     cleanup:;
-      free (function_name_buffer);
       gcov_close ();
       return 1;
     }
-  if (gcov_read_unsigned (&version) || version != GCOV_VERSION)
+  version = gcov_read_unsigned ();
+  if (version != GCOV_VERSION)
     {
       char v[4], e[4];
+      unsigned desired = GCOV_VERSION;
       
-      magic = GCOV_VERSION;
-      for (ix = 4; ix--; magic >>= 8, version >>= 8)
+      for (ix = 4; ix--; desired >>= 8, version >>= 8)
 	{
 	  v[ix] = version;
-	  e[ix] = magic;
+	  e[ix] = desired;
 	}
       fnotice (stderr, "%s:version `%.4s', prefer version `%.4s'\n",
 	       da_file_name, v, e);
     }
   
-  while (1)
+  while (!gcov_is_eof ())
     {
-      unsigned tag, length;
-      long base;
-      
-      if (gcov_read_unsigned (&tag)
-	  || gcov_read_unsigned (&length))
-	{
-	  if (gcov_eof ())
-	    break;
-	  
-	corrupt:;
-	  fnotice (stderr, "%s:corrupted\n", da_file_name);
-	  goto cleanup;
-	}
-      base = gcov_save_position ();
+      unsigned tag = gcov_read_unsigned ();
+      unsigned length = gcov_read_unsigned ();
+      unsigned long base = gcov_position ();
+      int error;
+
       if (tag == GCOV_TAG_OBJECT_SUMMARY)
-	{
-	  if (gcov_read_summary (&object_summary))
-	    goto corrupt;
-	}
+	gcov_read_summary (&object_summary);
       else if (tag == GCOV_TAG_PROGRAM_SUMMARY
 	       || tag == GCOV_TAG_INCORRECT_SUMMARY)
-	{
-	  program_count++;
-	  gcov_resync (base, length);
-	}
+	program_count++;
       else if (tag == GCOV_TAG_FUNCTION)
 	{
-	  unsigned checksum;
+	  const char *function_name = gcov_read_string ();
 	  struct function_info *fn_n = functions;
-	  
-	  if (gcov_read_string (&function_name_buffer)
-	      || gcov_read_unsigned (&checksum))
-	    goto corrupt;
 
 	  for (fn = fn ? fn->next : NULL; ; fn = fn->next)
 	    {
@@ -1070,20 +1027,20 @@ read_count_file ()
 	      else
 		{
 		  fnotice (stderr, "%s:unknown function `%s'\n",
-			   da_file_name, function_name_buffer);
+			   da_file_name, function_name);
 		  break;
 		}
-	      if (!strcmp (fn->name, function_name_buffer))
+	      if (!strcmp (fn->name, function_name))
 		break;
 	    }
 
 	  if (!fn)
 	    ;
-	  else if (checksum != fn->checksum)
+	  else if (gcov_read_unsigned () != fn->checksum)
 	    {
 	    mismatch:;
 	      fnotice (stderr, "%s:profile mismatch for `%s'\n",
-		       da_file_name, function_name_buffer);
+		       da_file_name, fn->name);
 	      goto cleanup;
 	    }
 	}
@@ -1097,20 +1054,18 @@ read_count_file ()
 	      = (gcov_type *)xcalloc (fn->num_counts, sizeof (gcov_type));
 	  
 	  for (ix = 0; ix != fn->num_counts; ix++)
-	    {
-	      gcov_type count;
-	      
-	      if (gcov_read_counter (&count))
-		goto corrupt;
-	      fn->counts[ix] += count;
-	    }
+	    fn->counts[ix] += gcov_read_counter ();
 	}
-      else
-	gcov_resync (base, length);
+      gcov_seek (base, length);
+      if ((error = gcov_is_error ()))
+	{
+	  fnotice (stderr, error < 0
+		   ? "%s:overflowed\n" : "%s:corrupted\n", da_file_name);
+	  goto cleanup;
+	}
     }
 
   gcov_close ();
-  free (function_name_buffer);
   return 0;
 }
 
