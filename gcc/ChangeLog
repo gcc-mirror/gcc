@@ -6,6 +6,9 @@ Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
 
+	* global.c: Include machmode.h amd move hard-reg-set.h before
+	rtl.h.
+
 	* haifa-sched.c (insn_issue_delay, birthing_insn_p,
 	adjust_priority, print_insn_chaino): New declaration.
 	(schedule_insns): Remove declaration.

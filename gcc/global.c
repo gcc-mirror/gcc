@@ -22,10 +22,11 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 
+#include "machmode.h"
+#include "hard-reg-set.h"
 #include "rtl.h"
 #include "flags.h"
 #include "basic-block.h"
-#include "hard-reg-set.h"
 #include "regs.h"
 #include "insn-config.h"
 #include "output.h"
