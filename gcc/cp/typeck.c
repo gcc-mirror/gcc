@@ -3404,6 +3404,10 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    unsigned_arg = TREE_UNSIGNED (TREE_TYPE (op0));
 
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
+	      /* We can shorten only if the shift count is less than the
+		 number of bits in the smaller type size.  */
+	      && TREE_INT_CST_HIGH (op1) == 0
+	      && TYPE_PRECISION (TREE_TYPE (arg0)) > TREE_INT_CST_LOW (op1)
 	      /* If arg is sign-extended and then unsigned-shifted,
 		 we can simulate this with a signed shift in arg's type
 		 only if the extended result is at least twice as wide
@@ -3756,8 +3760,12 @@ build_x_unary_op (code, xarg)
 {
   /* & rec, on incomplete RECORD_TYPEs is the simple opr &, not an
      error message. */
-  if (code != ADDR_EXPR || TREE_CODE (TREE_TYPE (xarg)) != RECORD_TYPE
-      || TYPE_SIZE (TREE_TYPE (xarg)))
+  if (code == ADDR_EXPR
+      && ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (xarg)))
+	   && TYPE_SIZE (TREE_TYPE (xarg)) == NULL_TREE)
+	  || (TREE_CODE (xarg) == OFFSET_REF)))
+    /* don't look for a function */;
+  else
     {
       tree rval = build_opfncall (code, LOOKUP_SPECULATIVELY, xarg,
 				  NULL_TREE, NULL_TREE);
@@ -3811,6 +3819,9 @@ build_unary_op (code, xarg, noconvert)
     }
 
   if (typecode == ENUMERAL_TYPE)
+    typecode = INTEGER_TYPE;
+
+  if (typecode == BOOLEAN_TYPE && ! noconvert)
     typecode = INTEGER_TYPE;
 
   isaggrtype = IS_AGGR_TYPE_CODE (typecode);
@@ -5435,7 +5446,14 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (modifycode == INIT_EXPR)
     {
-      if (TYPE_LANG_SPECIFIC (lhstype) && TYPE_HAS_CONSTRUCTOR (lhstype))
+      if (! IS_AGGR_TYPE (lhstype))
+	/* Do the default thing */;
+      else if (! TYPE_HAS_CONSTRUCTOR (lhstype))
+	cp_error ("`%T' has no constructors", lhstype);
+      else if (! TYPE_NEEDS_CONSTRUCTING (lhstype)
+	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
+	/* Do the default thing */;
+      else
 	{
 	  result = build_method_call (lhs, constructor_name_full (lhstype),
 				      build_tree_list (NULL_TREE, rhs),
@@ -5449,7 +5467,17 @@ build_modify_expr (lhs, modifycode, rhs)
     {
 #if 1
       /* `operator=' is not an inheritable operator.  */
-      if (TYPE_LANG_SPECIFIC (lhstype) && TYPE_HAS_ASSIGNMENT (lhstype))
+      if (! IS_AGGR_TYPE (lhstype))
+	/* Do the default thing */;
+      else if (! TYPE_HAS_ASSIGNMENT (lhstype))
+	cp_error ("`%T' does not define operator=", lhstype);
+      else if (! TYPE_HAS_REAL_ASSIGNMENT (lhstype)
+	       && ! TYPE_HAS_COMPLEX_ASSIGN_REF (lhstype)
+	       /* FIXME find some way to deal with TARGET_EXPRs here.  */
+	       && TREE_CODE (newrhs) != TARGET_EXPR
+	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
+	/* Do the default thing */;
+      else
 	{
 	  result = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
 				   lhs, rhs, make_node (NOP_EXPR));
@@ -5655,6 +5683,8 @@ build_modify_expr (lhs, modifycode, rhs)
   if (TREE_SIDE_EFFECTS (newrhs))
     newrhs = stabilize_reference (newrhs);
 
+#if 0
+  /* This is now done by generating X(X&) and operator=(X&). */
   /* C++: The semantics of C++ differ from those of C when an
      assignment of an aggregate is desired.  Assignment in C++ is
      now defined as memberwise assignment of non-static members
@@ -5673,14 +5703,6 @@ build_modify_expr (lhs, modifycode, rhs)
 	  || (TREE_CODE (TREE_TYPE (newrhs)) == RECORD_TYPE
 	      && UNIQUELY_DERIVED_FROM_P (lhstype, TREE_TYPE (newrhs)))))
     {
-      /* This was decided in finish_struct.  */
-      if (modifycode == INIT_EXPR)
-	cp_error ("can't generate default copy constructor for `%T'", lhstype);
-      else
-	cp_error ("can't generate default assignment operator for `%T'",
-		  lhstype);
-#if 0
-      /* This is now done by generating X(X&) and operator=(X&). */
       tree vbases = CLASSTYPE_VBASECLASSES (lhstype);
       tree lhs_addr = build_unary_op (ADDR_EXPR, lhs, 0);
       tree rhs_addr;
@@ -5756,8 +5778,8 @@ build_modify_expr (lhs, modifycode, rhs)
 					       TYPE_BINFO (lhstype)),
 			  result);
       return build_compound_expr (result);
-#endif
     }
+#endif
 
   /* Convert new value to destination type.  */
 
@@ -5811,6 +5833,7 @@ build_modify_expr (lhs, modifycode, rhs)
     }
   else
     {
+#if 0
       if (IS_AGGR_TYPE (lhstype))
 	{
 	  if (result = build_opfncall (MODIFY_EXPR,
@@ -5818,6 +5841,7 @@ build_modify_expr (lhs, modifycode, rhs)
 				       make_node (NOP_EXPR)))
 	    return result;
 	}
+#endif
       /* Avoid warnings on enum bit fields. */
       if (TREE_CODE (olhstype) == ENUMERAL_TYPE
 	  && TREE_CODE (lhstype) == INTEGER_TYPE)
@@ -6603,8 +6627,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
      `convert_for_initialization'.  They should otherwise be
      bashed before coming here.  */
   else if (codel == REFERENCE_TYPE)
-    /* Force an abort.  */
-    my_friendly_assert (codel != REFERENCE_TYPE, 317);
+    my_friendly_abort (317);
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (rhs)))
     {
       tree nrhs = build1 (NOP_EXPR, type, rhs);
@@ -6742,6 +6765,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	    }
 	  /* Handle the case of default parameter initialization and
 	     initialization of static variables.  */
+	  else if (TREE_CODE (rhs) == TARGET_EXPR)
+	    return rhs;
 	  else if (TREE_CODE (rhs) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (rhs))
 	    {
 	      my_friendly_assert (TREE_CODE (TREE_OPERAND (rhs, 0)) == CALL_EXPR, 318);

@@ -43,6 +43,9 @@ tree builtin_return_address_fndecl;
 #define TRY_NEW_EH
 #endif
 #endif
+#if defined(__i386) || defined(__rs6000) || defined(__hppa)
+#define TRY_NEW_EH
+#endif
 #endif
 
 #ifndef TRY_NEW_EH
@@ -187,60 +190,6 @@ easy_expand_asm (str)
 {
   expand_asm (build_string (strlen (str)+1, str));
 }
-
-/* unwind the stack. */
-static void
-do_unwind (throw_label)
-     rtx throw_label;
-{
-#ifdef sparc
-  extern FILE *asm_out_file;
-  tree fcall;
-  tree params;
-  rtx return_val_rtx;
-
-  /* call to  __builtin_return_address () */
-  params=tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
-  fcall = build_function_call (BuiltinReturnAddress, params);
-  return_val_rtx = expand_expr (fcall, NULL_RTX, SImode, 0);
-  /* In the return, the new pc is pc+8, as the value comming in is
-     really the address of the call insn, not the next insn.  */
-  emit_move_insn (return_val_rtx, plus_constant(gen_rtx (LABEL_REF,
-							 Pmode,
-							 throw_label), -8));
-  /* We use three values, PC, type, and value */
-  easy_expand_asm ("st %l0,[%fp]");
-  easy_expand_asm ("st %l1,[%fp+4]");
-  easy_expand_asm ("st %l2,[%fp+8]");
-  easy_expand_asm ("ret");
-  easy_expand_asm ("restore");
-  emit_barrier ();
-#endif
-#if m88k
-  rtx temp_frame = frame_pointer_rtx;
-
-  temp_frame = memory_address (Pmode, temp_frame);
-  temp_frame = copy_to_reg (gen_rtx (MEM, Pmode, temp_frame));
-
-  /* hopefully this will successfully pop the frame! */
-  emit_move_insn (frame_pointer_rtx, temp_frame);
-  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
-  emit_move_insn (arg_pointer_rtx, frame_pointer_rtx);
-  emit_insn (gen_add2_insn (stack_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
-						     (HOST_WIDE_INT)m88k_debugger_offset (stack_pointer_rtx, 0))));
-
-#if 0
-  emit_insn (gen_add2_insn (arg_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
-						   -(HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
-
-  emit_move_insn (stack_pointer_rtx, arg_pointer_rtx);
-
-  emit_insn (gen_add2_insn (stack_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
-						     (HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
-#endif
-#endif
-}
-
 
 
 #if 0
@@ -834,10 +783,26 @@ init_exception_processing ()
 
   pop_lang_context ();
   throw_label = gen_label_rtx ();
+#ifdef sparc
   saved_pc = gen_rtx (REG, Pmode, 16);
   saved_throw_type = gen_rtx (REG, Pmode, 17);
   saved_throw_value = gen_rtx (REG, Pmode, 18);
-
+#endif
+#ifdef __i386
+  saved_pc = gen_rtx (REG, Pmode, 3);
+  saved_throw_type = gen_rtx (REG, Pmode, 4);
+  saved_throw_value = gen_rtx (REG, Pmode, 5);
+#endif
+#ifdef __rs6000
+  saved_pc = gen_rtx (REG, Pmode, 12);
+  saved_throw_type = gen_rtx (REG, Pmode, 13);
+  saved_throw_value = gen_rtx (REG, Pmode, 14);
+#endif
+#ifdef __hppa
+  saved_pc = gen_rtx (REG, Pmode, 5);
+  saved_throw_type = gen_rtx (REG, Pmode, 6);
+  saved_throw_value = gen_rtx (REG, Pmode, 7);
+#endif
   new_eh_queue (&ehqueue);
   new_eh_queue (&eh_table_output_queue);
   new_eh_stack (&ehstack);
@@ -1112,7 +1077,7 @@ expand_start_catch_block (declspecs, declarator)
   if (declspecs)
     {
       tree init_type;
-      decl = grokdeclarator (declarator, declspecs, NORMAL, 1, NULL_TREE);
+      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
 
       /* Figure out the type that the initializer is. */
       init_type = TREE_TYPE (decl);
@@ -1247,6 +1212,82 @@ do_function_call (func, params, return_type)
   return NULL_RTX;
 }
 
+/* unwind the stack. */
+static void
+do_unwind (throw_label)
+     rtx throw_label;
+{
+#ifdef sparc
+  extern FILE *asm_out_file;
+  tree fcall;
+  tree params;
+  rtx return_val_rtx;
+
+  /* call to  __builtin_return_address () */
+  params=tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+  fcall = build_function_call (BuiltinReturnAddress, params);
+  return_val_rtx = expand_expr (fcall, NULL_RTX, SImode, 0);
+  /* In the return, the new pc is pc+8, as the value comming in is
+     really the address of the call insn, not the next insn.  */
+  emit_move_insn (return_val_rtx, plus_constant(gen_rtx (LABEL_REF,
+							 Pmode,
+							 throw_label), -8));
+  /* We use three values, PC, type, and value */
+  easy_expand_asm ("st %l0,[%fp]");
+  easy_expand_asm ("st %l1,[%fp+4]");
+  easy_expand_asm ("st %l2,[%fp+8]");
+  easy_expand_asm ("ret");
+  easy_expand_asm ("restore");
+  emit_barrier ();
+#endif
+#if defined(__i386) || defined(__rs6000) || defined(__hppa)
+  extern FILE *asm_out_file;
+  tree fcall;
+  tree params;
+  rtx return_val_rtx;
+
+  /* call to  __builtin_return_address () */
+  params=tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+  fcall = build_function_call (BuiltinReturnAddress, params);
+  return_val_rtx = expand_expr (fcall, NULL_RTX, SImode, 0);
+#if 0
+  /* I would like to do this here, but doesn't seem to work. */
+  emit_move_insn (return_val_rtx, gen_rtx (LABEL_REF,
+					   Pmode,
+					   throw_label));
+  /* So, for now, just pass throw label to stack unwinder. */
+#endif
+  /* We use three values, PC, type, and value */
+  params = tree_cons (NULL_TREE, make_tree (ptr_type_node,
+					    gen_rtx (LABEL_REF, Pmode, throw_label)), NULL_TREE);
+  
+  do_function_call (Unwind, params, NULL_TREE);
+  emit_barrier ();
+#endif
+#if m88k
+  rtx temp_frame = frame_pointer_rtx;
+
+  temp_frame = memory_address (Pmode, temp_frame);
+  temp_frame = copy_to_reg (gen_rtx (MEM, Pmode, temp_frame));
+
+  /* hopefully this will successfully pop the frame! */
+  emit_move_insn (frame_pointer_rtx, temp_frame);
+  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+  emit_move_insn (arg_pointer_rtx, frame_pointer_rtx);
+  emit_insn (gen_add2_insn (stack_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
+						     (HOST_WIDE_INT)m88k_debugger_offset (stack_pointer_rtx, 0))));
+
+#if 0
+  emit_insn (gen_add2_insn (arg_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
+						   -(HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
+
+  emit_move_insn (stack_pointer_rtx, arg_pointer_rtx);
+
+  emit_insn (gen_add2_insn (stack_pointer_rtx, gen_rtx (CONST_INT, VOIDmode,
+						     (HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
+#endif
+#endif
+}
 
 /* is called from expand_excpetion_blocks () to generate the code in a function
    to "throw" if anything in the function needs to preform a throw.
@@ -1306,6 +1347,12 @@ expand_builtin_throw ()
 
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
+#ifndef sparc
+  /* On the SPARC, __builtin_return_address is already -8, no need to
+     subtract any more from it. */
+  emit_insn (gen_add2_insn (return_val_rtx, GEN_INT (-1)));
+#endif
+
   /* yes it did */
   emit_move_insn (saved_pc, return_val_rtx);
   do_unwind (throw_label);
@@ -1344,7 +1391,8 @@ expand_exception_blocks ()
   {
     static int have_done = 0;
     if (! have_done && TREE_PUBLIC (current_function_decl)
-	&& ! DECL_INLINE (current_function_decl))
+	&& DECL_INTERFACE_KNOWN (current_function_decl)
+	&& ! DECL_EXTERNAL (current_function_decl))
       {
 	have_done = 1;
 	expand_builtin_throw ();
@@ -1394,7 +1442,7 @@ expand_throw (exp)
 	rtx throw_value_rtx;
 
 	emit_move_insn (saved_throw_type, throw_type_rtx);
-	exp = convert_to_reference (build_reference_type (build_type_variant (TREE_TYPE (exp), 1, 0)), exp, CONV_STATIC, LOOKUP_COMPLAIN, NULL_TREE);
+	exp = convert_to_reference (build_reference_type (build_type_variant (TREE_TYPE (exp), 1, 0)), exp, CONV_STATIC, LOOKUP_COMPLAIN, error_mark_node);
 	if (exp == error_mark_node)
 	  error ("  in thrown expression");
 	throw_value_rtx = expand_expr (build_unary_op (ADDR_EXPR, exp, 0), NULL_RTX, VOIDmode, 0);
@@ -1437,7 +1485,8 @@ build_exception_table ()
 	 /* Beginning marker for table. */
 	 ASM_OUTPUT_ALIGN (asm_out_file, 2);
 	 ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_TABLE__");
-	 fprintf (asm_out_file, "        .word   0, 0, 0\n");
+	 output_exception_table_entry (asm_out_file,
+				       const0_rtx, const0_rtx, const0_rtx);
        }
      count++;
      output_exception_table_entry (asm_out_file,
@@ -1449,7 +1498,8 @@ build_exception_table ()
     {
       /* Ending marker for table. */
       ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_END__");
-      fprintf (asm_out_file, "        .word   -1, -1, -1\n");
+      output_exception_table_entry (asm_out_file,
+				    constm1_rtx, constm1_rtx, constm1_rtx);
     }
 
 #endif /* TRY_NEW_EH */
@@ -1472,7 +1522,10 @@ tree
 build_throw (e)
      tree e;
 {
-  e = build1 (THROW_EXPR, void_type_node, e);
-  TREE_SIDE_EFFECTS (e) = 1;
+  if (e != error_mark_node)
+    {
+      e = build1 (THROW_EXPR, void_type_node, e);
+      TREE_SIDE_EFFECTS (e) = 1;
+    }
   return e;
 }

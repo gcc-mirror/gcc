@@ -22,6 +22,7 @@ enum decl_context
 { NORMAL,			/* Ordinary declaration */
   FUNCDEF,			/* Function definition */
   PARM,				/* Declaration of parm before function body */
+  CATCHPARM,			/* Declaration of catch parm */
   FIELD,			/* Declaration inside struct or union */
   BITFIELD,			/* Likewise but with specified width */
   TYPENAME,			/* Typename (inside cast or sizeof)  */

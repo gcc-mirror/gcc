@@ -301,9 +301,9 @@ int flag_cadillac;
    that can be collected when they become garbage.  */
 int flag_gc;
 
-/* Controls whether compiler generates 'dossiers' that give
+/* Controls whether compiler generates 'type descriptor' that give
    run-time type information.  */
-int flag_dossier;
+int flag_rtti = 0;
 
 /* Nonzero if we wish to output cross-referencing information
    for the GNU class browser.  */
@@ -365,7 +365,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"dollars-in-identifiers", &dollars_in_ident, 1},
   {"enum-int-equiv", &flag_int_enum_equivalence, 1},
   {"gc", &flag_gc, 1},
-  {"dossier", &flag_dossier, 1},
+  {"rtti", &flag_rtti, 1},
   {"xref", &flag_gnu_xref, 1},
   {"nonnull-objects", &flag_assume_nonnull_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
@@ -442,14 +442,14 @@ lang_decode_option (p)
 	{
 	  flag_gc = 1;
 	  /* This must come along for the ride.  */
-	  flag_dossier = 1;
+	  flag_rtti = 1;
 	  found = 1;
 	}
       else if (! strcmp (p, "no-gc"))
 	{
 	  flag_gc = 0;
 	  /* This must come along for the ride.  */
-	  flag_dossier = 0;
+	  flag_rtti = 0;
 	  found = 1;
 	}
       else if (! strcmp (p, "alt-external-templates"))
@@ -707,15 +707,10 @@ grok_x_components (specs, components)
 	    tcode = class_type_node;
 	  else if (IS_SIGNATURE(t))
 	    tcode = signature_type_node;
-	  else if (CLASSTYPE_DECLARED_EXCEPTION(t))
-	    tcode = exception_type_node;
 	  
 	  t = xref_defn_tag(tcode, TYPE_IDENTIFIER(t), NULL_TREE);
 	  if (TYPE_CONTEXT(t))
 	    CLASSTYPE_NO_GLOBALIZE(t) = 1;
-	  if (TYPE_LANG_SPECIFIC (t)
-	      && CLASSTYPE_DECLARED_EXCEPTION (t))
-	    shadow_tag (specs);
 	  return NULL_TREE;
 	  break;
 
@@ -2170,7 +2165,9 @@ finish_table (name, type, init, publicp)
   if (TREE_VALUE (init) == integer_zero_node
       && TREE_CHAIN (init) == NULL_TREE)
     {
+#if 0
       if (empty_table == NULL_TREE)
+#endif
 	{
 	  empty_table = get_temp_name (atype, 1);
 	  init = build (CONSTRUCTOR, atype, NULL_TREE, init);
@@ -2347,9 +2344,6 @@ mark_vtable_entries (decl)
 {
   tree entries = TREE_CHAIN (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)));
 
-  if (flag_dossier)
-    entries = TREE_CHAIN (entries);
-
   for (; entries; entries = TREE_CHAIN (entries))
     {
       tree fnaddr = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries));
@@ -2439,14 +2433,18 @@ finish_vtable_vardecl (prev, vars)
 
       /* Stuff this virtual function table's size into
 	 `pfn' slot of `the_null_vtable_entry'.  */
+#if 0
+      /* we do not put size as first entry any more */
       tree nelts = array_type_nelts (TREE_TYPE (vars));
       if (flag_vtable_thunks)
 	TREE_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (vars))) = nelts;
       else
 	SET_FNADDR_FROM_VTABLE_ENTRY (the_null_vtable_entry, nelts);
-      /* Kick out the dossier before writing out the vtable.  */
-      if (flag_dossier)
-	rest_of_decl_compilation (TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (TREE_CHAIN (CONSTRUCTOR_ELTS (DECL_INITIAL (vars))))), 0), 0, 1, 1);
+#endif
+
+      /* Kick out the type descriptor before writing out the vtable.  */
+      if (flag_rtti)
+	rest_of_decl_compilation (TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (vars)))), 0), 0, 1, 1);
 
       /* Write it out.  */
       mark_vtable_entries (vars);
@@ -2565,30 +2563,32 @@ void
 import_export_inline (decl)
      tree decl;
 {
-  if (TREE_PUBLIC (decl))
+  if (DECL_INTERFACE_KNOWN (decl))
     return;
 
-  /* If an explicit instantiation doesn't have TREE_PUBLIC set, it was with
-     'extern'.  */
-  if (DECL_EXPLICIT_INSTANTIATION (decl)
-      || (DECL_IMPLICIT_INSTANTIATION (decl) && ! flag_implicit_templates))
+  if (DECL_TEMPLATE_INSTANTIATION (decl))
     {
-      TREE_PUBLIC (decl) = 1;
-      DECL_EXTERNAL (decl) = 1;
+      if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
+	TREE_PUBLIC (decl) = 0;
+      else
+	DECL_EXTERNAL (decl) = 1;
     }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       tree ctype = DECL_CLASS_CONTEXT (decl);
       if (CLASSTYPE_INTERFACE_KNOWN (ctype))
 	{
-	  TREE_PUBLIC (decl) = 1;
 	  DECL_EXTERNAL (decl)
 	    = (CLASSTYPE_INTERFACE_ONLY (ctype)
 	       || (DECL_INLINE (decl) && ! flag_implement_inlines));
 	}
+      else
+	TREE_PUBLIC (decl) = 0;
     }
+  else
+    TREE_PUBLIC (decl) = 0;
 }
-  
+
 extern int parse_time, varconst_time;
 
 #define TIMEVAR(VAR, BODY)    \
@@ -2693,7 +2693,7 @@ finish_file ()
   poplevel (1, 0, 0);
   pop_momentary ();
 
-  finish_function (lineno, 0);
+  finish_function (lineno, 0, 0);
 
   assemble_destructor (IDENTIFIER_POINTER (fnname));
 
@@ -2818,7 +2818,7 @@ finish_file ()
       poplevel (1, 0, 0);
       pop_momentary ();
 
-      finish_function (lineno, 0);
+      finish_function (lineno, 0, 0);
       assemble_constructor (IDENTIFIER_POINTER (fnname));
     }
 
@@ -2871,74 +2871,86 @@ finish_file ()
   pushdecl (vars);
 #endif
 
+  interface_unknown = 1;
+  interface_only = 0;
+
+  for (vars = saved_inlines; vars; vars = TREE_CHAIN (vars))
+    {
+      tree decl = TREE_VALUE (vars);
+
+      if (DECL_ARTIFICIAL (decl)
+	  && ! DECL_INITIAL (decl)
+	  && (TREE_USED (decl) || ! DECL_EXTERNAL (decl)))
+	synthesize_method (decl);
+    }
+
   walk_vtables ((void (*)())0, finish_vtable_vardecl);
   if (flag_handle_signatures)
     walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
+
+  for (vars = saved_inlines; vars; vars = TREE_CHAIN (vars))
+    {
+      tree decl = TREE_VALUE (vars);
+
+      if (DECL_ARTIFICIAL (decl)
+	  && ! DECL_INITIAL (decl)
+	  && TREE_USED (decl))
+	synthesize_method (decl);
+    }
 
   for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {
       if (TREE_CODE (vars) == THUNK_DECL)
 	emit_thunk (vars);
+      else if (TREE_CODE (vars) == FUNCTION_DECL
+	       && ! DECL_INTERFACE_KNOWN (vars)
+	       && DECL_DECLARED_STATIC (vars))
+	TREE_PUBLIC (vars) = 0;
     }
 
+  /* Now write out inline functions which had their addresses taken and
+     which were not declared virtual and which were not declared `extern
+     inline'.  */
   {
-    int reconsider = 0;		/* More may be referenced; check again */
-    tree delayed = NULL_TREE;	/* These might be referenced later */
+    int reconsider = 1;		/* More may be referenced; check again */
+    saved_inlines = tree_cons (NULL_TREE, NULL_TREE, saved_inlines);
 
-    /* Now write out inline functions which had their addresses taken and
-       which were not declared virtual and which were not declared `extern
-       inline'.  */
-    while (saved_inlines)
+    while (reconsider)
       {
-	tree decl = TREE_VALUE (saved_inlines);
-	saved_inlines = TREE_CHAIN (saved_inlines);
-	/* Redefinition of a member function can cause DECL_SAVED_INSNS to be
-	   0; don't crash.  */
-	if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
-	  continue;
-	import_export_inline (decl);
-	if (TREE_PUBLIC (decl)
-	    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-	    || flag_keep_inline_functions)
+	tree last = saved_inlines;
+	tree place = TREE_CHAIN (saved_inlines);
+	reconsider = 0;
+
+	for (; place; place = TREE_CHAIN (place))
 	  {
-	    if (DECL_EXTERNAL (decl))
-	      assemble_external (decl);
-	    else
+	    tree decl = TREE_VALUE (place);
+
+	    if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
 	      {
-		reconsider = 1;
-		temporary_allocation ();
-		output_inline_function (decl);
-		permanent_allocation (1);
+		TREE_CHAIN (last) = TREE_CHAIN (place);
+		continue;
 	      }
-	  }
-	else if (TREE_USED (decl)
-		 || TREE_USED (DECL_ASSEMBLER_NAME (decl)))
-	  delayed = tree_cons (NULL_TREE, decl, delayed);
-      }
-
-    if (reconsider && delayed)
-      {
-	while (reconsider)
-	  {
-	    tree place;
-	    reconsider = 0;
-	    for (place = delayed; place; place = TREE_CHAIN (place))
+	    import_export_inline (decl);
+	    if (TREE_PUBLIC (decl)
+		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+		|| flag_keep_inline_functions)
 	      {
-		tree decl = TREE_VALUE (place);
-		if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-		    && ! TREE_ASM_WRITTEN (decl))
+		TREE_CHAIN (last) = TREE_CHAIN (place);
+
+		if (DECL_EXTERNAL (decl))
+		  assemble_external (decl);
+		else
 		  {
-		    if (DECL_EXTERNAL (decl))
-		      assemble_external (decl);
-		    else
-		      {
-			reconsider = 1;
-			temporary_allocation ();
-			output_inline_function (decl);
-			permanent_allocation (1);
-		      }
+		    reconsider = 1;
+		    temporary_allocation ();
+		    output_inline_function (decl);
+		    permanent_allocation (1);
 		  }
+
+		continue;
 	      }
+
+	    last = place;
 	  }
       }
   }

@@ -97,8 +97,7 @@ process_template_parm (list, next)
 			     PARM, 0, NULL_TREE);
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
-      if (TREE_CODE (TREE_TYPE (parm)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (parm)) == UNION_TYPE)
+      if (IS_AGGR_TYPE (TREE_TYPE (parm)))
 	{
 	  sorry ("aggregate template parameter types");
 	  TREE_TYPE (parm) = void_type_node;
@@ -466,7 +465,7 @@ coerce_template_parms (parms, arglist, in_decl)
 	      tree a = TREE_OPERAND (val, 0);
 	      if ((TREE_CODE (a) == VAR_DECL
 		   || TREE_CODE (a) == FUNCTION_DECL)
-		  && !TREE_PUBLIC (a))
+		  && ! DECL_PUBLIC (a))
 		{
 		  cp_error ("address of non-extern `%E' cannot be used as template argument", a);
 		  val = error_mark_node;
@@ -683,7 +682,8 @@ push_template_decls (parmlist, arglist, class_level)
 	  val = digest_init (TREE_TYPE (parm), arg, (tree *) 0);
 	  if (val != error_mark_node)
 	    {
-	      decl = build_decl (VAR_DECL, DECL_NAME (parm), TREE_TYPE (parm));
+	      decl = build_decl (CONST_DECL, DECL_NAME (parm),
+				 TREE_TYPE (parm));
 	      DECL_INITIAL (decl) = val;
 	      TREE_READONLY (decl) = 1;
 	    }
@@ -834,6 +834,11 @@ uses_template_parms (t)
     case UNINSTANTIATED_P_TYPE:
       return 1;
 
+    case CONSTRUCTOR:
+      if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
+	return uses_template_parms (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
+      /* else fall through */
+
     default:
       switch (TREE_CODE_CLASS (TREE_CODE (t)))
 	{
@@ -898,19 +903,6 @@ instantiate_member_templates (classname)
 				     &TREE_VEC_ELT (parmvec, 0));
 	  type = IDENTIFIER_TYPE_VALUE (id);
 	  my_friendly_assert (type != 0, 277);
-	  if (flag_external_templates)
-	    {
-	      if (CLASSTYPE_INTERFACE_UNKNOWN (type))
-		{
-		  DECL_EXTERNAL (t2) = 0;
-		  TREE_PUBLIC (t2) = 0;
-		}
-	      else
-		{
-		  DECL_EXTERNAL (t2) = CLASSTYPE_INTERFACE_ONLY (type);
-		  TREE_PUBLIC (t2) = 1;
-		}
-	    }
 	  break;
 	case 1:
 	  /* Failure.  */
@@ -1116,15 +1108,11 @@ lookup_nested_type_by_name (ctype, name)
 {
   tree t;
 
-  t = TREE_VALUE(CLASSTYPE_TAGS(ctype)); 
-  while (t)
-  {
-    if (strcmp(IDENTIFIER_POINTER(name), IDENTIFIER_POINTER(TYPE_IDENTIFIER(t)))
- == 0)
-      return t;
-    else 
-      t = TREE_CHAIN(t);
-  }
+  for (t = CLASSTYPE_TAGS (ctype); t; t = TREE_CHAIN (t))
+    {
+      if (name == TREE_PURPOSE (t))
+	return TREE_VALUE (t);
+    }
   return NULL_TREE;
 }
 
@@ -1198,9 +1186,12 @@ tsubst (t, args, nargs, in_decl)
 	 tsubst (TYPE_MAX_VALUE (t), args, nargs, in_decl));
 
     case TEMPLATE_TYPE_PARM:
-      return cp_build_type_variant (args[TEMPLATE_TYPE_IDX (t)],
-				   TYPE_READONLY (t),
-				   TYPE_VOLATILE (t));
+      {
+	tree arg = args[TEMPLATE_TYPE_IDX (t)];
+	return cp_build_type_variant
+	  (arg, TYPE_READONLY (arg) || TYPE_READONLY (t),
+	   TYPE_VOLATILE (arg) || TYPE_VOLATILE (t));
+      }
 
     case TEMPLATE_CONST_PARM:
       return args[TEMPLATE_CONST_IDX (t)];
@@ -1404,9 +1395,10 @@ tsubst (t, args, nargs, in_decl)
 		}
 	    }
 	  }
-	TREE_PUBLIC (r) = TREE_PUBLIC (t);
-	DECL_EXTERNAL (r) = DECL_EXTERNAL (t);
-	TREE_STATIC (r) = TREE_STATIC (t);
+	TREE_PUBLIC (r) = 1;
+	DECL_EXTERNAL (r) = 1;
+	TREE_STATIC (r) = 0;
+	DECL_INTERFACE_KNOWN (r) = 0;
 	DECL_INLINE (r) = DECL_INLINE (t);
 	{
 #if 0				/* Maybe later.  -jason  */
@@ -1719,10 +1711,21 @@ instantiate_template (tmpl, targ_ptr)
 	input_filename = p->filename = t->filename;
 
 	extract_interface_info ();
-	
-	if (interface_unknown && flag_external_templates && ! DECL_IN_SYSTEM_HEADER (tmpl))
-	  warn_if_unknown_interface ();
-	if (interface_unknown || !flag_external_templates)
+
+	if (interface_unknown && flag_external_templates)
+	  {
+	    if (DECL_CLASS_CONTEXT (fndecl)
+		&& CLASSTYPE_INTERFACE_KNOWN (DECL_CLASS_CONTEXT (fndecl)))
+	      {
+		interface_unknown = 0;
+		interface_only
+		  = CLASSTYPE_INTERFACE_ONLY (DECL_CLASS_CONTEXT (fndecl));
+	      }
+	    else if (! DECL_IN_SYSTEM_HEADER (tmpl))
+	      warn_if_unknown_interface ();
+	  }
+
+	if (interface_unknown || ! flag_external_templates)
 	  p->interface = 1;		/* unknown */
 	else
 	  p->interface = interface_only ? 0 : 2;
@@ -2008,6 +2011,9 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 	  arg = TREE_TYPE (arg);
 	}
 #endif
+      if (TREE_CODE (arg) == REFERENCE_TYPE)
+	arg = TREE_TYPE (arg);
+
       if (TREE_CODE (parm) != REFERENCE_TYPE)
 	{
 	  if (TREE_CODE (arg) == FUNCTION_TYPE
@@ -2068,9 +2074,6 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
   if (arg == parm)
     return 0;
 
-  if (TREE_CODE (arg) == REFERENCE_TYPE)
-    arg = TREE_TYPE (arg);
-
   switch (TREE_CODE (parm))
     {
     case TEMPLATE_TYPE_PARM:
@@ -2082,6 +2085,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	  return 1;
 	}
       idx = TEMPLATE_TYPE_IDX (parm);
+#if 0
       /* Template type parameters cannot contain cv-quals; i.e.
          template <class T> void f (T& a, T& b) will not generate
 	 void f (const int& a, const int& b).  */
@@ -2089,6 +2093,13 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	  || TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm))
 	return 1;
       arg = TYPE_MAIN_VARIANT (arg);
+#else
+      {
+	int constp = TYPE_READONLY (arg) > TYPE_READONLY (parm);
+	int volatilep = TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm);
+	arg = cp_build_type_variant (arg, constp, volatilep);
+      }
+#endif
       /* Simple cases: Value already set, does match or doesn't.  */
       if (targs[idx] == arg)
 	return 0;
@@ -2205,22 +2216,19 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
     case UNINSTANTIATED_P_TYPE:
       {
 	tree a;
-	/* Unification of something that is not a template fails. (mrs) */
-	if (TYPE_NAME (arg) == 0)
+	/* Unification of something that is not a class fails.  */
+	if (! IS_AGGR_TYPE (arg))
 	  return 1;
 	a = IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (arg));
-	/* Unification of something that is not a template fails. (mrs) */
-	if (a == 0)
-	  return 1;
-	if (UPT_TEMPLATE (parm) != TREE_PURPOSE (a))
-	  /* different templates */
-	  return 1;
-	return unify (tparms, targs, ntparms, UPT_PARMS (parm), TREE_VALUE (a),
-		      nsubsts);
+	if (a && UPT_TEMPLATE (parm) == TREE_PURPOSE (a))
+	  return unify (tparms, targs, ntparms, UPT_PARMS (parm),
+			TREE_VALUE (a), nsubsts);
+	/* FIXME: Should check base conversions here.  */
+	return 1;
       }
 
     case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (parm))
+      if (TYPE_PTRMEMFUNC_FLAG (parm))
 	return unify (tparms, targs, ntparms, TYPE_PTRMEMFUNC_FN_TYPE (parm),
 		      arg, nsubsts);
 
@@ -2294,6 +2302,9 @@ do_pending_expansions ()
 	DECIDE (! DECL_EXTERNAL (t));
       else if (! flag_implicit_templates)
 	DECIDE (0);
+
+      /* OK, it was an implicit instantiation.  */
+      TREE_PUBLIC (t) = 0;
 
       /* If it's a method, let the class type decide it.
 	 @@ What if the method template is in a separate file?
@@ -2425,17 +2436,14 @@ do_function_instantiation (declspecs, declarator, storage)
   if (flag_external_templates)
     return;
 
-  if (DECL_EXPLICIT_INSTANTIATION (result) && TREE_PUBLIC (result))
-    return;
-
   SET_DECL_EXPLICIT_INSTANTIATION (result);
+  TREE_PUBLIC (result) = 1;
 
   if (storage == NULL_TREE)
     {
-      TREE_PUBLIC (result) = 1;
-      DECL_EXTERNAL (result) = (DECL_INLINE (result)
-				&& ! flag_implement_inlines);
-      TREE_STATIC (result) = ! DECL_EXTERNAL (result);
+      DECL_INTERFACE_KNOWN (result) = 1;
+      DECL_EXTERNAL (result) = 0;
+      TREE_STATIC (result) = 1;
     }
   else if (storage == ridpointers[(int) RID_EXTERN])
     ;
@@ -2475,7 +2483,7 @@ do_type_instantiation (name, storage)
     }
 
   /* We've already instantiated this.  */
-  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && CLASSTYPE_INTERFACE_KNOWN (t))
+  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && ! CLASSTYPE_INTERFACE_ONLY (t))
     {
       if (! extern_p)
 	cp_pedwarn ("multiple explicit instantiation of `%#T'", t);
@@ -2485,22 +2493,29 @@ do_type_instantiation (name, storage)
   if (! CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
     {
       SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
+      SET_CLASSTYPE_INTERFACE_KNOWN (t);
+      CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
+      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
+      TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = extern_p;
       if (! extern_p)
 	{
-	  SET_CLASSTYPE_INTERFACE_KNOWN (t);
-	  CLASSTYPE_INTERFACE_ONLY (t) = 0;
-	  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
 	  CLASSTYPE_DEBUG_REQUESTED (t) = 1;
-	  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
 	  rest_of_type_compilation (t, 1);
 	}
     }
-
-  instantiate_member_templates (TYPE_IDENTIFIER (t));
-
-  /* this should really be done by instantiate_member_templates */
+  
   {
-    tree tmp = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
+    tree tmp;
+    /* Classes nested in template classes currently don't have an
+       IDENTIFIER_TEMPLATE--their out-of-line members are handled
+       by the enclosing template class.  Note that there are name
+       conflict bugs with this approach. */
+    tmp = TYPE_IDENTIFIER (t);
+    if (IDENTIFIER_TEMPLATE (tmp))
+      instantiate_member_templates (tmp);
+
+    /* this should really be done by instantiate_member_templates */
+    tmp = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
     for (; tmp; tmp = TREE_CHAIN (tmp))
       {
 	if (DECL_TEMPLATE_SPECIALIZATION (tmp)
@@ -2509,12 +2524,12 @@ do_type_instantiation (name, storage)
 	  continue;
 
 	SET_DECL_EXPLICIT_INSTANTIATION (tmp);
+	TREE_PUBLIC (tmp) = 1;
 	if (! extern_p)
 	  {
-	    TREE_PUBLIC (tmp) = 1;
-	    DECL_EXTERNAL (tmp) = (DECL_INLINE (tmp)
-				   && ! flag_implement_inlines);
-	    TREE_STATIC (tmp) = ! DECL_EXTERNAL (tmp);
+	    DECL_INTERFACE_KNOWN (tmp) = 1;
+	    DECL_EXTERNAL (tmp) = 0;
+	    TREE_STATIC (tmp) = 1;
 	  }
       }
 

@@ -663,10 +663,12 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 
       if (form == REFERENCE_TYPE)
 	{
-	  rval = copy_node (expr);
-	  TREE_TYPE (rval) = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
-	  rval = cp_convert (build_pointer_type (TREE_TYPE (reftype)), rval,
+	  tree type = TREE_TYPE (expr);
+	  tree tmp = copy_node (expr);
+	  TREE_TYPE (tmp) = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
+	  rval = cp_convert (build_pointer_type (TREE_TYPE (reftype)), tmp,
 			     convtype, flags);
+	  TREE_TYPE (tmp) = type;
 	  TREE_TYPE (rval) = reftype;
 	  return rval;
 	}
@@ -725,7 +727,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  && (rval = build_method_call
 	      (NULL_TREE, constructor_name_full (type),
 	       build_tree_list (NULL_TREE, expr), TYPE_BINFO (type),
-	       LOOKUP_NO_CONVERSION|LOOKUP_SPECULATIVELY)))
+	       LOOKUP_NO_CONVERSION|LOOKUP_SPECULATIVELY
+	       | LOOKUP_ONLYCONVERTING)))
 	{
 	  tree init;
 
@@ -736,7 +739,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	      init = build_method_call (t, constructor_name_full (type),
 					build_tree_list (NULL_TREE, expr),
 					TYPE_BINFO (type),
-					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
+					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION
+					| LOOKUP_ONLYCONVERTING);
 
 	      if (init == error_mark_node)
 		return error_mark_node;
@@ -750,7 +754,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	      init = build_method_call (NULL_TREE, constructor_name_full (type),
 					build_tree_list (NULL_TREE, expr),
 					TYPE_BINFO (type),
-					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
+					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION
+					|LOOKUP_ONLYCONVERTING);
 
 	      if (init == error_mark_node)
 		return error_mark_node;
@@ -1283,12 +1288,9 @@ cp_convert (type, expr, convtype, flags)
   if (IS_AGGR_TYPE_CODE (code))
     {
       tree dtype = TREE_TYPE (e);
+      tree ctor = NULL_TREE;
+      tree conversion = NULL_TREE;
 
-      if (TREE_CODE (dtype) == REFERENCE_TYPE)
-	{
-	  e = convert_from_reference (e);
-	  dtype = TREE_TYPE (e);
-	}
       dtype = TYPE_MAIN_VARIANT (dtype);
 
       /* Conversion of object pointers or signature pointers/references
@@ -1321,87 +1323,78 @@ cp_convert (type, expr, convtype, flags)
 	 There may be some ambiguity between using a constructor
 	 vs. using a type conversion operator when both apply.  */
 
-      else if (IS_AGGR_TYPE (dtype))
+      if (IS_AGGR_TYPE (dtype) && ! DERIVED_FROM_P (type, dtype)
+	  && TYPE_HAS_CONVERSION (dtype))
+	conversion = build_type_conversion (CONVERT_EXPR, type, e, 1);
+
+      if (conversion == error_mark_node)
 	{
-	  tree binfo;
+	  error ("ambiguous pointer conversion");
+	  return conversion;
+	}
 
-	  tree conversion;
+      if (TYPE_HAS_CONSTRUCTOR (type))
+	ctor = build_method_call (NULL_TREE, constructor_name_full (type),
+				  build_tree_list (NULL_TREE, e),
+				  TYPE_BINFO (type),
+				  LOOKUP_NORMAL | LOOKUP_SPECULATIVELY
+				  | LOOKUP_ONLYCONVERTING
+				  | (conversion ? LOOKUP_NO_CONVERSION : 0));
 
-	  if (! DERIVED_FROM_P (type, dtype) && TYPE_HAS_CONVERSION (dtype))
-	    conversion = build_type_conversion (CONVERT_EXPR, type, e, 1);
-	  else
-	    conversion = NULL_TREE;
-
-	  if (TYPE_HAS_CONSTRUCTOR (type))
-	    {
-	      tree rval = build_method_call (NULL_TREE, constructor_name_full (type),
-					     build_tree_list (NULL_TREE, e),
-					     TYPE_BINFO (type),
-					     conversion ? LOOKUP_NO_CONVERSION : 0);
-
-	      if (rval != error_mark_node)
-		{
-		  if (conversion)
-		    {
-		      error ("both constructor and type conversion operator apply");
-		      return error_mark_node;
-		    }
-		  /* call to constructor successful.  */
-		  rval = build_cplus_new (type, rval, 1);
-		  return rval;
-		}
-	    }
-	  /* Type conversion successful/applies.  */
-	  if (conversion)
-	    {
-	      if (conversion == error_mark_node)
-		error ("ambiguous pointer conversion");
-	      return conversion;
-	    }
-
-	  /* now try normal C++ assignment semantics.  */
-	  binfo = TYPE_BINFO (dtype);
-	  if (BINFO_TYPE (binfo) == type
-	      || (binfo = get_binfo (type, dtype, 1)))
-	    {
-	      if (binfo == error_mark_node)
-		return error_mark_node;
-	    }
-	  if (binfo != NULL_TREE)
-	    {
-	      if (lvalue_p (e))
-		{
-		  e = build_unary_op (ADDR_EXPR, e, 0);
-
-		  if (! BINFO_OFFSET_ZEROP (binfo))
-		    e = build (PLUS_EXPR, TYPE_POINTER_TO (type),
-			       e, BINFO_OFFSET (binfo));
-		  return build1 (INDIRECT_REF, type, e);
-		}
-
-	      sorry ("addressable aggregates");
-	      return error_mark_node;
-	    }
-	  error ("conversion between incompatible aggregate types requested");
+      if (ctor == error_mark_node)
+	{
+	  cp_error ("in conversion to type `%T'", type);
 	  return error_mark_node;
 	}
-      /* conversion from non-aggregate to aggregate type requires
-         constructor.  */
-      else if (TYPE_HAS_CONSTRUCTOR (type))
+      
+      if (conversion && ctor)
 	{
-	  tree rval;
-	  tree init = build_method_call (NULL_TREE, constructor_name_full (type),
-					 build_tree_list (NULL_TREE, e),
-					 TYPE_BINFO (type), LOOKUP_NORMAL);
-	  if (init == error_mark_node)
+	  error ("both constructor and type conversion operator apply");
+	  return error_mark_node;
+	}
+      else if (conversion)
+	return conversion;
+      else if (ctor)
+	{
+	  if (current_function_decl)
+	    /* We can't pass 1 to the with_cleanup_p arg here, because that
+	       screws up passing classes by value.  */
+	    ctor = build_cplus_new (type, ctor, 0);
+	  else
 	    {
-	      cp_error ("in conversion to type `%T'", type);
-	      return error_mark_node;
+	      register tree parm = TREE_OPERAND (ctor, 1);
+
+	      /* Initializers for static variables and parameters
+		 have to handle doing the initialization and
+		 cleanup themselves.  */
+	      my_friendly_assert (TREE_CODE (ctor) == CALL_EXPR, 322);
+#if 0
+	      /* The following assertion fails in cases where we
+		 are initializing a static member variable of a
+		 particular instance of a template class with a
+		 call to a constructor of the given instance, as
+		 in:
+		 
+		 TMPL<int> object = TMPL<int>();
+		 
+		 Curiously, the assertion does not fail if we do
+		 the same thing for a static member of a
+		 non-template class, as in:
+		 
+		 T object = T();
+		 
+		 I can't see why we should care here whether or not
+		 the initializer expression involves a call to
+		 `new', so for the time being, it seems best to
+		 just avoid doing this assertion.  */
+	      my_friendly_assert (TREE_CALLS_NEW (TREE_VALUE (parm)),
+				  323);
+#endif
+	      TREE_VALUE (parm) = NULL_TREE;
+	      ctor = build_indirect_ref (ctor, NULL_PTR);
+	      TREE_HAS_CONSTRUCTOR (ctor) = 1;
 	    }
-	  /* We can't pass 1 to the with_cleanup_p arg here, because that
-             screws up passing classes by value.  */
-	  rval = build_cplus_new (type, init, 0);
-	  return rval;
+	  return ctor;
 	}
     }
 
@@ -1483,9 +1476,9 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
   int flags;
 
   if (for_sure == 0)
-    flags = LOOKUP_PROTECT;
+    flags = LOOKUP_PROTECT|LOOKUP_ONLYCONVERTING;
   else
-    flags = LOOKUP_NORMAL;
+    flags = LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING;
 
   rval = build_method_call (expr, typename, NULL_TREE, NULL_TREE, flags);
   if (rval == error_mark_node)
@@ -1615,9 +1608,9 @@ build_type_conversion (code, xtype, expr, for_sure)
 	      int flags;
 
 	      if (for_sure == 0)
-		flags = LOOKUP_PROTECT;
+		flags = LOOKUP_PROTECT|LOOKUP_ONLYCONVERTING;
 	      else
-		flags = LOOKUP_NORMAL;
+		flags = LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING;
 	      rval = build_method_call (expr,
 					constructor_name_full (typename),
 					NULL_TREE, NULL_TREE, flags);

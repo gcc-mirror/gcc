@@ -1250,9 +1250,8 @@ debug_binfo (elem)
   virtuals = BINFO_VIRTUALS (elem);
   if (virtuals != 0)
     {
+      /* skip the rtti type descriptor entry */
       virtuals = TREE_CHAIN (virtuals);
-      if (flag_dossier)
-	virtuals = TREE_CHAIN (virtuals);
     }
   i = 1;
   while (virtuals)

@@ -187,15 +187,26 @@ RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
 CXX_TREE_H = $(TREE_H) cp-tree.h tree.def
+PARSE_H = $(srcdir)/parse.h
+PARSE_C = $(srcdir)/parse.c
 
-parse.o : $(srcdir)/parse.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
+parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
-  `echo $(srcdir)/parse.c | sed 's,^\./,,'`
+  `echo $(PARSE_C) | sed 's,^\./,,'`
 
-$(srcdir)/parse.c $(srcdir)/parse.h : $(srcdir)/parse.y
+#$(PARSE_C) $(PARSE_H) : $(srcdir)/parse.y
+#	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
+#	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
+#	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
+$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
+stamp-parse: $(srcdir)/parse.y
 	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
-	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
+	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
+	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
+	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)
+	$(srcdir)/../move-if-change y.tab.h $(PARSE_H)
+	cp $(PARSE_C) y.tab.c
+	touch stamp-parse
 
 # hash.h really depends on $(srcdir)/gxx.gperf.
 # But this would screw things for people that don't have gperf,
@@ -206,9 +217,9 @@ $(srcdir)/hash.h:
 		$(srcdir)/gxx.gperf >$(srcdir)/hash.h
 
 spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
-  $(srcdir)/parse.h $(srcdir)/../flags.h lex.h
+  $(PARSE_H) $(srcdir)/../flags.h lex.h
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
-  $(srcdir)/parse.h input.c $(srcdir)/../flags.h hash.h lex.h
+  $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
@@ -229,7 +240,7 @@ expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
   $(srcdir)/../expr.h ../insn-codes.h
 edsel.o : edsel.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
 xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h
-pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(srcdir)/parse.h
+pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(PARSE_H)
 error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
 sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h

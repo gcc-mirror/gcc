@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 360.  Free: 261.  */
+/* First used: 0 (reserved), Last used: 361.  Free: */
 
 static int abortcount = 0;
 
@@ -1342,6 +1342,7 @@ build_m_component_ref (datum, component)
 
   if (TREE_CODE (objtype) == REFERENCE_TYPE)
     objtype = TREE_TYPE (objtype);
+  objtype = TYPE_MAIN_VARIANT (objtype);
 
   if (! IS_AGGR_TYPE (objtype))
     {
