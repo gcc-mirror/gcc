@@ -173,14 +173,6 @@ int flag_implicit_templates = 1;
 
 int flag_implicit_inline_templates = 1;
 
-/* Nonzero means allow numerical priorities on constructors.  */
-
-#ifdef USE_INIT_PRIORITY
-int flag_init_priority = 1;
-#else
-int flag_init_priority;
-#endif
-
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;
@@ -481,7 +473,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"implement-inlines", &flag_implement_inlines, 1},
   {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
-  {"init-priority", &flag_init_priority, 1},
   {"labels-ok", &flag_labels_ok, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"operator-names", &flag_operator_names, 1},
@@ -2872,14 +2863,6 @@ setup_initp ()
 {
   tree t, *p, next_t;
 
-  if (! flag_init_priority)
-    {
-      for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
-	cp_warning ("init_priority for `%#D' ignored without -finit-priority",
-		    TREE_VALUE (t));
-      return;
-    }
-
   /* First, remove any entries from static_aggregates that are also in
      static_aggregates_initp, and update the entries in _initp to
      include the initializer.  */
@@ -2943,7 +2926,7 @@ start_objects (method_type, initp)
 
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
 
-  if (flag_init_priority)
+  if (initp != DEFAULT_INIT_PRIORITY)
     {
       char joiner;
 
@@ -2952,8 +2935,6 @@ start_objects (method_type, initp)
 #else
       joiner = '_';
 #endif
-      if (initp == 0)
-	initp = DEFAULT_INIT_PRIORITY;
 
       sprintf (type, "%c%c%.5u", method_type, joiner, initp);
     }
@@ -3005,7 +2986,7 @@ finish_objects (method_type, initp)
   pop_momentary ();
   finish_function (lineno, 0, 0);
 
-  if (! flag_init_priority)
+  if (initp == DEFAULT_INIT_PRIORITY)
     {
       if (method_type == 'I')
 	assemble_constructor (fnname);
@@ -3017,11 +2998,9 @@ finish_objects (method_type, initp)
   /* If we're using init priority we can't use assemble_*tor, but on ELF
      targets we can stick the references into named sections for GNU ld
      to collect.  */
-  if (flag_init_priority)
+  else
     {
       char buf[15];
-      if (initp == 0)
-	initp = DEFAULT_INIT_PRIORITY;
       sprintf (buf, ".%ctors.%.5u", method_type == 'I' ? 'c' : 'd',
 	       /* invert the numbering so the linker puts us in the proper
 		  order; constructors are run from right to left, and the
@@ -3052,7 +3031,7 @@ do_dtors (start)
     }
   else
     {
-      initp = 0;
+      initp = DEFAULT_INIT_PRIORITY;
       vars = static_aggregates;
     }
 
@@ -3140,7 +3119,7 @@ do_ctors (start)
     }
   else
     {
-      initp = 0;
+      initp = DEFAULT_INIT_PRIORITY;
       vars = static_aggregates;
     }
 
@@ -3345,9 +3324,8 @@ finish_file ()
     {
       do_dtors (NULL_TREE);
 
-      if (flag_init_priority)
-	for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
-	  do_dtors (vars);
+      for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
+	do_dtors (vars);
     }
 
   /* do_ctors will reverse the lists for messing up.  */
@@ -3355,9 +3333,8 @@ finish_file ()
     {
       do_ctors (NULL_TREE);
 
-      if (flag_init_priority)
-	for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
-	  do_ctors (vars);
+      for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
+	do_ctors (vars);
   }
 
   permanent_allocation (1);
