@@ -207,11 +207,48 @@ static int *uid_to_ruid;
 /* Highest valid index in `uid_to_ruid'.  */
 static int max_uid;
 
-/* Forward references: */
-
-static int redundant_insn_p ();
-static void update_block ();
-static void update_reg_dead_notes ();
+static void mark_referenced_resources PROTO((rtx, struct resources *, int));
+static void mark_set_resources	PROTO((rtx, struct resources *, int, int));
+static int stop_search_p	PROTO((rtx, int));
+static int resource_conflicts_p	PROTO((struct resources *,
+				       struct resources *));
+static int insn_references_resource_p PROTO((rtx, struct resources *, int));
+static int insn_sets_resources_p PROTO((rtx, struct resources *, int));
+static rtx find_end_label	PROTO((void));
+static rtx emit_delay_sequence	PROTO((rtx, rtx, int, int));
+static rtx add_to_delay_list	PROTO((rtx, rtx));
+static void delete_from_delay_slot PROTO((rtx));
+static void delete_scheduled_jump PROTO((rtx));
+static void note_delay_statistics PROTO((int, int));
+static rtx optimize_skip	PROTO((rtx));
+static int mostly_true_jump	PROTO((rtx, rtx));
+static rtx get_branch_condition	PROTO((rtx, rtx));
+static int condition_dominates_p PROTO((rtx, rtx));
+static rtx steal_delay_list_from_target PROTO((rtx, rtx, rtx, rtx,
+					       struct resources *,
+					       struct resources *,
+					       struct resources *,
+					       int, int *, int *, rtx *));
+static rtx steal_delay_list_from_fallthrough PROTO((rtx, rtx, rtx, rtx,
+						    struct resources *,
+						    struct resources *,
+						    struct resources *,
+						    int, int *, int *));
+static void try_merge_delay_insns PROTO((rtx, rtx));
+static int redundant_insn_p	PROTO((rtx, rtx, rtx));
+static int own_thread_p		PROTO((rtx, rtx, int));
+static int find_basic_block	PROTO((rtx));
+static void update_block	PROTO((rtx, rtx));
+static void update_reg_dead_notes PROTO((rtx, rtx));
+static void update_live_status	PROTO((rtx, rtx));
+static rtx next_insn_no_annul	PROTO((rtx));
+static void mark_target_live_regs PROTO((rtx, struct resources *));
+static void fill_simple_delay_slots PROTO((rtx, int));
+static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
+					 int, int, int, int *));
+static void fill_eager_delay_slots PROTO((rtx));
+static void relax_delay_slots	PROTO((rtx));
+static void make_return_insns	PROTO((rtx));
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
    which resources are references by the insn.  If INCLUDE_CALLED_ROUTINE
@@ -2331,6 +2368,7 @@ mark_target_live_regs (target, res)
 static void
 fill_simple_delay_slots (first, non_jumps_p)
      rtx first;
+     int non_jumps_p;
 {
   register rtx insn, pat, trial, next_trial;
   register int i, j;
