@@ -4,7 +4,7 @@ package gnu.java.locale;
 
 import java.util.ListResourceBundle;
 
-public class LocaleInformation_en_US extends ListResourceBundle
+public class LocaleInformation_en_GB extends ListResourceBundle
 {
   static final String decimalSeparator = ".";
   static final String groupingSeparator = ",";
@@ -18,12 +18,12 @@ public class LocaleInformation_en_US extends ListResourceBundle
 
   static final String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", null };
 
-  static final String[] ampms = { "AM", "PM" };
+  static final String[] ampms = { "", "" };
 
-  static final String shortDateFormat = "MM/dd/yyyy";
-  static final String defaultTimeFormat = "hh:m:s a";
-  static final String currencySymbol = "$";
-  static final String intlCurrencySymbol = "USD";
+  static final String shortDateFormat = "dd/MM/yy";
+  static final String defaultTimeFormat = "";
+  static final String currencySymbol = "\u00A3";
+  static final String intlCurrencySymbol = "GBP";
   static final String currencyFormat = "$#,###,##0.00;-$#,###,##0.00";
 
   private static final Object[][] contents =

@@ -1,5 +1,5 @@
 /* LocaleInformation_en.java -- US English locale data
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -99,6 +99,38 @@ public class LocaleInformation_en extends ListResourceBundle
    */
   private static final String[] eras = { "BC", "AD" };
 
+  private static final String[][] zoneStrings =
+  {
+    { "GMT", "Greenwich Mean Time", "GMT",
+      /**/   "Greenwich Mean Time", "GMT", "GMT" },
+    { "PST", "Pacific Standard Time", "PST",
+      /**/   "Pacific Daylight Time", "PDT", "San Francisco" },
+    { "MST", "Mountain Standard Time", "MST",
+      /**/   "Mountain Daylight Time", "MDT", "Denver" },
+    { "PNT", "Mountain Standard Time", "MST",
+      /**/   "Mountain Standard Time", "MST", "Phoenix" },
+    { "CST", "Central Standard Time", "CST",
+      /**/   "Central Daylight Time", "CDT", "Chicago" },
+    { "EST", "Eastern Standard Time", "EST",
+      /**/   "Eastern Daylight Time", "EDT", "Boston" },
+    { "IET", "Eastern Standard Time", "EST",
+      /**/   "Eastern Standard Time", "EST", "Indianapolis" },
+    { "PRT", "Atlantic Standard Time", "AST",
+      /**/   "Atlantic Daylight Time", "ADT", "Halifax" },
+    { "CNT", "Newfoundland Standard Time", "NST",
+      /**/   "Newfoundland Daylight Time", "NDT", "St. Johns" },
+    { "ECT", "Central European Standard Time", "CET",
+      /**/   "Central European Daylight Time", "CEST", "Paris" },
+    { "CTT", "China Standard Time", "CST",
+      /**/   "China Standard Time", "CST", "Shanghai" },
+    { "JST", "Japan Standard Time", "JST",
+      /**/   "Japan Standard Time", "JST", "Tokyo" },
+    { "HST", "Hawaii Standard Time", "HST",
+      /**/   "Hawaii Standard Time", "HST", "Honolulu" },
+    { "AST", "Alaska Standard Time", "AKST",
+      /**/   "Alaska Daylight Time", "AKDT", "Anchorage" }
+  };
+
   /*************************************************************************/
 
   /**
@@ -119,6 +151,18 @@ public class LocaleInformation_en extends ListResourceBundle
     { "ampms", ampms },
     { "eras", eras },
     { "localPatternChars", "GyMdkHmsSEDFwWahKz" },
+    { "zoneStrings", zoneStrings },
+
+    { "shortDateFormat", "M/d/yy" },         // Java's Y2K bug.
+    { "mediumDateFormat", "d-MMM-yy" },
+    { "longDateFormat", "MMMM d, yyyy" },
+    { "fullDateFormat", "EEEE MMMM d, yyyy G" },
+    { "defaultDateFormat", "d-MMMM-yy" },
+    { "shortTimeFormat", "h:mm a" },
+    { "mediumTimeFormat", "h:mm:ss a" },
+    { "longTimeFormat", "h:mm:ss a z" },
+    { "fullTimeFormat", "h:mm:ss;S 'o''clock' a z" },
+    { "defaultTimeFormat", "h:mm:ss a" },
 
     // For DecimalFormat/DecimalFormatSymbols
     { "decimalSeparator", "." },

@@ -4,26 +4,26 @@ package gnu.java.locale;
 
 import java.util.ListResourceBundle;
 
-public class LocaleInformation_en_US extends ListResourceBundle
+public class LocaleInformation_uz_UZ extends ListResourceBundle
 {
   static final String decimalSeparator = ".";
   static final String groupingSeparator = ",";
   static final String numberFormat = "#,###,##0.###";
   static final String percentFormat = "#,###,##0%";
-  static final String[] weekdays = { null, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+  static final String[] weekdays = { null, "yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba" };
 
-  static final String[] shortWeekdays = { null, "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+  static final String[] shortWeekdays = { null, "Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha" };
 
-  static final String[] shortMonths = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", null };
+  static final String[] shortMonths = { "Yav", "Fev", "Mar", "Apr", "May", "Iyn", "Iyl", "Avg", "Sen", "Okt", "Noy", "Dek", null };
 
-  static final String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", null };
+  static final String[] months = { "yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "senyabr", "oktyabr", "noyabr", "dekabr", null };
 
-  static final String[] ampms = { "AM", "PM" };
+  static final String[] ampms = { "", "" };
 
-  static final String shortDateFormat = "MM/dd/yyyy";
-  static final String defaultTimeFormat = "hh:m:s a";
-  static final String currencySymbol = "$";
-  static final String intlCurrencySymbol = "USD";
+  static final String shortDateFormat = "dd/MM/yy";
+  static final String defaultTimeFormat = "";
+  static final String currencySymbol = "so'm";
+  static final String intlCurrencySymbol = "UZS";
   static final String currencyFormat = "$#,###,##0.00;-$#,###,##0.00";
 
   private static final Object[][] contents =
