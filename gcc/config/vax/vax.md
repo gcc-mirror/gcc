@@ -516,6 +516,19 @@
    addf2 %1,%0
    addf3 %1,%2,%0")
 
+/* The space-time-opcode tradeoffs for addition vary by model of VAX.
+
+   On a VAX 3 "movab (r1)[r2],r3" is faster than "addl3 r1,r2,r3",
+   but it not faster on other models.
+
+   "movab #(r1),r2" is usually shorter than "addl3 #,r1,r2", and is
+   faster on a VAX 3, but some VAXes (e.g. VAX 9000) will stall if
+   a register is used in an address too soon after it is set.
+   Compromise by using movab only when it is shorter than the add
+   or the base register in the address is one of sp, ap, and fp,
+   which are not modified very often.  */
+
+
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")
 	(plus:SI (match_operand:SI 1 "general_operand" "g")
@@ -534,23 +547,37 @@
 	return \"subl2 $%n2,%0\";
       if (GET_CODE (operands[2]) == CONST_INT
 	  && (unsigned) INTVAL (operands[2]) >= 64
-	  && GET_CODE (operands[1]) == REG)
+	  && GET_CODE (operands[1]) == REG
+	  && ((INTVAL (operands[2]) < 32767 && INTVAL (operands[2]) > -32768)
+	      || REGNO (operands[1]) > 11))
 	return \"movab %c2(%1),%0\";
       return \"addl2 %2,%0\";
     }
   if (rtx_equal_p (operands[0], operands[2]))
     return \"addl2 %1,%0\";
+
+  if (GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) < 32767
+      && INTVAL (operands[2]) > -32768
+      && GET_CODE (operands[1]) == REG
+      && push_operand (operands[0], SImode))
+    return \"pushab %c2(%1)\";
+
   if (GET_CODE (operands[2]) == CONST_INT
       && (unsigned) (- INTVAL (operands[2])) < 64)
     return \"subl3 $%n2,%1,%0\";
+
   if (GET_CODE (operands[2]) == CONST_INT
       && (unsigned) INTVAL (operands[2]) >= 64
-      && GET_CODE (operands[1]) == REG)
-    {
-      if (push_operand (operands[0], SImode))
-	return \"pushab %c2(%1)\";
-      return \"movab %c2(%1),%0\";
-    }
+      && GET_CODE (operands[1]) == REG
+      && ((INTVAL (operands[2]) < 32767 && INTVAL (operands[2]) > -32768)
+	  || REGNO (operands[1]) > 11))
+    return \"movab %c2(%1),%0\";
+
+  /* Add this if using gcc on a VAX 3xxx:
+  if (REG_P (operands[1]) && REG_P (operands[2]))
+    return \"movab (%1)[%2],%0\";
+  */
   return \"addl3 %1,%2,%0\";
 }")
 
