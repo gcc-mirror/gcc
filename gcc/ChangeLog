@@ -1,3 +1,11 @@
+Fri Aug 20 19:07:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.c (rtx_class, note_insn_name, reg_note_name): Constify.
+
+	* rtl.h (rtx_class, reg_note_name, note_insn_name): Likewise.
+
+	* genopinit.c (gen_insn): Use accessor macro, not `rtx_class'.
+
 Fri Aug 20 18:53:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (rtx_format): Constify a char*.

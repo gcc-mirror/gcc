@@ -183,7 +183,7 @@ gen_insn (insn)
 		    /* We have to be concerned about matching "gt" and
 		       missing "gtu", e.g., so verify we have reached the
 		       end of thing we are to match.  */
-		    if (*p == 0 && *q == 0 && rtx_class[op] == '<')
+		    if (*p == 0 && *q == 0 && GET_RTX_CLASS(op) == '<')
 		      break;
 		  }
 
