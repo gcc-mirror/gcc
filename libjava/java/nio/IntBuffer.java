@@ -39,10 +39,10 @@ package java.nio;
 
 import gnu.java.nio.IntBufferImpl;
 
-public abstract class IntBuffer extends Buffer
+public abstract class IntBuffer extends Buffer implements Comparable
 {
-  private ByteOrder endian = ByteOrder.BIG_ENDIAN;
   protected int [] backing_buffer;
+  protected int array_offset;
 
   public static IntBuffer allocateDirect(int capacity)
   {
@@ -77,7 +77,13 @@ public abstract class IntBuffer extends Buffer
     return wrap(array, 0, array.length);
   }
 
-  final public IntBuffer get(int[] dst, int offset, int length)
+  IntBuffer (int capacity, int limit, int position, int mark)
+  {
+    super (capacity, limit, position, mark);
+    array_offset = 0;
+  }
+  
+  public IntBuffer get(int[] dst, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       {
@@ -87,12 +93,12 @@ public abstract class IntBuffer extends Buffer
     return this;
   }
 
-  final public IntBuffer get(int[] dst)
+  public IntBuffer get (int[] dst)
   {
     return get(dst, 0, dst.length);
   }
 
-  final public IntBuffer put(IntBuffer src)
+  public IntBuffer put (IntBuffer src)
   {
     while (src.hasRemaining())
       put(src.get());
@@ -100,7 +106,7 @@ public abstract class IntBuffer extends Buffer
     return this;
   }
 
-  final public IntBuffer put(int[] src, int offset, int length)
+  public IntBuffer put (int[] src, int offset, int length)
   {
     for (int i = offset; i < offset + length; i++)
       put(src[i]);
@@ -125,7 +131,7 @@ public abstract class IntBuffer extends Buffer
 
   public final int arrayOffset()
   {
-    return 0;
+    return array_offset;
   }
 
   public int hashCode()
@@ -172,17 +178,7 @@ public abstract class IntBuffer extends Buffer
     return 0;
   }
 
-  public final ByteOrder order()
-  {
-    return endian;
-  }
-
-  public final IntBuffer order(ByteOrder bo)
-  {
-    endian = bo;
-    return this;
-  }
-
+  public abstract ByteOrder order();
   public abstract int get();
   public abstract IntBuffer put(int b);
   public abstract int get(int index);
@@ -192,34 +188,4 @@ public abstract class IntBuffer extends Buffer
   public abstract IntBuffer slice();
   public abstract IntBuffer duplicate();
   public abstract IntBuffer asReadOnlyBuffer();
-  public abstract ShortBuffer asShortBuffer();
-  public abstract CharBuffer asCharBuffer();
-  public abstract IntBuffer asIntBuffer();
-  public abstract LongBuffer asLongBuffer();
-  public abstract FloatBuffer asFloatBuffer();
-  public abstract DoubleBuffer asDoubleBuffer();
-  public abstract char getChar();
-  public abstract IntBuffer putChar(char value);
-  public abstract char getChar(int index);
-  public abstract IntBuffer putChar(int index, char value);
-  public abstract short getShort();
-  public abstract IntBuffer putShort(short value);
-  public abstract short getShort(int index);
-  public abstract IntBuffer putShort(int index, short value);
-  public abstract int getInt();
-  public abstract IntBuffer putInt(int value);
-  public abstract int getInt(int index);
-  public abstract IntBuffer putInt(int index, int value);
-  public abstract long getLong();
-  public abstract IntBuffer putLong(long value);
-  public abstract long getLong(int index);
-  public abstract IntBuffer putLong(int index, long value);
-  public abstract float getFloat();
-  public abstract IntBuffer putFloat(float value);
-  public abstract float getFloat(int index);
-  public abstract IntBuffer putFloat(int index, float value);
-  public abstract double getDouble();
-  public abstract IntBuffer putDouble(double value);
-  public abstract double getDouble(int index);
-  public abstract IntBuffer putDouble(int index, double value);
 }
