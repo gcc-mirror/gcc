@@ -1476,6 +1476,7 @@ extern char *current_function_name;
 {								\
   alpha_write_verstamp (FILE);					\
   fprintf (FILE, "\t.set noreorder\n");				\
+  fprintf (FILE, "\t.set volatile\n");                                \
   fprintf (FILE, "\t.set noat\n");				\
   ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
 }
