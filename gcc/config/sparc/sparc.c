@@ -1957,8 +1957,10 @@ output_scc_insn (operands, insn)
 /* Modes for quad-word quantities.  */
 #define T_MODES (~C_MODES)
 
-/* Modes for single-float quantities.  */
-#define SF_MODES ((1 << (int) SFmode) | (1 << (int) SImode))
+/* Modes for single-float quantities.  We must allow any single word or
+   smaller quantity.  This is because the fix/float conversion instructions
+   take integer inputs/outputs from the float registers.  */
+#define SF_MODES (S_MODES)
 
 /* Modes for double-float quantities.  */
 #define DF_MODES (SF_MODES | (1 << (int) DFmode) | (1 << (int) SCmode))
