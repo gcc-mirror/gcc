@@ -6,6 +6,9 @@
 
 /* Specify extra dir to search for include files.  */
 #define SYSTEM_INCLUDE_DIR "/usr/mach/include"
+
+/* Make stddef.h agree with types.h.  */
+#define SIZE_TYPE "long int"
 
 /* Defines to be able to build libgcc.a with GCC.  */
 
