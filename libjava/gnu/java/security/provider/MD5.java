@@ -77,7 +77,7 @@ public class MD5 extends MessageDigest implements Cloneable
 
   public int engineGetDigestLength()
   {
-    return 20;
+    return 16;
   }
 
   // Intialize the A,B,C,D needed for the hash
