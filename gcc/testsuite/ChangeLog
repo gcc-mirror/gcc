@@ -1,3 +1,12 @@
+2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* gcc.c-torture/compile/920501-12.x: New file, must pass -mshort
+	for HC11/HC12 (array is too large otherwise).
+	* gcc.c-torture/compile/920501-4.x: New file, likewise.
+	* gcc.c-torture/compile/20010518-2.x: Likewise.
+	* gcc.c-torture/compile/980506-1.x: Don't execute this test on
+	HC11/HC12 (array is too large).
+
 2003-03-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* lib/gcc-dg.exp (gcc-dg-test): Change .pch to .gch.
