@@ -2280,7 +2280,7 @@ mark_vtable_entries (decl)
 	 we know all the thunks we'll need when we emit a virtual
 	 function, so we emit the thunks there instead.  */
       if (DECL_THUNK_P (fn)) 
-	use_thunk (fn, THUNK_GENERATE_WITH_VTABLE_P (fn));
+	use_thunk (fn, /*emit_p=*/0);
       mark_used (fn);
     }
 }

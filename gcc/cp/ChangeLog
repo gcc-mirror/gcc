@@ -1,3 +1,28 @@
+2001-06-06  Jason Merrill  <jason_merrill@redhat.com>
+
+	* cp-tree.h (THUNK_GENERATE_WITH_VTABLE_P): Lose.
+	(struct lang_decl_flags): Lose generate_with_vtable_p.
+	(BV_GENERATE_THUNK_WITH_VTABLE_P): Lose.
+	* class.c (copy_virtuals): Adjust.
+	* decl2.c (mark_vtable_entries): Adjust.
+	* method.c (make_thunk, build_vtable_entry): Adjust.
+	* class.c (update_vtable_entry_for_fn): Only look as far as the
+	first defining class.
+	(build_vtbl_initializer): Put nothing in the slot for a function only 
+	defined in a lost primary virtual base.
+	(add_vcall_offset_vtbl_entries_1): Use the same code for 
+	the lost primary case and the normal case.
+	(dfs_unshared_virtual_bases): Don't lose a non-virtual primary base.
+	(get_vfield_offset, get_derived_offset): Lose.
+	(dfs_find_final_overrider): Use look_for_overrides_here.
+	(get_matching_virtual): New fn.
+	* semantics.c (emit_associated_thunks): Check BV_USE_VCALL_INDEX_P,
+	not BV_VCALL_INDEX.
+	* search.c (look_for_overrides_here): Split out from...
+	(look_for_overrides_r): Here.
+
+	* class.c (find_final_overrider): Return error_mark_node on error.
+
 2001-06-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* call.c (convert_default_arg): Use INTEGRAL_TYPE_P.

@@ -2314,7 +2314,7 @@ emit_associated_thunks (fn)
 	for (v = BINFO_VIRTUALS (binfo); v; v = TREE_CHAIN (v))
 	  if (BV_FN (v) == fn
 	      && (!integer_zerop (BV_DELTA (v))
-		  || BV_VCALL_INDEX (v)))
+		  || BV_USE_VCALL_INDEX_P (v)))
 	    {
 	      tree thunk;
 	      tree vcall_index;
@@ -2331,8 +2331,7 @@ emit_associated_thunks (fn)
 					  vfunc_ptr_type_node,
 					  fn),
 				  BV_DELTA (v),
-				  vcall_index,
-				  /*generate_with_vtable_p=*/0);
+				  vcall_index);
 	      use_thunk (thunk, /*emit_p=*/1);
 	    }
     }

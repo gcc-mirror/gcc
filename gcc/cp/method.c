@@ -298,11 +298,10 @@ request for member `%D' is ambiguous in multiple inheritance lattice",
    DELTA is the offset to this and VCALL_INDEX is zero.  */
 
 tree
-make_thunk (function, delta, vcall_index, generate_with_vtable_p)
+make_thunk (function, delta, vcall_index)
      tree function;
      tree delta;
      tree vcall_index;
-     int generate_with_vtable_p;
 {
   tree thunk_id;
   tree thunk;
@@ -351,7 +350,6 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = d;
       THUNK_VCALL_OFFSET (thunk) = vcall_offset;
-      THUNK_GENERATE_WITH_VTABLE_P (thunk) = generate_with_vtable_p;
       /* The thunk itself is not a constructor or destructor, even if
          the thing it is thunking to is.  */
       DECL_INTERFACE_KNOWN (thunk) = 1;
@@ -384,7 +382,6 @@ void
 use_thunk (thunk_fndecl, emit_p)
      tree thunk_fndecl;
      int emit_p;
-     
 {
   tree fnaddr;
   tree function;

@@ -1,6 +1,7 @@
 // Test for mangling of simple testcase involving construction vtables.
 
 // { dg-do compile }
+// { dg-options "-fno-inline" }
 
 struct A {
   virtual void f () { }
@@ -25,4 +26,3 @@ C c;
 // { dg-final { scan-assembler mangle1.C "\n_ZTT1C:" } }
 // { dg-final { scan-assembler mangle1.C "\n_ZTV1A:" } }
 // { dg-final { scan-assembler mangle1.C "\n_ZTV1C:" } }
-// { dg-final { scan-assembler mangle1.C "\n_ZTv0_n\(12|24\)_N1A1fEv:" } }
