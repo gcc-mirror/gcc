@@ -39,8 +39,8 @@
 
    GAS requires the %cl argument, so override i386/unix.h. */
 
-#undef AS3_SHIFT_DOUBLE
-#define AS3_SHIFT_DOUBLE(a,b,c,d) AS3 (a,b,c,d)
+#undef SHIFT_DOUBLE_OMITS_COUNT
+#define SHIFT_DOUBLE_OMITS_COUNT 0
 
 /* Print opcodes the way that GAS expects them. */
 #define GAS_MNEMONICS 1
