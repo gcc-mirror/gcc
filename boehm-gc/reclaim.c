@@ -862,6 +862,25 @@ void GC_print_block_list()
 #endif /* NO_DEBUGGING */
 
 /*
+ * Clear all obj_link pointers in the list of free objects *flp.
+ * Clear *flp.
+ * This must be done before dropping a list of free gcj-style objects,
+ * since may otherwise end up with dangling "descriptor" pointers.
+ * It may help for other pointer-containg objects.
+ */
+void GC_clear_fl_links(flp)
+ptr_t *flp;
+{
+    ptr_t next = *flp;
+
+    while (0 != next) {
+       *flp = 0;
+       flp = &(obj_link(next));
+       next = *flp;
+    }
+}
+
+/*
  * Perform GC_reclaim_block on the entire heap, after first clearing
  * small object free lists (if we are not just looking for leaks).
  */
@@ -875,17 +894,24 @@ int report_if_found;		/* Abort if a GC_reclaimable object is found */
 #   endif
     /* Clear reclaim- and free-lists */
       for (kind = 0; kind < GC_n_kinds; kind++) {
-        register ptr_t *fop;
-        register ptr_t *lim;
-        register struct hblk ** rlp;
-        register struct hblk ** rlim;
-        register struct hblk ** rlist = GC_obj_kinds[kind].ok_reclaim_list;
+        ptr_t *fop;
+        ptr_t *lim;
+        struct hblk ** rlp;
+        struct hblk ** rlim;
+        struct hblk ** rlist = GC_obj_kinds[kind].ok_reclaim_list;
+	GC_bool should_clobber = (GC_obj_kinds[kind].ok_descriptor != 0);
         
         if (rlist == 0) continue;	/* This kind not used.	*/
         if (!report_if_found) {
             lim = &(GC_obj_kinds[kind].ok_freelist[MAXOBJSZ+1]);
 	    for( fop = GC_obj_kinds[kind].ok_freelist; fop < lim; fop++ ) {
-	      *fop = 0;
+	      if (*fop != 0) {
+		if (should_clobber) {
+		  GC_clear_fl_links(fop);
+		} else {
+	          *fop = 0;
+		}
+	      }
 	    }
 	} /* otherwise free list objects are marked, 	*/
 	  /* and its safe to leave them			*/

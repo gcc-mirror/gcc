@@ -16,17 +16,27 @@
 #include "private/gc_priv.h" /* For GC_compare_and_exchange, GC_memory_barrier */
 #include "private/specific.h"
 
-static tse invalid_tse; 	/* 0 qtid is guaranteed to be invalid	*/
+static tse invalid_tse = {INVALID_QTID, 0, 0, INVALID_THREADID};
+			/* A thread-specific data entry which will never	*/
+			/* appear valid to a reader.  Used to fill in empty	*/
+			/* cache entries to avoid a check for 0.		*/
 
 int PREFIXED(key_create) (tsd ** key_ptr, void (* destructor)(void *)) {
     int i;
     tsd * result = (tsd *)MALLOC_CLEAR(sizeof (tsd));
 
+    /* A quick alignment check, since we need atomic stores */
+      GC_ASSERT((unsigned long)(&invalid_tse.next) % sizeof(tse *) == 0);
     if (0 == result) return ENOMEM;
     pthread_mutex_init(&(result -> lock), NULL);
     for (i = 0; i < TS_CACHE_SIZE; ++i) {
 	result -> cache[i] = &invalid_tse;
     }
+#   ifdef GC_ASSERTIONS
+      for (i = 0; i < TS_HASH_SIZE; ++i) {
+	GC_ASSERT(result -> hash[i] == 0);
+      }
+#   endif
     *key_ptr = result;
     return 0;
 }
@@ -36,12 +46,14 @@ int PREFIXED(setspecific) (tsd * key, void * value) {
     int hash_val = HASH(self);
     volatile tse * entry = (volatile tse *)MALLOC_CLEAR(sizeof (tse));
     
+    GC_ASSERT(self != INVALID_THREADID);
     if (0 == entry) return ENOMEM;
     pthread_mutex_lock(&(key -> lock));
     /* Could easily check for an existing entry here.	*/
     entry -> next = key -> hash[hash_val];
     entry -> thread = self;
     entry -> value = value;
+    GC_ASSERT(entry -> qtid == INVALID_QTID);
     /* There can only be one writer at a time, but this needs to be	*/
     /* atomic with respect to concurrent readers.			*/ 
     *(volatile tse **)(key -> hash + hash_val) = entry;
@@ -70,6 +82,10 @@ void PREFIXED(remove_specific) (tsd * key) {
 	*link = entry -> next;
 	/* Atomic! concurrent accesses still work.	*/
 	/* They must, since readers don't lock.		*/
+	/* We shouldn't need a volatile access here,	*/
+	/* since both this and the preceding write 	*/
+	/* should become visible no later than		*/
+	/* the pthread_mutex_unlock() call.		*/
     }
     /* If we wanted to deallocate the entry, we'd first have to clear 	*/
     /* any cache entries pointing to it.  That probably requires	*/
@@ -91,6 +107,7 @@ void *  PREFIXED(slow_getspecific) (tsd * key, unsigned long qtid,
     unsigned hash_val = HASH(self);
     tse *entry = key -> hash[hash_val];
 
+    GC_ASSERT(qtid != INVALID_QTID);
     while (entry != NULL && entry -> thread != self) {
 	entry = entry -> next;
     } 
@@ -99,6 +116,8 @@ void *  PREFIXED(slow_getspecific) (tsd * key, unsigned long qtid,
         entry -> qtid = qtid;
 		/* It's safe to do this asynchronously.  Either value 	*/
 		/* is safe, though may produce spurious misses.		*/
+		/* We're replacing one qtid with another one for the	*/
+		/* same thread.						*/
 	*cache_ptr = entry;
 		/* Again this is safe since pointer assignments are 	*/
 		/* presumed atomic, and either pointer is valid.	*/
