@@ -1,3 +1,8 @@
+2004-02-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natPosixProcess.cc (startProcess): Handle case where
+	PATH or LD_LIBRARY_PATH is not set in parent environment.
+
 2004-02-03  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/nio/DatagramChannelImpl.java
