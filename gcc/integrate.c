@@ -942,6 +942,7 @@ copy_for_inline (orig)
       if (orig_asm_operands_vector == XVEC (orig, 3))
 	{
 	  x = rtx_alloc (ASM_OPERANDS);
+	  x->volatil = orig->volatil;
 	  XSTR (x, 0) = XSTR (orig, 0);
 	  XSTR (x, 1) = XSTR (orig, 1);
 	  XINT (x, 2) = XINT (orig, 2);
@@ -2163,6 +2164,7 @@ copy_rtx_and_substitute (orig, map)
       if (map->orig_asm_operands_vector == XVEC (orig, 3))
 	{
 	  copy = rtx_alloc (ASM_OPERANDS);
+	  copy->volatil = orig->volatil;
 	  XSTR (copy, 0) = XSTR (orig, 0);
 	  XSTR (copy, 1) = XSTR (orig, 1);
 	  XINT (copy, 2) = XINT (orig, 2);
