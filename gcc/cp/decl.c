@@ -13481,7 +13481,10 @@ start_function (declspecs, declarator, attrs, flags)
       decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, NULL);
       /* If the declarator is not suitable for a function definition,
 	 cause a syntax error.  */
-      if (decl1 == NULL_TREE || TREE_CODE (decl1) != FUNCTION_DECL) return 0;
+      if (decl1 == NULL_TREE || TREE_CODE (decl1) != FUNCTION_DECL)
+	return 0;
+
+      cplus_decl_attributes (&decl1, attrs, 0);
 
       fntype = TREE_TYPE (decl1);
 
@@ -13595,19 +13598,16 @@ start_function (declspecs, declarator, attrs, flags)
 
   /* Build the return declaration for the function.  */
   restype = TREE_TYPE (fntype);
-  if (!processing_template_decl)
+  /* Promote the value to int before returning it.  */
+  if (c_promoting_integer_type_p (restype))
+    restype = type_promotes_to (restype);
+  if (DECL_RESULT (decl1) == NULL_TREE)
     {
-      if (!DECL_RESULT (decl1))
-	{
-	  DECL_RESULT (decl1)
-	    = build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
-	  c_apply_type_quals_to_decl (cp_type_quals (restype),
-				      DECL_RESULT (decl1));
-	}
+      DECL_RESULT (decl1)
+	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
+      c_apply_type_quals_to_decl (cp_type_quals (restype),
+				  DECL_RESULT (decl1));
     }
-  else
-    /* Just use `void'.  Nobody will ever look at this anyhow.  */
-    DECL_RESULT (decl1) = build_decl (RESULT_DECL, 0, void_type_node);
 
   /* Initialize RTL machinery.  We cannot do this until
      CURRENT_FUNCTION_DECL and DECL_RESULT are set up.  We do this
@@ -13767,20 +13767,6 @@ start_function (declspecs, declarator, attrs, flags)
 
   pushlevel (0);
   current_binding_level->parm_flag = 1;
-
-  cplus_decl_attributes (&decl1, attrs, 0);
-
-  /* Promote the value to int before returning it.  */
-  if (c_promoting_integer_type_p (restype))
-    restype = type_promotes_to (restype);
-
-  if (DECL_RESULT (decl1) == NULL_TREE)
-    {
-      DECL_RESULT (decl1)
-	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
-      TREE_READONLY (DECL_RESULT (decl1)) = CP_TYPE_CONST_P (restype);
-      TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = CP_TYPE_VOLATILE_P (restype);
-    }
 
   ++function_depth;
 

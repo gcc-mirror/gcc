@@ -1,3 +1,10 @@
+2002-02-04  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (start_function): Call cplus_decl_attributes immediately
+	after grokdeclarator.
+
+	* decl.c (start_function): Combine DECL_RESULT handling code.
+
 2002-02-03  Jason Merrill  <jason@redhat.com>
 
 	* xref.c: Remove.
