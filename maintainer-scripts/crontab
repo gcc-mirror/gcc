@@ -1,4 +1,4 @@
 16 0 * * * sh /home/gccadmin/scripts/update_version
-16 0 * * * sh /home/gccadmin/scripts/update_branch_version
+16 0 * * * sh /home/gccadmin/scripts/update_version -rgcc-3_0-branch
 50 0 * * * sh /home/gccadmin/scripts/update_web_docs
 55 0 * * * sh /home/gccadmin/scripts/update_web_docs_libstdcxx

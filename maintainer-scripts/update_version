@@ -7,20 +7,35 @@ export CVSROOT
 /bin/mkdir /tmp/$$
 cd /tmp/$$
 
+# ARGS is passed to 'cvs co'
+ARGS="$*"
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
-FILES="gcc/gcc/version.c gcc/gcc/f/version.c gcc/libf2c/libF77/Version.c gcc/libf2c/libI77/Version.c gcc/libf2c/libU77/Version.c"
+# version is contained within a char*
+textstring_FILES="gcc/gcc/version.c gcc/gcc/f/version.c gcc/libf2c/libF77/Version.c gcc/libf2c/libI77/Version.c gcc/libf2c/libU77/Version.c"
 
-/usr/local/bin/cvs co $FILES
+# version is contained within a #define
+cppdefine_FILES="gcc/libstdc++-v3/include/bits/c++config"
 
-for file in $FILES; do
+/usr/local/bin/cvs co $ARGS $textstring_FILES $cppdefine_FILES
 
+for file in $textstring_FILES; do
   OLD_VERSION=`/bin/cat $file`
   /bin/sed -e "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
 $OLD_VERSION
 HERE
 done
 
-/usr/local/bin/cvs commit -m "Daily bump." $FILES
+for file in $cppdefine_FILES; do
+  OLD_VERSION=`/bin/cat $file`
+  /bin/sed -e "s/\(#.*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
+$OLD_VERSION
+HERE
+done
+
+/usr/local/bin/cvs commit -m "Daily bump." $textstring_FILES $cppdefine_FILES
+commit_results=$?
 
 /bin/rm -rf /tmp/$$
+exit $commit_results
+
