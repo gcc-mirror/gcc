@@ -1691,7 +1691,7 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       break;
 
     case PLUS:
-      /* Some assemblers need integer constants to appear last (eg masm).  */
+      /* Some assemblers need integer constants to appear last (e.g. masm).  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	{
 	  output_addr_const_pdp11 (file, XEXP (x, 1));

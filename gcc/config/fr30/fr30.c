@@ -709,7 +709,7 @@ int
 fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
 				 tree type, int named)
 {
-  /* Unnamed arguments, ie those that are prototyped as ...
+  /* Unnamed arguments, i.e. those that are prototyped as ...
      are always passed on the stack.
      Also check here to see if all the argument registers are full.  */
   if (named == 0 || cum >= FR30_NUM_ARG_REGS)

@@ -1595,7 +1595,7 @@ enum reg_class
 #define CALL_SHORT		0x00000002	/* Never call indirect.  */
 
 /* These bits describe the different types of function supported
-   by the ARM backend.  They are exclusive.  ie a function cannot be both a
+   by the ARM backend.  They are exclusive.  i.e. a function cannot be both a
    normal function and an interworked function, for example.  Knowing the
    type of a function is important for determining its prologue and
    epilogue sequences.

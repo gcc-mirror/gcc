@@ -835,12 +835,12 @@ extern const struct mips_cpu_info *mips_tune_info;
    ABI for which this is true.  */
 #define ABI_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64)
 
-/* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3).  */
+/* ISA has instructions for managing 64 bit fp and gp regs (e.g. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
 				 || ISA_MIPS4				\
                                  || ISA_MIPS64)
 
-/* ISA has branch likely instructions (eg. mips2).  */
+/* ISA has branch likely instructions (e.g. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
 #define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1)
@@ -1922,16 +1922,16 @@ extern enum reg_class mips_char_to_class[256];
    `I'	is used for the range of constants an arithmetic insn can
 	actually contain (16 bits signed integers).
 
-   `J'	is used for the range which is just zero (ie, $r0).
+   `J'	is used for the range which is just zero (i.e., $r0).
 
    `K'	is used for the range of constants a logical insn can actually
 	contain (16 bit zero-extended integers).
 
    `L'	is used for the range of constants that be loaded with lui
-	(ie, the bottom 16 bits are zero).
+	(i.e., the bottom 16 bits are zero).
 
    `M'	is used for the range of constants that take two words to load
-	(ie, not matched by `I', `K', and `L').
+	(i.e., not matched by `I', `K', and `L').
 
    `N'	is used for negative 16 bit constants other than -65536.
 
@@ -2824,7 +2824,7 @@ while (0)
 
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON mips_output_aligned_decl_common
 
-/* This says how to define a local common symbol (ie, not visible to
+/* This says how to define a local common symbol (i.e., not visible to
    linker).  */
 
 #ifndef ASM_OUTPUT_ALIGNED_LOCAL

@@ -78,7 +78,7 @@ then the following rules must be obeyed:
 
 	* All externally visible functions which should be entered in
 	Thumb mode must have the .thumb_func pseudo op specified just
-	before their entry point.  eg:
+	before their entry point.  e.g.:
 
 			.code 16
 			.global function

@@ -321,7 +321,7 @@ mcore_print_operand_address (FILE * stream, rtx x)
 /* Print operand x (an rtx) in assembler syntax to file stream
    according to modifier code.
 
-   'R'  print the next register or memory location along, ie the lsw in
+   'R'  print the next register or memory location along, i.e. the lsw in
         a double word value
    'O'  print a constant without the #
    'M'  print a constant as its negative
@@ -2782,7 +2782,7 @@ conditionalize_block (rtx first)
       if (code != BARRIER && code != NOTE && !is_cond_candidate (insn))
 	return NEXT_INSN (insn);
      
-      /* Remember the last real insn before the label (ie end of block 2).  */
+      /* Remember the last real insn before the label (i.e. end of block 2).  */
       if (code == JUMP_INSN || code == INSN)
 	{
 	  blk_size ++;

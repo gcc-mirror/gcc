@@ -3459,7 +3459,7 @@ remove_useless_addtr_insns (int check_notes)
 	    {
 	      rtx pattern = PATTERN (next);
 
-	      /* If it a reversed fp conditional branch (eg uses add,tr)
+	      /* If it a reversed fp conditional branch (e.g. uses add,tr)
 		 and CCFP dies, then reverse our conditional and the branch
 		 to avoid the add,tr.  */
 	      if (GET_CODE (pattern) == SET
@@ -6191,7 +6191,7 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
   int useskip = 0;
   rtx xoperands[5];
 
-  /* A conditional branch to the following instruction (eg the delay slot)
+  /* A conditional branch to the following instruction (e.g. the delay slot)
      is asking for a disaster.  This can happen when not optimizing and
      when jump optimization fails.
 
@@ -6500,7 +6500,7 @@ output_bb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
   static char buf[100];
   int useskip = 0;
 
-  /* A conditional branch to the following instruction (eg the delay slot) is
+  /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  I do not think this can happen as this pattern
      is only used when optimizing; jump optimization should eliminate the
      jump.  But be prepared just in case.  */
@@ -6645,7 +6645,7 @@ output_bvb (rtx *operands ATTRIBUTE_UNUSED, int nullify, int length,
   static char buf[100];
   int useskip = 0;
 
-  /* A conditional branch to the following instruction (eg the delay slot) is
+  /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  I do not think this can happen as this pattern
      is only used when optimizing; jump optimization should eliminate the
      jump.  But be prepared just in case.  */
@@ -6785,7 +6785,7 @@ const char *
 output_dbra (rtx *operands, rtx insn, int which_alternative)
 {
 
-  /* A conditional branch to the following instruction (eg the delay slot) is
+  /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  Be prepared!  */
 
   if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
@@ -6889,7 +6889,7 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
 	     int reverse_comparison)
 {
 
-  /* A conditional branch to the following instruction (eg the delay slot) is
+  /* A conditional branch to the following instruction (e.g. the delay slot) is
      asking for a disaster.  Be prepared!  */
 
   if (next_real_insn (JUMP_LABEL (insn)) == next_real_insn (insn))
@@ -8553,7 +8553,7 @@ following_call (rtx insn)
    will adhere to those rules.
 
    So, late in the compilation process we find all the jump tables, and
-   expand them into real code -- eg each entry in the jump table vector
+   expand them into real code -- e.g. each entry in the jump table vector
    will get an appropriate label followed by a jump to the final target.
 
    Reorg and the final jump pass can then optimize these branches and

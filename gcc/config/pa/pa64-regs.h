@@ -146,7 +146,7 @@ Boston, MA 02111-1307, USA.  */
    but can be less for certain modes in special long registers.
 
    For PA64, GPRs and FPRs hold 64 bits worth (we ignore the 32bit
-   addressability of the FPRs).  ie, we pretend each register holds
+   addressability of the FPRs).  i.e., we pretend each register holds
    precisely WORD_SIZE bits.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)

@@ -96,7 +96,7 @@ arm_dllimport_name_p (symbol)
 }
 
 /* Mark a DECL as being dllexport'd.
-   Note that we override the previous setting (eg: dllimport).  */
+   Note that we override the previous setting (e.g.: dllimport).  */
 
 void
 arm_mark_dllexport (decl)

@@ -9551,7 +9551,7 @@ frv_int_to_acc (enum insn_code icode, int opnum, rtx opval)
   rtx reg;
   int i;
 
-  /* ACCs and ACCGs are implicity global registers if media instrinsics
+  /* ACCs and ACCGs are implicity global registers if media intrinsics
      are being used.  We set up this lazily to avoid creating lots of
      unnecessary call_insn rtl in non-media code.  */
   for (i = 0; i <= ACC_MASK; i++)

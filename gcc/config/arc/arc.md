@@ -69,7 +69,7 @@
 ;; conditionalizing instructions.  It saves having to scan the rtl to see if
 ;; it uses or alters the condition codes.
 
-;; USE: This insn uses the condition codes (eg: a conditional branch).
+;; USE: This insn uses the condition codes (e.g.: a conditional branch).
 ;; CANUSE: This insn can use the condition codes (for conditional execution).
 ;; SET: All condition codes are set by this insn.
 ;; SET_ZN: the Z and N flags are set by this insn.

@@ -143,7 +143,7 @@ static int dslots_jump_total;
 /* # of nops needed by previous insn.  */
 static int dslots_number_nops;
 
-/* Number of 1/2/3 word references to data items (ie, not jal's).  */
+/* Number of 1/2/3 word references to data items (i.e., not jal's).  */
 static int num_refs[3];
 
 /* Registers to check for load delay.  */
@@ -293,7 +293,7 @@ reg_or_0_operand (rtx op, enum machine_mode mode)
 }
 
 /* Return 1 if OP is a memory operand that fits in a single instruction
-   (ie, register + small offset).  */
+   (i.e., register + small offset).  */
 
 int
 simple_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
