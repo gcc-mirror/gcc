@@ -1,3 +1,12 @@
+2003-09-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (arm-*-coff*, armel-*-coff*, arm*-*-ecos-elf,
+	arm*-*-elf, ep9312-*-elf, arm*-wince-pe*, arm*-*-pe*, arm*-*-pe*,
+	rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*,
+	rs6000-ibm-aix5.1.*, powerpc-ibm-aix5.1.*,
+	rs6000-ibm-aix[56789].*, powerpc-ibm-aix[56789].*,
+	i[34567]86-pc-msdosdjgpp*): Disable fixproto.
+
 2003-09-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movti_power): Collapse case 1 and 2
