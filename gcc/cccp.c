@@ -1451,26 +1451,21 @@ main (argc, argv)
 
   /* Now handle the command line options.  */
 
-  /* Do undefines specified with -U.  */
-  for (i = 1; i < argc; i++)
+  /* Do -U's, -D's and -A's in the order they were seen.  */
+  for (i = 1; i < argc; i++) {
     if (pend_undefs[i]) {
       if (debug_output)
         output_line_command (fp, &outbuf, 0, same_file);
       make_undef (pend_undefs[i], &outbuf);
     }
-
-  /* Do assertions specified with -A.  */
-  for (i = 1; i < argc; i++)
-    if (pend_assertions[i])
-      make_assertion (pend_assertion_options[i], pend_assertions[i]);
-
-  /* Do defines specified with -D.  */
-  for (i = 1; i < argc; i++)
     if (pend_defs[i]) {
       if (debug_output)
         output_line_command (fp, &outbuf, 0, same_file);
       make_definition (pend_defs[i], &outbuf);
     }
+    if (pend_assertions[i])
+      make_assertion (pend_assertion_options[i], pend_assertions[i]);
+  }
 
   done_initializing = 1;
 
