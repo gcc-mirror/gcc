@@ -22,17 +22,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 
 /* The replacement text of a function-like macro is stored as a
-   contiguous sequence of aligned blocks.  Each block represents the
-   portion of text from the start of the previous block (or the start
-   of the macro replacement text in the case of the first block) to
-   the next parameter, or the end of the replacement list if there
-   are none left.
+   contiguous sequence of aligned blocks, each representing the text
+   between subsequent parameters in that text.
 
-   Each block consists of an unsigned int, which is the length of text
-   contained in the third part, an unsigned short, which is the
+   Each block comprises the length of text contained therein, the
    one-based index of the argument that immediately follows that text,
    and the text itself.  The final block in the macro expansion is
-   recognizable as it has an argument index of zero.  */
+   easily recognizable as it has an argument index of zero.  */
 
 struct block
 {
@@ -67,17 +63,16 @@ struct fun_macro
   unsigned int argc;
 };
 
-/* Lexing TODO: Handle -C, maybe -CC, and space in escaped newlines.
-   Stop cpplex.c from recognizing comments and directives during its
-   lexing pass.  Get rid of line_base usage - seems pointless?  Do we
-   get escaped newline at EOF correct?  */
+/* Lexing TODO: Maybe handle -CC and space in escaped newlines.  Stop
+   cpplex.c from recognizing comments and directives during its lexing
+   pass.  Get rid of line_base usage - seems pointless?  */
 
 static const uchar *handle_newline PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_escaped_newlines PARAMS ((cpp_reader *,
 						   const uchar *));
 static const uchar *skip_whitespace PARAMS ((cpp_reader *, const uchar *));
 static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
-static const uchar *skip_comment PARAMS ((cpp_reader *, const uchar *));
+static const uchar *copy_comment PARAMS ((cpp_reader *, const uchar *));
 static void scan_out_logical_line PARAMS ((cpp_reader *pfile, cpp_macro *));
 static void check_output_buffer PARAMS ((cpp_reader *, size_t));
 static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
@@ -99,6 +94,10 @@ check_output_buffer (pfile, n)
      cpp_reader *pfile;
      size_t n;
 {
+  /* We might need two bytes to terminate an unterminated comment, and
+     one more to terminate with a NUL.  */
+  n += 2 + 1;
+
   if (n > (size_t) (pfile->out.limit - pfile->out.cur))
     {
       size_t size = pfile->out.cur - pfile->out.base;
@@ -134,45 +133,70 @@ skip_escaped_newlines (pfile, cur)
      cpp_reader *pfile;
      const uchar *cur;
 {
-  while (*cur == '\\' && is_vspace (cur[1]))
-    cur = handle_newline (pfile, cur + 1);
+  if (*cur == '\\' && is_vspace (cur[1]))
+    {
+      do
+	cur = handle_newline (pfile, cur + 1);
+      while (*cur == '\\' && is_vspace (cur[1]));
+
+      if (cur == RLIMIT (pfile->context))
+	cpp_error (pfile, DL_PEDWARN,
+		   "backslash-newline at end of file");
+    }
 
   return cur;
 }
 
 /* CUR points to the character after the asterisk introducing a
-   comment.  Returns the position after the comment.  */
+   comment in the input buffer.  The remaining comment is copied to
+   the buffer pointed to by pfile->out.cur, which must be of
+   sufficient size, and pfile->out.cur is updated.  Unterminated
+   comments are diagnosed, and correctly terminated in the output.
+
+   Returns a pointer to the first character after the comment in the
+   input buffer.  */
 static const uchar *
-skip_comment (pfile, cur)
+copy_comment (pfile, cur)
      cpp_reader *pfile;
      const uchar *cur;
 {
   unsigned int from_line = pfile->line;
-  unsigned int c = 0, prevc = 0;
   const uchar *limit = RLIMIT (pfile->context);
+  uchar *out = pfile->out.cur;
 
   while (cur < limit)
     {
-      prevc = c;
-      c = *cur++;
+      unsigned int c = *cur++;
+      *out++ = c;
 
       if (c == '/')
 	{
-	  if (prevc == '*')
-	    break;
+	  /* An immediate slash does not terminate the comment.  */
+	  if (out[-2] == '*' && out > pfile->out.cur + 1)
+	    goto done;
+
 	  if (*cur == '*' && cur[1] != '/'
 	      && CPP_OPTION (pfile, warn_comments))
 	    cpp_error_with_line (pfile, DL_WARNING, pfile->line, 0,
 				 "\"/*\" within comment");
 	}
       else if (is_vspace (c))
-	cur = handle_newline (pfile, cur - 1);
+	{
+	  cur = handle_newline (pfile, cur - 1);
+	  /* Canonicalize newline sequences and skip escaped ones.  */
+	  if (out[-2] == '\\')
+	    out -= 2;
+	  else
+	    out[-1] = '\n';
+	}
     }
 
-  if (c != '/' || prevc != '*')
-    cpp_error_with_line (pfile, DL_ERROR, from_line, 0,
-			 "unterminated comment");
+  cpp_error_with_line (pfile, DL_ERROR, from_line, 0, "unterminated comment");
+  *out++ = '*';
+  *out++ = '/';
 
+ done:
+  pfile->out.cur = out;
   return cur;
 }
 
@@ -206,7 +230,7 @@ skip_whitespace (pfile, cur)
 	  tmp = skip_escaped_newlines (pfile, cur + 1);
 	  if (*tmp == '*')
 	    {
-	      cur = skip_comment (pfile, tmp + 1);
+	      cur = copy_comment (pfile, tmp + 1);
 	      continue;
 	    }
 	}
@@ -244,23 +268,6 @@ lex_identifier (pfile, cur)
 				       len, HT_ALLOC);
   pfile->out.cur = out;
   return result;
-}
-
-/* Reads an identifier, returning its hashnode.  If the next token is
-   not an identifier, returns NULL.  */
-cpp_hashnode *
-_cpp_lex_identifier_trad (pfile)
-     cpp_reader *pfile;
-{
-  const uchar *cur = skip_whitespace (pfile, CUR (pfile->context));
-
-  if (!is_idstart (*cur))
-    {
-      CUR (pfile->context) = cur;
-      return NULL;
-    }
-
-  return lex_identifier (pfile, cur);
 }
 
 /* Overlays the true file buffer temporarily with text of length LEN
@@ -381,7 +388,7 @@ scan_out_logical_line (pfile, macro)
 {
   cpp_context *context;
   const uchar *cur;
-  unsigned int c, paren_depth, quote = 0;
+  unsigned int c, paren_depth = 0, quote = 0;
   uchar *out;
   struct fun_macro fmacro;
 
@@ -466,7 +473,22 @@ scan_out_logical_line (pfile, macro)
 	    {
 	      cur = skip_escaped_newlines (pfile, cur);
 	      if (*cur == '*')
-		out--, cur = skip_comment (pfile, cur + 1);
+		{
+		  *out = '*';
+		  pfile->out.cur = out + 1;
+		  cur = copy_comment (pfile, cur + 1);
+
+		  /* Comments in directives become spaces so that
+		     tokens are properly separated when the ISO
+		     preprocessor re-lexes the line.  The exception
+		     is #define.  */
+		  if (pfile->state.in_directive && !macro)
+		    out[-1] = ' ';
+		  else if (CPP_OPTION (pfile, discard_comments))
+		    out -= 1;
+		  else
+		    out = pfile->out.cur;
+		}
 	    }
 	  break;
 
