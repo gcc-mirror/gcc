@@ -1,3 +1,8 @@
+2003-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Don't pass --with-stabs for mips*-sgi-irix6*o32.
+	* configure. Regenerate.
+
 2003-06-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Disable serial configure by default.

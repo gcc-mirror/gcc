@@ -1230,10 +1230,6 @@ fi
 # Default to using --with-stabs for certain targets.
 if test x${with_stabs} = x ; then
   case "${target}" in
-  mips*-*-irix6*o32)
-    with_stabs=yes;
-    extra_host_args="${extra_host_args} --with-stabs"
-    ;;
   mips*-*-irix6*)
     ;;
   mips*-*-* | alpha*-*-osf*)

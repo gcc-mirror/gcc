@@ -1,3 +1,12 @@
+2003-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris5gas.h (MDEBUG_ASM_SPEC): Override to match
+	DWARF 2 default.
+
+	* config/mips/dbxmdebug.h: New file.
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): Use it with
+	gas and --with-stabs.
+
 2003-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (can_move_by_pieces): align argument may be unused.
