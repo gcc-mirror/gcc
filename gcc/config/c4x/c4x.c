@@ -826,10 +826,15 @@ c4x_expand_prologue ()
 	  insn = emit_insn (gen_movqi (gen_rtx_REG (QImode, AR3_REGNO),
 				       gen_rtx_REG (QImode, SP_REGNO)));
           RTX_FRAME_RELATED_P (insn) = 1;
-	  /* FIXME: Assume ISR doesn't require more than 32767 words
-	     of local variables.  */
+	  /* We require that an ISR uses fewer than 32768 words of
+	     local variables, otherwise we have to go to lots of
+	     effort to save a register, load it with the desired size,
+	     adjust the stack pointer, and then restore the modified
+	     register.  Frankly, I think it is a poor ISR that
+	     requires more than 32767 words of local temporary
+	     storage!  */
 	  if (size > 32767)
-	    error ("ISR %s requires %d words of local vars, max is 32767.",
+	    fatal ("ISR %s requires %d words of local vars, max is 32767.",
 		   current_function_name, size);
 	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
 				        gen_rtx_REG (QImode, SP_REGNO),

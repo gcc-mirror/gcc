@@ -1,5 +1,10 @@
 2001-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.c (c4x_expand_prologue): Don't compile an ISR
+	with more than 32767 words of local storage.
+
+2001-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.c (c4x_init_builtins): Remove builtin support
 	for 'abs', 'labs', and 'fabs'.
 	(c4x_expand_builtin): Likewise.
