@@ -274,7 +274,7 @@ gcc_tooldir = @gcc_tooldir@
 # Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
 build_tooldir = $(exec_prefix)/$(target_alias)
 # Directory in which the compiler finds g++ includes.
-gxx_include_dir= @gxx_include_dir@
+gcc_gxx_include_dir= @gcc_gxx_include_dir@
 # Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
@@ -637,7 +637,7 @@ FLAGS_TO_PASS = \
 	"exec_prefix=$(exec_prefix)" \
 	"prefix=$(prefix)" \
 	"local_prefix=$(local_prefix)" \
-	"gxx_include_dir=$(gxx_include_dir)" \
+	"gxx_include_dir=$(gcc_gxx_include_dir)" \
 	"tooldir=$(tooldir)" \
 	"gcc_tooldir=$(gcc_tooldir)" \
 	"bindir=$(bindir)" \
@@ -1947,7 +1947,7 @@ cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status system.h \
            mbchar.h prefix.h Makefile.in
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
@@ -1981,7 +1981,7 @@ cppinit.o:  cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h \
 		cpphash.h prefix.h output.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
@@ -2004,7 +2004,7 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
    Makefile
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
@@ -2015,7 +2015,7 @@ unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) system.h Makefile
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \

@@ -1,3 +1,15 @@
+Tue Mar  2 09:24:10 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in (gxx_include_dir): Rename to
+	gcc_gxx_include_dir in order to prevent it being overridden by
+	a top level Makefile.
+	(gcc_tooldir): If $exec_prefix != $prefix then use the
+	difference between the two as the basis for gcc_tooldir.
+
+	* configure: Rebuild.
+
+	* Makefile.in: Rename gxx_include_dir to gcc_gxx_include_dir.
+
 Tue Mar  2 16:45:31 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* unroll.c (copy_loop_body): Don't make extra copies of
