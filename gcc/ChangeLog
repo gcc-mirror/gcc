@@ -1,3 +1,7 @@
+2003-04-30  Diego Novillo  <dnovillo@redhat.com>
+
+	* builtins.def (BUILTIN_CONSTANT_P): Mark as constant.
+
 2003-04-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree-inline.c (inlinable_function_p): Back out last change, it's
