@@ -2720,7 +2720,9 @@ ignore_library (name)
 }
 #endif /* COLLECT_EXPORT_LIST */
 
-extern char *ldgetname PARAMS ((struct ldfile *, void *));
+#if defined (HAVE_DECL_LDGETNAME) && !HAVE_DECL_LDGETNAME
+extern char *ldgetname PARAMS ((LDFILE *, GCC_SYMENT *));
+#endif
 
 /* COFF version to scan the name list of the loaded program for
    the symbols g++ uses for static constructors and destructors.
