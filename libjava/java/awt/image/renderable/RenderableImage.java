@@ -44,7 +44,7 @@ import java.util.Vector;
 
 public interface RenderableImage
 {
-  String HINTS_OBSERVED = "HINTS_OBSERVED";
+  static final String HINTS_OBSERVED = "HINTS_OBSERVED";
   Vector getSources();
   Object getProperty(String name);
   String[] getPropertyNames();

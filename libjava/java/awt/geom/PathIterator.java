@@ -59,24 +59,24 @@ public interface PathIterator
    * from the point to infinity (in any direction) crosses an odd number of
    * segments.
    */
-  int WIND_EVEN_ODD = 0;
+  static final int WIND_EVEN_ODD = 0;
 
   /**
    * The non-zero winding mode: a point is internal to the shape if a ray
    * from the point to infinity (in any direction) crosses a different number
    * of segments headed clockwise than those headed counterclockwise.
    */
-  int WIND_NON_ZERO = 1;
+  static final int WIND_NON_ZERO = 1;
 
   /**
    * Starts a new subpath. There is no segment from the previous vertex.
    */
-  int SEG_MOVETO = 0;
+  static final int SEG_MOVETO = 0;
 
   /**
    * The current segment is a line.
    */
-  int SEG_LINETO = 1;
+  static final int SEG_LINETO = 1;
 
   /**
    * The current segment is a quadratic parametric curve. It is interpolated
@@ -91,7 +91,7 @@ public interface PathIterator
    *         = n! / (m! * (n-m)!)
    * </pre>
    */
-  int SEG_QUADTO = 2;
+  static final int SEG_QUADTO = 2;
 
   /**
    * The current segment is a cubic parametric curve (more commonly known as
@@ -107,13 +107,13 @@ public interface PathIterator
    *         = n! / (m! * (n-m)!)
    * </pre>
    */
-  int SEG_CUBICTO = 3;
+  static final int SEG_CUBICTO = 3;
 
   /**
    * The current segment closes a loop by an implicit line to the previous
    * SEG_MOVETO coordinate.
    */
-  int SEG_CLOSE = 4;
+  static final int SEG_CLOSE = 4;
 
   /**
    * Returns the winding rule to determine which points are inside this path.

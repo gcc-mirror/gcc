@@ -1,3 +1,32 @@
+2002-11-07  Michael Koch <konqueror@gmx.de>
+
+	* java/awt/color/ICC_Profile.java:
+	Added missing constants.
+	* java/awt/color/ICC_ColorSpace.java
+	(getMinValue): Added dummy implementation.
+	(getMaxValue): Added dummy implementation.
+	* java/awt/datatransfer/DataFlavor.java
+	(imageFlavor): Added.
+	(isMimeTypeEqual): Must be final.
+	(getDefaultRepresentationClass): Must be non-static.
+	(getDefaultRepresentationClassAsString): Must be non-static.
+	* java/awt/dnd/DragSourceContext.java
+	(dragExit): Corrected argument.
+	(dragDropEnd): Corrected argument.
+	* java/awt/dnd/DragSourceListener.java.java
+	(dragExit): Corrected argument.
+	(dragDropEnd): Corrected argument.
+	* java/awt/font/TextHitInfo.java
+	(toString): Added stubbed implementation.
+	* java/awt/geom/PathIterator.java:
+	The constants must be static.
+	* java/awt/image/VolatileImage.java
+	(IMAGE_INCOMPATIBLE): Fixed typo.
+	* java/awt/image/renderable/RenderableImage.java
+	(HINTS_OBSERVED): Must be static.
+	* java/beans/BeanInfo.java:
+	Constants must be final.
+
 2002-11-06  Tom Tromey  <tromey@redhat.com>
 
 	From svens@it.uu.se.  For PR libgcj/8481.
