@@ -1,3 +1,8 @@
+Thu Oct  2 21:15:03 1997  Richard Henderson  <rth@cygnus.com>
+
+	* i386.h (RETURN_ADDR_RTX): New definition that works for 
+	__builtin_return_address(0) and -fomit-frame-pointer.
+
 Wed Oct  1 13:43:53 1997  Jim Wilson  <wilson@cygnus.com>
 
 	Bring over from FSF.
