@@ -1,3 +1,10 @@
+2002-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6706
+	* dwarfout.c (output_reg_number): Fix warning message.
+	(output_bound_representation): Check SAVE_EXPR_RTL is not NULL
+	before using it.
+	
 2002-07-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc/gcc.c (asm_debug): Move initialization ...
