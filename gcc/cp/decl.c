@@ -112,7 +112,6 @@ static int unary_op_p PARAMS ((tree));
 static tree store_bindings PARAMS ((tree, tree));
 static tree lookup_tag_reverse PARAMS ((tree, tree));
 static tree obscure_complex_init PARAMS ((tree, tree));
-static tree maybe_build_cleanup_1 PARAMS ((tree, tree));
 static tree lookup_name_real PARAMS ((tree, int, int, int));
 static void warn_extern_redeclared_static PARAMS ((tree, tree));
 static void grok_reference_init PARAMS ((tree, tree, tree));
@@ -13845,7 +13844,7 @@ finish_destructor_body ()
 
   exprstmt = build_delete (current_class_type,
 			   current_class_ref,
-			   integer_zero_node,
+			   sfk_base_destructor,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
 			   0);
 
@@ -14513,14 +14512,15 @@ hack_incomplete_structures (type)
     }
 }
 
-/* If DECL is of a type which needs a cleanup, build that cleanup here.
-   See build_delete for information about AUTO_DELETE.  */
+/* If DECL is of a type which needs a cleanup, build that cleanup
+   here.  */
 
-static tree
-maybe_build_cleanup_1 (decl, auto_delete)
-     tree decl, auto_delete;
+tree
+maybe_build_cleanup (decl)
+     tree decl;
 {
   tree type = TREE_TYPE (decl);
+
   if (type != error_mark_node && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     {
       int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
@@ -14539,7 +14539,8 @@ maybe_build_cleanup_1 (decl, auto_delete)
 	  || flag_expensive_optimizations)
 	flags |= LOOKUP_NONVIRTUAL;
 
-      rval = build_delete (TREE_TYPE (rval), rval, auto_delete, flags, 0);
+      rval = build_delete (TREE_TYPE (rval), rval,
+			   sfk_complete_destructor, flags, 0);
 
       if (TYPE_USES_VIRTUAL_BASECLASSES (type)
 	  && ! TYPE_HAS_DESTRUCTOR (type))
@@ -14549,16 +14550,6 @@ maybe_build_cleanup_1 (decl, auto_delete)
       return rval;
     }
   return 0;
-}
-
-/* If DECL is of a type which needs a cleanup, build that cleanup
-   here.  The cleanup does not free the storage with a call a delete.  */
-
-tree
-maybe_build_cleanup (decl)
-     tree decl;
-{
-  return maybe_build_cleanup_1 (decl, integer_two_node);
 }
 
 /* Expand a C++ expression at the statement level.

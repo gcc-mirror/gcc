@@ -38,7 +38,7 @@ static void expand_aggr_vbase_init_1 PARAMS ((tree, tree, tree, tree));
 static void construct_virtual_bases PARAMS ((tree, tree, tree, tree, tree));
 static void expand_aggr_init_1 PARAMS ((tree, tree, tree, tree, int));
 static void expand_default_init PARAMS ((tree, tree, tree, tree, int));
-static tree build_vec_delete_1 PARAMS ((tree, tree, tree, tree, int));
+static tree build_vec_delete_1 PARAMS ((tree, tree, tree, special_function_kind, int));
 static void perform_member_init PARAMS ((tree, tree, int));
 static void sort_base_init PARAMS ((tree, tree *, tree *));
 static tree build_builtin_delete_call PARAMS ((tree));
@@ -51,7 +51,7 @@ static tree get_temp_regvar PARAMS ((tree, tree));
 static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
 static tree build_new_1	PARAMS ((tree));
 static tree get_cookie_size PARAMS ((tree));
-static tree build_dtor_call PARAMS ((tree, tree, int));
+static tree build_dtor_call PARAMS ((tree, special_function_kind, int));
 static tree build_field_list PARAMS ((tree, tree, int *));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
@@ -276,7 +276,7 @@ perform_member_init (member, init, explicit)
 
       expr = build_component_ref (current_class_ref, member, NULL_TREE,
 				  explicit);
-      expr = build_delete (type, expr, integer_zero_node,
+      expr = build_delete (type, expr, sfk_base_destructor,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
       if (expr != error_mark_node)
@@ -2538,7 +2538,7 @@ build_new_1 (exp)
 static tree
 build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
      tree base, maxindex, type;
-     tree auto_delete_vec;
+     special_function_kind auto_delete_vec;
      int use_global_delete;
 {
   tree virtual_size;
@@ -2586,7 +2586,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
   body = NULL_TREE;
 
   body = tree_cons (NULL_TREE,
-		    build_delete (ptype, tbase, integer_two_node,
+		    build_delete (ptype, tbase, sfk_complete_destructor,
 				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
 		    body);
 
@@ -2608,9 +2608,8 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
  no_destructor:
   /* If the delete flag is one, or anything else with the low bit set,
      delete the storage.  */
-  if (auto_delete_vec == integer_zero_node)
-    deallocate_expr = integer_zero_node;
-  else
+  deallocate_expr = integer_zero_node;
+  if (auto_delete_vec != sfk_base_destructor)
     {
       tree base_tbd;
 
@@ -2634,15 +2633,11 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
 	  /* True size with header.  */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, cookie_size);
 	}
-      deallocate_expr = build_x_delete (base_tbd,
-					2 | use_global_delete,
-					virtual_size);
-      deallocate_expr = fold (build (COND_EXPR, void_type_node,
-				     fold (build (BIT_AND_EXPR,
-						  integer_type_node,
-						  auto_delete_vec,
-						  integer_one_node)),
-				     deallocate_expr, integer_zero_node));
+
+      if (auto_delete_vec == sfk_deleting_destructor)
+	deallocate_expr = build_x_delete (base_tbd,
+					  2 | use_global_delete,
+					  virtual_size);
     }
 
   if (loop && deallocate_expr != integer_zero_node)
@@ -2997,7 +2992,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
 			      build_binary_op (MINUS_EXPR, maxindex, 
 					       iterator),
 			      type,
-			      /*auto_delete_vec=*/integer_zero_node,
+			      sfk_base_destructor,
 			      /*use_global_delete=*/0);
       finish_cleanup (e, try_block);
     }
@@ -3039,60 +3034,42 @@ build_x_delete (addr, which_delete, virtual_size)
   return build_op_delete_call (code, addr, virtual_size, flags, NULL_TREE);
 }
 
-/* Call the destructor for EXP using the IN_CHARGE parameter.  FLAGS
-   are as for build_delete.  */
+/* Call the DTOR_KIND destructor for EXP.  FLAGS are as for
+   build_delete.  */
 
 static tree
-build_dtor_call (exp, in_charge, flags)
+build_dtor_call (exp, dtor_kind, flags)
      tree exp;
-     tree in_charge;
+     special_function_kind dtor_kind;
      int flags;
 {
-  tree name = NULL_TREE;
-  tree call1;
-  tree call2;
-  tree call3;
-  tree result;
+  tree name;
 
-  /* First, try to figure out statically which function to call.  */
-  in_charge = fold (in_charge);
-  if (tree_int_cst_equal (in_charge, integer_zero_node))
-    name = base_dtor_identifier;
-  else if (tree_int_cst_equal (in_charge, integer_one_node))
-    name = deleting_dtor_identifier;
-  else if (tree_int_cst_equal (in_charge, integer_two_node))
-    name = complete_dtor_identifier;
-  if (name)
-    return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
+  switch (dtor_kind)
+    {
+    case sfk_complete_destructor:
+      name = complete_dtor_identifier;
+      break;
 
-  /* If that didn't work, build the various alternatives.  */
-  call1 = build_method_call (exp, complete_dtor_identifier,
-			     NULL_TREE, NULL_TREE, flags);
-  call2 = build_method_call (exp, deleting_dtor_identifier,
-			     NULL_TREE, NULL_TREE, flags);
-  call3 = build_method_call (exp, base_dtor_identifier,
-			     NULL_TREE, NULL_TREE, flags);
+    case sfk_base_destructor:
+      name = base_dtor_identifier;
+      break;
 
-  /* Build the conditionals.  */
-  result = build (COND_EXPR, void_type_node,
-		  fold (build (BIT_AND_EXPR, integer_type_node,
-			       in_charge, integer_two_node)),
-		  call1,
-		  call3);
-  result = build (COND_EXPR, void_type_node,
-		  fold (build (BIT_AND_EXPR, integer_type_node,
-			       in_charge, integer_one_node)),
-		  call2,
-		  result);
-  return result;
+    case sfk_deleting_destructor:
+      name = deleting_dtor_identifier;
+      break;
+
+    default:
+      my_friendly_abort (20000524);
+    }
+  return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
    ADDR is an expression which yields the store to be destroyed.
-   AUTO_DELETE is nonzero if a call to DELETE should be made or not.
-   If in the program, (AUTO_DELETE & 2) is non-zero, we tear down the
-   virtual baseclasses.
-   If in the program, (AUTO_DELETE & 1) is non-zero, then we deallocate.
+   AUTO_DELETE is the name of the destructor to call, i.e., either
+   sfk_complete_destructor, sfk_base_destructor, or
+   sfk_deleting_destructor.
 
    FLAGS is the logical disjunction of zero or more LOOKUP_
    flags.  See cp-tree.h for more info.
@@ -3102,7 +3079,7 @@ build_dtor_call (exp, in_charge, flags)
 tree
 build_delete (type, addr, auto_delete, flags, use_global_delete)
      tree type, addr;
-     tree auto_delete;
+     special_function_kind auto_delete;
      int flags;
      int use_global_delete;
 {
@@ -3173,7 +3150,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
-      if (auto_delete == integer_zero_node)
+      if (auto_delete == sfk_base_destructor)
 	return void_zero_node;
 
       return build_op_delete_call
@@ -3187,28 +3164,19 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
      of the base classes; otherwise, we must do that here.  */
   if (TYPE_HAS_DESTRUCTOR (type))
     {
-      tree passed_auto_delete;
       tree do_delete = NULL_TREE;
       tree ifexp;
 
-      if (use_global_delete)
+      if (use_global_delete && auto_delete == sfk_deleting_destructor)
 	{
-	  tree cond = fold (build (BIT_AND_EXPR, integer_type_node,
-				   auto_delete, integer_one_node));
-	  tree call = build_builtin_delete_call (addr);
-
-	  cond = fold (build (COND_EXPR, void_type_node, cond,
-			      call, void_zero_node));
-	  if (cond != void_zero_node)
-	    do_delete = cond;
-
-	  passed_auto_delete = fold (build (BIT_AND_EXPR, integer_type_node,
-					    auto_delete, integer_two_node));
+	  /* Delete the object. */
+	  do_delete = build_builtin_delete_call (addr);
+	  /* Otherwise, treat this like a complete object destructor
+	     call.  */
+	  auto_delete = sfk_complete_destructor;
 	}
-      else
-	passed_auto_delete = auto_delete;
 
-      expr = build_dtor_call (ref, passed_auto_delete, flags);
+      expr = build_dtor_call (ref, auto_delete, flags);
       if (do_delete)
 	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 
@@ -3239,7 +3207,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       /* If we have member delete or vbases, we call delete in
 	 finish_function.  */
-      my_friendly_assert (auto_delete == integer_zero_node, 20000411);
+      my_friendly_assert (auto_delete == sfk_base_destructor, 20000411);
 
       /* Take care of the remaining baseclasses.  */
       for (i = 0; i < n_baseclasses; i++)
@@ -3264,7 +3232,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	    {
 	      tree this_member = build_component_ref (ref, DECL_NAME (member), NULL_TREE, 0);
 	      tree this_type = TREE_TYPE (member);
-	      expr = build_delete (this_type, this_member, integer_two_node, flags, 0);
+	      expr = build_delete (this_type, this_member,
+				   sfk_complete_destructor, flags, 0);
 	      exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	    }
 	}
@@ -3295,7 +3264,7 @@ build_vbase_delete (type, decl)
 			 addr, 0);
       result = tree_cons (NULL_TREE,
 			  build_delete (TREE_TYPE (this_addr), this_addr,
-					integer_zero_node,
+					sfk_base_destructor,
 					LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0),
 			  result);
       vbases = TREE_CHAIN (vbases);
@@ -3322,7 +3291,7 @@ build_vbase_delete (type, decl)
 tree
 build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
      tree base, maxindex;
-     tree auto_delete_vec;
+     special_function_kind auto_delete_vec;
      int use_global_delete;
 {
   tree type;
