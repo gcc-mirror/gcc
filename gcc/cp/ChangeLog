@@ -1,3 +1,8 @@
+2004-12-07  Roger Sayle  <roger@eyesopen.com>
+
+	* name-lookup.c (leave_scope): We only need to update
+	class_binding_level when leaving a class scope.
+
 2004-12-06  Ziemowit Laski  <zlaski@apple.com>
 
 	* cp-tree.h (struct lang_type_class): Add 'objc_protocols' field.
