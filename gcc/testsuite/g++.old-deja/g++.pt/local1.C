@@ -4,7 +4,7 @@ setback(MEMBER *bp, MEMBER STRUCT::*offset)
         if(!bp) return 0;
         union { int i; MEMBER STRUCT::*of; } u;
         u.of = offset;
-        return (STRUCT *) ((int) bp - u.i);
+        return (STRUCT *) ((__SIZE_TYPE__) bp - u.i);
 }
  
 

@@ -1,10 +1,18 @@
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
+	  * g++.old-deja/g++.brendan/code-gen2.C: Cast to size_t, not int.
+	  * g++.old-deja/g++.mike/warn1.C: Likewise.
+	  * g++.old-deja/g++.pt/local1.C: Likewise.
+	  * g++.old-deja/g++.pt/local7.C: Likewise.
+	  * g++.old-deja/g++.pt/spec16.C: Likewise.
+
 2000-05-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.abi/ptrflags.C: Correct and extend.
 
 2000-05-05  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
-        * g77.f-torture/execute/20000503-1.f:  New test.
+	  * g77.f-torture/execute/20000503-1.f:  New test.
 
 2000-05-04  Andreas Jaeger  <aj@suse.de>
 
@@ -62,7 +70,7 @@ Sun Apr 23 14:41:33 2000  Jeffrey A Law  (law@cygnus.com)
 
 Thu Apr 20 11:57:03 2000  Jeffrey A Law  (law@cygnus.com)
 
-        * gcc.c-torture/compile/20000420-1.c: New test.
+	  * gcc.c-torture/compile/20000420-1.c: New test.
 
 2000-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -397,7 +405,7 @@ Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
 2000-02-09  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* gcc.dg/special/ecos.exp: Use -static when testing --gc-sections
-        on native targets
+	  on native targets
 
 2000-02-08  Nathan Sidwell  <nathan@acm.org>
 
@@ -1413,7 +1421,7 @@ Mon Mar  1 23:29:14 1999  Jeffrey A Law  (law@cygnus.com)
 1999-02-27 13:34 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* lib/g++.exp: Don't add incdir=$base_dir/../include to
-        ALWAYS_CXXFLAGS.
+	  ALWAYS_CXXFLAGS.
 
 1999-02-24  Craig Burley  <craig@jcb-sc.com>
 
@@ -1483,11 +1491,11 @@ Wed Feb 10 13:08:12 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 Wed Feb 10 12:15:35 1999  Felix Lee  <flee@cygnus.com>
 
-        * lib/c-torture.exp (c-torture-compile): Pull out code for
-        analyzing gcc error messages.
-        (c-torture-execute): Likewise.  Fix some (harmless) false
-        positives.
-        * lib/gcc.exp (gcc_check_compile): New function.
+	  * lib/c-torture.exp (c-torture-compile): Pull out code for
+	  analyzing gcc error messages.
+	  (c-torture-execute): Likewise.  Fix some (harmless) false
+	  positives.
+	  * lib/gcc.exp (gcc_check_compile): New function.
 
 Mon Feb  8 21:42:57 1999  Richard Henderson  <rth@cygnus.com>
 
@@ -2480,11 +2488,11 @@ Mon Feb  9 02:08:47 1998  H.J. Lu  (hjl@gnu.org)
 
 	* lib/g77.exp (g77_target_compile): Fix multilibs for libf2c.
 
-        * lib/old-dejagnu.exp (old-dejagnu): Added the
-        "execution test - XFAIL *-*-*" handling in the spirit of
-        "excess errors test -". Changed the "execution test fails"
-        handling to be like "excess errors test fails".
-        * Update various tests accordingly.
+	  * lib/old-dejagnu.exp (old-dejagnu): Added the
+	  "execution test - XFAIL *-*-*" handling in the spirit of
+	  "excess errors test -". Changed the "execution test fails"
+	  handling to be like "excess errors test fails".
+	  * Update various tests accordingly.
 
 Fri Feb  6 14:30:48 1998  Jim Wilson  <wilson@cygnus.com>
 
@@ -2504,7 +2512,7 @@ Mon Dec  8 23:55:26 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Tue Nov 25 16:18:51 1997  Kate Hedstrom  (kate@ahab.rutgers.edu)
 
-        * lib/f-torture.exp: Improve error and loop detection.
+	  * lib/f-torture.exp: Improve error and loop detection.
 
 Wed Nov 19 14:27:04 1997  Michael Meissner  <meissner@cygnus.com>
 
@@ -2562,7 +2570,7 @@ Thu Sep 11 09:53:40 1997  Joe Buck  (jbuck@synopsys.com)
 
 Fri Sep  5 00:21:42 1997  Jeffrey A Law  (law@cygnus.com)
 
-        * gcc.c-torture/execute/cbrt.c: Tweak to work on more targets.
+	  * gcc.c-torture/execute/cbrt.c: Tweak to work on more targets.
 
 Wed Sep  3 17:29:35 1997  Bob Manson  <manson@charmed.cygnus.com>
 
@@ -2790,9 +2798,9 @@ Fri Feb  7 12:55:45 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 Fri Feb  7 10:41:53 1997  Jeffrey A Law  (law@cygnus.com)
 
-        * 941014-2.c: Include stdlib.h
-        * 960327-1.c: Include stdio.h
-        * dbra.c, index-1.c: Don't assume ints are 32bits.
+	  * 941014-2.c: Include stdlib.h
+	  * 960327-1.c: Include stdio.h
+	  * dbra.c, index-1.c: Don't assume ints are 32bits.
 
 Tue Feb  4 12:51:09 1997  Bob Manson  <manson@charmed.cygnus.com>
 
@@ -2874,7 +2882,7 @@ Wed Jan  8 14:43:07 1997  Jim Wilson  <wilson@cygnus.com>
 
 Wed Nov 13 16:04:19 1996  Joern Rennecke <amylaar@cygnus.com>
 
-        * gcc.c-torture/execute/{loop-2e.c,loop-2f.c}: Only use
+	  * gcc.c-torture/execute/{loop-2e.c,loop-2f.c}: Only use
 	MAP_ANON / MAP_ANONYMOUS if defined;
 	else try to map from /dev/zero .
 
@@ -3137,7 +3145,7 @@ Mon Oct 16 23:13:32 1995  Brendan Kehoe  <brendan@cygnus.com>
 
 Mon Oct 16 19:28:32 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
-        * g++.old-deja/old-deja.exp: Add $LIBS at the end of the args.
+	  * g++.old-deja/old-deja.exp: Add $LIBS at the end of the args.
 
 Mon Oct 16 13:48:58 1995  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -3360,7 +3368,7 @@ Thu Jun  1 00:06:19 1995  Jeff Law  (law@snake.cs.utah.edu)
 Wed May 31 14:25:13 1995  Doug Evans  <dje@canuck.cygnus.com>
 
 	* gcc.c-torture/execute/{920410-1.c,921113-1.c,921208-2.c,
-        930106-1.c,memcpy-1.c}: Use STACK_SIZE if defined.
+	  930106-1.c,memcpy-1.c}: Use STACK_SIZE if defined.
 
 Tue May 30 11:19:54 1995  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -3423,7 +3431,7 @@ Wed Mar 29 16:34:03 1995  Torbjorn Granlund  <tege@adder.cygnus.com>
 
 Tue Mar 28 16:10:33 1995  J.T. Conklin  <jtc@rtl.cygnus.com>
 
-        * config/bug.exp (${tool}_load): Updated to use new remote_open
+	  * config/bug.exp (${tool}_load): Updated to use new remote_open
 	  and remote_close procs.
 	* config/idp.exp: New file.
 
@@ -4012,37 +4020,37 @@ Sat May 21 10:39:38 1994  Bill Cox  (bill@rtl.cygnus.com)
 Thu May 19 18:00:03 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config/sim.exp, config/udi.exp, config/unix.exp, config/vx.exp, 
-          g++.brendan/alignof.exp, g++.brendan/arm3.exp, g++.brendan/code-gen5.exp,
-          g++.brendan/crash29.exp, g++.brendan/crash5.exp, g++.brendan/cvt3.exp,
-          g++.brendan/delete1.exp, g++.brendan/nest12.exp, g++.brendan/nest13.exp,
-          g++.brendan/overload3.exp, g++.brendan/redecl1.exp, g++.brendan/visibility2.exp,
-          g++.jason/cond.exp, g++.jason/hmc1.exp, g++.jason/report.exp,
-          g++.law/access1.exp, g++.law/access2.exp, g++.law/arg6.exp, 
-          g++.law/arg7.exp, g++.law/arg8.exp, g++.law/arm1.exp, 
-          g++.law/arm10.exp, g++.law/arm4.exp, g++.law/arm5.exp,
-          g++.law/ctors15.exp, g++.law/ctors19.exp, g++.law/cvt1.exp,
-          g++.law/cvt12.exp, g++.law/cvt13.exp, g++.law/cvt18.exp, 
-          g++.law/cvt22.exp, g++.law/cvt3.exp, g++.law/cvt5.exp, 
-          g++.law/cvt6.exp, g++.law/cvt8.exp, g++.law/dtors3.exp, 
-          g++.law/except1.exp, g++.law/except3.exp, g++.law/except4.exp,
-          g++.law/except5.exp, g++.law/except6.exp, g++.law/init5.exp, 
-          g++.law/init8.exp, g++.law/inline4.exp, g++.law/memoized1.exp,
-          g++.law/missing1.exp, g++.law/operators14.exp, g++.law/operators18.exp,
-          g++.law/operators9.exp, g++.law/scope2.exp, g++.law/temps2.exp,
-          g++.law/temps3.exp, g++.law/temps5.exp, g++.law/typeck2.exp, 
-          g++.mike/misc4.exp, g++.mike/misc6.exp, g++.niklas/t118.exp,
-          g++.niklas/t128.exp, g++.niklas/t138.exp, g++.niklas/t139.exp,
-          g++.niklas/t140.exp, g++.niklas/t141.exp, gcc.code_quality/code_quality.exp,
-          gcc.compile/compile.exp, gcc.dje/dje.exp, gcc.execute/execute.exp, 
-          gcc.failure/failure.exp, gcc.ieee/ieee.exp, gcc.noncompile/noncompile.exp,
-          gcc.special/special.exp, gcc.unsorted/unsorted.exp, lib/c-torture.exp,
-          lib/chill.exp, lib/g++.exp, lib/gcc.exp, lib/mike-g++.exp, lib/mike-gcc.exp,
-          lib/old-dejagnu.exp: Checkin Rob's 94Q1 testing changes.
+	    g++.brendan/alignof.exp, g++.brendan/arm3.exp, g++.brendan/code-gen5.exp,
+	    g++.brendan/crash29.exp, g++.brendan/crash5.exp, g++.brendan/cvt3.exp,
+	    g++.brendan/delete1.exp, g++.brendan/nest12.exp, g++.brendan/nest13.exp,
+	    g++.brendan/overload3.exp, g++.brendan/redecl1.exp, g++.brendan/visibility2.exp,
+	    g++.jason/cond.exp, g++.jason/hmc1.exp, g++.jason/report.exp,
+	    g++.law/access1.exp, g++.law/access2.exp, g++.law/arg6.exp, 
+	    g++.law/arg7.exp, g++.law/arg8.exp, g++.law/arm1.exp, 
+	    g++.law/arm10.exp, g++.law/arm4.exp, g++.law/arm5.exp,
+	    g++.law/ctors15.exp, g++.law/ctors19.exp, g++.law/cvt1.exp,
+	    g++.law/cvt12.exp, g++.law/cvt13.exp, g++.law/cvt18.exp, 
+	    g++.law/cvt22.exp, g++.law/cvt3.exp, g++.law/cvt5.exp, 
+	    g++.law/cvt6.exp, g++.law/cvt8.exp, g++.law/dtors3.exp, 
+	    g++.law/except1.exp, g++.law/except3.exp, g++.law/except4.exp,
+	    g++.law/except5.exp, g++.law/except6.exp, g++.law/init5.exp, 
+	    g++.law/init8.exp, g++.law/inline4.exp, g++.law/memoized1.exp,
+	    g++.law/missing1.exp, g++.law/operators14.exp, g++.law/operators18.exp,
+	    g++.law/operators9.exp, g++.law/scope2.exp, g++.law/temps2.exp,
+	    g++.law/temps3.exp, g++.law/temps5.exp, g++.law/typeck2.exp, 
+	    g++.mike/misc4.exp, g++.mike/misc6.exp, g++.niklas/t118.exp,
+	    g++.niklas/t128.exp, g++.niklas/t138.exp, g++.niklas/t139.exp,
+	    g++.niklas/t140.exp, g++.niklas/t141.exp, gcc.code_quality/code_quality.exp,
+	    gcc.compile/compile.exp, gcc.dje/dje.exp, gcc.execute/execute.exp, 
+	    gcc.failure/failure.exp, gcc.ieee/ieee.exp, gcc.noncompile/noncompile.exp,
+	    gcc.special/special.exp, gcc.unsorted/unsorted.exp, lib/c-torture.exp,
+	    lib/chill.exp, lib/g++.exp, lib/gcc.exp, lib/mike-g++.exp, lib/mike-gcc.exp,
+	    lib/old-dejagnu.exp: Checkin Rob's 94Q1 testing changes.
 
 Tue May 17 14:55:09 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* config/udi.exp, gcc.execute/execute.exp, gcc.wendy/wendy.exp,
-          lib/g++.exp, lib/old-dejagnu.exp: Replace error proc calls
+	    lib/g++.exp, lib/old-dejagnu.exp: Replace error proc calls
 	  with perror calls.
 
 Mon May  2 17:41:13 1994  Jason Merrill  (jason@deneb.cygnus.com)
@@ -4102,9 +4110,9 @@ Wed Mar  9 15:22:54 1994  Doug Evans  (dje@canuck.cygnus.com)
 
 Thu Feb 24 07:15:18 1994  Jeffrey A. Law  (law@snake.cs.utah.edu)
 
-        * gcc.special/920717-x.c: Fix typo.
-        * gcc.special/special.exp (920717-x.c): Use $srcdir/$subdir to
-        get at sources.
+	  * gcc.special/920717-x.c: Fix typo.
+	  * gcc.special/special.exp (920717-x.c): Use $srcdir/$subdir to
+	  get at sources.
 
 	* lib/mike-gcc.exp: Fix typo.
 
@@ -4336,7 +4344,7 @@ Mon Aug 23 14:24:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Tue Aug 17 15:42:07 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-        * Add PR-related files to Makefiles, .cvsignore files, etc.
+	  * Add PR-related files to Makefiles, .cvsignore files, etc.
 
 Mon Aug  2 15:46:05 PDT 1993  Jeff Wheat  (cassidy@cygnus.com)
 
@@ -4375,15 +4383,15 @@ Sat Jun 19 07:13:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
     This should complete moving the CHILL test files.
 	* chill.noncompile(.cvsignore printf.grt 
-          in-printf.grt chprintf.grt chprintf.ch):
-          Added test-support files.
+	    in-printf.grt chprintf.grt chprintf.ch):
+	    Added test-support files.
 	  (Makefile): Modified further.
 	* chill.compile (emptymod.ch gdbme.ch neg_range.ch
-          signal.ch): Added test files.
-        * chill.execute (.cvsignore printf.grt printr.c
-          in-printf.grt rts.c chprintf.grt rts.h): Added
+	    signal.ch): Added test files.
+	  * chill.execute (.cvsignore printf.grt printr.c
+	    in-printf.grt rts.c chprintf.grt rts.h): Added
 	  test-support files.
-          (Makefile): More corrections.
+	    (Makefile): More corrections.
 
 Fri Jun 18 23:40:54 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -4486,7 +4494,7 @@ Mon Apr 12 15:15:37 1993  Mike Werner  (mtw@deneb.cygnus.com)
 
 Sun Apr 11 17:22:37 1993  Rob Savoye  (rob at darkstar.cygnus.com)
 
-        * lib/gcc.exp: Exits gracefully if $CC is bogus.
+	  * lib/gcc.exp: Exits gracefully if $CC is bogus.
 
 Fri Apr  9 09:41:59 1993  Mike Werner  (mtw@deneb.cygnus.com)
 
