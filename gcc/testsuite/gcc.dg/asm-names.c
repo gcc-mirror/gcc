@@ -21,3 +21,7 @@ main (void)
 extern int xmain (void) asm ("main");
 
 int xmain (void) { return main(); }
+
+/* In case built where the runtime calls __main.  */
+extern int ymain (void) asm ("___main");
+int ymain (void) { return main(); }
