@@ -262,9 +262,8 @@ struct gcc_target
        fourth argument is the cost of the dependence as estimated by
        the scheduler.  The last argument is the distance in cycles 
        between the already scheduled insn (first parameter) and the
-       the second insn (second parameter).
-    */
-    bool (* is_costly_dependence) PARAMS ((rtx, rtx, rtx, int, int));
+       the second insn (second parameter).  */
+    bool (* is_costly_dependence) (rtx, rtx, rtx, int, int);
   } sched;
 
   /* Given two decls, merge their attributes and return the result.  */

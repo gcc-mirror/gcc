@@ -2087,7 +2087,7 @@ extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
 #endif
 /* In web.c */
-extern void web_main			PARAMS ((void));
+extern void web_main (void);
 
 /* In sched.c.  */
 #ifdef BUFSIZ

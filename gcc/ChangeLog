@@ -1,3 +1,9 @@
+2003-12-01  Steven Bosscher  <stevenb@suse.de>
+
+	* function.c (update_epilogue_consts): Don't use PARAMS.
+	* rtl.h (web_main): Ditto.
+	* target.h (is_costly_dependence): Ditto
+
 2003-12-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/7847
