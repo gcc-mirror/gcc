@@ -789,6 +789,7 @@ extern int fixuplabelno;
 #define TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
 #define TARGET_STRIP_NAME_ENCODING  rs6000_elf_strip_name_encoding
 #define TARGET_IN_SMALL_DATA_P  rs6000_elf_in_small_data_p
+#define TARGET_SECTION_TYPE_FLAGS  rs6000_elf_section_type_flags
 
 /* The ELF version doesn't encode [DS] or whatever at the end of symbols.  */
 
