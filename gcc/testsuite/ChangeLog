@@ -1,3 +1,12 @@
+2004-10-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17435
+	* g++.dg/init/ref12.C: New test.
+
+	PR c++/18140
+	* g++.dg/template/shift1.C: New test.
+	* g++.dg/template/error10.C: Adjust error markers.
+
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/17529

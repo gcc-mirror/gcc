@@ -4239,7 +4239,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	expr = decl_constant_value (expr);
       if (convs->check_copy_constructor_p)
 	check_constructor_callable (totype, expr);
-	return expr;
+      return expr;
     case ck_ambig:
       /* Call build_user_type_conversion again for the error.  */
       return build_user_type_conversion
@@ -6467,7 +6467,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
       conv = conv->u.next;
       /* If the next conversion is a BASE_CONV, skip that too -- but
 	 remember that the conversion was required.  */
-      if (conv->kind == ck_base && conv->need_temporary_p)
+      if (conv->kind == ck_base)
 	{
 	  if (conv->check_copy_constructor_p)
  	    check_constructor_callable (TREE_TYPE (expr), expr);
@@ -6537,6 +6537,11 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	    }
 	  /* Use its address to initialize the reference variable.  */
 	  expr = build_address (var);
+	  if (base_conv_type)
+	    expr = convert_to_base (expr, 
+				    build_pointer_type (base_conv_type),
+				    /*check_access=*/true,
+				    /*nonnull=*/true);
 	  expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
 	}
       else
