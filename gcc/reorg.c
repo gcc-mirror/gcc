@@ -1997,6 +1997,11 @@ redundant_insn (insn, target, delay_list)
   struct resources needed, set;
   int i;
 
+  /* If INSN has any REG_UNUSED notes, it can't match anything since we
+     are allowed to not actually assign to such a register.  */
+  if (find_reg_note (insn, REG_UNUSED, NULL_RTX) != 0)
+    return 0;
+
   /* Scan backwards looking for a match.  */
   for (trial = PREV_INSN (target); trial; trial = PREV_INSN (trial))
     {
@@ -2035,7 +2040,8 @@ redundant_insn (insn, target, delay_list)
 	     resource requirements as we go.  */
 	  for (i = XVECLEN (pat, 0) - 1; i > 0; i--)
 	    if (GET_CODE (XVECEXP (pat, 0, i)) == GET_CODE (insn)
-		&& rtx_equal_p (PATTERN (XVECEXP (pat, 0, i)), ipat))
+		&& rtx_equal_p (PATTERN (XVECEXP (pat, 0, i)), ipat)
+		&& ! find_reg_note (XVECEXP (pat, 0, i), REG_UNUSED, NULL_RTX))
 	      break;
 
 	  /* If found a match, exit this loop early.  */
@@ -2043,7 +2049,8 @@ redundant_insn (insn, target, delay_list)
 	    break;
 	}
 
-      else if (GET_CODE (trial) == GET_CODE (insn) && rtx_equal_p (pat, ipat))
+      else if (GET_CODE (trial) == GET_CODE (insn) && rtx_equal_p (pat, ipat)
+	       && ! find_reg_note (trial, REG_UNUSED, NULL_RTX))
 	break;
     }
 
