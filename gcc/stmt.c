@@ -1246,7 +1246,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      f->before_jump
 		= emit_insns_after (cleanup_insns, f->before_jump);
 
-	      TREE_VALUE (lists) = 0;
+	      f->cleanup_list_list = TREE_CHAIN (lists);
 	    }
 
 	if (stack_level)
