@@ -6867,7 +6867,6 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	      enum rtx_code cmp_code;
 	      int comparison_const_width;
 	      unsigned HOST_WIDE_INT comparison_sign_mask;
-	      rtx vtop;
 
 	      add_val = INTVAL (bl->biv->add_val);
 	      comparison_value = XEXP (comparison, 1);
@@ -6914,25 +6913,6 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  initial_value = const0_rtx;
 		}
 
-	      /* Check if there is a NOTE_INSN_LOOP_VTOP note.  If there is,
-		 that means that this is a for or while style loop, with
-		 a loop exit test at the start.  Thus, we can assume that
-		 the loop condition was true when the loop was entered.
-		 This allows us to change the loop exit condition to an
-		 equality test.
-		 We start at the end and search backwards for the previous
-		 NOTE.  If there is no NOTE_INSN_LOOP_VTOP for this loop,
-		 the search will stop at the NOTE_INSN_LOOP_CONT.  */
-	      vtop = loop_end;
-	      do
-		vtop = PREV_INSN (vtop);
-	      while (GET_CODE (vtop) != NOTE
-		     || NOTE_LINE_NUMBER (vtop) > 0
-		     || NOTE_LINE_NUMBER (vtop) == NOTE_REPEATED_LINE_NUMBER
-		     || NOTE_LINE_NUMBER (vtop) == NOTE_INSN_DELETED);
-	      if (NOTE_LINE_NUMBER (vtop) != NOTE_INSN_LOOP_VTOP)
-		vtop = NULL_RTX;
-		
 	      /* First check if we can do a vanilla loop reversal.  */
 	      if (initial_value == const0_rtx
 		  /* If we have a decrement_and_branch_on_count, prefer
@@ -6941,7 +6921,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		     reversal if the biv is used to calculate a giv or has
 		     a non-counting use.  */
 #if ! defined (HAVE_decrement_and_branch_until_zero) && defined (HAVE_decrement_and_branch_on_count)
-		  && (! (add_val == 1 && vtop
+		  && (! (add_val == 1 && loop_info->vtop
 		         && (bl->biv_count == 0
 			     || no_use_except_counting)))
 #endif
@@ -6956,7 +6936,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  nonneg = 1;
 		  cmp_code = GE;
 		}
-	      else if (add_val == 1 && vtop
+	      else if (add_val == 1 && loop_info->vtop
 		       && (bl->biv_count == 0
 			   || no_use_except_counting))
 		{

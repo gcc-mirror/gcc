@@ -1,3 +1,14 @@
+Wed Dec 16 17:24:07 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.h (loop_info): New field 'vtop'.
+	* loop.c (check_dbra_loop):  Use loop_info->vtop rather than
+	scanning loop for vtop.
+	* unroll.c (subtract_reg_term, find_common_reg_term): New functions.
+	(loop_iterations): Use them to determine if loop has a constant
+ 	number of iterations.  Set loop_info->vtop.  Don't subtract
+	common reg term from initial_value and final_value if have a
+	do-while loop.
+
 Tue Dec 15 13:49:55 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.md (bset, bclr): Operand 0 is a read/write operand.

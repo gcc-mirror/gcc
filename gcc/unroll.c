@@ -3394,6 +3394,72 @@ loop_find_equiv_value (loop_start, reg)
 }
 
 
+/* Return a simplified rtx for the expression OP - REG.
+
+   REG must appear in OP, and OP must be a register or the sum of a register
+   and a second term.
+
+   Thus, the return value must be const0_rtx or the second term.
+
+   The caller is responsible for verifying that REG appears in OP and OP has
+   the proper form.  */
+
+static rtx
+subtract_reg_term (op, reg)
+     rtx op, reg;
+{
+  if (op == reg)
+    return const0_rtx;
+  if (GET_CODE (op) == PLUS)
+    {
+      if (XEXP (op, 0) == reg)
+	return XEXP (op, 1);
+      else if (XEXP (op, 1) == reg)
+	return XEXP (op, 0);
+    }
+  /* OP does not contain REG as a term.  */
+  abort ();
+}
+
+
+/* Find and return register term common to both expressions OP0 and
+   OP1 or NULL_RTX if no such term exists.  Each expression must be a
+   REG or a PLUS of a REG.  */
+
+static rtx
+find_common_reg_term (op0, op1)
+     rtx op0, op1;
+{
+  if ((GET_CODE (op0) == REG || GET_CODE (op0) == PLUS)
+      && (GET_CODE (op1) == REG || GET_CODE (op1) == PLUS))
+    {
+      rtx op00;
+      rtx op01;
+      rtx op10;
+      rtx op11;
+
+      if (GET_CODE (op0) == PLUS)
+	op01 = XEXP (op0, 1), op00 = XEXP (op0, 0);
+      else
+	op01 = const0_rtx, op00 = op0;
+
+      if (GET_CODE (op1) == PLUS)
+	op11 = XEXP (op1, 1), op10 = XEXP (op1, 0);
+      else
+	op11 = const0_rtx, op10 = op1;
+
+      /* Find and return common register term if present.  */
+      if (REG_P (op00) && (op00 == op10 || op00 == op11))
+	return op00;
+      else if (REG_P (op01) && (op01 == op10 || op01 == op11))
+	return op01;
+    }
+
+  /* No common register term found.  */
+  return NULL_RTX;
+}
+
+
 /* Calculate the number of loop iterations.  Returns the exact number of loop
    iterations if it can be calculated, otherwise returns zero.  */
 
@@ -3411,6 +3477,8 @@ loop_iterations (loop_start, loop_end, loop_info)
   int increment_dir;
   int unsigned_p, compare_dir, final_larger;
   rtx last_loop_insn;
+  rtx vtop;
+  rtx reg_term;
 
   loop_info->n_iterations = 0;
   loop_info->initial_value = 0;
@@ -3421,6 +3489,7 @@ loop_iterations (loop_start, loop_end, loop_info)
   loop_info->increment = 0;
   loop_info->iteration_var = 0;
   loop_info->unroll_number = 1;
+  loop_info->vtop = 0;
 
   /* First find the iteration variable.  If the last insn is a conditional
      branch, and the insn before tests a register value, make that the
@@ -3447,6 +3516,25 @@ loop_iterations (loop_start, loop_end, loop_info)
   comparison_code = GET_CODE (comparison);
   iteration_var = XEXP (comparison, 0);
   comparison_value = XEXP (comparison, 1);
+  
+  /* Check if there is a NOTE_INSN_LOOP_VTOP note.  If there is,
+     that means that this is a for or while style loop, with
+     a loop exit test at the start.  Thus, we can assume that
+     the loop condition was true when the loop was entered.
+
+     We start at the end and search backwards for the previous
+     NOTE.  If there is no NOTE_INSN_LOOP_VTOP for this loop,
+     the search will stop at the NOTE_INSN_LOOP_CONT.  */
+  vtop = loop_end;
+  do
+    vtop = PREV_INSN (vtop);
+  while (GET_CODE (vtop) != NOTE
+	 || NOTE_LINE_NUMBER (vtop) > 0
+	 || NOTE_LINE_NUMBER (vtop) == NOTE_REPEATED_LINE_NUMBER
+	 || NOTE_LINE_NUMBER (vtop) == NOTE_INSN_DELETED);
+  if (NOTE_LINE_NUMBER (vtop) != NOTE_INSN_LOOP_VTOP)
+    vtop = NULL_RTX;
+  loop_info->vtop = vtop;
 
   if (GET_CODE (iteration_var) != REG)
     {
@@ -3545,63 +3633,85 @@ loop_iterations (loop_start, loop_end, loop_info)
   loop_info->iteration_var = iteration_var;
   loop_info->comparison_code = comparison_code;
 
+  /* Try to determine the iteration count for loops such
+     as (for i = init; i < init + const; i++).  When running the
+     loop optimization twice, the first pass often converts simple
+     loops into this form.  */
+
   if (REG_P (initial_value))
     {
-      rtx temp = final_value;
+      rtx reg1;
+      rtx reg2;
+      rtx const2;
 
-      /* initial_value = reg1, final_value = reg2 + const, where reg1
-	 != reg2.  Try to find what reg1 is equivalent to.  Hopefully
-	 it will either be reg2 or reg2 plus a constant.  */
-      if (GET_CODE (temp) == PLUS)
-	temp = XEXP (temp, 0);
-      if (REG_P (temp) && REGNO (temp) != REGNO (initial_value))
-	initial_value = loop_find_equiv_value (loop_start, initial_value);
+      reg1 = initial_value;
+      if (GET_CODE (final_value) == PLUS)
+	reg2 = XEXP (final_value, 0), const2 = XEXP (final_value, 1);
+      else
+	reg2 = final_value, const2 = const0_rtx;
+
+      /* Check for initial_value = reg1, final_value = reg2 + const2,
+	 where reg1 != reg2.  */
+      if (REG_P (reg2) && reg2 != reg1)
+	{
+	  rtx temp;
+
+	  /* Find what reg1 is equivalent to.  Hopefully it will
+	     either be reg2 or reg2 plus a constant.  */
+	  temp = loop_find_equiv_value (loop_start, reg1);
+	  if (find_common_reg_term (temp, reg2))
+	    initial_value = temp;
+	  else
+	    {
+	      /* Find what reg2 is equivalent to.  Hopefully it will
+		 either be reg1 or reg1 plus a constant.  Let's ignore
+		 the latter case for now since it is not so common.  */
+	      temp = loop_find_equiv_value (loop_start, reg2);
+	      if (temp == loop_info->iteration_var)
+		temp = initial_value;
+	      if (temp == reg1)
+		final_value = (const2 == const0_rtx)
+		  ? reg1 : gen_rtx_PLUS (GET_MODE (reg1), reg1, const2);
+	    }
+	}
+      else if (loop_info->vtop && GET_CODE (reg2) == CONST_INT)
+	{
+	  rtx temp;
+
+	  /*  When running the loop optimizer twice, check_dbra_loop
+	      further obfuscates reversible loops of the form:
+	      for (i = init; i < init + const; i++).  We often end up with
+	      final_value = 0, initial_value = temp, temp = temp2 - init,
+	      where temp2 = init + const.  If the loop has a vtop we
+	      can replace initial_value with const.  */
+
+	  temp = loop_find_equiv_value (loop_start, reg1);
+	  if (GET_CODE (temp) == MINUS && REG_P (XEXP (temp, 0)))
+	    {
+	      rtx temp2 = loop_find_equiv_value (loop_start, XEXP (temp, 0));
+	      if (GET_CODE (temp2) == PLUS
+		  && XEXP (temp2, 0) == XEXP (temp, 1))
+		initial_value = XEXP (temp2, 1);
+	    }
+	}
     }
-
+  
   /* If have initial_value = reg + const1 and final_value = reg +
      const2, then replace initial_value with const1 and final_value
      with const2.  This should be safe since we are protected by the
-     initial comparison before entering the loop.  */
-  if ((GET_CODE (initial_value) == REG || GET_CODE (initial_value) == PLUS)
-      && (GET_CODE (final_value) == REG || GET_CODE (final_value) == PLUS))
+     initial comparison before entering the loop if we have a vtop.
+     For example, a + b < a + c is not equivalent to b < c for all a
+     when using modulo arithmetic.
+
+     ??? Without a vtop we could still perform the optimization if we check
+     the initial and final values carefully.  */
+  if (loop_info->vtop 
+      && (reg_term = find_common_reg_term (initial_value, final_value)))
     {
-      rtx init_op0;
-      rtx fini_op0;
-      rtx init_op1;
-      rtx fini_op1;
-
-      if (GET_CODE (initial_value) == PLUS)
-	init_op1 = XEXP (initial_value, 1), init_op0 = XEXP (initial_value, 0);
-      else
-	init_op1 = const0_rtx, init_op0 = initial_value;
-
-      if (GET_CODE (final_value) == PLUS)
-	fini_op1 = XEXP (final_value, 1), fini_op0 = XEXP (final_value, 0);
-      else
-	fini_op1 = const0_rtx, fini_op0 = final_value;
-
-      /* Remove register common factor if present.  */
-      if (REG_P (init_op0) && init_op0 == fini_op0)
-	{
-	  initial_value = init_op1;
-	  final_value = fini_op1;
-	}
-      else if (REG_P (init_op0) && init_op0 == fini_op1)
-	{
-	  initial_value = init_op1;
-	  final_value = fini_op0;
-	}
-      else if (REG_P (init_op1) && init_op1 == fini_op0)
-	{
-	  initial_value = init_op0;
-	  final_value = fini_op1;
-	}
-      else if (REG_P (init_op1) && init_op1 == fini_op1)
-	{
-	  initial_value = init_op0;
-	  final_value = fini_op0;
-	}
+      initial_value = subtract_reg_term (initial_value, reg_term);
+      final_value = subtract_reg_term (final_value, reg_term);
     }
+
   loop_info->initial_equiv_value = initial_value;
   loop_info->final_equiv_value = final_value;
   
