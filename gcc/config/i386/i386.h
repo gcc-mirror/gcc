@@ -2718,9 +2718,11 @@ number as al, and ax.
 
 /* How to renumber registers for dbx and gdb.  */
 
-#define DBX_REGISTER_NUMBER(n)  dbx_register_map[n]
+#define DBX_REGISTER_NUMBER(n) \
+  (TARGET_64BIT ? dbx64_register_map[n] : dbx_register_map[n])
 
 extern int const dbx_register_map[FIRST_PSEUDO_REGISTER];
+extern int const dbx64_register_map[FIRST_PSEUDO_REGISTER];
 extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
@@ -2730,14 +2732,14 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT) == 0								\
-   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -4))\
-   : gen_rtx_MEM (Pmode, plus_constant (FRAME, 4)))
+   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, TARGET_64BIT ? -8 : -4))\
+   : gen_rtx_MEM (Pmode, plus_constant (FRAME, TARGET_64BIT ? 8 : 4)))
 
 /* PC is dbx register 8; let's use that column for RA. */
-#define DWARF_FRAME_RETURN_COLUMN 	8
+#define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
 
 /* Before the prologue, the top of the frame is at 4(%esp).  */
-#define INCOMING_FRAME_SP_OFFSET 4
+#define INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

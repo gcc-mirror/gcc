@@ -56,7 +56,8 @@ Boston, MA 02111-1307, USA.  */
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
 
 #undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
+#define DBX_REGISTER_NUMBER(n) \
+  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
 /* Output assembler code to FILE to call the profiler.
    To the best of my knowledge, no Linux libc has required the label

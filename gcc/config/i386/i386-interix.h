@@ -432,7 +432,8 @@ while (0)
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n) \
-((n) == 0 ? 0 \
+(TARGET_64BIT ? dbx64_register_map[n] \
+ : (n) == 0 ? 0 \
  : (n) == 1 ? 2 \
  : (n) == 2 ? 1 \
  : (n) == 3 ? 3 \
