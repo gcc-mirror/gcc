@@ -1,3 +1,7 @@
+2001-11-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (output_move_double): Fix typo in double load.
+
 2001-11-01  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (h8300_encode_label): Compute a string
