@@ -1,5 +1,10 @@
 2002-04-07  Mark Wielaard <mark@klomp.org>
 
+        * java/util/AbstractMap.java (putAll): Use entrySet size.
+        (toString): Explicitly use getKey() and getValue().
+
+2002-04-07  Mark Wielaard <mark@klomp.org>
+
 	* java/util/Hashtable.java (contains): Remove NullPointer check.
 	(containsValue): Add NullPointer check.
 	(remove): Always throw NullPointerException when key

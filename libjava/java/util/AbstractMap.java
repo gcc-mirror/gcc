@@ -353,7 +353,7 @@ public abstract class AbstractMap implements Map
   public void putAll(Map m)
   {
     Iterator entries = m.entrySet().iterator();
-    int pos = size();
+    int pos = m.size();
     while (--pos >= 0)
       {
         Map.Entry entry = (Map.Entry) entries.next();
@@ -425,10 +425,10 @@ public abstract class AbstractMap implements Map
     StringBuffer r = new StringBuffer("{");
     for (int pos = size(); pos > 0; pos--)
       {
-        // Append the toString value of the entries rather than calling
-        // getKey/getValue. This is more efficient and it matches the JDK
-        // behaviour.
-        r.append(entries.next());
+        Map.Entry entry = (Map.Entry) entries.next();
+        r.append(entry.getKey());
+        r.append('=');
+        r.append(entry.getValue());
         if (pos > 1)
           r.append(", ");
       }
