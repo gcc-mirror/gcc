@@ -1,3 +1,8 @@
+2001-12-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* ginclude/ppc-asm.h (JUMP_TARGET): New macro.
+	* config/rs6000/tramp.asm: Use it.
+
 2001-12-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* gencheck.c, gengenrtl.c: Don't define xmalloc.
