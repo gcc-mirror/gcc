@@ -1,3 +1,8 @@
+2004-07-08  Andrew Pinski  <apinski@apple.com>
+
+	* Makefile.in (libbackend.o): Add -combine to the gcc 
+	command line.
+
 2004-07-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/t-stormy16 (TARGET_LIBGCC2_CFLAGS): Define.

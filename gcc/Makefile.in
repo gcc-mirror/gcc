@@ -2130,7 +2130,7 @@ libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -DLOCALEDIR=\"$(localedir)\" \
-	  -c $(filter %.c,$^) -o $@
+	  -c $(filter %.c,$^) -o $@ -combine
 
 #
 # Generate header and source files from the machine description,
