@@ -3,6 +3,7 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile } */
 
+#include <stddef.h>
 #include <objc/objc.h>
 #include <objc/Object.h>
 
