@@ -1,3 +1,7 @@
+2001-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* config-ml.in: Handle GCJ and GCJFLAGS.
+
 2001-03-21  Michael Chastain  <chastain@redhat.com>
 
 	* Makefile.in: all-m4 depends on all-texinfo.
