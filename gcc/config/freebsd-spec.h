@@ -107,12 +107,12 @@ Boston, MA 02111-1307, USA.  */
    500016, select the appropriate libc, depending on whether we're
    doing profiling or need threads support.  At __FreeBSD_version
    500016 and later, when threads support is requested include both
-   -lc and -lc_r instead of only -lc_r.  To make matters interesting,
-   we can't actually use __FreeBSD_version provided by <osreldate.h>
-   directly since it breaks cross-compiling.  As a final twist, make
-   it a hard error if -pthread is provided on the command line and gcc
-   was configured with --disable-threads (this will help avoid bug
-   reports from users complaining about threading when they
+   -lc and the threading lib instead of only -lc_r.  To make matters
+   interesting, we can't actually use __FreeBSD_version provided by
+   <osreldate.h> directly since it breaks cross-compiling.  As a final
+   twist, make it a hard error if -pthread is provided on the command
+   line and gcc was configured with --disable-threads (this will help
+   avoid bug reports from users complaining about threading when they
    misconfigured the gcc bootstrap but are later consulting FreeBSD
    manual pages that refer to the mythical -pthread option).  */
 
@@ -132,8 +132,8 @@ is built with the --enable-threads configure-time option.}		\
 #if FBSD_MAJOR >= 5
 #define FBSD_LIB_SPEC "							\
   %{!shared:								\
-    %{!pg: %{pthread:-lc_r} -lc}					\
-    %{pg:  %{pthread:-lc_r_p} -lc_p}					\
+    %{!pg: %{pthread:-lpthread} -lc}					\
+    %{pg:  %{pthread:-lpthread_p} -lc_p}				\
   }"
 #else
 #define FBSD_LIB_SPEC "							\

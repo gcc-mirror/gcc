@@ -1,3 +1,8 @@
+2004-12-21  David O'Brien  <obrien@FreeBSD.org>
+
+	Backport from mainline:
+	* config/freebsd-spec.h:  Use KSE pthread lib for -pthread.
+
 2004-12-19  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_hard_regno_mode_ok): Always accept all SSE,
