@@ -1,3 +1,8 @@
+2002-09-26  Igor Shevlyakov <igor@microunity.com>
+
+	* combine.c (simplify_set): Don't call to force_to_mode if size
+	of integer type is larger than HOST_BITS_PER_WIDE_INT.
+
 2002-09-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (qmtest-g++): Fix file path.
