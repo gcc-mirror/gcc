@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.13.6 10/21/92 12:41:48";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.14.3 10/28/92 15:20:54";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -2667,7 +2667,12 @@ print_operand (file, x, code)
 	      && !(m88k_volatile_code == 'v'
 		   && GET_CODE (XEXP (x, 0)) == LO_SUM
 		   && rtx_equal_p (XEXP (XEXP (x, 0), 1), last_addr)))
-	    fprintf (file, "fldcr\t %s,%sfcr63\n\t",
+	    fprintf (file,
+#ifdef AS_BUG_FLDCR
+		     "fldcr\t %s,%scr63\n\t",
+#else
+		     "fldcr\t %s,%sfcr63\n\t",
+#endif
 		     reg_names[0], m88k_pound_sign);
 	  m88k_volatile_code = code;
 	  last_addr = (GET_CODE (XEXP (x, 0)) == LO_SUM
