@@ -1,3 +1,9 @@
+2004-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/7544
+	* g++.dg/ext/weak1.C, gcc.dg/weak/weak-10.c, objc.dg/weak-1.m: New
+	tests.
+
 2004-11-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/18652

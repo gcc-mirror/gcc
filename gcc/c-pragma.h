@@ -60,6 +60,7 @@ extern void c_register_pragma (const char *, const char *,
 extern void c_register_pragma_with_expansion (const char *, const char *,
 					      void (*) (struct cpp_reader *));
 extern void maybe_apply_pragma_weak (tree);
+extern void maybe_apply_pending_pragma_weaks (void);
 extern tree maybe_apply_renaming_pragma (tree, tree);
 extern void add_to_renaming_pragma_list (tree, tree);
 

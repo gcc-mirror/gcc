@@ -55,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "c-common.h"
+#include "c-pragma.h"
 #include "flags.h"
 #include "langhooks.h"
 #include "objc-act.h"
@@ -602,6 +603,8 @@ objc_finish_file (void)
 
 #ifdef OBJCPLUS
   cp_finish_file ();
+#else
+  maybe_apply_pending_pragma_weaks ();
 #endif
 }
 

@@ -294,6 +294,33 @@ maybe_apply_pragma_weak (tree decl)
       }
 }
 
+/* Process all "#pragma weak A = B" directives where we have not seen
+   a decl for A.  */
+void
+maybe_apply_pending_pragma_weaks (void)
+{
+  tree *p, t, alias_id, id, decl, *next;
+
+  for (p = &pending_weaks; (t = *p) ; p = next)
+    {
+      next = &TREE_CHAIN (t);
+      alias_id = TREE_PURPOSE (t);
+      id = TREE_VALUE (t);
+
+      if (TREE_VALUE (t) == NULL)
+	continue;
+
+      decl = build_decl (FUNCTION_DECL, alias_id, default_function_type);
+
+      DECL_ARTIFICIAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
+      DECL_WEAK (decl) = 1;
+
+      assemble_alias (decl, id);
+    }
+}
+
 /* #pragma weak name [= value] */
 static void
 handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
@@ -328,6 +355,11 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
 #else
 void
 maybe_apply_pragma_weak (tree ARG_UNUSED (decl))
+{
+}
+
+void
+maybe_apply_pending_pragma_weaks (void)
 {
 }
 #endif /* HANDLE_PRAGMA_WEAK */
