@@ -120,6 +120,10 @@ static int virtuals_instantiated;
 void (*save_machine_status) PROTO((struct function *));
 void (*restore_machine_status) PROTO((struct function *));
 
+/* Likewise, but for language-specific data.  */
+void (*save_lang_status) PROTO((struct function *));
+void (*restore_lang_status) PROTO((struct function *));
+
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
 
@@ -287,9 +291,10 @@ find_function_data (decl)
 }
 
 /* Save the current context for compilation of a nested function.
-   This is called from language-specific code.
-   The caller is responsible for saving any language-specific status,
-   since this function knows only about language-independent variables.  */
+   This is called from language-specific code.  The caller should use
+   the save_lang_status callback to save any language-specific state,
+   since this function knows only about language-independent
+   variables.  */
 
 void
 push_function_context_to (context)
@@ -308,6 +313,8 @@ push_function_context_to (context)
 
   save_tree_status (p, context);
   save_varasm_status (p, context);
+  if (save_lang_status)
+    (*save_lang_status) (p);
   if (save_machine_status)
     (*save_machine_status) (p);
 
@@ -344,6 +351,8 @@ pop_function_context_from (context)
 
   if (restore_machine_status)
     (*restore_machine_status) (p);
+  if (restore_lang_status)
+    (*restore_lang_status) (p);
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */

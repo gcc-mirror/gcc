@@ -1,3 +1,13 @@
+Fri Sep  3 19:02:38 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+ 	* function.h (struct function): Add new element LANGUAGE.
+ 	(save_lang_status): Declare new variable.
+	(restore_lang_status): Likewise.
+	* function.c (save_lang_status): Define.
+	(restore_lang_status): Likewise.
+	(push_function_context_to): Call language-specific save function.
+	(pop_function_context_from): Call language-specific restore function.
+	
 Fri Sep  3 01:16:18 1999  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
 
 	* i386.md (movsf_1): Check REG_P before use of REGNO.
