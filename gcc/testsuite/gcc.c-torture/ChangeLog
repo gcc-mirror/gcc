@@ -9,6 +9,10 @@ Thu Oct  1 17:15:26 1998  Nick Clifton  <nickc@cygnus.com>
 	* compile/981001-1.c: New test.
 	* execute/981001-1.c: New test.
 	
+Mon Aug 31 12:00:00 1998  Catherine Moore  <clm@cygnus.com>
+
+	* execute/941014-1.x:  New file.
+
 Wed Aug 26 16:10:00 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* execute/loop-4b.c: New test.
