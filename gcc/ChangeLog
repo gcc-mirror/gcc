@@ -1,3 +1,8 @@
+Thu Nov  5 07:57:45 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.c (expand_fixup_region_end): Make sure outer context labels
+	are not issued in an inner context during cleanups.
+
 Thu Nov  5 04:03:06 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (addsi3, subsi3): No new temporaries once cse is
