@@ -46,6 +46,9 @@
 #include "treetree.h"
 #include "opts.h"
 #include "options.h"
+#include "c-common.h"
+
+enum c_language_kind c_language = clk_c;
 
 extern int yyparse (void);
 
