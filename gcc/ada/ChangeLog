@@ -1,3 +1,15 @@
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
+	* einfo.ads: Block_Node points to the identifier of the block, not to 
+	the block node itself, to preserve the link when the block is 
+	rewritten, e.g. within an if-statement with a static condition. 
+	
+	* inline.adb (Cleanup_Scopes): recover block statement from block 
+	entity using new meaning of Block_Node.
+	
+	* sem_ch5.adb (Analyze_Block_Statement): set Block_Node to point to 
+	identifier of block node, rather than to node itself.
+
 2001-12-04  Gary Dismukes <dismukes@gnat.com>
 	
 	* layout.adb:
