@@ -6845,6 +6845,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_SIN:
     case BUILT_IN_COS:
+      /* Treat these like sqrt, but only if the user asks for them. */
+      if (! flag_fast_math)
+	break;
     case BUILT_IN_FSQRT:
       /* If not optimizing, call the library function.  */
       if (! optimize)
