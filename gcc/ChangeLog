@@ -1,3 +1,8 @@
+2001-05-04  Andreas Jaeger  <aj@suse.de>
+
+	* except.h: Add prototype declaration for
+	expand_builtin_init_dwarf_reg_sizes.
+
 2001-05-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* Makefile.in (site.exp): Set TESTING_IN_BUILD_TREE.
@@ -49,9 +54,9 @@
 	* config/m68hc11/m68hc11.c (limit_reload_class): Remove.
 	(m68hc11_override_options): Remove setting of flag_no_nonansi_builtin.
 	Set 68HC12 min offset to -65536.
-	(print_operand): Put parenthesis arround the operand if it refers 
+	(print_operand): Put parenthesis arround the operand if it refers
 	to a symbol having the same name as a register.
-	(m68hc11_z_replacement): When z register is replaced by its 
+	(m68hc11_z_replacement): When z register is replaced by its
 	equivalent soft register, force the insn to be re-recognized.
 	(m68hc11_check_z_replacement): Fix the test when destination is
 	the index register and z dies in the insn.
@@ -77,13 +82,13 @@
 
 	* config/m68hc11/m68hc11.md (*addhi3_68hc12): Fix generation
 	and use m68hc11_notice_keep_cc when using leax/leay.
-	(addhi3 split): Reject split if the insn is handled by 
+	(addhi3 split): Reject split if the insn is handled by
 	leax/leay above.
 	* config/m68hc11/m68hc11.c (m68hc11_split_move): For 68HC12 the
 	push must be handled in a special way if the source operand uses
 	sp as index register.
 	(m68hc11_notice_keep_cc): New function.
-	(m68hc11_gen_movhi): Use it when an insn changes a register but 
+	(m68hc11_gen_movhi): Use it when an insn changes a register but
 	not the flags.
 	(m68hc11_gen_movqi): Fix move for 68HC12.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_notice_keep_cc): Declare.
@@ -97,7 +102,7 @@
 
 	* config/m68hc11/m68hc11.md (tsthi_1): Use cpd for 68HC12.
 	(zero_extendsi split): Simplify and use (zero_extendhi).
-	(*addhi3): Remove 'w' constraint since stack pointer is handled 
+	(*addhi3): Remove 'w' constraint since stack pointer is handled
 	by (addhi3_sp).
 	(*ashlhi3_2): Operand 2 is clobbered use '+' for its constraint.
 	(*ashlhi3, *ashrhi3, *lshrhi3): Likewise.
@@ -343,7 +348,7 @@ Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-04-30  Zack Weinberg  <zackw@stanford.edu>
 
-	* tsystem.h: Test only POSIX for availability of string.h 
+	* tsystem.h: Test only POSIX for availability of string.h
 	and time.h.
 	* config.gcc (all systems): If USG appeared in xm_defines,
 	change it to POSIX.  If both USG and POSIX appeared, just
