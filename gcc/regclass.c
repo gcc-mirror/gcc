@@ -462,9 +462,22 @@ memory_move_secondary_cost (mode, class, in)
   rtx mem = top_of_stack[(int) mode];
 
   if (in)
-    altclass = SECONDARY_INPUT_RELOAD_CLASS (class, mode, mem);
+    {
+#ifdef SECONDARY_INPUT_RELOAD_CLASS
+      altclass = SECONDARY_INPUT_RELOAD_CLASS (class, mode, mem);
+#else
+      altclass = NO_REGS;
+#endif
+    }
   else
-    altclass = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, mem);
+    {
+#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
+      altclass = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, mem);
+#else
+      altclass = NO_REGS;
+#endif
+    }
+
   if (altclass == NO_REGS)
     return 0;
 
