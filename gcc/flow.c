@@ -871,6 +871,7 @@ make_edges (label_value_list, bb_eh_end)
       basic_block bb = BASIC_BLOCK (i);
       rtx insn, x, eh_list;
       enum rtx_code code;
+      int force_fallthru = 0;
 
       /* If we have asynchronous exceptions, scan the notes for all exception
 	 regions active in the block.  In the normal case, we only need the
@@ -915,6 +916,21 @@ make_edges (label_value_list, bb_eh_end)
 
 	      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 		make_label_edge (bb, XEXP (RTVEC_ELT (vec, j), 0), 0);
+
+	      /* Some targets (eg, ARM) emit a conditional jump that also
+		 contains the out-of-range target.  Scan for these and
+		 add an edge if necessary.  */
+	      if ((tmp = single_set (insn)) != NULL
+		  && SET_DEST (tmp) == pc_rtx
+		  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
+		  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
+		make_label_edge (bb, XEXP (XEXP (SET_SRC (tmp), 2), 0), 0);
+
+#ifdef CASE_DROPS_THROUGH
+	      /* Silly VAXen.  The ADDR_VEC is going to be in the way of
+		 us naturally detecting fallthru into the next block.  */
+	      force_fallthru = 1;
+#endif
 	    }
 
 	  /* If this is a computed jump, then mark it as reaching
@@ -1015,14 +1031,14 @@ make_edges (label_value_list, bb_eh_end)
 
       /* Find out if we can drop through to the next block.  */
       insn = next_nonnote_insn (insn);
-      if (!insn)
+      if (!insn || (i + 1 == n_basic_blocks && force_fallthru))
 	make_edge (bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
       else if (i + 1 < n_basic_blocks)
 	{
 	  rtx tmp = BLOCK_HEAD (i + 1);
 	  if (GET_CODE (tmp) == NOTE)
 	    tmp = next_nonnote_insn (tmp);
-	  if (insn == tmp)
+	  if (force_fallthru || insn == tmp)
 	    make_edge (bb, BASIC_BLOCK (i + 1), EDGE_FALLTHRU);
 	}
     }
