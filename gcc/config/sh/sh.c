@@ -1257,11 +1257,15 @@ find_barrier (from)
 
   /* For HImode: range is 510, add 4 because pc counts from address of
      second instruction after this one, subtract 2 for the jump instruction
-     that we may need to emit before the table.  This gives 512.
+     that we may need to emit before the table, subtract 2 for the instruction
+     that fills the jump delay slot (in very rare cases, reorg will take an
+     instruction from after the constant pool or will leave the delay slot
+     empty).  This gives 510.
      For SImode: range is 1020, add 4 because pc counts from address of
      second instruction after this one, subtract 2 in case pc is 2 byte
      aligned, subtract 2 for the jump instruction that we may need to emit
-     before the table.  This gives 1020.  */
+     before the table, subtract 2 for the instruction that fills the jump
+     delay slot.  This gives 1018.  */
 
   /* If not optimizing, then it is possible that the jump instruction we add
      won't be shortened, and thus will have a length of 14 instead of 2.
@@ -1270,8 +1274,8 @@ find_barrier (from)
 
   if (optimize)
     {
-      si_limit = 1020;
-      hi_limit = 512;
+      si_limit = 1018;
+      hi_limit = 510;
     }
   else
     {
