@@ -10,7 +10,7 @@ package java.awt;
 
 /* A somewhat incomplete placeholder. */
 
-public class Cursor
+public class Cursor implements java.io.Serializable
 {
   public static final int DEFAULT_CURSOR   = 0,
 			  CROSSHAIR_CURSOR = 1,

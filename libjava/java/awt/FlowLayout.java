@@ -27,6 +27,13 @@ public class FlowLayout implements LayoutManager, Serializable
   /** Constant that specifies right alignment.  */
   public static final int RIGHT = 2;
 
+  /** Constant that specifies alignment to leading edge of container's
+   * orientation.  */
+  public static final int LEADING = 3;
+  /** Constant that specifies alignment to trailing edge of container's
+   * orientation.  */
+  public static final int TRAILING = 4;
+
   /** Add a new component to the layout.  This particular implementation
    * does nothing.
    */
@@ -82,7 +89,8 @@ public class FlowLayout implements LayoutManager, Serializable
       throw new IllegalArgumentException ("horizontal gap must be nonnegative");
     if (vgap < 0)
       throw new IllegalArgumentException ("vertical gap must be nonnegative");
-    if (align != LEFT && align != RIGHT && align != CENTER)
+    if (align != LEFT && align != RIGHT && align != CENTER
+	&& align != LEADING && align != TRAILING)
       throw new IllegalArgumentException ("invalid align: " + align);
     this.align = align;
     this.hgap = hgap;
@@ -100,6 +108,9 @@ public class FlowLayout implements LayoutManager, Serializable
 
     Dimension d = parent.getSize ();
     Insets ins = parent.getInsets ();
+
+    ComponentOrientation orient = parent.getComponentOrientation ();
+    boolean left_to_right = orient.isLeftToRight ();
 
     int y = ins.top + vgap;
     int i = 0;
@@ -128,12 +139,20 @@ public class FlowLayout implements LayoutManager, Serializable
 
 	// Set the location of each component for this row.
 	int x;
-	if (align == LEFT)
+
+	int myalign = align;
+	if (align == LEADING)
+	  myalign = left_to_right ? LEFT : RIGHT;
+	else if (align == TRAILING)
+	  myalign = left_to_right ? RIGHT : LEFT;
+
+	if (myalign == LEFT)
 	  x = ins.left + hgap;
-	else if (align == CENTER)
+	else if (myalign == CENTER)
 	  x = (d.width - new_w) / 2;
 	else
 	  x = d.width - new_w;
+
 	for (int k = i; i < j; ++k)
 	  {
 	    // FIXME: this is very inefficient.
@@ -178,7 +197,8 @@ public class FlowLayout implements LayoutManager, Serializable
    */
   public void setAlignment (int align)
   {
-    if (align != LEFT && align != RIGHT && align != CENTER)
+    if (align != LEFT && align != RIGHT && align != CENTER
+	&& align != LEADING && align != TRAILING)
       throw new IllegalArgumentException ("invalid align: " + align);
     this.align = align;
   }

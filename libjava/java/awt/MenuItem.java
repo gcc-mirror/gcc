@@ -9,8 +9,7 @@ details.  */
 package java.awt;
 import java.awt.event.*;
 import java.util.EventListener;
-
-/* A very incomplete placeholder. */
+import java.awt.peer.MenuItemPeer;
 
 public class MenuItem extends MenuComponent
 {
@@ -34,6 +33,12 @@ public class MenuItem extends MenuComponent
     this.label = label;
   }
 
+  public MenuItem (String label, MenuShortcut shortcut)
+  {
+    this.label = label;
+    this.shortcut = shortcut;
+  }
+
   public String getLabel()
   {
     return label;
@@ -42,6 +47,11 @@ public class MenuItem extends MenuComponent
   public synchronized void setLabel(String label)
   {
     this.label = label;
+    if (peer != null)
+      {
+	MenuItemPeer mp = (MenuItemPeer) peer;
+	mp.setLabel (label);
+      }
   }
 
   public boolean isEnabled()
@@ -51,7 +61,18 @@ public class MenuItem extends MenuComponent
 
   public synchronized void setEnabled(boolean b)
   {
-    this.enabled = b;
+    // The JCL says this method is ignored if the enabled state does
+    // not change.  I take that to mean that the peer is not notified
+    // in this case.
+    if (this.enabled != b)
+      {
+	this.enabled = b;
+	if (peer != null)
+	  {
+	    MenuItemPeer mp = (MenuItemPeer) peer;
+	    mp.setEnabled (b);
+	  }
+      }
   }
 
   /** @deprecated Use setEnabled() instead. */
@@ -118,6 +139,16 @@ public class MenuItem extends MenuComponent
   public synchronized void removeActionListener(ActionListener l)
   {
     actionListener = AWTEventMulticaster.remove(actionListener, l);
+  }
+
+  public void addNotify ()
+  {
+    if (peer != null)
+      {
+	// This choice of toolkit seems unsatisfying, but I'm not sure
+	// what else to do.
+	peer = Toolkit.getDefaultToolkit ().createMenuItem (this);
+      }
   }
 
   /** Returns all registered EventListers of the given listenerType. 

@@ -1,3 +1,49 @@
+2000-12-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/MenuContainer.java: Fixed typo.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added SystemColor.java.
+	* java/awt/SystemColor.java: New file.
+
+	* java/awt/Color.java (rgba): Now package-private.
+
+	* java/awt/event/InputEvent.java (isAltGraphDown): New method.
+
+	* java/awt/event/ContainerEvent.java (getContainer): Renamed from
+	getComponent.
+
+	* java/awt/MenuItem.java (addNotify): New method.
+	(MenuItem(String,MenuShortcut)): New constructor.
+	(setLabel): Notify peer of change.
+	(setEnabled): Likewise.
+
+	* java/awt/GridLayout.java (toString): New method.
+
+	* java/awt/FlowLayout.java (LEADING, TRAILING): New constants.
+	(FlowLayout): Check for LEADING and TRAILING.
+	(setAlignment): Likewise.
+	(layoutContainer): Handle component orientation.
+
+	* java/awt/Component.java (orientatin): New field.
+	(setComponentOrientation): Wrote.
+	(getComponentOrientation): Wrote.
+
+	* java/awt/Event.java (Event): Implements Serializable.
+	(consumed): New field for serialization.
+	* java/awt/Dimension.java (Dimension): Implements Serializable.
+	* java/awt/Cursor.java (Cursor): Implements Serializable.
+	* java/awt/Container.java (Container): No longer abstract.
+
+	* java/awt/Choice.java: Wrote.
+	* java/awt/Checkbox.java: Wrote.
+	* java/awt/ItemSelectable.java: Documented.
+	* java/awt/CheckboxGroup.java: Wrote.
+
+	* java/awt/CardLayout.java (layoutContainer): Directly use fields
+	in other classes.
+	(getSize): Likewise.
+
 2000-12-24  Jeff Sturm  <jeff.sturm@commerceone.com>
 
 	* java/io/FileDescriptor.java: Initialize fd to -1.

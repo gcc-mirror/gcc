@@ -224,6 +224,15 @@ public class GridLayout implements LayoutManager, Serializable
     this.vgap = vgap;
   }
 
+  /** Return String description of this object.  */
+  public String toString ()
+  {
+    return ("[" + getClass ().getName ()
+	    + ",hgap=" + hgap + ",vgap=" + vgap
+	    + ",rows=" + rows + ",cols=" + cols
+	    + "]");
+  }
+
   // This method is used to compute the various sizes.
   private Dimension getSize (Container parent, boolean is_min)
   {

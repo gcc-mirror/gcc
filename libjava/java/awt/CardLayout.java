@@ -19,7 +19,7 @@ import java.io.Serializable;
  * time.  This class includes methods for changing which card is
  * shown.
  *
- * @verson 0.0
+ * @version 0.0
  * @author Tom Tromey <tromey@redhat.com>
  * @date December 2, 2000
  */
@@ -127,24 +127,22 @@ public class CardLayout implements LayoutManager2, Serializable
    */
   public void layoutContainer (Container parent)
   {
-    // FIXME: can we just use the width and height fields of parent?
-    // Or will that break with subclassing?
-    Dimension d = parent.getSize ();
+    int width = parent.width;
+    int height = parent.height;
 
     Insets ins = parent.getInsets ();
 
-    int num = parent.getComponentCount ();
-    // This is more efficient than calling getComponents().
+    int num = parent.ncomponents;
     Component[] comps = parent.component;
-    
+
     for (int i = 0; i < num; ++i)
       {
 	if (comps[i].isVisible ())
 	  {
 	    // Only resize the one we care about.
 	    comps[i].setBounds (hgap + ins.left, vgap + ins.top,
-				d.width - 2 * hgap - ins.left - ins.right,
-				d.height - 2 * vgap - ins.top - ins.bottom);
+				width - 2 * hgap - ins.left - ins.right,
+				height - 2 * vgap - ins.top - ins.bottom);
 	    break;
 	  }
       }
@@ -302,14 +300,11 @@ public class CardLayout implements LayoutManager2, Serializable
   // Compute the size according to WHAT.
   private Dimension getSize (Container parent, int what)
   {
-    int w = 0, h = 0, num = parent.getComponentCount ();
-    // This is more efficient than calling getComponents().
+    int w = 0, h = 0, num = parent.ncomponents;
     Component[] comps = parent.component;
 
     for (int i = 0; i < num; ++i)
       {
-	// FIXME: can we just directly read the fields in Component?
-	// Or will that not work with subclassing?
 	Dimension d;
 
 	if (what == MIN)

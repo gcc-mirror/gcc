@@ -624,6 +624,7 @@ java/awt/RenderingHints.java \
 java/awt/ScrollPane.java \
 java/awt/Scrollbar.java	\
 java/awt/Shape.java \
+java/awt/SystemColor.java \
 java/awt/TextArea.java \
 java/awt/TextComponent.java \
 java/awt/TextField.java	\

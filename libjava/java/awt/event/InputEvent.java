@@ -47,6 +47,11 @@ public abstract class InputEvent extends ComponentEvent
     return (modifiers & ALT_MASK) != 0;
   }
 
+  public boolean isAltGraphDown ()
+  {
+    return (modifiers & ALT_GRAPH_MASK) != 0;
+  }
+
   public long getWhen ()
   {
     return when;

@@ -90,6 +90,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   transient HierarchyListener hierarchyListener;
   transient HierarchyBoundsListener hierarchyBoundsListener;
 
+  transient ComponentOrientation orientation = ComponentOrientation.UNKNOWN;
+
   protected Component()
   {
   }
@@ -1569,15 +1571,14 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void setComponentOrientation(ComponentOrientation o)
   {
-    // FIXME
+    orientation = o;
   }
-  
+
   public ComponentOrientation getComponentOrientation()
   {
-    // FIXME
-    return null;
+    return orientation;
   }
-  
+
   /*
   public AccessibleContext getAccessibleContext()
   {

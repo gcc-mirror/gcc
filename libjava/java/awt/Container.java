@@ -18,7 +18,7 @@ import java.awt.peer.LightweightPeer;
 
 /* A somewhat incomplete class. */
 
-public abstract class Container extends Component
+public class Container extends Component
 {
   /* Serialized fields from the serialization spec. */
   int ncomponents;
