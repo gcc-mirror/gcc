@@ -19,8 +19,8 @@ typedef struct
   size_t      value_length;
 } property_pair;
 
-// The compiler generates this declaration.
-extern char *_Jv_Compiler_Properties[];
+// Set to NULL-terminated list of properties set at compile time.
+extern const char **_Jv_Compiler_Properties;
 
 // Properties taken from the user's environment.
 extern property_pair *_Jv_Environment_Properties;

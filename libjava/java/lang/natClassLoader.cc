@@ -447,20 +447,19 @@ jclass _Jv_FindClass (_Jv_Utf8Const *name,
 	}
       else 
 	{
-	  if (redirect == NULL)
+	  java::lang::ClassLoader *sys = java::lang::ClassLoader::system;
+	  if (sys == NULL)
 	    {
 	      _Jv_InitClass (&ClassLoaderClass);
-	      java::lang::ClassLoader::getSystemClassLoader ();
+	      sys = java::lang::ClassLoader::getSystemClassLoader ();
 	    }
 
-	  // Load using the bootstrap loader jmspec 5.3.1
-	  klass = redirect -> loadClass (sname, false); 
+	  // Load using the bootstrap loader jmspec 5.3.1.
+	  klass = sys->loadClass (sname, false); 
 
-	  // register that we're an initiating loader
+	  // Register that we're an initiating loader.
 	  if (klass)
-	    {
-	      _Jv_RegisterInitiatingLoader (klass, 0);
-	    }
+	    _Jv_RegisterInitiatingLoader (klass, 0);
 	}
     }
   else

@@ -1,3 +1,33 @@
+1999-10-22  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/ClassLoader.h): New target.
+	* java/lang/natClassLoader.cc (_Jv_FindClass): Removed reference
+	to `redirect'.
+
+	* include/java-props.h (_Jv_Compiler_Properties): Changed
+	declaration.
+	* gcj/array.h (JvRunMain, _Jv_RunMain): Don't declare.
+	* include/jvm.h (_Jv_GCSetInitialHeapSize,
+	_Jv_GCSetMaximumHeapSize): Declare.
+	(JvRunMain, _Jv_RunMain): Declare.
+	(_Jv_SetMaximumHeapSize, _Jv_SetInitialHeapSize): Declare.
+	* nogc.cc (_Jv_GCSetInitialHeapSize): New function.
+	(_Jv_GCSetMaximumHeapSize): Likewise.
+	* boehm.cc (_Jv_GCSetInitialHeapSize): New function.
+	(_Jv_GCSetMaximumHeapSize): Likewise.
+	* prims.cc (parse_heap_size): New function.
+	(_Jv_SetInitialHeapSize): Likewise.
+	(_Jv_SetMaximumHeapSize): Likewise.
+	(_Jv_Compiler_Properties): New global.
+	* gij.cc (help): New function.
+	(version): Likewise.
+	(heap_size): Likewise.
+	(heap_max_size): Likewise.
+	(main): Parse arguments.  Set _Jv_Compiler_Properties.
+	Include <config.h>, <java-props.h>.
+	(_Jv_Compiler_Properties): Removed.
+
 1999-10-18  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): New
