@@ -200,7 +200,6 @@ static rtx initial_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void copy_loop_body PROTO((rtx, rtx, struct inline_remap *, rtx, int,
 				  enum unroll_types, rtx, rtx, rtx, rtx));
-static int back_branch_in_range_p PROTO((rtx, rtx, rtx));
 static void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
 static rtx approx_final_value PROTO((enum rtx_code, rtx, int *, int *));
 static int find_splittable_regs PROTO((enum unroll_types, rtx, rtx, rtx, int));
@@ -2021,7 +2020,7 @@ emit_unrolled_add (dest_reg, src_reg, increment)
    In practice, this is not a problem, because this function is seldom called,
    and uses a negligible amount of CPU time on average.  */
 
-static int
+int
 back_branch_in_range_p (insn, loop_start, loop_end)
      rtx insn;
      rtx loop_start, loop_end;
