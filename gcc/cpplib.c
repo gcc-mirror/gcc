@@ -743,7 +743,7 @@ do_line (pfile)
 
       if (read_line_number (pfile, &action_number) != 0)
 	{
-	  if (CPP_PEDANTIC (pfile))
+	  if (! CPP_OPTION (pfile, preprocessed) && CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile,  "extra tokens at end of #line directive");
 
 	  if (action_number == 1)
