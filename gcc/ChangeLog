@@ -1,3 +1,8 @@
+2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-cfg.c (pass_warn_function_return): It needs
+	CFG, not SSA.
+
 2004-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (Machine Dependent Options): Alphabetize.
