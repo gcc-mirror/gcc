@@ -1,3 +1,8 @@
+2002-02-16  Andrew Cagney  <ac131313@redhat.com>
+
+	* config/rs6000/netbsd.h (PREFERRED_DEBUGGING_TYPE): Set to
+	DBX_DEBUG.
+
 2002-02-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/t-pa, pa/t-pro, som.h: Revert last patch.
