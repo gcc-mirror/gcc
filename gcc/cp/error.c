@@ -1331,38 +1331,9 @@ dump_expr (tree t, int flags)
       break;
 
     case INTEGER_CST:
-      {
-	tree type = TREE_TYPE (t);
-	my_friendly_assert (type != 0, 81);
-
-	/* If it's an enum, output its tag, rather than its value.  */
-	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  {
-	    tree values = TYPE_VALUES (type);
-
-	    for (; values;
-	         values = TREE_CHAIN (values))
-	      if (tree_int_cst_equal (TREE_VALUE (values), t))
-	        break;
-
-	    if (values)
-	      pp_tree_identifier (cxx_pp, TREE_PURPOSE (values));
-	    else
-	      {
-                /* Value must have been cast.  */
-                pp_left_paren (cxx_pp);
-                dump_type (type, flags);
-                pp_right_paren (cxx_pp);
-                pp_c_integer_literal (pp_c_base (cxx_pp), t);
-	      }
-	  }
-        else
-          pp_c_integer_literal (pp_c_base (cxx_pp), t);
-      }
-      break;
-
+    case STRING_CST:
     case REAL_CST:
-      pp_c_real_literal (pp_c_base (cxx_pp), t);
+       pp_c_constant (pp_c_base (cxx_pp), t);
       break;
 
     case PTRMEM_CST:
@@ -1370,10 +1341,6 @@ dump_expr (tree t, int flags)
       dump_type (PTRMEM_CST_CLASS (t), flags);
       pp_colon_colon (cxx_pp);
       pp_tree_identifier (cxx_pp, DECL_NAME (PTRMEM_CST_MEMBER (t)));
-      break;
-
-    case STRING_CST:
-      pp_c_string_literal (pp_c_base (cxx_pp), t);
       break;
 
     case COMPOUND_EXPR:

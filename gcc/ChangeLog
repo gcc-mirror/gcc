@@ -1,3 +1,52 @@
+2003-08-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.c (pp_base_indent): Rename from pp_indent.
+	* c-pretty-print.h (pp_c_pretty_print_flag)s: New datatype.
+	(struct c_pretty_print_info): Add more fields.
+	(pp_c_left_paren): Move to c-pretty-print.c.
+	(pp_c_right_paren): Likewise.
+	(pp_c_left_brace): Likewise.
+	(pp_c_right_brace): Likewise.
+	(pp_c_left_bracket): Likewise.
+	(pp_c_right_bracket): Likewise.
+	(pp_c_declarator): Declare.
+	(pp_c_direct_declarator): Likewise.
+	(pp_c_specifier_qualifier_list): Likewise.
+	(pp_c_type_id): Likewise.
+	* c-pretty-print.c (pp_c_cv_qualifier): Change prootype. Rework..
+	(pp_c_type_qualifier_list): New.
+	(pp_c_pointer): Likewise.
+	(pp_c_parameter_type_list): Likewise.
+	(pp_c_function_definition): Likewise.
+	(pp_c_id_expression): Likewise.
+	(pp_c_simple_type_specifier): Tidy.
+	(pp_c_unary_expression): Likewise.
+	(pp_c_expression): Likewise.
+	(pp_c_pretty_printer_init): Likewise.
+	(pp_c_specifier_qualifier_list): Rework..
+	(pp_c_abstract_declarator): Likewise.
+	(pp_c_postfix_expression): Likewise.
+	(pp_c_primary_expression): Likewise.
+	(pp_c_cast_expression): Likewise.
+	(pp_c_direct_abstract_declarator): Likewise.
+	(pp_c_storage_class_specifier): Likewise.
+	(pp_c_function_specifier): Likewise.
+	(pp_c_declaration_specifiers): Likewise.
+	(pp_c_direct_declarator): Likewise.
+	(pp_c_declarator): Likewise.
+	(pp_c_declaration): Likewise.
+	(pp_c_statement): Likewise.
+	(pp_c_integer_constant): Rename from pp_c_integer_literal.
+	(pp_c_character_constant): Rename from pp_c_character_literal.
+	(pp_c_bool_constant): Rename from pp_c_bool_literal.
+	(pp_c_enumeration_constant): Rename from pp_c_enumerator.
+	(pp_c_floating_constant): Rename from pp_c_real_literal.
+	(pp_c_constant): Rename from pp_c_literal.
+	* c-lang.c: Include diagnostic.h and c-pretty-print.h
+	(LANG_HOOKS_INITIALIZE_DIAGNOSTITCS): Define.
+	(c_initialize_diagnostics): New.
+	* Makefile.in (c-lang.o): Update dependency.
+
 2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-typeck.c (digest_init): Add conversion for VECTOR_TYPEs.

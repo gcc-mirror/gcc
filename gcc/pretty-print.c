@@ -90,19 +90,6 @@ pp_clear_state (pretty_printer *pp)
   pp_indentation (pp) = 0;
 }
 
-/* Insert enough spaces into the output area of PRETTY-PRINTER to bring
-   the column position to the current indentation level, assuming that a
-   newline has just been written to the buffer.  */
-static void
-pp_indent (pretty_printer *pp)
-{
-  int n = pp_indentation (pp);
-  int i;
-
-  for (i = 0; i < n; ++i)
-    pp_space (pp);
-}
-
 /* Flush the formatted text of PRETTY-PRINTER onto the attached stream.  */
 static inline void
 pp_write_text_to_stream (pretty_printer *pp)
@@ -162,6 +149,19 @@ pp_append_r (pretty_printer *pp, const char *start, int length)
 {
   obstack_grow (&pp->buffer->obstack, start, length);
   pp->buffer->line_length += length;
+}
+
+/* Insert enough spaces into the output area of PRETTY-PRINTER to bring
+   the column position to the current indentation level, assuming that a
+   newline has just been written to the buffer.  */
+void
+pp_base_indent (pretty_printer *pp)
+{
+  int n = pp_indentation (pp);
+  int i;
+
+  for (i = 0; i < n; ++i)
+    pp_space (pp);
 }
 
 /* Format a message pointed to by TEXT.  The following format specifiers are
@@ -399,7 +399,7 @@ pp_base_emit_prefix (pretty_printer *pp)
 	case DIAGNOSTICS_SHOW_PREFIX_ONCE:
 	  if (pp->emitted_prefix)
 	    {
-	      pp_indent (pp);
+	      pp_base_indent (pp);
 	      break;
 	    }
 	  pp_indentation (pp) += 3;
