@@ -845,31 +845,31 @@ static void sanity_checks (pfile)
      type precisions made by cpplib.  */
   test--;
   if (test < 1)
-    cpp_error (pfile, DL_FATAL, "cppchar_t must be an unsigned type");
+    cpp_error (pfile, DL_ICE, "cppchar_t must be an unsigned type");
 
   if (CPP_OPTION (pfile, precision) > BITS_PER_HOST_WIDEST_INT)
-    cpp_error (pfile, DL_FATAL,
+    cpp_error (pfile, DL_ICE,
 	       "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits",
 	       (unsigned long)BITS_PER_HOST_WIDEST_INT,
 	       (unsigned long)CPP_OPTION (pfile, precision));
 
   if (CPP_OPTION (pfile, precision) < CPP_OPTION (pfile, int_precision))
-    cpp_error (pfile, DL_FATAL,
+    cpp_error (pfile, DL_ICE,
 	       "CPP arithmetic must be at least as precise as a target int");
 
   if (CPP_OPTION (pfile, char_precision) < 8)
-    cpp_error (pfile, DL_FATAL, "target char is less than 8 bits wide");
+    cpp_error (pfile, DL_ICE, "target char is less than 8 bits wide");
 
   if (CPP_OPTION (pfile, wchar_precision) < CPP_OPTION (pfile, char_precision))
-    cpp_error (pfile, DL_FATAL,
+    cpp_error (pfile, DL_ICE,
 	       "target wchar_t is narrower than target char");
 
   if (CPP_OPTION (pfile, int_precision) < CPP_OPTION (pfile, char_precision))
-    cpp_error (pfile, DL_FATAL,
+    cpp_error (pfile, DL_ICE,
 	       "target int is narrower than target char");
 
   if (CPP_OPTION (pfile, wchar_precision) > BITS_PER_CPPCHAR_T)
-    cpp_error (pfile, DL_FATAL,
+    cpp_error (pfile, DL_ICE,
 	       "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits",
 	       (unsigned long)BITS_PER_CPPCHAR_T,
 	       (unsigned long)CPP_OPTION (pfile, wchar_precision));
@@ -1061,7 +1061,7 @@ output_deps (pfile)
   if (deps_stream != stdout)
     {
       if (ferror (deps_stream) || fclose (deps_stream) != 0)
-	cpp_error (pfile, DL_FATAL, "I/O error on output");
+	cpp_error (pfile, DL_ERROR, "I/O error on output");
     }
 }
 
@@ -1300,7 +1300,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
       else if (CPP_OPTION (pfile, out_fname) == NULL)
 	CPP_OPTION (pfile, out_fname) = argv[i];
       else
-	cpp_error (pfile, DL_FATAL,
+	cpp_error (pfile, DL_ERROR,
 		   "too many filenames. Type %s --help for usage info",
 		   progname);
     }
@@ -1328,7 +1328,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	      arg = argv[++i];
 	      if (!arg)
 		{
-		  cpp_error (pfile, DL_FATAL,
+		  cpp_error (pfile, DL_ERROR,
 			     cl_options[opt_index].msg, argv[i - 1]);
 		  return argc;
 		}
@@ -1481,7 +1481,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	    CPP_OPTION (pfile, out_fname) = arg;
 	  else
 	    {
-	      cpp_error (pfile, DL_FATAL, "output filename specified twice");
+	      cpp_error (pfile, DL_ERROR, "output filename specified twice");
 	      return argc;
 	    }
 	  break;
@@ -1592,7 +1592,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 		}
 	      else
 		{
-		  cpp_error (pfile, DL_FATAL, "-I- specified twice");
+		  cpp_error (pfile, DL_ERROR, "-I- specified twice");
 		  return argc;
 		}
 	    }
@@ -1796,7 +1796,7 @@ cpp_post_options (pfile)
       (CPP_OPTION (pfile, print_deps_missing_files)
        || CPP_OPTION (pfile, deps_file)
        || CPP_OPTION (pfile, deps_phony_targets)))
-    cpp_error (pfile, DL_FATAL,
+    cpp_error (pfile, DL_ERROR,
 	       "you must additionally specify either -M or -MM");
 }
 

@@ -92,8 +92,7 @@ _cpp_begin_message (pfile, code, line, column)
 	{
 	  if (CPP_OPTION (pfile, inhibit_errors))
 	    return 0;
-	  if (pfile->errors < CPP_FATAL_LIMIT)
-	    pfile->errors++;
+	  pfile->errors++;
 	}
       else if (CPP_OPTION (pfile, inhibit_warnings))
 	return 0;
@@ -102,14 +101,9 @@ _cpp_begin_message (pfile, code, line, column)
     case DL_ERROR:
       if (CPP_OPTION (pfile, inhibit_errors))
 	return 0;
-      if (pfile->errors < CPP_FATAL_LIMIT)
-	pfile->errors++;
-      break;
-
-      /* Fatal errors cannot be inhibited.  */
-    case DL_FATAL:
+      /* ICEs cannot be inhibited.  */
     case DL_ICE:
-      pfile->errors = CPP_FATAL_LIMIT;
+      pfile->errors++;
       break;
     }
 

@@ -651,7 +651,7 @@ do_include_common (pfile, type)
     {
       /* Prevent #include recursion.  */
       if (pfile->line_maps.depth >= CPP_STACK_MAX)
-	cpp_error (pfile, DL_FATAL, "#include nested too deeply");
+	cpp_error (pfile, DL_ERROR, "#include nested too deeply");
       else
 	{
 	  check_eol (pfile);
