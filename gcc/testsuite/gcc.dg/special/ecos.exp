@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -116,7 +116,10 @@ if { [ check_weak_available ] == 1 } {
         fail "wkali-2a.o"
     } else {
         set lines [gcc_target_compile "$srcdir/$subdir/wkali-2b.c" "wkali-2b.o" object ""]
-        if ![string match "" $lines] then {
+        if [string match "*only weak aliases*" $lines] then {
+	    xfail "wkali-2b.o"
+	    file delete $srcdir/$subdir/a.out
+        } elseif ![string match "" $lines] then {
             fail "wkali-2b.o"
         } else {
             dg-runtest "$srcdir/$subdir/wkali-2.c" "wkali-2a.o wkali-2b.o" ""
