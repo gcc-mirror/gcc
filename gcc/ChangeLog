@@ -1,3 +1,9 @@
+Tue Apr 20 13:14:58 EDT 1999  John Wehle  (john@feith.com)
+
+	* i386.c (output_move_double): Abort if a non-offsettable
+	memory operand is encountered.  Delete unused code.
+	(find_addr_reg): Remove.
+
 Mon Apr 19 21:13:02 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* tree.def (BLOCK): Fix typo in comment.

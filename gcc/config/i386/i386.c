@@ -992,32 +992,6 @@ singlemove_string (operands)
     }
 }
 
-/* Return a REG that occurs in ADDR with coefficient 1.
-   ADDR can be effectively incremented by incrementing REG.  */
-
-static rtx
-find_addr_reg (addr)
-     rtx addr;
-{
-  while (GET_CODE (addr) == PLUS)
-    {
-      if (GET_CODE (XEXP (addr, 0)) == REG)
-	addr = XEXP (addr, 0);
-      else if (GET_CODE (XEXP (addr, 1)) == REG)
-	addr = XEXP (addr, 1);
-      else if (CONSTANT_P (XEXP (addr, 0)))
-	addr = XEXP (addr, 1);
-      else if (CONSTANT_P (XEXP (addr, 1)))
-	addr = XEXP (addr, 0);
-      else
-	abort ();
-    }
-
-  if (GET_CODE (addr) == REG)
-    return addr;
-  abort ();
-}
-
 /* Output an insn to add the constant N to the register X.  */
 
 static void
@@ -1055,7 +1029,6 @@ output_move_double (operands)
   rtx latehalf[2];
   rtx middlehalf[2];
   rtx xops[2];
-  rtx addreg0 = 0, addreg1 = 0;
   int dest_overlapped_low = 0;
   int size = GET_MODE_SIZE (GET_MODE (operands[0]));
 
@@ -1092,11 +1065,14 @@ output_move_double (operands)
   else
     optype1 = RNDOP;
 
-  /* Check for the cases that the operand constraints are not
-     supposed to allow to happen.  Abort if we get one,
-     because generating code for these cases is painful.  */
+  /* Check for the cases that are not supposed to happen
+     either due to the operand constraints or the fact
+     that all memory operands on the x86 are offsettable.
+     Abort if we get one, because generating code for these
+     cases is painful.  */
 
-  if (optype0 == RNDOP || optype1 == RNDOP)
+  if (optype0 == RNDOP || optype1 == RNDOP
+      || optype0 == MEMOP || optype1 == MEMOP)
     abort ();
 
   /* If one operand is decrementing and one is incrementing
@@ -1130,15 +1106,6 @@ output_move_double (operands)
         operands[1] = gen_rtx_MEM (DImode, operands[1]);
       optype1 = OFFSOP;
     }
-
-  /* If an operand is an unoffsettable memory ref, find a register
-     we can increment temporarily to make it refer to the second word.  */
-
-  if (optype0 == MEMOP)
-    addreg0 = find_addr_reg (XEXP (operands[0], 0));
-
-  if (optype1 == MEMOP)
-    addreg1 = find_addr_reg (XEXP (operands[1], 0));
 
   /* Ok, we can do one word at a time.
      Normally we do the low-numbered word first,
@@ -1236,8 +1203,7 @@ output_move_double (operands)
      emit the move late-half first.  Otherwise, compute the MEM address
      into the upper part of N and use that as a pointer to the memory
      operand.  */
-  if (optype0 == REGOP
-      && (optype1 == OFFSOP || optype1 == MEMOP))
+  if (optype0 == REGOP && optype1 == OFFSOP)
     {
       if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
 	  && reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
@@ -1268,10 +1234,6 @@ output_move_double (operands)
 	  if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
 		|| reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
 	    goto compadr;
-
-	  /* JRV says this can't happen: */
-	  if (addreg0 || addreg1)
-	      abort ();
 
 	  /* Only the middle reg conflicts; simply put it last. */
 	  output_asm_insn (singlemove_string (operands), operands);
@@ -1307,29 +1269,11 @@ output_move_double (operands)
 	      || REGNO (operands[0]) == REGNO (latehalf[1])))
       || dest_overlapped_low)
     {
-      /* Make any unoffsettable addresses point at high-numbered word.  */
-      if (addreg0)
-	asm_add (size-4, addreg0);
-      if (addreg1)
-	asm_add (size-4, addreg1);
-
-      /* Do that word.  */
+      /* Do the high-numbered word.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
 
-      /* Undo the adds we just did.  */
-      if (addreg0)
-	asm_add (-4, addreg0);
-      if (addreg1)
-	asm_add (-4, addreg1);
-
       if (size == 12)
-        {
-	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
-	  if (addreg0)
-	    asm_add (-4, addreg0);
-	  if (addreg1)
-	    asm_add (-4, addreg1);
-	}
+	output_asm_insn (singlemove_string (middlehalf), middlehalf);
 
       /* Do low-numbered word.  */
       return singlemove_string (operands);
@@ -1341,29 +1285,10 @@ output_move_double (operands)
 
   /* Do the middle one of the three words for long double */
   if (size == 12)
-    {
-      if (addreg0)
-        asm_add (4, addreg0);
-      if (addreg1)
-        asm_add (4, addreg1);
+    output_asm_insn (singlemove_string (middlehalf), middlehalf);
 
-      output_asm_insn (singlemove_string (middlehalf), middlehalf);
-    }
-
-  /* Make any unoffsettable addresses point at high-numbered word.  */
-  if (addreg0)
-    asm_add (4, addreg0);
-  if (addreg1)
-    asm_add (4, addreg1);
-
-  /* Do that word.  */
+  /* Do the high-numbered word.  */
   output_asm_insn (singlemove_string (latehalf), latehalf);
-
-  /* Undo the adds we just did.  */
-  if (addreg0)
-    asm_add (4-size, addreg0);
-  if (addreg1)
-    asm_add (4-size, addreg1);
 
   return "";
 }
