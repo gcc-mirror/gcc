@@ -243,12 +243,14 @@ case $host_os in
     ld_shlibs=yes
     ;;
   hpux*)
-    hardcode_libdir_flag_spec='${wl}+b ${wl}$libdir'
-    hardcode_libdir_separator=:
+    if test $with_gnu_ld = no; then
+      hardcode_libdir_flag_spec='${wl}+b ${wl}$libdir'
+      hardcode_libdir_separator=:
+      export_dynamic_flag_spec='${wl}-E'
+    fi
     hardcode_direct=yes
     hardcode_minus_L=yes # Not in the search PATH, but as the default
 			 # location of the library.
-    export_dynamic_flag_spec='${wl}-E'
 
     case $cc_basename in
       CC)
@@ -272,10 +274,12 @@ case $host_os in
         ;;
       *)
         if test $with_gcc = yes; then
-	  case "$host_os" in
-	  hpux9*) archive_cmds='$rm $output_objdir/$soname~$CC -shared -fPIC ${wl}+b ${wl}$install_libdir -o $output_objdir/$soname $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags~test $output_objdir/$soname = $lib || mv $output_objdir/$soname $lib' ;;
-	  *) archive_cmds='$CC -shared -fPIC ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags' ;;
-	  esac
+	  if test $with_gnu_ld = no; then
+	    case "$host_os" in
+	    hpux9*) archive_cmds='$rm $output_objdir/$soname~$CC -shared -fPIC ${wl}+b ${wl}$install_libdir -o $output_objdir/$soname $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags~test $output_objdir/$soname = $lib || mv $output_objdir/$soname $lib' ;;
+	    *) archive_cmds='$CC -shared -fPIC ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags' ;;
+	    esac
+	  fi
 	else
 	  # FIXME: insert proper C++ library support
           ld_shlibs=no
