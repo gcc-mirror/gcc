@@ -6,7 +6,7 @@ Fri May 22 00:57:00 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
 	is defined.
 	* tm.texi (JUMP_TABLES_IN_TEXT_SECTION): Corresponding changes.
 	* arm/coff.h: Define JUMP_TABLES_IN_TEXT_SECTION to 1.
-	coff.h: Likewise.
+	* arm/tcoff.h: Likewise.
 	* i386/386bsd.h: Likewise.
 	* i386/freebsd-elf.h: Likewise.
 	* i386/freebsd.h: Likewise.
