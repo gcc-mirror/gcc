@@ -3444,8 +3444,6 @@
   "!TARGET_MIPS16"
   "*
 {
-  dslots_jump_total++;
-  dslots_jump_filled++;
   operands[2] = const0_rtx;
 
   if (REGNO (operands[0]) == REGNO (operands[1]))
@@ -3469,8 +3467,6 @@
   "*
 {
   unsigned int regno1;
-  dslots_jump_total++;
-  dslots_jump_filled++;
   operands[2] = const0_rtx;
 
   if (GET_CODE (operands[1]) == REG)
@@ -3520,8 +3516,6 @@
   "!TARGET_MIPS16"
   "*
 {
-  dslots_jump_total += 2;
-  dslots_jump_filled += 2;
   operands[4] = const0_rtx;
 
   if (optimize && find_reg_note (insn, REG_DEAD, operands[1]))
@@ -3556,8 +3550,6 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT && !TARGET_MIPS16"
   "*
 {
-  dslots_jump_total += 2;
-  dslots_jump_filled += 2;
   operands[4] = const0_rtx;
 
   if (optimize && find_reg_note (insn, REG_DEAD, operands[1]))
@@ -6560,8 +6552,6 @@ move\\t%0,%z4\\n\\
   "*
 {
   operands[4] = const0_rtx;
-  dslots_jump_total += 3;
-  dslots_jump_filled += 2;
 
   return \"sll\\t%3,%2,26\\n\\
 \\tbgez\\t%3,1f\\n\\
@@ -6917,8 +6907,6 @@ move\\t%0,%z4\\n\\
   "*
 {
   operands[4] = const0_rtx;
-  dslots_jump_total += 3;
-  dslots_jump_filled += 2;
 
   return \"sll\\t%3,%2,26\\n\\
 \\tbgez\\t%3,1f\\n\\
@@ -7297,8 +7285,6 @@ move\\t%0,%z4\\n\\
   "*
 {
   operands[4] = const0_rtx;
-  dslots_jump_total += 3;
-  dslots_jump_filled += 2;
 
   return \"sll\\t%3,%2,26\\n\\
 \\tbgez\\t%3,1f\\n\\
@@ -9145,216 +9131,162 @@ move\\t%0,%z4\\n\\
 	(unordered:CC (match_operand:DF 1 "register_operand" "f")
 		      (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.un.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.un.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sunlt_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unlt:CC (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ult.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.ult.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "suneq_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(uneq:CC (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ueq.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.ueq.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sunle_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unle:CC (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ule.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.ule.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "seq_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(eq:CC (match_operand:DF 1 "register_operand" "f")
 	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.eq.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.eq.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "slt_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(lt:CC (match_operand:DF 1 "register_operand" "f")
 	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.lt.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.lt.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sle_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(le:CC (match_operand:DF 1 "register_operand" "f")
 	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.le.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.le.d\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sgt_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(gt:CC (match_operand:DF 1 "register_operand" "f")
 	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.lt.d\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.lt.d\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sge_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(ge:CC (match_operand:DF 1 "register_operand" "f")
 	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.le.d\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.le.d\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sunordered_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unordered:CC (match_operand:SF 1 "register_operand" "f")
 		      (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.un.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.un.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sunlt_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unlt:CC (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ult.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.ult.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "suneq_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(uneq:CC (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ueq.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.ueq.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sunle_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unle:CC (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.ule.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
+  "c.ule.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "seq_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(eq:CC (match_operand:SF 1 "register_operand" "f")
 	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.eq.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.eq.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "slt_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(lt:CC (match_operand:SF 1 "register_operand" "f")
 	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.lt.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.lt.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sle_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(le:CC (match_operand:SF 1 "register_operand" "f")
 	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.le.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.le.s\t%Z0%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sgt_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(gt:CC (match_operand:SF 1 "register_operand" "f")
 	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.lt.s\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.lt.s\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 (define_insn "sge_sf"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(ge:CC (match_operand:SF 1 "register_operand" "f")
 	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "*
-{
-  return mips_fill_delay_slot (\"c.le.s\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
+  "c.le.s\t%Z0%2,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "FPSW")])
 
 
 ;;

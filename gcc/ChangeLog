@@ -1,5 +1,35 @@
 2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips-protos.h (final_prescan_insn,
+	mips_count_memory_refs, mips_fill_delay_slot): Remove.
+	* config/mips/mips.h (delay_type, dslots_load_total,
+	dslots_load_filled, dslots_jump_total, dslots_jump_filled,
+	dslots_number_nops, num_refs, mips_load_reg, mips_load_reg2,
+	mips_load_reg3, mips_load_reg4): Remove.
+	(MASK_STATS): Remove.
+	(MASK_EXPLICIT_RELOCS): Reuse its value.
+	(TARGET_STATS): Remove.
+	(TARGET_SWITCHES): Turn -mstats and -mno-stats into no-ops.
+	Warn that -mstats is now ignored.
+	(FINAL_PRESCAN_INSN): Undefine.
+	(DBR_OUTPUT_SEQEND): Remove handling of dslot statistics.
+	(ASM_OUTPUT_REG_POP): Likewise.
+	* config/mips/mips.c (dslots_load_total, dslots_load_filled,
+	dslots_jump_total, dslots_jump_filled, dslots_number_nops, num_refs,
+	mips_load_reg, mips_load_reg2, mips_load_reg3, mips_load_reg4,
+	mips_fill_delay_slot, mips_count_memory_refs,
+	final_prescan_insn): Remove.
+	(output_block_move): Remove calls to mips_count_memory_refs.
+	(print_operand): Remove printing of #nop for TARGET_STATS.
+	(mips_output_function_epilogue): Remove TARGET_STATS code.
+	Reorganize setting of fnnmae.
+	* config/mips/mips.md: Remove handling of dslot statistics
+	throughout file.  Change all fcmp patterns into normal asm
+	templates, removing calls to mips_fill_delay_slot.
+	* doc/invoke.texi: Remove documentation of -mstats.
+
+2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_class_max_nregs): Return the number of
 	words in the mode.
 
