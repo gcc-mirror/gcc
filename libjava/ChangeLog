@@ -1,5 +1,21 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/FileDescriptor.java
+	(sync): Moved around, added javadoc.
+	(valid): Likewise.
+	(open): Likewise.
+	(write): Likewise.
+	(close): Likewise.
+	(setLength): Likewise.
+	(seek): Likewise.
+	(getLength): Likewise.
+	(getFilePointer): Likewise.
+	(read): Likewise.
+	(available): Likewise.
+	(finalize): Likewise.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/AbstractAction.java: Reformated.
 	(getPropertyChangeListeners): New method.
 	* javax/swing/AbstractCellEditor.java: Reformated.
