@@ -8400,7 +8400,22 @@ function_arg_pass_by_reference (cum, mode, type, named)
 }
 
 /* Return the class of registers for which a mode change from FROM to TO
-   is invalid.  */
+   is invalid.
+
+   In little-endian mode, the hi-lo registers are numbered backwards,
+   so (subreg:SI (reg:DI hi) 0) gets the high word instead of the low
+   word as intended.
+
+   Similarly, when using paired floating-point registers, the first
+   register holds the low word, regardless of endianness.  So in big
+   endian mode, (subreg:SI (reg:DF $f0) 0) does not get the high word
+   as intended.
+
+   Also, loading a 32-bit value into a 64-bit floating-point register
+   will not sign-extend the value, despite what LOAD_EXTEND_OP says.
+   We can't allow 64-bit float registers to change from a 32-bit
+   mode to a 64-bit mode.  */
+
 enum reg_class
 mips_cannot_change_mode_class (from, to)
      enum machine_mode from, to;
