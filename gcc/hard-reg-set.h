@@ -211,6 +211,9 @@ extern char call_used_regs[FIRST_PSEUDO_REGISTER];
 
 extern HARD_REG_SET call_used_reg_set;
   
+/* Registers that we don't want to caller save.  */
+extern HARD_REG_SET losing_caller_save_reg_set;
+
 /* Indexed by hard register number, contains 1 for registers that are
    fixed use -- i.e. in fixed_regs -- or a function value return register
    or STRUCT_VALUE_REGNUM or STATIC_CHAIN_REGNUM.  These are the

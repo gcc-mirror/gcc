@@ -176,6 +176,12 @@ extern int caller_save_needed;
 #define CALLER_SAVE_PROFITABLE(REFS, CALLS)  (4 * (CALLS) < (REFS))
 #endif
 
+/* On most machines a register class is likely to be spilled if it
+   only has one register.  */
+#ifndef CLASS_LIKELY_SPILLED_P
+#define CLASS_LIKELY_SPILLED_P(CLASS) (reg_class_size[(int) (CLASS)] == 1)
+#endif
+
 /* Allocated in local_alloc.  */
 
 /* A list of SCRATCH rtl allocated by local-alloc.  */

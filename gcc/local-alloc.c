@@ -55,6 +55,10 @@ Boston, MA 02111-1307, USA.  */
    But this is currently disabled since tying in global_alloc is not
    yet implemented.  */
 
+/* Pseudos allocated here cannot be reallocated by global.c if the hard
+   register is used as a spill register.  So we don't allocate such pseudos
+   here if their preferred class is likely to be used by spills.  */
+
 #include <stdio.h>
 #include "config.h"
 #include "rtl.h"
@@ -66,17 +70,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "output.h"
 
-/* Pseudos allocated here cannot be reallocated by global.c if the hard
-   register is used as a spill register.  So we don't allocate such pseudos
-   here if their preferred class is likely to be used by spills.
-
-   On most machines, the appropriate test is if the class has one
-   register, so we default to that.  */
-
-#ifndef CLASS_LIKELY_SPILLED_P
-#define CLASS_LIKELY_SPILLED_P(CLASS) (reg_class_size[(int) (CLASS)] == 1)
-#endif
-
 /* Next quantity number available for allocation.  */
 
 static int next_qty;
@@ -2105,6 +2098,9 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
     COPY_HARD_REG_SET (used, fixed_reg_set);
   else
     COPY_HARD_REG_SET (used, call_used_reg_set);
+
+  if (accept_call_clobbered)
+    IOR_HARD_REG_SET(used, losing_caller_save_reg_set);
 
   for (ins = born_index; ins < dead_index; ins++)
     IOR_HARD_REG_SET (used, regs_live_at[ins]);

@@ -81,6 +81,9 @@ char call_used_regs[FIRST_PSEUDO_REGISTER];
 
 HARD_REG_SET call_used_reg_set;
 
+/* HARD_REG_SET of registers we want to avoid caller saving.  */
+HARD_REG_SET losing_caller_save_reg_set;
+
 /* Data for initializing the above.  */
 
 static char initial_call_used_regs[] = CALL_USED_REGISTERS;
@@ -390,6 +393,8 @@ init_reg_sets_1 ()
 	SET_HARD_REG_BIT (call_used_reg_set, i);
       if (call_fixed_regs[i])
 	SET_HARD_REG_BIT (call_fixed_reg_set, i);
+      if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (i)))
+	SET_HARD_REG_BIT (losing_caller_save_reg_set, i);
     }
 }
 
