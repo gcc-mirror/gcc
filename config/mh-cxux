@@ -4,11 +4,6 @@
 SYSV = -DSYSV -DSVR4
 RANLIB = true
 
-# C++ debugging is not yet supported under SVR4 (DWARF)
-CXXFLAGS=-O
-
 # The l flag generates a warning from the SVR4 archiver, remove it.
 AR_FLAGS = cq
 
-# Under CX/UX, we want to tell the compiler to use ANSI mode.
-CC=cc -Xa
