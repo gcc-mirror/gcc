@@ -96,7 +96,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return useGraphics2d;
   }
 
-  static 
+  static
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       System.loadLibrary("gtkpeer");
@@ -352,7 +352,6 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
    * @deprecated part of the older "logical font" system in earlier AWT
    * implementations. Our newer Font class uses getClasspathFontPeer.
    */
-
   protected FontPeer getFontPeer (String name, int style) 
   {
     try {

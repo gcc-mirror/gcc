@@ -239,7 +239,7 @@ public class GLightweightPeer
 
   public void setBackground(Color color) {}
 
-  public void setBounds(int x, int y, int width, int height) { }
+  public void setBounds(int x, int y, int width, int height) {}
 
   public void setCursor(Cursor cursor) {}
 
