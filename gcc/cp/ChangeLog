@@ -1,3 +1,11 @@
+1998-07-08  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* cp-tree.h (warn_long_long): Define.
+	* decl.c (grokdeclarator): Add flag `warn_long_long' as guard for
+	warning "ANSI C++ does not support `long long'".
+	* decl2.c (warn_long_long): Define.
+	(lang_decode_option): Parse -Wlong-long, -Wno-long-long options.
+
 1998-07-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (xref_tag): Handle attributes between 'class' and name.

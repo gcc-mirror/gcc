@@ -121,7 +121,8 @@ in the following sections.
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declaration  -Wimport
 -Werror-implicit-function-declaration  -Winline
--Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
+-Wlarger-than-@var{len}  -Wlong-long
+-Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
 -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
 -Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type
@@ -1703,6 +1704,12 @@ main ()
 
 In this example, g++ will synthesize a default @samp{A& operator =
 (const A&);}, while cfront will use the user-defined @samp{operator =}.
+
+@item -Wlong-long
+Warn if @samp{long long} type is used.  This is default.  To inhibit
+the warning messages, use @samp{-Wno-long-long}.  Flags
+@samp{-Wlong-long} and @samp{-Wno-long-long} are taken into account
+only when @samp{-pedantic} flag is used.
 
 @item -Werror
 Make all warnings into errors.

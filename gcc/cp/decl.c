@@ -8436,7 +8436,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		{
 		  if (i == (int) RID_LONG && RIDBIT_SETP (i, specbits))
 		    {
-		      if (pedantic && ! in_system_header)
+		      if (pedantic && ! in_system_header && warn_long_long)
 			pedwarn ("ANSI C++ does not support `long long'");
 		      if (longlong)
 			error ("`long long long' is too long for GCC");

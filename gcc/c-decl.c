@@ -485,6 +485,10 @@ int flag_no_ident = 0;
 
 int warn_implicit_int;
 
+/* Nonzero means warn about usage of long long when `-pedantic'.  */
+
+int warn_long_long = 1;
+
 /* Nonzero means message about use of implicit function declarations;
  1 means warning; 2 means error. */
 
@@ -704,6 +708,10 @@ c_decode_option (argc, argv)
     }
   else if (!strcmp (p, "-Wno-implicit"))
     warn_implicit_int = 0, mesg_implicit_function_declaration = 0;
+  else if (!strcmp (p, "-Wlong-long"))
+    warn_long_long = 1;
+  else if (!strcmp (p, "-Wno-long-long"))
+    warn_long_long = 0;
   else if (!strcmp (p, "-Wwrite-strings"))
     warn_write_strings = 1;
   else if (!strcmp (p, "-Wno-write-strings"))
@@ -4406,7 +4414,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      error ("`long long long' is too long for GCC");
 		    else
 		      {
-			if (pedantic && ! in_system_header)
+			if (pedantic && ! in_system_header && warn_long_long)
 			  pedwarn ("ANSI C does not support `long long'");
 			longlong = 1;
 		      }

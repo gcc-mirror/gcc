@@ -178,6 +178,10 @@ int flag_implicit_templates = 1;
 
 int warn_implicit = 1;
 
+/* Nonzero means warn about usage of long long when `-pedantic'.  */
+
+int warn_long_long = 1;
+
 /* Nonzero means warn when all ctors or dtors are private, and the class
    has no friends.  */
 
@@ -686,6 +690,8 @@ lang_decode_option (argc, argv)
 
       if (!strcmp (p, "implicit"))
 	warn_implicit = setting;
+      else if (!strcmp (p, "long-long"))
+	warn_long_long = setting;
       else if (!strcmp (p, "return-type"))
 	warn_return_type = setting;
       else if (!strcmp (p, "ctor-dtor-privacy"))

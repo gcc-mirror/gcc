@@ -193,6 +193,7 @@ in the following sections.
 \-Wimplicit\-int
 \-Wimplicit\-function\-declaration
 \-Winline
+\-Wlong\-long
 \-Wmain
 \-Wmissing\-prototypes
 \-Wmissing\-declarations
@@ -2003,6 +2004,20 @@ Warn if an \c
 .TP
 .B \-Wenum\-clash
 Warn about conversion between different enumeration types (C++ only).
+.TP
+.B \-Wlong-long
+Warn if
+.B long long \c
+type is used.  This is default.  To inhibit
+the warning messages, use flag `\|\c
+.B \-Wno\-long\-long\c
+\&\|'.  Flags `\|\c
+.B \-W\-long\-long\c
+\&\|' and `\|\c
+.B \-Wno\-long\-long\c
+\&\|' are taken into account only when flag `\|\c
+.B \-pedantic\c
+\&\|' is used.
 .TP
 .B \-Woverloaded\-virtual
 (C++ only.)
