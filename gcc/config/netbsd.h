@@ -82,11 +82,16 @@ Boston, MA 02111-1307, USA.  */
    1. Select the appropriate set of libs, depending on whether we're
       profiling.
 
-   2. Include the pthread library if -pthread is specified.
+   2. Include the pthread library if -pthread is specified (only
+      if threads are enabled).
 
-   3. Include the posix library if -posix is specified.  */
+   3. Include the posix library if -posix is specified.
+
+   FIXME: Could eliminate the duplication here if we were allowed to
+   use string concatenation.  */
 
 #undef LIB_SPEC
+#ifdef NETBSD_ENABLE_PTHREADS
 #define LIB_SPEC		\
   "%{pthread:			\
      %{!p:			\
@@ -104,6 +109,20 @@ Boston, MA 02111-1307, USA.  */
 	 %{!pg:-lc}}		\
        %{p:-lc_p}		\
        %{pg:-lc_p}}}"
+#else
+#define LIB_SPEC		\
+  "%{posix:			\
+     %{!p:			\
+       %{!pg:-lposix}}		\
+     %{p:-lposix_p}		\
+     %{pg:-lposix_p}}		\
+   %{!shared:			\
+     %{!symbolic:		\
+       %{!p:			\
+	 %{!pg:-lc}}		\
+       %{p:-lc_p}		\
+       %{pg:-lc_p}}}"
+#endif
 
 /* Provide a LIBGCC_SPEC appropriate for NetBSD.  We also want to exclude
    libgcc with -symbolic.  */
