@@ -1,3 +1,28 @@
+2004-07-22  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* Makefile.am (ordinary_java_source_files): Add
+	DefaultContentHandlerFactory.java.
+	* Makefile.in: Rebuilt.
+	* java/net/URLConnection.java (defaultFactory): New field.
+	(getContent): 
+	(getContentHandler): Renamed from 'setContentHandler'. Try 
+	defaultFactory after user-set factory, if any. Search for content 
+	handler implementations in gnu.java.net.content, not gnu.gcj.content.
+	* gnu/java/net/protocol/file/Connection.java (getHeaderField):
+	Implemented.
+	(getLastModified): Implemented.
+	(getPermission): Create file permission here, instead of in
+	constructor.
+	* gnu/java/net/protocol/gcjlib/Connection.java (getHeaderField):
+	Implemented.
+	* gnu/java/net/protocol/jar/Connection.java (getHeaderField):
+	Implemented.
+	(getLastModified): Implemented.
+	* gnu/java/awt/ClasspathToolkit.java (createImageProducer): New.
+	Default implementation.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (createImageProducer): New.
+	Implement using GdkPixbufDecoder.
+	
 2004-07-21  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JTextArea.java
@@ -650,8 +675,6 @@
 	(BasicPopupMenuUI.PopupMenuHandler): Implemented.
 	(BasicPopupMenuUI.TopWindowListener): New ComponentListener.
 	Implemented.
-	
-	
 
 2004-07-21  Michael Koch  <konqueror@gmx.de>
 

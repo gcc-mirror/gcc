@@ -278,6 +278,17 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
         return image;        
       }
   }
+  
+  /**
+   * Creates an ImageProducer from the specified URL. The image is assumed
+   * to be in a recognised format. 
+   *
+   * @param url URL to read image data from.
+   */  
+  public ImageProducer createImageProducer(URL url)
+  {
+    return new GdkPixbufDecoder(url);  
+  }
 
   public ColorModel getColorModel () 
   {

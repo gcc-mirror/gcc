@@ -50,6 +50,9 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.Permission;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * This subclass of java.net.URLConnection models a URLConnection via
@@ -62,9 +65,11 @@ import java.security.Permission;
 public class Connection extends URLConnection
 {
   /**
-   * Default permission for a file
+   * HTTP-style DateFormat, used to format the last-modified header.
    */
-  private static final String DEFAULT_PERMISSION = "read";
+  private static SimpleDateFormat dateFormat
+    = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'",
+                           new Locale ("En", "Us", "Unix"));
 
   /**
    * This is a File object for this connection
@@ -82,18 +87,11 @@ public class Connection extends URLConnection
   private OutputStream outputStream;
   
   /**
-   * FilePermission to read the file
-   */
-  private FilePermission permission;
-
-  /**
    * Calls superclass constructor to initialize.
    */
   public Connection(URL url)
   {
     super (url);
-
-    permission = new FilePermission(getURL().getFile(), DEFAULT_PERMISSION);
   }
   
   /**
@@ -156,6 +154,54 @@ public class Connection extends URLConnection
   }
 
   /**
+   *  Get an http-style header field. Just handle a few common ones. 
+   */
+  public String getHeaderField(String field)
+  {
+    try
+      {
+	if (!connected)
+	  connect();
+
+	if (field.equals("content-type"))
+          return guessContentTypeFromName(file.getName());
+	else if (field.equals("content-length"))
+          return Long.toString(file.length());
+	else if (field.equals("last-modified"))
+	  {
+	    synchronized (dateFormat)
+	      {
+        	return dateFormat.format(new Date(file.lastModified()));
+	      }
+	  }
+      }
+    catch (IOException e)
+      {
+        // Fall through.
+      }
+    return null;
+  }
+
+  /**
+   * Get the length of content.
+   * @return the length of the content.
+   */
+  public int getContentLength()
+  {
+    try
+      {
+ 	if (!connected)
+ 	  connect();
+
+	return (int) file.length();
+      }
+    catch (IOException e)
+      {
+ 	return -1;
+      }
+  }
+
+  /**
    * Get the last modified time of the resource.
    *
    * @return the time since epoch that the resource was modified.
@@ -176,26 +222,6 @@ public class Connection extends URLConnection
   }
 
   /**
-   * Get the length of content.
-   *
-   * @return the length of the content.
-   */
-  public int getContentLength()
-  {
-    try
-      {
-	if (!connected)
-	  connect();
-        
-	return (int) file.length();
-      }
-    catch (IOException e)
-      {
-	return -1;
-      }
-  }
-  
-  /**
    * This method returns a <code>Permission</code> object representing the
    * permissions required to access this URL.  This method returns a
    * <code>java.io.FilePermission</code> for the file's path with a read
@@ -205,6 +231,6 @@ public class Connection extends URLConnection
    */
   public Permission getPermission() throws IOException
   {
-    return permission;
+    return new FilePermission(getURL().getFile(), "read");
   }
 }

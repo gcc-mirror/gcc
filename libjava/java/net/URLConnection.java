@@ -116,6 +116,9 @@ public abstract class URLConnection
    */
   private static boolean defaultUseCaches = true;
 
+  private static ContentHandlerFactory defaultFactory
+    = new gnu.java.net.DefaultContentHandlerFactory();
+
   /**
    * This variable determines whether or not interaction is allowed with
    * the user.  For example, to prompt for a username and password.
@@ -436,7 +439,7 @@ public abstract class URLConnection
     // guessContentTypeFromName() and guessContentTypeFromStream methods
     // as well as FileNameMap class & fileNameMap field & get/set methods.
     String type = getContentType();
-    ContentHandler ch = setContentHandler(type);
+    ContentHandler ch = getContentHandler(type);
 
     if (ch == null)
       return getInputStream();
@@ -963,7 +966,7 @@ public abstract class URLConnection
     fileNameMap = map;
   }
 
-  private ContentHandler setContentHandler(String contentType)
+  private ContentHandler getContentHandler(String contentType)
   {
     ContentHandler handler;
 
@@ -981,12 +984,17 @@ public abstract class URLConnection
       else
 	return null;
 
-    // If a non-default factory has been set, use it to find the content type.
+    // If a non-default factory has been set, use it.
     if (factory != null)
       handler = factory.createContentHandler(contentType);
 
-    // Non-default factory may have returned null or a factory wasn't set.
-    // Use the default search algorithm to find a handler for this content type.
+    // Now try default factory. Using this factory to instantiate built-in
+    // content handlers is preferable  
+    if (handler == null)
+      handler = defaultFactory.createContentHandler(contentType);
+
+    // User-set factory has not returned a handler. Use the default search 
+    // algorithm.
     if (handler == null)
       {
 	// Get the list of packages to check and append our default handler
@@ -995,7 +1003,7 @@ public abstract class URLConnection
 	// ever be needed (or available).
 	String propVal = System.getProperty("java.content.handler.pkgs");
 	propVal = (propVal == null) ? "" : (propVal + "|");
-	propVal = propVal + "gnu.gcj.content|sun.net.www.content";
+	propVal = propVal + "gnu.java.net.content|sun.net.www.content";
 
 	// Replace the '/' character in the content type with '.' and
 	// all other non-alphabetic, non-numeric characters with '_'.
