@@ -1,3 +1,13 @@
+2003-11-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12971
+	* include/bits/locale_facets.tcc
+	(money_put::do_put(..., long double)): Fix conversion
+	specification as per DR 328 [WP].
+	* testsuite/22_locale/money_put/put/char/12971.cc: Add.
+	* testsuite/22_locale/money_put/put/wchar_t/12971.cc: Ditto.
+	* docs/html/ext/howto.html: Add entry for DR 328.
+
 2003-11-08  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12967
