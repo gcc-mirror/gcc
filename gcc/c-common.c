@@ -2146,8 +2146,10 @@ type_for_mode (mode, unsignedp)
   if (mode == TYPE_MODE (intDI_type_node))
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
+#if HOST_BITS_PER_WIDE_INT >= 64
   if (mode == TYPE_MODE (intTI_type_node))
     return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
+#endif
 
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;
