@@ -1,5 +1,11 @@
 2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/sh/sh.md (udivsi3): Don't put udivsi3_i4_media instructions
+	into a libcall block.
+	(divsi3): Likewise divsi3_i4_media.
+
+2002-11-20  Richard Sandiford  <rsandifo@redhat.com>
+
 	* global.c (find_reg): Check HARD_REGNO_NREGS before kicking
 	out another register.
 
