@@ -53,10 +53,10 @@ void test01()
   const ext_type* 	e_lit = e_lit_base;
 
   int_type 		i_lit_base[24] = 
-  { 25088, 27648, 24832, 25344, 27392, 8192, 
-    28672, 25856, 24832, 29184, 27648, 8192, 
-    27136, 24832, 29440, 27904, 26880, 28160, 
-    25856, 8192, 29696, 25856, 24832, 2560
+  { 
+    0x6200, 0x6c00, 0x6100, 0x6300, 0x6b00, 0x2000, 0x7000, 0x6500, 0x6100, 
+    0x7200, 0x6c00, 0x2000, 0x6a00, 0x6100, 0x7300, 0x6d00, 0x6900, 0x6e00, 
+    0x6500, 0x2000, 0x7400, 0x6500, 0x6100, 0xa000
   };
   const int_type* 	i_lit = i_lit_base;
 
@@ -74,17 +74,17 @@ void test01()
   const unicode_codecvt&	cvt = use_facet<unicode_codecvt>(loc); 
 
   // in
-  unicode_codecvt::state_type state01("UNICODE", "UCS4");
+  unicode_codecvt::state_type state01("UCS-2BE", "UCS4", 0xfeff, 0);
   initialize_state(state01);
   result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
-		     i_arr, i_arr + size, ito_next);
+		     i_arr, i_arr + size + 1, ito_next);
   VERIFY( r1 == codecvt_base::ok );
   VERIFY( !int_traits::compare(i_arr, i_lit, size) ); 
   VERIFY( efrom_next == e_lit + size );
   VERIFY( ito_next == i_arr + size );
 
   // out
-  unicode_codecvt::state_type state02("UNICODE", "UCS4");
+  unicode_codecvt::state_type state02("UCS-2BE", "UCS4", 0xfeff, 0);
   initialize_state(state02);  
   result r2 = cvt.out(state02, i_lit, i_lit + size, ifrom_next, 
 		       e_arr, e_arr + size, eto_next);
@@ -95,7 +95,7 @@ void test01()
 
   // unshift
   ext_traits::copy(e_arr, e_lit, size);
-  unicode_codecvt::state_type state03("UNICODE", "UCS4");
+  unicode_codecvt::state_type state03("UCS-2BE", "UCS4", 0xfeff, 0);
   initialize_state(state03);
   result r3 = cvt.unshift(state03, e_arr, e_arr + size, eto_next);
   VERIFY( r3 == codecvt_base::noconv );
@@ -107,7 +107,7 @@ void test01()
 
   VERIFY( !cvt.always_noconv() );
 
-  unicode_codecvt::state_type state04("UNICODE", "UCS4");
+  unicode_codecvt::state_type state04("UCS-2BE", "UCS4", 0xfeff, 0);
   initialize_state(state04);
   int j = cvt.length(state03, e_lit, e_lit + size, 5);
   VERIFY( j == 5 );

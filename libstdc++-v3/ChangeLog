@@ -1,8 +1,25 @@
+2000-10-19  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* testsuite/22_locale/codecvt_unicode_char.cc (test01): Adjust
+	creation of state_type for unicode_codecvt to take into account
+	the byte order markings. Add distinct tests for UCS-2BE and UCS-2LE.
+	* testsuite/22_locale/codecvt_unicode_wchar_t.cc (test01): Same.
+	* include/bits/codecvt.h (__enc_traits): Add support for encodings
+	that need a byte order marker. Needed for correct unicode support.
+
+	* src/locale.cc: Remove explicit qualification std::.
+	(locale::locale(const char* __name)): Revert, as named locale
+	support not finished.
+	* src/localename.cc (locale::_Impl:: _Impl(size_t __numfacets,
+	size_t __refs, bool __has_name = false, string __name): Move
+	default argument...
+	* include/bits/localefwd.h: Here.
+	
 2000-10-18  Chip Salzenberg  <chip@valinux.com>
 
         * libio/libio.h (_IO_USER_LOCK): Define.
 
-2000-10-18   Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+2000-10-18  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* libsupc++/Makefile.am (exception): Change exception.cc to
 	exception_support.cc.

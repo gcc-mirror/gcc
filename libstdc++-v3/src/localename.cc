@@ -74,10 +74,10 @@ namespace std {
   // including the standard "C" locale.
   locale::_Impl::
   _Impl(size_t __numfacets, size_t __refs, bool __has_name = false, 
-	string __name = "*")
+	string __name)
   : _M_references(__refs - 1), _M_facets(0), _M_category_names(0), 
     _M_has_name(__has_name), _M_name(__name)
-  { 
+  {
     try
       {  _M_facets = new __vec_facet(__numfacets, NULL); }
     catch(...) 

@@ -65,33 +65,41 @@ namespace std
     // Max size of charset encoding name
     static const int 	_S_max_size = 32;
     // Name of internal character set encoding.
-    char	       	_M_intc_enc[_S_max_size];
+    char	       	_M_int_enc[_S_max_size];
     // Name of external character set encoding.
-    char  	       	_M_extc_enc[_S_max_size];
+    char  	       	_M_ext_enc[_S_max_size];
 
     // Conversion descriptor between external encoding to internal encoding.
     __desc_type		_M_in_desc;
     // Conversion descriptor between internal encoding to external encoding.
     __desc_type		_M_out_desc;
 
+    // Details the byte-order marker for the external encoding, if necessary.
+    int			_M_ext_bom;
+
+    // Details the byte-order marker for the internal encoding, if necessary.
+    int			_M_int_bom;
+
   public:
-    __enc_traits() : _M_in_desc(0), _M_out_desc(0)
+    __enc_traits()
+    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
     {
       // __intc_end = whatever we are using internally, which is
       // UCS4 (linux) 
       // UCS2 == UNICODE  (microsoft, java, aix, whatever...)
       // XXX Currently don't know how to get this data from target system...
-      strcpy(_M_intc_enc, "UCS4");
+      strcpy(_M_int_enc, "UCS4");
 
       // __extc_end = external codeset in current locale
-      strcpy(_M_extc_enc, nl_langinfo(CODESET));
+      strcpy(_M_ext_enc, nl_langinfo(CODESET));
     }
 
-    __enc_traits(const char* __int, const char* __ext)
-    : _M_in_desc(0), _M_out_desc(0)
+    __enc_traits(const char* __int, const char* __ext, int __ibom = 0, 
+		 int __ebom = 0)
+    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
     {
-      strncpy(_M_intc_enc, __int, _S_max_size);
-      strncpy(_M_extc_enc, __ext, _S_max_size);
+      strncpy(_M_int_enc, __int, _S_max_size);
+      strncpy(_M_ext_enc, __ext, _S_max_size);
     }
 
     // 21.1.2 traits typedefs
@@ -101,8 +109,10 @@ namespace std
     // CopyConstructible types (20.1.3)
     __enc_traits(const __enc_traits& __obj)
     {
-      strncpy(_M_intc_enc, __obj._M_intc_enc, _S_max_size);
-      strncpy(_M_extc_enc, __obj._M_extc_enc, _S_max_size);
+      strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
+      strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
+      _M_ext_bom = __obj._M_ext_bom;
+      _M_int_bom = __obj._M_int_bom;
     }
 
     ~__enc_traits()
@@ -115,8 +125,8 @@ namespace std
     void
     _M_init()
     {
-      _M_in_desc = iconv_open(_M_intc_enc, _M_extc_enc);
-      _M_out_desc = iconv_open(_M_extc_enc, _M_intc_enc);
+      _M_in_desc = iconv_open(_M_int_enc, _M_ext_enc);
+      _M_out_desc = iconv_open(_M_ext_enc, _M_int_enc);
       if (_M_out_desc == iconv_t(-1) || _M_in_desc == iconv_t(-1))
 	{
 	  // XXX Extended error checking.
@@ -140,11 +150,19 @@ namespace std
 
    const char* 
     _M_get_internal_enc()
-    { return _M_intc_enc; }
+    { return _M_int_enc; }
 
     const char* 
     _M_get_external_enc()
-    { return _M_extc_enc; }
+    { return _M_ext_enc; }
+
+    int 
+    _M_get_external_bom()
+    { return _M_ext_bom; }
+
+    int 
+    _M_get_internal_bom()
+    { return _M_int_bom; }
   };
 #endif //_GLIBCPP_USE_WCHAR_T
 
@@ -372,10 +390,32 @@ namespace std
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
-	  char* __cfrom = reinterpret_cast<char*>(const_cast<intern_type*>(__from));
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  size_t __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
-	  
+	  char* __cfrom;
+	  size_t __conv;
+
+	  // Some encodings need a byte order marker as the first item
+	  // in the byte stream, to designate endian-ness. The default
+	  // value for the byte order marker is NULL, so if this is
+	  // the case, it's not necessary and we can just go on our
+	  // merry way.
+	  int __int_bom = __state._M_get_internal_bom();
+	  if (__int_bom)
+	    {	  
+	      size_t __size = __from_end - __from;
+	      intern_type __cfixed[__size + 1];
+	      __cfixed[0] = static_cast<intern_type>(__int_bom);
+	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	    }
+	  else
+	    {
+	      intern_type* __cfixed = const_cast<intern_type*>(__from);
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	    }
+
 	  if (__conv != size_t(-1))
 	    {
 	      __from_next = reinterpret_cast<const intern_type*>(__cfrom);
@@ -452,9 +492,32 @@ namespace std
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
-	  char* __cfrom = reinterpret_cast<char*>(const_cast<extern_type*>(__from));
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  size_t __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	  char* __cfrom;
+	  size_t __conv;
+
+	  // Some encodings need a byte order marker as the first item
+	  // in the byte stream, to designate endian-ness. The default
+	  // value for the byte order marker is NULL, so if this is
+	  // the case, it's not necessary and we can just go on our
+	  // merry way.
+	  int __ext_bom = __state._M_get_external_bom();
+	  if (__ext_bom)
+	    {	  
+	      size_t __size = __from_end - __from;
+	      extern_type __cfixed[__size + 1];
+	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
+	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	    }
+	  else
+	    {
+	      extern_type* __cfixed = const_cast<extern_type*>(__from);
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	    }
+
 	  
 	  if (__conv != size_t(-1))
 	    {

@@ -76,9 +76,9 @@ namespace std {
 #ifdef _GLIBCPP_USE_WCHAR_T
     &std::ctype<wchar_t>::id,
 #endif
-    &std::codecvt<char, char, mbstate_t>::id,
+    &codecvt<char, char, mbstate_t>::id,
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::codecvt<wchar_t, char, mbstate_t>::id,
+    &codecvt<wchar_t, char, mbstate_t>::id,
 #endif
     0
   };
@@ -86,21 +86,21 @@ namespace std {
   const locale::id* const
   locale::_Impl::_S_id_monetary[] =
   {
-    &std::moneypunct<char, false>::id, 
+    &moneypunct<char, false>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::moneypunct<wchar_t, false>::id,
+    &moneypunct<wchar_t, false>::id,
 #endif
     &std::moneypunct<char,true >::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::moneypunct<wchar_t,true >::id,
+    &moneypunct<wchar_t,true >::id,
 #endif
-    &std::money_get<char>::id,        
+    &money_get<char>::id,        
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::money_get<wchar_t>::id,
+    &money_get<wchar_t>::id,
 #endif
-    &std::money_put<char>::id,        
+    &money_put<char>::id,        
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::money_put<wchar_t>::id,
+    &money_put<wchar_t>::id,
 #endif
     0
   };
@@ -108,17 +108,17 @@ namespace std {
   const locale::id* const
   locale::_Impl::_S_id_numeric[] =
   {
-    &std::numpunct<char>::id, 
+    &numpunct<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::numpunct<wchar_t>::id,
+    &numpunct<wchar_t>::id,
 #endif
-    &std::num_get<char>::id,  
+    &num_get<char>::id,  
  #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::num_get<wchar_t>::id,
+    &num_get<wchar_t>::id,
 #endif
-    &std::num_put<char>::id,  
+    &num_put<char>::id,  
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::num_put<wchar_t>::id,
+    &num_put<wchar_t>::id,
 #endif
     0
   };
@@ -126,13 +126,13 @@ namespace std {
   const locale::id* const
   locale::_Impl::_S_id_time[] =
   {
-    &std::time_get<char>::id, 
+    &time_get<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::time_get<wchar_t>::id,
+    &time_get<wchar_t>::id,
 #endif
-    &std::time_put<char>::id, 
+    &time_put<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::time_put<wchar_t>::id,
+    &time_put<wchar_t>::id,
 #endif
     0
   };
@@ -140,13 +140,13 @@ namespace std {
   const locale::id* const
   locale::_Impl::_S_id_messages[] =
   {
-    &std::time_get<char>::id, 
+    &time_get<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::time_get<wchar_t>::id,
+    &time_get<wchar_t>::id,
 #endif
-    &std::time_put<char>::id, 
+    &time_put<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &std::time_put<wchar_t>::id,
+    &time_put<wchar_t>::id,
 #endif
     0
   };
@@ -154,7 +154,7 @@ namespace std {
   const locale::id* const* const
   locale::_Impl::_S_facet_categories[] =
   {
-    //  order must match the decl order in class locale.
+    // Order must match the decl order in class locale.
     locale::_Impl::_S_id_collate,
     locale::_Impl::_S_id_ctype,
     locale::_Impl::_S_id_monetary,
@@ -566,7 +566,9 @@ namespace std {
 	  (_M_impl = _S_classic)->_M_add_reference();
 	// Might throw:
 	else
-	  _M_impl = new _Impl(_S_facets_num, 1, true, __name);
+	  // XXX Named locale support not finished.
+	  // _M_impl = new _Impl(_S_facets_num, 1, true, __name);
+	  _M_impl = new _Impl(*_S_classic, __name, all, 1);
       }
     else
       throw runtime_error("attempt to create named locale from NULL name");
@@ -649,7 +651,6 @@ namespace std {
 	try {
 	  // 26 Standard facets, 2 references.
 	  // One reference for _M_classic, one for _M_global
-	  // XXX _S_classic = _S_global = new _Impl(26, 2);
 	  _S_classic = new _Impl(_S_facets_num, 2, true, "C");
 	  _S_global = _S_classic; 
 
