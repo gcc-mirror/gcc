@@ -119,7 +119,7 @@ by type.  Explanations are in the following sections.
 -fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
 -std=@var{std}
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
--i8  -r8  -d8}
+-fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 }
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -183,6 +183,23 @@ Specify the layout used by the the source file. The free form layout
 was introduced in Fortran 90.  Fixed form was traditionally used in
 older Fortran programs.
 
+@cindex option, -fdefault-double-8
+@cindex -fdefault-double-8, option
+@item -fdefault-double-8
+Set the "DOUBLE PRECISION" type to an 8 byte wide.
+
+@cindex option, -fdefault-integer-8
+@cindex -fdefault-integer-8, option
+@item -fdefault-integer-8
+Set the default integer and logical types to an 8 byte wide type.
+Do nothing if this is already the default.
+
+@cindex option, -fdefault-real-8
+@cindex -fdefault-real-8, option
+@item -fdefault-real-8
+Set the default real type to an 8 byte wide type.
+Do nothing if this is already the default.
+
 @cindex -fdollar-ok option
 @cindex options, -fdollar-ok
 @item -fdollar-ok
@@ -232,23 +249,6 @@ Specify that no implicit typing is allowed, unless overridden by explicit
 @item -std=@var{std}
 Conform to the specified standard.  Allowed values for @var{std} are
 @samp{gnu}, @samp{f95} and @samp{f90}.
-
-@cindex option, -i8
-@cindex -i8, option
-@cindex option, -r8
-@cindex -r8, option
-@cindex option, -d8
-@cindex -d8, option
-@item -i8
-@item -r8
-@item -d8
-The @option{-i8} and @option{-r8} options set the default @code{INTEGER}
-and @code{REAL} kinds to @code{KIND=8}.  The @option{-d8} option is
-equivalent to specifying both @option{-i8} and @option{-r8}.
-
-When @option{-r8} is specified, the @code{DOUBLE PRECISION} kind is set
-to @code{KIND=16} if the target supports a 16 byte floating point format.
-If no such format exists, the @code{DOUBLE PRECISION} kind is unchanged.
 
 @end table
 
