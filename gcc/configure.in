@@ -921,6 +921,7 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-sco5
 		fixincludes=fixinc.sco
 		broken_install=yes
+		install_headers_dir=install-headers-cpio
 		tm_file=i386/sco5.h
 		tmake_file=i386/t-sco5
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
