@@ -1,3 +1,17 @@
+Thu Apr 19 19:15:26 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config/pa/pa-linux.h (CPLUSPLUS_CPP_SPEC): Undefine.
+	* config/pa/pa.h (CPLUSPLuS_CPP_SPEC): Define.
+
+	* config/pa/som.h (ASM_OUTPUT_FUNCTION_PREFIX): Truncate subspace
+	name at 32 total characters.
+	(ASM_OUTPUT_SECTION_NAME): Similarly.  Also, only support placing
+	functions in named sections -- data items can still go into unique
+	sections, but they have normal names (ie $LIT$ and $DATA$).
+
+	* config/pa/som.h (SUPPORTS_INIT_PRIORITY): SOM does not support
+	INIT_PRIORITY.
+
 2001-04-19 DJ Delorie  <dj@redhat.com>
 
 	* config/alpha/vms.h: Change OBJECT_SUFFIX and EXECUTABLE_SUFFIX
