@@ -1,3 +1,8 @@
+1999-02-04 16:04 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpperror.c (cpp_print_containing_files): Fix formatting 
+	bug induced by merge.
+
 Thu Feb  4 10:46:30 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
        * config/mips/mips.md ([u]divmodsi4,[u]divmoddi4,[u]divsi3,[u]divdi3,
