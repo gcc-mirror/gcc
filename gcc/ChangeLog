@@ -1,3 +1,10 @@
+Sat Aug 28 19:36:05 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (jump_optimize_1): Do not delete assignments to 
+	internal_arg_pointer.
+	* cse.c (delete_trivially_dead_insns): Always consider a set of
+	the internal_arg_pointer live.
+
 Sat Aug 28 16:24:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (flow_delete_insn_chain): Rename from delete_insn_chain.
