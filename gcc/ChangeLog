@@ -1,5 +1,12 @@
 2000-11-17  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/elf.h (PREFERRED_DEBUGGING_TYPE): Set to DWARF2_DEBUG.
+	(ASM_SPEC): Disable and enable .mdebug based on -gstabs.
+	(ASM_FILE_START): Only write out ecoff .file directive if
+	emitting mdebug debugging.
+
+2000-11-17  Richard Henderson  <rth@redhat.com>
+
 	* configure.in (HAVE_AS_DWARF2_DEBUG_LINE): New.  Detect
 	whether as accepts .file/.loc and produces dwarf2 line info.
 	* dwarf2out.c (DWARF2_ASM_LINE_DEBUG_INFO): Default on if

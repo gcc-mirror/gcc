@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.    */
 #define DWARF2_DEBUGGING_INFO
 
 #undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #undef ASM_FINAL_SPEC
 
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.    */
 #define CC1_SPEC  "%{G*}"
 
 #undef  ASM_SPEC
-#define ASM_SPEC  "%{G*} %{relax:-relax} %{gdwarf*:-no-mdebug}"
+#define ASM_SPEC  "%{G*} %{relax:-relax} %{!gstabs*:-no-mdebug}%{gstabs*:-mdebug}"
 
 #undef  LINK_SPEC
 #define LINK_SPEC "-m elf64alpha %{G*} %{relax:-relax}		\
@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.    */
 #undef  ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
 do {								\
-  if (write_symbols != DWARF2_DEBUG)				\
+  if (write_symbols == DBX_DEBUG)				\
     {								\
       alpha_write_verstamp (FILE);				\
       output_file_directive (FILE, main_input_filename);	\
