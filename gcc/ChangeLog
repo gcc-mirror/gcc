@@ -1,3 +1,13 @@
+2004-11-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.c (combine_bnp): Add code to handle
+	zero_extension and lshiftrt insns.
+	Replace uses of XEXP(...) with either SET_DEST() or SET_SRC()
+	where appropriate.
+	* config/stormy16.stormy16.md (bclrx3, bsetx3): New patterns
+	to handle bp and bn insn patterns with a zero_extend rtx
+	inside them.
+
 2004-11-19  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* config/arm/arm.md (generic_sched): Make const.

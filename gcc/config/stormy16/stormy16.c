@@ -2570,9 +2570,12 @@ xstormy16_expand_builtin(tree exp, rtx target,
 static void
 combine_bnp (rtx insn)
 {
-  int insn_code, regno, need_extend, mask;
+  int insn_code, regno, need_extend;
+  unsigned int mask;
   rtx cond, reg, and, load, qireg, mem;
   enum machine_mode load_mode = QImode;
+  enum machine_mode and_mode = QImode;
+  rtx shift = NULL_RTX;
 
   insn_code = recog_memoized (insn);
   if (insn_code != CODE_FOR_cbranchhi
@@ -2613,15 +2616,14 @@ combine_bnp (rtx insn)
       for (and = prev_real_insn (insn); and; and = prev_real_insn (and))
 	{
 	  int and_code = recog_memoized (and);
+
 	  if (and_code == CODE_FOR_extendqihi2
-	      && rtx_equal_p (XEXP (PATTERN (and), 0), reg)
-	      && rtx_equal_p (XEXP (XEXP (PATTERN (and), 1), 0), qireg))
-	    {
-	      break;
-	    }
+	      && rtx_equal_p (SET_DEST (PATTERN (and)), reg)
+	      && rtx_equal_p (XEXP (SET_SRC (PATTERN (and)), 0), qireg))
+	    break;
 	
 	  if (and_code == CODE_FOR_movhi_internal
-	      && rtx_equal_p (XEXP (PATTERN (and), 0), reg))
+	      && rtx_equal_p (SET_DEST (PATTERN (and)), reg))
 	    {
 	      /* This is for testing bit 15.  */
 	      and = insn;
@@ -2630,6 +2632,7 @@ combine_bnp (rtx insn)
 
 	  if (reg_mentioned_p (reg, and))
 	    return;
+
 	  if (GET_CODE (and) != NOTE
 	      && GET_CODE (and) != INSN)
 	    return;
@@ -2641,44 +2644,84 @@ combine_bnp (rtx insn)
       for (and = prev_real_insn (insn); and; and = prev_real_insn (and))
 	{
 	  if (recog_memoized (and) == CODE_FOR_andhi3
-	      && rtx_equal_p (XEXP (PATTERN (and), 0), reg)
-	      && rtx_equal_p (XEXP (XEXP (PATTERN (and), 1), 0), reg))
-	    {
-	      break;
-	    }
+	      && rtx_equal_p (SET_DEST (PATTERN (and)), reg)
+	      && rtx_equal_p (XEXP (SET_SRC (PATTERN (and)), 0), reg))
+	    break;
 	
 	  if (reg_mentioned_p (reg, and))
 	    return;
+
 	  if (GET_CODE (and) != NOTE
 	      && GET_CODE (and) != INSN)
 	    return;
+	}
+
+      if (and)
+	{
+	  /* Some mis-optimisations by GCC can generate a RIGHT-SHIFT
+	     followed by an AND like this:
+
+               (parallel [(set (reg:HI r7) (lshiftrt:HI (reg:HI r7) (const_int 3)))
+                          (clobber (reg:BI carry))]
+
+               (set (reg:HI r7) (and:HI (reg:HI r7) (const_int 1)))
+	      
+	     Attempt to detect this here.  */
+	  for (shift = prev_real_insn (and); shift; shift = prev_real_insn (shift))
+	    {
+	      if (recog_memoized (shift) == CODE_FOR_lshrhi3
+		  && rtx_equal_p (SET_DEST (XVECEXP (PATTERN (shift), 0, 0)), reg)
+		  && rtx_equal_p (XEXP (SET_SRC (XVECEXP (PATTERN (shift), 0, 0)), 0), reg))
+		break;
+		
+	      if (reg_mentioned_p (reg, shift)
+		  || (GET_CODE (shift) != NOTE
+		      && GET_CODE (shift) != INSN))
+		{
+		  shift = NULL_RTX;
+		  break;
+		}
+	    }
 	}
     }
   if (!and)
     return;
 
-  for (load = prev_real_insn (and); load; load = prev_real_insn (load))
+  for (load = shift ? prev_real_insn (shift) : prev_real_insn (and);
+       load;
+       load = prev_real_insn (load))
     {
       int load_code = recog_memoized (load);
+
       if (load_code == CODE_FOR_movhi_internal
-	  && rtx_equal_p (XEXP (PATTERN (load), 0), reg)
-	  && xstormy16_below100_operand (XEXP (PATTERN (load), 1), HImode)
-	  && ! MEM_VOLATILE_P (XEXP (PATTERN (load), 1)))
+	  && rtx_equal_p (SET_DEST (PATTERN (load)), reg)
+	  && xstormy16_below100_operand (SET_SRC (PATTERN (load)), HImode)
+	  && ! MEM_VOLATILE_P (SET_SRC (PATTERN (load))))
 	{
 	  load_mode = HImode;
 	  break;
 	}
 
       if (load_code == CODE_FOR_movqi_internal
-	  && rtx_equal_p (XEXP (PATTERN (load), 0), qireg)
-	  && xstormy16_below100_operand (XEXP (PATTERN (load), 1), QImode))
+	  && rtx_equal_p (SET_DEST (PATTERN (load)), qireg)
+	  && xstormy16_below100_operand (SET_SRC (PATTERN (load)), QImode))
 	{
 	  load_mode = QImode;
 	  break;
 	}
-	
+
+      if (load_code == CODE_FOR_zero_extendqihi2
+	  && rtx_equal_p (SET_DEST (PATTERN (load)), reg)
+	  && xstormy16_below100_operand (XEXP (SET_SRC (PATTERN (load)), 0), QImode))
+	{
+	  load_mode = QImode;
+	  and_mode = HImode;
+	  break;
+	}
+
       if (reg_mentioned_p (reg, load))
 	return;
+
       if (GET_CODE (load) != NOTE
 	  && GET_CODE (load) != INSN)
 	return;
@@ -2686,19 +2729,33 @@ combine_bnp (rtx insn)
   if (!load)
     return;
 
-  if (!need_extend)
+  mem = SET_SRC (PATTERN (load));
+
+  if (need_extend)
     {
-      if (!xstormy16_onebit_set_operand (XEXP (XEXP (PATTERN (and), 1), 1), load_mode))
-	return;
-      mask = (int) INTVAL (XEXP (XEXP (PATTERN (and), 1), 1));
+      mask = (load_mode == HImode) ? 0x8000 : 0x80;
+
+      /* If the mem includes a zero-extend operation and we are
+	 going to generate a sign-extend operation then move the
+	 mem inside the zero-extend.  */
+      if (GET_CODE (mem) == ZERO_EXTEND)
+	mem = XEXP (mem, 0);
     }
   else
-    mask = (load_mode == HImode) ? 0x8000 : 0x80;
+    {
+      if (!xstormy16_onebit_set_operand (XEXP (SET_SRC (PATTERN (and)), 1), load_mode))
+	return;
 
-  mem = XEXP (PATTERN (load), 1);
+      mask = (int) INTVAL (XEXP (SET_SRC (PATTERN (and)), 1));
+
+      if (shift)
+	mask <<= INTVAL (XEXP (SET_SRC (XVECEXP (PATTERN (shift), 0, 0)), 1));
+    }
+
   if (load_mode == HImode)
     {
       rtx addr = XEXP (mem, 0);
+
       if (! (mask & 0xff))
 	{
 	  addr = plus_constant (addr, 1);
@@ -2710,11 +2767,16 @@ combine_bnp (rtx insn)
   if (need_extend)
     XEXP (cond, 0) = gen_rtx_SIGN_EXTEND (HImode, mem);
   else
-    XEXP (cond, 0) = gen_rtx_AND (QImode, mem, GEN_INT (mask));
+    XEXP (cond, 0) = gen_rtx_AND (and_mode, mem, GEN_INT (mask));
+
   INSN_CODE (insn) = -1;
   delete_insn (load);
+
   if (and != insn)
     delete_insn (and);
+
+  if (shift != NULL_RTX)
+    delete_insn (shift);
 }
 
 static void
