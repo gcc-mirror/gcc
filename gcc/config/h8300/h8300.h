@@ -929,6 +929,9 @@ extern int h8300_valid_machine_decl_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
+#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
+  LENGTH += h8300_adjust_insn_length (INSN, LENGTH);
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
