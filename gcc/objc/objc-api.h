@@ -1,5 +1,5 @@
 /* GNU Objective-C Runtime API.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -97,11 +97,21 @@ typedef struct objc_symtab {
                                                   compiled (defined) in the 
                                                   module. */
   void      *defs[1];                           /* Variable array of pointers.
-                                                  cls_def_cnt of type Class* 
+                                                  cls_def_cnt of type Class 
                                                   followed by cat_def_cnt of
                                                   type Category_t. */
 } Symtab,   *Symtab_t;
 
+
+/* For every class which happens to have statically allocated instances in
+   this module, one OBJC_STATIC_INSTANCES is allocated by the compiler.
+   INSTANCES is NULL terminated and points to all statically allocated
+   instances of this class.  */
+struct objc_static_instances
+{
+  char *class_name;
+  id instances[0];
+};
 
 /*
 ** The compiler generates one of these structures for each module that
@@ -118,6 +128,10 @@ typedef struct objc_module {
   const char* name;                             /* Name of the file where the 
                                                   module was generated.   The 
                                                   name includes the path. */
+
+  /* Pointer to a NULL terminated array of objc_static_instances.  */
+  struct objc_static_instances **statics;
+
   Symtab_t    symtab;                           /* Pointer to the Symtab of
                                                   the module.  The Symtab
                                                   holds an array of pointers to 
@@ -203,12 +217,12 @@ struct objc_protocol_list {
 #define __CLS_ISINFO(cls, mask) ((__CLS_INFO(cls)&mask)==mask)
 #define __CLS_SETINFO(cls, mask) (__CLS_INFO(cls) |= mask)
 
-/* The structure is of type MetaClass* */
+/* The structure is of type MetaClass */
 #define _CLS_META 0x2L
 #define CLS_ISMETA(cls) ((cls)&&__CLS_ISINFO(cls, _CLS_META))
 
 
-/* The structure is of type Class* */
+/* The structure is of type Class */
 #define _CLS_CLASS 0x1L
 #define CLS_ISCLASS(cls) ((cls)&&__CLS_ISINFO(cls, _CLS_CLASS))
 
@@ -268,7 +282,7 @@ typedef struct objc_category {
 typedef struct objc_super {
   id      self;                           /* Id of the object sending
                                                 the message. */
-  Class* class;                              /* Object's super class. */
+  Class class;                              /* Object's super class. */
 } Super, *Super_t;
 
 IMP objc_msg_lookup_super(Super_t super, SEL sel);
@@ -283,25 +297,25 @@ retval_t objc_msg_sendv(id, SEL, arglist_t);
 ** This may e.g. try to load in the class using dynamic loading.
 ** The function is guaranteed to be passed a non-NULL name string.
 */
-extern Class* (*_objc_lookup_class)(const char *name);
+extern Class (*_objc_lookup_class)(const char *name);
 
-extern id (*_objc_object_alloc)(Class* class);
+extern id (*_objc_object_alloc)(Class class);
 
 extern id (*_objc_object_copy)(id object);
 
 extern id (*_objc_object_dispose)(id object);
 
-Method_t class_get_class_method(MetaClass* class, SEL aSel);
+Method_t class_get_class_method(MetaClass class, SEL aSel);
 
-Method_t class_get_instance_method(Class* class, SEL aSel);
+Method_t class_get_instance_method(Class class, SEL aSel);
 
-Class* class_pose_as(Class* impostor, Class* superclass);
+Class class_pose_as(Class impostor, Class superclass);
 
-Class* objc_get_class(const char *name);
+Class objc_get_class(const char *name);
 
-Class* objc_lookup_class(const char *name);
+Class objc_lookup_class(const char *name);
 
-Class* objc_next_class(void **enum_state);
+Class objc_next_class(void **enum_state);
 
 const char *sel_get_name(SEL selector);
 
@@ -320,53 +334,53 @@ SEL sel_register_typed_name(const char *name, const char*type);
 
 BOOL sel_is_mapped (SEL aSel);
 
-extern id class_create_instance(Class* class);
+extern id class_create_instance(Class class);
 
 static inline const char *
-class_get_class_name(Class* class)
+class_get_class_name(Class class)
 {
   return CLS_ISCLASS(class)?class->name:((class==Nil)?"Nil":0);
 }
 
 static inline long
-class_get_instance_size(Class* class)
+class_get_instance_size(Class class)
 {
   return CLS_ISCLASS(class)?class->instance_size:0;
 }
 
-static inline MetaClass*
-class_get_meta_class(Class* class)
+static inline MetaClass
+class_get_meta_class(Class class)
 {
   return CLS_ISCLASS(class)?class->class_pointer:Nil;
 }
 
-static inline Class*
-class_get_super_class(Class* class)
+static inline Class
+class_get_super_class(Class class)
 {
   return CLS_ISCLASS(class)?class->super_class:Nil;
 }
 
 static inline int
-class_get_version(Class* class)
+class_get_version(Class class)
 {
   return CLS_ISCLASS(class)?class->version:-1;
 }
 
 static inline BOOL
-class_is_class(Class* class)
+class_is_class(Class class)
 {
   return CLS_ISCLASS(class);
 }
 
 static inline BOOL
-class_is_meta_class(Class* class)
+class_is_meta_class(Class class)
 {
   return CLS_ISMETA(class);
 }
 
 
 static inline void
-class_set_version(Class* class, long version)
+class_set_version(Class class, long version)
 {
   if (CLS_ISCLASS(class))
     class->version = version;
@@ -378,20 +392,20 @@ method_get_imp(Method_t method)
   return (method!=METHOD_NULL)?method->method_imp:(IMP)0;
 }
 
-IMP get_imp (Class* class, SEL sel);
+IMP get_imp (Class class, SEL sel);
 
 id object_copy(id object);
 
 id object_dispose(id object);
 
-static inline Class*
+static inline Class
 object_get_class(id object)
 {
   return ((object!=nil)
 	  ? (CLS_ISCLASS(object->class_pointer)
 	     ? object->class_pointer
 	     : (CLS_ISMETA(object->class_pointer)
-		? (Class*)object
+		? (Class)object
 		: Nil))
 	  : Nil);
 }
@@ -401,11 +415,11 @@ object_get_class_name(id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
                          ?object->class_pointer->name
-                         :((Class*)object)->name)
+                         :((Class)object)->name)
                        :"Nil");
 }
 
-static inline MetaClass*
+static inline MetaClass
 object_get_meta_class(id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
@@ -416,14 +430,14 @@ object_get_meta_class(id object)
                        :Nil);
 }
 
-static inline Class*
+static inline Class
 object_get_super_class
 (id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
                          ?object->class_pointer->super_class
                          :(CLS_ISMETA(object->class_pointer)
-                           ?((Class*)object)->super_class
+                           ?((Class)object)->super_class
                            :Nil))
                        :Nil);
 }
@@ -431,7 +445,7 @@ object_get_super_class
 static inline BOOL
 object_is_class(id object)
 {
-  return CLS_ISCLASS((Class*)object);
+  return CLS_ISCLASS((Class)object);
 }
 
 static inline BOOL
@@ -443,7 +457,7 @@ object_is_instance(id object)
 static inline BOOL
 object_is_meta_class(id object)
 {
-  return CLS_ISMETA((Class*)object);
+  return CLS_ISMETA((Class)object);
 }
 
 #endif /* not __objc_api_INCLUDE_GNU */
