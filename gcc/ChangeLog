@@ -1,3 +1,15 @@
+2003-11-02  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/10817
+	* ifcvt.c (noce_emit_move_insn): Improve documentation comment.
+	(noce_try_move): New function to optimize an if-the-else into an
+	unconditional move, i.e. "if (a!=b) x=a; else x=b" into "x=a".
+	(noce_process_if_block): Attempt simplification with noce_try_move.
+
+	* simplify-rtx.c (simplify_ternary_operation): Some minor fixes
+	and improvements to the optimizations of IF_THEN_ELSE expressions.
+	(simplify_subreg): Silence signed/unsigned comparison warning.
+
 2003-11-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* Makefile.in (targhooks.o, reload.o): Update dependencies.
