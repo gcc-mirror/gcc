@@ -1996,6 +1996,52 @@ check_global_declarations (vec, len)
     }
 }
 
+/* Save the current INPUT_FILENAME and LINENO on the top entry in the
+   INPUT_FILE_STACK.  Push a new entry for FILE and LINE, and set the
+   INPUT_FILENAME and LINENO accordingly.  */
+
+void
+push_srcloc (file, line)
+     char *file;
+     int line;
+{
+  struct file_stack *fs;
+
+  if (input_file_stack)
+    {
+      input_file_stack->name = input_filename;
+      input_file_stack->line = lineno;
+    }
+
+  fs = (struct file_stack *) xmalloc (sizeof (struct file_stack));
+  fs->name = input_filename = file;
+  fs->line = lineno = line;
+  fs->indent_level = 0;
+  fs->next = input_file_stack;
+  input_file_stack = fs;
+  input_file_stack_tick++;
+}
+
+/* Pop the top entry off the stack of presently open source files.
+   Restore the INPUT_FILENAME and LINENO from the new topmost entry on
+   the stack.  */
+
+void
+pop_srcloc ()
+{
+  struct file_stack *fs;
+  
+  fs = input_file_stack;
+  input_file_stack = fs->next;
+  free (fs);
+  input_file_stack_tick++;
+  /* The initial souce file is never popped.  */
+  if (!input_file_stack)
+    abort ();
+  input_filename = input_file_stack->name;
+  lineno = input_file_stack->line;
+}
+
 /* Compile an entire file of output from cpp, named NAME.
    Write a file of assembly output and various debugging dumps.  */
 
@@ -2257,10 +2303,7 @@ compile_file (name)
   input_filename = name;
 
   /* Put an entry on the input file stack for the main input file.  */
-  input_file_stack
-    = (struct file_stack *) xmalloc (sizeof (struct file_stack));
-  input_file_stack->next = 0;
-  input_file_stack->name = input_filename;
+  push_srcloc (input_filename, 0);
 
   /* Perform language-specific initialization.
      This may set main_input_filename.  */

@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,3 +45,6 @@ extern struct file_stack *input_file_stack;
 
 /* Incremented on each change to input_file_stack.  */
 extern int input_file_stack_tick;
+
+extern void push_srcloc PARAMS ((char *name, int line));
+extern void pop_srcloc PARAMS ((void));
