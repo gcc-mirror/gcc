@@ -1,3 +1,7 @@
+Tue Sep  9 09:12:17 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (print_value): Fix last change.
+
 Mon Sep  8 15:15:11 1997  Nick Clifton  <nickc@cygnus.com>
 
 	* v850.h (ASM_SPEC): Pass on target processor.
