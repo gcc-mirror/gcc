@@ -3302,40 +3302,24 @@ add_conversions (binfo)
 {
   int i;
   tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
-  tree name = NULL_TREE;
 
   for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
     {
       tree tmp = TREE_VEC_ELT (method_vec, i);
+      tree name;
 
       if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
 	break;
 
-      if (TREE_CODE (tmp) == OVERLOAD)
-	{
-	  my_friendly_assert (TREE_CHAIN (tmp) == NULL_TREE, 981121);
-	  tmp = OVL_FUNCTION (tmp);
-	}
-
-      /* We don't want to mark 'name' until we've seen all the overloads
-	 in this class; we could be overloading on the quals of 'this'.  */
-      if (name && name != DECL_NAME (tmp))
-	{
-	  IDENTIFIER_MARKED (name) = 1;
-	  name = NULL_TREE;
-	}
+      name = DECL_NAME (OVL_CURRENT (tmp));
 
       /* Make sure we don't already have this conversion.  */
-      if (! IDENTIFIER_MARKED (DECL_NAME (tmp)))
+      if (! IDENTIFIER_MARKED (name))
 	{
 	  conversions = scratch_tree_cons (binfo, tmp, conversions);
-	  name = DECL_NAME (tmp);
+	  IDENTIFIER_MARKED (name) = 1;
 	}
     }
-
-  if (name)
-     IDENTIFIER_MARKED (name) = 1;
-
   return NULL_TREE;
 }
 
@@ -3351,7 +3335,7 @@ lookup_conversions (type)
     breadth_first_search (TYPE_BINFO (type), add_conversions, 0);
 
   for (t = conversions; t; t = TREE_CHAIN (t))
-    IDENTIFIER_MARKED (DECL_NAME (TREE_VALUE (t))) = 0;
+    IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (t)))) = 0;
 
   return conversions;
 }
