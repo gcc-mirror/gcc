@@ -356,7 +356,7 @@ dtors_section ()							\
 #undef ASM_BYTE
 #define ASM_BYTE	".byte"
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\t.byte"
+#define ASM_BYTE_OP	".byte"
 #else
 #undef ASM_LONG
 #define ASM_LONG	"long"
@@ -367,7 +367,7 @@ dtors_section ()							\
 #undef ASM_BYTE
 #define ASM_BYTE	"byte"
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\tbyte"
+#define ASM_BYTE_OP	"byte"
 #endif /* USE_GAS */
 
 /* The sysV68 as doesn't know about double's and float's.  */
@@ -476,7 +476,7 @@ do { long l;					\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
   do { register int sp = 0, lp = 0;				\
-    fprintf ((FILE), "%s\t", ASM_BYTE_OP);			\
+    fprintf ((FILE), "\t%s\t", ASM_BYTE_OP);			\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
       { lp += 3;						\
