@@ -384,6 +384,23 @@ hard_regno_mode_ok (regno, mode)
     }
 }
 
+int
+m68hc11_hard_regno_rename_ok (reg1, reg2)
+     int reg1, reg2;
+{
+  /* Don't accept renaming to Z register.  We will replace it to
+     X,Y or D during machine reorg pass.  */
+  if (reg2 == HARD_Z_REGNUM)
+    return 0;
+
+  /* Don't accept renaming D,X to Y register as the code will be bigger.  */
+  if (TARGET_M6811 && reg2 == HARD_Y_REGNUM
+      && (D_REGNO_P (reg1) || X_REGNO_P (reg1)))
+    return 0;
+
+  return 1;
+}
+
 enum reg_class
 preferred_reload_class (operand, class)
      rtx operand;

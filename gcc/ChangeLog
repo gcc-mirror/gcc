@@ -1,5 +1,13 @@
 2003-03-10  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.h (HARD_REGNO_RENAME_OK): Define.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_hard_regno_rename_ok):
+	Declare.
+	* config/m68hc11/m68hc11.c (m68hc11_hard_regno_rename_ok): New function
+	for reg rename optimization to avoid using Z and Y registers.
+
+2003-03-10  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md ("*addhi3_68hc12"): Accept any constant
 	when adding to X and Y since leax/leay are fast.
 	("*addhi3"): Accept 'I' constraint when adding to address register.
