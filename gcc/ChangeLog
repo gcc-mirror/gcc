@@ -1,3 +1,8 @@
+Mon Feb 22 08:57:38 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case CONVERT_EXPR): If converting to
+	BLKmode UNION_TYPE from BLKmode, just return inner object.
+
 Thu Feb 18 17:03:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_REF): Propagate
