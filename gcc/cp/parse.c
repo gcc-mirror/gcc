@@ -4805,25 +4805,25 @@ case 174:
     break;}
 case 176:
 #line 1052 "parse.y"
-{ yyval.ttype = tree_cons (NULL_TREE, yyval.ttype, 
-		                  build_tree_list (NULL_TREE, yyvsp[0].ttype)); ;
+{ yyval.ttype = expr_tree_cons (NULL_TREE, yyval.ttype, 
+		                  build_expr_list (NULL_TREE, yyvsp[0].ttype)); ;
     break;}
 case 177:
 #line 1055 "parse.y"
-{ yyval.ttype = tree_cons (NULL_TREE, yyval.ttype, 
-		                  build_tree_list (NULL_TREE, error_mark_node)); ;
+{ yyval.ttype = expr_tree_cons (NULL_TREE, yyval.ttype, 
+		                  build_expr_list (NULL_TREE, error_mark_node)); ;
     break;}
 case 178:
 #line 1058 "parse.y"
-{ chainon (yyval.ttype, build_tree_list (NULL_TREE, yyvsp[0].ttype)); ;
+{ chainon (yyval.ttype, build_expr_list (NULL_TREE, yyvsp[0].ttype)); ;
     break;}
 case 179:
 #line 1060 "parse.y"
-{ chainon (yyval.ttype, build_tree_list (NULL_TREE, error_mark_node)); ;
+{ chainon (yyval.ttype, build_expr_list (NULL_TREE, error_mark_node)); ;
     break;}
 case 180:
 #line 1065 "parse.y"
-{ yyval.ttype = build_tree_list (NULL_TREE, yyval.ttype); ;
+{ yyval.ttype = build_expr_list (NULL_TREE, yyval.ttype); ;
     break;}
 case 182:
 #line 1071 "parse.y"
@@ -6036,23 +6036,23 @@ case 414:
     break;}
 case 415:
 #line 2172 "parse.y"
-{ yyval.ttype = tree_cons (NULL_TREE, yyvsp[0].ttype, yyval.ttype); ;
+{ yyval.ttype = expr_tree_cons (NULL_TREE, yyvsp[0].ttype, yyval.ttype); ;
     break;}
 case 416:
 #line 2175 "parse.y"
-{ yyval.ttype = build_tree_list (yyvsp[-2].ttype, yyvsp[0].ttype); ;
+{ yyval.ttype = build_expr_list (yyvsp[-2].ttype, yyvsp[0].ttype); ;
     break;}
 case 417:
 #line 2177 "parse.y"
-{ yyval.ttype = tree_cons (yyvsp[-2].ttype, yyvsp[0].ttype, yyval.ttype); ;
+{ yyval.ttype = expr_tree_cons (yyvsp[-2].ttype, yyvsp[0].ttype, yyval.ttype); ;
     break;}
 case 418:
 #line 2179 "parse.y"
-{ yyval.ttype = build_tree_list (yyval.ttype, yyvsp[0].ttype); ;
+{ yyval.ttype = build_expr_list (yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 419:
 #line 2181 "parse.y"
-{ yyval.ttype = tree_cons (yyvsp[-2].ttype, yyvsp[0].ttype, yyval.ttype); ;
+{ yyval.ttype = expr_tree_cons (yyvsp[-2].ttype, yyvsp[0].ttype, yyval.ttype); ;
     break;}
 case 420:
 #line 2186 "parse.y"
