@@ -88,7 +88,7 @@ final class MessageFormatElement
 	  int val = DateFormat.DEFAULT;
 	  if (style == null)
 	    ;
-	  if (style.equals("short"))
+	  else if (style.equals("short"))
 	    val = DateFormat.SHORT;
 	  else if (style.equals("medium"))
 	    val = DateFormat.MEDIUM;
