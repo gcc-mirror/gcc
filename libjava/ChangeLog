@@ -1,3 +1,7 @@
+2004-10-21  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* java/lang/ieeefp.h: Add m32r support.
+
 2004-10-20  Andreas Schwab  <schwab@suse.de>
 
 	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Cast pointers
