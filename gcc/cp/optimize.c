@@ -319,6 +319,7 @@ copy_body_r (tp, walk_subtrees, data)
     remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0), 
 		     walk_subtrees);
   else if (TREE_CODE (*tp) == UNSAVE_EXPR)
+    /* UNSAVE_EXPRs should not be generated until expansion time.  */
     my_friendly_abort (19991113);
   /* For a SCOPE_STMT, we must copy the associated block so that we
      can write out debugging information for the inlined variables.  */
