@@ -3433,7 +3433,11 @@ propagate_block (old, first, last, significant, bnum, flags)
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (call_used_regs[i] && ! global_regs[i]
 			&& ! fixed_regs[i])
-		      SET_REGNO_REG_SET (dead, i);
+		      {
+		        SET_REGNO_REG_SET (dead, i);
+			if (significant)
+		          SET_REGNO_REG_SET (significant, i);
+		      }
 
 		  /* The stack ptr is used (honorarily) by a CALL insn.  */
 		  SET_REGNO_REG_SET (live, STACK_POINTER_REGNUM);
