@@ -17,7 +17,7 @@ License along with libiberty; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This file exports one function: choose_temp_base.  */
+/* This file exports one function: choose_tmpdir.  */
 
 #if ! defined (_WIN32) && ! defined (NO_SYS_FILE_H)
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
@@ -28,6 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #define W_OK 2
 #define X_OK 1
 #endif
+
+#include <stdio.h>	/* May get P_tmpdir.  */
 
 #ifdef IN_GCC
 #include "config.h"
@@ -85,7 +87,7 @@ try (dir, base)
    The buffer for the result is obtained with xmalloc.  */
 
 char *
-choose_temp_base ()
+choose_tmpdir ()
 {
   char *base = 0;
   char *temp_filename;
