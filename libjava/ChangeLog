@@ -1,3 +1,9 @@
+2000-08-04  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/StreamTokenizer.java (TT_NONE): Now private.
+	(nextToken): Handle backslashed newline.  From Oskar Liljeblad.
+	For PR java.io/301.
+
 2000-08-03  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectInputStream.java (readFields): Turn off

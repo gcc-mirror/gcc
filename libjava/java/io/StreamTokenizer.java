@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,7 +37,7 @@ public class StreamTokenizer
   public static final int TT_WORD = -3;
 
   /** A constant indicating that no tokens have been read yet. */
-  public static final int TT_NONE = -4;
+  private static final int TT_NONE = -4;
 
   /**
    * Contains the type of the token read resulting from a call to nextToken
@@ -364,6 +364,10 @@ public class StreamTokenizer
 		  case 't':	ch = '\t';
 		    break;
 		  case 'v':	ch = 0xB;
+		    break;
+		  case '\n':    ch = '\n';
+		    break;
+                  case '\r':    ch = '\r';
 		    break;
 		  case '\"':
 		  case '\'':
