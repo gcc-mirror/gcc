@@ -15,6 +15,11 @@ Fri Jun  2 00:22:52 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (untyped_call): Remove excess parameters
 
+2000-06-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* fixinc/inclhack.def (osf_namespace_a): Relax expression to
+	match that used before the conversion to c_fix style.
+
 2000-06-01  Stan Cox  <scox@cygnus.com>
 
 	* varray.h (VARRAY_PUSH_GENERIC_PTR, VARRAY_PUSH_CHAR_PTR): Fix

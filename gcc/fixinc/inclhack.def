@@ -1610,7 +1610,7 @@ fix = {
 
     c_fix     = format;
     c_fix_arg = "__%0";
-    c_fix_arg = "reg(ex|off|match)_t[^;]";
+    c_fix_arg = "reg(ex|off|match)_t";
 
     test_text = "`touch sys/lc_core.h`"
     "typedef struct {\n  int stuff, mo_suff;\n} regex_t;\n"
