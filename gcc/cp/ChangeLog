@@ -1,9 +1,11 @@
 1999-08-08  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (struct binding_level): Add eh_region field.
+	(push_binding_level): Set it.
+	(define_label): Complain about jumping into an EH block.
+
 	* ptree.c (print_lang_type): Print the real type of a PMF.
 	Print what exceptions a fn type throws.
-
-	* typeck.c (common_type): Use same_type_p.
 
 1999-08-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

@@ -639,7 +639,10 @@ struct binding_level
        worry about ambiguous (ARM or ANSI) scope rules.  */
     unsigned is_for_scope : 1;
 
-    /* Two bits left for this word.  */
+    /* True if this level corresponds to an EH region, as for a try block.  */
+    unsigned eh_region : 1;
+
+    /* One bit left for this word.  */
 
 #if defined(DEBUG_CP_BINDING_LEVELS)
     /* Binding depth at which this level began.  */
@@ -703,6 +706,12 @@ push_binding_level (newlevel, tag_transparent, keep)
   current_binding_level = newlevel;
   newlevel->tag_transparent = tag_transparent;
   newlevel->more_cleanups_ok = 1;
+
+  /* We are called before expand_start_bindings, but after
+     expand_eh_region_start for a try block; so we check this now,
+     before the EH block is covered up.  */
+  newlevel->eh_region = is_eh_region ();
+
   newlevel->keep = keep;
 #if defined(DEBUG_CP_BINDING_LEVELS)
   newlevel->binding_depth = binding_depth;
@@ -4868,6 +4877,7 @@ define_label (filename, line, name)
     {
       struct named_label_list *uses, *prev;
       int identified = 0;
+      int saw_eh = 0;
 
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
@@ -4922,7 +4932,7 @@ define_label (filename, line, name)
 				   uses->lineno_o_goto, "  from here");
 			      }
 			    identified = 1;
-			}
+			  }
 
 			if (problem)
 			  cp_error_at ("  crosses initialization of `%#D'",
@@ -4935,6 +4945,19 @@ define_label (filename, line, name)
 		  }
 		if (b == uses->binding_level)
 		  break;
+		if (b->eh_region && ! saw_eh)
+		  {
+		    if (! identified)
+		      {
+			cp_error ("jump to label `%D'", decl);
+			error_with_file_and_line
+			  (uses->filename_o_goto,
+			   uses->lineno_o_goto, "  from here");
+			identified = 1;
+		      }
+		    error ("  enters exception handling block");
+		    saw_eh = 1;
+		  }
 		b = b->level_chain;
 	      }
 
