@@ -584,7 +584,7 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -605,7 +605,7 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	%{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -618,7 +618,7 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -642,7 +642,7 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
