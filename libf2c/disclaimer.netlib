@@ -1,0 +1,15 @@
+f2c is a Fortran to C converter under development since 1990 by
+	David M. Gay (then AT&T Bell Labs, now Bell Labs, Lucent Technologies)
+	Stu Feldman (then at Bellcore, now at IBM)
+	Mark Maimone (Carnegie-Mellon University)
+	Norm Schryer (then AT&T Bell Labs, now AT&T Labs)
+Please send bug reports to dmg@research.bell-labs.com .
+
+AT&T, Bellcore and Lucent disclaim all warranties with regard to this
+software, including all implied warranties of merchantability
+and fitness.  In no event shall AT&T, Bellcore or Lucent be liable for
+any special, indirect or consequential damages or any damages
+whatsoever resulting from loss of use, data or profits, whether
+in an action of contract, negligence or other tortious action,
+arising out of or in connection with the use or performance of
+this software.
