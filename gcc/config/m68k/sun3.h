@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -130,20 +130,20 @@ Boston, MA 02111-1307, USA.  */
 #if TARGET_DEFAULT & 0100
 /* -mfpa is the default */
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} \
-%{a:/usr/lib/bb_link.o} %{g:-lg} \
+%{g:-lg} \
 %{msoft-float:-L/usr/lib/fsoft}%{m68881:-L/usr/lib/f68881}\
 %{!msoft_float:%{!m68881:-L/usr/lib/ffpa}}"
 #else
 #if TARGET_DEFAULT & 2
 /* -m68881 is the default */
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} \
-%{a:/usr/lib/bb_link.o} %{g:-lg} \
+%{g:-lg} \
 %{msoft-float:-L/usr/lib/fsoft}%{!msoft-float:%{!mfpa:-L/usr/lib/f68881}}\
 %{mfpa:-L/usr/lib/ffpa}"
 #else
 /* -msoft-float is the default */
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} \
-%{a:/usr/lib/bb_link.o} %{g:-lg} \
+%{g:-lg} \
 %{!m68881:%{!mfpa:-L/usr/lib/fsoft}}%{m68881:-L/usr/lib/f68881}\
 %{mfpa:-L/usr/lib/ffpa}"
 #endif
@@ -282,6 +282,10 @@ Boston, MA 02111-1307, USA.  */
         }								\
     } while (0)
 
+#if 0
+/* This was turned off as it caused linking errors on sunos4.1.
+   `gcc -a' links in /usr/lib/bb_link.o which does not provide __bb_link
+   but its own version of __bb_init_func. */
 #undef BLOCK_PROFILER_CODE
 #define BLOCK_PROFILER_CODE						\
 extern int ___tcov_init;						\
@@ -294,3 +298,4 @@ __bb_init_func (blocks)							\
 									\
   ___bb_link (blocks->filename, blocks->counts, blocks->ncounts);	\
 }
+#endif
