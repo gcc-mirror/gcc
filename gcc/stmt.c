@@ -2513,7 +2513,15 @@ expand_return (retval)
     }
 
   /* Are any cleanups needed?  E.g. C++ destructors to be run?  */
+  /* This is not sufficient.  We also need to watch for cleanups of the
+     expression we are about to expand.  Unfortunately, we cannot know
+     if it has cleanups until we expand it, and we want to change how we
+     expand it depending upon if we need cleanups.  We can't win.  */
+#if 0
   cleanups = any_pending_cleanups (1);
+#else
+  cleanups = 1;
+#endif
 
   if (TREE_CODE (retval) == RESULT_DECL)
     retval_rhs = retval;
