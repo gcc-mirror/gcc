@@ -28,7 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-#ifdef VMS
+#ifdef VMS_TARGET
 #include "tree.h"
 #endif
 
@@ -648,6 +648,9 @@ check_float_value (mode, d, overflow)
   return 0;
 }
 
+#ifdef VMS_TARGET
+/* Additional support code for VMS target. */
+
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
    the program with an appropriate .comm or initialization.  */
@@ -741,6 +744,7 @@ vms_flush_pending_externals (file)
       fprintf (file, ",%d\n", p->size);
     }
 }
+#endif /* VMS_TARGET */
 
 #ifdef VMS
 /* Additional support code for VMS host. */
