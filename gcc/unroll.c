@@ -3997,12 +3997,6 @@ loop_iterations (loop)
 	}
       return 0;
     }
-  else if (comparison_code == EQ)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream, "Loop iterations: EQ comparison loop.\n");
-      return 0;
-    }
   else if (GET_CODE (final_value) != CONST_INT)
     {
       if (loop_dump_stream)
@@ -4013,6 +4007,43 @@ loop_iterations (loop)
 	  fprintf (loop_dump_stream, ".\n");
 	}
       return 0;
+    }
+  else if (comparison_code == EQ)
+    {
+      rtx inc_once;
+
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream, "Loop iterations: EQ comparison loop.\n");
+
+      inc_once = gen_int_mode (INTVAL (initial_value) + INTVAL (increment),
+			       GET_MODE (iteration_var));
+
+      if (inc_once == final_value)
+	{
+	  /* The iterator value once through the loop is equal to the
+	     comparision value.  Either we have an infinite loop, or
+	     we'll loop twice.  */
+	  if (increment == const0_rtx)
+	    return 0;
+	  loop_info->n_iterations = 2;
+	}
+      else
+	loop_info->n_iterations = 1;
+
+      if (GET_CODE (loop_info->initial_value) == CONST_INT)
+	loop_info->final_value
+	  = gen_int_mode ((INTVAL (loop_info->initial_value)
+			   + loop_info->n_iterations * INTVAL (increment)),
+			  GET_MODE (iteration_var));
+      else
+	loop_info->final_value
+	  = plus_constant (loop_info->initial_value,
+			   loop_info->n_iterations * INTVAL (increment));
+      loop_info->final_equiv_value
+	= gen_int_mode ((INTVAL (initial_value)
+			 + loop_info->n_iterations * INTVAL (increment)),
+			GET_MODE (iteration_var));
+      return loop_info->n_iterations;
     }
 
   /* Final_larger is 1 if final larger, 0 if they are equal, otherwise -1.  */

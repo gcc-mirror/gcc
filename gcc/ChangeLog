@@ -19,6 +19,10 @@
 	* config/rs6000/linux64.h (ASM_OUTPUT_REG_PUSH): Undef.
 	(ASM_OUTPUT_REG_POP): Undef.
 
+	2002-06-30  Alan Modra  <amodra@bigpond.net.au>
+	PR optimization/7120
+	* unroll.c (loop_iterations): Handle EQ loops.
+
 2002-09-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Remove "if"
