@@ -1,3 +1,17 @@
+1999-01-28  Baron Roberts  <baron@sgi.com>
+
+	* string: Uncomment wstring declaration.
+
+	* std/straits.h: Remove #if 0/#endif from around
+	struct string_char_traits <wchar_t>.
+	#include <cwchar>.
+	Add missing definition for wchar_t move method.
+	Add empty() method for trait-based empty string return.
+
+	* std/bastring.h (c_str): Change return of "" to return of
+	traits::empty() call so that proper empty string is returned
+	based on the character type (i.e. "" or L"").
+
 1999-02-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (stuff2): Tweak.
