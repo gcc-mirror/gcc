@@ -1,10 +1,10 @@
 // Build don't link:
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 11 Apr 1999 <nathan@acm.org>
 // Derived from bug report from Gabriel Dos Reis
 // <Gabriel.Dos-Reis@cmla.ens-cachan.fr>
-// http://egcs.cygnus.com/ml/egcs-bugs/1999-03/msg00883.html
+// http://gcc.gnu.org/ml/gcc-bugs/1999-03n/msg00888.html
 
 // conditional exprs have some funny rules when one of the types is void.
 // [expr.cond] 5.16, make sure we do the right things

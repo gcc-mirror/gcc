@@ -1,9 +1,9 @@
 // Build don't link:
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Jun 1999 <nathan@acm.org>
 // Derived from a bug report from Stephan Riess <riess@bfw-online.de>
-// http://egcs.cygnus.com/ml/egcs-bugs/1999-06/msg00107.html
+// http://gcc.gnu.org/ml/gcc-bugs/1999-06n/msg00107.html
 
 // Builtin ops don't always need reference bindings, and we weren't removing
 // them always after doing overload resolution. This caused us to try and take
