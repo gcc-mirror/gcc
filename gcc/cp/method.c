@@ -2357,7 +2357,7 @@ do_build_assign_ref (fndecl)
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
 
-	  if (TREE_READONLY (field))
+	  if (CP_TYPE_CONST_P (TREE_TYPE (field)))
 	    {
 	      if (DECL_NAME (field))
 		cp_error ("non-static const member `%#D', can't use default assignment operator", field);

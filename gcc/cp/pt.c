@@ -5694,6 +5694,8 @@ tsubst_decl (t, args, type, in_decl)
       {
 	r = copy_node (t);
 	TREE_TYPE (r) = type;
+	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
+
 	if (TREE_CODE (DECL_INITIAL (r)) != TEMPLATE_PARM_INDEX)
 	  DECL_INITIAL (r) = TREE_TYPE (r);
 	else
@@ -5716,12 +5718,12 @@ tsubst_decl (t, args, type, in_decl)
     case FIELD_DECL:
       {
 	r = copy_node (t);
-	TREE_TYPE (r) = type;
 	copy_lang_decl (r);
-#if 0
-	DECL_FIELD_CONTEXT (r) = tsubst (DECL_FIELD_CONTEXT (t), args, 
-					 /*complain=*/1, in_decl);
-#endif
+	TREE_TYPE (r) = type;
+	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
+
+	/* We don't have to set DECL_CONTEXT here; it is set by
+	   finish_member_declaration.  */
 	DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args,
 					/*complain=*/1, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
@@ -5767,6 +5769,7 @@ tsubst_decl (t, args, type, in_decl)
 
 	r = copy_node (t);
 	TREE_TYPE (r) = type;
+	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
 	DECL_CONTEXT (r) = ctx;
 	if (TREE_STATIC (r))
 	  DECL_ASSEMBLER_NAME (r)

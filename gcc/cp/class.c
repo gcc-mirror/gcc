@@ -3385,7 +3385,7 @@ finish_struct_1 (t, warn_anon)
         has_mutable = 1;
 
       /* If any field is const, the structure type is pseudo-const.  */
-      if (TREE_READONLY (x))
+      if (CP_TYPE_CONST_P (TREE_TYPE (x)))
 	{
 	  C_TYPE_FIELDS_READONLY (t) = 1;
 	  if (DECL_INITIAL (x) == NULL_TREE)
