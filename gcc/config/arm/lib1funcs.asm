@@ -1098,7 +1098,20 @@ LSYM(Lover12):
    the target code cannot be relied upon to return via a BX instruction, so
    instead we have to store the resturn address on the stack and allow the
    called function to return here instead.  Upon return we recover the real
-   return address and use a BX to get back to Thumb mode.  */
+   return address and use a BX to get back to Thumb mode.
+
+   There are three variations of this code.  The first,
+   _interwork_call_via_rN(), will push the return address onto the
+   stack and pop it in _arm_return().  It should only be used if all
+   arguments are passed in registers.
+
+   The second, _interwork_r7_call_via_rN(), instead stores the return
+   address at [r7, #-4].  It is the caller's responsibility to ensure
+   that this address is valid and contains no useful data.
+
+   The third, _interwork_r11_call_via_rN(), works in the same way but
+   uses r11 instead of r7.  It is useful if the caller does not really
+   need a frame pointer.  */
 	
 	.text
 	.align 0
@@ -1107,7 +1120,33 @@ LSYM(Lover12):
 	.globl _arm_return
 _arm_return:
 	RETLDM
-	.code   16
+
+	.globl _arm_return_r7
+_arm_return_r7:
+	ldr	lr, [r7, #-4]
+	bx	lr
+
+	.globl _arm_return_r11
+_arm_return_r11:
+	ldr	lr, [r11, #-4]
+	bx	lr
+
+.macro interwork_with_frame frame, register, name, return
+	.code	16
+
+	THUMB_FUNC_START \name
+
+	bx	pc
+	nop
+
+	.code	32
+	tst	\register, #1
+	streq	lr, [\frame, #-4]
+	adreq	lr, _arm_return_\frame
+	bx	\register
+
+	SIZE	(\name)
+.endm
 
 .macro interwork register
 	.code	16
@@ -1126,6 +1165,9 @@ LSYM(Lchange_\register):
 	bx	\register
 
 	SIZE	(_interwork_call_via_\register)
+
+	interwork_with_frame r7,\register,_interwork_r7_call_via_\register
+	interwork_with_frame r11,\register,_interwork_r11_call_via_\register
 .endm
 	
 	interwork r0

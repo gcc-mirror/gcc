@@ -917,10 +917,16 @@ extern const char * structure_size_string;
       fixed_regs[10]     = 1;					\
       call_used_regs[10] = 1;					\
     }								\
-  if (TARGET_APCS_FRAME)					\
+  /* -mcaller-super-interworking reserves r11 for calls to	\
+     _interwork_r11_call_via_rN().  Making the register global	\
+     is an easy way of ensuring that it remains valid for all	\
+     calls.  */							\
+  if (TARGET_APCS_FRAME || TARGET_CALLER_INTERWORKING)		\
     {								\
       fixed_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;		\
       call_used_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;	\
+      if (TARGET_CALLER_INTERWORKING)				\
+	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;		\
     }								\
   SUBTARGET_CONDITIONAL_REGISTER_USAGE				\
 }
@@ -1518,6 +1524,20 @@ enum reg_class
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
+
+/* The amount of scratch space needed by _interwork_{r7,r11}_call_via_rN().
+   When present, it is one word in size, and sits at the top of the frame,
+   between the soft frame pointer and either r7 or r11.
+
+   We only need _interwork_rM_call_via_rN() for -mcaller-super-interworking,
+   and only then if some outgoing arguments are passed on the stack.  It would
+   be tempting to also check whether the stack arguments are passed by indirect
+   calls, but there seems to be no reason in principle why a post-reload pass
+   couldn't convert a direct call into an indirect one.  */
+#define CALLER_INTERWORKING_SLOT_SIZE			\
+  (TARGET_CALLER_INTERWORKING				\
+   && current_function_outgoing_args_size != 0		\
+   ? UNITS_PER_WORD : 0)
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
