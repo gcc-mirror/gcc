@@ -2306,9 +2306,11 @@ resolve_offset_ref (exp)
     {
       basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (member));
       addr = convert_pointer_to (basetype, addr);
-      member = convert (ptr_type_node, build_unary_op (ADDR_EXPR, member, 0));
+      member = convert (ptrdiff_type_node,
+			build_unary_op (ADDR_EXPR, member, 0));
       return build1 (INDIRECT_REF, type,
-		     build (PLUS_EXPR, ptr_type_node, addr, member));
+		     build (PLUS_EXPR, build_pointer_type (type),
+			    addr, member));
     }
   else if (TYPE_PTRMEMFUNC_P (TREE_TYPE (member)))
     {
