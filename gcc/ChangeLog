@@ -2,6 +2,15 @@
 
 	* doc/extend.texi (Empty Structures): New.
 
+	* c-pch.c: Include flags.h.  Add comments to routines.
+	(struct c_pch_validity): New.
+	(get_ident): Update PCH file version number.
+	(pch_init): Output current debugging type.
+	(c_common_valid_pch): Check debugging type.
+	* Makefile.in (c-pch.o): Update dependencies.
+	* flags.h (debug_type_names): Declare.
+	* toplev.c (debug_type_names): Move out of decode_g_option.
+
 2003-04-11  Eric Christopher  <echristo@redhat.com>
 
 	* emit-rtl.c (gen_rtx): Fix typos.

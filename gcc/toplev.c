@@ -4268,6 +4268,12 @@ decode_W_option (arg)
   return 1;
 }
 
+/* Indexed by enum debug_info_type.  */
+const char *const debug_type_names[] =
+{
+  "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff", "vms"
+};
+
 /* Parse a -g... command line switch.  ARG is the value after the -g.
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
@@ -4287,11 +4293,6 @@ decode_g_option (arg)
      -g and -ggdb don't explicitly set the debugging format so
      -gdwarf -g3 is equivalent to -gdwarf3.  */
   static int type_explicitly_set_p = 0;
-  /* Indexed by enum debug_info_type.  */
-  static const char *const debug_type_names[] =
-  {
-    "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff", "vms"
-  };
 
   /* The maximum admissible debug level value.  */
   static const unsigned max_debug_level = 3;

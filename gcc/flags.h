@@ -41,6 +41,9 @@ enum debug_info_type
 /* Specify which kind of debugging info to generate.  */
 extern enum debug_info_type write_symbols;
 
+/* Names of debug_info_type, for error messages.  */
+extern const char *const debug_type_names[];
+
 enum debug_info_level
 {
   DINFO_LEVEL_NONE,	/* Write no debugging info.  */
