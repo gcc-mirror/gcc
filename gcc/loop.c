@@ -6316,6 +6316,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
 	      add_val = INTVAL (bl->biv->add_val);
 	      comparison_val = INTVAL (XEXP (comparison, 1));
+	      final_value = XEXP (comparison, 1);
 	      initial_value = bl->initial_value;
 		
 	      /* Normalize the initial value if it is an integer and 
@@ -6353,7 +6354,6 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 2);
 	      new_add_val = GEN_INT (- INTVAL (bl->biv->add_val));
 
-	      final_value = XEXP (comparison, 1);
 	      start_value = GEN_INT (INTVAL (XEXP (comparison, 1))
 				     - INTVAL (bl->biv->add_val));
 
