@@ -1,3 +1,8 @@
+2004-06-24  Eric Christopher  <echristo@redhat.com>
+
+	* combine.c (distribute_notes): Don't delete sets to
+	global register variables.
+
 2004-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (ffsdi2, clzdi2): New expanders.
