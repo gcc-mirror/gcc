@@ -81,21 +81,14 @@ ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args)
 	{
 	case FFI_TYPE_UINT8:
 	case FFI_TYPE_SINT8:
-	  *args = (void*) ((char*)(raw++) + SIZEOF_ARG - 1);
+	  *args = (void*) ((char*)(raw++) + 3);
 	  break;
 	  
 	case FFI_TYPE_UINT16:
 	case FFI_TYPE_SINT16:
-	  *args = (void*) ((char*)(raw++) + SIZEOF_ARG - 2);
+	  *args = (void*) ((char*)(raw++) + 2);
 	  break;
 
-#if SIZEOF_ARG >= 4	  
-	case FFI_TYPE_UINT32:
-	case FFI_TYPE_SINT32:
-	  *args = (void*) ((char*)(raw++) + SIZEOF_ARG - 4);
-	  break;
-#endif
-	
 #if SIZEOF_ARG == 8	  
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
@@ -157,31 +150,54 @@ ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
       switch ((*tp)->type)
 	{
 	case FFI_TYPE_UINT8:
+#if WORDS_BIGENDIAN
+	  *(UINT32*)(raw++) = *(UINT8*) (*args);
+#else
 	  (raw++)->uint = *(UINT8*) (*args);
+#endif
 	  break;
 
 	case FFI_TYPE_SINT8:
+#if WORDS_BIGENDIAN
+	  *(SINT32*)(raw++) = *(SINT8*) (*args);
+#else
 	  (raw++)->sint = *(SINT8*) (*args);
+#endif
 	  break;
 
 	case FFI_TYPE_UINT16:
+#if WORDS_BIGENDIAN
+	  *(UINT32*)(raw++) = *(UINT16*) (*args);
+#else
 	  (raw++)->uint = *(UINT16*) (*args);
+#endif
 	  break;
 
 	case FFI_TYPE_SINT16:
+#if WORDS_BIGENDIAN
+	  *(SINT32*)(raw++) = *(SINT16*) (*args);
+#else
 	  (raw++)->sint = *(SINT16*) (*args);
+#endif
 	  break;
 
-#if SIZEOF_ARG >= 4
 	case FFI_TYPE_UINT32:
+#if WORDS_BIGENDIAN
+	  *(UINT32*)(raw++) = *(UINT32*) (*args);
+#else
 	  (raw++)->uint = *(UINT32*) (*args);
+#endif
 	  break;
 
 	case FFI_TYPE_SINT32:
+#if WORDS_BIGENDIAN
+	  *(SINT32*)(raw++) = *(SINT32*) (*args);
+#else
 	  (raw++)->sint = *(SINT32*) (*args);
-	  break;
 #endif
-        case FFI_TYPE_FLOAT:
+	  break;
+
+	case FFI_TYPE_FLOAT:
 	  (raw++)->flt = *(FLOAT32*) (*args);
 	  break;
 
@@ -211,6 +227,55 @@ ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 
 #if !FFI_NATIVE_RAW_API
 
+static void
+ffi_java_rvalue_to_raw (ffi_cif *cif, void *rvalue)
+{
+#if WORDS_BIGENDIAN && SIZEOF_ARG == 8
+  switch (cif->rtype->type)
+    {
+    case FFI_TYPE_UINT8:
+    case FFI_TYPE_UINT16:
+    case FFI_TYPE_UINT32:
+      *(UINT64 *)rvalue <<= 32;
+      break;
+
+    case FFI_TYPE_SINT8:
+    case FFI_TYPE_SINT16:
+    case FFI_TYPE_SINT32:
+    case FFI_TYPE_INT:
+      *(SINT64 *)rvalue <<= 32;
+      break;
+
+    default:
+      break;
+    }
+#endif
+}
+
+static void
+ffi_java_raw_to_rvalue (ffi_cif *cif, void *rvalue)
+{
+#if WORDS_BIGENDIAN && SIZEOF_ARG == 8
+  switch (cif->rtype->type)
+    {
+    case FFI_TYPE_UINT8:
+    case FFI_TYPE_UINT16:
+    case FFI_TYPE_UINT32:
+      *(UINT64 *)rvalue >>= 32;
+      break;
+
+    case FFI_TYPE_SINT8:
+    case FFI_TYPE_SINT16:
+    case FFI_TYPE_SINT32:
+    case FFI_TYPE_INT:
+      *(SINT64 *)rvalue >>= 32;
+      break;
+
+    default:
+      break;
+    }
+#endif
+}
 
 /* This is a generic definition of ffi_raw_call, to be used if the
  * native system does not provide a machine-specific implementation.
@@ -227,6 +292,7 @@ void ffi_java_raw_call (/*@dependent@*/ ffi_cif *cif,
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));
   ffi_java_raw_to_ptrarray (cif, raw, avalue);
   ffi_call (cif, fn, rvalue, avalue);
+  ffi_java_rvalue_to_raw (cif, rvalue);
 }
 
 #if FFI_CLOSURES		/* base system provides closures */
@@ -240,6 +306,7 @@ ffi_java_translate_args (ffi_cif *cif, void *rvalue,
 
   ffi_java_ptrarray_to_raw (cif, avalue, raw);
   (*cl->fun) (cif, rvalue, raw, cl->user_data);
+  ffi_java_raw_to_rvalue (cif, rvalue);
 }
 
 /* Again, here is the generic version of ffi_prep_raw_closure, which
