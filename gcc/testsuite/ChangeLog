@@ -1,3 +1,8 @@
+2000-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-const-expr-2.c, gcc.dg/c99-const-expr-2.c: Add more
+	tests.
+
 2000-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000801-4.c: Make sure the second string is
