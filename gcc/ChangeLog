@@ -1,3 +1,10 @@
+2004-09-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/16954
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
+	Prevent renaming if the aliasing sets of the type which the
+	pointer points to are different.
+
 2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17188
