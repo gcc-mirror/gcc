@@ -409,7 +409,7 @@ namespace std
 	{
 	  try
 	    {
-	      if (!__copy_streambufs(*this, this->rdbuf(), __sbout))
+	      if (!__copy_streambufs(this->rdbuf(), __sbout))
 		__err |= ios_base::failbit;
 	    }
 	  catch(...)
