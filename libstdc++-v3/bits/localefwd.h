@@ -294,13 +294,14 @@ namespace std
     // The (shared) implementation
     _Impl* 		_M_impl;  
 
-    // The one true C reference locale
+    // The "C" reference locale
     static _Impl* 	_S_classic; 
 
     // Current global reference locale
     static _Impl* 	_S_global;  
 
-    static const int 	_S_num_categories = _Count_ones<all>::_S_count;
+    static const int 	_S_categories_num = _Count_ones<all>::_S_count;
+    static const int 	_S_facets_num = 26;
 
     explicit 
     locale(_Impl*) throw();
@@ -423,7 +424,7 @@ namespace std
   template<typename _Facet>
     locale::locale(const locale& __other, _Facet* __f)
     {
-      _M_impl = new _Impl(*__other._M_impl, 0);
+      _M_impl = new _Impl(*__other._M_impl, 1);
       _M_impl->_M_install_facet(&_Facet::id, __f);
       _M_impl->_M_has_name = false;
       _M_impl->_M_name = "*";

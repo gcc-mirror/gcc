@@ -45,70 +45,80 @@ namespace std {
     delete _M_category_names;
   }
 
-  // This constructor is used to correctly initialize the standard,
-  // required facets.
+  locale::_Impl::
+  _Impl(const _Impl& __other, size_t __refs)
+  : _M_references(__refs - 1), _M_facets(0), _M_category_names(0), 
+    _M_has_name(__other._M_has_name), _M_name(__other._M_name)
+  {
+    try
+      {  _M_facets = new __vec_facet(*(__other._M_facets)); }
+    catch(...) 
+      {
+	delete _M_facets;
+	throw;
+      }
+
+    try 
+      {	_M_category_names = new __vec_string(*(__other._M_category_names)); }
+    catch(...) 
+      {
+	delete _M_category_names;
+	throw;
+      }
+
+    std::vector<facet*>::iterator __it = _M_facets->begin();
+    for (; __it != _M_facets->end(); ++__it)
+      (*__it)->_M_add_reference();
+  }
+
+  // This constructor is used to correctly initialize named locales,
+  // including the standard "C" locale.
   locale::_Impl::
   _Impl(size_t __numfacets, size_t __refs, bool __has_name = false, 
 	string __name = "*")
   : _M_references(__refs - 1), _M_facets(0), _M_category_names(0), 
     _M_has_name(__has_name), _M_name(__name)
   { 
-    typedef vector<facet*, allocator<facet*> > __vec_facet;
-    typedef vector<string, allocator<string> > __vec_string;
+    try
+      {  _M_facets = new __vec_facet(__numfacets, NULL); }
+    catch(...) 
+      {
+	delete _M_facets;
+	throw;
+      }
 
-    auto_ptr<__vec_facet> __pvf(new __vec_facet(__numfacets, (facet*)0));
-    auto_ptr<__vec_string> __pcn(new __vec_string(_S_num_categories, _M_name));
-    _M_facets = __pvf.release();
-    _M_category_names = __pcn.release();
+    try 
+      {	_M_category_names = new __vec_string(_S_categories_num, _M_name); }
+    catch(...) 
+      {
+	delete _M_category_names;
+	throw;
+      }
   }
   
-  locale::_Impl::
-  _Impl(const _Impl& __other, size_t __refs)
-  : _M_references(__refs - 1), _M_facets(0), _M_category_names(0), 
-    _M_has_name(__other._M_has_name), _M_name(__other._M_name)
-  {
-    typedef vector<facet*, allocator<facet*> > __vec_facet;
-    typedef vector<string, allocator<string> > __vec_string;
-
-    auto_ptr<__vec_facet> __pvf(new __vec_facet(*(__other._M_facets)));
-    auto_ptr<__vec_string> 
-      __pcn(new __vec_string(*(__other._M_category_names)));
-
-    std::vector<facet*>::iterator __it = __pvf->begin();
-    for (; __it != __pvf->end(); ++__it)
-      (*__it)->_M_add_reference();
-
-    // These must be last since in the presence of an exception, the 
-    // destructor for 'this' won't run until AFTER execution has passed  
-    // the closing brace of the constructor.
-    _M_facets = __pvf.release();
-    _M_category_names = __pcn.release();
-  }
-
   // Construct specific categories, leaving unselected ones alone
   locale::_Impl::
   _Impl(const _Impl& __other, const string& __name, category __cat, 
 	size_t __refs)
     : _M_references(__refs - 1), _M_has_name(__other._M_name != "*")
   {
-    typedef vector<facet*, allocator<facet*> > __vec_facet;
-    typedef vector<string, allocator<string> > __vec_string;
-
     __cat = _S_normalize_category(__cat);  // might throw
-    try {
-      _M_facets = new __vec_facet(*(__other._M_facets));
-    }
-    catch(...) {
-      delete _M_facets;
-      throw;
-    }
-    try {
-       _M_category_names = new __vec_string(*(__other._M_category_names));
-    }
-    catch(...) {
-      delete _M_category_names;
-      throw;
-    }
+
+    try 
+      { _M_facets = new __vec_facet(*(__other._M_facets)); }
+    catch(...) 
+      {
+	delete _M_facets;
+	throw;
+      }
+
+    try 
+      {	_M_category_names = new __vec_string(*(__other._M_category_names)); }
+    catch(...) 
+      {
+	delete _M_category_names;
+	throw;
+      }
 
     static void(_Impl::* ctors[]) (const char*) = 
     {

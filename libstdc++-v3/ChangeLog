@@ -1,3 +1,13 @@
+2000-09-19  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/localename.cc (locale::_Imp) : Remove typedefs.	
+	* bits/localefwd.h (locale::locale(const locale& __other, _Facet*
+	__f): Consistency check,, call _Imp ctor with refererence argument
+	of 1.
+	* bits/localefwd.h: Change _S_num_categories to
+	_S_categories_num. Add new data member, _S_facets_num, which is
+	the number of standard facets.
+
 2000-09-19  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/21_strings/howto.html:  Fix editor lossage from last commit.
