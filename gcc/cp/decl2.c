@@ -5461,9 +5461,10 @@ handle_class_head (aggr, scope, id)
 	  /* According to the suggested resolution of core issue 180,
 	     'typename' is assumed after a class-key.  */
 	  decl = make_typename_type (scope, id, 1);
-	  if (decl == error_mark_node)
-	    return error_mark_node;
-	  decl = TYPE_MAIN_DECL (decl);
+	  if (decl != error_mark_node)
+	    decl = TYPE_MAIN_DECL (decl);
+	  else
+	    decl = NULL_TREE;
 	}
       else if (scope == current)
         {
@@ -5479,7 +5480,7 @@ handle_class_head (aggr, scope, id)
 	cp_error ("no file-scope type named `%D'", id);
       
       /* Inject it at the current scope.  */
-      if (!decl)
+      if (! decl)
 	decl = TYPE_MAIN_DECL (xref_tag (aggr, id, 1));
     }
  
