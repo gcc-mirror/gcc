@@ -488,15 +488,16 @@ extern int ix86_arch;
 #define TARGET_CPU_DEFAULT_i386 0
 #define TARGET_CPU_DEFAULT_i486 1
 #define TARGET_CPU_DEFAULT_pentium 2
-#define TARGET_CPU_DEFAULT_pentiumpro 3
-#define TARGET_CPU_DEFAULT_pentium2 4
-#define TARGET_CPU_DEFAULT_pentium3 5
-#define TARGET_CPU_DEFAULT_pentium4 6
-#define TARGET_CPU_DEFAULT_k6 7
-#define TARGET_CPU_DEFAULT_k6_2 8
-#define TARGET_CPU_DEFAULT_k6_3 9
-#define TARGET_CPU_DEFAULT_athlon 10
-#define TARGET_CPU_DEFAULT_athlon_sse 11
+#define TARGET_CPU_DEFAULT_pentium_mmx 3
+#define TARGET_CPU_DEFAULT_pentiumpro 4
+#define TARGET_CPU_DEFAULT_pentium2 5
+#define TARGET_CPU_DEFAULT_pentium3 6
+#define TARGET_CPU_DEFAULT_pentium4 7
+#define TARGET_CPU_DEFAULT_k6 8
+#define TARGET_CPU_DEFAULT_k6_2 9
+#define TARGET_CPU_DEFAULT_k6_3 10
+#define TARGET_CPU_DEFAULT_athlon 11
+#define TARGET_CPU_DEFAULT_athlon_sse 12
 
 #define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
 				  "pentiumpro", "pentium2", "pentium3", \
