@@ -1,3 +1,7 @@
+2003-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/extend.texi: Fix typos.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
