@@ -1519,13 +1519,13 @@ namespace std
 		    // formatting is required, an arbitrary number of
 		    // fill spaces will be necessary.
 		    if (__testipad)
-		      __res += string_type(__width - __len, __fill);
+		      __res.append(__width - __len, __fill);
 		    else
 		      __res += __fill;
 		    break;
 		  case money_base::none:
 		    if (__testipad)
-		      __res += string_type(__width - __len, __fill);
+		      __res.append(__width - __len, __fill);
 		    break;
 		  }
 	      }
@@ -1543,7 +1543,7 @@ namespace std
 		  __res.append(__width - __len, __fill);
 		else
 		  // Before.
-		  __res.insert(0, string_type(__width - __len, __fill));
+		  __res.insert(0, __width - __len, __fill);
 		__len = __width;
 	      }
 	    

@@ -1,3 +1,8 @@
+2004-02-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_put<>::_M_insert):
+	Prefer basic_string::append to operator+= and a temporary.
+
 2004-02-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/vterminate.cc (__gnu_cxx::__verbose_terminate_handler):
