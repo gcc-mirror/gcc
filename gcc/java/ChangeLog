@@ -1,3 +1,9 @@
+1999-11-09  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-path.c: Include <sys/stat.h>.
+	(jcf_path_init): Search for libjava.zip.  Fixes PR gcj/84.
+	(DIR_UP): New macro.
+
 Tue Nov  9 12:12:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (source_end_java_method): Resume permanent allocation,

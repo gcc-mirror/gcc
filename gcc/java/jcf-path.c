@@ -43,6 +43,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define DIR_SEPARATOR '/'
 #endif
 
+#ifndef DIR_UP
+#define DIR_UP ".."
+#endif
+
 
 
 /* Possible flag values.  */
@@ -223,9 +227,58 @@ void
 jcf_path_init ()
 {
   char *cp;
+  char *try, sep[2];
+  struct stat stat_b;
+  int found = 0, len;
 
   add_entry (&sys_dirs, ".", 0);
-  add_entry (&sys_dirs, LIBGCJ_ZIP_FILE, 1);
+
+  sep[0] = DIR_SEPARATOR;
+  sep[1] = '\0';
+
+  GET_ENV_PATH_LIST (cp, "GCC_EXEC_PREFIX");
+  if (cp)
+    {
+      try = alloca (strlen (cp) + 50);
+      /* The exec prefix can be something like
+	 /usr/local/bin/../lib/gcc-lib/.  We want to change this
+	 into a pointer to the share directory.  We support two
+	 configurations: one where prefix and exec-prefix are the
+	 same, and one where exec-prefix is `prefix/SOMETHING'.  */
+      strcpy (try, cp);
+      strcat (try, DIR_UP);
+      strcat (try, sep);
+      strcat (try, DIR_UP);
+      strcat (try, sep);
+      len = strlen (try);
+
+      strcpy (try + len, "share");
+      strcat (try, sep);
+      strcat (try, "libgcj.zip");
+      if (! stat (try, &stat_b))
+	{
+	  add_entry (&sys_dirs, try, 1);
+	  found = 1;
+	}
+      else
+	{
+	  strcpy (try + len, DIR_UP);
+	  strcat (try, sep);
+	  strcat (try, "share");
+	  strcat (try, sep);
+	  strcat (try, "libgcj.zip");
+	  if (! stat (try, &stat_b))
+	    {
+	      add_entry (&sys_dirs, try, 1);
+	      found = 1;
+	    }
+	}
+    }
+  if (! found)
+    {
+      /* Desperation: use the installed one.  */
+      add_entry (&sys_dirs, LIBGCJ_ZIP_FILE, 1);
+    }
 
   GET_ENV_PATH_LIST (cp, "CLASSPATH");
   add_path (&classpath_env, cp, 0);
