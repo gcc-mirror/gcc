@@ -8825,7 +8825,7 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
   /* If we were given an invalid count, don't do anything except exactly
      what was requested.  */
 
-  if (input_count < 0 || input_count > (int) GET_MODE_BITSIZE (mode))
+  if (input_count < 0 || input_count >= (int) GET_MODE_BITSIZE (mode))
     {
       if (x)
 	return x;

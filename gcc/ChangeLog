@@ -1,3 +1,8 @@
+2001-09-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* combine.c (simplify_shift_const): Treat shifts by the mode
+	size as undefined.
+
 2001-09-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (struct tokenrun): New.
