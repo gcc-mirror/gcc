@@ -1,3 +1,9 @@
+2002-07-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ip2k/t-ip2k: Remove LIBGCC1, CROSS_LIBGCC1, and LIBGCC1_TEST.
+	* config/mips/t-isa3264: Likewise.
+	* config/mmix/t-mmix: Likewise.
+
 2002-07-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* emit-rtl.c (init_emit_once): Add missing cast to HOST_WIDE_INT.

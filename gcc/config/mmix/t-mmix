@@ -1,9 +1,4 @@
 # See "Target Fragment" in GCC info.  That same order is used here.
-LIBGCC1 =
-
-# libgcc1-test doesn't work.  There's critical stuff in crti and crtn and
-# we know the result of running libgcc1-test anyway.
-CROSS_LIBGCC1 =
 
 TARGET_LIBGCC2_CFLAGS = -mlibfuncs -O2
 
