@@ -6392,6 +6392,24 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"6")])
 
+;; ??? This is a hack to work around a problem with expand_builtin_setjmp.
+;; It restores the frame pointer, and then does a call to restore the global
+;; pointer (gp) register.  The call insn implicitly (via the assembler) reloads
+;; gp from the stack.  However, call insns do not depend on $fp, so it is
+;; possible for the instruction scheduler to move the fp restore after the
+;; call, which then causes gp to be corrupted.  We fix this by emitting a
+;; scheduler barrier.  A better fix is to put code here that restores the
+;; $gp, and then the call is unnecessary.  This is only a problem when PIC
+;; (TARGET_ABICALLS), and only when the gp register is caller-saved
+;; (irix5/o32, but not irix6/n32/n64).
+
+(define_expand "nonlocal_goto_receiver"
+  [(const_int 0)]
+  ""
+  "
+{
+  emit_insn (gen_blockage ());
+}")
 
 ;;
 ;;  ....................

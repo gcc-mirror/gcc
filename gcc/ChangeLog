@@ -1,5 +1,7 @@
 Thu Sep  4 15:02:27 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* mips.md (nonlocal_goto_receiver): Define.
+
 	* profile.c (output_arc_profiler): Check next_insert_after for non
 	NULL before deferencing it.
 
