@@ -1,3 +1,7 @@
+Wed Sep 30 14:27:49 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* function.c (assign_parms): Undo change of June 9.
+
 Tue Sep 29 09:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (get_inner_reference): Fix typo in last change.
