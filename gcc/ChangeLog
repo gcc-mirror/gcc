@@ -1,3 +1,7 @@
+Thu Oct  8 17:15:04 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (cpplib.o): Use unlibsubdir.
+
 Thu Oct  8 12:50:47 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (get_condition): Allow combine when either compare is
