@@ -4,10 +4,10 @@
    i386/gas.h checks this.  */
 #define YES_UNDERSCORES
 
-#include "i386/gstabs.h"
+#include <i386/gstabs.h>
 
 /* Get perform_* macros to build libgcc.a.  */
-#include "i386/perform.h"
+#include <i386/perform.h>
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES GNU_CPP_PREDEFINES("i386")
@@ -17,4 +17,4 @@
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Get machine-independent configuration parameters for the GNU system.  */
-#include "gnu.h"
+#include <gnu.h>
