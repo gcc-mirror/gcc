@@ -1,3 +1,8 @@
+2002-12-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/fr30/fr30.h (GO_IF_LEGITIMATE_ADDRESS): Check for frame
+	pointer and arg pointer by examining the register number.
+
 2002-12-05  Matthias Klose  <doko@debian.org>
 
 	* doc/invoke.texi: Remove last reference to -a.
