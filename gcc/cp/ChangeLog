@@ -1,8 +1,3 @@
-Mon Jun 19 12:54:15 1995  Gerald Baumgartner  (gb@alexander.cs.purdue.edu)
-
-	* decl.c (start_function): If current_class_decl is a signature
-	pointer, don't dereference it but set C_C_D to current_class_decl.
-
 Fri Jun 16 15:07:29 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* Make-lang.in (DEMANGLER_PROG): Add LIBS.
