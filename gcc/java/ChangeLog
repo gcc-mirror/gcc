@@ -1,3 +1,8 @@
+Thu Jan  6 16:31:28 2000  Anthony Green  <green@cygnus.com>
+
+	* expr.c (java_lang_expand_expr): Switch to permanent obstack
+	before building constant array decl.
+
 Thu Jan  6 00:54:10 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (generate_byecode_conditional): Fixed indentation in
