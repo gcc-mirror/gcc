@@ -320,14 +320,17 @@ decl_attributes (decl, attributes)
 			     "format string arg not a string type, for `%s'");
 	    return;
 	  }
-	/* Verify that first_arg_num points to the last argument, the ... */
-	while (argument)
-	  arg_num++, argument = TREE_CHAIN (argument);
-	if (arg_num != first_arg_num)
+	if (first_arg_num != 0)
 	  {
-	    error_with_decl (decl,
-			     "args to be formatted is not ..., for `%s'");
-	    return;
+	    /* Verify that first_arg_num points to the last arg, the ... */
+	    while (argument)
+	      arg_num++, argument = TREE_CHAIN (argument);
+	    if (arg_num != first_arg_num)
+	      {
+		error_with_decl (decl,
+				 "args to be formatted is not ..., for `%s'");
+		return;
+	      }
 	  }
 	
 	record_format_info (DECL_NAME (decl), is_scan, format_num,
