@@ -1,3 +1,18 @@
+2003-06-25  H.J. Lu <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (MASK_SSE1): Removed.
+	(MASK_SSE164): Removed.
+	(MASK_SSE264): Removed.
+	(bdesc_2arg): Replace MASK_SSE1 with MASK_SSE. Replace
+	MASK_SSE164 with MASK_SSE | MASK_64BIT. Replace MASK_SSE264
+	with MASK_SSE2 | MASK_64BIT.
+	(bdesc_1arg): Likewise.
+	(ix86_init_mmx_sse_builtins): Likewise.
+
+	* config/i386/i386.h (TARGET_SSE): Remove MASK_SSE2.
+	(TARGET_SWITCHES): Enable both MASK_SSE and MASK_SSE2 for
+	-msse2.
+
 2003-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* hwint.h (HOST_WIDE_INT_PRINT, HOST_WIDE_INT_PRINT_C): New macros.
