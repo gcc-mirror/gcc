@@ -1,3 +1,10 @@
+Wed Jun 17 15:57:48 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+
+	* eh-common.h (struct eh_context): Add comment for hidden use of
+	field dynamic_handler_chain.
+	* except.c (get_dynamic_handler_chain): Comment on, and use the
+	correct offset of the dynamic_handler_chain field.
+
 1998-06-17 12:46:56 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/iris6.h (LINK_SPEC): Add -woff 131.

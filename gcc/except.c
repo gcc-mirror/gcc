@@ -1017,7 +1017,10 @@ get_dynamic_handler_chain ()
   rtx ehc, dhc, result;
 
   ehc = get_eh_context ();
-  dhc = ehc;
+
+  /* This is the offset of dynamic_handler_chain in the eh_context struct
+     declared in eh-common.h. If its location is change, change this offset */
+  dhc = plus_constant (ehc, GET_MODE_SIZE (Pmode));
 
   result = copy_to_reg (dhc);
 
