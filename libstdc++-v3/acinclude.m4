@@ -1427,6 +1427,9 @@ AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
       *-*-aix*)
         ATOMICITYH=$os_include_dir
         ;;
+      *-*-irix*)
+	ATOMICITYH=$os_include_dir
+	;;
       *)
         # bit of overkill on this text...
         AC_MSG_ERROR([Atomic locking requested, but $enable_threads is an unknown thread package and atomic operations are not present in the CPU])
