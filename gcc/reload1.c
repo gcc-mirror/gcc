@@ -5826,14 +5826,30 @@ choose_reload_regs (insn, avoid_return_reg)
 		      break;
 		    }
 
-	      /* JRV: If the equiv register we have found is
-		 explicitly clobbered in the current insn, mark but
-		 don't use, as above.  */
+	      /* If the equiv register we have found is explicitly clobbered
+		 in the current insn, it depends on the reload type if we
+		 can use it, use it for reload_override_in, or not at all.
+		 In particular, we then can't use EQUIV for a
+		 RELOAD_FOR_OUTPUT_ADDRESS reload.  */
 
 	      if (equiv != 0 && regno_clobbered_p (regno, insn))
 		{
-		  reload_override_in[r] = equiv;
-		  equiv = 0;
+		  switch (reload_when_needed[r])
+		    {
+		    case RELOAD_FOR_OTHER_ADDRESS:
+		    case RELOAD_FOR_INPADDR_ADDRESS:
+		    case RELOAD_FOR_INPUT_ADDRESS:
+		    case RELOAD_FOR_OPADDR_ADDR:
+		      break;
+		    case RELOAD_OTHER:
+		    case RELOAD_FOR_INPUT:
+		    case RELOAD_FOR_OPERAND_ADDRESS:
+		      reload_override_in[r] = equiv;
+		      /* Fall through. */
+		    default:
+		      equiv = 0;
+		      break;
+		    }
 		}
 
 	      /* If we found an equivalent reg, say no code need be generated
