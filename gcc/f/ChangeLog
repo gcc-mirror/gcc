@@ -2,9 +2,7 @@ Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95 Released.
 
-Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
-
-	* gcc-2.95 Released.
+	* version.c: No longer a prerelease.
 
 Sat Jul 17 21:57:07 1999  Jeffrey A Law  (law@cygnus.com)
 
