@@ -445,14 +445,10 @@ unary_expr:
 		{ $$ = c_alignof_expr ($2); }
 	| ALIGNOF '(' typename ')'  %prec HYPERUNARY
 		{ $$ = c_alignof (groktypename ($3)); }
-	| REALPART unary_expr %prec UNARY
+	| REALPART cast_expr %prec UNARY
 		{ $$ = build_unary_op (REALPART_EXPR, $2, 0); }
-	| IMAGPART unary_expr %prec UNARY
+	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_unary_op (IMAGPART_EXPR, $2, 0); }
-	| REALPART '(' unary_expr ')' %prec HYPERUNARY
-		{ $$ = build_unary_op (REALPART_EXPR, $3, 0); }
-	| IMAGPART '(' unary_expr ')' %prec HYPERUNARY
-		{ $$ = build_unary_op (IMAGPART_EXPR, $3, 0); }
 	;
 
 cast_expr:
