@@ -10362,12 +10362,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       a TREE_LIST.  */
 	    tree attrs = TREE_PURPOSE (declarator);
 	    tree inner_decl;
+	    int attr_flags;
+
 	    declarator = TREE_VALUE (declarator);
 	    inner_decl = declarator;
 	    while (inner_decl != NULL_TREE
 		   && TREE_CODE (inner_decl) == TREE_LIST)
 	      inner_decl = TREE_VALUE (inner_decl);
-	    int attr_flags = 0;
+	    attr_flags = 0;
 	    if (inner_decl == NULL_TREE
 		|| TREE_CODE (inner_decl) == IDENTIFIER_NODE)
 	      attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
