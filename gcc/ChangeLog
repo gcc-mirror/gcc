@@ -1,5 +1,27 @@
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* langhooks.h (estimate_num_insns, pushlevel, poplevel, set_block,
+	maybe_build_cleanup, update_decl_after_saving): Remove hooks.
+	* langhooks.c (lhd_clear_binding_stack): Remove.
+	* langhooks-def.h (lhd_clear_binding_stack,
+	LANG_HOOKS_MAYBE_BUILD_CLEANUP,
+	LANG_HOOKS_UPDATE_DECL_AFTER_SAVING,
+	LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS, LANG_HOOKS_PUSHLEVEL,
+	LANG_HOOKS_POPLEVEL, LANG_HOOKS_SET_BLOCK): Remove.
+	(LANG_HOOKS_CLEAR_BINDING_STACK): Define to lhd_do_nothing.
+	* system.h (LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS,
+	LANG_HOOKS_PUSHLEVEL, LANG_HOOKS_SET_BLOCK,
+	LANG_HOOKS_MAYBE_BUILD_CLEANUP,
+	LANG_HOOKS_UPDATE_DECL_AFTER_SAVING, LANG_HOOKS_POPLEVEL): Poison.
+	* tree.h (poplevel): Don't declare.
+	* c-lang.c (LANG_HOOKS_CLEAR_BINDING_STACK, LANG_HOOKS_PUSHLEVEL,
+	LANG_HOOKS_POPLEVEL, LANG_HOOKS_SET_BLOCK): Remove.
+	* objc/objc-lang.c (LANG_HOOKS_CLEAR_BINDING_STACK,
+	LANG_HOOKS_PUSHLEVEL, LANG_HOOKS_POPLEVEL, LANG_HOOKS_SET_BLOCK):
+	Remove.
+
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR tree-optimization/16437
 	* c-common.c (shorten_compare): Don't mark result of conversion to
 	narrower signed type as overflowing.

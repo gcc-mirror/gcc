@@ -47,7 +47,6 @@ struct lang_hooks_for_tree_inlining
   int (*start_inlining) (tree);
   void (*end_inlining) (tree);
   tree (*convert_parm_for_inlining) (tree, tree, tree, int);
-  int (*estimate_num_insns) (tree);
 };
 
 struct lang_hooks_for_callgraph
@@ -155,17 +154,6 @@ struct lang_hooks_for_types
 
 struct lang_hooks_for_decls
 {
-  /* Enter a new lexical scope.  Argument is always zero when called
-     from outside the front end.  */
-  void (*pushlevel) (int);
-
-  /* Exit a lexical scope and return a BINDING for that scope.
-     Takes three arguments:
-     KEEP -- nonzero if there were declarations in this scope.
-     REVERSE -- reverse the order of decls before returning them.
-     FUNCTIONBODY -- nonzero if this level is the body of a function.  */
-  tree (*poplevel) (int, int, int);
-
   /* Returns nonzero if we are in the global binding level.  Ada
      returns -1 for an undocumented reason used in stor-layout.c.  */
   int (*global_bindings_p) (void);
@@ -174,9 +162,6 @@ struct lang_hooks_for_decls
      current binding level.  This is used when a BIND_EXPR is expanded,
      to handle the BLOCK node inside the BIND_EXPR.  */
   void (*insert_block) (tree);
-
-  /* Set the BLOCK node for the current scope level.  */
-  void (*set_block) (tree);
 
   /* Function to add a decl to the current scope level.  Takes one
      argument, a decl to add.  Returns that decl, or, if the same
@@ -332,10 +317,6 @@ struct lang_hooks
      things are cleared out.  */
   tree (*unsave_expr_now) (tree);
 
-  /* Called by expand_expr to build and return the cleanup-expression
-     for the passed TARGET_EXPR.  Return NULL if there is none.  */
-  tree (*maybe_build_cleanup) (tree);
-
   /* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of
      thing that the assembler should talk about, set
      DECL_ASSEMBLER_NAME to an appropriate IDENTIFIER_NODE.
@@ -397,9 +378,6 @@ struct lang_hooks
      in bytes.  A frontend can call lhd_expr_size to get the default
      semantics in cases that it doesn't want to handle specially.  */
   tree (*expr_size) (tree);
-
-  /* Update lang specific fields after duplicating function body.  */
-  void (*update_decl_after_saving) (tree, void *);
 
   /* Pointers to machine-independent attribute tables, for front ends
      using attribs.c.  If one is NULL, it is ignored.  Respectively, a

@@ -735,16 +735,6 @@ insert_block (tree block)
     = chainon (current_binding_level->blocks, block);
 }
 
-/* Set the BLOCK node for the innermost scope
-   (the one we are currently in).  */
-
-void
-set_block (tree block ATTRIBUTE_UNUSED )
-{
-  /* The RTL expansion machinery requires us to provide this callback,
-     but it is not applicable in function-at-a-time mode.  */
-}
-
 /* Returns nonzero if T is a virtual function table.  */
 
 int

@@ -205,15 +205,6 @@ lhd_can_use_bit_fields_p (void)
   return true;
 }
 
-/* Provide a default routine to clear the binding stack.  This is used
-   by languages that don't need to do anything special.  */
-void
-lhd_clear_binding_stack (void)
-{
-  while (! lang_hooks.decls.global_bindings_p ())
-    lang_hooks.decls.poplevel (0, 0, 0);
-}
-
 /* Type promotion for variable arguments.  */
 tree
 lhd_type_promotes_to (tree type ATTRIBUTE_UNUSED)

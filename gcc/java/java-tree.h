@@ -1171,7 +1171,6 @@ extern tree getdecls (void);
 extern void pushlevel (int);
 extern tree poplevel (int,int, int);
 extern void insert_block (tree);
-extern void set_block (tree);
 extern tree pushdecl (tree);
 extern void java_init_decl_processing (void);
 extern void java_dup_lang_specific_decl (tree);

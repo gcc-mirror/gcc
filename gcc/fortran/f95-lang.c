@@ -103,7 +103,7 @@ static bool gfc_mark_addressable (tree);
 void do_function_end (void);
 int global_bindings_p (void);
 void insert_block (tree);
-void set_block (tree);
+static void gfc_clear_binding_stack (void);
 static void gfc_be_parse_file (int);
 static void gfc_expand_function (tree);
 
@@ -123,6 +123,7 @@ static void gfc_expand_function (tree);
 #undef LANG_HOOKS_SIGNED_TYPE
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
+#undef LANG_HOOKS_CLEAR_BINDING_STACK
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU F95"
@@ -141,6 +142,7 @@ static void gfc_expand_function (tree);
 #define LANG_HOOKS_SIGNED_TYPE             gfc_signed_type
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gfc_signed_or_unsigned_type
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gfc_expand_function
+#define LANG_HOOKS_CLEAR_BINDING_STACK     gfc_clear_binding_stack
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -334,14 +336,6 @@ GTY(())
   /* For each level (except the global one), a chain of BLOCK nodes for all
      the levels that were entered and exited one level down from this one.  */
   tree blocks;
-  /* The back end may need, for its own internal processing, to create a BLOCK
-     node. This field is set aside for this purpose. If this field is non-null
-     when the level is popped, i.e. when poplevel is invoked, we will use such
-     block instead of creating a new one from the 'names' field, that is the
-     ..._DECL nodes accumulated so far.  Typically the routine 'pushlevel'
-     will be called before setting this field, so that if the front-end had
-     inserted ..._DECL nodes in the current block they will not be lost.   */
-  tree block_created_by_back_end;
   /* The binding level containing this one (the enclosing binding level). */
   struct binding_level *level_chain;
 };
@@ -354,7 +348,7 @@ static GTY(()) struct binding_level *current_binding_level = NULL;
 static GTY(()) struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
-static struct binding_level clear_binding_level = { NULL, NULL, NULL, NULL };
+static struct binding_level clear_binding_level = { NULL, NULL, NULL };
 
 /* Return non-zero if we are currently in the global binding level.  */
 
@@ -412,7 +406,6 @@ poplevel (int keep, int reverse, int functionbody)
   tree decl_chain;
   tree subblock_chain = current_binding_level->blocks;
   tree subblock_node;
-  tree block_created_by_back_end;
 
   /* Reverse the list of XXXX_DECL nodes if desired.  Note that the ..._DECL
      nodes chained through the `names' field of current_binding_level are in
@@ -421,24 +414,10 @@ poplevel (int keep, int reverse, int functionbody)
   decl_chain = (reverse) ? nreverse (current_binding_level->names)
     : current_binding_level->names;
 
-  block_created_by_back_end =
-    current_binding_level->block_created_by_back_end;
-  if (block_created_by_back_end != 0)
-    {
-      block_node = block_created_by_back_end;
-
-      /* Check if we are about to discard some information that was gathered
-         by the front-end. Nameley check if the back-end created a new block
-         without calling pushlevel first. To understand why things are lost
-         just look at the next case (i.e. no block created by back-end.  */
-      if ((keep || functionbody) && (decl_chain || subblock_chain))
-	abort ();
-    }
-
   /* If there were any declarations in the current binding level, or if this
      binding level is a function body, or if there are any nested blocks then
      create a BLOCK node to record them for the life of this function.  */
-  else if (keep || functionbody)
+  if (keep || functionbody)
     block_node = build_block (keep ? decl_chain : 0, 0, subblock_chain, 0, 0);
 
   /* Record the BLOCK node just built as the subblock its enclosing scope.  */
@@ -475,9 +454,8 @@ poplevel (int keep, int reverse, int functionbody)
     }
   else if (block_node)
     {
-      if (block_created_by_back_end == NULL)
-	current_binding_level->blocks
-	  = chainon (current_binding_level->blocks, block_node);
+      current_binding_level->blocks
+	= chainon (current_binding_level->blocks, block_node);
     }
 
   /* If we did not make a block for the level just exited, any blocks made for
@@ -503,15 +481,6 @@ insert_block (tree block)
   TREE_USED (block) = 1;
   current_binding_level->blocks
     = chainon (current_binding_level->blocks, block);
-}
-
-/* Set the BLOCK node for the innermost scope
-   (the one we are currently in).  */
-
-void
-set_block (tree block)
-{
-  current_binding_level->block_created_by_back_end = block;
 }
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope.
@@ -559,6 +528,15 @@ pushdecl_top_level (tree x)
   t = pushdecl (x);
   current_binding_level = b;
   return t;
+}
+
+
+/* Clear the binding stack.  */
+static void
+gfc_clear_binding_stack (void)
+{
+  while (!global_bindings_p ())
+    poplevel (0, 0, 0);
 }
 
 

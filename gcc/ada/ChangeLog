@@ -1,3 +1,8 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* misc.c (LANG_HOOKS_CLEAR_BINDING_STACK, LANG_HOOKS_PUSHLEVEL,
+	LANG_HOOKS_POPLEVEL, LANG_HOOKS_SET_BLOCK): Remove.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* trans.c (gnat_to_gnu <N_Handled_Sequence_Of_Statements>): Update

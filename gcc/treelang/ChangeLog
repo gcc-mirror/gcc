@@ -1,3 +1,13 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* treetree.c (set_block): Remove.
+	(struct binding_level): Remove block_created_by_back_end.
+	(clear_binding_level): Likewise.
+	(tree_code_create_function_initial,
+	tree_code_create_function_wrapup): Call pushlevel and poplevel
+	directly rather than through hooks.
+	(poplevel): Don't handle block_created_by_back_end.
+
 2004-04-07  Richard Henderson  <rth@redhat.com>
 
 	* treetree.c (tree_mark_addressable):  Don't put_var_into_stack.

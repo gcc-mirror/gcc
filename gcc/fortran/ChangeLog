@@ -1,3 +1,12 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* f95-lang.c (set_block): Remove.
+	(gfc_clear_binding_stack): New.
+	(LANG_HOOKS_CLEAR_BINDING_STACK): Define.
+	(struct binding_level): Remove block_created_by_back_end.
+	(clear_binding_level): Likewise.
+	(poplevel): Don't handle block_created_by_back_end.
+
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-decl.c (gfc_create_module_variable): Nothing to do if
