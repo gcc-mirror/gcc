@@ -211,7 +211,7 @@ typedef struct state_ainsn_table *state_ainsn_table_t;
    function `main'.  */
 
 static void *create_node            PARAMS ((size_t));
-static void *copy_node              PARAMS ((void *, size_t));
+static void *copy_node              PARAMS ((const void *, size_t));
 static char *check_name             PARAMS ((char *, pos_t));
 static char *next_sep_el            PARAMS ((char **, int, int));
 static int n_sep_els                PARAMS ((char *, int, int));
@@ -530,7 +530,7 @@ static struct obstack irp;
 #define VLA_PTR_CREATE(vla, allocated_length, name)                   	\
   do									\
     {                                                                	\
-      vla_ptr_t *vla_ptr = &(vla);                                      \
+      vla_ptr_t *const vla_ptr = &(vla);                                \
                                                                       	\
       VARRAY_GENERIC_PTR_INIT (vla_ptr->varray, allocated_length, name);\
       vla_ptr->length = 0;                                              \
@@ -557,8 +557,8 @@ static struct obstack irp;
    undefined.  */
 #define VLA_PTR_EXPAND(vla, n)                                        \
   do {                                                                \
-    vla_ptr_t *expand_vla_ptr = &(vla);                               \
-    size_t new_length = (n) + expand_vla_ptr->length;                 \
+    vla_ptr_t *const expand_vla_ptr = &(vla);                         \
+    const size_t new_length = (n) + expand_vla_ptr->length;           \
                                                                       \
     if (VARRAY_SIZE (expand_vla_ptr->varray) < new_length)            \
       VARRAY_GROW (expand_vla_ptr->varray,                            \
@@ -570,7 +570,7 @@ static struct obstack irp;
 /* Add element to the end of the vla.  */
 #define VLA_PTR_ADD(vla, ptr)                                         \
   do {                                                                \
-    vla_ptr_t *vla_ptr = &(vla);                                      \
+    vla_ptr_t *const vla_ptr = &(vla);                                \
                                                                       \
     VLA_PTR_EXPAND (*vla_ptr, 1);                                     \
     VARRAY_GENERIC_PTR (vla_ptr->varray, vla_ptr->length - 1) = (ptr);\
@@ -588,7 +588,7 @@ static struct obstack irp;
 
 #define VLA_HWINT_CREATE(vla, allocated_length, name)                 \
   do {                                                                \
-    vla_hwint_t *vla_ptr = &(vla);                                    \
+    vla_hwint_t *const vla_ptr = &(vla);                              \
                                                                       \
     VARRAY_WIDE_INT_INIT (vla_ptr->varray, allocated_length, name);   \
     vla_ptr->length = 0;                                              \
@@ -608,8 +608,8 @@ static struct obstack irp;
 
 #define VLA_HWINT_EXPAND(vla, n)                                      \
   do {                                                                \
-    vla_hwint_t *expand_vla_ptr = &(vla);                             \
-    size_t new_length = (n) + expand_vla_ptr->length;                 \
+    vla_hwint_t *const expand_vla_ptr = &(vla);                       \
+    const size_t new_length = (n) + expand_vla_ptr->length;           \
                                                                       \
     if (VARRAY_SIZE (expand_vla_ptr->varray) < new_length)            \
       VARRAY_GROW (expand_vla_ptr->varray,                            \
@@ -620,7 +620,7 @@ static struct obstack irp;
 
 #define VLA_HWINT_ADD(vla, ptr)                                       \
   do {                                                                \
-    vla_hwint_t *vla_ptr = &(vla);                                    \
+    vla_hwint_t *const vla_ptr = &(vla);                              \
                                                                       \
     VLA_HWINT_EXPAND (*vla_ptr, 1);                                   \
     VARRAY_WIDE_INT (vla_ptr->varray, vla_ptr->length - 1) = (ptr);   \
@@ -1244,56 +1244,56 @@ struct state_ainsn_table
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 
 #define DECL_UNIT(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_unit)					\
        decl_mode_check_failed (_decl->mode, "dm_unit",			\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.unit; }))
 
 #define DECL_BYPASS(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_bypass)					\
        decl_mode_check_failed (_decl->mode, "dm_bypass",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.bypass; }))
 
 #define DECL_AUTOMATON(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);				       	\
      if (_decl->mode != dm_automaton)					\
        decl_mode_check_failed (_decl->mode, "dm_automaton",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.automaton; }))
 
 #define DECL_EXCL(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);				       	\
      if (_decl->mode != dm_excl)					\
        decl_mode_check_failed (_decl->mode, "dm_excl",			\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.excl; }))
 
 #define DECL_PRESENCE(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_presence)					\
        decl_mode_check_failed (_decl->mode, "dm_presence",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.presence; }))
 
 #define DECL_ABSENCE(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);				       	\
      if (_decl->mode != dm_absence)					\
        decl_mode_check_failed (_decl->mode, "dm_absence",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.absence; }))
 
 #define DECL_RESERV(d) __extension__					\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_reserv)					\
-       decl_mode_check_failed (_decl->mode, "dm_reserv",			\
+       decl_mode_check_failed (_decl->mode, "dm_reserv",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.reserv; }))
 
 #define DECL_INSN_RESERV(d) __extension__				\
-(({ struct decl *_decl = (d);						\
+(({ struct decl *const _decl = (d);				       	\
      if (_decl->mode != dm_insn_reserv)					\
        decl_mode_check_failed (_decl->mode, "dm_insn_reserv",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
@@ -1350,42 +1350,42 @@ decl_mode_check_failed (mode, expected_mode_str, file, line, func)
 
 
 #define REGEXP_UNIT(r) __extension__					\
-(({ struct regexp *_regexp = (r);					\
+(({ struct regexp *const _regexp = (r);					\
      if (_regexp->mode != rm_unit)					\
        regexp_mode_check_failed (_regexp->mode, "rm_unit",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_regexp)->regexp.unit; }))
 
 #define REGEXP_RESERV(r) __extension__					\
-(({ struct regexp *_regexp = (r);					\
+(({ struct regexp *const _regexp = (r);					\
      if (_regexp->mode != rm_reserv)					\
        regexp_mode_check_failed (_regexp->mode, "rm_reserv",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_regexp)->regexp.reserv; }))
 
 #define REGEXP_SEQUENCE(r) __extension__				\
-(({ struct regexp *_regexp = (r);					\
+(({ struct regexp *const _regexp = (r);					\
      if (_regexp->mode != rm_sequence)					\
        regexp_mode_check_failed (_regexp->mode, "rm_sequence",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_regexp)->regexp.sequence; }))
 
 #define REGEXP_REPEAT(r) __extension__					\
-(({ struct regexp *_regexp = (r);					\
+(({ struct regexp *const _regexp = (r);					\
      if (_regexp->mode != rm_repeat)					\
        regexp_mode_check_failed (_regexp->mode, "rm_repeat",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_regexp)->regexp.repeat; }))
 
 #define REGEXP_ALLOF(r) __extension__					\
-(({ struct regexp *_regexp = (r);					\
+(({ struct regexp *const _regexp = (r);					\
      if (_regexp->mode != rm_allof)					\
        regexp_mode_check_failed (_regexp->mode, "rm_allof",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_regexp)->regexp.allof; }))
 
 #define REGEXP_ONEOF(r) __extension__					\
-(({ struct regexp *_regexp = (r);					\
+(({ struct regexp *const _regexp = (r);					\
      if (_regexp->mode != rm_oneof)					\
        regexp_mode_check_failed (_regexp->mode, "rm_oneof",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
@@ -1478,11 +1478,10 @@ create_node (size)
 /* Copy IR structure (node).  */
 static void *
 copy_node (from, size)
-     void *from;
+     const void *from;
      size_t size;
 {
-  void *result;
-  result = create_node (size);
+  void *const result = create_node (size);
   memcpy (result, from, size);
   return result;
 }
@@ -1493,7 +1492,7 @@ check_name (name, pos)
      char * name;
      pos_t pos ATTRIBUTE_UNUSED;
 {
-  char *str;
+  const char *str;
 
   for (str = name; *str != '\0'; str++)
     if (*str == '\"')
