@@ -1,3 +1,7 @@
+2002-09-10  Frank Ch. Eigler  <fche@redhat.com>
+
+	* gcc.c-torture/execute/20010915-1.c: Correct typo in abort call.
+
 2002-09-10  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/20020312-2.c: Adjust for x86-64.
