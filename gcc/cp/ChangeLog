@@ -1,3 +1,9 @@
+2003-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5296
+	* pt.c (try_one_overload): Add addr_p parameter.
+	(resolve_overloaded_unification): Pass it.
+
 2003-09-08  Richard Henderson  <rth@redhat.com>
 
 	* decl.c (finish_function): Clear current_function_decl.
