@@ -14190,10 +14190,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		 is dependent.  */
 	      type = make_typename_type (parser->scope, name, tag_type,
 					 /*complain=*/1);
-	      if (tag_type == enum_type)
-		TYPENAME_IS_ENUM_P (type) = 1;
-	      else if (tag_type != typename_type)
-		TYPENAME_IS_CLASS_P (type) = 1;
 	      decl = TYPE_NAME (type);
 	    }
 	  else if (is_template)
