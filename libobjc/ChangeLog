@@ -1,3 +1,7 @@
+Fri April 8 08:21:07 1999 Ovidiu Predescu <ovidiu@cup.hp.com>
+
+	* objc-features.texi: Updated the URL to Boehm's GC page.
+
 Fri Mar 26 23:41:07 1999 Ovidiu Predescu <ovidiu@cup.hp.com>
 
 	* archive.c (__objc_code_char, __objc_write_char): Explicitly specify
