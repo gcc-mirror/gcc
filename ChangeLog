@@ -1,5 +1,9 @@
 2003-06-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Replace {build,host,target}_canonical by
+	{build,host,target}.
+	* Makefile.in: Regenerate.
+
 	* Makefile.tpl: Fix stupid pasto.
 	* Makefile.in: Regenerate.
 

@@ -29,20 +29,11 @@ in
 VPATH=@srcdir@
 
 build_alias=@build_alias@
-build_cpu=@build_cpu@
-build_vendor=@build_vendor@
-build_os=@build_os@
-build_canonical=@build_cpu@-@build_vendor@-@build_os@
+build=@build@
 host_alias=@host_alias@
-host_cpu=@host_cpu@
-host_vendor=@host_vendor@
-host_os=@host_os@
-host_canonical=@host_cpu@-@host_vendor@-@host_os@
+host=@host@
 target_alias=@target_alias@
-target_cpu=@target_cpu@
-target_vendor=@target_vendor@
-target_os=@target_os@
-target_canonical=@target_cpu@-@target_vendor@-@target_os@
+target=@target@
 
 program_transform_name = @program_transform_name@
 
@@ -266,7 +257,7 @@ USUAL_AR_FOR_TARGET = ` \
   if [ -f $$r/binutils/ar ] ; then \
     echo $$r/binutils/ar ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       echo $(AR); \
     else \
        echo ar | sed '$(program_transform_name)' ; \
@@ -280,7 +271,7 @@ USUAL_AS_FOR_TARGET = ` \
   elif [ -f $$r/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=as ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       echo $(AS); \
     else \
        echo as | sed '$(program_transform_name)' ; \
@@ -313,7 +304,7 @@ USUAL_DLLTOOL_FOR_TARGET = ` \
   if [ -f $$r/binutils/dlltool ] ; then \
     echo $$r/binutils/dlltool ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       echo $(DLLTOOL); \
     else \
        echo dlltool | sed '$(program_transform_name)' ; \
@@ -329,7 +320,7 @@ USUAL_LD_FOR_TARGET = ` \
   elif [ -f $$r/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=ld ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       echo $(LD); \
     else \
        echo ld | sed '$(program_transform_name)' ; \
@@ -345,7 +336,7 @@ USUAL_NM_FOR_TARGET = ` \
   elif [ -f $$r/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=nm ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       echo $(NM); \
     else \
        echo nm | sed '$(program_transform_name)' ; \
@@ -357,7 +348,7 @@ USUAL_RANLIB_FOR_TARGET = ` \
   if [ -f $$r/binutils/ranlib ] ; then \
     echo $$r/binutils/ranlib ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       if [ x'$(RANLIB)' != x ]; then \
          echo $(RANLIB); \
       else \
@@ -373,7 +364,7 @@ USUAL_WINDRES_FOR_TARGET = ` \
   if [ -f $$r/binutils/windres ] ; then \
     echo $$r/binutils/windres ; \
   else \
-    if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+    if [ '$(host)' = '$(target)' ] ; then \
       echo $(WINDRES); \
     else \
        echo windres | sed '$(program_transform_name)' ; \
@@ -979,7 +970,7 @@ check-[+module+]:
 [+ ELIF no_check_cross +]
 # This module is only tested in a native toolchain.
 check-[+module+]:
-	@if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
+	@if [ '$(host)' = '$(target)' ] ; then \
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
