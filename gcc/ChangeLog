@@ -1,3 +1,7 @@
+2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* libgcc2.c (__moddi3): Cast &w to UDWtype*.
+
 2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (tree_block_forwards_to): Remove.
