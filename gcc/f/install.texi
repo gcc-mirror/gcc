@@ -1566,13 +1566,6 @@ To save some disk space during installation, after Stage 2
 is built, you can type @samp{rm -fr stage1} to remove the
 binaries built during Stage 1.
 
-@emph{Note:} @xref{Object File Differences}, for information on
-expected differences in object files produced during Stage 2 and
-Stage 3 of a bootstrap build.
-These differences will be encountered as a result of using
-the @samp{make compare} or similar command sequence recommended
-by the GNU CC installation documentation.
-
 Also, @xref{Installation,,Installing GNU CC,gcc,Using and Porting GNU CC},
 for important information on building @code{gcc} that is
 not described in this @code{g77} manual.
