@@ -75,6 +75,21 @@ _objc_thread_t objc_thread_detach(SEL selector, id object, id argument);
 int     objc_mutex_lock_x(_objc_mutex_t mutex, const char *f, int l);
 int     objc_mutex_unlock_x(_objc_mutex_t mutex, const char *f, int l);
 
+/*
+  Use this to set the hook function that will be called when the 
+  runtime initially becomes multi threaded.
+  The hook function is only called once, meaning only when the 
+  2nd thread is spawned, not for each and every thread.
+
+  It returns the previous hook function or NULL if there is none.
+
+  A program outside of the runtime could set this to some function so
+  it can be informed; for example, the GNUstep Base Library sets it 
+  so it can implement the NSBecomingMultiThreaded notification.
+  */
+typedef void (*objc_thread_callback)();
+objc_thread_callback objc_set_thread_callback(objc_thread_callback func);
+
 /* For debugging of locks, uncomment these two macros: */
 /* #define objc_mutex_lock(x)      objc_mutex_lock_x(x, __FILE__, __LINE__) */
 /* #define objc_mutex_unlock(x)    objc_mutex_unlock_x(x, __FILE__, __LINE__)*/
