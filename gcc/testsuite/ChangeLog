@@ -1,3 +1,23 @@
+2000-06-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* g++.old-deja/Makefile.in, g++.old-deja/configure.in,
+	g++.old-deja/g++.niklas/Makefile.in,           
+	g++.old-deja/g++.niklas/configure.in,
+	g++.old-deja/g++.other/Makefile.in,
+	g++.old-deja/g++.other/configure.in,
+	gcc.c-torture/code_quality/Makefile.in,
+	gcc.c-torture/code_quality/configure.in,
+	gcc.c-torture/compat/Makefile.in, gcc.c-torture/compat/configure.in,
+	gcc.c-torture/compile/Makefile.in, gcc.c-torture/compile/configure.in,
+	gcc.c-torture/execute/Makefile.in, gcc.c-torture/execute/configure.in,
+	gcc.c-torture/execute/ieee/Makefile.in,
+	gcc.c-torture/execute/ieee/configure.in,
+	gcc.c-torture/noncompile/Makefile.in,
+	gcc.c-torture/noncompile/configure.in,
+	gcc.c-torture/special/Makefile.in, gcc.c-torture/special/configure.in,
+	gcc.c-torture/unsorted/Makefile.in, gcc.c-torture/unsorted/configure.in,
+	gcc.misc-tests/Makefile.in, gcc.misc-tests/configure.in: Delete.
+
 2000-06-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/ambig3.C: New test.
