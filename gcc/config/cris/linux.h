@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CRIS_CPP_SUBTARGET_SPEC
 #define CRIS_CPP_SUBTARGET_SPEC \
-  "-D__gnu_linux__ __linux__ -D__unix__  -D__ELF__\
+  "-D__gnu_linux__ -D__linux__ -D__unix__  -D__ELF__\
    %{pthread:-D_REENTRANT}\
    %{fPIC|fpic: -D__PIC__ -D__pic__}\
    %{!fleading-underscore:-fno-leading-underscore -D__NO_UNDERSCORES__}\
