@@ -2499,8 +2499,6 @@ finish_eh_generation ()
      connect many of the handlers, and then type information will not
      be effective.  Still, this is a win over previous implementations.  */
 
-  rebuild_jump_labels (get_insns ());
-  find_basic_blocks (get_insns (), max_reg_num (), 0);
   cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
 
   /* These registers are used by the landing pads.  Make sure they
