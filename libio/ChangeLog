@@ -1,3 +1,10 @@
+1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* filedoalloc.c, floatio.h, iovfprintf.c, iovfscanf.c: Remove
+	advertising clause from BSD license, pursuant with
+
+	  ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
+
 1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* strstream.h (strstreambuf::streambuf): Rename parameters to
