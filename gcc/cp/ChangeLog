@@ -1,5 +1,34 @@
+Wed Jan 28 23:14:44 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (instantiate_type): Don't just return a known type if
+ 	it's wrong.
+
 Wed Jan 28 11:04:07 1998  Mark Mitchell  <mmitchell@usa.net>
 
+	* class.c (instantiate_type): Remove handling of FUNCTION_DECL
+	since that code could never be reached.
+	
+	* error.c (dump_decl): Avoid aborting in the midst of printing an
+	error message about an illegal template declaration.
+
+	* parse.y (structsp): Print an error message, rather than crashing,
+	when a class-head does not name a class.
+
+	* pt.c (convert_nontype_argument):  Allow REAL_TYPE and COMPLEX_TYPE
+	template arguments as a g++ extension.
+	
+	* cp-tree.def (ALIGNOF_EXPR): New tree code.
+	* decl2.c (grok_alignof): If processing_template_decl, just store
+	the expression.
+	* typeck.c (c_alignof): Likewise.
+	* decl2.c (build_expr_from_tree): Handle ALIGNOF_EXPR.
+	* error.c (dump_expr): Likewise.
+	* pt.c (tsubst_copy): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	* pt.c (uses_template_parms): Correctly determine whether or not a
+	SIZEOF_EXPR/ALIGNOF_EXPR uses template parameters so that constant
+	folding can be done.
+	
 	* cp-tree.h (grok_enum_decls): Remove type parameter.
 	* decl.c (grok_enum_decls): Likewise.
 	* decl2.c (grok_x_components): Call grok_enum_decls

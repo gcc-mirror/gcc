@@ -2355,13 +2355,21 @@ structsp:
 		}
 	| class_head  %prec EMPTY
 		{
-		  $$.t = $1;
 		  $$.new_type_flag = 0;
-		  /* struct B: public A; is not accepted by the WP grammar.  */
-		  if (TYPE_BINFO_BASETYPES ($$.t) && !TYPE_SIZE ($$.t)
-		      && ! TYPE_BEING_DEFINED ($$.t))
-		    cp_error ("base clause without member specification for `%#T'",
-			      $$.t);
+		  if (TYPE_BINFO ($1) == NULL_TREE)
+		    {
+		      cp_error ("%T is not a class type", $1);
+		      $$.t = error_mark_node;
+		    } 
+		  else
+		    {
+		      $$.t = $1;
+		      /* struct B: public A; is not accepted by the WP grammar.  */
+		      if (TYPE_BINFO_BASETYPES ($$.t) && !TYPE_SIZE ($$.t)
+			  && ! TYPE_BEING_DEFINED ($$.t))
+			cp_error ("base clause without member specification for `%#T'",
+				  $$.t);
+		    }
 		}
 	;
 

@@ -2074,6 +2074,7 @@ cp_tree_equal (t1, t2)
 	&& TEMPLATE_CONST_LEVEL (t1) == TEMPLATE_CONST_LEVEL (t2);
 
     case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
       if (TREE_CODE (TREE_OPERAND (t1, 0)) != TREE_CODE (TREE_OPERAND (t2, 0)))
 	return 0;
       if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t1, 0))) == 't')

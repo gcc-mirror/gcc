@@ -659,46 +659,46 @@ static const short yyrline[] = { 0,
   2190,  2196,  2198,  2201,  2204,  2207,  2213,  2216,  2219,  2221,
   2223,  2225,  2229,  2235,  2243,  2245,  2249,  2251,  2256,  2259,
   2262,  2264,  2266,  2270,  2274,  2279,  2283,  2286,  2291,  2295,
-  2298,  2301,  2305,  2341,  2347,  2356,  2368,  2370,  2373,  2375,
-  2380,  2382,  2384,  2386,  2388,  2392,  2397,  2402,  2408,  2413,
-  2418,  2420,  2424,  2429,  2432,  2439,  2467,  2473,  2475,  2478,
-  2481,  2483,  2487,  2489,  2493,  2519,  2548,  2551,  2552,  2573,
-  2596,  2598,  2602,  2628,  2637,  2726,  2733,  2736,  2744,  2755,
-  2764,  2768,  2783,  2786,  2791,  2793,  2795,  2797,  2799,  2801,
-  2806,  2812,  2814,  2817,  2820,  2822,  2833,  2838,  2841,  2843,
-  2848,  2851,  2852,  2863,  2866,  2867,  2878,  2880,  2883,  2885,
-  2888,  2895,  2903,  2910,  2916,  2922,  2930,  2934,  2939,  2943,
-  2946,  2955,  2957,  2961,  2964,  2969,  2973,  2978,  2988,  2991,
-  2995,  2999,  3007,  3012,  3018,  3021,  3023,  3025,  3031,  3034,
-  3036,  3038,  3040,  3044,  3047,  3068,  3078,  3080,  3081,  3085,
-  3090,  3093,  3095,  3097,  3099,  3103,  3109,  3112,  3114,  3116,
-  3118,  3122,  3125,  3128,  3130,  3132,  3134,  3138,  3141,  3144,
-  3146,  3148,  3150,  3157,  3168,  3172,  3177,  3181,  3186,  3188,
-  3192,  3195,  3197,  3201,  3203,  3204,  3207,  3209,  3215,  3230,
-  3236,  3242,  3256,  3258,  3262,  3278,  3284,  3299,  3306,  3312,
-  3314,  3315,  3316,  3324,  3333,  3334,  3338,  3341,  3347,  3353,
-  3356,  3358,  3360,  3362,  3366,  3370,  3374,  3377,  3382,  3385,
-  3387,  3389,  3391,  3393,  3395,  3397,  3399,  3403,  3407,  3411,
-  3415,  3416,  3418,  3420,  3422,  3424,  3426,  3428,  3430,  3432,
-  3440,  3442,  3443,  3444,  3447,  3455,  3460,  3467,  3469,  3474,
-  3476,  3479,  3493,  3496,  3499,  3508,  3520,  3531,  3551,  3561,
-  3564,  3572,  3584,  3587,  3590,  3593,  3609,  3612,  3623,  3624,
-  3628,  3643,  3662,  3674,  3688,  3702,  3715,  3734,  3752,  3771,
-  3779,  3800,  3818,  3831,  3832,  3835,  3835,  3838,  3838,  3841,
-  3841,  3847,  3853,  3856,  3861,  3868,  3877,  3886,  3895,  3903,
-  3916,  3918,  3922,  3924,  3927,  3934,  3937,  3945,  3961,  3972,
-  3984,  3986,  3989,  3999,  4009,  4020,  4022,  4024,  4027,  4044,
-  4050,  4058,  4060,  4062,  4066,  4069,  4070,  4078,  4082,  4086,
-  4089,  4090,  4096,  4099,  4102,  4104,  4108,  4113,  4116,  4126,
-  4131,  4132,  4140,  4146,  4151,  4155,  4160,  4164,  4168,  4172,
-  4177,  4188,  4202,  4206,  4209,  4211,  4215,  4219,  4222,  4225,
-  4227,  4231,  4233,  4240,  4247,  4250,  4253,  4257,  4261,  4267,
-  4271,  4276,  4278,  4281,  4286,  4292,  4303,  4306,  4308,  4312,
-  4317,  4319,  4326,  4329,  4331,  4333,  4339,  4344,  4347,  4349,
-  4351,  4353,  4355,  4357,  4359,  4361,  4363,  4365,  4367,  4369,
-  4371,  4373,  4375,  4377,  4379,  4381,  4383,  4385,  4387,  4389,
-  4391,  4393,  4395,  4397,  4399,  4401,  4403,  4405,  4407,  4409,
-  4412,  4414
+  2298,  2301,  2305,  2341,  2347,  2356,  2376,  2378,  2381,  2383,
+  2388,  2390,  2392,  2394,  2396,  2400,  2405,  2410,  2416,  2421,
+  2426,  2428,  2432,  2437,  2440,  2447,  2475,  2481,  2483,  2486,
+  2489,  2491,  2495,  2497,  2501,  2527,  2556,  2559,  2560,  2581,
+  2604,  2606,  2610,  2636,  2645,  2734,  2741,  2744,  2752,  2763,
+  2772,  2776,  2791,  2794,  2799,  2801,  2803,  2805,  2807,  2809,
+  2814,  2820,  2822,  2825,  2828,  2830,  2841,  2846,  2849,  2851,
+  2856,  2859,  2860,  2871,  2874,  2875,  2886,  2888,  2891,  2893,
+  2896,  2903,  2911,  2918,  2924,  2930,  2938,  2942,  2947,  2951,
+  2954,  2963,  2965,  2969,  2972,  2977,  2981,  2986,  2996,  2999,
+  3003,  3007,  3015,  3020,  3026,  3029,  3031,  3033,  3039,  3042,
+  3044,  3046,  3048,  3052,  3055,  3076,  3086,  3088,  3089,  3093,
+  3098,  3101,  3103,  3105,  3107,  3111,  3117,  3120,  3122,  3124,
+  3126,  3130,  3133,  3136,  3138,  3140,  3142,  3146,  3149,  3152,
+  3154,  3156,  3158,  3165,  3176,  3180,  3185,  3189,  3194,  3196,
+  3200,  3203,  3205,  3209,  3211,  3212,  3215,  3217,  3223,  3238,
+  3244,  3250,  3264,  3266,  3270,  3286,  3292,  3307,  3314,  3320,
+  3322,  3323,  3324,  3332,  3341,  3342,  3346,  3349,  3355,  3361,
+  3364,  3366,  3368,  3370,  3374,  3378,  3382,  3385,  3390,  3393,
+  3395,  3397,  3399,  3401,  3403,  3405,  3407,  3411,  3415,  3419,
+  3423,  3424,  3426,  3428,  3430,  3432,  3434,  3436,  3438,  3440,
+  3448,  3450,  3451,  3452,  3455,  3463,  3468,  3475,  3477,  3482,
+  3484,  3487,  3501,  3504,  3507,  3516,  3528,  3539,  3559,  3569,
+  3572,  3580,  3592,  3595,  3598,  3601,  3617,  3620,  3631,  3632,
+  3636,  3651,  3670,  3682,  3696,  3710,  3723,  3742,  3760,  3779,
+  3787,  3808,  3826,  3839,  3840,  3843,  3843,  3846,  3846,  3849,
+  3849,  3855,  3861,  3864,  3869,  3876,  3885,  3894,  3903,  3911,
+  3924,  3926,  3930,  3932,  3935,  3942,  3945,  3953,  3969,  3980,
+  3992,  3994,  3997,  4007,  4017,  4028,  4030,  4032,  4035,  4052,
+  4058,  4066,  4068,  4070,  4074,  4077,  4078,  4086,  4090,  4094,
+  4097,  4098,  4104,  4107,  4110,  4112,  4116,  4121,  4124,  4134,
+  4139,  4140,  4148,  4154,  4159,  4163,  4168,  4172,  4176,  4180,
+  4185,  4196,  4210,  4214,  4217,  4219,  4223,  4227,  4230,  4233,
+  4235,  4239,  4241,  4248,  4255,  4258,  4261,  4265,  4269,  4275,
+  4279,  4284,  4286,  4289,  4294,  4300,  4311,  4314,  4316,  4320,
+  4325,  4327,  4334,  4337,  4339,  4341,  4347,  4352,  4355,  4357,
+  4359,  4361,  4363,  4365,  4367,  4369,  4371,  4373,  4375,  4377,
+  4379,  4381,  4383,  4385,  4387,  4389,  4391,  4393,  4395,  4397,
+  4399,  4401,  4403,  4405,  4407,  4409,  4411,  4413,  4415,  4417,
+  4420,  4422
 };
 #endif
 
@@ -6233,83 +6233,91 @@ case 455:
 case 456:
 #line 2357 "parse.y"
 {
-		  yyval.ftype.t = yyvsp[0].ttype;
 		  yyval.ftype.new_type_flag = 0;
-		  /* struct B: public A; is not accepted by the WP grammar.  */
-		  if (TYPE_BINFO_BASETYPES (yyval.ftype.t) && !TYPE_SIZE (yyval.ftype.t)
-		      && ! TYPE_BEING_DEFINED (yyval.ftype.t))
-		    cp_error ("base clause without member specification for `%#T'",
-			      yyval.ftype.t);
+		  if (TYPE_BINFO (yyvsp[0].ttype) == NULL_TREE)
+		    {
+		      cp_error ("%T is not a class type", yyvsp[0].ttype);
+		      yyval.ftype.t = error_mark_node;
+		    } 
+		  else
+		    {
+		      yyval.ftype.t = yyvsp[0].ttype;
+		      /* struct B: public A; is not accepted by the WP grammar.  */
+		      if (TYPE_BINFO_BASETYPES (yyval.ftype.t) && !TYPE_SIZE (yyval.ftype.t)
+			  && ! TYPE_BEING_DEFINED (yyval.ftype.t))
+			cp_error ("base clause without member specification for `%#T'",
+				  yyval.ftype.t);
+		    }
 		;
     break;}
 case 460:
-#line 2376 "parse.y"
+#line 2384 "parse.y"
 { if (pedantic && !in_system_header)
 		    pedwarn ("comma at end of enumerator list"); ;
     break;}
 case 462:
-#line 2383 "parse.y"
+#line 2391 "parse.y"
 { error ("storage class specifier `%s' not allowed after struct or class", IDENTIFIER_POINTER (yyvsp[0].ttype)); ;
     break;}
 case 463:
-#line 2385 "parse.y"
+#line 2393 "parse.y"
 { error ("type specifier `%s' not allowed after struct or class", IDENTIFIER_POINTER (yyvsp[0].ttype)); ;
     break;}
 case 464:
-#line 2387 "parse.y"
+#line 2395 "parse.y"
 { error ("type qualifier `%s' not allowed after struct or class", IDENTIFIER_POINTER (yyvsp[0].ttype)); ;
     break;}
 case 465:
-#line 2389 "parse.y"
+#line 2397 "parse.y"
 { error ("no body nor ';' separates two class, struct or union declarations"); ;
     break;}
 case 466:
-#line 2394 "parse.y"
+#line 2402 "parse.y"
 { current_aggr = yyval.ttype; yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 467:
-#line 2399 "parse.y"
+#line 2407 "parse.y"
 { current_aggr = yyval.ttype; yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 468:
-#line 2404 "parse.y"
+#line 2412 "parse.y"
 {
 		  current_aggr = yyvsp[-2].ttype;
 		  yyval.ttype = handle_class_head (yyvsp[-2].ttype, yyvsp[-1].ttype, yyvsp[0].ttype);
 		;
     break;}
 case 469:
-#line 2409 "parse.y"
+#line 2417 "parse.y"
 {
 		  current_aggr = yyvsp[-3].ttype;
 		  yyval.ttype = handle_class_head (yyvsp[-3].ttype, yyvsp[-1].ttype, yyvsp[0].ttype);
 		;
     break;}
 case 470:
-#line 2414 "parse.y"
+#line 2422 "parse.y"
 {
 		  current_aggr = yyvsp[-2].ttype;
 		  yyval.ttype = handle_class_head (yyvsp[-2].ttype, NULL_TREE, yyvsp[0].ttype);
 		;
     break;}
 case 471:
-#line 2419 "parse.y"
+#line 2427 "parse.y"
 { current_aggr = yyval.ttype; yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 472:
-#line 2421 "parse.y"
+#line 2429 "parse.y"
 { current_aggr = yyval.ttype; yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 473:
-#line 2426 "parse.y"
+#line 2434 "parse.y"
 { yyval.ttype = xref_tag (current_aggr, yyvsp[0].ttype, NULL_TREE, 0); ;
     break;}
 case 474:
-#line 2431 "parse.y"
+#line 2439 "parse.y"
 { yyval.ttype = xref_tag (current_aggr, yyvsp[0].ttype, NULL_TREE, 1); ;
     break;}
 case 475:
-#line 2434 "parse.y"
+#line 2442 "parse.y"
 { 
 		  yyval.ttype = yyvsp[-1].ttype;
 		  if (yyvsp[0].ttype)
@@ -6317,7 +6325,7 @@ case 475:
 		;
     break;}
 case 476:
-#line 2440 "parse.y"
+#line 2448 "parse.y"
 { 
 		  yyval.ttype = TREE_TYPE (yyvsp[-1].ttype);
 		  if (TREE_INT_CST_LOW (current_aggr) == union_type 
@@ -6345,28 +6353,28 @@ case 476:
 		;
     break;}
 case 477:
-#line 2469 "parse.y"
+#line 2477 "parse.y"
 { yyval.ttype = xref_tag (yyval.ttype, make_anon_name (), NULL_TREE, 0);
 		  yyungetc ('{', 1); ;
     break;}
 case 480:
-#line 2480 "parse.y"
+#line 2488 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 481:
-#line 2482 "parse.y"
+#line 2490 "parse.y"
 { yyungetc(':', 1); yyval.ttype = NULL_TREE; ;
     break;}
 case 482:
-#line 2484 "parse.y"
+#line 2492 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 484:
-#line 2490 "parse.y"
+#line 2498 "parse.y"
 { yyval.ttype = chainon (yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 485:
-#line 2495 "parse.y"
+#line 2503 "parse.y"
 {
 		  tree type = TREE_TYPE (yyvsp[0].ttype);
 		  if (! is_aggr_type (type, 1))
@@ -6393,7 +6401,7 @@ case 485:
 		;
     break;}
 case 486:
-#line 2520 "parse.y"
+#line 2528 "parse.y"
 {
 		  tree type = TREE_TYPE (yyvsp[0].ttype);
 		  if (current_aggr == signature_type_node)
@@ -6422,11 +6430,11 @@ case 486:
 		;
     break;}
 case 487:
-#line 2550 "parse.y"
+#line 2558 "parse.y"
 { yyval.ttype = TYPE_MAIN_DECL (yyvsp[0].ttype); ;
     break;}
 case 489:
-#line 2553 "parse.y"
+#line 2561 "parse.y"
 {
 		  if (current_aggr == signature_type_node)
 		    {
@@ -6449,7 +6457,7 @@ case 489:
 		;
     break;}
 case 490:
-#line 2574 "parse.y"
+#line 2582 "parse.y"
 {
 		  if (current_aggr == signature_type_node)
 		    {
@@ -6472,13 +6480,13 @@ case 490:
 		;
     break;}
 case 492:
-#line 2599 "parse.y"
+#line 2607 "parse.y"
 { if (yyval.ttype != ridpointers[(int)RID_VIRTUAL])
 		    sorry ("non-virtual access");
 		  yyval.ttype = access_default_virtual_node; ;
     break;}
 case 493:
-#line 2603 "parse.y"
+#line 2611 "parse.y"
 { int err = 0;
 		  if (yyvsp[-1].ttype == access_protected_node)
 		    {
@@ -6506,7 +6514,7 @@ case 493:
 		;
     break;}
 case 494:
-#line 2629 "parse.y"
+#line 2637 "parse.y"
 { if (yyvsp[-1].ttype != ridpointers[(int)RID_VIRTUAL])
 		    sorry ("non-virtual access");
 		  if (yyval.ttype == access_public_node)
@@ -6515,7 +6523,7 @@ case 494:
 		    yyval.ttype = access_private_virtual_node; ;
     break;}
 case 495:
-#line 2639 "parse.y"
+#line 2647 "parse.y"
 { tree t = yyvsp[-1].ttype;
 		  push_obstacks_nochange ();
 		  end_temporary_allocation ();
@@ -6603,17 +6611,17 @@ case 495:
 		;
     break;}
 case 496:
-#line 2728 "parse.y"
+#line 2736 "parse.y"
 {
 		    yyval.ttype = build_self_reference ();
 		;
     break;}
 case 497:
-#line 2735 "parse.y"
+#line 2743 "parse.y"
 { if (yyval.ttype) yyval.ttype = build_tree_list (access_public_node, yyval.ttype); ;
     break;}
 case 498:
-#line 2737 "parse.y"
+#line 2745 "parse.y"
 {
 		  if (current_aggr == signature_type_node)
 		    yyval.ttype = build_tree_list (access_public_node, yyvsp[0].ttype);
@@ -6623,7 +6631,7 @@ case 498:
 		;
     break;}
 case 499:
-#line 2745 "parse.y"
+#line 2753 "parse.y"
 {
 		  tree visspec = yyvsp[-2].ttype;
 
@@ -6636,19 +6644,19 @@ case 499:
 		;
     break;}
 case 500:
-#line 2756 "parse.y"
+#line 2764 "parse.y"
 {
 		  if (current_aggr == signature_type_node)
 		    error ("access specifier not allowed in signature");
 		;
     break;}
 case 501:
-#line 2766 "parse.y"
+#line 2774 "parse.y"
 { if (yyval.ttype == void_type_node) yyval.ttype = NULL_TREE; 
 		;
     break;}
 case 502:
-#line 2769 "parse.y"
+#line 2777 "parse.y"
 { /* In pushdecl, we created a reverse list of names
 		     in this binding level.  Make sure that the chain
 		     of what we're trying to add isn't the item itself
@@ -6663,91 +6671,91 @@ case 502:
 		;
     break;}
 case 503:
-#line 2785 "parse.y"
+#line 2793 "parse.y"
 { ;
     break;}
 case 504:
-#line 2787 "parse.y"
+#line 2795 "parse.y"
 { error ("missing ';' before right brace");
 		  yyungetc ('}', 0); ;
     break;}
 case 505:
-#line 2792 "parse.y"
+#line 2800 "parse.y"
 { yyval.ttype = finish_method (yyval.ttype); ;
     break;}
 case 506:
-#line 2794 "parse.y"
+#line 2802 "parse.y"
 { yyval.ttype = finish_method (yyval.ttype); ;
     break;}
 case 507:
-#line 2796 "parse.y"
+#line 2804 "parse.y"
 { yyval.ttype = finish_method (yyval.ttype); ;
     break;}
 case 508:
-#line 2798 "parse.y"
+#line 2806 "parse.y"
 { yyval.ttype = finish_method (yyval.ttype); ;
     break;}
 case 509:
-#line 2800 "parse.y"
+#line 2808 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 510:
-#line 2802 "parse.y"
+#line 2810 "parse.y"
 { yyval.ttype = yyvsp[0].ttype;
 		  pedantic = yyvsp[-1].itype; ;
     break;}
 case 511:
-#line 2811 "parse.y"
+#line 2819 "parse.y"
 { yyval.ttype = grok_x_components (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 512:
-#line 2813 "parse.y"
+#line 2821 "parse.y"
 { yyval.ttype = grok_x_components (yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 513:
-#line 2815 "parse.y"
+#line 2823 "parse.y"
 { yyval.ttype = grokfield (yyval.ttype, NULL_TREE, yyvsp[0].ttype, yyvsp[-2].ttype,
 				  build_tree_list (yyvsp[-1].ttype, NULL_TREE)); ;
     break;}
 case 514:
-#line 2818 "parse.y"
+#line 2826 "parse.y"
 { yyval.ttype = grokfield (yyval.ttype, NULL_TREE, yyvsp[0].ttype, yyvsp[-2].ttype,
 				  build_tree_list (yyvsp[-1].ttype, NULL_TREE)); ;
     break;}
 case 515:
-#line 2821 "parse.y"
+#line 2829 "parse.y"
 { yyval.ttype = grokbitfield (NULL_TREE, NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 516:
-#line 2823 "parse.y"
+#line 2831 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 517:
-#line 2834 "parse.y"
+#line 2842 "parse.y"
 { tree specs, attrs;
 		  split_specs_attrs (yyvsp[-4].ttype, &specs, &attrs);
 		  yyval.ttype = grokfield (yyvsp[-3].ttype, specs, yyvsp[0].ttype, yyvsp[-2].ttype,
 				  build_tree_list (yyvsp[-1].ttype, attrs)); ;
     break;}
 case 518:
-#line 2839 "parse.y"
+#line 2847 "parse.y"
 { yyval.ttype = grokfield (yyval.ttype, NULL_TREE, yyvsp[0].ttype, yyvsp[-2].ttype,
 				  build_tree_list (yyvsp[-1].ttype, NULL_TREE)); ;
     break;}
 case 519:
-#line 2842 "parse.y"
+#line 2850 "parse.y"
 { yyval.ttype = do_class_using_decl (yyvsp[0].ttype); ;
     break;}
 case 520:
-#line 2844 "parse.y"
+#line 2852 "parse.y"
 { yyval.ttype = finish_member_template_decl (yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 521:
-#line 2850 "parse.y"
+#line 2858 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 523:
-#line 2853 "parse.y"
+#line 2861 "parse.y"
 {
 		  /* In this context, void_type_node encodes
 		     friends.  They have been recorded elsewhere.  */
@@ -6758,11 +6766,11 @@ case 523:
 		;
     break;}
 case 524:
-#line 2865 "parse.y"
+#line 2873 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 526:
-#line 2868 "parse.y"
+#line 2876 "parse.y"
 {
 		  /* In this context, void_type_node encodes
 		     friends.  They have been recorded elsewhere.  */
@@ -6773,7 +6781,7 @@ case 526:
 		;
     break;}
 case 531:
-#line 2890 "parse.y"
+#line 2898 "parse.y"
 { split_specs_attrs (yyvsp[-4].ttype, &current_declspecs,
 				     &prefix_attributes);
 		  yyvsp[-4].ttype = current_declspecs;
@@ -6781,7 +6789,7 @@ case 531:
 				  build_tree_list (yyvsp[-1].ttype, prefix_attributes)); ;
     break;}
 case 532:
-#line 2896 "parse.y"
+#line 2904 "parse.y"
 { split_specs_attrs (yyvsp[-4].ttype, &current_declspecs,
 				     &prefix_attributes);
 		  yyvsp[-4].ttype = current_declspecs;
@@ -6789,7 +6797,7 @@ case 532:
 		  cplus_decl_attributes (yyval.ttype, yyvsp[0].ttype, prefix_attributes); ;
     break;}
 case 533:
-#line 2905 "parse.y"
+#line 2913 "parse.y"
 { split_specs_attrs (yyvsp[-4].ttype, &current_declspecs,
 				     &prefix_attributes);
 		  yyvsp[-4].ttype = current_declspecs;
@@ -6797,7 +6805,7 @@ case 533:
 				  build_tree_list (yyvsp[-1].ttype, prefix_attributes)); ;
     break;}
 case 534:
-#line 2911 "parse.y"
+#line 2919 "parse.y"
 { split_specs_attrs (yyvsp[-4].ttype, &current_declspecs,
 				     &prefix_attributes);
 		  yyvsp[-4].ttype = current_declspecs;
@@ -6805,7 +6813,7 @@ case 534:
 				  build_tree_list (yyvsp[-1].ttype, prefix_attributes)); ;
     break;}
 case 535:
-#line 2917 "parse.y"
+#line 2925 "parse.y"
 { split_specs_attrs (yyvsp[-4].ttype, &current_declspecs,
 				     &prefix_attributes);
 		  yyvsp[-4].ttype = current_declspecs;
@@ -6813,7 +6821,7 @@ case 535:
 		  cplus_decl_attributes (yyval.ttype, yyvsp[0].ttype, prefix_attributes); ;
     break;}
 case 536:
-#line 2923 "parse.y"
+#line 2931 "parse.y"
 { split_specs_attrs (yyvsp[-3].ttype, &current_declspecs,
 				     &prefix_attributes);
 		  yyvsp[-3].ttype = current_declspecs;
@@ -6821,54 +6829,54 @@ case 536:
 		  cplus_decl_attributes (yyval.ttype, yyvsp[0].ttype, prefix_attributes); ;
     break;}
 case 537:
-#line 2932 "parse.y"
+#line 2940 "parse.y"
 { yyval.ttype = grokfield (yyval.ttype, current_declspecs, yyvsp[0].ttype, yyvsp[-2].ttype,
 				  build_tree_list (yyvsp[-1].ttype, prefix_attributes)); ;
     break;}
 case 538:
-#line 2935 "parse.y"
+#line 2943 "parse.y"
 { yyval.ttype = grokbitfield (yyval.ttype, current_declspecs, yyvsp[-1].ttype);
 		  cplus_decl_attributes (yyval.ttype, yyvsp[0].ttype, prefix_attributes); ;
     break;}
 case 539:
-#line 2941 "parse.y"
+#line 2949 "parse.y"
 { yyval.ttype = grokfield (yyval.ttype, current_declspecs, yyvsp[0].ttype, yyvsp[-2].ttype,
 				  build_tree_list (yyvsp[-1].ttype, prefix_attributes)); ;
     break;}
 case 540:
-#line 2944 "parse.y"
+#line 2952 "parse.y"
 { yyval.ttype = grokbitfield (yyval.ttype, current_declspecs, yyvsp[-1].ttype);
 		  cplus_decl_attributes (yyval.ttype, yyvsp[0].ttype, prefix_attributes); ;
     break;}
 case 541:
-#line 2947 "parse.y"
+#line 2955 "parse.y"
 { yyval.ttype = grokbitfield (NULL_TREE, current_declspecs, yyvsp[-1].ttype);
 		  cplus_decl_attributes (yyval.ttype, yyvsp[0].ttype, prefix_attributes); ;
     break;}
 case 543:
-#line 2958 "parse.y"
+#line 2966 "parse.y"
 { TREE_CHAIN (yyvsp[0].ttype) = yyval.ttype; yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 544:
-#line 2963 "parse.y"
+#line 2971 "parse.y"
 { yyval.ttype = build_enumerator (yyval.ttype, NULL_TREE); ;
     break;}
 case 545:
-#line 2965 "parse.y"
+#line 2973 "parse.y"
 { yyval.ttype = build_enumerator (yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 546:
-#line 2971 "parse.y"
+#line 2979 "parse.y"
 { yyval.ftype.t = build_decl_list (yyvsp[-1].ftype.t, yyvsp[0].ttype); 
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag; ;
     break;}
 case 547:
-#line 2974 "parse.y"
+#line 2982 "parse.y"
 { yyval.ftype.t = build_decl_list (yyvsp[0].ftype.t, NULL_TREE); 
 		  yyval.ftype.new_type_flag = yyvsp[0].ftype.new_type_flag; ;
     break;}
 case 548:
-#line 2979 "parse.y"
+#line 2987 "parse.y"
 {
 		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
@@ -6878,71 +6886,71 @@ case 548:
 		;
     break;}
 case 549:
-#line 2990 "parse.y"
+#line 2998 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 550:
-#line 2992 "parse.y"
+#line 3000 "parse.y"
 { yyval.ttype = decl_tree_cons (NULL_TREE, yyvsp[0].ttype, yyval.ttype); ;
     break;}
 case 551:
-#line 2997 "parse.y"
+#line 3005 "parse.y"
 { yyval.ftype.t = IDENTIFIER_AS_LIST (yyvsp[0].ttype); 
 		  yyval.ftype.new_type_flag = 0; ;
     break;}
 case 552:
-#line 3000 "parse.y"
+#line 3008 "parse.y"
 { yyval.ftype.t = decl_tree_cons (NULL_TREE, yyvsp[0].ttype, yyvsp[-1].ftype.t); 
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag; ;
     break;}
 case 553:
-#line 3009 "parse.y"
+#line 3017 "parse.y"
 { yyval.itype = suspend_momentary (); ;
     break;}
 case 554:
-#line 3014 "parse.y"
+#line 3022 "parse.y"
 { resume_momentary ((int) yyvsp[-1].itype); yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 555:
-#line 3020 "parse.y"
+#line 3028 "parse.y"
 { resume_momentary ((int) yyvsp[-3].itype); yyval.ttype = yyvsp[-1].ttype; ;
     break;}
 case 556:
-#line 3022 "parse.y"
+#line 3030 "parse.y"
 { resume_momentary ((int) yyvsp[-3].itype); yyval.ttype = yyvsp[-1].ttype; ;
     break;}
 case 557:
-#line 3024 "parse.y"
+#line 3032 "parse.y"
 { resume_momentary ((int) yyvsp[-1].itype); yyval.ttype = empty_parms (); ;
     break;}
 case 558:
-#line 3026 "parse.y"
+#line 3034 "parse.y"
 { resume_momentary ((int) yyvsp[-3].itype); yyval.ttype = NULL_TREE; ;
     break;}
 case 559:
-#line 3033 "parse.y"
+#line 3041 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 560:
-#line 3035 "parse.y"
+#line 3043 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 561:
-#line 3037 "parse.y"
+#line 3045 "parse.y"
 { yyval.ttype = make_pointer_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 562:
-#line 3039 "parse.y"
+#line 3047 "parse.y"
 { yyval.ttype = make_reference_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 563:
-#line 3041 "parse.y"
+#line 3049 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-2].ttype, arg);
 		;
     break;}
 case 565:
-#line 3049 "parse.y"
+#line 3057 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[0].ttype) == IDENTIFIER_NODE)
 		    {
@@ -6964,7 +6972,7 @@ case 565:
 		;
     break;}
 case 566:
-#line 3069 "parse.y"
+#line 3077 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[0].ttype) == IDENTIFIER_NODE)
 		    yyval.ttype = IDENTIFIER_GLOBAL_VALUE (yyvsp[0].ttype);
@@ -6974,97 +6982,97 @@ case 566:
 		;
     break;}
 case 569:
-#line 3082 "parse.y"
+#line 3090 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 570:
-#line 3087 "parse.y"
+#line 3095 "parse.y"
 { yyval.ttype = get_type_decl (yyvsp[0].ttype); ;
     break;}
 case 571:
-#line 3092 "parse.y"
+#line 3100 "parse.y"
 { yyval.ttype = make_call_declarator (yyval.ttype, yyvsp[-2].ttype, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 572:
-#line 3094 "parse.y"
+#line 3102 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, yyvsp[-1].ttype); ;
     break;}
 case 573:
-#line 3096 "parse.y"
+#line 3104 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, NULL_TREE); ;
     break;}
 case 574:
-#line 3098 "parse.y"
+#line 3106 "parse.y"
 { yyval.ttype = yyvsp[-1].ttype; ;
     break;}
 case 575:
-#line 3100 "parse.y"
+#line 3108 "parse.y"
 { push_nested_class (yyvsp[-1].ttype, 3);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyval.ttype, yyvsp[0].ttype);
 		  TREE_COMPLEXITY (yyval.ttype) = current_class_depth; ;
     break;}
 case 577:
-#line 3111 "parse.y"
+#line 3119 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 578:
-#line 3113 "parse.y"
+#line 3121 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 579:
-#line 3115 "parse.y"
+#line 3123 "parse.y"
 { yyval.ttype = make_pointer_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 580:
-#line 3117 "parse.y"
+#line 3125 "parse.y"
 { yyval.ttype = make_reference_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 581:
-#line 3119 "parse.y"
+#line 3127 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-2].ttype, arg);
 		;
     break;}
 case 583:
-#line 3127 "parse.y"
+#line 3135 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 584:
-#line 3129 "parse.y"
+#line 3137 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 585:
-#line 3131 "parse.y"
+#line 3139 "parse.y"
 { yyval.ttype = make_pointer_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 586:
-#line 3133 "parse.y"
+#line 3141 "parse.y"
 { yyval.ttype = make_reference_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 587:
-#line 3135 "parse.y"
+#line 3143 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-2].ttype, arg);
 		;
     break;}
 case 589:
-#line 3143 "parse.y"
+#line 3151 "parse.y"
 { yyval.ttype = make_call_declarator (yyval.ttype, yyvsp[-2].ttype, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 590:
-#line 3145 "parse.y"
+#line 3153 "parse.y"
 { yyval.ttype = yyvsp[-1].ttype; ;
     break;}
 case 591:
-#line 3147 "parse.y"
+#line 3155 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, yyvsp[-1].ttype); ;
     break;}
 case 592:
-#line 3149 "parse.y"
+#line 3157 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, NULL_TREE); ;
     break;}
 case 593:
-#line 3151 "parse.y"
+#line 3159 "parse.y"
 { if (OP0 (yyval.ttype) != current_class_type)
 		    {
 		      push_nested_class (OP0 (yyval.ttype), 3);
@@ -7073,7 +7081,7 @@ case 593:
 		;
     break;}
 case 594:
-#line 3158 "parse.y"
+#line 3166 "parse.y"
 { got_scope = NULL_TREE;
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-1].ttype, yyvsp[0].ttype);
 		  if (yyvsp[-1].ttype != current_class_type)
@@ -7084,47 +7092,47 @@ case 594:
 		;
     break;}
 case 595:
-#line 3170 "parse.y"
+#line 3178 "parse.y"
 { got_scope = NULL_TREE;
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 596:
-#line 3173 "parse.y"
+#line 3181 "parse.y"
 { got_scope = NULL_TREE;
  		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 597:
-#line 3179 "parse.y"
+#line 3187 "parse.y"
 { got_scope = NULL_TREE;
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 598:
-#line 3182 "parse.y"
+#line 3190 "parse.y"
 { got_scope = NULL_TREE;
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 600:
-#line 3189 "parse.y"
+#line 3197 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 601:
-#line 3194 "parse.y"
+#line 3202 "parse.y"
 { yyval.ttype = build_functional_cast (yyvsp[-3].ftype.t, yyvsp[-1].ttype); ;
     break;}
 case 602:
-#line 3196 "parse.y"
+#line 3204 "parse.y"
 { yyval.ttype = reparse_decl_as_expr (yyvsp[-3].ftype.t, yyvsp[-1].ttype); ;
     break;}
 case 603:
-#line 3198 "parse.y"
+#line 3206 "parse.y"
 { yyval.ttype = reparse_absdcl_as_expr (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 608:
-#line 3210 "parse.y"
+#line 3218 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 609:
-#line 3217 "parse.y"
+#line 3225 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[-1].ttype) == IDENTIFIER_NODE)
 		    {
@@ -7140,7 +7148,7 @@ case 609:
 		;
     break;}
 case 610:
-#line 3231 "parse.y"
+#line 3239 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[-1].ttype) == IDENTIFIER_NODE)
 		    yyval.ttype = lastiddecl;
@@ -7148,7 +7156,7 @@ case 610:
 		;
     break;}
 case 611:
-#line 3237 "parse.y"
+#line 3245 "parse.y"
 {
 		  if (TREE_CODE (yyval.ttype) == IDENTIFIER_NODE)
 		    yyval.ttype = lastiddecl;
@@ -7156,15 +7164,15 @@ case 611:
 		;
     break;}
 case 612:
-#line 3243 "parse.y"
+#line 3251 "parse.y"
 { got_scope = yyval.ttype = complete_type (TREE_TYPE (yyvsp[-1].ttype)); ;
     break;}
 case 614:
-#line 3259 "parse.y"
+#line 3267 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 615:
-#line 3264 "parse.y"
+#line 3272 "parse.y"
 {
 		  if (TREE_CODE_CLASS (TREE_CODE (yyvsp[-1].ttype)) == 't')
 		    yyval.ttype = make_typename_type (yyvsp[-1].ttype, yyvsp[0].ttype);
@@ -7179,14 +7187,14 @@ case 615:
 		;
     break;}
 case 616:
-#line 3280 "parse.y"
+#line 3288 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[0].ttype) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", yyvsp[0].ttype);
 		;
     break;}
 case 617:
-#line 3285 "parse.y"
+#line 3293 "parse.y"
 {
 		  if (TREE_CODE_CLASS (TREE_CODE (yyvsp[-1].ttype)) == 't')
 		    yyval.ttype = make_typename_type (yyvsp[-1].ttype, yyvsp[0].ttype);
@@ -7201,7 +7209,7 @@ case 617:
 		;
     break;}
 case 618:
-#line 3301 "parse.y"
+#line 3309 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[-1].ttype) != IDENTIFIER_NODE)
 		    yyval.ttype = lastiddecl;
@@ -7209,7 +7217,7 @@ case 618:
 		;
     break;}
 case 619:
-#line 3307 "parse.y"
+#line 3315 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[-1].ttype) != IDENTIFIER_NODE)
 		    yyval.ttype = lastiddecl;
@@ -7217,11 +7225,11 @@ case 619:
 		;
     break;}
 case 620:
-#line 3313 "parse.y"
+#line 3321 "parse.y"
 { got_scope = yyval.ttype = complete_type (TREE_TYPE (yyval.ttype)); ;
     break;}
 case 623:
-#line 3317 "parse.y"
+#line 3325 "parse.y"
 {
 		  if (TREE_CODE (yyval.ttype) == IDENTIFIER_NODE)
 		    yyval.ttype = lastiddecl;
@@ -7229,7 +7237,7 @@ case 623:
 		;
     break;}
 case 624:
-#line 3326 "parse.y"
+#line 3334 "parse.y"
 {
 		  if (TREE_CODE (yyvsp[0].ttype) == IDENTIFIER_NODE)
 		    yyval.ttype = IDENTIFIER_GLOBAL_VALUE (yyvsp[0].ttype);
@@ -7239,156 +7247,156 @@ case 624:
 		;
     break;}
 case 626:
-#line 3335 "parse.y"
+#line 3343 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 627:
-#line 3340 "parse.y"
+#line 3348 "parse.y"
 { got_scope = NULL_TREE; ;
     break;}
 case 628:
-#line 3342 "parse.y"
+#line 3350 "parse.y"
 { yyval.ttype = yyvsp[-1].ttype; got_scope = NULL_TREE; ;
     break;}
 case 629:
-#line 3349 "parse.y"
+#line 3357 "parse.y"
 { got_scope = void_type_node; ;
     break;}
 case 630:
-#line 3355 "parse.y"
+#line 3363 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 631:
-#line 3357 "parse.y"
+#line 3365 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[0].ttype, NULL_TREE); ;
     break;}
 case 632:
-#line 3359 "parse.y"
+#line 3367 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 633:
-#line 3361 "parse.y"
+#line 3369 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[0].ttype, NULL_TREE); ;
     break;}
 case 634:
-#line 3363 "parse.y"
+#line 3371 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[0].ttype, NULL_TREE);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-1].ttype, arg);
 		;
     break;}
 case 635:
-#line 3367 "parse.y"
+#line 3375 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-2].ttype, arg);
 		;
     break;}
 case 637:
-#line 3376 "parse.y"
+#line 3384 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, NULL_TREE, yyvsp[-1].ttype); ;
     break;}
 case 638:
-#line 3378 "parse.y"
+#line 3386 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, yyvsp[-1].ttype); ;
     break;}
 case 639:
-#line 3384 "parse.y"
+#line 3392 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 640:
-#line 3386 "parse.y"
+#line 3394 "parse.y"
 { yyval.ttype = make_pointer_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 641:
-#line 3388 "parse.y"
+#line 3396 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[0].ftype.t, NULL_TREE); ;
     break;}
 case 642:
-#line 3390 "parse.y"
+#line 3398 "parse.y"
 { yyval.ttype = make_pointer_declarator (NULL_TREE, NULL_TREE); ;
     break;}
 case 643:
-#line 3392 "parse.y"
+#line 3400 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 644:
-#line 3394 "parse.y"
+#line 3402 "parse.y"
 { yyval.ttype = make_reference_declarator (NULL_TREE, yyvsp[0].ttype); ;
     break;}
 case 645:
-#line 3396 "parse.y"
+#line 3404 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[0].ftype.t, NULL_TREE); ;
     break;}
 case 646:
-#line 3398 "parse.y"
+#line 3406 "parse.y"
 { yyval.ttype = make_reference_declarator (NULL_TREE, NULL_TREE); ;
     break;}
 case 647:
-#line 3400 "parse.y"
+#line 3408 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[0].ttype, NULL_TREE);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-1].ttype, arg);
 		;
     break;}
 case 648:
-#line 3404 "parse.y"
+#line 3412 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-2].ttype, arg);
 		;
     break;}
 case 650:
-#line 3413 "parse.y"
+#line 3421 "parse.y"
 { yyval.ttype = yyvsp[-1].ttype; ;
     break;}
 case 652:
-#line 3417 "parse.y"
+#line 3425 "parse.y"
 { yyval.ttype = make_call_declarator (yyval.ttype, yyvsp[-3].ttype, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 653:
-#line 3419 "parse.y"
+#line 3427 "parse.y"
 { yyval.ttype = make_call_declarator (yyval.ttype, empty_parms (), yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 654:
-#line 3421 "parse.y"
+#line 3429 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, yyvsp[-1].ttype); ;
     break;}
 case 655:
-#line 3423 "parse.y"
+#line 3431 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, yyval.ttype, NULL_TREE); ;
     break;}
 case 656:
-#line 3425 "parse.y"
+#line 3433 "parse.y"
 { yyval.ttype = make_call_declarator (NULL_TREE, yyvsp[-3].ttype, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 657:
-#line 3427 "parse.y"
+#line 3435 "parse.y"
 { set_quals_and_spec (yyval.ttype, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 658:
-#line 3429 "parse.y"
+#line 3437 "parse.y"
 { set_quals_and_spec (yyval.ttype, yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 659:
-#line 3431 "parse.y"
+#line 3439 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, NULL_TREE, yyvsp[-1].ttype); ;
     break;}
 case 660:
-#line 3433 "parse.y"
+#line 3441 "parse.y"
 { yyval.ttype = build_parse_node (ARRAY_REF, NULL_TREE, NULL_TREE); ;
     break;}
 case 666:
-#line 3457 "parse.y"
+#line 3465 "parse.y"
 { do_pushlevel (); ;
     break;}
 case 667:
-#line 3462 "parse.y"
+#line 3470 "parse.y"
 { yyval.ttype = do_poplevel (); ;
     break;}
 case 669:
-#line 3470 "parse.y"
+#line 3478 "parse.y"
 { if (pedantic)
 		    pedwarn ("ANSI C++ forbids label declarations"); ;
     break;}
 case 672:
-#line 3481 "parse.y"
+#line 3489 "parse.y"
 { tree link;
 		  for (link = yyvsp[-1].ttype; link; link = TREE_CHAIN (link))
 		    {
@@ -7399,11 +7407,11 @@ case 672:
 		;
     break;}
 case 673:
-#line 3495 "parse.y"
+#line 3503 "parse.y"
 {;
     break;}
 case 675:
-#line 3501 "parse.y"
+#line 3509 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7413,7 +7421,7 @@ case 675:
 		;
     break;}
 case 676:
-#line 3509 "parse.y"
+#line 3517 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7425,7 +7433,7 @@ case 676:
 		;
     break;}
 case 677:
-#line 3522 "parse.y"
+#line 3530 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7437,7 +7445,7 @@ case 677:
 		;
     break;}
 case 678:
-#line 3532 "parse.y"
+#line 3540 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7458,7 +7466,7 @@ case 678:
 		;
     break;}
 case 679:
-#line 3551 "parse.y"
+#line 3559 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7469,11 +7477,11 @@ case 679:
 		;
     break;}
 case 680:
-#line 3563 "parse.y"
+#line 3571 "parse.y"
 { finish_stmt (); ;
     break;}
 case 681:
-#line 3565 "parse.y"
+#line 3573 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7483,7 +7491,7 @@ case 681:
 		;
     break;}
 case 682:
-#line 3573 "parse.y"
+#line 3581 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7495,15 +7503,15 @@ case 682:
 		;
     break;}
 case 683:
-#line 3586 "parse.y"
+#line 3594 "parse.y"
 { finish_stmt (); ;
     break;}
 case 685:
-#line 3592 "parse.y"
+#line 3600 "parse.y"
 { finish_stmt (); ;
     break;}
 case 686:
-#line 3594 "parse.y"
+#line 3602 "parse.y"
 {
 		  tree expr = yyvsp[-1].ttype;
 		  if (! processing_template_decl)
@@ -7521,11 +7529,11 @@ case 686:
 		  finish_stmt (); ;
     break;}
 case 687:
-#line 3610 "parse.y"
+#line 3618 "parse.y"
 { if (! processing_template_decl) expand_start_else (); ;
     break;}
 case 688:
-#line 3612 "parse.y"
+#line 3620 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7538,17 +7546,17 @@ case 688:
 		;
     break;}
 case 689:
-#line 3623 "parse.y"
+#line 3631 "parse.y"
 { finish_stmt (); ;
     break;}
 case 690:
-#line 3625 "parse.y"
+#line 3633 "parse.y"
 { if (! processing_template_decl) expand_end_cond ();
 		  do_poplevel ();
 		  finish_stmt (); ;
     break;}
 case 691:
-#line 3629 "parse.y"
+#line 3637 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7565,7 +7573,7 @@ case 691:
 		;
     break;}
 case 692:
-#line 3644 "parse.y"
+#line 3652 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7586,7 +7594,7 @@ case 692:
 		;
     break;}
 case 693:
-#line 3663 "parse.y"
+#line 3671 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7600,7 +7608,7 @@ case 693:
 		;
     break;}
 case 694:
-#line 3675 "parse.y"
+#line 3683 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7616,7 +7624,7 @@ case 694:
 		;
     break;}
 case 695:
-#line 3689 "parse.y"
+#line 3697 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7632,7 +7640,7 @@ case 695:
 		;
     break;}
 case 696:
-#line 3703 "parse.y"
+#line 3711 "parse.y"
 {
 		  if (processing_template_decl)
 		    TREE_OPERAND (yyvsp[-5].ttype, 1) = yyvsp[-1].ttype;
@@ -7647,7 +7655,7 @@ case 696:
 		;
     break;}
 case 697:
-#line 3716 "parse.y"
+#line 3724 "parse.y"
 { if (processing_template_decl)
 		    {
 		      yyval.ttype = build_min_nt (FOR_STMT, NULL_TREE, NULL_TREE, 
@@ -7668,7 +7676,7 @@ case 697:
 		;
     break;}
 case 698:
-#line 3735 "parse.y"
+#line 3743 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7688,7 +7696,7 @@ case 698:
 		;
     break;}
 case 699:
-#line 3753 "parse.y"
+#line 3761 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7709,7 +7717,7 @@ case 699:
 		;
     break;}
 case 700:
-#line 3774 "parse.y"
+#line 3782 "parse.y"
 {
 		  if (processing_template_decl)
 		    TREE_OPERAND (yyvsp[-9].ttype, 2) = yyvsp[-1].ttype;
@@ -7717,7 +7725,7 @@ case 700:
 		;
     break;}
 case 701:
-#line 3780 "parse.y"
+#line 3788 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7740,7 +7748,7 @@ case 701:
 		  finish_stmt (); ;
     break;}
 case 702:
-#line 3801 "parse.y"
+#line 3809 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7759,7 +7767,7 @@ case 702:
 		;
     break;}
 case 703:
-#line 3818 "parse.y"
+#line 3826 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7774,23 +7782,23 @@ case 703:
 		;
     break;}
 case 704:
-#line 3831 "parse.y"
+#line 3839 "parse.y"
 { finish_stmt (); ;
     break;}
 case 705:
-#line 3833 "parse.y"
+#line 3841 "parse.y"
 { do_case (yyvsp[-1].ttype, NULL_TREE); ;
     break;}
 case 707:
-#line 3836 "parse.y"
+#line 3844 "parse.y"
 { do_case (yyvsp[-3].ttype, yyvsp[-1].ttype); ;
     break;}
 case 709:
-#line 3839 "parse.y"
+#line 3847 "parse.y"
 { do_case (NULL_TREE, NULL_TREE); ;
     break;}
 case 711:
-#line 3842 "parse.y"
+#line 3850 "parse.y"
 { emit_line_note (input_filename, lineno);
 		  if (processing_template_decl)
 		    add_tree (build_min_nt (BREAK_STMT));
@@ -7798,7 +7806,7 @@ case 711:
 		    error ("break statement not within loop or switch"); ;
     break;}
 case 712:
-#line 3848 "parse.y"
+#line 3856 "parse.y"
 { emit_line_note (input_filename, lineno);
 		  if (processing_template_decl)
 		    add_tree (build_min_nt (CONTINUE_STMT));
@@ -7806,19 +7814,19 @@ case 712:
 		    error ("continue statement not within a loop"); ;
     break;}
 case 713:
-#line 3854 "parse.y"
+#line 3862 "parse.y"
 { emit_line_note (input_filename, lineno);
 		  c_expand_return (NULL_TREE); ;
     break;}
 case 714:
-#line 3857 "parse.y"
+#line 3865 "parse.y"
 { emit_line_note (input_filename, lineno);
 		  c_expand_return (yyvsp[-1].ttype);
 		  finish_stmt ();
 		;
     break;}
 case 715:
-#line 3862 "parse.y"
+#line 3870 "parse.y"
 { if (TREE_CHAIN (yyvsp[-2].ttype)) yyvsp[-2].ttype = combine_strings (yyvsp[-2].ttype);
 		  emit_line_note (input_filename, lineno);
 		  expand_asm (yyvsp[-2].ttype);
@@ -7826,7 +7834,7 @@ case 715:
 		;
     break;}
 case 716:
-#line 3869 "parse.y"
+#line 3877 "parse.y"
 { if (TREE_CHAIN (yyvsp[-4].ttype)) yyvsp[-4].ttype = combine_strings (yyvsp[-4].ttype);
 		  emit_line_note (input_filename, lineno);
 		  c_expand_asm_operands (yyvsp[-4].ttype, yyvsp[-2].ttype, NULL_TREE, NULL_TREE,
@@ -7836,7 +7844,7 @@ case 716:
 		;
     break;}
 case 717:
-#line 3878 "parse.y"
+#line 3886 "parse.y"
 { if (TREE_CHAIN (yyvsp[-6].ttype)) yyvsp[-6].ttype = combine_strings (yyvsp[-6].ttype);
 		  emit_line_note (input_filename, lineno);
 		  c_expand_asm_operands (yyvsp[-6].ttype, yyvsp[-4].ttype, yyvsp[-2].ttype, NULL_TREE,
@@ -7846,7 +7854,7 @@ case 717:
 		;
     break;}
 case 718:
-#line 3888 "parse.y"
+#line 3896 "parse.y"
 { if (TREE_CHAIN (yyvsp[-8].ttype)) yyvsp[-8].ttype = combine_strings (yyvsp[-8].ttype);
 		  emit_line_note (input_filename, lineno);
 		  c_expand_asm_operands (yyvsp[-8].ttype, yyvsp[-6].ttype, yyvsp[-4].ttype, yyvsp[-2].ttype,
@@ -7856,7 +7864,7 @@ case 718:
 		;
     break;}
 case 719:
-#line 3896 "parse.y"
+#line 3904 "parse.y"
 {
 		  if (processing_template_decl)
 		    add_tree (build_min_nt (GOTO_STMT, yyvsp[-1].ttype));
@@ -7866,7 +7874,7 @@ case 719:
 		;
     break;}
 case 720:
-#line 3904 "parse.y"
+#line 3912 "parse.y"
 {
 		  if (processing_template_decl)
 		    add_tree (build_min_nt (GOTO_STMT, yyvsp[-1].ttype));
@@ -7881,21 +7889,21 @@ case 720:
 		;
     break;}
 case 721:
-#line 3917 "parse.y"
+#line 3925 "parse.y"
 { finish_stmt (); ;
     break;}
 case 722:
-#line 3919 "parse.y"
+#line 3927 "parse.y"
 { error ("label must be followed by statement");
 		  yyungetc ('}', 0);
 		  finish_stmt (); ;
     break;}
 case 723:
-#line 3923 "parse.y"
+#line 3931 "parse.y"
 { finish_stmt (); ;
     break;}
 case 725:
-#line 3929 "parse.y"
+#line 3937 "parse.y"
 {
 		  if (! current_function_parms_stored)
 		    store_parm_decls ();
@@ -7903,11 +7911,11 @@ case 725:
 		;
     break;}
 case 726:
-#line 3935 "parse.y"
+#line 3943 "parse.y"
 { expand_start_all_catch (); ;
     break;}
 case 727:
-#line 3937 "parse.y"
+#line 3945 "parse.y"
 {
 		  int nested = (hack_decl_function_context
 				(current_function_decl) != NULL_TREE);
@@ -7916,7 +7924,7 @@ case 727:
 		;
     break;}
 case 728:
-#line 3947 "parse.y"
+#line 3955 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7932,7 +7940,7 @@ case 728:
 		;
     break;}
 case 729:
-#line 3961 "parse.y"
+#line 3969 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7945,7 +7953,7 @@ case 729:
 		;
     break;}
 case 730:
-#line 3972 "parse.y"
+#line 3980 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7958,7 +7966,7 @@ case 730:
 		;
     break;}
 case 733:
-#line 3991 "parse.y"
+#line 3999 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7969,7 +7977,7 @@ case 733:
 		;
     break;}
 case 734:
-#line 4000 "parse.y"
+#line 4008 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7980,7 +7988,7 @@ case 734:
 		;
     break;}
 case 735:
-#line 4009 "parse.y"
+#line 4017 "parse.y"
 {
 		  if (processing_template_decl)
 		    {
@@ -7993,17 +8001,17 @@ case 735:
 		;
     break;}
 case 739:
-#line 4029 "parse.y"
+#line 4037 "parse.y"
 { expand_start_catch_block (NULL_TREE, NULL_TREE); ;
     break;}
 case 740:
-#line 4045 "parse.y"
+#line 4053 "parse.y"
 { check_for_new_type ("inside exception declarations", yyvsp[-1].ftype);
 		  expand_start_catch_block (TREE_PURPOSE (yyvsp[-1].ftype.t),
 					    TREE_VALUE (yyvsp[-1].ftype.t)); ;
     break;}
 case 741:
-#line 4052 "parse.y"
+#line 4060 "parse.y"
 { tree label;
 		do_label:
 		  label = define_label (input_filename, lineno, yyvsp[-1].ttype);
@@ -8012,129 +8020,129 @@ case 741:
 		;
     break;}
 case 742:
-#line 4059 "parse.y"
+#line 4067 "parse.y"
 { goto do_label; ;
     break;}
 case 743:
-#line 4061 "parse.y"
+#line 4069 "parse.y"
 { goto do_label; ;
     break;}
 case 744:
-#line 4063 "parse.y"
+#line 4071 "parse.y"
 { goto do_label; ;
     break;}
 case 745:
-#line 4068 "parse.y"
+#line 4076 "parse.y"
 { if (yyvsp[-1].ttype) cplus_expand_expr_stmt (yyvsp[-1].ttype); ;
     break;}
 case 747:
-#line 4071 "parse.y"
+#line 4079 "parse.y"
 { if (pedantic)
 		    pedwarn ("ANSI C++ forbids compound statements inside for initializations");
 		;
     break;}
 case 748:
-#line 4080 "parse.y"
+#line 4088 "parse.y"
 { emit_line_note (input_filename, lineno);
 		  yyval.ttype = NULL_TREE; ;
     break;}
 case 749:
-#line 4083 "parse.y"
+#line 4091 "parse.y"
 { emit_line_note (input_filename, lineno); ;
     break;}
 case 750:
-#line 4088 "parse.y"
+#line 4096 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 752:
-#line 4091 "parse.y"
+#line 4099 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 753:
-#line 4098 "parse.y"
+#line 4106 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 756:
-#line 4105 "parse.y"
+#line 4113 "parse.y"
 { yyval.ttype = chainon (yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 757:
-#line 4110 "parse.y"
+#line 4118 "parse.y"
 { yyval.ttype = build_tree_list (yyval.ttype, yyvsp[-1].ttype); ;
     break;}
 case 758:
-#line 4115 "parse.y"
+#line 4123 "parse.y"
 { yyval.ttype = tree_cons (NULL_TREE, yyval.ttype, NULL_TREE); ;
     break;}
 case 759:
-#line 4117 "parse.y"
+#line 4125 "parse.y"
 { yyval.ttype = tree_cons (NULL_TREE, yyvsp[0].ttype, yyval.ttype); ;
     break;}
 case 760:
-#line 4128 "parse.y"
+#line 4136 "parse.y"
 {
 		  yyval.ttype = empty_parms();
 		;
     break;}
 case 762:
-#line 4133 "parse.y"
+#line 4141 "parse.y"
 { yyval.ttype = tree_cons (NULL_TREE, yyvsp[0].ftype.t, void_list_node);
 		  TREE_PARMLIST (yyval.ttype) = 1; 
 		  check_for_new_type ("inside parameter list", yyvsp[0].ftype); ;
     break;}
 case 763:
-#line 4142 "parse.y"
+#line 4150 "parse.y"
 {
 		  yyval.ttype = chainon (yyval.ttype, void_list_node);
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 764:
-#line 4147 "parse.y"
+#line 4155 "parse.y"
 {
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 765:
-#line 4152 "parse.y"
+#line 4160 "parse.y"
 {
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 766:
-#line 4156 "parse.y"
+#line 4164 "parse.y"
 {
 		  yyval.ttype = build_tree_list (NULL_TREE, yyvsp[-1].ftype.t); 
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 767:
-#line 4161 "parse.y"
+#line 4169 "parse.y"
 {
 		  yyval.ttype = NULL_TREE;
 		;
     break;}
 case 768:
-#line 4165 "parse.y"
+#line 4173 "parse.y"
 {
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 769:
-#line 4169 "parse.y"
+#line 4177 "parse.y"
 {
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 770:
-#line 4173 "parse.y"
+#line 4181 "parse.y"
 {
 		  yyval.ttype = build_tree_list (NULL_TREE, yyvsp[-1].ftype.t);
 		  TREE_PARMLIST (yyval.ttype) = 1;
 		;
     break;}
 case 771:
-#line 4178 "parse.y"
+#line 4186 "parse.y"
 {
 		  /* This helps us recover from really nasty
 		     parse errors, for example, a missing right
@@ -8147,7 +8155,7 @@ case 771:
 		;
     break;}
 case 772:
-#line 4189 "parse.y"
+#line 4197 "parse.y"
 {
 		  /* This helps us recover from really nasty
 		     parse errors, for example, a missing right
@@ -8160,98 +8168,98 @@ case 772:
 		;
     break;}
 case 773:
-#line 4204 "parse.y"
+#line 4212 "parse.y"
 { maybe_snarf_defarg (); ;
     break;}
 case 774:
-#line 4206 "parse.y"
+#line 4214 "parse.y"
 { yyval.ttype = yyvsp[0].ttype; ;
     break;}
 case 777:
-#line 4217 "parse.y"
+#line 4225 "parse.y"
 { check_for_new_type ("in a parameter list", yyvsp[0].ftype);
 		  yyval.ttype = build_tree_list (NULL_TREE, yyvsp[0].ftype.t); ;
     break;}
 case 778:
-#line 4220 "parse.y"
+#line 4228 "parse.y"
 { check_for_new_type ("in a parameter list", yyvsp[-1].ftype);
 		  yyval.ttype = build_tree_list (yyvsp[0].ttype, yyvsp[-1].ftype.t); ;
     break;}
 case 779:
-#line 4223 "parse.y"
+#line 4231 "parse.y"
 { check_for_new_type ("in a parameter list", yyvsp[0].ftype);
 		  yyval.ttype = chainon (yyval.ttype, yyvsp[0].ftype.t); ;
     break;}
 case 780:
-#line 4226 "parse.y"
+#line 4234 "parse.y"
 { yyval.ttype = chainon (yyval.ttype, build_tree_list (NULL_TREE, yyvsp[0].ttype)); ;
     break;}
 case 781:
-#line 4228 "parse.y"
+#line 4236 "parse.y"
 { yyval.ttype = chainon (yyval.ttype, build_tree_list (yyvsp[0].ttype, yyvsp[-2].ttype)); ;
     break;}
 case 783:
-#line 4234 "parse.y"
+#line 4242 "parse.y"
 { check_for_new_type ("in a parameter list", yyvsp[-1].ftype);
 		  yyval.ttype = build_tree_list (NULL_TREE, yyvsp[-1].ftype.t); ;
     break;}
 case 784:
-#line 4244 "parse.y"
+#line 4252 "parse.y"
 { tree specs = strip_attrs (yyvsp[-1].ftype.t);
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag;
 		  yyval.ftype.t = build_tree_list (specs, yyvsp[0].ttype); ;
     break;}
 case 785:
-#line 4248 "parse.y"
+#line 4256 "parse.y"
 { yyval.ftype.t = build_tree_list (yyvsp[-1].ftype.t, yyvsp[0].ttype); 
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag; ;
     break;}
 case 786:
-#line 4251 "parse.y"
+#line 4259 "parse.y"
 { yyval.ftype.t = build_tree_list (get_decl_list (yyvsp[-1].ftype.t), yyvsp[0].ttype); 
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag; ;
     break;}
 case 787:
-#line 4254 "parse.y"
+#line 4262 "parse.y"
 { tree specs = strip_attrs (yyvsp[-1].ftype.t);
 		  yyval.ftype.t = build_tree_list (specs, yyvsp[0].ttype);
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag; ;
     break;}
 case 788:
-#line 4258 "parse.y"
+#line 4266 "parse.y"
 { tree specs = strip_attrs (yyvsp[0].ftype.t);
 		  yyval.ftype.t = build_tree_list (specs, NULL_TREE); 
 		  yyval.ftype.new_type_flag = yyvsp[0].ftype.new_type_flag; ;
     break;}
 case 789:
-#line 4262 "parse.y"
+#line 4270 "parse.y"
 { tree specs = strip_attrs (yyvsp[-1].ttype);
 		  yyval.ftype.t = build_tree_list (specs, yyvsp[0].ttype); 
 		  yyval.ftype.new_type_flag = 0; ;
     break;}
 case 790:
-#line 4269 "parse.y"
+#line 4277 "parse.y"
 { yyval.ftype.t = build_tree_list (NULL_TREE, yyvsp[0].ftype.t);
 		  yyval.ftype.new_type_flag = yyvsp[0].ftype.new_type_flag;  ;
     break;}
 case 791:
-#line 4272 "parse.y"
+#line 4280 "parse.y"
 { yyval.ftype.t = build_tree_list (yyvsp[0].ttype, yyvsp[-1].ftype.t);
 		  yyval.ftype.new_type_flag = yyvsp[-1].ftype.new_type_flag;  ;
     break;}
 case 794:
-#line 4283 "parse.y"
+#line 4291 "parse.y"
 { see_typename (); ;
     break;}
 case 795:
-#line 4288 "parse.y"
+#line 4296 "parse.y"
 {
 		  error ("type specifier omitted for parameter");
 		  yyval.ttype = build_tree_list (integer_type_node, NULL_TREE);
 		;
     break;}
 case 796:
-#line 4293 "parse.y"
+#line 4301 "parse.y"
 {
 		  error ("type specifier omitted for parameter");
 		  if (TREE_CODE (yyval.ttype) == SCOPE_REF
@@ -8262,188 +8270,188 @@ case 796:
 		;
     break;}
 case 797:
-#line 4305 "parse.y"
+#line 4313 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 798:
-#line 4307 "parse.y"
+#line 4315 "parse.y"
 { yyval.ttype = yyvsp[-1].ttype; ;
     break;}
 case 799:
-#line 4309 "parse.y"
+#line 4317 "parse.y"
 { yyval.ttype = build_decl_list (NULL_TREE, NULL_TREE); ;
     break;}
 case 800:
-#line 4314 "parse.y"
+#line 4322 "parse.y"
 { yyval.ttype = build_decl_list (NULL_TREE, groktypename(yyvsp[0].ftype.t)); ;
     break;}
 case 802:
-#line 4320 "parse.y"
+#line 4328 "parse.y"
 {
 		  TREE_CHAIN (yyvsp[0].ttype) = yyval.ttype;
 		  yyval.ttype = yyvsp[0].ttype;
 		;
     break;}
 case 803:
-#line 4328 "parse.y"
+#line 4336 "parse.y"
 { yyval.ttype = NULL_TREE; ;
     break;}
 case 804:
-#line 4330 "parse.y"
+#line 4338 "parse.y"
 { yyval.ttype = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 805:
-#line 4332 "parse.y"
+#line 4340 "parse.y"
 { yyval.ttype = make_reference_declarator (yyvsp[-1].ttype, yyvsp[0].ttype); ;
     break;}
 case 806:
-#line 4334 "parse.y"
+#line 4342 "parse.y"
 { tree arg = make_pointer_declarator (yyvsp[-1].ttype, yyvsp[0].ttype);
 		  yyval.ttype = build_parse_node (SCOPE_REF, yyvsp[-2].ttype, arg);
 		;
     break;}
 case 807:
-#line 4341 "parse.y"
+#line 4349 "parse.y"
 { got_scope = NULL_TREE; ;
     break;}
 case 808:
-#line 4346 "parse.y"
+#line 4354 "parse.y"
 { yyval.ttype = ansi_opname[MULT_EXPR]; ;
     break;}
 case 809:
-#line 4348 "parse.y"
+#line 4356 "parse.y"
 { yyval.ttype = ansi_opname[TRUNC_DIV_EXPR]; ;
     break;}
 case 810:
-#line 4350 "parse.y"
+#line 4358 "parse.y"
 { yyval.ttype = ansi_opname[TRUNC_MOD_EXPR]; ;
     break;}
 case 811:
-#line 4352 "parse.y"
+#line 4360 "parse.y"
 { yyval.ttype = ansi_opname[PLUS_EXPR]; ;
     break;}
 case 812:
-#line 4354 "parse.y"
+#line 4362 "parse.y"
 { yyval.ttype = ansi_opname[MINUS_EXPR]; ;
     break;}
 case 813:
-#line 4356 "parse.y"
+#line 4364 "parse.y"
 { yyval.ttype = ansi_opname[BIT_AND_EXPR]; ;
     break;}
 case 814:
-#line 4358 "parse.y"
+#line 4366 "parse.y"
 { yyval.ttype = ansi_opname[BIT_IOR_EXPR]; ;
     break;}
 case 815:
-#line 4360 "parse.y"
+#line 4368 "parse.y"
 { yyval.ttype = ansi_opname[BIT_XOR_EXPR]; ;
     break;}
 case 816:
-#line 4362 "parse.y"
+#line 4370 "parse.y"
 { yyval.ttype = ansi_opname[BIT_NOT_EXPR]; ;
     break;}
 case 817:
-#line 4364 "parse.y"
+#line 4372 "parse.y"
 { yyval.ttype = ansi_opname[COMPOUND_EXPR]; ;
     break;}
 case 818:
-#line 4366 "parse.y"
+#line 4374 "parse.y"
 { yyval.ttype = ansi_opname[yyvsp[0].code]; ;
     break;}
 case 819:
-#line 4368 "parse.y"
+#line 4376 "parse.y"
 { yyval.ttype = ansi_opname[LT_EXPR]; ;
     break;}
 case 820:
-#line 4370 "parse.y"
+#line 4378 "parse.y"
 { yyval.ttype = ansi_opname[GT_EXPR]; ;
     break;}
 case 821:
-#line 4372 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
-    break;}
-case 822:
-#line 4374 "parse.y"
-{ yyval.ttype = ansi_assopname[yyvsp[0].code]; ;
-    break;}
-case 823:
-#line 4376 "parse.y"
-{ yyval.ttype = ansi_opname [MODIFY_EXPR]; ;
-    break;}
-case 824:
-#line 4378 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
-    break;}
-case 825:
 #line 4380 "parse.y"
 { yyval.ttype = ansi_opname[yyvsp[0].code]; ;
     break;}
-case 826:
+case 822:
 #line 4382 "parse.y"
+{ yyval.ttype = ansi_assopname[yyvsp[0].code]; ;
+    break;}
+case 823:
+#line 4384 "parse.y"
+{ yyval.ttype = ansi_opname [MODIFY_EXPR]; ;
+    break;}
+case 824:
+#line 4386 "parse.y"
+{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+    break;}
+case 825:
+#line 4388 "parse.y"
+{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+    break;}
+case 826:
+#line 4390 "parse.y"
 { yyval.ttype = ansi_opname[POSTINCREMENT_EXPR]; ;
     break;}
 case 827:
-#line 4384 "parse.y"
+#line 4392 "parse.y"
 { yyval.ttype = ansi_opname[PREDECREMENT_EXPR]; ;
     break;}
 case 828:
-#line 4386 "parse.y"
+#line 4394 "parse.y"
 { yyval.ttype = ansi_opname[TRUTH_ANDIF_EXPR]; ;
     break;}
 case 829:
-#line 4388 "parse.y"
+#line 4396 "parse.y"
 { yyval.ttype = ansi_opname[TRUTH_ORIF_EXPR]; ;
     break;}
 case 830:
-#line 4390 "parse.y"
+#line 4398 "parse.y"
 { yyval.ttype = ansi_opname[TRUTH_NOT_EXPR]; ;
     break;}
 case 831:
-#line 4392 "parse.y"
+#line 4400 "parse.y"
 { yyval.ttype = ansi_opname[COND_EXPR]; ;
     break;}
 case 832:
-#line 4394 "parse.y"
+#line 4402 "parse.y"
 { yyval.ttype = ansi_opname[yyvsp[0].code]; ;
     break;}
 case 833:
-#line 4396 "parse.y"
+#line 4404 "parse.y"
 { yyval.ttype = ansi_opname[COMPONENT_REF]; ;
     break;}
 case 834:
-#line 4398 "parse.y"
+#line 4406 "parse.y"
 { yyval.ttype = ansi_opname[MEMBER_REF]; ;
     break;}
 case 835:
-#line 4400 "parse.y"
+#line 4408 "parse.y"
 { yyval.ttype = ansi_opname[CALL_EXPR]; ;
     break;}
 case 836:
-#line 4402 "parse.y"
+#line 4410 "parse.y"
 { yyval.ttype = ansi_opname[ARRAY_REF]; ;
     break;}
 case 837:
-#line 4404 "parse.y"
+#line 4412 "parse.y"
 { yyval.ttype = ansi_opname[NEW_EXPR]; ;
     break;}
 case 838:
-#line 4406 "parse.y"
+#line 4414 "parse.y"
 { yyval.ttype = ansi_opname[DELETE_EXPR]; ;
     break;}
 case 839:
-#line 4408 "parse.y"
+#line 4416 "parse.y"
 { yyval.ttype = ansi_opname[VEC_NEW_EXPR]; ;
     break;}
 case 840:
-#line 4410 "parse.y"
+#line 4418 "parse.y"
 { yyval.ttype = ansi_opname[VEC_DELETE_EXPR]; ;
     break;}
 case 841:
-#line 4413 "parse.y"
+#line 4421 "parse.y"
 { yyval.ttype = grokoptypename (yyvsp[-1].ftype.t, yyvsp[0].ttype); ;
     break;}
 case 842:
-#line 4415 "parse.y"
+#line 4423 "parse.y"
 { yyval.ttype = ansi_opname[ERROR_MARK]; ;
     break;}
 }
@@ -8644,7 +8652,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 4418 "parse.y"
+#line 4426 "parse.y"
 
 
 #ifdef SPEW_DEBUG
