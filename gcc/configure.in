@@ -3326,12 +3326,13 @@ fi
 AC_MSG_CHECKING(assembler alignment features)
 gcc_cv_as=
 gcc_cv_as_alignment_features=
+gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,gcc$,gas,'`
 if [[ -x as$host_exeext ]]; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
-elif [[ -f $srcdir/../gas/configure.in ]]; then
+elif [[ -f $gcc_cv_as_gas_srcdir/configure.in ]]; then
 	# Single tree build which includes gas.
-	for f in $srcdir/../gas/configure $srcdir/../gas/configure.in $srcdir/../gas/Makefile.in
+	for f in $gcc_cv_as_gas_srcdir/configure $gcc_cv_as_gas_srcdir/configure.in $gcc_cv_as_gas_srcdir/Makefile.in
 	do
 		gcc_cv_gas_version=`grep '^VERSION=[[0-9]]*\.[[0-9]]*' $f`
 		if [[ x$gcc_cv_gas_version != x ]]; then
