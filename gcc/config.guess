@@ -56,7 +56,32 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	# A Tn.n version is a released field test version.
 	# A Xn.n version is an unreleased experimental baselevel.
 	# 1.2 uses "1.2" for uname -r.
-	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VTX]//'`
+	cat <<EOF >dummy.s
+	.globl main
+	.ent main
+main:
+	.frame \$30,0,\$26,0
+	.prologue 0
+	.long 0x47e03d84
+	cmoveq \$4,0,\$3
+	addl \$3,\$31,\$0
+	ret \$31,(\$26),1
+	.end main
+EOF
+	${CC-cc} dummy.s -o dummy 2>/dev/null
+	if test "$?" = 0 ; then
+		./dummy
+		case "$?" in
+			1)
+				UNAME_MACHINE="alphaev5"
+				;;
+			2)
+				UNAME_MACHINE="alphaev56"
+				;;
+		esac
+	fi
+	rm -f dummy.s dummy
+	echo ${UNAME_MACHINE}-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VTX]//'`
 	exit 0 ;;
     21064:Windows_NT:50:3)
 	echo alpha-dec-winnt3.5
@@ -457,7 +482,32 @@ EOF
 	esac
 
 	if test "${UNAME_MACHINE}" = "alpha" ; then
-	  echo alpha-unknown-linux-gnu ; exit 0
+		sed 's/^	//'  <<EOF >dummy.s
+		.globl main
+		.ent main
+	main:
+		.frame \$30,0,\$26,0
+		.prologue 0
+		.long 0x47e03d84
+		cmoveq \$4,0,\$3
+		addl \$3,\$31,\$0
+		ret \$31,(\$26),1
+		.end main
+EOF
+		${CC-cc} dummy.s -o dummy 2>/dev/null
+		if test "$?" = 0 ; then
+			./dummy
+			case "$?" in
+				1)
+					UNAME_MACHINE="alphaev5"
+				;;	
+			2)	
+					UNAME_MACHINE="alphaev56"
+				;;	
+		esac	
+	  fi	
+	  rm -f dummy.s dummy
+	  echo ${UNAME_MACHINE}-unknown-linux-gnu ; exit 0
 	elif test "${UNAME_MACHINE}" = "mips" ; then
 	  cat >dummy.c <<EOF
 main(argc, argv)
