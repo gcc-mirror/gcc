@@ -1,3 +1,9 @@
+2003-05-06  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/linuxspe.h: New file.
+
+        * config.gcc: Add powerpc-*-linux-gnuspe* target.
+
 2003-05-06  Richard Henderson  <rth@redhat.com>
 
 	* unwind-dw2.c (uw_update_context_1): Only set cfa as sp if 
