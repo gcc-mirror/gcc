@@ -1,5 +1,8 @@
 2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* configure.in: Update local install.html, configopts.html paths.
+	* configure: Regenerate.
+
 	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit): Retrieve
 	current limits before setting.
 
