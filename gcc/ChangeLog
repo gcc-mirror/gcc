@@ -1,3 +1,17 @@
+Thu Dec 23 11:59:56 1999  Jeffrey A Law  (law@cygnus.com)
+
+	1999-12-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+        * fold-const.c (operand_equal_p): Use memcmp to compare string
+        constants.
+        Suggested by D. J. Bernstein
+
+	Thu Dec 16 02:26:11 1999  Jeffrey A Law  (law@cygnus.com)
+	* h8300.md (HImode preinc peephole): Fix typo.
+
+	1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+        * loop.c (check_dbra_loop): Can't reverse a biv that has
+	maybe_multiple set.
+
 1999-12-07  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* invoke.texi (C Dialect Options): Remove -flang-c9x, add -std

@@ -2131,7 +2131,7 @@ operand_equal_p (arg0, arg1, only_const)
 
       case STRING_CST:
 	return (TREE_STRING_LENGTH (arg0) == TREE_STRING_LENGTH (arg1)
-		&& ! strncmp (TREE_STRING_POINTER (arg0),
+		&& ! memcmp (TREE_STRING_POINTER (arg0),
 			      TREE_STRING_POINTER (arg1),
 			      TREE_STRING_LENGTH (arg0)));
 

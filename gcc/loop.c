@@ -7696,6 +7696,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
   for (bl = loop_iv_list; bl; bl = bl->next)
     {
       if (bl->biv_count == 1
+	  && ! bl->biv->maybe_multiple
 	  && bl->biv->dest_reg == XEXP (comparison, 0)
 	  && ! reg_used_between_p (regno_reg_rtx[bl->regno], bl->biv->insn,
 				   first_compare))
