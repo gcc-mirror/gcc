@@ -1,3 +1,15 @@
+2005-03-05  James A. Morrison  <phython@gcc.gnu.org>
+
+	* doc/c-tree.texi: Wrap comments in @r{}.
+	* doc/cpp.texi: Likewise.
+	* doc/cppinternals.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/objc.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tree-ssa.texi
+
 2005-03-04  Devang Patel  <dpatel@apple.com>
 	
 	PR tree-optimization/18815

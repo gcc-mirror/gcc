@@ -849,7 +849,7 @@ checking the state of the option (documentation is elided for brevity).
 
 @smallexample
 [chip.c]
-char *chip_alu = ""; /* Specify default here.  */
+char *chip_alu = ""; /* @r{Specify default here.}  */
 
 [chip.h]
 extern char *chip_alu;

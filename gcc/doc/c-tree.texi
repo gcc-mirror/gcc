@@ -1363,7 +1363,7 @@ void process_stmt (stmt)
         @{
         case IF_STMT:
           process_stmt (THEN_CLAUSE (stmt));
-          /* More processing here.  */
+          /* @r{More processing here.}  */
           break;
 
         @dots{}

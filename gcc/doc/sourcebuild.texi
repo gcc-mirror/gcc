@@ -1321,8 +1321,8 @@ kind.  A command @code{branch(end)} or @code{returns(end)} marks
 the end of a range without starting a new one.  For example:
 
 @smallexample
-if (i > 10 && j > i && j < 20)  /* branch(27 50 75) */
-                                /* branch(end) */
+if (i > 10 && j > i && j < 20)  /* @r{branch(27 50 75)} */
+                                /* @r{branch(end)} */
   foo (i, j);
 @end smallexample
 
