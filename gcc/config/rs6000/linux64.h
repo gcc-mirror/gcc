@@ -39,6 +39,12 @@ Boston, MA 02111-1307, USA.  */
 #undef  ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC "-mppc64"
 
+#undef	ASM_SPEC
+#define	ASM_SPEC "%{.s: %{mregnames} %{mno-regnames}} \
+%{.S: %{mregnames} %{mno-regnames}} \
+%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
+%{v:-V} %{Qy:} %{!Qn:-Qy} -a64 %(asm_cpu) %{Wa,*:%*}"
+
 /* 64-bit PowerPC Linux always has a TOC.  */
 #undef  TARGET_NO_TOC
 #define TARGET_NO_TOC		0
