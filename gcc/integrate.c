@@ -1708,7 +1708,10 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       map->insn_map[INSN_UID (insn)] = copy;
     }
 
-  /* Now copy the REG_NOTES.  */
+  /* Now copy the REG_NOTES.  Increment const_age, so that only constants
+     from parameters can be substituted in.  These are the only ones that
+     are valid across the entire function.  */
+  map->const_age++;
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	&& map->insn_map[INSN_UID (insn)]
