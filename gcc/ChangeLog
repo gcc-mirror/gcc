@@ -1,3 +1,8 @@
+Thu Aug 26 18:11:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (array_type_nelts): Don't create RTL_EXPRs from
+	SAVE_EXPRs unless the SAVE_EXPRs have already been expanded.
+
 Thu Aug 26 19:33:23 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (DWARF2_ASM_LINE_DEBUG_INFO): Add default definition.
