@@ -2958,10 +2958,6 @@ VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 # WARN_CFLAGS setting can't be to the expansion of GCC_WARN_CFLAGS in
 # the context of the stage_x rule.
 STAGE2_FLAGS_TO_PASS = \
-	HOST_CC="$(HOST_CC)" \
-	HOST_CFLAGS="$(HOST_CFLAGS)" \
-	HOST_LDFLAGS="$(HOST_LDFLAGS)" \
-	HOST_CPPFLAGS="$(HOST_CPPFLAGS)" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \

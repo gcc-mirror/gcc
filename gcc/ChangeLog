@@ -1,3 +1,8 @@
+2001-10-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (STAGE2_FLAGS_TO_PASS): Remove patches which
+	propagated HOST_CC, HOST_CFLAGS, HOST_LDFLAGS and HOST_CPPFLAGS.
+
 2001-10-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/cppinternals.texi: Update.
