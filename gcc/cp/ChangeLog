@@ -1,3 +1,15 @@
+2004-11-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18124
+	* parser.c (cp_parser_type_parameter): Robustify.
+
+	PR c++/18155
+	* parser.c (cp_parser_single_declaration): Disallow template
+	typedefs.
+
+	PR c++/18177
+	* typeck.c (build_const_cast): Use error_operand_p.
+
 2004-11-02  Ziemowit Laski  <zlaski@apple.com>
 
 	* cp-lang.c (cxx_types_compatible_p): Remove prototype and definition.

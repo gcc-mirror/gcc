@@ -1,3 +1,15 @@
+2004-11-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18124
+	* g++.dg/template/crash25.C: New test.
+
+	PR c++/18155
+	* g++.dg/template/typedef2.C: New test.
+	* g++.dg/parse/crash13.C: Adjust error markers.
+
+	PR c++/18177
+	* g++.dg/conversion/const3.C: New test.
+	
 2004-11-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17535

@@ -5099,7 +5099,7 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 tree
 build_const_cast (tree type, tree expr)
 {
-  if (type == error_mark_node || expr == error_mark_node)
+  if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
 
   if (processing_template_decl)
