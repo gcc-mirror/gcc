@@ -288,6 +288,7 @@ Boston, MA 02111-1307, USA.  */
    and dtor lists this way, so we use -init and -fini to invoke the
    do_global_* functions instead of running collect2.  */
 
+#undef BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP_32	"\t.data"
 #define BSS_SECTION_ASM_OP_64	"\t.section\t.bss"
 #define BSS_SECTION_ASM_OP			\
@@ -302,10 +303,6 @@ Boston, MA 02111-1307, USA.  */
   (mips_abi != ABI_32 && mips_abi != ABI_O64	\
    ? READONLY_DATA_SECTION_ASM_OP_64		\
    : READONLY_DATA_SECTION_ASM_OP_32)
-
-/* Switch into a generic section.  */
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION  irix_asm_named_section
 
 /* The default definition in defaults.h cannot cope with the runtime-variable
    definition of DWARF2_UNWIND_INFO above, so define here explicitly.  */
@@ -335,46 +332,6 @@ Boston, MA 02111-1307, USA.  */
 #undef EH_FRAME_SECTION_NAME
 
 #endif /* _MIPS_SIM == _ABIO32 && !GAS */
-
-/* Define functions to read the name and flags of the current section.
-   They are used by irix_asm_output_align.  */
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS						\
-const char *								\
-current_section_name (void)						\
-{									\
-  switch (in_section)							\
-    {									\
-    case no_section:	return NULL;					\
-    case in_text:	return ".text";					\
-    case in_data:	return ".data";					\
-    case in_bss:	return ".bss";					\
-    case in_readonly_data:						\
-      if (mips_abi != ABI_32 && mips_abi != ABI_O64)			\
-	return ".rodata";						\
-      else								\
-	return ".rdata";						\
-    case in_named:							\
-      return in_named_name;						\
-    }									\
-  abort ();								\
-}									\
-									\
-unsigned int								\
-current_section_flags (void)						\
-{									\
-  switch (in_section)							\
-    {									\
-    case no_section:	return 0;					\
-    case in_text:	return SECTION_CODE;				\
-    case in_data:	return SECTION_WRITE;				\
-    case in_bss:	return SECTION_WRITE | SECTION_BSS;		\
-    case in_readonly_data: return 0;					\
-    case in_named:	return get_named_section_flags (in_named_name);	\
-    }									\
-  abort ();								\
-}
 
 /* SGI assembler needs all sorts of extra help to do alignment properly.  */
 #undef ASM_OUTPUT_ALIGN
