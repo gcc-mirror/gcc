@@ -61,10 +61,10 @@ typedef struct cpp_name cpp_name;
   T(CPP_AND,		"&")	/* bit ops */	\
   T(CPP_OR,		"|")			\
   T(CPP_XOR,		"^")			\
-  T(CPP_COMPL,		"~")			\
   T(CPP_RSHIFT,		">>")			\
   T(CPP_LSHIFT,		"<<")			\
 \
+  T(CPP_COMPL,		"~")			\
   T(CPP_AND_AND,	"&&")	/* logical */	\
   T(CPP_OR_OR,		"||")			\
   T(CPP_QUERY,		"?")			\
@@ -85,7 +85,6 @@ typedef struct cpp_name cpp_name;
   T(CPP_AND_EQ,		"&=")	/* bit ops */	\
   T(CPP_OR_EQ,		"|=")			\
   T(CPP_XOR_EQ,		"^=")			\
-  T(CPP_COMPL_EQ,	"~=")			\
   T(CPP_RSHIFT_EQ,	">>=")			\
   T(CPP_LSHIFT_EQ,	"<<=")			\
   /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */	\

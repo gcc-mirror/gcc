@@ -2056,24 +2056,24 @@ _cpp_init_input_buffer (pfile)
  that replaced trigraphs and deleted esacped newlines, and a second
  pass that tokenized the result of the first pass.  Tokenisation was
  performed by peeking at the next character in the input stream.  For
- example, if the input stream contained "~=", the handler for the ~
+ example, if the input stream contained "!=", the handler for the !
  character would peek at the next character, and if it were a '='
- would skip over it, and return a "~=" token, otherwise it would
- return just the "~" token.
+ would skip over it, and return a "!=" token, otherwise it would
+ return just the "!" token.
 
  To implement a single-pass lexer, this peeking ahead is unworkable.
  An arbitrary number of escaped newlines, and trigraphs (in particular
- ??/ which translates to the escape \), could separate the '~' and '='
- in the input stream, yet the next token is still a "~=".
+ ??/ which translates to the escape \), could separate the '!' and '='
+ in the input stream, yet the next token is still a "!=".
 
  Suppose instead that we lex by one logical line at a time, producing
- a token list or stack for each logical line, and when seeing the '~'
- push a CPP_COMPLEMENT token on the list.  Then if the '~' is part of
- a longer token ("~=") we know we must see the remainder of the token
- by the time we reach the end of the logical line.  Thus we can have
- the '=' handler look at the previous token (at the end of the list /
- top of the stack) and see if it is a "~" token, and if so, instead of
- pushing a "=" token revise the existing token to be a "~=" token.
+ a token list or stack for each logical line, and when seeing the '!'
+ push a CPP_NOT token on the list.  Then if the '!' is part of a
+ longer token ("!=") we know we must see the remainder of the token by
+ the time we reach the end of the logical line.  Thus we can have the
+ '=' handler look at the previous token (at the end of the list / top
+ of the stack) and see if it is a "!" token, and if so, instead of
+ pushing a "=" token revise the existing token to be a "!=" token.
 
  This works in the presence of escaped newlines, because the '\' would
  have been pushed on the top of the stack as a CPP_BACKSLASH.  The
@@ -2091,7 +2091,7 @@ _cpp_init_input_buffer (pfile)
  To the preprocessor, whitespace is only significant to the point of
  knowing whether whitespace precedes a particular token.  For example,
  the '=' handler needs to know whether there was whitespace between it
- and a "~" token on the top of the stack, to make the token conversion
+ and a "!" token on the top of the stack, to make the token conversion
  decision correctly.  So each token has a PREV_WHITESPACE flag to
  indicate this - the standard permits consecutive whitespace to be
  regarded as a single space.  The compiler front ends are not
