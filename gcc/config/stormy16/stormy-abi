@@ -70,11 +70,13 @@ Both fields are 16 bits.  An argument of size N bytes
 (N will be even) is accessed as if by the following code:
 
 char *result;
-if (count + N > 16)
+/* count = #bytes non-variable arguments */
+/* 12 = #bytes for register arguments */
+if (count + N > 12)
   {
-    if (count < 16)
-      count = 16;
-    result = base - (count + N - 16 + 4);
+    if (count < 12)
+      count = 12;
+    result = base - (count + N - 12 + 4);
   }
 else
   {
@@ -98,8 +100,8 @@ SP ->
 	r3
 count->	r2
 	Return address (two words)
-	9th procedure parameter word
-	10th procedure parameter word
+	7th procedure parameter word
+	8th procedure parameter word
 	...
 	last procedure parameter word
 

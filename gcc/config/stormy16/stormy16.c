@@ -1131,9 +1131,9 @@ stormy16_build_va_list ()
   record = make_lang_type (RECORD_TYPE);
   type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  f_2 = build_decl (FIELD_DECL, get_identifier ("base"),
+  f_1 = build_decl (FIELD_DECL, get_identifier ("base"),
 		      ptr_type_node);
-  f_1 = build_decl (FIELD_DECL, get_identifier ("count"), 
+  f_2 = build_decl (FIELD_DECL, get_identifier ("count"), 
 		      unsigned_type_node);
 
   DECL_FIELD_CONTEXT (f_1) = record;
@@ -1186,7 +1186,9 @@ stormy16_expand_builtin_va_start (stdarg_p, valist, nextarg)
 }
 
 /* Implement the stdarg/varargs va_arg macro.  VALIST is the variable
-   of type va_list as a tree, TYPE is the type passed to va_arg.  */
+   of type va_list as a tree, TYPE is the type passed to va_arg.
+   Note:  This algorithm is documented in stormy-abi.  */
+   
 rtx
 stormy16_expand_builtin_va_arg (valist, type)
      tree valist;
@@ -1197,8 +1199,9 @@ stormy16_expand_builtin_va_arg (valist, type)
   rtx count_rtx, addr_rtx, r;
   rtx lab_gotaddr, lab_fromstack;
   tree t;
-  int size, last_reg_count;
+  int size, size_of_reg_args;
   tree size_tree, count_plus_size;
+  rtx count_plus_size_rtx;
   
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = TREE_CHAIN (f_base);
@@ -1209,14 +1212,17 @@ stormy16_expand_builtin_va_arg (valist, type)
   size = PUSH_ROUNDING (int_size_in_bytes (type));
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
   
-  last_reg_count = NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD - size;
+  size_of_reg_args = NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD;
 
   count_rtx = expand_expr (count, NULL_RTX, HImode, EXPAND_NORMAL);
   lab_gotaddr = gen_label_rtx ();
   lab_fromstack = gen_label_rtx ();
   addr_rtx = gen_reg_rtx (Pmode);
-  emit_cmp_and_jump_insns (count_rtx, GEN_INT (last_reg_count),
-			  GTU, const1_rtx, HImode, 1, 1, lab_fromstack);
+
+  count_plus_size = build (PLUS_EXPR, TREE_TYPE (count), count, size_tree);
+  count_plus_size_rtx = expand_expr (count_plus_size, NULL_RTX, HImode, EXPAND_NORMAL);
+  emit_cmp_and_jump_insns (count_plus_size_rtx, GEN_INT (size_of_reg_args),
+			   GTU, const1_rtx, HImode, 1, 1, lab_fromstack);
   
   t = build (PLUS_EXPR, ptr_type_node, base, count);
   r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
