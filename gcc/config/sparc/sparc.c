@@ -8384,7 +8384,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (float_mode_p)
 	*total = sparc_costs->float_mul;
       else if (! TARGET_HARD_MUL)
-	return COSTS_N_INSNS (25);
+	*total = COSTS_N_INSNS (25);
       else
 	{
 	  int bit_cost;
