@@ -1,3 +1,8 @@
+2004-10-21  Eric Christopher  <echristo@redhat.com>
+
+	* config/rs6000/rs6000.c (setup_incoming_varargs): Align DFmode
+	saves.
+
 2004-10-22  Bernardo Innocenti  <bernie@develer.com>
 
 	Backport from the mainline:
@@ -233,10 +238,10 @@
 	* config/alpha/qrnnd.asm: Mark for noexecstack.
 
 2004-09-30  Richard Henderson  <rth@redhat.com>
- 
+
 	* unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.
 	* doc/tm.texi (DWARF_ZERO_REG): New.
- 
+
 	* config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
 	alpha_expand_epilogue): Revert 2003-09-30 change to store zero.
 	* config/alpha/alpha.h (DWARF_ZERO_REG): New.
@@ -463,7 +468,7 @@
 
 	* version.c (version_string): Restore pre-release marker.
 	* doc/include/gcc-common.texi: Set version to 3.4.3.
-	
+
 2004-09-06  Release Manager
 
 	* GCC 3.4.2 released.
@@ -521,7 +526,7 @@
 
 	* config/ns32k/ns32k.h (TRANSFER_FROM_TRAMPOLINE): Remove.
 	(TRAMPOLINE_TEMPLATE): Merge code from __trampoline inline.
-	                                                                        
+
 2004-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcc-std.ver (GCC_3.4.2): Export also __trampoline_setup.
@@ -591,7 +596,7 @@
 	one and two.
 
 2004-08-24  Richard Henderson  <rth@redhat.com>
-	                                                                        
+
 	PR target/16298
 	* config/i386/i386.c (legitimate_constant_p): Rework to not accept
 	random codes within CONST.
