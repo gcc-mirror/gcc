@@ -3585,10 +3585,10 @@ rs6000_stack_info ()
     info_ptr->fpmem_offset = 0;  
 
   /* Zero offsets if we're not saving those registers */
-  if (!info_ptr->fp_size)
+  if (info_ptr->fp_size == 0)
     info_ptr->fp_save_offset = 0;
 
-  if (!info_ptr->gp_size)
+  if (info_ptr->gp_size == 0)
     info_ptr->gp_save_offset = 0;
 
   if (!info_ptr->lr_save_p)

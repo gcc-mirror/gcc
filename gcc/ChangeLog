@@ -1,3 +1,8 @@
+Sun Jan  3 03:20:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.c (rs6000_stack_info): Undo spurious part of last
+	change.
+
 1999-01-01  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* extend.texi (__builtin_constant_p): Add missing @smallexample.
