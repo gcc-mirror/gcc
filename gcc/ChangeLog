@@ -1,5 +1,10 @@
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
+	* c-decl.c (finish_struct): Add DECL_EXPR for variable sized
+	structures seen inside functions.
+
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
 	* c-decl.c (grokdeclarator): Save variable array size before
 	subtracting 1, rather than after.
 
