@@ -10,10 +10,17 @@ template <class T> struct A {
 template <class T> T A<T>::t = 0;
 static template struct A<int>;
 
+// These functions must be defined in a single line, so that, even if
+// constants or pointers are placed in the code section (for example,
+// on the SH), we still get the same line numbers.
+
+void test_int() { A<int>::t = 42; } // gets bogus error
+
+void test_char() { A<char>::t = 42; } // ERROR - not instantiated XFAIL *-*-irix*
+// Irix's default linker does not produce line numbers so XFAIL it.
+
 int main ()
 {
-  A<int>::t = 42;		// gets bogus error
-  A<char>::t = 42;		// ERROR - not instantiated XFAIL mips*-*-*
-				// Irix's default linker does not
-				// produce line numbers so XFAIL it.
+  test_int ();
+  test_char ();
 }

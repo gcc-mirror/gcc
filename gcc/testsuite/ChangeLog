@@ -1,3 +1,9 @@
+2001-04-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.old-deja/g++.ext/instantiate1.C: Adjust to accommodate
+	peculiarities of the SH.
+	* g++.old-deja/g++.ext/instantiate2.C: Likewise.
+
 2001-04-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/ieee/fp-cmp-1.c: Renamed nan to dnan.
@@ -210,7 +216,6 @@
 	* g++.old-deja/g++.pt/overload15.C: New test to stress overloaded
 	templatized constructors.
 
->>>>>>> 1.1119
 2001-02-24  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20010224-1.c: New test.
