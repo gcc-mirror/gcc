@@ -13855,7 +13855,7 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
   fn = finish_function ((ctor_initializer_p ? 1 : 0) | 
 			(inline_p ? 2 : 0));
   /* Generate code for it, if necessary.  */
-  expand_body (fn);
+  expand_or_defer_fn (fn);
   /* Restore the saved values.  */
   parser->in_unbraced_linkage_specification_p 
     = saved_in_unbraced_linkage_specification_p;

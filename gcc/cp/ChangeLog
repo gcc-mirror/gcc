@@ -1,3 +1,29 @@
+Wed Jul  2 00:36:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (defer_fn): Set DECL_DEFER_OUTPUT.
+	(finish-file): Do not process function with DECL_DEFER_OUTPUT clear;
+	clear DECL_DEFER_OUTPUT once function is processed; avoid flags
+	massaging.
+
+	* cp-tree.h (DECL_NEEDED_P): Support unit-at-a-time
+	(expand_or_defer_fn): Declare.
+	(lower_function): Declare.
+	* decl.c (start_cleanup_fn): Use expand_or_defer_fn.
+	* decl2.c: Include cgraph.h and varpool.h
+	(maybe_emit_vtables):  Make explicit instantations as needed.
+	(mark_member_pointers, lower_function): New functions.
+	(finish_file): Do unit-at-a-time.
+	* method.c (synthesize_method): Use expand_or_defer_fn.
+	* optimize.c (maybe_clone_body): Use expand_or_defer_fn.
+	* parser.c (cp_parser_function_definition_after_decl): Use
+	expand_or_defer_fn.
+	* pt.c (instantiate_decl): Likewise.
+	* semantics.c: Include cgraph.h
+	(expand_or_defer_fn): Break out from ...
+	(expand_body): ... here; deal with unit-at-a-time.
+	* cp-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION,
+	LANG_HOOKS_CALLGRAPH_LOWER_FUNCTION): Define.
+
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (resolve_scoped_fn_name): Return error_mark_node for

@@ -581,7 +581,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       /* Re-enable access control.  */
       pop_deferring_access_checks ();
 
-      expand_body (finish_function (0));
+      expand_or_defer_fn (finish_function (0));
     }
 
   pop_from_top_level ();
@@ -862,7 +862,7 @@ synthesize_method (tree fndecl)
     }
 
   finish_function_body (stmt);
-  expand_body (finish_function (0));
+  expand_or_defer_fn (finish_function (0));
 
   extract_interface_info ();
   if (! context)

@@ -1746,7 +1746,7 @@ struct lang_decl GTY(())
   ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))	\
    || (DECL_ASSEMBLER_NAME_SET_P (DECL)				\
        && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)))	\
-   || (flag_syntax_only && TREE_USED (DECL)))
+   || (((flag_syntax_only || flag_unit_at_a_time) && TREE_USED (DECL))))
 
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
    declaration.  Some entities (like a member function in a local
@@ -3800,6 +3800,7 @@ extern tree get_guard (tree);
 extern tree get_guard_cond (tree);
 extern tree set_guard (tree);
 extern void prepare_assemble_variable (tree);
+extern void lower_function (tree);
 
 extern void cp_error_at		(const char *msgid, ...);
 extern void cp_warning_at	(const char *msgid, ...);
@@ -4151,6 +4152,7 @@ extern void clear_out_block                     (void);
 extern tree begin_global_stmt_expr              (void);
 extern tree finish_global_stmt_expr             (tree);
 extern tree check_template_template_default_arg (tree);
+extern void expand_or_defer_fn			(tree);
 
 /* in tree.c */
 extern void lang_check_failed			(const char *, int,
