@@ -185,8 +185,7 @@ print_rtx (in_rtx)
 	      }
 	    else
 	      {
-		/* Can't use XSTR because of type checking.  */
-		char *str = in_rtx->fld[i].rtstr;
+		char *str = X0STR (in_rtx, i);
 		if (str == 0)
 		  fputs (dump_for_graph ? " \\\"\\\"" : " \"\"", outfile);
 		else

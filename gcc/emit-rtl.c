@@ -217,7 +217,7 @@ gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2)
 
   PUT_MODE (r, mode);
   XEXP (r, 0) = arg0;
-  XEXP (r, 1) = NULL_RTX;
+  X0EXP (r, 1) = NULL_RTX;
   XWINT (r, 2) = arg1;
   XWINT (r, 3) = arg2;
 

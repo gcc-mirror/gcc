@@ -2699,7 +2699,8 @@ copy_rtx_and_substitute (orig, map)
       switch (*format_ptr++)
 	{
 	case '0':
-	  XEXP (copy, i) = XEXP (orig, i);
+	  /* Copy this through the wide int field; that's safest.  */
+	  X0WINT (copy, i) = X0WINT (orig, i);
 	  break;
 
 	case 'e':

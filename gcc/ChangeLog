@@ -1,3 +1,62 @@
+1999-08-31 12:20 -0700 Zack Weinberg <zack@bitmover.com>
+
+	* rtl.h (RTL_CHECK1, RTL_CHECK2): New macros which type- and
+	bounds- check RTL accesses if --enable-checking.
+	(RTVEC_ELT): Bounds check if --enable-checking.
+	(XWINT, XINT, XSTR, XEXP, XVEC, XMODE, XBITMAP, XTREE,
+	XBBDEF): Use RTL_CHECK1/RTL_CHECK2 as appropriate.
+	(XVECEXP, XVECLEN): Define in terms of XVEC, RTVEC_ELT, and
+	GET_NUM_ELEM.
+	(X0WINT, X0INT, X0STR, X0EXP, X0VEC, X0MODE, X0BITMAP, X0TREE,
+	X0BBDEF, X0ADVFLAGS):  New macros for accessing '0' slots of RTXes.
+
+	(ADDR_DIFF_VEC_FLAGS): Use X0ADVFLAGS.
+	(NOTE_SOURCE_FILE): Use X0STR.
+	(NOTE_BLOCK_NUMBER, NOTE_EH_HANDLER, LABEL_NUSES,
+	MEM_ALIAS_SET): Use X0INT.
+	(NOTE_RANGE_INFO, NOTE_LIVE_INFO, NOTE_BASIC_BLOCK,
+	JUMP_LABEL, LABEL_REFS, LABEL_NEXTREF, CONTAINING_INSN):
+	Use X0EXP.
+	* real.h (CONST_DOUBLE_CHAIN): Use X0EXP.
+	* rtl.c (copy_rtx, copy_most_rtx): Copy '0' slots with X0WINT.
+	(rtl_check_failed_bounds, rtl_check_failed_type1,
+	rtl_check_failed_type2, rtvec_check_failed_bounds): New
+	functions.
+	(fancy_abort): Fix comment.
+
+	* cse.c (canon_hash): Read CONST_DOUBLE data slots with XWINT.
+	(cse_insn): Decrement LABEL_NUSES for jump target before
+	deleting jump insn.
+	* emit-rtl.c (gen_rtx_CONST_DOUBLE): Use X0EXP for slot 1.
+	* final.c (alter_subreg): Compute regno before changing x to
+	REG; set REGNO(x) after changing it.
+	* flow.c (count_basic_blocks): Use XWINT to inspect EH_REGION
+	notes containing CONST_INTs.
+	(delete_eh_regions): Use NOTE_EH_HANDLER.
+	* function.c (put_reg_into_stack): Make reg a MEM before
+	initializing it.
+	(fixup_var_refs_insns):  Save REG_NOTES (insn) in case we
+	delete insn.
+	(gen_mem_addressof): Make reg a MEM before initializing it.
+	* integrate.c (copy_rtx_and_substitute): Copy '0' slots with
+	X0WINT.
+	* local-alloc.c (update_equiv_regs): Zap REG_NOTES before
+	deleting an insn, not after.
+	(block_alloc): Only look at PATTERN(insn) if we have to, and
+	only if it's format class 'i'.
+	* loop.c (check_dbra_loop): Check bl->biv->add_val is a
+	CONST_INT before using its INTVAL.
+	* print-rtl.c (print_rtx): Use X0STR.
+	* regmove.c (fixup_match_1): Don't look at PATTERN of 
+	non-class-'i' insn chain elements.
+	* reload.c (loc_mentioned_in_p): Take address of
+	in->fld[1].rtx directly.
+	* reload1.c (reload): Change reg to a MEM before initializing
+	it.
+	* varasm.c (mark_constant_pool): Skip CONST_DOUBLES, which
+	have no names.
+	* config/i386/i386.md (decrement_and_branch_if_zero): Fix typo.
+
 Fri Aug 20 13:43:41 1999  Andrew Haley  <aph@cygnus.com>
 
 	* config/mips/mips.c (machine_dependent_reorg): Force a

@@ -3745,6 +3745,9 @@ mark_constant_pool ()
       if (!pool->mark)
 	  continue;
 
+      /* skip CONST_DOUBLEs too - correct?  */
+      if (GET_CODE (pool->constant) == CONST_DOUBLE)
+	continue;
       label = XSTR (pool->constant, 0);
 
       /* Be sure the symbol's value is marked. */

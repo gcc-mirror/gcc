@@ -1341,11 +1341,11 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
 	new = assign_stack_local (decl_mode, GET_MODE_SIZE (decl_mode), 0);
     }
 
+  PUT_CODE (reg, MEM);
   PUT_MODE (reg, decl_mode);
   XEXP (reg, 0) = XEXP (new, 0);
   /* `volatil' bit means one thing for MEMs, another entirely for REGs.  */
   MEM_VOLATILE_P (reg) = volatile_p;
-  PUT_CODE (reg, MEM);
 
   /* If this is a memory ref that contains aggregate components,
      mark it as such for cse and loop optimize.  If we are reusing a
@@ -1495,6 +1495,9 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
 
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
+	  /* Remember the notes in case we delete the insn.  */
+	  note = REG_NOTES (insn);
+
 	  /* If this is a CLOBBER of VAR, delete it.
 
 	     If it has a REG_LIBCALL note, delete the REG_LIBCALL
@@ -1653,10 +1656,13 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
 	  /* Also fix up any invalid exprs in the REG_NOTES of this insn.
 	     But don't touch other insns referred to by reg-notes;
 	     we will get them elsewhere.  */
-	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (GET_CODE (note) != INSN_LIST)
-	      XEXP (note, 0)
-		= walk_fixup_memory_subreg (XEXP (note, 0), insn, 1);
+	  while (note)
+	    {
+	      if (GET_CODE (note) != INSN_LIST)
+		XEXP (note, 0)
+		  = walk_fixup_memory_subreg (XEXP (note, 0), insn, 1);
+	       note = XEXP (note, 1);
+	    }
 	}
 
       if (!ht)
@@ -2631,9 +2637,9 @@ gen_mem_addressof (reg, decl)
      address is being taken.  */
   REG_USERVAR_P (XEXP (r, 0)) = REG_USERVAR_P (reg);
 
-  XEXP (reg, 0) = r;
   PUT_CODE (reg, MEM);
   PUT_MODE (reg, DECL_MODE (decl));
+  XEXP (reg, 0) = r;
   MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
   MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
   MEM_ALIAS_SET (reg) = get_alias_set (decl);

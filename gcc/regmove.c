@@ -1905,7 +1905,9 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  NOTE_SOURCE_FILE (insn) = 0;
 	  /* emit_insn_after_with_line_notes has no
 	     return value, so search for the new insn.  */
-	  for (insn = p; PATTERN (insn) != pat; )
+	  insn = p;
+	  while (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
+		 || PATTERN (insn) != pat)
 	    insn = PREV_INSN (insn);
 
 	  REG_NOTES (insn) = notes;

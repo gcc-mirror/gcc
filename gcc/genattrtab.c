@@ -5955,6 +5955,8 @@ main (argc, argv)
   rtx tem;
   int i;
 
+  progname = "genattrtab";
+
 #if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
   /* Get rid of any avoidable limit on stack size.  */
   {

@@ -222,19 +222,86 @@ typedef struct rtvec_def{
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
-#define XWINT(RTX, N)	((RTX)->fld[N].rtwint)			/* w */
-#define XINT(RTX, N)	((RTX)->fld[N].rtint)			/* i,n */
-#define XSTR(RTX, N)	((RTX)->fld[N].rtstr)			/* s,S */
-#define XEXP(RTX, N)	((RTX)->fld[N].rtx)			/* e,u */
-#define XVEC(RTX, N)	((RTX)->fld[N].rtvec)			/* E,V */
-#define XVECLEN(RTX, N)	((RTX)->fld[N].rtvec->num_elem)		/* E,V */
-#define XMODE(RTX, N)	((RTX)->fld[N].rttype)			/* M */
-#define XBITMAP(RTX, N) ((RTX)->fld[N].rtbit)			/* b */
-#define XTREE(RTX, N)   ((RTX)->fld[N].rttree)			/* t */
-#define XBBDEF(RTX, N)	((RTX)->fld[N].bb)			/* B */
+#if defined ENABLE_CHECKING  && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+/* The bit with a star outside the statement expr and an & inside is
+   so that N can be evaluated only once.  */
+#define RTL_CHECK1(RTX, N, C1)						\
+(*({ rtx _rtx = RTX; int _n = N;					\
+     enum rtx_code _code = GET_CODE (_rtx);				\
+     if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
+       rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
+				__PRETTY_FUNCTION__);			\
+     if (GET_RTX_FORMAT(_code)[_n] != C1)				\
+       rtl_check_failed_type1 (_rtx, _n, C1, __FILE__, __LINE__,	\
+			       __PRETTY_FUNCTION__);			\
+     &_rtx->fld[_n]; }))
 
-#define RTVEC_ELT(RTVEC, I)	((RTVEC)->elem[I])
-#define XVECEXP(RTX,N,M)	RTVEC_ELT (XVEC (RTX, N), M)
+#define RTL_CHECK2(RTX, N, C1, C2)					\
+(*({ rtx _rtx = RTX; int _n = N;					\
+     enum rtx_code _code = GET_CODE (_rtx);				\
+     if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
+       rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
+				__PRETTY_FUNCTION__);			\
+     if (GET_RTX_FORMAT(_code)[_n] != C1				\
+	 && GET_RTX_FORMAT(_code)[_n] != C2)				\
+       rtl_check_failed_type2 (_rtx, _n, C1, C2, __FILE__, __LINE__,	\
+			       __PRETTY_FUNCTION__);			\
+     &_rtx->fld[_n]; }))
+
+#define RTVEC_ELT(RTVEC, I)						\
+(*({ rtvec _rtvec = RTVEC; int _i = I;					\
+     if (_i < 0 || _i >= GET_NUM_ELEM (_rtvec))				\
+       rtvec_check_failed_bounds (_rtvec, _i, __FILE__, __LINE__,	\
+				  __PRETTY_FUNCTION__);			\
+     &_rtvec->elem[_i]; }))
+
+extern void rtl_check_failed_bounds PROTO((rtx, int,
+					   const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+extern void rtl_check_failed_type1 PROTO((rtx, int, int,
+					  const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+extern void rtl_check_failed_type2 PROTO((rtx, int, int, int,
+					  const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+extern void rtvec_check_failed_bounds PROTO((rtvec, int,
+					     const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+
+#else   /* not ENABLE_CHECKING */
+
+#define RTL_CHECK1(RTX, N, C1)     ((RTX)->fld[N])
+#define RTL_CHECK2(RTX, N, C1, C2) ((RTX)->fld[N])
+#define RTVEC_ELT(RTVEC, I)	   ((RTVEC)->elem[I])
+
+#endif
+
+#define XWINT(RTX, N)	(RTL_CHECK1(RTX, N, 'w').rtwint)
+#define XINT(RTX, N)	(RTL_CHECK2(RTX, N, 'i', 'n').rtint)
+#define XSTR(RTX, N)	(RTL_CHECK2(RTX, N, 's', 'S').rtstr)
+#define XEXP(RTX, N)	(RTL_CHECK2(RTX, N, 'e', 'u').rtx)
+#define XVEC(RTX, N)	(RTL_CHECK2(RTX, N, 'E', 'V').rtvec)
+#define XMODE(RTX, N)	(RTL_CHECK1(RTX, N, 'M').rttype)
+#define XBITMAP(RTX, N) (RTL_CHECK1(RTX, N, 'b').rtbit)
+#define XTREE(RTX, N)   (RTL_CHECK1(RTX, N, 't').rttree)
+#define XBBDEF(RTX, N)	(RTL_CHECK1(RTX, N, 'B').bb)
+
+#define XVECEXP(RTX, N, M)	RTVEC_ELT (XVEC (RTX, N), M)
+#define XVECLEN(RTX, N)		GET_NUM_ELEM (XVEC (RTX, N))
+
+/* These are like XWINT, etc. except that they expect a '0' field instead
+   of the normal type code.  */
+
+#define X0WINT(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtwint)
+#define X0INT(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtint)
+#define X0STR(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtstr)
+#define X0EXP(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtx)
+#define X0VEC(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rtvec)
+#define X0MODE(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rttype)
+#define X0BITMAP(RTX, N)   (RTL_CHECK1(RTX, N, '0').rtbit)
+#define X0TREE(RTX, N)	   (RTL_CHECK1(RTX, N, '0').rttree)
+#define X0BBDEF(RTX, N)	   (RTL_CHECK1(RTX, N, '0').bb)
+#define X0ADVFLAGS(RTX, N) (RTL_CHECK1(RTX, N, '0').rt_addr_diff_vec_flags)
 
 
 /* ACCESS MACROS for particular fields of insns.  */
@@ -357,7 +424,7 @@ typedef struct rtvec_def{
 
 #define REG_NOTES(INSN)	XEXP(INSN, 6)
 
-#define ADDR_DIFF_VEC_FLAGS(RTX) ((RTX)->fld[4].rt_addr_diff_vec_flags)
+#define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS(RTX, 4)
 
 /* Don't forget to change reg_note_name in rtl.c.  */
 enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
@@ -404,11 +471,12 @@ extern const char * const reg_note_name[];
    The NOTE_INSN_RANGE_{START,END} and NOTE_INSN_LIVE notes record their
    information as a rtx in the field.  */
 
-#define NOTE_SOURCE_FILE(INSN)  ((INSN)->fld[3].rtstr)
-#define NOTE_BLOCK_NUMBER(INSN) ((INSN)->fld[3].rtint)
-#define NOTE_RANGE_INFO(INSN)   ((INSN)->fld[3].rtx)
-#define NOTE_LIVE_INFO(INSN)    ((INSN)->fld[3].rtx)
-#define NOTE_BASIC_BLOCK(INSN)	((INSN)->fld[3].bb)
+#define NOTE_SOURCE_FILE(INSN) 	X0STR(INSN, 3)
+#define NOTE_BLOCK_NUMBER(INSN)	X0INT(INSN, 3)
+#define NOTE_EH_HANDLER(INSN)	X0INT(INSN, 3)
+#define NOTE_RANGE_INFO(INSN)  	X0EXP(INSN, 3)
+#define NOTE_LIVE_INFO(INSN)   	X0EXP(INSN, 3)
+#define NOTE_BASIC_BLOCK(INSN)	X0EXP(INSN, 3)
 
 /* If the NOTE_BLOCK_NUMBER field gets a -1, it means create a new
    block node for a live range block.  */
@@ -488,7 +556,7 @@ extern const char * const note_insn_name[];
 
 /* In jump.c, each label contains a count of the number
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
-#define LABEL_NUSES(LABEL) ((LABEL)->fld[5].rtint)
+#define LABEL_NUSES(LABEL) X0INT(LABEL, 5)
 
 /* The original regno this ADDRESSOF was built for.  */
 #define ADDRESSOF_REGNO(RTX) XINT(RTX, 1)
@@ -499,24 +567,24 @@ extern const char * const note_insn_name[];
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
    be decremented and possibly the label can be deleted.  */
-#define JUMP_LABEL(INSN)   ((INSN)->fld[7].rtx)
+#define JUMP_LABEL(INSN)   X0EXP(INSN, 7)
 
 /* Once basic blocks are found in flow.c,
    each CODE_LABEL starts a chain that goes through
    all the LABEL_REFs that jump to that label.
    The chain eventually winds up at the CODE_LABEL; it is circular.  */
-#define LABEL_REFS(LABEL) ((LABEL)->fld[6].rtx)
+#define LABEL_REFS(LABEL) X0EXP(LABEL, 6)
 
 /* This is the field in the LABEL_REF through which the circular chain
    of references to a particular label is linked.
    This chain is set up in flow.c.  */
 
-#define LABEL_NEXTREF(REF) ((REF)->fld[1].rtx)
+#define LABEL_NEXTREF(REF) X0EXP(REF, 1)
 
 /* Once basic blocks are found in flow.c,
    Each LABEL_REF points to its containing instruction with this field.  */
 
-#define CONTAINING_INSN(RTX) ((RTX)->fld[2].rtx)
+#define CONTAINING_INSN(RTX) X0EXP(RTX, 2)
 
 /* For a REG rtx, REGNO extracts the register number.  */
 
@@ -601,7 +669,7 @@ extern const char * const note_insn_name[];
    some front-ends, these numbers may correspond in some way to types,
    or other language-level entities, but they need not, and the
    back-end makes no such assumptions.  */
-#define MEM_ALIAS_SET(RTX) (XINT (RTX, 1))
+#define MEM_ALIAS_SET(RTX) X0INT(RTX, 1)
 
 /* For a LABEL_REF, 1 means that this reference is to a label outside the
    loop containing the reference.  */
