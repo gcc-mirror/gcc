@@ -28,7 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
 
-#include "tm.h"
+#include "tconfig.h"
 #ifndef L_trampoline
 #include "gstddef.h"
 #endif
@@ -1495,7 +1495,7 @@ __do_global_dtors ()
 #ifdef DO_GLOBAL_DTORS_BODY
   DO_GLOBAL_DTORS_BODY;
 #else
-  unsigned nptrs = (unsigned) __DTOR_LIST__[0];
+  unsigned nptrs = (unsigned HOST_WIDE_INT) __DTOR_LIST__[0];
   unsigned i;
 
   /* Some systems place the number of pointers
