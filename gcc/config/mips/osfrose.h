@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    DECstation (OSF/1 reference port with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,59 +34,13 @@ Boston, MA 02111-1307, USA.  */
 -DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD \
 -Asystem(unix) -Asystem(xpg4) -Acpu(mips) -Amachine(mips)"
 
-#define ASM_SPEC "\
-%{mmips-as: \
-	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
-	%{pipe: %e-pipe is not supported.} \
-	%{K}} \
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
-%{noasmopt:-O0} \
-%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
-%{g} %{g0} %{g1} %{g2} %{g3} \
-%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
-
-#ifndef CROSS_COMPILE
-#define ASM_FINAL_SPEC "\
-%{mmips-as: %{!mno-mips-tfile: \
-	\n mips-tfile %{v*: -v} %{d*} \
-			%{K: -I %b.o~} \
-			%{!K: %{save-temps: -I %b.o~}} \
-			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-			%{.s:%i} %{!.s:%g.s}}}"
-
-#else				/* CROSS_COMPILE */
-#define ASM_FINAL_SPEC "\
-%{mmips-as: %{mmips-tfile: \
-	\n mips-tfile %{v*: -v} %{d*} \
-			%{K: -I %b.o~} \
-			%{!K: %{save-temps: -I %b.o~}} \
-			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-			%{.s:%i} %{!.s:%g.s}}}"
-#endif
-
-#define CPP_SPEC "\
-%{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
-%{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY} \
-	-ULANGUAGE_C -U__LANGUAGE_C__} \
-%{.s:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
-%{.s:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY} \
-	-ULANGUAGE_C -U__LANGUAGE_C__} \
-%{.cc:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
+#define SUBTARGET_CPP_SIZE_SPEC "\
 %{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3 -D__mips64} \
-%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
-%{msingle-float:%{!msoft-float:-D__mips_single_float}} \
-%{m4650:%{!msoft-float:-D__mips_single_float}} \
-%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
-%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
+%{!mlong64:-D__PTRDIFF_TYPE__=int}"
+
+#define SUBTARGET_CPP_SPEC "\
+%{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
+%{.s:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}}"
 
 /* ??? This assumes that GNU as is always used with GNU ld, and MIPS as is
    always used with MIPS ld.  */

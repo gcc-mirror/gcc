@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 5.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -64,31 +64,16 @@ Boston, MA 02111-1307, USA.  */
   -D_MIPS_SIM=_MIPS_SIM_ABI32 -D_MIPS_SZPTR=32 \
   -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "\
 %{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
-%{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D_LANGUAGE_OBJECTIVE_C -D_LANGUAGE_C} \
-%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.s:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{!.S:%{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}\
 %{!mfp64: -D_MIPS_FPSET=16}%{mfp64: -D_MIPS_FPSET=32} \
 %{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{!mips1: %{!mips2: %{!mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS1}}} \
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{!mlong64: -D_MIPS_SZLONG=32}%{mlong64: -D_MIPS_SZLONG=64} \
-%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3 -D__mips64} \
-%{mgp32:-U__mips64} %{mgp64:-D__mips64} \
-%{msingle-float:%{!msoft-float:-D__mips_single_float}} \
-%{m4650:%{!msoft-float:-D__mips_single_float}} \
-%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
-%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
+%{!mlong64: -D_MIPS_SZLONG=32}%{mlong64: -D_MIPS_SZLONG=64}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "\

@@ -623,49 +623,83 @@ while (0)
 -Asystem(unix) -Asystem(bsd) -Acpu(mips) -Amachine(mips)"
 #endif
 
-/* Extra switches sometimes passed to the assembler.  */
+/* Assembler specs.  */
 
-#ifndef ASM_SPEC
+/* MIPS_AS_ASM_SPEC is passed when using the MIPS assembler rather
+   than gas.  */
+
+#define MIPS_AS_ASM_SPEC "\
+%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
+%{pipe: %e-pipe is not supported.} \
+%{K} %(subtarget_mips_as_asm_spec)"
+
+/* SUBTARGET_MIPS_AS_ASM_SPEC is passed when using the MIPS assembler
+   rather than gas.  It may be overridden by subtargets.  */
+
+#ifndef SUBTARGET_MIPS_AS_ASM_SPEC
+#define SUBTARGET_MIPS_AS_ASM_SPEC "%{v}"
+#endif
+
+/* GAS_ASM_SPEC is passed when using gas, rather than the MIPS
+   assembler.  */
+
+#define GAS_ASM_SPEC "%{mcpu=*} %{m4650} %{mmad:-m4650} %{v}"
+
+/* TARGET_ASM_SPEC is used to select either MIPS_AS_ASM_SPEC or
+   GAS_ASM_SPEC as the default, depending upon the value of
+   TARGET_DEFAULT.  */
+
 #if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
 /* GAS */
-#define ASM_SPEC "\
-%{mmips-as: \
-	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
-	%{pipe: %e-pipe is not supported.} \
-	%{K}} \
-%{!mmips-as: \
-	%{mcpu=*} %{m4650} %{mmad:-m4650}} \
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} %{v} \
-%{noasmopt:-O0} \
-%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
-%{g} %{g0} %{g1} %{g2} %{g3} \
-%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{membedded-pic}"
 
-#else
-/* not GAS */
-#define ASM_SPEC "\
-%{!mgas: \
-	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
-	%{pipe: %e-pipe is not supported.} \
-	%{K}} \
-%{mgas: \
-	%{mcpu=*} %{m4650} %{mmad:-m4650}} \
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} %{v} \
-%{noasmopt:-O0} \
-%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
-%{g} %{g0} %{g1} %{g2} %{g3} \
-%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{membedded-pic}"
+#define TARGET_ASM_SPEC "\
+%{mmips-as: %(mips_as_asm_spec)} \
+%{!mmips-as: %(gas_asm_spec)}"
 
+#else /* not GAS */
+
+#define TARGET_ASM_SPEC "\
+%{!mgas: %(mips_as_asm_spec)} \
+%{mgas: %(gas_asm_spec)}"
+
+#endif /* not GAS */
+
+/* SUBTARGET_ASM_OPTIMIZING_SPEC handles passing optimization options
+   to the assembler.  It may be overridden by subtargets.  */
+#ifndef SUBTARGET_ASM_OPTIMIZING_SPEC
+#define SUBTARGET_ASM_OPTIMIZING_SPEC "\
+%{noasmopt:-O0} \
+%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}}"
 #endif
-#endif	/* ASM_SPEC */
+
+/* SUBTARGET_ASM_DEBUGGING_SPEC handles passing debugging options to
+   the assembler.  It may be overridden by subtargets.  */
+#ifndef SUBTARGET_ASM_DEBUGGING_SPEC
+#define SUBTARGET_ASM_DEBUGGING_SPEC "\
+%{g} %{g0} %{g1} %{g2} %{g3} \
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
+%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
+#endif
+
+/* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
+   overridden by subtargets.  */
+
+#ifndef SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC ""
+#endif
+
+/* ASM_SPEC is the set of arguments to pass to the assembler.  */
+
+#define ASM_SPEC "\
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
+%(subtarget_asm_optimizing_spec) \
+%(subtarget_asm_debugging_spec) \
+%{membedded-pic} \
+%{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
+%(target_asm_spec) \
+%(subtarget_asm_spec)"
 
 /* Specify to run a post-processor, mips-tfile after the assembler
    has run to stuff the mips debug information into the object file.
@@ -735,7 +769,24 @@ while (0)
 %{save-temps: }"
 #endif
 
-/* Preprocessor specs */
+/* Preprocessor specs.  */
+
+/* SUBTARGET_CPP_SIZE_SPEC defines SIZE_TYPE and PTRDIFF_TYPE.  It may
+   be overridden by subtargets.  */
+
+#ifndef SUBTARGET_CPP_SIZE_SPEC
+#define SUBTARGET_CPP_SIZE_SPEC "\
+%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}"
+#endif
+
+/* SUBTARGET_CPP_SPEC is passed to the preprocessor.  It may be
+   overridden by subtargets.  */
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
+#endif
+
+/* CPP_SPEC is the set of arguments to pass to the preprocessor.  */
 
 #ifndef CPP_SPEC
 #define CPP_SPEC "\
@@ -745,16 +796,42 @@ while (0)
 %{.m:	-D__LANGUAGE_OBJECTIVE_C -D_LANGUAGE_OBJECTIVE_C} \
 %{.S:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.s:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
-%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{!.S: %{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}} \
+%(subtarget_cpp_size_spec) \
 %{mips3:-U__mips -D__mips=3 -D__mips64} \
 %{mips4:-U__mips -D__mips=4 -D__mips64} \
 %{mgp32:-U__mips64} %{mgp64:-D__mips64} \
 %{msingle-float:%{!msoft-float:-D__mips_single_float}} \
 %{m4650:%{!msoft-float:-D__mips_single_float}} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
-%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
+%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}} \
+%(subtarget_cpp_spec) "
+#endif
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#define EXTRA_SPECS							\
+  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
+  { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC },		\
+  { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
+  { "gas_asm_spec", GAS_ASM_SPEC },					\
+  { "target_asm_spec", TARGET_ASM_SPEC },				\
+  { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC },		\
+  { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
+  { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
+  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
+  SUBTARGET_EXTRA_SPECS
+
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
 #endif
 
 /* If defined, this macro is an additional prefix to try after

@@ -48,16 +48,9 @@ Boston, MA 02111-1307, USA.  */
 /* ??? Same for _MIPS_SZINT.  */
 /* ??? Same for _MIPS_SZPTR.  */
 /* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
-#undef CPP_SPEC
-#define CPP_SPEC "\
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "\
 %{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
-%{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D_LANGUAGE_OBJECTIVE_C -D_LANGUAGE_C} \
-%{.S:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{.s:	-D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{!.S:%{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}\
 %{mfp32: -D_MIPS_FPSET=16}%{!mfp32: -D_MIPS_FPSET=32} \
 %{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
@@ -82,18 +75,11 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{!mabi=32:%{!mabi=n32: %{!mabi=64: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}} \
-%{mips3: -U__mips -D__mips=3} \
-%{mips4: -U__mips -D__mips=4} \
 %{!mips1:%{!mips2:%{!mips3:%{!mips4: -U__mips -D__mips=3}}}} \
-%{mgp32: -U__mips64}%{mgp64: -D__mips64} \
 %{mabi=32: -U__mips64} \
 %{mabi=n32: -D__mips64} \
 %{mabi=64: -D__mips64} \
-%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D__mips64}}} \
-%{msingle-float:%{!msoft-float:-D__mips_single_float}} \
-%{m4650:%{!msoft-float:-D__mips_single_float}} \
-%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
-%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
+%{!mabi=32: %{!mabi=n32: %{!mabi=64: -D__mips64}}}"
 
 /* Irix 6 uses DWARF.  */
 #define DWARF_DEBUGGING_INFO
@@ -177,28 +163,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
-#undef ASM_SPEC
-#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
-/* GAS */
-#define ASM_SPEC "\
-%{mmips-as: \
-	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
-	%{pipe: %e-pipe is not supported.} \
-	%{K}} \
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} %{v} \
-%{noasmopt:-O0} \
-%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
-%{g} %{g0} %{g1} %{g2} %{g3} \
-%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{membedded-pic} \
-%{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
-%{!mabi*:-n32}"
+#undef SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC "%{!mabi*:-n32}"
 
-#else
-/* not GAS */
 /* Must pass -g0 to the assembler, otherwise it may overwrite our
    debug info with its own debug info. */
 /* Must pass -show instead of -v.  */
@@ -207,19 +174,11 @@ Boston, MA 02111-1307, USA.  */
 /* ??? We pass -w to disable all assembler warnings.  The `label should be
    inside .ent/.end block' warning that we get for DWARF II debug info labels
    is particularly annoying.  */
-#define ASM_SPEC "\
-%{!mgas: \
-	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
-	%{pipe: %e-pipe is not supported.} \
-	%{K}} \
-%{G*} %{EB} %{EL} %{v:-show} \
-%{mips1} %{mips2} %{mips3} %{mips4} \
-%{noasmopt:-O0} %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
--g0 -G 0 -w %{membedded-pic} \
-%{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
-%{!mabi*:-n32}"
+#undef SUBTARGET_MIPS_AS_ASM_SPEC
+#define SUBTARGET_MIPS_AS_ASM_SPEC "%{v:-show} -G 0 -w"
 
-#endif
+#undef SUBTARGET_ASM_DEBUGGING_SPEC
+#define SUBTARGET_ASM_DEBUGGING_SPEC "-g0"
 
 /* Stuff for constructors.  Start here.  */
 
