@@ -223,11 +223,15 @@ init_caller_save ()
 	      ok &= constrain_operands (reg_restore_code[i][j], 1);
 	    }
 
-	if (! ok && j == 1)
-	  {
-	    call_fixed_regs[i] = 1;
-	    SET_HARD_REG_BIT (call_fixed_reg_set, i);
-	  }
+	  if (! ok)
+	    {
+	      regno_save_mode[i][j] = VOIDmode;
+	      if (j == 1)
+		{
+		  call_fixed_regs[i] = 1;
+		  SET_HARD_REG_BIT (call_fixed_reg_set, i);
+		}
+	    }
       }
 
   end_sequence ();
