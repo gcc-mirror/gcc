@@ -1,3 +1,60 @@
+2003-03-23  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/BufferedOutputStream.java:
+	Reformated.
+	* java/io/BufferedReader.java:
+	Reformated.
+	* java/io/ByteArrayOutputStream.java
+	(size): Fixed @see tag.
+	* java/io/CharArrayWriter.java
+	(size): Fixed @see tag.
+	* java/io/DataInput.java:
+	Reformated.
+	* java/io/DataOutput.java:
+	Reformated.
+	* java/io/DataOutputStream.java:
+	Merged copyright years with classpath.
+	* java/io/Externalizable.java:
+	Reformated.
+	* java/io/FileFilter.java:
+	Reformated.
+	* java/io/FileInputStream.java:
+	Merged copyright years with classpath.
+	* java/io/FileOutputStream.java:
+	Merged copyright years with classpath.
+	* java/io/FilePermission.java
+	(FilePermission): Replaced @XXX with FIXME:.
+	* java/io/FileWriter.java:
+	Reformated.
+	* java/io/FilenameFilter.java:
+	Reformated.
+	* java/io/FilterInputStream.java:
+	Reformated.
+	* java/io/FilterOutputStream.java:
+	Reformated.
+	* java/io/FilterReader.java:
+	Reformated.
+	* java/io/FilterWriter.java:
+	Reformated.
+	* java/io/LineNumberInputStream.java
+	(LineNumberInputStream): Replaced @code with HTML tags to make javadoc
+	happy.
+	(getLineNumber): Fixed @return tag.
+	* java/io/ObjectInput.java:
+	Reformated.
+	* java/io/ObjectOutput.java:
+	Reformated.
+	* java/io/ObjectStreamClass.java:
+	Reformated.
+	* java/io/PrintStream.java:
+	Merged copyright years with classpath.
+	* java/io/PushbackReader.java
+	(PushbackReader): Replaced @code with @param.
+	* java/io/SerializablePermission.java:
+	Reformated.
+	* java/io/StreamTokenizer.java
+	(resetSyntax): Fixed @see tag.
+
 2003-03-22  Richard Henderson  <rth@redhat.com>
 
 	* sysdep/ia64/locks.h: Include ia64intrin.h.

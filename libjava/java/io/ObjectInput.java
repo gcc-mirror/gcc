@@ -58,8 +58,6 @@ public interface ObjectInput extends DataInput
     */
   public abstract int available() throws IOException;
 
-  /*************************************************************************/
-
   /**
     * This method reading a byte of data from a stream.  It returns that byte
     * as an int.  This method blocks if no data is available to be read.
@@ -69,8 +67,6 @@ public interface ObjectInput extends DataInput
     * @exception IOException If an error occurs
     */
   public abstract int read() throws IOException;
-
-  /*************************************************************************/
 
   /**
     * This method reads raw bytes and stores them them a byte array buffer.
@@ -85,8 +81,6 @@ public interface ObjectInput extends DataInput
     * @exception IOException If an error occurs
     */
   public abstract int read(byte[] buf) throws IOException;
-
-  /*************************************************************************/
 
   /**
     * This method reads raw bytes and stores them in a byte array buffer
@@ -107,8 +101,6 @@ public interface ObjectInput extends DataInput
     */
   public abstract int read(byte[] buf, int offset, int len) throws IOException;
 
-  /*************************************************************************/
-
   /**
     * Reads an object instance and returns it.  If the class for the object
     * being read cannot be found, then a ClassNotFoundException will
@@ -123,8 +115,6 @@ public interface ObjectInput extends DataInput
   public abstract Object readObject() 
     throws ClassNotFoundException, IOException;
 
-  /*************************************************************************/
-
   /**
     * This method causes the specified number of bytes to be read and
     * discarded.  It is possible that fewer than the requested number of bytes
@@ -137,8 +127,6 @@ public interface ObjectInput extends DataInput
     * @exception IOException If an error occurs
     */
   public abstract long skip(long num_bytes) throws IOException;
-
-  /*************************************************************************/
 
   /**
     * This method closes the input source

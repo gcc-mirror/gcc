@@ -130,7 +130,7 @@ public class CharArrayWriter extends Writer
    *
    * @return The number of chars in the internal buffer
    *
-   * @see reset
+   * @see #reset()
    */
   public int size ()
   {

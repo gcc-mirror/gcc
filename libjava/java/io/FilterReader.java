@@ -63,21 +63,11 @@ package java.io;
   */
 public abstract class FilterReader extends Reader
 {
-  /*
-   * Instance Variables
-   */
-
   /**
     * This is the subordinate <code>Reader</code> to which method calls
     * are redirected
     */
   protected Reader in;
-
-  /*************************************************************************/
-
-  /*
-   * Constructors
-   */
 
   /**
     * Create a <code>FilterReader</code> with the specified subordinate
@@ -93,12 +83,6 @@ public abstract class FilterReader extends Reader
     this.in = in;
   }
 
-  /*************************************************************************/
-
-  /*
-   * Instance Methods
-   */
-
   /**
     * Calls the <code>in.mark(int)</code> method.
     *
@@ -111,8 +95,6 @@ public abstract class FilterReader extends Reader
     in.mark(readlimit);
   }
 
-  /*************************************************************************/
-
   /**
     * Calls the <code>in.markSupported()</code> method.
     *
@@ -124,8 +106,6 @@ public abstract class FilterReader extends Reader
     return(in.markSupported());
   }
 
-  /*************************************************************************/
-
   /**
     * Calls the <code>in.reset()</code> method.
     *
@@ -135,8 +115,6 @@ public abstract class FilterReader extends Reader
   {
     in.reset();
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>in.read()</code> method.
@@ -149,8 +127,6 @@ public abstract class FilterReader extends Reader
   {
     return(in.ready());
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>in.skip(long)</code> method
@@ -166,8 +142,6 @@ public abstract class FilterReader extends Reader
     return(in.skip(num_chars));
   }
 
-  /*************************************************************************/
-
   /**
     * Calls the <code>in.read()</code> method
     *
@@ -179,8 +153,6 @@ public abstract class FilterReader extends Reader
   {
     return(in.read());
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>in.read(char[], int, int)</code> method.
@@ -197,8 +169,6 @@ public abstract class FilterReader extends Reader
   {
     return(in.read(buf, offset, len));
   }
-
-  /*************************************************************************/
 
   /**
     * This method closes the stream by calling the <code>close()</code> method

@@ -77,7 +77,7 @@ public class PushbackReader extends FilterReader
    * specified subordinate <code>Reader</code> with a default pushback buffer 
    * size of 1.
    *
-   * @code in The subordinate stream to read from
+   * @param in The subordinate stream to read from
    */
   public PushbackReader(Reader in)
   {

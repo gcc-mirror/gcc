@@ -56,21 +56,11 @@ package java.io;
   */
 public abstract class FilterWriter extends Writer
 {
-  /*
-   * Instance Variables
-   */
-
   /**
     * This is the subordinate <code>Writer</code> that this class
     * redirects its method calls to.
     */
   protected Writer out;
-
-  /*************************************************************************/
-
-  /*
-   * Constructors
-   */
 
   /**
     * This method initializes an instance of <code>FilterWriter</code>
@@ -86,12 +76,6 @@ public abstract class FilterWriter extends Writer
     this.out = out;
   }
 
-  /*************************************************************************/
-
-  /*
-   * Instance Methods
-   */
-
   /**
     * This method closes the underlying <code>Writer</code>.  Any
     * further attempts to write to this stream may throw an exception.
@@ -103,8 +87,6 @@ public abstract class FilterWriter extends Writer
     out.close();
   }
 
-  /*************************************************************************/
-
   /**
     * This method attempt to flush all buffered output to be written to the
     * underlying output sink.
@@ -115,8 +97,6 @@ public abstract class FilterWriter extends Writer
   {
     out.flush();
   }
-
-  /*************************************************************************/
 
   /**
     * This method writes a single char of output to the underlying
@@ -130,8 +110,6 @@ public abstract class FilterWriter extends Writer
   {
     out.write(b);
   }
-
-  /*************************************************************************/
 
   /**
     * This method writes <code>len</code> chars from the array <code>buf</code>
@@ -148,8 +126,6 @@ public abstract class FilterWriter extends Writer
   {
     out.write(buf, offset, len);
   }
-
-  /*************************************************************************/
 
   /**
     * This method writes <code>len</code> chars from the <code>String</code>

@@ -69,24 +69,11 @@ package java.io;
   */
 public class FilterInputStream extends InputStream
 {
-
-  /*************************************************************************/
-
-  /*
-   * Instance Variables
-   */
-
   /**
     * This is the subordinate <code>InputStream</code> to which method calls
     * are redirected
     */
   protected InputStream in;
-
-  /*************************************************************************/
-
-  /*
-   * Constructors
-   */
 
   /**
     * Create a <code>FilterInputStream</code> with the specified subordinate
@@ -99,12 +86,6 @@ public class FilterInputStream extends InputStream
     this.in = in;
   }
 
-  /*************************************************************************/
-
-  /*
-   * Instance Methods
-   */
-
   /**
     * Calls the <code>in.mark(int)</code> method.
     *
@@ -114,8 +95,6 @@ public class FilterInputStream extends InputStream
   {
     in.mark(readlimit);
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>in.markSupported()</code> method.
@@ -128,8 +107,6 @@ public class FilterInputStream extends InputStream
     return(in.markSupported());
   }
 
-  /*************************************************************************/
-
   /**
     * Calls the <code>in.reset()</code> method.
     *
@@ -139,8 +116,6 @@ public class FilterInputStream extends InputStream
   {
     in.reset();
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>in.available()</code> method.
@@ -153,8 +128,6 @@ public class FilterInputStream extends InputStream
   {
     return(in.available());
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>in.skip(long)</code> method
@@ -170,8 +143,6 @@ public class FilterInputStream extends InputStream
     return(in.skip(num_bytes));
   }
 
-  /*************************************************************************/
-
   /**
     * Calls the <code>in.read()</code> method
     *
@@ -183,8 +154,6 @@ public class FilterInputStream extends InputStream
   {
     return(in.read());
   }
-
-  /*************************************************************************/
 
   /**
     * Calls the <code>read(byte[], int, int)</code> overloaded method.  
@@ -204,8 +173,6 @@ public class FilterInputStream extends InputStream
     return(read(buf, 0, buf.length));
   }
 
-  /*************************************************************************/
-
   /**
     * Calls the <code>in.read(byte[], int, int)</code> method.
     *
@@ -221,8 +188,6 @@ public class FilterInputStream extends InputStream
   {
     return(in.read(buf, offset, len));
   }
-
-  /*************************************************************************/
 
   /**
     * This method closes the input stream by closing the input stream that
