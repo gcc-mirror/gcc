@@ -1155,8 +1155,6 @@ add_virtual_function (new_virtuals_p, overridden_virtuals_p,
     }
 }
 
-extern struct obstack *current_obstack;
-
 /* Add method METHOD to class TYPE.  If ERROR_P is true, we are adding
    the method after the class has already been defined because a
    declaration for it was seen.  (Even though that is erroneous, we

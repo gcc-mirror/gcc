@@ -3274,14 +3274,10 @@ cselib_init ()
   /* These are only created once.  */
   if (! callmem)
     {
-      extern struct obstack permanent_obstack;
-
       gcc_obstack_init (&cselib_obstack);
       cselib_startobj = obstack_alloc (&cselib_obstack, 0);
 
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       callmem = gen_rtx_MEM (BLKmode, const0_rtx);
-      pop_obstacks ();
       ggc_add_rtx_root (&callmem, 1);
     }
 

@@ -9070,7 +9070,7 @@ most_specialized_class (tmpl, args)
 	= get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args);
       if (spec_args)
 	{
-	  list = decl_tree_cons (TREE_PURPOSE (t), TREE_VALUE (t), list);
+	  list = tree_cons (TREE_PURPOSE (t), TREE_VALUE (t), list);
 	  TREE_TYPE (list) = TREE_TYPE (t);
 	}
     }

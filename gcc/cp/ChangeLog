@@ -1,3 +1,36 @@
+2000-10-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (current_obstack): Remove.
+	* decl.c (ggc_p): Remove.
+	(start_decl): Don't use decl_tree_cons.
+	(grokdeclarator): Don't use build_decl_list.
+	(start_function): Don't use decl_tree_cons.
+	(finish_function): Don't mess with obstacks.
+	* decl2.c (grok_x_components): Don't use build_decl_list.
+	* lex.c (make_call_declarator): Don't call decl_tree_cons.
+	(implicitly_declare_fn): Don't call build_decl_list.
+	* parse.y (frob_specs): Don't call build_decl_list or
+	decl_tree_cons.
+	(expr_or_declarator_intern): Don't call decl_tree_cons.
+	(primary): Don't call build_decl_list.
+	(fcast_or_absdcl): Likewise.
+	(typed_declspecs): Don't call decl_tree_cons.
+	(reserved_declspecs): Don't call build_decl_list.
+	(declmods): Likewise.
+	(reserved_typespecquals): Likewise.
+	(aggr): Likewise.
+	(new_type_id): Likewise.
+	(cv_qualifiers): Likewise.
+	(after_type_declarator_intern): Likewise.
+	(notype_declarator_intern): Likewise.
+	(absdcl_intern): Likewise.
+	(named_parm): Likewise.
+	* pt.c (most_specialized_class): Likewise.
+	* repo.c (temporary_obstack): Make it a structure, not a pointer.
+	(init_repo): Initialize it.
+	* search.c (current_obstack): Remove.
+	* typeck2.c (add_exception_specifier): Don't call build_decl_list.
+	
 2000-10-09  Richard Henderson  <rth@cygnus.com>
 
 	* Make-lang.in (CXX_EXTRA_HEADERS): Remove.

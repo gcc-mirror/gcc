@@ -133,7 +133,6 @@ struct tree_common
   ENUM_BITFIELD(tree_code) code : 8;
   unsigned side_effects_flag : 1;
   unsigned constant_flag : 1;
-  unsigned permanent_flag : 1;
   unsigned addressable_flag : 1;
   unsigned volatile_flag : 1;
   unsigned readonly_flag : 1;
@@ -155,6 +154,10 @@ struct tree_common
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
+  /* This flag is presently unused.  However, language front-ends
+     should not make use of this flag; it is reserved for future
+     expansion.  */
+  unsigned dummy : 1;
 };
 
 /* The following table lists the uses of each of the above flags and
@@ -229,8 +232,6 @@ struct tree_common
 
        TREE_CONSTANT in
            all expressions
-
-   permanent_flag: TREE_PERMANENT in all nodes
 
    unsigned_flag:
 
@@ -568,17 +569,6 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    if the value is constant.  */
 #define TREE_CONSTANT(NODE) ((NODE)->common.constant_flag)
 
-/* Nonzero means permanent node;
-   node will continue to exist for the entire compiler run.
-   Otherwise it will be recycled at the end of the function.
-   This flag is always zero if garbage collection is in use.
-   Try not to use this.  Only set it with TREE_SET_PERMANENT.  */
-#define TREE_PERMANENT(NODE) ((NODE)->common.permanent_flag)
-#define TREE_SET_PERMANENT(NODE) do { \
-  if (!ggc_p && current_obstack == &permanent_obstack) \
-    TREE_PERMANENT(NODE) = 1; \
-} while (0) 
-
 /* In INTEGER_TYPE or ENUMERAL_TYPE nodes, means an unsigned type.
    In FIELD_DECL nodes, means an unsigned bit field.
    The same bit is used in functions as DECL_BUILT_IN_NONANSI.  */
@@ -890,7 +880,6 @@ struct tree_block
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type.main_variant)
 #define TYPE_NONCOPIED_PARTS(NODE) (TYPE_CHECK (NODE)->type.noncopied_parts)
 #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type.context)
-#define TYPE_OBSTACK(NODE) (TYPE_CHECK (NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
 
 /* For a VECTOR_TYPE node, this describes a different type which is emitted
@@ -1152,7 +1141,6 @@ struct tree_type
   union tree_node *binfo;
   union tree_node *noncopied_parts;
   union tree_node *context;
-  struct obstack *obstack;
   HOST_WIDE_INT alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_type *lang_specific;
@@ -1858,9 +1846,7 @@ extern tree integer_types[itk_none];
 extern int exact_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
 extern int floor_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
 
-extern char *oballoc			PARAMS ((int));
 extern char *permalloc			PARAMS ((int));
-extern char *savealloc			PARAMS ((int));
 extern char *expralloc			PARAMS ((int));
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
@@ -1917,8 +1903,6 @@ extern tree build_complex		PARAMS ((tree, tree, tree));
 extern tree build_string		PARAMS ((int, const char *));
 extern tree build1			PARAMS ((enum tree_code, tree, tree));
 extern tree build_tree_list		PARAMS ((tree, tree));
-extern tree build_decl_list		PARAMS ((tree, tree));
-extern tree build_expr_list		PARAMS ((tree, tree));
 extern tree build_decl			PARAMS ((enum tree_code, tree, tree));
 extern tree build_block			PARAMS ((tree, tree, tree, tree, tree));
 extern tree build_expr_wfl              PARAMS ((tree, const char *, int, int));
@@ -2177,11 +2161,6 @@ extern tree chainon			PARAMS ((tree, tree));
 /* Make a new TREE_LIST node from specified PURPOSE, VALUE and CHAIN.  */
 
 extern tree tree_cons			PARAMS ((tree, tree, tree));
-extern tree perm_tree_cons		PARAMS ((tree, tree, tree));
-extern tree temp_tree_cons		PARAMS ((tree, tree, tree));
-extern tree saveable_tree_cons		PARAMS ((tree, tree, tree));
-extern tree decl_tree_cons		PARAMS ((tree, tree, tree));
-extern tree expr_tree_cons		PARAMS ((tree, tree, tree));
 
 /* Return the last tree node in a chain.  */
 
@@ -2620,33 +2599,8 @@ extern tree gettags				PARAMS ((void));
 
 extern tree build_range_type PARAMS ((tree, tree, tree));
 
-/* Call when starting to parse a declaration:
-   make expressions in the declaration last the length of the function.
-   Returns an argument that should be passed to resume_momentary later.  */
-extern int suspend_momentary PARAMS ((void));
-
-extern int allocation_temporary_p PARAMS ((void));
-
-/* Call when finished parsing a declaration:
-   restore the treatment of node-allocation that was
-   in effect before the suspension.
-   YES should be the value previously returned by suspend_momentary.  */
-extern void resume_momentary PARAMS ((int));
-
 /* Called after finishing a record, union or enumeral type.  */
 extern void rest_of_type_compilation PARAMS ((tree, int));
-
-/* Save the current set of obstacks, but don't change them.  */
-extern void push_obstacks_nochange PARAMS ((void));
-
-extern void permanent_allocation PARAMS ((int));
-extern void push_momentary PARAMS ((void));
-extern void clear_momentary PARAMS ((void));
-extern void pop_momentary PARAMS ((void));
-extern void end_temporary_allocation PARAMS ((void));
-
-/* Pop the obstack selection stack.  */
-extern void pop_obstacks PARAMS ((void));
 
 /* In alias.c */
 extern void record_component_aliases		PARAMS ((tree));
@@ -2657,18 +2611,10 @@ extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));
 
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));
-extern void push_obstacks		PARAMS ((struct obstack *,
-						struct obstack *));
-extern void pop_momentary_nofree	PARAMS ((void));
-extern void preserve_momentary		PARAMS ((void));
-extern void saveable_allocation		PARAMS ((void));
-extern void temporary_allocation	PARAMS ((void));
-extern void resume_temporary_allocation	PARAMS ((void));
 extern void set_identifier_size		PARAMS ((int));
 extern int int_fits_type_p		PARAMS ((tree, tree));
 extern int tree_log2			PARAMS ((tree));
 extern int tree_floor_log2		PARAMS ((tree));
-extern void preserve_initializer	PARAMS ((void));
 extern void preserve_data		PARAMS ((void));
 extern int object_permanent_p		PARAMS ((tree));
 extern int type_precision		PARAMS ((tree));
@@ -2683,9 +2629,6 @@ extern tree type_hash_lookup		PARAMS ((unsigned int, tree));
 extern void type_hash_add		PARAMS ((unsigned int, tree));
 extern unsigned int type_hash_list	PARAMS ((tree));
 extern int simple_cst_list_equal	PARAMS ((tree, tree));
-extern void debug_obstack		PARAMS ((char *));
-extern void rtl_in_current_obstack	PARAMS ((void));
-extern void rtl_in_saveable_obstack	PARAMS ((void));
 extern void init_tree_codes		PARAMS ((void));
 extern void dump_tree_statistics	PARAMS ((void));
 extern void print_obstack_statistics	PARAMS ((const char *,
@@ -2702,7 +2645,6 @@ extern int real_twop			PARAMS ((tree));
 extern void start_identifier_warnings	PARAMS ((void));
 extern void gcc_obstack_init		PARAMS ((struct obstack *));
 extern void init_obstacks		PARAMS ((void));
-extern void obfree			PARAMS ((char *));
 extern void build_common_tree_nodes	PARAMS ((int));
 extern void build_common_tree_nodes_2	PARAMS ((int));
 

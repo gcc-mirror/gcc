@@ -1352,14 +1352,12 @@ get_symref (name)
   if (p == 0)
     {
       /* Ensure SYMBOL_REF will stay around.  */
-      end_temporary_allocation ();
       p = *last_p = (struct symref_hashent *)
 			permalloc (sizeof (struct symref_hashent));
       p->symref = gen_rtx_SYMBOL_REF (Pmode,
 				      obstack_copy0 (&permanent_obstack,
 						     name, strlen (name)));
       p->next = 0;
-      resume_temporary_allocation ();
     }
 
   return p->symref;

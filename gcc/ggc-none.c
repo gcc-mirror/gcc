@@ -1,5 +1,5 @@
 /* Null garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -31,9 +31,6 @@
 #include "rtl.h"
 #include "tm_p.h"
 #include "ggc.h"
-
-/* For now, keep using the old obstack scheme in the gen* programs.  */
-int ggc_p = 0;
 
 void *
 ggc_alloc (size)

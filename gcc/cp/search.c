@@ -36,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern struct obstack *current_obstack;
-
 #include "stack.h"
 
 /* Obstack used for remembering decision points of breadth-first.  */

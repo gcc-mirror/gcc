@@ -598,6 +598,7 @@ goal:
 		  ggc_add_tree_root (&package_list, 1);
 		  ggc_add_tree_root (&current_this, 1);
 		  ggc_add_tree_root (&currently_caught_type_list, 1);
+		  ggc_add_string_root (&cyclic_inheritance_report, 1);
 		  ggc_add_root (&ctxp, 1, 
 				sizeof (struct parser_ctxt *),
 				mark_parser_ctxt);
@@ -3938,7 +3939,7 @@ add_inner_class_fields (class_decl, fct_decl)
       tree decl;
       for (decl = BLOCK_EXPR_DECLS (block); decl; decl = TREE_CHAIN (decl))
 	{
-	  char *name, *pname;
+	  tree name, pname;
 	  tree wfl, init, list;
 	  
 	  /* Avoid non final arguments. */
@@ -3947,8 +3948,8 @@ add_inner_class_fields (class_decl, fct_decl)
 	  
 	  MANGLE_OUTER_LOCAL_VARIABLE_NAME (name, DECL_NAME (decl));
 	  MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID (pname, DECL_NAME (decl));
-	  wfl = build_wfl_node (get_identifier (name));
-	  init = build_wfl_node (get_identifier (pname));
+	  wfl = build_wfl_node (name);
+	  init = build_wfl_node (pname);
 	  /* Build an initialization for the field: it will be
 	     initialized by a parameter added to finit$, bearing a
 	     mangled name of the field itself (param$<n>.) The
@@ -4036,10 +4037,8 @@ lookup_field_wrapper (class, name)
      context. We try to look for it now. */
   if (INNER_CLASS_TYPE_P (class))
     {
-      char *alias_buffer;
       tree new_name;
-      MANGLE_OUTER_LOCAL_VARIABLE_NAME (alias_buffer, name);
-      new_name = get_identifier (alias_buffer);
+      MANGLE_OUTER_LOCAL_VARIABLE_NAME (new_name, name);
       decl = lookup_field (&type, new_name);
       if (decl && decl != error_mark_node)
 	FIELD_LOCAL_ALIAS_USED (decl) = 1;
@@ -4959,10 +4958,8 @@ obtain_incomplete_type (type_name)
 
   if (!ptr)
     {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       BUILD_PTR_FROM_NAME (ptr, name);
       layout_type (ptr);
-      pop_obstacks ();
       TREE_CHAIN (ptr) = ctxp->incomplete_class;
       ctxp->incomplete_class = ptr;
     }
@@ -5060,12 +5057,14 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
       {
 	const char *buffer = IDENTIFIER_POINTER (DECL_NAME (field));
 	tree purpose = NULL_TREE, value = NULL_TREE, name = NULL_TREE;
+	tree mangled_id;
 
 	switch (mode)
 	  {
 	  case AIPL_FUNCTION_DECLARATION:
-	    MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR (buffer, &buffer [4]);
-	    purpose = build_wfl_node (get_identifier (buffer));
+	    MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR (mangled_id, 
+							 &buffer [4]);
+	    purpose = build_wfl_node (mangled_id);
 	    if (TREE_CODE (TREE_TYPE (field)) == POINTER_TYPE)
 	      value = build_wfl_node (TYPE_NAME (TREE_TYPE (field)));
 	    else
@@ -5073,13 +5072,14 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
 	    break;
 
 	  case AIPL_FUNCTION_CREATION:
-	    MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR (buffer, &buffer [4]);
-	    purpose = get_identifier (buffer);
+	    MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR (purpose,
+							 &buffer [4]);
 	    value = TREE_TYPE (field);
 	    break;
 
 	  case AIPL_FUNCTION_FINIT_INVOCATION:
-	    MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR (buffer, &buffer [4]);
+	    MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR (mangled_id, 
+							 &buffer [4]);
 	    /* Now, this is wrong. purpose should always be the NAME
 	       of something and value its matching value (decl, type,
 	       etc...) FIXME -- but there is a lot to fix. */
@@ -5087,7 +5087,7 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
 	    /* When invoked for this kind of operation, we already
 	       know whether a field is used or not. */
 	    purpose = TREE_TYPE (field);
-	    value = build_wfl_node (get_identifier (buffer));
+	    value = build_wfl_node (mangled_id);
 	    break;
 
 	  case AIPL_FUNCTION_CTOR_INVOCATION:
@@ -5136,8 +5136,6 @@ craft_constructor (class_decl, args)
   tree decl, ctor_name;
   char buffer [80];
   
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   /* The constructor name is <init> unless we're dealing with an
      anonymous class, in which case the name will be fixed after having
      be expanded. */
@@ -5174,8 +5172,6 @@ craft_constructor (class_decl, args)
   fix_method_argument_names (parm, decl);
   /* Now, mark the artificial parameters. */
   DECL_FUNCTION_NAP (decl) = artificial;
-
-  pop_obstacks ();
   DECL_CONSTRUCTOR_P (decl) = 1;
 }
 
@@ -5227,10 +5223,7 @@ safe_layout_class (class)
   const char *save_input_filename = input_filename;
   int save_lineno = lineno;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   layout_class (class);
-  pop_obstacks ();
 
   current_class = save_current_class;
   input_filename = save_input_filename;
@@ -5270,8 +5263,6 @@ java_complete_class ()
   int error_found;
   tree type;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   /* Process imports */
   process_imports ();
 
@@ -5306,10 +5297,8 @@ java_complete_class ()
 		/* We do part of the job done in add_field */
 		tree field_decl = JDEP_DECL (dep);
 		tree field_type = TREE_TYPE (decl);
-		push_obstacks (&permanent_obstack, &permanent_obstack);
 		if (TREE_CODE (field_type) == RECORD_TYPE)
 		  field_type = promote_type (field_type);
-		pop_obstacks ();
 		TREE_TYPE (field_decl) = field_type;
 		DECL_ALIGN (field_decl) = 0;
 		DECL_USER_ALIGN (field_decl) = 0;
@@ -5350,7 +5339,6 @@ java_complete_class ()
 	      if (!error_found)
 		{
 		  tree mdecl = JDEP_DECL (dep), signature;
-		  push_obstacks (&permanent_obstack, &permanent_obstack);
 		  /* Recompute and reset the signature, check first that
 		     all types are now defined. If they're not,
 		     dont build the signature. */
@@ -5359,7 +5347,6 @@ java_complete_class ()
 		      signature = build_java_signature (TREE_TYPE (mdecl));
 		      set_java_signature (TREE_TYPE (mdecl), signature);
 		    }
-		  pop_obstacks ();
 		}
 	      else
 		continue;
@@ -5404,7 +5391,6 @@ java_complete_class ()
 	    }
 	}
     }
-  pop_obstacks ();
   return;
 }
 
@@ -7245,7 +7231,6 @@ source_end_java_method ()
     }
 
   current_function_decl = NULL_TREE;
-  permanent_allocation (1);
   java_parser_context_restore_global ();
   asynchronous_exceptions = flag_asynchronous_exceptions;
 }
@@ -8005,8 +7990,6 @@ build_outer_field_access_methods (decl)
   if (FIELD_INNER_ACCESS (decl))
     return FIELD_INNER_ACCESS (decl);
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   /* Create the identifier and a function named after it. */
   id = build_new_access_id ();
 
@@ -8036,7 +8019,6 @@ build_outer_field_access_methods (decl)
   mdecl = build_outer_field_access_method (DECL_CONTEXT (decl), 
 					   TREE_TYPE (decl), id, args, stmt);
   DECL_FUNCTION_ACCESS_DECL (mdecl) = decl;
-  pop_obstacks ();
 
   /* Return the access name */
   return FIELD_INNER_ACCESS (decl) = id;
@@ -8093,8 +8075,6 @@ build_outer_method_access_method (decl)
   id = build_new_access_id ();
   OUTER_FIELD_ACCESS_IDENTIFIER_P (id) = 1;
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   carg = TYPE_ARG_TYPES (TREE_TYPE (decl));
   /* Create the arguments, as much as the original */
   for (; carg && carg != end_params_node; 
@@ -8141,7 +8121,6 @@ build_outer_method_access_method (decl)
   java_method_add_stmt (mdecl,body);
   end_artificial_method_body (mdecl);
   current_function_decl = saved_current_function_decl;
-  pop_obstacks ();
 
   /* Back tag the access function so it know what it accesses */
   DECL_FUNCTION_ACCESS_DECL (decl) = mdecl;
@@ -8212,7 +8191,6 @@ maybe_build_thisn_access_method (type)
   /* We generate the method. The method looks like:
      static <outer_of_type> access$0 (<type> inst$) { return inst$.this$<n>; }
   */
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   args = build_tree_list (inst_id, build_pointer_type (type));
   TREE_CHAIN (args) = end_params_node;
   rtype = build_pointer_type (TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type))));
@@ -8230,7 +8208,6 @@ maybe_build_thisn_access_method (type)
   java_method_add_stmt (mdecl, stmt);
   end_artificial_method_body (mdecl);
   current_function_decl = saved_current_function_decl;
-  pop_obstacks ();
 
   CLASS_ACCESS0_GENERATED_P (type) = 1;
 
@@ -8432,11 +8409,8 @@ build_dot_class_method_invocation (type)
   else
     sig_id = DECL_NAME (TYPE_NAME (type));
 
-  s = make_node (STRING_CST);
-  TREE_STRING_LENGTH (s) = IDENTIFIER_LENGTH (sig_id);
-  TREE_STRING_POINTER (s) = obstack_alloc (expression_obstack,
-					   TREE_STRING_LENGTH (s)+1);
-  strcpy (TREE_STRING_POINTER (s), IDENTIFIER_POINTER (sig_id));
+  s = build_string (IDENTIFIER_LENGTH (sig_id), 
+		    IDENTIFIER_POINTER (sig_id));
   return build_method_invocation (build_wfl_node (get_identifier ("class$")),
 				  build_tree_list (NULL_TREE, s));
 }
@@ -10899,9 +10873,7 @@ java_complete_tree (node)
     {
       tree value = DECL_INITIAL (node);
       DECL_INITIAL (node) = NULL_TREE;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       value = fold_constant_for_init (value, node);
-      pop_obstacks ();
       DECL_INITIAL (node) = value;
       if (value != NULL_TREE)
 	{
@@ -11114,10 +11086,8 @@ java_complete_lhs (node)
 	  && FIELD_FINAL (TREE_OPERAND (cn, 1))
 	  && DECL_INITIAL (TREE_OPERAND (cn, 1)))
 	{
-	  push_obstacks (&permanent_obstack, &permanent_obstack);
 	  cn = fold_constant_for_init (DECL_INITIAL (TREE_OPERAND (cn, 1)),
 				       TREE_OPERAND (cn, 1));
-	  pop_obstacks ();
 	}
 
       if (!TREE_CONSTANT (cn) && !flag_emit_xref)
@@ -11395,9 +11365,7 @@ java_complete_lhs (node)
 	{
 	  tree value;
 	  
-	  push_obstacks (&permanent_obstack, &permanent_obstack);
 	  value = fold_constant_for_init (nn, nn);
-	  pop_obstacks ();
 
 	  if (value != NULL_TREE)
 	    {
@@ -13029,7 +12997,7 @@ do_merge_string_cste (cste, string, string_len, after)
   
   cste = make_node (STRING_CST);
   TREE_STRING_LENGTH (cste) = len;
-  new = TREE_STRING_POINTER (cste) = obstack_alloc (expression_obstack, len+1);
+  new = TREE_STRING_POINTER (cste) = ggc_alloc (len+1);
 
   if (after)
     {
@@ -13234,11 +13202,9 @@ patch_string_cst (node)
   int location;
   if (! flag_emit_class_files)
     {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       node = get_identifier (TREE_STRING_POINTER (node));
       location = alloc_name_constant (CONSTANT_String, node);
       node = build_ref_from_constant_pool (location);
-      pop_obstacks ();
     }
   TREE_TYPE (node) = string_ptr_type_node;
   TREE_CONSTANT (node) = 1;
@@ -13972,7 +13938,6 @@ array_constructor_check_entry (type, entry)
   new_value = NULL_TREE;
   wfl_value = TREE_VALUE (entry);
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   value = java_complete_tree (TREE_VALUE (entry));
   /* patch_string return error_mark_node if arg is error_mark_node */
   if ((patched = patch_string (value)))
@@ -13989,7 +13954,6 @@ array_constructor_check_entry (type, entry)
   if (!new_value && (new_value = try_reference_assignconv (type, value)))
     type_value = promote_type (type);
 
-  pop_obstacks ();
   /* Check and report errors */
   if (!new_value)
     {

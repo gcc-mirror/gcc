@@ -281,7 +281,7 @@ push_value (value)
     }
   push_type (type);
   if (tree_list_free_list == NULL_TREE)
-    quick_stack = perm_tree_cons (NULL_TREE, value, quick_stack);
+    quick_stack = tree_cons (NULL_TREE, value, quick_stack);
   else
     {
       tree node = tree_list_free_list;
@@ -1463,10 +1463,8 @@ create_label_decl (name)
      tree name;
 {
   tree decl;
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   decl = build_decl (LABEL_DECL, name, 
 		     TREE_TYPE (return_address_type_node));
-  pop_obstacks ();
   DECL_CONTEXT (decl) = current_function_decl;
   DECL_IGNORED_P (decl) = 1;
   return decl;
@@ -1985,14 +1983,12 @@ build_jni_stub (method)
       TREE_CHAIN (env_var) = res_var;
     }
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   meth_var = build_decl (VAR_DECL, get_identifier ("meth"), ptr_type_node);
   TREE_STATIC (meth_var) = 1;
   TREE_PUBLIC (meth_var) = 0;
   DECL_EXTERNAL (meth_var) = 0;
   make_decl_rtl (meth_var, NULL, 0);
   meth_var = pushdecl_top_level (meth_var);
-  pop_obstacks ();
 
   /* One strange way that the front ends are different is that they
      store arguments differently.  */
@@ -2334,7 +2330,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	  {
 	    tree temp, value, init_decl;
 	    struct rtx_def *r;
-	    push_obstacks (&permanent_obstack, &permanent_obstack);
 	    START_RECORD_CONSTRUCTOR (temp, object_type_node);
 	    PUSH_FIELD_VALUE (temp, "vtable",
 			      get_primitive_array_vtable (element_type));
@@ -2358,7 +2353,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    make_decl_rtl (init_decl, NULL, 1);
 	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
 	    r = expand_expr (init, target, tmode, modifier);
-	    pop_obstacks ();
 	    return r;
 	  }
 
@@ -2371,7 +2365,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    && ilength >= 10 && JPRIMITIVE_TYPE_P (element_type))
 	  {
 	    tree init_decl;
-	    push_obstacks (&permanent_obstack, &permanent_obstack);
 	    init_decl = build_decl (VAR_DECL, generate_name (),
 				    TREE_TYPE (init));
 	    pushdecl_top_level (init_decl);
@@ -2381,7 +2374,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    TREE_READONLY (init_decl) = 1;
 	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    make_decl_rtl (init_decl, NULL, 1);
-	    pop_obstacks ();
 	    init = init_decl;
 	  }
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),
@@ -2449,13 +2441,9 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       /* We expand a try[-catch] block */
 
       /* Expand the try block */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       expand_eh_region_start ();
-      pop_obstacks ();
       expand_expr_stmt (TREE_OPERAND (exp, 0));
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       expand_start_all_catch ();
-      pop_obstacks ();
 
       /* Expand all catch clauses (EH handlers) */
       for (current = TREE_OPERAND (exp, 1); current; 
@@ -2517,7 +2505,7 @@ note_instructions (jcf, method)
 
   JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
   byte_ops = jcf->read_ptr;
-  instruction_bits = oballoc (length + 1);
+  instruction_bits = xrealloc (instruction_bits, length + 1);
   bzero (instruction_bits, length + 1);
 
   /* This pass figures out which PC can be the targets of jumps. */
@@ -2748,12 +2736,10 @@ java_push_constant_from_pool (jcf, index)
   if (JPOOL_TAG (jcf, index) == CONSTANT_String)
     {
       tree name;
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index));
       index = alloc_name_constant (CONSTANT_String, name);
       c = build_ref_from_constant_pool (index);
       TREE_TYPE (c) = promote_type (string_type_node);
-      pop_obstacks ();
     }
   else
     c = get_constant (jcf, index);
@@ -2881,7 +2867,6 @@ process_jvm_instruction (PC, byte_ops, length)
     tree type = TREE_TYPE (selector); \
     flush_quick_stack (); \
     expand_start_case (0, selector, type, "switch statement");\
-    push_momentary (); \
     while (--npairs >= 0) \
       { \
 	jint match = IMMEDIATE_s4; jint offset = IMMEDIATE_s4; \
@@ -2894,7 +2879,6 @@ process_jvm_instruction (PC, byte_ops, length)
     label =  build_decl (LABEL_DECL, NULL_TREE, NULL_TREE); \
     pushcase (NULL_TREE, 0, label, &duplicate); \
     expand_java_goto (oldpc + default_offset); \
-    pop_momentary (); \
     expand_end_case (selector); \
   }
 
@@ -2906,7 +2890,6 @@ process_jvm_instruction (PC, byte_ops, length)
     tree type = TREE_TYPE (selector); \
     flush_quick_stack (); \
     expand_start_case (0, selector, type, "switch statement");\
-    push_momentary (); \
     for (; low <= high; low++) \
       { \
         jint offset = IMMEDIATE_s4; \
@@ -2919,7 +2902,6 @@ process_jvm_instruction (PC, byte_ops, length)
     label =  build_decl (LABEL_DECL, NULL_TREE, NULL_TREE); \
     pushcase (NULL_TREE, 0, label, &duplicate); \
     expand_java_goto (oldpc + default_offset); \
-    pop_momentary (); \
     expand_end_case (selector); \
   }
 

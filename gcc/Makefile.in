@@ -1232,8 +1232,6 @@ ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h toplev.h \
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) $(GGC_H)
 
-ggc-callbacks.o: ggc-callbacks.c $(CONFIG_H) $(RTL_H) $(TREE_H) $(GGC_H)
-
 obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f obstack.c
 	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
@@ -1365,7 +1363,7 @@ unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
    hard-reg-set.h varray.h $(BASIC_BLOCK_H)
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
-   insn-flags.h function.h except.h $(EXPR_H) ssa.h
+   insn-flags.h function.h except.h $(EXPR_H) ssa.h $(GGC_H)
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h function.h \
    insn-config.h insn-flags.h insn-codes.h $(INSN_ATTR_H) $(REGS_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h

@@ -36,10 +36,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "keyword.h"
 
-#ifndef JC1_LITE
-extern struct obstack *expression_obstack;
-#endif
-
 /* Function declaration  */
 static int java_lineterminator PARAMS ((unicode_t));
 static char *java_sprint_unicode PARAMS ((struct java_line *, int));
@@ -1104,6 +1100,7 @@ java_lex (java_lval)
       else
 	java_lval->node = build_string (strlen (string), string);
 #endif
+      obstack_free (&temporary_obstack, string);
       return STRING_LIT_TK;
     }
 

@@ -817,8 +817,6 @@ compute_can_copy ()
 #ifndef AVOID_CCMODE_COPIES
   rtx reg,insn;
 #endif
-  char *free_point = (char *) oballoc (1);
-
   bzero (can_copy_p, NUM_MACHINE_MODES);
 
   start_sequence ();
@@ -838,9 +836,6 @@ compute_can_copy ()
       can_copy_p[i] = 1;
 
   end_sequence ();
-
-  /* Free the objects we just allocated.  */
-  obfree (free_point);
 }
 
 /* Cover function to xmalloc to record bytes allocated.  */

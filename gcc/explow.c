@@ -129,15 +129,10 @@ plus_constant_wide (x, c)
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
 	{
-	  /* Any rtl we create here must go in a saveable obstack, since
-	     we might have been called from within combine.  */
-	  push_obstacks_nochange ();
-	  rtl_in_saveable_obstack ();
 	  tem
 	    = force_const_mem (GET_MODE (x),
 			       plus_constant (get_pool_constant (XEXP (x, 0)),
 					      c));
-	  pop_obstacks ();
 	  if (memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
 	    return tem;
 	}

@@ -2609,7 +2609,7 @@ implicitly_declare_fn (kind, type, const_p)
 
     case sfk_assignment_operator:
       retref = 1;
-      declspecs = build_decl_list (NULL_TREE, type);
+      declspecs = build_tree_list (NULL_TREE, type);
 
       if (const_p)
 	type = build_qualified_type (type, TYPE_QUAL_CONST);

@@ -50,10 +50,6 @@ extern tree global_namespace;
 
 extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 
-/* Use garbage collection.  */
-
-int ggc_p = 1;
-
 #ifndef BOOL_TYPE_SIZE
 #ifdef SLOW_BYTE_ACCESS
 /* In the new ABI, `bool' has size and alignment `1', on all
@@ -7150,8 +7146,8 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* This should only be done once on the top most decl.  */
   if (have_extern_spec && !used_extern_spec)
     {
-      declspecs = decl_tree_cons (NULL_TREE, get_identifier ("extern"),
-				  declspecs);
+      declspecs = tree_cons (NULL_TREE, get_identifier ("extern"),
+			     declspecs);
       used_extern_spec = 1;
     }
 
@@ -11043,7 +11039,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       else if (attrlist)
 	TREE_VALUE (attrlist) = chainon (inner_attrs, TREE_VALUE (attrlist));
       else
-	attrlist = build_decl_list (NULL_TREE, inner_attrs);
+	attrlist = build_tree_list (NULL_TREE, inner_attrs);
     }
 
   /* Now TYPE has the actual type.  */
@@ -13530,7 +13526,7 @@ start_function (declspecs, declarator, attrs, flags)
   /* This should only be done once on the top most decl.  */
   if (have_extern_spec && !used_extern_spec)
     {
-      declspecs = decl_tree_cons (NULL_TREE, get_identifier ("extern"), declspecs);
+      declspecs = tree_cons (NULL_TREE, get_identifier ("extern"), declspecs);
       used_extern_spec = 1;
     }
 
@@ -14285,15 +14281,10 @@ finish_function (flags)
 
   /* Clean up.  */
   if (! nested)
-    {
-      /* Let the error reporting routines know that we're outside a
-         function.  For a nested function, this value is used in
-         pop_cp_function_context and then reset via pop_function_context.  */
-      current_function_decl = NULL_TREE;
-      /* We don't really care about obstacks, but the middle-end
-	 sometimes cares on what obstck things are located.  */
-      permanent_allocation (1);
-    }
+    /* Let the error reporting routines know that we're outside a
+       function.  For a nested function, this value is used in
+       pop_cp_function_context and then reset via pop_function_context.  */
+    current_function_decl = NULL_TREE;
 
   return fndecl;
 }

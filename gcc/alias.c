@@ -1935,8 +1935,7 @@ init_alias_analysis ()
      registers.  */
   reg_base_value_size = maxreg * 2;
   reg_base_value = (rtx *) xcalloc (reg_base_value_size, sizeof (rtx));
-  if (ggc_p)
-    ggc_add_rtx_root (reg_base_value, reg_base_value_size);
+  ggc_add_rtx_root (reg_base_value, reg_base_value_size);
 
   new_reg_base_value = (rtx *) xmalloc (reg_base_value_size * sizeof (rtx));
   reg_seen = (char *) xmalloc (reg_base_value_size);
@@ -2129,8 +2128,7 @@ end_alias_analysis ()
   reg_known_equiv_p = 0;
   if (reg_base_value)
     {
-      if (ggc_p)
-	ggc_del_root (reg_base_value);
+      ggc_del_root (reg_base_value);
       free (reg_base_value);
       reg_base_value = 0;
     }

@@ -110,7 +110,7 @@
    For top-level functions, this is temporary_obstack.
    Separate obstacks are made for nested functions.  */
 
-extern struct obstack *function_obstack;
+extern struct obstack flow_obstack;
 
 
 /* Structure to hold information about lexical scopes.  */
@@ -676,8 +676,8 @@ fixup_reorder_chain ()
       create_basic_block (n_basic_blocks - 1, jump_insn, jump_insn, NULL);
 
       nb = BASIC_BLOCK (n_basic_blocks - 1);
-      nb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
-      nb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
+      nb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      nb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       nb->local_set = 0;
 
       COPY_REG_SET (nb->global_live_at_start, bb->global_live_at_start);

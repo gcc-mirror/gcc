@@ -1,5 +1,5 @@
 /* std.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -687,7 +687,6 @@ ffestd_stmt_pass_ ()
       tree duplicate;
 
       expand_start_case (0, which, TREE_TYPE (which), "entrypoint dispatch");
-      push_momentary ();
 
       stmt = ffestd_stmt_list_.first;
       do
@@ -709,7 +708,6 @@ ffestd_stmt_pass_ ()
 	      label = ffecom_temp_label ();
 	      TREE_USED (label) = 1;
 	      expand_goto (label);
-	      clear_momentary ();
 
 	      ffesymbol_hook (stmt->u.R1226.entry).length_tree = label;
 	    }
@@ -717,9 +715,7 @@ ffestd_stmt_pass_ ()
 	}
       while (--ents != 0);
 
-      pop_momentary ();
       expand_end_case (which);
-      clear_momentary ();
     }
 #endif
 

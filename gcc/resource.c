@@ -923,7 +923,7 @@ mark_target_live_regs (insns, target, res)
 	{
 	  /* Allocate a place to put our results and chain it into the 
 	     hash table.  */
-	  tinfo = (struct target_info *) oballoc (sizeof (struct target_info));
+	  tinfo = (struct target_info *) xmalloc (sizeof (struct target_info));
 	  tinfo->uid = INSN_UID (target);
 	  tinfo->block = b;
 	  tinfo->next = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
@@ -1223,6 +1223,20 @@ free_resource_info ()
 {
   if (target_hash_table != NULL)
     {
+      int i;
+      
+      for (i = 0; i < TARGET_HASH_PRIME; ++i) 
+	{
+	  struct target_info *ti = target_hash_table[i];
+
+	  while (ti) 
+	    {
+	      struct target_info *next = ti->next;
+	      free (ti);
+	      ti = next;
+	    }
+	}
+
       free (target_hash_table);
       target_hash_table = NULL;
     }

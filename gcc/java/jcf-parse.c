@@ -255,7 +255,6 @@ get_constant (jcf, index)
   tag = JPOOL_TAG (jcf, index);
   if ((tag & CONSTANT_ResolvedFlag) || tag == CONSTANT_Utf8)
     return (tree) jcf->cpool.data[index];
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   switch (tag)
     {
     case CONSTANT_Integer:
@@ -327,7 +326,6 @@ get_constant (jcf, index)
 #endif /* TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT */
     case CONSTANT_String:
       {
-	extern struct obstack *expression_obstack;
 	tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index));
 	const char *utf8_ptr = IDENTIFIER_POINTER (name);
 	unsigned char *str_ptr;
@@ -350,8 +348,7 @@ get_constant (jcf, index)
 	value = make_node (STRING_CST);
 	TREE_TYPE (value) = build_pointer_type (string_type_node);
 	TREE_STRING_LENGTH (value) = 2 * str_len;
-	TREE_STRING_POINTER (value)
-	  = obstack_alloc (expression_obstack, 2 * str_len);
+	TREE_STRING_POINTER (value) = ggc_alloc (2 * str_len);
 	str_ptr = (unsigned char *) TREE_STRING_POINTER (value);
 	str = (const unsigned char *)utf8_ptr;
 	for (i = 0; i < str_len; i++)
@@ -391,7 +388,6 @@ get_constant (jcf, index)
     default:
       goto bad;
     }
-  pop_obstacks ();
   JPOOL_TAG(jcf, index) = tag | CONSTANT_ResolvedFlag;
   jcf->cpool.data [index] = (jword) value;
   return value;
@@ -486,17 +482,12 @@ read_class (name)
   if (current_jcf->read_state)
     saved_pos = ftell (current_jcf->read_state);
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
   /* Search in current zip first.  */
   if (find_in_current_zip (IDENTIFIER_POINTER (name), &jcf) == 0)
     {
       if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
 		      &this_jcf, 1) == 0)
-	{
-	  pop_obstacks ();	/* FIXME: one pop_obstack() per function */
-	  return 0;
-	}
+	return 0;
       else
 	{
 	  this_jcf.seen_in_zip = 0;
@@ -519,7 +510,6 @@ read_class (name)
 
   if (!current_jcf->seen_in_zip)
     JCF_FINISH (current_jcf);
-  pop_obstacks ();
 
   current_class = save_current_class;
   input_filename = save_input_filename;
@@ -639,7 +629,6 @@ jcf_parse (jcf)
   if (current_class != class_type_node && current_class != object_type_node)
     TYPE_FIELDS (current_class) = nreverse (TYPE_FIELDS (current_class));
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   layout_class (current_class);
   if (current_class == object_type_node)
     layout_class_methods (object_type_node);
@@ -651,8 +640,6 @@ jcf_parse (jcf)
   for (current = DECL_INNER_CLASS_LIST (TYPE_NAME (current_class)); current;
        current = TREE_CHAIN (current))
     load_class (DECL_NAME (TREE_PURPOSE (current)), 1);
-
-  pop_obstacks ();
 }
 
 void

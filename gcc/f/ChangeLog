@@ -1,3 +1,43 @@
+Thu Oct 12 22:28:51 2000  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_do_entry_): Don't mess with obstacks.
+	(ffecom_finish_global_): Likewise.
+	(ffecom_finish_symbol_transform_): Likewise.
+	(ffecom_gen_sfuncdef_): Likewise.
+	(ffecom_init_zero_): Likewise.
+	(ffecom_start_progunit_): Likewise.
+	(ffecom_sym_transform_): Likewise.
+	(ffecom_sym_transform_assign_): Likewise.
+	(ffecom_transform_equiv_): Likewise.
+	(ffecom_transform_namelist_): Likewise.
+	(ffecom_vardesc_): Likewise.
+	(ffecom_vardesc_array_): Likewise.
+	(ffecom_vardesc_dims_): Likewise.
+	(ffecom_end_transition): Likewise.
+	(ffecom_make_tempvar): Likewise.
+	(bison_rule_pushlevel_): Likewise.
+	(bison_rule_compstmt_): Likewise.
+	(finish_decl): Likewise.
+	(finish_function): Likewise.
+	(push_parm_decl): Likewise.
+	(start_decl): Likewise.
+	(start_function): Likewise.
+	(ggc_p): Don't define.
+	* std.c (ffestd_stmt_pass_): Likewise.
+	* ste.c (ffeste_end_block_): Likewise.
+	(ffeste_end_stmt_): Likewise.
+	(ffeste_begin_iterdo_): Likewise.
+	(ffeste_io_ialist_): Likewise.
+	(ffeste_io_cilist_): Likewise.
+	(ffeste_io_inlist_): Likewise.
+	(ffeste_io_olist_): Likewise.
+	(ffeste_R810): Likewise.
+	(ffeste_R838): Likewise.
+	(ffeste_R839): Likewise.
+	(ffeste_R842): Likewise.
+	(ffeste_R843): Likewise.
+	(ffeste_R1001): Likewise.
+	
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (finish_function): Don't init can_reach_end.

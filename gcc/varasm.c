@@ -80,9 +80,6 @@ extern FILE *asm_out_file;
 const char *first_global_object_name;
 const char *weak_global_object_name;
 
-extern struct obstack *current_obstack;
-extern struct obstack *saveable_obstack;
-extern struct obstack *rtl_obstack;
 extern struct obstack permanent_obstack;
 #define obstack_chunk_alloc xmalloc
 
@@ -2110,18 +2107,8 @@ immed_double_const (i0, i1, mode)
 	  && GET_MODE (r) == mode)
 	return r;
 
-  /* No; make a new one and add it to the chain.
-
-     We may be called by an optimizer which may be discarding any memory
-     allocated during its processing (such as combine and loop).  However,
-     we will be leaving this constant on the chain, so we cannot tolerate
-     freed memory.  So switch to saveable_obstack for this allocation
-     and then switch back if we were in current_obstack.  */
-
-  push_obstacks_nochange ();
-  rtl_in_saveable_obstack ();
+  /* No; make a new one and add it to the chain.  */
   r = gen_rtx_CONST_DOUBLE (mode, const0_rtx, i0, i1);
-  pop_obstacks ();
 
   /* Don't touch const_double_chain if not inside any function.  */
   if (current_function_decl != 0)
@@ -2186,12 +2173,8 @@ immed_real_const_1 (d, mode)
      We may be called by an optimizer which may be discarding any memory
      allocated during its processing (such as combine and loop).  However,
      we will be leaving this constant on the chain, so we cannot tolerate
-     freed memory.  So switch to saveable_obstack for this allocation
-     and then switch back if we were in current_obstack.  */
-  push_obstacks_nochange ();
-  rtl_in_saveable_obstack ();
+     freed memory.  */
   r = rtx_alloc (CONST_DOUBLE);
-  pop_obstacks ();
   PUT_MODE (r, mode);
   bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (r), sizeof u);
 
@@ -2314,6 +2297,22 @@ decode_addr_const (exp, value)
   value->offset = offset;
 }
 
+struct rtx_const
+{
+#ifdef ONLY_INT_FIELDS
+  unsigned int kind : 16;
+  unsigned int mode : 16;
+#else
+  enum kind kind : 16;
+  enum machine_mode mode : 16;
+#endif
+  union {
+    union real_extract du;
+    struct addr_const addr;
+    struct {HOST_WIDE_INT high, low;} di;
+  } un;
+};
+
 /* Uniquize all constants that appear in memory.
    Each constant in memory thus far output is recorded
    in `const_hash_table' with a `struct constant_descriptor'
@@ -3095,21 +3094,12 @@ output_constant_def (exp)
       desc->label = ggc_alloc_string (label, -1);
       const_hash_table[hash] = desc;
   
-      /* We have a symbol name; construct the SYMBOL_REF and the MEM
-	 in the permanent obstack.  We could also construct this in the
-	 obstack of EXP and put it into TREE_CST_RTL, but we have no way
-	 of knowing what obstack it is (e.g., it might be in a function
-	 obstack of a function we are nested inside).  */
-
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
-
+      /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
       desc->rtl
 	= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
 		       gen_rtx_SYMBOL_REF (Pmode, desc->label));
 
       set_mem_attributes (desc->rtl, exp, 1);
-      pop_obstacks ();
 
       found = 0;
     }
@@ -3140,10 +3130,7 @@ output_constant_def (exp)
 	  struct deferred_constant *p;
 	  p = (struct deferred_constant *) xmalloc (sizeof (struct deferred_constant));
 
-	  push_obstacks_nochange ();
-	  suspend_momentary ();
 	  p->exp = copy_constant (exp);
-	  pop_obstacks ();
 	  p->reloc = reloc;
 	  p->labelno = const_labelno++;
 	  if (after_function)
@@ -3260,14 +3247,10 @@ init_varasm_status (f)
   f->varasm = p;
   p->x_const_rtx_hash_table
     = ((struct constant_descriptor **)
-       xmalloc (MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *)));
+       xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct constant_descriptor *)));
   p->x_const_rtx_sym_hash_table
     = ((struct pool_sym **)
-       xmalloc (MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *)));
-  bzero ((char *) p->x_const_rtx_hash_table,
-	 MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *));
-  bzero ((char *) p->x_const_rtx_sym_hash_table,
-	 MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *));
+       xcalloc (MAX_RTX_HASH_TABLE, sizeof (struct pool_sym *)));
 
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
@@ -3282,6 +3265,7 @@ mark_pool_constant (pc)
 {
   while (pc)
     {
+      ggc_mark (pc);
       ggc_mark_rtx (pc->constant);
       pc = pc->next;
     }
@@ -3324,8 +3308,31 @@ free_varasm_status (f)
      struct function *f;
 {
   struct varasm_status *p;
+  int i;
 
   p = f->varasm;
+
+  /* Clear out the hash tables.  */
+  for (i = 0; i < MAX_RTX_HASH_TABLE; ++i)
+    {
+      struct constant_descriptor* cd;
+      struct pool_sym *ps;
+
+      cd = p->x_const_rtx_hash_table[i];
+      while (cd) {
+	struct constant_descriptor* next = cd->next;
+	free (cd);
+	cd = next;
+      }
+
+      ps = p->x_const_rtx_sym_hash_table[i];
+      while (ps) {
+	struct pool_sym *next = ps->next;
+	free (ps);
+	ps = next;
+      }
+    }
+
   free (p->x_const_rtx_hash_table);
   free (p->x_const_rtx_sym_hash_table);
   free (p);
@@ -3333,22 +3340,6 @@ free_varasm_status (f)
 }
 
 enum kind { RTX_DOUBLE, RTX_INT };
-
-struct rtx_const
-{
-#ifdef ONLY_INT_FIELDS
-  unsigned int kind : 16;
-  unsigned int mode : 16;
-#else
-  enum kind kind : 16;
-  enum machine_mode mode : 16;
-#endif
-  union {
-    union real_extract du;
-    struct addr_const addr;
-    struct {HOST_WIDE_INT high, low;} di;
-  } un;
-};
 
 /* Express an rtx for a constant integer (perhaps symbolic)
    as the sum of a symbol or label plus an explicit integer.
@@ -3361,13 +3352,7 @@ decode_rtx_const (mode, x, value)
      struct rtx_const *value;
 {
   /* Clear the whole structure, including any gaps.  */
-
-  {
-    int *p = (int *) value;
-    int *end = (int *) (value + 1);
-    while (p < end)
-      *p++ = 0;
-  }
+  bzero (value, sizeof (struct rtx_const));
 
   value->kind = RTX_INT;	/* Most usual kind.  */
   value->mode = mode;
@@ -3516,23 +3501,14 @@ record_constant_rtx (mode, x)
      rtx x;
 {
   struct constant_descriptor *ptr;
-  char *label;
-  rtx rtl;
-  struct rtx_const value;
 
-  decode_rtx_const (mode, x, &value);
+  ptr = ((struct constant_descriptor *) 
+	 xcalloc (1, 
+		  (sizeof (struct constant_descriptor) 
+		   + sizeof (struct rtx_const) - 1)));
+  decode_rtx_const (mode, x, (struct rtx_const *) ptr->contents);
 
-  /* Put these things in the saveable obstack so we can ensure it won't
-     be freed if we are called from combine or some other phase that discards
-     memory allocated from function_obstack (current_obstack).  */
-  obstack_grow (saveable_obstack, &ptr, sizeof ptr);
-  obstack_grow (saveable_obstack, &label, sizeof label);
-  obstack_grow (saveable_obstack, &rtl, sizeof rtl);
-
-  /* Record constant contents.  */
-  obstack_grow (saveable_obstack, &value, sizeof value);
-
-  return (struct constant_descriptor *) obstack_finish (saveable_obstack);
+  return ptr;
 }
 
 /* Given a constant rtx X, make (or find) a memory constant for its value
@@ -3602,32 +3578,9 @@ force_const_mem (mode, x)
       pool_offset += align - 1;
       pool_offset &= ~ (align - 1);
 
-      /* If RTL is not being placed into the saveable obstack, make a
-	 copy of X that is in the saveable obstack in case we are
-	 being called from combine or some other phase that discards
-	 memory it allocates.  We used to only do this if it is a
-	 CONST; however, reload can allocate a CONST_INT when
-	 eliminating registers.  */
-      if (rtl_obstack != saveable_obstack
-	  && (GET_CODE (x) == CONST || GET_CODE (x) == CONST_INT))
-	{
-	  push_obstacks_nochange ();
-	  rtl_in_saveable_obstack ();
-
-	  if (GET_CODE (x) == CONST)
-	    x = gen_rtx_CONST (GET_MODE (x), 
-			       gen_rtx_PLUS (GET_MODE (x), 
-					     XEXP (XEXP (x, 0), 0),
-					     XEXP (XEXP (x, 0), 1)));
-	  else
-	    x = GEN_INT (INTVAL (x));
-
-	  pop_obstacks ();
-	}
-
       /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
 
-      pool = (struct pool_constant *) savealloc (sizeof (struct pool_constant));
+      pool = (struct pool_constant *) ggc_alloc (sizeof (struct pool_constant));
       pool->desc = desc;
       pool->constant = x;
       pool->mode = mode;
@@ -3654,7 +3607,7 @@ force_const_mem (mode, x)
 
       /* Add label to symbol hash table.  */
       hash = SYMHASH (found);
-      sym = (struct pool_sym *) savealloc (sizeof (struct pool_sym));
+      sym = (struct pool_sym *) xmalloc (sizeof (struct pool_sym));
       sym->label = found;
       sym->pool = pool;
       sym->next = const_rtx_sym_hash_table[hash];

@@ -4642,11 +4642,7 @@ ia64_encode_section_info (decl)
 	  size_t len = strlen (symbol_str);
 	  char *newstr;
 
-	  if (ggc_p)
-	    newstr = ggc_alloc_string (NULL, len + 1);
-	  else
-	    newstr = obstack_alloc (saveable_obstack, len + 2);
-
+	  newstr = ggc_alloc_string (NULL, len + 1);
 	  *newstr = SDATA_NAME_FLAG_CHAR;
 	  memcpy (newstr + 1, symbol_str, len + 1);
 
@@ -4659,11 +4655,8 @@ ia64_encode_section_info (decl)
      ENCODE_SECTION_INFO was first called.  Remove the '@'.*/
   else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
     {
-      if (ggc_p)
-	XSTR (XEXP (DECL_RTL (decl), 0), 0)
-	  = ggc_alloc_string (symbol_str + 1, -1);
-      else
-        XSTR (XEXP (DECL_RTL (decl), 0), 0) = symbol_str + 1;
+      XSTR (XEXP (DECL_RTL (decl), 0), 0)
+	= ggc_alloc_string (symbol_str + 1, -1);
     }
 }
 

@@ -5032,10 +5032,8 @@ get_fpscr_rtx ()
 
   if (! fpscr_rtx)
     {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
       fpscr_rtx = gen_rtx (REG, PSImode, 48);
       REG_USERVAR_P (fpscr_rtx) = 1;
-      pop_obstacks ();
       ggc_add_rtx_root (&fpscr_rtx, 1);
       mark_user_reg (fpscr_rtx);
     }

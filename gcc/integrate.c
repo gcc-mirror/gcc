@@ -444,12 +444,6 @@ save_for_inline (fndecl)
   in_nonparm_insns = 0;
   save_parm_insns (insn, first_nonparm_insn);
 
-  /* We have now allocated all that needs to be allocated permanently
-     on the rtx obstack.  Set our high-water mark, so that we
-     can free the rest of this when the time comes.  */
-
-  preserve_data ();
-
   cfun->inl_max_label_num = max_label_num ();
   cfun->inl_last_parm_insn = cfun->x_last_parm_insn;
   cfun->original_arg_vector = argvec;
@@ -1666,10 +1660,7 @@ integrate_decl_tree (let, map)
     {
       tree d;
 
-      push_obstacks_nochange ();
-      saveable_allocation ();
       d = copy_decl_for_inlining (t, map->fndecl, current_function_decl);
-      pop_obstacks ();
 
       if (DECL_RTL (t) != 0)
 	{
@@ -2778,10 +2769,6 @@ output_inline_function (fndecl)
   cfun = f;
   current_function_decl = fndecl;
   clear_emit_caches ();
-
-  /* Things we allocate from here on are part of this function, not
-     permanent.  */
-  temporary_allocation ();
 
   set_new_last_label_num (f->inl_max_label_num);
 

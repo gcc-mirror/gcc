@@ -43,6 +43,7 @@ static struct eh_range *find_handler_in_range PARAMS ((int, struct eh_range *,
 						      struct eh_range *));
 static void link_handler PARAMS ((struct eh_range *, struct eh_range *));
 static void check_start_handlers PARAMS ((struct eh_range *, int));
+static void free_eh_ranges PARAMS ((struct eh_range *range));
 
 extern struct obstack permanent_obstack;
 
@@ -156,7 +157,7 @@ link_handler (range, outer)
   if (range->start_pc < outer->start_pc || range->end_pc > outer->end_pc)
     {
       struct eh_range *h
-	= (struct eh_range *) oballoc (sizeof (struct eh_range));
+	= (struct eh_range *) xmalloc (sizeof (struct eh_range));
       if (range->start_pc < outer->start_pc)
 	{
 	  h->start_pc = range->start_pc;
@@ -221,12 +222,27 @@ handle_nested_ranges ()
     }
 }
 
+/* Free RANGE as well as its children and siblings.  */
+
+static void
+free_eh_ranges (range)
+     struct eh_range *range;
+{
+  while (range) 
+    {
+      struct eh_range *next = range->next_sibling;
+      free_eh_ranges (range->first_child);
+      free (range);
+      range = next;
+    }
+}
 
 /* Called to re-initialize the exception machinery for a new method. */
 
 void
 method_init_exceptions ()
 {
+  free_eh_ranges (&whole_range);
   whole_range.start_pc = 0;
   whole_range.end_pc = DECL_CODE_LENGTH (current_function_decl) + 1;
   whole_range.outer = NULL;
@@ -279,7 +295,7 @@ add_handler (start_pc, end_pc, handler, type)
       prev = ptr;
     }
 
-  h = (struct eh_range *) oballoc (sizeof (struct eh_range));
+  h = (struct eh_range *) xmalloc (sizeof (struct eh_range));
   h->start_pc = start_pc;
   h->end_pc = end_pc;
   h->first_child = NULL;
@@ -306,9 +322,7 @@ expand_start_java_handler (range)
 	   current_pc, range->end_pc);
 #endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
   range->expanded = 1;
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   expand_eh_region_start ();
-  pop_obstacks ();
 }
 
 tree
@@ -323,7 +337,6 @@ prepare_eh_table_type (type)
    * c) a pointer to the Utf8Const name of the class, plus one
    * (which yields a value with low-order bit 1). */
 
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   if (type == NULL_TREE)
     exp = CATCH_ALL_TYPE;
   else if (is_compiled_class (type))
@@ -333,7 +346,6 @@ prepare_eh_table_type (type)
 		(PLUS_EXPR, ptr_type_node,
 		 build_utf8_ref (build_internal_class_name (type)),
 		 size_one_node));
-  pop_obstacks ();
   return exp;
 }
 
@@ -345,9 +357,7 @@ expand_end_java_handler (range)
 {  
   tree handler = range->handlers;
   force_poplevels (range->start_pc);
-  push_obstacks (&permanent_obstack, &permanent_obstack);
   expand_start_all_catch ();
-  pop_obstacks ();
   for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
     {
       start_catch_handler (prepare_eh_table_type (TREE_PURPOSE (handler)));

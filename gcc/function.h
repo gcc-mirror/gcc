@@ -433,20 +433,6 @@ struct function
      during the nested function.  */
   struct var_refs_queue *fixup_var_refs_queue;
 
-  /* For tree.c.  */
-  int all_types_permanent;
-  struct momentary_level *momentary_stack;
-  char *maybepermanent_firstobj;
-  char *temporary_firstobj;
-  char *momentary_firstobj;
-  char *momentary_function_firstobj;
-  struct obstack *current_obstack;
-  struct obstack *function_obstack;
-  struct obstack *function_maybepermanent_obstack;
-  struct obstack *expression_obstack;
-  struct obstack *saveable_obstack;
-  struct obstack *rtl_obstack;
-
   /* For integrate.c.  */
   int inlinable;
   int no_debugging_symbols;
@@ -590,8 +576,6 @@ extern void (*restore_lang_status)	PARAMS ((struct function *));
 extern void (*free_lang_status)         PARAMS ((struct function *));
 
 /* Save and restore status information for a nested function.  */
-extern void save_tree_status		PARAMS ((struct function *));
-extern void restore_tree_status		PARAMS ((struct function *));
 extern void restore_emit_status		PARAMS ((struct function *));
 extern void free_after_parsing		PARAMS ((struct function *));
 extern void free_after_compilation	PARAMS ((struct function *));

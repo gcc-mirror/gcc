@@ -994,7 +994,7 @@ static void
 sdbout_queue_anonymous_type (type)
      tree type;
 {
-  anonymous_types = saveable_tree_cons (NULL_TREE, type, anonymous_types);
+  anonymous_types = tree_cons (NULL_TREE, type, anonymous_types);
 }
 
 static void

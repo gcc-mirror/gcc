@@ -2845,9 +2845,6 @@ eliminate_regs_in_insn (insn, replace)
       abort ();
     }
 
-  if (! replace)
-    push_obstacks (&reload_obstack, &reload_obstack);
-
   if (old_set != 0 && GET_CODE (SET_DEST (old_set)) == REG
       && REGNO (SET_DEST (old_set)) < FIRST_PSEUDO_REGISTER)
     {
@@ -3147,9 +3144,6 @@ eliminate_regs_in_insn (insn, replace)
      the pre-passes.  */
   if (val && REG_NOTES (insn) != 0)
     REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, REG_NOTES (insn));
-
-  if (! replace)
-    pop_obstacks ();
 
   return val;
 }

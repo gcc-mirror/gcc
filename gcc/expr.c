@@ -238,14 +238,8 @@ init_expr_once ()
   enum machine_mode mode;
   int num_clobbers;
   rtx mem, mem1;
-  char *free_point;
 
   start_sequence ();
-
-  /* Since we are on the permanent obstack, we must be sure we save this
-     spot AFTER we call start_sequence, since it will reuse the rtl it
-     makes.  */
-  free_point = (char *) oballoc (0);
 
   /* Try indexing by frame ptr and try by stack ptr.
      It is known that on the Convex the stack ptr isn't a valid index.
@@ -302,7 +296,6 @@ init_expr_once ()
     }
 
   end_sequence ();
-  obfree (free_point);
 }
 
 /* This is run at the start of compiling a function.  */
@@ -1757,8 +1750,6 @@ emit_block_move (x, y, size, align)
 	  /* This was copied from except.c, I don't know if all this is
 	     necessary in this context or not.  */
 	  fn = get_identifier ("memcpy");
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
 	  fntype = build_pointer_type (void_type_node);
 	  fntype = build_function_type (fntype, NULL_TREE);
 	  fn = build_decl (FUNCTION_DECL, fn, fntype);
@@ -1768,7 +1759,6 @@ emit_block_move (x, y, size, align)
 	  DECL_ARTIFICIAL (fn) = 1;
 	  make_decl_rtl (fn, NULL_PTR, 1);
 	  assemble_external (fn);
-	  pop_obstacks ();
 	}
 
       /* We need to make an argument list for the function call.
@@ -2525,8 +2515,6 @@ clear_storage (object, size, align)
 	      /* This was copied from except.c, I don't know if all this is
 		 necessary in this context or not.  */
 	      fn = get_identifier ("memset");
-	      push_obstacks_nochange ();
-	      end_temporary_allocation ();
 	      fntype = build_pointer_type (void_type_node);
 	      fntype = build_function_type (fntype, NULL_TREE);
 	      fn = build_decl (FUNCTION_DECL, fn, fntype);
@@ -2536,7 +2524,6 @@ clear_storage (object, size, align)
 	      DECL_ARTIFICIAL (fn) = 1;
 	      make_decl_rtl (fn, NULL_PTR, 1);
 	      assemble_external (fn);
-	      pop_obstacks ();
 	    }
 
 	  /* We need to make an argument list for the function call.
@@ -5966,15 +5953,9 @@ expand_expr (exp, target, tmode, modifier)
 	    && function != inline_function_decl && function != 0)
 	  {
 	    struct function *p = find_function_data (function);
-	    /* Allocate in the memory associated with the function
-	       that the label is in.  */
-	    push_obstacks (p->function_obstack,
-			   p->function_maybepermanent_obstack);
-
 	    p->expr->x_forced_labels
 	      = gen_rtx_EXPR_LIST (VOIDmode, label_rtx (exp),
 				   p->expr->x_forced_labels);
-	    pop_obstacks ();
 	  }
 	else
 	  {
@@ -6007,11 +5988,8 @@ expand_expr (exp, target, tmode, modifier)
       if (DECL_SIZE (exp) == 0 && COMPLETE_TYPE_P (TREE_TYPE (exp))
 	  && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
 	{
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
 	  layout_decl (exp, 0);
 	  PUT_MODE (DECL_RTL (exp), DECL_MODE (exp));
-	  pop_obstacks ();
 	}
 
       /* Although static-storage variables start off initialized, according to

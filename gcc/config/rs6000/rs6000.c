@@ -6705,10 +6705,8 @@ output_toc (file, x, labelno, mode)
 
   /* When the linker won't eliminate them, don't output duplicate
      TOC entries (this happens on AIX if there is any kind of TOC,
-     and on SVR4 under -fPIC or -mrelocatable).
-     This won't work if we are not garbage collecting, so 
-     we don't do it, sorry.  */
-  if (TARGET_TOC && ggc_p)
+     and on SVR4 under -fPIC or -mrelocatable).  */
+  if (TARGET_TOC)
     {
       struct toc_hash_struct *h;
       void * * found;
@@ -7583,11 +7581,7 @@ rs6000_encode_section_info (decl)
 	  size_t len2 = strlen (XSTR (sym_ref, 0));
 	  char *str;
 
-	  if (ggc_p)
-	    str = ggc_alloc_string (NULL, len1 + len2);
-	  else
-	    str = permalloc (len1 + len2 + 1);
-
+	  str = ggc_alloc_string (NULL, len1 + len2);
 	  str[0] = '.';
 	  str[1] = '.';
 	  memcpy (str + len1, XSTR (sym_ref, 0), len2 + 1);
@@ -7634,10 +7628,7 @@ rs6000_encode_section_info (decl)
 	  size_t len = strlen (XSTR (sym_ref, 0));
 	  char *str;
 
-	  if (ggc_p)
-	    str = ggc_alloc_string (NULL, len + 1);
-	  else
-	    str = permalloc (len + 2);
+	  str = ggc_alloc_string (NULL, len + 1);
 	  str[0] = '@';
 	  memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
 

@@ -360,7 +360,6 @@ push_function_context_to (context)
   outer_function_chain = p;
   p->fixup_var_refs_queue = 0;
 
-  save_tree_status (p);
   if (save_lang_status)
     (*save_lang_status) (p);
   if (save_machine_status)
@@ -392,7 +391,6 @@ pop_function_context_from (context)
   current_function_decl = p->decl;
   reg_renumber = 0;
 
-  restore_tree_status (p);
   restore_emit_status (p);
 
   if (restore_machine_status)
@@ -547,12 +545,6 @@ assign_stack_local_1 (mode, size, align, function)
   int bigend_correction = 0;
   int alignment;
 
-  /* Allocate in the memory associated with the function in whose frame
-     we are assigning.  */
-  if (function != cfun)
-    push_obstacks (function->function_obstack,
-		   function->function_maybepermanent_obstack);
-
   if (align == 0)
     {
       tree type;
@@ -623,9 +615,6 @@ assign_stack_local_1 (mode, size, align, function)
 
   function->x_stack_slot_list
     = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
-
-  if (function != cfun)
-    pop_obstacks ();
 
   return x;
 }
@@ -1637,7 +1626,7 @@ find_fixup_replacement (replacements, x)
 
   if (p == 0)
     {
-      p = (struct fixup_replacement *) oballoc (sizeof (struct fixup_replacement));
+      p = (struct fixup_replacement *) xmalloc (sizeof (struct fixup_replacement));
       p->old = x;
       p->new = 0;
       p->next = *replacements;
@@ -1800,6 +1789,8 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
 
 	      while (replacements)
 		{
+		  struct fixup_replacement *next;
+
 		  if (GET_CODE (replacements->new) == REG)
 		    {
 		      rtx insert_before;
@@ -1835,7 +1826,9 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
 		      emit_insn_before (seq, insert_before);
 		    }
 
-		  replacements = replacements->next;
+		  next = replacements->next;
+		  free (replacements);
+		  replacements = next;
 		}
 	    }
 
@@ -3306,15 +3299,8 @@ insns_for_mem_walk (r, data)
 	 we process the INSNs in order, we know that if we have
 	 recorded it it must be at the front of the list.  */
       if (ifme && (!ifme->insns || XEXP (ifme->insns, 0) != ifmwi->insn))
-	{
-	  /* We do the allocation on the same obstack as is used for
-	     the hash table since this memory will not be used once
-	     the hash table is deallocated.  */
-	  push_obstacks (&ifmwi->ht->memory, &ifmwi->ht->memory);
-	  ifme->insns = gen_rtx_EXPR_LIST (VOIDmode, ifmwi->insn,
-					   ifme->insns);
-	  pop_obstacks ();
-	}
+	ifme->insns = gen_rtx_EXPR_LIST (VOIDmode, ifmwi->insn,
+					 ifme->insns);
     }
 
   return 0;
@@ -3556,13 +3542,6 @@ instantiate_decls (fndecl, valid_only)
 {
   tree decl;
 
-  if (DECL_SAVED_INSNS (fndecl))
-    /* When compiling an inline function, the obstack used for
-       rtl allocation is the maybepermanent_obstack.  Calling
-       `resume_temporary_allocation' switches us back to that
-       obstack while we process this function's parameters.  */
-    resume_temporary_allocation ();
-
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
@@ -3579,15 +3558,6 @@ instantiate_decls (fndecl, valid_only)
 
   /* Now process all variables defined in the function or its subblocks.  */
   instantiate_decls_1 (DECL_INITIAL (fndecl), valid_only);
-
-  if (DECL_INLINE (fndecl) || DECL_DEFER_OUTPUT (fndecl))
-    {
-      /* Save all rtl allocated for this function by raising the
-	 high-water mark on the maybepermanent_obstack.  */
-      preserve_data ();
-      /* All further rtl allocation is now done in the current_obstack.  */
-      rtl_in_current_obstack ();
-    }
 }
 
 /* Subroutine of instantiate_decls: Process all decls in the given
@@ -5587,21 +5557,16 @@ trampoline_address (function)
      by expand_function_end.  */
   if (fp != 0)
     {
-      push_obstacks (fp->function_maybepermanent_obstack,
-		     fp->function_maybepermanent_obstack);
       rtlexp = make_node (RTL_EXPR);
       RTL_EXPR_RTL (rtlexp) = tramp;
       fp->x_trampoline_list = tree_cons (function, rtlexp,
 					 fp->x_trampoline_list);
-      pop_obstacks ();
     }
   else
     {
       /* Make the RTL_EXPR node temporary, not momentary, so that the
 	 trampoline_list doesn't become garbage.  */
-      int momentary = suspend_momentary ();
       rtlexp = make_node (RTL_EXPR);
-      resume_momentary (momentary);
 
       RTL_EXPR_RTL (rtlexp) = tramp;
       trampoline_list = tree_cons (function, rtlexp, trampoline_list);
@@ -6554,10 +6519,8 @@ expand_function_end (filename, line, end_bindings)
 	 initializing trampolines.  */
       if (initial_trampoline == 0)
 	{
-	  end_temporary_allocation ();
 	  initial_trampoline
 	    = gen_rtx_MEM (BLKmode, assemble_trampoline_template ());
-	  resume_temporary_allocation ();
 
 	  ggc_add_rtx_root (&initial_trampoline, 1);
 	}

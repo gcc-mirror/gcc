@@ -5674,9 +5674,6 @@ output_millicode_call (insn, call_dest)
 }
 
 extern struct obstack permanent_obstack;
-extern struct obstack *saveable_obstack;
-extern struct obstack *rtl_obstack;
-extern struct obstack *current_obstack;
 
 /* INSN is either a function call.  It may have an unconditional jump
    in its delay slot.
@@ -5792,15 +5789,7 @@ output_call (insn, call_dest, sibcall)
 	     not found on the list, create a new entry on the list.  */
 	  if (deferred_plabels == NULL || i == n_deferred_plabels)
 	    {
-	      struct obstack *ambient_obstack = current_obstack;
-	      struct obstack *ambient_rtl_obstack = rtl_obstack;
 	      const char *real_name;
-
-	      /* Any RTL we create here needs to live until the end of
-		 the compilation unit and therefore must live on the
-		 permanent obstack.  */
-	      current_obstack = &permanent_obstack;
-	      rtl_obstack = &permanent_obstack;
 
 	      if (deferred_plabels == 0)
 		deferred_plabels = (struct deferred_plabel *)
@@ -5816,10 +5805,6 @@ output_call (insn, call_dest, sibcall)
 	      deferred_plabels[i].name = obstack_alloc (&permanent_obstack,
 							strlen (name) + 1);
 	      strcpy (deferred_plabels[i].name, name);
-
-	      /* Switch back to normal obstack allocation.  */
-	      current_obstack = ambient_obstack;
-	      rtl_obstack = ambient_rtl_obstack;
 
 	      /* Gross.  We have just implicitly taken the address of this
 		 function, mark it as such.  */
@@ -5965,11 +5950,7 @@ hppa_encode_label (sym, permanent)
   int len = strlen (str);
   char *newstr;
 
-  if (ggc_p)
-    newstr = ggc_alloc_string (NULL, len + 1);
-  else
-    newstr = obstack_alloc ((permanent ? &permanent_obstack : saveable_obstack),
-			  len + 2);
+  newstr = ggc_alloc_string (NULL, len + 1);
 
   if (str[0] == '*')
     *newstr++ = *str++;
