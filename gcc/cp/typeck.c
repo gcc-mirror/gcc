@@ -7307,6 +7307,13 @@ c_expand_return (retval)
       return;
     }
 
+  /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
+  if ((DECL_NAME (current_function_decl) == ansi_opname[(int) NEW_EXPR]
+       || DECL_NAME (current_function_decl) == ansi_opname[(int) VEC_NEW_EXPR])
+      && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
+      && null_ptr_cst_p (retval))
+    cp_pedwarn ("operator new should throw an exception, not return NULL");
+  
   if (retval == NULL_TREE)
     {
       /* A non-named return value does not count.  */

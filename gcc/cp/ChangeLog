@@ -1,3 +1,11 @@
+1999-04-29  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (TYPE_NOTHROW_P): New macro.
+	* decl2.c (delete_sanity): Warn on deleting void *.
+	* init.c (build_new_1): Use TYPE_NOTHROW_P.
+	* typeck.c (c_expand_return): cp_pedwarn on returning NULL from
+	throwing operator new.
+
 1999-04-28  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (build_component_addr): Remove prototype.

@@ -10,7 +10,7 @@ extern "C" int printf(const char* ...);
 int     delete_counter = -1;
 
 struct T{
-  void operator delete (void * p) {delete_counter ++; ::delete p;}
+  void operator delete (void * p) {delete_counter ++; ::operator delete(p);}
 };
 
 int main(void)

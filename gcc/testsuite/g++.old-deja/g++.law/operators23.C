@@ -13,7 +13,7 @@ class blah {
      int j;
    public:
      blah();
-     void *operator new(size_t size);
+     void *operator new(size_t size) throw();
 };
 
 inline blah::blah() : j(0) {
@@ -21,7 +21,7 @@ inline blah::blah() : j(0) {
 }
 
 
-void *blah::operator new(size_t size) {
+void *blah::operator new(size_t size) throw(){
      printf ("FAIL\n");
      exit (1);
      return NULL;
