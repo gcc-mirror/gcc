@@ -426,10 +426,12 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
   ffi_arg rint;
   long long rlonglong;
 
+# if FFI_CLOSURES
   /* The closure must not be an automatic variable on
      platforms (Solaris) that forbid stack execution by default. */
   static ffi_closure cl;
-  
+#endif
+
   ffi_type * cl_arg_types[17];
 
   ffi_type ts1_type;
