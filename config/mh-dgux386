@@ -1,7 +1,3 @@
-# from mh-dgux
-HDEFINES=-DHOST_SYS=DGUX_SYS
-RANLIB = true
-
 # from mh-sysv4
 RANLIB = true
 
