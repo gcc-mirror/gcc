@@ -4644,7 +4644,10 @@ init_noncopied_parts (lhs, list)
 /* Subroutine of expand_expr: return nonzero iff there is no way that
    EXP can reference X, which is being modified.  TOP_P is nonzero if this
    call is going to be used to determine whether we need a temporary
-   for EXP, as opposed to a recursive call to this function.  */
+   for EXP, as opposed to a recursive call to this function.
+
+   It is always safe for this routine to return zero since it merely
+   searches for optimization opportunities.  */
 
 static int
 safe_from_p (x, exp, top_p)
@@ -4654,6 +4657,10 @@ safe_from_p (x, exp, top_p)
 {
   rtx exp_rtl = 0;
   int i, nops;
+  static int save_expr_count;
+  static int save_expr_size = 0;
+  static tree *save_expr_rewritten;
+  static tree save_expr_trees[256];
 
   if (x == 0
       /* If EXP has varying size, we MUST use a target since we currently
@@ -4670,6 +4677,28 @@ safe_from_p (x, exp, top_p)
 	      != INTEGER_CST)
 	  && GET_MODE (x) == BLKmode))
     return 1;
+
+  if (top_p && save_expr_size == 0)
+    {
+      int rtn;
+
+      save_expr_count = 0;
+      save_expr_size = sizeof (save_expr_trees) / sizeof (save_expr_trees[0]);
+      save_expr_rewritten = &save_expr_trees[0];
+
+      rtn = safe_from_p (x, exp, 1);
+
+      for (i = 0; i < save_expr_count; ++i)
+	{
+	  if (TREE_CODE (save_expr_trees[i]) != ERROR_MARK)
+	    abort ();
+	  TREE_SET_CODE (save_expr_trees[i], SAVE_EXPR);
+	}
+
+      save_expr_size = 0;
+
+      return rtn;
+    }
 
   /* If this is a subreg of a hard register, declare it unsafe, otherwise,
      find the underlying pseudo.  */
@@ -4702,6 +4731,8 @@ safe_from_p (x, exp, top_p)
 		 || safe_from_p (x, TREE_VALUE (exp), 0))
 		&& (TREE_CHAIN (exp) == 0
 		    || safe_from_p (x, TREE_CHAIN (exp), 0)));
+      else if (TREE_CODE (exp) == ERROR_MARK)
+	return 1;	/* An already-visited SAVE_EXPR? */
       else
 	return 0;
 
@@ -4764,7 +4795,35 @@ safe_from_p (x, exp, top_p)
 
 	case SAVE_EXPR:
 	  exp_rtl = SAVE_EXPR_RTL (exp);
-	  break;
+	  if (exp_rtl)
+	    break;
+
+	  /* This SAVE_EXPR might appear many times in the top-level
+	     safe_from_p() expression, and if it has a complex
+	     subexpression, examining it multiple times could result
+	     in a combinatorial explosion.  E.g. on an Alpha
+	     running at least 200MHz, a Fortran test case compiled with
+	     optimization took about 28 minutes to compile -- even though
+	     it was only a few lines long, and the complicated line causing
+	     so much time to be spent in the earlier version of safe_from_p()
+	     had only 293 or so unique nodes.
+
+	     So, turn this SAVE_EXPR into an ERROR_MARK for now, but remember
+	     where it is so we can turn it back in the top-level safe_from_p()
+	     when we're done.  */
+
+	  /* For now, don't bother re-sizing the array. */
+	  if (save_expr_count >= save_expr_size)
+	    return 0;
+	  save_expr_rewritten[save_expr_count++] = exp;
+	  TREE_SET_CODE (exp, ERROR_MARK);
+
+	  nops = tree_code_length[(int) SAVE_EXPR];
+	  for (i = 0; i < nops; i++)
+	    if (TREE_OPERAND (exp, i) != 0
+		&& ! safe_from_p (x, TREE_OPERAND (exp, i), 0))
+	      return 0;
+	  return 1;
 
 	case BIND_EXPR:
 	  /* The only operand we look at is operand 1.  The rest aren't
