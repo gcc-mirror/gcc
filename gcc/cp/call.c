@@ -685,7 +685,7 @@ standard_conversion (to, from, expr)
       fcode = TREE_CODE (from);
       conv = build_conv (LVALUE_CONV, from, conv);
     }
-  else if (fromref || (expr && real_lvalue_p (expr)))
+  else if (fromref || (expr && lvalue_p (expr)))
     conv = build_conv (RVALUE_CONV, from, conv);
 
    /* Allow conversion between `__complex__' data types  */
