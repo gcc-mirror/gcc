@@ -8130,7 +8130,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      else if (! DECL_ARTIFICIAL (decl))
 		{
 		  cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
-		  cp_warning_at ("  you can work around this by removing the initializer"), decl;
+		  cp_warning_at ("  you can work around this by removing the initializer", decl);
 		}
 	    }
 	}
