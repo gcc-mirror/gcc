@@ -1,9 +1,38 @@
+2004-01-19  Kim Ho  <kho@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (getMenuBarHeight): Added
+	MenuBarPeer parameter.
+	(removeMenuBarPeer): New native method.
+	(setMenuBar): Call remove if menu bar is null. Adjust insets
+	appropriately.
+	(postSizeAllocateEvent): New method. Called when menu bar size is
+	allocated. Adjust insets and redo layout.
+	(GtkFramePeer): Set menu bar during frame creation.
+	(postConfigureEvent): Adjust position and size to accomodate
+	menu bar.
+	* java/awt/Frame.java (setMenuBar): addNotify to create menu bar.
+	* java/awt/Menu.java (addSeparator): Use peer's addSeparator.
+	(addNotify): Create the peer if it doesn't exist and call addNotify
+	for the menu's items.
+	* java/awt/MenuBar.java (addNotify): Create this menu bar's menus.
+	* java/awt/MenuItem.java (addNotify): Create the peer if it
+	doesn't exist.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(removeMenuBarPeer): New method. Remove menu bar on the current
+	frame.
+	(setMenuBarPeer): Add the menu bar to the current frame and the
+	callback for size-allocate events on the menu bar.
+	(getMenuBarHeight): Add menu bar parameter.
+	(menubar_resize_cb): New callback method for postSizeAllocate events.
+
+	Also: Fix indentation on last ChangeLog entry.
+
 2004-01-16  Kim Ho  <kho@redhat.com>
 
-        * gnu/java/awt/peer/gtk/GtkFileDialogPeer.java
-        (gtkWidgetGetDimensions): Remove.
-        * jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
-        (gtkWidgetGetDimensions): Remove.
+	* gnu/java/awt/peer/gtk/GtkFileDialogPeer.java
+	(gtkWidgetGetDimensions): Remove.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(gtkWidgetGetDimensions): Remove.
 
 2004-01-16  Tom Tromey  <tromey@redhat.com>
 

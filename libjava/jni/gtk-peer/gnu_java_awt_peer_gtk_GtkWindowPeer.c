@@ -1,5 +1,5 @@
 /* gtkwindowpeer.c -- Native implementation of GtkWindowPeer
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,6 +72,8 @@ static jint window_get_new_state (GtkWidget *widget);
 static gboolean window_property_changed_cb (GtkWidget *widget,
 					    GdkEventProperty *event,
 					    jobject peer);
+static void menubar_resize_cb (GtkWidget *widget, GtkAllocation *alloc, 
+                               jobject peer);					    
 
 /*
  * Make a new window.
@@ -358,45 +360,61 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarPeer
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_removeMenuBarPeer
   (JNIEnv *env, jobject obj, jobject menubar)
 {
-  void *wptr, *mptr;
-  GtkBox *box;
-
-  if (!menubar) return;
+  void *wptr;
+  GtkWidget *box;
+  GtkWidget *mptr;
 
   wptr = NSA_GET_PTR (env, obj);
   mptr = NSA_GET_PTR (env, menubar);
-
-  if (!mptr) return; /* this case should remove a menu */
-
+  
   gdk_threads_enter ();
-  box = GTK_BOX (GTK_BIN (wptr)->child);
-  gtk_box_pack_start (box, GTK_WIDGET (mptr), 0, 0, 0);
+
+  box = GTK_BIN (wptr)->child;
+  gtk_container_remove (GTK_CONTAINER (box), GTK_WIDGET (mptr));  
+  
+  gdk_threads_leave();
+}  
+  
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarPeer
+  (JNIEnv *env, jobject obj, jobject menubar)
+{
+  void *wptr;
+  GtkWidget *mptr;
+  GtkWidget *box;
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  
+  wptr = NSA_GET_PTR (env, obj);
+  mptr = NSA_GET_PTR (env, menubar);
+  
+  gdk_threads_enter ();
+
+  g_signal_connect (G_OBJECT (mptr), "size-allocate", 
+                    G_CALLBACK (menubar_resize_cb), *gref);    
+  box = GTK_BIN (wptr)->child;		    
+  gtk_box_pack_start (GTK_BOX (box), mptr, 0, 0, 0);
+ 
+  gtk_widget_show (mptr);
+
+ 
   gdk_threads_leave ();
 }
 
 JNIEXPORT jint JNICALL
 Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
-  (JNIEnv *env, jobject obj)
+  (JNIEnv *env, jobject obj, jobject menubar)
 {
-  void *ptr;
-  GList *children;
-  jint height = 0;
-
-  ptr = NSA_GET_PTR (env, obj);
+  GtkWidget *ptr;
+  jint height;
+  
+  ptr = NSA_GET_PTR (env, menubar);
 
   gdk_threads_enter ();
-  children = gtk_container_children (GTK_CONTAINER (GTK_BIN (ptr)->child));
-  if (g_list_length (children) == 2)
-    {
-      GtkWidget *menubar = GTK_WIDGET (children->data);
-      height = menubar->allocation.height;
-
-    }
+  height = ptr->allocation.height;
   gdk_threads_leave ();
-
   return height;
 }
 
@@ -697,4 +715,26 @@ window_property_changed_cb (GtkWidget *widget __attribute__((unused)),
 				(jint) extents[1]); /* right */
 
   return FALSE;
+}
+
+static void menubar_resize_cb (GtkWidget *widget, GtkAllocation *alloc, 
+                               jobject peer)
+{
+  static int id_set = 0;
+  static jmethodID postSizeAllocateEventID;
+  
+  if (!id_set)
+    {
+      jclass gtkframepeer = (*gdk_env)->FindClass (gdk_env,
+                                "gnu/java/awt/peer/gtk/GtkFramePeer");
+      postSizeAllocateEventID = (*gdk_env)->GetMethodID (gdk_env,
+                                                     gtkframepeer,
+                                                     "postSizeAllocateEvent",
+                                                     "()V");
+      id_set = 1;
+    }
+  gdk_threads_leave();
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                              postSizeAllocateEventID);
+  gdk_threads_enter();
 }
