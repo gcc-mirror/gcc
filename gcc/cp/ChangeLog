@@ -1,3 +1,9 @@
+2000-08-27  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (pushdecl): Matching decls for local externs are found in
+	the current level.  Propagate linkage information from previous
+	declarations.
+
 2000-08-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* ir.texi (Expressions): Fix typo.
