@@ -1,3 +1,8 @@
+2004-03-11  Richard Henderson  <rth@redhat.com>
+
+	PR target/14539
+	* config/alpha/alpha.h (STACK_BOUNDARY): Set to 128.
+
 2004-03-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* real.c (encode_ibm_extended): Do round low word.
