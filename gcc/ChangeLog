@@ -1,3 +1,8 @@
+2003-10-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (make_range): When handling unsigned, don't reverse
+	range if high bound is zero.
+
 2003-09-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	config/frv/frv.h (PREDICATE_CODES): Added
