@@ -469,13 +469,27 @@ package body Switch.C is
 
             when 'g' =>
                Ptr := Ptr + 1;
-               GNAT_Mode                  := True;
-               Identifier_Character_Set   := 'n';
-               Warning_Mode               := Treat_As_Error;
-               Check_Unreferenced         := True;
-               Check_Withs                := True;
-               Check_Unreferenced_Formals := True;
-               System_Extend_Unit         := Empty;
+               GNAT_Mode := True;
+               Identifier_Character_Set := 'n';
+               System_Extend_Unit := Empty;
+               Warning_Mode := Treat_As_Error;
+
+               --  Set default warnings (basically -gnatwa)
+
+               Check_Unreferenced           := True;
+               Check_Unreferenced_Formals   := True;
+               Check_Withs                  := True;
+               Constant_Condition_Warnings  := True;
+               Implementation_Unit_Warnings := True;
+               Ineffective_Inline_Warnings  := True;
+               Warn_On_Constant             := True;
+               Warn_On_Export_Import        := True;
+               Warn_On_Modified_Unread      := True;
+               Warn_On_No_Value_Assigned    := True;
+               Warn_On_Obsolescent_Feature  := True;
+               Warn_On_Redundant_Constructs := True;
+               Warn_On_Unchecked_Conversion := True;
+               Warn_On_Unrecognized_Pragma  := True;
 
                Set_Default_Style_Check_Options;
 

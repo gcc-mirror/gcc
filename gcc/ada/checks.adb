@@ -463,13 +463,16 @@ package body Checks is
       Expr : Node_Id;
       Loc  : Source_Ptr;
 
+      Alignment_Required : constant Boolean := Maximum_Alignment > 1;
+      --  Constant to show whether target requires alignment checks
+
    begin
       --  See if check needed. Note that we never need a check if the
       --  maximum alignment is one, since the check will always succeed
 
       if No (AC)
         or else not Check_Address_Alignment (AC)
-        or else Maximum_Alignment = 1
+        or else not Alignment_Required
       then
          return;
       end if;
@@ -1191,7 +1194,7 @@ package body Checks is
                  N_Full_Type_Declaration
                then
                   declare
-                     Type_Def : Node_Id :=
+                     Type_Def : constant Node_Id :=
                                  Type_Definition
                                    (Original_Node (Parent (T_Typ)));
                   begin

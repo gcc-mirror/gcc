@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2000-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 2000-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the OpenVMS/Alpha DEC C++ (cxx) version of this package.
+--  This is the OpenVMS/Alpha DEC C++ (cxx) version of this package
 
 with Ada.Tags;                use Ada.Tags;
 with System;                  use System;
@@ -102,14 +102,14 @@ package body Interfaces.CPP is
    function Displaced_This
     (Current_This : System.Address;
      Vptr         : Vtable_Ptr;
-     Position     : Positive)
-     return         System.Address
+     Position     : Positive) return System.Address
    is
       pragma Warnings (Off, Vptr);
       pragma Warnings (Off, Position);
    begin
       return Current_This;
---        + Storage_Offset (Vptr.Prims_Ptr (Position).Delta1);
+      --        + Storage_Offset (Vptr.Prims_Ptr (Position).Delta1);
+      --  why is above line commented out ???
    end Displaced_This;
 
    -----------------------
@@ -118,8 +118,7 @@ package body Interfaces.CPP is
 
    function CPP_CW_Membership
      (Obj_Tag : Vtable_Ptr;
-      Typ_Tag : Vtable_Ptr)
-      return Boolean
+      Typ_Tag : Vtable_Ptr) return Boolean
    is
       Pos : constant Integer := Obj_Tag.TSD.Idepth - Typ_Tag.TSD.Idepth;
    begin
@@ -153,14 +152,24 @@ package body Interfaces.CPP is
       return T.TSD.Idepth;
    end CPP_Get_Inheritance_Depth;
 
-   -------------------------
+   -----------------------
+   -- CPP_Get_RC_Offset --
+   -----------------------
+
+   function CPP_Get_RC_Offset (T : Vtable_Ptr) return SSE.Storage_Offset is
+      pragma Warnings (Off, T);
+   begin
+      return 0;
+   end CPP_Get_RC_Offset;
+
+   -----------------------------
    -- CPP_Get_Prim_Op_Address --
-   -------------------------
+   -----------------------------
 
    function CPP_Get_Prim_Op_Address
      (T        : Vtable_Ptr;
-      Position : Positive)
-      return Address is
+      Position : Positive) return Address
+   is
    begin
       return T.Prims_Ptr (Position).Pfn;
    end CPP_Get_Prim_Op_Address;
@@ -189,14 +198,14 @@ package body Interfaces.CPP is
    --------------------
 
    procedure CPP_Inherit_DT
-    (Old_T   : Vtable_Ptr;
-     New_T   : Vtable_Ptr;
+    (Old_T       : Vtable_Ptr;
+     New_T       : Vtable_Ptr;
      Entry_Count : Natural)
    is
    begin
       if Old_T /= null then
-         New_T.Prims_Ptr (1 .. Entry_Count)
-           := Old_T.Prims_Ptr (1 .. Entry_Count);
+         New_T.Prims_Ptr (1 .. Entry_Count) :=
+           Old_T.Prims_Ptr (1 .. Entry_Count);
       end if;
    end CPP_Inherit_DT;
 
@@ -208,8 +217,8 @@ package body Interfaces.CPP is
      (Old_TSD : Address;
       New_Tag : Vtable_Ptr)
    is
-      TSD : constant Type_Specific_Data_Ptr
-        := To_Type_Specific_Data_Ptr (Old_TSD);
+      TSD : constant Type_Specific_Data_Ptr :=
+              To_Type_Specific_Data_Ptr (Old_TSD);
 
       New_TSD : Type_Specific_Data renames New_Tag.TSD.all;
 
@@ -268,6 +277,17 @@ package body Interfaces.CPP is
       T.Prims_Ptr (Position).Pfn := Value;
    end CPP_Set_Prim_Op_Address;
 
+   -----------------------
+   -- CPP_Set_RC_Offset --
+   -----------------------
+
+   procedure CPP_Set_RC_Offset (T : Vtable_Ptr; Value : SSE.Storage_Offset) is
+      pragma Warnings (Off, T);
+      pragma Warnings (Off, Value);
+   begin
+      null;
+   end CPP_Set_RC_Offset;
+
    -------------------------------
    -- CPP_Set_Remotely_Callable --
    -------------------------------
@@ -293,8 +313,7 @@ package body Interfaces.CPP is
    -------------------
 
    function Expanded_Name (T : Vtable_Ptr) return String is
-      Result : Cstring_Ptr := T.TSD.Expanded_Name;
-
+      Result : constant Cstring_Ptr := T.TSD.Expanded_Name;
    begin
       return Result (1 .. Length (Result));
    end Expanded_Name;
@@ -304,8 +323,7 @@ package body Interfaces.CPP is
    ------------------
 
    function External_Tag (T : Vtable_Ptr) return String is
-      Result : Cstring_Ptr := T.TSD.External_Tag;
-
+      Result : constant Cstring_Ptr := T.TSD.External_Tag;
    begin
       return Result (1 .. Length (Result));
    end External_Tag;
@@ -325,16 +343,4 @@ package body Interfaces.CPP is
       return Len - 1;
    end Length;
 
-   procedure CPP_Set_RC_Offset (T : Vtable_Ptr; Value : SSE.Storage_Offset) is
-      pragma Warnings (Off, T);
-      pragma Warnings (Off, Value);
-   begin
-      null;
-   end CPP_Set_RC_Offset;
-
-   function CPP_Get_RC_Offset (T : Vtable_Ptr) return SSE.Storage_Offset is
-      pragma Warnings (Off, T);
-   begin
-      return 0;
-   end CPP_Get_RC_Offset;
 end Interfaces.CPP;

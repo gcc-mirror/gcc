@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@ package body System.Standard_Library is
 
    Inside_Elab_Final_Code : Integer := 0;
    pragma Export (C, Inside_Elab_Final_Code, "__gnat_inside_elab_final_code");
-   --  ???This variable is obsolete starting from 29/08 but cannot be removed
+   --  ???This variable is obsolete since 2001-08-29 but cannot be removed
    --  ???right away due to the bootstrap problems
 
    --------------------------

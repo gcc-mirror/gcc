@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1998-2002 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2003 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,21 +201,19 @@ package Xr_Tabls is
 
    function Get_File
      (Decl     : Declaration_Reference;
-      With_Dir : Boolean := False)
-      return     String;
+      With_Dir : Boolean := False) return String;
+   pragma Inline (Get_File);
    --  Extract column number or file name from reference
 
    function Get_File
      (Ref      : Reference;
-      With_Dir : Boolean := False)
-      return     String;
+      With_Dir : Boolean := False) return String;
    pragma Inline (Get_File);
 
    function Get_File
      (File     : File_Reference;
       With_Dir : Boolean := False;
-      Strip    : Natural := 0)
-      return     String;
+      Strip    : Natural := 0) return String;
    --  Returns the file name (and its directory if With_Dir is True or the
    --  user has used the -f switch on the command line. If Strip is not 0,
    --  then the last Strip-th "-..." substrings are removed first. For
@@ -223,7 +221,9 @@ package Xr_Tabls is
    --  would be returned as "parent-child1.ali". This is used when looking
    --  for the ALI file to use for a package, since for separates with have
    --  to use the parent's ALI. The null string is returned if there is no
-   --  such parent unit
+   --  such parent unit.
+   --
+   --  Note that this version of Get_File is not inlined
 
    function Get_File_Ref (Ref : Reference)              return File_Reference;
    function Get_Line     (Decl : Declaration_Reference) return String;
@@ -383,7 +383,6 @@ private
 
    pragma Inline (Get_Column);
    pragma Inline (Get_Emit_Warning);
-   pragma Inline (Get_File);
    pragma Inline (Get_File_Ref);
    pragma Inline (Get_Line);
    pragma Inline (Get_Symbol);

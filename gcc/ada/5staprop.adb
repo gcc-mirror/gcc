@@ -275,14 +275,11 @@ package body System.Task_Primitives.Operations is
    ------------
 
    Check_Count  : Integer := 0;
-   Old_Owner    : Task_ID;
    Lock_Count   : Integer := 0;
    Unlock_Count : Integer := 0;
 
    function To_Lock_Ptr is
      new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
-   function To_Task_ID is
-     new Unchecked_Conversion (Owner_ID, Task_ID);
    function To_Owner_ID is
      new Unchecked_Conversion (Task_ID, Owner_ID);
 
@@ -300,8 +297,10 @@ package body System.Task_Primitives.Operations is
       pragma Unreferenced (Context);
 
       Self_ID : Task_ID := Self;
-      Result  : Interfaces.C.int;
       Old_Set : aliased sigset_t;
+
+      Result : Interfaces.C.int;
+      pragma Unreferenced (Result);
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC
@@ -758,7 +757,9 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Loss_Of_Inheritance);
 
-      Result  : Interfaces.C.int;
+      Result : Interfaces.C.int;
+      pragma Unreferenced (Result);
+
       Param   : aliased struct_pcparms;
 
       use Task_Info;
@@ -1605,7 +1606,6 @@ package body System.Task_Primitives.Operations is
 
       if Unlock_Count - Check_Count > 1000 then
          Check_Count := Unlock_Count;
-         Old_Owner   := To_Task_ID (Single_RTS_Lock.Owner);
       end if;
 
       --  Check that caller is abort-deferred

@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a IRIX (pthread library) version of this package.
+--  This is a IRIX (pthread library) version of this package
 
 --  This package contains all the GNULL primitives that interface directly
 --  with the underlying OS.
@@ -222,7 +222,6 @@ package body System.Task_Primitives.Operations is
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
       pragma Unreferenced (On);
       pragma Unreferenced (T);
-
    begin
       null;
    end Stack_Guard;
@@ -332,7 +331,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_destroy (L);
       pragma Assert (Result = 0);
@@ -340,7 +338,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access RTS_Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_destroy (L);
       pragma Assert (Result = 0);
@@ -356,13 +353,14 @@ package body System.Task_Primitives.Operations is
       Result := pthread_mutex_lock (L);
       Ceiling_Violation := Result = EINVAL;
 
-      --  assumes the cause of EINVAL is a priority ceiling violation
+      --  Assumes the cause of EINVAL is a priority ceiling violation
 
       pragma Assert (Result = 0 or else Result = EINVAL);
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
    begin
@@ -396,7 +394,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_unlock (L);
       pragma Assert (Result = 0);
@@ -584,7 +581,6 @@ package body System.Task_Primitives.Operations is
    function Monotonic_Clock return Duration is
       TS     : aliased timespec;
       Result : Interfaces.C.int;
-
    begin
       Result := clock_gettime (Real_Time_Clock_Id, TS'Unchecked_Access);
       pragma Assert (Result = 0);
@@ -614,9 +610,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Wakeup (T : ST.Task_ID; Reason : System.Tasking.Task_States) is
       pragma Unreferenced (Reason);
-
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -628,7 +622,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
       Result : Interfaces.C.int;
-
+      pragma Unreferenced (Result);
    begin
       if Do_Yield then
          Result := sched_yield;
@@ -1069,9 +1063,8 @@ package body System.Task_Primitives.Operations is
       function State (Int : System.Interrupt_Management.Interrupt_ID)
                      return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
+      --  Get interrupt state. Defined in a-init.c. The input argument is
+      --  the interrupt number, and the result is one of the following:
 
       Default : constant Character := 's';
       --    'n'   this interrupt not set by any Interrupt_State pragma

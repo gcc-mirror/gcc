@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,11 +75,8 @@ procedure Gnatls is
 
    Main_File : File_Name_Type;
    Ali_File  : File_Name_Type;
-
-   Text : Text_Buffer_Ptr;
-   Id   : ALI_Id;
-
-   Next_Arg : Positive;
+   Text      : Text_Buffer_Ptr;
+   Next_Arg  : Positive;
 
    Too_Long : Boolean := False;
    --  When True, lines are too long for multi-column output and each
@@ -219,9 +216,8 @@ procedure Gnatls is
    ------------------------------
 
    function Corresponding_Sdep_Entry
-     (A     : ALI_Id;
-      U     : Unit_Id)
-      return  Sdep_Id
+     (A : ALI_Id;
+      U : Unit_Id) return Sdep_Id
    is
    begin
       for D in ALIs.Table (A).First_Sdep .. ALIs.Table (A).Last_Sdep loop
@@ -253,7 +249,6 @@ procedure Gnatls is
       --  Compute maximum of each column
 
       for Id in ALIs.First .. ALIs.Last loop
-
          Get_Name_String (Units.Table (ALIs.Table (Id).First_Unit).Uname);
          if Also_Predef or else not Is_Internal_Unit then
 
@@ -829,7 +824,6 @@ begin
    Scan_Args : while Next_Arg < Arg_Count loop
       declare
          Next_Argv : String (1 .. Len_Arg (Next_Arg));
-
       begin
          Fill_Arg (Next_Argv'Address, Next_Arg);
          Scan_Ls_Arg (Next_Argv, And_Save => True);
@@ -866,7 +860,7 @@ begin
       Write_Eol;
       Write_Str ("GNATLS ");
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1997-2003 Free Software Foundation, Inc.");
+      Write_Str (" Copyright 1997-2004 Free Software Foundation, Inc.");
       Write_Eol;
       Write_Eol;
       Write_Str ("Source Search Path:");
@@ -942,9 +936,16 @@ begin
 
          if Get_Name_Table_Info (Ali_File) = 0 then
             Text := Read_Library_Info (Ali_File, True);
-            Id :=
-              Scan_ALI
-                (Ali_File, Text, Ignore_ED => False, Err => False);
+
+            declare
+               Discard : ALI_Id;
+               pragma Unreferenced (Discard);
+            begin
+               Discard :=
+                 Scan_ALI
+                   (Ali_File, Text, Ignore_ED => False, Err => False);
+            end;
+
             Free (Text);
          end if;
       end if;
@@ -1029,9 +1030,8 @@ begin
       end;
    end loop;
 
-   --  All done. Set proper exit status.
+   --  All done. Set proper exit status
 
    Namet.Finalize;
    Exit_Program (E_Success);
-
 end Gnatls;

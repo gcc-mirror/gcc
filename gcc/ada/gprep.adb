@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,8 +24,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 with Csets;
 with Err_Vars; use Err_Vars;
 with Errutil;
@@ -41,8 +39,9 @@ with Snames;
 with Stringt;  use Stringt;
 with Types;    use Types;
 
+with Ada.Text_IO;       use Ada.Text_IO;
 with GNAT.Command_Line;
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.OS_Lib;       use GNAT.OS_Lib;
 
 package body GPrep is
 
@@ -57,11 +56,11 @@ package body GPrep is
    Outfile_Name : String_Access;
    Deffile_Name : String_Access;
 
-   Source_Ref_Pragma         : Boolean := False;  -- Set if -r switch set
-   --  Record command line options
+   Source_Ref_Pragma : Boolean := False;
+   --  Record command line options (set if -r switch set)
 
    Text_Outfile : aliased Ada.Text_IO.File_Type;
-   Outfile      : File_Access := Text_Outfile'Access;
+   Outfile      : constant File_Access := Text_Outfile'Access;
 
    -----------------
    -- Subprograms --
@@ -87,11 +86,11 @@ package body GPrep is
 
    procedure Put_Char_To_Outfile (C : Character);
    --  Output one character to the output file.
-   --  Used to initialize the preprocessor..
+   --  Used to initialize the preprocessor.
 
    procedure New_EOL_To_Outfile;
    --  Output a new line to the output file.
-   --  used to initialize the preprocessor.
+   --  Used to initialize the preprocessor.
 
    procedure Scan_Command_Line;
    --  Scan the switches and the file names
@@ -108,7 +107,7 @@ package body GPrep is
       if not Copyright_Displayed then
          Write_Line ("GNAT Preprocessor " &
                      Gnatvsn.Gnat_Version_String &
-                     " Copyright 1996-2003 Free Software Foundation, Inc.");
+                     " Copyright 1996-2004 Free Software Foundation, Inc.");
          Copyright_Displayed := True;
       end if;
    end Display_Copyright;

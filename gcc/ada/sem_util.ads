@@ -639,7 +639,7 @@ package Sem_Util is
    procedure Process_End_Label
      (N   : Node_Id;
       Typ : Character;
-      Ent  : Entity_Id);
+      Ent : Entity_Id);
    --  N is a node whose End_Label is to be processed, generating all
    --  appropriate cross-reference entries, and performing style checks
    --  for any identifier references in the end label. Typ is either
@@ -776,7 +776,7 @@ package Sem_Util is
    --  Is_Public based upon the new scope.
 
    function Type_Access_Level (Typ : Entity_Id) return Uint;
-   --  Return the accessibility level of Typ.
+   --  Return the accessibility level of Typ
 
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns

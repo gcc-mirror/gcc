@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1992-2003 Free Software Foundation, Inc.        --
+--            Copyright (C) 1992-2004 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,8 +52,9 @@ package body Ada.Synchronous_Task_Control is
 
       St := semTake (S.Sema, NO_WAIT);
 
+      --  If we took the semaphore, reset semaphore state to FULL
+
       if St = OK then
-         --  Took the semaphore. Reset semaphore state to FULL
          Result := True;
          St := semGive (S.Sema);
       end if;
@@ -74,6 +75,7 @@ package body Ada.Synchronous_Task_Control is
       --  empty (St = OK) or have left it empty.
 
       St := semTake (S.Sema, NO_WAIT);
+      pragma Assert (St = OK);
    end Set_False;
 
    --------------
@@ -82,7 +84,7 @@ package body Ada.Synchronous_Task_Control is
 
    procedure Set_True (S : in out Suspension_Object) is
       St : STATUS;
-
+      pragma Unreferenced (St);
    begin
       St := semGive (S.Sema);
    end Set_True;
@@ -136,7 +138,7 @@ package body Ada.Synchronous_Task_Control is
 
    procedure Finalize (S : in out Suspension_Object) is
       St : STATUS;
-
+      pragma Unreferenced (St);
    begin
       St := semDelete (S.Sema);
       St := semDelete (S.Mutex);

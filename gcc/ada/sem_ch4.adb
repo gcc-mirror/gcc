@@ -209,10 +209,9 @@ package body Sem_Ch4 is
    --  a more informative message.
 
    function Try_Indexed_Call
-     (N      : Node_Id;
-      Nam    : Entity_Id;
-      Typ    : Entity_Id)
-      return   Boolean;
+     (N   : Node_Id;
+      Nam : Entity_Id;
+      Typ : Entity_Id) return Boolean;
    --  If a function has defaults for all its actuals, a call to it may
    --  in fact be an indexing on the result of the call. Try_Indexed_Call
    --  attempts the interpretation as an indexing, prior to analysis as
@@ -220,10 +219,9 @@ package body Sem_Ch4 is
    --  interpretations (same symbol but two different types).
 
    function Try_Indirect_Call
-     (N      : Node_Id;
-      Nam    : Entity_Id;
-      Typ    : Entity_Id)
-      return   Boolean;
+     (N   : Node_Id;
+      Nam : Entity_Id;
+      Typ : Entity_Id) return Boolean;
    --  Similarly, a function F that needs no actuals can return an access
    --  to a subprogram, and the call F (X)  interpreted as F.all (X). In
    --  this case the call may be overloaded with both interpretations.
@@ -333,10 +331,6 @@ package body Sem_Ch4 is
          Type_Id := Entity (Subtype_Mark (E));
          Check_Fully_Declared (Type_Id, N);
          Set_Directly_Designated_Type (Acc_Type, Type_Id);
-
-         if Is_Protected_Type (Type_Id) then
-            Check_Restriction (No_Protected_Type_Allocators, N);
-         end if;
 
          if Is_Limited_Type (Type_Id)
            and then Comes_From_Source (N)
@@ -448,6 +442,15 @@ package body Sem_Ch4 is
             Init_Size_Align              (Acc_Type);
             Set_Directly_Designated_Type (Acc_Type, Type_Id);
             Check_Fully_Declared (Type_Id, N);
+
+            --  Check restriction against dynamically allocated protected
+            --  objects. Note that when limited aggregates are supported,
+            --  a similar test should be applied to an allocator with a
+            --  qualified expression ???
+
+            if Is_Protected_Type (Type_Id) then
+               Check_Restriction (No_Protected_Type_Allocators, N);
+            end if;
 
             --  Check for missing initialization. Skip this check if we already
             --  had errors on analyzing the allocator, since in that case these
@@ -4299,10 +4302,9 @@ package body Sem_Ch4 is
    -----------------------
 
    function Try_Indirect_Call
-     (N      : Node_Id;
-      Nam    : Entity_Id;
-      Typ    : Entity_Id)
-      return   Boolean
+     (N   : Node_Id;
+      Nam : Entity_Id;
+      Typ : Entity_Id) return Boolean
    is
       Actuals : constant List_Id := Parameter_Associations (N);
       Actual  : Node_Id;
@@ -4345,10 +4347,9 @@ package body Sem_Ch4 is
    ----------------------
 
    function Try_Indexed_Call
-     (N      : Node_Id;
-      Nam    : Entity_Id;
-      Typ    : Entity_Id)
-      return   Boolean
+     (N   : Node_Id;
+      Nam : Entity_Id;
+      Typ : Entity_Id) return Boolean
    is
       Actuals : constant List_Id   := Parameter_Associations (N);
       Actual : Node_Id;

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,7 +119,7 @@ package body System.Interrupt_Management.Operations is
    function Interrupt_Wait (Mask : access Interrupt_Mask)
      return Interrupt_ID
    is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       Iosb    : IO_Status_Block_Type := (0, 0, 0);
       Status  : Cond_Value_Type;
 

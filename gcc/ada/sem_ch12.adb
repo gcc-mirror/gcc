@@ -2577,7 +2577,7 @@ package body Sem_Ch12 is
 
             if In_Open_Scopes (Scope (Scope (Gen_Unit))) then
                declare
-                  Decl : Node_Id :=
+                  Decl : constant Node_Id :=
                            Original_Node
                              (Unit_Declaration_Node (Scope (Gen_Unit)));
                begin
@@ -6248,7 +6248,7 @@ package body Sem_Ch12 is
          Gen_Anc  : Entity_Id)
          return     Boolean
       is
-         Gen_Par : Entity_Id := Generic_Parent (Act_Spec);
+         Gen_Par : constant Entity_Id := Generic_Parent (Act_Spec);
 
       begin
          if No (Gen_Par) then
@@ -7768,8 +7768,7 @@ package body Sem_Ch12 is
 
                begin
                   Decl := First (Actual_Decls);
-
-                  while (Present (Decl)) loop
+                  while Present (Decl) loop
                      if Nkind (Decl) = N_Subtype_Declaration
                        and then Chars (Defining_Identifier (Decl)) =
                                                     Chars (Etype (A_Gen_T))

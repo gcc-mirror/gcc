@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2130,14 +2130,21 @@ package body Freeze is
                --  inherited the indication from elsewhere (e.g. an address
                --  clause, which is not good enough in RM terms!)
 
-               if Present (Get_Rep_Pragma (E, Name_Atomic))            or else
-                  Present (Get_Rep_Pragma (E, Name_Atomic_Components)) or else
-                  Present (Get_Rep_Pragma (E, Name_Volatile))          or else
-                  Present (Get_Rep_Pragma (E, Name_Volatile_Components))
+               if Present (Get_Rep_Pragma (E, Name_Atomic))
+                    or else
+                  Present (Get_Rep_Pragma (E, Name_Atomic_Components))
                then
                   Error_Msg_N
-                    ("stand alone atomic/volatile constant must be imported",
-                     E);
+                    ("stand alone atomic constant must be " &
+                     "imported ('R'M 'C.6(13))", E);
+
+               elsif Present (Get_Rep_Pragma (E, Name_Volatile))
+                       or else
+                     Present (Get_Rep_Pragma (E, Name_Volatile_Components))
+               then
+                  Error_Msg_N
+                    ("stand alone volatile constant must be " &
+                     "imported ('R'M 'C.6(13))", E);
                end if;
             end if;
 
@@ -4171,6 +4178,20 @@ package body Freeze is
                "for imported subprogram",
                Name (Address_Clause (E)));
          end if;
+      end if;
+
+      --  Reset the Pure indication on an imported subprogram unless an
+      --  explicit Pure_Function pragma was present. We do this because
+      --  otherwise it is an insidious error to call a non-pure function
+      --  from a pure unit and have calls mysteriously optimized away.
+      --  What happens here is that the Import can bypass the normal
+      --  check to ensure that pure units call only pure subprograms.
+
+      if Is_Imported (E)
+        and then Is_Pure (E)
+        and then not Has_Pragma_Pure_Function (E)
+      then
+         Set_Is_Pure (E, False);
       end if;
 
       --  For non-foreign convention subprograms, this is where we create

@@ -92,7 +92,6 @@ package body ALI is
       Task_Dispatching_Policy_Specified    := ' ';
       Unreserve_All_Interrupts_Specified   := False;
       Zero_Cost_Exceptions_Specified       := False;
-
    end Initialize_ALI;
 
    --------------
@@ -143,8 +142,9 @@ package body ALI is
       function Getc return Character;
       --  Get next character, bumping P past the character obtained
 
-      function Get_Name (Lower : Boolean := False;
-                         Ignore_Spaces : Boolean := False) return Name_Id;
+      function Get_Name
+        (Lower         : Boolean := False;
+         Ignore_Spaces : Boolean := False) return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
       --  length in Name_Len, as well as being returned in Name_Id form).
       --  If Lower is set to True then the Name_Buffer will be converted to
@@ -174,6 +174,10 @@ package body ALI is
 
       procedure Skip_Space;
       --  Skip past white space (blanks or horizontal tab)
+
+      procedure Skipc;
+      --  Skip past next character, does not affect value in C. This call
+      --  is like calling Getc and ignoring the returned result.
 
       ---------------------
       -- At_End_Of_Field --
@@ -480,6 +484,17 @@ package body ALI is
          end loop;
       end Skip_Space;
 
+      -----------
+      -- Skipc --
+      -----------
+
+      procedure Skipc is
+      begin
+         if P /= T'Last then
+            P := P + 1;
+         end if;
+      end Skipc;
+
    --  Start of processing for Scan_ALI
 
    begin
@@ -706,6 +721,8 @@ package body ALI is
                   Normalize_Scalars_Specified := True;
                   NS_Found := True;
 
+               --  Invalid switch starting with N
+
                else
                   Fatal_Error;
                end if;
@@ -716,11 +733,26 @@ package body ALI is
                Queuing_Policy_Specified := Getc;
                ALIs.Table (Id).Queuing_Policy := Queuing_Policy_Specified;
 
-            --  Processing for SL
+            --  Processing fir flags starting with S
 
             elsif C = 'S' then
-               Checkc ('L');
-               ALIs.Table (Id).Interface := True;
+               C := Getc;
+
+               --  Processing for SL
+
+               if C = 'L' then
+                  ALIs.Table (Id).Interface := True;
+
+               --  Processing for SS
+
+               elsif C = 'S' then
+                  Opt.Sec_Stack_Used := True;
+
+               --  Invalid switch starting with S
+
+               else
+                  Fatal_Error;
+               end if;
 
             --  Processing for Tx
 
@@ -729,18 +761,25 @@ package body ALI is
                ALIs.Table (Id).Task_Dispatching_Policy :=
                  Task_Dispatching_Policy_Specified;
 
-            --  Processing for UA
+            --  Processing for switch starting with U
 
             elsif C = 'U' then
-               if Nextc = 'A' then
+               C := Getc;
+
+               --  Processing for UA
+
+               if C  = 'A' then
                   Unreserve_All_Interrupts_Specified := True;
-                  C := Getc;
 
                --  Processing for UX
 
-               else
-                  Checkc ('X');
+               elsif C = 'X' then
                   ALIs.Table (Id).Unit_Exception_Table := True;
+
+               --  Invalid switches starting with U
+
+               else
+                  Fatal_Error;
                end if;
 
             --  Processing for ZX
@@ -1487,11 +1526,9 @@ package body ALI is
                Xref_Entity.Increment_Last;
 
                Read_Refs_For_One_Entity : declare
-
                   XE : Xref_Entity_Record renames
                          Xref_Entity.Table (Xref_Entity.Last);
-
-                  N : Nat;
+                  N  : Nat;
 
                   procedure Read_Instantiation_Reference;
                   --  Acquire instantiation reference. Caller has checked
@@ -1621,7 +1658,6 @@ package body ALI is
 
                      declare
                         Nested_Brackets : Natural := 0;
-                        C               : Character;
 
                      begin
                         loop
@@ -1636,7 +1672,7 @@ package body ALI is
                                  end if;
                            end case;
 
-                           C := Getc;
+                           Skipc;
                         end loop;
                      end;
 
@@ -1680,7 +1716,6 @@ package body ALI is
                            Current_File_Num := XR.File_Num;
                            P := P + 1;
                            N := Get_Nat;
-
                         else
                            XR.File_Num := Current_File_Num;
                         end if;
@@ -1710,7 +1745,6 @@ package body ALI is
 
                   XE.Last_Xref := Xref.Last;
                   C := Nextc;
-
                end Read_Refs_For_One_Entity;
             end loop;
 

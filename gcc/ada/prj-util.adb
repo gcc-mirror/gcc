@@ -92,7 +92,7 @@ package body Prj.Util is
                         Attribute_Or_Array_Name => Name_Executable,
                         In_Package              => Builder_Package);
 
-      Executable_Suffix : Variable_Value :=
+      Executable_Suffix : constant Variable_Value :=
                             Prj.Util.Value_Of
                               (Name                    => Main,
                                Attribute_Or_Array_Name =>
@@ -118,7 +118,8 @@ package body Prj.Util is
             --  the specification suffix.
 
             declare
-               Name : String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+               Name : constant String (1 .. Name_Len) :=
+                        Name_Buffer (1 .. Name_Len);
                Last : Positive := Name_Len;
 
                Naming : constant Naming_Data :=

@@ -143,8 +143,8 @@ package body GNAT.Sockets.Thin is
    is
       pragma Warnings (Off, Exceptfds);
 
-      RFS  : Fd_Set_Access := Readfds;
-      WFS  : Fd_Set_Access := Writefds;
+      RFS  : constant Fd_Set_Access := Readfds;
+      WFS  : constant Fd_Set_Access := Writefds;
       WFSC : Fd_Set_Access := No_Fd_Set;
       EFS  : Fd_Set_Access := Exceptfds;
       Res  : C.int;
@@ -190,10 +190,10 @@ package body GNAT.Sockets.Thin is
 
       if EFS /= No_Fd_Set then
          declare
-            EFSC    : Fd_Set_Access := New_Socket_Set (EFS);
+            EFSC    : constant Fd_Set_Access := New_Socket_Set (EFS);
+            Flag    : constant C.int := MSG_PEEK + MSG_OOB;
             Buffer  : Character;
             Length  : C.int;
-            Flag    : C.int := MSG_PEEK + MSG_OOB;
             Fromlen : aliased C.int;
 
          begin

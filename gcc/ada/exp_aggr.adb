@@ -264,6 +264,8 @@ package body Exp_Aggr is
    --    5. The array component type is tagged, which may necessitate
    --       reassignment of proper tags.
 
+   --    6. The array component type might have unaligned bit components
+
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate.
@@ -317,7 +319,7 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      --  Checks 4  (array must not be multi-dimensional Fortran case)
+      --  Checks 4 (array must not be multi-dimensional Fortran case)
 
       if Convention (Typ) = Convention_Fortran
         and then Number_Dimensions (Typ) > 1
@@ -347,6 +349,12 @@ package body Exp_Aggr is
       --    JVM, object tags are handled implicitly)
 
       if Is_Tagged_Type (Component_Type (Typ)) and then not Java_VM then
+         return False;
+      end if;
+
+      --  Checks 6 (component type must not have bit aligned components)
+
+      if Type_May_Have_Bit_Aligned_Components (Component_Type (Typ)) then
          return False;
       end if;
 
@@ -1924,7 +1932,7 @@ package body Exp_Aggr is
             --  by Build_Task_Allocate_Block_With_Init_Stmts)
 
             declare
-               Ctype            : Entity_Id := Etype (Selector);
+               Ctype            : constant Entity_Id := Etype (Selector);
                Inside_Allocator : Boolean   := False;
                P                : Node_Id   := Parent (N);
 
@@ -3520,7 +3528,8 @@ package body Exp_Aggr is
 
       function Must_Slide (N : Node_Id; Typ : Entity_Id) return Boolean
       is
-         Obj_Type : Entity_Id := Etype (Defining_Identifier (Parent (N)));
+         Obj_Type : constant Entity_Id :=
+                      Etype (Defining_Identifier (Parent (N)));
 
          L1, L2, H1, H2 : Node_Id;
 
@@ -4341,6 +4350,12 @@ package body Exp_Aggr is
       --  size of the data.
 
       elsif Has_Mutable_Components (Typ) then
+         Convert_To_Assignments (N, Typ);
+
+      --  If the type involved has any non-bit aligned components, then
+      --  we are not sure that the back end can handle this case correctly.
+
+      elsif Type_May_Have_Bit_Aligned_Components (Typ) then
          Convert_To_Assignments (N, Typ);
 
       --  In all other cases we generate a proper aggregate that

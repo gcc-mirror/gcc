@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2002-2003 Free Software Foundation, Inc.           --
+--         Copyright (C) 2002-2004 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,7 +249,7 @@ procedure Gprcmd is
    procedure Extend (Dir : String) is
 
       procedure Recursive_Extend (D : String);
-      --  Recursively display all subdirectories of D.
+      --  Recursively display all subdirectories of D
 
       ----------------------
       -- Recursive_Extend --
@@ -355,7 +355,7 @@ begin
          Put (Standard_Error, "GPRCMD ");
          Put (Standard_Error, Gnatvsn.Gnat_Version_String);
          Put_Line (Standard_Error,
-                   " Copyright 2002-2003, Free Software Fundation, Inc.");
+                   " Copyright 2002-2004, Free Software Fundation, Inc.");
          Usage;
 
       elsif Cmd = "pwd" then
@@ -437,8 +437,8 @@ begin
          Find_Program_Name;
 
          declare
-            Path : String_Access :=
-                     Locate_Exec_On_Path (Name_Buffer (1 .. Name_Len));
+            Path  : constant String_Access :=
+                      Locate_Exec_On_Path (Name_Buffer (1 .. Name_Len));
             Index : Natural;
 
          begin
@@ -454,7 +454,7 @@ begin
                  and then Path (Index - 3 .. Index - 1) = "bin"
                  and then Path (Index - 4) = Directory_Separator
                then
-                  --  We have found the <prefix>, return it.
+                  --  We have found the <prefix>, return it
 
                   Put (Path (Path'First .. Index - 5));
                end if;

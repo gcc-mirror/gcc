@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,14 +24,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Gnatvsn;
 with Hostparm;
 with Osint; use Osint;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
 with Ada.Text_IO;             use Ada.Text_IO;
-
-with Gnatvsn;
 
 package body VMS_Conv is
 
@@ -85,8 +84,7 @@ package body VMS_Conv is
    function Matching_Name
      (S     : String;
       Itm   : Item_Ptr;
-      Quiet : Boolean := False)
-      return  Item_Ptr;
+      Quiet : Boolean := False) return Item_Ptr;
    --  Determines if the item list headed by Itm and threaded through the
    --  Next fields (with null marking the end of the list), contains an
    --  entry that uniquely matches the given string. The match is case
@@ -452,8 +450,7 @@ package body VMS_Conv is
    function Matching_Name
      (S     : String;
       Itm   : Item_Ptr;
-      Quiet : Boolean := False)
-     return  Item_Ptr
+      Quiet : Boolean := False) return Item_Ptr
    is
       P1, P2 : Item_Ptr;
 
@@ -620,7 +617,7 @@ package body VMS_Conv is
    begin
       Put ("GNAT ");
       Put (Gnatvsn.Gnat_Version_String);
-      Put_Line (" Copyright 1996-2003 Free Software Foundation, Inc.");
+      Put_Line (" Copyright 1996-2004 Free Software Foundation, Inc.");
    end Output_Version;
 
    -----------
@@ -1049,8 +1046,7 @@ package body VMS_Conv is
 
             function Get_Arg_End
               (Argv    : String;
-               Arg_Idx : Integer)
-               return    Integer;
+               Arg_Idx : Integer) return Integer;
             --  Begins looking at Arg_Idx + 1 and returns the index of the
             --  last character before a slash or else the index of the last
             --  character in the string Argv.
@@ -1061,8 +1057,7 @@ package body VMS_Conv is
 
             function Get_Arg_End
               (Argv    : String;
-               Arg_Idx : Integer)
-              return    Integer
+               Arg_Idx : Integer) return Integer
             is
             begin
                for J in Arg_Idx + 1 .. Argv'Last loop
@@ -1399,8 +1394,8 @@ package body VMS_Conv is
                                  Arg1_Idx : Integer := Arg'First;
 
                                  function Get_Arg1_End
-                                   (Arg  : String; Arg_Idx : Integer)
-                                       return Integer;
+                                   (Arg     : String;
+                                    Arg_Idx : Integer) return Integer;
                                  --  Begins looking at Arg_Idx + 1 and
                                  --  returns the index of the last character
                                  --  before a comma or else the index of the
@@ -1411,8 +1406,8 @@ package body VMS_Conv is
                                  ------------------
 
                                  function Get_Arg1_End
-                                   (Arg  : String; Arg_Idx : Integer)
-                                       return Integer
+                                   (Arg     : String;
+                                    Arg_Idx : Integer) return Integer
                                  is
                                  begin
                                     for J in Arg_Idx + 1 .. Arg'Last loop

@@ -721,7 +721,7 @@ package body Exp_Ch11 is
 
          if Debug_Flag_Dot_X and then Comes_From_Source (Handler) then
             declare
-               H : Node_Id := Handler;
+               H : constant Node_Id := Handler;
             begin
                Next_Non_Pragma (Handler);
                Remove (H);

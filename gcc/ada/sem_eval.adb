@@ -2279,63 +2279,91 @@ package body Sem_Eval is
    -------------------------
 
    procedure Eval_String_Literal (N : Node_Id) is
-      T : constant Entity_Id := Etype (N);
-      B : constant Entity_Id := Base_Type (T);
-      I : Entity_Id;
+      Typ : constant Entity_Id := Etype (N);
+      Bas : constant Entity_Id := Base_Type (Typ);
+      Xtp : Entity_Id;
+      Len : Nat;
+      Lo  : Node_Id;
 
    begin
       --  Nothing to do if error type (handles cases like default expressions
       --  or generics where we have not yet fully resolved the type)
 
-      if B = Any_Type or else B = Any_String then
+      if Bas = Any_Type or else Bas = Any_String then
          return;
+      end if;
 
       --  String literals are static if the subtype is static (RM 4.9(2)), so
       --  reset the static expression flag (it was set unconditionally in
       --  Analyze_String_Literal) if the subtype is non-static. We tell if
       --  the subtype is static by looking at the lower bound.
 
-      elsif not Is_OK_Static_Expression (String_Literal_Low_Bound (T)) then
-         Set_Is_Static_Expression (N, False);
+      if Ekind (Typ) = E_String_Literal_Subtype then
+         if not Is_OK_Static_Expression (String_Literal_Low_Bound (Typ)) then
+            Set_Is_Static_Expression (N, False);
+            return;
+         end if;
 
-      elsif Nkind (Original_Node (N)) = N_Type_Conversion then
+      --  Here if Etype of string literal is normal Etype (not yet possible,
+      --  but may be possible in future!)
+
+      elsif not Is_OK_Static_Expression
+                    (Type_Low_Bound (Etype (First_Index (Typ))))
+      then
          Set_Is_Static_Expression (N, False);
+         return;
+      end if;
+
+      --  If original node was a type conversion, then result if non-static
+
+      if Nkind (Original_Node (N)) = N_Type_Conversion then
+         Set_Is_Static_Expression (N, False);
+         return;
+      end if;
 
       --  Test for illegal Ada 95 cases. A string literal is illegal in
       --  Ada 95 if its bounds are outside the index base type and this
-      --  index type is static. This can hapen in only two ways. Either
+      --  index type is static. This can happen in only two ways. Either
       --  the string literal is too long, or it is null, and the lower
       --  bound is type'First. In either case it is the upper bound that
       --  is out of range of the index type.
 
-      elsif Ada_95 then
-         if Root_Type (B) = Standard_String
-           or else Root_Type (B) = Standard_Wide_String
+      if Ada_95 then
+         if Root_Type (Bas) = Standard_String
+              or else
+            Root_Type (Bas) = Standard_Wide_String
          then
-            I := Standard_Positive;
+            Xtp := Standard_Positive;
          else
-            I := Etype (First_Index (B));
+            Xtp := Etype (First_Index (Bas));
          end if;
 
-         if String_Literal_Length (T) > String_Type_Len (B) then
+         if Ekind (Typ) = E_String_Literal_Subtype then
+            Lo := String_Literal_Low_Bound (Typ);
+         else
+            Lo := Type_Low_Bound (Etype (First_Index (Typ)));
+         end if;
+
+         Len := String_Length (Strval (N));
+
+         if UI_From_Int (Len) > String_Type_Len (Bas) then
             Apply_Compile_Time_Constraint_Error
               (N, "string literal too long for}", CE_Length_Check_Failed,
-               Ent => B,
-               Typ => First_Subtype (B));
+               Ent => Bas,
+               Typ => First_Subtype (Bas));
 
-         elsif String_Literal_Length (T) = 0
-            and then not Is_Generic_Type (I)
-            and then Expr_Value (String_Literal_Low_Bound (T)) =
-                     Expr_Value (Type_Low_Bound (Base_Type (I)))
+         elsif Len = 0
+           and then not Is_Generic_Type (Xtp)
+           and then
+             Expr_Value (Lo) = Expr_Value (Type_Low_Bound (Base_Type (Xtp)))
          then
             Apply_Compile_Time_Constraint_Error
               (N, "null string literal not allowed for}",
                CE_Length_Check_Failed,
-               Ent => B,
-               Typ => First_Subtype (B));
+               Ent => Bas,
+               Typ => First_Subtype (Bas));
          end if;
       end if;
-
    end Eval_String_Literal;
 
    --------------------------

@@ -714,7 +714,7 @@ package body Sem_Ch5 is
         and then Serious_Errors_Detected = 0
       then
          declare
-            Chosen : Node_Id := Find_Static_Alternative (N);
+            Chosen : constant Node_Id := Find_Static_Alternative (N);
             Alt    : Node_Id;
 
          begin

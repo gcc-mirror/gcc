@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,8 +86,10 @@ package body System.Interrupt_Management is
 
    procedure Notify_Exception (signo : Signal) is
       Mask   : aliased sigset_t;
-      Result : int;
       My_Id  : t_id;
+
+      Result : int;
+      pragma Unreferenced (Result);
 
    begin
       Result := pthread_sigmask (SIG_SETMASK, null, Mask'Unchecked_Access);

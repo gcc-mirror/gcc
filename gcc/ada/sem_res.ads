@@ -59,7 +59,6 @@ package Sem_Res is
    --  specified check suppressed (can be All_Checks to suppress all checks).
 
    procedure Resolve (N : Node_Id);
-   pragma Inline (Resolve);
    --  A version of Resolve where the type to be used for resolution is
    --  taken from the Etype (N). This is commonly used in cases where the
    --  context does not add anything and the first pass of analysis found
@@ -117,5 +116,11 @@ package Sem_Res is
    procedure Pre_Analyze_And_Resolve (N : Node_Id);
    --  Same, but use type of node because context does not impose a single
    --  type.
+
+private
+   procedure Resolve_Implicit_Type (N : Node_Id) renames Resolve;
+   pragma Inline (Resolve_Implicit_Type);
+   --  We use this renaming to make the application of Inline very explicit
+   --  to this version, since other versions of Resolve are not inlined.
 
 end Sem_Res;

@@ -254,7 +254,8 @@ package body Prj.PP is
       -------------------------------
 
       procedure Write_End_Of_Line_Comment (Node : Project_Node_Id) is
-         Value : Name_Id := End_Of_Line_Comment (Node);
+         Value : constant Name_Id := End_Of_Line_Comment (Node);
+
       begin
          if Value /= No_Name then
             Write_String (" --");

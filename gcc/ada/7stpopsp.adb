@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1992-2002, Free Software Fundation, Inc.        --
+--            Copyright (C) 1992-2003, Free Software Fundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ package body Specific is
    procedure Initialize (Environment_Task : Task_ID) is
       pragma Warnings (Off, Environment_Task);
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_key_create (ATCB_Key'Access, null);
       pragma Assert (Result = 0);
@@ -64,7 +63,6 @@ package body Specific is
 
    procedure Set (Self_Id : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));
       pragma Assert (Result = 0);

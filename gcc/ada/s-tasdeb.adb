@@ -211,9 +211,7 @@ package body System.Tasking.Debug is
    -- Set_Trace --
    ---------------
 
-   procedure Set_Trace
-     (Flag  : Character;
-      Value : Boolean := True) is
+   procedure Set_Trace (Flag  : Character; Value : Boolean := True) is
    begin
       Trace_On (Flag) := Value;
    end Set_Trace;
@@ -278,7 +276,8 @@ package body System.Tasking.Debug is
      (Self_Id  : Task_ID;
       Msg      : String;
       Flag     : Character;
-      Other_Id : Task_ID := null) is
+      Other_Id : Task_ID := null)
+   is
    begin
       if Trace_On (Flag) then
          Put (To_Integer (Self_Id)'Img &
@@ -294,11 +293,16 @@ package body System.Tasking.Debug is
       end if;
    end Trace;
 
-   procedure Write (Fd : Integer; S : String; Count : Integer) is
+   -----------
+   -- Write --
+   -----------
 
-      Num : Integer;
+   procedure Write (Fd : Integer; S : String; Count : Integer) is
+      Discard : Integer;
+      pragma Unreferenced (Discard);
    begin
-      Num := System.CRTL.write (Fd, S (S'First)'Address, Count);
+      Discard := System.CRTL.write (Fd, S (S'First)'Address, Count);
+      --  Is it really right to ignore write errors here ???
    end Write;
 
 end System.Tasking.Debug;

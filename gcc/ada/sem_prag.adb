@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2763,6 +2763,7 @@ package body Sem_Prag is
 
                   declare
                      Decl : constant Node_Id := Unit_Declaration_Node (Def_Id);
+
                   begin
                      if Present (Decl)
                        and then Nkind (Decl) = N_Subprogram_Declaration
@@ -2856,7 +2857,7 @@ package body Sem_Prag is
          ----------------------------
 
          function Back_End_Cannot_Inline (Subp : Entity_Id) return Boolean is
-            Decl : Node_Id := Unit_Declaration_Node (Subp);
+            Decl : constant Node_Id := Unit_Declaration_Node (Subp);
 
          begin
             if Nkind (Decl) = N_Subprogram_Body then
@@ -4186,7 +4187,8 @@ package body Sem_Prag is
 
                if Expander_Active then
                   declare
-                     Temp : Node_Id := New_Copy_Tree (Expression (Arg2));
+                     Temp : constant Node_Id :=
+                              New_Copy_Tree (Expression (Arg2));
                   begin
                      Set_Parent (Temp, N);
                      Pre_Analyze_And_Resolve (Temp, RTE (RE_Interrupt_ID));
@@ -5293,7 +5295,8 @@ package body Sem_Prag is
             end if;
 
             Process_Eliminate_Pragma
-              (Unit_Name,
+              (N,
+               Unit_Name,
                Entity,
                Parameter_Types,
                Result_Type,
@@ -7378,9 +7381,13 @@ package body Sem_Prag is
             No_Run_Time_Mode           := True;
             Configurable_Run_Time_Mode := True;
 
-            if Ttypes.System_Word_Size = 32 then
-               Duration_32_Bits_On_Target := True;
-            end if;
+            declare
+               Word32 : constant Boolean := Ttypes.System_Word_Size = 32;
+            begin
+               if Word32 then
+                  Duration_32_Bits_On_Target := True;
+               end if;
+            end;
 
             Restrictions (No_Finalization)       := True;
             Restrictions (No_Exception_Handlers) := True;
@@ -9776,7 +9783,7 @@ package body Sem_Prag is
    --  than appearence as any argument is insignificant, a positive value
    --  indicates that appearence in that parameter position is significant.
 
-   Sig_Flags : array (Pragma_Id) of Int :=
+   Sig_Flags : constant array (Pragma_Id) of Int :=
      (Pragma_AST_Entry                    => -1,
       Pragma_Abort_Defer                  => -1,
       Pragma_Ada_83                       => -1,

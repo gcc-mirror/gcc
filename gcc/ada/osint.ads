@@ -213,6 +213,12 @@ package Osint is
    --  If the above computation fails, return Path.
    --  This function assumes that Prefix'First = Path'First
 
+   function Shared_Lib (Name : String) return String;
+   --  Returns the runtime shared library in the form -l<name>-<version> where
+   --  version is the GNAT runtime library option for the platform. For example
+   --  this routine called with Name set to "gnat" will return "-lgnat-5.02"
+   --  on UNIX and Windows and -lgnat_5_02 on VMS.
+
    -------------------------
    -- Search Dir Routines --
    -------------------------

@@ -2375,7 +2375,6 @@ package body Sem_Ch10 is
 
    procedure Expand_Limited_With_Clause (Nam : Node_Id; N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (Nam);
-      P     : Entity_Id;
       Unum  : Unit_Number_Type;
       Withn : Node_Id;
 
@@ -2397,8 +2396,6 @@ package body Sem_Ch10 is
             Required   => True,
             Subunit    => False,
             Error_Node => Nam);
-
-         P := Cunit_Entity (Unum);
 
          if not Analyzed (Cunit (Unum)) then
             Set_Library_Unit (Withn, Cunit (Unum));
@@ -2430,8 +2427,6 @@ package body Sem_Ch10 is
               Required   => True,
               Subunit    => False,
               Error_Node => Nam);
-
-         P    := Cunit_Entity (Unum);
 
          if not Analyzed (Cunit (Unum)) then
             Set_Library_Unit (Withn, Cunit (Unum));
@@ -3242,9 +3237,9 @@ package body Sem_Ch10 is
    -------------------------------
 
    procedure Install_Limited_Withed_Unit (N : Node_Id) is
-      Unum             : Unit_Number_Type :=
+      Unum             : constant Unit_Number_Type :=
                            Get_Source_Unit (Library_Unit (N));
-      P_Unit           : Entity_Id := Unit (Library_Unit (N));
+      P_Unit           : constant Entity_Id := Unit (Library_Unit (N));
       P                : Entity_Id;
       Lim_Elmt         : Elmt_Id;
       Lim_Typ          : Entity_Id;
@@ -3584,9 +3579,8 @@ package body Sem_Ch10 is
    -------------------------
 
    procedure Build_Limited_Views (N : Node_Id) is
-
-      Unum        : Unit_Number_Type := Get_Source_Unit (Library_Unit (N));
-      P           : Entity_Id        := Cunit_Entity (Unum);
+      Unum : constant Unit_Number_Type := Get_Source_Unit (Library_Unit (N));
+      P    : constant Entity_Id        := Cunit_Entity (Unum);
 
       Spec        : Node_Id;         --  To denote a package specification
       Lim_Typ     : Entity_Id;       --  To denote shadow entities.
@@ -3717,9 +3711,9 @@ package body Sem_Ch10 is
       --  Could use more comments below ???
 
       procedure Build_Chain (Spec : Node_Id; Scope : Entity_Id) is
-         Decl          : Node_Id;
-         Analyzed_Unit : Boolean := Analyzed (Cunit (Unum));
+         Analyzed_Unit : constant Boolean := Analyzed (Cunit (Unum));
          Is_Tagged     : Boolean;
+         Decl          : Node_Id;
 
       begin
          Decl := First (Visible_Declarations (Spec));
@@ -3788,7 +3782,7 @@ package body Sem_Ch10 is
                --  Local package
 
                declare
-                  Spec : Node_Id := Specification (Decl);
+                  Spec : constant Node_Id := Specification (Decl);
 
                begin
                   Comp_Typ := Defining_Unit_Name (Spec);
@@ -4077,7 +4071,7 @@ package body Sem_Ch10 is
    --------------------------------
 
    procedure Remove_Limited_With_Clause (N : Node_Id) is
-      P_Unit    : Entity_Id := Unit (Library_Unit (N));
+      P_Unit    : constant Entity_Id := Unit (Library_Unit (N));
       P         : Entity_Id := Defining_Unit_Name (Specification (P_Unit));
       Lim_Elmt  : Elmt_Id;
       Lim_Typ   : Entity_Id;

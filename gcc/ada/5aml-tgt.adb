@@ -189,7 +189,9 @@ package body MLib.Tgt is
                Success : Boolean;
                Oldpath : String (1 .. Lib_Version'Length + 1);
                Newpath : String (1 .. Lib_File'Length + 1);
-               Result  : Integer;
+
+               Result : Integer;
+               pragma Unreferenced (Result);
 
                function Symlink
                  (Oldpath : System.Address;

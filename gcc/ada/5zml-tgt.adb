@@ -67,7 +67,7 @@ package body MLib.Tgt is
    -- Archive_Ext --
    -----------------
 
-   function Archive_Ext return  String is
+   function Archive_Ext return String is
    begin
       return "a";
    end Archive_Ext;
@@ -150,11 +150,13 @@ package body MLib.Tgt is
    -----------------------------
 
    function Get_Target_Suffix return String is
-      Target_Name : String_Ptr := Sdefault.Target_Name;
+      Target_Name : constant String_Ptr := Sdefault.Target_Name;
       Index       : Positive   := Target_Name'First;
+
    begin
-      while ((Index < Target_Name'Last) and then
-               (Target_Name (Index + 1) /= '-')) loop
+      while Index < Target_Name'Last
+        and then Target_Name (Index + 1) /= '-'
+      loop
          Index := Index + 1;
       end loop;
 

@@ -626,9 +626,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
       pragma Unreferenced (Reason);
-
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -640,6 +638,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
       Result : Interfaces.C.int;
+      pragma Unreferenced (Result);
    begin
       if Do_Yield then
          Result := sched_yield;
@@ -972,7 +971,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Task (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result :=
         pthread_kill
@@ -1038,8 +1036,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
       pragma Warnings (Off, T);
       pragma Warnings (Off, Thread_Self);
@@ -1054,8 +1051,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
       pragma Warnings (Off, T);
       pragma Warnings (Off, Thread_Self);
@@ -1074,12 +1070,11 @@ package body System.Task_Primitives.Operations is
       Tmp_Set : aliased sigset_t;
       Result  : Interfaces.C.int;
 
-      function State (Int : System.Interrupt_Management.Interrupt_ID)
-                     return Character;
+      function State
+        (Int : System.Interrupt_Management.Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
+      --  Get interrupt state. Defined in a-init.c. The input argument is
+      --  the interrupt number, and the result is one of the following:
 
       Default : constant Character := 's';
       --    'n'   this interrupt not set by any Interrupt_State pragma

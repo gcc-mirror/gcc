@@ -3255,6 +3255,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   each.  While doing this, build a copy-out structure if
 	   we need one.  */
 
+	/* If the return type has a size that overflows, we cannot have
+	   a function that returns that type.  This usage doesn't make
+	   sense anyway, so give an error here.  */
+	if (TYPE_SIZE_UNIT (gnu_return_type)
+	    && TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_return_type)))
+	  {
+	    post_error ("cannot return type whose size overflows",
+			gnat_entity);
+	    gnu_return_type = copy_node (gnu_return_type);
+	    TYPE_SIZE (gnu_return_type) = bitsize_zero_node;
+	    TYPE_SIZE_UNIT (gnu_return_type) = size_zero_node;
+	    TYPE_MAIN_VARIANT (gnu_return_type) = gnu_return_type;
+	    TYPE_NEXT_VARIANT (gnu_return_type) = 0;
+	  }
+
 	for (gnat_param = First_Formal (gnat_entity), parmnum = 0;
 	     Present (gnat_param);
 	     gnat_param = Next_Formal_With_Extras (gnat_param), parmnum++)

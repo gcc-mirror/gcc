@@ -68,7 +68,6 @@ package body Specific is
 
    procedure Set (Self_Id : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));
       pragma Assert (Result = 0);

@@ -92,11 +92,14 @@ package body Specific is
    --  tasks.
 
    function Self return Task_ID is
-      Result : Interfaces.C.int;
       Value : aliased System.Address;
+
+      Result : Interfaces.C.int;
+      pragma Unreferenced (Result);
 
    begin
       Result := st_getspecific (ATCB_Key, Value'Address);
+      --  Is it OK not to check this result???
 
       --  If the key value is Null, then it is a non-Ada task.
 

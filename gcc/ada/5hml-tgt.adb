@@ -125,7 +125,8 @@ package body MLib.Tgt is
 
       Init_Fini : Argument_List_Access := Empty_Argument_List;
 
-      Common_Options : Argument_List := Options & new String'(PIC_Option);
+      Common_Options : constant Argument_List :=
+                         Options & new String'(PIC_Option);
       --  Common set of options to the gcc command performing the link.
       --  On HPUX, this command eventually resorts to collect2, which may
       --  generate a C file and compile it on the fly. This compilation shall
@@ -177,12 +178,13 @@ package body MLib.Tgt is
                Success : Boolean;
                Oldpath : String (1 .. Lib_Version'Length + 1);
                Newpath : String (1 .. Lib_File'Length + 1);
-               Result  : Integer;
+
+               Result : Integer;
+               pragma Unreferenced (Result);
 
                function Symlink
                  (Oldpath : System.Address;
-                  Newpath : System.Address)
-                  return    Integer;
+                  Newpath : System.Address) return Integer;
                pragma Import (C, Symlink, "__gnat_symlink");
 
             begin

@@ -749,8 +749,7 @@ package body Xr_Tabls is
 
    function Get_File
      (Decl     : Declaration_Reference;
-      With_Dir : Boolean := False)
-      return     String
+      With_Dir : Boolean := False) return String
    is
    begin
       return Get_File (Decl.Decl.File, With_Dir);
@@ -758,8 +757,7 @@ package body Xr_Tabls is
 
    function Get_File
      (Ref      : Reference;
-      With_Dir : Boolean := False)
-      return     String
+      With_Dir : Boolean := False) return String
    is
    begin
       return Get_File (Ref.File, With_Dir);
@@ -768,8 +766,7 @@ package body Xr_Tabls is
    function Get_File
      (File     : File_Reference;
       With_Dir : in Boolean := False;
-      Strip    : Natural    := 0)
-      return     String
+      Strip    : Natural    := 0) return String
    is
       Tmp : GNAT.OS_Lib.String_Access;
 

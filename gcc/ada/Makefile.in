@@ -1207,6 +1207,7 @@ endif
   # This command transforms (YYYYMMDD) into YY,MMDD
   GSMATCH_VERSION := $(shell grep "^ *Gnat_Static_Version_String" $(fsrcpfx)gnatvsn.ads | sed -e 's/.*(\(.*\)).*/\1/' -e 's/\(..\)\(..\)\(....\)/\2,\3/')
   TOOLS_LIBS_LO := --for-linker=sys\\$$\$$library:trace.exe
+  LIBRARY_VERSION := $(subst .,_,$(LIB_VERSION))
 endif
 
 ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
@@ -1241,6 +1242,8 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   EXTRA_GNATMAKE_OBJS = mdll.o mdll-utl.o mdll-fil.o
   EXTRA_GNATRTL_NONTASKING_OBJS = g-regist.o
   soext = .dll
+# ??? This will be replaced by gnatlib-shared-dual-win32 when GNAT auto-import
+# support for array/record will be done.
   GNATLIB_SHARED = gnatlib-shared-win32
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1688,7 +1691,7 @@ install-gnatlib: ../stamp-gnatlib
 	-$(INSTALL_DATA) rts/Makefile.prolog $(DESTDIR)$(ADA_SHARE_MAKE_DIR)
 	-$(INSTALL_DATA) rts/Makefile.generic $(DESTDIR)$(ADA_SHARE_MAKE_DIR)
 	for file in rts/*.ali; do \
-	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 	-$(INSTALL_DATA) rts/g-trasym$(objext) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
 	-for file in rts/*$(arext);do \
@@ -1707,11 +1710,6 @@ else
 	    $(INSTALL) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 endif
-	if [ -f rts/libgnat-*$(soext) ]; then \
-	   (cd $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
-	    $(LN_S) libgnat-*$(soext) libgnat$(soext) && \
-	    $(LN_S) libgnarl-*$(soext) libgnarl$(soext)) \
-	fi
 # This copy must be done preserving the date on the original file.
 	for file in rts/*.adb rts/*.ads; do \
 	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_INCLUDE_DIR); \
@@ -1898,8 +1896,6 @@ gnatlib-shared-default:
 		-o libgnarl-$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) $(THREADSLIB)
-	cd rts; $(LN_S) libgnat-$(LIBRARY_VERSION)$(soext) libgnat$(soext)
-	cd rts; $(LN_S) libgnarl-$(LIBRARY_VERSION)$(soext) libgnarl$(soext)
 
 gnatlib-shared-dual:
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -1916,10 +1912,25 @@ gnatlib-shared-dual:
              gnatlib
 	$(MV) libgna*$(soext) rts
 
-# Note that on Win32 the auto-import does not work for DLL, so on the
-# platform we have a specific setup. The libgnat.dll contains only
-# non-tasking objects and libgnarl.dll contains tasking and non-tasking
-# objects. A tasking program must be linked with libgnarl.dll only.
+gnatlib-shared-dual-win32:
+	$(MAKE) $(FLAGS_TO_PASS) \
+             GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
+	     THREAD_KIND="$(THREAD_KIND)" \
+             gnatlib-shared-win32
+	$(MV) rts/libgna*$(soext) .
+	$(RM) ../stamp-gnatlib2
+	$(MAKE) $(FLAGS_TO_PASS) \
+             GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     THREAD_KIND="$(THREAD_KIND)" \
+             gnatlib
+	$(MV) libgna*$(soext) rts
+
+# ??? we need to add the option to support auto-import of arrays/records to
+# the GNATLIBFLAGS when this will be supported by GNAT. At this point we will
+# use the gnatlib-shared-dual-win32 target to build the GNAT runtimes on
+# Windows.
 gnatlib-shared-win32:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
@@ -1936,8 +1947,6 @@ gnatlib-shared-win32:
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) \
 		$(THREADSLIB) -Wl,libgnat-$(LIBRARY_VERSION)$(soext)
-	cd rts; $(LN_S) libgnat-$(LIBRARY_VERSION)$(soext) libgnat$(soext)
-	cd rts; $(LN_S) libgnarl-$(LIBRARY_VERSION)$(soext) libgnarl$(soext)
 
 gnatlib-shared-vms:
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -1951,7 +1960,7 @@ gnatlib-shared-vms:
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
 	echo "case_sensitive=NO" >> SYMVEC_$$$$.opt && \
 	../../xgcc -g -B../../ -nostartfiles -shared -shared-libgcc \
-	   -o libgnat_s$(soext) libgnat.a \
+	   -o libgnat_$(LIBRARY_VERSION)$(soext) libgnat.a \
 	   sys\$$library:trace.exe \
 	   --for-linker=/noinform \
 	   --for-linker=SYMVEC_$$$$.opt \
@@ -1961,8 +1970,8 @@ gnatlib-shared-vms:
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
 	echo "case_sensitive=NO" >> SYMVEC_$$$$.opt && \
 	../../xgcc -g -B../../ -nostartfiles -shared -shared-libgcc \
-	   -o libgnarl_s$(soext) \
-	   libgnarl.a libgnat_s$(soext) \
+	   -o libgnarl_$(LIBRARY_VERSION)$(soext) \
+	   libgnarl.a libgnat_$(LIBRARY_VERSION)$(soext) \
 	   sys\$$library:trace.exe \
 	   --for-linker=/noinform \
 	   --for-linker=SYMVEC_$$$$.opt \

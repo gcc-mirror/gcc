@@ -484,6 +484,12 @@ package body Switch.M is
             Bind_Only  := True;
             Make_Steps := True;
 
+         --  Processing for B switch
+
+         when 'B' =>
+            Ptr := Ptr + 1;
+            Build_Bind_And_Link_Full_Project := True;
+
          --  Processing for c switch
 
          when 'c' =>

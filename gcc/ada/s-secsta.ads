@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,11 @@ package System.Secondary_Stack is
 
    package SSE renames System.Storage_Elements;
 
-   Default_Secondary_Stack_Size : constant := 10 * 1024;
-   --  Default size of a secondary stack
+   Default_Secondary_Stack_Size : Natural := 10 * 1024;
+   --  Default size of a secondary stack. May be modified by binder -D switch
 
    procedure SS_Init
-     (Stk  : in out System.Address;
+     (Stk  : in out Address;
       Size : Natural := Default_Secondary_Stack_Size);
    --  Initialize the secondary stack with a main stack of the given Size.
    --
@@ -62,15 +62,15 @@ package System.Secondary_Stack is
    --  stack using System.Soft_Links.Get_Sec_Stack_Addr.
 
    procedure SS_Allocate
-     (Address      : out System.Address;
+     (Addr         : out Address;
       Storage_Size : SSE.Storage_Count);
    --  Allocate enough space for a 'Storage_Size' bytes object with Maximum
-   --  alignment. The address of the allocated space is returned in 'Address'
+   --  alignment. The address of the allocated space is returned in Addr.
 
-   procedure SS_Free (Stk : in out System.Address);
-   --  Release the memory allocated for the Secondary Stack. That is to say,
-   --  all the allocated chuncks.
-   --  Upon return, Stk will be set to System.Null_Address
+   procedure SS_Free (Stk : in out Address);
+   --  Release the memory allocated for the Secondary Stack. That is
+   --  to say, all the allocated chunks. Upon return, Stk will be set
+   --  to System.Null_Address.
 
    type Mark_Id is private;
    --  Type used to mark the stack.
@@ -81,6 +81,14 @@ package System.Secondary_Stack is
    procedure SS_Release (M : Mark_Id);
    --  Restore the state of the stack corresponding to the mark M. If an
    --  additional chunk have been allocated, it will never be freed during a
+
+   function SS_Get_Max return Long_Long_Integer;
+   --  Return maximum used space in storage units for the current secondary
+   --  stack. For a dynamically allocated secondary stack, the returned
+   --  result is always -1. For a statically allocated secondary stack,
+   --  the returned value shows the largest amount of space allocated so
+   --  far during execution of the program to the current secondary stack,
+   --  i.e. the secondary stack for the current task.
 
    generic
       with procedure Put_Line (S : String);

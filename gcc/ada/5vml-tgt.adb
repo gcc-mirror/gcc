@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2003, Ada Core Technologies, Inc.             --
+--          Copyright (C) 2003-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,10 +25,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a set of target dependent routines to build
---  static, dynamic and shared libraries.
-
---  This is the VMS version of the body.
+--  This is the VMS version of the body
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Text_IO;             use Ada.Text_IO;
@@ -142,8 +139,6 @@ package body MLib.Tgt is
       pragma Unreferenced (Lib_Address);
       pragma Unreferenced (Relocatable);
 
-
-
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
                      Fil.Ext_To (Lib_Filename, DLL_Ext);
@@ -152,7 +147,8 @@ package body MLib.Tgt is
       Last_Opt  : Natural       := Opts'Last;
       Opts2     : Argument_List (Options'Range);
       Last_Opt2 : Natural       := Opts2'First - 1;
-      Inter     : Argument_List := Interfaces;
+
+      Inter : constant Argument_List := Interfaces;
 
       function Is_Interface (Obj_File : String) return Boolean;
       --  For a Stand-Alone Library, returns True if Obj_File is the object
@@ -172,9 +168,10 @@ package body MLib.Tgt is
 
       function Is_Interface (Obj_File : String) return Boolean is
          ALI : constant String :=
-           Fil.Ext_To
-             (Filename => To_Lower (Base_Name (Obj_File)),
-              New_Ext  => "ali");
+                 Fil.Ext_To
+                  (Filename => To_Lower (Base_Name (Obj_File)),
+                   New_Ext  => "ali");
+
       begin
          if Inter'Length = 0 then
             return True;
@@ -203,7 +200,6 @@ package body MLib.Tgt is
       begin
          if Symbol_Data.Symbol_File = No_Name then
             return "symvec.opt";
-
          else
             return Get_Name_String (Symbol_Data.Symbol_File);
          end if;
@@ -239,9 +235,11 @@ package body MLib.Tgt is
       end Version_String;
 
       Opt_File_Name  : constant String := Option_File_Name;
+      Version        : constant String := Version_String;
       For_Linker_Opt : constant String_Access :=
                          new String'("--for-linker=" & Opt_File_Name);
-      Version : constant String := Version_String;
+
+   --  Start of processing for Build_Dynamic_Library
 
    begin
       VMS_Options (VMS_Options'First + 1) := For_Linker_Opt;
@@ -423,6 +421,7 @@ package body MLib.Tgt is
       declare
          Index : Natural := Opts'First;
          Opt   : String_Access;
+
       begin
          while Index <= Last_Opt loop
             Opt := Opts (Index);

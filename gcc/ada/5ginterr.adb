@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---              Copyright (C) 1998-2002 Free Software Fundation             --
+--              Copyright (C) 1998-2003 Free Software Fundation             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,11 +244,9 @@ package body System.Interrupts is
    -------------------------------------
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Dynamic_Interrupt_Protection)
-      return   Boolean
+     (Object : access Dynamic_Interrupt_Protection) return Boolean
    is
       pragma Unreferenced (Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -279,11 +277,9 @@ package body System.Interrupts is
    -------------------------------------
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Static_Interrupt_Protection)
-      return   Boolean
+     (Object : access Static_Interrupt_Protection) return Boolean
    is
       pragma Unreferenced (Object);
-
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -320,8 +316,9 @@ package body System.Interrupts is
    -- Current_Handler --
    ---------------------
 
-   function Current_Handler (Interrupt : Interrupt_ID)
-     return Parameterless_Handler is
+   function Current_Handler
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
+   is
    begin
       if Is_Reserved (Interrupt) then
          raise Program_Error;
@@ -466,13 +463,15 @@ package body System.Interrupts is
    ---------------
 
    function Reference (Interrupt : Interrupt_ID) return System.Address is
-      Signal : System.Address :=
-        System.Storage_Elements.To_Address
-          (System.Storage_Elements.Integer_Address (Interrupt));
+      Signal : constant System.Address :=
+                 System.Storage_Elements.To_Address
+                   (System.Storage_Elements.Integer_Address (Interrupt));
 
    begin
       if Is_Reserved (Interrupt) then
-      --  Only usable Interrupts can be used for binding it to an Entry.
+
+         --  Only usable Interrupts can be used for binding it to an Entry
+
          raise Program_Error;
       end if;
 

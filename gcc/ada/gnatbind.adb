@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -379,7 +379,7 @@ begin
       Write_Eol;
       Write_Str ("GNATBIND ");
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1995-2003 Free Software Foundation, Inc.");
+      Write_Str (" Copyright 1995-2004 Free Software Foundation, Inc.");
       Write_Eol;
    end if;
 

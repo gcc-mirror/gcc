@@ -165,6 +165,11 @@ package Opt is
    --  Force brief error messages to standard error, even if verbose mode is
    --  set (so that main error messages go to standard output).
 
+   Build_Bind_And_Link_Full_Project : Boolean := False;
+   --  GNATMAKE
+   --  Set to True to build, bind and link all the sources of a project file
+   --  (switch -B)
+
    Check_Object_Consistency : Boolean := False;
    --  GNATBIND, GNATMAKE
    --  Set to True to check whether every object file is consistent with
@@ -259,6 +264,13 @@ package Opt is
    --  Set True (-gnatD switch) to debug generated expanded code instead
    --  of the original source code. Causes debugging information to be
    --  written with respect to the generated code file that is written.
+
+   Default_Sec_Stack_Size : Int := -1;
+   --  GNATBIND
+   --  Set to default secondary stack size in units of kilobytes. Set by
+   --  the -Dnnn switch for the binder. A value of -1 indicates that no
+   --  default was set by the binder, and that the default should be the
+   --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
 
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE
@@ -766,6 +778,11 @@ package Opt is
    Run_Path_Option : Boolean := True;
    --  GNATMAKE, GNATLINK
    --  Set to False when no run_path_option should be issued to the linker
+
+   Sec_Stack_Used : Boolean := False;
+   --  GNAT, GBATBIND
+   --  Set True if generated code uses the System.Secondary_Stack package.
+   --  For the binder, set if any unit uses the secondary stack package.
 
    Shared_Libgnat : Boolean;
    --  GNATBIND

@@ -717,9 +717,8 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
       pragma Unreferenced (Do_Yield);
-
       Result : int;
-
+      pragma Unreferenced (Result);
    begin
       Result := taskDelay (0);
    end Yield;

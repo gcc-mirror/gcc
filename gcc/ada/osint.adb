@@ -24,14 +24,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Fmap;             use Fmap;
+with Fmap;     use Fmap;
+with Gnatvsn;  use Gnatvsn;
 with Hostparm;
-with Namet;            use Namet;
-with Opt;              use Opt;
-with Output;           use Output;
-with Sdefault;         use Sdefault;
-with System.Case_Util; use System.Case_Util;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Output;   use Output;
+with Sdefault; use Sdefault;
 with Table;
+
+with System.Case_Util; use System.Case_Util;
 
 with Unchecked_Conversion;
 
@@ -610,7 +612,6 @@ package body Osint is
    function C_String_Length (S : Address) return Integer is
       function Strlen (S : Address) return Integer;
       pragma Import (C, Strlen, "strlen");
-
    begin
       if S = Null_Address then
          return 0;
@@ -646,7 +647,6 @@ package body Osint is
 
    function Concat (String_One : String; String_Two : String) return String is
       Buffer : String (1 .. String_One'Length + String_Two'Length);
-
    begin
       Buffer (1 .. String_One'Length) := String_One;
       Buffer (String_One'Length + 1 .. Buffer'Last) := String_Two;
@@ -814,13 +814,14 @@ package body Osint is
    procedure Exit_Program (Exit_Code : Exit_Code_Type) is
    begin
       --  The program will exit with the following status:
+
       --    0 if the object file has been generated (with or without warnings)
       --    1 if recompilation was not needed (smart recompilation)
       --    2 if gnat1 has been killed by a signal (detected by GCC)
       --    4 for a fatal error
       --    5 if there were errors
       --    6 if no code has been generated (spec)
-      --
+
       --  Note that exit code 3 is not used and must not be used as this is
       --  the code returned by a program aborted via C abort() routine on
       --  Windows. GCC checks for that case and thinks that the child process
@@ -1205,9 +1206,9 @@ package body Osint is
             return null;
          end if;
 
-      else
-         --  Search in the current directory
+      --  Search in the current directory
 
+      else
          --  Get the current directory
 
          declare
@@ -1845,7 +1846,7 @@ package body Osint is
    --  Start of processing for Read_Default_Search_Dirs
 
    begin
-      --  Construct a C compatible character string buffer.
+      --  Construct a C compatible character string buffer
 
       Buffer (1 .. Search_Dir_Prefix.all'Length)
         := Search_Dir_Prefix.all;
@@ -1940,7 +1941,7 @@ package body Osint is
       --  indicates failure to open the specified source file.
 
       Text : Text_Buffer_Ptr;
-      --  Allocated text buffer.
+      --  Allocated text buffer
 
       Status : Boolean;
       --  For the calls to Close
@@ -2001,23 +2002,7 @@ package body Osint is
             else
                Current_Full_Obj_Stamp := Empty_Time_Stamp;
                Close (Lib_FD, Status);
-               --  No need to check the status, we return null anyway
 
-               return null;
-            end if;
-         end if;
-
-         --  Object file exists, compare object and ALI time stamps
-
-         if Current_Full_Lib_Stamp > Current_Full_Obj_Stamp then
-            if Fatal_Err then
-               Get_Name_String (Current_Full_Obj_Name);
-               Close (Lib_FD, Status);
-               --  No need to check the status, we fail anyway
-               Fail ("Bad time stamp: ", Name_Buffer (1 .. Name_Len));
-            else
-               Current_Full_Obj_Stamp := Empty_Time_Stamp;
-               Close (Lib_FD, Status);
                --  No need to check the status, we return null anyway
 
                return null;
@@ -2183,6 +2168,7 @@ package body Osint is
       --  Read is complete, get time stamp and close file and we are done
 
       Close (Source_File_FD, Status);
+
       --  The status should never be False. But, if it is, what can we do?
       --  So, we don't test it.
 
@@ -2206,6 +2192,7 @@ package body Osint is
          Std_Prefix := Executable_Prefix;
 
          if Std_Prefix.all /= "" then
+
             --  Remove trailing directory separator when calling set_std_prefix
 
             set_std_prefix (Std_Prefix.all, Std_Prefix'Length - 1);
@@ -2239,6 +2226,31 @@ package body Osint is
       Program_Set := True;
       Running_Program := P;
    end Set_Program;
+
+   ----------------
+   -- Shared_Lib --
+   ----------------
+
+   function Shared_Lib (Name : String) return String is
+      Library : String (1 .. Name'Length + Library_Version'Length + 3);
+      --  3 = 2 for "-l" + 1 for "-" before lib version
+
+   begin
+      Library (1 .. 2)                          := "-l";
+      Library (3 .. 2 + Name'Length)            := Name;
+      Library (3 + Name'Length)                 := '-';
+      Library (4 + Name'Length .. Library'Last) := Library_Version;
+
+      if Hostparm.OpenVMS then
+         for K in Library'First + 2 .. Library'Last loop
+            if Library (K) = '.' or else Library (K) = '-' then
+               Library (K) := '_';
+            end if;
+         end loop;
+      end if;
+
+      return Library;
+   end Shared_Lib;
 
    ----------------------
    -- Smart_File_Stamp --
@@ -2317,9 +2329,11 @@ package body Osint is
       Get_Name_String (Name);
 
       for J in reverse 1 .. Name_Len - 1 loop
+
          --  If we find the last directory separator
 
          if Is_Directory_Separator (Name_Buffer (J)) then
+
             --  Return the part of Name that follows this last directory
             --  separator.
 
@@ -2344,8 +2358,7 @@ package body Osint is
 
       for J in reverse 2 .. Name_Len loop
 
-         --  If we found the last '.', return the part of Name that precedes
-         --  this '.'.
+         --  If we found the last '.', return part of Name that precedes it
 
          if Name_Buffer (J) = '.' then
             Name_Len := J - 1;
@@ -2595,7 +2608,7 @@ package body Osint is
       Path_Len  : Integer) return String_Access
    is
       subtype Path_String is String (1 .. Path_Len);
-      type    Path_String_Access is access Path_String;
+      type Path_String_Access is access Path_String;
 
       function Address_To_Access is new
         Unchecked_Conversion (Source => Address,
@@ -2604,7 +2617,7 @@ package body Osint is
       Path_Access : constant Path_String_Access :=
                       Address_To_Access (Path_Addr);
 
-      Return_Val  : String_Access;
+      Return_Val : String_Access;
 
    begin
       Return_Val := new String (1 .. Path_Len);
@@ -2669,7 +2682,6 @@ package body Osint is
                       Name_Buffer (1 .. Name_Len);
 
    begin
-
       Find_Program_Name;
 
       --  Convert the name to lower case so error messages are the same on

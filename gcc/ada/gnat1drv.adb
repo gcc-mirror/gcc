@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,9 +77,6 @@ with System.Assertions;
 procedure Gnat1drv is
    Main_Unit_Node : Node_Id;
    --  Compilation unit node for main unit
-
-   Main_Unit_Entity : Node_Id;
-   --  Compilation unit entity for main unit
 
    Main_Kind : Node_Kind;
    --  Kind of main compilation unit node.
@@ -193,7 +190,7 @@ begin
          Write_Eol;
          Write_Str ("GNAT ");
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 1992-2003 Free Software Foundation, Inc.");
+         Write_Str (" Copyright 1992-2004 Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -277,7 +274,6 @@ begin
       Original_Operating_Mode := Operating_Mode;
       Frontend;
       Main_Unit_Node := Cunit (Main_Unit);
-      Main_Unit_Entity := Cunit_Entity (Main_Unit);
       Main_Kind := Nkind (Unit (Main_Unit_Node));
 
       --  Check for suspicious or incorrect body present if we are doing

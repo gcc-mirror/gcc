@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with System.Storage_Elements;
+with System.Soft_Links;
 
 with Unchecked_Conversion;
 
@@ -39,6 +40,16 @@ package body System.Pool_Size is
 
    package SSE renames System.Storage_Elements;
    use type SSE.Storage_Offset;
+
+   --  Even though these storage pools are typically only used
+   --  by a single task, if multiple tasks are declared at the
+   --  same or a more nested scope as the storage pool, there
+   --  still may be concurrent access. The current implementation
+   --  of Stack_Bounded_Pool always uses a global lock for protecting
+   --  access. This should eventually be replaced by an atomic
+   --  linked list implementation for efficiency reasons.
+
+   package SSL renames System.Soft_Links;
 
    type Storage_Count_Access is access SSE.Storage_Count;
    function To_Storage_Count_Access is
@@ -82,6 +93,8 @@ package body System.Pool_Size is
       Alignment    : SSE.Storage_Count)
    is
    begin
+      SSL.Lock_Task.all;
+
       if Pool.Elmt_Size = 0 then
          Vsize.Allocate (Pool, Address, Storage_Size, Alignment);
 
@@ -98,6 +111,13 @@ package body System.Pool_Size is
       else
          raise Storage_Error;
       end if;
+
+      SSL.Unlock_Task.all;
+
+   exception
+      when others =>
+         SSL.Unlock_Task.all;
+         raise;
    end Allocate;
 
    ----------------
@@ -111,6 +131,8 @@ package body System.Pool_Size is
       Alignment    : SSE.Storage_Count)
    is
    begin
+      SSL.Lock_Task.all;
+
       if Pool.Elmt_Size = 0 then
          Vsize.Deallocate (Pool, Address, Storage_Size, Alignment);
 
@@ -118,6 +140,12 @@ package body System.Pool_Size is
          To_Storage_Count_Access (Address).all := Pool.First_Free;
          Pool.First_Free := Address - Pool.The_Pool'Address + 1;
       end if;
+
+      SSL.Unlock_Task.all;
+   exception
+      when others =>
+         SSL.Unlock_Task.all;
+         raise;
    end Deallocate;
 
    ----------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1998-2003 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2004 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,10 +24,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Xr_Tabls;     use Xr_Tabls;
-with Xref_Lib;     use Xref_Lib;
-with Osint;        use Osint;
-with Types;        use Types;
+with Xr_Tabls; use Xr_Tabls;
+with Xref_Lib; use Xref_Lib;
+with Osint;    use Osint;
+with Types;    use Types;
 
 with Gnatvsn;
 with Opt;
@@ -41,7 +41,6 @@ with GNAT.Strings;      use GNAT.Strings;
 ---------------
 
 procedure Gnatfind is
-
    Output_Ref      : Boolean := False;
    Pattern         : Xref_Lib.Search_Pattern;
    Local_Symbols   : Boolean := True;
@@ -240,7 +239,7 @@ procedure Gnatfind is
    procedure Write_Usage is
    begin
       Put_Line ("GNATFIND " & Gnatvsn.Gnat_Version_String
-                & " Copyright 1998-2003, Ada Core Technologies Inc.");
+                & " Copyright 1998-2004, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatfind pattern[:sourcefile[:line[:column]]] "
                 & "[file1 file2 ...]");
       New_Line;

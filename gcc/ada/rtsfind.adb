@@ -441,6 +441,7 @@ package body Rtsfind is
 
       if S /= "not found"
         or else not Configurable_Run_Time_Mode
+        or else All_Errors_Mode
       then
          M (1 .. 6) := "\file ";
          P := 6;
@@ -539,6 +540,12 @@ package body Rtsfind is
 
       if Present (U.Entity) then
          return;
+      end if;
+
+      --  Note if secondary stack is used
+
+      if U_Id = System_Secondary_Stack then
+         Opt.Sec_Stack_Used := True;
       end if;
 
       --  Otherwise we need to load the unit, First build unit name

@@ -142,7 +142,6 @@ package body Xref_Lib is
       Line_Num    : Natural := 0;
       Col_Num     : Natural := 0;
       File_Ref    : File_Reference := Empty_File;
-      Has_Pattern : Boolean := False;
 
    begin
       --  Find the end of the first item in Entity (pattern or file?)
@@ -224,8 +223,7 @@ package body Xref_Lib is
                end;
          end;
 
-         File_Start  := File_Start + 1;
-         Has_Pattern := True;
+         File_Start := File_Start + 1;
       end if;
 
       --  Parse the file name
@@ -291,6 +289,8 @@ package body Xref_Lib is
 
    procedure Add_Xref_File (File : String) is
       File_Ref : File_Reference := Empty_File;
+      pragma Unreferenced (File_Ref);
+
       Iterator : Expansion_Iterator;
 
       procedure Add_Xref_File_Internal (File : String);
@@ -307,7 +307,7 @@ package body Xref_Lib is
 
          if Tail (File, 4) = ".ali" then
             File_Ref := Add_To_Xref_File
-              (File, Visited => False, Emit_Warning => True);
+                          (File, Visited => False, Emit_Warning => True);
 
          --  Normal non-ali file case
 
@@ -315,9 +315,8 @@ package body Xref_Lib is
             File_Ref := Add_To_Xref_File (File, Visited => True);
 
             File_Ref := Add_To_Xref_File
-              (ALI_File_Name (File),
-               Visited => False,
-               Emit_Warning => True);
+                         (ALI_File_Name (File),
+                          Visited => False, Emit_Warning => True);
          end if;
       end Add_Xref_File_Internal;
 
@@ -404,10 +403,12 @@ package body Xref_Lib is
    --------------------
 
    procedure Find_ALI_Files is
-      My_Dir       : Rec_DIR;
-      Dir_Ent      : File_Name_String;
-      Last         : Natural;
-      File_Ref     : File_Reference;
+      My_Dir  : Rec_DIR;
+      Dir_Ent : File_Name_String;
+      Last    : Natural;
+
+      File_Ref : File_Reference;
+      pragma Unreferenced (File_Ref);
 
       function Open_Next_Dir return Boolean;
       --  Tries to open the next object directory, and return False if
@@ -568,11 +569,13 @@ package body Xref_Lib is
       Token            : Positive;
       Ptr              : Positive := Ali'First;
       Num_Dependencies : Natural  := 0;
-      File_Ref         : File_Reference;
       File_Start       : Positive;
       File_End         : Positive;
       Gnatchop_Offset  : Integer;
       Gnatchop_Name    : Positive;
+
+      File_Ref : File_Reference;
+      pragma Unreferenced (File_Ref);
 
    begin
       --  Read all the lines possibly processing with-clauses and dependency
@@ -581,7 +584,6 @@ package body Xref_Lib is
       --  which is an error condition.
 
       while Ali (Ptr) /= EOF loop
-
          if D_Lines and then Ali (Ptr) = 'D' then
 
             --  Found dependency information. Format looks like:
@@ -636,8 +638,8 @@ package body Xref_Lib is
             Parse_Token (Ali, Ptr, Token);
             Parse_Token (Ali, Ptr, Token);
 
-            File_Ref := Add_To_Xref_File
-              (Ali (Token .. Ptr - 1), Visited => False);
+            File_Ref :=
+              Add_To_Xref_File (Ali (Token .. Ptr - 1), Visited => False);
 
          elsif Ali (Ptr) = 'X' then
 
@@ -763,7 +765,6 @@ package body Xref_Lib is
          E_Line : Natural;    --  Line number of current entity
          E_Col  : Natural;    --  Column number of current entity
          E_Name : Positive;   --  Pointer to begin of entity name
-         E_Type : Character;  --  Type of current entity
 
       begin
          --  Look for the X lines corresponding to unit Eun
@@ -783,7 +784,6 @@ package body Xref_Lib is
 
          loop
             Parse_Number (Ali, Ptr, E_Line);
-            E_Type := Ali (Ptr);
             exit when Ali (Ptr) = EOF;
             Ptr := Ptr + 1;
             Parse_Number (Ali, Ptr, E_Col);
@@ -885,7 +885,6 @@ package body Xref_Lib is
             Parse_Derived_Info : declare
                P_Line   : Natural;          --  parent entity line
                P_Column : Natural;          --  parent entity column
-               P_Type   : Character;        --  parent entity type
                P_Eun    : Positive;         --  parent entity file number
 
             begin
@@ -913,7 +912,6 @@ package body Xref_Lib is
 
                --  Then parse the type and column number
 
-               P_Type := Ali (Ptr);
                Ptr := Ptr + 1;
                Parse_Number (Ali, Ptr, P_Column);
 
@@ -1034,9 +1032,9 @@ package body Xref_Lib is
 
       if Wide_Search then
          declare
-            File_Ref     : File_Reference;
-            File_Name    : constant String :=
-                             Get_Gnatchop_File (File.X_File);
+            File_Ref : File_Reference;
+            pragma Unreferenced (File_Ref);
+            File_Name : constant String := Get_Gnatchop_File (File.X_File);
          begin
             File_Ref := Add_To_Xref_File (ALI_File_Name (File_Name), False);
          end;
