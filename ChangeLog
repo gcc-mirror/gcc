@@ -1,3 +1,7 @@
+Wed Sep  3 22:00:58 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* .cvsignore (*-install): Remove.
+
 Mon Sep  1 16:45:44 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (target_subdir): Set to libraries if enable_multilib.
@@ -15,8 +19,6 @@ Tue Aug 19 01:41:32 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (BISON): Add -L flag.
 	(YACC): Likewise.
-
-
 
 Mon Aug 18 09:24:06 1997  Gavin Koch  <gavin@cygnus.com>
 
