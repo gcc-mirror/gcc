@@ -3000,7 +3000,6 @@ do {									\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
   {"volatile_mem_operand", {MEM}},				\
   {"offsettable_addr_operand", {REG, SUBREG, PLUS}},		\
-  {"fp_reg_or_mem_operand", {SUBREG, MEM, REG}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
   {"non_add_cint_operand", {CONST_INT}},			\
@@ -3060,7 +3059,6 @@ extern int num_insns_constant ();
 extern int easy_fp_constant ();
 extern int volatile_mem_operand ();
 extern int offsettable_addr_operand ();
-extern int fp_reg_or_mem_operand ();
 extern int mem_or_easy_const_operand ();
 extern int add_operand ();
 extern int non_add_cint_operand ();
