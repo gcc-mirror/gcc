@@ -1,3 +1,7 @@
+Mon May 31 09:36:11 1999  Cort Dougan  <cort@cs.nmt.edu>
+
+	* rs6000/linux.h (LINK_SPEC): Use emulation elf32ppclinux.
+
 Mon May 31 11:40:20 EDT 1999  John Wehle  (john@feith.com)
 
 	* flow.c (mark_regs_live_at_end, insn_dead_p,
