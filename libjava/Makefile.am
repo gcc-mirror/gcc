@@ -2421,13 +2421,11 @@ gnu/java/nio/charset/UTF_8.java \
 gnu/regexp/CharIndexed.java \
 gnu/regexp/CharIndexedCharArray.java \
 gnu/regexp/CharIndexedInputStream.java \
-gnu/regexp/CharIndexedReader.java \
 gnu/regexp/CharIndexedString.java \
 gnu/regexp/CharIndexedStringBuffer.java \
 gnu/regexp/RE.java \
 gnu/regexp/REException.java \
 gnu/regexp/REFilterInputStream.java \
-gnu/regexp/REFilterReader.java \
 gnu/regexp/REMatch.java \
 gnu/regexp/REMatchEnumeration.java \
 gnu/regexp/RESyntax.java \
@@ -2437,7 +2435,6 @@ gnu/regexp/RETokenBackRef.java \
 gnu/regexp/RETokenChar.java \
 gnu/regexp/RETokenEnd.java \
 gnu/regexp/RETokenEndSub.java \
-gnu/regexp/RETokenLookAhead.java \
 gnu/regexp/RETokenOneOf.java \
 gnu/regexp/RETokenPOSIX.java \
 gnu/regexp/RETokenRange.java \
