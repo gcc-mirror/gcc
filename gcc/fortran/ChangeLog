@@ -1,5 +1,11 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	
+	PR fortran/14077
+	* moduele.c (mio_symbol): Don't I/O initial values unless
+	symbol is a parameter.
+
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	
 	PR fortran/13201
 	* resolve.c (resolve_symbol): Verify that the shape of a
 	parameter array is not only explicit, but also constant.
