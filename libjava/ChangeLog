@@ -1,3 +1,9 @@
+2004-09-22  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/17623
+	* java/net/URL.java (URL): Copy userInfo from context.
+	(getUserInfo): Return cached userInfo if present.
+
 2004-09-22  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/6182:
