@@ -1174,6 +1174,13 @@ extern int current_function_anonymous_args;
 #define CTORS_SECTION_ASM_OP 	"\t.section\t.ctors\n"
 #define DTORS_SECTION_ASM_OP 	"\t.section\t.dtors\n"
 #define INIT_SECTION_ASM_OP  	"\t.section\t.init\n"
+
+/* Assemble generic sections.
+   This is currently only used to support section attributes.  */
+
+#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
+   fprintf (FILE, ".section\t%s\n", NAME)
+
 #define EXTRA_SECTIONS 		in_ctors, in_dtors
 
 #define EXTRA_SECTION_FUNCTIONS                              \
@@ -1195,9 +1202,6 @@ dtors_section() 					     \
       in_section = in_dtors;				     \
     }							     \
 }							      
-
-#define ASM_OUTPUT_SECTION(file, nam) \
-   do { fprintf (file, "\t.section\t%s\n", nam); } while(0) 
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
    do { ctors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
