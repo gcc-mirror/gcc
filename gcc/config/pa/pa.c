@@ -594,8 +594,18 @@ emit_move_sequence (operands, mode, scratch_reg)
     }
 
   /* Simplify the source if we need to.  */
-  if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
+  if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode)
+      || (GET_CODE (operand1) == HIGH
+	  && symbolic_operand (XEXP (operand1, 0), mode)
+	  && TARGET_KERNEL))
     {
+      int ishighonly = 0;
+
+      if (GET_CODE (operand1) == HIGH)
+	{
+	  ishighonly = 1;
+	  operand1 = XEXP (operand1, 0);
+	}
       if (symbolic_operand (operand1, mode))
 	{
 	  if (flag_pic)
@@ -604,15 +614,26 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      operands[1] = legitimize_pic_address (operand1, mode, temp);
 	    }
 	  /* On the HPPA, references to data space are supposed to */
-	  /* use dp, register 27. */
-	  else if (read_only_operand (operand1))
+	  /* use dp, register 27, but showing it in the RTL inhibits various
+	     cse and loop optimizations.  */
+	  else 
 	    {
-	      rtx set = gen_rtx (SET, VOIDmode,
-				  operand0,
-				  gen_rtx (LO_SUM, mode, operand0, operand1));
+	      rtx temp, set;
+
+	      if (reload_in_progress) 
+		temp = scratch_reg ? scratch_reg : operand0;
+	      else
+		temp = gen_reg_rtx (mode);
+
+	      if (ishighonly)
+		set = gen_rtx (SET, mode, operand0, temp);
+	      else
+		set = gen_rtx (SET, VOIDmode,
+			       operand0,
+			       gen_rtx (LO_SUM, mode, temp, operand1));
 				 
 	      emit_insn (gen_rtx (SET, VOIDmode,
-				  operand0,
+				  temp,
 				  gen_rtx (HIGH, mode, operand1)));
 	      if (TARGET_SHARED_LIBS
 		  && function_label_operand (operand1, mode))
@@ -631,45 +652,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 		emit_insn (set);
 	      return 1;
 	    }
-	  else
-	    {
-	      /* If reload_in_progress, we can't use addil and r1; we */
-	      /* have to use the more expensive ldil sequence. */
-	      if (reload_in_progress)
-		{
-		  emit_insn (gen_rtx (SET, VOIDmode,
-				      operand0,
-				      gen_rtx (HIGH, mode, operand1)));
-		  emit_insn (gen_rtx (SET, VOIDmode,
-				      operand0,
-				      gen_rtx (PLUS, mode,
-					       operand0,
-					       gen_rtx (REG, mode, 27))));
-		  emit_insn (gen_rtx (SET, VOIDmode,
-				      operand0,
-				      gen_rtx (LO_SUM, mode,
-					       operand0, operand1)));
-		}
-	      else
-		{
-		  rtx temp1, temp2 = gen_reg_rtx (mode);
-
-		  /* For 2.4 we could set RTX_UNCHANGING and add a 
-		     REG_EQUAL note for the first insn.  This would 
-		     allow the first insn to be moved out of loops.  */
-		  temp1 = gen_rtx (HIGH, mode, operand1);
-		  emit_insn (gen_rtx (SET, VOIDmode,
-				      temp2,
-				      gen_rtx (PLUS, mode,
-					       gen_rtx (REG, mode, 27),
-					       temp1)));
-		  emit_insn (gen_rtx (SET, VOIDmode,
-				      operand0,
-				      gen_rtx (LO_SUM, mode,
-					       temp2, operand1)));
-		}
-	      return 1;
-	    }
+	  return 1;
 	}
       else if (depi_cint_operand (operand1, VOIDmode))
 	return 0;
@@ -2097,6 +2080,11 @@ output_global_address (file, x)
      FILE *file;
      rtx x;
 {
+
+  /* Imagine  (high (const (plus ...))).  */
+  if (GET_CODE (x) == HIGH)
+    x = XEXP (x, 0);
+
   if (GET_CODE (x) == SYMBOL_REF && read_only_operand (x))
     assemble_name (file, XSTR (x, 0));
   else if (GET_CODE (x) == SYMBOL_REF)
@@ -2427,6 +2415,12 @@ secondary_reload_class (class, mode, in)
 		  || class == HI_SNAKE_FP_REGS)))
       || (class == SHIFT_REGS && (regno <= 0 || regno >= 32)))
     return GENERAL_REGS;
+
+  if (GET_CODE (in) == HIGH)
+    in = XEXP (in, 0);
+
+  if (TARGET_KERNEL && class != R1_REGS && symbolic_operand (in, VOIDmode))
+    return R1_REGS;
 
   return NO_REGS;
 }
