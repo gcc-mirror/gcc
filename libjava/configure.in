@@ -381,19 +381,8 @@ CANADIAN=no
 NULL_TARGET=no
 NATIVE=yes
 
-# Find unwind.h and support headers.  If we're in the tree with
-# gcc, then look there.  Otherwise look in compat-include.  If all else
-# fails, just hope the user has set things up somehow.
-echo "probing $srcdir/../gcc/unwind.h"
-if test -r $srcdir/../gcc/unwind.h; then
-   GCC_UNWIND_INCLUDE='-I$(top_srcdir)/../gcc'
-else
-   if test -d $srcdir/../compat-include; then
-      GCC_UNWIND_INCLUDE='-I$(top_srcdir)/../compat-include'
-   else
-      GCC_UNWIND_INCLUDE=
-   fi
-fi
+# We're in the tree with gcc, and need to include some of its headers.
+GCC_UNWIND_INCLUDE='-I$(top_srcdir)/../gcc'
 
 if test -n "${with_cross_host}"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS

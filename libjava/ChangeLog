@@ -1,3 +1,11 @@
+2001-04-02  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (GCC_UNWIND_INCLUDE): Assume we're built within
+	the same tree as gcc.
+	* configure: Rebuilt.
+
+	* exception.cc (_Jv_Throw): Clarify commentary.
+
 2001-04-02  Marcus G. Daniels  <mgd@swarm.org>
 
 	* jni.cc (wrap_value<jclass>): New specialization.
