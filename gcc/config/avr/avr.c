@@ -5189,7 +5189,7 @@ avr_normalize_condition (condition)
     }
 }
 
-/* This fnction optimizes conditional jumps */
+/* This function optimizes conditional jumps.  */
 
 static void
 avr_reorg ()
