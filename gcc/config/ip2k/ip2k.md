@@ -4848,8 +4848,8 @@
 		      (pc)))]
   "{
     operands[2] = gen_rtx_fmt_ee (reverse_condition (GET_CODE (operands[1])),
-	 		   GET_MODE (operands[1]),
-			   cc0_rtx, const0_rtx);
+				  GET_MODE (operands[1]),
+				  cc0_rtx, const0_rtx);
    }")
 
 ;; This is a bit test and jump sequence.

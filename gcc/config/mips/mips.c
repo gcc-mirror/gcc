@@ -3149,8 +3149,9 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode,
-						     gen_rtx_fmt_ee (test_code, mode,
-							      cmp0, cmp1),
+						     gen_rtx_fmt_ee (test_code,
+								     mode,
+								     cmp0, cmp1),
 						     label1, label2)));
 }
 
@@ -3235,8 +3236,8 @@ gen_conditional_move (rtx *operands)
   emit_insn (gen_rtx_SET (op_mode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (op_mode,
 						gen_rtx_fmt_ee (move_code, VOIDmode,
-							 cmp_reg,
-							 CONST0_RTX (SImode)),
+								cmp_reg,
+								CONST0_RTX (SImode)),
 						operands[2], operands[3])));
 }
 
@@ -3275,7 +3276,8 @@ mips_gen_conditional_trap (rtx *operands)
     op1 = force_reg (mode, op1);
 
   emit_insn (gen_rtx_TRAP_IF (VOIDmode,
-			      gen_rtx_fmt_ee (cmp_code, GET_MODE (operands[0]), op0, op1),
+			      gen_rtx_fmt_ee (cmp_code, GET_MODE (operands[0]),
+					      op0, op1),
 			      operands[1]));
 }
 

@@ -899,7 +899,7 @@
       && GET_MODE (sh_compare_op0) == DImode
       && sh_compare_op1 == const0_rtx)
     operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
-			   sh_compare_op0, sh_compare_op1);
+				  sh_compare_op0, sh_compare_op1);
   else
     {
       rtx tmp;

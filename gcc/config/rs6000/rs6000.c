@@ -9705,7 +9705,7 @@ rs6000_emit_sCOND (enum rtx_code code, rtx result)
       cc_mode = GET_MODE (XEXP (condition_rtx, 0));
 
       rev_cond_rtx = gen_rtx_fmt_ee (rs6000_reverse_condition (cc_mode, cond_code),
-			      SImode, XEXP (condition_rtx, 0), const0_rtx);
+				     SImode, XEXP (condition_rtx, 0), const0_rtx);
       not_op = gen_rtx_COMPARE (CCEQmode, rev_cond_rtx, const0_rtx);
       emit_insn (gen_rtx_SET (VOIDmode, not_result, not_op));
       condition_rtx = gen_rtx_EQ (VOIDmode, not_result, const0_rtx);

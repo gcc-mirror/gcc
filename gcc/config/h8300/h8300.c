@@ -2733,8 +2733,8 @@ expand_a_shift (enum machine_mode mode, int code, rtx operands[])
 	     (VOIDmode,
 	      gen_rtvec (2,
 			 gen_rtx_SET (VOIDmode, operands[0],
-				      gen_rtx_fmt_ee (code, mode, operands[0],
-					       operands[2])),
+				      gen_rtx_fmt_ee (code, mode,
+						      operands[0], operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_SCRATCH (QImode)))));
 }
@@ -4101,7 +4101,8 @@ fix_bit_operand (rtx *operands, int what, enum rtx_code type)
   {
     rtx res = gen_reg_rtx (QImode);
     emit_insn (gen_rtx_SET (VOIDmode, res,
-			    gen_rtx_fmt_ee (type, QImode, operands[1], operands[2])));
+			    gen_rtx_fmt_ee (type, QImode,
+					    operands[1], operands[2])));
     emit_insn (gen_rtx_SET (VOIDmode, operands[0], res));
   }
   return 1;
