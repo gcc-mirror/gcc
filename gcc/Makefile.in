@@ -2264,9 +2264,8 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 	fi ; fi
 	-rm -fr stage1 stage2 stage3 stage4
 # Delete stamps of bootstrap stages
-	-rm -f stage?_*
-	-rm -f clean?_*
-	-rm -f stage_last
+	-rm -f stage_*
+	-rm -f clean_*
 
 # Delete all files that users would normally create
 # while building and installing GCC.
@@ -2781,133 +2780,84 @@ STAGE2_FLAGS_TO_PASS = \
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
-stage1_build:
+stage_a: 
 	+$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
-	touch stage1_build
-	echo stage1_build > stage_last
+	touch stage_a
 
-stage1_copy: stage1_build
+stage_b: stage_a
 	$(MAKE) stage1
-	touch stage1_copy
-	echo stage2_build > stage_last
+	touch stage_b
 
 # This used to define ALLOCA as empty, but that would lead to bad results
 # for a subsequent `make install' since that would not have ALLOCA empty.
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-stage2_build: stage1_copy
+stage_c: stage_b
 	+$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage1/ \
 		 $(STAGE2_FLAGS_TO_PASS)
-	touch stage2_build
-	echo stage2_build > stage_last
+	touch stage_c
 
-stage2_copy: stage2_build
+stage_d: stage_c
 	+$(MAKE) stage2
-	touch stage2_copy
-	echo stage3_build > stage_last
+	touch stage_d
 
-stage3_build: stage2_copy
+stage_e: stage_d
 	+$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage2/ \
 		 $(STAGE2_FLAGS_TO_PASS)
-	touch stage3_build
-	echo stage3_build > stage_last
+	touch stage_e
 
 # For bootstrap4:
-stage3_copy: stage3_build
-	+$(MAKE) stage3
-	touch stage3_copy
-	echo stage4_build > stage_last
-
-stage4_build: stage3_copy
+stage_f: stage_e
 	+$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" \
 		 STAGE_PREFIX=stage3/ \
 		 $(STAGE2_FLAGS_TO_PASS)
-	touch stage4_build
-	echo stage4_build > stage_last
+	touch stage_f
 
 # Additional steps for *-lean targets:
-clean_s1: stage1_copy
+clean_s1: stage_b
 	-(cd stage1 && rm -f $(VOL_FILES))
 	touch clean_s1
 
-clean_s2: stage2_copy
+clean_s2: stage_d
 	-rm -rf stage1
 	touch clean_s2
 
-# The various entry points for bootstrapping.
+# This next little bit is the way it is for parallel builds.  It's simply
+# a chain of stages which DO have to be done sequentially.
 
-bootstrap: stage3_build
-	@echo
-	@echo Bootstrap complete - make \"quickstrap\" to redo last build,
-	@echo \"restage1\" through \"restage3\" to rebuild specific stages,
-	@echo or \"cleanstrap\" to redo the bootstrap from scratch.
+bootstrap_a:              stage_a
+bootstrap_b:  bootstrap_a stage_b
+bootstrap_c:  bootstrap_b stage_c
+bootstrap_d:  bootstrap_c stage_d
+bootstrap_e:  bootstrap_d stage_e
+bootstrap: force bootstrap_e
 
-bootstrap-lean : clean_s1 clean_s2 stage3_build
-	@echo
-	@echo Bootstrap complete - make \"quickstrap\" to redo last build,
-	@echo or \"cleanstrap\" to redo the bootstrap from scratch.
+bootstrap-lean_a:                   stage_a
+bootstrap-lean_b:  bootstrap-lean_a stage_b
+bootstrap-lean_c:  bootstrap-lean_b clean_s1 
+bootstrap-lean_d:  bootstrap-lean_c stage_c
+bootstrap-lean_e:  bootstrap-lean_d stage_d
+bootstrap-lean_f:  bootstrap-lean_e clean_s2
+bootstrap-lean_g:  bootstrap-lean_f stage_e
+bootstrap-lean: force bootstrap-lean_g
 
-bootstrap2: bootstrap
+bootstrap2_c:               stage_c
+bootstrap2_d:  bootstrap2_c stage_d
+bootstrap2_e:  bootstrap2_d stage_e
+bootstrap2: force bootstrap2_e
 
-bootstrap2-lean : bootstrap_lean
+bootstrap2-lean_c:                    stage_c
+bootstrap2-lean_d:  bootstrap2-lean_c stage_d
+bootstrap2-lean_e:  bootstrap2-lean_d clean_s2
+bootstrap2-lean_f:  bootstrap2-lean_e stage_e
+bootstrap2-lean: force bootstrap2-lean_f
 
-bootstrap3 bootstrap3-lean: bootstrap
+bootstrap3 bootstrap3-lean: force stage_e
  
-bootstrap4 bootstrap4-lean: stage4_build
-
-unstage1 unstage2 unstage3 unstage4:
-	-set -vx; stage=`echo $@ | sed -e 's/un//'`; \
-	if test -d $$stage; then \
-	  mv $$stage/* . 2>/dev/null; \
-	  for i in `cd $$stage; echo *` ; do \
-	    if test -d $$stage/$$i; then \
-	      mv $$stage/$$i/* $$i/. 2>/dev/null; \
-	    else \
-	      mv $$stage/$$i .; \
-	    fi \
-	  done \
-	fi ; \
-	rm -f $${stage}_build $${stage}_copy ;\
-	echo $${stage}_build > stage_last
-
-restage1: unstage1
-	$(MAKE) stage1_build
-
-restage2: unstage2
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage2_build
-
-restage3: unstage3
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage3_build
-
-restage4: unstage4
-	$(MAKE) LANGUAGES="$(LANGUAGES)" stage4_build
-
-bubblestrap:
-	if test -f stage3_build; then true; else \
-	  echo; echo You must \"make bootstrap\" first.; \
-	  exit 1; \
-	fi
-	for i in stage3 \
-		unstage1 stage1_build stage1_copy \
-		unstage2 stage2_build stage2_copy \
-		unstage3 stage3_build ; \
-	do \
-	  $(MAKE) LANGUAGES="$(LANGUAGES)" $$i || exit 1 ; \
-	done
-
-quickstrap:
-	if test -f stage_last ; then \
-	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) LANGUAGES="$(LANGUAGES)" $$LAST; \
-	else \
-	  $(MAKE) stage1_build; \
-	fi
-
-cleanstrap:
-	-$(MAKE) clean
-	$(MAKE) LANGUAGES="$(LANGUAGES)" bootstrap
+bootstrap4 bootstrap4-lean: force stage_f
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.
