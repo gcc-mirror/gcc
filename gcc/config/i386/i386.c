@@ -1592,7 +1592,7 @@ classify_argument (mode, type, classes, bit_offset)
 {
   int bytes =
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
-  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int words = (bytes + (bit_offset % 64) / 8 + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (type && AGGREGATE_TYPE_P (type))
     {
