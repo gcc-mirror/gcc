@@ -5437,7 +5437,7 @@ s390_alloc_pool (void)
   pool->label = gen_label_rtx ();
   pool->first_insn = NULL_RTX;
   pool->pool_insn = NULL_RTX;
-  pool->insns = BITMAP_XMALLOC ();
+  pool->insns = BITMAP_ALLOC (NULL);
   pool->size = 0;
 
   return pool;
@@ -5464,7 +5464,7 @@ s390_free_pool (struct constant_pool *pool)
       free (c);
     }
 
-  BITMAP_XFREE (pool->insns);
+  BITMAP_FREE (pool->insns);
   free (pool);
 }
 
@@ -5821,7 +5821,7 @@ s390_chunkify_start (void)
   /* Find all labels that are branched into
      from an insn belonging to a different chunk.  */
 
-  far_labels = BITMAP_XMALLOC ();
+  far_labels = BITMAP_ALLOC (NULL);
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
@@ -5918,7 +5918,7 @@ s390_chunkify_start (void)
       }
 
 
-  BITMAP_XFREE (far_labels);
+  BITMAP_FREE (far_labels);
 
 
   /* Recompute insn addresses.  */
