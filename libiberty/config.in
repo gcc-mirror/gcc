@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -29,6 +29,9 @@
 
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
+
+/* Define to `unsigned long' if <sys/types.h> doesn't define.  */
+#undef uintptr_t
 
 /* Define if you have the _doprnt function.  */
 #undef HAVE__DOPRNT

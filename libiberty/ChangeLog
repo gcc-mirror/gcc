@@ -1,3 +1,8 @@
+2003-02-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* acconfig.h: New file.  Add uintptr_t.
+	* config.in: Regenerated.
+
 2003-02-05  Release Manager
 
 	* GCC 3.2.2 Released.
