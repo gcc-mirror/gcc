@@ -38,9 +38,8 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.peer.TextAreaPeer;
-import java.awt.peer.TextComponentPeer;
 import java.awt.peer.ComponentPeer;
+import java.awt.peer.TextAreaPeer;
 
 /**
   * This implements a multi-line text entry widget.

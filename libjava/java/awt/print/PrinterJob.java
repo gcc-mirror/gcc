@@ -98,8 +98,7 @@ getCopies();
   *
   * @param copies The number of copies to be printed.
   */
-public abstract void
-setCopies();
+public abstract void setCopies (int copies);
 
 /*************************************************************************/
 

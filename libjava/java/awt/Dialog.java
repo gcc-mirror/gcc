@@ -39,9 +39,6 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.DialogPeer;
-import java.awt.peer.WindowPeer;
-import java.awt.peer.ContainerPeer;
-import java.awt.peer.ComponentPeer;
 
 /**
  * A dialog box widget class.

@@ -1,3 +1,41 @@
+2003-06-05  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Button.java,
+	java/awt/Checkbox.java,
+	java/awt/CheckboxMenuItem.java,
+	java/awt/Choice.java,
+	java/awt/Container.java,
+	java/awt/Dialog.java,
+	java/awt/EventQueue.java,
+	java/awt/FileDialog.java,
+	java/awt/Frame.java,
+	java/awt/Label.java,
+	java/awt/List.java,
+	java/awt/Menu.java,
+	java/awt/MenuItem.java,
+	java/awt/Panel.java,
+	java/awt/PopupMenu.java,
+	java/awt/Rectangle.java,
+	java/awt/ScrollPane.java,
+	java/awt/Scrollbar.java,
+	java/awt/TextArea.java,
+	java/awt/TextField.java,
+	java/awt/Window.java,
+	java/awt/datatransfer/DataFlavor.java,
+	java/awt/dnd/DragSource.java,
+	java/awt/dnd/DragSourceContext.java,
+	java/awt/event/HierarchyEvent.java,
+	java/awt/event/MouseWheelEvent.java,
+	java/awt/im/InputContext.java,
+	java/awt/image/BufferedImage.java,
+	java/awt/image/ComponentColorModel.java,
+	java/awt/image/Raster.java,
+	java/awt/image/WritableRaster.java,
+	java/awt/peer/ComponentPeer.java,
+	java/awt/print/PageFormat.java,
+	java/awt/print/PrinterJob.java:
+	New versions from Classpath.
+
 2003-06-05  Scott Gilbertson  <scottg@mantatest.com>
 
 	* java/text/SimpleDateFormat.java (SimpleDateFormat): Added

@@ -37,9 +37,9 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.event.*;
-import java.util.EmptyStackException;
+import java.awt.event.InvocationEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.util.EmptyStackException;
 
 /* Written using on-line Java 2 Platform Standard Edition v1.3 API 
  * Specification, as well as "The Java Class Libraries", 2nd edition 
@@ -376,4 +376,4 @@ public class EventQueue
     // XXX For now, this ONLY does the current time.
     return System.currentTimeMillis();
   }
-} // class EventQueue
+}

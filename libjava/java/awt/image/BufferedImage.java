@@ -37,10 +37,15 @@ exception statement from your version. */
 
 package java.awt.image;
 
-import java.awt.*;
-import java.awt.color.*;
-import java.util.*;
-
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.util.Hashtable;
+import java.util.Vector;
 import gnu.java.awt.ComponentDataBlitOp;
 
 /**

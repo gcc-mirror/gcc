@@ -39,9 +39,8 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.event.MouseEvent;
-import java.awt.peer.ScrollPanePeer;
-import java.awt.peer.ContainerPeer;
 import java.awt.peer.ComponentPeer;
+import java.awt.peer.ScrollPanePeer;
 import javax.accessibility.Accessible;
 
 /**
@@ -367,8 +366,8 @@ removeNotify()
   * @param index The index at which to add the child, which is ignored
   * in this implementation.
   */
-public final void
-addImpl(Component component, Object constraints, int index)
+  protected final void addImpl (Component component, Object constraints,
+				int index)
 {
   Component[] list = getComponents();
   if ((list != null) && (list.length > 0))
@@ -465,7 +464,7 @@ paramString()
    *
    * @since 1.4
    */
-  public boolean eventTypeEnabled (int type)
+  protected boolean eventTypeEnabled (int type)
   {
     if (type == MouseEvent.MOUSE_WHEEL)
       return wheelScrollingEnabled;

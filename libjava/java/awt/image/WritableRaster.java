@@ -34,9 +34,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.image;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
@@ -138,10 +140,10 @@ public class WritableRaster extends Raster
 
   public void setRect(Raster srcRaster)
   {
-    setRect(srcRaster, 0, 0);
+    setRect(0, 0, srcRaster);
   }
 
-  public void setRect(Raster srcRaster, int dx, int dy) 
+  public void setRect(int dx, int dy, Raster srcRaster) 
   {
     Rectangle targetUnclipped = new Rectangle(srcRaster.getMinX()+dx,
 					      srcRaster.getMinY()+dy,

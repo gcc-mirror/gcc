@@ -183,8 +183,7 @@ getImageableWidth()
   *
   * @return The imageable height of the paper.
   */
-public double
-getImageableHeigth()
+public double getImageableHeight()
 {
   return(paper.getImageableHeight());
 }
