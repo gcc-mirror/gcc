@@ -1,3 +1,15 @@
+Fri Apr 17 21:25:00 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (type_as_string_real): New function.
+	* pt.c (mangle_class_name_for_template): Use it.
+	* error.c (dump_aggr_type): Change prototype.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_type_real): Convert from dump_type.  If desired, the
+	"canonica" name of a typedef, i.e., the name of the underlying
+	type, can be printed.
+	(dump_type): Call dump_type_real.
+
 Fri Apr 17 14:30:45 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (lang_decode_option): -fnew-abi implies -fvtable-thunks.

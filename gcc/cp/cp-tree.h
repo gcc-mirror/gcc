@@ -2272,6 +2272,7 @@ extern void cp_sprintf				();
 extern void init_error				PROTO((void));
 extern char *fndecl_as_string			PROTO((tree, int));
 extern char *type_as_string			PROTO((tree, int));
+extern char *type_as_string_real		PROTO((tree, int, int));
 extern char *args_as_string			PROTO((tree, int));
 extern char *decl_as_string			PROTO((tree, int));
 extern char *expr_as_string			PROTO((tree, int));

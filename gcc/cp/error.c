@@ -88,14 +88,15 @@ static char *scratch_firstobj;
 enum pad { none, before, after };
 
 static void dump_type PROTO((tree, int));
+static void dump_type_real PROTO((tree, int, int));
 static void dump_decl PROTO((tree, int));
 static void dump_function_decl PROTO((tree, int));
 static void dump_expr PROTO((tree, int));
 static void dump_unary_op PROTO((char *, tree, int));
 static void dump_binary_op PROTO((char *, tree));
-static void dump_aggr_type PROTO((tree, int));
-static void dump_type_prefix PROTO((tree, int));
-static void dump_type_suffix PROTO((tree, int));
+static void dump_aggr_type PROTO((tree, int, int));
+static void dump_type_prefix PROTO((tree, int, int));
+static void dump_type_suffix PROTO((tree, int, int));
 static void dump_function_name PROTO((tree));
 static void dump_expr_list PROTO((tree));
 static void dump_global_iord PROTO((tree));
@@ -136,7 +137,7 @@ static char digit_buffer[128];
 /* Dump into the obstack a human-readable equivalent of TYPE.  */
 
 static void
-dump_type (t, v)
+dump_type_real (t, v, canonical_name)
      tree t;
      int v;			/* verbose? */
 {
@@ -160,7 +161,7 @@ dump_type (t, v)
       /* i.e. function taking no arguments */
       if (t != void_list_node)
 	{
-	  dump_type (TREE_VALUE (t), v);
+	  dump_type_real (TREE_VALUE (t), v, canonical_name);
 	  /* Can this happen other than for default arguments? */
 	  if (TREE_PURPOSE (t) && v)
 	    {
@@ -172,7 +173,7 @@ dump_type (t, v)
 	      if (TREE_CHAIN (t) != void_list_node)
 		{
 		  OB_PUTC2 (',', ' ');
-		  dump_type (TREE_CHAIN (t), v);
+		  dump_type_real (TREE_CHAIN (t), v, canonical_name);
 		}
 	    }
 	  else OB_PUTS (" ...");
@@ -184,7 +185,7 @@ dump_type (t, v)
       break;
 
     case TREE_VEC:
-      dump_type (BINFO_TYPE (t), v);
+      dump_type_real (BINFO_TYPE (t), v, canonical_name);
       break;
 
     case RECORD_TYPE:
@@ -195,14 +196,14 @@ dump_type (t, v)
 	{
 	  if (TYPE_READONLY (t) | TYPE_VOLATILE (t))
 	    dump_readonly_or_volatile (t, after);
-	  dump_type (SIGNATURE_TYPE (t), v);
+	  dump_type_real (SIGNATURE_TYPE (t), v, canonical_name);
 	  if (IS_SIGNATURE_POINTER (t))
 	    OB_PUTC ('*');
 	  else
 	    OB_PUTC ('&');
 	}
       else
-	dump_aggr_type (t, v);
+	dump_aggr_type (t, v, canonical_name);
       break;
 
     case TYPE_DECL:
@@ -212,7 +213,7 @@ dump_type (t, v)
 
     case COMPLEX_TYPE:
       OB_PUTS ("complex ");
-      dump_type (TREE_TYPE (t), v);
+      dump_type_real (TREE_TYPE (t), v, canonical_name);
       break;
 
     case INTEGER_TYPE:
@@ -226,7 +227,7 @@ dump_type (t, v)
     case VOID_TYPE:
     case BOOLEAN_TYPE:
       dump_readonly_or_volatile (t, after);
-      OB_PUTID (TYPE_IDENTIFIER (t));
+      OB_PUTID (TYPE_IDENTIFIER (canonical_name ? TYPE_MAIN_VARIANT (t) : t));
       break;
 
     case TEMPLATE_TEMPLATE_PARM:
@@ -249,7 +250,7 @@ dump_type (t, v)
 	      tree arg = TREE_VEC_ELT (args, i);
 	      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
 		  || TREE_CODE (arg) == TEMPLATE_DECL)
-	        dump_type (arg, 0);
+	        dump_type_real (arg, 0, canonical_name);
 	      else
 	        dump_expr (arg, 0);
 	      if (i < TREE_VEC_LENGTH (args)-1)
@@ -276,13 +277,13 @@ dump_type (t, v)
     offset_type:
     case FUNCTION_TYPE:
     case METHOD_TYPE:
-      dump_type_prefix (t, v);
-      dump_type_suffix (t, v);
+      dump_type_prefix (t, v, canonical_name);
+      dump_type_suffix (t, v, canonical_name);
       break;
 
     case TYPENAME_TYPE:
       OB_PUTS ("typename ");
-      dump_type (TYPE_CONTEXT (t), 0);
+      dump_type_real (TYPE_CONTEXT (t), 0, canonical_name);
       OB_PUTS ("::");
       OB_PUTID (TYPE_IDENTIFIER (t));
       break;
@@ -309,12 +310,21 @@ aggr_variety (t)
     return "struct";
 }
 
+static void
+dump_type (t, v)
+     tree t;
+     int v;			/* verbose? */
+{
+  dump_type_real (t, v, 0);
+}
+
 /* Print out a class declaration, in the form `class foo'.  */
 
 static void
-dump_aggr_type (t, v)
+dump_aggr_type (t, v, canonical_name)
      tree t;
      int v;			/* verbose? */
+     int canonical_name;
 {
   tree name;
   char *variety = aggr_variety (t);
@@ -327,7 +337,7 @@ dump_aggr_type (t, v)
       OB_PUTC (' ');
     }
   
-  name = TYPE_NAME (t);
+  name = TYPE_NAME (canonical_name ? TYPE_MAIN_VARIANT (t) : t);
 
   if (name && DECL_CONTEXT (name))
     {
@@ -366,9 +376,10 @@ dump_aggr_type (t, v)
    int *[]&.  */
 
 static void
-dump_type_prefix (t, v)
+dump_type_prefix (t, v, canonical_name)
      tree t;
      int v;			/* verbosity */
+     int canonical_name;
 {
   if (TYPE_PTRMEMFUNC_P (t))
     {
@@ -382,7 +393,7 @@ dump_type_prefix (t, v)
       {
 	tree sub = TREE_TYPE (t);
 	
-	dump_type_prefix (sub, v);
+	dump_type_prefix (sub, v, canonical_name);
 	/* A tree for a member pointer looks like pointer to offset,
 	   so let the OFFSET_TYPE case handle it.  */
 	if (TREE_CODE (sub) != OFFSET_TYPE)
@@ -416,7 +427,7 @@ dump_type_prefix (t, v)
     case REFERENCE_TYPE:
       {
 	tree sub = TREE_TYPE (t);
-	dump_type_prefix (sub, v);
+	dump_type_prefix (sub, v, canonical_name);
 
 	switch (TREE_CODE (sub))
 	  {
@@ -440,11 +451,11 @@ dump_type_prefix (t, v)
 
     case OFFSET_TYPE:
     offset_type:
-      dump_type_prefix (TREE_TYPE (t), v);
+      dump_type_prefix (TREE_TYPE (t), v, canonical_name);
       if (TREE_CODE (t) == OFFSET_TYPE)	/* pmfs deal with this in d_t_p */
 	{
 	  OB_PUTC (' ');
-	  dump_type (TYPE_OFFSET_BASETYPE (t), 0);
+	  dump_type_real (TYPE_OFFSET_BASETYPE (t), 0, canonical_name);
 	  OB_PUTC2 (':', ':');
 	}
       OB_PUTC ('*');
@@ -454,19 +465,19 @@ dump_type_prefix (t, v)
       /* Can only be reached through function pointer -- this would not be
          correct if FUNCTION_DECLs used it.  */
     case FUNCTION_TYPE:
-      dump_type_prefix (TREE_TYPE (t), v);
+      dump_type_prefix (TREE_TYPE (t), v, canonical_name);
       OB_PUTC2 (' ', '(');
       break;
 
     case METHOD_TYPE:
-      dump_type_prefix (TREE_TYPE (t), v);
+      dump_type_prefix (TREE_TYPE (t), v, canonical_name);
       OB_PUTC2 (' ', '(');
-      dump_aggr_type (TYPE_METHOD_BASETYPE (t), 0);
+      dump_aggr_type (TYPE_METHOD_BASETYPE (t), 0, canonical_name);
       OB_PUTC2 (':', ':');
       break;
 
     case ARRAY_TYPE:
-      dump_type_prefix (TREE_TYPE (t), v);
+      dump_type_prefix (TREE_TYPE (t), v, canonical_name);
       break;
 
     case ENUMERAL_TYPE:
@@ -486,7 +497,7 @@ dump_type_prefix (t, v)
     case VOID_TYPE:
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
-      dump_type (t, v);
+      dump_type_real (t, v, canonical_name);
       break;
       
     default:
@@ -496,9 +507,10 @@ dump_type_prefix (t, v)
 }
 
 static void
-dump_type_suffix (t, v)
+dump_type_suffix (t, v, canonical_name)
      tree t;
      int v;			/* verbose? */
+     int canonical_name;
 {
   if (TYPE_PTRMEMFUNC_P (t))
     t = TYPE_PTRMEMFUNC_FN_TYPE (t);
@@ -510,7 +522,7 @@ dump_type_suffix (t, v)
     case OFFSET_TYPE:
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	OB_PUTC (')');
-      dump_type_suffix (TREE_TYPE (t), v);
+      dump_type_suffix (TREE_TYPE (t), v, canonical_name);
       break;
 
       /* Can only be reached through function pointer */
@@ -531,7 +543,7 @@ dump_type_suffix (t, v)
 	if (TREE_CODE (t) == METHOD_TYPE)
 	  dump_readonly_or_volatile
 	    (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), before);
-	dump_type_suffix (TREE_TYPE (t), v);
+	dump_type_suffix (TREE_TYPE (t), v, canonical_name);
 	break;
       }
 
@@ -549,7 +561,7 @@ dump_type_suffix (t, v)
 			      integer_one_node, 1)), 0);
 	}
       OB_PUTC (']');
-      dump_type_suffix (TREE_TYPE (t), v);
+      dump_type_suffix (TREE_TYPE (t), v, canonical_name);
       break;
       
     case ENUMERAL_TYPE:
@@ -676,7 +688,7 @@ dump_decl (t, v)
     general:
       if (v > 0)
 	{
-	  dump_type_prefix (TREE_TYPE (t), v);
+	  dump_type_prefix (TREE_TYPE (t), v, 0);
 	  OB_PUTC (' ');
 	  dump_readonly_or_volatile (t, after);
 	}
@@ -692,7 +704,7 @@ dump_decl (t, v)
       else
 	OB_PUTS ("{anon}");
       if (v > 0)
-	dump_type_suffix (TREE_TYPE (t), v);
+	dump_type_suffix (TREE_TYPE (t), v, 0);
       break;
 
     case NAMESPACE_DECL:
@@ -922,7 +934,7 @@ dump_function_decl (t, v)
 	  && ! DECL_CONSTRUCTOR_P (t)
 	  && ! DESTRUCTOR_NAME_P (name))
 	{
-	  dump_type_prefix (TREE_TYPE (fntype), 1);
+	  dump_type_prefix (TREE_TYPE (fntype), 1, 0);
 	  OB_PUTC (' ');
 	}
     }
@@ -953,7 +965,7 @@ dump_function_decl (t, v)
   OB_PUTC (')');
 
   if (v && ! IDENTIFIER_TYPENAME_P (name))
-    dump_type_suffix (TREE_TYPE (fntype), 1);
+    dump_type_suffix (TREE_TYPE (fntype), 1, 0);
 
   if (TREE_CODE (fntype) == METHOD_TYPE)
     {
@@ -1653,20 +1665,32 @@ fndecl_as_string (fndecl, print_ret_type_p)
 
 /* Same, but handle a _TYPE.
    Called from convert_to_reference, mangle_class_name_for_template,
-   build_unary_op, and GNU_xref_decl.  */
+   build_unary_op, and GNU_xref_decl.  If CANONICAL_NAME is non-zero,
+   when describing a typedef, we use the name of the type described,
+   rather than the name of the typedef.  */
+
+char *
+type_as_string_real (typ, v, canonical_name)
+     tree typ;
+     int v;
+     int canonical_name;
+{
+  OB_INIT ();
+
+  dump_type_real (typ, v, canonical_name);
+
+  OB_FINISH ();
+
+  return (char *)obstack_base (&scratch_obstack);
+}
+
 
 char *
 type_as_string (typ, v)
      tree typ;
      int v;
 {
-  OB_INIT ();
-
-  dump_type (typ, v);
-
-  OB_FINISH ();
-
-  return (char *)obstack_base (&scratch_obstack);
+  return type_as_string_real (typ, v, 0);
 }
 
 char *
