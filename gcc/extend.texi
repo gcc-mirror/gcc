@@ -2015,6 +2015,9 @@ closing curly brace of a complete enum, struct or union type
 @emph{definition} and the @code{packed} attribute only past the closing
 brace of a definition.
 
+You may also specify attributes between the enum, struct or union
+tag and the name of the type rather than after the closing brace.
+
 @table @code
 @cindex @code{aligned} attribute
 @item aligned (@var{alignment})
