@@ -397,7 +397,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
      "Do not load the PIC register in function prologues" },	\
   {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },	\
   {"long-calls",		ARM_FLAG_LONG_CALLS,		\
-     "Generate all call instructions as indirect calls"},	\
+     "Generate call insns as indirect calls, if necessary"},	\
   {"no-long-calls",	       -ARM_FLAG_LONG_CALLS, ""},	\
   SUBTARGET_SWITCHES						\
   {"",				TARGET_DEFAULT, "" }		\
@@ -1037,7 +1037,7 @@ enum reg_class
 	  else									\
 	    break;								\
 	  									\
-	  high = ((((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000);	\
+	  high = ((((val - low) & 0xffffffffUL) ^ 0x80000000UL) - 0x80000000UL);\
 	  /* Check for overflow or zero */					\
 	  if (low == 0 || high == 0 || (high + low != val))			\
 	    break;								\
@@ -1452,6 +1452,55 @@ CUMULATIVE_ARGS;
    
    When generating pic allow anything.  */
 #define LEGITIMATE_CONSTANT_P(X)	(flag_pic || ! label_mentioned_p (X))
+
+/* Special characters prefixed to function names
+   in order to encode attribute like information.
+   Note, '@' and '*' have already been taken.  */
+#define SHORT_CALL_FLAG_CHAR	'^'
+#define LONG_CALL_FLAG_CHAR	'#'
+
+#define ENCODED_SHORT_CALL_ATTR_P(SYMBOL_NAME)	\
+  (*(SYMBOL_NAME) == SHORT_CALL_FLAG_CHAR)
+
+#define ENCODED_LONG_CALL_ATTR_P(SYMBOL_NAME)	\
+  (*(SYMBOL_NAME) == LONG_CALL_FLAG_CHAR)
+
+#ifndef SUBTARGET_NAME_ENCODING_LENGTHS
+#define SUBTARGET_NAME_ENCODING_LENGTHS
+#endif
+
+/* This is a C fragement for the inside of a switch statement.
+   Each case label should return the number of characters to
+   be stripped from the start of a function's name, if that
+   name starts with the indicated character.  */
+#define ARM_NAME_ENCODING_LENGTHS		\
+  case SHORT_CALL_FLAG_CHAR: return 1;		\
+  case LONG_CALL_FLAG_CHAR:  return 1;		\
+  case '*':  return 1;				\
+  SUBTARGET_NAME_ENCODING_LENGTHS		
+
+/* This has to be handled by a function because more than part of the
+   ARM backend uses funciton name prefixes to encode attributes.  */
+#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)	\
+  (VAR) = arm_strip_name_encoding (SYMBOL_NAME)
+
+/* This is how to output a reference to a user-level label named NAME.
+   `assemble_name' uses this.  */
+#define ASM_OUTPUT_LABELREF(FILE, NAME)		\
+  fprintf (FILE, "%s%s", USER_LABEL_PREFIX, arm_strip_name_encoding (NAME))
+
+/* If we are referencing a function that is weak then encode a long call
+   flag in the function name, otherwise if the function is static or
+   or known to be defined in this file then encode a short call flag.
+   This macro is used inside the ENCODE_SECTION macro.  */
+#define ARM_ENCODE_CALL_TYPE(decl)					\
+  if (TREE_CODE (decl) == FUNCTION_DECL)				\
+    {									\
+      if (DECL_WEAK (decl))						\
+        arm_encode_call_attribute (decl, LONG_CALL_FLAG_CHAR);		\
+      else if (! TREE_PUBLIC (decl))        				\
+        arm_encode_call_attribute (decl, SHORT_CALL_FLAG_CHAR);		\
+    }									\
 
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
@@ -1470,8 +1519,17 @@ CUMULATIVE_ARGS;
                  ? TREE_CST_RTL (decl) : DECL_RTL (decl));		\
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;				\
     }									\
+  ARM_ENCODE_CALL_TYPE (decl)						\
+}
+#else
+#define ENCODE_SECTION_INFO(decl)					\
+{									\
+  ARM_ENCODE_CALL_TYPE (decl)						\
 }
 #endif
+
+#define ARM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)	\
+  arm_encode_call_attribute (DECL, SHORT_CALL_FLAG_CHAR)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1892,8 +1950,8 @@ extern const char * arm_pic_register_string;
 	(   ! symbol_mentioned_p (X)					\
 	 && ! label_mentioned_p (X)					\
 	 && (! CONSTANT_POOL_ADDRESS_P (X)				\
-	     || (   ! symbol_mentioned_p (get_pool_constant (X)))  	\
-	         && ! label_mentioned_p (get_pool_constant (X))))
+	     || (   ! symbol_mentioned_p (get_pool_constant (X))  	\
+	         && ! label_mentioned_p (get_pool_constant (X)))))
      
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT
@@ -1912,6 +1970,14 @@ extern int making_const_table;
    generated).  */
 #define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
   (arm_comp_type_attributes (TYPE1, TYPE2))
+
+/* If defined, a C statement that assigns default attributes to newly
+   defined TYPE.  */
+#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
+  arm_set_default_type_attributes (TYPE)
+
+/* Handle pragmas for compatibility with Intel's compilers.  */
+#define HANDLE_PRAGMA(GET, UNGET, NAME) arm_process_pragma (GET, UNGET, NAME)
 
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,

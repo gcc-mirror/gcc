@@ -127,6 +127,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
   do								\
     {								\
+      ARM_DECLARE_FUNCTION_SIZE (FILE, FNAME, DECL);		\
       if (!flag_inhibit_size_directive)				\
         {							\
           char label[256];					\

@@ -34,6 +34,7 @@ extern void   output_ascii_pseudo_op		PARAMS ((FILE *, unsigned char *, int));
 extern void   output_func_epilogue		PARAMS ((int));
 extern void   output_func_prologue		PARAMS ((FILE *, int));
 extern int    use_return_insn			PARAMS ((int));
+extern const char * arm_strip_name_encoding	PARAMS ((const char *));
 #if defined AOF_ASSEMBLER 
 extern void   aof_add_import			PARAMS ((char *));
 extern char * aof_data_section			PARAMS ((void));
@@ -62,6 +63,9 @@ extern void   arm_pe_encode_section_info 	PARAMS ((tree));
 extern tree   arm_pe_merge_machine_decl_attributes PARAMS ((tree, tree));
 extern void   arm_pe_unique_section 		PARAMS ((tree, int));
 extern int    arm_pe_valid_machine_decl_attribute PARAMS ((tree, tree, tree, tree));
+extern void   arm_set_default_type_attributes	PARAMS ((tree));
+extern void   arm_encode_call_attribute		PARAMS ((tree, char));
+extern int    arm_pe_return_in_memory		PARAMS ((tree));
 #endif
 
 #ifdef RTX_CODE
