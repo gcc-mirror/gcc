@@ -81,7 +81,7 @@ sendmsg.o: sendmsg.c fflags
 xforward: xforward.c
 	-$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/xforward.c
 	-$(GCC_FOR_TARGET) ./xforward.o -o xforward
-	if [ ! -f ./xforward ]; then touch ./xforward; fi	
+	if [ ! -f ./xforward ]; then touch ./xforward; else true; fi	
 
 fflags: xforward
 	-rm -f fflags
