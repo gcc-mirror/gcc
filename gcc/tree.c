@@ -1847,9 +1847,8 @@ staticp (arg)
 
    Constants, and certain read-only nodes, are returned with no
    SAVE_EXPR because that is safe.  Expressions containing placeholders
-   are not touched.  (Kenner, please add a cross reference to where
-   placeholders are explained, so people can learn the basics for
-   understanding this.)  */
+   are not touched; see tree.def for an explanation of what these
+   are used for.  */
 
 tree
 save_expr (expr)
