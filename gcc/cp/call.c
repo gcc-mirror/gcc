@@ -3739,23 +3739,27 @@ maybe_handle_implicit_object (ics)
 	 member and cv is the cv-qualification on the member
 	 function declaration.  */
       tree t = *ics;
+      if (TREE_CODE (t) == QUAL_CONV)
+	t = TREE_OPERAND (t, 0);
       if (TREE_CODE (t) == PTR_CONV)
 	t = TREE_OPERAND (t, 0);
       t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
-      t = build_conv (REF_BIND, TREE_TYPE (*ics), t);
+      t = build_conv (REF_BIND, 
+		      build_reference_type (TREE_TYPE (TREE_TYPE (*ics))), 
+		      t);
       ICS_STD_RANK (t) = ICS_STD_RANK (*ics);
       *ics = t;
     }
 }
 
-/* If ICS is a REF_BIND, modify it appropriately, set ORIG_TO_TYPE
+/* If ICS is a REF_BIND, modify it appropriately, set TARGET_TYPE
    to the type the reference originally referred to, and return 1.
    Otherwise, return 0.  */
 
 static int
-maybe_handle_ref_bind (ics, reference_type)
+maybe_handle_ref_bind (ics, target_type)
      tree* ics;
-     tree* reference_type;
+     tree* target_type;
 {
   if (TREE_CODE (*ics) == REF_BIND)
     {
@@ -3788,11 +3792,11 @@ maybe_handle_ref_bind (ics, reference_type)
 
       tree old_ics = *ics;
 
-      *reference_type = TREE_TYPE (TREE_TYPE (*ics));
+      *target_type = TREE_TYPE (TREE_TYPE (*ics));
       *ics = TREE_OPERAND (*ics, 0);
       if (TREE_CODE (*ics) == IDENTITY_CONV
-	  && is_properly_derived_from (TREE_TYPE (*ics), *reference_type))
-	*ics = build_conv (BASE_CONV, *reference_type, *ics);
+	  && is_properly_derived_from (TREE_TYPE (*ics), *target_type))
+	*ics = build_conv (BASE_CONV, *target_type, *ics);
       ICS_USER_FLAG (*ics) = ICS_USER_FLAG (old_ics);
       ICS_BAD_FLAG (*ics) = ICS_BAD_FLAG (old_ics);
       
@@ -3823,20 +3827,20 @@ compare_ics (ics1, ics2)
   tree deref_to_type2;
 
   /* REF_BINDING is non-zero if the result of the conversion sequence
-     is a reference type.   In that case REFERENCE_TYPE is the
-     reference type.  */
+     is a reference type.   In that case TARGET_TYPE is the
+     type referred to by the reference.  */
   int ref_binding1;
   int ref_binding2;
-  tree reference_type1;
-  tree reference_type2;
+  tree target_type1;
+  tree target_type2;
 
   /* Handle implicit object parameters.  */
   maybe_handle_implicit_object (&ics1);
   maybe_handle_implicit_object (&ics2);
 
   /* Handle reference parameters.  */
-  ref_binding1 = maybe_handle_ref_bind (&ics1, &reference_type1);
-  ref_binding2 = maybe_handle_ref_bind (&ics2, &reference_type2);
+  ref_binding1 = maybe_handle_ref_bind (&ics1, &target_type1);
+  ref_binding2 = maybe_handle_ref_bind (&ics2, &target_type2);
 
   /* [over.ics.rank]
 
@@ -4132,7 +4136,7 @@ compare_ics (ics1, ics2)
   if (ref_binding1 && ref_binding2
       && comptypes (TYPE_MAIN_VARIANT (to_type1),
 		    TYPE_MAIN_VARIANT (to_type2), 1))
-    return comp_cv_qualification (reference_type2, reference_type1);
+    return comp_cv_qualification (target_type2, target_type1);
 
   /* Neither conversion sequence is better than the other.  */
   return 0;
