@@ -63,11 +63,12 @@ namespace std {
     public:
       typedef _Tp value_type;
 
-      // this constructor needs to be implemented.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 253. valarray helper functions are almost entirely useless
+
       ///  Copy constructor.  Both slices refer to the same underlying array.
       mask_array (const mask_array&);
       
-      // This operator must be public.  See DR-253.
       ///  Assignment operator.  Assigns elements to corresponding elements
       ///  of @a a.
       mask_array& operator=(const mask_array&);
@@ -136,12 +137,12 @@ namespace std {
 
   template<typename _Tp>
     inline mask_array<_Tp>::mask_array(const mask_array<_Tp>& a)
-      : _M_sz(a._M_sz), _M_mask(a._M_mask), _M_array(a._M_array) {}
+    : _M_sz(a._M_sz), _M_mask(a._M_mask), _M_array(a._M_array) {}
 
   template<typename _Tp>
     inline
     mask_array<_Tp>::mask_array(_Array<_Tp> __a, size_t __s, _Array<bool> __m)
-      : _M_sz(__s), _M_mask(__m), _M_array(__a) {}
+    : _M_sz(__s), _M_mask(__m), _M_array(__a) {}
 
   template<typename _Tp>
     inline mask_array<_Tp>&
