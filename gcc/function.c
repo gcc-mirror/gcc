@@ -1639,7 +1639,7 @@ fixup_var_refs_insns_with_hash (htab_t ht, rtx var, enum machine_mode promoted_m
   tmp.key = var;
   ime = htab_find (ht, &tmp);
   for (insn_list = ime->insns; insn_list != 0; insn_list = XEXP (insn_list, 1))
-    if (INSN_P (XEXP (insn_list, 0)))
+    if (INSN_P (XEXP (insn_list, 0)) && !INSN_DELETED_P (XEXP (insn_list, 0)))
       fixup_var_refs_insn (XEXP (insn_list, 0), var, promoted_mode,
 			   unsignedp, 1, may_share);
 }
