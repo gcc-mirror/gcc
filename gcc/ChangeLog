@@ -1,5 +1,27 @@
 2000-12-02  Bruce Korb  <bkorb@gnu.org>
 
+	From: 2000-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixfixes.c (emit_gnu_type, format_write): Prototype.
+	(format_write, char_macro_use_fix, char_macro_def_fix): Use gcc's
+	custom uppercase ctype macros.
+	* fixincl.c (do_version): Make static and add ATTRIBUTE_NORETURN.
+	Use gcc's custom uppercase ctype macros.
+	(main): Prototype.
+	(machine_matches): Add static prototype and constify variable.
+	(create_file, test_test, egrep_test): Add static prototype.
+	(quoted_file_exists): Likewise, and constify parameters.
+	(extract_quoted_files, internal_fix, start_fixer, fix_applies,
+	write_replacement, test_for_changes): Add static prototype.
+	(write_replacement, test_for_changes): Delete excess argument to
+	`create_file'.
+	* fixtests.c (test): Make static.
+	* server.c (load_data, sig_handler, server_setup, find_shell): Add
+	static prototype.
+	(sig_handler): Mark parameter with ATTRIBUTE_UNUSED.
+
+2000-12-02  Bruce Korb  <bkorb@gnu.org>
+
 	* fixnc/mkfixinc.sh(msdosdjgpp): remove from fixincludes exception list
 	(per Laurynas Biveinis  <lauras@softhome.net>)
 

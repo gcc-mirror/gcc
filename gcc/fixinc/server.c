@@ -107,6 +107,7 @@ STATIC t_pchar p_cur_dir = (char *) NULL;
  *  The read data are stored in a malloc-ed string that is truncated
  *  to size at the end.  Input is assumed to be an ASCII string.
  */
+static char *load_data PARAMS ((FILE *));
 static char *
 load_data (fp)
      FILE *fp;
@@ -202,9 +203,10 @@ close_server ()
  *  to our server, and also that if the server dies, we do not
  *  die from a sigpipe problem.
  */
+static void sig_handler PARAMS ((int));
 static void
 sig_handler (signo)
-     int signo;
+     int signo ATTRIBUTE_UNUSED;
 {
 #ifdef DEBUG
   /* FIXME: this is illegal to do in a signal handler.  */
@@ -222,6 +224,7 @@ sig_handler (signo)
  *  Also establishes the current directory to give to the
  *  server process at the start of every server command.
  */
+static void server_setup PARAMS ((void));
 static void
 server_setup ()
 {
@@ -254,6 +257,7 @@ server_setup ()
  *  override with $CONFIG_SHELL, so we do the same.
  */
 
+static char *find_shell PARAMS ((void));
 static char *
 find_shell ()
 {

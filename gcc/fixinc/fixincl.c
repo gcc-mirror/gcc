@@ -93,7 +93,7 @@ const char incl_quote_pat[] = "^[ \t]*#[ \t]*include[ \t]*\"[^/]";
 tSCC z_fork_err[] = "Error %d (%s) starting filter process for %s\n";
 regex_t incl_quote_re;
 
-void do_version   PARAMS((void));
+static void do_version   PARAMS((void)) ATTRIBUTE_NORETURN;
 char *load_file   PARAMS((const char *));
 void run_compiles PARAMS((void));
 void initialize   PARAMS((int argc,char** argv));
@@ -107,6 +107,7 @@ void process      PARAMS((void));
  *
  *  MAIN ROUTINE
  */
+extern int main PARAMS ((int, char **));
 int
 main (argc, argv)
      int argc;
@@ -188,7 +189,7 @@ Altering  %5d of them\n";
 }
 
 
-void
+static void
 do_version ()
 {
   static const char zFmt[] = "echo '%s'";
@@ -258,7 +259,7 @@ ENV_TABLE
 
 #undef _ENV_
 
-  if (isdigit( *pz_verbose ))
+  if (ISDIGIT ( *pz_verbose ))
     verbose_level = (te_verbose)atoi( pz_verbose );
   else
     switch (*pz_verbose) {
@@ -376,7 +377,8 @@ load_file ( fname )
   return res;
 }
 
-int
+static int machine_matches PARAMS ((tFixDesc *));
+static int
 machine_matches( p_fixd )
   tFixDesc *p_fixd;
         {
@@ -390,7 +392,7 @@ machine_matches( p_fixd )
 
           const char **papz_machs = p_fixd->papz_machs;
           char *pz;
-          char *pz_sep = "";
+          const char *pz_sep = "";
           tCC *pz_if_true;
           tCC *pz_if_false;
           char cmd_buf[ MACH_LIST_SIZE_LIMIT ]; /* size lim from fixincl.tpl */
@@ -547,7 +549,8 @@ run_compiles ()
 #endif
 
 
-FILE *
+static FILE *create_file PARAMS ((void));
+static FILE *
 create_file ()
 {
   int fd;
@@ -611,7 +614,8 @@ create_file ()
   Result: APPLY_FIX or SKIP_FIX, depending on the result of the
           shell script we run.  */
 #ifndef __MSDOS__
-int
+static int test_test PARAMS ((tTestDesc *, char *));
+static int
 test_test (p_test, pz_test_file)
      tTestDesc *p_test;
      char*      pz_test_file;
@@ -666,7 +670,8 @@ fi";
   The caller may choose to reverse meaning if the sense of the test
   is inverted.  */
 
-int
+static int egrep_test PARAMS ((char *, tTestDesc *));
+static int
 egrep_test (pz_data, p_test)
      char *pz_data;
      tTestDesc *p_test;
@@ -688,11 +693,12 @@ egrep_test (pz_data, p_test)
   the file name.  If we emit the name, our invoking shell will try
   to copy a non-existing file into the destination directory.  */
 
-int
+static int quoted_file_exists PARAMS ((const char *, const char *, const char *));
+static int
 quoted_file_exists (pz_src_path, pz_file_path, pz_file)
-     char* pz_src_path;
-     char* pz_file_path;
-     char* pz_file;
+     const char *pz_src_path;
+     const char *pz_file_path;
+     const char *pz_file;
 {
   char z[ MAXPATHLEN ];
   char* pz;
@@ -739,7 +745,8 @@ quoted_file_exists (pz_src_path, pz_file_path, pz_file)
            for interpretation by the invoking shell  */
 
 
-void
+static void extract_quoted_files PARAMS ((char *, const char *, regmatch_t *));
+static void
 extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
      char *pz_data;
      const char *pz_fixed_file;
@@ -806,7 +813,8 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
     Somebody wrote a *_fix subroutine that we must call.
     */
 #ifndef __MSDOS__
-int
+static int internal_fix PARAMS ((int, tFixDesc *));
+static int
 internal_fix (read_fd, p_fixd)
   int read_fd;
   tFixDesc* p_fixd;
@@ -1012,7 +1020,8 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
     for stdout.  */
 
 #else /* is *NOT* __MSDOS__ */
-int
+static int start_fixer PARAMS ((int, tFixDesc *, char *));
+static int
 start_fixer (read_fd, p_fixd, pz_fix_file)
   int read_fd;
   tFixDesc* p_fixd;
@@ -1086,7 +1095,8 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
    Input:  the original text of the file and the file's name
    Result: none.  A new file may or may not be created.  */
 
-t_bool
+static t_bool fix_applies PARAMS ((tFixDesc *));
+static t_bool
 fix_applies (p_fixd)
   tFixDesc *p_fixd;
 {
@@ -1200,7 +1210,8 @@ fix_applies (p_fixd)
 
    Write out a replacement file  */
 
-void
+static void write_replacement PARAMS ((tFixDesc *));
+static void
 write_replacement (p_fixd)
   tFixDesc *p_fixd;
 {
@@ -1210,7 +1221,7 @@ write_replacement (p_fixd)
      return;
 
    {
-     FILE* out_fp = create_file (pz_curr_file);
+     FILE* out_fp = create_file ();
      fputs (pz_text, out_fp);
      fclose (out_fp);
    }
@@ -1226,7 +1237,8 @@ write_replacement (p_fixd)
     the matched text and then copy any remaining data from the
     output of the filter chain.
     */
-void
+static void test_for_changes PARAMS ((int));
+static void
 test_for_changes (read_fd)
   int read_fd;
 {
@@ -1256,7 +1268,7 @@ test_for_changes (read_fd)
       */
       else if (ch != *pz_cmp)
         {
-          out_fp = create_file (pz_curr_file);
+          out_fp = create_file ();
 
 #ifdef DO_STATS
           altered_ct++;
