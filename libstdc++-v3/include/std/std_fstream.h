@@ -439,23 +439,38 @@ namespace std
     basic_filebuf<char>::int_type 
     basic_filebuf<char>::_M_underflow_common(bool __bump);
 
+  template<>
+    basic_filebuf<char>::int_type
+    basic_filebuf<char>::underflow(); 
+
+  template<>
+    basic_filebuf<char>::int_type
+    basic_filebuf<char>::uflow(); 
+
  #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     basic_filebuf<wchar_t>::int_type 
     basic_filebuf<wchar_t>::_M_underflow_common(bool __bump);
+
+  template<>
+    basic_filebuf<wchar_t>::int_type
+    basic_filebuf<wchar_t>::underflow(); 
+
+  template<>
+    basic_filebuf<wchar_t>::int_type
+    basic_filebuf<wchar_t>::uflow(); 
  #endif
 
-  // Generic definitions.
+  // Generic definitions do nothing.
   template <typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type
     basic_filebuf<_CharT, _Traits>::underflow() 
-    { return _M_underflow_common(false); }
+    { return int_type(); }
 
   template <typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type
     basic_filebuf<_CharT, _Traits>::uflow() 
-    { return _M_underflow_common(true); }
-
+    { return int_type(); }
 
   // [27.8.1.5] Template class basic_ifstream
   /**
