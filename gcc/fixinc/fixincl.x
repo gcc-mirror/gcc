@@ -1942,8 +1942,9 @@ static tTestDesc aHpux11_AbsTests[] = {
 /*
  *  Fix Command Arguments for Hpux11_Abs
  */
-static const char* apzHpux11_AbsPatch[] = { "sed",
-    "-e", "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/",
+static const char* apzHpux11_AbsPatch[] = {
+    "format",
+    "if !defined(_MATH_INCLUDED) || defined(__GNUG__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -6134,7 +6135,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zHpux11_AbsName,    zHpux11_AbsList,
      apzHpux11_AbsMachs,
-     HPUX11_ABS_TEST_CT, FD_MACH_ONLY,
+     HPUX11_ABS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_AbsTests,   apzHpux11_AbsPatch, 0 },
 
   {  zHpux11_Size_TName,    zHpux11_Size_TList,
