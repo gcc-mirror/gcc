@@ -60,6 +60,19 @@ extern enum processor_type pa_cpu;
    : pa_cpu == PROCESSOR_8000 ? 4 \
    : 2)
 
+/* Which architecture to generate code for.  */
+
+enum architecture_type
+{
+  ARCHITECTURE_10,
+  ARCHITECTURE_11,
+  ARCHITECTURE_20
+};
+
+/* For -march= option.  */
+extern char *pa_arch_string;
+extern enum architecture_type pa_arch;
+
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fputs (" (hppa)", stderr);
@@ -137,6 +150,12 @@ extern int target_flags;
 #define MASK_BIG_SWITCH 2048
 #define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
 
+
+/* Generate code for the HPPA 2.0 architecture.  TARGET_PA_11 should also be
+   true when this is true.  */
+#define MASK_PA_20 4096
+#define TARGET_PA_20 (target_flags & MASK_PA_20)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -145,9 +164,10 @@ extern int target_flags;
 
 #define TARGET_SWITCHES \
   {{"snake", MASK_PA_11, "Generate PA1.1 code"},			\
-   {"nosnake", -MASK_PA_11, "Do not generate PA1.1 code"},		\
-   {"pa-risc-1-0", -MASK_PA_11, "Do not generate PA1.1 code"},		\
+   {"nosnake", -(MASK_PA_11 | MASK_PA_20), "Generate PA1.0 code"},		\
+   {"pa-risc-1-0", -(MASK_PA_11 | MASK_PA_20), "Generate PA1.0 code"},		\
    {"pa-risc-1-1", MASK_PA_11, "Generate PA1.1 code"},			\
+   {"pa-risc-2-0", MASK_PA_20, "Generate PA2.0 code.  This option requires gas snapshot 19990413 or later"},			\
    {"disable-fpregs", MASK_DISABLE_FPREGS, "Disable FP regs"},		\
    {"no-disable-fpregs", -MASK_DISABLE_FPREGS, "Do not disable FP regs"},\
    {"no-space-regs", MASK_NO_SPACE_REGS, "Disable space regs"},		\
@@ -183,7 +203,8 @@ extern int target_flags;
 
 #define TARGET_OPTIONS			\
 {					\
-  { "schedule=",	&pa_cpu_string, "Specify CPU for scheduling purposes" }\
+  { "schedule=",	&pa_cpu_string, "Specify CPU for scheduling purposes" },\
+  { "arch=",		&pa_arch_string, "Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later." }\
 }
 
 #define OVERRIDE_OPTIONS override_options ()

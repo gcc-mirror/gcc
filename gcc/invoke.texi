@@ -345,6 +345,7 @@ in the following sections.
 -malign-functions=@var{num} -mpreferred_stack_boundary=@var{num}
 
 @emph{HPPA Options}
+-march=@var{architecture type}
 -mbig-switch  -mdisable-fpregs  -mdisable-indexing  
 -mfast-indirect-calls -mgas  -mjump-in-delay  
 -mlong-load-store  -mno-big-switch  -mno-disable-fpregs
@@ -352,8 +353,8 @@ in the following sections.
 -mno-jump-in-delay  -mno-long-load-store  
 -mno-portable-runtime  -mno-soft-float  -mno-space  
 -mno-space-regs  -msoft-float  -mpa-risc-1-0  
--mpa-risc-1-1  -mportable-runtime
--mschedule=@var{list}  -mspace  -mspace-regs
+-mpa-risc-1-1  -mpa-risc-2-0 -mportable-runtime
+-mschedule=@var{cpu type}  -mspace  -mspace-regs
 
 @emph{Intel 960 Options}
 -m@var{cpu type}  -masm-compat  -mclean-linkage
@@ -5221,11 +5222,23 @@ may want to reduce the preferred alignment to
 These @samp{-m} options are defined for the HPPA family of computers:
 
 @table @code
-@item -mpa-risc-1-0
-Generate code for a PA 1.0 processor.
+@item -march=@var{architecture type}
+Generate code for the specified architecture.  The choices for
+@var{architecture type} are @samp{1.0} for PA 1.0, @samp{1.1} for PA
+1.1, and @samp{2.0} for PA 2.0 processors.  Refer to
+@file{/usr/lib/sched.models} on an HP-UX system to determine the proper
+architecture option for your machine.  Code compiled for lower numbered
+architectures will run on higher numbered architectures, but not the
+other way around.
 
+PA 2.0 support currently requires gas snapshot 19990413 or later.  The
+next release of binutils (current is 2.9.1) will probably contain PA 2.0
+support.  
+
+@item -mpa-risc-1-0
 @item -mpa-risc-1-1
-Generate code for a PA 1.1 processor.
+@item -mpa-risc-2-0
+Synonyms for -march=1.0, -march=1.1, and -march=2.0 respectively.
 
 @item -mbig-switch
 Generate code suitable for big switch tables.  Use this option only if
