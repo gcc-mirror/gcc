@@ -690,7 +690,7 @@ attr_string (str, len)
       return h->u.str;			/* <-- return if found.  */
 
   /* Not found; create a permanent copy and add it to the hash table.  */
-  new_str = (char *) xmalloc (len + 1);
+  new_str = (char *) obstack_alloc (hash_obstack, len + 1);
   bcopy (str, new_str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
@@ -837,6 +837,12 @@ check_attr_test (exp, is_const)
 	  /* Copy this just to make it permanent,
 	     so expressions using it can be permanent too.  */
 	  exp = attr_eq (XSTR (exp, 0), XSTR (exp, 1));
+
+	  /* It shouldn't be possible to simplfy the value given to a
+	     constant attribute, so don't expand this until it's time to
+	     write the test expression.  */	       
+	  if (attr->is_const)
+	    RTX_UNCHANGING_P (exp) = 1;
 
 	  if (attr->is_numeric)
 	    {
@@ -1698,6 +1704,11 @@ fill_attr (attr)
   int i;
   rtx value;
 
+  /* Don't fill constant attributes.  The value is independent of
+     any particular insn.  */
+  if (attr->is_const)
+    return;
+
   for (id = defs; id; id = id->next)
     {
       /* If no value is specified for this insn for this attribute, use the
@@ -2123,6 +2134,7 @@ compute_alternative_mask (exp, code)
      rtx exp;
      RTX_CODE code;
 {
+  char *string;
   if (GET_CODE (exp) == code)
     return compute_alternative_mask (XEXP (exp, 0), code)
 	   | compute_alternative_mask (XEXP (exp, 1), code);
@@ -2130,14 +2142,18 @@ compute_alternative_mask (exp, code)
   else if (code == AND && GET_CODE (exp) == NOT
 	   && GET_CODE (XEXP (exp, 0)) == EQ_ATTR
 	   && XSTR (XEXP (exp, 0), 0) == alternative_name)
-    return 1 << atoi (XSTR (XEXP (exp, 0), 1));
+    string = XSTR (XEXP (exp, 0), 1);
 
   else if (code == IOR && GET_CODE (exp) == EQ_ATTR
 	   && XSTR (exp, 0) == alternative_name)
-    return 1 << atoi (XSTR (exp, 1));
+    string = XSTR (exp, 1);
 
   else
     return 0;
+
+  if (string[1] == 0)
+    return 1 << (string[0] - '0');
+  return 1 << atoi (string);
 }
 
 /* Given I, a single-bit mask, return RTX to compare the `alternative'
@@ -3448,8 +3464,19 @@ write_test_expr (exp, in_comparison)
 
       attr = find_attr (XSTR (exp, 0), 0);
       if (! attr) abort ();
-      printf ("get_attr_%s (insn) == ", attr->name);
-      write_attr_valueq (attr, XSTR (exp, 1)); 
+
+      /* Now is the time to expand the value of a constant attribute.  */
+      if (attr->is_const)
+	{
+	  write_test_expr (evaluate_eq_attr (exp, attr->default_val->value,
+					     0, 0),
+			   in_comparison);
+	}
+      else
+	{
+	  printf ("get_attr_%s (insn) == ", attr->name);
+	  write_attr_valueq (attr, XSTR (exp, 1)); 
+	}
       break;
 
     /* See if an operand matches a predicate.  */
