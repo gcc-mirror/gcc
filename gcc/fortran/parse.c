@@ -1058,24 +1058,6 @@ accept_statement (gfc_statement st)
 
       break;
 
-    case ST_BLOCK_DATA:
-      {
-        gfc_symbol *block_data = NULL;
-        symbol_attribute attr;
-
-        gfc_get_symbol ("_BLOCK_DATA__", gfc_current_ns, &block_data);
-        gfc_clear_attr (&attr);
-        attr.flavor = FL_PROCEDURE;
-        attr.proc = PROC_UNKNOWN;
-        attr.subroutine = 1;
-        attr.access = ACCESS_PUBLIC;
-        block_data->attr = attr;
-        gfc_current_ns->proc_name = block_data;
-        gfc_commit_symbols ();
-      }
-
-      break;
-
     case ST_ENTRY:
     case_executable:
     case_exec_markers:
@@ -2409,6 +2391,9 @@ parse_block_data (void)
   static locus blank_locus;
   static int blank_block=0;
   gfc_gsymbol *s;
+
+  gfc_current_ns->proc_name = gfc_new_block;
+  gfc_current_ns->is_block_data = 1;
 
   if (gfc_new_block == NULL)
     {
