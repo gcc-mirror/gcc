@@ -1,3 +1,8 @@
+1998-08-27  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (build_enumerator): Set DECL_CONTEXT for the
+	CONST_DECLs. 
+
 1998-08-26  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (finish_enum): Change prototype.
