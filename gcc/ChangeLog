@@ -1,3 +1,8 @@
+2001-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc/objc-act.c (start_class): Register implemented_classes with
+	GC.
+
 2001-02-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppfiles.c (_cpp_make_system_header): Generate a file
