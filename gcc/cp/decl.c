@@ -13875,7 +13875,7 @@ finish_destructor_body ()
 		     TYPE_BINFO (current_class_type));
 		  finish_expr_stmt
 		    (build_scoped_method_call
-		     (current_class_ref, vb, complete_dtor_identifier,
+		     (current_class_ref, vb, base_dtor_identifier,
 		      NULL_TREE));
 		}
 	      vbases = TREE_CHAIN (vbases);

@@ -1,3 +1,8 @@
+2000-04-30  Scott Snyder <snyder@fnal.gov>
+
+	* decl.c (finish_destructor_body): Use the base destructor when
+	destroying virtual bases.
+
 2000-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (cplus_expand_expr): Preserve temporaries when expanding
