@@ -412,6 +412,8 @@ int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
 int loop_insn_first_p PARAMS ((rtx, rtx));
 typedef rtx (*loop_insn_callback) PARAMS ((struct loop *, rtx, int, int));
 void for_each_insn_in_loop PARAMS ((struct loop *, loop_insn_callback));
+rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block, 
+				  rtx, rtx));
 rtx loop_insn_sink PARAMS((const struct loop *, rtx));
 rtx loop_insn_hoist PARAMS((const struct loop *, rtx));
 

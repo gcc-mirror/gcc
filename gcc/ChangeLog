@@ -1,3 +1,17 @@
+2001-01-25  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.c (loop_call_insn_emit_before, loop_call_insn_hoist): New.
+	(loop_insn_emit_before): No longer static.
+	(move_movables): Replace emit_insn_after with loop_insn_emit_after.
+	(loop_givs_rescan, load_mems): Likewise.
+	(check_dbra_loop): Replace emit_insn_before with loop_insn_emit_before.
+	(maybe_eliminate_biv_1):
+	(move_movables): Replace emit_call_insn_before with
+	loop_call_insn_hoist.
+	* loop.h (loop_insn_emit_before): Add.
+	* unroll.c (copy_loop_body): Replace emit_insn_before with 
+	loop_insn_emit_before.
+
 2001-01-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * diagnostic.c (fatal): Request preprocessed source.
