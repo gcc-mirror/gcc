@@ -1,5 +1,5 @@
 #  GNU Objective C Runtime Makefile
-#  Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+#  Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
 #
 #  This file is part of GNU CC.
 #
@@ -58,7 +58,7 @@ all:
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
          selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o \
-         nil_method.o thr.o $(OBJC_THREAD_FILE).o
+         nil_method.o thr.o linking.o $(OBJC_THREAD_FILE).o
 
 libobjc.a: $(OBJC_O)
 	$(AR) rc libobjc.a $?
@@ -102,3 +102,4 @@ Protocol.o: Protocol.m
 thr.o: thr.h thr.c
 $(OBJC_THREAD_FILE).o: $(OBJC_THREAD_FILE).c
 nil_method.o: nil_method.c
+linking.o: linking.m
