@@ -811,7 +811,7 @@ process_init_constructor (type, init, elts)
 	    allconstant = 0;
 	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 	    allsimple = 0;
-	  members = expr_tree_cons (NULL_TREE, next1, members);
+	  members = tree_cons (size_int (i), next1, members);
 	}
     }
   else if (TREE_CODE (type) == RECORD_TYPE)
@@ -844,7 +844,7 @@ process_init_constructor (type, init, elts)
 	{
 	  if (! DECL_NAME (field) && DECL_C_BIT_FIELD (field))
 	    {
-	      members = expr_tree_cons (field, integer_zero_node, members);
+	      members = tree_cons (field, integer_zero_node, members);
 	      continue;
 	    }
 
@@ -920,7 +920,7 @@ process_init_constructor (type, init, elts)
 	    allconstant = 0;
 	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 	    allsimple = 0;
-	  members = expr_tree_cons (field, next1, members);
+	  members = tree_cons (field, next1, members);
 	}
     }
   else if (TREE_CODE (type) == UNION_TYPE
@@ -991,7 +991,7 @@ process_init_constructor (type, init, elts)
 	allconstant = 0;
       else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
 	allsimple = 0;
-      members = expr_tree_cons (field, next1, members);
+      members = tree_cons (field, next1, members);
     }
 
   /* If arguments were specified as a list, just remove the ones we used.  */
