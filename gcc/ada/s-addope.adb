@@ -2,11 +2,15 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---               S Y S T E M . S T O R A G E _ E L E M E N T S              --
+--             S Y S T E M . A D D R E S S _ O P E R A T I O N S            --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the implementation dependent sections of this file.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,57 +36,79 @@
 ------------------------------------------------------------------------------
 
 with Unchecked_Conversion;
-package body System.Storage_Elements is
 
-   pragma Suppress (All_Checks);
+package body System.Address_Operations is
 
-   function To_Address is new Unchecked_Conversion (Storage_Offset, Address);
-   function To_Offset  is new Unchecked_Conversion (Address, Storage_Offset);
+   type IA is mod 2 ** Address'Size;
+   --  The type used to provide the actual desired operations
 
-   --  Address arithmetic
+   function I is new Unchecked_Conversion (Address, IA);
+   function A is new Unchecked_Conversion (IA, Address);
+   --  The operations are implemented by unchecked conversion to type IA,
+   --  followed by doing the intrinsic operation on the IA values, followed
+   --  by converting the result back to type Address.
 
-   function "+" (Left : Address; Right : Storage_Offset) return Address is
+   ----------
+   -- AddA --
+   ----------
+
+   function AddA (Left, Right : Address) return Address is
    begin
-      return To_Address (To_Integer (Left) + To_Integer (To_Address (Right)));
-   end "+";
+      return A (I (Left) + I (Right));
+   end AddA;
 
-   function "+" (Left : Storage_Offset; Right : Address) return Address is
+   ----------
+   -- AndA --
+   ----------
+
+   function AndA (Left, Right : Address) return Address is
    begin
-      return To_Address (To_Integer (To_Address (Left)) + To_Integer (Right));
-   end "+";
+      return A (I (Left) and I (Right));
+   end AndA;
 
-   function "-" (Left : Address; Right : Storage_Offset) return Address is
+   ----------
+   -- DivA --
+   ----------
+
+   function DivA (Left, Right : Address) return Address is
    begin
-      return To_Address (To_Integer (Left) - To_Integer (To_Address (Right)));
-   end "-";
+      return A (I (Left) / I (Right));
+   end DivA;
 
-   function "-" (Left, Right : Address) return Storage_Offset is
+   ----------
+   -- ModA --
+   ----------
+
+   function ModA (Left, Right : Address) return Address is
    begin
-      return To_Offset (To_Address (To_Integer (Left) - To_Integer (Right)));
-   end "-";
+      return A (I (Left) and I (Right));
+   end ModA;
 
-   function "mod" (Left : Address; Right : Storage_Offset)
-     return Storage_Offset is
+   ---------
+   -- MulA --
+   ---------
+
+   function MulA (Left, Right : Address) return Address is
    begin
-      if Right >= 0 then
-         return Storage_Offset
-                  (To_Integer (Left) mod Integer_Address (Right));
-      else
-         return -Storage_Offset
-                  (To_Integer (Left) mod Integer_Address (-Right));
-      end if;
-   end "mod";
+      return A (I (Left) * I (Right));
+   end MulA;
 
-   --  Conversion to/from integers
+   ---------
+   -- OrA --
+   ---------
 
-   function To_Address (Value : Integer_Address) return Address is
+   function OrA (Left, Right : Address) return Address is
    begin
-      return Address (Value);
-   end To_Address;
+      return A (I (Left) or I (Right));
+   end OrA;
 
-   function To_Integer (Value : Address) return Integer_Address is
+   ----------
+   -- SubA --
+   ----------
+
+   function SubA (Left, Right : Address) return Address is
    begin
-      return Integer_Address (Value);
-   end To_Integer;
+      return A (I (Left) - I (Right));
+   end SubA;
 
-end System.Storage_Elements;
+end System.Address_Operations;

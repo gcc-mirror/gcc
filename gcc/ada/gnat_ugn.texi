@@ -8157,6 +8157,12 @@ and ALI files go in the current working directory.
 
 This switch cannot be used when using a project file.
 
+@ifclear vms
+@item -eL
+@cindex @option{-eL} (@code{gnatmake})
+Follow all symbolic links when processing project files.
+@end ifclear
+
 @item ^-f^/FORCE_COMPILE^
 @cindex @option{^-f^/FORCE_COMPILE^} (@code{gnatmake})
 Force recompilations. Recompile all sources, even though some object
@@ -8345,10 +8351,8 @@ linker.
 @table @asis
 @item @code{gcc} @asis{switches}
 @ifclear vms
-Any uppercase switch (other than @option{-A},
-@option{-L} or
-@option{-S}) or any switch that is more than one character is passed to
-@code{gcc} (e.g. @option{-O}, @option{-gnato,} etc.)
+Any uppercase or multi-character switch that is not a @code{gnatmake} switch
+is passed to @code{gcc} (e.g. @option{-O}, @option{-gnato,} etc.)
 @end ifclear
 @ifset vms
 Any qualifier that cannot be recognized as a qualifier for @code{GNAT MAKE}

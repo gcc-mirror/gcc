@@ -499,10 +499,11 @@ package body System.Finalization_Implementation is
             --  Reconstruction of a type with characteristics
             --  comparable to the original type
 
-            D : constant := Storage_Unit - 1;
+            D : constant := SSE.Storage_Offset (Storage_Unit - 1);
 
             type Parent_Type is new SSE.Storage_Array
-              (1 .. (Parent_Size (Obj, The_Tag) + D) / Storage_Unit);
+                   (1 .. (Parent_Size (Obj, The_Tag) + D) /
+                            SSE.Storage_Offset (Storage_Unit));
             for Parent_Type'Alignment use Address'Alignment;
 
             type Faked_Type_Of_Obj is record

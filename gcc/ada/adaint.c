@@ -411,7 +411,8 @@ __gnat_try_lock (char *dir, char *file)
   int fd;
 
   sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
-  sprintf (temp_file, "%s-%ld-%ld", dir, (long) getpid(), (long) getppid ());
+  sprintf (temp_file, "%s%cTMP-%ld-%ld",
+           dir, DIR_SEPARATOR, (long)getpid(), (long)getppid ());
 
   /* Create the temporary file and write the process number.  */
   fd = open (temp_file, O_CREAT | O_WRONLY, 0600);
@@ -1404,11 +1405,12 @@ __gnat_file_exists (char *name)
 }
 
 int
-__gnat_is_absolute_path (char *name)
+__gnat_is_absolute_path (char *name, int length)
 {
-  return (*name == '/' || *name == DIR_SEPARATOR
+  return (length != 0) &&
+     (*name == '/' || *name == DIR_SEPARATOR
 #if defined (__EMX__) || defined (MSDOS) || defined (WINNT)
-      || (strlen (name) > 1 && isalpha (name[0]) && name[1] == ':')
+      || (length > 1 && isalpha (name[0]) && name[1] == ':')
 #endif
 	  );
 }
@@ -1898,7 +1900,7 @@ char *
 __gnat_locate_regular_file (char *file_name, char *path_val)
 {
   char *ptr;
-  int absolute = __gnat_is_absolute_path (file_name);
+  int absolute = __gnat_is_absolute_path (file_name, strlen (file_name));
 
   /* Handle absolute pathnames.  */
   if (absolute)

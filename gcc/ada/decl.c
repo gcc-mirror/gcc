@@ -2731,6 +2731,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Access_Subprogram_Type:
+    case E_Anonymous_Access_Subprogram_Type:
       /* If we are not defining this entity, and we have incomplete
 	 entities being processed above us, make a dummy type and
 	 fill it in later.  */
@@ -3047,6 +3048,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Access_Protected_Subprogram_Type:
+    case E_Anonymous_Access_Protected_Subprogram_Type:
       if (type_annotate_only && No (Equivalent_Type (gnat_entity)))
 	gnu_type = build_pointer_type (void_type_node);
       else

@@ -293,6 +293,7 @@ package body Sem_Dist is
       RS_Pkg_E              : Entity_Id;
       RAS_Type              : Entity_Id;
       Async_E               : Entity_Id;
+      All_Calls_Remote_E    : Entity_Id;
       Attribute_Subp        : Entity_Id;
       Parameter             : Node_Id;
 
@@ -339,6 +340,12 @@ package body Sem_Dist is
          Async_E := Standard_False;
       end if;
 
+      if Has_All_Calls_Remote (RS_Pkg_E) then
+         All_Calls_Remote_E := Standard_True;
+      else
+         All_Calls_Remote_E := Standard_False;
+      end if;
+
       Parameter := New_Occurrence_Of (RTE (RE_Null_Address), Loc);
 
       Tick_Access_Conv_Call :=
@@ -349,7 +356,8 @@ package body Sem_Dist is
               Parameter,
               Make_String_Literal (Loc, Full_Qualified_Name (RS_Pkg_E)),
               Build_Subprogram_Id (Loc, Remote_Subp),
-              New_Occurrence_Of (Async_E, Loc)));
+              New_Occurrence_Of (Async_E, Loc),
+              New_Occurrence_Of (All_Calls_Remote_E, Loc)));
 
       Rewrite (N, Tick_Access_Conv_Call);
       Analyze_And_Resolve (N, RAS_Type);

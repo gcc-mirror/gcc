@@ -1200,8 +1200,13 @@ package body Exp_Dist is
       Param        : Node_Id;
       Package_Name : Node_Id;
       Subp_Id      : Node_Id;
-      Asynchronous : Node_Id;
+      Asynch_P     : Node_Id;
       Return_Value : Node_Id;
+
+      All_Calls_Remote : Entity_Id;
+      --  True if an All_Calls_Remote pragma applies to the RCI unit
+      --  that contains the subprogram (currently unused, all RAS
+      --  dereferences are handled through the PCS).
 
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -1226,8 +1231,10 @@ package body Exp_Dist is
       Param := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
       Package_Name := Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
       Subp_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('N'));
-      Asynchronous := Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+      Asynch_P := Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
       Return_Value := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+      All_Calls_Remote :=
+        Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
 
       --  Create the object which will be returned of type Fat_Type
 
@@ -1261,7 +1268,7 @@ package body Exp_Dist is
         New_Occurrence_Of (Subp_Id, Loc));
 
       Set_Field (Name_Async,
-        New_Occurrence_Of (Asynchronous, Loc));
+        New_Occurrence_Of (Asynch_P, Loc));
 
       --  Return the newly created value
 
@@ -1294,7 +1301,12 @@ package body Exp_Dist is
                 New_Occurrence_Of (Standard_Natural, Loc)),
 
             Make_Parameter_Specification (Loc,
-              Defining_Identifier => Asynchronous,
+              Defining_Identifier => Asynch_P,
+              Parameter_Type      =>
+                New_Occurrence_Of (Standard_Boolean, Loc)),
+
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier => All_Calls_Remote,
               Parameter_Type      =>
                 New_Occurrence_Of (Standard_Boolean, Loc))),
 

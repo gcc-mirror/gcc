@@ -77,7 +77,7 @@ extern void   __gnat_get_env_value_ptr             (char *, int *,
 						    char **);
 extern int    __gnat_file_exists		   (char *);
 extern int    __gnat_is_regular_file               (char *);
-extern int    __gnat_is_absolute_path              (char *);
+extern int    __gnat_is_absolute_path              (char *,int);
 extern int    __gnat_is_directory		   (char *);
 extern int    __gnat_is_writable_file		   (char *);
 extern int    __gnat_is_readable_file		   (char *name);
