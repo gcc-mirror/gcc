@@ -1,3 +1,8 @@
+2001-10-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* decl.c (bad_specifiers): Don't allow exception specifications
+	on any typedefs.
+
 2001-10-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp/lex.c (init_cp_pragma): Similarly.
