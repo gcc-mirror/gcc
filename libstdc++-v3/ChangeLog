@@ -1,3 +1,40 @@
+2004-02-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/21_strings/basic_string/cons/char/6.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/6.cc: New.
+	* testsuite/performance/string_cons_input_iterator.cc: New.
+
+	* include/bits/basic_string.h (_Rep::operator[]): Remove, unused.
+
+	* include/bits/basic_string.tcc (_S_construct(_InIterator,
+	_InIterator, const _Alloc&, input_iterator_tag)): Simplify
+	the double loop, streamline.
+
+	* include/bits/basic_string.h (_S_create(size_t,
+	const _Alloc&): Change signature to take two size_type
+	arguments.
+	* include/bits/basic_string.tcc (_S_construct(_InIterator,
+	_InIterator, const _Alloc&, input_iterator_tag)): Update
+	call, tweak a bit.
+	(_S_construct(_InIterator, _InIterator, const _Alloc&,
+	forward_iterator_tag)): Likewise.
+	(_S_construct(size_type, _CharT, const _Alloc&)): Likewise.
+	(_M_mutate(size_type, size_type, size_type)): Don't
+	implement the exponential growth policy, demand it to
+	_S_create, update call and simplify.
+	(_M_clone(const _Alloc&, size_type)): Likewise.
+	(_S_create(size_type, size_type, const _Alloc&)): Implement
+	the growth policy, simplify otherwise.
+
+	* include/bits/basic_string.h (c_str()): Simplify, due to
+	21.3.4 the internal representation is always kept null-terminated;
+	consistently fix comments.
+
+	* include/bits/basic_string.tcc (_S_construct(size_type,
+	_CharT, const _Alloc&)): Remove redundant try/catch.
+	(_M_mutate(size_type, size_type, size_type)): Ditto.
+	(_M_clone(const _Alloc&, size_type)): Ditto.
+
 2004-02-02  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/gslice.h, include/bits/gslice_array.h,

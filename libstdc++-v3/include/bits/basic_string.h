@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -129,9 +129,8 @@ namespace std
     private:
       // _Rep: string representation
       //   Invariants:
-      //   1. String really contains _M_length + 1 characters; last is set
-      //      to 0 only on call to c_str().  We avoid instantiating
-      //      _CharT() where the interface does not require it.
+      //   1. String really contains _M_length + 1 characters: due to 21.3.4
+      //      must be kept null-terminated.
       //   2. _M_capacity >= _M_length
       //      Allocated memory is always _M_capacity + (1 * sizeof(_CharT)).
       //   3. _M_refcount has three states:
@@ -198,10 +197,6 @@ namespace std
 	_M_refdata() throw()
 	{ return reinterpret_cast<_CharT*>(this + 1); }
 
-	_CharT&
-	operator[](size_t __s) throw()
-	{ return _M_refdata() [__s]; }
-
 	_CharT*
 	_M_grab(const _Alloc& __alloc1, const _Alloc& __alloc2)
 	{
@@ -211,7 +206,7 @@ namespace std
 
 	// Create & Destroy
 	static _Rep*
-	_S_create(size_t, const _Alloc&);
+	_S_create(size_type, size_type, const _Alloc&);
 
 	void
 	_M_dispose(const _Alloc& __a)
@@ -1457,21 +1452,17 @@ namespace std
       */
       const _CharT*
       c_str() const
-      {
-	// MT: This assumes concurrent writes are OK.
-	const size_type __n = this->size();
-	traits_type::assign(_M_data()[__n], _Rep::_S_terminal);
-        return _M_data();
-      }
+      { return _M_data(); }
 
       /**
        *  @brief  Return const pointer to contents.
        *
-       *  This is a handle to internal data.  It may not be null-terminated.
-       *  Do not modify or dire things may happen.
+       *  This is a handle to internal data. Do not modify or dire things may
+       *  happen.
       */
       const _CharT*
-      data() const { return _M_data(); }
+      data() const
+      { return _M_data(); }
 
       /**
        *  @brief  Return copy of allocator used to construct this string.
