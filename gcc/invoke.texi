@@ -1188,13 +1188,13 @@ CC:
 Check the code for syntax errors, but don't do anything beyond that.
 
 @item -pedantic
-Issue all the warnings demanded by strict ANSI standard C; reject
-all programs that use forbidden extensions.
+Issue all the warnings demanded by strict ANSI C and ISO C++;
+reject all programs that use forbidden extensions.
 
-Valid ANSI standard C programs should compile properly with or without
+Valid ANSI C and ISO C++ programs should compile properly with or without
 this option (though a rare few will require @samp{-ansi}).  However,
-without this option, certain GNU extensions and traditional C features
-are supported as well.  With this option, they are rejected.
+without this option, certain GNU extensions and traditional C and C++
+features are supported as well.  With this option, they are rejected.
 
 @samp{-pedantic} does not cause warning messages for use of the
 alternate keywords whose names begin and end with @samp{__}.  Pedantic
