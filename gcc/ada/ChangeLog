@@ -1,3 +1,78 @@
+2004-01-12  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/13572
+	* bld.adb (Recursive_Process): Reference prefix/share/gnat instead of
+	prefix/share/make
+
+	* Makefile.generic: Update copyright.
+	Add license notice.
+
+	* Makefile.in (ADA_SHARE_MAKE_DIR): Set to prefix/share/gnat instead
+	of prefix/share/make.
+
+	* Makefile.prolog: Update copyright.
+	Add license notice.
+
+2004-01-12  Laurent Pautet  <pautet@act-europe.fr>
+
+	* 3vsocthi.adb, 3vsocthi.ads, 3wsocthi.adb,
+	3wsocthi.ads, 3zsocthi.adb, 3zsocthi.ads, g-socthi.adb,
+	g-socthi.ads (Socket_Error_Message): Return C.Strings.chars_ptr
+	instead of String.
+
+	* g-socket.adb (Raise_Socket_Error): Use new Socket_Error_Message
+	signature.
+
+2004-01-12  Javier Miranda  <miranda@gnat.com>
+
+	* cstand.adb, exp_aggr.adb, exp_ch3.adb, exp_ch9.adb, exp_dist.adb,
+	exp_imgv.adb, exp_pakd.adb, exp_util.adb, par-ch3.adb, sem.adb,
+	sem_ch12.adb, sem_ch3.adb, sem_dist.adb, sem_prag.adb, sem_res.adb,
+	sem_util.adb, sinfo.adb, sinfo.ads, sprint.adb: Addition of
+	Component_Definition node.
+
+2004-01-12  Ed Falis  <falis@gnat.com>
+
+	* impunit.adb: Add GNAT.Secondary_Stack_Info as user-visible unit
+
+2004-01-12  Thomas Quinot  <quinot@act-europe.fr>
+
+	* link.c: Change default libgnat kind to STATIC for FreeBSD.
+
+2004-01-12  Bernard Banner  <banner@gnat.com>
+
+	* Makefile.in: map 86numaux to a-numaux for x86_64
+
+2004-01-12  Ed Schonberg  <schonberg@gnat.com>
+
+	* lib-xref.adb (Get_Type_Reference): If the type is the subtype entity
+	generated to rename a generic actual, go to the actual itself, the
+	subtype is not a user-visible entity.
+
+	* sem_ch7.adb (Uninstall_Declarations): If an entity in the visible
+	part is a private subtype, reset the visibility of its full view, if
+	any, to be consistent.
+
+	PR ada/13417
+	* sem_ch12.adb (Analyze_Formal_Package): Diagnose properly an attempt
+	to use a generic package G as a formal package for another generic
+	declared within G.
+
+2004-01-12  Robert Dewar  <dewar@gnat.com>
+
+	* trans.c (Eliminate_Error_Msg): New procedure called to generate msg
+
+	* usage.adb: Remove mention of obsolete -gnatwb switch
+	Noticed during code reading
+
+2004-01-12  Jerome Guitton  <guitton@act-europe.fr>
+
+	* 1ssecsta.adb: Minor changes for -gnatwa warnings
+
+2004-01-12  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-01-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* misc.c (gnat_expand_expr): Add alt_rtl parameter.
