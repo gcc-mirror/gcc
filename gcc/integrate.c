@@ -1711,9 +1711,16 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   /* Now copy the REG_NOTES.  */
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& map->insn_map[INSN_UID (insn)])
-      REG_NOTES (map->insn_map[INSN_UID (insn)])
-	= copy_rtx_and_substitute (REG_NOTES (insn), map);
+	&& map->insn_map[INSN_UID (insn)]
+	&& REG_NOTES (insn))
+      {
+	rtx tem = copy_rtx_and_substitute (REG_NOTES (insn), map);
+	/* We must also do subst_constants, in case one of our parameters
+	   has const type and constant value.  */
+	subst_constants (&tem, NULL_RTX, map);
+	apply_change_group ();
+	REG_NOTES (map->insn_map[INSN_UID (insn)]) = tem;
+      }
 
   if (local_return_label)
     emit_label (local_return_label);
