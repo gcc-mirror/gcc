@@ -1,3 +1,9 @@
+2002-02-26  Andreas Schwab  <schwab@suse.de>
+
+	* acinclude.m4 (LIB_AC_PROG_CXX): Use glibjava_CXX instead of
+	glibcpp_CXX, since libjava uses even another CXX.
+	* aclocal.m4, configure: Regenerated.
+
 2002-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natPosixProcess.cc (startProcess): Use FD_CLOEXEC, not
