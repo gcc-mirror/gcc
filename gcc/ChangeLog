@@ -1,3 +1,7 @@
+Thu Nov  5 03:42:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movdf_const_intreg_sp64): Enable again.
+
 Thu Nov  5 10:53:01 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* configure.in: Bring over gcc2 change of Nov 19 1997.
