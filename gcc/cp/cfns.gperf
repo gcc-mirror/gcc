@@ -16,9 +16,9 @@ const char * libc_name_p PARAMS ((const char *, unsigned int));
 #   exception, unless it calls a program-supplied function that
 #   throws an exception.
 #
-# bsearch and qsort are commented out because they can call such functions.
+# Specific functions are commented out for the reason noted in each case.
 #
-abort
+# abort			-- synchronous exception from SIGABRT handler
 abs
 acos
 asctime
@@ -29,7 +29,7 @@ atexit
 atof
 atoi
 atol
-#bsearch
+#bsearch		-- calls user function which may throw exception
 btowc
 calloc
 ceil
@@ -43,41 +43,41 @@ div
 exit
 exp
 fabs
-fclose
+#fclose			-- POSIX thread cancellation point
 feof
 ferror
-fflush
-fgetc
-fgetpos
-fgets
-fgetwc
-fgetws
+#fflush			-- POSIX thread cancellation point
+#fgetc			-- POSIX thread cancellation point
+#fgetpos		-- POSIX thread cancellation point
+#fgets			-- POSIX thread cancellation point
+#fgetwc			-- POSIX thread cancellation point
+#fgetws			-- POSIX thread cancellation point
 floor
 fmod
-fopen
-fprintf
-fputc
-fputs
-fputwc
-fputws
-fread
+#fopen			-- POSIX thread cancellation point
+#fprintf		-- POSIX thread cancellation point
+#fputc			-- POSIX thread cancellation point
+#fputs			-- POSIX thread cancellation point
+#fputwc			-- POSIX thread cancellation point
+#fputws			-- POSIX thread cancellation point
+#fread			-- POSIX thread cancellation point
 free
-freopen
+#freopen		-- POSIX thread cancellation point
 frexp
-fscanf
+#fscanf			-- POSIX thread cancellation point
 fseek
-fsetpos
-ftell
+#fsetpos		-- POSIX thread cancellation point
+#ftell			-- POSIX thread cancellation point
 fwide
-fwprintf
-fwrite
-fwscanf
-getc
-getchar
+#fwprintf		-- POSIX thread cancellation point
+#fwrite			-- POSIX thread cancellation point
+#fwscanf		-- POSIX thread cancellation point
+#getc			-- POSIX thread cancellation point
+#getchar		-- POSIX thread cancellation point
 getenv
-gets
-getwc
-getwchar
+#gets			-- POSIX thread cancellation point
+#getwc			-- POSIX thread cancellation point
+#getwchar		-- POSIX thread cancellation point
 gmtime
 isalnum
 isalpha
@@ -125,22 +125,22 @@ memmove
 memset
 mktime
 modf
-perror
+#perror			-- POSIX thread cancellation point
 pow
-printf
-putc
-putchar
-puts
-putwc
-putwchar
-#qsort
-raise
+#printf			-- POSIX thread cancellation point
+#putc			-- POSIX thread cancellation point
+#putchar		-- POSIX thread cancellation point
+#puts			-- POSIX thread cancellation point
+#putwc			-- POSIX thread cancellation point
+#putwchar		-- POSIX thread cancellation point
+#qsort			-- calls user function which may throw exception
+#raise			-- synchronous exception from signal handler
 rand
 realloc
-remove
-rename
-rewind
-scanf
+#remove			-- POSIX thread cancellation point
+#rename			-- POSIX thread cancellation point
+#rewind			-- POSIX thread cancellation point
+#scanf			-- POSIX thread cancellation point
 setbuf
 setlocale
 setvbuf
@@ -157,7 +157,7 @@ strcmp
 strcoll
 strcpy
 strcspn
-strerror
+#strerror		-- POSIX thread cancellation point
 strftime
 strlen
 strncat
@@ -174,25 +174,25 @@ strtoul
 strxfrm
 swprintf
 swscanf
-system
+#system			-- POSIX thread cancellation point
 tan
 tanh
 time
-tmpfile
-tmpnam
+#tmpfile		-- POSIX thread cancellation point
+#tmpnam			-- POSIX thread cancellation point
 tolower
 toupper
 towctrans
 towlower
 towupper
-ungetc
-ungetwc
-vfprintf
-vfwprintf
-vprintf
+#ungetc			-- POSIX thread cancellation point
+#ungetwc		-- POSIX thread cancellation point
+#vfprintf		-- POSIX thread cancellation point
+#vfwprintf		-- POSIX thread cancellation point
+#vprintf		-- POSIX thread cancellation point
 vsprintf
 vswprintf
-vwprintf
+#vwprintf		-- POSIX thread cancellation point
 wcrtomb
 wcscat
 wcschr
@@ -225,5 +225,5 @@ wmemcmp
 wmemcpy
 wmemmove
 wmemset
-wprintf
-wscanf
+#wprintf		-- POSIX thread cancellation point
+#wscanf			-- POSIX thread cancellation point
