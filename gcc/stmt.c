@@ -4538,11 +4538,14 @@ pushcase (value, converter, label, duplicate)
   return 0;
 }
 
-/* Like pushcase but this case applies to all values
-   between VALUE1 and VALUE2 (inclusive).
-   The return value is the same as that of pushcase
-   but there is one additional error code:
-   4 means the specified range was empty.  */
+/* Like pushcase but this case applies to all values between VALUE1 and
+   VALUE2 (inclusive).  If VALUE1 is NULL, the range starts at the lowest
+   value of the index type and ends at VALUE2.  If VALUE2 is NULL, the range
+   starts at VALUE1 and ends at the highest value of the index type.
+   If both are NULL, this case applies to all values.
+
+   The return value is the same as that of pushcase but there is one
+   additional error code: 4 means the specified range was empty.  */
 
 int
 pushcase_range (value1, value2, converter, label, duplicate)
@@ -4559,10 +4562,6 @@ pushcase_range (value1, value2, converter, label, duplicate)
   /* Fail if not inside a real case statement.  */
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
-
-  /* Fail if the range is empty.  */
-  if (tree_int_cst_lt (value2, value1))
-    return 4;
 
   if (stack_block_stack
       && stack_block_stack->depth > case_stack->depth)
@@ -4596,20 +4595,28 @@ pushcase_range (value1, value2, converter, label, duplicate)
     }
   case_stack->data.case_stmt.seenlabel = 1;
 
-  /* Convert VALUEs to type in which the comparisons are nominally done.  */
-  if (value1 == 0)  /* Negative infinity.  */
+  /* Convert VALUEs to type in which the comparisons are nominally done
+     and replace any unspecified value with the corresponding bound.  */
+  if (value1 == 0)
     value1 = TYPE_MIN_VALUE (index_type);
-  value1 = (*converter) (nominal_type, value1);
-
-  if (value2 == 0)  /* Positive infinity.  */
+  if (value2 == 0)
     value2 = TYPE_MAX_VALUE (index_type);
+
+  /* Fail if the range is empty.  Do this before any conversion since
+     we want to allow out-of-range empty ranges.  */
+  if (tree_int_cst_lt (value2, value1))
+    return 4;
+
+  value1 = (*converter) (nominal_type, value1);
   value2 = (*converter) (nominal_type, value2);
 
   /* Fail if these values are out of range.  */
-  if (! int_fits_type_p (value1, index_type))
+  if (TREE_CONSTANT_OVERFLOW (value1)
+      || ! int_fits_type_p (value1, index_type))
     return 3;
 
-  if (! int_fits_type_p (value2, index_type))
+  if (TREE_CONSTANT_OVERFLOW (value2)
+      || ! int_fits_type_p (value2, index_type))
     return 3;
 
   return add_case_node (value1, value2, label, duplicate);

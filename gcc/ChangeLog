@@ -5,6 +5,8 @@ Mon Feb  9 00:02:53 1998  Jim Wilson  <wilson@cygnus.com>
 
 Mon Feb  9 00:01:00 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stmt.c (pushcase_range): Clean up handling of "infinite" values.
+
 	* loop.c (strength_reduce): When placing increment for auto-inc
 	case, do comparison in loop order.
 
