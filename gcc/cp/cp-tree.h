@@ -3101,7 +3101,6 @@ extern tree build_const_cast			PROTO((tree, tree));
 extern tree build_c_cast			PROTO((tree, tree));
 extern tree build_x_modify_expr			PROTO((tree, enum tree_code, tree));
 extern tree build_modify_expr			PROTO((tree, enum tree_code, tree));
-extern int language_lvalue_valid		PROTO((tree));
 extern void warn_for_assignment			PROTO((char *, char *, char *, tree, int, int));
 extern tree convert_for_initialization		PROTO((tree, tree, tree, int, char *, tree, int));
 extern void c_expand_asm_operands		PROTO((tree, tree, tree, tree, int, char *, int));

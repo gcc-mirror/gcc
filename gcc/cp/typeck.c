@@ -6106,6 +6106,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	    && (IS_SIGNATURE_POINTER (TREE_TYPE (TREE_OPERAND (lhs, 0)))
 		|| IS_SIGNATURE_REFERENCE (TREE_TYPE (TREE_OPERAND (lhs, 0)))))
       && (TREE_READONLY (lhs) || TYPE_READONLY (lhstype)
+	  /* Functions are not modifiable, even though they are
+	     lvalues.  */
+	  || TREE_CODE (TREE_TYPE (lhs)) == FUNCTION_TYPE
 	  || ((TREE_CODE (lhstype) == RECORD_TYPE
 	       || TREE_CODE (lhstype) == UNION_TYPE)
 	      && C_TYPE_FIELDS_READONLY (lhstype))
@@ -6354,15 +6357,6 @@ build_x_modify_expr (lhs, modifycode, rhs)
   return build_modify_expr (lhs, modifycode, rhs);
 }
 
-/* Return 0 if EXP is not a valid lvalue in this language
-   even though `lvalue_or_else' would accept it.  */
-
-int
-language_lvalue_valid (exp)
-     tree exp ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
 
 /* Get difference in deltas for different pointer to member function
    types.  Return integer_zero_node, if FROM cannot be converted to a

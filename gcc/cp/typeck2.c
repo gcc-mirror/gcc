@@ -118,7 +118,9 @@ readonly_error (arg, string, soft)
     (*fn) ("%s of read-only reference `%D'", string, TREE_OPERAND (arg, 0));
   else if (TREE_CODE (arg) == RESULT_DECL)
     (*fn) ("%s of read-only named return value `%D'", string, arg);
-  else	       
+  else if (TREE_CODE (arg) == FUNCTION_DECL)
+    (*fn) ("%s of function `%D'", string, arg);
+  else
     (*fn) ("%s of read-only location", string);
 }
 

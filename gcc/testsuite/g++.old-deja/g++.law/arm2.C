@@ -11,7 +11,7 @@ int f() {  return 1; }
 
 int main()
 {
-  int (&fr)() = f;  // g++ cannot compile it
+  int (&fr)() = f;
 
   return 0;
 }

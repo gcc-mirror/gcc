@@ -7,12 +7,12 @@
 // keywords: function types, reference types
 
 typedef void (func_type) (int, int);
-typedef func_type& func_ref_type;		// gets bogus error, XFAIL *-*-*
+typedef func_type& func_ref_type;		
 
 void function (int arg1, int arg2)
 {
 }
 
-func_type& global_func_ref1 = function;		// gets bogus error, XFAIL *-*-*
+func_type& global_func_ref1 = function;		
 
 int main () { return 0; }
