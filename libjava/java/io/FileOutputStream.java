@@ -1,6 +1,6 @@
 // FileOutputStream.java - Write bytes to a file.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -23,7 +23,7 @@ package java.io;
 public class FileOutputStream extends OutputStream
 {
   public FileOutputStream (String path, boolean append)
-    throws SecurityException, IOException
+    throws SecurityException, FileNotFoundException
   {
     SecurityManager s = System.getSecurityManager();
     if (s != null)
@@ -33,17 +33,20 @@ public class FileOutputStream extends OutputStream
 				    : FileDescriptor.WRITE));
   }
 
-  public FileOutputStream (String path) throws SecurityException, IOException
+  public FileOutputStream (String path)
+    throws SecurityException, FileNotFoundException
   {
     this (path, false);
   }
 
-  public FileOutputStream (File file) throws SecurityException, IOException
+  public FileOutputStream (File file)
+    throws SecurityException, FileNotFoundException
   {
     this (file.getPath(), false);
   }
 
-  public FileOutputStream (FileDescriptor fdObj) throws SecurityException
+  public FileOutputStream (FileDescriptor fdObj)
+    throws SecurityException
   {
     SecurityManager s = System.getSecurityManager();
     if (s != null)

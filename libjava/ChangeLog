@@ -1,3 +1,9 @@
+2001-07-12  Tom Tromey  <tromey@redhat.com>
+
+	Report from Henner Zeller:
+	* java/io/FileOutputStream.java (FileOutputStream): Throw
+	FileNotFoundException, not IOException.
+
 2001-07-10  Anthony Green  <green@redhat.com>
 
 	* Makefile.in: Rebuilt.
@@ -47,7 +53,7 @@
 	* Makefile.in: Regenerate.
 	* java/lang/ThreadLocal.java: Initial import.
 
-2001-07-07  Jeff Sturm  <jsturm@one-point.com
+2001-07-07  Jeff Sturm  <jsturm@one-point.com>
 	
 	* Makefile.am (libgcj.jar): Don't recursively make
 	built_java_source_files.  Avoid long command lines.
