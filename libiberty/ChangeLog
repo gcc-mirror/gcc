@@ -1,3 +1,8 @@
+Mon Apr 26 01:36:06 1999  Donn Terry (donn@interix.com)
+
+	* configure.in (alloca detection): Handle alloca directly for interix.
+	* configure: Rebuilt.
+
 Sun Apr 25 01:18:21 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* choose-temp.c (DIR_SEPARATOR): Use '\\' only for native windows32.
