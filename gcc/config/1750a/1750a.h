@@ -67,6 +67,10 @@ extern int datalbl_ndx, jmplbl_ndx, label_pending, program_counter;
 extern enum section current_section;
 extern char *sectname[4];
 extern char *xstrdup(), *float_label();
+extern struct rtx_def *function_arg ();
+extern char *movcnt_regno_adjust ();
+extern char *mod_regno_adjust ();
+extern char *branch_or_jump ();
 #endif
 /*--------------------------------------------------------------------*/
 
@@ -542,15 +546,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-	(rtx) function_arg(CUM,MODE,TYPE,NAMED)
-/*
- (! MUST_PASS_IN_STACK(MODE,TYPE) &&				\
-  14 >= (CUM) +							\
-  ((MODE)==BLKmode ? int_size_in_bytes(TYPE) : GET_MODE_SIZE (MODE))  \
- ? gen_rtx (REG, MODE, CUM)					\
- : 0)
-*/
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) function_arg (CUM,MODE,TYPE,NAMED)
 
 /* Define the following macro if function calls on the target machine
    do not preserve any registers; in other words, if `CALL_USED_REGISTERS'
