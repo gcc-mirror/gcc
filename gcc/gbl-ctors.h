@@ -46,7 +46,7 @@ extern void atexit (void (*) (void));
 typedef void (*func_ptr) (void);
 
 /* Declare the set of symbols use as begin and end markers for the lists
-   of global object constructors and global object descructors.  */
+   of global object constructors and global object destructors.  */
 
 extern func_ptr __CTOR_LIST__[];
 extern func_ptr __DTOR_LIST__[];
@@ -75,7 +75,6 @@ do {									\
   func_ptr *p;								\
   for (p = __CTOR_LIST__ + 1; *p; )					\
     (*p++) ();								\
-  ON_EXIT (__do_global_dtors, 0);					\
 } while (0)
 #endif
 
