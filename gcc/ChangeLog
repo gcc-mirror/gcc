@@ -118,6 +118,7 @@
 
 2003-07-04  Jeff Law  <law@redhat.com>
 
+	PR c/11428
 	* expr.c (do_store_flag): Pass in the correct result type
 	when calling fold_single_bit_test.
 	* fold-const.c (fold_single_bit_test): Use result_type for the
