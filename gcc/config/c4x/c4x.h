@@ -39,16 +39,18 @@
 /* Define assembler options.  */
 
 #define ASM_SPEC "\
-%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=40:%{!mcpu=44:\
-%{!m30:%{!m40:-m40}}}}}}} \
+%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=33:%{!mcpu=40:%{!mcpu=44:\
+%{!m30:%{!m40:-m40}}}}}}}} \
 %{mcpu=30:-m30} \
 %{mcpu=31:-m31} \
 %{mcpu=32:-m32} \
+%{mcpu=33:-m33} \
 %{mcpu=40:-m40} \
 %{mcpu=44:-m44} \
 %{m30:-m30} \
 %{m31:-m31} \
 %{m32:-m32} \
+%{m33:-m33} \
 %{m40:-m40} \
 %{m44:-m44} \
 %{mmemparm:-p} %{mregparm:-r} \
@@ -62,21 +64,26 @@
 %{m30:--architecture c3x} \
 %{m31:--architecture c3x} \
 %{m32:--architecture c3x} \
+%{m33:--architecture c3x} \
 %{mcpu=30:--architecture c3x} \
 %{mcpu=31:--architecture c3x} \
-%{mcpu=32:--architecture c3x}"
+%{mcpu=32:--architecture c3x} \
+%{mcpu=33:--architecture c3x}"
 
 /* Define C preprocessor options.  */
 
 #define CPP_SPEC "\
-%{!m30:%{!m31:%{!m32:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=40:%{!mcpu=44:\
-  %{!m40:%{!m44:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40 }}}}}}}}}} \
+%{!m30:%{!m31:%{!m32:%{!m33:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=33:\
+%{!mcpu=40:%{!mcpu=44:%{\
+  !m40:%{!m44:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40}}}}}}}}}} \
 %{mcpu=30:-D_TMS320C3x -D_C3x -D_TMS320C30 -D_C30 } \
 %{m30:-D_TMS320C3x -D_C3x -D_TMS320C30 -D_C30 } \
 %{mcpu=31:-D_TMS320C3x -D_C3x -D_TMS320C31 -D_C31 } \
 %{m31:-D_TMS320C3x -D_C3x -D_TMS320C31 -D_C31 } \
 %{mcpu=32:-D_TMS320C3x -D_C3x -D_TMS320C32 -D_C32 } \
 %{m32:-D_TMS320C3x -D_C3x -D_TMS320C32 -D_C32 } \
+%{mcpu=33:-D_TMS320C3x -D_C3x -D_TMS320C33 -D_C33 } \
+%{m33:-D_TMS320C3x -D_C3x -D_TMS320C33 -D_C33 } \
 %{mcpu=40:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40 } \
 %{m40:-D_TMS320C4x -D_C4x -D_TMS320C40 -D_C40 } \
 %{mcpu=44:-D_TMS320C4x -D_C4x -D_TMS320C44 -D_C44 } \
@@ -117,6 +124,7 @@
 #define C30_FLAG            0x0100000 /* Emit C30 code.  */
 #define C31_FLAG            0x0200000 /* Emit C31 code.  */
 #define C32_FLAG            0x0400000 /* Emit C32 code.  */
+#define C33_FLAG            0x0400000 /* Emit C33 code.  */
 #define C40_FLAG            0x1000000 /* Emit C40 code.  */
 #define C44_FLAG            0x2000000 /* Emit C44 code.  */
 
@@ -155,6 +163,8 @@
     "Generate code for C31 CPU"}, \
   { "32", C32_FLAG, \
     "Generate code for C32 CPU"}, \
+  { "33", C33_FLAG, \
+    "Generate code for C33 CPU"}, \
   { "40", C40_FLAG, \
     "Generate code for C40 CPU"}, \
   { "44", C44_FLAG, \
@@ -265,6 +275,7 @@ extern int target_flags;
 #define TARGET_C30		(target_flags & C30_FLAG)
 #define TARGET_C31		(target_flags & C31_FLAG)
 #define TARGET_C32		(target_flags & C32_FLAG)
+#define TARGET_C33		(target_flags & C33_FLAG)
 #define TARGET_C40		(target_flags & C40_FLAG)
 #define TARGET_C44		(target_flags & C44_FLAG)
 
