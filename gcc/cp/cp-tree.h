@@ -115,18 +115,22 @@ Boston, MA 02111-1307, USA.  */
      For a static VAR_DECL, this is DECL_INIT_PRIORITY.
 
    BINFO_VIRTUALS
-     For a binfo, this is a TREE_LIST.  The BF_DELTA of each node
+     For a binfo, this is a TREE_LIST.  The BV_DELTA of each node
      gives the amount by which to adjust the `this' pointer when
      calling the function.  If the method is an overriden version of a
      base class method, then it is assumed that, prior to adjustment,
      the this pointer points to an object of the base class.
 
-     The BF_VCALL_INDEX of each node, if non-NULL, gives the vtable
+     The BV_VCALL_INDEX of each node, if non-NULL, gives the vtable
      index of the vcall offset for this entry.
 
-     The BF_FN is the declaration for the virtual function itself.
+     The BV_FN is the declaration for the virtual function itself.
      When CLASSTYPE_COM_INTERFACE_P does not hold, the first entry
-     does not have a BF_FN; it is just an offset.
+     does not have a BV_FN; it is just an offset.
+
+     The BV_OVERRIDING_BASE is the binfo for the final overrider for
+     this function.  (This binfo's BINFO_TYPE will always be the same
+     as the DECL_CLASS_CONTEXT for the function.)
 
    DECL_ARGUMENTS
      For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  
@@ -1500,10 +1504,14 @@ struct lang_type
 /* If non-NULL, this is the binfo for the primary base class, i.e.,
    the base class which contains the virtual function table pointer
    for this class.  */
-#define CLASSTYPE_PRIMARY_BINFO(NODE) 			\
-  (CLASSTYPE_HAS_PRIMARY_BASE_P (NODE)			\
-   ? TREE_VEC_ELT (TYPE_BINFO_BASETYPES (NODE),		\
-		   CLASSTYPE_VFIELD_PARENT (NODE))	\
+#define CLASSTYPE_PRIMARY_BINFO(NODE) \
+  (BINFO_PRIMARY_BINFO (TYPE_BINFO (NODE)))
+
+/* If non-NULL, this is the binfo for the primary base of BINFO.  */
+#define BINFO_PRIMARY_BINFO(NODE)					\
+  (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (NODE))			\
+   ? BINFO_BASETYPE (NODE, 						\
+		     CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (NODE)))	\
    : NULL_TREE)
 
 /* The number of virtual functions defined for this
@@ -1726,14 +1734,16 @@ struct lang_type
 
 /* The number of bytes by which to adjust the `this' pointer when
    calling this virtual function.  */
-#define BF_DELTA(NODE) (TREE_PURPOSE (NODE))
+#define BV_DELTA(NODE) (TREE_PURPOSE (NODE))
 
 /* If non-NULL, the vtable index at which to find the vcall offset
    when calling this virtual function.  */
-#define BF_VCALL_INDEX(NODE) (TREE_TYPE (NODE))
+#define BV_VCALL_INDEX(NODE) (TREE_TYPE (NODE))
 
 /* The function to call.  */
-#define BF_FN(NODE) (TREE_VALUE (NODE))
+#define BV_FN(NODE) (TREE_VALUE (NODE))
+
+/* The most derived class.  */
 
 
 /* Nonzero for TREE_LIST node means that this list of things

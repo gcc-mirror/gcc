@@ -883,23 +883,26 @@ binfo_value (elem, type)
   return get_binfo (elem, type, 0);
 }
 
-/* Return a reversed copy of the BINFO-chain given by PATH.  (If the 
-   BINFO_INHERITANCE_CHAIN points from base classes to derived
-   classes, it will instead point from derived classes to base
-   classes.)  Returns the first node in the reversed chain.  */
+/* Return a TREE_LIST whose TREE_VALUE nodes along the
+   BINFO_INHERITANCE_CHAIN for BINFO, but in the opposite order.  In
+   other words, while the BINFO_INHERITANCE_CHAIN goes from base
+   classes to derived classes, the reversed path goes from derived
+   classes to base classes.  */
 
 tree
-reverse_path (path)
-     tree path;
+reverse_path (binfo)
+     tree binfo;
 {
-  register tree prev = NULL_TREE, cur;
-  for (cur = path; cur; cur = BINFO_INHERITANCE_CHAIN (cur))
+  tree reversed_path;
+
+  reversed_path = NULL_TREE;
+  while (binfo) 
     {
-      tree r = copy_node (cur);
-      BINFO_INHERITANCE_CHAIN (r) = prev;
-      prev = r;
+      reversed_path = tree_cons (NULL_TREE, binfo, reversed_path);
+      binfo = BINFO_INHERITANCE_CHAIN (binfo);
     }
-  return prev;
+
+  return reversed_path;
 }
 
 void
