@@ -955,7 +955,6 @@ regclass (f, nregs)
      rtx f;
      int nregs;
 {
-#ifdef REGISTER_CONSTRAINTS
   register rtx insn;
   register int i;
   int pass;
@@ -1109,13 +1108,10 @@ regclass (f, nregs)
 	  altclass[i] = (int) alt;
 	}
     }
-#endif /* REGISTER_CONSTRAINTS */
 
   free (costs);
 }
 
-#ifdef REGISTER_CONSTRAINTS
-
 /* Record the cost of using memory or registers of various classes for
    the operands in INSN.
 
@@ -1817,8 +1813,6 @@ auto_inc_dec_reg_p (reg, mode)
   return 0;
 }
 #endif
-
-#endif /* REGISTER_CONSTRAINTS */
 
 static short *renumber = (short *)0;
 static size_t regno_allocated = 0;

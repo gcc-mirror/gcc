@@ -801,34 +801,6 @@ reload (first, global, dumpfile)
 	|| GET_CODE (insn) == CALL_INSN)
       note_stores (PATTERN (insn), mark_not_eliminable);
 
-#ifndef REGISTER_CONSTRAINTS
-  /* If all the pseudo regs have hard regs,
-     except for those that are never referenced,
-     we know that no reloads are needed.  */
-  /* But that is not true if there are register constraints, since
-     in that case some pseudos might be in the wrong kind of hard reg.  */
-
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (reg_renumber[i] == -1 && REG_N_REFS (i) != 0)
-      break;
-
-  if (i == max_regno && num_eliminable == 0 && ! caller_save_needed)
-    {
-      free (real_known_ptr);
-      free (real_at_ptr);
-      free (reg_equiv_constant);
-      free (reg_equiv_memory_loc);
-      free (reg_equiv_mem);
-      free (reg_equiv_init);
-      free (reg_equiv_address);
-      free (reg_max_ref_width);
-      free (reg_old_renumber);
-      free (pseudo_previous_regs);
-      free (pseudo_forbidden_regs);
-      return 0;
-    }
-#endif
-
   maybe_fix_stack_asms ();
 
   insns_need_reload = 0;
@@ -9126,7 +9098,6 @@ static int
 reload_cse_simplify_operands (insn)
      rtx insn;
 {
-#ifdef REGISTER_CONSTRAINTS
   int i,j;
 
   const char *constraints[MAX_RECOG_OPERANDS];
@@ -9334,9 +9305,6 @@ reload_cse_simplify_operands (insn)
   push_obstacks (&reload_obstack, &reload_obstack);
 
   return apply_change_group ();
-#else
-  return 0;
-#endif
 }
 
 /* These two variables are used to pass information from

@@ -169,12 +169,6 @@ struct data
 /* This variable points to the first link in the insn chain.  */
 
 static struct data *idata, **idata_end = &idata;
-
-/* Nonzero if any match_operand has a constraint string; implies that
-   REGISTER_CONSTRAINTS will be defined for this machine description.  */
-
-static int have_constraints;
-
 
 static void output_prologue PROTO((void));
 static void output_predicate_decls PROTO((void));
@@ -289,16 +283,9 @@ output_operand_data ()
       printf ("    %s,\n",
 	      d->predicate && d->predicate[0] ? d->predicate : "0");
 
-      if (have_constraints)
-	{
-	  printf ("    \"%s\",\n",
-		  d->constraint ? d->constraint : "");
-	}
+      printf ("    \"%s\",\n", d->constraint ? d->constraint : "");
 
       printf ("    %smode,\n", GET_MODE_NAME (d->mode));
-
-      if (! have_constraints)
-	printf ("    %d,\n", d->address_p);
 
       printf ("    %d\n", d->strict_low);
 
@@ -446,11 +433,8 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].predicate = XSTR (part, 1);
       d->operand[opno].constraint = XSTR (part, 2);
       if (XSTR (part, 2) != 0 && *XSTR (part, 2) != 0)
-	{
-	  d->operand[opno].n_alternatives
-	    = n_occurrences (',', XSTR (part, 2)) + 1;
-	  have_constraints = 1;
-	}
+	d->operand[opno].n_alternatives
+	  = n_occurrences (',', XSTR (part, 2)) + 1;
       d->operand[opno].address_p = this_address_p;
       return;
 
@@ -473,11 +457,8 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].predicate = "scratch_operand";
       d->operand[opno].constraint = XSTR (part, 1);
       if (XSTR (part, 1) != 0 && *XSTR (part, 1) != 0)
-	{
-	  d->operand[opno].n_alternatives
-	    = n_occurrences (',', XSTR (part, 1)) + 1;
-	  have_constraints = 1;
-	}
+	d->operand[opno].n_alternatives
+	  = n_occurrences (',', XSTR (part, 1)) + 1;
       d->operand[opno].address_p = 0;
       return;
 
@@ -557,24 +538,17 @@ compare_operands (d0, d1)
   if (strcmp (p0, p1) != 0)
     return 0;
 
-  if (have_constraints)
-    {
-      p0 = d0->constraint;
-      if (!p0)
-	p0 = "";
-      p1 = d1->constraint;
-      if (!p1)
-	p1 = "";
-      if (strcmp (p0, p1) != 0)
-	return 0;
-    }
+  p0 = d0->constraint;
+  if (!p0)
+    p0 = "";
+  p1 = d1->constraint;
+  if (!p1)
+    p1 = "";
+  if (strcmp (p0, p1) != 0)
+    return 0;
 
   if (d0->mode != d1->mode)
     return 0;
-
-  if (!have_constraints)
-    if (d0->address_p != d1->address_p)
-      return 0;
 
   if (d0->strict_low != d1->strict_low)
     return 0;
@@ -937,7 +911,6 @@ main (argc, argv)
   output_prologue ();
   next_code_number = 0;
   next_index_number = 0;
-  have_constraints = 0;
 
   /* Read the machine description.  */
 

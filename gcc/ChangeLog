@@ -1,3 +1,34 @@
+Fri Oct  1 10:56:06 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* Makefile.in (genattrtab.o): Don't depend on "insn-config.h".
+	* final.c (final_scan_insn): We always have register constraints.
+	* genattrtab.c: Don't include "insn-config.h".
+	(write_attr_case): We always have register constraints.
+	* genconfig.c (register_constraint_flag): Delete.
+	(walk_insn_part): Don't check whether we have register constraints.
+	(main): Don't write out "#define REGISTER_CONSTRAINTS".
+	* genoutput.c (have_constraints): Delete.
+	(main): Don't set it.
+	(output_operand_data): We always have constraints.
+	(scan_operands): Likewise.
+	(compare_operands): Likewise.
+	* local-alloc.c (block_alloc): We always have constraints.
+	(requires_inout): Always compile this function.
+	* recog.c (extract_insn): We always have constraints.
+	(constrain_operands, reg_fits_class_p): Always compile these
+	functions.
+	* recog.h (struct recog_data): Delete non-REGISTER_CONSTRAINTS
+	fields.
+	(struct insn_operand_data): Likewise.
+	* regclass.c (regclass): We always have constraints.
+	(record_reg_classes, copy_cost, record_address_regs,
+	auto_inc_dec_reg_p): Always compile these functions.
+	* regmove.c (regmove_optimize): We always have constraints.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (reload): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+	* i860.c (output_delay_insn): Likewise.
+
 Thu Sep 30 23:04:41 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* iris6.h (BUILD_VA_LIST_TYPE): Define.

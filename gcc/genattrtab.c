@@ -98,7 +98,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
-#include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 #include "ggc.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
@@ -5128,12 +5127,10 @@ write_attr_case (attr, av, write_case_lines, prefix, suffix, indent,
 
   if (must_constrain)
     {
-#ifdef REGISTER_CONSTRAINTS
       write_indent (indent + 2);
       printf ("if (! constrain_operands (reload_completed))\n");
       write_indent (indent + 2);
       printf ("  fatal_insn_not_found (insn);\n");
-#endif
     }
 
   write_attr_set (attr, indent + 2, av->value, prefix, suffix,

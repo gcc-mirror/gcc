@@ -1844,7 +1844,7 @@ genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_RTLANA
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_RTLANAL) $(HOST_LIBS)
 
-genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h insn-config.h errors.h ggc.h
+genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h errors.h ggc.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
 
 genoutput : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)

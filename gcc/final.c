@@ -2886,10 +2886,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	extract_insn (insn);
 	cleanup_subreg_operands (insn);
 
-#ifdef REGISTER_CONSTRAINTS
 	if (! constrain_operands (1))
 	  fatal_insn_not_found (insn);
-#endif
 
 	/* Some target machines need to prescan each insn before
 	   it is output.  */

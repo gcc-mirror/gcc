@@ -1082,9 +1082,6 @@ block_alloc (b)
 	  register rtx r0, r1;
 	  int combined_regno = -1;
 	  int i;
-#ifndef REGISTER_CONSTRAINTS
-	  register rtx body = PATTERN (insn);
-#endif
 
 	  this_insn_number = insn_number;
 	  this_insn = insn;
@@ -1110,18 +1107,10 @@ block_alloc (b)
 
 	     If tying is done, WIN is set nonzero.  */
 
-	  if (1
-#ifdef REGISTER_CONSTRAINTS
-	      && recog_data.n_operands > 1
+	  if (recog_data.n_operands > 1
 	      && recog_data.constraints[0][0] == '='
-	      && recog_data.constraints[0][1] != '&'
-#else
-	      && GET_CODE (PATTERN (insn)) == SET
-	      && rtx_equal_p (SET_DEST (PATTERN (insn)), recog_data.operand[0])
-#endif
-	      )
+	      && recog_data.constraints[0][1] != '&')
 	    {
-#ifdef REGISTER_CONSTRAINTS
 	      /* If non-negative, is an operand that must match operand 0.  */
 	      int must_match_0 = -1;
 	      /* Counts number of alternatives that require a match with
@@ -1137,12 +1126,10 @@ block_alloc (b)
 		  if (this_match == recog_data.n_alternatives)
 		    must_match_0 = i;
 		}
-#endif
 
 	      r0 = recog_data.operand[0];
 	      for (i = 1; i < recog_data.n_operands; i++)
 		{
-#ifdef REGISTER_CONSTRAINTS
 		  /* Skip this operand if we found an operand that
 		     must match operand 0 and this operand isn't it
 		     and can't be made to be it by commutativity.  */
@@ -1162,20 +1149,13 @@ block_alloc (b)
 		  if (n_matching_alts == recog_data.n_alternatives
 		      && 0 == requires_inout (recog_data.constraints[i]))
 		    continue;
-#endif
 
 		  r1 = recog_data.operand[i];
 
 		  /* If the operand is an address, find a register in it.
 		     There may be more than one register, but we only try one
 		     of them.  */
-		  if (
-#ifdef REGISTER_CONSTRAINTS
-		      recog_data.constraints[i][0] == 'p'
-#else
-		      recog_data.operand_address_p[i]
-#endif
-		      )
+		  if (recog_data.constraints[i][0] == 'p')
 		    while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
 		      r1 = XEXP (r1, 0);
 
@@ -1186,11 +1166,7 @@ block_alloc (b)
 			 can only be in the same register as the output, give
 			 priority to an equivalence found from that insn.  */
 		      int may_save_copy
-#ifdef REGISTER_CONSTRAINTS
 			= (r1 == recog_data.operand[i] && must_match_0 >= 0);
-#else
-			= (SET_DEST (body) == r0 && SET_SRC (body) == r1);
-#endif
 		      
 		      if (GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG)
 			win = combine_regs (r1, r0, may_save_copy,
@@ -2199,8 +2175,6 @@ no_conflict_p (insn, r0, r1)
   return ok;
 }
 
-#ifdef REGISTER_CONSTRAINTS
-
 /* Return the number of alternatives for which the constraint string P
    indicates that the operand must be equal to operand 0 and that no register
    is acceptable.  */
@@ -2257,7 +2231,6 @@ requires_inout (p)
 
   return num_matching_alts;
 }
-#endif /* REGISTER_CONSTRAINTS */
 
 void
 dump_local_alloc (file)
