@@ -1,3 +1,8 @@
+Thu Jan  3 11:05:41 2002  Jeffrey A Law  (law@redhat.com)
+
+        * config/os/hpux/bits/os_defines.h: Prefix __strtoll and
+        __strtoull declarations with __extension__.
+
 2002-01-03  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* testsuite/lib/prune.exp: Correct regular expression for

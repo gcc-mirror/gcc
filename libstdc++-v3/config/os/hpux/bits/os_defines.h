@@ -60,9 +60,9 @@
    We also force _GLIBCPP_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
 namespace std {
-  extern "C" long long strtoll (const char *, char **, int)
+  __extension__ extern "C" long long strtoll (const char *, char **, int)
     __asm  ("__strtoll");
-  extern "C" unsigned long long strtoull (const char *, char **, int)
+  __extension__ extern "C" unsigned long long strtoull (const char *, char **, int)
     __asm  ("__strtoull");
 }
 #define _GLIBCPP_USE_LONG_LONG 1
