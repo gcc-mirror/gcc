@@ -38,7 +38,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* These are the ones defined by Sony, plus mc68000 for uniformity with
    GCC on other 68000 systems.  */
 
+#ifdef MOTOROLA
+#define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews700 -D__motorola__"
+#else
 #define CPP_PREDEFINES "-Dunix -Dbsd43 -Dsony -Dsony_news -Dmc68000 -Dmc68020 -Dnews700"
+#endif
 
 /* These conditionals tested for different submodels,
    but they were incorrect since they tested the host rather than the target.
