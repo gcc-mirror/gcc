@@ -1,3 +1,9 @@
+2004-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/16633:
+	* lib/gcc-dg.exp: Set up LD_LIBRARY_PATH, SHLIB_PATH,
+	LD_LIBRARYN32_PATH, LD_LIBRARY64_PATH and DYLD_LIBRARY_PATH.
+
 2004-09-06  Devang Patel  <dpatel@apple.com>
 	
 	* gcc.dg/tree-ssa/ifc-20040816-1.c: Use -ftree-vectorize.
