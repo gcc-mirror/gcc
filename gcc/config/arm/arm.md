@@ -1867,7 +1867,7 @@
   [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "")
                          (match_operand:SI 1 "general_operand" "")
                          (match_operand:SI 2 "general_operand" ""))
-        (match_operand:SI 3 "nonmemory_operand" ""))]
+        (match_operand:SI 3 "reg_or_int_operand" ""))]
   "TARGET_ARM"
   "
   {
