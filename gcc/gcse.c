@@ -7175,6 +7175,11 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
   if (flag_non_call_exceptions && may_trap_p (dest))
     return;
 
+  /* Even if the destination cannot trap, the source may.  In this case we'd
+     need to handle updating the REG_EH_REGION note.  */
+  if (find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+    return;
+
   ptr = ldst_entry (dest);
   if (!ptr->pattern_regs)
     ptr->pattern_regs = extract_mentioned_regs (dest);
