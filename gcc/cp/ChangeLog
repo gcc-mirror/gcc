@@ -1,3 +1,8 @@
+Fri Jun 30 13:45:51 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* call.c (convert_harshness): Add QUAL_CODE when we're faced with
+	const vs non-const for void conversions.
+
 Thu Jun 29 09:35:05 1995  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (BOOL_TYPE_SIZE): Fix broken SLOW_BYTE_ACCESS check.
