@@ -1,3 +1,18 @@
+2002-03-18  Bernd Schmidt  <bernds@redhat.com>
+
+	* config/arm/arm.c (arm_gen_movstrqi): Use gen_lowpart instead
+	of gen_rtx_SUBREG.
+	(arm_reload_out_hi): Use gen_lowpart instead of
+	gen_rtx_SUBREG to access QImode components.
+	* config/arm/arm.md: Disable zero_extend split for QImode
+	subregs in BIG_ENDIAN mode.
+	(storehi_bigend): Match use of least significant byte.
+	(storeinthi): Remove extraneous SUBREG.
+	Add missing sonstruction of operands[2].
+	(movhi): Use gen_lowpart in place of gen_rtx_SUBREG.
+	(movqi): Use gen_lowpart in place of gen_rtx_SUBREG.
+	Replace gen_rtx (SUBREG) with gen_rtx_SUBREG.
+
 2002-03-18  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.h (PREDICATE_CODES): Add PARALLEL to
@@ -4459,7 +4474,7 @@ Mon Feb	 4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow any value in
 	any geenral register.
 
-2001-02-04  Bernd Schmidt  <bernds@redhat.com>
+2001-02-04  Bernd Schmidt  <bernds@redhat.com>s
 
 	* cfgrtl.c (force_nonfallthru_and_redirect): Don't try to redirect
 	the entry block.
