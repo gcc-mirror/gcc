@@ -245,30 +245,3 @@ do {                                                                    \
 #define STARTFILE_SPEC  \
   "%{shared:c++rt0.o%s} \
    %{!shared:%{pg:gcrt0.o%s}%{!pg:%{static:scrt0.o%s}%{!static:crt0.o%s}}}"
-
-/* This is defined when gcc is compiled in the BSD-directory-tree, and must
- * make up for the gap to all the stuff done in the GNU-makefiles.
- */
-
-#ifdef FREEBSD_NATIVE
-
-#define INCLUDE_DEFAULTS { \
-	{ "/usr/include", 0, 0, 0 }, \
-	{ "/usr/include/g++", "G++", 1, 1 }, \
-	{ 0, 0, 0, 0} \
-	}
-
-#undef MD_EXEC_PREFIX
-#define MD_EXEC_PREFIX "/usr/libexec/"
-
-#undef STANDARD_STARTFILE_PREFIX
-#define STANDARD_STARTFILE_PREFIX "/usr/lib"
-
-#if 0 /* This is very wrong!!! */
-#define DEFAULT_TARGET_MACHINE "i386-unknown-freebsd_1.0"
-#define GPLUSPLUS_INCLUDE_DIR "/usr/local/lib/gcc-lib/i386-unknown-freebsd_1.0/2.5.8/include"
-#define TOOL_INCLUDE_DIR "/usr/local/i386-unknown-freebsd_1.0/include"
-#define GCC_INCLUDE_DIR "/usr/local/lib/gcc-lib/i386-unknown-freebsd_1.0/2.5.8/include"
-#endif
-
-#endif /* FREEBSD_NATIVE */
