@@ -296,10 +296,9 @@ DEFDOC (DLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
 DEFDOC (CDLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
-DEFDOC (LOG10, "Natural logarithm.", "\
-Returns the natural logarithm of @var{@1@}, which must
-be greater than zero or, if type @code{COMPLEX}, must not
-be zero.
+DEFDOC (LOG10, "Base-10 logarithm.", "\
+Returns the base-10 logarithm of @var{@1@}, which must
+be greater than zero.
 
 The inverse of this function is @samp{10. ** LOG10(@var{@1@})}.
 
