@@ -44,6 +44,7 @@
 #include <bits/std_istream.h>
 #include <bits/std_ostream.h>
 #include <bits/std_string.h>
+#include <bits/std_iomanip.h>
 
 // NB: unnecessary if the .h headers include these
 #ifndef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
@@ -94,6 +95,17 @@ namespace std
 
 
   //
+  // iomanip
+  //
+  template class _Setfill<char>;
+  template _Setfill<char> setfill(char);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class _Setfill<wchar_t>;
+  template _Setfill<wchar_t> setfill(wchar_t);
+#endif
+
+
+  //
   // istream
   //
   template class basic_istream<char>;
@@ -104,11 +116,20 @@ namespace std
   template istream& operator>>(istream&, char*);
   template istream& operator>>(istream&, unsigned char*);
   template istream& operator>>(istream&, signed char*);
+
+  template istream& operator>>(istream&, _Setiosflags);
+  template istream& operator>>(istream&, _Resetiosflags);
+  template istream& operator>>(istream&, _Setbase);
+  template istream& operator>>(istream&, _Setfill<char>);
+  template istream& operator>>(istream&, _Setprecision);
+  template istream& operator>>(istream&, _Setw);
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_istream<wchar_t>;
   template wistream& ws(wistream&);
   template wistream& operator>>(wistream&, wchar_t&);
   template wistream& operator>>(wistream&, wchar_t*);
+  template wistream& operator>>(wistream&, _Setfill<wchar_t>);
 #endif
 
 
@@ -125,6 +146,14 @@ namespace std
   template ostream& operator<<(ostream&, const char*);
   template ostream& operator<<(ostream&, const unsigned char*);
   template ostream& operator<<(ostream&, const signed char*);
+
+  template ostream& operator<<(ostream&, _Setiosflags);
+  template ostream& operator<<(ostream&, _Resetiosflags);
+  template ostream& operator<<(ostream&, _Setbase);
+  template ostream& operator<<(ostream&, _Setfill<char>);
+  template ostream& operator<<(ostream&, _Setprecision);
+  template ostream& operator<<(ostream&, _Setw);
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_ostream<wchar_t>;
   template wostream& endl(wostream&);
@@ -134,6 +163,7 @@ namespace std
   template wostream& operator<<(wostream&, char);
   template wostream& operator<<(wostream&, const wchar_t*);
   template wostream& operator<<(wostream&, const char*);
+  template wostream& operator<<(wostream&, _Setfill<wchar_t>);
 #endif
   
 
