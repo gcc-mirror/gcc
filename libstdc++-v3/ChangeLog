@@ -1,3 +1,9 @@
+2003-10-16  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/cpu/m68k/atomicity.h (__exchange_and_add): Use TAS on
+	__mcf5400__. Don't rely on __mc68000__ to detect a bare 68000.
+	Document SMP safeness of asm macros.
+
 2003-10-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale.cc (locale::locale(const char*)): Tweak
