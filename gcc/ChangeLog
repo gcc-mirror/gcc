@@ -1,3 +1,7 @@
+2005-04-05  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md (*truncdfsf2_i387_1): New pattern.
+
 2005-04-05  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (Optimize Options): Mention -ftree-lrs, not
