@@ -1,3 +1,7 @@
+002-01-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/altivec-4.c: Test altivec predicates.
+
 2002-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20020107-1.c: New test.
