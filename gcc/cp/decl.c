@@ -12858,19 +12858,6 @@ xref_tag (code_type_node, name, globalize)
 	redeclare_class_template (ref, current_template_parms);
     }
 
-  /* Until the type is defined, tentatively accept whatever
-     structure tag the user hands us.  */
-  if (!COMPLETE_TYPE_P (ref)
-      && ref != current_class_type
-      /* Have to check this, in case we have contradictory tag info.  */
-      && IS_AGGR_TYPE_CODE (TREE_CODE (ref)))
-    {
-      if (tag_code == class_type)
-	CLASSTYPE_DECLARED_CLASS (ref) = 1;
-      else if (tag_code == record_type)
-	CLASSTYPE_DECLARED_CLASS (ref) = 0;
-    }
-
   TYPE_ATTRIBUTES (ref) = attributes;
 
   return ref;
