@@ -278,7 +278,7 @@ named_section (decl, name)
 /* Tell the assembler to switch to the bss section.  */
 
 void
-bss_section (decl, name)
+bss_section ()
 {
   if (in_section != in_bss)
     {
