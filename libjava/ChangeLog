@@ -1,3 +1,11 @@
+2000-03-09  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Call
+	_Jv_PrepareConstantTimeTables.
+	* java/lang/natClass.cc (_Jv_PrepareConstantTimeTables): Array
+	classes should have an IDT, so don't return if klass is an array
+	class.
+
 2000-03-08  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/natArray.cc (newInstance): Don't allow array

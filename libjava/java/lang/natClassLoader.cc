@@ -584,6 +584,9 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader)
       array_class->interfaces = interfaces;
       array_class->interface_count = 1;
 
+      // Generate the interface dispatch table.
+      _Jv_PrepareConstantTimeTables (array_class);
+
       // as per vmspec 5.3.3.2
       array_class->accflags = element->accflags;
 
