@@ -767,8 +767,13 @@ add_new_handler (region, newhandler)
     function_eh_regions[region].handlers = newhandler;
   else 
     {
-      for ( ; last->next != NULL; last = last->next)
-        ;
+      for ( ; ; last = last->next)
+	{
+	  if (last->type_info == CATCH_ALL_TYPE)
+	    pedwarn ("additional handler after ...");
+	  if (last->next == NULL)
+	    break;
+	}
       last->next = newhandler;
     }
 }
