@@ -6200,7 +6200,9 @@ record_initial (dest, set)
 
   if (GET_CODE (dest) != REG
       || REGNO (dest) >= max_reg_before_loop
-      || reg_iv_type[REGNO (dest)] != BASIC_INDUCT)
+      || reg_iv_type[REGNO (dest)] != BASIC_INDUCT
+      /* Reject this insn if the source isn't valid for the mode of DEST.  */
+      || GET_MODE (dest) != GET_MODE (SET_DEST (set)))
     return;
 
   bl = reg_biv_class[REGNO (dest)];
