@@ -144,13 +144,19 @@ sdata_symbolic_operand (op, mode)
 {
   switch (GET_CODE (op))
     {
-    case SYMBOL_REF:
-      return XSTR (op, 0)[0] == SDATA_NAME_FLAG_CHAR;
-
     case CONST:
-      return (GET_CODE (XEXP (op, 0)) == PLUS
-	      && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-	      && XSTR (XEXP (XEXP (op, 0), 0), 0)[0] == SDATA_NAME_FLAG_CHAR);
+      if (GET_CODE (XEXP (op, 0)) != PLUS
+	  || GET_CODE (XEXP (XEXP (op, 0), 0)) != SYMBOL_REF)
+	break;
+      op = XEXP (XEXP (op, 0), 0);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
+      if (CONSTANT_POOL_ADDRESS_P (op))
+	return GET_MODE_SIZE (get_pool_mode (op)) <= ia64_section_threshold;
+      else
+        return XSTR (op, 0)[0] == SDATA_NAME_FLAG_CHAR;
+
     default:
       break;
     }

@@ -226,6 +226,21 @@ do {									\
     const_section ();							\
 }
 
+/* Similarly for constant pool data.  */
+
+extern int ia64_section_threshold;
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE, RTX)					\
+{									\
+  if (GET_MODE_SIZE (MODE) > 0						\
+      && GET_MODE_SIZE (MODE) <= ia64_section_threshold)		\
+    sdata_section ();							\
+  else if (flag_pic && symbolic_operand ((RTX), (MODE)))		\
+    data_section ();							\
+  else									\
+    const_section ();							\
+}
+
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_sdata, in_sbss
 
