@@ -4,5 +4,6 @@
 #ifndef _LIMITS_H_  /* Terminated in limity.h.  */
 #define _LIMITS_H_
 
+#ifndef _LIBC_LIMITS_H_
 #include_next <limits.h>
-
+#endif
