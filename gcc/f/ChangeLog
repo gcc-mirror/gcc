@@ -1,3 +1,10 @@
+Sat Jul 11 18:24:37 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_expr_) [FFEBLD_opCONTER]: Die if padding
+	for constant is non-zero.
+
+	* com.c (__eprintf): Delete this function, it is obsolete.
+
 1998-07-09  Dave Love  <d.love@dl.ac.uk>
 
 	* intdoc.in (HOSTNM_func, HOSTNM_subr): Update last change.

@@ -2883,6 +2883,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       return list;
 
     case FFEBLD_opCONTER:
+      assert (ffebld_conter_pad (expr) == 0);
       item
 	= ffecom_constantunion (&ffebld_constant_union (ffebld_conter (expr)),
 				bt, kt, tree_type);
@@ -14816,29 +14817,6 @@ start_function (tree name, tree type, int nested, int public)
 }
 
 /* Here are the public functions the GNU back end needs.  */
-
-/* This is used by the `assert' macro.  It is provided in libgcc.a,
-   which `cc' doesn't know how to link.  Note that the C++ front-end
-   no longer actually uses the `assert' macro (instead, it calls
-   my_friendly_assert).  But all of the back-end files still need this.  */
-void
-__eprintf (string, expression, line, filename)
-#ifdef __STDC__
-     const char *string;
-     const char *expression;
-     unsigned line;
-     const char *filename;
-#else
-     char *string;
-     char *expression;
-     unsigned line;
-     char *filename;
-#endif
-{
-  fprintf (stderr, string, expression, line, filename);
-  fflush (stderr);
-  abort ();
-}
 
 tree
 convert (type, expr)
