@@ -1,3 +1,17 @@
+2000-05-19  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4:  Clean up comments on newer checks.
+	  (GLIBCPP_CHECK_COMPILER_VERSION):  Check for system_header
+	  pragma support.  Remove WERRORSUPPRESS variable, add WERROR.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+	* Makefile.in:  Regenerate.
+	* libio/Makefile.in:  Regenerate.
+	* math/Makefile.in:  Regenerate.
+	* src/Makefile.am:  Tell make's WERROR to depend on configure's WERROR.
+	* src/Makefile.in:  Regenerate.
+	* docs/configopts.html:  Document changes to --enable names.
+
 2000-05-18  Chip Salzenberg  <chip@valinux.com>
 
         * bits/ostream.tcc (_S_pad_char): Function template should not be
