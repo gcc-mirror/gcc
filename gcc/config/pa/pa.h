@@ -206,6 +206,11 @@ extern int target_flags;
    not for external calls.  */
 #define TARGET_LONG_PIC_PCREL_CALL 0
 
+/* Define to a C expression evaluating to true to use SOM secondary
+   definition symbols for weak support.  Linker support for secondary
+   definition symbols is buggy prior to HP-UX 11.X.  */
+#define TARGET_SOM_SDEF 0
+
 /* Macro to define tables used to set the flags.  This is a
    list in braces of target switches with each switch being
    { "NAME", VALUE, "HELP_STRING" }.  VALUE is the bits to set,

@@ -130,3 +130,8 @@ Boston, MA 02111-1307, USA.  */
 #define LD_INIT_SWITCH "+init"
 #undef LD_FINI_SWITCH
 #define LD_FINI_SWITCH "+fini"
+
+/* The HP-UX 11.X SOM linker (ld32) can successfully link shared libraries
+   with secondary definition (weak) symbols.  */
+#undef TARGET_SOM_SDEF
+#define TARGET_SOM_SDEF 1
