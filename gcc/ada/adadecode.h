@@ -4,7 +4,6 @@
  *                                                                          *
  *                             G N A T D E C O                              *
  *                                                                          *
- *                            $Revision$
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *

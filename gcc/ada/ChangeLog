@@ -1,3 +1,12 @@
+2002-03-14  Geoffrey Keating  <geoffk@redhat.com>
+
+	Delete all lines containing "$Revision:".
+	* xeinfo.adb: Don't look for revision numbers.
+	* xnmake.adb: Likewise.
+	* xsinfo.adb: Likewise.
+	* xsnames.adb: Likewise.
+	* xtreeprs.adb: Likewise.
+
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* misc.c (gnat_tree_code_type, gnat_tree_code_length,

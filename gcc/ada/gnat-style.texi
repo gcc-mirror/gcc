@@ -6,7 +6,6 @@
 @c                                                                            o
 @c                      G N A T   C O D I N G   S T Y L E                     o
 @c                                                                            o
-@c                               $Revision: 1.4 $
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -46,7 +45,6 @@
 @sp 10
 @title GNAT Coding Style
 @subtitle A guide for GNAT developers
-@subtitle Document revision level $Revision: 1.4 $
 @author Ada Core Technologies, Inc.
 @end titlepage
 @raisesections

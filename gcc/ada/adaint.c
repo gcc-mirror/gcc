@@ -4,7 +4,6 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision$
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *

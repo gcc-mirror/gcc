@@ -7,7 +7,6 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/Dec Unix)                     --
 --                                                                          --
---                            $Revision$
 --                                                                          --
 --           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
 --                                                                          --

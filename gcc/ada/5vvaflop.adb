@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.15 $
 --                                                                          --
 --          Copyright (C) 1997-2000 Free Software Foundation, Inc.          --
 --                       (Version for Alpha OpenVMS)                        --

@@ -7,7 +7,6 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---                             $Revision$
 --                                                                          --
 --          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
 --                                                                          --

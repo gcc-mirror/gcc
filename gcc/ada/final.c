@@ -4,7 +4,6 @@
  *                                                                          *
  *                               F I N A L                                  *
  *                                                                          *
- *                            $Revision: 1.1 $
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
