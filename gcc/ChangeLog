@@ -1,3 +1,17 @@
+2004-11-10  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/16480
+	2004-08-26  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Don't abort
+	on "(mem (symbol_ref ..))" rtl.  Look at LO_SUM base regs as well
+	as PLUS base regs.
+	2004-08-01  Geoffrey Keating  <geoffk@apple.com>
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Just abort
+	if trying to *store* to a non-offsettable address.
+	2004-07-30  Geoffrey Keating  <geoffk@apple.com>
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Cope with
+	non-offsettable addresses being moved into multiple GPRs.
+
 2004-11-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/t-iris6 (tp-bit.c): Fix target filename.
