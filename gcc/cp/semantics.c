@@ -2629,11 +2629,6 @@ finish_id_expression (tree id_expression,
 	     need.  */
 	  if (TREE_CODE (id_expression) == TEMPLATE_ID_EXPR)
 	    return id_expression;
-	  /* Since this name was dependent, the expression isn't
-	     constant -- yet.  No error is issued because it might be
-	     constant when things are instantiated.  */
-	  if (integral_constant_expression_p)
-	    *non_integral_constant_expression_p = true;
 	  *idk = CP_ID_KIND_UNQUALIFIED_DEPENDENT;
 	  /* If we found a variable, then name lookup during the
 	     instantiation will always resolve to the same VAR_DECL

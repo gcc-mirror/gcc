@@ -1,3 +1,8 @@
+2005-02-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19883
+	* g++.dg/parse/constant6.C: New test.
+
 2005-02-22  Uros Bizjak  <uros@kss-loka.si>
 
 	* g++.dg/charset/asm1.c: Check for IBM1047 code set, not IBM-1047.
