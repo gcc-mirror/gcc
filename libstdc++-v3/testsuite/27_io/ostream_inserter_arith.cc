@@ -312,12 +312,14 @@ test03()
 int
 test04()
 {
-  stringbuf strbuf;
-  ostream o(&strbuf);
-
-  o << hex << showbase << setw(6) << internal << 255;
-  VERIFY( strbuf.str() == "0x  ff" );
+  stringbuf strbuf1, strbuf2;
+  ostream o1(&strbuf1), o2(&strbuf2);
+  o1 << hex << showbase << setw(6) << internal << 0xff;
+  VERIFY( strbuf1.str() == "0x  ff" );
   
+  // ... vs internal-adjusted const char*-type objects
+  o2 << hex << showbase << setw(6) << internal << "0xff";
+  VERIFY( strbuf2.str() == "  0xff" );
   return 0;
 }
 

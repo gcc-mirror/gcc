@@ -337,12 +337,12 @@ namespace std
   template
     void 
     __pad<char>(ios_base&, char, char*, const char *, streamsize, 
-		streamsize);
+		streamsize, const bool);
 
   template
     void 
-    __pad<char, char_traits<char> >(ios_base&, char, char*, 
-				    const char *, streamsize, streamsize);
+    __pad<char, char_traits<char> >(ios_base&, char, char*, const char *, 
+				    streamsize, streamsize, const bool);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template 
@@ -363,13 +363,13 @@ namespace std
   template
     void 
     __pad<wchar_t>(ios_base&, wchar_t, wchar_t*, const wchar_t*, 
-		   streamsize, streamsize);
+		   streamsize, streamsize, const bool);
 
   template
     void 
     __pad<wchar_t, char_traits<wchar_t> >(ios_base&, wchar_t, wchar_t*, 
-					  const wchar_t*, 
-					  streamsize, streamsize);
+					  const wchar_t*, streamsize, 
+					  streamsize, const bool);
 #endif // _GLIBCPP_USE_WCHAR_T
 
   template 
