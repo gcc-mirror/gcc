@@ -3236,12 +3236,19 @@ install-common: native $(EXTRA_PARTS) lang.install-common installdirs
 	    chmod a-x $(DESTDIR)$(libsubdir)/$$file; \
 	  else true; fi; \
 	done
-# Don't mess with specs if it doesn't exist yet.
-	-if [ -f specs ] ; then \
-	  rm -f $(DESTDIR)$(libsubdir)/specs; \
-	  $(INSTALL_DATA) $(SPECS) $(DESTDIR)$(libsubdir)/specs; \
-	  chmod a-x $(DESTDIR)$(libsubdir)/specs; \
-	fi
+# Remove any specs file installed by a previous version of GCC.  
+	rm -f $(DESTDIR)$(libsubdir)/specs
+ifneq ($(SPECS),specs)
+# In general, we no longer install the specs file because its presence
+# makes the driver slower, and because people who need it can recreate
+# it by using -dumpspecs.
+#
+# However, in the case that the target has defined SPECS, then we must
+# install the file.  It may be that the installed specs file is
+# different from that built into the driver.
+	$(INSTALL_DATA) $(SPECS) $(DESTDIR)$(libsubdir)/specs
+	chmod a-x $(DESTDIR)$(libsubdir)/specs
+endif
 # Install protoize if it was compiled.
 	-if [ -f protoize$(exeext) ]; then \
 	  rm -f $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \

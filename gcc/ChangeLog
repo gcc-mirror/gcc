@@ -1,3 +1,8 @@
+2004-12-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (install-common): Do not install the specs file
+	unless SPECS is defined.
+
 2004-12-20  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/18942
