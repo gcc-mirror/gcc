@@ -1,3 +1,11 @@
+2000-03-05  Stephane Carrez  <stcarrez@worldnet.fr>
+
+	* dwarf2out.c (UNALIGNED_WORD_ASM_OP): Support 2 bytes pointer.
+	(ASM_OUTPUT_DWARF_ADDR_CONST): Use UNALIGNED_WORD_ASM_OP.
+	(DWARF_ARANGES_PAD_SIZE): New define.
+	(output_aranges): Use it to pad the address range header.
+	(DWARF_ROUND): Fix for non power of 2 rounding.
+
 2000-03-05  Jason Merrill  <jason@casey.cygnus.com>
 
 	* mkdeps.c (deps_calc_target): Remove incorrect 'const'.

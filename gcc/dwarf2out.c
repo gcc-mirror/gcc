@@ -159,7 +159,7 @@ dw_fde_node;
 
 /* Round SIZE up to the nearest BOUNDARY.  */
 #define DWARF_ROUND(SIZE,BOUNDARY) \
-  (((SIZE) + (BOUNDARY) - 1) & ~((BOUNDARY) - 1))
+  ((((SIZE) + (BOUNDARY) - 1) / (BOUNDARY)) * (BOUNDARY))
 
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
 #ifdef STACK_GROWS_DOWNWARD
@@ -312,7 +312,8 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
 
 #ifndef UNALIGNED_WORD_ASM_OP
 #define UNALIGNED_WORD_ASM_OP \
-  (PTR_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
+  ((PTR_SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : \
+   ((PTR_SIZE) == 2 ? UNALIGNED_SHORT_ASM_OP : UNALIGNED_INT_ASM_OP))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
@@ -361,7 +362,7 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
   do {									\
-    fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			\
+    fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);			\
     output_addr_const ((FILE), (RTX));					\
     fputc ('\n', (FILE));						\
   } while (0)
@@ -2141,6 +2142,12 @@ extern int flag_traditional;
 /* Fixed size portion of the address range info.  */
 #define DWARF_ARANGES_HEADER_SIZE \
   (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, PTR_SIZE * 2) - DWARF_OFFSET_SIZE)
+
+/* Size of padding portion in the address range info.  It must be
+   aligned to twice the pointer size.  */
+#define DWARF_ARANGES_PAD_SIZE \
+  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, PTR_SIZE * 2) \
+   - (2 * DWARF_OFFSET_SIZE + 4))
 
 /* The default is to have gcc emit the line number tables.  */
 #ifndef DWARF2_ASM_LINE_DEBUG_INFO
@@ -5363,19 +5370,19 @@ output_aranges ()
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  /* We need to align to twice the pointer size here.
-     If DWARF_OFFSET_SIZE == 4, then we have emitted 12 bytes, and need 4
-     bytes of padding to align for either 4 or 8 byte pointers.  */
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
-  /* If DWARF_OFFSET_SIZE == 8, then we have emitted 20 bytes, and need 12
-     bytes of padding to align for 8 byte pointers.  We have already emitted
-     4 bytes of padding, so emit 8 more here.  */
-  if (DWARF_OFFSET_SIZE == 8)
-    fprintf (asm_out_file, ",0,0");
 
-  if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s Pad to %d byte boundary",
-	     ASM_COMMENT_START, 2 * PTR_SIZE);
+  /* We need to align to twice the pointer size here.  */
+  if (DWARF_ARANGES_PAD_SIZE)
+    {
+      /* Pad using a 2 bytes word so that padding is correct
+         for any pointer size.  */
+      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0);
+      for (i = 2; i < DWARF_ARANGES_PAD_SIZE; i += 2)
+        fprintf (asm_out_file, ",0");
+      if (flag_debug_asm)
+        fprintf (asm_out_file, "\t%s Pad to %d byte boundary",
+                 ASM_COMMENT_START, 2 * PTR_SIZE);
+    }
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, text_section_label);
