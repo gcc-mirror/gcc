@@ -4249,7 +4249,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	     value in GPRs is reported here.  */
 	  if (align_words + CLASS_MAX_NREGS (mode, GENERAL_REGS)
 	      > GP_ARG_NUM_REG)
-	    /* Fortunately, there are only two possibilites, the value
+	    /* Fortunately, there are only two possibilities, the value
 	       is either wholly in GPRs or half in GPRs and half not.  */
 	    part_mode = DImode;
 	  
@@ -13643,7 +13643,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn ATTRIBUTE_UNUSED,
 }
 
 /* The function returns a true if INSN is microcoded.
-   Return false ptherwise.  */
+   Return false otherwise.  */
 
 static bool
 is_microcoded_insn (rtx insn)
@@ -14030,7 +14030,7 @@ get_next_active_insn (rtx insn, rtx tail)
   return next_insn;
 }
 
-/* Return whether the presence of INSN causes a dispatch group terminatation
+/* Return whether the presence of INSN causes a dispatch group termination
    of group WHICH_GROUP.
 
    If WHICH_GROUP == current_group, this function will return true if INSN
@@ -14072,7 +14072,7 @@ insn_terminates_group_p (rtx insn, enum group_termination which_group)
   return false;
 }
 
-/* Return true if it is recommended to keep NEXT_INSN "far" (in a seperate
+/* Return true if it is recommended to keep NEXT_INSN "far" (in a separate
    dispatch group) from the insns in GROUP_INSNS.  Return false otherwise.  */
 
 static bool
@@ -14110,7 +14110,7 @@ is_costly_group (rtx *group_insns, rtx next_insn)
    one of the following schemes, depending on the value of the flag
    -minsert_sched_nops = X:
    (1) X == sched_finish_regroup_exact: insert exactly as many nops as needed
-       in order to force NEXT_INSN into a seperate group.
+       in order to force NEXT_INSN into a separate group.
    (2) X < sched_finish_regroup_exact: insert exactly X nops.  
    GROUP_END, CAN_ISSUE_MORE and GROUP_COUNT record the state after nop 
    insertion (has a group just ended, how many vacant issue slots remain in the

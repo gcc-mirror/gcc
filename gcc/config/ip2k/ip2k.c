@@ -368,7 +368,7 @@ function_epilogue (file, size)
 	      OUT_AS2 (mov, w, %L0);
 	      OUT_AS2 (add, spl, w);
 	      epilogue_size += 4;
-	      /* fall-thru  */
+	      /* fall-through  */
 	    case 0:
 	      break;
 	    case 1:
@@ -383,7 +383,7 @@ function_epilogue (file, size)
 		OUT_AS2 (mov, w, %H0);
 	      OUT_AS2 (add, sph, w);
 	      epilogue_size += 4;
-	      /* fall-thru  */
+	      /* fall-through  */
 	    case 0:
 	      break;
 	    case 0x100:
@@ -498,7 +498,7 @@ function_epilogue (file, size)
 	  OUT_AS2 (mov, w, %L0);
 	  OUT_AS2 (add, spl, w);
 	  epilogue_size += 4;
-	  /* fall-thru  */
+	  /* fall-through  */
 
 	case 0:
 	  break;
@@ -515,7 +515,7 @@ function_epilogue (file, size)
 	    OUT_AS2 (mov, w, %H0);
 	  OUT_AS2 (add, sph, w);
 	  epilogue_size += 4;
-	  /* fall-thru  */
+	  /* fall-through  */
 
 	case 0:
 	  break;
@@ -615,7 +615,7 @@ legitimate_address_p (mode, x, strict)
       if (REGNO (x) == REG_IP)
 	return (GET_MODE_SIZE (mode) == 1) ? 'R' : 0;
 
-      /* We can indirect thru DP or SP register.  */
+      /* We can indirect through DP or SP register.  */
       if (strict ? REG_OK_FOR_BASE_STRICT_P (x)
 	         : REG_OK_FOR_BASE_NOSTRICT_P (x))
 	return 'S';
@@ -636,7 +636,7 @@ legitimate_address_p (mode, x, strict)
 	    op2 = tmp;
 	  }
 
-	/* Don't let anything but R+I thru..  */
+	/* Don't let anything but R+I through..  */
 	if (! REG_P (op1)
 	    || REG_P (op2)
 	    || GET_CODE (op2) != CONST_INT)
@@ -783,7 +783,7 @@ print_operand_address (file, addr)
     {
     case SUBREG:
       addr = alter_subreg (&addr);
-      /* fall-thru  */
+      /* fall-through  */
 
     case REG:
       fprintf (file, "(%s)",
@@ -906,7 +906,7 @@ print_operand (file, x, code)
     {
     case SUBREG:
       x = alter_subreg (&x);
-      /* fall-thru  */
+      /* fall-through  */
 
     case REG:
       fprintf (file, reg_names[true_regnum (x) + abcd]);
@@ -1757,7 +1757,7 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 
         case GTU:			
           code = NE;			/* Anything nonzero is GTU.  */
-          /* fall-thru  */
+          /* fall-through  */
 
         case EQ:
         case NE:			/* Test all the bits, result in
@@ -2077,7 +2077,7 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	case GTU:
 	  if (imm_sub)
 	    {
-	      /* > 0xffff never suceeds!  */
+	      /* > 0xffff never succeeds!  */
 	      if ((INTVAL (operands[1]) & 0xffff) != 0xffff)
 		{
 	          operands[3] = GEN_INT (INTVAL (operands[1]) + 1);
@@ -2177,7 +2177,7 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	    {
 	      if ((INTVAL (operands[1]) & 0xffff) == 0xffff)
 	        {
-		  /* <= 0xffff always suceeds.  */
+		  /* <= 0xffff always succeeds.  */
 		  OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
 		}
@@ -2306,7 +2306,7 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	case GTU:
 	  if (imm_sub)
 	    {
-	      /* > 0xffffffff never suceeds!  */
+	      /* > 0xffffffff never succeeds!  */
 	      if ((unsigned HOST_WIDE_INT)(INTVAL (operands[1]) & 0xffffffff)
 		  != 0xffffffff)
 		{
@@ -2436,7 +2436,7 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
 	      if ((unsigned HOST_WIDE_INT)(INTVAL (operands[1]) & 0xffffffff)
 		  == 0xffffffff)
 	        {
-		  /* <= 0xffffffff always suceeds.  */
+		  /* <= 0xffffffff always succeeds.  */
 		  OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
 		}
@@ -3856,7 +3856,7 @@ track_dp_reload (insn, dp_current, dp_current_ok, modifying)
 /* As part of the machine-dependent reorg we scan loads and reloads of
    DP to see where any are redundant.  This does happens because we
    are able to subsequently transform things in interesting ways.  Sometimes
-   gcc also does unecessary reloads too so we try to eliminate these too.  */
+   gcc also does unnecessary reloads too so we try to eliminate these too.  */
 
 static void
 mdr_try_dp_reload_elim (first_insn)
@@ -4017,7 +4017,7 @@ mdr_try_dp_reload_elim (first_insn)
         }
 
       /* When we're looking to see if we've finished we count the number of
-         paths throught the code labels where we weren't able to definitively
+         paths through the code labels where we weren't able to definitively
 	 track DP.
 	 This number is used to see if we're converging on a solution.
 	 If this hits zero then we've fully converged, but if this stays the
@@ -5262,7 +5262,7 @@ mdr_try_wreg_elim (first_insn)
         }
 
       /* When we're looking to see if we've finished we count the number of
-         paths throught the code labels where we weren't able to definitively
+         paths through the code labels where we weren't able to definitively
 	 track WREG.  This number is used to see if we're converging on a
 	 solution.
 	 If this hits zero then we've fully converged, but if this stays the
@@ -6191,7 +6191,7 @@ ip2k_short_operand (x, mode)
 
       x = XEXP (x, 0);
 
-      /* fall thru  */
+      /* fall through  */
 
     case REG:
       if (IS_PSEUDO_P (x))

@@ -463,7 +463,7 @@
           first regular expression *and* the reservation described by
           the second regular expression *and* etc.
 
-       4. "*" is used for convinience and simply means sequence in
+       4. "*" is used for convenience and simply means sequence in
           which the regular expression are repeated NUMBER times with
           cycle advancing (see ",").
 
@@ -1118,7 +1118,7 @@
 
 ;; Note - it is the backend's responsibility to fill any unfilled delay slots
 ;; at assembler generation time.  This is usually done by adding a special print
-;; operand to the delayed insrtuction, and then in the PRINT_OPERAND function
+;; operand to the delayed instruction, and then in the PRINT_OPERAND function
 ;; calling dbr_sequence_length() to determine how many delay slots were filled.
 ;; For example:
 ;;
@@ -1364,7 +1364,7 @@
 
 ;; Note - it is best to only have one movsi pattern and to handle
 ;; all the various contingencies by the use of alternatives.  This
-;; allows reload the greatest amount of flexability (since reload will
+;; allows reload the greatest amount of flexibility (since reload will
 ;; only choose amoungst alternatives for a selected insn, it will not
 ;; replace the insn with another one).
 
@@ -1374,7 +1374,7 @@
 ;; constants into memory when the destination is a floating-point register.
 ;; That may make a function use a PIC pointer when it didn't before, and we
 ;; cannot change PIC usage (and hence stack layout) so late in the game.
-;; The resulting sequences for loading cosntants into FPRs are preferable
+;; The resulting sequences for loading constants into FPRs are preferable
 ;; even when we're not generating PIC code.
 
 (define_insn "*movsi_load"
@@ -3328,7 +3328,7 @@
 ;;   "anddi3 %0,%1,%2"
 ;;   [(set_attr "length" "4")])
 
-;; Includive OR, 64 bit integers
+;; Inclusive OR, 64 bit integers
 ;; (define_insn "iordi3"
 ;;   [(set (match_operand:DI 0 "register_operand" "=r")
 ;; 	(ior:DI (match_operand:DI 1 "register_operand" "%r")
@@ -7393,7 +7393,7 @@
   [(set_attr "length" "4")
    (set_attr "type" "mqsath")])
 
-;; Set hi/lo instrctions: type "mset"
+;; Set hi/lo instructions: type "mset"
 
 (define_insn "mhsetlos"
   [(set (match_operand:SI 0 "fpr_operand" "=f")

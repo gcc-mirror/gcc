@@ -6677,7 +6677,7 @@ alpha_expand_builtin (tree exp, rtx target,
 /* These variables are used for communication between the following functions.
    They indicate various things about the current function being compiled
    that are used to tell what kind of prologue, epilogue and procedure
-   descriptior to generate.  */
+   descriptor to generate.  */
 
 /* Nonzero if we need a stack procedure.  */
 enum alpha_procedure_types {PT_NULL = 0, PT_REGISTER = 1, PT_STACK = 2};
@@ -8829,7 +8829,7 @@ alpha_align_insns (unsigned int max_align,
 	  int nop_count = (align - ofs) / 4;
 	  rtx where;
 
-	  /* Insert nops before labels, branches, and calls to truely merge
+	  /* Insert nops before labels, branches, and calls to truly merge
 	     the execution of the nops with the previous instruction group.  */
 	  where = prev_nonnote_insn (i);
 	  if (where)

@@ -1230,7 +1230,7 @@
    (set_attr "type" "mult")]
 )
 
-;; Unnamed template to match long long multiply-accumlate (smlal)
+;; Unnamed template to match long long multiply-accumulate (smlal)
 
 (define_insn "*mulsidi3adddi"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")
@@ -1267,7 +1267,7 @@
    (set_attr "predicable" "yes")]
 )
 
-;; Unnamed template to match long long unsigned multiply-accumlate (umlal)
+;; Unnamed template to match long long unsigned multiply-accumulate (umlal)
 
 (define_insn "*umulsidi3adddi"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")

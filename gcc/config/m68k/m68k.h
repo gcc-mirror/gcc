@@ -213,7 +213,7 @@ extern int target_flags;
 #define MASK_RTD	(1<<16)
 #define TARGET_RTD	(target_flags & MASK_RTD)
 
-/* Support A5 relative data seperate from text.
+/* Support A5 relative data separate from text.
  * This option implies -fPIC, however it inhibits the generation of the
  * A5 save/restore in functions and the loading of a5 with a got pointer.
  */

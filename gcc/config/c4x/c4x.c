@@ -1088,7 +1088,7 @@ c4x_expand_epilogue(void)
 	  dont_pop_ar3 = 0;	/* If we use ar3, we need to pop it.  */
 	  if (size || current_function_args_size)
 	    {
-	      /* If we are ommitting the frame pointer, we still have
+	      /* If we are omitting the frame pointer, we still have
 	         to make space for it so the offsets are correct
 	         unless we don't use anything on the stack at all.  */
 	      size += 1;

@@ -157,7 +157,7 @@
 ;  a register satisying the 'f' constraint is used as a dst operand,
 ;  the CC gets clobbered (except for LDFcond).
 
-;  The ! in front of the 'b' constaint says to GCC to disparage the
+;  The ! in front of the 'b' constraint says to GCC to disparage the
 ;  use of this constraint.  The 'b' constraint applies only to the SP.
 
 ;  Note that we deal with the condition code CC like some of the RISC
@@ -173,7 +173,7 @@
 ;  delayed branch slots.
 
 ;  Since the C[34]x has many instructions that set the CC, we pay the
-;  price of having to explicity define which insns clobber the CC
+;  price of having to explicitly define which insns clobber the CC
 ;  (rather than using the macro NOTICE_UPDATE_CC). 
 
 ;  Note that many patterns say that the CC is clobbered when in fact
@@ -6265,7 +6265,7 @@
 ;
 ; MULF
 ;
-; The C3x MPYF only uses 24 bit precision while the C4x uses 32 bit precison.
+; The C3x MPYF only uses 24-bit precision while the C4x uses 32-bit precision.
 ;
 (define_expand "mulhf3"
   [(parallel [(set (match_operand:HF 0 "reg_operand" "=h")
@@ -7320,7 +7320,7 @@
  "stf\\t%1,*%0++\\n\\tstf\\t%2,*%0++")
 
 
-; The following two peepholes remove an unecessary load
+; The following two peepholes remove an unnecessary load
 ; often found at the end of a function.  These peepholes
 ; could be generalized to other binary operators.  They shouldn't
 ; be required if we run a post reload mop-up pass.

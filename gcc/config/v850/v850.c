@@ -2270,7 +2270,7 @@ v850_encode_data_area (tree decl, rtx symbol)
 {
   int flags;
 
-  /* Map explict sections into the appropriate attribute */
+  /* Map explicit sections into the appropriate attribute */
   if (v850_get_data_area (decl) == DATA_AREA_NORMAL)
     {
       if (DECL_SECTION_NAME (decl))
@@ -3155,8 +3155,8 @@ pattern_is_ok_for_prepare (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	return 0;
 
       /* If the register is being pushed somewhere other than the stack
-	 space just aquired by the first operand then abandon this quest.
-	 Note: the test is <= becuase both values are negative.	 */
+	 space just acquired by the first operand then abandon this quest.
+	 Note: the test is <= because both values are negative.	 */
       if (INTVAL (XEXP (plus, 1))
 	  <= INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)))
 	return 0;

@@ -81,7 +81,7 @@ extern void __frv_deregister_eh(void) __attribute__((__destructor__));
 
 extern func_ptr __EH_FRAME_BEGIN__[];
 
-/* Register the exeception handling table as the first constructor */
+/* Register the exception handling table as the first constructor */
 void
 __frv_register_eh (void)
 {
@@ -93,7 +93,7 @@ __frv_register_eh (void)
 /* Note, do not declare __{,de}register_frame_info weak as it seems
    to interfere with the pic support.  */
 
-/* Unregister the exeception handling table as a deconstructor */
+/* Unregister the exception handling table as a deconstructor */
 void
 __frv_deregister_eh (void)
 {

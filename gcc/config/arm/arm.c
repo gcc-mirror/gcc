@@ -849,7 +849,7 @@ arm_override_options (void)
     {
       /* There's some dispute as to whether this should be 1 or 2.  However,
 	 experiments seem to show that in pathological cases a setting of
-	 1 degrades less severly than a setting of 2.  This could change if
+	 1 degrades less severely than a setting of 2.  This could change if
 	 other parts of the compiler change their behavior.  */
       arm_constant_limit = 1;
 
@@ -1051,7 +1051,7 @@ use_return_insn (int iscond, rtx sibling)
 
      triggers a bug on most SA-110 based devices, such that the stack
      pointer won't be correctly restored if the instruction takes a
-     page fault.  We work around this problem by poping r3 along with
+     page fault.  We work around this problem by popping r3 along with
      the other registers, since that is never slower than executing
      another instruction.  
 

@@ -1349,7 +1349,7 @@ zbss_section ()								\
    can appear in the "ghs section" pragma.  These names are used to index
    into the GHS_default_section_names[] and GHS_current_section_names[]
    that are defined in v850.c, and so the ordering of each must remain
-   consistant. 
+   consistent. 
 
    These arrays give the default and current names for each kind of 
    section defined by the GHS pragmas.  The current names can be changed
