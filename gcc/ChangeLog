@@ -1,3 +1,7 @@
+Fri Feb 20 05:22:12 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (distdir-start): Add dependence on bi-parser.[ch].
+
 Thu Feb 19 18:07:11 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k.h (TARGET_SWITCHES): For 68000, 68302, subtract MASK_68881.

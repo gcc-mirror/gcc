@@ -2413,7 +2413,8 @@ gcc.xtar: distdir
 # This target exists to do the initial work before the language specific
 # stuff gets done.
 distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
-  $(srcdir)/c-parse.c $(srcdir)/cexp.c $(srcdir)/config.in
+  $(srcdir)/c-parse.c $(srcdir)/cexp.c $(srcdir)/config.in \
+  $(srcdir)/bi-parser.h $(srcdir)/bi-parser.c
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
