@@ -819,14 +819,12 @@ rewrite_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	      basic_block bb ATTRIBUTE_UNUSED,
 	      block_stmt_iterator si)
 {
-  stmt_ann_t ann;
   tree stmt;
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
 
   stmt = bsi_stmt (si);
-  ann = stmt_ann (stmt);
 
   /* If mark_def_sites decided that we don't need to rewrite this
      statement, ignore it.  */
