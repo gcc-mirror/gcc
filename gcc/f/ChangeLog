@@ -1,3 +1,7 @@
+Thu Jul 31 01:47:27 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_init_0): Use `dconsthalf'.
+
 Sat Jul 19 12:03:03 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c data.c expr.c fini.c g77spec.c global.c lab.c lex.c name.c
