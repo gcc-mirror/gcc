@@ -1619,47 +1619,22 @@ extern struct rtx_def *legitimize_pic_address ();
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-/* Assemblers (both gas 1.35 and as in 4.0.3)
-   seem to treat -0.0 as if it were 0.0.
-   They reject 99e9999, but accept inf.  */
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
   {									\
-    if (REAL_VALUE_ISINF (VALUE)					\
-        || REAL_VALUE_ISNAN (VALUE)					\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
-      {									\
-	long t[2];							\
-	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
-	fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n",			\
-		 ASM_LONG, t[0], ASM_LONG, t[1]);			\
-      }									\
-    else								\
-      {									\
-	char str[30];							\
-	REAL_VALUE_TO_DECIMAL ((VALUE), "%.17g", str);			\
-	fprintf (FILE, "\t.double 0r%s\n", str);			\
-      }									\
+    long t[2];								\
+    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);				\
+    fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n",			\
+	     ASM_LONG, t[0], ASM_LONG, t[1]);				\
   }
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
   {									\
-    if (REAL_VALUE_ISINF (VALUE)					\
-        || REAL_VALUE_ISNAN (VALUE)					\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
-      {									\
-	long t;								\
-	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
-	fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t);			\
-      }									\
-    else								\
-      {									\
-	char str[30];							\
-	REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", str);			\
-	fprintf (FILE, "\t.single 0r%s\n", str);			\
-      }									\
-  }
+    long t;								\
+    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);				\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t);			\
+  }									\
 
 /* This is how to output an assembler line defining a `long double'
    constant.  */
