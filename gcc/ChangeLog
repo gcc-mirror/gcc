@@ -1,3 +1,8 @@
+2004-04-07  Caroline Tice  <ctice@apple.com>
+
+	* gcc.c (main): Move 'break' in main loops (on an error)
+	to wait until error processing has occurred.
+	
 2004-04-06  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Stop changing enable_threads midstream.

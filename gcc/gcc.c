@@ -6425,10 +6425,7 @@ main (int argc, const char **argv)
 						       infiles[i].language);
 
 		  if (value < 0)
-		    {
-		      this_file_error = 1;
-		      break;
-		    }
+		    this_file_error = 1;
 		}
 	    }
 
@@ -6436,6 +6433,7 @@ main (int argc, const char **argv)
 	    {
 	      delete_failure_queue ();
 	      error_count++;
+	      break;
 	    }
 	  clear_failure_queue ();
 	}
@@ -6482,10 +6480,7 @@ main (int argc, const char **argv)
 	      value = do_spec (input_file_compiler->spec);
 	      infiles[i].compiled = true;
 	      if (value < 0)
-		{
-		  this_file_error = 1;
-		  break;
-		}
+		this_file_error = 1;
 	    }
 	}
 
@@ -6502,6 +6497,7 @@ main (int argc, const char **argv)
 	{
 	  delete_failure_queue ();
 	  error_count++;
+	  break;
 	}
       /* If this compilation succeeded, don't delete those files later.  */
       clear_failure_queue ();
