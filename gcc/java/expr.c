@@ -2215,7 +2215,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 	  else if (FIELD_STATIC (field_decl))
 	    {
 	      if (!DECL_CLINIT_P (current_function_decl))
-		error_with_decl (field_decl, 
+		warning_with_decl (field_decl, 
              "assignment to final static field `%s' not in class initializer");
 	    }
 	  else
@@ -2223,7 +2223,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
 	      tree cfndecl_name = DECL_NAME (current_function_decl);
 	      if (! DECL_CONSTRUCTOR_P (current_function_decl)
 		  && !ID_FINIT_P (cfndecl_name))
-		error_with_decl (field_decl, "assignment to final field `%s' not in constructor");
+		warning_with_decl (field_decl, "assignment to final field `%s' not in constructor");
 	    }
 	}
       expand_assignment (field_ref, new_value, 0, 0);
