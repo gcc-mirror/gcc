@@ -1310,7 +1310,8 @@
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
 	 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))
-   (clobber (reg:DI MACH_REG))]
+   (clobber (reg:SI MACH_REG))
+   (clobber (reg:SI MACL_REG))]
   "TARGET_SH2"
   "#")
 
@@ -1319,7 +1320,8 @@
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
 	 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))
-   (clobber (reg:DI MACH_REG))]
+   (clobber (reg:SI MACH_REG))
+   (clobber (reg:SI MACL_REG))]
   "TARGET_SH2"
   [(const_int 0)]
   "
@@ -1356,7 +1358,8 @@
 	(mult:DI
 	 (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
 	 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))
-   (clobber (reg:DI MACH_REG))]
+   (clobber (reg:SI MACH_REG))
+   (clobber (reg:SI MACL_REG))]
   "TARGET_SH2"
   "#")
 
@@ -1364,7 +1367,8 @@
   [(set (match_operand:DI 0 "arith_reg_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
 		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))
-   (clobber (reg:DI MACH_REG))]
+   (clobber (reg:SI MACH_REG))
+   (clobber (reg:SI MACL_REG))]
   "TARGET_SH2"
   [(const_int 0)]
   "
@@ -3369,7 +3373,7 @@
 (define_insn "calli"
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
-   (use (reg:SI FPSCR_REG))
+   (use (reg:PSI FPSCR_REG))
    (clobber (reg:SI PR_REG))]
   ""
   "jsr	@%0%#"
@@ -3384,7 +3388,7 @@
 (define_insn "calli_pcrel"
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
-   (use (reg:SI FPSCR_REG))
+   (use (reg:PSI FPSCR_REG))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2"
@@ -3399,7 +3403,7 @@
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))
 	      (match_operand 2 "" "")))
-   (use (reg:SI FPSCR_REG))
+   (use (reg:PSI FPSCR_REG))
    (clobber (reg:SI PR_REG))]
   ""
   "jsr	@%1%#"
@@ -3413,7 +3417,7 @@
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))
 	      (match_operand 2 "" "")))
-   (use (reg:SI FPSCR_REG))
+   (use (reg:PSI FPSCR_REG))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2"
@@ -3427,7 +3431,7 @@
 (define_expand "call"
   [(parallel [(call (mem:SI (match_operand 0 "arith_reg_operand" ""))
 			    (match_operand 1 "" ""))
-	      (use (reg:SI FPSCR_REG))
+	      (use (reg:PSI FPSCR_REG))
 	      (clobber (reg:SI PR_REG))])]
   ""
   "
@@ -3454,7 +3458,7 @@
   [(parallel [(set (match_operand 0 "arith_reg_operand" "")
 		   (call (mem:SI (match_operand 1 "arith_reg_operand" ""))
 				 (match_operand 2 "" "")))
-	      (use (reg:SI FPSCR_REG))
+	      (use (reg:PSI FPSCR_REG))
 	      (clobber (reg:SI PR_REG))])]
   ""
   "
@@ -4401,7 +4405,7 @@
 ;; (define_insn "fix_truncsfsi2_i4_2"
 ;;  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 ;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-;;   (use (reg:SI FPSCR_REG))
+;;   (use (reg:PSI FPSCR_REG))
 ;;   (clobber (reg:SI FPUL_REG))]
 ;;  "TARGET_SH4"
 ;;  "#"
