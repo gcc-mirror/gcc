@@ -6894,7 +6894,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    rtx errno_rtx = GEN_ERRNO_RTX;
 #else
 	    rtx errno_rtx
-	      = gen_rtx (MEM, word_mode, gen_rtx (SYMBOL_REF, Pmode, "*errno"));
+	      = gen_rtx (MEM, word_mode, gen_rtx (SYMBOL_REF, Pmode, "errno"));
 #endif
 
 	    emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
