@@ -4788,6 +4788,8 @@ static void find_best_packet PARAMS ((int *, const struct ia64_packet **,
 static int itanium_reorder PARAMS ((FILE *, rtx *, rtx *, int));
 static void dump_current_packet PARAMS ((FILE *));
 static void schedule_stop PARAMS ((FILE *));
+static rtx gen_nop_type PARAMS ((enum attr_type));
+static void ia64_emit_nops PARAMS ((void));
 
 /* Map a bundle number to its pseudo-op.  */
 
@@ -5998,6 +6000,99 @@ emit_predicate_relation_info ()
     }
 }
 
+/* Generate a NOP instruction of type T.  We will never generate L type
+   nops.  */
+
+static rtx
+gen_nop_type (t)
+     enum attr_type t;
+{
+  switch (t)
+    {
+    case TYPE_M:
+      return gen_nop_m ();
+    case TYPE_I:
+      return gen_nop_i ();
+    case TYPE_B:
+      return gen_nop_b ();
+    case TYPE_F:
+      return gen_nop_f ();
+    case TYPE_X:
+      return gen_nop_x ();
+    default:
+      abort ();
+    }
+}
+
+/* After the last scheduling pass, fill in NOPs.  It's easier to do this
+   here than while scheduling.  */
+
+static void
+ia64_emit_nops ()
+{
+  rtx insn;
+  const struct bundle *b = 0;
+  int bundle_pos = 0;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx pat;
+      enum attr_type t;
+      pat = INSN_P (insn) ? PATTERN (insn) : const0_rtx;
+      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	continue;
+      if ((GET_CODE (pat) == UNSPEC && XINT (pat, 1) == 22)
+	  || GET_CODE (insn) == CODE_LABEL)
+	{
+	  if (b)
+	    while (bundle_pos < 3)
+	      {
+		emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
+		bundle_pos++;
+	      }
+	  if (GET_CODE (insn) != CODE_LABEL)
+	    b = bundle + INTVAL (XVECEXP (pat, 0, 0));
+	  else
+	    b = 0;
+	  bundle_pos = 0;
+	  continue;
+	}
+      else if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == 2)
+	{
+	  int t = INTVAL (XVECEXP (pat, 0, 0));
+	  if (b)
+	    while (bundle_pos < t)
+	      {
+		emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
+		bundle_pos++;
+	      }
+	  continue;
+	}
+
+      if (bundle_pos == 3)
+	b = 0;
+
+      if (b && INSN_P (insn))
+	{
+	  t = ia64_safe_type (insn);
+	  if (t == TYPE_UNKNOWN)
+	    continue;
+	  while (bundle_pos < 3)
+	    {
+	      if (t == b->t[bundle_pos]
+		  || (t == TYPE_A && (b->t[bundle_pos] == TYPE_M
+				      || b->t[bundle_pos] == TYPE_I)))
+		break;
+
+	      emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
+	      bundle_pos++;
+	    }
+	  if (bundle_pos < 3)
+	    bundle_pos++;
+	}
+    }
+}
+
 /* Perform machine dependent operations on the rtl chain INSNS.  */
 
 void
@@ -6022,6 +6117,7 @@ ia64_reorg (insns)
       /* This relies on the NOTE_INSN_BASIC_BLOCK notes to be in the same
 	 place as they were during scheduling.  */
       emit_insn_group_barriers (rtl_dump_file, insns);
+      ia64_emit_nops ();
     }
   else
     emit_all_insn_group_barriers (rtl_dump_file, insns);
