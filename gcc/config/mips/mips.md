@@ -1798,8 +1798,8 @@
    (clobber (match_scratch:SI 5 "=X,3,l"))
    (clobber (match_scratch:SI 6 "=a,a,a"))
    (clobber (match_scratch:SI 7 "=X,X,d"))]
-  "TARGET_MIPS3900
-   || ISA_HAS_MADD_MSUB
+  "(TARGET_MIPS3900
+   || ISA_HAS_MADD_MSUB)
    && !TARGET_MIPS16"
   "*
 {

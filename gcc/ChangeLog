@@ -1,5 +1,8 @@
 2001-10-22  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* config/mips/mips.md (mul_acc_si): Fix precedence of conditional
+	terms.
+
 	* c-format.c: Fix spelling typo in comment.
 
 	* sched-int.h: Fix typo in GCC preamble.
