@@ -1234,7 +1234,24 @@ insert_regs (rtx x, struct table_elt *classp, int modified)
 	      if (REG_P (classp->exp)
 		  && GET_MODE (classp->exp) == GET_MODE (x))
 		{
-		  make_regs_eqv (regno, REGNO (classp->exp));
+		  unsigned c_regno = REGNO (classp->exp);
+
+		  gcc_assert (REGNO_QTY_VALID_P (c_regno));
+
+		  /* Suppose that 5 is hard reg and 100 and 101 are
+		     pseudos.  Consider
+
+		     (set (reg:si 100) (reg:si 5))
+		     (set (reg:si 5) (reg:si 100))
+		     (set (reg:di 101) (reg:di 5))
+
+		     We would now set REG_QTY (101) = REG_QTY (5), but the
+		     entry for 5 is in SImode.  When we use this later in
+		     copy propagation, we get the register in wrong mode.  */
+		  if (qty_table[REG_QTY (c_regno)].mode != GET_MODE (x))
+		    continue;
+
+		  make_regs_eqv (regno, c_regno);
 		  return 1;
 		}
 
