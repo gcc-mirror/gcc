@@ -94,7 +94,7 @@
 ;; constraints shouldn't hurt.
 
 ;; (define_function_unit {name} {num-units} {n-users} {test}
-;;                       {ready-delay} {busy-delay} [{conflict-list}])
+;;                       {ready-delay} {issue-delay} [{conflict-list}])
 
 ;; The integer ALU.
 ;; (Noted only for documentation; units that take one cycle do not need to

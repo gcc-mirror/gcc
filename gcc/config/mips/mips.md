@@ -123,7 +123,7 @@
 ;; .........................
 
 ; (define_function_unit NAME MULTIPLICITY SIMULTANEITY
-;			TEST READY-DELAY BUSY-DELAY [CONFLICT-LIST])
+;			TEST READY-DELAY ISSUE-DELAY [CONFLICT-LIST])
 
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
@@ -144,125 +144,125 @@
 
 (define_function_unit "imuldiv"  1 1
   (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000"))
-  17 34)
+  17 0)
 
 (define_function_unit "imuldiv"  1 1
   (and (eq_attr "type" "imul") (eq_attr "cpu" "r3000"))
-  12 24)
+  12 0)
 
 (define_function_unit "imuldiv" 1 1
   (and (eq_attr "type" "imul") (eq_attr "cpu" "r4000"))
-  10 20)
+  10 0)
 
 (define_function_unit "imuldiv"  1 1
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "!r3000,r4000"))
-  38 76)
+  38 0)
 
 (define_function_unit "imuldiv"  1 1
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3000"))
-  35 70)
+  35 0)
 
 (define_function_unit "imuldiv" 1 1
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4000"))
-  69 138)
+  69 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r6000"))
-  4 8)
+  4 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fadd") (eq_attr "cpu" "r3000"))
-  2 4)
+  2 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fadd") (eq_attr "cpu" "r6000"))
-  3 6)
+  3 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000"))
-  2 4)
+  2 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000"))
-  1 2)
+  1 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000")))
-  7 14)
+  7 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000")))
-  4 8)
+  4 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
-  5 10)
+  5 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000")))
-  8 16)
+  8 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000")))
-  5 10)
+  5 0)
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
-  6 12)
+  6 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000")))
-  23 46)
+  23 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000")))
-  12 24)
+  12 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
-  15 30)
+  15 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000")))
-  36 72)
+  36 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000")))
-  19 34)
+  19 0)
 
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
-  16 32)
+  16 0)
 
-(define_function_unit "divide" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 108)
-(define_function_unit "divide" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 224)
+(define_function_unit "divide" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 0)
+(define_function_unit "divide" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 0)
 
 
 ;; The following functional units do not use the cpu type, and use
 ;; much less memory in genattrtab.c.
 
-;; (define_function_unit "memory"   1 0 (eq_attr "type" "load")                                3   0)
-;; (define_function_unit "memory"   1 0 (eq_attr "type" "store")                               1   0)
+;; (define_function_unit "memory"   1 0 (eq_attr "type" "load")                                3 0)
+;; (define_function_unit "memory"   1 0 (eq_attr "type" "store")                               1 0)
 ;;       
-;; (define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp")                                2   0)
+;; (define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp")                                2 0)
 ;;       
-;; (define_function_unit "transfer" 1 0 (eq_attr "type" "xfer")                                2   0)
-;; (define_function_unit "transfer" 1 0 (eq_attr "type" "hilo")                                3   0)
+;; (define_function_unit "transfer" 1 0 (eq_attr "type" "xfer")                                2 0)
+;; (define_function_unit "transfer" 1 0 (eq_attr "type" "hilo")                                3 0)
 ;;   
-;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "imul")                               17  34)
-;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "idiv")                               38  76)
+;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "imul")                               17 0)
+;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "idiv")                               38 0)
 ;;   
-;; (define_function_unit "adder"    1 1 (eq_attr "type" "fadd")                                4   8)
-;; (define_function_unit "adder"    1 1 (eq_attr "type" "fabs,fneg")                           2   4)
+;; (define_function_unit "adder"    1 1 (eq_attr "type" "fadd")                                4 0)
+;; (define_function_unit "adder"    1 1 (eq_attr "type" "fabs,fneg")                           2 0)
 ;;   
-;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "SF"))    7  14)
-;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "DF"))    8  16)
+;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "SF"))    7 0)
+;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "DF"))    8 0)
 ;;   
-;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "SF"))   23  46)
-;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "DF"))   36  72)
+;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "SF"))   23 0)
+;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "DF"))   36 0)
 ;; 
-;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 108)
-;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 224)
+;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 0)
+;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 0)
 
 
 ;;
