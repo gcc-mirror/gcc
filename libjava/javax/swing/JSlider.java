@@ -304,7 +304,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    */
   public JSlider(int minimum, int maximum)
   {
-    this(HORIZONTAL, minimum, maximum, (maximum - minimum) / 2);
+    this(HORIZONTAL, minimum, maximum, (maximum + minimum) / 2);
   }
 
   /**

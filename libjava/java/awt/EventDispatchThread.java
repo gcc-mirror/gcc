@@ -67,7 +67,17 @@ class EventDispatchThread extends Thread
 	      // We are interrupted when we should finish executing
 	      return;
 	    }
-	  queue.dispatchEvent(evt);
+
+          KeyboardFocusManager manager;
+          manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+
+          // Try to dispatch this event to the current keyboard focus
+          // manager.  It will dispatch all FocusEvents, all
+          // WindowEvents related to focus, and all KeyEvents,
+          // returning true.  Otherwise, it returns false and we
+          // dispatch the event normally.
+          if (!manager.dispatchEvent (evt))
+            queue.dispatchEvent(evt);
 	}
 	catch (InterruptedException ie)
 	{

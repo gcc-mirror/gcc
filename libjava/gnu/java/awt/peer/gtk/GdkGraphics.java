@@ -46,6 +46,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.SystemColor;
 import java.awt.image.ImageObserver;
 import java.text.AttributedCharacterIterator;
 
@@ -149,7 +150,10 @@ public class GdkGraphics extends Graphics
 	return true;
       }
 
-    return drawImage (img, x, y, component.getBackground (), observer);
+    if (component != null)
+      return drawImage (img, x, y, component.getBackground (), observer);
+    else
+      return drawImage (img, x, y, SystemColor.window, observer);
   }
 
   public boolean drawImage (Image img, int x, int y, int width, int height, 
@@ -168,8 +172,12 @@ public class GdkGraphics extends Graphics
   public boolean drawImage (Image img, int x, int y, int width, int height, 
 			    ImageObserver observer)
   {
-    return drawImage (img, x, y, width, height, component.getBackground (),
-		      observer);
+    if (component != null)
+      return drawImage (img, x, y, width, height, component.getBackground (),
+                        observer);
+    else
+      return drawImage (img, x, y, width, height, SystemColor.window,
+                        observer);
   }
 
   public boolean drawImage (Image img, int dx1, int dy1, int dx2, int dy2, 
@@ -191,8 +199,12 @@ public class GdkGraphics extends Graphics
 			    int sx1, int sy1, int sx2, int sy2, 
 			    ImageObserver observer) 
   {
-    return drawImage (img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2,
-		      component.getBackground (), observer);
+    if (component != null)
+      return drawImage (img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2,
+                        component.getBackground (), observer);
+    else
+      return drawImage (img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2,
+                        SystemColor.window, observer);
   }
 
   native public void drawLine (int x1, int y1, int x2, int y2);

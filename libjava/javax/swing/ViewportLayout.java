@@ -41,37 +41,62 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.Serializable;
 
 /**
  * ViewportLayout
  * @author	Andrew Selkirk
- * @version	1.0
+ * @author	Graydon Hoare
  */
 public class ViewportLayout implements LayoutManager, Serializable
 {
   static final long serialVersionUID = -788225906076097229L;
 
-	public ViewportLayout() {
-	}
-	public void addLayoutComponent(String name, Component c) {
-          // ignore
-	}
-	public void removeLayoutComponent(Component c) {
-          // ignore
-	}
-	public Dimension preferredLayoutSize(Container parent) {
-          return null;
-	}
-	public Dimension minimumLayoutSize(Container parent) {
-          return null;
-	}
-	public void layoutContainer(Container parent) {
-          if (parent.countComponents() == 1)
-            {
-              // This should usually be true, but if it's not it is
-              // probably nicer if we do not panic.
-              Component c = parent.getComponent(0);
-            }
-	}
+  public ViewportLayout() 
+  {
+  }
+  public void addLayoutComponent(String name, Component c) 
+  {
+  }
+  public void removeLayoutComponent(Component c) 
+  {
+  }
+  public Dimension preferredLayoutSize(Container parent) 
+  {
+    JViewport vp = (JViewport)parent;
+    Component view = vp.getView();
+    if (view instanceof Scrollable)
+      {
+        Scrollable sc = (Scrollable) view;
+        Dimension d = sc.getPreferredScrollableViewportSize();
+        // System.err.println(this + ".preferredLayoutSize() : scrollable -> " + d);
+        return d;
+      }
+    else
+      return view.getPreferredSize();
+  }
+  public Dimension minimumLayoutSize(Container parent) 
+  {
+    JViewport vp = (JViewport)parent;
+    Component view = vp.getView();
+    return view.getMinimumSize();
+  }
+  public void layoutContainer(Container parent) 
+  {
+    JViewport vp = (JViewport)parent;
+    Component view = vp.getView();
+    Rectangle portBounds = vp.getBounds();
+    Dimension viewMinimum = view.getMinimumSize();
+    int width = Math.max(portBounds.width, 
+                         viewMinimum.width);
+    int height = Math.max(portBounds.height, 
+                          viewMinimum.height);
+    int x = Math.min(0, portBounds.width - width);
+    int y = Math.min(0, portBounds.height - height);
+    // System.err.println(this + ".layoutContainer() : width = " + width + ", height = " + height);
+    vp.setViewPosition(new Point(x, y));
+    vp.setViewSize(new Dimension(width, height));
+  }
 }

@@ -154,11 +154,6 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
     setEchoChar (c);
   }
 
-  public void setFont (Font f)
-  {
-    gtkSetFont (f.getName (), f.getStyle (), f.getSize ());
-  }
-
   public void handleEvent (AWTEvent e)
   {
     if (e.getID () == KeyEvent.KEY_PRESSED)

@@ -823,13 +823,13 @@ public class GdkGraphics2D extends Graphics2D
 
   public void setClip (int x, int y, int width, int height)
   {
-    clip = new Rectangle2D.Double ((double)x, (double)y, 
-                                   (double)width, (double)height);
-    setClip(clip);
+    setClip(new Rectangle2D.Double ((double)x, (double)y, 
+                                    (double)width, (double)height));
   }
   
   public void setClip (Shape s)
   {
+    clip = s;
     if (s != null)
       {
         cairoNewPath ();

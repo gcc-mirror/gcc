@@ -227,7 +227,17 @@ public class ScrollPaneLayout
 
             if (horizontalScrollBar != null)
               horizontalScrollBarSize.setSize(horizontalScrollBar.getPreferredSize());
-            
+
+            /*
+            System.err.println("widths: [vp=" + viewportSize.width +
+                               ", h=" + columnHeaderSize.width +
+                               ", sc=" + horizontalScrollBarSize.width + "]");
+
+            System.err.println("heights: [vp=" + viewportSize.height +
+                               ", h=" + rowHeaderSize.height +
+                               ", sc=" + verticalScrollBarSize.height + "]");                    
+            */
+
             return new Dimension(insetsSize.width 
                                  + viewportSize.width
                                  + viewportInsetsSize.width
@@ -336,9 +346,9 @@ public class ScrollPaneLayout
         synchronized (sc.getTreeLock ())
           {
             Rectangle scrollPaneBounds = sc.getBounds();
-            Dimension viewportSize = new Dimension(0,0);
-            Dimension viewSize = new Dimension(0,0);
             JViewport viewport = sc.getViewport();
+            Dimension viewportSize = viewport.getSize();
+            Dimension viewSize = viewport.getView().getSize(); 
 
             int x1 = 0, x2 = 0, x3 = 0, x4 = 0;
             int y1 = 0, y2 = 0, y3 = 0, y4 = 0;
@@ -395,7 +405,7 @@ public class ScrollPaneLayout
               rowHeader.setBounds(new Rectangle(x1, y2, x2-x1, y3-y2));
 
             if (showVsb)
-              verticalScrollBar.setBounds(new Rectangle(x3, y2, x4-x3, y3-y2));
+                verticalScrollBar.setBounds(new Rectangle(x3, y2, x4-x3, y3-y2));
 
             if (showHsb)
               horizontalScrollBar.setBounds(new Rectangle(x2, y3, x3-x2, y4-y3));

@@ -112,9 +112,10 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_setFont
   struct peerfont *pfont = NULL;
   PangoFontMap *map = NULL; 
   char const *family_name = NULL;
+  enum java_awt_font_style style;
 
   gdk_threads_enter ();
-  enum java_awt_font_style style = (enum java_awt_font_style) style_int;
+  style = (enum java_awt_font_style) style_int;
 
   g_assert (self != NULL);
   pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, self);

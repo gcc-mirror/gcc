@@ -47,6 +47,7 @@ import java.awt.Rectangle;
 import java.awt.image.ImageObserver;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
+import javax.swing.ViewportLayout;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
@@ -70,7 +71,8 @@ public class BasicViewportUI extends ViewportUI
   }
 
   void installDefaults(JComponent c)
-  {
+  {    
+    c.setOpaque(true);
   }
 
   void uninstallDefaults(JComponent c)
@@ -100,6 +102,7 @@ public class BasicViewportUI extends ViewportUI
   public void installUI(JComponent c) 
   {
     super.installUI(c);
+    c.setLayout(new ViewportLayout());
     installListeners(c);
   }
 
@@ -111,9 +114,8 @@ public class BasicViewportUI extends ViewportUI
 
   public Dimension getPreferredSize(JComponent c) 
   {
-    // FIXME: integrate with Scrollable
-    Dimension d = new Dimension(100,100);
-    return d;
+    // let the ViewportLayout decide
+    return null;
   }
 
   public void paint(Graphics g, JComponent c)
@@ -128,6 +130,12 @@ public class BasicViewportUI extends ViewportUI
     Point pos = v.getViewPosition();
     Rectangle viewBounds = view.getBounds();
     Rectangle portBounds = v.getBounds();
+
+    if (viewBounds.width == 0 
+        || viewBounds.height == 0
+        || portBounds.width == 0
+        || portBounds.height == 0)
+      return;
 
     if (backingStoreImage == null 
         || backingStoreWidth != viewBounds.width

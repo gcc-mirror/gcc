@@ -681,6 +681,7 @@ public class BasicSliderUI extends SliderUI
     highlightColor = defaults.getColor("Slider.highlight");
     focusColor = defaults.getColor("Slider.focus");
     slider.setBorder(defaults.getBorder("Slider.border"));
+    slider.setOpaque(true);
 
     thumbHeight = defaults.getInt("Slider.thumbHeight");
     thumbWidth = defaults.getInt("Slider.thumbWidth");

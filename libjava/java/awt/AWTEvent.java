@@ -231,15 +231,15 @@ public abstract class AWTEvent extends EventObject
   }
 
   /**
-   * Returns a string representation of this event. This is in the format
-   * <code>getClass().getName() + '[' + paramString() + "] on "
-   * + source</code>.
+   * Create a string that represents this event in the format
+   * <code>classname[eventstring] on sourcecomponentname</code>.
    *
-   * @return a string representation of this event
+   * @return a string representing this event
    */
-  public String toString()
+  public String toString ()
   {
-    return getClass().getName() + "[" + paramString() + "] on " + source;
+    return getClass ().getName () + "[" + paramString () + "] on "
+      + ((Component) source).getName ();
   }
 
   /**

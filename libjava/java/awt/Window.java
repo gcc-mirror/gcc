@@ -83,6 +83,8 @@ public class Window extends Container implements Accessible
   private transient GraphicsConfiguration graphicsConfiguration;
   private transient AccessibleContext accessibleContext;
 
+  private transient boolean shown;
+
   /** 
    * This (package access) constructor is used by subclasses that want
    * to build windows that do not have parents.  Eg. toplevel
@@ -92,6 +94,9 @@ public class Window extends Container implements Accessible
   Window()
   {
     visible = false;
+    // Windows are the only Containers that default to being focus
+    // cycle roots.
+    focusCycleRoot = true;
     setLayout(new BorderLayout());
   }
 
@@ -242,6 +247,23 @@ public class Window extends Container implements Accessible
     validate();
     super.show();
     toFront();
+
+    KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+    manager.setGlobalFocusedWindow (this);
+
+    if (!shown)
+      {
+        FocusTraversalPolicy policy = getFocusTraversalPolicy ();
+        Component initialFocusOwner = null;
+
+        if (policy != null)
+          initialFocusOwner = policy.getInitialComponent (this);
+
+        if (initialFocusOwner != null)
+          initialFocusOwner.requestFocusInWindow (false);
+
+        shown = true;
+      }
   }
 
   public void hide()
@@ -627,9 +649,16 @@ public class Window extends Container implements Accessible
    * @return The component that has focus, or <code>null</code> if no
    * component has focus.
    */
-  public Component getFocusOwner()
+  public Component getFocusOwner ()
   {
-    // FIXME
+    KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+
+    Window activeWindow = manager.getActiveWindow ();
+
+    // The currently-focused Component belongs to the active Window.
+    if (activeWindow == this)
+      return manager.getFocusOwner ();
+
     return null;
   }
 

@@ -1,4 +1,4 @@
-/* JPopupMenu.java --
+/* JPopupMenu.java
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,639 +37,975 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.LayoutManager;
+import java.awt.Panel;
+import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.EventListener;
+import java.util.Vector;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.PopupMenuUI;
 
+
 /**
- * JPopupMenu
- * @author	Andrew Selkirk
- * @version	1.0
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.3.8.3 $
  */
 public class JPopupMenu extends JComponent implements Accessible, MenuElement
 {
-
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Separator
-	 */
-	public static class Separator extends JSeparator {
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor Separator
-		 */
-		public Separator() {
-			// TODO
-		} // Separator()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getUIClassID
-		 * @returns String
-		 */
-		public String getUIClassID() {
-			return null; // TODO
-		} // getUIClassID()
-
-
-	} // Separator
-
-	/**
-	 * AccessibleJPopupMenu
-	 */
-	protected class AccessibleJPopupMenu extends AccessibleJComponent {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor AccessibleJPopupMenu
-		 * @param component TODO
-		 */
-		protected AccessibleJPopupMenu(JPopupMenu component) {
-			super(component);
-			// TODO
-		} // AccessibleJPopupMenu()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getAccessibleRole
-		 * @returns AccessibleRole
-		 */
-		public AccessibleRole getAccessibleRole() {
-			return AccessibleRole.POPUP_MENU;
-		} // getAccessibleRole()
-
-
-	} // AccessibleJPopupMenu
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "PopupMenuUI";
-
-	/**
-	 * invoker
-	 */
-	transient Component invoker;
-
-	/**
-	 * desiredLocationX
-	 */
-	private int desiredLocationX;
-
-	/**
-	 * desiredLocationY
-	 */
-	private int desiredLocationY;
-
-	/**
-	 * label
-	 */
-	private String label;
-
-	/**
-	 * paintBorder
-	 */
-	private boolean paintBorder;
-
-	/**
-	 * margin
-	 */
-	private Insets margin;
-
-	/**
-	 * defaultLWPopupEnabledKey
-	 */
-	private static final Object defaultLWPopupEnabledKey = null; // TODO
-
-	/**
-	 * lightWeightPopupEnabled
-	 */
-	private boolean lightWeightPopupEnabled;
-
-	/**
-	 * selectionModel
-	 */
-	private SingleSelectionModel selectionModel;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor JPopupMenu
-	 */
-	public JPopupMenu() {
-		// TODO
-	} // JPopupMenu()
-
-	/**
-	 * Constructor JPopupMenu
-	 * @param label TODO
-	 */
-	public JPopupMenu(String label) {
-		// TODO
-	} // JPopupMenu()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * readObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 * @exception ClassNotFoundException TODO
-	 */
-	private void readObject(ObjectInputStream stream) 
-			throws IOException, ClassNotFoundException {
-		// TODO
-	} // readObject()
-
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * add
-	 * @param item TODO
-	 * @returns JMenuItem
-	 */
-	public JMenuItem add(JMenuItem item) {
-		return null; // TODO
-	} // add()
-
-	/**
-	 * add
-	 * @param text TODO
-	 * @returns JMenuItem
-	 */
-	public JMenuItem add(String text) {
-		return null; // TODO
-	} // add()
-
-	/**
-	 * add
-	 * @param action TODO
-	 * @returns JMenuItem
-	 */
-	public JMenuItem add(Action action) {
-		return null; // TODO
-	} // add()
-
-	/**
-	 * remove
-	 * @param index TODO
-	 */
-	public void remove(int index) {
-		// TODO
-	} // remove()
-
-	/**
-	 * insert
-	 * @param action TODO
-	 * @param index TODO
-	 */
-	public void insert(Action action, int index) {
-		// TODO
-	} // insert()
-
-	/**
-	 * insert
-	 * @param component TODO
-	 * @param index TODO
-	 */
-	public void insert(Component component, int index) {
-		// TODO
-	} // insert()
-
-	/**
-	 * paintBorder
-	 * @param graphics TODO
-	 */
-	protected void paintBorder(Graphics graphics) {
-		// TODO
-	} // paintBorder()
-
-	/**
-	 * getDefaultLightWeightPopupEnabled
-	 * @returns boolean
-	 */
-	public static boolean getDefaultLightWeightPopupEnabled() {
-		return false; // TODO
-	} // getDefaultLightWeightPopupEnabled()
-
-	/**
-	 * setDefaultLightWeightPopupEnabled
-	 * @param enabled TODO
-	 */
-	public static void setDefaultLightWeightPopupEnabled(boolean enabled) {
-		// TODO
-	} // setDefaultLightWeightPopupEnabled()
-
-	/**
-	 * getUI
-	 * @returns PopupMenuUI
-	 */
-	public PopupMenuUI getUI() {
-		return (PopupMenuUI) ui;
-	} // getUI()
-
-	/**
-	 * setUI
-	 * @param ui TODO
-	 */
-	public void setUI(PopupMenuUI ui) {
-		super.setUI(ui);
-		// TODO
-	} // setUI()
-
-	/**
-	 * updateUI
-	 */
-	public void updateUI() {
-		setUI((PopupMenuUI) UIManager.get(this));
-		invalidate();
-	} // updateUI()
-
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
-
-	/**
-	 * getSelectionModel
-	 * @returns SingleSelectionModel
-	 */
-	public SingleSelectionModel getSelectionModel() {
-		return null; // TODO
-	} // getSelectionModel()
-
-	/**
-	 * setSelectionModel
-	 * @param model TODO
-	 */
-	public void setSelectionModel(SingleSelectionModel model) {
-		// TODO
-	} // setSelectionModel()
-
-	/**
-	 * createActionComponent
-	 * @param action TODO
-	 * @returns JMenuItem
-	 */
-	protected JMenuItem createActionComponent(Action action) {
-		return null; // TODO
-	} // createActionComponent()
-
-	/**
-	 * createActionChangeListener
-	 * @param item TODO
-	 * @returns PropertyChangeListener
-	 */
-	protected PropertyChangeListener createActionChangeListener(JMenuItem item) {
-		return null; // TODO
-	} // createActionChangeListener()
-
-	/**
-	 * isLightWeightPopupEnabled
-	 * @returns boolean
-	 */
-	public boolean isLightWeightPopupEnabled() {
-		return false; // TODO
-	} // isLightWeightPopupEnabled()
-
-	/**
-	 * setLightWeightPopupEnabled
-	 * @param enabled TODO
-	 */
-	public void setLightWeightPopupEnabled(boolean enabled) {
-		// TODO
-	} // setLightWeightPopupEnabled()
-
-	/**
-	 * getLabel
-	 * @returns String
-	 */
-	public String getLabel() {
-		return null; // TODO
-	} // getLabel()
-
-	/**
-	 * setLabel
-	 * @param label TODO
-	 */
-	public void setLabel(String label) {
-		// TODO
-	} // setLabel()
-
-	/**
-	 * addSeparator
-	 */
-	public void addSeparator() {
-		// TODO
-	} // addSeparator()
-
-	/**
-	 * addPopupMenuListener
-	 * @param listener TODO
-	 */
-	public void addPopupMenuListener(PopupMenuListener listener) {
-		// TODO
-	} // addPopupMenuListener()
-
-	/**
-	 * removePopupMenuListener
-	 * @param listener TODO
-	 */
-	public void removePopupMenuListener(PopupMenuListener listener) {
-		// TODO
-	} // removePopupMenuListener()
-
-	/**
-	 * firePopupMenuWillBecomeVisible
-	 */
-	protected void firePopupMenuWillBecomeVisible() {
-		// TODO
-	} // firePopupMenuWillBecomeVisible()
-
-	/**
-	 * firePopupMenuWillBecomeInvisible
-	 */
-	protected void firePopupMenuWillBecomeInvisible() {
-		// TODO
-	} // firePopupMenuWillBecomeInvisible()
-
-	/**
-	 * firePopupMenuCanceled
-	 */
-	protected void firePopupMenuCanceled() {
-		// TODO
-	} // firePopupMenuCanceled()
-
-	/**
-	 * pack
-	 */
-	public void pack() {
-		// TODO
-	} // pack()
-
-	/**
-	 * isVisible
-	 * @returns boolean
-	 */
-	public boolean isVisible() {
-		return false; // TODO
-	} // isVisible()
-
-	/**
-	 * setVisible
-	 * @param visible TODO
-	 */
-	public void setVisible(boolean visible) {
-		// TODO
-	} // setVisible()
-
-	/**
-	 * setLocation
-	 * @param x TODO
-	 * @param y TODO
-	 */
-	public void setLocation(int x, int y) {
-		// TODO
-	} // setLocation()
-
-	/**
-	 * isPopupMenu
-	 * @returns boolean
-	 */
-	private boolean isPopupMenu() {
-		return false; // TODO
-	} // isPopupMenu()
-
-	/**
-	 * getInvoker
-	 * @returns Component
-	 */
-	public Component getInvoker() {
-		return null; // TODO
-	} // getInvoker()
-
-	/**
-	 * setInvoker
-	 * @param component TODO
-	 */
-	public void setInvoker(Component component) {
-		// TODO
-	} // setInvoker()
-
-	/**
-	 * show
-	 * @param component TODO
-	 * @param x TODO
-	 * @param y TODO
-	 */
-	public void show(Component component, int x, int y) {
-		// TODO
-	} // show()
-
-	/**
-	 * getRootPopupMenu
-	 * @returns JPopupMenu
-	 */
-	JPopupMenu getRootPopupMenu() {
-		return null; // TODO
-	} // getRootPopupMenu()
-
-	/**
-	 * getComponentAtIndex
-	 * @param index TODO
-	 * @returns Component
-	 */
-	public Component getComponentAtIndex(int index) {
-		return null; // TODO
-	} // getComponentAtIndex()
-
-	/**
-	 * getComponentIndex
-	 * @param component TODO
-	 * @returns int
-	 */
-	public int getComponentIndex(Component component) {
-		return 0; // TODO
-	} // getComponentIndex()
-
-	/**
-	 * setPopupSize
-	 * @param size TODO
-	 */
-	public void setPopupSize(Dimension size) {
-		// TODO
-	} // setPopupSize()
-
-	/**
-	 * setPopupSize
-	 * @param x TODO
-	 * @param y TODO
-	 */
-	public void setPopupSize(int x, int y) {
-		// TODO
-	} // setPopupSize()
-
-	/**
-	 * setSelected
-	 * @param selected TODO
-	 */
-	public void setSelected(Component selected) {
-		// TODO
-	} // setSelected()
-
-	/**
-	 * isBorderPainted
-	 * @returns boolean
-	 */
-	public boolean isBorderPainted() {
-		return false; // TODO
-	} // isBorderPainted()
-
-	/**
-	 * setBorderPainted
-	 * @param painted TODO
-	 */
-	public void setBorderPainted(boolean painted) {
-		// TODO
-	} // setBorderPainted()
-
-	/**
-	 * getMargin
-	 * @returns Insets
-	 */
-	public Insets getMargin() {
-		return null; // TODO
-	} // getMargin()
-
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return null; // TODO
-	} // paramString()
-
-	/**
-	 * processMouseEvent
-	 * @param event TODO
-	 * @param path TODO
-	 * @param manager TODO
-	 */
-	public void processMouseEvent(MouseEvent event, MenuElement[] path,
-			MenuSelectionManager manager) {
-		// TODO
-	} // processMouseEvent()
-
-	/**
-	 * processKeyEvent
-	 * @param event TODO
-	 * @param path TODO
-	 * @param manager TODO
-	 */
-	public void processKeyEvent(KeyEvent event, MenuElement[] path,
-			MenuSelectionManager manager) {
-		// TODO
-	} // processKeyEvent()
-
-	/**
-	 * menuSelectionChanged
-	 * @param changed TODO
-	 */
-	public void menuSelectionChanged(boolean changed) {
-		// TODO
-	} // menuSelectionChanged()
-
-	/**
-	 * getSubElements
-	 * @returns MenuElement[]
-	 */
-	public MenuElement[] getSubElements() {
-		return null; // TODO
-	} // getSubElements()
-
-	/**
-	 * getComponent
-	 * @returns Component
-	 */
-	public Component getComponent() {
-		return null; // TODO
-	} // getComponent()
-
-	/**
-	 * isPopupTrigger
-	 * @param event TODO
-	 * @returns boolean
-	 */
-	public boolean isPopupTrigger(MouseEvent event) {
-		return false; // TODO
-	} // isPopupTrigger()
-
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJPopupMenu(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
-
-
-} // JPopupMenu
+  private static final String uiClassID = "PopupMenuUI";
+  private static final Object defaultLWPopupEnabledKey = null;
+  private static boolean defaultLWPopupEnabled = true;
+  transient Component invoker;
+  private int locationX;
+  private int locationY;
+  private String label;
+  private boolean paintBorder;
+  private Insets margin;
+  private boolean lightWeightPopupEnabled;
+  private SingleSelectionModel selectionModel;
+  private transient Popup popup;
+  private Point location;
+
+  /**
+   * Creates a new JPopupMenu object.
+   */
+  public JPopupMenu()
+  {
+    updateUI();
+    
+    lightWeightPopupEnabled = defaultLWPopupEnabled;
+    selectionModel = new DefaultSingleSelectionModel();
+  }
+
+  /**
+   * Creates a new JPopupMenu object.
+   *
+   * @param label DOCUMENT ME!
+   */
+  public JPopupMenu(String label)
+  {
+    this.label = label;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param stream DOCUMENT ME!
+   *
+   * @throws IOException DOCUMENT ME!
+   * @throws ClassNotFoundException DOCUMENT ME!
+   */
+  private void readObject(ObjectInputStream stream)
+                   throws IOException, ClassNotFoundException
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param stream DOCUMENT ME!
+   *
+   * @throws IOException DOCUMENT ME!
+   */
+  private void writeObject(ObjectOutputStream stream) throws IOException
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param item DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public JMenuItem add(JMenuItem item)
+  {
+    this.insert(item, -1);
+    return item;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param text DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public JMenuItem add(String text)
+  {
+    JMenuItem item = new JMenuItem(text);
+    return add(item);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param action DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public JMenuItem add(Action action)
+  {
+    JMenuItem item = new JMenuItem(action);
+    return add(item);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param index DOCUMENT ME!
+   */
+  public void remove(int index)
+  {
+    super.remove(index);
+
+    GridBagConstraints constraints = new GridBagConstraints();
+    constraints.fill = GridBagConstraints.HORIZONTAL;
+    constraints.weightx = 100.0;
+    constraints.weighty = 100.0;
+
+    Component[] items = getComponents();
+    for (int i = index; i < items.length; i++)
+      {
+	constraints.gridy = i;
+	super.add(items[i], constraints, i);
+      }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param action DOCUMENT ME!
+   * @param index DOCUMENT ME!
+   */
+  public void insert(Action action, int index)
+  {
+    JMenuItem item = new JMenuItem(action);
+    this.insert(item, index);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param component DOCUMENT ME!
+   * @param index DOCUMENT ME!
+   */
+  public void insert(Component component, int index)
+  {
+    GridBagConstraints constraints = new GridBagConstraints();
+    constraints.fill = GridBagConstraints.HORIZONTAL;
+    constraints.weightx = 100.0;
+    constraints.weighty = 100.0;
+    
+    if (index == -1)
+       index = getComponents().length;
+       
+    constraints.gridy = index;
+    super.add(component, constraints, index);
+
+    // need to change constraints for the components that were moved by 1
+    // due to the insertion
+    if (index != -1)
+      {
+	Component[] items = getComponents();
+
+	for (int i = index + 1; i < items.length; i++)
+	  {
+	    constraints.gridy = i;
+	    super.add(items[i], constraints, i);
+	  }
+      }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param graphics DOCUMENT ME!
+   */
+  protected void paintBorder(Graphics graphics)
+  {
+    if (paintBorder)
+      getBorder().paintBorder(this, graphics, 0, 0, getSize(null).width,
+                              getSize(null).height);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static boolean getDefaultLightWeightPopupEnabled()
+  {
+    return defaultLWPopupEnabled;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param enabled DOCUMENT ME!
+   */
+  public static void setDefaultLightWeightPopupEnabled(boolean enabled)
+  {
+    defaultLWPopupEnabled = enabled;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public PopupMenuUI getUI()
+  {
+    return (PopupMenuUI) ui;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param ui DOCUMENT ME!
+   */
+  public void setUI(PopupMenuUI ui)
+  {
+    super.setUI(ui);
+  }
+
+  /**
+   * DOCUMENT ME!
+   */
+  public void updateUI()
+  {
+    setUI((PopupMenuUI) UIManager.getUI(this));
+    invalidate();
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public String getUIClassID()
+  {
+    return "PopupMenuUI";
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public SingleSelectionModel getSelectionModel()
+  {
+    return selectionModel;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param model DOCUMENT ME!
+   */
+  public void setSelectionModel(SingleSelectionModel model)
+  {
+    if (selectionModel != model)
+      {
+	SingleSelectionModel oldModel = this.selectionModel;
+      }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param action DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  protected JMenuItem createActionComponent(Action action)
+  {
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param item DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  protected PropertyChangeListener createActionChangeListener(JMenuItem item)
+  {
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public boolean isLightWeightPopupEnabled()
+  {
+    return lightWeightPopupEnabled;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param enabled DOCUMENT ME!
+   */
+  public void setLightWeightPopupEnabled(boolean enabled)
+  {
+    lightWeightPopupEnabled = enabled;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public String getLabel()
+  {
+    return label;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param label DOCUMENT ME!
+   */
+  public void setLabel(String label)
+  {
+    this.label = label;
+  }
+
+  /**
+   * DOCUMENT ME!
+   */
+  public void addSeparator()
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
+  public void addPopupMenuListener(PopupMenuListener listener)
+  {
+    listenerList.add(PopupMenuListener.class, listener);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
+  public void removePopupMenuListener(PopupMenuListener listener)
+  {
+    listenerList.remove(PopupMenuListener.class, listener);
+  }
+
+  /**
+   * DOCUMENT ME!
+   */
+  protected void firePopupMenuWillBecomeVisible()
+  {
+    EventListener[] ll = listenerList.getListeners(PopupMenuListener.class);
+
+    for (int i = 0; i < ll.length; i++)
+      ((PopupMenuListener) ll[i]).popupMenuWillBecomeVisible(new PopupMenuEvent(this));
+  }
+
+  /**
+   * DOCUMENT ME!
+   */
+  protected void firePopupMenuWillBecomeInvisible()
+  {
+    EventListener[] ll = listenerList.getListeners(PopupMenuListener.class);
+
+    for (int i = 0; i < ll.length; i++)
+      ((PopupMenuListener) ll[i]).popupMenuWillBecomeInvisible(new PopupMenuEvent(this));
+  }
+
+  /**
+   * DOCUMENT ME!
+   */
+  protected void firePopupMenuCanceled()
+  {
+    EventListener[] ll = listenerList.getListeners(PopupMenuListener.class);
+
+    for (int i = 0; i < ll.length; i++)
+      ((PopupMenuListener) ll[i]).popupMenuCanceled(new PopupMenuEvent(this));
+  }
+
+  /**
+   * DOCUMENT ME!
+   */
+  public void pack()
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public boolean isVisible()
+  {
+    return super.visible;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param visible DOCUMENT ME!
+   */
+  public void setVisible(boolean visible)
+  {
+    super.visible = visible;
+
+    firePopupMenuWillBecomeVisible();
+
+    if (visible)
+      {
+	Container rootContainer = (Container) SwingUtilities.getRoot(invoker);
+
+	boolean fit = true;
+	Dimension size;
+
+	// Determine the size of the popup menu
+	if (this.getSize().width == 0 && this.getSize().width == 0)
+	  size = this.getPreferredSize();
+	else
+	  size = this.getSize();
+
+	if ((size.width > (rootContainer.getWidth() - locationX))
+	    || (size.height > (rootContainer.getHeight() - locationY)))
+	  fit = false;
+
+	if (lightWeightPopupEnabled && fit)
+	  popup = new LightWeightPopup(this);
+	else
+	  {
+	    if (fit)
+	      popup = new MediumWeightPopup(this);
+	    else
+	      popup = new HeavyWeightPopup(this);
+	  }
+	
+        if (popup instanceof LightWeightPopup 
+            || popup instanceof MediumWeightPopup)
+          {
+            JLayeredPane layeredPane;
+            layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
+            Point lp = layeredPane.getLocationOnScreen();
+            Point r = SwingUtilities.getRoot(invoker).getLocationOnScreen();
+            int px = locationX - (lp.x - r.x);
+            int py = locationY - (lp.y - r.y);	  
+            popup.show(px, py, size.width, size.height);	  		
+          } 
+        else
+          popup.show(locationX, locationY, size.width, size.height);
+      }
+    else
+      {
+	firePopupMenuWillBecomeInvisible();
+	popup.hide();
+      }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param x DOCUMENT ME!
+   * @param y DOCUMENT ME!
+   */
+  public void setLocation(int x, int y)
+  {
+    locationX = x;
+    locationY = y;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  private boolean isPopupMenu()
+  {
+    return true;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public Component getInvoker()
+  {
+    return invoker;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param component DOCUMENT ME!
+   */
+  public void setInvoker(Component component)
+  {
+    invoker = component;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param component DOCUMENT ME!
+   * @param x DOCUMENT ME!
+   * @param y DOCUMENT ME!
+   */
+  public void show(Component component, int x, int y)
+  {
+    setInvoker(component);
+
+    Point rootOnScreen;
+    rootOnScreen = SwingUtilities.getRoot(invoker).getLocationOnScreen();
+    Point invokerOnScreen = invoker.getLocationOnScreen();
+    
+    int popupX = (invokerOnScreen.x - rootOnScreen.x) + x;
+    int popupY = (invokerOnScreen.y - rootOnScreen.y) + y;
+    
+    setLocation(popupX , popupY);
+    setVisible(true);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  JPopupMenu getRootPopupMenu()
+  {
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param index DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public Component getComponentAtIndex(int index)
+  {
+    return getComponent(index);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param component DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public int getComponentIndex(Component component)
+  {
+    Component[] items = getComponents();
+
+    for (int i = 0; i < items.length; i++)
+      {
+	if (items[i].equals(component))
+	  return i;
+      }
+
+    return -1;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param size DOCUMENT ME!
+   */
+  public void setPopupSize(Dimension size)
+  {
+    super.setSize(size);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param x DOCUMENT ME!
+   * @param y DOCUMENT ME!
+   */
+  public void setPopupSize(int x, int y)
+  {
+    super.setSize(x, y);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param selected DOCUMENT ME!
+   */
+  public void setSelected(Component selected)
+  {
+    int index = getComponentIndex(selected);
+    selectionModel.setSelectedIndex(index);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public boolean isBorderPainted()
+  {
+    return paintBorder;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param painted DOCUMENT ME!
+   */
+  public void setBorderPainted(boolean painted)
+  {
+    paintBorder = painted;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public Insets getMargin()
+  {
+    return margin;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  protected String paramString()
+  {
+    return "JPopupMenu";
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   * @param path DOCUMENT ME!
+   * @param manager DOCUMENT ME!
+   */
+  public void processMouseEvent(MouseEvent event, MenuElement[] path,
+                                MenuSelectionManager manager)
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   * @param path DOCUMENT ME!
+   * @param manager DOCUMENT ME!
+   */
+  public void processKeyEvent(KeyEvent event, MenuElement[] path,
+                              MenuSelectionManager manager)
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param changed DOCUMENT ME!
+   */
+  public void menuSelectionChanged(boolean changed)
+  {
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public MenuElement[] getSubElements()
+  {
+    Component[] items = getComponents();
+    MenuElement[] subElements = new MenuElement[items.length];
+
+    for (int i = 0; i < items.length; i++)
+      subElements[i] = (MenuElement) items[i];
+
+    return subElements;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public Component getComponent()
+  {
+    return this;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public boolean isPopupTrigger(MouseEvent event)
+  {
+    return ((PopupMenuUI)getUI()).isPopupTrigger(event);
+    
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJPopupMenu(this);
+
+    return accessibleContext;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.3 $
+   */
+  private interface Popup
+  {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param x DOCUMENT ME!
+     * @param y DOCUMENT ME!
+     * @param width DOCUMENT ME!
+     * @param height DOCUMENT ME!
+     */
+    void show(int x, int y, int width, int height);
+
+    /**
+     * DOCUMENT ME!
+     */
+    void hide();
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.3 $
+   */
+  private class LightWeightPopup extends JPanel implements Popup
+  {
+    /**
+     * Creates a new LightWeightPopup object.
+     *
+     * @param c DOCUMENT ME!
+     */
+    public LightWeightPopup(Container c)
+    {
+      this.add(c);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param x DOCUMENT ME!
+     * @param y DOCUMENT ME!
+     * @param width DOCUMENT ME!
+     * @param height DOCUMENT ME!
+     */
+    public void show(int x, int y, int width, int height)
+    {
+      JLayeredPane layeredPane;
+      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
+      this.setBounds(x, y, width, height);
+      layeredPane.add(this, JLayeredPane.POPUP_LAYER, 0);
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void hide()
+    {
+      JLayeredPane layeredPane;
+      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
+      int index = layeredPane.getIndexOf(this);
+      layeredPane.remove(index);
+    }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.3 $
+   */
+  private class MediumWeightPopup extends Panel implements Popup
+  {
+
+    /**
+     * Creates a new MediumWeightPopup object.
+     *
+     * @param c DOCUMENT ME!
+     */
+    public MediumWeightPopup(Container c)
+    {
+      this.add(c);      
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param x DOCUMENT ME!
+     * @param y DOCUMENT ME!
+     * @param width DOCUMENT ME!
+     * @param heigth DOCUMENT ME!
+     */
+    public void show(int x, int y, int width, int heigth)
+    {
+      JLayeredPane layeredPane;
+      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane();
+      layeredPane.add(this, JLayeredPane.POPUP_LAYER, 0);
+      this.setBounds(x, y, width, height);
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void hide()
+    {
+      JLayeredPane layeredPane;
+      layeredPane = SwingUtilities.getRootPane(invoker).getLayeredPane(); 
+      int index = layeredPane.getIndexOf(this);
+      layeredPane.remove(index);
+    }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.3 $
+   */
+  private class HeavyWeightPopup extends JWindow implements Popup
+  {
+    /**
+     * Creates a new HeavyWeightPopup object.
+     *
+     * @param c DOCUMENT ME!
+     */
+    public HeavyWeightPopup(Container c)
+    {
+      this.setContentPane(c);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param x DOCUMENT ME!
+     * @param y DOCUMENT ME!
+     * @param width DOCUMENT ME!
+     * @param height DOCUMENT ME!
+     */
+    public void show(int x, int y, int width, int height)
+    {
+      this.setBounds(x, y, width, height);
+      this.show();
+    }
+
+    /**
+     * DOCUMENT ME!
+     */
+    public void hide()
+    {
+      this.hide();
+    }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.3 $
+   */
+  public static class Separator extends JSeparator
+  {
+    /**
+     * Creates a new Separator object.
+     */
+    public Separator()
+    {
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public String getUIClassID()
+    {
+      return null;
+    }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.3 $
+   */
+  protected class AccessibleJPopupMenu extends AccessibleJComponent
+  {
+    /**
+     * Creates a new AccessibleJPopupMenu object.
+     *
+     * @param component DOCUMENT ME!
+     */
+    protected AccessibleJPopupMenu(JPopupMenu component)
+    {
+      super(component);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.POPUP_MENU;
+    }
+  }
+}

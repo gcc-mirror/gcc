@@ -712,6 +712,7 @@ public class BasicProgressBarUI extends ProgressBarUI
     progressBar.setForeground(defaults.getColor("ProgressBar.foreground"));
     progressBar.setBackground(defaults.getColor("ProgressBar.background"));
     progressBar.setBorder(defaults.getBorder("ProgressBar.border"));
+    progressBar.setOpaque(true);
 
     selectionForeground = defaults.getColor("ProgressBar.selectionForeground");
     selectionBackground = defaults.getColor("ProgressBar.selectionBackground");

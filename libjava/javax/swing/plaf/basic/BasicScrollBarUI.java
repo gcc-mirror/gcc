@@ -125,6 +125,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
      */
     public void stateChanged(ChangeEvent e)
     {
+      //       System.err.println(this + ".stateChanged()");
+      calculatePreferredSize();
+      layoutContainer(scrollbar);		  
       getThumbBounds();
       scrollbar.repaint();
     }
@@ -734,6 +737,8 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    */
   private void calculatePreferredSize()
   {
+    // System.err.println(this + ".calculatePreferredSize()");
+
     int height;
     int width;
     height = width = 0;
@@ -743,7 +748,7 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	width += incrButton.getPreferredSize().getWidth();
 	width += decrButton.getPreferredSize().getWidth();
 
-	width += Math.max(200, scrollbar.getVisibleAmount());
+	width += (scrollbar.getMaximum() - scrollbar.getMinimum());
 
 	height = Math.max(incrButton.getPreferredSize().height,
 	                  decrButton.getPreferredSize().height);
@@ -756,7 +761,7 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	height += incrButton.getPreferredSize().getHeight();
 	height += decrButton.getPreferredSize().getHeight();
 
-	height += Math.max(200, scrollbar.getVisibleAmount());
+	height += (scrollbar.getMaximum() - scrollbar.getMinimum());
 
 	width = Math.max(incrButton.getPreferredSize().width,
 	                 decrButton.getPreferredSize().width);
@@ -803,6 +808,8 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
     int min = scrollbar.getMinimum();
     int value = scrollbar.getValue();
     int extent = scrollbar.getVisibleAmount();
+
+    // System.err.println(this + ".getThumbBounds()");
 
     if (max == min)
     {
@@ -892,8 +899,8 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 
     scrollbar.setForeground(defaults.getColor("ScrollBar.foreground"));
     scrollbar.setBackground(defaults.getColor("ScrollBar.background"));
-
     scrollbar.setBorder(defaults.getBorder("ScrollBar.border"));
+    scrollbar.setOpaque(true);
 
     maximumThumbSize = defaults.getDimension("ScrollBar.maximumThumbSize");
     minimumThumbSize = defaults.getDimension("ScrollBar.minimumThumbSize");
@@ -1046,14 +1053,6 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
   public void paint(Graphics g, JComponent c)
   {
     layoutContainer(scrollbar);
-    
-//    Rectangle r = incrButton.getBounds();
-//    SwingUtilities.paintComponent(g, incrButton, scrollbar, r.x, r.y, r.width,
-//                                  r.height);
-//    r = decrButton.getBounds();
-//    SwingUtilities.paintComponent(g, decrButton, scrollbar, r.x, r.y, r.width,
-//                                  r.height);
-
     paintTrack(g, c, getTrackBounds());
     paintThumb(g, c, getThumbBounds());
 

@@ -806,31 +806,6 @@ keyevent_to_awt_keychar (GdkEvent *event)
     }
 }
 
-/* Checks if keyval triggers a KEY_TYPED event on the source widget.
-   This function identifies special keyvals that don't trigger
-   GtkIMContext "commit" signals, but that do trigger Java KEY_TYPED
-   events. */
-static int
-generates_key_typed_event (GdkEvent *event, GtkWidget *source)
-{
-  guint keyval;
-
-  if (!GTK_IS_ENTRY (source)
-      && !GTK_IS_TEXT_VIEW (source))
-    return event->key.length ? 1 : 0;
-
-  keyval = event->key.keyval;
-
-  return (keyval == GDK_Escape
-          || keyval == GDK_BackSpace
-          || keyval == GDK_Delete
-          || keyval == GDK_KP_Delete
-          || keyval == GDK_Return
-          || keyval == GDK_KP_Enter
-          || (keyval == GDK_Tab
-              && GTK_IS_TEXT_VIEW(source))) ? 1 : 0;
-}
-
 void
 awt_event_handler (GdkEvent *event)
 {
@@ -1055,104 +1030,53 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
           }
       }
       break;
+
     case GDK_FOCUS_CHANGE:
       (*gdk_env)->CallVoidMethod (gdk_env, peer,
 				  postFocusEventID,
-				  (jint) (event->focus_change.in) ? 
+				  (jint) (event->focus_change.in) ?
 				  AWT_FOCUS_GAINED : AWT_FOCUS_LOST,
 				  JNI_FALSE);
       break;
     case GDK_KEY_PRESS:
-    case GDK_KEY_RELEASE:
-      {
-        GdkWindow *obj_window;
-        jobject *focus_obj_ptr = NULL;
-	int generates_key_typed = 0;
+        if (GTK_IS_WINDOW (widget))
+          {
+            /*            GdkEventKey *keyevent = (GdkEventKey *) event; */
+            /*            g_printerr ("key press event: sent: %d  time: %d  state: %d  keyval: %d  length: %d  string: %s  hardware_keycode: %d  group: %d\n", keyevent->send_event, keyevent->time, keyevent->state, keyevent->keyval, keyevent->length, keyevent->string, keyevent->hardware_keycode, keyevent->group); */
 
-        /* A widget with a grab will get key events */
-	if (!GTK_IS_WINDOW (widget))
-	  focus_obj_ptr = &peer;
-	else
-	  {
-            GtkWindow *window;
-
-            /* Check if we have an enabled focused widget in this window.
-	       If not don't handle the event. */
-	    window = GTK_WINDOW (widget);
-	    if (!window->focus_widget
-	        || !GTK_WIDGET_IS_SENSITIVE (window->focus_widget)
-	        || !window->focus_widget->window)
-	      return FALSE;
-	
-            /* TextArea peers are attached to the scrolled window
-               that contains the GtkTextView, not to the text view
-               itself.  Same for List. */
-            if (GTK_IS_TEXT_VIEW (window->focus_widget)
-                || GTK_IS_CLIST (window->focus_widget))
-              {
-                obj_window = gtk_widget_get_parent (window->focus_widget)->window;
-              }
-            else if (GTK_IS_BUTTON (window->focus_widget))
-	      /* GtkButton events go to the "event_window" and this is what
-	         we registered when the button was created. */
-              obj_window = GTK_BUTTON (window->focus_widget)->event_window;
-            else
-              obj_window = window->focus_widget->window;
-
-            gdk_property_get (obj_window,
-                              gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
-                              gdk_atom_intern ("CARDINAL", FALSE),
-                              0,
-                              sizeof (jobject),
-                              FALSE,
-                              NULL,
-                              NULL,
-                              NULL,
-                              (guchar **)&focus_obj_ptr);
-
-            /* If the window has no jobject attached we can't send anything */
-	    if (!focus_obj_ptr)
-	      return FALSE;
-	      
-	    /* Should we generate an AWT_KEY_TYPED event? */
-	    generates_key_typed = generates_key_typed_event (event, window->focus_widget);
-	  }	
-
-	if (event->type == GDK_KEY_PRESS)	
-	  {
-            (*gdk_env)->CallVoidMethod (gdk_env, *focus_obj_ptr,
-				        postKeyEventID,
-				        (jint) AWT_KEY_PRESSED,
-				        (jlong) event->key.time,
+            (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                        postKeyEventID,
+                                        (jint) AWT_KEY_PRESSED,
+                                        (jlong) event->key.time,
                                         keyevent_state_to_awt_mods (event),
                                         keysym_to_awt_keycode (event),
                                         keyevent_to_awt_keychar (event),
                                         keysym_to_awt_keylocation (event));
-
-            if (generates_key_typed)
-              {
-                (*gdk_env)->CallVoidMethod (gdk_env, *focus_obj_ptr,
-                                            postKeyEventID,
-                                            (jint) AWT_KEY_TYPED,
-                                            (jlong) event->key.time,
-                                            state_to_awt_mods (event->key.state),
-                                            VK_UNDEFINED,
-                                            keyevent_to_awt_keychar (event),
-                                            AWT_KEY_LOCATION_UNKNOWN);
-              }
+            /* FIXME: generation of key typed events needs to be moved
+               to GtkComponentPeer.postKeyEvent.  If the key in a key
+               press event is not an "action" key
+               (KeyEvent.isActionKey) and is not a modifier key, then
+               it should generate a key typed event. */
+            return TRUE;
           }
-	else /* GDK_KEY_RELEASE */
-          {
-	    (*gdk_env)->CallVoidMethod (gdk_env, *focus_obj_ptr,
-				        postKeyEventID,
-				        (jint) AWT_KEY_RELEASED,
-				        (jlong) event->key.time,
-			                keyevent_state_to_awt_mods (event),
-			                keysym_to_awt_keycode (event),
+        else
+          return FALSE;
+        break;
+    case GDK_KEY_RELEASE:
+      if (GTK_IS_WINDOW (widget))
+        {
+            (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                        postKeyEventID,
+                                        (jint) AWT_KEY_RELEASED,
+                                        (jlong) event->key.time,
+                                        keyevent_state_to_awt_mods (event),
+                                        keysym_to_awt_keycode (event),
                                         keyevent_to_awt_keychar (event),
                                         keysym_to_awt_keylocation (event));
-	  }
-      }
+            return TRUE;
+        }
+      else
+        return FALSE;
       break;
     default:
       break;

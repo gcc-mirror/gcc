@@ -636,9 +636,12 @@ JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphIsHori
 
   gdk_threads_leave ();
 
-  return 
+  return 1;
+  /* FIXME: Pango doesn't seem to have decided how it will deal
+     with vertical text. for the time being we inherit this limitation.
     ((dir == PANGO_DIRECTION_LTR) ||
      (dir == PANGO_DIRECTION_RTL));    
+  */
 }
 
 

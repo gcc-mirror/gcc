@@ -39,17 +39,73 @@ exception statement from your version. */
 package java.awt;
 
 /**
- * STUB CLASS ONLY
+ * DefaultFocusTraversalPolicy is the default focus traversal policy
+ * used by Containers.
+ *
+ * This policy sharpens ContainerOrderFocusTraversalPolicy's
+ * acceptance criteria, to reject those Components that have
+ * unfocusable peers.  Despite this extra strictness, this policy will
+ * always accept a Component that has explicitly been set focusable by
+ * any means.
+ *
+ * This AWT implementation assumes that the peers of the following
+ * Components are not focusable: Canvas, Panel, Label, ScrollPane,
+ * Scrollbar, Window, and any lightweight Component.
+ *
+ * A Component's focusability is independent of the focusability of
+ * its peer.
+ *
+ * @author Thomas Fitzsimmons <fitzsim@redhat.com>
+ * @since 1.4
  */
 public class DefaultFocusTraversalPolicy
   extends ContainerOrderFocusTraversalPolicy
 {
-  public DefaultFocusTraversalPolicy()
+  /**
+   * Construct a default focus traversal policy.
+   */
+  public DefaultFocusTraversalPolicy ()
   {
   }
 
-  protected boolean accept(Component comp)
+  /**
+   * Check whether a given Component would be acceptable as a focus
+   * owner.  The Component must be displayable, visible and enabled to
+   * be acceptable.  If the Component's focus traversability has been
+   * overridden, by overriding Component.isFocusTraversable or
+   * Component.isFocusable, or by calling Component.setFocusable, then
+   * the Component will be accepted if it is focusable.  If the
+   * Component uses the default focus traversable behaviour, then
+   * <code>comp</code> will always be rejected if it is a Canvas,
+   * Panel, Label, ScrollPane, Scrollbar, Window or lightweight
+   * Component.
+   *
+   * @param comp the Component to check
+   *
+   * @return true if the Component is an acceptable target for
+   * keyboard input focus, false otherwise
+   */
+  protected boolean accept (Component comp)
   {
-    throw new Error("not implemented");
+    if (comp.visible
+	&& comp.isDisplayable ()
+	&& comp.enabled)
+      {
+	if (comp.isFocusTraversableOverridden != 0
+	    && comp.isFocusTraversable ())
+	  return true;
+	else
+	  {
+	    if (!(comp instanceof Canvas
+		  || comp instanceof Panel
+		  || comp instanceof Label
+		  || comp instanceof ScrollPane
+		  || comp instanceof Scrollbar
+		  || comp instanceof Window
+		  || comp.isLightweight ()))
+	      return true;
+	  }
+      }
+    return false;
   }
-} // class DefaultFocusTraversalPolicy
+}

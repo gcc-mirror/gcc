@@ -357,6 +357,20 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds
 
   gdk_threads_enter ();
   gtk_window_move (GTK_WINDOW(ptr), x, y);
+  /* The call to gdk_window_move is needed in addition to the call to
+     gtk_window_move.  If gdk_window_move isn't called, then the
+     following set of operations doesn't give the expected results:
+
+     1. show a window
+     2. manually move it to another position on the screen
+     3. hide the window
+     4. reposition the window with Component.setLocation
+     5. show the window
+
+     Instead of being at the position set by setLocation, the window
+     is reshown at the position to which it was moved manually. */
+  gdk_window_move (GTK_WIDGET (ptr)->window, x, y);
+
   /* Need to change the widget's request size. */
   gtk_widget_set_size_request (GTK_WIDGET(ptr), width, height);
   /* Also need to call gtk_window_resize.  If the resize is requested

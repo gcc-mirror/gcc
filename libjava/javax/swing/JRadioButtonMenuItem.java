@@ -39,118 +39,188 @@ package javax.swing;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.3.8.4 $
+ */
 public class JRadioButtonMenuItem extends JMenuItem implements Accessible
 {
-  //-------------------------------------------------------------
-  // Variables --------------------------------------------------
-  //-------------------------------------------------------------
   private static final String uiClassID = "RadioButtonMenuItemUI";
 
-  //-------------------------------------------------------------
-  // Initialization ---------------------------------------------
-  //-------------------------------------------------------------
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   */
   public JRadioButtonMenuItem()
   {
     this(null, null);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param icon DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(Icon icon)
   {
     this(null, icon);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(String text)
   {
     this(text, null);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param action DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(Action action)
   {
     this();
     setAction(action);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(String text, Icon icon)
   {
     this(text, icon, false);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   * @param selected DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(String text, boolean selected)
   {
     this(text, null, selected);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param icon DOCUMENT ME!
+   * @param selected DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(Icon icon, boolean selected)
   {
     this(null, icon, selected);
-  } // JRadioButtonMenuItem()
+  }
 
+  /**
+   * Creates a new JRadioButtonMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   * @param selected DOCUMENT ME!
+   */
   public JRadioButtonMenuItem(String text, Icon icon, boolean selected)
   {
-    super(text, icon);  
-    setModel(new JToggleButton.ToggleButtonModel());	
+    super(text, icon);
+    setModel(new JToggleButton.ToggleButtonModel());
     model.setSelected(selected);
-  } // JRadioButtonMenuItem()
+  }
 
-  //-------------------------------------------------------------
-  // Methods ----------------------------------------------------
-  //-------------------------------------------------------------
+  /**
+   * DOCUMENT ME!
+   *
+   * @param stream DOCUMENT ME!
+   *
+   * @throws IOException DOCUMENT ME!
+   */
   private void writeObject(ObjectOutputStream stream) throws IOException
   {
     // TODO
-  } // writeObject()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public String getUIClassID()
   {
     return uiClassID;
-  } // getUIClassID()
+  }
 
+  /**
+   * DOCUMENT ME!
+   */
   public void requestFocus()
   {
     // TODO
-  } // requestFocus()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected String paramString()
   {
     return "JRadioButtonMenuItem";
-  } // paramString()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      {
-        accessibleContext = new AccessibleJRadioButtonMenuItem(this);
-      }
-    return accessibleContext;
-  } // getAccessibleContext()
+      accessibleContext = new AccessibleJRadioButtonMenuItem(this);
 
-  //-------------------------------------------------------------
-  // Classes ----------------------------------------------------
-  //-------------------------------------------------------------
+    return accessibleContext;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.3.8.4 $
+   */
   protected class AccessibleJRadioButtonMenuItem extends AccessibleJMenuItem
   {
-    //-------------------------------------------------------------
-    // Initialization ---------------------------------------------
-    //-------------------------------------------------------------
+    /**
+     * Creates a new AccessibleJRadioButtonMenuItem object.
+     *
+     * @param component DOCUMENT ME!
+     */
     protected AccessibleJRadioButtonMenuItem(JRadioButtonMenuItem component)
     {
       super(component);
 
       // TODO
-    } // AccessibleJRadioButtonMenuItem()
+    }
 
-    //-------------------------------------------------------------
-    // Methods ----------------------------------------------------
-    //-------------------------------------------------------------
+    /**
+     * DOCUMENT ME!
+     *
+     * @return $returnType$ DOCUMENT ME!
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.RADIO_BUTTON;
-    } // getAccessibleRole()
-  } // AccessibleJRadioButtonMenuItem
-} // JRadioButtonMenuItem
+    }
+  }
+}

@@ -428,9 +428,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return q;
   }
 
-  protected void loadSystemColors (int[] systemColors) 
-  {
-  }
+  protected native void loadSystemColors (int[] systemColors);
 
   public DragSourceContextPeer createDragSourceContextPeer(DragGestureEvent e)
   {

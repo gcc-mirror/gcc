@@ -46,10 +46,16 @@ import java.awt.peer.ContainerPeer;
 import java.awt.peer.LightweightPeer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.ObjectInputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.EventListener;
+import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Set;
 import javax.accessibility.Accessible;
 import javax.swing.SwingUtilities;
@@ -92,6 +98,21 @@ public class Container extends Component
   /* Anything else is non-serializable, and should be declared "transient". */
   transient ContainerListener containerListener;
   transient PropertyChangeSupport changeSupport; 
+
+  /** The focus traversal policy that determines how focus is
+      transferred between this Container and its children. */
+  private FocusTraversalPolicy focusTraversalPolicy;
+
+  /**
+   * The focus traversal keys, if not inherited from the parent or default
+   * keyboard manager. These sets will contain only AWTKeyStrokes that
+   * represent press and release events to use as focus control.
+   *
+   * @see #getFocusTraversalKeys(int)
+   * @see #setFocusTraversalKeys(int, Set)
+   * @since 1.4
+   */
+  transient Set[] focusTraversalKeys;
 
   /**
    * Default constructor for subclasses.
@@ -396,6 +417,8 @@ public class Container extends Component
 
         if (layoutMgr != null)
           layoutMgr.removeLayoutComponent(r);
+
+        r.parent = null;
 
         // Post event to notify of adding the container.
         ContainerEvent ce = new ContainerEvent(this,
@@ -853,6 +876,11 @@ public class Container extends Component
   {
     return locate (x, y);
   }
+  
+  public Component getComponentAt(int index)
+  {
+    return component[index];
+  }
 
   /**
    * Returns the component located at the specified point.  This is done
@@ -1068,9 +1096,89 @@ public class Container extends Component
       throw new IllegalArgumentException ();
 
     if (keystrokes == null)
-      throw new IllegalArgumentException ();
+      {
+        Container parent = getParent ();
 
-    throw new Error ("not implemented");
+        while (parent != null)
+          {
+            if (parent.areFocusTraversalKeysSet (id))
+              {
+                keystrokes = parent.getFocusTraversalKeys (id);
+                break;
+              }
+            parent = parent.getParent ();
+          }
+
+        if (keystrokes == null)
+          keystrokes = KeyboardFocusManager.getCurrentKeyboardFocusManager ().
+            getDefaultFocusTraversalKeys (id);
+      }
+
+    Set sa;
+    Set sb;
+    Set sc;
+    String name;
+    switch (id)
+      {
+      case KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS:
+        sa = getFocusTraversalKeys
+          (KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        sb = getFocusTraversalKeys
+          (KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS);
+        sc = getFocusTraversalKeys
+          (KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS);
+        name = "forwardFocusTraversalKeys";
+        break;
+      case KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS:
+        sa = getFocusTraversalKeys
+          (KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        sb = getFocusTraversalKeys
+          (KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS);
+        sc = getFocusTraversalKeys
+          (KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS);
+        name = "backwardFocusTraversalKeys";
+        break;
+      case KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS:
+        sa = getFocusTraversalKeys
+          (KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        sb = getFocusTraversalKeys
+          (KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        sc = getFocusTraversalKeys
+          (KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS);
+        name = "upCycleFocusTraversalKeys";
+        break;
+      case KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS:
+        sa = getFocusTraversalKeys
+          (KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        sb = getFocusTraversalKeys
+          (KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        sc = getFocusTraversalKeys
+          (KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS);
+        name = "downCycleFocusTraversalKeys";
+        break;
+      default:
+        throw new IllegalArgumentException ();
+      }
+
+    int i = keystrokes.size ();
+    Iterator iter = keystrokes.iterator ();
+
+    while (--i >= 0)
+      {
+        Object o = iter.next ();
+        if (!(o instanceof AWTKeyStroke)
+            || sa.contains (o) || sb.contains (o) || sc.contains (o)
+            || ((AWTKeyStroke) o).keyCode == KeyEvent.VK_UNDEFINED)
+          throw new IllegalArgumentException ();
+      }
+
+    if (focusTraversalKeys == null)
+      focusTraversalKeys = new Set[3];
+
+    keystrokes = Collections.unmodifiableSet (new HashSet (keystrokes));
+    firePropertyChange (name, focusTraversalKeys[id], keystrokes);
+
+    focusTraversalKeys[id] = keystrokes;
   }
   
   /**
@@ -1085,7 +1193,7 @@ public class Container extends Component
    *
    * @since 1.4
    */
-  public Set getFocusTraversalKeys(int id)
+  public Set getFocusTraversalKeys (int id)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS &&
@@ -1093,9 +1201,18 @@ public class Container extends Component
         id != KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS)
       throw new IllegalArgumentException ();
 
-    return null;
+    Set s = null;
+
+    if (focusTraversalKeys != null)
+      s = focusTraversalKeys[id];
+
+    if (s == null && parent != null)
+      s = parent.getFocusTraversalKeys (id);
+
+    return s == null ? (KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                        .getDefaultFocusTraversalKeys(id)) : s;
   }
-  
+
   /**
    * Returns whether the Set of focus traversal keys for the given focus
    * traversal operation has been explicitly defined for this Container.
@@ -1110,7 +1227,7 @@ public class Container extends Component
    *
    * @since 1.4
    */
-  public boolean areFocusTraversalKeysSet(int id)
+  public boolean areFocusTraversalKeysSet (int id)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS &&
@@ -1118,43 +1235,148 @@ public class Container extends Component
         id != KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS)
       throw new IllegalArgumentException ();
 
+    return focusTraversalKeys != null && focusTraversalKeys[id] != null;
+  }
+
+  /**
+   * Check whether the given Container is the focus cycle root of this
+   * Container's focus traversal cycle.  If this Container is a focus
+   * cycle root itself, then it will be in two different focus cycles
+   * -- it's own, and that of its ancestor focus cycle root's.  In
+   * that case, if <code>c</code> is either of those containers, this
+   * method will return true.
+   *
+   * @param c the candidate Container
+   *
+   * @return true if c is the focus cycle root of the focus traversal
+   * cycle to which this Container belongs, false otherwise
+   *
+   * @since 1.4
+   */
+  public boolean isFocusCycleRoot (Container c)
+  {
+    if (this == c
+        && isFocusCycleRoot ())
+      return true;
+
+    Container ancestor = getFocusCycleRootAncestor ();
+
+    if (c == ancestor)
+      return true;
+
     return false;
   }
-  
-  public boolean isFocusCycleRoot(Container c)
+
+  /**
+   * If this Container is a focus cycle root, set the focus traversal
+   * policy that determines the focus traversal order for its
+   * children.  If non-null, this policy will be inherited by all
+   * inferior focus cycle roots.  If <code>policy</code> is null, this
+   * Container will inherit its policy from the closest ancestor focus
+   * cycle root that's had its policy set.
+   *
+   * @param policy the new focus traversal policy for this Container or null
+   *
+   * @since 1.4
+   */
+  public void setFocusTraversalPolicy (FocusTraversalPolicy policy)
   {
-    return false;
+    focusTraversalPolicy = policy;
   }
-  
-  public void transferFocusBackward()
+
+  /**
+   * Return the focus traversal policy that determines the focus
+   * traversal order for this Container's children.  This method
+   * returns null if this Container is not a focus cycle root.  If the
+   * focus traversal policy has not been set explicitly, then this
+   * method will return an ancestor focus cycle root's policy instead.
+   *
+   * @return this Container's focus traversal policy or null
+   *
+   * @since 1.4
+   */
+  public FocusTraversalPolicy getFocusTraversalPolicy ()
   {
+    if (!isFocusCycleRoot ())
+      return null;
+
+    if (focusTraversalPolicy == null)
+      {
+        Container ancestor = getFocusCycleRootAncestor ();
+
+	if (ancestor != this)
+	  return ancestor.getFocusTraversalPolicy ();
+	else
+	  {
+	    KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+
+	    return manager.getDefaultFocusTraversalPolicy ();
+	  }
+      }
+    else
+      return focusTraversalPolicy;
   }
-  
-  public void setFocusTraversalPolicy(FocusTraversalPolicy policy)
+
+  /**
+   * Check whether this Container's focus traversal policy has been
+   * explicitly set.  If it has not, then this Container will inherit
+   * its focus traversal policy from one of its ancestor focus cycle
+   * roots.
+   *
+   * @return true if focus traversal policy is set, false otherwise
+  */
+  public boolean isFocusTraversalPolicySet ()
   {
+    return focusTraversalPolicy == null;
   }
-  
-  public FocusTraversalPolicy getFocusTraversalPolicy()
+
+  /**
+   * Set whether or not this Container is the root of a focus
+   * traversal cycle.  This Container's focus traversal policy
+   * determines the order of focus traversal.  Some policies prevent
+   * the focus from being transferred between two traversal cycles
+   * until an up or down traversal operation is performed.  In that
+   * case, normal traversal (not up or down) is limited to this
+   * Container and all of this Container's descendents that are not
+   * descendents of inferior focus cycle roots.  In the default case
+   * however, ContainerOrderFocusTraversalPolicy is in effect, and it
+   * supports implicit down-cycle traversal operations.
+   *
+   * @return true if this is a focus cycle root, false otherwise
+   *
+   * @since 1.4
+   */
+  public void setFocusCycleRoot (boolean focusCycleRoot)
   {
-    return null;
+    this.focusCycleRoot = focusCycleRoot;
   }
-  
-  public boolean isFocusTraversalPolicySet()
+
+  /**
+   * Check whether this Container is a focus cycle root.
+   *
+   * @return true if this is a focus cycle root, false otherwise
+   *
+   * @since 1.4
+   */
+  public boolean isFocusCycleRoot ()
   {
-    return false;
+    return focusCycleRoot;
   }
-  
-  public void setFocusCycleRoot(boolean focusCycleRoot)
+
+  /**
+   * Transfer focus down one focus traversal cycle.  If this Container
+   * is a focus cycle root, then its default component becomes the
+   * focus owner, and this Container becomes the current focus cycle
+   * root.  No traversal will occur if this Container is not a focus
+   * cycle root.
+   *
+   * @since 1.4
+   */
+  public void transferFocusDownCycle ()
   {
-  }
-  
-  public boolean isFocusCycleRoot()
-  {
-    return false;
-  }
-  
-  public void transferFocusDownCycle()
-  {
+    KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+
+    manager.downFocusCycle (this);
   }
 
   /**
@@ -1369,6 +1591,61 @@ public class Container extends Component
 	      }
           }
       }
+  }
+
+  /**
+   * Deserialize this Container:
+   * <ol>
+   * <li>Read from the stream the default serializable fields.</li>
+   * <li>Read a list of serializable ContainerListeners as optional
+   * data.  If the list is null, no listeners will be registered.</li>
+   * <li>Read this Container's FocusTraversalPolicy as optional data.
+   * If this is null, then this Container will use a
+   * DefaultFocusTraversalPolicy.</li>
+   * </ol>
+   *
+   * @param s the stream to read from
+   * @throws ClassNotFoundException if deserialization fails
+   * @throws IOException if the stream fails
+   */
+  private void readObject (ObjectInputStream s)
+    throws ClassNotFoundException, IOException
+  {
+    s.defaultReadObject ();
+    String key = (String) s.readObject ();
+    while (key != null)
+      {
+        Object object = s.readObject ();
+        if ("containerL".equals (key))
+          addContainerListener((ContainerListener) object);
+        // FIXME: under what key is the focus traversal policy stored?
+        else if ("focusTraversalPolicy".equals (key))
+          setFocusTraversalPolicy ((FocusTraversalPolicy) object);
+
+        key = (String) s.readObject();
+      }
+  }
+
+  /**
+   * Serialize this Container:
+   * <ol>
+   * <li>Write to the stream the default serializable fields.</li>
+   * <li>Write the list of serializable ContainerListeners as optional
+   * data.</li>
+   * <li>Write this Container's FocusTraversalPolicy as optional data.</li>
+   * </ol>
+   *
+   * @param s the stream to write to
+   * @throws IOException if the stream fails
+   */
+  private void writeObject (ObjectOutputStream s) throws IOException
+  {
+    s.defaultWriteObject ();
+    AWTEventMulticaster.save (s, "containerL", containerListener);
+    if (focusTraversalPolicy instanceof Serializable)
+      s.writeObject (focusTraversalPolicy);
+    else
+      s.writeObject (null);
   }
 
   // Nested classes.

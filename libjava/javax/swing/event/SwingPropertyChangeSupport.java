@@ -210,8 +210,9 @@ public final	class SwingPropertyChangeSupport
 		PropertyChangeListener	listener;
 
 		// Check Values if they are equal
-		if (event.getOldValue() == null || event.getNewValue() == null ||
-			event.getOldValue().equals(event.getNewValue()) == true) {
+		if (event.getOldValue() == null && event.getNewValue() == null ||
+		    (event.getOldValue() != null && event.getNewValue() != null &&
+	            event.getOldValue().equals(event.getNewValue()))) {
 			return;
 		} // if
 

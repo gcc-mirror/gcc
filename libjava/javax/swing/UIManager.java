@@ -178,8 +178,7 @@ public class UIManager implements Serializable
    */
   public static Dimension getDimension(Object key)
   {
-    System.out.println("UIManager.getDim");
-    return new Dimension(200,100);
+    return (Dimension) getLookAndFeel().getDefaults().get(key);
   }
 
   /**

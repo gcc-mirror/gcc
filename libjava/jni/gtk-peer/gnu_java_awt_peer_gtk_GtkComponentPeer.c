@@ -39,9 +39,370 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include <gtk/gtkprivate.h>
+#include <gdk/gdkkeysyms.h>
 
 static GtkWidget *find_fg_color_widget (GtkWidget *widget);
 static GtkWidget *find_bg_color_widget (GtkWidget *widget);
+static gboolean focus_in_cb (GtkWidget *widget,
+                             GdkEventFocus *event,
+                             jobject peer);
+static gboolean focus_out_cb (GtkWidget *widget,
+                              GdkEventFocus *event,
+                              jobject peer);
+/*
+ * This method returns a GDK keyval that corresponds to one of the
+ * keysyms in the X keymap table.  The return value is only used to
+ * determine the keyval's corresponding hardware keycode, and doesn't
+ * reflect an accurate translation of a Java virtual key value to a
+ * GDK keyval.
+ */
+#ifdef __GNUC__
+__inline
+#endif
+static guint
+awt_keycode_to_keysym (jint keyCode, jint keyLocation)
+{
+  /* GDK_A through GDK_Z */
+  if (keyCode >= VK_A && keyCode <= VK_Z)
+    return gdk_keyval_to_lower (keyCode);
+
+  /* GDK_0 through GDK_9 */
+  if (keyCode >= VK_0 && keyCode <= VK_9)
+    return keyCode;
+
+  switch (keyCode)
+    {
+    case VK_ENTER:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_Enter : GDK_Return;
+    case VK_BACK_SPACE:
+      return GDK_BackSpace;
+    case VK_TAB:
+      return GDK_Tab;
+    case VK_CANCEL:
+      return GDK_Cancel;
+    case VK_CLEAR:
+      return GDK_Clear;
+    case VK_SHIFT:
+      return keyLocation == AWT_KEY_LOCATION_LEFT ? GDK_Shift_L : GDK_Shift_R;
+    case VK_CONTROL:
+      return keyLocation == AWT_KEY_LOCATION_LEFT ? GDK_Control_L : GDK_Control_R;
+    case VK_ALT:
+      return keyLocation == AWT_KEY_LOCATION_LEFT ? GDK_Alt_L : GDK_Alt_R;
+    case VK_PAUSE:
+      return GDK_Pause;
+    case VK_CAPS_LOCK:
+      return GDK_Caps_Lock;
+    case VK_ESCAPE:
+      return GDK_Escape;
+    case VK_SPACE:
+      return GDK_space;
+    case VK_PAGE_UP:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_Page_Up : GDK_Page_Up;
+    case VK_PAGE_DOWN:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_Page_Down : GDK_Page_Down;
+    case VK_END:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_End : GDK_End;
+    case VK_HOME:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_Home : GDK_Home;
+    case VK_LEFT:
+      return GDK_Left;
+    case VK_UP:
+      return GDK_Up;
+    case VK_RIGHT:
+      return GDK_Right;
+    case VK_DOWN:
+      return GDK_Down;
+    case VK_COMMA:
+      return GDK_comma;
+    case VK_MINUS:
+      return GDK_minus;
+    case VK_PERIOD:
+      return GDK_period;
+    case VK_SLASH:
+      return GDK_slash;
+      /*
+    case VK_0:
+    case VK_1:
+    case VK_2:
+    case VK_3:
+    case VK_4:
+    case VK_5:
+    case VK_6:
+    case VK_7:
+    case VK_8:
+    case VK_9:
+      */
+    case VK_SEMICOLON:
+      return GDK_semicolon;
+    case VK_EQUALS:
+      return GDK_equal;
+      /*
+    case VK_A:
+    case VK_B:
+    case VK_C:
+    case VK_D:
+    case VK_E:
+    case VK_F:
+    case VK_G:
+    case VK_H:
+    case VK_I:
+    case VK_J:
+    case VK_K:
+    case VK_L:
+    case VK_M:
+    case VK_N:
+    case VK_O:
+    case VK_P:
+    case VK_Q:
+    case VK_R:
+    case VK_S:
+    case VK_T:
+    case VK_U:
+    case VK_V:
+    case VK_W:
+    case VK_X:
+    case VK_Y:
+    case VK_Z:
+      */
+    case VK_OPEN_BRACKET:
+      return GDK_bracketleft;
+    case VK_BACK_SLASH:
+      return GDK_backslash;
+    case VK_CLOSE_BRACKET:
+      return GDK_bracketright;
+    case VK_NUMPAD0:
+      return GDK_KP_0;
+    case VK_NUMPAD1:
+      return GDK_KP_1;
+    case VK_NUMPAD2:
+      return GDK_KP_2;
+    case VK_NUMPAD3:
+      return GDK_KP_3;
+    case VK_NUMPAD4:
+      return GDK_KP_4;
+    case VK_NUMPAD5:
+      return GDK_KP_5;
+    case VK_NUMPAD6:
+      return GDK_KP_6;
+    case VK_NUMPAD7:
+      return GDK_KP_7;
+    case VK_NUMPAD8:
+      return GDK_KP_8;
+    case VK_NUMPAD9:
+      return GDK_KP_9;
+    case VK_MULTIPLY:
+      return GDK_KP_Multiply;
+    case VK_ADD:
+      return GDK_KP_Add;
+      /*
+    case VK_SEPARATER:
+      */
+    case VK_SEPARATOR:
+      return GDK_KP_Separator;
+    case VK_SUBTRACT:
+      return GDK_KP_Subtract;
+    case VK_DECIMAL:
+      return GDK_KP_Decimal;
+    case VK_DIVIDE:
+      return GDK_KP_Divide;
+    case VK_DELETE:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_Delete : GDK_Delete;
+    case VK_NUM_LOCK:
+      return GDK_Num_Lock;
+    case VK_SCROLL_LOCK:
+      return GDK_Scroll_Lock;
+    case VK_F1:
+      return GDK_F1;
+    case VK_F2:
+      return GDK_F2;
+    case VK_F3:
+      return GDK_F3;
+    case VK_F4:
+      return GDK_F4;
+    case VK_F5:
+      return GDK_F5;
+    case VK_F6:
+      return GDK_F6;
+    case VK_F7:
+      return GDK_F7;
+    case VK_F8:
+      return GDK_F8;
+    case VK_F9:
+      return GDK_F9;
+    case VK_F10:
+      return GDK_F10;
+    case VK_F11:
+      return GDK_F11;
+    case VK_F12:
+      return GDK_F12;
+    case VK_F13:
+      return GDK_F13;
+    case VK_F14:
+      return GDK_F14;
+    case VK_F15:
+      return GDK_F15;
+    case VK_F16:
+      return GDK_F16;
+    case VK_F17:
+      return GDK_F17;
+    case VK_F18:
+      return GDK_F18;
+    case VK_F19:
+      return GDK_F19;
+    case VK_F20:
+      return GDK_F20;
+    case VK_F21:
+      return GDK_F21;
+    case VK_F22:
+      return GDK_F22;
+    case VK_F23:
+      return GDK_F23;
+    case VK_F24:
+      return GDK_F24;
+    case VK_PRINTSCREEN:
+      return GDK_Print;
+    case VK_INSERT:
+      return keyLocation == AWT_KEY_LOCATION_NUMPAD ? GDK_KP_Insert : GDK_Insert;
+    case VK_HELP:
+      return GDK_Help;
+    case VK_META:
+      return keyLocation == AWT_KEY_LOCATION_LEFT ? GDK_Meta_L : GDK_Meta_R;
+    case VK_BACK_QUOTE:
+      return GDK_grave;
+    case VK_QUOTE:
+      return GDK_apostrophe;
+    case VK_KP_UP:
+      return GDK_KP_Up;
+    case VK_KP_DOWN:
+      return GDK_KP_Down;
+    case VK_KP_LEFT:
+      return GDK_KP_Left;
+    case VK_KP_RIGHT:
+      return GDK_KP_Right;
+    case VK_DEAD_GRAVE:
+      return GDK_dead_grave;
+    case VK_DEAD_ACUTE:
+      return GDK_dead_acute;
+    case VK_DEAD_CIRCUMFLEX:
+      return GDK_dead_circumflex;
+    case VK_DEAD_TILDE:
+      return GDK_dead_tilde;
+    case VK_DEAD_MACRON:
+      return GDK_dead_macron;
+    case VK_DEAD_BREVE:
+      return GDK_dead_breve;
+    case VK_DEAD_ABOVEDOT:
+      return GDK_dead_abovedot;
+    case VK_DEAD_DIAERESIS:
+      return GDK_dead_diaeresis;
+    case VK_DEAD_ABOVERING:
+      return GDK_dead_abovering;
+    case VK_DEAD_DOUBLEACUTE:
+      return GDK_dead_doubleacute;
+    case VK_DEAD_CARON:
+      return GDK_dead_caron;
+    case VK_DEAD_CEDILLA:
+      return GDK_dead_cedilla;
+    case VK_DEAD_OGONEK:
+      return GDK_dead_ogonek;
+    case VK_DEAD_IOTA:
+      return GDK_dead_iota;
+    case VK_DEAD_VOICED_SOUND:
+      return GDK_dead_voiced_sound;
+    case VK_DEAD_SEMIVOICED_SOUND:
+      return GDK_dead_semivoiced_sound;
+    case VK_AMPERSAND:
+      return GDK_ampersand;
+    case VK_ASTERISK:
+      return GDK_asterisk;
+    case VK_QUOTEDBL:
+      return GDK_quotedbl;
+    case VK_LESS:
+      return GDK_less;
+    case VK_GREATER:
+      return GDK_greater;
+    case VK_BRACELEFT:
+      return GDK_braceleft;
+    case VK_BRACERIGHT:
+      return GDK_braceright;
+    case VK_AT:
+      return GDK_at;
+    case VK_COLON:
+      return GDK_colon;
+    case VK_CIRCUMFLEX:
+      return GDK_asciicircum;
+    case VK_DOLLAR:
+      return GDK_dollar;
+    case VK_EURO_SIGN:
+      return GDK_EuroSign;
+    case VK_EXCLAMATION_MARK:
+      return GDK_exclam;
+    case VK_INVERTED_EXCLAMATION_MARK:
+      return GDK_exclamdown;
+    case VK_LEFT_PARENTHESIS:
+      return GDK_parenleft;
+    case VK_NUMBER_SIGN:
+      return GDK_numbersign;
+    case VK_PLUS:
+      return GDK_plus;
+    case VK_RIGHT_PARENTHESIS:
+      return GDK_parenright;
+    case VK_UNDERSCORE:
+      return GDK_underscore;
+      /*
+    case VK_FINAL:
+    case VK_CONVERT:
+    case VK_NONCONVERT:
+    case VK_ACCEPT:
+      */
+    case VK_MODECHANGE:
+      return GDK_Mode_switch;
+      /*
+    case VK_KANA:
+      */
+    case VK_KANJI:
+      return GDK_Kanji;
+      /*
+    case VK_ALPHANUMERIC:
+      */
+    case VK_KATAKANA:
+      return GDK_Katakana;
+    case VK_HIRAGANA:
+      return GDK_Hiragana;
+      /*
+    case VK_FULL_WIDTH:
+    case VK_HALF_WIDTH:
+    case VK_ROMAN_CHARACTERS:
+    case VK_ALL_CANDIDATES:
+      */
+    case VK_PREVIOUS_CANDIDATE:
+      return GDK_PreviousCandidate;
+    case VK_CODE_INPUT:
+      return GDK_Codeinput;
+      /*
+    case VK_JAPANESE_KATAKANA:
+    case VK_JAPANESE_HIRAGANA:
+    case VK_JAPANESE_ROMAN:
+      */
+    case VK_KANA_LOCK:
+      return GDK_Kana_Lock;
+      /*
+    case VK_INPUT_METHOD_ON_OFF:
+    case VK_CUT:
+    case VK_COPY:
+    case VK_PASTE:
+    case VK_UNDO:
+    case VK_AGAIN:
+    case VK_FIND:
+    case VK_PROPS:
+    case VK_STOP:
+    case VK_COMPOSE:
+    case VK_ALT_GRAPH:
+      */
+    default:
+      return GDK_VoidSymbol;
+    }
+}
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor 
@@ -106,6 +467,137 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor
   gdk_cursor = gdk_cursor_new (gdk_cursor_type);
   gdk_window_set_cursor (widget->window, gdk_cursor);
   gdk_cursor_destroy (gdk_cursor);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetRequestFocus
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+  
+  gdk_threads_enter ();
+  gtk_widget_grab_focus (GTK_WIDGET (ptr));
+  gdk_threads_leave ();
+}
+
+/*
+ * Translate a Java KeyEvent object into a GdkEventKey event, then
+ * pass it to the GTK main loop for processing.
+ */
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetDispatchKeyEvent
+  (JNIEnv *env, jobject obj, jint id, jlong when, jint mods,
+   jint keyCode, jint keyLocation)
+{
+  void *ptr;
+  GdkEvent *event = NULL;
+  GdkKeymapKey *keymap_keys = NULL;
+  gint n_keys = 0;
+  guint lookup_keyval = 0;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  if (id == AWT_KEY_PRESSED)
+    event = gdk_event_new (GDK_KEY_PRESS);
+  else if (id == AWT_KEY_RELEASED)
+    event = gdk_event_new (GDK_KEY_RELEASE);
+  else
+    {
+      gdk_threads_leave ();
+      /* Don't send AWT KEY_TYPED events to GTK. */
+      return;
+    }
+
+  if (GTK_IS_BUTTON (ptr))
+    event->key.window = GTK_BUTTON (ptr)->event_window;
+  else if (GTK_IS_SCROLLED_WINDOW (ptr))
+    event->key.window = GTK_WIDGET (GTK_SCROLLED_WINDOW (ptr)->container.child)->window;
+  else
+    event->key.window = GTK_WIDGET (ptr)->window;
+
+  event->key.send_event = 0;
+  event->key.time = (guint32) when;
+
+  if (mods & AWT_SHIFT_MASK)
+    event->key.state |= GDK_SHIFT_MASK;
+  if (mods & AWT_CTRL_MASK)
+    event->key.state |= GDK_CONTROL_MASK;
+  if (mods & AWT_ALT_MASK)
+    event->key.state |= GDK_MOD1_MASK;
+
+  /* This hack is needed because the AWT has no notion of num lock.
+     It infers numlock state from the only Java virtual keys that are
+     affected by it. */
+  if (keyCode == VK_NUMPAD9
+      || keyCode == VK_NUMPAD8
+      || keyCode == VK_NUMPAD7
+      || keyCode == VK_NUMPAD6
+      || keyCode == VK_NUMPAD5
+      || keyCode == VK_NUMPAD4
+      || keyCode == VK_NUMPAD3
+      || keyCode == VK_NUMPAD2
+      || keyCode == VK_NUMPAD1
+      || keyCode == VK_NUMPAD0
+      || keyCode == VK_DECIMAL)
+    event->key.state |= GDK_MOD2_MASK;
+
+  /* These values don't need to be filled in since GTK doesn't use
+     them. */
+  event->key.length = 0;
+  event->key.string = NULL;
+
+  lookup_keyval = awt_keycode_to_keysym (keyCode, keyLocation);
+
+  if (!gdk_keymap_get_entries_for_keyval (gdk_keymap_get_default (),
+                                          lookup_keyval,
+                                          &keymap_keys,
+                                          &n_keys))
+    {
+      /* No matching keymap entry was found. */
+      g_printerr ("No matching keymap entries were found\n");
+      gdk_threads_leave ();
+      return;
+    }
+
+  if (n_keys > 1)
+    g_printerr ("warning: using hardware keycode from first keymap entry, though multiple entries were found\n");
+
+  event->key.hardware_keycode = keymap_keys[0].keycode;
+  event->key.group =  keymap_keys[0].group;
+
+  g_free (keymap_keys);
+
+  if (!gdk_keymap_translate_keyboard_state (gdk_keymap_get_default (),
+                                            event->key.hardware_keycode,
+                                            event->key.state,
+                                            event->key.group,
+                                            &event->key.keyval,
+                                            NULL, NULL, NULL))
+    {
+      /* No matching keyval was found. */
+      g_printerr ("No matching keyval was found\n");
+      gdk_threads_leave ();
+      return;
+    }
+
+  /*  keyevent = (GdkEventKey *) event; */
+  /*  g_printerr ("generated event: sent: %d  time: %d  state: %d  keyval: %d  length: %d  string: %s  hardware_keycode: %d  group: %d\n", keyevent->send_event, keyevent->time, keyevent->state, keyevent->keyval, keyevent->length, keyevent->string, keyevent->hardware_keycode, keyevent->group); */
+
+  /* We already received the original key event on the window itself,
+     so we don't want to resend it. */
+  if (!GTK_IS_WINDOW (ptr))
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+        gtk_widget_event (GTK_WIDGET (GTK_SCROLLED_WINDOW (ptr)->container.child), event);
+      else
+        gtk_widget_event (GTK_WIDGET (ptr), event);
+    }
 
   gdk_threads_leave ();
 }
@@ -734,6 +1226,12 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignal
   g_signal_connect (GTK_OBJECT (ptr), "event", 
                     G_CALLBACK (pre_event_handler), *gref);
 
+  g_signal_connect (G_OBJECT (ptr), "focus-in-event",
+                    G_CALLBACK (focus_in_cb), *gref);
+
+  g_signal_connect (G_OBJECT (ptr), "focus-out-event",
+                    G_CALLBACK (focus_out_cb), *gref);
+
   gdk_threads_leave ();
 }
 
@@ -772,3 +1270,26 @@ find_bg_color_widget (GtkWidget *widget)
   return bg_color_widget;
 }
 
+static gboolean
+focus_in_cb (GtkWidget *widget __attribute((unused)),
+             GdkEventFocus *event __attribute((unused)),
+             jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                              postFocusEventID,
+                              AWT_FOCUS_GAINED,
+                              JNI_FALSE);
+  return FALSE;
+}
+
+static gboolean
+focus_out_cb (GtkWidget *widget __attribute((unused)),
+              GdkEventFocus *event __attribute((unused)),
+              jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                              postFocusEventID,
+                              AWT_FOCUS_LOST,
+                              JNI_FALSE);
+  return FALSE;
+}
