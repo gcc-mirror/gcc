@@ -8731,13 +8731,18 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
       fold_checksum_tree (DECL_VINDEX (expr), ctx, ht);
       break;
     case 't':
-      fold_checksum_tree (TYPE_VALUES (expr), ctx, ht);
+      if (TREE_CODE (expr) == ENUMERAL_TYPE)
+        fold_checksum_tree (TYPE_VALUES (expr), ctx, ht);
       fold_checksum_tree (TYPE_SIZE (expr), ctx, ht);
       fold_checksum_tree (TYPE_SIZE_UNIT (expr), ctx, ht);
       fold_checksum_tree (TYPE_ATTRIBUTES (expr), ctx, ht);
       fold_checksum_tree (TYPE_NAME (expr), ctx, ht);
-      fold_checksum_tree (TYPE_MIN_VALUE (expr), ctx, ht);
-      fold_checksum_tree (TYPE_MAX_VALUE (expr), ctx, ht);
+      if (INTEGRAL_TYPE_P (expr)
+          || SCALAR_FLOAT_TYPE_P (expr))
+	{
+	  fold_checksum_tree (TYPE_MIN_VALUE (expr), ctx, ht);
+	  fold_checksum_tree (TYPE_MAX_VALUE (expr), ctx, ht);
+	}
       fold_checksum_tree (TYPE_MAIN_VARIANT (expr), ctx, ht);
       fold_checksum_tree (TYPE_BINFO (expr), ctx, ht);
       fold_checksum_tree (TYPE_CONTEXT (expr), ctx, ht);
