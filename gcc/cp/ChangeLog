@@ -1,3 +1,20 @@
+2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (CPTR_AGGR_TAG): New global tree node.
+	(current_aggr): Define.
+	* decl.c (grokdeclarator): Make sure a friend class is an
+	elaborated type specifier.
+	* parse.y (current_aggr): Remove static definition.
+	(cp_parse_init): Adjust.
+	(structsp): Clear and restore current_aggr.
+	(component_decl_list): Clear current_aggr.
+	
+	* error.c (dump_type, case TYPENAME_TYPE): Don't emit the
+	aggregate tag on the typename's context.
+	
+	* pt.c (tsubst_friend_class): Return NULL, if parms becomes NULL.
+	(instantiate_class_template): Ignore NULL friend types.
+
 2000-08-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cvt.c (warn_ref_binding): New static function, broken out of ...

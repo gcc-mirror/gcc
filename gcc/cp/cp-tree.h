@@ -592,6 +592,7 @@ enum cp_tree_index
     CPTI_TINFO_VAR_ID,
     CPTI_ABORT_FNDECL,
     CPTI_GLOBAL_DELETE_FNDECL,
+    CPTI_AGGR_TAG,
 
     CPTI_ACCESS_DEFAULT,
     CPTI_ACCESS_PUBLIC,
@@ -686,6 +687,7 @@ extern tree cp_global_trees[CPTI_MAX];
 #define tinfo_var_id                    cp_global_trees[CPTI_TINFO_VAR_ID]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
+#define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 
 /* Define the sets of attributes that member functions and baseclasses
    can have.  These are sensible combinations of {public,private,protected}

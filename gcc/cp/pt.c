@@ -4677,7 +4677,8 @@ tsubst_friend_function (decl, args)
 /* FRIEND_TMPL is a friend TEMPLATE_DECL.  ARGS is the vector of
    template arguments, as for tsubst.
 
-   Returns an appropriate tsbust'd friend type.  */
+   Returns an appropriate tsbust'd friend type or error_mark_node on
+   failure.  */
 
 static tree
 tsubst_friend_class (friend_tmpl, args)
@@ -4718,6 +4719,8 @@ tsubst_friend_class (friend_tmpl, args)
       tree parms 
 	= tsubst_template_parms (DECL_TEMPLATE_PARMS (friend_tmpl),
 				 args, /*complain=*/1);
+      if (!parms)
+        return error_mark_node;
       redeclare_class_template (TREE_TYPE (tmpl), parms);
       friend_type = TREE_TYPE (tmpl);
     }
@@ -5144,7 +5147,8 @@ instantiate_class_template (type)
 	   information.  */
 	++processing_template_decl;
 
-      make_friend_class (type, new_friend_type);
+      if (new_friend_type != error_mark_node)
+        make_friend_class (type, new_friend_type);
 
       if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 	--processing_template_decl;

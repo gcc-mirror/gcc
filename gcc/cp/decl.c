@@ -11220,6 +11220,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      cp_error ("`inline' specified for friend class declaration");
 	      inlinep = 0;
 	    }
+	  if (!current_aggr && TREE_CODE (type) != TYPENAME_TYPE)
+	    {
+	      if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+	        cp_error ("template parameters cannot be friends");
+	      else
+	        cp_error ("friend declaration requires `%#T'", type);
+	    }
 
 	  /* Only try to do this stuff if we didn't already give up.  */
 	  if (type != integer_type_node)
