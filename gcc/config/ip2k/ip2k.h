@@ -34,11 +34,6 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* This declaration should be present.  */
-extern int target_flags;
-
-#define TARGET_SWITCHES {{"",0, NULL}}
-
 #define TARGET_VERSION fprintf (stderr, " (ip2k, GNU assembler syntax)")
 
 /* Caller-saves is not a win for the IP2K.  Pretty much anywhere that
