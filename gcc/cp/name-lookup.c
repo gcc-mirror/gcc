@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -2018,7 +2018,8 @@ push_overloaded_decl (tree decl, int flags)
 	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USED (tmp)
 		  && !(flags & PUSH_USING)
 		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
-				TYPE_ARG_TYPES (TREE_TYPE (decl))))
+				TYPE_ARG_TYPES (TREE_TYPE (decl)))
+		  && ! decls_match (fn, decl))
 		error ("`%#D' conflicts with previous using declaration `%#D'",
 			  decl, fn);
 
