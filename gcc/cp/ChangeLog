@@ -1,3 +1,9 @@
+Mon May 11 07:16:30 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* lex.c (yyprint): Remove TYPENAME_ELLIPSIS.
+	* parse.h: Regenerated.
+	* parse.c: Really regenerated.
+	
 Mon May 11 00:03:34 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cp-tree.h (finish_unary_op_expr): New function.
