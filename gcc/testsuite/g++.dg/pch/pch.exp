@@ -37,7 +37,6 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
     set bname "[file rootname [file tail $test]]"
 
     catch { file delete "$bname.H.pch" }
-    catch { file delete "$bname.H" }
     catch { file delete "$bname.s" }
     catch { file delete "$bname.s-pch" }
 
@@ -48,6 +47,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
 
 	# For the header files, the default is to precompile.
 	set dg-do-what-default precompile
+	catch { file delete "$bname.H" }
 	file copy "[file rootname $test].Hs" "$bname.H"
 	dg-test -keep-output "$bname.H" $flags ""
 
