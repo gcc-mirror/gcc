@@ -3510,8 +3510,10 @@ try_split (pat, trial, last)
       for (insn = insn_last; insn ; insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == CALL_INSN)
 	  {
-	    CALL_INSN_FUNCTION_USAGE (insn)
-	      = CALL_INSN_FUNCTION_USAGE (trial);
+	    rtx *p = &CALL_INSN_FUNCTION_USAGE (insn);
+	    while (*p)
+	      p = &XEXP (*p, 1);
+	    *p = CALL_INSN_FUNCTION_USAGE (trial);
 	    SIBLING_CALL_P (insn) = SIBLING_CALL_P (trial);
 	  }
     }

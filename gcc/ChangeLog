@@ -1,4 +1,9 @@
 2003-06-26  Richard Henderson  <rth@redhat.com>
+	
+	* emit-rtl.c (try_split): Append to new CALL_INSN_FUNCTION_USAGE
+	instead of replacing it.
+	
+2003-06-26  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (propagate_one_insn): Kill function return value 
 	registers across tail calls.
