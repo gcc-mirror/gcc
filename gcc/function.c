@@ -7038,10 +7038,11 @@ epilogue_done:
       rtx insn, prev;
 
       /* GDB handles `break f' by setting a breakpoint on the first
-	 line note *after* the prologue.  Which means (1) that if
+	 line note after the prologue.  Which means (1) that if
 	 there are line number notes before where we inserted the
-	 prologue we should move them, and (2) if there is no such
-	 note, then we should generate one at the prologue.  */
+	 prologue we should move them, and (2) we should generate a
+	 note before the end of the first basic block, if there isn't
+	 one already there.  */
 
       for (insn = prologue_end; insn ; insn = prev)
 	{
@@ -7050,32 +7051,34 @@ epilogue_done:
 	    {
 	      /* Note that we cannot reorder the first insn in the
 		 chain, since rest_of_compilation relies on that
-		 remaining constant.  Do the next best thing.  */
+		 remaining constant.  */
 	      if (prev == NULL)
-		{
-		  emit_line_note_after (NOTE_SOURCE_FILE (insn),
-					NOTE_LINE_NUMBER (insn),
-					prologue_end);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		}
-	      else
-		reorder_insns (insn, insn, prologue_end);
+		break;
+	      reorder_insns (insn, insn, prologue_end);
 	    }
 	}
 
-      insn = NEXT_INSN (prologue_end);
-      if (! insn || GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) <= 0)
+      /* Find the last line number note in the first block.  */
+      for (insn = BASIC_BLOCK (0)->end;
+	   insn != prologue_end;
+	   insn = PREV_INSN (insn))
+	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	  break;
+
+      /* If we didn't find one, make a copy of the first line number
+	 we run across.  */
+      if (! insn)
 	{
-	  for (insn = next_active_insn (f); insn ; insn = PREV_INSN (insn))
-	    {
-	      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
-		{
-		  emit_line_note_after (NOTE_SOURCE_FILE (insn),
-					NOTE_LINE_NUMBER (insn),
-					prologue_end);
-		  break;
-		}
-	    }
+	  for (insn = next_active_insn (prologue_end);
+	       insn;
+	       insn = PREV_INSN (insn))
+	    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	      {
+		emit_line_note_after (NOTE_SOURCE_FILE (insn),
+				      NOTE_LINE_NUMBER (insn),
+				      prologue_end);
+		break;
+	      }
 	}
     }
 #endif

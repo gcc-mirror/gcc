@@ -1,5 +1,11 @@
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
+	* function.c (thread_prologue_epilogue_insns): Don't move the
+	line note at the head of the chain.  Only force a lineno note
+	before the end of block 0.
+
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
 	* gensupport.c (collect_insn_data): Record the maximum number
 	of alternatives, not the last seen.
 
