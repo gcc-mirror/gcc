@@ -1,5 +1,12 @@
 2005-01-19  Richard Henderson  <rth@redhat.com>
 
+	PR target/19427
+	* config/i386/i386.c (ix86_expand_vector_set): Fix third and fourth
+	shufps elements.
+	(ix86_expand_vector_extract): Likewise.
+
+2005-01-19  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/19304
 	* expr.c (emit_move_change_mode): New argument force; use
 	simplify_gen_subreg if true.
