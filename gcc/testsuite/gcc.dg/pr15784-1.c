@@ -40,3 +40,4 @@ int i (float x) {
 	return fabs(x) == -0.0;
 }
 /* { dg-final { scan-tree-dump-times "ABS_EXPR" 0 "generic" } } */
+/* { dg-final { cleanup-tree-dump "generic" } } */

@@ -36,4 +36,4 @@ get_alias_set (t)
    properly.  */
 /* { dg-final { scan-tree-dump-times "if " 3 "dom3"} } */
  
-
+/* { dg-final { cleanup-tree-dump "dom3" } } */

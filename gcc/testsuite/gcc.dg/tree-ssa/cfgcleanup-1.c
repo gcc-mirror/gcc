@@ -16,3 +16,4 @@ cleanup (int a, int b)
 }
 /* Dce should get rid of the initializers and cfgcleanup should elliminate ifs  */
 /* { dg-final { scan-tree-dump-times "if " 0 "dce1"} } */
+/* { dg-final { cleanup-tree-dump "dce1" } } */

@@ -22,8 +22,11 @@ void xxx(void)
 /* We should be able to find out that the loop iterates four times and unroll it completely.  */
 
 /* { dg-final { scan-tree-dump-times "Added canonical iv to loop 1, 4 iterations" 1 "ivcanon"} } */
+/* { dg-final { cleanup-tree-dump "ivcanon" } } */
 /* { dg-final { scan-tree-dump-times "Unrolled loop 1 completely" 1 "cunroll"} } */
+/* { dg-final { cleanup-tree-dump "cunroll" } } */
 /* { dg-final { scan-tree-dump-times "foo" 5 "vars"} } */
+/* { dg-final { cleanup-tree-dump "vars" } } */
 
 /* Because hppa and ia64 targets include an external declaration for foo as
    well as the calls we need to look for something more specific then just

@@ -35,7 +35,9 @@ blah (decl, set)
 /* There should be precisely one reference to pointer_alias_set.  If there is
    more than one, then the dominator optimizations failed.  */
 /* { dg-final { scan-tree-dump-times "pointer_alias_set" 1 "dom3"} } */
+/* { dg-final { cleanup-tree-dump "dom3" } } */
 
 /* The assignment set = -1 in the ELSE clause of the last IF
    statement should be removed by the final cleanup phase.  */
 /* { dg-final { scan-tree-dump-times "set = -1" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -11,3 +11,4 @@ S bar (const S &a)
 
 /* Test whether memcpy call has been optimized out.  */
 /* { dg-final { scan-tree-dump-times "memcpy" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -25,3 +25,4 @@ main ()
 
 /* There should be no G on the RHS of an assignment. */
 /* { dg-final { scan-tree-dump-times "= G;" 0 "ccp"} } */
+/* { dg-final { cleanup-tree-dump "ccp" } } */

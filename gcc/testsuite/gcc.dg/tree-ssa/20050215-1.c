@@ -11,3 +11,4 @@ int foo (void)
 /* Make sure the optimizers don't introduce overflow where one
    did not exist in the original.  */
 /* { dg-final { scan-tree-dump-times "-0+4" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -20,3 +20,4 @@ rgn_rank (rtx insn1, rtx insn2)
 
 /* There should be two IF conditionals.  */
 /* { dg-final { scan-tree-dump-times "if " 2 "dom1" } } */
+/* { dg-final { cleanup-tree-dump "dom1" } } */

@@ -23,3 +23,4 @@ subreg_highpart_offset (outermode, innermode)
 /* There should be one right shift by 2 places.  */
 /* { dg-final { scan-tree-dump-times " >> 2" 1 "dom3"} } */
 
+/* { dg-final { cleanup-tree-dump "dom3" } } */

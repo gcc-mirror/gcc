@@ -24,3 +24,5 @@ void xxx(void)
 /* And the use of jter should be replaced by iter + 2 */
 
 /* { dg-final { scan-tree-dump-times " \\+ 2" 1 "vars" } } */
+
+/* { dg-final { cleanup-tree-dump "vars" } } */

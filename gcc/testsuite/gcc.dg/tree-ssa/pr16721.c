@@ -13,3 +13,4 @@ int test()
 
 /* The load from p->addr should not disappear.  */
 /* { dg-final { scan-tree-dump-times "\->addr" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

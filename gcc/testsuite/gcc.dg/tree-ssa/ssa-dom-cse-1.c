@@ -13,3 +13,4 @@ threading(int a,int b)
 }
 /* We should thread the jump twice and eliminate it.  */
 /* { dg-final { scan-tree-dump-times "Replaced.* t " 1 "dom1"} } */
+/* { dg-final { cleanup-tree-dump "dom1" } } */

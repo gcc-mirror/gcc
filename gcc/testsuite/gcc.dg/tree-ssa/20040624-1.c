@@ -18,4 +18,4 @@ foo (unsigned int a, unsigned int b)
    conditional.  */
 
 /* { dg-final { scan-tree-dump-times "if " 1 "dom1" } } */
-
+/* { dg-final { cleanup-tree-dump "dom1" } } */

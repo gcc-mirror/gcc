@@ -39,5 +39,4 @@ blah (unsigned int regno)
    eliminate some useless typecasting.  The first type cast is needed
    to convert the unsigned int regno parameter into a struct rtx_def **.  */
 /* { dg-final { scan-tree-dump-times "\\(struct rtx_def \\* \\*\\)" 1 "dom3"} } */
-                                                                                
-
+/* { dg-final { cleanup-tree-dump "dom3" } } */

@@ -18,3 +18,4 @@ void bar (void)
    does not alias any other pointer.
    Hence, we must have a VDEF for a before and after the call to foo().  */
 /* { dg-final { scan-tree-dump-times "V_MAY_DEF" 1 "alias1"} } */
+/* { dg-final { cleanup-tree-dump "alias1" } } */

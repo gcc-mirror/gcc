@@ -14,3 +14,4 @@ void f()
 
 /* { dg-final { scan-tree-dump-times "42" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "63" 1 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

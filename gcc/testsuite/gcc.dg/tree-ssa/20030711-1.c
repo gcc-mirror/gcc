@@ -52,3 +52,4 @@ record_component_aliases (type)
 /* There should be four loads of vec.length.  */
 /* { dg-final { scan-tree-dump-times "vec.length" 4 "dom3"} } */
 
+/* { dg-final { cleanup-tree-dump "dom3" } } */

@@ -14,3 +14,4 @@ q()
 }
 /* There should be no IF conditionals.  */
 /* { dg-final { scan-tree-dump-times "if " 0 "dce3"} } */
+/* { dg-final { cleanup-tree-dump "dce3" } } */

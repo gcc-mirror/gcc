@@ -27,3 +27,4 @@ int main()
 
 /* The abort() call clearly is unreachable.  */
 /* { dg-final { scan-tree-dump-times "abort" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

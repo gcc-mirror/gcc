@@ -21,3 +21,4 @@ foo (int *x)
    variables, they ought to be ignored.  There should be two tail
    calls here.  */
 /* { dg-final { scan-tree-dump-times "Found tail call" 2 "tailc"} } */
+/* { dg-final { cleanup-tree-dump "tailc" } } */

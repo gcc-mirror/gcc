@@ -42,3 +42,4 @@ foo (t, set)
 /* ??? Will fail until we properly distinguish member stores.  At
    present the write to type.alias_set kills the previous load.  */
 /* { dg-final { scan-tree-dump-times "common.code" 1 "dom3" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "dom3" } } */

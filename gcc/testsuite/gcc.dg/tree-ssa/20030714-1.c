@@ -41,3 +41,5 @@ find_base_value (src)
 
 /* There should be three loads of ->code.  */
 /* { dg-final { scan-tree-dump-times "->code" 3 "dom3"} } */
+
+/* { dg-final { cleanup-tree-dump "dom3" } } */

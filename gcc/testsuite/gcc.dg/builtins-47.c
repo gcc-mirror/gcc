@@ -17,4 +17,4 @@ int main ()
 
 /* { dg-final { scan-tree-dump-times "sqrt" 0 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "pow" 0 "gimple" } } */
-
+/* { dg-final { cleanup-tree-dump "gimple" } } */

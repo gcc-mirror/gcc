@@ -44,4 +44,4 @@ objects_must_conflict_p (t1, t2)
 /* There should be two assignments of variables to the value zero.  */
 /* { dg-final { scan-tree-dump-times " = 0" 2 "optimized"} } */
  
-
+/* { dg-final { cleanup-tree-dump "optimized" } } */

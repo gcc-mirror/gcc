@@ -52,3 +52,4 @@ record_component_aliases (type)
 /* There should be two loads of vec.length.  */
 /* { dg-final { scan-tree-dump-times "vec.length" 2 "dom3"} } */
 
+/* { dg-final { cleanup-tree-dump "dom3" } } */

@@ -64,3 +64,4 @@ store_expr (exp, target, want_value)
    immediately dominates the comparison in question.  We need something
    stronger.  */
 /* { dg-final { scan-tree-dump-times "target.*!= 0" 0 "dom3" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "dom3" } } */
