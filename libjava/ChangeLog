@@ -1,4 +1,14 @@
+2004-08-23  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* prims.cc (JVMPI_NOTIFY_ALLOC): New macro. Call jvmpi_notify_alloc
+	only if jvmpi is enabled.
+	(jvmpi_notify_alloc): Don't check if jvmpi is enabled here.
+	(_Jv_AllocObjectNoFinalizer): Use JVMPI_NOTIFY_ALLOC.
+	(_Jv_AllocString): Likewise.
+	(_Jv_AllocPtrFreeObject): Likewise.	
+
 2004-08-23  Hans Boehm  <Hans.Boehm@hp.com>
+
 	* defineclass.cc: Include <stdio.h>.
 	* java/lang/natClassLoader.cc: Include <stdio.h>.
 
