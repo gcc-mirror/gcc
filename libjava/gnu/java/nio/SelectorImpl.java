@@ -250,50 +250,31 @@ public class SelectorImpl extends AbstractSelector
   protected SelectionKey register (AbstractSelectableChannel ch, int ops,
                                    Object att)
   {
-// 	  // filechannel is not selectable ?
-//     if (ch instanceof FileChannelImpl)
-//       {
-//         FileChannelImpl fc = (FileChannelImpl) ch;
-//         SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, fc.fd);
-//         keys.add (impl);
-//         impl.interestOps (ops);
-//         impl.attach (att);
-//         return impl;
-//       }
-//     else
-
+    SelectionKeyImpl result;
+    
     if (ch instanceof SocketChannelImpl)
       {
         SocketChannelImpl sc = (SocketChannelImpl) ch;
-        SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, sc.fd);
-        add (impl);
-        impl.interestOps (ops);
-        impl.attach (att);
-        return impl;
+        result = new SelectionKeyImpl (ch, this, sc.fd);
       }
     else if (ch instanceof DatagramChannelImpl)
       {
         DatagramChannelImpl dc = (DatagramChannelImpl) ch;
-        SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, dc.fd);
-        add (impl);
-        impl.interestOps (ops);
-        impl.attach (att);
-        return impl;
+        result = new SelectionKeyImpl (ch, this, dc.fd);
       }
     else if (ch instanceof ServerSocketChannelImpl)
       {
         ServerSocketChannelImpl ssc = (ServerSocketChannelImpl) ch;
-        SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, ssc.fd);
-        add (impl);
-        impl.interestOps (ops);
-        impl.attach (att);
-        return impl;
+        result = new SelectionKeyImpl (ch, this, ssc.fd);
       }
     else
       {
-        System.err.println ("INTERNAL ERROR, no known channel type");
+        throw new InternalError ("No known channel type");
       }
 
-    return null;
+    add (result);
+    result.interestOps (ops);
+    result.attach (att);
+    return result;
   }
 }

@@ -47,7 +47,7 @@ import java.nio.channels.spi.SelectorProvider;
 
 class ServerSocketChannelImpl extends ServerSocketChannel
 {
-  ServerSocket sock_object;
+  ServerSocket serverSocket;
   int fd;
 //   int local_port;
   boolean blocking = true;
@@ -62,7 +62,7 @@ class ServerSocketChannelImpl extends ServerSocketChannel
 
     try
       {
-        sock_object = new ServerSocket ();
+        serverSocket = new ServerSocket ();
       }
     catch (IOException e)
       {
@@ -106,6 +106,6 @@ class ServerSocketChannelImpl extends ServerSocketChannel
 
   public ServerSocket socket ()
   {
-    return sock_object;
+    return serverSocket;
   }
 }

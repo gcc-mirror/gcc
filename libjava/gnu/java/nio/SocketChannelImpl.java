@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.io.IOException;
@@ -50,7 +51,7 @@ import gnu.classpath.Configuration;
 
 public class SocketChannelImpl extends SocketChannel
 {
-  Socket sock_object;
+  Socket socket;
   int fd;
   int local_port;
   boolean blocking = true;
@@ -141,20 +142,17 @@ public class SocketChannelImpl extends SocketChannel
     
   public boolean isConnectionPending ()
   {
-    if (blocking)
-	    return true;
-
-    return false;
+    return blocking ? true : false;
   }
     
   public Socket socket ()
   {
-    if (sock_object != null)
+    if (socket != null)
 	    {
-        //sock_object.ch = this;
+        //socket.ch = this;
 	    }
 
-    return sock_object;
+    return socket;
   }
 
   public int read (ByteBuffer dst) throws IOException
