@@ -418,6 +418,7 @@ for machine in $build $host $target; do
 		;;
 	arm-*-aout)
 		tm_file=arm/aout.h
+		tmake_file=arm/t-bare
 		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
