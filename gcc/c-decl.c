@@ -5664,8 +5664,9 @@ finish_struct (t, fieldlist, attributes)
 	      DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
 #endif
 #ifdef PCC_BITFIELD_TYPE_MATTERS
-	      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-				    TYPE_ALIGN (TREE_TYPE (x)));
+	      if (PCC_BITFIELD_TYPE_MATTERS)
+		DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+				      TYPE_ALIGN (TREE_TYPE (x)));
 #endif
 	    }
 	}
