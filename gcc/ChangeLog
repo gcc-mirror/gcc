@@ -1,3 +1,7 @@
+2001-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+        * fixinc/fixtests.c: Declare entries in ENV_TABLE.
+                                                                                
 2001-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (run_directive): Set pfile->directive.
