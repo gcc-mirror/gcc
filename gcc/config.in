@@ -76,6 +76,9 @@
 /* Whether atol must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_ATOL
 
+/* Whether atof must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_ATOF
+
 /* Whether sbrk must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_SBRK
 
@@ -99,6 +102,12 @@
 
 /* Whether setrlimit must be declared even if <sys/resource.h> is included.  */
 #undef NEED_DECLARATION_SETRLIMIT
+
+/* Whether putc_unlocked must be declared even if <stdio.h> is included.  */
+#undef NEED_DECLARATION_PUTC_UNLOCKED
+
+/* Whether fputs_unlocked must be declared even if <stdio.h> is included.  */
+#undef NEED_DECLARATION_FPUTS_UNLOCKED
 
 /* Define if you want expensive run-time checks. */
 #undef ENABLE_CHECKING

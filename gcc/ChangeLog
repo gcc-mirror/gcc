@@ -1,3 +1,13 @@
+Fri Mar 19 01:42:05 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* system.h: Use putc_unlocked, fputc_unlocked, and
+	fputs_unlocked only if putc_unlocked has a prototype already.
+	Prototype fputs_unlocked if necessary.
+	* configure.in: Check for prototypes of putc_unlocked and
+	fputs_unlocked. 
+	* acconfig.h: Updated.
+	* config.in, configure: Rebuilt.
+
 Fri Mar 19 02:45:12 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in (INTL_TARGETS): new macro
