@@ -1269,8 +1269,8 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\" \
-  `test "$SHLIB_LINK" -a "@enable_shared@" = "yes" && echo "-DENABLE_SHARED_LIBGCC"` \
-  `test "$SHLIB_MULTILIB" && echo "-DNO_SHARED_LIBGCC_MULTILIB"`
+  `test "$(SHLIB_LINK)" -a "@enable_shared@" = "yes" && echo "-DENABLE_SHARED_LIBGCC"` \
+  `test "$(SHLIB_MULTILIB)" && echo "-DNO_SHARED_LIBGCC_MULTILIB"`
 
 gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
     Makefile $(lang_specs_files) prefix.h $(GCC_H)
