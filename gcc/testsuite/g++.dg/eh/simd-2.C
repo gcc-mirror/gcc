@@ -4,8 +4,7 @@
 // { dg-options "-O -w" { target i?86-*-* } }
 // { dg-options "-O -w -maltivec" { target powerpc64-*-linux* } }
 // { dg-do run { xfail "powerpc64-*-linux*"}  }
-// { dg-error "" "PR target/12916" { target sparc64-*-* sparcv9-*-* } 13 }
-// { dg-error "" "PR target/12916" { target sparc-*-* } 15 }
+// { dg-error "" "PR target/12916" { target sparc*-*-* } 0 }
 
 typedef int __attribute__((mode(V4SI))) vecint;
 

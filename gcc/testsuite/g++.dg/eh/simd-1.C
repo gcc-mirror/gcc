@@ -3,7 +3,7 @@
 // { dg-options "-O" }
 // { dg-options "-O -w" { target i?86-*-* } }
 // { dg-do run }
-// { dg-error "" "PR target/12916" { target sparc*-*-* } 11 }
+// { dg-error "" "PR target/12916" { target sparc*-*-* } 0 }
 
 typedef int __attribute__((mode(V2SI))) vecint;
 
