@@ -156,8 +156,8 @@
 /* Run-time compilation parameters selecting different hardware subsets.
 
    Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
+   This is a list in braces of triplets in braces,
+   each pair being { "NAME", VALUE, "DESCRIPTION" }
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
@@ -252,7 +252,7 @@
     "Assume that pointers may be aliased" }, \
   { "no-aliases", -ALIASES_FLAG, \
     "Assume that pointers not aliased" }, \
-  { "", TARGET_DEFAULT} }
+  { "", TARGET_DEFAULT, ""} }
 
 /* Default target switches */
 
