@@ -1174,7 +1174,7 @@
    (set (cc0) (compare (match_dup 5)
                        (match_operand:SI 2 "general_operand" "mri")))
    (set (pc) (if_then_else (gtu (cc0) (const_int 0))
-                           (label_ref (match_operand 4 "" ""))
+                           (label_ref (match_dup 4))
                            (pc)))
    (set (match_dup 5) (ashift:SI (match_dup 5)
                                  (const_int 2)))
