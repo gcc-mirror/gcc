@@ -2190,7 +2190,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
 	      if (!this_insn)
 	        {
 		  /* Oh dear! we ran off the end, give up.  */
-		  insn_extract (insn);
+		  extract_insn_cached (insn);
 		  arc_ccfsm_state = 0;
 		  arc_ccfsm_target_insn = NULL;
 		  return;
@@ -2212,9 +2212,8 @@ arc_final_prescan_insn (insn, opvec, noperands)
 
       /* Restore recog_data.  Getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
-	 across this call; since the insn has been recognized already we
-	 call insn_extract direct.  */
-      insn_extract (insn);
+	 across this call.  */
+      extract_insn_cached (insn);
     }
 }
 
