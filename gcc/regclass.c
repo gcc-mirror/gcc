@@ -673,7 +673,7 @@ static void record_address_regs	PROTO((rtx, enum reg_class, int));
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 static int auto_inc_dec_reg_p	PROTO((rtx, enum machine_mode));
 #endif
-static void reg_scan_mark_refs	PROTO((rtx, rtx, int));
+static void reg_scan_mark_refs	PROTO((rtx, rtx, int, int));
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.
@@ -1939,21 +1939,54 @@ reg_scan (f, nregs, repeat)
 	if (GET_CODE (PATTERN (insn)) == PARALLEL
 	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
 	  max_parallel = XVECLEN (PATTERN (insn), 0);
-	reg_scan_mark_refs (PATTERN (insn), insn, 0);
+	reg_scan_mark_refs (PATTERN (insn), insn, 0, 0);
 
 	if (REG_NOTES (insn))
-	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1);
+	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1, 0);
+      }
+}
+
+/* Update 'regscan' information by looking at the insns
+   from FIRST to LAST.  Some new REGs have been created,
+   and any REG with number greater than OLD_MAX_REGNO is
+   such a REG.  We only update information for those.  */
+
+void
+reg_scan_update(first, last, old_max_regno)
+     rtx first;
+     rtx last;
+     int old_max_regno;
+{
+  register rtx insn;
+
+  allocate_reg_info (max_reg_num (), FALSE, FALSE);
+
+  for (insn = first; insn != last; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == INSN
+	|| GET_CODE (insn) == CALL_INSN
+	|| GET_CODE (insn) == JUMP_INSN)
+      {
+	if (GET_CODE (PATTERN (insn)) == PARALLEL
+	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
+	  max_parallel = XVECLEN (PATTERN (insn), 0);
+	reg_scan_mark_refs (PATTERN (insn), insn, 0, old_max_regno);
+
+	if (REG_NOTES (insn))
+	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1, old_max_regno);
       }
 }
 
 /* X is the expression to scan.  INSN is the insn it appears in.
-   NOTE_FLAG is nonzero if X is from INSN's notes rather than its body.  */
+   NOTE_FLAG is nonzero if X is from INSN's notes rather than its body.
+   We should only record information for REGs with numbers
+   greater than or equal to MIN_REGNO.  */
 
 static void
-reg_scan_mark_refs (x, insn, note_flag)
+reg_scan_mark_refs (x, insn, note_flag, min_regno)
      rtx x;
      rtx insn;
      int note_flag;
+     int min_regno;
 {
   register enum rtx_code code = GET_CODE (x);
   register rtx dest;
@@ -1976,24 +2009,27 @@ reg_scan_mark_refs (x, insn, note_flag)
       {
 	register int regno = REGNO (x);
 
-	REGNO_LAST_NOTE_UID (regno) = INSN_UID (insn);
-	if (!note_flag)
-	  REGNO_LAST_UID (regno) = INSN_UID (insn);
-	if (REGNO_FIRST_UID (regno) == 0)
-	  REGNO_FIRST_UID (regno) = INSN_UID (insn);
+	if (regno >= min_regno)
+	  {
+	    REGNO_LAST_NOTE_UID (regno) = INSN_UID (insn);
+	    if (!note_flag)
+	      REGNO_LAST_UID (regno) = INSN_UID (insn);
+	    if (REGNO_FIRST_UID (regno) == 0)
+	      REGNO_FIRST_UID (regno) = INSN_UID (insn);
+	  }
       }
       break;
 
     case EXPR_LIST:
       if (XEXP (x, 0))
-	reg_scan_mark_refs (XEXP (x, 0), insn, note_flag);
+	reg_scan_mark_refs (XEXP (x, 0), insn, note_flag, min_regno);
       if (XEXP (x, 1))
-	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag);
+	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag, min_regno);
       break;
 
     case INSN_LIST:
       if (XEXP (x, 1))
-	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag);
+	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag, min_regno);
       break;
 
     case SET:
@@ -2004,7 +2040,8 @@ reg_scan_mark_refs (x, insn, note_flag)
 	   dest = XEXP (dest, 0))
 	;
 
-      if (GET_CODE (dest) == REG)
+      if (GET_CODE (dest) == REG
+	  && REGNO (dest) >= min_regno)
 	REG_N_SETS (REGNO (dest))++;
 
       /* If this is setting a pseudo from another pseudo or the sum of a
@@ -2021,6 +2058,7 @@ reg_scan_mark_refs (x, insn, note_flag)
 
       if (GET_CODE (SET_DEST (x)) == REG
 	  && REGNO (SET_DEST (x)) >= FIRST_PSEUDO_REGISTER
+	  && REGNO (SET_DEST (x)) >= min_regno
 	  /* If the destination pseudo is set more than once, then other
 	     sets might not be to a pointer value (consider access to a
 	     union in two threads of control in the presense of global
@@ -2063,12 +2101,12 @@ reg_scan_mark_refs (x, insn, note_flag)
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  {
 	    if (fmt[i] == 'e')
-	      reg_scan_mark_refs (XEXP (x, i), insn, note_flag);
+	      reg_scan_mark_refs (XEXP (x, i), insn, note_flag, min_regno);
 	    else if (fmt[i] == 'E' && XVEC (x, i) != 0)
 	      {
 		register int j;
 		for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-		  reg_scan_mark_refs (XVECEXP (x, i, j), insn, note_flag);
+		  reg_scan_mark_refs (XVECEXP (x, i, j), insn, note_flag, min_regno);
 	      }
 	  }
       }
