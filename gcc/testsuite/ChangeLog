@@ -1,3 +1,8 @@
+2003-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/10700
+	* gcc.c-torture/compile/20030703-1.c: New test case.
+
 2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-volatile-1.c: New test.
