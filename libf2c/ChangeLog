@@ -1,4 +1,10 @@
-1999-10-22  Dave Love  <fx@gnu.org>
+1999-10-14 Theo Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* libU77/acconfig.h: Define GETTIMEOFDAY_ONE_ARGUMENT and
+	HAVE_TIMEZONE in acconfig.h.
+	* libU77/config.hin: Rebuilt.
+
+1999-10-12  Dave Love  <fx@gnu.org>
 
 	* libU77/aclocal.m4: Re-write, defining LIBU77_GETTIMEOFDAY, not
 	LIBU77_HAVE_STRUCT_TIMEZONE.
