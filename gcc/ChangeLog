@@ -1,3 +1,44 @@
+2005-03-17  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.opt: New file.
+	* config/alpha/alpha.c (alpha_tune): New.  Rename all existing uses
+	of alpha_cpu.
+	(alpha_cpu_string, alpha_tune_string, alpha_tp_string, 
+	alpha_fprm_string, alpha_fptm_string): Make static.
+	(alpha_tls_size_string): Remove.
+	(alpha_handle_option): New.
+	(override_options): Update for alpha_cpu/alpha_tune split.
+	(alpha_file_start): Likewise.
+	(TARGET_DEFAULT_TARGET_FLAGS): New.
+	(TARGET_HANDLE_OPTION): New.
+	* config/alpha/alpha.h (alpha_tune): Declare.
+	(MASK_FP, MASK_FPREGS, TARGET_FPREGS, MASK_GAS, TARGET_GAS, 
+	MASK_IEEE_CONFORMANT, TARGET_IEEE_CONFORMANT, MASK_IEEE, TARGET_IEEE,
+	MASK_IEEE_WITH_INEXACT, TARGET_IEEE_WITH_INEXACT, MASK_BUILD_CONSTANTS,
+	TARGET_BUILD_CONSTANTS, MASK_FLOAT_VAX, TARGET_FLOAT_VAX, MASK_BWX,
+	TARGET_BWX, MASK_MAX, TARGET_MAX, MASK_FIX, TARGET_FIX, MASK_CIX,
+	TARGET_CIX, MASK_EXPLICIT_RELOCS, TARGET_EXPLICIT_RELOCS,
+	MASK_SMALL_DATA, TARGET_SMALL_DATA, MASK_TLS_KERNEL, TARGET_TLS_KERNEL,
+	MASK_SMALL_TEXT, TARGET_SMALL_TEXT, MASK_LONG_DOUBLE_128,
+	TARGET_LONG_DOUBLE_128, MASK_CPU_EV5, TARGET_CPU_EV5, MASK_CPU_EV6,
+	TARGET_CPU_EV6, MASK_SUPPORT_ARCH): Remove.
+	(TARGET_SWITCHES, TARGET_OPTIONS): Remove.
+	(TARGET_DEFAULT): Remove MASK_FP.
+	(TARGET_FP): Redefined based on TARGET_SOFT_FP.
+	(TARGET_SUPPORT_ARCH): Default on if HAVE_AS_EXPLICIT_RELOCS.
+	(alpha_cpu_string, alpha_tune_string, alpha_fprm_string,
+	alpha_fptm_string, alpha_tp_string, alpha_mlat_string,
+	alpha_tls_size_string): Remove.
+	* config/alpha/alpha.md (prefetch): Use alpha_cpu.
+	(attribute tune): Rename from attribute cpu.
+	* config/alpha/ev4.md: Update to match.
+	* config/alpha/ev5.md, config/alpha/ev6.md: Likewise.
+	* config/alpha/freebsd.h (TARGET_DEFAULT): Remove MASK_FP.
+	* config/alpha/linux.h (TARGET_DEFAULT): Likewise.
+	* config/alpha/netbsd.h (TARGET_DEFAULT): Likewise.
+	* config/alpha/osf5.h (TARGET_DEFAULT): Likewise.
+	* config/alpha/vms.h (TARGET_DEFAULT): Likewise.
+
 2005-03-16  James E. Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.c (issue_nops_and_insn): Check first_insn attribute,

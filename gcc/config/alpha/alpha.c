@@ -55,8 +55,11 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-gimple.h"
 
 /* Specify which cpu to schedule for.  */
+enum processor_type alpha_tune;
 
+/* Which cpu we're generating code for.  */
 enum processor_type alpha_cpu;
+
 static const char * const alpha_cpu_name[] =
 {
   "ev4", "ev5", "ev6"
@@ -80,13 +83,12 @@ int alpha_tls_size = 32;
 
 /* Strings decoded into the above options.  */
 
-const char *alpha_cpu_string;	/* -mcpu= */
-const char *alpha_tune_string;	/* -mtune= */
-const char *alpha_tp_string;	/* -mtrap-precision=[p|s|i] */
-const char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
-const char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
-const char *alpha_mlat_string;	/* -mmemory-latency= */
-const char *alpha_tls_size_string; /* -mtls-size=[16|32|64] */
+static const char *alpha_cpu_string;	/* -mcpu= */
+static const char *alpha_tune_string;	/* -mtune= */
+static const char *alpha_tp_string;	/* -mtrap-precision=[p|s|i] */
+static const char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
+static const char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
+static const char *alpha_mlat_string;	/* -mmemory-latency= */
 
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
@@ -218,35 +220,90 @@ static void unicosmk_gen_dsib (unsigned long *);
 static void unicosmk_output_ssib (FILE *, const char *);
 static int unicosmk_need_dex (rtx);
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+alpha_handle_option (size_t code, const char *arg, int value)
+{
+  switch (code)
+    {
+    case OPT_mfp_regs:
+      if (value == 0)
+	target_flags |= MASK_SOFT_FP;
+      break;
+
+    case OPT_mieee:
+    case OPT_mieee_with_inexact:
+      target_flags |= MASK_IEEE_CONFORMANT;
+      break;
+
+    case OPT_mcpu_:
+      alpha_cpu_string = arg;
+      break;
+
+    case OPT_mtune_:
+      alpha_tune_string = arg;
+      break;
+
+    case OPT_mfp_rounding_mode_:
+      alpha_fprm_string = arg;
+      break;
+
+    case OPT_mfp_trap_mode_:
+      alpha_fptm_string = arg;
+      break;
+
+    case OPT_mtrap_precision_:
+      alpha_tp_string = arg;
+      break;
+
+    case OPT_mmemory_latency_:
+      alpha_mlat_string = arg;
+      break;
+
+    case OPT_mtls_size_:
+      if (strcmp (arg, "16") == 0)
+	alpha_tls_size = 16;
+      else if (strcmp (arg, "32") == 0)
+	alpha_tls_size = 32;
+      else if (strcmp (arg, "64") == 0)
+	alpha_tls_size = 64;
+      else
+	error ("bad value %qs for -mtls-size switch", arg);
+      break;
+    }
+
+  return true;
+}
+
 /* Parse target option strings.  */
 
 void
 override_options (void)
 {
-  int i;
   static const struct cpu_table {
     const char *const name;
     const enum processor_type processor;
     const int flags;
   } cpu_table[] = {
-#define EV5_MASK (MASK_CPU_EV5)
-#define EV6_MASK (MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX)
     { "ev4",	PROCESSOR_EV4, 0 },
     { "ev45",	PROCESSOR_EV4, 0 },
     { "21064",	PROCESSOR_EV4, 0 },
-    { "ev5",	PROCESSOR_EV5, EV5_MASK },
-    { "21164",	PROCESSOR_EV5, EV5_MASK },
-    { "ev56",	PROCESSOR_EV5, EV5_MASK|MASK_BWX },
-    { "21164a",	PROCESSOR_EV5, EV5_MASK|MASK_BWX },
-    { "pca56",	PROCESSOR_EV5, EV5_MASK|MASK_BWX|MASK_MAX },
-    { "21164PC",PROCESSOR_EV5, EV5_MASK|MASK_BWX|MASK_MAX },
-    { "21164pc",PROCESSOR_EV5, EV5_MASK|MASK_BWX|MASK_MAX },
-    { "ev6",	PROCESSOR_EV6, EV6_MASK },
-    { "21264",	PROCESSOR_EV6, EV6_MASK },
-    { "ev67",	PROCESSOR_EV6, EV6_MASK|MASK_CIX },
-    { "21264a",	PROCESSOR_EV6, EV6_MASK|MASK_CIX },
+    { "ev5",	PROCESSOR_EV5, 0 },
+    { "21164",	PROCESSOR_EV5, 0 },
+    { "ev56",	PROCESSOR_EV5, MASK_BWX },
+    { "21164a",	PROCESSOR_EV5, MASK_BWX },
+    { "pca56",	PROCESSOR_EV5, MASK_BWX|MASK_MAX },
+    { "21164PC",PROCESSOR_EV5, MASK_BWX|MASK_MAX },
+    { "21164pc",PROCESSOR_EV5, MASK_BWX|MASK_MAX },
+    { "ev6",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX },
+    { "21264",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX },
+    { "ev67",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX },
+    { "21264a",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX },
     { 0, 0, 0 }
   };
+
+  int i;
 
   /* Unicos/Mk doesn't have shared libraries.  */
   if (TARGET_ABI_UNICOSMK && flag_pic)
@@ -335,30 +392,13 @@ override_options (void)
 	error ("bad value %qs for -mfp-trap-mode switch", alpha_fptm_string);
     }
 
-  if (alpha_tls_size_string)
-    {
-      if (strcmp (alpha_tls_size_string, "16") == 0)
-	alpha_tls_size = 16;
-      else if (strcmp (alpha_tls_size_string, "32") == 0)
-	alpha_tls_size = 32;
-      else if (strcmp (alpha_tls_size_string, "64") == 0)
-	alpha_tls_size = 64;
-      else
-	error ("bad value %qs for -mtls-size switch", alpha_tls_size_string);
-    }
-
-  alpha_cpu
-    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
-      : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
-
   if (alpha_cpu_string)
     {
       for (i = 0; cpu_table [i].name; i++)
 	if (! strcmp (alpha_cpu_string, cpu_table [i].name))
 	  {
-	    alpha_cpu = cpu_table [i].processor;
-	    target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX
-			       | MASK_CPU_EV5 | MASK_CPU_EV6);
+	    alpha_tune = alpha_cpu = cpu_table [i].processor;
+	    target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
 	    target_flags |= cpu_table [i].flags;
 	    break;
 	  }
@@ -371,7 +411,7 @@ override_options (void)
       for (i = 0; cpu_table [i].name; i++)
 	if (! strcmp (alpha_tune_string, cpu_table [i].name))
 	  {
-	    alpha_cpu = cpu_table [i].processor;
+	    alpha_tune = cpu_table [i].processor;
 	    break;
 	  }
       if (! cpu_table [i].name)
@@ -387,13 +427,13 @@ override_options (void)
     }
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
-      && alpha_tp != ALPHA_TP_INSN && ! TARGET_CPU_EV6)
+      && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
     {
       warning ("fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;
     }
 
-  if (TARGET_CPU_EV6)
+  if (alpha_cpu == PROCESSOR_EV6)
     {
       /* Except for EV6 pass 1 (not released), we always have precise
 	 arithmetic traps.  Which means we can do software completion
@@ -440,14 +480,14 @@ override_options (void)
 	};
 
 	lat = alpha_mlat_string[1] - '0';
-	if (lat <= 0 || lat > 3 || cache_latency[alpha_cpu][lat-1] == -1)
+	if (lat <= 0 || lat > 3 || cache_latency[alpha_tune][lat-1] == -1)
 	  {
 	    warning ("L%d cache latency unknown for %s",
-		     lat, alpha_cpu_name[alpha_cpu]);
+		     lat, alpha_cpu_name[alpha_tune]);
 	    lat = 3;
 	  }
 	else
-	  lat = cache_latency[alpha_cpu][lat-1];
+	  lat = cache_latency[alpha_tune][lat-1];
       }
     else if (! strcmp (alpha_mlat_string, "main"))
       {
@@ -1339,7 +1379,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
   if (optimize_size)
     cost_data = &alpha_rtx_cost_size;
   else
-    cost_data = &alpha_rtx_cost_data[alpha_cpu];
+    cost_data = &alpha_rtx_cost_data[alpha_tune];
 
   switch (code)
     {
@@ -2909,7 +2949,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
       /* On EV6, we've got enough shifters to make non-arithmetic shifts
 	 viable over a longer latency cmove.  On EV5, the E0 slot is a
 	 scarce resource, and on EV4 shift has the same latency as a cmove.  */
-      && (diff <= 8 || alpha_cpu == PROCESSOR_EV6))
+      && (diff <= 8 || alpha_tune == PROCESSOR_EV6))
     {
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
       emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
@@ -4465,7 +4505,7 @@ alpha_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 static int
 alpha_issue_rate (void)
 {
-  return (alpha_cpu == PROCESSOR_EV4 ? 2 : 4);
+  return (alpha_tune == PROCESSOR_EV4 ? 2 : 4);
 }
 
 /* How many alternative schedules to try.  This should be as wide as the
@@ -4479,7 +4519,7 @@ alpha_issue_rate (void)
 static int
 alpha_multipass_dfa_lookahead (void)
 {
-  return (alpha_cpu == PROCESSOR_EV6 ? 4 : 2);
+  return (alpha_tune == PROCESSOR_EV6 ? 4 : 2);
 }
 
 /* Machine-specific function data.  */
@@ -8774,9 +8814,9 @@ alpha_reorg (void)
       && alpha_tp != ALPHA_TP_INSN
       && flag_schedule_insns_after_reload)
     {
-      if (alpha_cpu == PROCESSOR_EV4)
+      if (alpha_tune == PROCESSOR_EV4)
 	alpha_align_insns (8, alphaev4_next_group, alphaev4_next_nop);
-      else if (alpha_cpu == PROCESSOR_EV5)
+      else if (alpha_tune == PROCESSOR_EV5)
 	alpha_align_insns (16, alphaev5_next_group, alphaev5_next_nop);
     }
 }
@@ -8809,12 +8849,22 @@ alpha_file_start (void)
   if (TARGET_EXPLICIT_RELOCS)
     fputs ("\t.set nomacro\n", asm_out_file);
   if (TARGET_SUPPORT_ARCH | TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)
-    fprintf (asm_out_file,
-	     "\t.arch %s\n",
-	     TARGET_CPU_EV6 ? "ev6"
-	     : (TARGET_CPU_EV5
-		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5")
-		: "ev4"));
+    {
+      const char *arch;
+
+      if (alpha_cpu == PROCESSOR_EV6 || TARGET_FIX || TARGET_CIX)
+	arch = "ev6";
+      else if (TARGET_MAX)
+	arch = "pca56";
+      else if (TARGET_BWX)
+	arch = "ev56";
+      else if (alpha_cpu == PROCESSOR_EV5)
+	arch = "ev5";
+      else
+	arch = "ev4";
+
+      fprintf (asm_out_file, "\t.arch %s\n", arch);
+    }
 }
 #endif
 
@@ -10149,6 +10199,12 @@ alpha_init_libfuncs (void)
    for an example of how it can be violated in practice.  */
 #undef TARGET_RELAXED_ORDERING
 #define TARGET_RELAXED_ORDERING true
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS \
+  (TARGET_DEFAULT | TARGET_CPU_DEFAULT | TARGET_DEFAULT_EXPLICIT_RELOCS)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION alpha_handle_option
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

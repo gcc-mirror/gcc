@@ -45,26 +45,26 @@
 
 ; Assume type "multi" single issues.
 (define_insn_reservation "ev6_multi" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "multi"))
   "ev6_u0+ev6_u1+ev6_l0+ev6_l1+ev6_fa+ev6_fm+ev6_fst0+ev6_fst1")
 
 ; Integer loads take at least 3 clocks, and only issue to lower units.
 ; adjust_cost still factors in user-specified memory latency, so return 1 here.
 (define_insn_reservation "ev6_ild" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "ild,ldsym"))
   "ev6_l")
 
 (define_insn_reservation "ev6_ist" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "ist"))
   "ev6_l")
 
 ; FP loads take at least 4 clocks.  adjust_cost still factors
 ; in user-specified memory latency, so return 2 here.
 (define_insn_reservation "ev6_fld" 2
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "fld"))
   "ev6_l")
 
@@ -75,99 +75,99 @@
 ; file and the insn retired.
 
 (define_insn_reservation "ev6_fst" 3
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "fst"))
   "ev6_fst,nothing,ev6_l")
 
 ; Arithmetic goes anywhere.
 (define_insn_reservation "ev6_arith" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "iadd,ilog,icmp"))
   "ev6_ebox")
 
 ; Motion video insns also issue only to U0, and take three ticks.
 (define_insn_reservation "ev6_mvi" 3
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "mvi"))
   "ev6_u0")
 
 ; Shifts issue to upper units.
 (define_insn_reservation "ev6_shift" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "shift"))
   "ev6_u")
 
 ; Multiplies issue only to U1, and all take 7 ticks.
 (define_insn_reservation "ev6_imul" 7
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "imul"))
   "ev6_u1")
 
 ; Conditional moves decompose into two independent primitives, each taking
 ; one cycle.  Since ev6 is out-of-order, we can't see anything but two cycles.
 (define_insn_reservation "ev6_icmov" 2
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "icmov"))
   "ev6_ebox,ev6_ebox")
 
 ; Integer branches issue to upper units
 (define_insn_reservation "ev6_ibr" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "ibr,callpal"))
   "ev6_u")
 
 ; Calls only issue to L0.
 (define_insn_reservation "ev6_jsr" 1
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "jsr"))
   "ev6_l0")
 
 ; Ftoi/itof only issue to lower pipes.
 (define_insn_reservation "ev6_itof" 3
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "itof"))
   "ev6_l")
 
 (define_insn_reservation "ev6_ftoi" 3
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "ftoi"))
   "ev6_fst,nothing,ev6_l")
 
 (define_insn_reservation "ev6_fmul" 4
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "fmul"))
   "ev6_fm")
 
 (define_insn_reservation "ev6_fadd" 4
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "fadd,fcpys,fbr"))
   "ev6_fa")
 
 (define_insn_reservation "ev6_fcmov" 8
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (eq_attr "type" "fcmov"))
   "ev6_fa,nothing*3,ev6_fa")
 
 (define_insn_reservation "ev6_fdivsf" 12
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (and (eq_attr "type" "fdiv")
 	    (eq_attr "opsize" "si")))
   "ev6_fa*9")
 
 (define_insn_reservation "ev6_fdivdf" 15
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (and (eq_attr "type" "fdiv")
 	    (eq_attr "opsize" "di")))
   "ev6_fa*12")
 
 (define_insn_reservation "ev6_sqrtsf" 18
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (and (eq_attr "type" "fsqrt")
 	    (eq_attr "opsize" "si")))
   "ev6_fa*15")
 
 (define_insn_reservation "ev6_sqrtdf" 33
-  (and (eq_attr "cpu" "ev6")
+  (and (eq_attr "tune" "ev6")
        (and (eq_attr "type" "fsqrt")
 	    (eq_attr "opsize" "di")))
   "ev6_fa*30")

@@ -20,7 +20,7 @@
 
 /* Tru64 5.1 uses IEEE QUAD format.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT	MASK_FP | MASK_FPREGS | MASK_LONG_DOUBLE_128
+#define TARGET_DEFAULT	(MASK_FPREGS | MASK_LONG_DOUBLE_128)
 
 /* In Tru64 UNIX V5.1, Compaq introduced a new assembler
    (/usr/lib/cmplrs/cc/adu) which currently (versions between 3.04.29 and
