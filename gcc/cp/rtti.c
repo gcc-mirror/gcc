@@ -374,9 +374,6 @@ get_tinfo_fn (type)
   make_function_rtl (d);
   assemble_external (d);
   mark_inline_for_output (d);
-  if (at_eof)
-    import_export_decl (d);
-
   pop_obstacks ();
 
   return d;
@@ -1064,9 +1061,16 @@ synthesize_tinfo_fn (fndecl)
      tree fndecl;
 {
   tree type = TREE_TYPE (DECL_NAME (fndecl));
-  tree tmp, addr;
+  tree tmp, addr, tdecl;
 
-  tree tdecl = get_tinfo_var (type);
+  if (at_eof)
+    {
+      import_export_decl (fndecl);
+      if (DECL_REALLY_EXTERN (fndecl))
+	return;
+    }
+
+  tdecl = get_tinfo_var (type);
   DECL_EXTERNAL (tdecl) = 0;
   TREE_STATIC (tdecl) = 1;
   DECL_COMMON (tdecl) = 1;

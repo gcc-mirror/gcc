@@ -4346,9 +4346,8 @@ define_label (filename, line, name)
 			   and they should be cleaned up
 			   by the time we get to the label.  */
 			&& ! DECL_ARTIFICIAL (new_decls)
-			&& ((DECL_INITIAL (new_decls) != NULL_TREE
-			     && DECL_INITIAL (new_decls) != error_mark_node)
-			    || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls))))
+			&& !(DECL_INITIAL (new_decls) == NULL_TREE
+			     && pod_type_p (TREE_TYPE (new_decls))))
 		      {
 			if (! identified) 
 			  {
@@ -4358,8 +4357,13 @@ define_label (filename, line, name)
 						      "  from here");
 			    identified = 1;
 			}
-			cp_error_at ("  crosses initialization of `%#D'",
-				     new_decls);
+			if (DECL_INITIAL (new_decls)
+			    || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls)))
+			  cp_error_at ("  crosses initialization of `%#D'",
+				       new_decls);
+			else
+			  cp_error_at ("  enters scope of non-POD `%#D'",
+					 new_decls);
 		      }
 		    new_decls = TREE_CHAIN (new_decls);
 		  }
@@ -13999,6 +14003,7 @@ struct cp_function
   int parms_stored;
   int temp_name_counter;
   tree named_labels;
+  struct named_label_list *named_label_uses;
   tree shadowed_labels;
   tree ctor_label;
   tree dtor_label;
@@ -14035,6 +14040,7 @@ push_cp_function_context (context)
   cp_function_chain = p;
 
   p->named_labels = named_labels;
+  p->named_label_uses = named_label_uses;
   p->shadowed_labels = shadowed_labels;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
@@ -14077,6 +14083,7 @@ pop_cp_function_context (context)
   cp_function_chain = p->next;
 
   named_labels = p->named_labels;
+  named_label_uses = p->named_label_uses;
   shadowed_labels = p->shadowed_labels;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
