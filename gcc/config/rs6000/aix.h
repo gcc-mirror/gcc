@@ -41,8 +41,20 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_LIBGCC_SPECIAL_1
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_LONG_LONG \
--Asystem=unix -Asystem=aix -Acpu=rs6000 -Amachine=rs6000"
+#define TARGET_OS_CPP_BUILTINS()         \
+  do                                     \
+    {                                    \
+      builtin_define ("_IBMR2");         \
+      builtin_define ("_POWER");         \
+      builtin_define ("_AIX");           \
+      builtin_define ("_AIX32");         \
+      builtin_define ("_LONG_LONG");     \
+      builtin_assert ("system=unix");    \
+      builtin_assert ("system=aix");     \
+      builtin_assert ("cpu=rs6000");     \
+      builtin_assert ("machine=rs6000"); \
+    }                                    \
+  while (0)
 
 /* Define appropriate architecture macros for preprocessor depending on
    target switches.  */

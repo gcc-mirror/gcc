@@ -106,11 +106,20 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-#undef  CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-D_PPC_ -D__PPC__ -D_PPC64_ -D__PPC64__ -D__powerpc__ -D__powerpc64__ \
-  -D_PIC_ -D__PIC__ -D__ELF__ \
-  -Acpu=powerpc64 -Amachine=powerpc64"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()            \
+  do                                        \
+    {                                       \
+      builtin_define ("__PPC__");           \
+      builtin_define ("__PPC64__");         \
+      builtin_define ("__powerpc__");       \
+      builtin_define ("__powerpc64__");     \
+      builtin_define ("__PIC__");           \
+      builtin_define ("__ELF__");           \
+      builtin_assert ("cpu=powerpc64");     \
+      builtin_assert ("machine=powerpc64"); \
+    }                                       \
+  while (0)
 
 #undef  CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"

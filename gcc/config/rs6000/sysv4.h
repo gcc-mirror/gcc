@@ -808,9 +808,19 @@ do {						\
 #define	TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
 #endif
 
-#ifndef	CPP_PREDEFINES
-#define	CPP_PREDEFINES \
-  "-DPPC -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4 -Acpu=powerpc -Amachine=powerpc"
+#ifndef	TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()          \
+  do                                      \
+    {                                     \
+      builtin_define_std ("PPC");         \
+      builtin_define_std ("unix");        \
+      builtin_define ("__svr4__");        \
+      builtin_assert ("system=unix");     \
+      builtin_assert ("system=svr4");     \
+      builtin_assert ("cpu=powerpc");     \
+      builtin_assert ("machine=powerpc"); \
+    }                                     \
+  while (0)
 #endif
 
 /* Pass various options to the assembler.  */

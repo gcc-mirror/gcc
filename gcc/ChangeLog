@@ -1,3 +1,22 @@
+2002-07-09  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* config/rs6000/aix.h: Convert CPP_PREDEFINES to
+	TARGET_OS_CPP_BUILTINS.
+	* config/rs6000/aix31.h: Likewise.
+	* config/rs6000/aix41.h: Likewise.
+	* config/rs6000/aix43.h: Likewise.
+	* config/rs6000/aix51.h: Likewise.
+	* config/rs6000/beos.h: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/eabi.h: Likewise.
+	* config/rs6000/eabisim.h: Likewise.
+	* config/rs6000/linux.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/lynx.h: Likewise.
+	* config/rs6000/mach.h: Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/rs6000/vxppc.h: Likewise.
 
 2002-07-09 Devang Patel <dpatel@apple.com>
 	* objc/objc-act.c (adjust_type_for_id_default): Fix my previous patch.

@@ -23,9 +23,19 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Simulated)");
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
-  "-DPPC -D__embedded__ -D__simulator__ -Asystem=embedded -Asystem=simulator -Acpu=powerpc -Amachine=powerpc"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()           \
+  do                                       \
+    {                                      \
+      builtin_define_std ("PPC");          \
+      builtin_define ("__embedded__");     \
+      builtin_define ("__simulator__");    \
+      builtin_assert ("system=embedded");  \
+      builtin_assert ("system=simulator"); \
+      builtin_assert ("cpu=powerpc");      \
+      builtin_assert ("machine=powerpc");  \
+    }                                      \
+  while (0)
 
 /* Make the simulator the default */
 #undef	LIB_DEFAULT_SPEC
