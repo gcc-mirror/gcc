@@ -19,7 +19,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
 
 /* The m88100 port of GNU CC adheres to the various standards from 88open.
    These documents are available by writing:
@@ -198,13 +199,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.65 $"
+#define VERSION_INFO2   "$Revision: 1.66 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.65 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.66 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
