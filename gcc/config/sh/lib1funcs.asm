@@ -1044,6 +1044,9 @@ trivial:
 	lds r4,fpul
 
 	.align 2
+#ifdef FMOVD_WORKS
+	.align 3	! make double below 8 byte aligned.
+#endif
 L1:
 	.double 2147483648
 
@@ -1083,6 +1086,9 @@ ___udivsi3_i4:
 	rts
 	lds.l @r15+,fpscr
 
+#ifdef FMOVD_WORKS
+	.align 3	! make double below 8 byte aligned.
+#endif
 trivial:
 	rts
 	lds r4,fpul
