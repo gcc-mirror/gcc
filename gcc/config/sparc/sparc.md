@@ -2632,12 +2632,16 @@
   ""
   "
 {
-  rtx temp;
   /* Trap instruction to flush all the registers window.  */
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, const0_rtx), 0));
   /* Load the fp value for the containing fn into %fp.
-     This is needed because operands[2] refers to %fp.  */
+     This is needed because operands[2] refers to %fp.
+     Virtual register instantiation fails if the virtual %fp isn't set from a
+     register.  Thus we must copy operands[0] into a register if it isn't
+     already one.  */
+  if (GET_CODE (operands[0]) != REG)
+    operands[0] = force_reg (SImode, operands[0]);
   emit_move_insn (virtual_stack_vars_rtx, operands[0]);
   /* Find the containing function's current nonlocal goto handler,
      which will do any cleanups and then jump to the label.  */
