@@ -1,3 +1,7 @@
+2003-11-12  Catherine Moore  <clm@redhat.com>
+
+	* gcc.c-torture/execute/20020720-1.x:  Add xfail for frv-*-*.
+
 2003-11-12  Andreas Jaeger  <aj@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
