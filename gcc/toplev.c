@@ -1673,7 +1673,7 @@ read_integral_parameter (p, pname, defval)
   if (*endp != 0)
     {
       if (pname != 0)
-	error ("invalid option `%s'", pname);
+	error ("invalid option argument `%s'", pname);
       return defval;
     }
 
