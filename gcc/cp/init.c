@@ -1529,7 +1529,7 @@ build_offset_ref (type, name)
   if (TREE_CODE (type) == NAMESPACE_DECL)
     {
       t = lookup_namespace_name (type, name);
-      if (! type_unknown_p (t))
+      if (t != error_mark_node && ! type_unknown_p (t))
 	{
 	  mark_used (t);
 	  t = convert_from_reference (t);
