@@ -1,3 +1,7 @@
+Mon Jul  6 22:17:19 1998  Alasdair Baird	<alasdair@wildcat.demon.co.uk>
+
+	* jump.c (jump_optimize) Check for CONST_INT before using INTVAL.
+
 Mon Jul  6 22:14:31 1998  Richard Henderson  (rth@cygnus.com)
 
 	* regclass.c (allocate_reg_info): Initialize the entire reg_data
