@@ -2533,6 +2533,9 @@ compare_constant_1 (exp, p)
       if (flag_writable_strings)
 	return 0;
 
+      if (*p++ != TYPE_MODE (TREE_TYPE (exp)))
+	return 0;
+
       strp = TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       if (bcmp ((char *) &TREE_STRING_LENGTH (exp), p,
@@ -2708,6 +2711,7 @@ record_constant_1 (exp)
       if (flag_writable_strings)
 	return;
 
+      obstack_1grow (&permanent_obstack, TYPE_MODE (TREE_TYPE (exp)));
       strp = TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       obstack_grow (&permanent_obstack, (char *) &TREE_STRING_LENGTH (exp),
