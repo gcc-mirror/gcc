@@ -1454,6 +1454,8 @@ extern char leaf_reg_remap[];
 /* - We can't load constants into FP registers.
    - We can't load FP constants into integer registers when soft-float,
      because there is no soft-float pattern with a r/F constraint.
+   - We can't load FP constants into integer registers for TFmode unless
+     it is 0.0L, because there is no movtf pattern with a r/F constraint.
    - Try and reload integer constants (symbolic or otherwise) back into
      registers directly, rather than having them dumped to memory.  */
 
@@ -1461,7 +1463,9 @@ extern char leaf_reg_remap[];
   (CONSTANT_P (X)					\
    ? ((FP_REG_CLASS_P (CLASS)				\
        || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
-	   && ! TARGET_FPU))				\
+	   && ! TARGET_FPU)				\
+       || (GET_MODE (X) == TFmode			\
+	   && ! fp_zero_operand (X, TFmode)))		\
       ? NO_REGS						\
       : (!FP_REG_CLASS_P (CLASS)			\
          && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)	\

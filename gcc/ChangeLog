@@ -1,3 +1,13 @@
+2000-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (movtf_insn_sp32, movtf_insn_vis_sp32,
+	movtf_no_e_insn_sp32, movtf_insn_hq_sp64, movtf_insn_hq_vis_sp64,
+	movtf_no_e_insn_sp64): Accept loading 0.0 into GENERAL_REGS.
+	(movtf_insn_sp64, movtf_insn_vis_sp64): Likewise.
+	Accept storing GENERAL_REGS into offsetable memory.
+	* config/sparc/sparc.h (PREFERRED_RELOAD_CLASS): Don't allow
+	building a TFmode constant other than 0.0L into GENERAL_REGS.
+
 2000-04-06  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* regrename.c (regrename_optimize): Handle no REG_ALLOC_ORDER.
