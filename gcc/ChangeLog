@@ -1,3 +1,9 @@
+<<<<<<< ChangeLog
+
+	* config/alpha/alpha.md (divmodsi_internal_er): Generate lituse
+	sequence number for the literal.
+	(divmoddi_internal_er): Likewise.
+
 2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR java/4972
