@@ -5076,11 +5076,13 @@ m68hc11_reorg (first)
   z_replacement_completed = 1;
   m68hc11_reassign_regs (first);
 
+  if (optimize)
+    compute_bb_for_insn ();
+
   /* After some splitting, there are some oportunities for CSE pass.
      This happens quite often when 32-bit or above patterns are split.  */
   if (optimize > 0 && split_done)
     {
-      find_basic_blocks (first, max_reg_num (), 0);
       reload_cse_regs (first);
     }
 
@@ -5110,7 +5112,6 @@ m68hc11_reorg (first)
             }
         }
 
-      find_basic_blocks (first, max_reg_num (), 0);
       life_analysis (first, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
     }
 
