@@ -123,6 +123,37 @@ print_quote( q, text )
   return text;
 }
 
+static void
+format_write (format, text, av)
+     tCC* format;
+     tCC* text;
+     regmatch_t av[];
+{
+    tCC *p, *str;
+    int c;
+    size_t len;
+
+    for (p = 0; *p; p++) {
+       c = *p;
+       if (c != '%') {
+           putchar(c);
+           continue;
+       }
+
+       c = *++p;
+       if (c == '%') {
+           putchar(c);
+           continue;
+       } else if (c < '0' || c > '9') {
+           abort();
+       }
+
+       c -= '0';
+       str = text + av[c].rm_so;
+       len = av[c].rm_eo - av[c].rm_so;
+       fwrite(str, len, 1, stdout);
+    }
+}
 
 FIX_PROC_HEAD( format_fix )
 {
@@ -172,46 +203,8 @@ FIX_PROC_HEAD( format_fix )
         char* apz[10];
         int   i;
 
-        /*
-         *  Write the text up to the match
-         */
         fwrite( text, rm[0].rm_so, 1, stdout );
-
-        /*
-         *  Copy all the submatches into separate strings
-         */
-        for (i=0; i<10; i++) {
-            if (rm[i].rm_so == -1) {
-                apz[i] = (char*)NULL;
-                break;
-            }
-            {
-                int len = rm[i].rm_eo - rm[i].rm_so;
-                apz[i] = (char*)malloc( len + 1 );
-                memcpy( (void*)apz[i], text+rm[i].rm_so, len );
-                apz[i][len] = NUL;
-            }
-        }
-
-        /*
-         *  IF there are any submatches,
-         *  THEN only use the submatches in the formatting
-         */
-        if (apz[1] != (char*)NULL)
-            printf( pz_fmt, apz[1], apz[2], apz[3], apz[4],
-                    apz[5], apz[6], apz[7], apz[8], apz[9] );
-        else
-            printf( pz_fmt, apz[0] );
-
-        /*
-         *  Free our submatch strings
-         */
-        for (i=0; i<10; i++) {
-            if (apz[i] == (char*)NULL)
-                break;
-            free( (void*)apz[i] );
-        }
-
+       format_write( pz_fmt, text, rm );
         text += rm[0].rm_eo;
     }
 
@@ -232,10 +225,8 @@ FIX_PROC_HEAD( format_fix )
    which is the required syntax per the C standard.  (The definition of
    _IO also has to be tweaked - see below.)  'IO' is actually whatever you
    provide in the STR argument.  */
-static void
-fix_char_macro_uses (text, str)
-     const char *text;
-     const char *str;
+
+FIX_PROC_HEAD( char_macro_use_fix )
 {
   /* This regexp looks for a traditional-syntax #define (# in column 1)
      of an object-like macro.  */
@@ -245,8 +236,17 @@ fix_char_macro_uses (text, str)
 
   regmatch_t rm[1];
   const char *p, *limit;
-  size_t len = strlen (str);
+  const char *str = p_fixd->patch_args[0];
+  size_t len;
 
+  if (str == NULL)
+    {
+      fprintf (stderr, "%s needs macro-name-string argument",
+              p_fixd->fix_name);
+      exit(3);
+    }
+
+  len = strlen (str);
   compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_uses");
 
   for (p = text;
@@ -310,10 +310,7 @@ fix_char_macro_uses (text, str)
    which is the required syntax per the C standard.  (The uses of _IO
    also have to be tweaked - see above.)  'IO' is actually whatever
    you provide in the STR argument.  */
-static void
-fix_char_macro_defines (text, str)
-     const char *text;
-     const char *str;
+FIX_PROC_HEAD( char_macro_def_fix )
 {
   /* This regexp looks for any traditional-syntax #define (# in column 1).  */
   static const char pat[] =
@@ -322,8 +319,16 @@ fix_char_macro_defines (text, str)
 
   regmatch_t rm[1];
   const char *p, *limit;
-  size_t len = strlen (str);
+  const char *str = p_fixd->patch_args[0];
+  size_t len;
   char arg;
+
+  if (str == NULL)
+    {
+      fprintf (stderr, "%s needs macro-name-string argument",
+              p_fixd->fix_name);
+      exit(3);
+    }
 
   compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_defines");
 
@@ -391,27 +396,6 @@ fix_char_macro_defines (text, str)
   fputs (text, stdout);
 }
 
-/* The various prefixes on these macros are handled automatically
-   because the fixers don't care where they start matching.  */
-FIX_PROC_HEAD( IO_use_fix )
-{
-  fix_char_macro_uses (text, "IO");
-}
-FIX_PROC_HEAD( CTRL_use_fix )
-{
-  fix_char_macro_uses (text, "CTRL");
-}
-
-FIX_PROC_HEAD( IO_defn_fix )
-{
-  fix_char_macro_defines (text, "IO");
-}
-FIX_PROC_HEAD( CTRL_defn_fix )
-{
-  fix_char_macro_defines (text, "CTRL");
-}
-
-
 /* Fix for machine name #ifdefs that are not in the namespace reserved
    by the C standard.  They won't be defined if compiling with -ansi,
    and the headers will break.  We go to some trouble to only change
@@ -426,7 +410,7 @@ FIX_PROC_HEAD( machine_name_fix )
   fputs( "The target machine has no needed machine name fixes\n", stderr );
 #else
   regmatch_t match[2];
-  char *line, *base, *limit, *p, *q;
+  const char *line, *base, *limit, *p, *q;
   regex_t *label_re, *name_re;
   char scratch[SCRATCHSZ];
   size_t len;

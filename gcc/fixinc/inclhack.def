@@ -978,15 +978,17 @@ fix = {
  *  _IO might be: _IO DESIO BSD43__IO with W, R, WR, C, ... suffixes.
  */
 fix = {
-    hackname = io_use_quotes;
-    select = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*\\( *[^,']";
-    c_fix = IO_use;
+    hackname  = io_use_quotes;
+    select  = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*\\( *[^,']";
+    c_fix     = char_macro_use;
+    c_fix_arg = "IO";
 };
 
 fix = {
-    hackname = io_def_quotes;
-    select = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
-    c_fix = IO_defn;
+    hackname  = io_def_quotes;
+    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
+    c_fix     = char_macro_def;
+    c_fix_arg = "IO";
 };
  
  
@@ -995,15 +997,17 @@ fix = {
  *  CTRL might be: CTRL _CTRL ISCTRL BSD43_CTRL ...
  */
 fix = {
-    hackname = ctrl_use_quotes;
-    select = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
-    c_fix = CTRL_use;
+    hackname  = ctrl_use_quotes;
+    select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
+    c_fix     = char_macro_use;
+    c_fix_arg = "CTRL";
 };
- 
+  
 fix = {
-    hackname = ctrl_def_quotes;
-    select = "define[ \t]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\1'";
-    c_fix = CTRL_defn;
+    hackname  = ctrl_def_quotes;
+    select    = "define[ \t]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\1'";
+    c_fix     = char_macro_def;
+    c_fix_arg = "CTRL";
 };
 
 

@@ -72,7 +72,7 @@ static apply_fix_p_t test ( fname, text ) \
  *  a backslash.  Especially a backslash followed by octal digits.
  *  We are not doing a correctness syntax check here.
  */
-static tSCC*
+static tCC*
 skip_quote( q, text )
   char  q;
   char* text;

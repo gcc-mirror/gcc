@@ -1,3 +1,23 @@
+2000-05-12  Zack Weinberg <zack@wolery.cumb.org>
+
+        * fixinc/fixfixes.c (IO_use_fix, IO_defn_fix, CTRL_use_fix,
+        CTRL_defn_fix): Delete.
+        (fix_char_macro_defines, fix_char_macro_uses): Rename to
+        char_macro_def_fix and char_macro_use_fix, respectively.  Put
+        them into the FIXUP_TABLE.  Get the string to search for from
+        a c_fix_arg.
+
+        (format_write): New function.
+        (format_fix): Use it.
+
+        (FIX_PROC_HEAD): Constify text parameter.
+        (machine_name_fix): Constify all char *s.
+        * fixtests.c (skip_quote): Remove double static.
+
+        * inclhack.def (io_def_quotes, io_use_quotes, ctrl_def_quotes,
+        ctrl_use_quotes): Update for new scheme.
+        * fixincl.x: Regenerate.
+
 2000-05-12  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (PREFERRED_DEBUGGING_TYPE): Redefine as
