@@ -57,6 +57,10 @@ extern int target_flags;
    and is not intended to be usable on this cpu.  */
 #define TARGET_REGPARM (target_flags & 020)
 
+/* Put uninitialized locals into bss, not data.
+   Meaningful only on svr3.  */
+#define TARGET_SVR3_SHLIB (target_flags & 040)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -73,6 +77,8 @@ extern int target_flags;
     { "nortd", -8},				\
     { "regparm", 020},				\
     { "noregparm", -020},			\
+    { "svr3-shlib", 040},			\
+    { "nosvr3-shlib", -040},			\
     { "", TARGET_DEFAULT}}
 
 /* target machine storage layout */
