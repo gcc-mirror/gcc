@@ -1,3 +1,8 @@
+2004-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* parser.c (cp_parser_simple_type_specifier): Explicitly test
+	against NULL_TREE.
+
 2004-05-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c, class.c, cp-tree.def, decl2.c, name-lookup.c, pt.c,
