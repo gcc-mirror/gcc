@@ -2613,9 +2613,10 @@ verify_addresses (v, giv_inc, unroll_number)
   rtx last_addr = plus_constant (v->dest_reg,
 				 INTVAL (giv_inc) * (unroll_number - 1));
 
-  /* First check to see if either address would fail.  */
-  if (! validate_change (v->insn, v->location, v->dest_reg, 0)
-      || ! validate_change (v->insn, v->location, last_addr, 0))
+  /* First check to see if either address would fail.   Handle the fact
+     that we have may have a match_dup.  */
+  if (! validate_replace_rtx (*v->location, v->dest_reg, v->insn)
+      || ! validate_replace_rtx (*v->location, last_addr, v->insn))
     ret = 0;
 
   /* Now put things back the way they were before.  This will always
@@ -2886,6 +2887,10 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  if (v->dest_reg == tem
 		      && ! verify_addresses (v, giv_inc, unroll_number))
 		    {
+		      for (v2 = v->next_iv; v2; v2 = v2->next_iv)
+			if (v2->same_insn == v)
+			  v2->same_insn = 0;
+
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
 				 "Invalid address for giv at insn %d\n",
@@ -2932,6 +2937,10 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     if the resulting address would be invalid.  */
 		  if (! verify_addresses (v, giv_inc, unroll_number))
 		    {
+		      for (v2 = v->next_iv; v2; v2 = v2->next_iv)
+			if (v2->same_insn == v)
+			  v2->same_insn = 0;
+
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
 				 "Invalid address for giv at insn %d\n",
