@@ -1,3 +1,8 @@
+2004-12-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18869
+	* match.c (gfc_match_common): Skip whitespace.
+
 2004-12-12  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/16581
