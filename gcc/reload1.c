@@ -774,6 +774,12 @@ reload (rtx first, int global)
 			    = force_const_mem (GET_MODE (SET_DEST (set)), x);
 			  if (!reg_equiv_memory_loc[i])
 			    continue;
+			  /* As above. Later passes of reload assume that
+			     all addresses found in the reg_equiv_* arrays
+			     were originally legitimate.  */
+			  if (!memory_operand (reg_equiv_memory_loc[i], VOIDmode))
+			    reg_equiv_memory_loc[i] = NULL_RTX;
+
 			}
 		    }
 		  else
