@@ -1,3 +1,8 @@
+2004-09-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA):
+	Indentation fix.
+
 2004-09-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Socket.java
