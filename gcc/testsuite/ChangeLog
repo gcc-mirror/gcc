@@ -1,3 +1,7 @@
+2003-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.c-torture/compile/simd-5.x: Remove xfail for PPC64.
+
 2003-06-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10940

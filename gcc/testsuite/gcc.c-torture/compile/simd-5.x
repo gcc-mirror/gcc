@@ -25,17 +25,6 @@ if { [istarget "sparc64-*-*"] || [istarget "sparcv9-*-*"] } {
             { "" }
         }
     }
-} elseif { [istarget "powerpc64-*-*"] } {
-    # On PowerPC-64 it fails unconditionally.
-    set torture_eval_before_compile {
-        global compiler_conditional_xfail_data
-        set compiler_conditional_xfail_data {
-            "PR target/9680" \
-            "*-*-*" \
-            { "*" } \
-            { "" }
-        }
-    }
 }
 
 return 0
