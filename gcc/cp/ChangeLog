@@ -1,3 +1,11 @@
+2001-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* dump.c (cp_dump_tree, USING_STMT case): New case.
+	* tree.c (cp_statement_code_p): Add USING_STMT.
+	* decl2.c (do_using_directive): Add the using directive statement.
+
+	* tree.c (walk_tree): Reformat an if block.
+
 2001-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (compute_array_index_type): Don't try to do anything with

@@ -1037,6 +1037,7 @@ cp_statement_code_p (code)
     case RETURN_INIT:
     case TRY_BLOCK:
     case HANDLER:
+    case USING_STMT:
       return 1;
 
     default:
@@ -1187,16 +1188,18 @@ walk_tree (tp, func, data, htab)
   if (!*tp)
     return NULL_TREE;
 
-  if (htab) {
-    void **slot;
-    /* Don't walk the same tree twice, if the user has requested that we
-       avoid doing so. */
-    if (htab_find (htab, *tp))
-      return NULL_TREE;
-    /* If we haven't already seen this node, add it to the table. */
-    slot = htab_find_slot (htab, *tp, INSERT);
-    *slot = *tp;
-  }
+  if (htab)
+    {
+      void **slot;
+      
+      /* Don't walk the same tree twice, if the user has requested
+         that we avoid doing so. */
+      if (htab_find (htab, *tp))
+	return NULL_TREE;
+      /* If we haven't already seen this node, add it to the table. */
+      slot = htab_find_slot (htab, *tp, INSERT);
+      *slot = *tp;
+    }
 
   /* Call the function.  */
   walk_subtrees = 1;
