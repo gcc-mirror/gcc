@@ -360,6 +360,9 @@ stupid_find_reg (call_preserved, class, mode,
 #ifdef ELIMINABLE_REGS
   for (i = 0; i < sizeof eliminables / sizeof eliminables[0]; i++)
     SET_HARD_REG_BIT (used, eliminables[i].from);
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+  SET_HARD_REG_BIT (used, HARD_FRAME_POINTER_REGNUM);
+#endif
 #else
   SET_HARD_REG_BIT (used, FRAME_POINTER_REGNUM);
 #endif
