@@ -1147,7 +1147,7 @@ demangle_name (dm, encode_return_type)
 
 /* Demangles and emits a <nested-name>. 
 
-    <nested-name>     ::= N [<CV-qualifiers>] <prefix> <unqulified-name> E  */
+    <nested-name>     ::= N [<CV-qualifiers>] <prefix> <unqualified-name> E  */
 
 static status_t
 demangle_nested_name (dm, encode_return_type)
@@ -1662,7 +1662,7 @@ demangle_operator_name (dm, short_name, num_args, type_arg)
     { "rS", ">>="      , 2 },
     { "rm", "%"        , 2 },
     { "rs", ">>"       , 2 },
-    { "sz", " sizeof"  , 1 }
+    { "sz", "sizeof"  , 1 }
   };
 
   const int num_operators = 
@@ -2236,6 +2236,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
     {
       /* A pointer-to-member.  */
       dyn_string_t class_type;
+      char peek;
+      int reset_caret = 0;
+      int old_caret_position;
       
       /* Eat the 'M'.  */
       advance_char (dm);
@@ -2245,14 +2248,43 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       RETURN_IF_ERROR (demangle_type (dm));
       class_type = (dyn_string_t) result_pop (dm);
       
-      if (peek_char (dm) == 'F')
+      peek = peek_char (dm);
+      old_caret_position = result_get_caret (dm);
+      if (peek == 'r' || peek == 'V' || peek == 'K')
+	{
+	  dyn_string_t cv_qualifiers = dyn_string_new (24);
+	  status_t status;
+
+	  if (cv_qualifiers == NULL)
+	    return STATUS_ALLOCATION_FAILED;
+
+	  /* Decode all adjacent CV qualifiers.  */
+	  demangle_CV_qualifiers (dm, cv_qualifiers);
+
+	  /* Emit them, and shift the caret left so that the
+	     underlying type will be emitted before the
+	     qualifiers.  */
+	  status = result_add_string (dm, cv_qualifiers);
+	  result_shift_caret (dm, -dyn_string_length (cv_qualifiers));
+
+	  dyn_string_delete (cv_qualifiers);
+	  RETURN_IF_ERROR (status);
+	  /* Prepend a blank.  */
+	  RETURN_IF_ERROR (result_add_char (dm, ' '));
+	  result_shift_caret (dm, -1);
+
+	  peek = peek_char (dm);
+	  reset_caret = 1;
+	}
+
+      if (peek == 'F')
 	/* A pointer-to-member function.  We want output along the
 	   lines of `void (C::*) (int, int)'.  Demangle the function
 	   type, which would in this case give `void () (int, int)'
 	   and set *insert_pos to the spot between the first
 	   parentheses.  */
 	status = demangle_type_ptr (dm, insert_pos, substitution_start);
-      else if (peek_char (dm) == 'A')
+      else if (peek == 'A')
 	/* A pointer-to-member array variable.  We want output that
 	   looks like `int (Klass::*) [10]'.  Demangle the array type
 	   as `int () [10]', and set *insert_pos to the spot between
@@ -2286,6 +2318,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       /* Clean up. */
       dyn_string_delete (class_type);
 
+      if (reset_caret)
+	result_set_caret (dm, old_caret_position);
+
       RETURN_IF_ERROR (status);
     }
     break;
@@ -2315,6 +2350,39 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       /* An array pointer or reference.  demangle_array_type will figure
 	 out where the asterisks and ampersands go.  */
       RETURN_IF_ERROR (demangle_array_type (dm, insert_pos));
+      break;
+
+    case 'r':
+    case 'V':
+    case 'K':
+      /* Qualified base type.  Pick up the qualifiers.  */
+      {
+	dyn_string_t cv_qualifiers = dyn_string_new (24);
+
+	if (cv_qualifiers == NULL)
+	  return STATUS_ALLOCATION_FAILED;
+
+	/* Pick up all adjacent CV qualifiers.  */
+	demangle_CV_qualifiers (dm, cv_qualifiers);
+
+	/* Demangle the underlying type.  */
+	status = demangle_type_ptr (dm, insert_pos, substitution_start);
+
+	/* Insert the qualifiers where we're told to.  */
+	if (STATUS_NO_ERROR (status))
+	  {
+	    status = result_insert_char (dm, *insert_pos, ' ');
+	    ++(*insert_pos);
+	    if (STATUS_NO_ERROR (status))
+	      status = result_insert_string (dm, *insert_pos, cv_qualifiers);
+	  }
+
+	/* The next character should go after the qualifiers.  */
+	*insert_pos += dyn_string_length (cv_qualifiers);
+
+	dyn_string_delete (cv_qualifiers);
+	RETURN_IF_ERROR (status);
+      }
       break;
 
     default:
@@ -2404,28 +2472,58 @@ demangle_type (dm)
 
 	  /* Decode all adjacent CV qualifiers.  */
 	  demangle_CV_qualifiers (dm, cv_qualifiers);
-	  /* Emit them, and shift the caret left so that the
-	     underlying type will be emitted before the qualifiers.  */
-	  status = result_add_string (dm, cv_qualifiers);
-	  result_shift_caret (dm, -dyn_string_length (cv_qualifiers));
-	  /* Clean up.  */
-	  dyn_string_delete (cv_qualifiers);
-	  RETURN_IF_ERROR (status);
-	  /* Also prepend a blank, if needed.  */
-	  RETURN_IF_ERROR (result_add_char (dm, ' '));
-	  result_shift_caret (dm, -1);
 
-	  /* Demangle the underlying type.  It will be emitted before
-	     the CV qualifiers, since we moved the caret.  */
-	  RETURN_IF_ERROR (demangle_type (dm));
+	  /* If the underlying type is a pointer or reference type, we
+	     need to call demangle_type_ptr to find out where to put
+	     the qualifiers.  */
+	  peek = peek_char (dm);
+	  if (peek == 'P' || peek == 'R' || peek == 'M')
+	    {
+	      status = demangle_type_ptr (dm, &insert_pos,
+					  substitution_start (dm));
+	      if (STATUS_NO_ERROR (status))
+		{
+		  status = result_insert_char (dm, insert_pos, ' ');
+		  if (STATUS_NO_ERROR (status))
+		    status = result_insert_string (dm, insert_pos + 1,
+						   cv_qualifiers);
+		}
+	      dyn_string_delete (cv_qualifiers);
+	      RETURN_IF_ERROR (status);
+	    }
+	  else
+	    {
+	      /* Emit the qualifiers, and shift the caret left so that
+		 the underlying type will be emitted first.  */
+	      status = result_add_string (dm, cv_qualifiers);
+	      result_shift_caret (dm, -dyn_string_length (cv_qualifiers));
+	      /* Clean up.  */
+	      dyn_string_delete (cv_qualifiers);
+	      RETURN_IF_ERROR (status);
+	      /* Also prepend a blank, if needed.  */
+	      RETURN_IF_ERROR (result_add_char (dm, ' '));
+	      result_shift_caret (dm, -1);
 
-	  /* Put the caret back where it was previously.  */
-	  result_set_caret (dm, old_caret_position);
+	      /* Demangle the underlying type.  It will be emitted before
+		 the CV qualifiers, since we moved the caret.  */
+	      RETURN_IF_ERROR (demangle_type (dm));
+
+	      /* Put the caret back where it was previously.  */
+	      result_set_caret (dm, old_caret_position);
+	    }
 	}
 	break;
 
       case 'F':
-	return "Non-pointer or -reference function type.";
+	/* The return type should go at the current position.  */
+	insert_pos = result_caret_pos (dm);
+	/* Put in parentheses to indicate that this is a function.  */
+	RETURN_IF_ERROR (result_add (dm, "()"));
+	/* Demangle the function type.  The return type will be
+	   inserted before the '()', and the argument list will go
+	   after it.  */
+	RETURN_IF_ERROR (demangle_function_type (dm, &insert_pos));
+	break;
 
       case 'A':
 	RETURN_IF_ERROR (demangle_array_type (dm, NULL));
@@ -3472,10 +3570,17 @@ static status_t
 demangle_local_name (dm)
      demangling_t dm;
 {
+  int old_caret_position = result_get_caret (dm);
+
   DEMANGLE_TRACE ("local-name", dm);
 
   RETURN_IF_ERROR (demangle_char (dm, 'Z'));
   RETURN_IF_ERROR (demangle_encoding (dm));
+
+  /* Restore the caret to avoid being confused by any qualifiers we
+     may have found during the encoding.  */
+  result_set_caret (dm, old_caret_position);
+
   RETURN_IF_ERROR (demangle_char (dm, 'E'));
   RETURN_IF_ERROR (result_add (dm, "::"));
 
