@@ -1077,7 +1077,8 @@ c4x_emit_move_sequence (operands, mode)
      and emit associated (HIGH (SYMREF)) if large memory model.  
      c4x_legitimize_address could be used to do this,
      perhaps by calling validize_address.  */
-  if (! (reload_in_progress || reload_completed)
+  if (TARGET_EXPOSE_LDP
+      && ! (reload_in_progress || reload_completed)
       && GET_CODE (op1) == MEM
       && symbolic_address_operand (XEXP (op1, 0), Pmode))
     {
@@ -1088,7 +1089,8 @@ c4x_emit_move_sequence (operands, mode)
 			    gen_rtx_LO_SUM (Pmode, dp_reg, XEXP (op1, 0)));
     }
 
-  if (! (reload_in_progress || reload_completed)
+  if (TARGET_EXPOSE_LDP
+      && ! (reload_in_progress || reload_completed)
       && GET_CODE (op0) == MEM 
       && symbolic_address_operand (XEXP (op0, 0), Pmode))
     {
@@ -1409,12 +1411,14 @@ c4x_check_legit_addr (mode, addr, strict)
       /* Direct addressing.  */
     case LABEL_REF:
     case SYMBOL_REF:
+      if (! TARGET_EXPOSE_LDP && ! strict && mode != HFmode && mode != HImode)
+	return 1;
       /* These need to be converted to a LO_SUM (...). 
-	 c4x_legitimize_address will fix them up.  */
+	 LEGITIMIZE_RELOAD_ADDRESS will do this during reload.  */
       return 0;
 
       /* Do not allow direct memory access to absolute addresses.
-         This is more pain than its worth, especially for the
+         This is more pain than it's worth, especially for the
          small memory model where we can't guarantee that
          this address is within the data page---we don't want
          to modify the DP register in the small memory model,
@@ -1509,6 +1513,32 @@ c4x_legitimize_address (orig, mode)
 	  
 	  return gen_rtx_LO_SUM (Pmode, dp_reg, orig);
 	}
+    }
+
+  return NULL_RTX;
+}
+
+
+rtx
+c4x_legitimize_reload_address (orig, mode, insn)
+     rtx orig ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
+     rtx insn;
+{                                                                    	
+  if (mode != HImode 
+      && mode != HFmode
+      && GET_MODE (orig) != HImode
+      && GET_MODE (orig) != HFmode
+      && (GET_CODE (orig) == CONST					
+          || GET_CODE (orig) == SYMBOL_REF				
+          || GET_CODE (orig) == LABEL_REF))
+    {                                                                   
+      rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);			
+      if (! TARGET_SMALL)						
+        emit_insn_before (gen_rtx_SET (VOIDmode, dp_reg, 		
+				       gen_rtx_HIGH (Pmode, orig)),	
+			  insn);
+      return gen_rtx_LO_SUM (Pmode, dp_reg, orig);
     }
 
   return NULL_RTX;
@@ -3002,20 +3032,24 @@ src_operand (op, mode)
   if (GET_CODE (op) == CONST_DOUBLE)
     return c4x_H_constant (op);
 
-  /* Disallow symbolic addresses.  */
+  /* Disallow symbolic addresses.  Only the predicate
+     symbolic_address_operand will match these.  */
   if (GET_CODE (op) == SYMBOL_REF
       || GET_CODE (op) == LABEL_REF
       || GET_CODE (op) == CONST)
     return 0;
 
-  /* Disallow direct memory access symbolic addresses. 
-     These are usually caught by the movqi expander and
-     converted to a LO_SUM.  */
+  /* If TARGET_EXPOSE_LDP is zero, allow direct memory access to
+     symbolic addresses.  These will be rejected by
+     GO_IF_LEGITIMATE_ADDRESS and fixed up by
+     LEGITIMIZE_RELOAD_ADDRESS.  If TARGET_EXPOSE_LDP is nonzero,
+     disallow direct memory access to symbolic addresses.  These
+     should be converted to a HIGH/LO_SUM pair by the movqi expander.  */
   if (GET_CODE (op) == MEM
       && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	   || GET_CODE (XEXP (op, 0)) == LABEL_REF
 	   || GET_CODE (XEXP (op, 0)) == CONST)))
-    return 0;
+    return ! TARGET_EXPOSE_LDP;
 
   return general_operand (op, mode);
 }
