@@ -790,7 +790,7 @@ public:
   jobject CallNonvirtualObjectMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jobject result = p->CallNonvirtualObjectMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -805,7 +805,7 @@ public:
   jboolean CallNonvirtualBooleanMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jboolean result = p->CallNonvirtualBooleanMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -820,7 +820,7 @@ public:
   jbyte CallNonvirtualByteMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jbyte result = p->CallNonvirtualByteMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -835,7 +835,7 @@ public:
   jchar CallNonvirtualCharMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jchar result = p->CallNonvirtualCharMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -850,7 +850,7 @@ public:
   jshort CallNonvirtualShortMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jshort result = p->CallNonvirtualShortMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -865,7 +865,7 @@ public:
   jint CallNonvirtualIntMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jint result = p->CallNonvirtualIntMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -880,7 +880,7 @@ public:
   jlong CallNonvirtualLongMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jlong result = p->CallNonvirtualLongMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -895,7 +895,7 @@ public:
   jfloat CallNonvirtualFloatMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jfloat result = p->CallNonvirtualFloatMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -910,7 +910,7 @@ public:
   jdouble CallNonvirtualDoubleMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     jdouble result = p->CallNonvirtualDoubleMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
     return result;
@@ -925,7 +925,7 @@ public:
   void CallNonvirtualVoidMethod (jobject obj0, jclass cl1, jmethodID meth2, ...)
   {
     _Jv_va_list args;
-    va_start (args, cl1);
+    va_start (args, meth2);
     p->CallNonvirtualVoidMethodV (this, obj0, cl1, meth2, args);
     va_end (args);
   }
