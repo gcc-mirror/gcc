@@ -645,7 +645,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 38]"
+#define MIPS_VERSION "[AL 1.1, MM 39]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1968,6 +1968,7 @@ typedef struct mips_args {
    RTX for the static chain value that should be passed to the
    function when it is called.  */
 
+#ifndef INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
 {									    \
   rtx addr = ADDR;							    \
@@ -1978,10 +1979,12 @@ typedef struct mips_args {
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"), \
 		     0, VOIDmode, 1, addr, Pmode);			    \
 }
+#endif /* INITIALIZE_TRAMPOLINE */
 
 
 /* Attempt to turn on access permissions for the stack.  */
 
+#ifndef TRANSFER_FROM_TRAMPOLINE
 #define TRANSFER_FROM_TRAMPOLINE					\
 									\
 void									\
@@ -2002,6 +2005,7 @@ __enable_execute_stack (addr)						\
     perror ("cacheflush of trampoline code");				\
  */									\
 }
+#endif	/* TRANSFER_FROM_TRAMPOLINE */
 
 
 /* Addressing modes, and classification of registers for them.  */
@@ -3431,11 +3435,15 @@ rdata_section ()							\
     rdata_section ();							\
 }									\
 
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL, RELOC)					\
 {									\
   if (int_size_in_bytes (TREE_TYPE (DECL)) <= mips_section_threshold	\
       && mips_section_threshold > 0)					\
     sdata_section ();							\
+									\
+  else if (RELOC)							\
+    data_section ();							\
+									\
   else if (TREE_CODE (DECL) == STRING_CST)				\
     {									\
       if (flag_writable_strings)					\
@@ -3443,10 +3451,13 @@ rdata_section ()							\
       else								\
 	rdata_section ();						\
     }									\
+									\
   else if (TREE_CODE (DECL) != VAR_DECL)				\
     rdata_section ();							\
+									\
   else if (!TREE_READONLY (DECL))					\
     data_section ();							\
+									\
   else									\
     rdata_section ();							\
 }
