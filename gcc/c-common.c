@@ -199,18 +199,27 @@ combine_strings (strings)
   return value;
 }
 
-/* Process the attributes listed in ATTRIBUTES
-   and install them in DECL.  */
+/* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
+   and install them in DECL.  PREFIX_ATTRIBUTES can appear after the
+   declaration specifiers and declaration modifiers but before the
+   declaration proper. */
 
 void
-decl_attributes (decl, attributes)
-     tree decl, attributes;
+decl_attributes (decl, attributes, prefix_attributes)
+     tree decl, attributes, prefix_attributes;
 {
-  tree a, name, args, type, new_attr;
+  tree a, name, args, type;
 
   type = TREE_TYPE (decl);
 
-  new_attr = TYPE_ATTRIBUTES (type);
+  for (a = prefix_attributes; a; a = TREE_CHAIN (a))
+    if (!(name = TREE_VALUE (a)))
+      continue;
+    else if (valid_machine_attribute (name, decl, type))
+      ;
+    else
+      warning ("`%s' attribute directive ignored",
+	       IDENTIFIER_POINTER (name));
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     if (!(name = TREE_VALUE (a)))
@@ -273,8 +282,8 @@ decl_attributes (decl, attributes)
 	else
 	  warning_with_decl (decl, "`transparent_union' attribute ignored");
       }
-    else if (TREE_VALUE (a) == get_identifier ("constructor")
-	     || TREE_VALUE (a) == get_identifier ("__constructor__"))
+    else if (name == get_identifier ("constructor")
+	     || name == get_identifier ("__constructor__"))
       {
 	if (TREE_CODE (decl) != FUNCTION_DECL
 	    || TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
@@ -286,8 +295,8 @@ decl_attributes (decl, attributes)
 	  }
 	DECL_STATIC_CONSTRUCTOR (decl) = 1;
       }
-    else if (TREE_VALUE (a) == get_identifier ("destructor")
-	     || TREE_VALUE (a) == get_identifier ("__destructor__"))
+    else if (name == get_identifier ("destructor")
+	     || name == get_identifier ("__destructor__"))
       {
 	if (TREE_CODE (decl) != FUNCTION_DECL
 	    || TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
@@ -298,25 +307,6 @@ decl_attributes (decl, attributes)
 	    continue;
 	  }
 	DECL_STATIC_DESTRUCTOR (decl) = 1;
-      }
-    else if (TREE_CODE (name) != TREE_LIST)
-      {
-#ifdef VALID_MACHINE_ATTRIBUTE
-	if (VALID_MACHINE_ATTRIBUTE (type, new_attr, name))
-	  { 
-	    register tree atlist;
-
-	    for (atlist = new_attr; atlist; atlist = TREE_CHAIN (atlist))
-	       if (TREE_VALUE (atlist) == name)
-		  goto found_attr;
-
-	    new_attr = tree_cons (NULL_TREE, name, new_attr);
-	  found_attr:;
-	  }
-	else
-#endif
-	  warning ("`%s' attribute directive ignored",
-		   IDENTIFIER_POINTER (name));
       }
     else if ( args = TREE_CHAIN (name),
 	      (!strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
@@ -364,7 +354,8 @@ decl_attributes (decl, attributes)
 #ifdef ASM_OUTPUT_SECTION_NAME
 	if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
 	  {
-	    if (TREE_CODE (decl) == VAR_DECL && current_function_decl != NULL_TREE)
+	    if (TREE_CODE (decl) == VAR_DECL 
+                && current_function_decl != NULL_TREE)
 	      error_with_decl (decl,
 			       "section attribute cannot be specified for local variables");
 	    /* The decl may have already been given a section attribute from
@@ -422,7 +413,8 @@ decl_attributes (decl, attributes)
 	     && list_length (args) == 3
 	     && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE
 	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (args))) == INTEGER_CST
-	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)))) == INTEGER_CST )
+	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)))) 
+                == INTEGER_CST )
       {
         tree format_type = TREE_VALUE (args);
 	tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
@@ -519,24 +511,12 @@ decl_attributes (decl, attributes)
 	record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
 				is_scan, format_num, first_arg_num);
       }
-#ifdef VALID_MACHINE_ATTRIBUTE
-    else if (VALID_MACHINE_ATTRIBUTE (type, new_attr, TREE_VALUE (a)))
-      { 
-	register tree atlist;
-
-	for (atlist = new_attr; atlist; atlist = TREE_CHAIN (atlist))
-	  if (TREE_VALUE (atlist) == TREE_VALUE (a))
-	    goto found_attr2;
-
-	new_attr = tree_cons (NULL_TREE, TREE_VALUE (a), new_attr);
-      found_attr2:;
-      }
-#endif
+    else if (valid_machine_attribute (name, decl, type))
+      ;
     else
       warning ("`%s' attribute directive ignored",
 	       IDENTIFIER_POINTER (name));
 
-  TREE_TYPE (decl) = build_type_attribute_variant (type, new_attr);
 }
 
 /* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
