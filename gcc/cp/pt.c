@@ -2432,9 +2432,9 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
 
   /* Figure out what error message to issue.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    msg = "default argument for template parameter in function template `%D'";
+    msg = "default template arguments may not be used in function templates";
   else if (is_partial)
-    msg = "default argument in partial specialization `%D'";
+    msg = "default template arguments may not be used in partial specializations";
   else
     msg = "default argument for template parameter for class enclosing `%D'";
 
