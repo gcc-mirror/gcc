@@ -11530,8 +11530,7 @@ resolve_typename_type (tree type, bool only_current_p)
     return error_mark_node;
   /* If SCOPE is a partial instantiation, it will not have a valid
      TYPE_FIELDS list, so use the original template.  */
-  if (CLASSTYPE_USE_TEMPLATE (scope))
-    scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
+  scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
   /* Enter the SCOPE so that name lookup will be resolved as if we
      were in the class definition.  In particular, SCOPE will no
      longer be considered a dependent type.  */

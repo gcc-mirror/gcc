@@ -1,3 +1,11 @@
+2003-02-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9836
+	* cp-tree.h (CLASSTYPE_PRIMARY_TEMPLATE): Do not skip from
+	specializations back to the main template.
+	* parser.c (cp_parser_diagnose_invalid_type_name):Adjust use.
+	* pt.c (resolve_typename_type): Likewise.
+
 2003-02-24  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	PR c++/9778
