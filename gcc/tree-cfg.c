@@ -2638,7 +2638,7 @@ set_bb_for_stmt (tree t, basic_block bb)
 /* Finds iterator for STMT.  */
 
 extern block_stmt_iterator
-stmt_for_bsi (tree stmt)
+bsi_for_stmt (tree stmt)
 {
   block_stmt_iterator bsi;
 

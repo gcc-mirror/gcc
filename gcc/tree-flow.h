@@ -416,7 +416,7 @@ typedef struct {
 static inline block_stmt_iterator bsi_start (basic_block);
 static inline block_stmt_iterator bsi_last (basic_block);
 static inline block_stmt_iterator bsi_after_labels (basic_block);
-block_stmt_iterator stmt_for_bsi (tree);
+block_stmt_iterator bsi_for_stmt (tree);
 static inline bool bsi_end_p (block_stmt_iterator);
 static inline void bsi_next (block_stmt_iterator *);
 static inline void bsi_prev (block_stmt_iterator *);

@@ -1105,20 +1105,9 @@ replace_immediate_uses (tree var, tree repl)
 	  fold_stmt (&tmp);
 	  if (tmp != stmt)
 	    {
-	      basic_block bb = bb_for_stmt (stmt);
-	      block_stmt_iterator si;
-
-	      /* Start iterating at the start of the basic block
-		 holding STMT until we reach it.  This is slow, but
-		 it's the only way to get a statement pointer
-		 reliably.  */
-	      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
-		if (bsi_stmt (si) == stmt)
-		  {
-		    fold_stmt (bsi_stmt_ptr (si));
-		    stmt = bsi_stmt (si);
-		    break;
-		  }
+	      block_stmt_iterator si = bsi_for_stmt (stmt);
+	      bsi_replace (&si, tmp, true);
+	      stmt = bsi_stmt (si);
 	    }
 	}
 
