@@ -1,3 +1,7 @@
+1999-11-08  Nick Clifton  <nickc@cygnus.com>
+
+	* lib/gcc-dg.exp: Include target-supports.exp
+
 1999-11-05  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/target-supports.exp: New file: Provide procs to test for 
