@@ -4010,14 +4010,6 @@ If you enable it, GCC can save registers around function calls.  This
 makes it possible to use call-clobbered registers to hold variables that
 must live across calls.
 
-@defmac DEFAULT_CALLER_SAVES
-Define this macro if function calls on the target machine do not preserve
-any registers; in other words, if @code{CALL_USED_REGISTERS} has 1
-for all registers.  When defined, this macro enables @option{-fcaller-saves}
-by default for all optimization levels.  It has no effect for optimization
-levels 2 and higher, where @option{-fcaller-saves} is the default.
-@end defmac
-
 @defmac CALLER_SAVE_PROFITABLE (@var{refs}, @var{calls})
 A C expression to determine whether it is worthwhile to consider placing
 a pseudo-register in a call-clobbered hard register and saving and

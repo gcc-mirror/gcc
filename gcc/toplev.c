@@ -471,11 +471,7 @@ int flag_short_enums;
    be saved across function calls, if that produces overall better code.
    Optional now, so people can test it.  */
 
-#ifdef DEFAULT_CALLER_SAVES
-int flag_caller_saves = 1;
-#else
 int flag_caller_saves = 0;
-#endif
 
 /* Nonzero if structures and unions should be returned in memory.
 
