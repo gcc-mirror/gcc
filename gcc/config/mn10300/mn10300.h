@@ -639,7 +639,18 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
    except for CONSTANT_ADDRESS_P which is actually
-   machine-independent.  */
+   machine-independent.
+
+   On the mn10300, the value in the address register must be
+   in the same memory space/segment as the effective address.
+
+   This is problematical for reload since it does not understand
+   that base+index != index+base in a memory reference.
+
+   Note it is still possible to use reg+reg addressing modes,
+   it's just much more difficult.  For a discussion of a possible
+   workaround and solution, see the comments in pa.c before the
+   function record_unscaled_index_insn_codes.  */
 
 /* Accept either REG or SUBREG where a register is valid.  */
   
@@ -666,10 +677,6 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
       if (base != 0 && index != 0)			\
 	{						\
 	  if (GET_CODE (index) == CONST_INT)		\
-	    goto ADDR;					\
-	  if (REG_P (index)				\
-	      && REG_OK_FOR_INDEX_P (index)		\
-	      && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)) \
 	    goto ADDR;					\
 	}						\
     }							\

@@ -1,3 +1,7 @@
+Mon Oct 27 16:11:10 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.h (GO_IF_LEGITIMATE_ADDRESS): Disable reg+reg.
+
 Sun Oct 26 13:50:44 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_sa_mask [VMS]): Don't include $26 in the mask.
