@@ -1104,7 +1104,7 @@
 
 (define_insn "set_high"
   [(set (match_operand:QI 0 "std_reg_operand" "=c")
-        (high:QI (match_operand:QI 1 "symbolic_operand" "")))]
+        (high:QI (match_operand:QI 1 "symbolic_address_operand" "")))]
   "! TARGET_C3X "
   "ldhi\\t^%H1,%0"
   [(set_attr "type" "unary")])
@@ -1112,14 +1112,14 @@
 (define_insn "set_lo_sum"
   [(set (match_operand:QI 0 "std_reg_operand" "=c")
         (lo_sum:QI (match_dup 0)
-                   (match_operand:QI 1 "symbolic_operand" "")))]
+                   (match_operand:QI 1 "symbolic_address_operand" "")))]
   ""
   "or\\t#%H1,%0"
   [(set_attr "type" "unary")])
 
 (define_split
   [(set (match_operand:QI 0 "std_reg_operand" "")
-        (match_operand:QI 1 "symbolic_operand" ""))]
+        (match_operand:QI 1 "symbolic_address_operand" ""))]
   "! TARGET_C3X"
   [(set (match_dup 0) (high:QI (match_dup 1)))
    (set (match_dup 0) (lo_sum:QI (match_dup 0) (match_dup 1)))]
@@ -1132,7 +1132,7 @@
 ; easily load symbolic addresses into a register.
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
-        (match_operand:QI 1 "symbolic_operand" ""))]
+        (match_operand:QI 1 "symbolic_address_operand" ""))]
   "! TARGET_SMALL 
    && (TARGET_C3X || (reload_completed
                       && ! std_reg_operand (operands[0], QImode)))"
@@ -1154,7 +1154,7 @@
 ; for the small memory model.
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
-        (match_operand:QI 1 "symbolic_operand" ""))]
+        (match_operand:QI 1 "symbolic_address_operand" ""))]
   "TARGET_SMALL
    && (TARGET_C3X || (reload_completed
                       && ! std_reg_operand (operands[0], QImode)))"
@@ -1170,7 +1170,7 @@
 
 (define_insn "load_immed_address"
   [(set (match_operand:QI 0 "reg_operand" "=a?x?c*r")
-        (match_operand:QI 1 "symbolic_operand" ""))]
+        (match_operand:QI 1 "symbolic_address_operand" ""))]
    "TARGET_LOAD_ADDRESS"
   "#"
   [(set_attr "type" "multi")])
@@ -1197,7 +1197,7 @@
   "(REG_P (operands[0]) || REG_P (operands[1])
     || GET_CODE (operands[0]) == SUBREG
     || GET_CODE (operands[1]) == SUBREG)
-    && ! symbolic_operand (operands[1], QImode)"
+    && ! symbolic_address_operand (operands[1], QImode)"
   "*
    if (which_alternative == 2)
      return \"sti\\t%1,%0\";
@@ -4355,7 +4355,7 @@
 ; CALL
 ;
 (define_insn "*call_c3x"
- [(call (mem:QI (match_operand:QI 0 "call_operand" ""))
+ [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
         (match_operand:QI 1 "general_operand" ""))
   (clobber (reg:QI 31))]
   ;; Operand 1 not really used on the C4x.  The C30 doesn't have reg 31.
@@ -4366,7 +4366,7 @@
 
 ; LAJ requires R11 (31) for the return address
 (define_insn "*laj"
- [(call (mem:QI (match_operand:QI 0 "call_operand" ""))
+ [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
         (match_operand:QI 1 "general_operand" ""))
   (clobber (reg:QI 31))]
   ;; Operand 1 not really used on the C4x.
@@ -4380,7 +4380,7 @@
   [(set_attr "type" "laj")])
 
 (define_expand "call"
- [(parallel [(call (mem:QI (match_operand:QI 0 "call_operand" ""))
+ [(parallel [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
                    (match_operand:QI 1 "general_operand" ""))
              (clobber (reg:QI 31))])]
  ""
@@ -4388,7 +4388,7 @@
 
 (define_insn "*callv_c3x"
  [(set (match_operand 0 "" "=r")
-       (call (mem:QI (match_operand:QI 1 "call_operand" ""))
+       (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
              (match_operand:QI 2 "general_operand" "")))
   (clobber (reg:QI 31))]
   ;; Operand 0 and 2 not really used for the C4x. 
@@ -4401,7 +4401,7 @@
 ; LAJ requires R11 (31) for the return address
 (define_insn "*lajv"
  [(set (match_operand 0 "" "=r")
-       (call (mem:QI (match_operand:QI 1 "call_operand" ""))
+       (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
              (match_operand:QI 2 "general_operand" "")))
   (clobber (reg:QI 31))]
   ;; Operand 0 and 2 not really used in the C30 instruction.
@@ -4416,7 +4416,7 @@
 
 (define_expand "call_value"
  [(parallel [(set (match_operand 0 "" "")
-                  (call (mem:QI (match_operand:QI 1 "call_operand" ""))
+                  (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
                         (match_operand:QI 2 "general_operand" "")))
              (clobber (reg:QI 31))])]
  ""
@@ -6223,7 +6223,7 @@
 ; Peepholes to convert 'call label; rets' into jump label
 ;
 (define_peephole
-  [(parallel [(call (mem:QI (match_operand:QI 0 "call_operand" ""))
+  [(parallel [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
                     (match_operand:QI 1 "general_operand" ""))
               (clobber (reg:QI 31))])
    (return)]
@@ -6237,7 +6237,7 @@
 
 (define_peephole
   [(parallel [(set (match_operand 0 "" "")
-                   (call (mem:QI (match_operand:QI 1 "call_operand" ""))
+                   (call (mem:QI (match_operand:QI 1 "call_address_operand" ""))
                          (match_operand:QI 2 "general_operand" "")))
               (clobber (reg:QI 31))])
    (return)]
