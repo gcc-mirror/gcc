@@ -1,3 +1,9 @@
+2003-03-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/7796
+	* unroll.c (calculate_giv_inc): Handle constants being
+	loaded with LSHIFTRT.
+
 2003-03-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8726
@@ -14046,3 +14052,4 @@ Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* mips.h (FUNCTION_ARG_REGNO_P): Fix parentheses.
 
 See ChangeLog.7 for earlier changes.
+
