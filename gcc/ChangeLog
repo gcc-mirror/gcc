@@ -1,3 +1,8 @@
+2003-02-08  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (override_options): Turn off explicit
+	relocs until post-peep2 code duplication resolved.
+
 2003-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* optabs.c (expand_unop): Widen clz properly when clz is done

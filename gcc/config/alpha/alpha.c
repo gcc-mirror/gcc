@@ -657,6 +657,10 @@ override_options ()
       real_format_for_mode[DFmode - QFmode] = &vax_g_format;
       real_format_for_mode[TFmode - QFmode] = NULL;
     }
+
+  /* ??? Turn off explicit relocs until code duplication by bb-reorder
+     is addressed.  */
+  target_flags &= ~MASK_EXPLICIT_RELOCS;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
