@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for PowerPC
    running Windows/NT.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -125,16 +125,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	FIXED_R13
 #define FIXED_R13 1
-
-
-/* Output .file and comments listing what options there are */
-#undef	ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-{								\
-  ASM_OUTPUT_OPTIONS (FILE);					\
-  output_file_directive (FILE, main_input_filename);		\
-}
-
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -201,11 +191,10 @@ do {									\
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
-{								\
-  ASM_OUTPUT_OPTIONS (FILE);					\
-  output_file_directive (FILE, main_input_filename);		\
+do {								\
+  output_file_directive ((FILE), main_input_filename);		\
   data_section ();						\
-}
+} while (0)
 
 #undef ASM_FILE_END
 
