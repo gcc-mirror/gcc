@@ -1909,11 +1909,19 @@ write_switch (start, depth)
 	   || type == DT_elt_one_int
 	   || type == DT_elt_zero_wide_safe)
     {
+      const char *indent = "";
       /* Pmode may not be a compile-time constant.  */
       if (type == DT_mode && p->tests->u.mode == Pmode)
 	return p;
 
-      printf ("  switch (");
+      /* We cast switch parameter to integer, so we must ensure that the value
+	 fits.  */
+      if (type == DT_elt_zero_wide_safe)
+	{
+	  indent = "  ";
+	  printf("  if ((int) XWINT (x%d, 0) == XWINT (x%d, 0))\n", depth, depth);
+	}
+      printf ("%s  switch (", indent);
       switch (type)
 	{
 	case DT_mode:
@@ -1936,7 +1944,7 @@ write_switch (start, depth)
 	default:
 	  abort ();
 	}
-      printf (")\n    {\n");
+      printf (")\n%s    {\n", indent);
 
       do
 	{
@@ -1955,7 +1963,7 @@ write_switch (start, depth)
 	  if (p != start && p->need_label && needs_label == NULL)
 	    needs_label = p;
 
-	  printf ("    case ");
+	  printf ("%s    case ", indent);
 	  switch (type)
 	    {
 	    case DT_mode:
@@ -1973,7 +1981,7 @@ write_switch (start, depth)
 	    default:
 	      abort ();
 	    }
-	  printf (":\n      goto L%d;\n", p->success.first->number);
+	  printf (":\n%s      goto L%d;\n", indent, p->success.first->number);
 	  p->success.first->need_label = 1;
 
 	  p = p->next;
@@ -1981,7 +1989,8 @@ write_switch (start, depth)
       while (p && p->tests->type == type && !p->tests->next);
 
     case_done:
-      printf ("    default:\n      break;\n    }\n");
+      printf ("%s    default:\n%s      break;\n%s    }\n",
+	      indent, indent, indent);
 
       return needs_label != NULL ? needs_label : p;
     }
