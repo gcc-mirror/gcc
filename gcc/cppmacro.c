@@ -990,11 +990,12 @@ cpp_get_token (pfile, token)
 /* Read each token in, until EOF.  Directives are transparently
    processed.  */
 void
-cpp_scan_buffer_nooutput (pfile)
+cpp_scan_buffer_nooutput (pfile, all_buffers)
      cpp_reader *pfile;
+     int all_buffers;
 {
-  cpp_buffer *buffer = pfile->buffer->prev;
   cpp_token token;
+  cpp_buffer *buffer = all_buffers ? 0: pfile->buffer->prev;
 
   do
     do

@@ -777,7 +777,7 @@ extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 						 void *));
 
 /* In cppmacro.c */
-extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *));
+extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *, int));
 extern void cpp_start_lookahead		PARAMS ((cpp_reader *));
 extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
 
