@@ -2,6 +2,7 @@
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
    Modified for Linux/Pthreads by Kai-Uwe Sattler (kus@iti.cs.uni-magdeburg.de)
+   Modified for posix compliance by Chris Ball (cball@fmco.com)
 
 This file is part of GNU CC.
 
@@ -31,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Key structure for maintaining thread specific storage */
 static pthread_key_t _objc_thread_storage;
+static pthread_attr_t _objc_thread_attribs;
 
 /* Backend initialization functions */
 
@@ -39,14 +41,34 @@ int
 __objc_init_thread_system(void)
 {
   /* Initialize the thread storage key */
-  return pthread_key_create(&_objc_thread_storage, NULL);
+  if (pthread_key_create(&_objc_thread_storage, NULL) == 0)
+    {
+      /*
+       * The normal default detach state for threads is PTHREAD_CREATE_JOINABLE
+       * which causes threads to not die when you think they should.
+	   */
+      if (pthread_attr_init(&_objc_thread_attribs) == 0)
+        {
+          if (pthread_attr_setdetachstate(&_objc_thread_attribs, 
+                                          PTHREAD_CREATE_DETACHED) == 0)
+            return 0;
+        }
+    }
+
+  return -1;
 }
 
 /* Close the threads subsystem. */
 int
 __objc_close_thread_system(void)
 {
-  return 0;
+  if (pthread_key_delete(_objc_thread_storage) == 0)
+    {
+      if (pthread_attr_destroy(&_objc_thread_attribs) == 0)
+        return 0;
+    }
+
+  return -1;
 }
 
 /* Backend thread functions */
@@ -57,20 +79,50 @@ __objc_thread_detach(void (*func)(void *arg), void *arg)
 {
   objc_thread_t thread_id;
   pthread_t new_thread_handle;
-
-  if ( !(pthread_create(&new_thread_handle, NULL, (void *)func, arg)) )
-      thread_id = *(objc_thread_t *)&new_thread_handle;
+  
+  if (!(pthread_create(&new_thread_handle, &_objc_thread_attribs, 
+                       (void *)func, arg)))
+    thread_id = *(objc_thread_t *)&new_thread_handle;
   else
     thread_id = NULL;
   
   return thread_id;
 }
 
-/* Set the current thread's priority. */
+/* Set the current thread's priority.
+ *
+ * Be aware that the default schedpolicy often disallows thread priorities.
+ */
 int
 __objc_thread_set_priority(int priority)
 {
-  /* Not implemented yet */
+  pthread_t thread_id = pthread_self();
+  int policy;
+  struct sched_param params;
+  int priority_min, priority_max;
+
+  if (pthread_getschedparam(thread_id, &policy, &params) == 0)
+    {
+      if ((priority_max = sched_get_priority_max(policy)) != 0)
+        return -1;
+
+      if ((priority_min = sched_get_priority_min(policy)) != 0)
+        return -1;
+
+      if (priority > priority_max)
+        priority = priority_max;
+      else if (priority < priority_min)
+        priority = priority_min;
+      params.sched_priority = priority;
+
+      /*
+       * The solaris 7 and several other man pages incorrectly state that
+       * this should be a pointer to policy but pthread.h is universally
+       * at odds with this.
+       */
+      if (pthread_setschedparam(thread_id, policy, &params) == 0)
+        return 0;
+    }
   return -1;
 }
 
@@ -78,8 +130,13 @@ __objc_thread_set_priority(int priority)
 int
 __objc_thread_get_priority(void)
 {
-  /* Not implemented yet */
-  return -1;
+  int policy;
+  struct sched_param params;
+
+  if (pthread_getschedparam(pthread_self(), &policy, &params) == 0)
+    return params.sched_priority;
+  else
+    return -1;
 }
 
 /* Yield our process time to another thread. */
@@ -113,7 +170,10 @@ __objc_thread_id(void)
 int
 __objc_thread_set_data(void *value)
 {
-  return pthread_setspecific(_objc_thread_storage, value);
+  if (pthread_setspecific(_objc_thread_storage, value) == 0)
+    return 0;
+  else
+    return -1;
 }
 
 /* Returns the thread's local storage pointer. */
@@ -152,10 +212,9 @@ __objc_mutex_deallocate(objc_mutex_t mutex)
    * pthread_mutex_destroy to work.
    */
 
-  while ( count )
+  while (count)
     {
-      if (( count = pthread_mutex_unlock((pthread_mutex_t *)mutex->backend))
-          < 0 )
+      if ((count = pthread_mutex_unlock((pthread_mutex_t*)mutex->backend)) < 0)
         return -1;
     }
 
@@ -171,21 +230,30 @@ __objc_mutex_deallocate(objc_mutex_t mutex)
 int
 __objc_mutex_lock(objc_mutex_t mutex)
 {
-  return pthread_mutex_lock((pthread_mutex_t *)mutex->backend);
+  if (pthread_mutex_lock((pthread_mutex_t *)mutex->backend) == 0)
+    return 0;
+  else
+    return -1;
 }
 
 /* Try to grab a lock on a mutex. */
 int
 __objc_mutex_trylock(objc_mutex_t mutex)
 {
-  return pthread_mutex_trylock((pthread_mutex_t *)mutex->backend);
+  if (pthread_mutex_trylock((pthread_mutex_t *)mutex->backend) == 0)
+    return 0;
+  else
+    return -1;
 }
 
 /* Unlock the mutex */
 int
 __objc_mutex_unlock(objc_mutex_t mutex)
 {
-  return pthread_mutex_unlock((pthread_mutex_t *)mutex->backend);
+  if (pthread_mutex_unlock((pthread_mutex_t *)mutex->backend) == 0)
+    return 0;
+  else
+    return -1;
 }
 
 /* Backend condition mutex functions */
@@ -222,22 +290,29 @@ __objc_condition_deallocate(objc_condition_t condition)
 int
 __objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
 {
-  return pthread_cond_wait((pthread_cond_t *)condition->backend,
-			   (pthread_mutex_t *)mutex->backend);
+  if (pthread_cond_wait((pthread_cond_t *)condition->backend,
+                        (pthread_mutex_t *)mutex->backend) == 0)
+    return 0;
+  else
+    return -1;
 }
 
 /* Wake up all threads waiting on this condition. */
 int
 __objc_condition_broadcast(objc_condition_t condition)
 {
-  return pthread_cond_broadcast((pthread_cond_t *)condition->backend);
+  if (pthread_cond_broadcast((pthread_cond_t *)condition->backend) == 0)
+    return 0;
+  else
+    return -1;
 }
 
 /* Wake up one thread waiting on this condition. */
 int
 __objc_condition_signal(objc_condition_t condition)
 {
-  return pthread_cond_signal((pthread_cond_t *)condition->backend);
+  if (pthread_cond_signal((pthread_cond_t *)condition->backend) == 0)
+    return 0;
+  else
+    return -1;
 }
-
-/* End of File */
