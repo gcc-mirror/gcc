@@ -965,7 +965,7 @@ c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
 c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h c-parse.h \
-    input.h flags.h c-gperf.h
+    input.h flags.h $(srcdir)/c-gperf.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
@@ -2119,7 +2119,7 @@ gcc.xtar: distdir
 
 # This target exists to do the initial work before the language specific
 # stuff gets done.
-distdir-start: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y \
+distdir-start: doc $(srcdir)/INSTALL c-parse.y $(srcdir)/c-gperf.h objc-parse.y \
   c-parse.c objc-parse.c cexp.c
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
