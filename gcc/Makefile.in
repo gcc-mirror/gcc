@@ -1988,7 +1988,7 @@ cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h system.h
 cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h
 cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
 
-cppinit.o:  cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h \
+cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \
 		cpphash.h prefix.h output.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
