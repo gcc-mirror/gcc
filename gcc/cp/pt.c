@@ -7302,7 +7302,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
     case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case TRUNC_MOD_EXPR:
@@ -7985,7 +7984,6 @@ tsubst_copy_and_build (tree t,
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
     case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case TRUNC_MOD_EXPR:

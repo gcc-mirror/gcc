@@ -1,3 +1,11 @@
+2003-09-01  Josef Zlomek  <zlomekj@suse.cz>
+
+	* error.c (dump_expr): Kill BIT_ANDTC_EXPR.
+	* lex.c (init_operators): Kill BIT_ANDTC_EXPR.
+	* pt.c (tsubst_copy): Kill BIT_ANDTC_EXPR.
+	* typeck.c (build_binary_op): Kill BIT_ANDTC_EXPR.
+	(tsubst_copy_and_build): Kill BIT_ANDTC_EXPR.
+
 2003-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12093

@@ -2808,7 +2808,6 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       break;
 
     case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)

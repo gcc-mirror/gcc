@@ -638,7 +638,6 @@ DEFTREECODE (RROTATE_EXPR, "rrotate_expr", '2', 2)
 DEFTREECODE (BIT_IOR_EXPR, "bit_ior_expr", '2', 2)
 DEFTREECODE (BIT_XOR_EXPR, "bit_xor_expr", '2', 2)
 DEFTREECODE (BIT_AND_EXPR, "bit_and_expr", '2', 2)
-DEFTREECODE (BIT_ANDTC_EXPR, "bit_andtc_expr", '2', 2)
 DEFTREECODE (BIT_NOT_EXPR, "bit_not_expr", '1', 1)
 
 /* ANDIF and ORIF allow the second operand not to be computed if the

@@ -1581,7 +1581,6 @@ ffecom_overlap_ (tree dest_decl, tree dest_offset, tree dest_size,
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
@@ -8891,7 +8890,6 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset, tree *size, tree t)
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:

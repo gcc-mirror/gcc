@@ -1486,7 +1486,6 @@ dump_expr (tree t, int flags)
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
     case LT_EXPR:

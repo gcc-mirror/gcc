@@ -473,7 +473,6 @@ convert_to_integer (tree type, tree expr)
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
-	case BIT_ANDTC_EXPR:
 	trunc1:
 	  {
 	    tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
