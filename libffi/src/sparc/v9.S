@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
-   v9.S - Copyright (c) 2000, 2003 Red Hat, Inc.
+   v9.S - Copyright (c) 2000, 2003, 2004 Red Hat, Inc.
    
-   Sparc 64bit Foreign Function Interface 
+   SPARC 64-bit Foreign Function Interface 
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -37,11 +37,11 @@
 
 .text
         .align 8
-.globl ffi_call_V9
-.globl _ffi_call_V9
+.globl ffi_call_v9
+.globl _ffi_call_v9
 
-ffi_call_V9:
-_ffi_call_V9:
+ffi_call_v9:
+_ffi_call_v9:
 .LLFB1:
 	save	%sp, -STACKFRAME, %sp
 .LLCFI0:
@@ -87,7 +87,7 @@ _ffi_call_V9:
 
 	cmp	%i3, FFI_TYPE_INT
 	be,a,pt	%icc, done
-	 stx	%o0, [%i4]	! (delay)
+	 stx	%o0, [%i4+0]	! (delay)
 
 	cmp	%i3, FFI_TYPE_FLOAT
 	be,a,pn	%icc, done
@@ -123,13 +123,14 @@ dostruct:
 	 restore
 .LLFE1:
 
-.ffi_call_V9_end:
-	.size	ffi_call_V9,.ffi_call_V9_end-ffi_call_V9
+.ffi_call_v9_end:
+	.size	ffi_call_v9,.ffi_call_v9_end-ffi_call_v9
 
 
-#define	STACKFRAME	 320	/* 16*8 register window +
+#undef STACKFRAME
+#define	STACKFRAME	 336	/* 16*8 register window +
 				   6*8 args backing store +
-				   18*8 locals */
+				   20*8 locals */
 #define	FP		%fp+STACK_BIAS
 
 /* ffi_closure_v9(...)
@@ -173,46 +174,55 @@ ffi_closure_v9:
 
 	! Call ffi_closure_sparc_inner to do the bulk of the work.
 	mov	%g1, %o0
-	add	%fp, STACK_BIAS-144, %o1
+	add	%fp, STACK_BIAS-160, %o1
 	add	%fp, STACK_BIAS+128, %o2
-	call	ffi_closure_sparc_inner
-	add	%fp, STACK_BIAS-128, %o3
+	call	ffi_closure_sparc_inner_v9
+	 add	%fp, STACK_BIAS-128, %o3
 
 	! Load up the return value in the proper type.
+	! See ffi_prep_cif_machdep for the list of cases.
 	cmp	%o0, FFI_TYPE_VOID
 	be,pn	%icc, done1
 
+	cmp	%o0, FFI_TYPE_INT
+	be,pn	%icc, integer
+
 	cmp	%o0, FFI_TYPE_FLOAT
 	be,a,pn	%icc, done1
-	 ld	[FP-144], %f0
+	 ld	[FP-160], %f0
 
 	cmp	%o0, FFI_TYPE_DOUBLE
 	be,a,pn	%icc, done1
-	 ldd	[FP-144], %f0
+	 ldd	[FP-160], %f0
 
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	cmp	%o0, FFI_TYPE_LONGDOUBLE
 	be,a,pn	%icc, longdouble1
-	 ldd	[FP-144], %f0
+	 ldd	[FP-160], %f0
+#endif
 
-	cmp	%o0, FFI_TYPE_STRUCT
-	be,pn	%icc, struct1
+	! FFI_TYPE_STRUCT
+	ldx	[FP-152], %i1
+	ldx	[FP-144], %i2
+	ldx	[FP-136], %i3
+	ldd	[FP-160], %f0
+	ldd	[FP-152], %f2
+	ldd	[FP-144], %f4
+	ldd	[FP-136], %f6
 
-	! FFI_TYPE_UINT64 | FFI_TYPE_SINT64 | FFI_TYPE_POINTER
-	ldx	[FP-144], %i0
+integer:
+	ldx	[FP-160], %i0
 
 done1:
 	ret
 	 restore
 
-struct1:
-	ldx	[FP-136], %i2
-	ret
-	 restore
-
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 longdouble1:
-	ldd	[FP-136], %f2
+	ldd	[FP-152], %f2
 	ret
 	 restore
+#endif
 .LLFE2:
 
 .ffi_closure_v9_end:
