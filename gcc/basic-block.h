@@ -233,6 +233,7 @@ extern varray_type basic_block_for_insn;
 #define BLOCK_FOR_INSN(INSN)  VARRAY_BB (basic_block_for_insn, INSN_UID (INSN))
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 
+extern void compute_bb_for_insn		PROTO ((int));
 extern void set_block_for_insn		PROTO ((rtx, basic_block));
 
 extern void dump_bb_data		PROTO ((FILE *, int_list_ptr *,

@@ -276,7 +276,6 @@ static bitmap uid_volatile;
 static int count_basic_blocks		PROTO((rtx));
 static rtx find_basic_blocks_1		PROTO((rtx, rtx*));
 static void create_basic_block		PROTO((int, rtx, rtx, rtx));
-static void compute_bb_for_insn		PROTO((varray_type, int));
 static void clear_edges			PROTO((void));
 static void make_edges			PROTO((rtx, rtx*));
 static void make_edge			PROTO((basic_block, basic_block, int));
@@ -404,8 +403,7 @@ find_basic_blocks (f, nregs, file, do_cleanup)
   max_uid += max_uid / 10;
 #endif
 
-  VARRAY_BB_INIT (basic_block_for_insn, max_uid, "basic_block_for_insn");
-  compute_bb_for_insn (basic_block_for_insn, max_uid);
+  compute_bb_for_insn (max_uid);
 
   /* Discover the edges of our cfg.  */
 
@@ -804,12 +802,13 @@ create_basic_block (index, head, end, bb_note)
 /* Records the basic block struct in BB_FOR_INSN, for every instruction
    indexed by INSN_UID.  MAX is the size of the array.  */
 
-static void
-compute_bb_for_insn (bb_for_insn, max)
-     varray_type bb_for_insn;
+void
+compute_bb_for_insn (max)
      int max;
 {
   int i;
+
+  VARRAY_BB_INIT (basic_block_for_insn, max, "basic_block_for_insn");
 
   for (i = 0; i < n_basic_blocks; ++i)
     {
@@ -822,7 +821,7 @@ compute_bb_for_insn (bb_for_insn, max)
 	{
 	  int uid = INSN_UID (insn);
 	  if (uid < max)
-	    VARRAY_BB (bb_for_insn, uid) = bb;
+	    VARRAY_BB (basic_block_for_insn, uid) = bb;
 	  if (insn == end)
 	    break;
 	  insn = NEXT_INSN (insn);
