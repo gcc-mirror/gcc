@@ -135,7 +135,9 @@ using std::iota;
 using __gnu_cxx::random_sample; 
 using __gnu_cxx::random_sample_n;
 using __gnu_cxx::is_sorted; 
-using __gnu_cxx::is_heap; 
+using __gnu_cxx::is_heap;
+using __gnu_cxx::count;   // Extension returning void
+using __gnu_cxx::count_if;   // Extension returning void
 
 #endif /* _CPP_BACKWARD_ALGO_H */
 

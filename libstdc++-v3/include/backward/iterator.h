@@ -36,6 +36,8 @@
 #include <bits/stl_construct.h>
 #include <bits/stl_raw_storage_iter.h>
 
+#include <ext/iterator> // For 3-parameter distance extension
+
 // Names from stl_iterator.h
 using std::input_iterator_tag;
 using std::output_iterator_tag;
@@ -112,7 +114,8 @@ template<class _Iter>
   value_type(const _Iter& __i)
   { return static_cast<typename iterator_traits<_Iter>::value_type*>(0); }
 
-using std::distance; 
+using std::distance;
+using __gnu_cxx::distance; // 3-parameter extension
 using std::advance; 
 
 using std::insert_iterator;
