@@ -1,3 +1,7 @@
+2002-03-06  Andrew Cagney  <ac131313@redhat.com>
+
+	* floatformat.h (floatformat_arm_ext): Delete declaration.
+
 2002-02-22  Jim Blandy  <jimb@redhat.com>
 
 	Allow the user to specify functions for allocating memory for

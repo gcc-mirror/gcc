@@ -103,13 +103,6 @@ const struct floatformat floatformat_m88110_harris_ext =
   floatformat_intbit_no,
   "floatformat_m88110_ext_harris"
 };
-const struct floatformat floatformat_arm_ext =
-{
-  /* Bits 1 to 16 are unused.  */
-  floatformat_big, 96, 0, 17, 15, 0x3fff, 0x7fff, 32, 64,
-  floatformat_intbit_yes,
-  "floatformat_arm_ext"
-};
 const struct floatformat floatformat_arm_ext_big =
 {
   /* Bits 1 to 16 are unused.  */
