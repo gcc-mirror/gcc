@@ -71,7 +71,6 @@ CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CSTD_INCLUDES = @CSTD_INCLUDES@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
-CXX_libstdcxx = @CXX_libstdcxx@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
@@ -105,24 +104,24 @@ WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
+glibcpp_CXX = @glibcpp_CXX@
 glibcpp_basedir = @glibcpp_basedir@
+glibcpp_expect = @glibcpp_expect@
+glibcpp_runtest = @glibcpp_runtest@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libio_la = @libio_la@
 toplevel_srcdir = @toplevel_srcdir@
-xcompiling = @xcompiling@
 
-AUTOMAKE_OPTIONS = foreign dejagnu no-installinfo
+AUTOMAKE_OPTIONS = foreign dejagnu
 
 DEJATOOL = libstdc++
 
-EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then             echo $(top_builddir)/../expect/expect ;           else echo expect ; fi`
+EXPECT = @glibcpp_expect@
 
-
-RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then 	       echo $(top_srcdir)/../dejagnu/runtest ; 	    else echo runtest; fi`
-
+RUNTEST = @glibcpp_runtest@
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

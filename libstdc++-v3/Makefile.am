@@ -120,9 +120,6 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
-	"EXPECT=$(EXPECT)" \
-	"RUNTEST=$(RUNTEST)" \
-	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"exec_prefix=$(exec_prefix)" \
 	"infodir=$(infodir)" \
 	"libdir=$(libdir)" \
@@ -131,8 +128,6 @@ AM_MAKEFLAGS = \
 	"tooldir=$(tooldir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"PICFLAG=$(PICFLAG)" \
@@ -142,3 +137,5 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" 
+
+

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.81 2001/04/03 00:26:58 pme Exp $
+## $Id: Makefile.am,v 1.82 2001/04/06 06:08:17 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -29,6 +29,7 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
+CXX = @glibcpp_CXX@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la

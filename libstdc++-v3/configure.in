@@ -236,7 +236,6 @@ AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
-AC_SUBST(xcompiling)
  
 AC_CACHE_SAVE
 AC_LC_MESSAGES

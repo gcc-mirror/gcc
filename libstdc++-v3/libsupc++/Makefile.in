@@ -68,9 +68,7 @@ AS = @AS@
 CC = @CC@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
-CXX = @CXX@
 CXXCPP = @CXXCPP@
-CXX_libstdcxx = @CXX_libstdcxx@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
@@ -97,14 +95,16 @@ WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
+glibcpp_CXX = @glibcpp_CXX@
 glibcpp_basedir = @glibcpp_basedir@
+glibcpp_expect = @glibcpp_expect@
+glibcpp_runtest = @glibcpp_runtest@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libio_la = @libio_la@
 toplevel_srcdir = @toplevel_srcdir@
-xcompiling = @xcompiling@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
@@ -112,6 +112,7 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
+CXX = @glibcpp_CXX@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 
