@@ -493,6 +493,18 @@ do {  int i;								\
         fprintf (FILE, "\tlink a6,$%d\n", -fsize);		\
       else							\
 	fprintf (FILE, "\tlink a6,$0\n\tsubl $%d,sp\n", fsize); }  \
+  else if (fsize)						      \
+    {								      \
+      /* Adding negative number is faster on the 68040.  */	      \
+      if (fsize + 4 < 0x8000)					      \
+	{							      \
+	  fprintf (FILE, "\tadd.w #%d,sp\n", - (fsize + 4));	      \
+	}							      \
+      else							      \
+	{							      \
+	  fprintf (FILE, "\tadd.l #%d,sp\n", - (fsize + 4));          \
+	}							      \
+    }								      \
   for (regno = 24; regno < 56; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       fprintf(FILE, "\tfpmoved %s, sp@-\n",			\
@@ -602,6 +614,17 @@ do {  int i;								\
       }								\
   if (frame_pointer_needed)					\
     fprintf (FILE, "\tunlk a6\n");				\
+  else if (fsize)                                                     \
+    {                                                                 \
+      if (fsize + 4 < 0x8000)                                         \
+	{                                                             \
+	  fprintf (FILE, "\tadd.w #%d,sp\n", fsize + 4);              \
+	}                                                             \
+      else                                                            \
+	{                                                             \
+	  fprintf (FILE, "\tadd.l #%d,sp\n", fsize + 4);              \
+	}                                                             \
+    }                                                                 \
   if (current_function_pops_args)				\
     fprintf (FILE, "\trtd $%d\n", current_function_pops_args);	\
   else fprintf (FILE, "\trts\n"); }
