@@ -1,11 +1,6 @@
 # These are host overrides
 # From config dir
 
-# See all the declarations.
-FIXPROTO_DEFINES = -D_XOPEN_SOURCE
-
-# Don't run fixproto
-STMP_FIXPROTO =
 RANLIB = :
 RANLIB_TEST = false
 SHELL = sh

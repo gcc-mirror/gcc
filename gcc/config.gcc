@@ -283,7 +283,6 @@ case $machine in
 	gnu_ld=yes
 	gas=yes
 	# These details are the same as for Linux.
-	xmake_file=x-linux
 	# But here we need a little extra magic.
 	tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
 	case $machine in
@@ -426,8 +425,7 @@ alpha-*-interix)
 
 	xm_defines=POSIX
 	xm_file="alpha/xm-alpha-interix.h xm-interix.h"
-	xmake_file=x-interix
-	tmake_file="alpha/t-alpha alpha/t-interix alpha/t-ieee"
+	tmake_file="alpha/t-alpha t-interix alpha/t-interix alpha/t-ieee"
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
 	fi
@@ -567,7 +565,6 @@ arm-*-riscix*)			# Acorn RISC machine
 	else
 	    tm_file=arm/riscix.h
 	fi
-	xmake_file=arm/x-riscix
 	tmake_file=arm/t-riscix
 	use_collect2=yes
 	;;
@@ -585,7 +582,6 @@ arm*-*-netbsd*)
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	xmake_file=x-linux
 	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -740,47 +736,51 @@ hppa*-*-linux* | parisc*-*-linux*)
 	;;
 hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
-	tmake_file=pa/t-openbsd
+	tmake_file=pa/t-bsd
 	;;
 hppa1.1-*-pro*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
-	tmake_file=pa/t-pro
+	tmake_file="pa/t-bsd pa/t-pro"
 	;;
 hppa1.1-*-osf*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-osf.h"
+	tmake_file="pa/t-bsd pa/t-pa"
 	use_collect2=yes
 	;;
 hppa1.1-*-rtems*)
 	target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
 	tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h pa/rtems.h"
-	tmake_file=pa/t-pro
+	tmake_file="pa/t-bsd pa/t-pro"
 	;;
 hppa1.0-*-osf*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-osf.h"
+	tmake_file="pa/t-bsd pa/t-pa"
 	use_collect2=yes
 	;;
 hppa1.1-*-bsd*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h"
 	target_cpu_default="MASK_PA_11"
+	tmake_file="pa/t-bsd pa/t-pa"
 	use_collect2=yes
 	;;
 hppa1.0-*-bsd*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h"
+	tmake_file="pa/t-bsd pa/t-pa"
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux7*)
 	tm_file="pa/pa-oldas.h ${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux7.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux8.0[0-2]*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	if test x$gas != xyes
 	then
 		tm_file="pa/pa-oldas.h ${tm_file}"
@@ -792,7 +792,7 @@ hppa1.1-*-hpux8.0[0-2]*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	if test x$gas != xyes
 	then
 		tm_file="pa/pa-oldas.h ${tm_file}"
@@ -804,14 +804,14 @@ hppa1.1-*-hpux8*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux8*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -820,8 +820,7 @@ hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	float_format=i128
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
-	tmake_file=pa/t-pa
+	tmake_file="pa/t-pa pa/t-pa-hpux"
 	if test x$enable_threads = x; then
 	    enable_threads=$have_pthread_h
 	fi
@@ -837,8 +836,7 @@ hppa1.0-*-hpux10*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 	float_format=i128
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
-	tmake_file=pa/t-pa
+	tmake_file="pa/t-pa pa/t-pa-hpux"
 	if test x$enable_threads = x; then
 	    enable_threads=$have_pthread_h
 	fi
@@ -852,8 +850,7 @@ hppa1.0-*-hpux10*)
 	;;
 hppa*64*-*-hpux11*)
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
-	tmake_file=pa/t-pa
+	tmake_file="pa/t-pa pa/t-pa-hpux"
 	tm_file="pa/pa64-start.h ${tm_file} pa/pa64-regs.h pa/long_double.h pa/elf.h pa/pa-hpux.h pa/pa-hpux11.h pa/pa-64.h pa/pa64-hpux.h"
 	float_format=i128
 	tmake_file=pa/t-pa64
@@ -874,8 +871,7 @@ hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	float_format=i128
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
-	tmake_file=pa/t-pa
+	tmake_file="pa/t-pa pa/t-pa-hpux"
 #	if test x$enable_threads = x; then
 #	    enable_threads=$have_pthread_h
 #	fi
@@ -890,7 +886,7 @@ hppa1.0-*-hpux11*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 	float_format=i128
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 #	if test x$enable_threads = x; then
 #	    enable_threads=$have_pthread_h
 #	fi
@@ -905,14 +901,14 @@ hppa1.1-*-hpux* | hppa2*-*-hpux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa1.0-*-hpux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
@@ -920,20 +916,21 @@ hppa1.1-*-hiux* | hppa2*-*-hiux*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa1.0-*-hiux*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 	xm_defines=POSIX
-	xmake_file=pa/x-pa-hpux
+	tmake_file=pa/t-pa-hpux
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	;;
 hppa*-*-lites*)
 	tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h"
 	target_cpu_default="MASK_PA_11"
+	tmake_file="pa/t-bsd pa/t-pa"
 	use_collect2=yes
 	;;
 hppa*-*-mpeix*)
@@ -947,8 +944,7 @@ hppa*-*-mpeix*)
 i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines='POSIX FATAL_EXIT_CODE=12'
 	tm_file=i370/oe.h
-	tmake_file="i370/t-i370"
-	xmake_file=i370/x-oe
+	tmake_file="i370/t-oe i370/t-i370"
 	c_target_objs="i370-c.o"
 	cxx_target_objs="i370-c.o"
 	;;
@@ -960,7 +956,6 @@ i370-*-mvs*)
 	cxx_target_objs="i370-c.o"
 	;;
 i370-*-linux*)
-	xmake_file=x-linux
 	tm_file="elfos.h svr4.h linux.h i370/linux.h ${tm_file}"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	# broken_install=yes
@@ -976,8 +971,7 @@ i370-*-linux*)
 i[34567]86-*-chorusos*)
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/att.h elfos.h i386/i386elf.h chorus.h"
-	tmake_file=i386/t-i386elf
-	xmake_file=x-svr4
+	tmake_file="i386/t-i386elf t-svr4"
 	case x${enable_threads} in
 	  xyes | xpthreads | xposix)
 		thread_file='posix'
@@ -987,8 +981,7 @@ i[34567]86-*-chorusos*)
 i[34567]86-*-elf*)
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/att.h elfos.h i386/i386elf.h"
-	tmake_file=i386/t-i386elf
-	xmake_file=x-svr4
+	tmake_file="i386/t-i386elf t-svr4"
 	;;
 i[34567]86-ibm-aix*)		# IBM PS/2 running AIX
         if test x$gas = xyes
@@ -1055,7 +1048,6 @@ i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
 		tm_file="${tm_file} usegas.h"
 	fi
 	xm_defines="POSIX SMALL_ARG_MAX"
-	xmake_file=x-svr4
 	tm_file="${tm_file} i386/att.h elfos.h ptx4.h i386/ptx4-i.h"
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
@@ -1150,7 +1142,6 @@ i[34567]86-*-linux*aout*)	# Intel 80386's running GNU/Linux
 i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
 				# with ELF format using the
 				# GNU/Linux C library 5
-	xmake_file=x-linux	
 	tm_file="${tm_file} i386/att.h elfos.h svr4.h linux.h i386/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1163,7 +1154,6 @@ i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
 i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# with ELF format using glibc 2
 			# aka GNU/Linux C library 6
-	xmake_file=x-linux
 	tm_file="${tm_file} i386/att.h elfos.h svr4.h linux.h i386/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1174,7 +1164,6 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 	fi
 	;;
 x86_64-*-linux*)
-	xmake_file=x-linux
 	tm_file="i386/biarch64.h i386/i386.h i386/att.h elfos.h svr4.h linux.h \
 		 i386/x86-64.h i386/linux64.h"
 	tmake_file="t-slibgcc-elf-ver t-linux i386/t-crtstuff"
@@ -1260,7 +1249,6 @@ i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
 	;;
 i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 	xm_defines=POSIX
-	xmake_file=i386/x-sco5
 	install_headers_dir=install-headers-cpio
 	tm_file=i386/sco5.h
 	if test x$gas = xyes
@@ -1279,14 +1267,13 @@ i[34567]86-*-solaris2*)
 		# Only needed if gas does not support -s
 		tm_file="i386/sol2gas.h ${tm_file}"
 	fi
-	tmake_file=i386/t-sol2
+	tmake_file="i386/t-sol2 t-svr4"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-	xmake_file=x-svr4
 	if test x${enable_threads} = x; then
 	    enable_threads=$have_pthread_h
 	    if test x${enable_threads} = x; then
@@ -1308,8 +1295,7 @@ i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
        then
                tm_file="${tm_file} dbx.h"
        fi
-       tmake_file=i386/t-crtpic
-       xmake_file=x-svr4
+       tmake_file="i386/t-crtpic t-svr4"
        extra_parts="crtbegin.o crtend.o"
        if test x$enable_threads = xyes; then
 	       thread_file='posix'
@@ -1322,15 +1308,13 @@ i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	then
 		tm_file="${tm_file} dbx.h"
 	fi
-	tmake_file=i386/t-crtpic
-	xmake_file=x-svr4
+	tmake_file="i386/t-crtpic t-svr4"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/att.h elfos.h svr4.h i386/sysv4.h i386/sysv5.h i386/udk.h"
-	tmake_file="i386/t-crtpic i386/t-udk"
-	xmake_file=x-svr4
+	tmake_file="i386/t-crtpic i386/t-udk t-svr4"
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio
 	;;
@@ -1377,7 +1361,6 @@ i[34567]86-*-win32)
 	float_format=i386
 	tmake_file=i386/t-cygwin
 	tm_file=i386/win32.h
-	xmake_file=i386/x-cygwin
 	extra_objs=winnt.o
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
@@ -1390,7 +1373,6 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	float_format=i386
 	tmake_file=i386/t-cygwin
 	tm_file=i386/cygwin.h
-	xmake_file=i386/x-cygwin
 	extra_objs=winnt.o
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
@@ -1404,7 +1386,6 @@ i[34567]86-*-mingw32*)
 	xm_file=i386/xm-mingw32.h
 	tmake_file="i386/t-cygwin i386/t-mingw32"
 	extra_objs=winnt.o
-	xmake_file=i386/x-cygwin
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
 	fi
@@ -1421,7 +1402,6 @@ i[34567]86-*-uwin*)
 	tm_file=i386/uwin.h
 	tmake_file="i386/t-cygwin i386/t-uwin"
 	extra_objs=winnt.o
-	xmake_file=i386/x-cygwin
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
 	fi
@@ -1431,9 +1411,8 @@ i[34567]86-*-interix*)
 	tm_file="i386/i386-interix.h interix.h"
 	xm_file="i386/xm-i386-interix.h xm-interix.h"
 	xm_defines=POSIX
-	tmake_file="i386/t-interix"
+	tmake_file="t-interix i386/t-interix"
 	extra_objs=interix.o
-	xmake_file=x-interix
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
 	fi
@@ -1445,7 +1424,6 @@ i[34567]86-dg-dgux*)
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/att.h elfos.h svr4.h i386/sysv4.h i386/dgux.h"
 	tmake_file=i386/t-dgux
-	xmake_file=i386/x-dgux
 	install_headers_dir=install-headers-cpio
       ;;
 i860-alliant-*)		# Alliant FX/2800
@@ -1602,12 +1580,11 @@ m68000-hp-hpux*)		# HP 9000 series 300
 	xm_defines=POSIX
 	if test x$gas = xyes
 	then
-		xmake_file=m68k/x-hp320g
 		tm_file=m68k/hp310g.h
 	else
-		xmake_file=m68k/x-hp320
 		tm_file=m68k/hp310.h
 	fi
+	tmake_file=m68k/t-hp320
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
 	extra_headers=math-68881.h
@@ -1949,7 +1926,6 @@ m68k-*-sysv4*)			# Motorola m68k's running system V.4
 	;;
 m68k-*-linux*aout*)		# Motorola m68k's running GNU/Linux
 				# with a.out format
-	xmake_file=x-linux
 	tm_file=m68k/linux-aout.h
 	tmake_file="t-linux-aout m68k/t-linux-aout"
 	extra_headers=math-68881.h
@@ -1959,7 +1935,6 @@ m68k-*-linux*aout*)		# Motorola m68k's running GNU/Linux
 m68k-*-linux*libc1)		# Motorola m68k's running GNU/Linux
 				# with ELF format using the
 				# GNU/Linux C library 5
-	xmake_file=x-linux
 	tm_file=m68k/linux.h
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 m68k/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1970,7 +1945,6 @@ m68k-*-linux*libc1)		# Motorola m68k's running GNU/Linux
 m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
-	xmake_file=x-linux
 	tm_file=m68k/linux.h
 	tmake_file="t-slibgcc-elf-ver t-linux m68k/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2011,7 +1985,7 @@ m88k-dg-dgux*)
 	case $machine in
 	  m88k-dg-dguxbcs*)
 	    tm_file="elfos.h svr4.h m88k/dgux.h m88k/dguxbcs.h"
-	    tmake_file=m88k/t-dguxbcs
+	    tmake_file="m88k/t-dgux m88k/t-dguxbcs"
 	    ;;
 	  *)
 	    tm_file="elfos.h svr4.h m88k/dgux.h"
@@ -2019,7 +1993,6 @@ m88k-dg-dgux*)
 	    ;;
 	esac
 	extra_parts="crtbegin.o bcscrtbegin.o crtend.o m88kdgux.ld"
-	xmake_file=m88k/x-dgux
 	if test x$gas = xyes
 	then
 		tmake_file=m88k/t-dgux-gas
@@ -2098,9 +2071,8 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	else
 		tm_file=mips/iris6.h
 	fi
-	tmake_file=mips/t-iris6
+	tmake_file="mips/t-iris mips/t-iris6"
 	xm_defines=POSIX
-	xmake_file=mips/x-iris6
 #	if test x$enable_threads = xyes; then
 #		thread_file='irix'
 #	fi
@@ -2117,8 +2089,7 @@ mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 	tm_file="mips/iris6.h mips/cross64.h"
 	xm_defines=POSIX
 	xm_file=mips/xm-iris5.h
-	xmake_file=mips/x-iris
-	tmake_file=mips/t-cross64
+	tmake_file="mips/t-iris mips/t-cross64"
 	# See comment in mips/iris[56].h files.
 	use_collect2=yes
 #	if test x$enable_threads = xyes; then
@@ -2154,9 +2125,9 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 	else
 		tm_file=mips/iris5.h
 	fi
+	tmake_file=mips/t-iris
 	xm_defines=POSIX
 	xm_file=mips/xm-iris5.h
-	xmake_file=mips/x-iris
 	# mips-tfile doesn't work yet
 	# See comment in mips/iris5.h file.
 	use_collect2=yes
@@ -2169,8 +2140,8 @@ mips-sgi-irix4loser*)		# Mostly like a MIPS.
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
+	tmake_file=mips/t-iris
 	xm_defines=POSIX
-	xmake_file=mips/x-iris
 	if test x$gas = xyes
 	then	:
 	else
@@ -2189,8 +2160,8 @@ mips-sgi-irix4*)		# Mostly like a MIPS.
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
+	tmake_file=mips/t-iris
 	xm_defines=POSIX
-	xmake_file=mips/x-iris
 	if test x$gas = xyes
 	then	:
 	else
@@ -2260,7 +2231,6 @@ mipsel-*-netbsd* | mips-dec-netbsd*)    # Decstation running NetBSD
 	tmake_file=t-netbsd
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
-	xmake_file=x-linux
         tm_file="elfos.h svr4.h linux.h mips/linux.h"
 	case $machine in
         mipsisa32*-*)
@@ -2643,7 +2613,6 @@ powerpc64-*-linux*)
 	tm_file="${tm_file} elfos.h svr4.h rs6000/sysv4.h rs6000/linux64.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
-	xmake_file=x-linux
 	extra_headers=ppc-asm.h
 	;;
 powerpc-*-beos*)
@@ -2727,7 +2696,6 @@ powerpc-*-linux*libc1)
 	tm_file="${tm_file} elfos.h svr4.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
-	xmake_file=x-linux
 	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2737,7 +2705,6 @@ powerpc-*-linux*)
 	tm_file="${tm_file} elfos.h svr4.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
-	xmake_file=x-linux
 	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2846,7 +2813,6 @@ rs6000-*-lynxos*)
 	use_collect2=yes
 	;;
 s390-*-linux*)
-	xmake_file=x-linux
 	tm_file="s390/s390.h elfos.h svr4.h linux.h s390/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
@@ -2855,7 +2821,6 @@ s390-*-linux*)
 	fi
 	;;
 s390x-*-linux*)
-	xmake_file=x-linux
 	tm_file="s390/s390.h elfos.h svr4.h linux.h s390/linux.h s390/linux64.h"
 	tm_p_file=s390/s390-protos.h
 	md_file=s390/s390.md
@@ -2890,7 +2855,6 @@ sh-*-rtems*)
 sh-*-linux*)
 	tm_file="${tm_file} sh/elf.h sh/linux.h"
 	tmake_file="sh/t-sh sh/t-elf sh/t-linux"
-	xmake_file=x-linux
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2954,11 +2918,9 @@ sparc-*-elf*)
 	;;
 sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
 	tm_file="aoutos.h sparc/sparc.h sparc/aout.h sparc/linux-aout.h"
-	xmake_file=x-linux
 	gnu_ld=yes
 	;;
 sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
-	xmake_file=x-linux
 	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2966,7 +2928,6 @@ sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 	float_format=sparc
 	;;
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
-	xmake_file=x-linux
 	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -3164,7 +3125,6 @@ sparc64-*-elf*)
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
 	tm_file="sparc/sparc_bi.h ${tm_file} elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
-	xmake_file=x-linux
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then

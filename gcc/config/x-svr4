@@ -1,2 +1,0 @@
-# See all the declarations.
-FIXPROTO_DEFINES = -D_XOPEN_SOURCE
