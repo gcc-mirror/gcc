@@ -3783,10 +3783,11 @@ fold_rtx (rtx x, rtx insn)
       || code == LTGT || code == UNEQ || code == ORDERED
       || code == UNORDERED)
     {
-      if (must_swap || (const_arg0
-			&& (const_arg1 == 0
-			    || (GET_CODE (const_arg0) == CONST_INT
-			        && GET_CODE (const_arg1) != CONST_INT))))
+      if (must_swap
+	  || swap_commutative_operands_p (const_arg0 ? const_arg0
+						     : XEXP (x, 0),
+					  const_arg1 ? const_arg1
+						     : XEXP (x, 1)))
 	{
 	  rtx tem = XEXP (x, 0);
 
