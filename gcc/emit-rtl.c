@@ -560,6 +560,55 @@ gen_lowpart_common (mode, x)
 	}
     }
 
+  /* If X is an integral constant but we want it in floating-point, it
+     must be the case that we have a union of an integer and a floating-point
+     value.  If the machine-parameters allow it, simulate that union here
+     and return the result.  */
+
+  else if (HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	   && HOST_BITS_PER_INT == BITS_PER_WORD
+	   && GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+	   && GET_MODE (x) == VOIDmode
+	   && sizeof (double) * HOST_BITS_PER_CHAR == 2 * HOST_BITS_PER_INT)
+    {
+      union {int i[2]; double d; } u;
+      int low, high;
+
+      if (GET_CODE (x) == CONST_INT)
+	low = INTVAL (x), high = low >> (HOST_BITS_PER_INT -1);
+      else
+	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
+
+#ifdef HOST_WORDS_BIG_ENDIAN
+      u.i[0] = high, u.i[1] = low;
+#else
+      u.i[0] = low, u.i[1] = high;
+#endif
+
+      return immed_real_const_1 (u.d, mode);
+    }
+
+  /* Similarly, if this is converting a floating-point value into a
+     two-word integer, we can do this one word at a time and make an
+     integer.  Only do this is the host and target parameters are
+     compatible.  */
+
+  else if (HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	   && HOST_BITS_PER_INT == BITS_PER_WORD
+	   && GET_MODE_CLASS (mode) == MODE_INT
+	   && GET_CODE (x) == CONST_DOUBLE
+	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+	   && GET_MODE_BITSIZE (mode) == 2 * BITS_PER_WORD)
+    {
+      rtx lowpart = operand_subword (x, WORDS_BIG_ENDIAN, 0, GET_MODE (x));
+      rtx highpart = operand_subword (x, ! WORDS_BIG_ENDIAN, 0, GET_MODE (x));
+
+      if (lowpart && GET_CODE (lowpart) == CONST_INT
+	  && highpart && GET_CODE (highpart) == CONST_INT)
+	return immed_double_const (INTVAL (lowpart), INTVAL (highpart), mode);
+    }
+
   /* Otherwise, we can't do this.  */
   return 0;
 }
