@@ -53,7 +53,7 @@ namespace std {
     catch(...) 
       {
 	delete _M_facets;
-	throw;
+	__throw_exception_again;
       }
 
     for (size_t i = 0; i < _S_num_categories; ++i)
@@ -83,7 +83,7 @@ namespace std {
     catch(...) 
       {
 	delete _M_facets;
-	throw;
+	__throw_exception_again;
       }
 
     // Name all the categories.
@@ -159,7 +159,7 @@ namespace std {
     if (__index == 0 
 	|| __imp->_M_facets->size() <= __index 
 	|| (*(__imp->_M_facets))[__index] == 0)
-      throw runtime_error("no locale facet");
+      __throw_runtime_error("no locale facet");
 	
     _M_install_facet(__idp, (*(__imp->_M_facets))[__index]); 
   }

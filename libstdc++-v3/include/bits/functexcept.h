@@ -1,6 +1,6 @@
-// Methods and support infrastructure for exceptions -*- C++ -*-
+// Function-Based Exception Support -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,52 +28,57 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 15 Exception handling
+// ISO C++ 14882: 19.1  Exception classes
 //
 
-// This file declares functions whose only purpose is to throw an
-// exception. They help break a circularity between <string> and
-// <stdexcept>. See src/stdexcept.cc, where these functions are
-// defined.
+#include <exception_defines.h>
 
-// XXX: These functions serve a similar purpose to those in
-// stl/bits/stl_range_errors.h . Eventually the two approaches should
-// be merged. 
+namespace std
+{
+  // Helper for exception objects in <except> 
+  void
+  __throw_bad_exception(void);
 
-#ifndef _CPP_EXCEPTION_SUPPORT_H
-#define _CPP_EXCEPTION_SUPPORT_H	1
+  // Helper for exception objects in <new> 
+  void
+  __throw_bad_alloc(void);
 
-namespace std {
+  // Helper for exception objects in <typeinfo> 
+  void
+  __throw_bad_cast(void);
 
-#if _GLIBCPP_USE_EXCEPTIONS
-  // Internal functions for string implementation.
-  extern void __out_of_range(const char *__str);
-  extern void __length_error(const char *__str);
-  
-# define __OUTOFRANGE(__cond) \
-  do { if (__cond) __out_of_range(#__cond); } while (0)
-# define __LENGTHERROR(__cond) \
-  do { if (__cond) __length_error(#__cond); } while (0)
-#else
-# include <bits/std_cassert.h>
-# define __OUTOFRANGE(__cond) assert(!(__cond))
-# define __LENGTHERROR(__cond) assert(!(__cond))
-#endif
+  void
+  __throw_bad_typeid(void);
 
+  // Helpers for exception objects in <stdexcept> 
+  void
+  __throw_logic_error(const char* __s);
+
+  void
+  __throw_domain_error(const char* __s);
+
+  void
+  __throw_invalid_argument(const char* __s);
+
+  void
+  __throw_length_error(const char* __s);
+
+  void
+  __throw_out_of_range(const char* __s);
+
+  void
+  __throw_runtime_error(const char* __s);
+
+  void
+  __throw_range_error(const char* __s);
+
+  void
+  __throw_overflow_error(const char* __s);
+
+  void
+  __throw_underflow_error(const char* __s);
+
+  // Helpers for exception objects in basic_ios
+  void
+  __throw_ios_failure(const char* __s);
 } // namespace std
-
-#endif	/* _CPP_EXCEPTION_SUPPORT_H */
-
-
-
-
-
-
-
-
-
-
-
-
-
-

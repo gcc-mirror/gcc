@@ -522,7 +522,7 @@ public:
 #ifdef __STL_THROW_RANGE_ERRORS
   void _M_range_check(size_type __n) const {
     if (__n >= this->size())
-      __stl_throw_range_error("vector<bool>");
+      __throw_range_error("vector<bool>");
   }
 
   reference at(size_type __n)

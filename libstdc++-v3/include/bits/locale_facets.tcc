@@ -75,7 +75,7 @@ namespace std
       __vec_facet* __facet = __loc._M_impl->_M_facets;
       const locale::facet* __fp = (*__facet)[__i]; 
       if (__fp == 0 || __i >= __facet->size())
-        throw bad_cast();
+        __throw_bad_cast();
       return static_cast<const _Facet&>(*__fp);
     }
 
@@ -1098,7 +1098,7 @@ namespace std
       }
       catch (...) {
         __io.flags(__fmt);
-        throw;
+        __throw_exception_again;
       }
     }
 

@@ -49,7 +49,7 @@ namespace std
 	  catch(...) 
 	    {
 	      delete _M_file;
-	      throw;
+	      __throw_exception_again;
 	    }
 	}
     }
@@ -67,7 +67,7 @@ namespace std
 	  catch(...) 
 	    {
 	      delete [] _M_buf;
-	      throw;
+	      __throw_exception_again;
 	    }
 	  
 	  // Allocate pback buffer.
@@ -76,7 +76,7 @@ namespace std
 	  catch(...) 
 	    {
 	      delete [] _M_pback;
-	      throw;
+	      __throw_exception_again;
 	    }
 	}
     }
