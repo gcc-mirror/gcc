@@ -492,6 +492,10 @@ gen_type (ret_val, t, style)
           data_type = "void";
           break;
 
+	case ERROR_MARK:
+	  data_type = "[ERROR]";
+	  break;
+
         default:
           abort ();
         }
