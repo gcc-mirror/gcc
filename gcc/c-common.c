@@ -2344,6 +2344,8 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
 {
   int format_length;
   const char *format_chars;
+  tree array_size = 0;
+  tree array_init;
 
   if (TREE_CODE (format_tree) == NOP_EXPR)
     {
@@ -2436,6 +2438,17 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
       return;
     }
   format_tree = TREE_OPERAND (format_tree, 0);
+  if (TREE_CODE (format_tree) == VAR_DECL
+      && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE
+      && (array_init = decl_constant_value (format_tree)) != format_tree
+      && TREE_CODE (array_init) == STRING_CST)
+    {
+      /* Extract the string constant initializer.  Note that this may include
+	 a trailing NUL character that is not in the array (e.g.
+	 const char a[3] = "foo";).  */
+      array_size = DECL_SIZE_UNIT (format_tree);
+      format_tree = array_init;
+    }
   if (TREE_CODE (format_tree) != STRING_CST)
     {
       res->number_non_literal++;
@@ -2448,6 +2461,20 @@ check_format_info_recurse (status, res, info, format_tree, params, arg_num)
     }
   format_chars = TREE_STRING_POINTER (format_tree);
   format_length = TREE_STRING_LENGTH (format_tree);
+  if (array_size != 0)
+    {
+      /* Variable length arrays can't be initialized.  */
+      if (TREE_CODE (array_size) != INTEGER_CST)
+	abort ();
+      if (host_integerp (array_size, 0))
+	{
+	  HOST_WIDE_INT array_size_value = TREE_INT_CST_LOW (array_size);
+	  if (array_size_value > 0
+	      && array_size_value == (int) array_size_value
+	      && format_length > array_size_value)
+	    format_length = array_size_value;
+	}
+    }
   if (format_length < 1)
     {
       res->number_unterminated++;

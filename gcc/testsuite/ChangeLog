@@ -1,3 +1,7 @@
+2000-10-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-array-1.c: New test.
+
 2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-printf-1.c, gcc.dg/c90-scanf-1.c: Add tests for

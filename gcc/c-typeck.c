@@ -54,6 +54,7 @@ static tree qualify_type		PARAMS ((tree, tree));
 static int comp_target_types		PARAMS ((tree, tree));
 static int function_types_compatible_p	PARAMS ((tree, tree));
 static int type_lists_compatible_p	PARAMS ((tree, tree));
+static tree decl_constant_value_for_broken_optimization PARAMS ((tree));
 static tree lookup_field		PARAMS ((tree, tree, tree *));
 static tree convert_arguments		PARAMS ((tree, tree, tree, tree));
 static tree pointer_int_sum		PARAMS ((enum tree_code, tree, tree));
@@ -844,7 +845,6 @@ decl_constant_value (decl)
   if (/* Don't change a variable array bound or initial value to a constant
 	 in a place where a variable is invalid.  */
       current_function_decl != 0
-      && ! pedantic
       && ! TREE_THIS_VOLATILE (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != 0
@@ -854,10 +854,27 @@ decl_constant_value (decl)
 	 or a variable, then re-evaluating it could give different results.  */
       && TREE_CONSTANT (DECL_INITIAL (decl))
       /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR
-      && DECL_MODE (decl) != BLKmode)
+      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
     return DECL_INITIAL (decl);
   return decl;
+}
+
+/* Return either DECL or its known constant value (if it has one), but
+   return DECL if pedantic or DECL has mode BLKmode.  This is for
+   bug-compatibility with the old behavior of decl_constant_value
+   (before GCC 3.0); every use of this function is a bug and it should
+   be removed before GCC 3.1.  It is not appropriate to use pedantic
+   in a way that affects optimization, and BLKmode is probably not the
+   right test for avoiding misoptimizations either.  */
+
+static tree
+decl_constant_value_for_broken_optimization (decl)
+     tree decl;
+{
+  if (pedantic || DECL_MODE (decl) == BLKmode)
+    return decl;
+  else
+    return decl_constant_value (decl);
 }
 
 /* Perform default promotions for C data used in expressions.
@@ -881,7 +898,7 @@ default_conversion (exp)
      address of the array produces consistent results.  */
   else if (optimize && TREE_CODE (exp) == VAR_DECL && code != ARRAY_TYPE)
     {
-      exp = decl_constant_value (exp);
+      exp = decl_constant_value_for_broken_optimization (exp);
       type = TREE_TYPE (exp);
     }
 
@@ -4019,7 +4036,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
       || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE)
     rhs = default_conversion (rhs);
   else if (optimize && TREE_CODE (rhs) == VAR_DECL)
-    rhs = decl_constant_value (rhs);
+    rhs = decl_constant_value_for_broken_optimization (rhs);
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
@@ -4695,7 +4712,7 @@ digest_init (type, init, require_constant, constructor_constant)
 	}
 
       if (optimize && TREE_CODE (inside_init) == VAR_DECL)
-	inside_init = decl_constant_value (inside_init);
+	inside_init = decl_constant_value_for_broken_optimization (inside_init);
 
       /* Compound expressions can only occur here if -pedantic or
 	 -pedantic-errors is specified.  In the later case, we always want
