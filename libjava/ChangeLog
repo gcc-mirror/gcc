@@ -1,5 +1,10 @@
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* java/awt/ImageMediaEntry: Removed.
+	* java/awt/MediaEntry: Removed.
+
+2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	Hashtable synchronization for PowerPC.
 	* configure.in: Define SLOW_PTHREAD_SELF if configure.host set
 	slow_pthread_self. Set up symlink for sysdeps directory.
