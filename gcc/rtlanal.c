@@ -360,7 +360,6 @@ get_jump_table_offset (insn, earliest)
   rtx y;
   rtx old_y;
   int i;
-  int j;
 
   if (GET_CODE (insn) != JUMP_INSN
       || ! (label = JUMP_LABEL (insn))
