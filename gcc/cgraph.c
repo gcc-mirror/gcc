@@ -248,6 +248,7 @@ cgraph_mark_needed_node (struct cgraph_node *node, int needed)
 
       node->next_needed = cgraph_nodes_queue;
       cgraph_nodes_queue = node;
+      notice_global_symbol (node->decl);
 
       /* At the moment frontend automatically emits all nested functions.  */
       if (node->nested)
@@ -465,6 +466,7 @@ cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *node)
     {
       node->next_needed = cgraph_varpool_nodes_queue;
       cgraph_varpool_nodes_queue = node;
+      notice_global_symbol (node->decl);
     }
   node->needed = 1;
 }
