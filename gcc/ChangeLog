@@ -1,5 +1,10 @@
 2001-06-08  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/linux.h (CPLUSPLUS_CPP_SPEC): New.
+	(LIB_SPEC): Mirror config/linux.h version.
+
+2001-06-08  Richard Henderson  <rth@redhat.com>
+
 	* except.c (get_exception_pointer, get_exception_filter): Take a
 	struct function.  Update all callers.
 	* except.h (get_exception_pointer): Update declaration.
