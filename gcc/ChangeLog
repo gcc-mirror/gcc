@@ -1,3 +1,8 @@
+Wed Oct 14 21:57:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* combine.c (combine_instructions): When finished, call init_recog.
+	* regmove.c (optimize_reg_copy_3): Reject volatile MEMs.
+
 Wed Oct 14 16:10:22 1998  Per Bothner  <bothner@cygnus.com>
 
 	* toplev.c:  If flag_syntax_only, don't open or write assembler file.
