@@ -213,7 +213,7 @@
 
 /* Play safe, not the fastest code. */
 #define TARGET_DEFAULT		ALIASES_FLAG | PARALLEL_PACK_FLAG \
-				| PARALLEL_MPY_FLAG | TARGET_RPTB_FLAG
+				| PARALLEL_MPY_FLAG | RPTB_FLAG
 
 /* Caveats:
    Max iteration count for RPTB/RPTS is 2^31 + 1.
