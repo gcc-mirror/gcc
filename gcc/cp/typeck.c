@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -5183,8 +5183,10 @@ build_static_cast (type, expr)
   /* FIXME handle casting to array type.  */
 
   ok = 0;
-  if (can_convert_arg (strip_all_pointer_quals (type),
-                       strip_all_pointer_quals (intype), expr))
+  if (IS_AGGR_TYPE (intype)
+      ? can_convert_arg (type, intype, expr)
+      : can_convert_arg (strip_all_pointer_quals (type),
+                         strip_all_pointer_quals (intype), expr))
     ok = 1;
   else if (TYPE_PTROB_P (type) && TYPE_PTROB_P (intype))
     {

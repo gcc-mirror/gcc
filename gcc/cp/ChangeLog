@@ -1,3 +1,8 @@
+2000-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (build_static_cast): Don't strip target qualifiers
+	when casting from a class.
+
 2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (warn_hidden): Initialize variable `fndecl'.
