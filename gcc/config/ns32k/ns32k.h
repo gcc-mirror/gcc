@@ -755,7 +755,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
    of a trampoline, leaving space for the variable parts.  */
 
 /* On the 32k, the trampoline looks like this:
-     addr  .,r2
+     addr  0(pc),r2
      jump  @__trampoline
      .int STATIC
      .int FUNCTION
@@ -765,7 +765,7 @@ operands on the 32k are stored).  */
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  fprintf (FILE, "\taddr .,r2\n" );					\
+  fprintf (FILE, "\taddr 0(pc),r2\n" );					\
   fprintf (FILE, "\tjump " );						\
   PUT_ABSOLUTE_PREFIX (FILE);						\
   fprintf (FILE, "__trampoline\n" );					\
@@ -798,9 +798,10 @@ operands on the 32k are stored).  */
 void					\
 __transfer_from_trampoline ()		\
 {					\
-  asm ("___trampoline:");		\
+  asm (".globl __trampoline");		\
+  asm ("__trampoline:");		\
   asm ("movd 16(r2),tos");		\
-  asm ("movd 12(r2),r2");		\
+  asm ("movd 12(r2),r1");		\
   asm ("ret 0");			\
 }
 
