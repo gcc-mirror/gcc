@@ -1,3 +1,19 @@
+2000-08-10  Tom Tromey  <tromey@cygnus.com>
+
+	* java/net/natPlainSocketImpl.cc (bind): Don't go to error case
+	when errno not set.
+	(connect): Likewise.
+	(accept): Likewise.
+	(getOption): Likewise.
+	* java/net/natPlainDatagramSocketImpl.cc (bind): Don't go to error
+	case when errno not set.
+	(peek): Likewise.
+	(send): Likewise.
+	(receive): Likewise.
+	(mcastGrp): Likewise.
+	(setOption): Likewise.
+	(getOption): Likewise.
+
 2000-08-10  Bryce McKinlay  <bryce@albatross.co.nz>
 	    John Stracke <francis@ecal.com>
 
