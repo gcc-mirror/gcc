@@ -1,3 +1,9 @@
+Tue Sep 30 23:06:43 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (beq): For registers and ints 0-255, use cmpeq+bne, since
+	that pair will dual-issue on the 21164 and plus+beq won't.
+	(bne): Likewise for cmpeq+beq.
+
 Tue Sep 30 16:07:58 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* except.c (find_exception_handler_labels): Correct argument to free.
