@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2379,9 +2379,7 @@ mark_used_regs (needed, live, x, final, insn)
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
 	  && (GET_MODE_SIZE (GET_MODE (x))
-	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	  && (INTEGRAL_MODE_P (GET_MODE (x))
-	      || INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (x)))))
+	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
 	reg_changes_size[REGNO (SUBREG_REG (x))] = 1;
 
       /* While we're here, optimize this case.  */
@@ -2572,6 +2570,13 @@ mark_used_regs (needed, live, x, final, insn)
 	       || GET_CODE (testreg) == SIGN_EXTRACT
 	       || GET_CODE (testreg) == SUBREG)
 	  {
+	    if (GET_CODE (testreg) == SUBREG
+		&& GET_CODE (SUBREG_REG (testreg)) == REG
+		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER
+		&& (GET_MODE_SIZE (GET_MODE (testreg))
+		    != GET_MODE_SIZE (GET_MODE (SUBREG_REG (testreg)))))
+	      reg_changes_size[REGNO (SUBREG_REG (testreg))] = 1;
+
 	    /* Modifying a single register in an alternate mode
 	       does not use any of the old value.  But these other
 	       ways of storing in a register do use the old value.  */
