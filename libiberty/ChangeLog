@@ -1,3 +1,8 @@
+2002-03-18  Stuart Griffith  <Stuart_Griffith@credence.com>
+
+	* strtod.c (strtod): Increment 8 chars, not 7, when `infinity'
+	seen.
+
 2002-03-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-demangle.c: Add libgcc exception to cp-demangle.c copyright
