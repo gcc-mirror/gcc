@@ -1,3 +1,14 @@
+Fri Jun  4 03:20:40 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (fixup_addr_diff_vecs): Emit braf reference label.
+	(braf_label_ref_operand): Delete.
+	* sh.h (PREDICATE_CODES): Remove braf_label_ref_operand.
+	* sh.md (casesi_jump_2): Operand1 is now the inside of a
+	label_ref, and has no predicate.
+	The patten has a predicate to guard against invalid substitutions.
+	(dummy_jump): Delete.
+	(casesi): Update use of casesi_jump_2.
+
 Thu Jun 3 07:48 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	*fixinc/inclhack.def(Io_Def_Quotes): corrected sed expression

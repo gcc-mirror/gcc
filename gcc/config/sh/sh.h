@@ -2129,7 +2129,6 @@ extern struct rtx_def *get_fpscr_rtx ();
   {"arith_reg_operand", {SUBREG, REG}},					\
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
   {"binary_float_operator", {PLUS, MULT}},				\
-  {"braf_label_ref_operand", {LABEL_REF}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
   {"fp_arith_reg_operand", {SUBREG, REG}},				\
   {"fp_extended_operand", {SUBREG, REG, FLOAT_EXTEND}},			\
