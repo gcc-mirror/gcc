@@ -540,6 +540,7 @@ label   = Name:\\u0020</pre>
           case '=':
           case ':':
             buffer.append('\\').append(c);
+            break;
           default:
             if (c < ' ' || c > '~')
               {
