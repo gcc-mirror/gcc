@@ -1,3 +1,10 @@
+2004-08-26  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-alias-common.c (gate_pta): New function.
+	(pass_build_pta): Use it.
+	(pass_del_pta): Use it.
+	(delete_alias_vars): Don't check flag_tree_points_to.
+
 2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.h (HARD_REGNO_CALL_PART_CLOBBERED): Added 
