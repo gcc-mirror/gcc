@@ -1,5 +1,8 @@
 Tue Apr 28 17:53:33 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* ginclude/stddef.h: Add check for _MACHINE_ANSI_H_ for BSD/OS
+	when undefining macros at the end.
+
 	* expr.c (expand_builtin, case BUILT_IN_MEMSET): Break if either
 	val or len has TREE_SIDE_EFFECTS set.
 
