@@ -1087,12 +1087,14 @@ _cpp_backup_tokens (pfile, count)
       pfile->lookaheads += count;
       while (count--)
 	{
-	  if (pfile->cur_token == pfile->cur_run->base)
+	  pfile->cur_token--;
+	  if (pfile->cur_token == pfile->cur_run->base
+	      /* Possible with -fpreprocessed and no leading #line.  */
+	      && pfile->cur_run->prev != NULL)
 	    {
 	      pfile->cur_run = pfile->cur_run->prev;
 	      pfile->cur_token = pfile->cur_run->limit;
 	    }
-	  pfile->cur_token--;
 	}
     }
   else

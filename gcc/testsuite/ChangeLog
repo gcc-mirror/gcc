@@ -1,3 +1,7 @@
+2001-11-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/fpreprocessed.c: New test case.
+
 2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/cpp/assert_trad1.c, gcc.dg/cpp/tr-paste.c,

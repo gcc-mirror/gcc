@@ -1,3 +1,8 @@
+2001-11-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c (_cpp_backup_tokens): Revert previous check-in.
+	Don't fall off the base token run.
+
 2001-11-19  Jason Wilkins <fenix@io.com>
 
 	* Makefile.in: Use INSTALL_SCRIPT not INSTALL_PROGRAM.
