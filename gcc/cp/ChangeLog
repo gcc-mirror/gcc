@@ -1,3 +1,7 @@
+2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* Make-lang.in (cp/name-lookup.o): Add more dependencies.
+
 2003-03-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* cp-tree.h (binding_for_name: Move to name-lookup.h  Adjust
