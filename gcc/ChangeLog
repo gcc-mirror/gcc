@@ -1,3 +1,10 @@
+Sun Aug 23 00:17:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* recog.c (validate_replace_rtx_group): New function.
+	* recog.h (validate_replace_rtx_group): Declare it.
+	* regmove.c (optimize_reg_copy_3): If any substitution fails, then undo
+	the entire group of substitutions.
+
 Sat Aug 22 23:31:00 1998  Klaus-Georg Adams  (Klaus-Georg.Adams@chemie.uni-karlsruhe.de)
 
 	* loop.c (load_mems): Fix initializers.
