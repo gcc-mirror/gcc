@@ -911,8 +911,9 @@ insns_match_p (mode, i1, i2)
      equal, they were constructed identically.  */
 
   if (GET_CODE (i1) == CALL_INSN
-      && !rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
-		       CALL_INSN_FUNCTION_USAGE (i2)))
+      && (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
+		        CALL_INSN_FUNCTION_USAGE (i2))
+	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2)))
     return false;
 
 #ifdef STACK_REGS
