@@ -5,7 +5,6 @@
 // means things like the rhs of a comma operator mustn't decay. This will make
 // a difference if it is an array or function.
 
-// execution test - XFAIL
 extern void abort();
 
 int main (int argc, char **argv)
