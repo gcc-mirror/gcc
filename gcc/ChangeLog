@@ -19,7 +19,8 @@ Tue Jun 30 14:03:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Tue Jun 30 10:54:48 1998  Mark Mitchell  <mark@markmitchell.com>
 
-	* rtl.texi: Don't say that RTX_INTEGRATED_P is unused.
+	* rtl.texi: Don't say that RTX_INTEGRATED_P is not depended
+	upon.
 
 Tue Jun 30 13:11:42 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
