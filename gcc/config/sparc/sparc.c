@@ -4683,9 +4683,11 @@ function_value (type, mode, incoming_p)
 
 	  return function_arg_record_value (type, mode, 0, 1, regbase);
 	}
-      else if (TREE_CODE (type) == UNION_TYPE)
+      else if (AGGREGATE_TYPE_P (type))
 	{
-	  int bytes = int_size_in_bytes (type);
+	  /* All other aggregate types are passed in an integer register
+	     in a mode corresponding to the size of the type.  */
+	  HOST_WIDE_INT bytes = int_size_in_bytes (type);
 
 	  if (bytes > 32)
 	    abort ();
@@ -4697,7 +4699,7 @@ function_value (type, mode, incoming_p)
   if (TARGET_ARCH64
       && GET_MODE_CLASS (mode) == MODE_INT 
       && GET_MODE_SIZE (mode) < UNITS_PER_WORD
-      && type && TREE_CODE (type) != UNION_TYPE)
+      && type && ! AGGREGATE_TYPE_P (type))
     mode = DImode;
 
   if (incoming_p)
