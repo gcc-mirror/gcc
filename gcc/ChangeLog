@@ -1,5 +1,9 @@
 Mon Nov 12 05:18:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* emit-rtl.c (set_mem_attributes): If making object, can set alignment
+	from type.
+	(replace_equiv_address): Call update_temp_slot_address.
+
 	* dwarf2out.c (loc_descriptor_from_tree, case COMPOUND_EXPR): New case.
 
 	* alias.c (nonoverlapping_memrefs_p): Handle DECL_RTL being a CONCAT.
