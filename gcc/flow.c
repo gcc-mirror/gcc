@@ -3364,6 +3364,15 @@ propagate_one_insn (pbi, insn)
      delete it.  */
   if ((flags & PROP_KILL_DEAD_CODE) && insn_is_dead)
     {
+      /* Record sets.  Do this even for dead instructions, since they
+	 would have killed the values if they hadn't been deleted.  */
+      mark_set_regs (pbi, PATTERN (insn), insn);
+
+      /* CC0 is now known to be dead.  Either this insn used it,
+	 in which case it doesn't anymore, or clobbered it,
+	 so the next insn can't use it.  */
+      pbi->cc0_live = 0;
+
       if (libcall_is_dead)
 	{
 	  prev = propagate_block_delete_libcall (pbi->bb, insn, note);
@@ -3371,11 +3380,6 @@ propagate_one_insn (pbi, insn)
 	}
       else
 	propagate_block_delete_insn (pbi->bb, insn);
-
-      /* CC0 is now known to be dead.  Either this insn used it,
-	 in which case it doesn't anymore, or clobbered it,
-	 so the next insn can't use it.  */
-      pbi->cc0_live = 0;
 
       return prev;
     }

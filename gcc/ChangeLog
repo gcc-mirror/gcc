@@ -1,5 +1,7 @@
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (propagate_one_insn): Mark sets even when the insn is dead.
+
 	* ifcvt.c (noce_process_if_block): Fail the conversion if X is
 	referenced bewteen the condition and the jump.  Don't delete
 	anything but the jump.
