@@ -5076,7 +5076,8 @@ delete_null_pointer_checks (f)
 	     not kill the nonnull property if it is derived from a MEM
 	     appearing in a SET_DEST.  */
 	  if (GET_CODE (SET_DEST (set)) == MEM
-	      && GET_CODE (XEXP (SET_DEST (set), 0)) == REG)
+	      && GET_CODE (XEXP (SET_DEST (set), 0)) == REG
+	      && REGNO (XEXP (SET_SRC (set), 0)) >= FIRST_PSEUDO_REGISTER)
 	    SET_BIT (nonnull_local[current_block],
 		     REGNO (XEXP (SET_DEST (set), 0)));
 	}
