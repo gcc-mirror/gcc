@@ -323,8 +323,8 @@ build_diff() {
   tmpdir=gccdiff.$$
   mkdir $tmpdir || error "Could not create directory $tmpdir"
   changedir $tmpdir
-  tar xfz $1 || error "Could not unpack $1 for diffs"
-  tar xfz $3 || error "Could not unpack $3 for diffs"
+  ${TAR} xfz $1 || error "Could not unpack $1 for diffs"
+  ${TAR} xfz $3 || error "Could not unpack $3 for diffs"
   ${DIFF} $2 $4 > ../${5%.gz}
   if [ $? -eq 2 ]; then
     error "Trouble making diffs from $1 to $3"
