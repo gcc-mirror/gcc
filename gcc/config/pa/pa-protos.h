@@ -177,7 +177,7 @@ extern void pa_asm_output_aligned_local (FILE *, const char *,
 					 unsigned int);
 
 /* Functions in varasm.c used by pa.c.  */
-extern void readonly_data (void);
-extern void one_only_readonly_data_section (void);
-extern void one_only_data_section (void);
+extern void som_readonly_data_section (void);
+extern void som_one_only_readonly_data_section (void);
+extern void som_one_only_data_section (void);
 extern void forget_section (void);
