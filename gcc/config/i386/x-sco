@@ -1,5 +1,8 @@
 INSTALL=cp
 RANLIB = :
 RANLIB_TEST = false
-CC = rcc -Di386
-OLDCC = rcc -Di386
+CC = rcc
+OLDCC = rcc
+RCCFLAGS = -Dunix -Di386 -DM_UNIX -DM_I386
+XCFLAGS = $(RCCFLAGS)
+CLIB = -lPW
