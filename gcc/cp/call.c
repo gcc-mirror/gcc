@@ -5781,6 +5781,8 @@ compare_ics (ics1, ics2)
   return 0;
 }
 
+/* The source type for this standard conversion sequence.  */
+
 static tree
 source_type (t)
      tree t;
