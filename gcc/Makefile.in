@@ -984,6 +984,7 @@ libgcc.a: libgcc2.ready libgcc.mk
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
 	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
+	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  -f libgcc.mk all
 
 # Use the genmultilib shell script to generate the information the gcc
@@ -1725,6 +1726,10 @@ $(HOST_PREFIX_1)ggc-none.o: ggc-none.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(HOST_PREFIX)ggc-none.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c
 
+$(HOST_PREFIX_1)gensupport.o: gensupport.c
+	rm -f $(HOST_PREFIX)gensupport.c
+	$(LN_S) $(srcdir)/gensupport.c $(HOST_PREFIX)gensupport.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)gensupport.c
 
 #
 # Remake internationalization support.
