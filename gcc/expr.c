@@ -6872,22 +6872,19 @@ expand_expr (exp, target, tmode, modifier)
 
     case COMPLEX_CST:
     case STRING_CST:
-      if (! TREE_CST_RTL (exp))
-	output_constant_def (exp, 1);
+      temp = output_constant_def (exp, 1);
 
-      /* TREE_CST_RTL probably contains a constant address.
+      /* temp contains a constant address.
 	 On RISC machines where a constant address isn't valid,
 	 make some insns to get that address into a register.  */
-      if (GET_CODE (TREE_CST_RTL (exp)) == MEM
-	  && modifier != EXPAND_CONST_ADDRESS
+      if (modifier != EXPAND_CONST_ADDRESS
 	  && modifier != EXPAND_INITIALIZER
 	  && modifier != EXPAND_SUM
-	  && (! memory_address_p (mode, XEXP (TREE_CST_RTL (exp), 0))
-	      || (flag_force_addr
-		  && GET_CODE (XEXP (TREE_CST_RTL (exp), 0)) != REG)))
-	return replace_equiv_address (TREE_CST_RTL (exp),
-				      copy_rtx (XEXP (TREE_CST_RTL (exp), 0)));
-      return TREE_CST_RTL (exp);
+	  && (! memory_address_p (mode, XEXP (temp, 0))
+	      || flag_force_addr))
+	return replace_equiv_address (temp,
+				      copy_rtx (XEXP (temp, 0)));
+      return temp;
 
     case EXPR_WITH_FILE_LOCATION:
       {
@@ -7300,18 +7297,12 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 	  }
       }
-      /* Fall through.  */
+      goto normal_inner_ref;
 
     case COMPONENT_REF:
-    case BIT_FIELD_REF:
-    case ARRAY_RANGE_REF:
       /* If the operand is a CONSTRUCTOR, we can just extract the
-	 appropriate field if it is present.  Don't do this if we have
-	 already written the data since we want to refer to that copy
-	 and varasm.c assumes that's what we'll do.  */
-      if (code == COMPONENT_REF
-	  && TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
-	  && TREE_CST_RTL (TREE_OPERAND (exp, 0)) == 0)
+	 appropriate field if it is present.  */
+      if (TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR)
 	{
 	  tree elt;
 
@@ -7363,7 +7354,11 @@ expand_expr (exp, target, tmode, modifier)
 		return op0;
 	      }
 	}
+      goto normal_inner_ref;
 
+    case BIT_FIELD_REF:
+    case ARRAY_RANGE_REF:
+    normal_inner_ref:
       {
 	enum machine_mode mode1;
 	HOST_WIDE_INT bitsize, bitpos;
