@@ -1,3 +1,10 @@
+2002-06-07  Phil Edwards  <pme@gcc.gnu.org>
+
+	* mkcheck.in:  Link against local testsuite library.
+	* testsuite/testsuite_hooks.h (__set_testsuite_memlimit):  Move null
+	implementation out...
+	* testsuite/testsuite_hooks.cc:  ...to here.
+
 2002-06-06  Loren J. Rittle <ljrittle@acm.org>
 
 	* src/Makefile.am (AUTOMAKE_OPTIONS): Use cygnus-style generation.
