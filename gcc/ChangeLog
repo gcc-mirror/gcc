@@ -1,3 +1,26 @@
+2004-04-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (combine_simplify_rtx): Adjust call to use
+	simplify_relational_operation.  Do not use SELECT_CC_MODE
+	when a comparison already has a MODE_CC mode.
+	(simplify_set): simplify_relational_operation may now
+	return another relational expression.
+	* cse.c (fold_rtx): simplify_relational_operation now
+	takes of computing the comparison mode.
+	* dojump.c (compare_from_rtx): Use simplify_relational_operation,
+	remove dead code.
+	(do_compare_rtx_and_jump): Likewise.
+	* integrate.c (subst_constants): simplify_relational_operation
+	may now return another relational expression.
+	* simplify-rtx.c (simplify_gen_relational): Move most code to
+	the new simplify_relational_operation and
+	simplify_relational_operation_1 functions.
+	(simplify_relational_operation): Rewritten.
+	(simplify_relational_operation_1): New function.
+	(simplify_ternary_operation): simplify_relational_operation
+	may now return another relational expression.
+	(simplify_rtx): Remove unnecessary temp variable. 
+
 2004-04-29  Uros Bizjak  <uros@kss-loka.si>
 
         * reg-stack.c (swap_to_top): New function.
