@@ -1,5 +1,7 @@
 1998-07-09  Dave Love  <d.love@dl.ac.uk>
 
+	* libU77/Version.c, libI77/Version.c: Update version info.
+
 	* libU77/sys_clock_.c: Replace TIMES conditional stuff removed in
 	error by last change.
 
