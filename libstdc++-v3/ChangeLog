@@ -1,3 +1,13 @@
+2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libstdc++/13462
+	* include/bits/stl_multiset.h (__gnu_norm::multiset): Define pointer
+	as allocator's pointer, likewise for reference, const_pointer, and
+	const_reference.
+	* include/bits/stl_set.h (__gnu_norm::set): Likewise.
+	* include/ext/hash_set (__gnu_ext::hash_set): Likewise.
+	(__gnu_ext::hash_multiset): Likewise.
+
 2003-12-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get::_M_extract_int,
