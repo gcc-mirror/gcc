@@ -1,3 +1,15 @@
+2002-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (constructor_name_p): Declare it.
+	(check_template_template_default_arg): Likewise.
+	* class.c (handle_using_decl): Use constructor_name_p.
+	* decl.c (grokdeclarator): Likewise.
+	* decl2.c (constructor_name_p): Define it.
+	* init.c (build_member_call): Use constructor_name_p.
+	* parse.y (template_parm): Use check_template_template_default_arg.
+	* pt.c (check_explicit_specialization): Use constructor_name_p.
+	* semantics.c (check_template_template_default_arg): New function.
+	
 2002-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (can_complete_type_without_circularity): Add static to

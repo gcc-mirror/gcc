@@ -1522,8 +1522,7 @@ build_member_call (type, name, parmlist)
 	return error_mark_node;
     }
 
-  if (method_name == constructor_name (type)
-      || method_name == constructor_name_full (type))
+  if (constructor_name_p (method_name, type))
     return build_functional_cast (type, parmlist);
   if (lookup_fnfields (basetype_path, method_name, 0))
     return build_method_call (decl, 

@@ -1625,6 +1625,25 @@ finish_template_template_parm (aggr, identifier)
   return finish_template_type_parm (aggr, tmpl);
 }
 
+/* ARGUMENT is the default-argument value for a template template
+   parameter.  If ARGUMENT is invalid, issue error messages and return
+   the ERROR_MARK_NODE.  Otherwise, ARGUMENT itself is returned.  */
+
+tree
+check_template_template_default_arg (tree argument)
+{
+  if (TREE_CODE (argument) != TEMPLATE_DECL
+      && TREE_CODE (argument) != TEMPLATE_TEMPLATE_PARM
+      && TREE_CODE (argument) != TYPE_DECL
+      && TREE_CODE (argument) != UNBOUND_CLASS_TEMPLATE)
+    {
+      error ("invalid default template argument");
+      return error_mark_node;
+    }
+
+  return argument;
+}
+
 /* Finish a parameter list, indicated by PARMS.  If ELLIPSIS is
    non-zero, the parameter list was terminated by a `...'.  */
 

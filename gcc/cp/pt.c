@@ -1529,8 +1529,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  tree fns = NULL_TREE;
 	  int idx;
 
-	  if (name == constructor_name (ctype) 
-	      || name == constructor_name_full (ctype))
+	  if (constructor_name_p (name, ctype))
 	    {
 	      int is_constructor = DECL_CONSTRUCTOR_P (decl);
 	      
