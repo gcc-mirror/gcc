@@ -1,6 +1,7 @@
 // Explicit instantiation file.
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,18 +32,31 @@
 // ISO C++ 14882:
 //
 
-#include <ext/rope>
-#include <ext/stdio_filebuf.h>
+#include <sstream>
 
 namespace std
 {
-  template
-    const unsigned long 
-    __gnu_cxx::rope<char, std::allocator<char> >::_S_min_len;
-
-  using __gnu_cxx::stdio_filebuf;
-  template class stdio_filebuf<char>;
+  // stringbuf
+  template class basic_stringbuf<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template class stdio_filebuf<wchar_t>;
+  template class basic_stringbuf<wchar_t>;
 #endif
-} // namespace std
+
+  // istringstream
+  template class basic_istringstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_istringstream<wchar_t>; 
+#endif
+
+  // ostringstream
+  template class basic_ostringstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_ostringstream<wchar_t>; 
+#endif
+
+  // stringstream
+  template class basic_stringstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_stringstream<wchar_t>; 
+#endif
+} //std

@@ -1,5 +1,21 @@
 2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* src/misc-inst.cc: Define unnecessary algorithm
+	instantiations. Break apart instantiations into groupings below.
+	* src/fstream-inst.cc: New.
+	* src/io-inst.cc: New.	
+	* src/istream-inst.cc: New.	
+	* src/ostream-inst.cc: New.		
+	* src/streambuf-inst.cc: New.	
+	* src/sstream-inst.cc: New.		
+	* src/Makefile.am (sources): Add files.
+	* src/Makefile.in: Regenerate.
+
+	* acinclude.m4: Work around automake 1.4-p5 bug, change
+	AM_GNU_GETTEXT in comments to AM-GNU-GETTEXT.
+	
+2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/6795.
 	* config/os/solaris/solaris2.6/bits/ctype_noninline.h
 	(classic_table): Fix.

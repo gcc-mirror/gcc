@@ -67,9 +67,6 @@ AS = @AS@
 ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 AWK = @AWK@
 BASIC_FILE_H = @BASIC_FILE_H@
-BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
-CATALOGS = @CATALOGS@
-CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CCODECVT_C = @CCODECVT_C@
 CCODECVT_H = @CCODECVT_H@
@@ -81,24 +78,13 @@ CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CSTDIO_H = @CSTDIO_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
-DATADIRNAME = @DATADIRNAME@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GENCAT = @GENCAT@
-GLIBC21 = @GLIBC21@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
-GMOFILES = @GMOFILES@
-GMSGFMT = @GMSGFMT@
-INSTOBJEXT = @INSTOBJEXT@
-INTLBISON = @INTLBISON@
-INTLLIBS = @INTLLIBS@
-INTLOBJS = @INTLOBJS@
-INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
-LIBICONV = @LIBICONV@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
@@ -106,20 +92,15 @@ LIBUNWIND_FLAG = @LIBUNWIND_FLAG@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-MSGFMT = @MSGFMT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPT_LDFLAGS = @OPT_LDFLAGS@
 OS_INC_SRCDIR = @OS_INC_SRCDIR@
 PACKAGE = @PACKAGE@
-POFILES = @POFILES@
-POSUB = @POSUB@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
-USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
@@ -194,7 +175,9 @@ sources = \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
 	collate.cc ctype.cc messages.cc monetary.cc numeric.cc time.cc \
 	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
-	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc
+	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc \
+	fstream-inst.cc io-inst.cc istream-inst.cc ostream-inst.cc \
+	streambuf-inst.cc sstream-inst.cc
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
@@ -277,7 +260,8 @@ ios.lo strstream.lo cmath.lo bitset.lo functexcept.lo stdexcept.lo \
 vterminate.lo c++locale.lo locale.lo localename.lo codecvt.lo \
 collate.lo ctype.lo messages.lo monetary.lo numeric.lo time.lo \
 concept-inst.lo locale-inst.lo misc-inst.lo stl-inst.lo string-inst.lo \
-wstring-inst.lo valarray-inst.lo ext-inst.lo
+wstring-inst.lo valarray-inst.lo ext-inst.lo fstream-inst.lo io-inst.lo \
+istream-inst.lo ostream-inst.lo streambuf-inst.lo sstream-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
