@@ -440,6 +440,7 @@ ffe_handle_option (size_t scode, const char *arg, int value)
       ffe_set_case_match (FFE_caseNONE);
       ffe_set_case_source (FFE_caseLOWER);
       ffe_set_case_symbol (FFE_caseNONE);
+      break;
 
     case OPT_fcase_preserve:
       ffe_set_case_intrin (FFE_caseNONE);

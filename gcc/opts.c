@@ -399,6 +399,7 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_Wdeprecated_declarations:
       warn_deprecated_decl = value;
+      break;
 
     case OPT_Wdisabled_optimization:
       warn_disabled_optimization = value;
@@ -1015,6 +1016,7 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_ftime_report:
       time_report = value;
+      break;
 
     case OPT_ftls_model_:
       if (!strcmp (arg, "global-dynamic"))
