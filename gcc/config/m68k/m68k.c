@@ -43,17 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "flags.h"
 
-/* We need to have MOTOROLA always defined (either 0 or 1) because we use
-   if-statements and ?: on it.  This way we have compile-time error checking
-   for both the MOTOROLA and MIT code paths.  We do rely on the host compiler
-   to optimize away all constant tests.  */
-#ifdef MOTOROLA
-# undef MOTOROLA
-# define MOTOROLA 1  /* Use the Motorola assembly syntax.  */
-#else
-# define MOTOROLA 0  /* Use the MIT assembly syntax.  */
-#endif
-
 /* The ASM_DOT macro allows easy string pasting to handle the differences
    between MOTOROLA and MIT syntaxes in asm_fprintf(), which doesn't
    support the %. option.  */

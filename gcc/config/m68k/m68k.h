@@ -20,6 +20,18 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* We need to have MOTOROLA always defined (either 0 or 1) because we use
+   if-statements and ?: on it.  This way we have compile-time error checking
+   for both the MOTOROLA and MIT code paths.  We do rely on the host compiler
+   to optimize away all constant tests.  */
+#ifdef MOTOROLA
+# undef MOTOROLA
+# define MOTOROLA 1  /* Use the Motorola assembly syntax.  */
+# define TARGET_VERSION fprintf (stderr, " (68k, Motorola syntax)")
+#else
+# define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)")
+# define MOTOROLA 0  /* Use the MIT assembly syntax.  */
+#endif
 
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
@@ -102,13 +114,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Set the default */
 #define INT_OP_GROUP INT_OP_DOT_WORD
-
-/* Print subsidiary information on the compiler version in use.  */
-#ifdef MOTOROLA
-#define TARGET_VERSION fprintf (stderr, " (68k, Motorola syntax)");
-#else
-#define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)");
-#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1399,11 +1404,11 @@ __transfer_from_trampoline ()					\
 #define NOTICE_UPDATE_CC(EXP,INSN) notice_update_cc (EXP, INSN)
 
 #define OUTPUT_JUMP(NORMAL, FLOAT, NO_OV)  \
-{ if (cc_prev_status.flags & CC_IN_68881)			\
+do { if (cc_prev_status.flags & CC_IN_68881)			\
     return FLOAT;						\
   if (cc_prev_status.flags & CC_NO_OVERFLOW)			\
     return NO_OV;						\
-  return NORMAL; }
+  return NORMAL; } while (0)
 
 /* Control the assembler format that we output.  */
 
