@@ -596,7 +596,7 @@ expand_call (exp, target, ignore)
      if -fcheck-memory-usage, code which invokes functions (and thus
      damages some hard registers) can be inserted before using the value.
      So, target is always a pseudo-register in that case.  */
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     target = 0;
 
   /* See if we can find a DECL-node for the actual function.
@@ -1608,7 +1608,7 @@ expand_call (exp, target, ignore)
       pop_temp_slots ();	/* FUNEXP can't be BLKmode */
 
       /* Check the function is executable.  */
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	emit_library_call (chkr_check_exec_libfunc, 1,
 			   VOIDmode, 1,
 			   funexp, ptr_mode);
@@ -1853,7 +1853,7 @@ expand_call (exp, target, ignore)
 						NULL_RTX)));
 
       /* Mark the memory for the aggregate as write-only.  */
-      if (flag_check_memory_usage)
+      if (current_function_check_memory_usage)
 	emit_library_call (chkr_set_right_libfunc, 1,
 			   VOIDmode, 3,
 			   structure_value_addr, ptr_mode, 
@@ -3535,7 +3535,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   if (arg->value == arg->stack)
     {
       /* If the value is already in the stack slot, we are done.  */
-      if (flag_check_memory_usage && GET_CODE (arg->stack) == MEM)
+      if (current_function_check_memory_usage && GET_CODE (arg->stack) == MEM)
 	{
 	  if (arg->mode == BLKmode)
 	    abort ();
