@@ -6792,7 +6792,9 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	  /* If VAROP is a SUBREG, strip it as long as the inner operand has
 	     the same number of words as what we've seen so far.  Then store
 	     the widest mode in MODE.  */
-	  if (SUBREG_WORD (varop) == 0
+	  if (subreg_lowpart_p (varop)
+	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop)))
+		  > GET_MODE_SIZE (GET_MODE (varop)))
 	      && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop)))
 		    + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 		  == mode_words))
