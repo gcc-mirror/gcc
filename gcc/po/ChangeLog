@@ -1,3 +1,7 @@
+2000-10-21  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* POTFILES.in: Add config/i386/netware.h and config/netware.h.
+
 2000-10-21  Philipp Thomas  <pthomas@suse.de>
 
 	* POTFILES.in: Remove config/rs6000/netware.h.

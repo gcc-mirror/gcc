@@ -185,6 +185,7 @@ config/i386/mach.h
 config/i386/mingw32.h
 config/i386/moss.h
 config/i386/netbsd.h
+config/i386/netware.h
 config/i386/next.h
 config/i386/os2.h
 config/i386/osf1elf.h
@@ -394,6 +395,7 @@ config/mn10300/mn10300.h
 config/mn10300/xm-mn10300.h
 config/msdos/mklibgcc.c
 config/netbsd.h
+config/netware.h
 config/nextstep.c
 config/nextstep.h
 config/nextstep21.h
