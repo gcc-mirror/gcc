@@ -1,3 +1,13 @@
+2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* g77.dg/bprob/bprob.exp: Disable test on arm-elf configs.
+	* gcc.misc-tests/bprob.exp: Likewise.
+	* g77.dg/execute/20001201.x, 6367.x, io0.x, io1.x, u77-test.x: XFAIL
+	the execution test on arm-elf configs.
+	* g77.dg/execute/10197.x: New file.  XFAIL the execution test on 
+	configs that don't support scratch files.
+	* g77.dg/execute/u77-test.x: XFAIL compilation on arm-elf configs.
+
 2003-10-30  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_all.sh: Do not print PASS messages to stdout, as
