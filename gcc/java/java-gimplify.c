@@ -1,6 +1,6 @@
 /* Java(TM) language-specific gimplification routines.
 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,10 +63,10 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
   char code_class = TREE_CODE_CLASS(TREE_CODE (*expr_p));
 
   /* Java insists on strict left-to-right evaluation of expressions.
-     A problem may arise if a variable used in the lhs of a binary
-     operation is altered by an assignment to that value in the rhs
+     A problem may arise if a variable used in the LHS of a binary
+     operation is altered by an assignment to that value in the RHS
      before we've performed the operation.  So, we always copy every
-     LHS to a temprorary variable.  
+     LHS to a temporary variable.  
 
      FIXME: Are there any other cases where we should do this?
      Parameter lists, maybe?  Or perhaps that's unnecessary because
