@@ -221,6 +221,10 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_BUMP_BUFFER_LINE(PBUF) ((PBUF)->lineno++,\
 				    (PBUF)->line_base = (PBUF)->cur)
 #define CPP_BUMP_LINE(PFILE) CPP_BUMP_BUFFER_LINE(CPP_BUFFER(PFILE))
+#define CPP_BUMP_BUFFER_LINE_CUR(PBUF, CUR) ((PBUF)->lineno++,\
+				             (PBUF)->line_base = CUR)
+#define CPP_BUMP_LINE_CUR(PFILE, CUR) \
+                            CPP_BUMP_BUFFER_LINE_CUR(CPP_BUFFER(PFILE), CUR)
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 
 /* Are we in column 1 right now?  Used mainly for -traditional handling

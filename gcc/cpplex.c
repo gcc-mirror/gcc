@@ -248,33 +248,41 @@ static void
 skip_block_comment (pfile)
      cpp_reader *pfile;
 {
-  int c, prev_c = -1;
   long line, col;
+  const U_CHAR *limit, *cur;
 
   FORWARD(1);
   cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
-  for (;;)
+  limit = CPP_BUFFER (pfile)->rlimit;
+  cur = CPP_BUFFER (pfile)->cur;
+
+  while (cur < limit)
     {
-      c = GETC ();
-      if (c == EOF)
-	{
-	  cpp_error_with_line (pfile, line, col, "unterminated comment");
-	  return;
-	}
-      else if (c == '\n' || c == '\r')
+      char c = *cur++;
+      if (c == '\n' || c == '\r')
 	{
 	  /* \r cannot be a macro escape marker here. */
 	  if (!ACTIVE_MARK_P (pfile))
-	    CPP_BUMP_LINE (pfile);
+	    CPP_BUMP_LINE_CUR (pfile, cur);
 	}
-      else if (c == '/' && prev_c == '*')
-	return;
-      else if (c == '*' && prev_c == '/'
-	       && CPP_OPTION (pfile, warn_comments))
-	cpp_warning (pfile, "`/*' within comment");
+      else if (c == '*')
+	{
+	  /* Check for teminator.  */
+	  if (cur < limit && *cur == '/')
+	    goto out;
 
-      prev_c = c;
+	  /* Warn about comment starter embedded in comment.  */
+	  if (cur[-2] == '/' && CPP_OPTION (pfile, warn_comments))
+	    cpp_warning_with_line (pfile, CPP_BUFFER (pfile)->lineno,
+				   cur - CPP_BUFFER (pfile)->line_base,
+				   "'/*' within comment");
+	}
     }
+
+  cpp_error_with_line (pfile, line, col, "unterminated comment");
+  cur--;
+ out:
+  CPP_BUFFER (pfile)->cur = cur + 1;
 }
 
 /* Skip a C++/Chill line comment.  We know it's a comment, and point
