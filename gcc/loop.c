@@ -419,6 +419,7 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   register int i;
   struct loops loops_data;
   struct loops *loops = &loops_data;
+  struct loop_info *loops_info;
 
   loop_dump_stream = dumpfile;
 
@@ -455,9 +456,18 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   uid_loop = (struct loop **) xcalloc (max_uid_for_loop, 
 				       sizeof (struct loop *));
 
+  /* Allocate storage for array of loops.  */
+  loops->array = (struct loop *)
+    xcalloc (loops->num, sizeof (struct loop));
+
   /* Find and process each loop.
      First, find them, and record them in order of their beginnings.  */
   find_and_verify_loops (f, loops);
+
+  /* Allocate and initialize auxiliary loop information.  */
+  loops_info = xcalloc (loops->num, sizeof (struct loop_info));
+  for (i = 0; i < loops->num; i++)
+    loops->array[i].info = loops_info + i;
 
   /* Now find all register lifetimes.  This must be done after
      find_and_verify_loops, because it might reorder the insns in the
@@ -510,15 +520,6 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
      this prevents low overhead loop instructions from being used.  */
   indirect_jump_in_function = indirect_jump_in_function_p (f);
 
-  /* Allocate and initialize auxiliary loop information.  */
-  for (i = max_loop_num - 1; i >= 0; i--)
-    {
-      struct loop *loop = &loops->array[i];
-
-      loop->info = (struct loop_info *) alloca (sizeof (struct loop_info));
-      memset (loop->info, 0, sizeof (struct loop_info));
-    }
-
   /* Now scan the loops, last ones first, since this means inner ones are done
      before outer ones.  */
   for (i = max_loop_num - 1; i >= 0; i--)
@@ -539,6 +540,8 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   free (moved_once);
   free (uid_luid);
   free (uid_loop);
+  free (loops_info);
+  free (loops->array);
 }
 
 /* Returns the next insn, in execution order, after INSN.  START and
@@ -2596,10 +2599,6 @@ find_and_verify_loops (f, loops)
      This also avoids writing past end of tables when there are no loops.  */
   uid_loop[0] = NULL;
 
-  loops->array = (struct loop *)
-    xmalloc (num_loops * sizeof (struct loop));
-  bzero ((char *)loops->array, num_loops * sizeof (struct loop));
-      
   /* Find boundaries of loops, mark which loops are contained within
      loops, and invalidate loops that have setjmp.  */
 
