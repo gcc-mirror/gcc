@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
    aix_closure.S - Copyright (c) 2002 2003 Free Software Foundation, Inc.
-   based on darwin_closure.S 
+   based on darwin_closure.S
 
    PowerPC Assembly glue.
 
@@ -119,10 +119,10 @@ ffi_closure_ASM:
 	in the parents outgoing area  */
 	stw   r3, 200(r1)
 	stw   r4, 204(r1)
-	stw   r5, 208(r1) 
+	stw   r5, 208(r1)
 	stw   r6, 212(r1)
 	stw   r7, 216(r1)
-	stw   r8, 220(r1) 
+	stw   r8, 220(r1)
 	stw   r9, 224(r1)
 	stw   r10, 228(r1)
 
@@ -135,11 +135,11 @@ ffi_closure_ASM:
 	stfd  f6, 96(r1)
 	stfd  f7, 104(r1)
 	stfd  f8, 112(r1)
-	stfd  f9, 120(r1) 
-	stfd  f10, 128(r1) 
-	stfd  f11, 136(r1) 
-	stfd  f12, 144(r1) 
-	stfd  f13, 152(r1)  
+	stfd  f9, 120(r1)
+	stfd  f10, 128(r1)
+	stfd  f11, 136(r1)
+	stfd  f12, 144(r1)
+	stfd  f13, 152(r1)
 
 	/* set up registers for the routine that actually does the work */
 	/* get the context pointer from the trampoline */
@@ -191,7 +191,7 @@ L..60:
 
 
 /* case double */
-L..46:   
+L..46:
 	lfd f1,0(r5)
 	b L..44
 
@@ -233,7 +233,7 @@ L..57:
 	b L..44
 
 /* case unsigned int16 */
-L..58:	
+L..58:
 	addi r5,r5,2
 	lhz r3,0(r5)
 

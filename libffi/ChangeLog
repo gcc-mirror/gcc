@@ -1,3 +1,15 @@
+2004-09-02  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/powerpc/aix.S: Remove whitespaces.
+	* src/powerpc/aix_closure.S: Likewise.
+	* src/powerpc/asm.h: Likewise.
+	* src/powerpc/ffi.c: Likewise.
+	* src/powerpc/ffitarget.h: Likewise.
+	* src/powerpc/linux64.S: Likewise.
+	* src/powerpc/linux64_closure.S: Likewise.
+	* src/powerpc/ppc_closure.S: Likewise.
+	* src/powerpc/sysv.S: Likewise.
+
 2004-08-30  Anthony Green  <green@redhat.com>
 
 	* Makefile.am: Add frv support.

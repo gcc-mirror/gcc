@@ -88,4 +88,3 @@ struct ffi_aix_trampoline_struct {
 #endif
 
 #endif
-

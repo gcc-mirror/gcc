@@ -1,9 +1,7 @@
 /* -----------------------------------------------------------------------
    asm.h - Copyright (c) 1998 Geoffrey Keating
-   
-   PowerPC Assembly glue.
 
-   $Id: asm.h,v 1.1.1.1 1998/11/29 16:48:16 green Exp $
+   PowerPC Assembly glue.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -50,12 +48,12 @@
 #ifdef PIC
 #define CALL_MCOUNT							      \
   .pushsection;								      \
-  .section ".data";    							      \
+  .section ".data";							      \
   .align ALIGNARG(2);							      \
 0:.long 0;								      \
   .previous;								      \
   mflr  %r0;								      \
-  stw   %r0,4(%r1);	       						      \
+  stw   %r0,4(%r1);							      \
   bl    _GLOBAL_OFFSET_TABLE_@local-4;					      \
   mflr  %r11;								      \
   lwz   %r0,0b@got(%r11);						      \
@@ -67,8 +65,8 @@
 0:.long 0;								      \
   .previous;								      \
   mflr  %r0;								      \
-  lis   %r11,0b@ha;		       					      \
-  stw   %r0,4(%r1);	       						      \
+  lis   %r11,0b@ha;							      \
+  stw   %r0,4(%r1);							      \
   addi  %r0,%r11,0b@l;							      \
   bl    JUMPTARGET(_mcount);
 #endif /* PIC */
@@ -125,4 +123,3 @@
 
 /* Local labels stripped out by the linker.  */
 #define L(x) .L##x
-

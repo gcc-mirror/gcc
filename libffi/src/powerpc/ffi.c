@@ -1,9 +1,7 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 1998 Geoffrey Keating
-   
-   PowerPC Foreign Function Interface 
 
-   $Id: ffi.c,v 1.1.1.1 1998/11/29 16:48:16 green Exp $
+   PowerPC Foreign Function Interface
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -67,7 +65,7 @@ enum { ASM_NEEDS_REGISTERS = 4 };
 
    |   Return address from ffi_call_SYSV 4bytes	|	higher addresses
    |--------------------------------------------|
-   |   Previous backchain pointer	4	| 	stack pointer here
+   |   Previous backchain pointer	4	|       stack pointer here
    |--------------------------------------------|<+ <<<	on entry to
    |   Saved r28-r31			4*4	| |	ffi_call_SYSV
    |--------------------------------------------| |
@@ -84,7 +82,7 @@ enum { ASM_NEEDS_REGISTERS = 4 };
    |   Current backchain pointer	4	|-/	during
    |--------------------------------------------|   <<<	ffi_call_SYSV
 
-   */
+*/
 
 /*@-exportheader@*/
 void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
@@ -92,7 +90,7 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
 {
   const unsigned bytes = ecif->cif->bytes;
   const unsigned flags = ecif->cif->flags;
-  
+
   /* 'stacktop' points at the previous backchain pointer.  */
   unsigned *const stacktop = stack + (bytes / sizeof(unsigned));
 
@@ -131,10 +129,10 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
 
   /* Deal with return values that are actually pass-by-reference.  */
   if (flags & FLAG_RETVAL_REFERENCE)
-  {
-    *gpr_base++ = (unsigned long)(char *)ecif->rvalue;
-    intarg_count++;
-  }
+    {
+      *gpr_base++ = (unsigned long)(char *)ecif->rvalue;
+      intarg_count++;
+    }
 
   /* Now for the arguments.  */
   p_argv = ecif->avalue;
@@ -192,18 +190,18 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
 	    }
 	  else
 	    {
-              /* whoops: abi states only certain register pairs
-               * can be used for passing long long int
-               * specifically (r3,r4), (r5,r6), (r7,r8), 
-               * (r9,r10) and if next arg is long long but
-               * not correct starting register of pair then skip
-               * until the proper starting register
+	      /* whoops: abi states only certain register pairs
+	       * can be used for passing long long int
+	       * specifically (r3,r4), (r5,r6), (r7,r8),
+	       * (r9,r10) and if next arg is long long but
+	       * not correct starting register of pair then skip
+	       * until the proper starting register
 	       */
-              if (intarg_count%2 != 0)
-                {
-                  intarg_count ++;
-                  gpr_base++;
-                }
+	      if (intarg_count%2 != 0)
+		{
+		  intarg_count ++;
+		  gpr_base++;
+		}
 	      *(long long *)gpr_base = *(long long *)*p_argv;
 	      gpr_base += 2;
 	    }
@@ -217,7 +215,7 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
 	  struct_copy_size = ((*ptr)->size + 15) & ~0xF;
 	  copy_space -= struct_copy_size;
 	  memcpy(copy_space, (char *)*p_argv, (*ptr)->size);
-	  
+
 	  gprvalue = (unsigned long)copy_space;
 
 	  FFI_ASSERT(copy_space > (char *)next_arg);
@@ -276,7 +274,7 @@ enum { ASM_NEEDS_REGISTERS64 = 4 };
    |--------------------------------------------|
    |   CR save area			8bytes	|
    |--------------------------------------------|
-   |   Previous backchain pointer	8	| 	stack pointer here
+   |   Previous backchain pointer	8	|	stack pointer here
    |--------------------------------------------|<+ <<<	on entry to
    |   Saved r28-r31			4*8	| |	ffi_call_LINUX64
    |--------------------------------------------| |
@@ -299,7 +297,7 @@ enum { ASM_NEEDS_REGISTERS64 = 4 };
    |   Current backchain pointer	8	|-/	during
    |--------------------------------------------|   <<<	ffi_call_LINUX64
 
-   */
+*/
 
 /*@-exportheader@*/
 void hidden ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
@@ -314,7 +312,7 @@ void hidden ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
   /* 'next_arg' points at the space for gpr3, and grows upwards as
      we use GPR registers, then continues at rest.  */
   unsigned long *const gpr_base = stacktop - ASM_NEEDS_REGISTERS64
-				  - NUM_GPR_ARG_REGISTERS64;
+    - NUM_GPR_ARG_REGISTERS64;
   unsigned long *const gpr_end = gpr_base + NUM_GPR_ARG_REGISTERS64;
   unsigned long *const rest = stack + 6 + NUM_GPR_ARG_REGISTERS64;
   unsigned long *next_arg = gpr_base;
@@ -434,7 +432,7 @@ void hidden ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
 	case FFI_TYPE_SINT32:
 	  gprvalue = *(signed int *)*p_argv;
 	  goto putgpr;
-	
+
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
 	case FFI_TYPE_POINTER:
@@ -466,7 +464,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   unsigned type = cif->rtype->type;
 
   if (cif->abi != FFI_LINUX64)
-    {    
+    {
       /* All the machine-independent calculation of cif->bytes will be wrong.
 	 Redo the calculation for SYSV.  */
 
@@ -497,10 +495,10 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
      - 32-bit (or less) integer values are returned in gpr3;
      - Structures of size <= 4 bytes also returned in gpr3;
      - 64-bit integer values and structures between 5 and 8 bytes are returned
-       in gpr3 and gpr4;
+     in gpr3 and gpr4;
      - Single/double FP values are returned in fpr1;
      - Larger structures and long double (if not equivalent to double) values
-       are allocated space and a pointer is passed as the first argument.
+     are allocated space and a pointer is passed as the first argument.
      For LINUX64:
      - integer values in gpr3;
      - Structures/Unions by reference;
@@ -674,31 +672,31 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
 /*@-declundef@*/
 /*@-exportheader@*/
-extern void ffi_call_SYSV(/*@out@*/ extended_cif *, 
-			  unsigned, unsigned, 
-			  /*@out@*/ unsigned *, 
+extern void ffi_call_SYSV(/*@out@*/ extended_cif *,
+			  unsigned, unsigned,
+			  /*@out@*/ unsigned *,
 			  void (*fn)());
-extern void hidden ffi_call_LINUX64(/*@out@*/ extended_cif *, 
+extern void hidden ffi_call_LINUX64(/*@out@*/ extended_cif *,
 				    unsigned long, unsigned long,
-				    /*@out@*/ unsigned long *, 
+				    /*@out@*/ unsigned long *,
 				    void (*fn)());
 /*@=declundef@*/
 /*@=exportheader@*/
 
-void ffi_call(/*@dependent@*/ ffi_cif *cif, 
-	      void (*fn)(), 
-	      /*@out@*/ void *rvalue, 
+void ffi_call(/*@dependent@*/ ffi_cif *cif,
+	      void (*fn)(),
+	      /*@out@*/ void *rvalue,
 	      /*@dependent@*/ void **avalue)
 {
   extended_cif ecif;
 
   ecif.cif = cif;
   ecif.avalue = avalue;
-  
+
   /* If the return value is a struct and we don't have a return	*/
   /* value address then we need to make one		        */
 
-  if ((rvalue == NULL) && 
+  if ((rvalue == NULL) &&
       (cif->rtype->type == FFI_TYPE_STRUCT))
     {
       /*@-sysunrecog@*/
@@ -707,15 +705,15 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
     }
   else
     ecif.rvalue = rvalue;
-    
-  
-  switch (cif->abi) 
+
+
+  switch (cif->abi)
     {
 #ifndef POWERPC64
     case FFI_SYSV:
     case FFI_GCC_SYSV:
       /*@-usedef@*/
-      ffi_call_SYSV(&ecif, -cif->bytes, 
+      ffi_call_SYSV(&ecif, -cif->bytes,
 		    cif->flags, ecif.rvalue, fn);
       /*@=usedef@*/
       break;
@@ -744,8 +742,8 @@ static void flush_icache(char * addr1, int size)
   int i;
   char * addr;
   for (i = 0; i < size; i += MIN_CACHE_LINE_SIZE) {
-     addr = addr1 + i;
-     __asm__ volatile ("icbi 0,%0;" "dcbf 0,%0;" : : "r"(addr) : "memory");
+    addr = addr1 + i;
+    __asm__ volatile ("icbi 0,%0;" "dcbf 0,%0;" : : "r"(addr) : "memory");
   }
   addr = addr1 + size - 1;
   __asm__ volatile ("icbi 0,%0;" "dcbf 0,%0;" "sync;" "isync;" : : "r"(addr) : "memory");
@@ -799,21 +797,21 @@ typedef union
   double d;
 } ffi_dblfl;
 
-int ffi_closure_helper_SYSV (ffi_closure*, void*, unsigned long*, 
+int ffi_closure_helper_SYSV (ffi_closure*, void*, unsigned long*,
 			     ffi_dblfl*, unsigned long*);
 
-/* Basically the trampoline invokes ffi_closure_SYSV, and on 
+/* Basically the trampoline invokes ffi_closure_SYSV, and on
  * entry, r11 holds the address of the closure.
  * After storing the registers that could possibly contain
  * parameters to be passed into the stack frame and setting
- * up space for a return value, ffi_closure_SYSV invokes the 
+ * up space for a return value, ffi_closure_SYSV invokes the
  * following helper function to do most of the work
  */
 
 int
-ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue, 
-            unsigned long * pgr, ffi_dblfl * pfr, 
-            unsigned long * pst)
+ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
+			 unsigned long * pgr, ffi_dblfl * pfr,
+			 unsigned long * pst)
 {
   /* rvalue is the pointer to space for return value in closure assembly */
   /* pgr is the pointer to where r3-r10 are stored in ffi_closure_SYSV */
@@ -825,8 +823,8 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
   long             i, avn;
   long             nf;   /* number of floating registers already used */
   long             ng;   /* number of general registers already used */
-  ffi_cif *        cif; 
-  double           temp; 
+  ffi_cif *        cif;
+  double           temp;
 
   cif = closure->cif;
   avalue = alloca(cif->nargs * sizeof(void *));
@@ -846,7 +844,7 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
   i = 0;
   avn = cif->nargs;
   arg_types = cif->arg_types;
-  
+
   /* Grab the addresses of the arguments from the stack frame.  */
   while (i < avn)
     {
@@ -854,124 +852,124 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
 	{
 	case FFI_TYPE_SINT8:
 	case FFI_TYPE_UINT8:
-	/* there are 8 gpr registers used to pass values */
-          if (ng < 8) {
-	     avalue[i] = (((char *)pgr)+3);
-             ng++;
-             pgr++;
-          } else {
-             avalue[i] = (((char *)pst)+3);
-             pst++;
-          }
+	  /* there are 8 gpr registers used to pass values */
+	  if (ng < 8) {
+	    avalue[i] = (((char *)pgr)+3);
+	    ng++;
+	    pgr++;
+	  } else {
+	    avalue[i] = (((char *)pst)+3);
+	    pst++;
+	  }
 	  break;
-           
+
 	case FFI_TYPE_SINT16:
 	case FFI_TYPE_UINT16:
-	/* there are 8 gpr registers used to pass values */
-          if (ng < 8) {
-	     avalue[i] = (((char *)pgr)+2);
-             ng++;
-             pgr++;
-          } else {
-             avalue[i] = (((char *)pst)+2);
-             pst++;
-          }
+	  /* there are 8 gpr registers used to pass values */
+	  if (ng < 8) {
+	    avalue[i] = (((char *)pgr)+2);
+	    ng++;
+	    pgr++;
+	  } else {
+	    avalue[i] = (((char *)pst)+2);
+	    pst++;
+	  }
 	  break;
 
 	case FFI_TYPE_SINT32:
 	case FFI_TYPE_UINT32:
 	case FFI_TYPE_POINTER:
 	  /* there are 8 gpr registers used to pass values */
-          if (ng < 8) {
-	     avalue[i] = pgr;
-             ng++;
-             pgr++;
-          } else {
-             avalue[i] = pst;
-             pst++;
-          }
+	  if (ng < 8) {
+	    avalue[i] = pgr;
+	    ng++;
+	    pgr++;
+	  } else {
+	    avalue[i] = pst;
+	    pst++;
+	  }
 	  break;
 
 	case FFI_TYPE_STRUCT:
-	  /* Structs are passed by reference. The address will appear in a 
+	  /* Structs are passed by reference. The address will appear in a
 	     gpr if it is one of the first 8 arguments.  */
-          if (ng < 8) {
-	     avalue[i] = (void *) *pgr;
-             ng++;
-             pgr++;
-          } else {
-             avalue[i] = (void *) *pst;
-             pst++;
-          }
+	  if (ng < 8) {
+	    avalue[i] = (void *) *pgr;
+	    ng++;
+	    pgr++;
+	  } else {
+	    avalue[i] = (void *) *pst;
+	    pst++;
+	  }
 	  break;
 
 	case FFI_TYPE_SINT64:
 	case FFI_TYPE_UINT64:
 	  /* passing long long ints are complex, they must
-           * be passed in suitable register pairs such as
-           * (r3,r4) or (r5,r6) or (r6,r7), or (r7,r8) or (r9,r10)
-           * and if the entire pair aren't available then the outgoing
-           * parameter stack is used for both but an alignment of 8
-           * must will be kept.  So we must either look in pgr
-           * or pst to find the correct address for this type
-           * of parameter.
-           */
-           if (ng < 7) {
-              if (ng & 0x01) {
-		/* skip r4, r6, r8 as starting points */
-                  ng++;
-                  pgr++;
-              }
-              avalue[i] = pgr;
-              ng+=2;
-              pgr+=2;
-           } else {
-              if (((long)pst) & 4) pst++;
-              avalue[i] = pst;
-              pst+=2;
-           }
-           break;
+	   * be passed in suitable register pairs such as
+	   * (r3,r4) or (r5,r6) or (r6,r7), or (r7,r8) or (r9,r10)
+	   * and if the entire pair aren't available then the outgoing
+	   * parameter stack is used for both but an alignment of 8
+	   * must will be kept.  So we must either look in pgr
+	   * or pst to find the correct address for this type
+	   * of parameter.
+	   */
+	  if (ng < 7) {
+	    if (ng & 0x01) {
+	      /* skip r4, r6, r8 as starting points */
+	      ng++;
+	      pgr++;
+	    }
+	    avalue[i] = pgr;
+	    ng+=2;
+	    pgr+=2;
+	  } else {
+	    if (((long)pst) & 4) pst++;
+	    avalue[i] = pst;
+	    pst+=2;
+	  }
+	  break;
 
 	case FFI_TYPE_FLOAT:
-	    /* unfortunately float values are stored as doubles
-             * in the ffi_closure_SYSV code (since we don't check
-             * the type in that routine).
-             */
+	  /* unfortunately float values are stored as doubles
+	   * in the ffi_closure_SYSV code (since we don't check
+	   * the type in that routine).
+	   */
 
-          /* there are 8 64bit floating point registers */
+	  /* there are 8 64bit floating point registers */
 
-          if (nf < 8) {
-             temp = pfr->d;
-             pfr->f = (float)temp;
-             avalue[i] = pfr;
-             nf++;
-             pfr++;
-          } else {
+	  if (nf < 8) {
+	    temp = pfr->d;
+	    pfr->f = (float)temp;
+	    avalue[i] = pfr;
+	    nf++;
+	    pfr++;
+	  } else {
 	    /* FIXME? here we are really changing the values
-             * stored in the original calling routines outgoing
-             * parameter stack.  This is probably a really
-             * naughty thing to do but...
-             */
-	     avalue[i] = pst;
-             nf++;
-             pst+=1;
-          }
+	     * stored in the original calling routines outgoing
+	     * parameter stack.  This is probably a really
+	     * naughty thing to do but...
+	     */
+	    avalue[i] = pst;
+	    nf++;
+	    pst+=1;
+	  }
 	  break;
 
 	case FFI_TYPE_DOUBLE:
 	  /* On the outgoing stack all values are aligned to 8 */
-          /* there are 8 64bit floating point registers */
+	  /* there are 8 64bit floating point registers */
 
-          if (nf < 8) {
-	     avalue[i] = pfr;
-             nf++;
-             pfr++;
-          } else {
-	     if (((long)pst) & 4) pst++;
-	     avalue[i] = pst;
-             nf++;
-             pst+=2;
-          }
+	  if (nf < 8) {
+	    avalue[i] = pfr;
+	    nf++;
+	    pfr++;
+	  } else {
+	    if (((long)pst) & 4) pst++;
+	    avalue[i] = pst;
+	    nf++;
+	    pst+=2;
+	  }
 	  break;
 
 	default:
@@ -993,7 +991,7 @@ int hidden ffi_closure_helper_LINUX64 (ffi_closure*, void*, unsigned long*,
 				       ffi_dblfl*);
 
 int hidden
-ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue, 
+ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
 			    unsigned long *pst, ffi_dblfl *pfr)
 {
   /* rvalue is the pointer to space for return value in closure assembly */
@@ -1004,7 +1002,7 @@ ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
   void **avalue;
   ffi_type **arg_types;
   long i, avn;
-  ffi_cif *cif; 
+  ffi_cif *cif;
   ffi_dblfl *end_pfr = pfr + NUM_FPR_ARG_REGISTERS64;
 
   cif = closure->cif;
@@ -1021,7 +1019,7 @@ ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
   i = 0;
   avn = cif->nargs;
   arg_types = cif->arg_types;
-  
+
   /* Grab the addresses of the arguments from the stack frame.  */
   while (i < avn)
     {
@@ -1032,7 +1030,7 @@ ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
 	  avalue[i] = (char *) pst + 7;
 	  pst++;
 	  break;
-           
+
 	case FFI_TYPE_SINT16:
 	case FFI_TYPE_UINT16:
 	  avalue[i] = (char *) pst + 6;
@@ -1064,13 +1062,13 @@ ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
 
 	case FFI_TYPE_FLOAT:
 	  /* unfortunately float values are stored as doubles
-           * in the ffi_closure_LINUX64 code (since we don't check
-           * the type in that routine).
-           */
+	   * in the ffi_closure_LINUX64 code (since we don't check
+	   * the type in that routine).
+	   */
 
-          /* there are 13 64bit floating point registers */
+	  /* there are 13 64bit floating point registers */
 
-          if (pfr < end_pfr)
+	  if (pfr < end_pfr)
 	    {
 	      double temp = pfr->d;
 	      pfr->f = (float) temp;
@@ -1084,7 +1082,7 @@ ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
 
 	case FFI_TYPE_DOUBLE:
 	  /* On the outgoing stack all values are aligned to 8 */
-          /* there are 13 64bit floating point registers */
+	  /* there are 13 64bit floating point registers */
 
 	  if (pfr < end_pfr)
 	    {
