@@ -488,6 +488,28 @@ copy_most_rtx (orig, may_share)
     }
   return copy;
 }
+
+/* Create a new copy of an rtx.  Only copy just one level.  */
+rtx
+shallow_copy_rtx (orig)
+     rtx orig;
+{
+  register int i;
+  register char *format_ptr;
+  register RTX_CODE code = GET_CODE (orig);
+  register rtx copy = rtx_alloc (code);
+
+  PUT_MODE (copy, GET_MODE (orig));
+  copy->in_struct = orig->in_struct;
+  copy->volatil = orig->volatil;
+  copy->unchanging = orig->unchanging;
+  copy->integrated = orig->integrated;
+
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    copy->fld[i] = orig->fld[i];
+
+  return copy;
+}
 
 /* Subroutines of read_rtx.  */
 

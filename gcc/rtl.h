@@ -889,6 +889,7 @@ extern rtvec rtvec_alloc		PROTO((int));
 extern rtx copy_rtx			PROTO((rtx));
 extern rtx copy_rtx_if_shared		PROTO((rtx));
 extern rtx copy_most_rtx		PROTO((rtx, rtx));
+extern rtx shallow_copy_rtx		PROTO((rtx));
 extern rtvec gen_rtvec_v		PROTO((int, rtx *));
 extern rtvec gen_rtvec_vv		PROTO((int, rtunion *));
 extern rtx gen_reg_rtx			PROTO((enum machine_mode));
