@@ -1,3 +1,14 @@
+2004-07-10  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	* gfortran.dg/g77/ffixed-form-1.f: Copy from g77.dg
+	* gfortran.dg/g77/ffixed-form-2.f: Likewise
+	* gfortran.dg/g77/ffree-form-1.f: Likewise
+	* gfortran.dg/g77/ffree-form-2.f: Likewise
+	* gfortran.dg/g77/ffree-form-3.f: Likewise
+	* gfortran.dg/g77/fno-underscoring.f: Likewise
+	* gfortran.dg/g77/funderscoring.f: Likewise
+	* gfortran.dg/g77/pr9258.f: Likewise.  Add dg-warning lines.
+
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	
 	* gfortran.fortran-torture/execute/module_init_1.f90: Fix test.
