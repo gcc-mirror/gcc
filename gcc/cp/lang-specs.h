@@ -88,7 +88,7 @@ Boston, MA 02111-1307, USA.  */
   {"@c++-cpp-output",
    {"%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-			    %{v:-version} %{pg:-p} %{p}\
+			    %{v:-version} %{pg:-p} %{p} -fpreprocessed\
 			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
