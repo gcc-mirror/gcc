@@ -1,3 +1,7 @@
+2000-05-04  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/t-alpha (LIB2FUNCS_EXTRA): Use qrrnd.asm in place.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Don't wrap <sys/types.h> with HAVE_SYS_TYPES_H.
