@@ -286,10 +286,10 @@ $(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin
 	  *) rm -f lang-f77;; \
 	esac
 	if [ -f lang-f77 ]; then \
-	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) \
+	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
 	   `echo $(srcdir)/f/ansify.c | sed 's,^\./,,'` -o f/ansify; \
 	  f/ansify < $(srcdir)/f/intdoc.in > f/intdoc.h0 $(srcdir)/f/intdoc.in; \
-	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -I./f \
+	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -I./f $(INCLUDES) \
 	   `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc; \
 	  f/intdoc > $(srcdir)/f/intdoc.texi; \
 	  rm f/intdoc f/ansify f/intdoc.h0; \
