@@ -950,17 +950,26 @@ formal_parameter:
 		{
 		  $$ = build_tree_list ($2, $1);
 		}
-|	modifiers type variable_declarator_id /* Added, JDK1.1 final parms */
+|	final type variable_declarator_id /* Added, JDK1.1 final parms */
 		{ 
 		  parse_jdk1_1_error ("final parameters");
 		  $$ = build_tree_list ($3, $2);
 		}
 |	type error
 		{yyerror ("Missing identifier"); RECOVER;}
-|	modifiers type error
+|	final type error
 		{
-		  SOURCE_FRONTEND_DEBUG (("Modifiers: %d", $1));
 		  yyerror ("Missing identifier"); RECOVER;
+		}
+;
+
+final:
+	modifiers
+		{
+		  check_modifiers ("Illegal modifier `%s'. Only `final' was expected here",
+				   $1, ACC_FINAL);
+		  if ($1 != ACC_FINAL)
+		    MODIFIER_WFL (FINAL_TK) = build_wfl_node (NULL_TREE);
 		}
 ;
 
