@@ -1,3 +1,14 @@
+2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	Support for NetBSD.
+	* aclocal.m4: Add test for NetBSD's ctype support.
+	* configure: Regenerate.
+	* configure.target: Support NetBSD.
+	* config/os/netbsd/bits/ctype_base.h: New file.
+	* config/os/netbsd/bits/ctype_inline.h: New file.
+	* config/os/netbsd/bits/ctype_noinline.h: New file.
+	* config/os/netbsd/bits/os_defines.h: New file.
+
 2000-12-05  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/complex.cc (pow): Remove definitions for explicit
