@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hashtab.h"
 #include "splay-tree.h"
 #include "varray.h"
-#include "cgraph.h"
 
 #include "c-common.h"
 #include "name-lookup.h"
@@ -1709,10 +1708,8 @@ struct lang_decl GTY(())
    not something is comdat until end-of-file.  */
 #define DECL_NEEDED_P(DECL)					\
   ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))	\
-   || (DECL_P (DECL)						\
-       && (TREE_CODE (DECL) == FUNCTION_DECL			\
-	   ? cgraph_node (DECL)->needed 			\
-	   : cgraph_varpool_node (DECL)->needed))		\
+   || (DECL_ASSEMBLER_NAME_SET_P (DECL)				\
+       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)))	\
    || (((flag_syntax_only || flag_unit_at_a_time) && TREE_USED (DECL))))
 
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the

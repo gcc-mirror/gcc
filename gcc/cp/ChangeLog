@@ -1,3 +1,15 @@
+2004-06-12  Andrew Pinski  <apinski@apple.com>
+
+	PR c++/14639
+	Revert:
+	2004-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+		* cp-tree.h: Fix typo.
+
+		* cp-tree.h: Include cgraph.h
+		(DECL_NEEDED_P): Use cgraph_*node on the decl instead of 
+		TREE_SYMBOL_REFERENCED on the DECL_ASSEMBLER_NAME of the decl.
+
 2004-06-12  Jason Merrill  <jason@redhat.com>
 
 	PR tree-optimization/14107
