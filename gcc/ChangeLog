@@ -1,3 +1,8 @@
+2003-06-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (LEGITIMATE_CONSTANT_P): Make it always
+	1.
+
 2003-06-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc [s390*-*-*]: Support --with-arch, --with-tune, and
