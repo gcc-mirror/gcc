@@ -1,4 +1,10 @@
-2004-07-10 Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-common.c: Fix whitespace issues, make variable names
+	more readable.
+	(create_common): Additionally, make loop logic more obvious.
+
+2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/13415
