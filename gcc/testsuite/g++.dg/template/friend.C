@@ -16,15 +16,15 @@ ostream& operator<<(ostream &o, const typename s<T>::t &x)
 template <class T>
 struct s {
   struct t
-  {				 // { dg-bogus "" "" { xfail *-*-* } }
+  {
     friend ostream&
-    operator<<<T>(ostream&, const typename s<T>::t &); // { dg-bogus "" "" { xfail *-*-* } }
+    operator<<<T>(ostream&, const typename s<T>::t &);
   };
   t x;
 };
 
 int main()
 {
-  s<int>::t y;			 // { dg-bogus "" "" { xfail *-*-* } }
+  s<int>::t y;
   cout << y;
 }

@@ -1,5 +1,8 @@
 2002-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4003 - template/friend.C
+	* pt.c (tsubst_friend_function): Use decl_namespace_context.
+
 	PR c++/3948 -- C++ ABI change, followup to 2001-12-18 patch.
 	* class.c (finish_struct_bits): Also set TREE_ADDRESSABLE for a
 	type with a nontrivial destructor.

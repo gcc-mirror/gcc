@@ -4623,7 +4623,7 @@ tsubst_friend_function (decl, args)
       tree template_id, arglist, fns;
       tree new_args;
       tree tmpl;
-      tree ns = CP_DECL_CONTEXT (TYPE_MAIN_DECL (current_class_type));
+      tree ns = decl_namespace_context (TYPE_MAIN_DECL (current_class_type));
       
       /* Friend functions are looked up in the containing namespace scope.
          We must enter that scope, to avoid finding member functions of the
@@ -6064,15 +6064,6 @@ tsubst_decl (t, args, type, complain)
 	SET_DECL_RTL (r, NULL_RTX);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
 
-	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */
-	if (DECL_PRETTY_FUNCTION_P (r))
-	  {
-	    const char *const name = (*decl_printable_name)
-	      			(current_function_decl, 2);
-	    DECL_INITIAL (r) = cp_fname_init (name);
-	    TREE_TYPE (r) = TREE_TYPE (DECL_INITIAL (r));
-	  }
-
 	/* Even if the original location is out of scope, the newly
 	   substituted one is not.  */
 	if (TREE_CODE (r) == VAR_DECL)
@@ -7353,10 +7344,6 @@ tsubst_expr (t, args, complain, in_decl)
 	  {
 	    init = DECL_INITIAL (decl);
 	    decl = tsubst (decl, args, complain, in_decl);
-	    if (DECL_PRETTY_FUNCTION_P (decl))
-	      init = DECL_INITIAL (decl);
-	    else
-	      init = tsubst_expr (init, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
                 if (TREE_CODE (decl) != TYPE_DECL)
@@ -7372,6 +7359,17 @@ tsubst_expr (t, args, complain, in_decl)
 	        if (TREE_CODE (decl) == VAR_DECL)
 	          DECL_TEMPLATE_INSTANTIATED (decl) = 1;
 	        maybe_push_decl (decl);
+		if (DECL_PRETTY_FUNCTION_P (decl))
+		  {
+		    /* For __PRETTY_FUNCTION__ we have to adjust the
+		       initializer.  */
+		    const char *const name
+		      = (*decl_printable_name) (current_function_decl, 2);
+		    init = cp_fname_init (name);
+		    TREE_TYPE (decl) = TREE_TYPE (init);
+		  }
+		else
+		  init = tsubst_expr (init, args, complain, in_decl);
 	        cp_finish_decl (decl, init, NULL_TREE, 0);
 	      }
 	  }
