@@ -1,3 +1,8 @@
+2003-06-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (const_costs): Move this to ...
+	(h8300_rtx_costs): ... here.
+
 2003-06-16  Roger Sayle  <roger@eyesopen.com>
 
 	* optabs.h (enum optab_index): Add new OTI_tan and OTI_atan.
