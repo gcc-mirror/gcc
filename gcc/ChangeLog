@@ -1,3 +1,14 @@
+2002-05-30  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_expand_unop_builtin): Return
+        const0_rtx instead of NULL_RTX when in error.
+        (altivec_expand_abs_builtin): Same.
+        (rs6000_expand_binop_builtin): Same.
+        (altivec_expand_predicate_builtin): Same.
+        (altivec_expand_stv_builtin): Same.
+        (rs6000_expand_ternop_builtin): Same.
+        (altivec_expand_builtin): Same.
+
 2002-05-29  David S. Miller  <davem@redhat.com>
 
 	* rtl.h (clear_emit_caches): Delete.

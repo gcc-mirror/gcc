@@ -3580,7 +3580,7 @@ rs6000_expand_unop_builtin (icode, arglist, target)
 
   /* If we got invalid arguments bail out before generating bad rtl.  */
   if (arg0 == error_mark_node)
-    return NULL_RTX;
+    return const0_rtx;
 
   switch (icode)
     {
@@ -3593,7 +3593,7 @@ rs6000_expand_unop_builtin (icode, arglist, target)
 	  || INTVAL (op0) < -0x1f)
 	{
 	  error ("argument 1 must be a 5-bit signed literal");
-	  return NULL_RTX;
+	  return const0_rtx;
 	}
       break;
     default:
@@ -3630,7 +3630,7 @@ altivec_expand_abs_builtin (icode, arglist, target)
 
   /* If we have invalid arguments, bail out before generating bad rtl.  */
   if (arg0 == error_mark_node)
-    return NULL_RTX;
+    return const0_rtx;
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -3668,7 +3668,7 @@ rs6000_expand_binop_builtin (icode, arglist, target)
 
   /* If we got invalid arguments bail out before generating bad rtl.  */
   if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return NULL_RTX;
+    return const0_rtx;
 
   switch (icode)
     {
@@ -3684,7 +3684,7 @@ rs6000_expand_binop_builtin (icode, arglist, target)
 	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
-	  return NULL_RTX;
+	  return const0_rtx;
 	}
       break;
     default:
@@ -3730,7 +3730,7 @@ altivec_expand_predicate_builtin (icode, opcode, arglist, target)
   if (TREE_CODE (cr6_form) != INTEGER_CST)
     {
       error ("argument 1 of __builtin_altivec_predicate must be a constant");
-      return NULL_RTX;
+      return const0_rtx;
     }
   else
     cr6_form_int = TREE_INT_CST_LOW (cr6_form);
@@ -3740,7 +3740,7 @@ altivec_expand_predicate_builtin (icode, opcode, arglist, target)
 
   /* If we have invalid arguments, bail out before generating bad rtl.  */
   if (arg0 == error_mark_node || arg1 == error_mark_node)
-    return NULL_RTX;
+    return const0_rtx;
 
   if (target == 0
       || GET_MODE (target) != tmode
@@ -3810,7 +3810,7 @@ altivec_expand_stv_builtin (icode, arglist)
   if (arg0 == error_mark_node
       || arg1 == error_mark_node
       || arg2 == error_mark_node)
-    return NULL_RTX;
+    return const0_rtx;
 
   if (! (*insn_data[icode].operand[2].predicate) (op0, mode2))
     op0 = copy_to_mode_reg (mode2, op0);
@@ -3847,7 +3847,7 @@ rs6000_expand_ternop_builtin (icode, arglist, target)
   if (arg0 == error_mark_node
       || arg1 == error_mark_node
       || arg2 == error_mark_node)
-    return NULL_RTX;
+    return const0_rtx;
 
   switch (icode)
     {
@@ -4104,7 +4104,7 @@ altivec_expand_builtin (exp, target, expandedp)
 
       /* If we got invalid arguments bail out before generating bad rtl.  */
       if (arg0 == error_mark_node)
-	return NULL_RTX;
+	return const0_rtx;
 
       if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
@@ -4126,13 +4126,13 @@ altivec_expand_builtin (exp, target, expandedp)
 
       /* If we got invalid arguments bail out before generating bad rtl.  */
       if (arg0 == error_mark_node)
-	return NULL_RTX;
+	return const0_rtx;
 
       if (TREE_CODE (arg0) != INTEGER_CST
 	  || TREE_INT_CST_LOW (arg0) & ~0x3)
 	{
 	  error ("argument to dss must be a 2-bit unsigned literal");
-	  return NULL_RTX;
+	  return const0_rtx;
 	}
 
       if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
@@ -4161,13 +4161,13 @@ altivec_expand_builtin (exp, target, expandedp)
 	if (arg0 == error_mark_node
 	    || arg1 == error_mark_node
 	    || arg2 == error_mark_node)
-	  return NULL_RTX;
+	  return const0_rtx;
 
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || TREE_INT_CST_LOW (arg2) & ~0x3)
 	{
 	  error ("argument to `%s' must be a 2-bit unsigned literal", d->name);
-	  return NULL_RTX;
+	  return const0_rtx;
 	}
 
 	if (! (*insn_data[d->icode].operand[0].predicate) (op0, mode0))
