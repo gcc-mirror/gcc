@@ -1,3 +1,9 @@
+2004-09-15  Per Bothner  <per@bothner.com>
+
+	* include/line-map.h (line_map_start):  Add parameter names so
+	preceding comment makes sense.
+	(linemap_add):  Remove from comment mention of non-existing parameter.
+
 2004-09-09  Matt Austern  <austern@apple.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
