@@ -1,5 +1,7 @@
 2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc_update: Add cpp.1 to the list of generated files.
+
 	* texi2pod.pl: Handle @option and @env.
 
 2001-01-03  Mike Stump  <mrs@wrs.com>
