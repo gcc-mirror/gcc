@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.59 2000/12/18 18:03:08 bkoz Exp $
+## $Id: Makefile.am,v 1.60 2000/12/21 01:28:57 gdr Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -62,16 +62,16 @@ WARN_CXXFLAGS = \
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
-TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
+CSTD_INCLUDES = @CSTD_INCLUDES@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
-CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
+TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \
 	-nostdinc++ \
-	$(CSHADOW_INCLUDES) $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) \
-	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) -I$(top_builddir)/include \
+	-I$(GLIBCPP_INCLUDE_DIR) $(CSTD_INCLUDES) -I$(top_builddir)/include \
+	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)	
 
 base_headers = \
@@ -297,6 +297,7 @@ myinstallheaders:
 	done; \
 	fi;
 
+
 # We have to handle misc-inst.cc and locale-inst.cc in a special way
 # since we cannot instantiate all classes due to missing definitions
 # for things like vptrs, type_info bits, etc. when using
@@ -310,7 +311,14 @@ locale-inst.o: locale-inst.cc
 locale-inst.lo: locale-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 
-# We have to instantiate wstring bits too. . . 
+# Use special rules for the deprecated source files so that they find
+# deprecated include files.
+strstream.lo: strstream.cc
+	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+strstream.o: strstream.cc
+	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+
+# Make wstring-inst.cc from string-inst.cc
 wstring-inst.o: string-inst.cc
 	$(CXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
 wstring-inst.lo: string-inst.cc
@@ -329,6 +337,7 @@ libstdc++.INC: Makefile
 
 tmp-libstdc++.INC: Makefile
 	echo $(INCLUDES) > $@
+
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
