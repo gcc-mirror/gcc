@@ -18,5 +18,3 @@ gtfiles="\$(srcdir)/fortran/f95-lang.c \$(srcdir)/fortran/trans-decl.c \$(srcdir
 
 need_gmp="yes"
 
-#outputs=g95/Makefile
-

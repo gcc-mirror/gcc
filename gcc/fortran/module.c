@@ -21,7 +21,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* The syntax of g95 modules resembles that of lisp lists, ie a
+/* The syntax of gfortran modules resembles that of lisp lists, ie a
    sequence of atoms, which can be left or right parenthesis, names,
    integers or strings.  Parenthesis are always matched which allows
    us to skip over sections at high speed without having to know

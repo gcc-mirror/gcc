@@ -1,5 +1,10 @@
 2004-08-25  Paul Brook  <paul@codesourcery.com>
 
+	* config-lang.in: Remove dead commented line.
+	* module.c: Replace g95 with gfortran in comment.
+
+2004-08-25  Paul Brook  <paul@codesourcery.com>
+
 	PR fortran/17190
 	* arith.c (gfc_mpfr_to_mpz): Workaround mpfr bug.
 
