@@ -3070,7 +3070,8 @@ function_arg (cum, mode, type, named)
 
 	  /* First check to see if there is any such field.  */
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	    if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+	    if (TREE_CODE (field) == FIELD_DECL
+		&& TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
 		&& (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
 		    % BITS_PER_WORD == 0))
@@ -3111,7 +3112,9 @@ function_arg (cum, mode, type, named)
 		  rtx reg;
 
 		  for (; field; field = TREE_CHAIN (field))
-		    if (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)) >= bitpos)
+		    if (TREE_CODE (field) == FIELD_DECL
+			&& (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
+			    >= bitpos))
 		      break;
 
 		  if (field
@@ -5733,15 +5736,18 @@ mips_function_value (valtype, func)
     {
       /* A struct with only one or two floating point fields is returned in
 	 the floating point registers.  */
-      tree field;
+      tree field, fields[2];
       int i;
 
       for (i = 0, field = TYPE_FIELDS (valtype); field;
-	   field = TREE_CHAIN (field), i++)
+	   field = TREE_CHAIN (field))
 	{
-	  /* ??? For C++, must ignore everything that isn't a FIELD_DECL.  */
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
 	  if (TREE_CODE (TREE_TYPE (field)) != REAL_TYPE || i >= 2)
 	    break;
+
+	  fields[i++] = field;
 	}
 	  
       /* Must check i, so that we reject structures with no elements.  */
@@ -5749,19 +5755,27 @@ mips_function_value (valtype, func)
 	{
 	  if (i == 1)
 	    {
-	      mode = TYPE_MODE (TYPE_FIELDS (valtype));
-	      reg = FP_RETURN;
+	      /* The structure has DImode, but we don't allow DImode values
+		 in FP registers, so we use a PARALLEL even though it isn't
+		 strictly necessary.  */
+	      enum machine_mode field_mode = TYPE_MODE (TREE_TYPE (fields[0]));
+
+	      return gen_rtx (PARALLEL, mode,
+			      gen_rtvec (1,
+					 gen_rtx (EXPR_LIST, VOIDmode,
+						  gen_rtx (REG, field_mode, FP_RETURN),
+						  const0_rtx)));
 	    }
 	  else if (i == 2)
 	    {
 	      enum machine_mode first_mode
-		= TYPE_MODE (TREE_TYPE (TYPE_FIELDS (valtype)));
+		= TYPE_MODE (TREE_TYPE (fields[0]));
 	      enum machine_mode second_mode
-		= TYPE_MODE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (valtype))));
+		= TYPE_MODE (TREE_TYPE (fields[1]));
 	      int first_offset
-		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TYPE_FIELDS (valtype)));
+		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (fields[0]));
 	      int second_offset
-		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TREE_CHAIN (TYPE_FIELDS (valtype))));
+		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (fields[1]));
 
 	      return gen_rtx (PARALLEL, mode,
 			      gen_rtvec (2,
