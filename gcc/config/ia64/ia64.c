@@ -3090,6 +3090,7 @@ ia64_print_operand_address (stream, address)
    C	Swap and print a comparison operator.
    D	Print an FP comparison operator.
    E    Print 32 - constant, for SImode shifts as extract.
+   e    Print 64 - constant, for DImode rotates.
    F	A floating point constant 0.0 emitted as f0, or 1.0 emitted as f1, or
         a floating point register emitted normally.
    I	Invert a predicate register by adding 1.
@@ -3152,6 +3153,10 @@ ia64_print_operand (file, x, code)
 
     case 'E':
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, 32 - INTVAL (x));
+      return;
+
+    case 'e':
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, 64 - INTVAL (x));
       return;
 
     case 'F':
