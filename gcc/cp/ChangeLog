@@ -1,3 +1,15 @@
+2004-09-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (build_enumerator): Use add_double and int_fits_type_p
+	instead of cp_build_binary_op, to avoid creating short-lived trees.
+	* parser.c (cp_parse_type_specifier <RID_ENUM>): Use two-token
+	lookahead instead of backtracking.  Move some code to avoid a
+	conditional branch.
+	(cp_parser_enum_specifier): Avoid duplication of effort with caller.
+	Use cp_lexer_next_token_is/cp_lexer_next_token_is_not as appropriate.
+	(cp_parser_enumerator_list, cp_parser_enumerator_definition):
+	Use cp_lexer_next_token_is/cp_lexer_next_token_is_not as appropriate.
+
 2004-09-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* decl.c (grok_declarator): Remove a redundant semicolon.
@@ -17,7 +29,7 @@
 	define a stub macro that expands to NULL.
 	(cp_lexer_new_main): Only set debugging_p if ENABLE_CHECKING set.
 	(cp_lexer_new_from_tokens): Likewise.
-	
+
 2004-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (finish_function): Clean out pointers we no longer need.
@@ -36,7 +48,7 @@
 
 	* cp-tree.h (DECL_CONSTRUCTION_VTABLE_P): New macro.
 	* class.c (build_ctor_vtbl_group): Set DECL_CONSTRUCTION_VTABLE_P.
-	* decl2.c (determine_visibility): Honor 
+	* decl2.c (determine_visibility): Honor
 	TARGET_CXX_EXPORT_CLASS_DATA.
 
 	* class.c (key_method): Rename to ...
@@ -76,7 +88,7 @@
 	LANG_HOOKS_ATTRIBUTE_TABLE, LANG_HOOKS_TREE_INLINING_WALK_SUBTREES,
 	LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN,
 	LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS,
-	LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, 
+	LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P,
 	LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P,
 	LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P,
 	LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN,
@@ -95,7 +107,7 @@
 	* cp-tree.h (cp_finish_file): New prototype.
 	* decl.c: Do not include gtype-cp.h.
 	* decl2.c (finish_file): Rename to cp_finish_file.
-	
+
 2004-08-31  Richard Henderson  <rth@redhat.com>
 
 	PR c++/17221
@@ -403,7 +415,7 @@
 	build_dynamic_cast_1, ptr_initializer, ptm_initializer,
 	get_pseudo_ti_init): Likewise.
 	* search.c (get_dynamic_cast_base_type): Likewise.
-	
+
 2004-08-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* class.c, search.c: Remove references to DWARF_DEBUG.

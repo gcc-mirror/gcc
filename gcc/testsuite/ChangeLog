@@ -1,3 +1,8 @@
+2004-09-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.old-deja/g++.other/enum2.C: Move dg-error markers to
+	reflect changed line numbering of diagnostics.
+
 2004-09-06  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/edit_real_1.f90: Add new test.
@@ -22,10 +27,10 @@
 	* testsuite/gcc.dg/builtins-46.c: New.
 
 2004-09-03  Devang Patel  <dpatel@apple.com>
-	
+
 	* gcc.dg/tree-ssa/ifc-20040816-1.c: New test.
 	* gcc.dg/tree-ssa/ifc-20040816-2.c: New test.
-	
+
 2004-09-03  Jan Beulich  <jbeulich@novell.com>
 
 	* g++.dg/abi/bitfield5.C: Use -mno-ms-bitfields.
@@ -61,7 +66,7 @@
 2004-09-03  Devang Patel  <dpatel@apple.com>
 
 	* g++.dg/debug/pr15736.cc: New test.
-	
+
 2004-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* README.QMTEST: Fix out-of-date link.
@@ -71,7 +76,7 @@
 	PR fortran/16579
 	* gfortran.fortran-torture/execute/intrinsic_i_char.f90:
 	Delete.  Duplicate of gfortran.dg/g77/20010610.f
-	
+
 2004-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/arm_rtti1.C: New test.
@@ -97,7 +102,7 @@
 	* gcc.target/mips/mips-ps-3.c: New test.
 	* gcc.target/mips/mips-ps-4.c: New test.
 	* gcc.target/mips/mips-ps-type.c: New test.
-	
+
 2004-09-02  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/edit_real_1.f90: Add new tests.
@@ -155,7 +160,7 @@
 
 	PR fortran/16579
 	* gfortran.fortran-torture/execute/intrinsic_i_char.f90: New test.
-	
+
 2004-08-31  Bud Davis  <bdavis9659@comcast.net>
 
 	PR libfortran/16805
@@ -453,7 +458,7 @@
 2004-08-19  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/14976
-	PR fortran/16228 
+	PR fortran/16228
 	* gfortran.dg/data_char_1.f90: New test.
 
 2004-08-19  Erik Schnetter  <schnetter@aei.mpg.de>
@@ -518,7 +523,7 @@
 
 	PR c++/16965
 	* g++.dg/parse/error17.C: New test.
-	
+
 2004-08-17  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect: New directory for vectorizer tests.
@@ -600,11 +605,11 @@
 2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/pr17036-1.c: New test.
-	
+
 2004-08-16  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-20040809-1.c: New test.
-	
+
 2004-08-16  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/funcdef-attr-1.c: New test.
@@ -651,7 +656,7 @@
 2004-08-12  Devang patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-20040809-2.c: New test.
-	
+
 2004-08-12  Janis Johnson  <janis1872us.ibm.com>
 
 	* g++.dg/ext/altivec-12.C: New test.
@@ -718,7 +723,7 @@
 
 	* gcc.dg/darwin-ld-20040809-1.c: New test.
 	* gcc.dg/darwin-ld-20040809-2.c: New test.
-	
+
 2004-08-11  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/16917
