@@ -1,6 +1,6 @@
 /* Perform various loop optimizations, including strength reduction.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -909,7 +909,7 @@ scan_loop (loop, flags)
 	      if (VARRAY_INT (regs->set_in_loop, regno) == 2)
 		{
 		  register struct movable *m;
-		  m = (struct movable *) alloca (sizeof (struct movable));
+		  m = (struct movable *) xmalloc (sizeof (struct movable));
 		  m->next = 0;
 		  m->insn = p;
 		  m->set_dest = SET_DEST (set);
