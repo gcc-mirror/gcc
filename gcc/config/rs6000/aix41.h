@@ -22,6 +22,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "rs6000/rs6000.h"
 
+#if 0
+/* Commented out because it breaks compiler bootstrapping because references
+   to environ get hosed */
+
 #undef ASM_SPEC
 #define ASM_SPEC "-u -mpwr"
 
@@ -30,6 +34,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_EXTERNAL
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
+#endif
+#endif
 
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
