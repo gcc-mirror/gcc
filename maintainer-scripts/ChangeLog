@@ -1,3 +1,7 @@
+2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* update_version:  Don't indent the version string.
+
 2002-03-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* snapshot-README: Note that snapshots come from the 3.1 branch.

@@ -47,7 +47,7 @@ for BRANCH in $BRANCHES; do
     if test -f $file; then 
       OLD_VERSION=`/bin/cat $file`
       /bin/sed -e "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
-        $OLD_VERSION
+$OLD_VERSION
 HERE
 
       COMMIT_FILES="$COMMIT_FILES $file"
@@ -58,7 +58,7 @@ HERE
     if test -f $file; then 
       OLD_VERSION=`/bin/cat $file`
       /bin/sed -e "s/\(#.*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
-        $OLD_VERSION
+$OLD_VERSION
 HERE
 
       COMMIT_FILES="$COMMIT_FILES $file"
