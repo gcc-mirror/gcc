@@ -55,30 +55,33 @@
 
 2002-05-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
-	* bb-reorder.c (make_reorder_chain_1): Modified.
+	* bb-reorder.c (make_reorder_chain_1): Use prev_bb/next_bb to get to
+	neighbouring basic blocks.  Use ENTRY_BLOCK_PTR->next_bb instead of
+	BASIC_BLOCK (0).  Use EXIT_BLOCK_PTR->prev_bb instead of
+	BASIC_BLOCK (n_basic_blocks - 1).
 	* cfganal.c (can_fallthru, flow_call_edges_add,
-	flow_preorder_transversal_compute): Modified.
+	flow_preorder_transversal_compute): Too.
 	* cfgbuild.c (make_edges, find_basic_blocks, find_many_sub_basic_blocks,
-	find_sub_basic_blocks): Modified.
-	* cfgcleanup.c (try_simplify_condjump, try_optimize_cfg): Modified.
+	find_sub_basic_blocks): Too.
+	* cfgcleanup.c (try_simplify_condjump, try_optimize_cfg): Too.
 	* cfglayout.c (skip_insns_after_block, fixup_reorder_chain,
-	fixup_fallthru_exit_predecessor, cfg_layout_redirect_edge): Modified.
-	* cfgrtl.c (tidy_fallthru_edges, verify_flow_info): Modified.
+	fixup_fallthru_exit_predecessor, cfg_layout_redirect_edge): Too.
+	* cfgrtl.c (tidy_fallthru_edges, verify_flow_info): Too.
 	* combine.c (this_basic_block): Type changed to basic_block.
 	(combine_instructions, set_nonzero_bits_and_sign_copies, try_combine,
 	nonzero_bits, num_sign_bit_copies, get_last_value_validate,
-	get_last_value, distribute_notes, distribute_links): Modified.
-	* final.c (compute_alignments): Modified.
-	* flow.c (regno_uninitialized, regno_clobbered_at_setjmp): Modified.
-	* function.c (thread_prologue_and_epilogue_insns): Modified.
-	* gcse.c (compute_code_hoist_vbeinout): Modified.
-	* global.c (build_insn_chain): Modified.
-	* ifcvt.c (find_if_block, find_cond_trap): Modified.
-	* predict.c (last_basic_block_p, note_prediction_to_br_prob): Modified.
-	* regmove.c (regmove_optimize): Modified.
-	* resource.c (find_basic_block): Modified.
-	* sched-ebb.c (schedule_ebbs): Modified.
-	* ssa-dce.c (find_control_dependence, find_pdom): Modified.
+	get_last_value, distribute_notes, distribute_links): Too.
+	* final.c (compute_alignments): Too.
+	* flow.c (regno_uninitialized, regno_clobbered_at_setjmp): Too.
+	* function.c (thread_prologue_and_epilogue_insns): Too.
+	* gcse.c (compute_code_hoist_vbeinout): Too.
+	* global.c (build_insn_chain): Too.
+	* ifcvt.c (find_if_block, find_cond_trap): Too.
+	* predict.c (last_basic_block_p, note_prediction_to_br_prob): Too.
+	* regmove.c (regmove_optimize): Too.
+	* resource.c (find_basic_block): Too.
+	* sched-ebb.c (schedule_ebbs): Too.
+	* ssa-dce.c (find_control_dependence, find_pdom): Too.
 
 2002-05-21  Andreas Jaeger  <aj@suse.de>
 
