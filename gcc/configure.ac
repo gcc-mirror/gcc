@@ -269,7 +269,7 @@ rm -f a.out a.exe b.out
 
 # Find the native compiler
 AC_PROG_CC
-AC_PROG_CC_C_O
+AM_PROG_CC_C_O
 # autoconf is lame and doesn't give us any substitution variable for this.
 if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
   NO_MINUS_C_MINUS_O=yes
@@ -3262,14 +3262,6 @@ AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)
 
-# If it doesn't already exist, create document directory
-echo "checking for the document directory." 1>&2
-if test -d doc ; then
-  true
-else
-  mkdir doc 
-fi
-
 # Echo link setup.
 if test x${build} = x${host} ; then
   if test x${host} = x${target} ; then
@@ -3305,7 +3297,7 @@ case ${CONFIG_HEADERS} in
   echo > cstamp-h ;;
 esac
 # Make sure all the subdirs exist.
-for d in $subdirs
+for d in $subdirs doc build
 do
     test -d $d || mkdir $d
 done

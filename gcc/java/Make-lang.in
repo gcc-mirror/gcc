@@ -108,13 +108,13 @@ JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/jcf-path.o java/xref.o java/boehm.o java/java-gimplify.o
 
 GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/win32-host.o java/zextract.o version.o errors.o java/ggc-none.o \
+  java/win32-host.o java/zextract.o version.o errors.o ggc-none.o \
   intl.o
 
 JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o intl.o
 
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-		java/win32-host.o java/zextract.o errors.o version.o java/ggc-none.o intl.o
+		java/win32-host.o java/zextract.o errors.o version.o ggc-none.o intl.o
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o intl.o
 
@@ -341,11 +341,6 @@ java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
 java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) function.h $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
   java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h target.h
-
-# ggc-none.c is in the parent directory
-java/ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/ggc-none.c $(OUTPUT_OPTION)
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

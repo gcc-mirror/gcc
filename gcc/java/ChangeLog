@@ -1,3 +1,7 @@
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Revert the gcc-none.o change.
+
 2004-09-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parse.y (patch_anonymous_class): VEC_space returns true if there
