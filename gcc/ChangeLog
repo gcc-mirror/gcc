@@ -1,3 +1,23 @@
+2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/10962
+	* ggc.h: Add header guards.
+	* c-decl.c (finish_struct): Sort fields if
+	number greater than 15 and there are no
+	anonymous structs/unions.
+	* c-common.h: Include ggc.h.
+	(sorted_fields_type): New struct.
+	(field_decl_cmp): New prototype.
+	(resort_sorted_fields): New prototype.
+	(DECL_DECLARES_TYPE_NON_TEMPLATE_P): New macro.
+	* c-tree.h: (lang_type): Use pointer to sorted_fields_type
+	as s, removing other fields.
+	* c-typeck.c (lookup_field): Use s in lang_type.
+	These were mostly moved from cp/class.c:
+	* c-common.c (field_decl_cmp): New static function.
+	(field_decl_cmp): New function.
+	(resort_sorted_fields): New function.
+
 2003-07-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.c (machopic_select_section): Use decl_readonly_section

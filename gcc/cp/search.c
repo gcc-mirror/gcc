@@ -432,8 +432,8 @@ lookup_field_1 (tree type, tree name, bool want_type)
       && DECL_LANG_SPECIFIC (TYPE_NAME (type))
       && DECL_SORTED_FIELDS (TYPE_NAME (type)))
     {
-      tree *fields = &TREE_VEC_ELT (DECL_SORTED_FIELDS (TYPE_NAME (type)), 0);
-      int lo = 0, hi = TREE_VEC_LENGTH (DECL_SORTED_FIELDS (TYPE_NAME (type)));
+      tree *fields = &DECL_SORTED_FIELDS (TYPE_NAME (type))->elts[0];
+      int lo = 0, hi = DECL_SORTED_FIELDS (TYPE_NAME (type))->len;
       int i;
 
       while (lo < hi)

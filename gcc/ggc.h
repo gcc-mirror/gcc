@@ -19,6 +19,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_GGC_H
+#define GCC_GGC_H
+
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
 
@@ -259,3 +262,5 @@ extern void stringpool_statistics (void);
 extern int ggc_min_expand_heuristic (void);
 extern int ggc_min_heapsize_heuristic (void);
 extern void init_ggc_heuristics (void);
+
+#endif

@@ -1183,11 +1183,11 @@ lookup_field (tree decl, tree component)
   if (TYPE_LANG_SPECIFIC (type))
     {
       int bot, top, half;
-      tree *field_array = &TYPE_LANG_SPECIFIC (type)->elts[0];
+      tree *field_array = &TYPE_LANG_SPECIFIC (type)->s->elts[0];
 
       field = TYPE_FIELDS (type);
       bot = 0;
-      top = TYPE_LANG_SPECIFIC (type)->len;
+      top = TYPE_LANG_SPECIFIC (type)->s->len;
       while (top - bot > 1)
 	{
 	  half = (top - bot + 1) >> 1;

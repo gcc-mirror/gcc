@@ -1,3 +1,20 @@
+2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/10962
+	* class.c (field_decl_cmp): Remove.
+	(resort_field_decl_cmp): Remove.
+	(resort_sorted_fields): Remove.
+	(add_fields_to_vec): Rename to ...
+	(add_fields_to_record_type): this.
+	(finish_struct_1): Change to be using
+	sorted_fields_type's fields.
+	* cp-tree.h (lang_decl): In lang_decl_u3
+	change sorted_fields to be a pointer to
+	sorted_fields_type.
+	(resort_sorted_fields): Remove prototype.
+	* search.c (lookup_field_1): Change to be using
+	sorted_fields_type's fields.
+
 2003-07-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/5421
