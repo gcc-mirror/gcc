@@ -1,3 +1,7 @@
+2000-02-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* c-pragma.c (maximum_field_alignment): Remove duplicate declaration.
+
 2000-02-10  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (add_abstract_origin_attribute): Check TREE_CODE (origin)
