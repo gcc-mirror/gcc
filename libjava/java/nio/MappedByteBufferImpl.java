@@ -72,8 +72,8 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     checkForUnderflow();
 
     int pos = position();
-    byte result = DirectByteBufferImpl.getImpl(address, pos);
-    position (pos + 1);
+    byte result = VMDirectByteBuffer.get(address, pos);
+    position(pos + 1);
     return result;
   }
 
@@ -83,7 +83,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     checkForOverflow();
 
     int pos = position();
-    DirectByteBufferImpl.putImpl(address, pos, value);
+    VMDirectByteBuffer.put(address, pos, value);
     position(pos + 1);
     return this;
   }
@@ -92,7 +92,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   {
     checkIndex(index);
 
-    return DirectByteBufferImpl.getImpl(address, index);
+    return VMDirectByteBuffer.get(address, index);
   }
 
   public ByteBuffer get(byte[] dst, int offset, int length)
@@ -101,7 +101,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     checkForUnderflow(length);
 
     int index = position();
-    DirectByteBufferImpl.getImpl(address, index, dst, offset, length);
+    VMDirectByteBuffer.get(address, index, dst, offset, length);
     position(index+length);
 
     return this;
@@ -112,7 +112,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     checkIfReadOnly();
     checkIndex(index);
 
-    DirectByteBufferImpl.putImpl(address, index, value);
+    VMDirectByteBuffer.put(address, index, value);
     return this;
   }
 
@@ -123,7 +123,7 @@ final class MappedByteBufferImpl extends MappedByteBuffer
       {
 	int count = remaining();
 	// Call shiftDown method optimized for direct buffers.
-	DirectByteBufferImpl.shiftDown(address, 0, pos, count);
+	VMDirectByteBuffer.shiftDown(address, 0, pos, count);
 	position(count);
 	limit(capacity());
       }
@@ -138,10 +138,9 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   public ByteBuffer slice()
   {
     int rem = remaining();
-    return new DirectByteBufferImpl (this,
-				     DirectByteBufferImpl
-				     .adjustAddress(address, position()),
-				     rem, rem, 0, isReadOnly ());
+    return new DirectByteBufferImpl
+      (this, VMDirectByteBuffer.adjustAddress(address, position()),
+       rem, rem, 0, isReadOnly());
   }
 
   private ByteBuffer duplicate(boolean readOnly)

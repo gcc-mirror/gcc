@@ -949,6 +949,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/nio/ReadOnlyBufferException.java \
 	java/nio/ShortBuffer.java java/nio/ShortBufferImpl.java \
 	java/nio/ShortViewBufferImpl.java \
+	java/nio/VMDirectByteBuffer.java \
 	java/nio/channels/AlreadyConnectedException.java \
 	java/nio/channels/AsynchronousCloseException.java \
 	java/nio/channels/ByteChannel.java \
@@ -3918,6 +3919,7 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/nio/MappedByteBuffer.lo java/nio/MappedByteBufferImpl.lo \
 	java/nio/ReadOnlyBufferException.lo java/nio/ShortBuffer.lo \
 	java/nio/ShortBufferImpl.lo java/nio/ShortViewBufferImpl.lo \
+	java/nio/VMDirectByteBuffer.lo \
 	java/nio/channels/AlreadyConnectedException.lo \
 	java/nio/channels/AsynchronousCloseException.lo \
 	java/nio/channels/ByteChannel.lo \
@@ -6830,6 +6832,7 @@ java/nio/ReadOnlyBufferException.java \
 java/nio/ShortBuffer.java \
 java/nio/ShortBufferImpl.java \
 java/nio/ShortViewBufferImpl.java \
+java/nio/VMDirectByteBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/AsynchronousCloseException.java \
 java/nio/channels/ByteChannel.java \
@@ -9996,6 +9999,8 @@ java/nio/ShortBuffer.lo: java/nio/$(am__dirstamp) \
 java/nio/ShortBufferImpl.lo: java/nio/$(am__dirstamp) \
 	java/nio/$(DEPDIR)/$(am__dirstamp)
 java/nio/ShortViewBufferImpl.lo: java/nio/$(am__dirstamp) \
+	java/nio/$(DEPDIR)/$(am__dirstamp)
+java/nio/VMDirectByteBuffer.lo: java/nio/$(am__dirstamp) \
 	java/nio/$(DEPDIR)/$(am__dirstamp)
 java/nio/channels/AlreadyConnectedException.lo:  \
 	java/nio/channels/$(am__dirstamp) \
@@ -16839,6 +16844,8 @@ mostlyclean-compile:
 	-rm -f java/nio/ShortBufferImpl.lo
 	-rm -f java/nio/ShortViewBufferImpl.$(OBJEXT)
 	-rm -f java/nio/ShortViewBufferImpl.lo
+	-rm -f java/nio/VMDirectByteBuffer.$(OBJEXT)
+	-rm -f java/nio/VMDirectByteBuffer.lo
 	-rm -f java/nio/channels/AlreadyConnectedException.$(OBJEXT)
 	-rm -f java/nio/channels/AlreadyConnectedException.lo
 	-rm -f java/nio/channels/AsynchronousCloseException.$(OBJEXT)
@@ -20700,6 +20707,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/ShortBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/ShortBufferImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/ShortViewBufferImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/VMDirectByteBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natDirectByteBufferImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/AlreadyConnectedException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/AsynchronousCloseException.Plo@am__quote@

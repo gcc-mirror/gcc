@@ -1,5 +1,5 @@
-/* NIOServerSocket.java -- 
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+/* VMDirectByteBuffer.java -- 
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,45 +36,18 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
+package java.nio;
 
-import gnu.java.net.PlainSocketImpl;
+import gnu.classpath.Configuration;
+import gnu.gcj.RawData;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-
-/**
- * @author Michael Koch (konqueror@gmx.de)
- */
-public final class NIOServerSocket extends ServerSocket
+final class VMDirectByteBuffer
 {
-  private ServerSocketChannelImpl channel;
-    
-  protected NIOServerSocket (ServerSocketChannelImpl channel)
-    throws IOException
-  {
-    super();
-    this.channel = channel;
-  }
-
-  public native PlainSocketImpl getPlainSocketImpl();
-
-  public ServerSocketChannel getChannel()
-  {
-    return channel;
-  }
-
-  public Socket accept() throws IOException
-  {
-    SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
-      sm.checkListen (getLocalPort());
-
-    SocketChannel socketChannel = channel.provider().openSocketChannel();
-    implAccept (socketChannel.socket());
-    return socketChannel.socket();
-  }
+  static native RawData allocate (int capacity);
+  static native void free(RawData address);
+  static native byte get(RawData address, int index);
+  static native void get(RawData address, int index, byte[] dst, int offset, int length);
+  static native void put(RawData address, int index, byte value);
+  static native RawData adjustAddress(RawData address, int offset);
+  static native void shiftDown(RawData address, int dst_offset, int src_offset, int count);
 }

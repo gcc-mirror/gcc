@@ -16,56 +16,55 @@ details.  */
 #include <stdlib.h>
 
 #include <gnu/gcj/RawData.h>
-#include <java/nio/DirectByteBufferImpl.h>
+#include <java/nio/VMDirectByteBuffer.h>
 
 using gnu::gcj::RawData;
-using java::nio::DirectByteBufferImpl;
 
 RawData*
-java::nio::DirectByteBufferImpl::allocateImpl (jint capacity)
+java::nio::VMDirectByteBuffer::allocate (jint capacity)
 {
   return reinterpret_cast<gnu::gcj::RawData*> (::malloc (capacity));
 }
 
 void
-java::nio::DirectByteBufferImpl::freeImpl (gnu::gcj::RawData* address)
+java::nio::VMDirectByteBuffer::free (gnu::gcj::RawData* address)
 {
   ::free (reinterpret_cast<void*> (address));
 }
 
 jbyte
-DirectByteBufferImpl::getImpl (RawData* address, jint index)
+java::nio::VMDirectByteBuffer::get (RawData* address, jint index)
 {
   jbyte* pointer = reinterpret_cast<jbyte*> (address) + index;
   return *pointer;
 }
 
 void
-DirectByteBufferImpl::getImpl (RawData* address, jint index,
-			       jbyteArray dst, jint offset, jint length)
+java::nio::VMDirectByteBuffer::get (RawData* address, jint index,
+				    jbyteArray dst, jint offset, jint length)
 {
   jbyte* src = reinterpret_cast<jbyte*> (address) + index;
   memcpy (elements (dst) + offset, src, length);
 }
 
 void
-java::nio::DirectByteBufferImpl::putImpl (gnu::gcj::RawData* address,
-					  jint index, jbyte value)
+java::nio::VMDirectByteBuffer::put (gnu::gcj::RawData* address,
+				    jint index, jbyte value)
 {
   jbyte* pointer = reinterpret_cast<jbyte*> (address) + index;
   *pointer = value;
 }
 
 RawData*
-java::nio::DirectByteBufferImpl::adjustAddress (RawData* address, jint offset)
+java::nio::VMDirectByteBuffer::adjustAddress (RawData* address, jint offset)
 {
   jbyte* start = reinterpret_cast<jbyte*> (address) + offset;
   return reinterpret_cast<RawData*>(start);
 }
 
 void
-java::nio::DirectByteBufferImpl::shiftDown
-(RawData* address, jint dst_offset, jint src_offset, jint count)
+java::nio::VMDirectByteBuffer::shiftDown (RawData* address, jint dst_offset,
+					  jint src_offset, jint count)
 {
   jbyte* dst = reinterpret_cast<jbyte*> (address) + dst_offset;
   jbyte* src = reinterpret_cast<jbyte*> (address) + src_offset;

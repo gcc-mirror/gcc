@@ -38,20 +38,10 @@ exception statement from your version. */
 
 package java.nio;
 
-import gnu.classpath.Configuration;
 import gnu.gcj.RawData;
 
 final class DirectByteBufferImpl extends ByteBuffer
 {
-  static
-  {
-    // load the shared library needed for native methods.
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary ("javanio");
-      }
-  }
-  
   /** Used by MappedByteBufferImpl and when slicing to prevent premature GC. */
   protected Object owner;
 
@@ -78,26 +68,21 @@ final class DirectByteBufferImpl extends ByteBuffer
    */ 
   public static ByteBuffer allocate(int capacity)
   {
-    return new DirectByteBufferImpl(allocateImpl(capacity), capacity);
+    return new DirectByteBufferImpl(VMDirectByteBuffer.allocate(capacity),
+				    capacity);
   }
 
-  private static native RawData allocateImpl (int capacity);
-  private static native void freeImpl (RawData address);
-  
   protected void finalize() throws Throwable
   {
-    freeImpl (address);
+    VMDirectByteBuffer.free(address);
   }
   
-  static native byte getImpl (RawData address, int index);
-  static native void putImpl (RawData address, int index, byte value);
-
   public byte get()
   {
     checkForUnderflow();
 
     int pos = position();
-    byte result = getImpl (address, pos);
+    byte result = VMDirectByteBuffer.get(address, pos);
     position(pos + 1);
     return result;
   }
@@ -106,11 +91,8 @@ final class DirectByteBufferImpl extends ByteBuffer
   {
     checkIndex(index);
 
-    return getImpl (address, index);
+    return VMDirectByteBuffer.get(address, index);
   }
-
-  static native void getImpl (RawData address, int index,
-			      byte[] dst, int offset, int length);
 
   public ByteBuffer get(byte[] dst, int offset, int length)
   {
@@ -118,7 +100,7 @@ final class DirectByteBufferImpl extends ByteBuffer
     checkForUnderflow(length);
 
     int index = position();
-    getImpl(address, index, dst, offset, length);
+    VMDirectByteBuffer.get(address, index, dst, offset, length);
     position(index+length);
 
     return this;
@@ -130,7 +112,7 @@ final class DirectByteBufferImpl extends ByteBuffer
     checkForOverflow();
 
     int pos = position();
-    putImpl (address, pos, value);
+    VMDirectByteBuffer.put(address, pos, value);
     position(pos + 1);
     return this;
   }
@@ -140,15 +122,13 @@ final class DirectByteBufferImpl extends ByteBuffer
     checkIfReadOnly();
     checkIndex(index);
 
-    putImpl (address, index, value);
+    VMDirectByteBuffer.put(address, index, value);
     return this;
   }
   
-  static native void shiftDown(RawData address, int dst_offset, int src_offset, int count);
-
   void shiftDown(int dst_offset, int src_offset, int count)
   {
-    shiftDown(address, dst_offset, src_offset, count);
+    VMDirectByteBuffer.shiftDown(address, dst_offset, src_offset, count);
   }
   
   public ByteBuffer compact()
@@ -157,21 +137,19 @@ final class DirectByteBufferImpl extends ByteBuffer
     if (pos > 0)
       {
 	int count = remaining();
-	shiftDown(address, 0, pos, count);
+	VMDirectByteBuffer.shiftDown(address, 0, pos, count);
 	position(count);
 	limit(capacity());
       }
     return this;
   }
 
-  public static native RawData adjustAddress(RawData address, int offset);
-
   public ByteBuffer slice()
   {
     int rem = remaining();
-    return new DirectByteBufferImpl (owner,
-				     adjustAddress(address, position()),
-				     rem, rem, 0, isReadOnly ());
+    return new DirectByteBufferImpl
+      (owner, VMDirectByteBuffer.adjustAddress(address, position()),
+       rem, rem, 0, isReadOnly());
   }
 
   private ByteBuffer duplicate(boolean readOnly)

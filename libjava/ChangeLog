@@ -1,5 +1,20 @@
 2004-11-24  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/NIOServerSocket.java: Added email to @author tag.
+	* java/nio/DirectByteBufferImpl.java:
+	Moved native methods to java.nio.VMDirectByteBuffer class.
+	* java/nio/MappedByteBufferImpl.java:
+	Use native methods from java.nio.VMDirectByteBuffer class.
+	* java/nio/VMDirectByteBuffer.java: New file,
+	* java/nio/natDirectByteBufferImpl.cc:
+	Moved all methods into java.nio.VMDirectByteBuffer class.
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(register): Only re-use valid keys.
+	* Makefile.am: Added java/nio/VMDirectByteBuffer.java.
+	* Makefile.in: Regenerated.
+
+2004-11-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/DirectByteBufferImpl.java,
 	java/nio/MappedByteBufferImpl.java:
 	Reformatted.
