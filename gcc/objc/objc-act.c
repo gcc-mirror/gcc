@@ -537,7 +537,7 @@ objc_fatal ()
 }
 
 void
-objc_finish ()
+finish_file ()
 {
   if (doing_objc_thang)
     finish_objc ();		/* Objective-C finalization */

@@ -258,9 +258,7 @@ extern void yyprint ();
 program: /* empty */
 		{ if (pedantic)
 		    pedwarn ("ANSI C forbids an empty source file");
-ifobjc
-		  objc_finish ();
-end ifobjc
+		  finish_file ();
 		}
 	| extdefs
 		{
@@ -268,9 +266,7 @@ end ifobjc
 		     get us back to the global binding level.  */
 		  while (! global_bindings_p ())
 		    poplevel (0, 0, 0);
-ifobjc
-		  objc_finish ();
-end ifobjc
+		  finish_file ();
 		}
 	;
 

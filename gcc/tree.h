@@ -943,6 +943,11 @@ struct tree_type
    alternative would be passed.  */
 #define DECL_TRANSPARENT_UNION(NODE) ((NODE)->decl.transparent_union)
 
+/* Used in FUNCTION_DECLs to indicate that they should be run automatically
+   at the beginning or end of execution.  */
+#define DECL_STATIC_CONSTRUCTOR(NODE) ((NODE)->decl.static_ctor_flag)
+#define DECL_STATIC_DESTRUCTOR(NODE) ((NODE)->decl.static_dtor_flag)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) ((NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) ((NODE)->decl.lang_flag_1)
@@ -979,7 +984,9 @@ struct tree_decl
   unsigned common_flag : 1;
   unsigned defer_output : 1;
   unsigned transparent_union : 1;
-  /* room for four more */
+  unsigned static_ctor_flag : 1;
+  unsigned static_dtor_flag : 1;
+  /* room for two more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* used by yyparse */
 
-void objc_finish				PROTO((void));
+void finish_file				PROTO((void));
 tree start_class				PROTO((enum tree_code, tree, tree, tree));
 tree continue_class				PROTO((tree));
 void finish_class				PROTO((tree));
