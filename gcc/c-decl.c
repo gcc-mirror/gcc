@@ -6794,7 +6794,7 @@ static hashval_t
 link_hash_hash (const void *x_p)
 {
   tree x = (tree)x_p;
-  return (hashval_t) DECL_ASSEMBLER_NAME (x);
+  return (hashval_t) (long)DECL_ASSEMBLER_NAME (x);
 }
 
 static int

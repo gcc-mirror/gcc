@@ -1,3 +1,8 @@
+2003-07-13  Andreas Jaeger  <aj@suse.de>
+
+	* c-decl.c (link_hash_hash): Avoid warning about casting pointer
+	to integer of different size.
+
 2003-07-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_comparison): Convert (ne (and (not X) 1) 0)
