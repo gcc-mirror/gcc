@@ -26,7 +26,6 @@
 // the executable file might be covered by the GNU General Public License.
 
 #include <stddef.h>
-#include <string.h>
 #include "tinfo.h"
 #include "new"			// for placement new
 
