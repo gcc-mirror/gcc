@@ -1,3 +1,10 @@
+2001-01-09  Alan Lehotsky  <lehotsky@tiac.net>
+
+	* gcc.c-torture/execute/921202-1.c: Use STACK_SIZE to avoid
+	problems on small machines.
+	* gcc.c-torture/execute/920730-1.c: Use values from <limits.h> to
+	parameterize. 
+	
 2001-01-09  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.ext/instantiate2.C: ERROR line should fail for

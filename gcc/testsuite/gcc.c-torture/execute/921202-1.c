@@ -1,15 +1,20 @@
+#ifndef STACK_SIZE
+#define	VLEN	2055
+#else
+#define VLEN ((STACK_SIZE/16) - 1)
+#endif
 main ()
 {
-  long dx[2055];
-  long dy[2055];
-  long s1[2055];
+  long dx[VLEN];
+  long dy[VLEN];
+  long s1[VLEN];
   int cyx, cyy;
   int i;
   long size;
 
   for (;;)
     {
-      size = 2055;
+      size = VLEN;
       mpn_random2 (s1, size);
 
       for (i = 0; i < 1; i++)
