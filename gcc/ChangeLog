@@ -1,3 +1,14 @@
+Tue Aug 27 23:03:52 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* c-common.c (warn_undeclared_selector): New variable.
+	* c-common.h (warn_undeclared_selector): Idem.
+	* c-opts.c (c_common_decode_option): Set warn_undeclared_selector
+	to on when -Wundeclared-selector is found.
+	(COMMAND_LINE_OPTIONS): Added -Wundeclared-selector.
+	* objc/objc-act.c (build_selector_expr): If
+	warn_undeclared_selector is set, check that the selector has
+	already been defined, and emit a warning if not.
+
 2002-08-27  Nick Clifton  <nickc@redhat.com>
             Catherine Moore  <clm@redhat.com>
             Jim Wilson  <wilson@cygnus.com>
