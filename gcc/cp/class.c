@@ -75,7 +75,7 @@ static class_stack_node_t current_class_stack;
 static tree get_vfield_name PARAMS ((tree));
 static void finish_struct_anon PARAMS ((tree));
 static tree build_vbase_pointer PARAMS ((tree, tree));
-static tree build_vtable_entry PARAMS ((tree, tree));
+static tree build_vtable_entry PARAMS ((tree, tree, tree));
 static tree get_vtable_name PARAMS ((tree));
 static tree get_derived_offset PARAMS ((tree, tree));
 static tree get_basefndecls PARAMS ((tree, tree));
@@ -85,8 +85,7 @@ static void prepare_fresh_vtable PARAMS ((tree, tree));
 static tree dfs_fixup_vtable_deltas PARAMS ((tree, void *));
 static tree dfs_finish_vtbls PARAMS ((tree, void *));
 static void finish_vtbls PARAMS ((tree));
-static void modify_vtable_entry PARAMS ((tree, tree, tree));
-static tree get_vtable_entry_n PARAMS ((tree, unsigned HOST_WIDE_INT));
+static void modify_vtable_entry PARAMS ((tree, tree, tree, tree));
 static void add_virtual_function PARAMS ((tree *, tree *, int *, tree, tree));
 static tree delete_duplicate_fields_1 PARAMS ((tree, tree));
 static void delete_duplicate_fields PARAMS ((tree));
@@ -114,7 +113,6 @@ static tree fixed_type_or_null PARAMS ((tree, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
 							  int, tree));
 static void build_vtable_entry_ref PARAMS ((tree, tree, tree));
-static tree build_vtable_entry_for_fn PARAMS ((tree, tree));
 static tree build_vtbl_initializer PARAMS ((tree, tree));
 static int count_fields PARAMS ((tree));
 static int add_fields_to_vec PARAMS ((tree, tree, int));
@@ -683,23 +681,37 @@ build_vbase_path (code, type, expr, path, nonnull)
 
 /* Virtual function things.  */
 
-/* Build an entry in the virtual function table.
-   DELTA is the offset for the `this' pointer.
-   PFN is an ADDR_EXPR containing a pointer to the virtual function.
-   Note that the index (DELTA2) in the virtual function table
-   is always 0.  */
+/* Build an entry in the virtual function table.  DELTA is the offset
+   for the `this' pointer.  VCALL_INDEX is the vtable index containing
+   the vcall offset; zero if none.  FNDECL is the virtual function
+   itself.  */
 
 static tree
-build_vtable_entry (delta, pfn)
-     tree delta, pfn;
+build_vtable_entry (delta, vcall_index, fndecl)
+     tree delta;
+     tree vcall_index;
+     tree fndecl;
 {
+  tree pfn;
+
+  /* Take the address of the function, considering it to be of an
+     appropriate generic type.  */
+  pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
+  /* The address of a function can't change.  */
+  TREE_CONSTANT (pfn) = 1;
+
   if (flag_vtable_thunks)
     {
-      HOST_WIDE_INT idelta = TREE_INT_CST_LOW (delta);
-      if (idelta && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (pfn, 0)))
+      HOST_WIDE_INT idelta;
+      HOST_WIDE_INT ivindex;
+
+      idelta = TREE_INT_CST_LOW (delta);
+      ivindex = TREE_INT_CST_LOW (vcall_index);
+      if ((idelta || ivindex) 
+	  && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (pfn, 0)))
 	{
-	  pfn = build1 (ADDR_EXPR, vtable_entry_type,
-			make_thunk (pfn, idelta));
+	  pfn = make_thunk (pfn, idelta, ivindex);
+	  pfn = build1 (ADDR_EXPR, vtable_entry_type, pfn);
 	  TREE_READONLY (pfn) = 1;
 	  TREE_CONSTANT (pfn) = 1;
 	}
@@ -715,6 +727,9 @@ build_vtable_entry (delta, pfn)
 			      tree_cons (NULL_TREE, integer_zero_node,
 					 build_tree_list (NULL_TREE, pfn)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
+
+      /* We don't use vcall offsets when not using vtable thunks.  */
+      my_friendly_assert (integer_zerop (vcall_index), 20000125);
 
       /* DELTA used to be constructed by `size_int' and/or size_binop,
 	 which caused overflow problems when it was negative.  That should
@@ -738,25 +753,6 @@ build_vtable_entry (delta, pfn)
 
       return entry;
     }
-}
-
-/* Build a vtable entry for FNDECL.  DELTA is the amount by which we
-   must adjust the this pointer when calling F.  */
-
-static tree
-build_vtable_entry_for_fn (delta, fndecl)
-     tree delta;
-     tree fndecl;
-{
-  tree pfn;
-
-  /* Take the address of the function, considering it to be of an
-     appropriate generic type.  */
-  pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
-  /* The address of a function can't change.  */
-  TREE_CONSTANT (pfn) = 1;
-  /* Now build the vtable entry itself.  */
-  return build_vtable_entry (delta, pfn);
 }
 
 /* We want to give the assembler the vtable identifier as well as
@@ -984,16 +980,18 @@ set_rtti_entry (virtuals, offset, type)
   if (flag_vtable_thunks)
     {
       /* The first slot holds the offset.  */
-      TREE_PURPOSE (virtuals) = offset;
+      BF_DELTA (virtuals) = offset;
+      BF_VCALL_INDEX (virtuals) = integer_zero_node;
 
       /* The next node holds the decl.  */
       virtuals = TREE_CHAIN (virtuals);
       offset = integer_zero_node;
     }
 
-  /* This slot holds the decl.  */
-  TREE_PURPOSE (virtuals) = offset;
-  TREE_VALUE (virtuals) = decl;
+  /* This slot holds the function to call.  */
+  BF_DELTA (virtuals) = offset;
+  BF_VCALL_INDEX (virtuals) = integer_zero_node;
+  BF_FN (virtuals) = decl;
 }
 
 /* Get the VAR_DECL of the vtable for TYPE. TYPE need not be polymorphic,
@@ -1263,42 +1261,71 @@ prepare_fresh_vtable (binfo, for_type)
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
 }
 
-/* Change the offset for the FNDECL entry to NEW_OFFSET.  Also update
-   DECL_VINDEX (FNDECL).  */
+/* Make V, an entry on the BINFO_VIRTUALS list for BINFO (which is in
+   the hierarchy dominated by T) list FNDECL as its BF_FN.  */
 
 static void
-modify_vtable_entry (old_entry_in_list, new_offset, fndecl)
-     tree old_entry_in_list, new_offset, fndecl;
+modify_vtable_entry (t, binfo, fndecl, v)
+     tree t;
+     tree binfo;
+     tree fndecl;
+     tree v;
 {
-  tree base_fndecl = TREE_VALUE (old_entry_in_list);
+  tree base_offset, offset;
+  tree context = DECL_CLASS_CONTEXT (fndecl);
+  tree vfield = TYPE_VFIELD (t);
+  tree this_offset;
+  tree vcall_index;
 
-  /* Update the entry.  */
-  TREE_PURPOSE (old_entry_in_list) = new_offset;
-  TREE_VALUE (old_entry_in_list) = fndecl;
+  offset = get_class_offset (context, t, binfo, fndecl);
 
-  /* Now assign virtual dispatch information, if unset.  We can
-     dispatch this, through any overridden base function.  */
-  if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
+  /* Find the right offset for ythe this pointer based on the
+     base class we just found.  We have to take into
+     consideration the virtual base class pointers that we
+     stick in before the virtual function table pointer.
+
+     Also, we want just the delta between the most base class
+     that we derived this vfield from and us.  */
+  base_offset 
+    = size_binop (PLUS_EXPR,
+		  get_derived_offset (binfo, 
+				      DECL_VIRTUAL_CONTEXT (BF_FN (v))),
+		  BINFO_OFFSET (binfo));
+  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
+  vcall_index = integer_zero_node;
+
+  if (fndecl != BF_FN (v)
+      || !tree_int_cst_equal (this_offset, BF_DELTA (v))
+      || !tree_int_cst_equal (vcall_index, BF_VCALL_INDEX (v)))
     {
-      DECL_VINDEX (fndecl) = DECL_VINDEX (base_fndecl);
-      DECL_VIRTUAL_CONTEXT (fndecl) = DECL_VIRTUAL_CONTEXT (base_fndecl);
-    }
-}
+      tree base_fndecl;
 
-/* Access the virtual function table entry N.  VIRTUALS is the virtual
-   function table's initializer.  */
+      /* Make sure we can modify the derived association with immunity.  */
+      if (binfo == TYPE_BINFO (t))
+	/* In this case, it is *type*'s vtable we are modifying.  We
+	   start with the approximation that it's vtable is that of
+	   the immediate base class.  */
+	build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
+      else
+	/* This is our very own copy of `basetype' to play with.
+	   Later, we will fill in all the virtual functions that
+	   override the virtual functions in these base classes which
+	   are not defined by the current type.  */
+	prepare_fresh_vtable (binfo, t);
 
-static tree
-get_vtable_entry_n (virtuals, n)
-     tree virtuals;
-     unsigned HOST_WIDE_INT n;
-{
-  while (n > 0)
-    {
-      --n;
-      virtuals = TREE_CHAIN (virtuals);
+      base_fndecl = BF_FN (v);
+      BF_DELTA (v) = this_offset;
+      BF_VCALL_INDEX (v) = vcall_index;
+      BF_FN (v) = fndecl;
+
+      /* Now assign virtual dispatch information, if unset.  We can
+	 dispatch this, through any overridden base function.  */
+      if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
+	{
+	  DECL_VINDEX (fndecl) = DECL_VINDEX (base_fndecl);
+	  DECL_VIRTUAL_CONTEXT (fndecl) = DECL_VIRTUAL_CONTEXT (base_fndecl);
+	}
     }
-  return virtuals;
 }
 
 /* Call this function whenever its known that a vtable for T is going
@@ -1340,14 +1367,20 @@ add_virtual_function (new_virtuals_p, overridden_virtuals_p,
      tree fndecl;
      tree t; /* Structure type.  */
 {
+  tree new_virtual;
+
   /* If this function doesn't override anything from a base class, we
      can just assign it a new DECL_VINDEX now.  Otherwise, if it does
      override something, we keep it around and assign its DECL_VINDEX
      later, in modify_all_vtables.  */
   if (TREE_CODE (DECL_VINDEX (fndecl)) == INTEGER_CST)
     /* We've already dealt with this function.  */
-    ;
-  else if (DECL_VINDEX (fndecl) == error_mark_node)
+    return;
+
+  new_virtual = build_tree_list (integer_zero_node, fndecl);
+  BF_VCALL_INDEX (new_virtual) = integer_zero_node;
+
+  if (DECL_VINDEX (fndecl) == error_mark_node)
     {
       /* FNDECL is a new virtual function; it doesn't override any
 	 virtual function in a base class.  */
@@ -1362,15 +1395,15 @@ add_virtual_function (new_virtuals_p, overridden_virtuals_p,
       DECL_VIRTUAL_CONTEXT (fndecl) = t;
 
       /* Save the state we've computed on the NEW_VIRTUALS list.  */
-      *new_virtuals_p = tree_cons (integer_zero_node,
-				   fndecl,
-				   *new_virtuals_p);
+      TREE_CHAIN (new_virtual) = *new_virtuals_p;
+      *new_virtuals_p = new_virtual;
     }
-  else if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
-    /* FNDECL overrides a function from a base class.  */
-    *overridden_virtuals_p = tree_cons (NULL_TREE, 
-					fndecl, 
-					*overridden_virtuals_p);
+  else
+    {
+      /* FNDECL overrides a function from a base class.  */
+      TREE_CHAIN (new_virtual) = *overridden_virtuals_p;
+      *overridden_virtuals_p = new_virtual;
+    }
 }
 
 extern struct obstack *current_obstack;
@@ -2615,7 +2648,6 @@ build_vtbl_initializer (binfo, t)
 	 we can put it in the vtable.  */
       init = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
       TREE_CONSTANT (init) = 1;
-      init = build_vtable_entry (integer_zero_node, init);
       inits = tree_cons (NULL_TREE, init, inits);
 
       v = TREE_CHAIN (v);
@@ -2645,13 +2677,15 @@ build_vtbl_initializer (binfo, t)
   while (v)
     {
       tree delta;
+      tree vcall_index;
       tree fn;
       tree init;
 
       /* Pull the offset for `this', and the function to call, out of
 	 the list.  */
-      delta = TREE_PURPOSE (v);
-      fn = TREE_VALUE (v);
+      delta = BF_DELTA (v);
+      vcall_index = BF_VCALL_INDEX (v);
+      fn = BF_FN (v);
       my_friendly_assert (TREE_CODE (delta) == INTEGER_CST, 19990727);
       my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 19990727);
 
@@ -2661,7 +2695,7 @@ build_vtbl_initializer (binfo, t)
 	fn = abort_fndecl;
 
       /* Package up that information for the vtable.  */
-      init = build_vtable_entry_for_fn (delta, fn);
+      init = build_vtable_entry (delta, vcall_index, fn);
       /* And add it to the chain of initializers.  */
       inits = tree_cons (NULL_TREE, init, inits);
 
@@ -2928,11 +2962,11 @@ modify_one_vtable (binfo, t, fndecl)
   if (fndecl == NULL_TREE)
     return;
 
-  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
-
-  while (virtuals)
+  for (virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
+       virtuals;
+       virtuals = TREE_CHAIN (virtuals), ++n)
     {
-      tree current_fndecl = TREE_VALUE (virtuals);
+      tree current_fndecl = BF_FN (virtuals);
 
       /* We should never have an instance of __pure_virtual on the
 	 BINFO_VIRTUALS list.  If we do, then we will never notice
@@ -2942,47 +2976,7 @@ modify_one_vtable (binfo, t, fndecl)
 			  19990727);
 
       if (current_fndecl && overrides (fndecl, current_fndecl))
-	{
-	  tree base_offset, offset;
-	  tree context = DECL_CLASS_CONTEXT (fndecl);
-	  tree vfield = TYPE_VFIELD (t);
-	  tree this_offset;
-
-	  offset = get_class_offset (context, t, binfo, fndecl);
-
-	  /* Find the right offset for the this pointer based on the
-	     base class we just found.  We have to take into
-	     consideration the virtual base class pointers that we
-	     stick in before the virtual function table pointer.
-
-	     Also, we want just the delta between the most base class
-	     that we derived this vfield from and us.  */
-	  base_offset = size_binop (PLUS_EXPR,
-				    get_derived_offset (binfo, DECL_CONTEXT (current_fndecl)),
-				    BINFO_OFFSET (binfo));
-	  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
-
-	  if (binfo == TYPE_BINFO (t))
-	    /* In this case, it is *type*'s vtable we are modifying.
-	       We start with the approximation that it's vtable is
-	       that of the immediate base class.  */
-	      build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
-	  else
-	    /* This is our very own copy of `basetype' to play with.
-	       Later, we will fill in all the virtual functions that
-	       override the virtual functions in these base classes
-	       which are not defined by the current type.  */
-	    prepare_fresh_vtable (binfo, t);
-
-#ifdef NOTQUITE
-	  cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
-#endif
-	  modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
-			       this_offset,
-			       fndecl);
-	}
-      ++n;
-      virtuals = TREE_CHAIN (virtuals);
+	modify_vtable_entry (t, binfo, fndecl, virtuals);
     }
 }
 
@@ -3104,58 +3098,14 @@ dfs_fixup_vtable_deltas (binfo, data)
 	return NULL_TREE;
     }
 
-  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
-
-  while (virtuals)
+  for (virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
+       virtuals;
+       virtuals = TREE_CHAIN (virtuals), ++n)
     {
-      tree fndecl = TREE_VALUE (virtuals);
-      tree delta = TREE_PURPOSE (virtuals);
+      tree fndecl = BF_FN (virtuals);
 
       if (fndecl)
-	{
-	  tree base_offset, offset;
-	  tree context = DECL_CLASS_CONTEXT (fndecl);
-	  tree vfield = TYPE_VFIELD (t);
-	  tree this_offset;
-
-	  offset = get_class_offset (context, t, binfo, fndecl);
-
-	  /* Find the right offset for the this pointer based on the
-	     base class we just found.  We have to take into
-	     consideration the virtual base class pointers that we
-	     stick in before the virtual function table pointer.
-
-	     Also, we want just the delta between the most base class
-	     that we derived this vfield from and us.  */
-	  base_offset = size_binop (PLUS_EXPR,
-				    get_derived_offset (binfo,
-							DECL_CONTEXT (fndecl)),
-				    BINFO_OFFSET (binfo));
-	  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
-
-	  if (! tree_int_cst_equal (this_offset, delta))
-	    {
-	      /* Make sure we can modify the derived association with immunity.  */
-	      if (binfo == TYPE_BINFO (t))
-		/* In this case, it is *type*'s vtable we are modifying.
-		   We start with the approximation that it's vtable is that
-		   of the immediate base class.  */
-		build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
-	      else
-		/* This is our very own copy of `basetype' to play
-		   with.  Later, we will fill in all the virtual
-		   functions that override the virtual functions in
-		   these base classes which are not defined by the
-		   current type.  */
-		prepare_fresh_vtable (binfo, t);
-
-	      modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
-				   this_offset,
-				   fndecl);
-	    }
-	}
-      ++n;
-      virtuals = TREE_CHAIN (virtuals);
+	modify_vtable_entry (t, binfo, fndecl, virtuals);
     }
 
   return NULL_TREE;
@@ -3226,8 +3176,8 @@ override_one_vtable (binfo, old, t)
 
   while (orig_virtuals)
     {
-      tree fndecl = TREE_VALUE (virtuals);
-      tree old_fndecl = TREE_VALUE (old_virtuals);
+      tree fndecl = BF_FN (virtuals);
+      tree old_fndecl = BF_FN (old_virtuals);
 
       /* First check to see if they are the same.  */
       if (DECL_ASSEMBLER_NAME (fndecl) == DECL_ASSEMBLER_NAME (old_fndecl))
@@ -3280,7 +3230,7 @@ override_one_vtable (binfo, old, t)
 	    }
 	  {
 	    /* This MUST be overridden, or the class is ill-formed.  */
-	    tree fndecl = TREE_VALUE (virtuals);
+	    tree fndecl = BF_FN (virtuals);
 
 	    fndecl = copy_node (fndecl);
 	    copy_lang_decl (fndecl);
@@ -3291,8 +3241,8 @@ override_one_vtable (binfo, old, t)
 
 	    /* We can use integer_zero_node, as we will core dump
 	       if this is used anyway.  */
-	    TREE_PURPOSE (virtuals) = integer_zero_node;
-	    TREE_VALUE (virtuals) = fndecl;
+	    BF_DELTA (virtuals) = integer_zero_node;
+	    BF_FN (virtuals) = fndecl;
 	  }
 	}
       virtuals = TREE_CHAIN (virtuals);
