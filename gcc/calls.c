@@ -2260,8 +2260,7 @@ expand_call (exp, target, ignore)
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {
-	    /* Assign a temporary to hold the value.  */
-	    tree d;
+	    rtx d;
 
 	    /* For variable-sized objects, we must be called with a target
 	       specified.  If we were to allocate space on the stack here,
@@ -2270,14 +2269,9 @@ expand_call (exp, target, ignore)
 	    if (struct_value_size < 0)
 	      abort ();
 
-	    /* This DECL is just something to feed to mark_addressable;
-	       it doesn't get pushed.  */
-	    d = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
-	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 1, 0, 1);
-	    mark_addressable (d);
-	    mark_temp_addr_taken (DECL_RTL (d));
-	    structure_value_addr = XEXP (DECL_RTL (d), 0);
-	    TREE_USED (d) = 1;
+	    d = assign_temp (TREE_TYPE (exp), 1, 1, 1);
+	    mark_temp_addr_taken (d);
+	    structure_value_addr = XEXP (d, 0);
 	    target = 0;
 	  }
       }

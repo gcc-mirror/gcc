@@ -4925,19 +4925,6 @@ mark_addressable (exp)
 	    return 1;
 	  }
       case VAR_DECL:
-	if (TREE_STATIC (x) && TREE_READONLY (x)
-	    && DECL_RTL (x) != 0
-	    && ! DECL_IN_MEMORY_P (x))
-	  {
-	    TREE_ASM_WRITTEN (x) = 0;
-	    DECL_RTL (x) = 0;
-	    rest_of_decl_compilation (x, 0, 
-				      !DECL_FUNCTION_SCOPE_P (x),
-				      0);
-	    TREE_ADDRESSABLE (x) = 1;
-
-	    return 1;
-	  }
 	/* Caller should not be trying to mark initialized
 	   constant fields addressable.  */
 	my_friendly_assert (DECL_LANG_SPECIFIC (x) == 0
@@ -4952,8 +4939,6 @@ mark_addressable (exp)
 	  cp_warning ("address requested for `%D', which is declared `register'",
 		      x);
 	TREE_ADDRESSABLE (x) = 1;
-	if (cfun && expanding_p)
-	  put_var_into_stack (x);
 	return 1;
 
       case FUNCTION_DECL:
