@@ -1,3 +1,10 @@
+2004-11-04  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR tree-optimization/18184
+	* c-typeck.c (comptypes): Do not treat pointers of different
+	modes or alias-all flags as equivalent.
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1): Likewise.
+
 2004-11-04  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/gty.texi, doc/makefile.texi, doc/sourcebuild.texi: Don't

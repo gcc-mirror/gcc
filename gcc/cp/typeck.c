@@ -1030,11 +1030,13 @@ comptypes (tree t1, tree t2, int strict)
       if (!comptypes (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2),
 		      strict & ~COMPARE_REDECLARATION))
 	return false;
-      /* Fall through.  */
+      return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
+      return TYPE_MODE (t1) == TYPE_MODE (t2)
+	     && TYPE_REF_CAN_ALIAS_ALL (t1) == TYPE_REF_CAN_ALIAS_ALL (t2)
+	     && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
