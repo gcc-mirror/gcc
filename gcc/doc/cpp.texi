@@ -6,10 +6,12 @@
 @c @cropmarks
 @c @finalout
 
+@include gcc-common.texi
+
 @copying
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -40,10 +42,6 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 @c man end
 @end copying
 
-@macro gcctabopt{body}
-@code{\body\}
-@end macro
-
 @c Create a separate index for command line options.
 @defcodeindex op
 @syncodeindex vr op
@@ -60,8 +58,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 
 @titlepage
 @title The C Preprocessor
-@subtitle Last revised April 2001
-@subtitle for GCC version 3
+@subtitle for GCC version @value{version-GCC}
 @author Richard M. Stallman
 @author Zachary Weinberg
 @page

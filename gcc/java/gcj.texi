@@ -10,7 +10,7 @@
 @c the word ``Java'.
 
 @c When this manual is copyrighted.
-@set copyrights-gcj 2001, 2002
+@set copyrights-gcj 2001, 2002, 2003, 2004, 2005
 
 @c Versions
 @set which-gcj GCC-@value{version-GCC}

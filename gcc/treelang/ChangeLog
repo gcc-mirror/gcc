@@ -1,3 +1,8 @@
+2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* treelang.texi: Don't use local treelang version number.  Don't
+	give last update date.
+
 2005-02-01  James A. Morrison  <phython@gcc.gnu.org>
 
 	* (lex.l): Undef LINEMAP_POSITION_FOR_COLUMN before defining it.

@@ -78,11 +78,6 @@ This file documents the use of the GNU compilers.
 @center @titlefont{Using the GNU Compiler Collection}
 @sp 2
 @center by Richard M. Stallman and the GCC Developer Community
-@sp 3
-@center Last updated 6 February 2005
-@sp 1
-
-@center for GCC @value{version-GCC}
 @page
 @vskip 0pt plus 1filll
 For GCC Version @value{version-GCC}@*
