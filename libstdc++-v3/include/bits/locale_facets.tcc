@@ -219,9 +219,11 @@ namespace std
       bool __found_dec = false;
       bool __found_sci = false;
       string __found_grouping;
+      if (__lc->_M_use_grouping)
+	__found_grouping.reserve(32);
       int __sep_pos = 0;
       bool __e;
-      const char_type* __p;
+      const char_type* __q;
       while (__beg != __end)
         {
 	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
@@ -265,9 +267,9 @@ namespace std
 	      else
 		break;
 	    }
-          else if (__p = __traits_type::find(__lit + _S_izero, 10, __c))
+          else if (__q = __traits_type::find(__lit + _S_izero, 10, __c))
 	    {
-	      __xtrc += _S_atoms_in[__p - __lit];
+	      __xtrc += _S_atoms_in[__q - __lit];
 	      __found_mantissa = true;
 	      ++__sep_pos;
 	      ++__beg;
@@ -283,7 +285,8 @@ namespace std
 	      // Remove optional plus or minus sign, if they exist.
 	      if (++__beg != __end)
 		{
-		  const bool __plus = __traits_type::eq(*__beg, __lit[_S_iplus]);
+		  const bool __plus = __traits_type::eq(*__beg,
+							__lit[_S_iplus]);
 		  if (__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
 		    {
 		      __xtrc += __plus ? _S_atoms_in[_S_iplus]
@@ -311,7 +314,6 @@ namespace std
         }
 
       // Finish up.
-      __xtrc += char();
       if (__beg == __end)
         __err |= ios_base::eofbit;
       return __beg;
@@ -332,7 +334,8 @@ namespace std
 	const _CharT* __lit = __lc->_M_atoms_in;
 
 	// NB: Iff __basefield == 0, __base can change based on contents.
-	const ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
+	const ios_base::fmtflags __basefield = __io.flags()
+	                                       & ios_base::basefield;
 	const bool __oct = __basefield == ios_base::oct;
 	int __base = __oct ? 8 : (__basefield == ios_base::hex ? 16 : 10);
 
@@ -395,11 +398,13 @@ namespace std
 
 	// Extract.
 	string __found_grouping;
+	if (__lc->_M_use_grouping)
+	  __found_grouping.reserve(32);
 	int __sep_pos = 0;
 	bool __overflow = false;
 	_ValueT __result = 0;
 	const char_type* __lit_zero = __lit + _S_izero;
-	const char_type* __p;
+	const char_type* __q;
 	if (__negative)
 	  {
 	    const _ValueT __min = numeric_limits<_ValueT>::min() / __base;
@@ -426,16 +431,17 @@ namespace std
 		  }
 		else if (__traits_type::eq(__c, __lc->_M_decimal_point))
 		  break;
-		else if (__p = __traits_type::find(__lit_zero, __len, __c))
+		else if (__q = __traits_type::find(__lit_zero, __len, __c))
 		  {
-		    int __digit = __p - __lit_zero;
+		    int __digit = __q - __lit_zero;
 		    if (__digit > 15)
 		      __digit -= 6;
 		    if (__result < __min)
 		      __overflow = true;
 		    else
 		      {
-			const _ValueT __new_result = __result * __base - __digit;
+			const _ValueT __new_result = __result * __base
+			                             - __digit;
 			__overflow |= __new_result > __result;
 			__result = __new_result;
 			++__sep_pos;
@@ -469,16 +475,17 @@ namespace std
 		  }
 		else if (__traits_type::eq(__c, __lc->_M_decimal_point))
 		  break;
-		else if (__p = __traits_type::find(__lit_zero, __len, __c))
+		else if (__q = __traits_type::find(__lit_zero, __len, __c))
 		  {
-		    int __digit = __p - __lit_zero;
+		    int __digit = __q - __lit_zero;
 		    if (__digit > 15)
 		      __digit -= 6;
 		    if (__result > __max)
 		      __overflow = true;
 		    else
 		      {
-			const _ValueT __new_result = __result * __base + __digit;
+			const _ValueT __new_result = __result * __base
+			                             + __digit;
 			__overflow |= __new_result < __result;
 			__result = __new_result;
 			++__sep_pos;
@@ -497,7 +504,8 @@ namespace std
 	    // Add the ending grouping.
 	    __found_grouping += static_cast<char>(__sep_pos);
 
-	    if (!std::__verify_grouping(__lc->_M_grouping, __lc->_M_grouping_size,
+	    if (!std::__verify_grouping(__lc->_M_grouping,
+					__lc->_M_grouping_size,
 					__found_grouping))
 	      __err |= ios_base::failbit;
 	  }
@@ -890,8 +898,9 @@ namespace std
   template<typename _CharT, typename _OutIter>
     void
     num_put<_CharT, _OutIter>::
-    _M_group_float(const char* __grouping, size_t __grouping_size, _CharT __sep,
-		   const _CharT* __p, _CharT* __new, _CharT* __cs, int& __len) const
+    _M_group_float(const char* __grouping, size_t __grouping_size,
+		   _CharT __sep, const _CharT* __p, _CharT* __new,
+		   _CharT* __cs, int& __len) const
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 282. What types does numpunct grouping refer to?
@@ -1061,8 +1070,9 @@ namespace std
 	  const streamsize __w = __io.width();
 	  if (__w > static_cast<streamsize>(__len))
 	    {
-	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-								   * __w));
+	      _CharT* __cs
+		= static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							* __w));
 	      _M_pad(__fill, __w, __io, __cs, __name, __len);
 	      __name = __cs;
 	    }
@@ -1120,8 +1130,10 @@ namespace std
            const void* __v) const
     {
       const ios_base::fmtflags __flags = __io.flags();
-      const ios_base::fmtflags __fmt = ~(ios_base::showpos | ios_base::basefield
-					 | ios_base::uppercase | ios_base::internal);
+      const ios_base::fmtflags __fmt = ~(ios_base::showpos
+					 | ios_base::basefield
+					 | ios_base::uppercase
+					 | ios_base::internal);
       __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
 
       __s = _M_insert_int(__s, __io, __fill,
@@ -1186,6 +1198,8 @@ namespace std
 	bool __long_sign = false;
 	// String of grouping info from thousands_sep plucked from __units.
 	string __grouping_tmp;
+	if (__lc->_M_use_grouping)
+	  __grouping_tmp.reserve(32);
 	// Marker for thousands_sep position.
 	int __sep_pos = 0;
 	// If input iterator is in a valid state.
@@ -1274,9 +1288,10 @@ namespace std
 		      __sep_pos = 0;
 		      __testdecfound = true;
 		    }
-		  else if (*__beg == __lc->_M_thousands_sep && !__testdecfound)
+		  else if (__lc->_M_use_grouping
+			   && *__beg == __lc->_M_thousands_sep)
 		    {
-		      if (__lc->_M_grouping_size)
+		      if (!__testdecfound)
 			{
 			  // Mark position for later analysis.
 			  __grouping_tmp += static_cast<char>(__sep_pos);
@@ -2146,8 +2161,9 @@ namespace std
       // NB: This size is arbitrary. Should this be a data member,
       // initialized at construction?
       const size_t __maxlen = 64;
-      char_type* __res = static_cast<char_type*>(__builtin_alloca(sizeof(char_type)
-								  * __maxlen));
+      char_type* __res =
+	static_cast<char_type*>(__builtin_alloca(sizeof(char_type)
+						 * __maxlen));
 
       // NB: In IEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one

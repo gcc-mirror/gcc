@@ -1,5 +1,14 @@
 2004-02-27  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
+	num_get<>::_M_extract_int, money_get<>::_M_extract): If appropriate,
+	call reserve on the __tmp_gruping string.
+	(num_get<>::_M_extract_float): Don't append unnecessarily a
+	char() to the returned string.
+	* include/bits/locale_facets.tcc: Trivial reformattings.
+
+2004-02-27  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.h (money_get<>::_M_extract):
 	Change signature: now takes a plain string&.
 	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
