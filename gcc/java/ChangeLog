@@ -1,5 +1,8 @@
 2003-06-11  Tom Tromey  <tromey@redhat.com>
 
+	* lang.c (java_handle_option): Update dependency_tracking for
+	OPT_MF case.
+
 	* lang.c (java_handle_option): OPT_fbootclasspath_ can take an
 	empty argument.
 
