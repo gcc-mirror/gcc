@@ -1,3 +1,8 @@
+Wed Apr 14 09:19:39 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.c (x86_adjust_cost): Agi stall takes 1 cycle on Pentium, fst
+	requires value to be ready one extra cycle.
+
 Wed Apr 14 11:28:34 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* config/i386/i386.c (memory_address_length): Add missing parenthesis.

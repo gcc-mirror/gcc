@@ -5424,7 +5424,7 @@ x86_adjust_cost (insn, link, dep_insn, cost)
 	return 0;
 
       if (agi_dependent (insn, dep_insn))
-	return 3;
+	return cost ? cost + 1 : 2;
 
       if (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == SET
@@ -5434,6 +5434,10 @@ x86_adjust_cost (insn, link, dep_insn, cost)
 	/* compare probably paired with jump */
 	return 0;
       break;
+
+      /* Stores stalls one cycle longer than other insns.  */
+      if (is_fp_insn (insn) && cost && is_fp_store (dep_insn))
+        cost++;
 
     case PROCESSOR_K6:
     default:
