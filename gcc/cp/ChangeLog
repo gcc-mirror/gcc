@@ -1,3 +1,8 @@
+1997-10-06  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* tree.c (print_lang_statistics): #if 0 call to
+	print_inline_obstack_statistics until its definition is checked in.
+
 Mon Oct  6 09:27:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): Look for the original template.
