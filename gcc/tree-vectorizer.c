@@ -807,11 +807,11 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
 
       /* 3.1. Find the relevant names that need an exit-phi in GUARD_BB, i.e.
          names for which slpeel_update_phi_nodes_for_guard1 had not already
-         created a phi node. This is the case for names that are used out
-         side the loop (and therefore need an exit phi) but are not updated
+         created a phi node. This is the case for names that are used outside
+	 the loop (and therefore need an exit phi) but are not updated
          across loop iterations (and therefore don't have a loop-header-phi).
 
-         slpeel_update_phi_nodes_for_guard1 is responssible for creating
+         slpeel_update_phi_nodes_for_guard1 is responsible for creating
          loop-exit phis in GUARD_BB for names that have a loop-header-phi. When
          such a phi is created we also record the new name in SSA_NAME_AUX. If
          this new name exists, then guard_arg was set to this new name
