@@ -9999,7 +9999,7 @@ ix86_expand_int_addcc (operands)
 				       ix86_compare_op1, &compare_op))
      return 0;
   if (GET_CODE (compare_op) != LTU)
-    val = operands[3] == const1_rtx ? constm1_rtx : const1_rtx;
+    val = constm1_rtx;
   if ((GET_CODE (compare_op) == LTU) == (operands[3] == constm1_rtx))
     {
       switch (GET_MODE (operands[0]))

@@ -1,3 +1,7 @@
+Thu Jan  9 00:57:15 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c  (ix86_expand_int_addcc): Fix thinko.
+
 2003-01-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (FUNCTION_MODE): Always use SImode.
