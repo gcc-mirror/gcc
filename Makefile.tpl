@@ -282,7 +282,7 @@ USUAL_AS_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(AS); \
     else \
-       t='$(program_transform_name)'; echo as | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo as | sed -e $$t ; \
     fi; \
   fi`
 
@@ -296,7 +296,7 @@ USUAL_LD_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(LD); \
     else \
-       t='$(program_transform_name)'; echo ld | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo ld | sed -e $$t ; \
     fi; \
   fi`
 
@@ -308,7 +308,7 @@ USUAL_DLLTOOL_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(DLLTOOL); \
     else \
-       t='$(program_transform_name)'; echo dlltool | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo dlltool | sed -e $$t ; \
     fi; \
   fi`
 
@@ -320,7 +320,7 @@ USUAL_WINDRES_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(WINDRES); \
     else \
-       t='$(program_transform_name)'; echo windres | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo windres | sed -e $$t ; \
     fi; \
   fi`
 
@@ -332,7 +332,7 @@ USUAL_AR_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(AR); \
     else \
-       t='$(program_transform_name)'; echo ar | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo ar | sed -e $$t ; \
     fi; \
   fi`
 
@@ -348,7 +348,7 @@ USUAL_RANLIB_FOR_TARGET = ` \
          echo ranlib; \
       fi; \
     else \
-       t='$(program_transform_name)'; echo ranlib | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
     fi; \
   fi`
 
@@ -362,7 +362,7 @@ USUAL_NM_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(NM); \
     else \
-       t='$(program_transform_name)'; echo nm | sed -e 's/x/x/' $$t ; \
+       t='$(program_transform_name)'; echo nm | sed -e $$t ; \
     fi; \
   fi`
 

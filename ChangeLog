@@ -1,5 +1,16 @@
 2002-12-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Fix dramatic bustage due to change in
+	program_transform_name.
+	* Makefile.in: Regenerate.
+
+	* configure.in: Remove unnecessary PATH setting.
+	* configure: Regnerate.
+
+	* configure.in: Don't default to unprefixed tools unless
+	the native tools will work.
+	* configure: Regenerate.
+
 	* configure.in: Convert to autoconf script.  Blow away lots
 	of now-redundant Makefile fragments.
 	* configure: Generate using Autoconf.
