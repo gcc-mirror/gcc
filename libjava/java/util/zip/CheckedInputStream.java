@@ -1,5 +1,5 @@
 /* CheckedInputStream.java - Compute checksum of data being read
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,11 +35,12 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.util.zip;
 
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /* Written using on-line Java Platform 1.2 API Specification
  * and JCL book.

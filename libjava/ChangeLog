@@ -1,3 +1,11 @@
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/zip/CheckedInputStream.java,
+	java/util/zip/InflaterInputStream.java,
+	java/util/zip/ZipFile.java,
+	java/util/zip/ZipInputStream.java:
+	Import cleanups.
+
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/rmi/server/UnicastConnectionManager.java (clients): Now

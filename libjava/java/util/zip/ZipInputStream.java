@@ -1,5 +1,5 @@
-/* java.util.zip.ZipInputStream
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+/* ZipInputStream.java --
+   Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,8 +39,8 @@ exception statement from your version. */
 package java.util.zip;
 
 import java.io.EOFException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * This is a FilterInputStream that reads the files in an zip archive

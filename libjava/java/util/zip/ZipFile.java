@@ -1,5 +1,5 @@
-/* java.util.zip.ZipFile
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+/* ZipFile.java --
+   Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,8 +42,8 @@ import java.io.BufferedInputStream;
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.Enumeration;
 import java.util.HashMap;
