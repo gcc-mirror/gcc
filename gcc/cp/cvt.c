@@ -361,11 +361,7 @@ build_up_reference (type, arg, flags)
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
-    {
-      tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
-      DECL_ARTIFICIAL (slot) = 1;
-      arg = build_target_expr (slot, arg);
-    }
+    return get_target_expr (arg);
 
   /* If we had a way to wrap this up, and say, if we ever needed it's
      address, transform all occurrences of the register, into a memory
