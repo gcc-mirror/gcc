@@ -539,6 +539,9 @@ EOF
 	# i386?
 	echo i386-pc-interix
 	exit 0 ;;
+    i*:UWIN*:*)
+	echo ${UNAME_MACHINE}-pc-uwin
+	exit 0 ;;
     p*:CYGWIN*:*)
 	echo powerpcle-unknown-cygwin32
 	exit 0 ;;

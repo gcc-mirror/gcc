@@ -1,3 +1,8 @@
+Thu Mar 11 01:19:31 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* config.sub: Add i386-uwin support.
+	* config.guess: Likewise.
+
 Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* configure.in: cleanup, add mh-*pic handling for arm, special
