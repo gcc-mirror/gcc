@@ -1,3 +1,8 @@
+2004-12-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17909
+	* g++.dg/other/vararg-2.C: New test.
+
 2004-12-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17011, c++/17971
