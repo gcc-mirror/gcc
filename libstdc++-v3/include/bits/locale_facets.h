@@ -1448,6 +1448,7 @@ namespace std
     class moneypunct_byname : public moneypunct<_CharT, _Intl>
     {
       __c_locale			_M_c_locale_moneypunct;
+
     public:
       typedef _CharT 			char_type;
       typedef basic_string<_CharT> 	string_type;

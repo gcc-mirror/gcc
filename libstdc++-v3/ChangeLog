@@ -1,3 +1,12 @@
+2001-08-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/c_locale_gnu.cc: Minor tweaks.
+	(moneypunct<wchar_t>): Implement.
+	* include/bits/locale_facets.h: Same.
+	* testsuite/22_locale/moneypunct.cc: New file.
+	* testsuite/22_locale/moneypunct_byname.cc: New file.
+	* testsuite/22_locale/moneypunct_char_members.cc: New file.	
+
 2001-08-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/os/gnu-linux/bits/os_defines.h: Correct __s390__ definitions.
