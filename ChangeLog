@@ -1,3 +1,9 @@
+2003-02-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.in (*-*-darwin*): Rename from powerpc*-*-darwin*,
+	don't configure target-libobjc.
+	* configure: Regenerate.
+
 2003-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.tpl (RANLIB): Define.
