@@ -37,14 +37,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 
 static void tree_ssa_phiopt (void);
-static bool conditional_replacement (basic_block, tree, tree, tree);
-static bool value_replacement (basic_block, tree, tree, tree);
-static bool abs_replacement (basic_block, tree, tree, tree);
-static void replace_phi_with_stmt (block_stmt_iterator, basic_block,
-				   basic_block, tree, tree);
-static bool candidate_bb_for_phi_optimization (basic_block,
-					       basic_block *,
-					       basic_block *);
+static bool conditional_replacement (basic_block, basic_block, basic_block,
+				     edge, edge, tree, tree, tree);
+static bool value_replacement (basic_block, basic_block, basic_block,
+			       edge, edge, tree, tree, tree);
+static bool abs_replacement (basic_block, basic_block, basic_block,
+			     edge, edge, tree, tree, tree);
+static void replace_phi_edge_with_variable (basic_block, basic_block, edge,
+					    tree, tree);
 
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  i.e. if we have something
@@ -112,24 +112,85 @@ tree_ssa_phiopt (void)
   basic_block bb;
   bool removed_phis = false;
 
-  /* Search every basic block for PHI nodes we may be able to optimize.  */
-  FOR_EACH_BB (bb)
+  /* Search every basic block for COND_EXPR we may be able to optimize in reverse
+     order so we can find more.  */
+  FOR_EACH_BB_REVERSE (bb)
     {
-      tree arg0, arg1, phi;
+      tree cond_expr;
+      tree phi;
+      basic_block bb1, bb2;
+      edge e1, e2;
+      
+      cond_expr = last_stmt (bb);
+      /* Check to see if the last statement is a COND_EXPR */
+      if (!cond_expr
+          || TREE_CODE (cond_expr) != COND_EXPR)
+        continue;
+      
+      e1 = EDGE_SUCC (bb, 0);
+      bb1 = e1->dest;
+      e2 = EDGE_SUCC (bb, 1);
+      bb2 = e2->dest;
+      
+      /* We cannot do the optimization on abnormal edges.  */
+      if ((e1->flags & EDGE_ABNORMAL) != 0
+          || (e2->flags & EDGE_ABNORMAL) != 0)
+       continue;
+      
+      /* If either bb1's succ or bb2 or bb2's succ is non NULL.  */
+      if (EDGE_COUNT (bb1->succs) < 1
+          || bb2 == NULL
+	  || EDGE_COUNT (bb2->succs) < 1)
+        continue;
+      
+      /* Find the bb which is the fall through to the other.  */
+      if (EDGE_SUCC (bb1, 0)->dest == bb2)
+        ;
+      else if (EDGE_SUCC (bb2, 0)->dest == bb1)
+        {
+	  basic_block bb_tmp = bb1;
+	  edge e_tmp = e1;
+	  bb1 = bb2;
+	  bb2 = bb_tmp;
+	  e1 = e2;
+	  e2 = e_tmp;
+	}
+      else
+        continue;
+      
+      e1 = EDGE_SUCC (bb1, 0);
+      
+      /* Make sure that bb1 is just a fall through.  */
+      if (EDGE_COUNT (bb1->succs) > 1
+	  || (e1->flags & EDGE_FALLTHRU) == 0)
+        continue;
+	
+      /* Also make that bb1 only have one pred and it is bb. */
+      if (EDGE_COUNT (bb1->preds) > 1
+          || EDGE_PRED (bb1, 0)->src != bb)
+	continue;
+      
+      phi = phi_nodes (bb2);
 
-      /* We're searching for blocks with one PHI node which has two
-	 arguments.  */
-      phi = phi_nodes (bb);
-      if (phi && PHI_CHAIN (phi) == NULL
-	  && PHI_NUM_ARGS (phi) == 2)
+      /* Check to make sure that there is only one PHI node.
+         TODO: we could do it with more than one iff the other PHI nodes
+	 have the same elements for these two edges.  */
+      if (phi && PHI_CHAIN (phi) == NULL)
 	{
-	  arg0 = PHI_ARG_DEF (phi, 0);
-	  arg1 = PHI_ARG_DEF (phi, 1);
+	  tree arg0 = NULL, arg1 = NULL;
+	  int i;
+	  
+	  arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
+	  arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
+	   	  
+	  /* We know something is wrong if we cannot find the edges in the PHI
+	     node.  */
+	  gcc_assert (arg0 != NULL && arg1 != NULL);
 	    
 	  /* Do the replacement of conditional if it can be done.  */
-	    if (conditional_replacement (bb, phi, arg0, arg1)
-		|| value_replacement (bb, phi, arg0, arg1)
-		|| abs_replacement (bb, phi, arg0, arg1))
+	    if (conditional_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1)
+		|| value_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1)
+		|| abs_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
 	      {
 		/* We have done the replacement so we need to rebuild the
 		   cfg when this pass is complete.  */
@@ -159,89 +220,21 @@ empty_block_p (basic_block bb)
   return true;
 }
 
-/* BB is a basic block which has only one PHI node with precisely two
-   arguments.
-
-   Examine both of BB's predecessors to see if one ends with a 
-   COND_EXPR and the other is a successor of the COND_EXPR.  If so, then
-   we may be able to optimize PHI nodes at the start of BB. 
-
-   If so, mark store the block with the COND_EXPR into COND_BLOCK_P
-   and the other block into OTHER_BLOCK_P and return true, otherwise
-   return false.  */
-
-static bool
-candidate_bb_for_phi_optimization (basic_block bb,
-				   basic_block *cond_block_p,
-				   basic_block *other_block_p)
-{
-  tree last0, last1;
-  basic_block cond_block, other_block;
-
-  /* One of the alternatives must come from a block ending with
-     a COND_EXPR.  */
-  last0 = last_stmt (EDGE_PRED (bb, 0)->src);
-  last1 = last_stmt (EDGE_PRED (bb, 1)->src);
-  if (last0 && TREE_CODE (last0) == COND_EXPR)
-    {
-      cond_block = EDGE_PRED (bb, 0)->src;
-      other_block = EDGE_PRED (bb, 1)->src;
-    }
-  else if (last1 && TREE_CODE (last1) == COND_EXPR)
-    {
-      other_block = EDGE_PRED (bb, 0)->src;
-      cond_block = EDGE_PRED (bb, 1)->src;
-    }
-  else
-    return false;
-  
-  /* COND_BLOCK must have precisely two successors.  We indirectly
-     verify that those successors are BB and OTHER_BLOCK.  */
-  if (EDGE_COUNT (cond_block->succs) != 2
-      || (EDGE_SUCC (cond_block, 0)->flags & EDGE_ABNORMAL) != 0
-      || (EDGE_SUCC (cond_block, 1)->flags & EDGE_ABNORMAL) != 0)
-    return false;
-  
-  /* OTHER_BLOCK must have a single predecessor which is COND_BLOCK,
-     OTHER_BLOCK must have a single successor which is BB and
-     OTHER_BLOCK must have no PHI nodes.  */
-  if (EDGE_COUNT (other_block->preds) != 1
-      || EDGE_PRED (other_block, 0)->src != cond_block
-      || EDGE_COUNT (other_block->succs) != 1
-      || EDGE_SUCC (other_block, 0)->dest != bb
-      || phi_nodes (other_block))
-    return false;
-  
-  *cond_block_p = cond_block;
-  *other_block_p = other_block;
-  /* Everything looks OK.  */
-  return true;
-}
-
-/* Replace PHI in block BB with statement NEW.  NEW is inserted after
-   BSI.  Remove the edge from COND_BLOCK which does not lead to BB (COND_BLOCK
+/* Replace PHI node element whoes edge is E in block BB with variable NEW.
+   Remove the edge from COND_BLOCK which does not lead to BB (COND_BLOCK
    is known to have two edges, one of which must reach BB).  */
 
 static void
-replace_phi_with_stmt (block_stmt_iterator bsi, basic_block bb,
-		       basic_block cond_block, tree phi, tree new)
+replace_phi_edge_with_variable (basic_block cond_block, basic_block bb,
+				edge e, tree phi, tree new)
 {
   basic_block block_to_remove;
+  int i;
+  block_stmt_iterator bsi;
 
-  /* Insert our new statement at the head of our block.  */
-  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
-  
-  /* Register our new statement as the defining statement for
-     the result.  */
-  SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = new;
-  
-  /* Remove the now useless PHI node. 
-  
-     We do not want to use remove_phi_node since that releases the
-     SSA_NAME as well and the SSA_NAME is still being used.  */
-  release_phi_node (phi);
-  bb_ann (bb)->phi_nodes = NULL;
-  
+  /* Change the PHI argument to new. */
+  PHI_ARG_DEF_TREE (phi, e->dest_idx) = new;
+
   /* Remove the empty basic block.  */
   if (EDGE_SUCC (cond_block, 0)->dest == bb)
     {
@@ -278,16 +271,17 @@ replace_phi_with_stmt (block_stmt_iterator bsi, basic_block bb,
     is argument 0 from PHI.  Likewise for ARG1.  */
 
 static bool
-conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+conditional_replacement (basic_block cond_bb, basic_block middle_bb,
+			 basic_block phi_bb, edge e0, edge e1, tree phi,
+			 tree arg0, tree arg1)
 {
   tree result;
   tree old_result = NULL;
-  basic_block other_block = NULL;
-  basic_block cond_block = NULL;
   tree new, cond;
   block_stmt_iterator bsi;
   edge true_edge, false_edge;
   tree new_var = NULL;
+  tree new_var1;
 
   /* The PHI arguments have the constants 0 and 1, then convert
      it to the conditional.  */
@@ -297,8 +291,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   else
     return false;
   
-  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block)
-      || !empty_block_p (other_block))
+  if (!empty_block_p (middle_bb))
     return false;
 										
   /* If the condition is not a naked SSA_NAME and its type does not
@@ -306,7 +299,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
      variable to optimize this case as it would likely create
      non-gimple code when the condition was converted to the
      result's type.  */
-  cond = COND_EXPR_COND (last_stmt (cond_block));
+  cond = COND_EXPR_COND (last_stmt (cond_bb));
   result = PHI_RESULT (phi);
   if (TREE_CODE (cond) != SSA_NAME
       && !lang_hooks.types_compatible_p (TREE_TYPE (cond), TREE_TYPE (result)))
@@ -324,10 +317,12 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   
   /* We need to know which is the true edge and which is the false
      edge so that we know when to invert the condition below.  */
-  extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
       
-  /* Insert our new statement at the head of our block.  */
-  bsi = bsi_after_labels (bb);
+  /* Insert our new statement at the end of condtional block before the
+     COND_EXPR.  */
+  bsi = bsi_last (cond_bb);
+  bsi_insert_before (&bsi, build_empty_stmt (), BSI_NEW_STMT);
   
   if (old_result)
     {
@@ -342,6 +337,9 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       new1 = build (MODIFY_EXPR, TREE_TYPE (old_result), new_var, new1);
       bsi_insert_after (&bsi, new1, BSI_NEW_STMT);
     }
+    
+  new_var1 = duplicate_ssa_name (PHI_RESULT (phi), NULL);
+  
   
   /* At this point we know we have a COND_EXPR with two successors.
      One successor is BB, the other successor is an empty block which
@@ -360,13 +358,12 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
      false edge as the value zero.  Note that those conditions are not
      the same since only one of the outgoing edges from the COND_EXPR
      will directly reach BB and thus be associated with an argument.  */
-  if ((PHI_ARG_EDGE (phi, 0) == true_edge && integer_onep (arg0))
-      || (PHI_ARG_EDGE (phi, 0) == false_edge && integer_zerop (arg0))
-      || (PHI_ARG_EDGE (phi, 1) == true_edge && integer_onep (arg1))
-      || (PHI_ARG_EDGE (phi, 1) == false_edge && integer_zerop (arg1)))
+  if ((e0 == true_edge && integer_onep (arg0))
+      || (e0 == false_edge && integer_zerop (arg0))
+      || (e1 == true_edge && integer_onep (arg1))
+      || (e1 == false_edge && integer_zerop (arg1)))
     {
-      new = build (MODIFY_EXPR, TREE_TYPE (PHI_RESULT (phi)),
-		    PHI_RESULT (phi), cond);
+      new = build (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
     }
   else
     {
@@ -376,7 +373,10 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       /* If what we get back is a conditional expression, there is no
 	  way that it can be gimple.  */
       if (TREE_CODE (cond) == COND_EXPR)
-	return false; 
+	{
+	  release_ssa_name (new_var1);
+	  return false; 
+	}
 
       /* If what we get back is not gimple try to create it as gimple by
 	 using a temporary variable.  */
@@ -392,13 +392,19 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       
       if (TREE_CODE (cond) == TRUTH_NOT_EXPR
 	  &&  !is_gimple_val (TREE_OPERAND (cond, 0)))
-	return false;
+	{
+	  release_ssa_name (new_var1);
+	  return false;
+	}
 
-      new = build (MODIFY_EXPR, TREE_TYPE (PHI_RESULT (phi)),
-		    PHI_RESULT (phi), cond);
+      new = build (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
     }
   
-  replace_phi_with_stmt (bsi, bb, cond_block, phi, new);
+  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+  
+  SSA_NAME_DEF_STMT (new_var1) = new;
+  
+  replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, new_var1);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -411,12 +417,12 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
     is argument 0 from the PHI.  Likewise for ARG1.  */
 
 static bool
-value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+value_replacement (basic_block cond_bb, basic_block middle_bb,
+		   basic_block phi_bb, edge e0, edge e1, tree phi,
+		   tree arg0, tree arg1)
 {
   tree result;
-  basic_block other_block = NULL;
-  basic_block cond_block = NULL;
-  tree new, cond;
+  tree cond;
   edge true_edge, false_edge;
 
   /* If the type says honor signed zeros we cannot do this
@@ -424,11 +430,10 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
     return false;
 
-  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block)
-      || !empty_block_p (other_block))
+  if (!empty_block_p (middle_bb))
     return false;
 
-  cond = COND_EXPR_COND (last_stmt (cond_block));
+  cond = COND_EXPR_COND (last_stmt (cond_bb));
   result = PHI_RESULT (phi);
 
   /* This transformation is only valid for equality comparisons.  */
@@ -437,7 +442,7 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 
   /* We need to know which is the true edge and which is the false
       edge so that we know if have abs or negative abs.  */
-  extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
 
   /* At this point we know we have a COND_EXPR with two successors.
      One successor is BB, the other successor is an empty block which
@@ -467,20 +472,17 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 	 OTHER_BLOCK).  If that is the case, then we want the single outgoing
 	 edge from OTHER_BLOCK which reaches BB and represents the desired
 	 path from COND_BLOCK.  */
-      if (e->dest == other_block)
+      if (e->dest == middle_bb)
 	e = EDGE_SUCC (e->dest, 0);
 
       /* Now we know the incoming edge to BB that has the argument for the
 	 RHS of our new assignment statement.  */
-      if (PHI_ARG_EDGE (phi, 0) == e)
+      if (e0 == e)
 	arg = arg0;
       else
 	arg = arg1;
 
-      /* Build the new assignment.  */
-      new = build (MODIFY_EXPR, TREE_TYPE (result), result, arg);
-
-      replace_phi_with_stmt (bsi_after_labels (bb), bb, cond_block, phi, new);
+      replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, arg);
 
       /* Note that we optimized this PHI.  */
       return true;
@@ -492,13 +494,14 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
     replacement.  Return true if the replacement is done.  Otherwise return
     false.
     bb is the basic block where the replacement is going to be done on.  arg0
-    is argument 0 from the phi.  Likewise for arg1.  */
+    is argument 0 from the phi.  Likewise for arg1.   */
+
 static bool
-abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+abs_replacement (basic_block cond_bb, basic_block middle_bb,
+		 basic_block phi_bb, edge e0 ATTRIBUTE_UNUSED, edge e1, tree phi,
+		 tree arg0, tree arg1)
 {
   tree result;
-  basic_block other_block = NULL;
-  basic_block cond_block = NULL;
   tree new, cond;
   block_stmt_iterator bsi;
   edge true_edge, false_edge;
@@ -513,12 +516,9 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
     return false;
 
-  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block))
-    return false;
-
   /* OTHER_BLOCK must have only one executable statement which must have the
      form arg0 = -arg1 or arg1 = -arg0.  */
-  bsi = bsi_start (other_block);
+  bsi = bsi_start (middle_bb);
   while (!bsi_end_p (bsi))
     {
       tree stmt = bsi_stmt (bsi);
@@ -570,7 +570,7 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   if (assign == NULL)
     return false;
 
-  cond = COND_EXPR_COND (last_stmt (cond_block));
+  cond = COND_EXPR_COND (last_stmt (cond_bb));
   result = PHI_RESULT (phi);
 
   /* Only relationals comparing arg[01] against zero are interesting.  */
@@ -592,7 +592,7 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 
   /* We need to know which is the true edge and which is the false
      edge so that we know if have abs or negative abs.  */
-  extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
 
   /* For GT_EXPR/GE_EXPR, if the true edge goes to OTHER_BLOCK, then we
      will need to negate the result.  Similarly for LT_EXPR/LE_EXPR if
@@ -602,10 +602,12 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   else
     e = false_edge;
   
-  if (e->dest == other_block)
+  if (e->dest == middle_bb)
     negate = true;
   else
     negate = false;
+    
+  result = duplicate_ssa_name (result, NULL);
   
   if (negate)
     lhs = make_rename_temp (TREE_TYPE (result), NULL);
@@ -616,7 +618,8 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   new = build (MODIFY_EXPR, TREE_TYPE (lhs),
                lhs, build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
 
-  replace_phi_with_stmt (bsi_after_labels (bb), bb, cond_block, phi, new);
+  bsi = bsi_last (cond_bb);
+  bsi_insert_before (&bsi, new, BSI_NEW_STMT);
 
   if (negate)
     {
@@ -624,18 +627,15 @@ abs_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       /* Get the right BSI.  We want to insert after the recently 
 	 added ABS_EXPR statement (which we know is the first statement
 	 in the block.  */
-      bsi = bsi_start (bb);
-      bsi_next (&bsi);
       new = build (MODIFY_EXPR, TREE_TYPE (result),
                    result, build1 (NEGATE_EXPR, TREE_TYPE (lhs), lhs));
 
       bsi_insert_after (&bsi, new, BSI_NEW_STMT);
-
-      /* Register the new statement as defining the temporary -- this is
-	 normally done by replace_phi_with_stmt, but the link will be wrong
-	 if we had to negate the resulting value.  */
-      SSA_NAME_DEF_STMT (result) = new;
+      
     }
+    
+  SSA_NAME_DEF_STMT (result) = new;
+  replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, result);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -665,7 +665,7 @@ struct tree_opt_pass pass_phiopt =
   0,					/* todo_flags_start */
   TODO_cleanup_cfg | TODO_dump_func | TODO_ggc_collect	/* todo_flags_finish */
     | TODO_verify_ssa | TODO_rename_vars
-    | TODO_verify_flow,
+    | TODO_verify_flow | TODO_verify_stmts,
   0					/* letter */
 };
 												

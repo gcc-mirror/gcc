@@ -1,3 +1,8 @@
+2005-03-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17671
+	* gcc.dg/tree-ssa/phi-opt-[1-4].c: New tests.
+
 2005-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/warn/Wnvdtor.C: New test.

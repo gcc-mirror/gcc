@@ -1,3 +1,17 @@
+2005-03-06  Andrew Pinski  <pinskia@physics.uc.edu>
+	
+	PR tree-opt/17671
+	* tree-ssa-phiopt.c (tree_ssa_phiopt): Rewrite so we base the
+	bbs on the COND_EXPR instead of the PHI_NODEs.
+	(candidate_bb_for_phi_optimization): Remove.
+	(replace_phi_with_stmt): Rename to ...
+	(replace_phi_edge_with_variable): this and change so that we
+	replace the phi argument instead of removing the PHI.
+	(conditional_replacement): Change so we deal with PHI with more
+	than two arguments.
+	(value_replacement): Likewise.
+	(abs_replacement): Likewise.
+
 2005-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000-protos.h: Rename output_e500_flip_eq_bit to
