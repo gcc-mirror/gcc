@@ -358,7 +358,7 @@ new_unit (unit_flags * flags)
 
   /* Unspecified recl ends up with a processor dependent value.  */
 
-  u->recl = (ioparm.recl_in != 0) ? ioparm.recl_in : DEFAULT_RECL;
+  u->recl = (ioparm.recl_in != 0) ? ioparm.recl_in : g.max_offset;
   u->last_record = 0;
   u->current_record = 0;
 
