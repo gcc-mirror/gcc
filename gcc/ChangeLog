@@ -1,5 +1,14 @@
 2004-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* builtins.def (BUILT_IN_FPUTC, BUILT_IN_FPUTC_UNLOCKED,
+	BUILT_IN_FPUTS, BUILT_IN_FPUTS_UNLOCKED, BUILT_IN_FWRITE,
+	BUILT_IN_FWRITE_UNLOCKED, BUILT_IN_PUTCHAR, BUILT_IN_PUTCHAR_UNLOCKED,
+	BUILT_IN_PUTS, BUILT_IN_PUTS_UNLOCKED): Remove nothrow attribute.
+	* builtin-attrs.def (ATTR_NONNULL_1, ATTR_NONNULL_2, ATTR_NONNULL_1_2,
+	ATTR_NONNULL_1_4): New.
+
+2004-09-29  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/17697
 	* tree-ssa-ccp.c (execute_fold_all_builtins): Update eh and cleanup
 	cfg if needed.
