@@ -1,3 +1,8 @@
+2001-07-30  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/t-arm-elf (MULTILIB_EXCEPTIONS): Skip -mthumb as well
+	as -mthumb-interwork when -mcpu=arm7 is specified.
+
 Mon Jul 30 17:44:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.def (noreturn, loop branch, loop exit): Mark as first
