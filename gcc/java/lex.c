@@ -64,7 +64,7 @@ static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
 static unicode_t java_parse_escape_sequence PROTO (());
 static int java_letter_or_digit_p PROTO ((unicode_t));
 static int java_parse_doc_section PROTO ((unicode_t));
-static void java_parse_end_comment PROTO (());
+static void java_parse_end_comment PROTO ((unicode_t));
 static unicode_t java_get_unicode PROTO (());
 static unicode_t java_read_unicode PROTO ((int, int *));
 static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
@@ -366,13 +366,14 @@ java_lineterminator (c)
     return 0;
 }
 
-/* Parse the end of a C style comment */
+/* Parse the end of a C style comment.
+ * C is the first character after the '/*'. */
 static void
-java_parse_end_comment ()
+java_parse_end_comment (c)
+     unicode_t c;
 {
-  unicode_t c;
 
-  for (c = java_get_unicode ();; c = java_get_unicode ())
+  for ( ;; c = java_get_unicode ())
     {
       switch (c)
 	{
@@ -559,8 +560,9 @@ java_lex (java_lval)
       switch (c = java_get_unicode ())
 	{
 	case '/':
-	  for (c = java_get_unicode ();;c = java_get_unicode ())
+	  for (;;)
 	    {
+	      c = java_get_unicode ();
 	      if (c == UEOF)
 		java_lex_error ("Comment not terminated at end of input", 0);
 	      if (c == '\n')	/* ULT */
@@ -576,10 +578,8 @@ java_lex (java_lval)
 	      else if (java_parse_doc_section (c))
 		goto step1;
 	    }
-	  else
-	    java_unget_unicode ();
 
-	  java_parse_end_comment ();
+	  java_parse_end_comment (c);
 	  goto step1;
 	  break;
 	default:

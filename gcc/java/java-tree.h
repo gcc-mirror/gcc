@@ -90,7 +90,6 @@ struct JCF;
    6: METHOD_TRANSIENT (in FUNCTION_DECL)
       LABEL_CHANGED (in LABEL_DECL)
       CLASS_SUPER (in TYPE_DECL, ACC_SUPER flag)
-      INITIALIZED_P (in FIELD_DECL, VAR_DECL, PARM_DECL)
    7: DECL_CONSTRUCTOR_P (in FUNCTION_DECL).
 */
 
@@ -633,10 +632,6 @@ extern int encode_newarray_type PROTO ((tree));
 #define FIELD_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 #define FIELD_VOLATILE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define FIELD_TRANSIENT(DECL) DECL_LANG_FLAG_5 (DECL)
-
-/* Initialized flag on variable/field/parm decl */
-
-#define INITIALIZED_P(DECL) DECL_LANG_FLAG_6 (DECL)
 
 /* Access flags etc for a class (a TYPE_DECL): */
 
