@@ -63,8 +63,13 @@ typedef void *__gnuc_va_list;
 /* Amount of space required in an argument list for an arg of type TYPE.
    TYPE may alternatively be an expression whose type is used.  */
 
+#if defined(sysV68)
+#define __va_rounded_size(TYPE)  \
+  (((sizeof (TYPE) + sizeof (short) - 1) / sizeof (short)) * sizeof (short))
+#else
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
+#endif
 
 #define va_start(AP, LASTARG) 						\
  (AP = ((__gnuc_va_list) __builtin_next_arg (LASTARG)))
