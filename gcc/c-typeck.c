@@ -6155,6 +6155,10 @@ c_expand_return (retval)
       tree t = convert_for_assignment (valtype, retval, "return",
 				       NULL_TREE, NULL_TREE, 0);
       tree res = DECL_RESULT (current_function_decl);
+
+      if (t == error_mark_node)
+	return;
+
       t = build (MODIFY_EXPR, TREE_TYPE (res),
 		 res, convert (TREE_TYPE (res), t));
       TREE_SIDE_EFFECTS (t) = 1;
