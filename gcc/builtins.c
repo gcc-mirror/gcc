@@ -379,8 +379,8 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
      calls may traverse the arc back to this label.  */
 
   current_function_has_nonlocal_label = 1;
-  nonlocal_goto_handler_labels =
-    gen_rtx_EXPR_LIST (VOIDmode, lab1, nonlocal_goto_handler_labels);
+  nonlocal_goto_handler_labels
+    = gen_rtx_EXPR_LIST (VOIDmode, lab1, nonlocal_goto_handler_labels);
 
   /* Clobber the FP when we get here, so we have to make sure it's
      marked as used by this function.  */
