@@ -40,6 +40,6 @@ yyparse()
 {
 
   iterator_template<IdlDeclarator_bar,IdlDeclarator_bar&,foo*,foo*> declIter;
-  const IdlDeclarator& declarator = *declIter; // WARNING - choosing
+  const IdlDeclarator& declarator = *declIter;
   return 1;
 }
