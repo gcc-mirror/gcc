@@ -56,7 +56,7 @@ package java.security;
 public interface PrivateKey extends Key
 {
   /**
-   * The verion identifier used for serialization.
+   * The version identifier used for serialization.
    */
   long serialVersionUID = 6034044314589513430L;
 } // interface PrivateKey
