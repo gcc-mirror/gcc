@@ -1291,7 +1291,7 @@ struct lang_type
   unsigned needs_virtual_reinit : 1;
 
   unsigned marks: 6;
-  unsigned vec_delete_takes_size : 1;
+  unsigned vec_new_uses_cookie : 1;
   unsigned declared_class : 1;
 
   unsigned being_defined : 1;
@@ -1353,19 +1353,11 @@ struct lang_type
 #define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->gets_delete)
 #define TYPE_GETS_REG_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 1)
 
-/* Nonzero for _CLASSTYPE means that operator vec delete is defined and
-   takes the optional size_t argument.  */
-#define TYPE_VEC_DELETE_TAKES_SIZE(NODE) \
-  (TYPE_LANG_SPECIFIC(NODE)->vec_delete_takes_size)
-
 /* Nonzero if `new NODE[x]' should cause the allocation of extra
-   storage to indicate how many array elements are in use.  The old
-   ABI had a bug in that we always allocate the extra storage if NODE
-   has a two-argument array operator delete.  */
-#define TYPE_VEC_NEW_USES_COOKIE(NODE)		\
-  (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (NODE)	\
-   || (TYPE_LANG_SPECIFIC (NODE)		\
-       && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
+   storage to indicate how many array elements are in use.  */
+#define TYPE_VEC_NEW_USES_COOKIE(NODE)			\
+  (CLASS_TYPE_P (NODE)					\
+   && TYPE_LANG_SPECIFIC (NODE)->vec_new_uses_cookie)
 
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */

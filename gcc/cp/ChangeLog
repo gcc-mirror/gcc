@@ -1,3 +1,15 @@
+2001-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (type_requires_array_cookie): New function.
+	(check_methods): Don't try to figure out whether the type needs a
+	cookie here.
+	(check_bases_and_members): Set TYPE_VEC_NEW_USES_COOKIE here.
+	* cp-tree.h (TYPE_VEC_DELETE_TAKES_SIZE): Remove.
+	(TYPE_VEC_NEW_USES_COOKIE): Reimplement.
+	* pt.c (instantiate_class_template): Don't set
+	TYPE_VEC_DELETE_TAKES_SIZE.
+	* NEWS: Document ABI changes from GCC 3.0.
+	
 2001-07-18  Xavier Delacour <xavier@fmaudio.net>,
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
