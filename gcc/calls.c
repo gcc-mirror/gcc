@@ -3302,7 +3302,11 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 
       locate_and_pad_parm (Pmode, NULL_TREE,
-			   argvec[count].reg && argvec[count].partial == 0,
+#ifdef STACK_PARMS_IN_REG_PARM_AREA
+                           1,
+#else
+			   argvec[count].reg != 0,
+#endif
 			   NULL_TREE, &args_size, &argvec[count].offset,
 			   &argvec[count].size, &alignment_pad);
 
@@ -3367,7 +3371,11 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 #endif
 
       locate_and_pad_parm (mode, NULL_TREE,
-			   argvec[count].reg && argvec[count].partial == 0,
+#ifdef STACK_PARMS_IN_REG_PARM_AREA
+                           1,
+#else
+			   argvec[count].reg != 0,
+#endif
 			   NULL_TREE, &args_size, &argvec[count].offset,
 			   &argvec[count].size, &alignment_pad);
 
