@@ -1095,10 +1095,11 @@ mark_temp_addr_taken (x)
     p->addr_taken = 1;
 }
 
-/* If X could be a reference to a temporary slot, mark that slot as belonging
-   to the to one level higher.  If X matched one of our slots, just mark that
-   one.  Otherwise, we can't easily predict which it is, so upgrade all of
-   them.  Kept slots need not be touched.
+/* If X could be a reference to a temporary slot, mark that slot as
+   belonging to the to one level higher than the current level.  If X
+   matched one of our slots, just mark that one.  Otherwise, we can't
+   easily predict which it is, so upgrade all of them.  Kept slots
+   need not be touched.
 
    This is called when an ({...}) construct occurs and a statement
    returns a value in memory.  */
@@ -1149,12 +1150,15 @@ preserve_temp_slots (x)
 	 level in case we used its address.  */
       struct temp_slot *q;
 
-      for (q = temp_slots; q; q = q->next)
-	if (q != p && q->addr_taken && q->level == p->level)
-	  q->level--;
+      if (p->level == temp_slot_level)
+	{
+	  for (q = temp_slots; q; q = q->next)
+	    if (q != p && q->addr_taken && q->level == p->level)
+	      q->level--;
 
-      p->level--;
-      p->addr_taken = 0;
+	  p->level--;
+	  p->addr_taken = 0;
+	}
       return;
     }
 
