@@ -1,5 +1,24 @@
 2005-01-18  Uros Bizjak  <uros@kss-loka.si>
 
+	* config/i386/i386.c (override_options): Revert 2004-11-24 change.
+	* config/i386/i386.md (fmodsf3, dremsf3, *sinsf2, *cossf2, sincossf3,
+	*tansf3_1, tansf2, atan2sf3_1, atan2sf3, atansf2, asinsf2, acossf2,
+	logsf2, log10sf2, log2sf2, log1psf2, logbsf2, ilogbsf2, expsf2,
+	exp10sf2, exp2sf2, expm1sf2, rintsf2, floorsf2, ceilsf2, btruncsf2,
+	nearbyintsf2): Disable for TARGET_SSE_MATH.  Leave patterns enabled
+	for TARGET_MIX_SSE_I387.
+	(fmoddf3, dremdf3, *sindf2, *sinextendsfdf2, *cosdf2, *cosextendsfdf2,
+	sincosdf3, *sincosextendsfdf3, *tandf3_1, tandf2, atan2df3_1,
+	atan2df3, atandf2, asindf2, acosdf2, logdf2, log10df2, log2df2,
+	log1pdf2, logbdf2, expdf2, exp10df2, exp2df2, expm1df2, rintdf2,
+	floordf2, ceildf2, btruncdf2, nearbyintdf2): Disable for
+	(TARGET_SSE2 && TARGET_SSE_MATH).  Leave patterns enabled for
+	TARGET_MIX_SSE_I387.
+	(atan2sf3, atan2df3, atan2xf3): Remove register constraints
+	from expander.
+
+2005-01-18  Uros Bizjak  <uros@kss-loka.si>
+
 	PR target/19424
 	* config/i386/mmx.md (*movv2sf_internal_rex64, *movv2sf_internal):
 	Add movaps alternative for xmm reg->reg move.
