@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,7 +44,9 @@
 
 #include <ctime>	// For struct tm
 #include <cwctype>	// For wctype_t
-#include <ios>		// For ios_base
+#include <iosfwd>
+#include <bits/ios_base.h>  // For ios_base, ios_base::iostate
+#include <streambuf>
 
 namespace std
 {
@@ -55,8 +57,72 @@ namespace std
 # define  _GLIBCPP_NUM_FACETS 14
 #endif
 
+  // Convert string to numeric value of type _Tv and store results.  
+  // NB: This is specialized for all required types, there is no
+  // generic definition.
+  template<typename _Tv>
+    void
+    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err, 
+		   const __c_locale& __cloc, int __base = 10);
+
+  // Explicit specializations for required types.
+  template<>
+    void
+    __convert_to_v(const char*, long&, ios_base::iostate&, 
+		   const __c_locale&, int);
+
+  template<>
+    void
+    __convert_to_v(const char*, unsigned long&, ios_base::iostate&, 
+		   const __c_locale&, int);
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template<>
+    void
+    __convert_to_v(const char*, long long&, ios_base::iostate&, 
+		   const __c_locale&, int);
+
+  template<>
+    void
+    __convert_to_v(const char*, unsigned long long&, ios_base::iostate&, 
+		   const __c_locale&, int);
+#endif
+
+  template<>
+    void
+    __convert_to_v(const char*, float&, ios_base::iostate&, 
+		   const __c_locale&, int);
+
+  template<>
+    void
+    __convert_to_v(const char*, double&, ios_base::iostate&, 
+		   const __c_locale&, int);
+
+ template<>
+    void
+    __convert_to_v(const char*, long double&, ios_base::iostate&, 
+		   const __c_locale&, int);
+
+
   template<typename _CharT, typename _Traits>
-    struct __pad;
+    struct __pad
+    {
+      static void
+      _S_pad(ios_base& __io, _CharT __fill, _CharT* __news, 
+	     const _CharT* __olds, const streamsize __newlen, 
+	     const streamsize __oldlen, const bool __num);
+    };
+
+  template<typename _CharT>
+    bool
+    __verify_grouping(const basic_string<_CharT>& __grouping, 
+		      basic_string<_CharT>& __grouping_tmp);
+
+  template<typename _CharT>
+    _CharT*
+    __add_grouping(_CharT* __s, _CharT __sep,  
+		   const char* __gbeg, const char* __gend, 
+		   const _CharT* __first, const _CharT* __last);
 
   // 22.2.1.1  Template class ctype
   // Include host and configuration specific ctype enums for ctype_base.

@@ -268,24 +268,6 @@ CXXABI_1.2 {
     __cxa_call_unexpected;
     __cxa_current_exception_type;
     __cxa_demangle;
-    __cxa_dyn_string_append_char;
-    __cxa_dyn_string_append_cstr;
-    __cxa_dyn_string_append;
-    __cxa_dyn_string_clear;
-    __cxa_dyn_string_copy_cstr;
-    __cxa_dyn_string_copy;
-    __cxa_dyn_string_delete;
-    __cxa_dyn_string_eq;
-    __cxa_dyn_string_init;
-    __cxa_dyn_string_insert_char;
-    __cxa_dyn_string_insert_cstr;
-    __cxa_dyn_string_insert;
-    __cxa_dyn_string_new;
-    __cxa_dyn_string_prepend_cstr;
-    __cxa_dyn_string_prepend;
-    __cxa_dyn_string_release;
-    __cxa_dyn_string_resize;
-    __cxa_dyn_string_substring;
     __cxa_end_catch;
     __cxa_free_exception;
     __cxa_get_globals;
@@ -309,6 +291,26 @@ CXXABI_1.2 {
 
     # __gnu_cxx::_verbose_terminate_handler()
     _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
+
+    # XXX Should not be exported.
+    __cxa_dyn_string_append_char;
+    __cxa_dyn_string_append_cstr;
+    __cxa_dyn_string_append;
+    __cxa_dyn_string_clear;
+    __cxa_dyn_string_copy_cstr;
+    __cxa_dyn_string_copy;
+    __cxa_dyn_string_delete;
+    __cxa_dyn_string_eq;
+    __cxa_dyn_string_init;
+    __cxa_dyn_string_insert_char;
+    __cxa_dyn_string_insert_cstr;
+    __cxa_dyn_string_insert;
+    __cxa_dyn_string_new;
+    __cxa_dyn_string_prepend_cstr;
+    __cxa_dyn_string_prepend;
+    __cxa_dyn_string_release;
+    __cxa_dyn_string_resize;
+    __cxa_dyn_string_substring;
 
   local:
     *;

@@ -43,6 +43,8 @@
 #pragma GCC system_header
 
 #include <bits/atomicity.h>
+#include <bits/localefwd.h>
+#include <bits/locale_classes.h>
 
 namespace std
 {

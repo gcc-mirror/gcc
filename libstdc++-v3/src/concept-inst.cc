@@ -1,6 +1,6 @@
 // Concept checking instantiations -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,7 @@
 #ifdef _GLIBCPP_CONCEPT_CHECKS
 
 #include <memory>
+#include <iterator>
 #include <ostream>
 
 #define _Instantiate(...) template void __function_requires< __VA_ARGS__ > ()
