@@ -949,21 +949,3 @@ chrec_type (tree chrec)
   
   return TREE_TYPE (chrec);
 }
-
-extern void initialize_scalar_evolutions_analyzer (void);
-
-/* Initializer.  */
-
-void
-initialize_scalar_evolutions_analyzer (void)
-{
-  /* The elements below are unique.  */
-  if (chrec_dont_know == NULL_TREE)
-    {
-      chrec_not_analyzed_yet = NULL_TREE;
-      chrec_dont_know = make_node (SCEV_NOT_KNOWN);
-      chrec_known = make_node (SCEV_KNOWN);
-      TREE_TYPE (chrec_dont_know) = NULL_TREE;
-      TREE_TYPE (chrec_known) = NULL_TREE;
-    }
-}
