@@ -4530,10 +4530,13 @@ function_arg_slotno (cum, mode, type, named, incoming_p, pregno, ppadding)
 
 struct function_arg_record_value_parms
 {
-  rtx ret;
-  int slotno, named, regbase;
-  unsigned int nregs;
-  int intoffset;
+  rtx ret;		/* return expression being built.  */
+  int slotno;		/* slot number of the argument.  */
+  int named;		/* whether the argument is named.  */
+  int regbase;		/* regno of the base register.  */
+  int stack;		/* 1 if part of the argument is on the stack.  */
+  int intoffset;	/* offset of the pending integer field.  */
+  unsigned int nregs;	/* number of words passed in registers.  */
 };
 
 static void function_arg_record_value_3
@@ -4608,8 +4611,13 @@ function_arg_record_value_1 (type, startbitpos, parms)
 		  this_slotno = parms->slotno + parms->intoffset
 		    / BITS_PER_WORD;
 
-		  intslots = MIN (intslots, SPARC_INT_ARG_MAX - this_slotno);
-		  intslots = MAX (intslots, 0);
+		  if (intslots > 0 && intslots > SPARC_INT_ARG_MAX - this_slotno)
+		    {
+		      intslots = MAX (0, SPARC_INT_ARG_MAX - this_slotno);
+		      /* We need to pass this field on the stack.  */
+		      parms->stack = 1;
+		    }
+
 		  parms->nregs += intslots;
 		  parms->intoffset = -1;
 		}
@@ -4674,7 +4682,7 @@ function_arg_record_value_3 (bitpos, parms)
     {
       regno = parms->regbase + this_slotno;
       reg = gen_rtx_REG (mode, regno);
-      XVECEXP (parms->ret, 0, parms->nregs)
+      XVECEXP (parms->ret, 0, parms->stack + parms->nregs)
 	= gen_rtx_EXPR_LIST (VOIDmode, reg, GEN_INT (intoffset));
 
       this_slotno += 1;
@@ -4747,7 +4755,7 @@ function_arg_record_value_2 (type, startbitpos, parms)
 		default: break;
 		}
 	      reg = gen_rtx_REG (mode, regno);
-	      XVECEXP (parms->ret, 0, parms->nregs)
+	      XVECEXP (parms->ret, 0, parms->stack + parms->nregs)
 		= gen_rtx_EXPR_LIST (VOIDmode, reg,
 			   GEN_INT (bitpos / BITS_PER_UNIT));
 	      parms->nregs += 1;
@@ -4755,7 +4763,7 @@ function_arg_record_value_2 (type, startbitpos, parms)
 		{
 		  regno += GET_MODE_SIZE (mode) / 4;
 	  	  reg = gen_rtx_REG (mode, regno);
-		  XVECEXP (parms->ret, 0, parms->nregs)
+		  XVECEXP (parms->ret, 0, parms->stack + parms->nregs)
 		    = gen_rtx_EXPR_LIST (VOIDmode, reg,
 			GEN_INT ((bitpos + GET_MODE_BITSIZE (mode))
 				 / BITS_PER_UNIT));
@@ -4772,8 +4780,19 @@ function_arg_record_value_2 (type, startbitpos, parms)
 }
 
 /* Used by function_arg and function_value to implement the complex
-   SPARC64 structure calling conventions.  */
+   conventions of the 64-bit ABI for passing and returning structures.
+   Return an expression valid as a return value for the two macros
+   FUNCTION_ARG and FUNCTION_VALUE.
 
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   MODE is the argument's machine mode.
+   SLOTNO is the index number of the argument's slot in the parameter array.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+   REGBASE is the regno of the base register for the parameter array.  */
+   
 static rtx
 function_arg_record_value (type, mode, slotno, named, regbase)
      tree type;
@@ -4788,6 +4807,7 @@ function_arg_record_value (type, mode, slotno, named, regbase)
   parms.slotno = slotno;
   parms.named = named;
   parms.regbase = regbase;
+  parms.stack = 0;
 
   /* Compute how many registers we need.  */
   parms.nregs = 0;
@@ -4804,8 +4824,12 @@ function_arg_record_value (type, mode, slotno, named, regbase)
       intslots = (endbit - startbit) / BITS_PER_WORD;
       this_slotno = slotno + parms.intoffset / BITS_PER_WORD;
 
-      intslots = MIN (intslots, SPARC_INT_ARG_MAX - this_slotno);
-      intslots = MAX (intslots, 0);
+      if (intslots > 0 && intslots > SPARC_INT_ARG_MAX - this_slotno)
+        {
+	  intslots = MAX (0, SPARC_INT_ARG_MAX - this_slotno);
+	  /* We need to pass this field on the stack.  */
+	  parms.stack = 1;
+        }
 
       parms.nregs += intslots;
     }
@@ -4835,7 +4859,17 @@ function_arg_record_value (type, mode, slotno, named, regbase)
   if (nregs == 0)
     abort ();
 
-  parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (nregs));
+  parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (parms.stack + nregs));
+
+  /* If at least one field must be passed on the stack, generate
+     (parallel [(expr_list (nil) ...) ...]) so that all fields will
+     also be passed on the stack.  We can't do much better because the
+     semantics of FUNCTION_ARG_PARTIAL_NREGS doesn't handle the case
+     of structures for which the fields passed exclusively in registers
+     are not at the beginning of the structure.  */
+  if (parms.stack)
+    XVECEXP (parms.ret, 0, 0)
+      = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
 
   /* Fill in the entries.  */
   parms.nregs = 0;

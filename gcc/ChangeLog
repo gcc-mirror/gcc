@@ -1,4 +1,18 @@
 2003-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
+
+	PR target/10142
+	* config/sparc/sparc.c (function_arg_record_value_parms): Add
+	new 'stack' field.
+	(function_arg_record_value_1): Set 'stack' to 1 if we run out of
+	integer slots for an integer field.
+	(function_arg_record_value_3): Shift vector index.
+	(function_arg_record_value_2): Likewise.
+	(function_arg_record_value): Initialize 'stack' to 0.
+	Set 'stack' to 1 if we run out of integer slots for an integer field.
+	Generate (parallel [(expr_list (nil) ...) ...]) if 'stack' is set to 1.
+
+2003-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/10955
 	* unroll.c (unroll_loop): Fix off-by-one bug.
