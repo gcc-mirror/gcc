@@ -123,7 +123,9 @@ namespace std
 
       /**
        *  @if maint
-       *  Actual size of internal buffer.
+       *  Actual size of internal buffer. This number is equal to the size
+       *  of the put area + 1 position, reserved for the overflow char of
+       *  a full area.
        *  @endif
       */
       size_t			_M_buf_size;
@@ -452,41 +454,30 @@ namespace std
       void
       _M_output_unshift();
 
-      // These two functions are used to clarify internal buffer
-      // maintenance. After an overflow, or after a seekoff call that
-      // started at beg or end, or possibly when the stream becomes
-      // unbuffered, and a myrid other obscure corner cases, the
-      // internal buffer does not truly reflect the contents of the
-      // external buffer. At this point, for whatever reason, it is in
-      // an indeterminate state.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
-      void
-      _M_set_indeterminate(void)
-      { _M_set_determinate(off_type(0)); }
-
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
-      void
-      _M_set_determinate(off_type __off)
-      {
-	const bool __testin = this->_M_mode & ios_base::in;
-	const bool __testout = this->_M_mode & ios_base::out;
-	if (__testin)
-	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
-	if (__testout)
+       // This function sets the pointers of the internal buffer, both get
+       // and put areas. Typically, __off == _M_in_end - _M_in_beg upon
+       // _M_underflow; __off == 0 upon _M_overflow, seekoff, open, setbuf.
+       // 
+       // NB: _M_out_end - _M_out_beg == _M_buf_size - 1, since _M_buf_size
+       // reflects the actual allocated memory and the last cell is reserved
+       // for the overflow char of a full put area.
+       void
+       _M_set_buffer(streamsize __off)
+       {
+ 	const bool __testin = this->_M_mode & ios_base::in;
+ 	const bool __testout = this->_M_mode & ios_base::out;
+	if (_M_buf_size)
 	  {
-	    this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size);
-	    this->_M_out_lim += __off;
+	    if (__testin)
+	      this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
+	    if (__testout)
+	      {
+		this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size - 1);
+		this->_M_out_lim += __off;
+	      }
+	    _M_filepos = this->_M_buf + __off;
 	  }
-	_M_filepos = this->_M_buf + __off;
-      }
+       }
     };
 
   // [27.8.1.5] Template class basic_ifstream

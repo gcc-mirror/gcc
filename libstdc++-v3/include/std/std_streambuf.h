@@ -187,9 +187,9 @@ namespace std
       //@{
       /**
        *  @if maint
-       *  _M_set_indeterminate and setp set it equal to _M_out_beg, then
-       *  at each put operation it may be moved forward (toward _M_out_end)
-       *  by _M_out_cur_move.
+       *  setp (and _M_set_buffer(0) in basic_filebuf) set it equal to
+       *  _M_out_beg, then at each put operation it may be moved
+       *  forward (toward _M_out_end) by _M_out_cur_move.
        *  @endif
       */      
       char_type*                _M_out_lim;    // End limit of used put area.

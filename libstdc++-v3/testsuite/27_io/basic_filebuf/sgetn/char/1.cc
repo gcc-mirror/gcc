@@ -123,11 +123,11 @@ void test05()
   VERIFY( c7 == c2 ); // n != i
   strmsz_1 = fb_03.sgetn(carray1, 10);
   VERIFY( !strmsz_1 ); //zero
-  strmsz_1 = fb_01.in_avail();
+  strmsz_1 = fb_01.in_avail(); // N.B.: _M_in_end - _M_in_beg == BUFSIZ - 1
   strmsz_2 = fb_01.sgetn(carray2, strmsz_1 + 5);
   VERIFY( strmsz_1 == strmsz_2 - 5 ); 
   c4 = fb_01.sgetc(); // buffer should have underflowed from above.
-  VERIFY( c4 == 'i' );
+  VERIFY( c4 == 'h' );
   strmsz_1 = fb_01.in_avail();
   VERIFY( strmsz_1 > 0 );
   strmsz_2 = fb_01.sgetn(carray2, strmsz_1 + 5);

@@ -48,7 +48,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     _M_allocate_internal_buffer()
     {
-      if (!this->_M_buf && this->_M_buf_size)
+      if (!_M_buf_allocated && this->_M_buf_size)
 	{
 	  // Allocate internal buffer.
 	  this->_M_buf = new char_type[this->_M_buf_size];
@@ -101,9 +101,9 @@ namespace std
 	      this->_M_mode = __mode;
 
 	      // Setup initial position of buffer.
-	      _M_set_indeterminate();
+	      _M_set_buffer(0);
 
-	      if ((__mode & ios_base::ate)
+	      if ((__mode & ios_base::ate) 
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		// 27.8.1.3,4
 		this->close();
@@ -218,27 +218,28 @@ namespace std
 				ios_base::in);
 	    }
 
-	  if (_M_buf_size)
+	  if (_M_buf_size > 1)
 	    {
 	      streamsize __elen = 0;
 	      streamsize __ilen = 0;
 
 	      if (__check_facet(_M_codecvt).always_noconv())
 		{
-		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), _M_buf_size);
+		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), _M_buf_size - 1);
 		  __ilen = __elen;
 		}
 	      else
 		{
-		  char* __buf = static_cast<char*>(__builtin_alloca(_M_buf_size));
-		  __elen = _M_file.xsgetn(__buf, _M_buf_size);
+		  char* __buf = static_cast<char*>(__builtin_alloca(_M_buf_size - 1));
+		  __elen = _M_file.xsgetn(__buf, _M_buf_size - 1);
 		  
 		  const char* __eend;
 		  char_type* __iend;
 		  codecvt_base::result __r;
 		  __r = _M_codecvt->in(_M_state_cur, __buf, __buf + __elen, 
 				       __eend, this->_M_in_beg, 
-				       this->_M_in_beg + _M_buf_size, __iend);
+				       this->_M_in_beg + _M_buf_size - 1, 
+				       __iend);
 		  if (__r == codecvt_base::ok)
 		    __ilen = __iend - this->_M_in_beg;
 		  else if (__r == codecvt_base::noconv)
@@ -258,7 +259,7 @@ namespace std
 
 	      if (0 < __ilen)
 		{
-		  _M_set_determinate(__ilen);
+		  _M_set_buffer(__ilen);
 		  __ret = traits_type::to_int_type(*this->_M_in_cur);
 		  if (__bump)
 		    _M_move_in_cur(1);
@@ -338,41 +339,30 @@ namespace std
     _M_overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
+      const bool __testeof = traits_type::eq_int_type(__c, __ret);
       const bool __testput = this->_M_out_beg < this->_M_out_lim;
 
       if (__testput)
-	{
-	  // Need to restore current position. The position of the external
-	  // byte sequence (_M_file) corresponds to _M_filepos, and we need
-	  // to move it to _M_out_beg for the write.
-	  if (_M_filepos && _M_filepos != this->_M_out_beg)
-	    {
-	      off_type __off = this->_M_out_beg - _M_filepos;
-	      _M_file.seekoff(__off, ios_base::cur);
-	    }
+ 	{
+ 	  // Need to restore current position. The position of the
+ 	  // external byte sequence (_M_file) corresponds to
+ 	  // _M_filepos, and we need to move it to _M_out_beg for the
+ 	  // write.
+	  if (_M_filepos != this->_M_out_beg)
+	    _M_file.seekoff(this->_M_out_beg - _M_filepos, ios_base::cur);
 
-	  // Convert internal buffer to external representation, output.
-	  if (_M_convert_to_external(this->_M_out_beg, 
-				     this->_M_out_lim - this->_M_out_beg))
+	  // If appropriate, append the overflow char.
+	  if (!__testeof)
+	    *this->_M_out_lim++ = traits_type::to_char_type(__c);
+
+	  // Convert pending sequence to external representation,
+	  // output. 
+	  if (_M_convert_to_external(this->_M_out_beg,
+				     this->_M_out_lim - this->_M_out_beg)
+	      && (!__testeof || (__testeof && !_M_file.sync())))
 	    {
-	      // Convert pending sequence to external representation, output.
-	      // If eof, then just attempt sync.
-	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
-		{
-		  // User code must flush when switching modes (thus
-		  // don't sync).
-		  char_type __pending = traits_type::to_char_type(__c);
-		  if (_M_convert_to_external(&__pending, 1))
-		    {
-		      _M_set_indeterminate();
-		      __ret = traits_type::not_eof(__c);
-		    }
-		}
-	      else if (!_M_file.sync())
-		{
-		  _M_set_indeterminate();
-		  __ret = traits_type::not_eof(__c);
-		}
+	      _M_set_buffer(0);
+	      __ret = traits_type::not_eof(__c);
 	    }
 	}
       _M_last_overflowed = true;	
@@ -388,20 +378,22 @@ namespace std
       const bool __testput = this->_M_out_cur < this->_M_out_end;
       const bool __testout = this->_M_mode & ios_base::out;
       
+      // Perhaps set below in _M_overflow.
+      _M_last_overflowed = false;
+
       if (__testout)
 	{
 	  if (traits_type::eq_int_type(__c, traits_type::eof()))
 	    __ret = traits_type::not_eof(__c);
 	  else if (__testput)
 	    {
-	      *this->_M_out_cur = traits_type::to_char_type(__c);
+ 	      *this->_M_out_cur = traits_type::to_char_type(__c);
 	      _M_move_out_cur(1);
 	      __ret = traits_type::not_eof(__c);
 	    }
 	  else 
 	    __ret = this->_M_overflow(__c);
 	}
-      _M_last_overflowed = false;    // Set in _M_overflow, below.
       return __ret;
     }
   
@@ -479,12 +471,15 @@ namespace std
     {
       if (!this->is_open() && __s == 0 && __n == 0)
 	this->_M_buf_size = 0;
-      else if (__s && __n)
+      else if (__s && __n > 1)
 	{
-	  // This is implementation-defined behavior, and assumes
-	  // that an external char_type array of length (__s + __n)
-	  // exists and has been pre-allocated. If this is not the
-	  // case, things will quickly blow up.
+	  // This is implementation-defined behavior, and assumes that
+	  // an external char_type array of length (__s + __n) exists
+	  // and has been pre-allocated. If this is not the case,
+	  // things will quickly blow up. The length argument __n must
+	  // be greater than 1 because __n - 1 positions will be used
+	  // for the get and put areas, and 1 position is needed to
+	  // host the overflow char of a full put area.
 
 	  // Step 1: Destroy the current internal array.
 	  _M_destroy_internal_buffer();
@@ -492,7 +487,7 @@ namespace std
 	  // Step 2: Use the external array.
 	  this->_M_buf = __s;
 	  this->_M_buf_size = __n;
-	  _M_set_indeterminate();
+	  _M_set_buffer(0);
 	}
       _M_last_overflowed = false;	
       return this; 
@@ -539,7 +534,7 @@ namespace std
 
 	      // Return pos_type(off_type(-1)) in case of failure.
 	      __ret = _M_file.seekoff(__computed_off, __way, __mode);
-	      _M_set_indeterminate();
+	      _M_set_buffer(0);
 	    }
 	  else
 	    {
