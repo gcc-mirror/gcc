@@ -51,7 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "regs.h"
 #include "function.h"
-#include "output.h"
 #include "gcov-io.h"
 #include "toplev.h"
 #include "ggc.h"
