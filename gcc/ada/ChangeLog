@@ -1,3 +1,393 @@
+2004-10-26  Vincent Celier  <celier@gnat.com>
+	    Thomas Quinot   <quinot@act-europe.fr>
+
+	* g-socthi-vms.adb, g-socthi-mingw.adb, g-socthi-vxworks.ads:
+	(C_Writev): Change MSG_Forced_Flags to Constants.MSG_Forced_Flags as
+	there is no use of GNAT.Sockets.Constants.
+	Remove remaining pragma Import for C_Write
+	Remove C_Read and C_Write from internal implementation unit
+	GNAT.Sockets.Thin, as their usage for sockets is non-portable (using
+	the read and write functions from the system runtime library is fine
+	on UNIX but won't work under Windows).
+
+	* g-socket.adb: (Abort_Selector): Use C_Send instead of C_Write.
+	(Check_Selector): Use C_Recv instead of C_Read.
+	Selectors are the GNAT.Sockets abstraction to perform a select()
+	call on a set of descriptors. To allow abortion of an ongoing
+	select operation, some data is written to a dedicated socket that
+	is always monitored.
+	Under Windows, the write and read library functions cannot operate
+	on sockets, so we need to use send and recv instead, which is portable
+	across all supported platforms.
+
+	* g-socthi.ads: Remove C_Read and C_Write from internal implementation
+	unit GNAT.Sockets.Thin, as their usage for sockets is non-portable
+	(using the read and write functions from the system runtime library is
+	fine on UNIX but won't work under Windows).
+
+2004-10-26  Nicolas Setton  <setton@act-europe.fr>
+
+	* mlib-tgt-darwin.adb: New file.
+
+	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb,
+	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb,
+	mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb,
+	mlib-tgt-mingw.adb, mlib-tgt-vxworks.adb (Archive_Indexer_Options): New
+	subprogram body.
+
+	* Makefile.in: Add support for building shared libraries under Darwin.
+	(EXTRA_GNATRTL_NONTASKING_OBJS, ppc-vxworks): Add s-vxwexc.o, containing
+	the low level EH init subprogram to be called from __gnat_initialize.
+
+	* mlib-tgt.ads, mlib-tgt.adb (Archive_Indexer_Options): New subprogram,
+	indicates which options to pass to the archive indexer.
+
+	* mlib-utl.adb: Add support for calling ranlib with additional
+	options. This is needed for instance under Mac OS X.
+	(Ranlib_Options): New global variable, used to store the potential
+	options to pass to ranlib.
+	(Ar): Use Ranlib_Options when spawning ranlib.
+	(Initialize): Set the value of ranlib option.
+
+2004-10-26  Olivier Hainque  <hainque@act-europe.fr>
+
+	* s-parame-linux.adb (Minimum_Stack_Size): Adjust to return 12K
+	instead of 8K, to reflect the real potential needs for stack-checking
+	in the ZCX case.
+
+2004-10-26  Pascal Obry  <obry@gnat.com>
+
+	* s-parame-mingw.adb (Default_Stack_Size): Add some comments.
+
+	* s-taprop-mingw.adb (Create_Task): Set initial stack size to 1024. On
+	Windows only the initial thread stack size can be set so it is good to
+	start we a low stack size.
+	The OS will adjust the size as needed.
+
+2004-10-26  Olivier Hainque  <hainque@act-europe.fr>
+	    Nicolas Setton  <setton@act-europe.fr>
+
+	* expect.c, adaint.c, link.c, sysdep.c (unix sections): Guard with
+	"__unix__" instead of "unix".
+	The latter is implicitly defined by gcc3.2 but not by gcc >= 3.4, so the
+	sections were just mistakenly ignored. The former is
+	implicitely defined by gcc2.8, gcc3.2 and gcc3.4.
+	Update #ifdef preprocessor macro to detect the symbol __hpux__ instead
+	of hpux. This prevents an unwanted definition of the symbol
+	convert_addresses in adaint.o.
+
+2004-10-26  Gary Dismukes  <dismukes@gnat.com>
+
+	* a-exexpr.adb (Setup_Key): Change initial value to 16#DEAD#, for
+	compatibility with type Unwind_Word on 16-bit targets such as AAMP.
+
+2004-10-26  Cyrille Comar  <comar@act-europe.fr>
+
+	* a-filico.ads, a-filico.adb: fix incorrect header.
+
+2004-10-26  Javier Miranda  <miranda@gnat.com>
+
+	* a-ststio.ads: Fix typo in identifier
+
+2004-10-26  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* checks.adb (Expr_Known_Valid): If floating-point validity checks are
+	enabled, check the result of unary and binary operations when the
+	expression is the right-hand side of an assignment.
+
+2004-10-26  Vincent Celier  <celier@gnat.com>
+
+	* clean.adb (Delete): Do not output warnings when in quiet output and
+	not in verbose mode.
+	(Force_Deletions): New Boolean flag, defaulted to False
+	(Delete): Only delete a file if it is writable, and when
+	Force_Deletions is True.
+	(Parse_Cmd_Line): New switch -f: set Force_Deletions to True
+	(Usage): Line for new switch -f
+	(Clean_Directory): Use GNAT.OS_Lib.Set_Writable instead of rolling our
+	own.
+
+2004-10-26  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* decl.c (gnat_to_gnu_field): Use the type of the inner object for a
+	JM type only if its size matches that of the wrapper.  When a size is
+	prescribed and the field is not aliased, remove the wrapper of a JM
+	type only if the size is not greater than that of the packed array.
+	(gnat_to_gnu_entity): Change the extension of packed array wrappers
+	from LJM to JM.
+
+2004-10-26  Geert Bosch  <bosch@gnat.com>
+
+	* eval_fat.adb (Eps_Model,Eps_Denorm): Remove, no longer used.
+	(Succ): Re-implement using Scaling, Exponent and Ceiling attributes.
+	(Pred): Implement in terms of Succ.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_aggr.adb (Safe_Component): An aggregate component that is an
+	unchecked conversion is safe for in-place use if the expression of the
+	conversion is safe.
+	(Expand_Array_Aggregate): An aggregate that initializes an allocator may
+	be expandable in place even if the aggregate does not come from source.
+	(Convert_Array_Aggr_In_Allocator): New procedure to initialize the
+	designated object of an allocator in place, rather than building it
+	first on the stack. The previous scheme forces a full copy of the array,
+	and may be altogether unsusable if the size of the array is too large
+	for stack allocation.
+
+2004-10-26  Robert Dewar  <dewar@gnat.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Make sure we expand a loop for array
+	compares if the component is atomic.
+
+	* exp_ch5.adb (Expand_Assign_Array): Make sure we expand a loop for
+	array assignment if the component type is atomic.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+	    Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* exp_ch6.adb (Expand_Actuals): If the actual for an in-out parameter
+	is aliased and is a by_reference type, do not pass by copy.
+	(Expand_N_Function_Call) <Rhs_Of_Assign_Or_Decl>: New function to
+	detect whether the call is in the right side of an assignment or
+	the expression of an object declaration.  Recurse on component
+	association within aggregates.
+	Call it in the condition that determines whether the temporary is
+	necessary for correct stack-checking.
+
+2004-10-26  Thomas Quinot  <quinot@act-europe.fr>
+
+	* exp_dist.adb (Build_General_Calling_Stubs): New formal parameter
+	RACW_Type, used in the PolyORB version.
+	Rename RCI_Info to RCI_Locator, for consistency between the PolyORB
+	version and the GARLIC version.
+
+	* snames.ads, snames.adb, s-parint.ads, s-parint.adb: 
+	Rename RCI_Info to RCI_Locator for better consistency between the
+	GARLIC and PolyORB versions of the distributed systems annex.
+	(DSA_Implementation_Name): This enumeration lists the possible
+	implementations of the Partition Communication Subsystem for the
+	Distributed Systems Annex (DSA). The three available implementations
+	are the dummy stub implementation (No_DSA), and two versions based on
+	two different distribution runtime libraries: GARLIC and PolyORB. Both
+	the GARLIC PCS and the PolyORB PCS are part of the GLADE distribution
+	technology.
+	Change the literal GLADE_DSA to GARLIC_DSA to accurately describe
+	that organization.
+
+	* rtsfind.ads: Rename RCI_Info to RCI_Locator for better consistency
+	between the GARLIC and PolyORB versions of the distributed systems
+	annex.
+	Remove RE_Unbounded_Reclaim_Pool since it is unused.
+
+2004-10-26  Gary Dismukes  <dismukes@gnat.com>
+
+	* gnat1drv.adb: Suppress calling the back end when
+	Frontend_Layout_On_Target is true.
+
+2004-10-26  Thomas Quinot  <quinot@act-europe.fr>
+
+	* g-os_lib.ads, g-os_lib.adb (Set_Executable, Set_Writable,
+	Set_Read_Only): New subprograms.
+	These new routines allow the user to set or unset the Owner execute
+	and Owner write permission flags on a file.
+
+	* makegpr.adb, mlib.adb, mlib-prj.adb: Use
+	GNAT.OS_Lib.Set_Executable instead of rolling our own.
+
+2004-10-26  Matthew Gingell  <gingell@gnat.com>
+
+	* i-cpp.ads, i-cpp.adb: Change layout of VTable for new C++ ABI.
+
+2004-10-26  Pascal Obry  <obry@gnat.com>
+
+	* init.c (__gnat_error_handler) [Win32]: Instead of trying to read the
+	memory before the faulting page we properly test the process read
+	access for this address using appropriate Win32 routine.
+	(HPUX sections): guard with "__hpux__" instead of "hpux".
+
+2004-10-26  Robert Dewar  <dewar@gnat.com>
+
+	* lib-xref.adb (Generate_Reference): Don't complain about reference to
+	entry parameter if pragma Unreferenced set, since we do not properly
+	handle the case of multiple parameters.
+
+2004-10-26  Vincent Celier  <celier@gnat.com>
+
+	* prj-env.adb: (Contains_ALI_Files): New Boolean function
+	(Ada_Objects_Path.Add): For a library project, add to the object path
+	the library directory only if there is no object directory or if the
+	library directory contains ALI files.
+	(Set_Ada_Paths.Add.Recursive_Add): Ditto
+
+2004-10-26  Vincent Celier  <celier@gnat.com>
+
+	* prj-nmsc.adb (Language_Independent_Check): Do not forbid virtual
+	extension of library projects.
+
+	* prj-part.adb: If env var ADA_PROJECT_PATH is not defined, project
+	path defaults to ".:<prefix>/lib/gnat".
+	(Parse): For an extending all project, allow direct import of a project
+	that is virtually extended.
+
+	* prj-proc.adb (Imported_Or_Extended_Project_From): If a project with
+	the specified name is directly imported, return its ID. Otherwise, if
+	an extension of this project is imported, return the ID of the
+	extension.
+
+2004-10-26  Robert Dewar  <dewar@gnat.com>
+
+	* s-arit64.adb: (Le3): New function, used by Scaled_Divide
+	(Sub3): New procedure, used by Scaled_Divide
+	(Scaled_Divide): Substantial rewrite, avoid duplicated code, and also
+	correct more than one instance of failure to propagate carries
+	correctly.
+	(Double_Divide): Handle overflow case of largest negative number
+	divided by minus one.
+
+	* s-arit64.ads (Double_Divide): Document that overflow can occur in
+	the case of a quotient value out of range.
+	Fix comments.
+
+2004-10-26  Robert Dewar  <dewar@gnat.com>
+
+	* s-bitops.adb (Bit_Eq): Remove redundant check.
+
+	* s-bitops.ads: Minor comment updates
+	Change some occurrences of Address to System.Address
+
+	* s-carsi8.ads: Fix minor cut-and-paste error in comments
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'Access): Apply proper
+	accessibility check to prefix that is a protected operation.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch10.adb (Optional_Subunit): If file of expected subunit is
+	empty, post message on stub.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+	    Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch12.adb (In_Main_Context): Predicate to determine whether the
+	current instance appears within a unit that is directly in the context
+	of the main unit.
+	Used to determine whether the body of the instance should be analyzed
+	immediately after its spec, to make its subprogram bodies available
+	for front-end inlining.
+	(Analyze_Formal_Array_Type): Cleanup condition that checks that range
+	constraint is not allowed on the component type (AARM 12.5.3(3))
+
+2004-10-26  Cyrille Comar  <comar@act-europe.fr>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	'Storage_Pool): enhance, document & limit detection of non-sharable
+	internal pools.
+
+	* impunit.adb: Make System.Pool_Global and System.Pool_Local visible.
+
+	* s-pooglo.ads: Add more documentation now that this pool is properly
+	documented.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): If the full view is a task
+	or protected type with discriminants, do not constrain the
+	corresponding record type if the subtype declaration has no
+	discriminant constraints. This can be the case in source code, or in
+	the subtype declaration created to rename an actual type within an
+	instantiation.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): If body is a subunit for a
+	different kind of stub (possibly wrong name for file), do not check
+	for conformance.
+	(Uses_Secondary_Stack): New subsidiary to Build_Body_To_Inline. If body
+	includes call to some function that returns an unconstrained type, do
+	not inline.
+
+2004-10-26  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_elab.adb (Check_Elab_Call): Do not check a call that does not
+	appear in the code for the main unit. Dependencies among units in the
+	context of the main unit are established when those other units are
+	compiled. Otherwise spurious elaboration constraints can generate
+	incorrect elaboration circularities.
+
+2004-10-26  Thomas Quinot  <quinot@act-europe.fr>
+	    Ed Schonberg   <schonberg@gnat.com>
+
+	* sem_util.adb (Is_Aliased_View): Defend against the case where this
+	subprogram is called with a parameter that is not an object name. This
+	situation arises for some cases of illegal code, which is diagnosed
+	later, and in this case it is wrong to call Is_Aliased, as that might
+	cause a compiler crash.
+	(Explain_Limited_Type): Refine previous fix to include
+	inherited components of derived types, to provide complete information.
+
+	* exp_ch9.adb (Set_Privals): Set the Ekind of the actual object that
+	is the prival for a protected object.
+	It is necessary to mark this entity as a variable, in addition to
+	flagging it as Aliased, because Sem_Util.Is_Aliased_View has been
+	modified to avoid checking the Aliased flag on entities that are not
+	objects. (Checking that flag for non-objects is erroneous and could
+	lead to a compiler crash).
+
+2004-10-26  Robert Dewar  <dewar@gnat.com>
+
+	* s-fatgen.adb (Pred): Fix redundant test for X > 0.0, since if
+	X_Frac = 0.5, then we know that the number X must be positive.
+	(Succ): Remove the same redundant test, and also fix the primary test
+	to test for X_Frac = -0.5 (used to be 0.5) which is clearly wrong.
+	Minor reformatting
+	(Decompose): Add fuller comments to spec
+
+2004-10-26  Pascal Obry  <obry@gnat.com>
+
+	* tracebak.c (IS_BAD_PTR): Use IsBadCodePtr on Win32 to check for ptr
+	validity (process must have read access). Set to 0 in all other cases.
+	(STOP_FRAME): Now check for ptr validity to avoid a segmentation
+	violation on Win32.
+	(VALID_STACK_FRAME): Check for ptr validity on Win32 to avoid a
+	segmentation violation.
+
+2004-10-26  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* trans.c (call_to_gnu): For an (in-)out parameter passed by reference
+	whose type is a constructed subtype of an aliased object with an
+	unconstrained nominal subtype, convert the actual to the constructed
+	subtype before taking its address.
+
+2004-10-26  Vincent Celier  <celier@gnat.com>
+
+	* a-dirval.ads, a-dirval.adb, a-dirval-vms.adb, a-dirval-mingw.adb
+	(Is_Path_Name_Case_Sensitive): New function
+
+	* a-direct.adb (To_Lower_If_Case_Insensitive): New procedure
+	(Base_Name, Simple_Name, Current_Directory, Compose,
+	Containing_Directory, Full_Name): Call To_Lower_If_Case_Insensitive on
+	the result.
+
+2004-10-26  Cyrille Comar    <comar@act-europe.fr>
+	    Vasiliy Fofanov  <fofanov@act-europe.fr>
+	    Vincent Celier   <celier@gnat.com>
+
+	* gnat_ugn.texi: Generalize "finding memory problems" section into a
+	"memory management issues" section and document some of the useful
+	memory pools provided as part of the GNAT library.
+	Remove "virtual" from declaration of A::method2 in
+	the simple example of Ada/C++ mixed system.
+	Library Projects may be virtually extended: their virtual extensions
+	are not Library Projects.
+	Added section on extending project hierarchies.
+
 2004-10-19  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* adaint.c (__gnat_get_libraries_from_registry): Cast value
