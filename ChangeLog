@@ -1,3 +1,9 @@
+2000-08-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config-ml.in (CC, CXX): Avoid trailing whitespace.
+	(LD_LIBRARY_PATH, SHLIB_PATH): Adjust for multilibs and export to
+	sub-configures.
+
 2000-08-21  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS: Add self as a libiberty maintainer
