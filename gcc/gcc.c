@@ -587,6 +587,7 @@ static struct compiler default_compilers[] =
   {".C", "#C++"}, {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
   {".f", "#Fortran"}, {".for", "#Fortran"}, {".F", "#Fortran"},
   {".fpp", "#Fortran"},
+  {".p", "#Pascal"}, {".pas", "#Pascal"},
   /* Next come the entries for C.  */
   {".c", "@c"},
   {"@c",
