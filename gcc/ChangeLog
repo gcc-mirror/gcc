@@ -1,3 +1,7 @@
+2004-07-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Adjust link for GNU Classpath.
+
 2004-07-04  Richard Henderson  <rth@redhat.com>
 
 	* rtl.def (ADDRESSOF): Remove.
