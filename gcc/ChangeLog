@@ -1,3 +1,7 @@
+2004-02-16  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/sourcebuild.texi: Mention backends.html.
+
 2004-02-15  Roger Sayle  <roger@eyesopen.com>
 
 	Backport from mainline:

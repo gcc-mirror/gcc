@@ -768,6 +768,9 @@ following are also necessary:
 An entry for the target architecture in @file{readings.html} on the
 GCC web site, with any relevant links.
 @item
+Details of the properties of the back end and target architecture in
+@file{backends.html} on the GCC web site.
+@item
 A news item about the contribution of support for that target
 architecture, in @file{index.html} on the GCC web site.
 @item
