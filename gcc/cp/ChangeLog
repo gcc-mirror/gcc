@@ -1,3 +1,7 @@
+Fri Oct 10 12:21:11 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Fix previous change.
+
 Thu Oct  9 12:08:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst): Fix thinko.

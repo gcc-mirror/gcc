@@ -623,8 +623,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     member class template of a non-specialized class
 	     template is itself a template.	        
 
-	     So, we just leave the template info alone in this case.
-	     */
+	     So, we just leave the template info alone in this case.  */
 	  if (!(DECL_TEMPLATE_INFO (decl) && DECL_TI_TEMPLATE (decl)))
 	    DECL_TEMPLATE_INFO (decl)
 	      = perm_tree_cons (tmpl, targs, NULL_TREE);
@@ -4411,9 +4410,6 @@ instantiate_decl (d)
   int line = lineno;
   char *file = input_filename;
 
-  if (DECL_TEMPLATE_SPECIALIZATION (d))
-    return d;
-
   for (td = tmpl; DECL_TEMPLATE_INSTANTIATION (td); )
     td = DECL_TI_TEMPLATE (td);
 
@@ -4436,6 +4432,18 @@ instantiate_decl (d)
 
   if (d_defined)
     return d;
+
+  if (TREE_CODE (d) == FUNCTION_DECL) 
+    {
+      tree specs;
+
+      /* Check to see if there is a matching specialization. */
+      for (specs = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+	   specs != NULL_TREE;
+	   specs = TREE_CHAIN (specs))
+	if (comp_template_args (TREE_PURPOSE (specs), args))
+	  return TREE_VALUE (specs);
+    }
 
   /* This needs to happen before any tsubsting.  */
   if (! push_tinst_level (d))
