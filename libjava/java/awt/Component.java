@@ -220,6 +220,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   public void setEnabled(boolean b)
   {
     this.enabled = b;
+    if (peer != null)
+      peer.setEnabled(b);
   }
   
   /** @deprecated */
@@ -299,8 +301,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (peer != null)
       peer.setForeground(c);
     this.foreground = c;
-    if (peer != null)
-      peer.setForeground(foreground);
   }
 
   /** @return the background color of the component. null may be
@@ -321,7 +321,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (peer != null)
       peer.setBackground(c);
     this.background = c;
-    if (peer != null) peer.setBackground(background);
   }
   
   public Font getFont()
@@ -1412,7 +1411,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
        etc. */
   }
 
-  void addNotifyContainerChildren() {
+  void addNotifyContainerChildren() 
+  {
     // nothing to do unless we're a container
   }
 

@@ -186,10 +186,11 @@ public class Window extends Container
       }
   }
 
+  /** @specnote Unlike Component.getToolkit, this implementation always 
+                returns the value of Toolkit.getDefaultToolkit(). */
   public Toolkit getToolkit()
   {
-    // FIXME: why different from Component.getToolkit() ?
-    return super.getToolkit();
+    return Toolkit.getDefaultToolkit ();    
   }
 
   public final String getWarningString()

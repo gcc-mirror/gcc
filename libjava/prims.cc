@@ -91,6 +91,10 @@ property_pair *_Jv_Environment_Properties;
 // The name of this executable.
 static char * _Jv_execName;
 
+// Stash the argv pointer to benefit native libraries that need it.
+const char **_Jv_argv;
+int _Jv_argc;
+
 #ifdef ENABLE_JVMPI
 // Pointer to JVMPI notification functions.
 void (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (JVMPI_Event *event);
@@ -864,6 +868,9 @@ void
 JvRunMain (jclass klass, int argc, const char **argv)
 {
   PROCESS_GCJ_PROPERTIES;
+
+  _Jv_argv = argv;
+  _Jv_argc = argc;
 
   main_init ();
 #ifdef HAVE_PROC_SELF_EXE

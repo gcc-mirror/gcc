@@ -62,7 +62,7 @@ public class BufferedImage extends java.awt.Image
   
   public BufferedImage(int w, int h, int type)
   {
-    ColorModel cm;
+    ColorModel cm = null;
     
     boolean alpha = false;
     boolean premultiplied = false;
@@ -85,7 +85,7 @@ public class BufferedImage extends java.awt.Image
       case TYPE_INT_ARGB_PRE:
       case TYPE_USHORT_565_RGB:
       case TYPE_USHORT_555_RGB:
-	int[] masks;
+	int[] masks = null;
 	switch (type)
 	  {
 	  case TYPE_INT_RGB:
