@@ -345,18 +345,18 @@ tree ffecom_f2c_ptr_to_ftnint_type_node;
 typedef enum
   {
     FFECOM_rttypeVOID_,
-    FFECOM_rttypeINT_,		/* C's `int' type, for libF77/system_.c? */
-    FFECOM_rttypeINTEGER_,
-    FFECOM_rttypeLONGINT_,	/* C's `long long int' type. */
-    FFECOM_rttypeLOGICAL_,
-    FFECOM_rttypeREAL_F2C_,	/* f2c's `float' returned as `double'. */
-    FFECOM_rttypeREAL_GNU_,	/* `float' returned as such. */
+    FFECOM_rttypeFTNINT_,	/* f2c's `ftnint' type. */
+    FFECOM_rttypeINTEGER_,	/* f2c's `integer' type. */
+    FFECOM_rttypeLONGINT_,	/* f2c's `longint' type. */
+    FFECOM_rttypeLOGICAL_,	/* f2c's `logical' type. */
+    FFECOM_rttypeREAL_F2C_,	/* f2c's `real' returned as `double'. */
+    FFECOM_rttypeREAL_GNU_,	/* `real' returned as such. */
     FFECOM_rttypeCOMPLEX_F2C_,	/* f2c's `complex' returned via 1st arg. */
-    FFECOM_rttypeCOMPLEX_GNU_,	/* gcc's `complex float' returned as such. */
+    FFECOM_rttypeCOMPLEX_GNU_,	/* f2c's `complex' returned directly. */
     FFECOM_rttypeDOUBLE_,	/* C's `double' type. */
-    FFECOM_rttypeDOUBLEREAL_,
+    FFECOM_rttypeDOUBLEREAL_,	/* f2c's `doublereal' type. */
     FFECOM_rttypeDBLCMPLX_F2C_,	/* f2c's `doublecomplex' returned via 1st arg. */
-    FFECOM_rttypeDBLCMPLX_GNU_,	/* gcc's `complex double' returned as such. */
+    FFECOM_rttypeDBLCMPLX_GNU_,	/* f2c's `doublecomplex' returned directly. */
     FFECOM_rttypeCHARACTER_,	/* f2c `char *'/`ftnlen' pair. */
     FFECOM_rttype_
   } ffecomRttype_;
@@ -7423,8 +7423,8 @@ ffecom_make_gfrt_ (ffecomGfrt ix)
       ttype = void_type_node;
       break;
 
-    case FFECOM_rttypeINT_:
-      ttype = integer_type_node;
+    case FFECOM_rttypeFTNINT_:
+      ttype = ffecom_f2c_ftnint_type_node;
       break;
 
     case FFECOM_rttypeINTEGER_:
@@ -7440,11 +7440,11 @@ ffecom_make_gfrt_ (ffecomGfrt ix)
       break;
 
     case FFECOM_rttypeREAL_F2C_:
-      ttype = ffecom_f2c_real_type_node;
+      ttype = double_type_node;
       break;
 
     case FFECOM_rttypeREAL_GNU_:
-      ttype = ffecom_tree_type[FFEINFO_basictypeREAL][FFEINFO_kindtypeREAL1];
+      ttype = float_type_node;
       break;
 
     case FFECOM_rttypeCOMPLEX_F2C_:
@@ -7457,6 +7457,10 @@ ffecom_make_gfrt_ (ffecomGfrt ix)
 
     case FFECOM_rttypeDOUBLE_:
       ttype = double_type_node;
+      break;
+
+    case FFECOM_rttypeDOUBLEREAL_:
+      ttype = ffecom_f2c_doublereal_type_node;
       break;
 
     case FFECOM_rttypeDBLCMPLX_F2C_:
@@ -11601,7 +11605,7 @@ ffecom_gfrt_basictype (ffecomGfrt gfrt)
     case FFECOM_rttypeVOID_:
       return FFEINFO_basictypeNONE;
 
-    case FFECOM_rttypeINT_:
+    case FFECOM_rttypeFTNINT_:
       return FFEINFO_basictypeINTEGER;
 
     case FFECOM_rttypeINTEGER_:
@@ -11622,6 +11626,7 @@ ffecom_gfrt_basictype (ffecomGfrt gfrt)
       return FFEINFO_basictypeCOMPLEX;
 
     case FFECOM_rttypeDOUBLE_:
+    case FFECOM_rttypeDOUBLEREAL_:
       return FFEINFO_basictypeREAL;
 
     case FFECOM_rttypeDBLCMPLX_F2C_:
@@ -11646,7 +11651,7 @@ ffecom_gfrt_kindtype (ffecomGfrt gfrt)
     case FFECOM_rttypeVOID_:
       return FFEINFO_kindtypeNONE;
 
-    case FFECOM_rttypeINT_:
+    case FFECOM_rttypeFTNINT_:
       return FFEINFO_kindtypeINTEGER1;
 
     case FFECOM_rttypeINTEGER_:
@@ -11667,6 +11672,7 @@ ffecom_gfrt_kindtype (ffecomGfrt gfrt)
       return FFEINFO_kindtypeREAL1;
 
     case FFECOM_rttypeDOUBLE_:
+    case FFECOM_rttypeDOUBLEREAL_:
       return FFEINFO_kindtypeREAL2;
 
     case FFECOM_rttypeDBLCMPLX_F2C_:

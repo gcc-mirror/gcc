@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is a VMS intrinsic. */
 
-doublereal G77_secnds_0 (real *r)
+double G77_secnds_0 (real *r)
 {
     struct tm *lt;
     time_t clock;

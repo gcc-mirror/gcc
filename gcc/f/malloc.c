@@ -33,10 +33,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "proj.h"
 #include "malloc.h"
 
-/* For systems where <stdlib.h> is missing: */
-
-void *malloc (size_t size);
-void *realloc (void *ptr, size_t size);
+/* Assume gcc/toplev.o is linked in.  */
+void *xmalloc (unsigned size);
+void *xrealloc (void *ptr, int size);
 
 /* Externals defined here.  */
 
@@ -364,19 +363,14 @@ void *
 malloc_new_ (mallocSize s)
 {
   void *ptr;
-  size_t ss = s;
+  unsigned ss = s;
 
-#if MALLOC_DEBUG
+#if MALLOC_DEBUG && 0
   assert (s == (mallocSize) ss);/* Else alloc is too big for this
 				   library/sys. */
 #endif
 
-  ptr = malloc (ss);
-  if (ptr == NULL)
-    {
-      free (malloc_reserve_);
-      assert (ptr != NULL);
-    }
+  ptr = xmalloc (ss);
 #if MALLOC_DEBUG
   memset (ptr, 126, ss);	/* Catch some kinds of errors more
 				   quickly/reliably. */
@@ -523,18 +517,13 @@ malloc_resize_inpool_ (mallocPool pool, mallocType_ type UNUSED,
 void *
 malloc_resize_ (void *ptr, mallocSize s)
 {
-  size_t ss = s;
+  int ss = s;
 
-#if MALLOC_DEBUG
+#if MALLOC_DEBUG && 0
   assert (s == (mallocSize) ss);/* Too big if failure here. */
 #endif
 
-  ptr = realloc (ptr, ss);
-  if (ptr == NULL)
-    {
-      free (malloc_reserve_);
-      assert (ptr != NULL);
-    }
+  ptr = xrealloc (ptr, ss);
   return ptr;
 }
 

@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-08-11
+@c 1997-08-25
 
 @ifclear NEWSONLY
 @node News
@@ -110,6 +110,11 @@ Place automatic arrays on the stack, even if
 @code{SAVE} or the @samp{-fno-automatic} option
 is in effect.
 This avoids a compiler crash in some cases.
+
+@item
+The @samp{-malign-double} option now reliably aligns
+@code{DOUBLE PRECISION} optimally on Pentium and
+Pentium Pro architectures (586 and 686 in @code{gcc}).
 
 @item
 New option @samp{-Wno-globals} disables warnings
@@ -231,6 +236,9 @@ front end.
 Modify @code{make} rules and related code so that
 generation of Info documentation doesn't require
 compilation using @code{gcc}.
+Now, any ANSI C compiler should be adequate to
+produce the @code{g77} documentation (in particular,
+the tables of intrinsics) from scratch.
 
 @item
 Add @code{INT2} and @code{INT8} intrinsics.
@@ -284,7 +292,7 @@ as an option that inhibits linking, just like @samp{-c} or
 and @samp{-Xlinker} options.
 
 @item
-Upgrade to @code{libf2c} as of 1997-08-06.
+Upgrade to @code{libf2c} as of 1997-08-16.
 
 @item
 Modify @code{libf2c} to consistently and clearly diagnose

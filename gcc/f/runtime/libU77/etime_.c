@@ -39,10 +39,10 @@ Boston, MA 02111-1307, USA.  */
 static long clk_tck = 0;
 
 #ifdef KR_headers
-doublereal G77_etime_0 (tarray)
+double G77_etime_0 (tarray)
      real tarray[2];
 #else
-doublereal G77_etime_0 (real tarray[2])
+double G77_etime_0 (real tarray[2])
 #endif
 {
   /* The getrusage version is only the default for convenience. */

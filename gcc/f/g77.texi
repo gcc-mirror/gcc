@@ -102,7 +102,7 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @sp 2
 @center James Craig Burley
 @sp 3
-@center Last updated 1997-08-11
+@center Last updated 1997-08-24
 @sp 1
 @c The version number appears some more times in this file.
 
@@ -1513,6 +1513,18 @@ These problems result, primarily, from differences between the way
 such constants are interpreted by the C preprocessor and by a Fortran
 compiler.
 
+Another example of a problem that results from using the C preprocessor
+is that a Fortran comment line that happens to contain any
+characters ``interesting'' to the C preprocessor,
+such as a backslash at the end of the line,
+is not recognized by the preprocessor as a comment line,
+so instead of being passed through ``raw'',
+the line is edited according to the rules for the preprocessor.
+For example, the backslash at the end of the line is removed,
+along with the subsequent newline, resulting in the next
+line being effectively commented out---unfortunate if that
+line is a non-comment line of important code!
+
 @emph{Note:} The @samp{-traditional} and @samp{-undef} flags are supplied
 to @code{cpp} by default, to avoid unpleasant surprises.
 @xref{Preprocessor Options,,Options Controlling the Preprocessor,
@@ -2573,10 +2585,9 @@ and data sets.
 this option does not apply, generally speaking, to Fortran
 code compiled by @code{g77}.
 
-@emph{Also note:} Apparently due to a @code{gcc} backend bug,
-@samp{-malign-double} does not align stack-allocated data (such as
-local variables neither @code{SAVE}d nor reckoned to take up too
-much space to put on the stack).
+@emph{Also note:} @code{g77} fixes a @code{gcc} backend bug to allow
+@samp{-malign-double} to work generally, not just with
+statically-allocated data.
 
 @emph{Also also note:} The negative form of @samp{-malign-double}
 is @samp{-mno-align-double}, not @samp{-benign-double}.
@@ -5004,6 +5015,7 @@ These are not necessarily supported by every GNU Fortran
 implementation.
 
 @item KIND=7
+@cindex pointers
 This is valid only as @code{INTEGER(KIND=7)} and
 denotes the @code{INTEGER} type that has the smallest
 storage size that holds a pointer on the system.
@@ -7909,7 +7921,8 @@ the return type of a @code{REAL} @code{FUNCTION}.)
 @samp{-P} option to generate C prototypes appropriate for calling the
 Fortran.@footnote{The files generated like this can also be used for
 inter-unit consistency checking of dummy and actual arguments, although
-the @samp{ftnchek} tool from @url{ftp://ftp.netlib.org/fortran} is
+the @samp{ftnchek} tool from @url{ftp://ftp.netlib.org/fortran}
+or @url{ftp://ftp.dsm.fordham.edu} is
 probably better for this purpose.}
 If the Fortran code containing any
 routines to be called from C is in file @file{joe.f}, use the command
@@ -9982,12 +9995,16 @@ The Intel x86 architecture generally ensures that these programs will
 work on all its implementations,
 but particular implementations (such as Pentium Pro)
 perform better with more strict alignment.
+(Such behavior isn't unique to the Intel x86 architecture.)
+Other architectures might @emph{demand} 64-bit alignment
+of 64-bit data.
 
-There are a variety of approaches to use to address this problem,
-in any combination:
+There are a variety of approaches to use to address this problem:
 
 @itemize @bullet
 @item
+@cindex COMMON, layout
+@cindex layout of common blocks
 Order your @code{COMMON} and @code{EQUIVALENCE} areas such
 that the variables and arrays with the widest alignment
 guidelines come first.
@@ -10017,67 +10034,44 @@ avoid having to carefully count the number of bytes
 occupied by each entity to determine whether the
 actual alignment of each subsequent entity meets the
 alignment guidelines for the type of that entity.
+ 
+If you don't ensure correct alignment of @code{COMMON} elements, the
+compiler may be forced by some systems to violate the Fortran semantics by
+adding padding to get @code{DOUBLE PRECISION} data properly aligned.
+If the unfortunate practice is employed of overlaying different types of
+data in the @code{COMMON} block, the different variants
+of this block may become misaligned with respect to each other.
+Even if your platform doesn't require strict alignment,
+@code{COMMON} should be laid out as above for portability.
+(Unfortunately the FORTRAN 77 standard didn't anticipate this
+possible requirement, which is compiler-independent on a given platform.)
 
 @item
+@cindex -malign-double option
+@cindex options, -malign-double
 Use the (x86-specific) @samp{-malign-double} option when compiling
-programs.
-This will align only static data (entities in @code{COMMON} or
-local entities with the @code{SAVE} attribute),
-but it should probably always be
-used with Fortran code on the 586 and 686 architectures for best
-performance.
-
-This feature of @samp{-malign-double} means it may actually be best to
-use it with @samp{-fno-automatic} even though the latter usually
-produces worse code; at least, doing so will tend to produce more
-consistent run times.
-
-Using @samp{-malign-double} and @samp{-fno-automatic} together is
-apparently the only way to ensure that all doubles are correctly aligned
-on GNU x86 systems without having to change @code{g77} itself as
-described in the next item.
-(Note that the @code{gcc} C extension @samp{__attribute__ ((aligned (8))}
-also won't double-align the datum to which it is applied if that is allocated
-on the stack.)
-It isn't clear whether this deficiency also applies to
-non-GNU based x86 systems (Solaris, DGUX et al), but it probably does.
-
-@item
-Change the definition of the @samp{STACK_BOUNDARY} macro in
-@file{gcc/config/i386/i386.h} from @samp{32} to
-@samp{(TARGET_ALIGN_DOUBLE ? 64 : 32)}, and rebuild
-@code{g77}.
-@xref{Installation,,Installing GNU Fortran}, for more information.
+programs for the Pentium and Pentium Pro architectures (called 586
+and 686 in the @code{gcc} configuration subsystem).
+The warning about this in the @code{gcc} manual isn't
+generally relevant to Fortran,
+but using it will force @code{COMMON} to be padded if necessary to align
+@code{DOUBLE PRECISION} data.
 
 @item
 Ensure that @file{crt0.o} or @file{crt1.o}
 on your system guarantees a 64-bit
 aligned stack for @code{main()}.
-Some experimentation might be needed to determine this, and
-access to source code to fix this.
-While arranging this may typically
-get more data properly aligned, it won't, by itself,
-ensure they all are.
-
-One approach to testing this is to write a @code{main()} program
-in C or assembler that outputs the address of the stack pointer
-(and/or frame pointer), and visually inspect the output to see
-if the stack is 64-bit aligned.
-If it is, try renaming the executable to longer and shorter names
-and running the program again.
-If the name of the executable is placed on the stack by @file{crt0.o}
-or @file{crt1.o},
-the location of the stack should move, and this might help determine
-whether it is kept on a 64-bit boundary.
+The recent one from GNU (@code{glibc2}) will do this on x86 systems,
+but we don't know of any other x86 setups where it will be right.
+Read your system's documentation to determine if
+it is appropriate to upgrade to a more recent version
+to obtain the optimal alignment.
 @end itemize
 
-Yes, this is all more complicated than it should be.
-The problems are best solved in @code{gcc} and the
-libraries for the operating systems on such systems,
-which need to be continuously updated to provide the
-best alignment for newly released processors.
-Managing this while remaining compatible with ABIs
-on various systems can be challenging.
+Progress is being made on making this work
+``out of the box'' on future versions of @code{g77},
+@code{gcc}, and some of the relevant operating systems
+(such as GNU/Linux).
 
 @node Prefer Automatic Uninitialized Variables
 @subsection Prefer Automatic Uninitialized Variables
@@ -10950,6 +10944,18 @@ This set of features is
 probably considered just behind intrinsics
 in @code{PARAMETER} statements on the list of large,
 important things to add to @code{g77}.
+
+In the meantime, consider using the @code{INTEGER(KIND=7)}
+declaration to specify that a variable must be
+able to hold a pointer.
+This construct is not portable to other non-GNU compilers,
+but it is portable to all machines GNU Fortran supports
+when @code{g77} is used.
+
+@xref{Functions and Subroutines}, for information on
+@code{%VAL()}, @code{%REF()}, and @code{%DESCR()}
+constructs, which are useful for passing pointers to
+procedures written in languages other than Fortran.
 
 @node Sensible Non-standard Constructs
 @subsection Sensible Non-standard Constructs
@@ -12222,6 +12228,63 @@ of ``an extension'' or ``support for traditional practice''.
 @item
 If you are an experienced user of Fortran compilers, your suggestions
 for improvement of GNU Fortran are welcome in any case.
+@end itemize
+
+Many, perhaps most, bug reports against @code{g77} turn out to
+be bugs in the user's code.
+While we find such bug reports educational, they sometimes take
+a considerable amount of time to track down or at least respond
+to---time we could be spending making @code{g77}, not some user's
+code, better.
+
+Some steps you can take to verify that the bug is not certainly
+in the code you're compiling with @code{g77}:
+
+@itemize @bullet
+@item
+Compile your code using the @code{g77} options @samp{-W -Wall -O}.
+These options enable many useful warning; the @samp{-O} option
+enables flow analysis that enables the uninitialized-variable
+warning.
+
+If you investigate the warnings and find evidence of possible bugs
+in your code, fix them first and retry @code{g77}.
+
+@item
+Compile your code using the @code{g77} options @samp{-finit-local-zero},
+@samp{-fno-automatic}, @samp{-ffloat-store}, and various
+combinations thereof.
+
+If your code works with any of these combinations, that is not
+proof that the bug isn't in @code{g77}---a @code{g77} bug exposed
+by your code might simply be avoided, or have a different, more subtle
+effect, when different options are used---but it can be a
+strong indicator that your code is making unawarranted assumptions
+about the Fortran dialect and/or underlying machine it is
+being compiled and run on.
+
+@xref{Overly Convenient Options,,Overly Convenient Command-Line Options},
+for information on the @samp{-fno-automatic} and
+@samp{-finit-local-zero} options and how to convert
+their use into selective changes in your own code.
+
+@item
+@pindex ftncheck
+Validate your code with @code{ftnchek} or a similar code-checking
+tool.
+@code{ftncheck} can be found at @url{ftp://ftp.netlib.org/fortran}
+or @url{ftp://ftp.dsm.fordham.edu}.
+
+@item
+Try your code out using other Fortran compilers, such as @code{f2c}.
+If it does not work on at least one other compiler (assuming the
+compiler supports the features the code needs), that is a strong
+indicator of a bug in the code.
+
+However, even if your code works on many compilers @emph{except}
+@code{g77}, that does @emph{not} mean the bug is in @code{g77}.
+It might mean the bug is in your code, and that @code{g77} simply
+exposes it more readily than other compilers.
 @end itemize
 
 @node Bug Lists

@@ -39,14 +39,14 @@ typedef RETSIGTYPE (*sig_type)();
 #ifdef KR_headers
 extern sig_type signal();
 
-int G77_alarm_0 (seconds, proc)
+integer G77_alarm_0 (seconds, proc)
      integer *seconds;
      sig_type proc;
 #else
 #include <signal.h>
 typedef int (*sig_proc)(int);
 
-int G77_alarm_0 (integer *seconds, sig_proc proc)
+integer G77_alarm_0 (integer *seconds, sig_proc proc)
 #endif
 {
   int status;

@@ -302,10 +302,11 @@ ffeglobal_new_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
     return;
 
   if ((g != NULL)
-      && (g->type != FFEGLOBAL_typeNONE)
-      && (g->type != FFEGLOBAL_typeEXT)
-      && ((g->type != type)
-	  || (g->u.proc.defined)))
+      && ((g->type == FFEGLOBAL_typeMAIN)
+	  || (g->type == FFEGLOBAL_typeSUBR)
+	  || (g->type == FFEGLOBAL_typeFUNC)
+	  || (g->type == FFEGLOBAL_typeBDATA))
+      && g->u.proc.defined)
     {
       if (ffe_is_globals () || ffe_is_warn_globals ())
 	{
@@ -313,6 +314,27 @@ ffeglobal_new_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
 			? FFEBAD_FILEWIDE_ALREADY_SEEN
 			: FFEBAD_FILEWIDE_ALREADY_SEEN_W);
 	  ffebad_string (ffelex_token_text (t));
+	  ffebad_here (0, ffelex_token_where_line (t),
+		       ffelex_token_where_column (t));
+	  ffebad_here (1, ffelex_token_where_line (g->t),
+		       ffelex_token_where_column (g->t));
+	  ffebad_finish ();
+	}
+      g->type = FFEGLOBAL_typeANY;
+    }
+  else if ((g != NULL)
+	   && (g->type != FFEGLOBAL_typeNONE)
+	   && (g->type != FFEGLOBAL_typeEXT)
+	   && (g->type != type))
+    {
+      if (ffe_is_globals () || ffe_is_warn_globals ())
+	{
+	  ffebad_start (ffe_is_globals ()
+			? FFEBAD_FILEWIDE_DISAGREEMENT
+			: FFEBAD_FILEWIDE_DISAGREEMENT_W);
+	  ffebad_string (ffelex_token_text (t));
+	  ffebad_string (ffeglobal_type_string_[type]);
+	  ffebad_string (ffeglobal_type_string_[g->type]);
 	  ffebad_here (0, ffelex_token_where_line (t),
 		       ffelex_token_where_column (t));
 	  ffebad_here (1, ffelex_token_where_line (g->t),
@@ -1180,6 +1202,12 @@ ffeglobal_ref_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
   ffename n = NULL;
   ffeglobal g;
 
+  /* It is never really _known_ that an EXTERNAL statement
+     names a BLOCK DATA by just looking at the program unit,
+     so override a different notion here.  */
+  if (type == FFEGLOBAL_typeBDATA)
+    type = FFEGLOBAL_typeEXT;
+
   g = ffesymbol_global (s);
   if (g == NULL)
     {
@@ -1218,11 +1246,6 @@ ffeglobal_ref_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
 	      ffebad_finish ();
 	    }
 #endif
-	  /* It is never really _known_ that an EXTERNAL statement
-	     names a BLOCK DATA by just looking at the program unit,
-	     so don't override a different notion.  */
-	  if (type == FFEGLOBAL_typeBDATA)
-	    type = FFEGLOBAL_typeEXT;
 	}
       else if (ffe_is_globals ())
 	{
@@ -1272,6 +1295,7 @@ ffeglobal_ref_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
 	       && ((ffesymbol_basictype (s) != g->u.proc.bt)
 		   || (ffesymbol_kindtype (s) != g->u.proc.kt)
 		   || ((ffesymbol_size (s) != g->u.proc.sz)
+		       && g->u.proc.defined
 		       && (g->u.proc.sz != FFETARGET_charactersizeNONE))))
 	{
 	  if (ffe_is_globals ())

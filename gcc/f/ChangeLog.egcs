@@ -1,3 +1,8 @@
+Wed Aug 27 20:32:03 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* top.c (ffe_decode_option): Turn on flag_move_all_moveables
+	and flag_reduce_all_givs.
+
 Mon Aug 25 23:24:32 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* Make-lang.in ($(srcdir)/f/runtime/configure,
@@ -41,11 +46,6 @@ Sun Aug 17 08:35:11 1997  Jeffrey A Law  (law@cygnus.com)
 	* g77.c, parse.c: Likewise.
 
 	* intdoc.texi: Remove generated file from distribution.
-
-Fri Aug 15 13:44:14 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* Makefile.in, Make-lang.in: Remove "^L" at the beginning
-	of lines.
 
 Tue Aug 12 10:23:02 1997  Jeffrey A Law  (law@cygnus.com)
 

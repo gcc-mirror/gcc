@@ -5800,6 +5800,7 @@ ffestb_R5284_ (ffelexToken t)
 					  (ffeexprCallback) ffestb_R5281_);
 
     case FFELEX_typeNAME:
+    case FFELEX_typeOPEN_PAREN:
       return (ffelexHandler) (*((ffelexHandler)
 				ffeexpr_lhs (ffesta_output_pool,
 					     FFEEXPR_contextDATA,

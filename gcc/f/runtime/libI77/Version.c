@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19970805\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19970816\n";
 
 /*
 */
@@ -260,6 +260,10 @@ wrtfmt.c:
 		 with -DF8X_NML_ELIDE_QUOTES to get the old behavior.
 		 wrtfmt.o: wrt_G: tweak to print the right number of 0's
 		 for zero under G format. */
+/* 16 Aug. 1997: iio.c: fix bug in internal writes to an array of character
+		 strings that sometimes caused one more array element than
+		 required by the format to be blank-filled.  Example:
+		 format(1x). */
 /* 17 June 1997: detect recursive I/O and call f__fatal explaining it. */
 
 #include <stdio.h>
