@@ -1,3 +1,26 @@
+2005-03-14  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/17688
+	* config/i386/i386.c (x86_use_himode_fiop): New.
+	(x86_use_simode_fiop): Rename from x86_use_fiop.
+	* config/i386/i386.h (x86_use_himode_fiop): Declare.
+	(TARGET_USE_HIMODE_FIOP): New.
+	(x86_use_simode_fiop): Rename from x86_use_fiop.
+	(TARGET_USE_SIMODE_FIOP): Rename from TARGET_USE_FIOP.
+	
+	* config/i386/i386.md (X87MODEI12): New mode macro define.
+	(*cmpfp_<mode>): Rename from *cmpfp_si.  Use X87MODEI12 mode macro
+	to implement x87 FP compare with HImode input operands.
+	(*fp_jcc_8<mode>_387, splitter): Rename from *fp_jcc_8_387.
+	Use X87MODEI12 mode macro to handle HImode input operands.
+	(*fop_sf_2<mode>_i387, *fop_sf_3<mode>_i387, *fop_df_2<mode>_i387,
+	*fop_df_3<mode>_i387, *fop_xf_2<mode>_i387, *fop_xf_3<mode>_i387):
+	Renamed from *fop_sf_2_i387, *fop_sf_3_i387, *fop_df_2_i387,
+	*fop_df_3_i387, *fop_xf_2_i387, *fop_xf_3_i387. Use X87MODEI12 mode
+	macro to implement x87 operators with HImode input operands.
+	(fop splitters): Use X87MODEI12 mode macro to handle HImode
+	input operands.
+
 2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-cfg.c (find_taken_edge_cond_expr): Use zero_p instead of
