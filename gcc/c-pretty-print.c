@@ -140,17 +140,22 @@ pp_c_arrow (c_pretty_printer *pp)
 }
 
 void
-pp_c_semicolon(c_pretty_printer *pp)
+pp_c_semicolon (c_pretty_printer *pp)
 {
   pp_semicolon (pp);
   pp_base (pp)->padding = pp_none;
 }
 
+/* Print out the external representation of CV-QUALIFIER.  */
+
 static void
 pp_c_cv_qualifier (c_pretty_printer *pp, const char *cv)
 {
   const char *p = pp_last_position_in_text (pp);
-  if (p != NULL && *p == '*')
+  /* The C programming language does not have references, but it is much
+     simpler to handle those here rather than going through the same
+     logic in the C++ pretty-printer.  */
+  if (p != NULL && (*p == '*' || *p == '&'))
     pp_c_whitespace (pp);
   pp_c_identifier (pp, cv);
 }
@@ -164,6 +169,9 @@ pp_c_type_cast (c_pretty_printer *pp, tree t)
   pp_type_id (pp, t);
   pp_c_right_paren (pp);
 }
+
+/* We're about to pretty-print a pointer type as indicated by T.
+   Output a whitespace, if needed, preparing for subsequent output.  */
 
 void
 pp_c_space_for_pointer_operator (c_pretty_printer *pp, tree t)
@@ -737,6 +745,8 @@ pp_c_string_literal (c_pretty_printer *pp, tree s)
   pp_doublequote (pp);
 }
 
+/* Pretty-print an INTEGER literal.  */
+
 static void
 pp_c_integer_constant (c_pretty_printer *pp, tree i)
 {
@@ -922,6 +932,8 @@ pp_c_constant (c_pretty_printer *pp, tree e)
     }
 }
 
+/* Pretty-print an IDENTIFIER_NODE, precedeed by whitespace is necessary.  */
+
 void
 pp_c_identifier (c_pretty_printer *pp, const char *id)
 {
@@ -1012,7 +1024,9 @@ void
 pp_c_init_declarator (c_pretty_printer *pp, tree t)
 {
   pp_declarator (pp, t);
-  if (DECL_INITIAL (t))
+  /* We don't want to output function definitions here.  There are handled
+     elsewhere (and the syntactic form is bogus anyway).  */
+  if (TREE_CODE (t) != FUNCTION_DECL && DECL_INITIAL (t))
     {
       tree init = DECL_INITIAL (t);
       /* This C++ bit is handled here because it is easier to do so.
