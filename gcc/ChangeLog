@@ -1,3 +1,57 @@
+Mon Jan 18 11:48:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpplib.c (special_symbol): Qualify a char* with the `const' keyword.
+	Instead of writing to const char *buf directly, use a non-const
+ 	variable `wbuf' to allocate and write a string, then set buf = wbuf.
+
+	* cppulp.c (user_label_prefix): Qualify a char* with the `const'
+	keyword.
+
+	* dyn-string.c (dyn_string_append): Likewise.
+
+	* dyn-string.h (dyn_string_append): Likewise.
+
+	* final.c (end_final, output_operand_lossage, asm_fprintf): Likewise.
+
+	* output.h (end_final, output_operand_lossage, asm_fprintf,
+	named_section, decode_reg_name, make_decl_rtl, user_label_prefix):
+	Likewise.
+
+	* profile.c (init_branch_prob): Likewise.
+
+	* toplev.c (set_target_switch, vmessage,
+ 	v_message_with_file_and_line, v_message_with_decl,
+ 	v_error_with_file_and_line, v_error_with_decl, v_error_for_asm,
+ 	verror, vfatal, v_warning_with_file_and_line, v_warning_with_decl,
+ 	v_warning_for_asm, vwarning, vpedwarn, v_pedwarn_with_decl,
+ 	v_pedwarn_with_file_and_line, vsorry, v_really_sorry,
+	open_dump_file, dump_rtl, clean_dump_file, 
+	print_version, print_single_switch, print_switch_values,
+	dump_base_name, debug_args, lang_independent_options,
+	user_label_prefix, documented_lang_options, target_switches,
+	target_options, print_time, pfatal_with_name, fatal_io_error,
+	fatal_insn, default_print_error_function, print_error_function,
+	report_error_function, error_with_file_and_line, error_with_decl,
+	error_for_asm, error, fatal, warning_with_file_and_line,
+	warning_with_decl, warning_for_asm, warning, pedwarn,
+	pedwarn_with_decl, pedwarn_with_file_and_line, sorry,
+	really_sorry, botch, output_quoted_string, output_file_directive,
+	open_dump_file, rest_of_decl_compilation, display_help, main):
+	Likewise.
+
+	* toplev.h (print_time, fatal, fatal_io_error, pfatal_with_name,
+	fatal_insn, warning, error, pedwarn, pedwarn_with_file_and_line,
+	warning_with_file_and_line, error_with_file_and_line, sorry,
+        really_sorry, default_print_error_function, report_error_function,
+	rest_of_decl_compilation, pedwarn_with_decl, warning_with_decl,
+	error_with_decl, error_for_asm, warning_for_asm, output_quoted_string,
+	output_file_directive, botch): Likewise.
+
+	* tree.h (make_decl_rtl): Likewise.
+
+	* varasm.c (strip_reg_name, named_section, decode_reg_name,
+	make_decl_rtl): Likewise.
+	
 Mon Jan 18 11:35:49 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* Makefile.in (TCL_LIBRARY): Use 'cd' to find the library

@@ -125,7 +125,7 @@ struct constant_descriptor;
 struct rtx_const;
 struct pool_constant;
 
-static char *strip_reg_name		PROTO((char *));
+static const char *strip_reg_name	PROTO((const char *));
 static int contains_pointers_p		PROTO((tree));
 static void decode_addr_const		PROTO((tree, struct addr_const *));
 static int const_hash			PROTO((tree));
@@ -263,7 +263,7 @@ in_data_section ()
 void
 named_section (decl, name, reloc)
      tree decl;
-     char *name;
+     const char *name;
      int reloc;
 {
   if (decl != NULL_TREE
@@ -549,9 +549,9 @@ make_function_rtl (decl)
 
 /* Given NAME, a putative register name, discard any customary prefixes.  */
 
-static char *
+static const char *
 strip_reg_name (name)
-     char *name;
+  const char *name;
 {
 #ifdef REGISTER_PREFIX
   if (!strncmp (name, REGISTER_PREFIX, strlen (REGISTER_PREFIX)))
@@ -572,7 +572,7 @@ strip_reg_name (name)
 
 int
 decode_reg_name (asmspec)
-     char *asmspec;
+  const char *asmspec;
 {
   if (asmspec != 0)
     {
@@ -601,7 +601,7 @@ decode_reg_name (asmspec)
 
 #ifdef ADDITIONAL_REGISTER_NAMES
       {
-	static struct { char *name; int number; } table[]
+	static struct { const char *name; int number; } table[]
 	  = ADDITIONAL_REGISTER_NAMES;
 
 	for (i = 0; i < (int)(sizeof (table) / sizeof (table[0])); i++)
@@ -633,7 +633,7 @@ decode_reg_name (asmspec)
 void
 make_decl_rtl (decl, asmspec, top_level)
      tree decl;
-     char *asmspec;
+     const char *asmspec;
      int top_level;
 {
   register char *name = 0;

@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
-   Copyright (C) 1987, 1991, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 97-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,7 +24,7 @@ extern void init_final		PROTO((char *));
 
 /* Called at end of source file,
    to output the block-profiling table for this entire compilation.  */
-extern void end_final		PROTO((char *));
+extern void end_final		PROTO((const char *));
 
 /* Enable APP processing of subsequent output.
    Used before the output from an `asm' statement.  */
@@ -77,7 +77,7 @@ extern rtx alter_subreg PROTO((rtx));
 
 /* Report inconsistency between the assembler template and the operands.
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
-extern void output_operand_lossage  PROTO((char *));
+extern void output_operand_lossage  PROTO((const char *));
 
 /* Output a string of assembler code, substituting insn operands.
    Defined in final.c.  */
@@ -106,7 +106,7 @@ extern void output_addr_const PROTO((FILE *, rtx));
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
-extern void asm_fprintf		PROTO(PVPROTO((FILE *file, char *p, ...)));
+extern void asm_fprintf		PVPROTO((FILE *file, const char *p, ...));
 
 /* Split up a CONST_DOUBLE or integer constant rtx into two rtx's for single
    words.  */
@@ -161,7 +161,7 @@ extern void eh_frame_section		PROTO ((void));
    If DECL is NULL, just switch to section NAME.
    If NAME is NULL, get the name from DECL.
    If RELOC is 1, the initializer for DECL contains relocs.  */
-extern void named_section		PROTO((tree, char *, int));
+extern void named_section		PROTO((tree, const char *, int));
 
 /* Tell assembler to switch to the section for function DECL.  */
 extern void function_section		PROTO((tree));
@@ -188,7 +188,7 @@ extern void weak_finish			PROTO ((void));
    or -4 if ASMSPEC is `memory' and is not recognized.
    Accept an exact spelling or a decimal number.
    Prefixes such as % are optional.  */
-extern int decode_reg_name		PROTO((char *));
+extern int decode_reg_name		PROTO((const char *));
 
 #ifdef TREE_CODE
 /* Create the DECL_RTL for a declaration for a static or external variable
@@ -198,7 +198,7 @@ extern int decode_reg_name		PROTO((char *));
    TOP_LEVEL is nonzero if this is a file-scope variable.
 
    This is never called for PARM_DECL nodes.  */
-extern void make_decl_rtl		PROTO((tree, char *, int));
+extern void make_decl_rtl		PROTO((tree, const char *, int));
 
 /* Make the rtl for variable VAR be volatile.
    Use this only for static variables.  */
@@ -487,4 +487,4 @@ extern FILE *rtl_dump_file;
    && ! (RELOC && (flag_pic || DECL_ONE_ONLY (DECL))))
 
 /* User label prefix in effect for this compilation.  */
-extern char *user_label_prefix;
+extern const char *user_label_prefix;

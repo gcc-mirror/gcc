@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1467,7 +1467,7 @@ extern int reload			PROTO ((rtx, int, FILE *));
 extern void init_caller_save		PROTO ((void));
 
 /* In profile.c */
-extern void init_branch_prob		PROTO ((char *));
+extern void init_branch_prob		PROTO ((const char *));
 #ifdef BUFSIZ
 extern void branch_prob			PROTO ((rtx, FILE *));
 extern void end_branch_prob		PROTO ((FILE *));

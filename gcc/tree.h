@@ -2258,7 +2258,7 @@ extern void set_yydebug			PROTO ((int));
 extern void fixup_signed_type		PROTO ((tree));
 
 /* varasm.c */
-extern void make_decl_rtl		PROTO ((tree, char *, int));
+extern void make_decl_rtl		PROTO ((tree, const char *, int));
 extern void make_decl_one_only		PROTO ((tree));
 extern int supports_one_only		PROTO ((void));
 extern void variable_section		PROTO ((tree, int));

@@ -2054,7 +2054,8 @@ special_symbol (hp, pfile)
      HASHNODE *hp;
      cpp_reader *pfile;
 {
-  char *buf;
+  const char *buf;
+  char *wbuf;
   int len;
   int true_indepth;
   cpp_buffer *ip = NULL;
@@ -2108,13 +2109,15 @@ special_symbol (hp, pfile)
 	if (ip->fname != NULL)
 	  true_indepth++;
 
-      buf = (char *) alloca (8); /* Eight bytes ought to be more than enough */
-      sprintf (buf, "%d", true_indepth - 1);
+      wbuf = (char *) alloca (8); /* Eight bytes ought to be more than enough*/
+      sprintf (wbuf, "%d", true_indepth - 1);
+      buf = wbuf;
       break;
 
   case T_VERSION:
-      buf = (char *) alloca (3 + strlen (version_string));
-      sprintf (buf, "\"%s\"", version_string);
+      wbuf = (char *) alloca (3 + strlen (version_string));
+      sprintf (wbuf, "\"%s\"", version_string);
+      buf = wbuf;
       break;
 
 #ifndef NO_BUILTIN_SIZE_TYPE
@@ -2142,19 +2145,20 @@ special_symbol (hp, pfile)
       break;
 
   case T_CONST:
-      buf = (char *) alloca (4 * sizeof (int));
-      sprintf (buf, "%d", hp->value.ival);
+      wbuf = (char *) alloca (4 * sizeof (int));
+      sprintf (wbuf, "%d", hp->value.ival);
 #ifdef STDC_0_IN_SYSTEM_HEADERS
       if (ip->system_header_p
 	  && hp->length == 8 && bcmp (hp->name, "__STDC__", 8) == 0
 	  && ! cpp_lookup (pfile, (U_CHAR *) "__STRICT_ANSI__", -1, -1))
-	strcpy (buf, "0");
+	strcpy (wbuf, "0");
 #endif
 #if 0
       if (pcp_inside_if && pcp_outfile)
 	/* Output a precondition for this macro use */
 	fprintf (pcp_outfile, "#define %s %d\n", hp->name, hp->value.ival);
 #endif
+      buf = wbuf;
       break;
 
     case T_SPECLINE:
@@ -2163,21 +2167,23 @@ special_symbol (hp, pfile)
 	long col = ip->colno;
 	adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
 
-	buf = (char *) alloca (10);
-	sprintf (buf, "%ld", line);
+	wbuf = (char *) alloca (10);
+	sprintf (wbuf, "%ld", line);
+	buf = wbuf;
       }
       break;
 
     case T_DATE:
     case T_TIME:
-      buf = (char *) alloca (20);
+      wbuf = (char *) alloca (20);
       timebuf = timestamp (pfile);
       if (hp->type == T_DATE)
-	sprintf (buf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
+	sprintf (wbuf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
 		 timebuf->tm_mday, timebuf->tm_year + 1900);
       else
-	sprintf (buf, "\"%02d:%02d:%02d\"", timebuf->tm_hour, timebuf->tm_min,
+	sprintf (wbuf, "\"%02d:%02d:%02d\"", timebuf->tm_hour, timebuf->tm_min,
 		 timebuf->tm_sec);
+      buf = wbuf;
       break;
 
     case T_SPEC_DEFINED:

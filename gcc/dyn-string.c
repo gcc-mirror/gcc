@@ -1,5 +1,5 @@
 /* An abstract string datatype.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -62,7 +62,7 @@ dyn_string_delete (ds)
 dyn_string_t 
 dyn_string_append (ds, s)
      dyn_string_t ds;
-     char *s;
+     const char *s;
 {
   int len = strlen (s);
   dyn_string_resize (ds, ds->length + len + 1 /* '\0' */);

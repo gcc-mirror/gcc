@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts. 
-   Copyright (C) 1990, 91-94, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91-94, 96-98, 1999 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -1407,7 +1407,7 @@ expand_spanning_tree (block)
 
 void
 init_branch_prob (filename)
-     char *filename;
+  const char *filename;
 {
   long len;
   int i;
