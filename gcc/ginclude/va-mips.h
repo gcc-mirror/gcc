@@ -29,7 +29,7 @@ typedef char * __gnuc_va_list;
 #define __va_ellipsis
 #endif
 
-#if __mips>=3
+#ifdef __mips64
 #define __va_rounded_size(__TYPE)  \
   (((sizeof (__TYPE) + 8 - 1) / 8) * 8)
 #else
@@ -54,7 +54,7 @@ typedef char * __gnuc_va_list;
 
 #else
 #define va_alist  __builtin_va_alist
-#if __mips>=3
+#ifdef __mips64
 /* This assumes that `long long int' is always a 64 bit type.  */
 #define va_dcl    long long int __builtin_va_alist; __va_ellipsis
 #else
@@ -78,11 +78,11 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
-/* The __mips>=3 cases are reversed from the 32 bit cases, because the standard
+/* The __mips64 cases are reversed from the 32 bit cases, because the standard
    32 bit calling convention left-aligns all parameters smaller than a word,
-   whereas the __mips>=3 calling convention does not (and hence they are
+   whereas the __mips64 calling convention does not (and hence they are
    right aligned).  */
-#if __mips>=3
+#ifdef __mips64
 #ifdef __MIPSEB__
 #define va_arg(__AP, __type)                                    \
   ((__type *) (void *) (__AP = (char *) ((((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8) \
@@ -94,7 +94,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
    *(__type *) (void *) (__AP - __va_rounded_size (__type)))
 #endif
 
-#else /* not __mips>=3 */
+#else /* not __mips64 */
 
 #ifdef __MIPSEB__
 /* For big-endian machines.  */
