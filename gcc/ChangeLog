@@ -1,3 +1,9 @@
+2002-04-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	PR 5933
+	* pa.h (ASM_OUTPUT_MI_THUNK): Use indirect jump to target function when
+	generating 32-bit pic code.
+
 2002-04-07  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.h (RS6000_PIC_OFFSET_TABLE_REGNUM): New.

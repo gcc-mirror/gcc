@@ -865,23 +865,76 @@ extern enum cmp_type hppa_branch_type;
 
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
 { const char *target_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0); \
+  static unsigned int current_thunk_number; \
+  char label[16]; \
+  char *lab; \
+  ASM_GENERATE_INTERNAL_LABEL (label, "LTHN", current_thunk_number); \
+  STRIP_NAME_ENCODING (lab, label); \
   STRIP_NAME_ENCODING (target_name, target_name); \
+  /* FIXME: total_code_bytes is not handled correctly in files with \
+     mi thunks.  */ \
   pa_output_function_prologue (FILE, 0); \
   if (VAL_14_BITS_P (DELTA)) \
     { \
-      fprintf (FILE, "\tb %s\n\tldo ", target_name); \
-      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
-      fprintf (FILE, "(%%r26),%%r26\n"); \
+      if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic) \
+	{ \
+	  fprintf (FILE, "\taddil LT%%%s,%%r19\n", lab); \
+	  fprintf (FILE, "\tldw RT%%%s(%%r1),%%r22\n", lab); \
+	  fprintf (FILE, "\tldw 0(%%sr0,%%r22),%%r22\n"); \
+	  fprintf (FILE, "\tbb,>=,n %%r22,30,.+16\n"); \
+	  fprintf (FILE, "\tdepi 0,31,2,%%r22\n"); \
+	  fprintf (FILE, "\tldw 4(%%sr0,%%r22),%%r19\n"); \
+	  fprintf (FILE, "\tldw 0(%%sr0,%%r22),%%r22\n"); \
+	  fprintf (FILE, "\tldsid (%%sr0,%%r22),%%r1\n\tmtsp %%r1,%%sr0\n"); \
+	  fprintf (FILE, "\tbe 0(%%sr0,%%r22)\n\tldo "); \
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+	  fprintf (FILE, "(%%r26),%%r26\n"); \
+	} \
+      else \
+	{ \
+	  fprintf (FILE, "\tb %s\n\tldo ", target_name); \
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+	  fprintf (FILE, "(%%r26),%%r26\n"); \
+	} \
     } \
   else \
     { \
-      fprintf (FILE, "\taddil L%%"); \
-      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
-      fprintf (FILE, ",%%r26\n\tb %s\n\tldo R%%", target_name); \
-      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
-      fprintf (FILE, "(%%r1),%%r26\n"); \
+      if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic) \
+	{ \
+	  fprintf (FILE, "\taddil L%%"); \
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+	  fprintf (FILE, ",%%r26\n\tldo R%%"); \
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+	  fprintf (FILE, "(%%r1),%%r26\n"); \
+	  fprintf (FILE, "\taddil LT%%%s,%%r19\n", lab); \
+	  fprintf (FILE, "\tldw RT%%%s(%%r1),%%r22\n", lab); \
+	  fprintf (FILE, "\tldw 0(%%sr0,%%r22),%%r22\n"); \
+	  fprintf (FILE, "\tbb,>=,n %%r22,30,.+16\n"); \
+	  fprintf (FILE, "\tdepi 0,31,2,%%r22\n"); \
+	  fprintf (FILE, "\tldw 4(%%sr0,%%r22),%%r19\n"); \
+	  fprintf (FILE, "\tldw 0(%%sr0,%%r22),%%r22\n"); \
+	  fprintf (FILE, "\tldsid (%%sr0,%%r22),%%r1\n\tmtsp %%r1,%%sr0\n"); \
+	  fprintf (FILE, "\tbe,n 0(%%sr0,%%r22)\n"); \
+	} \
+      else \
+	{ \
+	  fprintf (FILE, "\taddil L%%"); \
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+	  fprintf (FILE, ",%%r26\n\tb %s\n\tldo R%%", target_name); \
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, DELTA); \
+	  fprintf (FILE, "(%%r1),%%r26\n"); \
+	} \
     } \
-  fprintf (FILE, "\n\t.EXIT\n\t.PROCEND\n"); \
+  fprintf (FILE, "\t.EXIT\n\t.PROCEND\n"); \
+  if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic) \
+    { \
+      data_section (); \
+      fprintf (FILE, "\t.align 4\n"); \
+      ASM_OUTPUT_INTERNAL_LABEL (FILE, "LTHN", current_thunk_number); \
+      fprintf (FILE, "\t.word P%%%s\n", target_name); \
+      function_section (THUNK_FNDECL); \
+    } \
+  current_thunk_number++; \
 }
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
