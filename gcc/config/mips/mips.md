@@ -8935,7 +8935,8 @@ move\\t%0,%z4\\n\\
 }")
 
 ;;; Make sure that this only matches the insn before ADDR_DIFF_VEC.  Otherwise
-;;; it is not valid.
+;;; it is not valid.  ??? With the USE, the condition tests may not be required
+;;; any longer.
 
 ;;; ??? The length depends on the ABI.  It is two for o32, and one for n32.
 ;;; We just use the conservative number here.
@@ -8968,7 +8969,8 @@ move\\t%0,%z4\\n\\
   "")
 
 ;;; Make sure that this only matches the insn before ADDR_DIFF_VEC.  Otherwise
-;;; it is not valid.
+;;; it is not valid.  ??? With the USE, the condition tests may not be required
+;;; any longer.
 
 (define_insn ""
   [(set (pc)
