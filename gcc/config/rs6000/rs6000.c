@@ -98,6 +98,17 @@ u_short_cint_operand (op, mode)
   return (GET_CODE (op) == CONST_INT && (INTVAL (op) & 0xffff0000) == 0);
 }
 
+/* Return 1 if OP is a CONST_INT that cannot fit in a signed D field.  */
+
+int
+non_short_cint_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && (unsigned) (INTVAL (op) + 0x8000) >= 0x10000);
+}
+
 /* Returns 1 if OP is a register that is not special (i.e., not MQ,
    ctr, or lr).  */
 
@@ -248,6 +259,18 @@ add_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && (INTVAL (op) & 0xffff) == 0));
 }
 
+/* Return 1 if OP is a constant but not a valid add_operand.  */
+
+int
+non_add_cint_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && (unsigned) (INTVAL (op) + 0x8000) >= 0x10000
+	  && (INTVAL (op) & 0xffff) != 0);
+}
+
 /* Return 1 if the operand is a non-special register or a constant that
    can be used as the operand of an OR or XOR insn on the RS/6000.  */
 
@@ -260,6 +283,19 @@ logical_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && ((INTVAL (op) & 0xffff0000) == 0
 		  || (INTVAL (op) & 0xffff) == 0)));
+}
+
+/* Return 1 if C is a constant that is not a logical operand (as
+   above).  */
+
+int
+non_logical_cint_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && (INTVAL (op) & 0xffff0000) != 0
+	  && (INTVAL (op) & 0xffff) != 0);
 }
 
 /* Return 1 if C is a constant that can be encoded in a mask on the
@@ -308,6 +344,17 @@ and_operand (op, mode)
   return (reg_or_short_operand (op, mode)
 	  || logical_operand (op, mode)
 	  || mask_operand (op, mode));
+}
+
+/* Return 1 if the operand is a constant but not a valid operand for an AND
+   insn.  */
+
+int
+non_and_cint_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return GET_CODE (op) == CONST_INT && ! and_operand (op, mode);
 }
 
 /* Return 1 if the operand is a general register or memory operand.  */

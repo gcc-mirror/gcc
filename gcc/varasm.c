@@ -208,11 +208,13 @@ strip_reg_name (name)
     name++;
   return name;
 }
-
+
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
-   or -2 if the name is not a register.  Accept an exact spelling or
-   a decimal number.  Prefixes such as % are optional.  */
+   or -2 if the ASMSPEC is not `cc' and is recognized,
+   or -3 if ASMSPEC is `cc' and is not recognized.
+   Accept an exact spelling or a decimal number.
+   Prefixes such as % are optional.  */
 
 int
 decode_reg_name (asmspec)
@@ -253,6 +255,9 @@ decode_reg_name (asmspec)
 	    return table[i].number;
       }
 #endif /* ADDITIONAL_REGISTER_NAMES */
+
+      if (!strcmp (asmspec, "cc"))
+	return -3;
 
       return -2;
     }
@@ -302,10 +307,10 @@ make_decl_rtl (decl, asmspec, top_level)
       if (TREE_REGDECL (decl) && reg_number == -1)
 	error_with_decl (decl,
 			 "register name not specified for `%s'");
-      else if (TREE_REGDECL (decl) && reg_number == -2)
+      else if (TREE_REGDECL (decl) && reg_number < 0)
 	error_with_decl (decl,
 			 "invalid register name for `%s'");
-      else if (reg_number >= 0 && ! TREE_REGDECL (decl))
+      else if ((reg_number >= 0 || reg_number == -3) && ! TREE_REGDECL (decl))
 	error_with_decl (decl,
 			 "register name given for non-register variable `%s'");
       else if (TREE_REGDECL (decl) && TREE_CODE (decl) == FUNCTION_DECL)
