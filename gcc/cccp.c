@@ -1020,9 +1020,9 @@ U_CHAR is_idchar[256];
 /* table to tell if char can be first char of a c identifier.  */
 U_CHAR is_idstart[256];
 /* table to tell if c is horizontal space.  */
-U_CHAR is_hor_space[256];
+static U_CHAR is_hor_space[256];
 /* table to tell if c is horizontal or vertical space.  */
-static U_CHAR is_space[256];
+U_CHAR is_space[256];
 /* names of some characters */
 static char *char_name[256];
 
