@@ -1,3 +1,7 @@
+2000-06-02  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (lang_get_alias_set): New.
+
 2000-05-28  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* bugs.texi: Note that debugging information for

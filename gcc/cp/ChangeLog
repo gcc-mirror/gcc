@@ -1,3 +1,7 @@
+2000-06-02  Richard Henderson  <rth@cygnus.com>
+
+	* decl.c (init_decl_processing): Don't set lang_get_alias_set.
+
 2000-06-02  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* decl.c (store_return_init): Call put_var_into_stack.

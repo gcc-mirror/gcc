@@ -1,3 +1,7 @@
+2000-06-02  Richard Henderson  <rth@cygnus.com>
+
+	* lang.c (lang_get_alias_set): New.
+
 2000-05-31  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_field_access): Complete the DECL_INITIAL tree

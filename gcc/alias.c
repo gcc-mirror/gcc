@@ -81,10 +81,6 @@ typedef struct alias_set_entry
   splay_tree children;
 } *alias_set_entry;
 
-/* The language-specific function for alias analysis.  If NULL, the
-   language does not do any special alias analysis.  */
-HOST_WIDE_INT (*lang_get_alias_set) PARAMS ((tree));
-
 static int rtx_equal_for_memref_p	PARAMS ((rtx, rtx));
 static rtx find_symbolic_term		PARAMS ((rtx));
 static rtx get_addr			PARAMS ((rtx));
@@ -369,8 +365,7 @@ get_alias_set (t)
       /* Now give the language a chance to do something but record what we
 	 gave it this time.  */
       orig_t = t;
-      if (lang_get_alias_set != 0
-	  && (set = (*lang_get_alias_set) (t)) != -1)
+      if ((set = lang_get_alias_set (t)) != -1)
 	return set;
 
       /* If this is a reference, go inside it and use the underlying
@@ -395,8 +390,8 @@ get_alias_set (t)
 	}
 
       /* Give the language another chance to do something special.  */
-      if (orig_t != t && lang_get_alias_set != 0
-	  && (set = (*lang_get_alias_set) (t)) != -1)
+      if (orig_t != t
+	  && (set = lang_get_alias_set (t)) != -1)
 	return set;
 
       /* Now all we care about is the type.  */
@@ -410,8 +405,7 @@ get_alias_set (t)
     return TYPE_ALIAS_SET (t);
 
   /* See if the language has special handling for this type.  */
-  if (lang_get_alias_set != 0
-      && (set = (*lang_get_alias_set) (t)) != -1)
+  if ((set = lang_get_alias_set (t)) != -1)
     ;
   /* There are no objects of FUNCTION_TYPE, so there's no point in
      using up an alias set for them.  (There are, of course, pointers

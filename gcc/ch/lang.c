@@ -283,6 +283,19 @@ incomplete_type_error (value, type)
   error ("internal error - use of undefined type");
 }
 
+/* Return the typed-based alias set for T, which may be an expression
+   or a type.  Return -1 if we don't do anything special.  */
+
+HOST_WIDE_INT
+lang_get_alias_set (t)
+     tree t;
+{
+  /* ??? Need to figure out what the rules are.  Certainly we'd need
+     to handle union-like things, and probably variant records. 
+     Until then, turn off type-based aliasing completely.  */
+  return 0;
+}
+
 void
 lang_init ()
 {

@@ -2896,8 +2896,6 @@ init_decl_processing ()
   tree array_domain_type;
   tree t;
 
-  lang_get_alias_set = c_get_alias_set;
-
   current_function_decl = NULL;
   named_labels = NULL;
   current_binding_level = NULL_BINDING_LEVEL;

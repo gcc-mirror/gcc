@@ -3265,7 +3265,7 @@ c_apply_type_quals_to_decl (type_quals, decl)
    or a type.  Return -1 if we don't do anything special.  */
 
 HOST_WIDE_INT
-c_get_alias_set (t)
+lang_get_alias_set (t)
      tree t;
 {
   tree u;
