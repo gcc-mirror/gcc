@@ -1,3 +1,8 @@
+2000-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppinit.c (no_arg, no_ass, no_dir, no_fil, no_mac, no_pth):
+	Change from char[] to macros.
+
 2000-03-12  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c (cpp_start_read): Update indirect function

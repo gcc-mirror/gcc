@@ -1080,12 +1080,15 @@ struct cl_option
   enum opt_code opt_code;
 };
 
-static const char no_arg[] = N_("Argument missing after `%s' option");
-static const char no_ass[] = N_("Assertion missing after `%s' option");
-static const char no_dir[] = N_("Directory name missing after `%s' option");
-static const char no_fil[] = N_("File name missing after `%s' option");
-static const char no_mac[] = N_("Macro name missing after `%s' option");
-static const char no_pth[] = N_("Path name missing after `%s' option");
+/* Irix6 "cc -n32" and OSF4 cc have problems with char foo[] = ("string");
+   I.e. a const string initializer with parens around it.  That is
+   what N_("string") resolves to, so we make no_* be macros instead.  */
+#define no_arg N_("Argument missing after `%s' option")
+#define no_ass N_("Assertion missing after `%s' option")
+#define no_dir N_("Directory name missing after `%s' option")
+#define no_fil N_("File name missing after `%s' option")
+#define no_mac N_("Macro name missing after `%s' option")
+#define no_pth N_("Path name missing after `%s' option")
 
 /* This list must be ASCII sorted. Make enum order above match this. */
 #define DEF_OPT(text, msg, code) {text, msg, sizeof(text) - 1, code}
