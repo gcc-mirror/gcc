@@ -1,3 +1,9 @@
+Mon Jun 14 03:55:40 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (rs6000-ibm-aix4.3*, powerpc-ibm-aix4.3*): Do not
+	require a sub-version #.
+	* configure: Rebuilt.
+
 1999-06-14  Robert Lipe  (robertlipe@usa.net)
 
 	* svr4.h (DWARF2_DEBUGGING_INFO): Check for redefinition.
