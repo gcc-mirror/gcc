@@ -1,29 +1,34 @@
-2002-06-19  Paolo Bonzini <bonzini@gnu.org> 
+2002-06-21  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (treelang/tree1.o, treelang/treetree.o,
+	treelang/parse.o, treelang/lex.o): Add dependency on $(CONFIG_H).
+
+2002-06-19  Paolo Bonzini <bonzini@gnu.org>
 
 	* lex.l (yyparse) Return AUTOMATIC for 'automatic' token rather
 	than STATIC.
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
 
-        Cleanup 
+        Cleanup
 
 	* Make-lang.in (check-treelang). Add. Remove direct dependency of
 	'check' on 'treelang.check' as redundant.
-	
+
 	PCH Garbage collection regime (gengtypes.c) phase 1.
-	
+
 	* Make-lang.in (treelang/tree1.o). Depend on gt-treelang-tree1.h
 	gt-treelang-treelang.h gtype-treelang.h.
 	(gt-treelang-tree1.h) Depend on s-gtype.
 	(gt-treelang-treelang.h) Depend on s-gtype.
 	(gtype-treelang.h) Depend on s-gtype.
 
-	* config-lang.in (gtfiles): Define. 
+	* config-lang.in (gtfiles): Define.
 
 	* lex.l (main): Remove '#if 0' dead code.
 	(main): Move undef of IN_GCC so define of tree typedef works.
 	(all): Replace token and production by prod_token_parm_item.
-	
+
 	* parse.y
 	(all): Replace token and production by prod_token_parm_item.
 
@@ -61,14 +66,14 @@
 
 2002-05-19  Tim Josling  <tej@melbpc.org.au>
 
-	* treetree.c (warn_format_zero_length): Add. 
+	* treetree.c (warn_format_zero_length): Add.
 
 2002-05-14  Tim Josling  <tej@melbpc.org.au>
 
 	* Make-lang.in: Fix build for .info files, add target for manpages.
-	A bug report and a suggested patch came from Magnus Fromreide 
+	A bug report and a suggested patch came from Magnus Fromreide
 	<magfr@lysator.liu.se>.
-	
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.
@@ -77,7 +82,7 @@
 
 	* treetree.c: (cpp_define) Add.
         (cpp_get_callbacks) Add.
-	
+
 2002-05-07  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c: (cpp_get_options) Add.
@@ -102,11 +107,8 @@
 2001-06-11  Tim Josling  <tej@melbpc.org.au>
 
 	* all (all) Revamp code to conform to GCC coding standards, fix
-	typos in texi files. 
+	typos in texi files.
 
 2001-05-11  Tim Josling  <tej@melbpc.org.au>
 
         Create the new language.
-
-	
-	
