@@ -1,3 +1,11 @@
+2000-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fp-bit.h: New file.
+
+	* fp-bit.c: Move common code, prototypes, etc into fp-bit.h.
+	Comment #endif statements.
+	(__thenan_sf, __thenan_df): Add missing braces around initializer.
+
 Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcse.c (compute_pre_data): Compute ae_kill using other local
