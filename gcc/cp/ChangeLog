@@ -1,3 +1,8 @@
+2004-01-28  Jan Hubicka  <jh@suse.czi
+
+	* semantics.c (expand_body)  Do emit_associated_thunks before
+	expansion.
+
 2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13683
