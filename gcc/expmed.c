@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -680,8 +680,13 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 
   if (GET_MODE (value) != VOIDmode)
     value = convert_to_mode (word_mode, value, 1);
+
+  if (GET_CODE (value) == CONST_DOUBLE
+      && (part1 = gen_lowpart_common (word_mode, value)) != 0)
+    value = part1;
+
   if (CONSTANT_P (value) && GET_CODE (value) != CONST_INT)
-    value = copy_to_reg (value);
+    value = copy_to_mode_reg (word_mode, value);
 
   /* Split the value into two parts:
      PART1 gets that which goes in the first word; PART2 the other.  */
