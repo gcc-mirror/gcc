@@ -1043,12 +1043,6 @@ pushlevel_temporary (tag_transparent)
    and create a "block" (a BLOCK node) for the level
    to record its declarations and subblocks for symbol table output.
 
-   If KEEP == 2, this level's subblocks go to the front,
-   not the back of the current binding level.  This happens,
-   for instance, when code for constructors and destructors
-   need to generate code at the end of a function which must
-   be moved up to the front of the function.
-
    If FUNCTIONBODY is nonzero, this level is the body of a function,
    so create a block as if KEEP were set and also clear out all
    label names.
@@ -1074,6 +1068,11 @@ poplevel (keep, reverse, functionbody)
   tree block = NULL_TREE;
   tree decl;
   int block_previously_created;
+
+  /* We used to use KEEP == 2 to indicate that the new block should go
+     at the beginning of the list of blocks at this binding level,
+     rather than the end.  This hack is no longer used.  */
+  my_friendly_assert (keep == 0 || keep == 1, 0);
 
   GNU_xref_end_scope ((HOST_WIDE_INT) current_binding_level,
 		      (HOST_WIDE_INT) current_binding_level->level_chain,
@@ -1325,14 +1324,8 @@ poplevel (keep, reverse, functionbody)
      must be carried forward so they will later become subblocks
      of something else.  */
   else if (subblocks)
-    {
-      if (keep == 2)
-	current_binding_level->blocks
-	  = chainon (subblocks, current_binding_level->blocks);
-      else
-	current_binding_level->blocks
-	  = chainon (current_binding_level->blocks, subblocks);
-    }
+    current_binding_level->blocks
+      = chainon (current_binding_level->blocks, subblocks);
 
   /* Take care of compiler's internal binding structures.  */
   if (tmp == 2)
@@ -13302,7 +13295,7 @@ finish_function (lineno, call_poplevel, nested)
 
 	  /* End of destructor.  */
 	  expand_end_bindings (NULL_TREE, getdecls () != NULL_TREE, 0);
-	  poplevel (2, 0, 0);	/* XXX change to 1 */
+	  poplevel (getdecls () != NULL_TREE, 0, 0);
 
 	  /* Back to the top of destructor.  */
 	  /* Don't execute destructor code if `this' is NULL.  */
