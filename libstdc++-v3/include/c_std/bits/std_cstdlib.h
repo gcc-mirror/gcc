@@ -35,6 +35,7 @@
 #define _CPP_CSTDLIB 1
 
 #include <bits/c++config.h>
+#include <bits/std_cstddef.h>
 
 #pragma GCC system_header
 #include_next <stdlib.h>
@@ -79,8 +80,6 @@
 
 namespace std 
 {
-  using ::size_t;	// cstddef
-
   using ::div_t;
   using ::ldiv_t;
 

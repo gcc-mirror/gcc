@@ -52,14 +52,12 @@
 #undef fscanf
 #undef printf
 #undef scanf
-#undef snprintf
 #undef sprintf
 #undef sscanf
 #undef vfprintf
 #undef vfscanf
 #undef vprintf
 #undef vscanf
-#undef vsnprintf
 #undef vsprintf
 #undef vsscanf
 #undef fgetc
@@ -104,14 +102,12 @@ namespace std
   using ::fscanf;
   using ::printf;
   using ::scanf;
-  using ::snprintf;
   using ::sprintf;
   using ::sscanf;
   using ::vfprintf;
   using ::vfscanf;
   using ::vprintf;
   using ::vscanf;
-  using ::vsnprintf;
   using ::vsprintf;
   using ::vsscanf;
   using ::fgetc;
