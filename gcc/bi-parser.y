@@ -164,5 +164,5 @@ yyerror (s)
      char *s;
 {
   fprintf (stderr, "syntax error in input\n");
-  exit (1);
+  exit (FATAL_EXIT_CODE);
 }
