@@ -5445,7 +5445,7 @@ echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
 echo "configure:5446: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
-gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,gcc$,gas,'`
+gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 if test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
