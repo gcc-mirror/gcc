@@ -2,6 +2,9 @@
 
 	* rtl.h (RTL_CHECK1, RTL_CHECK2, RTL_CHECKC1, RTL_CHECKC2,
 	RTVEC_ELT): Const-ify.
+	* varray.h (VARRAY_CHECK): Const-ify.
+	* ggc.h (ggc_mark_rtx, ggc_mark_tree, ggc_mark_nonnull_tree,
+	ggc_mark_rtvec, ggc_mark): Const-ify.
 
 2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 

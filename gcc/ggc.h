@@ -88,35 +88,35 @@ extern void ggc_mark_rtvec_children	PARAMS ((struct rtvec_def *));
 
 #define ggc_mark_rtx(EXPR)                      \
   do {                                          \
-    rtx r__ = (EXPR);                           \
+    rtx const r__ = (EXPR);                     \
     if (ggc_test_and_set_mark (r__))            \
       ggc_mark_rtx_children (r__);              \
   } while (0)
 
 #define ggc_mark_tree(EXPR)				\
   do {							\
-    tree t__ = (EXPR);					\
+    tree const t__ = (EXPR);				\
     if (ggc_test_and_set_mark (t__))			\
       VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
   } while (0)
 
 #define ggc_mark_nonnull_tree(EXPR)			\
   do {							\
-    tree t__ = (EXPR);					\
+    tree const t__ = (EXPR);				\
     if (! ggc_set_mark (t__))				\
       VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
   } while (0)
 
 #define ggc_mark_rtvec(EXPR)                    \
   do {                                          \
-    rtvec v__ = (EXPR);                         \
+    rtvec const v__ = (EXPR);                   \
     if (ggc_test_and_set_mark (v__))            \
       ggc_mark_rtvec_children (v__);            \
   } while (0)
 
 #define ggc_mark(EXPR)				\
   do {						\
-    const void *a__ = (EXPR);			\
+    const void *const a__ = (EXPR);		\
     if (a__ != NULL)				\
       ggc_set_mark (a__);			\
   } while (0)

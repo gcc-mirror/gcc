@@ -177,8 +177,8 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 					const char *, int,
 					const char *)) ATTRIBUTE_NORETURN;
 #define VARRAY_CHECK(VA, N, T) __extension__			\
-(*({ varray_type _va = VA;					\
-     size_t _n = N; 						\
+(*({ varray_type const _va = (VA);				\
+     const size_t _n = (N); 					\
      if (_n >= _va->num_elements)				\
        varray_check_failed (_va, _n, __FILE__, __LINE__, __FUNCTION__);	\
      &_va->data.T[_n]; }))
