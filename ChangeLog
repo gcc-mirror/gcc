@@ -98,6 +98,10 @@ Sat Aug 29 14:32:55 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* configure: Fix --without/--disable cases for gxx-include-dir.
 
+Fri Jul 24 17:01:42 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* config.sub: Merge with FSF.
+
 Sat Jul 18 14:32:43 CDT 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.guess: (*-pc-sco3.2v5) Add detection for Pentium II.
@@ -198,6 +202,10 @@ Wed Jun 10 11:19:47 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* ltmain.sh: On installation, don't get confused if the same name
 	appears more than once in the list of library names.
+
+Wed Jun  3 14:51:42 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* config.sub: Accept m68060 and m5200 as CPU names.
 
 Thu May 28 19:31:13 1998  Ian Lance Taylor  <ian@cygnus.com>
 
