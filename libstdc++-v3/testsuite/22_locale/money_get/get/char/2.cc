@@ -28,8 +28,6 @@
 void test02()
 {
   using namespace std;
-  typedef money_base::part part;
-  typedef money_base::pattern pattern;
   typedef istreambuf_iterator<char> iterator_type;
 
   bool test __attribute__((unused)) = true;
@@ -39,21 +37,11 @@ void test02()
   locale loc_hk = __gnu_test::try_named_locale("en_HK");
   VERIFY( loc_c != loc_hk );
 
-  // cache the moneypunct facets
-  typedef moneypunct<char, true> __money_true;
-  typedef moneypunct<char, false> __money_false;
-
-  // sanity check the data is correct.
-  const string empty;
-
   // total EPA budget FY 2002
   const string digits1("720000000000");
 
   // est. cost, national missile "defense", expressed as a loss in USD 2001
   const string digits2("-10000000000000");  
-
-  // not valid input
-  const string digits3("-A"); 
 
   // input less than frac_digits
   const string digits4("-1");

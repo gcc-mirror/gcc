@@ -28,8 +28,6 @@
 void test01()
 {
   using namespace std;
-  typedef money_base::part part;
-  typedef money_base::pattern pattern;
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
   bool test __attribute__((unused)) = true;
@@ -39,31 +37,17 @@ void test01()
   locale loc_de = __gnu_test::try_named_locale("de_DE@euro");
   VERIFY( loc_c != loc_de );
 
-  // cache the moneypunct facets
-  typedef moneypunct<wchar_t, true> __money_true;
-  typedef moneypunct<wchar_t, false> __money_false;
-
   // sanity check the data is correct.
   const wstring empty;
 
   // total EPA budget FY 2002
   const wstring digits1(L"720000000000");
 
-  // est. cost, national missile "defense", expressed as a loss in USD 2001
-  const wstring digits2(L"-10000000000000");  
-
-  // not valid input
-  const wstring digits3(L"-A"); 
-
-  // input less than frac_digits
-  const wstring digits4(L"-1");
-  
   iterator_type end;
   wistringstream iss;
   iss.imbue(loc_de);
   // cache the money_get facet
   const money_get<wchar_t>& mon_get = use_facet<money_get<wchar_t> >(iss.getloc()); 
-
 
   iss.str(L"7.200.000.000,00 ");
   iterator_type is_it01(iss);

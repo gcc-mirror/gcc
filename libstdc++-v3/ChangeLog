@@ -1,5 +1,16 @@
 2004-03-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/22_locale/money_get/get/char/1.cc: Clean up.
+	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/4.cc: Likewise.
+
+2004-03-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
 	num_get<>::_M_extract_int, num_get<>::do_get(bool&),
 	__pad<>::_S_pad): Prefer plain operator== to traits::eq().
