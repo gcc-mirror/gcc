@@ -1155,13 +1155,22 @@ check_classfn (ctype, cname, function)
 		  if (decls_match (function, fndecl))
 		    return;
 #else
-		  if (DECL_NAME (function) == DECL_NAME (fndecl)
-		      && comptypes (TREE_TYPE (TREE_TYPE (function)),
-				    TREE_TYPE (TREE_TYPE (fndecl)), 1)
-		      && compparms (TYPE_ARG_TYPES (TREE_TYPE (function)),
-				    TYPE_ARG_TYPES (TREE_TYPE (fndecl)),
-				    3))
-		    return;
+		  if (DECL_NAME (function) == DECL_NAME (fndecl))
+		    {
+		      tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
+		      tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+
+		      /* Get rid of the this parameter on functions that become
+			 static. */
+		      if (DECL_STATIC_FUNCTION_P (fndecl)
+			  && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
+			p1 = TREE_CHAIN (p1);
+
+		      if (comptypes (TREE_TYPE (TREE_TYPE (function)),
+				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
+			  && compparms (p1, p2, 3))
+			return;
+		    }
 #endif
 		  fndecl = DECL_CHAIN (fndecl);
 		}
@@ -1253,6 +1262,16 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       DECL_CLASS_CONTEXT (value) = current_class_type;
       CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
       pushdecl_class_level (value);
+
+      /* If we declare a typedef name for something that has no name,
+	 the typedef name is used for linkage.  See 7.1.3 p4 94/0158. */
+      if (TYPE_NAME (TREE_TYPE (value))
+	  && TREE_CODE (TYPE_NAME (TREE_TYPE (value))) == TYPE_DECL
+	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TREE_TYPE (value))))
+	{
+	  TYPE_NAME (TREE_TYPE (value)) = value;
+	  TYPE_STUB_DECL (TREE_TYPE (value)) = value;
+	}
       return value;
     }
 

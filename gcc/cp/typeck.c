@@ -47,6 +47,7 @@ static tree pointer_int_sum ();
 static tree pointer_diff ();
 static tree convert_sequence ();
 /* static */ tree unary_complex_lvalue ();
+static tree get_delta_difference PROTO((tree, tree, int));
 
 extern rtx original_result_rtx;
 
@@ -4290,29 +4291,25 @@ unary_complex_lvalue (code, arg)
 	return build_unary_op (ADDR_EXPR, t, 0);
       else
 	{
-	  /* Can't build a pointer to member if the member must
-	     go through virtual base classes.  */
-	  if (virtual_member (DECL_FIELD_CONTEXT (t),
-			      CLASSTYPE_VBASECLASSES (TREE_TYPE (TREE_OPERAND (arg, 0)))))
-	    {
-	      sorry ("pointer to member via virtual baseclass");
-	      return error_mark_node;
-	    }
-
 	  if (TREE_OPERAND (arg, 0)
 	      && (TREE_CODE (TREE_OPERAND (arg, 0)) != NOP_EXPR
 		  || TREE_OPERAND (TREE_OPERAND (arg, 0), 0) != error_mark_node))
-	    {
-	      /* Don't know if this should return address to just
-		 _DECL, or actual address resolved in this expression.  */
-	      sorry ("address of bound pointer-to-member expression");
-	      return error_mark_node;
-	    }
+	    if (TREE_CODE (t) != FIELD_DECL)
+	      {
+		/* Don't know if this should return address to just
+		   _DECL, or actual address resolved in this expression.  */
+		sorry ("address of bound pointer-to-member expression");
+		return error_mark_node;
+	      }
 
-	  return convert (build_pointer_type (TREE_TYPE (arg)),
-			  size_binop (EASY_DIV_EXPR, 
-				      DECL_FIELD_BITPOS (t),
-				      size_int (BITS_PER_UNIT)));
+	  offset = get_delta_difference (DECL_FIELD_CONTEXT (t), 
+					 TREE_TYPE (TREE_OPERAND (arg, 0)),
+					 0);
+	  offset = size_binop (PLUS_EXPR, offset,
+			       size_binop (EASY_DIV_EXPR,
+					   DECL_FIELD_BITPOS (t),
+					   size_int (BITS_PER_UNIT)));
+	  return convert (build_pointer_type (TREE_TYPE (arg)), offset);
 	}
     }
 

@@ -1484,7 +1484,7 @@ primary:
 		{ $$ = build_typeid ($3); }
 	| TYPEID '(' type_id ')'
 		{ tree type = groktypename ($3);
-		  $$ = get_typeid (type); }
+		  $$ = get_typeid (TYPE_MAIN_VARIANT (type)); }
 	| global_scope IDENTIFIER
 		{
 		do_scoped_id:

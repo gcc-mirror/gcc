@@ -556,9 +556,6 @@ build_up_reference (type, arg, flags, checkconst)
 	}
       else
 	{
-	  /* We should never get here for class objects, because they are
-             always in memory.  */
-	  my_friendly_assert (! IS_AGGR_TYPE (argtype), 362);
 	  temp = get_temp_name (argtype, 0);
 	  if (global_bindings_p ())
 	    {

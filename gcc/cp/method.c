@@ -362,6 +362,19 @@ build_overload_value (type, value)
     value = TREE_OPERAND (value, 0);
   my_friendly_assert (TREE_CODE (type) == PARM_DECL, 242);
   type = TREE_TYPE (type);
+  if (TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE)
+    {
+      /* Handle a pointer to member as a template instantiation
+	 parameter, boy, what fun!  */
+      type = integer_type_node;
+      if (TREE_CODE (value) != INTEGER_CST)
+	{
+	  sorry ("unknown pointer to member constant");
+	  return;
+	}
+    }
+
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:
