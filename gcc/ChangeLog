@@ -1,3 +1,10 @@
+Wed Oct 16 19:43:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR target/7396
+	* i386.c (builtin_description):Drop cmpg[te]s[sd].
+	* xmmintrin.h (__mm_cmpg[te]_s[sd]): Rewrite using
+	swapped alternative.
+
 2002-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (fold): Fix a typo.
