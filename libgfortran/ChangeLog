@@ -1,3 +1,12 @@
+2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/17283
+	* intrinsics/pack_generic.c (__pack): Allocate memory for return array
+	if not done by caller.
+	(__pack_s): New function.
+	* runtime/memory.c (internal_malloc, internal_malloc64): Allow
+	allocating zero memory.
+
 2004-10-04  Paul Brook  <paul@codesourcery.com>
 	Bud Davis  <bdavis9659@comcast.net>
 

@@ -1,3 +1,9 @@
+2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/17283
+	* iresolve.c (gfc_resolve_pack): Choose function depending if mask
+	is scalar.
+
 2004-10-04  Erik Schnetter  <schnetter@aei.mpg.de>
 
 	* scanner.c (preprocessor_line): Accept preprocessor lines without

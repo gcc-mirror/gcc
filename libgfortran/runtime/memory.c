@@ -165,8 +165,8 @@ internal_malloc (GFC_INTEGER_4 size)
 {
 #ifdef GFC_CHECK_MEMORY
   /* Under normal circumstances, this is _never_ going to happen!  */
-  if (size <= 0)
-    runtime_error ("Attempt to allocate a non-positive amount of memory.");
+  if (size < 0)
+    runtime_error ("Attempt to allocate a negative amount of memory.");
 
 #endif
   return internal_malloc_size ((size_t) size);
@@ -178,8 +178,8 @@ internal_malloc64 (GFC_INTEGER_8 size)
 {
 #ifdef GFC_CHECK_MEMORY
   /* Under normal circumstances, this is _never_ going to happen!  */
-  if (size <= 0)
-    runtime_error ("Attempt to allocate a non-positive amount of memory.");
+  if (size < 0)
+    runtime_error ("Attempt to allocate a negative amount of memory.");
 #endif
   return internal_malloc_size ((size_t) size);
 }

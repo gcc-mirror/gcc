@@ -1022,15 +1022,33 @@ gfc_resolve_not (gfc_expr * f, gfc_expr * i)
 void
 gfc_resolve_pack (gfc_expr * f,
                   gfc_expr * array ATTRIBUTE_UNUSED,
-		  gfc_expr * mask ATTRIBUTE_UNUSED,
+		  gfc_expr * mask,
 		  gfc_expr * vector ATTRIBUTE_UNUSED)
 {
-  static char pack[] = "__pack";
+  static char pack[] = "__pack",
+    pack_s[] = "__pack_s";
 
   f->ts = array->ts;
   f->rank = 1;
 
-  f->value.function.name = pack;
+  if (mask->rank != 0)
+    f->value.function.name = pack;
+  else
+    {
+      /* We convert mask to default logical only in the scalar case.
+	 In the array case we can simply read the array as if it were
+	 of type default logical.  */
+      if (mask->ts.kind != gfc_default_logical_kind)
+	{
+	  gfc_typespec ts;
+
+	  ts.type = BT_LOGICAL;
+	  ts.kind = gfc_default_logical_kind;
+	  gfc_convert_type (mask, &ts, 2);
+	}
+
+      f->value.function.name = pack_s;
+    }
 }
 
 
