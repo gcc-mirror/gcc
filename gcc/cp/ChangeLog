@@ -6,6 +6,11 @@
 	tree.c (init_cplus_unsave): New.
 	(cplus_unsave_expr_now): New.
 
+1999-08-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst): Back out 1999-08-06 patch.  Use fold and
+	decl_constant_value to simplify array bounds.
+
 1999-08-11  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lang-options.h: Add -fms-extensions.
