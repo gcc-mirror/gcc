@@ -2641,6 +2641,7 @@ store_expr (exp, target, want_value)
      example, in case it is a CONST_DOUBLE and we want only a word-sized
      value.  */
   if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
+      && TREE_CODE (exp) != ERROR_MARK
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
     temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
 			  temp, TREE_UNSIGNED (TREE_TYPE (exp)));
