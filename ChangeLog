@@ -1,3 +1,8 @@
+2001-11-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* configure.in (noconfigdirs) [h8300*-*-*, h8500-*-*]: Disable
+	libf2c.
+
 2001-11-12  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add self.

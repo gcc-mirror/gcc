@@ -736,7 +736,7 @@ case "${target}" in
     ;;
   h8300*-*-* | \
   h8500-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj} target-libf2c"
     ;;
   hppa*64*-*-linux* | parisc*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
