@@ -228,7 +228,7 @@ resize (size_type n, charT c)
 template <class charT, class traits, class Allocator>
 basic_string <charT, traits, Allocator>::size_type
 basic_string <charT, traits, Allocator>::
-copy (charT* s, size_type n, size_type pos)
+copy (charT* s, size_type n, size_type pos) const
 {
   OUTOFRANGE (pos > length ());
 
