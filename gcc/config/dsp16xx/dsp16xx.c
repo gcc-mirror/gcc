@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the DSP1610.
-   Copyright (C) 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997, 1998, 2001 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -268,8 +268,7 @@ dsp16xx_reg_class_from_letter (c)
       return SLOW_MEM_LOAD_REGS;
 
     default:
-      fatal ("Invalid register class letter %c", c);
-      return NO_REGS;
+      abort ();
     }
 }
 /* Return the class number of the smallest class containing
@@ -371,7 +370,7 @@ limit_reload_class (mode, class)
       return class;
 
     case ACCUM_HIGH_REGS:
-      fatal ("ACCUM_HIGH_REGS class in limit_reload_class");
+      abort ();
 
     case A1L_REG:
     case ACCUM_LOW_REGS:
@@ -398,7 +397,7 @@ limit_reload_class (mode, class)
       return class;
 
     case YH_OR_ACCUM_HIGH_REGS:
-      fatal ("YH_OR_ACCUM_HIGH_REGS found in limit_reload_class");
+      abort ();
 
     case X_OR_YH_REGS:
       return class;
@@ -406,8 +405,7 @@ limit_reload_class (mode, class)
     case YL_REG:
       /* Register 'yl' is invalid for QImode, so we should never
 	 see it. */
-
-      fatal ("YL found in limit_reload_class");
+      abort ();
 
     case YL_OR_ACCUM_LOW_REGS:
     case X_OR_YL_REGS:
@@ -1220,26 +1218,24 @@ function_prologue (file, size)
     {
       if (current_frame_info.var_size == 1)
 	fprintf (file, "\t*%s++\n", sp);
+      else if (SMALL_INTVAL (current_frame_info.var_size)
+	       && ((current_frame_info.var_size & 0x8000) == 0))
+	fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J],
+		 current_frame_info.var_size, sp, reg_names[REG_J]);
       else
-        {
-	  if(SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
-	    fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
-	  else
-	    fatal ("Stack size > 32k");
-	}
+	error ("Stack size > 32k");
     }
   
-  /* Save any registers this function uses, unless they are
-   * used in a call, in which case we don't need to
-   */
+  /* Save any registers this function uses, unless they are used in a call,
+     in which case we don't need to.  */
   
-  for( regno = 0; regno < FIRST_PSEUDO_REGISTER; ++ regno )
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++ regno)
     if (dsp16xx_call_saved_register (regno)) 
       {
 #if OLD_REGISTER_SAVE
-	fprintf( file, "\t*%s++=%s\n", sp, reg_names[regno] );
+	fprintf (file, "\t*%s++=%s\n", sp, reg_names[regno]);
 #else
-	fprintf( file, "\tpush(*%s)=%s\n", sp, reg_names[regno] );
+	fprintf (file, "\tpush(*%s)=%s\n", sp, reg_names[regno]);
 #endif
       }
   
@@ -1247,24 +1243,23 @@ function_prologue (file, size)
     {
       if (current_frame_info.args_size == 1)
 	fprintf (file, "\t*%s++\n", sp);
+      else if (SMALL_INTVAL (current_frame_info.args_size)
+	       && (current_frame_info.args_size & 0x8000) == 0)
+	fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J],
+		 current_frame_info.args_size, sp, reg_names[REG_J]);
       else
-        {
-	  if(SMALL_INTVAL(current_frame_info.args_size) && ((current_frame_info.args_size & 0x8000) == 0))
-	    fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.args_size, sp, reg_names[REG_J]);
-	  else
-	    fatal ("Stack size > 32k");
-	}
+	error ("Stack size > 32k");
     }
   
   if (frame_pointer_needed)
     {
-      fprintf( file, "\t%s=%s\n", a1h, sp );
-      fprintf( file, "\t%s=%s\n", fp, a1h );  /* Establish new base frame */
-      fprintf( file, "\t%s=%ld\n", reg_names[REG_J], -total_size);
-      fprintf( file, "\t*%s++%s\n", fp, reg_names[REG_J]);
+      fprintf (file, "\t%s=%s\n", a1h, sp);
+      fprintf (file, "\t%s=%s\n", fp, a1h);  /* Establish new base frame */
+      fprintf (file, "\t%s=%ld\n", reg_names[REG_J], -total_size);
+      fprintf (file, "\t*%s++%s\n", fp, reg_names[REG_J]);
     }
   
-  fprintf( file, "\t/* END FUNCTION PROLOGUE: */\n\n" );
+  fprintf (file, "\t/* END FUNCTION PROLOGUE: */\n\n");
 }
 
 void
@@ -1482,9 +1477,10 @@ double_reg_to_memory (operands)
       else if (GET_CODE (XEXP(addr,1)) == CONST_INT)
 	offset = INTVAL(XEXP(addr,1)) + 1;
       else
-	fatal ("Invalid addressing mode");
+	abort ();
 
-      fprintf (asm_out_file, "\t*(%d)=%s\n", offset + 31, reg_names[REGNO(operands[1]) + 1]);
+      fprintf (asm_out_file, "\t*(%d)=%s\n", offset + 31,
+	       reg_names[REGNO(operands[1]) + 1]);
     }
     else
     {
@@ -1660,40 +1656,43 @@ print_operand(file, op, letter)
     {
 	/* Print the low half of a 32-bit register pair */
         if (letter == 'w')
-           fprintf( file, "%s", reg_names[REGNO(op)+1] );
+           fprintf (file, "%s", reg_names[REGNO (op) + 1]);
         else if (letter == 'u' || !letter)
-           fprintf( file, "%s", reg_names[REGNO(op)]);
+           fprintf (file, "%s", reg_names[REGNO (op)]);
 	else if (letter == 'b')
-	    fprintf ( file, "%sh", reg_names[REGNO(op)]);
+	    fprintf (file, "%sh", reg_names[REGNO (op)]);
 	else if (letter == 'm')
-	  fprintf (file, "%s", himode_reg_name[REGNO(op)]);
+	  fprintf (file, "%s", himode_reg_name[REGNO (op)]);
         else
-           fatal("Bad register extension code");
+	  output_operand_lossgae ("Bad register extension code");
     }
-    else if( code == MEM )
-        output_address( XEXP(op,0) );
-    else if( code == CONST_INT )
-    { 
+    else if (code == MEM)
+      output_address (XEXP(op,0));
+    else if (code == CONST_INT)
+      { 
 	HOST_WIDE_INT val = INTVAL (op);
-        if( letter == 'H' )
-            fprintf( file, HOST_WIDE_INT_PRINT_HEX, val & 0xffff);
+
+        if (letter == 'H')
+	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, val & 0xffff);
 	else if (letter == 'h')
-            fprintf( file, HOST_WIDE_INT_PRINT_DEC, val);
-        else if( letter == 'U' )
-            fprintf( file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, val);
+        else if (letter == 'U')
+	  fprint(f file, HOST_WIDE_INT_PRINT_HEX, (val >> 16) & 0xffff);
         else
-           output_addr_const( file, op );
-    }
-    else if( code == CONST_DOUBLE && GET_MODE(op) != DImode )
-    {
-	  union { double d; int i[2]; } u;
-	  union { float f; int i; } u1;
-	  u.i[0] = CONST_DOUBLE_LOW (op);
-	  u.i[1] = CONST_DOUBLE_HIGH (op);
-	  u1.f = u.d;
-          fprintf( file, "0x%x", u1.i );
-    }
-    else output_addr_const( file, op);
+	  output_addr_const (file, op);
+      }
+    else if (code == CONST_DOUBLE && GET_MODE (op) != DImode)
+      {
+	union {double d; int i[2]; } u;
+	union {float f; int i; } u1;
+
+	u.i[0] = CONST_DOUBLE_LOW (op);
+	u.i[1] = CONST_DOUBLE_HIGH (op);
+	u1.f = u.d;
+	fprintf (file, "0x%x", u1.i);
+      }
+    else
+      output_addr_const (file, op);
 }
 
 
@@ -1726,10 +1725,10 @@ print_operand_address(file, addr)
 	  if (offset >= -31 && offset <= 0)
 	    offset = 31 + offset;
 	  else
-	    fatal ("Invalid offset in ybase addressing");
+	    abort ();
 	}
       else
-	fatal ("Invalid register in ybase addressing");
+	abort ();
       
       fprintf (file, "*(%d)", offset);
       break;
@@ -1743,7 +1742,7 @@ print_operand_address(file, addr)
 }
 
 void
-output_dsp16xx_float_const(operands)
+output_dsp16xx_float_const (operands)
      rtx *operands;
 {
   rtx src = operands[1];
@@ -1758,7 +1757,7 @@ output_dsp16xx_float_const(operands)
   operands[1] = GEN_INT (value);
   output_asm_insn ("%u0=%U1\n\t%w0=%H1", operands);
 #else
-  fatal ("inline float constants not supported on this host");
+  fatal_error ("inline float constants not supported on this host");
 #endif
 }
 
@@ -1902,7 +1901,7 @@ emit_1600_core_shift (shift_op, operands, shift_amount)
       shift_asm_ptr_first = lshift_right_asm_first;
     }
   else
-    fatal ("Invalid shift operator in emit_1600_core_shift");
+    abort ();
 
   while (shift_amount != 0)
     {
@@ -1984,19 +1983,21 @@ asm_output_float (file, fp_const)
      double fp_const;
 {
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-      REAL_VALUE_TYPE d = fp_const;
-      long value;
+  REAL_VALUE_TYPE d = fp_const;
+  long value;
 
-      REAL_VALUE_TO_TARGET_SINGLE (d, value);
-      fputs ("\tint ", file);
+  REAL_VALUE_TO_TARGET_SINGLE (d, value);
+  fputs ("\tint ", file);
 #ifdef WORDS_BIG_ENDIAN
-      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value >> 16) & 0xffff, (value & 0xffff));
+  fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value >> 16) & 0xffff,
+	   value & 0xffff);
 #else
-      fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value & 0xffff), (value >> 16) & 0xffff);
+  fprintf (file, "0x%-4.4lx, 0x%-4.4lx", value & 0xffff,
+	   (value >> 16) & 0xffff);
 #endif
-      fputs ("\n", file);
+  fputs ("\n", file);
 #else
-      fatal ("inline float constants not supported on this host");
+  fatal_error ("inline float constants not supported on this host");
 #endif
 }
 
@@ -2171,17 +2172,15 @@ gen_tst_reg (x)
   mode = GET_MODE (x);
 
   if (mode == QImode)
-    {
-	  emit_insn (gen_rtx_PARALLEL
-		     (VOIDmode,
-		      gen_rtvec (2, gen_rtx_SET (VOIDmode, cc0_rtx, x),
-				 gen_rtx_CLOBBER (VOIDmode,
-						  gen_rtx_SCRATCH (QImode)))));
-	}
+    emit_insn (gen_rtx_PARALLEL
+	       (VOIDmode,
+		gen_rtvec (2, gen_rtx_SET (VOIDmode, cc0_rtx, x),
+			   gen_rtx_CLOBBER (VOIDmode,
+					    gen_rtx_SCRATCH (QImode)))));
   else if (mode == HImode)
     emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, x));
   else
-    fatal ("Invalid mode for gen_tst_reg");
+    abort ();
 
   return cc0_rtx;
 }
@@ -2262,7 +2261,7 @@ gen_compare_reg (code, x, y)
 						 force_reg (HImode,y))));
     }
   else
-    fatal ("Invalid mode for integer comparison in gen_compare_reg");
+    abort ();
 
   return cc0_rtx;
 }
@@ -2285,10 +2284,4 @@ output_block_move (operands)
 
   fprintf (asm_out_file, "\t}\n");
   return "";
-}
-
-void
-dsp16xx_invalid_register_for_compare ()
-{
-  fatal ("Invalid register for compare");
 }

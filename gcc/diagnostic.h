@@ -169,7 +169,7 @@ extern output_buffer *diagnostic_buffer;
 extern void set_diagnostic_context	PARAMS ((diagnostic_context *,
 						 const char *, va_list *,
 						 const char *, int, int));
-extern void set_fatal_function		PARAMS ((void (*)
+extern void set_internal_error_function	PARAMS ((void (*)
 						 PARAMS ((const char *,
 							  va_list *))));
 extern void report_diagnostic		PARAMS ((diagnostic_context *));

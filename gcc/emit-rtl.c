@@ -1001,7 +1001,8 @@ gen_realpart (mode, x)
 	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
 	   && REG_P (x)
 	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
-    fatal ("Unable to access real part of complex value in a hard register on this target");
+    internal_error
+      ("Can't access real part of complex value in hard register");
   else if (WORDS_BIG_ENDIAN)
     return gen_highpart (mode, x);
   else
@@ -1024,7 +1025,8 @@ gen_imagpart (mode, x)
 	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
 	   && REG_P (x)
 	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
-    fatal ("Unable to access imaginary part of complex value in a hard register on this target");
+    internal_error
+      ("can't access imaginary part of complex value in hard register");
   else
     return gen_highpart (mode, x);
 }

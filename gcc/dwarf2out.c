@@ -3181,8 +3181,8 @@ get_cfa_from_loc_descr (cfa, loc)
 	  cfa->offset = ptr->dw_loc_oprnd1.v.val_unsigned;
 	  break;
 	default:
-	  fatal ("DW_LOC_OP %s not implememnted yet.\n",
-		 dwarf_stack_op_name (ptr->dw_loc_opc));
+	  internal_error ("DW_LOC_OP %s not implememnted\n",
+			  dwarf_stack_op_name (ptr->dw_loc_opc));
 	}
     }
 }

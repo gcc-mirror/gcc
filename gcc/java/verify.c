@@ -1,6 +1,6 @@
 /* Handle verification of bytecoded methods for the GNU compiler for 
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -304,9 +304,10 @@ type_stack_dup (size, offset)
 	  index++;
 	  type[index] = stack_type_map[stack_pointer - 2];
 	  if (! TYPE_IS_WIDE (type[index]))
-	    fatal ("internal error - dup operation");
+	    abort ();
 	  if (index == size || index == size + offset)
-	    fatal ("dup operation splits 64-bit number");
+	    /* Dup operation splits 64-bit number.  */
+	    abort ();
 	}
       pop_type (type[index]);
     }
@@ -393,8 +394,7 @@ pop_argument_types (arg_types)
 #ifdef __GNUC__
 #define CHECK_PC_IN_RANGE(PC) ({if (PC < 0 || PC > length) goto bad_pc; (void)1;})
 #else
-#define CHECK_PC_IN_RANGE(PC) (PC < 0 || PC > length ? \
-  (fatal("Bad byte codes.\n"), 0) : 1)
+#define CHECK_PC_IN_RANGE(PC) (PC < 0 || PC > length ? (abort (), 0) : 1)
 #endif
 
 #define BCODE byte_ops

@@ -5831,6 +5831,7 @@ var_rtx (exp)
 }
 
 #ifdef MAX_INTEGER_COMPUTATION_MODE
+
 void
 check_max_integer_computation_mode (exp)
      tree exp;
@@ -5856,7 +5857,7 @@ check_max_integer_computation_mode (exp)
       mode = TYPE_MODE (TREE_TYPE (exp));
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && mode > MAX_INTEGER_COMPUTATION_MODE)
-	fatal ("unsupported wide integer operation");
+	internal_error ("unsupported wide integer operation");
     }
 
   /* Check operand of a unary op.  */
@@ -5865,7 +5866,7 @@ check_max_integer_computation_mode (exp)
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && mode > MAX_INTEGER_COMPUTATION_MODE)
-	fatal ("unsupported wide integer operation");
+	internal_error ("unsupported wide integer operation");
     }
 
   /* Check operands of a binary/comparison op.  */
@@ -5874,12 +5875,12 @@ check_max_integer_computation_mode (exp)
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && mode > MAX_INTEGER_COMPUTATION_MODE)
-	fatal ("unsupported wide integer operation");
+	internal_error ("unsupported wide integer operation");
 
       mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 1)));
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && mode > MAX_INTEGER_COMPUTATION_MODE)
-	fatal ("unsupported wide integer operation");
+	internal_error ("unsupported wide integer operation");
     }
 }
 #endif
@@ -6037,7 +6038,7 @@ expand_expr (exp, target, tmode, modifier)
 
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && mode > MAX_INTEGER_COMPUTATION_MODE)
-	fatal ("unsupported wide integer operation");
+	internal_error ("unsupported wide integer operation");
     }
 
   if (tmode != mode
@@ -6052,7 +6053,7 @@ expand_expr (exp, target, tmode, modifier)
       && TREE_CODE (exp) != RTL_EXPR
       && GET_MODE_CLASS (tmode) == MODE_INT
       && tmode > MAX_INTEGER_COMPUTATION_MODE)
-    fatal ("unsupported wide integer operation");
+    internal_error ("unsupported wide integer operation");
 
   check_max_integer_computation_mode (exp);
 #endif

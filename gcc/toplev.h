@@ -1,5 +1,5 @@
 /* toplev.h - Various declarations for functions found in toplev.c
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,21 +42,21 @@ extern void debug_end_source_file	PARAMS ((unsigned));
 extern void debug_define		PARAMS ((unsigned, const char *));
 extern void debug_undef			PARAMS ((unsigned, const char *));
 extern int debug_ignore_block		PARAMS ((union tree_node *));
-extern void fatal			PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-extern void fatal_io_error		PARAMS ((const char *))
-  ATTRIBUTE_NORETURN;
-extern void pfatal_with_name		PARAMS ((const char *))
-  ATTRIBUTE_NORETURN;
+extern void internal_error		PARAMS ((const char *, ...))
+					       ATTRIBUTE_PRINTF_1
+					       ATTRIBUTE_NORETURN;
+extern void fatal_io_error		PARAMS ((const char *, ...))
+					       ATTRIBUTE_PRINTF_1
+					       ATTRIBUTE_NORETURN;
 extern void _fatal_insn_not_found	PARAMS ((struct rtx_def *,
 						const char *, int,
 						const char *))
-  ATTRIBUTE_NORETURN;
+					       ATTRIBUTE_NORETURN;
 extern void _fatal_insn			PARAMS ((const char *,
 						struct rtx_def *,
 						const char *, int,
 						const char *))
-  ATTRIBUTE_NORETURN;
+					      ATTRIBUTE_NORETURN;
 
 #define fatal_insn(msgid, insn) \
 	_fatal_insn (msgid, insn, __FILE__, __LINE__, __FUNCTION__)
@@ -64,22 +64,24 @@ extern void _fatal_insn			PARAMS ((const char *,
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
 
 extern void warning			PARAMS ((const char *, ...))
-						ATTRIBUTE_PRINTF_1;
+					       ATTRIBUTE_PRINTF_1;
 extern void error			PARAMS ((const char *, ...))
-						ATTRIBUTE_PRINTF_1;
+					       ATTRIBUTE_PRINTF_1;
+extern void fatal_error			PARAMS ((const char *, ...))
+					       ATTRIBUTE_PRINTF_1;
 extern void pedwarn			PARAMS ((const char *, ...))
-						ATTRIBUTE_PRINTF_1;
+					       ATTRIBUTE_PRINTF_1;
 extern void pedwarn_with_file_and_line	PARAMS ((const char *, int,
-						  const char *, ...))
-  ATTRIBUTE_PRINTF_3;
+						 const char *, ...))
+					       ATTRIBUTE_PRINTF_3;
 extern void warning_with_file_and_line	PARAMS ((const char *, int,
-						  const char *, ...))
-  ATTRIBUTE_PRINTF_3;
+						 const char *, ...))
+					       ATTRIBUTE_PRINTF_3;
 extern void error_with_file_and_line	PARAMS ((const char *, int,
-						  const char *, ...))
-  ATTRIBUTE_PRINTF_3;
+						 const char *, ...))
+					       ATTRIBUTE_PRINTF_3;
 extern void sorry			PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1;
+					       ATTRIBUTE_PRINTF_1;
 extern void default_print_error_function PARAMS ((const char *));
 extern void report_error_function	PARAMS ((const char *));
 
@@ -90,20 +92,20 @@ extern void rest_of_compilation		PARAMS ((union tree_node *));
 
 /* The *_with_decl functions aren't suitable for ATTRIBUTE_PRINTF. */
 extern void pedwarn_with_decl		PARAMS ((union tree_node *,
-						  const char *, ...));
+						 const char *, ...));
 extern void warning_with_decl		PARAMS ((union tree_node *,
-						  const char *, ...));
+						 const char *, ...));
 extern void error_with_decl		PARAMS ((union tree_node *,
-						  const char *, ...));
+						 const char *, ...));
 
 extern void announce_function		PARAMS ((union tree_node *));
 
 extern void error_for_asm		PARAMS ((struct rtx_def *,
 						 const char *, ...))
-  ATTRIBUTE_PRINTF_2;
+					       ATTRIBUTE_PRINTF_2;
 extern void warning_for_asm		PARAMS ((struct rtx_def *,
 						 const char *, ...))
-  ATTRIBUTE_PRINTF_2;
+					       ATTRIBUTE_PRINTF_2;
 #if defined (_JBLEN) || defined (setjmp)
 extern void set_float_handler PARAMS ((jmp_buf));
 extern int push_float_handler PARAMS ((jmp_buf, jmp_buf));
@@ -121,12 +123,13 @@ extern void botch			PARAMS ((const char *))
 
 #ifdef BUFSIZ
 extern void fnotice			PARAMS ((FILE *, const char *, ...))
-  ATTRIBUTE_PRINTF_2;
+					       ATTRIBUTE_PRINTF_2;
 #endif
 
 extern int wrapup_global_declarations   PARAMS ((union tree_node **, int));
 extern void check_global_declarations   PARAMS ((union tree_node **, int));
-extern void note_deferral_of_defined_inline_function PARAMS ((union tree_node *));
+extern void note_deferral_of_defined_inline_function
+					PARAMS ((union tree_node *));
 extern int errorcount;
 extern int warningcount;
 extern int sorrycount;

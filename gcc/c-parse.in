@@ -2501,7 +2501,7 @@ methoddef:
 		  if (objc_implementation_context)
 		    objc_inherit_code = CLASS_METHOD_DECL;
                   else
-		    fatal ("method definition not in class context");
+		    fatal_error ("method definition not in class context");
 		}
 	  methoddecl
 		{
@@ -2526,7 +2526,7 @@ methoddef:
 		  if (objc_implementation_context)
 		    objc_inherit_code = INSTANCE_METHOD_DECL;
                   else
-		    fatal ("method definition not in class context");
+		    fatal_error ("method definition not in class context");
 		}
 	  methoddecl
 		{

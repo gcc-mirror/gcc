@@ -67,6 +67,7 @@ static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
 
 java_lexer *java_new_lexer PARAMS ((FILE *, const char *));
 
+#ifdef HAVE_ICONV
 /* This is nonzero if we have initialized `need_byteswap'.  */
 static int byteswap_init = 0;
 
@@ -75,6 +76,7 @@ static int byteswap_init = 0;
    doing a conversion once at startup and seeing what happens.  This
    flag holds the results of this determination.  */
 static int need_byteswap = 0;
+#endif
 
 void
 java_init_lex (finput, encoding)
@@ -161,7 +163,9 @@ static void
 java_unget_unicode ()
 {
   if (!ctxp->c_line->current)
-    fatal ("can't unget unicode - java_unget_unicode");
+    /* Can't unget unicode.  */
+    abort ();
+
   ctxp->c_line->current--;
   ctxp->c_line->char_col -= JAVA_COLUMN_DELTA (0);
 }
@@ -211,6 +215,7 @@ java_allocate_new_line ()
 }
 
 /* Create a new lexer object.  */
+
 java_lexer *
 java_new_lexer (finput, encoding)
      FILE *finput;
@@ -277,8 +282,8 @@ java_new_lexer (finput, encoding)
     {
       /* If iconv failed, use the internal decoder if the default
 	 encoding was requested.  This code is used on platforms where
-	 iconv() exists but is insufficient for our needs.  For
-	 instance, on Solaris 2.5 iconv() cannot handle UTF-8 or UCS-2.  */
+	 iconv exists but is insufficient for our needs.  For
+	 instance, on Solaris 2.5 iconv cannot handle UTF-8 or UCS-2.  */
       if (strcmp (encoding, DEFAULT_ENCODING))
 	enc_error = 1;
 #ifdef HAVE_ICONV
@@ -288,7 +293,7 @@ java_new_lexer (finput, encoding)
     }
 
   if (enc_error)
-    fatal ("unknown encoding: `%s'", encoding);
+    fatal_error ("unknown encoding: `%s'", encoding);
 
   return lex;
 }
@@ -956,7 +961,7 @@ java_lex (java_lval)
   ctxp->elc.prev_col = ctxp->elc.col;
   ctxp->elc.col = ctxp->c_line->char_col - JAVA_COLUMN_DELTA (-1);
   if (ctxp->elc.col < 0)
-    fatal ("ctxp->elc.col < 0 - java_lex");
+    abort ();
 
   /* Numeric literals */
   if (JAVA_ASCII_DIGIT (c) || (c == '.'))
@@ -1712,7 +1717,7 @@ java_get_line_col (filename, line, col)
   char *base;
 
   if (!(fp = fopen (filename, "r")))
-    fatal ("Can't open file - java_display_line_col");
+    fatal_io_error ("can't open %s", filename);
 
   while (cline != line)
     {

@@ -904,7 +904,7 @@ init_branch_prob (filename)
       strip_off_ending (data_file, len);
       strcat (data_file, ".bb");
       if ((bb_file = fopen (data_file, "wb")) == 0)
-	pfatal_with_name (data_file);
+	fatal_io_error ("can't open %s", data_file);
 
       /* Open an output file for the program flow graph.  */
       bbg_file_name = (char *) alloca (len + 5);
@@ -912,7 +912,7 @@ init_branch_prob (filename)
       strip_off_ending (bbg_file_name, len);
       strcat (bbg_file_name, ".bbg");
       if ((bbg_file = fopen (bbg_file_name, "wb")) == 0)
-	pfatal_with_name (bbg_file_name);
+	fatal_io_error ("can't open %s", bbg_file_name);
 
       /* Initialize to zero, to ensure that the first file name will be
 	 written to the .bb file.  */

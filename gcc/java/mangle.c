@@ -85,8 +85,7 @@ java_mangle_decl (obstack, decl)
       mangle_method_decl (decl);
       break;
     default:
-      fatal ("Can't mangle `%s\' -- java_mangle_decl", 
-	     tree_code_name [TREE_CODE (decl)]);
+      internal_error ("Can't mangle %s", tree_code_name [TREE_CODE (decl)]);
     }
   return finish_mangling ();
 }
@@ -368,7 +367,7 @@ mangle_type (type)
       break;
     bad_type:
     default:
-      fatal ("internal error - trying to mangle unknown type");
+      abort ();
     }
 }
 
@@ -481,7 +480,7 @@ mangle_record_type (type, from_pointer)
   do { obstack_1grow (mangle_obstack, 'N'); nadded_p = 1; } while (0)
 
   if (TREE_CODE (type) != RECORD_TYPE)
-    fatal ("Non RECORD_TYPE argument -- mangle_record_type");
+    abort ();
 
   if (!TYPE_PACKAGE_LIST (type))
     set_type_package_list (type);
@@ -534,7 +533,7 @@ mangle_pointer_type (type)
   pointer_type = type;
   type = TREE_TYPE (type);
   if (TREE_CODE (type) != RECORD_TYPE)
-    fatal ("Double indirection found -- mangle_pointer_type");
+    abort ();
   
   obstack_1grow (mangle_obstack, 'P');
   if (mangle_record_type (type, /* for_pointer = */ 1))
@@ -560,7 +559,8 @@ mangle_array_type (p_type)
 
   type = TREE_TYPE (p_type);
   if (!type)
-    fatal ("Non pointer array type -- mangle_array_type");
+    abort ();
+
   elt_type = TYPE_ARRAY_ELEMENT (type);
 
   /* We cache a bit of the Jarray <> mangle. */
@@ -736,7 +736,8 @@ init_mangling (obstack)
   if (!compression_table)
     compression_table = make_tree_vec (10);
   else
-    fatal ("Mangling already in progress -- init_mangling");
+    /* Mangling already in progress.  */
+    abort ();
 
   /* Mangled name are to be suffixed */
   obstack_grow (mangle_obstack, "_Z", 2);
@@ -754,7 +755,8 @@ finish_mangling ()
   tree result;
 
   if (!compression_table)
-    fatal ("Mangling already finished -- finish_mangling");
+    /* Mangling already finished.  */
+    abort ();
 
   ggc_del_root (&compression_table);
   compression_table = NULL_TREE;

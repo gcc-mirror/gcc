@@ -1,6 +1,5 @@
 /* Code to test for "definitive assignment".
-
-   Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -464,7 +463,7 @@ check_init (exp, before)
 	words when_false = tmp + num_current_words;
 #ifdef ENABLE_JC1_CHECKING
 	if (TREE_CODE (alt->block) != LOOP_EXPR)
-	  fatal ("internal error in check-init:  EXIT_EXPR not in LOOP_EXPR");
+	  abort ();
 #endif
 	check_bool_init (TREE_OPERAND (exp, 0), before, when_false, when_true);
 	done_alternative (when_true, alt);
@@ -535,7 +534,7 @@ check_init (exp, before)
 	struct alternatives *alt = alternatives;	
 #ifdef ENABLE_JC1_CHECKING
 	if (TREE_CODE (alt->block) != CLEANUP_POINT_EXPR)
-	  fatal ("internal error in check-init:  WITH_CLEANUP_EXPR not in CLEANUP_POINT_EXPR");
+	  abort ();
 #endif
 	check_init (TREE_OPERAND (exp, 0), before);
 	UNION (alt->combined, alt->combined, before);
@@ -728,8 +727,9 @@ check_init (exp, before)
       break;
       
     default:
-      fatal ("internal error in check-init: tree code not implemented: %s",
-	    tree_code_name [(int) TREE_CODE (exp)]);
+      internal_error
+	("internal error in check-init: tree code not implemented: %s",
+	 tree_code_name [(int) TREE_CODE (exp)]);
     }
 }
 

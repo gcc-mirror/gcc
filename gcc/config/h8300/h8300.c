@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc. 
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
@@ -113,7 +113,10 @@ h8300_init_once ()
   h8_mov_op = h8_mov_ops[cpu_type];
 
   if (!TARGET_H8300S && TARGET_MAC)
-    fatal ("-ms2600 is used without -ms.");
+    {
+      error ("-ms2600 is used without -ms.");
+      target_flags |= 1;
+    }
 }
 
 const char *

@@ -240,14 +240,12 @@ parse_signature (jcf, sig_index)
      JCF *jcf;
      int sig_index;
 {
-  if (sig_index <= 0 || sig_index >= JPOOL_SIZE(jcf)
+  if (sig_index <= 0 || sig_index >= JPOOL_SIZE (jcf)
       || JPOOL_TAG (jcf, sig_index) != CONSTANT_Utf8)
-    fatal ("invalid field/method signature");
+    abort ();
   else
-    {
-      return parse_signature_string (JPOOL_UTF_DATA (jcf, sig_index),
-				     JPOOL_UTF_LENGTH (jcf, sig_index));
-    }
+    return parse_signature_string (JPOOL_UTF_DATA (jcf, sig_index),
+				   JPOOL_UTF_LENGTH (jcf, sig_index));
 }
 
 void
@@ -364,7 +362,8 @@ get_constant (jcf, index)
 	  {
 	    int char_len = UT8_CHAR_LENGTH (*utf8);
 	    if (char_len < 0 || char_len > 3 || char_len > i)
- 	      fatal ("bad string constant");
+ 	      fatal_error ("bad string constant");
+
 	    utf8 += char_len;
 	    i -= char_len;
 	    str_len++;
@@ -415,12 +414,12 @@ get_constant (jcf, index)
     default:
       goto bad;
     }
-  JPOOL_TAG(jcf, index) = tag | CONSTANT_ResolvedFlag;
+  JPOOL_TAG (jcf, index) = tag | CONSTANT_ResolvedFlag;
   jcf->cpool.data [index] = (jword) value;
   return value;
  bad:
-  fatal ("bad value constant type %d, index %d", 
-	 JPOOL_TAG( jcf, index ), index);
+  internal_error ("bad value constant type %d, index %d", 
+		  JPOOL_TAG (jcf, index), index);
 }
 
 tree
@@ -429,8 +428,10 @@ get_name_constant (jcf, index)
   int index;
 {
   tree name = get_constant (jcf, index);
+
   if (TREE_CODE (name) != IDENTIFIER_NODE)
-    fatal ("bad nameandtype index %d", index);
+    abort ();
+
   return name;
 }
 
@@ -479,9 +480,9 @@ give_name_to_class (jcf, i)
      JCF *jcf;
      int i;
 {
-  if (i <= 0 || i >= JPOOL_SIZE(jcf)
+  if (i <= 0 || i >= JPOOL_SIZE (jcf)
       || JPOOL_TAG (jcf, i) != CONSTANT_Class)
-    fatal ("bad class index %d", i);
+    abort ();
   else
     {
       tree this_class;
@@ -507,9 +508,9 @@ tree
 get_class_constant (JCF *jcf , int i)
 {
   tree type;
-  if (i <= 0 || i >= JPOOL_SIZE(jcf)
+  if (i <= 0 || i >= JPOOL_SIZE (jcf)
       || (JPOOL_TAG (jcf, i) & ~CONSTANT_ResolvedFlag) != CONSTANT_Class)
-    fatal ("bad class index %d", i);
+    abort ();
 
   if (JPOOL_TAG (jcf, i) != CONSTANT_ResolvedClass)
     {
@@ -517,6 +518,7 @@ get_class_constant (JCF *jcf , int i)
       /* verify_constant_pool confirmed that name_index is a CONSTANT_Utf8. */
       const char *name = JPOOL_UTF_DATA (jcf, name_index);
       int nlength = JPOOL_UTF_LENGTH (jcf, name_index);
+
       if (name[0] == '[')  /* Handle array "classes". */
 	  type = TREE_TYPE (parse_signature_string (name, nlength));
       else
@@ -614,7 +616,7 @@ load_class (class_or_name, verbose)
     name = DECL_NAME (TYPE_NAME (class_or_name));
 
   if (read_class (name) == 0 && verbose)
-    fatal ("Cannot find file for class %s.", IDENTIFIER_POINTER (name));
+    error ("Cannot find file for class %s.", IDENTIFIER_POINTER (name));
 }
 
 /* Parse a source file when JCF refers to a source file.  */
@@ -637,12 +639,10 @@ jcf_parse_source ()
   if (!HAS_BEEN_ALREADY_PARSED_P (file))
     {
       if (!(finput = fopen (input_filename, "r")))
-	fatal ("input file `%s' just disappeared - jcf_parse_source",
-	       input_filename);
+	fatal_io_error ("can't reopen %s", input_filename);
       parse_source_file (file, finput);
       if (fclose (finput))
-	fatal ("can't close input file `%s' stream - jcf_parse_source",
-	       input_filename);
+	fatal_io_error ("can't close %s", input_filename);
     }
   java_pop_parser_context (IS_A_COMMAND_LINE_FILENAME_P (file));
   java_parser_context_restore_global ();
@@ -658,13 +658,13 @@ jcf_parse (jcf)
   tree current;
 
   if (jcf_parse_preamble (jcf) != 0)
-    fatal ("Not a valid Java .class file.\n");
+    fatal_error ("not a valid Java .class file");
   code = jcf_parse_constant_pool (jcf);
   if (code != 0)
-    fatal ("error while parsing constant pool");
+    fatal_error ("error while parsing constant pool");
   code = verify_constant_pool (jcf);
   if (code > 0)
-    fatal ("error in constant pool entry #%d\n", code);
+    fatal_error ("error in constant pool entry #%d\n", code);
 
   jcf_parse_class (jcf);
   if (main_class == NULL_TREE)
@@ -689,13 +689,13 @@ jcf_parse (jcf)
   
   code = jcf_parse_fields (jcf);
   if (code != 0)
-    fatal ("error while parsing fields");
+    fatal_error ("error while parsing fields");
   code = jcf_parse_methods (jcf);
   if (code != 0)
-    fatal ("error while parsing methods");
+    fatal_error ("error while parsing methods");
   code = jcf_parse_final_attributes (jcf);
   if (code != 0)
-    fatal ("error while parsing final attributes");
+    fatal_error ("error while parsing final attributes");
 
   /* The fields of class_type_node are already in correct order. */
   if (current_class != class_type_node && current_class != object_type_node)
@@ -954,14 +954,14 @@ yyparse ()
       
       /* Close previous descriptor, if any */
       if (main_jcf->read_state && fclose (main_jcf->read_state))
-	fatal ("failed to close input file `%s' - yyparse",
-	       (main_jcf->filename ? main_jcf->filename : "<unknown>"));
+	fatal_io_error ("can't close %s",
+			main_jcf->filename ? main_jcf->filename : "<unknown>");
       
       /* Set jcf up and open a new file */
       JCF_ZERO (main_jcf);
       main_jcf->read_state = fopen (IDENTIFIER_POINTER (name), "rb");
       if (main_jcf->read_state == NULL)
-	pfatal_with_name (IDENTIFIER_POINTER (name));
+	fatal_io_error ("can't open %s", IDENTIFIER_POINTER (name));
       
       /* Set new input_filename and finput */
       finput = main_jcf->read_state;

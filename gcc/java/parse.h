@@ -1,5 +1,5 @@
 /* Language parser definitions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -290,7 +290,7 @@ extern tree stabilize_reference PARAMS ((tree));
 	 current = TREE_CHAIN (current), list = TREE_CHAIN (list))	\
       ARG_FINAL_P (current) = ARG_FINAL_P (list);			\
     if (current != list)						\
-      fatal ("MARK_FINAL_PARMS");					\
+      abort ();								\
   }
 
 /* Reset the ARG_FINAL_P that might have been set in method M args.  */

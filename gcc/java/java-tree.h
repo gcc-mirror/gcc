@@ -1415,7 +1415,7 @@ extern tree *type_map;
 			     INNER_CLASS_DECL_P (NODE) :		      \
 			     (TREE_CODE (NODE) == RECORD_TYPE ? 	      \
 			      INNER_CLASS_TYPE_P (NODE) : 		      \
-			      (fatal ("INNER_CLASS_P: Wrong node type"), 0)))
+			      (abort (), 0)))
 
 /* On a TYPE_DECL, hold the list of inner classes defined within the
    scope of TYPE_DECL.  */

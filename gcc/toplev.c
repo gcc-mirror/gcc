@@ -1699,10 +1699,9 @@ pop_float_handler (handled, handler)
 
 static void
 crash_signal (signo)
-     /* If this is missing, some compilers complain.  */
      int signo;
 {
-  fatal ("Internal error: %s.", strsignal (signo));
+  internal_error ("Internal error: %s", strsignal (signo));
 }
 
 /* Strip off a legitimate source ending from the input string NAME of
@@ -1851,7 +1850,7 @@ open_dump_file (index, decl)
 
   rtl_dump_file = fopen (dump_name, open_arg);
   if (rtl_dump_file == NULL)
-    pfatal_with_name (dump_name);
+    fatal_io_error ("can't open %s", dump_name);
 
   free (dump_name);
 
@@ -2209,7 +2208,7 @@ compile_file (name)
     {
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
-	pfatal_with_name (aux_info_file_name);
+	fatal_io_error ("can't open %s", aux_info_file_name);
     }
 
   /* Open assembler code output file.  Do this even if -fsyntax-only is on,
@@ -2234,7 +2233,7 @@ compile_file (name)
       else
         asm_out_file = fopen (asm_file_name, "w");
       if (asm_out_file == 0)
-        pfatal_with_name (asm_file_name);
+	fatal_io_error ("can't open %s for writing", asm_file_name);
     }
 
 #ifdef IO_BUFFER_SIZE
@@ -2511,8 +2510,10 @@ compile_file (name)
 
   finish_parse ();
 
-  if (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0)
-    fatal_io_error (asm_file_name);
+  if (ferror (asm_out_file) != 0)
+    fatal_io_error ("error writing to %s", asm_file_name);
+  if (fclose (asm_out_file) != 0)
+    fatal_io_error ("error closing %s", asm_file_name);
 
   /* Do whatever is necessary to finish printing the graphs.  */
   if (graph_dump_format != no_graph)

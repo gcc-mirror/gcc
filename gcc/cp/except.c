@@ -466,8 +466,11 @@ decl_is_java_type (decl, err)
 	{
 	  tree jthrow_node
 	    = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jthrowable"));
+
 	  if (jthrow_node == NULL_TREE)
-	    fatal ("call to Java `catch' or `throw', while `jthrowable' undefined");
+	    fatal_error
+	      ("call to Java `catch' or `throw' with `jthrowable' undefined");
+
 	  jthrow_node = TREE_TYPE (TREE_TYPE (jthrow_node));
 
 	  if (! DERIVED_FROM_P (jthrow_node, TREE_TYPE (decl)))

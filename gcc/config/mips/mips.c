@@ -4953,10 +4953,16 @@ override_options ()
   if (! ISA_HAS_64BIT_REGS)
     {
       if (TARGET_FLOAT64)
-	fatal ("-mips%d does not support 64 bit fp registers", mips_isa);
+	{
+	  error ("-mips%d does not support 64 bit fp registers", mips_isa);
+	  target_flags &= ~ MASK_FLAG64;
+	}
 
       else if (TARGET_64BIT)
-	fatal ("-mips%d does not support 64 bit gp registers", mips_isa);
+	{
+	  error ("-mips%d does not support 64 bit gp registers", mips_isa);
+	  target_flags &= ~MASK_64BIT;
+	}
     }
 
   if (mips_abi != ABI_32 && mips_abi != ABI_O64)
@@ -5572,8 +5578,7 @@ print_operand (file, op, letter)
     fputs (reg_names[GP_REG_FIRST], file);
 
   else if (letter == 'd' || letter == 'x' || letter == 'X')
-    fatal ("PRINT_OPERAND: letter %c was found & insn was not CONST_INT",
-	   letter);
+    output_operand_lossage ("invalid use of %%d, %%x, or %%X");
 
   else if (letter == 'B')
     fputs (code == EQ ? "z" : "n", file);
@@ -6434,8 +6439,9 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		       - GET_MODE_SIZE (gpr_mode));
 
       if (gp_offset < 0 || end_offset < 0)
-	fatal ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
-	       (long) gp_offset, (long) end_offset);
+	internal_error
+	  ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
+	   (long) gp_offset, (long) end_offset);
 
       /* If we see a large frame in mips16 mode, we save the registers
          before adjusting the stack pointer, and load them afterward.  */
@@ -6651,8 +6657,9 @@ save_restore_insns (store_p, large_reg, large_offset, file)
       end_offset = fp_offset - (current_frame_info.fp_reg_size - fp_size);
 
       if (fp_offset < 0 || end_offset < 0)
-	fatal ("fp_offset (%ld) or end_offset (%ld) is less than zero.",
-	       (long) fp_offset, (long) end_offset);
+	internal_error
+	  ("fp_offset (%ld) or end_offset (%ld) is less than zero.",
+	   (long) fp_offset, (long) end_offset);
 
       else if (fp_offset < 32768)
 	base_reg_rtx = stack_pointer_rtx, base_offset  = 0;

@@ -1,5 +1,5 @@
 /* Write out a Java(TM) class file.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -355,14 +355,15 @@ static void append_innerclasses_attribute_entry PARAMS ((struct jcf_partial *, t
 static int CHECK_PUT PARAMS ((void *, struct jcf_partial *, int));
 
 static int
-CHECK_PUT(ptr, state, i)
+CHECK_PUT (ptr, state, i)
      void *ptr;
      struct jcf_partial *state;
      int i;
 {
-  if ((unsigned char *)ptr < state->chunk->data
-      || (unsigned char*)ptr + i > state->chunk->data + state->chunk->size)
-    fatal ("internal error - CHECK_PUT failed");
+  if ((unsigned char *) ptr < state->chunk->data
+      || (unsigned char *) ptr + i > state->chunk->data + state->chunk->size)
+    abort ();
+
   return 0;
 }
 #else
@@ -411,16 +412,16 @@ alloc_chunk (last, data, size, work)
 static int CHECK_OP PARAMS ((struct jcf_partial *));
 
 static int
-CHECK_OP(struct jcf_partial *state)
+CHECK_OP (state)
+     struct jcf_partial *state;
 {
   if (state->bytecode.ptr > state->bytecode.limit)
-    {
-      fatal("internal error - CHECK_OP failed");
-    }
+    abort ();
+
   return 0;
 }
 #else
-#define CHECK_OP(STATE) ((void)0)
+#define CHECK_OP(STATE) ((void) 0)
 #endif
 
 static unsigned char *
@@ -687,7 +688,8 @@ get_access_flags (decl)
 	flags |= ACC_PRIVATE;
     }
   else
-    fatal ("internal error - bad argument to get_access_flags");
+    abort ();
+
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (METHOD_NATIVE (decl))
@@ -833,11 +835,10 @@ find_constant_index (value, state)
 	}
     }
   else if (TREE_CODE (value) == STRING_CST)
-    {
-      return find_string_constant (&state->cpool, value);
-    }
+    return find_string_constant (&state->cpool, value);
+
   else
-    fatal ("find_constant_index - bad type");
+    abort ();
 }
 
 /* Push 64-bit long constant on VM stack.
@@ -1176,12 +1177,12 @@ generate_bytecode_conditional (exp, true_label, false_label,
 				       true_label, false_label,
 				       true_branch_first, state);
 	if (state->code_SP != save_SP_after)
-	  fatal ("internal error  non-matching SP");
+	  abort ();
       }
       break;
     case TRUTH_NOT_EXPR:
-      generate_bytecode_conditional (TREE_OPERAND (exp, 0), false_label, true_label,
-				     ! true_branch_first, state);
+      generate_bytecode_conditional (TREE_OPERAND (exp, 0), false_label,
+				     true_label, ! true_branch_first, state);
       break;
     case TRUTH_ANDIF_EXPR:
       {
@@ -1345,7 +1346,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
       break;
     }
   if (save_SP != state->code_SP)
-    fatal ("internal error - SP mismatch");
+    abort ();
 }
 
 /* Call pending cleanups i.e. those for surrounding CLEANUP_POINT_EXPRs
@@ -2062,12 +2063,12 @@ generate_bytecode_insns (exp, target, state)
       else if (TREE_CODE (exp) == ARRAY_REF)
 	{
 	  jopcode = OPCODE_iastore + adjust_typed_op (TREE_TYPE (exp), 7);
-	  RESERVE(1);
+	  RESERVE (1);
 	  OP1 (jopcode);
 	  NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 4 : 3);
 	}
       else
-	fatal ("internal error (bad lhs to MODIFY_EXPR)");
+	abort ();
       break;
     case PLUS_EXPR:
       jopcode = OPCODE_iadd;
@@ -2579,8 +2580,8 @@ generate_bytecode_insns (exp, target, state)
 	      {
 		DECL_CONTEXT (f) = saved_context;
 		if (nargs <= 0)
-		  fatal ("Illegal number of arguments to invokeinterface, nargs=%d",
-			 nargs);
+		  abort ();
+
 		OP1 (nargs);
 		OP1 (0);
 	      }
@@ -2767,7 +2768,7 @@ perform_relocations (state)
 	    }
 	}
       if (new_ptr != chunk->data)
-	fatal ("internal error - perform_relocations");
+	abort ();
     }
   state->code_length = pc;
 }
@@ -3288,16 +3289,11 @@ make_class_file_name (clas)
       if (s == NULL)
 	break;
       *s = '\0';
-      if (stat (r, &sb) == -1)
-	{
+      if (stat (r, &sb) == -1
 	  /* Try to make it.  */
-	  if (mkdir (r, 0755) == -1)
-	    {
-	      fatal ("failed to create directory `%s'", r);
-	      free (r);
-	      return NULL;
-	    }
-	}
+	  && mkdir (r, 0755) == -1)
+	fatal_io_error ("can't create directory %s", r);
+
       *s = DIR_SEPARATOR;
       /* Skip consecutive separators.  */
       for (dname = s + 1; *dname && *dname == DIR_SEPARATOR; ++dname)
@@ -3321,15 +3317,16 @@ write_classfile (clas)
 
   if (class_file_name != NULL)
     {
-      FILE* stream = fopen (class_file_name, "wb");
+      FILE *stream = fopen (class_file_name, "wb");
       if (stream == NULL)
-	fatal ("failed to open `%s' for writing", class_file_name);
+	fatal_io_error ("can't to open %s", class_file_name);
+
       jcf_dependency_add_target (class_file_name);
       init_jcf_state (state, work);
       chunks = generate_classfile (clas, state);
       write_chunks (stream, chunks);
       if (fclose (stream))
-	fatal ("failed to close after writing `%s'", class_file_name);
+	fatal_io_error ("can't close %s", class_file_name);
       free (class_file_name);
     }
   release_jcf_state (state);

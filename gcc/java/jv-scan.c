@@ -1,5 +1,5 @@
 /* Main for jv-scan
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -36,7 +36,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include <getopt.h>
 
-void fatal PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void fatal_error PARAMS ((const char *s, ...))
+     ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void warning PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 void gcc_obstack_init PARAMS ((struct obstack *obstack));
 void report PARAMS ((void));
@@ -178,10 +179,11 @@ DEFUN (main, (argc, argv),
 
   /* Check on bad usage */
   if (flag_find_main + flag_dump_class + flag_complexity > 1)
-    fatal ("Only one of `--print-main', `--list-class', and `--complexity' allowed");
+    fatal_error
+      ("Only one of `--print-main', `--list-class', and `--complexity' allowed");
 
   if (output_file && !(out = fopen (output_file, "w")))
-    fatal ("Can't open output file `%s'", output_file);
+    fatal_error ("Can't open output file `%s'", output_file);
 
   ft = ftell (out);
 
@@ -217,7 +219,7 @@ DEFUN (main, (argc, argv),
 	    reset_report ();
 	  }
 	else
-	  fatal ("File not found `%s'", argv [i]);
+	  fatal_error ("File not found `%s'", argv [i]);
       }
 
   /* Flush and close */
@@ -235,7 +237,7 @@ DEFUN (main, (argc, argv),
    functions */
 
 void
-fatal VPARAMS ((const char *s, ...))
+fatal_error VPARAMS ((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *s;

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -90,41 +90,43 @@ void
 override_options ()
 {
   int def_align;
+  int i;
 
   def_align = 1;
 
   /* Validate -malign-loops= value, or provide default */
+  m68k_align_loops = def_align;
   if (m68k_align_loops_string)
     {
-      m68k_align_loops = atoi (m68k_align_loops_string);
-      if (m68k_align_loops < 1 || m68k_align_loops > MAX_CODE_ALIGN)
-	fatal ("-malign-loops=%d is not between 1 and %d",
-	       m68k_align_loops, MAX_CODE_ALIGN);
+      i = atoi (m68k_align_loops_string);
+      if (i < 1 || i > MAX_CODE_ALIGN)
+	error ("-malign-loops=%d is not between 1 and %d", i, MAX_CODE_ALIGN);
+      else
+	m68k_align_loops = i;
     }
-  else
-    m68k_align_loops = def_align;
 
   /* Validate -malign-jumps= value, or provide default */
+  m68k_align_jumps = def_align;
   if (m68k_align_jumps_string)
     {
-      m68k_align_jumps = atoi (m68k_align_jumps_string);
-      if (m68k_align_jumps < 1 || m68k_align_jumps > MAX_CODE_ALIGN)
-	fatal ("-malign-jumps=%d is not between 1 and %d",
-	       m68k_align_jumps, MAX_CODE_ALIGN);
+      i = atoi (m68k_align_jumps_string);
+      if (i < 1 || i > MAX_CODE_ALIGN)
+	error ("-malign-jumps=%d is not between 1 and %d", i, MAX_CODE_ALIGN);
+      else
+	m68k_align_jumps = i;
     }
-  else
-    m68k_align_jumps = def_align;
 
   /* Validate -malign-functions= value, or provide default */
+  m68k_align_funcs = def_align;
   if (m68k_align_funcs_string)
     {
-      m68k_align_funcs = atoi (m68k_align_funcs_string);
-      if (m68k_align_funcs < 1 || m68k_align_funcs > MAX_CODE_ALIGN)
-	fatal ("-malign-functions=%d is not between 1 and %d",
-	       m68k_align_funcs, MAX_CODE_ALIGN);
+      i = atoi (m68k_align_funcs_string);
+      if (i < 1 || i > MAX_CODE_ALIGN)
+	error ("-malign-functions=%d is not between 1 and %d",
+	       i, MAX_CODE_ALIGN);
+      else
+	m68k_align_funcs = i;
     }
-  else
-    m68k_align_funcs = def_align;
 }
 
 /* This function generates the assembly code for function entry.
