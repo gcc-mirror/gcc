@@ -138,7 +138,7 @@ static basic_block *ifc_bbs;
    for vectorizer or not. If it is used for vectorizer, additional checks are
    used. (Vectorization checks are not yet implemented).  */
 
-bool
+static bool
 tree_if_conversion (struct loop *loop, bool for_vectorizer)
 {
   basic_block bb;
