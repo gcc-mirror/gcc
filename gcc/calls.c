@@ -3504,6 +3504,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   int flags = 0;
   int reg_parm_stack_space = 0;
   int needed;
+  rtx before_call;
 
 #ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
@@ -3528,6 +3529,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     flags |= ECF_CONST;
   else if (fn_type == LCT_PURE_MAKE_BLOCK)
     flags |= ECF_PURE;
+  else if (fn_type == LCT_NORETURN)
+    flags |= ECF_NORETURN;
   fun = orgfun;
 
   if (libfunc_nothrow (fun))
@@ -4041,6 +4044,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     abort ();
 #endif
 
+  before_call = get_last_insn ();
+
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
   /* The return type is needed to decide how many bytes the function pops.
@@ -4057,6 +4062,34 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       valreg,
 	       old_inhibit_defer_pop + 1, call_fusage, flags);
+
+  /* For calls to `setjmp', etc., inform flow.c it should complain
+     if nonvolatile values are live.  For functions that cannot return,
+     inform flow that control does not fall through.  */
+
+  if (flags & (ECF_RETURNS_TWICE | ECF_NORETURN | ECF_LONGJMP))
+    {
+      /* The barrier or NOTE_INSN_SETJMP note must be emitted
+	 immediately after the CALL_INSN.  Some ports emit more than
+	 just a CALL_INSN above, so we must search for it here.  */
+
+      rtx last = get_last_insn ();
+      while (GET_CODE (last) != CALL_INSN)
+	{
+	  last = PREV_INSN (last);
+	  /* There was no CALL_INSN?  */
+	  if (last == before_call)
+	    abort ();
+	}
+
+      if (flags & ECF_RETURNS_TWICE)
+	{
+	  emit_note_after (NOTE_INSN_SETJMP, last);
+	  current_function_calls_setjmp = 1;
+	}
+      else
+	emit_barrier_after (last);
+    }
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;

@@ -3,6 +3,9 @@
 	* function.c (expand_function_start): Set DECL_REGISTER on
 	a pseudo used for DECL_RESULT.
 
+	* rtl.h (LCT_NORETURN): New.
+	* calls.c (emit_library_call_value_1): Handle it.
+
 2001-03-27  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (objc_init): Use dump_base_name.

@@ -1972,7 +1972,8 @@ enum libcall_type
   LCT_CONST = 1,
   LCT_PURE = 2,
   LCT_CONST_MAKE_BLOCK = 3,
-  LCT_PURE_MAKE_BLOCK = 4
+  LCT_PURE_MAKE_BLOCK = 4,
+  LCT_NORETURN = 5
 };
 
 extern void emit_library_call		PARAMS ((rtx, enum libcall_type,
