@@ -1,3 +1,8 @@
+2004-03-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* expr.c (store_constructor): Use gen_int_mode to correctly
+	sign-extend CONST_INT value.
+
 2004-04-01  Alan Modra  <amodra@bigpond.net.au>
 	    Jakub Jelinek  <jakub@redhat.com>
 
