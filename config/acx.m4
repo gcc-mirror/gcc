@@ -140,3 +140,18 @@ else
   $1="$ac_cv_prog_$1"
 fi
 ]) []dnl # NCN_STRICT_CHECK_TARGET_TOOL
+
+###
+# AC_PROG_CPP_WERROR
+# Used for autoconf 2.5x to force AC_PREPROC_IFELSE to reject code which
+# triggers warnings from the preprocessor.  Will be in autoconf 2.58.
+# For now, using this also overrides header checks to use only the
+# preprocessor (matches 2.13 behavior; matching 2.58's behavior is a
+# bit harder from here).
+# Eventually autoconf will default to checking headers with the compiler
+# instead, and we'll have to do this differently.
+
+AC_DEFUN([AC_PROG_CPP_WERROR],
+[AC_REQUIRE([AC_PROG_CPP])dnl
+m4_define([AC_CHECK_HEADER],m4_defn([_AC_CHECK_HEADER_OLD]))
+ac_c_preproc_warn_flag=yes])# AC_PROG_CPP_WERROR
