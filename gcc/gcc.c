@@ -3192,26 +3192,27 @@ process_command (argc, argv)
     {
       const char *new_version = DEFAULT_TARGET_VERSION;
       const char *new_machine = DEFAULT_TARGET_MACHINE;
-      const char *const *new_argv = argv;
+      const char *progname = argv[0];
+      char **new_argv;
       char *new_argv0;
       int baselen;
       
-      while (argc > 1 && new_argv[1][0] == '-'
-	     && (new_argv[1][1] == 'V' || new_argv[1][1] == 'b'))
+      while (argc > 1 && argv[1][0] == '-'
+	     && (argv[1][1] == 'V' || argv[1][1] == 'b'))
 	{
-	  char opt = new_argv[1][1];
+	  char opt = argv[1][1];
 	  const char *arg;
-	  if (new_argv[1][2] != '\0')
+	  if (argv[1][2] != '\0')
 	    {
-	      arg = new_argv[1] + 2;
+	      arg = argv[1] + 2;
 	      argc -= 1;
-	      new_argv += 1;
+	      argv += 1;
 	    }
 	  else if (argc > 2)
 	    {
-	      arg = new_argv[2];
+	      arg = argv[2];
 	      argc -= 2;
-	      new_argv += 2;
+	      argv += 2;
 	    }
 	  else
 	    fatal ("`-%c' option must have argument", opt);
@@ -3221,22 +3222,22 @@ process_command (argc, argv)
 	    new_machine = arg;
 	}
 
-      for (baselen = strlen (argv[0]); baselen > 0; baselen--)
-	if (IS_DIR_SEPARATOR (argv[0][baselen-1]))
+      for (baselen = strlen (progname); baselen > 0; baselen--)
+	if (IS_DIR_SEPARATOR (progname[baselen-1]))
 	  break;
-      new_argv0 = xmemdup (argv[0], baselen, 
+      new_argv0 = xmemdup (progname, baselen, 
 			   baselen + concat_length (new_version, new_machine,
 						    "-gcc-", NULL) + 1);
       strcpy (new_argv0 + baselen, new_machine);
       strcat (new_argv0, "-gcc-");
       strcat (new_argv0, new_version);
 
-      new_argv = xmemdup (new_argv, (argc+1) * sizeof (new_argv0[0]),
-			   (argc+1) * sizeof (new_argv0[0]));
+      new_argv = xmemdup (argv, (argc + 1) * sizeof (argv[0]),
+			  (argc + 1) * sizeof (argv[0]));
       new_argv[0] = new_argv0;
 
       execvp (new_argv0, new_argv);
-      fatal ("couldn't run `%s': %s", new_argv0, xstrerror(errno));
+      fatal ("couldn't run `%s': %s", new_argv0, xstrerror (errno));
     }
 
   /* Set up the default search paths.  If there is no GCC_EXEC_PREFIX,
