@@ -2078,57 +2078,27 @@ build_component_ref (datum, component, basetype_path, protect)
 	    return error_mark_node;
 	  if (fndecls)
 	    {
+	      /* If the function is unique and static, we can resolve it
+		 now.  Otherwise, we have to wait and see what context it is
+		 used in; a component_ref involving a non-static member
+		 function can only be used in a call (expr.ref).  */
 	      if (TREE_CHAIN (fndecls) == NULL_TREE
-		  && TREE_CODE (TREE_VALUE (fndecls)) != OVERLOAD)
+		  && TREE_CODE (TREE_VALUE (fndecls)) == FUNCTION_DECL
+		  && DECL_STATIC_FUNCTION_P (TREE_VALUE (fndecls)))
 		{
-		  tree access, fndecl;
+		  tree fndecl;
 
-		  /* Unique, so use this one now.  */
 		  basetype = TYPE_MAIN_VARIANT (TREE_PURPOSE (fndecls));
 		  fndecl = TREE_VALUE (fndecls);
-		  access = compute_access (TREE_PURPOSE (fndecls), fndecl);
-		  if (access == access_public_node)
-		    {
-		      if (DECL_VINDEX (fndecl)
-			  && ! resolves_to_fixed_type_p (datum, 0))
-			{
-			  tree addr = build_unary_op (ADDR_EXPR, datum, 0);
-			  tree fntype = TREE_TYPE (fndecl);
-
-			  addr = convert_pointer_to (DECL_CONTEXT (fndecl),
-						     addr);
-			  datum = build_indirect_ref (addr, NULL_PTR);
-			  my_friendly_assert (datum != error_mark_node, 310);
-			  fndecl = build_vfn_ref (&addr, datum,
-						  DECL_VINDEX (fndecl));
-			  /* The type of fndecl is a function type,
-			     not a pointer-to-function type, since
-			     build_vfn_ref returns not the correct
-			     vtable slot, but the indirection of the
-			     correct vtable slot.  */
-			  TREE_TYPE (fndecl) = fntype;
-			}
-		      else
-			mark_used (fndecl);
-		      return build (OFFSET_REF, TREE_TYPE (fndecl),
-				    datum, fndecl);
-		    }
-		  if (access == access_protected_node)
-		    cp_error ("member function `%D' is protected", fndecl);
-		  else
-		    cp_error ("member function `%D' is private", fndecl);
-		  return error_mark_node;
+		  enforce_access (TREE_PURPOSE (fndecls), fndecl);
+		  mark_used (fndecl);
+		  return fndecl;
 		}
 	      else
 		{
-		  /* Just act like build_offset_ref, since the object does
-                     not matter unless we're actually calling the function.  */
-		  tree t;
-
-		  t = build_tree_list (error_mark_node, fndecls);
-		  TREE_TYPE (t) = build_offset_type (basetype,
-						     unknown_type_node);
-		  return t;
+		  ref = build (COMPONENT_REF, unknown_type_node,
+			       datum, fndecls);
+		  return ref;
 		}
 	    }
 
@@ -2622,9 +2592,7 @@ build_x_function_call (function, params, decl)
 	      return error_mark_node;
 	    }
 	  /* Yow: call from a static member function.  */
-	  decl = build1 (NOP_EXPR, build_pointer_type (current_class_type),
-			 error_mark_node);
-	  decl = build_indirect_ref (decl, NULL_PTR);
+	  decl = build_dummy_object (current_class_type);
 	}
 
       /* Put back explicit template arguments, if any.  */
@@ -2636,12 +2604,10 @@ build_x_function_call (function, params, decl)
   else if (TREE_CODE (function) == COMPONENT_REF
 	   && type == unknown_type_node)
     {
-      /* Should we undo what was done in build_component_ref? */
-      if (TREE_CODE (TREE_PURPOSE (TREE_OPERAND (function, 1))) == TREE_VEC)
-	/* Get the name that build_component_ref hid.  */
-	function = DECL_NAME (TREE_VALUE (TREE_OPERAND (function, 1)));
-      else
-	function = TREE_PURPOSE (TREE_OPERAND (function, 1));
+      /* Undo what we did in build_component_ref.  */
+      decl = TREE_OPERAND (function, 0);
+      function = TREE_OPERAND (function, 1);
+      function = DECL_NAME (OVL_CURRENT (TREE_VALUE (function)));
       return build_method_call (decl, function, params,
 				NULL_TREE, LOOKUP_NORMAL);
     }
@@ -4248,6 +4214,8 @@ build_component_addr (arg, argtype, msg)
   tree basetype = decl_type_context (field);
   tree rval = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0);
 
+  my_friendly_assert (TREE_CODE (field) == FIELD_DECL, 981018);
+
   if (DECL_C_BIT_FIELD (field))
     {
       error (msg, IDENTIFIER_POINTER (DECL_NAME (field)));
@@ -4665,24 +4633,7 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      if (TREE_CODE (arg) == OVERLOAD 
-	  || (TREE_CODE (arg) == OFFSET_REF
-	      && TREE_CODE (TREE_OPERAND (arg, 1)) == TEMPLATE_ID_EXPR))
-	return build1 (ADDR_EXPR, unknown_type_node, arg);
-      else if (TREE_CODE (arg) == TREE_LIST)
-	{
-	  if (TREE_CODE (TREE_VALUE (arg)) == FUNCTION_DECL)
-	    /* Unique overloaded non-member function.  */
-	    return build_unary_op (ADDR_EXPR, TREE_VALUE (arg), 0);
-	  if (TREE_CHAIN (arg) == NULL_TREE
-	      && TREE_CODE (TREE_VALUE (arg)) == TREE_LIST
-	      && TREE_CODE (TREE_VALUE (TREE_VALUE (arg))) != OVERLOAD)
-	    /* Unique overloaded member function.  */
-	    return build_unary_op (ADDR_EXPR, TREE_VALUE (TREE_VALUE (arg)),
-				   0);
-	  return build1 (ADDR_EXPR, unknown_type_node, arg);
-	}
-      else if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
+      if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
 	{
 	  tree targs;
 	  tree fn;
@@ -4705,6 +4656,8 @@ build_unary_op (code, xarg, noconvert)
 
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
+      else if (type_unknown_p (arg))
+	return build1 (ADDR_EXPR, unknown_type_node, arg);
 
       /* Handle complex lvalues (when permitted)
 	 by reduction to simpler cases.  */
@@ -4890,9 +4843,7 @@ unary_complex_lvalue (code, arg)
 	  tree type;
 
 	  if (TREE_OPERAND (arg, 0)
-	      && (TREE_CODE (TREE_OPERAND (arg, 0)) != NOP_EXPR
-		  || (TREE_OPERAND (TREE_OPERAND (arg, 0), 0)
-		      != error_mark_node))
+	      && ! is_dummy_object (TREE_OPERAND (arg, 0))
 	      && TREE_CODE (t) != FIELD_DECL)
 	    {
 	      cp_error ("taking address of bound pointer-to-member expression");
@@ -5770,7 +5721,7 @@ build_c_cast (type, expr)
   if (TREE_CODE (type) == VOID_TYPE)
     value = build1 (CONVERT_EXPR, type, value);
   else if (TREE_TYPE (value) == NULL_TREE
-      || type_unknown_p (value))
+	   || type_unknown_p (value))
     {
       value = instantiate_type (type, value, 1);
       /* Did we lose?  */

@@ -4539,9 +4539,13 @@ arg_assoc (k, n)
 
   if (TREE_CODE (n) == ADDR_EXPR)
     n = TREE_OPERAND (n, 0);
+  if (TREE_CODE (n) == COMPONENT_REF)
+    n = TREE_OPERAND (n, 1);
   while (TREE_CODE (n) == TREE_LIST)
     n = TREE_VALUE (n);
 
+  if (TREE_CODE (n) == FUNCTION_DECL)
+    return arg_assoc_type (k, TREE_TYPE (n));
   if (TREE_CODE (n) == TEMPLATE_ID_EXPR)
     {
       /* [basic.lookup.koenig]
@@ -4604,7 +4608,7 @@ arg_assoc (k, n)
       my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
       
       for (; n; n = OVL_CHAIN (n))
-	if (arg_assoc (k, OVL_FUNCTION (n)))
+	if (arg_assoc_type (k, TREE_TYPE (OVL_FUNCTION (n))))
 	  return 1;
     }
 

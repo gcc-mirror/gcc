@@ -107,21 +107,8 @@ cp_convert_to_pointer (type, expr)
 	 functions.  */
       if (TYPE_PTRMEMFUNC_P (intype))
 	{
-	  tree decl, basebinfo;
 	  tree fntype = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (intype));
-	  tree t = TYPE_METHOD_BASETYPE (fntype);
-
-	  if (current_class_type == 0
-	      || get_base_distance (t, current_class_type, 0, &basebinfo)
-	      == -1)
-	    {
-	      decl = build1 (NOP_EXPR, t, error_mark_node);
-	    }
-	  else if (current_class_ptr == 0)
-	    decl = build1 (NOP_EXPR, t, error_mark_node);
-	  else
-	    decl = current_class_ref;
-
+	  tree decl = maybe_dummy_object (TYPE_METHOD_BASETYPE (fntype), 0);
 	  expr = build (OFFSET_REF, fntype, decl, expr);
 	}
 

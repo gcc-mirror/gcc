@@ -5045,17 +5045,11 @@ instantiate_type (lhstype, rhs, complain)
 	    if (function == error_mark_node)
 	      return error_mark_node;
 	    my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 185);
-	    if (DECL_VINDEX (function))
-	      {
-		tree base = TREE_OPERAND (rhs, 0);
-		tree base_ptr = build_unary_op (ADDR_EXPR, base, 0);
-		if (base_ptr == error_mark_node)
-		  return error_mark_node;
-		base_ptr = convert_pointer_to (DECL_CONTEXT (function), base_ptr);
-		if (base_ptr == error_mark_node)
-		  return error_mark_node;
-		return build_vfn_ref (&base_ptr, base, DECL_VINDEX (function));
-	      }
+
+	    if (! DECL_STATIC_FUNCTION_P (function))
+	      cp_error ("reference to `%D' can only be used in a call",
+			function);
+
 	    mark_used (function);
 	    return function;
 	  }
@@ -5293,49 +5287,11 @@ instantiate_type (lhstype, rhs, complain)
 		elem = OVL_NEXT (elem);
 	  }
 
-	/* No exact match found, look for a compatible method.  */
-	for (baselink = rhs; baselink;
-	     baselink = next_baselink (baselink))
-	  {
-	    elem = TREE_VALUE (baselink);
-	    for (; elem; elem = OVL_NEXT (elem))
-	      if (comp_target_types (lhstype, 
-				     TREE_TYPE (OVL_CURRENT (elem)), 1) > 0)
-		break;
-	    if (elem)
-	      {
-		tree save_elem = OVL_CURRENT (elem);
-		for (elem = OVL_NEXT (elem); elem; elem = OVL_NEXT (elem))
-		  if (comp_target_types (lhstype, 
-					 TREE_TYPE (OVL_CURRENT (elem)), 0) > 0)
-		    break;
-		if (elem)
-		  {
-		    if (complain)
-		      error ("ambiguous overload for overloaded method requested");
-		    return error_mark_node;
-		  }
-		mark_used (save_elem);
-		return save_elem;
-	      }
-	    name = rhs;
-	    while (TREE_CODE (name) == TREE_LIST)
-	      name = TREE_VALUE (name);
-	    name = DECL_NAME (OVL_CURRENT (name));
-#if 0
-	    if (TREE_CODE (lhstype) == FUNCTION_TYPE && globals < 0)
-	      {
-		/* Try to instantiate from non-member functions.  */
-		rhs = lookup_name_nonclass (name);
-		if (rhs && TREE_CODE (rhs) == TREE_LIST)
-		  {
-		    /* This code seems to be missing a `return'.  */
-		    my_friendly_abort (4);
-		    instantiate_type (lhstype, rhs, complain);
-		  }
-	      }
-#endif
-	  }
+	name = rhs;
+	while (TREE_CODE (name) == TREE_LIST)
+	  name = TREE_VALUE (name);
+	name = DECL_NAME (OVL_CURRENT (name));
+
 	if (complain)
 	  cp_error ("no compatible member functions named `%D'", name);
 	return error_mark_node;

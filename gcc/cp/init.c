@@ -1359,7 +1359,6 @@ build_member_call (type, name, parmlist)
   tree t;
   tree method_name;
   int dtor = 0;
-  int dont_use_this = 0;
   tree basetype_path, decl;
 
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR
@@ -1415,23 +1414,11 @@ build_member_call (type, name, parmlist)
       return error_mark_node;
     }
 
-  /* No object?  Then just fake one up, and let build_method_call
-     figure out what to do.  */
-  if (current_class_type == 0
-      || get_base_distance (type, current_class_type, 0, &basetype_path) == -1)
-    dont_use_this = 1;
+  decl = maybe_dummy_object (type, &basetype_path);
 
-  if (dont_use_this)
-    {
-      basetype_path = TYPE_BINFO (type);
-      decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
-    }
-  else if (current_class_ptr == 0)
-    {
-      dont_use_this = 1;
-      decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
-    }
-  else
+  /* Convert 'this' to the specified type to disambiguate conversion
+     to the function's context.  */
+  if (decl == current_class_ref)
     {
       tree olddecl = current_class_ptr;
       tree oldtype = TREE_TYPE (TREE_TYPE (olddecl));
@@ -1440,12 +1427,9 @@ build_member_call (type, name, parmlist)
 	  tree newtype = build_type_variant (type, TYPE_READONLY (oldtype),
 					     TYPE_VOLATILE (oldtype));
 	  decl = convert_force (build_pointer_type (newtype), olddecl, 0);
+	  decl = build_indirect_ref (decl, NULL_PTR);
 	}
-      else
-	decl = olddecl;
     }
-
-  decl = build_indirect_ref (decl, NULL_PTR);
 
   if (method_name == constructor_name (type)
       || method_name == constructor_name_full (type))
@@ -1463,7 +1447,7 @@ build_member_call (type, name, parmlist)
 	return error_mark_node;
       if (TREE_CODE (t) == FIELD_DECL)
 	{
-	  if (dont_use_this)
+	  if (is_dummy_object (decl))
 	    {
 	      cp_error ("invalid use of non-static field `%D'", t);
 	      return error_mark_node;
@@ -1569,16 +1553,7 @@ build_offset_ref (type, name)
       return error_mark_node;
     }
 
-  if (current_class_type == 0
-      || get_base_distance (type, current_class_type, 0, &basebinfo) == -1)
-    {
-      basebinfo = TYPE_BINFO (type);
-      decl = build1 (NOP_EXPR, type, error_mark_node);
-    }
-  else if (current_class_ptr == 0)
-    decl = build1 (NOP_EXPR, type, error_mark_node);
-  else
-    decl = current_class_ref;
+  decl = maybe_dummy_object (type, &basebinfo);
 
   fnfields = lookup_fnfields (basebinfo, name, 1);
   fields = lookup_field (basebinfo, name, 0, 0);
@@ -1771,9 +1746,7 @@ resolve_offset_ref (exp)
 
   /* The first case is really just a reference to a member of `this'.  */
   if (TREE_CODE (member) == FIELD_DECL
-      && (base == current_class_ref
-	  || (TREE_CODE (base) == NOP_EXPR
-	      && TREE_OPERAND (base, 0) == error_mark_node)))
+      && (base == current_class_ref || is_dummy_object (base)))
     {
       tree basetype_path;
       tree access;
@@ -1815,8 +1788,7 @@ resolve_offset_ref (exp)
     }
 
   /* Ensure that we have an object.  */
-  if (TREE_CODE (base) == NOP_EXPR
-      && TREE_OPERAND (base, 0) == error_mark_node)
+  if (is_dummy_object (base))
     addr = error_mark_node;
   else
     /* If this is a reference to a member function, then return the

@@ -1866,6 +1866,17 @@ hack_identifier (value, name)
       TREE_USED (value) = 1;
       value = build_component_ref (current_class_ref, name, NULL_TREE, 1);
     }
+  else if (TREE_CODE (value) == FUNCTION_DECL
+	   && DECL_FUNCTION_MEMBER_P (value))
+    {
+      tree decl;
+
+      if (IS_SIGNATURE (DECL_CLASS_CONTEXT (value)))
+	return value;
+
+      decl = maybe_dummy_object (DECL_CLASS_CONTEXT (value), 0);
+      value = build_component_ref (decl, name, NULL_TREE, 1);
+    }
   else if (really_overloaded_fn (value))
     {
 #if 0

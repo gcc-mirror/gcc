@@ -1577,8 +1577,7 @@ dump_expr (t, nop)
     case OFFSET_REF:
       {
 	tree ob = TREE_OPERAND (t, 0);
-	if (TREE_CODE (ob) == NOP_EXPR
-	    && TREE_OPERAND (ob, 0) == error_mark_node)
+	if (is_dummy_object (ob))
 	  {
 	    if (TREE_CODE (TREE_OPERAND (t, 1)) == FUNCTION_DECL)
 	      /* A::f */
