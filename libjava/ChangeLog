@@ -1,5 +1,14 @@
 2003-06-08  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/Socket.java
+	(Socket): Dont initialize inputShutdown and outputShutdown twice,
+	call bind() and connect() to actually do the bind and connect tasks.
+	(bind): Connect to canonical address if bindpoint is null, create
+	socket and bind it to bindpoint.
+	(connect): Check for exceptions.
+
+2003-06-08  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(DatagramSocket): No need to set SO_REUSEADDRESS here. This belongs
 	into the Multicast constructors.
