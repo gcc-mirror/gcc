@@ -4005,8 +4005,12 @@ expand_function_start (tree subr)
 	}
       if (value_address)
 	{
-	  rtx x = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), value_address);
-	  set_mem_attributes (x, DECL_RESULT (subr), 1);
+	  rtx x = value_address;
+	  if (!DECL_BY_REFERENCE (DECL_RESULT (subr)))
+	    {
+	      x = gen_rtx_MEM (DECL_MODE (DECL_RESULT (subr)), x);
+	      set_mem_attributes (x, DECL_RESULT (subr), 1);
+	    }
 	  SET_DECL_RTL (DECL_RESULT (subr), x);
 	}
     }

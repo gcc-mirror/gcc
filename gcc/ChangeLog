@@ -1,3 +1,8 @@
+2004-08-10  Jason Merrill  <jason@redhat.com>
+
+	* function.c (expand_function_start): Handle DECL_BY_REFERENCE on
+	the RESULT_DECL.
+
 2004-08-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree-vn.c (val_expr_pair_expr_eq): Compare vuses, to match the
