@@ -3436,6 +3436,16 @@ __throw ()
 
 void *__eh_pc;
 
+/* See expand_builtin_throw for details.  */
+
+void **__eh_ffetmnpc () {
+  static void *buf[2] = {
+    &__find_first_exception_table_match,
+    &__eh_pc
+  };
+  return buf;
+}
+
 void
 __empty ()
 {

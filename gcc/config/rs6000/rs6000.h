@@ -3126,3 +3126,7 @@ extern int rs6000_valid_type_attribute_p ();
 extern void rs6000_set_default_type_attributes ();
 extern struct rtx_def *rs6000_dll_import_ref ();
 extern struct rtx_def *rs6000_longcall_ref ();
+
+/* See nonlocal_goto_receiver for when this must be set.  */
+
+#define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_TOC && TARGET_MINIMAL_TOC)
