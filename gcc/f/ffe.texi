@@ -21,7 +21,7 @@ search for the string TBD.
 If you want to help by working on one or more of these items,
 email me at @email{@value{email-burley}}.
 If you're planning to do more than just research issues and offer comments,
-see @uref{http://egcs.cygnus.com/contribute.html} for steps you might
+see @uref{http://www.gnu.org/software/contribute.html} for steps you might
 need to take first.
 
 @menu

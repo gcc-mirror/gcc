@@ -1,4 +1,4 @@
-If you think you may have found a bug in GNU CC, please
+If you think you may have found a bug in GCC, please
 read the Bugs section of the GCC manual for advice on
 
 (1) how to tell when to report a bug, 
@@ -22,6 +22,6 @@ a like manner.  (Standalone Info is part of the Texinfo distribution.)
 (3) By hand. Search for the chapter "Reporting Bugs" in gcc.texi, or
     cat /usr/local/info/gcc* | more "+/^File: gcc.info,  Node: Bugs,"
 
-You may also want to take a look at the EGCS FAQ, in which there are
+You may also want to take a look at the GCC FAQ, in which there are
 additional instructions for submitting bug reports:
-	http://egcs.cygnus.com/faq.html#bugreport
+	http://www.gnu.org/software/gcc/faq.html#bugreport

@@ -33,7 +33,7 @@ is expected to contain documentation that is most consistent with the
 
    An online, "live" version of this document (derived directly from
 the mainline, development version of `g77' within `egcs') is available
-via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
+via `http://www.gnu.org/software/gcc/onlinedocs/g77_bugs.html'.  Follow the
 "Known Bugs" link.
 
    For information on bugs that might afflict people who configure,
