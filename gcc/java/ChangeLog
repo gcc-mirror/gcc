@@ -1,3 +1,10 @@
+2003-03-11  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (resolve_field_access): Initialize class if field is
+	found in another static field.
+	* expr.c (build_class_init): Don't optimize out initialization of
+	implemented interface.
+
 2003-03-11  Andrew Haley  <aph@redhat.com>
 
 	* jcf-io.c (caching_stat): Initialize origsep to remove compiler
