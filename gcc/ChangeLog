@@ -1,3 +1,15 @@
+2005-01-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (mips64*-*-linux*): Set the default abi to n32.  Remove
+	redundant target_cpu_default and extra_parts lines.  Use the default
+	"from-abi" ISA.
+	* config/mips/linux64.h (DRIVER_DEFAULT_ABI_SELF_SPEC): Delete.
+	(SUBTARGET_EXTRA_SPECS): Delete.
+	(DRIVER_SELF_SPECS): Remove architecture lines.  Set the ABI directly.
+	(SUBTARGET_ASM_SPEC): Remove -mabi=n32 and -mabi=64 mappings.
+	* config/mips/t-linux64 (MULTILIB_DIRNAMES): Use "32" for -mabi=32
+	and "n32" for -mabi=n32.
+
 2005-01-17  Ian Lance Taylor  <ian@airs.com>
 
 	PR c/5675

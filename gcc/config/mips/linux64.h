@@ -19,25 +19,16 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This sets the post-install default ABI to n32.  This must NOT be
-   kept in sync with the default ABI in gcc/config.gcc; it's actually
-   meant to override that.  However, for correct behavior at build
-   time, we also need t-linux64 to get the build-time specs in line
-   with the setting in config.gcc.  */
-#define DRIVER_DEFAULT_ABI_SELF_SPEC "%{!mabi=*:-mabi=n32}"
-#undef SUBTARGET_EXTRA_SPECS
-#define SUBTARGET_EXTRA_SPECS \
-  { "driver_default_abi_self_spec", DRIVER_DEFAULT_ABI_SELF_SPEC },
+/* Force the default endianness and ABI flags onto the command line
+   in order to make the other specs easier to write.  */
 #define DRIVER_SELF_SPECS \
 "%{!EB:%{!EL:%(endian_spec)}}", \
-"%(driver_default_abi_self_spec)", \
-"%{!mips*:%{!march=*:%{mabi=32:-mips1}%{mabi=n32|mabi=64:-mips3}}}"
+"%{!mabi=*: -mabi=n32}"
 
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "\
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
-%{fno-PIC:-non_shared} %{fno-pic:-non_shared} \
-%{mabi=64:-64} %{mabi=n32:-n32}"
+%{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "\
