@@ -1200,7 +1200,7 @@ varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h function.h \
    output.h bytecode.h c-pragma.h
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
-   recog.h output.h bytecode.h
+   recog.h output.h bytecode.h bc-emit.h
 stmt.o : stmt.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h loop.h \
    recog.h bytecode.h bc-typecd.h bc-typecd.def bc-opcode.h bc-optab.h \
@@ -1276,7 +1276,7 @@ recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
    regs.h recog.h hard-reg-set.h flags.h insn-config.h insn-attr.h \
    insn-flags.h insn-codes.h real.h
 reg-stack.o : reg-stack.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
-   regs.h hard-reg-set.h flags.h insn-config.h
+   regs.h hard-reg-set.h flags.h insn-config.h insn-flags.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) \
    $(RTL_H) regs.h hard-reg-set.h real.h insn-config.h conditions.h \
