@@ -2929,7 +2929,7 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
      below are simplified by the ones above.  */
   no_overlap = integer_onep (range_binop (LT_EXPR, integer_type_node,
 					  high0, 1, low1, 0));
-  subset = integer_onep (range_binop (LT_EXPR, integer_type_node,
+  subset = integer_onep (range_binop (LE_EXPR, integer_type_node,
 				      high1, 1, high0, 1));
 
   /* We now have four cases, depending on whether we are including or
