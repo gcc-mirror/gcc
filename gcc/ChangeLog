@@ -1,3 +1,7 @@
+2002-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (arith_4096_operand): Fix error in last change.
+
 2002-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Remove duplicate

@@ -964,10 +964,10 @@ arith_4096_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  int val;
   if (GET_CODE (op) != CONST_INT)
     return 0;
-  return val == 4096;
+  else
+    return INTVAL (op) == 4096;
 }
 
 /* Return true if OP is suitable as second operand for add/sub */
