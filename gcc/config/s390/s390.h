@@ -753,6 +753,10 @@ CUMULATIVE_ARGS;
  || GET_CODE (X) == LABEL_REF                                           \
  || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
+#define TLS_SYMBOLIC_CONST(X)	\
+((GET_CODE (X) == SYMBOL_REF && tls_symbolic_operand (X))	\
+ || (GET_CODE (X) == CONST && tls_symbolic_reference_mentioned_p (X)))
+
 
 /* Condition codes.  */
 
@@ -930,6 +934,10 @@ extern int flag_pic;
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
   fprintf ((FILE), "\t.set\t.,.+%u\n", (SIZE))
 
+/* Output a reference to a user-level label named NAME.  */
+#define ASM_OUTPUT_LABELREF(FILE, NAME) \
+  asm_fprintf ((FILE), "%U%s", (*targetm.strip_name_encoding) (NAME))
+
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
@@ -1018,10 +1026,9 @@ extern int s390_nr_constants;
 									    \
     case MODE_INT:							    \
     case MODE_PARTIAL_INT:						    \
-      if (flag_pic							    \
-	  && (GET_CODE (EXP) == CONST					    \
-	      || GET_CODE (EXP) == SYMBOL_REF				    \
-	      || GET_CODE (EXP) == LABEL_REF ))				    \
+      if (GET_CODE (EXP) == CONST					    \
+	  || GET_CODE (EXP) == SYMBOL_REF				    \
+	  || GET_CODE (EXP) == LABEL_REF)				    \
         {								    \
 	  fputs (integer_asm_op (UNITS_PER_WORD, TRUE), FILE);		    \
           s390_output_symbolic_const (FILE, EXP);			    \

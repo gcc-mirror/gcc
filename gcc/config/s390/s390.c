@@ -54,6 +54,11 @@ static int s390_adjust_priority PARAMS ((rtx, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
 static void s390_encode_section_info PARAMS ((tree, int));
+static const char *s390_strip_name_encoding PARAMS ((const char *));
+static bool s390_cannot_force_const_mem PARAMS ((rtx));
+static void s390_init_builtins PARAMS ((void));
+static rtx s390_expand_builtin PARAMS ((tree, rtx, rtx, 
+					enum machine_mode, int));
 static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
 
@@ -81,6 +86,20 @@ static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING s390_strip_name_encoding
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM s390_cannot_force_const_mem
+
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS s390_init_builtins
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN s390_expand_builtin
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
@@ -97,6 +116,9 @@ static int s390_sr_alias_set = 0;
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 rtx s390_compare_op0, s390_compare_op1;
+
+/* The encoding characters for the four TLS models present in ELF.  */
+static char const tls_model_chars[] = " GLil";
 
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
@@ -132,6 +154,9 @@ struct machine_function GTY(())
 
   /* Size of stack frame.  */
   HOST_WIDE_INT frame_size;
+
+  /* Some local-dynamic TLS symbol name.  */
+  const char *some_ld_name;
 };
 
 static int s390_match_ccmode_set PARAMS ((rtx, enum machine_mode));
@@ -140,6 +165,10 @@ static const char *s390_branch_condition_mnemonic PARAMS ((rtx, int));
 static int check_mode PARAMS ((rtx, enum machine_mode *));
 static int general_s_operand PARAMS ((rtx, enum machine_mode, int));
 static int s390_decompose_address PARAMS ((rtx, struct s390_address *));
+static rtx get_thread_pointer PARAMS ((void));
+static rtx legitimize_tls_address PARAMS ((rtx, rtx));
+static const char *get_some_local_dynamic_name PARAMS ((void));
+static int get_some_local_dynamic_name_1 PARAMS ((rtx *, void *));
 static int reg_used_in_mem_p PARAMS ((int, rtx));
 static int addr_generation_dependency_p PARAMS ((rtx, rtx));
 static int s390_split_branches PARAMS ((rtx, bool *));
@@ -910,6 +939,7 @@ larl_operand (op, mode)
   if (GET_CODE (op) == LABEL_REF)
     return 1;
   if (GET_CODE (op) == SYMBOL_REF
+      && !tls_symbolic_operand (op)
       && (!flag_pic || SYMBOL_REF_FLAG (op) 
           || CONSTANT_POOL_ADDRESS_P (op)))
     return 1;
@@ -932,16 +962,21 @@ larl_operand (op, mode)
   if (GET_CODE (op) == LABEL_REF)
     return 1;
   if (GET_CODE (op) == SYMBOL_REF
+      && !tls_symbolic_operand (op)
       && (!flag_pic || SYMBOL_REF_FLAG (op)
           || CONSTANT_POOL_ADDRESS_P (op)))
     return 1;
 
-  /* Now we must have a @GOTENT offset or @PLT stub.  */
+  /* Now we must have a @GOTENT offset or @PLT stub
+     or an @INDNTPOFF TLS offset.  */
   if (GET_CODE (op) == UNSPEC
       && XINT (op, 1) == 111)
     return 1;
   if (GET_CODE (op) == UNSPEC
       && XINT (op, 1) == 113)
+    return 1;
+  if (GET_CODE (op) == UNSPEC
+      && XINT (op, 1) == UNSPEC_INDNTPOFF)
     return 1;
 
   return 0;
@@ -1091,6 +1126,23 @@ bras_sym_operand (op, mode)
   return 0;
 }
 
+/* If OP is a SYMBOL_REF of a thread-local symbol, return its TLS mode,
+   otherwise return 0.  */
+
+int
+tls_symbolic_operand (op)
+     register rtx op;
+{
+  const char *symbol_str;
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+  symbol_str = XSTR (op, 0);
+
+  if (symbol_str[0] != '%')
+    return 0;
+  return strchr (tls_model_chars, symbol_str[1]) - tls_model_chars;
+}
 
 /* Return true if OP is a load multiple operation.  It is known to be a
    PARALLEL and the first section will be tested. 
@@ -1250,6 +1302,37 @@ symbolic_reference_mentioned_p (op)
   return 0;
 }
 
+/* Return true if OP contains a reference to a thread-local symbol.  */
+
+int
+tls_symbolic_reference_mentioned_p (op)
+     rtx op;
+{
+  register const char *fmt;
+  register int i;
+
+  if (GET_CODE (op) == SYMBOL_REF)
+    return tls_symbolic_operand (op);
+
+  fmt = GET_RTX_FORMAT (GET_CODE (op));
+  for (i = GET_RTX_LENGTH (GET_CODE (op)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
+	    if (tls_symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
+	      return 1;
+	}
+
+      else if (fmt[i] == 'e' && tls_symbolic_reference_mentioned_p (XEXP (op, i)))
+	return 1;
+    }
+
+  return 0;
+}
+
 
 /* Return true if OP is a legitimate general operand when 
    generating PIC code.  It is given that flag_pic is on 
@@ -1264,7 +1347,7 @@ legitimate_pic_operand_p (op)
     return 1;
 
   /* Reject everything else; must be handled 
-     via emit_pic_move.  */
+     via emit_symbolic_move.  */
   return 0;
 }
 
@@ -1279,20 +1362,85 @@ legitimate_constant_p (op)
   if (!SYMBOLIC_CONST (op))
     return 1;
 
-  /* In the PIC case, symbolic constants must *not* be
-     forced into the literal pool.  We accept them here,
-     so that they will be handled by emit_pic_move.  */
-  if (flag_pic)
+  /* Accept immediate LARL operands.  */
+  if (TARGET_64BIT && larl_operand (op, VOIDmode))
     return 1;
 
-  /* Even in the non-PIC case, we can accept immediate
-     LARL operands here.  */
-  if (TARGET_64BIT)
-    return larl_operand (op, VOIDmode);
+  /* Thread-local symbols are never legal constants.  This is
+     so that emit_call knows that computing such addresses
+     might require a function call.  */
+  if (TLS_SYMBOLIC_CONST (op))
+    return 0;
+
+  /* In the PIC case, symbolic constants must *not* be
+     forced into the literal pool.  We accept them here,
+     so that they will be handled by emit_symbolic_move.  */
+  if (flag_pic)
+    return 1;
 
   /* All remaining non-PIC symbolic constants are
      forced into the literal pool.  */
   return 0;
+}
+
+/* Determine if it's legal to put X into the constant pool.  This
+   is not possible if X contains the address of a symbol that is
+   not constant (TLS) or not known at final link time (PIC).  */
+
+static bool
+s390_cannot_force_const_mem (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+      /* Accept all non-symbolic constants.  */
+      return false;
+
+    case LABEL_REF:
+      /* Labels are OK iff we are non-PIC.  */
+      return flag_pic != 0;
+
+    case SYMBOL_REF:
+      /* 'Naked' TLS symbol references are never OK,
+         non-TLS symbols are OK iff we are non-PIC.  */
+      if (tls_symbolic_operand (x))
+	return true;
+      else
+	return flag_pic != 0;
+
+    case CONST:
+      return s390_cannot_force_const_mem (XEXP (x, 0));
+    case PLUS:
+    case MINUS:
+      return s390_cannot_force_const_mem (XEXP (x, 0))
+	     || s390_cannot_force_const_mem (XEXP (x, 1));
+
+    case UNSPEC:
+      switch (XINT (x, 1))
+	{
+	/* Only lt-relative or GOT-relative UNSPECs are OK.  */
+	case 100:
+	case 104:
+	case 112:
+	case 114:
+	case UNSPEC_TLSGD:
+	case UNSPEC_TLSLDM:
+	case UNSPEC_NTPOFF:
+	case UNSPEC_DTPOFF:
+	case UNSPEC_GOTNTPOFF:
+	case UNSPEC_INDNTPOFF:
+	  return false;
+
+	default:
+	  return true;
+	}
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 /* Returns true if the constant value OP is a legitimate general
@@ -1624,10 +1772,11 @@ s390_decompose_address (addr, out)
         }
 
       /* In the small-PIC case, the linker converts @GOT12 
-         offsets to possible displacements.  */
+         and @GOTNTPOFF offsets to possible displacements.  */
       else if (GET_CODE (disp) == CONST
                && GET_CODE (XEXP (disp, 0)) == UNSPEC
-               && XINT (XEXP (disp, 0), 1) == 110)
+               && (XINT (XEXP (disp, 0), 1) == 110
+		   || XINT (XEXP (disp, 0), 1) == UNSPEC_GOTNTPOFF))
         {
           if (flag_pic != 1)
             return FALSE;
@@ -1675,12 +1824,6 @@ s390_decompose_address (addr, out)
           /* Now we must have a literal pool address.  */
           if (GET_CODE (disp) != SYMBOL_REF
               || !CONSTANT_POOL_ADDRESS_P (disp))
-            return FALSE;
-
-          /* In 64-bit PIC mode we cannot accept symbolic 
-             constants in the constant pool.  */
-          if (TARGET_64BIT && flag_pic
-              && SYMBOLIC_CONST (get_pool_constant (disp)))
             return FALSE;
 
           /* If we have an offset, make sure it does not
@@ -2094,18 +2237,237 @@ legitimize_pic_address (orig, reg)
   return new;
 }
 
+/* Load the thread pointer into a register.  */
+
+static rtx
+get_thread_pointer ()
+{
+  rtx tp;
+
+  tp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_TP);
+  tp = force_reg (Pmode, tp);
+  mark_reg_pointer (tp, BITS_PER_WORD);
+
+  return tp;
+}
+
+/* Construct the SYMBOL_REF for the tls_get_offset function.  */
+
+static GTY(()) rtx s390_tls_symbol;
+rtx
+s390_tls_get_offset ()
+{
+  if (!s390_tls_symbol)
+    s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
+
+  return s390_tls_symbol;
+}
+
+/* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
+   this (thread-local) address.  REG may be used as temporary.  */
+
+static rtx
+legitimize_tls_address (addr, reg)
+     rtx addr;
+     rtx reg;
+{
+  rtx new, tls_call, temp, base, r2, insn;
+
+  if (GET_CODE (addr) == SYMBOL_REF)
+    switch (tls_symbolic_operand (addr))
+      {
+      case TLS_MODEL_GLOBAL_DYNAMIC:
+	start_sequence ();
+	r2 = gen_rtx_REG (Pmode, 2);
+	tls_call = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLSGD);
+	new = gen_rtx_CONST (Pmode, tls_call);
+	new = force_const_mem (Pmode, new);
+	emit_move_insn (r2, new);
+	emit_call_insn (gen_call_value_tls (r2, tls_call));
+	insn = get_insns ();
+	end_sequence ();
+
+	new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_NTPOFF);
+	temp = gen_reg_rtx (Pmode);
+	emit_libcall_block (insn, temp, r2, new);
+
+	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	if (reg != 0)
+	  {
+	    s390_load_address (reg, new);
+	    new = reg;
+	  }
+	break;
+
+      case TLS_MODEL_LOCAL_DYNAMIC:
+	start_sequence ();
+	r2 = gen_rtx_REG (Pmode, 2);
+	tls_call = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_TLSLDM);
+	new = gen_rtx_CONST (Pmode, tls_call);
+	new = force_const_mem (Pmode, new);
+	emit_move_insn (r2, new);
+	emit_call_insn (gen_call_value_tls (r2, tls_call));
+	insn = get_insns ();
+	end_sequence ();
+
+	new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_TLSLDM_NTPOFF);
+	temp = gen_reg_rtx (Pmode);
+	emit_libcall_block (insn, temp, r2, new);
+
+	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	base = gen_reg_rtx (Pmode);
+	s390_load_address (base, new);
+
+	new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_DTPOFF);
+	new = gen_rtx_CONST (Pmode, new);
+	new = force_const_mem (Pmode, new);
+	temp = gen_reg_rtx (Pmode);
+	emit_move_insn (temp, new);
+
+	new = gen_rtx_PLUS (Pmode, base, temp);
+	if (reg != 0)
+	  {
+	    s390_load_address (reg, new);
+	    new = reg;
+	  }
+	break;
+
+      case TLS_MODEL_INITIAL_EXEC:
+	if (flag_pic == 1)
+	  {
+	    /* Assume GOT offset < 4k.  This is handled the same way
+	       in both 31- and 64-bit code.  */
+
+	    if (reload_in_progress || reload_completed)
+	      regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+
+	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTNTPOFF);
+	    new = gen_rtx_CONST (Pmode, new);
+	    new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
+	    new = gen_rtx_MEM (Pmode, new);
+	    RTX_UNCHANGING_P (new) = 1;
+	    temp = gen_reg_rtx (Pmode);
+	    emit_move_insn (temp, new);
+	  }
+	else if (TARGET_64BIT)
+	  {
+	    /* If the GOT offset might be >= 4k, we determine the position
+	       of the GOT entry via a PC-relative LARL.  */
+
+	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_INDNTPOFF);
+	    new = gen_rtx_CONST (Pmode, new);
+	    temp = gen_reg_rtx (Pmode);
+	    emit_move_insn (temp, new);
+
+	    new = gen_rtx_MEM (Pmode, temp);
+	    RTX_UNCHANGING_P (new) = 1;
+	    temp = gen_reg_rtx (Pmode);
+	    emit_move_insn (temp, new);
+	  }
+	else if (flag_pic)
+	  {
+	    /* If the GOT offset might be >= 4k, we have to load it 
+	       from the literal pool.  */
+
+	    if (reload_in_progress || reload_completed)
+	      regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+
+	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTNTPOFF);
+	    new = gen_rtx_CONST (Pmode, new);
+	    new = force_const_mem (Pmode, new);
+	    temp = gen_reg_rtx (Pmode);
+	    emit_move_insn (temp, new);
+
+            new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
+	    new = gen_rtx_MEM (Pmode, new);
+	    RTX_UNCHANGING_P (new) = 1;
+
+	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, new, addr), UNSPEC_TLS_LOAD);
+	    temp = gen_reg_rtx (Pmode);
+	    emit_insn (gen_rtx_SET (Pmode, temp, new));
+	  }
+	else
+	  {
+	    /* In position-dependent code, load the absolute address of
+	       the GOT entry from the literal pool.  */
+
+	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_INDNTPOFF);
+	    new = gen_rtx_CONST (Pmode, new);
+	    new = force_const_mem (Pmode, new);
+	    temp = gen_reg_rtx (Pmode);
+	    emit_move_insn (temp, new);
+
+	    new = temp;
+	    new = gen_rtx_MEM (Pmode, new);
+	    RTX_UNCHANGING_P (new) = 1;
+
+	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, new, addr), UNSPEC_TLS_LOAD);
+	    temp = gen_reg_rtx (Pmode);
+	    emit_insn (gen_rtx_SET (Pmode, temp, new));
+	  }
+
+	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	if (reg != 0)
+	  {
+	    s390_load_address (reg, new);
+	    new = reg;
+	  }
+	break;
+
+      case TLS_MODEL_LOCAL_EXEC:
+	new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_NTPOFF);
+	new = gen_rtx_CONST (Pmode, new);
+	new = force_const_mem (Pmode, new);
+        temp = gen_reg_rtx (Pmode);
+	emit_move_insn (temp, new);
+
+	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	if (reg != 0)
+	  {
+	    s390_load_address (reg, new);
+	    new = reg;
+	  }
+	break;
+
+      default:
+	abort ();
+      }
+
+  else if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == UNSPEC)
+    {
+      switch (XINT (XEXP (addr, 0), 1))
+	{
+	case UNSPEC_INDNTPOFF:
+	  if (TARGET_64BIT)
+	    new = addr;
+	  else
+	    abort ();
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+  else
+    abort ();  /* for now ... */
+
+  return new;
+}
+
 /* Emit insns to move operands[1] into operands[0].  */
 
 void
-emit_pic_move (operands, mode)
+emit_symbolic_move (operands)
      rtx *operands;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   rtx temp = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
 
-  if (GET_CODE (operands[0]) == MEM && SYMBOLIC_CONST (operands[1]))
+  if (GET_CODE (operands[0]) == MEM)
     operands[1] = force_reg (Pmode, operands[1]);
-  else
+  else if (TLS_SYMBOLIC_CONST (operands[1]))
+    operands[1] = legitimize_tls_address (operands[1], temp);
+  else if (flag_pic)
     operands[1] = legitimize_pic_address (operands[1], temp);
 }
 
@@ -2128,7 +2490,14 @@ legitimize_address (x, oldx, mode)
 {
   rtx constant_term = const0_rtx;
 
-  if (flag_pic)
+  if (TLS_SYMBOLIC_CONST (x))
+    {
+      x = legitimize_tls_address (x, 0);
+
+      if (legitimate_address_p (mode, x, FALSE))
+	return x;
+    }
+  else if (flag_pic)
     {
       if (SYMBOLIC_CONST (x)
           || (GET_CODE (x) == PLUS 
@@ -2540,6 +2909,48 @@ s390_simplify_dwarf_addr (orig_x)
   return orig_x;      
 }
 
+/* Locate some local-dynamic symbol still in use by this function
+   so that we can print its name in local-dynamic base patterns.  */
+
+static const char *
+get_some_local_dynamic_name ()
+{
+  rtx insn;
+
+  if (cfun->machine->some_ld_name)
+    return cfun->machine->some_ld_name;
+
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+        && for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
+      return cfun->machine->some_ld_name;
+
+  abort ();
+}
+
+static int
+get_some_local_dynamic_name_1 (px, data)
+     rtx *px;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *px;
+
+  if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
+    {
+      x = get_pool_constant (x);
+      return for_each_rtx (&x, get_some_local_dynamic_name_1, 0);
+    }
+
+  if (GET_CODE (x) == SYMBOL_REF
+      && tls_symbolic_operand (x) == TLS_MODEL_LOCAL_DYNAMIC)
+    {
+      cfun->machine->some_ld_name = XSTR (x, 0);
+      return 1;
+    }
+
+  return 0;
+}
+
 /* Output symbolic constant X in assembler syntax to 
    stdio stream FILE.  */
 
@@ -2612,6 +3023,30 @@ s390_output_symbolic_const (file, x)
           fprintf (file, "@PLT-");
 	  s390_output_symbolic_const (file, cfun->machine->literal_pool_label);
 	  break;
+	case UNSPEC_TLSGD:
+	  s390_output_symbolic_const (file, XVECEXP (x, 0, 0));
+	  fprintf (file, "@TLSGD");
+	  break;
+	case UNSPEC_TLSLDM:
+	  assemble_name (file, get_some_local_dynamic_name ());
+	  fprintf (file, "@TLSLDM");
+	  break;
+	case UNSPEC_DTPOFF:
+	  s390_output_symbolic_const (file, XVECEXP (x, 0, 0));
+	  fprintf (file, "@DTPOFF");
+	  break;
+	case UNSPEC_NTPOFF:
+	  s390_output_symbolic_const (file, XVECEXP (x, 0, 0));
+	  fprintf (file, "@NTPOFF");
+	  break;
+	case UNSPEC_GOTNTPOFF:
+	  s390_output_symbolic_const (file, XVECEXP (x, 0, 0));
+	  fprintf (file, "@GOTNTPOFF");
+	  break;
+	case UNSPEC_INDNTPOFF:
+	  s390_output_symbolic_const (file, XVECEXP (x, 0, 0));
+	  fprintf (file, "@INDNTPOFF");
+	  break;
 	default:
 	  output_operand_lossage ("invalid UNSPEC as operand (2)");
 	  break;
@@ -2657,6 +3092,7 @@ print_operand_address (file, addr)
 
     'C': print opcode suffix for branch condition.
     'D': print opcode suffix for inverse branch condition.
+    'J': print tls_load/tls_gdcall/tls_ldcall suffix
     'O': print only the displacement of a memory reference.
     'R': print only the base register of a memory reference.
     'N': print the second word of a DImode operand.
@@ -2680,6 +3116,26 @@ print_operand (file, x, code)
 
     case 'D':
       fprintf (file, s390_branch_condition_mnemonic (x, TRUE));
+      return;
+
+    case 'J':
+      if (GET_CODE (x) == SYMBOL_REF)
+	{
+	  fprintf (file, "%s", ":tls_load:");
+	  output_addr_const (file, x);
+	}
+      else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSGD)
+	{
+	  fprintf (file, "%s", ":tls_gdcall:");
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	}
+      else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSLDM)
+	{
+	  fprintf (file, "%s", ":tls_ldcall:");
+	  assemble_name (file, get_some_local_dynamic_name ());
+	}
+      else
+	abort ();
       return;
 
     case 'O':
@@ -5443,6 +5899,134 @@ s390_va_arg (valist, type)
 }
 
 
+/* Builtins.  */
+
+enum s390_builtin
+{
+  S390_BUILTIN_THREAD_POINTER,
+  S390_BUILTIN_SET_THREAD_POINTER,
+
+  S390_BUILTIN_max
+};
+
+static unsigned int const code_for_builtin_64[S390_BUILTIN_max] = {
+  CODE_FOR_get_tp_64,
+  CODE_FOR_set_tp_64
+};
+
+static unsigned int const code_for_builtin_31[S390_BUILTIN_max] = {
+  CODE_FOR_get_tp_31,
+  CODE_FOR_set_tp_31
+};
+
+static void
+s390_init_builtins ()
+{
+  tree ftype;
+
+  ftype = build_function_type (ptr_type_node, void_list_node);
+  builtin_function ("__builtin_thread_pointer", ftype,
+		    S390_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+		    NULL, NULL_TREE);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  builtin_function ("__builtin_set_thread_pointer", ftype,
+		    S390_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
+		    NULL, NULL_TREE);
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+static rtx
+s390_expand_builtin (exp, target, subtarget, mode, ignore)
+     tree exp;
+     rtx target;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
+{
+#define MAX_ARGS 2
+
+  unsigned int const *code_for_builtin = 
+    TARGET_64BIT ? code_for_builtin_64 : code_for_builtin_31;
+
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum insn_code icode;
+  rtx op[MAX_ARGS], pat;
+  int arity;
+  bool nonvoid;
+
+  if (fcode >= S390_BUILTIN_max)
+    internal_error ("bad builtin fcode");
+  icode = code_for_builtin[fcode];
+  if (icode == 0)
+    internal_error ("bad builtin fcode");
+
+  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
+
+  for (arglist = TREE_OPERAND (exp, 1), arity = 0;
+       arglist;
+       arglist = TREE_CHAIN (arglist), arity++)
+    {
+      const struct insn_operand_data *insn_op;
+
+      tree arg = TREE_VALUE (arglist);
+      if (arg == error_mark_node)
+	return NULL_RTX;
+      if (arity > MAX_ARGS)
+	return NULL_RTX;
+
+      insn_op = &insn_data[icode].operand[arity + nonvoid];
+
+      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, 0);
+
+      if (!(*insn_op->predicate) (op[arity], insn_op->mode))
+	op[arity] = copy_to_mode_reg (insn_op->mode, op[arity]);
+    }
+
+  if (nonvoid)
+    {
+      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
+	  || GET_MODE (target) != tmode
+	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+    }
+
+  switch (arity)
+    {
+    case 0:
+      pat = GEN_FCN (icode) (target);
+      break;
+    case 1:
+      if (nonvoid)
+        pat = GEN_FCN (icode) (target, op[0]);
+      else
+	pat = GEN_FCN (icode) (op[0]);
+      break;
+    case 2:
+      pat = GEN_FCN (icode) (target, op[0], op[1]);
+      break;
+    default:
+      abort ();
+    }
+  if (!pat)
+    return NULL_RTX;
+  emit_insn (pat);
+
+  if (nonvoid)
+    return target;
+  else
+    return const0_rtx;
+}
+
+
 /* Output assembly code for the trampoline template to
    stdio stream FILE.
 
@@ -5602,26 +6186,83 @@ s390_select_rtx_section (mode, x, align)
     function_section (current_function_decl);
 }
 
-/* If using PIC, mark a SYMBOL_REF for a non-global symbol so that we
-   may access it directly in the GOT.  */
+/* Encode symbol attributes (local vs. global, tls model) of a SYMBOL_REF
+   into its name and SYMBOL_REF_FLAG.  */
 
 static void
 s390_encode_section_info (decl, first)
      tree decl;
      int first ATTRIBUTE_UNUSED;
 {
-  if (flag_pic)
-    {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-		 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
+  bool local_p = (*targetm.binds_local_p) (decl);
+  rtx rtl, symbol;
 
-      if (GET_CODE (rtl) == MEM)
+  rtl = DECL_P (decl) ? DECL_RTL (decl) : TREE_CST_RTL (decl);
+  if (GET_CODE (rtl) != MEM)
+    return;
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  /* When using PIC, SYMBOL_REF_FLAG marks non-global symbols
+     that can be accessed directly.  */
+  if (flag_pic)
+    SYMBOL_REF_FLAG (symbol) = local_p;
+
+  /* Encode thread-local data with %[GLil] for "global dynamic",
+     "local dynamic", "initial exec" or "local exec" TLS models,
+     respectively.  */
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
+    {
+      const char *symbol_str = XSTR (symbol, 0);
+      char *newstr;
+      size_t len;
+      enum tls_model kind = decl_tls_model (decl);
+
+      if (!flag_pic)
 	{
-	  SYMBOL_REF_FLAG (XEXP (rtl, 0))
-	    = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-	       || ! TREE_PUBLIC (decl));
+	  /* We don't allow non-pic code for shared libraries,
+	     so don't generate GD/LD TLS models for non-pic code.  */
+	  switch (kind)
+	    {
+	    case TLS_MODEL_GLOBAL_DYNAMIC:
+	      kind = TLS_MODEL_INITIAL_EXEC; break;
+	    case TLS_MODEL_LOCAL_DYNAMIC:
+	      kind = TLS_MODEL_LOCAL_EXEC; break;
+	    default:
+	      break;
+	    }
 	}
+
+      if (symbol_str[0] == '%')
+	{
+	  if (symbol_str[1] == tls_model_chars[kind])
+	    return;
+	  symbol_str += 2;
+	}
+      len = strlen (symbol_str) + 1;
+      newstr = alloca (len + 2);
+
+      newstr[0] = '%';
+      newstr[1] = tls_model_chars[kind];
+      memcpy (newstr + 2, symbol_str, len);
+
+      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 2 - 1);
     }
+}
+
+/* Undo the above when printing symbol names.  */
+
+static const char *
+s390_strip_name_encoding (str)
+     const char *str;
+{
+  if (str[0] == '%')
+    str += 2;
+  if (str[0] == '*')
+    str += 1;
+  return str;
 }
 
 /* Output thunk to FILE that implements a C++ virtual function call (with

@@ -1,3 +1,55 @@
+2003-01-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.in (HAVE_AS_TLS): Add s390-*-* and s390x-*-* cases.
+	* configure: Regenerate.
+
+	* config/s390/s390-protos.h (tls_symbolic_operand): Add prototype.
+	(tls_symbolic_reference_mentioned_p): Add prototype.
+	(s390_tls_get_offset): Add prototype.
+	(emit_pic_move): Remove prototype, replace by ...
+	(emit_symbolic_move): .. this new prototype.
+
+	* config/s390/s390.c (TARGET_HAVE_TLS): Conditionally define.
+	(tls_model_chars): New global variable.
+	(s390_encode_section_info): Encode TLS model.
+	Use targetm.binds_local_p to check for local symbols.
+	(s390_strip_name_encoding): New function.
+	(TARGET_STRIP_NAME_ENCODING): Define.
+
+	(get_thread_pointer): New function.
+	(legitimize_tls_address): New function.	
+	(legitimize_address): Call it.
+	(emit_pic_move): Remove, replace by ...
+	(emit_symbolic_move): ... this new function.
+
+	(larl_operand): Handle TLS operands.
+	(legitimate_constant_p): Likewise.
+	(s390_decompose_address): Likewise.
+	(s390_cannot_force_const_mem): New function.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
+
+	(s390_output_symbolic_const): Handle TLS unspecs.
+	(print_operand): New code 'J'.
+	(machine_function): Add struct member 'some_ld_name'.
+	(get_some_local_dynamic_name, get_some_local_dynamic_name_1): New.
+
+	(enum s390_builtin): New type.
+	(code_for_builtin_64, code_for_builtin_31): New global variables.
+	(s390_init_builtins, s390_expand_builtin): New functions.
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Define.
+
+	* config/s390/s390.h (TLS_SYMBOLIC_CONST): New macro.
+	(ASM_OUTPUT_LABELREF): Define.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY): Handle TLS constants.
+
+	* config/s390/s390.md: Define TLS UNSPEC constants.
+	("movdi", "movsi"): Handle TLS operands.
+	("get_tp_64", "get_tp_31", "set_tp_64", "set_tp_31"): New insns.
+	("*tls_load_64", "*tls_load_31"): New insns.
+	("call_value_tls", "call_value_tls_exp"): New expanders.
+	("brasl_tls", "bras_tls", "basr_tls_64", "basr_tls_31", 
+	"bas_tls_64", "bas_tls_31"): New insns.
+
 2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/passes.texi: Fix typo.
