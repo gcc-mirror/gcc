@@ -5,24 +5,25 @@ PlotFile.o: PlotFile.cc \
  $(srcdir)/fstream.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 SFile.o: SFile.cc \
- $(srcdir)/SFile.h \
- $(srcdir)/fstream.h \
+ $(srcdir)/SFile.h $(srcdir)/fstream.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 builtinbuf.o: builtinbuf.cc \
  $(srcdir)/builtinbuf.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/iostreamP.h \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h
+ libc-lock.h \
+ $(srcdir)/iolibio.h 
 editbuf.o: editbuf.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/editbuf.h \
  $(srcdir)/fstream.h \
  $(srcdir)/iostream.h \
@@ -30,14 +31,16 @@ editbuf.o: editbuf.cc \
 filebuf.o: filebuf.cc \
  $(srcdir)/iostreamP.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
  $(srcdir)/builtinbuf.h
 fstream.o: fstream.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/fstream.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h
@@ -45,63 +48,70 @@ indstream.o: indstream.cc \
  $(srcdir)/indstream.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioassign.o: ioassign.cc \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h
+ libc-lock.h \
+ $(srcdir)/iolibio.h 
 ioextend.o: ioextend.cc \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iomanip.o: iomanip.cc \
  $(srcdir)/iomanip.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iostream.o: iostream.cc \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h \
- $(srcdir)/floatio.h
+ libc-lock.h \
+ $(srcdir)/iolibio.h 
 isgetline.o: isgetline.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/iostream.h \
- $(srcdir)/streambuf.h 
+ $(srcdir)/streambuf.h
 isgetsb.o: isgetsb.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/iostream.h \
- $(srcdir)/streambuf.h 
+ $(srcdir)/streambuf.h
 isscan.o: isscan.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h
 osform.o: osform.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h
 parsestream.o: parsestream.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/parsestream.h \
  $(srcdir)/streambuf.h 
 pfstream.o: pfstream.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/pfstream.h \
  $(srcdir)/fstream.h \
  $(srcdir)/iostream.h \
@@ -109,46 +119,53 @@ pfstream.o: pfstream.cc \
  $(srcdir)/procbuf.h
 procbuf.o: procbuf.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/procbuf.h \
  $(srcdir)/streambuf.h
 sbform.o: sbform.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/streambuf.h
 sbgetline.o: sbgetline.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/streambuf.h
 sbscan.o: sbscan.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/streambuf.h
 stdiostream.o: stdiostream.cc \
  $(srcdir)/stdiostream.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h
+ libc-lock.h \
+ $(srcdir)/iolibio.h 
 stdstrbufs.o: stdstrbufs.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 stdstreams.o: stdstreams.cc \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/streambuf.h \
  $(srcdir)/iostream.h
 stream.o: stream.cc \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ libc-lock.h \
+ $(srcdir)/iolibio.h $(srcdir)/libio.h \
  $(srcdir)/stream.h \
  $(srcdir)/iostream.h \
  $(srcdir)/streambuf.h \
@@ -157,196 +174,268 @@ stream.o: stream.cc \
 streambuf.o: streambuf.cc \
  $(srcdir)/iostreamP.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h 
 strstream.o: strstream.cc \
  $(srcdir)/iostreamP.h \
  $(srcdir)/streambuf.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
  $(srcdir)/strstream.h \
  $(srcdir)/iostream.h \
- $(srcdir)/strfile.h 
+ $(srcdir)/strfile.h
 cleanup.o: cleanup.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 filedoalloc.o: filedoalloc.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 fileops.o: fileops.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 floatconv.o: floatconv.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 genops.o: genops.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofclose.o: iofclose.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofdopen.o: iofdopen.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
+ $(srcdir)/iolibio.h $(srcdir)/libio.h 
+iofeof.o: iofeof.c \
+ $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
+ioferror.o: ioferror.c \
+ $(srcdir)/libioP.h \
+ libc-lock.h \
+ $(srcdir)/iolibio.h \
+ $(srcdir)/libio.h 
 iofflush.o: iofflush.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
+iofflush_u.o: iofflush_u.c \
+ $(srcdir)/libioP.h \
+ libc-lock.h \
+ $(srcdir)/iolibio.h \
+ $(srcdir)/libio.h 
 iofgetpos.o: iofgetpos.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofgets.o: iofgets.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofopen.o: iofopen.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofprintf.o: iofprintf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofputs.o: iofputs.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofread.o: iofread.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofscanf.o: iofscanf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofsetpos.o: iofsetpos.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioftell.o: ioftell.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iofwrite.o: iofwrite.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
+iogetc.o: iogetc.c \
+ $(srcdir)/libioP.h \
+ libc-lock.h \
+ $(srcdir)/iolibio.h \
+ $(srcdir)/libio.h 
 iogetdelim.o: iogetdelim.c \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ libc-lock.h \
+ $(srcdir)/iolibio.h $(srcdir)/libio.h 
 iogetline.o: iogetline.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iogets.o: iogets.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioignore.o: ioignore.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iopadn.o: iopadn.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioperror.o: ioperror.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iopopen.o: iopopen.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioprims.o: ioprims.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioprintf.o: ioprintf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
+ioputc.o: ioputc.c \
+ $(srcdir)/libioP.h \
+ libc-lock.h \
+ $(srcdir)/iolibio.h \
+ $(srcdir)/libio.h 
 ioputs.o: ioputs.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioscanf.o: ioscanf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioseekoff.o: ioseekoff.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioseekpos.o: ioseekpos.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iosetbuffer.o: iosetbuffer.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iosetvbuf.o: iosetvbuf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iosprintf.o: iosprintf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iosscanf.o: iosscanf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iostrerror.o: iostrerror.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 ioungetc.o: ioungetc.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 iovfprintf.o: iovfprintf.c \
  $(srcdir)/libioP.h \
- $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ libc-lock.h \
+ $(srcdir)/iolibio.h $(srcdir)/libio.h \
  $(srcdir)/floatio.h
 iovfscanf.o: iovfscanf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/floatio.h
 iovsprintf.o: iovsprintf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/strfile.h
 iovsscanf.o: iovsscanf.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/libio.h \
  $(srcdir)/strfile.h
 outfloat.o: outfloat.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
+peekc.o: peekc.c \
+ $(srcdir)/libioP.h \
+ libc-lock.h \
+ $(srcdir)/iolibio.h \
+ $(srcdir)/libio.h 
 stdfiles.o: stdfiles.c \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) 
+ $(srcdir)/libio.h 
 strops.o: strops.c \
- $(srcdir)/strfile.h \
- $(srcdir)/libio.h $(_G_CONFIG_H) \
+ $(srcdir)/strfile.h $(srcdir)/libio.h \
  $(srcdir)/libioP.h \
+ libc-lock.h \
  $(srcdir)/iolibio.h 
