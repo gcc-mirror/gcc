@@ -610,6 +610,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "5kc", PROCESSOR_R5KC, 64 },
   { "20kc", PROCESSOR_R20KC, 64 },
 
+  /* Broadcom SB-1 CPU core */
+  { "sb1", PROCESSOR_SB1, 64 },
+
   /* End marker */
   { 0, 0, 0 }
 };

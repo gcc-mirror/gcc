@@ -70,7 +70,8 @@ enum processor_type {
   PROCESSOR_R8000,
   PROCESSOR_R4KC,
   PROCESSOR_R5KC,
-  PROCESSOR_R20KC
+  PROCESSOR_R20KC,
+  PROCESSOR_SB1
 };
 
 /* Recast the cpu class to be the cpu attribute.  */
@@ -352,6 +353,7 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS4300             (mips_arch == PROCESSOR_R4300)
 #define TARGET_MIPS4KC              (mips_arch == PROCESSOR_R4KC)
 #define TARGET_MIPS5KC              (mips_arch == PROCESSOR_R5KC)
+#define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
 
 /* Scheduling target defines.  */
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
@@ -359,6 +361,7 @@ extern void		sbss_section PARAMS ((void));
 #define TUNE_MIPS4000               (mips_tune == PROCESSOR_R4000)
 #define TUNE_MIPS5000               (mips_tune == PROCESSOR_R5000)
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
+#define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
