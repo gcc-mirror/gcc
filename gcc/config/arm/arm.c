@@ -221,7 +221,7 @@ arm_override_options ()
 {
   int arm_thumb_aware = 0;
   int flags = 0;
-  int i;
+  unsigned i;
   struct arm_cpu_select *ptr;
   static struct cpu_default {
     int cpu;
@@ -406,13 +406,14 @@ int
 const_ok_for_arm (i)
      HOST_WIDE_INT i;
 {
-  unsigned HOST_WIDE_INT mask = ~0xFF;
+  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT)0xFF;
 
   /* For machines with >32 bit HOST_WIDE_INT, the bits above bit 31 must 
      be all zero, or all one.  */
   if ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) != 0
       && ((i & ~(unsigned HOST_WIDE_INT) 0xffffffff) 
-	  != (((HOST_WIDE_INT) -1) & ~(unsigned HOST_WIDE_INT) 0xffffffff)))
+	  != ((~(unsigned HOST_WIDE_INT) 0)
+	      & ~(unsigned HOST_WIDE_INT) 0xffffffff)))
     return FALSE;
   
   /* Fast return for 0 and powers of 2 */
@@ -426,7 +427,7 @@ const_ok_for_arm (i)
       mask =
 	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffff)
 			 >> (32 - 2)) | ~((unsigned HOST_WIDE_INT) 0xffffffff);
-    } while (mask != ~0xFF);
+    } while (mask != ~(unsigned HOST_WIDE_INT) 0xFF);
 
   return FALSE;
 }
@@ -2293,7 +2294,7 @@ load_multiple_operation (op, mode)
 
   for (; i < count; i++)
     {
-      rtx elt = XVECEXP (op, 0, i);
+      elt = XVECEXP (op, 0, i);
 
       if (GET_CODE (elt) != SET
           || GET_CODE (SET_DEST (elt)) != REG
@@ -2922,7 +2923,6 @@ arm_gen_movstrqi (operands)
   rtx part_bytes_reg = NULL;
   rtx mem;
   int dst_unchanging_p, dst_in_struct_p, src_unchanging_p, src_in_struct_p;
-  extern int optimize;
 
   if (GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT
@@ -3294,6 +3294,7 @@ rtx
 gen_compare_reg (code, x, y, fp)
      enum rtx_code code;
      rtx x, y;
+     int fp;
 {
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   rtx cc_reg = gen_rtx (REG, mode, 24);
@@ -5727,8 +5728,6 @@ final_prescan_insn (insn, opvec, noperands)
 	  if (!this_insn)
 	    break;
 
-	  scanbody = PATTERN (this_insn);
-
 	  switch (GET_CODE (this_insn))
 	    {
 	    case CODE_LABEL:
@@ -5803,8 +5802,9 @@ final_prescan_insn (insn, opvec, noperands)
       	      /* If this is an unconditional branch to the same label, succeed.
 		 If it is to another label, do nothing.  If it is conditional,
 		 fail.  */
-	      /* XXX Probably, the test for the SET and the PC are unnecessary. */
+	      /* XXX Probably, the tests for SET and the PC are unnecessary. */
 
+	      scanbody = PATTERN (this_insn);
 	      if (GET_CODE (scanbody) == SET
 		  && GET_CODE (SET_DEST (scanbody)) == PC)
 		{
@@ -5839,6 +5839,7 @@ final_prescan_insn (insn, opvec, noperands)
 	    case INSN:
 	      /* Instructions using or affecting the condition codes make it
 		 fail.  */
+	      scanbody = PATTERN (this_insn);
 	      if ((GET_CODE (scanbody) == SET
 		   || GET_CODE (scanbody) == PARALLEL)
 		  && get_attr_conds (this_insn) != CONDS_NOCOND)
