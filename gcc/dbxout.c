@@ -2274,7 +2274,21 @@ dbxout_parms (parms)
 			 DBX_MEMPARM_STABS_LETTER);
 	      }
 
-	    dbxout_type (TREE_TYPE (parms), 0, 0);
+	    /* It is quite tempting to use:
+	       
+	           dbxout_type (TREE_TYPE (parms), 0, 0);
+
+	       as the next statement, rather than using DECL_ARG_TYPE(), so
+	       that gcc reports the actual type of the parameter, rather
+	       than the promoted type.  This certainly makes GDB's life
+	       easier, at least for some ports.  The change is a bad idea
+	       however, since GDB expects to be able access the type without
+	       performing any conversions.  So for example, if we were
+	       passing a float to an unprototyped function, gcc will store a
+	       double on the stack, but if we emit a stab saying the type is a
+	       float, then gdb will only read in a single value, and this will
+	       produce an erropneous value.  */
+ 	    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);
 	  }
