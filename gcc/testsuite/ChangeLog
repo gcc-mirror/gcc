@@ -1,3 +1,8 @@
+2004-09-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17620
+	* g++.dg/inherit/base2.C: New.
+
 2004-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/20001012-1.c: Add prototypes for builtin functions.
