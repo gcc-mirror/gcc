@@ -448,7 +448,6 @@ or with constant text in a single argument.
  %C     process CPP_SPEC as a spec.
  %1	process CC1_SPEC as a spec.
  %2	process CC1PLUS_SPEC as a spec.
- %3     process LINK_GCC_C_SEQUENCE_SPEC as a spec.
  %|	output "-" if the input for the current command is coming from a pipe.
  %*	substitute the variable part of a matched option.  (See below.)
 	Note that each comma in the substituted string is replaced by
@@ -628,7 +627,7 @@ proper position among the other output files.  */
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r} %{s} %{t}\
     %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-    %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%3}}\
+    %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
 #endif
 
@@ -4755,12 +4754,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case '2':
 	    value = do_spec_1 (cc1plus_spec, 0, NULL);
-	    if (value != 0)
-	      return value;
-	    break;
-
-	  case '3':
-	    value = do_spec_1 (link_gcc_c_sequence_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;

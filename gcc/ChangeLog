@@ -1,5 +1,10 @@
 2002-04-03  David S. Miller  <davem@redhat.com>
 
+	* gcc.c (LINK_GCC_C_SEQUENCE_SPEC): No need for a new
+	one-character spec for this, just use %(link_gcc_c_sequence).
+
+2002-04-03  David S. Miller  <davem@redhat.com>
+
 	* config/sparc/crtfastmath.c (FPRS_NS): Delete bogus little-endian
 	handling.
 
