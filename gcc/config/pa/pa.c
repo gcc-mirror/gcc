@@ -837,7 +837,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  || (GET_CODE (operand1) == CONST_INT && INT_14_BITS (operand1))
 	  || (operand1 == CONST0_RTX (mode))
 	  || (GET_CODE (operand1) == HIGH
-	      && !symbolic_operand (XEXP (operand1, 0)))
+	      && !symbolic_operand (XEXP (operand1, 0), VOIDmode))
 	  /* Only `general_operands' can come here, so MEM is ok.  */
 	  || GET_CODE (operand1) == MEM)
 	{
@@ -1515,7 +1515,7 @@ output_block_move (operands, size_is_constant)
       output_asm_insn ("ldw 0(0,%1),%3", operands);
 
       /* Make %0 point at the first byte after the destination block.  */
-      output_asm_insn ("add %2,%0,%0", operands);
+      output_asm_insn ("addl %2,%0,%0", operands);
       /* Store the leftmost bytes, up to, but not including, the address
 	 in %0.  */
       output_asm_insn ("stbys,e %3,0(0,%0)", operands);
@@ -1944,35 +1944,28 @@ compute_frame_size (size, fregs_live)
      we need to add this in because of STARTING_FRAME_OFFSET. */
   fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
-  for (i = 18; i >= 3; i--)
+  for (i = 18; i >= 4; i--)
     {
-      /* fp is stored in a special place.  */
-      if (regs_ever_live[i]
-	  && (i != FRAME_POINTER_REGNUM || !frame_pointer_needed))
+      if (regs_ever_live[i])
+	fsize += 4;
+    }
+  /* If we don't have a frame pointer, the register normally used for that
+     purpose is saved just like other registers, not in the "frame marker".  */
+  if (! frame_pointer_needed)
+    {
+      if (regs_ever_live[FRAME_POINTER_REGNUM])
 	fsize += 4;
     }
   fsize = (fsize + 7) & ~7;
 
-  if (!TARGET_SNAKE)
-    {
-      for (i = 43; i >= 40; i--)
-	if (regs_ever_live[i])
-	  {
-	    fsize += 8;
-	    if (fregs_live)
-	      *fregs_live = 1;
-	  }
-    }
-  else
-    {
-      for (i = 78; i >= 60; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  {
-	    fsize += 8;
-	    if (fregs_live)
-	      *fregs_live = 1;
-	  }
-    }
+  for (i = 66; i >= 48; i -= 2)
+    if (regs_ever_live[i] || regs_ever_live[i + 1])
+      {
+	fsize += 8;
+	if (fregs_live)
+	  *fregs_live = 1;
+      }
+
   fsize += current_function_outgoing_args_size;
   if (! leaf_function_p () || fsize)
     fsize += 32;
@@ -2030,13 +2023,11 @@ output_function_prologue (file, size)
 void
 hppa_expand_prologue()
 {
-
   extern char call_used_regs[];
   int size = get_frame_size ();
   int merge_sp_adjust_with_store = 0;
   int i, offset;
   rtx tmpreg, size_rtx;
-
 
   gr_saved = 0;
   fr_saved = 0;
@@ -2165,9 +2156,8 @@ hppa_expand_prologue()
      was done earlier.  */
   if (frame_pointer_needed)
     {
-      for (i = 18, offset = local_fsize; i >= 3; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i]
-	    && i != FRAME_POINTER_REGNUM)
+      for (i = 18, offset = local_fsize; i >= 4; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
 	    store_reg (i, offset, FRAME_POINTER_REGNUM);
 	    offset += 4;
@@ -2221,28 +2211,14 @@ hppa_expand_prologue()
 	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
 
       /* Now actually save the FP registers.  */
-      if (! TARGET_SNAKE)
-	{
-	  for (i = 43; i >= 40; i--)
-	    if (regs_ever_live[i])
-	      {
-		emit_move_insn (gen_rtx (MEM, DFmode,
-					 gen_rtx (POST_INC, DFmode, tmpreg)),
-				gen_rtx (REG, DFmode, i));
-		fr_saved++;
-	      }
-	}
-      else
-	{
-	  for (i = 78; i >= 60; i -= 2)
-	    if (regs_ever_live[i] || regs_ever_live[i + 1])
-	      {
-		emit_move_insn (gen_rtx (MEM, DFmode,
-					 gen_rtx (POST_INC, DFmode, tmpreg)),
-				gen_rtx (REG, DFmode, i));
-		fr_saved++;
-	      }
-	}
+      for (i = 66; i >= 48; i -= 2)
+	if (regs_ever_live[i] || regs_ever_live[i + 1])
+	  {
+	    emit_move_insn (gen_rtx (MEM, DFmode,
+				     gen_rtx (POST_INC, DFmode, tmpreg)),
+			    gen_rtx (REG, DFmode, i));
+	    fr_saved++;
+	  }
     }
 }
 
@@ -2306,9 +2282,8 @@ hppa_expand_epilogue ()
   /* General register restores.  */
   if (frame_pointer_needed)
     {
-      for (i = 18, offset = local_fsize; i >= 3; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i]
-	    && i != FRAME_POINTER_REGNUM)
+      for (i = 18, offset = local_fsize; i >= 4; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
 	    load_reg (i, offset, FRAME_POINTER_REGNUM);
 	    offset += 4;
@@ -2345,22 +2320,11 @@ hppa_expand_epilogue ()
 	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
 
       /* Actually do the restores now.  */
-      if (! TARGET_SNAKE)
-	{
-	  for (i = 43; i >= 40; i--)
-	    if (regs_ever_live[i])
-	      emit_move_insn (gen_rtx (REG, DFmode, i),
-			      gen_rtx (MEM, DFmode,
-				       gen_rtx (POST_INC, DFmode, tmpreg)));
-	}
-      else
-	{
-	  for (i = 78; i >= 60; i -= 2)
-	    if (regs_ever_live[i] || regs_ever_live[i + 1])
-	      emit_move_insn (gen_rtx (REG, DFmode, i),
-			      gen_rtx (MEM, DFmode,
-				       gen_rtx (POST_INC, DFmode, tmpreg)));
-	}
+      for (i = 66; i >= 48; i -= 2)
+	if (regs_ever_live[i] || regs_ever_live[i + 1])
+	  emit_move_insn (gen_rtx (REG, DFmode, i),
+			  gen_rtx (MEM, DFmode,
+				   gen_rtx (POST_INC, DFmode, tmpreg)));
     }
 
   /* No frame pointer, but we have a stack greater than 8k.  We restore
@@ -2878,7 +2842,12 @@ print_operand (file, x, code)
       abort ();
     }
   if (GET_CODE (x) == REG)
-    fprintf (file, "%s", reg_names [REGNO (x)]);
+    {
+      if (FP_REG_P (x) && GET_MODE_SIZE (GET_MODE (x)) <= 4 && (REGNO (x) & 1) == 0)
+	fprintf (file, "%sL", reg_names [REGNO (x)]);
+      else
+	fprintf (file, "%s", reg_names [REGNO (x)]);
+    }
   else if (GET_CODE (x) == MEM)
     {
       int size = GET_MODE_SIZE (GET_MODE (x));
@@ -3164,12 +3133,12 @@ output_mod_insn (unsignedp, insn)
 }
 
 void
-output_arg_descriptor (insn)
-     rtx insn;
+output_arg_descriptor (call_insn)
+     rtx call_insn;
 {
   char *arg_regs[4];
   enum machine_mode arg_mode;
-  rtx prev_insn;
+  rtx link;
   int i, output_flag = 0;
   int regno;
 
@@ -3185,64 +3154,43 @@ output_arg_descriptor (insn)
       return;
     }
 
-  for (prev_insn = PREV_INSN (insn); GET_CODE (prev_insn) == INSN;
-       prev_insn = PREV_INSN (prev_insn))
+  if (GET_CODE (call_insn) != CALL_INSN)
+    abort ();
+  for (link = CALL_INSN_FUNCTION_USAGE (call_insn); link; link = XEXP (link, 1))
     {
-      /* Terminate search for arguments if a non-USE insn is encountered
-	 or a USE insn which does not specify an argument, STATIC_CHAIN,
-	 or STRUCT_VALUE register.  */
-      if (!(GET_CODE (PATTERN (prev_insn)) == USE
-	    && GET_CODE (XEXP (PATTERN (prev_insn), 0)) == REG
-	    && (FUNCTION_ARG_REGNO_P (REGNO (XEXP (PATTERN (prev_insn), 0)))
-		|| REGNO (XEXP (PATTERN (prev_insn), 0)) == STATIC_CHAIN_REGNUM
-		|| REGNO (XEXP (PATTERN (prev_insn), 0))
-		== STRUCT_VALUE_REGNUM)))
-	break;
+      rtx use = XEXP (link, 0);
 
-      /* If this is a USE for the STATIC_CHAIN or STRUCT_VALUE register,
-	 then skip it and continue the loop since those are not encoded
-	 in the argument relocation bits.  */
-      if (REGNO (XEXP (PATTERN (prev_insn), 0)) == STATIC_CHAIN_REGNUM
-	  || REGNO (XEXP (PATTERN (prev_insn), 0)) == STRUCT_VALUE_REGNUM)
+      if (! (GET_CODE (use) == USE
+	     && GET_CODE (XEXP (use, 0)) == REG
+	     && FUNCTION_ARG_REGNO_P (REGNO (XEXP (use, 0)))))
 	continue;
 
-      arg_mode = GET_MODE (XEXP (PATTERN (prev_insn), 0));
-      regno = REGNO (XEXP (PATTERN (prev_insn), 0));
+      arg_mode = GET_MODE (XEXP (use, 0));
+      regno = REGNO (XEXP (use, 0));
       if (regno >= 23 && regno <= 26)
 	{
 	  arg_regs[26 - regno] = "GR";
 	  if (arg_mode == DImode)
 	    arg_regs[25 - regno] = "GR";
 	}
-      else if (!TARGET_SNAKE)	/* fp args */
+      else if (regno >= 32 && regno <= 39)
 	{
+	  if ((regno & 1) != 0)
+	    abort ();
 	  if (arg_mode == SFmode)
-	    arg_regs[regno - 32] = "FR";
-	  else
+	    arg_regs[(regno - 32) / 2] = "FR";
+	  else if (arg_mode == DFmode)
 	    {
 #ifndef HP_FP_ARG_DESCRIPTOR_REVERSED
-	      arg_regs[regno - 33] = "FR";
-	      arg_regs[regno - 32] = "FU";
+	      arg_regs[(regno - 34) / 2] = "FR";
+	      arg_regs[(regno - 34) / 2 + 1] = "FU";
 #else
-	      arg_regs[regno - 33] = "FU";
-	      arg_regs[regno - 32] = "FR";
+	      arg_regs[(regno - 34) / 2] = "FU";
+	      arg_regs[(regno - 34) / 2 + 1] = "FR";
 #endif
 	    }
-	}
-      else
-	{
-	  if (arg_mode == SFmode)
-	    arg_regs[(regno - 44) / 2] = "FR";
 	  else
-	    {
-#ifndef HP_FP_ARG_DESCRIPTOR_REVERSED
-	      arg_regs[(regno - 46) / 2] = "FR";
-	      arg_regs[(regno - 46) / 2 + 1] = "FU";
-#else
-	      arg_regs[(regno - 46) / 2] = "FU";
-	      arg_regs[(regno - 46) / 2 + 1] = "FR";
-#endif
-	    }
+	    abort ();
 	}
     }
   fputs ("\t.CALL ", asm_out_file);
@@ -3848,7 +3796,7 @@ function_label_operand  (op, mode)
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for
    use in fmpyadd instructions.  */
 int
-fmpyaddoperands(operands)
+fmpyaddoperands (operands)
      rtx *operands;
 {
   enum machine_mode mode = GET_MODE (operands[0]);
@@ -3890,7 +3838,7 @@ fmpyaddoperands(operands)
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for
    use in fmpysub instructions.  */
 int
-fmpysuboperands(operands)
+fmpysuboperands (operands)
      rtx *operands;
 {
   enum machine_mode mode = GET_MODE (operands[0]);
