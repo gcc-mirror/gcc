@@ -1734,7 +1734,7 @@ simplify_cond (exp, insn_code, insn_index)
 	  /* If test is true, make this value the default
 	     and discard this + any following tests.  */
 	  len = i;
-	  defval = tests[i];
+	  defval = tests[i + 1];
 	  new_defval = newval;
 	}
 
