@@ -117,7 +117,7 @@ extern int                    atoi(const char *);
 extern long int               atol(const char *);
 extern char *                 atos(char *, struct netbuf *, int);
 extern void                   auth_destroy(AUTH *);
-extern AUTH *                 authdes_create(char *, unsigned, struct sockaddr *, des_block *);
+extern AUTH *                 authdes_create(/* ??? */);
 extern void                   authdes_getcred(struct authdes_cred *, short *, short *, short *, int *);
 extern AUTH *                 authdes_seccreate(/* ??? */);
 extern AUTH *                 authnone_create(void);
