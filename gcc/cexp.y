@@ -101,7 +101,7 @@ struct arglist {
 
 #endif
 
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 6)
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
 #endif
 

@@ -174,7 +174,7 @@ my_bzero (b, length)
 # endif /* !defined (BSTRING) && (defined (USG) || defined (VMS)) */
 #endif /* ! STDC_HEADERS */
 
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 6)
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
 #endif
 
