@@ -61,11 +61,11 @@ Boston, MA 02111-1307, USA.  */
    Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -Dunix -Asystem(unix) -Asystem(svr3) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -Asystem(svr3)"
 
 #undef CPP_SPEC
-#define CPP_SPEC \
- "-D_M_I386 -D_M_I86 -D_M_I86SM -D_M_SDATA -D_M_STEXT \
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
+  -D_M_I386 -D_M_I86 -D_M_I86SM -D_M_SDATA -D_M_STEXT \
   -D_M_UNIX -D_M_XENIX \
   -D_M_SYS5 -D_M_SYSV -D_M_SYS3 -D_M_SYSIII \
   -D_M_COFF -D_M_BITFIELDS -D_M_WORDSWAP \

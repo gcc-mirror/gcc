@@ -44,9 +44,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dps2 -Dunix -Di386 -Asystem(unix) -Asystem(aix) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dps2 -Dunix -Asystem(aix)"
 
-#define CPP_SPEC \
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
   "%{posix:-D_POSIX_SOURCE}%{!posix:-DAIX} -D_I386 -D_AIX -D_MBCS"
 
 /* special flags for the aix assembler to generate the short form for all

@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.2 $"
+#define VERSION_INFO2   "$Revision: 1.3 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -268,3 +268,20 @@ char insn; int insn_; char * file_; int line_;
     warning ("argument is a structure"),0 : 0), \
     (function_arg (&CUM, MODE, TYPE, NAMED)))
 
+/* This is how to output an assembler line
+   that says to advance the location counter
+   to a multiple of 2**LOG bytes.  */
+
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+     if (LOG <= 2) 			\
+        fprintf ((FILE), "\t.align %d\n", 1<<(LOG));\
+     else if ((LOG)!=0) 		\
+        {				\
+	 char buf[256];			\
+	 if (!backalign_labelno) fprintf ((FILE), "\t.align %d\n", 1); \
+	 ASM_GENERATE_INTERNAL_LABEL (buf, "LBA", backalign_labelno++); \
+	 fprintf ((FILE), "%s:", &buf[1]); \
+	 fprintf ((FILE), "\t.backalign %s,%d,%d\n", &buf[1], 1<<(LOG), \
+		  ((TARGET_PENTIUMPRO || TARGET_486) && LOG==4) ? 6 : 2);\
+        }

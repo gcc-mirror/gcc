@@ -42,9 +42,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dunix -Di386 -Asystem(unix) -Asystem(svr3) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -Asystem(svr3)"
 
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{posix:-D_POSIX_SOURCE}"
 
 /* Writing `int' for a bitfield forces int alignment for the structure.  */
 
