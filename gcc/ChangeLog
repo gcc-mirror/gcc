@@ -1,11 +1,6 @@
-Tue Mar  3 11:18:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Mon Mar  2 08:06:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Version 2.8.1 released.
-
-	* expr.c (expand_increment): If op0 is a MEM, enqueue insn to load
- 	it into a REG, not just the one to store it.
-
-Mon Mar  2 08:06:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (mostlyclean): Remove duplicate deletion of temp
  	files.  Delete more stamp files and [df]p-bit.c
