@@ -2547,6 +2547,81 @@ expand_stmt (t)
   return rval;
 }
 
+/* Called from expand_body via walk_tree.  Replace all AGGR_INIT_EXPRs
+   will equivalent CALL_EXPRs.  */
+
+static tree
+simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  tree aggr_init_expr;
+  tree call_expr;
+  tree fn;
+  tree args;
+  tree slot;
+  tree type;
+  tree call_type;
+  int copy_from_buffer_p;
+
+  /* Only AGGR_INIT_EXPRs are interesting.  */
+  aggr_init_expr = *tp;
+  if (TREE_CODE (aggr_init_expr) != AGGR_INIT_EXPR)
+    return NULL_TREE;
+
+  /* Form an appropriate CALL_EXPR.  */
+  fn = TREE_OPERAND (aggr_init_expr, 0);
+  args = TREE_OPERAND (aggr_init_expr, 1);
+  slot = TREE_OPERAND (aggr_init_expr, 2);
+  type = TREE_TYPE (aggr_init_expr);
+  call_type = type;
+  if (AGGR_INIT_VIA_CTOR_P (aggr_init_expr))
+    {
+      /* Replace the first argument with the address of the third
+	 argument to the AGGR_INIT_EXPR.  */
+      call_type = build_pointer_type (type);
+      mark_addressable (slot);
+      args = tree_cons (NULL_TREE, build1 (ADDR_EXPR, call_type, slot),
+			TREE_CHAIN (args));
+    }
+  call_expr = build (CALL_EXPR, call_type, fn, args, NULL_TREE);
+  TREE_SIDE_EFFECTS (call_expr) = 1;
+
+  /* If we're using the non-reentrant PCC calling convention, then we
+     need to copy the returned value out of the static buffer into the
+     SLOT.  */
+  copy_from_buffer_p = 0;
+#ifdef PCC_STATIC_STRUCT_RETURN  
+  if (!AGGR_INIT_VIA_CTOR_P (aggr_init_expr) && aggregate_value_p (type))
+    {
+      int old_ac;
+
+      flag_access_control = 0;
+      call_expr = build_aggr_init (slot, call_expr, LOOKUP_ONLYCONVERTING);
+      flag_access_control = old_ac;
+      copy_from_buffer_p = 1;
+    }
+#endif
+
+  /* If this AGGR_INIT_EXPR indicates the value returned by a
+     function, then we want to use the value of the initialized
+     location as the result.  */
+  if (AGGR_INIT_VIA_CTOR_P (aggr_init_expr) || copy_from_buffer_p)
+    {
+      call_expr = build (COMPOUND_EXPR, type,
+			 call_expr, slot);
+      TREE_SIDE_EFFECTS (call_expr) = 1;
+    }
+
+  /* Replace the AGGR_INIT_EXPR with the CALL_EXPR.  */
+  TREE_CHAIN (call_expr) = TREE_CHAIN (aggr_init_expr);
+  *tp = call_expr;
+
+  /* Keep iterating.  */
+  return NULL_TREE;
+}
+
 /* Generate RTL for FN.  */
 
 void
@@ -2573,6 +2648,9 @@ expand_body (fn)
       ggc_collect ();
       return;
     }
+
+  /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
+  walk_tree (&DECL_SAVED_TREE (fn), simplify_aggr_init_exprs_r, NULL);
 
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
