@@ -1,5 +1,13 @@
 2003-10-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (time_get::do_get_year):
+	Absolutely avoid dereferencing end iterators.
+	(time_put::put): Minor clean up.
+
+	* include/bits/locale_facets.tcc: Cosmetic reformattings.
+
+2003-10-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
 	Revert the last commit, is not correct, sorry.
 	
