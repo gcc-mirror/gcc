@@ -1,3 +1,9 @@
+Tue Aug 24 15:37:03 1999  Richard Henderson  <rth@cygnus.com>
+
+	* fold-const.c (fold): Reassociate (+ (+ (* a b) c) (* d e))
+	as (+ (+ (* a b) (* d e)) c).  Factor a common power-of-two
+	multiplicand out of (+ (* a b) (* c d)).
+
 Tue Aug 24 11:46:10 1999  Bob Manson <manson@cygnus.com>
 			  Richard Henderson  <rth@cygnus.com>
 
