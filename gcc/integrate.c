@@ -474,7 +474,7 @@ save_for_inline_copying (fndecl)
      Make these new rtx's now, and install them in regno_reg_rtx, so they
      will be the official pseudo-reg rtx's for the rest of compilation.  */
 
-  reg_map = (rtx *) savealloc ((max_reg + 1) * sizeof (rtx));
+  reg_map = (rtx *) savealloc (regno_pointer_flag_length * sizeof (rtx));
 
   len = sizeof (struct rtx_def) + (GET_RTX_LENGTH (REG) - 1) * sizeof (rtunion);
   for (i = max_reg - 1; i > LAST_VIRTUAL_REGISTER; i--)
