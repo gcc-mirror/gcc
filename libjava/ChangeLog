@@ -1,3 +1,23 @@
+2003-06-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/logging/LogRecord.java,
+	java/util/logging/Logger.java,
+	java/util/logging/SocketHandler.java,
+	java/util/logging/SimpleFormatter.java,
+	java/util/logging/Formatter.java,
+	java/util/logging/ErrorManager.java,
+	java/util/logging/Handler.java,
+	java/util/logging/FileHandler.java,
+	java/util/logging/LogManager.java,
+	java/util/logging/Level.java,
+	java/util/logging/ConsoleHandler.java,
+	java/util/logging/StreamHandler.java,
+	java/util/logging/LoggingPermission.java,
+	java/util/logging/Filter.java,
+	java/util/logging/MemoryHandler.java,
+	java/util/logging/XMLFormatter.java:
+	New files from classpath.
+
 2003-06-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/ObjectStreamField.java
