@@ -1,3 +1,7 @@
+Tue Sep 21 09:08:30 1999  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77spec.c (lang_specific_driver): Initialise return value.
+
 Thu Sep 16 18:07:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bad.c (ffebad_finish): Use uppercase ctype macro from system.h.
