@@ -1246,7 +1246,6 @@ begin_class_definition (t)
   /* Don't change signatures.  */
   if (! IS_SIGNATURE (t))
     {
-      extern tree pending_vtables;
       int needs_writing;
       tree name = TYPE_IDENTIFIER (t);
       
@@ -1258,24 +1257,13 @@ begin_class_definition (t)
 	}
       
       /* Record how to set the access of this class's
-	 virtual functions.  If write_virtuals == 2 or 3, then
+	 virtual functions.  If write_virtuals == 3, then
 	 inline virtuals are ``extern inline''.  */
-      switch (write_virtuals)
-	{
-	case 0:
-	case 1:
-	  needs_writing = 1;
-	  break;
-	case 2:
-	  needs_writing = !! value_member (name, pending_vtables);
-	  break;
-	case 3:
-	  needs_writing = ! CLASSTYPE_INTERFACE_ONLY (t)
-	    && CLASSTYPE_INTERFACE_KNOWN (t);
-	  break;
-	default:
-	  needs_writing = 0;
-	}
+      if (write_virtuals == 3)
+	needs_writing = ! CLASSTYPE_INTERFACE_ONLY (t)
+	  && CLASSTYPE_INTERFACE_KNOWN (t);
+      else
+	needs_writing = 1;
       CLASSTYPE_VTABLE_NEEDS_WRITING (t) = needs_writing;
     }
 #if 0

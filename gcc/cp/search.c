@@ -2241,8 +2241,7 @@ dfs_debug_mark (binfo)
 
   /* If interface info is known, either we've already emitted the debug
      info or we don't need to.  */
-  if (CLASSTYPE_INTERFACE_KNOWN (t)
-      || (write_virtuals == 2 && TYPE_VIRTUAL_P (t)))
+  if (CLASSTYPE_INTERFACE_KNOWN (t))
     return;
 
   /* If debug info is requested from this context for this type, supply it.

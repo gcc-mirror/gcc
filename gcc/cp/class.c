@@ -678,9 +678,7 @@ build_vtable (binfo, type)
   DECL_ALIGN (decl) = MAX (TYPE_ALIGN (double_type_node),
 			   DECL_ALIGN (decl));
 
-  /* Why is this conditional? (mrs) */
-  if (binfo && write_virtuals >= 0)
-    DECL_VIRTUAL_P (decl) = 1;
+  DECL_VIRTUAL_P (decl) = 1;
   DECL_CONTEXT (decl) = type;
 
   binfo = TYPE_BINFO (type);
@@ -2134,8 +2132,7 @@ finish_vtbls (binfo, do_self, t)
 	  decl = BINFO_VTABLE (binfo);
 	  context = DECL_CONTEXT (decl);
 	  DECL_CONTEXT (decl) = 0;
-	  if (write_virtuals >= 0
-	      && DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
+	  if (DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
 	    DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
 					    BINFO_VIRTUALS (binfo));
 	  cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
@@ -3963,8 +3960,7 @@ finish_struct_1 (t, warn_anon)
       else if (has_virtual)
 	{
 	  TYPE_BINFO_VIRTUALS (t) = pending_virtuals;
-	  if (write_virtuals >= 0)
-	    DECL_VIRTUAL_P (TYPE_BINFO_VTABLE (t)) = 1;
+	  DECL_VIRTUAL_P (TYPE_BINFO_VTABLE (t)) = 1;
 	}
     }
 
@@ -4130,14 +4126,9 @@ finish_struct_1 (t, warn_anon)
 	 references between translation units.  */
       if (CLASSTYPE_METHOD_VEC (t))
 	{
-	  extern tree pending_vtables;
-
 	  /* Don't output full info about any type
 	     which does not have its implementation defined here.  */
-	  if (TYPE_VIRTUAL_P (t) && write_virtuals == 2)
-	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t))
-	      = (value_member (TYPE_IDENTIFIER (t), pending_vtables) == 0);
-	  else if (CLASSTYPE_INTERFACE_ONLY (t))
+	  if (CLASSTYPE_INTERFACE_ONLY (t))
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
 #if 0
 	  /* XXX do something about this.  */

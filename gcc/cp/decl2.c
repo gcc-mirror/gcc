@@ -345,21 +345,14 @@ int flag_this_is_variable;
 
 /* 3 means write out only virtuals function tables `defined'
    in this implementation file.
-   2 means write out only specific virtual function tables
-   and give them (C) public access.
-   1 means write out virtual function tables and give them
-   (C) public access.
    0 means write out virtual function tables and give them
-   (C) static access (default).
-   -1 means declare virtual function tables extern.  */
+   (C) static access (default).  */
 
 int write_virtuals;
 
-/* Nonzero means we should attempt to elide constructors when possible.
-   FIXME: This flag is obsolete, and should be torn out along with the
-   old overloading code.  */
+/* Nonzero means we should attempt to elide constructors when possible.  */
 
-int flag_elide_constructors;
+int flag_elide_constructors = 1;
 
 /* Nonzero means recognize and handle signature language constructs.  */
 
@@ -542,22 +535,6 @@ lang_decode_option (argc, argv)
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;
-  /* The +e options are for cfront compatibility.  They come in as
-     `-+eN', to kludge around gcc.c's argument handling.  */
-  else if (p[0] == '-' && p[1] == '+' && p[2] == 'e')
-    {
-      int old_write_virtuals = write_virtuals;
-      if (p[3] == '1')
-	write_virtuals = 1;
-      else if (p[3] == '0')
-	write_virtuals = -1;
-      else if (p[3] == '2')
-	write_virtuals = 2;
-      else error ("invalid +e option");
-      if (old_write_virtuals != 0
-	  && write_virtuals != old_write_virtuals)
-	error ("conflicting +e options given");
-    }
   else if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.
@@ -2575,12 +2552,10 @@ import_export_vtable (decl, type, final)
   if (DECL_INTERFACE_KNOWN (decl))
     return;
 
-  /* +e0 or +e1 */
-  if (write_virtuals < 0 || write_virtuals == 1 || TYPE_FOR_JAVA (type))
+  if (TYPE_FOR_JAVA (type))
     {
       TREE_PUBLIC (decl) = 1;
-      if (write_virtuals < 0 || TYPE_FOR_JAVA (type))
-	DECL_EXTERNAL (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
       DECL_INTERFACE_KNOWN (decl) = 1;
     }
   else if (CLASSTYPE_INTERFACE_KNOWN (type))
@@ -2702,8 +2677,7 @@ static int
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
-  if (write_virtuals >= 0
-      && ! DECL_EXTERNAL (vars)
+  if (! DECL_EXTERNAL (vars)
       && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
 	  || CLASSTYPE_EXPLICIT_INSTANTIATION (DECL_CONTEXT (vars))
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
@@ -3598,19 +3572,6 @@ finish_file ()
 
   walk_vtables ((void (*) PROTO((tree, tree))) 0,
 		prune_vtable_vardecl);
-
-  if (write_virtuals == 2)
-    {
-      /* Now complain about an virtual function tables promised
-	 but not delivered.  */
-      while (pending_vtables)
-	{
-	  if (TREE_PURPOSE (pending_vtables) == NULL_TREE)
-	    error ("virtual function table for `%s' not defined",
-		   IDENTIFIER_POINTER (TREE_VALUE (pending_vtables)));
-	  pending_vtables = TREE_CHAIN (pending_vtables);
-	}
-    }
 
   finish_repo ();
 

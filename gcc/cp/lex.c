@@ -4712,33 +4712,7 @@ handle_cp_pragma (pname)
 {
   register int token;
 
-  if (! strcmp (pname, "vtable"))
-    {
-      extern tree pending_vtables;
-
-      /* More follows: it must be a string constant (class name).  */
-      token = real_yylex ();
-      if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
-	{
-	  error ("invalid #pragma vtable");
-	  return -1;
-	}
-
-      if (write_virtuals != 2)
-	{
-	  warning ("use `+e2' option to enable #pragma vtable");
-	  return -1;
-	}
-      pending_vtables
-	= perm_tree_cons (NULL_TREE,
-			  get_identifier (TREE_STRING_POINTER (yylval.ttype)),
-			  pending_vtables);
-      token = real_yylex ();
-      if (token != END_OF_LINE)
-	warning ("trailing characters ignored");
-      return 1;
-    }
-  else if (! strcmp (pname, "unit"))
+  if (! strcmp (pname, "unit"))
     {
       /* More follows: it must be a string constant (unit name).  */
       token = real_yylex ();

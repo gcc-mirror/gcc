@@ -23,9 +23,6 @@ DEFINE_LANG_NAME ("C++")
 /* This is the contribution to the `lang_options' array in gcc.c for
    g++.  */
 
-  { "-+e0", "" },		/* gcc.c tacks the `-' on the front.  */
-  { "-+e1", "" },
-  { "-+e2", "" },
   { "-faccess-control", "" },
   { "-fno-access-control", "Do not obey access control semantics" },
   { "-fall-virtual", "Make all member functions virtual" },
@@ -41,7 +38,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fconst-strings", "" },
   { "-fno-const-strings", "Make string literals `char[]' instead of `const char[]'" },
   { "-fdefault-inline", "" },
-  { "-fno-default-inline", "Do not inline mmeber functions be default"},
+  { "-fno-default-inline", "Do not inline member functions by default"},
   { "-frtti", "" },
   { "-fno-rtti", "Do not generate run time type descriptor information" },
   { "-felide-constructors", "" },
@@ -60,13 +57,13 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-handle-exceptions", "" },
   { "-fhandle-signatures", "Handle signature language constructs" },
   { "-fno-handle-signatures", "" },
-  { "-fhonor-std", "Do not ignore the namespace standard" },
+  { "-fhonor-std", "Treat the namespace `std' as a normal namespace" },
   { "-fno-honor-std", "" },
   { "-fhuge-objects", "Enable support for huge objects" },
   { "-fno-huge-objects", "" },
   { "-fimplement-inlines", "" },
   { "-fno-implement-inlines", "Export functions even if they can be inlined" },
-  { "-fimplicit-templates", "Emit implicit instatiations if needed" },
+  { "-fimplicit-templates", "Emit implicit template instatiations when used" },
   { "-fno-implicit-templates", "" },
   { "-finit-priority", "Handle the init_priority attribute" },
   { "-fno-init-priority", "" },
@@ -74,7 +71,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-labels-ok", "" },
   { "-fmemoize-lookups", "" },
   { "-fno-memoize-lookups", "" },
-  { "-fname-mangling-version-", "Set the version of name mangling to use" },
+  { "-fname-mangling-version-", "" },
   { "-fnew-abi", "Enable experimental ABI changes" },
   { "-fno-new-abi", "" },
   { "-fnonnull-objects", "" },
