@@ -1,3 +1,10 @@
+2003-04-02  Richard Henderson  <rth@redhat.com>
+
+        * libgcc-std.ver (_Unwind_GetCFA): New.
+        * unwind-dw2.c (_Unwind_GetCFA): New.
+        * unwind-sjlj.c (_Unwind_GetCFA): New.
+        * unwind.h: Declare it.
+
 2003-04-02  Mike Stump  <mrs@apple.com>
 
 	* doc/install.texi (Specific): Update pointers to apple.com.
