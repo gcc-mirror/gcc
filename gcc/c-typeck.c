@@ -287,7 +287,7 @@ common_type (t1, t2)
 	newargs = 0;
 
 	for (i = 0; i < len; i++)
-	  newargs = tree_cons (0, 0, newargs);
+	  newargs = tree_cons (NULL_TREE, NULL_TREE, newargs);
 
 	n = newargs;
 
@@ -1011,7 +1011,7 @@ build_component_ref (datum, component)
     {
       if (TYPE_SIZE (type) == 0)
 	{
-	  incomplete_type_error (0, type);
+	  incomplete_type_error (NULL_TREE, type);
 	  return error_mark_node;
 	}
 
@@ -2027,7 +2027,7 @@ convert_arguments (typelist, values, name)
 		parmval = default_conversion (parmval);
 #endif
 	    }
-	  result = tree_cons (0, parmval, result);
+	  result = tree_cons (NULL_TREE, parmval, result);
 	}
       else if (TREE_CODE (TREE_TYPE (val)) == REAL_TYPE
                && (TYPE_PRECISION (TREE_TYPE (val))
@@ -3676,7 +3676,7 @@ build_c_cast (type, expr)
 	    name = "";
 	  return digest_init (type, build_nt (CONSTRUCTOR, NULL_TREE,
 					      build_tree_list (field, value)),
-			      0, 0, 0, name);
+			      NULL_PTR, 0, 0, name);
 	}
       error ("cast to union type from type not present in union");
       return error_mark_node;
@@ -4200,7 +4200,7 @@ store_init_value (decl, init)
 
   /* Digest the specified initializer into an expression.  */
 
-  value = digest_init (type, init, 0, TREE_STATIC (decl),
+  value = digest_init (type, init, NULL_PTR, TREE_STATIC (decl),
 		       TREE_STATIC (decl) || pedantic, 
 		       IDENTIFIER_POINTER (DECL_NAME (decl)));
 
@@ -4667,13 +4667,13 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	}
 
       if (raw_constructor)
-	result = process_init_constructor (type, inside_init, 0,
+	result = process_init_constructor (type, inside_init, NULL_PTR,
 					   require_constant,
 					   constructor_constant, ofwhat);
       else if (tail != 0)
 	{
 	  *tail = old_tail_contents;
-	  result = process_init_constructor (type, 0, tail,
+	  result = process_init_constructor (type, NULL_TREE, tail,
 					     require_constant,
 					     constructor_constant, ofwhat);
 	}
@@ -4751,20 +4751,23 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
     {
       if (raw_constructor)
 	return process_init_constructor (type, inside_init,
-					 0, constructor_constant,
+					 NULL_PTR, constructor_constant,
 					 constructor_constant, ofwhat);
       else if (tail != 0)
 	{
 	  *tail = old_tail_contents;
-	  return process_init_constructor (type, 0, tail, constructor_constant,
+	  return process_init_constructor (type, NULL_TREE, tail,
+					   constructor_constant,
 					   constructor_constant, ofwhat);
 	}
       else if (flag_traditional)
 	/* Traditionally one can say `char x[100] = 0;'.  */
 	return process_init_constructor (type,
-					 build_nt (CONSTRUCTOR, 0,
-						   tree_cons (0, inside_init, 0)),
-					 0, constructor_constant,
+					 build_nt (CONSTRUCTOR, NULL_TREE,
+						   tree_cons (NULL_TREE,
+							      inside_init,
+							      NULL_TREE)),
+					 NULL_PTR, constructor_constant,
 					 constructor_constant, ofwhat);
     }
 
@@ -4906,7 +4909,8 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 				       TREE_VALUE (tail), &tail1,
 				       /* Both of these are the same because
 					  a value here is an elt overall.  */
-				       constant_element, constant_element, 0);
+				       constant_element, constant_element,
+				       NULL_PTR);
 		});
 
 	      if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
@@ -4915,7 +4919,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		{
 		  error_init (
 		    "non-empty initializer for array%s of empty elements",
-		    " `%s'", 0);
+		    " `%s'", NULL_PTR);
 		  /* Just ignore what we were supposed to use.  */
 		  tail1 = 0;
 		}
@@ -5015,7 +5019,8 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		  push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
 		  next1 = digest_init (TREE_TYPE (field),
 				       TREE_VALUE (tail), &tail1,
-				       constant_element, constant_element, 0);
+				       constant_element, constant_element,
+				       NULL_PTR);
 		});
 	      if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
 		abort ();
@@ -5103,7 +5108,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
 	      next1 = digest_init (TREE_TYPE (field),
 				   TREE_VALUE (tail), &tail1,
-				   constant_value, constant_element, 0);
+				   constant_value, constant_element, NULL_PTR);
 	    });
 	  if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
 	    abort ();
@@ -5134,12 +5139,12 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
       if (TREE_CODE (type) == UNION_TYPE)
 	{
 	  pedwarn_init ("excess elements in union initializer%s",
-			" after `%s'", 0);
+			" after `%s'", NULL_PTR);
 	}
       else
 	{
 	  pedwarn_init ("excess elements in aggregate initializer%s",
-			" after `%s'", 0);
+			" after `%s'", NULL_PTR);
 	}
     }
 
@@ -5293,7 +5298,7 @@ c_expand_start_case (exp)
 
       exp = default_conversion (exp);
       type = TREE_TYPE (exp);
-      index = get_unwidened (exp, 0);
+      index = get_unwidened (exp, NULL_TREE);
       /* We can't strip a conversion from a signed type to an unsigned,
 	 because if we did, int_fits_type_p would do the wrong thing
 	 when checking case values for being in range,

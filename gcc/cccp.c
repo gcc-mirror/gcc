@@ -120,6 +120,14 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR (char *) NULL
+#endif
+
 /* Exported declarations.  */
 
 char *xmalloc ();
@@ -1589,7 +1597,7 @@ main (argc, argv)
 	perror_with_name (pend_files[i]);
 	return FAILURE_EXIT_CODE;
       }
-      finclude (fd, pend_files[i], &outbuf, 0, 0);
+      finclude (fd, pend_files[i], &outbuf, 0, NULL_PTR);
     }
   no_output--;
 
@@ -1773,7 +1781,7 @@ main (argc, argv)
 	perror_with_name (pend_includes[i]);
 	return FAILURE_EXIT_CODE;
       }
-      finclude (fd, pend_includes[i], &outbuf, 0, 0);
+      finclude (fd, pend_includes[i], &outbuf, 0, NULL_PTR);
     }
 
   /* Scan the input, processing macros and directives.  */
@@ -3329,7 +3337,8 @@ handle_directive (ip, op)
 	  case '\"':
 	    {
 	      register U_CHAR *bp1
-		= skip_quoted_string (xp - 1, bp, ip->lineno, 0, 0, 0);
+		= skip_quoted_string (xp - 1, bp, ip->lineno,
+				      NULL_PTR, NULL_PTR, NULL_PTR);
 	      while (xp != bp1)
 		if (*xp == '\\') {
 		  if (*++xp != '\n')
@@ -4307,8 +4316,8 @@ check_preconditions (prec)
       HASHNODE *hp;
       
       prec += 6;
-      mdef = create_definition (prec, lineend, 0);
-      
+      mdef = create_definition (prec, lineend, NULL_PTR);
+
       if (mdef.defn == 0)
 	abort();
       
@@ -4695,7 +4704,7 @@ create_definition (buf, limit, op)
     if (is_hor_space[*bp])
       ++bp;		/* skip exactly one blank/tab char */
     /* now everything from bp before limit is the definition. */
-    defn = collect_expansion (bp, limit, -1, 0);
+    defn = collect_expansion (bp, limit, -1, NULL_PTR);
     defn->args.argnames = (U_CHAR *) "";
   }
 
@@ -5452,7 +5461,7 @@ read_token_list (bpp, limit, error_flag)
 	break;
       bp++;
     } else if (*bp == '"' || *bp == '\'')
-      bp = skip_quoted_string (bp, limit, 0, 0, 0, &eofp);
+      bp = skip_quoted_string (bp, limit, 0, NULL_PTR, NULL_PTR, &eofp);
     else
       while (! is_hor_space[*bp] && *bp != '(' && *bp != ')'
 	     && *bp != '"' && *bp != '\'' && bp != limit)
@@ -5911,7 +5920,7 @@ do_if (buf, limit, op, keyword)
   FILE_BUF *ip = &instack[indepth];
 
   value = eval_if_expression (buf, limit - buf);
-  conditional_skip (ip, value == 0, T_IF, 0);
+  conditional_skip (ip, value == 0, T_IF, NULL_PTR);
   return 0;
 }
 
@@ -6142,7 +6151,8 @@ skip_if_group (ip, any)
       break;
     case '\"':
     case '\'':
-      bp = skip_quoted_string (bp - 1, endb, ip->lineno, &ip->lineno, 0, 0);
+      bp = skip_quoted_string (bp - 1, endb, ip->lineno, &ip->lineno,
+			       NULL_PTR, NULL_PTR);
       break;
     case '\\':
       /* Char after backslash loses its special meaning.  */
@@ -6674,7 +6684,7 @@ skip_paren_group (ip)
     case '\'':
       {
 	int eofp = 0;
-	p = skip_quoted_string (p - 1, limit, 0, 0, 0, &eofp);
+	p = skip_quoted_string (p - 1, limit, 0, NULL_PTR, NULL_PTR, &eofp);
 	if (eofp)
 	  return ip->bufp = p;
       }
@@ -6844,7 +6854,7 @@ macroexpand (hp, op)
 	parse_error = macarg (&args[i], rest_args);
       }
       else
-	parse_error = macarg (0, 0);
+	parse_error = macarg (NULL_PTR, 0);
       if (parse_error) {
 	error_with_line (line_for_error (start_line), parse_error);
 	break;
@@ -7505,6 +7515,7 @@ delete_newlines (start, length)
 void
 error (msg, arg1, arg2, arg3)
      char *msg;
+     char *arg1, *arg2, *arg3;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -7557,6 +7568,7 @@ error_from_errno (name)
 void
 warning (msg, arg1, arg2, arg3)
      char *msg;
+     char *arg1, *arg2, *arg3;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -7586,6 +7598,7 @@ static void
 error_with_line (line, msg, arg1, arg2, arg3)
      int line;
      char *msg;
+     char *arg1, *arg2, *arg3;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -7610,6 +7623,7 @@ error_with_line (line, msg, arg1, arg2, arg3)
 void
 pedwarn (msg, arg1, arg2, arg3)
      char *msg;
+     char *arg1, *arg2, *arg3;
 {
   if (pedantic_errors)
     error (msg, arg1, arg2, arg3);
@@ -7625,6 +7639,7 @@ pedwarn_with_file_and_line (file, line, msg, arg1, arg2, arg3)
      char *file;
      int line;
      char *msg;
+     char *arg1, *arg2, *arg3;
 {
   int i;
   if (!pedantic_errors && inhibit_warnings)
@@ -8001,7 +8016,8 @@ dump_defn_1 (base, start, length, of)
     if (*p != '\n')
       putc (*p, of);
     else if (*p == '\"' || *p =='\'') {
-      U_CHAR *p1 = skip_quoted_string (p, limit, 0, 0, 0, 0);
+      U_CHAR *p1 = skip_quoted_string (p, limit, 0, NULL_PTR,
+				       NULL_PTR, NULL_PTR);
       fwrite (p, p1 - p, 1, of);
       p = p1 - 1;
     }
@@ -8314,7 +8330,7 @@ make_assertion (option, str)
 
   /* pass NULL as output ptr to do_define since we KNOW it never
      does any output.... */
-  do_assert (buf, buf + strlen (buf) , NULL, kt);
+  do_assert (buf, buf + strlen (buf) , NULL_PTR, kt);
   --indepth;
 }
 
