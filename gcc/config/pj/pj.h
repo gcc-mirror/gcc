@@ -1159,7 +1159,7 @@ do { fputs (current_function_varargs || current_function_stdarg         \
 
 /* The prefix to add to an internally generated label.  */
 
-#define LOCAL_LABEL_PREFIX ""
+#define LOCAL_LABEL_PREFIX "."
 
 /* Make an internal label into a string.  */
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \

@@ -1,3 +1,9 @@
+2001-03-17  Anthony Green  <green@redhat.com>
+
+	* config/pj/lib1funcs.S: Fix broken comment.
+	* config/pj/pj.h (LOCAL_LABEL_PREFIX): Prefix internal
+	labels with '.'.
+
 2001-03-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi: Remove obsolete information relating to build and
