@@ -1,3 +1,12 @@
+2000-04-25  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (REG_CLASS_FROM_LETTER): Return
+	EXTENDED_REGS only if TARGET_AM33.
+	* config/mn10300/mn10300.md (movsi, addsi): Avoid exposing
+	SP_REGS to register allocation and reloading unless absolutely
+	necessary.
+	(movsi3): Remove special-case of adding non-constants to SP.
+
 2000-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (gcc_AC_NEED_DECLARATION): This macro now requires
