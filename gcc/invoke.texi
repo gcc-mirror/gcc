@@ -418,6 +418,7 @@ in the following sections.
 -mb  -ml  -mdalign  -mrelax
 -mbigtable  -mfmovd  -mhitachi  -mnomacsave
 -misize  -mpadstruct  -mspace
+-mprefergot
 
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
@@ -6713,6 +6714,10 @@ which is incompatible with the SH ABI.
 
 @item -mspace
 Optimize for space instead of speed.  Implied by @code{-Os}.
+
+@item -mprefergot
+When generating position-independent code, emit function calls using
+the Global Offset Table instead of the Procedure Linkage Table.
 @end table
 
 @node System V Options
