@@ -222,7 +222,12 @@ add_dependence (insn, elem, dep_type)
       cond2 = get_condition (elem);
       if (cond1 && cond2
 	  && conditions_mutex_p (cond1, cond2)
-	  && !modified_in_p (cond1, elem))
+	  /* Make sure first instruction doesn't affect condition of second
+	     instruction if switched.  */
+	  && !modified_in_p (cond1, elem)
+	  /* Make sure second instruction doesn't affect condition of first
+	     instruction if switched.  */
+	  && !modified_in_p (cond2, insn))
 	return;
     }
 
