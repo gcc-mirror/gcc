@@ -431,15 +431,27 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	   param = TREE_CHAIN (param), args = TREE_CHAIN (args))
 	{
 	  tree arg = TREE_VALUE (args);
-	  if (param != arg
-	      /* Make sure there are no problems with copying.  Note we must
+	  if (param != arg)
+	    {
+	      /* Make sure there are no problems with copying.  The parameter
 	         have a copyable type and the two arguments must have reasonably
 	         equivalent types.  The latter requirement could be relaxed if
 	         we emitted a suitable type conversion statement.  */
-	      && (!is_gimple_reg_type (TREE_TYPE (param))
+	      if (!is_gimple_reg_type (TREE_TYPE (param))
 		  || !lang_hooks.types_compatible_p (TREE_TYPE (param),
-						     TREE_TYPE (arg))))
-	    break;
+						     TREE_TYPE (arg)))
+		break;
+
+	      /* The parameter should be a real operand, so that phi node
+		 created for it at the start of the function has the meaning
+		 of copying the value.  This test implies is_gimple_reg_type
+		 from the previous condition, however this one could be
+		 relaxed by being more careful with copying the new value
+		 of the parameter (emitting appropriate MODIFY_EXPR and
+		 updating the virtual operands).  */
+	      if (!is_gimple_reg (param))
+		break;
+	    }
 	}
       if (!args && !param)
 	tail_recursion = true;
