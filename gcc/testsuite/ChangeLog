@@ -1,3 +1,7 @@
+1999-08-03  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/enum2.C: New test.
+
 Mon Aug  2 13:35:12 1999  Richard Henderson  <rth@cygnus.com>
 
 	Adapted from tests from Franz Sirl:
