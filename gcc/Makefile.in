@@ -126,7 +126,7 @@ PREMADE_ATTRTAB =
 target= ... `configure' substitutes actual target name here.
 xmake_file= ... `configure' substitutes actual x- file name here.
 tmake_file= ... `configure' substitutes actual t- file name here.
-version=`awk '{printf "%s", substr ($$4, 2, length ($$4) - 3); }' $(srcdir)/version.c`
+version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < version.c`
 
 # Directory where sources are, from where we are.
 srcdir = .
