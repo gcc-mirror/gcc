@@ -62,7 +62,11 @@ void
 finalize_pic ()
 {
   if (flag_pic && current_function_uses_pic_offset_table)
-    emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+    {
+      rtx insn = gen_rtx (USE, VOIDmode, pic_offset_table_rtx);
+      emit_insn_after (insn, get_insns ());
+      emit_insn (insn);
+    }
 }
 
 
