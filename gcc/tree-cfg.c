@@ -2934,7 +2934,7 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
 
      The requirement for no PHI nodes could be relaxed.  Basically we
      would have to examine the PHIs to prove that none of them used
-     the value set by the statement we want to insert on E.   That
+     the value set by the statement we want to insert on E.  That
      hardly seems worth the effort.  */
   if (EDGE_COUNT (dest->preds) == 1
       && ! phi_nodes (dest)
@@ -4297,12 +4297,12 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
 
 	   There is precisely one CASE_LABEL_EXPR in the switch vector
 	   which needs updating.  Either its label needs to be updated
-	   or it needs to be directed to a new case leader.   */
+	   or it needs to be directed to a new case leader.  */
 	e2 = find_edge (e->src, dest);
 	if (e2)
 	  {
 	    /* In this case we need to change the case leader for the
-	       current leader of E to be the case leader for E2.   */
+	       current leader of E to be the case leader for E2.  */
 	    tree e_leader = get_case_leader_for_edge (e);
 	    tree e2_leader = get_case_leader_for_edge (e2);
 	    CASE_LEADER_OR_LABEL (e_leader) = e2_leader;

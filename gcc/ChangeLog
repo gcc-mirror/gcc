@@ -1,3 +1,8 @@
+2004-11-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bitmap.c, bitmap.h, expmed.c, tree-cfg.c: Fix comment
+	formatting.
+
 2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/install.texi (automake): Correctly document that everything now 
