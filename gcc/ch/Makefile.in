@@ -1,5 +1,6 @@
 # Makefile for GNU CHILL compiler.
-#   Copyright (C) 1987, 88, 90-94, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1998,
+#   1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
