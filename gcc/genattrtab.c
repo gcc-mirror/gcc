@@ -2418,16 +2418,15 @@ simplify_cond (exp, insn_code, insn_index)
      then build a new expression if they don't match EXP.  */
   rtx defval = XEXP (exp, 1);
   rtx new_defval = XEXP (exp, 1);
-
   int len = XVECLEN (exp, 0);
-  rtx *tests = (rtx *) alloca (len * sizeof (rtx));
+  rtunion *tests = (rtunion *) alloca (len * sizeof (rtunion));
   int allsame = 1;
   char *first_spacer;
 
   /* This lets us free all storage allocated below, if appropriate.  */
   first_spacer = (char *) obstack_finish (rtl_obstack);
 
-  bcopy ((char *) &XVECEXP (exp, 0, 0), (char *) tests, len * sizeof (rtx));
+  bcopy ((char *) XVEC (exp, 0)->elem, (char *) tests, len * sizeof (rtunion));
 
   /* See if default value needs simplification.  */
   if (GET_CODE (defval) == COND)
@@ -2440,10 +2439,10 @@ simplify_cond (exp, insn_code, insn_index)
       rtx newtest, newval;
 
       /* Simplify this test.  */
-      newtest = SIMPLIFY_TEST_EXP (tests[i], insn_code, insn_index);
-      tests[i] = newtest;
+      newtest = SIMPLIFY_TEST_EXP (tests[i].rtx, insn_code, insn_index);
+      tests[i].rtx = newtest;
 
-      newval = tests[i + 1];
+      newval = tests[i + 1].rtx;
       /* See if this value may need simplification.  */
       if (GET_CODE (newval) == COND)
 	newval = simplify_cond (newval, insn_code, insn_index);
@@ -2454,7 +2453,7 @@ simplify_cond (exp, insn_code, insn_index)
 	  /* If test is true, make this value the default
 	     and discard this + any following tests.  */
 	  len = i;
-	  defval = tests[i + 1];
+	  defval = tests[i + 1].rtx;
 	  new_defval = newval;
 	}
 
@@ -2462,33 +2461,33 @@ simplify_cond (exp, insn_code, insn_index)
 	{
 	  /* If test is false, discard it and its value.  */
 	  for (j = i; j < len - 2; j++)
-	    tests[j] = tests[j + 2];
+	    tests[j].rtx = tests[j + 2].rtx;
 	  len -= 2;
 	}
 
-      else if (i > 0 && attr_equal_p (newval, tests[i - 1]))
+      else if (i > 0 && attr_equal_p (newval, tests[i - 1].rtx))
 	{
 	  /* If this value and the value for the prev test are the same,
 	     merge the tests.  */
 
-	  tests[i - 2]
-	    = insert_right_side (IOR, tests[i - 2], newtest,
+	  tests[i - 2].rtx
+	    = insert_right_side (IOR, tests[i - 2].rtx, newtest,
 				 insn_code, insn_index);
 
 	  /* Delete this test/value.  */
 	  for (j = i; j < len - 2; j++)
-	    tests[j] = tests[j + 2];
+	    tests[j].rtx = tests[j + 2].rtx;
 	  len -= 2;
 	}
 
       else
-	tests[i + 1] = newval;
+	tests[i + 1].rtx = newval;
     }
 
   /* If the last test in a COND has the same value
      as the default value, that test isn't needed.  */
 
-  while (len > 0 && attr_equal_p (tests[len - 1], new_defval))
+  while (len > 0 && attr_equal_p (tests[len - 1].rtx, new_defval))
     len -= 2;
 
   /* See if we changed anything.  */
@@ -2496,7 +2495,7 @@ simplify_cond (exp, insn_code, insn_index)
     allsame = 0;
   else
     for (i = 0; i < len; i++)
-      if (! attr_equal_p (tests[i], XVECEXP (exp, 0, i)))
+      if (! attr_equal_p (tests[i].rtx, XVECEXP (exp, 0, i)))
 	{
 	  allsame = 0;
 	  break;
@@ -2519,8 +2518,8 @@ simplify_cond (exp, insn_code, insn_index)
       rtx newexp = rtx_alloc (COND);
 
       XVEC (newexp, 0) = rtvec_alloc (len);
-      bcopy ((char *) tests, (char *) &XVECEXP (newexp, 0, 0),
-	     len * sizeof (rtx));
+      bcopy ((char *) tests, (char *) XVEC (newexp, 0)->elem,
+	     len * sizeof (rtunion));
       XEXP (newexp, 1) = new_defval;
       return newexp;
     }
