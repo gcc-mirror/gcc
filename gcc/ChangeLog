@@ -1,3 +1,7 @@
+Mon Jun  8 00:04:07 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (summarize_insn): Ignore rtl slot format 'i'.
+
 Sun Jun  7 14:15:45 1998  John Carr  <jfc@mit.edu>
 
 	* sol2.h (INIT_SUBTARGET_OPTABS): Use Solaris libc float/long long
