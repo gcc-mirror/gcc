@@ -1,3 +1,7 @@
+Wed Feb 24 16:13:59 1999  Per Bothner  <bothner@deneb.cygnus.com>
+
+	*  check-init.c (check_init):  COPYN takes word count, not bit count.
+
 Fri Feb 26 14:06:21 1999  Per Bothner  <bothner@cygnus.com>
 
 	* typeck.c (convert_ieee_real_to_integer):  Use save_expr instead of
