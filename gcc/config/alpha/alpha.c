@@ -1124,21 +1124,21 @@ output_prolog (file, size)
   unsigned reg_mask = 0;
   int i;
 
-  /* If we need a GP (we have a LDSYM insn or a CALL_INSN) and we are not
-     a static function), load it first.  */
+  /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
+     Even if we are a static function, we still need to do this in case
+     our address is taken and passed to something like qsort.  */
 
   alpha_function_needs_gp = 0;
-  if (TREE_PUBLIC (current_function_decl))
-    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-      if ((GET_CODE (insn) == CALL_INSN)
-	  || (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	      && GET_CODE (PATTERN (insn)) != USE
-	      && GET_CODE (PATTERN (insn)) != CLOBBER
-	      && get_attr_type (insn) == TYPE_LDSYM))
-	{
-	  alpha_function_needs_gp = 1;
-	  break;
-	}
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if ((GET_CODE (insn) == CALL_INSN)
+	|| (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	    && GET_CODE (PATTERN (insn)) != USE
+	    && GET_CODE (PATTERN (insn)) != CLOBBER
+	    && get_attr_type (insn) == TYPE_LDSYM))
+      {
+	alpha_function_needs_gp = 1;
+	break;
+      }
 
   if (alpha_function_needs_gp)
     fprintf (file, "\tldgp $29,0($27)\n");
