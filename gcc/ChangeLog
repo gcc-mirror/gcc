@@ -1,5 +1,9 @@
 2000-12-01  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/sh/sh.c (shiftcosts): Don't get INTVAL before testing
+	whether X is a CONST_INT.
+	(addsubcosts): Likewise.
+
 	* config/sh/sh.h (OUTPUT_ADDR_CONST_EXTRA): Use INTVAL instead of
 	mis-used XINT.
 	(ARG_POINTER_REGNUM): Set to AP_REG.

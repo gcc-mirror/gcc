@@ -965,11 +965,13 @@ int
 shiftcosts (x)
      rtx x;
 {
-  int value = INTVAL (XEXP (x, 1));
+  int value;
 
   /* If shift by a non constant, then this will be expensive.  */
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     return SH_DYNAMIC_SHIFT_COST;
+
+  value = INTVAL (XEXP (x, 1));
 
   /* Otherwise, return the true cost in instructions.  */
   if (GET_CODE (x) == ASHIFTRT)
@@ -1025,7 +1027,8 @@ addsubcosts (x)
     return 1;
 
   /* Likewise for small constants.  */
-  if (CONST_OK_FOR_I (INTVAL (XEXP (x, 1))))
+  if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      && CONST_OK_FOR_I (INTVAL (XEXP (x, 1))))
     return 1;
 
   /* Any other constant requires a 2 cycle pc-relative load plus an
