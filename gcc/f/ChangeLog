@@ -9,6 +9,12 @@ Fri Sep  4 19:53:34 1998  Craig Burley  <burley@gnu.org>
 
 Fri Sep  4 18:35:52 1998  Craig Burley  <burley@gnu.org>
 
+	* lang-options.h: Convert to wrap option and doc string
+	in a new macro invocation, FTNOPT, so the nearly identical
+	list can be used in FSF-g77.
+
+Fri Sep  4 18:35:52 1998  Craig Burley  <burley@gnu.org>
+
 	* Makefile.in (fini.o): Don't define USE_HCONFIG here.
 	* fini.c: Define USE_HCONFIG here instead, so deps-kinda
 	picks up correct dependency.
