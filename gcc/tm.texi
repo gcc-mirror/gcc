@@ -1489,6 +1489,14 @@ corresponding to the register number @var{in} as seen by the called
 function.  Return @var{in} if register number @var{in} is not an inbound
 register.
 
+@findex LOCAL_REGNO
+@item LOCAL_REGNO (@var{regno})
+Define this macro if the target machine has register windows.  This C
+expression returns true if the register is call-saved but is in the
+register window.  Unlike most call-saved registers, such registers
+need not be explicitly restored on function exit or during non-local
+gotos.
+
 @ignore
 @findex PC_REGNUM
 @item PC_REGNUM
