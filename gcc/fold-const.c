@@ -4270,7 +4270,7 @@ extract_muldiv (t, c, code, wide_type)
 		? wide_type : type);
   tree t1, t2;
   int same_p = tcode == code;
-  tree op0, op1;
+  tree op0 = NULL_TREE, op1 = NULL_TREE;
 
   /* Don't deal with constants of zero here; they confuse the code below.  */
   if (integer_zerop (c))

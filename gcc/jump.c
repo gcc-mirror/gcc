@@ -4644,8 +4644,10 @@ invert_exp (x, insn)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	if (! invert_exp (XEXP (x, i), insn))
-	  return 0;
+	{
+	  if (! invert_exp (XEXP (x, i), insn))
+	    return 0;
+	}
       else if (fmt[i] == 'E')
 	{
 	  register int j;
@@ -4793,8 +4795,10 @@ redirect_exp (loc, olabel, nlabel, insn)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	if (! redirect_exp (&XEXP (x, i), olabel, nlabel, insn))
-	  return 0;
+	{
+	  if (! redirect_exp (&XEXP (x, i), olabel, nlabel, insn))
+	    return 0;
+	}
       else if (fmt[i] == 'E')
 	{
 	  register int j;

@@ -652,9 +652,7 @@ static void make_regs_eqv	PROTO((int, int));
 static void delete_reg_equiv	PROTO((int));
 static int mention_regs		PROTO((rtx));
 static int insert_regs		PROTO((rtx, struct table_elt *, int));
-static void free_element	PROTO((struct table_elt *));
 static void remove_from_table	PROTO((struct table_elt *, unsigned));
-static struct table_elt *get_element PROTO((void));
 static struct table_elt *lookup	PROTO((rtx, unsigned, enum machine_mode)),
        *lookup_for_remove PROTO((rtx, unsigned, enum machine_mode));
 static rtx lookup_as_function	PROTO((rtx, enum rtx_code));
