@@ -1,3 +1,7 @@
+2000-04-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* index-prop: Fix occasional problem when using cvs diff -p
+
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc_update: Remove references to cexp.c/cexp.y.
