@@ -3924,6 +3924,7 @@ expand_decl (decl)
 	   && !(flag_float_store
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
+	   && ! DECL_NONLOCAL (decl)
 	   && (DECL_REGISTER (decl) || optimize))
     {
       /* Automatic variable that can go in a register.  */
