@@ -4785,6 +4785,7 @@ store_constructor (exp, target, align, cleared, size)
 	      store_constructor_field (target, bitsize, bitpos, mode, value,
 				       type, align, cleared,
 				       TYPE_NONALIASED_COMPONENT (type)
+				       && GET_CODE (target) == MEM
 				       ? MEM_ALIAS_SET (target) :
 				       get_alias_set (elttype));
 
