@@ -1,3 +1,7 @@
+2004-11-25  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (sh_output_mi_thunk): Do not call regset_release_memory.
+
 2004-11-24  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Reduce
