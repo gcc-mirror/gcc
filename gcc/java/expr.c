@@ -2578,6 +2578,10 @@ process_jvm_instruction (PC, byte_ops, length)
 
    We fix this by using save_expr.  This forces the sub-operand to be
    copied into a fresh virtual register,
+
+   For method invocation, we modify the arguments so that a
+   left-to-right order evaluation is performed. Saved expressions
+   will, in CALL_EXPR order, be reused when the call will be expanded.
 */
 
 tree
@@ -2593,19 +2597,30 @@ force_evaluation_order (node)
     }
   else if (TREE_CODE (node) == CALL_EXPR || TREE_CODE (node) == NEW_CLASS_EXPR)
     {
-      tree last_side_effecting_arg = NULL_TREE;
-      tree arg = TREE_OPERAND (node, 1);
-      for (; arg != NULL_TREE; arg = TREE_CHAIN (arg))
+      tree arg, cmp;
+
+      if (!TREE_OPERAND (node, 1))
+	return node;
+
+      /* This reverses the evaluation order. This is a desired effect. */
+      for (cmp = NULL_TREE, arg = TREE_OPERAND (node, 1); 
+	   arg; arg = TREE_CHAIN (arg))
 	{
-	  if (TREE_SIDE_EFFECTS (TREE_VALUE (arg)))
-	    last_side_effecting_arg = arg;
+	  tree saved = save_expr (TREE_VALUE (arg));
+	  cmp = (cmp == NULL_TREE ? saved :
+		 build (COMPOUND_EXPR, void_type_node, cmp, saved));
+	  TREE_VALUE (arg) = saved;
 	}
-      arg = TREE_OPERAND (node, 1);
-      for (; arg != NULL_TREE;  arg = TREE_CHAIN (arg))
+      
+      if (cmp && TREE_CODE (cmp) == COMPOUND_EXPR)
+	TREE_SIDE_EFFECTS (cmp) = 1;
+
+      if (cmp)
 	{
-	  if (arg == last_side_effecting_arg)
-	    break;
-	  TREE_VALUE (arg) = save_expr (TREE_VALUE (arg)); 
+	  cmp = save_expr (build (COMPOUND_EXPR, TREE_TYPE (node), cmp, node));
+	  CAN_COMPLETE_NORMALLY (cmp) = CAN_COMPLETE_NORMALLY (node);
+	  TREE_SIDE_EFFECTS (cmp) = 1;
+	  node = cmp;
 	}
     }
   return node;

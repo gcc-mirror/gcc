@@ -2212,7 +2212,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/cygnus/gnupro-98r1/share/bison.simple"
+#line 3 "/usr/share/misc/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2229,7 +2229,7 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -2363,7 +2363,9 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
+#ifndef YYPARSE_PARAM
 int yyparse (void);
+#endif
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -2405,7 +2407,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/cygnus/gnupro-98r1/share/bison.simple"
+#line 196 "/usr/share/misc/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4694,7 +4696,7 @@ case 495:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/cygnus/gnupro-98r1/share/bison.simple"
+#line 498 "/usr/share/misc/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -9813,6 +9815,11 @@ patch_invoke (patch, method, args)
     if (JPRIMITIVE_TYPE_P (TREE_TYPE (TREE_VALUE (ta))) &&
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
+
+  /* Resolve unresolved returned type isses */
+  t = TREE_TYPE (TREE_TYPE (method));
+  if (TREE_CODE (t) == POINTER_TYPE && !CLASS_LOADED_P (TREE_TYPE (t)))
+    resolve_and_layout (TREE_TYPE (t), NULL);
   
   if (flag_emit_class_files || flag_emit_xref)
     func = method;
@@ -10223,7 +10230,7 @@ qualify_ambiguous_name (id)
 	break;
       case NEW_ARRAY_EXPR:
 	qual = TREE_CHAIN (qual);
-	new_array_found = 1;
+	again = new_array_found = 1;
 	continue;
       case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
@@ -10301,7 +10308,8 @@ qualify_ambiguous_name (id)
      declaration or parameter declaration, then it is an expression
      name. We don't carry this test out if we're in the context of the
      use of SUPER or THIS */
-  if (!this_found && !super_found && (decl = IDENTIFIER_LOCAL_VALUE (name)))
+  if (!this_found && !super_found && 
+      TREE_CODE (name) != STRING_CST && (decl = IDENTIFIER_LOCAL_VALUE (name)))
     {
       RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;
@@ -10318,15 +10326,17 @@ qualify_ambiguous_name (id)
       QUAL_RESOLUTION (qual) = (new_array_found ? NULL_TREE : decl);
     }
 
-  /* We reclassify NAME as a type name if:
+  /* We reclassify NAME as yielding to a type name resolution if:
      - NAME is a class/interface declared within the compilation
        unit containing NAME,
      - NAME is imported via a single-type-import declaration,
      - NAME is declared in an another compilation unit of the package
        of the compilation unit containing NAME,
      - NAME is declared by exactly on type-import-on-demand declaration
-     of the compilation unit containing NAME. */
-  else if ((decl = resolve_and_layout (name, NULL_TREE)))
+     of the compilation unit containing NAME. 
+     - NAME is actually a STRING_CST. */
+  else if (TREE_CODE (name) == STRING_CST ||
+	   (decl = resolve_and_layout (name, NULL_TREE)))
     {
       RESOLVE_TYPE_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;

@@ -643,6 +643,7 @@ check_init (exp, before)
     case GE_EXPR:
     case LT_EXPR:
     case LE_EXPR:
+    case MAX_EXPR:
     case ARRAY_REF:
     binop:
       check_init (TREE_OPERAND (exp, 0), before);
