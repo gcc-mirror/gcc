@@ -678,6 +678,12 @@ dequeue_and_dump (di)
       dump_next_stmt (di, t);
       break;
 
+    case HANDLER:
+      dump_stmt (di, t);
+      dump_child ("body", HANDLER_BODY (t));
+      dump_next_stmt (di, t);
+      break;
+
     case IF_STMT:
       dump_stmt (di, t);
       dump_child ("cond", IF_COND (t));
@@ -707,6 +713,8 @@ dequeue_and_dump (di)
 
     case TRY_BLOCK:
       dump_stmt (di, t);
+      if (CLEANUP_P (t))
+	dump_string (di, "cleanup");
       dump_child ("body", TRY_STMTS (t));
       dump_child ("hdlr", TRY_HANDLERS (t));
       dump_next_stmt (di, t);
@@ -770,6 +778,7 @@ dequeue_and_dump (di)
     case INDIRECT_REF:
     case THROW_EXPR:
     case CLEANUP_POINT_EXPR:
+    case SAVE_EXPR:
       /* These nodes are unary, but do not have code class `1'.  */
       dump_child ("op 0", TREE_OPERAND (t, 0));
       break;

@@ -1897,7 +1897,13 @@ storage is initialized to zero.
 
 @item SAVE_EXPR
 
-FIXME: Describe.
+A @code{SAVE_EXPR} represents an expression (possibly involving
+side-effects) that is used more than once.  The side-effects should
+occur only the first time the expression is evaluated.  Subsequent uses
+should juse reuse the computed value.  The first operand to the
+@code{SAVE_EXPR} is the expression to evaluate.  The side-effects should
+be executed where the @code{SAVE_EXPR} is first encountered in a
+depth-first preorder traversal of the expression tree.
 
 @item TARGET_EXPR
 A @code{TARGET_EXPR} represents a temporary object.  The first operand

@@ -1,3 +1,9 @@
+1999-10-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Dump HANDLERs and SAVE_EXPRs.  Dump
+	CLEANUP_P for a TRY_BLOCK.
+	* ir.texi: Document SAVE_EXPR.
+
 Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* call.c (build_over_call):  Check that the built-in function is
