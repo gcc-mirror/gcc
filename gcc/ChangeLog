@@ -1,3 +1,8 @@
+2004-11-14  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (lambda-code.o, tree-loop-linear.o): Depend on
+	$(EXPR_H).
+
 2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c (walk_stmt_tree): Remove.
