@@ -8,7 +8,7 @@ case "$target_triplet" in {
 	    set target_list { "powerpc-sim" }
 #	}
     }
-    { "mips-elf" } {
+    { "mips*-*-elf" } {
 	set target_list { "mips-sim" }
     }
 
