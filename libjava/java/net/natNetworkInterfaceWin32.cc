@@ -52,6 +52,17 @@ details.  */
 #include <java/net/SocketException.h>
 #include <java/util/Vector.h>
 
+#ifdef DISABLE_JAVA_NET
+
+::java::util::Vector*
+java::net::NetworkInterface::getRealNetworkInterfaces ()
+{
+  ::java::util::Vector* ht = new ::java::util::Vector();
+  return ht;
+}
+
+#else /* DISABLE_JAVA_NET */
+
 ::java::util::Vector*
 java::net::NetworkInterface::getRealNetworkInterfaces ()
 {
@@ -127,3 +138,5 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
   return ht;
 #endif /* WIN32 */
 }
+
+#endif // DISABLE_JAVA_NET //
