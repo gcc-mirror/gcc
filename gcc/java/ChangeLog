@@ -1,3 +1,9 @@
+2003-05-02  Tom Tromey  <tromey@redhat.com>
+
+	PR java/10491:
+	* gjavah.c (HANDLE_INNERCLASSES_ATTRIBUTE): New macro.
+	(handle_inner_classes): New function.
+
 2003-05-01  Tom Tromey  <tromey@redhat.com>
 
 	PR java/10459:
