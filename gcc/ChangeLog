@@ -1,3 +1,8 @@
+2003-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_shift_needs_scratch_p): Update a
+	comment.
+
 2002-01-25  Richard Henderson  <rth@redhat.com>
 
 	* config/m68k/m68k-none.h (ASM_SPEC): Adjust inter-option spacing.
