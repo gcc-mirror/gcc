@@ -70,7 +70,7 @@ extern rtx s390_return_addr_rtx PARAMS ((int, rtx));
 extern void s390_output_symbolic_const PARAMS ((FILE *, rtx));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
-extern void s390_output_constant_pool PARAMS ((FILE *));
+extern void s390_output_constant_pool PARAMS ((rtx, rtx));
 extern void s390_trampoline_template PARAMS ((FILE *));
 extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx s390_gen_rtx_const_DI PARAMS ((int, int));
