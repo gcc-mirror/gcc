@@ -297,6 +297,17 @@ calls_function_1 (exp, which)
 
       break;
 
+    case CONSTRUCTOR:
+      {
+	tree tem;
+
+	for (tem = CONSTRUCTOR_ELTS (exp); tem != 0; tem = TREE_CHAIN (tem))
+	  if (calls_function_1 (TREE_VALUE (tem), which))
+	    return 1;
+      }
+
+      return 0;
+
     case SAVE_EXPR:
       if (SAVE_EXPR_RTL (exp) != 0)
 	return 0;

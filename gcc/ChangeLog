@@ -1,5 +1,7 @@
 2000-12-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* calls.c (calls_function_1, case CONSTRUCTOR): New case.
+
 	* alias.c (alias_sets_conflict_p): New function.
 	(mems_in_disjoint_alias_sets_p): Use it.
 	(readonly_fields_p): Moved from expr.c; check for record type.
