@@ -1,5 +1,5 @@
 /* expr.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2001 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -17323,6 +17323,7 @@ ffeexpr_sym_rhs_dimlist_ (ffesymbol s, ffelexToken t)
 	       | FFESYMBOL_attrsINIT
 	       | FFESYMBOL_attrsNAMELIST
 	       | FFESYMBOL_attrsSFARG
+               | FFESYMBOL_attrsARRAY
 	       | FFESYMBOL_attrsTYPE)))
     na = sa | FFESYMBOL_attrsADJUSTS;
   else
@@ -17958,6 +17959,7 @@ ffeexpr_declare_parenthesized_ (ffelexToken t, bool maybe_intrin,
 
 	case FFEEXPR_contextDIMLIST:
 	  s = ffeexpr_sym_rhs_dimlist_ (s, t);
+          bad = FALSE;
 	  break;
 
 	case FFEEXPR_contextCHARACTERSIZE:

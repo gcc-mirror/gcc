@@ -1,3 +1,8 @@
+2001-09-28  Robert Anderson  <rwa@alumni.princeton.edu>
+
+	* expr.c (ffeexpr_sym_rhs_dimlist_): Allow array elements
+	as bounds of adjustable arrays.
+
 Thu Sep 20 15:05:20 JST 2001  George Helffrich  <george@geo.titech.ac.jp>
 
 	* com.c (ffecom_subscript_check_): Loosen subscript checking rules
