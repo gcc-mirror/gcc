@@ -257,13 +257,20 @@ find_include_file (pfile, fname, search_start, ihash, before)
   if (f == -1)
     return -1;
 
-  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
+  if (path == ABSOLUTE_PATH)
+    {
+      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
+      ih->nshort = ih->name;
+    }
+  else
+    {
+      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name)
+			      + strlen (fname) + 1);
+      ih->nshort = ih->name + strlen (fname) + 1;
+      strcpy ((char *)ih->nshort, fname);
+    }
   strcpy ((char *)ih->name, name);
   ih->foundhere = path;
-  if (path == ABSOLUTE_PATH)
-    ih->nshort = ih->name;
-  else
-    ih->nshort = strstr (ih->name, fname);
   ih->control_macro = NULL;
   ih->hash = dummy.hash;
 

@@ -1,3 +1,8 @@
+2000-03-14  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (find_include_file): Don't assume nshort is a
+	substring of name.
+
 Tue Mar 14 08:42:21 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (hppa configurations): Add pa32-regs.h to the
