@@ -1,3 +1,8 @@
+2000-04-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* libjava.compile/block.java: New file.
+	* libjava.compile/block.out: New file.
+
 2000-04-20  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.jni/throwit.out: Fixed output to be correct.
