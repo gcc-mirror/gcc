@@ -1,3 +1,9 @@
+2002-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/5746
+	* semantics.c (finish_switch_cond): Don't call get_unwidened
+	if error_mark_node.
+
 2002-02-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/2645, DR 295
