@@ -1,5 +1,5 @@
 /* Function integration definitions for GNU C-Compiler
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -92,6 +92,10 @@ struct inline_remap
   rtvec copy_asm_operands_vector;
   /* Likewise, this is the copied constraints vector.  */
   rtvec copy_asm_constraints_vector;
+
+  /* Indications for regs being pointers and their alignment.  */
+  char *regno_pointer_flag;
+  char *regno_pointer_align;
 
   /* The next few fields are used for subst_constants to record the SETs
      that it saw.  */
