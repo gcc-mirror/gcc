@@ -55,7 +55,7 @@ libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TA
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
 # know that we are building the simulator.
-host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find emacs emacs19 uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils snavigator libtool gettext zip fastjar"
+host_tools="texinfo byacc flex bison binutils ld gas gcc cgen sid sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find emacs emacs19 uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils snavigator libtool gettext zip fastjar"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -327,6 +327,9 @@ if [ x${shared} = xyes ]; then
       ;;
     powerpc*-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-ppcpic"
+      ;;
+    s390-* | s390x-*)
+      host_makefile_frag="${host_makefile_frag} config/mh-s390pic"
       ;;
     *-*-*)
       if test -f ${srcdir}/config/mh-${host_cpu}pic; then
@@ -689,26 +692,8 @@ case "${target}" in
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
-  arm-*-coff*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
-    ;;
-  arm-*-elf*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
-    ;;
   arm-*-oabi*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  c4x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
-    ;;
-  c54x*-*-* | tic54x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} gcc gdb newlib"
     ;;
   thumb-*-coff)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -720,34 +705,28 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   strongarm-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   strongarm-*-coff)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   xscale-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi target-qthreads"
-    if [ x${is_cross_compiler} != xno ] ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
+    noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     ;;
   xscale-*-coff)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    if [ x${is_cross_compiler} != xno ] ; then
-	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
-    fi
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   thumb-*-pe)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
+    ;;
+  c4x-*-*)
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    ;;
+  c54x*-*-* | tic54x-*-*)
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} gcc gdb newlib"
     ;;
   cris-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -764,7 +743,9 @@ case "${target}" in
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
-  h8300*-*-* | \
+  h8300*-*-*)
+    noconfigdirs="$noconfigdirs target-libgloss"
+    ;;
   h8500-*-*)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj} target-libf2c"
     ;;
@@ -796,6 +777,10 @@ case "${target}" in
   ia64*-*-elf*)
     # No gdb support yet.
     noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb"
+    ;;
+  ia64*-**-hpux*)
+    # No gdb or ld support yet.
+    noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb ld"
     ;;
   i[3456]86-*-coff | i[3456]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -898,12 +883,8 @@ case "${target}" in
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
-    # The configure and build of ld are currently disabled because
-    # GNU ld is known to be broken for AIX 4.2 and 4.3 (at least)
-    # The symptom is that GDBtk 4.18 fails at startup with a segfault
-    # if linked by GNU ld, but not if linked by the native ld.
-    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss ${libgcj} ld"
-    use_gnu_ld=no
+    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss ${libgcj}"
+    use_gnu_ld=yes
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
@@ -929,12 +910,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib gprof cvssrc ${libgcj}"
     ;;
   rs6000-*-aix*)
-    # The configure and build of ld are currently disabled because
-    # GNU ld is known to be broken for AIX 4.2 and 4.3 (at least)
-    # The symptom is that GDBtk 4.18 fails at startup with a segfault
-    # if linked by GNU ld, but not if linked by the native ld.
-    noconfigdirs="$noconfigdirs gprof ld ${libgcj}"
-    use_gnu_ld=no
+    noconfigdirs="$noconfigdirs gprof ${libgcj}"
+    use_gnu_ld=yes
     ;;
   rs6000-*-*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"
@@ -1496,10 +1473,20 @@ case " $skipdirs " in
      fi
    fi
 
-   # If we're building newlib, use its generic headers last, but search
-   # for any libc-related directories first (so make it the last -B
-   # switch).
-   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
+   case "${target}-${is_cross_compiler}" in
+   i[3456]86-pc-linux*-no)
+      # Here host == target, so we don't need to build gcc,
+      # so we don't want to discard standard headers.
+      FLAGS_FOR_TARGET=`echo " $FLAGS_FOR_TARGET " | sed -e 's/ -nostdinc / /'`
+      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/'
+      ;;
+   *)
+      # If we're building newlib, use its generic headers last, but search
+      # for any libc-related directories first (so make it the last -B
+      # switch).
+      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
+      ;;
+   esac
    ;;
   esac
   ;;

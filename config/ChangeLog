@@ -24,7 +24,12 @@
 	* mh-ia64pic: New file.
 	* mt-ia64pic: New file.	
 
-Fri Jul 14 18:13:23 2000  Mark P Mitchell  <mark@codesourcery.com>
+2001-02-09  Martin Schwidefsky  <schwidefsky@de.ibm.com>
+
+	* mh-s390pic: New file.
+	* mt-s390pic: New file.
+
+2000-07-14  Mark P Mitchell  <mark@codesourcery.com>
 
 	* mh-irix6 (CC): Don't set it.
 

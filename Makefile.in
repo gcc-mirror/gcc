@@ -1812,7 +1812,7 @@ all-send-pr: all-prms
 all-shellutils:
 all-sid: all-tcl all-tk
 all-sim: all-libiberty all-bfd all-opcodes all-readline all-cgen
-all-snavigator: all-tcl all-tk all-itcl all-db all-grep all-libgui
+all-snavigator: all-tcl all-tk all-itcl all-tix all-db all-grep all-libgui
 all-tar: all-libiberty
 all-tcl:
 all-tcl8.1:
@@ -1893,7 +1893,9 @@ DEVO_SUPPORT= README Makefile.in configure configure.in \
 # ChangeLog omitted because it may refer to files which are not in this
 # distribution (perhaps it would be better to include it anyway).
 ETC_SUPPORT= Makefile.in configure configure.in standards.texi \
-	make-stds.texi standards.info*
+	make-stds.texi standards.info* configure.texi configure.info* \
+	configbuild.* configdev.*
+
 
 # When you use `make setup-dirs' or `make taz' you should always redefine
 # this macro.
@@ -1901,10 +1903,16 @@ SUPPORT_FILES = list-of-support-files-for-tool-in-question
 
 # NOTE: No double quotes in the below.  It is used within shell script
 # as VER="$(VER)"
-VER = `	if grep AM_INIT_AUTOMAKE $(TOOL)/configure.in >/dev/null 2>&1; then \
+VER = `	if grep 'AM_INIT_AUTOMAKE.*BFD_VERSION' $(TOOL)/configure.in >/dev/null 2>&1; then \
+	  sed < bfd/configure.in -n 's/AM_INIT_AUTOMAKE[^,]*, *\([^)]*\))/\1/p'; \
+	elif grep AM_INIT_AUTOMAKE $(TOOL)/configure.in >/dev/null 2>&1; then \
 	  sed < $(TOOL)/configure.in -n 's/AM_INIT_AUTOMAKE[^,]*, *\([^)]*\))/\1/p'; \
-	else \
+	elif test -f $(TOOL)/version.in; then \
+	  head -1 $(TOOL)/version.in; \
+	elif grep VERSION $(TOOL)/Makefile.in > /dev/null 2>&1; then \
 	  sed < $(TOOL)/Makefile.in -n 's/^VERSION *= *//p'; \
+	else \
+	  echo VERSION; \
 	fi`
 PACKAGE = $(TOOL)
 
@@ -1918,13 +1926,17 @@ taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(SUPPORT_FILES)"
-	$(MAKE) -f Makefile.in do-tar-bz2 \
+	$(MAKE) -f Makefile.in do-tar \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-bz2 \
 		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(SUPPORT_FILES)"
 
-.PHONY: gdb-taz
-gdb-taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
+.PHONY: gdb-tar
+gdb-tar: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 	$(MAKE) -f Makefile.in do-proto-toplev \
 		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
 		MD5PROG="$(MD5PROG)" \
@@ -1937,7 +1949,18 @@ gdb-taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(SUPPORT_FILES)"
-	$(MAKE) -f Makefile.in do-tar-bz2 \
+	$(MAKE) -f Makefile.in do-tar \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+
+.PHONY: gdb-taz
+gdb-taz: gdb-tar $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
+	$(MAKE) -f Makefile.in gdb-tar \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-bz2 \
 		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(SUPPORT_FILES)"
@@ -1996,15 +2019,25 @@ do-proto-toplev: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 	else true; fi
 	chmod -R og=u . || chmod og=u `find . -print`
 	#
+	# Create .gmo files from .po files.
+	for f in `find . -name '*.po' -type f -print`; do \
+	     msgfmt -o `echo $$f | sed -e 's/\.po$$/.gmo/'` $$f ; \
+	done
+	#
 	-rm -f $(PACKAGE)-$(VER)
 	ln -s proto-toplev $(PACKAGE)-$(VER)
 
-.PHONY: do-tar-bz2
-do-tar-bz2:
-	echo "==> Making $(PACKAGE)-$(VER).tar.bz2"
-	-rm -f $(PACKAGE)-$(VER).tar.bz2
+.PHONY: do-tar
+do-tar:
+	echo "==> Making $(PACKAGE)-$(VER).tar"
+	-rm -f $(PACKAGE)-$(VER).tar
 	find $(PACKAGE)-$(VER) -follow -name CVS -prune -o -type f -print \
 		| tar cTfh - $(PACKAGE)-$(VER).tar
+
+.PHONY: do-bz2
+do-bz2:
+	echo "==> Bzipping $(PACKAGE)-$(VER).tar.bz2"
+	-rm -f $(PACKAGE)-$(VER).tar.bz2
 	$(BZIPPROG) -v -9 $(PACKAGE)-$(VER).tar
 
 .PHONY: do-md5sum
@@ -2061,9 +2094,14 @@ gdb.tar.bz2: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
 	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(GDB_SUPPORT_DIRS)"
+.PHONY: gdb.tar
+gdb.tar: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-tar TOOL=gdb \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(GDB_SUPPORT_DIRS)"
 
-.PHONY: dejagnu.tar.bz2
 DEJAGNU_SUPPORT_DIRS=  tcl expect libiberty
+.PHONY: dejagnu.tar.bz2
 dejagnu.tar.bz2: $(DIST_SUPPORT) $(DEJAGNU_SUPPORT_DIRS) dejagnu
 	$(MAKE) -f Makefile.in taz TOOL=dejagnu \
 		MD5PROG="$(MD5PROG)" \
@@ -2075,6 +2113,11 @@ gdb+dejagnu.tar.bz2: $(DIST_SUPPORT) $(GDBD_SUPPORT_DIRS) gdb
 	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb PACKAGE=gdb+dejagnu \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(GDBD_SUPPORT_DIRS)"
+.PHONY: gdb+dejagnu.tar
+gdb+dejagnu.tar: $(DIST_SUPPORT) $(GDBD_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-tar TOOL=gdb PACKAGE=gdb+dejagnu \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(GDBD_SUPPORT_DIRS)"
 
 .PHONY: insight.tar.bz2
 INSIGHT_SUPPORT_DIRS= $(GDB_SUPPORT_DIRS) tcl tk itcl tix libgui
@@ -2082,11 +2125,21 @@ insight.tar.bz2: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
 	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb PACKAGE=insight \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(INSIGHT_SUPPORT_DIRS)"
+.PHONY: insight.tar
+insight.tar: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-tar TOOL=gdb PACKAGE=insight \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(INSIGHT_SUPPORT_DIRS)"
 
 .PHONY: insight+dejagnu.tar.bz2
 INSIGHTD_SUPPORT_DIRS= $(INSIGHT_SUPPORT_DIRS) expect dejagnu
 insight+dejagnu.tar.bz2: $(DIST_SUPPORT) $(INSIGHTD_SUPPORT_DIRS) gdb
 	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb PACKAGE="insight+dejagnu" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(INSIGHTD_SUPPORT_DIRS)"
+.PHONY: insight+dejagnu.tar
+insight+dejagnu.tar: $(DIST_SUPPORT) $(INSIGHTD_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-tar TOOL=gdb PACKAGE="insight+dejagnu" \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(INSIGHTD_SUPPORT_DIRS)"
 
