@@ -1,3 +1,9 @@
+2001-01-08  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/1586:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AUTOMAKE_OPTIONS): Added no-dependencies.
+
 2001-01-08  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Use the new "-M -MF" option for generating dependencies
