@@ -1,3 +1,8 @@
+2000-05-08  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/linux.h: Remove undefines which disabled .ctor/.dtor
+	support.
+
 2000-05-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (LOOSE_CFLAGS): Add /g modifiers to both sed
