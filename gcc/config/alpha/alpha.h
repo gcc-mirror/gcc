@@ -1561,7 +1561,7 @@ extern void final_prescan_insn ();
 
 /* Define the value returned by a floating-point comparison instruction.  */
 
-#define FLOAT_STORE_FLAG_VALUE 0.5
+#define FLOAT_STORE_FLAG_VALUE (TARGET_FLOAT_VAX ? 0.5 : 2.0)
 
 /* Canonicalize a comparison from one we don't have to one we do have.  */
 
