@@ -1713,7 +1713,7 @@ bit_operator (x, mode)
             (with sign extension for ASHIFTRT)
    16     - move word into place, zero or sign extend other
    17-20  - do 16bit shift, then inline remaining shifts
-   20-23  - loop
+   21-23  - loop
    24*    - ASHIFT: move byte 0(msb) to byte 1, zero byte 0,
                     move word 0 to word 1, zero word 0
             LSHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
@@ -2113,7 +2113,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		*assembler_p = "mov.b\t%t0,%s0\n\tshll\t%t0\n\tsubx\t%t0,%t0\t";
+		*assembler_p = "mov.b\t%t0,%s0\n\tshll\t%t0\n\tsubx\t%t0,%t0";
 	      else
 		*assembler_p = "mov.b\t%t0,%s0\n\texts.w\t%T0";
 	      *cc_valid_p = 0;
@@ -2147,7 +2147,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	    {
 	    case SHIFT_ASHIFT:
 	      if (TARGET_H8300S)
-		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\t";
+		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0";
 	      else
 		*assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0";
 	      *cc_valid_p = 0;
@@ -2442,7 +2442,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	  if (shift_type == SHIFT_ASHIFTRT)
 	    {
 	      if (TARGET_H8300)
-		*assembler_p = "shll\t%z0\n\tsubx %w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
+		*assembler_p = "shll\t%z0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
 	      else
 		*assembler_p = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
 	      *cc_valid_p = 0;
@@ -2623,12 +2623,12 @@ emit_a_shift (insn, operands)
 		switch (mode)
 		  {
 		  case QImode:
-		    sprintf (insn_buf, "and #%d,%%X0", mask);
+		    sprintf (insn_buf, "and\t#%d,%%X0", mask);
 		    cc_status.value1 = operands[0];
 		    cc_status.flags |= CC_NO_CARRY;
 		    break;
 		  case HImode:
-		    sprintf (insn_buf, "and #%d,%%s0\n\tand #%d,%%t0",
+		    sprintf (insn_buf, "and\t#%d,%%s0\n\tand\t#%d,%%t0",
 			     mask & 255, mask >> 8);
 		    break;
 		  case SImode:
@@ -2639,7 +2639,7 @@ emit_a_shift (insn, operands)
 	      }
 	    else
 	      {
-		sprintf (insn_buf, "and.%c #%d,%%%c0",
+		sprintf (insn_buf, "and.%c\t#%d,%%%c0",
 			 "bwl"[shift_mode], mask,
 			 mode == QImode ? 'X' : mode == HImode ? 'T' : 'S');
 		cc_status.value1 = operands[0];
