@@ -1,3 +1,7 @@
+2001-04-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* MAINTAINERS: Add self and RTH as C front end maintainers.
+
 2001-04-05  Alexandre Oliva  <aoliva@redhat.com>
 
         * config.sub: Make sure to match an already-canonicalized
