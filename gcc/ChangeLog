@@ -1,3 +1,9 @@
+Thu Sep 23 12:59:14 1999  Alex Samuel  <samuel@codesourcery.com>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* ggc-page.c: New file.
+	* Makefile.in (ggc-page.o): New.
+
 Thu Sep 23 13:55:21 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* invoke.texi: Document -fdelete-null-pointer-checks
