@@ -1,3 +1,9 @@
+2004-12-20  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/18942
+	* simplify-rtx.c (simplify_relational_operation_1): Simplify
+	x + cst1 == cst2 to x == cst2 - cst1.  Made static.
+
 2004-12-20  Matt Austern  <austern@apple.com>
 
 	PR c++/19044
