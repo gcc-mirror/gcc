@@ -724,9 +724,6 @@ base_init:
 		  if (! current_function_parms_stored)
 		    store_parm_decls ();
 
-		  /* Flag that we are processing base and member initializers.  */
-		  current_vtable_decl = error_mark_node;
-
 		  if (DECL_CONSTRUCTOR_P (current_function_decl))
 		    {
 		      /* Make a contour for the initializer list.  */
