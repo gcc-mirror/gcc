@@ -1,3 +1,14 @@
+2002-05-31  Florian Weimer  <fw@deneb.enyo.de>
+
+	* Makefile.in, Make-lang.in: Documentation is now built in
+	Make-lang.in.  Store Info and generated Texinfo files in the
+	source directory.
+	* gnat_ug.texi: Remove CVS keywords, correct version number.
+	Set file name correctly.
+
+	* gnat_ug_*.texi: Add.
+	* .cvsignore: Ignore generated Texinfo files.
+
 2002-05-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* ada.h: Add MI guard macro.
