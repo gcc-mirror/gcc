@@ -1,5 +1,22 @@
 Wed Sep  9 21:58:41 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* except.h (current_function_eh_stub_label): Declare.
+	(current_function_eh_old_stub_label): Declare.
+	* function.h (struct function): New members eh_stub_label and
+	eh_old_stub_label.
+	* except.c (current_function_eh_stub_label): New variable.
+	(current_function_eh_old_stub_label): New variable.
+	(init_eh_for_function): Clear them.
+	(save_eh_status): Save them.
+	(restore_eh_status): Restore them.
+	(expand_builtin_eh_stub): Set current_function_eh_stub_label.
+	(expand_builtin_eh_stub_old): Set current_function_eh_old_stub_label.
+	* flow.c (find_basic_blocks_1): When handling a REG_LABEL note, don't
+	make an edge from the block that contains it to the block starting
+	with the label if this label is one of the eh stub labels.
+	If eh stub labels exist, show they are reachable from the last block
+	in the function.
+
 	* reload1.c (reload): Break out several subroutines and make some
 	variables global.
 	(calculate_needs_all_insns): New function, broken out of reload.

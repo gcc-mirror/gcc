@@ -484,7 +484,9 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	{
 	  /* Make a list of all labels referred to other than by jumps.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_LABEL)
+	    if (REG_NOTE_KIND (note) == REG_LABEL
+		&& XEXP (note, 0) != current_function_eh_stub_label
+		&& XEXP (note, 0) != current_function_eh_old_stub_label)
 	      label_value_list = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
 						    label_value_list);
 	}
@@ -589,7 +591,6 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 		  {
 		    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 		      {
-			
 			/* References to labels in non-jumping insns have
 			   REG_LABEL notes attached to them.
 
@@ -609,12 +610,17 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			   associated insns aren't marked dead, so we make
 			   the block in question live and create an edge from
 			   this insn to the label.  This is not strictly
-			   correct, but it is close enough for now.  */
+			   correct, but it is close enough for now.  
+
+			   See below for code that handles the eh_stub labels
+			   specially.  */
 			for (note = REG_NOTES (insn);
 			     note;
 			     note = XEXP (note, 1))
 			  {
-			    if (REG_NOTE_KIND (note) == REG_LABEL)
+			    if (REG_NOTE_KIND (note) == REG_LABEL
+				&& XEXP (note, 0) != current_function_eh_stub_label
+				&& XEXP (note, 0) != current_function_eh_old_stub_label)
 			      {
 				x = XEXP (note, 0);
 				block_live[BLOCK_NUM (x)] = 1;
@@ -694,6 +700,22 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			       use them could possibly do nonlocal gotos.  */
 			  }
 		      }
+		  }
+		/* We know something about the structure of the function
+		   __throw in libgcc2.c.  It is the only function that ever
+		   contains eh_stub labels.  It modifies its return address
+		   so that the last block returns to one of the eh_stub labels
+		   within it.  So we have to make additional edges in the
+		   flow graph.  */
+		if (i + 1 == n_basic_blocks
+		    && current_function_eh_stub_label != 0)
+		  {
+		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+						       current_function_eh_stub_label),
+				    basic_block_end[i], 0);
+		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+						       current_function_eh_old_stub_label),
+				    basic_block_end[i], 0);
 		  }
 	      }
 	}
