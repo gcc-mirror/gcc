@@ -36,6 +36,89 @@
  
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+
 #include_next <math.h>
 
+// Get rid of those macros defined in <math.h> in lieu of real functions.
+#undef abs
+#undef div
+#undef acos
+#undef asin
+#undef atan
+#undef atan2
+#undef ceil
+#undef cos
+#undef cosh
+#undef exp
+#undef fabs
+#undef floor
+#undef fmod
+#undef frexp
+#undef ldexp
+#undef log
+#undef log10
+#undef modf
+#undef pow
+#undef sin
+#undef sinh
+#undef sqrt
+#undef tan
+#undef tanh
+
+#undef fpclassify
+#undef isfinite
+#undef isinf
+#undef isnan
+#undef isnormal
+#undef signbit
+#undef isgreater
+#undef isgreaterequal
+#undef isless
+#undef islessequal
+#undef islessgreater
+#undef isunordered
+
+namespace std 
+{
+  inline double
+  abs(double __x)
+  { return __builtin_fabs(__x); }
+
+  inline float
+  abs(float __x)
+  { return __builtin_fabsf(__x); }
+
+  inline long double
+  abs(long double __x)
+  { return __builtin_fabsl(__x); }
+
+#if _GLIBCPP_HAVE_MODFF
+  inline float 
+  modf(float __x, float* __iptr) { return modff(__x, __iptr); }
+#else
+  inline float 
+  modf(float __x, float* __iptr)
+  {
+    double __tmp;
+    double __res = modf(static_cast<double>(__x), &__tmp);
+    *__iptr = static_cast<float>(__tmp);
+    return __res;
+  }
+#endif
+
+#if _GLIBCPP_HAVE_MODFL
+  inline long double 
+  modf(long double __x, long double* __iptr) { return modfl(__x, __iptr); }
+#else
+  inline long double 
+  modf(long double __x, long double* __iptr) 
+  { 
+    double __tmp;
+    double __res = modf(static_cast<double>(__x), &__tmp);
+    * __iptr = static_cast<long double>(__tmp);
+    return __res;
+  }
+#endif
+}
 #endif

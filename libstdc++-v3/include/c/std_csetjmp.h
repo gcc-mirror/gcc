@@ -38,4 +38,12 @@
 
 #include_next <setjmp.h>
 
+// Get rid of those macros defined in <setjmp.h> in lieu of real functions.
+#undef longjmp
+
+// Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
+#ifndef setjmp
+#define setjmp(env) std::setjmp (env)
+#endif
+
 #endif

@@ -1,6 +1,6 @@
 // 1999-04-12 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -500,7 +500,7 @@ bool test11()
 
   // sanity check via 'C' library call
   char* err;
-  long l = strtol(cstrlit, &err, 0);
+  long l = std::strtol(cstrlit, &err, 0);
 
   std::istringstream iss(cstrlit);
   iss.setf(std::ios::fmtflags(0), std::ios::basefield);

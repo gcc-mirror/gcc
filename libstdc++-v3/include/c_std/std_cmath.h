@@ -82,13 +82,6 @@ namespace std
   // an `exported' forward declaration.
   template<typename _Tp> _Tp __cmath_power(_Tp, unsigned int);
 
-  template<typename _Tp>
-  inline _Tp
-    __cmath_abs(_Tp __x)
-    {
-      return __x < _Tp() ? -__x : __x;
-    }
-
   inline double
   abs(double __x)
   { return __builtin_fabs(__x); }

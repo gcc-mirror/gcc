@@ -1,3 +1,67 @@
+2002-06-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_compatibility: New.
+	* include/c_compatibility/assert.h: New.
+	* include/c_compatibility/ctype.h: New.
+	* include/c_compatibility/errno.h: New.
+	* include/c_compatibility/float.h: New.
+	* include/c_compatibility/iso646.h: New.
+	* include/c_compatibility/limits.h: New.
+	* include/c_compatibility/locale.h: New.
+	* include/c_compatibility/math.h: New.
+	* include/c_compatibility/setjmp.h: New.
+	* include/c_compatibility/signal.h: New.
+	* include/c_compatibility/stdarg.h: New.
+	* include/c_compatibility/stddef.h: New.
+	* include/c_compatibility/stdio.h: New.
+	* include/c_compatibility/stdlib.h: New.
+	* include/c_compatibility/string.h: New.
+	* include/c_compatibility/time.h: New.
+	* include/c_compatibility/wchar.h: New.
+	* include/c_compatibility/wctype.h: New.
+
+	* include/c/std_cerrno.h: Get out of the way... define errno.
+	* include/c/std_cmath.h: Add abs, modf overloads.
+	Undefine C99 isms. Still not sure how to deal with this sanely.
+	* include/c/std_csetjmp.h: Tweak.
+	* include/c/std_cwchar.h: Include cstddef for size_t.
+
+	* include/c_std/std_cmath.h: Remove extra function.
+	
+	Pendantic std usage in testsuites.	
+	* testsuite/17_intro/header_cstdlib.cc (test01): Qualify ldiv_t
+	with std.
+	* testsuite/17_intro/header_cwchar.cc: Tweak.
+	* testsuite/22_locale/codecvt_members_char_char.cc (test03): Use
+	std::setlocale.
+	* testsuite/22_locale/ctype_to_wchar_t.cc (test05): Same.
+	* testsuite/22_locale/ctype_to_char.cc (test05): Same.
+	* testsuite/22_locale/ctype_is_wchar_t.cc (test05): Same.
+	* testsuite/22_locale/ctype_is_char.cc (test05): Same.
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc (test03): Same.
+	* testsuite/22_locale/time_get_members_wchar_t.cc (test08): Same.
+	* testsuite/22_locale/time_get_members_char.cc (test08): Same.
+	* testsuite/22_locale/time_put_members_wchar_t.cc (test04): Same.
+	* testsuite/22_locale/time_put_members_char.cc (test04): Same.
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test04): Same.
+	* testsuite/22_locale/num_put_members_char.cc (test04): Same.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc (test03): Same.
+	* testsuite/22_locale/numpunct_members_char.cc (test03): Same.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Same.
+	* testsuite/22_locale/num_get_members_char.cc: Same.
+	* testsuite/22_locale/money_put_members_wchar_t.cc (test07): Same.
+	* testsuite/22_locale/money_put_members_char.cc (test07): Same.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc (test03): Same.
+	* testsuite/22_locale/moneypunct_members_char.cc (test03): Same.
+	* testsuite/22_locale/money_get_members_wchar_t.cc (test08): Same.
+	* testsuite/22_locale/money_get_members_char.cc (test08): Same.
+	* testsuite/22_locale/messages_members_char.cc (test03): Same.
+	* testsuite/22_locale/collate_members_wchar_t.cc (test04): Same.
+	* testsuite/22_locale/collate_members_char.cc (test04): Same.
+	* testsuite/26_numerics/fabs_inline.cc: Use std::printf.
+	* testsuite/27_io/istream_seeks.cc (test02): Qualify abort.
+	* testsuite/27_io/istream_extractor_arith.cc (test11): Qualify strtol.
+	
 2002-06-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/Makefile.am (libsupc__convenience_la_SOURCES): Add

@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- compatibility header.
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,58 +27,9 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
+#ifndef _CPP_FLOAT_H_
+#define _CPP_FLOAT_H_ 1
 
-#ifndef _CPP_CSTDIO
-#define _CPP_CSTDIO 1
-
-#pragma GCC system_header
-
-#include_next <stdio.h>
-
-// Get rid of those macros defined in <stdio.h> in lieu of real functions.
-#undef clearerr
-#undef fclose
-#undef feof
-#undef ferror
-#undef fflush
-#undef fgetc
-#undef fgetpos
-#undef fgets
-#undef fopen
-#undef fprintf
-#undef fputc
-#undef fputs
-#undef fread
-#undef freopen
-#undef fscanf
-#undef fseek
-#undef fsetpos
-#undef ftell
-#undef fwrite
-#undef getc
-#undef getchar
-#undef gets
-#undef perror
-#undef printf
-#undef putc
-#undef putchar
-#undef puts
-#undef remove
-#undef rename
-#undef rewind
-#undef scanf
-#undef setbuf
-#undef setvbuf
-#undef sprintf
-#undef sscanf
-#undef tmpfile
-#undef tmpnam
-#undef ungetc
-#undef vfprintf
-#undef vprintf
-#undef vsprintf
+#include <cfloat>
 
 #endif
