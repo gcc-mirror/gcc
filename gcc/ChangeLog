@@ -1,3 +1,7 @@
+2001-07-31  Graham Stott <grahams@redhat.com>
+
+	* function.c (pad_below): Revert 2001-07-26 patch.
+
 Tue Jul 31 15:37:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack (convert_regs_1): Fix best edge condition.
