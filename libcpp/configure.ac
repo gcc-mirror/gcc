@@ -117,7 +117,7 @@ case $target in
 	s390*-*-* | \
 	sparc64*-*-* | ultrasparc-*-freebsd* | \
 	sparcv9-*-solaris2* | \
-	sparc-*-solaris2.[789] | sparc-*-solaris2.1[0-9] | \
+	sparc-*-solaris2.[789] | sparc-*-solaris2.1[0-9]* | \
 	sh[123456789l]*-*-*)
 		need_64bit_hwint=yes ;;
 	*)

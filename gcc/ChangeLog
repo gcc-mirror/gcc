@@ -1,3 +1,8 @@
+2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config.gcc: Consistently use solaris2.1[0-9]* instead of
+	solaris2.1[0-9].
+
 2005-03-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_builtin_memcpy): Take decomposed arguments
