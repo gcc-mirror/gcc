@@ -847,10 +847,16 @@ extern struct rs6000_cpu_select rs6000_select[];
 /* Special register that represents memory, used for float/int conversions.  */
 #define FPMEM_REGNUM 76
 
+/* Register to use as a placeholder for the GOT/allocated TOC register.
+   FINALIZE_PIC will change all uses of this register to a an appropriate
+   pseudo register when it adds the code to setup the GOT.  We use r2
+   because it is a reserved register in all of the ABI's.  */
+#define GOT_TOC_REGNUM 2
+
 /* Place that structure value return address is placed.
 
    On the RS/6000, it is passed as an extra parameter.  */
-#define STRUCT_VALUE	0
+#define STRUCT_VALUE 0
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

@@ -373,24 +373,6 @@ rs6000_immed_double_const (i0, i1, mode)
 }
 
 
-/* Return the GOT register, creating it if needed.  */
-
-struct rtx_def *
-rs6000_got_register (value)
-     rtx value;
-{
-  if (!pic_offset_table_rtx)
-    {
-      if (reload_in_progress || reload_completed)
-	fatal_insn ("internal error -- needed new GOT register during reload phase to load:", value);
-
-      pic_offset_table_rtx = gen_reg_rtx (SImode);
-    }
-
-  return pic_offset_table_rtx;
-}
-
-
 /* Return non-zero if this function is known to have a null epilogue.  */
 
 int
@@ -2078,6 +2060,81 @@ ccr_bit (op, scc_p)
     }
 }
 
+/* Return the GOT register, creating it if needed.  */
+
+struct rtx_def *
+rs6000_got_register (value)
+     rtx value;
+{
+  if (!pic_offset_table_rtx)
+    {
+      if (reload_in_progress || reload_completed)
+	fatal_insn ("internal error -- needed new GOT register during reload phase to load:", value);
+
+      current_function_uses_pic_offset_table = 1;
+      pic_offset_table_rtx = gen_rtx (REG, Pmode, GOT_TOC_REGNUM);
+    }
+
+  return pic_offset_table_rtx;
+}
+
+
+/* Replace all occurances of register FROM with an new pseduo register in an insn X.
+   Store the pseudo register used in REG.
+   This is only safe during FINALIZE_PIC, since the registers haven't been setup
+   yet.  */
+
+static rtx
+rs6000_replace_regno (x, from, reg)
+     rtx x;
+     int from;
+     rtx *reg;
+{
+  register int i, j;
+  register char *fmt;
+
+  /* Allow this function to make replacements in EXPR_LISTs.  */
+  if (!x)
+    return x;
+
+  switch (GET_CODE (x))
+    {
+    case SCRATCH:
+    case PC:
+    case CC0:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return x;
+
+    case REG:
+      if (REGNO (x) == from)
+	{
+	  if (! *reg)
+	    *reg = gen_reg_rtx (Pmode);
+
+	  return *reg;
+	}
+
+      return x;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	XEXP (x, i) = rs6000_replace_regno (XEXP (x, i), from, reg);
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  XVECEXP (x, i, j) = rs6000_replace_regno (XVECEXP (x, i, j), from, reg);
+    }
+
+  return x;
+}  
+
+
 /* By generating position-independent code, when two different
    programs (A and B) share a common library (libC.a), the text of
    the library can be shared whether or not the library is linked at
@@ -2098,17 +2155,39 @@ rs6000_finalize_pic ()
 {
   if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
-      /* If a PIC register has been created, insert the pic initialization
-	 at the function beginning.  */
-      if (pic_offset_table_rtx)
+      /* Loop through all of the insns, replacing the special GOT_TOC_REGNUM
+	 with an appropriate pseduo register.  If we find we need GOT/TOC,
+	 add the appropriate init code.  */
+      if (flag_pic)
 	{
 	  rtx insn = get_insns ();
-	  rtx init = gen_init_v4_pic (pic_offset_table_rtx);
+	  rtx reg = NULL_RTX;
+	  rtx first_insn;
 
 	  if (GET_CODE (insn) == NOTE)
 	    insn = next_nonnote_insn (insn);
 
-	  emit_insn_before (init, insn);
+	  first_insn = insn;
+	  for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
+	    {
+	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+		{
+		  PATTERN (insn) = rs6000_replace_regno (PATTERN (insn),
+							 GOT_TOC_REGNUM,
+							 &reg);
+
+		  if (REG_NOTES (insn))
+		    REG_NOTES (insn) = rs6000_replace_regno (REG_NOTES (insn),
+							     GOT_TOC_REGNUM,
+							     &reg);
+		}
+	    }
+
+	  if (reg)
+	    {
+	      rtx init = gen_init_v4_pic (reg);
+	      emit_insn_before (init, first_insn);
+	    }
 	}
     }
 }
