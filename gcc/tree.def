@@ -739,9 +739,6 @@ DEFTREECODE (UNSAVE_EXPR, "unsave_expr", 'e', 1)
    Operand may have any mode.  Result mode is Pmode.  */
 DEFTREECODE (ADDR_EXPR, "addr_expr", 'e', 1)
 
-/* Non-lvalue reference or pointer to an object.  */
-DEFTREECODE (REFERENCE_EXPR, "reference_expr", 'e', 1)
-
 /* Operand is a function constant; result is a function variable value
    of type EPmode.  Used only for languages that need static chains.  */
 DEFTREECODE (ENTRY_VALUE_EXPR, "entry_value_expr", 'e', 1)

@@ -999,7 +999,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case ADDR_EXPR:
-    case REFERENCE_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case INDIRECT_REF:
@@ -1850,9 +1849,6 @@ op_symbol (tree op)
 
     case POSTINCREMENT_EXPR:
       return "++ ";
-
-    case REFERENCE_EXPR:
-      return "";
 
     default:
       return "<<< ??? >>>";
