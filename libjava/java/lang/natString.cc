@@ -586,12 +586,12 @@ java::lang::String::getBytes (jstring enc)
   jint offset = 0;
   gnu::gcj::convert::UnicodeToBytes *converter
     = gnu::gcj::convert::UnicodeToBytes::getEncoder(enc);
-  while (todo > 0)
+  while (todo > 0 || converter->havePendingBytes())
     {
       converter->setOutput(buffer, bufpos);
       int converted = converter->write(this, offset, todo, NULL);
       bufpos = converter->count;
-      if (converted == 0)
+      if (converted == 0 && bufpos == converter->count)
 	{
 	  buflen *= 2;
 	  jbyteArray newbuffer = JvNewByteArray(buflen);
@@ -599,10 +599,10 @@ java::lang::String::getBytes (jstring enc)
 	  buffer = newbuffer;
 	}
       else
-	{
-	  offset += converted;
-	  todo -= converted;
-	}
+	bufpos = converter->count;
+
+      offset += converted;
+      todo -= converted;
     }
   converter->done ();
   if (bufpos == buflen)

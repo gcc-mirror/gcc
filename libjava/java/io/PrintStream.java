@@ -1,6 +1,6 @@
 // PrintStream.java - Print string representations
 
-/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -110,7 +110,7 @@ public class PrintStream extends FilterOutputStream
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
-    while (count > 0)
+    while (count > 0 || converter.havePendingBytes())
       {
 	converter.setOutput(work_bytes, 0);
 	int converted = converter.write(buf, offset, count);
@@ -123,7 +123,7 @@ public class PrintStream extends FilterOutputStream
   private void writeChars(String str, int offset, int count)
     throws IOException
   {
-    while (count > 0)
+    while (count > 0 || converter.havePendingBytes())
       {
 	converter.setOutput(work_bytes, 0);
 	int converted = converter.write(str, offset, count, work);

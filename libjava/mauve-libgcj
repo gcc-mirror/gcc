@@ -36,5 +36,4 @@ JDBC2.0
 !java.security.KeyFactory.getInstance14
 !java.security.AlgorithmParameters.getInstance14
 !java.security.AlgorithmParameterGenerator.getInstance14
-!java.lang.String.surrogate
 !java.net.DatagramSocket.DatagramSocketTest2
