@@ -6,6 +6,9 @@
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES GNU_CPP_PREDEFINES("i386")
 
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
+
 #undef	LINK_SPEC
 #define LINK_SPEC "-m elf_i386 %{shared:-shared} \
   %{!shared: \
