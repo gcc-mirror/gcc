@@ -21,6 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hconfig.h"
 #include "system.h"
 #include "gengtype.h"
+#include "gtyp-gen.h"
 
 /* Nonzero iff an error has occurred.  */
 static int hit_error = 0;
@@ -518,18 +519,16 @@ static outf_p output_files;
    source file.  */
 outf_p header_file;
 
-enum {
-  BASE_FILE_C,
-  BASE_FILE_OBJC,
-  BASE_FILE_CPLUSPLUS,
-  BASE_FILE_TREELANG,
-  BASE_FILE_COBOL
-};
+/* Number of files specified in gtfiles.  */
+#define NUM_GT_FILES (ARRAY_SIZE (all_files) - 1)
 
-static const char *const lang_names[] = {
-  "c", "objc", "cp", "treelang", "cobol", "f", "ada", "java"
-};
-#define NUM_BASE_FILES ARRAY_SIZE (lang_names)
+/* Number of files in the language files array.  */
+#define NUM_LANG_FILES (ARRAY_SIZE (lang_files) - 1)
+
+/* Length of srcdir name.  */
+static int srcdir_len = 0;
+
+#define NUM_BASE_FILES (ARRAY_SIZE (lang_dir_names) - 1)
 outf_p base_files[NUM_BASE_FILES];
 
 static outf_p create_file PARAMS ((const char *, const char *));
@@ -610,6 +609,8 @@ oprintf VPARAMS ((outf_p o, const char *format, ...))
 
 /* Open the global header file and the language-specific header files.  */
 
+static void open_base_files PARAMS((void));
+
 static void
 open_base_files ()
 {
@@ -618,8 +619,8 @@ open_base_files ()
   header_file = create_file ("GCC", "gtype-desc.h");
 
   for (i = 0; i < NUM_BASE_FILES; i++)
-    base_files[i] = create_file (lang_names[i], 
-				 xasprintf ("gtype-%s.h", lang_names[i]));
+    base_files[i] = create_file (lang_dir_names[i], 
+				 xasprintf ("gtype-%s.h", lang_dir_names[i]));
 
   /* gtype-desc.c is a little special, so we create it here.  */
   {
@@ -641,9 +642,6 @@ open_base_files ()
   }
 }
 
-#define startswith(len, c, s)  \
-  ((size_t)(len) >= strlen (s) && memcmp (c, s, strlen (s)) == 0)
-
 /* Determine the pathname to F relative to $(srcdir).  */
 
 static const char *
@@ -652,29 +650,35 @@ get_file_basename (f)
 {
   size_t len;
   const char *basename;
+  unsigned i;
   
-  /* Determine the output file name.  */
-  len = strlen (f);
   basename = strrchr (f, '/');
-  if (basename == NULL)
-    basename = f;
-  else
-    basename++;
-  if (startswith (basename - f, basename-2, "f/"))
-    basename -= 2;
-  else if (startswith (basename - f, basename-3, "cp/"))
-    basename -= 3;
-  else if (startswith (basename - f, basename-4, "ada/"))
-    basename -= 4;
-  else if (startswith (basename - f, basename-5, "java/"))
-    basename -= 5;
-  else if (startswith (basename - f, basename-5, "objc/"))
-    basename -= 5;
-  else if (startswith (basename - f, basename-9, "treelang/"))
-    basename -= 9;
-  else if (startswith (basename - f, basename-6, "cobol/"))
-    basename -= 6;
-
+  
+  if (!basename)
+    return f;
+  
+  len = strlen (f);
+  basename++;
+  
+  for (i = 1; i < NUM_BASE_FILES; i++)
+    {
+      const char * s1;
+      const char * s2;
+      int l1;
+      int l2;
+      s1 = basename - strlen (lang_dir_names [i]) - 1;
+      s2 = lang_dir_names [i];
+      l1 = strlen (s1);
+      l2 = strlen (s2);
+      if (l1 >= l2 && !memcmp (s1, s2, l2))
+        {
+          basename -= l2 + 1;
+          if ((basename - f - 1) != srcdir_len)
+            abort (); /* Match is wrong - should be preceded by $srcdir.  */
+          break;
+        }
+    }
+  
   return basename;
 }
 
@@ -692,31 +696,47 @@ get_base_file_bitmap (input_file)
 {
   const char *basename = get_file_basename (input_file);
   const char *slashpos = strchr (basename, '/');
-  size_t len = strlen (basename);
+  unsigned j;
+  unsigned k;
+  unsigned bitmap;
   
-  if (slashpos != NULL)
+  if (slashpos)
     {
       size_t i;
-      for (i = 0; i < NUM_BASE_FILES; i++)
-	if ((size_t)(slashpos - basename) == strlen (lang_names [i])
-	    && memcmp (basename, lang_names[i], strlen (lang_names[i])) == 0)
-	  return 1 << i;
+      for (i = 1; i < NUM_BASE_FILES; i++)
+	if ((size_t)(slashpos - basename) == strlen (lang_dir_names [i])
+	    && memcmp (basename, lang_dir_names[i], strlen (lang_dir_names[i])) == 0)
+          {
+            /* It's in a language directory, set that language.  */
+            bitmap = 1 << i;
+            return bitmap;
+          }
+
+      abort (); /* Should have found the language.  */
     }
-  else if (strcmp (basename, "c-lang.c") == 0)
-    return 1 << BASE_FILE_C;
-  else if (strcmp (basename, "c-parse.in") == 0
-	   || strcmp (basename, "c-tree.h") == 0
-	   || strcmp (basename, "c-decl.c") == 0
-	   || strcmp (basename, "c-objc-common.c") == 0)
-    return 1 << BASE_FILE_C | 1 << BASE_FILE_OBJC;
-  else if (startswith (len, basename, "c-common.c"))
-    return 1 << BASE_FILE_C | 1 << BASE_FILE_OBJC| 1 << BASE_FILE_CPLUSPLUS
-      |  1 << BASE_FILE_TREELANG | 1 << BASE_FILE_COBOL;
-  else if (startswith (len, basename, "c-"))
-    return 1 << BASE_FILE_C | 1 << BASE_FILE_OBJC | 1 << BASE_FILE_CPLUSPLUS;
-  else
-    return (1 << NUM_BASE_FILES) - 1;
-  abort ();
+
+  /* If it's in any config-lang.in, then set for the languages
+     specified.  */
+
+  bitmap = 0;
+
+  for (j = 0; j < NUM_LANG_FILES; j++)
+    {
+      if (!strcmp(input_file, lang_files[j]))
+        {
+          for (k = 0; k < NUM_BASE_FILES; k++)
+            {
+              if (!strcmp(lang_dir_names[k], langs_for_lang_files[j]))
+                bitmap |= (1 << k);
+            }
+        }
+    }
+    
+  /* Otherwise, set all languages.  */
+  if (!bitmap)
+    bitmap = (1 << NUM_BASE_FILES) - 1;
+
+  return bitmap;
 }
 
 /* An output file, suitable for definitions, that can see declarations
@@ -765,8 +785,8 @@ get_output_file_with_visibility (input_file)
       size_t i;
       
       for (i = 0; i < NUM_BASE_FILES; i++)
-	if (memcmp (basename, lang_names[i], strlen (lang_names[i])) == 0
-	    && basename[strlen(lang_names[i])] == '/')
+	if (memcmp (basename, lang_dir_names[i], strlen (lang_dir_names[i])) == 0
+	    && basename[strlen(lang_dir_names[i])] == '/')
 	  return base_files[i];
 
       output_name = "gtype-desc.c";
@@ -797,6 +817,8 @@ get_output_file_name (input_file)
 
 /* Copy the output to its final destination,
    but don't unnecessarily change modification times.  */
+
+static void close_output_files PARAMS ((void));
 
 static void
 close_output_files ()
@@ -1896,11 +1918,14 @@ write_gc_roots (variables)
 extern int main PARAMS ((int argc, char **argv));
 int 
 main(argc, argv)
-     int argc;
-     char **argv;
+     int argc ATTRIBUTE_UNUSED;
+     char **argv ATTRIBUTE_UNUSED;
 {
-  int i;
+  unsigned i;
   static struct fileloc pos = { __FILE__, __LINE__ };
+  unsigned j;
+  
+  srcdir_len = strlen (srcdir);
 
   do_typedef ("CUMULATIVE_ARGS",
 	      create_scalar_type ("CUMULATIVE_ARGS", 
@@ -1914,8 +1939,21 @@ main(argc, argv)
 							 strlen ("void"))),
 	      &pos);
 
-  for (i = 1; i < argc; i++)
-    parse_file (argv[i]);
+  for (i = 0; i < NUM_GT_FILES; i++)
+    {
+      int dupflag = 0;
+      /* Omit if already seen.  */
+      for (j = 0; j < i; j++)
+        {
+          if (!strcmp (all_files[i], all_files[j]))
+            {
+              dupflag = 1;
+              break;
+            }
+        }
+      if (!dupflag)
+        parse_file (all_files[i]);
+    }
 
   if (hit_error != 0)
     exit (1);

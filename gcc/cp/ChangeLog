@@ -18,6 +18,12 @@
 	* pt.c (template_parm_this_level_p, push_template_decl_real):
 	Pass depth as int pointer. 
 
+2002-07-11  Tim Josling  <tej@melbpc.org.au>
+
+	Remove front end hard coding from gengtype.c.  
+
+	* config-lang.in (gtfiles): Add files needed for this front end.
+
 2002-07-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (unqualified_name_lookup_error): Declare it.

@@ -228,13 +228,30 @@ things you need to do:
 
 @enumerate
 @item
-You need to add the file to the list of source files the type machinery
-scans.  For a back-end file, this is usually done automatically; if not,
-you should add it to @code{config_gtfiles} in the appropriate port's
-entries in @file{config.gcc}.  For a front-end file, this is done by
-adding the filename to the @code{gtfiles} variable defined in
-@file{config-lang.in}.  For other files, this is done by adding the
+You need to add the file to the list of source files the type
+machinery scans.  There are three cases: 
+
+@enumerate a
+@item
+For a back-end file, this is usually done
+automatically; if not, you should add it to @code{config_gtfiles} in
+the appropriate port's entries in @file{config.gcc}. 
+
+@item
+For files shared by all front ends, this is done by adding the
 filename to the @code{GTFILES} variable in @file{Makefile.in}.
+
+@item 
+For any other file used by a front end, this is done by adding the
+filename to the @code{gtfiles} variable defined in
+@file{config-lang.in}.  For C, the file is @file{c-config-lang.in}.
+This list should include all files that have GTY macros in them that
+are used in that front end, other than those defined in the previous
+list items.  For example, it is common for front end writers to use
+@file{c-common.c} and other files from the C front end, and these
+should be included in the @file{gtfiles} variable for such front ends.
+
+@end enumerate
 
 @item
 You need to include the file that the type machinery will generate in
