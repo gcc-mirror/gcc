@@ -1,3 +1,8 @@
+Thu Mar  5 09:23:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in: Make locating frag files failsafe even for the
+	special case if configuring and building in srcdir.
+
 1998-02-24  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	Changes for _G_IO_IO_FILE_VERSION == 0x20001:
