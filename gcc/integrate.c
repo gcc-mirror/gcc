@@ -1904,21 +1904,24 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  else if (set != 0
 		   && rtx_equal_p (SET_DEST (set), virtual_stack_vars_rtx))
 	    {
+	      HOST_WIDE_INT offset;
 	      temp = map->reg_map[REGNO (SET_DEST (set))];
 	      temp = map->const_equiv_map[REGNO (temp)];
 
-	      if (GET_CODE (temp) != PLUS
-		  || ! rtx_equal_p (XEXP (temp, 0), virtual_stack_vars_rtx)
-		  || GET_CODE (XEXP (temp, 1)) != CONST_INT)
+	      if (rtx_equal_p (temp, virtual_stack_vars_rtx))
+		offset = 0;
+	      else if (GET_CODE (temp) == PLUS
+		       && rtx_equal_p (XEXP (temp, 0), virtual_stack_vars_rtx)
+		       && GET_CODE (XEXP (temp, 1)) == CONST_INT)
+		offset = INTVAL (XEXP (temp, 1));
+	      else
 		abort ();
 
 	      if (rtx_equal_p (SET_SRC (set), stack_pointer_rtx))
 		temp = SET_SRC (set);
 	      else
-		temp
-		  = force_operand (plus_constant (SET_SRC (set),
-						  - INTVAL (XEXP (temp, 1))),
-				   NULL_RTX);
+		temp = force_operand (plus_constant (SET_SRC (set), offset),
+				      NULL_RTX);
 
 	      copy = emit_move_insn (SET_DEST (set), temp);
 	    }
