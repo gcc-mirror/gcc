@@ -766,6 +766,7 @@ diagnostic_initialize (context)
 
   diagnostic_starter (context) = default_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
+  context->warnings_are_errors_message = warnings_are_errors;
 }
 
 void
@@ -819,7 +820,7 @@ diagnostic_for_decl (diagnostic, decl)
   if (global_dc->lock++)
     error_recursion (global_dc);
 
-  if (diagnostic_count_error (global_dc, diagnostic->kind))
+  if (diagnostic_count_diagnostic (global_dc, diagnostic->kind))
     {
       diagnostic_report_current_function (global_dc);
       output_set_prefix
@@ -839,29 +840,42 @@ diagnostic_flush_buffer (context)
   fflush (output_buffer_attached_stream (&context->buffer));
 }
 
-/* Count an error or warning.  Return true if the message should be
-   printed.  */
+/* Count a diagnostic.  Return true if the message should be printed.  */
 bool
-diagnostic_count_error (context, kind)
+diagnostic_count_diagnostic (context, kind)
     diagnostic_context *context;
     diagnostic_t kind;
 {
-  if (kind == DK_WARNING && !diagnostic_report_warnings_p ())
-    return false;
-
-  if (kind == DK_WARNING && !warnings_are_errors)
-    ++diagnostic_kind_count (context, DK_WARNING);
-  else
+  switch (kind)
     {
-      static bool warning_message = false;
+    default:
+      abort();
+      break;
+      
+    case DK_FATAL: case DK_ICE: case DK_SORRY:
+    case DK_ANACHRONISM: case DK_NOTE:
+      ++diagnostic_kind_count (context, kind);
+      break;
 
-      if (kind == DK_WARNING && !warning_message)
-	{
+    case DK_WARNING:
+      if (!diagnostic_report_warnings_p ())
+        return false;
+      else if (!warnings_are_errors)
+        {
+          ++diagnostic_kind_count (context, DK_WARNING);
+          break;
+        }
+      /* else fall through.  */
+
+    case DK_ERROR:
+      if (kind == DK_WARNING && context->warnings_are_errors_message)
+        {
 	  output_verbatim (&context->buffer,
                            "%s: warnings being treated as errors\n", progname);
-	  warning_message = true;
-	}
+          context->warnings_are_errors_message = false;
+        }
       ++diagnostic_kind_count (context, DK_ERROR);
+      break;
     }
 
   return true;
@@ -1220,7 +1234,7 @@ diagnostic_report_diagnostic (context, diagnostic)
   if (context->lock++)
     error_recursion (context);
 
-  if (diagnostic_count_error (context, diagnostic->kind))
+  if (diagnostic_count_diagnostic (context, diagnostic->kind))
     {
       (*diagnostic_starter (context)) (context, diagnostic);
       output_format (&context->buffer, &diagnostic->message);

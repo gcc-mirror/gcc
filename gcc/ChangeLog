@@ -1,3 +1,18 @@
+2002-06-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* objc/objc-act.c (warn_with_ivar): Adjust calls to
+	diagnostic_count_error.
+	(warn_with_method): Likewise.
+
+	* diagnostic.h (warnings_are_errors_message): New field of
+	diagnostic_context.
+	(diagnostic_count_error): Rename to diagnostic_count_diagnostic to
+	match semantics.
+	* diagnostic.c: Adjust calls to diagnostic_count_error through out.
+	(diagnostic_count_diagnostic): Make aware of other kinds of
+	diagnostics. 
+	(diagnostic_initialize): Initialize warnings_are_errors_message field.
+
 2002-06-11  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/6520:
