@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files may include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
+#define MULTILIB_DEFAULTS { "mnumerics" }
+
 /* Names to predefine in the preprocessor for this target machine.  */
 #define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Acpu(i960) -Amachine(i960)"
 
@@ -45,7 +47,8 @@ Boston, MA 02111-1307, USA.  */
 	%{mcc:-D__i960CC__ -D__i960_CC__}\
 	%{mcf:-D__i960CF__ -D__i960_CF__}\
 	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:\
-		%{!mcc:%{!mcf:-D__i960_KB -D__i960KB__ %{mic*:-D__i960KB}}}}}}}}}"
+		%{!mcc:%{!mcf:-D__i960_KB -D__i960KB__ %{mic*:-D__i960KB}}}}}}}}}\
+	%{mlong-double-64:-D__LONG_DOUBLE_64__}"
 
 /* -mic* options make characters signed by default.  */
 /* Use #if rather than ?: because MIPS C compiler rejects ?: in
@@ -209,6 +212,11 @@ extern int process_pragma ();
 #define TARGET_FLAG_OLD_ALIGN	0x8000
 #define TARGET_OLD_ALIGN	(target_flags & TARGET_FLAG_OLD_ALIGN)
 
+/* Nonzero if long doubles are to be 64 bits.  Useful for soft-float targets
+   if 80 bit long double support is missing.  */
+#define TARGET_FLAG_LONG_DOUBLE_64	0x10000
+#define TARGET_LONG_DOUBLE_64	(target_flags & TARGET_FLAG_LONG_DOUBLE_64)
+
 extern int target_flags;
 
 /* Macro to define tables used to set the flags.
@@ -268,6 +276,7 @@ extern int target_flags;
     {"no-strict-align", -(TARGET_FLAG_STRICT_ALIGN)},	\
     {"old-align", (TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)},	 \
     {"no-old-align", -(TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)}, \
+    {"long-double-64", TARGET_FLAG_LONG_DOUBLE_64},	\
     {"link-relax", 0},					\
     {"no-link-relax", 0},				\
     SUBTARGET_SWITCHES                                                  \
@@ -356,8 +365,17 @@ extern int target_flags;
 /* Width in bits of a pointer.  See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE 32
 
-/* Width in bits of a long double.  Identical to double for now.  */
-#define	LONG_DOUBLE_TYPE_SIZE	64
+/* Width in bits of a long double.  Define to 96, and let
+   ROUND_TYPE_ALIGN adjust the alignment for speed. */
+#define	LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_64 ? 64 : 96)
+
+/* Define this to set long double type size to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#if defined(__LONG_DOUBLE_64__)
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
+#endif
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
 #define POINTER_BOUNDARY 32

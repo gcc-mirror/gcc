@@ -1,3 +1,25 @@
+1999-01-19  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* invoke.texi (-mlong-double-64): New option description.
+
+1999-01-19  Jim Wilson  <wilson@cygnus.com>
+
+	* libgcc2.c: Change all uses of LONG_DOUBLE_TYPE_SIZE to
+	LIBGCC2_LONG_DOUBLE_TYPE_SIZE.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): New.  Set to LONG_DOUBLE_TYPE_SIZE
+	if not defined.
+	* i960/i960.h (MULTILIB_DEFAULTS): Define to mnumerics.
+	(CPP_SPECS): Add -mlong-double-64 support.
+	(TARGET_FLAG_LONG_DOUBLE_64, TARGET_LONG_DOUBLE_64): New.
+	(TARGET_SWITCHES): Add -mlong-double-64 support.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define.
+	* i960/vx960-coff.h (MULTILIB_DEFAULTS): Define to msoft-float.
+	(CPP_SPECS): Add -mlong-double-64 support.
+	* i960/t-960bare (MULTILIB_OPTIONS): Add mlong-double-64.
+	(MULTILIB_DIRNAMES): Add ld64.
+	* i960/t-vxworks960 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Likewise.
+
 Tue Jan 19 11:54:04 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* calls.c (expand_call): Strip a TARGET_EXPR if we're passing by
