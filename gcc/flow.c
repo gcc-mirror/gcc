@@ -133,7 +133,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "recog.h"
-#include "expr.h"
 #include "insn-flags.h"
 
 #include "obstack.h"
@@ -2783,8 +2782,7 @@ static void
 mark_regs_live_at_end (set)
      regset set;
 {
-  tree return_decl, return_type;
-  rtx return_reg;
+  tree type;
   int i;
 
   /* If exiting needs the right stack value, consider the stack pointer
@@ -2843,34 +2841,42 @@ mark_regs_live_at_end (set)
 
   /* Mark function return value.  */
 
-  return_decl = DECL_RESULT (current_function_decl);
-  return_type = TREE_TYPE (return_decl);
-  return_reg = DECL_RTL (return_decl);
-  if (return_reg)
+  type = TREE_TYPE (DECL_RESULT (current_function_decl));
+  if (type != void_type_node)
     {
-      if (GET_CODE (return_reg) == REG
-	  && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
+      rtx outgoing;
+
+      if (current_function_returns_struct
+	  || current_function_returns_pcc_struct)
+	type = build_pointer_type (type);
+
+#ifdef FUNCTION_OUTGOING_VALUE
+      outgoing = FUNCTION_OUTGOING_VALUE (type, current_function_decl);
+#else
+      outgoing = FUNCTION_VALUE (type, current_function_decl);
+#endif
+      if (GET_MODE (outgoing) == BLKmode)
+	PUT_MODE (outgoing, DECL_RTL (DECL_RESULT (current_function_decl)));
+
+      if (GET_CODE (outgoing) == REG)
+	mark_reg (set, outgoing);
+      else if (GET_CODE (outgoing) == PARALLEL)
 	{
-	  /* Use hard_function_value to avoid examining a BLKmode register.  */
-	  return_reg
-	    = hard_function_value (return_type, current_function_decl, 1);
-	  mark_reg (set, return_reg);
-	}
-      else if (GET_CODE (return_reg) == PARALLEL)
-	{
-	  int len = XVECLEN (return_reg, 0);
+	  int len = XVECLEN (outgoing, 0);
 
 	  /* Check for a NULL entry, used to indicate that the parameter
 	     goes on the stack and in registers.  */
-	  i = (XEXP (XVECEXP (return_reg, 0, 0), 0) ? 0 : 1);
+	  i = (XEXP (XVECEXP (outgoing, 0, 0), 0) ? 0 : 1);
 
 	  for ( ; i < len; ++i)
 	    {
-	      rtx r = XVECEXP (return_reg, 0, i);
+	      rtx r = XVECEXP (outgoing, 0, i);
 	      if (GET_CODE (r) == REG)
 		mark_reg (set, r);
 	    }
 	}
+      else
+	abort ();
     }
 }
 
