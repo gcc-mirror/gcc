@@ -57,6 +57,8 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   3,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   3,					/* cost of a divide/mod */
+  3,					/* cost of movsx */
+  3,					/* cost of movzx */
   0,					/* "large" insn */
   2,					/* MOVE_RATIO */
   2,					/* cost for loading QImode using movzbl */
@@ -90,6 +92,8 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   6,					/* cost of starting a multiply */
   1,					/* cost of multiply per each bit set */
   23,					/* cost of a divide/mod */
+  3,					/* cost of movsx */
+  2,					/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
@@ -123,6 +127,8 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   12,					/* cost of starting a multiply */
   1,					/* cost of multiply per each bit set */
   40,					/* cost of a divide/mod */
+  3,					/* cost of movsx */
+  2,					/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
@@ -156,6 +162,8 @@ struct processor_costs pentium_cost = {
   11,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   25,					/* cost of a divide/mod */
+  3,					/* cost of movsx */
+  2,					/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
   6,					/* cost for loading QImode using movzbl */
@@ -189,6 +197,8 @@ struct processor_costs pentiumpro_cost = {
   4,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   17,					/* cost of a divide/mod */
+  1,					/* cost of movsx */
+  1,					/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
   2,					/* cost for loading QImode using movzbl */
@@ -222,6 +232,8 @@ struct processor_costs k6_cost = {
   3,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   18,					/* cost of a divide/mod */
+  2,					/* cost of movsx */
+  2,					/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
   3,					/* cost for loading QImode using movzbl */
@@ -255,6 +267,8 @@ struct processor_costs athlon_cost = {
   5,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   42,					/* cost of a divide/mod */
+  1,					/* cost of movsx */
+  1,					/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
@@ -288,6 +302,8 @@ struct processor_costs pentium4_cost = {
   30,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   112,					/* cost of a divide/mod */
+  1,					/* cost of movsx */
+  1,					/* cost of movzx */
   16,					/* "large" insn */
   6,					/* MOVE_RATIO */
   2,					/* cost for loading QImode using movzbl */
@@ -2212,7 +2228,7 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       nsse_reg = gen_reg_rtx (Pmode);
       emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, 0)));
       emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
-			      gen_rtx_MULT (VOIDmode, nsse_reg,
+			      gen_rtx_MULT (Pmode, nsse_reg,
 					    GEN_INT (4))));
       if (next_cum.sse_regno)
 	emit_move_insn
@@ -5938,6 +5954,57 @@ split_di (operands, num, lo_half, hi_half)
 	abort ();
     }
 }
+/* Split one or more TImode RTL references into pairs of SImode
+   references.  The RTL can be REG, offsettable MEM, integer constant, or
+   CONST_DOUBLE.  "operands" is a pointer to an array of DImode RTL to
+   split and "num" is its length.  lo_half and hi_half are output arrays
+   that parallel "operands".  */
+
+void
+split_ti (operands, num, lo_half, hi_half)
+     rtx operands[];
+     int num;
+     rtx lo_half[], hi_half[];
+{
+  while (num--)
+    {
+      rtx op = operands[num];
+      if (CONSTANT_P (op))
+	{
+	  if (GET_CODE (op) == CONST_INT)
+	    {
+	      lo_half[num] = GEN_INT (trunc_int_for_mode (INTVAL (op), SImode));
+	      hi_half[num] = (1 << (HOST_BITS_PER_WIDE_INT -1)) != 0 ? constm1_rtx : const0_rtx;
+	    }
+	  else if (GET_CODE (op) == CONST_DOUBLE && HOST_BITS_PER_WIDE_INT == 64)
+	    {
+	      lo_half[num] = GEN_INT (trunc_int_for_mode (CONST_DOUBLE_LOW (op), SImode));
+	      hi_half[num] = GEN_INT (trunc_int_for_mode (CONST_DOUBLE_HIGH (op), SImode));
+	    }
+	  else
+	    abort ();
+	}
+      else if (! reload_completed)
+	{
+	  lo_half[num] = gen_lowpart (DImode, op);
+	  hi_half[num] = gen_highpart (DImode, op);
+	}
+      else if (GET_CODE (op) == REG)
+	{
+	  if (TARGET_64BIT)
+	    abort();
+	  lo_half[num] = gen_rtx_REG (DImode, REGNO (op));
+	  hi_half[num] = gen_rtx_REG (DImode, REGNO (op) + 1);
+	}
+      else if (offsettable_memref_p (op))
+	{
+	  lo_half[num] = adjust_address (op, DImode, 0);
+	  hi_half[num] = adjust_address (op, DImode, 8);
+	}
+      else
+	abort ();
+    }
+}
 
 /* Output code to perform a 387 binary operation in INSN, one of PLUS,
    MINUS, MULT or DIV.  OPERANDS are the insn operands, where operands[3]
@@ -6621,13 +6688,22 @@ ix86_expand_move (mode, operands)
   else
     {
       if (GET_CODE (operands[0]) == MEM
-	  && (GET_MODE (operands[0]) == QImode
+	  && (PUSH_ROUNDING (GET_MODE_SIZE (mode)) != GET_MODE_SIZE (mode)
 	      || !push_operand (operands[0], mode))
 	  && GET_CODE (operands[1]) == MEM)
 	operands[1] = force_reg (mode, operands[1]);
 
       if (push_operand (operands[0], mode)
 	  && ! general_no_elim_operand (operands[1], mode))
+	operands[1] = copy_to_mode_reg (mode, operands[1]);
+
+      /* Force large constants in 64bit compilation into register
+	 to get them CSEed.  */
+      if (TARGET_64BIT && mode == DImode
+	  && immediate_operand (operands[1], mode)
+	  && !x86_64_zero_extended_value (operands[1])
+	  && !register_operand (operands[0], mode)
+	  && optimize && !reload_completed && !reload_in_progress)
 	operands[1] = copy_to_mode_reg (mode, operands[1]);
 
       if (FLOAT_MODE_P (mode))
@@ -8490,6 +8566,8 @@ ix86_split_to_parts (operand, parts, mode)
     }
   else
     {
+      if (mode == TImode)
+	split_ti (&operand, 1, &parts[0], &parts[1]);
       if (mode == XFmode || mode == TFmode)
 	{
 	  if (REG_P (operand))
@@ -8515,8 +8593,10 @@ ix86_split_to_parts (operand, parts, mode)
 	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
 	      if (HOST_BITS_PER_WIDE_INT >= 64)
 	        parts[0]
-		  = GEN_INT (trunc_int_for_mode (l[0] + ((l[1] << 31) << 1),
-						 SImode));
+		  = GEN_INT (trunc_int_for_mode
+		      ((l[0] & (((HOST_WIDE_INT) 2 << 31) - 1))
+		       + ((((HOST_WIDE_INT)l[1]) << 31) << 1),
+		       DImode));
 	      else
 	        parts[0] = immed_double_const (l[0], l[1], DImode);
 	      parts[1] = GEN_INT (trunc_int_for_mode (l[2], SImode));
@@ -10701,7 +10781,7 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
       emit_move_insn (gen_rtx_MEM (HImode, plus_constant (tramp, offset)),
 		      GEN_INT (trunc_int_for_mode (0xff49, HImode)));
       emit_move_insn (gen_rtx_MEM (QImode, plus_constant (tramp, offset+2)),
-		      GEN_INT (trunc_int_for_mode (0xe3, HImode)));
+		      GEN_INT (trunc_int_for_mode (0xe3, QImode)));
       offset += 3;
       if (offset > TRAMPOLINE_SIZE)
 	abort();
