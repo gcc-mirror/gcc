@@ -1,3 +1,9 @@
+2004-02-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* config-lang.in: Disable Ada by default until probe logic for
+	a bootstrap Ada compiler can be moved to the top level configure
+	script.
+
 2004-02-12  Olivier Hainque  <hainque@act-europe.fr>
 
 	* decl.c (components_to_record): Don't claim that the internal fields
