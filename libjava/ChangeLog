@@ -1,3 +1,9 @@
+2004-05-03  Michael Koch  <konqueror@gmx.de>
+
+	Fixes PR libgcj/14695:
+	* java/net/NetworkInterface.java
+	(getByName): Return null when no interface was found.
+
 2004-04-30  Ranjit Mathew  <rmathew@hotmail.com>
             Tom Tromey  <tromey@redhat.com>
 

@@ -130,12 +130,15 @@ public final class NetworkInterface
   }
 
   /**
-   *  Returns an network interface by name
+   * Returns an network interface by name
    *
-   *  @param name The name of the interface to return
+   * @param name The name of the interface to return
+   * 
+   * @return a <code>NetworkInterface</code> object representing the interface,
+   * or null if there is no interface with that name.
    *
-   *  @exception SocketException If an error occurs
-   *  @exception NullPointerException If the specified name is null
+   * @exception SocketException If an error occurs
+   * @exception NullPointerException If the specified name is null
    */
   public static NetworkInterface getByName(String name)
     throws SocketException
@@ -150,7 +153,8 @@ public final class NetworkInterface
 	  return tmp;
       }
 
-    throw new SocketException("no network interface with this name exists");
+    // No interface with the given name found.
+    return null;
   }
 
   /**
