@@ -1,3 +1,8 @@
+2004-12-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expmed.c (synth_mult): Initialize new_limit.latency before
+	making a recursive call.
+
 2004-12-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (legitimate_address_p): Reject address

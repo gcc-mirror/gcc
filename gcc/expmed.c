@@ -2660,7 +2660,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	    op_latency = add_cost[mode];
 
 	  new_limit.cost = best_cost.cost - op_cost;
-	  new_limit.cost = best_cost.cost - op_latency;
+	  new_limit.latency = best_cost.latency - op_latency;
 	  synth_mult (alg_in, t / d, &new_limit, mode);
 
 	  alg_in->cost.cost += op_cost;
