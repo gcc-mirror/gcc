@@ -1,3 +1,7 @@
+2001-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* toplev.c (set_float_handler): Use memcpy, not bcopy.
+
 2001-03-25  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (umodqi3): Output a tab instead of a
