@@ -40,9 +40,9 @@ package gnu.java.nio;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
+import java.nio.channels.*;
 import gnu.classpath.Configuration;
+import gnu.java.nio.channels.FileChannelImpl;
 
 /**
  * @author Michael Koch
@@ -59,13 +59,13 @@ public class FileLockImpl extends FileLock
       }
   }
   
-  private FileDescriptor fd;
+  private FileChannelImpl ch;
   
-  public FileLockImpl (FileDescriptor fd, FileChannel channel, long position,
+  public FileLockImpl (FileChannelImpl channel, long position,
                        long size, boolean shared)
   {
     super (channel, position, size, shared);
-    this.fd = fd;
+    ch = channel;
   }
 
   protected void finalize()
@@ -85,10 +85,8 @@ public class FileLockImpl extends FileLock
     return !channel().isOpen();
   }
 
-  private native void releaseImpl () throws IOException;
-
   public synchronized void release () throws IOException
   {
-    releaseImpl ();
+    ch.unlock(position(), size());
   }
 }
