@@ -1,0 +1,91 @@
+%{
+/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
+%}
+struct resword { char *name; short token; enum rid rid;};
+%%
+__alignof, ALIGNOF, NORID
+__alignof__, ALIGNOF, NORID
+__asm, GCC_ASM_KEYWORD, NORID
+__asm__, GCC_ASM_KEYWORD, NORID
+__attribute, ATTRIBUTE, NORID
+__attribute__, ATTRIBUTE, NORID
+__classof, CLASSOF, NORID
+__classof__, CLASSOF, NORID
+__const, TYPE_QUAL, RID_CONST
+__const__, TYPE_QUAL, RID_CONST
+__extension__, EXTENSION, NORID
+__headof, HEADOF, NORID
+__headof__, HEADOF, NORID
+__inline, SCSPEC, RID_INLINE
+__inline__, SCSPEC, RID_INLINE
+__label__, LABEL, NORID
+__signed, TYPESPEC, RID_SIGNED
+__signed__, TYPESPEC, RID_SIGNED
+__typeof, TYPEOF, NORID
+__typeof__, TYPEOF, NORID
+__volatile, TYPE_QUAL, RID_VOLATILE
+__volatile__, TYPE_QUAL, RID_VOLATILE
+__wchar_t, TYPESPEC, RID_WCHAR  /* Unique to ANSI C++ */,
+all, ALL, NORID			/* Extension */,
+except, EXCEPT, NORID		/* Extension */,
+exception, AGGR, RID_EXCEPTION	/* Extension */,
+raise, RAISE, NORID		/* Extension */,
+raises, RAISES, NORID		/* Extension */,
+reraise, RERAISE, NORID		/* Extension */,
+throw, THROW, NORID		/* Extension */,
+try, TRY, NORID			/* Extension */,
+asm, ASM_KEYWORD, NORID,
+auto, SCSPEC, RID_AUTO,
+break, BREAK, NORID,
+case, CASE, NORID,
+catch, CATCH, NORID,
+char, TYPESPEC, RID_CHAR,
+class, AGGR, RID_CLASS,
+classof, CLASSOF, NORID,
+const, TYPE_QUAL, RID_CONST,
+continue, CONTINUE, NORID,
+default, DEFAULT, NORID,
+delete, DELETE, NORID,
+do, DO, NORID,
+double, TYPESPEC, RID_DOUBLE,
+dynamic_cast, DYNAMIC_CAST, NORID,
+else, ELSE, NORID,
+enum, ENUM, NORID,
+extern, SCSPEC, RID_EXTERN,
+float, TYPESPEC, RID_FLOAT,
+for, FOR, NORID,
+friend, SCSPEC, RID_FRIEND,
+goto, GOTO, NORID,
+headof, HEADOF, NORID,
+if, IF, NORID,
+inline, SCSPEC, RID_INLINE,
+int, TYPESPEC, RID_INT,
+long, TYPESPEC, RID_LONG,
+mutable, SCSPEC, RID_MUTABLE,
+new, NEW, NORID,
+operator, OPERATOR, NORID,
+overload, OVERLOAD, NORID,
+private, VISSPEC, RID_PRIVATE,
+protected, VISSPEC, RID_PROTECTED,
+public, VISSPEC, RID_PUBLIC,
+register, SCSPEC, RID_REGISTER,
+return, RETURN, NORID,
+short, TYPESPEC, RID_SHORT,
+signature, AGGR, RID_SIGNATURE	/* Extension */,
+signed, TYPESPEC, RID_SIGNED,
+sigof, SIGOF, NORID		/* Extension */,
+sizeof, SIZEOF, NORID,
+static, SCSPEC, RID_STATIC,
+struct, AGGR, RID_RECORD,
+switch, SWITCH, NORID,
+this, THIS, NORID,
+template, TEMPLATE, NORID,
+typedef, SCSPEC, RID_TYPEDEF,
+typeof, TYPEOF, NORID,
+typeid, TYPEID, NORID,
+union, AGGR, RID_UNION,
+unsigned, TYPESPEC, RID_UNSIGNED,
+virtual, SCSPEC, RID_VIRTUAL,
+void, TYPESPEC, RID_VOID,
+volatile, TYPE_QUAL, RID_VOLATILE,
+while, WHILE, NORID,

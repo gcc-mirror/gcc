@@ -1,0 +1,318 @@
+# Makefile for GNU C++ compiler.
+#   Copyright (C) 1987, 88, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+
+#This file is part of GNU CC.
+
+#GNU CC is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+
+#GNU CC is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with GNU CC; see the file COPYING.  If not, write to
+#the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+
+# The targets for external use include:
+# all, doc, TAGS, mostlyclean, clean, distclean, realclean,
+
+# Suppress smart makes who think they know how to automake Yacc files
+.y.c:
+
+# Variables that exist for you to override.
+# See below for how to change them for certain systems.
+
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
+
+# Various ways of specifying flags for compilations:  
+# CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
+# BOOT_CFLAGS is the value of CFLAGS to pass
+# to the stage2 and stage3 compilations
+# XCFLAGS is used for most compilations but not when using the GCC just built.
+XCFLAGS =
+CFLAGS = -g
+BOOT_CFLAGS = -O $(CFLAGS)
+# These exists to be overridden by the x-* and t-* files, respectively.
+X_CFLAGS =
+T_CFLAGS =
+
+X_CPPFLAGS =
+T_CPPFLAGS =
+
+CC = cc
+# CYGNUS LOCAL: we use byacc instead of bison, DO NOT SEND TO RMS
+BISON = `if [ -f ../../byacc/byacc ] ; then echo ../../byacc/byacc ;  else echo byacc ; fi`
+BISONFLAGS =
+LEX = `if [ -f ../../flex/flex ] ; then echo ../../flex/flex ;  else echo flex ; fi`
+LEXFLAGS=
+AR = ar
+OLDAR_FLAGS = qc
+AR_FLAGS = rc
+SHELL = /bin/sh
+MAKEINFO = makeinfo
+TEXI2DVI = texi2dvi
+
+# Define this as & to perform parallel make on a Sequent.
+# Note that this has some bugs, and it seems currently necessary 
+# to compile all the gen* files first by hand to avoid erroneous results.
+P =
+
+# This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
+# It omits XCFLAGS, and specifies -B./.
+# It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
+
+# Tools to use when building a cross-compiler.
+# These are used because `configure' appends `cross-make'
+# to the makefile when making a cross-compiler.
+
+# CYGNUS LOCAL: we don't use cross-make.  Instead we use the tools
+# from the build tree, if they are available.
+# program_transform_name and objdir are set by configure.in.
+program_transform_name =
+objdir = .
+
+target= ... `configure' substitutes actual target name here.
+xmake_file= ... `configure' substitutes actual x- file name here.
+tmake_file= ... `configure' substitutes actual t- file name here.
+#version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
+#mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
+
+# Directory where sources are, from where we are.
+srcdir = .
+
+# Change this to a null string if obstacks are installed in the
+# system library.
+OBSTACK=obstack.o
+
+# Directory to link to, when using the target `maketest'.
+DIR = ../gcc
+
+# Choose the real default target.
+ALL=all
+
+# End of variables for you to override.
+
+# Definition of `all' is here so that new rules inserted by sed
+# do not specify the default target.
+all: all.indirect
+
+# This tells GNU Make version 3 not to put all variables in the environment.
+.NOEXPORT:
+
+# sed inserts variable overrides after the following line.
+####target overrides
+####host overrides
+####cross overrides
+####build overrides
+####site overrides
+
+# Now figure out from those variables how to compile and link.
+
+all.indirect: Makefile ../cc1plus
+
+# IN_GCC tells obstack.h to use gstddef.h.
+INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
+
+# This is the variable actually used when we compile.
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
+
+# Likewise.
+ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
+
+SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo ../$(OBSTACK); else true; fi`
+SUBDIR_USE_ALLOCA = `if [ x$(USE_ALLOCA) != x ]; then echo ../$(USE_ALLOCA); else true; fi`
+SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
+
+# How to link with both our special library facilities
+# and the system's installed libraries.
+LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+
+# Always use -I$(srcdir)/config when compiling.
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+# This tells GNU make version 3 not to export all the variables
+# defined in this file into the environment.
+.NOEXPORT:
+
+# Lists of files for various purposes.
+
+# Language-specific object files for g++
+
+CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
+ class.o decl2.o error.o gc.o lex.o parse.o ptree.o spew.o typeck.o cvt.o \
+ edsel.o except.o init.o method.o search.o tree.o xref.o
+
+# Files specific to the C interpreter bytecode compiler(s).
+BC_OBJS = ../bc-emit.o ../bc-optab.o
+
+# Language-independent object files.
+OBJS = ../toplev.o ../version.o ../tree.o ../print-tree.o ../stor-layout.o ../fold-const.o \
+ ../function.o ../stmt.o ../expr.o ../calls.o ../expmed.o ../explow.o ../optabs.o ../varasm.o \
+ ../rtl.o ../print-rtl.o ../rtlanal.o ../emit-rtl.o ../real.o \
+ ../dbxout.o ../sdbout.o ../dwarfout.o ../xcoffout.o \
+ ../integrate.o ../jump.o ../cse.o ../loop.o ../unroll.o ../flow.o ../stupid.o ../combine.o \
+ ../regclass.o ../local-alloc.o ../global.o ../reload.o ../reload1.o ../caller-save.o \
+ ../insn-peep.o ../reorg.o ../sched.o ../final.o ../recog.o ../reg-stack.o \
+ ../insn-opinit.o ../insn-recog.o ../insn-extract.o ../insn-output.o ../insn-emit.o \
+ ../insn-attrtab.o ../aux-output.o ../getpwd.o ../convert.o \
+ ../c-common.o
+
+compiler: ../cc1plus
+../cc1plus: $(P) $(CXX_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o ../cc1plus \
+	      $(CXX_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
+
+
+Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
+	cd ..; $(SHELL) config.status
+
+native: config.status ../cc1plus
+
+# Really, really stupid make features, such as SUN's KEEP_STATE, may force
+# a target to build even if it is up-to-date.  So we must verify that
+# config.status does not exist before failing.
+config.status:
+	@if [ ! -f config.status ] ; then \
+	  echo You must configure gcc.  Look at the ../INSTALL file for details.; \
+	  false; \
+	else \
+	  true; \
+	fi
+
+
+# Compiling object files from source files.
+
+# Note that dependencies on obstack.h are not written
+# because that file is not part of GCC.
+# Dependencies on gvarargs.h are not written
+# because all that file does, when not compiling with GCC,
+# is include the system varargs.h.
+
+# C++ language specific files.
+
+TREE_H = ../tree.h ../real.h ../tree.def ../machmode.h ../machmode.def
+CXX_TREE_H = $(TREE_H) cp-tree.h tree.def
+
+parse.o : $(srcdir)/parse.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h lex.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
+  `echo $(srcdir)/parse.c | sed 's,^\./,,'`
+
+$(srcdir)/parse.c $(srcdir)/parse.h : $(srcdir)/parse.y
+	@echo expect 28 shift/reduce conflicts, 14 reduce/reduce conflicts.
+	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
+	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
+
+# hash.h really depends on $(srcdir)/gxx.gperf.
+# But this would screw things for people that don't have gperf,
+# if gxx.gpref got touched, say.
+# Thus you have to remove hash.h to force it to be re-made.
+$(srcdir)/hash.h:
+	gperf -p -j1 -g -o -t -N is_reserved_word '-k1,4,7,$$' \
+		$(srcdir)/gxx.gperf >$(srcdir)/hash.h
+
+spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
+  parse.h ../flags.h lex.h
+lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
+  parse.h input.c ../flags.h hash.h lex.h
+decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h \
+  lex.h decl.h ../stack.h
+decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h \
+  lex.h decl.h
+typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
+typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h $(RTL_H)
+class.o : class.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
+call.o : call.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h class.h
+init.o : init.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h $(RTL_H)
+method.o : method.c $(CONFIG_H) $(CXX_TREE_H) class.h
+cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) class.h
+search.o : search.c $(CONFIG_H) $(CXX_TREE_H) ../stack.h ../flags.h
+tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
+ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H)
+gc.o : gc.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
+except.o : except.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h $(RTL_H)
+expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) ../flags.h \
+  ../expr.h ../insn-codes.h
+edsel.o : edsel.c $(CONFIG_H) $(CXX_TREE_H) ../stack.h ../flags.h
+xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) ../input.h
+pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h parse.h
+error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
+errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
+sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
+
+doc: info
+info:
+
+dvi:
+
+
+# Deletion of files made during compilation.
+# There are four levels of this:
+#   `mostlyclean', `clean', `distclean' and `realclean'.
+# `mostlyclean' is useful while working on a particular type of machine.
+# It deletes most, but not all, of the files made by compilation.
+# It does not delete libgcc.a or its parts, so it won't have to be recompiled.
+# `clean' deletes everything made by running `make all'.
+# `distclean' also deletes the files made by config.
+# `realclean' also deletes everything that could be regenerated automatically.
+
+
+mostlyclean: 
+# Delete the stamp files.
+	-rm -f stamp-* tmp-*
+# Delete debugging dump files.
+	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
+	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
+# Delete unwanted output files from TeX.
+	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
+# Delete sorted indices we don't actually use.
+	-rm -f gcc.vrs gcc.kys gcc.tps gcc.pgs gcc.fns
+	-rm -f *.o ../cc1plus
+
+# Delete all files made by compilation
+# that don't exist in the distribution.
+clean: mostlyclean
+	-rm -f *.dvi
+
+# Delete all files that users would normally create
+# while building and installing GCC.
+distclean: clean
+	-rm -f config.status Makefile *.oaux
+	-rm -f parse.output
+
+# Delete anything likely to be found in the source directory
+# that shouldn't be in the distribution.
+extraclean: distclean
+	-rm -rf =* ./"#"* *~*
+	-rm -f patch* *.orig *.rej
+	-rm -f *.dvi *.oaux *.d *.[zZ] *.gz
+	-rm -f *.s *.s[0-9] *.i
+
+# Get rid of every file that's generated from some other file.
+# Most of these files ARE PRESENT in the GCC distribution.
+realclean: distclean
+	-rm -f TAGS
+	-rm -f parse.c parse.h parse.output
+
+# These exist for maintenance purposes.
+
+# This target creates the files that can be rebuilt, but go in the
+# distribution anyway.
+distdir: parse.c hash.h
+
+# Update the tags table.
+TAGS: force
+	cd $(srcdir) ;							\
+	etags *.c *.h ;							\
+	echo 'l' | tr 'l' '\f' >> TAGS ;				\
+	echo 'parse.y,0' >> TAGS ; 					\
+	etags -a ../*.h ../*.c;
+
+.PHONY: clean realclean TAGS
+
+force:

@@ -1,0 +1,92 @@
+/* This file contains the definitions and documentation for the
+   additional tree codes used in the GNU C++ compiler (see tree.def
+   for the standard codes).
+   Copyright (C) 1987, 1988, 1990, 1993 Free Software Foundation, Inc.
+   Hacked by Michael Tiemann (tiemann@cygnus.com)
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+ 
+/* Reference to the contents of an offset
+   (a value whose type is an OFFSET_TYPE).
+   Operand 0 is the object within which the offset is taken.
+   Operand 1 is the offset.  The language independent OFFSET_REF
+   just won't work for us.  */
+DEFTREECODE (CP_OFFSET_REF, "cp_offset_ref", "r", 2)
+
+/* For DELETE_EXPR, operand 0 is the store to be destroyed.
+   Operand 1 is the value to pass to the destroying function
+   saying whether the store should be deallocated as well.  */
+DEFTREECODE (DELETE_EXPR, "dl_expr", "e", 2)
+
+/* Value is reference to particular overloaded class method.
+   Operand 0 is the class name (an IDENTIFIER_NODE);
+   operand 1 is the field (also an IDENTIFIER_NODE).
+   The COMPLEXITY field holds the class level (usually 0).  */
+DEFTREECODE (SCOPE_REF, "scope_ref", "r", 2)
+
+/* When composing an object with a member, this is the result.
+   Operand 0 is the object.  Operand 1 is the member (usually
+   a dereferenced pointer to member).  */
+DEFTREECODE (MEMBER_REF, "member_ref", "r", 2)
+
+/* Type conversion operator in C++.  TREE_TYPE is type that this
+   operator converts to.  Operand is expression to be converted.  */
+DEFTREECODE (TYPE_EXPR, "type_expr", "e", 1)
+
+/* For CPLUS_NEW_EXPR, operand 0 is function which performs initialization,
+   operand 1 is argument list to initialization function,
+   and operand 2 is the slot which was allocated for this expression.  */
+DEFTREECODE (NEW_EXPR, "nw_expr", "e", 3)
+
+/* Distinguish variables that are only used to identify exceptions
+   that were caught.  Only the DECL_NAME (and TREE_CHAIN)
+   is really used.  */
+DEFTREECODE (CPLUS_CATCH_DECL, "catch_decl", "d", 0)
+
+/* Template definition.  The following fields have the specified uses,
+   although there are other macros in cp-tree.h that should be used for
+   accessing this data.
+        DECL_ARGUMENTS          template parm vector
+        DECL_TEMPLATE_INFO      template text &c
+	DECL_VINDEX		list of instantiations already produced;
+				only done for functions so far
+   For class template:
+        DECL_INITIAL            associated templates (methods &c)
+        DECL_RESULT             null
+   For non-class templates:
+	TREE_TYPE		type of object to be constructed
+        DECL_RESULT             decl for object to be created
+                                (e.g., FUNCTION_DECL with tmpl parms used)
+ */
+DEFTREECODE (TEMPLATE_DECL, "template_decl", "d", 0)
+
+/* Index into a template parameter list.  This parameter must be a type.
+   Use TYPE_FIELDS to find parmlist and index.  */
+DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", "t", 0)
+
+/* Index into a template parameter list.  This parameter must not be a
+   type.  */
+DEFTREECODE (TEMPLATE_CONST_PARM, "template_const_parm", "c", 2)
+
+/* For uninstantiated parameterized types.
+        TYPE_VALUES     tree list:
+                TREE_PURPOSE    template decl
+                TREE_VALUE      parm vector
+                TREE_CHAIN      null
+   Other useful fields to be defined later.  */
+DEFTREECODE (UNINSTANTIATED_P_TYPE, "uninstantiated_p_type", "t", 0)
