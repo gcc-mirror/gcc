@@ -38,13 +38,8 @@ cpp_options parse_options;
 enum cpp_token cpp_token;
 #endif
 
-#ifndef WCHAR_TYPE_SIZE
-#ifdef INT_TYPE_SIZE
-#define WCHAR_TYPE_SIZE INT_TYPE_SIZE
-#else
-#define WCHAR_TYPE_SIZE	BITS_PER_WORD
-#endif
-#endif
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
 
 /* The following symbols are subsumed in the c_global_trees array, and
    listed here individually for documentation purposes. 
