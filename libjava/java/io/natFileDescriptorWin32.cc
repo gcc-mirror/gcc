@@ -1,6 +1,6 @@
 // natFileDescriptorWin32.cc - Native part of FileDescriptor class.
 
-/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000, 2001  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -171,15 +171,19 @@ java::io::FileDescriptor::close (void)
 }
 
 jint
-java::io::FileDescriptor::seek (jlong pos, jint whence)
+java::io::FileDescriptor::seek (jlong pos, jint whence, jboolean eof_trunc)
 {
   JvAssert (whence == SET || whence == CUR);
 
   jlong len = length();
   jlong here = getFilePointer();
 
-  if ((whence == SET && pos > len) || (whence == CUR && here + pos > len))
-    throw new EOFException;
+  if (eof_trunc
+      && ((whence == SET && pos > len) || (whence == CUR && here + pos > len)))
+    {
+      whence = SET;
+      pos = len;
+    }
 
   LONG high = pos >> 32;
   DWORD low = SetFilePointer ((HANDLE)fd, (DWORD)(0xffffffff & pos), &high, whence == SET ? FILE_BEGIN : FILE_CURRENT);

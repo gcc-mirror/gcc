@@ -1,6 +1,6 @@
 // FileDescriptor.java - Open file or device
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -54,7 +54,11 @@ public final class FileDescriptor
   native void write (byte[] b, int offset, int len)
     throws IOException, NullPointerException, IndexOutOfBoundsException;
   native void close () throws IOException;
-  native int seek (long pos, int whence) throws IOException;
+  // EOF_TRUNC is true if a request to seek past the end of file
+  // should actually stop at the end of file.  If false, then a seek
+  // past the end is ok (and if a subsequent write occurs the file
+  // will grow).
+  native int seek (long pos, int whence, boolean eof_trunc) throws IOException;
   native long length () throws IOException;
   native long getFilePointer () throws IOException;
   native int read () throws IOException;

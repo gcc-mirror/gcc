@@ -1,3 +1,18 @@
+2001-08-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/RandomAccessFile.java (seek): Let seek go past end of
+	file.
+	(skipBytes): Don't fail if seeking past end of file.
+	* java/io/FileInputStream.java (skip): Don't fail if seeking past
+	end of file.
+	* java/io/natFileDescriptorWin32.cc (seek): Handle `eof_trunc'
+	argument.
+	* java/io/natFileDescriptorEcos.cc (seek): Handle `eof_trunc'
+	argument.
+	* java/io/natFileDescriptorPosix.cc (seek): Handle `eof_trunc'
+	argument.
+	* java/io/FileDescriptor.java (seek): Added `eof_trunc' argument.
+
 2001-08-02  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jni.cc (JNI_CreateJavaVM): Call _Jv_JNI_Init in order
