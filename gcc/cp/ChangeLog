@@ -1,3 +1,8 @@
+2002-07-17  Scott Snyder <snyder@fnal.gov>
+
+	PR c++/7320
+	* rtti.c (get_tinfo_decl): Set DECL_COMDAT.
+
 2002-07-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (add_method): Correct handling of conversion operators.
