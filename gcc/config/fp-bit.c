@@ -395,9 +395,9 @@ FLO_union_type;
 #else
 
 #if   defined L_thenan_sf
-const fp_number_type __thenan_sf = { CLASS_SNAN };
+const fp_number_type __thenan_sf = { CLASS_SNAN, 0, 0, (fractype) 0 };
 #elif defined L_thenan_df
-const fp_number_type __thenan_df = { CLASS_SNAN };
+const fp_number_type __thenan_df = { CLASS_SNAN, 0, 0, (fractype) 0 };
 #elif defined FLOAT
 extern const fp_number_type __thenan_sf;
 #else
