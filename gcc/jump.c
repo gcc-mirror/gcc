@@ -233,13 +233,12 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
     if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
       LABEL_NUSES (XEXP (insn, 0))++;
 
-  if (! mark_labels_only)
-    delete_barrier_successors (f);
-
   /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
      notes and recompute LABEL_NUSES.  */
   if (mark_labels_only)
     goto end;
+
+  delete_barrier_successors (f);
 
   last_insn = delete_unreferenced_labels (f);
 
@@ -2573,7 +2572,6 @@ mark_jump_label (x, insn, cross_jump, in_mem)
       {
 	rtx label = XEXP (x, 0);
 	rtx olabel = label;
-	rtx note;
 	rtx next;
 
 	/* Ignore remaining references to unreachable labels that
@@ -2620,11 +2618,34 @@ mark_jump_label (x, insn, cross_jump, in_mem)
 	    if (GET_CODE (insn) == JUMP_INSN)
 	      JUMP_LABEL (insn) = label;
 
-	    /* If we've changed OLABEL and we had a REG_LABEL note
-	       for it, update it as well.  */
-	    else if (label != olabel
-		     && (note = find_reg_note (insn, REG_LABEL, olabel)) != 0)
-	      XEXP (note, 0) = label;
+	    /* If we've changed the label, update notes accordingly.  */
+	    else if (label != olabel)
+	      {
+		rtx note;
+
+		/* We may have a REG_LABEL note to indicate that this
+		   instruction uses the label.  */
+		note = find_reg_note (insn, REG_LABEL, olabel);
+		if (note)
+		  XEXP (note, 0) = label;
+
+		/* We may also have a REG_EQUAL note to indicate that
+		   a register is being set to the address of the
+		   label.  We cannot use find_reg_note as above
+		   because the REG_EQUAL note will use a LABEL_REF,
+		   not the actual CODE_LABEL.  */
+		for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+		  if (REG_NOTE_KIND (note) == REG_EQUAL)
+		    {
+		      if (GET_CODE (XEXP (note, 0)) == LABEL_REF
+			  && XEXP (XEXP (note, 0), 0) == olabel)
+			XEXP (XEXP (note, 0), 0) = label;
+		      /* There is only one REG_EQUAL note per
+			 instruction, so we are done at this 
+			 point.  */
+		      break;
+		    }
+	      }
 
 	    /* Otherwise, add a REG_LABEL note for LABEL unless there already
 	       is one.  */
