@@ -1,5 +1,10 @@
 2005-03-04  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* tr.po: Update.
+	* vi.po: New file.
+
+2005-03-04  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
 	sv.po, tr.po: Update.
 

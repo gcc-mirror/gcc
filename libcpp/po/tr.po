@@ -1,13 +1,13 @@
 # Turkish translations for gcc messages.
-# Copyright (C) 2004 Free Software Foundation, Inc.
-# Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, ...,2004.
+# Copyright (C) 2005 Free Software Foundation, Inc.
+# Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, ..., 2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.0-b20041128\n"
+"Project-Id-Version: cpplib 4.0-b20050226\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-02-25 23:37+0000\n"
-"PO-Revision-Date: 2004-12-03 11:03+0300\n"
+"PO-Revision-Date: 2005-03-03 12:28+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -30,18 +30,18 @@ msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "iconv bulunamadığından %s ile %s karakter kümeleri arasında dönüşüm yapılamıyor"
 
 #: charset.c:743
-#, fuzzy, c-format
+#, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
-msgstr "UCN'den kaynak karakter kümesine dönüşüm"
+msgstr "0x%lx karakteri temel kaynak karakter kümesinde değil\n"
 
 #: charset.c:760 charset.c:1243
 msgid "converting to execution character set"
 msgstr "çalışma karakter kümesine dönüştürülüyor"
 
 #: charset.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
-msgstr "çalışma karakter kümesine dönüştürülüyor"
+msgstr "0x%lx karakteri icra karakter kümesindeki tek baytlık karakterlerden değil"
 
 #: charset.c:865
 msgid "universal character names are only valid in C++ and C99"
@@ -208,7 +208,7 @@ msgstr "#%s \"DOSYA\" ya da <DOSYA> gerektirir"
 #: directives.c:673
 #, c-format
 msgid "empty filename in #%s"
-msgstr ""
+msgstr "#%s ile belirtilen dosya boş"
 
 #: directives.c:681
 msgid "#include nested too deeply"
