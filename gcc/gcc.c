@@ -62,9 +62,11 @@ compilation is specified by a string called a "spec".  */
 
 #ifndef VPROTO
 #ifdef __STDC__
+#define PVPROTO(ARGS)		ARGS
 #define VPROTO(ARGS)		ARGS
 #define VA_START(va_list,var)	va_start(va_list,var)
 #else
+#define PVPROTO(ARGS)		()
 #define VPROTO(ARGS)		(va_alist) va_dcl
 #define VA_START(va_list,var)	va_start(va_list)
 #endif
@@ -215,8 +217,8 @@ static void pfatal_with_name	PROTO((char *));
 static void perror_with_name	PROTO((char *));
 static void perror_exec		PROTO((char *));
 #ifdef HAVE_VPRINTF
-static void fatal		PROTO((char *, ...));
-static void error		PROTO((char *, ...));
+static void fatal		PVPROTO((char *, ...));
+static void error		PVPROTO((char *, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
 static void fatal		PROTO(());

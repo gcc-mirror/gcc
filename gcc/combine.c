@@ -413,7 +413,7 @@ static rtx simplify_shift_const	PROTO((rtx, enum rtx_code, enum machine_mode,
 				       rtx, int));
 static int recog_for_combine	PROTO((rtx *, rtx, rtx *));
 static rtx gen_lowpart_for_combine  PROTO((enum machine_mode, rtx));
-static rtx gen_rtx_combine PROTO((enum rtx_code code, enum machine_mode mode,
+static rtx gen_rtx_combine PVPROTO((enum rtx_code code, enum machine_mode mode,
 				  ...));
 static rtx gen_binary		PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx));

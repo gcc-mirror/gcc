@@ -32,7 +32,7 @@ extern void output_asm_insn PROTO((char *, rtx *));
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
-extern void asm_fprintf STDIO_PROTO((FILE *file, char *p, ...));
+extern void asm_fprintf STDIO_PROTO(PVPROTO((FILE *file, char *p, ...)));
 
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic
