@@ -1390,14 +1390,8 @@ tree
 save_expr (expr)
      tree expr;
 {
-  tree t = expr;
+  tree t = fold (expr);
   tree inner;
-
-  /* Don't fold a COMPONENT_EXPR: if the operand was a CONSTRUCTOR (the
-     only time it will fold), it can cause problems with PLACEHOLDER_EXPRs
-     in Ada.  Moreover, it isn't at all clear why we fold here at all.  */
-  if (TREE_CODE (t) != COMPONENT_REF)
-    t = fold (t);
 
   /* If the tree evaluates to a constant, then we don't want to hide that
      fact (i.e. this allows further folding, and direct checks for constants).
@@ -1745,7 +1739,7 @@ unsafe_for_reeval (expr)
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.  */
 
-int
+bool
 contains_placeholder_p (exp)
      tree exp;
 {
@@ -1770,13 +1764,12 @@ contains_placeholder_p (exp)
 	 position computations since they will be converted into a
 	 WITH_RECORD_EXPR involving the reference, which will assume
 	 here will be valid.  */
-      return contains_placeholder_p (TREE_OPERAND (exp, 0));
+      return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
 
     case 'x':
       if (code == TREE_LIST)
-	return (contains_placeholder_p (TREE_VALUE (exp))
-		|| (TREE_CHAIN (exp) != 0
-		    && contains_placeholder_p (TREE_CHAIN (exp))));
+	return (CONTAINS_PLACEHOLDER_P (TREE_VALUE (exp))
+		|| CONTAINS_PLACEHOLDER_P (TREE_CHAIN (exp)));
       break;
 
     case '1':
@@ -1786,16 +1779,16 @@ contains_placeholder_p (exp)
 	{
 	case COMPOUND_EXPR:
 	  /* Ignoring the first operand isn't quite right, but works best.  */
-	  return contains_placeholder_p (TREE_OPERAND (exp, 1));
+	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1));
 
 	case RTL_EXPR:
 	case CONSTRUCTOR:
 	  return 0;
 
 	case COND_EXPR:
-	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
-		  || contains_placeholder_p (TREE_OPERAND (exp, 1))
-		  || contains_placeholder_p (TREE_OPERAND (exp, 2)));
+	  return (CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0))
+		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1))
+		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 2)));
 
 	case SAVE_EXPR:
 	  /* If we already know this doesn't have a placeholder, don't
@@ -1804,15 +1797,14 @@ contains_placeholder_p (exp)
 	    return 0;
 
 	  SAVE_EXPR_NOPLACEHOLDER (exp) = 1;
-	  result = contains_placeholder_p (TREE_OPERAND (exp, 0));
+	  result = CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
 	  if (result)
 	    SAVE_EXPR_NOPLACEHOLDER (exp) = 0;
 
 	  return result;
 
 	case CALL_EXPR:
-	  return (TREE_OPERAND (exp, 1) != 0
-		  && contains_placeholder_p (TREE_OPERAND (exp, 1)));
+	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1));
 
 	default:
 	  break;
@@ -1821,10 +1813,10 @@ contains_placeholder_p (exp)
       switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
-	  return contains_placeholder_p (TREE_OPERAND (exp, 0));
+	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
 	case 2:
-	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
-		  || contains_placeholder_p (TREE_OPERAND (exp, 1)));
+	  return (CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0))
+		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1)));
 	default:
 	  return 0;
 	}
@@ -1833,6 +1825,109 @@ contains_placeholder_p (exp)
       return 0;
     }
   return 0;
+}
+
+/* Return 1 if any part of the computation of TYPE involves a PLACEHOLDER_EXPR.
+   This includes size, bounds, qualifiers (for QUAL_UNION_TYPE) and field
+   positions.  */
+
+bool
+type_contains_placeholder_p (type)
+     tree type;
+{
+  /* If the size contains a placeholder or the parent type (component type in
+     the case of arrays) type involves a placeholder, this type does.  */
+  if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type))
+      || CONTAINS_PLACEHOLDER_P (TYPE_SIZE_UNIT (type))
+      || (TREE_TYPE (type) != 0
+	  && type_contains_placeholder_p (TREE_TYPE (type))))
+    return 1;
+
+  /* Now do type-specific checks.  Note that the last part of the check above
+     greatly limits what we have to do below.  */
+  switch (TREE_CODE (type))
+    {
+    case VOID_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+    case POINTER_TYPE:
+    case OFFSET_TYPE:
+    case REFERENCE_TYPE:
+    case METHOD_TYPE:
+    case FILE_TYPE:
+    case FUNCTION_TYPE:
+      return 0;
+
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+      /* Here we just check the bounds.  */
+      return (CONTAINS_PLACEHOLDER_P (TYPE_MIN_VALUE (type))
+	      || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (type)));
+
+    case ARRAY_TYPE:
+    case SET_TYPE:
+      /* We're already checked the component type (TREE_TYPE), so just check
+	 the index type.  */
+      return type_contains_placeholder_p (TYPE_DOMAIN (type));
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	static tree seen_types = 0;
+	tree field;
+	bool ret = 0;
+
+	/* We have to be careful here that we don't end up in infinite
+	   recursions due to a field of a type being a pointer to that type
+	   or to a mutually-recursive type.  So we store a list of record
+	   types that we've seen and see if this type is in them.  To save
+	   memory, we don't use a list for just one type.  Here we check
+	   whether we've seen this type before and store it if not.  */
+	if (seen_types == 0)
+	  seen_types = type;
+	else if (TREE_CODE (seen_types) != TREE_LIST)
+	  {
+	    if (seen_types == type)
+	      return 0;
+
+	    seen_types = tree_cons (NULL_TREE, type,
+				    build_tree_list (NULL_TREE, seen_types));
+	  }
+	else
+	  {
+	    if (value_member (type, seen_types) != 0)
+	      return 0;
+
+	    seen_types = tree_cons (NULL_TREE, type, seen_types);
+	  }
+
+	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	  if (TREE_CODE (field) == FIELD_DECL
+	      && (CONTAINS_PLACEHOLDER_P (DECL_FIELD_OFFSET (field))
+		  || (TREE_CODE (type) == QUAL_UNION_TYPE
+		      && CONTAINS_PLACEHOLDER_P (DECL_QUALIFIER (field)))
+		  || type_contains_placeholder_p (TREE_TYPE (field))))
+	    {
+	      ret = true;
+	      break;
+	    }
+
+	/* Now remove us from seen_types and return the result.  */
+	if (seen_types == type)
+	  seen_types = 0;
+	else
+	  seen_types = TREE_CHAIN (seen_types);
+
+	return ret;
+      }
+
+    default:
+      abort ();
+    }
 }
 
 /* Return 1 if EXP contains any expressions that produce cleanups for an
@@ -1960,9 +2055,9 @@ substitute_in_expr (exp, f, r)
 
 	  op0 = TREE_OPERAND (exp, 0);
 	  op1 = TREE_OPERAND (exp, 1);
-	  if (contains_placeholder_p (op0))
+	  if (CONTAINS_PLACEHOLDER_P (op0))
 	    op0 = substitute_in_expr (op0, f, r);
-	  if (contains_placeholder_p (op1))
+	  if (CONTAINS_PLACEHOLDER_P (op1))
 	    op1 = substitute_in_expr (op1, f, r);
 
 	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
@@ -1994,11 +2089,11 @@ substitute_in_expr (exp, f, r)
 	  op1 = TREE_OPERAND (exp, 1);
 	  op2 = TREE_OPERAND (exp, 2);
 
-	  if (contains_placeholder_p (op0))
+	  if (CONTAINS_PLACEHOLDER_P (op0))
 	    op0 = substitute_in_expr (op0, f, r);
-	  if (contains_placeholder_p (op1))
+	  if (CONTAINS_PLACEHOLDER_P (op1))
 	    op1 = substitute_in_expr (op1, f, r);
-	  if (contains_placeholder_p (op2))
+	  if (CONTAINS_PLACEHOLDER_P (op2))
 	    op2 = substitute_in_expr (op2, f, r);
 
 	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)

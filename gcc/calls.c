@@ -1146,8 +1146,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 	 with those made by function.c.  */
 
       /* See if this argument should be passed by invisible reference.  */
-      if ((TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-	   && contains_placeholder_p (TYPE_SIZE (type)))
+      if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type))
 	  || TREE_ADDRESSABLE (type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (*args_so_far, TYPE_MODE (type),

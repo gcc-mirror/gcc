@@ -4494,8 +4494,7 @@ assign_parms (fndecl)
 	 object itself or if the machine requires these objects be passed
 	 that way.  */
 
-      if ((TREE_CODE (TYPE_SIZE (passed_type)) != INTEGER_CST
-	   && contains_placeholder_p (TYPE_SIZE (passed_type)))
+      if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (passed_type))
 	  || TREE_ADDRESSABLE (passed_type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
