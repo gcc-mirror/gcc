@@ -4642,12 +4642,12 @@ receiver_is_class_object (receiver)
    the identifier of the selector of the message.  This is
    used when printing warnings about argument mismatches.  */
 
-static tree building_objc_message_expr = 0;
+static tree current_objc_message_selector = 0;
 
 tree
 objc_message_selector ()
 {
-  return building_objc_message_expr;
+  return current_objc_message_selector;
 }
 
 /* Construct an expression for sending a message.
@@ -4923,7 +4923,7 @@ finish_message_expr (receiver, sel_name, method_params)
     }
 
   /* Save the selector name for printing error messages.  */
-  building_objc_message_expr = sel_name;
+  current_objc_message_selector = sel_name;
 
   /* Build the parameters list for looking up the method.
      These are the object itself and the selector.  */
@@ -4937,7 +4937,7 @@ finish_message_expr (receiver, sel_name, method_params)
 				   receiver, self_object,
 				   selector, method_params);
 
-  building_objc_message_expr = 0;
+  current_objc_message_selector = 0;
 
   return retval;
 }
