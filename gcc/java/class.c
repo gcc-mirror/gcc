@@ -52,6 +52,9 @@ static int assume_compiled PARAMS ((const char *));
 static struct hash_entry *init_test_hash_newfunc PARAMS ((struct hash_entry *,
 							  struct hash_table *,
 							  hash_table_key));
+static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
+static int cxx_keyword_p PARAMS ((const char *, int));
+static tree mangle_field PARAMS ((tree, tree));
 
 static rtx registerClass_libfunc;
 
@@ -1626,29 +1629,13 @@ append_gpp_mangled_type (obstack, type)
     }
 }
 
-/* Build the mangled name of the `class' field.  */
+/* Build the mangled name of a field, given the class name and the
+   field name.  */
 
 static tree
-mangle_class_field (class)
-     tree class;
+mangle_field (class, name)
+     tree class, name;
 {
-  tree name;
-  obstack_grow (&temporary_obstack, "_CL_", 4);
-  append_gpp_mangled_type (&temporary_obstack, class);
-  obstack_1grow (&temporary_obstack, '\0');
-  name = get_identifier (obstack_base (&temporary_obstack));
-  obstack_free (&temporary_obstack, obstack_base (&temporary_obstack));
-  return name;
-}
-
-/* Build the mangled (assembly-level) name of the static field FIELD. */
-
-static tree
-mangle_static_field (field)
-     tree field;
-{
-  tree class = DECL_CONTEXT (field);
-  tree name = DECL_NAME (field);
   int encoded_len;
 #if ! defined (NO_DOLLAR_IN_LABEL) || ! defined (NO_DOT_IN_LABEL)
   obstack_1grow (&temporary_obstack, '_');
@@ -1683,10 +1670,37 @@ mangle_static_field (field)
 		    IDENTIFIER_POINTER (name),
 		    IDENTIFIER_LENGTH (name));
     }
+
+  /* Mangle C++ keywords by appending a `$'.  */
+  /* FIXME: NO_DOLLAR_IN_LABEL */
+  if (cxx_keyword_p (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
+    obstack_grow (&temporary_obstack, "$", 1);
+
   obstack_1grow (&temporary_obstack, '\0');
   name = get_identifier (obstack_base (&temporary_obstack));
   obstack_free (&temporary_obstack, obstack_base (&temporary_obstack));
   return name;
+}
+
+/* Build the mangled name of the `class' field.  */
+
+static tree
+mangle_class_field (class)
+     tree class;
+{
+  /* We know that we can use `class$' to mangle the class object,
+     because `class' is a reserved word in Java and thus can't appear
+     as a field or method name.  */
+  return mangle_field (class, get_identifier ("class$"));
+}
+
+/* Build the mangled (assembly-level) name of the static field FIELD. */
+
+static tree
+mangle_static_field (field)
+     tree field;
+{
+  return mangle_field (DECL_CONTEXT (field), DECL_NAME (field));
 }
 
 /* Build a VAR_DECL for the dispatch table (vtable) for class TYPE. */
@@ -1880,7 +1894,7 @@ layout_class_methods (this_class)
     }
   else
     dtable_count = integer_zero_node;
-  
+
   TYPE_METHODS (handle_type) = nreverse (TYPE_METHODS (handle_type));
 
   for (method_decl = TYPE_METHODS (handle_type);
@@ -1894,6 +1908,93 @@ layout_class_methods (this_class)
   layout_type (handle_type);
 #endif
   pop_obstacks ();
+}
+
+/* A sorted list of all C++ keywords.  */
+
+static const char *cxx_keywords[] =
+{
+  "asm",
+  "auto",
+  "bool",
+  "const_cast",
+  "delete",
+  "dynamic_cast",
+  "enum",
+  "explicit",
+  "extern",
+  "friend",
+  "inline",
+  "mutable",
+  "namespace",
+  "overload",
+  "register",
+  "reinterpret_cast",
+  "signed",
+  "sizeof",
+  "static_cast",
+  "struct",
+  "template",
+  "typedef",
+  "typeid",
+  "typename",
+  "typenameopt",
+  "union",
+  "unsigned",
+  "using",
+  "virtual",
+  "volatile",
+  "wchar_t"
+};
+
+/* Return 0 if NAME is equal to STR, -1 if STR is "less" than NAME,
+   and 1 if STR is "greater" than NAME.  */
+
+static int
+utf8_cmp (str, length, name)
+     const unsigned char *str;
+     int length;
+     const char *name;
+{
+  const unsigned char *limit = str + length;
+  int i;
+
+  for (i = 0; name[i]; ++i)
+    {
+      int ch = UTF8_GET (str, limit);
+      if (ch != name[i])
+	return ch - name[i];
+    }
+
+  return str == limit ? 0 : 1;
+}
+
+/* Return true if NAME is a C++ keyword.  */
+
+static int
+cxx_keyword_p (name, length)
+     const char *name;
+     int length;
+{
+  int last = ARRAY_SIZE (cxx_keywords);
+  int first = 0;
+  int mid = (last + first) / 2;
+  int old = -1;
+
+  for (mid = (last + first) / 2;
+       mid != old;
+       old = mid, mid = (last + first) / 2)
+    {
+      int r = utf8_cmp (name, length, cxx_keywords[mid]);
+
+      if (r == 0)
+	return 1;
+      else if (r < 0)
+	last = mid;
+      else
+	first = mid;
+    }
+  return 0;
 }
 
 /* Lay METHOD_DECL out, returning a possibly new value of
@@ -1931,8 +2032,14 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 			IDENTIFIER_POINTER (method_name),
 			IDENTIFIER_LENGTH (method_name));
 	}
+
+      /* Mangle C++ keywords by appending a `$'.  */
+      /* FIXME: NO_DOLLAR_IN_LABEL */
+      if (cxx_keyword_p (IDENTIFIER_POINTER (method_name),
+			 IDENTIFIER_LENGTH (method_name)))
+	obstack_grow (&temporary_obstack, "$", 1);
     }
-      
+
   obstack_grow (&temporary_obstack, "__", 2);
   if (ID_FINIT_P (method_name))
     obstack_grow (&temporary_obstack, "finit", 5);

@@ -1,3 +1,23 @@
+2000-10-05  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (jvgenmain_spec): Added `-fdollars-in-identifiers'.
+	* jvgenmain.c (class_mangling_prefix): Removed.
+	(class_mangling_suffix): New global.
+	(main): Use it.
+	* gjavah.c (cxx_keyword_subst): Mangle C++ keywords by appending
+	`$'.
+	(print_method_info): Handle overrides for static and final
+	methods.
+	(process_file): Generate declaration for class object field.
+	* class.c (cxx_keywords): New array.
+	(utf8_cmp): New function.
+	(cxx_keyword_p): New function.
+	(layout_class_method): Mangle C++ keywords by appending `$'.
+	(mangle_field): New function.
+	(mangle_class_field): Use mangle_field.  Mangle class name as
+	`class$'.
+	(mangle_static_field): Use mangle_field.
+
 Tue Oct  3 13:44:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (find_local_variable): Removed uncessary type check and
@@ -127,6 +147,7 @@ Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(argument_types_convertible): Likewise.
 	(patch_cast): Rename wfl_op parameter to avoid macro conflicts.
 	
+>>>>>>> 1.531
 2000-09-14  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.h: Use HAVE_ICONV_H, not HAVE_ICONV.
