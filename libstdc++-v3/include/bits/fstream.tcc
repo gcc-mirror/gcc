@@ -320,8 +320,13 @@ namespace std
 			      __iend, __buf, __buf + __blen, __bend);
 	      if (__r != codecvt_base::error)
 		__rlen = __bend - __buf;
-	      else 
-		__rlen = 0;
+	      else
+		{
+		  __rlen = 0;
+		  // Signal to the caller (_M_really_overflow) that
+		  // codecvt::out eventually failed.
+		  __elen = 0;		  
+		}
 	      if (__rlen)
 		{
 		  __elen += _M_file.xsputn(__buf, __rlen);
