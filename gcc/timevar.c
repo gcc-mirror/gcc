@@ -498,6 +498,11 @@ timevar_print (FILE *fp)
   fprintf (fp, "%7.2f\n", total->wall);
 #endif
 
+#ifdef ENABLE_CHECKING
+  fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");
+  fprintf (fp, "Configure with --disable-checking to disable checks.\n");
+#endif
+
 #endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
 	  || defined (HAVE_WALL_TIME) */
 }
