@@ -657,8 +657,8 @@ package body Sem_Ch3 is
       return        Entity_Id
    is
       Anon_Type : constant Entity_Id :=
-        Create_Itype (E_Anonymous_Access_Type, Related_Nod,
-          Scope_Id => Scope (Current_Scope));
+                    Create_Itype (E_Anonymous_Access_Type, Related_Nod,
+                                  Scope_Id => Scope (Current_Scope));
       Desig_Type : Entity_Id;
 
    begin
@@ -2979,9 +2979,10 @@ package body Sem_Ch3 is
       Disc_Spec    : Node_Id;
       Old_Disc     : Entity_Id;
       New_Disc     : Entity_Id;
+
       Constraint_Present : constant Boolean :=
-         Nkind (Subtype_Indication (Type_Definition (N))) =
-           N_Subtype_Indication;
+                             Nkind (Subtype_Indication (Type_Definition (N)))
+                                                     = N_Subtype_Indication;
 
    begin
       Set_Girder_Constraint (Derived_Type, No_Elist);
@@ -2995,6 +2996,32 @@ package body Sem_Ch3 is
          New_Scope (Derived_Type);
          Check_Or_Process_Discriminants (N, Derived_Type);
          End_Scope;
+
+      elsif Constraint_Present then
+
+         --  Build constrained subtype and derive from it
+
+         declare
+            Loc  : constant Source_Ptr := Sloc (N);
+            Anon : Entity_Id :=
+                     Make_Defining_Identifier (Loc,
+                       New_External_Name (Chars (Derived_Type), 'T'));
+            Decl : Node_Id;
+
+         begin
+            Decl :=
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => Anon,
+                Subtype_Indication =>
+                  New_Copy_Tree (Subtype_Indication (Type_Definition (N))));
+            Insert_Before (N, Decl);
+            Rewrite (Subtype_Indication (Type_Definition (N)),
+              New_Occurrence_Of (Anon, Loc));
+            Analyze (Decl);
+            Set_Analyzed (Derived_Type, False);
+            Analyze (N);
+            return;
+         end;
       end if;
 
       --  All attributes are inherited from parent. In particular,
@@ -3002,10 +3029,9 @@ package body Sem_Ch3 is
       --  Discriminants may be renamed, and must be treated separately.
 
       Set_Has_Discriminants
-                       (Derived_Type, Has_Discriminants (Parent_Type));
+        (Derived_Type, Has_Discriminants         (Parent_Type));
       Set_Corresponding_Record_Type
-                       (Derived_Type, Corresponding_Record_Type
-                                                        (Parent_Type));
+        (Derived_Type, Corresponding_Record_Type (Parent_Type));
 
       if Constraint_Present then
 
@@ -3021,15 +3047,17 @@ package body Sem_Ch3 is
             New_Disc   := First_Discriminant (Derived_Type);
             Disc_Spec  := First (Discriminant_Specifications (N));
             D_Constraint :=
-              First (Constraints (
-                Constraint (Subtype_Indication (Type_Definition (N)))));
+              First
+                (Constraints
+                  (Constraint (Subtype_Indication (Type_Definition (N)))));
 
             while Present (Old_Disc) and then Present (Disc_Spec) loop
 
                if Nkind (Discriminant_Type (Disc_Spec)) /=
-                 N_Access_Definition
+                                              N_Access_Definition
                then
                   Analyze (Discriminant_Type (Disc_Spec));
+
                   if not Subtypes_Statically_Compatible (
                              Etype (Discriminant_Type (Disc_Spec)),
                                Etype (Old_Disc))
@@ -3086,6 +3114,10 @@ package body Sem_Ch3 is
 
       else
          Set_First_Entity (Derived_Type, First_Entity (Parent_Type));
+         if Has_Discriminants (Parent_Type) then
+            Set_Discriminant_Constraint (
+              Derived_Type, Discriminant_Constraint (Parent_Type));
+         end if;
       end if;
 
       Set_Last_Entity  (Derived_Type, Last_Entity  (Parent_Type));
