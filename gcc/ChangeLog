@@ -1,3 +1,8 @@
+2001-08-10  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific, avr): Fix cross-reference to the
+	main manual to work both for info and HTML versions.
+
 2001-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/fde-glibc.c: Require glibc 2.2.4+ headers.

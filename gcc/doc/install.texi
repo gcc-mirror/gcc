@@ -1648,9 +1648,15 @@ You will need to install GNU @command{sed} before you can run configure.
 @heading @anchor{avr}avr
 
 ATMEL AVR-family micro controllers.  These are used in embedded
-applications.  There are no standard Unix configurations.  @xref{AVR
-Options,, AVR Options, gcc, Using and Porting the GNU Compiler
-Collection (GCC)}, for the list of supported MCU types.
+applications.  There are no standard Unix configurations.
+@ifnothtml
+@xref{AVR Options,, AVR Options, gcc, Using and Porting the GNU Compiler
+Collection (GCC)},
+@end ifnothtml
+@ifnotinfo
+See ``AVR Options'' in the main manual
+@end ifnotinfo
+for the list of supported MCU types.
 
 Use @samp{configure --target=avr --enable-languages="c"} to configure GCC@.
 
