@@ -2519,6 +2519,10 @@ struct lang_decl GTY(())
   (TREE_CODE (TYPE) == BOOLEAN_TYPE		\
    || TREE_CODE (TYPE) == INTEGER_TYPE)
 
+/* Returns true if TYPE is an integral or enumeration name.  */
+#define INTEGRAL_OR_ENUMERATION_TYPE_P(TYPE) \
+  (CP_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == ENUMERAL_TYPE)
+
 /* [basic.fundamental]
 
    Integral and floating types are collectively called arithmetic
@@ -3618,6 +3622,7 @@ extern tree initialize_reference                PARAMS ((tree, tree, tree));
 extern tree make_temporary_var_for_ref_to_temp  (tree, tree);
 extern tree strip_top_quals                     PARAMS ((tree));
 extern tree perform_implicit_conversion         PARAMS ((tree, tree));
+extern tree perform_direct_initialization_if_possible (tree, tree);
 
 /* in class.c */
 extern tree build_base_path			PARAMS ((enum tree_code, tree, tree, int));

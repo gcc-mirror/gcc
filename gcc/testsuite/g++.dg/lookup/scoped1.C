@@ -17,6 +17,6 @@ struct C: public B
     ::A::i1 = 1;
     ::A::i2 = 1;		// { dg-error "access" "" }
     ::A::f1 ();
-    ::A::f2 ();			// { dg-error "access" "" { xfail *-*-* } }
+    ::A::f2 ();			// { dg-error "" }
   }
 };

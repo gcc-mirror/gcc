@@ -20,11 +20,11 @@ public:
         void myf(int);
 };
 
-void inh::myf(int i) {
+void inh::myf(int i) { // ERROR - inaccessible
         a = i;
 }
 
 void top_t::myf(int i) {
-        inh::myf(i);		// ERROR - cannot convert to inh XFAIL *-*-*
+        inh::myf(i);		// ERROR - cannot convert to inh
 	mel::myf(i);
 }

@@ -45,11 +45,13 @@ static int joust PARAMS ((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PARAMS ((tree, tree));
 static tree build_over_call PARAMS ((struct z_candidate *, tree, int));
 static tree build_java_interface_fn_ref PARAMS ((tree, tree));
-#define convert_like(CONV, EXPR) \
-  convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0)
-#define convert_like_with_context(CONV, EXPR, FN, ARGNO) \
-  convert_like_real ((CONV), (EXPR), (FN), (ARGNO), 0)
-static tree convert_like_real PARAMS ((tree, tree, tree, int, int));
+#define convert_like(CONV, EXPR)				\
+  convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0, 		\
+		     /*issue_conversion_warnings=*/true)
+#define convert_like_with_context(CONV, EXPR, FN, ARGNO)	\
+  convert_like_real ((CONV), (EXPR), (FN), (ARGNO), 0, 		\
+		     /*issue_conversion_warnings=*/true)
+static tree convert_like_real (tree, tree, tree, int, int, bool);
 static void op_error PARAMS ((enum tree_code, enum tree_code, tree, tree,
 			    tree, const char *));
 static tree build_object_call PARAMS ((tree, tree));
@@ -4033,18 +4035,17 @@ enforce_access (basetype_path, decl)
   return 1;
 }
 
-/* Perform the conversions in CONVS on the expression EXPR. 
-   FN and ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
+/* Perform the conversions in CONVS on the expression EXPR.  FN and
+   ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is nonzero when
    being called to continue a conversion chain. It is negative when a
-   reference binding will be applied, positive otherwise.  */
+   reference binding will be applied, positive otherwise.  If
+   ISSUE_CONVERSION_WARNINGS is true, warnings about suspicious
+   conversions will be emitted if appropriate.  */
 
 static tree
-convert_like_real (convs, expr, fn, argnum, inner)
-     tree convs, expr;
-     tree fn;
-     int argnum;
-     int inner;
+convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
+		   bool issue_conversion_warnings)
 {
   int savew, savee;
 
@@ -4060,11 +4061,13 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	{
 	  if (TREE_CODE (t) == USER_CONV || !ICS_BAD_FLAG (t))
 	    {
-	      expr = convert_like_real (t, expr, fn, argnum, 1);
+	      expr = convert_like_real (t, expr, fn, argnum, 1,
+					/*issue_conversion_warnings=*/false);
 	      break;
 	    }
 	  else if (TREE_CODE (t) == AMBIG_CONV)
-	    return convert_like_real (t, expr, fn, argnum, 1);
+	    return convert_like_real (t, expr, fn, argnum, 1,
+				      /*issue_conversion_warnings=*/false);
 	  else if (TREE_CODE (t) == IDENTITY_CONV)
 	    break;
 	}
@@ -4074,7 +4077,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
       return cp_convert (totype, expr);
     }
   
-  if (!inner)
+  if (issue_conversion_warnings)
     expr = dubious_conversion_warnings
              (totype, expr, "argument", fn, argnum);
   switch (TREE_CODE (convs))
@@ -4166,7 +4169,8 @@ convert_like_real (convs, expr, fn, argnum, inner)
     };
 
   expr = convert_like_real (TREE_OPERAND (convs, 0), expr, fn, argnum,
-                            TREE_CODE (convs) == REF_BIND ? -1 : 1);
+                            TREE_CODE (convs) == REF_BIND ? -1 : 1,
+			    /*issue_conversion_warnings=*/false);
   if (expr == error_mark_node)
     return error_mark_node;
 
@@ -5961,6 +5965,25 @@ perform_implicit_conversion (type, expr)
     }
 
   return convert_like (conv, expr);
+}
+
+/* Convert EXPR to TYPE (as a direct-initialization) if that is
+   permitted.  If the conversion is valid, the converted expression is
+   returned.  Otherwise, NULL_TREE is returned.  */
+
+tree
+perform_direct_initialization_if_possible (tree type, tree expr)
+{
+  tree conv;
+  
+  if (type == error_mark_node || error_operand_p (expr))
+    return error_mark_node;
+  conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+			      LOOKUP_NORMAL);
+  if (!conv || ICS_BAD_FLAG (conv))
+    return NULL_TREE;
+  return convert_like_real (conv, expr, NULL_TREE, 0, 0, 
+			    /*issue_conversion_warnings=*/false);
 }
 
 /* DECL is a VAR_DECL whose type is a REFERENCE_TYPE.  The reference
