@@ -1,5 +1,8 @@
 2004-06-23  Andrew Pinski  <apinski@apple.com>
 
+	PR middle-end/15988
+	* g++.dg/opt/ptrmem4.C: New test.
+
 	* gcc.dg/c90-array-quals-2.c: New test.
 
 2006-06-23  Nitin Yewale <NitinY@KPITCummins.com>
