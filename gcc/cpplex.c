@@ -289,25 +289,26 @@ output_line_command (pfile, print, line)
   if (CPP_OPTION (pfile, no_line_commands))
     return;
 
-  /* Determine whether the current filename has changed, and if so,
-     how.  'nominal_fname' values are unique, so they can be compared
-     by comparing pointers.  */
-  if (ip->nominal_fname == print->last_fname)
-    change = same;
+  if (pfile->buffer_stack_depth == print->last_bsd)
+    {
+      /* Determine whether the current filename has changed, and if so,
+	 how.  'nominal_fname' values are unique, so they can be compared
+	 by comparing pointers.  */
+      if (ip->nominal_fname == print->last_fname)
+	change = same;
+      else
+	change = rname;
+    }
   else
     {
-      if (pfile->buffer_stack_depth == print->last_bsd)
-	change = rname;
+      if (pfile->buffer_stack_depth > print->last_bsd)
+	change = enter;
       else
-	{
-	  if (pfile->buffer_stack_depth > print->last_bsd)
-	    change = enter;
-	  else
-	    change = leave;
-	  print->last_bsd = pfile->buffer_stack_depth;
-	}
-      print->last_fname = ip->nominal_fname;
+	change = leave;
+      print->last_bsd = pfile->buffer_stack_depth;
     }
+  print->last_fname = ip->nominal_fname;
+
   /* If the current file has not changed, we can output a few newlines
      instead if we want to increase the line number by a small amount.
      We cannot do this if print->lineno is zero, because that means we

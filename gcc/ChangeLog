@@ -1,3 +1,8 @@
+2000-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplex.c (output_line_command): Output correct #line if a header
+	is including itself and is not protected against multiple inclusion.
+
 2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (open_include_file): If open(2) returns EMFILE or
