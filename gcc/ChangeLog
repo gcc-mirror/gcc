@@ -1,3 +1,7 @@
+2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (am33_2.0-*-linux*): Use t-slibgcc-elf-ver.
+
 2003-10-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_expand_call): Force function address
