@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
    Renamed and changed to suit Dynix/ptx v4 and later.
    Modified by Tim Wright (timw@sequent.com).
@@ -333,7 +333,7 @@ while (0)
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
   fprintf (FILE, "\t%s\t%u\n", SKIP_ASM_OP, (SIZE))
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.
 
    For System V Release 4 the convention is *not* to prepend a leading
    underscore onto user-level symbol names.  */
