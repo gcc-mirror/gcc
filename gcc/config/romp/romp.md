@@ -1,5 +1,5 @@
 ;;- Machine description for ROMP chip for GNU C compiler
-;;   Copyright (C) 1988, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+;;   Copyright (C) 1988, 91, 93, 94, 95, 1999 Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -651,7 +651,7 @@
       start_sequence ();
       if (GET_CODE (operands[0]) != REG
 	  || ! refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-				  operands[1]), 0)
+				  operands[1], 0))
 	{
 	  emit_move_insn (operand_subword (op0, 0, 1, DFmode),
 			  operand_subword_force (op1, 0, DFmode));

@@ -613,6 +613,9 @@ input_operand (op, mode)
     case CONST_INT:
       return mode == QImode || mode == HImode || add_operand (op, mode);
 
+    case CONSTANT_P_RTX:
+      return 1;
+
     default:
       break;
     }

@@ -2497,7 +2497,10 @@ emit_move_insn (x, y)
   if (mode == BLKmode || (GET_MODE (y) != mode && GET_MODE (y) != VOIDmode))
     abort ();
 
-  if (CONSTANT_P (y) && ! LEGITIMATE_CONSTANT_P (y))
+  /* Never force constant_p_rtx to memory.  */
+  if (GET_CODE (y) == CONSTANT_P_RTX)
+    ;
+  else if (CONSTANT_P (y) && ! LEGITIMATE_CONSTANT_P (y))
     y = force_const_mem (mode, y);
 
   /* If X or Y are memory references, verify that their addresses are valid
@@ -8993,16 +8996,11 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	      || POINTER_TYPE_P (TREE_TYPE (arg)))
 	    return const0_rtx;
 
-	  /* Otherwise, emit (const (constant_p_rtx (ARG))) and let CSE
-	     get a chance to see if it can deduce whether ARG is constant.  */
-	  /* ??? We always generate the CONST in ptr_mode since that's
-	     certain to be valid on this machine, then convert it to
-	     whatever we need.  */
+	  /* Otherwise, emit (constant_p_rtx (ARG)) and let CSE get a
+	     chance to see if it can deduce whether ARG is constant.  */
 
 	  tmp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
-	  tmp = gen_rtx_CONSTANT_P_RTX (ptr_mode, tmp);
-	  tmp = gen_rtx_CONST (ptr_mode, tmp);
-	  tmp = convert_to_mode (value_mode, tmp, 0);
+	  tmp = gen_rtx_CONSTANT_P_RTX (value_mode, tmp);
 	  return tmp;
 	}
 

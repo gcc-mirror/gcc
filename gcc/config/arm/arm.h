@@ -385,7 +385,6 @@ function tries to return. */
   {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,     \
    "Generate a call to abort if a noreturn function returns"}, \
   {"no-abort-on-noreturn",      -ARM_FLAG_ABORT_NORETURN, ""}, \
-
   SUBTARGET_SWITCHES					\
   {"",				TARGET_DEFAULT }	\
 }

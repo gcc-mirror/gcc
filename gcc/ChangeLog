@@ -1,3 +1,33 @@
+Thu Jan 21 01:59:30 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cse.c (fold_rtx): Revert 29 Dec change.
+	(cse_insn): Revert 12 Jan change.
+	* expr.c (expand_builtin): Don't emit CONST around CONSTANT_P_RTX.
+	* regclass.c (reg_scan_mark_refs): Revert 29 Dec change.
+	* rtl.def: Likewise.
+	* rtl.h (CONSTANT_P): Likewise.
+
+	* expr.c (emit_move_insn): Never try to flush CONSTANT_P_RTX
+	to memory.
+	* recog.c (immediate_operand): Accept CONSTANT_P_RTX.
+	* alpha.c (input_operand): Likewise.
+	* c4x.c (const_operand): Likewise.
+
+	* explow.c (allocate_dynamic_stack_space): Use register_operand
+	instead of arith_operand, which does not exist.
+
+	* 1750a.h: Fix comment closure.
+	* a29k.c (a29k_set_memflags): Fix typo in 19 Jan change.
+	* arc.md (one_cmplsi2_set_cc_insn): Fix set mode mismatch.
+	* arm.h (TARGET_SWITCHES): Fix typo.
+	* i370.md (anon mult and div patterns): Fix set mode mismatch.
+	* i860.c (output_delayed_branch): Fix operands to constrain_operands.
+	(output_delay_insn): Likewise.
+	* m88k.md (anon rotate insns): Fix set mode mismatch.
+	(anon BLKmode moves): Commonize and fix set mode mismatches.
+	* ns32k.md (udivmoddi[shq]i4_internal): Fix mode mismatch.
+	* romp.md (movdf): Fix typo.
+
 Thu Jan 21 00:29:35 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (install-common): Remove extraneous chmod for gcov

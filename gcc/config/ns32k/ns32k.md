@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994, 1996 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994, 1996, 1999 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 ;; This file is part of GNU CC.
@@ -1276,7 +1276,7 @@
 ;; ever used when explicitly emitted by a define_expand.
 (define_insn "udivmoddisi4_internal"
   [(set (match_operand:DI 0 "reg_or_mem_operand" "=rm")
-        (unspec:SI [(match_operand:DI 1 "reg_or_mem_operand" "0")
+        (unspec:DI [(match_operand:DI 1 "reg_or_mem_operand" "0")
                     (match_operand:SI 2 "general_operand" "g")] 0))]
   ""
   "deid %2,%0")
@@ -1341,7 +1341,7 @@
 ;; way to do this, so just restrict operand 0 and 1 to be in registers.
 (define_insn "udivmoddihi4_internal"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:HI [(match_operand:DI 1 "register_operand" "0")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "0")
                     (match_operand:HI 2 "general_operand" "g")] 0))]
   ""
   "deiw %2,%0")
@@ -1398,7 +1398,7 @@
 ;; way to do this, so just restrict operand 0 and 1 to be in registers.
 (define_insn "udivmoddiqi4_internal"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:QI [(match_operand:DI 1 "reg_or_mem_operand" "0")
+        (unspec:DI [(match_operand:DI 1 "reg_or_mem_operand" "0")
                     (match_operand:QI 2 "general_operand" "g")] 0))]
   ""
   "deib %2,%0")

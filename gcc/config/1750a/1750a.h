@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994, 95-98, 1999 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (oliver.kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
@@ -732,7 +732,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
   reg_renumber[REGNO] >= 12 && reg_renumber[REGNO] <= 15)
 
 /* Now macros that check whether X is a register and also,
-   strictly, whether it is in a specified class.
+   strictly, whether it is in a specified class.  */
 
 /* 1 if X is an address register  */
 
