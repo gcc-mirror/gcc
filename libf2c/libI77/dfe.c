@@ -82,7 +82,7 @@ c_dfe(cilist *a)
 	f__fmtbuf=a->cifmt;
 	if(a->cirec <= 0)
 		err(a->cierr,130,"dfe");
-	FSEEK(f__cf,f__curunit->url * (a->cirec-1),SEEK_SET);
+	FSEEK(f__cf,(off_t)f__curunit->url * (a->cirec-1),SEEK_SET);
 	f__curunit->uend = 0;
 	return(0);
 }
