@@ -4076,8 +4076,14 @@ cp_pointer_int_sum (resultcode, ptrop, intop)
      enum tree_code resultcode;
      register tree ptrop, intop;
 {
-  if (!complete_type_or_else (TREE_TYPE (ptrop), ptrop))
-    return error_mark_node;
+  tree res_type = TREE_TYPE (ptrop);
+
+  /* pointer_int_sum() uses size_in_bytes() on the TREE_TYPE(res_type)
+     in certain circumstance (when it's valid to do so).  So we need
+     to make sure it's complete.  We don't need to check here, if we
+     can actually complete it at all, as those checks will be done in
+     pointer_int_sum() anyway.  */
+  complete_type (TREE_TYPE (res_type));
 
   return pointer_int_sum (resultcode, ptrop, fold (intop));
 }

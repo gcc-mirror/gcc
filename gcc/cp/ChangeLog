@@ -1,3 +1,8 @@
+2002-03-01  Michael Matz  <matz@suse.de>
+
+	* typeck.c (cp_pointer_int_sum): Complete inner type which is
+	used later by size_in_bytes().
+
 2002-03-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* cp-tree.h (build_init):  Remove prototype.
