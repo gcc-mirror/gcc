@@ -1,3 +1,7 @@
+Sat Jan  3 12:15:41 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* configure.in: Finalize support for {alpha|powerpc}*-*-linux-gnulibc1
+
 Sun Dec  7 02:34:40 1997  Jody Goldberg	<jodyg@idt.net>
 
 	* libstdc++/std/bastring.h : Move closer to the draft standard
