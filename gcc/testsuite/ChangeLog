@@ -1,3 +1,8 @@
+2005-02-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19733
+	* g++.dg/parse/crash23.C: New test.
+
 2005-02-03  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19775

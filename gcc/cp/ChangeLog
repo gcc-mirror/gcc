@@ -1,3 +1,9 @@
+2005-02-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19733
+	* cvt.c (convert_to_void): Issue errors about pseudo-destructor
+	expressions.
+
 2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/18757
