@@ -1,3 +1,7 @@
+2001-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/tr-define.c: New test.
+
 2001-05-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* g++.old-deja/g++.abi/cxa_vec.C: Get malloc() from
