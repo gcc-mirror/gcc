@@ -66,6 +66,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Return Address::      Getting the return or frame address of a function.
 * Other Builtins::      Other built-in functions.
 * Deprecated Features:: Things might disappear from g++.
+* Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
 @end ifset
 @ifclear INTERNALS
@@ -114,6 +115,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 			 function.
 * Return Address::      Getting the return or frame address of a function.
 * Deprecated Features:: Things might disappear from g++.
+* Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 * Other Builtins::      Other built-in functions.
 @end menu
 @end ifclear
@@ -3292,6 +3294,42 @@ defines how template definitions have to be organized across
 implementation units. g++ has an implicit instantiation mechanism that
 should work just fine for standard-conforming code.
 
+@item -fstrict-prototype
+@itemx -fno-strict-prototype
+Previously it was possible to use an empty prototype parameter list to
+indicate an unspecified number of parameters (like C), rather than no
+parameters, as C++ demands. This feature has been removed, except where
+it is required for backwards compatibility @xref{Backwards Compatibility}
+
+@end table
+
+@node Backwards Compatibility
+@section Backwards Compatibility
+@cindex Backwards Compatibility
+@cindex ARM
+
+Now that there is a definitive ISO standard C++, g++ has a specification
+to adhere to. The C++ language evolved over time, and features that used
+to be acceptable in previous drafts of the standard, such as the ARM, are
+no longer accepted. In order to allow compilation of C++ written to such
+drafts, g++ contains some backwards compatibilities. @emph{All such
+backwards compatibility features are liable to disappear in future
+versions of g++.} They should be considered deprecated @xref{Deprecated
+Features}.
+
+@table @code
+@item For scope
+If a variable is declared at for scope, it used to remain in scope until
+the end of the scope which contained the for statement (rather than just
+within the for scope). g++ retains this, but issues a warning, if such a
+variable is accessed outside the for scope.
+
+@item implicit C language
+Old C system header files did not contain an @code{extern "C" @{...@}}
+scope to set the language. On such systems, all header files are
+implicitly scoped inside a C language scope. Also, an empty prototype
+@code{()} will be treated as an unspecified number of arguments, rather
+than no arguments, as C++ demands.
 @end table
 
 @node C++ Extensions

@@ -1,3 +1,9 @@
+2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* invoke.texi (strict-prototypes): Remove.
+	* extend.texi (Deprecated Features): Add strict-prototypes.
+	(Backwards Compatibility): New node.
+
 2000-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (andsi_1+1): Allow HImode.
