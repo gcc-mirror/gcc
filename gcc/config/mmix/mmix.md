@@ -34,11 +34,9 @@
 ;; The order of insns is as in Node: Standard Names, with smaller modes
 ;; before bigger modes.
 
-;; FIXME:s
-;; - Use new formats; e.g. '{' not '"*{'.
-
 (define_constants
-  [(MMIX_rJ_REGNUM 259)]
+  [(MMIX_rJ_REGNUM 259)
+   (MMIX_fp_rO_OFFSET -24)]
 )
 
 ;; FIXME: Can we remove the reg-to-reg for smaller modes?  Shouldn't they
@@ -1101,35 +1099,70 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; of "pop 0,0" until rO equals the saved value.  (If it goes lower, we
 ;; should call abort.)
 (define_expand "nonlocal_goto_receiver"
-  [(parallel [(unspec_volatile [(match_dup 0)] 1)
+  [(parallel [(unspec_volatile [(const_int 0)] 1)
 	      (clobber (scratch:DI))
 	      (clobber (reg:DI MMIX_rJ_REGNUM))])
-   (set (reg:DI MMIX_rJ_REGNUM) (match_dup 1))]
+   (set (reg:DI MMIX_rJ_REGNUM) (match_dup 0))]
   ""
   "
 {
-  rtx tem
-    = validize_mem (gen_rtx_MEM (Pmode,
-				 plus_constant (frame_pointer_rtx, -24)));
-  operands[0] = XEXP (tem, 0);
-  operands[1]
+  operands[0]
     = get_hard_reg_initial_val (Pmode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 
   /* Mark this function as containing a landing-pad.  */
   cfun->machine->has_landing_pad = 1;
 }")
 
-;; FIXME: Do we need to keep this in memory?  Can GCC counter our
-;; expectations and use saved registers to keep the slot address in,
-;; "across" the exception or goto?  Anyway, we need to make sure the value
-;; ends up in a non-local register, so best is to load it ourselves.
+;; GCC can insist on using saved registers to keep the slot address in
+;; "across" the exception, or (perhaps) to use saved registers in the
+;; address and re-use them after the register stack unwind, so it's best
+;; to form the address ourselves.
 (define_insn "*nonlocal_goto_receiver_expanded"
-  [(unspec_volatile [(match_operand:DI 0 "address_operand" "p")] 1)
-   (clobber (match_scratch:DI 1 "=&r"))
+  [(unspec_volatile [(const_int 0)] 1)
+   (clobber (match_scratch:DI 0 "=&r"))
    (clobber (reg:DI MMIX_rJ_REGNUM))]
   ""
-  "GETA $255,0f\;PUT rJ,$255\;LDOU $255,%a0\n\
-0:\;GET %1,rO\;CMPU %1,%1,$255\;BNP %1,1f\;POP 0,0\n1:")
+{
+  rtx temp_reg = operands[0];
+  rtx my_operands[2];
+  HOST_WIDEST_INT offs;
+  const char *my_template
+    = "GETA $255,0f\;PUT rJ,$255\;LDOU $255,%a0\n\
+0:\;GET %1,rO\;CMPU %1,%1,$255\;BNP %1,1f\;POP 0,0\n1:";
+
+  my_operands[1] = temp_reg;
+
+  /* If we have a frame-pointer (hence unknown stack-pointer offset),
+     just use the frame-pointer and the known offset.  */
+  if (frame_pointer_needed)
+    {
+      my_operands[0] = GEN_INT (-MMIX_fp_rO_OFFSET);
+
+      output_asm_insn ("NEGU %1,0,%0", my_operands);
+      my_operands[0] = gen_rtx_PLUS (Pmode, frame_pointer_rtx, temp_reg);
+    }
+  else
+    {
+      /* We know the fp-based offset, so "eliminate" it to be sp-based.  */
+      offs
+	= (mmix_initial_elimination_offset (MMIX_FRAME_POINTER_REGNUM,
+					    MMIX_STACK_POINTER_REGNUM)
+	   + MMIX_fp_rO_OFFSET);
+
+      if (offs >= 0 && offs <= 255)
+	my_operands[0]
+	  = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offs));
+      else
+	{
+	  mmix_output_register_setting (asm_out_file, REGNO (temp_reg),
+					offs, 1);
+	  my_operands[0] = gen_rtx_PLUS (Pmode, stack_pointer_rtx, temp_reg);
+	}
+    }
+
+  output_asm_insn (my_template, my_operands);
+  return "";
+})
 
 (define_insn "*Naddu"
   [(set (match_operand:DI 0 "register_operand" "=r")

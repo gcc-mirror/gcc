@@ -1,3 +1,12 @@
+2002-03-31  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md (define_constants): Remove misleading
+	FIXME.  Add MMIX_fp_rO_OFFSET.
+	("nonlocal_goto_receiver"): Don't have stack-frame address of
+	saved rO as part of the pattern.  Remove FIXME.
+	("*nonlocal_goto_receiver_expanded"): Similar.  Generate address
+	here, at output-time.
+
 2002-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/6100
