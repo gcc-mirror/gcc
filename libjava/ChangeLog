@@ -3,6 +3,11 @@
 	* java/util/LinkedList.java (clone): Clear the copy list with clear(), 
 	not by setting its size field.
 
+2001-07-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* include/i386-signal.h (HANDLE_DIVIDE_OVERFLOW): Removed unused
+	local `_ebp.'
+
 2001-07-12  Tom Tromey  <tromey@redhat.com>
 	    David Brownell  <david-b@pacbell.net>
 	
