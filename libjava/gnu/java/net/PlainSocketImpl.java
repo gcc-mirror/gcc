@@ -142,6 +142,11 @@ public final class PlainSocketImpl extends SocketImpl
     super.finalize();
   }
 
+  public int getNativeFD()
+  {
+    return fnum;
+  }
+
   /**
    * Sets the specified option on a socket to the passed in object.  For
    * options that take an integer argument, the passed in object is an

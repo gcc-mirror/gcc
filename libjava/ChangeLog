@@ -1,3 +1,11 @@
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/PlainDatagramSocketImpl.java
+	(finalize): Moved to directly after constructor.
+	(getNativeFD): New method.
+	* gnu/java/net/PlainSocketImpl.java
+	(getNativeFD): New method.
+
 2003-09-25  Ingo Proetel  <proetel@aicas.com>
 
 	* java/io/ObjectOutputStream.java:
