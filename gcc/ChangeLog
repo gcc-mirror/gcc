@@ -1,3 +1,9 @@
+2003-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (addhi3_incdec): Change the name to
+	*addhi3_incdec.
+	(addsi3_incdec): Change the name to *addsi3_incdec.
+
 2003-02-20  Roger Sayle  <roger@eyesopen.com>
 
 	* explow.c (force_reg): Avoid useless REG_EQUAL notes.
