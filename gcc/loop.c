@@ -7196,6 +7196,9 @@ express_from (struct induction *g1, struct induction *g2)
       && GET_CODE (g2->mult_val) == CONST_INT)
     {
       if (g1->mult_val == const0_rtx
+	  || (g1->mult_val == constm1_rtx
+	      && INTVAL (g2->mult_val)
+		 == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
 	  || INTVAL (g2->mult_val) % INTVAL (g1->mult_val) != 0)
 	return NULL_RTX;
       mult = GEN_INT (INTVAL (g2->mult_val) / INTVAL (g1->mult_val));
