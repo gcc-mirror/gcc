@@ -116,6 +116,8 @@ Boston, MA 02111-1307, USA.  */
   { "-dynamic", "-Zdynamic" },  \
   { "-dynamiclib", "-Zdynamiclib" },  \
   { "-exported_symbols_list", "-Zexported_symbols_list" },  \
+  { "-gfull", "-g -fno-eliminate-unused-debug-symbols" }, \
+  { "-gused", "-g -feliminate-unused-debug-symbols" }, \
   { "-segaddr", "-Zsegaddr" }, \
   { "-segs_read_only_addr", "-Zsegs_read_only_addr" }, \
   { "-segs_read_write_addr", "-Zsegs_read_write_addr" }, \
