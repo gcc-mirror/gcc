@@ -136,5 +136,6 @@ extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
 extern void sh_pr_interrupt PARAMS ((struct cpp_reader *));
 extern void sh_pr_trapa PARAMS ((struct cpp_reader *));
 extern void sh_pr_nosave_low_regs PARAMS ((struct cpp_reader *));
+extern rtx function_symbol (const char *);
 
 #endif /* ! GCC_SH_PROTOS_H */

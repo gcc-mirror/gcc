@@ -626,7 +626,7 @@ expand_block_move (operands)
 
 	  entry_name = get_identifier ("__movstrSI12_i4");
 
-	  sym = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name));
+	  sym = function_symbol (IDENTIFIER_POINTER (entry_name));
 	  func_addr_rtx = copy_to_mode_reg (Pmode, sym);
 	  force_into (XEXP (operands[0], 0), r4);
 	  force_into (XEXP (operands[1], 0), r5);
@@ -646,7 +646,7 @@ expand_block_move (operands)
 	  entry_name = get_identifier (bytes & 4
 				       ? "__movstr_i4_odd"
 				       : "__movstr_i4_even");
-	  sym = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name));
+	  sym = function_symbol (IDENTIFIER_POINTER (entry_name));
 	  func_addr_rtx = copy_to_mode_reg (Pmode, sym);
 	  force_into (XEXP (operands[0], 0), r4);
 	  force_into (XEXP (operands[1], 0), r5);
@@ -670,7 +670,7 @@ expand_block_move (operands)
 
       sprintf (entry, "__movstrSI%d", bytes);
       entry_name = get_identifier (entry);
-      sym = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name));
+      sym = function_symbol (IDENTIFIER_POINTER (entry_name));
       func_addr_rtx = copy_to_mode_reg (Pmode, sym);
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
@@ -691,7 +691,7 @@ expand_block_move (operands)
       rtx r6 = gen_rtx_REG (SImode, 6);
 
       entry_name = get_identifier ("__movstr");
-      sym = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (entry_name));
+      sym = function_symbol (IDENTIFIER_POINTER (entry_name));
       func_addr_rtx = copy_to_mode_reg (Pmode, sym);
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
@@ -1908,7 +1908,7 @@ expand_ashiftrt (operands)
   emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   sprintf (func, "__ashiftrt_r4_%d", value);
   func_name = get_identifier (func);
-  sym = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (func_name));
+  sym = function_symbol (IDENTIFIER_POINTER (func_name));
   emit_move_insn (wrk, sym);
   emit_insn (gen_ashrsi3_n (GEN_INT (value), wrk));
   emit_move_insn (operands[0], gen_rtx_REG (SImode, 4));
@@ -5110,10 +5110,9 @@ sh_expand_prologue ()
   if (SHMEDIA_REGS_STACK_ADJUST ())
     {
       emit_move_insn (gen_rtx_REG (Pmode, R0_REG),
-		      gen_rtx_SYMBOL_REF (Pmode,
-					  TARGET_FPU_ANY
-					  ? "__GCC_push_shmedia_regs"
-					  : "__GCC_push_shmedia_regs_nofpu"));
+		      function_symbol (TARGET_FPU_ANY
+				       ? "__GCC_push_shmedia_regs"
+				       : "__GCC_push_shmedia_regs_nofpu"));
       /* This must NOT go through the PLT, otherwise mach and macl
 	 may be clobbered.  */
       emit_insn (gen_shmedia_save_restore_regs_compact
@@ -5146,8 +5145,7 @@ sh_expand_prologue ()
       /* This must NOT go through the PLT, otherwise mach and macl
 	 may be clobbered.  */
       emit_move_insn (gen_rtx_REG (Pmode, R0_REG),
-		      gen_rtx_SYMBOL_REF (Pmode,
-					  "__GCC_shcompact_incoming_args"));
+		      function_symbol ("__GCC_shcompact_incoming_args"));
       emit_insn (gen_shcompact_incoming_args ());
     }
 }
@@ -5195,10 +5193,9 @@ sh_expand_epilogue ()
   if (SHMEDIA_REGS_STACK_ADJUST ())
     {
       emit_move_insn (gen_rtx_REG (Pmode, R0_REG),
-		      gen_rtx_SYMBOL_REF (Pmode,
-					  TARGET_FPU_ANY
-					  ? "__GCC_pop_shmedia_regs"
-					  : "__GCC_pop_shmedia_regs_nofpu"));
+		      function_symbol (TARGET_FPU_ANY
+				       ? "__GCC_pop_shmedia_regs"
+				       : "__GCC_pop_shmedia_regs_nofpu"));
       /* This must NOT go through the PLT, otherwise mach and macl
 	 may be clobbered.  */
       emit_insn (gen_shmedia_save_restore_regs_compact
@@ -7823,7 +7820,7 @@ sh_initialize_trampoline (tramp, fnaddr, cxt)
   if (TARGET_HARVARD)
     {
       if (TARGET_USERMODE)
-	emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__ic_invalidate"),
+	emit_library_call (function_symbol ("__ic_invalidate"),
 			   0, VOIDmode, 1, tramp, SImode);
       else
 	emit_insn (gen_ic_invalidate_line (tramp));
@@ -8477,6 +8474,14 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 
   reload_completed = 0;
   no_new_pseudos = 0;
+}
+
+rtx
+function_symbol (const char *name)
+{
+  rtx sym = gen_rtx_SYMBOL_REF (Pmode, name);
+  SYMBOL_REF_FLAGS (sym) = SYMBOL_FLAG_FUNCTION;
+  return sym;
 }
 
 #include "gt-sh.h"
