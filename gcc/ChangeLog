@@ -1,5 +1,8 @@
 Wed Apr 12 15:54:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
+	* builtins.c (expand_builtin_memcmp): Do expansion even with
+	!HAVE_cmpstrsi, do libcall when gen_strcmpsi fails.
+
 	* calls.c (expand_call): Do NO_DEFER_POP unconditionally once
 	stack is propertly aligned; add sanity checking for aligned
 	stack pointer.
