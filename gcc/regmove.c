@@ -146,6 +146,16 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
 			       gen_rtx_fmt_e (inc_code, Pmode, reg), 1);
 	      if (apply_change_group ())
 		{
+		  /* If there is a REG_DEAD note on this insn, we must
+		     change this not to REG_UNUSED meaning that the register
+		     is set, but the value is dead.  Failure to do so will
+		     result in a sched1 abort -- when it recomputes lifetime
+		     information, the number of REG_DEAD notes will have
+		     changed.  */
+		  rtx note = find_reg_note (insn, REG_DEAD, reg);
+		  if (note)
+		    PUT_MODE (note, REG_UNUSED);
+
 		  REG_NOTES (insn)
 		    = gen_rtx_EXPR_LIST (REG_INC,
 					 reg, REG_NOTES (insn));
