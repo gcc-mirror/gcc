@@ -194,19 +194,19 @@ instead of in the original English.
 @ifset USING
 This manual documents how to run, install and port the GNU
 compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to EGCS version 1.0.
+report bugs.  It corresponds to EGCS version 1.1.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
 This manual documents how to run and install the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to EGCS version 1.0.
+bugs.  It corresponds to EGCS version 1.1.
 @end ifclear
 @ifclear USING
 This manual documents how to port the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to EGCS version 1.0.
+bugs.  It corresponds to EGCS version 1.1.
 @end ifclear
 
 @end ifinfo

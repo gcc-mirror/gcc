@@ -1,3 +1,7 @@
+Fri Oct  2 01:31:54 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.texi: Fix version # that somehow slipped through.
+
 Fri Oct  2 01:24:19 1998  Geoff Keating  <geoffk@ozemail.com.au>
 
 	* gcse.c: New definition NEVER_SET for reg_first_set, reg_last_set,
