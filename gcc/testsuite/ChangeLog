@@ -1,3 +1,8 @@
+2003-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/11087
+	* gcc.c-torture/execute/20030717-1.c: New test.
+
 2003-07-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/cfg1.C: New test.

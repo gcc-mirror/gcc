@@ -1,3 +1,9 @@
+2003-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/11087
+	* loop.c (basic_induction_var): Check if convert_modes emitted any
+	instructions. Remove them and return 0 if so.
+
 2003-07-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11083
