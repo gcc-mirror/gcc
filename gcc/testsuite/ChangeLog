@@ -1,3 +1,8 @@
+2003-12-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/13031
+	* gcc.c-torture/compile/20031220-1.c: New test case.
+
 2003-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/cast-function-1.c: New test.
