@@ -1592,9 +1592,6 @@ struct cum_args {int regs;};
 #undef UNALIGNED_SHORT_ASM_OP
 #define UNALIGNED_SHORT_ASM_OP "\t.word\t"
 
-#undef INT_ASM_OP
-#define INT_ASM_OP "\t.dword\t"
-
 #undef UNALIGNED_INT_ASM_OP
 #define UNALIGNED_INT_ASM_OP "\t.dword\t"
 
