@@ -346,7 +346,7 @@ ada.tags: force
 
 # Generate documentation.
 #
-# The generated Texinfo files for the User Guideare stored in
+# The generated Texinfo files for the User Guide are stored in
 # $(srcdir), like the Info files.
 
 ada/doctools/xgnatug : ada/xgnatug.adb
