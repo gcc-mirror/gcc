@@ -3426,7 +3426,8 @@ tree_node_can_be_shared (tree t)
 	 gimple invariants if they overflowed.  */
       || CONSTANT_CLASS_P (t)
       || is_gimple_min_invariant (t)
-      || TREE_CODE (t) == SSA_NAME)
+      || TREE_CODE (t) == SSA_NAME
+      || t == error_node_mark)
     return true;
 
   if (TREE_CODE (t) == CASE_LABEL_EXPR)
