@@ -180,6 +180,8 @@ AC_MSG_RESULT($gcc_cv_header_inttypes_h)
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen vprintf bcopy bzero bcmp \
 	index rindex kill getrlimit setrlimit atoll atoq)
 
+GCC_FUNC_PRINTF_PTR
+
 GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort)
 

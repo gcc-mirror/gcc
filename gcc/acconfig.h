@@ -1,3 +1,6 @@
+/* Define to "%p" if printf supports it, else machmode.h will define it.  */
+#undef HOST_PTR_PRINTF
+
 /* Define if your cpp understands the stringify operator.  */
 #undef HAVE_CPP_STRINGIFY
 
