@@ -1,5 +1,12 @@
 2004-12-25  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/19137
+	* config/rs6000/rs6000.md (movti_power, movti_string): Relax
+	operand[1] predicate to input_operand, and add r<-n alternative.
+	Move TImode const_double_operand splitter to where it belongs.
+
+2004-12-25  Alan Modra  <amodra@bigpond.net.au>
+
 	PR target/19147
 	* config/rs6000/rs6000.md (andsi3_internal7, andsi3_internal8): Delete.
 
