@@ -127,7 +127,7 @@ int pj_stuff_on_line;
 
 /* Initialize the GCC target structure.  */
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* printf to the asm_out_file, with special format control characters
    for decoding operands.  

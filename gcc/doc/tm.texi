@@ -55,8 +55,8 @@ through the macros defined in the @file{.h} file.
 @cindex target hooks
 @cindex target functions
 
-@deftypevar {struct gcc_target} target
-The target @file{.c} file must define the global @code{target} variable
+@deftypevar {struct gcc_target} targetm
+The target @file{.c} file must define the global @code{targetm} variable
 which contains pointers to functions and data relating to the target
 machine.  The variable is declared in @file{target.h};
 @file{target-def.h} defines the macro @code{TARGET_INITIALIZER} which is
@@ -72,7 +72,7 @@ macros for which the default definition is inappropriate.  For example:
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE @var{machine}_valid_type_attribute_p
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 @end smallexample
 @end deftypevar
 

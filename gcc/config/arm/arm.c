@@ -148,7 +148,7 @@ static void	 arm_set_default_type_attributes	PARAMS ((tree));
 #undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES arm_set_default_type_attributes
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;

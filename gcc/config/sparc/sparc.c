@@ -192,7 +192,7 @@ enum processor_type sparc_cpu;
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sparc_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Validate and override various options, and do some machine dependent
    initialization.  */

@@ -139,7 +139,7 @@ static struct fr30_frame_info 	zero_frame_info;
 
 /* Initialize the GCC target structure.  */
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Returns the number of bytes offset between FROM_REG and TO_REG
    for the current function.  As a side effect it fills in the 

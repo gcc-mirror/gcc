@@ -59,7 +59,7 @@ static void romp_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE romp_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return 1 if the insn using CC0 set by INSN does not contain
    any unsigned tests applied to the condition codes.

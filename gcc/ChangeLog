@@ -1,3 +1,47 @@
+2001-07-06  Stan Shebs  <shebs@apple.com>
+
+	* target.h (targetm): Rename global from "target", so as not to
+	conflict with local variables.
+	* c-decl.c: Ditto.
+	* c-typeck.c: Ditto.
+	* final.c: Ditto.
+	* tree.c: Ditto.
+	* cp/decl.c: Ditto.
+	* cp/decl2.c: Ditto.
+	* cp/typeck.c: Ditto.
+	* 1750a/1750a.c: Ditto.
+	* a29k/a29k.c: Ditto.
+	* arc/arc.c: Ditto.
+	* arm/arm.c: Ditto.
+	* avr/avr.c: Ditto.
+	* clipper/clipper.c: Ditto.
+	* convex/convex.c: Ditto.
+	* d30v/d30v.c: Ditto.
+	* dsp16xx/dsp16xx.c: Ditto.
+	* elxsi/elxsi.c: Ditto.
+	* fr30/fr30.c: Ditto.
+	* h8300/h8300.c: Ditto.
+	* i370/i370.c: Ditto.
+	* i386/i386.c: Ditto.
+	* i860/i860.c: Ditto.
+	* i960/i960.c: Ditto.
+	* ia64/ia64.c: Ditto.
+	* m32r/m32r.c: Ditto.
+	* m68hc11/m68hc11.c: Ditto.
+	* m68k/m68k.c: Ditto.
+	* m88k/m88k.c: Ditto.
+	* mips/mips.c: Ditto.
+	* ns32k/ns32k.c: Ditto.
+	* pa/pa.c: Ditto.
+	* pdp11/pdp11.c: Ditto.
+	* romp/romp.c: Ditto.
+	* rs6000/rs6000.c: Ditto.
+	* sh/sh.c: Ditto.
+	* sparc/sparc.c: Ditto.
+	* vax/vax.c: Ditto.
+	* we32k/we32k.c: Ditto.
+	* doc/tm.texi: Update the manual to match.
+
 2001-07-06  Richard Henderson  <rth@redhat.com>
 
 	* except.h (MUST_USE_SJLJ_EXCEPTIONS): Examine the value of

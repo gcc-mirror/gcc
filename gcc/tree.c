@@ -435,7 +435,7 @@ make_node (code)
 
       /* Default to no attributes for type, but let target change that.  */
       TYPE_ATTRIBUTES (t) = NULL_TREE;
-      (*target.set_default_type_attributes) (t);
+      (*targetm.set_default_type_attributes) (t);
 
       /* We have not yet computed the alias set for this type.  */
       TYPE_ALIAS_SET (t) = -1;
@@ -2759,8 +2759,8 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
     {
       tree decl_attrs = DECL_MACHINE_ATTRIBUTES (decl);
 
-      if ((*target.valid_decl_attribute) (decl, decl_attrs, attr_name,
-					  attr_args))
+      if ((*targetm.valid_decl_attribute) (decl, decl_attrs, attr_name,
+					   attr_args))
 	{
 	  tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
 					decl_attrs);
@@ -2783,8 +2783,8 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
     }
 
   type_attrs = TYPE_ATTRIBUTES (type);
-  if ((*target.valid_type_attribute) (type, type_attrs, attr_name,
-				      attr_args))
+  if ((*targetm.valid_type_attribute) (type, type_attrs, attr_name,
+				       attr_args))
     {
       tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
 				    type_attrs);
@@ -2818,8 +2818,8 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
      by putting the attribute on the function type.  */
   else if (POINTER_TYPE_P (type)
 	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-	   && (*target.valid_type_attribute) (TREE_TYPE (type), type_attrs,
-					      attr_name, attr_args))
+	   && (*targetm.valid_type_attribute) (TREE_TYPE (type), type_attrs,
+					       attr_name, attr_args))
     {
       tree inner_type = TREE_TYPE (type);
       tree inner_attrs = TYPE_ATTRIBUTES (inner_type);

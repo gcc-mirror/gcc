@@ -77,7 +77,7 @@ static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ns32k_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Generate the assembly code for function entry.  FILE is a stdio
    stream to output the code to.  SIZE is an int: how many units of

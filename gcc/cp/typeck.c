@@ -212,7 +212,7 @@ qualify_type_recursive (t1, t2)
       tree b1;
       int type_quals;
       tree tgt;
-      tree attributes = (*target.merge_type_attributes) (t1, t2);
+      tree attributes = (*targetm.merge_type_attributes) (t1, t2);
 
       if (TREE_CODE (tt1) == OFFSET_TYPE)
 	{
@@ -343,7 +343,7 @@ type_after_usual_arithmetic_conversions (t1, t2)
 
   /* In what follows, we slightly generalize the rules given in [expr]
      so as to deal with `long long'.  First, merge the attributes.  */
-  attributes = (*target.merge_type_attributes) (t1, t2);
+  attributes = (*targetm.merge_type_attributes) (t1, t2);
 
   /* If only one is real, use it as the result.  */
   if (code1 == REAL_TYPE && code2 != REAL_TYPE)
@@ -549,7 +549,7 @@ common_type (t1, t2)
     return type_after_usual_arithmetic_conversions (t1, t2);
 
   /* Merge the attributes.  */
-  attributes = (*target.merge_type_attributes) (t1, t2);
+  attributes = (*targetm.merge_type_attributes) (t1, t2);
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 
@@ -999,7 +999,7 @@ comptypes (t1, t2, strict)
   if (strict & COMPARE_NO_ATTRIBUTES)
     attrval = 1;
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  else if (! (attrval = (*target.comp_type_attributes) (t1, t2)))
+  else if (! (attrval = (*targetm.comp_type_attributes) (t1, t2)))
      return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */

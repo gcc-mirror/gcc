@@ -1404,7 +1404,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
   if (DECL_P (olddecl))
     DECL_MACHINE_ATTRIBUTES (newdecl)
-      = (*target.merge_decl_attributes) (olddecl, newdecl);
+      = (*targetm.merge_decl_attributes) (olddecl, newdecl);
 
   if (TREE_CODE (newtype) == ERROR_MARK
       || TREE_CODE (oldtype) == ERROR_MARK)

@@ -142,7 +142,7 @@ static int        mcore_valid_decl_attribute   PARAMS ((tree, tree,
 #undef TARGET_VALID_DECL_ATTRIBUTE
 #define TARGET_VALID_DECL_ATTRIBUTE mcore_valid_decl_attribute
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Adjust the stack and return the number of bytes taken to do it.  */
 static void

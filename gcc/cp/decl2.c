@@ -2456,16 +2456,16 @@ import_export_class (ctype)
   if (CLASSTYPE_INTERFACE_ONLY (ctype))
     return;
 
-  if ((*target.valid_type_attribute) (ctype,
-				      TYPE_ATTRIBUTES (ctype),
-				      get_identifier ("dllimport"),
-				      NULL_TREE)
+  if ((*targetm.valid_type_attribute) (ctype,
+				       TYPE_ATTRIBUTES (ctype),
+				       get_identifier ("dllimport"),
+				       NULL_TREE)
       && lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
     import_export = -1;
-  else if ((*target.valid_type_attribute) (ctype,
-					   TYPE_ATTRIBUTES (ctype),
-					   get_identifier ("dllexport"),
-					   NULL_TREE)
+  else if ((*targetm.valid_type_attribute) (ctype,
+					    TYPE_ATTRIBUTES (ctype),
+					    get_identifier ("dllexport"),
+					    NULL_TREE)
 	   && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
     import_export = 1;
 

@@ -148,7 +148,7 @@ static rtx alpha_emit_xfloating_compare
 
 /* Initialize the GCC target structure.  */
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Parse target option strings. */
 

@@ -446,7 +446,7 @@ enum reg_class mips_char_to_class[256] =
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE mips_output_function_epilogue
 
-struct gcc_target target = TARGET_INITIALIZER;
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return truth value of whether OP can be used as an operands
    where a register or 16 bit unsigned integer is needed.  */
