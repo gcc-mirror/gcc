@@ -26,6 +26,9 @@ Written by Per Bothner 1994. */
 #include "config.h"
 #include "cpplib.h"
 
+extern char *xmalloc PARAMS ((unsigned));
+extern char *xrealloc PARAMS ((char *, unsigned));
+
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
 #include <locale.h>
@@ -981,7 +984,7 @@ cpp_parse_expr (pfile)
 	  else
 	    {
 	      new_stack = (struct operation*) xmalloc (new_size);
-	      bcopy (stack, new_stack, old_size);
+	      bcopy ((char *) stack, (char *) new_stack, old_size);
 	    }
 	  stack = new_stack;
 	  top = (struct operation*)((char*) new_stack + old_size);
