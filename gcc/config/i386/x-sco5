@@ -1,6 +1,6 @@
 RANLIB = :
 RANLIB_TEST = false
-CC = cc 
+CC = cc
 OLDCC = cc
 CCLIBFLAGS =
 # We avoid the ALLOCA in -lPW becuase it gives us an evil index()
