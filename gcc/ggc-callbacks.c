@@ -22,6 +22,7 @@
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "ggc.h"
 
 int ggc_p = 0;

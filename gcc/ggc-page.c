@@ -22,6 +22,7 @@
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "varray.h"
 #include "flags.h"
 #include "ggc.h"

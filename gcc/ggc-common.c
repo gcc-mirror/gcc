@@ -23,11 +23,12 @@
 
 #include "config.h"
 #include "system.h"
-#include "ggc.h"
-#include "hash.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tm_p.h"
+#include "hash.h"
 #include "varray.h"
+#include "ggc.h"
 
 static void ggc_mark_rtx_ptr PARAMS ((void *));
 static void ggc_mark_tree_ptr PARAMS ((void *));

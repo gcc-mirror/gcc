@@ -1,3 +1,9 @@
+Tue Oct  5 11:34:52 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* ggc-{common,callbacks,none,page,simple}.c (toplevel): Reorder
+	includes, so that ggc.h comes after other includes that define the
+	appropriate types.  Include tm_p.h for getting user prototypes.
+
 Mon Oct  4 16:48:16 1999  Diego Novillo <dnovillo@cygnus.com>
                           Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
