@@ -1,3 +1,8 @@
+1999-12-20  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (strip_all_pointer_quals): New static function.
+	(build_static_cast): Use it. Don't use at_least_as_qualified_p.
+
 1999-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cp_tree_index): Add CPTI_DSO_HANDLE.

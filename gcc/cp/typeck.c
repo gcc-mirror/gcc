@@ -65,6 +65,7 @@ static int comp_cv_target_types PROTO((tree, tree, int));
 static void casts_away_constness_r PROTO((tree *, tree *));
 static int casts_away_constness PROTO ((tree, tree));
 static void maybe_warn_about_returning_address_of_local PROTO ((tree));
+static tree strip_all_pointer_quals PROTO ((tree));
 
 /* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -5182,14 +5183,13 @@ build_static_cast (type, expr)
   /* FIXME handle casting to array type.  */
 
   ok = 0;
-  if (can_convert_arg (type, intype, expr))
+  if (can_convert_arg (strip_all_pointer_quals (type),
+                       strip_all_pointer_quals (intype), expr))
     ok = 1;
   else if (TYPE_PTROB_P (type) && TYPE_PTROB_P (intype))
     {
       tree binfo;
       if (IS_AGGR_TYPE (TREE_TYPE (type)) && IS_AGGR_TYPE (TREE_TYPE (intype))
-	  && at_least_as_qualified_p (TREE_TYPE (type),
-				      TREE_TYPE (intype))
 	  && (binfo = get_binfo (TREE_TYPE (intype), TREE_TYPE (type), 0))
 	  && ! TREE_VIA_VIRTUAL (binfo))
 	ok = 1;
@@ -5198,8 +5198,6 @@ build_static_cast (type, expr)
     {
       if (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type))),
 		       TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (intype))))
-	  && at_least_as_qualified_p (TREE_TYPE (TREE_TYPE (type)),
-				      TREE_TYPE (TREE_TYPE (intype)))
 	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
 				 TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)), 0))
 	  && ! TREE_VIA_VIRTUAL (binfo))
@@ -5208,13 +5206,13 @@ build_static_cast (type, expr)
   else if (TREE_CODE (intype) != BOOLEAN_TYPE
 	   && TREE_CODE (type) != ARRAY_TYPE
 	   && TREE_CODE (type) != FUNCTION_TYPE
-	   && can_convert (intype, type))
+	   && can_convert (intype, strip_all_pointer_quals (type)))
     ok = 1;
 
   /* [expr.static.cast]
 
      The static_cast operator shall not be used to cast away
-     constnes.  */
+     constness.  */
   if (ok && casts_away_constness (intype, type))
     {
       cp_error ("static_cast from `%T' to `%T' casts away constness",
@@ -7172,4 +7170,18 @@ casts_away_constness (t1, t2)
     return 1;
 
   return 0;
+}
+
+/* Returns TYPE with its cv qualifiers removed
+   TYPE is T cv* .. *cv where T is not a pointer type,
+   returns T * .. *  */
+
+static tree
+strip_all_pointer_quals (type)
+     tree type;
+{
+  if (TREE_CODE (type) == POINTER_TYPE)
+    return build_pointer_type (strip_all_pointer_quals (TREE_TYPE (type)));
+  else
+    return strip_top_quals (type);
 }
