@@ -1,3 +1,8 @@
+2004-10-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.h (DBX_OUTPUT_SOURCE_LINE): Define
+	begin_label.
+
 2004-10-27  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/18163
