@@ -1,3 +1,8 @@
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/FileDescriptor.java: Merged copyright with classpath to
+	start merging this class.
+
 2004-01-22  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/13107:
