@@ -6650,15 +6650,6 @@ to have the value of the tree node @var{decl_of_value}.  This macro will
 be used in preference to @samp{ASM_OUTPUT_DEF} if it is defined and if
 the tree nodes are available.
 
-@findex ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-@item ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (@var{stream}, @var{symbol}, @var{high}, @var{low})
-A C statement to output to the stdio stream @var{stream} assembler code
-which defines (equates) the symbol @var{symbol} to have a value equal to
-the difference of the two symbols @var{high} and @var{low},
-i.e.@: @var{high} minus @var{low}.  GCC guarantees that the symbols @var{high}
-and @var{low} are already known by the assembler so that the difference
-resolves into a constant.
-
 @findex SET_ASM_OP
 If @code{SET_ASM_OP} is defined, a default definition is provided which is
 correct for most systems.
