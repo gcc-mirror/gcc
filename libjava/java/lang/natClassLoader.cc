@@ -14,7 +14,6 @@ details.  */
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
@@ -463,9 +462,13 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	{
 	  // If you get this, it means you have the same class in two
 	  // different libraries.
+#define TEXT "Duplicate class registration: "
+	  // We size-limit MESSAGE so that you can't trash the stack.
 	  char message[200];
-	  snprintf (&message[0], 200, "Duplicate class registration: %s",
-		    klass->name->data);
+	  strcpy (message, TEXT);
+	  strncpy (message + sizeof (TEXT) - 1, klass->name->data,
+		   sizeof (message) - sizeof (TEXT));
+	  message[sizeof (message) - 1] = '\0';
 	  if (! gcj::runtimeInitialized)
 	    JvFail (message);
 	  else
