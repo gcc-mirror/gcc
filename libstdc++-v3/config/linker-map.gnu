@@ -37,17 +37,34 @@ GLIBCPP_3.1 {
     };
 
     # Names not in an 'extern' block are mangled names.
+
     # operator new(unsigned)
     _Znwj;
+    # operator new(unsigned, std::nothrow_t const&)
+    _ZnwjRKSt9nothrow_t;
+    # operator new(unsigned long)
+    _Znwm;
+    # operator new(unsigned long, std::nothrow_t const&)
+    _ZnwmRKSt9nothrow_t;
 
     # operator delete(void*)
     _ZdlPv;
+    # operator delete(void*, std::nothrow_t const&)
+    _ZdlPvRKSt9nothrow_t;
 
     # operator new[](unsigned)
     _Znaj;
+    # operator new[](unsigned, std::nothrow_t const&)
+    _ZnajRKSt9nothrow_t;
+    # operator new[](unsigned long)
+    _Znam;
+    # operator new[](unsigned long, std::nothrow_t const&)
+    _ZnamRKSt9nothrow_t;
 
     # operator delete[](void*)
     _ZdaPv;
+    # operator delete[](void*, std::nothrow_t const&)
+    _ZdaPvRKSt9nothrow_t;
 
     # vtable	
     _ZTV*;  
