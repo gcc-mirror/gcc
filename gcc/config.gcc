@@ -2811,7 +2811,7 @@ sparc-*-openbsd*)
 	use_collect2=yes
 	;;
 sparc-*-bsd*)
-	tm_file=sparc/bsd.h
+	tm_file="${tm_file} sparc/bsd.h"
 	;;
 sparc-*-chorusos*)
 	tm_file="sparc/sol2.h sparc/elf.h sparc/chorus.h"
