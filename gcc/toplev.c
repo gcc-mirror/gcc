@@ -4321,11 +4321,14 @@ rest_of_compilation (decl)
 
   /* If a machine dependent reorganization is needed, call it.  */
 #ifdef MACHINE_DEPENDENT_REORG
+  if (mach_dep_reorg_dump)
+    open_dump_file (".mach", decl_printable_name (decl, 2));
+
    MACHINE_DEPENDENT_REORG (insns);
 
    if (mach_dep_reorg_dump)
      {
-       dump_rtl (".mach", decl, print_rtl_with_bb, insns);
+       close_dump_file (print_rtl_with_bb, insns);
        if (graph_dump_format != no_graph)
 	 print_rtl_graph_with_bb (dump_base_name, ".mach", insns);
      }
