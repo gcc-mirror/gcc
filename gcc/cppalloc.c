@@ -23,10 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  what you give them.   Help stamp out software-hoarding!  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 #include "cpplib.h"
 
 static void

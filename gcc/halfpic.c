@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HALF_PIC_INIT
 
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "obstack.h"
@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 
 extern char *xmalloc ();
-extern void  free ();
 extern rtx eliminate_constant_term ();
 extern void assemble_name ();
 extern void output_addr_const ();

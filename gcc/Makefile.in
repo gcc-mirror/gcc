@@ -1271,7 +1271,7 @@ collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h obstack.h \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h
-hash.o: hash.c hash.h
+hash.o: hash.c hash.h system.h
 cplus-dem.o: cplus-dem.c $(DEMANGLE_H)
 
 underscore.c: stamp-under ; @true
@@ -1452,7 +1452,7 @@ mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H)
 
 # Build file to support OSF/rose half-pic format.
-halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H)
+halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H) system.h
 
 # Normally this target is not used; but it is used if you
 # define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
@@ -1695,7 +1695,7 @@ gengenrtl : gengenrtl.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gengenrtl.o $(HOST_LIBS)
 
-gengenrtl.o : gengenrtl.c $(RTL_BASE_H)
+gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gengenrtl.c
 
 #
@@ -1770,9 +1770,9 @@ cppmain$(exeext): cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
 	  cppalloc.o cpperror.o cppexp.o prefix.o version.o $(LIBS)
 
-cppmain.o: cppmain.c $(CONFIG_H) cpplib.h
+cppmain.o: cppmain.c $(CONFIG_H) cpplib.h system.h
 
-cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
+cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1782,13 +1782,13 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
-cpperror.o: cpperror.c $(CONFIG_H) cpplib.h
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h system.h
 
-cppexp.o: cppexp.c $(CONFIG_H) cpplib.h
+cppexp.o: cppexp.c $(CONFIG_H) cpplib.h system.h
 
-cpphash.o: cpphash.c cpplib.h cpphash.h
+cpphash.o: cpphash.c cpplib.h cpphash.h $(CONFIG_H) system.h
 
-cppalloc.o: cppalloc.c $(CONFIG_H)
+cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h system.h
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -1867,7 +1867,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	diff $(srcdir)/protoize.c tmp-proto.c | cat
 	-rm -f tmp-proto.[cs] tmp-proto$(objext)
 
-gcov.o: gcov.c gcov-io.h
+gcov.o: gcov.c gcov-io.h system.h
 
 # Only one of 'gcov' or 'gcov.exe' is actually built, depending
 # upon whether $(exeext) is empty or not.
@@ -1951,10 +1951,10 @@ gen-protos: gen-protos.o scan.o cppalloc.o $(HOST_LIBDEPS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	  gen-protos.o scan.o cppalloc.o $(HOST_LIBS)
 
-gen-protos.o: gen-protos.c scan.h $(build_xm_file)
+gen-protos.o: gen-protos.c scan.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
 
-scan.o: scan.c scan.h $(build_xm_file)
+scan.o: scan.c scan.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan.c
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
@@ -1972,10 +1972,11 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o prefix.o \
 	   version.o cppexp.o $(HOST_LIBS)
 
-fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h $(build_xm_file)
+fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h $(build_xm_file) \
+	system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
-scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file)
+scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
 
 # stmp-fixproto depends on this, not on fix-header directly.

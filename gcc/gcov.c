@@ -42,28 +42,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    only get execution counts for one or the other of the including files.  */
 
 #include "config.h"
-#include <stdio.h>
-#include "gansidecl.h"
-#include <sys/types.h>
+#include "system.h"
 #include <sys/stat.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
+#include "gansidecl.h"
 
 #include "gcov-io.h"
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
 
 /* The .bb file format consists of several lists of 4-byte integers
    which are the line numbers of each basic block in the file.  Each
@@ -230,11 +213,11 @@ static int output_function_summary = 0;
 static char *object_directory = 0;
 
 /* Forward declarations.  */
-static void process_args ();
-static void open_files ();
-static void read_files ();
-static void scan_for_source_files ();
-static void output_data ();
+static void process_args PROTO ((int, char **));
+static void open_files PROTO ((void));
+static void read_files PROTO ((void));
+static void scan_for_source_files PROTO ((void));
+static void output_data PROTO ((void));
 char * xmalloc ();
 
 int
