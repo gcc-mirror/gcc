@@ -1052,7 +1052,12 @@ $(CLEAN_TARGET_MODULES):
 	  true; \
 	fi
 
-clean-target: $(CLEAN_TARGET_MODULES)
+clean-target: $(CLEAN_TARGET_MODULES) clean-target-libgcc
+clean-target-libgcc:
+	test ! -d gcc/libgcc || \
+	(cd gcc/libgcc && find . -type d -print) | \
+	while read d; do rm -f gcc/$$d/libgcc.a || : ; done
+	-rm -rf gcc/libgcc
 
 # Check target.
 
