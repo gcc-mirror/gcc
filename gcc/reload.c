@@ -5641,7 +5641,7 @@ find_reloads_subreg_address (x, force_replace, opnum, type,
 	  rtx tem = make_memloc (SUBREG_REG (x), regno);
 
 	  /* If the address changes because of register elimination, then
-	      it must be replaced.  */
+	     it must be replaced.  */
 	  if (force_replace
 	      || ! rtx_equal_p (tem, reg_equiv_mem[regno]))
 	    {
