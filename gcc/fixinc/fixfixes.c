@@ -567,7 +567,7 @@ FIX_PROC_HEAD( wrap_fix )
       *(pz_dst++) = '_';
 
     if (++len >= sizeof( z_fixname )) {
-      void* p = must_malloc( len + strlen( pz_src ) + 1 );
+      void* p = xmalloc( len + strlen( pz_src ) + 1 );
       memcpy( p, (void*)z_fixname, len );
       pz_name = (tCC*)p;
       pz_dst  = (char*)pz_name + len;

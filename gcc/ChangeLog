@@ -1,3 +1,13 @@
+2000-07-12  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c: use xmalloc
+	* fixinc/fixincl.c(initialize): set program name for xmalloc
+	* fixinc/fixlib.c(must_malloc): obsolete
+	(is_cxx_header): no longer used - disabled
+	(skip_quote): inserted and disabled for future use
+	* fixinc/fixlib.h: reflects above
+	* fixinc/fixtests.c: removed dinkleberries
+
 2000-07-12  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.h: (TOKEN_SPELL) Pulled from cpplex.c.

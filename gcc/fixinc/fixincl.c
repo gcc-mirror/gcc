@@ -206,6 +206,8 @@ initialize ( argc, argv )
     "fixincl ERROR:  %s environment variable not defined\n\
 \tTARGET_MACHINE, DESTDIR, SRCDIR and FIND_BASE are required\n";
 
+  xmalloc_set_program_name (argv[0]);
+
   switch (argc)
     {
     case 1:
