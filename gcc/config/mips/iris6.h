@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -129,11 +130,12 @@ Boston, MA 02111-1307, USA.  */
    prior to 6.5.  They normally get defined in SUBTARGET_CPP_SPEC if
    !ansi, for g++ we want them regardless.  We don't need this on
    irix6.5 itself, but it shouldn't hurt other than the namespace
-   pollution.  */
+   pollution.  libstdc++ v3 needs many ISO C99 features provided
+   in IRIX 6.5.18, but protected by the __c99 macro.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "\
 -D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS \
-%{ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} %(cpp) \
+%{ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} -D__c99 %(cpp) \
 "
 
 /* Irix 6 uses DWARF-2.  */

@@ -1,3 +1,15 @@
+2003-03-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h (CPLUSPLUS_CPP_SPEC): Define __c99.
+
+	* fixinc/inclhack.def (irix___restrict): Don't change __restrict
+	for C++ on IRIX 6.5.1[89].
+	* fixinc/tests/base/internal/sgimacros.h: New file.
+
+	* fixinc/inclhack.def (irix_wcsftime): Use XPG5 variant for C99.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/internal/wchar_core.h: New file.
+
 2003-03-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/7784
