@@ -1,3 +1,8 @@
+2005-02-08  Marcin Dalecki  <martin@dalecki.de>
+
+	* expr.c (add_type_assertion): Use the proper enumeration type,
+	since this is what htab_find_slot() is expecting.
+
 2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcj.texi: Update copyright dates.

@@ -458,7 +458,7 @@ add_type_assertion (tree class, int assertion_code, tree op1, tree op2)
   as.op1 = op1;
   as.op2 = op2;
 
-  as_pp = htab_find_slot (assertions_htab, &as, true);
+  as_pp = htab_find_slot (assertions_htab, &as, INSERT);
 
   /* Don't add the same assertion twice.  */
   if (*as_pp)
