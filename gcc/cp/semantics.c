@@ -1135,7 +1135,7 @@ finish_declarator (declarator, declspecs, attributes,
 		     prefix_attributes); 
 }
 
-/* Finish a transltation unit.  */
+/* Finish a translation unit.  */
 
 void 
 finish_translation_unit ()
