@@ -4833,14 +4833,14 @@ decode_f_option (arg)
       read_integral_parameter (arg + 13, arg - 2, inline_max_insns);
 #ifdef INSN_SCHEDULING
   else if (!strncmp (arg, "sched-verbose=", 14))
-    fix_sched_param ("verbose", (char *)(arg + 14));
+    fix_sched_param ("verbose", (const char *)(arg + 14));
 #endif
   else if (!strncmp (arg, "fixed-", 6))
-    fix_register ((char *)(arg + 6), 1, 1);
+    fix_register ((const char *)(arg + 6), 1, 1);
   else if (!strncmp (arg, "call-used-", 10))
-    fix_register ((char *)(arg + 10), 0, 1);
+    fix_register ((const char *)(arg + 10), 0, 1);
   else if (!strncmp (arg, "call-saved-", 11))
-    fix_register ((char *)(arg + 11), 0, 0);
+    fix_register ((const char *)(arg + 11), 0, 0);
   else if (!strncmp (arg, "align-loops=", 12))
     align_loops = read_integral_parameter (arg + 12, arg - 2, align_loops);
   else if (!strncmp (arg, "align-functions=", 16))

@@ -2046,7 +2046,7 @@ case 61:
     break;}
 case 62:
 #line 481 "c-parse.y"
-{ char *name;
+{ const char *name;
 		  tree result = pop_init_level (0);
 		  tree type = yyvsp[-5].ttype;
 		  finish_init ();

@@ -571,7 +571,7 @@ choose_hard_reg_mode (regno, nregs)
 
 void
 fix_register (name, fixed, call_used)
-     char *name;
+     const char *name;
      int fixed, call_used;
 {
   int i;
