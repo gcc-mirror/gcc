@@ -45,7 +45,7 @@ import java.security.AccessController;
 import java.security.Permission;
 import java.security.PrivilegedAction;
 
-import gnu.java.util.prefs.*;
+import gnu.java.util.prefs.NodeReader;
 
 /**
  * Preference node containing key value entries and subnodes.
