@@ -3735,10 +3735,16 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
 		    enum machine_mode mode ATTRIBUTE_UNUSED,
 		    int force)
 {
+  rtx op0;
   rtx op1;
   rtx op2;
   enum rtx_code code1;
   enum rtx_code code2;
+
+
+  /* FIXME, why can't we tighten the operands for IF_THEN_ELSE?  */
+  if (code == IF_THEN_ELSE)
+      return 1 || (operands[0] == operands[2] || operands[0] == operands[3]);
 
   if (code == COMPARE)
     {
@@ -3751,6 +3757,10 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
       op2 = operands[2];
     }
 
+  op0 = operands[0];
+
+  if (GET_CODE (op0) == SUBREG)
+    op0 = SUBREG_REG (op0);
   if (GET_CODE (op1) == SUBREG)
     op1 = SUBREG_REG (op1);
   if (GET_CODE (op2) == SUBREG)
@@ -3759,6 +3769,7 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
   code1 = GET_CODE (op1);
   code2 = GET_CODE (op2);
 
+  
   if (code1 == REG && code2 == REG)
     return 1;
 
@@ -3769,6 +3780,7 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
       return c4x_R_indirect (op1) && c4x_R_indirect (op2);
     }
 
+  /* We cannot handle two MEMs or two CONSTS, etc.  */
   if (code1 == code2)
     return 0;
 
@@ -3788,6 +3800,7 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
 
 	  /* Any valid memory operand screened by src_operand is OK.  */
   	case MEM:
+	  break;
 	  
 	  /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
 	     into a stack slot memory address comprising a PLUS and a
@@ -3800,54 +3813,86 @@ c4x_valid_operands (enum rtx_code code, rtx *operands,
 	  break;
 	}
       
+      if (GET_CODE (op0) == SCRATCH)
+	  return 1;
+
+      if (!REG_P (op0))
+	  return 0;
+
       /* Check that we have a valid destination register for a two operand
 	 instruction.  */
-      return ! force || code == COMPARE || REGNO (op1) == REGNO (operands[0]);
+      return ! force || code == COMPARE || REGNO (op1) == REGNO (op0);
     }
 
-  /* We assume MINUS is commutative since the subtract patterns
-     also support the reverse subtract instructions.  Since op1
-     is not a register, and op2 is a register, op1 can only
-     be a restricted memory operand for a shift instruction.  */
+
+  /* Check non-commutative operators.  */
   if (code == ASHIFTRT || code == LSHIFTRT
       || code == ASHIFT || code == COMPARE)
     return code2 == REG
       && (c4x_S_indirect (op1) || c4x_R_indirect (op1));
-  
-  switch (code1)
+
+
+  /* Assume MINUS is commutative since the subtract patterns
+     also support the reverse subtract instructions.  Since op1
+     is not a register, and op2 is a register, op1 can only
+     be a restricted memory operand for a shift instruction.  */
+  if (code2 == REG)
     {
-    case CONST_INT:
-      if (c4x_J_constant (op1) && c4x_R_indirect (op2))
-	return 1;
-      break;
+      switch (code1)
+	{
+	case CONST_INT:
+	  break;
       
-    case CONST_DOUBLE:
-      if (! c4x_H_constant (op1))
-	return 0;
-      break;
+	case CONST_DOUBLE:
+	  if (! c4x_H_constant (op1))
+	    return 0;
+	  break;
 
-      /* Any valid memory operand screened by src_operand is OK.  */      
-    case MEM:
-#if 0
-      if (code2 != REG)
-	return 0;
-#endif
-      break;
+	  /* Any valid memory operand screened by src_operand is OK.  */      
+	case MEM:
+	  break;
+	  
+	  /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
+	     into a stack slot memory address comprising a PLUS and a
+	     constant.  */
+	case ADDRESSOF:
+	  break;
+	  
+	default:
+	  abort ();
+	  break;
+	}
 
-      /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
-	 into a stack slot memory address comprising a PLUS and a
-	 constant.  */
-    case ADDRESSOF:
-      break;
-      
-    default:
-      abort ();
-      break;
+      if (GET_CODE (op0) == SCRATCH)
+	  return 1;
+
+      if (!REG_P (op0))
+	  return 0;
+
+      /* Check that we have a valid destination register for a two operand
+	 instruction.  */
+      return ! force || REGNO (op1) == REGNO (op0);
     }
       
-  /* Check that we have a valid destination register for a two operand
-     instruction.  */
-  return ! force || REGNO (op1) == REGNO (operands[0]);
+  if (c4x_J_constant (op1) && c4x_R_indirect (op2))
+    return 1;
+
+  return 0;
+}
+
+
+int valid_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
+{
+
+  /* If we are not optimizing then we have to let anything go and let
+     reload fix things up.  instantiate_decl in function.c can produce
+     invalid insns by changing the offset of a memory operand from a
+     valid one into an invalid one, when the second operand is also a
+     memory operand.  The alternative is not to allow two memory
+     operands for an insn when not optimizing.  The problem only rarely
+     occurs, for example with the C-torture program DFcmp.c.  */
+
+  return ! optimize || c4x_valid_operands (code, operands, mode, 0);
 }
 
 
