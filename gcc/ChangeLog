@@ -1,5 +1,21 @@
 2001-05-20  Richard Henderson  <rth@redhat.com>
 
+	* sched-deps.c (sched_analyze_insn): Force volatile memory reads
+	to be output before a branch.
+
+	2001-05-12  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+	* sched-deps.c (sched_analyze_insn): Remove unused vars.
+
+	2001-04-05  Bernd Schmidt  <bernds@redhat.com>
+	* sched-deps.c (sched_analyze_insn): Revert more of the March 27
+	change.
+
+	2001-04-04  Bernd Schmidt  <bernds@redhat.com>
+	* sched-deps.c (sched_analyze_insn): Partially revert March 27
+	change.
+
+2001-05-20  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (dwarf2asm.o): Depend on $(TREE_H).
 
 2001-05-20  Richard Henderson  <rth@redhat.com>

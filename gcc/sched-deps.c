@@ -1022,12 +1022,13 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 
   if (GET_CODE (insn) == JUMP_INSN)
     {
-      rtx next, u;
+      rtx next;
       next = next_nonnote_insn (insn);
       if (next && GET_CODE (next) == BARRIER)
 	schedule_barrier_found = 1;
       else
 	{
+	  rtx pending, pending_mem, u;
 	  regset_head tmp;
 	  INIT_REG_SET (&tmp);
 
@@ -1042,6 +1043,32 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	    });
 
 	  CLEAR_REG_SET (&tmp);
+
+	  /* All memory writes and volatile reads must happen before the
+	     jump.  Non-volatile reads must happen before the jump iff
+	     the result is needed by the above register used mask.  */
+
+	  pending = deps->pending_write_insns;
+	  pending_mem = deps->pending_write_mems;
+	  while (pending)
+	    {
+	      add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
+	      pending = XEXP (pending, 1);
+	      pending_mem = XEXP (pending_mem, 1);
+	    }
+
+	  pending = deps->pending_read_insns;
+	  pending_mem = deps->pending_read_mems;
+	  while (pending)
+	    {
+	      if (MEM_VOLATILE_P (XEXP (pending_mem, 0)))
+		add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
+	      pending = XEXP (pending, 1);
+	      pending_mem = XEXP (pending_mem, 1);
+	    }
+
+	  for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
+	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	}
     }
 
@@ -1081,7 +1108,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
   /* Add dependencies if a scheduling barrier was found.  */
   if (schedule_barrier_found)
     {
-      rtx u, pending, pending_mem;
+      rtx u;
 
       for (i = 0; i < deps->max_reg; i++)
 	{
@@ -1098,18 +1125,6 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	    free_INSN_LIST_list (&reg_last->uses);
 	}
       flush_pending_lists (deps, insn, 0);
-
-      pending = deps->pending_write_insns;
-      pending_mem = deps->pending_write_mems;
-      while (pending)
-	{
-	  add_dependence (insn, XEXP (pending, 0), 0);
-	  pending = XEXP (pending, 1);
-	  pending_mem = XEXP (pending_mem, 1);
-	}
-
-      for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
       reg_pending_sets_all = 1;
     }
