@@ -209,7 +209,7 @@ funcs="$funcs waitpid"
 
 # Also in the old function.def file: alloca, vfork, getopt.
 
-vars="sys_errlist sys_nerr sys_siglist _system_configuration"
+vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk gettimeofday"
 checkfuncs="$checkfuncs realpath canonicalize_file_name pstat_getstatic pstat_getdynamic sysmp"
@@ -230,7 +230,6 @@ if test "x" = "y"; then
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
   AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
   AC_DEFINE(HAVE_SYS_SIGLIST, 1, [Define if you have the sys_siglist variable.])
-  AC_DEFINE(HAVE__SYSTEM_CONFIGURATION, 1, [Define if you have the _system_configuration variable.])
 fi
 
 # For each of these functions, if the host does not provide the
@@ -433,6 +432,17 @@ if test -z "${setobjs}"; then
       AC_MSG_RESULT(no)
     fi
   done
+
+  # special check for _system_configuration because AIX <4.3.2 do not
+  # contain the `physmem' member.
+  AC_MSG_CHECKING([for external symbol _system_configuration])
+  AC_TRY_COMPILE([#include <sys/systemcfg.h>],
+                 [double x = _system_configuration.physmem;],
+    [AC_MSG_RESULT([yes])
+    AC_DEFINE(HAVE__SYSTEM_CONFIGURATION, 1,
+              [Define if you have the _system_configuration variable.])],
+    [AC_MSG_RESULT([no])])
+
   AC_CHECK_FUNCS($checkfuncs)
   libiberty_NEED_DECLARATION(canonicalize_file_name)
 fi

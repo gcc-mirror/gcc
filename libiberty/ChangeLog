@@ -1,3 +1,12 @@
+2003-06-09  Albert Chin-A-Young  <china@thewrittenword.com>
+	
+	PR bootstrap/10974
+	* physmem.c: Update comment.
+	* configure.in: Modify test for _system_configuration for older
+	AIX systems.
+
+	* config.in, configure: Regenerated.
+	
 2003-06-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR other/10810
