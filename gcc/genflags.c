@@ -134,8 +134,8 @@ static void
 gen_insn (insn)
      rtx insn;
 {
-  char *name = XSTR (insn, 0);
-  char *p;
+  const char *name = XSTR (insn, 0);
+  const char *p;
   struct obstack *obstack_ptr;
   int len;
 

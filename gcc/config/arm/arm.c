@@ -1638,7 +1638,7 @@ arm_encode_call_attribute (decl, flag)
   tree decl;
   char flag;
 {
-  char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int    len = strlen (str);
   char * newstr;
 
@@ -5544,7 +5544,7 @@ int_log2 (power)
 void
 output_ascii_pseudo_op (stream, p, len)
      FILE * stream;
-     unsigned char * p;
+     const unsigned char * p;
      int len;
 {
   int i;

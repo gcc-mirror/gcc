@@ -1416,7 +1416,7 @@ hash_expr_1 (x, mode, do_not_record_p)
 	   final assembler.  This also avoids differences in the dump files
 	   between various stages.  */
 	unsigned int h = 0;
-	unsigned char *p = (unsigned char *) XSTR (x, 0);
+	const unsigned char *p = (const unsigned char *) XSTR (x, 0);
 
 	while (*p)
 	  h += (h << 7) + *p++; /* ??? revisit */
@@ -1488,7 +1488,8 @@ hash_expr_1 (x, mode, do_not_record_p)
 
       else if (fmt[i] == 's')
 	{
-	  register unsigned char *p = (unsigned char *) XSTR (x, i);
+	  register const unsigned char *p =
+	    (const unsigned char *) XSTR (x, i);
 
 	  if (p)
 	    while (*p)

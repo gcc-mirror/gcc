@@ -103,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
   if (current_sym_addr && current_sym_code == N_FUN		\
       && GET_CODE (current_sym_addr) == SYMBOL_REF)		\
     {								\
-      char *_p = XSTR (current_sym_addr, 0);			\
+      const char *_p = XSTR (current_sym_addr, 0);		\
       if (*_p == '*')						\
 	fprintf (asmfile, "%s", _p+1);				\
       else							\

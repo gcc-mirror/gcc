@@ -95,7 +95,7 @@ struct emit_status
   /* Line number and source file of the last line-number NOTE emitted.
      This is used to avoid generating duplicates.  */
   int x_last_linenum;
-  char *x_last_filename;
+  const char *x_last_filename;
 
   /* A vector indexed by pseudo reg number.  The allocated length
      of this vector is regno_pointer_flag_length.  Since this

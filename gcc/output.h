@@ -251,7 +251,7 @@ extern void assemble_asm		PARAMS ((tree));
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
    constant pool data.  */
-extern void assemble_start_function	PARAMS ((tree, char *));
+extern void assemble_start_function	PARAMS ((tree, const char *));
 
 /* Output assembler code associated with defining the size of the
    function.  DECL describes the function.  NAME is the function's name.  */

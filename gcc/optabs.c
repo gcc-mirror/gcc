@@ -4432,7 +4432,7 @@ init_one_libfunc (name)
   if (ggc_p)
     name = ggc_alloc_string (name, -1);
 
-  return gen_rtx_SYMBOL_REF (Pmode, (char *) name);
+  return gen_rtx_SYMBOL_REF (Pmode, name);
 }
 
 /* Mark ARG (which is really an OPTAB *) for GC.  */

@@ -730,7 +730,7 @@ ggc_alloc_obj (size, zero)
 
 int
 ggc_set_mark (p)
-     void *p;
+     const void *p;
 {
   page_entry *entry;
   unsigned bit, word;
@@ -746,7 +746,7 @@ ggc_set_mark (p)
 
   /* Calculate the index of the object on the page; this is its bit
      position in the in_use_p bitmap.  */
-  bit = (((char *) p) - entry->page) >> entry->order;
+  bit = (((const char *) p) - entry->page) >> entry->order;
   word = bit / HOST_BITS_PER_LONG;
   mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
   
@@ -770,7 +770,7 @@ ggc_set_mark (p)
 
 void
 ggc_mark_if_gcable (p)
-     void *p;
+     const void *p;
 {
   if (p && ggc_allocated_p (p))
     ggc_set_mark (p);
@@ -780,7 +780,7 @@ ggc_mark_if_gcable (p)
 
 size_t
 ggc_get_size (p)
-     void *p;
+     const void *p;
 {
   page_entry *pe = lookup_page_table_entry (p);
   return 1 << pe->order;

@@ -128,7 +128,7 @@ static void
 gen_insn (insn)
      rtx insn;
 {
-  char *name = XSTR (insn, 0);
+  const char *name = XSTR (insn, 0);
   int m1 = 0, m2 = 0, op = 0;
   size_t pindex;
   int i;

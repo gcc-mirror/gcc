@@ -2240,7 +2240,7 @@ extern struct rtx_def * arm_compare_op1;
   do										\
     {										\
       int mi_delta = (DELTA);							\
-      char * mi_op = mi_delta < 0 ? "sub" : "add";				\
+      const char *mi_op = mi_delta < 0 ? "sub" : "add";				\
       int shift = 0;								\
       int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))	\
 		        ? 1 : 0);						\

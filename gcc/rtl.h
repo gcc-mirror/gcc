@@ -87,7 +87,7 @@ typedef union rtunion_def
 {
   HOST_WIDE_INT rtwint;
   int rtint;
-  char *rtstr;
+  const char *rtstr;
   struct rtx_def *rtx;
   struct rtvec_def *rtvec;
   enum machine_mode rttype;
@@ -1031,7 +1031,7 @@ extern rtx emit_jump_insn_after		PARAMS ((rtx, rtx));
 extern rtx emit_barrier_after		PARAMS ((rtx));
 extern rtx emit_label_after		PARAMS ((rtx, rtx));
 extern rtx emit_note_after		PARAMS ((int, rtx));
-extern rtx emit_line_note_after		PARAMS ((char *, int, rtx));
+extern rtx emit_line_note_after		PARAMS ((const char *, int, rtx));
 extern rtx emit_insn			PARAMS ((rtx));
 extern rtx emit_insns			PARAMS ((rtx));
 extern rtx emit_insns_before		PARAMS ((rtx, rtx));
@@ -1040,9 +1040,9 @@ extern rtx emit_jump_insn		PARAMS ((rtx));
 extern rtx emit_call_insn		PARAMS ((rtx));
 extern rtx emit_label			PARAMS ((rtx));
 extern rtx emit_barrier			PARAMS ((void));
-extern rtx emit_line_note		PARAMS ((char *, int));
-extern rtx emit_note			PARAMS ((char *, int));
-extern rtx emit_line_note_force		PARAMS ((char *, int));
+extern rtx emit_line_note		PARAMS ((const char *, int));
+extern rtx emit_note			PARAMS ((const char *, int));
+extern rtx emit_line_note_force		PARAMS ((const char *, int));
 extern rtx make_insn_raw		PARAMS ((rtx));
 extern rtx previous_insn		PARAMS ((rtx));
 extern rtx next_insn			PARAMS ((rtx));
@@ -1163,7 +1163,7 @@ extern void free_reg_info		PARAMS ((void));
 
 /* recog.c */
 extern int asm_noperands		PARAMS ((rtx));
-extern char *decode_asm_operands	PARAMS ((rtx, rtx *, rtx **,
+extern const char *decode_asm_operands	PARAMS ((rtx, rtx *, rtx **,
 					       const char **,
 					       enum machine_mode *));
 

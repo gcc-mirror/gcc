@@ -251,7 +251,7 @@ do { char dstr[30];							\
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
 do {									\
   register int i, c, len = (LEN), cur_pos = 17;				\
-  register unsigned char *string = (unsigned char *)(STRING);		\
+  register const unsigned char *string = (const unsigned char *)(STRING); \
   fprintf ((STREAM), "\t.ascii\t\"");					\
   for (i = 0; i < len; i++)						\
     {									\

@@ -2840,7 +2840,7 @@ finish_objects (method_type, initp, body)
      int method_type, initp;
      tree body;
 {
-  char *fnname;
+  const char *fnname;
   tree fn;
 
   /* Finish up. */

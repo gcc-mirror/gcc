@@ -434,7 +434,7 @@ m32r_encode_section_info (decl)
     {
       rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
                  ? TREE_CST_RTL (decl) : DECL_RTL (decl));
-      char *str = XSTR (XEXP (rtl, 0), 0);
+      const char *str = XSTR (XEXP (rtl, 0), 0);
       int len = strlen (str);
       char *newstr = savealloc (len + 2);
       strcpy (newstr + 1, str);

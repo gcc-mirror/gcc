@@ -3683,7 +3683,7 @@ rest_of_compilation (decl)
   TIMEVAR (final_time,
 	   {
 	     rtx x;
-	     char *fnname;
+	     const char *fnname;
 
 	     /* Get the function's name, as described by its RTL.
 		This may be different from the DECL_NAME name used

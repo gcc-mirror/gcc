@@ -2098,7 +2098,7 @@ emit_thunk (thunk_fndecl)
 #ifdef ASM_OUTPUT_MI_THUNK
   if (!flag_syntax_only)
     {
-      char *fnname;
+      const char *fnname;
       current_function_decl = thunk_fndecl;
       /* Make sure we build up its RTL before we go onto the
 	 temporary obstack.  */

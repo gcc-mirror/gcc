@@ -78,7 +78,7 @@ static void notice PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 static void v_message_with_file_and_line PARAMS ((const char *, int, int,
 						  const char *, va_list));
 static void v_message_with_decl PARAMS ((tree, int, const char *, va_list));
-static void file_and_line_for_asm PARAMS ((rtx, char **, int *));
+static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
 static void v_error_with_file_and_line PARAMS ((const char *, int,
 						const char *, va_list));
 static void v_error_with_decl PARAMS ((tree, const char *, va_list));
@@ -574,7 +574,7 @@ v_message_with_decl (decl, warn, msgid, ap)
 static void
 file_and_line_for_asm (insn, pfile, pline)
      rtx insn;
-     char **pfile;
+     const char **pfile;
      int *pline;
 {
   rtx body = PATTERN (insn);
@@ -649,7 +649,7 @@ v_error_for_asm (insn, msgid, ap)
      const char *msgid;
      va_list ap;
 {
-  char *file;
+  const char *file;
   int line;
 
   count_error (0);
@@ -737,7 +737,7 @@ v_warning_for_asm (insn, msgid, ap)
 {
   if (count_error (1))
     {
-      char *file;
+      const char *file;
       int line;
 
       file_and_line_for_asm (insn, &file, &line);

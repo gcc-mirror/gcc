@@ -217,11 +217,11 @@ ggc_alloc_obj (size, zero)
 
 int
 ggc_set_mark (p)
-     void *p;
+     const void *p;
 {
   struct ggc_mem *x;
 
-  x = (struct ggc_mem *) ((char *)p - offsetof (struct ggc_mem, u));
+  x = (struct ggc_mem *) ((const char *)p - offsetof (struct ggc_mem, u));
 #ifdef GGC_ALWAYS_VERIFY
   if (! tree_lookup (x))
     abort ();
@@ -241,14 +241,14 @@ ggc_set_mark (p)
 
 void
 ggc_mark_if_gcable (p)
-     void *p;
+     const void *p;
 {
   struct ggc_mem *x;
 
   if (p == NULL)
     return;
 
-  x = (struct ggc_mem *) ((char *)p - offsetof (struct ggc_mem, u));
+  x = (struct ggc_mem *) ((const char *)p - offsetof (struct ggc_mem, u));
   if (! tree_lookup (x))
     return;
 
@@ -264,10 +264,10 @@ ggc_mark_if_gcable (p)
 
 size_t
 ggc_get_size (p)
-     void *p;
+     const void *p;
 {
   struct ggc_mem *x 
-    = (struct ggc_mem *) ((char *)p - offsetof (struct ggc_mem, u));
+    = (struct ggc_mem *) ((const char *)p - offsetof (struct ggc_mem, u));
   return x->size;
 }
 

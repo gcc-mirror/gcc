@@ -4775,7 +4775,7 @@ move\\t%0,%z4\\n\\
       && GET_CODE (operands[1]) == SYMBOL_REF
       && SYMBOL_REF_FLAG (operands[1]))
     {
-      char *name = XSTR (operands[1], 0);
+      const char *name = XSTR (operands[1], 0);
 
       if (name[0] != '*'
 	  || strncmp (name + 1, LOCAL_LABEL_PREFIX,
@@ -5197,7 +5197,7 @@ move\\t%0,%z4\\n\\
       && GET_CODE (operands[1]) == SYMBOL_REF
       && SYMBOL_REF_FLAG (operands[1]))
     {
-      char *name = XSTR (operands[1], 0);
+      const char *name = XSTR (operands[1], 0);
 
       if (name[0] != '*'
 	  || strncmp (name + 1, LOCAL_LABEL_PREFIX,

@@ -804,7 +804,7 @@ do {									\
 	   && XSTR (VALUE, 0)[0] == '.'					\
 	   && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT))	\
     {									\
-      char *name = XSTR (VALUE, 0);					\
+      const char *name = XSTR (VALUE, 0);				\
       while (*name == '.')						\
 	name++;								\
 									\
@@ -890,7 +890,7 @@ do {									\
       enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
     } *sections;							\
   struct section_info *s;						\
-  char *mode;								\
+  const char *mode;							\
   enum sect_enum type;							\
 									\
   for (s = sections; s; s = s->next)					\

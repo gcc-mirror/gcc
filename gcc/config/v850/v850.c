@@ -411,7 +411,7 @@ print_operand (file, x, code)
     case 'O':
       if (special_symbolref_operand (x, VOIDmode))
         {
-          char* name;
+          const char *name;
 
 	  if (GET_CODE (x) == SYMBOL_REF)
 	    name = XSTR (x, 0);
@@ -596,9 +596,9 @@ print_operand_address (file, addr)
     case SYMBOL_REF:
       if (ENCODED_NAME_P (XSTR (addr, 0)))
         {
-          char* name = XSTR (addr, 0);
-          char* off_name;
-          char* reg_name;
+          const char *name = XSTR (addr, 0);
+          const char *off_name;
+          const char *reg_name;
 
           if (ZDA_NAME_P (name))
             {
@@ -628,9 +628,9 @@ print_operand_address (file, addr)
     case CONST:
       if (special_symbolref_operand (addr, VOIDmode))
         {
-          char* name = XSTR (XEXP (XEXP (addr, 0), 0), 0);
-          char* off_name;
-          char* reg_name;
+          const char *name = XSTR (XEXP (XEXP (addr, 0), 0), 0);
+          const char *off_name;
+          const char *reg_name;
 
           if (ZDA_NAME_P (name))
             {
@@ -2090,7 +2090,7 @@ void
 v850_encode_data_area (decl)
      tree decl;
 {
-  char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int    len = strlen (str);
   char * newstr;
 
@@ -2099,7 +2099,7 @@ v850_encode_data_area (decl)
     {
       if (DECL_SECTION_NAME (decl))
 	{
-	  char * name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+	  const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 	  
 	  if (streq (name, ".zdata") || streq (name, ".zbss"))
 	    v850_set_data_area (decl, DATA_AREA_ZDA);

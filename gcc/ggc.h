@@ -94,20 +94,20 @@ extern void ggc_mark_tree_children PARAMS ((union tree_node *));
 
 #define ggc_mark_string(EXPR)			\
   do {						\
-    char *s__ = (EXPR);				\
+    const char *s__ = (EXPR);			\
     if (s__ != NULL)				\
       ggc_set_mark (s__);			\
   } while (0)
 
 #define ggc_mark(EXPR)				\
   do {						\
-    void *a__ = (EXPR);				\
+    const void *a__ = (EXPR);			\
     if (a__ != NULL)				\
       ggc_set_mark (a__);			\
   } while (0)
 
 /* Mark, but only if it was allocated in collectable memory.  */
-extern void ggc_mark_if_gcable PARAMS ((void *));
+extern void ggc_mark_if_gcable PARAMS ((const void *));
 
 /* A GC implementation must provide these functions.  */
 
@@ -151,7 +151,7 @@ void ggc_collect PARAMS ((void));
    returns zero if the object was not previously marked; non-zero if
    the object was already marked, or if, for any other reason,
    pointers in this data structure should not be traversed.  */
-int ggc_set_mark PARAMS ((void *));
+int ggc_set_mark PARAMS ((const void *));
 
 /* Callbacks to the languages.  */
 
@@ -200,7 +200,7 @@ typedef struct ggc_statistics
 } ggc_statistics;
 
 /* Return the number of bytes allocated at the indicated address.  */
-size_t ggc_get_size PARAMS ((void *));
+size_t ggc_get_size PARAMS ((const void *));
 
 /* Used by the various collectors to gather and print statistics that
    do not depend on the collector in use.  */

@@ -1118,7 +1118,7 @@ do { union { float f; long l;} tem;			\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,SIZE)               \
-do { int i; unsigned char *pp = (unsigned char *) (PTR);	\
+do { int i; const unsigned char *pp = (const unsigned char *) (PTR); \
   fprintf((FILE), "\t.byte %d", (unsigned int)*pp++);		\
   for (i = 1; i < (SIZE); ++i, ++pp) {				\
     if ((i % 8) == 0)						\

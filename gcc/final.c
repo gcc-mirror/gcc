@@ -147,7 +147,7 @@ static int high_block_linenum;
 static int high_function_linenum;
 
 /* Filename of last NOTE.  */
-static char *last_filename;
+static const char *last_filename;
 
 /* Number of basic blocks seen so far;
    used if profile_block_flag is set.  */
@@ -1537,7 +1537,7 @@ static int
 asm_insn_count (body)
      rtx body;
 {
-  char *template;
+  const char *template;
   int count = 1;
 
   if (GET_CODE (body) == ASM_INPUT)
@@ -2532,7 +2532,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  {
 	    unsigned int noperands = asm_noperands (body);
 	    rtx *ops = (rtx *) alloca (noperands * sizeof (rtx));
-	    char *string;
+	    const char *string;
 
 	    /* There's no telling what that did to the condition codes.  */
 	    CC_STATUS_INIT;
@@ -2972,7 +2972,7 @@ output_source_line (file, insn)
      FILE *file ATTRIBUTE_UNUSED;
      rtx insn;
 {
-  register char *filename = NOTE_SOURCE_FILE (insn);
+  register const char *filename = NOTE_SOURCE_FILE (insn);
 
   /* Remember filename for basic block profiling.
      Filenames are allocated on the permanent obstack

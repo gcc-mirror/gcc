@@ -2496,10 +2496,10 @@ extern void check_max_integer_computation_mode	PARAMS ((tree));
 
 /* In emit-rtl.c */
 extern void start_sequence_for_rtl_expr		PARAMS ((tree));
-extern struct rtx_def *emit_line_note_after	PARAMS ((char *, int,
-							struct rtx_def *));
-extern struct rtx_def *emit_line_note		PARAMS ((char *, int));
-extern struct rtx_def *emit_line_note_force	PARAMS ((char *, int));
+extern struct rtx_def *emit_line_note_after	PARAMS ((const char *, int,
+							 struct rtx_def *));
+extern struct rtx_def *emit_line_note		PARAMS ((const char *, int));
+extern struct rtx_def *emit_line_note_force	PARAMS ((const char *, int));
 
 /* In calls.c */
 extern void special_function_p	        PARAMS ((tree, int *, int *,

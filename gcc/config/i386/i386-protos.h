@@ -26,7 +26,7 @@ extern void optimization_options PARAMS ((int, int));
 
 extern int ix86_can_use_return_insn_p PARAMS ((void));
 
-extern void asm_output_function_prefix PARAMS ((FILE *, char *));
+extern void asm_output_function_prefix PARAMS ((FILE *, const char *));
 extern void load_pic_register PARAMS ((void));
 extern HOST_WIDE_INT ix86_initial_elimination_offset PARAMS((int, int));
 extern void ix86_expand_prologue PARAMS ((void));

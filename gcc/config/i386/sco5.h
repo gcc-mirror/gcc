@@ -222,7 +222,7 @@ do {									\
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
   if (TARGET_ELF) {							\
-     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
@@ -313,7 +313,8 @@ asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 #define ASM_OUTPUT_LIMITED_STRING(FILE, STR)				\
   do									\
     {									\
-      register unsigned char *_limited_str = (unsigned char *) (STR);	\
+      register const unsigned char *_limited_str =			\
+        (const unsigned char *) (STR);					\
       register unsigned ch;						\
       fprintf ((FILE), "%s\t\"", STRING_ASM_OP);			\
       for (; (ch = *_limited_str); _limited_str++)			\
@@ -341,12 +342,13 @@ asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
 do {									\
-      register unsigned char *_ascii_bytes = (unsigned char *) (STR);	\
-      register unsigned char *limit = _ascii_bytes + (LENGTH);		\
+      register const unsigned char *_ascii_bytes =			\
+        (const unsigned char *) (STR);					\
+      register const unsigned char *limit = _ascii_bytes + (LENGTH);	\
       register unsigned bytes_in_chunk = 0;				\
       for (; _ascii_bytes < limit; _ascii_bytes++)			\
         {								\
-	  register unsigned char *p;					\
+	  register unsigned const char *p;				\
 	  if (bytes_in_chunk >= 64)					\
 	    {								\
 	      fputc ('\n', (FILE));					\
@@ -468,9 +470,9 @@ do {									\
       enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;                \
     } *sections;                                                        \
   struct section_info *s;                                               \
-  char *mode;                                                           \
+  const char *mode;                                                     \
   enum sect_enum type;                                                  \
-  char *sname = NAME ;							\
+  const char *sname = NAME ;						\
   if (strcmp(NAME, ".gcc_except_table") == 0) sname = ".gccexc" ;	\
                                                                         \
   for (s = sections; s; s = s->next)                                    \

@@ -1405,7 +1405,7 @@ asm_noperands (body)
    If MODES, OPERAND_LOCS, CONSTRAINTS or OPERANDS is 0,
    we don't store that info.  */
 
-char *
+const char *
 decode_asm_operands (body, operands, operand_locs, constraints, modes)
      rtx body;
      rtx *operands;
@@ -1415,7 +1415,7 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
 {
   register int i;
   int noperands;
-  char *template = 0;
+  const char *template = 0;
 
   if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
     {

@@ -4209,7 +4209,7 @@ rs6000_allocate_stack_space (file, size, copy_r12)
       else if (GET_CODE (stack_limit_rtx) == SYMBOL_REF
 	       && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
 	{
-	  char * l_name = XSTR (stack_limit_rtx, 0);
+	  const char * l_name = XSTR (stack_limit_rtx, 0);
 	  const char * stripped_name;
 
 	  STRIP_NAME_ENCODING (stripped_name, l_name);
@@ -4662,7 +4662,7 @@ output_epilog (file, size)
      different traceback table.  */
   if (DEFAULT_ABI == ABI_AIX && ! flag_inhibit_size_directive)
     {
-      char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+      const char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
       int fixed_parms, float_parms, parm_info;
       int i;
 
@@ -4895,7 +4895,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 {
   const char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
   const char *prefix;
-  char *fname;
+  const char *fname;
   const char *r0	 = reg_names[0];
   const char *sp	 = reg_names[1];
   const char *toc	 = reg_names[2];
@@ -5097,7 +5097,7 @@ output_toc (file, x, labelno)
      int labelno;
 {
   char buf[256];
-  char *name = buf;
+  const char *name = buf;
   const char *real_name;
   rtx base = x;
   int offset = 0;

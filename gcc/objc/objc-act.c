@@ -161,7 +161,7 @@ static void finish_objc				PARAMS ((void));
 
 static void synth_module_prologue		PARAMS ((void));
 static tree build_constructor			PARAMS ((tree, tree));
-static char *build_module_descriptor		PARAMS ((void));
+static const char *build_module_descriptor      PARAMS ((void));
 static tree init_module_descriptor		PARAMS ((tree));
 static tree build_objc_method_call		PARAMS ((int, tree, tree,
 						       tree, tree, tree));
@@ -1681,7 +1681,7 @@ init_module_descriptor (type)
 
    struct objc_module { ... } _OBJC_MODULE = { ... };   */
 
-static char *
+static const char *
 build_module_descriptor ()
 {
   tree decl_specs, field_decl, field_decl_chain;
@@ -8189,7 +8189,7 @@ finish_objc ()
       || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
     {
       /* Arrange for Objc data structures to be initialized at run time.  */
-      char *init_name = build_module_descriptor ();
+      const char *init_name = build_module_descriptor ();
       if (init_name)
 	assemble_constructor (init_name);
     }
