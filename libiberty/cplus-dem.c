@@ -2491,7 +2491,8 @@ do_type (work, mangled, result)
 	case 'A':
 	  {
 	    ++(*mangled);
-	    if (!STRING_EMPTY (&decl) && decl.b[0] == '*')
+	    if (!STRING_EMPTY (&decl)
+		&& (decl.b[0] == '*' || decl.b[0] == '&'))
 	      {
 		string_prepend (&decl, "(");
 		string_append (&decl, ")");
@@ -2523,7 +2524,8 @@ do_type (work, mangled, result)
 	  /* A function */
 	case 'F':
 	  (*mangled)++;
-	  if (!STRING_EMPTY (&decl) && decl.b[0] == '*')
+	    if (!STRING_EMPTY (&decl)
+		&& (decl.b[0] == '*' || decl.b[0] == '&'))
 	    {
 	      string_prepend (&decl, "(");
 	      string_append (&decl, ")");
