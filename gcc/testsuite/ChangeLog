@@ -1,3 +1,8 @@
+2003-11-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/builtin-apply2.c: Set size of stack argument data to 64.
+	* gcc.dg/builtin-apply3.c: New test.
+
 2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* lib/compat.exp (compat-obj): New xfaildata parameter.
