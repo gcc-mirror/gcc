@@ -149,7 +149,7 @@ add_friend (tree type, tree decl, bool complain)
 	      if (decl == TREE_VALUE (friends))
 		{
 		  if (complain)
-		    warning ("`%D' is already a friend of class `%T'",
+		    warning ("%qD is already a friend of class %qT",
 			     decl, type);
 		  return;
 		}
@@ -201,7 +201,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
   if (! IS_AGGR_TYPE (friend_type))
     {
-      error ("invalid type `%T' declared `friend'", friend_type);
+      error ("invalid type %qT declared %<friend%>", friend_type);
       return;
     }
 
@@ -217,7 +217,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  /* [temp.friend]
 	     Friend declarations shall not declare partial
 	     specializations.  */
-	  error ("partial specialization `%T' declared `friend'",
+	  error ("partial specialization %qT declared %<friend%>",
 		 friend_type);
 	  return;
 	}
@@ -227,7 +227,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
   else if (same_type_p (type, friend_type))
     {
       if (complain)
-	pedwarn ("class `%T' is implicitly friends with itself",
+	pedwarn ("class %qT is implicitly friends with itself",
 		 type);
       return;
     }
@@ -245,19 +245,19 @@ make_friend_class (tree type, tree friend_type, bool complain)
   else if (TREE_CODE (friend_type) == TYPENAME_TYPE)
     {
       /* template <class T> friend typename S<T>::X; */
-      error ("typename type `%#T' declared `friend'", friend_type);
+      error ("typename type %q#T declared %<friend%>", friend_type);
       return;
     }
   else if (TREE_CODE (friend_type) == TEMPLATE_TYPE_PARM)
     {
       /* template <class T> friend class T; */
-      error ("template parameter type `%T' declared `friend'", friend_type);
+      error ("template parameter type %qT declared %<friend%>", friend_type);
       return;
     }
   else if (!CLASSTYPE_TEMPLATE_INFO (friend_type))
     {
       /* template <class T> friend class A; where A is not a template */
-      error ("`%#T' is not a template", friend_type);
+      error ("%q#T is not a template", friend_type);
       return;
     }
 
@@ -276,8 +276,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  if (friend_type == probe)
 	    {
 	      if (complain)
-		warning ("`%D' is already a friend of `%T'",
-			 probe, type);
+		warning ("%qD is already a friend of %qT", probe, type);
 	      break;
 	    }
 	}
@@ -286,8 +285,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  if (same_type_p (probe, friend_type))
 	    {
 	      if (complain)
-		warning ("`%T' is already a friend of `%T'",
-			 probe, type);
+		warning ("%qT is already a friend of %qT", probe, type);
 	      break;
 	    }
 	}
@@ -411,7 +409,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	    add_friend (current_class_type, decl, /*complain=*/true);
 	}
       else
-	error ("member `%D' declared as friend before type `%T' defined",
+	error ("member %qD declared as friend before type %qT defined",
 		  decl, ctype);
     }
   /* A global friend.
@@ -467,10 +465,14 @@ do_friend (tree ctype, tree declarator, tree decl,
 	  if (warn)
 	    {
 	      static int explained;
-	      warning ("friend declaration `%#D' declares a non-template function", decl);
+	      warning ("friend declaration %q#D declares a non-template "
+                       "function", decl);
 	      if (! explained)
 		{
-		  warning ("(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning");
+		  warning ("(if this is not what you intended, make sure "
+                           "the function template has already been declared "
+                           "and add <> after the function name here) "
+                           "-Wno-non-template-friend disables this warning");
 		  explained = 1;
 		}
 	    }

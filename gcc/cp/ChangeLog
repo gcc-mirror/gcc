@@ -1,3 +1,14 @@
+2004-10-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert diagnostics to use quoting flag q 4/n
+	* except.c (decl_is_java_type, build_throw, 
+	is_admissible_throw_operand, check_handlers_1, check_handlers): 
+	Use quoting formats.
+	* friend.c (add_friend, make_friend_class, do_friend): Likewise.
+	* init.c (sort_mem_initializers, emit_mem_initializers, 
+	member_init_ok_or_else, expand_member_init, is_aggr_type, 
+	build_offset_ref, build_java_class_ref): Likewise.
+
 2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert diagnostics to use quoting flag q 3/n
