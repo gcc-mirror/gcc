@@ -9125,14 +9125,14 @@ not_accessible_p (reference, member, from_super)
 
       /* Otherwise, access is granted if occuring from the class where
 	 member is declared or a subclass of it */
-      if (inherits_from_p (reference, current_class))
+      if (inherits_from_p (reference, DECL_CONTEXT (member)))
 	return 0;
       return 1;
     }
 
   /* Check access on private members. Access is granted only if it
-     occurs from within the class in witch it is declared. Exceptions
-     are access from inner-classes. This section is probably not
+     occurs from within the class in which it is declared. Exceptions
+     are accesses from inner-classes. This section is probably not
      complete. FIXME */
   if (access_flag & ACC_PRIVATE)
     return (current_class == DECL_CONTEXT (member) ? 0 : 
@@ -9143,7 +9143,7 @@ not_accessible_p (reference, member, from_super)
      REFERENCE is defined in the current package */
   if (ctxp->package)
     return !class_in_current_package (reference);
-  
+
   /* Otherwise, access is granted */
   return 0;
 }
