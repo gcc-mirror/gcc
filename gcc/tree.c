@@ -51,28 +51,11 @@ extern int _obstack_allocated_p (struct obstack *h, void *obj);
 
 #ifdef GATHER_STATISTICS
 /* Statistics-gathering stuff.  */
-typedef enum
-{
-  d_kind,
-  t_kind,
-  b_kind,
-  s_kind,
-  r_kind,
-  e_kind,
-  c_kind,
-  id_kind,
-  perm_list_kind,
-  temp_list_kind,
-  vec_kind,
-  x_kind,
-  lang_decl,
-  lang_type,
-  all_kinds
-} tree_node_kind;
 
 int tree_node_counts[(int) all_kinds];
 int tree_node_sizes[(int) all_kinds];
 
+/* Keep in sync with tree.h:enum tree_node_kind. */
 static const char * const tree_node_kind_names[] = {
   "decls",
   "types",
@@ -4446,19 +4429,19 @@ dump_tree_statistics (void)
 
   fprintf (stderr, "\n??? tree nodes created\n\n");
 #ifdef GATHER_STATISTICS
-  fprintf (stderr, "Kind                  Nodes     Bytes\n");
-  fprintf (stderr, "-------------------------------------\n");
+  fprintf (stderr, "Kind                   Nodes      Bytes\n");
+  fprintf (stderr, "---------------------------------------\n");
   total_nodes = total_bytes = 0;
   for (i = 0; i < (int) all_kinds; i++)
     {
-      fprintf (stderr, "%-20s %6d %9d\n", tree_node_kind_names[i],
+      fprintf (stderr, "%-20s %7d %10d\n", tree_node_kind_names[i],
 	       tree_node_counts[i], tree_node_sizes[i]);
       total_nodes += tree_node_counts[i];
       total_bytes += tree_node_sizes[i];
     }
-  fprintf (stderr, "-------------------------------------\n");
-  fprintf (stderr, "%-20s %6d %9d\n", "Total", total_nodes, total_bytes);
-  fprintf (stderr, "-------------------------------------\n");
+  fprintf (stderr, "---------------------------------------\n");
+  fprintf (stderr, "%-20s %7d %10d\n", "Total", total_nodes, total_bytes);
+  fprintf (stderr, "---------------------------------------\n");
 #else
   fprintf (stderr, "(No per-node statistics)\n");
 #endif
