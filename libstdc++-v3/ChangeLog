@@ -1,5 +1,14 @@
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* bits/fstream.tcc (basic_filebuf::basic_filebuf(fd)): Use it.
+	(basic_filebuf::close): Use it.
+	* bits/std_fstream.h (basic_filebuf): Remove default arguments for
+	filebuf ctor.
+	(basic_filebuf): Add _M_fileno_based data member.
+        As reported by brent verner <brent@rcfile.org> 
+	* testsuite/27_io/filebuf_members.cc: New file.
+	* testsuite/27_io/filebuf_members-1.tst: New file.
+
 	* bits/std_fstream.h: Formatting tweaks.
 	* testsuite/27_io/ofstream_members.cc: New file.
 	* testsuite/27_io/ofstream_members-1.tst: New file.
