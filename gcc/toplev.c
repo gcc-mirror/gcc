@@ -4106,7 +4106,9 @@ init_asm_output (const char *name)
 void *
 default_get_pch_validity (size_t *len)
 {
+#ifdef TARGET_OPTIONS
   size_t i;
+#endif
   char *result, *r;
   
   *len = sizeof (target_flags) + 2;
