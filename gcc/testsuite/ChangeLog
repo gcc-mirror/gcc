@@ -1,3 +1,7 @@
+2001-07-18  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/iftrap-1.c: Fix target line.
+
 2001-07-17  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/20010717-1.c: New.
@@ -187,7 +191,7 @@ Fri Jul  6 09:31:43 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* objc/execute/load-2.m: New test.  From Nicola Pero
 	<n.pero@mi.flashnet.it>.
-	
+
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20010605-2.c: New test.
@@ -295,13 +299,13 @@ Fri Jul  6 09:31:43 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-05-23  David.Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.misc-tests/linkage.exp:  Pass appropriate flags to 
+	* gcc.misc-tests/linkage.exp:  Pass appropriate flags to
 	native compiler for irix6.5.
 
 Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* lib/g++.exp (g++_include_flags): Use args to compute
- 	get_multilibs.
+	get_multilibs.
 	(g++_link_flags): Likewise.
 	(g++_init): Pass TOOL_OPTIONS as arguments to two above functions.
 
@@ -320,10 +324,10 @@ Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 	STACK_SIZE;
 	* gcc.c-torture/compile/991214-2.c (HISTO_SIZE): Define according
 	to STACK_SIZE; Use it to define size of add_histo array.
-	* gcc.c-torture/compile/920723-1.c (GITT_SIZE): Define according 
+	* gcc.c-torture/compile/920723-1.c (GITT_SIZE): Define according
 	to STACK_SIZE.
 	(f): Use GITT_SIZE to define size of gitt local table.
-	* gcc.c-torture/compile/930621-1.c (BYTEMEM_SIZE): Define according 
+	* gcc.c-torture/compile/930621-1.c (BYTEMEM_SIZE): Define according
 	to STACK_SIZE; Use it to define size of bytemem array.
 
 2001-05-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
@@ -407,7 +411,7 @@ Wed May 16 20:33:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* lib/g++.exp: Use testsuite_flags.
-	
+
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.c-torture/execute/ieee/rbug.x: XFAIL FreeBSD 4.x.
