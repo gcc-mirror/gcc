@@ -1737,6 +1737,10 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
       builtin_optab = nearbyint_optab; break;
+    case BUILT_IN_RINT:
+    case BUILT_IN_RINTF:
+    case BUILT_IN_RINTL:
+      builtin_optab = rint_optab; break;
     default:
       gcc_unreachable ();
     }
@@ -5599,6 +5603,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_NEARBYINT:
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
+    case BUILT_IN_RINT:
+    case BUILT_IN_RINTF:
+    case BUILT_IN_RINTL:
       target = expand_builtin_mathfn (exp, target, subtarget);
       if (target)
 	return target;

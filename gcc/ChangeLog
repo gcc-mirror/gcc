@@ -1,3 +1,63 @@
+2004-09-04  Uros Bizjak  <uros@kss-loka.si>
+
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_RINT{,F,L}
+	using rint_optab.
+	(expand_builtin): Expand BUILT_IN_RINT{,F,L} using
+	expand_builtin_mathfn.
+	* genopinit.c (optabs): Rename trunc_optab to btrunc_optab. Use
+	btrunc?f patterns for btrunc_optab. Implement rint_optab using
+	rint?f patterns.
+	* optabs.c (init_optabs): Initialize rint_optab.
+	* optabs.h (enum optab_index): Rename OTI_trunc to OTI_btrunc.
+	Add new OTI_rint.
+	(btrunc_optab): Rename macro from trunc_optab.
+	(rint_optab): Define corresponding macro.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_FRNDINT_FLOOR,
+	UNSPEC_FRNDINT_CEIL, UNSPEC_FRNDINT_TRUNC, UNSPEC_FRNDINT_MASK_PM.
+
+	* config/i386/i386-protos.h (emit_i387_cw_initialization):
+	Change prototype. Add new int parameter.
+	* config/i386/i386.c (emit_i387_cw_initialization):
+	Handle new rounding modes.
+
+	* config/i386/i386.h (enum fp_cw_mode): Delete.
+	(MODE_NEEDED): Handle new rounding modes. 
+	(EMIT_MODE_SET): Change condition to handle new rounding modes.
+
+	* config/i386/i386.md (UNSPEC_FRNDINT_FLOOR, UNSPEC_FRNDINT_CEIL,
+	UNSPEC_FRNDINT_TRUNC, UNSPEC_FRNDINT_MASK_PM): New unspecs to
+	represent different rounding modes of frndint insn.
+	(type): Add frndint type.
+	(i387, length, memory): Handle this type.
+	(i387_cw): New attribute definition.
+	(*fix_truncdi_1, fix_truncdi_nomemory, fix_truncdi_memory,
+	*fix_truncsi_1, fix_truncsi_nomemory, fix_truncsi_memory,
+	*fix_trunchi_1, fix_trunchi_nomemory, fix_trunchi_memory):
+	Add "i387_cw" attribute defined to "trunc".
+	(x86_fnstcw_1): Remove comment.
+	(*frndintxf2): Rename insn definition to frndintxf2. Move
+	insn definition near rint?f2 expanders.
+	(rintdf2, rintsf2, rintxf2): New expanders to implement rint,
+	rintf and rintl built-ins as inline x87 intrinsics.
+	(frndintxf2_floor): New pattern to implement floor rounding
+	mode with frndint x87 instruction.
+	(floordf2, floorsf2, floorxf2): New expanders to implement floor,
+	floorf and floorl built-ins as inline x87 intrinsics.
+	(frndintxf2_ceil): New pattern to implement ceil rounding
+	mode with frndint x87 instruction.
+	(ceildf2, ceilsf2, ceilxf2): New expanders to implement ceil,
+	ceilf and ceill built-ins as inline x87 intrinsics.
+	(frndintxf2_trunc): New pattern to implement trunc rounding
+	mode with frndint x87 instruction.
+	(btruncdf2, btruncsf2, btruncxf2): New expanders to implement trunc,
+	truncf and truncl built-ins as inline x87 intrinsics.
+	(frndintxf2_mask_pm): New pattern to implement rounding
+	mode with exceptions with frndint x87 instruction.
+	(nearbyintdf2, nearbyintsf2, nearbyintxf2): New expanders to
+	implement nearbyint, nearbyintf and nearbyintl built-ins as
+	inline x87 intrinsics.
+
 2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (SHORT): New mode macro.

@@ -1,3 +1,7 @@
+2004-09-04  Uros Bizjak  <uros@kss-loka.si>
+
+	* testsuite/gcc.dg/builtins-46.c: New.
+
 2004-09-03  Devang Patel  <dpatel@apple.com>
 	
 	* gcc.dg/tree-ssa/ifc-20040816-1.c: New test.
