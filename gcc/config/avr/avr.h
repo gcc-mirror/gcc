@@ -22,8 +22,28 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine. */
 
-#define CPP_PREDEFINES "-DAVR"
-
+#define TARGET_CPU_CPP_BUILTINS() 		\
+  do						\
+    {						\
+      builtin_define_std ("AVR");		\
+      if (avr_base_arch_macro)			\
+	builtin_define (avr_base_arch_macro);	\
+      if (avr_extra_arch_macro)			\
+	builtin_define (avr_extra_arch_macro);	\
+      if (avr_asm_only_p)			\
+	builtin_define ("__AVR_ASM_ONLY__");	\
+      if (avr_enhanced_p)			\
+	builtin_define ("__AVR_ENHANCED__");	\
+      if (avr_mega_p)				\
+	builtin_define ("__AVR_MEGA__");	\
+      if (TARGET_NO_INTERRUPTS)			\
+	builtin_define ("__NO_INTERRUPTS__");	\
+      if (TARGET_INT8)				\
+	builtin_define ("__INT_MAX__=127");	\
+      else					\
+	builtin_define ("__INT_MAX__=32767");	\
+    }						\
+  while (0)
 
 /* This declaration should be present. */
 extern int target_flags;
@@ -54,9 +74,6 @@ extern int target_flags;
 #define TARGET_RTL_DUMP		(target_flags & MASK_RTL_DUMP)
 #define TARGET_ALL_DEBUG 	(target_flags & MASK_ALL_DEBUG)
 
-
-
-
 #define TARGET_SWITCHES {						\
   { "order1", MASK_ORDER_1, NULL },					\
   { "order2", MASK_ORDER_2, NULL },					\
@@ -77,8 +94,12 @@ extern int target_flags;
 
 extern const char *avr_init_stack;
 extern const char *avr_mcu_name;
+
+extern const char *avr_base_arch_macro;
+extern const char *avr_extra_arch_macro;
 extern int avr_mega_p;
 extern int avr_enhanced_p;
+extern int avr_asm_only_p;
 
 #define AVR_MEGA (avr_mega_p)
 #define AVR_ENHANCED (avr_enhanced_p)
@@ -2513,51 +2534,8 @@ extern int avr_case_values_threshold;
    (and ANSI C) library functions `memcpy' and `memset' rather than
    the BSD functions `bcopy' and `bzero'.  */
 
-#define CPP_SPEC "\
-%{!mmcu*|mmcu=avr2:%(cpp_avr2)} \
-%{mmcu=at90s2313:%(cpp_avr2) -D__AVR_AT90S2313__} \
-%{mmcu=at90s2323:%(cpp_avr2) -D__AVR_AT90S2323__} \
-%{mmcu=at90s2333:%(cpp_avr2) -D__AVR_AT90S2333__} \
-%{mmcu=at90s2343:%(cpp_avr2) -D__AVR_AT90S2343__} \
-%{mmcu=attiny22: %(cpp_avr2) -D__AVR_ATtiny22__} \
-%{mmcu=attiny26: %(cpp_avr2) -D__AVR_ATtiny26__} \
-%{mmcu=at90s4433:%(cpp_avr2) -D__AVR_AT90S4433__} \
-%{mmcu=at90s4414:%(cpp_avr2) -D__AVR_AT90S4414__} \
-%{mmcu=at90s4434:%(cpp_avr2) -D__AVR_AT90S4434__} \
-%{mmcu=at90s8515:%(cpp_avr2) -D__AVR_AT90S8515__} \
-%{mmcu=at90s8535:%(cpp_avr2) -D__AVR_AT90S8535__} \
-%{mmcu=at90c8534:%(cpp_avr2) -D__AVR_AT90C8534__} \
-%{mmcu=avr3:%(cpp_avr3)} \
-%{mmcu=atmega603:%(cpp_avr3) -D__AVR_ATmega603__} \
-%{mmcu=atmega103:%(cpp_avr3) -D__AVR_ATmega103__} \
-%{mmcu=at43usb320:%(cpp_avr3) -D__AVR_AT43USB320__} \
-%{mmcu=at43usb355:%(cpp_avr3) -D__AVR_AT43USB355__} \
-%{mmcu=at76c711: %(cpp_avr3) -D__AVR_AT76C711__} \
-%{mmcu=avr4:%(cpp_avr4)} \
-%{mmcu=atmega8:  %(cpp_avr4) -D__AVR_ATmega8__} \
-%{mmcu=atmega83: %(cpp_avr4) -D__AVR_ATmega83__} \
-%{mmcu=atmega85: %(cpp_avr4) -D__AVR_ATmega85__} \
-%{mmcu=atmega8515: %(cpp_avr4) -D__AVR_ATmega8515__} \
-%{mmcu=avr5:%(cpp_avr5)} \
-%{mmcu=atmega16: %(cpp_avr5) -D__AVR_ATmega16__} \
-%{mmcu=atmega161:%(cpp_avr5) -D__AVR_ATmega161__} \
-%{mmcu=atmega162:%(cpp_avr5) -D__AVR_ATmega162__} \
-%{mmcu=atmega163:%(cpp_avr5) -D__AVR_ATmega163__} \
-%{mmcu=atmega32: %(cpp_avr5) -D__AVR_ATmega32__} \
-%{mmcu=atmega323:%(cpp_avr5) -D__AVR_ATmega323__} \
-%{mmcu=atmega64: %(cpp_avr5) -D__AVR_ATmega64__} \
-%{mmcu=atmega128:%(cpp_avr5) -D__AVR_ATmega128__} \
-%{mmcu=at94k:    %(cpp_avr5) -D__AVR_AT94K__} \
-%{mmcu=avr1:%(cpp_avr1)} \
-%{mmcu=at90s1200:%(cpp_avr1) -D__AVR_AT90S1200__} \
-%{mmcu=attiny10|mmcu=attiny11: %(cpp_avr1) -D__AVR_ATtiny11__} \
-%{mmcu=attiny12: %(cpp_avr1) -D__AVR_ATtiny12__} \
-%{mmcu=attiny15: %(cpp_avr1) -D__AVR_ATtiny15__} \
-%{mmcu=attiny28: %(cpp_avr1) -D__AVR_ATtiny28__} \
-%{mno-interrupts:-D__NO_INTERRUPTS__} \
-%{mint8:-D__INT_MAX__=127} \
-%{!mint*:-D__INT_MAX__=32767} \
-%{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+
 /* A C string constant that tells the GNU CC driver program options to
    pass to CPP.  It can also specify how to translate options you
    give to GNU CC into options for GNU CC to pass to the CPP.
@@ -2700,62 +2678,11 @@ extern int avr_case_values_threshold;
 %{mmcu=atmega128:crtm128.o%s} \
 %{mmcu=at94k:crtat94k.o%s}"
 
-#define CPP_AVR1_SPEC "-D__AVR_ARCH__=1 -D__AVR_ASM_ONLY__ "
-#define CPP_AVR2_SPEC "-D__AVR_ARCH__=2 "
-#define CPP_AVR3_SPEC "-D__AVR_ARCH__=3 -D__AVR_MEGA__ "
-#define CPP_AVR4_SPEC "-D__AVR_ARCH__=4 -D__AVR_ENHANCED__ "
-#define CPP_AVR5_SPEC "-D__AVR_ARCH__=5 -D__AVR_ENHANCED__ -D__AVR_MEGA__ "
+#define EXTRA_SPECS {"crt_binutils", CRT_BINUTILS_SPECS},
 
-#define EXTRA_SPECS                           \
-{"cpp_avr1", CPP_AVR1_SPEC},                  \
-{"cpp_avr2", CPP_AVR2_SPEC},                  \
-{"cpp_avr3", CPP_AVR3_SPEC},                  \
-{"cpp_avr4", CPP_AVR4_SPEC},                  \
-{"cpp_avr5", CPP_AVR5_SPEC},                  \
-{"crt_binutils", CRT_BINUTILS_SPECS},
 /* Define this macro to provide additional specifications to put in
    the `specs' file that can be used in various specifications like
-   `CC1_SPEC'.
-
-   The definition should be an initializer for an array of structures,
-   containing a string constant, that defines the specification name,
-   and a string constant that provides the specification.
-
-   Do not define this macro if it does not need to do anything.
-
-   `EXTRA_SPECS' is useful when an architecture contains several
-   related targets, which have various `..._SPECS' which are similar
-   to each other, and the maintainer would like one central place to
-   keep these definitions.
-
-   For example, the PowerPC System V.4 targets use `EXTRA_SPECS' to
-   define either `_CALL_SYSV' when the System V calling sequence is
-   used or `_CALL_AIX' when the older AIX-based calling sequence is
-   used.
-
-   The `config/rs6000/rs6000.h' target file defines:
-
-   #define EXTRA_SPECS \
-   { "cpp_sysv_default", CPP_SYSV_DEFAULT },
-
-   #define CPP_SYS_DEFAULT ""
-
-   The `config/rs6000/sysv.h' target file defines:
-   #undef CPP_SPEC
-   #define CPP_SPEC \
-   "%{posix: -D_POSIX_SOURCE } \
-   %{mcall-sysv: -D_CALL_SYSV } %{mcall-aix: -D_CALL_AIX } \
-   %{!mcall-sysv: %{!mcall-aix: %(cpp_sysv_default) }} \
-   %{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT}"
-
-   #undef CPP_SYSV_DEFAULT
-   #define CPP_SYSV_DEFAULT "-D_CALL_SYSV"
-
-   while the `config/rs6000/eabiaix.h' target file defines
-   `CPP_SYSV_DEFAULT' as:
-
-   #undef CPP_SYSV_DEFAULT
-   #define CPP_SYSV_DEFAULT "-D_CALL_AIX"  */
+   `CC1_SPEC'.  */
 
 /* This is the default without any -mmcu=* option (AT90S*).  */
 #define MULTILIB_DEFAULTS { "mmcu=avr2" }
