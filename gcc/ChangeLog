@@ -1,3 +1,51 @@
+2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
+ 	* config/s390/s390.c (targetm): Define TARGET_ASM_OPEN_PAREN
+	and TARGET_ASM_CLOSE_PAREN.
+	(regclass_map): CC register belongs to class NO_REGS.
+	(legitimize_pic_address): Don't generate unnecessary moves 
+	(to avoid confusing loop optimization).
+ 	(check_and_change_labels): Replace jump_long by indirect_jump.
+	(s390_final_chunkify): Don't start a new literal pool on section 
+	switch in 64-bit code.
+	(s390_va_start, s390_va_arg): Fixed incorrect sizes for 64-bit.
+	
+	* config/s390/s390.h (TARGET_SWITCHES): Renamed debug_arg to debug.
+	(MAX_BITS_PER_WORD, MAX_LONG_TYPE_SIZE): Set to 64 (for 64-bit).
+	(HARD_REGNO_MODE_OK, RETURN_IN_MEMORY): Support complex integer 
+	modes correctly.
+	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Remove CC_REGS.
+	(EH_RETURN_HANDLER_RTX): Fixed incorrect offset for 64-bit.
+	(CONST_COSTS): Fixed incorrect costs.
+
+	* config/s390/s390.md (fixuns_trunc[sd]f[sd]i2, udivsi3, umodsi3):
+	Use emit_jump instead of emit_jump_insn (gen_jump).
+	(divsi3, modsi3): Clobber low word of divmoddisi3 before shifting 
+	(to avoid confusing flow analysis).
+	(tablejump, tablejump1, tablejump2): Removed.  Replaced by casesi.
+	(casesi, casesi_jump): New.
+	(jump_long): Removed.  Functionality merged into indirect_jump.
+	(indirect_jump): Accept address_operand, not just register_operand.
+	(cjump_long, icjump_long): Use same logic as indirect_jump.
+	(builtin_setjmp_setup, builtin_setjmp_receiver, builtin_longjmp):
+	Fixed broken setjmp/longjmp handling.
+	(do_builtin_setjmp_setup): Removed.
+
+	* config/s390/linux.h (ASM_OUTPUT_DOUBLE_INT): Work around
+	broken GNU as versions that don't accept .quad with large
+	negative values.  Use hexadecimal output instead.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Adapt to new casesi insn.
+	(ASM_OPEN_PAREN, ASM_CLOSE_PAREN, FUNCTION_PROLOGUE,
+	FUNCTION_EPILOGUE): Removed.  Now in targetm.
+
+	* config/s390/linux64.h (CALL_USED_REGISTERS): Add CC register.
+
+	* config/s390/fixdfdi.h: Add missing copyright statement.
+	Fix type conflicts on 64-bit.  Add missing SFmode routines.
+
+	* s390.c, s390.h, s390.md, linux.h, linux64.h: Fixed incorrect
+	email address.
+
 2001-08-11  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (REG_EH_RETHROW): Remove.
