@@ -44,10 +44,10 @@ package Prj is
    --  Use to customize error reporting in Prj.Proc and Prj.Nmsc.
 
    type Verbosity is (Default, Medium, High);
-   --  Verbosity when parsing GNAT Project Files.
-   --  Default is default (very quiet, if no errors).
-   --  Medium is more verbose.
-   --  High is extremely verbose.
+   --  Verbosity when parsing GNAT Project Files
+   --    Default is default (very quiet, if no errors).
+   --    Medium is more verbose.
+   --    High is extremely verbose.
 
    type Lib_Kind is (Static, Dynamic, Relocatable);
 
@@ -60,7 +60,7 @@ package Prj is
       Location : Source_Ptr     := No_Location;
       Next     : String_List_Id := Nil_String;
    end record;
-   --  To hold values for string list variables and array elements.
+   --  To hold values for string list variables and array elements
 
    package String_Elements is new Table.Table
      (Table_Component_Type => String_Element,
@@ -69,7 +69,7 @@ package Prj is
       Table_Initial        => 200,
       Table_Increment      => 100,
       Table_Name           => "Prj.String_Elements");
-   --  The table for string elements in string lists.
+   --  The table for string elements in string lists
 
    type Variable_Kind is (Undefined, List, Single);
    --  Different kinds of variables
@@ -92,7 +92,7 @@ package Prj is
      (Kind     => Undefined,
       Location => No_Location,
       Default  => False);
-   --  Value of a non existing variable or array element.
+   --  Value of a non existing variable or array element
 
    type Variable_Id is new Nat;
    No_Variable : constant Variable_Id := 0;
@@ -101,7 +101,7 @@ package Prj is
       Name     : Name_Id;
       Value    : Variable_Value;
    end record;
-   --  To hold the list of variables in a project file and in packages.
+   --  To hold the list of variables in a project file and in packages
 
    package Variable_Elements is new Table.Table
      (Table_Component_Type => Variable,
@@ -110,7 +110,7 @@ package Prj is
       Table_Initial        => 200,
       Table_Increment      => 100,
       Table_Name           => "Prj.Variable_Elements");
-   --  The table of variable in list of variables.
+   --  The table of variable in list of variables
 
    type Array_Element_Id is new Nat;
    No_Array_Element : constant Array_Element_Id := 0;
@@ -119,9 +119,8 @@ package Prj is
       Value    : Variable_Value;
       Next     : Array_Element_Id := No_Array_Element;
    end record;
-   --  Each Array_Element represents an array element.
-   --  Each Array_Element is linked (Next) to the next array element,
-   --  if any, in the array.
+   --  Each Array_Element represents an array element and is linked (Next)
+   --  to the next array element, if any, in the array.
 
    package Array_Elements is new Table.Table
      (Table_Component_Type => Array_Element,
@@ -139,7 +138,7 @@ package Prj is
       Value : Array_Element_Id := No_Array_Element;
       Next  : Array_Id         := No_Array;
    end record;
-   --  Each Array_Data represents an array.
+   --  Each Array_Data value represents an array.
    --  Value is the id of the first element.
    --  Next is the id of the next array in the project file or package.
 
@@ -166,7 +165,7 @@ package Prj is
       Attributes => No_Variable,
       Arrays     => No_Array,
       Packages   => No_Package);
-   --  Declarations. Used in project structures and packages.
+   --  Declarations. Used in project structures and packages (what for???)
 
    type Package_Element is record
       Name   : Name_Id      := No_Name;
@@ -174,8 +173,7 @@ package Prj is
       Parent : Package_Id   := No_Package;
       Next   : Package_Id   := No_Package;
    end record;
-   --  A package. Includes declarations that may include
-   --  other packages.
+   --  A package. Includes declarations that may include other packages.
 
    package Packages is new Table.Table
      (Table_Component_Type => Package_Element,
@@ -187,68 +185,67 @@ package Prj is
    --  The table that contains all packages.
 
    function Image (Casing : Casing_Type) return String;
-   --  Similar to 'Image
+   --  Similar to 'Image (but avoid use of this attribute in compiler)
 
    function Value (Image : String) return Casing_Type;
-   --  Similar to 'Value
-   --  This is to avoid s-valenu in the closure of the tools
+   --  Similar to 'Value (but avoid use of this attribute in compiler)
    --  Raises Constraint_Error if not a Casing_Type image.
 
    type Naming_Data is record
-      Current_Language          : Name_Id          := No_Name;
+      Current_Language : Name_Id := No_Name;
       --  The programming language being currently considered
 
-      Dot_Replacement           : Name_Id          := No_Name;
+      Dot_Replacement : Name_Id := No_Name;
       --  The string to replace '.' in the source file name (for Ada).
 
-      Dot_Repl_Loc              : Source_Ptr       := No_Location;
+      Dot_Repl_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
       --  Dot_Replacement is defined.
 
-      Casing                    : Casing_Type      := All_Lower_Case;
+      Casing : Casing_Type := All_Lower_Case;
       --  The casing of the source file name (for Ada).
 
-      Specification_Suffix      : Array_Element_Id := No_Array_Element;
+      Specification_Suffix : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
       --  source file name of a specification.
       --  Indexed by the programming language.
 
-      Current_Spec_Suffix       : Name_Id          := No_Name;
+      Current_Spec_Suffix : Name_Id := No_Name;
       --  The specification suffix of the current programming language
 
-      Spec_Suffix_Loc           : Source_Ptr       := No_Location;
+      Spec_Suffix_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
       --  Current_Spec_Suffix is defined.
 
-      Implementation_Suffix     : Array_Element_Id := No_Array_Element;
+      Implementation_Suffix : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
       --  source file name of a body.
       --  Indexed by the programming language.
 
-      Current_Impl_Suffix       : Name_Id          := No_Name;
+      Current_Impl_Suffix : Name_Id := No_Name;
       --  The implementation suffix of the current programming language
 
-      Impl_Suffix_Loc           : Source_Ptr       := No_Location;
+      Impl_Suffix_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
       --  Current_Impl_Suffix is defined.
 
-      Separate_Suffix           : Name_Id          := No_Name;
+      Separate_Suffix : Name_Id := No_Name;
       --  The string to append to the unit name for the
       --  source file name of an Ada subunit.
 
-      Sep_Suffix_Loc            : Source_Ptr       := No_Location;
+      Sep_Suffix_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
       --  Separate_Suffix is defined.
 
-      Specifications            : Array_Element_Id := No_Array_Element;
+      Specifications : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual specifications
       --  to source file names. Specific to Ada.
 
-      Bodies                    : Array_Element_Id := No_Array_Element;
+      Bodies : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual bodies
       --  to source file names. Specific to Ada.
 
-      Specification_Exceptions  : Array_Element_Id := No_Array_Element;
+      Specification_Exceptions : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual specifications
       --  to source file names. Indexed by the programming language name.
 
@@ -294,113 +291,113 @@ package Prj is
    --  The table that contains the lists of project files.
 
    type Project_Data is record
-      First_Referred_By  : Project_Id     := No_Project;
+      First_Referred_By  : Project_Id := No_Project;
       --  The project, if any, that was the first to be known
       --  as importing or extending this project.
       --  Set by Prj.Proc.Process.
 
-      Name               : Name_Id        := No_Name;
+      Name : Name_Id := No_Name;
       --  The name of the project.
       --  Set by Prj.Proc.Process.
 
-      Path_Name          : Name_Id        := No_Name;
+      Path_Name : Name_Id := No_Name;
       --  The path name of the project file.
       --  Set by Prj.Proc.Process.
 
-      Location           : Source_Ptr     := No_Location;
+      Location : Source_Ptr := No_Location;
       --  The location in the project file source of the
       --  reserved word project.
       --  Set by Prj.Proc.Process.
 
-      Directory          : Name_Id        := No_Name;
+      Directory : Name_Id := No_Name;
       --  The directory where the project file resides.
       --  Set by Prj.Proc.Process.
 
-      Library            : Boolean        := False;
+      Library : Boolean := False;
       --  True if this is a library project.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Library_Dir        : Name_Id        := No_Name;
+      Library_Dir : Name_Id := No_Name;
       --  If a library project, directory where resides the library
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Library_Name       : Name_Id        := No_Name;
+      Library_Name : Name_Id := No_Name;
       --  If a library project, name of the library
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Library_Kind       : Lib_Kind       := Static;
+      Library_Kind : Lib_Kind := Static;
       --  If a library project, kind of library
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Lib_Internal_Name  : Name_Id        := No_Name;
+      Lib_Internal_Name : Name_Id := No_Name;
       --  If a library project, internal name store inside the library
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Lib_Elaboration    : Boolean        := False;
+      Lib_Elaboration : Boolean := False;
       --  If a library project, indicate if <lib>init and <lib>final
       --  procedures need to be defined.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Sources_Present    : Boolean        := True;
+      Sources_Present : Boolean := True;
       --  A flag that indicates if there are sources in this project file.
       --  There are no sources if 1) Source_Dirs is specified as an
       --  empty list, 2) Source_Files is specified as an empty list, or
       --  3) the current language is not in the list of the specified
       --  Languages.
 
-      Sources            : String_List_Id := Nil_String;
+      Sources : String_List_Id := Nil_String;
       --  The list of all the source file names.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Source_Dirs        : String_List_Id := Nil_String;
+      Source_Dirs : String_List_Id := Nil_String;
       --  The list of all the source directories.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Object_Directory   : Name_Id        := No_Name;
+      Object_Directory : Name_Id := No_Name;
       --  The object directory of this project file.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Modifies           : Project_Id     := No_Project;
+      Modifies : Project_Id := No_Project;
       --  The reference of the project file, if any, that this
       --  project file modifies.
       --  Set by Prj.Proc.Process.
 
-      Modified_By        : Project_Id     := No_Project;
+      Modified_By : Project_Id := No_Project;
       --  The reference of the project file, if any, that
       --  modifies this project file.
       --  Set by Prj.Proc.Process.
 
-      Naming             : Naming_Data    := Standard_Naming_Data;
+      Naming : Naming_Data := Standard_Naming_Data;
       --  The naming scheme of this project file.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
-      Decl               : Declarations   := No_Declarations;
+      Decl : Declarations := No_Declarations;
       --  The declarations (variables, attributes and packages)
       --  of this project file.
       --  Set by Prj.Proc.Process.
 
-      Imported_Projects  : Project_List   := Empty_Project_List;
+      Imported_Projects : Project_List := Empty_Project_List;
       --  The list of all directly imported projects, if any.
       --  Set by Prj.Proc.Process.
 
-      Include_Path       : String_Access  := null;
+      Include_Path : String_Access := null;
       --  The cached value of ADA_INCLUDE_PATH for this project file.
       --  Set by gnatmake (prj.Env.Set_Ada_Paths).
 
-      Objects_Path       : String_Access  := null;
+      Objects_Path : String_Access := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file.
       --  Set by gnatmake (prj.Env.Set_Ada_Paths).
 
-      Config_File_Name   : Name_Id        := No_Name;
+      Config_File_Name : Name_Id := No_Name;
       --  The name of the configuration pragmas file, if any.
       --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
 
-      Config_File_Temp   : Boolean        := False;
+      Config_File_Temp : Boolean := False;
       --  An indication that the configuration pragmas file is
       --  a temporary file that must be deleted at the end.
       --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
 
-      Config_Checked     : Boolean        := False;
+      Config_Checked : Boolean := False;
       --  A flag to avoid checking repetitively the configuration pragmas file.
       --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
 
@@ -409,16 +406,19 @@ package Prj is
       --  for language independent features: Object_Directory,
       --  Source_Directories, Library, non empty Naming Suffixs.
 
-      Checked            : Boolean        := False;
+      Checked : Boolean := False;
       --  A flag to avoid checking repetitively the naming scheme of
       --  this project file.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
+      Seen  : Boolean := False;
+      Flag1 : Boolean := False;
+      Flag2 : Boolean := False;
       --  Various flags that are used in an ad hoc manner
-
-      Seen               : Boolean        := False;
-      Flag1              : Boolean        := False;
-      Flag2              : Boolean        := False;
+      --  That's really not a good enough comment ??? we need to know what
+      --  these flags are used for, and give them proper names. If Flag1
+      --  and Flag2 have multiple uses, then either we use multiple fields
+      --  or a renaming scheme.
 
    end record;
    --  Project File representation.

@@ -1,3 +1,14 @@
+2001-12-05  Robert Dewar <dewar@gnat.com>
+
+	* prj-dect.ads: Add ??? comment
+	Add 2001 to copyright notice (was not done in after all)
+	
+	* prj-part.adb: Minor reformatting. Reword one awkward error message.
+	
+	* prj.ads: Minor reformatting throughout, and add some ??? comments
+	
+	* snames.ads: Minor reformatting
+
 2001-12-05  Geert Bosch <bosch@gnat.com>
 
 	* snames.adb: Autoupdate

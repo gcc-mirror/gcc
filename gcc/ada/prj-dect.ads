@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---             Copyright (C) 2000 Free Software Foundation, Inc.            --
+--          Copyright (C) 2000-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,8 +25,8 @@
 -- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
 --                                                                          --
 ------------------------------------------------------------------------------
---
---  Parse a list of declarative items in a project file.
+
+--  Parse a list of declarative items in a project file
 
 with Prj.Tree;
 
@@ -36,6 +36,6 @@ private package Prj.Dect is
      (Declarations    : out Prj.Tree.Project_Node_Id;
       Current_Project : Prj.Tree.Project_Node_Id;
       Extends         : Prj.Tree.Project_Node_Id);
-   --  Parse project declarative items.
+   --  Parse project declarative items. What are parameters ???
 
 end Prj.Dect;

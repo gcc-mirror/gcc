@@ -136,7 +136,8 @@ package body Prj.Part is
          end if;
       end loop;
 
-      --  There is no directory separator in name. Return "./" or ".\".
+      --  There is no directory separator in name. Return "./" or ".\"
+
       Name_Len := 2;
       Name_Buffer (1) := '.';
       Name_Buffer (2) := Dir_Sep;
@@ -227,15 +228,14 @@ package body Prj.Part is
       Context_Clause := Empty_Node;
       With_Loop :
 
-      --  If Token is not "with", there is no context clause,
+      --  If Token is not WITH, there is no context clause,
       --  or we have exhausted the with clauses.
 
       while Token = Tok_With loop
          Comma_Loop :
          loop
-            --  Scan past "with" or ","
+            Scan; -- scan past WITH or ","
 
-            Scan;
             Expect (Tok_String_Literal, "literal string");
 
             if Token /= Tok_String_Literal then
@@ -312,9 +312,8 @@ package body Prj.Part is
             if Token = Tok_Semicolon then
 
                --  End of (possibly multiple) with clause;
-               --  Scan past the semicolon.
 
-               Scan;
+               Scan; -- scan past the semicolon.
                exit Comma_Loop;
 
             elsif Token /= Tok_Comma then
@@ -396,7 +395,7 @@ package body Prj.Part is
 
                if A_Project_Name_And_Node.Modified then
                   Error_Msg
-                    ("cannot modify several times the same project file",
+                    ("cannot modify the same project file several times",
                      Token_Ptr);
 
                else
@@ -472,11 +471,11 @@ package body Prj.Part is
 
       Expect (Tok_Project, "project");
 
-      --  Scan past "project"
+      --  Mark location of PROJECT token if present
 
       if Token = Tok_Project then
          Set_Location_Of (Project, Token_Ptr);
-         Scan;
+         Scan; -- scan past project
       end if;
 
       Expect (Tok_Identifier, "identifier");
@@ -529,20 +528,14 @@ package body Prj.Part is
             end if;
          end;
 
-         --  Scan past the project name
-
-         Scan;
-
+         Scan; -- scan past the project name
       end if;
 
       if Token = Tok_Extends then
 
          --  We are extending another project
 
-         --  Scan past "extends"
-
-         Scan;
-
+         Scan; -- scan past EXTENDS
          Expect (Tok_String_Literal, "literal string");
 
          if Token = Tok_String_Literal then
@@ -578,9 +571,7 @@ package body Prj.Part is
                end if;
             end;
 
-            --  Scan past the modified project path
-
-            Scan;
+            Scan; -- scan past the modified project path
          end if;
       end if;
 
@@ -590,7 +581,7 @@ package body Prj.Part is
          Project_Declaration : Project_Node_Id := Empty_Node;
 
       begin
-         --  No need to Scan past "is", Prj.Dect.Parse will do it.
+         --  No need to Scan past IS, Prj.Dect.Parse will do it.
 
          Prj.Dect.Parse
            (Declarations    => Project_Declaration,
@@ -601,7 +592,7 @@ package body Prj.Part is
 
       Expect (Tok_End, "end");
 
-      --  Scan past "end"
+      --  Skip END if present
 
       if Token = Tok_End then
          Scan;
