@@ -4125,7 +4125,12 @@ store_expr (exp, target, want_value)
        || (temp != target && (side_effects_p (temp)
 			      || side_effects_p (target))))
       && TREE_CODE (exp) != ERROR_MARK
-      && ! dont_store_target)
+      && ! dont_store_target
+	 /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
+	    but TARGET is not valid memory reference, TEMP will differ
+	    from TARGET although it is really the same location.  */
+      && (TREE_CODE_CLASS (TREE_CODE (exp)) != 'd'
+	  || target != DECL_RTL_IF_SET (exp)))
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
@@ -5598,7 +5603,7 @@ safe_from_p (x, exp, top_p)
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
     case 'd':
-      exp_rtl = DECL_RTL_SET_P (exp) ? DECL_RTL (exp) : NULL_RTX;
+      exp_rtl = DECL_RTL_IF_SET (exp);
       break;
 
     case 'c':
