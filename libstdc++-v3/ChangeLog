@@ -1,6 +1,6 @@
 2001-06-19  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* mknumeric_limits: Add static defintions, format.
+	* mknumeric_limits: Add static definitions, format.
 	* testsuite/18_support/numeric_limits.cc (test02): Add test.
 
 	* include/c_std/bits/std_cwchar.h: Include ctime.
