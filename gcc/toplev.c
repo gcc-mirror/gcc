@@ -960,10 +960,10 @@ const char *user_label_prefix;
 
 static const param_info lang_independent_params[] = {
 #define DEFPARAM(ENUM, OPTION, HELP, DEFAULT) \
-  { OPTION, DEFAULT },
+  { OPTION, DEFAULT, HELP },
 #include "params.def"
 #undef DEFPARAM
-  { NULL, 0 }
+  { NULL, 0, NULL }
 };
 
 /* A default for same.  */
@@ -3813,6 +3813,17 @@ display_help ()
 
   printf (_("  -O[number]              Set optimisation level to [number]\n"));
   printf (_("  -Os                     Optimise for space rather than speed\n"));
+  for (i = sizeof (compiler_params); i--;)
+    {
+      const char *description = compiler_params[i].help;
+      const int length = 21-strlen(compiler_params[i].option);
+
+      if (description != NULL && * description != 0)
+	printf ("  --param %s=<value>%.*s%s\n",
+		compiler_params[i].option,
+		length > 0 ? length : 1, "                     ",
+		description);
+    }
   printf (_("  -pedantic               Issue warnings needed by strict compliance to ISO C\n"));
   printf (_("  -pedantic-errors        Like -pedantic except that errors are produced\n"));
   printf (_("  -w                      Suppress warnings\n"));
@@ -4364,7 +4375,7 @@ independent_decode_option (argc, argv)
         return 1;
       }
 
-      /* Get the '<name>=<value' parameter.  */
+      /* Get the '<name>=<value>' parameter.  */
       arg = argv[1];
       /* Look for the `='.  */
       equal = strchr (arg, '=');

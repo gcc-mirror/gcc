@@ -1,3 +1,19 @@
+2001-05-01  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* ChangeLog (2001-02-21): Remove erroneous entry.
+	* gcc.c (cc1_options): Add "-param".
+        (DEFAULT_WORD_SWITCH_TAKES_ARG): Likewise.
+        (option_map): Likewise.
+	(display_help): Add "--param" to 'other' options.
+	* invoke.texi (Optimize Options): Add documentation for `--param
+	max-delay-slot-insn-search' and `--param
+	max-delay-slot-live-search' and reorder --param section.
+	* params.def: Modify initial comment.
+	* params.h (param_info): Add `help' member.
+	* toplev.c (lang_independent_params): Include `help' description.
+	(display_help): Print --param parameters.
+	(independent_decode_option): Fix typographical error.
+
 2001-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-tree.texi (USING_STMT): Document.
@@ -1652,14 +1668,6 @@ Fri Mar  2 12:18:13 2001  Christopher Faylor <cgf@cygnus.com>
 	(fill_simple_delay_slots): Add a comment explaining a variable.
 	Move conditional out of loop, simplifying code.
 	(fill_eager_delay_slots): Fix typographical error in comment.
-
-2001-02-21  Jeffrey Oldham  <oldham@codesourcery.com>
-
-	* gcc.c (cc1_options): Add "-param".
-	(DEFAULT_WORD_SWITCH_TAKES_ARG): Likewise.
-	(option_map): Likewise.
-	* toplev.c (display_help): Add entry for "--param".
-	(independent_decode_option): Fix typographical error.
 
 2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
 

@@ -48,6 +48,8 @@ typedef struct param_info
   const char *option;
   /* The associated value.  */
   int value;
+  /* A short description of the option.  */
+  const char *help;
 } param_info;
 
 /* An array containing the compiler parameters and their current
