@@ -93,33 +93,33 @@ static bool is_homogeneous_fp_aggregate(ffi_type * type, int n,
       switch((*ptr) -> type) {
 	case FFI_TYPE_FLOAT:
 	  if (type_set && element != FFI_TYPE_FLOAT) return 0;
-	  if (--n < 0) return FALSE;
+	  if (--n < 0) return false;
 	  type_set = 1;
 	  element = FFI_TYPE_FLOAT;
 	  break;
 	case FFI_TYPE_DOUBLE:
 	  if (type_set && element != FFI_TYPE_DOUBLE) return 0;
-	  if (--n < 0) return FALSE;
+	  if (--n < 0) return false;
 	  type_set = 1;
 	  element = FFI_TYPE_DOUBLE;
 	  break;
 	case FFI_TYPE_STRUCT:
 	  if (!is_homogeneous_fp_aggregate(type, n, &struct_element))
-	      return FALSE;
-	  if (type_set && struct_element != element) return FALSE;
+	      return false;
+	  if (type_set && struct_element != element) return false;
 	  n -= (type -> size)/float_type_size(element);
 	  element = struct_element;
-	  if (n < 0) return FALSE;
+	  if (n < 0) return false;
 	  break;
 	/* case FFI_TYPE_LONGDOUBLE:
 	  Not yet implemented.	*/
 	default:
-	  return FALSE;
+	  return false;
       }
       ptr++;
     }
   *element_type = element;
-  return TRUE;
+  return true;
    
 } 
 
@@ -252,7 +252,7 @@ ffi_status
 ffi_prep_cif_machdep(ffi_cif *cif)
 {
   long i, avn;
-  bool is_simple = TRUE;
+  bool is_simple = true;
   long simple_flag = FFI_SIMPLE_V;
   /* Adjust cif->bytes to include space for the 2 scratch words,
      r8 register contents, spare word,
@@ -282,11 +282,11 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 	  simple_flag = FFI_ADD_LONG_ARG(simple_flag);
 	  break;
 	default:
-	  is_simple = FALSE;
+	  is_simple = false;
       }
     }
   } else {
-    is_simple = FALSE;
+    is_simple = false;
   }
 
   /* Set the return type flag */
@@ -301,7 +301,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
         size_t sz = cif -> rtype -> size;
   	unsigned short element_type;
 
-	is_simple = FALSE;
+	is_simple = false;
   	if (is_homogeneous_fp_aggregate(cif -> rtype, 8, &element_type)) {
 	  int nelements = sz/float_type_size(element_type);
 	  if (nelements <= 1) {
@@ -342,12 +342,12 @@ ffi_prep_cif_machdep(ffi_cif *cif)
       break;
 
     case FFI_TYPE_FLOAT:
-      is_simple = FALSE;
+      is_simple = false;
       cif->flags = FFI_TYPE_FLOAT;
       break;
 
     case FFI_TYPE_DOUBLE:
-      is_simple = FALSE;
+      is_simple = false;
       cif->flags = FFI_TYPE_DOUBLE;
       break;
 
