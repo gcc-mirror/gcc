@@ -4279,6 +4279,128 @@ rtx_needs_barrier (x, flags, pred)
   return need_barrier;
 }
 
+/* This structure is used to track some details about the previous insns
+   groups so we can determine if it may be necessary to insert NOPs to
+   workaround hardware errata.  */
+static struct group
+{
+  HARD_REG_SET p_reg_set;
+  HARD_REG_SET gr_reg_conditionally_set;
+} last_group[3];
+
+/* Index into the last_group array.  */
+static int group_idx;
+
+static void emit_group_barrier_after PARAMS ((rtx));
+static int errata_find_address_regs PARAMS ((rtx *, void *));
+static void errata_emit_nops PARAMS ((rtx));
+
+/* Create a new group barrier, emit it after AFTER, and advance group_idx.  */
+static void
+emit_group_barrier_after (after)
+     rtx after;
+{
+  emit_insn_after (gen_insn_group_barrier (), after);
+  group_idx = (group_idx + 1) % 3;
+  memset (last_group + group_idx, 0, sizeof last_group[group_idx]);
+}
+
+/* Called through for_each_rtx; determines if a hard register that was
+   conditionally set in the previous group is used as an address register.
+   It ensures that for_each_rtx returns 1 in that case.  */
+static int
+errata_find_address_regs (xp, data)
+     rtx *xp;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *xp;
+  if (GET_CODE (x) != MEM)
+    return 0;
+  x = XEXP (x, 0);
+  if (GET_CODE (x) == POST_MODIFY)
+    x = XEXP (x, 0);
+  if (GET_CODE (x) == REG)
+    {
+      struct group *prev_group = last_group + (group_idx + 2) % 3;
+      if (TEST_HARD_REG_BIT (prev_group->gr_reg_conditionally_set,
+			     REGNO (x)))
+	return 1;
+      return -1;
+    }
+  return 0;
+}
+
+/* Called for each insn; this function keeps track of the state in
+   last_group and emits additional NOPs if necessary to work around
+   an Itanium A/B step erratum.  */
+static void
+errata_emit_nops (insn)
+     rtx insn;
+{
+  struct group *this_group = last_group + group_idx;
+  struct group *prev_group = last_group + (group_idx + 2) % 3;
+  rtx pat = PATTERN (insn);
+  rtx cond = GET_CODE (pat) == COND_EXEC ? COND_EXEC_TEST (pat) : 0;
+  rtx real_pat = cond ? COND_EXEC_CODE (pat) : pat;
+  enum attr_type type;
+  rtx set = real_pat;
+
+  if (GET_CODE (real_pat) == USE
+      || GET_CODE (real_pat) == CLOBBER
+      || GET_CODE (real_pat) == ASM_INPUT
+      || GET_CODE (real_pat) == ADDR_VEC
+      || GET_CODE (real_pat) == ADDR_DIFF_VEC
+      || asm_noperands (insn) >= 0)
+    return;
+
+  /* single_set doesn't work for COND_EXEC insns, so we have to duplicate
+     parts of it.  */
+
+  if (GET_CODE (set) == PARALLEL)
+    {
+      int i;
+      set = XVECEXP (real_pat, 0, 0);
+      for (i = 1; i < XVECLEN (real_pat, 0); i++)
+	if (GET_CODE (XVECEXP (real_pat, 0, i)) != USE
+	    && GET_CODE (XVECEXP (real_pat, 0, i)) != CLOBBER)
+	  {
+	    set = 0;
+	    break;
+	  }
+    }
+
+  if (set && GET_CODE (set) != SET)
+    set = 0;
+
+  type  = get_attr_type (insn);
+
+  if (type == TYPE_F
+      && set && REG_P (SET_DEST (set)) && PR_REGNO_P (REGNO (SET_DEST (set))))
+    SET_HARD_REG_BIT (this_group->p_reg_set, REGNO (SET_DEST (set)));
+
+  if ((type == TYPE_M || type == TYPE_A) && cond && set
+      && REG_P (SET_DEST (set))
+      && GET_CODE (SET_SRC (set)) != PLUS
+      && GET_CODE (SET_SRC (set)) != MINUS
+      && (GET_CODE (SET_SRC (set)) != MEM
+	  || GET_CODE (XEXP (SET_SRC (set), 0)) != POST_MODIFY)
+      && GENERAL_REGNO_P (REGNO (SET_DEST (set))))
+    {
+      if (GET_RTX_CLASS (GET_CODE (cond)) != '<'
+	  || ! REG_P (XEXP (cond, 0)))
+	abort ();
+
+      if (TEST_HARD_REG_BIT (prev_group->p_reg_set, REGNO (XEXP (cond, 0))))
+	SET_HARD_REG_BIT (this_group->gr_reg_conditionally_set, REGNO (SET_DEST (set)));
+    }
+  if (for_each_rtx (&real_pat, errata_find_address_regs, NULL))
+    {
+      emit_insn_before (gen_insn_group_barrier (), insn);
+      emit_insn_before (gen_nop (), insn);
+      emit_insn_before (gen_insn_group_barrier (), insn);
+    }
+}
+
 /* INSNS is an chain of instructions.  Scan the chain, and insert stop bits
    as necessary to eliminate dependendencies.  */
 
@@ -4290,11 +4412,17 @@ emit_insn_group_barriers (insns)
 
   memset (rws_sum, 0, sizeof (rws_sum));
 
+  group_idx = 0;
+  memset (last_group, 0, sizeof last_group);
+
   prev_insn = 0;
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     {
       int need_barrier = 0;
       struct reg_flags flags;
+
+      if ((TARGET_B_STEP || TARGET_A_STEP) && INSN_P (insn))
+	errata_emit_nops (insn);
 
       memset (&flags, 0, sizeof (flags));
       switch (GET_CODE (insn))
@@ -4310,7 +4438,7 @@ emit_insn_group_barriers (insns)
 	      need_barrier = rws_access_regno (AR_LC_REGNUM, flags, 0);
 	      if (need_barrier)
 		{
-		  emit_insn_after (gen_insn_group_barrier (), insn);
+		  emit_group_barrier_after (insn);
 		  memset (rws_sum, 0, sizeof(rws_sum));
 		  prev_insn = NULL_RTX;
 		}
@@ -4328,7 +4456,7 @@ emit_insn_group_barriers (insns)
 	      /* PREV_INSN null can happen if the very first insn is a
 		 volatile asm.  */
 	      if (prev_insn)
-		emit_insn_after (gen_insn_group_barrier (), prev_insn);
+		emit_group_barrier_after (prev_insn);
 	      memcpy (rws_sum, rws_insn, sizeof (rws_sum));
 	    }
 
@@ -4354,7 +4482,7 @@ emit_insn_group_barriers (insns)
 	    }
 	  if (need_barrier)
 	    {
-	      emit_insn_after (gen_insn_group_barrier (), insn);
+	      emit_group_barrier_after (insn);
 	      memset (rws_sum, 0, sizeof (rws_sum));
 	      prev_insn = NULL_RTX;
 	    }
@@ -4412,7 +4540,7 @@ emit_insn_group_barriers (insns)
 		  /* PREV_INSN null can happen if the very first insn is a
 		     volatile asm.  */
 		  if (prev_insn)
-		    emit_insn_after (gen_insn_group_barrier (), prev_insn);
+		    emit_group_barrier_after (prev_insn);
 		  memcpy (rws_sum, rws_insn, sizeof (rws_sum));
 		}
 	      prev_insn = insn;
