@@ -4474,8 +4474,10 @@ Tuning this may improve compilation speed; it has no effect on code
 generation.
 
 The default is 30% + 70% * (RAM/1GB) with an upper bound of 100% when
-RAM >= 1GB.  If GCC is not able to calculate RAM on a particular
-platform, the lower bound of 30% is used.  Setting this parameter and
+RAM >= 1GB.  If @code{getrlimit} is available, the notion of "RAM" is
+the smallest of actual RAM, RLIMIT_RSS, RLIMIT_DATA and RLIMIT_AS.  If
+GCC is not able to calculate RAM on a particular platform, the lower
+bound of 30% is used.  Setting this parameter and
 @option{ggc-min-heapsize} to zero causes a full collection to occur at
 every opportunity.  This is extremely slow, but can be useful for
 debugging.
@@ -4489,7 +4491,9 @@ tuning this may improve compilation speed, and has no effect on code
 generation.
 
 The default is RAM/8, with a lower bound of 4096 (four megabytes) and an
-upper bound of 131072 (128 megabytes).  If GCC is not able to calculate
+upper bound of 131072 (128 megabytes).  If @code{getrlimit} is
+available, the notion of "RAM" is the smallest of actual RAM,
+RLIMIT_RSS, RLIMIT_DATA and RLIMIT_AS.  If GCC is not able to calculate
 RAM on a particular platform, the lower bound is used.  Setting this
 parameter very large effectively disables garbage collection.  Setting
 this parameter and @option{ggc-min-expand} to zero causes a full

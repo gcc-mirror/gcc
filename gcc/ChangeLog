@@ -1,3 +1,12 @@
+2003-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/invoke.texi (ggc-min-expand, ggc-min-heapsize): Document
+	new default behavior.
+	* ggc-common.c: Include sys/resource.h.
+	(ggc_rlimit_bound): New function.
+	(ggc_min_expand_heuristic, ggc_min_heapsize_heuristic): Update
+	defaults to account for rlimits.
+
 2003-02-22  Richard Henderson  <rth@redhat.com>
 
 	* i386.c, i386.h (TUNEMASK): Rename from CPUMASK.
