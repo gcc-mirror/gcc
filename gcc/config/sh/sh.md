@@ -8336,37 +8336,53 @@
   "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
   "
 {
-  rtx addr_target, orig_address, shift_reg;
-  HOST_WIDE_INT size;
+  rtx addr_target, orig_address, shift_reg, qi_val;
+  HOST_WIDE_INT bitsize, size, v;
+  rtx x = operands[3];
 
   /* ??? expmed doesn't care for non-register predicates.  */
   if (! memory_operand (operands[0], VOIDmode)
       || ! immediate_operand (operands[1], VOIDmode)
       || ! immediate_operand (operands[2], VOIDmode)
-      || ! general_operand (operands[3], VOIDmode))
+      || ! general_operand (x, VOIDmode))
     FAIL;
   /* If this isn't a 16 / 24 / 32 bit field, or if
      it doesn't start on a byte boundary, then fail.  */
-  size = INTVAL (operands[1]);
-  if (size < 16 || size > 32 || size % 8 != 0
+  bitsize = INTVAL (operands[1]);
+  if (bitsize < 16 || bitsize > 32 || bitsize % 8 != 0
       || (INTVAL (operands[2]) % 8) != 0)
     FAIL;
 
-  size /= 8;
+  size = bitsize / 8;
   orig_address = XEXP (operands[0], 0);
   shift_reg = gen_reg_rtx (SImode);
-  emit_insn (gen_movsi (shift_reg, operands[3]));
+  if (GET_CODE (x) == CONST_INT)
+    {
+      v = INTVAL (x);
+      qi_val = force_reg (QImode, GEN_INT (trunc_int_for_mode (v, QImode)));
+    }
+  else
+    {
+      emit_insn (gen_movsi (shift_reg, operands[3]));
+      qi_val = gen_rtx_SUBREG (QImode, shift_reg, 3);
+    }
   addr_target = copy_addr_to_reg (plus_constant (orig_address, size - 1));
 
   operands[0] = replace_equiv_address (operands[0], addr_target);
-  emit_insn (gen_movqi (operands[0], gen_rtx_SUBREG (QImode, shift_reg, 0)));
+  emit_insn (gen_movqi (operands[0], qi_val));
 
   while (size -= 1)
     {
-      emit_insn (gen_lshrsi3_k (shift_reg, shift_reg, GEN_INT (8)));
+      if (GET_CODE (x) == CONST_INT)
+	qi_val
+	  = force_reg (QImode, GEN_INT (trunc_int_for_mode (v >>= 8, QImode)));
+      else
+	{
+	  emit_insn (gen_lshrsi3_k (shift_reg, shift_reg, GEN_INT (8)));
+	  qi_val = gen_rtx_SUBREG (QImode, shift_reg, 3);
+	}
       emit_insn (gen_addsi3 (addr_target, addr_target, GEN_INT (-1)));
-      emit_insn (gen_movqi (operands[0],
-			    gen_rtx_SUBREG (QImode, shift_reg, 0)));
+      emit_insn (gen_movqi (operands[0], qi_val));
     }
 
   DONE;

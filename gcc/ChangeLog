@@ -1,3 +1,8 @@
+Thu Feb 21 21:17:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (insv): Provide byte offsets for gen_rtx_SUBREG.
+	If input is constant, do shifts at compile time.
+
 2002-02-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/extend.texi: Fix some more overfull hboxes.
