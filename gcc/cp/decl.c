@@ -5418,6 +5418,11 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 {
   tree fullname;
 
+  if (name == error_mark_node
+      || context == NULL_TREE
+      || context == error_mark_node)
+    return error_mark_node;
+
   if (TYPE_P (name))
     {
       if (!(TYPE_LANG_SPECIFIC (name)

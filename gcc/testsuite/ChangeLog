@@ -1,3 +1,9 @@
+2003-05-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9364, c++/10553, c++/10586
+	* g++.dg/parse/typename4.C: New test.
+	* g++.dg/parse/typename5.C: Likewise.
+
 2003-05-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/compile/20030503-1.c: New test.
