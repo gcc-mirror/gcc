@@ -1,5 +1,13 @@
 2001-08-19  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.h (STRIP_NAME_ENCODING): Handle @ and *
+	in the same string.
+	(ASM_NAME_TO_STRING): Remove.
+	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Handle @ and *
+	in the same string.  Remove support for expressions.
+
+2001-08-19  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.md (tablejump): Make an expander; handle
 	pic relative addressing here.
 	(tablejump_1): Rename from tablejump_pic.

@@ -54,28 +54,18 @@ do {									\
    we have to scan it for a non-label character and insert the # there.  */
 
 #undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(STREAM, NAME) 				\
-  do									\
-    {									\
-      const char *real_name;						\
-      const char *name_end;						\
-									\
-      STRIP_NAME_ENCODING (real_name, NAME);				\
-      name_end = strchr (real_name, '+');				\
-									\
-      fputs (user_label_prefix, STREAM);				\
-      if (name_end)							\
-	fwrite (real_name, name_end - real_name, 1, STREAM);		\
-      else								\
-	fputs (real_name, STREAM);					\
-									\
-      if (ia64_asm_output_label)					\
-	fputc ('#', STREAM);						\
-									\
-      if (name_end)							\
-	fputs (name_end, STREAM);					\
-    }									\
-  while (0)
+#define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
+do {						\
+  const char *name_ = NAME;			\
+  if (*name_ == SDATA_NAME_FLAG_CHAR)		\
+    name_++;					\
+  if (*name_ == '*')				\
+    name_++;					\
+  else						\
+    fputs (user_label_prefix, STREAM);		\
+  fputs (name_, STREAM);			\
+  fputc ('#', STREAM);				\
+} while (0)
 
 /* Intel assembler requires both flags and type if declaring a non-predefined
    section.  */
