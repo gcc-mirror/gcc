@@ -787,12 +787,12 @@ num_trim (num, precision)
     {
       precision -= PART_PRECISION;
       if (precision < PART_PRECISION)
-	num.high &= (1 << precision) - 1;
+	num.high &= (1UL << precision) - 1;
     }
   else
     {
       if (precision < PART_PRECISION)
-	num.low &= (1 << precision) - 1;
+	num.low &= (1UL << precision) - 1;
       num.high = 0;
     }
 
@@ -808,10 +808,10 @@ num_positive (num, precision)
   if (precision > PART_PRECISION)
     {
       precision -= PART_PRECISION;
-      return (num.high & (1 << (precision - 1))) == 0;
+      return (num.high & (1UL << (precision - 1))) == 0;
     }
 
-  return (num.low & (1 << (precision - 1))) == 0;
+  return (num.low & (1UL << (precision - 1))) == 0;
 }
 
 /* Returns the negative of NUM.  */
@@ -1245,7 +1245,7 @@ num_div_op (pfile, lhs, rhs, op)
   if (rhs.high)
     {
       i = precision - 1;
-      mask = 1 << (i - PART_PRECISION);
+      mask = 1UL << (i - PART_PRECISION);
       for (; ; i--, mask >>= 1)
 	if (rhs.high & mask)
 	  break;
@@ -1256,7 +1256,7 @@ num_div_op (pfile, lhs, rhs, op)
 	i = precision - PART_PRECISION - 1;
       else
 	i = precision - 1;
-      mask = 1 << i;
+      mask = 1UL << i;
       for (; ; i--, mask >>= 1)
 	if (rhs.low & mask)
 	  break;
@@ -1284,9 +1284,9 @@ num_div_op (pfile, lhs, rhs, op)
 	{
 	  lhs = num_binary_op (pfile, lhs, sub, CPP_MINUS);
 	  if (i >= PART_PRECISION)
-	    result.high |= 1 << (i - PART_PRECISION);
+	    result.high |= 1UL << (i - PART_PRECISION);
 	  else
-	    result.low |= 1 << i;
+	    result.low |= 1UL << i;
 	}
       if (i-- == 0)
 	break;
