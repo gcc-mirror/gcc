@@ -4430,8 +4430,9 @@ the environment variable @env{GCC_EXEC_PREFIX}.  @xref{Environment
 Variables}.
 
 As a special kludge, if the path provided by @option{-B} is
-@file{[foo/]stage@var{N}/} then it will be replaced by
-@file{[foo/]include}.  This is to help with boot-strapping the compiler.
+@file{[dir/]stage@var{N}/}, where @var{N} is a number in the range 0 to
+9, then it will be replaced by @file{[dir/]include}.  This is to help
+with boot-strapping the compiler. 
 
 @item -specs=@var{file}
 @opindex specs

@@ -1,3 +1,8 @@
+2001-07-03  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* doc/invoke.texi (Directory Options): Specifiy range for <N> in
+	-B option.  Use 'dir' not 'foo' as example directory name.
+
 2001-07-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
