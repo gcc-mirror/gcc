@@ -1,5 +1,9 @@
 2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md ("addti3", "subti3"): New insns and splitters.
+
+2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* expmed.c (choose_mult_variant): Pass MULT_COST as argument instead
 	of using register multiplication cost.
 	(expand_mult): Adapt choose_mult_variant call.
