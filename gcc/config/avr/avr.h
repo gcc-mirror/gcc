@@ -1188,9 +1188,9 @@ extern int avr_reg_order[];
    `parallel' RTX, if the return value is in multiple places.  See
    `FUNCTION_ARG' for an explanation of the `parallel' form.
 
-   If `PROMOTE_FUNCTION_RETURN' is defined, you must apply the same
-   promotion rules specified in `PROMOTE_MODE' if VALTYPE is a scalar
-   type.
+   If `TARGET_PROMOTE_FUNCTION_RETURN' is defined to return true, you
+   must apply the same promotion rules specified in `PROMOTE_MODE' if
+   VALTYPE is a scalar type.
 
    If the precise function being called is known, FUNC is a tree node
    (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This
@@ -1233,26 +1233,6 @@ extern int avr_reg_order[];
    called function use different registers for the return value, this
    macro should recognize only the caller's register numbers.  */
 
-#define RETURN_IN_MEMORY(TYPE) ((TYPE_MODE (TYPE) == BLKmode)	\
-				? int_size_in_bytes (TYPE) > 8	\
-				: 0)
-/* A C expression which can inhibit the returning of certain function
-   values in registers, based on the type of value.  A nonzero value
-   says to return the function value in memory, just as large
-   structures are always returned.  Here TYPE will be a C expression
-   of type `tree', representing the data type of the value.
-
-   Note that values of mode `BLKmode' must be explicitly handled by
-   this macro.  Also, the option `-fpcc-struct-return' takes effect
-   regardless of this macro.  On most systems, it is possible to
-   leave the macro undefined; this causes a default definition to be
-   used, whose value is the constant 1 for `BLKmode' values, and 0
-   otherwise.
-
-   Do not use this macro to indicate that structures and unions
-   should always be returned in memory.  You should instead use
-   `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 /* Define this macro to be 1 if all structure and union return values
    must be in memory.  Since this results in slower code, this should
@@ -1263,37 +1243,11 @@ extern int avr_reg_order[];
 
    If not defined, this defaults to the value 1.  */
 
-#define STRUCT_VALUE 0
-/* If the structure value address is not passed in a register, define
-   `STRUCT_VALUE' as an expression returning an RTX for the place
-   where the address is passed.  If it returns 0, the address is
-   passed as an "invisible" first argument.  */
-
-#define STRUCT_VALUE_INCOMING 0
-/* If the incoming location is not a register, then you should define
-   `STRUCT_VALUE_INCOMING' as an expression for an RTX for where the
-   called function should find the value.  If it should find the
-   value on the stack, define this to create a `mem' which refers to
-   the frame pointer.  A definition of 0 means that the address is
-   passed as an "invisible" first argument.  */
-
 #define EPILOGUE_USES(REGNO) 0
 /* Define this macro as a C expression that is nonzero for registers
    are used by the epilogue or the `return' pattern.  The stack and
    frame pointer registers are already be assumed to be used as
    needed.  */
-
-#define STRICT_ARGUMENT_NAMING 1
-/* Define this macro if the location where a function argument is
-   passed depends on whether or not it is a named argument.
-
-   This macro controls how the NAMED argument to `FUNCTION_ARG' is
-   set for varargs and stdarg functions.  With this macro defined,
-   the NAMED argument is always true for named arguments, and false
-   for unnamed arguments.  If this is not defined, but
-   `SETUP_INCOMING_VARARGS' is defined, then all arguments are
-   treated as named.  Otherwise, all named arguments except the last
-   are treated as named.  */
 
 
 #define HAVE_POST_INCREMENT 1

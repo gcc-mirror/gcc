@@ -77,6 +77,7 @@ static void avr_asm_out_dtor (rtx, int);
 static int default_rtx_costs (rtx, enum rtx_code, enum rtx_code);
 static bool avr_rtx_costs (rtx, int, int, int *);
 static int avr_address_cost (rtx);
+static bool avr_return_in_memory (tree, tree);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -241,6 +242,14 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ADDRESS_COST avr_address_cost
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY avr_return_in_memory
+
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5364,6 +5373,14 @@ avr_asm_out_dtor (rtx symbol, int priority)
 {
   fputs ("\t.global __do_global_dtors\n", asm_out_file);
   default_dtor_section_asm_out_destructor (symbol, priority);
+}
+
+static bool
+avr_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return ((TYPE_MODE (type) == BLKmode)
+	  ? int_size_in_bytes (type) > 8
+	  : 0);
 }
 
 #include "gt-avr.h"

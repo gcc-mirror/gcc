@@ -1,3 +1,14 @@
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/avr/avr.c (TARGET_STRUCT_VALUE_RTX): New.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
+	(avr_return_in_memory): Remove.
+	* config/avr/avr.h (RETURN_IN_MEMORY): Remove.
+	(STRUCT_VALUE): Likewise.
+	(STRUCT_VALUE_INCOMING): Likewise.
+	(STRICT_ARGUMENT_NAMING): Likewise.
+
 2004-01-25  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (recog_for_combine): Avoid allocating unnecesary RTX.
