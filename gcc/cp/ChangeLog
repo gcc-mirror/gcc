@@ -1,5 +1,8 @@
 2002-02-28  Jason Merrill  <jason@redhat.com>
 
+	* search.c (lookup_base_r): Don't clear is_non_public just because
+	we found a friendly scope.
+
 	* decl.c (finish_function): Only warn about missing return
 	statement with -Wreturn-type.
 
@@ -1182,7 +1185,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* search.c (get_vbase_1): Remove.
 	(get_vbase): Remove.
 	(convert_pointer_to_vbase): Remove.
-	(lookup_base_recursive): New function.
+	(lookup_base_r): New function.
 	(lookup_base): New function.
 	* typeck.c (require_complete_type): Use lookup_base &
 	build_base_path instead of convert_pointer_to.
