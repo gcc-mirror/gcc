@@ -1,3 +1,8 @@
+2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* configure.in: Check for minimum GTK version 2.4 requirement.
+	* configure: Rebuilt.
+
 2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.lang/TLtest.java: Reduce sleep time.
