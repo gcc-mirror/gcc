@@ -1135,20 +1135,50 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
 }
 
 
+/* Similar to minloc/maxloc, the argument list might need to be
+   reordered for the MINVAL, MAXVAL, PRODUCT, and SUM intrinsics.  The
+   difference is that MINLOC/MAXLOC take an additional KIND argument.
+   The possibilities are:
+
+         Arg #2     Arg #3
+         NULL       NULL
+         DIM        NULL
+         MASK       NULL
+         NULL       MASK             minval(array, mask=m)
+         DIM        MASK
+
+   I.e. in the case of minval(array,mask), mask will be in the second
+   position of the argument list and we'll have to fix that up.  */
+
 try
-gfc_check_minval_maxval (gfc_expr * array, gfc_expr * dim, gfc_expr * mask)
+gfc_check_reduction (gfc_actual_arglist * ap)
 {
+  gfc_expr *a, *m, *d;
 
-  if (array_check (array, 0) == FAILURE)
+  a = ap->expr;
+  if (int_or_real_check (a, 0) == FAILURE
+      || array_check (a, 0) == FAILURE)
     return FAILURE;
 
-  if (int_or_real_check (array, 0) == FAILURE)
+  d = ap->next->expr;
+  m = ap->next->next->expr;
+
+  if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
+      && ap->next->name[0] == '\0')
+    {
+      m = d;
+      d = NULL;
+
+      ap->next->expr = NULL;
+      ap->next->next->expr = m;
+    }
+
+  if (d != NULL
+      && (scalar_check (d, 1) == FAILURE
+      || type_check (d, 1, BT_INTEGER) == FAILURE))
     return FAILURE;
 
-  if (dim_check (dim, 1, 1) == FAILURE)
-    return FAILURE;
-
-  if (mask != NULL && logical_array_check (mask, 2) == FAILURE)
+  if (m != NULL && type_check (m, 2, BT_LOGICAL) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1271,26 +1301,6 @@ gfc_check_present (gfc_expr * a)
       must_be (a, 0, "an OPTIONAL dummy variable");
       return FAILURE;
     }
-
-  return SUCCESS;
-}
-
-
-try
-gfc_check_product (gfc_expr * array, gfc_expr * dim, gfc_expr * mask)
-{
-
-  if (array_check (array, 0) == FAILURE)
-    return FAILURE;
-
-  if (numeric_check (array, 0) == FAILURE)
-    return FAILURE;
-
-  if (dim_check (dim, 1, 1) == FAILURE)
-    return FAILURE;
-
-  if (mask != NULL && logical_array_check (mask, 2) == FAILURE)
-    return FAILURE;
 
   return SUCCESS;
 }
@@ -1546,26 +1556,6 @@ gfc_check_spread (gfc_expr * source, gfc_expr * dim, gfc_expr * ncopies)
   if (type_check (ncopies, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
   if (scalar_check (ncopies, 2) == FAILURE)
-    return FAILURE;
-
-  return SUCCESS;
-}
-
-
-try
-gfc_check_sum (gfc_expr * array, gfc_expr * dim, gfc_expr * mask)
-{
-
-  if (array_check (array, 0) == FAILURE)
-    return FAILURE;
-
-  if (numeric_check (array, 0) == FAILURE)
-    return FAILURE;
-
-  if (dim_check (dim, 1, 1) == FAILURE)
-    return FAILURE;
-
-  if (mask != NULL && logical_array_check (mask, 2) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

@@ -882,6 +882,7 @@ gfc_resolve_minloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
                     gfc_type_letter (array->ts.type), array->ts.kind);
 }
 
+
 void
 gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		    gfc_expr * mask)
