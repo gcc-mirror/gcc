@@ -4121,7 +4121,7 @@ of the stack has been reached, this function will return @code{0} or a
 random value. In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
-This function should only be used with a non-zero argument for debugging
+This function should only be used with a nonzero argument for debugging
 purposes.
 @end deftypefn
 
@@ -4146,7 +4146,7 @@ any function other than the current one; in such cases, or when the top
 of the stack has been reached, this function will return @code{0} if
 the first frame pointer is properly initialized by the startup code.
 
-This function should only be used with a non-zero argument for debugging
+This function should only be used with a nonzero argument for debugging
 purposes.
 @end deftypefn
 
