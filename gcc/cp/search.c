@@ -1018,9 +1018,15 @@ void
 type_access_control (type, val)
      tree type, val;
 {
+  /* The check processing_specialization is here because the parser in 3.3
+     does not set current_class_type while parsing class head of class
+     template specialization.  Access checking, if performed, will be
+     evaluated in the wrong context so we disable it here.  This doesn't
+     apply to the new parser in 3.4.  */
   if (val == NULL_TREE
       || (TREE_CODE (val) != TEMPLATE_DECL && TREE_CODE (val) != TYPE_DECL)
-      || ! DECL_CLASS_SCOPE_P (val))
+      || ! DECL_CLASS_SCOPE_P (val)
+      || processing_specialization)
     return;
 
   if (type_lookups == error_mark_node)

@@ -1,3 +1,9 @@
+2003-05-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10849
+	* search.c (type_access_control): Don't check access when
+	processing_specialization.
+
 2003-05-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10682
