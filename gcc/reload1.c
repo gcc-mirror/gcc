@@ -4479,6 +4479,7 @@ emit_reload_insns (insn)
   int special;
   /* Values to be put in spill_reg_store are put here first.  */
   rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
+  int is_asm = asm_noperands (PATTERN (insn)) >= 0;
 
   /* If this is a CALL_INSN preceded by USE insns, any reload insns
      must go in front of the first USE insn, not in front of INSN.  */
@@ -4850,7 +4851,15 @@ emit_reload_insns (insn)
 			    {
 			      reload_insn
 				= gen_input_reload (second_reload_reg,
-						    oldequiv, where);
+						    oldequiv, where, is_asm);
+			      /* If we can't create the reload insn,
+				 report an error and give up.  */
+			      if (reload_insn == 0)
+				{
+				  error_for_asm (insn,
+						 "`asm' operand requires impossible reload");
+				  return;
+				}
 			      if (this_reload_insn == 0)
 				this_reload_insn = reload_insn;
 			      oldequiv = second_reload_reg;
@@ -4863,7 +4872,15 @@ emit_reload_insns (insn)
 	      if (! special)
 		{
 		  reload_insn = gen_input_reload (reloadreg,
-						  oldequiv, where);
+						  oldequiv, where, is_asm);
+		  /* If we can't create the reload insn,
+		     report an error and give up.  */
+		  if (reload_insn == 0)
+		    {
+		      error_for_asm (insn,
+				     "`asm' operand requires impossible reload");
+		      return;
+		    }
 		  if (this_reload_insn == 0)
 		    this_reload_insn = reload_insn;
 		}
@@ -5379,13 +5396,17 @@ emit_reload_insns (insn)
 }
 
 /* Emit code before BEFORE_INSN to perform an input reload of IN to RELOADREG.
-   Returns first insn emitted.  */
+   Returns first insn emitted.
+
+   If IS_ASM, check the emitted insns for validity.
+   If they are invalid, delete them and return 0.  */
 
 rtx
-gen_input_reload (reloadreg, in, before_insn)
+gen_input_reload (reloadreg, in, before_insn, is_asm)
      rtx reloadreg;
      rtx in;
      rtx before_insn;
+     int is_asm;
 {
   register rtx prev_insn = PREV_INSN (before_insn);
 
@@ -5493,16 +5514,39 @@ gen_input_reload (reloadreg, in, before_insn)
 
   /* If IN is a simple operand, use gen_move_insn.  */
   else if (GET_RTX_CLASS (GET_CODE (in)) == 'o' || GET_CODE (in) == SUBREG)
-    emit_insn_before (gen_move_insn (reloadreg, in), before_insn);
+    {
+      rtx x = emit_insn_before (gen_move_insn (reloadreg, in), before_insn);
+      if (is_asm && recog_memoized (x) < 0)
+	{
+	  delete_insn (x);
+	  return 0;
+	}
+    }
 
 #ifdef HAVE_reload_load_address
   else if (HAVE_reload_load_address)
-    emit_insn_before (gen_reload_load_address (reloadreg, in), before_insn);
+    {
+      rtx x = emit_insn_before (gen_reload_load_address (reloadreg, in),
+				before_insn);
+      if (is_asm && recog_memoized (x) < 0)
+	{
+	  delete_insn (x);
+	  return 0;
+	}
+    }
 #endif
 
   /* Otherwise, just write (set REGLOADREG IN) and hope for the best.  */
   else
-    emit_insn_before (gen_rtx (SET, VOIDmode, reloadreg, in), before_insn);
+    {
+      rtx x = emit_insn_before (gen_rtx (SET, VOIDmode, reloadreg, in),
+				before_insn);
+      if (is_asm && recog_memoized (x) < 0)
+	{
+	  delete_insn (x);
+	  return 0;
+	}
+    }
 
   /* Return the first insn emitted.
      We can not just return PREV_INSN (before_insn), because there may have
