@@ -1,6 +1,6 @@
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-	gcc.dg/old-style-asm-1.c: New test.
+	* gcc.dg/old-style-asm-1.c: New test.
 
 2003-01-09  Richard Sandiford  <rsandifo@redhat.com>
 
