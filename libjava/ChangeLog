@@ -1,5 +1,9 @@
 2001-01-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/sf_fabs.c: Use uint32_t, not __uint32_t.
+
+2001-01-24  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (c_source_files): Added sf_fabs.c.
 	* java/lang/sf_fabs.c: New file.
