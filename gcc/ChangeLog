@@ -1,3 +1,7 @@
+2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* tlink.c (scan_linker_output): Tweak for output of AIX ld.
+
 2000-07-17  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (movdi): Split out load address code.
