@@ -1,3 +1,8 @@
+Wed Dec  5 19:18:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (keep_stack_depressed): Check global_live_at_start
+	of EXIT_BLOCK for temp register and verify it isn't in equiv_reg_src.
+
 2001-12-05  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (powerpc-*-freebsd*): Use the proper tmake_file files,
