@@ -139,6 +139,22 @@ typedef struct rtx_def
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
   rtunion fld[1];
+
+  /* The rest is used instead of the above if bytecode is being output */
+
+  /* For static or external objects.  */
+  char *label;
+
+  /* From the named label, or the local variable pointer or the
+     argument pointer, depending on context.  */
+
+  int offset;
+
+  /* For goto labels inside bytecode functions.  */
+  struct bc_label *bc_label;
+
+  /* A unique identifier */
+  int uid;
 } *rtx;
 
 /* Add prototype support.  */
@@ -640,6 +656,7 @@ extern rtx gen_rtx			PROTO((enum rtx_code, enum machine_mode, ...));
 extern rtvec gen_rtvec			PROTO((int, ...));
 
 #else
+extern rtx bc_gen_rtx ();
 extern rtx gen_rtx ();
 extern rtvec gen_rtvec ();
 #endif

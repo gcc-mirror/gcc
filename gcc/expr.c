@@ -19,8 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "config.h"
+#include "machmode.h"
 #include "rtl.h"
 #include "tree.h"
+#include "obstack.h"
 #include "flags.h"
 #include "function.h"
 #include "insn-flags.h"
@@ -30,6 +32,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "recog.h"
 #include "output.h"
 #include "typeclass.h"
+
+#include "bytecode.h"
+#include "bc-opcode.h"
+#include "bc-typecd.h"
+#include "bc-optab.h"
+#include "bc-emit.h"
+
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -137,6 +146,20 @@ static rtx expand_builtin_apply_args PROTO((void));
 static rtx expand_builtin_apply	PROTO((rtx, rtx, rtx));
 static void expand_builtin_return PROTO((rtx));
 static rtx expand_increment	PROTO((tree, int));
+rtx bc_expand_increment		PROTO((struct increment_operator *, tree));
+tree bc_runtime_type_code 	PROTO((tree));
+rtx bc_allocate_local		PROTO((int, int));
+void bc_store_memory 		PROTO((tree, tree));
+tree bc_expand_component_address PROTO((tree));
+tree bc_expand_address 		PROTO((tree));
+void bc_expand_constructor 	PROTO((tree));
+void bc_adjust_stack 		PROTO((int));
+tree bc_canonicalize_array_ref	PROTO((tree));
+void bc_load_memory		PROTO((tree, tree));
+void bc_load_externaddr		PROTO((rtx));
+void bc_load_externaddr_id	PROTO((tree, int));
+void bc_load_localaddr		PROTO((rtx));
+void bc_load_parmaddr		PROTO((rtx));
 static void preexpand_calls	PROTO((tree));
 static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
 static void do_jump_by_parts_greater_rtx PROTO((enum machine_mode, int, rtx, rtx, rtx, rtx));
@@ -182,6 +205,32 @@ enum insn_code movstr_optab[NUM_MACHINE_MODES];
 #ifndef OUTGOING_REGNO
 #define OUTGOING_REGNO(IN) (IN)
 #endif
+
+/* Maps used to convert modes to const, load, and store bytecodes. */
+enum bytecode_opcode mode_to_const_map[MAX_MACHINE_MODE];
+enum bytecode_opcode mode_to_load_map[MAX_MACHINE_MODE];
+enum bytecode_opcode mode_to_store_map[MAX_MACHINE_MODE];
+
+/* Initialize maps used to convert modes to const, load, and store
+   bytecodes. */
+void
+bc_init_mode_to_opcode_maps ()
+{
+  int mode;
+
+  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
+    mode_to_const_map[mode] =
+      mode_to_load_map[mode] =
+	mode_to_store_map[mode] = neverneverland;
+      
+#define DEF_MODEMAP(SYM, CODE, UCODE, CONST, LOAD, STORE) \
+  mode_to_const_map[(enum machine_mode) SYM] = CONST; \
+  mode_to_load_map[(enum machine_mode) SYM] = LOAD; \
+  mode_to_store_map[(enum machine_mode) SYM] = STORE;
+
+#include "modemap.def"
+#undef DEF_MODEMAP
+}
 
 /* This is run once per compilation to set up which modes can be used
    directly in memory and to initialize the block move optab.  */
@@ -2224,6 +2273,22 @@ expand_assignment (to, from, want_value, suggest_reg)
       return want_value ? result : NULL_RTX;
     }
 
+  if (output_bytecode)
+    {
+      tree dest_innermost;
+
+      bc_expand_expr (from);
+      bc_emit_instruction (dup);
+
+      dest_innermost = bc_expand_address (to);
+
+      /* Can't deduce from TYPE that we're dealing with a bitfield, so
+	 take care of it here. */
+
+      bc_store_memory (TREE_TYPE (to), dest_innermost);
+      return NULL;
+    }
+
   /* Assignment of a structure component needs special treatment
      if the structure component's rtx is not simply a MEM.
      Assignment of an array element at a constant index
@@ -3428,12 +3493,20 @@ expand_expr (exp, target, tmode, modifier)
   /* Use subtarget as the target for operand 0 of a binary operation.  */
   rtx subtarget = (target != 0 && GET_CODE (target) == REG ? target : 0);
   rtx original_target = target;
+  /* Maybe defer this until sure not doing bytecode?  */
   int ignore = (target == const0_rtx
 		|| ((code == NON_LVALUE_EXPR || code == NOP_EXPR
 		     || code == CONVERT_EXPR || code == REFERENCE_EXPR
 		     || code == COND_EXPR)
 		    && TREE_CODE (type) == VOID_TYPE));
   tree context;
+
+
+  if (output_bytecode)
+    {
+      bc_expand_expr (exp);
+      return NULL;
+    }
 
   /* Don't use hard regs as subtargets, because the combiner
      can only handle pseudo regs.  */
@@ -5615,6 +5688,510 @@ expand_expr (exp, target, tmode, modifier)
     abort ();
   return temp;
 }
+
+
+/* Emit bytecode to evaluate the given expression EXP to the stack. */
+void
+bc_expand_expr (exp)
+    tree exp;
+{
+  enum tree_code code;
+  tree type, arg0;
+  rtx r;
+  struct binary_operator *binoptab;
+  struct unary_operator *unoptab;
+  struct increment_operator *incroptab;
+  struct bc_label *lab, *lab1;
+  enum bytecode_opcode opcode;
+  
+  
+  code = TREE_CODE (exp);
+  
+  switch (code)
+    {
+    case PARM_DECL:
+      
+      if (DECL_RTL (exp) == 0)
+	{
+	  error_with_decl (exp, "prior parameter's size depends on `%s'");
+	  return;
+	}
+      
+      bc_load_parmaddr (DECL_RTL (exp));
+      bc_load_memory (TREE_TYPE (exp), exp);
+      
+      return;
+      
+    case VAR_DECL:
+      
+      if (DECL_RTL (exp) == 0)
+	abort ();
+      
+#if 0
+      if (DECL_RTL (exp)->label)
+	bc_load_externaddr (DECL_RTL (exp));
+      else
+	bc_load_localaddr (DECL_RTL (exp));
+#endif
+      if (TREE_PUBLIC (exp))
+	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp), DECL_RTL (exp)->offset);
+      else
+	bc_load_localaddr (DECL_RTL (exp));
+      
+      bc_load_memory (TREE_TYPE (exp), exp);
+      return;
+      
+    case INTEGER_CST:
+      
+#ifdef DEBUG_PRINT_CODE
+      fprintf (stderr, " [%x]\n", TREE_INT_CST_LOW (exp));
+#endif
+      bc_emit_instruction (mode_to_const_map[DECL_BIT_FIELD (exp)
+					     ? SImode
+					     : TYPE_MODE (TREE_TYPE (exp))],
+			   (HOST_WIDE_INT) TREE_INT_CST_LOW (exp));
+      return;
+      
+    case REAL_CST:
+      
+#ifdef DEBUG_PRINT_CODE
+      fprintf (stderr, " [%g]\n", (double) TREE_INT_CST_LOW (exp));
+#endif
+      bc_emit_instruction (mode_to_const_map[TYPE_MODE (TREE_TYPE (exp))],
+			   (double) TREE_REAL_CST (exp));
+      return;
+      
+    case CALL_EXPR:
+      
+      /* We build a call description vector describing the type of
+	 the return value and of the arguments; this call vector,
+	 together with a pointer to a location for the return value
+	 and the base of the argument list, is passed to the low
+	 level machine dependent call subroutine, which is responsible
+	 for putting the arguments wherever real functions expect
+	 them, as well as getting the return value back.  */
+      {
+	tree calldesc = 0, arg;
+	int nargs = 0, i;
+	rtx retval;
+	
+	/* Push the evaluated args on the evaluation stack in reverse
+	   order.  Also make an entry for each arg in the calldesc
+	   vector while we're at it.  */
+	
+	TREE_OPERAND (exp, 1) = nreverse (TREE_OPERAND (exp, 1));
+	
+	for (arg = TREE_OPERAND (exp, 1); arg; arg = TREE_CHAIN (arg))
+	  {
+	    ++nargs;
+	    bc_expand_expr (TREE_VALUE (arg));
+	    
+	    calldesc = tree_cons ((tree) 0,
+				  size_in_bytes (TREE_TYPE (TREE_VALUE (arg))),
+				  calldesc);
+	    calldesc = tree_cons ((tree) 0,
+				  bc_runtime_type_code (TREE_TYPE (TREE_VALUE (arg))),
+				  calldesc);
+	  }
+	
+	TREE_OPERAND (exp, 1) = nreverse (TREE_OPERAND (exp, 1));
+	
+	/* Allocate a location for the return value and push its
+	   address on the evaluation stack.  Also make an entry
+	   at the front of the calldesc for the return value type. */
+	
+	type = TREE_TYPE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))));
+	retval = bc_allocate_local (int_size_in_bytes (type), TYPE_ALIGN (type));
+	bc_load_localaddr (retval);
+	
+	calldesc = tree_cons ((tree) 0, size_in_bytes (type), calldesc);
+	calldesc = tree_cons ((tree) 0, bc_runtime_type_code (type), calldesc);
+	
+	/* Prepend the argument count.  */
+	calldesc = tree_cons ((tree) 0,
+			      build_int_2 (nargs, 0),
+			      calldesc);
+	
+	/* Push the address of the call description vector on the stack.  */
+	calldesc = build_nt (CONSTRUCTOR, (tree) 0, calldesc);
+	TREE_TYPE (calldesc) = build_array_type (integer_type_node,
+						 build_index_type (build_int_2 (nargs * 2, 0)));
+	r = output_constant_def (calldesc);
+	bc_load_externaddr (r);
+	
+	/* Push the address of the function to be called. */
+	bc_expand_expr (TREE_OPERAND (exp, 0));
+	
+	/* Call the function, popping its address and the calldesc vector
+	   address off the evaluation stack in the process.  */
+	bc_emit_instruction (call);
+	
+	/* Pop the arguments off the stack.  */
+	bc_adjust_stack (nargs);
+	
+	/* Load the return value onto the stack.  */
+	bc_load_localaddr (retval);
+	bc_load_memory (type, TREE_OPERAND (exp, 0));
+      }
+      return;
+      
+    case SAVE_EXPR:
+      
+      if (!SAVE_EXPR_RTL (exp))
+	{
+	  /* First time around: copy to local variable */
+	  SAVE_EXPR_RTL (exp) = bc_allocate_local (int_size_in_bytes (TREE_TYPE (exp)),
+						   TYPE_ALIGN (TREE_TYPE(exp)));
+	  bc_expand_expr (TREE_OPERAND (exp, 0));
+	  bc_emit_instruction (dup);
+	  
+	  bc_load_localaddr (SAVE_EXPR_RTL (exp));
+	  bc_store_memory (TREE_TYPE (exp), TREE_OPERAND (exp, 0));
+	}
+      else
+	{
+	  /* Consecutive reference: use saved copy */
+	  bc_load_localaddr (SAVE_EXPR_RTL (exp));
+	  bc_load_memory (TREE_TYPE (exp), TREE_OPERAND (exp, 0));
+	}
+      return;
+      
+#if 0
+      /* FIXME: the XXXX_STMT codes have been removed in GCC2, but
+	 how are they handled instead? */
+    case LET_STMT:
+      
+      TREE_USED (exp) = 1;
+      bc_expand_expr (STMT_BODY (exp));
+      return;
+#endif
+      
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      
+      bc_expand_expr (TREE_OPERAND (exp, 0));
+      bc_expand_conversion (TREE_TYPE (TREE_OPERAND (exp, 0)), TREE_TYPE (exp));
+      return;
+      
+    case MODIFY_EXPR:
+      
+      expand_assignment (TREE_TYPE (exp), TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1));
+      return;
+      
+    case ADDR_EXPR:
+      
+      bc_expand_address (TREE_OPERAND (exp, 0));
+      return;
+      
+    case INDIRECT_REF:
+      
+      bc_expand_expr (TREE_OPERAND (exp, 0));
+      bc_load_memory (TREE_TYPE (exp), TREE_OPERAND (exp, 0));
+      return;
+      
+    case ARRAY_REF:
+      
+      bc_expand_expr (bc_canonicalize_array_ref (exp));
+      return;
+      
+    case COMPONENT_REF:
+      
+      bc_expand_component_address (exp);
+      
+      /* If we have a bitfield, generate a proper load */
+      bc_load_memory (TREE_TYPE (TREE_OPERAND (exp, 1)), TREE_OPERAND (exp, 1));
+      return;
+      
+    case COMPOUND_EXPR:
+      
+      bc_expand_expr (TREE_OPERAND (exp, 0));
+      bc_emit_instruction (drop);
+      bc_expand_expr (TREE_OPERAND (exp, 1));
+      return;
+      
+    case COND_EXPR:
+      
+      bc_expand_expr (TREE_OPERAND (exp, 0));
+      bc_expand_truth_conversion (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      lab = bc_get_bytecode_label ();
+      bc_emit_bytecode (jumpifnot);
+      bc_emit_bytecode_labelref (lab);
+      
+#ifdef DEBUG_PRINT_CODE
+      fputc ('\n', stderr);
+#endif
+      bc_expand_expr (TREE_OPERAND (exp, 1));
+      lab1 = bc_get_bytecode_label ();
+      bc_emit_bytecode (jump);
+      bc_emit_bytecode_labelref (lab1);
+      
+#ifdef DEBUG_PRINT_CODE
+      fputc ('\n', stderr);
+#endif
+      
+      bc_emit_bytecode_labeldef (lab);
+      bc_expand_expr (TREE_OPERAND (exp, 2));
+      bc_emit_bytecode_labeldef (lab1);
+      return;
+      
+    case TRUTH_ANDIF_EXPR:
+      
+      opcode = jumpifnot;
+      goto andorif;
+      
+    case TRUTH_ORIF_EXPR:
+      
+      opcode = jumpif;
+      goto andorif;
+      
+    case PLUS_EXPR:
+      
+      binoptab = optab_plus_expr;
+      goto binop;
+      
+    case MINUS_EXPR:
+      
+      binoptab = optab_minus_expr;
+      goto binop;
+      
+    case MULT_EXPR:
+      
+      binoptab = optab_mult_expr;
+      goto binop;
+      
+    case TRUNC_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      
+      binoptab = optab_trunc_div_expr;
+      goto binop;
+      
+    case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+      
+      binoptab = optab_trunc_mod_expr;
+      goto binop;
+      
+    case FIX_ROUND_EXPR:
+    case FIX_FLOOR_EXPR:
+    case FIX_CEIL_EXPR:
+      abort ();			/* Not used for C.  */
+      
+    case FIX_TRUNC_EXPR:
+    case FLOAT_EXPR:
+    case MAX_EXPR:
+    case MIN_EXPR:
+    case FFS_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+      abort ();			/* FIXME */
+      
+    case RDIV_EXPR:
+      
+      binoptab = optab_rdiv_expr;
+      goto binop;
+      
+    case BIT_AND_EXPR:
+      
+      binoptab = optab_bit_and_expr;
+      goto binop;
+      
+    case BIT_IOR_EXPR:
+      
+      binoptab = optab_bit_ior_expr;
+      goto binop;
+      
+    case BIT_XOR_EXPR:
+      
+      binoptab = optab_bit_xor_expr;
+      goto binop;
+      
+    case LSHIFT_EXPR:
+      
+      binoptab = optab_lshift_expr;
+      goto binop;
+      
+    case RSHIFT_EXPR:
+      
+      binoptab = optab_rshift_expr;
+      goto binop;
+      
+    case TRUTH_AND_EXPR:
+      
+      binoptab = optab_truth_and_expr;
+      goto binop;
+      
+    case TRUTH_OR_EXPR:
+      
+      binoptab = optab_truth_or_expr;
+      goto binop;
+      
+    case LT_EXPR:
+      
+      binoptab = optab_lt_expr;
+      goto binop;
+      
+    case LE_EXPR:
+      
+      binoptab = optab_le_expr;
+      goto binop;
+      
+    case GE_EXPR:
+      
+      binoptab = optab_ge_expr;
+      goto binop;
+      
+    case GT_EXPR:
+      
+      binoptab = optab_gt_expr;
+      goto binop;
+      
+    case EQ_EXPR:
+      
+      binoptab = optab_eq_expr;
+      goto binop;
+      
+    case NE_EXPR:
+      
+      binoptab = optab_ne_expr;
+      goto binop;
+      
+    case NEGATE_EXPR:
+      
+      unoptab = optab_negate_expr;
+      goto unop;
+      
+    case BIT_NOT_EXPR:
+      
+      unoptab = optab_bit_not_expr;
+      goto unop;
+      
+    case TRUTH_NOT_EXPR:
+      
+      unoptab = optab_truth_not_expr;
+      goto unop;
+      
+    case PREDECREMENT_EXPR:
+      
+      incroptab = optab_predecrement_expr;
+      goto increment;
+      
+    case PREINCREMENT_EXPR:
+      
+      incroptab = optab_preincrement_expr;
+      goto increment;
+      
+    case POSTDECREMENT_EXPR:
+      
+      incroptab = optab_postdecrement_expr;
+      goto increment;
+      
+    case POSTINCREMENT_EXPR:
+      
+      incroptab = optab_postincrement_expr;
+      goto increment;
+      
+    case CONSTRUCTOR:
+      
+      bc_expand_constructor (exp);
+      return;
+      
+    case ERROR_MARK:
+    case RTL_EXPR:
+      
+      return;
+      
+    case BIND_EXPR:
+      {
+	tree vars = TREE_OPERAND (exp, 0);
+	int vars_need_expansion = 0;
+	
+	/* Need to open a binding contour here because
+	   if there are any cleanups they most be contained here.  */
+	expand_start_bindings (0);
+	
+	/* Mark the corresponding BLOCK for output.  */
+	if (TREE_OPERAND (exp, 2) != 0)
+	  TREE_USED (TREE_OPERAND (exp, 2)) = 1;
+	
+	/* If VARS have not yet been expanded, expand them now.  */
+	while (vars)
+	  {
+	    if (DECL_RTL (vars) == 0)
+	      {
+		vars_need_expansion = 1;
+		bc_expand_decl (vars, 0);
+	      }
+	    bc_expand_decl_init (vars);
+	    vars = TREE_CHAIN (vars);
+	  }
+	
+	bc_expand_expr (TREE_OPERAND (exp, 1));
+	
+	expand_end_bindings (TREE_OPERAND (exp, 0), 0, 0);
+	
+	return;
+      }
+    }
+  
+  abort ();
+  
+ binop:
+  
+  bc_expand_binary_operation (binoptab, TREE_TYPE (exp),
+			      TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1));
+  return;
+  
+  
+ unop:
+  
+  bc_expand_unary_operation (unoptab, TREE_TYPE (exp), TREE_OPERAND (exp, 0));
+  return;
+  
+  
+ andorif:
+  
+  bc_expand_expr (TREE_OPERAND (exp, 0));
+  bc_expand_truth_conversion (TREE_TYPE (TREE_OPERAND (exp, 0)));
+  lab = bc_get_bytecode_label ();
+  
+  bc_emit_instruction (dup);
+  bc_emit_bytecode (opcode);
+  bc_emit_bytecode_labelref (lab);
+  
+#ifdef DEBUG_PRINT_CODE
+  fputc ('\n', stderr);
+#endif
+  
+  bc_emit_instruction (drop);
+  
+  bc_expand_expr (TREE_OPERAND (exp, 1));
+  bc_expand_truth_conversion (TREE_TYPE (TREE_OPERAND (exp, 1)));
+  bc_emit_bytecode_labeldef (lab);
+  return;
+  
+  
+ increment:
+  
+  type = TREE_TYPE (TREE_OPERAND (exp, 0));
+  
+  /* Push the quantum.  */
+  bc_expand_expr (TREE_OPERAND (exp, 1));
+  
+  /* Convert it to the lvalue's type.  */
+  bc_expand_conversion (TREE_TYPE (TREE_OPERAND (exp, 1)), type);
+  
+  /* Push the address of the lvalue */
+  expand_expr (build1 (ADDR_EXPR, TYPE_POINTER_TO (type), TREE_OPERAND (exp, 0)));
+  
+  /* Perform actual increment */
+  expand_increment (incroptab, type);
+  return;
+}
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -7056,6 +7633,9 @@ expand_increment (exp, post)
   int op0_is_copy = 0;
   int single_insn = 0;
 
+  if (output_bytecode)
+    return bc_expand_increment (exp, post);
+
   /* Stabilize any component ref that might need to be
      evaluated more than once below.  */
   if (!post
@@ -8340,3 +8920,731 @@ do_tablejump (index, mode, range, table_label, default_label)
 }
 
 #endif /* HAVE_tablejump */
+
+
+/* Emit a suitable bytecode to load a value from memory, assuming a pointer
+   to that value is on the top of the stack. The resulting type is TYPE, and
+   the source declaration is DECL. */
+
+void
+bc_load_memory (type, decl)
+     tree type, decl;
+{
+  enum bytecode_opcode opcode;
+  
+  
+  /* Bit fields are special.  We only know about signed and
+     unsigned ints, and enums.  The latter are treated as
+     signed integers. */
+  
+  if (DECL_BIT_FIELD (decl))
+    if (TREE_CODE (type) == ENUMERAL_TYPE
+	|| TREE_CODE (type) == INTEGER_TYPE)
+      opcode = TREE_UNSIGNED (type) ? zxloadBI : sxloadBI;
+    else
+      abort ();
+  else
+    /* See corresponding comment in bc_store_memory(). */
+    if (TYPE_MODE (type) == BLKmode
+	|| TYPE_MODE (type) == VOIDmode)
+      return;
+    else
+      opcode = mode_to_load_map [TYPE_MODE (type)];
+
+  if (opcode == neverneverland)
+    abort ();
+  
+  bc_emit_bytecode (opcode);
+  
+#ifdef DEBUG_PRINT_CODE
+  fputc ('\n', stderr);
+#endif
+}
+
+
+/* Store the contents of the second stack slot to the address in the
+   top stack slot.  DECL is the declaration of the destination and is used
+   to determine whether we're dealing with a bitfield. */
+
+void
+bc_store_memory (type, decl)
+     tree type, decl;
+{
+  enum bytecode_opcode opcode;
+  
+  
+  if (DECL_BIT_FIELD (decl))
+    {
+      if (TREE_CODE (type) == ENUMERAL_TYPE
+	  || TREE_CODE (type) == INTEGER_TYPE)
+	opcode = sstoreBI;
+      else
+	abort ();
+    }
+  else
+    if (TYPE_MODE (type) == BLKmode)
+      {
+	/* Copy structure.  This expands to a block copy instruction, storeBLK.
+	   In addition to the arguments expected by the other store instructions,
+	   it also expects a type size (SImode) on top of the stack, which is the
+	   structure size in size units (usually bytes).  The two first arguments
+	   are already on the stack; so we just put the size on level 1.  For some
+	   other languages, the size may be variable, this is why we don't encode
+	   it as a storeBLK literal, but rather treat it as a full-fledged expression. */
+	
+	bc_expand_expr (TYPE_SIZE (type));
+	opcode = storeBLK;
+      }
+    else
+      opcode = mode_to_store_map [TYPE_MODE (type)];
+
+  if (opcode == neverneverland)
+    abort ();
+
+  bc_emit_bytecode (opcode);
+  
+#ifdef DEBUG_PRINT_CODE
+  fputc ('\n', stderr);
+#endif
+}
+
+
+/* Allocate local stack space sufficient to hold a value of the given
+   SIZE at alignment boundary ALIGNMENT bits.  ALIGNMENT must be an
+   integral power of 2.  A special case is locals of type VOID, which
+   have size 0 and alignment 1 - any "voidish" SIZE or ALIGNMENT is
+   remapped into the corresponding attribute of SI.  */
+
+rtx
+bc_allocate_local (size, alignment)
+     int size, alignment;
+{
+  rtx retval;
+  int byte_alignment;
+
+  if (size < 0)
+    abort ();
+
+  /* Normalize size and alignment  */
+  if (!size)
+    size = UNITS_PER_WORD;
+
+  if (alignment < BITS_PER_UNIT)
+    byte_alignment = 1 << (INT_ALIGN - 1);
+  else
+    /* Align */
+    byte_alignment = alignment / BITS_PER_UNIT;
+
+  if (local_vars_size & (byte_alignment - 1))
+    local_vars_size += byte_alignment - (local_vars_size & (byte_alignment - 1));
+
+  retval = bc_gen_rtx ((char *) 0, local_vars_size, (struct bc_label *) 0);
+  local_vars_size += size;
+
+  return retval;
+}
+
+
+/* Allocate variable-sized local array. Variable-sized arrays are
+   actually pointers to the address in memory where they are stored. */
+
+rtx
+bc_allocate_variable_array (size)
+     tree size;
+{
+  rtx retval;
+  const int ptralign = (1 << (PTR_ALIGN - 1));
+
+  /* Align pointer */
+  if (local_vars_size & ptralign)
+    local_vars_size +=  ptralign - (local_vars_size & ptralign);
+
+  /* Note down local space needed: pointer to block; also return
+     dummy rtx */
+
+  retval = bc_gen_rtx ((char *) 0, local_vars_size, (struct bc_label *) 0);
+  local_vars_size += POINTER_SIZE / BITS_PER_UNIT;
+  return retval;
+}
+
+
+/* Push the machine address for the given external variable offset.  */
+void
+bc_load_externaddr (externaddr)
+     rtx externaddr;
+{
+  bc_emit_bytecode (constP);
+  bc_emit_code_labelref (externaddr->label, externaddr->offset);
+
+#ifdef DEBUG_PRINT_CODE
+  fputc ('\n', stderr);
+#endif
+}
+
+
+static char *
+bc_strdup (s)
+    char *s;
+{
+  return strcpy (xmalloc ((strlen (s) + 1) * sizeof *s), s);
+}
+
+
+/* Like above, but expects an IDENTIFIER.  */
+void
+bc_load_externaddr_id (id, offset)
+     tree id;
+     int offset;
+{
+  if (!IDENTIFIER_POINTER (id))
+    abort ();
+
+  bc_emit_bytecode (constP);
+  bc_emit_code_labelref (bc_xstrdup (IDENTIFIER_POINTER (id)), offset);
+
+#ifdef DEBUG_PRINT_CODE
+  fputc ('\n', stderr);
+#endif
+}
+
+
+/* Push the machine address for the given local variable offset.  */
+void
+bc_load_localaddr (localaddr)
+     rtx localaddr;
+{
+  bc_emit_instruction (localP, (HOST_WIDE_INT) localaddr->offset);
+}
+
+
+/* Push the machine address for the given parameter offset.
+   NOTE: offset is in bits. */
+void
+bc_load_parmaddr (parmaddr)
+     rtx parmaddr;
+{
+  bc_emit_instruction (argP, (HOST_WIDE_INT) parmaddr->offset / BITS_PER_UNIT);
+}
+
+
+/* Convert a[i] into *(a + i).  */
+tree
+bc_canonicalize_array_ref (exp)
+     tree exp;
+{
+  tree type = TREE_TYPE (exp);
+  tree array_adr = build1 (ADDR_EXPR, TYPE_POINTER_TO (type),
+			   TREE_OPERAND (exp, 0));
+  tree index = TREE_OPERAND (exp, 1);
+
+
+  /* Convert the integer argument to a type the same size as a pointer
+     so the multiply won't overflow spuriously.  */
+
+  if (TYPE_PRECISION (TREE_TYPE (index)) != POINTER_SIZE)
+    index = convert (type_for_size (POINTER_SIZE, 0), index);
+
+  /* The array address isn't volatile even if the array is.
+     (Of course this isn't terribly relevant since the bytecode
+     translator treats nearly everything as volatile anyway.)  */
+  TREE_THIS_VOLATILE (array_adr) = 0;
+
+  return build1 (INDIRECT_REF, type,
+		 fold (build (PLUS_EXPR,
+			      TYPE_POINTER_TO (type),
+			      array_adr,
+			      fold (build (MULT_EXPR,
+					   TYPE_POINTER_TO (type),
+					   index,
+					   size_in_bytes (type))))));
+}
+
+
+/* Load the address of the component referenced by the given
+   COMPONENT_REF expression.
+
+   Returns innermost lvalue. */
+
+tree
+bc_expand_component_address (exp)
+     tree exp;
+{
+  tree tem, chain;
+  enum machine_mode mode;
+  int bitpos = 0;
+  HOST_WIDE_INT SIval;
+
+
+  tem = TREE_OPERAND (exp, 1);
+  mode = DECL_MODE (tem);
+
+
+  /* Compute cumulative bit offset for nested component refs
+     and array refs, and find the ultimate containing object.  */
+
+  for (tem = exp;; tem = TREE_OPERAND (tem, 0))
+    {
+      if (TREE_CODE (tem) == COMPONENT_REF)
+	bitpos += TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TREE_OPERAND (tem, 1)));
+      else
+	if (TREE_CODE (tem) == ARRAY_REF
+	    && TREE_CODE (TREE_OPERAND (tem, 1)) == INTEGER_CST
+	    && TREE_CODE (TYPE_SIZE (TREE_TYPE (tem))) == INTEGER_CST)
+
+	  bitpos += (TREE_INT_CST_LOW (TREE_OPERAND (tem, 1))
+		     * TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tem)))
+		     /* * TYPE_SIZE_UNIT (TREE_TYPE (tem)) */);
+	else
+	  break;
+    }
+
+  expand_expr (tem);
+
+
+  /* For bitfields also push their offset and size */
+  if (DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
+    bc_push_offset_and_size (bitpos, /* DECL_SIZE_UNIT */ (TREE_OPERAND (exp, 1)));
+  else
+    if (SIval = bitpos / BITS_PER_UNIT)
+      bc_emit_instruction (addconstPSI, SIval);
+
+  return (TREE_OPERAND (exp, 1));
+}
+
+
+/* Emit code to push two SI constants */
+void
+bc_push_offset_and_size (offset, size)
+     HOST_WIDE_INT offset, size;
+{
+  bc_emit_instruction (constSI, offset);
+  bc_emit_instruction (constSI, size);
+}
+
+
+/* Emit byte code to push the address of the given lvalue expression to
+   the stack.  If it's a bit field, we also push offset and size info.
+
+   Returns innermost component, which allows us to determine not only
+   its type, but also whether it's a bitfield. */
+
+tree
+bc_expand_address (exp)
+     tree exp;
+{
+  /* Safeguard */
+  if (!exp || TREE_CODE (exp) == ERROR_MARK)
+    return (exp);
+
+
+  switch (TREE_CODE (exp))
+    {
+    case ARRAY_REF:
+
+      return (bc_expand_address (bc_canonicalize_array_ref (exp)));
+
+    case COMPONENT_REF:
+
+      return (bc_expand_component_address (exp));
+
+    case INDIRECT_REF:
+
+      bc_expand_expr (TREE_OPERAND (exp, 0));
+
+      /* For variable-sized types: retrieve pointer.  Sometimes the
+	 TYPE_SIZE tree is NULL.  Is this a bug or a feature?  Let's
+	 also make sure we have an operand, just in case... */
+
+      if (TREE_OPERAND (exp, 0)
+	  && TYPE_SIZE (TREE_TYPE (TREE_OPERAND (exp, 0)))
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (exp, 0)))) != INTEGER_CST)
+	bc_emit_instruction (loadP);
+
+      /* If packed, also return offset and size */
+      if (DECL_BIT_FIELD (TREE_OPERAND (exp, 0)))
+	
+	bc_push_offset_and_size (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TREE_OPERAND (exp, 0))),
+				 TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (exp, 0))));
+
+      return (TREE_OPERAND (exp, 0));
+
+    case FUNCTION_DECL:
+
+      bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp), DECL_RTL (exp)->offset);
+      break;
+
+    case PARM_DECL:
+
+      bc_load_parmaddr (DECL_RTL (exp));
+
+      /* For variable-sized types: retrieve pointer */
+      if (TYPE_SIZE (TREE_TYPE (exp))
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST)
+	bc_emit_instruction (loadP);
+
+      /* If packed, also return offset and size */
+      if (DECL_BIT_FIELD (exp))
+	bc_push_offset_and_size (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (exp)),
+				 TREE_INT_CST_LOW (DECL_SIZE (exp)));
+
+      break;
+
+    case RESULT_DECL:
+
+      bc_emit_instruction (returnP);
+      break;
+
+    case VAR_DECL:
+
+#if 0
+      if (DECL_RTL (exp)->label)
+	bc_load_externaddr (DECL_RTL (exp));
+#endif
+
+      if (DECL_EXTERNAL (exp))
+	bc_load_externaddr_id (DECL_ASSEMBLER_NAME (exp), DECL_RTL (exp)->offset);
+      else
+	bc_load_localaddr (DECL_RTL (exp));
+
+      /* For variable-sized types: retrieve pointer */
+      if (TYPE_SIZE (TREE_TYPE (exp))
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST)
+	bc_emit_instruction (loadP);
+
+      /* If packed, also return offset and size */
+      if (DECL_BIT_FIELD (exp))
+	bc_push_offset_and_size (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (exp)),
+				 TREE_INT_CST_LOW (DECL_SIZE (exp)));
+      
+      break;
+
+    case STRING_CST:
+      {
+	rtx r;
+	
+	bc_emit_bytecode (constP);
+	r = output_constant_def (exp);
+	bc_emit_code_labelref (r->label, r->offset);
+
+#ifdef DEBUG_PRINT_CODE
+	fputc ('\n', stderr);
+#endif
+      }
+      break;
+
+    default:
+
+      abort();
+      break;
+    }
+
+  /* Most lvalues don't have components. */
+  return (exp);
+}
+
+
+/* Emit a type code to be used by the runtime support in handling
+   parameter passing.   The type code consists of the machine mode
+   plus the minimal alignment shifted left 8 bits.  */
+
+tree
+bc_runtime_type_code (type)
+     tree type;
+{
+  int val;
+
+  switch (TREE_CODE (type))
+    {
+    case VOID_TYPE:
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case COMPLEX_TYPE:
+    case ENUMERAL_TYPE:
+    case POINTER_TYPE:
+    case RECORD_TYPE:
+
+      val = TYPE_MODE (type) | TYPE_ALIGN (type) << 8;
+      break;
+
+    case ERROR_MARK:
+
+      val = 0;
+      break;
+
+    default:
+
+      abort ();
+    }
+  return build_int_2 (val, 0);
+}
+
+
+/* Generate constructor label */
+char *
+bc_gen_constr_label ()
+{
+  static int label_counter;
+  static char label[20];
+
+  sprintf (label, "*LR%d", label_counter++);
+
+  return (obstack_copy0 (&permanent_obstack, label, strlen (label)));
+}
+
+
+/* Evaluate constructor CONSTR and return pointer to it on level one.  We
+   expand the constructor data as static data, and push a pointer to it.
+   The pointer is put in the pointer table and is retrieved by a constP
+   bytecode instruction.  We then loop and store each constructor member in
+   the corresponding component.  Finally, we return the original pointer on
+   the stack. */
+
+void
+bc_expand_constructor (constr)
+     tree constr;
+{
+  char *l;
+  HOST_WIDE_INT ptroffs;
+  rtx constr_rtx;
+
+  
+  /* Literal constructors are handled as constants, whereas
+     non-literals are evaluated and stored element by element
+     into the data segment. */
+  
+  /* Allocate space in proper segment and push pointer to space on stack.
+   */
+
+  l = bc_gen_constr_label ();
+
+  if (TREE_CONSTANT (constr))
+    {
+      text_section ();
+
+      bc_emit_const_labeldef (l);
+      bc_output_constructor (constr, int_size_in_bytes (TREE_TYPE (constr)));
+    }
+  else
+    {
+      data_section ();
+
+      bc_emit_data_labeldef (l);
+      bc_output_data_constructor (constr);
+    }
+
+  
+  /* Add reference to pointer table and recall pointer to stack;
+     this code is common for both types of constructors: literals
+     and non-literals. */
+
+  bc_emit_instruction (constP, (HOST_WIDE_INT) ptroffs = bc_define_pointer (l));
+
+  /* This is all that has to be done if it's a literal. */
+  if (TREE_CONSTANT (constr))
+    return;
+
+
+  /* At this point, we have the pointer to the structure on top of the stack.
+     Generate sequences of store_memory calls for the constructor. */
+  
+  /* constructor type is structure */
+  if (TREE_CODE (TREE_TYPE (constr)) == RECORD_TYPE)
+    {
+      register tree elt;
+      
+      /* If the constructor has fewer fields than the structure,
+	 clear the whole structure first.  */
+      
+      if (list_length (CONSTRUCTOR_ELTS (constr))
+	  != list_length (TYPE_FIELDS (TREE_TYPE (constr))))
+	{
+	  bc_emit_instruction (dup);
+	  bc_emit_instruction (constSI, (HOST_WIDE_INT) int_size_in_bytes (TREE_TYPE (constr)));
+	  bc_emit_instruction (clearBLK);
+	}
+      
+      /* Store each element of the constructor into the corresponding
+	 field of TARGET.  */
+      
+      for (elt = CONSTRUCTOR_ELTS (constr); elt; elt = TREE_CHAIN (elt))
+	{
+	  register tree field = TREE_PURPOSE (elt);
+	  register enum machine_mode mode;
+	  int bitsize;
+	  int bitpos;
+	  int unsignedp;
+	  
+	  bitsize = TREE_INT_CST_LOW (DECL_SIZE (field)) /* * DECL_SIZE_UNIT (field) */;
+	  mode = DECL_MODE (field);
+	  unsignedp = TREE_UNSIGNED (field);
+
+	  bitpos = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	  
+	  bc_store_field (elt, bitsize, bitpos, mode, TREE_VALUE (elt), TREE_TYPE (TREE_VALUE (elt)),
+			  /* The alignment of TARGET is
+			     at least what its type requires.  */
+			  VOIDmode, 0,
+			  TYPE_ALIGN (TREE_TYPE (constr)) / BITS_PER_UNIT,
+			  int_size_in_bytes (TREE_TYPE (constr)));
+	}
+    }
+  else
+    
+    /* Constructor type is array */
+    if (TREE_CODE (TREE_TYPE (constr)) == ARRAY_TYPE)
+      {
+	register tree elt;
+	register int i;
+	tree domain = TYPE_DOMAIN (TREE_TYPE (constr));
+	int minelt = TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain));
+	int maxelt = TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain));
+	tree elttype = TREE_TYPE (TREE_TYPE (constr));
+	
+	/* If the constructor has fewer fields than the structure,
+	   clear the whole structure first.  */
+	
+	if (list_length (CONSTRUCTOR_ELTS (constr)) < maxelt - minelt + 1)
+	  {
+	    bc_emit_instruction (dup);
+	    bc_emit_instruction (constSI, (HOST_WIDE_INT) int_size_in_bytes (TREE_TYPE (constr)));
+	    bc_emit_instruction (clearBLK);
+	  }
+	
+	
+	/* Store each element of the constructor into the corresponding
+	   element of TARGET, determined by counting the elements. */
+	
+	for (elt = CONSTRUCTOR_ELTS (constr), i = 0;
+	     elt;
+	     elt = TREE_CHAIN (elt), i++)
+	  {
+	    register enum machine_mode mode;
+	    int bitsize;
+	    int bitpos;
+	    int unsignedp;
+	    
+	    mode = TYPE_MODE (elttype);
+	    bitsize = GET_MODE_BITSIZE (mode);
+	    unsignedp = TREE_UNSIGNED (elttype);
+	    
+	    bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype))
+		      /* * TYPE_SIZE_UNIT (elttype) */ );
+	    
+	    bc_store_field (elt, bitsize, bitpos, mode,
+			    TREE_VALUE (elt), TREE_TYPE (TREE_VALUE (elt)),
+			    /* The alignment of TARGET is
+			       at least what its type requires.  */
+			    VOIDmode, 0,
+			    TYPE_ALIGN (TREE_TYPE (constr)) / BITS_PER_UNIT,
+			    int_size_in_bytes (TREE_TYPE (constr)));
+	  }
+  
+      }
+}
+
+
+/* Store the value of EXP (an expression tree) into member FIELD of
+   structure at address on stack, which has type TYPE, mode MODE and
+   occupies BITSIZE bits, starting BITPOS bits from the beginning of the
+   structure.
+
+   ALIGN is the alignment that TARGET is known to have, measured in bytes.
+   TOTAL_SIZE is its size in bytes, or -1 if variable.  */
+
+void
+bc_store_field (field, bitsize, bitpos, mode, exp, type,
+		value_mode, unsignedp, align, total_size)
+     int bitsize, bitpos;
+     enum machine_mode mode;
+     tree field, exp, type;
+     enum machine_mode value_mode;
+     int unsignedp;
+     int align;
+     int total_size;
+{
+
+  /* Expand expression and copy pointer */
+  bc_expand_expr (exp);
+  bc_emit_instruction (over);
+
+
+  /* If the component is a bit field, we cannot use addressing to access
+     it.  Use bit-field techniques to store in it.  */
+
+  if (DECL_BIT_FIELD (field))
+    {
+      bc_store_bit_field (bitpos, bitsize, unsignedp);
+      return;
+    }
+  else
+    /* Not bit field */
+    {
+      HOST_WIDE_INT offset = bitpos / BITS_PER_UNIT;
+
+      /* Advance pointer to the desired member */
+      if (offset)
+	bc_emit_instruction (addconstPSI, offset);
+
+      /* Store */
+      bc_store_memory (type, field);
+    }
+}
+
+
+/* Store SI/SU in bitfield */
+void
+bc_store_bit_field (offset, size, unsignedp)
+     int offset, size, unsignedp;
+{
+  /* Push bitfield offset and size */
+  bc_push_offset_and_size (offset, size);
+
+  /* Store */
+  bc_emit_instruction (sstoreBI);
+}
+
+
+/* Load SI/SU from bitfield */
+void
+bc_load_bit_field (offset, size, unsignedp)
+     int offset, size, unsignedp;
+{
+  /* Push bitfield offset and size */
+  bc_push_offset_and_size (offset, size);
+
+  /* Load: sign-extend if signed, else zero-extend */
+  bc_emit_instruction (unsignedp ? zxloadBI : sxloadBI);
+}  
+
+
+/* Adjust interpreter stack by NLEVELS.  Positive means drop NLEVELS
+   (adjust stack pointer upwards), negative means add that number of
+   levels (adjust the stack pointer downwards).  Only positive values
+   normally make sense. */
+
+void
+bc_adjust_stack (nlevels)
+     int nlevels;
+{
+  switch (nlevels)
+    {
+    case 0:
+      break;
+      
+    case 2:
+      bc_emit_instruction (drop);
+      
+    case 1:
+      bc_emit_instruction (drop);
+      break;
+      
+    default:
+      
+      bc_emit_instruction (adjstackSI, (HOST_WIDE_INT) nlevels);
+      stack_depth -= nlevels;
+    }
+
+#if defined (VALIDATE_STACK)
+  VALIDATE_STACK ();
+#endif
+}
