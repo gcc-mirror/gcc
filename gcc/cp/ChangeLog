@@ -1,7 +1,17 @@
+Tue Feb  4 11:28:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (unify, case TEMPLATE_CONST_PARM): Use cp_tree_equal.
+
+	* pt.c (tsubst): Put it back for -fno-ansi-overloading.
+
+Mon Feb  3 18:41:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst, case FUNCTION_DECL): Lose obsolete code that
+ 	smashes together template and non-template decls of the same
+ 	signature.
+
 Thu Jan 30 19:18:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* decl.c (lookup_name_real): Also build a TYPENAME_TYPE for nested
- 	classes.
 	* pt.c (tsubst): Don't recurse for the type of a TYPENAME_TYPE.
 
 Wed Jan 29 11:40:35 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
