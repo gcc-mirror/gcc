@@ -603,6 +603,7 @@ merge_blocks_nomove (a, b)
 
   /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
   b->pred = b->succ = NULL;
+  a->global_live_at_end = b->global_live_at_end;
 
   expunge_block (b);
 

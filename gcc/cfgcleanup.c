@@ -334,6 +334,7 @@ merge_blocks_move_predecessor_nojumps (a, b)
   /* Scramble the insn chain.  */
   if (a->end != PREV_INSN (b->head))
     reorder_insns_nobb (a->head, a->end, PREV_INSN (b->head));
+  BB_SET_FLAG (a, BB_UPDATE_LIFE);
 
   if (rtl_dump_file)
     {
@@ -402,6 +403,7 @@ merge_blocks_move_successor_nojumps (a, b)
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
+  BB_SET_FLAG (a, BB_UPDATE_LIFE);
 
   if (rtl_dump_file)
     {
@@ -488,10 +490,14 @@ merge_blocks (e, b, c, mode)
 
       if (b_has_incoming_fallthru)
 	{
+	  rtx bb;
 	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR)
 	    return false;
-	  BB_SET_FLAG (b_fallthru_edge, BB_UPDATE_LIFE);
-	  notice_new_block (force_nonfallthru (b_fallthru_edge));
+	  bb = force_nonfallthru (b_fallthru_edge);
+	  if (bb)
+	    notice_new_block (bb);
+	  else
+	    BB_SET_FLAG (b_fallthru_edge->src, BB_UPDATE_LIFE);
 	}
       merge_blocks_move_predecessor_nojumps (b, c);
       return true;

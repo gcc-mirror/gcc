@@ -1,3 +1,10 @@
+Sat Oct 27 12:12:09 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (merge_blocks_move_predecessor_nojumps,
+	merge_blocks_move_successors_nojumps): Set BB_UPDATE_LIFE.
+	(merge_blocks): Properly udpate life after making edge nonfallthru.
+	* cfgrtl.c (merge_blocks_nomove): Update global_live_at_end.
+
 2001-10-26  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (get_shift_alg): Remove redundant code.
