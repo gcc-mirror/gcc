@@ -6,7 +6,10 @@
 int foo ();
 double dfoo ();
 
-main ()
+/* We don't want __main here because that can drag in atexit (among other
+   things) which won't necessarily exist yet.  */
+
+main_without__main ()
 {
   int a = foo (), b = foo ();
   unsigned int au = foo (), bu = foo ();
