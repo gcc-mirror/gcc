@@ -6101,9 +6101,16 @@ package body Sem_Util is
       --  declared at the library level to ensure that names such as
       --  X.all'access don't fail static accessibility checks.
 
+      --  Ada 0Y (AI-230): In case of anonymous access types that are
+      --  component_definition or discriminants of a nonlimited type,
+      --  the level is the same as that of the enclosing component type.
+
       Btyp := Base_Type (Typ);
       if Ekind (Btyp) in Access_Kind then
-         if Ekind (Btyp) = E_Anonymous_Access_Type then
+         if Ekind (Btyp) = E_Anonymous_Access_Type
+           and then not Is_Array_Type (Scope (Btyp))      --  Ada 0Y (AI-230)
+           and then Ekind (Scope (Btyp)) /= E_Record_Type --  Ada 0Y (AI-230)
+         then
             return Scope_Depth (Standard_Standard);
          end if;
 

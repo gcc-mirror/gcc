@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,10 +50,14 @@ pragma Pure (C);
    --  Signed and Unsigned Integers. Note that in GNAT, we have ensured that
    --  the standard predefined Ada types correspond to the standard C types
 
+   --  Note: the Integer qualifications used in the declaration of type long
+   --  avoid ambiguities when compiling in the presence of s-auxdec.ads and
+   --  a non-private system.address type.
+
    type int   is new Integer;
    type short is new Short_Integer;
-   type long  is range -(2 ** (System.Parameters.long_bits - 1))
-     .. +(2 ** (System.Parameters.long_bits - 1)) - 1;
+   type long  is range -(2 ** (System.Parameters.long_bits - Integer'(1)))
+     .. +(2 ** (System.Parameters.long_bits - Integer'(1))) - 1;
 
    type signed_char is range SCHAR_MIN .. SCHAR_MAX;
    for signed_char'Size use CHAR_BIT;
@@ -67,9 +71,13 @@ pragma Pure (C);
 
    subtype plain_char is unsigned_char; -- ??? should be parametrized
 
+   --  Note: the Integer qualifications used in the declaration of ptrdiff_t
+   --  avoid ambiguities when compiling in the presence of s-auxdec.ads and
+   --  a non-private system.address type.
+
    type ptrdiff_t is
-     range -(2 ** (Standard'Address_Size - 1)) ..
-           +(2 ** (Standard'Address_Size - 1) - 1);
+     range -(2 ** (Standard'Address_Size - Integer'(1))) ..
+           +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
 
    type size_t is mod 2 ** Standard'Address_Size;
 

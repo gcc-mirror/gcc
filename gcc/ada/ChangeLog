@@ -1,3 +1,58 @@
+2004-04-26  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_dist.adb, exp_dist.adb: When constructing a RAS value for a local
+	subprogram for which no pragma All_Calls_Remote applies, store the
+	address of the real subprogram in the underlying record type, so local
+	dereferences do not go through the PCS.
+
+2004-04-26  Robert Dewar  <dewar@gnat.com>
+
+	* i-c.ads: Add some type qualifications to avoid ambiguities when
+	compiling with s-auxdec.ads and a non-private address type.
+
+2004-04-26  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.rtl: Fix error in previous check-in:
+	Add s-addope.o to non tasking object list (rather than tasking object
+	list).
+
+2004-04-26  Javier Miranda  <miranda@gnat.com>
+
+	* sem_aggr.adb: Fix typo in comments
+	(Resolve_Aggr_Expr): Propagate the type to the nested aggregate.
+	Required to check the null-exclusion attribute.
+
+	* sem_attr.adb (Resolve_Attribute): Check the accessibility level in
+	case of anonymous access types in record and array components. For a
+	component definition the level is the same of the enclosing composite
+	type.
+
+	* sem_ch3.adb (Analyze_Component_Declaration): In case of components
+	that are anonymous access types the level of accessibility depends on
+	the enclosing type declaration. In order to have this information, set
+	the scope of the anonymous access type to the enclosing record type
+	declaration.
+	(Array_Type_Declaration): In case of components that are anonymous
+	access types the level of accessibility depends on the enclosing type
+	declaration. In order to have this information, set the scope of the
+	anonymous access type to the enclosing array type declaration.
+
+	* sem_ch3.adb (Array_Type_Declaration): Set the scope of the anonymous
+	access type.
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Add check to verify that
+	renaming of anonymous access-to-constant types allowed if and only if
+	the renamed object is access-to-constant.
+
+	* sem_util.adb (Type_Access_Level): In case of anonymous access types
+	that are component_definition or discriminants of a nonlimited type,
+	the level is the same as that of the enclosing component type.
+
+2004-04-26  Sergey Rybin  <rybin@act-europe.fr>
+
+	* sem_elim.adb: Some minor code reorganization from code reading. Fix
+	misprint in the function name (File_Name_Match).
+
 2004-04-23  Laurent GUERBY <laurent@guerby.net>
 
 	* Makefile.in: Remove RANLIB_TEST, use -$(RANLIB) including after 

@@ -6645,8 +6645,37 @@ package body Sem_Attr is
                   or else
                 Attr_Id = Attribute_Unchecked_Access)
               and then (Ekind (Btyp) = E_General_Access_Type
-                         or else Ekind (Btyp) = E_Anonymous_Access_Type)
+                          or else Ekind (Btyp) = E_Anonymous_Access_Type)
             then
+               --  Ada 0Y (AI-230): Check the accessibility of anonymous access
+               --  types in record and array components. For a component defini
+               --  tion the level is the same of the enclosing composite type.
+
+               if Extensions_Allowed
+                 and then Ekind (Btyp) = E_Anonymous_Access_Type
+                 and then (Is_Array_Type (Scope (Btyp))
+                             or else Ekind (Scope (Btyp)) = E_Record_Type)
+                 and then Object_Access_Level (P)
+                            > Type_Access_Level (Btyp)
+               then
+                  --  In an instance, this is a runtime check, but one we
+                  --  know will fail, so generate an appropriate warning.
+
+                  if In_Instance_Body then
+                     Error_Msg_N
+                       ("?non-local pointer cannot point to local object", P);
+                     Error_Msg_N
+                       ("?Program_Error will be raised at run time", P);
+                     Rewrite (N,
+                       Make_Raise_Program_Error (Loc,
+                         Reason => PE_Accessibility_Check_Failed));
+                     Set_Etype (N, Typ);
+                  else
+                     Error_Msg_N
+                       ("non-local pointer cannot point to local object", P);
+                  end if;
+               end if;
+
                if Is_Dependent_Component_Of_Mutable_Object (P) then
                   Error_Msg_N
                     ("illegal attribute for discriminant-dependent component",

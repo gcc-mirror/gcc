@@ -295,7 +295,7 @@ package body Sem_Dist is
       Async_E               : Entity_Id;
       All_Calls_Remote_E    : Entity_Id;
       Attribute_Subp        : Entity_Id;
-      Parameter             : Node_Id;
+      Local_Addr            : Node_Id;
 
    begin
       --  Check if we have to expand the access attribute
@@ -346,14 +346,17 @@ package body Sem_Dist is
          All_Calls_Remote_E := Standard_False;
       end if;
 
-      Parameter := New_Occurrence_Of (RTE (RE_Null_Address), Loc);
+      Local_Addr :=
+        Make_Attribute_Reference (Loc,
+          Prefix         => New_Occurrence_Of (Remote_Subp, Loc),
+          Attribute_Name => Name_Address);
 
       Tick_Access_Conv_Call :=
         Make_Function_Call (Loc,
           Name => New_Occurrence_Of (Attribute_Subp, Loc),
           Parameter_Associations =>
             New_List (
-              Parameter,
+              Local_Addr,
               Make_String_Literal (Loc, Full_Qualified_Name (RS_Pkg_E)),
               Build_Subprogram_Id (Loc, Remote_Subp),
               New_Occurrence_Of (Async_E, Loc),

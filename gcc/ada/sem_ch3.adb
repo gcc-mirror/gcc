@@ -993,6 +993,12 @@ package body Sem_Ch3 is
                 (Related_Nod => N,
                  N => Access_Definition (Component_Definition (N)));
 
+         --  Ada 0Y (AI-230): In case of components that are anonymous access
+         --  types the level of accessibility depends on the enclosing type
+         --  declaration
+
+         Set_Scope (T, Current_Scope); --  Ada 0Y (AI-230)
+
          --  Ada 0Y (AI-254)
 
          if Present (Access_To_Subprogram_Definition
@@ -2992,6 +2998,12 @@ package body Sem_Ch3 is
          Element_Type := Access_Definition
                            (Related_Nod => Related_Id,
                             N           => Access_Definition (Component_Def));
+
+         --  Ada 0Y (AI-230): In case of components that are anonymous access
+         --  types the level of accessibility depends on the enclosing type
+         --  declaration
+
+         Set_Scope (Element_Type, T); --  Ada 0Y (AI-230)
 
          --  Ada 0Y (AI-254)
 
