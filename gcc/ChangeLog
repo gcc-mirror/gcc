@@ -1,3 +1,8 @@
+2004-01-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Undefine
+	 before defining.
+
 2004-01-11  Steven Bosscher  <stevenb@suse.de>
 
 	* toplev.c (rest_of_handle_inline): Also consider functions
