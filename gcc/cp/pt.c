@@ -4327,16 +4327,8 @@ mark_class_instantiated (t, extern_p)
      int extern_p;
 {
   SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
-
-  if (supports_one_only () && ! SUPPORTS_WEAK)
-    /* For WIN32 we also want to put explicit instantiations in
-       linkonce sections.  */;
-  else
-    {
-      SET_CLASSTYPE_INTERFACE_KNOWN (t);
-      CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
-    }
-
+  SET_CLASSTYPE_INTERFACE_KNOWN (t);
+  CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
   CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = extern_p;
   if (! extern_p)
