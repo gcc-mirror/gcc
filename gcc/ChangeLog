@@ -1,3 +1,10 @@
+2005-01-31  Roger Sayle  <roger@eyesopen.com>
+	    Dale Johannesen  <dalej@apple.com>
+
+	PR middle-end/19650
+	* fold-const.c (fold_binary_op_with_conditional_arg):
+	Make types match original operands, before STRIP_NOPS.
+
 2005-01-31  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux-unwind.h (struct gcc_vregs): New.
