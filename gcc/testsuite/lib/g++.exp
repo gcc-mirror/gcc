@@ -22,6 +22,7 @@
 # g++ support library routines
 #
 load_lib prune.exp
+load_lib gcc-defs.exp
 
 #
 # GXX_UNDER_TEST is the compiler under test.
@@ -30,12 +31,16 @@ load_lib prune.exp
 
 set gpp_compile_options ""
 
+
 #
 # g++_version -- extract and print the version number of the compiler
 #
+
 proc g++_version { } {
     global GXX_UNDER_TEST
     
+    g++_init
+
     # ignore any arguments after the command
     set compiler [lindex $GXX_UNDER_TEST 0]
     
@@ -61,8 +66,8 @@ proc g++_version { } {
 }
 
 #
-# provide new versions of g++_include_flags and g++_link_flags (both
-# originally from libgloss.exp) which know about the new gcc tree structure
+# g++_include_flags -- provide new version of g++_include_flags
+# (originally from libgloss.exp) which knows about the gcc tree structure
 #
 proc g++_include_flags { paths } {
     global srcdir
@@ -93,6 +98,11 @@ proc g++_include_flags { paths } {
 
     return "$flags"
 }
+
+#
+# g++_link_flags -- provide new version of g++_link_flags
+# (originally from libgloss.exp) which knows about the gcc tree structure
+#
 
 proc g++_link_flags { paths } {
     global rootme
@@ -236,6 +246,9 @@ proc g++_init { args } {
     verbose "g++ is initialized" 3
 }
 
+#
+# g++_target_compile -- compile a source file
+#
 
 proc g++_target_compile { source dest type options } {
     global tmpdir;
@@ -265,38 +278,15 @@ proc g++_target_compile { source dest type options } {
     return [target_compile $source $dest $type $options]
 }
 
-proc g++_exit { args } {
-    global gluefile;
-
-    if [info exists gluefile] {
-	file_on_build delete $gluefile;
-	unset gluefile;
-    }
-}
-
-# If this is an older version of dejagnu (without runtest_file_p),
-# provide one and assume the old syntax: foo1.exp bar1.c foo2.exp bar2.c.
-# This can be deleted after the next dejagnu release.
-
-if { [info procs runtest_file_p] == "" } then {
-    proc runtest_file_p { runtests testcase } {
-	if { $runtests != "" && [regexp "\[.\]\[cC\]" $runtests] } then {
-	    if { [lsearch $runtests [file tail $testcase]] >= 0 } then {
-		return 1
-	    } else {
-		return 0
-	    }
-	}
-	return 1
-    }
-}
-
+#
+# g++_set_ld_library_path --
 # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
 # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
 # (for the 64-bit ABI).  The right way to do this would be to modify
 # unix.exp -- but that's not an option since it's part of DejaGNU
 # proper, so we do it here, by trickery.  We really only need to do 
 # this on IRIX, but it shouldn't hurt to do it anywhere else.
+#
 
 proc g++_set_ld_library_path { name element op } {
   setenv LD_LIBRARYN32_PATH [getenv LD_LIBRARY_PATH]
@@ -305,26 +295,17 @@ proc g++_set_ld_library_path { name element op } {
 
 trace variable env(LD_LIBRARY_PATH) w g++_set_ld_library_path
 
-# Utility used by mike-g++.exp and old-dejagnu.exp.
-# Check the compiler(/assembler/linker) output for text indicating that
-# the testcase should be marked as "unsupported".
 #
-# When dealing with a large number of tests, it's difficult to weed out the
-# ones that are too big for a particular cpu (eg: 16 bit with a small amount
-# of memory).  There are various ways to deal with this.  Here's one.
-# Fortunately, all of the cases where this is likely to happen will be using
-# gld so we can tell what the error text will look like.
-
-proc ${tool}_check_unsupported_p { output } {
-    if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
-	return "memory full"
-    }
-    return ""
-}
+# ${tool}_option_help
+#
 
 proc ${tool}_option_help { } {
-    send_user "--additional_options,OPTIONS\t\tUse OPTIONS to compile the testcase files. OPTIONS should be comma-separated."
+    send_user " --additional_options,OPTIONS\t\tUse OPTIONS to compile the testcase files. OPTIONS should be comma-separated.\n"
 }
+
+#
+# ${tool}_option_proc
+#
 
 proc ${tool}_option_proc { option } {
     if [regexp "^--additional_options," $option] {
