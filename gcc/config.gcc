@@ -2261,7 +2261,7 @@ mipsel-*-netbsd* | mips-dec-netbsd*)    # Decstation running NetBSD
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	xmake_file=x-linux
-        tm_file="linux.h mips/linux.h"
+        tm_file="elfos.h svr4.h linux.h mips/linux.h"
 	case $machine in
         mipsisa32*-*)
                 tm_file="$tm_file mips/isa32-linux.h"
