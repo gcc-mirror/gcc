@@ -1,3 +1,10 @@
+2002-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6706
+	* dwarfout.c (output_reg_number): Fix warning message.
+	(output_bound_representation): Check SAVE_EXPR_RTL is not NULL
+	before using it.
+	
 2002-07-03  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (prologue_get_pc): Issue pop here ...

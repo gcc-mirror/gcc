@@ -2086,7 +2086,8 @@ output_reg_number (rtl)
 
   if (regno >= DWARF_FRAME_REGISTERS)
     {
-      warning_with_decl (dwarf_last_decl, "internal regno botch: regno = %d\n",
+      warning_with_decl (dwarf_last_decl, 
+			 "internal regno botch: `%s' has regno = %d\n",
 			 regno);
       regno = 0;
     }
@@ -2303,7 +2304,8 @@ output_bound_representation (bound, dim_num, u_or_l)
 		   || TREE_CODE (bound) == CONVERT_EXPR)
 	      bound = TREE_OPERAND (bound, 0);
 
-	    if (TREE_CODE (bound) == SAVE_EXPR)
+	    if (TREE_CODE (bound) == SAVE_EXPR 
+		&& SAVE_EXPR_RTL (bound))
 	      output_loc_descriptor
 		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
 	  }
