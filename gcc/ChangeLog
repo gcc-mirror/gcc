@@ -1,3 +1,8 @@
+2003-12-05  Waldek Hebisch <hebisch@math.uni.wroc.pl>
+
+	* stmt.c (expand_nl_goto_receiver): Copy hard register clobbers
+	and ASM_INPUT barrier from expand_builtin_setjmp_receiver.
+
 2003-12-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_expand_call): Don't allow laziy binding
