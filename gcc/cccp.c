@@ -6919,24 +6919,31 @@ macroexpand (hp, op)
 	i = 0;
     }
 
+    /* Don't output an error message if we have already output one for
+       a parse error above.  */
     rest_zero = 0;
-    if (nargs == 0 && i > 0)
-      error ("arguments given to macro `%s'", hp->name);
-    else if (i < nargs) {
+    if (nargs == 0 && i > 0) {
+      if (! parse_error)
+	error ("arguments given to macro `%s'", hp->name);
+    } else if (i < nargs) {
       /* traditional C allows foo() if foo wants one argument.  */
       if (nargs == 1 && i == 0 && traditional)
 	;
       /* the rest args token is allowed to absorb 0 tokens */
       else if (i == nargs - 1 && defn->rest_args)
 	rest_zero = 1;
+      else if (parse_error)
+	;
       else if (i == 0)
 	error ("macro `%s' used without args", hp->name);
       else if (i == 1)
 	error ("macro `%s' used with just one arg", hp->name);
       else
 	error ("macro `%s' used with only %d args", hp->name, i);
-    } else if (i > nargs)
-      error ("macro `%s' used with too many (%d) args", hp->name, i);
+    } else if (i > nargs) {
+      if (! parse_error)
+	error ("macro `%s' used with too many (%d) args", hp->name, i);
+    }
 
     /* Swallow the closeparen.  */
     ++instack[indepth].bufp;
