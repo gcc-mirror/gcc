@@ -12,6 +12,11 @@
 
 	* config/ia64/ia64.c (ia64_adjust_cost): Handle SUBREGs.
 
+	* cfgcleanup.c (try_optimize_cfg): If try_simplify_condjump optimized
+	conditional jump, request updating life into for the block
+	containing it.  Fix a typo which prevented life info update.
+	Clear blocks bitmap before using it.
+
 2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c: Include c-lex.h.

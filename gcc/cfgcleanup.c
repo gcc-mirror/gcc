@@ -1211,7 +1211,10 @@ try_optimize_cfg (mode)
 
 	  /* Simplify branch over branch.  */
 	  if ((mode & CLEANUP_EXPENSIVE) && try_simplify_condjump (b))
-	    changed_here = true;
+	    {
+	      BB_SET_FLAG (b, BB_UPDATE_LIFE);
+	      changed_here = true;
+	    }
 
 	  /* If B has a single outgoing edge, but uses a non-trivial jump
 	     instruction without side-effects, we can either delete the
@@ -1261,10 +1264,11 @@ try_optimize_cfg (mode)
   if (mode & CLEANUP_CROSSJUMP)
     remove_fake_edges ();
 
-  if ((mode & CLEANUP_UPDATE_LIFE) & changed_overall)
+  if ((mode & CLEANUP_UPDATE_LIFE) && changed_overall)
     {
       bool found = 0;
       blocks = sbitmap_alloc (n_basic_blocks);
+      sbitmap_zero (blocks);
       for (i = 0; i < n_basic_blocks; i++)
 	if (BB_FLAGS (BASIC_BLOCK (i)) & BB_UPDATE_LIFE)
 	  {
