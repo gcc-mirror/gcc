@@ -1,3 +1,9 @@
+2002-05-22  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/loop-2c.x: Remove, the test should pass
+	now.
+	* gcc.c-torture/execute/loop-2d.x: Likewise.
+
 2002-05-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/weak-2.c:  xfail warnings for platforms that don't
@@ -86,7 +92,7 @@
 
 	PR c++/6497
 	* g++.dg/inherit/access2.C: New test.
-	
+
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/6445
@@ -260,7 +266,7 @@
 	* g++.dg/opt/const1.C: New test.
 
 2002-04-10  Lars Brinkhoff  <lars@nocrew.org>
- 
+
 	* gcc.c-torture/execute/20020406-1.c: Declare malloc.
 
 2002-04-10  Nathan Sidwell  <nathan@codesourcery.com>
@@ -368,7 +374,7 @@
 2002-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/new2.C: New test.
-	
+
 2002-03-27  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.brendan/crash52.C: Remove return warning marker.
@@ -466,7 +472,7 @@
 
 2002-03-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
-	* g++.old-deja/g++.eh/ia64-1.C: Use [ijkl]_[0-9] as variable names. 
+	* g++.old-deja/g++.eh/ia64-1.C: Use [ijkl]_[0-9] as variable names.
 	(A, E): Handle this.
 
 2002-03-20  Jason Merrill  <jason@redhat.com>
