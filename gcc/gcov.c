@@ -41,11 +41,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is no way to get the total execution counts for the included file, can
    only get execution counts for one or the other of the including files.  */
 
-/* The only need for this is so that we get macro definitions for rindex
-   if necessary.  */
 #include "config.h"
-
 #include <stdio.h>
+#include "gansidecl.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
