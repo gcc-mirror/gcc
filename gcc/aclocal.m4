@@ -269,8 +269,12 @@ AC_SUBST($1)dnl
 # mmap(2) blacklisting.  Some platforms provide the mmap library routine
 # but don't support all of the features we need from it.
 AC_DEFUN([gcc_AC_FUNC_MMAP_BLACKLIST],
-[if test $ac_cv_header_sys_mman_h != yes \
- || test $ac_cv_func_mmap != yes; then
+[
+AC_CHECK_HEADER([sys/mman.h],
+		[gcc_header_sys_mman_h=yes], [gcc_header_sys_mman_h=no])
+AC_CHECK_FUNC([mmap], [gcc_func_mmap=yes], [gcc_func_mmap=no])
+if test "$gcc_header_sys_mman_h" != yes \
+ || test "$gcc_func_mmap" != yes; then
    gcc_cv_func_mmap_file=no
    gcc_cv_func_mmap_dev_zero=no
    gcc_cv_func_mmap_anon=no
