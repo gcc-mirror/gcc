@@ -40,27 +40,82 @@ package java.nio;
 
 import gnu.gcj.RawData;
 
-final class DirectByteBufferImpl extends ByteBuffer
+abstract class DirectByteBufferImpl extends ByteBuffer
 {
-  /** Used by MappedByteBufferImpl and when slicing to prevent premature GC. */
-  protected Object owner;
+  /** The owner is used to keep alive the object that actually owns the
+    * memory. There are three possibilities:
+    *  1) owner == this: We allocated the memory and we should free it,
+    *                    but *only* in finalize (if we've been sliced
+    *                    other objects will also have access to the
+    *                    memory).
+    *  2) owner == null: The byte buffer was created thru
+    *                    JNI.NewDirectByteBuffer. The JNI code is
+    *                    responsible for freeing the memory.
+    *  3) owner == some other object: The other object allocated the
+    *                                 memory and should free it.
+    */
+  private final Object owner;
+  final RawData address;
 
-  RawData address;
-  private boolean readOnly;
-
-  public DirectByteBufferImpl(RawData address, long len)
+  final static class ReadOnly extends DirectByteBufferImpl
   {
-    this(null, address, (int) len, (int) len, 0, false);
+    ReadOnly(Object owner, RawData address,
+	     int capacity, int limit,
+	     int position)
+    {
+      super(owner, address, capacity, limit, position);
+    }
+
+    public ByteBuffer put(byte value)
+    {
+      throw new ReadOnlyBufferException ();
+    }
+
+    public ByteBuffer put(int index, byte value)
+    {
+      throw new ReadOnlyBufferException ();
+    }
+
+    public boolean isReadOnly()
+    {
+      return true;
+    }
   }
-  
-  public DirectByteBufferImpl(Object owner, RawData address,
-			      int capacity, int limit,
-			      int position, boolean readOnly)
+
+  final static class ReadWrite extends DirectByteBufferImpl
+  {
+    ReadWrite(int capacity)
+    {
+      super(capacity);
+    }
+
+    ReadWrite(Object owner, RawData address,
+	      int capacity, int limit,
+	      int position)
+    {
+      super(owner, address, capacity, limit, position);
+    }
+
+    public boolean isReadOnly()
+    {
+      return false;
+    }
+  }
+
+  DirectByteBufferImpl(int capacity)
+  {
+    super(capacity, capacity, 0, -1);
+    this.owner = this;
+    this.address = VMDirectByteBuffer.allocate(capacity);
+  }
+
+  DirectByteBufferImpl(Object owner, RawData address,
+		       int capacity, int limit,
+		       int position)
   {
     super(capacity, limit, position, -1);
-    this.address = address;
-    this.readOnly = readOnly;
     this.owner = owner;
+    this.address = address;
   }
 
   /**
@@ -68,13 +123,13 @@ final class DirectByteBufferImpl extends ByteBuffer
    */ 
   public static ByteBuffer allocate(int capacity)
   {
-    return new DirectByteBufferImpl(VMDirectByteBuffer.allocate(capacity),
-				    capacity);
+    return new DirectByteBufferImpl.ReadWrite(capacity);
   }
 
   protected void finalize() throws Throwable
   {
-    VMDirectByteBuffer.free(address);
+    if (owner == this)
+        VMDirectByteBuffer.free(address);
   }
   
   public byte get()
@@ -108,7 +163,6 @@ final class DirectByteBufferImpl extends ByteBuffer
 
   public ByteBuffer put(byte value)
   {
-    checkIfReadOnly();
     checkForOverflow();
 
     int pos = position();
@@ -119,7 +173,6 @@ final class DirectByteBufferImpl extends ByteBuffer
   
   public ByteBuffer put(int index, byte value)
   {
-    checkIfReadOnly();
     checkIndex(index);
 
     VMDirectByteBuffer.put(address, index, value);
@@ -147,9 +200,14 @@ final class DirectByteBufferImpl extends ByteBuffer
   public ByteBuffer slice()
   {
     int rem = remaining();
-    return new DirectByteBufferImpl
+    if (isReadOnly())
+        return new DirectByteBufferImpl.ReadOnly
       (owner, VMDirectByteBuffer.adjustAddress(address, position()),
-       rem, rem, 0, isReadOnly());
+       rem, rem, 0);
+    else
+        return new DirectByteBufferImpl.ReadWrite
+      (owner, VMDirectByteBuffer.adjustAddress(address, position()),
+       rem, rem, 0);
   }
 
   private ByteBuffer duplicate(boolean readOnly)
@@ -158,9 +216,14 @@ final class DirectByteBufferImpl extends ByteBuffer
     reset();
     int mark = position();
     position(pos);
-    DirectByteBufferImpl result
-      = new DirectByteBufferImpl(owner, address, capacity(), limit(),
-				 pos, readOnly);
+    DirectByteBufferImpl result;
+    if (readOnly)
+        result = new DirectByteBufferImpl.ReadOnly(owner, address, capacity(),
+                                                   limit(), pos);
+    else
+        result = new DirectByteBufferImpl.ReadWrite(owner, address, capacity(),
+                                                    limit(), pos);
+
     if (mark != pos)
       {
 	result.position(mark);
@@ -178,11 +241,6 @@ final class DirectByteBufferImpl extends ByteBuffer
   public ByteBuffer asReadOnlyBuffer()
   {
     return duplicate(true);
-  }
-
-  public boolean isReadOnly()
-  {
-    return readOnly;
   }
 
   public boolean isDirect()
