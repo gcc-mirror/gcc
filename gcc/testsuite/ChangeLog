@@ -1,3 +1,7 @@
+2001-01-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/avoidpaste1.c: Test case.
+
 2001-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/inline18.C: New test.
