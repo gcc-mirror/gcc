@@ -7825,23 +7825,23 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 void
 s390_trampoline_template (FILE *file)
 {
+  rtx op[2];
+  op[0] = gen_rtx_REG (Pmode, 0);
+  op[1] = gen_rtx_REG (Pmode, 1);
+
   if (TARGET_64BIT)
     {
-      fprintf (file, "larl\t%s,0f\n", reg_names[1]);
-      fprintf (file, "lg\t%s,0(%s)\n", reg_names[0], reg_names[1]);
-      fprintf (file, "lg\t%s,8(%s)\n", reg_names[1], reg_names[1]);
-      fprintf (file, "br\t%s\n", reg_names[1]);
-      fprintf (file, "0:\t.quad\t0\n");
-      fprintf (file, ".quad\t0\n");
+      output_asm_insn ("basr\t%1,0", op);
+      output_asm_insn ("lmg\t%0,%1,14(%1)", op);
+      output_asm_insn ("br\t%1", op);
+      ASM_OUTPUT_SKIP (file, (HOST_WIDE_INT)(TRAMPOLINE_SIZE - 10));
     }
   else
     {
-      fprintf (file, "basr\t%s,0\n", reg_names[1]);
-      fprintf (file, "l\t%s,10(%s)\n", reg_names[0], reg_names[1]);
-      fprintf (file, "l\t%s,14(%s)\n", reg_names[1], reg_names[1]);
-      fprintf (file, "br\t%s\n", reg_names[1]);
-      fprintf (file, ".long\t0\n");
-      fprintf (file, ".long\t0\n");
+      output_asm_insn ("basr\t%1,0", op);
+      output_asm_insn ("lm\t%0,%1,6(%1)", op);
+      output_asm_insn ("br\t%1", op);
+      ASM_OUTPUT_SKIP (file, (HOST_WIDE_INT)(TRAMPOLINE_SIZE - 8));
     }
 }
 
@@ -7854,10 +7854,10 @@ s390_initialize_trampoline (rtx addr, rtx fnaddr, rtx cxt)
 {
   emit_move_insn (gen_rtx_MEM (Pmode,
 		   memory_address (Pmode,
-		   plus_constant (addr, (TARGET_64BIT ? 20 : 12) ))), cxt);
+		   plus_constant (addr, (TARGET_64BIT ? 16 : 8)))), cxt);
   emit_move_insn (gen_rtx_MEM (Pmode,
 		   memory_address (Pmode,
-		   plus_constant (addr, (TARGET_64BIT ? 28 : 16) ))), fnaddr);
+		   plus_constant (addr, (TARGET_64BIT ? 24 : 12)))), fnaddr);
 }
 
 /* Return rtx for 64-bit constant formed from the 32-bit subwords
