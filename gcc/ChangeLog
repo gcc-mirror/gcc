@@ -19,7 +19,6 @@ Sun Feb 18 17:05:50 2001  Jeffrey A Law  (law@cygnus.com)
 	(rtx_varies_p, rtx_addr_can_trap_p): Similarly.
 
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
->>>>>>> 1.9328
 
 	* sibcall.c (optimize_sibling_and_tail_recursive_call): Compare
 	against last real insn in basic block.
