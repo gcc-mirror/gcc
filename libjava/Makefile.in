@@ -607,6 +607,7 @@ java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/lang/reflect/ReflectPermission.java \
 java/io/BlockDataException.java	\
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -625,9 +626,11 @@ java/io/EOFException.java \
 java/io/Externalizable.java \
 java/io/File.java \
 java/io/FileDescriptor.java \
+java/io/FileFilter.java \
 java/io/FileInputStream.java \
 java/io/FileNotFoundException.java \
 java/io/FileOutputStream.java \
+java/io/FilePermission.java \
 java/io/FileReader.java	\
 java/io/FileWriter.java	\
 java/io/FilenameFilter.java \
@@ -1433,8 +1436,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/io/DataOutput.P .deps/java/io/DataOutputStream.P \
 .deps/java/io/EOFException.P .deps/java/io/Externalizable.P \
 .deps/java/io/File.P .deps/java/io/FileDescriptor.P \
-.deps/java/io/FileInputStream.P .deps/java/io/FileNotFoundException.P \
-.deps/java/io/FileOutputStream.P .deps/java/io/FileReader.P \
+.deps/java/io/FileFilter.P .deps/java/io/FileInputStream.P \
+.deps/java/io/FileNotFoundException.P .deps/java/io/FileOutputStream.P \
+.deps/java/io/FilePermission.P .deps/java/io/FileReader.P \
 .deps/java/io/FileWriter.P .deps/java/io/FilenameFilter.P \
 .deps/java/io/FilterInputStream.P .deps/java/io/FilterOutputStream.P \
 .deps/java/io/FilterReader.P .deps/java/io/FilterWriter.P \
@@ -1536,7 +1540,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/reflect/Field.P \
 .deps/java/lang/reflect/InvocationTargetException.P \
 .deps/java/lang/reflect/Member.P .deps/java/lang/reflect/Method.P \
-.deps/java/lang/reflect/Modifier.P .deps/java/lang/reflect/natArray.P \
+.deps/java/lang/reflect/Modifier.P \
+.deps/java/lang/reflect/ReflectPermission.P \
+.deps/java/lang/reflect/natArray.P \
 .deps/java/lang/reflect/natConstructor.P \
 .deps/java/lang/reflect/natField.P .deps/java/lang/reflect/natMethod.P \
 .deps/java/lang/s_atan.P .deps/java/lang/s_ceil.P \
