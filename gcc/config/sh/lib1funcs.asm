@@ -772,7 +772,6 @@ GLOBAL(movstr):
 #endif
 
 #ifdef L_movstr_i4
-#if defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__) || defined(__SH4_NOFPU__)
 	.text
 	.global	GLOBAL(movstr_i4_even)
 	.global	GLOBAL(movstr_i4_odd)
@@ -826,7 +825,6 @@ GLOBAL(movstrSI12_i4):
 	mov.l	r1,@(4,r4)
 	rts
 	mov.l	r2,@(8,r4)
-#endif /* ! __SH4__ */
 #endif
 
 #ifdef L_mulsi3
