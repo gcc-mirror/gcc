@@ -1319,8 +1319,8 @@ reload (first, global, dumpfile)
 			 don't conflict with things needed to reload inputs or
 			 outputs.  */
 
-		      in_max = MAX (MAX (insn_needs.op_addr.regs[j][i],
-					 insn_needs.op_addr_reload.regs[j][i]),
+		      in_max = MAX ((insn_needs.op_addr.regs[j][i]
+				     + insn_needs.op_addr_reload.regs[j][i]),
 				    in_max);
 
 		      out_max = MAX (out_max, insn_needs.insn.regs[j][i]);
@@ -1352,8 +1352,8 @@ reload (first, global, dumpfile)
 			= MAX (out_max, insn_needs.out_addr_addr[j].groups[i]);
 		    }
 
-		  in_max = MAX (MAX (insn_needs.op_addr.groups[i],
-				     insn_needs.op_addr_reload.groups[i]),
+		  in_max = MAX ((insn_needs.op_addr.groups[i]
+				 + insn_needs.op_addr_reload.groups[i]),
 				in_max);
 		  out_max = MAX (out_max, insn_needs.insn.groups[i]);
 
@@ -4630,7 +4630,13 @@ reload_reg_free_p (regno, opnum, type)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
 
+      /* ??? A OPADDR_ADDR reload does not conflict with the OPERAND_ADDRESS
+	 reload that uses it.  However, the same operand can have multiple
+	 OPERAND_ADDRESS reloads, and a OPADDR_ADDR reload does conflict with
+	 other OPERAND_ADDRESS reloads for the same operand, hence we must
+	 say that OPADDR_ADDR and OPERAND_ADDRESS reloads always conflict.  */
       return (! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
+	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno));
 
     case RELOAD_FOR_OPADDR_ADDR:
@@ -4638,7 +4644,8 @@ reload_reg_free_p (regno, opnum, type)
         if (TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
           return 0;
 
-      return (!TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno));
+      return (! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno)
+	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno));
 
     case RELOAD_FOR_OUTPUT:
       /* This cannot share a register with RELOAD_FOR_INSN reloads, other
@@ -4755,12 +4762,6 @@ reload_reg_free_before_p (regno, opnum, type)
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
     case RELOAD_FOR_OPERAND_ADDRESS:
-      /* Earlier reloads include RELOAD_FOR_OPADDR_ADDR reloads.  */
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno))
-	return 0;
-
-      /* ... fall through ...  */
-
     case RELOAD_FOR_OPADDR_ADDR:
     case RELOAD_FOR_INSN:
       /* These can't conflict with inputs, or each other, so all we have to
@@ -4904,8 +4905,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
-      return (! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
-	      && !TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno));
+      return (! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno));
 
     case RELOAD_FOR_INSN:
       /* These conflict with other outputs with RELOAD_OTHER.  So
@@ -4980,11 +4980,13 @@ reloads_conflict (r1, r2)
 
     case RELOAD_FOR_OPERAND_ADDRESS:
       return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_INSN
-	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS);
+	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS
+	      || r2_type == RELOAD_FOR_OPADDR_ADDR);
 
     case RELOAD_FOR_OPADDR_ADDR:
       return (r2_type == RELOAD_FOR_INPUT 
-	      || r2_type == RELOAD_FOR_OPADDR_ADDR);
+	      || r2_type == RELOAD_FOR_OPADDR_ADDR
+	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS);
 
     case RELOAD_FOR_OUTPUT:
       return (r2_type == RELOAD_FOR_INSN || r2_type == RELOAD_FOR_OUTPUT
