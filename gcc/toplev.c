@@ -3126,7 +3126,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	      if (write_symbols == DBX_DEBUG && !strncmp (str, "ggdb", len)
 		  && len >= 2)
 		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == DBX_DEBUG && !strcmp (str, "gstabs+"))
+	      else if (write_symbols == DBX_DEBUG && !strncmp (str, "gstabs+", len)
+		       && len >= 7)
 		use_gnu_debug_info_extensions = 1;
 	      else if (write_symbols == DBX_DEBUG
 		       && !strncmp (str, "gstabs", len) && len >= 2)
