@@ -83,7 +83,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* A map from blocks to the edges on which they are control dependent.  */
 typedef struct {
-  /* An dynamically allocated array.  The Nth element corresponds to
+  /* A dynamically allocated array.  The Nth element corresponds to
      the block with index N + 2.  The Ith bit in the bitmap is set if
      that block is dependent on the Ith edge.  */
   bitmap *data;

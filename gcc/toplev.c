@@ -634,7 +634,7 @@ int flag_finite_math_only = 0;
 int flag_trapping_math = 1;
 
 /* Nonzero means disable transformations observable by signaling NaNs.
-   This option implies that any operation on a IEEE signaling NaN can
+   This option implies that any operation on an IEEE signaling NaN can
    generate a (user-visible) trap.  */
 
 int flag_signaling_nans = 0;

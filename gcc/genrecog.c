@@ -2477,7 +2477,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
   switch (type)
     {
     case RECOG:
-      /* If this is an DEFINE_INSN and X is a PARALLEL, see if it ends
+      /* If this is a DEFINE_INSN and X is a PARALLEL, see if it ends
 	 with a group of CLOBBERs of (hard) registers or MATCH_SCRATCHes.
 	 If so, set up to recognize the pattern without these CLOBBERs.  */
 

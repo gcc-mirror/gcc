@@ -3435,7 +3435,7 @@ subreg_offset_representable_p (xregno, xmode, offset, ymode)
     abort ();
 #endif
 
-  /* The XMODE value can be seen as an vector of NREGS_XMODE
+  /* The XMODE value can be seen as a vector of NREGS_XMODE
      values.  The subreg must represent an lowpart of given field.
      Compute what field it is.  */
   offset -= subreg_lowpart_offset (ymode, 

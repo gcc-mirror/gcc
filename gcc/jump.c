@@ -760,7 +760,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
   return UNKNOWN;
 }
 
-/* An wrapper around the previous function to take COMPARISON as rtx
+/* A wrapper around the previous function to take COMPARISON as rtx
    expression.  This simplifies many callers.  */
 enum rtx_code
 reversed_comparison_code (comparison, insn)
