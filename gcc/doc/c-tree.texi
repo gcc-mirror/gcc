@@ -1203,11 +1203,11 @@ Then, if @code{THUNK_VCALL_OFFSET} (an @code{INTEGER_CST}) is nonzero
 the adjusted @code{this} pointer must be adjusted again.  The complete
 calculation is given by the following pseudo-code:
 
-@example
+@smallexample
 this += THUNK_DELTA
 if (THUNK_VCALL_OFFSET)
   this += (*((ptrdiff_t **) this))[THUNK_VCALL_OFFSET]
-@end example
+@end smallexample
 
 Finally, the thunk should jump to the location given
 by @code{DECL_INITIAL}; this will always be an expression for the

@@ -2273,7 +2273,7 @@ $(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
 	 $(docdir)/invoke.texi $(docdir)/extend.texi $(docdir)/md.texi \
 	 $(docdir)/objc.texi $(docdir)/gcov.texi $(docdir)/trouble.texi \
 	 $(docdir)/bugreport.texi $(docdir)/service.texi \
-	 $(docdir)/contribute.texi $(docdir)/vms.texi \
+	 $(docdir)/contribute.texi $(docdir)/vms.texi $(docdir)/compat.texi \
 	 $(docdir)/include/funding.texi $(docdir)/gnu.texi \
 	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
 	 $(docdir)/contrib.texi $(docdir)/cppenv.texi $(docdir)/cppopts.texi

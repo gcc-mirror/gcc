@@ -169,7 +169,7 @@ in the following sections.
 -fallow-single-precision  -fcond-mismatch @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char @gol
--fwritable-strings  -fshort-wchar}
+-fwritable-strings}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -279,8 +279,8 @@ in the following sections.
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
--fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -ftrapv @gol
--funroll-all-loops  -funroll-loops  @gol
+-fstrength-reduce  -fstrict-aliasing  -fthread-jumps @gol
+-ftrapv -funroll-all-loops  -funroll-loops  @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -444,7 +444,7 @@ in the following sections.
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
--maix-struct-return -msvr4-struct-return
+-maix-struct-return -msvr4-struct-return @gol
 -mabi=altivec -mabi=no-altivec @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
@@ -610,8 +610,8 @@ in the following sections.
 
 @emph{D30V Options}
 @gccoptlist{
--mextmem  -mextmemory  -monchip  -mno-asm-optimize  -masm-optimize @gol
--mbranch-cost=@var{n} -mcond-exec=@var{n}}
+-mextmem  -mextmemory  -monchip  -mno-asm-optimize @gol
+-masm-optimize -mbranch-cost=@var{n} -mcond-exec=@var{n}}
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{
@@ -670,7 +670,7 @@ in the following sections.
 -fno-common  -fno-ident  -fno-gnu-linker @gol
 -fpcc-struct-return  -fpic  -fPIC @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
--fshort-double  -fvolatile @gol
+-fshort-double  -fshort-wchar -fvolatile @gol
 -fvolatile-global  -fvolatile-static @gol
 -fverbose-asm  -fpack-struct  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -1297,12 +1297,6 @@ than double precision.   If you must use @option{-traditional}, but want
 to use single precision operations when the operands are single
 precision, use this option.   This option has no effect when compiling
 with ISO or GNU C conventions (the default).
-
-@item -fshort-wchar
-@opindex fshort-wchar
-Override the underlying type for @samp{wchar_t} to be @samp{short
-unsigned int} instead of the default for the target.  This option is
-useful for building programs to run under WINE@.
 @end table
 
 @node C++ Dialect Options
@@ -9716,13 +9710,19 @@ unwinding from asynchronous events (such as debugger or garbage collector).
 Return ``short'' @code{struct} and @code{union} values in memory like
 longer ones, rather than in registers.  This convention is less
 efficient, but it has the advantage of allowing intercallability between
-GCC-compiled files and files compiled with other compilers.
+GCC-compiled files and files compiled with other compilers, particularly
+the Portable C Compiler (pcc).
 
 The precise convention for returning structures in memory depends
 on the target configuration macros.
 
 Short structures and unions are those whose size and alignment match
 that of some integer type.
+
+@strong{Warning:} code compiled with the @option{-fpcc-struct-return}
+switch is not binary compatible with code compiled with the
+@option{-freg-struct-return} switch.
+Use it to conform to a non-default application binary interface.
 
 @item -freg-struct-return
 @opindex freg-struct-return
@@ -9737,15 +9737,38 @@ defaults to @option{-fpcc-struct-return}, except on targets where GCC is
 the principal compiler.  In those cases, we can choose the standard, and
 we chose the more efficient register return alternative.
 
+@strong{Warning:} code compiled with the @option{-freg-struct-return}
+switch is not binary compatible with code compiled with the
+@option{-fpcc-struct-return} switch.
+Use it to conform to a non-default application binary interface.
+
 @item -fshort-enums
 @opindex fshort-enums
 Allocate to an @code{enum} type only as many bytes as it needs for the
 declared range of possible values.  Specifically, the @code{enum} type
 will be equivalent to the smallest integer type which has enough room.
 
+@strong{Warning:} the @option{-fshort-enums} switch causes GCC to generate
+code that is not binary compatible with code generated without that switch.
+Use it to conform to a non-default application binary interface.
+
 @item -fshort-double
 @opindex fshort-double
 Use the same size for @code{double} as for @code{float}.
+
+@strong{Warning:} the @option{-fshort-double} switch causes GCC to generate
+code that is not binary compatible with code generated without that switch.
+Use it to conform to a non-default application binary interface.
+
+@item -fshort-wchar
+@opindex fshort-wchar
+Override the underlying type for @samp{wchar_t} to be @samp{short
+unsigned int} instead of the default for the target.  This option is
+useful for building programs to run under WINE@.
+
+@strong{Warning:} the @option{-fshort-wchar} switch causes GCC to generate
+code that is not binary compatible with code generated without that switch.
+Use it to conform to a non-default application binary interface.
 
 @item -fshared-data
 @opindex fshared-data
@@ -9888,9 +9911,12 @@ three-way choice.
 
 @item -fpack-struct
 @opindex fpack-struct
-Pack all structure members together without holes.  Usually you would
-not want to use this option, since it makes the code suboptimal, and
-the offsets of structure members won't agree with system libraries.
+Pack all structure members together without holes.
+
+@strong{Warning:} the @option{-fpack-struct} switch causes GCC to generate
+code that is not binary compatible with code generated without that switch.
+Additionally, it makes the code suboptimial.
+Use it to conform to a non-default application binary interface.
 
 @item -finstrument-functions
 @opindex finstrument-functions
@@ -9987,8 +10013,10 @@ This option and its counterpart, @option{-fno-leading-underscore}, forcibly
 change the way C symbols are represented in the object file.  One use
 is to help link with legacy assembly code.
 
-Be warned that you should know what you are doing when invoking this
-option, and that not all targets provide complete support for it.
+@strong{Warning:} the @option{-fleading-underscore} switch causes GCC to
+generate code that is not binary compatible with code generated without that
+switch.  Use it to conform to a non-default application binary interface.
+Not all targets provide complete support for this switch.
 @end table
 
 @c man end

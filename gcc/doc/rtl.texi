@@ -2316,11 +2316,11 @@ An hypothetical example might be a pattern for an addition that can
 either wrap around or use saturating addition depending on the value
 of a special control register:
 
-@example
+@smallexample
 (parallel [(set (reg:SI 2) (unspec:SI [(reg:SI 3)
                                        (reg:SI 4)] 0))
            (use (reg:SI 1))])
-@end example
+@end smallexample
 
 @noindent
 
@@ -2552,10 +2552,10 @@ where @var{z} is an index register and @var{i} is a constant.
 
 Here is an example of its use:
 
-@example
+@smallexample
 (mem:SF (post_modify:SI (reg:SI 42) (plus (reg:SI 42)
                                           (reg:SI 48))))
-@end example
+@end smallexample
 
 This says to modify pseudo register 42 by adding the contents of pseudo
 register 48 to it, after the use of what ever 42 points to.

@@ -164,6 +164,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 * C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.
 * Objective-C::     GNU Objective-C runtime features.
+* Compatibility::   Binary Compatibility
 * Gcov::	    gcov: a GCC test coverage program.
 * Trouble::         If you have trouble using GCC.
 * Bugs::            How, why and where to report bugs.
@@ -188,6 +189,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 @include invoke.texi
 @include extend.texi
 @include objc.texi
+@include compat.texi
 @include gcov.texi
 @include trouble.texi
 @include bugreport.texi

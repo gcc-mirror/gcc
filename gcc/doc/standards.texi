@@ -168,11 +168,19 @@ information concerning the history of C that is available online, see
 
 There is no formal written standard for Objective-C@.  The most
 authoritative manual is ``Object-Oriented Programming and the
-Objective-C Language'', available at a number of web sites;
-@uref{http://developer.apple.com/techpubs/macosx/Cocoa/ObjectiveC/} has a
-recent version, while @uref{http://www.toodarkpark.org/computers/objc/}
-is an older example.  @uref{http://www.gnustep.org} includes useful
-information as well.
+Objective-C Language'', available at a number of web sites
+
+@itemize
+@item
+@uref{http://developer.apple.com/techpubs/macosx/Cocoa/ObjectiveC/}
+is a recent version
+@item
+@uref{http://www.toodarkpark.org/computers/objc/}
+is an older example
+@item
+@uref{http://www.gnustep.org}
+has additional useful information
+@end itemize
 
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
 GNAT Reference Manual}, for information on standard

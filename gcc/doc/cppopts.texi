@@ -541,10 +541,10 @@ standard-conforming modes it converts them.  See the @option{-std} and
 
 The nine trigraphs and their replacements are
 
-@example
+@smallexample
 Trigraph:       ??(  ??)  ??<  ??>  ??=  ??/  ??'  ??!  ??-
 Replacement:      [    ]    @{    @}    #    \    ^    |    ~
-@end example
+@end smallexample
 @end ifclear
 
 @item -remap
