@@ -382,6 +382,11 @@ read_include_file (pfile, inc)
       if (pagesize == -1)
 	pagesize = getpagesize ();
 
+      /* Use mmap if the file is big enough to be worth it (controlled
+	 by MMAP_THRESHOLD) and if we can safely count on there being
+	 at least one readable NUL byte after the end of the file's
+	 contents.  This is true for all tested operating systems when
+	 the file size is not an exact multiple of the page size.  */
       if (size / pagesize >= MMAP_THRESHOLD
 	  && (size % pagesize) != 0)
 	{
