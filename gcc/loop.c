@@ -9661,7 +9661,7 @@ loop_regs_scan (loop, extra_size)
   if (LOOP_INFO (loop)->has_call)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
-	  && rtx_varies_p (gen_rtx_REG (Pmode, i), /*for_alias=*/1))
+	  && rtx_varies_p (regno_reg_rtx[i], 1))
 	{
 	  regs->array[i].may_not_optimize = 1;
 	  regs->array[i].set_in_loop = 1;

@@ -5,6 +5,8 @@
 
 2002-06-11  Jeffrey Law <law@redhat.com>
 
+	* loop.c (loop_regs_scan): Avoid useless generation of REG objects.
+
 	* mips.c (function_arg_advance): gen_ashldi3 returns an INSN now,
 	not the pattern.  So extract the pattern from the insn.
 
