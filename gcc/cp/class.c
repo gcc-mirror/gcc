@@ -3676,7 +3676,7 @@ check_bitfield_decl (field)
       if (DECL_INITIAL (field))
 	{
 	  DECL_INITIAL (field) = NULL_TREE;
-	  DECL_FIELD_SIZE (field) = width;
+	  DECL_SIZE (field) = bitsize_int (width);
 	  DECL_BIT_FIELD (field) = 1;
 
 	  if (width == 0)
@@ -3921,7 +3921,6 @@ check_field_decls (t, access_decls, empty_p,
 	continue;
 	  
       DECL_SAVED_INSNS (x) = 0;
-      DECL_FIELD_SIZE (x) = 0;
 
       /* When this goes into scope, it will be a non-local reference.  */
       DECL_NONLOCAL (x) = 1;
@@ -4079,7 +4078,6 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   DECL_FIELD_CONTEXT (field) = class_type;
   DECL_FCONTEXT (field) = fcontext;
   DECL_SAVED_INSNS (field) = 0;
-  DECL_FIELD_SIZE (field) = 0;
   DECL_ALIGN (field) = TYPE_ALIGN (type);
 
   /* Return it.  */
@@ -4279,13 +4277,7 @@ check_methods (t)
       if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
 	continue;
 
-      /* Do both of these, even though they're in the same union;
-	 if the insn `r' member and the size `i' member are
-	 different sizes, as on the alpha, the larger of the two
-	 will end up with garbage in it.  */
       DECL_SAVED_INSNS (x) = 0;
-      DECL_FIELD_SIZE (x) = 0;
-
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
 	cp_error_at ("initializer specified for non-virtual method `%D'", x);

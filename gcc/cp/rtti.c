@@ -963,18 +963,16 @@ expand_class_desc (tdecl, type)
 	(FIELD_DECL, NULL_TREE, 
 	 flag_new_abi ? intSI_type_node : unsigned_intSI_type_node);
       DECL_BIT_FIELD (fields[1]) = 1;
-      DECL_FIELD_SIZE (fields[1]) = 29;
+      DECL_SIZE (fields[1]) = bitsize_int (29);
 
-      fields [2] = build_lang_decl
-	(FIELD_DECL, NULL_TREE, boolean_type_node);
+      fields [2] = build_lang_decl (FIELD_DECL, NULL_TREE, boolean_type_node);
       DECL_BIT_FIELD (fields[2]) = 1;
-      DECL_FIELD_SIZE (fields[2]) = 1;
+      DECL_SIZE (fields[2]) = bitsize_int (1);
 
       /* Actually enum access */
-      fields [3] = build_lang_decl
-	(FIELD_DECL, NULL_TREE, integer_type_node);
+      fields [3] = build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node);
       DECL_BIT_FIELD (fields[3]) = 1;
-      DECL_FIELD_SIZE (fields[3]) = 2;
+      DECL_SIZE (fields[3]) = bitsize_int (2);
 
       finish_builtin_type (base_desc_type_node, "__base_info", fields,
 			   3, ptr_type_node);

@@ -1,3 +1,25 @@
+Mon Feb 28 21:07:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Eliminate DECL_FIELD_SIZE.
+	* builtins.c (built_in_class_names, built_in_names): New variables.
+	* c-decl.c (finish_struct): Set specified size in DECL_SIZE.
+	* expr.c (expand_expr, case COMPONENT_REF): Get field size from
+	DECL_SIZE, not DECL_FIELD_SIZE.
+	* print-tree.c (print_node): Remove code that prints extra blank
+	lines in some cases.
+	Properly handle inline and builtin function cases.
+	* stor-layout.c (layout_decl): Get specified size from DEC_SIZE.
+	* tree.h (built_in_class_named, built_in_names): New declarations.
+	(union tree_decl): Rename internal unions to u1 and u2 and change
+	some of their components.
+	Add new field built_in_class.
+	(DECL_ALIGN, DECL_INCOMING_RTL, DECL_SAVED_INSNS, DECL_FRAME_SIZE):
+	Reflect above changes.
+	(DECL_FUNCTION_CODE, DECL_BUILT_IN_CLASS): Likewise.
+	(DECL_SET_FUNCTION_CODE, DECL_FIELD_SIZE): Deleted.
+	* objc/objc-act.c (objc_copy_list): Use DECL_SIZE, not DECL_FIELD_SIZE.
+	(encode_field_decl): Likewise; also remove obsolete test for bitfield.
+
 2000-02-28  Dmitri Makarov  <dim@windriver.com>
 
 	* extend.texi: Document ARM's support for long/short calls.

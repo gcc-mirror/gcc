@@ -593,7 +593,7 @@ typedef struct _jdeplist {
 
 /* Macro for the xreferencer */
 #define DECL_END_SOURCE_LINE(DECL)       DECL_FRAME_SIZE (DECL)
-#define DECL_INHERITED_SOURCE_LINE(DECL) DECL_FIELD_SIZE (DECL)
+#define DECL_INHERITED_SOURCE_LINE(DECL) (DECL_CHECK (DECL)->decl.u2.i)
      
 /* Parser context data structure. */
 struct parser_ctxt {

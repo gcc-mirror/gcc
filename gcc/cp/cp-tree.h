@@ -112,10 +112,7 @@ Boston, MA 02111-1307, USA.  */
      For a TEMPLATE_TEMPLATE_PARM, this is
      TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 
-   DECL_SAVED_INSNS/DECL_FIELD_SIZE
-     For a static VAR_DECL, this is DECL_INIT_PRIORITY.
-
-   BINFO_VIRTUALS
+  BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  The BV_DELTA of each node
      gives the amount by which to adjust the `this' pointer when
      calling the function.  If the method is an overriden version of a
@@ -2058,9 +2055,9 @@ struct lang_decl
 /* In a non-local VAR_DECL with static storage duration, this is the
    initialization priority.  If this value is zero, the NODE will be
    initialized at the DEFAULT_INIT_PRIORITY.  */
-#define DECL_INIT_PRIORITY(NODE) (DECL_FIELD_SIZE (VAR_DECL_CHECK (NODE)))
+#define DECL_INIT_PRIORITY(NODE) (VAR_DECL_CHECK (NODE)->decl.u2.i)
 
-/* In a TREE_LIST concatenating using directives, indicate indirekt
+/* In a TREE_LIST concatenating using directives, indicate indirect
    directives  */
 #define TREE_INDIRECT_USING(NODE) (TREE_LIST_CHECK (NODE)->common.lang_flag_0)
 
@@ -2866,13 +2863,13 @@ extern int flag_new_for_scope;
 
 /* An integer indicating how many bytes should be subtracted from the
    `this' pointer when this function is called.  */
-#define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
+#define THUNK_DELTA(DECL) (DECL_CHECK (DECL)->decl.u1.i)
 
 /* An integer indicating how many bytes should be subtracted from the
    vtable for the `this' pointer to find the vcall offset.  (The vptr
    is always located at offset zero from the f `this' pointer.)  If
    zero, then there is no vcall offset.  */
-#define THUNK_VCALL_OFFSET(DECL) (DECL_FIELD_SIZE (DECL))
+#define THUNK_VCALL_OFFSET(DECL) (DECL_CHECK (DECL)->decl.u2.i)
 
 /* DECL_NEEDED_P holds of a declaration when we need to emit its
    definition.  This is true when the back-end tells us that

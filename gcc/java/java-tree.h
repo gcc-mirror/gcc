@@ -402,7 +402,7 @@ struct lang_identifier
 #define LABEL_PENDING_CHAIN(NODE) DECL_RESULT(NODE)
 
 /* In a LABEL_DECL, the corresponding bytecode program counter. */
-#define LABEL_PC(NODE) ((NODE)->decl.saved_insns.i)
+#define LABEL_PC(NODE) ((NODE)->decl.u2.i)
 
 /* Used during verification to mark the label has "changed". (See JVM Spec). */
 #define LABEL_CHANGED(NODE) DECL_LANG_FLAG_6(NODE)
@@ -440,7 +440,7 @@ struct lang_identifier
 /* For a local VAR_DECL, holds the index into a words bitstring that
    specifies if this decl is definitively assigned.
    A DECL_BIT_INDEX of -1 means we no longer care. */
-#define DECL_BIT_INDEX(DECL) DECL_FIELD_SIZE(DECL)
+#define DECL_BIT_INDEX(DECL) (DECL_CHECK (DECL)->decl.u2.i)
 
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl

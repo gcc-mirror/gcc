@@ -2992,16 +2992,12 @@ make_chill_struct_type (fieldlist)
      tree fieldlist;
 {
   tree t, x;
-  if (TREE_UNION_ELEM (fieldlist))
-    t = make_node (UNION_TYPE);
-  else
-    t = make_node (RECORD_TYPE);
+
+  t = make_node (TREE_UNION_ELEM (fieldlist) ? UNION_TYPE : RECORD_TYPE);
+
   /* Install struct as DECL_CONTEXT of each field decl. */
   for (x = fieldlist; x; x = TREE_CHAIN (x))
-    {
-      DECL_CONTEXT (x) = t;
-      DECL_FIELD_SIZE (x) = 0;
-    }
+    DECL_CONTEXT (x) = t;
 
   /* Delete all duplicate fields from the fieldlist */
   for (x = fieldlist; x && TREE_CHAIN (x);)
@@ -3033,31 +3029,35 @@ make_chill_struct_type (fieldlist)
   return t;
 }
 
-/* decl is a FIELD_DECL.
-   DECL_INIT (decl) is (NULL_TREE, integer_one_node, integer_zero_node, tree_list),
-   meaning (default, pack, nopack, POS (...) ).
+/* DECL is a FIELD_DECL.
+   DECL_INIT (decl) is
+       (NULL_TREE, integer_one_node, integer_zero_node, tree_list)
+    meaning
+        (default, pack, nopack, POS (...) ).
+
    The return value is a boolean: 1 if POS specified, 0 if not */
+
 static int
 apply_chill_field_layout (decl, next_struct_offset)
      tree decl;
-     int* next_struct_offset;
+     int *next_struct_offset;
 {
-  tree layout, type, temp, what;
-  int word = 0, wordsize, start_bit, offset, length, natural_length;
+  tree layout = DECL_INITIAL (decl);
+  tree type = TREE_TYPE (decl);
+  tree temp, what;
+  HOST_WIDE_INT word = 0;
+  HOST_WIDE_INT wordsize, start_bit, offset, length, natural_length;
   int pos_error = 0;
-  int is_discrete;
+  int is_discrete = discrete_type_p (type);
 
-  type = TREE_TYPE (decl);
-  is_discrete = discrete_type_p (type);
   if (is_discrete)
-    natural_length = get_type_precision (TYPE_MIN_VALUE (type), TYPE_MAX_VALUE (type));
+    natural_length
+      = get_type_precision (TYPE_MIN_VALUE (type), TYPE_MAX_VALUE (type));
   else
     natural_length = TREE_INT_CST_LOW (TYPE_SIZE (type));
 
-  layout = DECL_INITIAL (decl);
   if (layout == integer_zero_node) /* NOPACK */
     {
-      DECL_PACKED (decl) = 0;
       *next_struct_offset += natural_length;
       return 0; /* not POS */
     }
@@ -3065,14 +3065,14 @@ apply_chill_field_layout (decl, next_struct_offset)
   if (layout == integer_one_node) /* PACK */
     {
       if (is_discrete)
-	DECL_BIT_FIELD (decl) = 1;
-      else
 	{
-	  DECL_BIT_FIELD (decl) = 0;
-	  DECL_ALIGN (decl) = BITS_PER_UNIT;
+	  DECL_BIT_FIELD (decl) = 1;
+	  DECL_SIZE (decl) = bitsize_int (natural_length);
 	}
+      else
+	DECL_ALIGN (decl) = BITS_PER_UNIT;
+
       DECL_PACKED (decl) = 1;
-      DECL_FIELD_SIZE (decl) = natural_length;
       *next_struct_offset += natural_length;
       return 0; /* not POS */
     }
@@ -3090,7 +3090,7 @@ apply_chill_field_layout (decl, next_struct_offset)
   else
     {
       word = TREE_INT_CST_LOW (TREE_PURPOSE (temp));
-      if (word < 0)
+      if (tree_int_cst_sgn (TREE_PURPOSE (temp)) < 0)
 	{
 	  error ("Starting word in POS must be >= 0");
 	  word = 0;
@@ -3114,7 +3114,7 @@ apply_chill_field_layout (decl, next_struct_offset)
       else
 	{
 	  start_bit = TREE_INT_CST_LOW (TREE_PURPOSE (temp));
-	  if (start_bit < 0)
+	  if (tree_int_cst_sgn (TREE_PURPOSE (temp)) < 0)
 	    {
 	      error ("Starting bit in POS must be >= 0");
 	      start_bit = *next_struct_offset - offset;
@@ -3142,7 +3142,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 	      else
 		{
 		  length = TREE_INT_CST_LOW (TREE_VALUE (temp));
-		  if (length <= 0)
+		  if (tree_int_cst_sgn (TREE_VALUE (temp)) < 0)
 		    {
 		      error ("Length in POS must be > 0");
 		      length = natural_length;
@@ -3159,7 +3159,8 @@ apply_chill_field_layout (decl, next_struct_offset)
 		}
 	      else
 		{
-		  int end_bit = TREE_INT_CST_LOW (TREE_VALUE (temp));
+		  HOST_WIDE_INT end_bit = TREE_INT_CST_LOW (TREE_VALUE (temp));
+
 		  if (end_bit < start_bit)
 		    {
 		      error ("End bit in POS must be >= the start bit");
@@ -3174,6 +3175,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 		    length = end_bit - start_bit + 1;
 		}
 	    }
+
 	  if (length != natural_length && ! pos_error)
 	    {
 	      sorry ("The length specified on POS must be the natural length of the field type");
@@ -3189,7 +3191,10 @@ apply_chill_field_layout (decl, next_struct_offset)
 
   DECL_PACKED (decl) = 1;
   DECL_BIT_FIELD (decl) = is_discrete;
-  DECL_FIELD_SIZE (decl) = length;
+
+  if (is_discrete)
+    DECL_SIZE (decl) = bitsize_int (length);
+
   *next_struct_offset += natural_length;
 
   return 1; /* was POS */
@@ -3209,12 +3214,7 @@ layout_chill_struct_type (t)
 
   old_momentary = suspend_momentary ();
 
-  /* Process specified field sizes.
-     Set DECL_FIELD_SIZE to the specified size, or 0 if none specified.
-     The specified size is found in the DECL_INITIAL.
-     Store 0 there, except for ": 0" fields (so we can find them
-     and delete them, below).  */
-
+  /* Process specified field sizes.  */
   next_struct_offset = 0;
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     {
