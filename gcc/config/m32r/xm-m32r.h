@@ -30,7 +30,7 @@
 #define HOST_WORDS_BIG_ENDIAN    1
 
 /* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
+   tm.h is a symbolic link to the actual target specific file.  */
 #include "tm.h"
 
 /* Arguments to use with `exit'.  */

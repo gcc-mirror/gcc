@@ -3904,7 +3904,7 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  int off, i;
 
 	  /* Set OFF to the offset from virtual_incoming_args_rtx of
-	     the first float register.   The FP save area lies below
+	     the first float register.  The FP save area lies below
 	     the integer one, and is aligned to UNITS_PER_FPVALUE bytes.  */
 	  off = -gp_saved * UNITS_PER_WORD;
 	  off &= ~(UNITS_PER_FPVALUE - 1);
@@ -5976,7 +5976,7 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
 				 unsigned int align)
 {
   /* If the target wants uninitialized const declarations in
-     .rdata then don't put them in .comm.   */
+     .rdata then don't put them in .comm.  */
   if (TARGET_EMBEDDED_DATA && TARGET_UNINIT_CONST_IN_RODATA
       && TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl)
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
@@ -7019,7 +7019,7 @@ mips_expand_epilogue (int sibcall_p)
 			      stack_pointer_rtx,
 			      GEN_INT (step2)));
 
-  /* Add in the __builtin_eh_return stack adjustment.   We need to
+  /* Add in the __builtin_eh_return stack adjustment.  We need to
      use a temporary in mips16 code.  */
   if (current_function_calls_eh_return)
     {
@@ -9189,7 +9189,7 @@ mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
    the division is not immediately followed by a shift[1][2].  We also
    need to stop the division from being put into a branch delay slot[3].
    The easiest way to avoid both problems is to add a nop after the
-   division.  When a divide-by-zero check is neeeded, this nop can be
+   division.  When a divide-by-zero check is needed, this nop can be
    used to fill the branch delay slot.
 
    [1] If a double-word or a variable shift executes immediately

@@ -766,7 +766,7 @@ c4x_leaf_function_p (void)
      to save/restore the registers we actually use.
      For the global variable leaf_function to be set, we need
      to define LEAF_REGISTERS and all that it entails.
-     Let's check ourselves...   */
+     Let's check ourselves....  */
 
   if (lookup_attribute ("leaf_pretend",
 			TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
@@ -929,7 +929,7 @@ c4x_expand_prologue (void)
 	}
       else
 	{
-	  /* If we use ar3, we need to push it.   */
+	  /* If we use ar3, we need to push it.  */
 	  dont_push_ar3 = 0;
 	  if ((size != 0) || (current_function_args_size != 0))
 	    {

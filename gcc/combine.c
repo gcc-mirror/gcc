@@ -6843,7 +6843,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	      int width = GET_MODE_BITSIZE (GET_MODE (x));
 	      rtx y;
 
-	      /* If MODE is narrower that HOST_WIDE_INT and CVAL is a negative
+	      /* If MODE is narrower than HOST_WIDE_INT and CVAL is a negative
 		 number, sign extend it.  */
 	      if (width > 0 && width < HOST_BITS_PER_WIDE_INT
 		  && (cval & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)

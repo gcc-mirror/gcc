@@ -249,7 +249,7 @@ typedef struct page_entry
 
   /* The previous page-entry with objects of the same size, or NULL if
      this is the first page-entry.   The PREV pointer exists solely to
-     keep the cost of ggc_free managable.  */
+     keep the cost of ggc_free manageable.  */
   struct page_entry *prev;
 
   /* The number of bytes allocated.  (This will always be a multiple

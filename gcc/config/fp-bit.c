@@ -915,7 +915,7 @@ _fpmul_parts ( fp_number_type *  a,
 	{
 	  /* We're a further than half way by a small amount corresponding
 	     to the bits set in "low".  Knowing that, we round here and
-	     not in pack_d, because there we don't have "low" avaliable
+	     not in pack_d, because there we don't have "low" available
 	     anymore.  */
 	  high += GARDROUND + 1;
 
@@ -1034,7 +1034,7 @@ _fpdiv_parts (fp_number_type * a,
 	    /* We're a further than half way by the small amount
 	       corresponding to the bits set in "numerator".  Knowing
 	       that, we round here and not in pack_d, because there we
-	       don't have "numerator" avaliable anymore.  */
+	       don't have "numerator" available anymore.  */
 	    quotient += GARDROUND + 1;
 
 	    /* Avoid further rounding in pack_d.  */
