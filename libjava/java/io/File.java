@@ -215,7 +215,7 @@ public class File implements Serializable
     return mkdirs (new File (path));
   }
 
-  private static String nextValue ()
+  private static synchronized String nextValue ()
   {
     return Long.toString(counter++, Character.MAX_RADIX);
   }
