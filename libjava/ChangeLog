@@ -1,3 +1,8 @@
+2003-09-04  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/awt/natEmbeddedWindow.cc (setWindowPeer): Removed
+	lvalue cast; use correct rvalue cast.
+
 2003-09-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (create): Add width
@@ -26,6 +31,7 @@
 	* java/util/logging/LogManager.java: create handlers
 	* java/util/logging/SimpleFormatter.java: print souceClassName and
 	sourceMethodName
+
 2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* win32.cc: fixed tab, indentation and whitespace
