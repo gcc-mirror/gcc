@@ -1,3 +1,8 @@
+2000-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* calls.c (expand_call): Handle cleanups in tail-recursion
+	arguments analagously to cleanups in sibling calls.
+
 2000-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* simplify-rtx.c: Rename macro SIGN_EXTEND to HWI_SIGN_EXTEND.

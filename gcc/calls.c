@@ -2400,7 +2400,7 @@ expand_call (exp, target, ignore)
 	    break;
 
 	  case 1: /* Mildly unsafe.  */
-	      args[i].tree_value = unsave_expr (args[i].tree_value);
+	    args[i].tree_value = unsave_expr (args[i].tree_value);
 	    break;
 
 	  case 2: /* Wildly unsafe.  */
@@ -2444,9 +2444,20 @@ expand_call (exp, target, ignore)
 	 made until after RTL generation for the entire function is
 	 complete.  */
       start_sequence ();
-
+      /* If expanding any of the arguments creates cleanups, we can't
+	 do a tailcall.  So, we'll need to pop the pending cleanups
+	 list.  If, however, all goes well, and there are no cleanups
+	 then the call to expand_start_target_temps will have no
+	 effect.  */
+      expand_start_target_temps ();
       if (optimize_tail_recursion (actparms, get_last_insn ()))
-        tail_recursion_insns = get_insns ();
+	{
+	  if (any_pending_cleanups (1))
+	    try_tail_call = try_tail_recursion = 0;
+	  else
+	    tail_recursion_insns = get_insns ();
+	}
+      expand_end_target_temps ();
       end_sequence ();
 
       /* Restore the original pending stack adjustment for the sibling and
