@@ -1,5 +1,12 @@
 2002-08-20  Andreas Jaeger  <aj@suse.de>
 
+	Merge from trunk:
+	Wed Jul 17 00:20:48 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (prefetch): Fix for 64bit mode.
+	(prefetch_sse_rex, prefetch_3dnow_rex): New patterns.
+
+	2002-08-11  Andreas Jaeger  <aj@suse.de>
 	PR target/7531:
 	* doc/invoke.texi (i386 and x86-64 Options): Document -mcmodel.
 
@@ -189,7 +196,7 @@
 		instead of gen_rtx_SUBREG.
 		(arm_reload_out_hi): Use gen_lowpart instead of
 		gen_rtx_SUBREG to access QImode components.
-		* config/arm/arm.md: Disable zero_extend split for QImode 
+		* config/arm/arm.md: Disable zero_extend split for QImode
 		subregs in BIG_ENDIAN mode.
 		(storehi_bigend): Match use of least significant byte.
 		(storeinthi): Remove extraneous SUBREG.
@@ -275,7 +282,7 @@
 
 	* config/m68hc11/m68hc11.md ("*movqi_68hc12"): Avoid allocating
 	QI mode registers in soft registers.
-	("zero_extendqihi2"): Do not take into account soft registers 
+	("zero_extendqihi2"): Do not take into account soft registers
 	for register allocation (use '*' constraint).
 
 2002-07-05  Stephane Carrez  <stcarrez@nerim.fr>
@@ -296,7 +303,7 @@
 	* dwarfout.c (output_reg_number): Fix warning message.
 	(output_bound_representation): Check SAVE_EXPR_RTL is not NULL
 	before using it.
-	
+
 2002-07-03  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (prologue_get_pc): Issue pop here ...
@@ -339,7 +346,7 @@
 	* config/m68hc11/m68hc11.md ("*addsi3"): Use 'o' constraint to
 	avoid the auto increment addressing modes.
 	("*subsi3"): Likewise.
-	(split for add/sub on address): For 68HC12 push the value on 
+	(split for add/sub on address): For 68HC12 push the value on
 	the stack and do the operation with a pop.
 
 2002-06-28  Stephane Carrez  <stcarrez@nerim.fr>
@@ -386,7 +393,7 @@
 
 	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Pass
 	flag_function_sections as new 3rd arg to resolve_unique_section.
-	
+
 2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7070
@@ -402,7 +409,7 @@
 	* doc/install.texi: Change ` bit' to `-bit'.
 	* doc/md.texi: Change `-bits' to `-bit'.
 	* doc/tm.texi: Change `-bits' to ` bits'.
-	
+
 2002-06-24  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (INIT_TARGET_OPTABS): If ARCH64, set the
