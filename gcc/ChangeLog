@@ -1,3 +1,7 @@
+2000-09-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* contrib.texi: Update my entry.
+
 Sun Sep 17 18:48:32 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md (mcu_enhanced): New attribute.
