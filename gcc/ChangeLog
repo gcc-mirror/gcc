@@ -1,3 +1,7 @@
+2005-03-23  Ian Lance Taylor  <ian@airs.com>
+
+	* reorg.c (dbr_schedule): Remove #if 0 code to call final.
+
 2005-03-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (alpha*-dec-osf[45]*): Remove target_cpu_default.
