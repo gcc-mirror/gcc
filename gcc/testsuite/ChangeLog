@@ -1,3 +1,8 @@
+2004-06-09  Bud Davis  <bdavis9659@comcast.net>
+                                                                                    
+        PR gfortran/15755
+	* gfortran.fortran-torture/execute/backspace.c : New test.
+
 2004-06-09  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.fortran-torture/execure/intrinsic_associated.f90
