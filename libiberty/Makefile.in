@@ -466,6 +466,7 @@ pex-msdos.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 pex-os2.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 pex-unix.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 pex-win32.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+physmem.o: config.h $(INCDIR)/libiberty.h
 putenv.o: config.h $(INCDIR)/ansidecl.h
 random.o: $(INCDIR)/ansidecl.h
 regex.o: config.h $(INCDIR)/xregex.h $(INCDIR)/xregex2.h

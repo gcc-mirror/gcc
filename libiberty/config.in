@@ -183,6 +183,9 @@
 /* Define if you have the sysconf function.  */
 #undef HAVE_SYSCONF
 
+/* Define if you have the sysctl function.  */
+#undef HAVE_SYSCTL
+
 /* Define if you have the sysmp function.  */
 #undef HAVE_SYSMP
 
@@ -248,6 +251,9 @@
 
 /* Define if you have the <sys/stat.h> header file.  */
 #undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/sysctl.h> header file.  */
+#undef HAVE_SYS_SYSCTL_H
 
 /* Define if you have the <sys/sysinfo.h> header file.  */
 #undef HAVE_SYS_SYSINFO_H
