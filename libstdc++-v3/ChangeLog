@@ -1,3 +1,8 @@
+2003-05-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html (3.10):  Add note about mips atomicity.h.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2003-05-06  Michael Ritzert <Ritzert@t-online.de>
 	    Matt Kraai <kraai@alumni.cmu.edu>
 
