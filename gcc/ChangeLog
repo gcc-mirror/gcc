@@ -1,3 +1,8 @@
+2003-02-26  Jan Hubicka  <jh@suse.cz>
+
+	PR target/8343
+	* m68k.md (umulsidi, mulsidi expanders): Use register operand.
+
 2003-02-26  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* fixinc/fixincl.x: Regenerate
