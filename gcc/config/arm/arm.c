@@ -856,12 +856,7 @@ arm_override_options (void)
 	error ("invalid ABI option: -mabi=%s", target_abi_name);
     }
   else
-    {
-      if (TARGET_IWMMXT)
-	arm_abi = ARM_ABI_AAPCS;
-      else
-	arm_abi = ARM_DEFAULT_ABI;
-    }
+    arm_abi = ARM_DEFAULT_ABI;
 
   if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
     error ("iwmmxt requires an AAPCS compatible ABI for proper operation");
