@@ -1,3 +1,91 @@
+Wed Sep 24 17:36:23 1997  Doug Evans  <dje@canuck.cygnus.com>
+
+	Bring over from FSF.
+
+	Wed Sep 24 19:17:08 1997  Doug Evans  <dje@cygnus.com>
+
+	* sparc/sparc.md (get_pc_via_call): Renamed from get_pc_sp32.
+	(get_pc_via_rdpc): Renamed from get_pc_sp64.
+	* sparc/sparc.c (finalize_pic): Update call to gen_get_pc_via_call.
+
+	Wed Sep 24 18:38:22 1997  David S. Miller  <davem@tanya.rutgers.edu>
+
+	* sparc/sparc.h (ASM_CPU_SPEC): Pass -Av9a for v8plus, ultrasparc.
+	(TARGET_OPTIONS): Add -malign-loops=, -malign-jumps=,
+	-malign-functions=.
+	(sparc_align_{loops,jumps,funcs}_string): Declare.
+	(sparc_align_{loops,jumps,funcs}): Declare.
+	(DEFAULT_SPARC_ALIGN_FUNCS): New macro.
+	(FUNCTION_BOUNDARY): Use sparc_align_funcs.
+	(STACK_BIAS): Define.
+	(SPARC_SIMM*_P): Cast to unsigned HOST_WIDE_INT first, then perform
+	test.
+	(SPARC_SETHI_P): New macro.
+	(CONST_OK_FOR_LETTER_P): Use it.
+	(ASM_OUTPUT_ALIGN_CODE): Define.
+	(ASM_OUTPUT_LOOP_ALIGN): Define.
+	* sparc/sparc.c (sparc_align_{loops,jumps,funcs}_string): New globals.
+	(sparc_align_{loops,jumps,funcs}): New globals.
+	(sparc_override_options): Handle -malign-loops=, -malign-jumps=,
+	-malign-functions=.
+	(move_operand): Use SPARC_SETHI_P.
+	(arith_double_operand): Cast to unsigned HOST_WIDE_INT first, then
+	perform test.
+	(arith11_double_operand): Likewise.
+	(arith10_double_operand): Likewise.
+	(finalize_pic): Finish sparc64 support.
+	(emit_move_sequence): Use SPARC_SETHI_P.  Simplify low part of
+	64 bit constants if able.
+	(output_fp_move_quad): Don't use fmovq unless TARGET_HARD_QUAD.
+	(sparc_builtin_saveregs, sparc64 case): Don't save fp regs if
+	! TARGET_FPU.
+	* sparc/sparc.md (*): Use GEN_INT instead of gen_rtx.
+	(get_pc_sp32): Use for sparc64 as well.
+	(lo_sum_di_sp{32,64}): Fix handling on 64 bit hosts.
+	(sethi_di_sp64_const): Likewise.
+	(movtf_cc_sp64): Check TARGET_HARD_QUAD.
+	(cmp_zero_extract_sp64): Use unsigned HOST_WIDE_INT in cast.
+	(ashlsi3, ashldi3, ashrsi3, ashrdi3, lshrsi3, lshrdi3): Likewise.
+
+	Tue Sep 23 19:02:46 1997  Doug Evans  <dje@cygnus.com>
+
+	* sparc/linux-aout.h (COMMENT_BEGIN): Delete.
+	* sparc/linux.h (COMMENT_BEGIN): Likewise.
+	* sparc/linux64.h (COMMENT_BEGIN): Likewise.
+
+	Tue Sep 23 14:48:18 1997  David S. Miller  <davem@tanya.rutgers.edu>
+
+	Add sparc64 linux support.
+	* configure.in (sparc64-*-linux*): Recognize.  Add sparc/xm-sparc.h
+	to xm_file list on 32-bit sparc-linux.
+	* sparc/xm-sp64.h: New file.
+	* sparc/linux64.h: New file.
+	* sparc/xm-linux.h: Include some standard headers if not inhibit_libc.
+	Don't include xm-sparc.h.
+	* config/xm-linux.h (HAVE_PUTENV, HAVE_ATEXIT): Define.
+	* glimits.h (LONG_MAX): Handle sparc64.
+
+	Sat Sep 20 03:07:54 1997  Doug Evans  <dje@cygnus.com>
+
+	* sparc/sysv4.h (ASM_COMMENT_START): Delete.
+	* sparc.h (ASM_COMMENT_START): Define.
+	* sparc.c (output_function_prologue): Use it.
+	(sparc_flat_output_function_{epi,pro}logue): Likewise.
+
+	Wed Sep 17 15:04:19 1997  Doug Evans  <dje@cygnus.com>
+
+	* sparc/sysv4.h (ASM_OUTPUT_{FLOAT,DOUBLE,LONG_DOUBLE}): Delete,
+	use sparc.h's copies.
+	* sparc/sparc.h (ASM_OUTPUT_{FLOAT,DOUBLE,LONG_DOUBLE}): Print
+	ascii form as well.
+
+	Mon Sep  8 08:45:19 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sparc.c (dwarf2out_cfi_label): Add declaration.
+	(save_regs, output_function_prologue): Remove cast for it.
+	(sparc_flat_{save_restore,output_function_prologue): Likewise.
+	({save,restore}_regs): No longer inline.
+
 Tue Sep 23 12:34:51 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (make_range): Correctly handle cases of converting
