@@ -1,5 +1,8 @@
 Tue Jan 18 16:19:55 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.h (BIGGEST_ALIGNMENT): Set to 128.
+	(BIGGEST_FIELD_ALIGNMENT): Set to (TARGET_ALIGN_DOUBLE ? 64 : 32)
+
 	* i386.md (memstr): Do not use rep stosb for counts divisible by 4
 	when optimize_size.
 	(clrstrsi): Rewrite.
