@@ -815,6 +815,12 @@ package body ALI is
                Checkc ('E');
                ALIs.Table (Id).Compile_Errors := True;
 
+            --  Processing for DB
+
+            elsif C = 'D' then
+               Checkc ('B');
+               Detect_Blocking := True;
+
             --  Processing for FD/FG/FI
 
             elsif C = 'F' then

@@ -150,7 +150,8 @@ package body Sem_Disp is
            and then Ekind (Etype (Formal)) = E_Anonymous_Access_Type
          then
             Error_Msg_N
-              ("Access parameter of a remote subprogram must be controlling",
+              ("access parameter of remote object primitive"
+               & " must be controlling",
                 Formal);
          end if;
 

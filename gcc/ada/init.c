@@ -111,6 +111,7 @@ int   __gl_num_interrupt_states     = 0;
 int   __gl_unreserve_all_interrupts = 0;
 int   __gl_exception_tracebacks     = 0;
 int   __gl_zero_cost_exceptions     = 0;
+int   __gl_detect_blocking          = 0;
 
 /* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit */
@@ -173,7 +174,8 @@ __gnat_set_globals (int main_priority,
                     int num_interrupt_states,
                     int unreserve_all_interrupts,
                     int exception_tracebacks,
-                    int zero_cost_exceptions)
+                    int zero_cost_exceptions,
+                    int detect_blocking)
 {
   static int already_called = 0;
 
@@ -236,6 +238,7 @@ __gnat_set_globals (int main_priority,
   __gl_task_dispatching_policy  = task_dispatching_policy;
   __gl_unreserve_all_interrupts = unreserve_all_interrupts;
   __gl_exception_tracebacks     = exception_tracebacks;
+  __gl_detect_blocking          = detect_blocking;
 
   /* ??? __gl_zero_cost_exceptions is new in 3.15 and is referenced from
      a-except.adb, which is also part of the compiler sources. Since the

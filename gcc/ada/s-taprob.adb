@@ -39,6 +39,7 @@ pragma Polling (Off);
 with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
+--           Self
 
 with System.Parameters;
 --  used for Runtime_Traces
@@ -87,6 +88,7 @@ package body System.Tasking.Protected_Objects is
 
    procedure Lock (Object : Protection_Access) is
       Ceiling_Violation : Boolean;
+
    begin
       --  The lock is made without defering abortion.
 
@@ -107,6 +109,19 @@ package body System.Tasking.Protected_Objects is
       if Ceiling_Violation then
          raise Program_Error;
       end if;
+
+      --  We are entering in a protected action, so that we increase the
+      --  protected object nesting level (if pragma Detect_Blocking is
+      --  active).
+
+      if Detect_Blocking then
+         declare
+            Self_Id : constant Task_Id := Self;
+         begin
+            Self_Id.Common.Protected_Action_Nesting :=
+              Self_Id.Common.Protected_Action_Nesting + 1;
+         end;
+      end if;
    end Lock;
 
    --------------------
@@ -115,6 +130,7 @@ package body System.Tasking.Protected_Objects is
 
    procedure Lock_Read_Only (Object : Protection_Access) is
       Ceiling_Violation : Boolean;
+
    begin
       Read_Lock (Object.L'Access, Ceiling_Violation);
 
@@ -125,6 +141,19 @@ package body System.Tasking.Protected_Objects is
       if Ceiling_Violation then
          raise Program_Error;
       end if;
+
+      --  We are entering in a protected action, so that we increase the
+      --  protected object nesting level (if pragma Detect_Blocking is
+      --  active).
+
+      if Detect_Blocking then
+         declare
+            Self_Id : constant Task_Id := Self;
+         begin
+            Self_Id.Common.Protected_Action_Nesting :=
+              Self_Id.Common.Protected_Action_Nesting + 1;
+         end;
+      end if;
    end Lock_Read_Only;
 
    ------------
@@ -133,6 +162,25 @@ package body System.Tasking.Protected_Objects is
 
    procedure Unlock (Object : Protection_Access) is
    begin
+      --  We are exiting from a protected action, so that we decrease the
+      --  protected object nesting level (if pragma Detect_Blocking is
+      --  active).
+
+      if Detect_Blocking then
+         declare
+            Self_Id : constant Task_Id := Self;
+
+         begin
+            --  Cannot call this procedure without being within a protected
+            --  action.
+
+            pragma Assert (Self_Id.Common.Protected_Action_Nesting > 0);
+
+            Self_Id.Common.Protected_Action_Nesting :=
+              Self_Id.Common.Protected_Action_Nesting - 1;
+         end;
+      end if;
+
       Unlock (Object.L'Access);
 
       if Parameters.Runtime_Traces then

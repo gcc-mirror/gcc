@@ -36,6 +36,13 @@ package Sem_Dist is
    --  caller stubs, expansion takes place directly in the specification and
    --  no additional compilation unit is created.
 
+   function Build_RAS_Primitive_Specification
+     (Subp_Spec          : Node_Id;
+      Remote_Object_Type : Node_Id) return Node_Id;
+   --  Build a subprogram specification for the primitive operation of the
+   --  Remote_Object_Type used to implement a remote access-to-subprogram
+   --  type whose parameter profile is given by specification Subp_Spec.
+
    function Is_All_Remote_Call (N : Node_Id) return Boolean;
    --  Check whether a function or procedure call should be expanded into
    --  a remote call, because the entity is declared in a package decl that
@@ -75,9 +82,8 @@ package Sem_Dist is
    --  the previous function.
 
    function Remote_AST_Null_Value
-     (N    : Node_Id;
-      Typ  : Entity_Id)
-      return Boolean;
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
    --  If N is a null value and Typ a remote access to subprogram type,
    --  this function will check if null needs to be replaced with an
    --  aggregate and will return True in this case. Otherwise, it will

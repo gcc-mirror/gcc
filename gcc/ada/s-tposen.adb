@@ -67,7 +67,8 @@ with System.Task_Primitives.Operations;
 --           Unlock
 
 with Ada.Exceptions;
---  used for Exception_Id;
+--  used for Exception_Id
+--           Raise_Exception
 
 with System.Parameters;
 --  used for Single_Lock
@@ -347,7 +348,30 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    procedure Lock_Entry (Object : Protection_Entry_Access) is
       Ceiling_Violation : Boolean;
+
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must
+      --  be raised if this potentially blocking operation is called from
+      --  a protected action, and the protected object nesting level
+      --  must be increased.
+
+      if Detect_Blocking then
+         declare
+            Self_Id : constant Task_Id := STPO.Self;
+         begin
+            if Self_Id.Common.Protected_Action_Nesting > 0  then
+               Ada.Exceptions.Raise_Exception
+                 (Program_Error'Identity, "potentially blocking operation");
+            else
+               --  We are entering in a protected action, so that we
+               --  increase the protected object nesting level.
+
+               Self_Id.Common.Protected_Action_Nesting :=
+                 Self_Id.Common.Protected_Action_Nesting + 1;
+            end if;
+         end;
+      end if;
+
       STPO.Write_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
@@ -364,7 +388,30 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    procedure Lock_Read_Only_Entry (Object : Protection_Entry_Access) is
       Ceiling_Violation : Boolean;
+
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action, and the protected object nesting level must
+      --  be increased.
+
+      if Detect_Blocking then
+         declare
+            Self_Id : constant Task_Id := STPO.Self;
+         begin
+            if Self_Id.Common.Protected_Action_Nesting > 0  then
+               Ada.Exceptions.Raise_Exception
+                 (Program_Error'Identity, "potentially blocking operation");
+            else
+               --  We are entering in a protected action, so that we
+               --  increase the protected object nesting level.
+
+               Self_Id.Common.Protected_Action_Nesting :=
+                 Self_Id.Common.Protected_Action_Nesting + 1;
+            end if;
+         end;
+      end if;
+
       STPO.Read_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
@@ -465,6 +512,17 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Ceiling_Violation : Boolean;
 
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       STPO.Write_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
@@ -579,6 +637,17 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Ceiling_Violation : Boolean;
 
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       STPO.Write_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
@@ -631,6 +700,23 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    procedure Unlock_Entry (Object : Protection_Entry_Access) is
    begin
+      --  We are exiting from a protected action, so that we decrease the
+      --  protected object nesting level (if pragma Detect_Blocking is active).
+
+      if Detect_Blocking then
+         declare
+            Self_Id : constant Task_Id := Self;
+
+         begin
+            --  Cannot call Unlock_Entry without being within protected action
+
+            pragma Assert (Self_Id.Common.Protected_Action_Nesting > 0);
+
+            Self_Id.Common.Protected_Action_Nesting :=
+              Self_Id.Common.Protected_Action_Nesting - 1;
+         end;
+      end if;
+
       STPO.Unlock (Object.L'Access);
    end Unlock_Entry;
 

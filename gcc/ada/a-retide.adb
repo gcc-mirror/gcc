@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,23 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Exceptions;
+--  Used for Raise_Exception
+
+with System.Tasking;
+--  Used for Task_Id
+
 with System.Task_Primitives.Operations;
 --  Used for Timed_Delay
+--           Self
 
 package body Ada.Real_Time.Delays is
 
    package STPO renames System.Task_Primitives.Operations;
+
+   ----------------
+   -- Local Data --
+   ----------------
 
    Absolute_RT : constant := 2;
 
@@ -45,8 +56,21 @@ package body Ada.Real_Time.Delays is
    -----------------
 
    procedure Delay_Until (T : Time) is
+      Self_Id : constant System.Tasking.Task_Id := STPO.Self;
+
    begin
-      STPO.Timed_Delay (STPO.Self, To_Duration (T), Absolute_RT);
+      --  If pragma Detect_Blocking is active, Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      else
+         STPO.Timed_Delay (Self_Id, To_Duration (T), Absolute_RT);
+      end if;
    end Delay_Until;
 
    -----------------

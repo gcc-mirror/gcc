@@ -856,6 +856,10 @@ package body Lib.Writ is
          Write_Info_Str (" CE");
       end if;
 
+      if Opt.Detect_Blocking then
+         Write_Info_Str (" DB");
+      end if;
+
       if Opt.Float_Format /= ' ' then
          Write_Info_Str (" F");
 

@@ -41,7 +41,6 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Output;   use Output;
 with Opt;      use Opt;
-with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Scans;    use Scans;
 with Scn;      use Scn;
@@ -869,33 +868,23 @@ package body Sem_Util is
 
    procedure Check_Potentially_Blocking_Operation (N : Node_Id) is
       S   : Entity_Id;
-      Loc : constant Source_Ptr := Sloc (N);
 
    begin
-      --  N is one of the potentially blocking operations listed in
-      --  9.5.1 (8). When using the Ravenscar profile, raise Program_Error
-      --  before N if the context is a protected action. Otherwise, only issue
-      --  a warning, since some users are relying on blocking operations
-      --  inside protected objects.
-      --  Indirect blocking through a subprogram call
-      --  cannot be diagnosed statically without interprocedural analysis,
-      --  so we do not attempt to do it here.
+      --  N is one of the potentially blocking operations listed in 9.5.1(8).
+      --  When pragma Detect_Blocking is active, the run time will raise
+      --  Program_Error. Here we only issue a warning, since we generally
+      --  support the use of potentially blocking operations in the absence
+      --  of the pragma.
+
+      --  Indirect blocking through a subprogram call cannot be diagnosed
+      --  statically without interprocedural analysis, so we do not attempt
+      --  to do it here.
 
       S := Scope (Current_Scope);
-
       while Present (S) and then S /= Standard_Standard loop
          if Is_Protected_Type (S) then
-            if Restricted_Profile then
-               Insert_Before_And_Analyze (N,
-                  Make_Raise_Program_Error (Loc,
-                    Reason => PE_Potentially_Blocking_Operation));
-               Error_Msg_N ("potentially blocking operation, " &
-                 " Program Error will be raised at run time?", N);
-
-            else
-               Error_Msg_N
-                 ("potentially blocking operation in protected operation?", N);
-            end if;
+            Error_Msg_N
+              ("potentially blocking operation in protected operation?", N);
 
             return;
          end if;
@@ -5781,10 +5770,9 @@ package body Sem_Util is
          --  scope because the back end otherwise tries to allocate a
          --  variable length temporary for the particular variant.
 
-         --  ??? With tree-ssa, the back-end does not (yet) support these
-         --  types either, so disable this optimization for now.
-
-         if Has_Discriminants (Typ) then
+         if Opt.GCC_Version = 2
+           and then Has_Discriminants (Typ)
+         then
             return True;
 
          --  For GCC 3, or for a non-discriminated record in GCC 2, we are

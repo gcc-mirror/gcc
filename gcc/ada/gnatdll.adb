@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                               G N A T D L L                              --
+--                              G N A T D L L                               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,25 +27,20 @@
 --  GNATDLL is a Windows specific tool for building a DLL.
 --  Both relocatable and non-relocatable DLL's are supported
 
-with Ada.Text_IO;
-with Ada.Strings.Unbounded;
-with Ada.Exceptions;
-with Ada.Command_Line;
-with GNAT.OS_Lib;
-with GNAT.Command_Line;
+with Ada.Text_IO;           use Ada.Text_IO;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Exceptions;        use Ada.Exceptions;
+with Ada.Command_Line;      use Ada.Command_Line;
+with GNAT.OS_Lib;           use GNAT.OS_Lib;
+with GNAT.Command_Line;     use GNAT.Command_Line;
 with Gnatvsn;
 
-with MDLL.Fil;
-with MDLL.Utl;
+with MDLL.Fil;              use MDLL.Fil;
+with MDLL.Utl;              use MDLL.Utl;
 
 procedure Gnatdll is
 
-   use GNAT;
-   use Ada;
-   use MDLL;
-   use Ada.Strings.Unbounded;
-
-   use type OS_Lib.Argument_List;
+   use type GNAT.OS_Lib.Argument_List;
 
    procedure Syntax;
    --  Print out usage
@@ -59,7 +54,7 @@ procedure Gnatdll is
    procedure Check_Context;
    --  Check the context before runing any commands to build the library
 
-   Syntax_Error  : exception;
+   Syntax_Error : exception;
    --  Raised when a syntax error is detected, in this case a usage info will
    --  be displayed.
 
@@ -76,31 +71,33 @@ procedure Gnatdll is
    Default_DLL_Address : constant String := "0x11000000";
    --  Default address for non relocatable DLL (Win32)
 
-   Lib_Filename        : Unbounded_String := Null_Unbounded_String;
+   Lib_Filename : Unbounded_String := Null_Unbounded_String;
    --  The DLL filename that will be created (.dll)
 
-   Def_Filename        : Unbounded_String := Null_Unbounded_String;
+   Def_Filename : Unbounded_String := Null_Unbounded_String;
    --  The definition filename (.def)
 
-   List_Filename       : Unbounded_String := Null_Unbounded_String;
+   List_Filename : Unbounded_String := Null_Unbounded_String;
    --  The name of the file containing the objects file to put into the DLL
 
-   DLL_Address         : Unbounded_String :=
-                           To_Unbounded_String (Default_DLL_Address);
+   DLL_Address : Unbounded_String := To_Unbounded_String (Default_DLL_Address);
    --  The DLL's base address
 
-   Objects_Files : Argument_List_Access := Null_Argument_List_Access;
+   Gen_Map_File : Boolean := False;
+   --  Set to True if a map file is to be generated
+
+   Objects_Files : Argument_List_Access := MDLL.Null_Argument_List_Access;
    --  List of objects to put inside the library
 
-   Ali_Files : Argument_List_Access := Null_Argument_List_Access;
+   Ali_Files : Argument_List_Access := MDLL.Null_Argument_List_Access;
    --  For each Ada file specified, we keep arecord of the corresponding
    --  ALI file. This list of SLI files is used to build the binder program.
 
-   Options : Argument_List_Access := Null_Argument_List_Access;
-   --  A list of options set in the command line.
+   Options : Argument_List_Access := MDLL.Null_Argument_List_Access;
+   --  A list of options set in the command line
 
-   Largs_Options : Argument_List_Access := Null_Argument_List_Access;
-   Bargs_Options : Argument_List_Access := Null_Argument_List_Access;
+   Largs_Options : Argument_List_Access := MDLL.Null_Argument_List_Access;
+   Bargs_Options : Argument_List_Access := MDLL.Null_Argument_List_Access;
    --  GNAT linker and binder args options
 
    type Build_Mode_State is (Import_Lib, Dynamic_Lib, Dynamic_Lib_Only, Nil);
@@ -109,8 +106,8 @@ procedure Gnatdll is
    --  Dynamic_Lib_Only means that only the DLL will be created (no import
    --  library).
 
-   Build_Mode             : Build_Mode_State := Nil;
-   --  Will be set when parsing the command line.
+   Build_Mode : Build_Mode_State := Nil;
+   --  Will be set when parsing the command line
 
    Must_Build_Relocatable : Boolean := True;
    --  True means build a relocatable DLL, will be set to False if a
@@ -121,10 +118,7 @@ procedure Gnatdll is
    ------------
 
    procedure Syntax is
-      use Text_IO;
-
-      procedure P (Str : in String) renames Text_IO.Put_Line;
-
+      procedure P (Str : String) renames Put_Line;
    begin
       P ("Usage : gnatdll [options] [list-of-files]");
       New_Line;
@@ -148,6 +142,7 @@ procedure Gnatdll is
       P ("   -a[addr]      Build non-relocatable DLL at address <addr>");
       P ("                 if <addr> is not specified use "
          & Default_DLL_Address);
+      P ("   -m            Generate map file");
       P ("   -n            No-import - do not create the import library");
       P ("   -bargs opts   opts are passed to the binder");
       P ("   -largs opts   opts are passed to the linker");
@@ -159,9 +154,9 @@ procedure Gnatdll is
 
    procedure Check (Filename : in String) is
    begin
-      if not OS_Lib.Is_Regular_File (Filename) then
-         Exceptions.Raise_Exception (Context_Error'Identity,
-                                     "Error: " & Filename & " not found.");
+      if not Is_Regular_File (Filename) then
+         Raise_Exception
+           (Context_Error'Identity, "Error: " & Filename & " not found.");
       end if;
    end Check;
 
@@ -186,29 +181,29 @@ procedure Gnatdll is
       --  No, a better choice would be to use tables ???
       --  Limits on what???
 
-      Ofiles : OS_Lib.Argument_List (1 .. Max_Files);
+      Ofiles : Argument_List (1 .. Max_Files);
       O      : Positive := Ofiles'First;
       --  List of object files to put in the library. O is the next entry
       --  to be used.
 
-      Afiles : OS_Lib.Argument_List (1 .. Max_Files);
+      Afiles : Argument_List (1 .. Max_Files);
       A      : Positive := Afiles'First;
-      --  List of ALI files. A is the next entry to be used.
+      --  List of ALI files. A is the next entry to be used
 
-      Gopts  : OS_Lib.Argument_List (1 .. Max_Options);
+      Gopts  : Argument_List (1 .. Max_Options);
       G      : Positive := Gopts'First;
-      --  List of gcc options. G is the next entry to be used.
+      --  List of gcc options. G is the next entry to be used
 
-      Lopts  : OS_Lib.Argument_List (1 .. Max_Options);
+      Lopts  : Argument_List (1 .. Max_Options);
       L      : Positive := Lopts'First;
       --  A list of -largs options (L is next entry to be used)
 
-      Bopts  : OS_Lib.Argument_List (1 .. Max_Options);
+      Bopts  : Argument_List (1 .. Max_Options);
       B      : Positive := Bopts'First;
       --  A list of -bargs options (B is next entry to be used)
 
       Build_Import : Boolean := True;
-      --  Set to Fals if option -n if specified (no-import).
+      --  Set to Fals if option -n if specified (no-import)
 
       --------------
       -- Add_File --
@@ -216,7 +211,7 @@ procedure Gnatdll is
 
       procedure Add_File (Filename : in String) is
       begin
-         if Fil.Is_Ali (Filename) then
+         if Is_Ali (Filename) then
 
             Check (Filename);
 
@@ -226,7 +221,7 @@ procedure Gnatdll is
             Afiles (A) := new String'(Filename);
             A := A + 1;
 
-         elsif Fil.Is_Obj (Filename) then
+         elsif Is_Obj (Filename) then
 
             Check (Filename);
 
@@ -238,7 +233,7 @@ procedure Gnatdll is
          else
             --  Unknown file type
 
-            Exceptions.Raise_Exception
+            Raise_Exception
               (Syntax_Error'Identity,
                "don't know what to do with " & Filename & " !");
          end if;
@@ -249,19 +244,19 @@ procedure Gnatdll is
       -------------------------
 
       procedure Add_Files_From_List (List_Filename : in String) is
-         File   : Text_IO.File_Type;
+         File   : File_Type;
          Buffer : String (1 .. 500);
          Last   : Natural;
 
       begin
-         Text_IO.Open (File, Text_IO.In_File, List_Filename);
+         Open (File, In_File, List_Filename);
 
-         while not Text_IO.End_Of_File (File) loop
-            Text_IO.Get_Line (File, Buffer, Last);
+         while not End_Of_File (File) loop
+            Get_Line (File, Buffer, Last);
             Add_File (Buffer (1 .. Last));
          end loop;
 
-         Text_IO.Close (File);
+         Close (File);
       end Add_Files_From_List;
 
    --  Start of processing for Parse_Command_Line
@@ -272,7 +267,7 @@ procedure Gnatdll is
       --  scan gnatdll switches
 
       loop
-         case Getopt ("g h v q k a? b: d: e: l: n I:") is
+         case Getopt ("g h v q k a? b: d: e: l: n m I:") is
 
             when ASCII.Nul =>
                exit;
@@ -290,7 +285,7 @@ procedure Gnatdll is
 
                MDLL.Verbose := True;
                if MDLL.Quiet then
-                  Exceptions.Raise_Exception
+                  Raise_Exception
                     (Syntax_Error'Identity,
                      "impossible to use -q and -v together.");
                end if;
@@ -301,7 +296,7 @@ procedure Gnatdll is
 
                MDLL.Quiet := True;
                if MDLL.Verbose then
-                  Exceptions.Raise_Exception
+                  Raise_Exception
                     (Syntax_Error'Identity,
                      "impossible to use -v and -q together.");
                end if;
@@ -343,10 +338,14 @@ procedure Gnatdll is
 
                if Def_Filename = Null_Unbounded_String then
                   Def_Filename := To_Unbounded_String
-                    (Fil.Ext_To (Parameter, "def"));
+                    (Ext_To (Parameter, "def"));
                end if;
 
                Build_Mode := Dynamic_Lib;
+
+            when 'm' =>
+
+               Gen_Map_File := True;
 
             when 'n' =>
 
@@ -361,7 +360,6 @@ procedure Gnatdll is
 
             when others =>
                raise Invalid_Switch;
-
          end case;
       end loop;
 
@@ -382,14 +380,12 @@ procedure Gnatdll is
 
       loop
          case Getopt ("*") is
-
             when ASCII.Nul =>
                exit;
 
             when others =>
                Lopts (L) := new String'(Full_Switch);
                L := L + 1;
-
          end case;
       end loop;
 
@@ -416,12 +412,10 @@ procedure Gnatdll is
          Add_Files_From_List (To_String (List_Filename));
       end if;
 
-      --  Check if the set of parameters are compatible.
+      --  Check if the set of parameters are compatible
 
-      if Build_Mode = Nil and then not Help and then not Verbose then
-         Exceptions.Raise_Exception
-           (Syntax_Error'Identity,
-            "nothing to do.");
+      if Build_Mode = Nil and then not Help and then not MDLL.Verbose then
+         Raise_Exception (Syntax_Error'Identity, "nothing to do.");
       end if;
 
       --  -n option but no file specified
@@ -430,7 +424,7 @@ procedure Gnatdll is
         and then A = Afiles'First
         and then O = Ofiles'First
       then
-         Exceptions.Raise_Exception
+         Raise_Exception
            (Syntax_Error'Identity,
             "-n specified but there are no objects to build the library.");
       end if;
@@ -445,41 +439,49 @@ procedure Gnatdll is
          Build_Mode := Import_Lib;
       end if;
 
-      --  Check if only a dynamic library must be built.
+      --  If map file is to be generated, add linker option here
+
+      if Gen_Map_File and then Build_Mode = Import_Lib then
+         Raise_Exception
+           (Syntax_Error'Identity,
+            "Can't generate a map file for an import library.");
+      end if;
+
+      --  Check if only a dynamic library must be built
 
       if Build_Mode = Dynamic_Lib and then not Build_Import then
          Build_Mode := Dynamic_Lib_Only;
       end if;
 
       if O /= Ofiles'First then
-         Objects_Files := new OS_Lib.Argument_List'(Ofiles (1 .. O - 1));
+         Objects_Files := new Argument_List'(Ofiles (1 .. O - 1));
       end if;
 
       if A /= Afiles'First then
-         Ali_Files     := new OS_Lib.Argument_List'(Afiles (1 .. A - 1));
+         Ali_Files     := new Argument_List'(Afiles (1 .. A - 1));
       end if;
 
       if G /= Gopts'First then
-         Options       := new OS_Lib.Argument_List'(Gopts (1 .. G - 1));
+         Options       := new Argument_List'(Gopts (1 .. G - 1));
       end if;
 
       if L /= Lopts'First then
-         Largs_Options := new OS_Lib.Argument_List'(Lopts (1 .. L - 1));
+         Largs_Options := new Argument_List'(Lopts (1 .. L - 1));
       end if;
 
       if B /= Bopts'First then
-         Bargs_Options := new OS_Lib.Argument_List'(Bopts (1 .. B - 1));
+         Bargs_Options := new Argument_List'(Bopts (1 .. B - 1));
       end if;
 
    exception
 
       when Invalid_Switch    =>
-         Exceptions.Raise_Exception
+         Raise_Exception
            (Syntax_Error'Identity,
             Message => "Invalid Switch " & Full_Switch);
 
       when Invalid_Parameter =>
-         Exceptions.Raise_Exception
+         Raise_Exception
            (Syntax_Error'Identity,
             Message => "No parameter for " & Full_Switch);
 
@@ -512,9 +514,9 @@ begin
    end if;
 
    if MDLL.Verbose or else Help then
-      Text_IO.New_Line;
-      Text_IO.Put_Line ("GNATDLL " & Version & " - Dynamic Libraries Builder");
-      Text_IO.New_Line;
+      New_Line;
+      Put_Line ("GNATDLL " & Version & " - Dynamic Libraries Builder");
+      New_Line;
    end if;
 
    MDLL.Utl.Locate;
@@ -544,7 +546,8 @@ begin
                To_String (Def_Filename),
                To_String (DLL_Address),
                Build_Import => True,
-               Relocatable  => Must_Build_Relocatable);
+               Relocatable  => Must_Build_Relocatable,
+               Map_File     => Gen_Map_File);
 
          when Dynamic_Lib_Only =>
             MDLL.Build_Dynamic_Library
@@ -557,31 +560,30 @@ begin
                To_String (Def_Filename),
                To_String (DLL_Address),
                Build_Import => False,
-               Relocatable  => Must_Build_Relocatable);
+               Relocatable  => Must_Build_Relocatable,
+               Map_File     => Gen_Map_File);
 
          when Nil =>
             null;
-
       end case;
-
    end if;
 
-   Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);
+   Set_Exit_Status (Success);
 
 exception
 
    when SE : Syntax_Error =>
-      Text_IO.Put_Line ("Syntax error : " & Exceptions.Exception_Message (SE));
-      Text_IO.New_Line;
+      Put_Line ("Syntax error : " & Exception_Message (SE));
+      New_Line;
       Syntax;
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+      Set_Exit_Status (Failure);
 
-   when E : Tools_Error | Context_Error =>
-      Text_IO.Put_Line (Exceptions.Exception_Message (E));
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+   when E : MDLL.Tools_Error | Context_Error =>
+      Put_Line (Exception_Message (E));
+      Set_Exit_Status (Failure);
 
    when others =>
-      Text_IO.Put_Line ("gnatdll: INTERNAL ERROR. Please report");
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+      Put_Line ("gnatdll: INTERNAL ERROR. Please report");
+      Set_Exit_Status (Failure);
 
 end Gnatdll;

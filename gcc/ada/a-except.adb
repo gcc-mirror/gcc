@@ -516,6 +516,37 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_28, "__gnat_rcheck_28");
    pragma Export (C, Rcheck_29, "__gnat_rcheck_29");
 
+   pragma No_Return (Rcheck_00);
+   pragma No_Return (Rcheck_01);
+   pragma No_Return (Rcheck_02);
+   pragma No_Return (Rcheck_03);
+   pragma No_Return (Rcheck_04);
+   pragma No_Return (Rcheck_05);
+   pragma No_Return (Rcheck_06);
+   pragma No_Return (Rcheck_07);
+   pragma No_Return (Rcheck_08);
+   pragma No_Return (Rcheck_09);
+   pragma No_Return (Rcheck_10);
+   pragma No_Return (Rcheck_11);
+   pragma No_Return (Rcheck_12);
+   pragma No_Return (Rcheck_13);
+   pragma No_Return (Rcheck_14);
+   pragma No_Return (Rcheck_15);
+   pragma No_Return (Rcheck_16);
+   pragma No_Return (Rcheck_17);
+   pragma No_Return (Rcheck_18);
+   pragma No_Return (Rcheck_19);
+   pragma No_Return (Rcheck_20);
+   pragma No_Return (Rcheck_21);
+   pragma No_Return (Rcheck_22);
+   pragma No_Return (Rcheck_23);
+   pragma No_Return (Rcheck_24);
+   pragma No_Return (Rcheck_25);
+   pragma No_Return (Rcheck_26);
+   pragma No_Return (Rcheck_27);
+   pragma No_Return (Rcheck_28);
+   pragma No_Return (Rcheck_29);
+
    ---------------------------------------------
    -- Reason Strings for Run-Time Check Calls --
    ---------------------------------------------

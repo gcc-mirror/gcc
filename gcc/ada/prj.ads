@@ -699,6 +699,9 @@ package Prj is
 
    end record;
 
+   Project_Error : exception;
+   --  Raised by some subprograms in Prj.Attr.
+
    function Empty_Project return Project_Data;
    --  Return the representation of an empty project
 

@@ -5594,12 +5594,13 @@ package body Sem_Ch3 is
       elsif Private_Extension and then Is_Generic_Type (Derived_Type) then
          Record_Type_Definition (Empty, Derived_Type);
 
-      --  STEP 5c: Process the record extension for non private tagged types.
+      --  STEP 5c: Process the record extension for non private tagged types
 
       elsif not Private_Extension then
-         --  Add the _parent field in the derived type.
 
-         Expand_Derived_Record (Derived_Type, Type_Def);
+         --  Add the _parent field in the derived type
+
+         Expand_Record_Extension (Derived_Type, Type_Def);
 
          --  Analyze the record extension
 

@@ -141,7 +141,7 @@ package body Sem_Type is
    --  visibility of these user-defined operations must be special-cased
    --  to determine whether they hide or are hidden by predefined operators.
    --  The form P."+" (x, y) requires additional handling.
-   --
+
    --  Concatenation is treated more conventionally: for every one-dimensional
    --  array type we introduce a explicit concatenation operator. This is
    --  necessary to handle the case of (element & element => array) which
@@ -154,7 +154,7 @@ package body Sem_Type is
 
    procedure All_Overloads;
    pragma Warnings (Off, All_Overloads);
-   --  Debugging procedure: list full contents of Overloads table.
+   --  Debugging procedure: list full contents of Overloads table
 
    procedure New_Interps (N : Node_Id);
    --  Initialize collection of interpretations for the given node, which is
@@ -197,7 +197,6 @@ package body Sem_Type is
 
       begin
          Get_First_Interp (N, Index, It);
-
          while Present (It.Nam) loop
 
             --  A user-defined subprogram hides another declared at an outer
@@ -234,8 +233,8 @@ package body Sem_Type is
                   exit;
 
                elsif not In_Open_Scopes (Scope (Name))
-                 or else Scope_Depth (Scope (Name))
-                   <= Scope_Depth (Scope (It.Nam))
+                 or else Scope_Depth (Scope (Name)) <=
+                         Scope_Depth (Scope (It.Nam))
                then
                   --  If ambiguity within instance, and entity is not an
                   --  implicit operation, save for later disambiguation.
@@ -297,9 +296,7 @@ package body Sem_Type is
 
          elsif Nkind (N) = N_Function_Call then
             Arg := First_Actual (N);
-
             while Present (Arg) loop
-
                if No (Universal_Interpretation (Arg)) then
                   return False;
                end if;
@@ -338,7 +335,7 @@ package body Sem_Type is
            or else Is_Potentially_Use_Visible (Vis_Type)
            or else In_Use (Vis_Type)
            or else (In_Use (Scope (Vis_Type))
-                     and then not Is_Hidden (Vis_Type))
+                      and then not Is_Hidden (Vis_Type))
            or else Nkind (N) = N_Expanded_Name
            or else (Nkind (N) in N_Op and then E = Entity (N))
            or else In_Instance
@@ -354,8 +351,8 @@ package body Sem_Type is
          elsif Nkind (N) = N_Function_Call
            and then Nkind (Name (N)) = N_Expanded_Name
            and then (Entity (Prefix (Name (N))) = Scope (Base_Type (T))
-                      or else Entity (Prefix (Name (N))) = Scope (Vis_Type)
-                      or else Scope (Vis_Type) = System_Aux_Id)
+                       or else Entity (Prefix (Name (N))) = Scope (Vis_Type)
+                       or else Scope (Vis_Type) = System_Aux_Id)
          then
             null;
 
@@ -390,7 +387,7 @@ package body Sem_Type is
             Set_Etype (N, T);
 
          else
-            --  Record both the operator or subprogram name, and its type.
+            --  Record both the operator or subprogram name, and its type
 
             if Nkind (N) in N_Op or else Is_Entity_Name (N) then
                Set_Entity (N, E);
@@ -504,12 +501,12 @@ package body Sem_Type is
 
                for J in First_Interp .. All_Interp.Last - 1 loop
 
-                  --  Current homograph is not hidden. Add to overloads.
+                  --  Current homograph is not hidden. Add to overloads
 
                   if not Is_Immediately_Visible (All_Interp.Table (J).Nam) then
                      exit;
 
-                  --  Homograph is hidden, unless it is a predefined operator.
+                  --  Homograph is hidden, unless it is a predefined operator
 
                   elsif Type_Conformant (H, All_Interp.Table (J).Nam) then
 
@@ -547,7 +544,7 @@ package body Sem_Type is
                H := Homonym (H);
          end loop;
 
-         --  Scan list of homographs for use-visible entities only.
+         --  Scan list of homographs for use-visible entities only
 
          H := Current_Entity (Ent);
 
@@ -576,7 +573,7 @@ package body Sem_Type is
 
       if All_Interp.Last = First_Interp + 1 then
 
-         --  The original interpretation is in fact not overloaded.
+         --  The original interpretation is in fact not overloaded
 
          Set_Is_Overloaded (N, False);
       end if;
@@ -666,7 +663,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  The context may be class wide.
+      --  The context may be class wide
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Ancestor (Root_Type (T1), T2)
@@ -903,6 +900,10 @@ package body Sem_Type is
       Predef_Subp : Entity_Id;
       User_Subp   : Entity_Id;
 
+      function Inherited_From_Actual (S : Entity_Id) return Boolean;
+      --  Determine whether one of the candidates is an operation inherited
+      --  by a type that is derived from an actual in an instantiation.
+
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean;
       --  Determine whether a subprogram is an actual in an enclosing
       --  instance. An overloading between such a subprogram and one
@@ -914,6 +915,7 @@ package body Sem_Type is
       --  ambiguities when two formal types have the same actual.
 
       function Standard_Operator return Boolean;
+      --  Comment required ???
 
       function Remove_Conversions return Interp;
       --  Last chance for pathological cases involving comparisons on
@@ -932,6 +934,29 @@ package body Sem_Type is
       --  pathology in the other direction with calls whose multiple overloaded
       --  actuals make them truly unresolvable.
 
+      ---------------------------
+      -- Inherited_From_Actual --
+      ---------------------------
+
+      function Inherited_From_Actual (S : Entity_Id) return Boolean is
+         Par : constant Node_Id := Parent (S);
+      begin
+         if Nkind (Par) /= N_Full_Type_Declaration
+           or else Nkind (Type_Definition (Par)) /= N_Derived_Type_Definition
+         then
+            return False;
+         else
+            return Is_Entity_Name (Subtype_Indication (Type_Definition (Par)))
+              and then
+               Is_Generic_Actual_Type (
+                 Entity (Subtype_Indication (Type_Definition (Par))));
+         end if;
+      end Inherited_From_Actual;
+
+      --------------------------
+      -- Is_Actual_Subprogram --
+      --------------------------
+
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean is
       begin
          return In_Open_Scopes (Scope (S))
@@ -947,7 +972,6 @@ package body Sem_Type is
       function Matches (Actual, Formal : Node_Id) return Boolean is
          T1 : constant Entity_Id := Etype (Actual);
          T2 : constant Entity_Id := Etype (Formal);
-
       begin
          return T1 = T2
            or else
@@ -969,9 +993,9 @@ package body Sem_Type is
          Act2 : Node_Id;
 
       begin
-         It1   := No_Interp;
-         Get_First_Interp (N, I, It);
+         It1 := No_Interp;
 
+         Get_First_Interp (N, I, It);
          while Present (It.Typ) loop
 
             if not Is_Overloadable (It.Nam) then
@@ -1055,12 +1079,11 @@ package body Sem_Type is
                Get_Next_Interp (I, It);
          end loop;
 
+         --  After some error, a formal may have Any_Type and yield
+         --  a spurious match. To avoid cascaded errors if possible,
+         --  check for such a formal in either candidate.
+
          if Serious_Errors_Detected > 0 then
-
-            --  After some error, a formal may have Any_Type and yield
-            --  a spurious match. To avoid cascaded errors if possible,
-            --  check for such a formal in either candidate.
-
             declare
                Formal : Entity_Id;
 
@@ -1115,17 +1138,15 @@ package body Sem_Type is
    --  Start of processing for Disambiguate
 
    begin
-      --  Recover the two legal interpretations.
+      --  Recover the two legal interpretations
 
       Get_First_Interp (N, I, It);
-
       while I /= I1 loop
          Get_Next_Interp (I, It);
       end loop;
 
       It1  := It;
       Nam1 := It.Nam;
-
       while I /= I2 loop
          Get_Next_Interp (I, It);
       end loop;
@@ -1154,12 +1175,12 @@ package body Sem_Type is
 
             declare
                Candidate : Interp := No_Interp;
+
             begin
                Get_First_Interp (N, I, It);
-
                while Present (It.Typ) loop
                   if (Covers (Typ, It.Typ)
-                       or else Typ = Any_Type)
+                        or else Typ = Any_Type)
                     and then
                      (It.Typ = Universal_Integer
                        or else It.Typ = Universal_Real)
@@ -1183,8 +1204,7 @@ package body Sem_Type is
             end;
 
          elsif Chars (Nam1) /= Name_Op_Not
-           and then (Typ = Standard_Boolean
-             or else Typ = Any_Boolean)
+           and then (Typ = Standard_Boolean or else Typ = Any_Boolean)
          then
             --  Equality or comparison operation. Choose predefined operator
             --  if arguments are universal. The node may be an operator, a
@@ -1215,7 +1235,6 @@ package body Sem_Type is
                           Universal_Interpretation (Arg1)
                then
                   Get_First_Interp (N, I, It);
-
                   while Scope (It.Nam) /= Standard_Standard loop
                      Get_Next_Interp (I, It);
                   end loop;
@@ -1273,6 +1292,11 @@ package body Sem_Type is
          --  node is overloaded, it did not resolve to the global entity in
          --  the generic, and we choose the formal subprogram.
 
+         --  Finally, the ambiguity can be between an explicit subprogram and
+         --  one inherited (with different defaults) from an actual. In this
+         --  case the resolution was to the explicit declaration in the
+         --  generic, and remains so in the instance.
+
          elsif In_Instance then
             if Nkind (N) = N_Function_Call
               or else Nkind (N) = N_Procedure_Call_Statement
@@ -1289,6 +1313,16 @@ package body Sem_Type is
 
                   elsif Is_Act2 and then not Is_Act1 then
                      return It2;
+
+                  elsif Inherited_From_Actual (Nam1)
+                    and then Comes_From_Source (Nam2)
+                  then
+                     return It2;
+
+                  elsif Inherited_From_Actual (Nam2)
+                    and then Comes_From_Source (Nam1)
+                  then
+                     return It1;
                   end if;
 
                   Actual := First_Actual (N);
@@ -1306,7 +1340,6 @@ package body Sem_Type is
                end;
 
             elsif Nkind (N) in N_Binary_Op then
-
                if Matches (Left_Opnd (N), First_Formal (Nam1))
                  and then
                    Matches (Right_Opnd (N), Next_Formal (First_Formal (Nam1)))
@@ -1317,7 +1350,6 @@ package body Sem_Type is
                end if;
 
             elsif Nkind (N) in  N_Unary_Op then
-
                if Etype (Right_Opnd (N)) = Etype (First_Formal (Nam1)) then
                   return It1;
                else
@@ -1374,7 +1406,7 @@ package body Sem_Type is
          then
             if Is_Fixed_Point_Type (Typ)
               and then (Chars (Nam1) = Name_Op_Multiply
-                         or else Chars (Nam1) = Name_Op_Divide)
+                          or else Chars (Nam1) = Name_Op_Divide)
               and then Ada_Version = Ada_83
             then
                if It2.Nam = Predef_Subp then
@@ -1393,7 +1425,6 @@ package body Sem_Type is
             return It2;
          end if;
       end if;
-
    end Disambiguate;
 
    ---------------------
@@ -1449,7 +1480,6 @@ package body Sem_Type is
    begin
       if Is_Overloaded (R) then
          Get_First_Interp (R, I, It);
-
          while Present (It.Typ) loop
             if Covers (T, It.Typ) or else Covers (It.Typ, T) then
 
@@ -1474,8 +1504,7 @@ package body Sem_Type is
 
          Set_Etype (R, TR);
 
-      --  In the non-overloaded case, the Etype of R is already set
-      --  correctly.
+      --  In the non-overloaded case, the Etype of R is already set correctly
 
       else
          null;
@@ -1542,7 +1571,6 @@ package body Sem_Type is
       end if;
 
       Map_Ptr := Headers (Hash (O_N));
-
       while Present (Interp_Map.Table (Map_Ptr).Node) loop
          if Interp_Map.Table (Map_Ptr).Node = O_N then
             Int_Ind := Interp_Map.Table (Map_Ptr).Index;
@@ -1598,16 +1626,14 @@ package body Sem_Type is
 
       else
          Get_First_Interp (N, I, It);
-
          while Present (It.Typ) loop
             if (Covers (Typ, It.Typ)
-                and then
-                  (Scope (It.Nam) /= Standard_Standard
-                     or else not Is_Invisible_Operator (N, Base_Type (Typ))))
-
+                  and then
+                    (Scope (It.Nam) /= Standard_Standard
+                       or else not Is_Invisible_Operator (N, Base_Type (Typ))))
               or else (not Is_Tagged_Type (Typ)
-                        and then Ekind (Typ) /= E_Anonymous_Access_Type
-                        and then Covers (It.Typ, Typ))
+                         and then Ekind (Typ) /= E_Anonymous_Access_Type
+                         and then Covers (It.Typ, Typ))
             then
                return True;
             end if;
@@ -1685,7 +1711,6 @@ package body Sem_Type is
 
          else
             Get_First_Interp (R, Index, It);
-
             loop
                T2 := Specific_Type (T, It.Typ);
 
@@ -1714,7 +1739,6 @@ package body Sem_Type is
       else
          Typ := Any_Type;
          Get_First_Interp (L, Index, It);
-
          while Present (It.Typ) loop
             Typ := Check_Right_Argument (It.Typ);
             exit when Typ /= Any_Type;
@@ -1726,7 +1750,6 @@ package body Sem_Type is
       --  If Typ is Any_Type, it means no compatible pair of types was found
 
       if Typ = Any_Type then
-
          if Nkind (Parent (L)) in N_Op then
             Error_Msg_N ("incompatible types for operator", Parent (L));
 
@@ -1947,7 +1970,6 @@ package body Sem_Type is
       New_F := First_Formal (New_S);
       Old_F := First_Formal (Op);
       Num := 0;
-
       while Present (New_F) and then Present (Old_F) loop
          Num := Num + 1;
          Next_Formal (New_F);
@@ -2095,7 +2117,6 @@ package body Sem_Type is
       --  Find end of Interp list and copy downward to erase the discarded one
 
       II := I + 1;
-
       while Present (All_Interp.Table (II).Typ) loop
          II := II + 1;
       end loop;

@@ -24,8 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet; use Namet;
-with Osint; use Osint;
+with Namet;   use Namet;
+with Osint;
+with Prj.Com; use Prj.Com;
 with Table;
 
 with System.Case_Util; use System.Case_Util;
@@ -39,11 +40,13 @@ package body Prj.Attr is
    --  Package names are preceded by 'P'
 
    --  Attribute names are preceded by two letters:
+
    --  The first letter is one of
    --    'S' for Single
    --    's' for Single with optional index
    --    'L' for List
    --    'l' for List of strings with optional indexes
+
    --  The second letter is one of
    --    'V' for single variable
    --    'A' for associative array
@@ -186,89 +189,8 @@ package body Prj.Attr is
    Initialized : Boolean := False;
    --  A flag to avoid multiple initialization
 
-   ----------------
-   -- Attributes --
-   ----------------
-
-   type Attribute_Record is record
-      Name           : Name_Id;
-      Var_Kind       : Variable_Kind;
-      Optional_Index : Boolean;
-      Attr_Kind      : Attribute_Kind;
-      Next           : Attr_Node_Id;
-   end record;
-   --  Data for an attribute
-
-   package Attrs is
-      new Table.Table (Table_Component_Type => Attribute_Record,
-                       Table_Index_Type     => Attr_Node_Id,
-                       Table_Low_Bound      => First_Attribute,
-                       Table_Initial        => Attributes_Initial,
-                       Table_Increment      => Attributes_Increment,
-                       Table_Name           => "Prj.Attr.Attrs");
-   --  The table of the attributes
-
-   --------------
-   -- Packages --
-   --------------
-
-   type Package_Record is record
-      Name            : Name_Id;
-      Known           : Boolean := True;
-      First_Attribute : Attr_Node_Id;
-   end record;
-   --  Data for a package
-
-   package Package_Attributes is
-      new Table.Table (Table_Component_Type => Package_Record,
-                       Table_Index_Type     => Pkg_Node_Id,
-                       Table_Low_Bound      => First_Package,
-                       Table_Initial        => Packages_Initial,
-                       Table_Increment      => Packages_Increment,
-                       Table_Name           => "Prj.Attr.Packages");
-   --  The table of the packages
-
    function Name_Id_Of (Name : String) return Name_Id;
    --  Returns the Name_Id for Name in lower case
-
-   -------------------
-   -- Add_Attribute --
-   -------------------
-
-   procedure Add_Attribute
-     (To_Package     : Package_Node_Id;
-      Attribute_Name : Name_Id;
-      Attribute_Node : out Attribute_Node_Id)
-   is
-   begin
-      --  Only add the attribute if the package is already defined
-
-      if To_Package /= Empty_Package then
-         Attrs.Increment_Last;
-         Attrs.Table (Attrs.Last) :=
-           (Name              => Attribute_Name,
-            Var_Kind          => Undefined,
-            Optional_Index    => False,
-            Attr_Kind         => Unknown,
-            Next              =>
-              Package_Attributes.Table (To_Package.Value).First_Attribute);
-         Package_Attributes.Table (To_Package.Value).First_Attribute :=
-           Attrs.Last;
-         Attribute_Node := (Value => Attrs.Last);
-      end if;
-   end Add_Attribute;
-
-   -------------------------
-   -- Add_Unknown_Package --
-   -------------------------
-
-   procedure Add_Unknown_Package (Name : Name_Id; Id : out Package_Node_Id) is
-   begin
-      Package_Attributes.Increment_Last;
-      Id := (Value => Package_Attributes.Last);
-      Package_Attributes.Table (Id.Value) :=
-        (Name => Name, Known => False, First_Attribute => Empty_Attr);
-   end Add_Unknown_Package;
 
    -----------------------
    -- Attribute_Kind_Of --
@@ -307,6 +229,7 @@ package body Prj.Attr is
       Starting_At : Attribute_Node_Id) return Attribute_Node_Id
    is
       Id : Attr_Node_Id := Starting_At.Value;
+
    begin
       while Id /= Empty_Attr
         and then Attrs.Table (Id).Name /= Name
@@ -386,7 +309,7 @@ package body Prj.Attr is
 
                for Index in First_Package .. Package_Attributes.Last loop
                   if Package_Name = Package_Attributes.Table (Index).Name then
-                     Fail ("duplicate name """,
+                     Osint.Fail ("duplicate name """,
                            Initialization_Data (Start .. Finish - 1),
                            """ in predefined packages.");
                   end if;
@@ -438,14 +361,14 @@ package body Prj.Attr is
                   Attr_Kind := Case_Insensitive_Associative_Array;
 
                when 'b' =>
-                  if File_Names_Case_Sensitive then
+                  if Osint.File_Names_Case_Sensitive then
                      Attr_Kind := Associative_Array;
                   else
                      Attr_Kind := Case_Insensitive_Associative_Array;
                   end if;
 
                when 'c' =>
-                  if File_Names_Case_Sensitive then
+                  if Osint.File_Names_Case_Sensitive then
                      Attr_Kind := Optional_Index_Associative_Array;
                   else
                      Attr_Kind :=
@@ -480,7 +403,7 @@ package body Prj.Attr is
 
                for Index in First_Attribute .. Attrs.Last - 1 loop
                   if Attribute_Name = Attrs.Table (Index).Name then
-                     Fail ("duplicate attribute """,
+                     Osint.Fail ("duplicate attribute """,
                            Initialization_Data (Start .. Finish - 1),
                            """ in " & Attribute_Location);
                   end if;
@@ -581,11 +504,13 @@ package body Prj.Attr is
    begin
       if Name'Length = 0 then
          Fail ("cannot register an attribute with no name");
+         raise Project_Error;
       end if;
 
       if In_Package = Empty_Package then
          Fail ("attempt to add attribute """, Name,
                """ to an undefined package");
+         raise Project_Error;
       end if;
 
       Attr_Name := Name_Id_Of (Name);
@@ -603,7 +528,7 @@ package body Prj.Attr is
                   Get_Name_String
                     (Package_Attributes.Table (In_Package.Value).Name) &
                   """");
-            exit;
+            raise Project_Error;
          end if;
 
          Curr_Attr := Attrs.Table (Curr_Attr).Next;
@@ -613,7 +538,7 @@ package body Prj.Attr is
 
       --  If Index_Is_File_Name, change the attribute kind if necessary
 
-      if Index_Is_File_Name  and then not File_Names_Case_Sensitive then
+      if Index_Is_File_Name and then not Osint.File_Names_Case_Sensitive then
          case Attr_Kind is
             when Associative_Array =>
                Real_Attr_Kind := Case_Insensitive_Associative_Array;
@@ -645,14 +570,26 @@ package body Prj.Attr is
    --------------------------
 
    procedure Register_New_Package (Name : String; Id : out Package_Node_Id) is
-      Pkg_Name   : Name_Id;
+      Pkg_Name : Name_Id;
 
    begin
       if Name'Length = 0 then
          Fail ("cannot register a package with no name");
+         Id := Empty_Package;
+         return;
       end if;
 
       Pkg_Name := Name_Id_Of (Name);
+
+      for Index in Package_Attributes.First .. Package_Attributes.Last loop
+         if Package_Attributes.Table (Index).Name = Pkg_Name then
+            Fail ("cannot register a package with a non unique name""",
+                  Name, """");
+            Id := Empty_Package;
+            return;
+         end if;
+      end loop;
+
       Package_Attributes.Increment_Last;
       Id := (Value => Package_Attributes.Last);
       Package_Attributes.Table (Package_Attributes.Last) :=
@@ -672,6 +609,7 @@ package body Prj.Attr is
    begin
       if Name'Length = 0 then
          Fail ("cannot register a package with no name");
+         raise Project_Error;
       end if;
 
       Pkg_Name := Name_Id_Of (Name);
@@ -680,7 +618,7 @@ package body Prj.Attr is
          if Package_Attributes.Table (Index).Name = Pkg_Name then
             Fail ("cannot register a package with a non unique name""",
                   Name, """");
-            exit;
+            raise Project_Error;
          end if;
       end loop;
 
@@ -692,7 +630,7 @@ package body Prj.Attr is
             if Attrs.Table (Curr_Attr).Name = Attr_Name then
                Fail ("duplicate attribute name """, Attributes (Index).Name,
                      """ in new package """ & Name & """");
-               exit;
+               raise Project_Error;
             end if;
 
             Curr_Attr := Attrs.Table (Curr_Attr).Next;
@@ -701,7 +639,7 @@ package body Prj.Attr is
          Attr_Kind := Attributes (Index).Attr_Kind;
 
          if Attributes (Index).Index_Is_File_Name
-           and then not File_Names_Case_Sensitive
+           and then not Osint.File_Names_Case_Sensitive
          then
             case Attr_Kind is
                when Associative_Array =>

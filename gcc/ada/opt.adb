@@ -98,7 +98,7 @@ package body Opt is
    procedure Set_Opt_Config_Switches (Internal_Unit : Boolean) is
    begin
       if Internal_Unit then
-         Ada_Version                := Ada_Version_Default;
+         Ada_Version                := Ada_Version_Runtime;
          Dynamic_Elaboration_Checks := False;
          Extensions_Allowed         := True;
          External_Name_Exp_Casing   := As_Is;

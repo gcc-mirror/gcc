@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,9 +119,9 @@ package Exp_Pakd is
    --  a packed array. There are two reasonable rules for deciding this:
 
    --    Store the first bit at right end (low order) word. This means
-   --    that the scaled subscript can be used directly as a right shift
+   --    that the scaled subscript can be used directly as a left shift
    --    count (if we put bit 0 at the left end, then we need an extra
-   --    subtract to compute the shift count.
+   --    subtract to compute the shift count).
 
    --    Layout the bits so that if the packed boolean array is overlaid on
    --    a record, using unchecked conversion, then bit 0 of the array is
@@ -156,7 +156,7 @@ package Exp_Pakd is
    --  that a worthwhile price to pay for the consistency.
 
    --  One more important point arises in the case where we have a constrained
-   --  subtype of an unconstrained array. Take the case of 20-bits. For the
+   --  subtype of an unconstrained array. Take the case of 20 bits. For the
    --  unconstrained representation, we would use an array of bytes:
 
    --     Little-endian case

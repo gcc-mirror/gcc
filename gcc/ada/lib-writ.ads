@@ -181,6 +181,9 @@ package Lib.Writ is
    --              format will be correct and complete. Note that NO is
    --              always present if CE is present.
    --
+   --         DB   Detect_Blocking pragma is in effect for all units in
+   --              this file.
+   --
    --         FD   Configuration pragmas apply to all the units in this
    --              file specifying a possibly non-standard floating point
    --              format (VAX float with Long_Float using D_Float)

@@ -2929,7 +2929,6 @@ package body Sem_Prag is
             --  denoted entities in the same declarative part.
 
             Hom_Id := Def_Id;
-
             while Present (Hom_Id) loop
                Def_Id := Get_Base_Subprogram (Hom_Id);
 
@@ -4498,6 +4497,9 @@ package body Sem_Prag is
             elsif Ekind (Nm) = E_Record_Type
               and then Present (Corresponding_Remote_Type (Nm))
             then
+               --  A record type that is the Equivalent_Type for
+               --  a remote access-to-subprogram type.
+
                N := Declaration_Node (Corresponding_Remote_Type (Nm));
 
                if Nkind (N) = N_Full_Type_Declaration
@@ -4506,6 +4508,13 @@ package body Sem_Prag is
                then
                   L := Parameter_Specifications (Type_Definition (N));
                   Process_Async_Pragma;
+
+                  if Is_Asynchronous (Nm)
+                    and then Expander_Active
+                  then
+                     RACW_Type_Is_Asynchronous (
+                       Underlying_RACW_Type (Nm));
+                  end if;
 
                else
                   Error_Pragma_Arg

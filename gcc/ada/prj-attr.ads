@@ -86,6 +86,12 @@ package Prj.Attr is
    --  explicitly with Register_New_Package (see below).
 
    type Attribute_Data_Array is array (Positive range <>) of Attribute_Data;
+   --  A list of attribute name/characteristics to be used as parameter of
+   --  procedure Register_New_Package below.
+
+   --  In the subprograms below, when it is specified that the subprogram
+   --  "fails", procedure Prj.Com.Fail is called. Unless it is specified
+   --  otherwise, if Prj.Com.Fail returns, exception Prj.Prj_Error is raised.
 
    procedure Register_New_Package
      (Name       : String;
@@ -93,11 +99,8 @@ package Prj.Attr is
    --  Add a new package with its attributes.
    --  This procedure can only be called after Initialize, but before any
    --  other call to a service of the Project Managers.
-   --  The name of the package must be unique. The names of the attributes
-   --  must be different.
-
-   --  The following declarations are only for the Project Manager, that is
-   --  the packages of the Prj or MLib hierarchies.
+   --  Fail if the name of the package is empty or not unique, or if the names
+   --  of the attributes are not different.
 
    ----------------
    -- Attributes --
@@ -168,9 +171,11 @@ package Prj.Attr is
    --  Default value of Package_Node_Id objects
 
    procedure Register_New_Package (Name : String; Id : out Package_Node_Id);
-   --  Add a new package. Fails if the package has a duplicate name.
-   --  Initially, the new package has no attributes. Id may be used to add
-   --  attributes using procedure Register_New_Attribute below.
+   --  Add a new package. Fails if Name (the package name) is empty or is
+   --  already the name of a package, and set Id to Empty_Package,
+   --  if Prj.Com.Fail returns. Initially, the new package has no attributes.
+   --  Id may be used to add attributes using procedure Register_New_Attribute
+   --  below.
 
    procedure Register_New_Attribute
      (Name               : String;
@@ -179,31 +184,20 @@ package Prj.Attr is
       Var_Kind           : Defined_Variable_Kind;
       Index_Is_File_Name : Boolean := False;
       Opt_Index          : Boolean := False);
-   --  Add a new attribute to registered package In_Package. Fails if the
-   --  attribute has a duplicate name. See definition of type Attribute_Data
-   --  above for the meaning of parameters Attr_Kind, Var_Kind,
+   --  Add a new attribute to registered package In_Package. Fails if Name
+   --  (the attribute name) is empty, if In_Package is Empty_Package or if
+   --  the attribute name has a duplicate name. See definition of type
+   --  Attribute_Data above for the meaning of parameters Attr_Kind, Var_Kind,
    --  Index_Is_File_Name and Opt_Index.
 
    function Package_Node_Id_Of (Name : Name_Id) return Package_Node_Id;
    --  Returns the package node id of the package with name Name. Returns
    --  Empty_Package if there is no package with this name.
 
-   procedure Add_Unknown_Package (Name : Name_Id; Id : out Package_Node_Id);
-   --  Add a new package. The Name cannot be the name of a predefined or
-   --  already registered package.
-
    function First_Attribute_Of
      (Pkg : Package_Node_Id) return Attribute_Node_Id;
    --  Returns the first attribute in the list of attributes of package Pkg.
    --  Returns Empty_Attribute if Pkg is Empty_Package.
-
-   procedure Add_Attribute
-     (To_Package     : Package_Node_Id;
-      Attribute_Name : Name_Id;
-      Attribute_Node : out Attribute_Node_Id);
-   --  Add an attribute to the list for package To_Package. Attribute_Name
-   --  cannot be the name of an existing attribute of the package.
-   --  Does nothing if To_Package is Empty_Package.
 
 private
    ----------------
@@ -265,5 +259,47 @@ private
                               (Value => First_Package);
 
    Package_First : constant Package_Node_Id := First_Package_Node_Id;
+
+   ----------------
+   -- Attributes --
+   ----------------
+
+   type Attribute_Record is record
+      Name           : Name_Id;
+      Var_Kind       : Variable_Kind;
+      Optional_Index : Boolean;
+      Attr_Kind      : Attribute_Kind;
+      Next           : Attr_Node_Id;
+   end record;
+   --  Data for an attribute
+
+   package Attrs is
+      new Table.Table (Table_Component_Type => Attribute_Record,
+                       Table_Index_Type     => Attr_Node_Id,
+                       Table_Low_Bound      => First_Attribute,
+                       Table_Initial        => Attributes_Initial,
+                       Table_Increment      => Attributes_Increment,
+                       Table_Name           => "Prj.Attr.Attrs");
+   --  The table of the attributes
+
+   --------------
+   -- Packages --
+   --------------
+
+   type Package_Record is record
+      Name            : Name_Id;
+      Known           : Boolean := True;
+      First_Attribute : Attr_Node_Id;
+   end record;
+   --  Data for a package
+
+   package Package_Attributes is
+      new Table.Table (Table_Component_Type => Package_Record,
+                       Table_Index_Type     => Pkg_Node_Id,
+                       Table_Low_Bound      => First_Package,
+                       Table_Initial        => Packages_Initial,
+                       Table_Increment      => Packages_Increment,
+                       Table_Name           => "Prj.Attr.Packages");
+   --  The table of the packages
 
 end Prj.Attr;

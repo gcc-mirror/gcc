@@ -77,6 +77,9 @@ with Ada.Strings.Unbounded;
 
 package Ada.Directories is
 
+   pragma Ada_05;
+   --  To be removed later ???
+
    -----------------------------------
    -- Directory and File Operations --
    -----------------------------------
@@ -386,7 +389,7 @@ private
       Is_Valid : Boolean := False;
       Simple   : Ada.Strings.Unbounded.Unbounded_String;
       Full     : Ada.Strings.Unbounded.Unbounded_String;
-      Kind     : File_Kind;
+      Kind     : File_Kind := Ordinary_File;
    end record;
 
    --  The type Search_Data is defined in the body, so that the spec does not

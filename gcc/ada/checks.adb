@@ -492,6 +492,7 @@ package body Checks is
          Expr := Expression (Expr);
 
       elsif Nkind (Expr) = N_Function_Call
+        and then Is_Entity_Name (Name (Expr))
         and then Is_RTE (Entity (Name (Expr)), RE_To_Address)
       then
          Expr := First (Parameter_Associations (Expr));

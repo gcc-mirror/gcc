@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 --  to build Windows DLL
 
 with GNAT.OS_Lib;
+--  Should have USE here ???
 
 package MDLL is
 
@@ -36,19 +37,20 @@ package MDLL is
 
    Null_Argument_List : constant Argument_List := (1 .. 0 => new String'(""));
 
-   Null_Argument_List_Access : Argument_List_Access
-     := new Argument_List (1 .. 0);
+   Null_Argument_List_Access : Argument_List_Access :=
+                                 new Argument_List (1 .. 0);
 
-   Tools_Error    : exception;
+   Tools_Error : exception;
+   --  Commment required
 
-   Verbose        : Boolean := False;
-   Quiet          : Boolean := False;
+   Verbose : Boolean := False;
+   Quiet   : Boolean := False;
+   --  Comment required ???
 
+   Kill_Suffix : Boolean := False;
    --  Kill_Suffix is used by dlltool to know whether or not the @nn suffix
    --  should be removed from the exported names. When Kill_Suffix is set to
    --  True then dlltool -k option is used.
-
-   Kill_Suffix    : Boolean := False;
 
    procedure Build_Dynamic_Library
      (Ofiles        : Argument_List;
@@ -60,14 +62,16 @@ package MDLL is
       Def_Filename  : String;
       Lib_Address   : String  := "";
       Build_Import  : Boolean := False;
-      Relocatable   : Boolean := False);
+      Relocatable   : Boolean := False;
+      Map_File      : Boolean := False);
    --  Build a DLL and the import library to link against the DLL.
    --  this function handles relocatable and non relocatable DLL.
    --  If the Afiles argument list contains some Ada units then it will
    --  generate the right adainit and adafinal and integrate it in the DLL.
    --  If the Afiles argument list is empty (there is only some object files
    --  provided) then it will not try to build a binder file. This is ok to
-   --  build DLL containing no Ada code.
+   --  build DLL containing no Ada code. If Map_File is set to True, a map
+   --  file named Lib_Filename & ".map" will be created.
 
    procedure Build_Import_Library
      (Lib_Filename : String;

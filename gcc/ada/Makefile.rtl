@@ -219,6 +219,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-diopit$(objext) \
   g-dirope$(objext) \
   g-dyntab$(objext) \
+  g-dynhta$(objext) \
   g-except$(objext) \
   g-excact$(objext) \
   g-exctra$(objext) \
@@ -235,7 +236,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-memdum$(objext) \
   g-moreex$(objext) \
   g-os_lib$(objext) \
-  g-perhas$(objext) \
   g-pehage$(objext) \
   g-regexp$(objext) \
   g-regpat$(objext) \

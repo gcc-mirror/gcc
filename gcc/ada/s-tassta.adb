@@ -226,6 +226,17 @@ package body System.Tasking.Stages is
 
    procedure Abort_Tasks (Tasks : Task_List) is
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then STPO.Self.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       Utilities.Abort_Tasks (Tasks);
    end Abort_Tasks;
 
@@ -266,6 +277,17 @@ package body System.Tasking.Stages is
       All_Elaborated : Boolean := True;
 
    begin
+      --  If pragma Detect_Blocking is active must be checked whether
+      --  this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then Self_ID.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       pragma Debug
         (Debug.Trace (Self_ID, "Activate_Tasks", 'C'));
 
@@ -513,6 +535,17 @@ package body System.Tasking.Stages is
       Len           : Natural;
 
    begin
+      --  If pragma Detect_Blocking is active must be checked whether
+      --  this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then Self_ID.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       pragma Debug
         (Debug.Trace (Self_ID, "Create_Task", 'C'));
 

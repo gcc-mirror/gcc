@@ -1,3 +1,322 @@
+2004-09-09  Vincent Celier  <celier@gnat.com>
+
+	* a-direct.ads: Add pragma Ada_05
+	(Directory_Entry_Type): Give default value to component Kind to avoid
+	not initialized warnings.
+
+	* a-direct.adb (Current_Directory): Remove directory separator at the
+	end.
+	(Delete_Directory, Delete_Tree): Raise Name_Error if Directory is not
+	an existing directory.
+	(Fetch_Next_Entry): Give default value to variable Kind to avoid warning
+	(Size (String)): Function C_Size returns Long_Integer, not File_Size.
+	Convert the result to File_Size.
+
+	* prj.ads: (Project_Error): New exception
+
+	* prj-attr.adb: Except in procedure Initialize, Fail comes from
+	Prj.Com, not from Osint.
+	(Attrs, Package_Attributes): Tables moved to private part of spec
+	(Add_Attribute, Add_Unknown_Package): Moved to new child package
+	Prj.Attr.PM.
+	(Register_New_Package (Name, Attributes), Register_New_Attribute): Raise
+	Prj.Project_Error after call to Fail.
+	(Register_New_Package (Name, Id)): Set Id to Empty_Package after calling
+	Fail. Check that package name is not already in use.
+
+	* prj-attr.ads: Comment updates to indicate that all subprograms may be
+	used by tools, not only by the project manager, and to indicate that
+	exception Prj.Prj_Error may be raised in case of problem.
+	(Add_Unknown_Package, Add_Attribute): Moved to new child package
+	Prj.Attr.PM.
+	(Attrs, Package_Attributes): Table instantiations moved from the body to
+	the private part to be accessible from Prj.Attr.PM body.
+
+	* prj-dect.adb (Parse_Package_Declaration): Call Add_Unknown_Package
+	from new package Prj.Attr.PM.
+	(Parse_Attribute_Declaration): Call Add_Attribute from new package
+	Prj.Attr.PM.
+
+	* Makefile.in: Add prj-attr-pm.o to gnatmake object list
+
+	* gnatbind.adb (Gnatbind): Correct warning message (Elaboration_Check
+	instead of Elaboration_Checks).
+
+	* a-calend.adb: Minor reformatting
+
+2004-09-09  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gigi.h (maybe_pad_type): New declaration.
+	(create_subprog_type): New arg RETURNS_BY_TARGET_PTR.
+
+	* ada-tree.h: (TYPE_RETURNS_BY_TARGET_PTR_P): New macro.
+
+	* cuintp.c: Convert to use buildN.
+
+	* decl.c (maybe_pad_type): No longer static.
+	(gnat_to_gnu_entity, case E_Function): Handle case of returning by
+	target pointer.
+	Convert to use buildN.
+
+	* trans.c (call_to_gnu): Add arg GNU_TARGET; support
+	TYPE_RETURNS_BY_TARGET_PTR_P.  All callers changed.
+	(gnat_to_gnu, case N_Assignment_Statement): Call call_to_gnu if call on
+	RHS.
+	(gnat_to_gnu, case N_Return): Handle TYPE_RETURN_BY_TARGET_PTR_P.
+	(gnat_gimplify_expr, case ADDR_EXPR): New case.
+	Convert to use buildN.
+
+	* utils2.c (gnat_build_constructor): Also set TREE_INVARIANT and
+	TREE_READONLY for const.
+	Convert to use buildN.
+
+	* utils.c (create_subprog_type): New operand RETURNS_BY_TARGET_PTR.
+	(create_var_decl): Refine when TREE_STATIC is set.
+	Convert to use buildN.
+
+2004-09-09  Gary Dismukes  <dismukes@gnat.com>
+
+	* gnat_ugn.texi: Delete text relating to checking of ali and object
+	consistency.
+
+	* a-except.adb (Rcheck_*): Add pragmas No_Return for each of these
+	routines.
+
+2004-09-09  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* gnat_ugn.texi: Add Detect_Blocking to the list of configuration
+	pragmas recognized by GNAT.
+
+	* gnat_rm.texi: Document pragma Detect_Blocking.
+
+	* s-solita.adb (Timed_Delay_T): When pragma Detect_Blocking is active,
+	raise Program_Error if called from a protected operation.
+
+	* s-taprob.adb (Lock): When pragma Detect_Blocking is active increase
+	the protected action nesting level.
+	(Lock_Read_Only): When pragma Detect_Blocking is active increase the
+	protected action nesting level.
+	(Unlock): When pragma Detect_Blocking is active decrease the protected
+	action nesting level.
+
+	* s-taskin.adb (Initialize_ATCB): Initialize to 0 the
+	Protected_Action_Nesting.
+
+	* s-taskin.ads: Adding the field Protected_Action_Nesting to the
+	Common_ATCB record. It contains the dynamic level of protected action
+	nesting for each task. It is needed for checking whether potentially
+	blocking operations are called from protected operations.
+	(Detect_Blocking): Adding a Boolean constant reflecting whether pragma
+	Detect_Blocking is active or not in the partition.
+
+	* s-tasren.adb (Call_Simple): When pragma Detect_Blocking is active,
+	raise Program_Error if called from a protected operation.
+	(Task_Entry_Call): When pragma Detect_Blocking is active, raise
+	Program_Error if called from a protected operation.
+	(Timed_Task_Entry_Call): When pragma Detect_Blocking is active, raise
+	Program_Error if called from a protected operation.
+
+	* s-tassta.adb (Abort_Tasks): When pragma Detect_Blocking is active,
+	raise Program_Error if called from a protected operation.
+
+	* s-tpoben.adb (Lock_Entries): When pragma Detect_Blocking is active,
+	raise Program_Error if called from a protected operation, and increase
+	the protected action nesting level.
+	(Lock_Read_Only_Entries): When pragma Detect_Blocking is active, raise
+	Program_Error if called from a protected operation, and increase the
+	protected action nesting level.
+	(Unlock_Entries): When pragma Detect_Blocking is active decrease the
+	protected action nesting level.
+
+	* s-tposen.adb (Lock_Entry): When pragma Detect_Blocking is active,
+	raise Program_Error if called from a protected operation, and increase
+	the protected action nesting level.
+	(Lock_Read_Only_Entry): When pragma Detect_Blocking is active, raise
+	Program_Error if called from a protected operation, and increase the
+	protected action nesting level.
+	(Protected_Single_Entry_Call): When pragma Detect_Blocking is active,
+	raise Program_Error if called from a protected operation.
+	(Timed_Protected_Single_Entry_Call): When pragma Detect_Blocking is
+	active, raise Program_Error if called from a protected operation.
+	(Unlock_Entry): When pragma Detect_Blocking is active decrease the
+	protected action nesting level.
+
+	* sem_util.adb (Check_Potentially_Blocking_Operation): Remove the
+	insertion of the statement raising Program_Error. The run time
+	contains the required machinery for handling that.
+
+	* sem_util.ads: Change comment associated to procedure
+	Check_Potentially_Blocking_Operation.
+	This procedure does not insert a call for raising the exception because
+	that is currently done by the run time.
+
+	* raise.h (__gnat_set_globals): Pass the detect_blocking parameter.
+
+	* init.c: Add the global variable __gl_detect_blocking that indicates
+	whether pragma Detect_Blocking is active (1) or not (0). Needed for
+	making the pragma available at run time.
+	(__gnat_set_globals): Pass and update the detect_blocking parameter.
+
+	* lib-writ.adb (Write_ALI): Set the DB flag in the ali file if
+	pragma Detect_Blocking is active.
+
+	* lib-writ.ads: Document the Detect_Blocking flag (DB) in ali files.
+
+	* ali.adb (Scan_ALI): Set the Detect_Blocking value to true if the flag
+	DB is found in the ali file. Any unit compiled with pragma
+	Detect_Blocking active forces its effect in the whole partition.
+
+	* a-retide.adb (Delay_Until): Raise Program_Error if pragma
+	Detect_Blocking is active and delay is called from a protected
+	operation.
+
+	* bindgen.adb (Gen_Adainit_Ada): When generating the call to
+	__gnat_set_globals, pass 1 as Detect_Blocking parameter if pragma
+	Detect_Blocking is active (0 otherwise).
+	(Gen_Adainit_C): When generating the call to __gnat_set_globals, pass 1
+	as Detect_Blocking parameter if pragma Detect_Blocking is active (0
+	otherwise).
+
+2004-09-09  Thomas Quinot  <quinot@act-europe.fr>
+
+	* gnat_rm.texi: Rename GNAT.Perfect_Hash.Generators to
+	GNAT.Perfect_Hash_Generators, and remove the empty GNAT.Perfect_Hash
+	package.
+
+	* s-parint.ads, s-parint.adb (Get_RAS_Info): New subprogram.
+	(Register_Receiving_Stub): Add Subp_Info formal parameter.
+	Update API in placeholder implemetation of s-parint to reflect changes
+	in distribution runtime library.
+
+	* sem_ch3.adb (Expand_Derived_Record): Rename to
+	Expand_Record_Extension.
+
+	* sem_disp.adb (Check_Controlling_Formals): Improve error message for
+	primitive operations of potentially distributed object types that have
+	non-controlling anonymous access formals.
+
+	* sem_dist.ads, sem_dist.adb (Build_RAS_Primitive_Specification): New
+	subprogram.
+	New implementation of expansion for remote access-to-subprogram types,
+	based on the RACW infrastructure.
+	This version of sem_dist is compatible with PolyORB/DSA as well as
+	GLADE.
+
+	* sem_prag.adb (Analyze_Pragma, case Pragma_Asynchronous): For a pragma
+	Asynchrronous that applies to a remote access-to-subprogram type, mark
+	the underlying RACW type as asynchronous.
+
+	* link.c: FreeBSD uses GNU ld: set __gnat_objlist_file_supported and
+	 __gnat_using_gnu_linker to 1.
+
+	* Makefile.rtl, impunit.adb, g-perhas.ads, g-pehage.ads,
+	g-pehage.adb: Rename GNAT.Perfect_Hash.Generators to
+	GNAT.Perfect_Hash_Generators, and remove the empty
+	GNAT.Perfect_Hash package.
+
+	* atree.adb: Minor reformatting
+
+	* exp_ch3.adb (Expand_Derived_Record): Rename to
+	Expand_Record_Extension.
+	(Build_Record_Init_Proc.Build_Assignment): The default expression in
+	a component declaration must remain attached at that point in the
+	tree so New_Copy_Tree copies it if the enclosing record type is derived.
+	It is therefore necessary to take a copy of the expression when building
+	the corresponding assignment statement in the init proc.
+	As a side effect, in the case of a derived record type, we now see the
+	original expression, without any rewriting that could have occurred
+	during expansion of the ancestor type's init proc, and we do not need
+	to go back to Original_Node.
+
+	* exp_ch3.ads (Expand_Derived_Record): Rename to
+	Expand_Record_Extension.
+
+	* exp_dist.ads, exp_dist.adb (Underlying_RACW_Type): New subprogram.
+	Returns the RACW type used to implement a remote access-to-subprogram
+	type.
+	(Add_RAS_Proxy_And_Analyze, Build_Remote_Subprogram_Proxy_Type):
+	New subprograms. Used to create a proxy tagged object for a remote
+	subprogram. The proxy object is used as the designated object
+	for RAS values on the same partition (unless All_Calls_Remote applies).
+	(Build_Get_Unique_RP_Call): New subprogram. Build a call to
+	System.Partition_Interface.Get_Unique_Remote_Pointer.
+	(Add_RAS_Access_TSS, Add_RAS_Dereference_TSS):
+	Renamed from Add_RAS_*_Attribute.
+	(Add_Receiving_Stubs_To_Declarations): Generate a table of local
+	subprograms.
+	New implementation of expansion for remote access-to-subprogram types,
+	based on the RACW infrastructure.
+
+	* exp_dist.ads (Copy_Specification): Update comment to note that this
+	function can copy the specification from either a subprogram
+	specification or an access-to-subprogram type definition.
+
+2004-09-09  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_type.adb (Disambiguate): Handle properly an accidental ambiguity
+	in an instance, between an explicit subprogram an one inherited from a
+	type derived from an actual.
+
+	* exp_ch6.adb (Expand_N_Subprogram_Body): If polling is enabled, do not
+	add a polling call if the subprogram is to be inlined by the back-end,
+	to avoid repeated calls with multiple inlinings.
+
+	* checks.adb (Apply_Alignment_Check): If the expression in the address
+	clause is a call whose name is not a static entity (e.g. a dispatching
+	call), treat as dynamic.
+
+2004-09-09  Robert Dewar  <dewar@gnat.com>
+
+	* g-trasym.ads: Minor reformatting
+
+	* exp_ch3.adb (Component_Needs_Simple_Initialization): Don't except
+	packed arrays, since unused bits are expected to be zero for a
+	comparison.
+
+2004-09-09  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* exp_pakd.ads: Fix an inacurracy and a couple of typos in the head
+	comment.
+
+2004-09-09  Pascal Obry  <obry@gnat.com>
+
+	* mdll.ads, mdll.adb (Build_Dynamic_Library): New parameter Map_File to
+	enable map file generation. Add the right option to generate the map
+	file if Map_File is set to True.
+
+	* gnatdll.adb (Gen_Map_File): New variable.
+	(Syntax): Add info about new -m (Map_File) option.
+	(Parse_Command_Line): Add support for -m option.
+	(gnatdll): Pass Gen_Map_File to Build_Dynamic_Library calls.
+	Minor reformatting.
+
+2004-09-09  Laurent Pautet  <pautet@act-europe.fr>
+
+	* gnatls.adb: Add a very verbose mode -V. Such mode is required by the
+	new gnatdist implementation.
+	Define a subpackage isolating the output routines specific to this
+	verbose mode.
+
+2004-09-09  Joel Brobecker  <brobecker@gnat.com>
+
+	* Makefile.rtl: (GNATRTL_NONTASKING_OBJS): Add g-dynhta.
+
+	* gnat_ugn.texi (Main Subprograms): Fix typo. Deduced, not deducted.
+
+2004-09-09  Cyrille Comar  <comar@act-europe.fr>
+
+	* opt.adb (Set_Opt_Config_Switches): Use Ada_Version_Runtime to compile
+	internal unit.
+
+	* opt.ads: Add Ada_Version_Runtime constant used to decide which
+	version of the language is used to compile the run time.
+
+2004-09-09  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* sem_util.adb (Requires_Transient_Scope): Re-enable handling
+	of variable length temporaries for function return now that the
+	back-end and gigi support it.
+
 2004-09-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* misc.c (gnat_print_type): Use TYPE_RM_SIZE_NUM.

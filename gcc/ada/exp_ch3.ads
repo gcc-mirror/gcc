@@ -43,7 +43,7 @@ package Exp_Ch3 is
    --  the master for that access type, now that it is known to denote an
    --  object with tasks.
 
-   procedure Expand_Derived_Record (T : Entity_Id; Def : Node_Id);
+   procedure Expand_Record_Extension (T : Entity_Id; Def : Node_Id);
    --  Add a field _parent in the extension part of the record.
 
    procedure Build_Discr_Checking_Funcs (N : Node_Id);

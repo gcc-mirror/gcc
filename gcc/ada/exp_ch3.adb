@@ -1400,17 +1400,10 @@ package body Exp_Ch3 is
         (T : Entity_Id) return Boolean;
       --  Determines if a component needs simple initialization, given its
       --  type T. This is the same as Needs_Simple_Initialization except
-      --  for the following differences. The types Tag and Vtable_Ptr,
-      --  which are access types which would normally require simple
-      --  initialization to null, do not require initialization as
-      --  components, since they are explicitly initialized by other
-      --  means. The other relaxation is for packed bit arrays that are
-      --  associated with a modular type, which in some cases require
-      --  zero initialization to properly support comparisons, except
-      --  that comparison of such components always involves an explicit
-      --  selection of only the component's specific bits (whether or not
-      --  there are adjacent components or gaps), so zero initialization
-      --  is never needed for components.
+      --  for the following difference: the types Tag and Vtable_Ptr, which
+      --  are access types which would normally require simple initialization
+      --  to null, do not require initialization as components, since they
+      --  are explicitly initialized by other means.
 
       procedure Constrain_Array
         (SI         : Node_Id;
@@ -1457,16 +1450,14 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Case of an access attribute applied to the current
-         --  instance. Replace the reference to the type by a
-         --  reference to the actual object. (Note that this
-         --  handles the case of the top level of the expression
-         --  being given by such an attribute, but doesn't cover
-         --  uses nested within an initial value expression.
-         --  Nested uses are unlikely to occur in practice,
-         --  but theoretically possible. It's not clear how
-         --  to handle them without fully traversing the
-         --  expression. ???)
+         --  Case of an access attribute applied to the current instance.
+         --  Replace the reference to the type by a reference to the actual
+         --  object. (Note that this handles the case of the top level of
+         --  the expression being given by such an attribute, but does not
+         --  cover uses nested within an initial value expression. Nested
+         --  uses are unlikely to occur in practice, but are theoretically
+         --  possible. It is not clear how to handle them without fully
+         --  traversing the expression. ???
 
          if Kind = N_Attribute_Reference
            and then (Attribute_Name (N) = Name_Unchecked_Access
@@ -1482,23 +1473,8 @@ package body Exp_Ch3 is
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
-         --  For a derived type the default value is copied from the component
-         --  declaration of the parent. In the analysis of the init_proc for
-         --  the parent the default value may have been expanded into a local
-         --  variable, which is of course not usable here. We must copy the
-         --  original expression and reanalyze.
-
-         if Nkind (Exp) = N_Identifier
-           and then not Comes_From_Source (Exp)
-           and then Analyzed (Exp)
-           and then not In_Open_Scopes (Scope (Entity (Exp)))
-           and then Nkind (Original_Node (Exp)) = N_Aggregate
-         then
-            Exp := New_Copy_Tree (Original_Node (Exp));
-         end if;
-
          --  Ada 2005 (AI-231): Generate conversion to the null-excluding
-         --  type to force the corresponding run-time check
+         --  type to force the corresponding run-time check.
 
          if Ada_Version >= Ada_05
            and then Can_Never_Be_Null (Etype (Id))  -- Lhs
@@ -1508,6 +1484,12 @@ package body Exp_Ch3 is
             Rewrite (Exp, Convert_To (Etype (Id), Relocate_Node (Exp)));
             Analyze_And_Resolve (Exp, Etype (Id));
          end if;
+
+         --  Take a copy of Exp to ensure that later copies of this
+         --  component_declaration in derived types see the original tree,
+         --  not a node rewritten during expansion of the init_proc.
+
+         Exp := New_Copy_Tree (Exp);
 
          Res := New_List (
            Make_Assignment_Statement (Loc,
@@ -2243,8 +2225,7 @@ package body Exp_Ch3 is
          return
            Needs_Simple_Initialization (T)
              and then not Is_RTE (T, RE_Tag)
-             and then not Is_RTE (T, RE_Vtable_Ptr)
-             and then not Is_Bit_Packed_Array (T);
+             and then not Is_RTE (T, RE_Vtable_Ptr);
       end Component_Needs_Simple_Initialization;
 
       ---------------------
@@ -3049,9 +3030,9 @@ package body Exp_Ch3 is
       end if;
    end Check_Stream_Attributes;
 
-   ---------------------------
-   -- Expand_Derived_Record --
-   ---------------------------
+   -----------------------------
+   -- Expand_Record_Extension --
+   -----------------------------
 
    --  Add a field _parent at the beginning of the record extension. This is
    --  used to implement inheritance. Here are some examples of expansion:
@@ -3075,7 +3056,7 @@ package body Exp_Ch3 is
    --       D : Int;
    --    end;
 
-   procedure Expand_Derived_Record (T : Entity_Id; Def : Node_Id) is
+   procedure Expand_Record_Extension (T : Entity_Id; Def : Node_Id) is
       Indic        : constant Node_Id    := Subtype_Indication (Def);
       Loc          : constant Source_Ptr := Sloc (Def);
       Rec_Ext_Part : Node_Id             := Record_Extension_Part (Def);
@@ -3087,7 +3068,7 @@ package body Exp_Ch3 is
       List_Constr  : constant List_Id    := New_List;
 
    begin
-      --  Expand_Tagged_Extension is called directly from the semantics, so
+      --  Expand_Record_Extension is called directly from the semantics, so
       --  we must check to see whether expansion is active before proceeding
 
       if not Expander_Active then
@@ -3170,7 +3151,7 @@ package body Exp_Ch3 is
       end if;
 
       Analyze (Comp_Decl);
-   end Expand_Derived_Record;
+   end Expand_Record_Extension;
 
    ------------------------------------
    -- Expand_N_Full_Type_Declaration --
@@ -5605,7 +5586,6 @@ package body Exp_Ch3 is
 
       elsif Is_Access_Type (T)
         or else (Init_Or_Norm_Scalars and then (Is_Scalar_Type (T)))
-
         or else (Is_Bit_Packed_Array (T)
                    and then Is_Modular_Integer_Type (Packed_Array_Type (T)))
       then

@@ -72,6 +72,10 @@ package Opt is
    --  GNAT
    --  Current Ada version for compiler
 
+   Ada_Version_Runtime : Ada_Version_Type := Ada_05;
+   --  GNAT
+   --  Ada version used to compile the runtime
+
    Ada_Final_Suffix : constant String := "final";
    Ada_Final_Name : String_Ptr := new String'("ada" & Ada_Final_Suffix);
    --  GNATBIND
