@@ -546,7 +546,7 @@ field and printed as @samp{/s}.
 @item CONSTANT_POOL_ADDRESS_P (@var{x})
 Nonzero in a @code{symbol_ref} if it refers to part of the current
 function's ``constants pool''.  These are addresses close to the
-beginning of the function, and GNU CC assumes they can be addressed
+beginning of the function, and GCC assumes they can be addressed
 directly (perhaps with the help of base registers).  Stored in the
 @code{unchanging} field and printed as @samp{/u}.
 
@@ -977,7 +977,7 @@ Similarly, there is only one object for the integer whose value is
 @item (const_double:@var{m} @var{addr} @var{i0} @var{i1} @dots{})
 Represents either a floating-point constant of mode @var{m} or an
 integer constant too large to fit into @code{HOST_BITS_PER_WIDE_INT}
-bits but small enough to fit within twice that number of bits (GNU CC
+bits but small enough to fit within twice that number of bits (GCC
 does not provide a mechanism to represent even larger constants).  In
 the latter case, @var{m} will be @code{VOIDmode}.
 
@@ -2093,7 +2093,7 @@ insn.  However, the reload phase may allocate a register used for one of
 the inputs unless the @samp{&} constraint is specified for the selected
 alternative (@pxref{Modifiers}).  You can clobber either a specific hard
 register, a pseudo register, or a @code{scratch} expression; in the
-latter two cases, GNU CC will allocate a hard register that is available
+latter two cases, GCC will allocate a hard register that is available
 there for use as a temporary.
 
 For instructions that require a temporary register, you should use
@@ -3189,14 +3189,14 @@ problem since reading RTL occurs only as part of building the
 compiler.
 
 People frequently have the idea of using RTL stored as text in a file as
-an interface between a language front end and the bulk of GNU CC.  This
+an interface between a language front end and the bulk of GCC.  This
 idea is not feasible.
 
-GNU CC was designed to use RTL internally only.  Correct RTL for a given
+GCC was designed to use RTL internally only.  Correct RTL for a given
 program is very dependent on the particular target machine.  And the RTL
 does not contain all the information about the program.
 
-The proper way to interface GNU CC to a new language front end is with
+The proper way to interface GCC to a new language front end is with
 the ``tree'' data structure, described in the files @file{tree.h} and
 @file{tree.def}.  The documentation for this structure (@pxref{Trees})
 is incomplete.
