@@ -84,6 +84,9 @@ typedef void *__gnuc_va_list;
 #if defined(sysV68)
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (short) - 1) / sizeof (short)) * sizeof (short))
+#elif defined(_AIX)
+#define __va_rounded_size(TYPE)  \
+  (((sizeof (TYPE) + sizeof (long) - 1) / sizeof (long)) * sizeof (long))
 #else
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
