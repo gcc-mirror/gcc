@@ -3851,10 +3851,5 @@ test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
 # Make target subdirectories if required.
-if ! test -d src; then
-  mkdir src
-fi
-
-if ! test -d src/${TARGETDIR}; then
-  mkdir src/${TARGETDIR}
-fi
+test -d src || mkdir src
+test -d src/${TARGETDIR} || mkdir src/${TARGETDIR}
