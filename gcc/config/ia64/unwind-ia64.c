@@ -138,7 +138,7 @@ typedef struct unw_state_record
   unsigned int done : 1;		/* are we done scanning descriptors? */
   unsigned int any_spills : 1;		/* got any register spills? */
   unsigned int in_body : 1;	/* are we inside a body? */
-
+  unsigned int no_reg_stack_frame : 1;	/* Don't adjust bsp for i&l regs */
   unsigned char *imask;		/* imask of of spill_mask record or NULL */
   unsigned long pr_val;		/* predicate values */
   unsigned long pr_mask;	/* predicate mask */
@@ -192,9 +192,12 @@ struct _Unwind_Context
   void *lsda;			/* language specific data area */
 
   /* Preserved state.  */
-  unsigned long *bsp_loc;	/* previous bsp save location */
+  unsigned long *bsp_loc;	/* previous bsp save location
+  				   Appears to be write-only?	*/
   unsigned long *bspstore_loc;
-  unsigned long *pfs_loc;
+  unsigned long *pfs_loc;	/* Save location for pfs in current
+  				   (corr. to sp) frame.  Target
+  				   contains cfm for caller.	*/
   unsigned long *pri_unat_loc;
   unsigned long *unat_loc;
   unsigned long *lc_loc;
@@ -1510,8 +1513,11 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   unsigned long *unw, header, length;
   unsigned char *insn, *insn_end;
   unsigned long segment_base;
+  struct unw_reg_info *r;
 
   memset (fs, 0, sizeof (*fs));
+  for (r = fs->curr.reg; r < fs->curr.reg + UNW_NUM_REGS; ++r)
+    r->when = UNW_WHEN_NEVER;
   context->lsda = 0;
 
   ent = _Unwind_FindTableEntry ((void *) context->rp,
@@ -1769,7 +1775,10 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
   /* Unwind BSP for the local registers allocated this frame.  */
   /* ??? What to do with stored BSP or BSPSTORE registers.  */
-  if (fs->when_target > fs->curr.reg[UNW_REG_PFS].when)
+  /* We assert that we are either at a call site, or we have
+     just unwound through a signal frame.  In either case
+     pfs_loc is valid.	*/
+  if (!(fs -> no_reg_stack_frame))
     {
       unsigned long pfs = *context->pfs_loc;
       unsigned long sol = (pfs >> 7) & 0x7f;
