@@ -1,4 +1,17 @@
-Fro Nov 19 05:48:45 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+1999-11-21  Nick Clifton  <nickc@cygnus.com>
+
+	* invoke.texi (ARM Options): Replace -mshort-load-bytes with
+	-malignment-traps. 
+	(arm.h): Replace -mshort-load-bytes with -malignment-traps.
+	(arm.c): Replace TARGET_SHORT_BY_BYTES with TARGET_MMU_TRAPS.
+	(arm.md): Replace TARGET_SHORT_BY_BYTES with TARGET_MMU_TRAPS.
+
+Sun Nov 21 17:11:13 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* varasm.c (output_constructor): Solve problem with long long
+ 	bitfields, even on BYTES_BIG_ENDIAN machines (testcase 991118-1).
+
+Fri Nov 19 05:48:45 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* global.c (allocno): New structure and static variable.
 	(allocno_reg): Remove, all references replaced by allocno.
@@ -24,11 +37,6 @@ Fro Nov 19 05:48:45 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	* toplev.c (rest_of_compilation): Open lreg dump file before regclass,
 	pass rtl_dump_file to regclass.
 	* rtl.h (regclass): Update prototype.
-
-Sun Nov 21 17:11:13 1999  Geoffrey Keating  <geoffk@cygnus.com>
-
-	* varasm.c (output_constructor): Solve problem with long long
- 	bitfields, even on BYTES_BIG_ENDIAN machines (testcase 991118-1).
 
 Fri Nov 19 06:32:19 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 

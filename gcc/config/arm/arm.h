@@ -285,9 +285,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    This is equivalent to -fpic.  */
 #define ARM_FLAG_APCS_REENT	(1 << 6)
 
-/* Nonzero if the MMU will trap unaligned word accesses, so shorts must be
-   loaded byte-at-a-time.  */
-#define ARM_FLAG_SHORT_BYTE	(1 << 7)
+/* Nonzero if the MMU will trap unaligned word accesses, so shorts must
+   be loaded using either LDRH or LDRB instructions.  */
+#define ARM_FLAG_MMU_TRAPS	(1 << 7)
 
 /* Nonzero if all floating point instructions are missing (and there is no
    emulator either).  Generate function calls for all ops in this case.  */
@@ -323,14 +323,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
 #define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
-/* Note: TARGET_SHORT_BY_BYTES is really a misnomer.  What it means is
-   that short values should not be accessed using word load instructions
-   as there is a possibility that they may not be word aligned and this
-   would generate an MMU fault.  On processors which do not have a 16 bit
-   load instruction therefore, short values must be loaded by individual
-   byte accesses rather than loading a word and then shifting the desired
-   value into place.  */
-#define TARGET_SHORT_BY_BYTES		(target_flags & ARM_FLAG_SHORT_BYTE)
+#define TARGET_MMU_TRAPS		(target_flags & ARM_FLAG_MMU_TRAPS)
 #define TARGET_SOFT_FLOAT		(target_flags & ARM_FLAG_SOFT_FLOAT)
 #define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
 #define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
@@ -369,12 +362,13 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"apcs-reentrant",		ARM_FLAG_APCS_REENT,		\
      "Generate re-entrant, PIC code" },				\
   {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT, "" },	\
-  {"short-load-bytes",		ARM_FLAG_SHORT_BYTE,		\
-     "Load shorts a byte at a time" },				\
-  {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE, "" },	\
-  {"short-load-words",	       -ARM_FLAG_SHORT_BYTE,		\
-     "Load words a byte at a time" },				\
-  {"no-short-load-words",	ARM_FLAG_SHORT_BYTE, "" },	\
+  {"alignment-traps",           ARM_FLAG_MMU_TRAPS,		\
+     "The MMU will trap on unaligned accesses" },\
+  {"no-alignment-traps",       -ARM_FLAG_MMU_TRAPS, "" },	\
+  {"short-load-bytes",		ARM_FLAG_MMU_TRAPS, "" },	\
+  {"no-short-load-bytes",      -ARM_FLAG_MMU_TRAPS, "" },	\
+  {"short-load-words",	       -ARM_FLAG_MMU_TRAPS, "" },	\
+  {"no-short-load-words",	ARM_FLAG_MMU_TRAPS, "" },	\
   {"soft-float",		ARM_FLAG_SOFT_FLOAT,		\
      "Use library calls to perform FP operations" },		\
   {"hard-float",	       -ARM_FLAG_SOFT_FLOAT,		\
@@ -540,7 +534,7 @@ extern int arm_is_6_or_7;
       if (MODE == QImode)			\
 	UNSIGNEDP = 1;				\
       else if (MODE == HImode)			\
-	UNSIGNEDP = TARGET_SHORT_BY_BYTES != 0;	\
+	UNSIGNEDP = TARGET_MMU_TRAPS != 0;	\
       (MODE) = SImode;				\
     }
 
@@ -1002,7 +996,7 @@ enum reg_class
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch. */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)		\
-  (((MODE) == HImode && ! arm_arch4 && TARGET_SHORT_BY_BYTES	\
+  (((MODE) == HImode && ! arm_arch4 && TARGET_MMU_TRAPS		\
     && (GET_CODE (X) == MEM					\
 	|| ((GET_CODE (X) == REG || GET_CODE (X) == SUBREG)	\
 	    && true_regnum (X) == -1)))				\

@@ -3483,7 +3483,7 @@ gen_rotated_half_load (memref)
     }
 
   /* If we aren't allowed to generate unaligned addresses, then fail.  */
-  if (TARGET_SHORT_BY_BYTES
+  if (TARGET_MMU_TRAPS
       && ((BYTES_BIG_ENDIAN ? 1 : 0) ^ ((offset & 2) == 0)))
     return NULL;
 
