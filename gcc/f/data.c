@@ -978,6 +978,7 @@ ffedata_eval_offset_ (ffebld subscripts, ffebld dims)
   while (subscripts != NULL)
     {
       ffeinfoKindtype sub_kind, low_kind, hi_kind;
+      ffebld sub1, low1, hi1;
 
       ++rank;
       assert (dims != NULL);
@@ -986,16 +987,19 @@ ffedata_eval_offset_ (ffebld subscripts, ffebld dims)
       dim = ffebld_head (dims);
 
       assert (ffeinfo_basictype (ffebld_info (subscript)) == FFEINFO_basictypeINTEGER);
-      /* Force to default - it's a constant expression !  */
-      sub_kind = ffeinfo_kindtype (ffebld_info (subscript));
-      if (sub_kind == FFEINFO_kindtypeINTEGER2)
-	subscript->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) subscript->u.conter.expr->u.integer2;
-      else if (sub_kind == FFEINFO_kindtypeINTEGER3)
-	subscript->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) subscript->u.conter.expr->u.integer3;
-      else if (sub_kind == FFEINFO_kindtypeINTEGER4)
-	subscript->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) subscript->u.conter.expr->u.integer4;
-      ffeinfo_kindtype (ffebld_info (subscript)) = FFEINFO_kindtypeINTEGERDEFAULT;
-      value = ffedata_eval_integer1_ (subscript);
+      if (ffebld_op (subscript) == FFEBLD_opCONTER)
+	{
+	  /* Force to default - it's a constant expression !  */
+	  sub_kind = ffeinfo_kindtype (ffebld_info (subscript));
+	  sub1 = ffebld_new_conter_with_orig (ffebld_constant_new_integer1_val (
+		   sub_kind == FFEINFO_kindtypeINTEGER2 ? subscript->u.conter.expr->u.integer2 :
+		   sub_kind == FFEINFO_kindtypeINTEGER3 ? subscript->u.conter.expr->u.integer3 :
+		   sub_kind == FFEINFO_kindtypeINTEGER4 ? subscript->u.conter.expr->u.integer4 :
+			subscript->u.conter.expr->u.integer1), NULL);
+	  value = ffedata_eval_integer1_ (sub1);
+	}
+      else
+	value = ffedata_eval_integer1_ (subscript);
 
       assert (ffebld_op (dim) == FFEBLD_opBOUNDS);
       low = ffebld_left (dim);
@@ -1006,29 +1010,35 @@ ffedata_eval_offset_ (ffebld subscripts, ffebld dims)
       else
 	{
 	  assert (ffeinfo_basictype (ffebld_info (low)) == FFEINFO_basictypeINTEGER);
-	  /* Force to default - it's a constant expression !  */
-	  low_kind = ffeinfo_kindtype (ffebld_info (low));
-	  if (low_kind == FFEINFO_kindtypeINTEGER2)
-	    low->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) low->u.conter.expr->u.integer2;
-	  else if (low_kind == FFEINFO_kindtypeINTEGER3)
-	    low->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) low->u.conter.expr->u.integer3;
-	  else if (low_kind == FFEINFO_kindtypeINTEGER4)
-	    low->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) low->u.conter.expr->u.integer4;
-	  ffeinfo_kindtype (ffebld_info (low)) = FFEINFO_kindtypeINTEGERDEFAULT;
-	  lowbound = ffedata_eval_integer1_ (low);
+	  if (ffebld_op (low) == FFEBLD_opCONTER)
+	    {
+	      /* Force to default - it's a constant expression !  */
+	      low_kind = ffeinfo_kindtype (ffebld_info (low));
+	      low1 = ffebld_new_conter_with_orig (ffebld_constant_new_integer1_val (
+			low_kind == FFEINFO_kindtypeINTEGER2 ? low->u.conter.expr->u.integer2 :
+			low_kind == FFEINFO_kindtypeINTEGER3 ? low->u.conter.expr->u.integer3 :
+			low_kind == FFEINFO_kindtypeINTEGER4 ? low->u.conter.expr->u.integer4 :
+				low->u.conter.expr->u.integer1), NULL);
+	       lowbound = ffedata_eval_integer1_ (low1);
+	     }
+	   else
+	     lowbound = ffedata_eval_integer1_ (low);
 	}
 
       assert (ffeinfo_basictype (ffebld_info (high)) == FFEINFO_basictypeINTEGER);
-      /* Force to default - it's a constant expression !  */
-      hi_kind = ffeinfo_kindtype (ffebld_info (high));
-      if (hi_kind == FFEINFO_kindtypeINTEGER2)
-	high->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) high->u.conter.expr->u.integer2;
-      else if (hi_kind == FFEINFO_kindtypeINTEGER3)
-	high->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) high->u.conter.expr->u.integer3;
-      else if (hi_kind == FFEINFO_kindtypeINTEGER4)
-	high->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) high->u.conter.expr->u.integer4;
-      ffeinfo_kindtype (ffebld_info (high)) = FFEINFO_kindtypeINTEGERDEFAULT;
-      highbound = ffedata_eval_integer1_ (high);
+      if (ffebld_op (high) == FFEBLD_opCONTER)
+	{
+	  /* Force to default - it's a constant expression !  */
+	  hi_kind = ffeinfo_kindtype (ffebld_info (high));
+	  hi1 = ffebld_new_conter_with_orig (ffebld_constant_new_integer1_val (
+		   hi_kind == FFEINFO_kindtypeINTEGER2 ? high->u.conter.expr->u.integer2 :
+		   hi_kind == FFEINFO_kindtypeINTEGER3 ? high->u.conter.expr->u.integer3 :
+		   hi_kind == FFEINFO_kindtypeINTEGER4 ? high->u.conter.expr->u.integer4 :
+			high->u.conter.expr->u.integer1), NULL);
+	  highbound = ffedata_eval_integer1_ (hi1);
+	}
+      else
+	highbound = ffedata_eval_integer1_ (high);
 
       if ((value < lowbound) || (value > highbound))
 	{
