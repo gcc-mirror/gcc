@@ -23,7 +23,7 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sparc/ffi.c \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
-	src/pa/ffi.c src/pa/linux.S
+	src/pa/ffi.c src/pa/linux.S src/frv/eabi.S src/frv/ffitarget.h
 
 ## ################################################################
 
@@ -115,6 +115,9 @@ nodist_libffi_la_SOURCES += src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/po
 endif
 if ARM
 nodist_libffi_la_SOURCES += src/arm/sysv.S src/arm/ffi.c
+endif
+if FRV
+nodist_libffi_la_SOURCES += src/frv/eabi.S src/frv/ffi.c
 endif
 if S390
 nodist_libffi_la_SOURCES += src/s390/sysv.S src/s390/ffi.c

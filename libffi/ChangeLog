@@ -1,3 +1,15 @@
+2004-08-30  Anthony Green  <green@redhat.com>
+
+	* Makefile.am: Add frv support.
+	* Makefile.in, testsuite/Makefile.in: Rebuilt.
+	* configure.ac: Read configure.host.
+	* configure.in: Read configure.host.
+	* configure.host: New file.  frv-elf needs libgloss.
+	* include/ffi.h.in: Force ffi_closure to have a nice big (8)
+	alignment.  This is needed to frv and should harm the others.
+	* include/ffi_common.h (ALIGN_DOWN): New macro.
+	* src/frv/ffi.c, src/frv/ffitarget.h, src/frv/eabi.S: New files.
+
 2004-08-24  David Daney  <daney@avtrex.com>
 
 	* testsuite/libffi.call/closure_fn0.c: Xfail mips64* instead of mips*.
