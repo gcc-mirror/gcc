@@ -1,3 +1,21 @@
+2003-10-20  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* config/rs6000/rs6000.h: (rs6000_sched_insert_nops): 	
+	support new flag -minsert-sched-nops.
+	(DEFAULT_SCHED_FINISH_NOP_INSERTION_SCHEME): Define.
+	* config/rs6000/rs6000.c: (rs6000_sched_insert_nops): 	
+	support new flag -minsert-sched-nops.	
+	(is_cracked_insn, is_microcoded_insn): New functions.
+	(rs6000_sched_finish): New function.
+	(rs6000_issue_rate): Return 5 for power4.
+	(get_next_active_insn, insn_terminates_group_p): New 	
+	functions.
+	(is_costly_group, force_new_group): New functions.
+	(redefine_groups, pad_groups): New functions.
+	(rs6000_variable_issue): Use new functions.
+	* doc/invoke.texi (-minsert-sched-nops): Document new
+	option.
+
 2003-10-20  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md (type attribute): Add new insn types
