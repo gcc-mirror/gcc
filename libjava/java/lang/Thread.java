@@ -18,12 +18,9 @@ package java.lang;
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Complete to version 1.1, with caveats
- * Known problems:
- *   No attempt was made to implement suspend/resume
- *     (this could be done in some cases)
- *   Various methods which assume a VM are likewise unimplemented
- *   We do implement stop() even though it is deprecated.
+ * Status:  Believed complete to version 1.3, with caveats. We do not 
+ *          implement the deprecated (and dangerous) stop, suspend, and resume
+ *          methods. Security implementation is not complete.
  */
 
 public class Thread implements Runnable
