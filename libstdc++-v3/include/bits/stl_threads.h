@@ -246,7 +246,7 @@ struct _STL_mutex_lock
           struct timespec __ts;
           /* Max sleep is 2**27nsec ~ 60msec      */
           __ts.tv_sec = 0;
-          __ts.tv_nsec = 1 << __log_nsec;
+          __ts.tv_nsec = 1L << __log_nsec;
           nanosleep(&__ts, 0);
 #     elif defined(__STL_WIN32THREADS)
           if (__log_nsec <= 20) {

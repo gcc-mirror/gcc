@@ -228,12 +228,12 @@ namespace std
     // Category values:
     // NB: Order must match _S_facet_categories definition in locale.cc
     static const category none		= 0;
-    static const category ctype 	= 1 << 0;
-    static const category numeric 	= 1 << 1;
-    static const category collate  	= 1 << 2;
-    static const category time 		= 1 << 3;
-    static const category monetary 	= 1 << 4;
-    static const category messages 	= 1 << 5;
+    static const category ctype 	= 1L << 0;
+    static const category numeric 	= 1L << 1;
+    static const category collate  	= 1L << 2;
+    static const category time 		= 1L << 3;
+    static const category monetary 	= 1L << 4;
+    static const category messages 	= 1L << 5;
     static const category all 		= (collate | ctype | monetary |
 				 	   numeric | time  | messages);
 

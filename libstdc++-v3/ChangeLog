@@ -1,4 +1,9 @@
-Fri Feb  2 15:47:51 2001  Jeffrey A Law  (law@cygnus.com)
+2001-02-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_threads.h (struct _STL_mutex_lock): Same.
+	* include/bits/localefwd.h: More initialization cleanups.
+
+2001-02-03  Jeffrey A Law  <law@cygnus.com>
 
 	* include/bits/ios_base.h (_S_ios_fmtflags_end): Initialize
 	correctly targets with 16bit ints.
