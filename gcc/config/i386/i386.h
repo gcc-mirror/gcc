@@ -437,13 +437,13 @@ extern int ix86_arch;
 #define CC1_CPU_SPEC "\
 %{!mcpu*: \
 %{m386:-mcpu=i386 \
-%n`-m386' is deprecated. Use `-march' or `-mcpu' instead.\n} \
+%n`-m386' is deprecated. Use `-march=i386' or `-mcpu=i386' instead.\n} \
 %{m486:-mcpu=i486 \
-%n`-m486' is deprecated. Use `-march' or `-mcpu' instead.\n} \
+%n`-m486' is deprecated. Use `-march=i486' or `-mcpu=i486' instead.\n} \
 %{mpentium:-mcpu=pentium \
-%n`-mpentium' is deprecated. Use `-march' or `-mcpu' instead.\n} \
+%n`-mpentium' is deprecated. Use `-march=pentium' or `-mcpu=pentium' instead.\n} \
 %{mpentiumpro:-mcpu=pentiumpro \
-%n`-mpentiumpro' is deprecated. Use `-march' or `-mcpu' instead.\n}}"
+%n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.\n}}"
 #endif
 
 #ifndef CPP_CPU_DEFAULT_SPEC
