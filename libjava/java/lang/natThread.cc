@@ -27,6 +27,10 @@ details.  */
 
 #include <jni.h>
 
+#ifdef ENABLE_JVMPI
+#include <jvmpi.h>
+#endif
+
 
 
 // This structure is used to represent all the data the native side
@@ -173,6 +177,21 @@ java::lang::Thread::finish_ ()
   natThread *nt = (natThread *) data;
   
   group->remove (this);
+
+#ifdef ENABLE_JVMPI  
+  if (_Jv_JVMPI_Notify_THREAD_END)
+    {
+      JVMPI_Event event;
+
+      event.event_type = JVMPI_EVENT_THREAD_END;
+      event.env_id = _Jv_GetCurrentJNIEnv ();
+
+      _Jv_DisableGC ();
+      (*_Jv_JVMPI_Notify_THREAD_END) (&event);
+      _Jv_EnableGC ();
+    }
+#endif
+
   group = NULL;
   
   // Signal any threads that are waiting to join() us.
@@ -188,6 +207,60 @@ java::lang::Thread::run_ (jobject obj)
   java::lang::Thread *thread = (java::lang::Thread *) obj;
   try
     {
+#ifdef ENABLE_JVMPI
+      if (_Jv_JVMPI_Notify_THREAD_START)
+	{
+	  JVMPI_Event event;
+	  
+	  jstring thread_name = thread->getName ();
+	  jstring group_name = NULL, parent_name = NULL;
+	  java::lang::ThreadGroup *group = thread->getThreadGroup ();
+
+	  if (group)
+	    {
+	      group_name = group->getName ();
+	      group = group->getParent ();
+	      
+	      if (group)
+		parent_name = group->getName ();
+	    }
+	  
+	  int thread_len = thread_name ? JvGetStringUTFLength (thread_name) : 0;
+	  int group_len = group_name ? JvGetStringUTFLength (group_name) : 0;
+	  int parent_len = parent_name ? JvGetStringUTFLength (parent_name) : 0;
+	  
+	  char thread_chars[thread_len + 1];
+	  char group_chars[group_len + 1];
+	  char parent_chars[parent_len + 1];
+	  
+	  if (thread_name)
+	    JvGetStringUTFRegion (thread_name, 0, 
+				  thread_name->length(), thread_chars);
+	  if (group_name)
+	    JvGetStringUTFRegion (group_name, 0, 
+				  group_name->length(), group_chars);
+	  if (parent_name)
+	    JvGetStringUTFRegion (parent_name, 0, 
+				  parent_name->length(), parent_chars);
+	  
+	  thread_chars[thread_len] = '\0';
+	  group_chars[group_len] = '\0';
+	  parent_chars[parent_len] = '\0';
+	  
+	  event.event_type = JVMPI_EVENT_THREAD_START;
+	  event.env_id = NULL;
+	  event.u.thread_start.thread_name = thread_chars;
+	  event.u.thread_start.group_name = group_chars;
+	  event.u.thread_start.parent_name = parent_chars;
+	  event.u.thread_start.thread_id = (jobjectID) thread;
+	  event.u.thread_start.thread_env_id = _Jv_GetCurrentJNIEnv ();
+	  
+	  _Jv_DisableGC ();
+	  (*_Jv_JVMPI_Notify_THREAD_START) (&event);
+	  _Jv_EnableGC ();
+	}
+#endif
+
       thread->run ();
     }
   catch (java::lang::Throwable *t)

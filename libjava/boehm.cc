@@ -69,6 +69,9 @@ static ptr_t *obj_free_list;
 // Freelist used for Java arrays.
 static ptr_t *array_free_list;
 
+// Lock used to protect access to Boehm's GC_enable/GC_disable functions.
+static _Jv_Mutex_t disable_gc_mutex;
+
 
 
 // This is called by the GC during the mark phase.  It marks a Java
@@ -391,6 +394,26 @@ _Jv_GCSetMaximumHeapSize (size_t size)
   GC_set_max_heap_size ((GC_word) size);
 }
 
+// From boehm's misc.c 
+extern "C" void GC_enable();
+extern "C" void GC_disable();
+
+void
+_Jv_DisableGC (void)
+{
+  _Jv_MutexLock (&disable_gc_mutex); 
+  GC_disable();
+  _Jv_MutexUnlock (&disable_gc_mutex); 
+}
+
+void
+_Jv_EnableGC (void)
+{
+  _Jv_MutexLock (&disable_gc_mutex); 
+  GC_enable();
+  _Jv_MutexUnlock (&disable_gc_mutex); 
+}
+
 void
 _Jv_InitGC (void)
 {
@@ -442,6 +465,8 @@ _Jv_InitGC (void)
   GC_obj_kinds[array_kind_x].ok_descriptor = MAKE_PROC (proc, 0);
   GC_obj_kinds[array_kind_x].ok_relocate_descr = FALSE;
   GC_obj_kinds[array_kind_x].ok_init = TRUE;
+
+  _Jv_MutexInit (&disable_gc_mutex);
 
   UNLOCK ();
   ENABLE_SIGNALS ();

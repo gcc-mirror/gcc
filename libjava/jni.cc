@@ -20,6 +20,9 @@ details.  */
 #include <jvm.h>
 #include <java-assert.h>
 #include <jni.h>
+#ifdef ENABLE_JVMPI
+#include <jvmpi.h>
+#endif
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
@@ -105,12 +108,66 @@ static java::util::Hashtable *ref_table;
 // The only VM.
 static JavaVM *the_vm;
 
+#ifdef ENABLE_JVMPI
+// The only JVMPI interface description.
+static JVMPI_Interface _Jv_JVMPI_Interface;
+
+static jint
+jvmpiEnableEvent (jint event_type, void *)
+{
+  switch (event_type)
+    {
+    case JVMPI_EVENT_OBJECT_ALLOC:
+      _Jv_JVMPI_Notify_OBJECT_ALLOC = _Jv_JVMPI_Interface.NotifyEvent;
+      break;
+      
+    case JVMPI_EVENT_THREAD_START:
+      _Jv_JVMPI_Notify_THREAD_START = _Jv_JVMPI_Interface.NotifyEvent;
+      break;
+      
+    case JVMPI_EVENT_THREAD_END:
+      _Jv_JVMPI_Notify_THREAD_END = _Jv_JVMPI_Interface.NotifyEvent;
+      break;
+      
+    default:
+      return JVMPI_NOT_AVAILABLE;
+    }
+  
+  return JVMPI_SUCCESS;
+}
+
+static jint
+jvmpiDisableEvent (jint event_type, void *)
+{
+  switch (event_type)
+    {
+    case JVMPI_EVENT_OBJECT_ALLOC:
+      _Jv_JVMPI_Notify_OBJECT_ALLOC = NULL;
+      break;
+      
+    default:
+      return JVMPI_NOT_AVAILABLE;
+    }
+  
+  return JVMPI_SUCCESS;
+}
+#endif
+
 
 
 void
 _Jv_JNI_Init (void)
 {
   ref_table = new java::util::Hashtable;
+  
+#ifdef ENABLE_JVMPI
+  _Jv_JVMPI_Interface.version = 1;
+  _Jv_JVMPI_Interface.EnableEvent = &jvmpiEnableEvent;
+  _Jv_JVMPI_Interface.DisableEvent = &jvmpiDisableEvent;
+  _Jv_JVMPI_Interface.EnableGC = &_Jv_EnableGC;
+  _Jv_JVMPI_Interface.DisableGC = &_Jv_DisableGC;
+  _Jv_JVMPI_Interface.RunGC = &_Jv_RunGC;
+#endif
 }
 
 // Tell the GC that a certain pointer is live.
@@ -1867,6 +1924,15 @@ _Jv_JNI_GetEnv (JavaVM *, void **penv, jint version)
       *penv = NULL;
       return JNI_EDETACHED;
     }
+
+#ifdef ENABLE_JVMPI
+  // Handle JVMPI requests.
+  if (version == JVMPI_VERSION_1)
+    {
+      *penv = (void *) &_Jv_JVMPI_Interface;
+      return 0;
+    }
+#endif
 
   // FIXME: do we really want to support 1.1?
   if (version != JNI_VERSION_1_2 && version != JNI_VERSION_1_1)

@@ -1,6 +1,6 @@
 // nogc.cc - Code to implement no GC.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -82,6 +82,16 @@ _Jv_GCSetInitialHeapSize (size_t size)
 
 void
 _Jv_GCSetMaximumHeapSize (size_t size)
+{
+}
+
+void
+_Jv_DisableGC (void)
+{
+}
+
+void
+_Jv_EnableGC (void)
 {
 }
 

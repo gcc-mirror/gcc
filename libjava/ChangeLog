@@ -1,3 +1,43 @@
+Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Add --disable-jvmpi.
+	* include/config.h.in: Rebuilt.
+	* acconfig.h: Add ENABLE_JVMPI.
+	 
+	* include/jvm.h: Declare _Jv_DisableGC and _Jv_EnableGC.
+	(_Jv_JVMPI_Notify_OBJECT_ALLOC): New define.
+	(_Jv_JVMPI_Notify_THREAD_END): New define.
+	(_Jv_JVMPI_Notify_THREAD_END): New define.
+	* prims.cc (_Jv_JVMPI_Notify_OBJECT_ALLOC): Declare.
+	(_Jv_JVMPI_Notify_THREAD_END): Declare.
+	(_Jv_JVMPI_Notify_THREAD_END): Declare.
+
+	* prims.cc (_Jv_AllocObject): Generate JVMPI object allocation
+	events.
+
+	* java/lang/natThread.cc: Include JVMPI headers if necessary.
+	(finish_): Generate JVMPI thread end events.
+	(run_): Generate JVMPI thread start events.
+	* gnu/gcj/runtime/natFirstThread.cc (run): Call JNI_OnLoad for any
+	preloaded JNI library.
+	Include JVMPI headers if necessary.
+	(run): Generate JVMPI thread start events.
+
+	* boehm.cc: Define GC_disable and GC_enable.
+	(_Jv_DisableGC): New function.
+	(_Jv_EnableGC): New function.
+	(disable_gc_mutex): Declare.
+	* nogc.cc (_Jv_DisableGC): New function.
+	(_Jv_EnableGC): New function.
+	  
+	* jni.cc (_Jv_JNI_GetEnv): Handle JVMPI interface requests.
+	(_Jv_JVMPI_Interface): Define.
+	(jvmpiEnableEvent): New function.
+	(_Jv_JNI_Init): Initialize _Jv_JVMPI_Interface.
+	  
+	* include/jvmpi.h: New file.
+
 2000-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.in: New #defines and friends for Thread.h.

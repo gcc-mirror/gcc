@@ -34,6 +34,10 @@ details.  */
 #include <java-signal.h>
 #include <java-threads.h>
 
+#ifdef ENABLE_JVMPI
+#include <jvmpi.h>
+#endif
+
 #ifndef DISABLE_GETENV_PROPERTIES
 #include <ctype.h>
 #include <java-props.h>
@@ -83,6 +87,12 @@ property_pair *_Jv_Environment_Properties;
 // The name of this executable.
 static char * _Jv_execName;
 
+#ifdef ENABLE_JVMPI
+// Pointer to JVMPI notification functions.
+void (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (JVMPI_Event *event);
+void (*_Jv_JVMPI_Notify_THREAD_START) (JVMPI_Event *event);
+void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
+#endif
 
 
 #ifdef HANDLE_SEGV
@@ -325,6 +335,27 @@ _Jv_AllocObject (jclass c, jint size)
   // appropriate index in the method vector.
   if (c->vtable->method[1] != ObjectClass.vtable->method[1])
     _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
+
+#ifdef ENABLE_JVMPI
+  // Service JVMPI request.
+
+  if (_Jv_JVMPI_Notify_OBJECT_ALLOC)
+    {
+      JVMPI_Event event;
+
+      event.event_type = JVMPI_EVENT_OBJECT_ALLOC;
+      event.env_id = NULL;
+      event.u.obj_alloc.arena_id = 0;
+      event.u.obj_alloc.class_id = (jobjectID) c;
+      event.u.obj_alloc.is_array = 0;
+      event.u.obj_alloc.size = size;
+      event.u.obj_alloc.obj_id = (jobjectID) obj;
+
+      _Jv_DisableGC ();
+      (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (&event);
+      _Jv_EnableGC ();
+    }
+#endif
 
   return obj;
 }

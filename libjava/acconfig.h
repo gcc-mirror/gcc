@@ -137,3 +137,6 @@
 
 /* Define if you have working iconv() function.  */
 #undef HAVE_ICONV
+
+/* Define if you are using JVMPI.  */
+#undef ENABLE_JVMPI

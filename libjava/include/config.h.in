@@ -152,6 +152,12 @@
 /* Define if g++ has a bug preventing us from inlining math routines.  */
 #undef __NO_MATH_INLINES
 
+/* Define if you are using JVMPI.  */
+#undef ENABLE_JVMPI
+
+/* The number of bytes in a void *.  */
+#undef SIZEOF_VOID_P
+
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
 
