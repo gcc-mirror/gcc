@@ -1507,7 +1507,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
       
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
-      if (DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
+      if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
          warning_with_decl 
            (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
 #endif
@@ -2162,15 +2162,19 @@ immed_real_const_1 (d, mode)
 
   u.d = d;
 
-  /* Detect special cases.  */
-
-  if (REAL_VALUES_IDENTICAL (dconst0, d))
+  /* Detect special cases.  But be careful we don't use a CONST_DOUBLE
+     that's from a parent function since it may be in its constant pool.  */
+  if (REAL_VALUES_IDENTICAL (dconst0, d)
+      && (cfun == 0 || decl_function_context (current_function_decl) == 0))
     return CONST0_RTX (mode);
+
   /* Check for NaN first, because some ports (specifically the i386) do not
      emit correct ieee-fp code by default, and thus will generate a core
      dump here if we pass a NaN to REAL_VALUES_EQUAL and if REAL_VALUES_EQUAL
      does a floating point comparison.  */
-  else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
+  else if ((! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
+	   && (cfun == 0
+	       || decl_function_context (current_function_decl) == 0))
     return CONST1_RTX (mode);
 
   if (sizeof u == sizeof (HOST_WIDE_INT))
@@ -3677,7 +3681,8 @@ find_pool_constant (f, addr)
   struct pool_sym *sym;
   const char *label = XSTR (addr, 0);
 
-  for (sym = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; sym; sym = sym->next)
+  for (sym = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; sym;
+       sym = sym->next)
     if (sym->label == label)
       return sym->pool;
 
