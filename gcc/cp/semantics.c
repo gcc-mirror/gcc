@@ -1320,7 +1320,6 @@ begin_class_definition (t)
   /* Don't change signatures.  */
   if (! IS_SIGNATURE (t))
     {
-      int needs_writing;
       tree name = TYPE_IDENTIFIER (t);
       
       if (! ANON_AGGRNAME_P (name))
@@ -1464,7 +1463,7 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
     ;
   else
     {
-      t = finish_struct (t, attributes, semi);
+      t = finish_struct (t, attributes);
       if (semi) 
 	note_got_semicolon (t);
     }

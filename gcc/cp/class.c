@@ -3202,9 +3202,8 @@ add_fields_to_vec (fields, field_vec, idx)
    ATTRIBUTES is the set of decl attributes to be applied, if any.  */
 
 void
-finish_struct_1 (t, warn_anon)
+finish_struct_1 (t)
      tree t;
-     int warn_anon;
 {
   int old;
   enum tree_code code = TREE_CODE (t);
@@ -4279,9 +4278,8 @@ unreverse_member_declarations (t)
 }
 
 tree
-finish_struct (t, attributes, warn_anon)
+finish_struct (t, attributes)
      tree t, attributes;
-     int warn_anon;
 {
   /* Append the fields we need for constructing signature tables.  */
   if (IS_SIGNATURE (t))
@@ -4299,7 +4297,7 @@ finish_struct (t, attributes, warn_anon)
       TYPE_SIZE (t) = integer_zero_node;
     }
   else
-    finish_struct_1 (t, warn_anon);
+    finish_struct_1 (t);
 
   TYPE_BEING_DEFINED (t) = 0;
 

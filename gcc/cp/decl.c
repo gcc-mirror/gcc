@@ -3048,8 +3048,7 @@ warn_extern_redeclared_static (newdecl, olddecl)
       if (! (TREE_CODE (newdecl) == FUNCTION_DECL
 	     && olddecl != NULL_TREE
 	     && TREE_CODE (olddecl) == FUNCTION_DECL
-	     && (DECL_BUILT_IN (olddecl)
-		 || DECL_BUILT_IN_NONANSI (olddecl))))
+	     && DECL_ARTIFICIAL (olddecl)))
 	{
 	  cp_pedwarn (IDENTIFIER_IMPLICIT_DECL (name)
 		      ? implicit_extern_static_warning
@@ -3092,44 +3091,58 @@ duplicate_decls (newdecl, olddecl)
  
   /* Check for redeclaration and other discrepancies. */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
-      && DECL_ARTIFICIAL (olddecl)
-      && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl)))
+      && DECL_ARTIFICIAL (olddecl))
     {
-      /* If you declare a built-in or predefined function name as static,
-	 the old definition is overridden, but optionally warn this was a
-	 bad choice of name.  Ditto for overloads.  */
-      if (! TREE_PUBLIC (newdecl)
-	  || (TREE_CODE (newdecl) == FUNCTION_DECL
-	      && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl)))
+      if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
-	  if (warn_shadow)
-	    cp_warning ("shadowing %s function `%#D'",
-			DECL_BUILT_IN (olddecl) ? "built-in" : "library",
-			olddecl);
-	  /* Discard the old built-in function.  */
-	  return 0;
-	}
-      else if (! types_match)
-	{
-	  if (TREE_CODE (newdecl) != FUNCTION_DECL)
+	  /* If you declare a built-in or predefined function name as static,
+	     the old definition is overridden, but optionally warn this was a
+	     bad choice of name.  */
+	  if (! TREE_PUBLIC (newdecl))
 	    {
-	      /* If the built-in is not ansi, then programs can override
-		 it even globally without an error.  */
-	      if (! DECL_BUILT_IN (olddecl))
-		cp_warning ("library function `%#D' redeclared as non-function `%#D'",
-			    olddecl, newdecl);
-	      else
-		{
-		  cp_error ("declaration of `%#D'", newdecl);
-		  cp_error ("conflicts with built-in declaration `%#D'",
+	      if (warn_shadow)
+		cp_warning ("shadowing %s function `%#D'",
+			    DECL_BUILT_IN (olddecl) ? "built-in" : "library",
 			    olddecl);
-		}
+	      /* Discard the old built-in function.  */
 	      return 0;
 	    }
+	  /* If the built-in is not ansi, then programs can override
+	     it even globally without an error.  */
+	  else if (! DECL_BUILT_IN (olddecl))
+	    cp_warning ("library function `%#D' redeclared as non-function `%#D'",
+			olddecl, newdecl);
+	  else
+	    {
+	      cp_error ("declaration of `%#D'", newdecl);
+	      cp_error ("conflicts with built-in declaration `%#D'",
+			olddecl);
+	    }
+	  return 0;
+	}
+      else if (!types_match)
+	{
+	  if ((DECL_LANGUAGE (newdecl) == lang_c
+	       && DECL_LANGUAGE (olddecl) == lang_c)
+	      || compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
+			    TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
+	    {
+	      /* A near match; override the builtin.  */
 
-	  cp_warning ("declaration of `%#D'", newdecl);
-	  cp_warning ("conflicts with built-in declaration `%#D'",
-		      olddecl);
+	      if (TREE_PUBLIC (newdecl))
+		{
+		  cp_warning ("new declaration `%#D'", newdecl);
+		  cp_warning ("ambiguates built-in declaration `%#D'",
+			      olddecl);
+		}
+	      else if (warn_shadow)
+		cp_warning ("shadowing %s function `%#D'",
+			    DECL_BUILT_IN (olddecl) ? "built-in" : "library",
+			    olddecl);
+	    }
+	  else
+	    /* Discard the old built-in function.  */
+	    return 0;
 	}
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
@@ -4469,17 +4482,7 @@ push_overloaded_decl (decl, flags)
   int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
 
   if (doing_global)
-    {
-      old = namespace_binding (name, DECL_CONTEXT (decl));
-      if (old && TREE_CODE (old) == FUNCTION_DECL
-	  && DECL_ARTIFICIAL (old)
-	  && (DECL_BUILT_IN (old) || DECL_BUILT_IN_NONANSI (old)))
-	{
-	  if (duplicate_decls (decl, old))
-	    return old;
-	  old = NULL_TREE;
-	}
-    }
+    old = namespace_binding (name, DECL_CONTEXT (decl));
   else
     old = lookup_name_current_level (name);
 
@@ -10013,6 +10016,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		if (TREE_CODE (size) == NOP_EXPR
 		    && TREE_TYPE (size) == TREE_TYPE (TREE_OPERAND (size, 0)))
 		  size = TREE_OPERAND (size, 0);
+		if (TREE_READONLY_DECL_P (size))
+		  size = decl_constant_value (size);
 
 		/* If this involves a template parameter, it will be a
 		   constant at instantiation time, but we don't know
@@ -10048,8 +10053,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			      dname);
 		    size = integer_one_node;
 		  }
-		if (TREE_READONLY_DECL_P (size))
-		  size = decl_constant_value (size);
 		if (pedantic && integer_zerop (size))
 		  cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", dname);
 		if (TREE_CONSTANT (size))
