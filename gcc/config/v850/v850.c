@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -64,6 +64,9 @@ static void v850_insert_attributes   (tree, tree *);
 static void v850_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void v850_encode_data_area    (tree, rtx);
 static void v850_encode_section_info (tree, rtx, int);
+static bool v850_return_in_memory    (tree, tree);
+static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+					 tree, int *, int);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -115,6 +118,17 @@ static int v850_interrupt_p = FALSE;
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG v850_reorg
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY v850_return_in_memory
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3396,4 +3410,25 @@ v850_select_section (tree exp,
     }
   else
     readonly_data_section ();
+}
+
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
+static bool
+v850_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  /* Return values > 8 bytes in length in memory.  */
+  return int_size_in_bytes (type) > 8 || TYPE_MODE (type) == BLKmode;
+}
+
+/* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
+
+static void
+v850_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
+			     enum machine_mode mode ATTRIBUTE_UNUSED,
+			     tree type ATTRIBUTE_UNUSED,
+			     int *pretend_arg_size ATTRIBUTE_UNUSED,
+			     int second_time ATTRIBUTE_UNUSED)
+{
+  ca->anonymous_args = (!TARGET_GHS ? 1 : 0);
 }

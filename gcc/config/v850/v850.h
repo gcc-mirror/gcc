@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -124,7 +124,7 @@ extern int target_flags;
      as GHS.  We don't have enough documentation on their conventions
      to be compatible.
 
-     * Tests of SETUP_INCOMING_VARARGS need to be made runtime checks
+     * Tests of TARGET_SETUP_INCOMING_VARARGS need to be made runtime checks
      since it depends on TARGET_GHS.  */
 #define TARGET_GHS (target_flags & MASK_GHS)
  
@@ -707,9 +707,6 @@ enum reg_class
     abort ();								\
 }
 
-/* A guess for the V850.  */
-#define PROMOTE_PROTOTYPES 1
-
 /* Keep the stack pointer constant throughout the function.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
@@ -776,10 +773,6 @@ struct cum_arg { int nbytes; int anonymous_args; };
    space allocated by the caller.  */
 #define OUTGOING_REG_PARM_STACK_SPACE
 
-/* Do any setup necessary for varargs/stdargs functions.  */
-#define SETUP_INCOMING_VARARGS(CUM, MODE, TYPE, PAS, SECOND) \
-  (CUM).anonymous_args = (!TARGET_GHS ? 1 : 0);
-
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   v850_va_arg (valist, type)
@@ -812,16 +805,7 @@ struct cum_arg { int nbytes; int anonymous_args; };
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 10)
 
-/* Return values > 8 bytes in length in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
-#define RETURN_IN_MEMORY(TYPE)  \
-  (int_size_in_bytes (TYPE) > 8 || TYPE_MODE (TYPE) == BLKmode)
-
-/* Register in which address to store a structure value
-   is passed to a function.  On the V850 it's passed as
-   the first parameter.  */
-
-#define STRUCT_VALUE 0
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
