@@ -1,5 +1,9 @@
 2004-08-12  Paolo Carlini  <pcarlini@suse.de>
 
+	* configure.ac: Specify version 1.8.5 in AM_INIT_AUTOMAKE.
+
+2004-08-12  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/16956
 	* include/bits/sstream.tcc (basic_stringbuf<>::seekoff): Add __off
 	to the returned value, reorganize a bit.
