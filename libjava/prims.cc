@@ -516,8 +516,10 @@ _Jv_NewArray (jint type, jint size)
   return NULL;			// Placate compiler.
 }
 
-jobject
-_Jv_NewMultiArray (jclass type, jint dimensions, jint *sizes)
+// Allocate a possibly multi-dimensional array but don't check that
+// any array length is <0.
+static jobject
+_Jv_NewMultiArrayUnchecked (jclass type, jint dimensions, jint *sizes)
 {
   JvAssert (type->isArray());
   jclass element_type = type->getComponentType();
@@ -533,11 +535,21 @@ _Jv_NewMultiArray (jclass type, jint dimensions, jint *sizes)
       JvAssert (element_type->isArray());
       jobject *contents = elements ((jobjectArray) result);
       for (int i = 0; i < sizes[0]; ++i)
-	contents[i] = _Jv_NewMultiArray (element_type, dimensions - 1,
-					 sizes + 1);
+	contents[i] = _Jv_NewMultiArrayUnchecked (element_type, dimensions - 1,
+						  sizes + 1);
     }
 
   return result;
+}
+
+jobject
+_Jv_NewMultiArray (jclass type, jint dimensions, jint *sizes)
+{
+  for (int i = 0; i < dimensions; ++i)
+    if (sizes[i] < 0)
+      throw new java::lang::NegativeArraySizeException;
+
+  return _Jv_NewMultiArrayUnchecked (type, dimensions, sizes);
 }
 
 jobject
@@ -549,11 +561,13 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
   for (int i = 0; i < dimensions; ++i)
     {
       jint size = va_arg (args, jint);
+      if (size < 0)
+	throw new java::lang::NegativeArraySizeException;
       sizes[i] = size;
     }
   va_end (args);
 
-  return _Jv_NewMultiArray (array_type, dimensions, sizes);
+  return _Jv_NewMultiArrayUnchecked (array_type, dimensions, sizes);
 }
 
 

@@ -43,11 +43,12 @@ java::lang::reflect::Array::newInstance (jclass componentType, jint length)
 }
 
 jobject
-java::lang::reflect::Array::newInstance (jclass componentType, jintArray dimensions)
+java::lang::reflect::Array::newInstance (jclass componentType,
+					 jintArray dimensions)
 {
   jint ndims = dimensions->length;
   if (ndims == 0)
-    return componentType->newInstance ();
+    throw new java::lang::IllegalArgumentException ();
   jint* dims = elements (dimensions);
   if (ndims == 1)
     return newInstance (componentType, dims[0]);
