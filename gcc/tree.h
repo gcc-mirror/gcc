@@ -1228,6 +1228,7 @@ extern char *xstrdup			PROTO((char *));
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));
+extern char *expralloc			PROTO((int));
 
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
@@ -1277,6 +1278,7 @@ extern tree build_string		PROTO((int, char *));
 extern tree build1			PROTO((enum tree_code, tree, tree));
 extern tree build_tree_list		PROTO((tree, tree));
 extern tree build_decl_list		PROTO((tree, tree));
+extern tree build_expr_list		PROTO((tree, tree));
 extern tree build_decl			PROTO((enum tree_code, tree, tree));
 extern tree build_block			PROTO((tree, tree, tree, tree, tree));
 
@@ -1415,6 +1417,7 @@ extern tree perm_tree_cons		PROTO((tree, tree, tree));
 extern tree temp_tree_cons		PROTO((tree, tree, tree));
 extern tree saveable_tree_cons		PROTO((tree, tree, tree));
 extern tree decl_tree_cons		PROTO((tree, tree, tree));
+extern tree expr_tree_cons		PROTO((tree, tree, tree));
 
 /* Return the last tree node in a chain.  */
 

@@ -1,6 +1,7 @@
 Tue Oct 14 11:30:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (expr_tree_cons, build_expr_list, expralloc): New fns.
+	* tree.h: Declare them.
 
 Fri Oct 10 13:46:56 1997  Doug Evans  <dje@canuck.cygnus.com>
 
