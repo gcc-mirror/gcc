@@ -85,12 +85,13 @@
   [(set_attr "type" "iaddlog,ld,fpop")])
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
-	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ")
-		 (match_operand:SI 2 "add_operand" "rI,K,L")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ,%rJ")
+		 (match_operand:SI 2 "add_operand" "rI,O,K,L")))]
   ""
   "@
    addl %r1,%2,%0
+   subl %r1,%n2,%0
    lda %0,%2(%r1)
    ldah %0,%h2(%r1)"
   [(set_attr "type" "iaddlog")])
@@ -129,7 +130,7 @@
 	 (plus:SI (match_operand:SI 1 "register_operand" "")
 		  (match_operand:SI 2 "const_int_operand" ""))))
    (clobber (match_operand:SI 3 "register_operand" ""))]
-  "! add_operand (operands[2], SImode) && INTVAL (operands[2]) > 0
+  "! sext_add_operand (operands[2], SImode) && INTVAL (operands[2]) > 0
    && INTVAL (operands[2]) % 4 == 0"
   [(set (match_dup 3) (match_dup 4))
    (set (match_dup 0) (sign_extend:DI (plus:SI (mult:SI (match_dup 3)
@@ -148,21 +149,25 @@
 }")
 
 (define_insn "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
-	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ")
-		 (match_operand:DI 2 "add_operand" "rI,K,L")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
+	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ,%rJ")
+		 (match_operand:DI 2 "add_operand" "rI,O,K,L")))]
   ""
   "@
    addq %r1,%2,%0
+   subq %r1,%n2,%0
    lda %0,%2(%r1)
    ldah %0,%h2(%r1)"
   [(set_attr "type" "iaddlog")])
 
+;; Don't do this if we are adjusting SP since we don't want to do
+;; it in two steps. 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "const_int_operand" "")))]
-  "! add_operand (operands[2], DImode)"
+  "! add_operand (operands[2], DImode)
+   && REGNO (operands[0]) != STACK_POINTER_REGNUM"
   [(set (match_dup 0) (plus:DI (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
   "
@@ -176,31 +181,37 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
-			  (match_operand:SI 2 "const48_operand" "I"))
-		 (match_operand:SI 3 "reg_or_8bit_operand" "rI")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ,rJ")
+			  (match_operand:SI 2 "const48_operand" "I,I"))
+		 (match_operand:SI 3 "sext_add_operand" "rI,O")))]
   ""
-  "s%2addl %r1,%3,%0"
+  "@
+   s%2addl %r1,%3,%0
+   s%2subl %r1,%n3,%0"
   [(set_attr "type" "iaddlog")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(sign_extend:DI
-	 (plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
-			   (match_operand:SI 2 "const48_operand" "I"))
-		  (match_operand:SI 3 "reg_or_8bit_operand" "rI"))))]
+	 (plus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "rJ,rJ")
+			   (match_operand:SI 2 "const48_operand" "I,I"))
+		  (match_operand:SI 3 "sext_add_operand" "rI,O"))))]
   ""
-  "s%2addl %r1,%3,%0"
+  "@
+   s%2addl %r1,%3,%0
+   s%2subl %r1,%n3,%0"
   [(set_attr "type" "iaddlog")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			  (match_operand:DI 2 "const48_operand" "I"))
-		 (match_operand:DI 3 "reg_or_8bit_operand" "rI")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ,rJ")
+			  (match_operand:DI 2 "const48_operand" "I,I"))
+		 (match_operand:DI 3 "reg_or_8bit_operand" "rI,O")))]
   ""
-  "s%2addq %r1,%3,%0"
+  "@
+   s%2addq %r1,%3,%0
+   s%2subq %1,%n3,%0"
   [(set_attr "type" "iaddlog")])
 
 ;; These variants of the above insns can occur if the third operand
@@ -1763,10 +1774,26 @@
   ""
   "
 {
-  enum machine_mode mode = alpha_compare_fp_p ? DFmode : DImode;
+  enum machine_mode mode;
+  enum rtx_code compare_code, branch_code;
+
+  if (alpha_compare_fp_p)
+    mode = DFmode, compare_code = EQ, branch_code = NE;
+  else
+    {
+      mode = DImode, compare_code = MINUS, branch_code = EQ;
+      if (GET_CODE (alpha_compare_op1) == CONST_INT)
+	{
+	  compare_code = PLUS;
+	  alpha_compare_op1 = GEN_INT (- INTVAL (alpha_compare_op1));
+	}
+    }
+
   operands[1] = gen_reg_rtx (mode);
-  operands[2] = gen_rtx (EQ, mode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx (NE, VOIDmode, operands[1], CONST0_RTX (mode));
+  operands[2] = gen_rtx (compare_code, mode,
+			 alpha_compare_op0, alpha_compare_op1);
+  operands[3] = gen_rtx (branch_code, VOIDmode,
+			 operands[1], CONST0_RTX (mode));
 }")
 
 (define_expand "bne"
@@ -1778,10 +1805,26 @@
   ""
   "
 {
-  enum machine_mode mode = alpha_compare_fp_p ? DFmode : DImode;
+  enum machine_mode mode;
+  enum rtx_code compare_code, branch_code;
+
+  if (alpha_compare_fp_p)
+    mode = DFmode, compare_code = EQ, branch_code = EQ;
+  else
+    {
+      mode = DImode, compare_code = MINUS, branch_code = NE;
+      if (GET_CODE (alpha_compare_op1) == CONST_INT)
+	{
+	  compare_code = PLUS;
+	  alpha_compare_op1 = GEN_INT (- INTVAL (alpha_compare_op1));
+	}
+    }
+
   operands[1] = gen_reg_rtx (mode);
-  operands[2] = gen_rtx (EQ, mode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx (EQ, VOIDmode, operands[1], CONST0_RTX (mode));
+  operands[2] = gen_rtx (compare_code, mode,
+			 alpha_compare_op0, alpha_compare_op1);
+  operands[3] = gen_rtx (branch_code, VOIDmode,
+			 operands[1], CONST0_RTX (mode));
 }")
 
 (define_expand "blt"
@@ -2049,10 +2092,11 @@
 ;; not generate valid insns.
 ;;
 ;; We can also handle equality comparisons (and inequality comparisons in
-;; cases where the resulting add cannot overflow) with out-of-range numbers by
-;; doing an add followed by a comparison with zero.  For this case, we
-;; also have an SImode pattern since we can merge the add and sign
-;; extend and the order doesn't matter.
+;; cases where the resulting add cannot overflow) by doing an add followed by
+;; a comparison with zero.  This is faster since the addition takes one
+;; less cycle than a compare when feeding into a conditional move.
+;; For this case, we also have an SImode pattern since we can merge the add
+;; and sign extend and the order doesn't matter.
 ;;
 ;; We do not do this for floating-point, since it isn't clear how the "wrong"
 ;; operation could have been generated.
@@ -2087,14 +2131,16 @@
 	   && rtx_equal_p (operands[5], operands[3]))
     operands[5] = operands[2];
 
-  if ((code == NE || code == EQ
-       || (extended_count (operands[2], DImode, unsignedp) >= 1
-	   && extended_count (operands[3], DImode, unsignedp) >= 1))
-      && GET_CODE (operands[3]) == CONST_INT
-      && (unsigned) INTVAL (operands[3]) > 255)
+  if (code == NE || code == EQ
+      || (extended_count (operands[2], DImode, unsignedp) >= 1
+	  && extended_count (operands[3], DImode, unsignedp) >= 1))
     {
-      operands[7] = gen_rtx (PLUS, DImode, operands[2],
-			     GEN_INT (- INTVAL (operands[3])));
+      if (GET_CODE (operands[3]) == CONST_INT)
+	operands[7] = gen_rtx (PLUS, DImode, operands[2],
+			       GEN_INT (- INTVAL (operands[3])));
+      else
+	operands[7] = gen_rtx (MINUS, DImode, operands[2], operands[3]);
+
       operands[8] = gen_rtx (code, VOIDmode, operands[6], const0_rtx);
     }
 
@@ -2117,26 +2163,32 @@
 	(if_then_else:DI
 	 (match_operator 1 "comparison_operator"
 			 [(match_operand:SI 2 "reg_or_0_operand" "")
-			  (match_operand:SI 3 "const_int_operand" "")])
+			  (match_operand:SI 3 "reg_or_cint_operand" "")])
 	 (match_operand:DI 4 "reg_or_8bit_operand" "")
 	 (match_operand:DI 5 "reg_or_8bit_operand" "")))
    (clobber (match_operand:DI 6 "register_operand" ""))]
-  "(unsigned) INTVAL (operands[3]) > 255"
+  "operands[3] != const0_rtx
+   && (GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)"
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0)
 	(if_then_else:DI (match_dup 8) (match_dup 4) (match_dup 5)))]
   "
 { enum rtx_code code = GET_CODE (operands[1]);
   int unsignedp = (code == GEU || code == LEU || code == GTU || code == LTU);
+  rtx tem;
 
   if ((code != NE && code != EQ
        && ! (extended_count (operands[2], DImode, unsignedp) >= 1
 	     && extended_count (operands[3], DImode, unsignedp) >= 1)))
     FAIL;
  
-  operands[7] = gen_rtx (SIGN_EXTEND, DImode,
-			 gen_rtx (PLUS, SImode, operands[2],
-				  GEN_INT (- INTVAL (operands[3]))));
+  if (GET_CODE (operands[3]) == CONST_INT)
+    tem = gen_rtx (PLUS, SImode, operands[2],
+		   GEN_INT (- INTVAL (operands[3])));
+  else
+    tem = gen_rtx (MINUS, SImode, operands[2], operands[3]);
+
+  operands[7] = gen_rtx (SIGN_EXTEND, DImode, tem);
   operands[8] = gen_rtx (GET_CODE (operands[1]), VOIDmode, operands[6],
 			 const0_rtx);
 }")
@@ -2157,14 +2209,16 @@
 { enum rtx_code code = GET_CODE (operands[1]);
   int unsignedp = (code == GEU || code == LEU || code == GTU || code == LTU);
 
-  if ((code == NE || code == EQ
-       || (extended_count (operands[2], DImode, unsignedp) >= 1
-	   && extended_count (operands[3], DImode, unsignedp) >= 1))
-      && GET_CODE (operands[3]) == CONST_INT
-      && (unsigned) INTVAL (operands[3]) > 255)
+  if (code == NE || code == EQ
+      || (extended_count (operands[2], DImode, unsignedp) >= 1
+	  && extended_count (operands[3], DImode, unsignedp) >= 1))
     {
-      operands[5] = gen_rtx (PLUS, DImode, operands[2],
-			     GEN_INT (- INTVAL (operands[3])));
+      if (GET_CODE (operands[3]) == CONST_INT)
+	operands[5] = gen_rtx (PLUS, DImode, operands[2],
+			       GEN_INT (- INTVAL (operands[3])));
+      else
+	operands[5] = gen_rtx (MINUS, DImode, operands[2], operands[3]);
+
       operands[6] = gen_rtx (code, VOIDmode, operands[4], const0_rtx);
     }
 
@@ -2191,14 +2245,20 @@
 	 (label_ref (match_operand 0 "" ""))
 	 (pc)))
    (clobber (match_operand:DI 4 "register_operand" ""))]
-  "INTVAL (operands[3]) < 0
+  "operands[3] != const0_rtx
    && (GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)"
   [(set (match_dup 4) (match_dup 5))
    (set (pc) (if_then_else (match_dup 6) (label_ref (match_dup 0)) (pc)))]
   "
-{ operands[5] = gen_rtx (SIGN_EXTEND, DImode,
-			 gen_rtx (PLUS, SImode, operands[2],
-				  GEN_INT (- INTVAL (operands[3]))));
+{ rtx tem;
+
+  if (GET_CODE (operands[3]) == CONST_INT)
+    tem = gen_rtx (PLUS, SImode, operands[2],
+		   GEN_INT (- INTVAL (operands[3])));
+  else
+    tem = gen_rtx (MINUS, SImode, operands[2], operands[3]);
+  
+  operands[5] = gen_rtx (SIGN_EXTEND, DImode, tem);
   operands[6] = gen_rtx (GET_CODE (operands[1]), VOIDmode,
 			 operands[4], const0_rtx);
 }")
@@ -3051,4 +3111,109 @@
     }
 
   DONE;
+}")
+
+;; Subroutine of stack space allocation.  Perform a stack probe.
+(define_expand "probe_stack"
+  [(set (match_dup 1) (match_operand:DI 0 "const_int_operand" ""))]
+  ""
+  "
+{
+  operands[0] = gen_rtx (MEM, DImode, plus_constant (stack_pointer_rtx,
+						     INTVAL (operands[0])));
+  MEM_VOLATILE_P (operands[0]) = 1;
+
+  operands[1] = gen_reg_rtx (DImode);
+}")
+
+;; This is how we allocate stack space.  If we are allocating a
+;; constant amount of space and we know it is less than 4096
+;; bytes, we need do nothing.
+;;
+;; If it is more than 4096 bytes, we need to probe the stack
+;; periodically. 
+(define_expand "allocate_stack"
+  [(set (reg:DI 30)
+	(plus:DI (reg:DI 30)
+		 (match_operand:DI 0 "reg_or_cint_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[0]) == CONST_INT
+	   && INTVAL (operands[0]) < 32768)
+    {
+      if (INTVAL (operands[0]) >= 4096)
+	{
+	  /* We do this the same way as in the prologue and generate explicit
+	     probes.  Then we update the stack by the constant.  */
+
+	  int probed = 4096;
+
+	  emit_insn (gen_probe_stack (GEN_INT (- probed)));
+	  while (probed + 8192 < INTVAL (operands[0]))
+	    emit_insn (gen_probe_stack (GEN_INT (- (probed += 8192))));
+
+	  if (probed + 4096 < INTVAL (operands[0]))
+	    emit_insn (gen_probe_stack (GEN_INT (- (probed += 4096))));
+	}
+
+      operands[0] = GEN_INT (- INTVAL (operands[0]));
+    }
+  else
+    {
+      rtx out_label = 0;
+      rtx loop_label = gen_label_rtx ();
+      rtx count = gen_reg_rtx (DImode);
+      rtx access = gen_reg_rtx (Pmode);
+      rtx memref = gen_rtx (MEM, DImode, access);
+
+      MEM_VOLATILE_P (memref) = 1;
+
+      /* If the amount to be allocated is not a constant, we only need to
+	 do something special if it is >= 4096.  */
+
+      if (GET_CODE (operands[0]) != CONST_INT)
+	{
+	  operands[0] = force_reg (DImode, operands[0]);
+	  out_label = gen_label_rtx ();
+	  emit_insn (gen_cmpdi (operands[0],
+				force_reg (DImode, GEN_INT (4096))));
+	  emit_jump_insn (gen_ble (out_label));
+
+	  /* Compute COUNT = (N + 4096) / 8192.  N is known positive.  */
+	  emit_insn (gen_adddi3 (count, operands[0], GEN_INT (4096)));
+	  emit_insn (gen_lshrdi3 (count, count, GEN_INT (13)));
+	}
+      else
+	emit_move_insn (count, GEN_INT ((INTVAL (operands[0]) + 4096) >> 13));
+
+      /* ACCESS = SP + 4096.  */
+      emit_insn (gen_adddi3 (access, stack_pointer_rtx, GEN_INT (4096)));
+      emit_label (loop_label);
+
+      /* Each iteration subtracts 8192 from ACCESS and references it.  */
+      emit_insn (gen_adddi3 (count, count, constm1_rtx));
+      emit_insn (gen_adddi3 (access, access, GEN_INT (-8192)));
+      emit_move_insn (gen_reg_rtx (DImode), memref);
+      emit_insn (gen_cmpdi (count, const0_rtx));
+      emit_jump_insn (gen_bgt (loop_label));
+
+      if (out_label)
+	emit_label (out_label);
+
+      /* We need to subtract operands[0] from SP.  We know it isn't a
+	 constant less than 32768, so we know we have to load it into
+	 a register.  */
+
+      emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
+			     force_reg (Pmode, operands[0])));
+
+      /* Now, unless we have a constant and we know that we are within
+	 4096 from the end, we need to access sp + 4096.  */
+      if (! (GET_CODE (operands[0]) == CONST_INT
+	     && (INTVAL (operands[0]) % 8192) < 4096))
+	emit_insn (gen_probe_stack (GEN_INT (4096)));
+
+      DONE;
+    }
 }")
