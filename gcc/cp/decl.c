@@ -2012,7 +2012,7 @@ wrapup_globals_for_namespace (namespace, data)
      wrapup_global_declarations from writing them out; we must process
      them ourselves in finish_vtable_vardecl.  */
   for (i = 0; i < len; ++i)
-    if (vtable_decl_p (vec[i], /*data=*/0))
+    if (vtable_decl_p (vec[i], /*data=*/0) && !DECL_EXTERNAL (vec[i]))
       {
 	DECL_NOT_REALLY_EXTERN (vec[i]) = 1;
 	DECL_EXTERNAL (vec[i]) = 1;
