@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -1368,29 +1368,4 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 #define SYMBOL_REF_TDA_P(X)	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_TDA) != 0)
 #define SYMBOL_REF_SDA_P(X)	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_SDA) != 0)
 
-/* Define this if you have defined special-purpose predicates in the
-   file `MACHINE.c'.  This macro is called within an initializer of an
-   array of structures.  The first field in the structure is the name
-   of a predicate and the second field is an array of rtl codes.  For
-   each predicate, list all rtl codes that can be in expressions
-   matched by the predicate.  The list should have a trailing comma.  */
-
-#define PREDICATE_CODES							\
-{ "reg_or_0_operand",		{ REG, SUBREG, CONST_INT, CONST_DOUBLE }}, \
-{ "reg_or_int5_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "reg_or_int9_operand",	{ REG, SUBREG, CONST_INT }},		\
-{ "reg_or_const_operand",       { REG, CONST_INT }},			\
-{ "call_address_operand",	{ REG, SYMBOL_REF }},			\
-{ "movsi_source_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
-				  CONST_DOUBLE, CONST, HIGH, MEM,	\
-				  REG, SUBREG }},			\
-{ "special_symbolref_operand",	{ SYMBOL_REF }},			\
-{ "power_of_two_operand",	{ CONST_INT }},				\
-{ "pattern_is_ok_for_prologue",	{ PARALLEL }},				\
-{ "pattern_is_ok_for_epilogue",	{ PARALLEL }},				\
-{ "register_is_ok_for_epilogue",{ REG }},				\
-{ "pattern_is_ok_for_dispose",	{ PARALLEL }},				\
-{ "pattern_is_ok_for_prepare",	{ PARALLEL }},				\
-{ "not_power_of_two_operand",	{ CONST_INT }},
-  
 #endif /* ! GCC_V850_H */
