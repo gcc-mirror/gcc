@@ -1,3 +1,9 @@
+2004-08-17  Roger Sayle  <roger@eyesopen.com>
+
+	* regclass.c (init_reg_sets_1): Add ENABLE_CHECKING sanity tests to
+	ensure that call_used_regs is a superset of both fixed_regs and
+	call_really_used_regs.
+
 2004-08-17  Daniel Bornstein  <danfuzz@milk.com>
 
 	PR target/17019
