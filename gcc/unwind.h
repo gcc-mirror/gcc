@@ -136,15 +136,15 @@ extern _Unwind_Ptr _Unwind_GetRegionStart (struct _Unwind_Context *);
    library and language-specific exception handling semantics.  It is
    specific to the code fragment described by an unwind info block, and
    it is always referenced via the pointer in the unwind info block, and
-   hence it has no ABI-specified name. 
+   hence it has no ABI-specified name.
 
    Note that this implies that two different C++ implementations can
    use different names, and have different contents in the language
-   specific data area.  Moreover, that the language specific data 
+   specific data area.  Moreover, that the language specific data
    area contains no version info because name of the function invoked
    provides more effective versioning by detecting at link time the
    lack of code to handle the different data format.  */
-   
+
 typedef _Unwind_Reason_Code (*_Unwind_Personality_Fn)
      (int, _Unwind_Action, _Unwind_Exception_Class,
       struct _Unwind_Exception *, struct _Unwind_Context *);

@@ -522,7 +522,7 @@ build_real (type, d)
   v = make_node (REAL_CST);
   dp = ggc_alloc (sizeof (REAL_VALUE_TYPE));
   memcpy (dp, &d, sizeof (REAL_VALUE_TYPE));
-  
+
   TREE_TYPE (v) = type;
   TREE_REAL_CST_PTR (v) = dp;
   TREE_OVERFLOW (v) = TREE_CONSTANT_OVERFLOW (v) = overflow;
@@ -4209,7 +4209,7 @@ decl_type_context (decl)
   while (context)
     {
       if (TREE_CODE (context) == NAMESPACE_DECL)
-        return NULL_TREE;
+	return NULL_TREE;
 
       if (TREE_CODE (context) == RECORD_TYPE
 	  || TREE_CODE (context) == UNION_TYPE

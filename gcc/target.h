@@ -134,7 +134,7 @@ struct gcc_target
     /* Calculate how much this insn affects how many more insns we
        can emit this cycle.  Default is they all cost the same.  */
     int (* variable_issue) PARAMS ((FILE *, int, rtx, int));
-    
+
     /* Initialize machine-dependent scheduling code.  */
     void (* md_init) PARAMS ((FILE *, int, int));
 

@@ -591,68 +591,68 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	  {
 	    /* Binary operations.  */
 	    _Unwind_Word first, second;
-	  if ((stack_elt -= 2) < 0)
-	    abort ();
-	  second = stack[stack_elt];
-	  first = stack[stack_elt + 1];
-
-	  switch (op)
-	    {
-	    case DW_OP_and:
-	      result = second & first;
-	      break;
-	    case DW_OP_div:
-	      result = (_Unwind_Sword) second / (_Unwind_Sword) first;
-	      break;
-	    case DW_OP_minus:
-	      result = second - first;
-	      break;
-	    case DW_OP_mod:
-	      result = (_Unwind_Sword) second % (_Unwind_Sword) first;
-	      break;
-	    case DW_OP_mul:
-	      result = second * first;
-	      break;
-	    case DW_OP_or:
-	      result = second | first;
-	      break;
-	    case DW_OP_plus:
-	      result = second + first;
-	      break;
-	    case DW_OP_shl:
-	      result = second << first;
-	      break;
-	    case DW_OP_shr:
-	      result = second >> first;
-	      break;
-	    case DW_OP_shra:
-	      result = (_Unwind_Sword) second >> first;
-	      break;
-	    case DW_OP_xor:
-	      result = second ^ first;
-	      break;
-	    case DW_OP_le:
-	      result = (_Unwind_Sword) first <= (_Unwind_Sword) second;
-	      break;
-	    case DW_OP_ge:
-	      result = (_Unwind_Sword) first >= (_Unwind_Sword) second;
-	      break;
-	    case DW_OP_eq:
-	      result = (_Unwind_Sword) first == (_Unwind_Sword) second;
-	      break;
-	    case DW_OP_lt:
-	      result = (_Unwind_Sword) first < (_Unwind_Sword) second;
-	      break;
-	    case DW_OP_gt:
-	      result = (_Unwind_Sword) first > (_Unwind_Sword) second;
-	      break;
-	    case DW_OP_ne:
-	      result = (_Unwind_Sword) first != (_Unwind_Sword) second;
-	      break;
-
-	    default:
+	    if ((stack_elt -= 2) < 0)
 	      abort ();
-	    }
+	    second = stack[stack_elt];
+	    first = stack[stack_elt + 1];
+
+	    switch (op)
+	      {
+	      case DW_OP_and:
+		result = second & first;
+		break;
+	      case DW_OP_div:
+		result = (_Unwind_Sword) second / (_Unwind_Sword) first;
+		break;
+	      case DW_OP_minus:
+		result = second - first;
+		break;
+	      case DW_OP_mod:
+		result = (_Unwind_Sword) second % (_Unwind_Sword) first;
+		break;
+	      case DW_OP_mul:
+		result = second * first;
+		break;
+	      case DW_OP_or:
+		result = second | first;
+		break;
+	      case DW_OP_plus:
+		result = second + first;
+		break;
+	      case DW_OP_shl:
+		result = second << first;
+		break;
+	      case DW_OP_shr:
+		result = second >> first;
+		break;
+	      case DW_OP_shra:
+		result = (_Unwind_Sword) second >> first;
+		break;
+	      case DW_OP_xor:
+		result = second ^ first;
+		break;
+	      case DW_OP_le:
+		result = (_Unwind_Sword) first <= (_Unwind_Sword) second;
+		break;
+	      case DW_OP_ge:
+		result = (_Unwind_Sword) first >= (_Unwind_Sword) second;
+		break;
+	      case DW_OP_eq:
+		result = (_Unwind_Sword) first == (_Unwind_Sword) second;
+		break;
+	      case DW_OP_lt:
+		result = (_Unwind_Sword) first < (_Unwind_Sword) second;
+		break;
+	      case DW_OP_gt:
+		result = (_Unwind_Sword) first > (_Unwind_Sword) second;
+		break;
+	      case DW_OP_ne:
+		result = (_Unwind_Sword) first != (_Unwind_Sword) second;
+		break;
+
+	      default:
+		abort ();
+	      }
 	  }
 	  break;
 
@@ -783,7 +783,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	    fs->regs.reg[reg].loc.reg = reg2;
 	  }
 	  break;
-      
+
 	case DW_CFA_remember_state:
 	  {
 	    struct frame_state_reg_info *new_rs;
@@ -850,7 +850,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
 	  fs->regs.reg[reg].loc.offset = offset;
 	  break;
-	  
+
 	case DW_CFA_def_cfa_sf:
 	  insn_ptr = read_uleb128 (insn_ptr, &fs->cfa_reg);
 	  insn_ptr = read_sleb128 (insn_ptr, &fs->cfa_offset);
@@ -1034,7 +1034,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       /* Special handling here: Many machines do not use a frame pointer,
 	 and track the CFA only through offsets from the stack pointer from
 	 one frame to the next.  In this case, the stack pointer is never
-	 stored, so it has no saved address in the context.  What we do 
+	 stored, so it has no saved address in the context.  What we do
 	 have is the CFA from the previous stack frame.  */
       if (context->reg[fs->cfa_reg] == NULL)
 	cfa = context->cfa;
@@ -1108,7 +1108,7 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
    level will be the return address and the CFA.  */
-   
+
 #define uw_init_context(CONTEXT)					   \
   do									   \
     {									   \

@@ -1635,7 +1635,7 @@ calculate_giv_inc (pattern, src_insn, regno)
 	  rtx second_part = XEXP (increment, 1);
 	  enum rtx_code code = GET_CODE (increment);
 
-	  increment = find_last_value (XEXP (increment, 0), 
+	  increment = find_last_value (XEXP (increment, 0),
 				       &src_insn, NULL_RTX, 0);
 	  /* Don't need the last insn anymore.  */
 	  delete_related_insns (get_last_insn ());
@@ -1732,7 +1732,7 @@ final_reg_note_copy (notesp, map)
   while (*notesp)
     {
       rtx note = *notesp;
-      
+
       if (GET_CODE (note) == INSN_LIST)
 	{
 	  /* Sometimes, we have a REG_WAS_0 note that points to a
@@ -2579,7 +2579,7 @@ find_splittable_regs (loop, unroll_type, unroll_number)
 		  rtx tem = gen_reg_rtx (bl->biv->mode);
 
 		  record_base_value (REGNO (tem), bl->biv->add_val, 0);
-		  loop_insn_hoist (loop, 
+		  loop_insn_hoist (loop,
 				   gen_move_insn (tem, bl->biv->src_reg));
 
 		  if (loop_dump_stream)
@@ -3594,7 +3594,7 @@ loop_iterations (loop)
 		  && INSN_LUID (JUMP_LABEL (temp)) < INSN_LUID (loop->cont))
 		{
 		  if (loop_dump_stream)
-		    fprintf 
+		    fprintf
 		      (loop_dump_stream,
 		       "Loop iterations: Loop has multiple back edges.\n");
 		  return 0;

@@ -1673,7 +1673,7 @@ strip_off_ending (name, len)
      int len;
 {
   int i;
-  for (i = 2; i < 6 && len > i;  i++)
+  for (i = 2; i < 6 && len > i; i++)
     {
       if (name[len - i] == '.')
 	{
@@ -1715,15 +1715,15 @@ output_quoted_string (asm_file, string)
    usable as an identifier in a target's assembly file.  */
 void
 output_clean_symbol_name (file, name)
-    FILE *file;
-    const char *name;
+     FILE *file;
+     const char *name;
 {
   /* Make a copy of NAME.  */
   char *id = xstrdup (name);
 
   /* Make it look like a valid identifier for an assembler.  */
   clean_symbol_name (id);
-  
+
   fputs (id, file);
   free (id);
 }

@@ -190,7 +190,7 @@ typedef struct _DST_SOURCE_CORR
 #define DST_K_SOURCE_CORR_HEADER_SIZE 4
 
 /* Source file correlation codes.  */
-	
+
 #define DST_K_SRC_DECLFILE 1
 #define DST_K_SRC_SETFILE 2
 #define DST_K_SRC_SETREC_L 3
@@ -251,5 +251,5 @@ typedef struct _DST_PROLOG
   unsigned int dst_l_prolog_bkpt_addr;
 } DST_PROLOG;
 #define DST_K_PROLOG_SIZE 8
-	
+
 #endif /* GCC_VMSDBG_H */

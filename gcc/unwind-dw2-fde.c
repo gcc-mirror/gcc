@@ -53,7 +53,7 @@ static __gthread_mutex_t object_mutex;
 #endif
 
 #ifdef __GTHREAD_MUTEX_INIT_FUNCTION
-static void 
+static void
 init_object_mutex (void)
 {
   __GTHREAD_MUTEX_INIT_FUNCTION (&object_mutex);
@@ -111,7 +111,7 @@ __register_frame (void *begin)
     return;
 
   ob = (struct object *) malloc (sizeof (struct object));
-  __register_frame_info (begin, ob);                       
+  __register_frame_info (begin, ob);
 }
 
 /* Similar, but BEGIN is actually a pointer to a table of unwind entries
@@ -161,7 +161,7 @@ __register_frame_table (void *begin)
    Since the registration did not happen there, we'll abort.
 
    Therefore, declare a new deregistration entry point that does the
-   exact same thing, but will resolve to the same library as 
+   exact same thing, but will resolve to the same library as
    implements __register_frame_info_bases.  */
 
 void *
@@ -398,7 +398,7 @@ start_fde_sort (struct fde_accumulator *accu, size_t count)
       return 1;
     }
   else
-    return 0;  
+    return 0;
 }
 
 static inline void
@@ -411,7 +411,7 @@ fde_insert (struct fde_accumulator *accu, fde *this_fde)
 /* Split LINEAR into a linear sequence with low values and an erratic
    sequence with high values, put the linear one (of longest possible
    length) into LINEAR and the erratic one into ERRATIC. This is O(N).
-   
+
    Because the longest linear sequence we are trying to locate within the
    incoming LINEAR array can be interspersed with (high valued) erratic
    entries.  We construct a chain indicating the sequenced entries.
@@ -434,18 +434,18 @@ fde_split (struct object *ob, fde_compare_t fde_compare,
      them and the overlaying onto ERRATIC will not work.  */
   if (sizeof (fde *) != sizeof (fde **))
     abort ();
-  
+
   for (i = 0; i < count; i++)
     {
       fde **probe;
-      
+
       for (probe = chain_end;
-           probe != &marker && fde_compare (ob, linear->array[i], *probe) < 0;
-           probe = chain_end)
-        {
-          chain_end = (fde **) erratic->array[probe - linear->array];
-          erratic->array[probe - linear->array] = NULL;
-        }
+	   probe != &marker && fde_compare (ob, linear->array[i], *probe) < 0;
+	   probe = chain_end)
+	{
+	  chain_end = (fde **) erratic->array[probe - linear->array];
+	  erratic->array[probe - linear->array] = NULL;
+	}
       erratic->array[i] = (fde *) chain_end;
       chain_end = &linear->array[i];
     }
@@ -486,22 +486,22 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
       /* Invariant: a[m..n-1] is a heap.  */
       m--;
       for (i = m; 2*i+1 < n; )
-        {
-          if (2*i+2 < n
-              && fde_compare (ob, a[2*i+2], a[2*i+1]) > 0
-              && fde_compare (ob, a[2*i+2], a[i]) > 0)
-            {
-              SWAP (a[i], a[2*i+2]);
-              i = 2*i+2;
-            }
-          else if (fde_compare (ob, a[2*i+1], a[i]) > 0)
-            {
-              SWAP (a[i], a[2*i+1]);
-              i = 2*i+1;
-            }
-          else
-            break;
-        }
+	{
+	  if (2*i+2 < n
+	      && fde_compare (ob, a[2*i+2], a[2*i+1]) > 0
+	      && fde_compare (ob, a[2*i+2], a[i]) > 0)
+	    {
+	      SWAP (a[i], a[2*i+2]);
+	      i = 2*i+2;
+	    }
+	  else if (fde_compare (ob, a[2*i+1], a[i]) > 0)
+	    {
+	      SWAP (a[i], a[2*i+1]);
+	      i = 2*i+1;
+	    }
+	  else
+	    break;
+	}
     }
   while (n > 1)
     {
@@ -509,22 +509,22 @@ frame_heapsort (struct object *ob, fde_compare_t fde_compare,
       n--;
       SWAP (a[0], a[n]);
       for (i = 0; 2*i+1 < n; )
-        {
-          if (2*i+2 < n
-              && fde_compare (ob, a[2*i+2], a[2*i+1]) > 0
-              && fde_compare (ob, a[2*i+2], a[i]) > 0)
-            {
-              SWAP (a[i], a[2*i+2]);
-              i = 2*i+2;
-            }
-          else if (fde_compare (ob, a[2*i+1], a[i]) > 0)
-            {
-              SWAP (a[i], a[2*i+1]);
-              i = 2*i+1;
-            }
-          else
-            break;
-        }
+	{
+	  if (2*i+2 < n
+	      && fde_compare (ob, a[2*i+2], a[2*i+1]) > 0
+	      && fde_compare (ob, a[2*i+2], a[i]) > 0)
+	    {
+	      SWAP (a[i], a[2*i+2]);
+	      i = 2*i+2;
+	    }
+	  else if (fde_compare (ob, a[2*i+1], a[i]) > 0)
+	    {
+	      SWAP (a[i], a[2*i+1]);
+	      i = 2*i+1;
+	    }
+	  else
+	    break;
+	}
     }
 #undef SWAP
 }
@@ -550,7 +550,7 @@ fde_merge (struct object *ob, fde_compare_t fde_compare,
 	      v1->array[i1+i2] = v1->array[i1-1];
 	      i1--;
 	    }
-        v1->array[i1+i2] = fde2;
+	  v1->array[i1+i2] = fde2;
 	}
       while (i2 > 0);
       v1->count += v2->count;
@@ -590,7 +590,7 @@ end_fde_sort (struct object *ob, struct fde_accumulator *accu, size_t count)
 }
 
 
-/* Update encoding, mixed_encoding, and pc_begin for OB for the 
+/* Update encoding, mixed_encoding, and pc_begin for OB for the
    fde array beginning at THIS_FDE.  Return the number of fdes
    encountered along the way.  */
 
@@ -747,7 +747,7 @@ init_object (struct object* ob)
     {
       fde **p;
       for (p = ob->u.array; *p; ++p)
-        add_fdes (ob, &accu, *p);
+	add_fdes (ob, &accu, *p);
     }
   else
     add_fdes (ob, &accu, ob->u.single);
@@ -826,7 +826,7 @@ linear_search_fdes (struct object *ob, fde *this_fde, void *pc)
 	}
 
       if ((_Unwind_Ptr) pc - pc_begin < pc_range)
-        return this_fde;
+	return this_fde;
     }
 
   return NULL;
@@ -840,7 +840,7 @@ binary_search_unencoded_fdes (struct object *ob, void *pc)
 {
   struct fde_vector *vec = ob->u.sort;
   size_t lo, hi;
-      
+
   for (lo = 0, hi = vec->count; lo < hi; )
     {
       size_t i = (lo + hi) / 2;
@@ -869,7 +869,7 @@ binary_search_single_encoding_fdes (struct object *ob, void *pc)
   int encoding = ob->s.b.encoding;
   _Unwind_Ptr base = base_from_object (encoding, ob);
   size_t lo, hi;
-      
+
   for (lo = 0, hi = vec->count; lo < hi; )
     {
       size_t i = (lo + hi) / 2;
@@ -897,7 +897,7 @@ binary_search_mixed_encoding_fdes (struct object *ob, void *pc)
 {
   struct fde_vector *vec = ob->u.sort;
   size_t lo, hi;
-      
+
   for (lo = 0, hi = vec->count; lo < hi; )
     {
       size_t i = (lo + hi) / 2;
@@ -952,14 +952,14 @@ search_object (struct object* ob, void *pc)
     {
       /* Long slow labourious linear search, cos we've no memory.  */
       if (ob->s.b.from_array)
-        {
-          fde **p;
+	{
+	  fde **p;
 	  for (p = ob->u.array; *p ; p++)
 	    {
 	      fde *f = linear_search_fdes (ob, *p, pc);
-              if (f)
+	      if (f)
 		return f;
-            }
+	    }
 	  return NULL;
 	}
       else

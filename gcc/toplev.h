@@ -116,7 +116,7 @@ extern struct ht *ident_hash;
 
 /* This function can be used by targets to set the flags originally
     implied by -ffast-math and -fno-fast-math.  */
- 
+
 extern void set_fast_math_flags         PARAMS ((int));
 
 /* Return true iff flags are set as if -ffast-math.  */

@@ -188,8 +188,8 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 
 /* Push X onto VA.  T is the name of the field in varray_data
    corresponding to the type of X.  */
-#define VARRAY_PUSH(VA, T, X) 				\
-  do 							\
+#define VARRAY_PUSH(VA, T, X)				\
+  do							\
     {							\
       if ((VA)->elements_used >= (VA)->num_elements)	\
         VARRAY_GROW ((VA), 2 * (VA)->num_elements);	\

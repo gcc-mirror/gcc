@@ -588,7 +588,7 @@ demangle_new_symbols ()
     {
       demangled *dem;
       const char *p = cplus_demangle ((char*) sym->root.key,
-				DMGL_PARAMS | DMGL_ANSI);
+				      DMGL_PARAMS | DMGL_ANSI);
 
       if (! p)
 	continue;

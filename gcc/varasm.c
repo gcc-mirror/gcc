@@ -1557,7 +1557,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     {
       warning_with_decl (decl,
 	"alignment of `%s' is greater than maximum object file alignment. Using %d",
-                    MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
+			 MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
 
@@ -1569,7 +1569,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #endif
 #ifdef CONSTANT_ALIGNMENT
       if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
-        align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
+	align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
 #endif
     }
 
@@ -1610,7 +1610,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #endif
   else if (DECL_INITIAL (decl) == 0
 	   || DECL_INITIAL (decl) == error_mark_node
-           || (flag_zero_initialized_in_bss
+	   || (flag_zero_initialized_in_bss
 	       && initializer_zerop (DECL_INITIAL (decl))))
     {
       unsigned HOST_WIDE_INT size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
@@ -1630,8 +1630,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 /* Don't continue this line--convex cc version 4.1 would lose.  */
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
-         warning_with_decl
-           (decl, "requested alignment for %s is greater than implemented alignment of %d",rounded);
+	warning_with_decl
+	  (decl, "requested alignment for %s is greater than implemented alignment of %d",rounded);
 #endif
 
       asm_emit_uninitialised (decl, name, size, rounded);
@@ -4055,8 +4055,8 @@ output_addressed_constants (exp)
 	;
 
       if (TREE_CODE_CLASS (TREE_CODE (tem)) == 'c'
-	    || TREE_CODE (tem) == CONSTRUCTOR)
-	  output_constant_def (tem, 0);
+	  || TREE_CODE (tem) == CONSTRUCTOR)
+	output_constant_def (tem, 0);
 
       if (TREE_PUBLIC (tem))
 	reloc |= 2;
@@ -4805,7 +4805,7 @@ mark_weak (decl)
       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == SYMBOL_REF)
     SYMBOL_REF_WEAK (XEXP (DECL_RTL (decl), 0)) = 1;
 }
- 
+
 /* Merge weak status between NEWDECL and OLDDECL.  */
 
 void
@@ -4819,7 +4819,7 @@ merge_weak (newdecl, olddecl)
   if (DECL_WEAK (newdecl))
     {
       tree wd;
-      
+
       /* NEWDECL is weak, but OLDDECL is not.  */
 
       /* If we already output the OLDDECL, we're in trouble; we can't
@@ -4827,7 +4827,7 @@ merge_weak (newdecl, olddecl)
 	 declare_weak because the NEWDECL and OLDDECL was not yet
 	 been merged; therefore, TREE_ASM_WRITTEN was not set.  */
       if (TREE_ASM_WRITTEN (olddecl))
-	error_with_decl (newdecl, 
+	error_with_decl (newdecl,
 			 "weak declaration of `%s' must precede definition");
 
       /* If we've already generated rtl referencing OLDDECL, we may
@@ -5469,7 +5469,7 @@ default_elf_select_section (decl, reloc, align)
     }
 }
 
-/* Construct a unique section name based on the decl name and the 
+/* Construct a unique section name based on the decl name and the
    categorization performed above.  */
 
 void
