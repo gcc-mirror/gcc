@@ -1,3 +1,7 @@
+2004-01-23  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-29.c: New test case.
+
 2004-01-23  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 18314
