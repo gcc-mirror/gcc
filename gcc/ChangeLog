@@ -1,5 +1,9 @@
 2004-10-02  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c, config/s390/tpf-unwind.h: Fix comment typos.
+
+2004-10-02  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (cleanup_tree_cfg): Speed up by calling
 	delete_unrechable_blocks() only when necessary.
 

@@ -123,7 +123,7 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
 /* Function Name: __tpf_eh_return
    Parameters passed into it: Destination address to jump to.
    Return Value: Converted Destination address if a Pat Stub exists.
-   Description: This function swaps the uwinding return address
+   Description: This function swaps the unwinding return address
       with the cp stub code.  The original target return address is
       then stored into the tpf return address field.  The cp stub
       code is searched for by climbing back up the stack and
@@ -231,7 +231,7 @@ __tpf_eh_return (void *target)
                      the exception handling unwinder so that it can 
                      actually do the "leap" shift out the low order 
                      bit designated to determine if we are in 64BIT mode.
-                     This is nececcary for CTOA stubs.
+                     This is necessary for CTOA stubs.
                      Otherwise we leap one byte past where we want to 
                      go to in the TPF pat stub linkage code.  */
                   shifter = *((unsigned long int *) 
