@@ -1904,33 +1904,14 @@ build_class_member_access_expr (tree object, tree member,
       return error_mark_node;
     }
 
-  /* Transform `(a, b).x' into `(*(a, &b)).x' and `(a ? b : c).x' into
-     `(*(a ?  &b : &c)).x'.  Unfortunately, expand_expr cannot handle a
-     COMPONENT_REF where the first operand is a conditional or comma
-     expression with class type.  */
-  if (TREE_CODE (object) == COMPOUND_EXPR)
-    {
-      object = build (COMPOUND_EXPR, 
-		      build_pointer_type (object_type),
-		      TREE_OPERAND (object, 0),
-		      build_unary_op (ADDR_EXPR, 
-				      TREE_OPERAND (object, 1),
-				      /*noconvert=*/1));
-      object = build_indirect_ref (object, NULL);
-    }
-  else if (TREE_CODE (object) == COND_EXPR)
-    {
-      object = build (COND_EXPR, 
-		      build_pointer_type (object_type),
-		      TREE_OPERAND (object, 0),
-		      build_unary_op (ADDR_EXPR, 
-				      TREE_OPERAND (object, 1),
-				      /*noconvert=*/1),
-		      build_unary_op (ADDR_EXPR, 
-				      TREE_OPERAND (object, 2),
-				      /*noconvert=*/1));
-      object = build_indirect_ref (object, NULL);
-    }
+  /* Transform `(a, b).x' into `(*(a, &b)).x', `(a ? b : c).x' into
+     `(*(a ?  &b : &c)).x', and so on.  A COND_EXPR is only an lvalue
+     in the frontend; only _DECLs and _REFs are lvalues in the backend.  */
+  {
+    tree temp = unary_complex_lvalue (ADDR_EXPR, object);
+    if (temp)
+      object = build_indirect_ref (temp, NULL);
+  }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
      MEMBER.  We check for each of those cases here.  */
