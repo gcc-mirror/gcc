@@ -1,3 +1,7 @@
+Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (shift to lea splitter): Use const_int_operand.
+
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c, cppinit.c, cpplex.c, cpplib.c, cppmacro.c,
