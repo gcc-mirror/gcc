@@ -1,3 +1,8 @@
+2001-02-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.c (cpp_options): Delete .d files on error.  Don't delete
+        .o files when using the -M options.
+
 2001-02-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 
