@@ -1,3 +1,10 @@
+Wed Jul 26 19:26:21 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* varasm.c (assemble_variable) [! defined(ASM_OUTPUT_ALIGNED_COMMON)
+	&& ! defined (ASM_OUTPUT_ALIGNED_BSS]): Also test
+	! defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) before complaining about
+	lack of implemented alignment.
+
 2000-07-26  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* emit-rtl.c (gen_lowpart_common) [REAL_ARITHMETIC]: Handle
