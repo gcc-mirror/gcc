@@ -24,16 +24,17 @@ eabi-ctors.c: $(srcdir)/config/rs6000/eabi-ctors.c
 # Build libgcc.a with different options.
 
 MULTILIB_OPTIONS	= msoft-float \
-			  mrelocatable \
+			  mrelocatable-lib \
 			  mlittle/mbig \
-			  mcall-sysv-noeabi/mcall-sysv-eabi/mcall-aix/mcall-solaris
+			  mcall-sysv-noeabi/mcall-sysv-eabi/mcall-aix
 
 MULTILIB_DIRNAMES	= nof \
 			  rel \
 			  le be \
-			  cs ce ca sol
+			  cs ce ca
 
 MULTILIB_MATCHES	= mlittle=mlittle-endian \
+			  mlittle=mcall-solaris \
 			  mbig=mbig-endian \
 			  mbig=mcall-linux \
 			  msoft-float=mcpu?403 \
@@ -41,12 +42,12 @@ MULTILIB_MATCHES	= mlittle=mlittle-endian \
 			  msoft-float=mcpu?860 \
 			  mcall-sysv-noeabi=mcall-linux \
 			  mcall-sysv-eabi=meabi \
-			  mcall-sysv-noeabi=mno-eabi
-
-MULTILIB_EXCEPTIONS	= *mrelocatable*/*mcall-sysv-noeabi* \
-			  *mrelocatable*/*mcall-solaris* \
-			  *mbig*/*mcall-solaris* \
-			  *mlittle*/*mcall-solaris*
+			  mcall-sysv-noeabi=mno-eabi \
+			  mcall-sysv-noeabi=mcall-solaris \
+			  mrelocatable-lib=mrelocatable \
+			  mrelocatable-lib=fpic \
+			  mrelocatable-lib=fPIC \
+			  mrelocatable-lib=shared
 
 LIBGCC = stmp-multilib stmp-crt
 INSTALL_LIBGCC = install-multilib install-crt

@@ -2118,7 +2118,7 @@ rs6000_replace_regno (x, from, reg)
       if (REGNO (x) == from)
 	{
 	  if (! *reg)
-	    *reg = gen_reg_rtx (Pmode);
+	    *reg = pic_offset_table_rtx = gen_reg_rtx (Pmode);
 
 	  return *reg;
 	}
