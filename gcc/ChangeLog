@@ -1,3 +1,11 @@
+2001-09-29  Bernd Schmidt  <bernds@redhat.com>
+
+	* config/i386/i386.c (init_mmx_sse_builtins): Fix type of storelps and
+	storehps builtins.
+	* doc/extend.texi (Vector Extensions): New node.
+	* doc/invoke.texi (Machine Dependent Options): Add documentation for
+        i386 -mmmx, -msse, -m3dnow.
+
 Sat Sep 29 15:08:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (Optimize Options): Revert an accidental checkin.

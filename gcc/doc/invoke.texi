@@ -471,6 +471,7 @@ in the following sections.
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
+-mmmx  -msse  -m3dnow @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer}
@@ -7599,6 +7600,383 @@ This extra alignment does consume extra stack space.  Code that is sensitive
 to stack space usage, such as embedded systems and operating system kernels,
 may want to reduce the preferred alignment to
 @option{-mpreferred-stack-boundary=2}.
+
+@item -mmmx
+@itemx -mno-mmx
+@item -msse
+@itemx -mno-sse
+@item -m3dnow
+@itemx -mno-3dnow
+@opindex mmmx
+@opindex mno-mmx
+@opindex msse
+@opindex mno-sse
+@opindex m3dnow
+@opindex mno-3dnow
+These switches enable or disable the use of built-in functions that allow
+direct access to the MMX, SSE and 3Dnow extensions of the instruction set.
+
+The following machine modes are available for use with MMX builtins
+(@pxref{Vector Extensions}): @code{V2SI} for a vector of two 32 bit integers,
+@code{V4HI} for a vector of four 16 bit integers, and @code{V8QI} for a
+vector of eight 8 bit integers.  Some of the builtins operate on MMX
+registers as a whole 64 bit entity, these use @code{DI} as their mode.
+
+If 3Dnow extensions are enabled, @code{V2SF} is used as a mode for a vector
+of two 32 bit floating point values.
+
+If SSE extensions are enabled, @code{V4SF} is used for a vector of four 32 bit
+floating point values.  Some instructions use a vector of four 32 bit
+integers, these use @code{V4SI}.  Finally, some instructions operate on an
+entire vector register, interpreting it as a 128 bit integer, these use mode
+@code{TI}.
+
+The following builtins are made available by @option{-mmmx}:
+@table @code
+@item v8qi __builtin_ia32_paddb (v8qi, v8qi)
+Generates the @code{paddb} machine instruction.
+@item v4hi __builtin_ia32_paddw (v4hi, v4hi)
+Generates the @code{paddw} machine instruction.
+@item v2si __builtin_ia32_paddd (v2si, v2si)
+Generates the @code{paddd} machine instruction.
+@item v8qi __builtin_ia32_psubb (v8qi, v8qi)
+Generates the @code{psubb} machine instruction.
+@item v4hi __builtin_ia32_psubw (v4hi, v4hi)
+Generates the @code{psubw} machine instruction.
+@item v2si __builtin_ia32_psubd (v2si, v2si)
+Generates the @code{psubd} machine instruction.
+
+@item v8qi __builtin_ia32_paddsb (v8qi, v8qi)
+Generates the @code{paddsb} machine instruction.
+@item v4hi __builtin_ia32_paddsw (v4hi, v4hi)
+Generates the @code{paddsw} machine instruction.
+@item v8qi __builtin_ia32_psubsb (v8qi, v8qi)
+Generates the @code{psubsb} machine instruction.
+@item v4hi __builtin_ia32_psubsw (v4hi, v4hi)
+Generates the @code{psubsw} machine instruction.
+
+@item v8qi __builtin_ia32_paddusb (v8qi, v8qi)
+Generates the @code{paddusb} machine instruction.
+@item v4hi __builtin_ia32_paddusw (v4hi, v4hi)
+Generates the @code{paddusw} machine instruction.
+@item v8qi __builtin_ia32_psubusb (v8qi, v8qi)
+Generates the @code{psubusb} machine instruction.
+@item v4hi __builtin_ia32_psubusw (v4hi, v4hi)
+Generates the @code{psubusw} machine instruction.
+
+@item v4hi __builtin_ia32_pmullw (v4hi, v4hi)
+Generates the @code{pmullw} machine instruction.
+@item v4hi __builtin_ia32_pmulhw (v4hi, v4hi)
+Generates the @code{pmulhw} machine instruction.
+
+@item di __builtin_ia32_pand (di, di)
+Generates the @code{pand} machine instruction.
+@item di __builtin_ia32_pandn (di,di)
+Generates the @code{pandn} machine instruction.
+@item di __builtin_ia32_por (di, di)
+Generates the @code{por} machine instruction.
+@item di __builtin_ia32_pxor (di, di)
+Generates the @code{pxor} machine instruction.
+
+@item v8qi __builtin_ia32_pcmpeqb (v8qi, v8qi)
+Generates the @code{pcmpeqb} machine instruction.
+@item v4hi __builtin_ia32_pcmpeqw (v4hi, v4hi)
+Generates the @code{pcmpeqw} machine instruction.
+@item v2si __builtin_ia32_pcmpeqd (v2si, v2si)
+Generates the @code{pcmpeqd} machine instruction.
+@item v8qi __builtin_ia32_pcmpgtb (v8qi, v8qi)
+Generates the @code{pcmpgtb} machine instruction.
+@item v4hi __builtin_ia32_pcmpgtw (v4hi, v4hi)
+Generates the @code{pcmpgtw} machine instruction.
+@item v2si __builtin_ia32_pcmpgtd (v2si, v2si)
+Generates the @code{pcmpgtd} machine instruction.
+
+@item v8qi __builtin_ia32_punpckhbw (v8qi, v8qi)
+Generates the @code{punpckhbw} machine instruction.
+@item v4hi __builtin_ia32_punpckhwd (v4hi, v4hi)
+Generates the @code{punpckhwd} machine instruction.
+@item v2si __builtin_ia32_punpckhdq (v2si, v2si)
+Generates the @code{punpckhdq} machine instruction.
+@item v8qi __builtin_ia32_punpcklbw (v8qi, v8qi)
+Generates the @code{punpcklbw} machine instruction.
+@item v4hi __builtin_ia32_punpcklwd (v4hi, v4hi)
+Generates the @code{punpcklwd} machine instruction.
+@item v2si __builtin_ia32_punpckldq (v2si, v2si)
+Generates the @code{punpckldq} machine instruction.
+
+@item v8qi __builtin_ia32_packsswb (v4hi, v4hi)
+Generates the @code{packsswb} machine instruction.
+@item v4hi __builtin_ia32_packssdw (v2si, v2si)
+Generates the @code{packssdw} machine instruction.
+@item v8qi __builtin_ia32_packuswb (v4hi, v4hi)
+Generates the @code{packuswb} machine instruction.
+
+@end table
+
+The following builtins are made available either with @option{-msse}, or
+with a combination of @option{-m3dnow} and @option{-march=athlon}.
+@table @code
+
+@item v4hi __builtin_ia32_pmulhuw (v4hi, v4hi)
+Generates the @code{pmulhuw} machine instruction.
+
+@item v8qi __builtin_ia32_pavgb (v8qi, v8qi)
+Generates the @code{pavgb} machine instruction.
+@item v4hi __builtin_ia32_pavgw (v4hi, v4hi)
+Generates the @code{pavgw} machine instruction.
+@item v4hi __builtin_ia32_psadbw (v8qi, v8qi)
+Generates the @code{psadbw} machine instruction.
+
+@item v8qi __builtin_ia32_pmaxub (v8qi, v8qi)
+Generates the @code{pmaxub} machine instruction.
+@item v4hi __builtin_ia32_pmaxsw (v4hi, v4hi)
+Generates the @code{pmaxsw} machine instruction.
+@item v8qi __builtin_ia32_pminub (v8qi, v8qi)
+Generates the @code{pminub} machine instruction.
+@item v4hi __builtin_ia32_pminsw (v4hi, v4hi)
+Generates the @code{pminsw} machine instruction.
+
+@item int __builtin_ia32_pextrw (v4hi, int)
+Generates the @code{pextrw} machine instruction.
+@item v4hi __builtin_ia32_pinsrw (v4hi, int, int)
+Generates the @code{pinsrw} machine instruction.
+
+@item int __builtin_ia32_pmovmskb (v8qi)
+Generates the @code{pmovmskb} machine instruction.
+@item void __builtin_ia32_maskmovq (v8qi, v8qi, char *)
+Generates the @code{maskmovq} machine instruction.
+@item void __buitlin_ia32_movntq (di *, di)
+Generates the @code{movntq} machine instruction.
+@item void __buitlin_ia32_sfence (void)
+Generates the @code{sfence} machine instruction.
+@item void __builtin_ia32_prefetch (char *, int selector)
+Generates a prefetch machine instruction, depending on the value of
+selector.  If @code{selector} is 0, it generates @code{prefetchnta}; for
+a value of 1, it generates @code{prefetcht0}; for a value of 2, it generates
+@code{prefetcht1}; and for a value of 3 it generates @code{prefetcht2}.
+
+@end table
+
+The following builtins are available when @option{-msse} is used.
+
+@table @code
+@item int __buitlin_ia32_comieq (v4sf, v4sf)
+Generates the @code{comiss} machine instruction and performs an equality
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_comineq (v4sf, v4sf)
+Generates the @code{comiss} machine instruction and performs an inequality
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_comilt (v4sf, v4sf)
+Generates the @code{comiss} machine instruction and performs a ``less than''
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_comile (v4sf, v4sf)
+Generates the @code{comiss} machine instruction and performs a ``less or
+equal'' comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_comigt (v4sf, v4sf)
+Generates the @code{comiss} machine instruction and performs a ``greater than''
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_comige (v4sf, v4sf)
+Generates the @code{comiss} machine instruction and performs a ``greater or
+equal'' comparison.  The return value is the truth value of that comparison.
+
+@item int __buitlin_ia32_ucomieq (v4sf, v4sf)
+Generates the @code{ucomiss} machine instruction and performs an equality
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_ucomineq (v4sf, v4sf)
+Generates the @code{ucomiss} machine instruction and performs an inequality
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_ucomilt (v4sf, v4sf)
+Generates the @code{ucomiss} machine instruction and performs a ``less than''
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_ucomile (v4sf, v4sf)
+Generates the @code{ucomiss} machine instruction and performs a ``less or
+equal'' comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_ucomigt (v4sf, v4sf)
+Generates the @code{ucomiss} machine instruction and performs a ``greater than''
+comparison.  The return value is the truth value of that comparison.
+@item int __buitlin_ia32_ucomige (v4sf, v4sf)
+Generates the @code{ucomiss} machine instruction and performs a ``greater or
+equal'' comparison.  The return value is the truth value of that comparison.
+
+@item v4sf __buitlin_ia32_addps (v4sf, v4sf)
+Generates the @code{addps} machine instruction.
+@item v4sf __buitlin_ia32_addss (v4sf, v4sf)
+Generates the @code{addss} machine instruction.
+@item v4sf __buitlin_ia32_subps (v4sf, v4sf)
+Generates the @code{subps} machine instruction.
+@item v4sf __buitlin_ia32_subss (v4sf, v4sf)
+Generates the @code{subss} machine instruction.
+@item v4sf __buitlin_ia32_mulps (v4sf, v4sf)
+Generates the @code{mulps} machine instruction.
+@item v4sf __buitlin_ia32_mulss (v4sf, v4sf)
+Generates the @code{mulss} machine instruction.
+@item v4sf __buitlin_ia32_divps (v4sf, v4sf)
+Generates the @code{divps} machine instruction.
+@item v4sf __buitlin_ia32_divss (v4sf, v4sf)
+Generates the @code{divss} machine instruction.
+
+@item v4si __buitlin_ia32_cmpeqps (v4sf, v4sf)
+Generates the @code{cmpeqps} machine instruction.
+@item v4si __buitlin_ia32_cmplts (v4sf, v4sf)
+Generates the @code{cmpltps} machine instruction.
+@item v4si __buitlin_ia32_cmpleps (v4sf, v4sf)
+Generates the @code{cmpleps} machine instruction.
+@item v4si __buitlin_ia32_cmpgtps (v4sf, v4sf)
+Generates the @code{cmpgtps} machine instruction.
+@item v4si __buitlin_ia32_cmpgeps (v4sf, v4sf)
+Generates the @code{cmpgeps} machine instruction.
+@item v4si __buitlin_ia32_cmpunordps (v4sf, v4sf)
+Generates the @code{cmpunodps} machine instruction.
+@item v4si __buitlin_ia32_cmpneqps (v4sf, v4sf)
+Generates the @code{cmpeqps} machine instruction.
+@item v4si __buitlin_ia32_cmpnltps (v4sf, v4sf)
+Generates the @code{cmpltps} machine instruction.
+@item v4si __buitlin_ia32_cmpnleps (v4sf, v4sf)
+Generates the @code{cmpleps} machine instruction.
+@item v4si __buitlin_ia32_cmpngtps (v4sf, v4sf)
+Generates the @code{cmpgtps} machine instruction.
+@item v4si __buitlin_ia32_cmpngeps (v4sf, v4sf)
+Generates the @code{cmpgeps} machine instruction.
+@item v4si __buitlin_ia32_cmpordps (v4sf, v4sf)
+Generates the @code{cmpunodps} machine instruction.
+
+@item v4si __buitlin_ia32_cmpeqss (v4sf, v4sf)
+Generates the @code{cmpeqss} machine instruction.
+@item v4si __buitlin_ia32_cmpltss (v4sf, v4sf)
+Generates the @code{cmpltss} machine instruction.
+@item v4si __buitlin_ia32_cmpless (v4sf, v4sf)
+Generates the @code{cmpless} machine instruction.
+@item v4si __buitlin_ia32_cmpgtss (v4sf, v4sf)
+Generates the @code{cmpgtss} machine instruction.
+@item v4si __buitlin_ia32_cmpgess (v4sf, v4sf)
+Generates the @code{cmpgess} machine instruction.
+@item v4si __buitlin_ia32_cmpunordss (v4sf, v4sf)
+Generates the @code{cmpunodss} machine instruction.
+@item v4si __buitlin_ia32_cmpneqss (v4sf, v4sf)
+Generates the @code{cmpeqss} machine instruction.
+@item v4si __buitlin_ia32_cmpnlts (v4sf, v4sf)
+Generates the @code{cmpltss} machine instruction.
+@item v4si __buitlin_ia32_cmpnless (v4sf, v4sf)
+Generates the @code{cmpless} machine instruction.
+@item v4si __buitlin_ia32_cmpngtss (v4sf, v4sf)
+Generates the @code{cmpgtss} machine instruction.
+@item v4si __buitlin_ia32_cmpngess (v4sf, v4sf)
+Generates the @code{cmpgess} machine instruction.
+@item v4si __buitlin_ia32_cmpordss (v4sf, v4sf)
+Generates the @code{cmpunodss} machine instruction.
+
+@item v4sf __buitlin_ia32_maxps (v4sf, v4sf)
+Generates the @code{maxps} machine instruction.
+@item v4sf __buitlin_ia32_maxsss (v4sf, v4sf)
+Generates the @code{maxss} machine instruction.
+@item v4sf __buitlin_ia32_minps (v4sf, v4sf)
+Generates the @code{minps} machine instruction.
+@item v4sf __buitlin_ia32_minsss (v4sf, v4sf)
+Generates the @code{minss} machine instruction.
+
+@item ti __buitlin_ia32_andps (ti, ti)
+Generates the @code{andps} machine instruction.
+@item ti __buitlin_ia32_andnps (ti, ti)
+Generates the @code{andnps} machine instruction.
+@item ti __buitlin_ia32_orps (ti, ti)
+Generates the @code{orps} machine instruction.
+@item ti __buitlin_ia32_xorps (ti, ti)
+Generates the @code{xorps} machine instruction.
+
+@item v4sf __buitlin_ia32_movps (v4sf, v4sf)
+Generates the @code{movps} machine instruction.
+@item v4sf __buitlin_ia32_movhlps (v4sf, v4sf)
+Generates the @code{movhlps} machine instruction.
+@item v4sf __buitlin_ia32_movlhps (v4sf, v4sf)
+Generates the @code{movlhps} machine instruction.
+@item v4sf __buitlin_ia32_unpckhps (v4sf, v4sf)
+Generates the @code{unpckhps} machine instruction.
+@item v4sf __buitlin_ia32_unpcklps (v4sf, v4sf)
+Generates the @code{unpcklps} machine instruction.
+
+@item v4sf __buitlin_ia32_cvtpi2ps (v4sf, v2si)
+Generates the @code{cvtpi2ps} machine instruction.
+@item v2si __buitlin_ia32_cvtps2pi (v4sf)
+Generates the @code{cvtps2pi} machine instruction.
+@item v4sf __buitlin_ia32_cvtsi2ss (v4sf, int)
+Generates the @code{cvtsi2ss} machine instruction.
+@item int __buitlin_ia32_cvtss2si (v4sf)
+Generates the @code{cvtsi2ss} machine instruction.
+@item v2si __buitlin_ia32_cvttps2pi (v4sf)
+Generates the @code{cvttps2pi} machine instruction.
+@item int __buitlin_ia32_cvttss2si (v4sf)
+Generates the @code{cvttsi2ss} machine instruction.
+
+@item v4sf __buitlin_ia32_rcpps (v4sf)
+Generates the @code{rcpps} machine instruction.
+@item v4sf __buitlin_ia32_rsqrtps (v4sf)
+Generates the @code{rsqrtps} machine instruction.
+@item v4sf __buitlin_ia32_sqrtps (v4sf)
+Generates the @code{sqrtps} machine instruction.
+@item v4sf __buitlin_ia32_rcpss (v4sf)
+Generates the @code{rcpss} machine instruction.
+@item v4sf __buitlin_ia32_rsqrtss (v4sf)
+Generates the @code{rsqrtss} machine instruction.
+@item v4sf __buitlin_ia32_sqrtss (v4sf)
+Generates the @code{sqrtss} machine instruction.
+
+@item v4sf __buitlin_ia32_shufps (v4sf, v4sf, int)
+Generates the @code{shufps} machine instruction.
+
+@item v4sf __buitlin_ia32_loadaps (float *)
+Generates the @code{movaps} machine instruction as a load from memory.
+@item void __buitlin_ia32_storeaps (float *, v4sf)
+Generates the @code{movaps} machine instruction as a store to memory.
+@item v4sf __buitlin_ia32_loadups (float *)
+Generates the @code{movups} machine instruction as a load from memory.
+@item void __buitlin_ia32_storeups (float *, v4sf)
+Generates the @code{movups} machine instruction as a store to memory.
+@item v4sf __buitlin_ia32_loadsss (float *)
+Generates the @code{movss} machine instruction as a load from memory.
+@item void __buitlin_ia32_storess (float *, v4sf)
+Generates the @code{movss} machine instruction as a store to memory.
+
+@item v4sf __buitlin_ia32_loadhps (v4sf, v2si *)
+Generates the @code{movhps} machine instruction as a load from memory.
+@item v4sf __buitlin_ia32_loadlps (v4sf, v2si *)
+Generates the @code{movlps} machine instruction as a load from memory
+@item void __buitlin_ia32_storehps (v4sf, v2si *)
+Generates the @code{movhps} machine instruction as a store to memory.
+@item void __buitlin_ia32_storelps (v4sf, v2si *)
+Generates the @code{movlps} machine instruction as a store to memory.
+
+@item void __buitlin_ia32_movntps (float *, v4sf)
+Generates the @code{movntps} machine instruction.
+@item int __buitlin_ia32_movmskps (v4sf)
+Generates the @code{movntps} machine instruction.
+
+@item void __buitlin_ia32_storeps1 (float *, v4sf)
+Generates the @code{movaps} machine instruction as a store to memory.
+Before storing, the value is modified with a @code{shufps} instruction
+so that the lowest of the four floating point elements is replicated
+across the entire vector that is stored.
+@item void __buitlin_ia32_storerps (float *, v4sf)
+Generates the @code{movaps} machine instruction as a store to memory.
+Before storing, the value is modified with a @code{shufps} instruction
+so that the order of the four floating point elements in the vector is
+reversed.
+@item v4sf __buitlin_ia32_loadps1 (float *)
+Generates a @code{movss} machine instruction to load a floating point
+value from memory, and a @code{shufps} instruction to replicate the
+loaded value across all four elements of the result vector.
+@item v4sf __buitlin_ia32_loadrps (float *)
+Generates a @code{movaps} machine instruction to load a vector from
+memory, and a @code{shufps} instruction to reverse the order of the
+four floating point elements in the result vector.
+@item v4sf __builtin_ia32_setps (float, float, float, float)
+Constructs a vector from four single floating point values.  The return
+value is equal to the value that would result from storing the four
+arguments into consecutive memory locations and then executing a
+@code{movaps} to load the vector from memory.
+@item v4sf __builtin_ia32_setps1 (float)
+Constructs a vector from a single floating point value by replicating
+it across all four elements of the result vector.
+@end table
 
 @item -mpush-args
 @itemx -mno-push-args
