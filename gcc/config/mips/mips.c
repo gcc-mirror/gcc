@@ -1719,7 +1719,7 @@ mips_move_1word (operands, insn, unsignedp)
 		    ret = "mflo\t%0";
 		}
 
-	      else if (ST_REG_P (regno1) && ISA_HAS_FP4)
+	      else if (ST_REG_P (regno1) && ISA_HAS_8CC)
 		ret = "li\t%0,1\n\tmovf\t%0,%.,%1";
 
 	      else
@@ -1728,7 +1728,7 @@ mips_move_1word (operands, insn, unsignedp)
 		  if (FP_REG_P (regno1))
 		    ret = "mfc1\t%0,%1";
 
-		  else if (regno1 == FPSW_REGNUM && ! ISA_HAS_FP4)
+		  else if (regno1 == FPSW_REGNUM && ! ISA_HAS_8CC)
 		    ret = "cfc1\t%0,$31";
 		}
 	    }
@@ -1755,7 +1755,7 @@ mips_move_1word (operands, insn, unsignedp)
 		}
 	    }
 
-	  else if (regno0 == FPSW_REGNUM && ! ISA_HAS_FP4)
+	  else if (regno0 == FPSW_REGNUM && ! ISA_HAS_8CC)
 	    {
 	      if (GP_REG_P (regno1))
 		{
@@ -2873,7 +2873,7 @@ gen_conditional_branch (operands, test_code)
 
     case CMP_SF:
     case CMP_DF:
-      if (! ISA_HAS_FP4)
+      if (! ISA_HAS_8CC)
 	reg = gen_rtx_REG (CCmode, FPSW_REGNUM);
       else
 	reg = gen_reg_rtx (CCmode);
@@ -4733,7 +4733,7 @@ override_options ()
 
 	  if (mode == CCmode)
 	    {
-	      if (! ISA_HAS_FP4)
+	      if (! ISA_HAS_8CC)
 		temp = (regno == FPSW_REGNUM);
 	      else
 		temp = (ST_REG_P (regno) || GP_REG_P (regno)
