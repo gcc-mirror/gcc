@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
-   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -36,12 +36,23 @@ extern char *output_mov_immediate ();
 extern char *output_multi_immediate ();
 extern char *output_return_instruction ();
 extern char *output_load_symbol ();
+extern char *emit_ldm_seq ();
+extern char *emit_stm_seq ();
 extern char *fp_immediate_constant ();
 extern struct rtx_def *gen_compare_reg ();
 extern struct rtx_def *arm_gen_store_multiple ();
 extern struct rtx_def *arm_gen_load_multiple ();
+extern struct rtx_def *gen_rotated_half_load ();
 
+enum arm_cond_code
+{
+  ARM_EQ = 0, ARM_NE, ARM_CS, ARM_CC, ARM_MI, ARM_PL, ARM_VS, ARM_VC,
+  ARM_HI, ARM_LS, ARM_GE, ARM_LT, ARM_GT, ARM_LE, ARM_AL, ARM_NV
+};
+extern enum arm_cond_code arm_current_cc;
 extern char *arm_condition_codes[];
+
+#define ARM_INVERSE_CONDITION_CODE(X)  ((enum arm_cond_code) (((int)X) ^ 1))
 
 /* This is needed by the tail-calling peepholes */
 extern int frame_pointer_needed;
@@ -1441,24 +1452,17 @@ do									\
    CC_Zmode should be used if only the Z flag is set correctly
    CCmode should be used otherwise. */
 
-#define EXTRA_CC_MODES CC_NOOVmode, CC_Zmode, CCFPmode, CCFPEmode
+#define EXTRA_CC_MODES CC_NOOVmode, CC_Zmode, CC_SWPmode, \
+  CCFPmode, CCFPEmode, CC_DNEmode, CC_DEQmode, CC_DLEmode, \
+  CC_DLTmode, CC_DGEmode, CC_DGTmode, CC_DLEUmode, CC_DLTUmode, \
+  CC_DGEUmode, CC_DGTUmode
 
-#define EXTRA_CC_NAMES "CC_NOOV", "CC_Z", "CCFP", "CCFPE"
+#define EXTRA_CC_NAMES "CC_NOOV", "CC_Z", "CC_SWP", "CCFP", "CCFPE", \
+  "CC_DNE", "CC_DEQ", "CC_DLE", "CC_DLT", "CC_DGE", "CC_DGT", "CC_DLEU", \
+  "CC_DLTU", "CC_DGEU", "CC_DGTU"
 
-#define SELECT_CC_MODE(OP,X,Y)				      		\
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
-   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)			\
-   : ((GET_MODE (X) == SImode)						\
-      && ((OP) == EQ || (OP) == NE || (OP) == LT || (OP) == GE)		\
-      && (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
-	  || GET_CODE (X) == AND || GET_CODE (X) == IOR			\
-	  || GET_CODE (X) == XOR || GET_CODE (X) == MULT		\
-	  || GET_CODE (X) == NOT || GET_CODE (X) == NEG			\
-	  || GET_CODE (X) == LSHIFTRT					\
-	  || GET_CODE (X) == ASHIFT || GET_CODE (X) == ASHIFTRT		\
-	  || GET_CODE (X) == ROTATERT || GET_CODE (X) == ZERO_EXTRACT)	\
-      ? CC_NOOVmode							\
-      : GET_MODE (X) == QImode ? CC_Zmode : CCmode))
+enum machine_mode arm_select_cc_mode ();
+#define SELECT_CC_MODE(OP,X,Y)  arm_select_cc_mode ((OP), (X), (Y))
 
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
 
@@ -1495,7 +1499,7 @@ extern int arm_compare_fp;
   {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
   {"multi_register_push", {PARALLEL}},					\
   {"cc_register", {REG}},						\
-  {"reversible_cc_register", {REG}},
+  {"dominant_cc_register", {REG}},
 
 
 
