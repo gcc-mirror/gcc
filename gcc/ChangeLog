@@ -1,5 +1,10 @@
 2002-02-09  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.h: Fix formatting.  Remove commented-out
+	definitions.
+
+2002-02-09  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.md (length): Correct the distance valid
 	for the short branch.
 
