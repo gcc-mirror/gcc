@@ -1,3 +1,8 @@
+2002-11-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_a_shift_length): Fix the insn
+	length computation when xor.l is output.
+
 2002-11-21  Jim Wilson  <wilson@redhat.com>
 
 	* config/rs6000/rs6000.c (function_arg): Set inner mode of SPE
