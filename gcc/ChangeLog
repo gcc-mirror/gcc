@@ -1,3 +1,8 @@
+2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac (gcc_cv_ld_as_needed): Use AC_CACHE_CHECK.
+	* configure: Regenerate.
+
 2004-04-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (i[34567]86-*-solaris2*): Default to DWARF-2
