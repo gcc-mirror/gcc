@@ -1,3 +1,13 @@
+2002-07-30  David Edelsohn  <edelsohn@gnu.org>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* rs6000.c (rs6000_expand_unop_builtin): Check icode not
+	CODE_FOR_nothing.  Change switch to if.
+	(rs6000_expand_binop_builtin): Same.
+	(rs6000_expand_builtin): Expand builtin if target support enabled.
+	(rs6000_init_builtins): Init builtin if target support enabled.
+	(rs6000_common_init_builtins): Check icode not CODE_FOR_nothing.
+
 2002-07-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c (cpp_unique_options): Define __GXX_ABI_VERSION, bump it to 101.
