@@ -1,3 +1,8 @@
+2003-02-10  Glen Nakamura  <glen@imodulo.com>
+		
+	* doc/extend.texi (C++98 Thread-Local Edits): Add missing @item
+	tag.
+
 Mon Feb 10 00:29:17 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (vector_move_operand): New predicate.
