@@ -1,3 +1,9 @@
+2004-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (zero_extendqidi2, zero_extendqidi2,
+	testdi_1_rex64, anddi_2, xordi_1_rex64, xordi_2_rex64): Remove
+	trailing whitespace from instructions.
+
 2004-02-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.ac: When generating auto-build.h, pass
