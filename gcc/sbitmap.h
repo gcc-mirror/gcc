@@ -97,6 +97,7 @@ extern void dump_sbitmap_vector 	PARAMS ((FILE *, const char *,
 extern sbitmap sbitmap_alloc		PARAMS ((unsigned int));
 extern sbitmap *sbitmap_vector_alloc	PARAMS ((unsigned int, unsigned int));
 extern void sbitmap_copy 		PARAMS ((sbitmap, sbitmap));
+extern int sbitmap_equal                PARAMS ((sbitmap, sbitmap));
 extern void sbitmap_zero		PARAMS ((sbitmap));
 extern void sbitmap_ones		PARAMS ((sbitmap));
 extern void sbitmap_vector_zero		PARAMS ((sbitmap *, unsigned int));
@@ -112,6 +113,7 @@ extern int sbitmap_a_and_b_or_c		PARAMS ((sbitmap, sbitmap, sbitmap,
 						 sbitmap));
 extern int sbitmap_a_and_b		PARAMS ((sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_or_b		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_xor_b              PARAMS ((sbitmap, sbitmap, sbitmap));
 extern int sbitmap_a_subset_b_p		PARAMS ((sbitmap, sbitmap));
 
 extern int sbitmap_first_set_bit	PARAMS ((sbitmap));

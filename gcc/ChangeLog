@@ -1,3 +1,15 @@
+2001-07-27  Daniel Berlin  <dan@cgsoftware.com>
+
+	* regclass.c (reg_scan_mark_refs): Increment REG_N_REFS when we
+	increment REG_N_SETS.
+
+2001-07-26  Daniel Berlin  <dan@cgsoftware.com>
+
+	* sbitmap.h: New prototype for sbitmap_a_xor_b.
+
+	* sbitmap.c (sbitmap_a_xor_b): New function.
+	ifdef the basic block stuff on IN_GCC.
+
 2001-07-29  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cppexp.c (parse_defined): Always record the macro name.

@@ -2427,7 +2427,10 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 
       if (GET_CODE (dest) == REG
 	  && REGNO (dest) >= min_regno)
-	REG_N_SETS (REGNO (dest))++;
+	{
+	  REG_N_SETS (REGNO (dest))++;
+	  REG_N_REFS (REGNO (dest))++;
+	}
 
       /* If this is setting a pseudo from another pseudo or the sum of a
 	 pseudo and a constant integer and the other pseudo is known to be
