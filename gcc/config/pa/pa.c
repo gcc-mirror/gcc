@@ -639,11 +639,13 @@ legitimize_pic_address (orig, mode, reg)
 
       if (flag_pic == 2)
 	{
-	  emit_insn (gen_pic2_highpart (reg, pic_offset_table_rtx, orig));
+	  emit_move_insn (reg,
+			  gen_rtx_PLUS (word_mode, pic_offset_table_rtx,
+					gen_rtx_HIGH (word_mode, orig)));
 	  pic_ref
 	    = gen_rtx_MEM (Pmode,
 			   gen_rtx_LO_SUM (Pmode, reg,
-					   gen_rtx_UNSPEC (SImode,
+					   gen_rtx_UNSPEC (Pmode,
 							   gen_rtvec (1, orig),
 							   0)));
 	}

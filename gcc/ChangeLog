@@ -1,5 +1,10 @@
 Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (legitimize_address): Consistently use Pmode rather than
+	SImode.  Do not call gen_pic2_highpart directly anymore.
+	* pa.md (pic2_highpart): No longer a named pattern.
+	(pic2_lo_sum): Similarly.  Reformat to make more readable.
+
 	* pa.md (call, call_value): Use "word_mode" instead of "SImode" as
 	needed.
 
