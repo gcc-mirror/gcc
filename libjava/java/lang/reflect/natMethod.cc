@@ -30,6 +30,7 @@ details.  */
 #include <java/lang/Double.h>
 #include <java/lang/IllegalAccessException.h>
 #include <java/lang/IllegalArgumentException.h>
+#include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/VirtualMachineError.h>
@@ -480,7 +481,27 @@ _Jv_CallAnyMethodA (jobject obj,
     {
       _Jv_VTable *vtable = *(_Jv_VTable **) obj;
       if (iface == NULL)
-	ncode = vtable->get_method (meth->index);
+	{
+	  if (is_jni_call && Modifier::isAbstract (meth->accflags))
+	    {
+	      // With JNI we don't know if this is an interface call
+	      // or a call to an abstract method.  Look up the method
+	      // by name, the slow way.
+	      _Jv_Method *concrete_meth
+		= _Jv_LookupDeclaredMethod (vtable->clas,
+					    meth->name,
+					    meth->signature,
+					    NULL);
+	      if (concrete_meth == NULL
+		  || concrete_meth->ncode == NULL
+		  || Modifier::isAbstract(concrete_meth->accflags))
+		throw new java::lang::IncompatibleClassChangeError
+		  (_Jv_GetMethodString (vtable->clas, meth->name));
+	      ncode = concrete_meth->ncode;
+	    }
+	  else
+	    ncode = vtable->get_method (meth->index);
+	}
       else
 	ncode = _Jv_LookupInterfaceMethodIdx (vtable->clas, iface,
 					      meth->index);
