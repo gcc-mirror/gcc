@@ -1,3 +1,8 @@
+2001-04-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/compile/20000629-1.x: Remove - error
+	has been fixed.
+
 Thu Apr 26 11:15:12 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.dg/special/initp1.C: Moved here from g++.old-deja/g++.ext.
