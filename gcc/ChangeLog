@@ -1,3 +1,10 @@
+2004-07-16  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md: Changed every occurence of BASE_REGISTER
+	to BASE_REGNUM.
+	* config/s390/s390.c: Likewise.
+	* config/s390/s390.h: Likewise.
+
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (addsi3, adddi3): Remove special handling
