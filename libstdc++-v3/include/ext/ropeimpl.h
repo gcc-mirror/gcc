@@ -51,6 +51,7 @@
 
 #include <ext/algorithm> // For copy_n and lexicographical_compare_3way
 #include <ext/memory> // For uninitialized_copy_n
+#include <ext/numeric> // For power
 
 namespace __gnu_cxx
 {
