@@ -666,7 +666,7 @@ changequote([,])dnl
 		tmake_file=arm/t-bare
 		;;
 	arm-*-vxworks*)
-		tm_file="arm/coff.h arm/vxarm.h"
+		tm_file=arm/vxarm.h
 		tmake_file=arm/t-bare
 		;;
 changequote(,)dnl
