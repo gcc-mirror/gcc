@@ -1392,9 +1392,18 @@ precondition_loop_p (loop, initial_value, final_value, increment, mode)
 
   if (loop_info->n_iterations > 0)
     {
-      *initial_value = const0_rtx;
-      *increment = const1_rtx;
-      *final_value = GEN_INT (loop_info->n_iterations);
+      if (INTVAL (loop_info->increment) > 0)
+	{
+	  *initial_value = const0_rtx;
+	  *increment = const1_rtx;
+	  *final_value = GEN_INT (loop_info->n_iterations);
+	}
+      else
+	{
+	  *initial_value = GEN_INT (loop_info->n_iterations);
+	  *increment = constm1_rtx;
+	  *final_value = const0_rtx;
+	}
       *mode = word_mode;
 
       if (loop_dump_stream)
