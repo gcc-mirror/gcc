@@ -1285,7 +1285,7 @@ extern enum rtx_code reverse_condition_maybe_unordered PARAMS ((enum rtx_code));
 extern enum rtx_code swap_condition	PARAMS ((enum rtx_code));
 extern enum rtx_code unsigned_condition	PARAMS ((enum rtx_code));
 extern enum rtx_code signed_condition	PARAMS ((enum rtx_code));
-extern void mark_jump_label		PARAMS ((rtx, rtx, int, int));
+extern void mark_jump_label		PARAMS ((rtx, rtx, int));
 
 /* In jump.c */
 extern rtx squeeze_notes		PARAMS ((rtx, rtx));
@@ -1715,7 +1715,7 @@ extern int rtx_renumbered_equal_p	PARAMS ((rtx, rtx));
 extern int true_regnum			PARAMS ((rtx));
 extern int redirect_jump_1		PARAMS ((rtx, rtx));
 extern int redirect_jump		PARAMS ((rtx, rtx, int));
-extern void jump_optimize		PARAMS ((rtx, int, int, int));
+extern void jump_optimize		PARAMS ((rtx, int, int));
 extern void jump_optimize_minimal	PARAMS ((rtx));
 extern void rebuild_jump_labels		PARAMS ((rtx));
 extern void thread_jumps		PARAMS ((rtx, int, int));
@@ -1729,8 +1729,6 @@ extern int condjump_in_parallel_p	PARAMS ((rtx));
 extern void never_reached_warning	PARAMS ((rtx));
 
 /* Flags for jump_optimize() */
-#define JUMP_CROSS_JUMP			1
-#define JUMP_CROSS_JUMP_DEATH_MATTERS	2
 #define JUMP_NOOP_MOVES			1
 #define JUMP_AFTER_REGSCAN		1
 
