@@ -137,11 +137,20 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
       switch ((*ptr)->type)
 	{
 	case FFI_TYPE_FLOAT:
-	case FFI_TYPE_DOUBLE:
-	  if ((*ptr)->type == FFI_TYPE_FLOAT)
-	    double_tmp = *(float *)*p_argv;
+	  double_tmp = *(float *)*p_argv;
+	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
+	    {
+	      *(float *)next_arg = (float)double_tmp;
+	      next_arg += 1;
+	    }
 	  else
-	    double_tmp = *(double *)*p_argv;
+	    *fpr_base++ = double_tmp;
+	  fparg_count++;
+	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
+	  break;
+
+	case FFI_TYPE_DOUBLE:
+	  double_tmp = *(double *)*p_argv;
 
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
 	    {
@@ -320,6 +329,10 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       switch ((*ptr)->type)
 	{
 	case FFI_TYPE_FLOAT:
+	  fparg_count++;
+	  /* floating singles are not 8-aligned on stack */
+	  break;
+
 	case FFI_TYPE_DOUBLE:
 	  fparg_count++;
 	  /* If this FP arg is going on the stack, it must be
@@ -612,20 +625,15 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
 	case FFI_TYPE_FLOAT:
 	    /* unfortunately float values are stored as doubles
              * in the ffi_closure_SYSV code (since we don't check
-             * the type in that routine).  This is also true
-             * of floats passed on the outgoing parameter stack.
-             * Also, on the outgoing stack all values are aligned
-             * to 8
-             *
-             * Don't you just love the simplicity of this ABI!
+             * the type in that routine).
              */
 
           /* there are 8 64bit floating point registers */
 
           if (nf < 8) {
-	     temp = *(double*)pfr;
+             temp = *(double*)pfr;
              *(float*)pfr = (float)temp;
-	     avalue[i] = pfr;
+             avalue[i] = pfr;
              nf++;
              pfr+=2;
           } else {
@@ -634,12 +642,9 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
              * parameter stack.  This is probably a really
              * naughty thing to do but...
              */
-	     if (((long)pst) & 4) pst++;
-	     temp = *(double*)pst;
-             *(float*)pst = (float)temp;
 	     avalue[i] = pst;
              nf++;
-             pst+=2;
+             pst+=1;
           }
 	  break;
 
