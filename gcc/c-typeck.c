@@ -7125,7 +7125,6 @@ c_start_case (exp)
 	}
       else
 	{
-	  tree index;
 	  type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
 	  if (warn_traditional && !in_system_header
@@ -7135,14 +7134,6 @@ c_start_case (exp)
 
 	  exp = default_conversion (exp);
 	  type = TREE_TYPE (exp);
-	  index = get_unwidened (exp, NULL_TREE);
-	  /* We can't strip a conversion from a signed type to an
-	     unsigned, because if we did, int_fits_type_p would do the
-	     wrong thing when checking case values for being in range,
-	     and it's too hard to do the right thing.  */
-	  if (TREE_UNSIGNED (TREE_TYPE (exp))
-	      == TREE_UNSIGNED (TREE_TYPE (index)))
-	    exp = index;
 	}
     }
 

@@ -1,5 +1,10 @@
 2001-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-typeck.c (c_start_case): Don't strip conversions from the
+	controlling expression.  Partially fixes PR c/2454.
+
+2001-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* Makefile.in (USER_H): Remove proto.h.
 	* config.gcc (c*-convex-*): Set extra_headers=proto.h.
 
