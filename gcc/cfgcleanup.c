@@ -1897,7 +1897,8 @@ cleanup_cfg (int mode)
 						 PROP_DEATH_NOTES
 						 | PROP_SCAN_DEAD_CODE
 						 | PROP_KILL_DEAD_CODE
-						 | PROP_LOG_LINKS))
+			  			 | ((mode & CLEANUP_LOG_LINKS)
+						    ? PROP_LOG_LINKS : 0)))
 	    break;
 	}
       else if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_PRE_SIBCALL))

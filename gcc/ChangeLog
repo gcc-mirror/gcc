@@ -1,5 +1,10 @@
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
+	* basic-block.h (PROP_POSTRELOAD): New macro.
+	(CLEANUP_LOG_LINKS): New.
+	* cfgcleanup.c (cleanup_cfg): Only PROP_LOG_LINKS when asked to.
+	* toplev.c (rest_of_handle_life):  Preserve LOG_LINKS trought cleanup_cfg.
+
 	* alloc-pool.c: Include hashtab.h
 	(alloc_pool_descriptor): New structure
 	(alloc_pool_hash): New global variable.
