@@ -13671,8 +13671,7 @@ start_function (declspecs, declarator, attrs, flags)
   if (!processing_template_decl && !(flags & SF_PRE_PARSED))
     {
       /* A specialization is not used to guide overload resolution.  */
-      if ((flag_guiding_decls
-	   || !DECL_TEMPLATE_SPECIALIZATION (decl1))
+      if (!DECL_TEMPLATE_SPECIALIZATION (decl1)
 	  && ! DECL_FUNCTION_MEMBER_P (decl1))
 	decl1 = pushdecl (decl1);
       else

@@ -105,7 +105,7 @@ in the following sections.
 @smallexample
 -fno-access-control -fcheck-new -fconserve-space
 -fdollars-in-identifiers -fno-elide-constructors -fexternal-templates
--ffor-scope -fno-for-scope -fno-gnu-keywords -fguiding-decls -fhonor-std
+-ffor-scope -fno-for-scope -fno-gnu-keywords -fhonor-std
 -fhuge-objects -fno-implicit-templates -finit-priority
 -fno-implement-inlines -fname-mangling-version-@var{n}
 -fno-default-inline -fno-operator-names -fno-optional-diags -fpermissive
@@ -1103,20 +1103,6 @@ Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier. You can use the keyword @code{__typeof__} instead.  
 @samp{-ansi} implies @samp{-fno-gnu-keywords}.
 
-@item -fguiding-decls
-Treat a function declaration with the same type as a potential function
-template instantiation as though it declares that instantiation, not a
-normal function.  If a definition is given for the function later in the
-translation unit (or another translation unit if the target supports
-weak symbols), that definition will be used; otherwise the template will
-be instantiated.  This behavior reflects the C++ language prior to
-September 1996, when guiding declarations were removed.
-
-This option implies @samp{-fname-mangling-version-0}, and will not work
-with other name mangling versions.  Like all options that change the
-ABI, all C++ code, @emph{including libgcc.a} must be built with the same
-setting of this option.
-
 @item -fhonor-std
 Treat the @code{namespace std} as a namespace, instead of ignoring
 it. For compatibility with earlier versions of g++, the compiler will,
@@ -1328,10 +1314,9 @@ could be interpreted as a particular specialization of a templatized
 function. Because this non-conforming behavior is no longer the default
 behavior for g++, @samp{-Wnon-template-friend} allows the compiler to
 check existing code for potential trouble spots, and is on by default.
-This new compiler behavior can also be turned off with the flag
-@samp{-fguiding-decls}, which activates the older, non-specification
-compiler code, or with @samp{-Wno-non-template-friend} which keeps the
-conformant compiler code but disables the helpful warning.
+This new compiler behavior can be turned off with
+@samp{-Wno-non-template-friend} which keeps the conformant compiler code
+but disables the helpful warning.
 
 @item -Wold-style-cast (C++ only)
 Warn if an old-style (C-style) cast is used within a C++ program.  The

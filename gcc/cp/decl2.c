@@ -95,6 +95,7 @@ static tree prune_vars_needing_no_initialization PARAMS ((tree));
 static void write_out_vars PARAMS ((tree));
 static void import_export_class	PARAMS ((tree));
 static tree key_method PARAMS ((tree));
+static int compare_options PARAMS ((const PTR, const PTR));
 
 extern int current_class_depth;
 
@@ -247,7 +248,7 @@ int flag_const_strings = 1;
 /* If non-NULL, dump the tree structure for the entire translation
    unit to this file.  */
 
-char *flag_dump_translation_unit = 0;
+const char *flag_dump_translation_unit = 0;
 
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
@@ -471,9 +472,6 @@ int max_tinst_depth = 17;
    arguments.  */
 int name_mangling_version = 2;
 
-/* Nonzero means that guiding declarations are allowed.  */
-int flag_guiding_decls;
-
 /* Nonzero if wchar_t should be `unsigned short' instead of whatever it
    would normally be, for use with WINE.  */
 int flag_short_wchar;
@@ -561,6 +559,28 @@ lang_f_options[] =
   {"xref", &flag_gnu_xref, 1}
 };
 
+/* The list of `-f' options that we no longer support.  The `-f'
+   prefix is not given in this table.  The `-fno-' variants are not
+   listed here.  This table must be kept in alphabetical order.  */
+static const char *unsupported_options[] = {
+  "all-virtual",
+  "enum-int-equiv",
+  "guiding-decls"
+  "nonnull-objects",
+  "this-is-variable",
+};
+
+/* Compare two option strings, pointed two by P1 and P2, for use with
+   bsearch.  */
+
+static int
+compare_options (p1, p2)
+     const PTR p1;
+     const PTR p2;
+{
+  return strcmp (*((char **) p1), *((char **) p2));
+}
+
 /* Decode the string P as a language-specific option.
    Return the number of strings consumed for a valid option.
    Otherwise return 0.  Should not complain if it does not
@@ -576,7 +596,7 @@ lang_decode_option (argc, argv)
      char **argv;
 {
   int strings_processed;
-  char *p = argv[0];
+  const char *p = argv[0];
 #if USE_CPPLIB
   strings_processed = cpp_handle_option (&parse_in, argc, argv);
 #else
@@ -591,19 +611,36 @@ lang_decode_option (argc, argv)
 	 P's value is the option sans `-f'.
 	 Search for it in the table of options.  */
       const char *option_value = NULL;
+      const char *positive_option;
       size_t j;
 
       p += 2;
       /* Try special -f options.  */
 
+      /* See if this is one of the options no longer supported.  We
+	 used to support these options, so we continue to accept them,
+	 with a warning.  */
+      if (strncmp (p, "no-", strlen ("no-")) == 0)
+	positive_option = p + strlen ("no-");
+      else
+	positive_option = p;
+
+      /* If the option is present, issue a warning.  Indicate to our
+	 caller that the option was processed successfully.  */
+      if (bsearch (&positive_option, 
+		   unsupported_options, 
+		   sizeof (unsupported_options[0]),
+		   (sizeof (unsupported_options) 
+		    / sizeof (unsupported_options[0])),
+		   compare_options))
+	{
+	  warning ("-f%s is no longer supported", p);
+	  return 1;
+	}
+
       if (!strcmp (p, "handle-exceptions")
 	  || !strcmp (p, "no-handle-exceptions"))
 	warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
-      else if (!strcmp (p, "all-virtual")
-	       || !strcmp (p, "enum-int-equiv")
-	       || !strcmp (p, "no-nonnull-objects")
-	       || !strcmp (p, "this-is-variable"))
-	warning ("-f%s is no longer supported", p);
       else if (! strcmp (p, "alt-external-templates"))
 	{
 	  flag_external_templates = 1;
@@ -617,13 +654,6 @@ lang_decode_option (argc, argv)
 	  flag_use_repository = 1;
 	  flag_implicit_templates = 0;
 	}
-      else if (!strcmp (p, "guiding-decls"))
-	{
-	  flag_guiding_decls = 1;
-	  name_mangling_version = 0;
-	}
-      else if (!strcmp (p, "no-guiding-decls"))
-	flag_guiding_decls = 0;
       else if (!strcmp (p, "external-templates"))
         {
           flag_external_templates = 1;

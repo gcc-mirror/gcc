@@ -1,5 +1,7 @@
 *** Changes since GCC 2.95:
 
+* Support for guiding declarations has been removed.
+
 * G++ now supports importing member functions from base classes with a
   using-declaration.
 

@@ -2470,14 +2470,6 @@ build_user_type_conversion_1 (totype, expr, flags)
   for (p = &(cand->second_conv); TREE_CODE (*p) != IDENTITY_CONV; )
     p = &(TREE_OPERAND (*p, 0));
 
-  /* Pedantically, normal function declarations are never considered
-     to refer to template instantiations, so we only do this with
-     -fguiding-decls.  */ 
-  if (flag_guiding_decls && templates && ! cand->template 
-      && !DECL_INITIAL (cand->fn) 
-      && TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE)
-    add_maybe_template (cand->fn, templates);
-
   *p = build
     (USER_CONV,
      (DECL_CONSTRUCTOR_P (cand->fn)
@@ -2592,13 +2584,6 @@ build_new_function_call (fn, args)
 	  print_z_candidates (candidates);
 	  return error_mark_node;
 	}
-
-      /* Pedantically, normal function declarations are never considered
-	 to refer to template instantiations, so we only do this with
-	 -fguiding-decls.  */
-      if (flag_guiding_decls && templates && ! cand->template 
-	  && ! DECL_INITIAL (cand->fn))
-	add_maybe_template (cand->fn, templates);
 
       return build_over_call (cand, args, LOOKUP_NORMAL);
     }
@@ -3387,14 +3372,6 @@ build_new_op (code, flags, arg1, arg2, arg3)
 			 ? candidates->next->fn
 			 : candidates->fn);
 	}
-
-      /* Pedantically, normal function declarations are never considered
-	 to refer to template instantiations, so we only do this with
-	 -fguiding-decls.  */ 
-      if (flag_guiding_decls && templates && ! cand->template 
-	  && ! DECL_INITIAL (cand->fn)
-	  && TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE)
-	add_maybe_template (cand->fn, templates);
 
       return build_over_call
 	(cand,
@@ -4460,13 +4437,6 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       && ((instance == current_class_ref && (dtor_label || ctor_label))
 	  || resolves_to_fixed_type_p (instance, 0)))
     flags |= LOOKUP_NONVIRTUAL;
-
-  /* Pedantically, normal function declarations are never considered
-     to refer to template instantiations, so we only do this with
-     -fguiding-decls.  */ 
-  if (flag_guiding_decls && templates && ! cand->template 
-      && ! DECL_INITIAL (cand->fn))
-    add_maybe_template (cand->fn, templates);
 
   return build_over_call
     (cand,
