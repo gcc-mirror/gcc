@@ -1,3 +1,7 @@
+Tue Oct 12 22:28:10 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* (RELOCATION_VALUE_1): Fixed integer value from 0 to 1.
+
 1999-10-07  Anthony Green  <green@cygnus.com>
 
 	* jcf-write.c (generate_classfile): Use UNSAFE_PUTx in cases

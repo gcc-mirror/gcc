@@ -187,7 +187,7 @@ struct jcf_relocation
 };
 
 #define RELOCATION_VALUE_0 ((HOST_WIDE_INT)0)
-#define RELOCATION_VALUE_1 ((HOST_WIDE_INT)0)
+#define RELOCATION_VALUE_1 ((HOST_WIDE_INT)1)
 
 /* State for single catch clause. */
 
