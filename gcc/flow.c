@@ -1802,6 +1802,9 @@ flow_delete_insn (insn)
   else
     set_last_insn (prev);
 
+  if (GET_CODE (insn) == CODE_LABEL)
+    remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
+
   /* If deleting a jump, decrement the use count of the label.  Deleting
      the label itself should happen in the normal course of block merging.  */
   if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))

@@ -1,3 +1,13 @@
+Mon Apr 12 03:11:30 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (flow_delete_insn): If we delete a CODE_LABEL, also remove
+	it from the nonlocal_goto_handler_labels list.
+	* jump.c (delete_insn): Likewise.
+	(jump_optimize_1): Also recompute LABEL_NUSES when we are just
+	marking labels.
+	* rtl.h (remove_node_from_expr_list): Declare.
+	* rtlanal.c (remove_node_from_expr_list): New function.
+
 Mon Apr 12 02:37:02 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* reg-stack.c: Update comment, include varray.h.
