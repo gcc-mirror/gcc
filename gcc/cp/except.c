@@ -38,7 +38,6 @@ Boston, MA 02111-1307, USA.  */
 
 static void push_eh_cleanup PROTO((void));
 static tree build_eh_type_type PROTO((tree));
-static tree build_eh_type PROTO((tree));
 static tree call_eh_info PROTO((void));
 static void push_eh_info PROTO((void));
 static tree get_eh_info PROTO((void));
@@ -333,9 +332,6 @@ static tree
 build_eh_type_type (type)
      tree type;
 {
-  const char *typestring;
-  tree exp;
-
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -346,22 +342,16 @@ build_eh_type_type (type)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  if (flag_rtti)
-    return build1 (ADDR_EXPR, ptr_type_node, get_typeid_1 (type));
-
-  typestring = build_overload_name (type, 1, 1);
-  exp = combine_strings (build_string (strlen (typestring)+1, typestring));
-  return build1 (ADDR_EXPR, ptr_type_node, exp);
+  return build1 (ADDR_EXPR, ptr_type_node, get_typeid_1 (type));
 }
 
-/* Build the address of a runtime type for use in the runtime matching
-   field of the new exception model */
+/* Build the address of a typeinfo function for use in the runtime
+   matching field of the new exception model */
 
 static tree
 build_eh_type_type_ref (type)
      tree type;
 {
-  const char *typestring;
   tree exp;
 
   if (type == error_mark_node)
@@ -374,39 +364,10 @@ build_eh_type_type_ref (type)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  push_permanent_obstack ();
+  exp = get_tinfo_fn (type);
+  exp = build1 (ADDR_EXPR, ptr_type_node, exp);
 
-  if (flag_rtti)
-    {
-      exp = get_tinfo_fn (type);
-      TREE_USED (exp) = 1;
-      mark_inline_for_output (exp);
-      exp = build1 (ADDR_EXPR, ptr_type_node, exp);
-    }
-  else
-    {
-      typestring = build_overload_name (type, 1, 1);
-      exp = combine_strings (build_string (strlen (typestring)+1, typestring));
-      exp = build1 (ADDR_EXPR, ptr_type_node, exp);
-    }
-  pop_obstacks ();
   return (exp);
-}
-
-
-/* Build a type value for use at runtime for a exp that is thrown or
-   matched against by the exception handling system.  */
-
-static tree
-build_eh_type (exp)
-     tree exp;
-{
-  if (flag_rtti)
-    {
-      exp = build_typeid (exp);
-      return build1 (ADDR_EXPR, ptr_type_node, exp);
-    }
-  return build_eh_type_type (TREE_TYPE (exp));
 }
 
 /* This routine is called to mark all the symbols representing runtime
@@ -859,7 +820,7 @@ expand_throw (exp)
 	     (NULL_TREE, integer_type_node, void_list_node))));
 
       if (TYPE_PTR_P (TREE_TYPE (exp)))
-	throw_type = build_eh_type (exp);
+	throw_type = build_eh_type_type (TREE_TYPE (exp));
       else
 	{
 	  tree object, ptr;
@@ -907,7 +868,7 @@ expand_throw (exp)
 	  finish_cleanup_try_block (try_block);
 	  finish_cleanup (build_terminate_handler (), try_block);
 
-	  throw_type = build_eh_type (object);
+	  throw_type = build_eh_type_type (TREE_TYPE (object));
 
 	  if (TYPE_HAS_DESTRUCTOR (TREE_TYPE (object)))
 	    {

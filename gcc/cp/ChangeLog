@@ -1,5 +1,16 @@
 1999-09-29  Jason Merrill  <jason@yorick.cygnus.com>
 
+	Support normal type_info-based EH mechanisms with -fno-rtti.
+	* except.c (build_eh_type_type): Remove special -fno-rtti handling.
+	(build_eh_type_type_ref): Likewise.
+	(build_eh_type): Remove.
+	(expand_throw): Call build_eh_type_type, not build_eh_type.
+	* decl2.c (import_export_decl): Don't associate the tinfo fn with
+	the vtable if -fno-rtti.
+	* decl.c (init_decl_processing): Always init_rtti_processing.
+
+	* rtti.c (get_typeid): Don't complain about -fno-rtti.
+
 	* class.c (class_cache_obstack, class_obstack): Remove.
 	(init_class_processing): Don't initialize class_obstack.
 	(push_cache_obstack): Remove.

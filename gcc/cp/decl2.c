@@ -2685,6 +2685,10 @@ import_export_decl (decl)
 
       if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
 	  && TYPE_VIRTUAL_P (ctype)
+	  /* If -fno-rtti, we're not necessarily emitting this stuff with
+	     the class, so go ahead and emit it now.  This can happen
+	     when a class is used in exception handling.  */
+	  && flag_rtti
 	  /* If the type is a cv-qualified variant of a type, then we
 	     must emit the tinfo function in this translation unit
 	     since it will not be emitted when the vtable for the type
