@@ -843,6 +843,11 @@ final_end_function (first, file, optimize)
     sdbout_end_function (last_linenum);
 #endif
 
+#ifdef DWARF_DEBUGGING_INFO
+  if (write_symbols == DWARF_DEBUG)
+    dwarfout_end_function ();
+#endif
+
 #ifdef XCOFF_DEBUGGING_INFO
   if (write_symbols == XCOFF_DEBUG)
     xcoffout_end_function (file, last_linenum);
@@ -1010,6 +1015,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #ifdef XCOFF_DEBUGGING_INFO
 	  if (write_symbols == XCOFF_DEBUG)
 	    xcoffout_begin_function (file, last_linenum);
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+	  if (write_symbols == DWARF_DEBUG)
+	    dwarfout_begin_function ();
 #endif
 	  break;
 	}
