@@ -1,3 +1,13 @@
+2004-04-11  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg):  Tweak
+	calling convention to allow a NULL_TREE to be returned.  Factor
+	sanity checks from callers, return NULL_TREE when appropriate.
+	(fold): Handle COMPOUND_EXPR operands of binary expressions
+	before COND_EXPR operands.  Use reorder_operands_p(a,b) to check
+	whether a op (b,c) can be rewritten as (b, a op c).  Simplify
+	calls to fold_binary_op_with_conditional_arg.
+
 2004-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/mips/iris5.h (current_section_flags):  Add
