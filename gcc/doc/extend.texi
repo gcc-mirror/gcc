@@ -5769,7 +5769,18 @@ same type as the variable it is initializing.
 
 @item
 If @code{signed} or @code{unsigned} is omitted, the vector type defaults
-to @code{signed}.
+to @code{signed} for @code{vector int} or @code{vector short} and to
+@code{unsigned} for @code{vector char}.
+
+@item
+Compiling with @option{-maltivec} adds keywords @code{__vector},
+@code{__pixel}, and @code{__bool}.  Macros @option{vector},
+@code{pixel}, and @code{bool} are defined in @code{<altivec.h>} and can
+be undefined.
+
+@item
+GCC allows using a @code{typedef} name as the type specifier for a
+vector type.
 
 @item
 For C, overloaded functions are implemented with macros so the following
