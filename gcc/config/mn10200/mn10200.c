@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10200 series
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -37,6 +37,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "ggc.h"
+#include "toplev.h"
+#include "tm_p.h"
 
 /* Global registers known to hold the value zero.
 
@@ -57,6 +59,8 @@ Boston, MA 02111-1307, USA.  */
    function.  */
 rtx zero_dreg;
 rtx zero_areg;
+
+static void count_tst_insns PARAMS ((int *));
 
 /* Note whether or not we need an out of line epilogue.  */
 static int out_of_line_epilogue;
@@ -486,7 +490,7 @@ total_frame_size ()
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (regs_ever_live[i] && !call_used_regs[i] && ! fixed_regs[i]
+      if ((regs_ever_live[i] && !call_used_regs[i] && ! fixed_regs[i])
 	  || (i == FRAME_POINTER_REGNUM && frame_pointer_needed))
 	size += 4;
     }
@@ -665,7 +669,7 @@ expand_prologue ()
   for (i = 0, offset = outgoing_args_size;
        i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (regs_ever_live[i] && !call_used_regs[i] && ! fixed_regs[i]
+      if ((regs_ever_live[i] && !call_used_regs[i] && ! fixed_regs[i])
 	  || (i == FRAME_POINTER_REGNUM && frame_pointer_needed))
 	{
 	  int regno;
@@ -757,7 +761,7 @@ expand_epilogue ()
   /* Restore each register.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (regs_ever_live[i] && !call_used_regs[i] && ! fixed_regs[i]
+      if ((regs_ever_live[i] && !call_used_regs[i] && ! fixed_regs[i])
 	  || (i == FRAME_POINTER_REGNUM && frame_pointer_needed))
 	{
 	  int regno;
@@ -860,7 +864,7 @@ notice_update_cc (body, insn)
 int
 call_address_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 }
@@ -870,7 +874,7 @@ call_address_operand (op, mode)
 int
 constant_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == MEM && CONSTANT_ADDRESS_P (XEXP (op, 0));
 }
@@ -899,8 +903,6 @@ secondary_reload_class (class, mode, in, input)
      rtx in;
      int input;
 {
-  int regno;
-
   /* Memory loads less than a full word wide can't have an
      address or stack pointer destination.  They must use
      a data register as an intermediate register.  */
@@ -957,7 +959,7 @@ secondary_reload_class (class, mode, in, input)
 int
 nshift_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (x))
     {
@@ -1034,7 +1036,7 @@ enum shift_mode
 
 struct shift_insn
 {
-  char *assembler;
+  const char *assembler;
   int cc_valid;
 };
 
@@ -1059,6 +1061,10 @@ static const struct shift_insn shift_one[3][3] =
       { "asr\t%0", CC_NO_CARRY },
   },
 };
+
+static enum shift_alg get_shift_alg PARAMS ((enum shift_type,
+					     enum machine_mode, int,
+					     const char **, int *));
 
 /* Given CPU, MODE, SHIFT_TYPE, and shift count COUNT, determine the best
    algorithm for doing the shift.  The assembler code is stored in ASSEMBLER.
@@ -1227,15 +1233,14 @@ get_shift_alg (shift_type, mode, count, assembler_p, cc_valid_p)
 
 /* Emit the assembler code for doing shifts.  */
 
-char *
+const char *
 emit_a_shift (insn, operands)
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
      rtx *operands;
 {
   static int loopend_lab;
-  char *assembler;
+  const char *assembler;
   int cc_valid;
-  rtx inside = PATTERN (insn);
   rtx shift = operands[3];
   enum machine_mode mode = GET_MODE (shift);
   enum rtx_code code = GET_CODE (shift);
@@ -1487,7 +1492,7 @@ mn10200_va_arg (valist, type)
   return force_reg (Pmode, expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL));
 }
 
-char *
+const char *
 output_tst (operand, insn)
      rtx operand, insn;
 {
@@ -1572,6 +1577,7 @@ output_tst (operand, insn)
 
    It accepts anything that is a general operand or the sum of the
    stack pointer and a general operand.  */
+int
 extendpsi_operand (op, mode)
      rtx op;
      enum machine_mode mode;

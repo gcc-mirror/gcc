@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10200 series
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -53,7 +53,7 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  {{ "", TARGET_DEFAULT}}
+  {{ "", TARGET_DEFAULT, 0}}
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0
@@ -249,11 +249,11 @@ enum reg_class {
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS  			\
-{     0,		/* No regs      */	\
-   0x0f,		/* DATA_REGS */		\
-   0xf0,		/* ADDRESS_REGS */	\
-   0xff,		/* GENERAL_REGS */    	\
-   0xff,		/* ALL_REGS 	*/	\
+{     {0},		/* No regs      */	\
+   {0x0f},		/* DATA_REGS */		\
+   {0xf0},		/* ADDRESS_REGS */	\
+   {0xff},		/* GENERAL_REGS */    	\
+   {0xff},		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -504,12 +504,10 @@ struct cum_arg { int nbytes; };
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-extern struct rtx_def *function_arg();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* Implement `va_arg'.  */
-extern struct rtx_def *mn10200_va_arg();
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   mn10200_va_arg (valist, type)
 
@@ -1069,17 +1067,5 @@ do { char dstr[30];					\
 				  SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM }}, \
   {"nshift_operator",		{ ASHIFTRT, LSHIFTRT, ASHIFT }},
 
-extern void asm_file_start ();
-extern void print_operand ();
-extern void print_operand_address ();
-extern void expand_prologue ();
-extern void expand_epilogue ();
-extern void notice_update_cc ();
-extern int call_address_operand ();
-extern enum reg_class secondary_reload_class ();
-extern char *emit_a_shift ();
-extern char *output_tst ();
-extern int extendpsi_operand ();
-extern int psimode_truncation_operand ();
 extern struct rtx_def *zero_dreg;
 extern struct rtx_def *zero_areg;
