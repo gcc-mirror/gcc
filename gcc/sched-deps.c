@@ -1249,9 +1249,6 @@ sched_analyze (deps, head, tail)
 	{
 	  int i;
 
-	  /* Clear out stale SCHED_GROUP_P.  */
-	  SCHED_GROUP_P (insn) = 0;
-
 	  CANT_MOVE (insn) = 1;
 
 	  /* Clear out the stale LOG_LINKS from flow.  */
