@@ -1431,7 +1431,7 @@
 
 (define_insn "pre_ldwm"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "pre_cint_operand" ""))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1446,7 +1446,7 @@
    (set_attr "length" "4")])
 
 (define_insn "pre_stwm"
-  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "pre_cint_operand" "")))
 	(match_operand:SI 2 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
@@ -1463,7 +1463,7 @@
 
 (define_insn "post_ldwm"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(mem:SI (match_operand:SI 1 "register_operand" "=r")))
+	(mem:SI (match_operand:SI 1 "register_operand" "+r")))
    (set (match_dup 1)
 	(plus:SI (match_dup 1)
 		 (match_operand:SI 2 "post_cint_operand" "")))]
@@ -1478,7 +1478,7 @@
    (set_attr "length" "4")])
 
 (define_insn "post_stwm"
-  [(set (mem:SI (match_operand:SI 0 "register_operand" "=r"))
+  [(set (mem:SI (match_operand:SI 0 "register_operand" "+r"))
 	(match_operand:SI 1 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0)
@@ -1807,7 +1807,7 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1821,7 +1821,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (mem:HI
 			  (plus:SI
-			    (match_operand:SI 1 "register_operand" "=r")
+			    (match_operand:SI 1 "register_operand" "+r")
 			    (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1831,7 +1831,7 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (mem:HI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (mem:HI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "int5_operand" "L")))
 	(match_operand:HI 2 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
@@ -2011,7 +2011,7 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "=r")
+	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "+r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -2023,7 +2023,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (mem:QI (plus:SI
-				  (match_operand:SI 1 "register_operand" "=r")
+				  (match_operand:SI 1 "register_operand" "+r")
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -2034,7 +2034,7 @@
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(zero_extend:HI (mem:QI (plus:SI
-				  (match_operand:SI 1 "register_operand" "=r")
+				  (match_operand:SI 1 "register_operand" "+r")
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -2043,7 +2043,7 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (mem:QI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (mem:QI (plus:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "int5_operand" "L")))
 	(match_operand:QI 2 "reg_or_0_operand" "rM"))
    (set (match_dup 0)
