@@ -108,6 +108,7 @@ static bool fold_real_zero_addition_p (tree, tree, int);
 static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
 				 tree, tree, tree);
 static tree fold_inf_compare (enum tree_code, tree, tree, tree);
+static bool tree_swap_operands_p (tree, tree);
 
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
@@ -4976,6 +4977,49 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
   return NULL_TREE;
 }
 
+/* Test whether it is preferable two swap two operands, ARG0 and
+   ARG1, for example because ARG0 is an integer constant and ARG1
+   isn't.  */
+
+static bool
+tree_swap_operands_p (tree arg0, tree arg1)
+{
+  STRIP_SIGN_NOPS (arg0);
+  STRIP_SIGN_NOPS (arg1);
+
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    return 0;
+  if (TREE_CODE (arg0) == INTEGER_CST)
+    return 1;
+
+  if (TREE_CODE (arg1) == REAL_CST)
+    return 0;
+  if (TREE_CODE (arg0) == REAL_CST)
+    return 1;
+
+  if (TREE_CODE (arg1) == COMPLEX_CST)
+    return 0;
+  if (TREE_CODE (arg0) == COMPLEX_CST)
+    return 1;
+
+  if (TREE_CONSTANT (arg1))
+    return 0;
+  if (TREE_CONSTANT (arg0))
+    return 1;
+
+  if (DECL_P (arg1))
+    return 0;
+  if (DECL_P (arg0))
+    return 1;
+
+  if (TREE_CODE (arg1) == SAVE_EXPR)
+    return 0;
+  if (TREE_CODE (arg0) == SAVE_EXPR)
+    return 1;
+
+  return 0;
+}
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -5035,8 +5079,7 @@ fold (tree expr)
 	subop = arg0;
 
       if (subop != 0 && TREE_CODE (subop) != INTEGER_CST
-	  && TREE_CODE (subop) != REAL_CST
-	  )
+	  && TREE_CODE (subop) != REAL_CST)
 	/* Note that TREE_CONSTANT isn't enough:
 	   static var addresses are constant but we can't
 	   do arithmetic on them.  */
@@ -5088,16 +5131,8 @@ fold (tree expr)
   if ((code == PLUS_EXPR || code == MULT_EXPR || code == MIN_EXPR
        || code == MAX_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR
        || code == BIT_AND_EXPR)
-      && ((TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) != INTEGER_CST)
-	  || (TREE_CODE (arg0) == REAL_CST && TREE_CODE (arg1) != REAL_CST)))
-    {
-      tem = arg0; arg0 = arg1; arg1 = tem;
-
-      if (t == orig_t)
-	t = copy_node (t);
-      TREE_OPERAND (t, 0) = arg0;
-      TREE_OPERAND (t, 1) = arg1;
-    }
+      && tree_swap_operands_p (arg0, arg1))
+    return fold (build (code, type, arg1, arg0));
 
   /* Now WINS is set as described above,
      ARG0 is the first operand of EXPR,
@@ -6645,18 +6680,10 @@ fold (tree expr)
 	 RROTATE_EXPR by a new constant.  */
       if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)
 	{
-	  if (t == orig_t)
-	    t = copy_node (t);
-	  TREE_SET_CODE (t, RROTATE_EXPR);
-	  code = RROTATE_EXPR;
-	  TREE_OPERAND (t, 1) = arg1
-	    = const_binop
-	      (MINUS_EXPR,
-	       convert (TREE_TYPE (arg1),
-			build_int_2 (GET_MODE_BITSIZE (TYPE_MODE (type)), 0)),
-	       arg1, 0);
-	  if (tree_int_cst_sgn (arg1) < 0)
-	    return t;
+	  tree tem = build_int_2 (GET_MODE_BITSIZE (TYPE_MODE (type)), 0);
+	  tem = convert (TREE_TYPE (arg1), tem);
+	  tem = const_binop (MINUS_EXPR, tem, arg1, 0);
+	  return fold (build (RROTATE_EXPR, type, arg0, tem));
 	}
 
       /* If we have a rotate of a bit operation with the rotate count and
@@ -6853,20 +6880,8 @@ fold (tree expr)
     case LE_EXPR:
     case GE_EXPR:
       /* If one arg is a real or integer constant, put it last.  */
-      if ((TREE_CODE (arg0) == INTEGER_CST
-	   && TREE_CODE (arg1) != INTEGER_CST)
-	  || (TREE_CODE (arg0) == REAL_CST
-	      && TREE_CODE (arg0) != REAL_CST))
-	{
-	  if (t == orig_t)
-	    t = copy_node (t);
-	  TREE_OPERAND (t, 0) = arg1;
-	  TREE_OPERAND (t, 1) = arg0;
-	  arg0 = TREE_OPERAND (t, 0);
-	  arg1 = TREE_OPERAND (t, 1);
-	  code = swap_tree_comparison (code);
-	  TREE_SET_CODE (t, code);
-	}
+      if (tree_swap_operands_p (arg0, arg1))
+	return fold (build (swap_tree_comparison (code), type, arg1, arg0));
 
       if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
 	{
@@ -7123,16 +7138,12 @@ fold (tree expr)
 	  switch (code)
 	    {
 	    case GE_EXPR:
-	      code = GT_EXPR;
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      t = build (code, type, TREE_OPERAND (t, 0), arg1);
-	      break;
+	      return fold (build (GT_EXPR, type, arg0, arg1));
 
 	    case LT_EXPR:
-	      code = LE_EXPR;
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      t = build (code, type, TREE_OPERAND (t, 0), arg1);
-	      break;
+	      return fold (build (LE_EXPR, type, arg0, arg1));
 
 	    default:
 	      break;
@@ -7175,24 +7186,17 @@ fold (tree expr)
 					   convert (type, integer_zero_node),
 					   arg0);
 		case GE_EXPR:
-		  code = EQ_EXPR;
-		  if (t == orig_t)
-		    t = copy_node (t);
-		  TREE_SET_CODE (t, EQ_EXPR);
-		  break;
+		  return fold (build (EQ_EXPR, type, arg0, arg1));
+
 		case LE_EXPR:
 		  return omit_one_operand (type,
 					   convert (type, integer_one_node),
 					   arg0);
 		case LT_EXPR:
-		  code = NE_EXPR;
-		  if (t == orig_t)
-		    t = copy_node (t);
-		  TREE_SET_CODE (t, NE_EXPR);
-		  break;
+		  return fold (build (NE_EXPR, type, arg0, arg1));
 
 		/* The GE_EXPR and LT_EXPR cases above are not normally
-		   reached because of  previous transformations.  */
+		   reached because of previous transformations.  */
 
 		default:
 		  break;
@@ -7202,15 +7206,11 @@ fold (tree expr)
 	      switch (code)
 		{
 		case GT_EXPR:
-		  code = EQ_EXPR;
 		  arg1 = const_binop (PLUS_EXPR, arg1, integer_one_node, 0);
-		  t = build (code, type, TREE_OPERAND (t, 0), arg1);
-		  break;
+		  return fold (build (EQ_EXPR, type, arg0, arg1));
 		case LE_EXPR:
-		  code = NE_EXPR;
 		  arg1 = const_binop (PLUS_EXPR, arg1, integer_one_node, 0);
-		  t = build (code, type, TREE_OPERAND (t, 0), arg1);
-		  break;
+		  return fold (build (NE_EXPR, type, arg0, arg1));
 		default:
 		  break;
 		}
@@ -7223,22 +7223,14 @@ fold (tree expr)
 					   convert (type, integer_zero_node),
 					   arg0);
 		case LE_EXPR:
-		  code = EQ_EXPR;
-		  if (t == orig_t)
-		    t = copy_node (t);
-		  TREE_SET_CODE (t, EQ_EXPR);
-		  break;
+		  return fold (build (EQ_EXPR, type, arg0, arg1));
 
 		case GE_EXPR:
 		  return omit_one_operand (type,
 					   convert (type, integer_one_node),
 					   arg0);
 		case GT_EXPR:
-		  code = NE_EXPR;
-		  if (t == orig_t)
-		    t = copy_node (t);
-		  TREE_SET_CODE (t, NE_EXPR);
-		  break;
+		  return fold (build (NE_EXPR, type, arg0, arg1));
 
 		default:
 		  break;
@@ -7248,15 +7240,11 @@ fold (tree expr)
 	      switch (code)
 		{
 		case GE_EXPR:
-		  code = NE_EXPR;
 		  arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-		  t = build (code, type, TREE_OPERAND (t, 0), arg1);
-		  break;
+		  return fold (build (NE_EXPR, type, arg0, arg1));
 		case LT_EXPR:
-		  code = EQ_EXPR;
 		  arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-		  t = build (code, type, TREE_OPERAND (t, 0), arg1);
-		  break;
+		  return fold (build (EQ_EXPR, type, arg0, arg1));
 		default:
 		  break;
 		}
@@ -7489,16 +7477,17 @@ fold (tree expr)
 	  switch (code)
 	    {
 	    case EQ_EXPR:
+	      if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
+		  || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
+		return constant_boolean_node (1, type);
+	      break;
+
 	    case GE_EXPR:
 	    case LE_EXPR:
 	      if (! FLOAT_TYPE_P (TREE_TYPE (arg0))
 		  || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
 		return constant_boolean_node (1, type);
-	      code = EQ_EXPR;
-	      if (t == orig_t)
-		t = copy_node (t);
-	      TREE_SET_CODE (t, code);
-	      break;
+	      return fold (build (EQ_EXPR, type, arg0, arg1));
 
 	    case NE_EXPR:
 	      /* For NE, we can only do this simplification if integer
@@ -7779,34 +7768,6 @@ fold (tree expr)
       else if (operand_equal_p (arg1, TREE_OPERAND (expr, 2), 0))
 	return pedantic_omit_one_operand (type, arg1, arg0);
 
-      /* If the second operand is zero, invert the comparison and swap
-	 the second and third operands.  Likewise if the second operand
-	 is constant and the third is not or if the third operand is
-	 equivalent to the first operand of the comparison.  */
-
-      if (integer_zerop (arg1)
-	  || (TREE_CONSTANT (arg1) && ! TREE_CONSTANT (TREE_OPERAND (t, 2)))
-	  || (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
-	      && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
-						 TREE_OPERAND (t, 2),
-						 TREE_OPERAND (arg0, 1))))
-	{
-	  /* See if this can be inverted.  If it can't, possibly because
-	     it was a floating-point inequality comparison, don't do
-	     anything.  */
-	  tem = invert_truthvalue (arg0);
-
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    {
-	      t = build (code, type, tem,
-			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1));
-	      arg0 = tem;
-	      /* arg1 should be the first argument of the new T.  */
-	      arg1 = TREE_OPERAND (t, 1);
-	      STRIP_NOPS (arg1);
-	    }
-	}
-
       /* If we have A op B ? A : C, we may be able to convert this to a
 	 simpler expression, depending on the operation and the values
 	 of B and C.  Signed zeros prevent all of these transformations,
@@ -7982,9 +7943,8 @@ fold (tree expr)
 	      case EQ_EXPR:
 		/* We can replace A with C1 in this case.  */
 		arg1 = convert (type, TREE_OPERAND (arg0, 1));
-		t = build (code, type, TREE_OPERAND (t, 0), arg1,
-			   TREE_OPERAND (t, 2));
-		break;
+		return fold (build (code, type, TREE_OPERAND (t, 0), arg1,
+				    TREE_OPERAND (t, 2)));
 
 	      case LT_EXPR:
 		/* If C1 is C2 + 1, this is min(A, C2).  */
@@ -8034,11 +7994,7 @@ fold (tree expr)
 
       /* If the second operand is simpler than the third, swap them
 	 since that produces better jump optimization results.  */
-      if ((TREE_CONSTANT (arg1) || DECL_P (arg1)
-	   || TREE_CODE (arg1) == SAVE_EXPR)
-	  && ! (TREE_CONSTANT (TREE_OPERAND (t, 2))
-		|| DECL_P (TREE_OPERAND (t, 2))
-		|| TREE_CODE (TREE_OPERAND (t, 2)) == SAVE_EXPR))
+      if (tree_swap_operands_p (TREE_OPERAND (t, 1), TREE_OPERAND (t, 2)))
 	{
 	  /* See if this can be inverted.  If it can't, possibly because
 	     it was a floating-point inequality comparison, don't do
@@ -8046,14 +8002,8 @@ fold (tree expr)
 	  tem = invert_truthvalue (arg0);
 
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
-	    {
-	      t = build (code, type, tem,
-			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1));
-	      arg0 = tem;
-	      /* arg1 should be the first argument of the new T.  */
-	      arg1 = TREE_OPERAND (t, 1);
-	      STRIP_NOPS (arg1);
-	    }
+	    return fold (build (code, type, tem,
+			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1)));
 	}
 
       /* Convert A ? 1 : 0 to simply A.  */
