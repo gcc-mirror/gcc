@@ -699,6 +699,22 @@ fn.def2:
 		  $$ = start_method (specs, $2); goto rest_of_mdef; }
 	| constructor_declarator
 		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
+        | template_header fn.def2 
+                { 
+		  end_template_decl (); 
+		  if ($2 && DECL_TEMPLATE_INFO ($2))
+		    {
+		      $$ = DECL_TI_TEMPLATE ($2); 
+		      check_member_template ($$);
+		    }
+		  else if ($2)
+		    $$ = $2;
+		  else 
+		    {
+		      cp_error("invalid member template declaration");
+		      $$ = NULL_TREE;
+		    }
+		}
 	;
 
 return_id:
@@ -2711,7 +2727,22 @@ component_decl_1:
 				  build_tree_list ($3, NULL_TREE)); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
-	;
+        | template_header component_decl_1 
+                { 
+		  end_template_decl (); 
+		  if ($2 && DECL_TEMPLATE_INFO ($2))
+		    {
+		      $$ = DECL_TI_TEMPLATE ($2); 
+		      check_member_template ($$);
+		    }
+		  else if ($2)
+		    $$ = $2;
+		  else
+		    {
+		      cp_error("invalid member template declaration");
+		      $$ = NULL_TREE;
+		    }
+		}
 
 /* The case of exactly one component is handled directly by component_decl.  */
 /* ??? Huh? ^^^ */

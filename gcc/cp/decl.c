@@ -2306,22 +2306,39 @@ decls_match (newdecl, olddecl)
     {
 	tree newargs = DECL_TEMPLATE_PARMS (newdecl);
 	tree oldargs = DECL_TEMPLATE_PARMS (olddecl);
-	int i, len = TREE_VEC_LENGTH (newargs);
+	int i;
 
-	if (TREE_VEC_LENGTH (oldargs) != len)
-	  return 0;
-	
-	for (i = 0; i < len; i++)
+	/* Run through all the levels of template parmaters, checking
+	   that they match.  */
+	while (newargs && oldargs) 
 	  {
-	    tree newarg = TREE_VALUE (TREE_VEC_ELT (newargs, i));
-	    tree oldarg = TREE_VALUE (TREE_VEC_ELT (oldargs, i));
-	    if (TREE_CODE (newarg) != TREE_CODE (oldarg))
+	    int len = TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS (newargs));
+
+	    if (TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS (oldargs)) != len)
 	      return 0;
-	    else if (TREE_CODE (newarg) == TYPE_DECL)
-	      /* continue */;
-	    else if (! comptypes (TREE_TYPE (newarg), TREE_TYPE (oldarg), 1))
-	      return 0;
+	    
+	    for (i = 0; i < len; i++)
+	      {
+		tree newarg = 
+		  TREE_VALUE (TREE_VEC_ELT 
+			      (INNERMOST_TEMPLATE_PARMS (newargs), i));
+		tree oldarg = 
+		  TREE_VALUE (TREE_VEC_ELT 
+			      (INNERMOST_TEMPLATE_PARMS (oldargs), i));
+		if (TREE_CODE (newarg) != TREE_CODE (oldarg))
+		  return 0;
+		else if (TREE_CODE (newarg) == TYPE_DECL)
+		  /* continue */;
+		else if (! comptypes (TREE_TYPE (newarg), TREE_TYPE (oldarg), 1))
+		  return 0;
+	      }
+	    newargs = TREE_CHAIN (newargs);
+	    oldargs = TREE_CHAIN (oldargs);
 	  }
+
+	if ((newargs == NULL_TREE) != (oldargs == NULL_TREE))
+	  /* One declaration has more levels that the other. */
+	  return 0;
 
 	if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
 	  types_match = 1;
@@ -3003,7 +3020,7 @@ pushdecl (x)
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use.  */
   if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
-      || TREE_CODE (x) == NAMESPACE_DECL)
+      || TREE_CODE (x) == NAMESPACE_DECL || TREE_CODE (x) == TEMPLATE_TYPE_PARM)
     name = DECL_NAME (x);
 
   if (name)
@@ -3493,6 +3510,11 @@ push_class_level_binding (name, x)
      tree name;
      tree x;
 {
+  /* The class_binding_level will be NULL if x is a template 
+     parameter name in a member template.  */
+  if (!class_binding_level)
+    return;
+
   if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
       && purpose_member (name, class_binding_level->class_shadowed))
     return;
@@ -7232,6 +7254,10 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       if (check)
 	{
 	  tmp = check_classfn (ctype, decl);
+
+	  if (tmp && TREE_CODE (tmp) == TEMPLATE_DECL)
+	    tmp = DECL_TEMPLATE_RESULT(tmp);
+
 	  if (tmp && DECL_ARTIFICIAL (tmp))
 	    cp_error ("definition of implicitly-declared `%D'", tmp);
 	  if (tmp && duplicate_decls (decl, tmp))
@@ -7270,6 +7296,10 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       if (ctype != NULL_TREE && check)
 	{
 	  tmp = check_classfn (ctype, decl);
+
+	  if (tmp && TREE_CODE (tmp) == TEMPLATE_DECL)
+	    tmp = DECL_TEMPLATE_RESULT(tmp);
+	      
 	  if (tmp && DECL_STATIC_FUNCTION_P (tmp)
 	      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
 	    {
@@ -8934,8 +8964,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    && uses_template_parms (current_class_type))
 		  {
 		    tree args = current_template_args ();
-		    type = tsubst (type, &TREE_VEC_ELT (args, 0),
-				   TREE_VEC_LENGTH (args), NULL_TREE);
+		    type = tsubst (type, args,
+				   TREE_VEC_LENGTH (TREE_VEC_ELT
+						    (args, 0)),
+				   NULL_TREE);
 		  }
 
 		/* This pop_nested_class corresponds to the
@@ -10038,7 +10070,7 @@ void
 replace_defarg (arg, init)
      tree arg, init;
 {
-  if (! processing_template_decl
+  if (! processing_template_decl && ! uses_template_parms (TREE_VALUE (arg))
       && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
     cp_pedwarn ("invalid type `%T' for default argument to `%T'",
 		TREE_TYPE (init), TREE_VALUE (arg));

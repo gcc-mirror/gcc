@@ -1190,6 +1190,8 @@ do_pending_inlines ()
   context = hack_decl_function_context (t->fndecl);
   if (context)
     push_cp_function_context (context);
+  if (is_member_template (t->fndecl))
+    begin_member_template_processing (DECL_TI_ARGS (t->fndecl));
   if (t->len > 0)
     {
       feed_input (t->buf, t->len);
@@ -1226,7 +1228,9 @@ process_next_inline (t)
 {
   tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
-  context = hack_decl_function_context (i->fndecl);
+  context = hack_decl_function_context (i->fndecl);  
+  if (is_member_template (i->fndecl))
+    end_member_template_processing ();
   if (context)
     pop_cp_function_context (context);
   i = i->next;
@@ -1249,6 +1253,8 @@ process_next_inline (t)
       context = hack_decl_function_context (i->fndecl);
       if (context)
 	push_cp_function_context (context);
+      if (is_member_template (i->fndecl))
+	begin_member_template_processing (DECL_TI_ARGS (i->fndecl));
       feed_input (i->buf, i->len);
       lineno = i->lineno;
       input_filename = i->filename;

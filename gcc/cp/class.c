@@ -1872,33 +1872,10 @@ grow_method (fndecl, method_vec_ptr)
 
   if (testp < (tree *) obstack_next_free (&class_obstack))
     {
-      tree x, prev_x;
-
-      for (x = *testp; x; x = DECL_CHAIN (x))
-	{
-	  if (DECL_NAME (fndecl) == ansi_opname[(int) DELETE_EXPR]
-	      || DECL_NAME (fndecl) == ansi_opname[(int) VEC_DELETE_EXPR])
-	    {
-	      /* ANSI C++ June 5 1992 WP 12.5.5.1 */
-	      cp_error_at ("`%D' overloaded", fndecl);
-	      cp_error_at ("previous declaration as `%D' here", x);
-	    }
-	  if (DECL_ASSEMBLER_NAME (fndecl) == DECL_ASSEMBLER_NAME (x))
-	    {
-	      /* Friend-friend ambiguities are warned about outside
-		 this loop.  */
-	      cp_error_at ("ambiguous method `%#D' in structure", fndecl);
-	      break;
-	    }
-	  prev_x = x;
-	}
-      if (x == 0)
-	{
-	  if (*testp)
-	    DECL_CHAIN (prev_x) = fndecl;
-	  else
-	    *testp = fndecl;
-	}
+      tree *p;
+      for (p = testp; *p; )
+	p = &DECL_CHAIN (*p);
+      *p = fndecl;
     }
   else
     {
@@ -4384,7 +4361,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 		}
 	    }
 
-	  if (TREE_CODE (x) == FUNCTION_DECL)
+	  if (TREE_CODE (x) == FUNCTION_DECL 
+	      || DECL_FUNCTION_TEMPLATE_P (x))
 	    {
 	      DECL_CLASS_CONTEXT (x) = t;
 	      if (last_x)
@@ -5062,12 +5040,13 @@ instantiate_type (lhstype, rhs, complain)
 	      for (elem = get_first_fn (rhs); elem; elem = DECL_CHAIN (elem))
 		if (TREE_CODE (elem) == TEMPLATE_DECL)
 		  {
-		    int n = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (elem));
-		    tree *t = (tree *) alloca (sizeof (tree) * n);
+		    int n = DECL_NTPARMS (elem);
+		    tree t = make_tree_vec (n);
 		    int i, d = 0;
-		    i = type_unification (DECL_TEMPLATE_PARMS (elem), t,
-					  TYPE_ARG_TYPES (TREE_TYPE (elem)),
-					  TYPE_ARG_TYPES (lhstype), &d, 0, 1);
+		    i = type_unification
+		      (DECL_INNERMOST_TEMPLATE_PARMS (elem), 
+		       &TREE_VEC_ELT (t, 0), TYPE_ARG_TYPES (TREE_TYPE (elem)),
+		       TYPE_ARG_TYPES (lhstype), &d, 0, 1);
 		    if (i == 0)
 		      {
 			if (save_elem)

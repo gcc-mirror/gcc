@@ -832,7 +832,8 @@ comptypes (type1, type2, strict)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      return TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2);
+      return TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2)
+	&& TEMPLATE_TYPE_LEVEL (t1) == TEMPLATE_TYPE_LEVEL (t2);
 
     case TYPENAME_TYPE:
       if (TYPE_IDENTIFIER (t1) != TYPE_IDENTIFIER (t2))
@@ -2296,7 +2297,8 @@ build_x_function_call (function, params, decl)
     {
       tree basetype = NULL_TREE;
 
-      if (TREE_CODE (function) == FUNCTION_DECL)
+      if (TREE_CODE (function) == FUNCTION_DECL
+	  || DECL_FUNCTION_TEMPLATE_P (function))
 	{
 	  basetype = DECL_CLASS_CONTEXT (function);
 

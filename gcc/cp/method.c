@@ -648,7 +648,7 @@ build_overload_identifier (name)
       arglist = TREE_VALUE (template);
       template = TREE_PURPOSE (template);
       tname = DECL_NAME (template);
-      parmlist = DECL_ARGUMENTS (template);
+      parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
       nparms = TREE_VEC_LENGTH (parmlist);
       OB_PUTC ('t');
       icat (IDENTIFIER_LENGTH (tname));
@@ -666,7 +666,7 @@ build_overload_identifier (name)
 	    }
 	  else
 	    {
-	      parm = tsubst (parm, &TREE_VEC_ELT (arglist, 0),
+	      parm = tsubst (parm, arglist,
 			     TREE_VEC_LENGTH (arglist), NULL_TREE);
 	      /* It's a PARM_DECL.  */
 	      build_overload_name (TREE_TYPE (parm), 0, 0);

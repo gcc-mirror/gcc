@@ -2005,7 +2005,8 @@ cp_tree_equal (t1, t2)
       return 0;
 
     case TEMPLATE_CONST_PARM:
-      return TEMPLATE_CONST_IDX (t1) == TEMPLATE_CONST_IDX (t2);
+      return TEMPLATE_CONST_IDX (t1) == TEMPLATE_CONST_IDX (t2)
+	&& TEMPLATE_CONST_LEVEL (t1) == TEMPLATE_CONST_LEVEL (t2);
 
     case SIZEOF_EXPR:
       if (TREE_CODE (TREE_OPERAND (t1, 0)) != TREE_CODE (TREE_OPERAND (t2, 0)))
