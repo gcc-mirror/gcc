@@ -1,3 +1,7 @@
+2003-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libjava.lang/pr8823.xfail: New file, add "xfail-byte".
+
 2003-01-24  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* libjava.jni/calls.c (Java_calls_docall): Define with
