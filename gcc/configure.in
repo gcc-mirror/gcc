@@ -208,7 +208,16 @@ AC_ARG_ENABLE(c-mbchar,
 if test x$enable_c_mbchar != xno; then
   extra_c_flags=-DMULTIBYTE_CHARS=1
 fi)
-  
+
+# Disable fast fixincludes
+AC_ARG_ENABLE(fast-fixincludes,
+[  --disable-fast-fixincludes
+                         Disable the new fast fixincludes.
+                         Run the old fixincludes script unconditionally],
+if test x$enable_fast_fixincludes = xno ; then
+  cp $srcdir/fixincludes ./fixinc.sh
+fi)
+
 # Enable Haifa scheduler.
 AC_ARG_ENABLE(haifa,
 [  --enable-haifa          use the experimental scheduler.
@@ -506,8 +515,6 @@ changequote([,])dnl
 		;;
 	*-*-openbsd*)
 		tm_file=${cpu_type}/openbsd.h
-		# On OpenBSD systems, the headers are okay
-		fixincludes=Makefile.in
 		tmake_file="t-libc-ok t-openbsd"
 		# avoid surprises, always provide an xm-openbsd file 
 		xm_file=${cpu_type}/xm-openbsd.h
@@ -567,7 +574,6 @@ changequote([,])dnl
 		xm_file="alpha/xm-alpha-interix.h xm-interix.h"
 		xmake_file="x-interix alpha/t-pe"
 		tmake_file="alpha/t-interix"
-		fixincludes=fixinc.interix
  		if test x$enable_threads = xyes ; then
 			thread_file='posix'
 		fi
@@ -1120,8 +1126,6 @@ changequote(,)dnl
 	i[34567]86-*-freebsdelf*)
 changequote([,])dnl
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
-		# On FreeBSD, the headers are already ok, except for math.h.
-		fixincludes=fixinc.wrap
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		tmake_file=i386/t-freebsd
 		gas=yes
@@ -1529,7 +1533,6 @@ changequote([,])dnl
 		tmake_file="i386/t-cygwin i386/t-uwin"
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin
-		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
@@ -1544,7 +1547,6 @@ changequote([,])dnl
 		tmake_file="i386/t-interix"
 		extra_objs=interix.o
 		xmake_file=x-interix
-		fixincludes=fixinc.interix
  		if test x$enable_threads = xyes ; then
 			thread_file='posix'
 		fi
@@ -2343,7 +2345,6 @@ changequote([,])dnl
 		extra_parts="crtbegin.o crtend.o"
 		gnu_ld=yes
 		gas=yes
-		fixincludes=Makefile.in 
 		;;
 	mips*el-*-openbsd*)	# mips little endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
@@ -3087,7 +3088,6 @@ changequote([,])dnl
                 tmake_file="sparc/t-halos sparc/t-sol2"
                 xmake_file=sparc/x-sysv4
                 extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
-                fixincludes=fixinc.svr4
                 broken_install=yes
                 ;;
 	sparc-*-solaris2*)
