@@ -1,3 +1,13 @@
+2000-08-27  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_name): Initialize template_p in local
+	name case.  Don't re-add substitutions as candidates.
+	(demangle_nested_name): Use <unqualified-name>.
+	(demangle_prefix): Likewise.  Don't add template names as
+	substitution candidates twice, or re-add a substitution or the
+	last prefix component.
+	(demangle_local_name): Adjust output format.
+
 2000-08-25  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (result_add_separated_char): Change parameter to
