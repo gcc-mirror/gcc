@@ -1290,12 +1290,26 @@ extern char *current_function_name;
   case MINUS:						\
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
       return COSTS_N_INSNS (6);				\
+    else if (GET_CODE (XEXP (X, 0)) == MULT		\
+	     && const48_operand (XEXP (XEXP (X, 0), 1), VOIDmode)) \
+      return 2 + rtx_cost (XEXP (XEXP (X, 0), 0)) + rtx_cost (XEXP (X, 1)); \
     break;						\
   case MULT:						\
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
       return COSTS_N_INSNS (6);				\
-    else						\
+    else if (GET_CODE (XEXP (X, 1)) != CONST_INT	\
+	     || exact_log2 (INTVAL (XEXP (X, 1))) < 0)	\
       return COSTS_N_INSNS (21);			\
+    else if (const48_operand (XEXP (X, 1), VOIDmode))	\
+      break;						\
+    return COSTS_N_INSNS (2);				\
+  case ASHIFT:						\
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
+	&& INTVAL (XEXP (X, 1)) <= 3)			\
+      break;						\
+    /* ... fall through ... */				\
+  case ASHIFTRT:  case LSHIFTRT:  case IF_THEN_ELSE:	\
+    return COSTS_N_INSNS (2);				\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
