@@ -1,3 +1,18 @@
+2004-09-20  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-13.c: Added xfail for non ppc platforms.
+	* gcc.dg/vect/vect-74.c: Split into 3 tests (vect-79.c, vect-80.c).
+	* gcc.dg/vect/vect-62.c: New testcase.
+	* gcc.dg/vect/vect-63.c: New testcase.
+	* gcc.dg/vect/vect-64.c: New testcase.
+	* gcc.dg/vect/vect-65.c: New testcase.
+	* gcc.dg/vect/vect-66.c: New testcase.
+	* gcc.dg/vect/vect-67.c: New testcase.
+	* gcc.dg/vect/vect-68.c: New testcase.
+	* gcc.dg/vect/vect-69.c: New testcase.
+	* gcc.dg/vect/vect-79.c: New testcase.
+	* gcc.dg/vect/vect-80.c: New testcase.
+
 2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.target/mips/asm-1.c: New test.
