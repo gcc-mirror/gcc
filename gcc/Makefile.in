@@ -484,6 +484,9 @@ OBJC_OBJS = objc-parse.o objc-act.o c-lex.o c-pragma.o \
 # Files specific to the C interpreter bytecode compiler(s).
 BC_OBJS = bc-emit.o bc-optab.o
 
+# Bytecode header files constructed at build time; vmsconfig.com wants this.
+BC_ALL = bc-arity.h bc-opcode.h bc-opname.h
+
 # Language-independent object files.
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  function.o stmt.o expr.o calls.o expmed.o explow.o optabs.o varasm.o \
@@ -514,7 +517,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
  genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
- bc-arity.h bc-opcode.h bc-opname.h \
+ $(BC_ALL) \
  stamp-bcarity stamp-bcopcode stamp-bcopname \
  bi-arity$(exeext) bi-opcode$(exeext) bi-opname$(exeext) \
  $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
