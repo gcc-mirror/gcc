@@ -1,3 +1,8 @@
+2000-01-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (return, return_internal): Modify patterns to prevent regrename
+	mucking with the return pointer.
+
 2001-01-05  Mike Stump  <mrs@wrs.com>
 
 	* varasm.c (assemble_name): Ensure we output the stripped name.
