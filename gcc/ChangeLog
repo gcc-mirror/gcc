@@ -1,3 +1,9 @@
+2004-06-13  Eric Christopher  <echristo@redhat.com>
+
+	* c-decl.c (diagnose_mismatched_decls): Improve error message.
+	Remove unused code.
+	* c-typeck.c (comptypes): Add location in standard we're checking.
+
 2004-06-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/libgcc-std.ver: Add __unorddf2 and __unordsf2 with
