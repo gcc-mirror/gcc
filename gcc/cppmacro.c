@@ -170,7 +170,7 @@ builtin_macro (pfile, token)
 	    file = ip->nominal_fname;
 	  }
 	make_string_token (pfile->string_pool, token,
-			   (U_CHAR *) file, strlen (file));
+			   (const U_CHAR *) file, strlen (file));
       }
       break;
 	

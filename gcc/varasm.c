@@ -2402,7 +2402,7 @@ static hashval_t
 const_str_htab_hash (x)
      const void *x;
 {
-  return STRHASH (((struct deferred_string *) x)->label);
+  return STRHASH (((const struct deferred_string *) x)->label);
 }
 
 /* Returns non-zero if the value represented by X (which is really a
@@ -2414,7 +2414,7 @@ const_str_htab_eq (x, y)
      const void *x;
      const void *y;
 {
-  return (((struct deferred_string *) x)->label == (char *) y);
+  return (((const struct deferred_string *) x)->label == (const char *) y);
 }
 
 /* Delete the hash table entry dfsp.  */
@@ -2607,7 +2607,7 @@ compare_constant_1 (exp, p)
       if ((enum machine_mode) *p++ != TYPE_MODE (TREE_TYPE (exp)))
 	return 0;
 
-      strp = (unsigned char *)TREE_STRING_POINTER (exp);
+      strp = (const unsigned char *)TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       if (memcmp ((char *) &TREE_STRING_LENGTH (exp), p,
 		sizeof TREE_STRING_LENGTH (exp)))
@@ -2750,8 +2750,8 @@ compare_constant_1 (exp, p)
 	    return 0;
 
 	/* Compare symbol name.  */
-	strp = (unsigned char *) XSTR (value.base, 0);
-	len = strlen ((char *) strp) + 1;
+	strp = (const unsigned char *) XSTR (value.base, 0);
+	len = strlen ((const char *) strp) + 1;
       }
       break;
 
@@ -2816,7 +2816,7 @@ static void
 record_constant_1 (exp)
      tree exp;
 {
-  register unsigned char *strp;
+  register const unsigned char *strp;
   register int len;
   register enum tree_code code = TREE_CODE (exp);
 
@@ -2841,7 +2841,7 @@ record_constant_1 (exp)
 	return;
 
       obstack_1grow (&permanent_obstack, TYPE_MODE (TREE_TYPE (exp)));
-      strp = (unsigned char *) TREE_STRING_POINTER (exp);
+      strp = (const unsigned char *) TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       obstack_grow (&permanent_obstack, (char *) &TREE_STRING_LENGTH (exp),
 		    sizeof TREE_STRING_LENGTH (exp));

@@ -1359,7 +1359,7 @@ do { ip = &instack[indepth];		\
 	    ibp += 2;
 	  }
 	  c = *ibp++;
-	  if (!isalnum (c) && c != '.' && c != '_') {
+	  if (!ISALNUM (c) && c != '.' && c != '_') {
 	    --ibp;
 	    break;
 	  }
@@ -2888,7 +2888,7 @@ do_line (buf, limit, op, keyword)
   bp = tem.buf;
   SKIP_WHITE_SPACE (bp);
 
-  if (!isdigit (*bp)) {
+  if (!ISDIGIT (*bp)) {
     error ("invalid format #line command");
     return;
   }
@@ -2899,7 +2899,7 @@ do_line (buf, limit, op, keyword)
   new_lineno = atoi ((const char *)bp) - 1;
 
   /* skip over the line number.  */
-  while (isdigit (*bp))
+  while (ISDIGIT (*bp))
     bp++;
 
 #if 0 /* #line 10"foo.c" is supposed to be allowed.  */
@@ -3726,7 +3726,7 @@ macroexpand (hp, op)
 	    /* Escape these chars */
 	    if (c == '\"' || (in_string && c == '\\'))
 	      xbuf[totlen++] = '\\';
-	    if (isprint (c))
+	    if (ISPRINT (c))
 	      xbuf[totlen++] = c;
 	    else {
 	      sprintf ((char *) &xbuf[totlen], "\\%03o", (unsigned int) c);
@@ -3928,7 +3928,7 @@ macarg (argptr)
 	 in case we need to keep it all.  */
       if (c == '\"' || c == '\\') /* escape these chars */
 	totlen++;
-      else if (!isprint (c))
+      else if (!ISPRINT (c))
 	totlen += 3;
     }
     argptr->stringified_length = totlen;

@@ -6110,7 +6110,7 @@ static void
 output_comp_unit (die)
      dw_die_ref die;
 {
-  char *secname;
+  const char *secname;
 
   if (die->die_child == 0)
     return;
@@ -6126,12 +6126,13 @@ output_comp_unit (die)
 
   if (die->die_symbol)
     {
-      secname = (char *) alloca (strlen (die->die_symbol) + 24);
-      sprintf (secname, ".gnu.linkonce.wi.%s", die->die_symbol);
+      char *tmp = (char *) alloca (strlen (die->die_symbol) + 24);
+      sprintf (tmp, ".gnu.linkonce.wi.%s", die->die_symbol);
+      secname = tmp;
       die->die_symbol = NULL;
     }
   else
-    secname = (char *) DEBUG_INFO_SECTION;
+    secname = (const char *) DEBUG_INFO_SECTION;
 
   /* Output debugging information.  */
   fputc ('\n', asm_out_file);

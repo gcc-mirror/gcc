@@ -384,7 +384,7 @@ static hashval_t
 ssa_rename_from_hash_function (srfp)
      const void *srfp;
 {
-  return ((ssa_rename_from_pair *) srfp)->reg;
+  return ((const ssa_rename_from_pair *) srfp)->reg;
 }
 
 /* Test whether two hash table entries SRFP1 and SRFP2 are equal.  */

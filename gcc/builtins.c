@@ -278,7 +278,7 @@ c_getstr (src)
 {
   tree offset_node;
   int offset, max;
-  char *ptr;
+  const char *ptr;
 
   src = string_constant (src, &offset_node);
   if (src == 0)
@@ -301,7 +301,7 @@ c_getstr (src)
 	return 0;
     }
 
-  return (const char *) ptr + offset;
+  return ptr + offset;
 }
 
 /* Given TEM, a pointer to a stack frame, follow the dynamic chain COUNT

@@ -208,7 +208,7 @@ _mcleanup()
     }
 #   ifdef DEBUG
 	fprintf( stderr , "[mcleanup] sbuf 0x%x ssiz %d\n" , sbuf , ssiz );
-#   endif DEBUG
+#   endif /* DEBUG */
     write( fd , sbuf , ssiz );
     endfrom = s_textsize / (HASHFRACTION * sizeof(*froms));
     for ( fromindex = 0 ; fromindex < endfrom ; fromindex++ ) {
@@ -221,7 +221,7 @@ _mcleanup()
 		fprintf( stderr ,
 			"[mcleanup] frompc 0x%x selfpc 0x%x count %d\n" ,
 			frompc , tos[toindex].selfpc , tos[toindex].count );
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    rawarc.raw_frompc = (unsigned long) frompc;
 	    rawarc.raw_selfpc = (unsigned long) tos[toindex].selfpc;
 	    rawarc.raw_count = tos[toindex].count;

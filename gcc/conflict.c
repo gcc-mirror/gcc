@@ -85,6 +85,7 @@ struct conflict_graph_arc_def
 };
 
 typedef struct conflict_graph_arc_def *conflict_graph_arc;
+typedef const struct conflict_graph_arc_def *const_conflict_graph_arc;
 
 
 /* A conflict graph.  */
@@ -127,7 +128,7 @@ static unsigned
 arc_hash (arcp)
      const void *arcp;
 {
-  conflict_graph_arc arc = (conflict_graph_arc) arcp;
+  const_conflict_graph_arc arc = (const_conflict_graph_arc) arcp;
 
   return CONFLICT_HASH_FN (arc->smaller, arc->larger);
 }
@@ -140,8 +141,8 @@ arc_eq (arcp1, arcp2)
      const void *arcp1;
      const void *arcp2;
 {
-  conflict_graph_arc arc1 = (conflict_graph_arc) arcp1;
-  conflict_graph_arc arc2 = (conflict_graph_arc) arcp2;
+  const_conflict_graph_arc arc1 = (const_conflict_graph_arc) arcp1;
+  const_conflict_graph_arc arc2 = (const_conflict_graph_arc) arcp2;
 
   return arc1->smaller == arc2->smaller && arc1->larger == arc2->larger;
 }
