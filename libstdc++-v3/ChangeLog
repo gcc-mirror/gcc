@@ -1,3 +1,8 @@
+2004-07-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 30.
+	* docs/html/ext/howto.html: Tweak entries for DRs 167/253/389/402.
+
 2004-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/14697
