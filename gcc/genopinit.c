@@ -141,7 +141,7 @@ gen_insn (insn)
 {
   char *name = XSTR (insn, 0);
   int m1, m2, op;
-  int pindex;
+  size_t pindex;
   int i;
   char *np, *pp, *p, *q;
 
