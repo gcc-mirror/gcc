@@ -47,3 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC "-u main %{static: -a archive}%{g: -a archive}"
+
+/* hpux8 and later have C++ compatable include files, so do not
+   pretend they are `extern "C"'.  */
+#define NO_IMPLICIT_EXTERN_C
