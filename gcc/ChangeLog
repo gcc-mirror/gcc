@@ -1,3 +1,9 @@
+2003-11-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (__udivsi3): Remove.
+	(divmodsi3): Change the name to ___udivsi3.
+	Update all callers.
+
 2003-11-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libgcc2.c (__negdi2, __addvsi3, __addvdi3, __subvsi3, __subvdi3,
