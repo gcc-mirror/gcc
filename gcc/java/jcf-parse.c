@@ -566,7 +566,7 @@ void
 load_class (tree class_or_name, int verbose)
 {
   tree name, saved;
-  int class_loaded = 0;
+  int class_loaded;
 
   /* class_or_name can be the name of the class we want to load */
   if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
@@ -585,20 +585,11 @@ load_class (tree class_or_name, int verbose)
     }
 
   saved = name;
-
   while (1)
     {
       char *separator;
 
-      /* We've already loaded it.  */
-      if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE)
-	{
-	  tree tmp_decl = IDENTIFIER_CLASS_VALUE (name);
-	  if (CLASS_PARSED_P (TREE_TYPE (tmp_decl)))
-	    break;
-	}
-	
-      if (read_class (name))
+      if ((class_loaded = read_class (name)))
 	break;
 
       /* We failed loading name. Now consider that we might be looking
@@ -615,13 +606,6 @@ load_class (tree class_or_name, int verbose)
       else
 	break;
     }
-
-  {
-    /* have we found the class we're looking for?  */
-    tree type_decl = IDENTIFIER_CLASS_VALUE (saved);
-    tree type = type_decl ? TREE_TYPE (type_decl) : NULL;
-    class_loaded = type && CLASS_PARSED_P (type);
-  }	      
 
   if (!class_loaded && verbose)
     error ("cannot find file for class %s", IDENTIFIER_POINTER (saved));
