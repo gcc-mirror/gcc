@@ -979,28 +979,17 @@ extern "C"\
     #
     # Fix  27:  End_Else_Label
     #
-    if ( test -n "`egrep '^[ 	]*#[ 	]*(else|endif)[ 	]+([!-.0-z\\{\\|\\}\\~]|/[^\\*])' ${file}`"
-       ) > /dev/null 2>&1 ; then
+    if ${FIXTESTS} ${file} else_endif_label
+    then
     fixlist="${fixlist}
       end_else_label"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi 
-
-    sed -e ':loop
-/\\$/N
-s/\\$/\\+++fixinc_eol+++/
-/\\$/b loop
-s/\\+++fixinc_eol+++/\\/g
-s%^\([ 	]*#[ 	]*else\)[ 	][ 	]*/[^*].*%\1%
-s%^\([ 	]*#[ 	]*else\)[ 	][ 	]*[^/ 	].*%\1%
-s%^\([ 	]*#[ 	]*endif\)[ 	][ 	]*/[^*].*%\1%
-s%^\([ 	]*#[ 	]*endif\)[ 	][ 	]*\*[^/].*%\1%
-s%^\([ 	]*#[ 	]*endif\)[ 	][ 	]*[^/* 	].*%\1%' \
-          < $infile > ${DESTDIR}/fixinc.tmp
+    ${FIXFIXES} ${file} else_endif_label < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of select 'if'
+    fi # end of c_test 'if'
 
 
     #

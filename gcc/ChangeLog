@@ -1,3 +1,13 @@
+1999-10-22  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/README: document the "mach" machine matching test
+	* fixinc/fixfixes.c: Implement the #else/#endif label fix
+	* fixinc/fixtests.c: Implement the #else/#endif label test
+	* fixinc/inclhack.def: utilize these tests and fixes
+	* fixinc/inclhack.sh:  regen
+	* fixinc/fixincl.x:  regen
+	* fixinc/fixincl.sh:  regen
+
 Thu Oct 21 20:37:19 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (cse.o): Depend on hashtab.h, not splay-tree.h.  Also

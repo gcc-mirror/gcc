@@ -71,7 +71,10 @@ Here are the rules for making fixes in the inclhack.def file:
     "c_test" because they are performed internally.  "test" sends
     a command to a server shell that actually fires off one or more
     processes to do the testing.  Avoid it, if you can, but it is
-    still more efficient than a fix process.
+    still more efficient than a fix process.  Also available is
+    "mach".  If the target machine matches any of the named
+    globbing-style patterns, then the machine name test will pass.
+    It is desired, however, to limit the use of this test.
 
     These tests are required to:
 

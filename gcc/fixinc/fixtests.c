@@ -62,7 +62,8 @@ typedef struct {
 } test_entry_t;
 
 #define FIX_TEST_TABLE \
-  _FT_( "double_slash", double_slash_test )
+  _FT_( "double_slash",     double_slash_test ) \
+  _FT_( "else_endif_label", else_endif_label_test )
 
 
 #define TEST_FOR_FIX_PROC_HEAD( test ) \
@@ -154,6 +155,133 @@ TEST_FOR_FIX_PROC_HEAD( double_slash_test )
   return SKIP_FIX;
 }
 
+
+TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
+{
+  static int compiled = 0;
+  static const char label_pat[] = "^[ \t]*#[ \t]*(else|endif)";
+  static regex_t label_re;
+
+  char ch;
+  const char* pz_next = (char*)NULL;
+  regmatch_t match[2];
+
+  /*
+     This routine may be run many times within a single execution.
+     Do the compile once only in that case.  In the standalone case,
+     we waste 10 bytes of memory and a test, branch and increment delay.  */
+  if (! compiled)
+    {
+      compiled++;
+      re_set_syntax (RE_SYNTAX_EGREP);
+      (void)re_compile_pattern (label_pat, sizeof (label_pat)-1,
+                                &label_re);
+    }
+
+  for (;;) /* entire file */
+    {
+      /*
+        See if we need to advance to the next candidate directive
+        If the scanning pointer passes over the end of the directive,
+        then the directive is inside a comment */
+      if (pz_next < text)
+        {
+          if (regexec (&label_re, text, 2, match, 0) != 0)
+            break;
+          pz_next = text + match[0].rm_eo;
+        }
+
+      /*
+        IF the scan pointer has not reached the directive end, ... */
+      if (pz_next > text)
+        {
+          /*
+            Advance the scanning pointer.  If we are at the start
+            of a quoted string or a comment, then skip the entire unit */
+          ch = *(text++);
+
+          switch (ch)
+            {
+            case '/':
+              /*
+                Skip comments */
+              if (*text == '*')
+                {
+                  text = strstr( text+1, "*/" );
+                  if (text == (char*)NULL)
+                    return SKIP_FIX;
+                  text += 2;
+                  continue;
+                }
+              break;
+
+            case '"':
+            case '\'':
+              text = skip_quote( ch, text );
+              break;
+            } /* switch (ch) */
+          continue;
+        } /* if (still shy of directive end) */
+
+      /*
+         The scanning pointer (text) has reached the end of the current
+         directive under test, then check for bogons here */
+      for (;;) /* bogon check */
+        {
+          char ch = *(pz_next++);
+          if (isspace (ch))
+            {
+              if (ch == '\n')
+                {
+                  /*
+                    It is clean.  No bogons on this directive */
+                  text = pz_next;
+                  pz_next = (char*)NULL; /* force a new regex search */
+                  break;
+                }
+              continue;
+            }
+
+          switch (ch)
+            {
+            case '\\':
+              /*
+                Skip escaped newlines.  Otherwise, we have a bogon */
+              if (*pz_next != '\n')
+                return APPLY_FIX;
+
+              pz_next++;
+              break;
+
+            case '/':
+              /*
+                Skip comments.  Otherwise, we have a bogon */
+              if (*pz_next == '*')
+                {
+                  pz_next = strstr( pz_next+1, "*/" );
+                  if (pz_next == (char*)NULL)
+                    return SKIP_FIX;
+                  pz_next += 2;
+                  break;
+                }
+
+              /*
+                FIXME:  if this is a C++ file, then a double slash comment
+                is allowed to follow the directive.  */
+
+              /* FALLTHROUGH */
+
+            default:
+              /*
+                GOTTA BE A BOGON */
+              return APPLY_FIX;
+            } /* switch (ch) */
+        } /* for (bogon check loop) */
+    } /* for (entire file) loop */
+
+  return SKIP_FIX;
+}
+
 /* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
      test for fix selector
@@ -179,6 +307,7 @@ run_test( tname, fname, text )
     {
       if (strcmp( pte->test_name, tname ) == 0)
         return (*pte->test_proc)( fname, text );
+      pte++;
     } while (--ct > 0);
   fprintf( stderr, "fixincludes error:  the `%s' fix test is unknown\n",
            tname );
