@@ -1,5 +1,5 @@
 /* Garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -99,9 +99,6 @@ extern void ggc_mark_rtvec_children PARAMS ((struct rtvec_def *));
       ggc_set_mark (a__);			\
   } while (0)
 
-/* Mark, but only if it was allocated in collectable memory.  */
-extern void ggc_mark_if_gcable PARAMS ((const void *));
-
 /* A GC implementation must provide these functions.  */
 
 /* Initialize the garbage collector.   */
@@ -141,8 +138,8 @@ const char *ggc_alloc_string PARAMS ((const char *contents, int length));
 /* Make a copy of S, in GC-able memory.  */
 #define ggc_strdup(S) ggc_alloc_string((S), -1)
 
-/* Invoke the collector.  This is really just a hint, but in the case of
-   the simple collector, the only time it will happen.  */
+/* Invoke the collector.  Garbage collection occurs only when this
+   function is called, not during allocations.  */
 void ggc_collect PARAMS ((void));
 
 /* Actually set the mark on a particular region of memory, but don't

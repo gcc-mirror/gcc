@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -276,9 +276,6 @@ ggc_mark_rtx_children (r)
 	      break;
 	    case 'V': case 'E':
 	      ggc_mark_rtvec (XVEC (r, i));
-	      break;
-	    case 'S': case 's':
-	      ggc_mark_if_gcable (XSTR (r, i));
 	      break;
 	    }
 	}

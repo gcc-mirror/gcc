@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -226,29 +226,6 @@ ggc_set_mark (p)
   G.objects += 1;
 
   return 0;
-}
-
-/* Mark a node, but check first to see that it's really gc-able memory.  */
-
-void
-ggc_mark_if_gcable (p)
-     const void *p;
-{
-  struct ggc_mem *x;
-
-  if (p == NULL)
-    return;
-
-  x = (struct ggc_mem *) ((const char *)p - offsetof (struct ggc_mem, u));
-  if (! tree_lookup (x))
-    return;
-
-  if (x->mark)
-    return;
-
-  x->mark = 1;
-  G.allocated += x->size;
-  G.objects += 1;
 }
 
 /* Return the size of the gc-able object P.  */

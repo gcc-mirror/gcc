@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 
 static int identify_call_return_value	PARAMS ((rtx, rtx *, rtx *));
-static rtx skip_copy_to_return_value	PARAMS ((rtx, rtx, rtx));
+static rtx skip_copy_to_return_value	PARAMS ((rtx));
 static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
 static rtx skip_stack_adjustment	PARAMS ((rtx));
 static rtx skip_pic_restore		PARAMS ((rtx));
@@ -133,11 +133,15 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
    copy.  Otherwise return ORIG_INSN.  */
 
 static rtx
-skip_copy_to_return_value (orig_insn, hardret, softret)
+skip_copy_to_return_value (orig_insn)
      rtx orig_insn;
-     rtx hardret, softret;
 {
   rtx insn, set = NULL_RTX;
+  rtx hardret, softret;
+
+  /* If there is no return value, we have nothing to do.  */
+  if (! identify_call_return_value (PATTERN (orig_insn), &hardret, &softret))
+    return orig_insn;
 
   insn = next_nonnote_insn (orig_insn);
   if (! insn)
@@ -265,8 +269,6 @@ call_ends_block_p (insn, end)
      rtx insn;
      rtx end;
 {
-  rtx hardret, softret;
-
   /* END might be a note, so get the last nonnote insn of the block.  */
   end = next_nonnote_insn (PREV_INSN (end));
 
@@ -277,8 +279,7 @@ call_ends_block_p (insn, end)
   /* Skip over copying from the call's return value pseudo into
      this function's hard return register and if that's the end
      of the block, we're OK.  */
-  identify_call_return_value (PATTERN (insn), &hardret, &softret);
-  insn = skip_copy_to_return_value (insn, hardret, softret);
+  insn = skip_copy_to_return_value (insn);
   if (insn == end)
     return 1;
 
