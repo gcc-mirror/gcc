@@ -100,7 +100,11 @@ CXXFLAGS = -g -O2
 LDFLAGS = 
 LIBCFLAGS = $(CFLAGS)
 CFLAGS_FOR_BUILD = $(CFLAGS)
-CFLAGS_FOR_TARGET = $(CFLAGS)
+# During gcc bootstrap, if we use some random cc for stage1 then
+# CFLAGS will be just -g.  We want to ensure that TARGET libraries
+# (which we know are built with gcc) are built with optimizations so
+# prepend -O2 when setting CFLAGS_FOR_TARGET.
+CFLAGS_FOR_TARGET = -O2 $(CFLAGS)
 LDFLAGS_FOR_TARGET = 
 LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 PICFLAG = 
