@@ -50,7 +50,7 @@
       the C++ standard, and each containing test files or
       subdirectories of test files that test for that particular part
       of the standard.
-   <p>
+   </p>
 
    <pre>
 17_intro
@@ -97,7 +97,7 @@ data		  Sample text files for testing input and output.
       was named accordingly. For instance, to test items related to
       <code> 21.3.6.1 - basic_string::find [lib.string::find]</code>
       in the standard, the following was used:
-   <p>
+   </p>
    <pre>
 21_strings/find.cc
    </pre>   
@@ -142,11 +142,11 @@ data		  Sample text files for testing input and output.
       This test case expects some kind of interactive input in order
       to finish or pass. At the moment, the interactive tests are not
       run by default. Instead, they are run by hand, like:
+   </p>
       <pre> 
 g++ 27_io/objects/char/3_xin.cc
 cat 27_io/objects/char/3_xin.in | a.out
      </pre> 
-   </p>
 </li>
 <li>
    <em>.in</em>
@@ -320,17 +320,17 @@ cat 27_io/objects/char/3_xin.in | a.out
 #	compile).
 #
 # dg-error regexp comment [{ target/xfail selector } [{.|0|linenum}]]
-#	indicate an error message <regexp> is expected on this line
+#	indicate an error message &lt;regexp&gt; is expected on this line
 #	(the test fails if it doesn't occur)
 #	Linenum=0 for general tool messages (eg: -V arg missing).
 #	"." means the current line.
 #
 # dg-warning regexp comment [{ target/xfail selector } [{.|0|linenum}]]
-#	indicate a warning message <regexp> is expected on this line
+#	indicate a warning message &lt;regexp&gt; is expected on this line
 #	(the test fails if it doesn't occur)
 #
 # dg-bogus regexp comment [{ target/xfail selector } [{.|0|linenum}]]
-#	indicate a bogus error message <regexp> use to occur here
+#	indicate a bogus error message &lt;regexp&gt; use to occur here
 #	(the test fails if it does occur)
 #
 # dg-build regexp comment [{ target/xfail selector }]
@@ -344,7 +344,7 @@ cat 27_io/objects/char/3_xin.in | a.out
 #	(this should only be used sparingly and temporarily)
 #
 # dg-output regexp [{ target selector }]
-#	indicate the expected output of the program is <regexp>
+#	indicate the expected output of the program is &lt;regexp&gt;
 #	(there may be multiple occurrences of this, they are concatenated)
 #
 # dg-final { tcl code }
@@ -394,11 +394,11 @@ Example 4: Testing for compilation errors on line 41
 
    <p>You can check the status of the build without installing it
    using the dejagnu harness, much like the rest of the gcc tools.</p>
-   <p>
-   <pre> make check</pre> in the <em>libbuilddir</em> directory.</p>
+   <pre> make check</pre>
+   <p>in the <em>libbuilddir</em> directory.</p>
    <p>or</p>
-   <p><pre> make check-target-libstdc++-v3</pre> in the
-   <em>gccbuilddir</em> directory.</p>
+   <pre> make check-target-libstdc++-v3</pre>
+   <p>in the <em>gccbuilddir</em> directory.</p>
 
    <p>
       These commands are equivalent and will create a 'testsuite'
@@ -476,7 +476,7 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
    <p> In addition, there are some testing options that are mostly of
    interest to library maintainers and system integrators. As such,
    these tests may not work on all cpu and host combinations, and must
-   be executed in the <em>libbuilddir</em> directory.</p> These options
+   be executed in the <em>libbuilddir</em> directory.  These options
    include, but are not necessarily limited to, the following:
    </p>
 
@@ -530,25 +530,38 @@ Diffing of expected output to standard streams needs to be finished off.
 <p>
 The V3 testing framework supports, or will eventually support,
 additional keywords for the purpose of easing the job of writing
-test cases.  All V3-keywords are of the form @xxx@.  Currently plans
-for supported keywords include:
+test cases.  All V3-keywords are of the form <code>@xxx@</code>.
+Currently plans for supported keywords include:
 </p>
 
-  @require@ <files>
-      The existence of <files> is essential for the test to complete
+<dl>
+<dt> <code> @require@ &lt;files&gt; </code> </dt>
+<dd>
+   <p>
+      The existence of &lt;files&gt; is essential for the test to complete
       successfully.  For example, a test case foo.C using bar.baz as
       input file could say
-	    // @require@ bar.baz
+   </p>
+   <pre>
+	    // @require@ bar.baz</pre>
+   <p>
       The special variable % stands for the rootname, e.g. the
       file-name without its `.C' extension.  Example of use (taken
       verbatim from 27_io/filebuf.cc)
-	   // @require@ %-*.tst %-*.txt
-
-  @diff@ <first-list> <second-list>
+   </p>
+   <pre>
+	   // @require@ %-*.tst %-*.txt</pre>
+</dd>
+<dt> <code> @diff@ &lt;first-list&gt; &lt;second-list&gt; </code> </dt>
+<dd>
+   <p>
       After the test case compiles and ran successfully, diff
-      <first-list> against <second-list>, these lists should have the
-      same length.  The test fails if diff returns non-zero a pair of
-      files.
+      &lt;first-list&gt; against &lt;second-list&gt;, these lists should
+      have the same length.  The test fails if diff returns non-zero a
+      pair of files.
+   </p>
+</dd>
+</dl>
 
 <!-- ####################################################### -->
 

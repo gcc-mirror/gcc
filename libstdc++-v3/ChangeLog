@@ -1,3 +1,7 @@
+2003-05-21  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/test.html: Fix markup.
+
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* libmath/stubs.c (hypot, hypotf, hypotl): Don't divide by
