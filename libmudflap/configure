@@ -3597,9 +3597,8 @@ done
 
 
 
-
 for ac_header in stdint.h execinfo.h signal.h dlfcn.h dirent.h pwd.h grp.h \
-  netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h sys/socket.h ctype.h mntent.h \
+  netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h ctype.h mntent.h \
   sys/socket.h netinet/in.h arpa/inet.h dlfcn.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
@@ -5657,7 +5656,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5660 "configure"' > conftest.$ac_ext
+  echo '#line 5659 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?

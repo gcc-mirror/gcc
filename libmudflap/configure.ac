@@ -60,7 +60,7 @@ AC_TRY_COMPILE([
 enable_shared=no])
 
 AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h dirent.h pwd.h grp.h \
-  netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h sys/socket.h ctype.h mntent.h \
+  netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h ctype.h mntent.h \
   sys/socket.h netinet/in.h arpa/inet.h dlfcn.h)
 
 AC_CHECK_FUNCS(backtrace backtrace_symbols gettimeofday signal)
