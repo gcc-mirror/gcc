@@ -1,3 +1,7 @@
+Thu Mar 14 14:28:38 2002  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20020314-1.c: New test.
+
 2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.c-torture/execute/20020314-1.c: New test.
