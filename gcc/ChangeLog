@@ -1,3 +1,8 @@
+2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/5909:
+	* doc/sourcebuild.texi: Document Ada test suite.
+
 2003-10-27  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c: Convert to ISO C90.
