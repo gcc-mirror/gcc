@@ -2365,7 +2365,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'I':
 	    if (gcc_exec_prefix)
 	      {
-		do_spec_1 ("-imacros", 1, 0);
+		do_spec_1 ("-iprefix", 1, 0);
 		/* Make this a separate argument.  */
 		do_spec_1 (" ", 0, 0);
 		do_spec_1 (gcc_exec_prefix, 1, 0);
