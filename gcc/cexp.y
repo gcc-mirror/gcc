@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -59,13 +59,27 @@ struct arglist {
 #endif
 #endif
 
+/* Find the largest host integer type and set its size and type.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
 #ifndef NULL_PTR
 #define NULL_PTR ((GENERIC_PTR)0)
 #endif
 
 int yylex ();
 void yyerror ();
-int expression_value;
+HOST_WIDE_INT expression_value;
 
 static jmp_buf parse_return_error;
 
@@ -905,7 +919,7 @@ right_shift (a, b)
 /* We do not support C comments.  They should be removed before
    this function is called.  */
 
-int
+HOST_WIDE_INT
 parse_c_expression (string)
      char *string;
 {
@@ -954,7 +968,7 @@ main ()
     if (buf[n] == EOF)
       break;
     buf[n] = '\0';
-    printf ("parser returned %d\n", parse_c_expression (buf));
+    printf ("parser returned %ld\n", parse_c_expression (buf));
   }
 
   return 0;
