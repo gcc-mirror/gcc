@@ -542,13 +542,14 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 #define EXTRA_CONSTRAINT_STR(OP, C, STR)                               	\
   s390_extra_constraint_str ((OP), (C), (STR))
-#define EXTRA_MEMORY_CONSTRAINT(C, STR)				\
-  ((C) == 'Q' || (C) == 'R' || (C) == 'S' || (C) == 'T')
-#define EXTRA_ADDRESS_CONSTRAINT(C, STR)			\
+#define EXTRA_MEMORY_CONSTRAINT(C, STR)					\
+  ((C) == 'Q' || (C) == 'R' || (C) == 'S' || (C) == 'T' || (C) == 'A')
+#define EXTRA_ADDRESS_CONSTRAINT(C, STR)				\
   ((C) == 'U' || (C) == 'W' || (C) == 'Y')
 
-#define CONSTRAINT_LEN(C, STR)                                   \
-  ((C) == 'N' ? 5 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
+#define CONSTRAINT_LEN(C, STR)                                  	\
+  ((C) == 'N' ? 5 : 							\
+   (C) == 'A' ? 2 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
 
 /* Stack layout and calling conventions.  */
 

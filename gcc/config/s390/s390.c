@@ -1166,6 +1166,27 @@ s390_logical_operator_ok_p (rtx *operands)
   return true;
 }
 
+/* Narrow logical operation CODE of memory operand MEMOP with immediate
+   operand IMMOP to switch from SS to SI type instructions.  */
+
+void
+s390_narrow_logical_operator (enum rtx_code code, rtx *memop, rtx *immop)
+{
+  int def = code == AND ? -1 : 0;
+  HOST_WIDE_INT mask;
+  int part;
+
+  gcc_assert (GET_CODE (*memop) == MEM);
+  gcc_assert (!MEM_VOLATILE_P (*memop));
+
+  mask = s390_extract_part (*immop, QImode, def);
+  part = s390_single_part (*immop, GET_MODE (*memop), QImode, def);
+  gcc_assert (part >= 0);
+
+  *memop = adjust_address (*memop, QImode, part);
+  *immop = gen_int_mode (mask, QImode);
+}
+
 
 /* Change optimizations to be performed, depending on the
    optimization level.
@@ -1564,6 +1585,21 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
   if (c != str[0])
     abort ();
 
+  /* Check for offsettable variants of memory constraints.  */
+  if (c == 'A')
+    {
+      /* Only accept non-volatile MEMs.  */
+      if (!MEM_P (op) || MEM_VOLATILE_P (op))
+	return 0;
+
+      if ((reload_completed || reload_in_progress)
+	  ? !offsettable_memref_p (op)
+	  : !offsettable_nonstrict_memref_p (op))
+	return 0;
+
+      c = str[1];
+    }
+
   switch (c)
     {
     case 'Q':
@@ -1658,7 +1694,7 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 {
   enum machine_mode mode, part_mode;
   int def;
-  unsigned char part;
+  int part, part_goal;
 
   if (c != str[0])
     abort ();
@@ -1682,7 +1718,10 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
       return value == 2147483647;
 
     case 'N':
-      part = str[1] - '0';
+      if (str[1] == 'x')
+	part_goal = -1;
+      else
+	part_goal = str[1] - '0';
 
       switch (str[2])
 	{
@@ -1709,7 +1748,10 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
       if (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (part_mode))
 	return 0;
 
-      if (s390_single_part (GEN_INT (value), mode, part_mode, def) != part)
+      part = s390_single_part (GEN_INT (value), mode, part_mode, def);
+      if (part < 0)
+	return 0;
+      if (part_goal != -1 && part_goal != part)
 	return 0;
 
       break;

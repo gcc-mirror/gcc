@@ -1,3 +1,20 @@
+2004-10-07  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_narrow_logical_operator): Add.
+	* config/s390/s390.c (s390_narrow_logical_operator): New function.
+	(s390_extra_constraint_str): Add 'A' constraints.
+	(s390_const_ok_for_constraint_p): Add 'Nx' constraints.
+	* config/s390/s390.h (EXTRA_MEMORY_CONSTRAINT): Add 'A' constraint.
+	(CONSTRAINT_LEN): Likewise.
+	* config/s390/s390.md ("*anddi3"): Add NI alternative and splitter.
+	("*andsi3_zarch", "*andsi3_esa"): Likewise.
+	("*andhi3_zarch", "*andhi3_esa"): Likewise.
+	("*iordi3"): Add OI alternative and splitter.
+	("*iorsi3_zarch", "*iorsi3_esa"): Likewise.
+	("*iorhi3_zarch", "*iorhi3_esa"): Likewise.
+	("*xordi3"): Add XI alternative and splitter.
+	("*xorsi3", "*xorhi3"): Likewise.
+
 2004-10-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_function_rodata_section): New function.
