@@ -28,9 +28,9 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
@@ -45,6 +45,7 @@ Index
 
 * Menu:
 
+* "infinite spaces" printed:             Strange Behavior at Run Time.
 * #define:                               Overall Options.
 * #if:                                   Overall Options.
 * #include:                              Overall Options.
@@ -64,6 +65,10 @@ Index
 * -fargument-alias option:               Code Gen Options.
 * -fargument-noalias option <1>:         Aliasing Assumed To Work.
 * -fargument-noalias option:             Code Gen Options.
+* -fbadu77-intrinsics-delete option:     Fortran Dialect Options.
+* -fbadu77-intrinsics-disable option:    Fortran Dialect Options.
+* -fbadu77-intrinsics-enable option:     Fortran Dialect Options.
+* -fbadu77-intrinsics-hide option:       Fortran Dialect Options.
 * -fcaller-saves option:                 Optimize Options.
 * -fcase-initcap option:                 Fortran Dialect Options.
 * -fcase-lower option:                   Fortran Dialect Options.
@@ -163,7 +168,6 @@ Index
 * -fugly option:                         Shorthand Options.
 * -fugly-assign option:                  Fortran Dialect Options.
 * -fugly-assumed option:                 Fortran Dialect Options.
-* -fugly-comma option <1>:               Actual Bugs.
 * -fugly-comma option:                   Fortran Dialect Options.
 * -fugly-complex option:                 Fortran Dialect Options.
 * -fugly-logint option:                  Fortran Dialect Options.
@@ -188,7 +192,8 @@ Index
 * -malign-double option:                 Optimize Options.
 * -Nl option:                            Compiler Limits.
 * -Nx option:                            Compiler Limits.
-* -O2:                                   Actual Bugs.
+* -O2 <1>:                               Actual Bugs.
+* -O2:                                   News.
 * -pedantic option:                      Warning Options.
 * -pedantic-errors option:               Warning Options.
 * -r8:                                   Increasing Precision/Range.
@@ -223,7 +228,6 @@ Index
 * 586/686 CPUs:                          Use Submodel Options.
 * 64-bit systems:                        Alpha Problems Fixed.
 * _strtoul:                              Missing strtoul.
-* `infinite spaces' printed:             Strange Behavior at Run Time.
 * Abort intrinsic:                       Abort Intrinsic.
 * Abs intrinsic:                         Abs Intrinsic.
 * ACCEPT statement:                      TYPE and ACCEPT I/O Statements.
@@ -253,6 +257,7 @@ Index
 * ALog intrinsic:                        ALog Intrinsic.
 * ALog10 intrinsic:                      ALog10 Intrinsic.
 * Alpha:                                 Actual Bugs.
+* Alpha, Digital:                        System-specific Problems.
 * Alpha, support <1>:                    Actual Bugs.
 * Alpha, support:                        Alpha Problems Fixed.
 * alternate entry points:                Alternate Entry Points.
@@ -308,10 +313,13 @@ Index
 * automatic arrays <2>:                  Stack Overflow.
 * automatic arrays <3>:                  Overly Convenient Options.
 * automatic arrays:                      Adjustable Arrays.
+* AXP:                                   System-specific Problems.
 * back end, gcc:                         What is GNU Fortran?.
 * backslash <1>:                         Backslash in Constants.
 * backslash:                             Fortran Dialect Options.
 * backtrace for bug reports:             Bug Reporting.
+* badu77 intrinsics:                     Fortran Dialect Options.
+* badu77 intrinsics group:               Intrinsic Groups.
 * basic concepts:                        What is GNU Fortran?.
 * beginners:                             Getting Started.
 * BesJ0 intrinsic:                       BesJ0 Intrinsic.
@@ -495,7 +503,7 @@ Index
 * cpp program <2>:                       Preprocessor Options.
 * cpp program <3>:                       Overall Options.
 * cpp program:                           What is GNU Fortran?.
-* Cpu_Time intrinsic:                    Cpu_Time Intrinsic.
+* CPU_Time intrinsic:                    CPU_Time Intrinsic.
 * Cray pointers:                         POINTER Statements.
 * creating patch files:                  Merging Distributions.
 * credits:                               Contributors.
@@ -546,6 +554,7 @@ Index
 * debugging:                             Debugging and Interfacing.
 * debugging information options:         Debugging Options.
 * debugging main source code:            Actual Bugs.
+* DEC Alpha:                             System-specific Problems.
 * DECODE statement:                      ENCODE and DECODE.
 * deleted intrinsics:                    Intrinsic Groups.
 * DErF intrinsic:                        DErF Intrinsic.
@@ -558,6 +567,7 @@ Index
 * diagnostics, incorrect:                What is GNU Fortran?.
 * dialect options:                       Fortran Dialect Options.
 * differences between object files:      Object File Differences.
+* Digital Alpha:                         System-specific Problems.
 * Digital Fortran features:              Fortran Dialect Options.
 * Digits intrinsic:                      Digits Intrinsic.
 * DiM intrinsic:                         DiM Intrinsic.
@@ -590,7 +600,7 @@ Index
 * DMin1 intrinsic:                       DMin1 Intrinsic.
 * DMod intrinsic:                        DMod Intrinsic.
 * DNInt intrinsic:                       DNInt Intrinsic.
-* DNRM2:                                 Actual Bugs.
+* DNRM2:                                 News.
 * DO loops, one-trip:                    Fortran Dialect Options.
 * DO statement <1>:                      Loops.
 * DO statement:                          Warning Options.
@@ -662,6 +672,7 @@ Index
 * f2c compatibility <5>:                 Shorthand Options.
 * f2c compatibility:                     Overall Options.
 * f2c intrinsics:                        Fortran Dialect Options.
+* f2c intrinsics group:                  Intrinsic Groups.
 * F2C_INSTALL_FLAG:                      Installing f2c.
 * F2CLIBOK:                              Installing f2c.
 * f77 command:                           Installing f77.
@@ -670,6 +681,7 @@ Index
 * f771 program:                          What is GNU Fortran?.
 * f771, linking error for:               Missing strtoul.
 * F77_INSTALL_FLAG:                      Installing f77.
+* f90 intrinsics group:                  Intrinsic Groups.
 * fatal signal:                          Bug Criteria.
 * Fdate intrinsic <1>:                   Fdate Intrinsic (function).
 * Fdate intrinsic:                       Fdate Intrinsic (subroutine).
@@ -782,6 +794,7 @@ Index
 * GNU C required:                        GNU C Required.
 * GNU Fortran command options:           Invoking G77.
 * GNU Fortran Front End (FFE):           What is GNU Fortran?.
+* gnu intrinsics group:                  Intrinsic Groups.
 * GNU version numbering:                 Merging Distributions.
 * GOTO statement:                        Assigned Statement Labels.
 * gperf:                                 Missing gperf?.
@@ -924,6 +937,7 @@ Index
 * intrinsics, ATan2:                     ATan2 Intrinsic.
 * intrinsics, ATan2D:                    ATan2D Intrinsic.
 * intrinsics, ATanD:                     ATanD Intrinsic.
+* intrinsics, badu77:                    Fortran Dialect Options.
 * intrinsics, BesJ0:                     BesJ0 Intrinsic.
 * intrinsics, BesJ1:                     BesJ1 Intrinsic.
 * intrinsics, BesJN:                     BesJN Intrinsic.
@@ -960,7 +974,7 @@ Index
 * intrinsics, CosD:                      CosD Intrinsic.
 * intrinsics, CosH:                      CosH Intrinsic.
 * intrinsics, Count:                     Count Intrinsic.
-* intrinsics, Cpu_Time:                  Cpu_Time Intrinsic.
+* intrinsics, CPU_Time:                  CPU_Time Intrinsic.
 * intrinsics, CShift:                    CShift Intrinsic.
 * intrinsics, CSin:                      CSin Intrinsic.
 * intrinsics, CSqRt:                     CSqRt Intrinsic.
@@ -1265,7 +1279,6 @@ Index
 * intrinsics, Sign:                      Sign Intrinsic.
 * intrinsics, Signal <1>:                Signal Intrinsic (function).
 * intrinsics, Signal:                    Signal Intrinsic (subroutine).
-* intrinsics, SIGNAL():                  Actual Bugs.
 * intrinsics, Sin:                       Sin Intrinsic.
 * intrinsics, SinD:                      SinD Intrinsic.
 * intrinsics, SinH:                      SinH Intrinsic.
@@ -1320,12 +1333,13 @@ Index
 * IOr intrinsic:                         IOr Intrinsic.
 * IOSTAT=:                               Run-time Library Errors.
 * IRand intrinsic:                       IRand Intrinsic.
+* Irix 6:                                System-specific Problems.
 * IsaTty intrinsic:                      IsaTty Intrinsic.
 * IShft intrinsic:                       IShft Intrinsic.
 * IShftC intrinsic:                      IShftC Intrinsic.
 * ISign intrinsic:                       ISign Intrinsic.
 * ITime intrinsic:                       ITime Intrinsic.
-* ix86:                                  Actual Bugs.
+* ix86:                                  News.
 * IZExt intrinsic:                       IZExt Intrinsic.
 * JCB002 program:                        Generics and Specifics.
 * JCB003 program:                        CMPAMBIG.
@@ -1437,6 +1451,7 @@ Index
 * MAIN__():                              Main Program Unit.
 * make clean:                            Cleanup Kills Stage Directories.
 * make compare:                          Object File Differences.
+* Makefile example:                      Bug Criteria.
 * makeinfo:                              Missing makeinfo?.
 * MAP statement:                         STRUCTURE UNION RECORD MAP.
 * MatMul intrinsic:                      MatMul Intrinsic.
@@ -1460,6 +1475,7 @@ Index
 * messages, run-time:                    Run-time Library Errors.
 * messages, warning:                     Warning Options.
 * messages, warning and error:           Warnings and Errors.
+* mil intrinsics group:                  Intrinsic Groups.
 * MIL-STD 1753 <1>:                      MIL-STD 1753.
 * MIL-STD 1753 <2>:                      END DO.
 * MIL-STD 1753 <3>:                      DO WHILE.
@@ -1531,6 +1547,10 @@ Index
 * options, -fargument-alias:             Code Gen Options.
 * options, -fargument-noalias <1>:       Aliasing Assumed To Work.
 * options, -fargument-noalias:           Code Gen Options.
+* options, -fbadu77-intrinsics-delete:   Fortran Dialect Options.
+* options, -fbadu77-intrinsics-disable:  Fortran Dialect Options.
+* options, -fbadu77-intrinsics-enable:   Fortran Dialect Options.
+* options, -fbadu77-intrinsics-hide:     Fortran Dialect Options.
 * options, -fcaller-saves:               Optimize Options.
 * options, -fcase-initcap:               Fortran Dialect Options.
 * options, -fcase-lower:                 Fortran Dialect Options.
@@ -1628,7 +1648,6 @@ Index
 * options, -fugly:                       Shorthand Options.
 * options, -fugly-assign:                Fortran Dialect Options.
 * options, -fugly-assumed:               Fortran Dialect Options.
-* options, -fugly-comma <1>:             Actual Bugs.
 * options, -fugly-comma:                 Fortran Dialect Options.
 * options, -fugly-complex:               Fortran Dialect Options.
 * options, -fugly-logint:                Fortran Dialect Options.
@@ -1820,7 +1839,6 @@ Index
 * rounding errors:                       Floating-point Errors.
 * row-major ordering:                    Arrays.
 * RRSpacing intrinsic:                   RRSpacing Intrinsic.
-* RS/6000 support:                       Actual Bugs.
 * RShift intrinsic:                      RShift Intrinsic.
 * run-time library:                      What is GNU Fortran?.
 * run-time options:                      Code Gen Options.
@@ -1847,7 +1865,7 @@ Index
 * separate distributions:                Merging Distributions.
 * sequence numbers:                      Better Source Model.
 * Set_Exponent intrinsic:                Set_Exponent Intrinsic.
-* SGI support:                           Actual Bugs.
+* SGI:                                   System-specific Problems.
 * Shape intrinsic:                       Shape Intrinsic.
 * SHIFT intrinsic:                       Bit Operations on Floating-point Data.
 * Short intrinsic:                       Short Intrinsic.
@@ -1858,7 +1876,6 @@ Index
 * signal 11:                             Signal 11 and Friends.
 * Signal intrinsic <1>:                  Signal Intrinsic (function).
 * Signal intrinsic:                      Signal Intrinsic (subroutine).
-* SIGNAL() intrinsic:                    Actual Bugs.
 * signature of procedures:               Procedures.
 * simplify porting:                      Simplify Porting.
 * Sin intrinsic:                         Sin Intrinsic.
@@ -1898,7 +1915,7 @@ Index
 * SRand intrinsic:                       SRand Intrinsic.
 * stack allocation:                      Maximum Stackable Size.
 * stack overflow:                        Stack Overflow.
-* stack, 387 coprocessor:                Actual Bugs.
+* stack, 387 coprocessor:                News.
 * stack, aligned:                        Aligned Data.
 * stage directories:                     Cleanup Kills Stage Directories.
 * standard support:                      Standard Support.
@@ -1974,8 +1991,6 @@ Index
 * support, f77:                          Backslash in Constants.
 * support, Fortran 90:                   Fortran 90 Support.
 * support, gdb:                          Debugger Problems.
-* support, RS/6000:                      Actual Bugs.
-* support, SGI:                          Actual Bugs.
 * suppressing warnings:                  Warning Options.
 * symbol names <1>:                      Names.
 * symbol names:                          Fortran Dialect Options.

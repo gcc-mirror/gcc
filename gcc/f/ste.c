@@ -1,5 +1,5 @@
 /* ste.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -395,12 +395,11 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 
   /* Do the initial assignment into the DO var.  */
 
-  expr = ffecom_modify (void_type_node, tvar, tstart);
-  expand_expr_stmt (expr);
+  tstart = ffecom_save_tree (tstart);
 
   expr = ffecom_2 (MINUS_EXPR, TREE_TYPE (tvar),
 		   tend,
-		   TREE_CONSTANT (tstart) ? tstart : tvar);
+		   tstart);
 
   if (!ffe_is_onetrip ())
     {
@@ -437,6 +436,9 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
   niters = ffecom_push_tempvar (TREE_TYPE (expr),
 				FFETARGET_charactersizeNONE, -1, FALSE);
   expr = ffecom_modify (void_type_node, niters, expr);
+  expand_expr_stmt (expr);
+
+  expr = ffecom_modify (void_type_node, tvar, tstart);
   expand_expr_stmt (expr);
 
   if (block == NULL)
@@ -997,7 +999,6 @@ ffeste_io_cilist_ (bool have_err,
   int yes;
   tree field;
   tree inits, initn;
-  tree ignore;			/* We ignore the length of format! */
   bool constantp = TRUE;
   static tree errfield, unitfield, endfield, formatfield, recfield;
   tree errinit, unitinit, endinit, formatinit, recinit;
@@ -1084,7 +1085,7 @@ ffeste_io_cilist_ (bool have_err,
       break;
 
     case FFESTV_formatCHAREXPR:
-      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, &ignore);
+      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
       if (TREE_CONSTANT (formatexp))
 	{
 	  formatinit = formatexp;
@@ -1303,7 +1304,6 @@ ffeste_io_icilist_ (bool have_err,
   int yes;
   tree field;
   tree inits, initn;
-  tree ignore;			/* We ignore the length of format! */
   bool constantp = TRUE;
   static tree errfield, unitfield, endfield, formatfield, unitlenfield,
     unitnumfield;
@@ -1407,7 +1407,7 @@ ffeste_io_icilist_ (bool have_err,
       break;
 
     case FFESTV_formatCHAREXPR:
-      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, &ignore);
+      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
       if (TREE_CONSTANT (formatexp))
 	{
 	  formatinit = formatexp;

@@ -25,27 +25,6 @@ port, build, and install `g77', *Note Problems Installing::.
 
      Until this bug is fixed, use only `-O1' or no optimization.
 
-   * A code-generation bug afflicts Intel x86 targets when `-O2' is
-     specified compiling, for example, an old version of the `DNRM2'
-     routine.  The x87 coprocessor stack is being somewhat mismanaged
-     in cases where assigned `GOTO' and `ASSIGN' are involved.
-
-     Version 0.5.21 of `g77' contains an initial effort to fix the
-     problem, but this effort is incomplete, and a more complete fix is
-     planned for the next release.
-
-   * Work is needed on the `SIGNAL()' intrinsic to ensure that pointers
-     and integers are properly handled on all targets, including 64-bit
-     machines.
-
-   * When using `-fugly-comma', `g77' assumes an extra `%VAL(0)'
-     argument is to be passed to intrinsics taking no arguments, such
-     as `IARGC()', which in turn reject such a call.  Although this has
-     been worked around for 0.5.18 due to changes in the handling of
-     intrinsics, `g77' needs to do the ugly-argument-appending trick
-     only for external-function invocation, as this would probably be
-     more consistent with compilers that default to using that trick.
-
    * Something about `g77''s straightforward handling of label
      references and definitions sometimes prevents the GBE from
      unrolling loops.  Until this is solved, try inserting or removing
@@ -151,30 +130,6 @@ port, build, and install `g77', *Note Problems Installing::.
      potential, with the current setup, for interface differences in
      the way such areas are laid out between `g77' and other compilers.
 
-   * Some crashes occur when compiling under Solaris on x86 machines.
-
-     Nothing has been heard about any such problems for some time, so
-     this is considering a closed item as of 0.5.20.  Please submit any
-     bug reports pertinent to `g77''s support for Solaris/x86 systems.
-
-   * RS/6000 support is not complete as of the gcc 2.6.3 back end.  The
-     2.7.0 back end appears to fix this problem, or at least mitigate
-     it significantly, but there is at least one known problem that is
-     likely to be a code-generation bug in `gcc-2.7.0' plus
-     `g77-0.5.16'.  This problem shows up only when compiling the
-     Fortran program with `-O'.
-
-     Nothing has been heard about any RS/6000 problems for some time,
-     so this is considering a closed item as of 0.5.20.  Please submit
-     any bug reports pertinent to `g77''s support for RS/6000 systems.
-
-   * SGI support is known to be a bit buggy.  The known problem shows
-     up only when compiling the Fortran program with `-O'.
-
-     It is possible these problems have all been fixed in 0.5.20 by
-     emulating complex arithmetic in the front end.  Please submit any
-     bug reports pertinent to `g77''s support for SGI systems.
-
    * `g77' doesn't work perfectly on 64-bit configurations such as the
      Alpha.  This problem is expected to be largely resolved as of
      version 0.5.20, and further addressed by 0.5.21.  Version 0.6
@@ -210,8 +165,7 @@ port, build, and install `g77', *Note Problems Installing::.
      general expressions (other than simple variables/arrays), to
      procedures when compiling on some systems (such as i386) with
      `-fPIC', as in when compiling for ELF targets.  The symptom is
-     that the assembler complains about invalid opcodes.  More
-     investigation is needed, but the problem is almost certainly in
-     the gcc back end, and it apparently occurs only when compiling
+     that the assembler complains about invalid opcodes.  This bug is
+     in the gcc back end, and it apparently occurs only when compiling
      sufficiently complicated functions *without* the `-O' option.
 

@@ -150,7 +150,7 @@
 @end ifset
 @ifset familyF90
 * Count Intrinsic::     (Reserved for future use.)
-* Cpu_Time Intrinsic::  Get current CPU time.
+* CPU_Time Intrinsic::  Get current CPU time.
 * CShift Intrinsic::    (Reserved for future use.)
 @end ifset
 @ifset familyF77
@@ -2229,6 +2229,10 @@ If the @var{Status} argument is supplied, it contains 0
 on success or a non-zero error code otherwise upon return.
 See @code{chdir(3)}.
 
+@emph{Caution:} Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
+
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
@@ -2263,6 +2267,10 @@ Description:
 Sets the current working directory to be @var{Dir}.
 Returns 0 on success or a non-zero error code.
 See @code{chdir(3)}.
+
+@emph{Caution:} Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -2595,18 +2603,18 @@ The name is, however, reserved as an intrinsic.
 Use @samp{EXTERNAL Count} to use this name for an
 external procedure.
 
-@node Cpu_Time Intrinsic
-@subsubsection Cpu_Time Intrinsic
-@cindex Cpu_Time intrinsic
-@cindex intrinsics, Cpu_Time
+@node CPU_Time Intrinsic
+@subsubsection CPU_Time Intrinsic
+@cindex CPU_Time intrinsic
+@cindex intrinsics, CPU_Time
 
 @noindent
 @example
-CALL Cpu_Time(@var{Seconds})
+CALL CPU_Time(@var{Seconds})
 @end example
 
 @noindent
-@var{Seconds}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
+@var{Seconds}: @code{REAL}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{f90}.
@@ -5270,6 +5278,12 @@ Description:
 
 Returns the login name for the process in @var{Login}.
 
+@emph{Caution:} On some systems, the @code{getlogin(3)}
+function, which this intrinsic calls at run time,
+is either not implemented or returns a null pointer.
+In the latter case, this intrinsic returns blanks
+in @var{Login}.
+
 @node GetPId Intrinsic
 @subsubsection GetPId Intrinsic
 @cindex GetPId intrinsic
@@ -6355,7 +6369,7 @@ Int2(@var{A})
 Int2: @code{INTEGER(KIND=6)} function.
 
 @noindent
-@var{A}: @code{INTEGER}; scalar; INTENT(IN).
+@var{A}: @code{INTEGER}, @code{REAL}, or @code{COMPLEX}; scalar; INTENT(IN).
 
 @noindent
 Intrinsic groups: @code{gnu}.
@@ -6390,7 +6404,7 @@ Int8(@var{A})
 Int8: @code{INTEGER(KIND=2)} function.
 
 @noindent
-@var{A}: @code{INTEGER}; scalar; INTENT(IN).
+@var{A}: @code{INTEGER}, @code{REAL}, or @code{COMPLEX}; scalar; INTENT(IN).
 
 @noindent
 Intrinsic groups: @code{gnu}.
@@ -7373,7 +7387,7 @@ Loc(@var{Entity})
 @end example
 
 @noindent
-Loc: @code{INTEGER(KIND=0)} function.
+Loc: @code{INTEGER(KIND=7)} function.
 
 @noindent
 @var{Entity}: Any type; cannot be a constant or expression.
@@ -9093,8 +9107,6 @@ Description:
 Returns the process's runtime in seconds---the same value as the
 UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.
-
 For information on other intrinsics with the same name:
 @xref{Second Intrinsic (subroutine)}.
 
@@ -9109,7 +9121,7 @@ CALL Second(@var{Seconds})
 @end example
 
 @noindent
-@var{Seconds}: @code{REAL(KIND=1)}; scalar; INTENT(OUT).
+@var{Seconds}: @code{REAL}; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -9120,7 +9132,7 @@ Description:
 Returns the process's runtime in seconds in @var{Seconds}---the same value
 as the UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.  @xref{Cpu_Time Intrinsic}
+This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic}
 for a standard equivalent.
 
 For information on other intrinsics with the same name:
@@ -9260,7 +9272,7 @@ CALL Signal(@var{Number}, @var{Handler}, @var{Status})
 or dummy/global @code{INTEGER(KIND=1)} scalar.
 
 @noindent
-@var{Status}: @code{INTEGER(KIND=1)}; OPTIONAL; scalar; INTENT(OUT).
+@var{Status}: @code{INTEGER(KIND=7)}; OPTIONAL; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -9271,12 +9283,13 @@ Description:
 If @var{Handler} is a an @code{EXTERNAL} routine, arranges for it to be
 invoked with a single integer argument (of system-dependent length)
 when signal @var{Number} occurs.
-If @var{Number} is an integer, it can be
-used to turn off handling of signal @var{Handler} or revert to its default
+If @var{Handler} is an integer, it can be
+used to turn off handling of signal @var{Number} or revert to its default
 action.
 See @code{signal(2)}.
 
-Note that @var{Handler} will be called using C conventions, so its value in
+Note that @var{Handler} will be called using C conventions,
+so the value of its argument in Fortran terms
 Fortran terms is obtained by applying @code{%LOC()} (or @var{LOC()}) to it.
 
 The value returned by @code{signal(2)} is written to @var{Status}, if
@@ -9286,6 +9299,34 @@ Otherwise the return value is ignored.
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
+
+@emph{Warning:} Use of the @code{libf2c} run-time library function
+@samp{signal_} directly
+(such as via @samp{EXTERNAL SIGNAL})
+requires use of the @code{%VAL()} construct
+to pass an @code{INTEGER} value
+(such as @samp{SIG_IGN} or @samp{SIG_DFL})
+for the @var{Handler} argument.
+
+However, while @samp{CALL SIGNAL(@var{signum}, %VAL(SIG_IGN))}
+works when @samp{SIGNAL} is treated as an external procedure
+(and resolves, at link time, to @code{libf2c}'s @samp{signal_} routine),
+this construct is not valid when @samp{SIGNAL} is recognized
+as the intrinsic of that name.
+
+Therefore, for maximum portability and reliability,
+code such references to the @samp{SIGNAL} facility as follows:
+
+@smallexample
+INTRINSIC SIGNAL
+@dots{}
+CALL SIGNAL(@var{signum}, SIG_IGN)
+@end smallexample
+
+@code{g77} will compile such a call correctly,
+while other compilers will generally either do so as well
+or reject the @samp{INTRINSIC SIGNAL} statement via a diagnostic,
+allowing you to take appropriate action.
 
 For information on other intrinsics with the same name:
 @xref{Signal Intrinsic (function)}.
@@ -9303,7 +9344,7 @@ Signal(@var{Number}, @var{Handler})
 @end example
 
 @noindent
-Signal: @code{INTEGER(KIND=1)} function.
+Signal: @code{INTEGER(KIND=7)} function.
 
 @noindent
 @var{Number}: @code{INTEGER}; scalar; INTENT(IN).
@@ -9321,18 +9362,72 @@ Description:
 If @var{Handler} is a an @code{EXTERNAL} routine, arranges for it to be
 invoked with a single integer argument (of system-dependent length)
 when signal @var{Number} occurs.
-If @var{Number} is an integer, it can be
-used to turn off handling of signal @var{Handler} or revert to its default
+If @var{Handler} is an integer, it can be
+used to turn off handling of signal @var{Number} or revert to its default
 action.
 See @code{signal(2)}.
 
-Note that @var{Handler} will be called using C conventions, so its value in
-Fortran terms is obtained by applying @code{%LOC()} (or @var{LOC()}) to it.
+Note that @var{Handler} will be called using C conventions,
+so the value of its argument in Fortran terms
+is obtained by applying @code{%LOC()} (or @var{LOC()}) to it.
 
 The value returned by @code{signal(2)} is returned.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
+
+@emph{Warning:} If the returned value is stored in
+an @code{INTEGER(KIND=1)} (default @code{INTEGER}) argument,
+truncation of the original return value occurs on some systems
+(such as Alphas, which have 64-bit pointers but 32-bit default integers),
+with no warning issued by @code{g77} under normal circumstances.
+
+Therefore, the following code fragment might silently fail on
+some systems:
+
+@smallexample
+INTEGER RTN
+EXTERNAL MYHNDL
+RTN = SIGNAL(@var{signum}, MYHNDL)
+@dots{}
+! Restore original handler:
+RTN = SIGNAL(@var{signum}, RTN)
+@end smallexample
+
+The reason for the failure is that @samp{RTN} might not hold
+all the information on the original handler for the signal,
+thus restoring an invalid handler.
+This bug could manifest itself as a spurious run-time failure
+at an arbitrary point later during the program's execution,
+for example.
+
+@emph{Warning:} Use of the @code{libf2c} run-time library function
+@samp{signal_} directly
+(such as via @samp{EXTERNAL SIGNAL})
+requires use of the @code{%VAL()} construct
+to pass an @code{INTEGER} value
+(such as @samp{SIG_IGN} or @samp{SIG_DFL})
+for the @var{Handler} argument.
+
+However, while @samp{RTN = SIGNAL(@var{signum}, %VAL(SIG_IGN))}
+works when @samp{SIGNAL} is treated as an external procedure
+(and resolves, at link time, to @code{libf2c}'s @samp{signal_} routine),
+this construct is not valid when @samp{SIGNAL} is recognized
+as the intrinsic of that name.
+
+Therefore, for maximum portability and reliability,
+code such references to the @samp{SIGNAL} facility as follows:
+
+@smallexample
+INTRINSIC SIGNAL
+@dots{}
+RTN = SIGNAL(@var{signum}, SIG_IGN)
+@end smallexample
+
+@code{g77} will compile such a call correctly,
+while other compilers will generally either do so as well
+or reject the @samp{INTRINSIC SIGNAL} statement via a diagnostic,
+allowing you to take appropriate action.
 
 For information on other intrinsics with the same name:
 @xref{Signal Intrinsic (subroutine)}.

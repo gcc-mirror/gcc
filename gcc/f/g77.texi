@@ -91,7 +91,7 @@ translations approved by the Free Software Foundation instead of in the
 original English.
 @end ifinfo
 
-Contributed by James Craig Burley (@email{burley@@gnu.ai.mit.edu}).
+Contributed by James Craig Burley (@email{burley@@gnu.org}).
 Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
@@ -102,7 +102,7 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @sp 2
 @center James Craig Burley
 @sp 3
-@center Last updated 1997-09-09
+@center Last updated 1998-01-11
 @sp 1
 @c The version number appears some more times in this file.
 
@@ -762,7 +762,7 @@ without royalty; alteration is not permitted.
 @cindex improvements, funding
 
 Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{burley@@gnu.ai.mit.edu}), who is a volunteer
+James Craig Burley (@email{burley@@gnu.org}), who is a volunteer
 for, not an employee of, the Free Software Foundation (FSF).
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -801,7 +801,7 @@ would be able to plan on not doing contract work for many months and
 could thus devote that time to work on projects (such as the planned
 changes for 0.6) that require longer timeframes to complete.
 For the latest information on the status of the author, do
-@kbd{finger -l burley@@gate.gnu.ai.mit.edu} on a UNIX system
+@kbd{finger -l burley@@gnu.org} on a UNIX system
 (or any system with a command like UNIX @code{finger}).
 
 Another important way to support work on GNU Fortran is to volunteer
@@ -810,7 +810,7 @@ Work is needed on documentation, testing, porting
 to various machines, and in some cases, coding (although major
 changes planned for version 0.6 make it difficult to add manpower to this
 area).
-Email @email{fortran@@gnu.ai.mit.edu} to volunteer for this work.
+Email @email{fortran@@gnu.org} to volunteer for this work.
 
 @xref{Funding,,Funding Free Software}, for more information.
 
@@ -1345,6 +1345,8 @@ by type.  Explanations are in the following sections.
 -fcase-initcap  -fcase-upper  -fcase-lower  -fcase-preserve
 -ff2c-intrinsics-delete  -ff2c-intrinsics-hide
 -ff2c-intrinsics-disable  -ff2c-intrinsics-enable
+-fbadu77-intrinsics-delete  -fbadu77-intrinsics-hide
+-fbadu77-intrinsics-disable  -fbadu77-intrinsics-enable
 -ff90-intrinsics-delete  -ff90-intrinsics-hide
 -ff90-intrinsics-disable  -ff90-intrinsics-enable
 -fgnu-intrinsics-delete  -fgnu-intrinsics-hide
@@ -1827,9 +1829,11 @@ had read @samp{DIMENSION X(*)}.
 @cindex -fugly-comma option
 @cindex options, -fugly-comma
 @item -fugly-comma
-Treat a trailing comma in an argument list as specification
-of a trailing null argument, and treat an empty argument
-list as specification of a single null argument.
+In an external-procedure invocation,
+treat a trailing comma in the argument list
+as specification of a trailing null argument,
+and treat an empty argument list
+as specification of a single null argument.
 
 For example, @samp{CALL FOO(,)} is treated as
 @samp{CALL FOO(%VAL(0), %VAL(0))}.
@@ -1839,6 +1843,8 @@ And @samp{F = FUNC()} is treated as @samp{F = FUNC(%VAL(0))}.
 
 The default behavior, @samp{-fno-ugly-comma}, is to ignore
 a single trailing comma in an argument list.
+So, by default, @samp{CALL FOO(X,)} is treated
+exactly the same as @samp{CALL FOO(X)}.
 
 @xref{Ugly Null Arguments}, for more information.
 
@@ -2046,6 +2052,24 @@ while allowing any-case matching of intrinsics and keywords.
 For example, @samp{call Foo(i,I)} would pass two @emph{different}
 variables named @samp{i} and @samp{I} to a procedure named @samp{Foo}.)
 
+@cindex -fbadu77-intrinsics-delete option
+@cindex options, -fbadu77-intrinsics-delete
+@item -fbadu77-intrinsics-delete
+@cindex -fbadu77-intrinsics-hide option
+@cindex options, -fbadu77-intrinsics-hide
+@item -fbadu77-intrinsics-hide
+@cindex -fbadu77-intrinsics-disable option
+@cindex options, -fbadu77-intrinsics-disable
+@item -fbadu77-intrinsics-disable
+@cindex -fbadu77-intrinsics-enable option
+@cindex options, -fbadu77-intrinsics-enable
+@item -fbadu77-intrinsics-enable
+@cindex badu77 intrinsics
+@cindex intrinsics, badu77
+Specify status of UNIX intrinsics having inappropriate forms.
+@samp{-fbadu77-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
+
 @cindex -ff2c-intrinsics-delete option
 @cindex options, -ff2c-intrinsics-delete
 @item -ff2c-intrinsics-delete
@@ -2062,6 +2086,7 @@ variables named @samp{i} and @samp{I} to a procedure named @samp{Foo}.)
 @cindex intrinsics, f2c
 Specify status of f2c-specific intrinsics.
 @samp{-ff2c-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
 
 @cindex -ff90-intrinsics-delete option
 @cindex options, -ff90-intrinsics-delete
@@ -2079,6 +2104,7 @@ Specify status of f2c-specific intrinsics.
 @cindex intrinsics, Fortran 90
 Specify status of F90-specific intrinsics.
 @samp{-ff90-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
 
 @cindex -fgnu-intrinsics-delete option
 @cindex options, -fgnu-intrinsics-delete
@@ -2097,6 +2123,7 @@ Specify status of F90-specific intrinsics.
 @cindex intrinsics, COMPLEX
 Specify status of Digital's COMPLEX-related intrinsics.
 @samp{-fgnu-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
 
 @cindex -fmil-intrinsics-delete option
 @cindex options, -fmil-intrinsics-delete
@@ -2114,6 +2141,7 @@ Specify status of Digital's COMPLEX-related intrinsics.
 @cindex intrinsics, MIL-STD 1753
 Specify status of MIL-STD-1753-specific intrinsics.
 @samp{-fmil-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
 
 @cindex -funix-intrinsics-delete option
 @cindex options, -funix-intrinsics-delete
@@ -2131,6 +2159,7 @@ Specify status of MIL-STD-1753-specific intrinsics.
 @cindex intrinsics, UNIX
 Specify status of UNIX intrinsics.
 @samp{-funix-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
 
 @cindex -fvxt-intrinsics-delete option
 @cindex options, -fvxt-intrinsics-delete
@@ -2148,6 +2177,7 @@ Specify status of UNIX intrinsics.
 @cindex intrinsics, VXT
 Specify status of VXT intrinsics.
 @samp{-fvxt-intrinsics-enable} is the default.
+@xref{Intrinsic Groups}.
 
 @cindex -ffixed-line-length-@var{n} option
 @cindex options, -ffixed-line-length-@var{n}
@@ -3251,9 +3281,9 @@ users use @code{g77}.
 such changes to @code{g77}.
 
 To find out about existing bugs and ongoing plans for GNU
-Fortran, retrieve @uref{ftp://alpha.gnu.ai.mit.edu/g77.plan}
+Fortran, retrieve @uref{ftp://alpha.gnu.org/g77.plan}
 or, if you cannot do that, email
-@email{fortran@@gnu.ai.mit.edu} asking for a recent copy of the
+@email{fortran@@gnu.org} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
 
 @heading In 0.5.21:
@@ -5726,7 +5756,7 @@ C INT(I1-I2) as INT(I1)-INT(I2) given INTEGER*2 I1,I2.
 C
 C Version 0:
 C Written by James Craig Burley 1997-02-20.
-C Contact via Internet email: burley@@gnu.ai.mit.edu
+C Contact via Internet email: burley@@gnu.org
 C
 C Purpose:
 C Determine how compilers handle non-standard IDIM
@@ -7060,11 +7090,11 @@ without conversion.
 @cindex null arguments
 @cindex arguments, null
 
-The @samp{-fugly-comma} option enables
-use of a single trailing comma to mean ``pass an extra trailing null
-argument'' in a list of actual arguments to a procedure other than a
-statement function, and use of an empty list of arguments to
-mean ``pass a single null argument''.
+The @samp{-fugly-comma} option enables use of a single trailing comma
+to mean ``pass an extra trailing null argument''
+in a list of actual arguments to an external procedure,
+and use of an empty list of arguments to such a procedure
+to mean ``pass a single null argument''.
 
 @cindex omitting arguments
 @cindex arguments, omitting
@@ -7598,26 +7628,33 @@ The groups are:
 @cindex intrinsics, groups of
 @cindex groups of intrinsics
 @table @code
+@cindex @code{badu77} intrinsics group
 @item badu77
 UNIX intrinsics having inappropriate forms (usually functions that
 have intended side effects).
 
+@cindex @code{gnu} intrinsics group
 @item gnu
 Intrinsics the GNU Fortran language supports that are extensions to
 the Fortran standards (77 and 90).
 
+@cindex @code{f2c} intrinsics group
 @item f2c
 Intrinsics supported by AT&T's @code{f2c} converter and/or @code{libf2c}.
 
+@cindex @code{f90} intrinsics group
 @item f90
 Fortran 90 intrinsics.
 
+@cindex @code{mil} intrinsics group
 @item mil
 MIL-STD 1753 intrinsics (@code{MVBITS}, @code{IAND}, @code{BTEST}, and so on).
 
+@cindex @code{mil} intrinsics group
 @item unix
 UNIX intrinsics (@code{IARGC}, @code{EXIT}, @code{ERF}, and so on).
 
+@cindex @code{mil} intrinsics group
 @item vxt
 VAX/VMS FORTRAN (current as of v4) intrinsics.
 @end table
@@ -10164,7 +10201,7 @@ or installing @code{g77} is not provided here.
 
 To find out about major bugs discovered in the current release and
 possible workarounds for them, retrieve
-@uref{ftp://alpha.gnu.ai.mit.edu/g77.plan}.
+@uref{ftp://alpha.gnu.org/g77.plan}.
 
 (Note that some of this portion of the manual is lifted
 directly from the @code{gcc} manual, with minor modifications
@@ -10541,7 +10578,7 @@ In the meantime, finding and fixing the programming
 bugs that lead to these behaviors is, ultimately, the user's
 responsibility, as difficult as that task can sometimes be.
 
-@cindex `infinite spaces' printed
+@cindex ``infinite spaces'' printed
 @cindex spaces, endless printing of
 @cindex libc, non-ANSI or non-default
 @cindex C library
@@ -11029,16 +11066,17 @@ specifiers.
 Supporting this requires a significant redesign or replacement
 of @code{libf2c}.
 
-However, a future version of @code{g77} might support
-this construct when the expression is constant.  For
-example:
+However, @code{g77} does support
+this construct when the expression is constant
+(as of version 0.5.22).
+For example:
 
 @smallexample
       PARAMETER (IWIDTH = 12)
 10    FORMAT (I<IWIDTH>)
 @end smallexample
 
-In the meantime, at least for output (@code{PRINT} and
+Otherwise, at least for output (@code{PRINT} and
 @code{WRITE}), Fortran code making use of this feature can
 be rewritten to avoid it by constructing the @code{FORMAT}
 string in a @code{CHARACTER} variable or array, then
@@ -12275,6 +12313,63 @@ tool.
 @code{ftncheck} can be found at @uref{ftp://ftp.netlib.org/fortran}
 or @uref{ftp://ftp.dsm.fordham.edu}.
 
+@pindex make
+@cindex Makefile example
+Here are some sample @file{Makefile} rules using @code{ftnchek}
+``project'' files to do cross-file checking and @code{sfmakedepend}
+(from @uref{ftp://ahab.rutgers.edu/pub/perl/sfmakedepend})
+to maintain dependencies automatically.
+These assume the use of GNU @code{make}.
+
+@smallexample
+# Dummy suffix for ftnchek targets:
+.SUFFIXES: .chek
+.PHONY: chekall
+
+# How to compile .f files (for implicit rule):
+FC = g77
+# Assume `include' directory:
+FFLAGS = -Iinclude -g -O -Wall
+
+# Flags for ftnchek:
+CHEK1 = -array=0 -include=includes -noarray
+CHEK2 = -nonovice -usage=1 -notruncation
+CHEKFLAGS = $(CHEK1) $(CHEK2)
+
+# Run ftnchek with all the .prj files except the one corresponding
+# to the target's root:
+%.chek : %.f ; \
+  ftnchek $(filter-out $*.prj,$(PRJS)) $(CHEKFLAGS) \
+    -noextern -library $<
+
+# Derive a project file from a source file:
+%.prj : %.f ; \
+  ftnchek $(CHEKFLAGS) -noextern -project -library $<
+
+# The list of objects is assumed to be in variable OBJS.
+# Sources corresponding to the objects:
+SRCS = $(OBJS:%.o=%.f)
+# ftnchek project files:
+PRJS = $(OBJS:%.o=%.prj)
+
+# Build the program
+prog: $(OBJS) ; \
+  $(FC) -o $@ $(OBJS)
+
+chekall: $(PRJS) ; \
+  ftnchek $(CHEKFLAGS) $(PRJS)
+
+prjs: $(PRJS)
+
+# For Emacs M-x find-tag:
+TAGS: $(SRCS) ; \
+  etags $(SRCS)
+
+# Rebuild dependencies:
+depend: ; \
+  sfmakedepend -I $(PLTLIBDIR) -I includes -a prj $(SRCS1)
+@end smallexample
+
 @item
 Try your code out using other Fortran compilers, such as @code{f2c}.
 If it does not work on at least one other compiler (assuming the
@@ -12290,8 +12385,8 @@ exposes it more readily than other compilers.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex fortran@@gnu.ai.mit.edu
-Send bug reports for GNU Fortran to @email{fortran@@gnu.ai.mit.edu}.
+@kindex fortran@@gnu.org
+Send bug reports for GNU Fortran to @email{fortran@@gnu.org}.
 
 Often people think of posting bug reports to a newsgroup instead of
 mailing them.
@@ -12627,7 +12722,7 @@ we should be able to reproduce the crash ourselves.
 If you would like to write bug fixes or improvements for the GNU Fortran
 compiler, that is very helpful.
 Send suggested fixes to the bug report
-mailing list, @email{fortran@@gnu.ai.mit.edu}.
+mailing list, @email{fortran@@gnu.org}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -12752,7 +12847,7 @@ The service directory is found in the file named @file{SERVICE} in the
 GNU CC distribution.
 
 @item
-Send a message to @email{fortran@@gnu.ai.mit.edu}.
+Send a message to @email{fortran@@gnu.org}.
 @end itemize
 
 @end ifset
@@ -13352,7 +13447,7 @@ that the explanations are given below, and the diagnostics themselves
 identify the appropriate explanation.
 
 Identification uses the GNU Info format---specifically, the @code{info}
-command that displays the explanation is given in within square
+command that displays the explanation is given within square
 brackets in the diagnostic.
 For example:
 
@@ -13556,7 +13651,7 @@ The following sample program might help:
       PROGRAM JCB003
 C
 C Written by James Craig Burley 1997-02-23.
-C Contact via Internet email: burley@@gnu.ai.mit.edu
+C Contact via Internet email: burley@@gnu.org
 C
 C Determine how compilers handle non-standard REAL
 C and AIMAG on DOUBLE COMPLEX operands.

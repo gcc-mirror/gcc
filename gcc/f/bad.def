@@ -539,6 +539,8 @@ FFEBAD_MSGS2 (FFEBAD_TOO_MANY_DIMS, FATAL,
 "Too many dimensions at %0")
 FFEBAD_MSGS1 (FFEBAD_NULL_ARGUMENT, FATAL,
 "Null argument at %0 for statement function reference at %1")
+FFEBAD_MSGS1 (FFEBAD_NULL_ARGUMENT_W, WARN,
+"Null argument at %0 for procedure invocation at %1")
 FFEBAD_MSGS1 (FFEBAD_TOO_FEW_ARGUMENTS, FATAL,
 "%A too few arguments (starting with dummy argument `%B') as of %0 for statement function reference at %1")
 FFEBAD_MSGS1 (FFEBAD_TOO_MANY_ARGUMENTS, FATAL,
@@ -547,6 +549,8 @@ FFEBAD_MSGS1 (FFEBAD_ARRAY_AS_SFARG, FATAL,
 "Array supplied at %1 for dummy argument `%A' in statement function reference at %0")
 FFEBAD_MSGS1 (FFEBAD_FORMAT_UNSUPPORTED, FATAL,
 "Unsupported FORMAT specifier at %0")
+FFEBAD_MSGS1 (FFEBAD_FORMAT_VARIABLE, FATAL,
+"Variable-expression FORMAT specifier at %0 -- unsupported")
 FFEBAD_MSGS2 (FFEBAD_OPEN_UNSUPPORTED, WARN,
 "Unsupported OPEN control item at %0 -- ACTION=, ASSOCIATEVARIABLE=, BLOCKSIZE=, BUFFERCOUNT=, CARRIAGECONTROL=, DEFAULTFILE=, DELIM=, DISPOSE=, EXTENDSIZE=, INITIALSIZE=, KEY=, MAXREC=, NOSPANBLOCKS, ORGANIZATION=, PAD=, POSITION=, READONLY=, RECORDTYPE=, SHARED=, and USEROPEN= are not supported",
 "Unsupported OPEN control item at %0")

@@ -501,7 +501,7 @@ f/str-ot.h f/str-ot.j: f/fini f/str-ot.fin
 	./f/fini `echo $(srcdir)/f/str-ot.fin | sed 's,^\./,,'` f/str-ot.j f/str-ot.h
 
 f/fini: f/fini.o f/proj-h.o
-	$(HOST_CC) $(HOST_CFLAGS) -W -Wall $(HOST_LDFLAGS) -o f/fini f/fini.o f/proj-h.o
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o f/fini f/fini.o f/proj-h.o
 
 f/fini.o:
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \

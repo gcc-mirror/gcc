@@ -28,14 +28,41 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: Ugly Integer Conversions,  Next: Ugly Assigned Labels,  Prev: Ugly Conversion of Initializers,  Up: Distensions
+
+Ugly Integer Conversions
+------------------------
+
+   The constructs enabled via `-fugly-logint' are:
+
+   * Automatic conversion between `INTEGER' and `LOGICAL' as dictated by
+     context (typically implies nonportable dependencies on how a
+     particular implementation encodes `.TRUE.' and `.FALSE.').
+
+   * Use of a `LOGICAL' variable in `ASSIGN' and assigned-`GOTO'
+     statements.
+
+   The above constructs are disabled by default because use of them
+tends to lead to non-portable code.  Even existing Fortran code that
+uses that often turns out to be non-portable, if not outright buggy.
+
+   Some of this is due to differences among implementations as far as
+how `.TRUE.' and `.FALSE.' are encoded as `INTEGER' values--Fortran
+code that assumes a particular coding is likely to use one of the above
+constructs, and is also likely to not work correctly on implementations
+using different encodings.
+
+   *Note Equivalence Versus Equality::, for more information.
 
 
 File: g77.info,  Node: Ugly Assigned Labels,  Prev: Ugly Integer Conversions,  Up: Distensions
@@ -824,6 +851,10 @@ Description:
    Sets the current working directory to be DIR.  Returns 0 on success
 or a non-zero error code.  See `chdir(3)'.
 
+   *Caution:* Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
+
    Due to the side effects performed by this intrinsic, the function
 form is not recommended.
 
@@ -1564,45 +1595,5 @@ IZExt Intrinsic
 
    This intrinsic is not yet implemented.  The name is, however,
 reserved as an intrinsic.  Use `EXTERNAL IZExt' to use this name for an
-external procedure.
-
-
-File: g77.info,  Node: JIAbs Intrinsic,  Next: JIAnd Intrinsic,  Prev: IZExt Intrinsic,  Up: Other Intrinsics
-
-JIAbs Intrinsic
-...............
-
-   This intrinsic is not yet implemented.  The name is, however,
-reserved as an intrinsic.  Use `EXTERNAL JIAbs' to use this name for an
-external procedure.
-
-
-File: g77.info,  Node: JIAnd Intrinsic,  Next: JIBClr Intrinsic,  Prev: JIAbs Intrinsic,  Up: Other Intrinsics
-
-JIAnd Intrinsic
-...............
-
-   This intrinsic is not yet implemented.  The name is, however,
-reserved as an intrinsic.  Use `EXTERNAL JIAnd' to use this name for an
-external procedure.
-
-
-File: g77.info,  Node: JIBClr Intrinsic,  Next: JIBits Intrinsic,  Prev: JIAnd Intrinsic,  Up: Other Intrinsics
-
-JIBClr Intrinsic
-................
-
-   This intrinsic is not yet implemented.  The name is, however,
-reserved as an intrinsic.  Use `EXTERNAL JIBClr' to use this name for an
-external procedure.
-
-
-File: g77.info,  Node: JIBits Intrinsic,  Next: JIBSet Intrinsic,  Prev: JIBClr Intrinsic,  Up: Other Intrinsics
-
-JIBits Intrinsic
-................
-
-   This intrinsic is not yet implemented.  The name is, however,
-reserved as an intrinsic.  Use `EXTERNAL JIBits' to use this name for an
 external procedure.
 

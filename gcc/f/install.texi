@@ -5,7 +5,19 @@
 @c The text of this file appears in the file INSTALL
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-09-09
+@c 1998-03-15
+
+@set version-g77 0.5.22
+@set version-gcc 2.7.2.3
+@set version-gcc-patched 2.7.2.3.f.2
+@set version-gzip 1.2.4
+@set version-tar 1.12
+@set version-patch 2.5
+@set version-make 3.76.1
+@set version-bison 1.25
+@set version-makeinfo 1.68
+@set version-texinfo 3.11
+@set version-sed 2.05
 
 @ifclear INSTALLONLY
 @node Installation
@@ -62,19 +74,19 @@ a complete GNU UNIX system can be put together on
 most systems, if desired.
 
 The version of GNU @code{gzip} used to package this release
-is 1.24.
+is @value{version-gzip}.
 (The version of GNU @code{tar} used to package this release
-is 1.11.2.)
+is @value{version-tar}.)
 
-@item @file{gcc-2.7.2.3.tar.gz}
+@item @file{gcc-@value{version-gcc}.tar.gz}
 You need to have this, or some other applicable, version
 of @code{gcc} on your system.
 The version should be an exact copy of a distribution
 from the FSF.
 Its size is approximately 7.1MB.
 
-If you've already unpacked @file{gcc-2.7.2.3.tar.gz} into a
-directory (named @file{gcc-2.7.2.3}) called the @dfn{source tree}
+If you've already unpacked @file{gcc-@value{version-gcc}.tar.gz} into a
+directory (named @file{gcc-@value{version-gcc}}) called the @dfn{source tree}
 for @code{gcc}, you can delete the distribution
 itself, but you'll need to remember to skip any instructions to unpack
 this distribution.
@@ -83,7 +95,7 @@ Without an applicable @code{gcc} source tree, you cannot
 build @code{g77}.
 You can obtain an FSF distribution of @code{gcc} from the FSF.
 
-@item @file{g77-0.5.21.tar.gz}
+@item @file{g77-@value{version-g77}.tar.gz}
 You probably have already unpacked this package,
 or you are reading an advance copy of these installation instructions,
 which are contained in this distribution.
@@ -99,7 +111,7 @@ using, how you build @code{g77}, and how much of it you
 install (primarily, which languages you install).
 
 The sizes shown below assume all languages distributed
-in @code{gcc-2.7.2.3}, plus @code{g77}, will be built
+in @code{gcc-@value{version-gcc}}, plus @code{g77}, will be built
 and installed.
 These sizes are indicative of GNU/Linux systems on
 Intel x86 running COFF and on Digital Alpha (AXP) systems
@@ -198,7 +210,7 @@ In any case, you can apply patches by hand---patch files
 are designed for humans to read them.
 
 The version of GNU @code{patch} used to develop this release
-is 2.4.
+is @value{version-patch}.
 
 @item @code{make}
 Your system must have @code{make}, and you will probably save
@@ -206,7 +218,7 @@ yourself a lot of trouble if it is GNU @code{make} (sometimes
 referred to as @code{gmake}).
 
 The version of GNU @code{make} used to develop this release
-is 3.73.
+is @value{version-make}.
 
 @item @code{cc}
 Your system must have a working C compiler.
@@ -223,7 +235,7 @@ You can obtain @code{bison} the same way you obtained
 @code{gcc} and @code{g77}.
 
 The version of GNU @code{bison} used to develop this release
-is 1.25.
+is @value{version-bison}.
 
 @xref{Missing bison?},
 for information on how to work around not having @code{bison}.
@@ -235,7 +247,8 @@ You can obtain @code{makeinfo} the same way you obtained
 @code{gcc} and @code{g77}.
 
 The version of GNU @code{makeinfo} used to develop this release
-is 1.68, from GNU @code{texinfo} version 3.11.
+is @value{version-makeinfo}, from
+GNU @code{texinfo} version @value{version-texinfo}.
 
 @xref{Missing makeinfo?},
 for information on getting around the lack of @code{makeinfo}.
@@ -246,10 +259,10 @@ version that cannot handle configuring, building, or
 installing @code{gcc} or @code{g77}.
 
 The version of GNU @code{sed} used to develop this release
-is 2.05.
+is @value{version-sed}.
 (Note that GNU @code{sed} version 3.0 was withdrawn by the
 FSF---if you happen to have this version installed, replace
-it with version 2.05 immediately.
+it with version @value{version-sed} immediately.
 See a GNU distribution site for further explanation.)
 
 @item @code{root} access or equivalent
@@ -287,6 +300,7 @@ either @code{gcc} or @code{g77}.
 
 @menu
 * General Problems::         Problems afflicting most or all systems.
+* System-specific Problems:: Problems afflicting particular systems.
 * Cross-compiler Problems::  Problems afflicting cross-compilation setups.
 @end menu
 
@@ -296,10 +310,10 @@ either @code{gcc} or @code{g77}.
 These problems can occur on most or all systems.
 
 @menu
-* GNU C Required::	       Why even ANSI C is not enough.
+* GNU C Required::             Why even ANSI C is not enough.
 * Patching GNU CC Necessary::  Why @code{gcc} must be patched first.
 * Building GNU CC Necessary::  Why you can't build @emph{just} Fortran.
-* Missing strtoul::	       If linking @code{f771} fails due to an
+* Missing strtoul::            If linking @code{f771} fails due to an
                                 unresolved reference to @code{strtoul}.
 * Object File Differences::    It's okay that @samp{make compare} will
                                 flag @file{f/zzz.o}.
@@ -464,7 +478,26 @@ than the corresponding output files.
 If the above does not work, definitely start from scratch
 and avoid copying the @code{gcc} using any method that does
 not reliably preserve date-time-modified information, such
-as the UNIX @samp{cp -r} command.
+as the UNIX @samp{cp -r} command (use @samp{cp -pr} instead).
+
+@node System-specific Problems
+@subsection System-specific Problems
+
+@cindex Digital Alpha
+@cindex Alpha, Digital
+@cindex DEC Alpha
+@cindex AXP
+If your system is based on a Digital Alpha (AXP) architecture
+and employs a 64-bit operating system (such as GNU/Linux),
+you might consider using @code{egcs} instead of versions
+of @code{g77} based on versions of @code{gcc} prior to 2.8.
+@uref{http://www.cygnus.com/egcs} for information on @code{egcs},
+or obtain a copy from @uref{ftp://egcs.cygnus.com/pub/egcs}.
+
+@cindex Irix 6
+@cindex SGI
+If your system is Irix 6, to obtain a working version of @code{gcc},
+@uref{http://reality.sgi.com/knobi/gcc-2.7.2.x-on-irix-6.2-6.3}.
 
 @node Cross-compiler Problems
 @subsection Cross-compiler Problems
@@ -679,7 +712,7 @@ The @code{g77} build will crash if an attempt is made to build
 it as a cross-compiler
 for a target when @code{g77} cannot reliably determine the bit pattern of
 floating-point constants for the target.
-Planned improvements for g77-0.6
+Planned improvements for version 0.6 of @code{g77}
 will give it the capabilities it needs to not have to crash the build
 but rather generate correct code for the target.
 (Currently, @code{g77}
@@ -781,8 +814,8 @@ already reside in @file{/usr/FSF}, a naming convention
 used by the author of @code{g77} on his own system:
 
 @example
-/usr/FSF/gcc-2.7.2.3.tar.gz
-/usr/FSF/g77-0.5.21.tar.gz
+/usr/FSF/gcc-@value{version-gcc}.tar.gz
+/usr/FSF/g77-@value{version-g77}.tar.gz
 @end example
 
 @c (You can use @file{gcc-2.7.2.1.tar.gz} instead, or
@@ -823,20 +856,20 @@ These explanations follow this list of steps.
 @example
 sh[ 1]# @kbd{cd /usr/src}
 @set source-dir 1
-sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -}
+sh[ 2]# @kbd{gunzip -c < /usr/FSF/gcc-@value{version-gcc}.tar.gz | tar xf -}
 [Might say "Broken pipe"...that is normal on some systems.]
 @set unpack-gcc 2
-sh[ 3]# @kbd{gunzip -c < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
+sh[ 3]# @kbd{gunzip -c < /usr/FSF/g77-@value{version-g77}.tar.gz | tar xf -}
 ["Broken pipe" again possible.]
 @set unpack-g77 3
-sh[ 4]# @kbd{ln -s gcc-2.7.2.3 gcc}
+sh[ 4]# @kbd{ln -s gcc-@value{version-gcc} gcc}
 @set link-gcc 4
-sh[ 5]# @kbd{ln -s g77-0.5.21 g77}
+sh[ 5]# @kbd{ln -s g77-@value{version-g77} g77}
 @set link-g77 5
 sh[ 6]# @kbd{mv -i g77/* gcc}
 [No questions should be asked by mv here; or, you made a mistake.]
 @set merge-g77 6
-sh[ 7]# @kbd{patch -p1 -V t -d gcc < gcc/f/gbe/2.7.2.3.diff}
+sh[ 7]# @kbd{patch -p1 -E -V t -d gcc < gcc/f/gbe/@value{version-gcc}.diff}
 [Unless patch complains about rejected patches, this step worked.]
 @set apply-patch 7
 sh[ 8]# @kbd{cd gcc}
@@ -898,17 +931,17 @@ installed version of @code{g77} and @code{gcc} in any case.
 @c instead, or apply @file{gcc-2.7.2-2.7.2.1.diff.gz} to achieve
 @c similar results.
 
-@item Step @value{unpack-g77}: @kbd{gunzip -d < /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
+@item Step @value{unpack-g77}: @kbd{gunzip -d < /usr/FSF/g77-@value{version-g77}.tar.gz | tar xf -}
 It is not always necessary to obtain the latest version of
 @code{g77} as a complete @file{.tar.gz} file if you have
 a complete, earlier distribution of @code{g77}.
 If appropriate, you can unpack that earlier
 version of @code{g77}, and then apply the appropriate patches
 to achieve the same result---a source tree containing version
-0.5.21 of @code{g77}.
+@value{version-g77} of @code{g77}.
 
-@item Step @value{link-gcc}: @kbd{ln -s gcc-2.7.2.3 gcc}
-@item Step @value{link-g77}: @kbd{ln -s g77-0.5.21 g77}
+@item Step @value{link-gcc}: @kbd{ln -s gcc-@value{version-gcc} gcc}
+@item Step @value{link-g77}: @kbd{ln -s g77-@value{version-g77} g77}
 These commands mainly help reduce typing,
 and help reduce visual clutter in examples
 in this manual showing what to type to install @code{g77}.
@@ -922,7 +955,7 @@ other than the FSF.
 
 @item Step @value{merge-g77}: @kbd{mv -i g77/* gcc}
 After doing this, you can, if you like, type
-@samp{rm g77} and @samp{rmdir g77-0.5.21} to remove
+@samp{rm g77} and @samp{rmdir g77-@value{version-g77}} to remove
 the empty directory and the symbol link to it.
 But, it might be helpful to leave them around as
 quick reminders of which version(s) of @code{g77} are
@@ -935,10 +968,11 @@ into the @file{gcc} directory).
 @item Step @value{apply-patch}: @kbd{patch -p1 @dots{}}
 @c (Or `@kbd{@dots{} < gcc/f/gbe/2.7.2.1.diff}', if appropriate.)
 @c
-This can produce a wide variety of printed output,
-from @samp{Hmm, I can't seem to find a patch in there anywhere...}
-to long lists of messages indicated that patches are
-being found, applied successfully, and so on.
+If you are using
+GNU @code{patch} version @value{version-patch} or later,
+this should produce a list of files patched.
+(Other versions of @code{patch} might not work
+properly.)
 
 If messages about ``fuzz'', ``offset'', or
 especially ``reject files'' are printed, it might
@@ -953,6 +987,15 @@ have old versions of several files as saved by @code{patch}.
 To remove these, after @kbd{cd gcc}, type @kbd{rm -i *.~*~}.
 
 @xref{Merging Distributions}, for more information.
+
+@emph{Note:} @code{gcc} versions circa 2.7.2.2 and 2.7.2.3
+are known to have slightly differing versions of the
+@code{gcc/ChangeLog} file,
+depending on how they are obtained.
+You can safely ignore diagnostics @code{patch} reports
+when patching this particular file,
+since it is purely a documentation file for implementors.
+See @file{gcc/f/gbe/2.7.2.3.diff} for more information.
 
 @item Step @value{f77-install-ok}: @kbd{touch f77-install-ok}
 Don't do this if you don't want to overwrite an existing
@@ -1130,10 +1173,10 @@ and @code{g77} is:
 
 @example
 sh# @kbd{cd /usr/src}
-sh# @kbd{gunzip -c /usr/FSF/gcc-2.7.2.3.tar.gz | tar xf -}
-sh# @kbd{gunzip -c /usr/FSF/g77-0.5.21.tar.gz | tar xf -}
-sh# @kbd{ln -s gcc-2.7.2.3 gcc}
-sh# @kbd{ln -s g77-0.5.21 g77}
+sh# @kbd{gunzip -c /usr/FSF/gcc-@value{version-gcc}.tar.gz | tar xf -}
+sh# @kbd{gunzip -c /usr/FSF/g77-@value{version-g77}.tar.gz | tar xf -}
+sh# @kbd{ln -s gcc-@value{version-gcc} gcc}
+sh# @kbd{ln -s g77-@value{version-g77} g77}
 sh# @kbd{mv -i g77/* gcc}
 @end example
 
@@ -1158,7 +1201,7 @@ g77/f
 
 All three entries should be moved (or copied) into a @code{gcc}
 source tree (typically named after its version number and
-as it appears in the FSF distributions---e.g. @file{gcc-2.7.2.3}).
+as it appears in the FSF distributions---e.g. @file{gcc-@value{version-gcc}}).
 
 @file{g77/f} is the subdirectory containing all of the
 code, documentation, and other information that is specific
@@ -1288,11 +1331,11 @@ It is hoped that the GBE interface, and the @code{gcc} and
 @code{g77} products in general, will stabilize sufficiently
 for the need for hand-patching to disappear.
 
-Invoking @code{patch} as described in @file{gcc/f/gbe/README}
-can produce a wide variety of printed output,
-from @samp{Hmm, I can't seem to find a patch in there anywhere...}
-to long lists of messages indicated that patches are
-being found, applied successfully, and so on.
+If you are using
+GNU @code{patch} version @value{version-patch} or later,
+this should produce a list of files patched.
+(Other versions of @code{patch} might not work
+properly.)
 
 If messages about ``fuzz'', ``offset'', or
 especially ``reject files'' are printed, it might
@@ -1311,6 +1354,15 @@ After @code{patch} finishes, the @code{gcc} directory might
 have old versions of several files as saved by @code{patch}.
 To remove these, after @kbd{cd gcc}, type @kbd{rm -i *.~*~}.
 
+@emph{Note:} @code{gcc} versions circa 2.7.2.2 and 2.7.2.3
+are known to have slightly differing versions of the
+@code{gcc/ChangeLog} file,
+depending on how they are obtained.
+You can safely ignore diagnostics @code{patch} reports
+when patching this particular file,
+since it is purely a documentation file for implementors.
+See @file{gcc/f/gbe/2.7.2.3.diff} for more information.
+
 @pindex config-lang.in
 @emph{Note:} @code{g77}'s configuration file @file{gcc/f/config-lang.in}
 ensures that the source code for the version of @code{gcc}
@@ -1327,7 +1379,7 @@ but could easily produce broken code.
 @cindex creating patch files
 @cindex patch files, creating
 @pindex gcc/f/gbe/
-@samp{diff -rcp2N} is used to create the patch files
+@samp{LC_ALL=C TZ=UTC0 diff -rcp2N} is used to create the patch files
 in @file{gcc/f/gbe/}.
 
 @node Installing f77
@@ -1778,46 +1830,46 @@ printed by them when they work:
 @example
 sh# @kbd{cd /usr/src/gcc}
 sh# @kbd{./g77 --driver=./xgcc -B./ -v}
-g77 version 0.5.21
+g77 version @value{version-g77}
  ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 @dots{}
 Reading specs from ./specs
-gcc version 2.7.2.3.f.1
+gcc version @value{version-gcc-patched}
  ./cpp -lang-c -v -isystem ./include -undef @dots{}
-GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
+GNU CPP version @value{version-gcc-patched} (Linux/Alpha)
 #include "..." search starts here:
 #include <...> search starts here:
  ./include
  /usr/local/include
  /usr/alpha-unknown-linux/include
- /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/@value{version-gcc-patched}/include
  /usr/include
 End of search list.
  ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase @dots{}
-GNU F77 version 2.7.2.3.f.1 (Linux/Alpha) compiled @dots{}
-GNU Fortran Front End version 0.5.21 compiled: @dots{}
+GNU F77 version @value{version-gcc-patched} (Linux/Alpha) compiled @dots{}
+GNU Fortran Front End version @value{version-g77} compiled: @dots{}
  as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
  ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. @dots{}
-__G77_LIBF77_VERSION__: 0.5.21
+__G77_LIBF77_VERSION__: @value{version-g77}
 @@(#)LIBF77 VERSION 19970404
-__G77_LIBI77_VERSION__: 0.5.21
+__G77_LIBI77_VERSION__: @value{version-g77}
 @@(#) LIBI77 VERSION pjw,dmg-mods 19970816
-__G77_LIBU77_VERSION__: 0.5.21
+__G77_LIBU77_VERSION__: @value{version-g77}
 @@(#) LIBU77 VERSION 19970609
 sh# @kbd{./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone}
 Reading specs from ./specs
-gcc version 2.7.2.3.f.1
+gcc version @value{version-gcc-patched}
  ./cpp -lang-c -v -isystem ./include -undef @dots{}
-GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
+GNU CPP version @value{version-gcc-patched} (Linux/Alpha)
 #include "..." search starts here:
 #include <...> search starts here:
  ./include
  /usr/local/include
  /usr/alpha-unknown-linux/include
- /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
+ /usr/lib/gcc-lib/alpha-unknown-linux/@value{version-gcc-patched}/include
  /usr/include
 End of search list.
  ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version @dots{}
-GNU C version 2.7.2.3.f.1 (Linux/Alpha) compiled @dots{}
+GNU C version @value{version-gcc-patched} (Linux/Alpha) compiled @dots{}
  as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
  ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. @dots{}
 /usr/lib/crt0.o: In function `__start':
@@ -2137,7 +2189,7 @@ until you're sure your distribution is widely used and has been
 well tested.
 This especially goes for those of you making any
 changes to the @code{g77} sources to port @code{g77}, e.g. to OS/2.
-@email{fortran@@gnu.ai.mit.edu} has received a fair number of bug
+@email{fortran@@gnu.org} has received a fair number of bug
 reports that turned out to be problems with other peoples' ports
 and distributions, about which nothing could be done for the
 user.

@@ -28,14 +28,181 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: CMPAMBIG,  Next: EXPIMP,  Up: Diagnostics
+
+`CMPAMBIG'
+==========
+
+     Ambiguous use of intrinsic INTRINSIC ...
+
+   The type of the argument to the invocation of the INTRINSIC
+intrinsic is a `COMPLEX' type other than `COMPLEX(KIND=1)'.  Typically,
+it is `COMPLEX(KIND=2)', also known as `DOUBLE COMPLEX'.
+
+   The interpretation of this invocation depends on the particular
+dialect of Fortran for which the code was written.  Some dialects
+convert the real part of the argument to `REAL(KIND=1)', thus losing
+precision; other dialects, and Fortran 90, do no such conversion.
+
+   So, GNU Fortran rejects such invocations except under certain
+circumstances, to avoid making an incorrect assumption that results in
+generating the wrong code.
+
+   To determine the dialect of the program unit, perhaps even whether
+that particular invocation is properly coded, determine how the result
+of the intrinsic is used.
+
+   The result of INTRINSIC is expected (by the original programmer) to
+be `REAL(KIND=1)' (the non-Fortran-90 interpretation) if:
+
+   * It is passed as an argument to a procedure that explicitly or
+     implicitly declares that argument `REAL(KIND=1)'.
+
+     For example, a procedure with no `DOUBLE PRECISION' or `IMPLICIT
+     DOUBLE PRECISION' statement specifying the dummy argument
+     corresponding to an actual argument of `REAL(Z)', where `Z' is
+     declared `DOUBLE COMPLEX', strongly suggests that the programmer
+     expected `REAL(Z)' to return `REAL(KIND=1)' instead of
+     `REAL(KIND=2)'.
+
+   * It is used in a context that would otherwise not include any
+     `REAL(KIND=2)' but where treating the INTRINSIC invocation as
+     `REAL(KIND=2)' would result in unnecessary promotions and
+     (typically) more expensive operations on the wider type.
+
+     For example:
+
+          DOUBLE COMPLEX Z
+          ...
+          R(1) = T * REAL(Z)
+
+     The above example suggests the programmer expected the real part
+     of `Z' to be converted to `REAL(KIND=1)' before being multiplied
+     by `T' (presumed, along with `R' above, to be type `REAL(KIND=1)').
+
+     Otherwise, the conversion would have to be delayed until after the
+     multiplication, requiring not only an extra conversion (of `T' to
+     `REAL(KIND=2)'), but a (typically) more expensive multiplication
+     (a double-precision multiplication instead of a single-precision
+     one).
+
+   The result of INTRINSIC is expected (by the original programmer) to
+be `REAL(KIND=2)' (the Fortran 90 interpretation) if:
+
+   * It is passed as an argument to a procedure that explicitly or
+     implicitly declares that argument `REAL(KIND=2)'.
+
+     For example, a procedure specifying a `DOUBLE PRECISION' dummy
+     argument corresponding to an actual argument of `REAL(Z)', where
+     `Z' is declared `DOUBLE COMPLEX', strongly suggests that the
+     programmer expected `REAL(Z)' to return `REAL(KIND=2)' instead of
+     `REAL(KIND=1)'.
+
+   * It is used in an expression context that includes other
+     `REAL(KIND=2)' operands, or is assigned to a `REAL(KIND=2)'
+     variable or array element.
+
+     For example:
+
+          DOUBLE COMPLEX Z
+          DOUBLE PRECISION R, T
+          ...
+          R(1) = T * REAL(Z)
+
+     The above example suggests the programmer expected the real part
+     of `Z' to *not* be converted to `REAL(KIND=1)' by the `REAL()'
+     intrinsic.
+
+     Otherwise, the conversion would have to be immediately followed by
+     a conversion back to `REAL(KIND=2)', losing the original, full
+     precision of the real part of `Z', before being multiplied by `T'.
+
+   Once you have determined whether a particular invocation of INTRINSIC
+expects the Fortran 90 interpretation, you can:
+
+   * Change it to `DBLE(EXPR)' (if INTRINSIC is `REAL') or
+     `DIMAG(EXPR)' (if INTRINSIC is `AIMAG') if it expected the Fortran
+     90 interpretation.
+
+     This assumes EXPR is `COMPLEX(KIND=2)'--if it is some other type,
+     such as `COMPLEX*32', you should use the appropriate intrinsic,
+     such as the one to convert to `REAL*16' (perhaps `DBLEQ()' in
+     place of `DBLE()', and `QIMAG()' in place of `DIMAG()').
+
+   * Change it to `REAL(INTRINSIC(EXPR))', otherwise.  This converts to
+     `REAL(KIND=1)' in all working Fortran compilers.
+
+   If you don't want to change the code, and you are certain that all
+ambiguous invocations of INTRINSIC in the source file have the same
+expectation regarding interpretation, you can:
+
+   * Compile with the `g77' option `-ff90', to enable the Fortran 90
+     interpretation.
+
+   * Compile with the `g77' options `-fno-f90 -fugly-complex', to
+     enable the non-Fortran-90 interpretations.
+
+   *Note REAL() and AIMAG() of Complex::, for more information on this
+issue.
+
+   Note: If the above suggestions don't produce enough evidence as to
+whether a particular program expects the Fortran 90 interpretation of
+this ambiguous invocation of INTRINSIC, there is one more thing you can
+try.
+
+   If you have access to most or all the compilers used on the program
+to create successfully tested and deployed executables, read the
+documentation for, and *also* test out, each compiler to determine how
+it treats the INTRINSIC intrinsic in this case.  (If all the compilers
+don't agree on an interpretation, there might be lurking bugs in the
+deployed versions of the program.)
+
+   The following sample program might help:
+
+           PROGRAM JCB003
+     C
+     C Written by James Craig Burley 1997-02-23.
+     C Contact via Internet email: burley@gnu.org
+     C
+     C Determine how compilers handle non-standard REAL
+     C and AIMAG on DOUBLE COMPLEX operands.
+     C
+           DOUBLE COMPLEX Z
+           REAL R
+           Z = (3.3D0, 4.4D0)
+           R = Z
+           CALL DUMDUM(Z, R)
+           R = REAL(Z) - R
+           IF (R .NE. 0.) PRINT *, 'REAL() is Fortran 90'
+           IF (R .EQ. 0.) PRINT *, 'REAL() is not Fortran 90'
+           R = 4.4D0
+           CALL DUMDUM(Z, R)
+           R = AIMAG(Z) - R
+           IF (R .NE. 0.) PRINT *, 'AIMAG() is Fortran 90'
+           IF (R .EQ. 0.) PRINT *, 'AIMAG() is not Fortran 90'
+           END
+     C
+     C Just to make sure compiler doesn't use naive flow
+     C analysis to optimize away careful work above,
+     C which might invalidate results....
+     C
+           SUBROUTINE DUMDUM(Z, R)
+           DOUBLE COMPLEX Z
+           REAL R
+           END
+
+   If the above program prints contradictory results on a particular
+compiler, run away!
 
 
 File: g77.info,  Node: EXPIMP,  Next: INTGLOB,  Prev: CMPAMBIG,  Up: Diagnostics

@@ -28,14 +28,267 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: Installing f2c,  Next: Patching GNU Fortran,  Prev: Installing f77,  Up: Complete Installation
+
+Installing `f2c'
+----------------
+
+   Currently, `g77' does not include `f2c' itself in its distribution.
+However, it does include a modified version of the `libf2c'.  This
+version is normally compatible with `f2c', but has been modified to
+meet the needs of `g77' in ways that might possibly be incompatible
+with some versions or configurations of `f2c'.
+
+   Decide how installation of `g77' should affect any existing
+installation of `f2c' on your system.
+
+   If you do not have `f2c' on your system (e.g. no `/usr/bin/f2c', no
+`/usr/include/f2c.h', and no `/usr/lib/libf2c.a', `/usr/lib/libF77.a',
+or `/usr/lib/libI77.a'), you don't need to be concerned with this item.
+
+   If you do have `f2c' on your system, you need to decide how users of
+`f2c' will be affected by your installing `g77'.  Since `g77' is
+currently designed to be object-code-compatible with `f2c' (with very
+few, clear exceptions), users of `f2c' might want to combine
+`f2c'-compiled object files with `g77'-compiled object files in a
+single executable.
+
+   To do this, users of `f2c' should use the same copies of `f2c.h' and
+`libf2c.a' that `g77' uses (and that get built as part of `g77').
+
+   If you do nothing here, the `g77' installation process will not
+overwrite the `include/f2c.h' and `lib/libf2c.a' files with its own
+versions, and in fact will not even install `libf2c.a' for use with the
+newly installed versions of `gcc' and `g77' if it sees that
+`lib/libf2c.a' exists--instead, it will print an explanatory message
+and skip this part of the installation.
+
+   To install `g77''s versions of `f2c.h' and `libf2c.a' in the
+appropriate places, create the file `f2c-install-ok' (e.g. via the UNIX
+command `touch f2c-install-ok') in the source or build top-level
+directory (the same directory in which the `g77' `f' directory resides,
+not the `f' directory itself), or edit `gcc/f/Make-lang.in' and change
+the definition of the `F2C_INSTALL_FLAG' macro appropriately.
+
+   Usually, this means that, after typing `cd gcc', you would type
+`touch f2c-install-ok'.
+
+   Make sure that when you enable the overwriting of `f2c.h' and
+`libf2c.a' as used by `f2c', you have a recent and properly configured
+version of `bin/f2c' so that it generates code that is compatible with
+`g77'.
+
+   If you don't want installation of `g77' to overwrite `f2c''s existing
+installation, but you do want `g77' installation to proceed with
+installation of its own versions of `f2c.h' and `libf2c.a' in places
+where `g77' will pick them up (even when linking `f2c'-compiled object
+files--which might lead to incompatibilities), create the file
+`f2c-exists-ok' (e.g. via the UNIX command `touch f2c-exists-ok') in
+the source or build top-level directory, or edit `gcc/f/Make-lang.in'
+and change the definition of the `F2CLIBOK' macro appropriately.
+
+
+File: g77.info,  Node: Patching GNU Fortran,  Next: Where to Install,  Prev: Installing f2c,  Up: Complete Installation
+
+Patching GNU Fortran
+--------------------
+
+   If you're using a SunOS4 system, you'll need to make the following
+change to `gcc/f/proj.h': edit the line reading
+
+     #define FFEPROJ_STRTOUL 1  ...
+
+by replacing the `1' with `0'.  Or, you can avoid editing the source by
+adding
+     CFLAGS='-DFFEPROJ_STRTOUL=0 -g -O'
+   to the command line for `make' when you invoke it.  (`-g' is the
+default for `CFLAGS'.)
+
+   This causes a minimal version of `strtoul()' provided as part of the
+`g77' distribution to be compiled and linked into whatever `g77'
+programs need it, since some systems (like SunOS4 with only the bundled
+compiler and its runtime) do not provide this function in their system
+libraries.
+
+   Similarly, a minimal version of `bsearch()' is available and can be
+enabled by editing a line similar to the one for `strtoul()' above in
+`gcc/f/proj.h', if your system libraries lack `bsearch()'.  The method
+of overriding `X_CFLAGS' may also be used.
+
+   These are not problems with `g77', which requires an ANSI C
+environment.  You should upgrade your system to one that provides a
+full ANSI C environment, or encourage the maintainers of `gcc' to
+provide one to all `gcc'-based compilers in future `gcc' distributions.
+
+   *Note Problems Installing::, for more information on why `strtoul()'
+comes up missing and on approaches to dealing with this problem that
+have already been tried.
+
+
+File: g77.info,  Node: Where to Install,  Next: Configuring gcc,  Prev: Patching GNU Fortran,  Up: Complete Installation
+
+Where in the World Does Fortran (and GNU CC) Go?
+------------------------------------------------
+
+   Before configuring, you should make sure you know where you want the
+`g77' and `gcc' binaries to be installed after they're built, because
+this information is given to the configuration tool and used during the
+build itself.
+
+   A `g77' installation necessarily requires installation of a
+`g77'-aware version of `gcc', so that the `gcc' command recognizes
+Fortran source files and knows how to compile them.
+
+   For this to work, the version of `gcc' that you will be building as
+part of `g77' *must* be installed as the "active" version of `gcc' on
+the system.
+
+   Sometimes people make the mistake of installing `gcc' as
+`/usr/local/bin/gcc', leaving an older, non-Fortran-aware version in
+`/usr/bin/gcc'.  (Or, the opposite happens.)  This can result in `g77'
+being unable to compile Fortran source files, because when it calls on
+`gcc' to do the actual compilation, `gcc' complains that it does not
+recognize the language, or the file name suffix.
+
+   So, determine whether `gcc' already is installed on your system,
+and, if so, *where* it is installed, and prepare to configure the new
+version of `gcc' you'll be building so that it installs over the
+existing version of `gcc'.
+
+   You might want to back up your existing copy of `bin/gcc', and the
+entire `lib/' directory, before you perform the actual installation (as
+described in this manual).
+
+   Existing `gcc' installations typically are found in `/usr' or
+`/usr/local'.  If you aren't certain where the currently installed
+version of `gcc' and its related programs reside, look at the output of
+this command:
+
+     gcc -v -o /tmp/delete-me -xc /dev/null -xnone
+
+   All sorts of interesting information on the locations of various
+`gcc'-related programs and data files should be visible in the output
+of the above command.  (The output also is likely to include a
+diagnostic from the linker, since there's no `main_()' function.)
+However, you do have to sift through it yourself; `gcc' currently
+provides no easy way to ask it where it is installed and where it looks
+for the various programs and data files it calls on to do its work.
+
+   Just *building* `g77' should not overwrite any installed
+programs--but, usually, after you build `g77', you will want to install
+it, so backing up anything it might overwrite is a good idea.  (This is
+true for any package, not just `g77', though in this case it is
+intentional that `g77' overwrites `gcc' if it is already installed--it
+is unusual that the installation process for one distribution
+intentionally overwrites a program or file installed by another
+distribution.)
+
+   Another reason to back up the existing version first, or make sure
+you can restore it easily, is that it might be an older version on
+which other users have come to depend for certain behaviors.  However,
+even the new version of `gcc' you install will offer users the ability
+to specify an older version of the actual compilation programs if
+desired, and these older versions need not include any `g77' components.
+*Note Specifying Target Machine and Compiler Version: (gcc)Target
+Options, for information on the `-V' option of `gcc'.
+
+
+File: g77.info,  Node: Configuring gcc,  Next: Building gcc,  Prev: Where to Install,  Up: Complete Installation
+
+Configuring GNU CC
+------------------
+
+   `g77' is configured automatically when you configure `gcc'.  There
+are two parts of `g77' that are configured in two different
+ways--`g77', which "camps on" to the `gcc' configuration mechanism, and
+`libf2c', which uses a variation of the GNU `autoconf' configuration
+system.
+
+   Generally, you shouldn't have to be concerned with either `g77' or
+`libf2c' configuration, unless you're configuring `g77' as a
+cross-compiler.  In this case, the `libf2c' configuration, and possibly
+the `g77' and `gcc' configurations as well, might need special
+attention.  (This also might be the case if you're porting `gcc' to a
+whole new system--even if it is just a new operating system on an
+existing, supported CPU.)
+
+   To configure the system, see *Note Installing GNU CC:
+(gcc)Installation, following the instructions for running `./configure'.
+Pay special attention to the `--prefix=' option, which you almost
+certainly will need to specify.
+
+   (Note that `gcc' installation information is provided as a straight
+text file in `gcc/INSTALL'.)
+
+   The information printed by the invocation of `./configure' should
+show that the `f' directory (the Fortran language) has been configured.
+If it does not, there is a problem.
+
+   *Note:* Configuring with the `--srcdir' argument is known to work
+with GNU `make', but it is not known to work with other variants of
+`make'.  Irix5.2 and SunOS4.1 versions of `make' definitely won't work
+outside the source directory at present.  `g77''s portion of the
+`configure' script issues a warning message about this when you
+configure for building binaries outside the source directory.
+
+
+File: g77.info,  Node: Building gcc,  Next: Pre-installation Checks,  Prev: Configuring gcc,  Up: Complete Installation
+
+Building GNU CC
+---------------
+
+   Building `g77' requires building enough of `gcc' that these
+instructions assume you're going to build all of `gcc', including
+`g++', `protoize', and so on.  You can save a little time and disk
+space by changes the `LANGUAGES' macro definition in `gcc/Makefile.in'
+or `gcc/Makefile', but if you do that, you're on your own.  One change
+is almost *certainly* going to cause failures: removing `c' or `f77'
+from the definition of the `LANGUAGES' macro.
+
+   After configuring `gcc', which configures `g77' and `libf2c'
+automatically, you're ready to start the actual build by invoking
+`make'.
+
+   *Note:* You *must* have run `./configure' before you run `make',
+even if you're using an already existing `gcc' development directory,
+because `./configure' does the work to recognize that you've added
+`g77' to the configuration.
+
+   There are two general approaches to building GNU CC from scratch:
+
+"bootstrap"
+     This method uses minimal native system facilities to build a
+     barebones, unoptimized `gcc', that is then used to compile
+     ("bootstrap") the entire system.
+
+"straight"
+     This method assumes a more complete native system exists, and uses
+     that just once to build the entire system.
+
+   On all systems without a recent version of `gcc' already installed,
+the bootstrap method must be used.  In particular, `g77' uses
+extensions to the C language offered, apparently, only by `gcc'.
+
+   On most systems with a recent version of `gcc' already installed,
+the straight method can be used.  This is an advantage, because it
+takes less CPU time and disk space for the build.  However, it does
+require that the system have fairly recent versions of many GNU
+programs and other programs, which are not enumerated here.
+
+* Menu:
+
+* Bootstrap Build::  For all systems.
+* Straight Build::   For systems with a recent version of `gcc'.
 
 
 File: g77.info,  Node: Bootstrap Build,  Next: Straight Build,  Up: Building gcc
@@ -126,46 +379,46 @@ them when they work:
 
      sh# cd /usr/src/gcc
      sh# ./g77 --driver=./xgcc -B./ -v
-     g77 version 0.5.21
+     g77 version 0.5.22
       ./xgcc -B./ -v -fnull-version -o /tmp/gfa18047 ...
      Reading specs from ./specs
-     gcc version 2.7.2.3.f.1
+     gcc version 2.7.2.3.f.2
       ./cpp -lang-c -v -isystem ./include -undef ...
-     GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
+     GNU CPP version 2.7.2.3.f.2 (Linux/Alpha)
      #include "..." search starts here:
      #include <...> search starts here:
       ./include
       /usr/local/include
       /usr/alpha-unknown-linux/include
-      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
+      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.2/include
       /usr/include
      End of search list.
       ./f771 /tmp/cca18048.i -fset-g77-defaults -quiet -dumpbase ...
-     GNU F77 version 2.7.2.3.f.1 (Linux/Alpha) compiled ...
-     GNU Fortran Front End version 0.5.21 compiled: ...
+     GNU F77 version 2.7.2.3.f.2 (Linux/Alpha) compiled ...
+     GNU Fortran Front End version 0.5.22 compiled: ...
       as -nocpp -o /tmp/cca180481.o /tmp/cca18048.s
       ld -G 8 -O1 -o /tmp/gfa18047 /usr/lib/crt0.o -L. ...
-     __G77_LIBF77_VERSION__: 0.5.21
+     __G77_LIBF77_VERSION__: 0.5.22
      @(#)LIBF77 VERSION 19970404
-     __G77_LIBI77_VERSION__: 0.5.21
+     __G77_LIBI77_VERSION__: 0.5.22
      @(#) LIBI77 VERSION pjw,dmg-mods 19970816
-     __G77_LIBU77_VERSION__: 0.5.21
+     __G77_LIBU77_VERSION__: 0.5.22
      @(#) LIBU77 VERSION 19970609
      sh# ./xgcc -B./ -v -o /tmp/delete-me -xc /dev/null -xnone
      Reading specs from ./specs
-     gcc version 2.7.2.3.f.1
+     gcc version 2.7.2.3.f.2
       ./cpp -lang-c -v -isystem ./include -undef ...
-     GNU CPP version 2.7.2.3.f.1 (Linux/Alpha)
+     GNU CPP version 2.7.2.3.f.2 (Linux/Alpha)
      #include "..." search starts here:
      #include <...> search starts here:
       ./include
       /usr/local/include
       /usr/alpha-unknown-linux/include
-      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.1/include
+      /usr/lib/gcc-lib/alpha-unknown-linux/2.7.2.3.f.2/include
       /usr/include
      End of search list.
       ./cc1 /tmp/cca18063.i -quiet -dumpbase null.c -version ...
-     GNU C version 2.7.2.3.f.1 (Linux/Alpha) compiled ...
+     GNU C version 2.7.2.3.f.2 (Linux/Alpha) compiled ...
       as -nocpp -o /tmp/cca180631.o /tmp/cca18063.s
       ld -G 8 -O1 -o /tmp/delete-me /usr/lib/crt0.o -L. ...
      /usr/lib/crt0.o: In function `__start':
@@ -426,12 +679,11 @@ general) are broken, at least for their system.
    Finally, *please* ask for bug reports to go to you first, at least
 until you're sure your distribution is widely used and has been well
 tested.  This especially goes for those of you making any changes to
-the `g77' sources to port `g77', e.g. to OS/2.
-<fortran@gnu.ai.mit.edu> has received a fair number of bug reports that
-turned out to be problems with other peoples' ports and distributions,
-about which nothing could be done for the user.  Once you are quite
-certain a bug report does not involve your efforts, you can forward it
-to us.
+the `g77' sources to port `g77', e.g. to OS/2.  <fortran@gnu.org> has
+received a fair number of bug reports that turned out to be problems
+with other peoples' ports and distributions, about which nothing could
+be done for the user.  Once you are quite certain a bug report does not
+involve your efforts, you can forward it to us.
 
 
 File: g77.info,  Node: Debugging and Interfacing,  Next: Collected Fortran Wisdom,  Prev: Installation,  Up: Top
@@ -854,292 +1106,4 @@ afterward.  (In `gdb', this is accomplished via `set lang c' and either
    *Note:* Compiling with the `-fno-emulate-complex' option avoids the
 debugging problem, but is known to cause other problems like compiler
 crashes and generation of incorrect code, so it is not recommended.
-
-
-File: g77.info,  Node: Arrays,  Next: Adjustable Arrays,  Prev: Complex Variables,  Up: Debugging and Interfacing
-
-Arrays (DIMENSION)
-==================
-
-   Fortran uses "column-major ordering" in its arrays.  This differs
-from other languages, such as C, which use "row-major ordering".  The
-difference is that, with Fortran, array elements adjacent to each other
-in memory differ in the *first* subscript instead of the last;
-`A(5,10,20)' immediately follows `A(4,10,20)', whereas with row-major
-ordering it would follow `A(5,10,19)'.
-
-   This consideration affects not only interfacing with and debugging
-Fortran code, it can greatly affect how code is designed and written,
-especially when code speed and size is a concern.
-
-   Fortran also differs from C, a popular language for interfacing and
-to support directly in debuggers, in the way arrays are treated.  In C,
-arrays are single-dimensional and have interesting relationships to
-pointers, neither of which is true for Fortran.  As a result, dealing
-with Fortran arrays from within an environment limited to C concepts
-can be challenging.
-
-   For example, accessing the array element `A(5,10,20)' is easy enough
-in Fortran (use `A(5,10,20)'), but in C some difficult machinations are
-needed.  First, C would treat the A array as a single-dimension array.
-Second, C does not understand low bounds for arrays as does Fortran.
-Third, C assumes a low bound of zero (0), while Fortran defaults to a
-low bound of one (1) and can supports an arbitrary low bound.
-Therefore, calculations must be done to determine what the C equivalent
-of `A(5,10,20)' would be, and these calculations require knowing the
-dimensions of `A'.
-
-   For `DIMENSION A(2:11,21,0:29)', the calculation of the offset of
-`A(5,10,20)' would be:
-
-       (5-2)
-     + (10-1)*(11-2+1)
-     + (20-0)*(11-2+1)*(21-1+1)
-     = 4293
-
-So the C equivalent in this case would be `a[4293]'.
-
-   When using a debugger directly on Fortran code, the C equivalent
-might not work, because some debuggers cannot understand the notion of
-low bounds other than zero.  However, unlike `f2c', `g77' does inform
-the GBE that a multi-dimensional array (like `A' in the above example)
-is really multi-dimensional, rather than a single-dimensional array, so
-at least the dimensionality of the array is preserved.
-
-   Debuggers that understand Fortran should have no trouble with
-non-zero low bounds, but for non-Fortran debuggers, especially C
-debuggers, the above example might have a C equivalent of `a[4305]'.
-This calculation is arrived at by eliminating the subtraction of the
-lower bound in the first parenthesized expression on each line--that
-is, for `(5-2)' substitute `(5)', for `(10-1)' substitute `(10)', and
-for `(20-0)' substitute `(20)'.  Actually, the implication of this can
-be that the expression `*(&a[2][1][0] + 4293)' works fine, but that
-`a[20][10][5]' produces the equivalent of `*(&a[0][0][0] + 4305)'
-because of the missing lower bounds.
-
-   Come to think of it, perhaps the behavior is due to the debugger
-internally compensating for the lower bounds by offsetting the base
-address of `a', leaving `&a' set lower, in this case, than
-`&a[2][1][0]' (the address of its first element as identified by
-subscripts equal to the corresponding lower bounds).
-
-   You know, maybe nobody really needs to use arrays.
-
-
-File: g77.info,  Node: Adjustable Arrays,  Next: Alternate Entry Points,  Prev: Arrays,  Up: Debugging and Interfacing
-
-Adjustable Arrays (DIMENSION)
-=============================
-
-   Adjustable and automatic arrays in Fortran require the implementation
-(in this case, the `g77' compiler) to "memorize" the expressions that
-dimension the arrays each time the procedure is invoked.  This is so
-that subsequent changes to variables used in those expressions, made
-during execution of the procedure, do not have any effect on the
-dimensions of those arrays.
-
-   For example:
-
-     REAL ARRAY(5)
-     DATA ARRAY/5*2/
-     CALL X(ARRAY, 5)
-     END
-     SUBROUTINE X(A, N)
-     DIMENSION A(N)
-     N = 20
-     PRINT *, N, A
-     END
-
-Here, the implementation should, when running the program, print
-something like:
-
-     20   2.  2.  2.  2.  2.
-
-Note that this shows that while the value of `N' was successfully
-changed, the size of the `A' array remained at 5 elements.
-
-   To support this, `g77' generates code that executes before any user
-code (and before the internally generated computed `GOTO' to handle
-alternate entry points, as described below) that evaluates each
-(nonconstant) expression in the list of subscripts for an array, and
-saves the result of each such evaluation to be used when determining
-the size of the array (instead of re-evaluating the expressions).
-
-   So, in the above example, when `X' is first invoked, code is
-executed that copies the value of `N' to a temporary.  And that same
-temporary serves as the actual high bound for the single dimension of
-the `A' array (the low bound being the constant 1).  Since the user
-program cannot (legitimately) change the value of the temporary during
-execution of the procedure, the size of the array remains constant
-during each invocation.
-
-   For alternate entry points, the code `g77' generates takes into
-account the possibility that a dummy adjustable array is not actually
-passed to the actual entry point being invoked at that time.  In that
-case, the public procedure implementing the entry point passes to the
-master private procedure implementing all the code for the entry points
-a `NULL' pointer where a pointer to that adjustable array would be
-expected.  The `g77'-generated code doesn't attempt to evaluate any of
-the expressions in the subscripts for an array if the pointer to that
-array is `NULL' at run time in such cases.  (Don't depend on this
-particular implementation by writing code that purposely passes `NULL'
-pointers where the callee expects adjustable arrays, even if you know
-the callee won't reference the arrays--nor should you pass `NULL'
-pointers for any dummy arguments used in calculating the bounds of such
-arrays or leave undefined any values used for that purpose in
-COMMON--because the way `g77' implements these things might change in
-the future!)
-
-
-File: g77.info,  Node: Alternate Entry Points,  Next: Alternate Returns,  Prev: Adjustable Arrays,  Up: Debugging and Interfacing
-
-Alternate Entry Points (ENTRY)
-==============================
-
-   The GBE does not understand the general concept of alternate entry
-points as Fortran provides via the ENTRY statement.  `g77' gets around
-this by using an approach to compiling procedures having at least one
-`ENTRY' statement that is almost identical to the approach used by
-`f2c'.  (An alternate approach could be used that would probably
-generate faster, but larger, code that would also be a bit easier to
-debug.)
-
-   Information on how `g77' implements `ENTRY' is provided for those
-trying to debug such code.  The choice of implementation seems unlikely
-to affect code (compiled in other languages) that interfaces to such
-code.
-
-   `g77' compiles exactly one public procedure for the primary entry
-point of a procedure plus each `ENTRY' point it specifies, as usual.
-That is, in terms of the public interface, there is no difference
-between
-
-     SUBROUTINE X
-     END
-     SUBROUTINE Y
-     END
-
-and:
-
-     SUBROUTINE X
-     ENTRY Y
-     END
-
-   The difference between the above two cases lies in the code compiled
-for the `X' and `Y' procedures themselves, plus the fact that, for the
-second case, an extra internal procedure is compiled.
-
-   For every Fortran procedure with at least one `ENTRY' statement,
-`g77' compiles an extra procedure named `__g77_masterfun_X', where X is
-the name of the primary entry point (which, in the above case, using
-the standard compiler options, would be `x_' in C).
-
-   This extra procedure is compiled as a private procedure--that is, a
-procedure not accessible by name to separately compiled modules.  It
-contains all the code in the program unit, including the code for the
-primary entry point plus for every entry point.  (The code for each
-public procedure is quite short, and explained later.)
-
-   The extra procedure has some other interesting characteristics.
-
-   The argument list for this procedure is invented by `g77'.  It
-contains a single integer argument named `__g77_which_entrypoint',
-passed by value (as in Fortran's `%VAL()' intrinsic), specifying the
-entry point index--0 for the primary entry point, 1 for the first entry
-point (the first `ENTRY' statement encountered), 2 for the second entry
-point, and so on.
-
-   It also contains, for functions returning `CHARACTER' and (when
-`-ff2c' is in effect) `COMPLEX' functions, and for functions returning
-different types among the `ENTRY' statements (e.g. `REAL FUNCTION R()'
-containing `ENTRY I()'), an argument named `__g77_result' that is
-expected at run time to contain a pointer to where to store the result
-of the entry point.  For `CHARACTER' functions, this storage area is an
-array of the appropriate number of characters; for `COMPLEX' functions,
-it is the appropriate area for the return type; for
-multiple-return-type functions, it is a union of all the supported
-return types (which cannot include `CHARACTER', since combining
-`CHARACTER' and non-`CHARACTER' return types via `ENTRY' in a single
-function is not supported by `g77').
-
-   For `CHARACTER' functions, the `__g77_result' argument is followed
-by yet another argument named `__g77_length' that, at run time,
-specifies the caller's expected length of the returned value.  Note
-that only `CHARACTER*(*)' functions and entry points actually make use
-of this argument, even though it is always passed by all callers of
-public `CHARACTER' functions (since the caller does not generally know
-whether such a function is `CHARACTER*(*)' or whether there are any
-other callers that don't have that information).
-
-   The rest of the argument list is the union of all the arguments
-specified for all the entry points (in their usual forms, e.g.
-`CHARACTER' arguments have extra length arguments, all appended at the
-end of this list).  This is considered the "master list" of arguments.
-
-   The code for this procedure has, before the code for the first
-executable statement, code much like that for the following Fortran
-statement:
-
-            GOTO (100000,100001,100002), __g77_which_entrypoint
-     100000 ...code for primary entry point...
-     100001 ...code immediately following first ENTRY statement...
-     100002 ...code immediately following second ENTRY statement...
-
-(Note that invalid Fortran statement labels and variable names are used
-in the above example to highlight the fact that it represents code
-generated by the `g77' internals, not code to be written by the user.)
-
-   It is this code that, when the procedure is called, picks which
-entry point to start executing.
-
-   Getting back to the public procedures (`x' and `Y' in the original
-example), those procedures are fairly simple.  Their interfaces are
-just like they would be if they were self-contained procedures (without
-`ENTRY'), of course, since that is what the callers expect.  Their code
-consists of simply calling the private procedure, described above, with
-the appropriate extra arguments (the entry point index, and perhaps a
-pointer to a multiple-type- return variable, local to the public
-procedure, that contains all the supported returnable non-character
-types).  For arguments that are not listed for a given entry point that
-are listed for other entry points, and therefore that are in the
-"master list" for the private procedure, null pointers (in C, the
-`NULL' macro) are passed.  Also, for entry points that are part of a
-multiple-type- returning function, code is compiled after the call of
-the private procedure to extract from the multi-type union the
-appropriate result, depending on the type of the entry point in
-question, returning that result to the original caller.
-
-   When debugging a procedure containing alternate entry points, you
-can either set a break point on the public procedure itself (e.g.  a
-break point on `X' or `Y') or on the private procedure that contains
-most of the pertinent code (e.g. `__g77_masterfun_X').  If you do the
-former, you should use the debugger's command to "step into" the called
-procedure to get to the actual code; with the latter approach, the
-break point leaves you right at the actual code, skipping over the
-public entry point and its call to the private procedure (unless you
-have set a break point there as well, of course).
-
-   Further, the list of dummy arguments that is visible when the
-private procedure is active is going to be the expanded version of the
-list for whichever particular entry point is active, as explained
-above, and the way in which return values are handled might well be
-different from how they would be handled for an equivalent single-entry
-function.
-
-
-File: g77.info,  Node: Alternate Returns,  Next: Assigned Statement Labels,  Prev: Alternate Entry Points,  Up: Debugging and Interfacing
-
-Alternate Returns (SUBROUTINE and RETURN)
-=========================================
-
-   Subroutines with alternate returns (e.g. `SUBROUTINE X(*)' and `CALL
-X(*50)') are implemented by `g77' as functions returning the C `int'
-type.  The actual alternate-return arguments are omitted from the
-calling sequence.  Instead, the caller uses the return value to do a
-rough equivalent of the Fortran computed-`GOTO' statement, as in `GOTO
-(50), X()' in the example above (where `X' is quietly declared as an
-`INTEGER(KIND=1)' function), and the callee just returns whatever
-integer is specified in the `RETURN' statement for the subroutine For
-example, `RETURN 1' is implemented as `X = 1' followed by `RETURN' in
-C, and `RETURN' by itself is `X = 0' and `RETURN').
 

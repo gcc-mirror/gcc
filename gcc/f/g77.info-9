@@ -28,14 +28,42 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: IShft Intrinsic,  Next: IShftC Intrinsic,  Prev: IsaTty Intrinsic,  Up: Table of Intrinsic Functions
+
+IShft Intrinsic
+...............
+
+     IShft(I, SHIFT)
+
+IShft: `INTEGER' function, the `KIND=' value of the type being that of
+argument I.
+
+I: `INTEGER'; scalar; INTENT(IN).
+
+SHIFT: `INTEGER'; scalar; INTENT(IN).
+
+Intrinsic groups: `mil', `f90', `vxt'.
+
+Description:
+
+   All bits representing I are shifted SHIFT places.  `SHIFT.GT.0'
+indicates a left shift, `SHIFT.EQ.0' indicates no shift and
+`SHIFT.LT.0' indicates a right shift.  If the absolute value of the
+shift count is greater than `BIT_SIZE(I)', the result is undefined.
+Bits shifted out from the left end or the right end, as the case may be,
+are lost.  Zeros are shifted in from the opposite end.
+
+   *Note IShftC Intrinsic:: for the circular-shift equivalent.
 
 
 File: g77.info,  Node: IShftC Intrinsic,  Next: ISign Intrinsic,  Prev: IShft Intrinsic,  Up: Table of Intrinsic Functions
@@ -396,7 +424,7 @@ Loc Intrinsic
 
      Loc(ENTITY)
 
-Loc: `INTEGER(KIND=0)' function.
+Loc: `INTEGER(KIND=7)' function.
 
 ENTITY: Any type; cannot be a constant or expression.
 
@@ -1417,8 +1445,6 @@ Description:
    Returns the process's runtime in seconds--the same value as the UNIX
 function `etime' returns.
 
-   This routine is known from Cray Fortran.
-
    For information on other intrinsics with the same name: *Note Second
 Intrinsic (subroutine)::.
 
@@ -1430,7 +1456,7 @@ Second Intrinsic (subroutine)
 
      CALL Second(SECONDS)
 
-SECONDS: `REAL(KIND=1)'; scalar; INTENT(OUT).
+SECONDS: `REAL'; scalar; INTENT(OUT).
 
 Intrinsic groups: `unix'.
 
@@ -1439,7 +1465,7 @@ Description:
    Returns the process's runtime in seconds in SECONDS--the same value
 as the UNIX function `etime' returns.
 
-   This routine is known from Cray Fortran.  *Note Cpu_Time Intrinsic::
+   This routine is known from Cray Fortran.  *Note CPU_Time Intrinsic::
 for a standard equivalent.
 
    For information on other intrinsics with the same name: *Note Second
@@ -1550,7 +1576,7 @@ NUMBER: `INTEGER'; scalar; INTENT(IN).
 HANDLER: Signal handler (`INTEGER FUNCTION' or `SUBROUTINE') or
 dummy/global `INTEGER(KIND=1)' scalar.
 
-STATUS: `INTEGER(KIND=1)'; OPTIONAL; scalar; INTENT(OUT).
+STATUS: `INTEGER(KIND=7)'; OPTIONAL; scalar; INTENT(OUT).
 
 Intrinsic groups: `unix'.
 
@@ -1558,12 +1584,13 @@ Description:
 
    If HANDLER is a an `EXTERNAL' routine, arranges for it to be invoked
 with a single integer argument (of system-dependent length) when signal
-NUMBER occurs.  If NUMBER is an integer, it can be used to turn off
-handling of signal HANDLER or revert to its default action.  See
+NUMBER occurs.  If HANDLER is an integer, it can be used to turn off
+handling of signal NUMBER or revert to its default action.  See
 `signal(2)'.
 
-   Note that HANDLER will be called using C conventions, so its value in
-Fortran terms is obtained by applying `%LOC()' (or LOC()) to it.
+   Note that HANDLER will be called using C conventions, so the value
+of its argument in Fortran terms Fortran terms is obtained by applying
+`%LOC()' (or LOC()) to it.
 
    The value returned by `signal(2)' is written to STATUS, if that
 argument is supplied.  Otherwise the return value is ignored.
@@ -1571,6 +1598,27 @@ argument is supplied.  Otherwise the return value is ignored.
    Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the (optional)
 STATUS argument.
+
+   *Warning:* Use of the `libf2c' run-time library function `signal_'
+directly (such as via `EXTERNAL SIGNAL') requires use of the `%VAL()'
+construct to pass an `INTEGER' value (such as `SIG_IGN' or `SIG_DFL')
+for the HANDLER argument.
+
+   However, while `CALL SIGNAL(SIGNUM, %VAL(SIG_IGN))' works when
+`SIGNAL' is treated as an external procedure (and resolves, at link
+time, to `libf2c''s `signal_' routine), this construct is not valid
+when `SIGNAL' is recognized as the intrinsic of that name.
+
+   Therefore, for maximum portability and reliability, code such
+references to the `SIGNAL' facility as follows:
+
+     INTRINSIC SIGNAL
+     ...
+     CALL SIGNAL(SIGNUM, SIG_IGN)
+
+   `g77' will compile such a call correctly, while other compilers will
+generally either do so as well or reject the `INTRINSIC SIGNAL'
+statement via a diagnostic, allowing you to take appropriate action.
 
    For information on other intrinsics with the same name: *Note Signal
 Intrinsic (function)::.
@@ -1773,72 +1821,4 @@ STATUS argument.
 
    For information on other intrinsics with the same name: *Note Stat
 Intrinsic (function)::.
-
-
-File: g77.info,  Node: Stat Intrinsic (function),  Next: Sum Intrinsic,  Prev: Stat Intrinsic (subroutine),  Up: Table of Intrinsic Functions
-
-Stat Intrinsic (function)
-.........................
-
-     Stat(FILE, SARRAY)
-
-Stat: `INTEGER(KIND=1)' function.
-
-FILE: `CHARACTER'; scalar; INTENT(IN).
-
-SARRAY: `INTEGER(KIND=1)'; DIMENSION(13); INTENT(OUT).
-
-Intrinsic groups: `unix'.
-
-Description:
-
-   Obtains data about the given file FILE and places them in the array
-SARRAY.  A null character (`CHAR(0)') marks the end of the name in
-FILE--otherwise, trailing blanks in FILE are ignored.  The values in
-this array are extracted from the `stat' structure as returned by
-`fstat(2)' q.v., as follows:
-
-  1. File mode
-
-  2. Inode number
-
-  3. ID of device containing directory entry for file
-
-  4. Device id (if relevant)
-
-  5. Number of links
-
-  6. Owner's uid
-
-  7. Owner's gid
-
-  8. File size (bytes)
-
-  9. Last access time
-
- 10. Last modification time
-
- 11. Last file status change time
-
- 12. Preferred I/O block size
-
- 13. Number of blocks allocated
-
-   Not all these elements are relevant on all systems.  If an element
-is not relevant, it is returned as 0.
-
-   Returns 0 on success or a non-zero error code.
-
-   For information on other intrinsics with the same name: *Note Stat
-Intrinsic (subroutine)::.
-
-
-File: g77.info,  Node: Sum Intrinsic,  Next: SymLnk Intrinsic (subroutine),  Prev: Stat Intrinsic (function),  Up: Table of Intrinsic Functions
-
-Sum Intrinsic
-.............
-
-   This intrinsic is not yet implemented.  The name is, however,
-reserved as an intrinsic.  Use `EXTERNAL Sum' to use this name for an
-external procedure.
 

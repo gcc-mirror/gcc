@@ -9212,14 +9212,14 @@ ffestb_R10014_ (ffelexToken t)
 	}
       if (ffestb_local_.format.sign)
 	{
-	  for (i = 0; i < ffelex_token_length (t); ++i)
+	  for (i = ffelex_token_length (t) + 1; i > 0; --i)
 	    ffestb_local_.format.pre.u.signed_val *= 10;
 	  ffestb_local_.format.pre.u.signed_val += strtoul (ffelex_token_text (t),
 							    NULL, 10);
 	}
       else
 	{
-	  for (i = 0; i < ffelex_token_length (t); ++i)
+	  for (i = ffelex_token_length (t) + 1; i > 0; --i)
 	    ffestb_local_.format.pre.u.unsigned_val *= 10;
 	  ffestb_local_.format.pre.u.unsigned_val += strtoul (ffelex_token_text (t),
 							      NULL, 10);
@@ -10103,7 +10103,7 @@ ffestb_R10016_ (ffelexToken t)
 	  ffebad_finish ();
 	  return (ffelexHandler) ffestb_R10016_;
 	}
-      for (i = 0; i < ffelex_token_length (t); ++i)
+      for (i = ffelex_token_length (t) + 1; i > 0; --i)
 	ffestb_local_.format.post.u.unsigned_val *= 10;
       ffestb_local_.format.post.u.unsigned_val += strtoul (ffelex_token_text (t),
 							   NULL, 10);
@@ -10203,7 +10203,7 @@ ffestb_R10018_ (ffelexToken t)
 	  ffebad_finish ();
 	  return (ffelexHandler) ffestb_R10018_;
 	}
-      for (i = 0; i < ffelex_token_length (t); ++i)
+      for (i = ffelex_token_length (t) + 1; i > 0; --i)
 	ffestb_local_.format.dot.u.unsigned_val *= 10;
       ffestb_local_.format.dot.u.unsigned_val += strtoul (ffelex_token_text (t),
 							  NULL, 10);
@@ -10330,7 +10330,7 @@ ffestb_R100110_ (ffelexToken t)
 	  ffebad_finish ();
 	  return (ffelexHandler) ffestb_R100110_;
 	}
-      for (i = 0; i < ffelex_token_length (t); ++i)
+      for (i = ffelex_token_length (t) + 1; i > 0; --i)
 	ffestb_local_.format.exp.u.unsigned_val *= 10;
       ffestb_local_.format.exp.u.unsigned_val += strtoul (ffelex_token_text (t),
 							  NULL, 10);

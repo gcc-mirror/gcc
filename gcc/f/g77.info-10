@@ -28,14 +28,82 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: Stat Intrinsic (function),  Next: Sum Intrinsic,  Prev: Stat Intrinsic (subroutine),  Up: Table of Intrinsic Functions
+
+Stat Intrinsic (function)
+.........................
+
+     Stat(FILE, SARRAY)
+
+Stat: `INTEGER(KIND=1)' function.
+
+FILE: `CHARACTER'; scalar; INTENT(IN).
+
+SARRAY: `INTEGER(KIND=1)'; DIMENSION(13); INTENT(OUT).
+
+Intrinsic groups: `unix'.
+
+Description:
+
+   Obtains data about the given file FILE and places them in the array
+SARRAY.  A null character (`CHAR(0)') marks the end of the name in
+FILE--otherwise, trailing blanks in FILE are ignored.  The values in
+this array are extracted from the `stat' structure as returned by
+`fstat(2)' q.v., as follows:
+
+  1. File mode
+
+  2. Inode number
+
+  3. ID of device containing directory entry for file
+
+  4. Device id (if relevant)
+
+  5. Number of links
+
+  6. Owner's uid
+
+  7. Owner's gid
+
+  8. File size (bytes)
+
+  9. Last access time
+
+ 10. Last modification time
+
+ 11. Last file status change time
+
+ 12. Preferred I/O block size
+
+ 13. Number of blocks allocated
+
+   Not all these elements are relevant on all systems.  If an element
+is not relevant, it is returned as 0.
+
+   Returns 0 on success or a non-zero error code.
+
+   For information on other intrinsics with the same name: *Note Stat
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: Sum Intrinsic,  Next: SymLnk Intrinsic (subroutine),  Prev: Stat Intrinsic (function),  Up: Table of Intrinsic Functions
+
+Sum Intrinsic
+.............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL Sum' to use this name for an
+external procedure.
 
 
 File: g77.info,  Node: SymLnk Intrinsic (subroutine),  Next: System Intrinsic (subroutine),  Prev: Sum Intrinsic,  Up: Table of Intrinsic Functions
@@ -1357,8 +1425,8 @@ Ugly Null Arguments
 
    The `-fugly-comma' option enables use of a single trailing comma to
 mean "pass an extra trailing null argument" in a list of actual
-arguments to a procedure other than a statement function, and use of an
-empty list of arguments to mean "pass a single null argument".
+arguments to an external procedure, and use of an empty list of
+arguments to such a procedure to mean "pass a single null argument".
 
    (Null arguments often are used in some procedure-calling schemes to
 indicate omitted arguments.)
@@ -1432,31 +1500,4 @@ Ugly Conversion of Initializers
    The above constructs, when used, can tend to result in non-portable
 code.  But, they are widely used in existing Fortran code in ways that
 often are quite portable.  Therefore, they are enabled by default.
-
-
-File: g77.info,  Node: Ugly Integer Conversions,  Next: Ugly Assigned Labels,  Prev: Ugly Conversion of Initializers,  Up: Distensions
-
-Ugly Integer Conversions
-------------------------
-
-   The constructs enabled via `-fugly-logint' are:
-
-   * Automatic conversion between `INTEGER' and `LOGICAL' as dictated by
-     context (typically implies nonportable dependencies on how a
-     particular implementation encodes `.TRUE.' and `.FALSE.').
-
-   * Use of a `LOGICAL' variable in `ASSIGN' and assigned-`GOTO'
-     statements.
-
-   The above constructs are disabled by default because use of them
-tends to lead to non-portable code.  Even existing Fortran code that
-uses that often turns out to be non-portable, if not outright buggy.
-
-   Some of this is due to differences among implementations as far as
-how `.TRUE.' and `.FALSE.' are encoded as `INTEGER' values--Fortran
-code that assumes a particular coding is likely to use one of the above
-constructs, and is also likely to not work correctly on implementations
-using different encodings.
-
-   *Note Equivalence Versus Equality::, for more information.
 

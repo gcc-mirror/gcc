@@ -51,7 +51,7 @@ struct _malloc_root_ malloc_root_
     (mallocArea_) &malloc_root_.malloc_pool_image_.first,
     0,
 #if MALLOC_DEBUG
-    0, 0, 0, 0, 0, 0, 0, '/'
+    0, 0, 0, 0, 0, 0, 0, { '/' }
 #endif
   },
 };

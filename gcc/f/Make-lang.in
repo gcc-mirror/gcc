@@ -266,6 +266,12 @@ f77-runtime-unsafe:
 # configure, not a Cygnus-type one.  It needs to be run *after* the
 # appropriate (cross-)compiler has been built, thus depend on GCC_PARTS.
 # NB, sh uses the *first* value of $a from `a=fred a=joe prog'.
+
+# We want to specify CONFIG_SITE for `configure' to override any site
+# configuration, the canonical version of which will force the wrong
+# compiler; it turns out that if we use /dev/null we lose with the
+# current autoconf and bash 2.0.  Rather than create an empty one to
+# read, we may as well use a non-existent one, `no-such-file' below.
 include/f2c.h \
 f/runtime/Makefile \
 f/runtime/libF77/Makefile \
@@ -284,18 +290,22 @@ f/runtime/libU77/Makefile: \
 	top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime; \
+	  rm -f no-such-file; \
+	  $(F77_FLAGS_TO_PASS) \
 	  CC="`case '$(GCC_FOR_TARGET)' in \
 	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
+	  CONFIG_SITE=no-such-file $(SHELL) \
 	  $${src}/f/runtime/configure --srcdir=$${src}/f/runtime
 	top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime/libU77; \
+	  rm -f no-such-file; \
+	  $(F77_FLAGS_TO_PASS) \
 	  CC="`case '$(GCC_FOR_TARGET)' in \
 	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
+	  CONFIG_SITE=no-such-file $(SHELL) \
 	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77
 
 #For now, omit f2c stuff.  -- burley
@@ -458,11 +468,13 @@ f77.install-common:
 	  fi ; \
 	else true; fi
 
-f77.install-info:
-	-rm -f $(infodir)/g77.info*
-	cd $(srcdir)/f; for f in g77.info*; \
-	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
-	-chmod a-x $(infodir)/g77.info*
+f77.install-info: f77.info
+	if [ -f $(srcdir)/f/g77.info ] ; then \
+	  rm -f $(infodir)/g77.info*; \
+	  cd $(srcdir)/f; for f in g77.info*; \
+	  do $(INSTALL_DATA) $$f $(infodir)/$$f; done; \
+	  chmod a-x $(infodir)/g77.info*; \
+	fi
 
 f77.install-man: $(srcdir)/f/g77.1
 	-if [ -f f771$(exeext) ] ; then \

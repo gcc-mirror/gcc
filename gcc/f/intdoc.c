@@ -494,7 +494,7 @@ external procedure.\n\
       if ((argi[0] == '*')
 	  || (argi[0] == 'n')
 	  || (argi[0] == '+')
-      || (argi[0] == 'p'))
+	  || (argi[0] == 'p'))
 	printf ("-1, @var{%s}-2, @dots{}, @var{%s}-n",
 		argc, argc);
     }
@@ -559,7 +559,7 @@ this intrinsic is valid only when used as the argument to\n\
 	}
 #if 0
       else if ((c[0] == 'I')
-	       && (c[1] == 'p'))
+	       && (c[1] == '7'))
 	printf (", the exact type being wide enough to hold a pointer\n\
 on the target system (typically @code{INTEGER(KIND=1)} or @code{INTEGER(KIND=4)}).\n\n");
 #endif
@@ -730,10 +730,6 @@ types of all the arguments.\n\n");
 		      argument_name_string (imp, 0));
 	      break;
 
-	    case 'p':
-	      printf ("@code{INTEGER} wide enough to hold a pointer");
-	      break;
-
 	    default:
 	      assert ("Ia" == NULL);
 	      break;
@@ -848,7 +844,7 @@ types of all the arguments.\n\n");
 	      break;
 
 	    default:
-	      assert ("N1" == NULL);
+	      assert ("E1" == NULL);
 	      break;
 	    }
 	  break;
@@ -1209,10 +1205,6 @@ print_type_string (char *c)
 	  printf ("@code{INTEGER(KIND=%d)}", (kind - '0'));
 	  break;
 
-	case 'p':
-	  printf ("@code{INTEGER(KIND=0)}");
-	  break;
-
 	default:
 	  assert ("Ia" == NULL);
 	  break;
@@ -1336,7 +1328,7 @@ print_type_string (char *c)
       break;
 
     default:
-      assert ("arg type?" == NULL);
+      assert ("type?" == NULL);
       break;
     }
 }

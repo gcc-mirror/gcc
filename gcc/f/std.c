@@ -1,5 +1,5 @@
 /* std.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -546,6 +546,7 @@ static void ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f,
 static void ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f,
 				      char *string);
 static void ffestd_R1001error_ (ffesttFormatList f);
+static void ffestd_R1001rtexpr_ (ffests s, ffesttFormatList f, ffebld expr);
 
 /* Internal macros. */
 
@@ -661,9 +662,10 @@ ffestd_stmt_pass_ ()
 {
   ffestdStmt_ stmt;
   ffestdExprItem_ expr;		/* For traversing lists. */
+  bool okay = (TREE_CODE (current_function_decl) != ERROR_MARK);
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-  if (ffestd_2pass_entrypoints_ != 0)
+  if ((ffestd_2pass_entrypoints_ != 0) && okay)
     {
       tree which = ffecom_which_entrypoint_decl ();
       tree value;
@@ -717,83 +719,97 @@ ffestd_stmt_pass_ ()
 	{
 	case FFESTD_stmtidENDDOLOOP_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_do (stmt->u.enddoloop.block);
+	  if (okay)
+	    ffeste_do (stmt->u.enddoloop.block);
 	  ffestw_kill (stmt->u.enddoloop.block);
 	  break;
 
 	case FFESTD_stmtidENDLOGIF_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_end_R807 ();
+	  if (okay)
+	    ffeste_end_R807 ();
 	  break;
 
 	case FFESTD_stmtidEXECLABEL_:
-	  ffeste_labeldef_branch (stmt->u.execlabel.label);
+	  if (okay)
+	    ffeste_labeldef_branch (stmt->u.execlabel.label);
 	  break;
 
 	case FFESTD_stmtidFORMATLABEL_:
-	  ffeste_labeldef_format (stmt->u.formatlabel.label);
+	  if (okay)
+	    ffeste_labeldef_format (stmt->u.formatlabel.label);
 	  break;
 
 	case FFESTD_stmtidR737A_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R737A (stmt->u.R737A.dest, stmt->u.R737A.source);
+	  if (okay)
+	    ffeste_R737A (stmt->u.R737A.dest, stmt->u.R737A.source);
 	  malloc_pool_kill (stmt->u.R737A.pool);
 	  break;
 
 	case FFESTD_stmtidR803_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R803 (stmt->u.R803.expr);
+	  if (okay)
+	    ffeste_R803 (stmt->u.R803.expr);
 	  malloc_pool_kill (stmt->u.R803.pool);
 	  break;
 
 	case FFESTD_stmtidR804_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R804 (stmt->u.R804.expr);
+	  if (okay)
+	    ffeste_R804 (stmt->u.R804.expr);
 	  malloc_pool_kill (stmt->u.R804.pool);
 	  break;
 
 	case FFESTD_stmtidR805_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R805 ();
+	  if (okay)
+	    ffeste_R805 ();
 	  break;
 
 	case FFESTD_stmtidR806_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R806 ();
+	  if (okay)
+	    ffeste_R806 ();
 	  break;
 
 	case FFESTD_stmtidR807_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R807 (stmt->u.R807.expr);
+	  if (okay)
+	    ffeste_R807 (stmt->u.R807.expr);
 	  malloc_pool_kill (stmt->u.R807.pool);
 	  break;
 
 	case FFESTD_stmtidR809_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R809 (stmt->u.R809.block, stmt->u.R809.expr);
+	  if (okay)
+	    ffeste_R809 (stmt->u.R809.block, stmt->u.R809.expr);
 	  malloc_pool_kill (stmt->u.R809.pool);
 	  break;
 
 	case FFESTD_stmtidR810_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R810 (stmt->u.R810.block, stmt->u.R810.casenum);
+	  if (okay)
+	    ffeste_R810 (stmt->u.R810.block, stmt->u.R810.casenum);
 	  malloc_pool_kill (stmt->u.R810.pool);
 	  break;
 
 	case FFESTD_stmtidR811_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R811 (stmt->u.R811.block);
+	  if (okay)
+	    ffeste_R811 (stmt->u.R811.block);
 	  malloc_pool_kill (ffestw_select (stmt->u.R811.block)->pool);
 	  ffestw_kill (stmt->u.R811.block);
 	  break;
 
 	case FFESTD_stmtidR819A_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R819A (stmt->u.R819A.block, stmt->u.R819A.label,
-			stmt->u.R819A.var,
-			stmt->u.R819A.start, stmt->u.R819A.start_token,
-			stmt->u.R819A.end, stmt->u.R819A.end_token,
-			stmt->u.R819A.incr, stmt->u.R819A.incr_token);
+	  if (okay)
+	    ffeste_R819A (stmt->u.R819A.block, stmt->u.R819A.label,
+			  stmt->u.R819A.var,
+			  stmt->u.R819A.start, stmt->u.R819A.start_token,
+			  stmt->u.R819A.end, stmt->u.R819A.end_token,
+			  stmt->u.R819A.incr, stmt->u.R819A.incr_token);
 	  ffelex_token_kill (stmt->u.R819A.start_token);
 	  ffelex_token_kill (stmt->u.R819A.end_token);
 	  if (stmt->u.R819A.incr_token != NULL)
@@ -803,269 +819,342 @@ ffestd_stmt_pass_ ()
 
 	case FFESTD_stmtidR819B_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R819B (stmt->u.R819B.block, stmt->u.R819B.label,
-			stmt->u.R819B.expr);
+	  if (okay)
+	    ffeste_R819B (stmt->u.R819B.block, stmt->u.R819B.label,
+			  stmt->u.R819B.expr);
 	  malloc_pool_kill (stmt->u.R819B.pool);
 	  break;
 
 	case FFESTD_stmtidR825_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R825 ();
+	  if (okay)
+	    ffeste_R825 ();
 	  break;
 
 	case FFESTD_stmtidR834_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R834 (stmt->u.R834.block);
+	  if (okay)
+	    ffeste_R834 (stmt->u.R834.block);
 	  break;
 
 	case FFESTD_stmtidR835_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R835 (stmt->u.R835.block);
+	  if (okay)
+	    ffeste_R835 (stmt->u.R835.block);
 	  break;
 
 	case FFESTD_stmtidR836_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R836 (stmt->u.R836.label);
+	  if (okay)
+	    ffeste_R836 (stmt->u.R836.label);
 	  break;
 
 	case FFESTD_stmtidR837_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R837 (stmt->u.R837.labels, stmt->u.R837.count,
-		       stmt->u.R837.expr);
+	  if (okay)
+	    ffeste_R837 (stmt->u.R837.labels, stmt->u.R837.count,
+			 stmt->u.R837.expr);
 	  malloc_pool_kill (stmt->u.R837.pool);
 	  break;
 
 	case FFESTD_stmtidR838_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R838 (stmt->u.R838.label, stmt->u.R838.target);
+	  if (okay)
+	    ffeste_R838 (stmt->u.R838.label, stmt->u.R838.target);
 	  malloc_pool_kill (stmt->u.R838.pool);
 	  break;
 
 	case FFESTD_stmtidR839_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R839 (stmt->u.R839.target);
+	  if (okay)
+	    ffeste_R839 (stmt->u.R839.target);
 	  malloc_pool_kill (stmt->u.R839.pool);
 	  break;
 
 	case FFESTD_stmtidR840_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R840 (stmt->u.R840.expr, stmt->u.R840.neg, stmt->u.R840.zero,
-		       stmt->u.R840.pos);
+	  if (okay)
+	    ffeste_R840 (stmt->u.R840.expr, stmt->u.R840.neg, stmt->u.R840.zero,
+			 stmt->u.R840.pos);
 	  malloc_pool_kill (stmt->u.R840.pool);
 	  break;
 
 	case FFESTD_stmtidR841_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R841 ();
+	  if (okay)
+	    ffeste_R841 ();
 	  break;
 
 	case FFESTD_stmtidR842_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R842 (stmt->u.R842.expr);
-	  malloc_pool_kill (stmt->u.R842.pool);
+	  if (okay)
+	    ffeste_R842 (stmt->u.R842.expr);
+	  if (stmt->u.R842.pool != NULL)
+	    malloc_pool_kill (stmt->u.R842.pool);
 	  break;
 
 	case FFESTD_stmtidR843_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R843 (stmt->u.R843.expr);
+	  if (okay)
+	    ffeste_R843 (stmt->u.R843.expr);
 	  malloc_pool_kill (stmt->u.R843.pool);
 	  break;
 
 	case FFESTD_stmtidR904_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R904 (stmt->u.R904.params);
+	  if (okay)
+	    ffeste_R904 (stmt->u.R904.params);
 	  malloc_pool_kill (stmt->u.R904.pool);
 	  break;
 
 	case FFESTD_stmtidR907_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R907 (stmt->u.R907.params);
+	  if (okay)
+	    ffeste_R907 (stmt->u.R907.params);
 	  malloc_pool_kill (stmt->u.R907.pool);
 	  break;
 
 	case FFESTD_stmtidR909_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R909_start (stmt->u.R909.params, stmt->u.R909.only_format,
-			     stmt->u.R909.unit, stmt->u.R909.format,
-			     stmt->u.R909.rec, stmt->u.R909.key);
+	  if (okay)
+	    ffeste_R909_start (stmt->u.R909.params, stmt->u.R909.only_format,
+			       stmt->u.R909.unit, stmt->u.R909.format,
+			       stmt->u.R909.rec, stmt->u.R909.key);
 	  for (expr = stmt->u.R909.list; expr != NULL; expr = expr->next)
 	    {
-	      ffeste_R909_item (expr->expr, expr->token);
+	      if (okay)
+		ffeste_R909_item (expr->expr, expr->token);
 	      ffelex_token_kill (expr->token);
 	    }
-	  ffeste_R909_finish ();
+	  if (okay)
+	    ffeste_R909_finish ();
 	  malloc_pool_kill (stmt->u.R909.pool);
 	  break;
 
 	case FFESTD_stmtidR910_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R910_start (stmt->u.R910.params, stmt->u.R910.unit,
-			     stmt->u.R910.format, stmt->u.R910.rec);
+	  if (okay)
+	    ffeste_R910_start (stmt->u.R910.params, stmt->u.R910.unit,
+			       stmt->u.R910.format, stmt->u.R910.rec);
 	  for (expr = stmt->u.R910.list; expr != NULL; expr = expr->next)
 	    {
-	      ffeste_R910_item (expr->expr, expr->token);
+	      if (okay)
+		ffeste_R910_item (expr->expr, expr->token);
 	      ffelex_token_kill (expr->token);
 	    }
-	  ffeste_R910_finish ();
+	  if (okay)
+	    ffeste_R910_finish ();
 	  malloc_pool_kill (stmt->u.R910.pool);
 	  break;
 
 	case FFESTD_stmtidR911_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R911_start (stmt->u.R911.params, stmt->u.R911.format);
+	  if (okay)
+	    ffeste_R911_start (stmt->u.R911.params, stmt->u.R911.format);
 	  for (expr = stmt->u.R911.list; expr != NULL; expr = expr->next)
 	    {
-	      ffeste_R911_item (expr->expr, expr->token);
+	      if (okay)
+		ffeste_R911_item (expr->expr, expr->token);
 	      ffelex_token_kill (expr->token);
 	    }
-	  ffeste_R911_finish ();
+	  if (okay)
+	    ffeste_R911_finish ();
 	  malloc_pool_kill (stmt->u.R911.pool);
 	  break;
 
 	case FFESTD_stmtidR919_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R919 (stmt->u.R919.params);
+	  if (okay)
+	    ffeste_R919 (stmt->u.R919.params);
 	  malloc_pool_kill (stmt->u.R919.pool);
 	  break;
 
 	case FFESTD_stmtidR920_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R920 (stmt->u.R920.params);
+	  if (okay)
+	    ffeste_R920 (stmt->u.R920.params);
 	  malloc_pool_kill (stmt->u.R920.pool);
 	  break;
 
 	case FFESTD_stmtidR921_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R921 (stmt->u.R921.params);
+	  if (okay)
+	    ffeste_R921 (stmt->u.R921.params);
 	  malloc_pool_kill (stmt->u.R921.pool);
 	  break;
 
 	case FFESTD_stmtidR923A_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R923A (stmt->u.R923A.params, stmt->u.R923A.by_file);
+	  if (okay)
+	    ffeste_R923A (stmt->u.R923A.params, stmt->u.R923A.by_file);
 	  malloc_pool_kill (stmt->u.R923A.pool);
 	  break;
 
 	case FFESTD_stmtidR923B_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R923B_start (stmt->u.R923B.params);
+	  if (okay)
+	    ffeste_R923B_start (stmt->u.R923B.params);
 	  for (expr = stmt->u.R923B.list; expr != NULL; expr = expr->next)
-	    ffeste_R923B_item (expr->expr);
-	  ffeste_R923B_finish ();
+	    {
+	      if (okay)
+		ffeste_R923B_item (expr->expr);
+	    }
+	  if (okay)
+	    ffeste_R923B_finish ();
 	  malloc_pool_kill (stmt->u.R923B.pool);
 	  break;
 
 	case FFESTD_stmtidR1001_:
-	  ffeste_R1001 (&stmt->u.R1001.str);
+	  if (okay)
+	    ffeste_R1001 (&stmt->u.R1001.str);
 	  ffests_kill (&stmt->u.R1001.str);
 	  break;
 
 	case FFESTD_stmtidR1103_:
-	  ffeste_R1103 ();
+	  if (okay)
+	    ffeste_R1103 ();
 	  break;
 
 	case FFESTD_stmtidR1112_:
-	  ffeste_R1112 ();
+	  if (okay)
+	    ffeste_R1112 ();
 	  break;
 
 	case FFESTD_stmtidR1212_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R1212 (stmt->u.R1212.expr);
+	  if (okay)
+	    ffeste_R1212 (stmt->u.R1212.expr);
 	  malloc_pool_kill (stmt->u.R1212.pool);
 	  break;
 
 	case FFESTD_stmtidR1221_:
-	  ffeste_R1221 ();
+	  if (okay)
+	    ffeste_R1221 ();
 	  break;
 
 	case FFESTD_stmtidR1225_:
-	  ffeste_R1225 ();
+	  if (okay)
+	    ffeste_R1225 ();
 	  break;
 
 	case FFESTD_stmtidR1226_:
 	  ffestd_subr_line_restore_ (stmt);
 	  if (stmt->u.R1226.entry != NULL)
-	    ffeste_R1226 (stmt->u.R1226.entry);
+	    {
+	      if (okay)
+		ffeste_R1226 (stmt->u.R1226.entry);
+	    }
 	  break;
 
 	case FFESTD_stmtidR1227_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_R1227 (stmt->u.R1227.block, stmt->u.R1227.expr);
+	  if (okay)
+	    ffeste_R1227 (stmt->u.R1227.block, stmt->u.R1227.expr);
 	  malloc_pool_kill (stmt->u.R1227.pool);
 	  break;
 
 #if FFESTR_VXT
 	case FFESTD_stmtidV018_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V018_start (stmt->u.V018.params, stmt->u.V018.format);
+	  if (okay)
+	    ffeste_V018_start (stmt->u.V018.params, stmt->u.V018.format);
 	  for (expr = stmt->u.V018.list; expr != NULL; expr = expr->next)
-	    ffeste_V018_item (expr->expr);
-	  ffeste_V018_finish ();
+	    {
+	      if (okay)
+		ffeste_V018_item (expr->expr);
+	    }
+	  if (okay)
+	    ffeste_V018_finish ();
 	  malloc_pool_kill (stmt->u.V018.pool);
 	  break;
 
 	case FFESTD_stmtidV019_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V019_start (stmt->u.V019.params, stmt->u.V019.format);
+	  if (okay)
+	    ffeste_V019_start (stmt->u.V019.params, stmt->u.V019.format);
 	  for (expr = stmt->u.V019.list; expr != NULL; expr = expr->next)
-	    ffeste_V019_item (expr->expr);
-	  ffeste_V019_finish ();
+	    {
+	      if (okay)
+		ffeste_V019_item (expr->expr);
+	    }
+	  if (okay)
+	    ffeste_V019_finish ();
 	  malloc_pool_kill (stmt->u.V019.pool);
 	  break;
 #endif
 
 	case FFESTD_stmtidV020_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V020_start (stmt->u.V020.params, stmt->u.V020.format);
+	  if (okay)
+	    ffeste_V020_start (stmt->u.V020.params, stmt->u.V020.format);
 	  for (expr = stmt->u.V020.list; expr != NULL; expr = expr->next)
-	    ffeste_V020_item (expr->expr);
-	  ffeste_V020_finish ();
+	    {
+	      if (okay)
+		ffeste_V020_item (expr->expr);
+	    }
+	  if (okay)
+	    ffeste_V020_finish ();
 	  malloc_pool_kill (stmt->u.V020.pool);
 	  break;
 
 #if FFESTR_VXT
 	case FFESTD_stmtidV021_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V021 (stmt->u.V021.params);
+	  if (okay)
+	    ffeste_V021 (stmt->u.V021.params);
 	  malloc_pool_kill (stmt->u.V021.pool);
 	  break;
 
 	case FFESTD_stmtidV023_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V023_start (stmt->u.V023.params);
+	  if (okay)
+	    ffeste_V023_start (stmt->u.V023.params);
 	  for (expr = stmt->u.V023.list; expr != NULL; expr = expr->next)
-	    ffeste_V023_item (expr->expr);
-	  ffeste_V023_finish ();
+	    {
+	      if (okay)
+		ffeste_V023_item (expr->expr);
+	    }
+	  if (okay)
+	    ffeste_V023_finish ();
 	  malloc_pool_kill (stmt->u.V023.pool);
 	  break;
 
 	case FFESTD_stmtidV024_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V024_start (stmt->u.V024.params);
+	  if (okay)
+	    ffeste_V024_start (stmt->u.V024.params);
 	  for (expr = stmt->u.V024.list; expr != NULL; expr = expr->next)
-	    ffeste_V024_item (expr->expr);
-	  ffeste_V024_finish ();
+	    {
+	      if (okay)
+		ffeste_V024_item (expr->expr);
+	    }
+	  if (okay)
+	    ffeste_V024_finish ();
 	  malloc_pool_kill (stmt->u.V024.pool);
 	  break;
 
 	case FFESTD_stmtidV025start_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V025_start ();
+	  if (okay)
+	    ffeste_V025_start ();
 	  break;
 
 	case FFESTD_stmtidV025item_:
-	  ffeste_V025_item (stmt->u.V025item.u, stmt->u.V025item.m,
-			    stmt->u.V025item.n, stmt->u.V025item.asv);
+	  if (okay)
+	    ffeste_V025_item (stmt->u.V025item.u, stmt->u.V025item.m,
+			      stmt->u.V025item.n, stmt->u.V025item.asv);
 	  break;
 
 	case FFESTD_stmtidV025finish_:
-	  ffeste_V025_finish ();
+	  if (okay)
+	    ffeste_V025_finish ();
 	  malloc_pool_kill (stmt->u.V025finish.pool);
 	  break;
 
 	case FFESTD_stmtidV026_:
 	  ffestd_subr_line_restore_ (stmt);
-	  ffeste_V026 (stmt->u.V026.params);
+	  if (okay)
+	    ffeste_V026 (stmt->u.V026.params);
 	  malloc_pool_kill (stmt->u.V026.pool);
 	  break;
 #endif
@@ -3513,9 +3602,22 @@ ffestd_R842 (ffebld expr)
     stmt = ffestd_stmt_new_ (FFESTD_stmtidR842_);
     ffestd_stmt_append_ (stmt);
     ffestd_subr_line_save_ (stmt);
-    stmt->u.R842.pool = ffesta_output_pool;
-    stmt->u.R842.expr = expr;
-    ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
+    if (ffesta_outpooldisp () == FFESTA_pooldispPRESERVE)
+      {
+	/* This is a "spurious" (automatically-generated) STOP
+	   that follows a previous STOP or other statement.
+	   Make sure we don't have an expression in the pool,
+	   and then mark that the pool has already been killed.  */
+	assert (expr == NULL);
+	stmt->u.R842.pool = NULL;
+	stmt->u.R842.expr = NULL;
+      }
+    else
+      {
+	stmt->u.R842.pool = ffesta_output_pool;
+	stmt->u.R842.expr = expr;
+	ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
+      }
   }
 #endif
 
@@ -4357,7 +4459,7 @@ ffestd_R1001dump_ (ffests s, ffesttFormatList list)
 	case FFESTP_formattypeFORMAT:
 	  if (next->u.R1003D.R1004.present)
 	    if (next->u.R1003D.R1004.rtexpr)
-	      ffestd_R1001error_ (next);
+	      ffestd_R1001rtexpr_ (s, next, next->u.R1003D.R1004.u.expr);
 	    else
 	      ffests_printf_1U (s, "%lu",
 				next->u.R1003D.R1004.u.unsigned_val);
@@ -4388,7 +4490,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, char *string)
 
   if (f->u.R1005.R1004.present)
     if (f->u.R1005.R1004.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
 
@@ -4396,7 +4498,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, char *string)
 
   if (f->u.R1005.R1006.present)
     if (f->u.R1005.R1006.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 }
@@ -4417,14 +4519,14 @@ ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, char *string)
 
   if (f->u.R1005.R1004.present)
     if (f->u.R1005.R1004.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
 
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 }
@@ -4444,14 +4546,14 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
 
   if (f->u.R1005.R1004.present)
     if (f->u.R1005.R1004.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
 
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
@@ -4459,7 +4561,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
     {
       ffests_putc (s, '.');
       if (f->u.R1005.R1007_or_R1008.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
       else
 	ffests_printf_1U (s, "%lu",
 			  f->u.R1005.R1007_or_R1008.u.unsigned_val);
@@ -4482,20 +4584,20 @@ ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, char *string)
 
   if (f->u.R1005.R1004.present)
     if (f->u.R1005.R1004.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
 
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   ffests_putc (s, '.');
   if (f->u.R1005.R1007_or_R1008.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
 }
@@ -4515,20 +4617,20 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
 
   if (f->u.R1005.R1004.present)
     if (f->u.R1005.R1004.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1004.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1005.R1004.u.unsigned_val);
 
   ffests_puts (s, string);
 
   if (f->u.R1005.R1006.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1006.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1006.u.unsigned_val);
 
   ffests_putc (s, '.');
   if (f->u.R1005.R1007_or_R1008.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1007_or_R1008.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1005.R1007_or_R1008.u.unsigned_val);
 
@@ -4536,7 +4638,7 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
     {
       ffests_putc (s, 'E');
       if (f->u.R1005.R1009.rtexpr)
-	ffestd_R1001error_ (f);
+	ffestd_R1001rtexpr_ (s, f, f->u.R1005.R1009.u.expr);
       else
 	ffests_printf_1U (s, "%lu", f->u.R1005.R1009.u.unsigned_val);
     }
@@ -4569,7 +4671,7 @@ ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, char *string)
 {
   if (f->u.R1010.val.present)
     if (f->u.R1010.val.rtexpr)
-      ffestd_R1001error_ (f);
+      ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
     else
       ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
 
@@ -4589,7 +4691,7 @@ ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, char *string)
   assert (f->u.R1010.val.present);
 
   if (f->u.R1010.val.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
 
@@ -4609,7 +4711,7 @@ ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f, char *string)
   assert (f->u.R1010.val.present);
 
   if (f->u.R1010.val.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
     ffests_printf_1D (s, "%ld", f->u.R1010.val.u.signed_val);
 
@@ -4631,7 +4733,7 @@ ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f, char *string)
   ffests_puts (s, string);
 
   if (f->u.R1010.val.rtexpr)
-    ffestd_R1001error_ (f);
+    ffestd_R1001rtexpr_ (s, f, f->u.R1010.val.u.expr);
   else
     ffests_printf_1U (s, "%lu", f->u.R1010.val.u.unsigned_val);
 }
@@ -4649,6 +4751,52 @@ ffestd_R1001error_ (ffesttFormatList f)
   ffebad_start (FFEBAD_FORMAT_UNSUPPORTED);
   ffebad_here (0, ffelex_token_where_line (f->t), ffelex_token_where_column (f->t));
   ffebad_finish ();
+}
+
+static void
+ffestd_R1001rtexpr_ (ffests s, ffesttFormatList f, ffebld expr)
+{
+  if ((expr == NULL)
+      || (ffebld_op (expr) != FFEBLD_opCONTER)
+      || (ffeinfo_basictype (ffebld_info (expr)) != FFEINFO_basictypeINTEGER)
+      || (ffeinfo_kindtype (ffebld_info (expr)) == FFEINFO_kindtypeINTEGER4))
+    {
+      ffebad_start (FFEBAD_FORMAT_VARIABLE);
+      ffebad_here (0, ffelex_token_where_line (f->t), ffelex_token_where_column (f->t));
+      ffebad_finish ();
+    }
+  else
+    {
+      int val;
+
+      switch (ffeinfo_kindtype (ffebld_info (expr)))
+	{
+#if FFETARGET_okINTEGER1
+	case FFEINFO_kindtypeINTEGER1:
+	  val = ffebld_constant_integer1 (ffebld_conter (expr));
+	  break;
+#endif
+
+#if FFETARGET_okINTEGER2
+	case FFEINFO_kindtypeINTEGER2:
+	  val = ffebld_constant_integer2 (ffebld_conter (expr));
+	  break;
+#endif
+
+#if FFETARGET_okINTEGER3
+	case FFEINFO_kindtypeINTEGER3:
+	  val = ffebld_constant_integer3 (ffebld_conter (expr));
+	  break;
+#endif
+
+	default:
+	  assert ("bad INTEGER constant kind type" == NULL);
+	  /* Fall through. */
+	case FFEINFO_kindtypeANY:
+	  return;
+	}
+      ffests_printf_1D (s, "%ld", val);
+    }
 }
 
 /* ffestd_R1102 -- PROGRAM statement

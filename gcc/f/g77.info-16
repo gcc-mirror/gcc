@@ -28,14 +28,310 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: Large File Unit Numbers,  Prev: Output Assumed To Flush,  Up: Working Programs
+
+Large File Unit Numbers
+-----------------------
+
+   If your program crashes at run time with a message including the
+text `illegal unit number', that probably is a message from the
+run-time library, `libf2c', used, and distributed with, `g77'.
+
+   The message means that your program has attempted to use a file unit
+number that is out of the range accepted by `libf2c'.  Normally, this
+range is 0 through 99, and the high end of the range is controlled by a
+`libf2c' source-file macro named `MXUNIT'.
+
+   If you can easily change your program to use unit numbers in the
+range 0 through 99, you should do so.
+
+   Otherwise, see *Note Larger File Unit Numbers::, for information on
+how to change `MXUNIT' in `libf2c' so you can build and install a new
+version of `libf2c' that supports the larger unit numbers you need.
+
+   *Note:* While `libf2c' places a limit on the range of Fortran
+file-unit numbers, the underlying library and operating system might
+impose different kinds of limits.  For example, some systems limit the
+number of files simultaneously open by a running program.  Information
+on how to increase these limits should be found in your system's
+documentation.
+
+
+File: g77.info,  Node: Overly Convenient Options,  Next: Faster Programs,  Prev: Working Programs,  Up: Collected Fortran Wisdom
+
+Overly Convenient Command-line Options
+======================================
+
+   These options should be used only as a quick-and-dirty way to
+determine how well your program will run under different compilation
+models without having to change the source.  Some are more problematic
+than others, depending on how portable and maintainable you want the
+program to be (and, of course, whether you are allowed to change it at
+all is crucial).
+
+   You should not continue to use these command-line options to compile
+a given program, but rather should make changes to the source code:
+
+`-finit-local-zero'
+     (This option specifies that any uninitialized local variables and
+     arrays have default initialization to binary zeros.)
+
+     Many other compilers do this automatically, which means lots of
+     Fortran code developed with those compilers depends on it.
+
+     It is safer (and probably would produce a faster program) to find
+     the variables and arrays that need such initialization and provide
+     it explicitly via `DATA', so that `-finit-local-zero' is not
+     needed.
+
+     Consider using `-Wuninitialized' (which requires `-O') to find
+     likely candidates, but do not specify `-finit-local-zero' or
+     `-fno-automatic', or this technique won't work.
+
+`-fno-automatic'
+     (This option specifies that all local variables and arrays are to
+     be treated as if they were named in `SAVE' statements.)
+
+     Many other compilers do this automatically, which means lots of
+     Fortran code developed with those compilers depends on it.
+
+     The effect of this is that all non-automatic variables and arrays
+     are made static, that is, not placed on the stack or in heap
+     storage.  This might cause a buggy program to appear to work
+     better.  If so, rather than relying on this command-line option
+     (and hoping all compilers provide the equivalent one), add `SAVE'
+     statements to some or all program unit sources, as appropriate.
+     Consider using `-Wuninitialized' (which requires `-O') to find
+     likely candidates, but do not specify `-finit-local-zero' or
+     `-fno-automatic', or this technique won't work.
+
+     The default is `-fautomatic', which tells `g77' to try and put
+     variables and arrays on the stack (or in fast registers) where
+     possible and reasonable.  This tends to make programs faster.
+
+     *Note:* Automatic variables and arrays are not affected by this
+     option.  These are variables and arrays that are *necessarily*
+     automatic, either due to explicit statements, or due to the way
+     they are declared.  Examples include local variables and arrays
+     not given the `SAVE' attribute in procedures declared `RECURSIVE',
+     and local arrays declared with non-constant bounds (automatic
+     arrays).  Currently, `g77' supports only automatic arrays, not
+     `RECURSIVE' procedures or other means of explicitly specifying
+     that variables or arrays are automatic.
+
+`-fugly'
+     Fix the source code so that `-fno-ugly' will work.  Note that, for
+     many programs, it is difficult to practically avoid using the
+     features enabled via `-fugly-init', and these features pose the
+     lowest risk of writing nonportable code, among the various "ugly"
+     features.
+
+`-fGROUP-intrinsics-hide'
+     Change the source code to use `EXTERNAL' for any external procedure
+     that might be the name of an intrinsic.  It is easy to find these
+     using `-fGROUP-intrinsics-disable'.
+
+
+File: g77.info,  Node: Faster Programs,  Prev: Overly Convenient Options,  Up: Collected Fortran Wisdom
+
+Faster Programs
+===============
+
+   Aside from the usual `gcc' options, such as `-O', `-ffast-math', and
+so on, consider trying some of the following approaches to speed up
+your program (once you get it working).
+
+* Menu:
+
+* Aligned Data::
+* Prefer Automatic Uninitialized Variables::
+* Avoid f2c Compatibility::
+* Use Submodel Options::
+
+
+File: g77.info,  Node: Aligned Data,  Next: Prefer Automatic Uninitialized Variables,  Up: Faster Programs
+
+Aligned Data
+------------
+
+   On some systems, such as those with Pentium Pro CPUs, programs that
+make heavy use of `REAL(KIND=2)' (`DOUBLE PRECISION') might run much
+slower than possible due to the compiler not aligning these 64-bit
+values to 64-bit boundaries in memory.  (The effect also is present,
+though to a lesser extent, on the 586 (Pentium) architecture.)
+
+   The Intel x86 architecture generally ensures that these programs will
+work on all its implementations, but particular implementations (such
+as Pentium Pro) perform better with more strict alignment.  (Such
+behavior isn't unique to the Intel x86 architecture.)  Other
+architectures might *demand* 64-bit alignment of 64-bit data.
+
+   There are a variety of approaches to use to address this problem:
+
+   * Order your `COMMON' and `EQUIVALENCE' areas such that the
+     variables and arrays with the widest alignment guidelines come
+     first.
+
+     For example, on most systems, this would mean placing
+     `COMPLEX(KIND=2)', `REAL(KIND=2)', and `INTEGER(KIND=2)' entities
+     first, followed by `REAL(KIND=1)', `INTEGER(KIND=1)', and
+     `LOGICAL(KIND=1)' entities, then `INTEGER(KIND=6)' entities, and
+     finally `CHARACTER' and `INTEGER(KIND=3)' entities.
+
+     The reason to use such placement is it makes it more likely that
+     your data will be aligned properly, without requiring you to do
+     detailed analysis of each aggregate (`COMMON' and `EQUIVALENCE')
+     area.
+
+     Specifically, on systems where the above guidelines are
+     appropriate, placing `CHARACTER' entities before `REAL(KIND=2)'
+     entities can work just as well, but only if the number of bytes
+     occupied by the `CHARACTER' entities is divisible by the
+     recommended alignment for `REAL(KIND=2)'.
+
+     By ordering the placement of entities in aggregate areas according
+     to the simple guidelines above, you avoid having to carefully
+     count the number of bytes occupied by each entity to determine
+     whether the actual alignment of each subsequent entity meets the
+     alignment guidelines for the type of that entity.
+
+     If you don't ensure correct alignment of `COMMON' elements, the
+     compiler may be forced by some systems to violate the Fortran
+     semantics by adding padding to get `DOUBLE PRECISION' data
+     properly aligned.  If the unfortunate practice is employed of
+     overlaying different types of data in the `COMMON' block, the
+     different variants of this block may become misaligned with
+     respect to each other.  Even if your platform doesn't require
+     strict alignment, `COMMON' should be laid out as above for
+     portability.  (Unfortunately the FORTRAN 77 standard didn't
+     anticipate this possible requirement, which is
+     compiler-independent on a given platform.)
+
+   * Use the (x86-specific) `-malign-double' option when compiling
+     programs for the Pentium and Pentium Pro architectures (called 586
+     and 686 in the `gcc' configuration subsystem).  The warning about
+     this in the `gcc' manual isn't generally relevant to Fortran, but
+     using it will force `COMMON' to be padded if necessary to align
+     `DOUBLE PRECISION' data.
+
+   * Ensure that `crt0.o' or `crt1.o' on your system guarantees a 64-bit
+     aligned stack for `main()'.  The recent one from GNU (`glibc2')
+     will do this on x86 systems, but we don't know of any other x86
+     setups where it will be right.  Read your system's documentation
+     to determine if it is appropriate to upgrade to a more recent
+     version to obtain the optimal alignment.
+
+   Progress is being made on making this work "out of the box" on
+future versions of `g77', `gcc', and some of the relevant operating
+systems (such as GNU/Linux).
+
+
+File: g77.info,  Node: Prefer Automatic Uninitialized Variables,  Next: Avoid f2c Compatibility,  Prev: Aligned Data,  Up: Faster Programs
+
+Prefer Automatic Uninitialized Variables
+----------------------------------------
+
+   If you're using `-fno-automatic' already, you probably should change
+your code to allow compilation with `-fautomatic' (the default), to
+allow the program to run faster.
+
+   Similarly, you should be able to use `-fno-init-local-zero' (the
+default) instead of `-finit-local-zero'.  This is because it is rare
+that every variable affected by these options in a given program
+actually needs to be so affected.
+
+   For example, `-fno-automatic', which effectively `SAVE's every local
+non-automatic variable and array, affects even things like `DO'
+iteration variables, which rarely need to be `SAVE'd, and this often
+reduces run-time performances.  Similarly, `-fno-init-local-zero'
+forces such variables to be initialized to zero--when `SAVE'd (such as
+when `-fno-automatic'), this by itself generally affects only startup
+time for a program, but when not `SAVE'd, it can slow down the
+procedure every time it is called.
+
+   *Note Overly Convenient Command-Line Options: Overly Convenient
+Options, for information on the `-fno-automatic' and
+`-finit-local-zero' options and how to convert their use into selective
+changes in your own code.
+
+
+File: g77.info,  Node: Avoid f2c Compatibility,  Next: Use Submodel Options,  Prev: Prefer Automatic Uninitialized Variables,  Up: Faster Programs
+
+Avoid f2c Compatibility
+-----------------------
+
+   If you aren't linking with any code compiled using `f2c', try using
+the `-fno-f2c' option when compiling *all* the code in your program.
+(Note that `libf2c' is *not* an example of code that is compiled using
+`f2c'--it is compiled by a C compiler, typically `gcc'.)
+
+
+File: g77.info,  Node: Use Submodel Options,  Prev: Avoid f2c Compatibility,  Up: Faster Programs
+
+Use Submodel Options
+--------------------
+
+   Using an appropriate `-m' option to generate specific code for your
+CPU may be worthwhile, though it may mean the executable won't run on
+other versions of the CPU that don't support the same instruction set.
+*Note Hardware Models and Configurations: (gcc)Submodel Options.
+
+   For recent CPUs that don't have explicit support in the released
+version of `gcc', it may still be possible to get improvements.  For
+instance, the flags recommended for 586/686 (Pentium(Pro)) chips for
+building the Linux kernel are:
+
+     -m486 -malign-loops=2 -malign-jumps=2 -malign-functions=2
+     -fomit-frame-pointer
+
+`-fomit-frame-pointer' will, however, inhibit debugging on x86 systems.
+
+
+File: g77.info,  Node: Trouble,  Next: Open Questions,  Prev: Collected Fortran Wisdom,  Up: Top
+
+Known Causes of Trouble with GNU Fortran
+****************************************
+
+   This section describes known problems that affect users of GNU
+Fortran.  Most of these are not GNU Fortran bugs per se--if they were,
+we would fix them.  But the result for a user might be like the result
+of a bug.
+
+   Some of these problems are due to bugs in other software, some are
+missing features that are too much work to add, and some are places
+where people's opinions differ as to what is best.
+
+   Information on bugs that show up when configuring, porting, building,
+or installing `g77' is not provided here.  *Note Problems Installing::.
+
+   To find out about major bugs discovered in the current release and
+possible workarounds for them, retrieve `ftp://alpha.gnu.org/g77.plan'.
+
+   (Note that some of this portion of the manual is lifted directly
+from the `gcc' manual, with minor modifications to tailor it to users
+of `g77'.  Anytime a bug seems to have more to do with the `gcc'
+portion of `g77', *Note Known Causes of Trouble with GNU CC:
+(gcc)Trouble.)
+
+* Menu:
+
+* But-bugs::         Bugs really in other programs or elsewhere.
+* Actual Bugs::      Bugs and misfeatures we will fix later.
+* Missing Features:: Features we already know we want to add later.
+* Disappointments::  Regrettable things we can't change.
+* Non-bugs::         Things we think are right, but some others disagree.
+* Warnings and Errors::  Which problems in your code get warnings,
+                        and which get errors.
 
 
 File: g77.info,  Node: But-bugs,  Next: Actual Bugs,  Up: Trouble
@@ -481,27 +777,6 @@ port, build, and install `g77', *Note Problems Installing::.
 
      Until this bug is fixed, use only `-O1' or no optimization.
 
-   * A code-generation bug afflicts Intel x86 targets when `-O2' is
-     specified compiling, for example, an old version of the `DNRM2'
-     routine.  The x87 coprocessor stack is being somewhat mismanaged
-     in cases where assigned `GOTO' and `ASSIGN' are involved.
-
-     Version 0.5.21 of `g77' contains an initial effort to fix the
-     problem, but this effort is incomplete, and a more complete fix is
-     planned for the next release.
-
-   * Work is needed on the `SIGNAL()' intrinsic to ensure that pointers
-     and integers are properly handled on all targets, including 64-bit
-     machines.
-
-   * When using `-fugly-comma', `g77' assumes an extra `%VAL(0)'
-     argument is to be passed to intrinsics taking no arguments, such
-     as `IARGC()', which in turn reject such a call.  Although this has
-     been worked around for 0.5.18 due to changes in the handling of
-     intrinsics, `g77' needs to do the ugly-argument-appending trick
-     only for external-function invocation, as this would probably be
-     more consistent with compilers that default to using that trick.
-
    * Something about `g77''s straightforward handling of label
      references and definitions sometimes prevents the GBE from
      unrolling loops.  Until this is solved, try inserting or removing
@@ -607,30 +882,6 @@ port, build, and install `g77', *Note Problems Installing::.
      potential, with the current setup, for interface differences in
      the way such areas are laid out between `g77' and other compilers.
 
-   * Some crashes occur when compiling under Solaris on x86 machines.
-
-     Nothing has been heard about any such problems for some time, so
-     this is considering a closed item as of 0.5.20.  Please submit any
-     bug reports pertinent to `g77''s support for Solaris/x86 systems.
-
-   * RS/6000 support is not complete as of the gcc 2.6.3 back end.  The
-     2.7.0 back end appears to fix this problem, or at least mitigate
-     it significantly, but there is at least one known problem that is
-     likely to be a code-generation bug in `gcc-2.7.0' plus
-     `g77-0.5.16'.  This problem shows up only when compiling the
-     Fortran program with `-O'.
-
-     Nothing has been heard about any RS/6000 problems for some time,
-     so this is considering a closed item as of 0.5.20.  Please submit
-     any bug reports pertinent to `g77''s support for RS/6000 systems.
-
-   * SGI support is known to be a bit buggy.  The known problem shows
-     up only when compiling the Fortran program with `-O'.
-
-     It is possible these problems have all been fixed in 0.5.20 by
-     emulating complex arithmetic in the front end.  Please submit any
-     bug reports pertinent to `g77''s support for SGI systems.
-
    * `g77' doesn't work perfectly on 64-bit configurations such as the
      Alpha.  This problem is expected to be largely resolved as of
      version 0.5.20, and further addressed by 0.5.21.  Version 0.6
@@ -666,9 +917,8 @@ port, build, and install `g77', *Note Problems Installing::.
      general expressions (other than simple variables/arrays), to
      procedures when compiling on some systems (such as i386) with
      `-fPIC', as in when compiling for ELF targets.  The symptom is
-     that the assembler complains about invalid opcodes.  More
-     investigation is needed, but the problem is almost certainly in
-     the gcc back end, and it apparently occurs only when compiling
+     that the assembler complains about invalid opcodes.  This bug is
+     in the gcc back end, and it apparently occurs only when compiling
      sufficiently complicated functions *without* the `-O' option.
 
 
@@ -910,301 +1160,4 @@ such as array element references, function references, etc.
 
      SUBROUTINE X(M, N)
      INTEGER N(10), M(N(2), N(1))
-
-
-File: g77.info,  Node: POINTER Statements,  Next: Sensible Non-standard Constructs,  Prev: Array Bounds Expressions,  Up: Missing Features
-
-POINTER Statements
-------------------
-
-   `g77' doesn't support pointers or allocatable objects (other than
-automatic arrays).  This set of features is probably considered just
-behind intrinsics in `PARAMETER' statements on the list of large,
-important things to add to `g77'.
-
-   In the meantime, consider using the `INTEGER(KIND=7)' declaration to
-specify that a variable must be able to hold a pointer.  This construct
-is not portable to other non-GNU compilers, but it is portable to all
-machines GNU Fortran supports when `g77' is used.
-
-   *Note Functions and Subroutines::, for information on `%VAL()',
-`%REF()', and `%DESCR()' constructs, which are useful for passing
-pointers to procedures written in languages other than Fortran.
-
-
-File: g77.info,  Node: Sensible Non-standard Constructs,  Next: FLUSH Statement,  Prev: POINTER Statements,  Up: Missing Features
-
-Sensible Non-standard Constructs
---------------------------------
-
-   `g77' rejects things other compilers accept, like `INTRINSIC
-SQRT,SQRT'.  As time permits in the future, some of these things that
-are easy for humans to read and write and unlikely to be intended to
-mean something else will be accepted by `g77' (though `-fpedantic'
-should trigger warnings about such non-standard constructs).
-
-   Until `g77' no longer gratuitously rejects sensible code, you might
-as well fix your code to be more standard-conforming and portable.
-
-   The kind of case that is important to except from the recommendation
-to change your code is one where following good coding rules would
-force you to write non-standard code that nevertheless has a clear
-meaning.
-
-   For example, when writing an `INCLUDE' file that defines a common
-block, it might be appropriate to include a `SAVE' statement for the
-common block (such as `SAVE /CBLOCK/'), so that variables defined in
-the common block retain their values even when all procedures declaring
-the common block become inactive (return to their callers).
-
-   However, putting `SAVE' statements in an `INCLUDE' file would
-prevent otherwise standard-conforming code from also specifying the
-`SAVE' statement, by itself, to indicate that all local variables and
-arrays are to have the `SAVE' attribute.
-
-   For this reason, `g77' already has been changed to allow this
-combination, because although the general problem of gratuitously
-rejecting unambiguous and "safe" constructs still exists in `g77', this
-particular construct was deemed useful enough that it was worth fixing
-`g77' for just this case.
-
-   So, while there is no need to change your code to avoid using this
-particular construct, there might be other, equally appropriate but
-non-standard constructs, that you shouldn't have to stop using just
-because `g77' (or any other compiler) gratuitously rejects it.
-
-   Until the general problem is solved, if you have any such construct
-you believe is worthwhile using (e.g. not just an arbitrary, redundant
-specification of an attribute), please submit a bug report with an
-explanation, so we can consider fixing `g77' just for cases like yours.
-
-
-File: g77.info,  Node: FLUSH Statement,  Next: Expressions in FORMAT Statements,  Prev: Sensible Non-standard Constructs,  Up: Missing Features
-
-`FLUSH' Statement
------------------
-
-   `g77' could perhaps use a `FLUSH' statement that does what `CALL
-FLUSH' does, but that supports `*' as the unit designator (same unit as
-for `PRINT') and accepts `ERR=' and/or `IOSTAT=' specifiers.
-
-
-File: g77.info,  Node: Expressions in FORMAT Statements,  Next: Explicit Assembler Code,  Prev: FLUSH Statement,  Up: Missing Features
-
-Expressions in `FORMAT' Statements
-----------------------------------
-
-   `g77' doesn't support `FORMAT(I<J>)' and the like.  Supporting this
-requires a significant redesign or replacement of `libf2c'.
-
-   However, a future version of `g77' might support this construct when
-the expression is constant.  For example:
-
-           PARAMETER (IWIDTH = 12)
-     10    FORMAT (I<IWIDTH>)
-
-   In the meantime, at least for output (`PRINT' and `WRITE'), Fortran
-code making use of this feature can be rewritten to avoid it by
-constructing the `FORMAT' string in a `CHARACTER' variable or array,
-then using that variable or array in place of the `FORMAT' statement
-label to do the original `PRINT' or `WRITE'.
-
-   Many uses of this feature on input can be rewritten this way as
-well, but not all can.  For example, this can be rewritten:
-
-           READ 20, I
-     20    FORMAT (I<J>)
-
-   However, this cannot, in general, be rewritten, especially when
-`ERR=' and `END=' constructs are employed:
-
-           READ 30, J, I
-     30    FORMAT (I<J>)
-
-
-File: g77.info,  Node: Explicit Assembler Code,  Next: Q Edit Descriptor,  Prev: Expressions in FORMAT Statements,  Up: Missing Features
-
-Explicit Assembler Code
------------------------
-
-   `g77' needs to provide some way, a la `gcc', for `g77' code to
-specify explicit assembler code.
-
-
-File: g77.info,  Node: Q Edit Descriptor,  Next: Old-style PARAMETER Statements,  Prev: Explicit Assembler Code,  Up: Missing Features
-
-Q Edit Descriptor
------------------
-
-   The `Q' edit descriptor in `FORMAT's isn't supported.  (This is
-meant to get the number of characters remaining in an input record.)
-Supporting this requires a significant redesign or replacement of
-`libf2c'.
-
-   A workaround might be using internal I/O or the stream-based
-intrinsics.  *Note FGetC Intrinsic (subroutine)::.
-
-
-File: g77.info,  Node: Old-style PARAMETER Statements,  Next: TYPE and ACCEPT I/O Statements,  Prev: Q Edit Descriptor,  Up: Missing Features
-
-Old-style PARAMETER Statements
-------------------------------
-
-   `g77' doesn't accept `PARAMETER I=1'.  Supporting this obsolete form
-of the `PARAMETER' statement would not be particularly hard, as most of
-the parsing code is already in place and working.
-
-   Until time/money is spent implementing it, you might as well fix
-your code to use the standard form, `PARAMETER (I=1)' (possibly needing
-`INTEGER I' preceding the `PARAMETER' statement as well, otherwise, in
-the obsolete form of `PARAMETER', the type of the variable is set from
-the type of the constant being assigned to it).
-
-
-File: g77.info,  Node: TYPE and ACCEPT I/O Statements,  Next: STRUCTURE UNION RECORD MAP,  Prev: Old-style PARAMETER Statements,  Up: Missing Features
-
-`TYPE' and `ACCEPT' I/O Statements
-----------------------------------
-
-   `g77' doesn't support the I/O statements `TYPE' and `ACCEPT'.  These
-are common extensions that should be easy to support, but also are
-fairly easy to work around in user code.
-
-   Generally, any `TYPE fmt,list' I/O statement can be replaced by
-`PRINT fmt,list'.  And, any `ACCEPT fmt,list' statement can be replaced
-by `READ fmt,list'.
-
-
-File: g77.info,  Node: STRUCTURE UNION RECORD MAP,  Next: OPEN CLOSE and INQUIRE Keywords,  Prev: TYPE and ACCEPT I/O Statements,  Up: Missing Features
-
-`STRUCTURE', `UNION', `RECORD', `MAP'
--------------------------------------
-
-   `g77' doesn't support `STRUCTURE', `UNION', `RECORD', `MAP'.  This
-set of extensions is quite a bit lower on the list of large, important
-things to add to `g77', partly because it requires a great deal of work
-either upgrading or replacing `libf2c'.
-
-
-File: g77.info,  Node: OPEN CLOSE and INQUIRE Keywords,  Next: ENCODE and DECODE,  Prev: STRUCTURE UNION RECORD MAP,  Up: Missing Features
-
-`OPEN', `CLOSE', and `INQUIRE' Keywords
----------------------------------------
-
-   `g77' doesn't have support for keywords such as `DISP='DELETE'' in
-the `OPEN', `CLOSE', and `INQUIRE' statements.  These extensions are
-easy to add to `g77' itself, but require much more work on `libf2c'.
-
-
-File: g77.info,  Node: ENCODE and DECODE,  Next: Suppressing Space Padding,  Prev: OPEN CLOSE and INQUIRE Keywords,  Up: Missing Features
-
-`ENCODE' and `DECODE'
----------------------
-
-   `g77' doesn't support `ENCODE' or `DECODE'.
-
-   These statements are best replaced by READ and WRITE statements
-involving internal files (CHARACTER variables and arrays).
-
-   For example, replace a code fragment like
-
-           INTEGER*1 LINE(80)
-     ...
-           DECODE (80, 9000, LINE) A, B, C
-     ...
-     9000  FORMAT (1X, 3(F10.5))
-
-with:
-
-           CHARACTER*80 LINE
-     ...
-           READ (UNIT=LINE, FMT=9000) A, B, C
-     ...
-     9000  FORMAT (1X, 3(F10.5))
-
-   Similarly, replace a code fragment like
-
-           INTEGER*1 LINE(80)
-     ...
-           ENCODE (80, 9000, LINE) A, B, C
-     ...
-     9000  FORMAT (1X, 'OUTPUT IS ', 3(F10.5))
-
-with:
-
-           CHARACTER*80 LINE
-     ...
-           WRITE (UNIT=LINE, FMT=9000) A, B, C
-     ...
-     9000  FORMAT (1X, 'OUTPUT IS ', 3(F10.5))
-
-   It is entirely possible that `ENCODE' and `DECODE' will be supported
-by a future version of `g77'.
-
-
-File: g77.info,  Node: Suppressing Space Padding,  Next: Fortran Preprocessor,  Prev: ENCODE and DECODE,  Up: Missing Features
-
-Suppressing Space Padding of Source Lines
------------------------------------------
-
-   `g77' should offer VXT-Fortran-style suppression of virtual spaces
-at the end of a source line if an appropriate command-line option is
-specified.
-
-   This affects cases where a character constant is continued onto the
-next line in a fixed-form source file, as in the following example:
-
-     10    PRINT *,'HOW MANY
-          1 SPACES?'
-
-`g77', and many other compilers, virtually extend the continued line
-through column 72 with spaces that become part of the character
-constant, but Digital Fortran normally didn't, leaving only one space
-between `MANY' and `SPACES?'  in the output of the above statement.
-
-   Fairly recently, at least one version of Digital Fortran was
-enhanced to provide the other behavior when a command-line option is
-specified, apparently due to demand from readers of the USENET group
-`comp.lang.fortran' to offer conformance to this widespread practice in
-the industry.  `g77' should return the favor by offering conformance to
-Digital's approach to handling the above example.
-
-
-File: g77.info,  Node: Fortran Preprocessor,  Next: Bit Operations on Floating-point Data,  Prev: Suppressing Space Padding,  Up: Missing Features
-
-Fortran Preprocessor
---------------------
-
-   `g77' should offer a preprocessor designed specifically for Fortran
-to replace `cpp -traditional'.  There are several out there worth
-evaluating, at least.
-
-   Such a preprocessor would recognize Hollerith constants, properly
-parse comments and character constants, and so on.  It might also
-recognize, process, and thus preprocess files included via the
-`INCLUDE' directive.
-
-
-File: g77.info,  Node: Bit Operations on Floating-point Data,  Next: POSIX Standard,  Prev: Fortran Preprocessor,  Up: Missing Features
-
-Bit Operations on Floating-point Data
--------------------------------------
-
-   `g77' does not allow `REAL' and other non-integral types for
-arguments to intrinsics like `AND', `OR', and `SHIFT'.
-
-   For example, this program is rejected by `g77', because the
-intrinsic `IAND' does not accept `REAL' arguments:
-
-     DATA A/7.54/, B/9.112/
-     PRINT *, IAND(A, B)
-     END
-
-
-File: g77.info,  Node: POSIX Standard,  Next: Floating-point Exception Handling,  Prev: Bit Operations on Floating-point Data,  Up: Missing Features
-
-`POSIX' Standard
-----------------
-
-   `g77' should support the POSIX standard for Fortran.
 

@@ -28,9 +28,9 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
@@ -180,7 +180,7 @@ worse shape!)
 * CosH Intrinsic::      Hyperbolic cosine.
 
 * Count Intrinsic::     (Reserved for future use.)
-* Cpu_Time Intrinsic::  Get current CPU time.
+* CPU_Time Intrinsic::  Get current CPU time.
 * CShift Intrinsic::    (Reserved for future use.)
 
 * CSin Intrinsic::      Sine (archaic).
@@ -1360,6 +1360,10 @@ Description:
 argument is supplied, it contains 0 on success or a non-zero error code
 otherwise upon return.  See `chdir(3)'.
 
+   *Caution:* Using this routine during I/O to a unit connected with a
+non-absolute file name can cause subsequent I/O on such a unit to fail
+because the I/O library may reopen files by name.
+
    Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the (optional)
 STATUS argument.
@@ -1554,7 +1558,7 @@ Description:
    Returns the hyperbolic cosine of X.
 
 
-File: g77.info,  Node: Count Intrinsic,  Next: Cpu_Time Intrinsic,  Prev: CosH Intrinsic,  Up: Table of Intrinsic Functions
+File: g77.info,  Node: Count Intrinsic,  Next: CPU_Time Intrinsic,  Prev: CosH Intrinsic,  Up: Table of Intrinsic Functions
 
 Count Intrinsic
 ...............
@@ -1564,14 +1568,14 @@ reserved as an intrinsic.  Use `EXTERNAL Count' to use this name for an
 external procedure.
 
 
-File: g77.info,  Node: Cpu_Time Intrinsic,  Next: CShift Intrinsic,  Prev: Count Intrinsic,  Up: Table of Intrinsic Functions
+File: g77.info,  Node: CPU_Time Intrinsic,  Next: CShift Intrinsic,  Prev: Count Intrinsic,  Up: Table of Intrinsic Functions
 
-Cpu_Time Intrinsic
+CPU_Time Intrinsic
 ..................
 
-     CALL Cpu_Time(SECONDS)
+     CALL CPU_Time(SECONDS)
 
-SECONDS: `REAL(KIND=1)'; scalar; INTENT(OUT).
+SECONDS: `REAL'; scalar; INTENT(OUT).
 
 Intrinsic groups: `f90'.
 
@@ -1582,7 +1586,7 @@ implementation of the Fortran 95 intrinsic is just an alias for
 `second' *Note Second Intrinsic (subroutine)::.
 
 
-File: g77.info,  Node: CShift Intrinsic,  Next: CSin Intrinsic,  Prev: Cpu_Time Intrinsic,  Up: Table of Intrinsic Functions
+File: g77.info,  Node: CShift Intrinsic,  Next: CSin Intrinsic,  Prev: CPU_Time Intrinsic,  Up: Table of Intrinsic Functions
 
 CShift Intrinsic
 ................
@@ -1847,23 +1851,4 @@ Description:
 
    Archaic form of `BESJN()' that is specific to one type for X.  *Note
 BesJN Intrinsic::.
-
-
-File: g77.info,  Node: DbesY0 Intrinsic,  Next: DbesY1 Intrinsic,  Prev: DbesJN Intrinsic,  Up: Table of Intrinsic Functions
-
-DbesY0 Intrinsic
-................
-
-     DbesY0(X)
-
-DbesY0: `REAL(KIND=2)' function.
-
-X: `REAL(KIND=2)'; scalar; INTENT(IN).
-
-Intrinsic groups: `unix'.
-
-Description:
-
-   Archaic form of `BESY0()' that is specific to one type for X.  *Note
-BesY0 Intrinsic::.
 

@@ -28,9 +28,9 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
@@ -589,7 +589,7 @@ Funding GNU Fortran
 *******************
 
    Work on GNU Fortran is still being done mostly by its author, James
-Craig Burley (<burley@gnu.ai.mit.edu>), who is a volunteer for, not an
+Craig Burley (<burley@gnu.org>), who is a volunteer for, not an
 employee of, the Free Software Foundation (FSF).  As with other GNU
 software, funding is important because it can pay for needed equipment,
 personnel, and so on.
@@ -623,14 +623,14 @@ work on a few occasions.  If more people did this, he would be able to
 plan on not doing contract work for many months and could thus devote
 that time to work on projects (such as the planned changes for 0.6)
 that require longer timeframes to complete.  For the latest information
-on the status of the author, do `finger -l burley@gate.gnu.ai.mit.edu'
-on a UNIX system (or any system with a command like UNIX `finger').
+on the status of the author, do `finger -l burley@gnu.org' on a UNIX
+system (or any system with a command like UNIX `finger').
 
    Another important way to support work on GNU Fortran is to volunteer
 to help out.  Work is needed on documentation, testing, porting to
 various machines, and in some cases, coding (although major changes
 planned for version 0.6 make it difficult to add manpower to this area).
-Email <fortran@gnu.ai.mit.edu> to volunteer for this work.
+Email <fortran@gnu.org> to volunteer for this work.
 
    *Note Funding Free Software: Funding, for more information.
 
@@ -1003,6 +1003,8 @@ by type.  Explanations are in the following sections.
           -fcase-initcap  -fcase-upper  -fcase-lower  -fcase-preserve
           -ff2c-intrinsics-delete  -ff2c-intrinsics-hide
           -ff2c-intrinsics-disable  -ff2c-intrinsics-enable
+          -fbadu77-intrinsics-delete  -fbadu77-intrinsics-hide
+          -fbadu77-intrinsics-disable  -fbadu77-intrinsics-enable
           -ff90-intrinsics-delete  -ff90-intrinsics-hide
           -ff90-intrinsics-disable  -ff90-intrinsics-enable
           -fgnu-intrinsics-delete  -fgnu-intrinsics-hide

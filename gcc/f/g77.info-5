@@ -28,9 +28,9 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
@@ -51,9 +51,9 @@ likely to affect how users use `g77'.  *Note News About GNU Fortran:
 News, for information on such changes to `g77'.
 
    To find out about existing bugs and ongoing plans for GNU Fortran,
-retrieve `ftp://alpha.gnu.ai.mit.edu/g77.plan' or, if you cannot do
-that, email <fortran@gnu.ai.mit.edu> asking for a recent copy of the
-GNU Fortran `.plan' file.
+retrieve `ftp://alpha.gnu.org/g77.plan' or, if you cannot do that, email
+<fortran@gnu.org> asking for a recent copy of the GNU Fortran `.plan'
+file.
 
 In 0.5.21:
 ==========

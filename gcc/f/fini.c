@@ -228,7 +228,7 @@ static char *spaces[]
 void testname (bool nested, int indent, name first, name last);
 void testnames (bool nested, int indent, int len, name first, name last);
 
-void
+int
 main (int argc, char **argv)
 {
   char buf[MAXNAMELEN];

@@ -1,3 +1,246 @@
+Mon Mar 16 15:38:50 1998  Craig Burley  <burley@gnu.org>
+
+	* Version 0.5.22 released.
+
+Mon Mar 16 14:36:02 1998  Craig Burley  <burley@gnu.org>
+
+	Make -g work better for ENTRY:
+	* com.c (ffecom_start_progunit_): Master function
+	for ENTRY-laden procedure is not really invented,
+	so it can be debugged.
+	(ffecom_do_entry_): Push/set/pop lineno for each
+	entry point.
+
+Sun Mar 15 05:48:49 1998  Craig Burley  <burley@gnu.org>
+
+	* intrin.def: Fix spelling of mixed-case form
+	of `CPU_Time' (was `Cpu_Time').
+
+1998-03-09  Dave Love  <d.love@dl.ac.uk>
+
+	* Make-lang.in: Set CONFIG_SITE to a non-existent file since
+	/dev/null loses with bash 2.0/autoconf 2.12.  Put
+	F77_FLAGS_TO_PASS before CC.
+
+Sun Mar  8 16:35:34 1998  Craig Burley  <burley@gnu.org>
+
+	* intrin.def: Use tabs instead of blanks more
+	consistently (excepting DEFGEN section for now).
+
+Sat Feb 28 15:24:38 1998  Craig Burley  <burley@gnu.org>
+
+	* intrin.def: Make CPU_TIME's arg generic real to be just
+	like SECOND_subr.
+
+Fri Feb 20 12:45:53 1998  Craig Burley  <burley@gnu.org>
+
+	* expr.c (ffeexpr_token_arguments_): Make sure
+	outer exprstack isn't null.
+
+1998-02-16  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in (f/fini): Don't use -W -Wall with HOST_CC.
+
+Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
+
+	Support FORMAT(I<1+2>) (constant variable-FORMAT
+	expressions):
+	* bad.def (FFEBAD_FORMAT_VARIABLE): New diagnostic.
+	* std.c (ffestd_R1001rtexpr_): New function.
+	(ffestd_R1001dump_, ffestd_R1001dump_1005_1_,
+	ffestd_R1001dump_1005_2_, ffestd_R1001dump_1005_3_,
+	ffestd_R1001dump_1005_4_, ffestd_R1001dump_1005_5_,
+	ffestd_R1001dump_1010_2_, ffestd_R1001dump_1010_3_,
+	ffestd_R1001dump_1010_4_, ffestd_R1001dump_1010_5_):
+	Use new function instead of ffestd_R1001error_.
+
+	* stb.c (ffestb_R10014_, ffestb_R10016_, ffestb_R10018_,
+	ffestb_R100110_): Restructure `for' loop for style.
+
+	Fix 970626-2.f by not doing most back-end processing
+	when current_function_decl is an ERROR_MARK, and by
+	making that the case when its type would be an ERROR_MARK:
+	* com.c (ffecom_start_progunit_, finish_function,
+	lang_printable_name, start_function,
+	ffecom_finish_symbol_transform_): Test for ERROR_MARK.
+	* std.c (ffestd_stmt_pass_): Don't do any downstream
+	processing if ERROR_MARK.
+
+	* Make-lang.in (f77.install-common): Don't install, and
+	don't uninstall existing, Info files if f/g77.info
+	doesn't exit.  (This is a somewhat modified version
+	of an egcs patch on 1998-01-07 12:05:51 by Bruno Haible
+	<bruno@linuix.mathematik.uni-karlsruhe.de>.)
+
+Fri Jan  9 19:09:07 1998  Craig Burley  <burley@gnu.org>
+
+	Fix -fpedantic combined with `F()' invocation,
+	also -fugly-comma combined with `IARGC()' invocation:
+	* bad.def (FFEBAD_NULL_ARGUMENT_W): New diagnostic.
+	* expr.c (ffeexpr_finished_): Don't reject null expressions
+	in the argument-expression context -- let outer context
+	handle that.
+	(ffeexpr_token_arguments_): Warn about null expressions
+	here if -fpedantic (as appropriate).
+	Obey -fugly-comma for only external-procedure invocations.
+	* intrin.c (ffeintrin_check_): No longer ignore explicit
+	omitted trailing args.
+
+Tue Dec 23 14:58:04 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_fulfill_generic): Don't generate
+	FFEBAD_INTRINSIC_TYPE for CHARACTER*(*) intrinsic.
+
+	* com.c (ffecom_gfrt_basictype):
+	(ffecom_gfrt_kindtype):
+	(ffecom_make_gfrt_):
+	(FFECOM_rttypeVOIDSTAR_): New return type `void *', for
+	the SIGNAL intrinsic.
+	* com-rt.def (FFECOM_rttypeSIGNAL): Now returns `void *'.
+	* intdoc.c: Replace `p' kind specifier with `7'.
+	* intrin.c (ffeintrin_check_, ffeintrin_init_0): Replace
+	`p' kind specifier with `7'.
+	* intrin.def (FFEINTRIN_impLOC, FFEINTRIN_impSIGNAL_func,
+	FFEINTRIN_impSIGNAL_subr): Replace `p' specifier with `7'.
+	Also, SIGNAL now returns a `void *' status, not `int'.
+
+	Improve run-time diagnostic for "PRINT '(I1', 42":
+	* com.c (ffecom_char_args_x_): Renamed from ffecom_char_args_,
+	which is now a macro (to avoid lots of changes to other code)
+	with new arg, ffecom_char_args_with_null_ being another new
+	macro to call same function with different value for new arg.
+	This function now appends a null byte to opCONTER expression
+	if the new arg is TRUE.
+	(ffecom_arg_ptr_to_expr): Support NULL length pointer.
+	* ste.c (ffeste_io_cilist_):
+	(ffeste_io_icilist_): Pass NULL length ptr for
+	FORMAT expression, so null byte gets appended where
+	feasible.
+	* target.c (ffetarget_character1):
+	(ffetarget_concatenate_character1):
+	(ffetarget_substr_character1):
+	(ffetarget_convert_character1_character1):
+	(ffetarget_convert_character1_hollerith):
+	(ffetarget_convert_character1_integer4):
+	(ffetarget_convert_character1_logical4):
+	(ffetarget_convert_character1_typeless):
+	(ffetarget_hollerith): Append extra phantom null byte as
+	part of FFETARGET-NULL-BYTE kludge.
+
+	* intrin.def (FFEINTRIN_impCPU_TIME): Point to
+	FFECOM_gfrtSECOND as primary run-time routine.
+
+Mon Dec 22 12:41:07 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_init_0): Remove duplicate
+	check for `!'.
+
+Sun Dec 14 02:49:58 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_init_0): Fix up indentation a bit.
+	Fix bug that prevented checking of arguments other
+	than the first.
+
+	* intdoc.c: Fix up indentation a bit.
+
+Tue Dec  9 16:20:57 1997  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_type_vardesc_): Vardesc.dims is a `ftnlen*'.
+
+Mon Dec  1 19:12:36 1997  Craig Burley  <burley@gnu.org>
+
+	* intrin.c (ffeintrin_check_): Fix up indentation a bit more.
+
+Mon Dec  1 16:21:08 1997  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_arglist_expr_): Crash if non-supplied
+	optional arg isn't passed as an address.
+	Pass null pointer explicitly, instead of via ffecom routine.
+	If incoming argstring is NULL, substitute pointer to "0".
+	Recognize '0' as ending the usual arg stuff, just like '\0'.
+
+Sun Nov 30 22:22:22 1997  Craig Burley  <burley@gnu.org>
+
+	* intdoc.c: Minor fix-ups.
+
+	* intrin.c (ffeintrin_check_): Fix up indentation a bit.
+
+	* intrin.def: Fix up spacing a bit.
+
+1997-11-17  Dave Love  <d.love@dl.ac.uk>
+
+	* com.c (ffecom_arglist_expr_): Pass null pointers for optional
+	args which aren't supplied.
+
+Sun Nov 16 21:45:43 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Make-lang.in (f77.install-info): Depend on f77.info.
+
+1997-11-06  Dave Love  <d.love@dl.ac.uk>
+
+	* intrin.def: Allow non-integer args for INT2 and INT8 (per
+	documentation).
+
+Tue Oct 28 02:21:25 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* lang-options.h: Add -fgnu-intrinsics-* and
+	-fbadu77-intrinsics-* options.
+
+Sun Oct 26 02:36:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* com.c (lang_print_error_function): Fix to more
+	reliably notice when the diagnosed region changes.
+
+Sat Oct 25 23:43:36 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Fix 950327-0.f:
+	* sta.c, sta.h (ffesta_outpooldisp): New function.
+	* std.c (ffestd_stmt_pass_): Don't kill NULL pool.
+	(ffestd_R842): If pool already preserved, save NULL
+	for pool, because it should be killed only once.
+
+	* malloc.c [MALLOC_DEBUG]: Put initializer for `name'
+	component in braces, to avoid compiler warning.
+
+Fri Oct 10 13:00:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* ste.c (ffeste_begin_iterdo_): Fix loop setup so iteration
+	variable is modified only after the #iterations is calculated;
+	otherwise if the iteration variable is aliased to any of the
+	operands in the start, end, or increment expressions, the
+	wrong #iterations might be calculated.
+
+	* com.c (ffecom_save_tree): Fix indentation.
+
+1997-10-05  Dave Love  <d.love@dl.ac.uk>
+
+	* intrin.def: Make SECOND_subr's arg generic real for people
+	porting from Cray and making everything double precision.
+
+Mon Sep 29 16:18:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* stu.c (ffestu_list_exec_transition_,
+	ffestu_dummies_transition_): Specify `bool' type for
+	`in_progress' variables.
+
+	* com.h (assemble_string): Declare this routine (instead
+	of #include'ing "output.h" from gcc) to eliminate warnings
+	from lex.c.
+
+Fri Sep 19 01:12:27 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* expr.c (ffeexpr_reduced_eqop2_): 
+	(ffeexpr_reduced_relop2_): Minor fixes to diagnostic code.
+
+	* fini.c (main): Change return type to `int'.
+
+Wed Sep 17 10:47:08 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* com-rt.def (FFECOM_gfrtDSIGN, FFECOM_gfrtISIGN,
+	FFECOM_gfrtSIGN): Add second argument.
+
+	* expr.c (ffeexpr_cb_comma_c_): Trivial fixes.
+
 Tue Sep  9 01:59:35 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* Version 0.5.21 released.

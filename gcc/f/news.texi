@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-09-09
+@c 1998-03-16
 
 @ifclear NEWSONLY
 @node News
@@ -17,12 +17,185 @@
 Changes made to recent versions of GNU Fortran are listed
 below, with the most recent version first.
 
-The changes are generally listed with code-generation
-bugs first, followed by compiler crashes involving valid
-code, new features, fixes to existing features, new
-diagnostics, internal improvements, and miscellany.
+The changes are generally listed in order:
+
+@enumerate
+@item
+Code-generation and run-time-library bugs
+
+@item
+Compiler and run-time-library crashes involving valid code
+
+@item
+New features
+
+@item
+Fixes and enhancements to existing features
+
+@item
+New diagnostics
+
+@item
+Internal improvements
+
+@item
+Miscellany
+@end enumerate
+
 This order is not strict---for example, some items
 involve a combination of these elements.
+
+@heading In 0.5.22:
+@itemize @bullet
+@item
+Fix code generation for iterative @code{DO} loops that
+have one or more references to the iteration variable,
+or to aliases of it, in their control expressions.
+For example, @samp{DO 10 J=2,J} now is compiled correctly.
+
+@cindex DNRM2
+@cindex stack, 387 coprocessor
+@cindex ix86
+@cindex -O2
+@item
+Fix a code-generation bug that afflicted
+Intel x86 targets when @samp{-O2} was specified
+compiling, for example, an old version of
+the @samp{DNRM2} routine.
+
+The x87 coprocessor stack was being
+mismanaged in cases involving assigned @code{GOTO}
+and @code{ASSIGN}.
+
+@item
+Fix @code{DTime} intrinsic so as not to truncate
+results to integer values (on some systems).
+
+@item
+Fix @code{SIGNAL} intrinsic so it offers portable
+support for 64-bit systems (such as Digital Alphas
+running GNU/Linux).
+
+@item
+Fix run-time crash involving @code{NAMELIST} on 64-bit
+machines such as Alphas.
+
+@item
+Fix @code{g77} version of @code{libf2c} so it no longer
+produces a spurious @samp{I/O recursion} diagnostic at run time
+when an I/O operation (such as @samp{READ *,I}) is interrupted
+in a manner that causes the program to be terminated
+via the @samp{f_exit} routine (such as via @kbd{C-c}).
+
+@item
+Fix @code{g77} crash triggered by @code{CASE} statement with
+an omitted lower or upper bound.
+
+@item
+Fix @code{g77} crash compiling references to @code{CPU_Time}
+intrinsic.
+
+@item
+Fix @code{g77} crash
+(or apparently infinite run-time)
+when compiling certain complicated expressions
+involving @code{COMPLEX} arithmetic
+(especially multiplication).
+
+@item
+Fix @code{g77} crash on statements such as
+@samp{PRINT *, (REAL(Z(I)),I=1,2)}, where
+@samp{Z} is @code{DOUBLE COMPLEX}.
+
+@item
+Fix a @code{g++} crash.
+
+@item
+Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
+compile-time constant @code{INTEGER} expression.
+
+@item
+Fix @code{g77} @samp{-g} option so procedures that
+use @samp{ENTRY} can be stepped through, line by line,
+in @code{gdb}.
+
+@item
+Fix a profiling-related bug in @code{gcc} back end for
+Intel x86 architecture.
+
+@item
+Allow any @code{REAL} argument to intrinsics
+@code{Second} and @code{CPU_Time}.
+
+@item
+Allow any numeric argument to intrinsics
+@code{Int2} and @code{Int8}.
+
+@item
+Use @code{tempnam}, if available, to open scratch files
+(as in @samp{OPEN(STATUS='SCRATCH')}
+so that the @code{TMPDIR} environment variable,
+if present, is used.
+
+@item
+Rename the @code{gcc} keyword @code{restrict} to
+@code{__restrict__}, to avoid rejecting valid, existing,
+C programs.
+Support for @code{restrict} is now more like support
+for @code{complex}.
+
+@item
+Fix @samp{-fpedantic} to not reject procedure invocations
+such as @samp{I=J()} and @samp{CALL FOO()}.
+
+@item
+Fix @samp{-fugly-comma} to affect invocations of
+only external procedures.
+Restore rejection of gratuitous trailing omitted
+arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
+
+@item
+Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
+@samp{-fbadu77-intrinsics-*} options.
+
+@item
+Improve diagnostic messages from @code{libf2c}
+so it is more likely that the printing of the
+active format string is limited to the string,
+with no trailing garbage being printed.
+
+(Unlike @code{f2c}, @code{g77} did not append
+a null byte to its compiled form of every
+format string specified via a @code{FORMAT} statement.
+However, @code{f2c} would exhibit the problem
+anyway for a statement like @samp{PRINT '(I)garbage', 1}
+by printing @samp{(I)garbage} as the format string.)
+
+@item
+Improve compilation of FORMAT expressions so that
+a null byte is appended to the last operand if it
+is a constant.
+This provides a cleaner run-time diagnostic as provided
+by @code{libf2c} for statements like @samp{PRINT '(I1', 42}.
+
+@item
+Fix various crashes involving code with diagnosed errors.
+
+@item
+Fix cross-compilation bug when configuring @code{libf2c}.
+
+@item
+Improve diagnostics.
+
+@item
+Improve documentation and indexing.
+
+@item
+Upgrade to @code{libf2c} as of 1997-09-23.
+This fixes a formatted-I/O bug that afflicted
+64-bit systems with 32-bit integers
+(such as Digital Alpha running GNU/Linux).
+@end itemize
 
 @heading In 0.5.21:
 @itemize @bullet

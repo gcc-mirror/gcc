@@ -1,5 +1,5 @@
 /* intrin.c -- Recognize references to intrinsics
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -398,6 +398,10 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 		    case 6:
 		      akt = 3;
 		      break;
+
+		    case 7:
+		      akt = ffecom_pointer_kind ();
+		      break;
 		    }
 		}
 	      okay &= anynum || (ffeinfo_kindtype (i) == akt);
@@ -519,11 +523,6 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 	} while (TRUE);
     }
 
-  /* Ignore explicit trailing omitted args.  */
-
-  while ((arg != NULL) && (ffebld_head (arg) == NULL))
-    arg = ffebld_trail (arg);
-
   if (arg != NULL)
     return FFEBAD_INTRINSIC_TOOMANY;
 
@@ -593,6 +592,10 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 	    case 6:
 	      kt = 3;
 	      break;
+
+	    case 7:
+	      kt = ffecom_pointer_kind ();
+	      break;
 	    }
 	}
       break;
@@ -601,10 +604,6 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
       if (ffe_is_90 ())
 	need_col = TRUE;
       kt = 1;
-      break;
-
-    case 'p':
-      kt = ffecom_pointer_kind ();
       break;
 
     case '=':
@@ -991,6 +990,10 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 		    case 6:
 		      akt = 3;
 		      break;
+
+		    case 7:
+		      akt = ffecom_pointer_kind ();
+		      break;
 		    }
 		}
 	      okay &= anynum || (ffeinfo_kindtype (i) == akt);
@@ -1363,7 +1366,8 @@ ffeintrin_fulfill_generic (ffebld *expr, ffeinfo *info, ffelexToken t)
       if ((ffesymbol_attrs (ffebld_symter (symter)) & FFESYMBOL_attrsTYPE)
 	  && (((bt != ffesymbol_basictype (ffebld_symter (symter)))
 	       || (kt != ffesymbol_kindtype (ffebld_symter (symter)))
-	       || (sz != ffesymbol_size (ffebld_symter (symter))))))
+	       || ((sz != FFETARGET_charactersizeNONE)
+		   && (sz != ffesymbol_size (ffebld_symter (symter)))))))
 	{
 	  ffebad_start (FFEBAD_INTRINSIC_TYPE);
 	  ffebad_here (0, ffelex_token_where_line (t),
@@ -1569,14 +1573,14 @@ ffeintrin_init_0 ()
 
       if ((c[0] != '-')
 	  && (c[0] != 'A')
-      && (c[0] != 'C')
-      && (c[0] != 'I')
-      && (c[0] != 'L')
-      && (c[0] != 'R')
-      && (c[0] != 'B')
-      && (c[0] != 'F')
-      && (c[0] != 'N')
-      && (c[0] != 'S'))
+	  && (c[0] != 'C')
+	  && (c[0] != 'I')
+	  && (c[0] != 'L')
+	  && (c[0] != 'R')
+	  && (c[0] != 'B')
+	  && (c[0] != 'F')
+	  && (c[0] != 'N')
+	  && (c[0] != 'S'))
 	{
 	  fprintf (stderr, "%s: bad return-base-type\n",
 		   ffeintrin_imps_[i].name);
@@ -1584,10 +1588,9 @@ ffeintrin_init_0 ()
 	}
       if ((c[1] != '-')
 	  && (c[1] != '=')
-      && ((c[1] < '1')
-	  || (c[1] > '9'))
-	  && (c[1] != 'C')
-	  && (c[1] != 'p'))
+	  && ((c[1] < '1')
+	      || (c[1] > '9'))
+	  && (c[1] != 'C'))
 	{
 	  fprintf (stderr, "%s: bad return-kind-type\n",
 		   ffeintrin_imps_[i].name);
@@ -1613,8 +1616,8 @@ ffeintrin_init_0 ()
 	}
       if ((c[colon + 1] != '-')
 	  && (c[colon + 1] != '*')
-      && ((c[colon + 1] < '0')
-	  || (c[colon + 1] > '9')))
+	  && ((c[colon + 1] < '0')
+	      || (c[colon + 1] > '9')))
 	{
 	  fprintf (stderr, "%s: bad COL-spec\n",
 		   ffeintrin_imps_[i].name);
@@ -1625,7 +1628,7 @@ ffeintrin_init_0 ()
 	{
 	  while ((c[0] != '=')
 		 && (c[0] != ',')
-	  && (c[0] != '\0'))
+		 && (c[0] != '\0'))
 	    ++c;
 	  if (c[0] != '=')
 	    {
@@ -1635,28 +1638,27 @@ ffeintrin_init_0 ()
 	    }
 	  if ((c[1] == '?')
 	      || (c[1] == '!')
-	  || (c[1] == '!')
 	      || (c[1] == '+')
-	  || (c[1] == '*')
+	      || (c[1] == '*')
 	      || (c[1] == 'n')
-	  || (c[1] == 'p'))
+	      || (c[1] == 'p'))
 	    ++c;
 	  if (((c[1] != '-')
 	       && (c[1] != 'A')
-	  && (c[1] != 'C')
-	  && (c[1] != 'I')
-	  && (c[1] != 'L')
-	  && (c[1] != 'R')
-	  && (c[1] != 'B')
-	  && (c[1] != 'F')
-	  && (c[1] != 'N')
-	  && (c[1] != 'S')
-	  && (c[1] != 'g')
-	  && (c[1] != 's'))
+	       && (c[1] != 'C')
+	       && (c[1] != 'I')
+	       && (c[1] != 'L')
+	       && (c[1] != 'R')
+	       && (c[1] != 'B')
+	       && (c[1] != 'F')
+	       && (c[1] != 'N')
+	       && (c[1] != 'S')
+	       && (c[1] != 'g')
+	       && (c[1] != 's'))
 	      || ((c[2] != '*')
 		  && ((c[2] < '1')
 		      || (c[2] > '9'))
-	      && (c[2] != 'A')))
+		  && (c[2] != 'A')))
 	    {
 	      fprintf (stderr, "%s: bad arg-type\n",
 		       ffeintrin_imps_[i].name);
@@ -1693,13 +1695,13 @@ ffeintrin_init_0 ()
 	    ++c;
 	  if ((c[3] == '&')
 	      || (c[3] == 'i')
-	  || (c[3] == 'w')
-	  || (c[3] == 'x'))
+	      || (c[3] == 'w')
+	      || (c[3] == 'x'))
 	    ++c;
 	  if (c[3] == ',')
 	    {
 	      c += 4;
-	      break;
+	      continue;
 	    }
 	  if (c[3] != '\0')
 	    {

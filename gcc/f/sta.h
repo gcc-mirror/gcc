@@ -98,6 +98,7 @@ void ffesta_ffebad_2st (ffebad msg, char *s, ffelexToken t1, ffelexToken t2);
 void ffesta_ffebad_2t (ffebad msg, ffelexToken t1, ffelexToken t2);
 ffelexHandler ffesta_zero (ffelexToken t);
 ffelexHandler ffesta_two (ffelexToken first, ffelexToken second);
+ffestaPooldisp ffesta_outpooldisp (void);
 void ffesta_set_outpooldisp (ffestaPooldisp d);
 
 /* Define macros. */

@@ -28,14 +28,54 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: JIAbs Intrinsic,  Next: JIAnd Intrinsic,  Prev: IZExt Intrinsic,  Up: Other Intrinsics
+
+JIAbs Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIAbs' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIAnd Intrinsic,  Next: JIBClr Intrinsic,  Prev: JIAbs Intrinsic,  Up: Other Intrinsics
+
+JIAnd Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIAnd' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIBClr Intrinsic,  Next: JIBits Intrinsic,  Prev: JIAnd Intrinsic,  Up: Other Intrinsics
+
+JIBClr Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIBClr' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIBits Intrinsic,  Next: JIBSet Intrinsic,  Prev: JIBClr Intrinsic,  Up: Other Intrinsics
+
+JIBits Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIBits' to use this name for an
+external procedure.
 
 
 File: g77.info,  Node: JIBSet Intrinsic,  Next: JIDiM Intrinsic,  Prev: JIBits Intrinsic,  Up: Other Intrinsics
@@ -668,7 +708,7 @@ Signal Intrinsic (function)
 
      Signal(NUMBER, HANDLER)
 
-Signal: `INTEGER(KIND=1)' function.
+Signal: `INTEGER(KIND=7)' function.
 
 NUMBER: `INTEGER'; scalar; INTENT(IN).
 
@@ -681,17 +721,61 @@ Description:
 
    If HANDLER is a an `EXTERNAL' routine, arranges for it to be invoked
 with a single integer argument (of system-dependent length) when signal
-NUMBER occurs.  If NUMBER is an integer, it can be used to turn off
-handling of signal HANDLER or revert to its default action.  See
+NUMBER occurs.  If HANDLER is an integer, it can be used to turn off
+handling of signal NUMBER or revert to its default action.  See
 `signal(2)'.
 
-   Note that HANDLER will be called using C conventions, so its value in
-Fortran terms is obtained by applying `%LOC()' (or LOC()) to it.
+   Note that HANDLER will be called using C conventions, so the value
+of its argument in Fortran terms is obtained by applying `%LOC()' (or
+LOC()) to it.
 
    The value returned by `signal(2)' is returned.
 
    Due to the side effects performed by this intrinsic, the function
 form is not recommended.
+
+   *Warning:* If the returned value is stored in an `INTEGER(KIND=1)'
+(default `INTEGER') argument, truncation of the original return value
+occurs on some systems (such as Alphas, which have 64-bit pointers but
+32-bit default integers), with no warning issued by `g77' under normal
+circumstances.
+
+   Therefore, the following code fragment might silently fail on some
+systems:
+
+     INTEGER RTN
+     EXTERNAL MYHNDL
+     RTN = SIGNAL(SIGNUM, MYHNDL)
+     ...
+     ! Restore original handler:
+     RTN = SIGNAL(SIGNUM, RTN)
+
+   The reason for the failure is that `RTN' might not hold all the
+information on the original handler for the signal, thus restoring an
+invalid handler.  This bug could manifest itself as a spurious run-time
+failure at an arbitrary point later during the program's execution, for
+example.
+
+   *Warning:* Use of the `libf2c' run-time library function `signal_'
+directly (such as via `EXTERNAL SIGNAL') requires use of the `%VAL()'
+construct to pass an `INTEGER' value (such as `SIG_IGN' or `SIG_DFL')
+for the HANDLER argument.
+
+   However, while `RTN = SIGNAL(SIGNUM, %VAL(SIG_IGN))' works when
+`SIGNAL' is treated as an external procedure (and resolves, at link
+time, to `libf2c''s `signal_' routine), this construct is not valid
+when `SIGNAL' is recognized as the intrinsic of that name.
+
+   Therefore, for maximum portability and reliability, code such
+references to the `SIGNAL' facility as follows:
+
+     INTRINSIC SIGNAL
+     ...
+     RTN = SIGNAL(SIGNUM, SIG_IGN)
+
+   `g77' will compile such a call correctly, while other compilers will
+generally either do so as well or reject the `INTRINSIC SIGNAL'
+statement via a diagnostic, allowing you to take appropriate action.
 
    For information on other intrinsics with the same name: *Note Signal
 Intrinsic (subroutine)::.
@@ -1189,255 +1273,4 @@ from source and package up as a binary distribution are ongoing.
 * Quick Start::            The easier procedure for non-experts.
 * Complete Installation::  For experts, or those who want to be: the details.
 * Distributing Binaries::  If you plan on distributing your `g77'.
-
-
-File: g77.info,  Node: Prerequisites,  Next: Problems Installing,  Up: Installation
-
-Prerequisites
-=============
-
-   The procedures described to unpack, configure, build, and install
-`g77' assume your system has certain programs already installed.
-
-   The following prerequisites should be met by your system before you
-follow the `g77' installation instructions:
-
-`gzip'
-     To unpack the `gcc' and `g77' distributions, you'll need the
-     `gunzip' utility in the `gzip' distribution.  Most UNIX systems
-     already have `gzip' installed.  If yours doesn't, you can get it
-     from the FSF.
-
-     Note that you'll need `tar' and other utilities as well, but all
-     UNIX systems have these.  There are GNU versions of all these
-     available--in fact, a complete GNU UNIX system can be put together
-     on most systems, if desired.
-
-     The version of GNU `gzip' used to package this release is 1.24.
-     (The version of GNU `tar' used to package this release is 1.11.2.)
-
-`gcc-2.7.2.3.tar.gz'
-     You need to have this, or some other applicable, version of `gcc'
-     on your system.  The version should be an exact copy of a
-     distribution from the FSF.  Its size is approximately 7.1MB.
-
-     If you've already unpacked `gcc-2.7.2.3.tar.gz' into a directory
-     (named `gcc-2.7.2.3') called the "source tree" for `gcc', you can
-     delete the distribution itself, but you'll need to remember to
-     skip any instructions to unpack this distribution.
-
-     Without an applicable `gcc' source tree, you cannot build `g77'.
-     You can obtain an FSF distribution of `gcc' from the FSF.
-
-`g77-0.5.21.tar.gz'
-     You probably have already unpacked this package, or you are
-     reading an advance copy of these installation instructions, which
-     are contained in this distribution.  The size of this package is
-     approximately 1.5MB.
-
-     You can obtain an FSF distribution of `g77' from the FSF, the same
-     way you obtained `gcc'.
-
-Enough disk space
-     The amount of disk space needed to unpack, build, install, and use
-     `g77' depends on the type of system you're using, how you build
-     `g77', and how much of it you install (primarily, which languages
-     you install).
-
-     The sizes shown below assume all languages distributed in
-     `gcc-2.7.2.3', plus `g77', will be built and installed.  These
-     sizes are indicative of GNU/Linux systems on Intel x86 running
-     COFF and on Digital Alpha (AXP) systems running ELF.  These should
-     be fairly representative of 32-bit and 64-bit systems,
-     respectively.
-
-     Note that all sizes are approximate and subject to change without
-     notice!  They are based on preliminary releases of g77 made shortly
-     before the public beta release.
-
-        -- `gcc' and `g77' distributions occupy 8.6MB packed, 35MB
-          unpacked.  These consist of the source code and documentation,
-          plus some derived files (mostly documentation), for `gcc' and
-          `g77'.  Any deviations from these numbers for different kinds
-          of systems are likely to be very minor.
-
-        -- A "bootstrap" build requires an additional 67.3MB for a
-          total of 102MB on an ix86, and an additional 98MB for a total
-          of 165MB on an Alpha.
-
-        -- Removing `gcc/stage1' after the build recovers 10.7MB for a
-          total of 91MB on an ix86, and recovers ??MB for a total of
-          ??MB on an Alpha.
-
-          After doing this, the integrity of the build can still be
-          verified via `make compare', and the `gcc' compiler modified
-          and used to build itself for testing fairly quickly, using
-          the copy of the compiler kept in `gcc/stage2'.
-
-        -- Removing `gcc/stage2' after the build further recovers
-          27.3MB for a total of 64.3MB, and recovers ??MB for a total
-          of ??MB on an Alpha.
-
-          After doing this, the compiler can still be installed,
-          especially if GNU `make' is used to avoid gratuitous rebuilds
-          (or, the installation can be done by hand).
-
-        -- Installing `gcc' and `g77' copies 14.9MB onto the `--prefix'
-          disk for a total of 79.2MB on an ix86, and copies ??MB onto
-          the `--prefix' disk for a total of ??MB on an Alpha.
-
-     After installation, if no further modifications and builds of
-     `gcc' or `g77' are planned, the source and build directory may be
-     removed, leaving the total impact on a system's disk storage as
-     that of the amount copied during installation.
-
-     Systems with the appropriate version of `gcc' installed don't
-     require the complete bootstrap build.  Doing a "straight build"
-     requires about as much space as does a bootstrap build followed by
-     removing both the `gcc/stage1' and `gcc/stage2' directories.
-
-     Installing `gcc' and `g77' over existing versions might require
-     less *new* disk space, but note that, unlike many products, `gcc'
-     installs itself in a way that avoids overwriting other installed
-     versions of itself, so that other versions may easily be invoked
-     (via `gcc -V VERSION').
-
-     So, the amount of space saved as a result of having an existing
-     version of `gcc' and `g77' already installed is not
-     much--typically only the command drivers (`gcc', `g77', `g++', and
-     so on, which are small) and the documentation is overwritten by
-     the new installation.  The rest of the new installation is done
-     without replacing existing installed versions (assuming they have
-     different version numbers).
-
-`patch'
-     Although you can do everything `patch' does yourself, by hand,
-     without much trouble, having `patch' installed makes installation
-     of new versions of GNU utilities such as `g77' so much easier that
-     it is worth getting.  You can obtain `patch' the same way you
-     obtained `gcc' and `g77'.
-
-     In any case, you can apply patches by hand--patch files are
-     designed for humans to read them.
-
-     The version of GNU `patch' used to develop this release is 2.4.
-
-`make'
-     Your system must have `make', and you will probably save yourself
-     a lot of trouble if it is GNU `make' (sometimes referred to as
-     `gmake').
-
-     The version of GNU `make' used to develop this release is 3.73.
-
-`cc'
-     Your system must have a working C compiler.
-
-     *Note Installing GNU CC: (gcc)Installation, for more information
-     on prerequisites for installing `gcc'.
-
-`bison'
-     If you do not have `bison' installed, you can usually work around
-     any need for it, since `g77' itself does not use it, and `gcc'
-     normally includes all files generated by running it in its
-     distribution.  You can obtain `bison' the same way you obtained
-     `gcc' and `g77'.
-
-     The version of GNU `bison' used to develop this release is 1.25.
-
-     *Note Missing bison?::, for information on how to work around not
-     having `bison'.
-
-`makeinfo'
-     If you are missing `makeinfo', you can usually work around any
-     need for it.  You can obtain `makeinfo' the same way you obtained
-     `gcc' and `g77'.
-
-     The version of GNU `makeinfo' used to develop this release is
-     1.68, from GNU `texinfo' version 3.11.
-
-     *Note Missing makeinfo?::, for information on getting around the
-     lack of `makeinfo'.
-
-`sed'
-     All UNIX systems have `sed', but some have a broken version that
-     cannot handle configuring, building, or installing `gcc' or `g77'.
-
-     The version of GNU `sed' used to develop this release is 2.05.
-     (Note that GNU `sed' version 3.0 was withdrawn by the FSF--if you
-     happen to have this version installed, replace it with version
-     2.05 immediately.  See a GNU distribution site for further
-     explanation.)
-
-`root' access or equivalent
-     To perform the complete installation procedures on a system, you
-     need to have `root' access to that system, or equivalent access to
-     the `--prefix' directory tree specified on the `configure' command
-     line.
-
-     Portions of the procedure (such as configuring and building `g77')
-     can be performed by any user with enough disk space and virtual
-     memory.
-
-     However, these instructions are oriented towards less-experienced
-     users who want to install `g77' on their own personal systems.
-
-     System administrators with more experience will want to determine
-     for themselves how they want to modify the procedures described
-     below to suit the needs of their installation.
-
-
-File: g77.info,  Node: Problems Installing,  Next: Settings,  Prev: Prerequisites,  Up: Installation
-
-Problems Installing
-===================
-
-   This is a list of problems (and some apparent problems which don't
-really mean anything is wrong) that show up when configuring, building,
-installing, or porting GNU Fortran.
-
-   *Note Installation Problems: (gcc)Installation Problems, for more
-information on installation problems that can afflict either `gcc' or
-`g77'.
-
-* Menu:
-
-* General Problems::         Problems afflicting most or all systems.
-* Cross-compiler Problems::  Problems afflicting cross-compilation setups.
-
-
-File: g77.info,  Node: General Problems,  Next: Cross-compiler Problems,  Up: Problems Installing
-
-General Problems
-----------------
-
-   These problems can occur on most or all systems.
-
-* Menu:
-
-* GNU C Required::	       Why even ANSI C is not enough.
-* Patching GNU CC Necessary::  Why `gcc' must be patched first.
-* Building GNU CC Necessary::  Why you can't build *just* Fortran.
-* Missing strtoul::	       If linking `f771' fails due to an
-                                unresolved reference to `strtoul'.
-* Object File Differences::    It's okay that `make compare' will
-                                flag `f/zzz.o'.
-* Cleanup Kills Stage Directories::  A minor nit for `g77' developers.
-* Missing gperf?::             When building requires `gperf'.
-
-
-File: g77.info,  Node: GNU C Required,  Next: Patching GNU CC Necessary,  Up: General Problems
-
-GNU C Required
-..............
-
-   Compiling `g77' requires GNU C, not just ANSI C.  Fixing this
-wouldn't be very hard (just tedious), but the code using GNU extensions
-to the C language is expected to be rewritten for 0.6 anyway, so there
-are no plans for an interim fix.
-
-   This requirement does not mean you must already have `gcc' installed
-to build `g77'.  As long as you have a working C compiler, you can use a
-bootstrap build to automate the process of first building `gcc' using
-the working C compiler you have, then building `g77' and rebuilding
-`gcc' using that just-built `gcc', and so on.
 

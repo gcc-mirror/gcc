@@ -1,5 +1,5 @@
 /* target.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -280,6 +280,13 @@ ffetarget_align (ffetargetAlign *updated_alignment,
   return min_pad;
 }
 
+/* Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
+
 #if FFETARGET_okCHARACTER1
 bool
 ffetarget_character1 (ffetargetCharacter1 *val, ffelexToken character,
@@ -290,8 +297,9 @@ ffetarget_character1 (ffetargetCharacter1 *val, ffelexToken character,
     val->text = NULL;
   else
     {
-      val->text = malloc_new_kp (pool, "ffetargetCharacter1", val->length);
+      val->text = malloc_new_kp (pool, "ffetargetCharacter1", val->length + 1);
       memcpy (val->text, ffelex_token_text (character), val->length);
+      val->text[val->length] = '\0';
     }
 
   return TRUE;
@@ -318,7 +326,12 @@ ffetarget_cmp_character1 (ffetargetCharacter1 l, ffetargetCharacter1 r)
 #endif
 /* ffetarget_concatenate_character1 -- Perform CONCAT op on two constants
 
-   Compare lengths, if equal then use memcmp.  */
+   Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
 
 #if FFETARGET_okCHARACTER1
 ffebad
@@ -331,11 +344,12 @@ ffetarget_concatenate_character1 (ffetargetCharacter1 *res,
     res->text = NULL;
   else
     {
-      res->text = malloc_new_kp (pool, "ffetargetCharacter1(CONCAT)", *len);
+      res->text = malloc_new_kp (pool, "ffetargetCharacter1(CONCAT)", *len + 1);
       if (l.length != 0)
 	memcpy (res->text, l.text, l.length);
       if (r.length != 0)
 	memcpy (res->text + l.length, r.text, r.length);
+      res->text[*len] = '\0';
     }
 
   return FFEBAD;
@@ -501,7 +515,12 @@ ffetarget_ne_character1 (bool *res, ffetargetCharacter1 l,
 #endif
 /* ffetarget_substr_character1 -- Perform SUBSTR op on three constants
 
-   Compare lengths, if equal then use memcmp.  */
+   Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
 
 #if FFETARGET_okCHARACTER1
 ffebad
@@ -519,8 +538,9 @@ ffetarget_substr_character1 (ffetargetCharacter1 *res,
   else
     {
       res->length = *len = last - first + 1;
-      res->text = malloc_new_kp (pool, "ffetargetCharacter1(SUBSTR)", *len);
+      res->text = malloc_new_kp (pool, "ffetargetCharacter1(SUBSTR)", *len + 1);
       memcpy (res->text, l.text + first - 1, *len);
+      res->text[*len] = '\0';
     }
 
   return FFEBAD;
@@ -666,6 +686,13 @@ ffetarget_convert_any_typeless_ (char *res, size_t size,
   return FFEBAD;
 }
 
+/* Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
+
 #if FFETARGET_okCHARACTER1
 ffebad
 ffetarget_convert_character1_character1 (ffetargetCharacter1 *res,
@@ -678,7 +705,7 @@ ffetarget_convert_character1_character1 (ffetargetCharacter1 *res,
     res->text = NULL;
   else
     {
-      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size);
+      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size + 1);
       if (size <= l.length)
 	memcpy (res->text, l.text, size);
       else
@@ -686,12 +713,21 @@ ffetarget_convert_character1_character1 (ffetargetCharacter1 *res,
 	  memcpy (res->text, l.text, l.length);
 	  memset (res->text + l.length, ' ', size - l.length);
 	}
+      res->text[size] = '\0';
     }
 
   return FFEBAD;
 }
 
 #endif
+
+/* Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
+
 #if FFETARGET_okCHARACTER1
 ffebad
 ffetarget_convert_character1_hollerith (ffetargetCharacter1 *res,
@@ -703,7 +739,8 @@ ffetarget_convert_character1_hollerith (ffetargetCharacter1 *res,
     res->text = NULL;
   else
     {
-      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size);
+      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size + 1);
+      res->text[size] = '\0';
       if (size <= l.length)
 	{
 	  char *p;
@@ -727,7 +764,14 @@ ffetarget_convert_character1_hollerith (ffetargetCharacter1 *res,
 }
 
 #endif
-/* ffetarget_convert_character1_integer1 -- Raw conversion.  */
+/* ffetarget_convert_character1_integer4 -- Raw conversion.
+
+   Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
 
 #if FFETARGET_okCHARACTER1
 ffebad
@@ -788,7 +832,8 @@ ffetarget_convert_character1_integer4 (ffetargetCharacter1 *res,
     res->text = NULL;
   else
     {
-      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size);
+      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size + 1);
+      res->text[size] = '\0';
       if (((size_t) size) <= size_of)
 	{
 	  int i = size_of - size;
@@ -813,7 +858,14 @@ ffetarget_convert_character1_integer4 (ffetargetCharacter1 *res,
 }
 
 #endif
-/* ffetarget_convert_character1_logical1 -- Raw conversion.  */
+/* ffetarget_convert_character1_logical4 -- Raw conversion.
+
+   Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
 
 #if FFETARGET_okCHARACTER1
 ffebad
@@ -874,7 +926,8 @@ ffetarget_convert_character1_logical4 (ffetargetCharacter1 *res,
     res->text = NULL;
   else
     {
-      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size);
+      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size + 1);
+      res->text[size] = '\0';
       if (((size_t) size) <= size_of)
 	{
 	  int i = size_of - size;
@@ -899,7 +952,14 @@ ffetarget_convert_character1_logical4 (ffetargetCharacter1 *res,
 }
 
 #endif
-/* ffetarget_convert_character1_typeless -- Raw conversion.  */
+/* ffetarget_convert_character1_typeless -- Raw conversion.
+
+   Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
 
 #if FFETARGET_okCHARACTER1
 ffebad
@@ -960,7 +1020,8 @@ ffetarget_convert_character1_typeless (ffetargetCharacter1 *res,
     res->text = NULL;
   else
     {
-      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size);
+      res->text = malloc_new_kp (pool, "FFETARGET cvt char1", size + 1);
+      res->text[size] = '\0';
       if (((size_t) size) <= size_of)
 	{
 	  int i = size_of - size;
@@ -1101,17 +1162,21 @@ ffetarget_divide_complex2 (ffetargetComplex2 *res, ffetargetComplex2 l,
 #endif
 /* ffetarget_hollerith -- Convert token to a hollerith constant
 
-   See prototype.
-
-   Token use count not affected overall.  */
+   Always append a null byte to the end, in case this is wanted in
+   a special case such as passing a string as a FORMAT or %REF.
+   Done to save a bit of hassle, nothing more, but it's a kludge anyway,
+   because it isn't a "feature" that is self-documenting.  Use the
+   string "FFETARGET-NULL-KLUDGE" to flag anyplace you use this feature
+   in the code.  */
 
 bool
 ffetarget_hollerith (ffetargetHollerith *val, ffelexToken integer,
 		     mallocPool pool)
 {
   val->length = ffelex_token_length (integer);
-  val->text = malloc_new_kp (pool, "ffetargetHollerith", val->length);
+  val->text = malloc_new_kp (pool, "ffetargetHollerith", val->length + 1);
   memcpy (val->text, ffelex_token_text (integer), val->length);
+  val->text[val->length] = '\0';
 
   return TRUE;
 }

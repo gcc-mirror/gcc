@@ -1,10 +1,15 @@
-970909
+1997-12-23
 
 This directory contains .diff files for various GNU CC distributions
 supported by this version of GNU Fortran.
 
 The name of a file includes which gcc version to which it applies.
 For example, 2.7.2.3.diff is the patch file for gcc version 2.7.2.3.
+
+To use this file, you must have a working version of `patch'
+installed.  For best results, ensure that the command
+`patch --version' reports that it is GNU patch, version 2.5
+or higher.
 
 To apply a .diff file to, say, gcc 2.7.2.3, one might use the following
 command (where the current directory contains the gcc source distribution
@@ -39,7 +44,7 @@ patch might work on gcc-2.7.3 or gcc-2.7.4 if these were
 released.  On the other hand, it probably wouldn't work for
 a more major release like gcc-2.8.0 or gcc-3.0.0, and you
 shouldn't try it.  If the .diff file is missing, don't bother
-asking <fortran@gnu.ai.mit.edu> for it -- it is certainly
+asking <fortran@gnu.org> for it -- it is certainly
 being worked on.  In the meantime, watch our progress at
-<ftp://alpha.gnu.ai.mit.edu/g77.plan> for information on support
+<ftp://alpha.gnu.org/g77.plan> for information on support
 for the recent versions of gcc.

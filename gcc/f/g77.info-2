@@ -28,9 +28,9 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
@@ -315,9 +315,10 @@ compiler accepts:
      *Note Ugly Assumed-Size Arrays::, for more information.
 
 `-fugly-comma'
-     Treat a trailing comma in an argument list as specification of a
-     trailing null argument, and treat an empty argument list as
-     specification of a single null argument.
+     In an external-procedure invocation, treat a trailing comma in the
+     argument list as specification of a trailing null argument, and
+     treat an empty argument list as specification of a single null
+     argument.
 
      For example, `CALL FOO(,)' is treated as `CALL FOO(%VAL(0),
      %VAL(0))'.  That is, *two* null arguments are specified by the
@@ -325,7 +326,8 @@ compiler accepts:
      is treated as `F = FUNC(%VAL(0))'.
 
      The default behavior, `-fno-ugly-comma', is to ignore a single
-     trailing comma in an argument list.
+     trailing comma in an argument list.  So, by default, `CALL
+     FOO(X,)' is treated exactly the same as `CALL FOO(X)'.
 
      *Note Ugly Null Arguments::, for more information.
 
@@ -473,6 +475,17 @@ compiler accepts:
      example, `call Foo(i,I)' would pass two *different* variables
      named `i' and `I' to a procedure named `Foo'.)
 
+`-fbadu77-intrinsics-delete'
+
+`-fbadu77-intrinsics-hide'
+
+`-fbadu77-intrinsics-disable'
+
+`-fbadu77-intrinsics-enable'
+     Specify status of UNIX intrinsics having inappropriate forms.
+     `-fbadu77-intrinsics-enable' is the default.  *Note Intrinsic
+     Groups::.
+
 `-ff2c-intrinsics-delete'
 
 `-ff2c-intrinsics-hide'
@@ -481,7 +494,8 @@ compiler accepts:
 
 `-ff2c-intrinsics-enable'
      Specify status of f2c-specific intrinsics.
-     `-ff2c-intrinsics-enable' is the default.
+     `-ff2c-intrinsics-enable' is the default.  *Note Intrinsic
+     Groups::.
 
 `-ff90-intrinsics-delete'
 
@@ -491,7 +505,8 @@ compiler accepts:
 
 `-ff90-intrinsics-enable'
      Specify status of F90-specific intrinsics.
-     `-ff90-intrinsics-enable' is the default.
+     `-ff90-intrinsics-enable' is the default.  *Note Intrinsic
+     Groups::.
 
 `-fgnu-intrinsics-delete'
 
@@ -501,7 +516,8 @@ compiler accepts:
 
 `-fgnu-intrinsics-enable'
      Specify status of Digital's COMPLEX-related intrinsics.
-     `-fgnu-intrinsics-enable' is the default.
+     `-fgnu-intrinsics-enable' is the default.  *Note Intrinsic
+     Groups::.
 
 `-fmil-intrinsics-delete'
 
@@ -511,7 +527,8 @@ compiler accepts:
 
 `-fmil-intrinsics-enable'
      Specify status of MIL-STD-1753-specific intrinsics.
-     `-fmil-intrinsics-enable' is the default.
+     `-fmil-intrinsics-enable' is the default.  *Note Intrinsic
+     Groups::.
 
 `-funix-intrinsics-delete'
 
@@ -521,7 +538,7 @@ compiler accepts:
 
 `-funix-intrinsics-enable'
      Specify status of UNIX intrinsics.  `-funix-intrinsics-enable' is
-     the default.
+     the default.  *Note Intrinsic Groups::.
 
 `-fvxt-intrinsics-delete'
 
@@ -531,7 +548,7 @@ compiler accepts:
 
 `-fvxt-intrinsics-enable'
      Specify status of VXT intrinsics.  `-fvxt-intrinsics-enable' is
-     the default.
+     the default.  *Note Intrinsic Groups::.
 
 `-ffixed-line-length-N'
      Set column after which characters are ignored in typical fixed-form

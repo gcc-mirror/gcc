@@ -28,14 +28,33 @@ License," "Funding for Free Software," and "Protect Your Freedom--Fight
 translations approved by the Free Software Foundation instead of in the
 original English.
 
-   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
-Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
-contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+   Contributed by James Craig Burley (<burley@gnu.org>).  Inspired by a
+first pass at translating `g77-0.5.16/f/DOC' that was contributed to
+Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
 
 INFO-DIR-SECTION Fortran Programming
 START-INFO-DIR-ENTRY
 * g77: (g77).               The GNU Fortran compilation system.
 END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: DbesY0 Intrinsic,  Next: DbesY1 Intrinsic,  Prev: DbesJN Intrinsic,  Up: Table of Intrinsic Functions
+
+DbesY0 Intrinsic
+................
+
+     DbesY0(X)
+
+DbesY0: `REAL(KIND=2)' function.
+
+X: `REAL(KIND=2)'; scalar; INTENT(IN).
+
+Intrinsic groups: `unix'.
+
+Description:
+
+   Archaic form of `BESY0()' that is specific to one type for X.  *Note
+BesY0 Intrinsic::.
 
 
 File: g77.info,  Node: DbesY1 Intrinsic,  Next: DbesYN Intrinsic,  Prev: DbesY0 Intrinsic,  Up: Table of Intrinsic Functions
@@ -1311,6 +1330,11 @@ Description:
 
    Returns the login name for the process in LOGIN.
 
+   *Caution:* On some systems, the `getlogin(3)' function, which this
+intrinsic calls at run time, is either not implemented or returns a
+null pointer.  In the latter case, this intrinsic returns blanks in
+LOGIN.
+
 
 File: g77.info,  Node: GetPId Intrinsic,  Next: GetUId Intrinsic,  Prev: GetLog Intrinsic,  Up: Table of Intrinsic Functions
 
@@ -1909,7 +1933,7 @@ Int2 Intrinsic
 
 Int2: `INTEGER(KIND=6)' function.
 
-A: `INTEGER'; scalar; INTENT(IN).
+A: `INTEGER', `REAL', or `COMPLEX'; scalar; INTENT(IN).
 
 Intrinsic groups: `gnu'.
 
@@ -1937,7 +1961,7 @@ Int8 Intrinsic
 
 Int8: `INTEGER(KIND=2)' function.
 
-A: `INTEGER'; scalar; INTENT(IN).
+A: `INTEGER', `REAL', or `COMPLEX'; scalar; INTENT(IN).
 
 Intrinsic groups: `gnu'.
 
@@ -2024,32 +2048,4 @@ Description:
 
    Returns `.TRUE.' if and only if the Fortran I/O unit specified by
 UNIT is connected to a terminal device.  See `isatty(3)'.
-
-
-File: g77.info,  Node: IShft Intrinsic,  Next: IShftC Intrinsic,  Prev: IsaTty Intrinsic,  Up: Table of Intrinsic Functions
-
-IShft Intrinsic
-...............
-
-     IShft(I, SHIFT)
-
-IShft: `INTEGER' function, the `KIND=' value of the type being that of
-argument I.
-
-I: `INTEGER'; scalar; INTENT(IN).
-
-SHIFT: `INTEGER'; scalar; INTENT(IN).
-
-Intrinsic groups: `mil', `f90', `vxt'.
-
-Description:
-
-   All bits representing I are shifted SHIFT places.  `SHIFT.GT.0'
-indicates a left shift, `SHIFT.EQ.0' indicates no shift and
-`SHIFT.LT.0' indicates a right shift.  If the absolute value of the
-shift count is greater than `BIT_SIZE(I)', the result is undefined.
-Bits shifted out from the left end or the right end, as the case may be,
-are lost.  Zeros are shifted in from the opposite end.
-
-   *Note IShftC Intrinsic:: for the circular-shift equivalent.
 

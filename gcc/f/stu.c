@@ -924,7 +924,7 @@ ffestu_sym_exec_transition (ffesymbol s)
 static void
 ffestu_list_exec_transition_ (ffebld list)
 {
-  static in_progress = FALSE;
+  static bool in_progress = FALSE;
   ffebld item;
   ffesymbol symbol;
 
@@ -1116,7 +1116,7 @@ tail:				/* :::::::::::::::::::: */
 static bool
 ffestu_dummies_transition_ (ffesymbol (*symfunc) (), ffebld list)
 {
-  static in_progress = FALSE;
+  static bool in_progress = FALSE;
   ffebld item;
   ffesymbol symbol;
   bool uncertain = FALSE;

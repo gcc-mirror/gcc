@@ -348,6 +348,7 @@ extern int flag_pedantic_errors;
 void emit_nop (void);
 void announce_function (tree decl);
 extern FILE *asm_out_file;
+void assemble_string (char *, int);
 void assemble_variable (tree decl, int top_level, int at_end,
 			int dont_output_data);
 void assemble_zeros (int size);
