@@ -43,10 +43,9 @@ enum debug_info_level
 /* Specify how much debugging info to generate.  */
 extern enum debug_info_level debug_info_level;
 
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-/* Nonzero means use GDB-only extensions of DBX format.  */
-extern int use_gdb_dbx_extensions;
-#endif
+/* Nonzero means use GNU-only extensions in the generated symbolic
+   debugging information.  */
+extern int use_gnu_debug_info_extensions;
 
 /* Nonzero means do optimizations.  -opt.  */
 
