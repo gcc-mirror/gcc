@@ -1,4 +1,9 @@
-Nathanael Nerode  <neroden@gcc.gnu.org>
+2002-10-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* a-chlat9.ads a-cwila9.ads a-dynpri.adb a-retide.adb: Update
+	maintainership comments.
+
+2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 	PR ada/5904
 	* 5ataprop.adb 5atpopsp.adb 5bosinte.adb 5ftaprop.adb 
 	5gtaprop.adb 5htaprop.adb 5rosinte.ads 5staprop.adb 
