@@ -5287,6 +5287,9 @@ default_arg (p, len)
 
       if ((end - start) == len && strncmp (p, start, len) == 0)
 	return 1;
+
+      if (*end == '\0')
+	break;
     }
 
   return 0;
