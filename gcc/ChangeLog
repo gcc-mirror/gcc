@@ -1,3 +1,14 @@
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (STATIC_CHAIN_REGNUM): Use soft z register
+	instead of _.d1.
+	(INITIALIZE_TRAMPOLINE): Call it.
+	(TRAMPOLINE_SIZE): Define according to 68HC11/68HC12.
+	(TRAMPOLINE_TEMPLATE): Remove.
+	* config/m68hc11/m68hc11.c (m68hc11_initialize_trampoline): New.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline):
+	Declare.
+
 2001-05-03  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/t-freebsd: Don't install "assert.h" in gcc.  Compile crtbeginS.o
