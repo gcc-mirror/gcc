@@ -37,10 +37,8 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Hostparm; use Hostparm;
-with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -818,28 +816,16 @@ package body Exp_Ch7 is
    begin
       if Is_Derived_Type (Typ)
         and then Comes_From_Source (E)
-        and then Is_Overriding_Operation (E)
-        and then
-          (not Is_Predefined_File_Name
-                     (Unit_File_Name (Get_Source_Unit (Root_Type (Typ)))))
+        and then not Is_Overriding_Operation (E)
       then
-         --  We know that the explicit operation on the type overrode
+         --  We know that the explicit operation on the type does not override
          --  the inherited operation of the parent, and that the derivation
          --  is from a private type that is not visibly controlled.
 
          Parent_Type := Etype (Typ);
          Op := Find_Prim_Op (Parent_Type, Name_Of (Prim));
 
-         if Present (Op)
-            and then Is_Hidden (Op)
-            and then Scope (Scope (Typ)) /= Scope (Op)
-            and then not In_Open_Scopes (Scope (Typ))
-         then
-            --  If the parent operation is not visible, and the derived
-            --  type is not declared in a child unit, then the explicit
-            --  operation does not override, and we must use the operation
-            --  of the parent.
-
+         if Present (Op) then
             E := Op;
 
             --  Wrap the object to be initialized into the proper

@@ -26,7 +26,6 @@
 
 with Atree;    use Atree;
 with Csets;    use Csets;
-with Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Scans;    use Scans;
@@ -99,13 +98,11 @@ package body Scn is
 
    procedure Check_End_Of_Line is
       Len : constant Int := Int (Scan_Ptr) - Int (Current_Line_Start);
-
    begin
-      if Len > Hostparm.Max_Line_Length then
-         Error_Long_Line;
-
-      elsif Style_Check then
+      if Style_Check then
          Style.Check_Line_Terminator (Len);
+      elsif Len > Opt.Max_Line_Length then
+         Error_Long_Line;
       end if;
    end Check_End_Of_Line;
 
@@ -115,6 +112,7 @@ package body Scn is
 
    function Determine_License return License_Type is
       GPL_Found : Boolean := False;
+      Result    : License_Type;
 
       function Contains (S : String) return Boolean;
       --  See if current comment contains successive non-blank characters
@@ -191,14 +189,17 @@ package body Scn is
            or else Source (Scan_Ptr + 1) /= '-'
          then
             if GPL_Found then
-               return GPL;
+               Result := GPL;
+               exit;
             else
-               return Unknown;
+               Result := Unknown;
+               exit;
             end if;
 
          elsif Contains ("Asaspecialexception") then
             if GPL_Found then
-               return Modified_GPL;
+               Result := Modified_GPL;
+               exit;
             end if;
 
          elsif Contains ("GNUGeneralPublicLicense") then
@@ -211,7 +212,8 @@ package body Scn is
              Contains
               ("ThisspecificationisderivedfromtheAdaReferenceManual")
          then
-            return Unrestricted;
+            Result := Unrestricted;
+            exit;
          end if;
 
          Skip_EOL;
@@ -240,6 +242,8 @@ package body Scn is
             end;
          end if;
       end loop;
+
+      return Result;
    end Determine_License;
 
    ----------------------------
@@ -259,7 +263,7 @@ package body Scn is
    begin
       Error_Msg
         ("this line is too long",
-         Current_Line_Start + Hostparm.Max_Line_Length);
+         Current_Line_Start + Source_Ptr (Opt.Max_Line_Length));
    end Error_Long_Line;
 
    ------------------------

@@ -191,6 +191,12 @@ begin
    Write_Str ("  -vPx     Specify verbosity when parsing GNAT Project Files");
    Write_Eol;
 
+   --  Line for -x
+
+   Write_Str ("  -x       " &
+              "Allow compilation of needed units external to the projects");
+   Write_Eol;
+
    --  Line for -X
 
    Write_Str ("  -Xnm=val Specify an external reference for GNAT " &

@@ -1,3 +1,147 @@
+2004-05-10  Doug Rupp  <rupp@gnat.com>
+
+	* 5qsystem.ads: Remove Short_Address subtype declaration. Moved to
+	system.aux_dec.
+
+	* s-auxdec.ads: Add Short_Address subtype (moved here from System).
+
+	* Makefile.in: [VMS]: Add translation for 5qauxdec.ads.
+
+	* init.c: [VMS] Macroize LIB$ calls for IA64 and Alpha.
+	Fixes undefined symbols in IA64 gnatlib.
+
+	* 5vinmaop.adb: Reference s-auxdec for Short_Address.
+
+	* 5xsystem.ads, 5vsystem.ads: Back out last change (addition of subtype
+	Short_Address). This will be moved to system.auxdec.
+
+2004-05-10  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_util.adb: Replace test for presence of a node that is always
+	present with a call to Discard_Node.
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): Remove superfluous call to
+	Analyze on the library unit node after generation of distribution stub
+	constructs.  The call was a no-op because Unit_Node has already been
+	Analyzed, and the tree fragments for the distribution stubs are
+	analyzed as they are inserted in Exp_Dist.
+	Update comment regarding to distribution stubs to reflect that we
+	do not generate stub in separate files anymore.
+
+	* einfo.ads: Clarify the fact that a tagged private type has the
+	E_Record_Type_With_Private Ekind.
+
+	* erroutc.adb: Minor reformatting
+
+	* erroutc.ads (Max_Msg_Length): Increase to cover possible larger
+	values if line length is increased using -gnatyM (noticed during code
+	reading).
+
+	* eval_fat.adb: Minor reformatting
+	Put spaces around exponentiation operator
+
+2004-05-10  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15005
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): If prefix
+	has been rewritten as an explicit dereference, retrieve type of
+	original node to check for possibly unconstrained record type.
+
+2004-05-10  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch7.adb (Check_Visibly_Controlled): If given operation is not
+	overriding, use the operation of the parent unconditionally.
+
+	* sem_ch4.adb (Remove_Address_Interpretations): Remove address
+	operation when either operand is a literal, to avoid further
+	ambiguities.
+
+	* sem_ch6.adb (New_Overloaded_Entity): If new entity is inherited and
+	overridden by a previous explicit declaration, mark the previous entity
+	as overriding.
+
+	* sem_disp.adb (Check_Dispatching_Operation): New predicate
+	Is_Visibly_Controlled, to determine whether a declaration of a
+	primitive control operation for a derived type overrides an inherited
+	one. Add warning if the explicit declaration does not override.
+
+2004-05-10  Vincent Celier  <celier@gnat.com>
+
+	* gnatls.adb (Gnatls): Initialize Snames, to avoid assertion error in
+	some cases when the sources are no longer present.
+
+	* make.adb (Collect_Arguments): Fail if an external source, not part
+	of any project need to be compiled, when switch -x has not been
+	specified.
+
+	* makeusg.adb: Document new switch -x
+
+	* opt.ads (External_Unit_Compilation_Allowed): New Boolean flag,
+	defaulted to False.
+
+	* switch-m.adb (Scan_Make_Switches): New switch -x
+
+	* vms_data.ads: Add VMS qualifier /NON_PROJECT_UNIT_COMPILATION for
+	gnatmake switch -x.
+
+	* gnat_ugn.texi: Document new gnatmake switch -x
+
+2004-05-10  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* misc.c (gnat_init_options): Set flag_zero_initialized_in_bss to 0.
+
+	* utils.c (create_var_decl): Do not modify the DECL_COMMON flag.
+	(process_attributes): Likewise.
+
+2004-05-10  Joel Brobecker  <brobecker@gnat.com>
+
+	* s-inmaop.ads: Fix spelling mistake in one of the comments.
+
+2004-05-10  Robert Dewar  <dewar@gnat.com>
+
+	* gnat_ugn.texi: Document that for config pragma files, the maximum
+	line length is always 32767.
+
+	* gnat_rm.texi: For pragma Eliminate, note that concatenation of string
+	literals is now allowed.
+
+	* gnat-style.texi: Remove statement about splitting long lines before
+	an operator rather than after, since we do not follow this rule at all.
+	Clarify rule (really lack of rule) for spaces around exponentiation
+
+	* sem_elim.adb: Allow concatenation of string literals as well as a
+	single string literal for pragma arguments.
+
+	* sem_prag.ads, sem_prag.adb: (Is_Config_Static_String): New function
+
+	* a-textio.adb (Terminate_Line): Do not add line feed if nothing
+	written for append case.
+
+	* frontend.adb: Changes to avoid checking max line length in config
+	pragma files.
+
+	* g-os_lib.ads: Minor reformatting
+
+	* mlib-utl.adb: Do not define Max_Line_Length locally (definition was
+	wrong in any case. Instead use standard value. Noticed during code
+	reading.
+
+	* opt.ads (Max_Line_Length): New field, used to implement removal of
+	limitation on length of lines when scanning config pragma files.
+
+	* osint.ads, prj-dect.adb, prj-strt.adb, prj-tree.adb,
+	makeutl.ads, makeutl.adb: Minor reformatting
+
+	* scn.adb: Do not check line length while scanning config pragma files
+	Do not check line length while scanning out license information
+
+	* scng.adb: Changes to avoid line length checks while parsing config
+	pragma files.
+
+2004-05-10  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-05-05  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* osint.adb (Find_Program_Name): Fix handling of VMS version

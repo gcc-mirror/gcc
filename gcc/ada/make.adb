@@ -1727,10 +1727,16 @@ package body Make is
                Project          => Arguments_Project,
                Path             => Arguments_Path_Name);
 
-            --  If the source is not a source of a project file,
-            --  we simply add the saved gcc switches.
+            --  If the source is not a source of a project file, check if
+            --  this is allowed.
 
             if Arguments_Project = No_Project then
+               if not External_Unit_Compilation_Allowed then
+                  Make_Failed ("external source, not part of any projects, " &
+                               "cannot be compiled (", Source_File_Name, ")");
+               end if;
+
+               --  If it is allowed, simply add the saved gcc switches
 
                Add_Arguments (The_Saved_Gcc_Switches.all);
 

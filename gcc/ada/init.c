@@ -1281,7 +1281,17 @@ __gnat_initialize (void)
 
 #elif defined (VMS)
 
-#ifdef IN_RTS
+#ifdef __IA64
+#define lib_get_curr_invo_context LIB$I64_GET_CURR_INVO_CONTEXT
+#define lib_get_prev_invo_context LIB$I64_GET_PREV_INVO_CONTEXT
+#define lib_get_invo_handle LIB$I64_GET_INVO_HANDLE
+#else
+#define lib_get_curr_invo_context LIB$GET_CURR_INVO_CONTEXT
+#define lib_get_prev_invo_context LIB$GET_PREV_INVO_CONTEXT
+#define lib_get_invo_handle LIB$GET_INVO_HANDLE
+#endif
+
+#if defined (IN_RTS) && !defined (__IA64)
 
 /* The prehandler actually gets control first on a condition. It swaps the
    stack pointer and calls the handler (__gnat_error_handler). */
@@ -1464,10 +1474,10 @@ __gnat_error_handler (int *sigargs, void *mechargs)
   mstate = (long *) (*Get_Machine_State_Addr) ();
   if (mstate != 0)
     {
-      LIB$GET_CURR_INVO_CONTEXT (&curr_icb);
-      LIB$GET_PREV_INVO_CONTEXT (&curr_icb);
-      LIB$GET_PREV_INVO_CONTEXT (&curr_icb);
-      curr_invo_handle = LIB$GET_INVO_HANDLE (&curr_icb);
+      lib_get_curr_invo_context (&curr_icb);
+      lib_get_prev_invo_context (&curr_icb);
+      lib_get_prev_invo_context (&curr_icb);
+      curr_invo_handle = lib_get_invo_handle (&curr_icb);
       *mstate = curr_invo_handle;
     }
   Raise_From_Signal_Handler (exception, msg);
@@ -1477,7 +1487,7 @@ void
 __gnat_install_handler (void)
 {
   long prvhnd;
-#ifdef IN_RTS
+#if defined (IN_RTS) && !defined (__IA64)
   char *c;
 
   c = (char *) xmalloc (2049);

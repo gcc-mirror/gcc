@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,77 +35,81 @@
 package System.Interrupt_Management.Operations is
 
    procedure Thread_Block_Interrupt (Interrupt : Interrupt_ID);
-   --  Mask the calling thread for the interrupt
    pragma Inline (Thread_Block_Interrupt);
+   --  Mask the calling thread for the interrupt
 
    procedure Thread_Unblock_Interrupt (Interrupt : Interrupt_ID);
-   --  Unmask the calling thread for the interrupt
    pragma Inline (Thread_Unblock_Interrupt);
+   --  Unmask the calling thread for the interrupt
 
    procedure Set_Interrupt_Mask (Mask : access Interrupt_Mask);
    --  Set the interrupt mask of the calling thread
+
    procedure Set_Interrupt_Mask
      (Mask  : access Interrupt_Mask;
       OMask : access Interrupt_Mask);
+   pragma Inline (Set_Interrupt_Mask);
    --  Set the interrupt mask of the calling thread while returning the
    --  previous Mask.
-   pragma Inline (Set_Interrupt_Mask);
 
    procedure Get_Interrupt_Mask (Mask : access Interrupt_Mask);
-   --  Get the interrupt mask of the calling thread
    pragma Inline (Get_Interrupt_Mask);
+   --  Get the interrupt mask of the calling thread
 
    function Interrupt_Wait (Mask : access Interrupt_Mask) return Interrupt_ID;
-   --  Wait for the interrupts specified in Mask and return
-   --  the interrupt received. Upon error it return 0.
    pragma Inline (Interrupt_Wait);
+   --  Wait for the interrupts specified in Mask and return
+   --  the interrupt received. Return 0 upon error.
 
    procedure Install_Default_Action (Interrupt : Interrupt_ID);
-   --  Set the sigaction of the Interrupt to default (SIG_DFL).
    pragma Inline (Install_Default_Action);
+   --  Set the sigaction of the Interrupt to default (SIG_DFL).
 
    procedure Install_Ignore_Action (Interrupt : Interrupt_ID);
-   --  Set the sigaction of the Interrupt to ignore (SIG_IGN).
    pragma Inline (Install_Ignore_Action);
+   --  Set the sigaction of the Interrupt to ignore (SIG_IGN).
 
    procedure Fill_Interrupt_Mask (Mask : access Interrupt_Mask);
-   --  Get a Interrupt_Mask with all the interrupt masked
    pragma Inline (Fill_Interrupt_Mask);
+   --  Get a Interrupt_Mask with all the interrupt masked
 
    procedure Empty_Interrupt_Mask (Mask : access Interrupt_Mask);
-   --  Get a Interrupt_Mask with all the interrupt unmasked
    pragma Inline (Empty_Interrupt_Mask);
+   --  Get a Interrupt_Mask with all the interrupt unmasked
 
    procedure Add_To_Interrupt_Mask
      (Mask      : access Interrupt_Mask;
       Interrupt : Interrupt_ID);
-   --  Mask the given interrupt in the Interrupt_Mask
    pragma Inline (Add_To_Interrupt_Mask);
+   --  Mask the given interrupt in the Interrupt_Mask
 
    procedure Delete_From_Interrupt_Mask
      (Mask      : access Interrupt_Mask;
       Interrupt : Interrupt_ID);
-   --  Unmask the given interrupt in the Interrupt_Mask
    pragma Inline (Delete_From_Interrupt_Mask);
+   --  Unmask the given interrupt in the Interrupt_Mask
 
    function Is_Member
      (Mask      : access Interrupt_Mask;
       Interrupt : Interrupt_ID) return Boolean;
-   --  See if a given interrupt is masked in the Interrupt_Mask
    pragma Inline (Is_Member);
+   --  See if a given interrupt is masked in the Interrupt_Mask
 
    procedure Copy_Interrupt_Mask (X : out Interrupt_Mask; Y : Interrupt_Mask);
-   --  Assigment needed for limited private type Interrupt_Mask.
    pragma Inline (Copy_Interrupt_Mask);
+   --  Assigment needed for limited private type Interrupt_Mask.
 
    procedure Interrupt_Self_Process (Interrupt : Interrupt_ID);
-   --  raise an Interrupt process-level
    pragma Inline (Interrupt_Self_Process);
+   --  Raise an Interrupt process-level
 
    --  The following objects serve as constants, but are initialized
    --  in the body to aid portability.  These actually belong to the
    --  System.Interrupt_Management but since Interrupt_Mask is a
    --  private type we can not have them declared there.
+
+   --  Why not make these deferred constants that are initialized using
+   --  function calls in the private part???
 
    Environment_Mask : aliased Interrupt_Mask;
    --  This mask represents the mask of Environment task when this package

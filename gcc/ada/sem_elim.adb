@@ -24,19 +24,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;   use Atree;
-with Einfo;   use Einfo;
-with Errout;  use Errout;
-with Namet;   use Namet;
-with Nlists;  use Nlists;
-with Sinput;  use Sinput;
-with Sinfo;   use Sinfo;
-with Snames;  use Snames;
-with Stand;   use Stand;
-with Stringt; use Stringt;
+with Atree;    use Atree;
+with Einfo;    use Einfo;
+with Errout;   use Errout;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Sem_Prag; use Sem_Prag;
+with Sinput;   use Sinput;
+with Sinfo;    use Sinfo;
+with Snames;   use Snames;
+with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Table;
 
 with GNAT.HTable; use GNAT.HTable;
+
 package body Sem_Elim is
 
    No_Elimination : Boolean;
@@ -774,15 +776,11 @@ package body Sem_Elim is
 
             Data.Entity_Scope (1) := Chars (Arg_Ent);
 
-         elsif Nkind (Arg_Entity) = N_String_Literal then
-            String_To_Name_Buffer (Strval (Arg_Entity));
+         elsif Is_Config_Static_String (Arg_Entity) then
             Data.Entity_Name := Name_Find;
             Data.Entity_Node := Arg_Entity;
 
          else
-            Error_Msg_N
-              ("wrong form for Entity_Argument parameter of pragma%",
-               Arg_Unit_Name);
             return;
          end if;
       else
@@ -794,12 +792,33 @@ package body Sem_Elim is
 
       if Present (Arg_Parameter_Types) then
 
-         --  Case of one name, which looks like a parenthesized literal
-         --  rather than an aggregate.
+         --  Here for aggregate case
 
-         if Nkind (Arg_Parameter_Types) = N_String_Literal
-           and then Paren_Count (Arg_Parameter_Types) = 1
-         then
+         if Nkind (Arg_Parameter_Types) = N_Aggregate then
+            Data.Parameter_Types :=
+              new Names
+                (1 .. List_Length (Expressions (Arg_Parameter_Types)));
+
+            Lit := First (Expressions (Arg_Parameter_Types));
+            for J in Data.Parameter_Types'Range loop
+               if Is_Config_Static_String (Lit) then
+                  Data.Parameter_Types (J) := Name_Find;
+                  Next (Lit);
+               else
+                  return;
+               end if;
+            end loop;
+
+         --  Otherwise we must have case of one name, which looks like a
+         --  parenthesized literal rather than an aggregate.
+
+         elsif Paren_Count (Arg_Parameter_Types) /= 1 then
+            Error_Msg_N
+              ("wrong form for argument of pragma Eliminate",
+               Arg_Parameter_Types);
+            return;
+
+         elsif Is_Config_Static_String (Arg_Parameter_Types) then
             String_To_Name_Buffer (Strval (Arg_Parameter_Types));
 
             if Name_Len = 0 then
@@ -812,53 +831,21 @@ package body Sem_Elim is
                Data.Parameter_Types := new Names'(1 => Name_Find);
             end if;
 
-         --  Otherwise must be an aggregate
-
-         elsif Nkind (Arg_Parameter_Types) /= N_Aggregate
-           or else Present (Component_Associations (Arg_Parameter_Types))
-           or else No (Expressions (Arg_Parameter_Types))
-         then
-            Error_Msg_N
-              ("Parameter_Types for pragma% must be list of string literals",
-               Arg_Parameter_Types);
-            return;
-
-         --  Here for aggregate case
-
          else
-            Data.Parameter_Types :=
-              new Names
-                (1 .. List_Length (Expressions (Arg_Parameter_Types)));
-
-            Lit := First (Expressions (Arg_Parameter_Types));
-            for J in Data.Parameter_Types'Range loop
-               if Nkind (Lit) /= N_String_Literal then
-                  Error_Msg_N
-                    ("parameter types for pragma% must be string literals",
-                     Lit);
-                  return;
-               end if;
-
-               String_To_Name_Buffer (Strval (Lit));
-               Data.Parameter_Types (J) := Name_Find;
-               Next (Lit);
-            end loop;
+            return;
          end if;
       end if;
 
       --  Process Result_Types argument
 
       if Present (Arg_Result_Type) then
-
-         if Nkind (Arg_Result_Type) /= N_String_Literal then
-            Error_Msg_N
-              ("Result_Type argument for pragma% must be string literal",
-               Arg_Result_Type);
+         if Is_Config_Static_String (Arg_Result_Type) then
+            Data.Result_Type := Name_Find;
+         else
             return;
          end if;
 
-         String_To_Name_Buffer (Strval (Arg_Result_Type));
-         Data.Result_Type := Name_Find;
+      --  Here if no Result_Types argument
 
       else
          Data.Result_Type := No_Name;
@@ -867,17 +854,11 @@ package body Sem_Elim is
       --  Process Source_Location argument
 
       if Present (Arg_Source_Location) then
-
-         if Nkind (Arg_Source_Location) /= N_String_Literal then
-            Error_Msg_N
-              ("Source_Location argument for pragma% must be string literal",
-               Arg_Source_Location);
+         if Is_Config_Static_String (Arg_Source_Location) then
+            Data.Source_Location := Name_Find;
+         else
             return;
          end if;
-
-         String_To_Name_Buffer (Strval (Arg_Source_Location));
-         Data.Source_Location := Name_Find;
-
       else
          Data.Source_Location := No_Name;
       end if;

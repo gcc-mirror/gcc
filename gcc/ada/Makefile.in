@@ -1145,6 +1145,7 @@ endif
 ifeq ($(strip $(filter-out alpha% ia64 dec hp vms% openvms% alphavms%,$(targ))),)
 ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
   LIBGNAT_TARGET_PAIRS_AUX1 = \
+  s-auxdec.ads<5qauxdec.ads \
   s-crtl.ads<5xcrtl.ads \
   s-osinte.adb<5xosinte.adb \
   s-osinte.ads<5xosinte.ads \

@@ -63,7 +63,6 @@ pragma Pure (System);
    --  Storage-related Declarations
 
    type Address is private;
-   subtype Short_Address is Address;
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;

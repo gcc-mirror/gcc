@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,6 @@
 with Casing;   use Casing;
 with Debug;    use Debug;
 with Err_Vars; use Err_Vars;
-with Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
@@ -71,7 +70,6 @@ package body Erroutc is
 
    function Buffer_Ends_With (S : String) return Boolean is
       Len : constant Natural := S'Length;
-
    begin
       return
         Msglen > Len
@@ -465,6 +463,10 @@ package body Erroutc is
       function To_Be_Purged (E : Error_Msg_Id) return Boolean;
       --  Returns True for a message that is to be purged. Also adjusts
       --  error counts appropriately.
+
+      ------------------
+      -- To_Be_Purged --
+      ------------------
 
       function To_Be_Purged (E : Error_Msg_Id) return Boolean is
       begin

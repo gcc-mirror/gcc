@@ -3383,18 +3383,19 @@ package Einfo is
       --  A record subtype, created by a record subtype declaration.
 
       E_Record_Type_With_Private,
-      --  Used for types defined by a private extension declaration. Includes
-      --  the fields for both private types and for record types (with the
-      --  sole exception of Corresponding_Concurrent_Type which is obviously
-      --  not needed). This entity is considered to be both a record type and
+      --  Used for types defined by a private extension declaration, and
+      --  for tagged private types. Includes the fields for both private
+      --  types and for record types (with the sole exception of
+      --  Corresponding_Concurrent_Type which is obviously not needed).
+      --  This entity is considered to be both a record type and
       --  a private type.
 
       E_Record_Subtype_With_Private,
       --  A subtype of a type defined by a private extension declaration.
 
       E_Private_Type,
-      --  A private type, created by a private type declaration that does
-      --  not have the keyword limited.
+      --  A private type, created by a private type declaration
+      --  that has neither the keyword limited nor the keyword tagged.
 
       E_Private_Subtype,
       --  A subtype of a private type, created by a subtype declaration used
@@ -3402,7 +3403,7 @@ package Einfo is
 
       E_Limited_Private_Type,
       --  A limited private type, created by a private type declaration that
-      --  has the keyword limited.
+      --  has the keyword limited, but not the keyword tagged.
 
       E_Limited_Private_Subtype,
       --  A subtype of a limited private type, created by a subtype declaration

@@ -4599,8 +4599,9 @@ package body Sem_Ch6 is
                   end if;
 
                   --  In any case the implicit operation remains hidden by
-                  --  the existing declaration.
+                  --  the existing declaration, which is overriding.
 
+                  Set_Is_Overriding_Operation (E);
                   return;
 
                   --  Within an instance, the renaming declarations for

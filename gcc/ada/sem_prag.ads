@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,17 @@ package Sem_Prag is
    --  If True is returned, the argument is converted to a string literal. If
    --  False is returned, then the argument is treated as an entity reference
    --  to the operator.
+
+   function Is_Config_Static_String (Arg : Node_Id) return Boolean;
+   --  This is called for a configuration pragma that requires either a
+   --  string literal or a concatenation of string literals. We cannot
+   --  use normal static string processing because it is too early in
+   --  the case of the pragma appearing in a configuration pragmas file.
+   --  If Arg is of an appropriate form, then this call obtains the string
+   --  (doing any necessary concatenations) and places it in Name_Buffer,
+   --  setting Name_Len to its length, and then returns True. If it is
+   --  not of the correct form, then an appropriate error message is
+   --  posted, and False is returned.
 
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with

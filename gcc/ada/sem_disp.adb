@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Uintp;    use Uintp;
 
@@ -423,6 +424,27 @@ package body Sem_Disp is
       Has_Dispatching_Parent : Boolean := False;
       Body_Is_Last_Primitive : Boolean := False;
 
+      function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
+      --  Check whether T is derived from a visibly controlled type.
+      --  This is true if the root type is declared in Ada.Finalization.
+      --  If T is derived instead from a private type whose full view
+      --  is controlled, an explicit Initialize/Adjust/Finalize subprogram
+      --  does not override the inherited one.
+
+      ---------------------------
+      -- Is_Visibly_Controlled --
+      ---------------------------
+
+      function Is_Visibly_Controlled (T : Entity_Id) return Boolean is
+         Root : constant Entity_Id := Root_Type (T);
+      begin
+         return Chars (Scope (Root)) = Name_Finalization
+           and then Chars (Scope (Scope (Root))) = Name_Ada
+           and then Scope (Scope (Scope (Root))) = Standard_Standard;
+      end Is_Visibly_Controlled;
+
+   --  Start of processing for Check_Dispatching_Operation
+
    begin
       if Ekind (Subp) /= E_Procedure and then Ekind (Subp) /= E_Function then
          return;
@@ -595,8 +617,19 @@ package body Sem_Disp is
 
       if Present (Old_Subp) then
          Check_Subtype_Conformant (Subp, Old_Subp);
-         Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
-         Set_Is_Overriding_Operation (Subp);
+         if (Chars (Subp) = Name_Initialize
+           or else Chars (Subp) = Name_Adjust
+           or else Chars (Subp) = Name_Finalize)
+           and then Is_Controlled (Tagged_Type)
+           and then not Is_Visibly_Controlled (Tagged_Type)
+         then
+            Set_Is_Overriding_Operation (Subp, False);
+            Error_Msg_NE
+              ("operation does not override inherited&?", Subp, Subp);
+         else
+            Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
+            Set_Is_Overriding_Operation (Subp);
+         end if;
       else
          Add_Dispatching_Operation (Tagged_Type, Subp);
       end if;
