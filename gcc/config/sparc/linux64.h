@@ -1,5 +1,5 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
-   Copyright 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GNU CC.
@@ -47,10 +47,6 @@ Boston, MA 02111-1307, USA.  */
   
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC "-Av9a"
-
-#undef  LIBGCC_SPEC
-#define LIBGCC_SPEC \
-  "%{!shared:-lgcc}"
 
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
@@ -111,14 +107,14 @@ Boston, MA 02111-1307, USA.  */
 %{fPIC:-D__PIC__ -D__pic__} \
 %{fpic:-D__PIC__ -D__pic__} \
 %{posix:-D_POSIX_SOURCE} \
+%{pthread:-D_REENTRANT} \
 "
-/* We no longer link with libc_p.a or libg.a by default. If you
-   want to profile or debug the GNU/Linux C library, please add
-   -lc_p or -ggdb to LDFLAGS at the link time, respectively.  */
+
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} \
-     %{!ggdb:-lc} %{ggdb:-lg}}"
+  "%{shared: -lc} \
+   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+     %{profile:-lc_p} %{!profile: -lc}}"
 
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
