@@ -1020,7 +1020,7 @@ void
 diagnostic_report_diagnostic (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
-  if (context->lock++)
+  if (context->lock++ && diagnostic->kind < DK_SORRY)
     error_recursion (context);
 
   if (diagnostic_count_diagnostic (context, diagnostic))
@@ -1042,7 +1042,7 @@ static void
 diagnostic_for_decl (diagnostic_context *context,
 		     diagnostic_info *diagnostic, tree decl)
 {
-  if (context->lock++)
+  if (context->lock++ && diagnostic->kind < DK_SORRY)
     error_recursion (context);
 
   if (diagnostic_count_diagnostic (context, diagnostic))
