@@ -436,7 +436,7 @@ DEFTREECODE (INIT_EXPR, "init_expr", 'e', 2)
 
 /* For TARGET_EXPR, operand 0 is the target of an initialization,
    operand 1 is the initializer for the target, which may be void
-     if simplify expanding it initializes the target.
+     if simply expanding it initializes the target.
    operand 2 is the cleanup for this node, if any.
    operand 3 is the saved initializer after this node has been
    expanded once; this is so we can re-expand the tree later.  */
