@@ -1,3 +1,9 @@
+Mon Jun  3 11:53:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* integrate.c (copy_insn_list): Properly pace the INSN_SCOPE copies.
+	* toplev.c: Include cfglahout.h
+	* Makefile.in (toplev.c): Add dependnecy.
+
 2002-06-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): New.
