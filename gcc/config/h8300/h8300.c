@@ -402,7 +402,7 @@ function_epilogue (file, size)
   if (GET_CODE (insn) == NOTE)
     insn = prev_nonnote_insn (insn);
   if (insn && GET_CODE (insn) == BARRIER)
-    return;
+    goto out;
 
   /* Pop the saved registers. */
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
