@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "function.h"
 
-extern char *reg_names[];
+extern const char *reg_names[];
 rtx cmp_op0=0, cmp_op1=0;
 
 /* table of relations for compares and branches */

@@ -635,7 +635,7 @@ extern enum reg_class regno_reg_class[];
 { register int regno;						\
   register int mask = 0;					\
   register int nregs = 0;					\
-  static char *reg_names[] = REGISTER_NAMES;			\
+  static const char * const reg_names[] = REGISTER_NAMES;	\
   extern char call_used_regs[];					\
   int fsize = ((SIZE) + 3) & -4;				\
   for (regno = 0; regno < 16; regno++)				\
@@ -737,7 +737,7 @@ extern enum reg_class regno_reg_class[];
   register int nregs, nfregs;					\
   int offset, foffset;						\
   extern char call_used_regs[];					\
-  static char *reg_names[] = REGISTER_NAMES;			\
+  static const char * const reg_names[] = REGISTER_NAMES;	\
   int fsize = ((SIZE) + 3) & -4;				\
   FUNCTION_EXTRA_EPILOGUE (FILE, SIZE);				\
   nfregs = 0;  fmask = 0; 					\

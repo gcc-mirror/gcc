@@ -1,3 +1,30 @@
+Sun Oct 31 20:42:17 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hard-reg-set.h (reg_names): Constify a char*.
+
+	* regclass.c  (reg_names): Likewise.
+
+	* regs.h (reg_names): Likewise
+
+	* a29k/a29k.c (reg_names): Delete declaration.
+
+	* a29k/a29k.h (CONDITIONAL_REGISTER_USAGE): Constify a char*.
+
+	* arc/arc.c (arc_save_restore, arc_output_function_prologue,
+	arc_output_function_epilogue): Likewise.
+
+	* elxsi/elxsi.c (reg_names): Likewise.
+
+	* gmicro/gmicro.h (FUNCTION_PROLOGUE, FUNCTION_EPILOGUE): Likewise.
+	
+	* m32r/m32r.c (m32r_output_function_epilogue, emit_cond_move):
+	Likewise.
+
+	* m88k/m88k.c (output_function_profiler): Likewise.
+
+	* sparc/sparc.c (sparc_flat_output_function_prologue,
+	sparc_flat_output_function_epilogue): Likewise.
+
 Sun Oct 31 13:32:15 CET 1999  Marc Lehmann <pcg@goof.com>
 
 	* toplev.c (rest_of_compilation): Seperate the setjmp/vfork clobber
