@@ -693,7 +693,7 @@ static int loop_cost;
 
 static rtx scan_one_insn	PROTO((rtx, int));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
-				       const char **, rtx));
+				       char *, const char **, rtx));
 static int copy_cost		PROTO((rtx, enum machine_mode, 
 				       enum reg_class, int));
 static void record_address_regs	PROTO((rtx, enum reg_class, int));
@@ -757,6 +757,7 @@ scan_one_insn (insn, pass)
   enum rtx_code pat_code;
   const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode modes[MAX_RECOG_OPERANDS];
+  char subreg_changes_size[MAX_RECOG_OPERANDS];
   rtx set, note;
   int i, j;
 
@@ -794,6 +795,7 @@ scan_one_insn (insn, pass)
       constraints[i] = recog_constraints[i];
       modes[i] = recog_operand_mode[i];
     }
+  memset (subreg_changes_size, 0, sizeof (subreg_changes_size));
 
   /* If this insn loads a parameter from its stack slot, then
      it represents a savings, rather than a cost, if the
@@ -881,7 +883,12 @@ scan_one_insn (insn, pass)
       op_costs[i] = init_cost;
 
       if (GET_CODE (recog_operand[i]) == SUBREG)
-	recog_operand[i] = SUBREG_REG (recog_operand[i]);
+	{
+	  rtx inner = SUBREG_REG (recog_operand[i]);
+	  if (GET_MODE_SIZE (modes[i]) != GET_MODE_SIZE (GET_MODE (inner)))
+	    subreg_changes_size[i] = 1;
+	  recog_operand[i] = inner;
+	}
 
       if (GET_CODE (recog_operand[i]) == MEM)
 	record_address_regs (XEXP (recog_operand[i], 0),
@@ -910,12 +917,12 @@ scan_one_insn (insn, pass)
 	xconstraints[i] = constraints[i+1];
 	xconstraints[i+1] = constraints[i];
 	record_reg_classes (recog_n_alternatives, recog_n_operands,
-			    recog_operand, modes, xconstraints,
-			    insn);
+			    recog_operand, modes, subreg_changes_size,
+			    xconstraints, insn);
       }
 
   record_reg_classes (recog_n_alternatives, recog_n_operands, recog_operand,
-		      modes, constraints, insn);
+		      modes, subreg_changes_size, constraints, insn);
 
   /* Now add the cost for each operand to the total costs for
      its register.  */
@@ -1131,11 +1138,13 @@ regclass (f, nregs)
    alternatives.  */
 
 static void
-record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
+record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
+		    constraints, insn)
      int n_alts;
      int n_ops;
      rtx *ops;
      enum machine_mode *modes;
+     char *subreg_changes_size;
      const char **constraints;
      rtx insn;
 {
@@ -1393,6 +1402,16 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      }
 
 	  constraints[i] = p;
+
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+	  /* If we noted a subreg earlier, and the selected class is a 
+	     subclass of CLASS_CANNOT_CHANGE_SIZE, zap it.  */
+	  if (subreg_changes_size[i]
+	      && (reg_class_subunion[(int) CLASS_CANNOT_CHANGE_SIZE]
+				    [(int) classes[i]]
+		  == CLASS_CANNOT_CHANGE_SIZE))
+	    classes[i] = NO_REGS;
+#endif
 
 	  /* How we account for this operand now depends on whether it is  a
 	     pseudo register or not.  If it is, we first check if any
