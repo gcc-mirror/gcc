@@ -1,6 +1,6 @@
 // natPosixProcess.cc - Native side of POSIX process code.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -34,6 +34,7 @@ details.  */
 #include <java/io/FileInputStream.h>
 #include <java/io/FileOutputStream.h>
 #include <java/io/IOException.h>
+#include <java/lang/OutOfMemoryError.h>
 
 extern char **environ;
 
@@ -100,6 +101,55 @@ new_string (jstring string)
   return buf;
 }
 
+static void
+cleanup (char **args, char **env)
+{
+  if (args != NULL)
+    {
+      for (int i = 0; args[i] != NULL; ++i)
+	_Jv_Free (args[i]);
+      _Jv_Free (args);
+    }
+  if (env != NULL)
+    {
+      for (int i = 0; env[i] != NULL; ++i)
+	_Jv_Free (env[i]);
+      _Jv_Free (env);
+    }
+}
+
+static void
+fail (int error_value, char **args, char **env,
+      int *one = NULL, int *two = NULL,
+      int *three = NULL, int *four = NULL,
+      java::lang::Throwable *t = NULL)
+{
+  cleanup (args, env);
+  if (one != NULL)
+    {
+      close (one[0]);
+      close (one[1]);
+    }
+  if (two != NULL)
+    {
+      close (two[0]);
+      close (two[1]);
+    }
+  if (three != NULL)
+    {
+      close (three[0]);
+      close (three[1]);
+    }
+  if (four != NULL)
+    {
+      close (four[0]);
+      close (four[1]);
+    }
+  if (t == NULL)
+    t = new java::io::IOException (JvNewStringLatin1 (strerror (error_value)));
+  throw t;
+}
+
 void
 java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 					   jstringArray envp)
@@ -109,57 +159,76 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   hasExited = false;
 
   if (! progarray)
-    _Jv_Throw (new NullPointerException);
+    throw new NullPointerException;
 
   // Transform arrays to native form.
-  // FIXME: we use malloc here.  We shouldn't.  If an exception is
-  // thrown we will leak memory.
   char **args = (char **) _Jv_Malloc ((progarray->length + 1)
 				      * sizeof (char *));
   char **env = NULL;
 
-  // FIXME: GC will fail here if _Jv_Malloc throws an exception.
-  // That's because we have to manually free the contents, but we 
+  // Initialize so we can gracefully recover.
   jstring *elts = elements (progarray);
-  for (int i = 0; i < progarray->length; ++i)
-    args[i] = new_string (elts[i]);
-  args[progarray->length] = NULL;
+  for (int i = 0; i <= progarray->length; ++i)
+    args[i] = NULL;
 
-  if (envp)
+  try
     {
-      env = (char **) _Jv_Malloc ((envp->length + 1) * sizeof (char *));
-      elts = elements (envp);
-      for (int i = 0; i < envp->length; ++i)
-	env[i] = new_string (elts[i]);
-      env[envp->length] = NULL;
+      for (int i = 0; i < progarray->length; ++i)
+	args[i] = new_string (elts[i]);
+      args[progarray->length] = NULL;
+
+      if (envp)
+	{
+	  env = (char **) _Jv_Malloc ((envp->length + 1) * sizeof (char *));
+	  elts = elements (envp);
+
+	  // Initialize so we can gracefully recover.
+	  for (int i = 0; i <= envp->length; ++i)
+	    env[i] = NULL;
+
+	  for (int i = 0; i < envp->length; ++i)
+	    env[i] = new_string (elts[i]);
+	  env[envp->length] = NULL;
+	}
+    }
+  catch (java::lang::OutOfMemoryError *oome)
+    {
+      fail (0, args, env, NULL, NULL, NULL, NULL, oome);
+      throw oome;
     }
 
-  // Create pipes for I/O.
-  int inp[2], outp[2], errp[2];
+  // Create pipes for I/O.  MSGP is for communicating exec() status.
+  int inp[2], outp[2], errp[2], msgp[2];
 
-  if (pipe (inp)
-      || pipe (outp)
-      || pipe (errp))
-    {
-    ioerror:
-      // FIXME.
-      _Jv_Free (args);
-      if (env)
-	_Jv_Free (env);
-      _Jv_Throw (new IOException (JvNewStringLatin1 (strerror (errno))));
-    }
+  if (pipe (inp))
+    fail (errno, args, env);
+  if (pipe (outp))
+    fail (errno, args, env, inp);
+  if (pipe (errp))
+    fail (errno, args, env, inp, outp);
+  if (pipe (msgp))
+    fail (errno, args, env, inp, outp, errp);
+  if (fcntl (msgp[1], F_SETFD, FD_CLOEXEC))
+    fail (errno, args, env, inp, outp, errp, msgp);
 
   // We create the streams before forking.  Otherwise if we had an
   // error while creating the streams we would have run the child with
   // no way to communicate with it.
-  errorStream = new FileInputStream (new FileDescriptor (errp[0]));
-  inputStream = new FileInputStream (new FileDescriptor (inp[0]));
-  outputStream = new FileOutputStream (new FileDescriptor (outp[1]));
+  try
+    {
+      errorStream = new FileInputStream (new FileDescriptor (errp[0]));
+      inputStream = new FileInputStream (new FileDescriptor (inp[0]));
+      outputStream = new FileOutputStream (new FileDescriptor (outp[1]));
+    }
+  catch (java::lang::Throwable *t)
+    {
+      fail (0, args, env, inp, outp, errp, msgp, t);
+    }
 
   // We don't use vfork() because that would cause the local
   // environment to be set by the child.
   if ((pid = (jlong) fork ()) == -1)
-    goto ioerror;
+    fail (errno, args, env, inp, outp, errp, msgp);
 
   if (pid == 0)
     {
@@ -190,10 +259,13 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       close (errp[1]);
       close (outp[0]);
       close (outp[1]);
+      close (msgp[0]);
 
       execvp (args[0], args);
-      // FIXME: should throw an IOException if execvp() fails. Not trivial,
-      // because _Jv_Throw won't work from child process
+
+      // Send the parent notification that the exec failed.
+      char c = errno;
+      write (msgp[1], &c, 1);
       _exit (127);
     }
 
@@ -202,6 +274,17 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   close (outp[0]);
   close (inp[1]);
   close (errp[1]);
+  close (msgp[1]);
+
+  char c;
+  int r = read (msgp[0], &c, 1);
+  if (r == -1)
+    fail (errno, args, env, inp, outp, errp, msgp);
+  else if (r != 0)
+    fail (c, args, env, inp, outp, errp, msgp);
+
+  close (msgp[0]);
+  cleanup (args, env);
 
   fcntl (outp[1], F_SETFD, 1);
   fcntl (inp[0], F_SETFD, 1);

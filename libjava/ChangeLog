@@ -1,3 +1,11 @@
+2000-09-06  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR java.lang/339:
+	* java/lang/natPosixProcess.cc (fail): New function.
+	(cleanup): New function.
+	(startProcess): Use them.  Create pipe so child can communicate
+	exec failure back to parent.
+
 2000-09-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/net/natPlainDatagramSocketImpl.cc: Change various `JvThrow'
@@ -7,7 +15,7 @@
 	* java/net/natPlainSocketImpl.cc: Change various `JvThrow' calls to 
 	`throw'.
 	* java/net/natInetAdress.cc: Ditto.
-	
+
 	* java/net/natPlainDatagramSocketImpl.cc (mcastGrp): Fix typo.
 
 2000-09-05  Tom Tromey  <tromey@cygnus.com>
