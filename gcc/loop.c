@@ -7300,7 +7300,7 @@ insert_bct (loop_start, loop_end)
      This check is repeated from analyze_loop_iterations (),
      because unrolling might have changed that.  */
   if (GET_CODE (PREV_INSN (loop_end)) != JUMP_INSN
-      || !is_condjump_p (PREV_INSN (loop_end))) {
+      || !condjump_p (PREV_INSN (loop_end))) {
     if (loop_dump_stream)
       fprintf (loop_dump_stream,
 	      "insert_bct: not instrumenting BCT because of invalid branch\n");
