@@ -426,8 +426,8 @@ static void gen_insn		PROTO((rtx));
 static void gen_delay		PROTO((rtx));
 static void gen_unit		PROTO((rtx));
 static void write_test_expr	PROTO((rtx, int));
-static int max_attr_value	PROTO((rtx));
-static int or_attr_value	PROTO((rtx));
+static int max_attr_value	PROTO((rtx, int*));
+static int or_attr_value	PROTO((rtx, int*));
 static void walk_attr_value	PROTO((rtx));
 static void write_attr_get	PROTO((struct attr_desc *));
 static rtx eliminate_known_true PROTO((rtx, rtx, int, int));
@@ -1083,7 +1083,7 @@ check_attr_value (exp, attr)
 	fatal ("CONST_INT not valid for non-numeric `%s' attribute",
 	       attr->name);
 
-      if (INTVAL (exp) < 0)
+      if (INTVAL (exp) < 0 && ! attr->negative_ok)
 	fatal ("Negative numeric value specified for `%s' attribute",
 	       attr->name);
 
@@ -1123,6 +1123,16 @@ check_attr_value (exp, attr)
       XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
       break;
 
+    case PLUS:
+    case MINUS:
+    case MULT:
+    case DIV:
+    case MOD:
+      if (attr && !attr->is_numeric)
+	fatal ("Invalid operation `%s' for non-numeric attribute value",
+	       GET_RTX_NAME (GET_CODE (exp)));
+      /* FALLTHRU */
+
     case IOR:
     case AND:
       XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
@@ -1148,12 +1158,27 @@ check_attr_value (exp, attr)
       XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
       break;
 
+    case ATTR:
+      {
+	struct attr_desc *attr2 = find_attr (XSTR (exp, 0), 0);
+	if (attr2 == NULL)
+	  fatal ("Unknown attribute `%s' in ATTR", XSTR (exp, 0));
+	else if ((attr && attr->is_const) && ! attr2->is_const)
+	  fatal ("Non-constant attribute `%s' referenced from `%s'",
+		 XSTR (exp, 0), attr->name);
+	else if (attr 
+		 && (attr->is_numeric != attr2->is_numeric
+		     || (! attr->negative_ok && attr2->negative_ok)))
+	  fatal ("Numeric attribute mismatch calling `%s' from `%s'",
+		 XSTR (exp, 0), attr->name);
+      }
+      break;
+
     case SYMBOL_REF:
-      if (attr && attr->is_const)
-	/* A constant SYMBOL_REF is valid as a constant attribute test and
-	   is expanded later by make_canonical into a COND.  */
-	return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
-      /* Otherwise, fall through...  */
+      /* A constant SYMBOL_REF is valid as a constant attribute test and
+         is expanded later by make_canonical into a COND.  In a non-constant
+         attribute test, it is left be.  */
+      return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 
     default:
       fatal ("Invalid operation `%s' for attribute value",
@@ -2101,7 +2126,10 @@ expand_units ()
 	    }
 
 	  /* Record MAX (BLOCKAGE (*,*)).  */
-	  unit->max_blockage = max_attr_value (max_blockage);
+	  {
+	    int unknown;
+	    unit->max_blockage = max_attr_value (max_blockage, &unknown);
+	  }
 
 	  /* See if the upper and lower bounds of BLOCKAGE (E,*) are the
 	     same.  If so, the blockage function carries no additional
@@ -2186,9 +2214,14 @@ simplify_knowing (exp, known_true)
 {
   if (GET_CODE (exp) != CONST_STRING)
     {
-      exp = attr_rtx (IF_THEN_ELSE, known_true, exp,
-		      make_numeric_value (max_attr_value (exp)));
-      exp = simplify_by_exploding (exp);
+      int unknown, max;
+      max = max_attr_value (exp, &unknown);
+      if (! unknown)
+	{
+	  exp = attr_rtx (IF_THEN_ELSE, known_true, exp,
+		          make_numeric_value (max));
+          exp = simplify_by_exploding (exp);
+	}
     }
   return exp;
 }
@@ -2458,7 +2491,8 @@ static rtx
 max_fn (exp)
      rtx exp;
 {
-  return make_numeric_value (max_attr_value (exp));
+  int unknown;
+  return make_numeric_value (max_attr_value (exp, &unknown));
 }
 
 static void
@@ -2468,16 +2502,23 @@ write_length_unit_log ()
   struct attr_value *av;
   struct insn_ent *ie;
   unsigned int length_unit_log, length_or;
+  int unknown = 0;
 
   if (length_attr == 0)
     return;
-  length_or = or_attr_value (length_attr->default_val->value);
-    for (av = length_attr->first_value; av; av = av->next)
-      for (ie = av->first_insn; ie; ie = ie->next)
-	length_or |= or_attr_value (av->value);
-  length_or = ~length_or;
-  for (length_unit_log = 0; length_or & 1; length_or >>= 1)
-    length_unit_log++;
+  length_or = or_attr_value (length_attr->default_val->value, &unknown);
+  for (av = length_attr->first_value; av; av = av->next)
+    for (ie = av->first_insn; ie; ie = ie->next)
+      length_or |= or_attr_value (av->value, &unknown);
+
+  if (unknown)
+    length_unit_log = 0;
+  else
+    {
+      length_or = ~length_or;
+      for (length_unit_log = 0; length_or & 1; length_or >>= 1)
+        length_unit_log++;
+    }
   printf ("int length_unit_log = %u;\n", length_unit_log);
 }
 
@@ -3703,6 +3744,8 @@ find_and_mark_used_attributes (exp, terms, nterms)
 	  *nterms += 1;
 	  MEM_VOLATILE_P (exp) = 1;
 	}
+      return 1;
+
     case CONST_STRING:
     case CONST_INT:
       return 1;
@@ -4106,7 +4149,7 @@ gen_attr (exp)
     fatal ("Duplicate definition for `%s' attribute", attr->name);
 
   if (*XSTR (exp, 1) == '\0')
-      attr->is_numeric = 1;
+    attr->is_numeric = 1;
   else
     {
       name_ptr = XSTR (exp, 1);
@@ -4652,79 +4695,82 @@ write_test_expr (exp, flags)
 }
 
 /* Given an attribute value, return the maximum CONST_STRING argument
-   encountered.  It is assumed that they are all numeric.  */
+   encountered.  Set *UNKNOWNP and return INT_MAX if the value is unknown.  */
 
 static int
-max_attr_value (exp)
+max_attr_value (exp, unknownp)
      rtx exp;
+     int *unknownp;
 {
-  int current_max = 0;
-  int n;
-  int i;
+  int current_max;
+  int i, n;
 
-  if (GET_CODE (exp) == CONST_STRING)
-    return atoi (XSTR (exp, 0));
-
-  else if (GET_CODE (exp) == COND)
+  switch (GET_CODE (exp))
     {
+    case CONST_STRING:
+      current_max = atoi (XSTR (exp, 0));
+      break;
+
+    case COND:
+      current_max = max_attr_value (XEXP (exp, 1), unknownp);
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
-	  n = max_attr_value (XVECEXP (exp, 0, i + 1));
+	  n = max_attr_value (XVECEXP (exp, 0, i + 1), unknownp);
 	  if (n > current_max)
 	    current_max = n;
 	}
+      break;
 
-      n = max_attr_value (XEXP (exp, 1));
+    case IF_THEN_ELSE:
+      current_max = max_attr_value (XEXP (exp, 1), unknownp);
+      n = max_attr_value (XEXP (exp, 2), unknownp);
       if (n > current_max)
 	current_max = n;
-    }
+      break;
 
-  else if (GET_CODE (exp) == IF_THEN_ELSE)
-    {
-      current_max = max_attr_value (XEXP (exp, 1));
-      n = max_attr_value (XEXP (exp, 2));
-      if (n > current_max)
-	current_max = n;
+    default:
+      *unknownp = 1;
+      current_max = INT_MAX;
+      break;
     }
-
-  else
-    abort ();
 
   return current_max;
 }
 
 /* Given an attribute value, return the result of ORing together all
-   CONST_STRING arguments encountered.  It is assumed that they are
-   all numeric.  */
+   CONST_STRING arguments encountered.  Set *UNKNOWNP and return -1
+   if the numeric value is not known.  */
 
 static int
-or_attr_value (exp)
+or_attr_value (exp, unknownp)
      rtx exp;
+     int *unknownp;
 {
-  int current_or = 0;
+  int current_or;
   int i;
 
-  if (GET_CODE (exp) == CONST_STRING)
-    return atoi (XSTR (exp, 0));
-
-  else if (GET_CODE (exp) == COND)
+  switch (GET_CODE (exp))
     {
+    case CONST_STRING:
+      current_or = atoi (XSTR (exp, 0));
+      break;
+
+    case COND:
+      current_or = or_attr_value (XEXP (exp, 1), unknownp);
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
-	{
-	  current_or |= or_attr_value (XVECEXP (exp, 0, i + 1));
-	}
+	current_or |= or_attr_value (XVECEXP (exp, 0, i + 1), unknownp);
+      break;
 
-      current_or |= or_attr_value (XEXP (exp, 1));
+    case IF_THEN_ELSE:
+      current_or = or_attr_value (XEXP (exp, 1), unknownp);
+      current_or |= or_attr_value (XEXP (exp, 2), unknownp);
+      break;
+
+    default:
+      *unknownp = 1;
+      current_or = -1;
+      break;
     }
-
-  else if (GET_CODE (exp) == IF_THEN_ELSE)
-    {
-      current_or = or_attr_value (XEXP (exp, 1));
-      current_or |= or_attr_value (XEXP (exp, 2));
-    }
-
-  else
-    abort ();
 
   return current_or;
 }
@@ -4928,14 +4974,7 @@ write_attr_set (attr, indent, value, prefix, suffix, known_true,
      rtx known_true;
      int insn_code, insn_index;
 {
-  if (GET_CODE (value) == CONST_STRING)
-    {
-      write_indent (indent);
-      printf ("%s ", prefix);
-      write_attr_value (attr, value);
-      printf ("%s\n", suffix);
-    }
-  else if (GET_CODE (value) == COND)
+  if (GET_CODE (value) == COND)
     {
       /* Assume the default value will be the default of the COND unless we
 	 find an always true expression.  */
@@ -5009,7 +5048,12 @@ write_attr_set (attr, indent, value, prefix, suffix, known_true,
 	}
     }
   else
-    abort ();
+    {
+      write_indent (indent);
+      printf ("%s ", prefix);
+      write_attr_value (attr, value);
+      printf ("%s\n", suffix);
+    }
 }
 
 /* Write out the computation for one attribute value.  */
@@ -5244,10 +5288,53 @@ write_attr_value (attr, value)
      struct attr_desc *attr;
      rtx value;
 {
-  if (GET_CODE (value) != CONST_STRING)
-    abort ();
+  int op;
 
-  write_attr_valueq (attr, XSTR (value, 0));
+  switch (GET_CODE (value))
+    {
+    case CONST_STRING:
+      write_attr_valueq (attr, XSTR (value, 0));
+      break;
+
+    case SYMBOL_REF:
+      fputs (XSTR (value, 0), stdout);
+      break;
+
+    case ATTR:
+      {
+	struct attr_desc *attr2 = find_attr (XSTR (value, 0), 0);
+	printf ("get_attr_%s (%s)", attr2->name, 
+		(attr2->is_const ? "" : "insn"));
+      }
+      break;
+
+    case PLUS:
+      op = '+';
+      goto do_operator;
+    case MINUS:
+      op = '-';
+      goto do_operator;
+    case MULT:
+      op = '*';
+      goto do_operator;
+    case DIV:
+      op = '/';
+      goto do_operator;
+    case MOD:
+      op = '%';
+      goto do_operator;
+
+    do_operator:
+      write_attr_value (attr, XEXP (value, 0));
+      putchar (' ');
+      putchar (op);
+      putchar (' ');
+      write_attr_value (attr, XEXP (value, 1));
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 static void

@@ -1,3 +1,17 @@
+Sun Feb 21 17:11:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genattrtab.c (check_attr_value): Allow negative const_int if
+	negative_ok.  Accept integral arithmetic operators.  Accept
+	direct references to other attributes.  Accept symbol_ref in
+	non-constant attributes.
+	(max_attr_value): Add new argument `unknownp'.  Update all callers.
+	(or_attr_value): Likewise.
+	(simplify_knowing): Don't optimize if max_attr_value unknown.
+	(write_length_unit_log): Likewise with or_attr_value.
+	(find_and_mark_used_attributes): Don't fallthru case.
+	(write_attr_set): Pass thru all non-cond expressions.
+	(write_attr_value): Handle symbol_ref, attr, and arithmetic.
+
 Sun Feb 21 13:16:44 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* regmove.c (discover_flags_reg): Use word_mode instead of SImode.
