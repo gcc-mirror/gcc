@@ -1,3 +1,24 @@
+2004-03-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-incpath.c, c-incpath.h, c-pch.c, c.opt, cppexp.c,
+	et-forest.h, genattr.c, ggc-none.c, hosthooks-def.h,
+	hosthooks.h, params.h, ra-colorize.c, web.c,
+	config/darwin-c.c, config/alpha/freebsd.h, config/arm/pe.c,
+	config/avr/avr-protos.h, config/avr/avr.md,
+	config/fr30/fr30-protos.h, config/fr30/fr30.md,
+	config/h8300/fixunssfsi.c, config/i386/darwin.h,
+	config/i386/freebsd.h, config/i386/freebsd64.h,
+	config/ia64/hpux.h, config/ia64/unwind-ia64.c,
+	config/ip2k/libgcc.S, config/m32r/xm-m32r.h,
+	config/mmix/mmix-modes.def, config/ns32k/netbsd.h,
+	config/ns32k/ns32k.md, config/pa/pa64-hpux.h,
+	config/pa/pa64-regs.h, config/rs6000/aix41.h,
+	config/rs6000/aix43.h, config/rs6000/host-darwin.c,
+	config/sparc/aout.h, config/sparc/freebsd.h,
+	config/sparc/litecoff.h, config/vax/vax-protos.h,
+	doc/hostconfig.texi, doc/include/gcc-common.texi: Update
+	copyright.
+
 2004-03-15  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb_expand_prologue): Tie prologue insns to fp.

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for SPARC using a.out.
-   Copyright (C) 1994, 1996, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GCC.

@@ -1,3 +1,7 @@
+2004-03-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-lang.c, ptree.c: Update copyright.
+
 2004-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14550

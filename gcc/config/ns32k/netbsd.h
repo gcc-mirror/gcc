@@ -1,5 +1,5 @@
 /* Configuration for a ns32532 running NetBSD as the target machine.
-   Copyright (C) 1988, 1994, 1995, 1996, 1998, 2002
+   Copyright (C) 1988, 1994, 1995, 1996, 1998, 2002, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
