@@ -1,3 +1,56 @@
+2003-02-31  Aldy Hernandez  <aldyh@redhat.com>
+
+        * testsuite/gcc.c-torture/execute/simd-3.c: New.
+
+        * expr.c (expand_expr): Handle VECTOR_CST.
+        (const_vector_from_tree): New.
+
+        * varasm.c (output_constant): Handle VECTOR_CST.
+
+        * c-typeck.c (digest_init): Build a vector constant from a
+        VECTOR_TYPE.
+
+        * config/rs6000/rs6000.c: Remove prototype for
+        easy_vector_constant.
+        (easy_vector_constant): Add mode parameter.  Rewrite to handle
+        more easy constants.
+        (rs6000_emit_move): Pass mode to easy_vector_constant.
+        Call emit_easy_vector_insn for SPE V2SI vector constant moves.
+        (emit_easy_vector_insn): New.
+        (easy_vector_same): New.
+        (EASY_VECTOR_15): New macro.
+        (EASY_VECTOR_15_ADD_SELF): New macro.
+        (bdesc_2arg): Rename to xorv2si3.
+        (easy_vector_constant_add_self): New.
+        (input_operand): Allow vector constants.
+
+        * config/rs6000/rs6000.h (PREDICATE_CODES): Add
+        easy_vector_constant, easy_vector_constant_add_self.
+        (EXTRA_CONSTRAINT): Add 'W'.
+
+        * config/rs6000/rs6000-protos.h: Add prototype for
+        easy_vector_constant, emit_easy_vector_insn.
+
+        * config/rs6000/altivec.md (xorv8hi3): New.
+        (xorv16qi3): New.
+        Remove all _const0 patterns.
+        (movv4si_internal): Rewrite to use code.  Add vector constant to
+        vector alternative.  Add splitter.
+        (movv8hi_internal): Same.
+        (movv16qi_internal): Same.
+        (movv4sf_internal): Same.
+        Change the unspecs for vspltis* to use constants.
+
+        * config/rs6000/spe.md ("xorv4hi3"): New.
+        ("spe_evxor"): Rename to xorv2si3.
+        ("xorv1di3"): New.
+        Remove all _const0 patterns.
+        (movv2si_internal): Rewrite to use code.  Add vector constant to
+        alternatives.  Add splitter.
+        (movv4hi_internal): Add vector constant to alternatives.
+        (movv1di_internal): Same.
+        (movv2sf_internal): Same.
+
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c/9936

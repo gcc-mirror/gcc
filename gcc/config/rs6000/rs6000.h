@@ -1292,6 +1292,7 @@ enum reg_class
    'S' is a constant that can be placed into a 64-bit mask operand
    'T' is a constant that can be placed into a 32-bit mask operand
    'U' is for V.4 small data references.
+   'W' is a vector constant that can be easily generated (no mem refs).
    't' is for AND masks that can be performed by two rldic{l,r} insns.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
@@ -1305,6 +1306,7 @@ enum reg_class
 		   && (fixed_regs[CR0_REGNO]				\
 		       || !logical_operand (OP, DImode))		\
 		   && !mask64_operand (OP, DImode))			\
+   : (C) == 'W' ? (easy_vector_constant (OP, GET_MODE (OP)))		\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -2740,6 +2742,8 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},			   \
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},			   \
   {"easy_fp_constant", {CONST_DOUBLE}},					   \
+  {"easy_vector_constant", {CONST_VECTOR}},				   \
+  {"easy_vector_constant_add_self", {CONST_VECTOR}},			   \
   {"zero_fp_constant", {CONST_DOUBLE}},					   \
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},				   \
   {"lwa_operand", {SUBREG, MEM, REG}},					   \

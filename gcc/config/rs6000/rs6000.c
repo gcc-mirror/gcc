@@ -55,6 +55,13 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NO_PROTOTYPE 0
 #endif
 
+#define EASY_VECTOR_15(n, x, y) ((n) >= -16 && (n) <= 15 \
+				 && easy_vector_same (x, y))
+
+#define EASY_VECTOR_15_ADD_SELF(n, x, y) ((n) >= 0x10 && (n) <= 0x1e \
+                                          && !((n) & 1)              \
+					  && easy_vector_same (x, y))
+
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
@@ -266,7 +273,8 @@ static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
 static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
-static int easy_vector_constant PARAMS ((rtx));
+int easy_vector_constant PARAMS ((rtx, enum machine_mode));
+static int easy_vector_same PARAMS ((rtx, enum machine_mode));
 static bool is_ev64_opaque_type PARAMS ((tree));
 static rtx rs6000_dwarf_register_span PARAMS ((rtx));
 
@@ -1416,48 +1424,149 @@ easy_fp_constant (op, mode)
     abort ();
 }
 
-/* Return 1 if the operand is a CONST_INT and can be put into a
-   register with one instruction.  */
+/* Return non zero if all elements of a vector have the same value.  */
 
 static int
-easy_vector_constant (op)
+easy_vector_same (op, mode)
      rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  rtx elt;
-  int units, i;
-
-  if (GET_CODE (op) != CONST_VECTOR)
-    return 0;
+  int units, i, cst;
 
   units = CONST_VECTOR_NUNITS (op);
 
-  /* We can generate 0 easily.  Look for that.  */
-  for (i = 0; i < units; ++i)
+  cst = INTVAL (CONST_VECTOR_ELT (op, 0));
+  for (i = 1; i < units; ++i)
+    if (INTVAL (CONST_VECTOR_ELT (op, i)) != cst)
+      break;
+  if (i == units)
+    return 1;
+  return 0;
+}
+
+/* Return 1 if the operand is a CONST_INT and can be put into a
+   register without using memory.  */
+
+int
+easy_vector_constant (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  int cst, cst2;
+
+  if (GET_CODE (op) != CONST_VECTOR
+      || (!TARGET_ALTIVEC
+	  && !TARGET_SPE))
+    return 0;
+
+  if (zero_constant (op, mode)
+      && ((TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (mode))
+	  || (TARGET_SPE && SPE_VECTOR_MODE (mode))))
+    return 1;
+
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+    return 0;
+
+  cst  = INTVAL (CONST_VECTOR_ELT (op, 0));
+  cst2 = INTVAL (CONST_VECTOR_ELT (op, 1));
+
+  /* Limit SPE vectors to 15 bits signed.  These we can generate with:
+       li r0, CONSTANT1
+       evmergelo r0, r0, r0
+       li r0, CONSTANT2
+
+     I don't know how efficient it would be to allow bigger constants,
+     considering we'll have an extra 'ori' for every 'li'.  I doubt 5
+     instructions is better than a 64-bit memory load, but I don't
+     have the e500 timing specs.  */
+  if (TARGET_SPE && mode == V2SImode
+      && cst  >= -0x7fff && cst <= 0x7fff
+      && cst2 >= -0x7fff && cst <= 0x7fff)
+    return 1;
+
+  if (TARGET_ALTIVEC && EASY_VECTOR_15 (cst, op, mode))
+    return 1;
+
+  if (TARGET_ALTIVEC && EASY_VECTOR_15_ADD_SELF (cst, op, mode))
+    return 1;
+
+  return 0;
+}
+
+/* Same as easy_vector_constant but only for EASY_VECTOR_15_ADD_SELF.  */
+
+int
+easy_vector_constant_add_self (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  int cst;
+
+  if (!easy_vector_constant (op, mode))
+    return 0;
+
+  cst = INTVAL (CONST_VECTOR_ELT (op, 0));
+
+  return TARGET_ALTIVEC && EASY_VECTOR_15_ADD_SELF (cst, op, mode);
+}
+
+const char *
+output_vec_const_move (operands)
+     rtx *operands;
+{
+  int cst, cst2;
+  enum machine_mode mode;
+  rtx dest, vec;
+
+  dest = operands[0];
+  vec = operands[1];
+
+  cst = INTVAL (CONST_VECTOR_ELT (vec, 0));
+  cst2 = INTVAL (CONST_VECTOR_ELT (vec, 1));
+  mode = GET_MODE (dest);
+
+  if (TARGET_ALTIVEC)
     {
-      elt = CONST_VECTOR_ELT (op, i);
-
-      /* We could probably simplify this by just checking for equality
-	 with CONST0_RTX for the current mode, but let's be safe
-	 instead.  */
-
-      switch (GET_CODE (elt))
+      if (zero_constant (vec, mode))
+	return "vxor %0,%0,%0";
+      else if (EASY_VECTOR_15 (cst, vec, mode))
 	{
-	case CONST_INT:
-	  if (INTVAL (elt) != 0)
-	    return 0;
-	  break;
-	case CONST_DOUBLE:
-	  if (CONST_DOUBLE_LOW (elt) != 0 || CONST_DOUBLE_HIGH (elt) != 0)
-	    return 0;
-	  break;
-	default:
-	  return 0;
+	  operands[1] = GEN_INT (cst);
+	  switch (mode)
+	    {
+	    case V4SImode:
+	      return "vspltisw %0,%1";
+	    case V8HImode:
+	      return "vspltish %0,%1";
+	    case V16QImode:
+	      return "vspltisb %0,%1";
+	    default:
+	      abort ();
+	    }
 	}
+      else if (EASY_VECTOR_15_ADD_SELF (cst, vec, mode))
+	return "#";
+      else
+	abort ();
     }
 
-  /* We could probably generate a few other constants trivially, but
-     gcc doesn't generate them yet.  FIXME later.  */
-  return 1;
+  if (TARGET_SPE)
+    {
+      /* Vector constant 0 is handled as a splitter of V2SI, and in the
+	 pattern of V1DI, V4HI, and V2SF.
+
+	 FIXME: We should probabl return # and add post reload
+	 splitters for these, but this way is so easy ;-).
+      */
+      operands[1] = GEN_INT (cst);
+      operands[2] = GEN_INT (cst2);
+      if (cst == cst2)
+	return "li %0,%1\n\tevmergelo %0,%0,%0";
+      else
+	return "li %0,%1\n\tevmergelo %0,%0,%0\n\tli %0,%2";
+    }
+
+  abort ();
 }
 
 /* Return 1 if the operand is the constant 0.  This works for scalars
@@ -1988,6 +2097,11 @@ input_operand (op, mode)
   if (GET_MODE_CLASS (mode) == MODE_INT
       && (GET_CODE (op) == CONST_INT
 	  || GET_CODE (op) == CONST_DOUBLE))
+    return 1;
+
+  /* Allow easy vector constants.  */
+  if (GET_CODE (op) == CONST_VECTOR
+      && easy_vector_constant (op, mode))
     return 1;
 
   /* For floating-point or multi-word mode, the only remaining valid type
@@ -2744,7 +2858,7 @@ rs6000_emit_move (dest, source, mode)
     case V2SImode:
     case V1DImode:
       if (CONSTANT_P (operands[1])
-	  && !easy_vector_constant (operands[1]))
+	  && !easy_vector_constant (operands[1], mode))
 	operands[1] = force_const_mem (mode, operands[1]);
       break;
       

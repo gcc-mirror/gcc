@@ -2147,36 +2147,6 @@
   [(set_attr "type" "vecstore")
    (set_attr  "length" "4")])
 
-;; SPE vector clears
-
-(define_insn "*movv2si_const0"
-  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-	(match_operand:V2SI 1 "zero_constant" ""))]
-  "TARGET_SPE"
-  "evxor %0,%0,%0"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*movv2sf_const0"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
-	(match_operand:V2SF 1 "zero_constant" ""))]
-  "TARGET_SPE"
-  "evxor %0,%0,%0"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*movv4hi_const0"
-  [(set (match_operand:V4HI 0 "gpc_reg_operand" "=r")
-	(match_operand:V4HI 1 "zero_constant" ""))]
-  "TARGET_SPE"
-  "evxor %0,%0,%0"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*movv1di_const0"
-  [(set (match_operand:V1DI 0 "gpc_reg_operand" "=r")
-	(match_operand:V1DI 1 "zero_constant" ""))]
-  "TARGET_SPE"
-  "evxor %0,%0,%0"
-  [(set_attr "type" "vecsimple")])
-
 ;; Vector move instructions.
 
 (define_expand "movv2si"
@@ -2185,16 +2155,31 @@
   "TARGET_SPE"
   "{ rs6000_emit_move (operands[0], operands[1], V2SImode); DONE; }")
 
-
 (define_insn "*movv2si_internal"
-  [(set (match_operand:V2SI 0 "nonimmediate_operand" "=m,r,r")
-	(match_operand:V2SI 1 "input_operand" "r,m,r"))]
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "=m,r,r,r")
+	(match_operand:V2SI 1 "input_operand" "r,m,r,W"))]
   "TARGET_SPE"
-  "@
-   evstdd%X0 %1,%y0
-   evldd%X1 %0,%y1
-   evor %0,%1,%1"
-  [(set_attr "type" "vecload,vecload,vecsimple")])
+  "*
+{
+  switch (which_alternative)
+    {
+    case 0: return \"evstdd%X0 %1,%y0\";
+    case 1: return \"evldd%X1 %0,%y1\";
+    case 2: return \"evor %0,%1,%1\";
+    case 3: return output_vec_const_move (operands);
+    default: abort ();
+    }
+}"
+  [(set_attr "type" "vecload,vecstore,*,*")
+   (set_attr "length" "*,*,*,12")])
+
+(define_split
+  [(set (match_operand:V2SI 0 "register_operand" "")
+	(match_operand:V2SI 1 "zero_constant" ""))]
+  "TARGET_SPE && reload_completed"
+  [(set (match_dup 0)
+	(xor:V2SI (match_dup 0) (match_dup 0)))]
+  "")
 
 (define_expand "movv1di"
   [(set (match_operand:V1DI 0 "nonimmediate_operand" "")
@@ -2203,14 +2188,16 @@
   "{ rs6000_emit_move (operands[0], operands[1], V1DImode); DONE; }")
 
 (define_insn "*movv1di_internal"
-  [(set (match_operand:V1DI 0 "nonimmediate_operand" "=m,r,r")
-	(match_operand:V1DI 1 "input_operand" "r,m,r"))]
+  [(set (match_operand:V1DI 0 "nonimmediate_operand" "=m,r,r,r")
+	(match_operand:V1DI 1 "input_operand" "r,m,r,W"))]
   "TARGET_SPE"
   "@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
-   evor %0,%1,%1"
-  [(set_attr "type" "vecload,vecload,vecsimple")])
+   evor %0,%1,%1
+   evxor %0,%0,%0"
+  [(set_attr "type" "vecload,vecstore,*,*")
+   (set_attr "length" "*,*,*,*")])
 
 (define_expand "movv4hi"
   [(set (match_operand:V4HI 0 "nonimmediate_operand" "")
@@ -2226,7 +2213,7 @@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
    evor %0,%1,%1"
-  [(set_attr "type" "vecload,vecload,vecsimple")])
+  [(set_attr "type" "vecload")])
 
 (define_expand "movv2sf"
   [(set (match_operand:V2SF 0 "nonimmediate_operand" "")
@@ -2235,14 +2222,16 @@
   "{ rs6000_emit_move (operands[0], operands[1], V2SFmode); DONE; }")
 
 (define_insn "*movv2sf_internal"
-  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=m,r,r")
-	(match_operand:V2SF 1 "input_operand" "r,m,r"))]
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=m,r,r,r")
+	(match_operand:V2SF 1 "input_operand" "r,m,r,W"))]
   "TARGET_SPE"
   "@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
-   evor %0,%1,%1"
-  [(set_attr "type" "vecload,vecload,vecsimple")])
+   evor %0,%1,%1
+   evxor %0,%0,%0"
+  [(set_attr "type" "vecload,vecstore,*,*")
+   (set_attr "length" "*,*,*,*")])
 
 (define_insn "spe_evmwhssfaa"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
