@@ -169,6 +169,10 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
+# Temporary note: Java hackers: add `libjava' at the end of this list
+# for a merged tree build. This limitation and this comment will go
+# away when libjava will safely build without `--disable-new-gxx-abi'
+# (Soon.)
 TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib libio librx libstdc++ libg++ winsup opcodes bsp libstub cygmon libf2c libchill libobjc
 
 # Target libraries are put under this directory:
@@ -485,6 +489,7 @@ ALL_MODULES = \
 	all-diff \
 	all-dosutils \
 	all-etc \
+	all-fastjar \
 	all-fileutils \
 	all-findutils \
 	all-find \
@@ -545,6 +550,7 @@ ALL_MODULES = \
 NATIVE_CHECK_MODULES = \
 	check-bison \
 	check-byacc \
+	check-fastjar \
 	check-flex \
 	check-zip
 
@@ -636,6 +642,7 @@ INSTALL_MODULES = \
 	install-diff \
 	install-dosutils \
 	install-etc \
+	install-fastjar \
 	install-fileutils \
 	install-findutils \
 	install-find \
@@ -838,6 +845,7 @@ CLEAN_MODULES = \
 	clean-diff \
 	clean-dosutils \
 	clean-etc \
+	clean-fastjar \
 	clean-fileutils \
 	clean-findutils \
 	clean-find \
@@ -1615,7 +1623,7 @@ all-libiberty:
 configure-target-libffi: $(ALL_GCC_C) 
 all-target-libffi: configure-target-libffi
 configure-target-libjava: $(ALL_GCC_CXX) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-libffi
-all-target-libjava: configure-target-libjava all-zip all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
+all-target-libjava: configure-target-libjava all-fastjar all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
 configure-target-librx: $(ALL_GCC_C)
 all-target-librx: configure-target-librx
 configure-target-libstdc++: $(ALL_GCC_C)
@@ -1671,6 +1679,9 @@ all-zip:
 all-zlib:
 configure-target-zlib: $(ALL_GCC_C)
 all-target-zlib: configure-target-zlib
+all-fastjar: all-zlib
+configure-target-fastjar: configure-target-zlib
+all-target-fastjar: configure-target-fastjar all-target-zlib
 configure-target-libiberty: $(ALL_GCC_C)
 all-target-libiberty: configure-target-libiberty
 all-target: $(ALL_TARGET_MODULES)

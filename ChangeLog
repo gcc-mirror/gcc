@@ -1,3 +1,13 @@
+2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.in (TARGET_CONFIGDIRS): Added note about libjava.
+	(ALL_MODULES): Added fastjar.
+	(NATIVE_CHECK_MODULES, INSTALL_MODULES, CLEAN_MODULES): Likewise.
+	(all-target-libjava): all-fastjar replaces all-zip.
+	(all-fastjar): Added.
+	(configure-target-fastjar, all-target-fastjar): Likewise.
+	* configure.in (host_tools): Added fastjar.
+
 2000-12-07  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (local-distclean): Remove leftover built files.
