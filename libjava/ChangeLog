@@ -1,3 +1,8 @@
+2000-04-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* boehm.cc: (_Jv_MarkObj, _Jv_MarkArray): Cast pointers for
+	MAYBE_MARK to ptr_t, for compatibility with new GC version.
+
 2000-04-16  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/natFileDescriptorPosix.cc (open): Use mode 0666. Fix for PR
