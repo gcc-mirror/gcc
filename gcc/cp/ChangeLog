@@ -1,3 +1,11 @@
+1999-09-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* ir.texi: New file.
+
+1999-09-19  Paul Burchard <burchard@pobox.com>
+
+	* semantics.c (expand_stmt): Initialize return value.
+
 1999-09-18  Paul Burchard <burchard@pobox.com>
 
 	* gxxint.texi: G++ now implements namespaces.

@@ -2194,7 +2194,7 @@ tree
 expand_stmt (t)
      tree t;
 {
-  tree rval;
+  tree rval = NULL_TREE;
 
   while (t && t != error_mark_node)
     {
