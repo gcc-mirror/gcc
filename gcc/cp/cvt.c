@@ -130,6 +130,9 @@ cp_convert_to_pointer (type, expr, force)
       intype = TREE_TYPE (expr);
     }
 
+  if (expr == error_mark_node)
+    return error_mark_node;
+
   form = TREE_CODE (intype);
 
   if (POINTER_TYPE_P (intype))
