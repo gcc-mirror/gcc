@@ -1380,7 +1380,7 @@ push_reload (in, out, inloc, outloc, class,
       reload_reg_rtx[i] = find_dummy_reload (in, out, inloc, outloc,
 					     inmode, outmode,
 					     reload_reg_class[i], i,
-					     reload_earlyclobbers[i] != NULL);
+					     earlyclobber_operand_p (out));
 
       /* If the outgoing register already contains the same value
 	 as the incoming one, we can dispense with loading it.
