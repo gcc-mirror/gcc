@@ -6123,7 +6123,7 @@ handle_deprecated_attribute (node, name, args, flags, no_add_attrs)
    The normal mechanism to prevent duplicates is to use type_hash_canon, but
    since we want to distinguish types that are essentially identical (except
    for their debug representation), we use a local list here.  */
-static tree vector_type_node_list = 0;
+static GTY(()) tree vector_type_node_list = 0;
 
 /* Handle a "vector_size" attribute; arguments as in
    struct attribute_spec.handler.  */
