@@ -1,5 +1,11 @@
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
+	* config/mmix/mmix-protos.h (mmix_expand_builtin_va_arg): Remove.
+	* config/mmix/mmix.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+	(mmix_gimplify_va_arg_expr): Rewrite from mmix_expand_builtin_va_arg.
+	* config/mmix/mmix.h (EXPAND_BUILTIN_VA_ARG): Remove.
+	(FRAME_POINTER_REQUIRED): Use current_function_has_nonlocal_label.
+
 	* config/m32r/m32r-protos.h (m32r_va_arg): Remove.
 	* config/m32r/m32r.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
 	(m32r_gimplify_va_arg_expr): Rewrite from m32r_va_arg.
