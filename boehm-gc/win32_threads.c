@@ -447,16 +447,22 @@ static DWORD WINAPI thread_start(LPVOID arg)
     /* Clear the thread entry even if we exit with an exception.	*/
     /* This is probably pointless, since an uncaught exception is	*/
     /* supposed to result in the process being killed.			*/
+#ifndef __GNUC__
     __try {
+#endif /* __GNUC__ */
 	ret = args.start (args.param);
+#ifndef __GNUC__
     } __finally {
+#endif /* __GNUC__ */
 	LOCK();
 	args.entry->stack = 0;
 	args.entry->in_use = FALSE;
 	      /* cast away volatile qualifier */
 	BZERO((void *) &args.entry->context, sizeof(CONTEXT));
 	UNLOCK();
+#ifndef __GNUC__
     }
+#endif /* __GNUC__ */
 
     return ret;
 }
