@@ -19,8 +19,11 @@
 
 # The targets for external use include:
 # all, doc, proto, install, install-cross, install-cross-rest,
-# uninstall, TAGS, mostlyclean, clean, cleanconfig, realclean,
+# uninstall, TAGS, mostlyclean, clean, distclean, realclean,
 # stage1, stage2, stage3, stage4.
+
+# Suppress smart makes who think they know how to automake Yacc files
+.y.c:
 
 .NOEXPORT: # This tells GNU Make version 3
 	   # not to put all the variables in the environment.
@@ -84,7 +87,7 @@ OLDCC = cc
 # NOTE: -O does not work on some Unix systems!
 CCLIBFLAGS = -O
 
-# Version of ar to use when compiling libgcc1.a. 
+# Version of ar to use when compiling libgcc1.a.
 OLDAR = ar
 
 # The GCC to use for compiling libgcc2.a.  Usually the one we just built.
@@ -121,12 +124,14 @@ srcdir = .
 # Common prefix for installation directories.
 # NOTE: This directory must exist when you start installation.
 prefix = /usr/local
+# Directory in which to put host dependent programs and libraries
+exec_prefix = $(prefix)
 # Directory in which to put the executable for the command `gcc'
-bindir = $(prefix)/bin
+bindir = $(exec_prefix)/bin
 # Directory in which to put the directories used by the compiler.
-libdir = $(prefix)/lib
+libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
-libsubdir = $(libdir)/gcc/$(target)/$(version)
+libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 # Directory in which to put man pages.
@@ -143,6 +148,8 @@ CLIB=
 OBSTACK=obstack.o
 
 # Specify the rule for actually making libgcc1.a.
+# The value may be empty; that means to do absolutely nothing
+# with or for libgcc1.a.
 LIBGCC1 = libgcc1.a
 
 # Specify the rule for actually making libgcc2.a.
@@ -159,10 +166,16 @@ LIBGCC2_CFLAGS = -O2 $(GCC_CFLAGS) -g1
 # The rules for compiling them should be in the t-* file for the machine.
 EXTRA_PASSES =
 
-# List of extra executables that should be compiled for this target machine
-# that are used for linking.
+# Like EXTRA_PASSES, but these are used when linking.
+EXTRA_PROGRAMS = 
+
+# List of extra object files that should be compiled for this target machine.
 # The rules for compiling them should be in the t-* file for the machine.
 EXTRA_PARTS =
+
+# List of extra object files that should be compiled and linked with
+# compiler proper (cc1, cc1obj, cc1plus).
+EXTRA_OBJS =
 
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
@@ -189,12 +202,12 @@ GCC_PASSES=gcc cc1 cpp $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use gcc
 # to link anything.
-GCC_PARTS=$(GCC_PASSES) libgcc.a $(EXTRA_PARTS)
+GCC_PARTS=$(GCC_PASSES) libgcc.a $(EXTRA_PROGRAMS) $(EXTRA_PARTS)
 
 # Change this to empty to prevent installing limits.h.
-# Actually, this currently has no effect, 
+# Actually, this currently has no effect,
 # and if that causes no problems, it can be deleted.
-# Otherwise, it must be replaced so as to control 
+# Otherwise, it must be replaced so as to control
 # the actions of install-limits-h.
 LIMITS_H = limits.h
 
@@ -212,8 +225,12 @@ HOST_PREFIX=
 HOST_PREFIX_1=loser-
 HOST_CC=$(CC)
 HOST_CFLAGS=$(ALL_CFLAGS)
+HOST_CLIB=$(CLIB)
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
+HOST_ALLOCA=$(ALLOCA)
+HOST_MALLOC=$(MALLOC)
+HOST_OBSTACK=$(OBSTACK)
 
 # Choose the real default target.
 ALL=all.internal
@@ -227,12 +244,14 @@ INSTALL_TARGET=install-native
 # do not specify the default target.
 # The real definition is under `all.internal' (for native compilers)
 # or `all.cross' (for cross compilers).
-all: $(ALL)
+all: all.indirect
 
 # sed inserts variable overrides after the following line.
 ####
 
 # Now figure out from those variables how to compile and link.
+
+all.indirect: $(ALL)
 
 INTERNAL_CFLAGS = $(CROSS)
 
@@ -243,10 +262,10 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
 # Even if ALLOCA is set, don't use it if compiling with GCC.
-USE_ALLOCA= `if [ x"${CC}" = x"${OLDCC}" ] ; then echo ${ALLOCA}; else true; fi`
-USE_HOST_ALLOCA= `if [ x"${CC}" = x"${OLDCC}" -a x"${ALLOCA}" != x ] ; then echo ${HOST_PREFIX}${ALLOCA}; else true; fi`
-USE_HOST_MALLOC= `if [ x"${MALLOC}" != x ] ; then echo ${HOST_PREFIX}${MALLOC}; else true; fi`
-USE_HOST_OBSTACK= `if [ x"${OBSTACK}" != x ] ; then echo ${HOST_PREFIX}${OBSTACK}; else true; fi`
+USE_ALLOCA= ` case "${CC}" in "${OLDCC}") echo ${ALLOCA} ;; esac `
+USE_HOST_ALLOCA= ` case "${HOST_CC}"@"${HOST_ALLOCA}" in "${OLDCC}"@?*) echo ${HOST_PREFIX}${HOST_ALLOCA} ;; esac `
+USE_HOST_MALLOC= ` case "${HOST_MALLOC}" in ?*) echo ${HOST_PREFIX}${HOST_MALLOC} ;; esac `
+USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
 
 # Dependency on obstack, alloca, malloc or whatever library facilities
 # are not installed in the system libraries.
@@ -256,7 +275,7 @@ LIBDEPS= $(OBSTACK) $(ALLOCA) $(MALLOC)
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-HOST_LIBDEPS= $(HOST_PREFIX)$(OBSTACK) $(HOST_PREFIX)$(ALLOCA) $(HOST_PREFIX)$(MALLOC)
+HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
@@ -264,7 +283,8 @@ LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(CLIB)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
-HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC) $(CLIB)
+HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
+	    $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
@@ -313,7 +333,7 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  regclass.o local-alloc.o global-alloc.o reload.o reload1.o caller-save.o \
  insn-peep.o reorg.o sched.o final.o recog.o reg-stack.o \
  insn-recog.o insn-extract.o insn-output.o insn-emit.o \
- insn-attrtab.o aux-output.o
+ insn-attrtab.o aux-output.o xcoffout.o $(EXTRA_OBJS)
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -384,10 +404,10 @@ start.encap: native gcc $(LIBGCC1_TARGET)
 # Use this to make a GCC that will be used only to recompile GCC.
 for-bootstrap: start.encap libgcc.a
 # These can't be made, with COFF encapsulation, until after GCC can run.
-rest.encap: libgcc.a float.h
+rest.encap: libgcc.a float.h  $(EXTRA_PARTS)
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PARTS)
+native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS)
 
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1
@@ -396,9 +416,16 @@ OBJC objc: cc1obj
 OBJECTIVE-C objective-c: cc1obj
 PROTO: proto
 
+# Really, really stupid make features, such as SUN's KEEP_STATE, may force
+# a target to build even if it is up-to-date.  So we must verify that
+# config.status does not exist before failing.
 config.status:
-	@echo You must configure gcc.  Look at the INSTALL file for details.
-	@false
+	@if [ ! -f config.status ] ; then \
+	  echo You must configure gcc.  Look at the INSTALL file for details.; \
+	  false; \
+	else \
+	  true; \
+	fi
 
 compilations: ${OBJS}
 
@@ -434,8 +461,8 @@ enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
 	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. \
-	    -c enquire.c
+# Breaking this line caused a problem with one version of GNU make.
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c enquire.c
 
 # Build libgcc.a.
 # This is done in two parts because some functions, in libgcc1.c,
@@ -482,7 +509,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 # We don't use -e here because there are if statements
 # that should not make the command give up when the if condition is false.
 # Instead, we test for failure after each command where it matters.
-	for file in .. $(LIB1FUNCS_EXTRA); \
+	-for file in .. $(LIB1FUNCS_EXTRA); \
 	do \
 	  if [ x$${file} != x.. ]; then \
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
@@ -525,8 +552,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	for name in $(LIB2FUNCS); \
 	do \
 	  echo $${name}; \
-	  $(GCC_FOR_TARGET) -fstrength-reduce -O $(INCLUDES) \
-	      $(LIBGCC2_CFLAGS) -c -DL$${name} \
+	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	      $(srcdir)/libgcc2.c -o $${name}.o; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}.o; \
@@ -538,7 +564,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 # We don't use -e here because there are if statements
 # that should not make the command give up when the if condition is false.
 # Instead, we test for failure after each command where it matters.
-	for file in .. $(LIB2FUNCS_EXTRA); \
+	-for file in .. $(LIB2FUNCS_EXTRA); \
 	do \
 	  if [ x$${file} != x.. ]; then \
 	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
@@ -547,8 +573,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	      cp $${file} $${name}.s; file=$${name}.s; \
 	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	    else true; fi; \
-	    $(GCC_FOR_TARGET) -fstrength-reduce -O $(INCLUDES) \
-		$(LIBGCC2_CFLAGS) -c $${file}; \
+	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}.o; \
 	    rm -f $${name}.[so]; \
@@ -566,7 +591,10 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 libgcc.a: $(LIBGCC1) $(LIBGCC2)
 	-rm -rf tmplibgcc.a libgcc.a tmpcopy
 	mkdir tmpcopy
-	(cd tmpcopy; $(AR) x ../$(LIBGCC1))
+	-if [ x$(LIBGCC1) != x ];			\
+	then (cd tmpcopy; $(AR) x ../$(LIBGCC1));	\
+	else true;					\
+	fi
 	(cd tmpcopy; $(AR) x ../$(LIBGCC2))
 	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *.o)
 	rm -rf tmpcopy
@@ -580,13 +608,11 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 # linked using GCC on system V, for the sake of C++ constructors.
 crtbegin.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -DCRT_BEGIN \
-	  -finhibit-size-directive -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff.o crtbegin.o
+	  -finhibit-size-directive -g0 -c $(srcdir)/crtstuff.c -o crtbegin.o
 
 crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -DCRT_END \
-	  -finhibit-size-directive -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff.o crtend.o
+	  -finhibit-size-directive -g0 -c $(srcdir)/crtstuff.c -o crtend.o
 
 # Compiling object files from source files.
 
@@ -618,7 +644,7 @@ cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
   `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
 
 $(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
-	@echo expect 29 shift/reduce conflicts and 14 reduce/reduce conflicts
+	@echo expect 30 shift/reduce conflicts and 14 reduce/reduce conflicts
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
 
 cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
@@ -674,7 +700,7 @@ c-common.o : c-common.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 gcc.o: gcc.c $(CONFIG_H) gvarargs.h obstack.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
-  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
+  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
@@ -687,7 +713,8 @@ tree.o : tree.c $(CONFIG_H) $(TREE_H) gvarargs.h flags.h function.h
 print-tree.o : print-tree.c $(CONFIG_H) $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(TREE_H) function.h
 fold-const.o : fold-const.c $(CONFIG_H) $(TREE_H) flags.h 
-toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h input.h insn-attr.h
+toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h input.h \
+   insn-attr.h xcoff.h
 
 rtl.o : rtl.c $(CONFIG_H) $(RTL_H)
 
@@ -695,7 +722,7 @@ print-rtl.o : print-rtl.c $(CONFIG_H) $(RTL_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(RTL_H)
 
 varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h \
-   insn-codes.h expr.h hard-reg-set.h regs.h
+   insn-codes.h expr.h hard-reg-set.h regs.h xcoff.h
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
    recog.h output.h
@@ -712,13 +739,15 @@ explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
 optabs.o : optabs.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h expr.h recog.h
 dbxout.o : dbxout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h regs.h \
-   insn-config.h reload.h gstab.h
+   insn-config.h reload.h gstab.h xcoff.h
 sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) gsyms.h flags.h \
    insn-config.h reload.h
 dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
    insn-config.h reload.h output.h
+xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoff.h flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) flags.h gvarargs.h function.h  \
    regs.h insn-config.h insn-codes.h real.h expr.h
+getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
    insn-flags.h insn-config.h insn-codes.h expr.h real.h function.h
@@ -759,7 +788,7 @@ sched.o : sched.c $(CONFIG_H) $(RTL_H) basic-block.h regs.h hard-reg-set.h \
    flags.h insn-config.h insn-attr.h
 final.o : final.c $(CONFIG_H) $(RTL_H) gvarargs.h flags.h regs.h \
    recog.h conditions.h insn-config.h insn-attr.h real.h output.h \
-   hard-reg-set.h insn-codes.h gstab.h
+   hard-reg-set.h insn-codes.h gstab.h xcoff.h
 recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
    regs.h recog.h hard-reg-set.h flags.h insn-config.h insn-attr.h \
    insn-flags.h insn-codes.h real.h
@@ -1010,34 +1039,34 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
 # The reason we use $(libdir)/g++-include rather than using libsubdir
 # is for compatibility with the current version of libg++.
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-          -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
+	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
-          -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 proto: config.status protoize unprotoize SYSCALLS.c.X protoize.1 unprotoize.1
 
-protoize: protoize.o getopt.o getopt1.o version.o $(LIBDEPS)
+protoize: protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
-	  protoize.o getopt.o getopt1.o version.o $(LIBS) -o $@
+	  protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
 protoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-          -DGPLUSPLUS_INCLUDE_DIR=\"$(libsubdir)/g++-include\" \
+          -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
 
-unprotoize: unprotoize.o getopt.o getopt1.o version.o $(LIBDEPS)
+unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
-	  unprotoize.o getopt.o getopt1.o version.o $(LIBS) -o $@
+	  unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
 unprotoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	cp $(srcdir)/protoize.c unprotoize.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-          -DGPLUSPLUS_INCLUDE_DIR=\"$(libsubdir)/g++-include\" \
+          -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
@@ -1052,29 +1081,22 @@ getopt1.o: $(srcdir)/getopt1.c getopt.h
 protoize.1:	$(srcdir)/proto-man ./cpp
 	./cpp -traditional $(srcdir)/proto-man \
 		| grep -v '^#' \
-			| awk 'NF > 0 {print}' > tmp-protoize.1
-	mv tmp-protoize.1 protoize.1
+			| awk 'NF > 0 {print}' > tmp-proto.1
+	mv tmp-proto.1 protoize.1
 
 unprotoize.1:	$(srcdir)/proto-man ./cpp
 	./cpp -traditional -DUNPRO $(srcdir)/proto-man \
 		| grep -v '^#' \
-			| awk 'NF > 0 {print}' > tmp-unprotoize.1
-	mv tmp-unprotoize.1 unprotoize.1
+			| awk 'NF > 0 {print}' > tmp-unproto.1
+	mv tmp-unproto.1 unprotoize.1
+
+SYSCALLS.c : $(srcdir)/sys-types.h $(srcdir)/sys-protos.h
+	cat $(srcdir)/sys-types.h $(srcdir)/sys-protos.h >$@
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X:	SYSCALLS.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -fgen-aux-info -S -o /dev/null $(srcdir)/SYSCALLS.c
-
-test-protoize:
-	-rm -f tmp-protoize.*
-	cp protoize.c tmp-protoize.c
-	chmod u+w tmp-protoize.c
-	./unprotoize -N -c "-B./ -Wall -Wwrite-strings $(CFLAGS)" tmp-protoize.c
-	./protoize -N -B ./ -c "-B./ -Wall -Wwrite-strings $(CFLAGS)" tmp-protoize.c
-	@echo Expect exactly one one line difference for visit_each_hash_node.
-	-diff protoize.c tmp-protoize.c
-	-rm -f tmp-protoize.*
+	  -fgen-aux-info -S -o /dev/null SYSCALLS.c
 
 # Remake the info files.
 
@@ -1093,9 +1115,9 @@ $(srcdir)/gcc.info: $(srcdir)/gcc.texi
 # There are four levels of this:
 #   `mostlyclean', `clean', `cleanconfig' and `realclean'.
 # `mostlyclean' is useful while working on a particular type of machine.
+# It deletes most, but not all, of the files made by compilation.
 # It does not delete libgcc.a or its parts, so it won't have to be recompiled.
-# `clean' deletes what you want to delete ordinarily to save space.
-# This is most, but not all, of the files made by compilation.
+# `clean' deletes everything made by running `make all'.
 # `cleanconfig' also deletes the files made by config.
 # `realclean' also deletes everything that could be regenerated automatically.
 
@@ -1106,50 +1128,62 @@ mostlyclean:
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
 	-rm -f $(HOST_PREFIX_1)obstack.c 
 # Delete the temp files made in the course of building libgcc.a.
-	-rm -f tmplibgcc.a* tmpcopy
+	-rm -f tmplibgcc* tmpcopy
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
-	-rm -f tmp-float.h tmp-*protoize.1 tmp-gcc.xtar.Z tmp-limits.h
+	-rm -f tmp-float.h tmp-*proto.1 tmp-gcc.xtar.Z tmp-limits.h gccnew
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
-	-rm -f *.s *.s[0-9] *.co
+# Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
-	-rm -f *.dbr *.jump2 *.sched *.cse2 *.cpp *.sched2 *.stack
-	-rm -f gccnew specs core float.h enquire SYSCALLS.c.X
-	-rm -f collect collect2
+	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
+# Delete some files made during installation.
+	-rm -f specs float.h enquire SYSCALLS.c SYSCALLS.c.X
+	-rm -f collect collect2 ld mips-tfile mips-tdump
+# Delete unwanted output files from TeX.
+	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
+# Delete core dumps.
+	-rm -f core
 
 # delete all files made by compilation.
 clean: mostlyclean
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready
 	-rm -fr stage1 stage2 stage3 stage4
 
-# Like clean but also delete the links and files made to configure gcc.
-cleanconfig: clean
+# This is used to get rid of everything found in the source dir
+# that shouldn't be in the distribution.
+distclean: clean
 	-rm -f tm.h aux-output.c config.h md config.status tconfig.h
-	-rm -f Makefile aux-output2.c
+	-rm -f Makefile *.dvi *.oaux
+
+# Delete anything likely to be found in the source directory
+# that shouldn't be in the distribution.
+extraclean: distclean
+	-rm -rf =* #* *~ config/#* config/*~
+	-rm -f *.dvi *.oaux patch*
+	-rm -f *.s *.s[0-9] *.i
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
-realclean: cleanconfig
-	-rm -f cpp.aux cpp.cps cpp.fns cpp.info cpp.kys cpp.pgs cpp.tps cpp.vrs
+realclean: distclean
 	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f protoize.1 unprotoize.1
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS 
-	-rm -f cpp.info* cpp.?? cpp.??s cpp.log cpp.toc cpp.*aux
-	-rm -f gcc.info* gcc.?? gcc.??s gcc.log gcc.toc gcc.*aux
-	-rm -f gplus.info* gplus.?? gplus.??s gplus.log gplus.toc gplus.*aux
-	-rm -f *.dvi
+	-rm -f cpp.info* cpp.??s cpp.*aux
+	-rm -f gcc.info* gcc.??s gcc.*aux
+	-rm -f gplus.info* gplus.??s gplus.*aux
 
 # Entry points `install' and `uninstall'.
 # Also temporarily `install-fixincludes' could replace `install-headers'.
+# Also use `install-collect2' to install collect2 when the config files don't.
 
 install: $(INSTALL_TARGET)
 
 # Copy the files of native compiler into directories where they will be run.
 install-native: install-common install-libgcc $(INSTALL_HEADERS) \
-   install-man install-proto
+   install-man
 
 # Copy the files of cross compiler into directories where they will be run.
 install-cross: install-common install-common-headers \
@@ -1215,9 +1249,9 @@ install-float-h-cross:
 # Create the installation directory.
 install-dir:
 	if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi
-	if [ -d $(libdir)/gcc ] ; then true ; else mkdir $(libdir)/gcc ; fi
-	if [ -d $(libdir)/gcc/$(target) ] ; then true ; else mkdir $(libdir)/gcc/$(target) ; fi
-	if [ -d $(libdir)/gcc/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc/$(target)/$(version) ; fi
+	if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; fi
+	if [ -d $(libdir)/gcc-lib/$(target) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target) ; fi
+	if [ -d $(libdir)/gcc-lib/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version) ; fi
 	if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; fi
 # We don't use mkdir -p to create the parents of mandir,
 # because some systems don't support it.
@@ -1235,7 +1269,7 @@ install-common: native install-dir
 	  else true; \
 	  fi; \
 	done
-	for file in $(EXTRA_PASSES) $(EXTRA_PARTS) ..; do \
+	for file in $(EXTRA_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) ..; do \
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(libsubdir)/$$file; \
 	    $(INSTALL_PROGRAM) $$file $(libsubdir)/$$file; \
@@ -1246,10 +1280,10 @@ install-common: native install-dir
 # Install the driver program as gcc-$(target)
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
 	-if [ -f gcc-cross ] ; then \
+	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/gcc-$(target); \
 	  if [ -d $(tooldir)/bin/. ] ; then \
 	    rm -f $(tooldir)/bin/gcc; \
 	    $(INSTALL_PROGRAM) gcc-cross $(tooldir)/bin/gcc; \
-	    $(INSTALL_PROGRAM) gcc-cross $(bindir)/gcc-$(target); \
 	  else true; fi; \
 	else \
 	  rm -f $(bindir)/gcc; \
@@ -1274,16 +1308,23 @@ install-proto: proto install-dir
 	chmod a-x $(libsubdir)/SYSCALLS.c.X
 
 # Install the man pages.
-install-man: install-dir $(srcdir)/gcc.1 protoize.1 unprotoize.1
+install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 \
+   protoize.1 unprotoize.1 $(srcdir)/g++.1
 	-rm -f $(mandir)/gcc$(manext)
 	$(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/gcc$(manext)
 	chmod a-x $(mandir)/gcc$(manext)
+	-rm -f $(mandir)/cccp$(manext)
+	$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
+	chmod a-x $(mandir)/cccp$(manext)
 	-rm -f $(mandir)/protoize$(manext)
 	$(INSTALL_DATA) protoize.1 $(mandir)/protoize$(manext)
 	chmod a-x $(mandir)/protoize$(manext)
 	-rm -f $(mandir)/unprotoize$(manext)
 	$(INSTALL_DATA) unprotoize.1 $(mandir)/unprotoize$(manext)
 	chmod a-x $(mandir)/unprotoize$(manext)
+	-rm -f $(mandir)/g++$(manext)
+	$(INSTALL_DATA) $(srcdir)/g++.1 $(mandir)/g++$(manext)
+	chmod a-x $(mandir)/g++$(manext)
 
 # Install the library.
 install-libgcc: libgcc.a
@@ -1337,14 +1378,18 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	-rm -f $(libsubdir)/include/stddef.h
 	$(INSTALL_DATA) $(srcdir)/gstddef.h $(libsubdir)/include/stddef.h
 	chmod a-x $(libsubdir)/include/stddef.h
+# Copy byteorder.h into the object file directory 
+# so that fixinc.svr4 can get at it if necessary.
+# If the dirs are the same, this won't do anything.
+	-cp $(srcdir)/byteorder.h .
 
 # $(libsubdir)/include:
 #	if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
 #	-chmod ugo+rx $(libsubdir)/include
 
 # This appears not to work.  It isn't clear how to fix it.
-# $(libsubdir)/include/README: $(libsubdir)/include $(srcdir)/fixincludes
-#	LIB=$(libsubdir)/include $(srcdir)/fixincludes
+# $(libsubdir)/include/README: $(libsubdir)/include $(srcdir)/$(FIXINCLUDES)
+#	LIB=$(libsubdir)/include $(srcdir)/$(FIXINCLUDES)
 #	$(INSTALL_DATA) $(srcdir)/fixincludes-README $@
 #	chmod a-x $@
 
@@ -1353,7 +1398,15 @@ install-fixincludes: install-headers
 	rm -rf $(libsubdir)/tmp
 	mkdir $(libsubdir)/tmp
 # Move aside the headers that come from GCC; delete all else.
-	cd $(libsubdir)/include; mv $(INSTALLED_H) ../tmp; rm -rf *
+# The sed command gets just the last file name component;
+# this is necessary because VPATH could add a dirname.
+# Using basename would be simpler, but some systems don't have it.
+	cd $(libsubdir)/include; \
+	for file in $(INSTALLED_H); do \
+	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	  mv $$realfile ../tmp; \
+	done; \
+	rm -rf *
 # Install fixed copies of system files.
 	$(srcdir)/$(FIXINCLUDES) $(libsubdir)/include
 # Bring back gcc's header files.
@@ -1362,15 +1415,24 @@ install-fixincludes: install-headers
 	$(INSTALL_DATA) $(srcdir)/README-fixinc $(libsubdir)/include/README
 	chmod a-x $(libsubdir)/include/README
 
+# Use this target to install the program `collect2' under the name `ld'.
+install-collect2: collect2
+	$(INSTALL_PROGRAM) collect2 $(libsubdir)/ld
+# Install the driver program as $(libsubdir)/gcc for collect2.
+	-if [ -f gcc-cross ] ; then \
+	  $(INSTALL_PROGRAM) gcc-cross $(libsubdir)/gcc; \
+	else \
+	  $(INSTALL_PROGRAM) gcc $(libsubdir)/gcc; \
+	fi
+
 # Cancel installation by deleting the installed files.
 uninstall:
 	-rm -rf $(libsubdir)
 	-rm -rf $(bindir)/gcc
-	-rm -rf $(mandir)/protoize$(manext)
-	-rm -rf $(mandir)/unprotoize$(manext)
 	-rm -rf $(bindir)/protoize
 	-rm -rf $(bindir)/unprotoize
 	-rm -rf $(mandir)/gcc$(manext)
+	-rm -rf $(mandir)/cccp$(manext)
 	-rm -rf $(mandir)/protoize$(manext)
 	-rm -rf $(mandir)/unprotoize$(manext)
 
@@ -1389,7 +1451,7 @@ TAGS: force
 #dist: gcc-$(version).tar.Z
 dist: gcc.xtar.Z
 
-gcc.xtar.Z:
+gcc.xtar.Z: gcc.xtar
 	compress < gcc.xtar > tmp-gcc.xtar.Z
 	mv tmp-gcc.xtar.Z gcc.xtar.Z
 
@@ -1398,15 +1460,22 @@ gcc.xtar.Z:
 
 #gcc-$(version).tar:
 gcc.xtar:
-	-rm -rf gcc-$(version)
+	-rm -rf gcc-$(version) tmp	
 # Put all the files in a temporary subdirectory
 # which has the name that we want to have in the tar file.
-	mkdir gcc-$(version)
-	for file in *; do \
-	  ln $file gcc-$(version) || cp $file gcc-$(version); \
+	mkdir tmp
+	mkdir tmp/config
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file tmp || cp $$file tmp; \
 	done
+	cd config; \
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file ../tmp/config || cp $$file ../tmp/config; \
+	done
+	ln .gdbinit tmp
+	mv tmp gcc-$(version)
 # Get rid of everything we don't want in the distribution.
-	cd gcc-$(version); make -f Makefile.in distclean
+	cd gcc-$(version); make -f Makefile.in extraclean
 # Make the distribution.
 	tar chf gcc.xtar gcc-$(version)
 # Get rid of the temporary directory.
@@ -1433,28 +1502,33 @@ maketest:
 
 bootstrap: all force
 	$(MAKE) stage1
-	$(MAKE) CC="stage1/gcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)" ALLOCA=
+# This used to define ALLOCA as empty, but that would lead to bad results
+# for a subsequent `make install' since that would not have ALLOCA empty.
+# To prevent `make install' from compiling alloca.o and then relinking cc1
+# because alloca.o is newer, we permit these recursive makes to compile
+# alloca.o.  Then cc1 is newer, so it won't have to be relinked.
+	$(MAKE) CC="stage1/gcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)" ALLOCA=
+	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 bootstrap2: force
-	$(MAKE) CC="stage1/gcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)" ALLOCA=
+	$(MAKE) CC="stage1/gcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)" ALLOCA=
+	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 bootstrap3: force
-	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)" ALLOCA=
+	$(MAKE) CC="stage2/gcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 # Copy the object files from a particular stage into a subdirectory.
 stage1: force
-	if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
+	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	-mv $(STAGESTUFF) stage1
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
 
 stage2: force
-	if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
+	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	-mv $(STAGESTUFF) stage2
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
