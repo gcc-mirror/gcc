@@ -1,3 +1,12 @@
+Wed Feb 28 19:05:37 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (sse_setccsf, sse_setccdf): New.
+	(sse_cmp* patterns): Use '%D' instead of outputtting condition
+	flag directly.
+	* i386.c (sse_comparison_operator): Accept the supported unordered
+	comparses; be ready for fast_math.
+	(print_operand): Support 'D'.
+
 Wed Feb 28 18:54:51 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (reversed_comparison_code): Kill.
