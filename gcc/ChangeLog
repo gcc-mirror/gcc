@@ -1,3 +1,16 @@
+Wed May 12 18:08:48 1999  David Edelsohn     <edelsohn@gnu.org>
+			  Richard Henderson  <rth@cygnus.com>
+
+        * rs6000.c (print_operand) [w]: Calculate signed constant more clearly.
+        (rs6000_allocate_stack_space): Print as hexadecimal value.
+        * rs6000.h (CONST_OK_FOR_LETTER_P): 'L' checks for a signed,
+        16-bit shifted constant.  Fix typo for 'P'.
+	(EXTRA_CONSTARINT): 'T' checks for a 32-bit mask operand.
+	* rs6000.md (movsi, addsi3_internal1, movdi, adddi3_internal1):
+	Use 'L' for shifted constant.
+	(anddi3_internal3): Fix typo.
+	(32-bit mask patterns): Use 'T'.
+
 Wed May 12 07:30:31 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/fixincl.c(quoted_file_exists): new procedure to ensure that
