@@ -1,3 +1,7 @@
+2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure: Regenerate for libtool change.
+
 2004-11-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool reversion.

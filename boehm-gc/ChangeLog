@@ -1,3 +1,7 @@
+2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure: Regenerate for libtool change.
+
 2004-11-27  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/gc_config.h.in: Add comment. Define only THREAD_LOCAL_ALLOC.

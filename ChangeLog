@@ -1,3 +1,8 @@
+2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* libtool.m4 (AC_DEPLIBS_CHECK_METHOD): Re-import linux-gnu case
+	from CVS libtool to always pass_all.
+
 2004-11-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* configure.in (hppa*-*-linux*): Don't add libgcj to noconfigdirs.
