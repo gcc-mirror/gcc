@@ -1244,6 +1244,24 @@ fix = {
 
 
 /*
+ *  Fix hpux 11.00 broken vsnprintf declaration
+ */
+fix = {
+    hackname = hpux11_vsnprintf;
+    files    = stdio.h;
+    select   = 'extern int vsnprintf\(char \*, __size_t, const char \*,'
+                                     ' __va__list\);';
+
+    c_fix     = format;
+    c_fix_arg = "extern int vsnprintf(char *, __size_t, const char *,"
+                                     " __va_list);";
+
+    test_text = 'extern int vsnprintf(char *, __size_t, const char *,'
+                                     ' __va__list);';
+};
+
+
+/*
  *  get rid of bogus inline definitions in HP-UX 8.0
  */
 fix = {
@@ -2865,6 +2883,21 @@ fix = {
     c_fix     = format;
     c_fix_arg = " __cplusplus";
     test_text = "#ifdef _cplusplus\nint bogus;\n#endif";
+};
+
+
+/*
+ *  function parameter to atexit is missing "void" on VAX Ultrix 4.3.
+ */
+fix = {
+    hackname = ultrix_atexit_param;
+    files    = stdlib.h;
+    select   = 'atexit\(.*\(\)';
+
+    c_fix     = format;
+    c_fix_arg = "atexit( void (*__func)( void )";
+
+    test_text = "int atexit( void (*__func)() );\n";
 };
 
 
