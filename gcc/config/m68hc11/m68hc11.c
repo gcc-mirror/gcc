@@ -3845,15 +3845,15 @@ m68hc11_gen_rotate (code, insn, operands)
 
   if (val > 0)
     {
-      /* Set the carry to bit-15, but don't change D yet.  */
-      if (GET_MODE (operands[0]) != QImode)
-        {
-          output_asm_insn ("asra", operands);
-          output_asm_insn ("rola", operands);
-        }
-
       while (--val >= 0)
         {
+          /* Set the carry to bit-15, but don't change D yet.  */
+          if (GET_MODE (operands[0]) != QImode)
+            {
+              output_asm_insn ("asra", operands);
+              output_asm_insn ("rola", operands);
+            }
+
           /* Rotate B first to move the carry to bit-0.  */
           if (D_REG_P (operands[0]))
             output_asm_insn ("rolb", operands);
@@ -3864,14 +3864,12 @@ m68hc11_gen_rotate (code, insn, operands)
     }
   else
     {
-      /* Set the carry to bit-8 of D.  */
-      if (val != 0 && GET_MODE (operands[0]) != QImode)
-        {
-          output_asm_insn ("tap", operands);
-        }
-      
       while (++val <= 0)
         {
+          /* Set the carry to bit-8 of D.  */
+          if (GET_MODE (operands[0]) != QImode)
+            output_asm_insn ("tap", operands);
+
           /* Rotate B first to move the carry to bit-7.  */
           if (D_REG_P (operands[0]))
             output_asm_insn ("rorb", operands);
