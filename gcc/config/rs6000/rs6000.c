@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1321,11 +1321,15 @@ print_operand (file, x, code)
     case 'z':
       /* X is a SYMBOL_REF.  Write out the name preceded by a
 	 period and without any trailing data in brackets.  Used for function
-	 names.  */
+	 names.  If we are configured for System V (or the embedded ABI) on
+	 the PowerPC, do not emit the period, since those systems do not use
+	 TOCs and the like.  */
       if (GET_CODE (x) != SYMBOL_REF)
 	abort ();
 
+#ifndef USING_SVR4_H
       putc ('.', file);
+#endif
       RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
       return;
 
@@ -1503,6 +1507,74 @@ rs6000_pushes_stack ()
 	  || rs6000_makes_calls ());
 }
 
+#ifdef USING_SVR4_H
+/* Write out a System V.4 style traceback table before the prologue
+
+   At present, only emit the basic tag table (ie, do not emit tag_types other
+   than 0, which might use more than 1 tag word).
+
+   The first tag word looks like:
+
+    0			1		    2			3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         0 |ver| tag |e|s| alloca  | # fprs  | # gprs  |s|l|c|f|
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+*/
+
+void
+svr4_traceback (file, name, decl)
+     FILE *file;
+     tree name, decl;
+{
+
+  int first_reg		= first_reg_to_save ();
+  int first_fp_reg	= first_fp_reg_to_save ();
+  int pushes_stack	= rs6000_pushes_stack ();
+  long tag;
+  long version		= 0;			/* version number */
+  long tag_type		= 0;			/* function type */
+  long extended_tag	= 0;			/* additional tag words needed */
+  long spare		= 0;			/* reserved for future use */
+  long alloca_reg;				/* stack/frame register */
+  long fpr_max		= 64 - first_fp_reg;	/* # of floating point registers saved */
+  long gpr_max		= 32 - first_reg;	/* # of general purpose registers saved */
+  long sp_max;					/* 1 if the function aquires a stack frame */
+  long lr_max;					/* 1 if the function stores the link register */
+  long cr_max;					/* 1 if the function has a CR save word */
+  long fpscr_max	= 0;			/* 1 if the function has a FPSCR save word */
+
+  if (frame_pointer_needed)
+    alloca_reg = 31;
+
+  else if (pushes_stack != 0)
+    alloca_reg = 1;
+
+  else
+    alloca_reg = 0;
+
+  lr_max = (regs_ever_live[65] || first_fp_reg < 62 || profile_flag);
+  cr_max = (must_save_cr () != 0);
+  sp_max = (pushes_stack != 0);
+
+  tag = (((version & 3) << 24)
+	 | ((tag_type & 7) << 21)
+	 | ((extended_tag & 1) << 20)
+	 | ((spare & 1) << 19)
+	 | ((alloca_reg & 0x1f) << 14)
+	 | ((fpr_max & 0x1f) << 9)
+	 | ((gpr_max & 0x1f) << 4)
+	 | ((sp_max & 1) << 3)
+	 | ((lr_max & 1) << 2)
+	 | ((cr_max & 1) << 1)
+	 | ((fpscr_max & 1) << 0));
+	   
+  fprintf (file, "\t.long 0x%lx\n", tag);
+}
+
+#endif /* USING_SVR4_H */
+
 /* Write function prologue.  */
 
 void
@@ -1522,8 +1594,9 @@ output_prolog (file, size)
   /* Write .extern for any function we will call to save and restore fp
      values.  */
   if (first_fp_reg < 62)
-    fprintf (file, "\t.extern ._savef%d\n\t.extern ._restf%d\n",
-	     first_fp_reg - 32, first_fp_reg - 32);
+    fprintf (file, "\t.extern %s%d%s\n\t.extern %s%d%s\n",
+	     SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX,
+	     RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
 
   /* Write .extern for truncation routines, if needed.  */
   if (rs6000_trunc_used && ! trunc_defined)
@@ -1565,10 +1638,10 @@ output_prolog (file, size)
   else if (first_fp_reg == 63)
     asm_fprintf (file, "\tstfd 31,-8(1)\n");
   else if (first_fp_reg != 64)
-    asm_fprintf (file, "\tbl ._savef%d\n", first_fp_reg - 32);
+    asm_fprintf (file, "\tbl %s%d%s\n", SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX);
 
   /* Now save gpr's.  */
-  if (! TARGET_POWER || first_reg == 31)
+  if (! TARGET_MULTIPLE || first_reg == 31)
     {
       int regno, loc;
 
@@ -1670,7 +1743,7 @@ output_epilog (file, size)
 	asm_fprintf (file, "\tmtlr 0\n");
 
       /* Restore gpr's.  */
-      if (! TARGET_POWER || first_reg == 31)
+      if (! TARGET_MULTIPLE || first_reg == 31)
 	{
 	  int regno, loc;
 
@@ -1702,7 +1775,7 @@ output_epilog (file, size)
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
       if (first_fp_reg < 62)
-	asm_fprintf (file, "\tb ._restf%d\n", first_fp_reg - 32);
+	asm_fprintf (file, "\tb %s%d%s\n", RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
       else
 	asm_fprintf (file, "\t{br|blr}\n");
     }
@@ -1717,7 +1790,11 @@ output_epilog (file, size)
      middle, and the two halves are placed at locations far apart in
      memory.''  The traceback table has this property, since it
      includes the offset from the start of the function to the
-     traceback table itself.  */
+     traceback table itself.
+
+     System V.4 Powerpc's (and the embedded ABI derived from it) use a
+     different traceback table located before the prologue.  */
+#ifndef USING_SVR4_H
   if (! flag_inhibit_size_directive)
     {
       char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
@@ -1895,6 +1972,7 @@ output_epilog (file, size)
       if (frame_pointer_needed)
 	fprintf (file, "\t.byte 31\n");
     }
+#endif /* !USING_SVR4_H */
 }
 
 /* Output a TOC entry.  We derive the entry name from what is
@@ -2111,6 +2189,9 @@ output_function_profiler (file, labelno)
   FILE *file;
   int labelno;
 {
+#ifdef USING_SVR4_H
+  abort ();
+#else
   /* The last used parameter register.  */
   int last_parm_reg;
   int i, j;
@@ -2162,6 +2243,7 @@ output_function_profiler (file, labelno)
 
   for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
     fprintf (file, "\tai %d,%d,0\n", i, j);
+#endif
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
