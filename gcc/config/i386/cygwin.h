@@ -410,6 +410,11 @@ extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
+/* MSVC returns aggregate types of up to 8 bytes via registers.
+   See i386.c:ix86_return_in_memory.  */
+#undef MS_AGGREGATE_RETURN
+#define MS_AGGREGATE_RETURN 1
+
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
