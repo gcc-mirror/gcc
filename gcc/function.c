@@ -286,7 +286,8 @@ static void mark_temp_slot PARAMS ((struct temp_slot *));
 static void mark_function_status PARAMS ((struct function *));
 static void mark_function_chain PARAMS ((void *));
 static void prepare_function_start PARAMS ((void));
-
+static void do_clobber_return_reg PARAMS ((rtx, void *));
+static void do_use_return_reg PARAMS ((rtx, void *));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -6120,42 +6121,77 @@ expand_dummy_function_end ()
   cfun = 0;
 }
 
-/* Emit CODE for each register of the return value.  Useful values for
-   code are USE and CLOBBER.  */
+/* Call DOIT for each hard register used as a return value from
+   the current function.  */
 
 void
-diddle_return_value (code)
-     enum rtx_code code;
+diddle_return_value (doit, arg)
+     void (*doit) PARAMS ((rtx, void *));
+     void *arg;
 {
-  tree decl_result = DECL_RESULT (current_function_decl);
-  rtx return_reg = DECL_RTL (decl_result);
+  rtx outgoing = current_function_return_rtx;
 
-  if (return_reg)
+  if (! outgoing)
+    return;
+
+  if (GET_CODE (outgoing) == REG
+      && REGNO (outgoing) >= FIRST_PSEUDO_REGISTER)
     {
-      if (GET_CODE (return_reg) == REG
-	  && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
-	{
-	  /* Use hard_function_value to avoid creating a reference to a BLKmode 
-	     register in the USE/CLOBBER insn.  */
-	  return_reg = hard_function_value (TREE_TYPE (decl_result),
-					    current_function_decl, 1);
-	  REG_FUNCTION_VALUE_P (return_reg) = 1;
-	  emit_insn (gen_rtx_fmt_e (code, VOIDmode, return_reg));
-	}
-      else if (GET_CODE (return_reg) == PARALLEL)
-	{
-	  int i;
+      tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
+#ifdef FUNCTION_OUTGOING_VALUE
+      outgoing = FUNCTION_OUTGOING_VALUE (type, current_function_decl);
+#else
+      outgoing = FUNCTION_VALUE (type, current_function_decl);
+#endif
+      /* If this is a BLKmode structure being returned in registers, then use
+	 the mode computed in expand_return.  */
+      if (GET_MODE (outgoing) == BLKmode)
+	PUT_MODE (outgoing,
+		  GET_MODE (DECL_RTL (DECL_RESULT (current_function_decl))));
+    }
 
-	  for (i = 0; i < XVECLEN (return_reg, 0); i++)
-	    {
-	      rtx x = XEXP (XVECEXP (return_reg, 0, i), 0);
+  if (GET_CODE (outgoing) == REG)
+    (*doit) (outgoing, arg);
+  else if (GET_CODE (outgoing) == PARALLEL)
+    {
+      int i;
 
-	      if (GET_CODE (x) == REG
-		  && REGNO (x) < FIRST_PSEUDO_REGISTER)
-		emit_insn (gen_rtx_fmt_e (code, VOIDmode, x));
-	    }
+      for (i = 0; i < XVECLEN (outgoing, 0); i++)
+	{
+	  rtx x = XEXP (XVECEXP (outgoing, 0, i), 0);
+
+	  if (GET_CODE (x) == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	    (*doit) (x, arg);
 	}
     }
+}
+
+static void
+do_clobber_return_reg (reg, arg)
+     rtx reg;
+     void *arg ATTRIBUTE_UNUSED;
+{
+  emit_insn (gen_rtx_CLOBBER (VOIDmode, reg));
+}
+
+void
+clobber_return_register ()
+{
+  diddle_return_value (do_clobber_return_reg, NULL);
+}
+
+static void
+do_use_return_reg (reg, arg)
+     rtx reg;
+     void *arg ATTRIBUTE_UNUSED;
+{
+  emit_insn (gen_rtx_USE (VOIDmode, reg));
+}
+
+void
+use_return_register ()
+{
+  diddle_return_value (do_use_return_reg, NULL);
 }
 
 /* Generate RTL for the end of the current function.
@@ -6324,7 +6360,7 @@ expand_function_end (filename, line, end_bindings)
 	 can only happen with functions that drop through; if there had
 	 been a return statement, there would have either been a return
 	 rtx, or a jump to the return label.  */
-      diddle_return_value (CLOBBER);
+      clobber_return_register ();
 
       emit_label (return_label);
     }
@@ -6443,6 +6479,12 @@ expand_function_end (filename, line, end_bindings)
 
       emit_move_insn (outgoing, value_address);
     }
+
+  /* ??? This should no longer be necessary since stupid is no longer with
+     us, but there are some parts of the compiler (eg reload_combine, and
+     sh mach_dep_reorg) that still try and compute their own lifetime info
+     instead of using the general framework.  */
+  use_return_register ();
 
   /* If this is an implementation of __throw, do what's necessary to 
      communicate between __builtin_eh_return and the epilogue.  */

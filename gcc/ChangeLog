@@ -1,3 +1,16 @@
+2000-02-04  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (diddle_return_value): Rework to use a callback function.
+	Use current_function_return_rtx if it's been set up.
+	(do_clobber_return_reg, clobber_return_register): New.
+	(do_use_return_reg, use_return_register): New.
+	(expand_function_end): Use them.
+	* stmt.c (expand_null_return): Likewise.
+	* function.h: Declare them.
+	* flow.c (mark_regs_live_at_end): Use diddle_return_value.
+	(mark_reg): Change arguments as appropriate for callback.
+	* integrate.c (expand_inline_function): Revert 19 Jan change.
+
 Fri Feb  4 20:25:42 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* tm.texi (Values in Registers): Fix typo: "fo" "for".

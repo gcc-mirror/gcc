@@ -2676,11 +2676,9 @@ expand_null_return ()
   /* If this function was declared to return a value, but we 
      didn't, clobber the return registers so that they are not
      propogated live to the rest of the function.  */
-
-  diddle_return_value (CLOBBER);
+  clobber_return_register ();
 
   /* Does any pending block have cleanups?  */
-
   while (block && block->data.block.cleanups == 0)
     block = block->next;
 

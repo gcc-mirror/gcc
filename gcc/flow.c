@@ -320,7 +320,7 @@ static int set_noop_p			PARAMS ((rtx));
 static int noop_move_p			PARAMS ((rtx));
 static void notice_stack_pointer_modification PARAMS ((rtx, rtx, void *));
 static void record_volatile_insns	PARAMS ((rtx));
-static void mark_reg			PARAMS ((regset, rtx));
+static void mark_reg			PARAMS ((rtx, void *));
 static void mark_regs_live_at_end	PARAMS ((regset));
 static void life_analysis_1		PARAMS ((rtx, int, int));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
@@ -2788,11 +2788,15 @@ record_volatile_insns (f)
 /* Mark a register in SET.  Hard registers in large modes get all
    of their component registers set as well.  */
 static void
-mark_reg (set, reg)
-     regset set;
+mark_reg (reg, xset)
      rtx reg;
+     void *xset;
 {
+  regset set = (regset) xset;
   int regno = REGNO (reg);
+
+  if (GET_MODE (reg) == BLKmode)
+    abort ();
 
   SET_REGNO_REG_SET (set, regno);
   if (regno < FIRST_PSEUDO_REGISTER)
@@ -2867,44 +2871,7 @@ mark_regs_live_at_end (set)
     }
 
   /* Mark function return value.  */
-
-  result = DECL_RESULT (current_function_decl);
-  type = TREE_TYPE (result);
-  if (type != void_type_node)
-    {
-      rtx outgoing;
-
-      /* ??? Share this code with expand_function_end.  */
-#ifdef FUNCTION_OUTGOING_VALUE
-      outgoing = FUNCTION_OUTGOING_VALUE (type, current_function_decl);
-#else
-      outgoing = FUNCTION_VALUE (type, current_function_decl);
-#endif
-      /* If this is a BLKmode structure being returned in registers,
-	 then use the mode computed in expand_return.  */
-      if (GET_MODE (outgoing) == BLKmode)
-	PUT_MODE (outgoing, GET_MODE (DECL_RTL (result)));
-
-      if (GET_CODE (outgoing) == REG)
-	mark_reg (set, outgoing);
-      else if (GET_CODE (outgoing) == PARALLEL)
-	{
-	  int len = XVECLEN (outgoing, 0);
-
-	  /* Check for a NULL entry, used to indicate that the parameter
-	     goes on the stack and in registers.  */
-	  i = (XEXP (XVECEXP (outgoing, 0, 0), 0) ? 0 : 1);
-
-	  for ( ; i < len; ++i)
-	    {
-	      rtx r = XVECEXP (outgoing, 0, i);
-	      if (GET_CODE (r) == REG)
-		mark_reg (set, r);
-	    }
-	}
-      else
-	abort ();
-    }
+  diddle_return_value (mark_reg, set);
 }
 
 /* Determine which registers are live at the start of each
