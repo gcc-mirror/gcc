@@ -5063,6 +5063,14 @@ fold (expr)
 			    fold (build1 (code, type, integer_one_node)),
 			    fold (build1 (code, type, integer_zero_node))));
    }
+  else if (TREE_CODE_CLASS (code) == '<'
+	   && TREE_CODE (arg0) == COMPOUND_EXPR)
+    return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
+		  fold (build (code, type, TREE_OPERAND (arg0, 1), arg1)));
+  else if (TREE_CODE_CLASS (code) == '<'
+	   && TREE_CODE (arg1) == COMPOUND_EXPR)
+    return build (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
+		  fold (build (code, type, arg0, TREE_OPERAND (arg1, 1))));
   else if (TREE_CODE_CLASS (code) == '2'
 	   || TREE_CODE_CLASS (code) == '<')
     {
@@ -5098,14 +5106,6 @@ fold (expr)
 	  fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
 					       /*cond_first_p=*/1);
     }
-  else if (TREE_CODE_CLASS (code) == '<'
-	   && TREE_CODE (arg0) == COMPOUND_EXPR)
-    return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		  fold (build (code, type, TREE_OPERAND (arg0, 1), arg1)));
-  else if (TREE_CODE_CLASS (code) == '<'
-	   && TREE_CODE (arg1) == COMPOUND_EXPR)
-    return build (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
-		  fold (build (code, type, arg0, TREE_OPERAND (arg1, 1))));
 
   switch (code)
     {
