@@ -6626,6 +6626,8 @@ thread_prologue_and_epilogue_insns (f)
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
+      rtx insn;
+
       start_sequence ();
       seq = gen_prologue();
       emit_insn (seq);
@@ -6634,8 +6636,27 @@ thread_prologue_and_epilogue_insns (f)
       if (GET_CODE (seq) != SEQUENCE)
 	seq = get_insns ();
       prologue = record_insns (seq);
-
       emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+
+      /* GDB handles `break f' by setting a breakpoint on the first
+	 line note *after* the prologue.  That means that we should
+	 insert a line note here; otherwise, if the next line note
+	 comes part way into the next block, GDB will skip all the way
+	 to that point.  */
+      insn = next_nonnote_insn (f);
+      while (insn)
+	{
+	  if (GET_CODE (insn) == NOTE 
+	      && NOTE_LINE_NUMBER (insn) >= 0)
+	    {
+	      emit_line_note_force (NOTE_SOURCE_FILE (insn),
+				    NOTE_LINE_NUMBER (insn));
+	      break;
+	    }
+
+	  insn = PREV_INSN (insn);
+	}
+
       seq = gen_sequence ();
       end_sequence ();
 
