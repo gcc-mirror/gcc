@@ -1,3 +1,9 @@
+2003-11-04  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* libsupc++/vec.cc (__cxa_vec_delete2): If given a NULL pointer,
+	immediately return.  This reflects a C++ ABI change 2003 Nov 03.
+	(__cxa_vec_delete3): Likewise.
+	
 2003-11-03  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/12790
@@ -103,6 +109,7 @@
 	* include/bits/istream.tcc: Same.
 	* include/bits/ostream.tcc: Same.
 
+>>>>>>> 1.2063
 2003-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):

@@ -282,7 +282,12 @@ namespace __cxxabiv1
 		    void (*destructor) (void *),
 		    void (*dealloc) (void *))
   {
-    char *base = static_cast<char *>(array_address);
+    char *base;
+  
+    if (!array_address)
+      return;
+
+    base = static_cast<char *>(array_address);
   
     if (padding_size)
       {
@@ -312,8 +317,14 @@ namespace __cxxabiv1
 		     void (*destructor) (void *),
 		    void (*dealloc) (void *, std::size_t))
   {
-    char *base = static_cast <char *> (array_address);
-    std::size_t size = 0;
+    char *base;
+    std::size_t size;
+    
+    if (!array_address)
+      return;
+
+    base = static_cast <char *> (array_address);
+    size = 0;
     
     if (padding_size)
       {
