@@ -4015,15 +4015,16 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     sizetree = size_int (PUSH_ROUNDING (TREE_INT_CST_LOW (sizetree)));
 #endif
 
+  /* Pad_below needs the pre-rounded size to know how much to pad below
+     so this must be done before rounding up.  */
+  if (where_pad == downward)
+    pad_below (offset_ptr, passed_mode, sizetree);
+
   if (where_pad != none
       && (TREE_CODE (sizetree) != INTEGER_CST
 	  || ((TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)))
     sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
 
-  /* This must be done after rounding sizetree, so that it will subtract
-     the same value that we explicitly add below.  */
-  if (where_pad == downward)
-    pad_below (offset_ptr, passed_mode, sizetree);
   ADD_PARM_SIZE (*arg_size_ptr, sizetree);
 #endif /* ARGS_GROW_DOWNWARD */
 }
