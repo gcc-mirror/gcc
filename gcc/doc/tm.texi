@@ -5585,7 +5585,7 @@ position independent code.
 @section Defining the Output Assembler Language
 
 This section describes macros whose principal purpose is to describe how
-to write instructions in assembler language--rather than what the
+to write instructions in assembler language---rather than what the
 instructions do.
 
 @menu
