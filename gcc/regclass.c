@@ -278,6 +278,12 @@ init_reg_sets (void)
 	  SET_HARD_REG_BIT (reg_class_contents[i], j);
     }
 
+  /* Sanity check: make sure the target macros FIXED_REGISTERS and
+     CALL_USED_REGISTERS had the right number of initializers.  */
+  if (sizeof fixed_regs != sizeof initial_fixed_regs
+      || sizeof call_used_regs != sizeof initial_call_used_regs)
+    abort();
+
   memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
   memset (global_regs, 0, sizeof global_regs);
