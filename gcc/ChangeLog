@@ -1,3 +1,13 @@
+Mon Mar  1 23:38:20 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Tue Feb  2 23:38:35 1999  David O'Brien <obrien@FreeBSD.org>
+	* i386/freebsd*.h now allows '$' in label names and does not use the
+	PCC struct return method.
+
+	Wed Dec 30 23:00:28 1998  David O'Brien <obrien@NUXI.com>
+        * configure.in (FreeBSD ELF): Needs special crt files.
+	* configure: Rebuilt.
+
 Sun Feb 28 14:47:53 1999  Arturo Montes  <mitosys@colomsat.com.co>
 
         * config/i386/t-sco5gas (crti.o): New target.
