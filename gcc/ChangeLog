@@ -1,3 +1,12 @@
+2003-06-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (cfgrtl.o): Add expr.h dependency.
+	* cfgrtl.c: Include expr.h.
+	(mark_killed_regs, safe_insert_insn_on_edge): New
+	functions.
+	* config/i386/i386.h (AVOID_CCMODE_COPIES): Define.
+	* basic-block.h (safe_insert_insn_on_edge): Declare.
+
 2003-06-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (missing_arg): Make non-static.

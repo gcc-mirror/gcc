@@ -56,6 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "insn-config.h"
 #include "cfglayout.h"
+#include "expr.h"
 
 /* Stubs in case we don't have a return insn.  */
 #ifndef HAVE_return
@@ -88,6 +89,7 @@ static bool rtl_redirect_edge_and_branch (edge, basic_block);
 static edge rtl_split_block (basic_block, void *);
 static void rtl_dump_bb (basic_block, FILE *);
 static int rtl_verify_flow_info_1 (void);
+static void mark_killed_regs (rtx, rtx, void *);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -1303,6 +1305,101 @@ insert_insn_on_edge (rtx pattern, edge e)
 
   e->insns = get_insns ();
   end_sequence ();
+}
+
+/* Called from safe_insert_insn_on_edge through note_stores, marks live
+   registers that are killed by the store.  */
+static void
+mark_killed_regs (rtx reg, rtx set ATTRIBUTE_UNUSED, void *data)
+{
+  regset killed = data;
+  int regno, i;
+
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  if (!REG_P (reg))
+    return;
+  regno = REGNO (reg);
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    SET_REGNO_REG_SET (killed, regno);
+  else
+    {
+      for (i = 0; i < HARD_REGNO_NREGS (regno, GET_MODE (reg)); i++)
+	SET_REGNO_REG_SET (killed, regno + i);
+    }
+}
+
+/* Similar to insert_insn_on_edge, tries to put INSN to edge E.  Additionally
+   it checks whether this will not clobber the registers that are live on the
+   edge (i.e. it requieres liveness information to be up-to-date) and if there
+   are some, then it tries to save and restore them.  Returns true if
+   succesful.  */
+bool
+safe_insert_insn_on_edge (rtx insn, edge e)
+{
+  rtx x;
+  regset_head killed_head;
+  regset killed = INITIALIZE_REG_SET (killed_head);
+  rtx save_regs = NULL_RTX;
+  int regno, noccmode;
+  enum machine_mode mode;
+
+#ifdef AVOID_CCMODE_COPIES
+  noccmode = true;
+#else
+  noccmode = false;
+#endif
+
+  for (x = insn; x; x = NEXT_INSN (x))
+    if (INSN_P (x))
+      note_stores (PATTERN (x), mark_killed_regs, killed);
+  bitmap_operation (killed, killed, e->dest->global_live_at_start,
+		    BITMAP_AND);
+
+  EXECUTE_IF_SET_IN_REG_SET (killed, 0, regno,
+    {
+      mode = regno < FIRST_PSEUDO_REGISTER
+	      ? reg_raw_mode[regno]
+	      : GET_MODE (regno_reg_rtx[regno]);
+      if (mode == VOIDmode)
+	return false;
+
+      if (noccmode && mode == CCmode)
+	return false;
+	
+      save_regs = alloc_EXPR_LIST (0,
+				   alloc_EXPR_LIST (0,
+						    gen_reg_rtx (mode),
+						    gen_raw_REG (mode, regno)),
+				   save_regs);
+    });
+
+  if (save_regs)
+    {
+      rtx from, to;
+
+      start_sequence ();
+      for (x = save_regs; x; x = XEXP (x, 1))
+	{
+	  from = XEXP (XEXP (x, 0), 1);
+	  to = XEXP (XEXP (x, 0), 0);
+	  emit_move_insn (to, from);
+	}
+      emit_insn (insn);
+      for (x = save_regs; x; x = XEXP (x, 1))
+	{
+	  from = XEXP (XEXP (x, 0), 0);
+	  to = XEXP (XEXP (x, 0), 1);
+	  emit_move_insn (to, from);
+	}
+      insn = get_insns ();
+      end_sequence ();
+      free_EXPR_LIST_list (&save_regs);
+    }
+  insert_insn_on_edge (insn, e);
+  
+  FREE_REG_SET (killed);
+  return true;
 }
 
 /* Update the CFG for the instructions queued on edge E.  */
