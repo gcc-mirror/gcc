@@ -68,7 +68,7 @@ Boston, MA 02111-1307, USA.  */
    number with SUM's sign, where A, B, and SUM are all C integers.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
 
-typedef short op_t;
+typedef int op_t;
 
 static void integer_overflow PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,

@@ -92,8 +92,8 @@ process_rtx (desc)
   
       /* Create a split with values from the insn_and_split. */
       rtx split = rtx_alloc (DEFINE_SPLIT);
-      XVEC (split, 0) = copy_rtx (XVEC (*desc, 1));
-      remove_constraints (XVEC (split, 0));
+      XEXP (split, 0) = copy_rtx (XEXP (*desc, 1));
+      remove_constraints (XEXP (split, 0));
       split_cond = XSTR (split, 1) = XSTR (*desc, 4);
   
       /* If the split condition starts with "&&", append it to the
@@ -113,7 +113,7 @@ process_rtx (desc)
   
       /* Fix up the DEFINE_INSN.  */
       PUT_CODE (*desc, DEFINE_INSN);
-      XVEC (*desc, 4) = XSTR (*desc, 7);
+      XVEC (*desc, 4) = XVEC (*desc, 7);
   
       /* Return the DEFINE_INSN part, and put the DEFINE_SPLIT
          in the queue.  */
