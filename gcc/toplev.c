@@ -563,6 +563,12 @@ int flag_fast_math = 0;
 
 int flag_errno_math = 1;
 
+/* 0 means straightforward implementation of complex divide acceptable.
+   1 means wide ranges of inputs must work for complex divide.
+   2 means C9X-like requirements for complex divide (not yet implemented).  */
+
+int flag_complex_divide_method = 0;
+
 /* Nonzero means all references through pointers are volatile.  */
 
 int flag_volatile;

@@ -1,3 +1,16 @@
+Tue May 18 03:53:37 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Improve open-coding of complex divide:
+	* flags.h: Declare new front-end-malleable flag.
+	* toplev.c: Define new flag.
+	* optabs.c (expand_cmplxdiv_straight): New function to do original
+	open-coding.
+	(expand_cmplxdiv_wide): New function to do new open-coding,
+	from Toon Moene, with changes (call to emit_barrier, dropping
+	of spurious `ok = 1;', plus the obvious `break;' -> `return 0;').
+	(expand_binop): A bit of spacing fixing, while at it.
+	Use new functions instead of inlining the open-coding code.
+
 Tue May 18 00:51:46 1999  Krister Walfridsson <cato@df.lth.se>
 
         * configure.in (arm*-*-netbsd*): Use collect2.
