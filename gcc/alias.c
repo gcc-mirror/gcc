@@ -100,8 +100,6 @@ find_base_value (src)
 	 even when the argument registers are used for other purposes.  */
       if (REGNO (src) < FIRST_PSEUDO_REGISTER && copying_arguments)
 	return reg_base_value[REGNO (src)];
-      if (REG_N_SETS (REGNO (src)) == 1 && reg_base_value[REGNO (src)])
-	return reg_base_value[REGNO (src)];
       return src;
 
     case MEM:
@@ -124,21 +122,7 @@ find_base_value (src)
     case PLUS:
     case MINUS:
       {
-	rtx temp, src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
-
-	if (GET_CODE (src_0) == REG)
-	  {
-	    temp = find_base_value (src_0);
-	    if (temp)
-	      src_0 = temp;
-	  }
-
-	if (GET_CODE (src_1) == REG)
-	  {
-	    temp = find_base_value (src_1);
-	    if (temp)
-	      src_1 = temp;
-	  }
+	rtx src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
 
 	/* Guess which operand is the base address.
 
@@ -152,12 +136,6 @@ find_base_value (src)
 	    || GET_CODE (src_0) == LABEL_REF
 	    || GET_CODE (src_0) == CONST)
 	  return find_base_value (src_0);
-
-	if (GET_CODE (src_0) == CONST_INT
-	    || GET_CODE (src_1) == SYMBOL_REF
-	    || GET_CODE (src_1) == LABEL_REF
-	    || GET_CODE (src_1) == CONST)
-	  return find_base_value (src_1);
 
 	if (GET_CODE (src_0) == REG && REGNO_POINTER_FLAG (REGNO (src_0)))
 	  return find_base_value (src_0);
