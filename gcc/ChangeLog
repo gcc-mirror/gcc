@@ -1,3 +1,7 @@
+2005-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* c-cppbuiltin.c (define__GNUC__): Correct assertion.
+
 2005-01-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c: Fix comment typos.
