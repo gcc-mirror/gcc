@@ -1,3 +1,13 @@
+2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpp.texi: Update.
+        * cppexp.c (parse_number): Update. 
+        * cpplex.c (parse_string): Pedwarn if multiline string does not
+        result from a system header's macro.
+        * cpplib.h (sys_objmacro_p): Rename sys_macro_p.
+        * cppmacro.c (sys_objmacro_p): Rename sys_macro_p.  Return true
+        for function-like macros too.
+
 2001-03-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* print-rtl.c (print_rtx): Cast enums to int for comparison.

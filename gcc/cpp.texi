@@ -170,9 +170,9 @@ spaces, horizontal and vertical tabs, and form feeds between the
 backslash and the subsequent newline.  The preprocessor issues a
 warning, but treats it as a valid escaped newline and combines the two
 lines to form a single logical line.  This works within comments and
-tokens, including multi-line strings, as well as between tokens.
-Comments are @emph{not} treated as whitespace for the purposes of this
-relaxation, since they have not yet been replaced with spaces.
+tokens, as well as between tokens.  Comments are @emph{not} treated as
+whitespace for the purposes of this relaxation, since they have not yet
+been replaced with spaces.
 
 @item
 All comments are replaced with single spaces.
@@ -216,8 +216,9 @@ bar"
 @end example
 
 is equivalent to @code{"foo\bar"}, not to @code{"foo\\bar"}.  To avoid
-having to worry about this, do not use the GNU extension which permits
-multi-line strings.  Instead, use string constant concatenation:
+having to worry about this, do not use the deprecated GNU extension
+which permits multi-line strings.  Instead, use string literal
+concatenation:
 
 @example
    "foo\\"
@@ -3053,12 +3054,15 @@ used at all.
 This pragma has been superseded by @samp{#pragma GCC poison}.
 @xref{Poisoning}.
 
-@item Multi-line string literals in directives
+@item Multi-line string literals
 
-The GNU C preprocessor currently allows newlines in string literals
-within a directive.  This is forbidden by the C standard and will
-eventually be removed.  (Multi-line string literals in open text are
-still supported.)
+The preprocessor currently allows raw newlines in string literals.  This
+extension is deprecated and will be removed in a future version of GCC.
+The preprocessor already forbids such string literals in all directives
+apart from #define.
+
+Instead, make use of ISO C concatenation of adjacent string literals, or
+use @samp{\n} followed by an escaped newline.
 
 @item Preprocessing things which are not C
 

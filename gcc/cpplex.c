@@ -686,12 +686,10 @@ parse_string (pfile, token, terminator)
 	      break;
 	    }
 
+	  if (! cpp_sys_macro_p (pfile))
+	    cpp_pedwarn (pfile, "multi-line string constants are deprecated");
 	  if (pfile->mlstring_pos.line == 0)
-	    {
-	      pfile->mlstring_pos = pfile->lexer_pos;
-	      if (CPP_PEDANTIC (pfile))
-		cpp_pedwarn (pfile, "multi-line string constant");
-	    }
+	    pfile->mlstring_pos = pfile->lexer_pos;
 	      
 	  handle_newline (buffer, c);  /* Stores to read_ahead.  */
 	  c = '\n';
