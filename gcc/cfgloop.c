@@ -804,19 +804,20 @@ flow_loops_find (loops, flags)
      
       header->loop_depth = 0;
 
+      /* If we have an abnormal predecessor, do not consider the
+	 loop (not worth the problems).  */
+      for (e = header->pred; e; e = e->pred_next)
+	if (e->flags & EDGE_ABNORMAL)
+	  break;
+      if (e)
+	continue;
+
       for (e = header->pred; e; e = e->pred_next)
 	{
 	  basic_block latch = e->src;
 
 	  if (e->flags & EDGE_ABNORMAL)
-	    {
-	      if (more_latches)
-		{
-		  RESET_BIT (headers, header->index);
-		  num_loops--;
-		}
-	      break;
-	    }
+	    abort ();
 
 	  /* Look for back edges where a predecessor is dominated
 	     by this block.  A natural loop has a single entry

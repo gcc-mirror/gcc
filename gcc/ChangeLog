@@ -1,3 +1,8 @@
+2003-10-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR/11883
+	* cfgloop.c (flow_loops_find): Fix handling of abnormal edges.
+
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/12180
