@@ -4,7 +4,7 @@
 
 1998-09-30  Robert Lipe  <robertl@dgii.com> 
 
-	* Makefile.in (all): Correct dependencies do --disable-multilibs 
+	* Makefile.in (all): Correct dependencies so --disable-multilibs 
 	works again.
   	(distclean): Correct typo.
 
