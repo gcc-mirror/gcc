@@ -66,7 +66,7 @@ static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_unique_section PARAMS ((tree, int));
-static void   avr_encode_section_info PARAMS ((tree, int));
+static void   avr_insert_attributes PARAMS ((tree, tree *));
 static unsigned int avr_section_type_flags PARAMS ((tree, const char *, int));
 
 static void   avr_asm_out_ctor PARAMS ((rtx, int));
@@ -226,8 +226,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
 #undef TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION avr_unique_section
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
 #undef TARGET_RTX_COSTS
@@ -1088,7 +1088,7 @@ print_operand_address (file, addr)
 
     default:
       if (CONSTANT_ADDRESS_P (addr)
-	  && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
+	  && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (addr))
 	      || GET_CODE (addr) == LABEL_REF))
 	{
 	  fprintf (file, "pm(");
@@ -4569,7 +4569,7 @@ avr_assemble_integer (x, size, aligned_p)
      int aligned_p;
 {
   if (size == POINTER_SIZE / BITS_PER_UNIT && aligned_p
-      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
+      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (x))
 	  || GET_CODE (x) == LABEL_REF))
     {
       fputs ("\t.word\tpm(", asm_out_file);
@@ -4838,23 +4838,25 @@ avr_progmem_p (decl)
   return 0;
 }
 
-/* Encode section information about tree DECL.  */
-  
+/* Add the section attribute if the variable is in progmem.  */
+
 static void
-avr_encode_section_info (decl, first)
-     tree decl;
-     int first;
+avr_insert_attributes (node, attributes)
+     tree node;
+     tree *attributes;
 {
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-  else if (first
-	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
-	   && TREE_CODE (decl) == VAR_DECL
-	   && avr_progmem_p (decl))
+  if (TREE_CODE (node) == VAR_DECL
+      && (TREE_STATIC (node) || DECL_EXTERNAL (node))
+      && avr_progmem_p (node))
     {
-      static const char *const dsec = ".progmem.data";
-      DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
-      TREE_READONLY (decl) = 1;
+      static const char dsec[] = ".progmem.data";
+      *attributes = tree_cons (get_identifier ("section"),
+		build_tree_list (NULL, build_string (strlen (dsec), dsec)),
+		*attributes);
+
+      /* ??? This seems sketchy.  Why can't the user declare the
+	 thing const in the first place?  */
+      TREE_READONLY (node) = 1;
     }
 }
 
