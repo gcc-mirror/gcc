@@ -648,11 +648,11 @@ do {								\
 								\
   DECL_WEAK (DECL) = 1;						\
   								\
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));	\
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
 								\
-  if (TREE_CODE (decl) == FUNCTION_DECL)			\
+  if (TREE_CODE (DECL) == FUNCTION_DECL)			\
     prefix = ".gnu.linkonce.t.";				\
-  else if (TREE_READONLY (decl))				\
+  else if (TREE_READONLY (DECL))				\
     prefix = ".gnu.linkonce.r.";				\
   else								\
     prefix = ".gnu.linkonce.d.";				\
