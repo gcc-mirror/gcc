@@ -242,28 +242,26 @@ DEFUN (main, (argc, argv),
    functions */
 
 void
-fatal_error VPARAMS ((const char *s, ...))
+fatal_error (const char *s, ...)
 {
-  VA_OPEN (ap, s);
-  VA_FIXEDARG (ap, const char *, s);
-
+  va_list ap;
+  va_start (ap, s);
   fprintf (stderr, "%s: error: ", exec_name);
   vfprintf (stderr, s, ap);
   fputc ('\n', stderr);
-  VA_CLOSE (ap);
+  va_end (ap);
   exit (1);
 }
 
 void
-warning VPARAMS ((const char *s, ...))
+warning (const char *s, ...)
 {
-  VA_OPEN (ap, s);
-  VA_FIXEDARG (ap, const char *, s);
-
+  va_list ap;
+  va_start (ap, s);
   fprintf (stderr, "%s: warning: ", exec_name);
   vfprintf (stderr, s, ap);
   fputc ('\n', stderr);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 void
