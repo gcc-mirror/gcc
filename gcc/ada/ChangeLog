@@ -1,3 +1,45 @@
+2001-12-11  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch3.adb: Clarify some ???.
+	
+2001-12-11  Robert Dewar <dewar@gnat.com>
+
+	* exp_util.adb (Must_Be_Aligned): Removed, replaced by 
+	Exp_Pakd.Known_Aligned_Enough
+	
+	* sem_ch13.adb (Check_Address_Alignment): Removed, extended 
+	version is moved to Exp_Ch13.
+
+2001-12-11  Robert Dewar <dewar@gnat.com>
+
+	* einfo.ads: Minor reformatting
+	
+	* exp_ch5.adb: Add comment for previous.change
+	
+	* ali.adb: New interface for extended typeref stuff.
+	
+	* ali.ads: New interface for typeref stuff.
+	
+	* checks.adb (Apply_Alignment_Check): New procedure.
+	
+	* debug.adb: Add -gnatdM for modified ALI output
+	
+	* exp_pakd.adb (Known_Aligned_Enough): Replaces Known_Aligned_Enough.
+	
+	* lib-xref.adb: Extend generation of <..> notation to cover 
+	subtype/object types. Note that this is a complete rewrite, 
+	getting rid of the very nasty quadratic algorithm previously 
+	used for derived type output.
+	
+	* lib-xref.ads: Extend description of <..> notation to cover 
+	subtype/object types. Uses {..} for these other cases. 
+	Also use (..) for pointer types.
+	
+	* sem_util.adb (Check_Potentially_Blocking_Operation): Slight cleanup.
+	
+	* exp_pakd.adb: Minor reformatting.  Note that prevous RH should say: 
+	(Known_Aligned_Enough): Replaces Must_Be_Aligned.
+
 2001-12-11  Vincent Celier <celier@gnat.com>
 
 	* gnatcmd.adb:
