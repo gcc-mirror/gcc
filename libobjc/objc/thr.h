@@ -1,5 +1,5 @@
 /* Thread and mutex controls for Objective C.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2002 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GNU CC.
@@ -74,30 +74,30 @@ struct objc_condition
 typedef struct objc_condition *objc_condition_t;
 
 /* Frontend mutex functions */
-objc_mutex_t objc_mutex_allocate(void);
-int objc_mutex_deallocate(objc_mutex_t mutex);
-int objc_mutex_lock(objc_mutex_t mutex);
-int objc_mutex_unlock(objc_mutex_t mutex);
-int objc_mutex_trylock(objc_mutex_t mutex);
+objc_mutex_t objc_mutex_allocate (void);
+int objc_mutex_deallocate (objc_mutex_t mutex);
+int objc_mutex_lock (objc_mutex_t mutex);
+int objc_mutex_unlock (objc_mutex_t mutex);
+int objc_mutex_trylock (objc_mutex_t mutex);
 
 /* Frontend condition mutex functions */
-objc_condition_t objc_condition_allocate(void);
-int objc_condition_deallocate(objc_condition_t condition);
-int objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex);
-int objc_condition_signal(objc_condition_t condition);
-int objc_condition_broadcast(objc_condition_t condition);
+objc_condition_t objc_condition_allocate (void);
+int objc_condition_deallocate (objc_condition_t condition);
+int objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex);
+int objc_condition_signal (objc_condition_t condition);
+int objc_condition_broadcast (objc_condition_t condition);
 
 /* Frontend thread functions */
-objc_thread_t objc_thread_detach(SEL selector, id object, id argument);
-void objc_thread_yield(void);
-int objc_thread_exit(void);
-int objc_thread_set_priority(int priority);
-int objc_thread_get_priority(void);
-void * objc_thread_get_data(void);
-int objc_thread_set_data(void *value);
-objc_thread_t objc_thread_id(void);
-void objc_thread_add(void);
-void objc_thread_remove(void);
+objc_thread_t objc_thread_detach (SEL selector, id object, id argument);
+void objc_thread_yield (void);
+int objc_thread_exit (void);
+int objc_thread_set_priority (int priority);
+int objc_thread_get_priority (void);
+void * objc_thread_get_data (void);
+int objc_thread_set_data (void *value);
+objc_thread_t objc_thread_id (void);
+void objc_thread_add (void);
+void objc_thread_remove (void);
 
 /*
   Use this to set the hook function that will be called when the 
@@ -111,35 +111,35 @@ void objc_thread_remove(void);
   it can be informed; for example, the GNUstep Base Library sets it 
   so it can implement the NSBecomingMultiThreaded notification.
   */
-typedef void (*objc_thread_callback)(void);
-objc_thread_callback objc_set_thread_callback(objc_thread_callback func);
+typedef void (*objc_thread_callback) (void);
+objc_thread_callback objc_set_thread_callback (objc_thread_callback func);
 
 /* Backend initialization functions */
-int __objc_init_thread_system(void);
-int __objc_fini_thread_system(void);
+int __objc_init_thread_system (void);
+int __objc_fini_thread_system (void);
 
 /* Backend mutex functions */
-int __objc_mutex_allocate(objc_mutex_t mutex);
-int __objc_mutex_deallocate(objc_mutex_t mutex);
-int __objc_mutex_lock(objc_mutex_t mutex);
-int __objc_mutex_trylock(objc_mutex_t mutex);
-int __objc_mutex_unlock(objc_mutex_t mutex);
+int __objc_mutex_allocate (objc_mutex_t mutex);
+int __objc_mutex_deallocate (objc_mutex_t mutex);
+int __objc_mutex_lock (objc_mutex_t mutex);
+int __objc_mutex_trylock (objc_mutex_t mutex);
+int __objc_mutex_unlock (objc_mutex_t mutex);
 
 /* Backend condition mutex functions */
-int __objc_condition_allocate(objc_condition_t condition);
-int __objc_condition_deallocate(objc_condition_t condition);
-int __objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex);
-int __objc_condition_broadcast(objc_condition_t condition);
-int __objc_condition_signal(objc_condition_t condition);
+int __objc_condition_allocate (objc_condition_t condition);
+int __objc_condition_deallocate (objc_condition_t condition);
+int __objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex);
+int __objc_condition_broadcast (objc_condition_t condition);
+int __objc_condition_signal (objc_condition_t condition);
 
 /* Backend thread functions */
-objc_thread_t __objc_thread_detach(void (*func)(void *arg), void *arg);
-int __objc_thread_set_priority(int priority);
-int __objc_thread_get_priority(void);
-void __objc_thread_yield(void);
-int __objc_thread_exit(void);
-objc_thread_t __objc_thread_id(void);
-int __objc_thread_set_data(void *value);
-void * __objc_thread_get_data(void);
+objc_thread_t __objc_thread_detach (void (*func) (void *arg), void *arg);
+int __objc_thread_set_priority (int priority);
+int __objc_thread_get_priority (void);
+void __objc_thread_yield (void);
+int __objc_thread_exit (void);
+objc_thread_t __objc_thread_id (void);
+int __objc_thread_set_data (void *value);
+void * __objc_thread_get_data (void);
 
 #endif /* not __thread_INCLUDE_GNU */

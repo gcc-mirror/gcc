@@ -1,3 +1,25 @@
+2002-07-02  Rodney Brown  <rbrown64@csc.com.au>
+
+	* objc/encoding.h: Fix formatting.
+	* objc/hash.h: Likewise.
+	* objc/objc-api.h: Likewise.
+	* objc/runtime.h: Likewise.
+	* objc/thr.h: Likewise.
+	* archive.c: Likewise.
+	* class.c: Likewise.
+	* encoding.c: Likewise.
+	* gc.c: Likewise.
+	* hash.c: Likewise.
+	* init.c: Likewise.
+	* misc.c: Likewise.
+	* nil_method.c: Likewise.
+	* objects.c: Likewise.
+	* sarray.c: Likewise.
+	* selector.c: Likewise.
+	* sendmsg.c: Likewise.
+	* thr-mach.c: Likewise.
+	* thr.c: Likewise.
+
 2002-06-25  DJ Delorie  <dj@redhat.com>
 
 	* aclocal.m4 (GLIBCPP_CONFIGURE): Split out

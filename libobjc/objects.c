@@ -32,29 +32,29 @@ Boston, MA 02111-1307, USA.  */
 # include <gc.h>
 #endif
 
-id __objc_object_alloc(Class);
-id __objc_object_dispose(id);
-id __objc_object_copy(id);
+id __objc_object_alloc (Class);
+id __objc_object_dispose (id);
+id __objc_object_copy (id);
 
-id (*_objc_object_alloc)(Class)   = __objc_object_alloc;   /* !T:SINGLE */ 
-id (*_objc_object_dispose)(id)    = __objc_object_dispose; /* !T:SINGLE */
-id (*_objc_object_copy)(id)       = __objc_object_copy;    /* !T:SINGLE */
+id (*_objc_object_alloc) (Class)   = __objc_object_alloc;   /* !T:SINGLE */ 
+id (*_objc_object_dispose) (id)    = __objc_object_dispose; /* !T:SINGLE */
+id (*_objc_object_copy) (id)       = __objc_object_copy;    /* !T:SINGLE */
 
 id
-class_create_instance(Class class)
+class_create_instance (Class class)
 {
   id new = nil;
 
 #if OBJC_WITH_GC
-  if (CLS_ISCLASS(class))
-    new = (id)GC_malloc_explicitly_typed (class->instance_size,
-					  class->gc_object_type);
+  if (CLS_ISCLASS (class))
+    new = (id) GC_malloc_explicitly_typed (class->instance_size,
+					   class->gc_object_type);
 #else
-  if (CLS_ISCLASS(class))
-    new = (*_objc_object_alloc)(class);
+  if (CLS_ISCLASS (class))
+    new = (*_objc_object_alloc) (class);
 #endif
 
-  if (new!=nil)
+  if (new != nil)
     {
       memset (new, 0, class->instance_size);
       new->class_pointer = class;
@@ -63,43 +63,41 @@ class_create_instance(Class class)
 }
 
 id
-object_copy(id object)
+object_copy (id object)
 {
-  if ((object!=nil)&&CLS_ISCLASS(object->class_pointer))
-    return (*_objc_object_copy)(object);
+  if ((object != nil) && CLS_ISCLASS (object->class_pointer))
+    return (*_objc_object_copy) (object);
   else
     return nil;
 }
 
 id
-object_dispose(id object)
+object_dispose (id object)
 {
-  if ((object!=nil)&&CLS_ISCLASS(object->class_pointer))
+  if ((object != nil) && CLS_ISCLASS (object->class_pointer))
     {
       if (_objc_object_dispose)
-        (*_objc_object_dispose)(object);
+        (*_objc_object_dispose) (object);
       else
-        objc_free(object);
+        objc_free (object);
     }
   return nil;
 }
 
-id __objc_object_alloc(Class class)
+id __objc_object_alloc (Class class)
 {
-  return (id)objc_malloc(class->instance_size);
+  return (id) objc_malloc (class->instance_size);
 }
 
-id __objc_object_dispose(id object) 
+id __objc_object_dispose (id object) 
 {
-  objc_free(object);
+  objc_free (object);
   return 0;
 }
 
-id __objc_object_copy(id object)
+id __objc_object_copy (id object)
 {
-  id copy = class_create_instance(object->class_pointer);
-  memcpy(copy, object, object->class_pointer->instance_size);
+  id copy = class_create_instance (object->class_pointer);
+  memcpy (copy, object, object->class_pointer->instance_size);
   return copy;
 }
-
-

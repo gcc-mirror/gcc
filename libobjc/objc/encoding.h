@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1997, 2002 Free Software Foundation, Inc.
 
 Author: Kresten Krab Thorup
 
@@ -50,30 +50,30 @@ Boston, MA 02111-1307, USA.  */
 #define _F_ONEWAY	0x10
 #define _F_GCINVISIBLE	0x20
 
-int objc_aligned_size (const char* type);
-int objc_sizeof_type (const char* type);
-int objc_alignof_type (const char* type);
-int objc_aligned_size (const char* type);
-int objc_promoted_size (const char* type);
+int objc_aligned_size (const char *type);
+int objc_sizeof_type (const char *type);
+int objc_alignof_type (const char *type);
+int objc_aligned_size (const char *type);
+int objc_promoted_size (const char *type);
 
-const char* objc_skip_type_qualifiers (const char* type);
-const char* objc_skip_typespec (const char* type);
-const char* objc_skip_offset (const char* type);
-const char* objc_skip_argspec (const char* type);
-int method_get_number_of_arguments (struct objc_method*);
-int method_get_sizeof_arguments (struct objc_method*);
+const char *objc_skip_type_qualifiers (const char *type);
+const char *objc_skip_typespec (const char *type);
+const char *objc_skip_offset (const char *type);
+const char *objc_skip_argspec (const char *type);
+int method_get_number_of_arguments (struct objc_method *);
+int method_get_sizeof_arguments (struct objc_method *);
 
-char* method_get_first_argument (struct objc_method*,
+char *method_get_first_argument (struct objc_method *,
 				 arglist_t argframe, 
-				 const char** type);
-char* method_get_next_argument (arglist_t argframe, 
+				 const char **type);
+char *method_get_next_argument (arglist_t argframe, 
 				const char **type);
-char* method_get_nth_argument (struct objc_method* m, 
+char *method_get_nth_argument (struct objc_method *m, 
 			       arglist_t argframe,
 			       int arg, 
 			       const char **type);
 
-unsigned objc_get_type_qualifiers (const char* type);
+unsigned objc_get_type_qualifiers (const char *type);
 
 
 struct objc_struct_layout 

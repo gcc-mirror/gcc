@@ -47,7 +47,7 @@ hash_new (unsigned int size, hash_func_type hash_func,
 
   /* Pass me a value greater than 0 and a power of 2.  */
   assert (size);
-  assert (!(size & (size - 1)));
+  assert (! (size & (size - 1)));
 
   /* Allocate the cache structure.  calloc insures
      its initialization for default values.  */
@@ -196,7 +196,7 @@ hash_remove (cache_ptr cache, const void *key)
         objc_free(node);
       } else
         prev = node, node = node->next;
-    } while (!removed && node);
+    } while (! removed && node);
     assert (removed);
   }
 
@@ -210,7 +210,7 @@ hash_next (cache_ptr cache, node_ptr node)
 {
   /* If the scan is being started then reset the last node
      visitied pointer and bucket index.  */
-  if (!node)
+  if (! node)
     cache->last_bucket  = 0;
 
   /* If there is a node visited last then check for another
@@ -258,7 +258,7 @@ hash_value_for_key (cache_ptr cache, const void *key)
               break;
       } else
         node = node->next;
-    } while (!retval && node);
+    } while (! retval && node);
 
   return retval;
 }
