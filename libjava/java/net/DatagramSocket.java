@@ -781,7 +781,7 @@ public class DatagramSocket
    * @exception SocketException If an error occurs
    * @exception IllegalArgumentException If tc value is illegal
    *
-   * @see DatagramSocket:getTrafficClass
+   * @see DatagramSocket#getTrafficClass()
    * 
    * @since 1.4
    */
@@ -800,7 +800,7 @@ public class DatagramSocket
   /**
    * Returns the current traffic class
    * 
-   * @see DatagramSocket:setTrafficClass
+   * @see DatagramSocket#setTrafficClass(int tc)
    *
    * @exception SocketException If an error occurs
    * 

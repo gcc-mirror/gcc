@@ -1017,7 +1017,7 @@ public class Socket
    *
    * @exception SocketException If an error occurs
    *
-   * @see Socket:setTrafficClass
+   * @see Socket#setTrafficClass(int tc)
    *
    * @since 1.4
    */
@@ -1042,7 +1042,7 @@ public class Socket
    * @exception SocketException If an error occurs
    * @exception IllegalArgumentException If tc value is illegal
    *
-   * @see Socket:getTrafficClass
+   * @see Socket#getTrafficClass()
    *
    * @since 1.4
    */

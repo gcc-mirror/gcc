@@ -1,3 +1,12 @@
+2003-03-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java,
+	java/net/MulticastSocket.java,
+	java/net/Socket.java,
+	java/net/URL.java,
+	java/net/URLConnection.java:
+	Fixed some documentation tags to make javadoc and friends happy.
+
 2003-03-10  Michael Koch  <koqnueror@gmx.de>
 
 	* java/beans/beancontext/BeanContextServicesSupport.java,
