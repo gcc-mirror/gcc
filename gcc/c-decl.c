@@ -377,6 +377,7 @@ static struct binding_level *label_level_chain;
 static tree grokparms (), grokdeclarator ();
 tree pushdecl ();
 tree builtin_function ();
+static void declare_function_name ();
 
 static tree lookup_tag ();
 static tree lookup_tag_reverse ();
@@ -2590,9 +2591,33 @@ init_decl_processing ()
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN, 0);
 #endif
 
+  /* Create the global binding of __NAME__.  */
+  declare_function_name ("top level");
+
   start_identifier_warnings ();
 
   init_format_info_table ();
+}
+
+/* Make a binding for __NAME__.  */
+
+static void
+declare_function_name (name)
+     char *name;
+{
+  tree decl, init;
+
+  push_obstacks_nochange ();
+  decl = pushdecl (build_decl (VAR_DECL,
+			       get_identifier ("__NAME__"),
+			       char_array_type_node));
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  init = build_string (strlen (name) + 1, name);
+  TREE_TYPE (init) = char_array_type_node;
+  DECL_INITIAL (decl) = init;
+  finish_decl (decl, init, NULL_TREE);
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -4210,7 +4235,7 @@ get_parm_info (void_at_end)
 
       if (TREE_ASM_WRITTEN (decl))
 	{
-	  error_with_decl (decl, "no real declaration for parameter `%s'");
+	  error_with_decl (decl, "parameter `%s' has just a forward declaration");
 	  TREE_CHAIN (decl) = new_parms;
 	  new_parms = decl;
 	}
@@ -5056,6 +5081,9 @@ start_function (declspecs, declarator, nested)
      (or an implicit decl), propagate certain information about the usage.  */
   if (TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (current_function_decl)))
     TREE_ADDRESSABLE (current_function_decl) = 1;
+
+  /* Declare __NAME__ for this function.  */
+  declare_function_name (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
 
   return 1;
 }
