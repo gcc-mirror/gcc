@@ -1,3 +1,9 @@
+Wed Dec 29 12:44:54 1999  Donald Lindsay  <dlindsay@cygnus.com>
+
+	* configure.in,configure: case arm for mn10200-*-* now sets
+ 	float_format=i32 so that float.h will correctly claim "double"
+	to be 32 bits. Ran autoconf to generate configure from .in file.
+
 Wed Dec 29 10:53:21 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (conditional zero): If op1 is a register, force it into
