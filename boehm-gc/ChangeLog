@@ -1,3 +1,8 @@
+2004-11-29  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/18699
+	Revert patches of 2004-11-26 and 2004-11-27.
+
 2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool change.
