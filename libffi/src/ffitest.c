@@ -222,11 +222,7 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
   signed int si1;
   signed int si2;
 
-#if defined(ALPHA) || defined(IA64) || defined(SPARC64) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))
-  long long rint;
-#else
-  int rint;
-#endif
+  ffi_arg rint;
   long long rlonglong;
 
   ffi_type ts1_type;
