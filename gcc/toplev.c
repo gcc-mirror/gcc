@@ -1498,6 +1498,24 @@ strip_off_ending (name, len)
     name[len - 4] = 0;
 }
 
+/* Output a quoted string.  */
+void
+output_quoted_string (asm_file, string)
+     FILE *asm_file;
+     char *string;
+{
+  char c;
+
+  putc ('\"', asm_file);
+  while ((c = *string++) != 0)
+    {
+      if (c == '\"' || c == '\\')
+	putc ('\\', asm_file);
+      putc (c, asm_file);
+    }
+  putc ('\"', asm_file);
+}
+
 /* Output a file name in the form wanted by System V.  */
 
 void
@@ -1522,7 +1540,9 @@ output_file_directive (asm_file, input_name)
 #ifdef ASM_OUTPUT_SOURCE_FILENAME
   ASM_OUTPUT_SOURCE_FILENAME (asm_file, na);
 #else
-  fprintf (asm_file, "\t.file\t\"%s\"\n", na);
+  fprintf (asm_file, "\t.file\t");
+  output_quoted_string (asm_file, na);
+  fputc ('\n', asm_file);
 #endif
 #endif
 }
