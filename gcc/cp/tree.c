@@ -2259,7 +2259,9 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
 	  return 0;
 	}
 
-      CLASSTYPE_COM_INTERFACE (type) = 1;
+      if (!flag_new_abi)
+	/* The v3 ABI is already COM compliant; don't set this flag.  */
+	CLASSTYPE_COM_INTERFACE (type) = 1;
       return 1;
     }
   else if (is_attribute_p ("init_priority", attr_name))

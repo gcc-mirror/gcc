@@ -787,7 +787,7 @@ ocp_convert (type, expr, convtype, flags)
 	    fn = TREE_OPERAND (expr, 0);
 	  if (fn)
 	    cp_warning ("the address of `%D', will always be `true'", fn);
-	  return truthvalue_conversion (e);
+	  return cp_truthvalue_conversion (e);
 	}
       return fold (convert_to_integer (type, e));
     }
@@ -976,19 +976,17 @@ convert_to_void (expr, implicit)
   
     if (TREE_CODE (probe) == ADDR_EXPR)
       probe = TREE_OPERAND (expr, 0);
-    if (!is_overloaded_fn (probe))
-      ;/* OK */
-    else if (really_overloaded_fn (probe))
-        {
-          /* [over.over] enumerates the places where we can take the address
-             of an overloaded function, and this is not one of them.  */
-          cp_pedwarn ("%s has no context for overloaded function name `%E'",
-                      implicit ? implicit : "void cast", expr);
-        }
-    else if (implicit && probe == expr)
+    if (type_unknown_p (probe))
+      {
+	/* [over.over] enumerates the places where we can take the address
+	   of an overloaded function, and this is not one of them.  */
+	cp_pedwarn ("%s cannot resolve address of overloaded function",
+		    implicit ? implicit : "void cast");
+      }
+    else if (implicit && probe == expr && is_overloaded_fn (probe))
       /* Only warn when there is no &.  */
       cp_warning ("%s is a reference, not call, to function `%E'",
-                    implicit, expr);
+		  implicit, expr);
   }
   
   if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))

@@ -1,5 +1,16 @@
 2001-01-02  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (cp_valid_lang_attribute): Don't set CLASSTYPE_COM_INTERFACE
+	for v3 ABI.
+
+	* typeck.c (cp_truthvalue_conversion): New fn.
+	* cvt.c (ocp_convert): Use it.
+
+	* cp-tree.h: Lose c-common.c decls.
+
+	* typeck.c (build_unary_op): Restore old &a.f diagnostic code.
+	* cvt.c (convert_to_void): Use type_unknown_p.
+
 	* typeck.c (strip_all_pointer_quals): Also strip quals from 
 	pointer-to-member types.
 
