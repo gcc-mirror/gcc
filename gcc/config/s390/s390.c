@@ -3325,7 +3325,7 @@ s390_va_arg (valist, type)
   if (indirect_p)
     {
       r = gen_rtx_MEM (Pmode, addr_rtx);
-      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+      set_mem_alias_set (r, get_varargs_alias_set ());
       emit_move_insn (addr_rtx, r);
     }
 
