@@ -7,8 +7,8 @@
 
 	* builtins.c (apply_args_size): Guard against a NULL cfun.
 	(expand_builtin_apply_args_1): Likewise.
-	(expand_builtin_apply_args_1): Likewise.
 	(expand_builtin_apply): Likewise.
+	Fixes PR bootstrap/12172.
 
 2003-09-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
