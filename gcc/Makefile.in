@@ -684,7 +684,7 @@ OBJS = diagnostic.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
  predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o \
- sibcall.o conflict.o
+ sibcall.o conflict.o timevar.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1470,10 +1470,10 @@ ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 	flags.h $(GGC_H) varray.h hash.h
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-	$(GGC_H) varray.h
+	$(GGC_H) varray.h timevar.h
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h toplev.h \
-	$(GGC_H) varray.h
+	$(GGC_H) varray.h timevar.h
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) $(GGC_H)
 
@@ -1505,7 +1505,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) $(BASIC_BLOCK_H) graph.h loop.h \
-   except.h regs.h $(lang_options_files)
+   except.h regs.h timevar.h $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
@@ -1658,6 +1658,8 @@ lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
+timevar.o : timevar.c $(CONFIG_H) system.h timevar.h timevar.def
+timevar.h : timevar.def
 
 regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h \

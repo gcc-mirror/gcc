@@ -26,10 +26,6 @@ union tree_node;
 struct rtx_def;
 #endif
 
-extern long gc_time;
-extern long parse_time;
-extern long varconst_time;
-
 extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
 extern int count_error			PARAMS ((int));

@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "varray.h"
 #include "flags.h"
 #include "ggc.h"
+#include "timevar.h"
 
 #ifdef HAVE_MMAP_ANYWHERE
 #include <sys/mman.h>
@@ -1101,8 +1102,6 @@ poison_pages ()
 void
 ggc_collect ()
 {
-  long time;
-
   /* Avoid frequent unnecessary work by skipping collection if the
      total allocations haven't expanded much since the last
      collection.  */
@@ -1111,7 +1110,7 @@ ggc_collect ()
     return;
 #endif
 
-  time = get_run_time ();
+  timevar_push (TV_GC);
   if (!quiet_flag)
     fprintf (stderr, " {GC %luk -> ", (unsigned long) G.allocated / 1024);
 
@@ -1136,14 +1135,10 @@ ggc_collect ()
   if (G.allocated_last_gc < GGC_MIN_LAST_ALLOCATED)
     G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
-  time = get_run_time () - time;
-  gc_time += time;
+  timevar_pop (TV_GC);
 
   if (!quiet_flag)
-    {
-      fprintf (stderr, "%luk in %.3f}", 
-	       (unsigned long) G.allocated / 1024, time * 1e-6);
-    }
+    fprintf (stderr, "%luk}", (unsigned long) G.allocated / 1024);
 }
 
 /* Print allocation statistics.  */
