@@ -1,5 +1,10 @@
 2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* tree.h (preserve_data, object_permanent_p, type_precision):
+	Remove.
+
+2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cpplib.c (cpp_init_internal_pragmas): Remove #pragma poison.
 	* cppmacro.c (paste_all_tokens): Bad pastes are a hard error.
 doc:
