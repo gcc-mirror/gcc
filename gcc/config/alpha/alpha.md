@@ -206,7 +206,7 @@
   [(set_attr "type" "iaddlog")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(plus:DI (plus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 				   (match_operand:DI 2 "const48_operand" "I"))
 			  (match_operand:DI 3 "register_operand" "r"))
