@@ -1,3 +1,9 @@
+2000-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (eligible_for_sibcall_delay): Cannot use
+	leaf sibcall delay slot if flag_pic.
+	(output_sibcall): Always emit call for leaf sibcall if flag_pic.
+
 2000-04-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (stmp-fixproto): Acknowledge errors in fixproto.
@@ -44,7 +50,8 @@ Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(ASM_OUTPUT_CASE_END): New, put assembler back into code CSECT.
 	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Remove page check,
 	since vector in in the data CSECT.
-	(ASM_OUTPUT_REG_POP, ASM_OUTPUT_REG_PUSH): Restore to correct operation.        * i370.md (Many patterns): Put the length in the XL directives.
+	(ASM_OUTPUT_REG_POP, ASM_OUTPUT_REG_PUSH): Restore to correct operation.
+        * i370.md (Many patterns): Put the length in the XL directives.
 	(movdi): Put back STM and MVC in definition.
 	(floatsidf2): Correct TARGET_ELF_ABI pattern and add back the LE370
 	pattern using the TCA.
