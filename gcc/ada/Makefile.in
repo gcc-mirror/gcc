@@ -567,6 +567,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-interr.adb<1sinterr.adb \
   s-taskin.ads<1staskin.ads \
   s-taskin.adb<1staskin.adb \
+  s-taspri.ads<1staspri.ads \
   s-tarest.adb<1starest.adb \
   s-tposen.ads<1stposen.ads \
   s-tposen.adb<1stposen.adb \

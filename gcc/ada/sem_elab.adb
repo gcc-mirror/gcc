@@ -963,7 +963,10 @@ package body Sem_Elab is
       --  will be doing the actual call later, not now, and it
       --  is at the time of the actual call (statically speaking)
       --  that we must do our static check, not at the time of
-      --  its initial analysis).
+      --  its initial analysis). However, we have to check calls
+      --  within component definitions (e.g., a function call
+      --  that determines an array component bound), so we
+      --  terminate the loop in that case.
 
       P := Parent (N);
       while Present (P) loop
@@ -972,6 +975,13 @@ package body Sem_Elab is
             Nkind (P) = N_Component_Declaration
          then
             return;
+
+         --  The call occurs within the constraint of a component,
+         --  so it must be checked.
+
+         elsif Nkind (P) = N_Component_Definition then
+            exit;
+
          else
             P := Parent (P);
          end if;

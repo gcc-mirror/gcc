@@ -1868,10 +1868,8 @@ package body Freeze is
 
       --  It is improper to freeze an external entity within a generic
       --  because its freeze node will appear in a non-valid context.
-      --  ??? We should probably freeze the entity at that point and insert
-      --  the freeze node in a proper place but this proper place is not
-      --  easy to find, and the proper scope is not easy to restore. For
-      --  now, just wait to get out of the generic to freeze ???
+      --  The entity will be frozen in the proper scope after the current
+      --  generic is analyzed.
 
       elsif Inside_A_Generic and then External_Ref_In_Generic (E) then
          return No_List;
@@ -2005,7 +2003,8 @@ package body Freeze is
          if Is_Subprogram (E) then
             if not Is_Internal (E) then
                declare
-                  F_Type : Entity_Id;
+                  F_Type    : Entity_Id;
+                  Warn_Node : Node_Id;
 
                   function Is_Fat_C_Ptr_Type (T : Entity_Id) return Boolean;
                   --  Determines if given type entity is a fat pointer type
@@ -2082,12 +2081,30 @@ package body Freeze is
                        and then Warn_On_Export_Import
                      then
                         Error_Msg_Qual_Level := 1;
-                        Error_Msg_N
+
+                        --  If this is an inherited operation, place the
+                        --  warning on the derived type declaration, rather
+                        --  than on the original subprogram.
+
+                        if Nkind (Original_Node (Parent (E))) =
+                          N_Full_Type_Declaration
+                        then
+                           Warn_Node := Parent (E);
+
+                           if Formal = First_Formal (E) then
+                              Error_Msg_NE
+                                ("?in inherited operation&!", Warn_Node, E);
+                           end if;
+                        else
+                           Warn_Node := Formal;
+                        end if;
+
+                        Error_Msg_NE
                           ("?type of argument& is unconstrained array",
-                           Formal);
-                        Error_Msg_N
+                           Warn_Node, Formal);
+                        Error_Msg_NE
                           ("?foreign caller must pass bounds explicitly",
-                           Formal);
+                           Warn_Node, Formal);
                         Error_Msg_Qual_Level := 0;
                      end if;
 

@@ -861,9 +861,19 @@ package body Sem_Attr is
 
       procedure Check_Dereference is
       begin
-         if Is_Object_Reference (P)
-           and then Is_Access_Type (P_Type)
+
+         --  Case of a subtype mark
+
+         if Is_Entity_Name (P)
+           and then Is_Type (Entity (P))
          then
+            return;
+         end if;
+
+         --  Case of an expression
+
+         Resolve (P);
+         if Is_Access_Type (P_Type) then
             Rewrite (P,
               Make_Explicit_Dereference (Sloc (P),
                 Prefix => Relocate_Node (P)));

@@ -1356,7 +1356,7 @@ package body Sem_Ch8 is
       if Old_S /= Any_Id then
 
          if Is_Actual
-           and then Box_Present (Inst_Node)
+           and then From_Default (N)
          then
             --  This is an implicit reference to the default actual
 

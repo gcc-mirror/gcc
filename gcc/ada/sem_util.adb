@@ -3330,6 +3330,13 @@ package body Sem_Util is
            or else Nkind (Object) = N_Slice
          then
             return Is_Dependent_Component_Of_Mutable_Object (Prefix (Object));
+
+         elsif Nkind (Object) = N_Type_Conversion then
+            --  A type conversion that Is_Variable is a view conversion:
+            --  go back to the denoted object.
+            return Is_Dependent_Component_Of_Mutable_Object
+              (Expression (Object));
+
          end if;
       end if;
 
