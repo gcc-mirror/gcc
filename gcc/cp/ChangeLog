@@ -1,3 +1,12 @@
+1998-09-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (get_base_distance): Remove assert.
+
+	* decl2.c (build_anon_union_vars): Don't process a field with no
+	name.
+	(finish_anon_union): Also complain about local anon unions with no
+	members.
+
 1998-09-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (lookup_namespace_name): If the name is a namespace,

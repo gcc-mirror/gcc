@@ -466,12 +466,12 @@ get_base_distance (parent, binfo, protect, path_ptr)
     return -3;
 
   /* If they gave us the real vbase binfo, which isn't in the main binfo
-     tree, deal with it.  */
+     tree, deal with it.  This happens when we are called from
+     expand_upcast_fixups.  */
   if (rval == -1 && TREE_CODE (parent) == TREE_VEC
       && parent == binfo_member (BINFO_TYPE (parent),
 				 CLASSTYPE_VBASECLASSES (type)))
     {
-      my_friendly_abort (980901);
       my_friendly_assert (BINFO_INHERITANCE_CHAIN (parent) == binfo, 980827);
       new_binfo = parent;
       rval = 1;
