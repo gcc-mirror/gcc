@@ -1,3 +1,10 @@
+2000-06-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.c-torture/noncompile/noncompile.exp: Remove poison-1 block.
+	* gcc.c-torture/noncompile/poison-1.c: Move...
+	* gcc.dg/poison-1.c: ...here, and adapt to dg framework.
+	* gcc.dg/cpp-li1.c: Add a token after the #line.
+
 2000-06-05  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/20000605-2.c: New test.
