@@ -201,6 +201,11 @@ AC_TYPE_OFF_T
 
 AC_DEFINE(Skip_f2c_Undefs, 1, [Define to skip f2c undefs.])
 
+# These defines are necessary to get 64-bit file size support.
+
+AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
+AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
+
 AC_OUTPUT(Makefile)
 
 dnl We might have configuration options to:

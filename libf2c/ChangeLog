@@ -1,5 +1,24 @@
 2001-07-07  Toon Moene  <toon@moene.indiv.nluug.nl>
 
+	* libI77/Makefile.in: Update config.h dependencies.
+	* libI77/configure.in: Define _XOPEN_SOURCE and
+	_FILE_OFFSET_BITS unconditionally.
+	* libI77/configure: Rebuilt.
+	* libI77/config.h.in: Rebuilt.
+	* libI77/endfile.c (t_runc): Replace rewind by FSEEK.
+	* libI77/err.c (f__nowwriting): The type of `loc' is off_t.
+	* libI77/open.c (f_open): Replace rewind by FSEEK.
+	* libI77/rewind.c: Include config.h.  (f_rew): Replace
+	rewind by FSEEK.
+	* libI77/sfe.c: Include config.h.
+	* libI77/wsfe.c: Ditto.
+	* libU77/configure.in: Define _XOPEN_SOURCE and
+	_FILE_OFFSET_BITS unconditionally.
+	* libU77/configure: Rebuilt.
+	* libU77/config.hin: Rebuilt.
+
+2001-07-07  Toon Moene  <toon@moene.indiv.nluug.nl>
+
 	* libI77/Makefile.in: Add necessary dependencies on config.h.
 
 2001-07-06  Toon Moene  <toon@moene.indiv.nluug.nl>

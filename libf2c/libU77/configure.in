@@ -107,4 +107,10 @@ AC_SUBST(MAYBES)
 AC_SUBST(CROSS)
 AC_SUBST(RANLIB)
 AC_SUBST(RANLIB_TEST)
+
+# These defines are necessary to get 64-bit file size support.
+
+AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
+AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
+
 AC_OUTPUT(Makefile)

@@ -51,3 +51,9 @@
 /* Define to skip f2c undefs. */
 #undef Skip_f2c_Undefs
 
+/* Get Single Unix Specification semantics */
+#undef _XOPEN_SOURCE
+
+/* Get 64-bit file size support */
+#undef _FILE_OFFSET_BITS
+
