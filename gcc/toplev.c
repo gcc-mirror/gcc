@@ -3025,16 +3025,6 @@ rest_of_compilation (decl)
 	  timevar_pop (TV_JUMP);
 	}
 
-      /* It's important to remove dead code before we call
-	 purge_addressof.  Sometimes, the only ADDRESSOFs for a REG
-	 will be dead, and if we don't get rid of them, we will end up
-	 committing ourselves to dumping the REG to the stack
-	 unnecessarily.  */
-      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg ();
-      life_analysis (insns, rtl_dump_file, 
-		     PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
-      
       /* The second pass of jump optimization is likely to have
          removed a bunch more instructions.  */
       renumber_insns (rtl_dump_file);
