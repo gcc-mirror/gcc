@@ -1,5 +1,12 @@
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
+	* loop.h: Update copyright date.
+        (LOOP_MOVABLES): Fix typo.
+        (LOOP_REGS): Likewise.
+        (LOOP_IVS): Likewise.
+	
+2002-01-03  Graham Stott  <grahams@redhat.com>
+
 	* cppinit.c: Update copyright date.
 	Don't include output.h
 	* Makefile.in: Update copyright date.
