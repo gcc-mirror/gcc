@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.gcj.convert.UnicodeToBytes;
+
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status:  Believed complete and correct to 1.3
@@ -58,6 +60,21 @@ package java.io;
  */
 public class PrintStream extends FilterOutputStream
 {
+  /* Notice the implementation is quite similar to OutputStreamWriter.
+   * This leads to some minor duplication, because neither inherits
+   * from the other, and we want to maximize performance. */
+
+  // Line separator string.
+  private static final char[] line_separator
+    = System.getProperty("line.separator").toCharArray();
+  
+  UnicodeToBytes converter;
+
+  // Work buffer of characters for converter.
+  char[] work = new char[100];
+  // Work buffer of bytes where we temporarily keep converter output.
+  byte[] work_bytes = new byte[100];
+
   /**
    * This boolean indicates whether or not an error has ever occurred
    * on this stream.
@@ -69,16 +86,6 @@ public class PrintStream extends FilterOutputStream
    * <code>false</code> otherwise
    */
   private boolean auto_flush;
-
-  /**
-   * The PrintWriter instance this object writes to
-   */
-  private PrintWriter pw;
-
-  /**
-   * Lets us know if the stream is closed
-   */
-  private boolean closed;
 
   /**
    * This method intializes a new <code>PrintStream</code> object to write
@@ -108,7 +115,7 @@ public class PrintStream extends FilterOutputStream
   {
     super (out);
 
-    pw = new PrintWriter (out, auto_flush);
+    converter = UnicodeToBytes.getDefaultEncoder();
     this.auto_flush = auto_flush;
   }
 
@@ -132,7 +139,7 @@ public class PrintStream extends FilterOutputStream
   {
     super (out);
 
-    pw = new PrintWriter (new OutputStreamWriter (out, encoding), auto_flush);
+    converter = UnicodeToBytes.getEncoder (encoding);
     this.auto_flush = auto_flush;
   }
 
@@ -147,10 +154,8 @@ public class PrintStream extends FilterOutputStream
    */
   public boolean checkError ()
   {
-    if (!closed)
-      flush ();
-
-    return error_occurred | pw.checkError ();
+    flush ();
+    return error_occurred;
   }
 
   /**
@@ -167,8 +172,19 @@ public class PrintStream extends FilterOutputStream
    */
   public void close ()
   {
-    pw.close ();
-    closed = true;
+    try
+      {
+	flush();
+	out.close();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
+      }
+    catch (IOException e)
+      {
+	setError ();
+      }
   }
 
   /**
@@ -177,7 +193,85 @@ public class PrintStream extends FilterOutputStream
    */
   public void flush ()
   {
-    pw.flush();
+    try
+      {
+	out.flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
+      }
+    catch (IOException e)
+      {
+	setError ();
+      }
+  }
+
+  private synchronized void print (String str, boolean println)
+  {
+    try
+      {
+        writeChars(str, 0, str.length());
+	if (println)
+	  writeChars(line_separator, 0, line_separator.length);
+	if (auto_flush)
+	  flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
+      }
+    catch (IOException e)
+      {
+	setError ();
+      }
+  }
+
+  private synchronized void print (char[] chars, int pos, int len,
+				   boolean println)
+  {
+    try
+      {
+        writeChars(chars, pos, len);
+	if (println)
+	  writeChars(line_separator, 0, line_separator.length);
+	if (auto_flush)
+	  flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
+      }
+    catch (IOException e)
+      {
+	setError ();
+      }
+  }
+
+  private void writeChars(char[] buf, int offset, int count)
+    throws IOException
+  {
+    while (count > 0 || converter.havePendingBytes())
+      {
+	converter.setOutput(work_bytes, 0);
+	int converted = converter.write(buf, offset, count);
+	offset += converted;
+	count -= converted;
+	out.write(work_bytes, 0, converter.count);
+      }
+  }
+
+  private void writeChars(String str, int offset, int count)
+    throws IOException
+  {
+    while (count > 0 || converter.havePendingBytes())
+      {
+	converter.setOutput(work_bytes, 0);
+	int converted = converter.write(str, offset, count, work);
+	offset += converted;
+	count -= converted;
+	out.write(work_bytes, 0, converter.count);
+      }
   }
 
   /**
@@ -189,7 +283,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (boolean bool)
   {
-    print (String.valueOf (bool));
+    print(String.valueOf(bool), false);
   }
 
   /**
@@ -200,7 +294,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (int inum)
   {
-    print (String.valueOf (inum));
+    print(String.valueOf(inum), false);
   }
 
   /**
@@ -211,7 +305,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (long lnum)
   {
-    print (String.valueOf (lnum));
+    print(String.valueOf(lnum), false);
   }
 
   /**
@@ -222,7 +316,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (float fnum)
   {
-    print (String.valueOf (fnum));
+    print(String.valueOf(fnum), false);
   }
 
   /**
@@ -233,7 +327,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (double dnum)
   {
-    print (String.valueOf (dnum));
+    print(String.valueOf(dnum), false);
   }
 
   /**
@@ -245,9 +339,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (Object obj)
   {
-    // Don't call pw directly.  Convert to String so we scan for newline
-    // characters on auto-flush;
-    print (String.valueOf (obj));
+    print(obj == null ? "null" : obj.toString(), false);
   }
 
   /**
@@ -258,10 +350,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (String str)
   {
-    pw.print (str);
-
-    if (auto_flush)
-      flush ();
+    print(str == null ? "null" : str, false);
   }
 
   /**
@@ -270,9 +359,10 @@ public class PrintStream extends FilterOutputStream
    *
    * @param ch The <code>char</code> value to be printed
    */
-  public void print (char ch)
+  public synchronized void print (char ch)
   {
-    print (String.valueOf (ch));
+    work[0] = ch;
+    print(work, 0, 1, false);
   }
 
   /**
@@ -283,7 +373,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void print (char[] charArray)
   {
-    pw.print (charArray);
+    print(charArray, 0, charArray.length, false);
   }
 
   /**
@@ -293,7 +383,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println ()
   {
-    pw.println();
+    print(line_separator, 0, line_separator.length, false);
   }
 
   /**
@@ -307,7 +397,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (boolean bool)
   {
-    println (String.valueOf (bool));
+    print(String.valueOf(bool), true);
   }
 
   /**
@@ -320,7 +410,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (int inum)
   {
-    println (String.valueOf (inum));
+    print(String.valueOf(inum), true);
   }
 
   /**
@@ -333,7 +423,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (long lnum)
   {
-    println (String.valueOf (lnum));
+    print(String.valueOf(lnum), true);
   }
 
   /**
@@ -346,7 +436,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (float fnum)
   {
-    println (String.valueOf (fnum));
+    print(String.valueOf(fnum), true);
   }
 
   /**
@@ -359,7 +449,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (double dnum)
   {
-    println (String.valueOf (dnum));
+    print(String.valueOf(dnum), true);
   }
 
   /**
@@ -373,7 +463,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (Object obj)
   {
-    println (String.valueOf (obj));
+    print(obj == null ? "null" : obj.toString(), true);
   }
 
   /**
@@ -386,7 +476,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (String str)
   {
-    pw.println (str);
+    print (str == null ? "null" : str, true);
   }
 
   /**
@@ -397,9 +487,10 @@ public class PrintStream extends FilterOutputStream
    *
    * @param ch The <code>char</code> value to be printed
    */
-  public void println (char ch)
+  public synchronized void println (char ch)
   {
-    println (String.valueOf (ch));
+    work[0] = ch;
+    print(work, 0, 1, true);
   }
 
   /**
@@ -412,7 +503,7 @@ public class PrintStream extends FilterOutputStream
    */
   public void println (char[] charArray)
   {
-    pw.println (charArray);
+    print(charArray, 0, charArray.length, true);
   }
 
   /**
@@ -424,16 +515,16 @@ public class PrintStream extends FilterOutputStream
    */
   public void write (int oneByte)
   {
-    // We actually have to implement this method. Flush first so that
-    // things get written in the right order.
-    flush();
-
     try
       {
         out.write (oneByte & 0xff);
         
         if (auto_flush && (oneByte == '\n'))
           flush ();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread ().interrupt ();
       }
     catch (IOException e)
       {
@@ -451,16 +542,16 @@ public class PrintStream extends FilterOutputStream
    */
   public void write (byte[] buffer, int offset, int len)
   {
-    // We actually have to implement this method too. Flush first so that
-    // things get written in the right order.
-    flush();
-
     try
       {
         out.write (buffer, offset, len);
         
         if (auto_flush)
           flush ();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread ().interrupt ();
       }
     catch (IOException e)
       {
