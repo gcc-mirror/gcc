@@ -15,10 +15,10 @@ foo5			/* { dg-error "foo5" "use of foo5" } */
 #define foo6 345	/* { dg-error "foo6" "def of foo6" } */
 #define foo6 456	/* { dg-error "foo6" "redef of foo6" } */
 #ifdef foo6		/* { dg-error "foo6" "#ifdef foo6" } */
-#error hey!  foo6 poisoned! /* { dg-error "foo6" "poisoned identifiers" } */
+#error hey! foo6 defined!
 #endif
 #if defined(foo6)	/* { dg-error "foo6" "#if defined foo6" } */
-#error foo6 still poisoned! /* { dg-error "foo6" "poisoned identifiers" } */
+#error foo6 still defined!
 #else
 foo6			/* { dg-error "foo6" "use of foo6" } */
 #endif

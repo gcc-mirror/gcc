@@ -18,3 +18,8 @@ F(			/* No diagnostic: don't even try to expand it.  */
 #else
 #error Macros not expanded in #elif
 #endif
+
+/* Check we don't warn about bad identifiers when skipping.  */
+#if 0
+#define foo __VA_ARGS__	/* { dg-bogus "warned about identifier" } */
+#endif

@@ -26,5 +26,5 @@
    { dg-warning "previous"  "prev def ro"   { target *-*-* } 11 }
    { dg-warning "previous"  "prev def va"   { target *-*-* } 14 }
 
-   { dg-warning "named variable"   "named"  { target *-*-* } 14 }
-   { dg-warning "anonymous variable" "anon" { target *-*-* } 15 } */ 
+   { dg-warning "named var" "named variadic"  { target *-*-* } 14 }
+   { dg-warning "anonymous var" "anon variadic" { target *-*-* } 15 } */ 
