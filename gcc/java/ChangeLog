@@ -1,3 +1,12 @@
+2003-09-17  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fixes PR java/9577
+	* mangle.c (find_compression_record_match): Skip
+	over a "6JArray" (the array template mangled string)
+	IDENTIFIER_NODE.
+	(mangle_array_type): Correct minor typo.
+	(atms): Move definition to the beginning.
+
 2003-09-16  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* class.c (add_miranda_methods): Ensure super-interfaces are laid 
