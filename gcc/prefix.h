@@ -1,4 +1,4 @@
-/* Provide prototypes for functions exported from prefix.c. */
+/* Provide prototypes for functions exported from prefix.c.
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
