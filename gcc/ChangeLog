@@ -1,3 +1,7 @@
+2004-07-01  Per Bothner  <per@bothner.com>
+
+	* final.c (final):  Fix typo reported by Aaron W. LaFramboise.
+
 2004-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (expand_assignment): Optimize bitfld += cst for 1 bit
