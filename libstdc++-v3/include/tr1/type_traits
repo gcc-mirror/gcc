@@ -370,6 +370,7 @@ namespace tr1
 #undef _DEFINE_SPEC_0_HELPER
 #undef _DEFINE_SPEC_1_HELPER
 #undef _DEFINE_SPEC_2_HELPER
+#undef _DEFINE_SPEC
 #undef _DEFINE_SPEC_1_VAR
 #undef _DEFINE_SPEC_2_VAR
 

@@ -1,5 +1,9 @@
 2004-12-24  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits: Add missing undef.
+
+2004-12-24  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement is_member_object_pointer,
 	is_member_function_pointer. N.B. Due to c++/19076, the latter
 	doesn't really work at the moment (a rather ugly work around
