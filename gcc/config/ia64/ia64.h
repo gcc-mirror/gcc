@@ -1046,6 +1046,15 @@ enum reg_class
        || (CLASS) == FR_INT_REGS) && (MODE) == XFmode) ? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the mode of the object illegally.  */
+
+#define CLASS_CANNOT_CHANGE_MODE        FR_REGS
+
+/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
+
+#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) 1
+
 /* A C expression that defines the machine-dependent operand constraint letters
    (`I', `J', `K', .. 'P') that specify particular ranges of integer values.  */
 

@@ -229,9 +229,15 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
   {0x00000000, 0x10000000},	/* SHIFT_REGS */		\
   {0xfffffffe, 0x1fffffff}}	/* ALL_REGS */
 
-/* This may not actually be necessary anymore.  But until I can prove
+/* If defined, gives a class of registers that cannot be used as the
+   operand of a SUBREG that changes the mode of the object illegally.  */
+/* ??? This may not actually be necessary anymore.  But until I can prove
    otherwise it will stay.  */
-#define CLASS_CANNOT_CHANGE_SIZE (FP_REGS)
+#define CLASS_CANNOT_CHANGE_MODE	(FP_REGS)
+
+/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
+#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
 
 /* The same information, inverted:
    Return the class number of the smallest class containing

@@ -5305,20 +5305,25 @@ choose_reload_regs (chain)
 		{
 		  enum reg_class class = rld[r].class, last_class;
 		  rtx last_reg = reg_last_reload_reg[regno];
+		  enum machine_mode need_mode;
 
 		  i = REGNO (last_reg) + word;
 		  last_class = REGNO_REG_CLASS (i);
+
+		  need_mode = smallest_mode_for_size ((word+1) * UNITS_PER_WORD,
+						      GET_MODE_CLASS (mode));
+
 		  if (
-#ifdef CLASS_CANNOT_CHANGE_SIZE
+#ifdef CLASS_CANNOT_CHANGE_MODE
 		      (TEST_HARD_REG_BIT
-		       (reg_class_contents[CLASS_CANNOT_CHANGE_SIZE], i)
-		       ? (GET_MODE_SIZE (GET_MODE (last_reg))
-			  == GET_MODE_SIZE (mode) + word * UNITS_PER_WORD)
+		       (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE], i)
+		       ? ! CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (last_reg), 
+						       need_mode)
 		       : (GET_MODE_SIZE (GET_MODE (last_reg))
-			  >= GET_MODE_SIZE (mode) + word * UNITS_PER_WORD))
+			  >= GET_MODE_SIZE (need_mode)))
 #else
 		      (GET_MODE_SIZE (GET_MODE (last_reg))
-		       >= GET_MODE_SIZE (mode) + word * UNITS_PER_WORD)
+		       >= GET_MODE_SIZE (need_mode))
 #endif
 		      && reg_reloaded_contents[i] == regno
 		      && TEST_HARD_REG_BIT (reg_reloaded_valid, i)
