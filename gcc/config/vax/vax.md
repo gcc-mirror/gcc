@@ -1962,7 +1962,7 @@
   if (push_operand (operands[0], SImode))
     return \"pushal %a1\";
   else
-    return \"movabl %a1,%0\";
+    return \"moval %a1,%0\";
 }")
 
 (define_insn ""
