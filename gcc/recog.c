@@ -1358,8 +1358,26 @@ push_operand (op, mode)
 
   op = XEXP (op, 0);
 
-  if (GET_CODE (op) != STACK_PUSH_CODE)
-    return 0;
+  if (PUSH_ROUNDING (GET_MODE_SIZE (mode)) == GET_MODE_SIZE (mode))
+    {
+      if (GET_CODE (op) != STACK_PUSH_CODE)
+	return 0;
+    }
+  else
+    {
+      int rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
+      if (GET_CODE (op) != PRE_MODIFY
+	  || GET_CODE (XEXP (op, 1)) != PLUS
+	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
+	  || GET_CODE (XEXP (XEXP (op, 1), 1)) != CONST_INT
+#ifdef STACK_GROWS_DOWNWARD
+	  || INTVAL (XEXP (XEXP (op, 1), 1)) != -rounded_size
+#else
+	  || INTVAL (XEXP (XEXP (op, 1), 1)) != rounded_size
+#endif
+	  )
+	return 0;
+    }
 
   return XEXP (op, 0) == stack_pointer_rtx;
 }
