@@ -1,3 +1,33 @@
+2005-03-23  Steven Bosscher  <stevenb@suse.de>
+
+	* convert.c (convert): Replace fold (buildN (...)) with fold_buildN.
+	* trans-array.c (gfc_trans_allocate_array_storage,
+	gfc_trans_allocate_temp_array gfc_trans_array_constructor_value,
+	gfc_conv_array_index_ref, gfc_trans_array_bound_check,
+	gfc_conv_array_index_offset, gfc_conv_scalarized_array_ref,
+	gfc_conv_array_ref, gfc_trans_preloop_setup, gfc_conv_ss_startstride,
+	gfc_conv_loop_setup, gfc_array_init_size, gfc_trans_array_bounds,
+	gfc_trans_auto_array_allocation, gfc_trans_dummy_array_bias,
+	gfc_conv_expr_descriptor): Likewise.
+	* trans-expr.c (gfc_conv_powi, gfc_conv_string_tmp,
+	gfc_conv_concat_op, gfc_conv_expr_op): Likewise.
+	* trans-intrinsic.c (build_round_expr, gfc_conv_intrinsic_bound,
+	gfc_conv_intrinsic_cmplx, gfc_conv_intrinsic_sign,
+	gfc_conv_intrinsic_minmaxloc, gfc_conv_intrinsic_minmaxval,
+	gfc_conv_intrinsic_btest, gfc_conv_intrinsic_bitop,
+	gfc_conv_intrinsic_singlebitop, gfc_conv_intrinsic_ibits,
+	gfc_conv_intrinsic_ishft, gfc_conv_intrinsic_ishftc,
+	gfc_conv_intrinsic_merge, prepare_arg_info,
+	gfc_conv_intrinsic_rrspacing, gfc_conv_intrinsic_repeat): Likewise.
+	* trans-stmt.c (gfc_trans_simple_do, gfc_trans_do, gfc_trans_do_while,
+	gfc_trans_forall_loop, gfc_do_allocate, generate_loop_for_temp_to_lhs,
+	generate_loop_for_rhs_to_temp, compute_inner_temp_size,
+	allocate_temp_for_forall_nest, gfc_trans_pointer_assign_need_temp,
+	gfc_trans_forall_1, gfc_evaluate_where_mask, gfc_trans_where_assign):
+	Likewise.
+	* trans-types.c (gfc_get_dtype, gfc_get_array_type_bounds): Likewise.
+	* trans.c (gfc_add_modify_expr): Likewise.
+
 2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* check.c (gfc_check_chdir, gfc_check_chdir_sub, gfc_check_kill,

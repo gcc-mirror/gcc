@@ -152,7 +152,7 @@ gfc_add_modify_expr (stmtblock_t * pblock, tree lhs, tree rhs)
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 #endif
 
-  tmp = fold (build2_v (MODIFY_EXPR, lhs, rhs));
+  tmp = fold_build2 (MODIFY_EXPR, void_type_node, lhs, rhs);
   gfc_add_expr_to_block (pblock, tmp);
 }
 
