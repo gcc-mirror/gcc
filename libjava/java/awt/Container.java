@@ -159,6 +159,25 @@ public class Container extends Component
   }
 
   /**
+   * Swaps the components at position i and j, in the container.
+   */
+
+  protected void swapComponents (int i, int j)
+  {   
+    synchronized (getTreeLock ())
+      {
+        if (i < 0 
+            || i >= component.length
+            || j < 0 
+            || j >= component.length)
+          throw new ArrayIndexOutOfBoundsException ();
+        Component tmp = component[i];
+        component[i] = component[j];
+        component[j] = tmp;
+      }
+  }
+
+  /**
    * Returns the insets for this container, which is the space used for
    * borders, the margin, etc.
    *

@@ -1,3 +1,8 @@
+2004-01-06  Graydon Hoare  <graydon@redhat.com>
+
+	* java/awt/Container.java (swapComponents): Add forgotten
+	function, required for JLayeredPane change.
+
 2004-01-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/CollationElementIterator.java: Reformated.
