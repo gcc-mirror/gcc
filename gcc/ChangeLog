@@ -1,3 +1,11 @@
+Mon Apr  7 14:36:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/10024
+	* cfglayout.c (cfg_layout_redirect_edge):
+	Redirect any branch edges unified with the fallthru one.
+	* cfgrtl.c (force_nonfallthru_and_redirect):  Do not special
+	case fallthru edges when called via cfglayout.c
+
 2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-typeck.c (output_init_element): Check for type == error_mark_node.
