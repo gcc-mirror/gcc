@@ -563,12 +563,28 @@ gen_lowpart_common (mode, x)
   /* If X is an integral constant but we want it in floating-point, it
      must be the case that we have a union of an integer and a floating-point
      value.  If the machine-parameters allow it, simulate that union here
-     and return the result.  */
+     and return the result.  The two-word and single-word cases are 
+     different.  */
 
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	     && HOST_BITS_PER_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+	   && GET_CODE (x) == CONST_INT
+	   && sizeof (float) * HOST_BITS_PER_CHAR == HOST_BITS_PER_INT)
+    {
+      union {int i; float d; } u;
+
+      u.i = INTVAL (x);
+      return immed_real_const_1 (u.d, mode);
+    }
+
+  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	    || flag_pretend_float)
+	   && GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	   && GET_MODE (x) == VOIDmode
 	   && sizeof (double) * HOST_BITS_PER_CHAR == 2 * HOST_BITS_PER_INT)
