@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.0.3.4 19 Mar 1992 11:11:58";
+static char out_sccs_id[] = "@(#)m88k.c	2.1.2.2 27 Mar 1992 08:37:28";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -212,7 +212,8 @@ emit_move_sequence (operands, mode)
     }
   else if (GET_CODE (operand0) == MEM)
     {
-      if (register_operand (operand1, mode) || operand1 == const0_rtx)
+      if (register_operand (operand1, mode)
+	  || (operand1 == const0_rtx && GET_MODE_SIZE (mode) <= UNITS_PER_WORD))
 	{
 	  /* Run this case quickly.  */
 	  emit_insn (gen_rtx (SET, VOIDmode, operand0, operand1));
