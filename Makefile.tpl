@@ -920,7 +920,7 @@ check-[+module+]:
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/[+module+] && \
-	    $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check)
+	    $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check); \
 	fi
 [+ ELSE check +]
 check-[+module+]:
