@@ -1,3 +1,11 @@
+2003-01-03  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
+
+	* gnu/gcj/protocol/http/Connection.java (proxyPort, proxyInUse,
+	proxyHost): New static fields.
+	(<clinit>): Initialize new fields.
+	(connect): Use proxy if necessary.
+	(usingProxy): Implement.
+
 2003-01-03  Eric Blake  <ebb9@email.byu.edu>
 
 	* java/util/TreeMap.java (fabricateTree): Fix off-by-one error.
