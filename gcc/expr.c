@@ -2347,6 +2347,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       int unsignedp;
       int volatilep = 0;
       tree tem;
+      int alignment;
 
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset,
@@ -2358,6 +2359,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (mode1 == VOIDmode && want_value)
 	tem = stabilize_reference (tem);
 
+      alignment = TYPE_ALIGN (TREE_TYPE (tem)) / BITS_PER_UNIT;
       to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, 0);
       if (offset != 0)
 	{
@@ -2368,6 +2370,14 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  to_rtx = change_address (to_rtx, VOIDmode,
 				   gen_rtx (PLUS, Pmode, XEXP (to_rtx, 0),
 					    force_reg (Pmode, offset_rtx)));
+	  /* If we have a variable offset, the known alignment
+	     is only that of the innermost structure containing the field.
+	     (Actually, we could sometimes do better by using the
+	     align of an element of the innermost array, but no need.)  */
+	  if (TREE_CODE (to) == COMPONENT_REF
+	      || TREE_CODE (to) == BIT_FIELD_REF)
+	    alignment
+	      = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (to, 0))) / BITS_PER_UNIT;
 	}
       if (volatilep)
 	{
@@ -2388,7 +2398,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 			     : VOIDmode),
 			    unsignedp,
 			    /* Required alignment of containing datum.  */
-			    TYPE_ALIGN (TREE_TYPE (tem)) / BITS_PER_UNIT,
+			    alignment,
 			    int_size_in_bytes (TREE_TYPE (tem)));
       preserve_temp_slots (result);
       free_temp_slots ();
