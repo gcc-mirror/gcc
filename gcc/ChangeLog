@@ -1,3 +1,8 @@
+2003-02-24  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c (do_spec_1) ['{']:  Handle pending argument upon return
+	from handle_braces in "%{...}".
+
 2003-02-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (TARGET_HAVE_TLS): Conditionally define.
