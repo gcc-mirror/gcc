@@ -1,3 +1,7 @@
+2003-07-08  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Makefile.in (stage1-start): Handle an empty SUBDIRS.
+
 2003-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattr.c (internal_dfa_insn_code): Don't prototype.

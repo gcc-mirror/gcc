@@ -3731,7 +3731,7 @@ compare4-lean: @make_compare_target@4-lean
 stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage1
-	-for dir in $(SUBDIRS) ; \
+	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
 	 do \
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
