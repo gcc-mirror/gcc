@@ -1,3 +1,7 @@
+2001-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.1: Regenerate.
+
 2001-10-16  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* c-tree.texi: Eliminate duplicated word.
