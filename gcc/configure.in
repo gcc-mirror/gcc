@@ -775,15 +775,31 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
+	i[[3456]]86-*-linux*gnulibc1)
+		xm_file=i386/xm-linux.h	# Intel 80386's running Linux
+		xmake_file=x-linux	# with ELF format using the
+		tm_file=i386/linux.h	# Linux C library 5
+		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		broken_install=yes
+		gnu_ld=yes
+ 		if [[ x$thread_file = x ]]; then
+ 			thread_file='single'
+ 		fi
+		;;
 	i[[3456]]86-*-linux*)		# Intel 80386's running Linux
-		xm_file=i386/xm-linux.h # with ELF format
-		xmake_file=x-linux
+		xm_file=i386/xm-linux.h # with ELF format using glibc 2
+		xmake_file=x-linux	# aka Linux C library 6
 		tm_file=i386/linux.h
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
+ 		if [[ x$thread_file = x ]]; then
+ 			thread_file='posix'
+ 		fi
 		;;
 	i[[3456]]86-*-gnu*)
 		;;
