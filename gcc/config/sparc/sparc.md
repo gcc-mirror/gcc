@@ -413,7 +413,7 @@
   [(set (reg:CCFPE 0)
 	(compare:CCFPE (match_operand:TF 0 "register_operand" "f")
 		       (match_operand:TF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fcmpeq %0,%1"
   [(set_attr "type" "fpcmp")])
 
@@ -437,7 +437,7 @@
   [(set (reg:CCFP 0)
 	(compare:CCFP (match_operand:TF 0 "register_operand" "f")
 		      (match_operand:TF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fcmpq %0,%1"
   [(set_attr "type" "fpcmp")])
 
@@ -644,6 +644,10 @@
 
 ;; These control RTL generation for conditional jump insns
 
+;; The quad-word fp compare library routines all return nonzero to indicate
+;; true, which is different from the equivalent libgcc routines, so we must
+;; handle them specially here.
+
 (define_expand "beq"
   [(set (pc)
 	(if_then_else (eq (match_dup 1) (const_int 0))
@@ -651,7 +655,15 @@
 		      (pc)))]
   ""
   "
-{ operands[1] = gen_compare_reg (EQ, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, EQ);
+      emit_insn (gen_bne (operands[0]));
+      DONE;
+    }      
+  operands[1] = gen_compare_reg (EQ, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "bne"
   [(set (pc)
@@ -660,7 +672,15 @@
 		      (pc)))]
   ""
   "
-{ operands[1] = gen_compare_reg (NE, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, NE);
+      emit_insn (gen_bne (operands[0]));
+      DONE;
+    }      
+  operands[1] = gen_compare_reg (NE, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "bgt"
   [(set (pc)
@@ -669,7 +689,15 @@
 		      (pc)))]
   ""
   "
-{ operands[1] = gen_compare_reg (GT, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GT);
+      emit_insn (gen_bne (operands[0]));
+      DONE;
+    }      
+  operands[1] = gen_compare_reg (GT, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "bgtu"
   [(set (pc)
@@ -688,7 +716,15 @@
 		      (pc)))]
   ""
   "
-{ operands[1] = gen_compare_reg (LT, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LT);
+      emit_insn (gen_bne (operands[0]));
+      DONE;
+    }      
+  operands[1] = gen_compare_reg (LT, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "bltu"
   [(set (pc)
@@ -707,7 +743,15 @@
 		      (pc)))]
   ""
   "
-{ operands[1] = gen_compare_reg (GE, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, GE);
+      emit_insn (gen_bne (operands[0]));
+      DONE;
+    }      
+  operands[1] = gen_compare_reg (GE, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "bgeu"
   [(set (pc)
@@ -726,7 +770,15 @@
 		      (pc)))]
   ""
   "
-{ operands[1] = gen_compare_reg (LE, sparc_compare_op0, sparc_compare_op1); }")
+{
+  if (GET_MODE (sparc_compare_op0) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, LE);
+      emit_insn (gen_bne (operands[0]));
+      DONE;
+    }      
+  operands[1] = gen_compare_reg (LE, sparc_compare_op0, sparc_compare_op1);
+}")
 
 (define_expand "bleu"
   [(set (pc)
@@ -1585,7 +1637,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(float_extend:TF
 	 (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fstoq %1,%0"
   [(set_attr "type" "fp")])
 
@@ -1593,7 +1645,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(float_extend:TF
 	 (match_operand:DF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fdtoq %1,%0"
   [(set_attr "type" "fp")])
 
@@ -1609,7 +1661,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF
 	 (match_operand:TF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtos %1,%0"
   [(set_attr "type" "fp")])
 
@@ -1617,7 +1669,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float_truncate:DF
 	 (match_operand:TF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtod %1,%0"
   [(set_attr "type" "fp")])
 
@@ -1640,7 +1692,7 @@
 (define_insn "floatsitf2"
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(float:TF (match_operand:SI 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fitoq %1,%0"
   [(set_attr "type" "fp")])
 
@@ -1664,7 +1716,7 @@
 (define_insn "fix_trunctfsi2"
   [(set (match_operand:SI 0 "register_operand" "=f")
 	(fix:SI (fix:TF (match_operand:TF 1 "register_operand" "f"))))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtoi %1,%0"
   [(set_attr "type" "fp")])
 
@@ -2409,7 +2461,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(plus:TF (match_operand:TF 1 "register_operand" "f")
 		 (match_operand:TF 2 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "faddq %1,%2,%0"
   [(set_attr "type" "fp")])
 
@@ -2433,7 +2485,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(minus:TF (match_operand:TF 1 "register_operand" "f")
 		  (match_operand:TF 2 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fsubq %1,%2,%0"
   [(set_attr "type" "fp")])
 
@@ -2457,7 +2509,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(mult:TF (match_operand:TF 1 "register_operand" "f")
 		 (match_operand:TF 2 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fmulq %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
@@ -2497,7 +2549,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(div:TF (match_operand:TF 1 "register_operand" "f")
 		(match_operand:TF 2 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fdivq %1,%2,%0"
   [(set_attr "type" "fpdiv")])
 
@@ -2574,7 +2626,7 @@
 (define_insn "sqrttf2"
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(sqrt:TF (match_operand:TF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && TARGET_HARD_QUAD"
   "fsqrtq %1,%0"
   [(set_attr "type" "fpsqrt")])
 
