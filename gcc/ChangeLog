@@ -1,3 +1,9 @@
+2002-03-15  Jason Merrill  <jason@redhat.com>
+
+	* varasm.c (assemble_variable): Call resolve_unique_section before
+	checking DECL_SECTION_NAME.  Use zeros for a decl with DECL_INITIAL
+	of error_mark_node.
+
 2002-03-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/5170
