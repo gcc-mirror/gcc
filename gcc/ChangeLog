@@ -1,3 +1,7 @@
+2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* .cvsignore: Add info files.
+
 2000-12-08 Laurynas Biveinis <lauras@softhome.net>
 
 	* config/winnt: Remove obsolete directory.

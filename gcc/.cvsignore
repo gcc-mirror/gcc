@@ -5,3 +5,6 @@ c-parse.y
 c-parse.h
 c-parse.c
 tradcif.c
+gcc.info*
+cpp.info*
+c-tree.info*
