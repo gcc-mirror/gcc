@@ -100,12 +100,14 @@ tree pending_vtables;
    static class variable can be declared inside the class without
    an initializer, and then initialized, staticly, outside the class.  */
 static varray_type pending_statics;
-static size_t pending_statics_used;
+#define pending_statics_used \
+  (pending_statics ? pending_statics->elements_used : 0)
 
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
 static varray_type saved_inlines;
-static size_t saved_inlines_used;
+#define saved_inlines_used \
+  (saved_inlines ? saved_inlines->elements_used : 0)
 
 /* Same, but not reset.  Local temp variables and global temp variables
    can have the same name.  */
@@ -1484,12 +1486,7 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
     {
       if (!pending_statics)
 	VARRAY_TREE_INIT (pending_statics, 32, "pending_statics");
-	
-      if (pending_statics_used == pending_statics->num_elements)
-	VARRAY_GROW (pending_statics, 
-		     2 * pending_statics->num_elements);
-      VARRAY_TREE (pending_statics, pending_statics_used) = decl;
-      ++pending_statics_used;
+      VARRAY_PUSH_TREE (pending_statics, decl);
     }
 
   /* Static consts need not be initialized in the class definition.  */
@@ -1966,12 +1963,8 @@ mark_inline_for_output (decl)
   DECL_SAVED_INLINE (decl) = 1;
   if (!saved_inlines)
     VARRAY_TREE_INIT (saved_inlines, 32, "saved_inlines");
-  
-  if (saved_inlines_used == saved_inlines->num_elements)
-    VARRAY_GROW (saved_inlines, 
-		 2 * saved_inlines->num_elements);
-  VARRAY_TREE (saved_inlines, saved_inlines_used) = decl;
-  ++saved_inlines_used;
+
+  VARRAY_PUSH_TREE (saved_inlines, decl);
 }
 
 /* Hand off a unique name which can be used for variable we don't really
@@ -2896,7 +2889,6 @@ static tree ssdf_decl;
 /* All the static storage duration functions created in this
    translation unit.  */
 static varray_type ssdf_decls;
-static size_t ssdf_decls_used;
 
 /* A map from priority levels to information about that priority
    level.  There may be many such levels, so efficient lookup is
@@ -2969,10 +2961,7 @@ start_static_storage_duration_function ()
       get_priority_info (DEFAULT_INIT_PRIORITY);
     }
 
-  if (ssdf_decls_used == ssdf_decls->num_elements)
-    VARRAY_GROW (ssdf_decls, 2 * ssdf_decls_used);
-  VARRAY_TREE (ssdf_decls, ssdf_decls_used) = ssdf_decl;
-  ++ssdf_decls_used;
+  VARRAY_PUSH_TREE (ssdf_decls, ssdf_decl);
 
   /* Create the argument list.  */
   initialize_p_decl = build_decl (PARM_DECL,
@@ -3324,7 +3313,7 @@ generate_ctor_or_dtor_function (constructor_p, priority)
 
   /* Call the static storage duration function with appropriate
      arguments.  */
-  for (i = 0; i < ssdf_decls_used; ++i) 
+  for (i = 0; i < ssdf_decls->elements_used; ++i) 
     {
       arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
 			     NULL_TREE);
