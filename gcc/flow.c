@@ -473,7 +473,7 @@ count_basic_blocks (f)
       if (code == CALL_INSN)
 	{
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	  int region = (note ? XINT (XEXP (note, 0), 0) : 1);
+	  int region = (note ? XWINT (XEXP (note, 0), 0) : 1);
 	  prev_call = insn;
 	  call_had_abnormal_edge = 0;
 
@@ -553,7 +553,7 @@ find_basic_blocks_1 (f, bb_eh_end)
 	{
 	  /* Record whether this call created an edge.  */
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	  int region = (note ? XINT (XEXP (note, 0), 0) : 1);
+	  int region = (note ? XWINT (XEXP (note, 0), 0) : 1);
 	  call_has_abnormal_edge = 0;
 
 	  /* If there is an EH region, we have an edge.  */
@@ -1613,7 +1613,7 @@ delete_eh_regions ()
 	if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG) ||
 	    (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)) 
 	  {
-	    int num = CODE_LABEL_NUMBER (insn);
+	    int num = NOTE_EH_HANDLER (insn);
 	    /* A NULL handler indicates a region is no longer needed,
 	       as long as it isn't the target of a rethrow.  */
 	    if (get_first_handler (num) == NULL && ! rethrow_used (num))

@@ -1110,6 +1110,7 @@ reload (first, global, dumpfile)
 	  if (reg_renumber[i] < 0)
 	    {
 	      rtx reg = regno_reg_rtx[i];
+	      PUT_CODE (reg, MEM);
 	      XEXP (reg, 0) = addr;
 	      REG_USERVAR_P (reg) = 0;
 	      RTX_UNCHANGING_P (reg) = is_readonly;
@@ -1118,7 +1119,6 @@ reload (first, global, dumpfile)
 	      /* We have no alias information about this newly created
 		 MEM.  */
 	      MEM_ALIAS_SET (reg) = 0;
-	      PUT_CODE (reg, MEM);
 	    }
 	  else if (reg_equiv_mem[i])
 	    XEXP (reg_equiv_mem[i], 0) = addr;

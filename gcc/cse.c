@@ -2166,7 +2166,7 @@ canon_hash (x, mode)
       if (GET_MODE (x) != VOIDmode)
 	for (i = 2; i < GET_RTX_LENGTH (CONST_DOUBLE); i++)
 	  {
-	    unsigned tem = XINT (x, i);
+	    unsigned HOST_WIDE_INT tem = XWINT (x, i);
 	    hash += tem;
 	  }
       else
@@ -7384,13 +7384,13 @@ cse_insn (insn, libcall_insn)
 	 the insn.  */
       else if (n_sets == 1 && dest == pc_rtx && src == pc_rtx)
 	{
+	  /* One less use of the label this insn used to jump to.  */
+	  if (JUMP_LABEL (insn) != 0)
+	    --LABEL_NUSES (JUMP_LABEL (insn));
 	  PUT_CODE (insn, NOTE);
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	  NOTE_SOURCE_FILE (insn) = 0;
 	  cse_jumps_altered = 1;
-	  /* One less use of the label this insn used to jump to.  */
-	  if (JUMP_LABEL (insn) != 0)
-	    --LABEL_NUSES (JUMP_LABEL (insn));
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
 	}

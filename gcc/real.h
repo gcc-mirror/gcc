@@ -452,7 +452,7 @@ union real_extract
 #define CONST_DOUBLE_HIGH(r) XWINT (r, 3)
 
 /* Link for chain of all CONST_DOUBLEs in use in current function.  */
-#define CONST_DOUBLE_CHAIN(r) XEXP (r, 1)
+#define CONST_DOUBLE_CHAIN(r) X0EXP (r, 1)
 /* The MEM which represents this CONST_DOUBLE's value in memory,
    or const0_rtx if no MEM has been made for it yet,
    or cc0_rtx if it is not on the chain.  */

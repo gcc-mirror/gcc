@@ -1631,7 +1631,7 @@ loc_mentioned_in_p (loc, in)
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
-      if (loc == &XEXP (in, i))
+      if (loc == &in->fld[i].rtx)
 	return 1;
       if (fmt[i] == 'e')
         {

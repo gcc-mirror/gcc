@@ -971,11 +971,11 @@ update_equiv_regs ()
 
 		  emit_insn_before (copy_rtx (PATTERN (equiv_insn)), insn);
 		  REG_NOTES (PREV_INSN (insn)) = REG_NOTES (equiv_insn);
+		  REG_NOTES (equiv_insn) = 0;
 
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (equiv_insn) = 0;
-		  REG_NOTES (equiv_insn) = 0;
 
 		  if (block < 0)
 		    REG_BASIC_BLOCK (regno) = 0;
@@ -1071,8 +1071,6 @@ block_alloc (b)
   insn = BLOCK_HEAD (b);
   while (1)
     {
-      register rtx body = PATTERN (insn);
-
       if (GET_CODE (insn) != NOTE)
 	insn_number++;
 
@@ -1083,6 +1081,9 @@ block_alloc (b)
 	  register rtx r0, r1;
 	  int combined_regno = -1;
 	  int i;
+#ifndef REGISTER_CONSTRAINTS
+	  register rtx body = PATTERN (insn);
+#endif
 
 	  this_insn_number = insn_number;
 	  this_insn = insn;
@@ -1184,11 +1185,11 @@ block_alloc (b)
 			 can only be in the same register as the output, give
 			 priority to an equivalence found from that insn.  */
 		      int may_save_copy
-			= ((SET_DEST (body) == r0 && SET_SRC (body) == r1)
 #ifdef REGISTER_CONSTRAINTS
-			   || (r1 == recog_operand[i] && must_match_0 >= 0)
+			= (r1 == recog_operand[i] && must_match_0 >= 0);
+#else
+			= (SET_DEST (body) == r0 && SET_SRC (body) == r1);
 #endif
-			   );
 		      
 		      if (GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG)
 			win = combine_regs (r1, r0, may_save_copy,

@@ -7797,7 +7797,8 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	    }
 	}
     }
-  else if (INTVAL (bl->biv->add_val) > 0)
+  else if (GET_CODE (bl->biv->add_val) == CONST_INT
+	   && INTVAL (bl->biv->add_val) > 0)
     {
       /* Try to change inc to dec, so can apply above optimization.  */
       /* Can do this if:

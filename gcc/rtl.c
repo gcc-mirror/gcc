@@ -387,7 +387,6 @@ copy_rtx (orig)
 	    XEXP (copy, i) = copy_rtx (XEXP (orig, i));
 	  break;
 
-	case '0':
 	case 'u':
 	  XEXP (copy, i) = XEXP (orig, i);
 	  break;
@@ -428,6 +427,11 @@ copy_rtx (orig)
 	  XSTR (copy, i) = XSTR (orig, i);
 	  break;
 
+	case '0':
+	  /* Copy this through the wide int field; that's safest. */
+	  X0WINT (copy, i) = X0WINT (orig, i);
+	  break;
+	  
 	default:
 	  abort ();
 	}
@@ -487,7 +491,6 @@ copy_most_rtx (orig, may_share)
 	    XEXP (copy, i) = copy_most_rtx (XEXP (orig, i), may_share);
 	  break;
 
-	case '0':
 	case 'u':
 	  XEXP (copy, i) = XEXP (orig, i);
 	  break;
@@ -520,6 +523,11 @@ copy_most_rtx (orig, may_share)
 	case 's':
 	case 'S':
 	  XSTR (copy, i) = XSTR (orig, i);
+	  break;
+
+	case '0':
+	  /* Copy this through the wide int field; that's safest. */
+	  X0WINT (copy, i) = X0WINT (orig, i);
 	  break;
 
 	default:
@@ -934,6 +942,65 @@ read_rtx (infile)
   return return_rtx;
 }
 
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+void
+rtl_check_failed_bounds (r, n, file, line, func)
+    rtx r;
+    int n;
+    const char *file;
+    int line;
+    const char *func;
+{
+  error ("RTL check: access of elt %d of `%s' with last elt %d",
+	 n, GET_RTX_NAME (GET_CODE (r)), GET_RTX_LENGTH (GET_CODE (r))-1);
+  fancy_abort (file, line, func);
+}
+
+void
+rtl_check_failed_type1 (r, n, c1, file, line, func)
+    rtx r;
+    int n;
+    int c1;
+    const char *file;
+    int line;
+    const char *func;
+{
+  error ("RTL check: expected elt %d type '%c', have '%c' (rtx %s)",
+	 n, c1, GET_RTX_FORMAT (GET_CODE (r))[n], GET_RTX_NAME (GET_CODE (r)));
+  fancy_abort (file, line, func);
+}
+
+void
+rtl_check_failed_type2 (r, n, c1, c2, file, line, func)
+    rtx r;
+    int n;
+    int c1;
+    int c2;
+    const char *file;
+    int line;
+    const char *func;
+{
+  error ("RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s)",
+	 n, c1, c2,
+	 GET_RTX_FORMAT (GET_CODE (r))[n], GET_RTX_NAME (GET_CODE(r)));
+  fancy_abort (file, line, func);
+}
+
+/* XXX Maybe print the vector?  */
+void
+rtvec_check_failed_bounds (r, n, file, line, func)
+    rtvec r;
+    int n;
+    const char *file;
+    int line;
+    const char *func;
+{
+  error ("RTL check: access of elt %d of vector with last elt %d",
+	 n, GET_NUM_ELEM (r)-1);
+  fancy_abort (file, line, func);
+}
+#endif /* ENABLE_CHECKING */
+
 /* These are utility functions used by fatal-error functions all over the
    code.  rtl.c happens to be linked by all the programs that need them,
    so these are here.  In the future we want to break out all error handling
@@ -962,11 +1029,10 @@ trim_filename (name)
 }
 
 /* Report an internal compiler error in a friendly manner and without
-   dumping core.  There are two versions because __FUNCTION__ isn't
-   available except in gcc 2.7 and later.  */
+   dumping core.  */
 
 extern void fatal PVPROTO ((const char *, ...))
-    ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 void
 fancy_abort (file, line, function)
