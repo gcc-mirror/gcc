@@ -1,3 +1,92 @@
+Mon Dec 16 22:43:31 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cp-tree.h (ptr_reasonably_similar): Add decl.
+
+Thu Dec 12 15:00:35 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (grokvardecl): Change SPECBITS parm to be the SPECBITS_IN
+	pointer.  New local SPECBITS with the parm's value.
+	(grokdeclarator): Pass &specbits down.
+
+	* parse.y (expr_no_commas): Make sure $$ is not an error_mark_node
+	before we try to do C_SET_EXP_ORIGINAL_CODE on it.
+
+	* search.c (envelope_add_decl): Check that the CLASSTYPE_CID of
+	CONTEXT is not 0 before we try to use TYPE_DERIVES_FROM.
+
+	* decl.c (cplus_expand_expr_stmt): Only expand the expr if EXP is
+	not an error_mark_node.
+
+Sat Dec  7 17:20:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (TYPE_MAIN_DECL): Use TYPE_STUB_DECL.
+	* *.c: Use TYPE_MAIN_DECL instead of TYPE_NAME where appropriate.
+	
+Fri Dec  6 14:40:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): When giving an anonymous struct a name,
+	replace TYPE_NAME instead of TYPE_IDENTIFIER (so TYPE_STUB_DECL is
+	not affected).
+
+	* typeck2.c (build_m_component_ref): If component is a pointer
+	to data member, resolve the OFFSET_REF now.
+
+	* call.c (convert_like): Don't go into infinite recursion.
+
+	* pt.c (coerce_template_parms): Use tsubst_expr for non-type args.
+
+	* class.c (finish_struct_1): Set DECL_ARTIFICIAL on the vptr.
+	* tree.c (layout_basetypes): And on the vbase ptr.
+
+Thu Dec  5 02:11:28 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (BOOL_TYPE_SIZE): Define in terms of POINTER_SIZE or
+	CHAR_TYPE_SIZE so bool is always the same size as another type.
+
+	* decl.c (pushtag): Set DECL_IGNORED_P for DWARF, too.
+
+Tue Dec  3 23:18:37 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (grok_x_components): Remove synthesized methods from
+ 	TYPE_METHODS of an anonymous union, complain about member
+ 	functions.
+	* decl.c (shadow_tag): Wipe out memory of synthesized methods in
+	anonymous unions.
+	(finish_function): Just clear the DECL_RTL of our arguments.
+
+Fri Nov 29 21:54:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Emit DWARF debugging info for static data
+	members.
+
+	* pt.c (tsubst): If t is a stub decl, return the stub decl for type.
+
+Wed Nov 27 14:47:15 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (build_component_ref): Don't die if COMPONENT isn't a
+ 	IDENTIFIER_NODE.
+
+Wed Nov 27 16:05:19 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
+
+	* Make-lang.in (g++-cross$(exeext)): Fix typo.
+
+Wed Nov 27 08:14:00 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	Make the g++ driver now be a standalone program, rather than one
+	that tries to run the gcc driver after munging up the options.
+	* Make-lang.in (g++.c, g++spec.o): New rules.
+	(g++.o): New rule, based on gcc.o with -DLANG_SPECIFIC_DRIVER
+	added.
+	(g++$(exeext)): New rule, based on xgcc rule.
+	(g++-cross$(exeext)): Now just copies g++$(exeext) over.
+	* g++spec.c: New file.
+	* g++.c: Removed file.
+
+Tue Nov 26 19:01:09 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (build_up_reference): Arrange for any temporary values
+	that have been keep in registers until now to be put into memory.
+
 Mon Nov 25 15:16:41 1996  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (c++.stage[1234]): Depend upon stage[1-4]-start, so
@@ -11,8 +100,6 @@ Thu Nov 21 16:30:24 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (c_expand_return): Fix logic.
 	(unary_complex_lvalue): Avoid unused warning on address of INIT_EXPR.
-
-	* decl.c (grokfndecl): Also note_debug_info_needed on ctype here.
 
 Wed Nov 20 18:47:31 1996  Bob Manson  <manson@charmed.cygnus.com>
 
@@ -186,20 +273,10 @@ Mon Nov 11 13:20:34 1996  Bob Manson  <manson@charmed.cygnus.com>
 Fri Nov  8 17:38:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Don't emit debug info.
-	* decl.c (start_function): Call note_debug_info_needed for context.
-	(start_decl): Likewise.
-	(cp_finish_decl): Not here.
-	(finish_function): Or here.
-	(pushdecl): Lose obsolete code.
+	* decl.c (pushdecl): Lose obsolete code.
 	(grokdeclarator): Still do the long long thing after complaining.
-	(finish_enum): Don't call rest_of_type_compilation
-	for DWARF.
-	* class.c (finish_struct_1): Don't call rest_of_type_compilation
-	for DWARF.
-	* search.c (dfs_debug_mark): For DWARF, just call
- 	rest_of_type_compilation.
-	(note_debug_info_needed): Don't do anything if we're in a template.
-	* parse.y (named_complex_class_head_sans_basetype): Likewise.
+	* search.c (note_debug_info_needed): Don't do anything if we're in a 
+	template.
 	* method.c (synthesize_method): For non-local classes,
  	push_to_top_level first.
 

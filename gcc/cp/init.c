@@ -2227,7 +2227,7 @@ is_friend (type, supplicant)
   if (declp)
     /* It's a function decl.  */
     {
-      tree list = DECL_FRIENDLIST (TYPE_NAME (type));
+      tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type));
       tree name = DECL_NAME (supplicant);
       tree ctype;
 
@@ -2259,7 +2259,7 @@ is_friend (type, supplicant)
       if (type == supplicant)
 	return 1;
       
-      list = CLASSTYPE_FRIEND_CLASSES (TREE_TYPE (TYPE_NAME (type)));
+      list = CLASSTYPE_FRIEND_CLASSES (TREE_TYPE (TYPE_MAIN_DECL (type)));
       for (; list ; list = TREE_CHAIN (list))
 	if (supplicant == TREE_VALUE (list))
 	  return 1;
@@ -2275,7 +2275,7 @@ is_friend (type, supplicant)
 	if (IS_AGGR_TYPE (supplicant))
 	  context = NULL_TREE;
 	else
-	  context = DECL_CONTEXT (TYPE_NAME (supplicant));
+	  context = DECL_CONTEXT (TYPE_MAIN_DECL (supplicant));
       }
     else if (DECL_FUNCTION_MEMBER_P (supplicant))
       context = DECL_CLASS_CONTEXT (supplicant);
@@ -2296,7 +2296,7 @@ static void
 add_friend (type, decl)
      tree type, decl;
 {
-  tree typedecl = TYPE_NAME (type);
+  tree typedecl = TYPE_MAIN_DECL (type);
   tree list = DECL_FRIENDLIST (typedecl);
   tree name = DECL_NAME (decl);
 
@@ -2346,7 +2346,7 @@ static void
 add_friends (type, name, friend_type)
      tree type, name, friend_type;
 {
-  tree typedecl = TYPE_NAME (type);
+  tree typedecl = TYPE_MAIN_DECL (type);
   tree list = DECL_FRIENDLIST (typedecl);
 
   while (list)
@@ -2409,7 +2409,7 @@ make_friend_class (type, friend_type)
   if (IS_SIGNATURE (friend_type))
     {
       error ("signature type `%s' declared `friend'",
-	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (friend_type))));
+	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
       return;
     }
   if (type == friend_type)
@@ -2561,7 +2561,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  warning ("implicitly declaring `%s' as struct",
 		   IDENTIFIER_POINTER (declarator));
 	  decl = xref_tag (record_type_node, declarator, NULL_TREE, 1);
-	  decl = TYPE_NAME (decl);
+	  decl = TYPE_MAIN_DECL (decl);
 	}
 
       /* Allow abbreviated declarations of overloaded functions,
@@ -2735,7 +2735,7 @@ build_new (placement, decl, init, use_global_new)
 	{
 	  /* An aggregate type.  */
 	  type = IDENTIFIER_TYPE_VALUE (decl);
-	  decl = TYPE_NAME (type);
+	  decl = TYPE_MAIN_DECL (type);
 	}
       else
 	{
@@ -2755,7 +2755,7 @@ build_new (placement, decl, init, use_global_new)
     {
       type = decl;
       true_type = type;
-      decl = TYPE_NAME (type);
+      decl = TYPE_MAIN_DECL (type);
     }
 
   if (processing_template_decl)

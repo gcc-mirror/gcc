@@ -340,8 +340,9 @@ convert_to_pointer_force (type, expr)
 	  if (distance == -2)
 	    {
 	    ambig:
-	      cp_error ("type `%T' is ambiguous baseclass of `%s'", TREE_TYPE (type),
-				    TYPE_NAME_STRING (TREE_TYPE (intype)));
+	      cp_error ("type `%T' is ambiguous baseclass of `%s'",
+			TREE_TYPE (type),
+			TYPE_NAME_STRING (TREE_TYPE (intype)));
 	      return error_mark_node;
 	    }
 	  if (distance == -1)
@@ -608,6 +609,10 @@ build_up_reference (type, arg, flags, checkconst)
       arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
     }
 
+  /* If we had a way to wrap this up, and say, if we ever needed it's
+     address, transform all occurrences of the register, into a memory
+     reference we could win better.  */
+  mark_addressable (arg);
   rval = build1 (ADDR_EXPR, type, arg);
 
  done:

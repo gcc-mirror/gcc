@@ -1208,7 +1208,8 @@ expr_no_commas:
 		{ $$ = build_x_conditional_expr ($$, $3, $5); }
 	| expr_no_commas '=' expr_no_commas
 		{ $$ = build_x_modify_expr ($$, NOP_EXPR, $3);
-                  C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
+		  if ($$ != error_mark_node)
+                    C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
 	| expr_no_commas ASSIGN expr_no_commas
 		{ $$ = build_x_modify_expr ($$, $2, $3); }
 	| THROW
@@ -2233,10 +2234,7 @@ named_complex_class_head_sans_basetype:
 		{
 		  current_aggr = $1;
 		  if (TREE_CODE ($3) == TYPE_DECL)
-		    {
-		      $$ = $3;
-		      note_debug_info_needed (DECL_CONTEXT ($$));
-		    }
+		    $$ = $3;
 		  else
 		    {
 		      cp_error ("`%T' does not have a nested type named `%D'",

@@ -312,7 +312,7 @@ enum languages { lang_c, lang_cplusplus };
 #define TYPE_ASSEMBLER_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (TYPE_NAME (NODE))))
 
 /* The _DECL for this _TYPE.  */
-#define TYPE_MAIN_DECL(NODE) (TYPE_NAME (NODE))
+#define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
 
 #define IS_AGGR_TYPE(t)		(TYPE_LANG_FLAG_5 (t))
 #define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE)
@@ -2470,6 +2470,7 @@ extern tree convert_for_initialization		PROTO((tree, tree, tree, int, char *, tr
 extern void c_expand_asm_operands		PROTO((tree, tree, tree, tree, int, char *, int));
 extern void c_expand_return			PROTO((tree));
 extern tree c_expand_start_case			PROTO((tree));
+extern int ptr_reasonably_similar		PROTO((tree, tree));
 extern tree build_component_ref			PROTO((tree, tree, tree, int));
 extern tree build_ptrmemfunc			PROTO((tree, tree, int));
 

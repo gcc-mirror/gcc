@@ -1793,8 +1793,7 @@ finish_struct_bits (t, max_has_virtual)
 	  && CLASSTYPE_NON_AGGREGATE (t)))
     {
       tree variants;
-      if (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
-	DECL_MODE (TYPE_NAME (t)) = BLKmode;
+      DECL_MODE (TYPE_MAIN_DECL (t)) = BLKmode;
       for (variants = t; variants; variants = TYPE_NEXT_VARIANT (variants))
 	{
 	  TYPE_MODE (variants) = BLKmode;
@@ -1997,7 +1996,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 
   if (nonprivate_method == 0
       && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
-      && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE)
+      && DECL_FRIENDLIST (TYPE_MAIN_DECL (t)) == NULL_TREE)
     {
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
       for (i = 0; i < n_baseclasses; i++)
@@ -2022,7 +2021,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	TYPE_HAS_DESTRUCTOR (t) = 0;
       else if (TREE_PRIVATE (dtor)
 	       && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
-	       && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE
+	       && DECL_FRIENDLIST (TYPE_MAIN_DECL (t)) == NULL_TREE
 	       && warn_ctor_dtor_privacy)
 	cp_warning ("`%#T' only defines a private destructor and has no friends",
 		    t);
@@ -3644,7 +3643,7 @@ finish_struct_1 (t, warn_anon)
 
       if (TYPE_HAS_CONSTRUCTOR (t)
 	  && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
-	  && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE)
+	  && DECL_FRIENDLIST (TYPE_MAIN_DECL (t)) == NULL_TREE)
 	{
 	  int nonprivate_ctor = 0;
 	  tree ctor;
@@ -3748,6 +3747,7 @@ finish_struct_1 (t, warn_anon)
       DECL_ASSEMBLER_NAME (vfield) = get_identifier (VFIELD_BASE);
       CLASSTYPE_VFIELD (t) = vfield;
       DECL_VIRTUAL_P (vfield) = 1;
+      DECL_ARTIFICIAL (vfield) = 1;
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_CLASS_CONTEXT (vfield) = t;
       DECL_FCONTEXT (vfield) = t;
@@ -3861,8 +3861,7 @@ finish_struct_1 (t, warn_anon)
      value for DECL_OFFSET, so that we can use it as part
      of a COMPONENT_REF for multiple inheritance.  */
 
-  if (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
-    layout_decl (TYPE_NAME (t), 0);
+  layout_decl (TYPE_MAIN_DECL (t), 0);
 
   /* Now fix up any virtual base class types that we left lying
      around.  We must get these done before we try to lay out the
@@ -4174,9 +4173,9 @@ finish_struct_1 (t, warn_anon)
     {
       /* Be smarter about nested classes here.  If a type is nested,
 	 only output it if we would output the enclosing type.  */
-      if (DECL_CONTEXT (TYPE_NAME (t))
-	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (TYPE_NAME (t)))) == 't')
-	DECL_IGNORED_P (TYPE_NAME (t)) = TREE_ASM_WRITTEN (TYPE_NAME (t));
+      if (DECL_CONTEXT (TYPE_MAIN_DECL (t))
+	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (TYPE_MAIN_DECL (t)))) == 't')
+	DECL_IGNORED_P (TYPE_MAIN_DECL (t)) = TREE_ASM_WRITTEN (TYPE_MAIN_DECL (t));
     }
 #endif
 
@@ -4199,23 +4198,23 @@ finish_struct_1 (t, warn_anon)
 	  /* Don't output full info about any type
 	     which does not have its implementation defined here.  */
 	  if (TYPE_VIRTUAL_P (t) && write_virtuals == 2)
-	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t))
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t))
 	      = (value_member (TYPE_IDENTIFIER (t), pending_vtables) == 0);
 	  else if (CLASSTYPE_INTERFACE_ONLY (t))
-	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
 #if 0
 	  /* XXX do something about this.  */
 	  else if (CLASSTYPE_INTERFACE_UNKNOWN (t))
 	    /* Only a first approximation!  */
-	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
+	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
 #endif
 	}
       else if (CLASSTYPE_INTERFACE_ONLY (t))
-	TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
-
-      /* Finish debugging output for this type.  */
-      rest_of_type_compilation (t, toplevel_bindings_p ());
+	TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
     }
+
+  /* Finish debugging output for this type.  */
+  rest_of_type_compilation (t, toplevel_bindings_p ());
 
   return t;
 }
@@ -4355,7 +4354,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
       CLASSTYPE_TAGS (t) = x = nreverse (CLASSTYPE_TAGS (t));
       while (x)
 	{
-	  tree tag = TYPE_NAME (TREE_VALUE (x));
+	  tree tag = TYPE_MAIN_DECL (TREE_VALUE (x));
 
 	  TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
 	  x = TREE_CHAIN (x);
@@ -4747,7 +4746,7 @@ push_nested_class (type, modify)
       || TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     return;
   
-  context = DECL_CONTEXT (TYPE_NAME (type));
+  context = DECL_CONTEXT (TYPE_MAIN_DECL (type));
 
   if (context && TREE_CODE (context) == RECORD_TYPE)
     push_nested_class (context, 2);
@@ -4760,7 +4759,7 @@ void
 pop_nested_class (modify)
      int modify;
 {
-  tree context = DECL_CONTEXT (TYPE_NAME (current_class_type));
+  tree context = DECL_CONTEXT (TYPE_MAIN_DECL (current_class_type));
 
   popclass (modify);
   if (context && TREE_CODE (context) == RECORD_TYPE)

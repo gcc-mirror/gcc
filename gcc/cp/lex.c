@@ -1112,7 +1112,7 @@ set_vardecl_interface_info (prev, vars)
   if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
       if (CLASSTYPE_INTERFACE_ONLY (type))
-	set_typedecl_interface_info (prev, TYPE_NAME (type));
+	set_typedecl_interface_info (prev, TYPE_MAIN_DECL (type));
       else
 	CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 1;
       DECL_EXTERNAL (vars) = CLASSTYPE_INTERFACE_ONLY (type);
@@ -2721,8 +2721,8 @@ identifier_typedecl_value (node)
   do (IDENTIFIER_GLOBAL_VALUE (node));
 #undef do
   /* Will this one ever happen?  */
-  if (TYPE_NAME (type))
-    return TYPE_NAME (type);
+  if (TYPE_MAIN_DECL (type))
+    return TYPE_MAIN_DECL (type);
 
   /* We used to do an internal error of 62 here, but instead we will
      handle the return of a null appropriately in the callers.  */
@@ -3366,7 +3366,7 @@ real_yylex ()
 		    ))
 	      {
 		pedwarn ("floating point number exceeds range of `%s'",
-			 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+			 IDENTIFIER_POINTER (TYPE_IDENTIFIER (type)));
 	      }
 	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
 	    while (isalnum (c))

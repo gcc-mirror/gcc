@@ -324,7 +324,7 @@ build_overload_nested_name (decl)
     {
       tree context = DECL_CONTEXT (decl);
       if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-	context = TYPE_MAIN_DECL (context);
+	context = TYPE_NAME (context);
       build_overload_nested_name (context);
     }
 
@@ -903,10 +903,10 @@ build_overload_name (parmtypes, begin, end)
 		if (i > 9)
 		  OB_PUTC ('_');
 		numeric_output_need_bar = 0;
-		build_overload_nested_name (TYPE_MAIN_DECL (parmtype));
+		build_overload_nested_name (TYPE_NAME (parmtype));
 	      }
 	    else	      
-	      build_overload_identifier (TYPE_MAIN_DECL (parmtype));
+	      build_overload_identifier (TYPE_NAME (parmtype));
 	    break;
 	  }
 
@@ -1075,7 +1075,7 @@ build_typename_overload (type)
   id = get_identifier (obstack_base (&scratch_obstack));
   IDENTIFIER_OPNAME_P (id) = 1;
 #if 0
-  IDENTIFIER_GLOBAL_VALUE (id) = TYPE_NAME (type);
+  IDENTIFIER_GLOBAL_VALUE (id) = TYPE_MAIN_DECL (type);
 #endif
   TREE_TYPE (id) = type;
   return id;

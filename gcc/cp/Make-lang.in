@@ -71,14 +71,32 @@ C++ c++: cc1plus
 # Tell GNU make to ignore these if they exist.
 .PHONY: C++ c++
 
+g++.c: $(srcdir)/gcc.c
+	-rm -f $@
+	ln -s $(srcdir)/gcc.c $@ || cp $(srcdir)/gcc.c $@
+
+g++spec.o: $(srcdir)/cp/g++spec.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+# N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
+# It'd be nice if we could find an easier way to do this---rather than have
+# to track changes to the toplevel gcc Makefile as well.
+# We depend on g++.c last, to make it obvious where it came from.
+g++.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g++.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(DRIVER_DEFINES) \
+	-DLANG_SPECIFIC_DRIVER \
+  -c g++.c
+
 # Create the compiler driver for g++.
-g++: $(srcdir)/cp/g++.c $(CONFIG_H) choose-temp.o pexecute.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $(srcdir)/cp/g++.c choose-temp.o pexecute.o $(LIBS)
+g++$(exeext): g++.o g++spec.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g++.o g++spec.o version.o \
+	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
-g++-cross: $(srcdir)/cp/g++.c choose-temp.o pexecute.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ \
-	   -DGCC_NAME=\"$(GCC_CROSS_NAME)\" $(srcdir)/cp/g++.c choose-temp.o pexecute.o $(LIBS)
+g++-cross$(exeext): g++$(exeext)
+	-rm -f g++-cross$(exeext)
+	cp g++$(exeext) g++-cross$(exeext)
 
 cxxmain.o: cplus-dem.c demangle.h
 	rm -f cxxmain.c

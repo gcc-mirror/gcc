@@ -149,7 +149,8 @@ process_template_parm (list, next)
       tree t = make_lang_type (TEMPLATE_TYPE_PARM);
       CLASSTYPE_GOT_SEMICOLON (t) = 1;
       decl = build_decl (TYPE_DECL, TREE_VALUE (parm), t);
-      TYPE_MAIN_DECL (t) = decl;
+      TYPE_NAME (t) = decl;
+      TYPE_STUB_DECL (t) = decl;
       parm = decl;
       TEMPLATE_TYPE_SET_INFO (t, idx, processing_template_decl);
     }
@@ -372,9 +373,13 @@ coerce_template_parms (parms, arglist, in_decl)
 	      else
 		arg = TREE_VALUE (arg);
 	    }
-	  else
+	  else if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (parms, i)))
+		   == TYPE_DECL)
 	    arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
 			  &TREE_VEC_ELT (vec, 0), i, in_decl);
+	  else
+	    arg = tsubst_expr (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
+			       &TREE_VEC_ELT (vec, 0), i, in_decl);
 
 	  TREE_VEC_ELT (vec, i) = arg;
 	}
@@ -1679,6 +1684,9 @@ tsubst (t, args, nargs, in_decl)
       }
 
     case TYPE_DECL:
+      if (t == TYPE_NAME (TREE_TYPE (t)))
+	return TYPE_NAME (type);
+
       {
 	tree r = copy_node (t);
 	TREE_TYPE (r) = type;

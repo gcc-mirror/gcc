@@ -1805,10 +1805,13 @@ build_component_ref (datum, component, basetype_path, protect)
     }
   else
     {
+      tree name = component;
+      if (TREE_CODE (component) == VAR_DECL)
+	name = DECL_NAME (component);
       if (basetype_path == NULL_TREE)
 	basetype_path = TYPE_BINFO (basetype);
-      field = lookup_field (basetype_path, component,
-			    protect && ! VFIELD_NAME_P (component), 0);
+      field = lookup_field (basetype_path, name,
+			    protect && !VFIELD_NAME_P (name), 0);
       if (field == error_mark_node)
 	return error_mark_node;
 
@@ -1817,7 +1820,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	  /* Not found as a data field, look for it as a method.  If found,
 	     then if this is the only possible one, return it, else
 	     report ambiguity error.  */
-	  tree fndecls = lookup_fnfields (basetype_path, component, 1);
+	  tree fndecls = lookup_fnfields (basetype_path, name, 1);
 	  if (fndecls == error_mark_node)
 	    return error_mark_node;
 	  if (fndecls)
@@ -1867,7 +1870,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		}
 	    }
 
-	  cp_error ("`%#T' has no member named `%D'", basetype, component);
+	  cp_error ("`%#T' has no member named `%D'", basetype, name);
 	  return error_mark_node;
 	}
       else if (TREE_TYPE (field) == error_mark_node)
