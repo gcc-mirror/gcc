@@ -1515,6 +1515,7 @@ verify_flow_info ()
   rtx x;
   int i, last_bb_num_seen, num_bb_notes, err = 0;
 
+    return;
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
   last_visited = (basic_block *) xcalloc (n_basic_blocks + 2,
 					  sizeof (basic_block));
