@@ -391,22 +391,14 @@ do {									\
 #define LINK_EH_SPEC "vms-dwarf2eh.o%s "
 
 #ifdef IN_LIBGCC2
-#include <libicb.h>
 #include <pdscdef.h>
 
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
  do {									\
-  unsigned long handle;							\
-  PDSCDEF *pv;								\
-  INVO_CONTEXT_BLK invo;						\
+  PDSCDEF *pv = *((PDSCDEF **) (CONTEXT)->reg [29]);                    \
 									\
-  memset (&invo, 0, sizeof (INVO_CONTEXT_BLK));				\
-									\
-  invo.libicb$q_ireg [29] = *((long long *) (CONTEXT)->reg [29]);	\
-  invo.libicb$q_ireg [30] = (long long) (CONTEXT)->cfa;			\
-  handle = LIB$GET_INVO_HANDLE (&invo);					\
-  LIB$GET_INVO_CONTEXT (handle, &invo);					\
-  pv = (PDSCDEF *) invo.libicb$ph_procedure_descriptor;			\
+  if (pv && ((long) pv & 0x7) == 0) /* low bits 0 means address */      \
+    pv = *(PDSCDEF **) pv;                                              \
 									\
   if (pv && ((pv->pdsc$w_flags & 0xf) == PDSC$K_KIND_FP_STACK))		\
     {									\
@@ -429,6 +421,19 @@ do {									\
 	      = -(pv->pdsc$l_size - pv->pdsc$w_rsa_offset - 8 * ++j);	\
 	    (FS)->regs.reg[i].how = REG_SAVED_OFFSET;			\
 	  }								\
+									\
+      goto SUCCESS;							\
+    }									\
+  else if (pv && ((pv->pdsc$w_flags & 0xf) == PDSC$K_KIND_FP_REGISTER))	\
+    {									\
+      (FS)->cfa_offset = pv->pdsc$l_size;				\
+      (FS)->cfa_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30; \
+      (FS)->retaddr_column = 26;					\
+      (FS)->cfa_how = CFA_REG_OFFSET;					\
+      (FS)->regs.reg[26].loc.reg = pv->pdsc$b_save_ra;			\
+      (FS)->regs.reg[26].how = REG_SAVED_REG;			        \
+      (FS)->regs.reg[29].loc.reg = pv->pdsc$b_save_fp;			\
+      (FS)->regs.reg[29].how = REG_SAVED_REG;			        \
 									\
       goto SUCCESS;							\
     }									\

@@ -1,5 +1,8 @@
 2002-02-13  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/vms.h (MD_FALLBACK_FRAME_STATE_FOR): Handle
+	register frame procedures. Optimize retrieving context.
+
 	* config/alpha/t-vms (MULTILIB_OPTIONS): Define.
 	(MULTILIB_DIRNAME, LIBGCC, INSTALL_LIBGCC): Likewise.
 	* config/alpha/vms.h (ASM_FILE_START): Write .arch directive.
