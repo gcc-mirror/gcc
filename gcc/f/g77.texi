@@ -5643,9 +5643,9 @@ The important thing about linking @command{g77}-compiled
 code with C++ is that the prototypes for the @command{g77}
 routines must specify C linkage to avoid name mangling.
 So, use an @samp{extern "C"} declaration.
-@command{f2c}'s @option{-C++} option will take care
-of this when generating skeletons or prototype files as above, and also
-avoid clashes with C++ reserved words in addition to those in C@.
+@command{f2c}'s @option{-C++} option will not take care
+of this when generating skeletons or prototype files as above, however,
+it will avoid clashes with C++ reserved words in addition to those in C@.
 
 @node Startup Code
 @subsection Startup Code
