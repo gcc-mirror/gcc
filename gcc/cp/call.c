@@ -4878,14 +4878,23 @@ build_special_member_call (tree instance, tree name, tree args,
 	  || name == deleting_dtor_identifier)
 	my_friendly_assert (args == NULL_TREE, 20020712);
 
-      /* We must perform the conversion here so that we do not
-	 subsequently check to see whether BINFO is an accessible
-	 base.  (It is OK for a constructor to call a constructor in
-	 an inaccessible base as long as the constructor being called
-	 is accessible.)  */
+      /* Convert to the base class, if necessary.  */
       if (!same_type_ignoring_top_level_qualifiers_p 
 	  (TREE_TYPE (instance), BINFO_TYPE (binfo)))
-	instance = convert_to_base_statically (instance, binfo);
+	{
+	  if (name != ansi_assopname (NOP_EXPR))
+	    /* For constructors and destructors, either the base is
+	       non-virtual, or it is virtual but we are doing the
+	       conversion from a constructor or destructor for the
+	       complete object.  In either case, we can convert
+	       statically.  */
+	    instance = convert_to_base_statically (instance, binfo);
+	  else
+	    /* However, for assignment operators, we must convert
+	       dynamically if the base is virtual.  */
+	    instance = build_base_path (PLUS_EXPR, instance,
+					binfo, /*nonnull=*/1);
+	}
     }
   
   my_friendly_assert (instance != NULL_TREE, 20020712);
