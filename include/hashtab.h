@@ -168,6 +168,7 @@ extern void	htab_clear_slot	PARAMS ((htab_t, void **));
 extern void	htab_remove_elt	PARAMS ((htab_t, void *));
 
 extern void	htab_traverse	PARAMS ((htab_t, htab_trav, void *));
+extern void	htab_traverse_noresize	PARAMS ((htab_t, htab_trav, void *));
 
 extern size_t	htab_size	PARAMS ((htab_t));
 extern size_t	htab_elements	PARAMS ((htab_t));

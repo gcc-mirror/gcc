@@ -113,7 +113,7 @@ ggc_mark_roots ()
       if (*cti->base)
 	{
 	  ggc_set_mark (*cti->base);
-	  htab_traverse (*cti->base, ggc_htab_delete, (PTR) cti);
+	  htab_traverse_noresize (*cti->base, ggc_htab_delete, (PTR) cti);
 	  ggc_set_mark ((*cti->base)->entries);
 	}
 }

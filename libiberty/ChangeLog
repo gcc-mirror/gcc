@@ -1,3 +1,8 @@
+2003-17-03  Jan Hubicka  <jh@suse.cz>
+
+	* hashtab.c (htab_traverse_noresize): Break out from ...
+	* hashtab.c (htab_traverse): ... here.
+
 2003-12-03  Jan Hubicka  <jh@suse.cz>
 
 	* hashtab.c (htab_expand): Fix warning.
