@@ -2430,7 +2430,7 @@ CHECK_TARGETS = check-gcc check-g++
 
 check: $(CHECK_TARGETS)
 
-check-g++: site.exp
+testsuite/site.exp: site.exp
 	if [ -d testsuite ]; then \
 	  true; \
 	else \
@@ -2438,7 +2438,9 @@ check-g++: site.exp
 	fi
 	rm -rf testsuite/site.exp
 	cp site.exp testsuite/site.exp
-	rootme=`pwd`; export rootme; \
+
+check-g++: testsuite/site.exp
+	-rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
@@ -2447,15 +2449,8 @@ check-g++: site.exp
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool g++ $(RUNTESTFLAGS)
 
-check-gcc: site.exp
-	if [ -d testsuite ]; then \
-	  true; \
-	else \
-	  mkdir testsuite; \
-	fi
-	rm -rf testsuite/site.exp
-	cp site.exp testsuite/site.exp
-	rootme=`pwd`; export rootme; \
+check-gcc: testsuite/site.exp
+	-rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
