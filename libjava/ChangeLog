@@ -1,5 +1,18 @@
 2000-08-02  Tom Tromey  <tromey@cygnus.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj_la_SOURCES): Added posix.cc.
+	* java/net/natPlainSocketImpl.cc: Include posix.h.
+	(accept): Use _Jv_select.
+	* java/net/natPlainDatagramSocketImpl.cc: Include posix.h.
+	(receive): Use _Jv_select.
+	* java/io/natFileDescriptorPosix.cc: Include posix.h.
+	(available): Use _Jv_select.
+	* java/lang/natSystem.cc: Include posix.h.
+	(currentTimeMillis): Use _Jv_gettimeofday.
+	* include/posix.h: New file.
+	* posix.cc: New file.
+
 	* scripts/encodings.pl: New file.
 	* Makefile.in: Rebuilt.
 	* Makefile.am (convert_source_files): Added IOConverter.java.

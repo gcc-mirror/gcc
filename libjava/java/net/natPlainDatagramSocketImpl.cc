@@ -17,15 +17,9 @@ details.  */
 #define ENOPROTOOPT 109
 #endif
 #else /* USE_WINSOCK */
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
+#include "posix.h"
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif
-#include <sys/time.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
@@ -314,7 +308,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
-      if ((retval = select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
 	goto error;
       else if (retval == 0)
 	JvThrow (new java::io::InterruptedIOException ());

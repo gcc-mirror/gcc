@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -19,12 +19,8 @@ details.  */
 #define ENOPROTOOPT 109
 #endif
 #else /* USE_WINSOCK */
-#include <sys/types.h>
+#include "posix.h"
 #include <sys/socket.h>
-#include <sys/time.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <errno.h>
@@ -249,7 +245,7 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
-      if ((retval = select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
 	goto error;
       else if (retval == 0)
 	JvThrow (new java::io::InterruptedIOException (

@@ -10,16 +10,11 @@ details.  */
 
 #include <config.h>
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include "posix.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <fcntl.h>
@@ -309,7 +304,7 @@ java::io::FileDescriptor::available (void)
       struct timeval tv;
       tv.tv_sec = 0;
       tv.tv_usec = 0;
-      r = ::select (fd + 1, &rd, NULL, NULL, &tv);
+      r = _Jv_select (fd + 1, &rd, NULL, NULL, &tv);
       if (r == -1)
 	goto posix_error;
       num = r == 0 ? 0 : 1;
