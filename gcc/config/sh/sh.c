@@ -7180,7 +7180,7 @@ fpscr_set_from_mem (mode, regs_live)
   enum attr_fp_mode fp_mode = mode;
   rtx addr_reg = get_free_reg (regs_live);
 
-  if (fp_mode == (enum attr_fp_mode) NORMAL_MODE (FP_MODE))
+  if (fp_mode == (enum attr_fp_mode) ACTUAL_NORMAL_MODE (FP_MODE))
     emit_insn (gen_fpu_switch1 (addr_reg));
   else
     emit_insn (gen_fpu_switch0 (addr_reg));

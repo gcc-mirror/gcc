@@ -1,3 +1,9 @@
+Fri Apr  4 15:58:52 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (ACTUAL_NORMAL_MODE): New macro, broken out of
+	(NORMAL_MODE).
+	* sh.c (fpscr_set_from_mem): Use ACTUAL_NORMAL_MODE.
+
 2003-04-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	
 	* doc/contrib.texi (Contributors): Add entries for Wolfgang

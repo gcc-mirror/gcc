@@ -3288,10 +3288,12 @@ extern int rtx_equal_function_value_matters;
 
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) TARGET_SH4
 
+#define ACTUAL_NORMAL_MODE(ENTITY) \
+  (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
+
 #define NORMAL_MODE(ENTITY) \
   (sh_cfun_interrupt_handler_p () ? FP_MODE_NONE \
-   : TARGET_FPU_SINGLE ? FP_MODE_SINGLE \
-   : FP_MODE_DOUBLE)
+   : ACTUAL_NORMAL_MODE (ENTITY))
 
 #define EPILOGUE_USES(REGNO)       ((TARGET_SH2E || TARGET_SH4)		\
 				    && (REGNO) == FPSCR_REG)
