@@ -19,7 +19,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 
 /* This file contains the structures required for the language
-   independant exception handling model. Both the static compiler and
+   independent exception handling model. Both the static compiler and
    the runtime library share this file. */
 
 /* The runtime flag flag_new_exceptions is used to determine whether the 

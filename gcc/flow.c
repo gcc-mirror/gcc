@@ -535,9 +535,10 @@ count_basic_blocks (f)
   return count;
 }
 
-/* Scan a list of insns for labels referrred to other than by jumps.
+/* Scan a list of insns for labels referred to other than by jumps.
    This is used to scan the alternatives of a call placeholder.  */
-static rtx find_label_refs (f, lvl)
+static rtx
+find_label_refs (f, lvl)
      rtx f;
      rtx lvl;
 {
@@ -3188,7 +3189,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  /* If any bits were removed from live_at_end, we'll have to
 	     rescan the block.  This wouldn't be necessary if we had
 	     precalculated local_live, however with PROP_SCAN_DEAD_CODE
-	     local_live is really dependant on live_at_end.  */
+	     local_live is really dependent on live_at_end.  */
 	  CLEAR_REG_SET (tmp);
 	  rescan = bitmap_operation (tmp, bb->global_live_at_end,
 				     new_live_at_end, BITMAP_AND_COMPL);
@@ -4554,7 +4555,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 {
   /* If this is a store to a predicate register, the value of the
      predicate is changing, we don't know that the predicate as seen
-     before is the same as that seen after.  Flush all dependant
+     before is the same as that seen after.  Flush all dependent
      conditions from reg_cond_dead.  This will make all such
      conditionally live registers unconditionally live.  */
   if (REGNO_REG_SET_P (pbi->reg_cond_reg, regno))
@@ -6575,16 +6576,16 @@ verify_flow_info ()
 
 /* Functions to access an edge list with a vector representation.
    Enough data is kept such that given an index number, the 
-   pred and succ that edge reprsents can be determined, or
-   given a pred and a succ, it's index number can be returned.
-   This allows algorithms which comsume a lot of memory to 
+   pred and succ that edge represents can be determined, or
+   given a pred and a succ, its index number can be returned.
+   This allows algorithms which consume a lot of memory to 
    represent the normally full matrix of edge (pred,succ) with a
    single indexed vector,  edge (EDGE_INDEX (pred, succ)), with no
    wasted space in the client code due to sparse flow graphs.  */
 
 /* This functions initializes the edge list. Basically the entire 
    flowgraph is processed, and all edges are assigned a number,
-   and the data structure is filed in.  */
+   and the data structure is filled in.  */
 struct edge_list *
 create_edge_list ()
 {
@@ -6676,7 +6677,7 @@ print_edge_list (f, elist)
     }
 }
 
-/* This function provides an internal consistancy check of an edge list,
+/* This function provides an internal consistency check of an edge list,
    verifying that all edges are present, and that there are no 
    extra edges.  */
 void
@@ -6904,7 +6905,7 @@ remove_fake_edges ()
   remove_fake_successors (ENTRY_BLOCK_PTR);
 }
 
-/* This functions will add a fake edge between any block which has no
+/* This function will add a fake edge between any block which has no
    successors, and the exit block. Some data flow equations require these
    edges to exist.  */
 void
