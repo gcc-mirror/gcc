@@ -81,7 +81,7 @@ public:
 
 // Helper for exception objects in <tr1/memory>
 // TODO this should be defined in a different file.
-void
+inline void
 __throw_bad_weak_ptr()
 {
 #if __EXCEPTIONS
