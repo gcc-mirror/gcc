@@ -1,3 +1,12 @@
+Mon Mar 26 15:55:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (push mem DI peep2): New.
+	(mov 0, mov -1 peep2): Handle 64bit.
+	(lea to arithmetics peep2): Handle 64bit leas.
+	(rsp arithmetics to push/pop peep2s): New.
+
+	* i386.md (truncdfsf2_3, trunctfsf2_2): Change predicate to memory_operand.
+
 Mon Mar 26 14:35:18 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (struct machine_function): Add save_varrargs_registers.
