@@ -1,3 +1,7 @@
+2004-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (cse_main): Kill push/pop context.
+
 2004-10-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* pretty-print.c: Include tree.h.
