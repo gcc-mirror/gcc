@@ -1,3 +1,7 @@
+2004-02-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.direct, alloc.c: Resync to upstream 6.3 alpha 1.
+
 2004-01-20  Andrew Haley  <aph@redhat.com>
 
 	* include/private/gcconfig.h (USE_MMAP): Define for all Linux.

@@ -126,7 +126,6 @@ int GC_n_attempts = 0;		/* Number of attempts at finishing	*/
     unsigned long time_diff;
     
     if ((count++ & 3) != 0) return(0);
-#ifndef NO_CLOCK
     GET_TIME(current_time);
     time_diff = MS_TIME_DIFF(current_time,GC_start_time);
     if (time_diff >= GC_time_limit) {
@@ -139,7 +138,6 @@ int GC_n_attempts = 0;		/* Number of attempts at finishing	*/
 #	endif
     	return(1);
     }
-#endif
     return(0);
   }
 #endif /* !SMALL_CONFIG */
