@@ -6560,6 +6560,6 @@ pa_add_gc_roots ()
   ggc_add_rtx_root (&hppa_compare_op0, 1);
   ggc_add_rtx_root (&hppa_compare_op1, 1);
   ggc_add_rtx_root (&hp_profile_label_rtx, 1);
-  ggc_add_root (&deferred_plabels, sizeof (&deferred_plabels), 1,
+  ggc_add_root (&deferred_plabels, 1, sizeof (&deferred_plabels),
 		&mark_deferred_plabels);
 }
