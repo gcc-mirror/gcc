@@ -1390,16 +1390,19 @@ expand_start_all_catch ()
 void
 expand_end_all_catch ()
 {
-  rtx new_catch_clause, outer_context;
+  rtx new_catch_clause, outer_context = NULL_RTX;
 
   if (! doing_eh (1))
     return;
 
-  outer_context = ehstack.top->entry->outer_context;
   if (! exceptions_via_longjmp)
-    /* Finish the rethrow region.  size_zero_node is just a NOP.  */
-    expand_eh_region_end (size_zero_node);
-  
+    {
+      outer_context = ehstack.top->entry->outer_context;
+
+      /* Finish the rethrow region.  size_zero_node is just a NOP.  */
+      expand_eh_region_end (size_zero_node);
+    }
+
   /* Code to throw out to outer context, if we fall off end of catch
      handlers.  This is rethrow (Lresume, same id, same obj) in the
      documentation. We use Lresume because we know that it will throw
