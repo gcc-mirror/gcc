@@ -1,5 +1,52 @@
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
+	* genrecog.c: Use ISO C90 prototypes.
+	(nodes_identical): Correct declaration to match prototype.
+	(maybe_both_true): Likewise.
+	(merge_trees): Likewise.
+
+	* genpeep.c (gen_peephole): Remove #if 0 code.
+	Use ISO C90 prototypes.
+
+	* genattrtab.c (copy_rtx_unchanging): Remove #if 0'ed code.
+	Remove #if 0'ed function simplify_by_alternatives.
+	(optimize_attrs): Remove #if 0'ed code.
+	Remove ^L.
+	Use ISO C90 prototypes.
+	(make_canonical): Remove #if 0'ed code.
+	(convert_const_symbol_ref): Remove #if 0'ed function.
+
+	* gen-protos.c (main): Check for argument.
+
+	* rtl.h: Use ISO C90 prototypes for functions from lists.c.
+
+	* params.h: Use ISO C90 prototypes.
+	* params.c: Likewise.
+	* intl.c: Likewise.
+	* intl.h: Likewise.
+	* lists.c: Likewise.
+	* errors.c: Likewise.
+	* errors.h: Likewise.
+	* gencodes.c: Likewise.
+	* genpreds.c: Likewise.
+	* genattr.c: Likewise.
+	* gen-protos.c: Likewise.
+	* genflags.c: Likewise
+	* genconditions.c: Likewise.
+	* genautomata.c: Likewise.
+	* gencheck.c: Likewise.
+	* genconfig.c: Likewise.
+	* genconstants.c: Likewise.
+	* genemit.c: Likewise.
+	* genextract.c: Likewise.
+	* gengenrtl.c: Likewise.
+	* gengtype.c: Likewise.
+	* gengtype.h: Likewise.
+	* genopinit.c: Likewise.
+	* genoutput.c: Likewise.
+	* gensupport.c: Likewise.
+	* gensupport.h: Likewise.
+
 	* sdbout.h: Use ISO C90 prototypes.
 
 	* sdbout.c (CONTIN): Removed empty macro.

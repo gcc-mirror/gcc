@@ -1,5 +1,5 @@
 /* Process machine description and calculate constant conditions.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,20 +40,17 @@ static int saw_eh_return;
 
 static htab_t condition_table;
 
-static void add_condition	PARAMS ((const char *));
-static void write_header	PARAMS ((void));
-static void write_conditions	PARAMS ((void));
-static int write_one_condition	PARAMS ((PTR *, PTR));
-
-extern int main			PARAMS ((int, char **));
+static void add_condition	(const char *);
+static void write_header	(void);
+static void write_conditions	(void);
+static int write_one_condition	(void **, void *);
 
 /* Record the C test expression EXPR in the condition_table.
    Duplicates clobber previous entries, which leaks memory, but
    we don't care for this application.  */
 
 static void
-add_condition (expr)
-     const char *expr;
+add_condition (const char *expr)
 {
   struct c_test *test;
 
@@ -69,7 +66,7 @@ add_condition (expr)
 /* Generate the header for insn-conditions.c.  */
 
 static void
-write_header ()
+write_header (void)
 {
   puts ("\
 /* Generated automatically by the program `genconditions' from the target\n\
@@ -122,7 +119,7 @@ write_header ()
 extern rtx insn;\n\
 extern rtx ins1;\n\
 extern rtx operands[];\n\
-extern int next_insn_tests_no_inequality PARAMS ((rtx));\n");
+extern int next_insn_tests_no_inequality (rtx);\n");
 
   puts ("\
 /* If we don't have __builtin_constant_p, or it's not acceptable in\n\
@@ -142,9 +139,7 @@ extern int next_insn_tests_no_inequality PARAMS ((rtx));\n");
     MAYBE_EVAL (! optimize_size && ! TARGET_READ_MODIFY_WRITE) },  */
 
 static int
-write_one_condition (slot, dummy)
-     PTR *slot;
-     PTR dummy ATTRIBUTE_UNUSED;
+write_one_condition (void **slot, void *dummy ATTRIBUTE_UNUSED)
 {
   const struct c_test *test = * (const struct c_test **) slot;
   const char *p;
@@ -167,7 +162,7 @@ write_one_condition (slot, dummy)
 /* Write out the complete conditions table, its size, and a flag
    indicating that gensupport.c can now do insn elision.  */
 static void
-write_conditions ()
+write_conditions (void)
 {
   puts ("\
 /* This table lists each condition found in the machine description.\n\
@@ -186,9 +181,7 @@ const struct c_test insn_conditions[] = {");
 }
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
   int pattern_lineno; /* not used */

@@ -2,7 +2,7 @@
    Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
-   
+
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify it
@@ -21,7 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* References:
-   
+
    1. Detecting pipeline structural hazards quickly. T. Proebsting,
       C. Fraser. Proceedings of ACM SIGPLAN-SIGACT Symposium on
       Principles of Programming Languages, pages 280--286, 1994.
@@ -73,7 +73,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    `genattrtab.c'.  They transform RTL constructions describing
    automata in .md file into internal representation convenient for
    further processing.
- 
+
    The translator major function `expand_automata' processes the
    description internal representation into finite state automaton.
    It can be divided on:
@@ -215,321 +215,321 @@ typedef struct state_ainsn_table *state_ainsn_table_t;
    described on the file top because the functions are called from
    function `main'.  */
 
-static void *create_node             PARAMS ((size_t));
-static void *copy_node               PARAMS ((const void *, size_t));
-static char *check_name              PARAMS ((char *, pos_t));
-static char *next_sep_el             PARAMS ((char **, int, int));
-static int n_sep_els                 PARAMS ((char *, int, int));
-static char **get_str_vect           PARAMS ((char *, int *, int, int));
-static void gen_presence_absence_set PARAMS ((rtx, int, int));
-static regexp_t gen_regexp_el        PARAMS ((char *));
-static regexp_t gen_regexp_repeat    PARAMS ((char *));
-static regexp_t gen_regexp_allof     PARAMS ((char *));
-static regexp_t gen_regexp_oneof     PARAMS ((char *));
-static regexp_t gen_regexp_sequence  PARAMS ((char *));
-static regexp_t gen_regexp           PARAMS ((char *));
+static void *create_node             (size_t);
+static void *copy_node               (const void *, size_t);
+static char *check_name              (char *, pos_t);
+static char *next_sep_el             (char **, int, int);
+static int n_sep_els                 (char *, int, int);
+static char **get_str_vect           (char *, int *, int, int);
+static void gen_presence_absence_set (rtx, int, int);
+static regexp_t gen_regexp_el        (char *);
+static regexp_t gen_regexp_repeat    (char *);
+static regexp_t gen_regexp_allof     (char *);
+static regexp_t gen_regexp_oneof     (char *);
+static regexp_t gen_regexp_sequence  (char *);
+static regexp_t gen_regexp           (char *);
 
-static unsigned string_hash          PARAMS ((const char *));
-static unsigned automaton_decl_hash  PARAMS ((const void *));
-static int automaton_decl_eq_p       PARAMS ((const void *,
-						   const void *));
-static decl_t insert_automaton_decl       PARAMS ((decl_t));
-static decl_t find_automaton_decl         PARAMS ((char *));
-static void initiate_automaton_decl_table PARAMS ((void));
-static void finish_automaton_decl_table   PARAMS ((void));
+static unsigned string_hash          (const char *);
+static unsigned automaton_decl_hash  (const void *);
+static int automaton_decl_eq_p       (const void *,
+				      const void *);
+static decl_t insert_automaton_decl       (decl_t);
+static decl_t find_automaton_decl         (char *);
+static void initiate_automaton_decl_table (void);
+static void finish_automaton_decl_table   (void);
 
-static hashval_t insn_decl_hash           PARAMS ((const void *));
-static int insn_decl_eq_p                 PARAMS ((const void *,
-						   const void *));
-static decl_t insert_insn_decl            PARAMS ((decl_t));
-static decl_t find_insn_decl              PARAMS ((char *));
-static void initiate_insn_decl_table      PARAMS ((void));
-static void finish_insn_decl_table        PARAMS ((void));
+static hashval_t insn_decl_hash           (const void *);
+static int insn_decl_eq_p                 (const void *,
+					   const void *);
+static decl_t insert_insn_decl            (decl_t);
+static decl_t find_insn_decl              (char *);
+static void initiate_insn_decl_table      (void);
+static void finish_insn_decl_table        (void);
 
-static hashval_t decl_hash                PARAMS ((const void *));
-static int decl_eq_p                      PARAMS ((const void *,
-						   const void *));
-static decl_t insert_decl                 PARAMS ((decl_t));
-static decl_t find_decl                   PARAMS ((char *));
-static void initiate_decl_table           PARAMS ((void));
-static void finish_decl_table             PARAMS ((void));
+static hashval_t decl_hash                (const void *);
+static int decl_eq_p                      (const void *,
+					   const void *);
+static decl_t insert_decl                 (decl_t);
+static decl_t find_decl                   (char *);
+static void initiate_decl_table           (void);
+static void finish_decl_table             (void);
 
-static unit_set_el_t process_excls       PARAMS ((char **, int, pos_t));
-static void add_excls                    PARAMS ((unit_set_el_t, unit_set_el_t,
-						  pos_t));
+static unit_set_el_t process_excls       (char **, int, pos_t);
+static void add_excls                    (unit_set_el_t, unit_set_el_t,
+					  pos_t);
 static unit_set_el_t process_presence_absence_names
-					 PARAMS ((char **, int, pos_t,
-						  int, int));
+					 (char **, int, pos_t,
+					  int, int);
 static pattern_set_el_t process_presence_absence_patterns
-					 PARAMS ((char ***, int, pos_t,
-						  int, int));
-static void add_presence_absence	 PARAMS ((unit_set_el_t,
-						  pattern_set_el_t,
-						  pos_t, int, int));
-static void process_decls                PARAMS ((void));
-static struct bypass_decl *find_bypass   PARAMS ((struct bypass_decl *,
-						  struct insn_reserv_decl *));
-static void check_automaton_usage        PARAMS ((void));
-static regexp_t process_regexp           PARAMS ((regexp_t));
-static void process_regexp_decls         PARAMS ((void));
-static void check_usage                  PARAMS ((void));
-static int loop_in_regexp                PARAMS ((regexp_t, decl_t));
-static void check_loops_in_regexps       PARAMS ((void));
-static void process_regexp_cycles        PARAMS ((regexp_t, int, int,
-						  int *, int *));
-static void evaluate_max_reserv_cycles   PARAMS ((void));
-static void check_all_description        PARAMS ((void));
+					 (char ***, int, pos_t,
+					  int, int);
+static void add_presence_absence	 (unit_set_el_t,
+					  pattern_set_el_t,
+					  pos_t, int, int);
+static void process_decls                (void);
+static struct bypass_decl *find_bypass   (struct bypass_decl *,
+					  struct insn_reserv_decl *);
+static void check_automaton_usage        (void);
+static regexp_t process_regexp           (regexp_t);
+static void process_regexp_decls         (void);
+static void check_usage                  (void);
+static int loop_in_regexp                (regexp_t, decl_t);
+static void check_loops_in_regexps       (void);
+static void process_regexp_cycles        (regexp_t, int, int,
+					  int *, int *);
+static void evaluate_max_reserv_cycles   (void);
+static void check_all_description        (void);
 
-static ticker_t create_ticker               PARAMS ((void));
-static void ticker_off                      PARAMS ((ticker_t *));
-static void ticker_on                       PARAMS ((ticker_t *));
-static int active_time                      PARAMS ((ticker_t));
-static void print_active_time               PARAMS ((FILE *, ticker_t));
+static ticker_t create_ticker               (void);
+static void ticker_off                      (ticker_t *);
+static void ticker_on                       (ticker_t *);
+static int active_time                      (ticker_t);
+static void print_active_time               (FILE *, ticker_t);
 
-static void add_advance_cycle_insn_decl     PARAMS ((void));
+static void add_advance_cycle_insn_decl     (void);
 
-static alt_state_t get_free_alt_state PARAMS ((void));
-static void free_alt_state              PARAMS ((alt_state_t));
-static void free_alt_states             PARAMS ((alt_state_t));
-static int alt_state_cmp                PARAMS ((const void *alt_state_ptr_1,
-						 const void *alt_state_ptr_2));
-static alt_state_t uniq_sort_alt_states PARAMS ((alt_state_t));
-static int alt_states_eq                PARAMS ((alt_state_t, alt_state_t));
-static void initiate_alt_states         PARAMS ((void));
-static void finish_alt_states           PARAMS ((void));
+static alt_state_t get_free_alt_state (void);
+static void free_alt_state              (alt_state_t);
+static void free_alt_states             (alt_state_t);
+static int alt_state_cmp                (const void *alt_state_ptr_1,
+					 const void *alt_state_ptr_2);
+static alt_state_t uniq_sort_alt_states (alt_state_t);
+static int alt_states_eq                (alt_state_t, alt_state_t);
+static void initiate_alt_states         (void);
+static void finish_alt_states           (void);
 
-static reserv_sets_t alloc_empty_reserv_sets PARAMS ((void));
-static unsigned reserv_sets_hash_value PARAMS ((reserv_sets_t));
-static int reserv_sets_cmp             PARAMS ((reserv_sets_t, reserv_sets_t));
-static int reserv_sets_eq              PARAMS ((reserv_sets_t, reserv_sets_t));
-static void set_unit_reserv            PARAMS ((reserv_sets_t, int, int));
-static int test_unit_reserv            PARAMS ((reserv_sets_t, int, int));
-static int it_is_empty_reserv_sets     PARAMS ((reserv_sets_t))
+static reserv_sets_t alloc_empty_reserv_sets (void);
+static unsigned reserv_sets_hash_value (reserv_sets_t);
+static int reserv_sets_cmp             (reserv_sets_t, reserv_sets_t);
+static int reserv_sets_eq              (reserv_sets_t, reserv_sets_t);
+static void set_unit_reserv            (reserv_sets_t, int, int);
+static int test_unit_reserv            (reserv_sets_t, int, int);
+static int it_is_empty_reserv_sets     (reserv_sets_t)
                                             ATTRIBUTE_UNUSED;
-static int reserv_sets_are_intersected PARAMS ((reserv_sets_t, reserv_sets_t));
-static void reserv_sets_shift          PARAMS ((reserv_sets_t, reserv_sets_t));
-static void reserv_sets_or             PARAMS ((reserv_sets_t, reserv_sets_t,
-						reserv_sets_t));
-static void reserv_sets_and            PARAMS ((reserv_sets_t, reserv_sets_t,
-						reserv_sets_t))
+static int reserv_sets_are_intersected (reserv_sets_t, reserv_sets_t);
+static void reserv_sets_shift          (reserv_sets_t, reserv_sets_t);
+static void reserv_sets_or             (reserv_sets_t, reserv_sets_t,
+					reserv_sets_t);
+static void reserv_sets_and            (reserv_sets_t, reserv_sets_t,
+					reserv_sets_t)
                                             ATTRIBUTE_UNUSED;
-static void output_cycle_reservs       PARAMS ((FILE *, reserv_sets_t,
-						int, int));
-static void output_reserv_sets         PARAMS ((FILE *, reserv_sets_t));
-static state_t get_free_state          PARAMS ((int, automaton_t));
-static void free_state                 PARAMS ((state_t));
-static hashval_t state_hash            PARAMS ((const void *));
-static int state_eq_p                  PARAMS ((const void *, const void *));
-static state_t insert_state            PARAMS ((state_t));
-static void set_state_reserv           PARAMS ((state_t, int, int));
-static int intersected_state_reservs_p PARAMS ((state_t, state_t));
-static state_t states_union            PARAMS ((state_t, state_t, reserv_sets_t));
-static state_t state_shift             PARAMS ((state_t, reserv_sets_t));
-static void initiate_states            PARAMS ((void));
-static void finish_states              PARAMS ((void));
+static void output_cycle_reservs       (FILE *, reserv_sets_t,
+					int, int);
+static void output_reserv_sets         (FILE *, reserv_sets_t);
+static state_t get_free_state          (int, automaton_t);
+static void free_state                 (state_t);
+static hashval_t state_hash            (const void *);
+static int state_eq_p                  (const void *, const void *);
+static state_t insert_state            (state_t);
+static void set_state_reserv           (state_t, int, int);
+static int intersected_state_reservs_p (state_t, state_t);
+static state_t states_union            (state_t, state_t, reserv_sets_t);
+static state_t state_shift             (state_t, reserv_sets_t);
+static void initiate_states            (void);
+static void finish_states              (void);
 
-static void free_arc           PARAMS ((arc_t));
-static void remove_arc         PARAMS ((state_t, arc_t));
-static arc_t find_arc          PARAMS ((state_t, state_t, ainsn_t));
-static arc_t add_arc           PARAMS ((state_t, state_t, ainsn_t, int));
-static arc_t first_out_arc     PARAMS ((state_t));
-static arc_t next_out_arc      PARAMS ((arc_t));
-static void initiate_arcs      PARAMS ((void));
-static void finish_arcs        PARAMS ((void));
+static void free_arc           (arc_t);
+static void remove_arc         (state_t, arc_t);
+static arc_t find_arc          (state_t, state_t, ainsn_t);
+static arc_t add_arc           (state_t, state_t, ainsn_t, int);
+static arc_t first_out_arc     (state_t);
+static arc_t next_out_arc      (arc_t);
+static void initiate_arcs      (void);
+static void finish_arcs        (void);
 
-static automata_list_el_t get_free_automata_list_el PARAMS ((void));
-static void free_automata_list_el PARAMS ((automata_list_el_t));
-static void free_automata_list PARAMS ((automata_list_el_t));
-static hashval_t automata_list_hash PARAMS ((const void *));
-static int automata_list_eq_p PARAMS ((const void *, const void *));
-static void initiate_automata_lists PARAMS ((void));
-static void automata_list_start PARAMS ((void));
-static void automata_list_add PARAMS ((automaton_t));
-static automata_list_el_t automata_list_finish PARAMS ((void));
-static void finish_automata_lists PARAMS ((void));
+static automata_list_el_t get_free_automata_list_el (void);
+static void free_automata_list_el (automata_list_el_t);
+static void free_automata_list (automata_list_el_t);
+static hashval_t automata_list_hash (const void *);
+static int automata_list_eq_p (const void *, const void *);
+static void initiate_automata_lists (void);
+static void automata_list_start (void);
+static void automata_list_add (automaton_t);
+static automata_list_el_t automata_list_finish (void);
+static void finish_automata_lists (void);
 
-static void initiate_excl_sets             PARAMS ((void));
-static reserv_sets_t get_excl_set          PARAMS ((reserv_sets_t));
+static void initiate_excl_sets             (void);
+static reserv_sets_t get_excl_set          (reserv_sets_t);
 
-static pattern_reserv_t form_reserv_sets_list PARAMS ((pattern_set_el_t));
-static void initiate_presence_absence_pattern_sets     PARAMS ((void));
-static int check_presence_pattern_sets     PARAMS ((reserv_sets_t,
-						    reserv_sets_t, int));
-static int check_absence_pattern_sets  PARAMS ((reserv_sets_t, reserv_sets_t,
-						int));
+static pattern_reserv_t form_reserv_sets_list (pattern_set_el_t);
+static void initiate_presence_absence_pattern_sets     (void);
+static int check_presence_pattern_sets     (reserv_sets_t,
+					    reserv_sets_t, int);
+static int check_absence_pattern_sets  (reserv_sets_t, reserv_sets_t,
+					int);
 
-static regexp_t copy_insn_regexp     PARAMS ((regexp_t));
-static regexp_t transform_1          PARAMS ((regexp_t));
-static regexp_t transform_2          PARAMS ((regexp_t));
-static regexp_t transform_3          PARAMS ((regexp_t));
+static regexp_t copy_insn_regexp     (regexp_t);
+static regexp_t transform_1          (regexp_t);
+static regexp_t transform_2          (regexp_t);
+static regexp_t transform_3          (regexp_t);
 static regexp_t regexp_transform_func
-                       PARAMS ((regexp_t, regexp_t (*) (regexp_t)));
-static regexp_t transform_regexp            PARAMS ((regexp_t));
-static void transform_insn_regexps          PARAMS ((void));
+                       (regexp_t, regexp_t (*) (regexp_t));
+static regexp_t transform_regexp            (regexp_t);
+static void transform_insn_regexps          (void);
 
-static void store_alt_unit_usage PARAMS ((regexp_t, regexp_t, int, int));
-static void check_regexp_units_distribution   PARAMS ((const char *, regexp_t));
-static void check_unit_distributions_to_automata PARAMS ((void));
+static void store_alt_unit_usage (regexp_t, regexp_t, int, int);
+static void check_regexp_units_distribution   (const char *, regexp_t);
+static void check_unit_distributions_to_automata (void);
 
-static int process_seq_for_forming_states   PARAMS ((regexp_t, automaton_t,
-						     int));
-static void finish_forming_alt_state        PARAMS ((alt_state_t,
-						     automaton_t));
-static void process_alts_for_forming_states PARAMS ((regexp_t,
-						     automaton_t, int));
-static void create_alt_states               PARAMS ((automaton_t));
+static int process_seq_for_forming_states   (regexp_t, automaton_t,
+					     int);
+static void finish_forming_alt_state        (alt_state_t,
+					     automaton_t);
+static void process_alts_for_forming_states (regexp_t,
+					     automaton_t, int);
+static void create_alt_states               (automaton_t);
 
-static void form_ainsn_with_same_reservs    PARAMS ((automaton_t));
+static void form_ainsn_with_same_reservs    (automaton_t);
 
-static reserv_sets_t form_reservs_matter PARAMS ((automaton_t));
-static void make_automaton           PARAMS ((automaton_t));
-static void form_arcs_marked_by_insn PARAMS ((state_t));
-static int create_composed_state     PARAMS ((state_t, arc_t, vla_ptr_t *));
-static void NDFA_to_DFA              PARAMS ((automaton_t));
-static void pass_state_graph         PARAMS ((state_t, void (*) (state_t)));
-static void pass_states              PARAMS ((automaton_t,
-					      void (*) (state_t)));
-static void initiate_pass_states       PARAMS ((void));
-static void add_achieved_state         PARAMS ((state_t));
-static int set_out_arc_insns_equiv_num PARAMS ((state_t, int));
-static void clear_arc_insns_equiv_num  PARAMS ((state_t));
-static void copy_equiv_class           PARAMS ((vla_ptr_t *to,
-						const vla_ptr_t *from));
-static int first_cycle_unit_presence   PARAMS ((state_t, int));
-static int state_is_differed           PARAMS ((state_t, state_t, int, int));
-static state_t init_equiv_class        PARAMS ((state_t *states, int));
-static int partition_equiv_class       PARAMS ((state_t *, int,
-						vla_ptr_t *, int *));
-static void evaluate_equiv_classes     PARAMS ((automaton_t, vla_ptr_t *));
-static void merge_states               PARAMS ((automaton_t, vla_ptr_t *));
-static void set_new_cycle_flags        PARAMS ((state_t));
-static void minimize_DFA               PARAMS ((automaton_t));
-static void incr_states_and_arcs_nums  PARAMS ((state_t));
-static void count_states_and_arcs      PARAMS ((automaton_t, int *, int *));
-static void build_automaton            PARAMS ((automaton_t));
+static reserv_sets_t form_reservs_matter (automaton_t);
+static void make_automaton           (automaton_t);
+static void form_arcs_marked_by_insn (state_t);
+static int create_composed_state     (state_t, arc_t, vla_ptr_t *);
+static void NDFA_to_DFA              (automaton_t);
+static void pass_state_graph         (state_t, void (*) (state_t));
+static void pass_states              (automaton_t,
+				      void (*) (state_t));
+static void initiate_pass_states       (void);
+static void add_achieved_state         (state_t);
+static int set_out_arc_insns_equiv_num (state_t, int);
+static void clear_arc_insns_equiv_num  (state_t);
+static void copy_equiv_class           (vla_ptr_t *to,
+					const vla_ptr_t *from);
+static int first_cycle_unit_presence   (state_t, int);
+static int state_is_differed           (state_t, state_t, int, int);
+static state_t init_equiv_class        (state_t *states, int);
+static int partition_equiv_class       (state_t *, int,
+					vla_ptr_t *, int *);
+static void evaluate_equiv_classes     (automaton_t, vla_ptr_t *);
+static void merge_states               (automaton_t, vla_ptr_t *);
+static void set_new_cycle_flags        (state_t);
+static void minimize_DFA               (automaton_t);
+static void incr_states_and_arcs_nums  (state_t);
+static void count_states_and_arcs      (automaton_t, int *, int *);
+static void build_automaton            (automaton_t);
 
-static void set_order_state_num              PARAMS ((state_t));
-static void enumerate_states                 PARAMS ((automaton_t));
+static void set_order_state_num              (state_t);
+static void enumerate_states                 (automaton_t);
 
-static ainsn_t insert_ainsn_into_equiv_class       PARAMS ((ainsn_t, ainsn_t));
-static void delete_ainsn_from_equiv_class          PARAMS ((ainsn_t));
-static void process_insn_equiv_class               PARAMS ((ainsn_t, arc_t *));
-static void process_state_for_insn_equiv_partition PARAMS ((state_t));
-static void set_insn_equiv_classes                 PARAMS ((automaton_t));
+static ainsn_t insert_ainsn_into_equiv_class       (ainsn_t, ainsn_t);
+static void delete_ainsn_from_equiv_class          (ainsn_t);
+static void process_insn_equiv_class               (ainsn_t, arc_t *);
+static void process_state_for_insn_equiv_partition (state_t);
+static void set_insn_equiv_classes                 (automaton_t);
 
-static double estimate_one_automaton_bound     PARAMS ((void));
-static int compare_max_occ_cycle_nums          PARAMS ((const void *,
-							const void *));
-static void units_to_automata_heuristic_distr  PARAMS ((void));
-static ainsn_t create_ainsns                   PARAMS ((void));
-static void units_to_automata_distr            PARAMS ((void));
-static void create_automata                    PARAMS ((void));
+static double estimate_one_automaton_bound     (void);
+static int compare_max_occ_cycle_nums          (const void *,
+						const void *);
+static void units_to_automata_heuristic_distr  (void);
+static ainsn_t create_ainsns                   (void);
+static void units_to_automata_distr            (void);
+static void create_automata                    (void);
 
-static void form_regexp                      PARAMS ((regexp_t));
-static const char *regexp_representation     PARAMS ((regexp_t));
-static void finish_regexp_representation     PARAMS ((void));
+static void form_regexp                      (regexp_t);
+static const char *regexp_representation     (regexp_t);
+static void finish_regexp_representation     (void);
 
-static void output_range_type            PARAMS ((FILE *, long int, long int));
-static int longest_path_length           PARAMS ((state_t));
-static void process_state_longest_path_length PARAMS ((state_t));
-static void output_dfa_max_issue_rate    PARAMS ((void));
-static void output_vect                  PARAMS ((vect_el_t *, int));
-static void output_chip_member_name      PARAMS ((FILE *, automaton_t));
-static void output_temp_chip_member_name PARAMS ((FILE *, automaton_t));
-static void output_translate_vect_name   PARAMS ((FILE *, automaton_t));
-static void output_trans_full_vect_name  PARAMS ((FILE *, automaton_t));
-static void output_trans_comb_vect_name  PARAMS ((FILE *, automaton_t));
-static void output_trans_check_vect_name PARAMS ((FILE *, automaton_t));
-static void output_trans_base_vect_name  PARAMS ((FILE *, automaton_t));
-static void output_state_alts_full_vect_name    PARAMS ((FILE *, automaton_t));
-static void output_state_alts_comb_vect_name    PARAMS ((FILE *, automaton_t));
-static void output_state_alts_check_vect_name   PARAMS ((FILE *, automaton_t));
-static void output_state_alts_base_vect_name    PARAMS ((FILE *, automaton_t));
-static void output_min_issue_delay_vect_name    PARAMS ((FILE *, automaton_t));
-static void output_dead_lock_vect_name   PARAMS ((FILE *, automaton_t));
-static void output_reserved_units_table_name    PARAMS ((FILE *, automaton_t));
-static void output_state_member_type     PARAMS ((FILE *, automaton_t));
-static void output_chip_definitions      PARAMS ((void));
-static void output_translate_vect        PARAMS ((automaton_t));
-static int comb_vect_p                   PARAMS ((state_ainsn_table_t));
-static state_ainsn_table_t create_state_ainsn_table PARAMS ((automaton_t));
+static void output_range_type            (FILE *, long int, long int);
+static int longest_path_length           (state_t);
+static void process_state_longest_path_length (state_t);
+static void output_dfa_max_issue_rate    (void);
+static void output_vect                  (vect_el_t *, int);
+static void output_chip_member_name      (FILE *, automaton_t);
+static void output_temp_chip_member_name (FILE *, automaton_t);
+static void output_translate_vect_name   (FILE *, automaton_t);
+static void output_trans_full_vect_name  (FILE *, automaton_t);
+static void output_trans_comb_vect_name  (FILE *, automaton_t);
+static void output_trans_check_vect_name (FILE *, automaton_t);
+static void output_trans_base_vect_name  (FILE *, automaton_t);
+static void output_state_alts_full_vect_name    (FILE *, automaton_t);
+static void output_state_alts_comb_vect_name    (FILE *, automaton_t);
+static void output_state_alts_check_vect_name   (FILE *, automaton_t);
+static void output_state_alts_base_vect_name    (FILE *, automaton_t);
+static void output_min_issue_delay_vect_name    (FILE *, automaton_t);
+static void output_dead_lock_vect_name   (FILE *, automaton_t);
+static void output_reserved_units_table_name    (FILE *, automaton_t);
+static void output_state_member_type     (FILE *, automaton_t);
+static void output_chip_definitions      (void);
+static void output_translate_vect        (automaton_t);
+static int comb_vect_p                   (state_ainsn_table_t);
+static state_ainsn_table_t create_state_ainsn_table (automaton_t);
 static void output_state_ainsn_table
-   PARAMS ((state_ainsn_table_t, char *, void (*) (FILE *, automaton_t),
-	    void (*) (FILE *, automaton_t), void (*) (FILE *, automaton_t),
-	    void (*) (FILE *, automaton_t)));
-static void add_vect                     PARAMS ((state_ainsn_table_t,
-						  int, vect_el_t *, int));
-static int out_state_arcs_num            PARAMS ((state_t));
-static int compare_transition_els_num    PARAMS ((const void *, const void *));
-static void add_vect_el 	         PARAMS ((vla_hwint_t *,
-						  ainsn_t, int));
-static void add_states_vect_el           PARAMS ((state_t));
-static void output_trans_table           PARAMS ((automaton_t));
-static void output_state_alts_table      PARAMS ((automaton_t));
-static int min_issue_delay_pass_states   PARAMS ((state_t, ainsn_t));
-static int min_issue_delay               PARAMS ((state_t, ainsn_t));
-static void initiate_min_issue_delay_pass_states PARAMS ((void));
-static void output_min_issue_delay_table PARAMS ((automaton_t));
-static void output_dead_lock_vect        PARAMS ((automaton_t));
-static void output_reserved_units_table  PARAMS ((automaton_t));
-static void output_tables                PARAMS ((void));
-static void output_max_insn_queue_index_def PARAMS ((void));
-static void output_insn_code_cases   PARAMS ((void (*) (automata_list_el_t)));
-static void output_automata_list_min_issue_delay_code PARAMS ((automata_list_el_t));
-static void output_internal_min_issue_delay_func PARAMS ((void));
-static void output_automata_list_transition_code PARAMS ((automata_list_el_t));
-static void output_internal_trans_func   PARAMS ((void));
-static void output_internal_insn_code_evaluation PARAMS ((const char *,
-							  const char *, int));
-static void output_dfa_insn_code_func	        PARAMS ((void));
-static void output_trans_func                   PARAMS ((void));
-static void output_automata_list_state_alts_code PARAMS ((automata_list_el_t));
-static void output_internal_state_alts_func     PARAMS ((void));
-static void output_state_alts_func              PARAMS ((void));
-static void output_min_issue_delay_func         PARAMS ((void));
-static void output_internal_dead_lock_func      PARAMS ((void));
-static void output_dead_lock_func               PARAMS ((void));
-static void output_internal_reset_func          PARAMS ((void));
-static void output_size_func		        PARAMS ((void));
-static void output_reset_func                   PARAMS ((void));
-static void output_min_insn_conflict_delay_func PARAMS ((void));
-static void output_internal_insn_latency_func   PARAMS ((void));
-static void output_insn_latency_func            PARAMS ((void));
-static void output_print_reservation_func       PARAMS ((void));
-static int units_cmp			        PARAMS ((const void *,
-							 const void *));
-static void output_get_cpu_unit_code_func       PARAMS ((void));
-static void output_cpu_unit_reservation_p       PARAMS ((void));
-static void output_dfa_clean_insn_cache_func    PARAMS ((void));
-static void output_dfa_start_func	        PARAMS ((void));
-static void output_dfa_finish_func	        PARAMS ((void));
+   (state_ainsn_table_t, char *, void (*) (FILE *, automaton_t),
+    void (*) (FILE *, automaton_t), void (*) (FILE *, automaton_t),
+    void (*) (FILE *, automaton_t));
+static void add_vect                     (state_ainsn_table_t,
+					  int, vect_el_t *, int);
+static int out_state_arcs_num            (state_t);
+static int compare_transition_els_num    (const void *, const void *);
+static void add_vect_el	         (vla_hwint_t *,
+					  ainsn_t, int);
+static void add_states_vect_el           (state_t);
+static void output_trans_table           (automaton_t);
+static void output_state_alts_table      (automaton_t);
+static int min_issue_delay_pass_states   (state_t, ainsn_t);
+static int min_issue_delay               (state_t, ainsn_t);
+static void initiate_min_issue_delay_pass_states (void);
+static void output_min_issue_delay_table (automaton_t);
+static void output_dead_lock_vect        (automaton_t);
+static void output_reserved_units_table  (automaton_t);
+static void output_tables                (void);
+static void output_max_insn_queue_index_def (void);
+static void output_insn_code_cases   (void (*) (automata_list_el_t));
+static void output_automata_list_min_issue_delay_code (automata_list_el_t);
+static void output_internal_min_issue_delay_func (void);
+static void output_automata_list_transition_code (automata_list_el_t);
+static void output_internal_trans_func   (void);
+static void output_internal_insn_code_evaluation (const char *,
+						  const char *, int);
+static void output_dfa_insn_code_func	        (void);
+static void output_trans_func                   (void);
+static void output_automata_list_state_alts_code (automata_list_el_t);
+static void output_internal_state_alts_func     (void);
+static void output_state_alts_func              (void);
+static void output_min_issue_delay_func         (void);
+static void output_internal_dead_lock_func      (void);
+static void output_dead_lock_func               (void);
+static void output_internal_reset_func          (void);
+static void output_size_func		        (void);
+static void output_reset_func                   (void);
+static void output_min_insn_conflict_delay_func (void);
+static void output_internal_insn_latency_func   (void);
+static void output_insn_latency_func            (void);
+static void output_print_reservation_func       (void);
+static int units_cmp			        (const void *,
+						 const void *);
+static void output_get_cpu_unit_code_func       (void);
+static void output_cpu_unit_reservation_p       (void);
+static void output_dfa_clean_insn_cache_func    (void);
+static void output_dfa_start_func	        (void);
+static void output_dfa_finish_func	        (void);
 
-static void output_regexp                  PARAMS ((regexp_t ));
-static void output_unit_set_el_list	   PARAMS ((unit_set_el_t));
-static void output_pattern_set_el_list	   PARAMS ((pattern_set_el_t));
-static void output_description             PARAMS ((void));
-static void output_automaton_name          PARAMS ((FILE *, automaton_t));
-static void output_automaton_units         PARAMS ((automaton_t));
-static void add_state_reservs              PARAMS ((state_t));
-static void output_state_arcs              PARAMS ((state_t));
-static int state_reservs_cmp               PARAMS ((const void *,
-						    const void *));
-static void remove_state_duplicate_reservs PARAMS ((void));
-static void output_state                   PARAMS ((state_t));
-static void output_automaton_descriptions  PARAMS ((void));
-static void output_statistics              PARAMS ((FILE *));
-static void output_time_statistics         PARAMS ((FILE *));
-static void generate                       PARAMS ((void));
+static void output_regexp                  (regexp_t );
+static void output_unit_set_el_list	   (unit_set_el_t);
+static void output_pattern_set_el_list	   (pattern_set_el_t);
+static void output_description             (void);
+static void output_automaton_name          (FILE *, automaton_t);
+static void output_automaton_units         (automaton_t);
+static void add_state_reservs              (state_t);
+static void output_state_arcs              (state_t);
+static int state_reservs_cmp               (const void *,
+					    const void *);
+static void remove_state_duplicate_reservs (void);
+static void output_state                   (state_t);
+static void output_automaton_descriptions  (void);
+static void output_statistics              (FILE *);
+static void output_time_statistics         (FILE *);
+static void generate                       (void);
 
-static void make_insn_alts_attr                PARAMS ((void));
-static void make_internal_dfa_insn_code_attr   PARAMS ((void));
-static void make_default_insn_latency_attr     PARAMS ((void));
-static void make_bypass_attr                   PARAMS ((void));
-static const char *file_name_suffix            PARAMS ((const char *));
-static const char *base_file_name              PARAMS ((const char *));
-static void check_automata_insn_issues	       PARAMS ((void));
-static void add_automaton_state                PARAMS ((state_t));
-static void form_important_insn_automata_lists PARAMS ((void));
+static void make_insn_alts_attr                (void);
+static void make_internal_dfa_insn_code_attr   (void);
+static void make_default_insn_latency_attr     (void);
+static void make_bypass_attr                   (void);
+static const char *file_name_suffix            (const char *);
+static const char *base_file_name              (const char *);
+static void check_automata_insn_issues	       (void);
+static void add_automaton_state                (state_t);
+static void form_important_insn_automata_lists (void);
 
 /* Undefined position.  */
 static pos_t no_pos = 0;
@@ -545,11 +545,11 @@ static struct obstack irp;
    allocator when varray is used only.  */
 
 /* Start work with vla.  */
-#define VLA_PTR_CREATE(vla, allocated_length, name)                   	 \
+#define VLA_PTR_CREATE(vla, allocated_length, name)	 \
   do									 \
-    {                                                                	 \
+    {	 \
       vla_ptr_t *const _vla_ptr = &(vla);                                \
-                                                                      	 \
+	 \
       VARRAY_GENERIC_PTR_INIT (_vla_ptr->varray, allocated_length, name);\
       _vla_ptr->length = 0;                                              \
     }									 \
@@ -1307,14 +1307,14 @@ struct state_ainsn_table
      &(_decl)->decl.bypass; }))
 
 #define DECL_AUTOMATON(d) __extension__					\
-(({ struct decl *const _decl = (d);				       	\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_automaton)					\
        decl_mode_check_failed (_decl->mode, "dm_automaton",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.automaton; }))
 
 #define DECL_EXCL(d) __extension__					\
-(({ struct decl *const _decl = (d);				       	\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_excl)					\
        decl_mode_check_failed (_decl->mode, "dm_excl",			\
 			       __FILE__, __LINE__, __FUNCTION__);	\
@@ -1328,7 +1328,7 @@ struct state_ainsn_table
      &(_decl)->decl.presence; }))
 
 #define DECL_ABSENCE(d) __extension__					\
-(({ struct decl *const _decl = (d);				       	\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_absence)					\
        decl_mode_check_failed (_decl->mode, "dm_absence",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
@@ -1342,20 +1342,19 @@ struct state_ainsn_table
      &(_decl)->decl.reserv; }))
 
 #define DECL_INSN_RESERV(d) __extension__				\
-(({ struct decl *const _decl = (d);				       	\
+(({ struct decl *const _decl = (d);					\
      if (_decl->mode != dm_insn_reserv)					\
        decl_mode_check_failed (_decl->mode, "dm_insn_reserv",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.insn_reserv; }))
 
-static const char *decl_name PARAMS ((enum decl_mode));
-static void decl_mode_check_failed PARAMS ((enum decl_mode, const char *,
-					    const char *, int, const char *));
+static const char *decl_name (enum decl_mode);
+static void decl_mode_check_failed (enum decl_mode, const char *,
+				    const char *, int, const char *);
 
 /* Return string representation of declaration mode MODE.  */
 static const char *
-decl_name (mode)
-     enum decl_mode mode;
+decl_name (enum decl_mode mode)
 {
   static char str [100];
 
@@ -1383,12 +1382,8 @@ decl_name (mode)
 /* The function prints message about unexpected declaration and finish
    the program.  */
 static void
-decl_mode_check_failed (mode, expected_mode_str, file, line, func)
-     enum decl_mode mode;
-     const char *expected_mode_str;
-     const char *file;
-     int line;
-     const char *func;
+decl_mode_check_failed (enum decl_mode mode, const char *expected_mode_str,
+			const char *file, int line, const char *func)
 {
   fprintf
     (stderr,
@@ -1440,16 +1435,15 @@ decl_mode_check_failed (mode, expected_mode_str, file, line, func)
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_regexp)->regexp.oneof; }))
 
-static const char *regexp_name PARAMS ((enum regexp_mode));
-static void regexp_mode_check_failed PARAMS ((enum regexp_mode, const char *,
-					      const char *, int,
-					      const char *));
+static const char *regexp_name (enum regexp_mode);
+static void regexp_mode_check_failed (enum regexp_mode, const char *,
+				      const char *, int,
+				      const char *);
 
 
 /* Return string representation of regexp mode MODE.  */
 static const char *
-regexp_name (mode)
-     enum regexp_mode mode;
+regexp_name (enum regexp_mode mode)
 {
   static char str [100];
 
@@ -1475,12 +1469,9 @@ regexp_name (mode)
 /* The function prints message about unexpected regexp and finish the
    program.  */
 static void
-regexp_mode_check_failed (mode, expected_mode_str, file, line, func)
-     enum regexp_mode mode;
-     const char *expected_mode_str;
-     const char *file;
-     int line;
-     const char *func;
+regexp_mode_check_failed (enum regexp_mode mode,
+			  const char *expected_mode_str,
+			  const char *file, int line, const char *func)
 {
   fprintf
     (stderr,
@@ -1511,8 +1502,7 @@ regexp_mode_check_failed (mode, expected_mode_str, file, line, func)
 
 /* Create IR structure (node).  */
 static void *
-create_node (size)
-     size_t size;
+create_node (size_t size)
 {
   void *result;
 
@@ -1526,9 +1516,7 @@ create_node (size)
 
 /* Copy IR structure (node).  */
 static void *
-copy_node (from, size)
-     const void *from;
-     size_t size;
+copy_node (const void *from, size_t size)
 {
   void *const result = create_node (size);
   memcpy (result, from, size);
@@ -1537,9 +1525,7 @@ copy_node (from, size)
 
 /* The function checks that NAME does not contain quotes (`"').  */
 static char *
-check_name (name, pos)
-     char * name;
-     pos_t pos ATTRIBUTE_UNUSED;
+check_name (char * name, pos_t pos ATTRIBUTE_UNUSED)
 {
   const char *str;
 
@@ -1559,10 +1545,7 @@ static vla_ptr_t decls;
    after the string scanned, or the end-of-string.  Return NULL if at
    end of string.  */
 static char *
-next_sep_el (pstr, sep, par_flag)
-     char **pstr;
-     int sep;
-     int par_flag;
+next_sep_el (char **pstr, int sep, int par_flag)
 {
   char *out_str;
   char *p;
@@ -1610,10 +1593,7 @@ next_sep_el (pstr, sep, par_flag)
    nonzero value.  Return 0 for the null string, -1 if parentheses is
    not balanced.  */
 static int
-n_sep_els (s, sep, par_flag)
-     char *s;
-     int sep;
-     int par_flag;
+n_sep_els (char *s, int sep, int par_flag)
 {
   int n;
   int pars_num;
@@ -1638,11 +1618,7 @@ n_sep_els (s, sep, par_flag)
    function also inserts the end marker NULL at the end of vector.
    Return 0 for the null string, -1 if parantheses are not balanced.  */
 static char **
-get_str_vect (str, els_num, sep, paren_p)
-     char *str;
-     int *els_num;
-     int sep;
-     int paren_p;
+get_str_vect (char *str, int *els_num, int sep, int paren_p)
 {
   int i;
   char **vect;
@@ -1663,13 +1639,12 @@ get_str_vect (str, els_num, sep, paren_p)
   return vect;
 }
 
-/* Process a DEFINE_CPU_UNIT.  
+/* Process a DEFINE_CPU_UNIT.
 
    This gives information about a unit contained in CPU.  We fill a
    struct unit_decl with information used later by `expand_automata'.  */
 void
-gen_cpu_unit (def)
-     rtx def;
+gen_cpu_unit (rtx def)
 {
   decl_t decl;
   char **str_cpu_units;
@@ -1695,13 +1670,12 @@ gen_cpu_unit (def)
     }
 }
 
-/* Process a DEFINE_QUERY_CPU_UNIT.  
+/* Process a DEFINE_QUERY_CPU_UNIT.
 
    This gives information about a unit contained in CPU.  We fill a
    struct unit_decl with information used later by `expand_automata'.  */
 void
-gen_query_cpu_unit (def)
-     rtx def;
+gen_query_cpu_unit (rtx def)
 {
   decl_t decl;
   char **str_cpu_units;
@@ -1725,14 +1699,13 @@ gen_query_cpu_unit (def)
     }
 }
 
-/* Process a DEFINE_BYPASS.  
+/* Process a DEFINE_BYPASS.
 
    This gives information about a unit contained in the CPU.  We fill
    in a struct bypass_decl with information used later by
    `expand_automata'.  */
 void
-gen_bypass (def)
-     rtx def;
+gen_bypass (rtx def)
 {
   decl_t decl;
   char **out_insns;
@@ -1762,14 +1735,13 @@ gen_bypass (def)
       }
 }
 
-/* Process an EXCLUSION_SET.  
+/* Process an EXCLUSION_SET.
 
    This gives information about a cpu unit conflicts.  We fill a
    struct excl_rel_decl (excl) with information used later by
    `expand_automata'.  */
 void
-gen_excl_set (def)
-     rtx def;
+gen_excl_set (rtx def)
 {
   decl_t decl;
   char **first_str_cpu_units;
@@ -1809,10 +1781,7 @@ gen_excl_set (def)
    We fill a struct unit_pattern_rel_decl with information used later
    by `expand_automata'.  */
 static void
-gen_presence_absence_set (def, presence_p, final_p)
-     rtx def;
-     int presence_p;
-     int final_p;
+gen_presence_absence_set (rtx def, int presence_p, int final_p)
 {
   decl_t decl;
   char **str_cpu_units;
@@ -1874,62 +1843,57 @@ gen_presence_absence_set (def, presence_p, final_p)
   num_dfa_decls++;
 }
 
-/* Process a PRESENCE_SET.  
- 
+/* Process a PRESENCE_SET.
+
     This gives information about a cpu unit reservation requirements.
    We fill a struct unit_pattern_rel_decl (presence) with information
    used later by `expand_automata'.  */
- void
-gen_presence_set (def)
-      rtx def;
+void
+gen_presence_set (rtx def)
 {
   gen_presence_absence_set (def, TRUE, FALSE);
 }
- 
-/* Process a FINAL_PRESENCE_SET.  
+
+/* Process a FINAL_PRESENCE_SET.
 
    This gives information about a cpu unit reservation requirements.
    We fill a struct unit_pattern_rel_decl (presence) with information
    used later by `expand_automata'.  */
 void
-gen_final_presence_set (def)
-     rtx def;
+gen_final_presence_set (rtx def)
 {
   gen_presence_absence_set (def, TRUE, TRUE);
 }
- 
+
 /* Process an ABSENCE_SET.
 
    This gives information about a cpu unit reservation requirements.
    We fill a struct unit_pattern_rel_decl (absence) with information
    used later by `expand_automata'.  */
 void
-gen_absence_set (def)
-     rtx def;
+gen_absence_set (rtx def)
 {
   gen_presence_absence_set (def, FALSE, FALSE);
 }
-  
+
 /* Process a FINAL_ABSENCE_SET.
 
    This gives information about a cpu unit reservation requirements.
    We fill a struct unit_pattern_rel_decl (absence) with information
    used later by `expand_automata'.  */
 void
-gen_final_absence_set (def)
-     rtx def;
+gen_final_absence_set (rtx def)
 {
   gen_presence_absence_set (def, FALSE, TRUE);
 }
-  
-/* Process a DEFINE_AUTOMATON.  
+
+/* Process a DEFINE_AUTOMATON.
 
    This gives information about a finite state automaton used for
    recognizing pipeline hazards.  We fill a struct automaton_decl
    with information used later by `expand_automata'.  */
 void
-gen_automaton (def)
-     rtx def;
+gen_automaton (rtx def)
 {
   decl_t decl;
   char **str_automata;
@@ -1951,13 +1915,12 @@ gen_automaton (def)
     }
 }
 
-/* Process an AUTOMATA_OPTION.  
+/* Process an AUTOMATA_OPTION.
 
    This gives information how to generate finite state automaton used
    for recognizing pipeline hazards.  */
 void
-gen_automata_option (def)
-     rtx def;
+gen_automata_option (rtx def)
 {
   if (strcmp ((char *) XSTR (def, 0), NO_MINIMIZATION_OPTION + 1) == 0)
     no_minimization_flag = 1;
@@ -1982,8 +1945,7 @@ static char *reserv_str;
 
 /* Parse an element in STR.  */
 static regexp_t
-gen_regexp_el (str)
-     char *str;
+gen_regexp_el (char *str)
 {
   regexp_t regexp;
   int len;
@@ -2012,8 +1974,7 @@ gen_regexp_el (str)
 
 /* Parse construction `repeat' in STR.  */
 static regexp_t
-gen_regexp_repeat (str)
-     char *str;
+gen_regexp_repeat (char *str)
 {
   regexp_t regexp;
   regexp_t repeat;
@@ -2046,8 +2007,7 @@ gen_regexp_repeat (str)
 
 /* Parse reservation STR which possibly contains separator '+'.  */
 static regexp_t
-gen_regexp_allof (str)
-     char *str;
+gen_regexp_allof (char *str)
 {
   regexp_t allof;
   char **allof_vect;
@@ -2073,8 +2033,7 @@ gen_regexp_allof (str)
 
 /* Parse reservation STR which possibly contains separator '|'.  */
 static regexp_t
-gen_regexp_oneof (str)
-     char *str;
+gen_regexp_oneof (char *str)
 {
   regexp_t oneof;
   char **oneof_vect;
@@ -2100,8 +2059,7 @@ gen_regexp_oneof (str)
 
 /* Parse reservation STR which possibly contains separator ','.  */
 static regexp_t
-gen_regexp_sequence (str)
-     char *str;
+gen_regexp_sequence (char *str)
 {
   regexp_t sequence;
   char **sequence_vect;
@@ -2126,8 +2084,7 @@ gen_regexp_sequence (str)
 
 /* Parse construction reservation STR.  */
 static regexp_t
-gen_regexp (str)
-     char *str;
+gen_regexp (char *str)
 {
   reserv_str = str;
   return gen_regexp_sequence (str);;
@@ -2139,8 +2096,7 @@ gen_regexp (str)
    in a struct reserv_decl with information used later by
    `expand_automata'.  */
 void
-gen_reserv (def)
-     rtx def;
+gen_reserv (rtx def)
 {
   decl_t decl;
 
@@ -2159,8 +2115,7 @@ gen_reserv (def)
    insn.  We fill a struct insn_reserv_decl with information used
    later by `expand_automata'.  */
 void
-gen_insn_reserv (def)
-     rtx def;
+gen_insn_reserv (rtx def)
 {
   decl_t decl;
 
@@ -2180,8 +2135,7 @@ gen_insn_reserv (def)
 
 /* The function evaluates hash value (0..UINT_MAX) of string.  */
 static unsigned
-string_hash (string)
-     const char *string;
+string_hash (const char *string)
 {
   unsigned result, i;
 
@@ -2201,8 +2155,7 @@ string_hash (string)
    function is used by abstract data `hashtab'.  The function returns
    hash value (0..UINT_MAX) of given automaton declaration.  */
 static hashval_t
-automaton_decl_hash (automaton_decl)
-     const void *automaton_decl;
+automaton_decl_hash (const void *automaton_decl)
 {
   const decl_t decl = (decl_t) automaton_decl;
 
@@ -2216,9 +2169,8 @@ automaton_decl_hash (automaton_decl)
    function returns 1 if the declarations have the same key, 0
    otherwise.  */
 static int
-automaton_decl_eq_p (automaton_decl_1, automaton_decl_2)
-     const void* automaton_decl_1;
-     const void* automaton_decl_2;
+automaton_decl_eq_p (const void* automaton_decl_1,
+		     const void* automaton_decl_2)
 {
   const decl_t decl1 = (decl_t) automaton_decl_1;
   const decl_t decl2 = (decl_t) automaton_decl_2;
@@ -2240,8 +2192,7 @@ static htab_t automaton_decl_table;
    declaration node in the table with the same key as given automaton
    declaration node.  */
 static decl_t
-insert_automaton_decl (automaton_decl)
-     decl_t automaton_decl;
+insert_automaton_decl (decl_t automaton_decl)
 {
   void **entry_ptr;
 
@@ -2261,8 +2212,7 @@ static struct decl work_automaton_decl;
    declaration.  The function returns node found in the table, NULL if
    such node does not exist in the table.  */
 static decl_t
-find_automaton_decl (name)
-     char *name;
+find_automaton_decl (char *name)
 {
   void *entry;
 
@@ -2277,7 +2227,7 @@ find_automaton_decl (name)
    declaration with given name.  The function must be called only once
    before any work with the automaton declaration table.  */
 static void
-initiate_automaton_decl_table ()
+initiate_automaton_decl_table (void)
 {
   work_automaton_decl.mode = dm_automaton;
   automaton_decl_table = htab_create (10, automaton_decl_hash,
@@ -2288,7 +2238,7 @@ initiate_automaton_decl_table ()
    function `initiate_automaton_decl_table' is possible immediately
    after this function call.  */
 static void
-finish_automaton_decl_table ()
+finish_automaton_decl_table (void)
 {
   htab_delete (automaton_decl_table);
 }
@@ -2305,8 +2255,7 @@ finish_automaton_decl_table ()
    function is used by abstract data `hashtab'.  The function returns
    hash value (0..UINT_MAX) of given insn declaration.  */
 static hashval_t
-insn_decl_hash (insn_decl)
-     const void *insn_decl;
+insn_decl_hash (const void *insn_decl)
 {
   const decl_t decl = (decl_t) insn_decl;
 
@@ -2319,9 +2268,7 @@ insn_decl_hash (insn_decl)
    The function is used by abstract data `hashtab'.  The function
    returns 1 if declarations have the same key, 0 otherwise.  */
 static int
-insn_decl_eq_p (insn_decl_1, insn_decl_2)
-     const void *insn_decl_1;
-     const void *insn_decl_2;
+insn_decl_eq_p (const void *insn_decl_1, const void *insn_decl_2)
 {
   const decl_t decl1 = (decl_t) insn_decl_1;
   const decl_t decl2 = (decl_t) insn_decl_2;
@@ -2344,8 +2291,7 @@ static htab_t insn_decl_table;
    already in the table.  The function returns insn declaration node
    in the table with the same key as given insn declaration node.  */
 static decl_t
-insert_insn_decl (insn_decl)
-     decl_t insn_decl;
+insert_insn_decl (decl_t insn_decl)
 {
   void **entry_ptr;
 
@@ -2365,8 +2311,7 @@ static struct decl work_insn_decl;
    declaration.  The function returns node found in the table, NULL if
    such node does not exist in the table.  */
 static decl_t
-find_insn_decl (name)
-     char *name;
+find_insn_decl (char *name)
 {
   void *entry;
 
@@ -2381,7 +2326,7 @@ find_insn_decl (name)
    declaration with given name.  The function must be called only once
    before any work with the insn declaration table.  */
 static void
-initiate_insn_decl_table ()
+initiate_insn_decl_table (void)
 {
   work_insn_decl.mode = dm_insn_reserv;
   insn_decl_table = htab_create (10, insn_decl_hash, insn_decl_eq_p,
@@ -2392,7 +2337,7 @@ initiate_insn_decl_table ()
    function `initiate_insn_decl_table' is possible immediately after
    this function call.  */
 static void
-finish_insn_decl_table ()
+finish_insn_decl_table (void)
 {
   htab_delete (insn_decl_table);
 }
@@ -2408,8 +2353,7 @@ finish_insn_decl_table ()
    is used by abstract data `hashtab'.  The function returns hash
    value (0..UINT_MAX) of given declaration.  */
 static hashval_t
-decl_hash (decl)
-     const void *decl;
+decl_hash (const void *decl)
 {
   const decl_t d = (const decl_t) decl;
 
@@ -2424,9 +2368,7 @@ decl_hash (decl)
    function is used by abstract data `hashtab'.  The function
    returns 1 if the declarations have the same key, 0 otherwise.  */
 static int
-decl_eq_p (decl_1, decl_2)
-     const void *decl_1;
-     const void *decl_2;
+decl_eq_p (const void *decl_1, const void *decl_2)
 {
   const decl_t d1 = (const decl_t) decl_1;
   const decl_t d2 = (const decl_t) decl_2;
@@ -2452,8 +2394,7 @@ static htab_t decl_table;
    same key as given declaration node.  */
 
 static decl_t
-insert_decl (decl)
-     decl_t decl;
+insert_decl (decl_t decl)
 {
   void **entry_ptr;
 
@@ -2472,8 +2413,7 @@ static struct decl work_decl;
    returns node found in the table, NULL if such node does not exist
    in the table.  */
 static decl_t
-find_decl (name)
-     char *name;
+find_decl (char *name)
 {
   void *entry;
 
@@ -2488,7 +2428,7 @@ find_decl (name)
    The function must be called only once before any work with the
    declaration table.  */
 static void
-initiate_decl_table ()
+initiate_decl_table (void)
 {
   work_decl.mode = dm_unit;
   decl_table = htab_create (10, decl_hash, decl_eq_p, (htab_del) 0);
@@ -2498,7 +2438,7 @@ initiate_decl_table ()
    `initiate_declaration_table' is possible immediately after this
    function call.  */
 static void
-finish_decl_table ()
+finish_decl_table (void)
 {
   htab_delete (decl_table);
 }
@@ -2510,10 +2450,7 @@ finish_decl_table ()
 /* Checking NAMES in an exclusion clause vector and returning formed
    unit_set_el_list.  */
 static unit_set_el_t
-process_excls (names, num, excl_pos)
-     char **names;
-     int num;
-     pos_t excl_pos ATTRIBUTE_UNUSED;
+process_excls (char **names, int num, pos_t excl_pos ATTRIBUTE_UNUSED)
 {
   unit_set_el_t el_list;
   unit_set_el_t last_el;
@@ -2551,10 +2488,8 @@ process_excls (names, num, excl_pos)
    list of the each element from DEST_LIST.  Checking situation "unit
    excludes itself".  */
 static void
-add_excls (dest_list, source_list, excl_pos)
-     unit_set_el_t dest_list;
-     unit_set_el_t source_list;
-     pos_t excl_pos ATTRIBUTE_UNUSED;
+add_excls (unit_set_el_t dest_list, unit_set_el_t source_list,
+	   pos_t excl_pos ATTRIBUTE_UNUSED)
 {
   unit_set_el_t dst;
   unit_set_el_t src;
@@ -2601,12 +2536,9 @@ add_excls (dest_list, source_list, excl_pos)
    formed unit_set_el_list.  The function is called only after
    processing all exclusion sets.  */
 static unit_set_el_t
-process_presence_absence_names (names, num, req_pos, presence_p, final_p)
-     char **names;
-     int num;
-     pos_t req_pos ATTRIBUTE_UNUSED;
-     int presence_p;
-     int final_p;
+process_presence_absence_names (char **names, int num,
+				pos_t req_pos ATTRIBUTE_UNUSED,
+				int presence_p, int final_p)
 {
   unit_set_el_t el_list;
   unit_set_el_t last_el;
@@ -2656,12 +2588,9 @@ process_presence_absence_names (names, num, req_pos, presence_p, final_p)
    returning the formed pattern_set_el_list.  The function is called
    only after processing all exclusion sets.  */
 static pattern_set_el_t
-process_presence_absence_patterns (patterns, num, req_pos, presence_p, final_p)
-     char ***patterns;
-     int num;
-     pos_t req_pos ATTRIBUTE_UNUSED;
-     int presence_p;
-     int final_p;
+process_presence_absence_patterns (char ***patterns, int num,
+				   pos_t req_pos ATTRIBUTE_UNUSED,
+				   int presence_p, int final_p)
 {
   pattern_set_el_t el_list;
   pattern_set_el_t last_el;
@@ -2730,12 +2659,10 @@ process_presence_absence_patterns (patterns, num, req_pos, presence_p, final_p)
    automata".  Remember that we process absence sets only after all
    presence sets.  */
 static void
-add_presence_absence (dest_list, pattern_list, req_pos, presence_p, final_p)
-     unit_set_el_t dest_list;
-     pattern_set_el_t pattern_list;
-     pos_t req_pos ATTRIBUTE_UNUSED;
-     int presence_p;
-     int final_p;
+add_presence_absence (unit_set_el_t dest_list,
+		      pattern_set_el_t pattern_list,
+		      pos_t req_pos ATTRIBUTE_UNUSED,
+		      int presence_p, int final_p)
 {
   unit_set_el_t dst;
   pattern_set_el_t pat;
@@ -2851,9 +2778,8 @@ add_presence_absence (dest_list, pattern_list, req_pos, presence_p, final_p)
 /* The function searches for bypass with given IN_INSN_RESERV in given
    BYPASS_LIST.  */
 static struct bypass_decl *
-find_bypass (bypass_list, in_insn_reserv)
-     struct bypass_decl *bypass_list;
-     struct insn_reserv_decl *in_insn_reserv;
+find_bypass (struct bypass_decl *bypass_list,
+	     struct insn_reserv_decl *in_insn_reserv)
 {
   struct bypass_decl *bypass;
 
@@ -2866,7 +2792,7 @@ find_bypass (bypass_list, in_insn_reserv)
 /* The function processes pipeline description declarations, checks
    their correctness, and forms exclusion/presence/absence sets.  */
 static void
-process_decls ()
+process_decls (void)
 {
   decl_t decl;
   decl_t automaton_decl;
@@ -3040,7 +2966,7 @@ process_decls ()
 	{
 	  unit_set_el_t unit_set_el_list;
 	  unit_set_el_t unit_set_el_list_2;
-	  
+
 	  unit_set_el_list
             = process_excls (DECL_EXCL (decl)->names,
 			     DECL_EXCL (decl)->first_list_length, decl->pos);
@@ -3063,7 +2989,7 @@ process_decls ()
 	{
 	  unit_set_el_t unit_set_el_list;
 	  pattern_set_el_t pattern_set_el_list;
-	  
+
 	  unit_set_el_list
             = process_presence_absence_names
 	      (DECL_PRESENCE (decl)->names, DECL_PRESENCE (decl)->names_num,
@@ -3087,7 +3013,7 @@ process_decls ()
 	{
 	  unit_set_el_t unit_set_el_list;
 	  pattern_set_el_t pattern_set_el_list;
-	  
+
 	  unit_set_el_list
             = process_presence_absence_names
 	      (DECL_ABSENCE (decl)->names, DECL_ABSENCE (decl)->names_num,
@@ -3108,7 +3034,7 @@ process_decls ()
    the automaton is not used, the function fixes error/warning.  The
    following function must be called only after `process_decls'.  */
 static void
-check_automaton_usage ()
+check_automaton_usage (void)
 {
   decl_t decl;
   int i;
@@ -3134,13 +3060,12 @@ check_automaton_usage ()
    Remember that reserv_regexp does not exist before the function
    call.  */
 static regexp_t
-process_regexp (regexp)
-     regexp_t regexp;
+process_regexp (regexp_t regexp)
 {
   decl_t decl_in_table;
   regexp_t new_regexp;
   int i;
-    
+
   if (regexp->mode == rm_unit)
     {
       decl_in_table = find_decl (REGEXP_UNIT (regexp)->name);
@@ -3190,7 +3115,7 @@ process_regexp (regexp)
    define_insn_reservation with the aid of function
    `process_regexp'.  */
 static void
-process_regexp_decls ()
+process_regexp_decls (void)
 {
   decl_t decl;
   int i;
@@ -3212,7 +3137,7 @@ process_regexp_decls ()
    following function must be called only after `process_decls',
    `process_regexp_decls'.  */
 static void
-check_usage ()
+check_usage (void)
 {
   decl_t decl;
   int i;
@@ -3245,9 +3170,7 @@ static int curr_loop_pass_num;
    contains given decl or reservations in given regexp refers for
    given decl.  */
 static int
-loop_in_regexp (regexp, start_decl)
-     regexp_t regexp;
-     decl_t start_decl;
+loop_in_regexp (regexp_t regexp, decl_t start_decl)
 {
   int i;
 
@@ -3306,7 +3229,7 @@ loop_in_regexp (regexp, start_decl)
 /* The following function fixes errors "cycle in definition ...".  The
    function uses function `loop_in_regexp' for that.  */
 static void
-check_loops_in_regexps ()
+check_loops_in_regexps (void)
 {
   decl_t decl;
   int i;
@@ -3321,7 +3244,7 @@ check_loops_in_regexps ()
     {
       decl = description->decls [i];
       curr_loop_pass_num = i;
-      
+
       if (decl->mode == dm_reserv)
 	  {
 	    DECL_RESERV (decl)->loop_pass_num = curr_loop_pass_num;
@@ -3339,11 +3262,9 @@ check_loops_in_regexps ()
 /* The function recursively processes IR of reservation and defines
    max and min cycle for reservation of unit.  */
 static void
-process_regexp_cycles (regexp, max_start_cycle, min_start_cycle,
-		       max_finish_cycle, min_finish_cycle)
-     regexp_t regexp;
-     int max_start_cycle, min_start_cycle;
-     int *max_finish_cycle, *min_finish_cycle;
+process_regexp_cycles (regexp_t regexp, int max_start_cycle,
+		       int min_start_cycle, int *max_finish_cycle,
+		       int *min_finish_cycle)
 {
   int i;
 
@@ -3431,7 +3352,7 @@ process_regexp_cycles (regexp, max_start_cycle, min_start_cycle,
 /* The following function is called only for correct program.  The
    function defines max reservation of insns in cycles.  */
 static void
-evaluate_max_reserv_cycles ()
+evaluate_max_reserv_cycles (void)
 {
   int max_insn_cycles_num;
   int min_insn_cycles_num;
@@ -3456,7 +3377,7 @@ evaluate_max_reserv_cycles ()
 /* The following function calls functions for checking all
    description.  */
 static void
-check_all_description ()
+check_all_description (void)
 {
   process_decls ();
   check_automaton_usage ();
@@ -3476,7 +3397,7 @@ check_all_description ()
 
 /* The following function creates ticker and makes it active.  */
 static ticker_t
-create_ticker ()
+create_ticker (void)
 {
   ticker_t ticker;
 
@@ -3487,8 +3408,7 @@ create_ticker ()
 
 /* The following function switches off given ticker.  */
 static void
-ticker_off (ticker)
-     ticker_t *ticker;
+ticker_off (ticker_t *ticker)
 {
   if (ticker->incremented_off_time == 0)
     ticker->incremented_off_time = get_run_time () + 1;
@@ -3496,8 +3416,7 @@ ticker_off (ticker)
 
 /* The following function switches on given ticker.  */
 static void
-ticker_on (ticker)
-     ticker_t *ticker;
+ticker_on (ticker_t *ticker)
 {
   if (ticker->incremented_off_time != 0)
     {
@@ -3510,8 +3429,7 @@ ticker_on (ticker)
 /* The following function returns current time in milliseconds since
    the moment when given ticker was created.  */
 static int
-active_time (ticker)
-     ticker_t ticker;
+active_time (ticker_t ticker)
 {
   if (ticker.incremented_off_time != 0)
     return ticker.incremented_off_time - 1 - ticker.modified_creation_time;
@@ -3536,9 +3454,7 @@ active_time (ticker)
 
 */
 static void
-print_active_time (f, ticker)
-     FILE *f;
-     ticker_t ticker;
+print_active_time (FILE *f, ticker_t ticker)
 {
   int msecs;
 
@@ -3586,7 +3502,7 @@ static ticker_t all_time;
 /* Pseudo insn decl which denotes advancing cycle.  */
 static decl_t advance_cycle_insn_decl;
 static void
-add_advance_cycle_insn_decl ()
+add_advance_cycle_insn_decl (void)
 {
   advance_cycle_insn_decl = create_node (sizeof (struct decl));
   advance_cycle_insn_decl->mode = dm_insn_reserv;
@@ -3617,8 +3533,8 @@ static int allocated_alt_states_num = 0;
 
 /* The following function returns free node alt_state.  It may be new
    allocated node or node freed earlier.  */
-static alt_state_t 
-get_free_alt_state ()
+static alt_state_t
+get_free_alt_state (void)
 {
   alt_state_t result;
 
@@ -3642,8 +3558,7 @@ get_free_alt_state ()
 
 /* The function frees node ALT_STATE.  */
 static void
-free_alt_state (alt_state)
-     alt_state_t alt_state;
+free_alt_state (alt_state_t alt_state)
 {
   if (alt_state == NULL)
     return;
@@ -3653,8 +3568,7 @@ free_alt_state (alt_state)
 
 /* The function frees list started with node ALT_STATE_LIST.  */
 static void
-free_alt_states (alt_states_list)
-     alt_state_t alt_states_list;
+free_alt_states (alt_state_t alt_states_list)
 {
   alt_state_t curr_alt_state;
   alt_state_t next_alt_state;
@@ -3670,9 +3584,7 @@ free_alt_states (alt_states_list)
 
 /* The function compares unique numbers of alt states.  */
 static int
-alt_state_cmp (alt_state_ptr_1, alt_state_ptr_2)
-     const void *alt_state_ptr_1;
-     const void *alt_state_ptr_2;
+alt_state_cmp (const void *alt_state_ptr_1, const void *alt_state_ptr_2)
 {
   if ((*(alt_state_t *) alt_state_ptr_1)->state->unique_num
       == (*(alt_state_t *) alt_state_ptr_2)->state->unique_num)
@@ -3687,9 +3599,8 @@ alt_state_cmp (alt_state_ptr_1, alt_state_ptr_2)
 /* The function sorts ALT_STATES_LIST and removes duplicated alt
    states from the list.  The comparison key is alt state unique
    number.  */
-static alt_state_t 
-uniq_sort_alt_states (alt_states_list)
-     alt_state_t alt_states_list;
+static alt_state_t
+uniq_sort_alt_states (alt_state_t alt_states_list)
 {
   alt_state_t curr_alt_state;
   vla_ptr_t alt_states;
@@ -3735,9 +3646,7 @@ uniq_sort_alt_states (alt_states_list)
 /* The function checks equality of alt state lists.  Remember that the
    lists must be already sorted by the previous function.  */
 static int
-alt_states_eq (alt_states_1, alt_states_2)
-     alt_state_t alt_states_1;
-     alt_state_t alt_states_2;
+alt_states_eq (alt_state_t alt_states_1, alt_state_t alt_states_2)
 {
   while (alt_states_1 != NULL && alt_states_2 != NULL
          && alt_state_cmp (&alt_states_1, &alt_states_2) == 0)
@@ -3750,14 +3659,14 @@ alt_states_eq (alt_states_1, alt_states_2)
 
 /* Initialization of the abstract data.  */
 static void
-initiate_alt_states ()
+initiate_alt_states (void)
 {
   first_free_alt_state = NULL;
 }
 
 /* Finishing work with the abstract data.  */
 static void
-finish_alt_states ()
+finish_alt_states (void)
 {
 }
 
@@ -3825,7 +3734,7 @@ static int allocated_states_num = 0;
 
 /* Allocate new reservation set.  */
 static reserv_sets_t
-alloc_empty_reserv_sets ()
+alloc_empty_reserv_sets (void)
 {
   reserv_sets_t result;
 
@@ -3838,8 +3747,7 @@ alloc_empty_reserv_sets ()
 
 /* Hash value of reservation set.  */
 static unsigned
-reserv_sets_hash_value (reservs)
-     reserv_sets_t reservs;
+reserv_sets_hash_value (reserv_sets_t reservs)
 {
   set_el_t hash_value;
   unsigned result;
@@ -3873,9 +3781,7 @@ reserv_sets_hash_value (reservs)
 
 /* Comparison of given reservation sets.  */
 static int
-reserv_sets_cmp (reservs_1, reservs_2)
-     reserv_sets_t reservs_1;
-     reserv_sets_t reservs_2;
+reserv_sets_cmp (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
 {
   int reservs_num;
   set_el_t *reserv_ptr_1;
@@ -3902,9 +3808,7 @@ reserv_sets_cmp (reservs_1, reservs_2)
 
 /* The function checks equality of the reservation sets.  */
 static int
-reserv_sets_eq (reservs_1, reservs_2)
-     reserv_sets_t reservs_1;
-     reserv_sets_t reservs_2;
+reserv_sets_eq (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
 {
   return reserv_sets_cmp (reservs_1, reservs_2) == 0;
 }
@@ -3912,10 +3816,7 @@ reserv_sets_eq (reservs_1, reservs_2)
 /* Set up in the reservation set that unit with UNIT_NUM is used on
    CYCLE_NUM.  */
 static void
-set_unit_reserv (reservs, cycle_num, unit_num)
-     reserv_sets_t reservs;
-     int cycle_num;
-     int unit_num;
+set_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 {
   if (cycle_num >= max_cycles_num)
     abort ();
@@ -3926,10 +3827,7 @@ set_unit_reserv (reservs, cycle_num, unit_num)
 /* Set up in the reservation set RESERVS that unit with UNIT_NUM is
    used on CYCLE_NUM.  */
 static int
-test_unit_reserv (reservs, cycle_num, unit_num)
-     reserv_sets_t reservs;
-     int cycle_num;
-     int unit_num;
+test_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 {
   if (cycle_num >= max_cycles_num)
     abort ();
@@ -3940,8 +3838,7 @@ test_unit_reserv (reservs, cycle_num, unit_num)
 /* The function checks that the reservation set represents no one unit
    reservation.  */
 static int
-it_is_empty_reserv_sets (operand)
-     reserv_sets_t operand;
+it_is_empty_reserv_sets (reserv_sets_t operand)
 {
   set_el_t *reserv_ptr;
   int reservs_num;
@@ -3960,9 +3857,8 @@ it_is_empty_reserv_sets (operand)
    i.e. there is a unit reservation on a cycle in both reservation
    sets.  */
 static int
-reserv_sets_are_intersected (operand_1, operand_2)
-     reserv_sets_t operand_1;
-     reserv_sets_t operand_2;
+reserv_sets_are_intersected (reserv_sets_t operand_1,
+			     reserv_sets_t operand_2)
 {
   set_el_t *el_ptr_1;
   set_el_t *el_ptr_2;
@@ -4005,9 +3901,7 @@ reserv_sets_are_intersected (operand_1, operand_2)
    cpu cycle.  The remaining bits of OPERAND (representing the last
    cycle unit reservations) are not changed.  */
 static void
-reserv_sets_shift (result, operand)
-     reserv_sets_t result;
-     reserv_sets_t operand;
+reserv_sets_shift (reserv_sets_t result, reserv_sets_t operand)
 {
   int i;
 
@@ -4019,10 +3913,8 @@ reserv_sets_shift (result, operand)
 
 /* OR of the reservation sets.  */
 static void
-reserv_sets_or (result, operand_1, operand_2)
-     reserv_sets_t result;
-     reserv_sets_t operand_1;
-     reserv_sets_t operand_2;
+reserv_sets_or (reserv_sets_t result, reserv_sets_t operand_1,
+		reserv_sets_t operand_2)
 {
   set_el_t *el_ptr_1;
   set_el_t *el_ptr_2;
@@ -4038,10 +3930,8 @@ reserv_sets_or (result, operand_1, operand_2)
 
 /* AND of the reservation sets.  */
 static void
-reserv_sets_and (result, operand_1, operand_2)
-     reserv_sets_t result;
-     reserv_sets_t operand_1;
-     reserv_sets_t operand_2;
+reserv_sets_and (reserv_sets_t result, reserv_sets_t operand_1,
+		reserv_sets_t operand_2)
 {
   set_el_t *el_ptr_1;
   set_el_t *el_ptr_2;
@@ -4059,11 +3949,8 @@ reserv_sets_and (result, operand_1, operand_2)
    cycle START_CYCLE in the reservation set.  The function uses repeat
    construction if REPETITION_NUM > 1.  */
 static void
-output_cycle_reservs (f, reservs, start_cycle, repetition_num)
-     FILE *f;
-     reserv_sets_t reservs;
-     int start_cycle;
-     int repetition_num;
+output_cycle_reservs (FILE *f, reserv_sets_t reservs, int start_cycle,
+		      int repetition_num)
 {
   int unit_num;
   int reserved_units_num;
@@ -4102,9 +3989,7 @@ output_cycle_reservs (f, reservs, start_cycle, repetition_num)
 /* The function outputs string representation of units reservation in
    the reservation set.  */
 static void
-output_reserv_sets (f, reservs)
-     FILE *f;
-     reserv_sets_t reservs;
+output_reserv_sets (FILE *f, reserv_sets_t reservs)
 {
   int start_cycle = 0;
   int cycle;
@@ -4144,9 +4029,7 @@ output_reserv_sets (f, reservs)
    may be new allocated node or node freed earlier.  The function also
    allocates reservation set if WITH_RESERVS has nonzero value.  */
 static state_t
-get_free_state (with_reservs, automaton)
-     int with_reservs;
-     automaton_t automaton;
+get_free_state (int with_reservs, automaton_t automaton)
 {
   state_t result;
 
@@ -4187,8 +4070,7 @@ get_free_state (with_reservs, automaton)
 
 /* The function frees node STATE.  */
 static void
-free_state (state)
-     state_t state;
+free_state (state_t state)
 {
   free_alt_states (state->component_states);
   VLA_PTR_ADD (free_states, state);
@@ -4199,8 +4081,7 @@ free_state (state)
    it is formed from hash values of the component deterministic
    states.  One more key is order number of state automaton.  */
 static hashval_t
-state_hash (state)
-     const void *state;
+state_hash (const void *state)
 {
   unsigned int hash_value;
   alt_state_t alt_state;
@@ -4225,9 +4106,7 @@ state_hash (state)
 
 /* Return nonzero value if the states are the same.  */
 static int
-state_eq_p (state_1, state_2)
-     const void *state_1;
-     const void *state_2;
+state_eq_p (const void *state_1, const void *state_2)
 {
   alt_state_t alt_state_1;
   alt_state_t alt_state_2;
@@ -4258,8 +4137,7 @@ state_eq_p (state_1, state_2)
 
 /* Insert STATE into the state table.  */
 static state_t
-insert_state (state)
-     state_t state;
+insert_state (state_t state)
 {
   void **entry_ptr;
 
@@ -4272,10 +4150,7 @@ insert_state (state)
 /* Add reservation of unit with UNIT_NUM on cycle CYCLE_NUM to
    deterministic STATE.  */
 static void
-set_state_reserv (state, cycle_num, unit_num)
-     state_t state;
-     int cycle_num;
-     int unit_num;
+set_state_reserv (state_t state, int cycle_num, int unit_num)
 {
   set_unit_reserv (state->reservs, cycle_num, unit_num);
 }
@@ -4283,9 +4158,7 @@ set_state_reserv (state, cycle_num, unit_num)
 /* Return nonzero value if the deterministic states contains a
    reservation of the same cpu unit on the same cpu cycle.  */
 static int
-intersected_state_reservs_p (state1, state2)
-     state_t state1;
-     state_t state2;
+intersected_state_reservs_p (state_t state1, state_t state2)
 {
   if (state1->automaton != state2->automaton)
     abort ();
@@ -4296,10 +4169,7 @@ intersected_state_reservs_p (state1, state2)
    representing the automaton state which is union of reservations of
    the deterministic states masked by RESERVS.  */
 static state_t
-states_union (state1, state2, reservs)
-     state_t state1;
-     state_t state2;
-     reserv_sets_t reservs;
+states_union (state_t state1, state_t state2, reserv_sets_t reservs)
 {
   state_t result;
   state_t state_in_table;
@@ -4322,9 +4192,7 @@ states_union (state1, state2, reservs)
    represent the automaton state is obtained from deterministic STATE
    by advancing cpu cycle and masking by RESERVS.  */
 static state_t
-state_shift (state, reservs)
-     state_t state;
-     reserv_sets_t reservs;
+state_shift (state_t state, reserv_sets_t reservs)
 {
   state_t result;
   state_t state_in_table;
@@ -4343,7 +4211,7 @@ state_shift (state, reservs)
 
 /* Initialization of the abstract data.  */
 static void
-initiate_states ()
+initiate_states (void)
 {
   decl_t decl;
   int i;
@@ -4372,7 +4240,7 @@ initiate_states ()
 
 /* Finishing work with the abstract data.  */
 static void
-finish_states ()
+finish_states (void)
 {
   VLA_PTR_DELETE (units_container);
   htab_delete (state_table);
@@ -4395,8 +4263,7 @@ static int allocated_arcs_num = 0;
 
 /* The function frees node ARC.  */
 static void
-free_arc (arc)
-     arc_t arc;
+free_arc (arc_t arc)
 {
   arc->next_out_arc = first_free_arc;
   first_free_arc = arc;
@@ -4404,9 +4271,7 @@ free_arc (arc)
 
 /* The function removes and frees ARC staring from FROM_STATE.  */
 static void
-remove_arc (from_state, arc)
-     state_t from_state;
-     arc_t arc;
+remove_arc (state_t from_state, arc_t arc)
 {
   arc_t prev_arc;
   arc_t curr_arc;
@@ -4430,10 +4295,7 @@ remove_arc (from_state, arc)
 /* The functions returns arc with given characteristics (or NULL if
    the arc does not exist).  */
 static arc_t
-find_arc (from_state, to_state, insn)
-     state_t from_state;
-     state_t to_state;
-     ainsn_t insn;
+find_arc (state_t from_state, state_t to_state, ainsn_t insn)
 {
   arc_t arc;
 
@@ -4447,11 +4309,8 @@ find_arc (from_state, to_state, insn)
    and with given STATE_ALTS.  The function returns added arc (or
    already existing arc).  */
 static arc_t
-add_arc (from_state, to_state, ainsn, state_alts)
-     state_t from_state;
-     state_t to_state;
-     ainsn_t ainsn;
-     int state_alts;
+add_arc (state_t from_state, state_t to_state, ainsn_t ainsn,
+	 int state_alts)
 {
   arc_t new_arc;
 
@@ -4485,30 +4344,28 @@ add_arc (from_state, to_state, ainsn, state_alts)
 
 /* The function returns the first arc starting from STATE.  */
 static arc_t
-first_out_arc (state)
-     state_t state;
+first_out_arc (state_t state)
 {
   return state->first_out_arc;
 }
 
 /* The function returns next out arc after ARC.  */
 static arc_t
-next_out_arc (arc)
-     arc_t arc;
+next_out_arc (arc_t arc)
 {
   return arc->next_out_arc;
 }
 
 /* Initialization of the abstract data.  */
 static void
-initiate_arcs ()
+initiate_arcs (void)
 {
   first_free_arc = NULL;
 }
 
 /* Finishing work with the abstract data.  */
 static void
-finish_arcs ()
+finish_arcs (void)
 {
 }
 
@@ -4527,8 +4384,8 @@ static htab_t automata_list_table;
 
 /* The following function returns free automata list el.  It may be
    new allocated node or node freed earlier.  */
-static automata_list_el_t 
-get_free_automata_list_el ()
+static automata_list_el_t
+get_free_automata_list_el (void)
 {
   automata_list_el_t result;
 
@@ -4547,8 +4404,7 @@ get_free_automata_list_el ()
 
 /* The function frees node AUTOMATA_LIST_EL.  */
 static void
-free_automata_list_el (automata_list_el)
-     automata_list_el_t automata_list_el;
+free_automata_list_el (automata_list_el_t automata_list_el)
 {
   if (automata_list_el == NULL)
     return;
@@ -4558,8 +4414,7 @@ free_automata_list_el (automata_list_el)
 
 /* The function frees list AUTOMATA_LIST.  */
 static void
-free_automata_list (automata_list)
-     automata_list_el_t automata_list;
+free_automata_list (automata_list_el_t automata_list)
 {
   automata_list_el_t curr_automata_list_el;
   automata_list_el_t next_automata_list_el;
@@ -4575,8 +4430,7 @@ free_automata_list (automata_list)
 
 /* Hash value of AUTOMATA_LIST.  */
 static hashval_t
-automata_list_hash (automata_list)
-     const void *automata_list;
+automata_list_hash (const void *automata_list)
 {
   unsigned int hash_value;
   automata_list_el_t curr_automata_list_el;
@@ -4593,9 +4447,7 @@ automata_list_hash (automata_list)
 
 /* Return nonzero value if the automata_lists are the same.  */
 static int
-automata_list_eq_p (automata_list_1, automata_list_2)
-     const void *automata_list_1;
-     const void *automata_list_2;
+automata_list_eq_p (const void *automata_list_1, const void *automata_list_2)
 {
   automata_list_el_t automata_list_el_1;
   automata_list_el_t automata_list_el_2;
@@ -4612,7 +4464,7 @@ automata_list_eq_p (automata_list_1, automata_list_2)
 
 /* Initialization of the abstract data.  */
 static void
-initiate_automata_lists ()
+initiate_automata_lists (void)
 {
   first_free_automata_list_el = NULL;
   automata_list_table = htab_create (1500, automata_list_hash,
@@ -4622,15 +4474,14 @@ initiate_automata_lists ()
 /* The following function starts new automata list and makes it the
    current one.  */
 static void
-automata_list_start ()
+automata_list_start (void)
 {
   current_automata_list = NULL;
 }
 
 /* The following function adds AUTOMATON to the current list.  */
 static void
-automata_list_add (automaton)
-     automaton_t automaton;
+automata_list_add (automaton_t automaton)
 {
   automata_list_el_t el;
 
@@ -4643,7 +4494,7 @@ automata_list_add (automaton)
 /* The following function finishes forming the current list, inserts
    it into the table and returns it.  */
 static automata_list_el_t
-automata_list_finish ()
+automata_list_finish (void)
 {
   void **entry_ptr;
 
@@ -4661,7 +4512,7 @@ automata_list_finish ()
 
 /* Finishing work with the abstract data.  */
 static void
-finish_automata_lists ()
+finish_automata_lists (void)
 {
   htab_delete (automata_list_table);
 }
@@ -4683,7 +4534,7 @@ static reserv_sets_t *unit_excl_set_table;
 /* The following function forms the array containing exclusion sets
    for each unit.  */
 static void
-initiate_excl_sets ()
+initiate_excl_sets (void)
 {
   decl_t decl;
   reserv_sets_t unit_excl_set;
@@ -4721,8 +4572,7 @@ initiate_excl_sets ()
 /* The function sets up and return EXCL_SET which is union of
    exclusion sets for each unit in IN_SET.  */
 static reserv_sets_t
-get_excl_set (in_set)
-     reserv_sets_t in_set;
+get_excl_set (reserv_sets_t in_set)
 {
   int excl_char_num;
   int chars_num;
@@ -4764,8 +4614,7 @@ static pattern_reserv_t *unit_final_absence_set_table;
 /* The following function forms list of reservation sets for given
    PATTERN_LIST.  */
 static pattern_reserv_t
-form_reserv_sets_list (pattern_list)
-     pattern_set_el_t pattern_list;
+form_reserv_sets_list (pattern_set_el_t pattern_list)
 {
   pattern_set_el_t el;
   pattern_reserv_t first, curr, prev;
@@ -4794,7 +4643,7 @@ form_reserv_sets_list (pattern_list)
  /* The following function forms the array containing presence and
    absence pattern sets for each unit.  */
 static void
-initiate_presence_absence_pattern_sets ()
+initiate_presence_absence_pattern_sets (void)
 {
   decl_t decl;
   int i;
@@ -4833,9 +4682,9 @@ initiate_presence_absence_pattern_sets ()
    sets for units in ORIGIONAL_SET.  The function returns TRUE if it
    is ok.  */
 static int
-check_presence_pattern_sets (checked_set, origional_set, final_p)
-     reserv_sets_t checked_set, origional_set;
-     int final_p;
+check_presence_pattern_sets (reserv_sets_t checked_set,
+			     reserv_sets_t origional_set,
+			     int final_p)
 {
   int char_num;
   int chars_num;
@@ -4844,7 +4693,7 @@ check_presence_pattern_sets (checked_set, origional_set, final_p)
   int unit_num;
   int presence_p;
   pattern_reserv_t pat_reserv;
-  
+
   chars_num = els_in_cycle_reserv * sizeof (set_el_t);
   for (char_num = 0; char_num < chars_num; char_num++)
     if (((unsigned char *) origional_set) [char_num])
@@ -4882,9 +4731,9 @@ check_presence_pattern_sets (checked_set, origional_set, final_p)
    sets for units in ORIGIONAL_SET.  The function returns TRUE if it
    is ok.  */
 static int
-check_absence_pattern_sets (checked_set, origional_set, final_p)
-     reserv_sets_t checked_set, origional_set;
-     int final_p;
+check_absence_pattern_sets (reserv_sets_t checked_set,
+			    reserv_sets_t origional_set,
+			    int final_p)
 {
   int char_num;
   int chars_num;
@@ -4892,7 +4741,7 @@ check_absence_pattern_sets (checked_set, origional_set, final_p)
   int start_unit_num;
   int unit_num;
   pattern_reserv_t pat_reserv;
-  
+
   chars_num = els_in_cycle_reserv * sizeof (set_el_t);
   for (char_num = 0; char_num < chars_num; char_num++)
     if (((unsigned char *) origional_set) [char_num])
@@ -4933,8 +4782,7 @@ check_absence_pattern_sets (checked_set, origional_set, final_p)
    defined by define_reservation by corresponding value during making
    the copy.  */
 static regexp_t
-copy_insn_regexp (regexp)
-     regexp_t regexp;
+copy_insn_regexp (regexp_t regexp)
 {
   regexp_t  result;
   int i;
@@ -4992,8 +4840,7 @@ static int regexp_transformed_p;
 /* The function makes transformation
    A*N -> A, A, ...  */
 static regexp_t
-transform_1 (regexp)
-     regexp_t regexp;
+transform_1 (regexp_t regexp)
 {
   int i;
   int repeat_num;
@@ -5024,8 +4871,7 @@ transform_1 (regexp)
    ...+(A+B+...)+C+... -> ...+A+B+...+C+...
    ...|(A|B|...)|C|... -> ...|A|B|...|C|...  */
 static regexp_t
-transform_2 (regexp)
-     regexp_t regexp;
+transform_2 (regexp_t regexp)
 {
   if (regexp->mode == rm_sequence)
     {
@@ -5169,8 +5015,7 @@ transform_2 (regexp)
    ...+(A,B,...)+C+... -> (...+A+C+...),B,...
    ...+(A,B,...)+(C,D,...) -> (A+C),(B+D),...  */
 static regexp_t
-transform_3 (regexp)
-     regexp_t regexp;
+transform_3 (regexp_t regexp)
 {
   if (regexp->mode == rm_sequence)
     {
@@ -5370,9 +5215,7 @@ transform_3 (regexp)
 /* The function traverses IR of reservation and applies transformations
    implemented by FUNC.  */
 static regexp_t
-regexp_transform_func (regexp, func)
-     regexp_t regexp;
-     regexp_t (*func) PARAMS ((regexp_t regexp));
+regexp_transform_func (regexp_t regexp, regexp_t (*func) (regexp_t regexp))
 {
   int i;
 
@@ -5399,10 +5242,9 @@ regexp_transform_func (regexp, func)
 /* The function applies all transformations for IR representation of
    reservation REGEXP.  */
 static regexp_t
-transform_regexp (regexp)
-     regexp_t regexp;
+transform_regexp (regexp_t regexp)
 {
-  regexp = regexp_transform_func (regexp, transform_1);  
+  regexp = regexp_transform_func (regexp, transform_1);
   do
     {
       regexp_transformed_p = 0;
@@ -5416,7 +5258,7 @@ transform_regexp (regexp)
 /* The function applies all transformations for reservations of all
    insn declarations.  */
 static void
-transform_insn_regexps ()
+transform_insn_regexps (void)
 {
   decl_t decl;
   int i;
@@ -5468,11 +5310,8 @@ static vla_ptr_t cycle_alt_unit_usages;
    CYCLE in REGEXP alternative with ALT_NUM.  The structure is made
    accessed through cycle_alt_unit_usages.  */
 static void
-store_alt_unit_usage (regexp, unit, cycle, alt_num)
-     regexp_t regexp;
-     regexp_t unit;
-     int cycle;
-     int alt_num;
+store_alt_unit_usage (regexp_t regexp, regexp_t unit, int cycle,
+		      int alt_num)
 {
   size_t i, length, old_length;
   unit_decl_t unit_decl;
@@ -5504,9 +5343,8 @@ store_alt_unit_usage (regexp, unit, cycle, alt_num)
 /* The function processes given REGEXP to find units with the wrong
    distribution.  */
 static void
-check_regexp_units_distribution (insn_reserv_name, regexp)
-     const char *insn_reserv_name;
-     regexp_t regexp;
+check_regexp_units_distribution (const char *insn_reserv_name,
+				 regexp_t regexp)
 {
   int i, j, k, cycle;
   regexp_t seq, allof, unit;
@@ -5600,7 +5438,7 @@ check_regexp_units_distribution (insn_reserv_name, regexp)
 /* The function finds units which violates units to automata
    distribution rule.  If the units exist, report about them.  */
 static void
-check_unit_distributions_to_automata ()
+check_unit_distributions_to_automata (void)
 {
   decl_t decl;
   int i;
@@ -5629,15 +5467,13 @@ static state_t state_being_formed;
 
 /* Current alt_state being formed.  */
 static alt_state_t alt_state_being_formed;
- 
+
 /* This recursive function processes `,' and units in reservation
    REGEXP for forming alt_states of AUTOMATON.  It is believed that
    CURR_CYCLE is start cycle of all reservation REGEXP.  */
 static int
-process_seq_for_forming_states (regexp, automaton, curr_cycle)
-     regexp_t regexp;
-     automaton_t automaton;
-     int curr_cycle;
+process_seq_for_forming_states (regexp_t regexp, automaton_t automaton,
+				int curr_cycle)
 {
   int i;
 
@@ -5685,9 +5521,8 @@ process_seq_for_forming_states (regexp, automaton, curr_cycle)
 /* This recursive function finishes forming ALT_STATE of AUTOMATON and
    inserts alt_state into the table.  */
 static void
-finish_forming_alt_state (alt_state, automaton)
-     alt_state_t alt_state;
-     automaton_t automaton ATTRIBUTE_UNUSED;
+finish_forming_alt_state (alt_state_t alt_state,
+			  automaton_t automaton ATTRIBUTE_UNUSED)
 {
   state_t state_in_table;
   state_t corresponding_state;
@@ -5709,10 +5544,8 @@ static ainsn_t curr_ainsn;
    forming alt_states of AUTOMATON.  List of the alt states should
    have the same order as in the description.  */
 static void
-process_alts_for_forming_states (regexp, automaton, inside_oneof_p)
-     regexp_t regexp;
-     automaton_t automaton;
-     int inside_oneof_p;
+process_alts_for_forming_states (regexp_t regexp, automaton_t automaton,
+				 int inside_oneof_p)
 {
   int i;
 
@@ -5744,8 +5577,7 @@ process_alts_for_forming_states (regexp, automaton, inside_oneof_p)
 
 /* Create nodes alt_state for all AUTOMATON insns.  */
 static void
-create_alt_states (automaton)
-     automaton_t automaton;
+create_alt_states (automaton_t automaton)
 {
   struct insn_reserv_decl *reserv_decl;
 
@@ -5773,8 +5605,7 @@ create_alt_states (automaton)
 /* The function forms list of ainsns of AUTOMATON with the same
    reservation.  */
 static void
-form_ainsn_with_same_reservs (automaton)
-     automaton_t automaton;
+form_ainsn_with_same_reservs (automaton_t automaton)
 {
   ainsn_t curr_ainsn;
   size_t i;
@@ -5826,8 +5657,7 @@ form_ainsn_with_same_reservs (automaton)
    of reservs_matter means some minimization during building the
    automaton.  */
 static reserv_sets_t
-form_reservs_matter (automaton)
-     automaton_t automaton;
+form_reservs_matter (automaton_t automaton)
 {
   int cycle, unit;
   reserv_sets_t reservs_matter = alloc_empty_reserv_sets();
@@ -5851,8 +5681,7 @@ form_reservs_matter (automaton)
 /* The following function creates all states of nondeterministic (if
    NDFA_FLAG has nonzero value) or deterministic AUTOMATON.  */
 static void
-make_automaton (automaton)
-     automaton_t automaton;
+make_automaton (automaton_t automaton)
 {
   ainsn_t ainsn;
   struct insn_reserv_decl *insn_reserv_decl;
@@ -5946,8 +5775,7 @@ make_automaton (automaton)
 
 /* Foms lists of all arcs of STATE marked by the same ainsn.  */
 static void
-form_arcs_marked_by_insn (state)
-     state_t state;
+form_arcs_marked_by_insn (state_t state)
 {
   decl_t decl;
   arc_t arc;
@@ -5974,10 +5802,8 @@ form_arcs_marked_by_insn (state)
    same insn.  If the composed state is not in STATE_STACK yet, it is
    pushed into STATE_STACK.  */
 static int
-create_composed_state (original_state, arcs_marked_by_insn, state_stack)
-     state_t original_state;
-     arc_t arcs_marked_by_insn;
-     vla_ptr_t *state_stack;
+create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
+		       vla_ptr_t *state_stack)
 {
   state_t state;
   alt_state_t alt_state, curr_alt_state;
@@ -6079,8 +5905,7 @@ create_composed_state (original_state, arcs_marked_by_insn, state_stack)
 /* The function transforms nondeterministic AUTOMATON into
    deterministic.  */
 static void
-NDFA_to_DFA (automaton)
-     automaton_t automaton;
+NDFA_to_DFA (automaton_t automaton)
 {
   state_t start_state;
   state_t state;
@@ -6124,9 +5949,7 @@ static int curr_state_graph_pass_num;
 /* This recursive function passes all states achieved from START_STATE
    and applies APPLIED_FUNC to them.  */
 static void
-pass_state_graph (start_state, applied_func)
-     state_t start_state;
-     void (*applied_func) PARAMS ((state_t state));
+pass_state_graph (state_t start_state, void (*applied_func) (state_t state))
 {
   arc_t arc;
 
@@ -6143,9 +5966,7 @@ pass_state_graph (start_state, applied_func)
 /* This recursive function passes all states of AUTOMATON and applies
    APPLIED_FUNC to them.  */
 static void
-pass_states (automaton, applied_func)
-     automaton_t automaton;
-     void (*applied_func) PARAMS ((state_t state));
+pass_states (automaton_t automaton, void (*applied_func) (state_t state))
 {
   curr_state_graph_pass_num++;
   pass_state_graph (automaton->start_state, applied_func);
@@ -6153,7 +5974,7 @@ pass_states (automaton, applied_func)
 
 /* The function initializes code for passing of all states.  */
 static void
-initiate_pass_states ()
+initiate_pass_states (void)
 {
   curr_state_graph_pass_num = 0;
 }
@@ -6165,8 +5986,7 @@ static vla_ptr_t all_achieved_states;
 /* This function is called by function pass_states to add an achieved
    STATE.  */
 static void
-add_achieved_state (state)
-     state_t state;
+add_achieved_state (state_t state)
 {
   VLA_PTR_ADD (all_achieved_states, state);
 }
@@ -6176,9 +5996,7 @@ add_achieved_state (state)
    nonzero value) or by equiv_class_num_2 of the destination state.
    The function returns number of out arcs of STATE.  */
 static int
-set_out_arc_insns_equiv_num (state, odd_iteration_flag)
-     state_t state;
-     int odd_iteration_flag;
+set_out_arc_insns_equiv_num (state_t state, int odd_iteration_flag)
 {
   int state_out_arcs_num;
   arc_t arc;
@@ -6205,8 +6023,7 @@ set_out_arc_insns_equiv_num (state, odd_iteration_flag)
 /* The function clears equivalence numbers and alt_states in all insns
    which mark all out arcs of STATE.  */
 static void
-clear_arc_insns_equiv_num (state)
-     state_t state;
+clear_arc_insns_equiv_num (state_t state)
 {
   arc_t arc;
 
@@ -6220,9 +6037,7 @@ clear_arc_insns_equiv_num (state)
 /* The function copies pointers to equivalent states from vla FROM
    into vla TO.  */
 static void
-copy_equiv_class (to, from)
-     vla_ptr_t *to;
-     const vla_ptr_t *from;
+copy_equiv_class (vla_ptr_t *to, const vla_ptr_t *from)
 {
   state_t *class_ptr;
 
@@ -6236,9 +6051,7 @@ copy_equiv_class (to, from)
 /* The following function returns TRUE if STATE reserves the unit with
    UNIT_NUM on the first cycle.  */
 static int
-first_cycle_unit_presence (state, unit_num)
-     state_t state;
-     int unit_num;
+first_cycle_unit_presence (state_t state, int unit_num)
 {
   int presence_p;
 
@@ -6257,11 +6070,8 @@ first_cycle_unit_presence (state, unit_num)
    output arcs.  Iteration of making equivalence partition is defined
    by ODD_ITERATION_FLAG.  */
 static int
-state_is_differed (state, another_state, another_state_out_arcs_num,
-		   odd_iteration_flag)
-     state_t state, another_state;
-     int another_state_out_arcs_num;
-     int odd_iteration_flag;
+state_is_differed (state_t state, state_t another_state,
+		   int another_state_out_arcs_num, int odd_iteration_flag)
 {
   arc_t arc;
   int state_out_arcs_num;
@@ -6296,9 +6106,7 @@ state_is_differed (state, another_state, another_state_out_arcs_num,
 /* The function makes initial partition of STATES on equivalent
    classes.  */
 static state_t
-init_equiv_class (states, states_num)
-     state_t *states;
-     int states_num;
+init_equiv_class (state_t *states, int states_num)
 {
   state_t *state_ptr;
   state_t result_equiv_class;
@@ -6321,12 +6129,9 @@ init_equiv_class (states, states_num)
    assigns it to the state equivalence number.  If the class has been
    partitioned, the function returns nonzero value.  */
 static int
-partition_equiv_class (equiv_class_ptr, odd_iteration_flag,
-		       next_iteration_classes, new_equiv_class_num_ptr)
-     state_t *equiv_class_ptr;
-     int odd_iteration_flag;
-     vla_ptr_t *next_iteration_classes;
-     int *new_equiv_class_num_ptr;
+partition_equiv_class (state_t *equiv_class_ptr, int odd_iteration_flag,
+		       vla_ptr_t *next_iteration_classes,
+		       int *new_equiv_class_num_ptr)
 {
   state_t new_equiv_class;
   int partition_p;
@@ -6384,9 +6189,7 @@ partition_equiv_class (equiv_class_ptr, odd_iteration_flag,
 
 /* The function finds equivalent states of AUTOMATON.  */
 static void
-evaluate_equiv_classes (automaton, equiv_classes)
-     automaton_t automaton;
-     vla_ptr_t *equiv_classes;
+evaluate_equiv_classes (automaton_t automaton, vla_ptr_t *equiv_classes)
 {
   state_t new_equiv_class;
   int new_equiv_class_num;
@@ -6395,7 +6198,7 @@ evaluate_equiv_classes (automaton, equiv_classes)
   vla_ptr_t next_iteration_classes;
   state_t *equiv_class_ptr;
   state_t *state_ptr;
-  
+
   VLA_PTR_CREATE (all_achieved_states, 1500, "all achieved states");
   pass_states (automaton, add_achieved_state);
   new_equiv_class = init_equiv_class (VLA_PTR_BEGIN (all_achieved_states),
@@ -6432,9 +6235,7 @@ evaluate_equiv_classes (automaton, equiv_classes)
 
 /* The function merges equivalent states of AUTOMATON.  */
 static void
-merge_states (automaton, equiv_classes)
-     automaton_t automaton;
-     vla_ptr_t *equiv_classes;
+merge_states (automaton_t automaton, vla_ptr_t *equiv_classes)
 {
   state_t *equiv_class_ptr;
   state_t curr_state;
@@ -6531,8 +6332,7 @@ merge_states (automaton, equiv_classes)
 /* The function sets up new_cycle_p for states if there is arc to the
    state marked by advance_cycle_insn_decl.  */
 static void
-set_new_cycle_flags (state)
-     state_t state;
+set_new_cycle_flags (state_t state)
 {
   arc_t arc;
 
@@ -6545,8 +6345,7 @@ set_new_cycle_flags (state)
 /* The top level function for minimization of deterministic
    AUTOMATON.  */
 static void
-minimize_DFA (automaton)
-     automaton_t automaton;
+minimize_DFA (automaton_t automaton)
 {
   vla_ptr_t equiv_classes;
 
@@ -6565,8 +6364,7 @@ static int curr_counted_arcs_num;
 /* The function is called by function `pass_states' to count states
    and arcs of an automaton.  */
 static void
-incr_states_and_arcs_nums (state)
-     state_t state;
+incr_states_and_arcs_nums (state_t state)
 {
   arc_t arc;
 
@@ -6577,10 +6375,8 @@ incr_states_and_arcs_nums (state)
 
 /* The function counts states and arcs of AUTOMATON.  */
 static void
-count_states_and_arcs (automaton, states_num, arcs_num)
-     automaton_t automaton;
-     int *states_num;
-     int *arcs_num;
+count_states_and_arcs (automaton_t automaton, int *states_num,
+		       int *arcs_num)
 {
   curr_counted_states_num = 0;
   curr_counted_arcs_num = 0;
@@ -6593,8 +6389,7 @@ count_states_and_arcs (automaton, states_num, arcs_num)
    recognition after checking and simplifying IR of the
    description.  */
 static void
-build_automaton (automaton)
-     automaton_t automaton;
+build_automaton (automaton_t automaton)
 {
   int states_num;
   int arcs_num;
@@ -6651,8 +6446,7 @@ static int curr_state_order_num;
 /* The function is called by function `pass_states' for enumerating
    states.  */
 static void
-set_order_state_num (state)
-     state_t state;
+set_order_state_num (state_t state)
 {
   state->order_state_num = curr_state_order_num;
   curr_state_order_num++;
@@ -6660,8 +6454,7 @@ set_order_state_num (state)
 
 /* The function enumerates all states of AUTOMATON.  */
 static void
-enumerate_states (automaton)
-     automaton_t automaton;
+enumerate_states (automaton_t automaton)
 {
   curr_state_order_num = 0;
   pass_states (automaton, set_order_state_num);
@@ -6676,9 +6469,8 @@ enumerate_states (automaton)
 /* The function inserts AINSN into cyclic list
    CYCLIC_EQUIV_CLASS_INSN_LIST of ainsns.  */
 static ainsn_t
-insert_ainsn_into_equiv_class (ainsn, cyclic_equiv_class_insn_list)
-     ainsn_t ainsn;
-     ainsn_t cyclic_equiv_class_insn_list;
+insert_ainsn_into_equiv_class (ainsn_t ainsn,
+			       ainsn_t cyclic_equiv_class_insn_list)
 {
   if (cyclic_equiv_class_insn_list == NULL)
     ainsn->next_equiv_class_insn = ainsn;
@@ -6694,8 +6486,7 @@ insert_ainsn_into_equiv_class (ainsn, cyclic_equiv_class_insn_list)
 /* The function deletes equiv_class_insn into cyclic list of
    equivalent ainsns.  */
 static void
-delete_ainsn_from_equiv_class (equiv_class_insn)
-     ainsn_t equiv_class_insn;
+delete_ainsn_from_equiv_class (ainsn_t equiv_class_insn)
 {
   ainsn_t curr_equiv_class_insn;
   ainsn_t prev_equiv_class_insn;
@@ -6714,9 +6505,7 @@ delete_ainsn_from_equiv_class (equiv_class_insn)
    ainsns.  INSN_ARCS_ARRAY is table: code of insn -> out arc of the
    state.  */
 static void
-process_insn_equiv_class (ainsn, insn_arcs_array)
-     ainsn_t ainsn;
-     arc_t *insn_arcs_array;
+process_insn_equiv_class (ainsn_t ainsn, arc_t *insn_arcs_array)
 {
   ainsn_t next_insn;
   ainsn_t curr_insn;
@@ -6747,8 +6536,7 @@ process_insn_equiv_class (ainsn, insn_arcs_array)
 
 /* The function processes STATE in order to find equivalent ainsns.  */
 static void
-process_state_for_insn_equiv_partition (state)
-     state_t state;
+process_state_for_insn_equiv_partition (state_t state)
 {
   arc_t arc;
   arc_t *insn_arcs_array;
@@ -6770,8 +6558,7 @@ process_state_for_insn_equiv_partition (state)
 
 /* The function searches for equivalent ainsns of AUTOMATON.  */
 static void
-set_insn_equiv_classes (automaton)
-     automaton_t automaton;
+set_insn_equiv_classes (automaton_t automaton)
 {
   ainsn_t ainsn;
   ainsn_t first_insn;
@@ -6833,7 +6620,7 @@ set_insn_equiv_classes (automaton)
 /* The function estimate size of the single DFA used by PHR (pipeline
    hazards recognizer).  */
 static double
-estimate_one_automaton_bound ()
+estimate_one_automaton_bound (void)
 {
   decl_t decl;
   double one_automaton_estimation_bound;
@@ -6860,9 +6647,8 @@ estimate_one_automaton_bound ()
 /* The function compares unit declarations according to their maximal
    cycle in reservations.  */
 static int
-compare_max_occ_cycle_nums (unit_decl_1, unit_decl_2)
-     const void *unit_decl_1;
-     const void *unit_decl_2;
+compare_max_occ_cycle_nums (const void *unit_decl_1,
+			    const void *unit_decl_2)
 {
   if ((DECL_UNIT (*(decl_t *) unit_decl_1)->max_occ_cycle_num)
       < (DECL_UNIT (*(decl_t *) unit_decl_2)->max_occ_cycle_num))
@@ -6877,7 +6663,7 @@ compare_max_occ_cycle_nums (unit_decl_1, unit_decl_2)
 /* The function makes heuristic assigning automata to units.  Actually
    efficacy of the algorithm has been checked yet??? */
 static void
-units_to_automata_heuristic_distr ()
+units_to_automata_heuristic_distr (void)
 {
   double estimation_bound;
   decl_t decl;
@@ -6934,7 +6720,7 @@ units_to_automata_heuristic_distr ()
    insn is simply insn for given automaton which makes reservation
    only of units of the automaton.  */
 static ainsn_t
-create_ainsns ()
+create_ainsns (void)
 {
   decl_t decl;
   ainsn_t first_ainsn;
@@ -6966,11 +6752,11 @@ create_ainsns ()
 /* The function assigns automata to units according to constructions
    `define_automaton' in the description.  */
 static void
-units_to_automata_distr ()
+units_to_automata_distr (void)
 {
   decl_t decl;
   int i;
-  
+
   for (i = 0; i < description->decls_num; i++)
     {
       decl = description->decls [i];
@@ -6992,7 +6778,7 @@ units_to_automata_distr ()
 /* The function creates DFA(s) for fast pipeline hazards recognition
    after checking and simplifying IR of the description.  */
 static void
-create_automata ()
+create_automata (void)
 {
   automaton_t curr_automaton;
   automaton_t prev_automaton;
@@ -7091,11 +6877,10 @@ create_automata ()
 /* This recursive function forms string representation of regexp
    (without tailing '\0').  */
 static void
-form_regexp (regexp)
-     regexp_t regexp;
+form_regexp (regexp_t regexp)
 {
   int i;
-    
+
   if (regexp->mode == rm_unit || regexp->mode == rm_reserv)
     {
       const char *name = (regexp->mode == rm_unit
@@ -7164,8 +6949,7 @@ form_regexp (regexp)
 /* The function returns string representation of REGEXP on IR
    obstack.  */
 static const char *
-regexp_representation (regexp)
-     regexp_t regexp;
+regexp_representation (regexp_t regexp)
 {
   form_regexp (regexp);
   obstack_1grow (&irp, '\0');
@@ -7175,10 +6959,10 @@ regexp_representation (regexp)
 /* The function frees memory allocated for last formed string
    representation of regexp.  */
 static void
-finish_regexp_representation ()
+finish_regexp_representation (void)
 {
   int length = obstack_object_size (&irp);
-  
+
   obstack_blank_fast (&irp, -length);
 }
 
@@ -7194,10 +6978,8 @@ finish_regexp_representation ()
    approximation.  */
 
 static void
-output_range_type (f, min_range_value, max_range_value)
-     FILE *f;
-     long int min_range_value;
-     long int max_range_value;
+output_range_type (FILE *f, long int min_range_value,
+		   long int max_range_value)
 {
   if (min_range_value >= 0 && max_range_value <= 255)
     fprintf (f, "unsigned char");
@@ -7222,12 +7004,11 @@ output_range_type (f, min_range_value, max_range_value)
    `cycle advance' arcs.  */
 
 static int
-longest_path_length (state)
-     state_t state;
+longest_path_length (state_t state)
 {
   arc_t arc;
   int length, result;
-  
+
   if (state->longest_path_length == ON_THE_PATH)
     /* We don't expect the path cycle here.  Our graph may contain
        only cycles with one state on the path not containing `cycle
@@ -7261,8 +7042,7 @@ static int max_dfa_issue_rate;
    from STATE to find MAX_DFA_ISSUE_RATE.  */
 
 static void
-process_state_longest_path_length (state)
-     state_t state;
+process_state_longest_path_length (state_t state)
 {
   int value;
 
@@ -7280,7 +7060,7 @@ process_state_longest_path_length (state)
    global variable and outputs its declaration.  */
 
 static void
-output_dfa_max_issue_rate ()
+output_dfa_max_issue_rate (void)
 {
   automaton_t automaton;
 
@@ -7298,9 +7078,7 @@ output_dfa_max_issue_rate ()
 /* The function outputs all initialization values of VECT with length
    vect_length.  */
 static void
-output_vect (vect, vect_length)
-     vect_el_t *vect;
-     int vect_length;
+output_vect (vect_el_t *vect, int vect_length)
 {
   int els_on_line;
 
@@ -7335,9 +7113,7 @@ output_vect (vect, vect_length)
 /* The following is name of member which represents state of a DFA for
    PHR.  */
 static void
-output_chip_member_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_chip_member_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "automaton_state_%d", automaton->automaton_order_num);
@@ -7349,9 +7125,7 @@ output_chip_member_name (f, automaton)
 /* The following is name of temporary variable which stores state of a
    DFA for PHR.  */
 static void
-output_temp_chip_member_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_temp_chip_member_name (FILE *f, automaton_t automaton)
 {
   fprintf (f, "_");
   output_chip_member_name (f, automaton);
@@ -7364,9 +7138,7 @@ output_temp_chip_member_name (f, automaton)
 
 /* Output name of translate vector for given automaton.  */
 static void
-output_translate_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_translate_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "translate_%d", automaton->automaton_order_num);
@@ -7376,9 +7148,7 @@ output_translate_vect_name (f, automaton)
 
 /* Output name for simple transition table representation.  */
 static void
-output_trans_full_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_trans_full_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "transitions_%d", automaton->automaton_order_num);
@@ -7390,9 +7160,7 @@ output_trans_full_vect_name (f, automaton)
 /* Output name of comb vector of the transition table for given
    automaton.  */
 static void
-output_trans_comb_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_trans_comb_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "transitions_%d", automaton->automaton_order_num);
@@ -7404,9 +7172,7 @@ output_trans_comb_vect_name (f, automaton)
 /* Output name of check vector of the transition table for given
    automaton.  */
 static void
-output_trans_check_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_trans_check_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "check_%d", automaton->automaton_order_num);
@@ -7417,9 +7183,7 @@ output_trans_check_vect_name (f, automaton)
 /* Output name of base vector of the transition table for given
    automaton.  */
 static void
-output_trans_base_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_trans_base_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "base_%d", automaton->automaton_order_num);
@@ -7429,9 +7193,7 @@ output_trans_base_vect_name (f, automaton)
 
 /* Output name for simple alternatives number representation.  */
 static void
-output_state_alts_full_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_state_alts_full_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "state_alts_%d", automaton->automaton_order_num);
@@ -7443,9 +7205,7 @@ output_state_alts_full_vect_name (f, automaton)
 /* Output name of comb vector of the alternatives number table for given
    automaton.  */
 static void
-output_state_alts_comb_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_state_alts_comb_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "state_alts_%d", automaton->automaton_order_num);
@@ -7457,9 +7217,7 @@ output_state_alts_comb_vect_name (f, automaton)
 /* Output name of check vector of the alternatives number table for given
    automaton.  */
 static void
-output_state_alts_check_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_state_alts_check_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "check_state_alts_%d", automaton->automaton_order_num);
@@ -7471,9 +7229,7 @@ output_state_alts_check_vect_name (f, automaton)
 /* Output name of base vector of the alternatives number table for given
    automaton.  */
 static void
-output_state_alts_base_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_state_alts_base_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "base_state_alts_%d", automaton->automaton_order_num);
@@ -7484,9 +7240,7 @@ output_state_alts_base_vect_name (f, automaton)
 
 /* Output name of simple min issue delay table representation.  */
 static void
-output_min_issue_delay_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_min_issue_delay_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "min_issue_delay_%d", automaton->automaton_order_num);
@@ -7497,9 +7251,7 @@ output_min_issue_delay_vect_name (f, automaton)
 
 /* Output name of deadlock vector for given automaton.  */
 static void
-output_dead_lock_vect_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_dead_lock_vect_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "dead_lock_%d", automaton->automaton_order_num);
@@ -7509,9 +7261,7 @@ output_dead_lock_vect_name (f, automaton)
 
 /* Output name of reserved units table for AUTOMATON into file F.  */
 static void
-output_reserved_units_table_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_reserved_units_table_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "reserved_units_%d", automaton->automaton_order_num);
@@ -7625,9 +7375,7 @@ output_reserved_units_table_name (f, automaton)
 /* Output C type which is used for representation of codes of states
    of AUTOMATON.  */
 static void
-output_state_member_type (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_state_member_type (FILE *f, automaton_t automaton)
 {
   output_range_type (f, 0, automaton->achieved_states_num);
 }
@@ -7635,7 +7383,7 @@ output_state_member_type (f, automaton)
 /* Output definition of the structure representing current DFA(s)
    state(s).  */
 static void
-output_chip_definitions ()
+output_chip_definitions (void)
 {
   automaton_t automaton;
 
@@ -7661,8 +7409,7 @@ output_chip_definitions ()
    insn equivalence class number.  The equivalence class number is
    used to access to table and vectors representing DFA(s).  */
 static void
-output_translate_vect (automaton)
-     automaton_t automaton;
+output_translate_vect (automaton_t automaton)
 {
   ainsn_t ainsn;
   int insn_value;
@@ -7696,8 +7443,7 @@ static int undefined_vect_el_value;
 /* The following function returns nonzero value if the best
    representation of the table is comb vector.  */
 static int
-comb_vect_p (tab)
-     state_ainsn_table_t tab;
+comb_vect_p (state_ainsn_table_t tab)
 {
   return  (2 * VLA_HWINT_LENGTH (tab->full_vect)
            > 5 * VLA_HWINT_LENGTH (tab->comb_vect));
@@ -7705,8 +7451,7 @@ comb_vect_p (tab)
 
 /* The following function creates new table for AUTOMATON.  */
 static state_ainsn_table_t
-create_state_ainsn_table (automaton)
-     automaton_t automaton;
+create_state_ainsn_table (automaton_t automaton)
 {
   state_ainsn_table_t tab;
   int full_vect_length;
@@ -7734,16 +7479,11 @@ create_state_ainsn_table (automaton)
 /* The following function outputs the best C representation of the
    table TAB of given TABLE_NAME.  */
 static void
-output_state_ainsn_table (tab, table_name, output_full_vect_name_func,
-                          output_comb_vect_name_func,
-                          output_check_vect_name_func,
-                          output_base_vect_name_func)
-     state_ainsn_table_t tab;
-     char *table_name;
-     void (*output_full_vect_name_func) PARAMS ((FILE *, automaton_t));
-     void (*output_comb_vect_name_func) PARAMS ((FILE *, automaton_t));
-     void (*output_check_vect_name_func) PARAMS ((FILE *, automaton_t));
-     void (*output_base_vect_name_func) PARAMS ((FILE *, automaton_t));
+output_state_ainsn_table (state_ainsn_table_t tab, char *table_name,
+			  void (*output_full_vect_name_func) (FILE *, automaton_t),
+			  void (*output_comb_vect_name_func) (FILE *, automaton_t),
+			  void (*output_check_vect_name_func) (FILE *, automaton_t),
+			  void (*output_base_vect_name_func) (FILE *, automaton_t))
 {
   if (!comb_vect_p (tab))
     {
@@ -7796,11 +7536,8 @@ output_state_ainsn_table (tab, table_name, output_full_vect_name_func,
    elements pointed by VECT to table TAB as its line with number
    VECT_NUM.  */
 static void
-add_vect (tab, vect_num, vect, vect_length)
-     state_ainsn_table_t tab;
-     int vect_num;
-     vect_el_t *vect;
-     int vect_length;
+add_vect (state_ainsn_table_t tab, int vect_num, vect_el_t *vect,
+	  int vect_length)
 {
   int real_vect_length;
   vect_el_t *comb_vect_start;
@@ -7898,8 +7635,7 @@ add_vect (tab, vect_num, vect, vect_length)
 
 /* Return number of out arcs of STATE.  */
 static int
-out_state_arcs_num (state)
-     state_t state;
+out_state_arcs_num (state_t state)
 {
   int result;
   arc_t arc;
@@ -7917,9 +7653,8 @@ out_state_arcs_num (state)
 
 /* Compare number of possible transitions from the states.  */
 static int
-compare_transition_els_num (state_ptr_1, state_ptr_2)
-     const void *state_ptr_1;
-     const void *state_ptr_2;
+compare_transition_els_num (const void *state_ptr_1,
+			    const void *state_ptr_2)
 {
   int transition_els_num_1;
   int transition_els_num_2;
@@ -7937,10 +7672,7 @@ compare_transition_els_num (state_ptr_1, state_ptr_2)
 /* The function adds element EL_VALUE to vector VECT for a table state
    x AINSN.  */
 static void
-add_vect_el (vect, ainsn, el_value)
-     vla_hwint_t *vect;
-     ainsn_t ainsn;
-     int el_value;
+add_vect_el (vla_hwint_t *vect, ainsn_t ainsn, int el_value)
 {
   int equiv_class_num;
   int vect_index;
@@ -7961,8 +7693,7 @@ static vla_ptr_t output_states_vect;
 /* The function is called by function pass_states.  The function adds
    STATE to `output_states_vect'.  */
 static void
-add_states_vect_el (state)
-     state_t state;
+add_states_vect_el (state_t state)
 {
   VLA_PTR_ADD (output_states_vect, state);
 }
@@ -7970,8 +7701,7 @@ add_states_vect_el (state)
 /* Form and output vectors (comb, check, base or full vector)
    representing transition table of AUTOMATON.  */
 static void
-output_trans_table (automaton)
-     automaton_t automaton;
+output_trans_table (automaton_t automaton)
 {
   state_t *state_ptr;
   arc_t arc;
@@ -8019,8 +7749,7 @@ output_trans_table (automaton)
    ainsn -> number of possible alternative reservations by the
    ainsn.  */
 static void
-output_state_alts_table (automaton)
-     automaton_t automaton;
+output_state_alts_table (automaton_t automaton)
 {
   state_t *state_ptr;
   arc_t arc;
@@ -8072,9 +7801,7 @@ static int curr_state_pass_num;
    returns minimal issue delay value for AINSN in STATE or -1 if we
    enter into a loop.  */
 static int
-min_issue_delay_pass_states (state, ainsn)
-     state_t state;
-     ainsn_t ainsn;
+min_issue_delay_pass_states (state_t state, ainsn_t ainsn)
 {
   arc_t arc;
   int min_insn_issue_delay, insn_issue_delay;
@@ -8116,9 +7843,7 @@ min_issue_delay_pass_states (state, ainsn)
    The function can return negative value if we can not issue AINSN.  We
    will report about it later.  */
 static int
-min_issue_delay (state, ainsn)
-     state_t state;
-     ainsn_t ainsn;
+min_issue_delay (state_t state, ainsn_t ainsn)
 {
   curr_state_pass_num++;
   state->min_insn_issue_delay = min_issue_delay_pass_states (state, ainsn);
@@ -8128,7 +7853,7 @@ min_issue_delay (state, ainsn)
 /* The function initiates code for finding minimal issue delay values.
    It should be called only once.  */
 static void
-initiate_min_issue_delay_pass_states ()
+initiate_min_issue_delay_pass_states (void)
 {
   curr_state_pass_num = 0;
 }
@@ -8137,8 +7862,7 @@ initiate_min_issue_delay_pass_states ()
    AUTOMATON.  The table is state x ainsn -> minimal issue delay of
    the ainsn.  */
 static void
-output_min_issue_delay_table (automaton)
-     automaton_t automaton;
+output_min_issue_delay_table (automaton_t automaton)
 {
   vla_hwint_t min_issue_delay_vect;
   vla_hwint_t compressed_min_issue_delay_vect;
@@ -8231,8 +7955,7 @@ static int locked_states_num;
 /* Form and output vector representing the locked states of
    AUTOMATON.  */
 static void
-output_dead_lock_vect (automaton)
-     automaton_t automaton;
+output_dead_lock_vect (automaton_t automaton)
 {
   state_t *state_ptr;
   arc_t arc;
@@ -8277,8 +8000,7 @@ output_dead_lock_vect (automaton)
 /* Form and output vector representing reserved units of the states of
    AUTOMATON.  */
 static void
-output_reserved_units_table (automaton)
-     automaton_t automaton;
+output_reserved_units_table (automaton_t automaton)
 {
   state_t *curr_state_ptr;
   vla_hwint_t reserved_units_table;
@@ -8325,7 +8047,7 @@ output_reserved_units_table (automaton)
 /* The function outputs all tables representing DFA(s) used for fast
    pipeline hazards recognition.  */
 static void
-output_tables ()
+output_tables (void)
 {
   automaton_t automaton;
 
@@ -8358,7 +8080,7 @@ output_tables ()
    `max_insn_queue_index'.  Its value is not less than maximal queue
    length needed for the insn scheduler.  */
 static void
-output_max_insn_queue_index_def ()
+output_max_insn_queue_index_def (void)
 {
   int i, max, latency;
   decl_t decl;
@@ -8391,8 +8113,8 @@ output_max_insn_queue_index_def ()
 /* The function outputs switch cases for insn reservations using
    function *output_automata_list_code.  */
 static void
-output_insn_code_cases (output_automata_list_code)
-     void (*output_automata_list_code) PARAMS ((automata_list_el_t));
+output_insn_code_cases (void (*output_automata_list_code)
+			(automata_list_el_t))
 {
   decl_t decl, decl2;
   int i, j;
@@ -8432,8 +8154,7 @@ output_insn_code_cases (output_automata_list_code)
 /* The function outputs a code for evaluation of a minimal delay of
    issue of insns which have reservations in given AUTOMATA_LIST.  */
 static void
-output_automata_list_min_issue_delay_code (automata_list)
-     automata_list_el_t automata_list;
+output_automata_list_min_issue_delay_code (automata_list_el_t automata_list)
 {
   automata_list_el_t el;
   automaton_t automaton;
@@ -8484,9 +8205,9 @@ output_automata_list_min_issue_delay_code (automata_list)
 
 /* Output function `internal_min_issue_delay'.  */
 static void
-output_internal_min_issue_delay_func ()
+output_internal_min_issue_delay_func (void)
 {
-  fprintf (output_file, "static int %s PARAMS ((int, struct %s *));\n",
+  fprintf (output_file, "static int %s (int, struct %s *);\n",
 	   INTERNAL_MIN_ISSUE_DELAY_FUNC_NAME, CHIP_NAME);
   fprintf (output_file,
 	   "static int\n%s (%s, %s)\n\tint %s;\n\tstruct %s *%s  ATTRIBUTE_UNUSED;\n",
@@ -8507,8 +8228,7 @@ output_internal_min_issue_delay_func ()
 /* The function outputs a code changing state after issue of insns
    which have reservations in given AUTOMATA_LIST.  */
 static void
-output_automata_list_transition_code (automata_list)
-     automata_list_el_t automata_list;
+output_automata_list_transition_code (automata_list_el_t automata_list)
 {
   automata_list_el_t el, next_el;
 
@@ -8601,9 +8321,9 @@ output_automata_list_transition_code (automata_list)
 
 /* Output function `internal_state_transition'.  */
 static void
-output_internal_trans_func ()
+output_internal_trans_func (void)
 {
-  fprintf (output_file, "static int %s PARAMS ((int, struct %s *));\n",
+  fprintf (output_file, "static int %s (int, struct %s *);\n",
 	   INTERNAL_TRANSITION_FUNC_NAME, CHIP_NAME);
   fprintf (output_file,
 	   "static int\n%s (%s, %s)\n\tint %s;\n\tstruct %s *%s  ATTRIBUTE_UNUSED;\n",
@@ -8631,10 +8351,9 @@ output_internal_trans_func ()
   where insn denotes INSN_NAME, insn_code denotes INSN_CODE_NAME, and
   code denotes CODE.  */
 static void
-output_internal_insn_code_evaluation (insn_name, insn_code_name, code)
-     const char *insn_name;
-     const char *insn_code_name;
-     int code;
+output_internal_insn_code_evaluation (const char *insn_name,
+				      const char *insn_code_name,
+				      int code)
 {
   fprintf (output_file, "\n  if (%s != 0)\n    {\n", insn_name);
   fprintf (output_file, "      %s = %s (%s);\n", insn_code_name,
@@ -8649,12 +8368,12 @@ output_internal_insn_code_evaluation (insn_name, insn_code_name, code)
 /* This function outputs `dfa_insn_code' and its helper function
    `dfa_insn_code_enlarge'.  */
 static void
-output_dfa_insn_code_func ()
+output_dfa_insn_code_func (void)
 {
   /* Emacs c-mode gets really confused if there's a { or } in column 0
      inside a string, so don't do that.  */
   fprintf (output_file, "\
-static void dfa_insn_code_enlarge PARAMS ((int));\n\
+static void dfa_insn_code_enlarge (int);\n\
 static void\n\
 dfa_insn_code_enlarge (uid)\n\
      int uid;\n{\n\
@@ -8664,14 +8383,14 @@ dfa_insn_code_enlarge (uid)\n\
                  %s * sizeof(int));\n\
   for (; i < %s; i++)\n\
     %s[i] = -1;\n}\n\n",
- 	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
- 	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
- 	   DFA_INSN_CODES_VARIABLE_NAME, DFA_INSN_CODES_VARIABLE_NAME,
- 	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
- 	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
- 	   DFA_INSN_CODES_VARIABLE_NAME);
+	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
+	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
+	   DFA_INSN_CODES_VARIABLE_NAME, DFA_INSN_CODES_VARIABLE_NAME,
+	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
+	   DFA_INSN_CODES_LENGTH_VARIABLE_NAME,
+	   DFA_INSN_CODES_VARIABLE_NAME);
   fprintf (output_file, "\
-static inline int %s PARAMS ((rtx));\n\
+static inline int %s (rtx);\n\
 static inline int\n%s (%s)\n\
     rtx %s;\n{\n\
  int uid = INSN_UID (%s);\n\
@@ -8701,7 +8420,7 @@ static inline int\n%s (%s)\n\
 
 /* The function outputs PHR interface function `state_transition'.  */
 static void
-output_trans_func ()
+output_trans_func (void)
 {
   fprintf (output_file, "int\n%s (%s, %s)\n\t%s %s;\n\trtx %s;\n",
 	   TRANSITION_FUNC_NAME, STATE_NAME, INSN_PARAMETER_NAME,
@@ -8716,8 +8435,7 @@ output_trans_func ()
 /* The function outputs a code for evaluation of alternative states
    number for insns which have reservations in given AUTOMATA_LIST.  */
 static void
-output_automata_list_state_alts_code (automata_list)
-     automata_list_el_t automata_list;
+output_automata_list_state_alts_code (automata_list_el_t automata_list)
 {
   automata_list_el_t el;
   automaton_t automaton;
@@ -8777,9 +8495,9 @@ output_automata_list_state_alts_code (automata_list)
 
 /* Output function `internal_state_alts'.  */
 static void
-output_internal_state_alts_func ()
+output_internal_state_alts_func (void)
 {
-  fprintf (output_file, "static int %s PARAMS ((int, struct %s *));\n",
+  fprintf (output_file, "static int %s (int, struct %s *);\n",
 	   INTERNAL_STATE_ALTS_FUNC_NAME, CHIP_NAME);
   fprintf (output_file,
 	   "static int\n%s (%s, %s)\n\tint %s;\n\tstruct %s *%s;\n",
@@ -8798,7 +8516,7 @@ output_internal_state_alts_func ()
 
 /* The function outputs PHR interface function `state_alts'.  */
 static void
-output_state_alts_func ()
+output_state_alts_func (void)
 {
   fprintf (output_file, "int\n%s (%s, %s)\n\t%s %s;\n\trtx %s;\n",
 	   STATE_ALTS_FUNC_NAME, STATE_NAME, INSN_PARAMETER_NAME,
@@ -8812,7 +8530,7 @@ output_state_alts_func ()
 
 /* Output function `min_issue_delay'.  */
 static void
-output_min_issue_delay_func ()
+output_min_issue_delay_func (void)
 {
   fprintf (output_file, "int\n%s (%s, %s)\n\t%s %s;\n\trtx %s;\n",
 	   MIN_ISSUE_DELAY_FUNC_NAME, STATE_NAME, INSN_PARAMETER_NAME,
@@ -8826,18 +8544,18 @@ output_min_issue_delay_func ()
   fprintf (output_file, "    }\n  else\n    %s = %s;\n",
 	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME);
   fprintf (output_file, "\n  return %s (%s, %s);\n",
- 	   INTERNAL_MIN_ISSUE_DELAY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
+	   INTERNAL_MIN_ISSUE_DELAY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
 	   STATE_NAME);
   fprintf (output_file, "}\n\n");
 }
 
 /* Output function `internal_dead_lock'.  */
 static void
-output_internal_dead_lock_func ()
+output_internal_dead_lock_func (void)
 {
   automaton_t automaton;
 
-  fprintf (output_file, "static int %s PARAMS ((struct %s *));\n",
+  fprintf (output_file, "static int %s (struct %s *);\n",
 	   INTERNAL_DEAD_LOCK_FUNC_NAME, CHIP_NAME);
   fprintf (output_file, "static int\n%s (%s)\n\tstruct %s *%s;\n",
 	   INTERNAL_DEAD_LOCK_FUNC_NAME, CHIP_PARAMETER_NAME, CHIP_NAME,
@@ -8858,7 +8576,7 @@ output_internal_dead_lock_func ()
 
 /* The function outputs PHR interface function `state_dead_lock_p'.  */
 static void
-output_dead_lock_func ()
+output_dead_lock_func (void)
 {
   fprintf (output_file, "int\n%s (%s)\n\t%s %s;\n",
 	   DEAD_LOCK_FUNC_NAME, STATE_NAME, STATE_TYPE_NAME, STATE_NAME);
@@ -8868,9 +8586,9 @@ output_dead_lock_func ()
 
 /* Output function `internal_reset'.  */
 static void
-output_internal_reset_func ()
+output_internal_reset_func (void)
 {
-  fprintf (output_file, "static void %s PARAMS ((struct %s *));\n",
+  fprintf (output_file, "static void %s (struct %s *);\n",
 	   INTERNAL_RESET_FUNC_NAME, CHIP_NAME);
   fprintf (output_file, "static void\n%s (%s)\n\tstruct %s *%s;\n",
 	   INTERNAL_RESET_FUNC_NAME, CHIP_PARAMETER_NAME,
@@ -8881,7 +8599,7 @@ output_internal_reset_func ()
 
 /* The function outputs PHR interface function `state_size'.  */
 static void
-output_size_func ()
+output_size_func (void)
 {
   fprintf (output_file, "int\n%s ()\n", SIZE_FUNC_NAME);
   fprintf (output_file, "{\n  return sizeof (struct %s);\n}\n\n", CHIP_NAME);
@@ -8889,7 +8607,7 @@ output_size_func ()
 
 /* The function outputs PHR interface function `state_reset'.  */
 static void
-output_reset_func ()
+output_reset_func (void)
 {
   fprintf (output_file, "void\n%s (%s)\n\t %s %s;\n",
 	   RESET_FUNC_NAME, STATE_NAME, STATE_TYPE_NAME, STATE_NAME);
@@ -8899,13 +8617,13 @@ output_reset_func ()
 
 /* Output function `min_insn_conflict_delay'.  */
 static void
-output_min_insn_conflict_delay_func ()
+output_min_insn_conflict_delay_func (void)
 {
   fprintf (output_file,
 	   "int\n%s (%s, %s, %s)\n\t%s %s;\n\trtx %s;\n\trtx %s;\n",
 	   MIN_INSN_CONFLICT_DELAY_FUNC_NAME,
 	   STATE_NAME, INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME,
- 	   STATE_TYPE_NAME, STATE_NAME,
+	   STATE_TYPE_NAME, STATE_NAME,
 	   INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME);
   fprintf (output_file, "{\n  struct %s %s;\n  int %s, %s;\n",
 	   CHIP_NAME, CHIP_NAME, INTERNAL_INSN_CODE_NAME,
@@ -8927,7 +8645,7 @@ output_min_insn_conflict_delay_func ()
 
 /* Output function `internal_insn_latency'.  */
 static void
-output_internal_insn_latency_func ()
+output_internal_insn_latency_func (void)
 {
   decl_t decl;
   struct bypass_decl *bypass;
@@ -8946,8 +8664,8 @@ output_internal_insn_latency_func ()
 	if (DECL_INSN_RESERV (decl)->default_latency > USHRT_MAX)
 	  tabletype = "int";
       }
-    
-  fprintf (output_file, "static int %s PARAMS ((int, int, rtx, rtx));\n",
+
+  fprintf (output_file, "static int %s (int, int, rtx, rtx);\n",
 	   INTERNAL_INSN_LATENCY_FUNC_NAME);
   fprintf (output_file, "static int\n%s (%s, %s, %s, %s)",
 	   INTERNAL_INSN_LATENCY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
@@ -9031,7 +8749,7 @@ output_internal_insn_latency_func ()
 
 /* The function outputs PHR interface function `insn_latency'.  */
 static void
-output_insn_latency_func ()
+output_insn_latency_func (void)
 {
   fprintf (output_file, "int\n%s (%s, %s)\n\trtx %s;\n\trtx %s;\n",
 	   INSN_LATENCY_FUNC_NAME, INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME,
@@ -9050,7 +8768,7 @@ output_insn_latency_func ()
 
 /* The function outputs PHR interface function `print_reservation'.  */
 static void
-output_print_reservation_func ()
+output_print_reservation_func (void)
 {
   decl_t decl;
   int i, j;
@@ -9086,7 +8804,7 @@ output_print_reservation_func ()
     }
   if (j != DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num)
     abort ();
-	      
+
   fprintf (output_file, "\n      \"%s\"\n    };\n  int %s;\n\n",
 	   NOTHING_NAME, INTERNAL_INSN_CODE_NAME);
 
@@ -9111,8 +8829,7 @@ output_print_reservation_func ()
 /* The following function is used to sort unit declaration by their
    names.  */
 static int
-units_cmp (unit1, unit2)
-     const void *unit1, *unit2;
+units_cmp (const void *unit1, const void *unit2)
 {
   const unit_decl_t u1 = *(unit_decl_t *) unit1;
   const unit_decl_t u2 = *(unit_decl_t *) unit2;
@@ -9141,11 +8858,11 @@ units_cmp (unit1, unit2)
 /* The following function outputs function to obtain internal cpu unit
    code by the cpu unit name.  */
 static void
-output_get_cpu_unit_code_func ()
+output_get_cpu_unit_code_func (void)
 {
   int i;
   unit_decl_t *units;
-  
+
   fprintf (output_file, "int\n%s (%s)\n\tconst char *%s;\n",
 	   GET_CPU_UNIT_CODE_FUNC_NAME, CPU_UNIT_NAME_PARAMETER_NAME,
 	   CPU_UNIT_NAME_PARAMETER_NAME);
@@ -9192,7 +8909,7 @@ output_get_cpu_unit_code_func ()
    unit (its internal code will be passed as the function argument) in
    given cpu state.  */
 static void
-output_cpu_unit_reservation_p ()
+output_cpu_unit_reservation_p (void)
 {
   automaton_t automaton;
 
@@ -9221,7 +8938,7 @@ output_cpu_unit_reservation_p ()
 
 /* The function outputs PHR interface function `dfa_clean_insn_cache'.  */
 static void
-output_dfa_clean_insn_cache_func ()
+output_dfa_clean_insn_cache_func (void)
 {
   fprintf (output_file,
 	   "void\n%s ()\n{\n  int %s;\n\n",
@@ -9235,7 +8952,7 @@ output_dfa_clean_insn_cache_func ()
 
 /* The function outputs PHR interface function `dfa_start'.  */
 static void
-output_dfa_start_func ()
+output_dfa_start_func (void)
 {
   fprintf (output_file,
 	   "void\n%s ()\n{\n  %s = get_max_uid ();\n",
@@ -9247,7 +8964,7 @@ output_dfa_start_func ()
 
 /* The function outputs PHR interface function `dfa_finish'.  */
 static void
-output_dfa_finish_func ()
+output_dfa_finish_func (void)
 {
   fprintf (output_file, "void\n%s ()\n{\n  free (%s);\n}\n\n",
 	   DFA_FINISH_FUNC_NAME, DFA_INSN_CODES_VARIABLE_NAME);
@@ -9260,8 +8977,7 @@ output_dfa_finish_func ()
 
 /* The function outputs string representation of IR reservation.  */
 static void
-output_regexp (regexp)
-     regexp_t regexp;
+output_regexp (regexp_t regexp)
 {
   fprintf (output_description_file, "%s", regexp_representation (regexp));
   finish_regexp_representation ();
@@ -9269,8 +8985,7 @@ output_regexp (regexp)
 
 /* Output names of units in LIST separated by comma.  */
 static void
-output_unit_set_el_list (list)
-     unit_set_el_t list;
+output_unit_set_el_list (unit_set_el_t list)
 {
   unit_set_el_t el;
 
@@ -9284,8 +8999,7 @@ output_unit_set_el_list (list)
 
 /* Output patterns in LIST separated by comma.  */
 static void
-output_pattern_set_el_list (list)
-     pattern_set_el_t list;
+output_pattern_set_el_list (pattern_set_el_t list)
 {
   pattern_set_el_t el;
   int i;
@@ -9303,7 +9017,7 @@ output_pattern_set_el_list (list)
 /* The function outputs string representation of IR define_reservation
    and define_insn_reservation.  */
 static void
-output_description ()
+output_description (void)
 {
   decl_t decl;
   int i;
@@ -9333,8 +9047,8 @@ output_description ()
 		       DECL_UNIT (decl)->name);
 	      output_pattern_set_el_list
 		(DECL_UNIT (decl)->final_presence_list);
- 	      fprintf (output_description_file, "\n");
- 	    }
+	      fprintf (output_description_file, "\n");
+	    }
 	  if (DECL_UNIT (decl)->absence_list != NULL)
 	    {
 	      fprintf (output_description_file, "unit %s absence_set: ",
@@ -9348,8 +9062,8 @@ output_description ()
 		       DECL_UNIT (decl)->name);
 	      output_pattern_set_el_list
 		(DECL_UNIT (decl)->final_absence_list);
- 	      fprintf (output_description_file, "\n");
- 	    }
+	      fprintf (output_description_file, "\n");
+	    }
 	}
     }
   fprintf (output_description_file, "\n");
@@ -9384,9 +9098,7 @@ output_description ()
 
 /* The function outputs name of AUTOMATON.  */
 static void
-output_automaton_name (f, automaton)
-     FILE *f;
-     automaton_t automaton;
+output_automaton_name (FILE *f, automaton_t automaton)
 {
   if (automaton->corresponding_automaton_decl == NULL)
     fprintf (f, "#%d", automaton->automaton_order_num);
@@ -9400,8 +9112,7 @@ output_automaton_name (f, automaton)
 
 /* The function outputs units name belonging to AUTOMATON.  */
 static void
-output_automaton_units (automaton)
-     automaton_t automaton;
+output_automaton_units (automaton_t automaton)
 {
   decl_t decl;
   char *name;
@@ -9446,8 +9157,7 @@ static vla_ptr_t state_reservs;
 
 /* The function forms `state_reservs' for STATE.  */
 static void
-add_state_reservs (state)
-     state_t state;
+add_state_reservs (state_t state)
 {
   alt_state_t curr_alt_state;
   reserv_sets_t reservs;
@@ -9467,8 +9177,7 @@ add_state_reservs (state)
 /* The function outputs readable representation of all out arcs of
    STATE.  */
 static void
-output_state_arcs (state)
-     state_t state;
+output_state_arcs (state_t state)
 {
   arc_t arc;
   ainsn_t ainsn;
@@ -9518,9 +9227,7 @@ output_state_arcs (state)
 /* The following function is used for sorting possible cpu unit
    reservation of a DFA state.  */
 static int
-state_reservs_cmp (reservs_ptr_1, reservs_ptr_2)
-     const void *reservs_ptr_1;
-     const void *reservs_ptr_2;
+state_reservs_cmp (const void *reservs_ptr_1, const void *reservs_ptr_2)
 {
   return reserv_sets_cmp (*(reserv_sets_t *) reservs_ptr_1,
                           *(reserv_sets_t *) reservs_ptr_2);
@@ -9529,7 +9236,7 @@ state_reservs_cmp (reservs_ptr_1, reservs_ptr_2)
 /* The following function is used for sorting possible cpu unit
    reservation of a DFA state.  */
 static void
-remove_state_duplicate_reservs ()
+remove_state_duplicate_reservs (void)
 {
   reserv_sets_t *reservs_ptr;
   reserv_sets_t *last_formed_reservs_ptr;
@@ -9553,8 +9260,7 @@ remove_state_duplicate_reservs ()
    described by possible (current and scheduled) cpu unit
    reservations.  */
 static void
-output_state (state)
-     state_t state;
+output_state (state_t state)
 {
   reserv_sets_t *reservs_ptr;
 
@@ -9582,7 +9288,7 @@ output_state (state)
 /* The following function output readable representation of
    DFAs used for fast recognition of pipeline hazards.  */
 static void
-output_automaton_descriptions ()
+output_automaton_descriptions (void)
 {
   automaton_t automaton;
 
@@ -9606,8 +9312,7 @@ output_automaton_descriptions ()
 /* The function outputs statistics about work of different phases of
    DFA generator.  */
 static void
-output_statistics (f)
-     FILE *f;
+output_statistics (FILE *f)
 {
   automaton_t automaton;
   int states_num;
@@ -9658,7 +9363,7 @@ output_statistics (f)
 	 automaton->min_issue_delay_table_compression_factor);
       transition_comb_vect_els
 	+= VLA_HWINT_LENGTH (automaton->trans_table->comb_vect);
-      transition_full_vect_els 
+      transition_full_vect_els
         += VLA_HWINT_LENGTH (automaton->trans_table->full_vect);
       state_alts_comb_vect_els
         += VLA_HWINT_LENGTH (automaton->state_alts_table->comb_vect);
@@ -9686,8 +9391,7 @@ output_statistics (f)
 /* The function output times of work of different phases of DFA
    generator.  */
 static void
-output_time_statistics (f)
-     FILE *f;
+output_time_statistics (FILE *f)
 {
   fprintf (f, "\n  transformation: ");
   print_active_time (f, transform_time);
@@ -9713,7 +9417,7 @@ output_time_statistics (f)
    for fast recognition of pipeline hazards.  No errors during
    checking must be fixed before this function call.  */
 static void
-generate ()
+generate (void)
 {
   automata_num = split_argument;
   if (description->units_num < automata_num)
@@ -9734,7 +9438,7 @@ generate ()
 /* The following function creates insn attribute whose values are
    number alternatives in insn reservations.  */
 static void
-make_insn_alts_attr ()
+make_insn_alts_attr (void)
 {
   int i, insn_num;
   decl_t decl;
@@ -9771,7 +9475,7 @@ make_insn_alts_attr ()
 /* The following function creates attribute which is order number of
    insn in pipeline hazard description translator.  */
 static void
-make_internal_dfa_insn_code_attr ()
+make_internal_dfa_insn_code_attr (void)
 {
   int i, insn_num;
   decl_t decl;
@@ -9808,7 +9512,7 @@ make_internal_dfa_insn_code_attr ()
 /* The following function creates attribute which order number of insn
    in pipeline hazard description translator.  */
 static void
-make_default_insn_latency_attr ()
+make_default_insn_latency_attr (void)
 {
   int i, insn_num;
   decl_t decl;
@@ -9842,13 +9546,13 @@ make_default_insn_latency_attr ()
 /* The following function creates attribute which returns 1 if given
    output insn has bypassing and 0 otherwise.  */
 static void
-make_bypass_attr ()
+make_bypass_attr (void)
 {
   int i, bypass_insn;
   int bypass_insns_num = 0;
   decl_t decl;
   rtx result_rtx;
-  
+
   for (i = 0; i < description->decls_num; i++)
     {
       decl = description->decls [i];
@@ -9898,8 +9602,7 @@ make_bypass_attr ()
 /* The function returns suffix of given file name.  The returned
    string can not be changed.  */
 static const char *
-file_name_suffix (file_name)
-     const char *file_name;
+file_name_suffix (const char *file_name)
 {
   const char *last_period;
 
@@ -9914,8 +9617,7 @@ file_name_suffix (file_name)
    given file name itself if the directory name is absent.  The
    returned string can not be changed.  */
 static const char *
-base_file_name (file_name)
-     const char *file_name;
+base_file_name (const char *file_name)
 {
   int directory_name_length;
 
@@ -9933,9 +9635,7 @@ base_file_name (file_name)
 /* The following is top level function to initialize the work of
    pipeline hazards description translator.  */
 void
-initiate_automaton_gen (argc, argv)
-     int argc;
-     char **argv;
+initiate_automaton_gen (int argc, char **argv)
 {
   const char *base_name;
   int i;
@@ -9985,7 +9685,7 @@ initiate_automaton_gen (argc, argv)
 /* The following function checks existence at least one arc marked by
    each insn.  */
 static void
-check_automata_insn_issues ()
+check_automata_insn_issues (void)
 {
   automaton_t automaton;
   ainsn_t ainsn, reserv_ainsn;
@@ -10034,8 +9734,7 @@ static vla_ptr_t automaton_states;
 /* This function is called by function pass_states to add an achieved
    STATE.  */
 static void
-add_automaton_state (state)
-     state_t state;
+add_automaton_state (state_t state)
 {
   VLA_PTR_ADD (automaton_states, state);
 }
@@ -10043,7 +9742,7 @@ add_automaton_state (state)
 /* The following function forms list of important automata (whose
    states may be changed after the insn issue) for each insn.  */
 static void
-form_important_insn_automata_lists ()
+form_important_insn_automata_lists (void)
 {
   automaton_t automaton;
   state_t *state_ptr;
@@ -10109,7 +9808,7 @@ form_important_insn_automata_lists ()
 /* The following is top level function to generate automat(a,on) for
    fast recognition of pipeline hazards.  */
 void
-expand_automata ()
+expand_automata (void)
 {
   int i;
 
@@ -10164,7 +9863,7 @@ expand_automata ()
 /* The following is top level function to output PHR and to finish
    work with pipeline description translator.  */
 void
-write_automata ()
+write_automata (void)
 {
   fprintf (stderr, "done\n");
   if (have_error)

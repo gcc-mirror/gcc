@@ -1,5 +1,5 @@
 /* intl.h - internationalization
-   Copyright 1998, 2001 Free Software Foundation, Inc.
+   Copyright 1998, 2001, 2003 Free Software Foundation, Inc.
 
    GCC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@
 #endif
 
 #ifdef ENABLE_NLS
-extern void gcc_init_libintl PARAMS ((void));
-extern size_t gcc_gettext_width PARAMS ((const char *));
+extern void gcc_init_libintl (void);
+extern size_t gcc_gettext_width (const char *);
 #else
 /* Stubs.  */
 # undef textdomain

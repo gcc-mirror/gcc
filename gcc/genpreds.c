@@ -2,7 +2,7 @@
    - some macros CODE_FOR_... giving the insn_code_number value
    for each of the defined standard insn names.
    Copyright (C) 1987, 1991, 1995, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,11 +29,9 @@ Boston, MA 02111-1307, USA.  */
 #define NO_GENRTL_H
 #include "rtl.h"
 
-static void output_predicate_decls PARAMS ((void));
-extern int main PARAMS ((void));
 
 static void
-output_predicate_decls ()
+output_predicate_decls (void)
 {
 #ifdef PREDICATE_CODES
   static const struct {
@@ -46,14 +44,14 @@ output_predicate_decls ()
 
   puts ("#ifdef RTX_CODE\n");
   for (i = 0; i < ARRAY_SIZE (predicate); i++)
-    printf ("extern int %s PARAMS ((rtx, enum machine_mode));\n",
+    printf ("extern int %s (rtx, enum machine_mode);\n",
 	    predicate[i].name);
   puts ("\n#endif /* RTX_CODE */\n");
 #endif
 }
 
 int
-main ()
+main (void)
 {
   puts ("/* Generated automatically by the program `genpreds'.  */\n");
   puts ("#ifndef GCC_TM_PREDS_H");

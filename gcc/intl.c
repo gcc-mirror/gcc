@@ -1,5 +1,5 @@
 /* Message translation utilities.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    terminal, so it has be set to output messages correctly.  */
 
 void
-gcc_init_libintl ()
+gcc_init_libintl (void)
 {
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_CTYPE, "");
@@ -52,8 +52,7 @@ gcc_init_libintl ()
    This is for indenting subsequent output.  */
 
 size_t
-gcc_gettext_width (msgstr)
-     const char *msgstr;
+gcc_gettext_width (const char *msgstr)
 {
   size_t nwcs = mbstowcs (0, msgstr, 0);
   wchar_t *wmsgstr = alloca ((nwcs + 1) * sizeof (wchar_t));
@@ -68,8 +67,7 @@ gcc_gettext_width (msgstr)
    the length of the string.  */
 
 size_t
-gcc_gettext_width (msgstr)
-     const char *msgstr;
+gcc_gettext_width (const char *msgstr)
 {
   return strlen (msgstr);
 }

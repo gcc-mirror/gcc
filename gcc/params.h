@@ -1,5 +1,5 @@
 /* params.h - Run-time parameters.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -59,13 +59,11 @@ extern param_info *compiler_params;
 
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
-extern void add_params
-  PARAMS ((const param_info params[], size_t n));
+extern void add_params (const param_info params[], size_t n);
 
 /* Set the VALUE associated with the parameter given by NAME.  */
 
-extern void set_param_value
-  PARAMS ((const char *name, int value));
+extern void set_param_value (const char *name, int value);
 
 
 /* The parameters in use by language-independent code.  */

@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,36 +111,36 @@ extern struct fileloc lexer_line;
 
 /* Print an error message.  */
 extern void error_at_line 
-  PARAMS ((struct fileloc *pos, const char *msg, ...)) ATTRIBUTE_PRINTF_2;
+  (struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
 
 /* Combines xmalloc() and vasprintf().  */
-extern int xvasprintf PARAMS ((char **, const char *, va_list))
+extern int xvasprintf (char **, const char *, va_list)
      ATTRIBUTE_PRINTF (2, 0);
 /* Like the above, but more convenient for quick coding.  */
-extern char * xasprintf PARAMS ((const char *, ...))
+extern char * xasprintf (const char *, ...)
      ATTRIBUTE_PRINTF_1;
 
 /* Constructor routines for types.  */
-extern void do_typedef PARAMS ((const char *s, type_p t, struct fileloc *pos));
-extern type_p resolve_typedef PARAMS ((const char *s, struct fileloc *pos));
-extern void new_structure PARAMS ((const char *name, int isunion, 
-				   struct fileloc *pos, pair_p fields, 
-				   options_p o));
-extern type_p find_structure PARAMS ((const char *s, int isunion));
-extern type_p create_scalar_type PARAMS ((const char *name, size_t name_len));
-extern type_p create_pointer PARAMS ((type_p t));
-extern type_p create_array PARAMS ((type_p t, const char *len));
-extern type_p adjust_field_type PARAMS ((type_p, options_p));
-extern void note_variable PARAMS ((const char *s, type_p t, options_p o,
-				   struct fileloc *pos));
-extern void note_yacc_type PARAMS ((options_p o, pair_p fields,
-				    pair_p typeinfo, struct fileloc *pos));
+extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
+extern type_p resolve_typedef (const char *s, struct fileloc *pos);
+extern void new_structure (const char *name, int isunion, 
+			   struct fileloc *pos, pair_p fields, 
+			   options_p o);
+extern type_p find_structure (const char *s, int isunion);
+extern type_p create_scalar_type (const char *name, size_t name_len);
+extern type_p create_pointer (type_p t);
+extern type_p create_array (type_p t, const char *len);
+extern type_p adjust_field_type (type_p, options_p);
+extern void note_variable (const char *s, type_p t, options_p o,
+			   struct fileloc *pos);
+extern void note_yacc_type (options_p o, pair_p fields,
+			    pair_p typeinfo, struct fileloc *pos);
 
 /* Lexer and parser routines, most automatically generated.  */
-extern int yylex PARAMS((void));
-extern void yyerror PARAMS ((const char *));
-extern int yyparse PARAMS ((void));
-extern void parse_file PARAMS ((const char *name));
+extern int yylex (void);
+extern void yyerror (const char *);
+extern int yyparse (void);
+extern void parse_file (const char *name);
 
 /* Output file handling.  */
 
@@ -164,8 +164,8 @@ extern outf_p header_file;
    made in INPUT_FILE and is linked into every language that uses
    INPUT_FILE.  */
 extern outf_p get_output_file_with_visibility 
-   PARAMS ((const char *input_file));
-const char *get_output_file_name PARAMS ((const char *));
+   (const char *input_file);
+const char *get_output_file_name (const char *);
 
 /* A list of output files suitable for definitions.  There is one
    BASE_FILES entry for each language.  */
@@ -174,8 +174,8 @@ extern outf_p base_files[];
 /* A bitmap that specifies which of BASE_FILES should be used to
    output a definition that is different for each language and must be
    defined once in each language that uses INPUT_FILE.  */
-extern lang_bitmap get_base_file_bitmap PARAMS ((const char *input_file));
+extern lang_bitmap get_base_file_bitmap (const char *input_file);
 
 /* Print, like fprintf, to O.  */
-extern void oprintf PARAMS ((outf_p o, const char *S, ...))
+extern void oprintf (outf_p o, const char *S, ...)
      ATTRIBUTE_PRINTF_2;

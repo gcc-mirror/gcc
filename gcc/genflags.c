@@ -2,7 +2,7 @@
    - some flags HAVE_... saying which simple standard instructions are
    available for this machine.
    Copyright (C) 1987, 1991, 1995, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,17 +40,16 @@ static int max_id_len;
 /* Max operand encountered in a scan over some insn.  */
 static int max_opno;
 
-static void max_operand_1	PARAMS ((rtx));
-static int num_operands		PARAMS ((rtx));
-static void gen_proto		PARAMS ((rtx));
-static void gen_macro		PARAMS ((const char *, int, int));
-static void gen_insn		PARAMS ((rtx));
+static void max_operand_1 (rtx);
+static int num_operands (rtx);
+static void gen_proto (rtx);
+static void gen_macro (const char *, int, int);
+static void gen_insn (rtx);
 
 /* Count the number of match_operand's found.  */
 
 static void
-max_operand_1 (x)
-     rtx x;
+max_operand_1 (rtx x)
 {
   RTX_CODE code;
   int i;
@@ -82,8 +81,7 @@ max_operand_1 (x)
 }
 
 static int
-num_operands (insn)
-     rtx insn;
+num_operands (rtx insn)
 {
   int len = XVECLEN (insn, 1);
   int i;
@@ -100,9 +98,7 @@ num_operands (insn)
    of arguments it takes.  Any missing arguments are assumed to be at
    the end.  */
 static void
-gen_macro (name, real, expect)
-     const char *name;
-     int real, expect;
+gen_macro (const char *name, int real, int expect)
 {
   int i;
 
@@ -131,8 +127,7 @@ gen_macro (name, real, expect)
    does nothing.  */
 
 static void
-gen_proto (insn)
-     rtx insn;
+gen_proto (rtx insn)
 {
   int num = num_operands (insn);
   int i;
@@ -159,9 +154,9 @@ gen_proto (insn)
     }
 
   if (truth != 0)
-    printf ("extern rtx        gen_%-*s PARAMS ((", max_id_len, name);
+    printf ("extern rtx        gen_%-*s (", max_id_len, name);
   else
-    printf ("static inline rtx gen_%-*s PARAMS ((", max_id_len, name);
+    printf ("static inline rtx gen_%-*s (", max_id_len, name);
 
   if (num == 0)
     fputs ("void", stdout);
@@ -169,11 +164,11 @@ gen_proto (insn)
     {
       for (i = 1; i < num; i++)
 	fputs ("rtx, ", stdout);
-      
+
       fputs ("rtx", stdout);
     }
 
-  puts ("));");
+  puts (");");
 
   /* Some back ends want to take the address of generator functions,
      so we cannot simply use #define for these dummy definitions.  */
@@ -197,8 +192,7 @@ gen_proto (insn)
 }
 
 static void
-gen_insn (insn)
-     rtx insn;
+gen_insn (rtx insn)
 {
   const char *name = XSTR (insn, 0);
   const char *p;
@@ -238,12 +232,8 @@ gen_insn (insn)
   obstack_grow (&obstack, &insn, sizeof (rtx));
 }
 
-extern int main PARAMS ((int, char **));
-
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
   rtx dummy;
@@ -262,7 +252,7 @@ main (argc, argv)
 
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
-  
+
   puts ("/* Generated automatically by the program `genflags'");
   puts ("   from the machine description file `md'.  */\n");
   puts ("#ifndef GCC_INSN_FLAGS_H");
@@ -299,8 +289,7 @@ main (argc, argv)
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 const char *
-get_insn_name (code)
-     int code ATTRIBUTE_UNUSED;
+get_insn_name (int code ATTRIBUTE_UNUSED)
 {
   return NULL;
 }

@@ -2,8 +2,8 @@
    a series of #define statements, one for each constant named in
    a (define_constants ...) pattern.
 
-   Copyright (C) 1987, 1991, 1995, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1995, 1998, 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,16 +34,13 @@ Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 #include "gensupport.h"
 
-static int print_md_constant PARAMS ((void **, void *));
-extern int main PARAMS ((int, char **));
+static int print_md_constant (void **, void *);
 
 /* Called via traverse_md_constants; emit a #define for
    the current constant definition.  */
 
 static int
-print_md_constant (slot, info)
-     void **slot;
-     void *info;
+print_md_constant (void **slot, void *info)
 {
   struct md_constant *def = *slot;
   FILE *file = info;
@@ -53,9 +50,7 @@ print_md_constant (slot, info)
 }
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   int dummy1, dummy2;
   rtx desc;
