@@ -965,7 +965,7 @@ printchar (c)
    syntax, so it can be changed between regex compilations.  */
 /* This has no initializer because initialized variables in Emacs
    become read-only after dumping.  */
-reg_syntax_t re_syntax_options;
+static reg_syntax_t re_syntax_options;
 
 
 /* Specify the precise syntax of regexps for compilation.  This provides

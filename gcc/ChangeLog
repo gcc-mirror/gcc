@@ -1,3 +1,7 @@
+2000-05-10  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/gnu-regex.c:  reg_syntax_t re_syntax_options must be static
+
 2000-05-10  Eric Schweitz  <schweitz@nortelnetworks.com>
 
 	* dwarfout.c (dwarfout_finish): Call retry_incomplete_types
