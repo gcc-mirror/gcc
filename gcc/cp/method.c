@@ -80,6 +80,7 @@ static int check_ktype PROTO((tree, int));
 static int issue_ktype PROTO((tree));
 static void build_overload_scope_ref PROTO((tree));
 static void build_mangled_template_parm_index PROTO((char *, tree));
+static void build_mangled_C9x_name PROTO((int));
 static int is_back_referenceable_type PROTO((tree));
 static int check_btype PROTO((tree));
 static void build_mangled_name_for_type PROTO((tree));
@@ -620,6 +621,41 @@ build_mangled_template_parm_index (s, index)
      representation of the function from the point of view of its
      type.  */
   build_underscore_int (TEMPLATE_PARM_LEVEL (index));
+}
+
+
+/* Mangling for C9X integer types (and Cygnus extensions for 128-bit
+   and other types) is based on the letter "I" followed by the hex
+   representations of the bitsize for the type in question. For
+   encodings that result in larger than two digits, a leading and
+   trailing underscore is added.
+
+   Thus:
+   int1_t   = 001 = I01
+   int8_t   = 008 = I08 
+   int16_t  = 010 = I10
+   int24_t  = 018 = I18
+   int32_t  = 020 = I20
+   int64_t  = 040 = I40
+   int80_t  = 050 = I50
+   int128_t = 080 = I80
+   int256_t = 100 = I_100_
+   int512_t = 200 = I_200_
+
+   Given an integer in decimal format, mangle according to this scheme. */
+
+static void
+build_mangled_C9x_name (bits)
+     int bits;
+{
+  char mangled[10] = "";
+
+  if (bits > 255)
+    sprintf (mangled, "I_%x_", bits);
+  else
+    sprintf (mangled, "I%.2x", bits);
+
+  OB_PUTCP (mangled);
 }
 
 
@@ -1367,15 +1403,18 @@ process_overload_item (parmtype, extra_Gcode)
 	       || parmtype == long_long_unsigned_type_node
 	       || parmtype == java_long_type_node)
         OB_PUTC ('x');
-#if 0
-      /* it would seem there is no way to enter these in source code,
-         yet.  (mrs) */
-      else if (parmtype == long_long_long_integer_type_node
-          || parmtype == long_long_long_unsigned_type_node)
-        OB_PUTC ('q');
-#endif
       else if (parmtype == java_boolean_type_node)
 	OB_PUTC ('b');
+#if HOST_BITS_PER_WIDE_INT >= 64
+      else if (parmtype == intTI_type_node 
+	       || parmtype == unsigned_intTI_type_node)
+	{
+	  /* Should just check a flag here instead of specific
+	   *_type_nodes, because all C9x types could use this. */
+	  int bits = TREE_INT_CST_LOW (TYPE_SIZE (parmtype));
+	  build_mangled_C9x_name (bits);
+	}
+#endif
       else
         my_friendly_abort (73);
       break;
