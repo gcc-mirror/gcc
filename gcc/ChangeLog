@@ -1,3 +1,8 @@
+2004-12-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* doc/invoke.texi (IA-64 options): Add existing options that
+	weren't already listed.
+
 2004-12-14  Jeff Law  <law@redhat.com>
 
 	* tree-outof-ssa.c (coalesce_abnormal_edges): Pass the correct target
