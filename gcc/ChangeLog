@@ -1,3 +1,9 @@
+2001-02-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* flow.c (mark_set_1): Make not_dead unsigned long.  For
+	non-pseudos, use it as a bitmask of the hard regs that 
+	don't die.
+
 2001-02-20  Will Cohen  <wcohen@redhat.com>
 
 	* config/pa/quadlib.c (_U_Qfcnvfxt_quad_to_usgl): New function.
