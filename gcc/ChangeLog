@@ -1,3 +1,14 @@
+Fri Oct 23 00:07:01 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* regclass.c (regclass): Break out some code into new function
+	scan_one_insn, and into regclass_init.
+	(init_cost): New static variable, moved out of regclass.
+	(regclass_init): Initialize it here, not in .
+	(scan_one_insn): New static function, broken out of regclass.
+	* recog.c (apply_change_group): Break out some code into new
+	function insn_invalid_p.
+	(insn_invalid_p): New static fn, broken out of apply_change_group.
+
 Thu Oct 22 22:34:42 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reload1.c (reload_as_needed): When rewrite POST_INC, verify

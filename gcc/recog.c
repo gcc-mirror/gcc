@@ -40,9 +40,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-static void validate_replace_rtx_1 PROTO((rtx *, rtx, rtx, rtx));
-static rtx *find_single_use_1 PROTO((rtx, rtx *));
-static rtx *find_constant_term_loc PROTO((rtx *));
+static void validate_replace_rtx_1	PROTO((rtx *, rtx, rtx, rtx));
+static rtx *find_single_use_1		PROTO((rtx, rtx *));
+static rtx *find_constant_term_loc	PROTO((rtx *));
+static int insn_invalid_p		PROTO((rtx));
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
@@ -252,6 +253,41 @@ validate_change (object, loc, new, in_group)
     return apply_change_group ();
 }
 
+/* This subroutine of apply_change_group verifies whether the changes to INSN
+   were valid; i.e. whether INSN can still be recognized.  */
+
+static int
+insn_invalid_p (insn)
+     rtx insn;
+{
+  int icode = recog_memoized (insn);
+  int is_asm = icode < 0 && asm_noperands (PATTERN (insn)) >= 0;
+
+  if (is_asm)
+    {
+      if (! check_asm_operands (PATTERN (insn)))
+	return 1;
+
+      /* Disallow modification of ASM_OPERANDS after reload; verifying the
+	 constraints is too difficult.  */
+      if (reload_completed)
+	return 1;
+    }
+  else if (icode < 0)
+    return 1;
+
+  /* After reload, verify that all constraints are satisfied.  */
+  if (reload_completed)
+    {
+      insn_extract (insn);
+
+      if (! constrain_operands (INSN_CODE (insn), 1))
+	return 1;
+    }
+
+  return 0;
+}
+
 /* Apply a group of changes previously issued with `validate_change'.
    Return 1 if all changes are valid, zero otherwise.  */
 
@@ -282,13 +318,7 @@ apply_change_group ()
 	  if (! memory_address_p (GET_MODE (object), XEXP (object, 0)))
 	    break;
 	}
-      else if ((recog_memoized (object) < 0
-		&& (asm_noperands (PATTERN (object)) < 0
-		    || ! check_asm_operands (PATTERN (object))
-		    || reload_completed))
-	       || (reload_completed
-		   && (insn_extract (object),
-		       ! constrain_operands (INSN_CODE (object), 1))))
+      else if (insn_invalid_p (object))
 	{
 	  rtx pat = PATTERN (object);
 

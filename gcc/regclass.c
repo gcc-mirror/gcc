@@ -648,6 +648,10 @@ struct costs
 
 static struct costs *costs;
 
+/* Initialized once, and used to initialize cost values for each insn.  */
+
+static struct costs init_cost;
+
 /* Record the same data by operand number, accumulated for each alternative
    in an insn.  The contribution to a pseudo is that of the minimum-cost
    alternative.  */
@@ -685,6 +689,7 @@ static int loop_depth;
 static int loop_cost;
 
 static int n_occurrences	PROTO((int, char *));
+static rtx scan_one_insn	PROTO((rtx, int));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
 				       char **, rtx));
 static int copy_cost		PROTO((rtx, enum machine_mode, 
@@ -718,12 +723,19 @@ reg_alternate_class (regno)
   return (enum reg_class) altclass[regno];
 }
 
-/* This prevents dump_flow_info from losing if called
-   before regclass is run.  */
+/* Initialize some global data for this pass.  */
 
 void
 regclass_init ()
 {
+  int i;
+
+  init_cost.mem_cost = 10000;
+  for (i = 0; i < N_REG_CLASSES; i++)
+    init_cost.cost[i] = 10000;
+
+  /* This prevents dump_flow_info from losing if called
+     before regclass is run.  */
   prefclass = 0;
 }
 
@@ -739,6 +751,221 @@ n_occurrences (c, s)
   return n;
 }
 
+/* Subroutine of regclass, processes one insn INSN.  Scan it and record each
+   time it would save code to put a certain register in a certain class.
+   PASS, when nonzero, inhibits some optimizations which need only be done
+   once.
+   Return the last insn processed, so that the scan can be continued from
+   there.  */
+
+static rtx
+scan_one_insn (insn, pass)
+     rtx insn;
+     int pass;
+{
+  enum rtx_code code = GET_CODE (insn);
+  enum rtx_code pat_code;
+
+  char *constraints[MAX_RECOG_OPERANDS];
+  enum machine_mode modes[MAX_RECOG_OPERANDS];
+  int nalternatives;
+  int noperands;
+  rtx set;
+  int i, j;
+
+  /* Show that an insn inside a loop is likely to be executed three
+     times more than insns outside a loop.  This is much more aggressive
+     than the assumptions made elsewhere and is being tried as an
+     experiment.  */
+
+  if (code == NOTE)
+    {
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	loop_depth++, loop_cost = 1 << (2 * MIN (loop_depth, 5));
+      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	loop_depth--, loop_cost = 1 << (2 * MIN (loop_depth, 5));
+
+      return insn;
+    }
+
+  if (GET_RTX_CLASS (code) != 'i')
+    return insn;
+
+  pat_code = GET_CODE (PATTERN (insn));
+  if (pat_code == USE
+      || pat_code == CLOBBER
+      || pat_code == ASM_INPUT
+      || pat_code == ADDR_VEC
+      || pat_code == ADDR_DIFF_VEC)
+    return insn;
+
+  if (code == INSN
+      && (noperands = asm_noperands (PATTERN (insn))) >= 0)
+    {
+      decode_asm_operands (PATTERN (insn), recog_operand, NULL_PTR,
+			   constraints, modes);
+      nalternatives = (noperands == 0 ? 0
+		       : n_occurrences (',', constraints[0]) + 1);
+    }
+  else
+    {
+      int insn_code_number = recog_memoized (insn);
+      rtx note;
+
+      set = single_set (insn);
+      insn_extract (insn);
+
+      nalternatives = insn_n_alternatives[insn_code_number];
+      noperands = insn_n_operands[insn_code_number];
+
+      /* If this insn loads a parameter from its stack slot, then
+	 it represents a savings, rather than a cost, if the
+	 parameter is stored in memory.  Record this fact.  */
+
+      if (set != 0 && GET_CODE (SET_DEST (set)) == REG
+	  && GET_CODE (SET_SRC (set)) == MEM
+	  && (note = find_reg_note (insn, REG_EQUIV,
+				    NULL_RTX)) != 0
+	  && GET_CODE (XEXP (note, 0)) == MEM)
+	{
+	  costs[REGNO (SET_DEST (set))].mem_cost
+	    -= (MEMORY_MOVE_COST (GET_MODE (SET_DEST (set)),
+				  GENERAL_REGS, 1)
+		* loop_cost);
+	  record_address_regs (XEXP (SET_SRC (set), 0),
+			       BASE_REG_CLASS, loop_cost * 2);
+	  return insn;
+	}
+
+      /* Improve handling of two-address insns such as
+	 (set X (ashift CONST Y)) where CONST must be made to
+	 match X. Change it into two insns: (set X CONST)
+	 (set X (ashift X Y)).  If we left this for reloading, it
+	 would probably get three insns because X and Y might go
+	 in the same place. This prevents X and Y from receiving
+	 the same hard reg.
+
+	 We can only do this if the modes of operands 0 and 1
+	 (which might not be the same) are tieable and we only need
+	 do this during our first pass.  */
+
+      if (pass == 0 && optimize
+	  && noperands >= 3
+	  && insn_operand_constraint[insn_code_number][1][0] == '0'
+	  && insn_operand_constraint[insn_code_number][1][1] == 0
+	  && CONSTANT_P (recog_operand[1])
+	  && ! rtx_equal_p (recog_operand[0], recog_operand[1])
+	  && ! rtx_equal_p (recog_operand[0], recog_operand[2])
+	  && GET_CODE (recog_operand[0]) == REG
+	  && MODES_TIEABLE_P (GET_MODE (recog_operand[0]),
+			      insn_operand_mode[insn_code_number][1]))
+	{
+	  rtx previnsn = prev_real_insn (insn);
+	  rtx dest
+	    = gen_lowpart (insn_operand_mode[insn_code_number][1],
+			   recog_operand[0]);
+	  rtx newinsn
+	    = emit_insn_before (gen_move_insn (dest,
+					       recog_operand[1]),
+				insn);
+
+	  /* If this insn was the start of a basic block,
+	     include the new insn in that block.
+	     We need not check for code_label here;
+	     while a basic block can start with a code_label,
+	     INSN could not be at the beginning of that block.  */
+	  if (previnsn == 0 || GET_CODE (previnsn) == JUMP_INSN)
+	    {
+	      int b;
+	      for (b = 0; b < n_basic_blocks; b++)
+		if (insn == basic_block_head[b])
+		  basic_block_head[b] = newinsn;
+	    }
+
+	  /* This makes one more setting of new insns's dest.  */
+	  REG_N_SETS (REGNO (recog_operand[0]))++;
+
+	  *recog_operand_loc[1] = recog_operand[0];
+	  for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
+	    if (recog_dup_num[i] == 1)
+	      *recog_dup_loc[i] = recog_operand[0];
+
+	  return PREV_INSN (newinsn);
+	}
+
+      for (i = 0; i < noperands; i++)
+	{
+	  constraints[i]
+	    = insn_operand_constraint[insn_code_number][i];
+	  modes[i] = insn_operand_mode[insn_code_number][i];
+	}
+    }
+
+  /* If we get here, we are set up to record the costs of all the
+     operands for this insn.  Start by initializing the costs.
+     Then handle any address registers.  Finally record the desired
+     classes for any pseudos, doing it twice if some pair of
+     operands are commutative.  */
+	     
+  for (i = 0; i < noperands; i++)
+    {
+      op_costs[i] = init_cost;
+
+      if (GET_CODE (recog_operand[i]) == SUBREG)
+	recog_operand[i] = SUBREG_REG (recog_operand[i]);
+
+      if (GET_CODE (recog_operand[i]) == MEM)
+	record_address_regs (XEXP (recog_operand[i], 0),
+			     BASE_REG_CLASS, loop_cost * 2);
+      else if (constraints[i][0] == 'p')
+	record_address_regs (recog_operand[i],
+			     BASE_REG_CLASS, loop_cost * 2);
+    }
+
+  /* Check for commutative in a separate loop so everything will
+     have been initialized.  We must do this even if one operand
+     is a constant--see addsi3 in m68k.md.  */
+
+  for (i = 0; i < noperands - 1; i++)
+    if (constraints[i][0] == '%')
+      {
+	char *xconstraints[MAX_RECOG_OPERANDS];
+	int j;
+
+	/* Handle commutative operands by swapping the constraints.
+	   We assume the modes are the same.  */
+
+	for (j = 0; j < noperands; j++)
+	  xconstraints[j] = constraints[j];
+
+	xconstraints[i] = constraints[i+1];
+	xconstraints[i+1] = constraints[i];
+	record_reg_classes (nalternatives, noperands,
+			    recog_operand, modes, xconstraints,
+			    insn);
+      }
+
+  record_reg_classes (nalternatives, noperands, recog_operand,
+		      modes, constraints, insn);
+
+  /* Now add the cost for each operand to the total costs for
+     its register.  */
+
+  for (i = 0; i < noperands; i++)
+    if (GET_CODE (recog_operand[i]) == REG
+	&& REGNO (recog_operand[i]) >= FIRST_PSEUDO_REGISTER)
+      {
+	int regno = REGNO (recog_operand[i]);
+	struct costs *p = &costs[regno], *q = &op_costs[i];
+
+	p->mem_cost += q->mem_cost * loop_cost;
+	for (j = 0; j < N_REG_CLASSES; j++)
+	  p->cost[j] += q->cost[j] * loop_cost;
+      }
+
+  return insn;
+}
+
 /* This is a pass of the compiler that scans all instructions
    and calculates the preferred class for each pseudo-register.
    This information can be accessed later by calling `reg_preferred_class'.
@@ -751,9 +978,7 @@ regclass (f, nregs)
 {
 #ifdef REGISTER_CONSTRAINTS
   register rtx insn;
-  register int i, j;
-  struct costs init_cost;
-  rtx set;
+  register int i;
   int pass;
 
   init_recog ();
@@ -812,10 +1037,6 @@ regclass (f, nregs)
     }
 #endif /* FORBIDDEN_INC_DEC_CLASSES */
 
-  init_cost.mem_cost = 10000;
-  for (i = 0; i < N_REG_CLASSES; i++)
-    init_cost.cost[i] = 10000;
-
   /* Normally we scan the insns once and determine the best class to use for
      each register.  However, if -fexpensive_optimizations are on, we do so
      twice, the second time using the tentative best classes to guide the
@@ -838,199 +1059,9 @@ regclass (f, nregs)
 
       for (insn = f; insn; insn = NEXT_INSN (insn))
 	{
-	  char *constraints[MAX_RECOG_OPERANDS];
-	  enum machine_mode modes[MAX_RECOG_OPERANDS];
-	  int nalternatives;
-	  int noperands;
-
-	  /* Show that an insn inside a loop is likely to be executed three
-	     times more than insns outside a loop.  This is much more aggressive
-	     than the assumptions made elsewhere and is being tried as an
-	     experiment.  */
-
-	  if (GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    loop_depth++, loop_cost = 1 << (2 * MIN (loop_depth, 5));
-	  else if (GET_CODE (insn) == NOTE
-		   && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    loop_depth--, loop_cost = 1 << (2 * MIN (loop_depth, 5));
-
-	  else if ((GET_CODE (insn) == INSN
-		    && GET_CODE (PATTERN (insn)) != USE
-		    && GET_CODE (PATTERN (insn)) != CLOBBER
-		    && GET_CODE (PATTERN (insn)) != ASM_INPUT)
-		   || (GET_CODE (insn) == JUMP_INSN
-		       && GET_CODE (PATTERN (insn)) != ADDR_VEC
-		       && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
-		   || GET_CODE (insn) == CALL_INSN)
-	    {
-	      if (GET_CODE (insn) == INSN
-		  && (noperands = asm_noperands (PATTERN (insn))) >= 0)
-		{
-		  decode_asm_operands (PATTERN (insn), recog_operand, NULL_PTR,
-				       constraints, modes);
-		  nalternatives = (noperands == 0 ? 0
-				   : n_occurrences (',', constraints[0]) + 1);
-		}
-	      else
-		{
-		  int insn_code_number = recog_memoized (insn);
-		  rtx note;
-
-		  set = single_set (insn);
-		  insn_extract (insn);
-
-		  nalternatives = insn_n_alternatives[insn_code_number];
-		  noperands = insn_n_operands[insn_code_number];
-
-		  /* If this insn loads a parameter from its stack slot, then
-		     it represents a savings, rather than a cost, if the
-		     parameter is stored in memory.  Record this fact.  */
-
-		  if (set != 0 && GET_CODE (SET_DEST (set)) == REG
-		      && GET_CODE (SET_SRC (set)) == MEM
-		      && (note = find_reg_note (insn, REG_EQUIV,
-						NULL_RTX)) != 0
-		      && GET_CODE (XEXP (note, 0)) == MEM)
-		    {
-		      costs[REGNO (SET_DEST (set))].mem_cost
-			-= (MEMORY_MOVE_COST (GET_MODE (SET_DEST (set)),
-					      GENERAL_REGS, 1)
-			    * loop_cost);
-		      record_address_regs (XEXP (SET_SRC (set), 0),
-					   BASE_REG_CLASS, loop_cost * 2);
-		      continue;
-		    }
-	      
-		  /* Improve handling of two-address insns such as
-		     (set X (ashift CONST Y)) where CONST must be made to
-		     match X. Change it into two insns: (set X CONST)
-		     (set X (ashift X Y)).  If we left this for reloading, it
-		     would probably get three insns because X and Y might go
-		     in the same place. This prevents X and Y from receiving
-		     the same hard reg.
-
-		     We can only do this if the modes of operands 0 and 1
-		     (which might not be the same) are tieable and we only need
-		     do this during our first pass.  */
-
-		  if (pass == 0 && optimize
-		      && noperands >= 3
-		      && insn_operand_constraint[insn_code_number][1][0] == '0'
-		      && insn_operand_constraint[insn_code_number][1][1] == 0
-		      && CONSTANT_P (recog_operand[1])
-		      && ! rtx_equal_p (recog_operand[0], recog_operand[1])
-		      && ! rtx_equal_p (recog_operand[0], recog_operand[2])
-		      && GET_CODE (recog_operand[0]) == REG
-		      && MODES_TIEABLE_P (GET_MODE (recog_operand[0]),
-					  insn_operand_mode[insn_code_number][1]))
-		    {
-		      rtx previnsn = prev_real_insn (insn);
-		      rtx dest
-			= gen_lowpart (insn_operand_mode[insn_code_number][1],
-				       recog_operand[0]);
-		      rtx newinsn
-			= emit_insn_before (gen_move_insn (dest,
-							   recog_operand[1]),
-					    insn);
-
-		      /* If this insn was the start of a basic block,
-			 include the new insn in that block.
-			 We need not check for code_label here;
-			 while a basic block can start with a code_label,
-			 INSN could not be at the beginning of that block.  */
-		      if (previnsn == 0 || GET_CODE (previnsn) == JUMP_INSN)
-			{
-			  int b;
-			  for (b = 0; b < n_basic_blocks; b++)
-			    if (insn == basic_block_head[b])
-			      basic_block_head[b] = newinsn;
-			}
-
-		      /* This makes one more setting of new insns's dest.  */
-		      REG_N_SETS (REGNO (recog_operand[0]))++;
-
-		      *recog_operand_loc[1] = recog_operand[0];
-		      for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
-			if (recog_dup_num[i] == 1)
-			  *recog_dup_loc[i] = recog_operand[0];
-
-		      insn = PREV_INSN (newinsn);
-		      continue;
-		    }
-
-		  for (i = 0; i < noperands; i++)
-		    {
-		      constraints[i]
-			= insn_operand_constraint[insn_code_number][i];
-		      modes[i] = insn_operand_mode[insn_code_number][i];
-		    }
-		}
-
-	      /* If we get here, we are set up to record the costs of all the
-		 operands for this insn.  Start by initializing the costs.
-		 Then handle any address registers.  Finally record the desired
-		 classes for any pseudos, doing it twice if some pair of
-		 operands are commutative.  */
-	     
-	      for (i = 0; i < noperands; i++)
-		{
-		  op_costs[i] = init_cost;
-
-		  if (GET_CODE (recog_operand[i]) == SUBREG)
-		    recog_operand[i] = SUBREG_REG (recog_operand[i]);
-
-		  if (GET_CODE (recog_operand[i]) == MEM)
-		    record_address_regs (XEXP (recog_operand[i], 0),
-					 BASE_REG_CLASS, loop_cost * 2);
-		  else if (constraints[i][0] == 'p')
-		    record_address_regs (recog_operand[i],
-					 BASE_REG_CLASS, loop_cost * 2);
-		}
-
-	      /* Check for commutative in a separate loop so everything will
-		 have been initialized.  We must do this even if one operand
-		 is a constant--see addsi3 in m68k.md.  */
-	      
-	      for (i = 0; i < noperands - 1; i++)
-		if (constraints[i][0] == '%')
-		  {
-		    char *xconstraints[MAX_RECOG_OPERANDS];
-		    int j;
-
-		    /* Handle commutative operands by swapping the constraints.
-		       We assume the modes are the same.  */
-
-		    for (j = 0; j < noperands; j++)
-		      xconstraints[j] = constraints[j];
-
-		    xconstraints[i] = constraints[i+1];
-		    xconstraints[i+1] = constraints[i];
-		    record_reg_classes (nalternatives, noperands,
-					recog_operand, modes, xconstraints,
-					insn);
-		  }
-
-	      record_reg_classes (nalternatives, noperands, recog_operand,
-				  modes, constraints, insn);
-
-	      /* Now add the cost for each operand to the total costs for
-		 its register.  */
-
-	      for (i = 0; i < noperands; i++)
-		if (GET_CODE (recog_operand[i]) == REG
-		    && REGNO (recog_operand[i]) >= FIRST_PSEUDO_REGISTER)
-		  {
-		    int regno = REGNO (recog_operand[i]);
-		    struct costs *p = &costs[regno], *q = &op_costs[i];
-
-		    p->mem_cost += q->mem_cost * loop_cost;
-		    for (j = 0; j < N_REG_CLASSES; j++)
-		      p->cost[j] += q->cost[j] * loop_cost;
-		  }
-	    }
+	  insn = scan_one_insn (insn, pass);
 	}
-
+      
       /* Now for each register look at how desirable each class is
 	 and find which class is preferred.  Store that in
 	 `prefclass[REGNO]'.  Record in `altclass[REGNO]' the largest register
