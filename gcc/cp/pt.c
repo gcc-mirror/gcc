@@ -745,9 +745,7 @@ static tree
 retrieve_local_specialization (tmpl)
      tree tmpl;
 {
-  tree spec = 
-    (tree) htab_find_with_hash (local_specializations, tmpl,
-				htab_hash_pointer (tmpl));
+  tree spec = (tree) htab_find (local_specializations, tmpl);
   return spec ? TREE_PURPOSE (spec) : NULL_TREE;
 }
 
@@ -934,8 +932,7 @@ register_local_specialization (spec, tmpl)
 {
   void **slot;
 
-  slot = htab_find_slot_with_hash (local_specializations, tmpl, 
-				   htab_hash_pointer (tmpl), INSERT);
+  slot = htab_find_slot (local_specializations, tmpl, INSERT);
   *slot = build_tree_list (spec, tmpl);
 }
 
@@ -10311,7 +10308,7 @@ instantiate_decl (d, defer_ok)
 
       /* Set up the list of local specializations.  */
       local_specializations = htab_create (37, 
-					   NULL,
+					   htab_hash_pointer,
 					   eq_local_specializations,
 					   NULL);
 

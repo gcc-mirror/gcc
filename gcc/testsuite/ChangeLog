@@ -1,3 +1,8 @@
+2003-01-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/defarg-1.C: New test.
+	* g++.dg/template/local2.C: Likewise.
+
 2003-01-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20030105-1.c: New test.

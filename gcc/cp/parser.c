@@ -7911,8 +7911,7 @@ cp_parser_template_parameter (parser)
      of the template parameter-list rather than a greater-than
      operator.  */
   return 
-    cp_parser_parameter_declaration (parser,
-				     /*greater_than_is_operator_p=*/false);
+    cp_parser_parameter_declaration (parser, /*template_parm_p=*/true);
 }
 
 /* Parse a type-parameter.
@@ -10792,8 +10791,8 @@ cp_parser_parameter_declaration_list (parser)
       tree parameter;
       /* Parse the parameter.  */
       parameter 
-	= cp_parser_parameter_declaration (parser,
-					   /*greater_than_is_operator_p=*/true);
+	= cp_parser_parameter_declaration (parser, /*template_parm_p=*/false);
+
       /* If a parse error ocurred parsing the parameter declaration,
 	 then the entire parameter-declaration-list is erroneous.  */
       if (parameter == error_mark_node)
@@ -10842,9 +10841,10 @@ cp_parser_parameter_declaration_list (parser)
      decl-specifier-seq abstract-declarator [opt]
      decl-specifier-seq abstract-declarator [opt] = assignment-expression
 
-   If GREATER_THAN_IS_OPERATOR_P is FALSE, then a non-nested `>' token
-   encountered during the parsing of the assignment-expression is not
-   interpreted as a greater-than operator.
+   If TEMPLATE_PARM_P is TRUE, then this parameter-declaration
+   declares a template parameter.  (In that case, a non-nested `>'
+   token encountered during the parsing of the assignment-expression
+   is not interpreted as a greater-than operator.)
 
    Returns a TREE_LIST representing the parameter-declaration.  The
    TREE_VALUE is a representation of the decl-specifier-seq and
@@ -10853,11 +10853,11 @@ cp_parser_parameter_declaration_list (parser)
    TREE_VALUE represents the declarator.  */
 
 static tree
-cp_parser_parameter_declaration (parser, greater_than_is_operator_p)
-     cp_parser *parser;
-     bool greater_than_is_operator_p;
+cp_parser_parameter_declaration (cp_parser *parser, 
+				 bool template_parm_p)
 {
   bool declares_class_or_enum;
+  bool greater_than_is_operator_p;
   tree decl_specifiers;
   tree attributes;
   tree declarator;
@@ -10865,6 +10865,16 @@ cp_parser_parameter_declaration (parser, greater_than_is_operator_p)
   tree parameter;
   cp_token *token;
   const char *saved_message;
+
+  /* In a template parameter, `>' is not an operator.
+
+     [temp.param]
+
+     When parsing a default template-argument for a non-type
+     template-parameter, the first non-nested `>' is taken as the end
+     of the template parameter-list rather than a greater-than
+     operator.  */
+  greater_than_is_operator_p = !template_parm_p;
 
   /* Type definitions may not appear in parameter types.  */
   saved_message = parser->type_definition_forbidden_message;
@@ -10930,7 +10940,8 @@ cp_parser_parameter_declaration (parser, greater_than_is_operator_p)
 
       /* If we are defining a class, then the tokens that make up the
 	 default argument must be saved and processed later.  */
-      if (at_class_scope_p () && TYPE_BEING_DEFINED (current_class_type))
+      if (!template_parm_p && at_class_scope_p () 
+	  && TYPE_BEING_DEFINED (current_class_type))
 	{
 	  unsigned depth = 0;
 
