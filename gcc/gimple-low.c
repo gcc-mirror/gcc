@@ -348,7 +348,15 @@ block_may_fallthru (tree block)
       return try_catch_may_fallthru (stmt);
 
     case TRY_FINALLY_EXPR:
-      return block_may_fallthru (TREE_OPERAND (stmt, 1));
+      /* The finally clause is always executed after the try clause,
+	 so if it does not fall through, then the try-finally will not
+	 fall through.  Otherwise, if the try clause does not fall
+	 through, then when the finally clause falls through it will
+	 resume execution wherever the try clause was going.  So the
+	 whole try-finally will only fall through if both the try
+	 clause and the finally clause fall through.  */
+      return (block_may_fallthru (TREE_OPERAND (stmt, 0))
+	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
 
     case MODIFY_EXPR:
       if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
