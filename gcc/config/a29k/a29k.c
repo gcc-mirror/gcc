@@ -220,7 +220,7 @@ spec_reg_operand (op, mode)
       return REGNO (op) >= R_BP && REGNO (op) <= R_CR;
     case MODE_INT:
       return REGNO (op) >= R_Q && REGNO (op) <= R_EXO;
-    detault:
+    default:
       return 0;
     }
 }
