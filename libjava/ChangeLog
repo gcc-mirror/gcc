@@ -1,3 +1,8 @@
+2001-12-08  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (_Jv_BytecodeVerifier::is_assignable_from_slow):
+	Handle case of array whose component type is not prepared.
+
 2001-12-07  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (defineClass): Rethrow any
