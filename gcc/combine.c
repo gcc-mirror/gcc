@@ -5771,10 +5771,12 @@ force_to_mode (x, mode, mask, reg)
       break;
 
     case LSHIFTRT:
-      /* Here we can only do something if the shift count is a constant and
-	 we can do arithmetic in OP_MODE.  */
+      /* Here we can only do something if the shift count is a constant,
+	 this shift constant is valid for the host, and we can do arithmetic
+	 in OP_MODE.  */
 
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT
 	  && GET_MODE_BITSIZE (op_mode) <= HOST_BITS_PER_WIDE_INT)
 	{
 	  rtx inner = XEXP (x, 0);
