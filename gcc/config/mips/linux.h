@@ -193,6 +193,7 @@ Boston, MA 02111-1307, USA.  */
 %{!shared: %{pthread:-lpthread} \
   %{profile:-lc_p} %{!profile: -lc}}"
 
+#ifndef inhibit_libc
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 #ifdef IN_LIBGCC2
@@ -262,3 +263,4 @@ typedef struct _sig_ucontext {
                                                                      \
     goto SUCCESS;                                                    \
   } while (0)
+#endif
