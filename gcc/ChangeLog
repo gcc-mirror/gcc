@@ -1,3 +1,7 @@
+2004-11-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gdbinit.in (pbb, pbm): New macros.
+
 2004-11-08 Jeff Law  <law@redhat.com>
 
 	* cfg.c (redirect_edge_succ_nodup): Use find_edge rather than
