@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.17 $"
+#define VERSION_INFO2   "$Revision: 1.18 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -93,7 +93,7 @@ Boston, MA 02111-1307, USA.  */
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
 %{!msvr3:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-" VERSION_INFO2 "\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
