@@ -272,13 +272,8 @@ namespace std
   // locale functions.
   template
     C*
-    __add_grouping<C>(C*, C, char const*, char const*, 
+    __add_grouping<C>(C*, C, char const*, size_t, 
 			 C const*, C const*);
-
-  template
-    bool
-    __verify_grouping<C>(const basic_string<C>&,
-			 const basic_string<C>&);
 
   template class __pad<C, char_traits<C> >;
 

@@ -93,27 +93,14 @@ namespace std
     };
 
   // Used by both numeric and monetary facets.
-  // Check to make sure that the __grouping_tmp string constructed in
-  // money_get or num_get matches the canonical grouping for a given
-  // locale.
-  // __grouping_tmp is parsed L to R
-  // 1,222,444 == __grouping_tmp of "\1\3\3"
-  // __grouping is parsed R to L
-  // 1,222,444 == __grouping of "\3" == "\3\3\3"
-  template<typename _CharT>
-    bool
-    __verify_grouping(const basic_string<_CharT>& __grouping, 
-		      const basic_string<_CharT>& __grouping_tmp);
-
-  // Used by both numeric and monetary facets.
   // Inserts "group separator" characters into an array of characters.
   // It's recursive, one iteration per group.  It moves the characters
   // in the buffer this way: "xxxx12345" -> "12,345xxx".  Call this
-  // only with __gbeg != __gend.
+  // only with __glen != 0.
   template<typename _CharT>
     _CharT*
     __add_grouping(_CharT* __s, _CharT __sep,  
-		   const char* __gbeg, const char* __gend, 
+		   const char* __gbeg, size_t __gsize, 
 		   const _CharT* __first, const _CharT* __last);
 
   // This template permits specializing facet output code for
@@ -1602,11 +1589,12 @@ namespace std
     struct __numpunct_cache : public locale::facet
     {
       const char* 			_M_grouping;
+      size_t                            _M_grouping_size;
       bool				_M_use_grouping;
       const _CharT* 			_M_truename;
+      size_t                            _M_truename_size;
       const _CharT*			_M_falsename;
-      size_t                            _M_truename_len;
-      size_t                            _M_falsename_len;     
+      size_t                            _M_falsename_size;     
       _CharT 				_M_decimal_point;
       _CharT 				_M_thousands_sep;
       
@@ -1625,10 +1613,10 @@ namespace std
       bool				_M_allocated;
 
       __numpunct_cache(size_t __refs = 0) : facet(__refs), 
-      _M_grouping(NULL), _M_use_grouping(false), _M_truename(NULL), 
-      _M_falsename(NULL),  _M_truename_len(0), _M_falsename_len(0),
-      _M_decimal_point(_CharT()), _M_thousands_sep(_CharT()),
-      _M_allocated(false)
+      _M_grouping(NULL), _M_grouping_size(0), _M_use_grouping(false),
+      _M_truename(NULL), _M_truename_size(0), _M_falsename(NULL),
+      _M_falsename_size(0), _M_decimal_point(_CharT()),
+      _M_thousands_sep(_CharT()), _M_allocated(false)
       { } 
 
       ~__numpunct_cache();
@@ -1645,21 +1633,20 @@ namespace std
 
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
 
-      const string::size_type __len = __np.grouping().size();
-      char* __grouping = new char[__len + 1];
-      __np.grouping().copy(__grouping, __len);
-      __grouping[__len] = char();
+      _M_grouping_size = __np.grouping().size();
+      char* __grouping = new char[_M_grouping_size];
+      __np.grouping().copy(__grouping, _M_grouping_size);
       _M_grouping = __grouping;
-      _M_use_grouping = __len && __np.grouping()[0] != 0;
+      _M_use_grouping = _M_grouping_size && __np.grouping()[0] != 0;
 
-      _M_truename_len = __np.truename().size();
-      _CharT* __truename = new _CharT[_M_truename_len];
-      __np.truename().copy(__truename, _M_truename_len);
+      _M_truename_size = __np.truename().size();
+      _CharT* __truename = new _CharT[_M_truename_size];
+      __np.truename().copy(__truename, _M_truename_size);
       _M_truename = __truename;
 
-      _M_falsename_len = __np.falsename().size();
-      _CharT* __falsename = new _CharT[_M_falsename_len];
-      __np.falsename().copy(__falsename, _M_falsename_len);
+      _M_falsename_size = __np.falsename().size();
+      _CharT* __falsename = new _CharT[_M_falsename_size];
+      __np.falsename().copy(__falsename, _M_falsename_size);
       _M_falsename = __falsename;
           
       _M_decimal_point = __np.decimal_point();
@@ -2421,9 +2408,9 @@ namespace std
 			char __mod, _ValueT __v) const;
 
       void
-      _M_group_float(const string& __grouping, char_type __sep, 
-		     const char_type* __p, char_type* __new, char_type* __cs,
-		     int& __len) const;
+      _M_group_float(const char* __grouping, size_t __grouping_size,
+		     char_type __sep, const char_type* __p, char_type* __new,
+		     char_type* __cs, int& __len) const;
 
       template<typename _ValueT>
         iter_type
@@ -2431,9 +2418,9 @@ namespace std
 		      _ValueT __v) const;
 
       void
-      _M_group_int(const string& __grouping, char_type __sep, 
-		   ios_base& __io, char_type* __new, char_type* __cs, 
-		   int& __len) const;
+      _M_group_int(const char* __grouping, size_t __grouping_size,
+		   char_type __sep, ios_base& __io, char_type* __new,
+		   char_type* __cs, int& __len) const;
 
       void
       _M_pad(char_type __fill, streamsize __w, ios_base& __io, 
