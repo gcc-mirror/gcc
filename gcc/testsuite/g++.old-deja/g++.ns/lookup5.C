@@ -5,7 +5,7 @@ namespace A{
 
 namespace B{
   using namespace A;
-  void f(int);
+  void f(int);			// ERROR - referenced below
 }
 
 using namespace B;
