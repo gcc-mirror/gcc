@@ -1649,8 +1649,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   global_const_equiv_map = map->const_equiv_map;
   global_const_equiv_map_size = map->const_equiv_map_size;
 
-  /* If the called fucntion does an alloca, save and restore the
-     frame pointer around the call.  This saves stack space, but
+  /* If the called function does an alloca, save and restore the
+     stack pointer around the call.  This saves stack space, but
      also is required if this inline is being done between two
      pushes.  */
   if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_CALLS_ALLOCA)
