@@ -2556,7 +2556,7 @@ assign_parms (fndecl, second_time)
   register rtx entry_parm = 0;
   register rtx stack_parm = 0;
   CUMULATIVE_ARGS args_so_far;
-  enum machine_mode passed_mode, nominal_mode;
+  enum machine_mode promoted_mode, passed_mode, nominal_mode;
   int unsignedp;
   /* Total space needed so far for args on the stack,
      given as a constant and a tree-expression.  */
@@ -2692,15 +2692,35 @@ assign_parms (fndecl, second_time)
 	}
 #endif
 
+      promoted_mode = passed_mode;
+
+#ifdef PROMOTE_FUNCTION_ARGS
+      /* Compute the mode in which the arg is actually extended to.  */
+      if (TREE_CODE (passed_type) == INTEGER_TYPE
+	  || TREE_CODE (passed_type) == ENUMERAL_TYPE
+	  || TREE_CODE (passed_type) == BOOLEAN_TYPE
+	  || TREE_CODE (passed_type) == CHAR_TYPE
+	  || TREE_CODE (passed_type) == REAL_TYPE
+	  || TREE_CODE (passed_type) == POINTER_TYPE
+	  || TREE_CODE (passed_type) == OFFSET_TYPE)
+	{
+	  unsignedp = TREE_UNSIGNED (passed_type);
+	  PROMOTE_MODE (promoted_mode, unsignedp, passed_type);
+	}
+#endif
+
       /* Let machine desc say which reg (if any) the parm arrives in.
 	 0 means it arrives on the stack.  */
 #ifdef FUNCTION_INCOMING_ARG
-      entry_parm = FUNCTION_INCOMING_ARG (args_so_far, passed_mode,
+      entry_parm = FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
 					  passed_type, ! last_named);
 #else
-      entry_parm = FUNCTION_ARG (args_so_far, passed_mode,
+      entry_parm = FUNCTION_ARG (args_so_far, promoted_mode,
 				 passed_type, ! last_named);
 #endif
+
+      if (entry_parm)
+	passed_mode = promoted_mode;
 
 #ifdef SETUP_INCOMING_VARARGS
       /* If this is the last named parameter, do any required setup for
@@ -3069,7 +3089,8 @@ assign_parms (fndecl, second_time)
 		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm), passed_mode))
 		entry_parm = copy_to_reg (entry_parm);
 
-	      entry_parm = convert_to_mode (nominal_mode, entry_parm, 0);
+	      entry_parm = convert_to_mode (nominal_mode, entry_parm,
+					    TREE_UNSIGNED (TREE_TYPE (parm)));
 	    }
 
 	  if (entry_parm != stack_parm)
@@ -4079,12 +4100,28 @@ expand_function_start (subr, parms_have_cleanups)
     /* If return mode is void, this decl rtl should not be used.  */
     DECL_RTL (DECL_RESULT (subr)) = 0;
   else if (parms_have_cleanups)
-    /* If function will end with cleanup code for parms,
-       compute the return values into a pseudo reg,
-       which we will copy into the true return register
-       after the cleanups are done.  */
-    DECL_RTL (DECL_RESULT (subr))
-      = gen_reg_rtx (DECL_MODE (DECL_RESULT (subr)));
+    {
+      /* If function will end with cleanup code for parms,
+	 compute the return values into a pseudo reg,
+	 which we will copy into the true return register
+	 after the cleanups are done.  */
+
+      enum machine_mode mode = DECL_MODE (DECL_RESULT (subr));
+#ifdef PROMOTE_FUNCTION_RETURN
+      tree type = TREE_TYPE (DECL_RESULT (subr));
+      int unsignedp = TREE_UNSIGNED (type);
+
+      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
+	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
+	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
+	  || TREE_CODE (type) == OFFSET_TYPE)
+	{
+	  PROMOTE_MODE (mode, unsignedp, type);
+	}
+#endif
+
+      DECL_RTL (DECL_RESULT (subr)) = gen_reg_rtx (mode);
+    }
   else
     /* Scalar, returned in a register.  */
     {
