@@ -1,3 +1,8 @@
+2004-02-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcse.c (delete_null_pointer_checks_1): Set stop_insn to end, not
+	beginning of block.
+
 2004-02-23  James E Wilson  <wilson@specifixinc.com>
 
 	* calls.c (precompute_arguments): Update comment.
