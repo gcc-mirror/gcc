@@ -6843,8 +6843,12 @@ check-target-libffi:
 
 .PHONY: install-target-libffi maybe-install-target-libffi
 maybe-install-target-libffi:
-# Dummy target for uninstallable.
-install-target-libffi:
+install-target-libffi: installdirs
+	@r=`${PWD}`; export r; \
+	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  $(SET_LIB_PATH) \
+	  (cd $(TARGET_SUBDIR)/libffi && \
+	    $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 
 
 .PHONY: configure-target-libjava maybe-configure-target-libjava
