@@ -549,22 +549,6 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	"*zero_extendqihi2_31"): New insns.
 	("*zero_extendqihi2_64"): Do not clobber CC.
 
-2002-09-18  Devang Patel  <dpatel@apple.com>
-
-	* cp/cp-tree.h: New prototype for walk_vtabls().
-	* cp/decl.c (walk_vtables_r): New function.
-	(struct cp_binding_level): Add new members, namespaces,
-	names_size and vtables.
-	(add_decl_to_level): Add decl in namespaces or vtables
-	chain, if conditions match.
-	(walk_vtables): New function.
-	(walk_namespaces_r): Travers separate namespace chain
-	for namespace decls.
-	(wrapup_globals_for_namespace): Use names_size instead
-	of list_length().
-	* cp/decl2.c (finish_file): Use walk_vtables() instead of
-	walk_globals() to walk vtable decls.
-
 2002-09-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (CTORS_SECTION_ASM_OP): New.
