@@ -4,6 +4,12 @@
 	(build_dtable_decl): Likewise.
 	* expr.c (build_invokevirtual): Likewise.
 
+2001-09-20  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_method_invocation): Build class initialization
+	when static finals are used to qualify method invocation.
+	Fixes PR java/4366.
+
 2001-09-19  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.h: (WFL_STRIP_BRACKET): Re-written using
