@@ -1935,13 +1935,6 @@ and 64 entries on the H8/300H) and shares space with the interrupt vector.
 You must use GAS and GLD from GNU binutils version 2.7 or later for
 this option to work correctly.
 
-@item interrupt_handler
-@cindex interrupt handler functions on the H8/300 processors
-Use this option on the H8/300 and H8/300H to indicate that the specified
-function is an interrupt handler.  The compiler will generate function
-entry and exit sequences suitable for use in an interrupt handler when this
-attribute is present.
-
 @item interrupt
 @cindex interrupt handler functions
 Use this option on the ARM, AVR and M32R/D ports to indicate that the
@@ -1949,8 +1942,8 @@ specified function is an interrupt handler.  The compiler will generate
 function entry and exit sequences suitable for use in an interrupt
 handler when this attribute is present.
 
-Note, interrupt handlers for the H8/300 and H8/300H processors can be
-specified via the @code{interrupt_handler} attribute.
+Note, interrupt handlers for the H8/300, H8/300H and SH processors can
+be specified via the @code{interrupt_handler} attribute.
 
 Note, on the AVR interrupts will be enabled inside the function.
 
@@ -1962,6 +1955,29 @@ void f () __attribute__ ((interrupt ("IRQ")));
 @end smallexample
 
 Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF.
+
+@item interrupt_handler
+@cindex interrupt handler functions on the H8/300 and SH processors
+Use this option on the H8/300, H8/300H and SH to indicate that the
+specified function is an interrupt handler.  The compiler will generate
+function entry and exit sequences suitable for use in an interrupt
+handler when this attribute is present.
+
+@item sp_switch
+Use this option on the SH to indicate an @code{interrupt_handler}
+function should switch to an alternate stack.  It expects a string
+argument that names a global variable holding the address of the
+alternate stack.
+
+@smallexample
+void *alt_stack;
+void f () __attribute__ ((interrupt_handler, sp_switch ("alt_stack")));
+@end smallexample
+
+@item trap_exit
+Use this option on the SH for an @code{interrupt_handle} to return using
+@code{trapa} instead of @code{rte}.  This attribute expects an integer
+argument specifying the trap number to be used.
 
 @item eightbit_data
 @cindex eight bit data on the H8/300 and H8/300H
