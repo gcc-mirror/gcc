@@ -2297,7 +2297,8 @@ set_exception_version_code (code)
 void
 free_exception_table ()
 {
-  free (eh_table);
+  if (eh_table)
+    free (eh_table);
   clear_function_eh_region ();
 }
   
