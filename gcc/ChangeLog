@@ -1,3 +1,18 @@
+2001-11-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in (GCOV_OBJS): Add version.o.
+	* gcov.c: Include "version.h" and <getopt.h>.
+	(gcov_version_string): Remove.
+	(print_usage): Take a parameter to determine whether this is a
+	call from --help or an error message.  Give fuller output that
+	follows the GNU Coding Standards for --help.
+	(print_version): New function.
+	(options): New.
+	(process_args): Use getopt_long.  Support long options.  Follow
+	GNU Coding Standards for --help and --version.
+	* doc/gcov.texi: Document long options.
+	Addresses part of PR other/704.
+
 2001-11-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_move_double): Fix typo in double load.

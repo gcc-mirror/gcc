@@ -2117,7 +2117,7 @@ gcov.o: gcov.c gcov-io.h intl.h $(SYSTEM_H) $(CONFIG_H)
 
 # Only one of 'gcov' or 'gcov.exe' is actually built, depending
 # upon whether $(exeext) is empty or not.
-GCOV_OBJS = gcov.o intl.o
+GCOV_OBJS = gcov.o intl.o version.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
 #
