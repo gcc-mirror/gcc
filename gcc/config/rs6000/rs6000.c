@@ -719,6 +719,78 @@ includes_rshift_p (shiftop, andop)
 
   return (INTVAL (andop) & ~ shift_mask) == 0;
 }
+
+/* Return 1 if REGNO (reg1) == REGNO (reg2) - 1 making them candidates
+   for lfq and stfq insns.
+
+   Note reg1 and reg2 *must* be hard registers.  To be sure we will
+   abort if we are passed pseudo registers.  */
+
+int
+registers_ok_for_quad_peep (reg1, reg2)
+     rtx reg1, reg2;
+{
+  /* We might have been passed a SUBREG.  */
+  if (GET_CODE (reg1) != REG || GET_CODE (reg2) != REG) 
+    return 0;
+
+  return (REGNO (reg1) == REGNO (reg2) - 1);
+}
+
+/* Return 1 if addr1 and addr2 are suitable for lfq or stfq insn.  addr1 and
+   addr2 must be in consecutive memory locations (addr2 == addr1 + 8).  */
+
+int
+addrs_ok_for_quad_peep (addr1, addr2)
+     register rtx addr1;
+     register rtx addr2;
+{
+  int reg1;
+  int offset1;
+
+  /* Extract an offset (if used) from the first addr.  */
+  if (GET_CODE (addr1) == PLUS)
+    {
+      /* If not a REG, return zero.  */
+      if (GET_CODE (XEXP (addr1, 0)) != REG)
+	return 0;
+      else
+	{
+          reg1 = REGNO (XEXP (addr1, 0));
+	  /* The offset must be constant!  */
+	  if (GET_CODE (XEXP (addr1, 1)) != CONST_INT)
+            return 0;
+          offset1 = INTVAL (XEXP (addr1, 1));
+	}
+    }
+  else if (GET_CODE (addr1) != REG)
+    return 0;
+  else
+    {
+      reg1 = REGNO (addr1);
+      /* This was a simple (mem (reg)) expression.  Offset is 0.  */
+      offset1 = 0;
+    }
+
+  /* Make sure the second address is a (mem (plus (reg) (const_int).  */
+  if (GET_CODE (addr2) != PLUS)
+    return 0;
+
+  if (GET_CODE (XEXP (addr2, 0)) != REG
+      || GET_CODE (XEXP (addr2, 1)) != CONST_INT)
+    return 0;
+
+  if (reg1 != REGNO (XEXP (addr2, 0)))
+    return 0;
+
+  /* The offset for the second addr must be 8 more than the first addr.  */
+  if (INTVAL (XEXP (addr2, 1)) != offset1 + 8)
+    return 0;
+
+  /* All the tests passed.  addr1 and addr2 are valid for lfq or stfq
+     instructions.  */
+  return 1;
+}
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
@@ -1502,7 +1574,7 @@ output_prolog (file, size)
 	asm_fprintf (file, "\t{stu|stwu} 1,%d(1)\n", - total_size);
       else
 	{
-	  asm_fprintf (file, "\t{cau 0,0,%d|lis 0,%d}\n\t{oril|ori} 0,0,%d\n",
+	  asm_fprintf (file, "\t{liu|lis} 0,%d\n\t{oril|ori} 0,0,%d\n",
 		   (total_size >> 16) & 0xffff, total_size & 0xffff);
 	  if (TARGET_POWERPC)
 	    asm_fprintf (file, "\tsubf 12,0,1\n");
