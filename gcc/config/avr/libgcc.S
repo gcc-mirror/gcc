@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #define __SP_H__ 0x3e
 #define __SP_L__ 0x3d
 
-	.section .text.libgcc
+	.section .text.libgcc, "ax", @progbits
 	
 /*******************************************************
                Multiplication  8 x 8

@@ -1,3 +1,9 @@
+Wed Jun  7 20:34:33 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (asm_output_section_name): output section
+	attributes.
+	* config/avr/libgcc.S (.text.libgcc): declare section attributes.
+
 2000-06-06  James E. Wilson  <wilson@cygnus.com>
 
 	* frame.h (struct unwind_info_ptr): Collapse version, flags, and length
