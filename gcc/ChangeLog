@@ -1,5 +1,13 @@
 2002-08-14  Richard Henderson  <rth@redhat.com>
 
+	* calls.c: Include target.h.
+	* Makefile.in (calls.o): Update.
+
+	* config/alpha/alpha.c (alpha_end_function): Use targetm.binds_local_p.
+	* config/alpha/alpha.h (FUNCTION_OK_FOR_SIBCALL): Likewise.
+
+2002-08-14  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (LOOSE_WARN): Add -fno-common.
 	* c-common.h (constant_string_class_name): Add missing extern.
 
