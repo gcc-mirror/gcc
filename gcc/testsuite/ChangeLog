@@ -1,5 +1,10 @@
 2004-11-27  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.dg/mips-args-1.c: Don't expect _R3000 or _R4000 to be defined
+	on IRIX.
+
+2004-11-27  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.dg/mips-movcc-[123].c: Pass the ?: expressions to other
 	functions.
 
