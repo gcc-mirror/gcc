@@ -19,9 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <ctype.h>
-#include "config.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -5252,3 +5252,10 @@ rs6000_encode_section_info (decl)
 }
 
 #endif /* USING_SVR4_H */
+
+void
+rs6000_fatal_bad_address (op)
+  rtx op;
+{
+  fatal_insn ("bad address", op);
+}
