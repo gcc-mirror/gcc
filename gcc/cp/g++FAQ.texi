@@ -3,7 +3,7 @@
 @setfilename g++FAQ.info
 @settitle Frequently asked questions about the GNU C++ compiler
 @setchapternewpage off
-@c version: @(#)g++FAQ.texi	1.56 09/15/97
+@c version: @(#)g++FAQ.texi	1.57 12/14/97
 @c %**end of header
 
 @iftex
@@ -12,7 +12,7 @@
 @titlepage
 @title G++ FAQ
 @subtitle Frequently asked questions about the GNU C++ compiler
-@subtitle September 14, 1997
+@subtitle December 14, 1997
 @sp 1
 @author Joe Buck
 @page
@@ -35,15 +35,14 @@ all those who sent suggestions for improvements.  Thanks to Marcus Speh
 for doing the index.  A hypertext version is available on the World Wide
 Web at @file{http://www.cygnus.com/misc/g++FAQ_toc.html}.
 
-This document has just been reorganized a bit.  There is some new
-information about upcoming g++ releases and egcs; more needs to be done
-but that will need to wait for next time.  A diff would look misleadingly
-large, since I blew away and rebuilt the texinfo menus.
+@strong{News flash}: egcs has been released, and the 2.8.0 release is
+expected very soon!
 
 Please send updates and corrections to the FAQ to
 @code{jbuck@@synopsys.com}.  Please do @emph{not} use me as a resource
 to get your questions answered; that's what @file{gnu.g++.help} is for and I
-don't have the time to support the net's use of g++.
+don't have the time to support the net's use of g++.  If you ignore this
+request your message to me may be deleted without a reply.  Sorry.
 
 Many FAQs, including this one, are available on the archive site
 ``rtfm.mit.edu''; see @*
@@ -64,6 +63,7 @@ or in HTML form at @file{http://www.cerfnet.com/~mpcline/On-Line-C++-FAQs/}.
 
 @menu
 * basics::                      What is g++?  How do I get it?
+* egcs and 2.8.0::              The next generation(s) of g++
 * installation::                How to install, installation problems
 * evolution::                   The Evolution of g++
 * User Problems::               Commonly reported problems and bugs
@@ -80,6 +80,14 @@ The basics: what is g++?
 * g++ for Solaris 2.x::         
 * g++ for other platforms::     
 * 1.x vs 2.x versions::         
+
+The Next Generation(s) of g++
+
+* egcs-intro::                  What is egcs?
+* egcs-whats-new::              What's new in egcs vs 2.7.2?
+* egcs-run-both::               How can I run both egcs and an FSF release?
+* egcs-vs-2.8.0::               How will egcs affect 2.8.0?
+* egcs-robustness::             How robust is egcs-1.0?
 
 Installation Issues and Problems
 
@@ -102,11 +110,8 @@ Installation Issues and Problems
 
 The Evolution of g++
 
-* version 2.7.x::               
+* version 2.7.x::               What's changed in 2.7.x from earlier versions
 * libstdc++::                   
-* new work::                    
-* egcs::                        
-* When?::                       
 
 User Problems
 
@@ -138,7 +143,7 @@ User Problems
 * assignment to streams::       
 @end menu
 
-@node basics, installation, Top, Top
+@node basics, egcs and 2.8.0, Top, Top
 @chapter The basics: what is g++?
 
 @cindex Free Software Foundation
@@ -166,6 +171,11 @@ or GPL (@pxref{legalities}).
 
 @node latest versions, g++ for Unix, basics, basics
 @section What is the latest version of gcc, g++, and libg++?
+
+@cindex egcs release
+
+The egcs project (on the Web: @file{http://www.cygnus.com/egcs/}) has
+now released egcs-1.0 as of December 3, 1997.
 
 @cindex gcc/g++, version date
 The current version of gcc/g++ is 2.7.2.3, released August 20, 1997.
@@ -436,7 +446,144 @@ install the C++ compiler as well.
 One could argue that we shouldn't even refer to "g++-2.x.y" but it's a
 convention.  It means ``the C++ compiler included with gcc-2.x.y.''
 
-@node installation, evolution, basics, Top
+@node egcs and 2.8.0, installation, basics, Top
+@chapter The Next Generation(s) of g++
+
+@menu
+* egcs-intro::                  What is egcs?
+* egcs-whats-new::              What's new in egcs vs 2.7.2?
+* egcs-run-both::               How can I run both egcs and an FSF release?
+* egcs-vs-2.8.0::               How will egcs affect 2.8.0?
+* egcs-robustness::             How robust is egcs-1.0?
+@end menu
+
+@node egcs-intro, egcs-whats-new, egcs and 2.8.0, egcs and 2.8.0
+@section What is egcs?
+
+egcs is the Experimental GNU compiler system (see
+@file{http://www.cygnus.com/egcs} on the Web).  It is an effort to
+accelerate development of new gcc features by providing a more open
+development model than gcc has traditionally used.
+
+The first egcs release, egcs-1.0, came out on December 3, 1997.
+Questions not addressed here may be answered in the egcs FAQ
+(@file{http://www.cygnus.com/egcs/faq.html}).
+
+@node egcs-whats-new, egcs-run-both, egcs-intro, egcs and 2.8.0
+@section What new C++ features are in egcs?
+
+@strong{Note}: unless indicated otherwise, these features are expected
+to be present in g++ 2.8.0 when released.
+
+@itemize @bullet
+@item
+@cindex integrated libstdc++
+
+The standard C++ classes are integrated with the egcs release (this is
+@emph{not} expected to be true of gcc-2.8.0).  libg++ is not being
+supported, though a version that will work with egcs has been
+contributed (FIXME: pointer?).  The compiler and library are configured
+and built in one step.
+
+@item
+@cindex new template implementation
+A completely new template implementation, much closer to the draft
+standard.  Limitations in 2.7.2.x concerning inlining template functions
+will be eliminated.  Static template data members, template class member
+functions, partial specification, and default template arguments will be
+supported.  An instantiation method resembling that used in Borland C++
+(instantiating functions possibly in multiple .o files and using weak
+symbols to link correctly) is provided, in addition to other
+options.  The SGI version of STL is shipped verbatim with libstdc++.
+
+@item
+@cindex redundant template elimination
+@cindex templates: removing redundancy
+On ELF platforms (Linux/ELF, Solaris, SVR4), if the GNU linker is used,
+duplicated template functions and virtual function tables are eliminated
+at link time.
+
+@item
+@cindex repository
+@cindex -frepo
+The @code{-frepo} flag is supported in egcs (it will not be in 2.8.0).
+However, because of the previous item, I don't recommend its use on ELF
+systems.
+
+@item
+@cindex new exception implementation
+Exception handling has been re-worked; exceptions will work together
+with optimization.
+Actually, there are two separate implementations: one based on setjmp/longjmp
+and designed to be highly portable, and one designed to be more efficient but
+requiring more processor-specific support (getting exceptions right has proven
+to be extremely difficult and has been the chief obstacle to getting a new
+release out).
+
+@item
+@cindex RTTI
+RTTI has been re-done to work correctly and is on by default.
+
+@item
+@cindex overloading
+Overloading has been re-worked to conform to the latest draft of the
+standard.
+
+@item
+There are many more changes: see @file{http://www.cygnus.com/egcs/c++features.html} for a list.
+@end itemize
+
+Features that are still missing include namespaces and templates as
+template arguments.
+
+@node egcs-run-both, egcs-vs-2.8.0, egcs-whats-new, egcs and 2.8.0
+@section How can I run both egcs and an FSF release of g++ on the same machine?
+
+The recommended approach is to provide a different argument to the
+@code{--prefix} flag when you configure egcs.  For example, say
+@code{--prefix=/usr/local/egcs} and then, after installation, you
+can make symbolic links from @file{/usr/local/egcs/bin} to whereever
+you want, for example
+
+@example
+ln -s /usr/local/egcs/bin/gcc /usr/local/bin/egcc
+ln -s /usr/local/egcs/bin/g++ /usr/local/bin/eg++
+@end example
+
+@node egcs-vs-2.8.0, egcs-robustness, egcs-run-both, egcs and 2.8.0
+@section What about 2.8.0?  How does egcs affect the 2.8.x development?
+
+2.8.0 is expected Real Soon Now (I would guess by the end of 1997, but that
+is only a guess).  The C++ front end should be essentially the same.
+
+Bug fixes generated in egcs will be passed to the 2.8.x releases for
+inclusion; the reverse is also taking place, though a bug fix may
+appear in one before it does in the other.
+
+@node egcs-robustness,  , egcs-vs-2.8.0, egcs and 2.8.0
+@section How solid is egcs-1.0?
+
+While the 'e' stands for 'experimental', egcs has been tested thoroughly
+and should be of high quality.  There are a few glitches which should be
+fixed shortly (in a 1.0.1 release, probably in early January):
+
+@itemize @bullet
+@item
+Deeply nested templates sometimes lead to a very large memory requirement
+if the @code{-Wreturn-type} option is on (note: this flag is implicitly
+turned on by @code{-W} or @code{-Wall}.  A workaround is to give the
+flag @code{-Wno-return-type} if you use @code{-Wall}.
+
+@item
+On Red Hat 5.0, it may be necessary to link all C++ programs with
+@code{-lpthread} to work around an undefined symbol problem.
+
+@item
+A patch is needed to fix egcs on Solaris/X86.  It is in the egcs FAQ
+(see above).
+@end itemize
+
+@node installation, evolution, egcs and 2.8.0, Top
 @chapter Installation Issues and Problems
 
 @menu
@@ -553,6 +700,11 @@ As of binutils version 2.2, on systems that use the so-called "a.out"
 debug format (e.g. Suns running SunOS 4.x), the GNU linker compresses
 the debug symbol table considerably.  The 2.7 version adds some symbol
 table compression for ELF and Solaris targets.
+
+Users of egcs or 2.8.0 (when released) on ELF systems should definitely
+use GNU ld (2.8 or later), as it will automatically remove duplicate
+instantiations of templates, virtual function tables, or ``outlined''
+copies of inline functions.
 
 @cindex collect linker, advantages
 Advantages of collect:
@@ -951,10 +1103,7 @@ in the future.
 
 @menu
 * version 2.7.x::               What's changed in 2.7.x from earlier versions
-* libstdc++::                   The GNU C++ standard library
-* new work::                    What's been done since 2.7.x
-* egcs::                        The Experimental GNU Compiler System
-* When?::                       When can I get all this new stuff?
+* libstdc++::                   
 @end menu
 
 @node version 2.7.x, libstdc++, evolution, evolution
@@ -1086,7 +1235,7 @@ though they are not needed).
 
 @end itemize
 
-@node libstdc++, new work, version 2.7.x, evolution
+@node libstdc++,  , version 2.7.x, evolution
 @section The GNU Standard C++ Library
 
 The GNU Standard C++ Library (also called the ``GNU ANSI C++ Library''
@@ -1111,67 +1260,6 @@ program searches this library.
 The maintainers of libg++ have de-emphasized work on the older libg++ classes
 in favor of enhancing libstdc++ to cover the full language, so while libg++
 will always be available, enhancements to it should not be expected.
-
-@node new work, egcs, libstdc++, evolution
-@section What can we expect in future gcc releases?
-
-A great deal of work has gone into enhancements to the C++ front end, as well
-as to other aspects of the compiler.
-
-The next major release(s) of gcc/g++ can be expected to have the following
-features:
-
-@itemize @bullet
-@cindex new template implementation
-@item
-A completely new template implementation, much closer to the draft
-standard.  Limitations in 2.7.2.x concerning inlining template functions
-will be eliminated.  Static template data members, template class member
-functions, partial specification, and default template arguments will be
-supported.  An instantiation method resembling that used in Borland C++
-(instantiating functions possibly in multiple .o files and using weak
-symbols to link correctly) will be provided, in addition to other
-options.  The SGI version of STL will be shipped with libstdc++ and will
-compile unchanged.
-
-@item
-@cindex new exception implementation
-Exception handling has been re-worked; exceptions will work together
-with optimization.
-Actually, there are two separate implementations: one based on setjmp/longjmp
-and designed to be highly portable, and one designed to be more efficient but
-requiring more processor-specific support (getting exceptions right has proven
-to be extremely difficult and has been the chief obstacle to getting a new
-release out).
-
-@item
-@cindex RTTI
-RTTI has been re-done to work correctly and is on by default.
-
-@item
-@cindex overloading
-Overloading has been re-worked to conform to the latest draft of the
-standard.
-@end itemize
-
-Features that are still missing include namespaces and templates as
-template arguments.
-
-@node egcs, When?, new work, evolution
-@section What's this I hear about egcs?
-
-The egcs effort is a new effort to merge several threads of gcc
-development and to provide a faster development process.
-For more information see @file{http://www.cygnus.com/egcs/}.
-
-@node When?,  , egcs, evolution
-@section OK, when can I get this stuff?
-
-The FSF has a policy of never announcing release dates in advance.
-I'm sure this is frustrating to a lot of people, since it's taken
-so long, and this frustration was one of the reasons the egcs effort
-was created.  An egcs release should be expected to occur in the
-very near future.   [ More on this next time ].
 
 @node User Problems, legalities, evolution, Top
 @chapter User Problems
@@ -1620,8 +1708,11 @@ another manual @file{libio/iostream.texi} describing the iostreams
 implementation.
 @item
 While there is no libg++-specific document describing the STL
-implementation, SGI's web site, at @file{http://www.sgi.com/Technology/STL/},
-is an excellent resource.
+implementation, SGI's web site, at
+@file{http://www.sgi.com/Technology/STL/}, is an excellent resource.
+Note that the SGI version of STL is the one that is included with the
+egcs and 2.8.0 (when it occurs) releases of g++.
+
 @end itemize
 
 @node templates, undefined templates, documentation, User Problems
