@@ -1,3 +1,11 @@
+2005-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/20493
+	* fold-const.c (fold_widened_comparison): Don't optimize casts of
+	function pointers on targets that require function pointer
+	canonicalization.
+	(fold_sign_changed_comparison): Likewise.
+
 2005-03-19  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251
