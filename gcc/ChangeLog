@@ -1,3 +1,9 @@
+2001-03-19  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (maybe_objc_method_name): Remove, never called.
+	* c-lang.c (maybe_objc_method_name): Ditto.
+	* c-tree.h (maybe_objc_method_name): Remove decl.
+
 2001-03-19  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c (init_gcc_specs): Fix comment.

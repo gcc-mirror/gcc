@@ -148,7 +148,6 @@ extern void maybe_objc_check_decl		PARAMS ((tree));
 extern void finish_file				PARAMS ((void));
 extern int maybe_objc_comptypes                 PARAMS ((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PARAMS ((void));
-extern tree maybe_objc_method_name		PARAMS ((tree));
 extern int recognize_objc_keyword		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
 

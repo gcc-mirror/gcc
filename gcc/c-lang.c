@@ -145,13 +145,6 @@ maybe_objc_comptypes (lhs, rhs, reflexive)
 }
 
 tree
-maybe_objc_method_name (decl)
-    tree decl ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-tree
 maybe_building_objc_message_expr ()
 {
   return 0;
