@@ -1,3 +1,7 @@
+2001-12-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 Wed Dec  5 07:33:45 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* configure, configure.in: Use temp file for long sed commands.
