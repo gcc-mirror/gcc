@@ -69,6 +69,44 @@ Wed Aug  4 12:53:44 1999  Michael Tiemann  <tiemann@holodeck.cygnus.com>
 
 Wed Aug  4 13:12:17 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* a29k/t-a29kbare: Fix some comments.
+	(LIB2FUNCS_EXTRA): Remove fp-bit.c and dp-bit.c
+	(FPBIT, DPBIT): Define.
+	* a29k/t-vx29k: Likewise.
+	* arc/t-arc: Likewise.
+	* arm/t-arm-elf: Likewise.
+	* arm/t-bare: Likewise.
+	* arm/t-pe: Likewise.
+	* arm/t-pe-thumb: Likewise.
+	* arm/t-semi: Likewise.
+	* arm/t-thumb: Likewise.
+	* arm/t-thumb-elf: Likewise.
+	* arm/t-thumb-linux: Likewise.
+	* h8300/t-h8300: Likewise.
+	* i960/t-i960: Likewise.
+	* i960/t-vxworks960: Likewise.
+	* m32r/t-m32r: Likewise.
+	* mips/t-ecoff: Likewise.
+	* mips/t-elf: Likewise.
+	* mips/t-r3900: Likewise.
+	* pa/t-pro: Likewise.
+	* rs6000/t-aix43: Likewise.
+	* rs6000/t-beos: Likewise.
+	* rs6000/t-newas: Likewise.
+	* rs6000/t-ppccomm: Likewise.
+	* rs6000/t-rs6000: Likewise.
+	* rs6000/t-winnt: Likewise.
+	* rs6000/t-xnewas: Likewise.
+	* rs6000/t-xrs6000: Likewise.
+	* sh/t-sh: Likewise.
+	* sparc/t-elf: Likewise.
+	* sparc/t-sparcbare: Likewise.
+	* sparc/t-sparclite: Likewise.
+	* sparc/t-splet: Likewise.
+	* v850/t-v850: Likewise.
+	* mn10200/t-mn10200: Fix comments.
+	* mn10300/t-mn10300: Likewise.
+
 	* pa.md (divsi3, udivsi3, modsi3, umodsi3 expanders): Clobber a new
 	dummy operand.  Allocate a new pseudo for the dummy operand.
 	(divsi3, udivsi3, modis3, umodsi3 patterns): Corresponding changes.

@@ -1,7 +1,12 @@
 LIBGCC1 =
 CROSS_LIBGCC1 =
 
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c xp-bit.c
+LIB2FUNCS_EXTRA = xp-bit.c
+
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
 
 dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT_BIT_ORDER_MISMATCH' > dp-bit.c
