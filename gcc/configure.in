@@ -2423,7 +2423,7 @@ changequote([,])dnl
 		;;
 	m68k-*-coff*)
 		tmake_file=m68k/t-m68kbare
-		tm_file="m68k/m68k-coff.h dbx.h libgloss.h"
+		tm_file="m68k/m68k-coff.h dbx.h"
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
