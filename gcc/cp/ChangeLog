@@ -1,3 +1,8 @@
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.c (cp_build_qualified_type_real): Use CP_TYPE_QUALS to
+	check whether we already have the type.
+
 2001-02-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_DESTRUCTORS): Fix typo in comment.
