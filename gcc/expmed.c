@@ -770,6 +770,16 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 
       if (BYTES_BIG_ENDIAN)
 	{
+	  int total_bits;
+
+	  /* We must do an endian conversion exactly the same way as it is
+	     done in extract_bit_field, so that the two calls to
+	     extract_fixed_bit_field will have comparable arguments.  */
+	  if (GET_CODE (value) != MEM)
+	    total_bits = BITS_PER_WORD;
+	  else
+	    total_bits = GET_MODE_BITSIZE (GET_MODE (value));
+
 	  /* Fetch successively less significant portions.  */
 	  if (GET_CODE (value) == CONST_INT)
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
@@ -780,8 +790,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 	       lsb.  Give extract_bit_field the value it needs (with
 	       endianness compensation) to fetch the piece we want.  */
 	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					    GET_MODE_BITSIZE (GET_MODE (value))
-					    - bitsize + bitsdone,
+					    total_bits - bitsize + bitsdone,
 					    NULL_RTX, 1, align);
 	}
       else
@@ -1362,7 +1371,7 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
      int unsignedp;
      int align;
 {
-  int total_bits;
+  int total_bits = BITS_PER_WORD;
   enum machine_mode mode;
 
   if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
@@ -1371,9 +1380,6 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
       if (bitsize + bitpos > BITS_PER_WORD)
 	return extract_split_bit_field (op0, bitsize, bitpos,
 					unsignedp, align);
-
-      mode = GET_MODE (op0);
-      total_bits = GET_MODE_BITSIZE (mode);
     }
   else
     {
@@ -1413,6 +1419,8 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
       op0 = change_address (op0, mode,
 			    plus_constant (XEXP (op0, 0), offset));
     }
+
+  mode = GET_MODE (op0);
 
   if (BYTES_BIG_ENDIAN)
     {
