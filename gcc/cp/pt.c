@@ -3510,8 +3510,8 @@ tsubst_friend_class (friend_type, args)
      tree friend_type;
      tree args;
 {
-  tree tmpl = 
-    lookup_name (DECL_NAME (CLASSTYPE_TI_TEMPLATE (friend_type)), 1); 
+  tree friend_tmpl = CLASSTYPE_TI_TEMPLATE (friend_type);
+  tree tmpl = lookup_name (DECL_NAME (friend_tmpl), 1); 
 
   tmpl = maybe_get_template_decl_from_type_decl (tmpl);
 
@@ -3519,9 +3519,9 @@ tsubst_friend_class (friend_type, args)
     {
       /* The friend template has already been declared.  Just
 	 check to see that the declarations match.  */
-      redeclare_class_template (TREE_TYPE (tmpl),
-				DECL_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE 
-						     (friend_type)));
+      if (tmpl != friend_tmpl)
+	redeclare_class_template (TREE_TYPE (tmpl),
+				  DECL_TEMPLATE_PARMS (friend_tmpl));
       friend_type = TREE_TYPE (tmpl);
     }
   else
@@ -3529,7 +3529,7 @@ tsubst_friend_class (friend_type, args)
       /* The friend template has not already been declared.  In this
 	 case, the instantiation of the template class will cause the
 	 injection of this template into the global scope.  */
-      tmpl = tsubst (CLASSTYPE_TI_TEMPLATE (friend_type), args, NULL_TREE);
+      tmpl = tsubst (friend_tmpl, args, NULL_TREE);
 
       /* The new TMPL is not an instantiation of anything, so we
  	 forget its origins.  We don't reset CLASSTYPE_TI_TEMPLATE for
