@@ -1,3 +1,8 @@
+2003-12-19  Steven Bosscher  <stevenb@suse.de>
+
+	* config/i386/i386.c (ix86_split_to_parts): Use an array with
+	four elements for decoding a CONST_DOUBLE on 64 bits targets.
+
 2004-12-19  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68kemb.h (TARGET_OS_CPP_BUILTINS): Remove redundant
@@ -5,7 +10,7 @@
 
 2004-12-18  Daniel Berlin  <dberlin@dberlin.org>
 
-        * lambda-code.c (can_convert_to_perfect_nest): Make checking
+	* lambda-code.c (can_convert_to_perfect_nest): Make checking
 	match up with what perfect_nestify can actually handle.
 	(perfect_nestify): Don't return false in the phi node loop.
 
@@ -68,17 +73,17 @@
 
 2004-12-18  Zdenek Dvorak  <dvorakz@suse.cz>
 
-        PR tree-optimization/18800
-        * params.def (PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND): New parameter.
-        * tree-ssa-loop-ivopts.c (struct iv_ca): Add n_cands field.
-        (ALWAYS_PRUNE_CAND_SET_BOUND): New macro.
-        (iv_ca_set_no_cp, iv_ca_set_cp, iv_ca_new): Update n_cands field.
-        (iv_ca_delta_join, iv_ca_delta_reverse, iv_ca_n_cands, iv_ca_prune):
-        New functions.
-        (iv_ca_extend): Return number of candidates in the set.
-        (try_add_cand_for): Add argument to iv_ca_extend calls.
-        (try_improve_iv_set): Use iv_ca_prune.
-        * doc/invoke.texi (iv-always-prune-cand-set-bound): Document.
+	PR tree-optimization/18800
+	* params.def (PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND): New parameter.
+	* tree-ssa-loop-ivopts.c (struct iv_ca): Add n_cands field.
+	(ALWAYS_PRUNE_CAND_SET_BOUND): New macro.
+	(iv_ca_set_no_cp, iv_ca_set_cp, iv_ca_new): Update n_cands field.
+	(iv_ca_delta_join, iv_ca_delta_reverse, iv_ca_n_cands, iv_ca_prune):
+	New functions.
+	(iv_ca_extend): Return number of candidates in the set.
+	(try_add_cand_for): Add argument to iv_ca_extend calls.
+	(try_improve_iv_set): Use iv_ca_prune.
+	* doc/invoke.texi (iv-always-prune-cand-set-bound): Document.
 
 2004-12-18  Zdenek Dvorak  <dvorakz@suse.cz>
 
