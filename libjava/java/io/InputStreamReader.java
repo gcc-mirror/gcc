@@ -46,7 +46,7 @@ public class InputStreamReader extends Reader
   {
     this.in = in instanceof BufferedInputStream
               ? (BufferedInputStream) in
-              : new BufferedInputStream(in, 250);
+              : new BufferedInputStream(in);
     /* Don't need to call super(in) here as long as the lock gets set. */
     this.lock = in;
     converter = decoder;

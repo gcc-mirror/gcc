@@ -72,9 +72,6 @@ public class ByteArrayInputStream extends InputStream
 
   public synchronized int read()
   {
-    if (pos < 0)
-      throw new ArrayIndexOutOfBoundsException(pos);
-
     if (pos < count)
       return ((int) buf[pos++]) & 0xFF;
     return -1;
@@ -82,10 +79,6 @@ public class ByteArrayInputStream extends InputStream
 
   public synchronized int read(byte[] b, int off, int len)
   {
-    /* Don't need to check pos value, arraycopy will check it. */
-    if (off < 0 || len < 0 || off + len > b.length)
-      throw new ArrayIndexOutOfBoundsException();
-
     if (pos >= count)
       return -1;
 

@@ -5,6 +5,13 @@
 	* configure.in: Check for setlocale.
 	* configure: Rebuilt.
 	* include/config.h.in: Rebuilt.
+	
+	* java/util/zip/InflaterInputStream (read): Don't return -1 unless
+	the infate() call didn't deliver any output. Throw a ZipException if
+	the needsDictionary() call returns true.
+	* java/io/ByteArrayInputStream (read): Remove redundant bounds checks.
+	* java/io/InputStreamReader: Use the default buffer size for the
+	contained BufferedInputStream.
 
 2000-11-28  Warren Levy  <warrenl@cygnus.com>
 
