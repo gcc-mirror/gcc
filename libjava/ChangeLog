@@ -1,3 +1,8 @@
+2005-03-12  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* stacktrace.cc (GetCallerInfo): Return nothing in case of
+	SJLJ_EXCEPTIONS is defined.
+
 2005-03-12  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Add XFAILs for new JSR-201

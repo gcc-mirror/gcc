@@ -429,7 +429,7 @@ _Jv_StackTrace::GetCallerInfo (jclass checkClass, jclass *caller_class,
   if (caller_meth)
     *caller_meth = trace_data.foundMeth;
 #else
-  return NULL;
+  return;
 #endif
 }
 
