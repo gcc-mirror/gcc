@@ -1,5 +1,13 @@
 2001-12-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-typeck.c, config/i386/i386.h, config/mcore/mcore.h,
+	config/ns32k/ns32k.h, config/rs6000/sysv4.h, fold-const.c,
+	toplev.c, cppinit.c, cppmacro.c, gcc.c: Use "built-in" and
+	"bit-field" spellings in messages.
+	* po/gcc.pot: Regenerate.
+
+2001-12-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.c, config/fr30/fr30.c, config/v850/v850-c.c, toplev.c: Use
 	American spelling in messages.
 	* po/gcc.pot: Regenerate.

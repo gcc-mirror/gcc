@@ -113,8 +113,8 @@ extern int target_flags;
     { "sb", -32,							\
       N_("Register sb is zero. Use for absolute addressing")},		\
     { "nosb", 32, N_("Do not use register sb")},			\
-    { "bitfield", -64, N_("Do not use bitfield instructions")},		\
-    { "nobitfield", 64, N_("Use bitfield instructions")},		\
+    { "bitfield", -64, N_("Do not use bit-field instructions")},	\
+    { "nobitfield", 64, N_("Use bit-field instructions")},		\
     { "himem", 128, N_("Generate code for high memory")},		\
     { "nohimem", -128, N_("Generate code for low memory")},		\
     { "32381", 256, N_("32381 fpu")},					\

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-12-15 19:58+0000\n"
+"POT-Creation-Date: 2001-12-15 20:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2920,7 +2920,7 @@ msgstr ""
 
 #: c-typeck.c:3396
 #, c-format
-msgid "cannot take address of bitfield `%s'"
+msgid "cannot take address of bit-field `%s'"
 msgstr ""
 
 #: c-typeck.c:3424 ch/typeck.c:3676 ch/xtypeck.c:62
@@ -4021,7 +4021,7 @@ msgid "End of search list.\n"
 msgstr ""
 
 #: cppinit.c:1003
-msgid "<builtin>"
+msgid "<built-in>"
 msgstr ""
 
 #: cppinit.c:1005
@@ -4605,7 +4605,7 @@ msgstr ""
 
 #: cppmacro.c:148
 #, c-format
-msgid "invalid builtin macro \"%s\""
+msgid "invalid built-in macro \"%s\""
 msgstr ""
 
 #: cppmacro.c:347
@@ -4953,7 +4953,7 @@ msgstr ""
 
 #: fold-const.c:3120 fold-const.c:3133
 #, c-format
-msgid "comparison is always %d due to width of bitfield"
+msgid "comparison is always %d due to width of bit-field"
 msgstr ""
 
 #: fold-const.c:4175 fold-const.c:4192
@@ -5014,7 +5014,7 @@ msgid "extraneous argument to `%s' option"
 msgstr ""
 
 #: gcc.c:1466
-msgid "Using builtin specs.\n"
+msgid "Using built-in specs.\n"
 msgstr ""
 
 #: gcc.c:1640
@@ -5206,7 +5206,7 @@ msgstr ""
 
 #: gcc.c:3056
 msgid ""
-"  -specs=<file>            Override builtin specs with the contents of "
+"  -specs=<file>            Override built-in specs with the contents of "
 "<file>\n"
 msgstr ""
 
@@ -6992,7 +6992,7 @@ msgid "Determine language standard"
 msgstr ""
 
 #: toplev.c:1196
-msgid "Make bitfields by unsigned by default"
+msgid "Make bit-fields by unsigned by default"
 msgstr ""
 
 #: toplev.c:1200
@@ -10102,35 +10102,35 @@ msgid "Do not use push instructions to save outgoing arguments"
 msgstr ""
 
 #: config/i386/i386.h:356
-msgid "Support MMX builtins"
+msgid "Support MMX built-in functions"
 msgstr ""
 
 #: config/i386/i386.h:358
-msgid "Do not support MMX builtins"
+msgid "Do not support MMX built-in functions"
 msgstr ""
 
 #: config/i386/i386.h:361
-msgid "Support 3DNow! builtins"
+msgid "Support 3DNow! built-in functions"
 msgstr ""
 
 #: config/i386/i386.h:364
-msgid "Do not support 3DNow! builtins"
+msgid "Do not support 3DNow! built-in functions"
 msgstr ""
 
 #: config/i386/i386.h:366
-msgid "Support MMX and SSE builtins and code generation"
+msgid "Support MMX and SSE built-in functions and code generation"
 msgstr ""
 
 #: config/i386/i386.h:369
-msgid "Do not support MMX and SSE builtins and code generation"
+msgid "Do not support MMX and SSE built-in functions and code generation"
 msgstr ""
 
 #: config/i386/i386.h:371
-msgid "Support MMX, SSE and SSE2 builtins and code generation"
+msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
 msgstr ""
 
 #: config/i386/i386.h:374
-msgid "Do not support MMX, SSE and SSE2 builtins and code generation"
+msgid "Do not support MMX, SSE and SSE2 built-in functions and code generation"
 msgstr ""
 
 #: config/i386/i386.h:376
@@ -11038,7 +11038,7 @@ msgid "Do not arbitary sized immediates in bit operations"
 msgstr ""
 
 #: config/mcore/mcore.h:142
-msgid "Always treat bitfield as int-sized"
+msgid "Always treat bit-field as int-sized"
 msgstr ""
 
 #: config/mcore/mcore.h:146
@@ -11689,11 +11689,11 @@ msgid "Do not use register sb"
 msgstr ""
 
 #: config/ns32k/ns32k.h:116
-msgid "Do not use bitfield instructions"
+msgid "Do not use bit-field instructions"
 msgstr ""
 
 #: config/ns32k/ns32k.h:117
-msgid "Use bitfield instructions"
+msgid "Use bit-field instructions"
 msgstr ""
 
 #: config/ns32k/ns32k.h:118
@@ -12221,11 +12221,11 @@ msgid "Select method for sdata handling"
 msgstr ""
 
 #: config/rs6000/sysv4.h:104
-msgid "Align to the base type of the bitfield"
+msgid "Align to the base type of the bit-field"
 msgstr ""
 
 #: config/rs6000/sysv4.h:106
-msgid "Don't align to the base type of the bitfield"
+msgid "Don't align to the base type of the bit-field"
 msgstr ""
 
 #: config/rs6000/sysv4.h:108
@@ -12270,7 +12270,7 @@ msgid "Don't use EABI"
 msgstr ""
 
 #: config/rs6000/sysv4.h:137
-msgid "Do not allow bitfields to cross word boundaries"
+msgid "Do not allow bit-fields to cross word boundaries"
 msgstr ""
 
 #: config/rs6000/sysv4.h:139
@@ -13482,7 +13482,7 @@ msgid "CARD argument must be powerset mode"
 msgstr ""
 
 #: ch/expr.c:1487
-msgid "expression for DESCR-builtin must be referable"
+msgid "expression for DESCR-built-in must be referable"
 msgstr ""
 
 #: ch/expr.c:1535
@@ -13650,12 +13650,12 @@ msgstr ""
 
 #: ch/expr.c:2977
 #, c-format
-msgid "unimplemented builtin function `%s'"
+msgid "unimplemented built-in function `%s'"
 msgstr ""
 
 #: ch/expr.c:2981
 #, c-format
-msgid "internal error - bad builtin function `%s'"
+msgid "internal error - bad built-in function `%s'"
 msgstr ""
 
 #: ch/expr.c:2995

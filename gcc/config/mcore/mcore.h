@@ -139,7 +139,7 @@ extern int target_flags;
   {"no-relax-immediates", - RELAX_IMM_BIT,				\
      N_("Do not arbitary sized immediates in bit operations") },	\
   {"wide-bitfields",        W_FIELD_BIT,				\
-     N_("Always treat bitfield as int-sized") },			\
+     N_("Always treat bit-field as int-sized") },			\
   {"no-wide-bitfields",   - W_FIELD_BIT,				\
      "" },								\
   {"4byte-functions",       OVERALIGN_FUNC_BIT,				\
