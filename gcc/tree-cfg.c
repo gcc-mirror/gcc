@@ -3942,7 +3942,7 @@ thread_jumps (void)
 {
   basic_block bb;
   bool retval = false;
-  int *worklist = xmalloc (sizeof (int) * last_basic_block);
+  basic_block *worklist = xmalloc (sizeof (basic_block) * last_basic_block);
   unsigned int size = 0;
 
   FOR_EACH_BB (bb)
@@ -3951,11 +3951,11 @@ thread_jumps (void)
       bb->flags &= ~BB_VISITED;
     }
 
-  /* Initialize WORKLIST by putting the indexes of non-forwarder
-     blocks that immediately precede forwarder blocks because those
-     are the ones that we know we can thread jumps from.  We use
-     BB_VISITED to indicate that whether a given basic block is in
-     WORKLIST or not, thereby avoiding duplicates in WORKLIST.  */
+  /* Initialize WORKLIST by putting non-forwarder blocks that
+     immediately precede forwarder blocks because those are the ones
+     that we know we can thread jumps from.  We use BB_VISITED to
+     indicate whether a given basic block is in WORKLIST or not,
+     thereby avoiding duplicates in WORKLIST.  */
   FOR_EACH_BB (bb)
     {
       edge_iterator ei;
@@ -3981,7 +3981,7 @@ thread_jumps (void)
 	      && (e->src->flags & BB_VISITED) == 0)
 	    {
 	      e->src->flags |= BB_VISITED;
-	      worklist[size] = e->src->index;
+	      worklist[size] = e->src;
 	      size++;
 	    }
 	}
@@ -3991,14 +3991,7 @@ thread_jumps (void)
   while (size > 0)
     {
       size--;
-      bb = BASIC_BLOCK (worklist[size]);
-
-      /* Check if BB is NULL because BB may have been deleted.  This
-	 could happen if BB is originally a non-forwarder block, later
-	 becomes a forwarder block, and it is deleted when a jump is
-	 threaded through it.  */
-      if (!bb)
-	continue;
+      bb = worklist[size];
 
       /* BB->INDEX is not longer in WORKLIST, so clear BB_VISITED.  */
       bb->flags &= ~BB_VISITED;
@@ -4029,7 +4022,7 @@ thread_jumps (void)
 		      && (f->src->flags & BB_VISITED) == 0)
 		    {
 		      f->src->flags |= BB_VISITED;
-		      worklist[size] = f->src->index;
+		      worklist[size] = f->src;
 		      size++;
 		    }
 		}
