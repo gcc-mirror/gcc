@@ -1143,7 +1143,7 @@ static void do_once PROTO((void));
 static HOST_WIDE_INT eval_if_expression PROTO((U_CHAR *, int));
 static void conditional_skip PROTO((FILE_BUF *, int, enum node_type, U_CHAR *, FILE_BUF *));
 static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
-static void validate_else PROTO((U_CHAR *));
+static void validate_else PROTO((U_CHAR *, U_CHAR *));
 
 static U_CHAR *skip_to_end_of_comment PROTO((FILE_BUF *, int *, int));
 static U_CHAR *skip_quoted_string PROTO((U_CHAR *, U_CHAR *, int, int *, int *, int *));
@@ -5982,9 +5982,12 @@ collect_expansion (buf, end, nargs, arglist)
 	     this must be -traditional.  So replace the comment with
 	     nothing at all.  */
 	  exp_p--;
-	  p += 1;
-	  while (p < limit && !(p[-2] == '*' && p[-1] == '/'))
-	    p++;
+	  while (++p < limit) {
+	    if (p[0] == '*' && p[1] == '/') {
+	      p += 2;
+	      break;
+	    }
+	  }
 #if 0
 	  /* Mark this as a concatenation-point, as if it had been ##.  */
 	  concat = p;
@@ -7341,7 +7344,7 @@ skip_if_group (ip, any, op)
 	  case T_ELSE:
 	  case T_ENDIF:
 	    if (pedantic && if_stack != save_if_stack)
-	      validate_else (bp);
+	      validate_else (bp, endb);
 	  case T_ELIF:
 	    if (if_stack == instack[indepth].if_stack) {
 	      error ("`#%s' not within a conditional", kt->name);
@@ -7516,40 +7519,41 @@ do_endif (buf, limit, op, keyword)
    the directive name.  P points to the first char after the directive name.  */
 
 static void
-validate_else (p)
+validate_else (p, limit)
      register U_CHAR *p;
+     register U_CHAR *limit;
 {
   /* Advance P over whitespace and comments.  */
   while (1) {
-    if (*p == '\\' && p[1] == '\n')
+    while (*p == '\\' && p[1] == '\n')
       p += 2;
     if (is_hor_space[*p])
       p++;
     else if (*p == '/') {
-      if (p[1] == '\\' && p[2] == '\n')
-	newline_fix (p + 1);
-      if (p[1] == '*') {
+      while (p[1] == '\\' && p[2] == '\n')
 	p += 2;
+      if (p[1] == '*') {
 	/* Don't bother warning about unterminated comments
 	   since that will happen later.  Just be sure to exit.  */
-	while (*p) {
-	  if (p[1] == '\\' && p[2] == '\n')
-	    newline_fix (p + 1);
-	  if (*p == '*' && p[1] == '/') {
-	    p += 2;
-	    break;
+	for (p += 2; ; p++) {
+	  if (p == limit)
+	    return;
+	  if (*p == '*') {
+	    while (p[1] == '\\' && p[2] == '\n')
+	      p += 2;
+	    if (p[1] == '/') {
+	      p += 2;
+	      break;
+	    }
 	  }
-	  p++;
 	}
       }
-      else if (cplusplus_comments && p[1] == '/') {
-	p += 2;
-	while (*p && (*p != '\n' || p[-1] == '\\'))
-	  p++;
-      }
+      else if (cplusplus_comments && p[1] == '/')
+	return;
+      else break;
     } else break;
   }
-  if (*p && *p != '\n')
+  if (*p != '\n')
     pedwarn ("text following `#else' or `#endif' violates ANSI standard");
 }
 
@@ -8493,8 +8497,10 @@ macarg1 (start, limit, depthptr, newlines, comments, rest_args)
 	      warning ("`/*' within comment");
 	    if (bp[1] == '\\' && bp[2] == '\n')
 	      newline_fix (bp + 1);
-	    if (bp[1] == '/')
+	    if (bp[1] == '/') {
+	      bp++;
 	      break;
+	    }
 	  }
 	}
       } else if (bp[1] == '/' && cplusplus_comments) {
