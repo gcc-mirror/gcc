@@ -1,3 +1,7 @@
+2000-07-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* version.c: Bump version number.
+
 2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Make-lang.in (F77_SRCS): Remove all .j files.
