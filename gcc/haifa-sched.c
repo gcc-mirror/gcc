@@ -2393,6 +2393,7 @@ schedule_block (int b, int rgn_n_insns)
 	{
 	  rtx insn;
 	  int cost;
+	  bool asm_p = false;
 
 	  if (sched_verbose >= 2)
 	    {
@@ -2450,9 +2451,9 @@ schedule_block (int b, int rgn_n_insns)
 	      memcpy (temp_state, curr_state, dfa_state_size);
 	      if (recog_memoized (insn) < 0)
 		{
-		  if (!first_cycle_insn_p
-		      && (GET_CODE (PATTERN (insn)) == ASM_INPUT
-			  || asm_noperands (PATTERN (insn)) >= 0))
+		  asm_p = (GET_CODE (PATTERN (insn)) == ASM_INPUT
+			   || asm_noperands (PATTERN (insn)) >= 0);
+		  if (!first_cycle_insn_p && asm_p)
 		    /* This is asm insn which is tryed to be issued on the
 		       cycle not first.  Issue it on the next cycle.  */
 		    cost = 1;
@@ -2567,6 +2568,10 @@ schedule_block (int b, int rgn_n_insns)
 	    can_issue_more--;
 
 	  advance = schedule_insn (insn, &ready, clock_var);
+
+	  /* After issuing an asm insn we should start a new cycle.  */
+	  if (advance == 0 && asm_p)
+	    advance = 1;
 	  if (advance != 0)
 	    break;
 

@@ -1,3 +1,9 @@
+2004-06-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/15653
+	* haifa-sched.c (schedule_block): Finish cycle after issuing asm
+	insn.
+
 2004-06-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR web/15263
