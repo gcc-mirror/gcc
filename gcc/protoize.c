@@ -121,6 +121,7 @@ typedef char * const_pointer_type;
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #else /* !defined(POSIX) */
 
