@@ -2018,7 +2018,7 @@ expand_call (exp, target, ignore)
 
   /* If there are cleanups to be called, don't use a hard reg as target.
      We need to double check this and see if it matters anymore.  */
-  if (any_pending_cleanups ()
+  if (any_pending_cleanups (1)
       && target && REG_P (target)
       && REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = 0;
