@@ -29,9 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #endif
 
-/* POINTERSP and WORKP both point to arrays of N pointers.  When
-   this function returns POINTERSP will point to a sorted version of
-   the original array pointed to by POINTERSP.  */
+/* POINTERS and WORK are both arrays of N pointers.  When this
+   function returns POINTERS will be sorted in ascending order.  */
 
 void sort_pointers (n, pointers, work)
      size_t n;
@@ -63,8 +62,11 @@ void sort_pointers (n, pointers, work)
     abort ();
 
   /* Figure out the endianness of the machine.  */
-  for (i = 0; i < sizeof (size_t); ++i)
-    ((char *)&j)[i] = i;
+  for (i = 0, j = 0; i < sizeof (size_t); ++i)
+    {
+      j *= (UCHAR_MAX + 1);
+      j += i;
+    }
   big_endian_p = (((char *)&j)[0] == 0);
 
   /* Move through the pointer values from least significant to most
@@ -91,8 +93,8 @@ void sort_pointers (n, pointers, work)
       /* Compute the address of the appropriate digit in the first and
 	 one-past-the-end elements of the array.  On a little-endian
 	 machine, the least-significant digit is closest to the front.  */
-      bias = ((digit_t *) pointers) + i;
-      top = ((digit_t *) (pointers + n)) + i;
+      bias = ((digit_t *) pointers) + j;
+      top = ((digit_t *) (pointers + n)) + j;
 
       /* Count how many there are of each value.  At the end of this
 	 loop, COUNT[K] will contain the number of pointers whose Ith
@@ -109,7 +111,7 @@ void sort_pointers (n, pointers, work)
 
       /* Now, drop the pointers into their correct locations.  */
       for (pointerp = pointers + n - 1; pointerp >= pointers; --pointerp)
-	work[--count[((digit_t *) pointerp)[i]]] = *pointerp;
+	work[--count[((digit_t *) pointerp)[j]]] = *pointerp;
 
       /* Swap WORK and POINTERS so that POINTERS contains the sorted
 	 array.  */
