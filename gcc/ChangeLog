@@ -1,3 +1,9 @@
+2003-04-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (move2add_last_cc0): New.
+	(reload_cse_move2add): Detect implicit sets.
+	(move2add_note_store): Notice a store into cc0.
+
 2003-04-17  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/10375
