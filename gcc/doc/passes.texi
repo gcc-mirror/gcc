@@ -12,7 +12,10 @@
 @cindex top level of compiler
 The overall control structure of the compiler is in @file{toplev.c}.  This
 file is responsible for initialization, decoding arguments, opening and
-closing files, and sequencing the passes.
+closing files, and sequencing the passes.  Routines for emitting
+diagnostic messages are defined in @file{diagnostic.c}.  The files
+@file{pretty-print.h} and @file{pretty-print.c} provide basic support
+for language-independent pretty-printing.
 
 @cindex parsing pass
 The parsing pass is invoked only once, to parse the entire input.  A
