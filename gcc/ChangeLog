@@ -1,3 +1,9 @@
+2005-03-15  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/20291
+	* combine.c (try_combine): If splitting fails, re-try with
+	original combined pattern, i.e. before clobber stripping.
+
 2005-03-14  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h (DWARF_CIE_DATA_ALIGNMENT): Change for
