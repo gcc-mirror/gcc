@@ -148,6 +148,7 @@ static void sparc_output_addr_vec (rtx);
 static void sparc_output_addr_diff_vec (rtx);
 static void sparc_output_deferred_case_vectors (void);
 static int check_return_regs (rtx);
+static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx);
@@ -194,6 +195,10 @@ static rtx sparc_tls_got (void);
 static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
 static bool sparc_rtx_costs (rtx, int, int, int *);
+static bool sparc_promote_prototypes (tree);
+static rtx sparc_struct_value_rtx (tree, int);
+static bool sparc_return_in_memory (tree, tree);
+static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
 
 /* Option handling.  */
 
@@ -276,6 +281,36 @@ enum processor_type sparc_cpu;
 #define TARGET_RTX_COSTS sparc_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+/* Return TRUE if the promotion described by PROMOTE_MODE should also be done
+   for outgoing function arguments.
+   This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
+   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
+   for this value.  */
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+
+/* Return TRUE if the promotion described by PROMOTE_MODE should also be done
+   for the return value of functions.  If this macro is defined, FUNCTION_VALUE
+   must perform the same promotions done by PROMOTE_MODE.
+   This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
+   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
+   for this value.  */
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES sparc_promote_prototypes
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX sparc_struct_value_rtx
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY sparc_return_in_memory
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING sparc_strict_argument_naming
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4817,6 +4852,60 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
   cum->libcall_p = fntype == 0;
 }
 
+/* Handle the PROMOTE_PROTOTYPES macro.
+   When a prototype says `char' or `short', really pass an `int'.  */
+
+static bool
+sparc_promote_prototypes (tree fntype ATTRIBUTE_UNUSED)
+{
+  return TARGET_ARCH32 ? true : false;
+}
+
+/* Handle the STRICT_ARGUMENT_NAMING macro.  */
+
+static bool
+sparc_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+{
+  /* For the V9 we want NAMED to mean what it says it means.  */
+  return TARGET_V9 ? true : false;
+}
+
+/* Handle the RETURN_IN_MEMORY macro.
+   Specify whether to return the return value in memory.  */
+
+static bool
+sparc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  /* SPARC ABI says that quad-precision floats and all structures are
+     returned in memory.
+     For V9: unions <= 32 bytes in size are returned in int regs,
+     structures up to 32 bytes are returned in int and fp regs.  */
+  return (TARGET_ARCH32
+	  ? (TYPE_MODE (type) == BLKmode
+	     || TYPE_MODE (type) == TFmode)
+	  : (TYPE_MODE (type) == BLKmode
+	     && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32));
+}
+
+/* Handle the STRUCT_VALUE macro.
+   Return where to find the structure return value address.  */
+
+static rtx
+sparc_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED, int incoming)
+{
+  if (TARGET_ARCH64)
+    return 0;
+  else
+    {
+      if (incoming)
+	return gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,
+						  STRUCT_VALUE_OFFSET));
+      else
+	return gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
+						  STRUCT_VALUE_OFFSET));
+    }
+}
+
 /* Scan the record type TYPE and return the following predicates:
     - INTREGS_P: the record contains at least one field or sub-field
       that is eligible for promotion in integer registers.
@@ -5730,7 +5819,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
    to determine if stdarg or varargs is used and return the address of
    the first unnamed parameter.  */
 
-rtx
+static rtx
 sparc_builtin_saveregs (void)
 {
   int first_reg = current_function_args_info.words;

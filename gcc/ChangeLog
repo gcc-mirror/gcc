@@ -1,3 +1,30 @@
+2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc-protos.h: Remove the prototype for
+	sparc_builtin_saveregs.
+	* config/sparc/sparc.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_EXPAND_BUILTIN_SAVEREGS): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
+	(sparc_builtin_saveregs): Make it static.
+	(sparc_promote_prototypes): New.
+	(sparc_struct_value_rtx): Likewise.
+	(sparc_return_in_memory): Likewise.
+	* config/sparc/sparc.h: (PROMOTE_FUNCTION_ARGS): Remove.
+	(PROMOTE_FUNCTION_RETURN): Likewise.
+	(RETURN_IN_MEMORY): Likewise.
+	(STRUCT_VALUE): Likewise.
+	(STRUCT_VALUE_INCOMING): Likewise.
+	(EXPAND_BUILTIN_SAVEREGS): Likewise.
+	(STRICT_ARGUMENT_NAMING): Likewise.
+	(PROMOTE_PROTOTYPES): Likewise.
+
+	* config/sparc/sparc.h (PROMOTE_MODE): Use word_mode.
+
 2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/12818

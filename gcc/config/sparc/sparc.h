@@ -1,8 +1,8 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997, 1998, 1999
-   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
-   64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+   64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
 
 This file is part of GCC.
@@ -746,23 +746,7 @@ extern struct sparc_cpu_select sparc_select[];
 if (TARGET_ARCH64				\
     && GET_MODE_CLASS (MODE) == MODE_INT	\
     && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
-  (MODE) = DImode;
-
-/* Define this macro if the promotion described by PROMOTE_MODE
-   should also be done for outgoing function arguments.  */
-/* This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
-   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
-   for this value.  */
-#define PROMOTE_FUNCTION_ARGS
-
-/* Define this macro if the promotion described by PROMOTE_MODE
-   should also be done for the return value of functions.
-   If this macro is defined, FUNCTION_VALUE must perform the same
-   promotions done by PROMOTE_MODE.  */
-/* This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
-   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
-   for this value.  */
-#define PROMOTE_FUNCTION_RETURN
+  (MODE) = word_mode;
 
 /* Define this macro if the promotion described by PROMOTE_MODE
    should _only_ be performed for outgoing function arguments or
@@ -1149,37 +1133,12 @@ extern int sparc_mode_class[];
 
 #define DEFAULT_PCC_STRUCT_RETURN -1
 
-/* SPARC ABI says that quad-precision floats and all structures are returned
-   in memory.
-   For v9: unions <= 32 bytes in size are returned in int regs,
-   structures up to 32 bytes are returned in int and fp regs.  */
-
-#define RETURN_IN_MEMORY(TYPE)				\
-(TARGET_ARCH32						\
- ? (TYPE_MODE (TYPE) == BLKmode				\
-    || TYPE_MODE (TYPE) == TFmode)			\
- : (TYPE_MODE (TYPE) == BLKmode				\
-    && (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 32))
-
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
    Must reserve 64 bytes for the in and local registers.
    v9: Functions which return large structures get the address to place the
    wanted value from an invisible first argument.  */
-/* Used only in other #defines in this file.  */
 #define STRUCT_VALUE_OFFSET 64
-
-#define STRUCT_VALUE \
-  (TARGET_ARCH64					\
-   ? 0							\
-   : gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, \
-					STRUCT_VALUE_OFFSET)))
-
-#define STRUCT_VALUE_INCOMING \
-  (TARGET_ARCH64						\
-   ? 0								\
-   : gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,	\
-					STRUCT_VALUE_OFFSET)))
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1954,10 +1913,6 @@ do {									\
     else							\
       sparc_initialize_trampoline (TRAMP, FNADDR, CXT)
 
-/* Generate necessary RTL for __builtin_saveregs().  */
-
-#define EXPAND_BUILTIN_SAVEREGS() sparc_builtin_saveregs ()
-
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   sparc_va_start (valist, nextarg)
@@ -1965,19 +1920,6 @@ do {									\
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   sparc_va_arg (valist, type)
-
-/* Define this macro if the location where a function argument is passed
-   depends on whether or not it is a named argument.
-
-   This macro controls how the NAMED argument to FUNCTION_ARG
-   is set for varargs and stdarg functions.  With this macro defined,
-   the NAMED argument is always true for named arguments, and false for
-   unnamed arguments.  If this is not defined, but SETUP_INCOMING_VARARGS
-   is defined, then all arguments are treated as named.  Otherwise, all named
-   arguments except the last are treated as named.
-   For the v9 we want NAMED to mean what it says it means.  */
-
-#define STRICT_ARGUMENT_NAMING TARGET_V9
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */
@@ -2385,9 +2327,6 @@ do {                                                                    \
    better than access by words when possible, so grab a whole word
    and maybe make use of that.  */
 #define SLOW_BYTE_ACCESS 1
-
-/* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES (TARGET_ARCH32)
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */

@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999, 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -36,7 +36,6 @@ extern int function_arg_partial_nregs (const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int);
 extern int function_arg_pass_by_reference (const CUMULATIVE_ARGS *,
 					   enum machine_mode, tree, int);
-extern struct rtx_def *sparc_builtin_saveregs (void);
 #ifdef RTX_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern void sparc_va_start (tree, rtx);
