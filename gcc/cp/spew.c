@@ -1398,9 +1398,13 @@ yyerror (msgid)
 	   || last_token == CPP_INT
 	   || last_token == CPP_FLOAT)
     error ("%s before numeric constant", string);
-  else if (last_token == CPP_NAME
-	   && TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
-    error ("%s before \"%s\"", string, IDENTIFIER_POINTER (yylval.ttype));
+  else if (last_token == CPP_NAME)
+    {
+      if (yylval.ttype && TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
+        error ("%s before `%s'", string, IDENTIFIER_POINTER (yylval.ttype));
+      else
+        error ("%s before `%c'", string, yychar);
+    }
   else
-    error ("%s before '%s' token", string, NAME(last_token));
+    error ("%s before `%s' token", string, NAME (last_token));
 }
