@@ -1,5 +1,5 @@
 // Functions for Exception Support for -*- C++ -*-
-// Copyright (C) 1994, 95-97, 1998 Free Software Foundation
+// Copyright (C) 1994, 95-97, 1998, 1999 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -165,13 +165,11 @@ __eh_free (void *p)
   free (p);
 }
 
-
-typedef void * (* rtimetype) (void);
-
 extern "C" void *
-__cplus_type_matcher (cp_eh_info *info, rtimetype match_info, 
+__cplus_type_matcher (__eh_info *info_, void *match_info,
                                  exception_descriptor *exception_table)
 {
+  cp_eh_info *info = (cp_eh_info *)info_;
   void *ret;
 
   /* No exception table implies the old style mechanism, so don't check. */
@@ -184,7 +182,7 @@ __cplus_type_matcher (cp_eh_info *info, rtimetype match_info,
 
   /* we don't worry about version info yet, there is only one version! */
   
-  void *match_type = match_info ();
+  void *match_type = ((void *(*)())match_info) ();
   ret = __throw_type_match_rtti (match_type, info->type, info->original_value);
   /* change value of exception */
   if (ret)
