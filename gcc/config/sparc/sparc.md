@@ -5146,7 +5146,7 @@
   "jmp %a0%#"
   [(set_attr "type" "uncond_branch")])
 
-;; ??? This doesn't handle v9 yet.  It also doesn't work with -mflat.
+;; ??? Doesn't work with -mflat.
 (define_expand "nonlocal_goto"
   [(match_operand:SI 0 "general_operand" "")
    (match_operand:SI 1 "general_operand" "")
@@ -5163,11 +5163,11 @@
      register.  Thus we must copy operands[0] into a register if it isn't
      already one.  */
   if (GET_CODE (operands[0]) != REG)
-    operands[0] = force_reg (SImode, operands[0]);
+    operands[0] = force_reg (Pmode, operands[0]);
   emit_move_insn (virtual_stack_vars_rtx, operands[0]);
   /* Find the containing function's current nonlocal goto handler,
      which will do any cleanups and then jump to the label.  */
-  emit_move_insn (gen_rtx (REG, SImode, 8), operands[1]);
+  emit_move_insn (gen_rtx (REG, Pmode, 8), operands[1]);
   /* Restore %fp from stack pointer value for containing function.
      The restore insn that follows will move this to %sp,
      and reload the appropriate value into %fp.  */
@@ -5179,7 +5179,7 @@
   emit_insn (gen_rtx (USE, VOIDmode, frame_pointer_rtx));
   emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
   emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
-  emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, SImode, 8)));
+  emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, Pmode, 8)));
   /* Return, restoring reg window and jumping to goto handler.  */
   emit_insn (gen_goto_handler_and_restore ());
   DONE;
