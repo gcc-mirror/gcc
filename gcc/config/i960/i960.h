@@ -94,8 +94,13 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC "%{!nostdlib:-lcg %{p:-lprof}%{pg:-lgprof}\
 	  %{mka:-lfpg}%{msa:-lfpg}%{mca:-lfpg}%{mcf:-lfpg} -lgnu}"
 
-/* Show we can debug even without a frame pointer.  */
-#define CAN_DEBUG_WITHOUT_FP
+/* Defining the macro shows we can debug even without a frame pointer.
+   Actually, we can debug without FP.  But defining the macro results in
+   that -O means FP elimination.  Addressing through sp requires
+   negative offset and more one word addressing in the most cases
+   (offsets except for 0-4095 require one more word).  Therefore we've
+   not defined the macro. */
+/*#define CAN_DEBUG_WITHOUT_FP*/
 
 /* Do leaf procedure and tail call optimizations for -O2 and higher.  */
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)	\
@@ -611,18 +616,30 @@ extern int hard_regno_mode_ok ();
    elimination messes up nonlocal goto sequences.  I think this works for other
    targets because they use indirect jumps for the return which disables fp
    elimination.  */
-#define FRAME_POINTER_REQUIRED \
-  (! leaf_function_p () || current_function_has_nonlocal_goto)
+#define FRAME_POINTER_REQUIRED (! leaf_function_p ())
 
-/* C statement to store the difference between the frame pointer
-   and the stack pointer values immediately after the function prologue.
+/* Definitions for register eliminations.
+
+   This is an array of structures.  Each structure initializes one pair
+   of eliminable registers.  The "from" register number is given first,
+   followed by "to".  Eliminations of the same "from" register are listed
+   in order of preference.. */
+
+#define ELIMINABLE_REGS	 {{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+/* Given FROM and TO register numbers, say whether this elimination is allowed.
+   Frame pointer elimination is automatically handled.  */
+#define CAN_ELIMINATE(FROM, TO) 1
+
+/* Define the offset between two registers, one to be eliminated, and
+   the other its replacement, at the start of a routine.
 
    Since the stack grows upward on the i960, this must be a negative number.
    This includes the 64 byte hardware register save area and the size of
    the frame.  */
 
-#define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  do { (VAR) = - (64 + compute_frame_size (get_frame_size ())); } while (0)
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
+  do { (OFFSET) = - (64 + compute_frame_size (get_frame_size ())); } while (0)
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 14
