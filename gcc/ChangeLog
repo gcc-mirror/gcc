@@ -1,3 +1,8 @@
+2001-03-14  Laurynas Biveinis  <lauras@softhome.net>
+
+        * configure.in: Use $gcc_cv_as instead of $as.
+        * configure: Regenerated.
+
 Wed Mar 14 13:17:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (handled_component_p, can_address_p): New functions.
