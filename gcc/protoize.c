@@ -75,7 +75,6 @@ static void usage (void) ATTRIBUTE_NORETURN;
 static void aux_info_corrupted (void) ATTRIBUTE_NORETURN;
 static void declare_source_confusing (const char *) ATTRIBUTE_NORETURN;
 static const char *shortpath (const char *, const char *);
-extern void fancy_abort  (void) ATTRIBUTE_NORETURN;
 static void notice (const char *, ...) ATTRIBUTE_PRINTF_1;
 static char *savestring (const char *, unsigned int);
 static char *dupnstr (const char *, size_t);
@@ -525,15 +524,6 @@ savestring (const char *input, unsigned int size)
   return output;
 }
 
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort (void)
-{
-  notice ("%s: internal abort\n", pname);
-  exit (FATAL_EXIT_CODE);
-}
 
 /* Make a duplicate of the first N bytes of a given string in a newly
    allocated area.  */
