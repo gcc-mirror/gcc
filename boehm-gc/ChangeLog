@@ -1,3 +1,9 @@
+2001-04-05  Hans Boehm  <hans_boehm@hp.com>
+
+	* misc.c: Back out buggy changes to stack clearing code.
+	Reduce CLEAR_SIZE to 1/4 of original value to reduce time
+	spent clearing memory.
+
 2001-04-04  Hans Boehm  <hans_boehm@hp.com>
 
 	* finalize.c:

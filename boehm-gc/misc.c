@@ -206,10 +206,10 @@ extern signed_word GC_mem_found;
  */
 word GC_stack_last_cleared = 0;	/* GC_no when we last did this */
 # ifdef THREADS
-#   define BIG_CLEAR_SIZE 2048	/* Clear this much now and then.	*/
-#   define SMALL_CLEAR_SIZE 256 /* Clear this much every time.		*/
+#   define CLEAR_SIZE 512
+# else
+#   define CLEAR_SIZE 213
 # endif
-# define CLEAR_SIZE 213  /* Granularity for GC_clear_stack_inner */
 # define DEGRADE_RATE 50
 
 word GC_min_sp;		/* Coolest stack pointer value from which we've */
@@ -266,12 +266,10 @@ ptr_t arg;
 {
     register word sp = (word)GC_approx_sp();  /* Hotter than actual sp */
 #   ifdef THREADS
-        word dummy[SMALL_CLEAR_SIZE];
-	unsigned random_no = 0;  /* Should be more random than it is ... */
-				 /* Used to occasionally clear a bigger	 */
-				 /* chunk.				 */
+        word dummy[CLEAR_SIZE];
+#   else
+    	register word limit;
 #   endif
-    register word limit;
     
 #   define SLOP 400
 	/* Extra bytes we clear every time.  This clears our own	*/
@@ -289,14 +287,7 @@ ptr_t arg;
 	/* thus more junk remains accessible, thus the heap gets	*/
 	/* larger ...							*/
 # ifdef THREADS
-    if (++random_no % 13 == 0) {
-	limit = sp;
-	MAKE_HOTTER(limit, BIG_CLEAR_SIZE*sizeof(word));
-	return GC_lear_stack_inner(arg, limit);
-    } else {
-	BZERO(dummy, SMALL_CLEAR_SIZE*sizeof(word));
-	return arg;
-    }
+    BZERO(dummy, CLEAR_SIZE*sizeof(word));
 # else
     if (GC_gc_no > GC_stack_last_cleared) {
         /* Start things over, so we clear the entire stack again */
