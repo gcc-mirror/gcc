@@ -5947,8 +5947,15 @@ expand_function_end (filename, line, end_bindings)
   /* Save the argument pointer if a save area was made for it.  */
   if (arg_pointer_save_area)
     {
-      rtx x = gen_move_insn (arg_pointer_save_area, virtual_incoming_args_rtx);
-      emit_insn_before (x, tail_recursion_reentry);
+      /* arg_pointer_save_area may not be a valid memory address, so we
+	 have to check it and fix it if necessary.  */
+      rtx seq;
+      start_sequence ();
+      emit_move_insn (validize_mem (arg_pointer_save_area),
+		      virtual_incoming_args_rtx);
+      seq = gen_sequence ();
+      end_sequence ();
+      emit_insn_before (seq, tail_recursion_reentry);
     }
 
   /* Initialize any trampolines required by this function.  */
