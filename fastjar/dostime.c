@@ -21,6 +21,8 @@
 
 #include <time.h>
 
+#include <stddef.h>
+
 #include "dostime.h"
 
 /*
