@@ -1292,7 +1292,7 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 
 	if (first < 0)
 	  {
-	    emit_insn ((mask << right) == 0xff
+	    emit_insn ((mask << right) <= 0xff
 		       ? gen_zero_extendqisi2(dest,
 					      gen_lowpart (QImode, source))
 		       : gen_zero_extendhisi2(dest,
@@ -1315,7 +1315,7 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 	    mask <<= first;
 	  }
 	if (first >= 0)
-	  emit_insn (mask == 0xff
+	  emit_insn (mask <= 0xff
 		     ? gen_zero_extendqisi2(dest, gen_lowpart (QImode, dest))
 		     : gen_zero_extendhisi2(dest, gen_lowpart (HImode, dest)));
 	if (total_shift > 0)
