@@ -170,9 +170,6 @@ static tree fold_builtin_abs (tree, tree);
 static tree fold_builtin_unordered_cmp (tree, enum tree_code, enum tree_code);
 static tree fold_builtin_1 (tree, bool);
 
-static tree simplify_builtin_memcmp (tree);
-static tree simplify_builtin_strcmp (tree);
-static tree simplify_builtin_strncmp (tree);
 static tree simplify_builtin_strpbrk (tree);
 static tree simplify_builtin_strstr (tree);
 static tree simplify_builtin_strchr (tree);
@@ -7279,10 +7276,10 @@ fold_builtin_strchr (tree exp, bool actually_strrchr)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_memcmp (tree exp)
+fold_builtin_memcmp (tree arglist)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg1, arg2, len;
+  const char *p1, *p2;
 
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -7294,14 +7291,48 @@ fold_builtin_memcmp (tree exp)
 
   /* If the LEN parameter is zero, return zero.  */
   if (integer_zerop (len))
-    {
-      tree temp = omit_one_operand (TREE_TYPE (exp), integer_zero_node, arg2);
-      return omit_one_operand (TREE_TYPE (exp), temp, arg1);
-    }
+    return omit_two_operands (integer_type_node, integer_zero_node,
+			      arg1, arg2);
 
   /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
   if (operand_equal_p (arg1, arg2, 0))
-    return omit_one_operand (TREE_TYPE (exp), integer_zero_node, len);
+    return omit_one_operand (integer_type_node, integer_zero_node, len);
+
+  p1 = c_getstr (arg1);
+  p2 = c_getstr (arg2);
+
+  /* If all arguments are constant, and the value of len is not greater
+     than the lengths of arg1 and arg2, evaluate at compile-time.  */
+  if (host_integerp (len, 1) && p1 && p2
+      && compare_tree_int (len, strlen (p1) + 1) <= 0
+      && compare_tree_int (len, strlen (p2) + 1) <= 0)
+    {
+      const int r = memcmp (p1, p2, tree_low_cst (len, 1));
+
+      if (r > 0)
+	return integer_one_node;
+      else if (r < 0)
+	return integer_minus_one_node;
+      else
+	return integer_zero_node;
+    }
+
+  /* If len parameter is one, return an expression corresponding to
+     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
+  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree ind1 = fold_convert (integer_type_node,
+				build1 (INDIRECT_REF, cst_uchar_node,
+					fold_convert (cst_uchar_ptr_node,
+						      arg1)));
+      tree ind2 = fold_convert (integer_type_node,
+				build1 (INDIRECT_REF, cst_uchar_node,
+					fold_convert (cst_uchar_ptr_node,
+						      arg2)));
+      return fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
+    }
 
   return 0;
 }
@@ -7310,14 +7341,12 @@ fold_builtin_memcmp (tree exp)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_strcmp (tree exp)
+fold_builtin_strcmp (tree arglist)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg1, arg2;
   const char *p1, *p2;
 
-  if (!validate_arglist (arglist,
-			 POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
 
   arg1 = TREE_VALUE (arglist);
@@ -7325,22 +7354,43 @@ fold_builtin_strcmp (tree exp)
 
   /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
   if (operand_equal_p (arg1, arg2, 0))
-    return fold_convert (TREE_TYPE (exp), integer_zero_node);
+    return integer_zero_node;
 
   p1 = c_getstr (arg1);
   p2 = c_getstr (arg2);
 
   if (p1 && p2)
     {
-      tree temp;
       const int i = strcmp (p1, p2);
       if (i < 0)
-	temp = integer_minus_one_node;
+	return integer_minus_one_node;
       else if (i > 0)
-	temp = integer_one_node;
+	return integer_one_node;
       else
-	temp = integer_zero_node;
-      return fold_convert (TREE_TYPE (exp), temp);
+	return integer_zero_node;
+    }
+
+  /* If the second arg is "", return *(const unsigned char*)arg1.  */
+  if (p2 && *p2 == '\0')
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      return fold_convert (integer_type_node,
+			   build1 (INDIRECT_REF, cst_uchar_node,
+				   fold_convert (cst_uchar_ptr_node,
+						 arg1)));
+    }
+
+  /* If the first arg is "", return -*(const unsigned char*)arg2.  */
+  if (p1 && *p1 == '\0')
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree temp = fold_convert (integer_type_node,
+				build1 (INDIRECT_REF, cst_uchar_node,
+					fold_convert (cst_uchar_ptr_node,
+						      arg2)));
+      return fold (build1 (NEGATE_EXPR, integer_type_node, temp));
     }
 
   return 0;
@@ -7350,9 +7400,8 @@ fold_builtin_strcmp (tree exp)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_strncmp (tree exp)
+fold_builtin_strncmp (tree arglist)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree arg1, arg2, len;
   const char *p1, *p2;
 
@@ -7366,29 +7415,71 @@ fold_builtin_strncmp (tree exp)
 
   /* If the LEN parameter is zero, return zero.  */
   if (integer_zerop (len))
-    {
-      tree temp = omit_one_operand (TREE_TYPE (exp), integer_zero_node, arg2);
-      return omit_one_operand (TREE_TYPE (exp), temp, arg1);
-    }
+    return omit_two_operands (integer_type_node, integer_zero_node,
+			      arg1, arg2);
 
   /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
   if (operand_equal_p (arg1, arg2, 0))
-    return omit_one_operand (TREE_TYPE (exp), integer_zero_node, len);
+    return omit_one_operand (integer_type_node, integer_zero_node, len);
 
   p1 = c_getstr (arg1);
   p2 = c_getstr (arg2);
 
   if (host_integerp (len, 1) && p1 && p2)
     {
-      tree temp;
       const int i = strncmp (p1, p2, tree_low_cst (len, 1));
-      if (i < 0)
-	temp = integer_minus_one_node;
-      else if (i > 0)
-	temp = integer_one_node;
+      if (i > 0)
+	return integer_one_node;
+      else if (i < 0)
+	return integer_minus_one_node;
       else
-	temp = integer_zero_node;
-      return fold_convert (TREE_TYPE (exp), temp);
+	return integer_zero_node;
+    }
+
+  /* If the second arg is "", and the length is greater than zero,
+     return *(const unsigned char*)arg1.  */
+  if (p2 && *p2 == '\0'
+      && TREE_CODE (len) == INTEGER_CST
+      && tree_int_cst_sgn (len) == 1)
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      return fold_convert (integer_type_node,
+			   build1 (INDIRECT_REF, cst_uchar_node,
+				   fold_convert (cst_uchar_ptr_node,
+						 arg1)));
+    }
+
+  /* If the first arg is "", and the length is greater than zero,
+     return -*(const unsigned char*)arg2.  */
+  if (p1 && *p1 == '\0'
+      && TREE_CODE (len) == INTEGER_CST
+      && tree_int_cst_sgn (len) == 1)
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree temp = fold_convert (integer_type_node,
+				build1 (INDIRECT_REF, cst_uchar_node,
+					fold_convert (cst_uchar_ptr_node,
+						      arg2)));
+      return fold (build1 (NEGATE_EXPR, integer_type_node, temp));
+    }
+
+  /* If len parameter is one, return an expression corresponding to
+     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
+  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree ind1 = fold_convert (integer_type_node,
+				build1 (INDIRECT_REF, cst_uchar_node,
+					fold_convert (cst_uchar_ptr_node,
+						      arg1)));
+      tree ind2 = fold_convert (integer_type_node,
+				build1 (INDIRECT_REF, cst_uchar_node,
+					fold_convert (cst_uchar_ptr_node,
+						      arg2)));
+      return fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
     }
 
   return 0;
@@ -8271,13 +8362,13 @@ fold_builtin_1 (tree exp, bool ignore)
       return fold_builtin_strchr (exp, true);
 
     case BUILT_IN_MEMCMP:
-      return fold_builtin_memcmp (exp);
+      return fold_builtin_memcmp (arglist);
 
     case BUILT_IN_STRCMP:
-      return fold_builtin_strcmp (exp);
+      return fold_builtin_strcmp (arglist);
 
     case BUILT_IN_STRNCMP:
-      return fold_builtin_strncmp (exp);
+      return fold_builtin_strncmp (arglist);
 
     case BUILT_IN_SIGNBIT:
     case BUILT_IN_SIGNBITF:
@@ -8515,17 +8606,17 @@ simplify_builtin (tree exp, int ignore)
       val = fold_builtin_strncpy (exp, NULL_TREE);
       break;
     case BUILT_IN_STRCMP:
-      val = simplify_builtin_strcmp (arglist);
+      val = fold_builtin_strcmp (arglist);
       break;
     case BUILT_IN_STRNCMP:
-      val = simplify_builtin_strncmp (arglist);
+      val = fold_builtin_strncmp (arglist);
       break;
     case BUILT_IN_STRPBRK:
       val = simplify_builtin_strpbrk (arglist);
       break;
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
-      val = simplify_builtin_memcmp (arglist);
+      val = fold_builtin_memcmp (arglist);
       break;
     case BUILT_IN_VA_START:
       simplify_builtin_va_start (arglist);
@@ -8800,220 +8891,6 @@ simplify_builtin_strpbrk (tree arglist)
       arglist = tree_cons (NULL_TREE, s1, arglist);
       return build_function_call_expr (fn, arglist);
     }
-}
-
-/* Simplify a call to the memcmp builtin.
-
-   Return 0 if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-static tree
-simplify_builtin_memcmp (tree arglist)
-{
-  tree arg1, arg2, len;
-  const char *p1, *p2;
-
-  if (!validate_arglist (arglist,
-			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
-    return 0;
-
-  arg1 = TREE_VALUE (arglist);
-  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-
-  /* If the len parameter is zero, return zero.  */
-  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
-    /* Evaluate and ignore arg1 and arg2 in case they have side-effects.  */
-    return omit_two_operands (integer_type_node, integer_zero_node,
-			      arg1, arg2);
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  /* If all arguments are constant, and the value of len is not greater
-     than the lengths of arg1 and arg2, evaluate at compile-time.  */
-  if (host_integerp (len, 1) && p1 && p2
-      && compare_tree_int (len, strlen (p1) + 1) <= 0
-      && compare_tree_int (len, strlen (p2) + 1) <= 0)
-    {
-      const int r = memcmp (p1, p2, tree_low_cst (len, 1));
-
-      return (r < 0
-	      ? integer_minus_one_node
-	      : (r > 0 ? integer_one_node : integer_zero_node));
-    }
-
-  /* If len parameter is one, return an expression corresponding to
-     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
-      tree ind1 =
-      fold (build1 (CONVERT_EXPR, integer_type_node,
-		    build1 (INDIRECT_REF, cst_uchar_node,
-			    build1 (NOP_EXPR, cst_uchar_ptr_node, arg1))));
-      tree ind2 =
-      fold (build1 (CONVERT_EXPR, integer_type_node,
-		    build1 (INDIRECT_REF, cst_uchar_node,
-			    build1 (NOP_EXPR, cst_uchar_ptr_node, arg2))));
-      return fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
-    }
-
-  return 0;
-}
-
-/* Simplify a call to the strcmp builtin.
-
-   Return 0 if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-static tree
-simplify_builtin_strcmp (tree arglist)
-{
-  tree arg1, arg2;
-  const char *p1, *p2;
-
-  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
-    return 0;
-
-  arg1 = TREE_VALUE (arglist);
-  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-
-  /* If both arguments are equal (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    return integer_zero_node;
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  if (p1 && p2)
-    {
-      const int i = strcmp (p1, p2);
-      return (i < 0
-	      ? integer_minus_one_node
-	      : (i > 0 ? integer_one_node : integer_zero_node));
-    }
-
-  /* If either arg is "", return an expression corresponding to
-     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
-      tree ind1 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg1))));
-      tree ind2 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg2))));
-      return fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
-    }
-
-  return 0;
-}
-
-/* Simplify a call to the strncmp builtin.
-
-   Return 0 if no simplification was possible, otherwise return the
-   simplified form of the call as a tree.
-
-   The simplified form may be a constant or other expression which
-   computes the same value, but in a more efficient manner (including
-   calls to other builtin functions).
-
-   The call may contain arguments which need to be evaluated, but
-   which are not useful to determine the result of the call.  In
-   this case we return a chain of COMPOUND_EXPRs.  The LHS of each
-   COMPOUND_EXPR will be an argument which must be evaluated.
-   COMPOUND_EXPRs are chained through their RHS.  The RHS of the last
-   COMPOUND_EXPR in the chain will contain the tree for the simplified
-   form of the builtin function call.  */
-
-static tree
-simplify_builtin_strncmp (tree arglist)
-{
-  tree arg1, arg2, arg3;
-  const char *p1, *p2;
-
-  if (!validate_arglist (arglist,
-			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
-    return 0;
-
-  arg1 = TREE_VALUE (arglist);
-  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-
-  /* If the len parameter is zero, return zero.  */
-  if (integer_zerop (arg3))
-    /* Evaluate and ignore arg1 and arg2 in case they have side-effects.  */
-    return omit_two_operands (integer_type_node, integer_zero_node,
-			      arg1, arg2);
-
-  /* If arg1 and arg2 are equal (and not volatile), return zero.  */
-  if (operand_equal_p (arg1, arg2, 0))
-    /* Evaluate and ignore arg3 in case it has side-effects.  */
-    return omit_one_operand (integer_type_node, integer_zero_node, arg3);
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  /* If all arguments are constant, evaluate at compile-time.  */
-  if (host_integerp (arg3, 1) && p1 && p2)
-    {
-      const int r = strncmp (p1, p2, tree_low_cst (arg3, 1));
-      return (r < 0
-	      ? integer_minus_one_node
-	      : (r > 0 ? integer_one_node : integer_zero_node));
-    }
-
-  /* If len == 1 or (either string parameter is "" and (len >= 1)),
-      return (*(const u_char*)arg1 - *(const u_char*)arg2).  */
-  if (host_integerp (arg3, 1)
-      && (tree_low_cst (arg3, 1) == 1
-	  || (tree_low_cst (arg3, 1) > 1
-	      && ((p1 && *p1 == '\0') || (p2 && *p2 == '\0')))))
-    {
-      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
-      tree ind1 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg1))));
-      tree ind2 =
-	fold (build1 (CONVERT_EXPR, integer_type_node,
-		      build1 (INDIRECT_REF, cst_uchar_node,
-			      build1 (NOP_EXPR, cst_uchar_ptr_node, arg2))));
-      return fold (build2 (MINUS_EXPR, integer_type_node, ind1, ind2));
-    }
-
-  return 0;
 }
 
 /* Simplify a call to the strcat builtin.
