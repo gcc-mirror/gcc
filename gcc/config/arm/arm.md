@@ -3874,8 +3874,14 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
-			       arm_compare_fp);
+  rtx ccreg;
+
+  /* When compiling for SOFT_FLOAT, ensure both arms are in registers.  */
+  if (! TARGET_HARD_FLOAT)
+    operands[3] = force_reg (SFmode, operands[3]);
+
+  ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
+			   arm_compare_fp);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")

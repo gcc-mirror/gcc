@@ -1,3 +1,8 @@
+Thu Nov 27 09:32:39 1997  Richard Earnshaw  (rearnsha@arm.com)
+
+	* arm.md (movsfcc): If not TARGET_HARD_FLOAT, ensure operand[3] 
+	valid.
+
 Wed Nov 26 13:04:46 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (SMALL_DATA_REG): Register to use for small data relocs.
