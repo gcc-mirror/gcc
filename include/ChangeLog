@@ -1,3 +1,8 @@
+Sat Jan  1 19:06:52 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* symcat.h (STRINGX) [!__STDC__ || ALMOST_STDC]: Change "?" to "s"
+	to stringify argument s.
+
 1999-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (struct splay_tree_node): Rename to ...

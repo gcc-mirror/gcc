@@ -1,6 +1,6 @@
 /* Symbol concatenation utilities.
 
-   Copyright (C) 1998, Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #define CONCAT2(a,b)	 a/**/b
 #define CONCAT3(a,b,c)	 a/**/b/**/c
 #define CONCAT4(a,b,c,d) a/**/b/**/c/**/d
-#define STRINGX(s) "?"
+#define STRINGX(s) "s"
 #endif
 
 #define XCONCAT2(a,b)     CONCAT2(a,b)
