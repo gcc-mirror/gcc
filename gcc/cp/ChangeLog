@@ -1,5 +1,11 @@
 2000-03-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tinfo2.cc (__ptr_to_member_data): Rename to ...
+	(__pointer_to_member_data): ... here. Adjust.
+	* rtti.c (create_tinfo_types): Adjust.
+
+2000-03-15  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (CPTI_REF_DESC_TYPE, ref_desc_type_node): Remove.
 	* decl.c (ref_desc_type_node): Undocument.
 	* rtti.c (ptr_ref_initializer): Rename to ...

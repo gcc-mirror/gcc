@@ -163,9 +163,9 @@ public:
 };
 
 // type information for a pointer to member variable (not function)
-class __ptr_to_member_type_info : public type_info {
+class __pointer_to_member_type_info : public type_info {
 public:
-  virtual ~__ptr_to_member_type_info ();
+  virtual ~__pointer_to_member_type_info ();
 // external parts
   const __class_type_info *klass;   // class of the member
   const type_info *type;            // type of the member
@@ -178,10 +178,10 @@ public:
   };
 
 public:
-  explicit __ptr_to_member_type_info (const char *n,
-                                      const __class_type_info *klass_,
-                                      const type_info *type_,
-                                      int quals_)
+  explicit __pointer_to_member_type_info (const char *n,
+                                          const __class_type_info *klass_,
+                                          const type_info *type_,
+                                          int quals_)
     : type_info (n), klass (klass_), type (type_), quals (quals_)
     { }
 
@@ -220,8 +220,8 @@ __enum_type_info::
 ~__enum_type_info ()
 {}
 
-__ptr_to_member_type_info::
-~__ptr_to_member_type_info ()
+__pointer_to_member_type_info::
+~__pointer_to_member_type_info ()
 {}
 
 bool __pointer_type_info::
@@ -271,7 +271,7 @@ do_catch (const type_info *thr_type,
   return target->do_catch (thrown_type->target, thr_obj, outer + 2);
 }
 
-bool __ptr_to_member_type_info::
+bool __pointer_to_member_type_info::
 do_catch (const type_info *thr_type,
           void **thr_obj,
           unsigned outer) const
@@ -287,8 +287,8 @@ do_catch (const type_info *thr_type,
     // But for that to be valid, our outer pointers must be const qualified.
     return false;
   
-  const __ptr_to_member_type_info *thrown_type =
-    static_cast <const __ptr_to_member_type_info *> (thr_type);
+  const __pointer_to_member_type_info *thrown_type =
+    static_cast <const __pointer_to_member_type_info *> (thr_type);
   
   if (thrown_type->quals & ~quals)
     // We're less qualified.
