@@ -1,3 +1,8 @@
+Mon Jun 28 10:22:30 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libI77/rsne.c: Fix NAMELIST bug by applying 19990627
+	Netlib patch to release branch.
+
 Wed Jun 16 11:38:58 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From Ian Watson <WATSON_IAN_A@Lilly.com> 1999-06-12:
