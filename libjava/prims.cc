@@ -687,6 +687,10 @@ win32_exception_handler (LPEXCEPTION_POINTERS e)
 static void
 main_init ()
 {
+  // Turn stack trace generation off while creating exception objects.
+  _Jv_InitClass (&java::lang::Throwable::class$);
+  java::lang::Throwable::trace_enabled = 0;
+  
   INIT_SEGV;
 #ifdef HANDLE_FPE
   INIT_FPE;
@@ -696,6 +700,8 @@ main_init ()
 #endif
 
   no_memory = new java::lang::OutOfMemoryError;
+
+  java::lang::Throwable::trace_enabled = 1;
 
 #ifdef USE_LTDL
   LTDL_SET_PRELOADED_SYMBOLS ();
