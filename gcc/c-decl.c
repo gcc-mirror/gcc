@@ -3115,9 +3115,9 @@ build_array_declarator (expr, quals, static_p, vla_unspec_p)
   if (pedantic && !flag_isoc99)
     {
       if (static_p || quals != NULL_TREE)
-	pedwarn ("ISO C89 does not support `static' or type qualifiers in parameter array declarators");
+	pedwarn ("ISO C90 does not support `static' or type qualifiers in parameter array declarators");
       if (vla_unspec_p)
-	pedwarn ("ISO C89 does not support `[*]' array declarators");
+	pedwarn ("ISO C90 does not support `[*]' array declarators");
     }
   if (vla_unspec_p)
     warning ("GCC does not yet properly implement `[*]' array declarators");
@@ -3909,7 +3909,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    {
 		      if (pedantic && !flag_isoc99 && ! in_system_header
 			  && warn_long_long)
-			pedwarn ("ISO C89 does not support `long long'");
+			pedwarn ("ISO C90 does not support `long long'");
 		      longlong = 1;
 		    }
 		}
@@ -4110,7 +4110,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   if (specbits & 1 << (int) RID_COMPLEX)
     {
       if (pedantic && !flag_isoc99)
-	pedwarn ("ISO C89 does not support complex types");
+	pedwarn ("ISO C90 does not support complex types");
       /* If we just have "complex", it is equivalent to
 	 "complex double", but if any modifiers at all are specified it is
 	 the complex form of TYPE.  E.g, "complex short" is
@@ -4388,10 +4388,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		  if (!flag_isoc99 && pedantic)
 		    {
 		      if (TREE_CONSTANT (size))
-			pedwarn ("ISO C89 forbids array `%s' whose size can't be evaluated",
+			pedwarn ("ISO C90 forbids array `%s' whose size can't be evaluated",
 				 name);
 		      else
-			pedwarn ("ISO C89 forbids variable-size array `%s'",
+			pedwarn ("ISO C90 forbids variable-size array `%s'",
 				 name);
 		    }
 		}
@@ -4434,7 +4434,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  else if (decl_context == FIELD)
 	    {
 	      if (pedantic && !flag_isoc99 && !in_system_header)
-		pedwarn ("ISO C89 does not support flexible array members");
+		pedwarn ("ISO C90 does not support flexible array members");
 
 	      /* ISO C99 Flexible array members are effectively identical
 		 to GCC's zero-length array extension.  */
