@@ -10111,7 +10111,7 @@
 	(vec_select:V4HI
 	 (vec_concat:V4HI (match_operand:V2HI 1 "extend_reg_or_0_operand" "rU")
 			  (match_operand:V2HI 2 "extend_reg_or_0_operand" "rU"))
-	 (parallel [(const_int 0) (const_int 2) (const_int 1) (const_int 3)])))]
+	 (parallel [(const_int 2) (const_int 0) (const_int 3) (const_int 1)])))]
   "TARGET_SHMEDIA"
   "mshflo.w	%N1, %N2, %0"
   [(set_attr "type" "arith_media")])

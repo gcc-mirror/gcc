@@ -1,3 +1,7 @@
+Thu Jan 16 21:50:25 2003  J"orn Rennecke <amylaar@onetel.net.uk>
+
+	* sh.md (mshflo_w_x): Fix description of operation.
+
 2003-01-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/rs6000/rs6000.h: Mention Altivec registers in
