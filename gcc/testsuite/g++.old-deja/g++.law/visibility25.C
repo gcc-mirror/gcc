@@ -22,5 +22,5 @@ public:
         C(void) : B(), a() {}
 
 private:
-        A a;
+        ::A a;
 };

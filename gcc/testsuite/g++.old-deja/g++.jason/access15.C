@@ -10,7 +10,7 @@ struct Z {
 struct A : private Z { };
 struct B : public A
 {
-    Z foo;
+    ::Z foo;
     B();
     B(const B&);
 };
