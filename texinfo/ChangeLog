@@ -1,3 +1,7 @@
+Tue Aug 26 11:18:52 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* libtxi/Makefile.in: Add dependencies for memcpy, memmove and strdup.
+
 Mon Jul 28 17:26:48 1997  Rob Savoye  <rob@chinadoll.cygnus.com>
 
 	* aclocal.m4: Add CYGWIN and EXEEXT autoconf macros.
