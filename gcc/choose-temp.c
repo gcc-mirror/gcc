@@ -80,7 +80,7 @@ try (dir, base)
   if (base != 0)
     return base;
   if (dir != 0
-      && access (dir, R_OK | W_OK) == 0)
+      && access (dir, R_OK | W_OK | X_OK) == 0)
     return dir;
   return 0;
 }
