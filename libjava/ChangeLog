@@ -1,3 +1,7 @@
+2003-12-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/ObjectStreamField.java (isUnshared): Added documentation.
+
 2003-12-20  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/nio/SelectorImpl.java
