@@ -2848,20 +2848,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   assert (GFC_ARRAY_TYPE_P (type));
   onstack = TREE_CODE (type) != POINTER_TYPE;
 
-  /* We never generate initialization code of module variables.  */
-  if (fnbody == NULL_TREE)
-    {
-      assert (onstack);
-
-      /* Generate static initializer.  */
-      if (sym->value)
-	{
-	  DECL_INITIAL (decl) =
-	    gfc_conv_array_initializer (TREE_TYPE (decl), sym->value);
-	}
-      return fnbody;
-    }
-
   gfc_start_block (&block);
 
   /* Evaluate character string length.  */
@@ -2884,12 +2870,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
 
   if (onstack)
     {
-      if (sym->value)
-	{
-	  DECL_INITIAL (decl) =
-	    gfc_conv_array_initializer (TREE_TYPE (decl), sym->value);
-	}
-
       gfc_add_expr_to_block (&block, fnbody);
       return gfc_finish_block (&block);
     }

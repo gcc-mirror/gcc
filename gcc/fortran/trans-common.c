@@ -383,7 +383,6 @@ create_common (gfc_common_head *com)
   if (is_init)
     {
       tree list, ctor, tmp;
-      gfc_se se;
       HOST_WIDE_INT offset = 0;
 
       list = NULL_TREE;
@@ -399,33 +398,11 @@ create_common (gfc_common_head *com)
 		       We don't implement this yet, so bail out.  */
                   gfc_todo_error ("Initialization of overlapping variables");
                 }
-              if (s->sym->attr.dimension)
-                {
-                  tmp = gfc_conv_array_initializer (TREE_TYPE (s->field),
-						    s->sym->value);
-                  list = tree_cons (s->field, tmp, list);
-                }
-              else
-                {
-		  switch (s->sym->ts.type)
-		    {
-		    case BT_CHARACTER:
-		      se.expr = gfc_conv_string_init
-			(s->sym->ts.cl->backend_decl, s->sym->value);
-		      break;
-
-		    case BT_DERIVED:
-		      gfc_init_se (&se, NULL);
-		      gfc_conv_structure (&se, s->sym->value, 1);
-		      break;
-
-		    default:
-		      gfc_init_se (&se, NULL);
-		      gfc_conv_expr (&se, s->sym->value);
-		      break;
-		    }
-                  list = tree_cons (s->field, se.expr, list);
-                }
+	      /* Add the initializer for this field.  */
+	      tmp = gfc_conv_initializer (s->sym->value, &s->sym->ts,
+		  TREE_TYPE (s->field), s->sym->attr.dimension,
+		  s->sym->attr.pointer || s->sym->attr.allocatable);
+	      list = tree_cons (s->field, tmp, list);
               offset = s->offset + s->length;
             }
         }

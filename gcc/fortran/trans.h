@@ -374,6 +374,9 @@ void gfc_build_builtin_function_decls (void);
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
 
+/* Build a static initializer.  */
+tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool);
+
 /* Substitute a temporary variable in place of the real one.  */
 void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
 

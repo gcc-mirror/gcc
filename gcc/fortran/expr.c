@@ -1855,7 +1855,7 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
 
 
 /* Relative of gfc_check_assign() except that the lvalue is a single
-   symbol.  */
+   symbol.  Used for initialization assignments.  */
 
 try
 gfc_check_assign_symbol (gfc_symbol * sym, gfc_expr * rvalue)
@@ -1873,7 +1873,10 @@ gfc_check_assign_symbol (gfc_symbol * sym, gfc_expr * rvalue)
   lvalue.symtree->n.sym = sym;
   lvalue.where = sym->declared_at;
 
-  r = gfc_check_assign (&lvalue, rvalue, 1);
+  if (sym->attr.pointer)
+    r = gfc_check_pointer_assign (&lvalue, rvalue);
+  else
+    r = gfc_check_assign (&lvalue, rvalue, 1);
 
   gfc_free (lvalue.symtree);
 

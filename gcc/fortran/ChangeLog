@@ -1,3 +1,14 @@
+2004-07-12  Paul Brook  <paul@codesourcery.com>
+
+	* expr.c (gfc_check_assign_symbol): Handle pointer assignments.
+	* trans-array.c (gfc_trans_auto_array_allocation): Remove
+	initialization code.
+	* trans-common.c (create_common): Use gfc_conv_initializer.
+	* trans-decl.c (gfc_get_symbol_decl): Use gfc_conv_initializer.
+	* trans-expr.c (gfc_conv_initializer): New function.
+	(gfc_conv_structure): Use it.
+	* trans.h (gfc_conv_initializer): Add prototype.
+
 2004-07-11  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/15986
