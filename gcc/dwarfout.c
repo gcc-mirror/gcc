@@ -531,153 +531,153 @@ static void generate_macinfo_entry	PROTO((char *, char *));
 */
 
 #ifndef TEXT_BEGIN_LABEL
-#define TEXT_BEGIN_LABEL	".L_text_b"
+#define TEXT_BEGIN_LABEL	"*.L_text_b"
 #endif
 #ifndef TEXT_END_LABEL
-#define TEXT_END_LABEL		".L_text_e"
+#define TEXT_END_LABEL		"*.L_text_e"
 #endif
 
 #ifndef DATA_BEGIN_LABEL
-#define DATA_BEGIN_LABEL	".L_data_b"
+#define DATA_BEGIN_LABEL	"*.L_data_b"
 #endif
 #ifndef DATA_END_LABEL
-#define DATA_END_LABEL		".L_data_e"
+#define DATA_END_LABEL		"*.L_data_e"
 #endif
 
 #ifndef DATA1_BEGIN_LABEL
-#define DATA1_BEGIN_LABEL	".L_data1_b"
+#define DATA1_BEGIN_LABEL	"*.L_data1_b"
 #endif
 #ifndef DATA1_END_LABEL
-#define DATA1_END_LABEL		".L_data1_e"
+#define DATA1_END_LABEL		"*.L_data1_e"
 #endif
 
 #ifndef RODATA_BEGIN_LABEL
-#define RODATA_BEGIN_LABEL	".L_rodata_b"
+#define RODATA_BEGIN_LABEL	"*.L_rodata_b"
 #endif
 #ifndef RODATA_END_LABEL
-#define RODATA_END_LABEL	".L_rodata_e"
+#define RODATA_END_LABEL	"*.L_rodata_e"
 #endif
 
 #ifndef RODATA1_BEGIN_LABEL
-#define RODATA1_BEGIN_LABEL	".L_rodata1_b"
+#define RODATA1_BEGIN_LABEL	"*.L_rodata1_b"
 #endif
 #ifndef RODATA1_END_LABEL
-#define RODATA1_END_LABEL	".L_rodata1_e"
+#define RODATA1_END_LABEL	"*.L_rodata1_e"
 #endif
 
 #ifndef BSS_BEGIN_LABEL
-#define BSS_BEGIN_LABEL		".L_bss_b"
+#define BSS_BEGIN_LABEL		"*.L_bss_b"
 #endif
 #ifndef BSS_END_LABEL
-#define BSS_END_LABEL		".L_bss_e"
+#define BSS_END_LABEL		"*.L_bss_e"
 #endif
 
 #ifndef LINE_BEGIN_LABEL
-#define LINE_BEGIN_LABEL	".L_line_b"
+#define LINE_BEGIN_LABEL	"*.L_line_b"
 #endif
 #ifndef LINE_LAST_ENTRY_LABEL
-#define LINE_LAST_ENTRY_LABEL	".L_line_last"
+#define LINE_LAST_ENTRY_LABEL	"*.L_line_last"
 #endif
 #ifndef LINE_END_LABEL
-#define LINE_END_LABEL		".L_line_e"
+#define LINE_END_LABEL		"*.L_line_e"
 #endif
 
 #ifndef DEBUG_BEGIN_LABEL
-#define DEBUG_BEGIN_LABEL	".L_debug_b"
+#define DEBUG_BEGIN_LABEL	"*.L_debug_b"
 #endif
 #ifndef SFNAMES_BEGIN_LABEL
-#define SFNAMES_BEGIN_LABEL	".L_sfnames_b"
+#define SFNAMES_BEGIN_LABEL	"*.L_sfnames_b"
 #endif
 #ifndef SRCINFO_BEGIN_LABEL
-#define SRCINFO_BEGIN_LABEL	".L_srcinfo_b"
+#define SRCINFO_BEGIN_LABEL	"*.L_srcinfo_b"
 #endif
 #ifndef MACINFO_BEGIN_LABEL
-#define MACINFO_BEGIN_LABEL	".L_macinfo_b"
+#define MACINFO_BEGIN_LABEL	"*.L_macinfo_b"
 #endif
 
 #ifndef DIE_BEGIN_LABEL_FMT
-#define DIE_BEGIN_LABEL_FMT	".L_D%u"
+#define DIE_BEGIN_LABEL_FMT	"*.L_D%u"
 #endif
 #ifndef DIE_END_LABEL_FMT
-#define DIE_END_LABEL_FMT	".L_D%u_e"
+#define DIE_END_LABEL_FMT	"*.L_D%u_e"
 #endif
 #ifndef PUB_DIE_LABEL_FMT
-#define PUB_DIE_LABEL_FMT	".L_P%u"
+#define PUB_DIE_LABEL_FMT	"*.L_P%u"
 #endif
 #ifndef INSN_LABEL_FMT
-#define INSN_LABEL_FMT		".L_I%u_%u"
+#define INSN_LABEL_FMT		"*.L_I%u_%u"
 #endif
 #ifndef BLOCK_BEGIN_LABEL_FMT
-#define BLOCK_BEGIN_LABEL_FMT	".L_B%u"
+#define BLOCK_BEGIN_LABEL_FMT	"*.L_B%u"
 #endif
 #ifndef BLOCK_END_LABEL_FMT
-#define BLOCK_END_LABEL_FMT	".L_B%u_e"
+#define BLOCK_END_LABEL_FMT	"*.L_B%u_e"
 #endif
 #ifndef SS_BEGIN_LABEL_FMT
-#define SS_BEGIN_LABEL_FMT	".L_s%u"
+#define SS_BEGIN_LABEL_FMT	"*.L_s%u"
 #endif
 #ifndef SS_END_LABEL_FMT
-#define SS_END_LABEL_FMT	".L_s%u_e"
+#define SS_END_LABEL_FMT	"*.L_s%u_e"
 #endif
 #ifndef EE_BEGIN_LABEL_FMT
-#define EE_BEGIN_LABEL_FMT	".L_e%u"
+#define EE_BEGIN_LABEL_FMT	"*.L_e%u"
 #endif
 #ifndef EE_END_LABEL_FMT
-#define EE_END_LABEL_FMT	".L_e%u_e"
+#define EE_END_LABEL_FMT	"*.L_e%u_e"
 #endif
 #ifndef MT_BEGIN_LABEL_FMT
-#define MT_BEGIN_LABEL_FMT	".L_t%u"
+#define MT_BEGIN_LABEL_FMT	"*.L_t%u"
 #endif
 #ifndef MT_END_LABEL_FMT
-#define MT_END_LABEL_FMT	".L_t%u_e"
+#define MT_END_LABEL_FMT	"*.L_t%u_e"
 #endif
 #ifndef LOC_BEGIN_LABEL_FMT
-#define LOC_BEGIN_LABEL_FMT	".L_l%u"
+#define LOC_BEGIN_LABEL_FMT	"*.L_l%u"
 #endif
 #ifndef LOC_END_LABEL_FMT
-#define LOC_END_LABEL_FMT	".L_l%u_e"
+#define LOC_END_LABEL_FMT	"*.L_l%u_e"
 #endif
 #ifndef BOUND_BEGIN_LABEL_FMT
-#define BOUND_BEGIN_LABEL_FMT	".L_b%u_%u_%c"
+#define BOUND_BEGIN_LABEL_FMT	"*.L_b%u_%u_%c"
 #endif
 #ifndef BOUND_END_LABEL_FMT
-#define BOUND_END_LABEL_FMT	".L_b%u_%u_%c_e"
+#define BOUND_END_LABEL_FMT	"*.L_b%u_%u_%c_e"
 #endif
 #ifndef DERIV_BEGIN_LABEL_FMT
-#define DERIV_BEGIN_LABEL_FMT	".L_d%u"
+#define DERIV_BEGIN_LABEL_FMT	"*.L_d%u"
 #endif
 #ifndef DERIV_END_LABEL_FMT
-#define DERIV_END_LABEL_FMT	".L_d%u_e"
+#define DERIV_END_LABEL_FMT	"*.L_d%u_e"
 #endif
 #ifndef SL_BEGIN_LABEL_FMT
-#define SL_BEGIN_LABEL_FMT	".L_sl%u"
+#define SL_BEGIN_LABEL_FMT	"*.L_sl%u"
 #endif
 #ifndef SL_END_LABEL_FMT
-#define SL_END_LABEL_FMT	".L_sl%u_e"
+#define SL_END_LABEL_FMT	"*.L_sl%u_e"
 #endif
 #ifndef BODY_BEGIN_LABEL_FMT
-#define BODY_BEGIN_LABEL_FMT	".L_b%u"
+#define BODY_BEGIN_LABEL_FMT	"*.L_b%u"
 #endif
 #ifndef BODY_END_LABEL_FMT
-#define BODY_END_LABEL_FMT	".L_b%u_e"
+#define BODY_END_LABEL_FMT	"*.L_b%u_e"
 #endif
 #ifndef FUNC_END_LABEL_FMT
-#define FUNC_END_LABEL_FMT	".L_f%u_e"
+#define FUNC_END_LABEL_FMT	"*.L_f%u_e"
 #endif
 #ifndef TYPE_NAME_FMT
-#define TYPE_NAME_FMT		".L_T%u"
+#define TYPE_NAME_FMT		"*.L_T%u"
 #endif
 #ifndef DECL_NAME_FMT
-#define DECL_NAME_FMT		".L_E%u"
+#define DECL_NAME_FMT		"*.L_E%u"
 #endif
 #ifndef LINE_CODE_LABEL_FMT
-#define LINE_CODE_LABEL_FMT	".L_LC%u"
+#define LINE_CODE_LABEL_FMT	"*.L_LC%u"
 #endif
 #ifndef SFNAMES_ENTRY_LABEL_FMT
-#define SFNAMES_ENTRY_LABEL_FMT	".L_F%u"
+#define SFNAMES_ENTRY_LABEL_FMT	"*.L_F%u"
 #endif
 #ifndef LINE_ENTRY_LABEL_FMT
-#define LINE_ENTRY_LABEL_FMT	".L_LE%u"
+#define LINE_ENTRY_LABEL_FMT	"*.L_LE%u"
 #endif
 
 /* Definitions of defaults for various types of primitive assembly language
