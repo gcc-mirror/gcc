@@ -33,7 +33,7 @@
 #endif
 #endif
 
-#include <std/bastring.cc>
+#include <string>
 
 #ifdef C
 typedef char c;

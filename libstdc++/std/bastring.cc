@@ -25,9 +25,6 @@
 // Written by Jason Merrill based upon the specification by Takanori Adachi
 // in ANSI X3J16/94-0013R2.
 
-#include <cstddef>
-#include <std/bastring.h>
-
 extern "C++" {
 template <class charT, class traits, class Allocator>
 inline void * basic_string <charT, traits, Allocator>::Rep::
@@ -47,11 +44,7 @@ operator delete (void * ptr)
 
 template <class charT, class traits, class Allocator>
 inline size_t basic_string <charT, traits, Allocator>::Rep::
-#if _G_ALLOC_CONTROL
-default_frob (size_t s)
-#else
 frob_size (size_t s)
-#endif
 {
   size_t i = 16;
   while (i < s) i *= 2;
@@ -83,11 +76,7 @@ clone ()
 
 template <class charT, class traits, class Allocator>
 inline bool basic_string <charT, traits, Allocator>::Rep::
-#ifdef _G_ALLOC_CONTROL
-default_excess (size_t s, size_t r)
-#else
 excess_slop (size_t s, size_t r)
-#endif
 {
   return 2 * (s <= 16 ? 16 : s) < r;
 }
@@ -520,20 +509,10 @@ getline (istream &is, basic_string <charT, traits, Allocator>& s, charT delim)
 
 template <class charT, class traits, class Allocator>
 basic_string <charT, traits, Allocator>::Rep
-basic_string<charT, traits, Allocator>::nilRep = { 0, 0, 1 };
+basic_string<charT, traits, Allocator>::nilRep = { 0, 0, 1, false };
 
 template <class charT, class traits, class Allocator>
 const basic_string <charT, traits, Allocator>::size_type
 basic_string <charT, traits, Allocator>::npos;
-
-#ifdef _G_ALLOC_CONTROL
-template <class charT, class traits, class Allocator>
-bool (*basic_string <charT, traits, Allocator>::Rep::excess_slop) (size_t, size_t)
-     = basic_string <charT, traits, Allocator>::Rep::default_excess;
-
-template <class charT, class traits, class Allocator>
-size_t (*basic_string <charT, traits, Allocator>::Rep::frob_size) (size_t)
-     = basic_string <charT, traits, Allocator>::Rep::default_frob;
-#endif
 
 } // extern "C++"
