@@ -1,3 +1,12 @@
+Thu Jun  1 12:24:21 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (get_alias_set): Don't call language-specific routine more
+	than is needed and clean up code a bit.
+	* c-common.c (c_get_alias_set): All references whose type
+	is char get alias set 0, but character types need not.
+	* varasm.c (make_function_rtl): Don't call set_mem_attributes.
+	(make_decl_rtl): Don't call it for FUNCTION_DECL.
+
 2000-06-01  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/tests/base/...: new base result files

@@ -3284,33 +3284,22 @@ c_get_alias_set (t)
       return 0;
 
   /* If this is a char *, the ANSI C standard says it can alias
-     anything.  */
-  else if (TREE_CODE (t) == INDIRECT_REF
-	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == INTEGER_TYPE
-	   && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (t, 0)))
-	       == TYPE_PRECISION (char_type_node)))
+     anything.  Note that all references need do this.  */
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 'r'
+      && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+      && TYPE_PRECISION (TREE_TYPE (t)) == TYPE_PRECISION (char_type_node))
     return 0;
 
   /* That's all the expressions we handle specially.  */
   if (! TYPE_P (t))
     return -1;
 
-  if (TREE_CODE (t) == INTEGER_TYPE)
-    {
-      /* The C standard specifically allows aliasing between signed and
-	 unsigned variants of the same type.  We treat the signed
-	 variant as canonical.  */
-      tree signed_variant = signed_type (t);
+  /* The C standard specifically allows aliasing between signed and
+     unsigned variants of the same type.  We treat the signed
+     variant as canonical.  */
+  if (TREE_CODE (t) == INTEGER_TYPE && TREE_UNSIGNED (t))
+    return get_alias_set (signed_type (t));
 
-      if (signed_variant == signed_char_type_node)
-	/* The C standard guarantess that any object may be accessed
-	   via an lvalue that has character type.  We don't have to
-	   check for unsigned_char_type_node or char_type_node because
-	   we are specifically looking at the signed variant.  */
-	return 0;
-      else if (signed_variant  != t)
-	return get_alias_set (signed_variant);
-    }
   else if (POINTER_TYPE_P (t))
     {
       tree t1;
