@@ -5906,13 +5906,20 @@ names.
 @findex ASM_OUTPUT_DESTRUCTOR
 This is like @code{ASM_OUTPUT_CONSTRUCTOR} but used for termination
 functions rather than initialization functions.
+
+When @code{ASM_OUTPUT_CONSTRUCTOR} and @code{ASM_OUTPUT_DESTRUCTOR} are
+defined, the initializaiton routine generated for the generated object
+file will have static linkage.
 @end table
 
 If your system uses @code{collect2} as the means of processing
 constructors, then that program normally uses @code{nm} to scan an
-object file for constructor functions to be called.  On certain kinds of
-systems, you can define these macros to make @code{collect2} work faster
-(and, in some cases, make it work at all):
+object file for constructor functions to be called.  On such systems you
+must not define @code{ASM_OUTPUT_CONSTRUCTOR} and @code{ASM_OUTPUT_DESTRUCTOR}
+as the object file's initialization routine must have global scope.
+
+On certain kinds of systems, you can define these macros to make
+@code{collect2} work faster (and, in some cases, make it work at all):
 
 @table @code
 @findex OBJECT_FORMAT_COFF
