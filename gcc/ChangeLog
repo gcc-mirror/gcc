@@ -1,5 +1,8 @@
 2004-02-12  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/darwin.h: Add include guards.  Remove old, now incorrect,
+	comment about STANDARD_EXEC_PREFIX.
+
 	* Makefile.in (install-man): Use $(CPP_INSTALL_NAME) and
 	$(GCOV_INSTALL_NAME) to install manpages.  Remove generic rule
 	for installing .1 manpages.  Add rules for installing cpp

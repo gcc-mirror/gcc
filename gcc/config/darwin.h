@@ -20,6 +20,9 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef CONFIG_DARWIN_H
+#define CONFIG_DARWIN_H
+
 /* The definitions in this file are common to all processor types
    running Darwin, which is the kernel for Mac OS X.  Darwin is
    basically a BSD user layer laid over a Mach kernel, then evolved
@@ -29,11 +32,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Although NeXT ran on many different architectures, as of Jan 2001
    the only supported Darwin targets are PowerPC and x86.  */
-
-/* Technically, STANDARD_EXEC_PREFIX should be /usr/libexec/, but in
-   practice this makes it hard to install new compilers elsewhere, so
-   leave it undefined and expect system builders to set configure args
-   correctly.  */
 
 /* One of Darwin's NeXT legacies is the Mach-O format, which is partly
    like a.out and partly like COFF, with additional features like
@@ -831,3 +829,5 @@ enum machopic_addr_class {
 #define ASM_APP_ON ""
 #undef ASM_APP_OFF
 #define ASM_APP_OFF ""
+
+#endif /* CONFIG_DARWIN_H */
