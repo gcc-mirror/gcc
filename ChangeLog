@@ -1,3 +1,8 @@
+Mon Jun  4 16:32:58 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* ltcf-c.sh (archive_cmds, archive_expsym_cmds) [solaris,
+	with_gcc]: Use `gcc -shared' to build a shared library.
+
 Mon Jun  4 16:24:56 2001  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* ltcf-c.sh (archive_cmd) [hpux, with_gcc]: Use gcc to link shared
