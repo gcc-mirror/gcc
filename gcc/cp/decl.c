@@ -7704,6 +7704,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   char *asmspec = NULL;
   int was_readonly = 0;
   int already_used = 0;
+  tree core_type;
 
   /* If this is 0, then we did not change obstacks.  */
   if (! decl)
@@ -7859,6 +7860,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
   GNU_xref_decl (current_function_decl, decl);
 
+  core_type = type;
+  while (TREE_CODE (core_type) == ARRAY_TYPE)
+    core_type = TREE_TYPE (core_type);
+  
   if (TREE_CODE (decl) == FIELD_DECL)
     ;
   else if (TREE_CODE (decl) == CONST_DECL)
@@ -7907,14 +7912,11 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   else if (TREE_CODE_CLASS (TREE_CODE (type)) == 't'
 	   && (IS_AGGR_TYPE (type) || TYPE_NEEDS_CONSTRUCTING (type)))
     {
-      tree ctype = type;
-      while (TREE_CODE (ctype) == ARRAY_TYPE)
-	ctype = TREE_TYPE (ctype);
-      if (! TYPE_NEEDS_CONSTRUCTING (ctype))
+      if (! TYPE_NEEDS_CONSTRUCTING (core_type))
 	{
-	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (ctype))
+	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type))
 	    cp_error ("structure `%D' with uninitialized const members", decl);
-	  if (CLASSTYPE_REF_FIELDS_NEED_INIT (ctype))
+	  if (CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
 	    cp_error ("structure `%D' with uninitialized reference members",
 		      decl);
 	}
@@ -8183,17 +8185,17 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	resume_temporary_allocation ();
 
       if (type != error_mark_node
-	  && TYPE_LANG_SPECIFIC (type)
-	  && CLASSTYPE_ABSTRACT_VIRTUALS (type))
-	abstract_virtuals_error (decl, type);
+	  && TYPE_LANG_SPECIFIC (core_type)
+	  && CLASSTYPE_ABSTRACT_VIRTUALS (core_type))
+	abstract_virtuals_error (decl, core_type);
       else if ((TREE_CODE (type) == FUNCTION_TYPE
 		|| TREE_CODE (type) == METHOD_TYPE)
 	       && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
 	       && CLASSTYPE_ABSTRACT_VIRTUALS (TREE_TYPE (type)))
 	abstract_virtuals_error (decl, TREE_TYPE (type));
 
-      if (TYPE_LANG_SPECIFIC (type) && IS_SIGNATURE (type))
-	signature_error (decl, type);
+      if (TYPE_LANG_SPECIFIC (core_type) && IS_SIGNATURE (core_type))
+	signature_error (decl, core_type);
       else if ((TREE_CODE (type) == FUNCTION_TYPE
 		|| TREE_CODE (type) == METHOD_TYPE)
 	       && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
