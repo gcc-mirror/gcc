@@ -1,5 +1,10 @@
 2004-04-27  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.c (arm_promote_prototypes): New function.
+	(TARGET_PROMOTE_PROTOTYPES): Use it.
+
+2004-04-27  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/arm.c (arm_expand_epilogue): Count blocks of 4 regs.
 
 2004-04-26  Bernard Giroud  <bgiroud@free.fr>
