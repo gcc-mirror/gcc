@@ -2323,6 +2323,12 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
       break;
     }
 
+  if (GET_CODE (base) == CONST_INT)
+    {
+      start += INTVAL (base);
+      base = const0_rtx;
+    }
+
   end = start + size;
 
   /* Set the return values.  */
@@ -2352,13 +2358,6 @@ refers_to_mem_p (x, base, start, end)
   register HOST_WIDE_INT i;
   register enum rtx_code code;
   register char *fmt;
-
-  if (GET_CODE (base) == CONST_INT)
-    {
-      start += INTVAL (base);
-      end += INTVAL (base);
-      base = const0_rtx;
-    }
 
  repeat:
   if (x == 0)
