@@ -40,7 +40,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cgraph.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *);
-static tree inline_forbidden_p (tree *, int *, void *);
 static tree start_cdtor (int);
 static void finish_cdtor (tree);
 
@@ -65,110 +64,45 @@ c_disregard_inline_limits (tree fn)
   return DECL_DECLARED_INLINE_P (fn) && DECL_EXTERNAL (fn);
 }
 
-static tree
-inline_forbidden_p (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
-		    void *fn)
-{
-  tree node = *nodep;
-  tree t;
-
-  switch (TREE_CODE (node))
-    {
-    case CALL_EXPR:
-      t = get_callee_fndecl (node);
-
-      if (! t)
-	break;
-
-      /* We cannot inline functions that call setjmp.  */
-      if (setjmp_call_p (t))
-	return node;
-
-      switch (DECL_FUNCTION_CODE (t))
-	{
-	  /* We cannot inline functions that take a variable number of
-	     arguments.  */
-	case BUILT_IN_VA_START:
-	case BUILT_IN_STDARG_START:
-#if 0
-	  /* Functions that need information about the address of the
-             caller can't (shouldn't?) be inlined.  */
-	case BUILT_IN_RETURN_ADDRESS:
-#endif
-	  return node;
-
-	default:
-	  break;
-	}
-
-      break;
-
-    case DECL_STMT:
-      /* We cannot inline functions that contain other functions.  */
-      if (TREE_CODE (TREE_OPERAND (node, 0)) == FUNCTION_DECL
-	  && DECL_INITIAL (TREE_OPERAND (node, 0)))
-	return node;
-      break;
-
-    case GOTO_STMT:
-    case GOTO_EXPR:
-      t = TREE_OPERAND (node, 0);
-
-      /* We will not inline a function which uses computed goto.  The
-	 addresses of its local labels, which may be tucked into
-	 global storage, are of course not constant across
-	 instantiations, which causes unexpected behavior.  */
-      if (TREE_CODE (t) != LABEL_DECL)
-	return node;
-
-      /* We cannot inline a nested function that jumps to a nonlocal
-         label.  */
-      if (TREE_CODE (t) == LABEL_DECL
-	  && !DECL_FILE_SCOPE_P (t) && DECL_CONTEXT (t) != fn)
-	return node;
-
-      break;
-
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      /* We cannot inline a function of the form
-
-	   void F (int i) { struct S { int ar[i]; } s; }
-
-	 Attempting to do so produces a catch-22 in tree-inline.c.
-	 If walk_tree examines the TYPE_FIELDS chain of RECORD_TYPE/
-	 UNION_TYPE nodes, then it goes into infinite recursion on a
-	 structure containing a pointer to its own type.  If it doesn't,
-	 then the type node for S doesn't get adjusted properly when
-	 F is inlined, and we abort in find_function_data.  */
-      for (t = TYPE_FIELDS (node); t; t = TREE_CHAIN (t))
-	if (variably_modified_type_p (TREE_TYPE (t)))
-	  return node;
-
-    default:
-      break;
-    }
-
-  return NULL_TREE;
-}
-
 int
 c_cannot_inline_tree_fn (tree *fnp)
 {
   tree fn = *fnp;
   tree t;
+  bool do_warning = (warn_inline
+		     && DECL_INLINE (fn)
+		     && DECL_DECLARED_INLINE_P (fn)
+		     && !DECL_IN_SYSTEM_HEADER (fn));
 
   if (flag_really_no_inline
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
-    return 1;
+    {
+      if (do_warning)
+	warning ("%Hfunction '%F' can never be inlined because it "
+		 "is supressed using -fno-inline",
+		 &DECL_SOURCE_LOCATION (fn), fn);
+      goto cannot_inline;
+    }
 
   /* Don't auto-inline anything that might not be bound within
      this unit of translation.  */
   if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn))
-    goto cannot_inline;
+    {
+      if (do_warning)
+	warning ("%Hfunction '%F' can never be inlined because it might not "
+		 "be bound within this unit of translation",
+		 &DECL_SOURCE_LOCATION (fn), fn);
+      goto cannot_inline;
+    }
 
   if (! function_attribute_inlinable_p (fn))
-    goto cannot_inline;
+    {
+      if (do_warning)
+	warning ("%Hfunction '%F' can never be inlined because it uses "
+		 "attributes conflicting with inlining",
+		 &DECL_SOURCE_LOCATION (fn), fn);
+      goto cannot_inline;
+    }
 
   /* If a function has pending sizes, we must not defer its
      compilation, and we can't inline it as a tree.  */
@@ -178,7 +112,13 @@ c_cannot_inline_tree_fn (tree *fnp)
       put_pending_sizes (t);
 
       if (t)
-	goto cannot_inline;
+	{
+	  if (do_warning)
+	    warning ("%Hfunction '%F' can never be inlined because it has "
+		     "pending sizes",
+		     &DECL_SOURCE_LOCATION (fn), fn);
+	  goto cannot_inline;
+	}
     }
 
   if (! DECL_FILE_SCOPE_P (fn))
@@ -186,30 +126,14 @@ c_cannot_inline_tree_fn (tree *fnp)
       /* If a nested function has pending sizes, we may have already
          saved them.  */
       if (DECL_LANG_SPECIFIC (fn)->pending_sizes)
-	goto cannot_inline;
+	{
+	  if (do_warning)
+	    warning ("%Hnested function '%F' can never be inlined because it "
+		     "has possibly saved pending sizes",
+		     &DECL_SOURCE_LOCATION (fn), fn);
+	  goto cannot_inline;
+	}
     }
-  else
-    {
-      /* We rely on the fact that this function is called upfront,
-	 just before we start expanding a function.  If FN is active
-	 (i.e., it's the current_function_decl or a parent thereof),
-	 we have to walk FN's saved tree.  Otherwise, we can safely
-	 assume we have done it before and, if we didn't mark it as
-	 uninlinable (in which case we wouldn't have been called), it
-	 is inlinable.  Unfortunately, this strategy doesn't work for
-	 nested functions, because they're only expanded as part of
-	 their enclosing functions, so the inlinability test comes in
-	 late.  */
-      t = current_function_decl;
-
-      while (t && t != fn)
-	t = DECL_CONTEXT (t);
-      if (! t)
-	return 0;
-    }
-
-  if (walk_tree (&DECL_SAVED_TREE (fn), inline_forbidden_p, fn, NULL))
-    goto cannot_inline;
 
   return 0;
 

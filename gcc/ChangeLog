@@ -1,3 +1,15 @@
+Thu Sep 11 01:21:05 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* c-objc-common.c (c_cannot_inline_tree_fn): Warn
+	on why function is not inlinable; do not check
+	the body.
+	(inline_forbidden_p): Move to...
+	* tree-inline.c (inline_forbidden_p_1): ... here; Add warnings;
+	deal with alloca, longjmp.
+	(inline_forbidden_p): New static function.
+	(find_alloca_call_1, find_alloca_call, find_builtin_longjmp_call_1,
+	find_builtin_longjmp_call): Kill.
+
 2003-09-10  Richard Henderson  <rth@redhat.com>
 
 	* cgraph.h (struct cgraph_node): Rename lowered to analyzed.
