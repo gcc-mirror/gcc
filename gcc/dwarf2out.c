@@ -1593,9 +1593,15 @@ output_call_frame_info (for_eh)
          frame.  Make the augmentation string three bytes (including the
          trailing null) so the pointer is 4-byte aligned.  The Solaris ld
          can't handle unaligned relocs.  */
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "eh");
       if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file, "eh");
+	  fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
+	}
+      else
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file, "eh", 3);
+	}
       fputc ('\n', asm_out_file);
 
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
@@ -5196,7 +5202,12 @@ output_die (die)
 	  break;
 
 	case dw_val_class_str:
-	  ASM_OUTPUT_DWARF_STRING (asm_out_file, a->dw_attr_val.v.val_str);
+	  if (flag_debug_asm)
+	    ASM_OUTPUT_DWARF_STRING (asm_out_file, a->dw_attr_val.v.val_str);
+	  else
+	    ASM_OUTPUT_ASCII (asm_out_file,
+			      a->dw_attr_val.v.val_str,
+			      strlen (a->dw_attr_val.v.val_str) + 1);
 	  break;
 
 	default:
@@ -5341,9 +5352,15 @@ output_pubnames ()
 
       fputc ('\n', asm_out_file);
 
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, pub->name);
       if (flag_debug_asm)
-	fprintf (asm_out_file, "%s external name", ASM_COMMENT_START);
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file, pub->name);
+	  fprintf (asm_out_file, "%s external name", ASM_COMMENT_START);
+	}
+      else
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file, pub->name, strlen (pub->name) + 1);
+	}
 
       fputc ('\n', asm_out_file);
     }
@@ -5568,10 +5585,18 @@ output_line_info ()
 
   for (ft_index = 1; ft_index < file_table_in_use; ++ft_index)
     {
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, file_table[ft_index]);
       if (flag_debug_asm)
-	fprintf (asm_out_file, "%s File Entry: 0x%x",
-		 ASM_COMMENT_START, ft_index);
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file, file_table[ft_index]);
+	  fprintf (asm_out_file, "%s File Entry: 0x%x",
+		   ASM_COMMENT_START, ft_index);
+	}
+      else
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file,
+			    file_table[ft_index],
+			    strlen (file_table[ft_index]) + 1);
+	}
 
       fputc ('\n', asm_out_file);
 
