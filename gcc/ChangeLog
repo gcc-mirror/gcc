@@ -1,3 +1,11 @@
+2004-12-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/18532
+	* mklibgcc.in: Build one set of EXTRA_MULTILIB_PARTS for
+	multilib at a time. Don't build the default set. Don't add
+	EXTRA_MULTILIB_PARTS to shared libunwind nor libgcc. Remove
+	filter for shared libunwind and libgcc.
+
 2004-12-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/18759
