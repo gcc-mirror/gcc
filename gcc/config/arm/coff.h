@@ -22,6 +22,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "arm/semi.h"
 #include "arm/aout.h"
+
+#undef  USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
+
 
 /* Run-time Target Specification.  */
 #undef  TARGET_VERSION

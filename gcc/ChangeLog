@@ -1,3 +1,7 @@
+Thu Nov 19 15:42:54 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/coff.h: Set USER_LABEL_PREFIX to "_".
+
 Thu Nov 19 23:20:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* Early auto_inc reloads don't conflict with outputs.
