@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ARM RISCiX 1.1x version.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe11@cl.cam.ac.uk), based on original
 	      work by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
@@ -21,7 +21,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* RISCix 1.1x is basically the same as 1.2x except that it doesn't have
+/* RISCiX 1.1x is basically the same as 1.2x except that it doesn't have
    symrename or atexit. */
 
 /* Translation to find startup files.  On RISCiX boxes, gcrt0.o is in
@@ -31,10 +31,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES  "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
-#endif
-
-#ifndef CPP_SPEC
-#define CPP_SPEC "%{m6:-D__arm6__} %{!ansi: -D_BSD_C}"
 #endif
 
 /* Riscix 1.1 doesn't have X/OPEN support, so only accept -mbsd (but ignore
@@ -81,7 +77,16 @@ Boston, MA 02111-1307, USA.  */
 #define SYMBOL__MAIN __gccmain
 #endif
 
+/* Override the normal default CPU */
+#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm2
+
 #include "arm/aout.h"
+
+#undef CPP_SPEC
+#define CPP_SPEC "\
+%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %{!ansi: -D_BSD_C} \
+"
+
 
 /* The native RISCiX assembler does not support stabs of any kind; because
    the native assembler is not used by the compiler, Acorn didn't feel it was

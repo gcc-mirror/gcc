@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ARM RISCiX version.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe11@cl.cam.ac.uk), based on original
 	      work by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
@@ -51,13 +51,6 @@ Boston, MA 02111-1307, USA.  */
     "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
 #endif
 
-#ifndef CPP_SPEC
-#define CPP_SPEC "%{m6:-D__arm6__} \
-	%{mbsd:%{pedantic:%e-mbsd and -pedantic incompatible} -D_BSD_C} \
-	%{mxopen:%{mbsd:%e-mbsd and -mxopen incompatible} 		\
-	  %{pedantic:%e-mxopen and -pedantic incompatible} -D_XOPEN_C}  \
-	%{!mbsd:%{!mxopen:%{!ansi: -D_BSD_C}}}"
-#endif
 
 /* RISCiX has some weird symbol name munging, that is done to the object module
    after assembly, which enables multiple libraries to be supported within
@@ -123,7 +116,21 @@ Boston, MA 02111-1307, USA.  */
 
 /* Maths operation domain error number, EDOM */
 #define TARGET_EDOM 33
+
+/* Override the normal default CPU */
+#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm2
+
 #include "arm/aout.h"
+
+/* Override CPP_SPEC, there's no point handling endianness (and probably
+   not much point handling apcs_pc), and we want to add the right #defines
+   when using the include files.  */
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
+	%{mbsd:%{pedantic:%e-mbsd and -pedantic incompatible} -D_BSD_C} \
+	%{mxopen:%{mbsd:%e-mbsd and -mxopen incompatible} 		\
+	  %{pedantic:%e-mxopen and -pedantic incompatible} -D_XOPEN_C}  \
+	%{!mbsd:%{!mxopen:%{!ansi: -D_BSD_C}}}"
 
 /* The native RISCiX assembler does not support stabs of any kind; because
    the native assembler is not used by the compiler, Acorn didn't feel it was
