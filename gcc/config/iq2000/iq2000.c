@@ -1610,7 +1610,7 @@ iq2000_va_arg (tree valist, tree type)
     if (r != addr_rtx)
       emit_move_insn (addr_rtx, r);
 
-    /* flush the POSTINCREMENT */
+    /* Flush the POSTINCREMENT.  */
     emit_queue();
 
     if (indirect)
@@ -2348,7 +2348,7 @@ iq2000_expand_prologue (void)
 	      if (GET_CODE (entry_parm) != REG)
 	        abort ();
 
-	      /* passed in a register, so will get homed automatically */
+	      /* Passed in a register, so will get homed automatically.  */
 	      if (GET_MODE (entry_parm) == BLKmode)
 		words = (int_size_in_bytes (passed_type) + 3) / 4;
 	      else
@@ -2719,7 +2719,7 @@ iq2000_output_conditional_branch (rtx insn, rtx * operands, int two_operands_p,
   static char buffer[200];
   /* The kind of comparison we are doing.  */
   enum rtx_code code = GET_CODE (operands[0]);
-  /* nonzero if the opcode for the comparison needs a `z' indicating
+  /* Nonzero if the opcode for the comparison needs a `z' indicating
      that it is a comparison against zero.  */
   int need_z_p;
   /* A string to use in the assembly output to represent the first
@@ -3744,7 +3744,7 @@ iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int * total)
 	  * total = COSTS_N_INSNS (2);
 	else if (GET_CODE (symref) != SYMBOL_REF)
 	  * total = COSTS_N_INSNS (4);
-	/* let's be paranoid....  */
+	/* Let's be paranoid....  */
 	else if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)
 	  * total = COSTS_N_INSNS (2);
 	else

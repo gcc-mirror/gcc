@@ -1,3 +1,9 @@
+2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/iq2000/iq2000-protos.h: Fix comment formatting.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/iq2000/iq2000.md: Likewise.
+
 2004-01-14  J. Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (is_ada_subrange_type): No longer check the TYPE_NAME.
