@@ -93,6 +93,15 @@ lhd_decode_option (argc, argv)
   return 0;
 }
 
+/* The default post options hook.  */
+
+bool
+lhd_post_options (pfilename)
+     const char **pfilename ATTRIBUTE_UNUSED;
+{
+  return false;
+}
+
 /* Called from by print-tree.c.  */
 
 void

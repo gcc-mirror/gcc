@@ -3964,7 +3964,7 @@ extern tree make_aggr_type			(enum tree_code);
 extern void yyerror				(const char *);
 extern void yyhook				(int);
 extern int cp_type_qual_from_rid                (tree);
-extern const char *cxx_init			(const char *);
+extern bool cxx_init				(void);
 extern void cxx_finish (void);
 extern void cxx_init_options (void);
 

@@ -432,13 +432,11 @@ generate_struct_by_value_array ()
   exit (0);
 }
 
-const char *
-objc_init (filename)
-     const char *filename;
+bool
+objc_init ()
 {
-  filename = c_objc_common_init (filename);
-  if (filename == NULL)
-    return filename;
+  if (c_objc_common_init () == false)
+    return false;
 
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
@@ -482,7 +480,7 @@ objc_init (filename)
   if (print_struct_values)
     generate_struct_by_value_array ();
 
-  return filename;
+  return true;
 }
 
 void

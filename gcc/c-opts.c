@@ -39,6 +39,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define TARGET_SYSTEM_ROOT NULL
 #endif
 
+static int saved_lineno;
+
 /* CPP's options.  */
 static cpp_options *cpp_opts;
 
@@ -1442,7 +1444,8 @@ c_common_decode_option (argc, argv)
 
 /* Post-switch processing.  */
 bool
-c_common_post_options ()
+c_common_post_options (pfilename)
+     const char **pfilename;
 {
   /* Canonicalize the input and output filenames.  */
   if (in_fname == NULL || !strcmp (in_fname, "-"))
@@ -1492,26 +1495,6 @@ c_common_post_options ()
   if (warn_missing_format_attribute && !warn_format)
     warning ("-Wmissing-format-attribute ignored without -Wformat");
 
-  /* If an error has occurred in cpplib, note it so we fail
-     immediately.  */
-  errorcount += cpp_errors (parse_in);
-
-  return flag_preprocess_only;
-}
-
-/* Front end initialization common to C, ObjC and C++.  */
-const char *
-c_common_init (filename)
-     const char *filename;
-{
-  /* Set up preprocessor arithmetic.  Must be done after call to
-     c_common_nodes_and_builtins for type nodes to be good.  */
-  cpp_opts->precision = TYPE_PRECISION (intmax_type_node);
-  cpp_opts->char_precision = TYPE_PRECISION (char_type_node);
-  cpp_opts->int_precision = TYPE_PRECISION (integer_type_node);
-  cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
-  cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
-
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is
@@ -1539,19 +1522,43 @@ c_common_init (filename)
     }
 
   /* NOTE: we use in_fname here, not the one supplied.  */
-  filename = cpp_read_main_file (parse_in, in_fname, ident_hash);
+  *pfilename = cpp_read_main_file (parse_in, in_fname, ident_hash);
+
+  saved_lineno = lineno;
+  lineno = 0;
+
+  /* If an error has occurred in cpplib, note it so we fail
+     immediately.  */
+  errorcount += cpp_errors (parse_in);
+
+  return flag_preprocess_only;
+}
+
+/* Front end initialization common to C, ObjC and C++.  */
+bool
+c_common_init ()
+{
+  lineno = saved_lineno;
+
+  /* Set up preprocessor arithmetic.  Must be done after call to
+     c_common_nodes_and_builtins for type nodes to be good.  */
+  cpp_opts->precision = TYPE_PRECISION (intmax_type_node);
+  cpp_opts->char_precision = TYPE_PRECISION (char_type_node);
+  cpp_opts->int_precision = TYPE_PRECISION (integer_type_node);
+  cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
+  cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
 
   if (flag_preprocess_only)
     {
-      if (filename)
+      if (main_input_filename)
 	preprocess_file (parse_in);
-      return NULL;
+      return false;
     }
 
   /* Has to wait until now so that cpplib has its hash table.  */
   init_pragma ();
 
-  return filename;
+  return true;
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */

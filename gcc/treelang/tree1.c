@@ -78,7 +78,7 @@ unsigned int option_lexer_trace = 0;
 
 /* Local variables.  */
 
-unsigned char *in_fname = NULL;	/* Input file name.  */
+const char *in_fname;	/* Input file name.  */
 
 /* This is 1 if we have output the version string.  */
 
@@ -179,12 +179,12 @@ treelang_decode_option (num_options_left, first_option_left)
 
 /* Language dependent parser setup.  */
 
-const char*
-treelang_init (const char* filename)
+bool
+treelang_init ()
 {
-  /* Set up the declarations needed for this front end.  */
+  in_fname = main_input_filename;
 
-  input_filename = "";
+  /* Set up the declarations needed for this front end.  */
   lineno = 0;
 
   /* Init decls etc.  */
@@ -193,7 +193,7 @@ treelang_init (const char* filename)
 
   /* This error will not happen from GCC as it will always create a
      fake input file.  */
-  if (!filename || (filename[0] == ' ') || (!filename[0])) 
+  if (!in_fname || in_fname[0] == ' ' || !in_fname[0]) 
     {
       if (!version_done)
         {
@@ -201,17 +201,17 @@ treelang_init (const char* filename)
           exit (1);
         }
 
-      in_fname = NULL;
-      return NULL;
+      return false;
     }
-  yyin = fopen (filename, "r");
+
+  yyin = fopen (in_fname, "r");
   if (!yyin)
     {
-      fprintf (stderr, "Unable to open input file %s\n", filename);
+      fprintf (stderr, "Unable to open input file %s\n", in_fname);
       exit (1);
     }
-  input_filename = filename;
-  return (char*) (in_fname = (unsigned char*)filename);
+
+  return true;
 }
 
 /* Language dependent wrapup.  */

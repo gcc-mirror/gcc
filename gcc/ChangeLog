@@ -1,3 +1,23 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.h (c_common_init, c_common_post_options): Update.
+	* c-objc-common.c (c_objc_common_init): Update for new prototype.
+	* c-opts.c (saved_lineno): New.
+	(c_common_post_options, c_common_init): Update prototypes,
+	move call to cpp_read_main_file from latter to former.
+	* c-tree.h (c_ojbc_common_init): Update.
+	* langhooks-def.h (lhd_post_options): New.
+	(LANG_HOOKS_INIT, LANG_HOOKS_POST_OPTIONS): Update.
+	* langhooks.c (lhd_post_options): New.
+	* langhooks.h (struct lang_hooks): Update post_options and init hooks.
+	* toplev.c (no_backend): New.
+	(process_options): Call post_options hook and set main_input_filename
+	and input_filename here.
+	(lang_dependent_init, do_compile): post_options hook moved to
+	process_options.
+	* objc/objc-act.c (objc_init): Update prototype.
+	* objc/objc-act.h (objc_init): Update prototype.
+
 2003-03-08  Roger Sayle  <roger@eyesopen.com>
 
 	* emit-rtl.c (gen_lowpart): Don't attempt to load a part of

@@ -406,9 +406,8 @@ init_cp_pragma ()
    the exact order that things are done here.  It would be nice if the
    initialization done by this routine were moved to its subroutines,
    and the ordering dependencies clarified and reduced.  */
-const char *
-cxx_init (filename)
-     const char *filename;
+bool
+cxx_init (void)
 {
   input_filename = "<internal>";
 
@@ -446,15 +445,14 @@ cxx_init (filename)
 
   interface_unknown = 1;
 
-  filename = c_common_init (filename);
-  if (filename == NULL)
-    return NULL;
+  if (c_common_init () == false)
+    return false;
 
   init_cp_pragma ();
 
-  init_repo (filename);
+  init_repo (main_input_filename);
 
-  return filename;
+  return true;
 }
 
 /* Helper function to load global variables with interface

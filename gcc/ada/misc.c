@@ -79,7 +79,7 @@ extern FILE *asm_out_file;
 extern int save_argc;
 extern char **save_argv;
 
-static const char *gnat_init		PARAMS ((const char *));
+static bool gnat_init			PARAMS ((void));
 static void gnat_init_options		PARAMS ((void));
 static int gnat_decode_option		PARAMS ((int, char **));
 static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
@@ -337,9 +337,8 @@ internal_error_function (msgid, ap)
 
 /* Perform all the initialization steps that are language-specific.  */
 
-static const char *
-gnat_init (filename)
-     const char *filename;
+static bool
+gnat_init ()
 {
   /* Performs whatever initialization steps needed by the language-dependent
      lexical analyzer.
@@ -350,7 +349,7 @@ gnat_init (filename)
   gnat_init_decl_processing ();
 
   /* Add the input filename as the last argument.  */
-  gnat_argv[gnat_argc] = (char *) filename;
+  gnat_argv[gnat_argc] = (char *) main_input_filename;
   gnat_argc++;
   gnat_argv[gnat_argc] = 0;
 
@@ -361,10 +360,7 @@ gnat_init (filename)
 
   set_lang_adjust_rli (gnat_adjust_rli);
 
-  if (filename == 0)
-    filename = "";
-
-  return filename;
+  return true;
 }
 
 /* If we are using the GCC mechanism for to process exception handling, we

@@ -46,6 +46,7 @@ extern void lhd_do_nothing_t PARAMS ((tree));
 extern void lhd_do_nothing_i PARAMS ((int));
 extern void lhd_do_nothing_f PARAMS ((struct function *));
 extern int lhd_decode_option PARAMS ((int, char **));
+extern bool lhd_post_options PARAMS ((const char **));
 extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
 extern tree lhd_return_tree PARAMS ((tree));
 extern tree lhd_return_null_tree PARAMS ((tree));
@@ -86,13 +87,13 @@ void write_global_declarations PARAMS ((void));
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
-#define LANG_HOOKS_INIT			lhd_do_nothing
+#define LANG_HOOKS_INIT			hook_bool_void_false
 #define LANG_HOOKS_FINISH		lhd_do_nothing
 #define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
 #define LANG_HOOKS_INIT_OPTIONS		lhd_do_nothing
 #define LANG_HOOKS_DECODE_OPTION	lhd_decode_option
-#define LANG_HOOKS_POST_OPTIONS		hook_bool_void_false
+#define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
 #define LANG_HOOKS_EXPAND_EXPR		lhd_expand_expr

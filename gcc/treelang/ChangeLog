@@ -1,3 +1,15 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* tree1.c (in_fname): Fix type.
+	(treelang_init): Update prototype and use of in_fname.
+	* treelang.h (in_fname): Fix type.
+	* treetree.c (tree_code_if_start, tree_code_if_else,
+	tree_code_if_end, tree_code_create_function_prototype,
+	tree_code_create_function_initial, tree_code_create_funciton_wrapup,
+	tree_code_create_variable, tree_code_output_expression_statement)
+	: Fix prototypes and use of filenames.
+	* treetree.h: Similarly.
+
 2003-03-05  Andreas Jaeger  <aj@suse.de>
 
 	* treetree.c (init_c_lex): Follow change to c-common.h.

@@ -40,7 +40,7 @@ enum category_enum
 };
 
 /* Input file name and FILE.  */
-extern unsigned char* in_fname;
+extern const char* in_fname;
 extern FILE* yyin;
 
 /* Forward references to satisfy mutually recursive definitions.  */

@@ -961,8 +961,8 @@ extern void disable_builtin_function		PARAMS ((const char *));
 extern tree build_va_arg			PARAMS ((tree, tree));
 
 extern void c_common_init_options		PARAMS ((enum c_language_kind));
-extern bool c_common_post_options		PARAMS ((void));
-extern const char *c_common_init		PARAMS ((const char *));
+extern bool c_common_post_options		PARAMS ((const char **));
+extern bool c_common_init			PARAMS ((void));
 extern void c_common_finish			PARAMS ((void));
 extern void c_common_parse_file			PARAMS ((int));
 extern HOST_WIDE_INT c_common_get_alias_set	PARAMS ((tree));
