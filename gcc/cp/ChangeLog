@@ -1,3 +1,8 @@
+Thu Jan 27 13:54:12 2000  Mike Stump  <mrs@wrs.com>
+
+	* decl.c (pushdecl): Fix up shadow warnings with respect to implicit
+	for scopes.
+
 2000-01-26  Jason Merrill  <jason@casey.cygnus.com>
 
 	* pt.c (unify): Use fold, not maybe_fold_nontype_arg.
