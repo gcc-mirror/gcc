@@ -33,15 +33,11 @@ SORT=sort		# Could be /bin/sort or /usr/bin/sort
 C_FILE=$1; shift
 H_FILE=$1; shift
 
-# Must unset, so that RS="" works in gawk 3.0-3.1.1 (possibly earlier too)
-# Appears to be a gawk bug, RS="" is not an extension
-unset POSIXLY_CORRECT
-
 ${AWK} '
-	BEGIN{ RS=""; FS="\n" }
 	# Ignore comments and blank lines
 	/^[ \t]*(;|$)/	{ next }
-	/^[^ \t]/ 	{ gsub ("\n", "\034", $0); print }
+	# Note that RS="" falls foul of gawk 3.1.2 bugs
+	/^[^ \t]/       { getline tmp; print $0 "\034" tmp}
 ' "$@" | ${SORT} | ${AWK} '
     function switch_flags (flags,   result)
     {

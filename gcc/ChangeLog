@@ -1,3 +1,7 @@
+2003-06-20  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* opts.sh: Tweak awk script for portability.
+
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10888
