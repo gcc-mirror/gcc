@@ -1,3 +1,8 @@
+2005-03-24  J"orn Rennecke <joern.rennecke@st.com>
+
+	Band aid for PR target/20617:
+	* config/sh/lib1funcs.asm (FUNC, ALIAS): Add .hidden directive.
+
 2005-03-23  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20601

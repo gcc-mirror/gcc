@@ -37,9 +37,19 @@ Boston, MA 02111-1307, USA.  */
    ELF local label prefixes by J"orn Rennecke
    amylaar@cygnus.com  */
 
+#define ALIAS(X,Y)	.global GLOBAL(X); .set GLOBAL(X),GLOBAL(Y)
+
 #ifdef __ELF__
 #define LOCAL(X)	.L_##X
-#define FUNC(X)		.type X,@function
+
+#if 1 /* ??? The export list mechanism is broken, everything that is not
+	 hidden is exported.  */
+#undef FUNC
+#define FUNC(X)		.type X,@function  .hidden X
+#undef ALIAS
+#define ALIAS(X,Y)	.global GLOBAL(X); .set GLOBAL(X),GLOBAL(Y); .hidden GLOBAL(X)
+#endif
+
 #define ENDFUNC0(X)	.Lfe_##X: .size X,.Lfe_##X-X
 #define ENDFUNC(X)	ENDFUNC0(X)
 #else
@@ -52,7 +62,6 @@ Boston, MA 02111-1307, USA.  */
 #define	GLOBAL0(U,X)	CONCAT(U,__##X)
 #define	GLOBAL(X)	GLOBAL0(__USER_LABEL_PREFIX__,X)
 
-#define ALIAS(X,Y)	.global GLOBAL(X); .set GLOBAL(X),GLOBAL(Y)
 
 #if defined __SH5__ && ! defined __SH4_NOFPU__ && ! defined (__LITTLE_ENDIAN__)
 #define FMOVD_WORKS
