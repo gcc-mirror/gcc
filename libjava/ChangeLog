@@ -1,3 +1,9 @@
+2001-12-12  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/StringBuffer.java
+	(ensureCapacity_unsynchronized): Ensure we always get at least
+	`minimumCapacity' characters in new buffer.
+
 2001-12-11  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/String.java (String): New constructor.

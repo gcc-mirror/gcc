@@ -130,7 +130,7 @@ public final class StringBuffer
   {
     if (minimumCapacity > value.length)
       {
-	minimumCapacity = value.length * 2 + 2;
+	minimumCapacity = Math.max (minimumCapacity, value.length * 2 + 2);
 	char[] nb = new char[minimumCapacity];
 	System.arraycopy(value, 0, nb, 0, count);
 	value = nb;
