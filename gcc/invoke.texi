@@ -88,7 +88,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @smallexample
--c  -S  -E  -o @var{file}  -pipe  -v  --help  -x @var{language}
+-c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -v  --help  -x @var{language}
 @end smallexample
 
 @item C Language Options
@@ -428,7 +428,7 @@ in the following sections.
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @smallexample
 -fcall-saved-@var{reg}  -fcall-used-@var{reg}
--fexceptions -ffixed-@var{reg}  -finhibit-size-directive
+-fexceptions  -funwind-tables  -ffixed-@var{reg}  -finhibit-size-directive
 -fcheck-memory-usage  -fprefix-function-name
 -fno-common  -fno-ident  -fno-gnu-linker
 -fpcc-struct-return  -fpic  -fPIC
@@ -527,6 +527,13 @@ assembler  assembler-with-cpp
 Turn off any specification of a language, so that subsequent files are
 handled according to their file name suffixes (as they are if @samp{-x}
 has not been used at all).
+
+@item -pass-exit-codes
+Normally the @code{gcc} program will exit with the code of 1 if any
+phase of the compiler returns a non-success return code.  If you specify
+@samp{-pass-exit-codes}, the @code{gcc} program will instead return with
+numerically highest error produced by any phase that returned an error
+indication.
 @end table
 
 If you only want some of the stages of compilation, you can use
@@ -6692,6 +6699,12 @@ to enable this option when compiling C code that needs to interoperate
 properly with exception handlers written in C++.  You may also wish to
 disable this option if you are compiling older C++ programs that don't
 use exception handling.
+
+@item -funwind-tables
+Similar to @code{-fexceptions}, except that it will just generate any needed
+static data, but will not affect the generated code in any other way.
+You will normally not enable this option; instead, a language processor
+that needs this handling would enable it on your behalf.
 
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like

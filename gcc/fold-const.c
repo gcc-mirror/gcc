@@ -92,6 +92,7 @@ static int merge_ranges		PROTO((int *, tree *, tree *, int, tree, tree,
 static tree fold_range_test	PROTO((tree));
 static tree unextend		PROTO((tree, int, int, tree));
 static tree fold_truthop	PROTO((enum tree_code, tree, tree, tree));
+static tree optimize_minmax_comparison PROTO((tree));
 static tree strip_compound_expr PROTO((tree, tree));
 static int multiple_of_p	PROTO((tree, tree, tree));
 static tree constant_boolean_node PROTO((int, tree));
@@ -2585,6 +2586,11 @@ invert_truthvalue (arg)
       return build (COMPOUND_EXPR, type, TREE_OPERAND (arg, 0),
 		    invert_truthvalue (TREE_OPERAND (arg, 1)));
 
+    case WITH_RECORD_EXPR:
+      return build (WITH_RECORD_EXPR, type,
+		    invert_truthvalue (TREE_OPERAND (arg, 0)),
+		    TREE_OPERAND (arg, 1));
+
     case NON_LVALUE_EXPR:
       return invert_truthvalue (TREE_OPERAND (arg, 0));
 
@@ -2728,11 +2734,13 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 
   /* Get all the information about the extractions being done.  If the bit size
      if the same as the size of the underlying object, we aren't doing an
-     extraction at all and so can do nothing.  */
+     extraction at all and so can do nothing.  We also don't want to
+     do anything if the inner expression is a PLACEHOLDER_EXPR since we
+     then will no longer be able to replace it.  */
   linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
 				&lunsignedp, &lvolatilep, &alignment);
   if (linner == lhs || lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
-      || offset != 0)
+      || offset != 0 || TREE_CODE (linner) == PLACEHOLDER_EXPR)
     return 0;
 
  if (!const_p)
@@ -2743,7 +2751,8 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 				   &runsignedp, &rvolatilep, &alignment);
 
      if (rinner == rhs || lbitpos != rbitpos || lbitsize != rbitsize
-	 || lunsignedp != runsignedp || offset != 0)
+	 || lunsignedp != runsignedp || offset != 0
+	 || TREE_CODE (rinner) == PLACEHOLDER_EXPR)
        return 0;
    }
 
@@ -2936,7 +2945,8 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
   inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
 			       punsignedp, pvolatilep, &alignment);
   if ((inner == exp && and_mask == 0)
-      || *pbitsize < 0 || offset != 0)
+      || *pbitsize < 0 || offset != 0
+      || TREE_CODE (inner) == PLACEHOLDER_EXPR)
     return 0;
   
   /* Compute the mask to access the bitfield.  */
@@ -3305,15 +3315,11 @@ make_range (exp, pin_p, plow, phigh)
 
 	      /* A range without an upper bound is, naturally, unbounded.
 		 Since convert would have cropped a very large value, use
-		  the max value for the destination type.  */
+		 the max value for the destination type.  */
+	      high_positive
+		= TYPE_MAX_VALUE (equiv_type) ? TYPE_MAX_VALUE (equiv_type)
+		  : TYPE_MAX_VALUE (type);
 
-	      high_positive = TYPE_MAX_VALUE (equiv_type);
-	      if (!high_positive)
-		{
-		  high_positive = TYPE_MAX_VALUE (type);
-		  if (!high_positive)
-		    abort();
-		}
 	      high_positive = fold (build (RSHIFT_EXPR, type,
 					   convert (type, high_positive),
 					   convert (type, integer_one_node)));
@@ -3517,7 +3523,7 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
 	 end of the second.  */
       if (no_overlap)
 	in_p = 1, low = low1, high = high1;
-      else if (subset)
+      else if (subset || highequal)
 	in_p = 0, low = high = 0;
       else
 	{
@@ -4051,6 +4057,103 @@ fold_truthop (code, truth_type, lhs, rhs)
 		const_binop (BIT_IOR_EXPR, l_const, r_const, 0));
 }
 
+/* Optimize T, which is a comparison of a MIN_EXPR or MAX_EXPR with a 
+   constant.  */
+
+static tree
+optimize_minmax_comparison (t)
+     tree t;
+{
+  tree type = TREE_TYPE (t);
+  tree arg0 = TREE_OPERAND (t, 0);
+  enum tree_code op_code;
+  tree comp_const = TREE_OPERAND (t, 1);
+  tree minmax_const;
+  int consts_equal, consts_lt;
+  tree inner;
+
+  STRIP_SIGN_NOPS (arg0);
+
+  op_code = TREE_CODE (arg0);
+  minmax_const = TREE_OPERAND (arg0, 1);
+  consts_equal = tree_int_cst_equal (minmax_const, comp_const);
+  consts_lt = tree_int_cst_lt (minmax_const, comp_const);
+  inner = TREE_OPERAND (arg0, 0);
+
+  /* If something does not permit us to optimize, return the original tree.  */
+  if ((op_code != MIN_EXPR && op_code != MAX_EXPR)
+      || TREE_CODE (comp_const) != INTEGER_CST
+      || TREE_CONSTANT_OVERFLOW (comp_const)
+      || TREE_CODE (minmax_const) != INTEGER_CST
+      || TREE_CONSTANT_OVERFLOW (minmax_const))
+    return t;
+
+  /* Now handle all the various comparison codes.  We only handle EQ_EXPR
+     and GT_EXPR, doing the rest with recursive calls using logical
+     simplifications.  */
+  switch (TREE_CODE (t))
+    {
+    case NE_EXPR:  case LT_EXPR:  case LE_EXPR:
+      return
+	invert_truthvalue (optimize_minmax_comparison (invert_truthvalue (t)));
+
+    case GE_EXPR:
+      return
+	fold (build (TRUTH_ORIF_EXPR, type,
+		     optimize_minmax_comparison
+		     (build (EQ_EXPR, type, arg0, comp_const)),
+		     optimize_minmax_comparison
+		     (build (GT_EXPR, type, arg0, comp_const))));
+
+    case EQ_EXPR:
+      if (op_code == MAX_EXPR && consts_equal)
+	/* MAX (X, 0) == 0  ->  X <= 0  */
+	return fold (build (LE_EXPR, type, inner, comp_const));
+
+      else if (op_code == MAX_EXPR && consts_lt)
+	/* MAX (X, 0) == 5  ->  X == 5   */
+	return fold (build (EQ_EXPR, type, inner, comp_const));
+
+      else if (op_code == MAX_EXPR)
+	/* MAX (X, 0) == -1  ->  false  */
+	return omit_one_operand (type, integer_zero_node, inner);
+
+      else if (consts_equal)
+	/* MIN (X, 0) == 0  ->  X >= 0  */
+	return fold (build (GE_EXPR, type, inner, comp_const));
+
+      else if (consts_lt)
+	/* MIN (X, 0) == 5  ->  false  */
+	return omit_one_operand (type, integer_zero_node, inner);
+
+      else
+	/* MIN (X, 0) == -1  ->  X == -1  */
+	return fold (build (EQ_EXPR, type, inner, comp_const));
+
+    case GT_EXPR:
+      if (op_code == MAX_EXPR && (consts_equal || consts_lt))
+	/* MAX (X, 0) > 0  ->  X > 0
+	   MAX (X, 0) > 5  ->  X > 5  */
+	return fold (build (GT_EXPR, type, inner, comp_const));
+
+      else if (op_code == MAX_EXPR)
+	/* MAX (X, 0) > -1  ->  true  */
+	return omit_one_operand (type, integer_one_node, inner);
+
+      else if (op_code == MIN_EXPR && (consts_equal || consts_lt))
+	/* MIN (X, 0) > 0  ->  false
+	   MIN (X, 0) > 5  ->  false  */
+	return omit_one_operand (type, integer_zero_node, inner);
+
+      else
+	/* MIN (X, 0) > -1  ->  X > -1  */
+	return fold (build (GT_EXPR, type, inner, comp_const));
+
+    default:
+      return t;
+    }
+}
+
 /* If T contains a COMPOUND_EXPR which was inserted merely to evaluate
    S, a SAVE_EXPR, return the expression actually being evaluated.   Note
    that we may sometimes modify the tree.  */
@@ -4182,7 +4285,7 @@ fold (expr)
 
       /* Don't use STRIP_NOPS, because signedness of argument type matters.  */
       if (arg0 != 0)
-	STRIP_TYPE_NOPS (arg0);
+	STRIP_SIGN_NOPS (arg0);
 
       if (arg0 != 0 && TREE_CODE (arg0) == COMPLEX_CST)
 	subop = TREE_REALPART (arg0);
@@ -4216,7 +4319,7 @@ fold (expr)
 	    {
 	      /* Signedness matters here.  Perhaps we can refine this
 		 later.  */
-	      STRIP_TYPE_NOPS (op);
+	      STRIP_SIGN_NOPS (op);
 	    }
 	  else
 	    {
@@ -5925,6 +6028,76 @@ fold (expr)
 	    }
 	}
 
+      /* If this is an EQ or NE comparison of a constant with a PLUS_EXPR or
+	 a MINUS_EXPR of a constant, we can convert it into a comparison with
+	 a revised constant as long as no overflow occurs.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && (TREE_CODE (arg0) == PLUS_EXPR
+	      || TREE_CODE (arg0) == MINUS_EXPR)
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && 0 != (tem = const_binop (TREE_CODE (arg0) == PLUS_EXPR
+				      ? MINUS_EXPR : PLUS_EXPR,
+				      arg1, TREE_OPERAND (arg0, 1), 0))
+	  && ! TREE_CONSTANT_OVERFLOW (tem))
+	return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
+
+      /* Similarly for a NEGATE_EXPR.  */
+      else if ((code == EQ_EXPR || code == NE_EXPR)
+	       && TREE_CODE (arg0) == NEGATE_EXPR
+	       && TREE_CODE (arg1) == INTEGER_CST
+	       && 0 != (tem = fold (build1 (NEGATE_EXPR, TREE_TYPE (arg1),
+					    arg1)))
+	       && TREE_CODE (tem) == INTEGER_CST
+	       && ! TREE_CONSTANT_OVERFLOW (tem))
+	return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
+
+      /* If we have X - Y == 0, we can convert that to X == Y and similarly
+	 for !=.  Don't do this for ordered comparisons due to overflow.  */
+      else if ((code == NE_EXPR || code == EQ_EXPR)
+	       && integer_zerop (arg1) && TREE_CODE (arg0) == MINUS_EXPR)
+	return fold (build (code, type,
+			    TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1)));
+
+      /* If we are widening one operand of an integer comparison,
+	 see if the other operand is similarly being widened.  Perhaps we
+	 can do the comparison in the narrower type.  */
+      else if (TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE
+	       && TREE_CODE (arg0) == NOP_EXPR
+	       && (tem = get_unwidened (arg0, NULL_TREE)) != arg0
+	       && (t1 = get_unwidened (arg1, TREE_TYPE (tem))) != 0
+	       && (TREE_TYPE (t1) == TREE_TYPE (tem)
+		   || (TREE_CODE (t1) == INTEGER_CST
+		       && int_fits_type_p (t1, TREE_TYPE (tem)))))
+	return fold (build (code, type, tem, convert (TREE_TYPE (tem), t1)));
+      
+      /* If this is comparing a constant with a MIN_EXPR or a MAX_EXPR of a
+	 constant, we can simplify it.  */
+      else if (TREE_CODE (arg1) == INTEGER_CST
+	       && (TREE_CODE (arg0) == MIN_EXPR
+		   || TREE_CODE (arg0) == MAX_EXPR)
+	       && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	return optimize_minmax_comparison (t);
+
+      /* If we are comparing an ABS_EXPR with a constant, we can
+	 convert all the cases into explicit comparisons, but they may
+	 well not be faster than doing the ABS and one comparison.
+	 But ABS (X) <= C is a range comparison, which becomes a subtraction
+	 and a comparison, and is probably faster.  */
+      else if (code == LE_EXPR && TREE_CODE (arg1) == INTEGER_CST
+	       && TREE_CODE (arg0) == ABS_EXPR
+	       && ! TREE_SIDE_EFFECTS (arg0))
+	{
+	  tree inner = TREE_OPERAND (arg0, 0);
+
+	  tem = fold (build1 (NEGATE_EXPR, TREE_TYPE (arg1), arg1));
+	  if (TREE_CODE (tem) == INTEGER_CST
+	      && ! TREE_CONSTANT_OVERFLOW (tem))
+	    return fold (build (TRUTH_ANDIF_EXPR, type,
+				build (GE_EXPR, type, inner, tem),
+				build (LE_EXPR, type, inner, arg1)));
+	}
+	  
       /* If this is an EQ or NE comparison with zero and ARG0 is
 	 (1 << foo) & bar, convert it to (bar >> foo) & 1.  Both require
 	 two operations, but the latter can be done in one less insn
@@ -6076,35 +6249,93 @@ fold (expr)
 	    }
 	}
 
-      /* An unsigned <= 0x7fffffff can be simplified.  */
+      /* Comparisons with the highest or lowest possible integer of
+	 the specified size will have known values and an unsigned
+	 <= 0x7fffffff can be simplified.  */
       {
-	int width = TYPE_PRECISION (TREE_TYPE (arg1));
+	int width = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (arg1)));
+
 	if (TREE_CODE (arg1) == INTEGER_CST
 	    && ! TREE_CONSTANT_OVERFLOW (arg1)
 	    && width <= HOST_BITS_PER_WIDE_INT
-	    && TREE_INT_CST_LOW (arg1) == ((HOST_WIDE_INT) 1 << (width - 1)) - 1
-	    && TREE_INT_CST_HIGH (arg1) == 0
 	    && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
-		|| POINTER_TYPE_P (TREE_TYPE (arg1)))
-	    && TREE_UNSIGNED (TREE_TYPE (arg1)))
+		|| POINTER_TYPE_P (TREE_TYPE (arg1))))
 	  {
-	    switch (TREE_CODE (t))
-	      {
-	      case LE_EXPR:
-		return fold (build (GE_EXPR, type,
-				    convert (signed_type (TREE_TYPE (arg0)),
-					     arg0),
-				    convert (signed_type (TREE_TYPE (arg1)),
-					     integer_zero_node)));
-	      case GT_EXPR:
-		return fold (build (LT_EXPR, type,
-				    convert (signed_type (TREE_TYPE (arg0)),
-					     arg0),
-				    convert (signed_type (TREE_TYPE (arg1)),
-					     integer_zero_node)));
-	      default:
-		break;
-	      }
+	    if (TREE_INT_CST_HIGH (arg1) == 0
+		&& (TREE_INT_CST_LOW (arg1)
+		    == ((HOST_WIDE_INT) 1 << (width - 1)) - 1)
+		&& ! TREE_UNSIGNED (TREE_TYPE (arg1)))
+	      switch (TREE_CODE (t))
+		{
+		case GT_EXPR:
+		  return omit_one_operand (type,
+					   convert (type, integer_zero_node),
+					   arg0);
+		case GE_EXPR:
+		  TREE_SET_CODE (t, EQ_EXPR);
+		  break;
+
+		case LE_EXPR:
+		  return omit_one_operand (type,
+					   convert (type, integer_one_node),
+					   arg0);
+		case LT_EXPR:
+		  TREE_SET_CODE (t, NE_EXPR);
+		  break;
+
+		default:
+		  break;
+		}
+
+	    else if (TREE_INT_CST_HIGH (arg1) == -1
+		     && (- TREE_INT_CST_LOW (arg1)
+			 == ((HOST_WIDE_INT) 1 << (width - 1)))
+		     && ! TREE_UNSIGNED (TREE_TYPE (arg1)))
+	      switch (TREE_CODE (t))
+		{
+		case LT_EXPR:
+		  return omit_one_operand (type,
+					   convert (type, integer_zero_node),
+					   arg0);
+		case LE_EXPR:
+		  TREE_SET_CODE (t, EQ_EXPR);
+		  break;
+
+		case GE_EXPR:
+		  return omit_one_operand (type,
+					   convert (type, integer_one_node),
+					   arg0);
+		case GT_EXPR:
+		  TREE_SET_CODE (t, NE_EXPR);
+		  break;
+
+		default:
+		  break;
+		}
+
+	    else if (TREE_INT_CST_HIGH (arg1) == 0
+		      && (TREE_INT_CST_LOW (arg1)
+			  == ((HOST_WIDE_INT) 1 << (width - 1)) - 1)
+		      && TREE_UNSIGNED (TREE_TYPE (arg1)))
+	      
+	      switch (TREE_CODE (t))
+		{
+		case LE_EXPR:
+		  return fold (build (GE_EXPR, type,
+				      convert (signed_type (TREE_TYPE (arg0)),
+					       arg0),
+				      convert (signed_type (TREE_TYPE (arg1)),
+					       integer_zero_node)));
+		case GT_EXPR:
+		  return fold (build (LT_EXPR, type,
+				      convert (signed_type (TREE_TYPE (arg0)),
+					       arg0),
+				      convert (signed_type (TREE_TYPE (arg1)),
+					       integer_zero_node)));
+
+		default:
+		  break;
+		}
 	  }
       }
 
@@ -6268,6 +6499,7 @@ fold (expr)
       /* Note that it is safe to invert for real values here because we
 	 will check below in the one case that it matters.  */
 
+      t1 = NULL_TREE;
       invert = 0;
       if (code == NE_EXPR || code == GE_EXPR)
 	{

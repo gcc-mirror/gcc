@@ -184,6 +184,227 @@ Fri Oct 29 02:51:35 1999  Mark Mitchell  <mark@codesourcery.com>
 	(pre_edge_insert): Free inserted.
 	* stmt.c (free_stmt_status): Don't free NULL.
 
+Fri Oct 29 15:25:07 1999  Arnaud Charlet  <charlet@ACT-Europe.FR>
+
+	* gcov.c (DIR_SEPARATOR): Provide default.
+	(output_data): Add test for MS-DOS format absolute filename.
+	(fancy_abort): Correct program name.
+	(open_files): Open all files in binary mode.
+	* libgcc2.c (__bb_exit_func): Likewise.
+
+	* profile.c (init_branch_prob): Specify binary when opening files.
+
+	* flags.h (flag_unwind_tables): New decl.
+	* toplev.c (flag_unwind_table): New definition.
+	(f_options): Add -funwind-tables.
+	(decode_g_option): Clarify warning when unknown -g option is given.
+	(rest_of_compilation): If inside an inlined external function,
+	pretend we are just being declared.
+
+	* dwarf2out.c (dwarf2out_do_frame): Check -funwind_tables.
+	(dwarf2out_frame_finish): Likewise.
+
+Fri Oct 29 06:32:44 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* flow.c (propagate_block): When the last reference to a label
+ 	before an ADDR_VEC is deleted because the reference is a dead
+ 	store, delete the ADDR_VEC.
+
+Fri Oct 29 07:44:26 1999  Vasco Pedro  <vp@di.fct.unl.pt>
+
+	* fold-const.c (merge_ranges): In not in0, but in1, handle
+	upper bounds equal like subset case.
+
+Thu Oct 28 19:22:24 1999  Douglas Rupp <rupp@gnat.com>
+
+	* dbxout.c (dbxout_parms): Generate a second stabs line for parameters
+	passed in a register but moved to the stack.
+
+Thu Oct 28 19:12:57 1999  Sam Tardieu  <tardieu@act-europe.fr>
+
+	* gcc.c (pass_exit_codes, greatest_status): New variables.
+	(struct option_map): Add entry for "--pass-exit-codes".
+	(execute): Update greatest_status if error.
+	(display_help): Add documentation for -pass-exit-codes.
+	(process_command): Handle -pass-exit-codes.
+	(main): Look at pass_exit_codes and greatest_status on call to exit.
+
+Thu Oct 28 18:06:50 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (find_reloads): Refine test for no input reload
+	case to not includes reloads emitted after insn.
+
+	* function.c (find_temp_slots_from_address): Handle sum involving
+	a register that points to a temp slot.
+	(update_temp_slot_address): Make recursive call if both old and
+	new are PLUS with a common operand.
+	* calls.c (expand_call): Mark temp slot for result as having
+	address taken.
+	
+	* rtlanal.c (reg_referenced_p, case IF_THEN_ELSE): New case.
+
+	* gcc.c (process_command): Add standard_exec_prefix with "GCC"
+	component as well as "BINUTILS".
+
+	* integrate.h (copy_rtx_and_substitute): New arg, FOR_LHS.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	(expand_inline_function, integrate_parm_decls, integrate_decl_tree):
+	All callers changed.
+	* unroll.c (inital_reg_note_copy, copy_loop_body): Likewise.
+	
+	* dbxout.c (dbxout_type, case INTEGER_TYPE_NODE): If can use
+	gdb extensions, write size of type; also be more consistent
+	in using references when this is a subtype.
+
+	* pa.md (extv, extzv, insv): Use define_expand to reject constant
+	that is out of range.
+
+	* loop.c (unknown_constant_address_altered): New variable.
+	(prescan_loop): Initialize it.
+	(note_addr_stored): Set it for RTX_UNCHANGING_P MEM.
+	(invariant_p, case MEM): Remove handling for volatile and readony;
+	check new variable if readonly.
+	(check_dbra_loop): Chdeck unknown_constant_address_altered.
+
+	* cse.c (canon_hash, case MEM): Do not record if BLKmode.
+	(addr_affects_sp_p): Removed from note_mem_written and only
+	define #ifdef AUTO_INC_DEC.
+
+	* alpha.c (input_operand, case ADDRESSOF): Treat as REG.
+
+	* regclass.c (record_reg_classes): Properly handle register move
+	directions.
+
+	* varasm.c (initializer_constant_valid_p, case MINUS_EXPR):
+	Don't think valid if both operands are invalid.
+	(struct constant_descriptor): New field RTL.
+	(mark_const_hash_entry): Mark it.
+	(record_constant{,_rtx}): Initialize it.
+	(output_constant_def): Allocate RTL in permanent obstack and
+	save in table.
+	({record,compare}_constant_1): Modes must match for
+	CONSTRUCTOR of ARRAY_TYPE.
+
+	* c-common.h (initializer_constant_valid_p): Delete decl from here.
+	* output.h (initializer_constant_valid_p): Move decl to here.
+	* c-common.c (initializer_constant_valid_p): Delete function from here.
+	* varasm.c (initializer_constant_valid_p): Move function to here.
+
+	* tree.h (STRIP_SIGN_NOPS): New macro.
+	* fold-const.c (optimize_minmax_comparison): New function.
+	(invert_truthvalue, case WITH_RECORD_EXPR): New case.
+	(fold): Use STRIP_SIGN_NOPS instead of STRIP_TYPE_NOPS.
+	(fold, case EQ_EXPR): Call optimize_minmax_comparison and add
+	cases with ABS_EXPR, NEGATE_EXPR, PLUS_EXPR, MINUS_EXPR, and
+	widening conversions.
+	(fold, case LE_EXPR): Rework changing unsigned to signed comparisons
+	to look at size of mode, not precision of type; also add missing cases.
+	(optimize_bit_field_compare, decode_field_reference): Don't try to
+	optimize COMPONENT_REF of a PLACEHOLDER_EXPR.
+
+	* dwarf2out.c (ctype.h): Include.
+	(dwarf2out_set_demangle_name_func): New function.
+	(size_of_line_info): Deleted.
+	(output_line_info): Compute size of line info table from difference
+	of labels.
+	(base_type_die, add_name_attribute): Call demangle function, if any.
+	(field_byte_offset): Use bits per word for variable length fields.
+	(gen_array_type_die): Add array name.
+	(gen_subprogram_die): Ignore DECL_INLINE if -fno-inline.
+	(dwarf2out_add_library_unit_info): New function.
+
+	* explow.c (set_stack_check_libfunc): New function.
+	(stack_check_libfunc): New static variable.
+	(probe_stack_range): Allow front-end to set up a libfunc to call.
+
+	* combine.c (simplify_comparison): When making comparison in wider
+	mode, check for having commuted an AND and a SUBREG.
+	(contains_muldiv): New function.
+	(try_combine): Call it when dividing a PARALLEL.
+	(simplify_rtx, case TRUNCATE): Don't remove for umulsi3_highpart.
+	(simplify_comparison, case ASHIFTRT): Recognize sign-extension of
+	a PLUS.
+	(record_value_for_reg): If TEM is a binary operation with two CLOBBERs,
+	use one of the CLOBBERs instead.
+	(if_then_else_cond): If comparing against zero, just return thing
+	being compared.
+
+	* optabs.c (expand_abs): If machine has MAX, ABS (x) is MAX (x, -x).
+	Don't generate shifts and subtract if have conditional arithmetic.
+
+	* rtl.h (delete_barrier): New declaration.
+	* jump.c (jump_optimize): Set up to handle conditional call.
+	In conditional arithmetic case, handle CALL_INSN followed by a BARRIER.
+	(delete_barrier): New function.
+
+	* rtl.c (read_rtx): Call fatal if bad RTL code; check for bad mode.
+
+	* recog.c (nonmemory_operand): Accept ADDRESSOF.
+
+	* tree.c (build_type_attribute_variant): Push to obstack of
+	ttype around type_hash_canon call.
+
+	* expr.c (placeholder_list): Move decl to file scope.
+	(expand_expr): Don't force access to volatile just because its
+	address is taken.
+	If ignoring reference operations, just expand the operands.
+	(expand_expr, case COMPONENT_REF): Propagate
+	EXPAND_CONST_ADDRESS to recursive call when expanding inner.
+	Refine test for using bitfield operations vs pointer punning.
+	(expand_expr, case CONVERT_EXPR): If converting to
+	BLKmode UNION_TYPE from BLKmode, just return inner object.
+	Use proper mode in store_field call.
+	Properly set sizes of object to store and total size in store_field
+	call for convert to union.
+	(expand_expr, case ARRAY_REF): If OP0 is in a register, put it in
+	memory (like for ADDR_EXPR).  Also, don't put constant in register if
+	we'll want it in memory.
+	(readonly_fields_p): New function.
+	(expand_expr, case INDIRECT_REF): Call it if LHS.
+	(expand_assignment): Handle a RESULT_DECL where
+	DECL_RTL is a PARALLEL.
+	(do_jump, case WITH_RECORD_EXPR): New case.
+	(get_inner_reference): Always go inside a CONVERT_EXPR
+	and NOP_EXPR if both modes are the same.
+	(store_field): Use bitfield operations if size of bitsize is not same
+	as size of RHS's type.
+	Check for bitpos not a multiple of alignment in BLKmode case.
+	Do block move in largest possible alignment.
+	(store_constructor): Set BITSIZE to -1 for variable size and properly
+ 	in case of array of BLKmode.
+	(expand_expr_unaligned): New function.
+	(do_compare_and_jump): Call it.
+
+	* mips/iris5.h (SWITCHES_NEED_SPACES): New macro.
+	* collect2.c (main): Only allow -ofoo if SWITCHES_NEED_SPACES
+	does not include 'o'.
+
+	* function.c (instantiate_virtual_regs_1, case SET): Handle case where
+	both SET_DEST and SET_SRC reference a virtual register.
+	(gen_mem_addressof): Copy RTX_UNCHANGING_P from new REG to old REG.
+
+	* integrate.c (expand_inline_function): Handle case of setting
+	virtual stack vars register (from built in setjmp); when parameter
+	lives in memory, expand virtual_{stack_vars,incoming_args}_rtx early.
+	(subst_constant): Add new parm, MEMONLY.
+	(expand_inline_function, integrate_parm_decls): Pass new parm.
+	(integrate_decl_tree): Likewise.
+	(copy_rtx_and_substitute, case MEM): Do copy RTX_UNCHANGING_P.
+	(try_constants): Call subst_constants twice, with MEMONLY 0 and 1.
+	(copy_rtx_and_substitute, case SET): Add explicit calls to
+	copy_rtx_and_substitute for both sides.
+
+	* stmt.c (expand_asm_operands): Don't use TREE_STRING_LENGTH for
+	constraints.
+	(pushcase{,_range}): Convert to NOMINAL_TYPE after checking for
+	within INDEX_TYPE, instead of before.
+	(fixup_gotos): Use f->target_rtl, not the next insn,
+	since latter may be from a later fixup.
+	(expand_value_return): Correctly convert VAL when promoting function
+	return; support RETURN_REG being a PARALLEL.
+	(expand_return): When checking for result in regs and having
+	cleanup, consider PARALLEL in DECL_RTL as being in regs.
+
 1999-10-28 21:27 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* cpplib.h (struct cpp_buffer: fname, nominal_fname,

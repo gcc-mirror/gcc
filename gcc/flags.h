@@ -404,6 +404,10 @@ extern int flag_exceptions;
 
 extern int flag_new_exceptions;
 
+/* Nonzero means generate frame unwind info table when supported */
+
+extern int flag_unwind_tables;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 

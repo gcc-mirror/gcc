@@ -402,6 +402,18 @@ extern void tree_class_check_failed PROTO((const tree, char,
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0)))))	\
     (EXP) = TREE_OPERAND (EXP, 0);
 
+/* Like STRIP_NOPS, but don't let the signedness change either.  */
+
+#define STRIP_SIGN_NOPS(EXP) \
+  while ((TREE_CODE (EXP) == NOP_EXPR				\
+	  || TREE_CODE (EXP) == CONVERT_EXPR			\
+	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
+	 && (TYPE_MODE (TREE_TYPE (EXP))			\
+	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
+	 && (TREE_UNSIGNED (TREE_TYPE (EXP))			\
+	     == TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
+    (EXP) = TREE_OPERAND (EXP, 0);
+
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
 
 #define STRIP_TYPE_NOPS(EXP) \
@@ -861,9 +873,9 @@ struct tree_block
 
 /* The set of type qualifiers for this type.  */
 #define TYPE_QUALS(NODE)			\
-  ((TYPE_READONLY(NODE) * TYPE_QUAL_CONST) |	\
-   (TYPE_VOLATILE(NODE) * TYPE_QUAL_VOLATILE) |	\
-   (TYPE_RESTRICT(NODE) * TYPE_QUAL_RESTRICT))
+  ((TYPE_READONLY(NODE) * TYPE_QUAL_CONST)	\
+   | (TYPE_VOLATILE(NODE) * TYPE_QUAL_VOLATILE)	\
+   | (TYPE_RESTRICT(NODE) * TYPE_QUAL_RESTRICT))
 
 /* These flags are available for each language front end to use internally.  */
 #define TYPE_LANG_FLAG_0(NODE) (TYPE_CHECK (NODE)->type.lang_flag_0)

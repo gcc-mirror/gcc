@@ -1059,6 +1059,7 @@ extern rtx find_equiv_reg		PROTO((rtx, rtx, enum reg_class, int, short *, int, e
 extern rtx squeeze_notes		PROTO((rtx, rtx));
 extern rtx delete_insn			PROTO((rtx));
 extern void delete_jump			PROTO((rtx));
+extern void delete_barrier		PROTO((rtx));
 extern rtx get_label_before		PROTO((rtx));
 extern rtx get_label_after		PROTO((rtx));
 extern rtx follow_jumps			PROTO((rtx));

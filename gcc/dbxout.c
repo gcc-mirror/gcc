@@ -1153,25 +1153,48 @@ dbxout_type (type, full, show_arg_types)
 	  dbxout_type_index (type);
 	  fprintf (asmfile, ";0;127;");
 	}
-      /* This used to check if the type's precision was more than
-	 HOST_BITS_PER_WIDE_INT.  That is wrong since gdb uses a
-	 long (it has no concept of HOST_BITS_PER_WIDE_INT).  */
-      else if (use_gnu_debug_info_extensions
-	       && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
-		   || TYPE_PRECISION (type) >= HOST_BITS_PER_LONG))
-	{
-	  /* This used to say `r1' and we used to take care
-	     to make sure that `int' was type number 1.  */
-	  fprintf (asmfile, "r");
-	  dbxout_type_index (integer_type_node);
-	  fprintf (asmfile, ";");
-	  print_int_cst_octal (TYPE_MIN_VALUE (type));
-	  fprintf (asmfile, ";");
-	  print_int_cst_octal (TYPE_MAX_VALUE (type));
-	  fprintf (asmfile, ";");
-	}
-      else /* Output other integer types as subranges of `int'.  */
+
+      /* If this is a subtype of another integer type, always prefer to
+	 write it as a subtype.  */
+      else if (TREE_TYPE (type) != 0
+	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_CST)
 	dbxout_range_type (type);
+
+      else
+  	{
+	  /* If the size is non-standard, say what it is if we can use
+	     GDB extensions.  */
+
+	  if (use_gnu_debug_info_extensions
+	      && TYPE_PRECISION (type) != TYPE_PRECISION (integer_type_node))
+	    fprintf (asmfile, "@s%d;", TYPE_PRECISION (type));
+
+	  /* If we can use GDB extensions and the size is wider than a
+	     long (the size used by GDB to read them) or we may have
+	     trouble writing the bounds the usual way, write them in
+	     octal.  Note the test is for the *target's* size of "long",
+	     not that of the host.  The host test is just to make sure we
+	     can write it out in case the host wide int is narrower than the
+	     target "long".  */
+
+ 	  if (use_gnu_debug_info_extensions
+	      && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
+		  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT))
+	    {
+	      fprintf (asmfile, "r");
+	      dbxout_type_index (type);
+	      fprintf (asmfile, ";");
+	      print_int_cst_octal (TYPE_MIN_VALUE (type));
+	      fprintf (asmfile, ";");
+	      print_int_cst_octal (TYPE_MAX_VALUE (type));
+	      fprintf (asmfile, ";");
+	    }
+
+	  else
+	    /* Output other integer types as subranges of `int'.  */
+	    dbxout_range_type (type);
+  	}
+
       CHARS (22);
       break;
 
@@ -2427,17 +2450,26 @@ dbxout_parms (parms)
 		 && ! CONSTANT_P (XEXP (DECL_RTL (parms), 0)))
 	  {
 	    /* Parm was passed in registers but lives on the stack.  */
+	    int aux_sym_value = 0;
 
 	    current_sym_code = N_PSYM;
 	    /* DECL_RTL looks like (MEM (PLUS (REG...) (CONST_INT...))),
 	       in which case we want the value of that CONST_INT,
 	       or (MEM (REG ...)) or (MEM (MEM ...)),
 	       in which case we use a value of zero.  */
-	    if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
-		|| GET_CODE (XEXP (DECL_RTL (parms), 0)) == MEM)
+	    if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
 	      current_sym_value = 0;
+	    else if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == MEM)
+	      {
+		/* Remember the location on the stack the parm is moved to */
+	        aux_sym_value
+		  = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
+	        current_sym_value = 0;
+	      }
 	    else
-	      current_sym_value = INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1));
+		current_sym_value
+		  = INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1));
+
 	    current_sym_addr = 0;
 
 	    /* Make a big endian correction if the mode of the type of the
@@ -2452,7 +2484,8 @@ dbxout_parms (parms)
 	    FORCE_TEXT;
 	    if (DECL_NAME (parms))
 	      {
-		current_sym_nchars = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
+		current_sym_nchars
+		  = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
 
 		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)),
@@ -2470,6 +2503,17 @@ dbxout_parms (parms)
 				     XEXP (DECL_RTL (parms), 0));
 	    dbxout_type (TREE_TYPE (parms), 0, 0);
 	    dbxout_finish_symbol (parms);
+	    if (aux_sym_value != 0)
+	      {
+		/* Generate an entry for the stack location */
+
+		fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (DECL_NAME (parms)));
+		current_sym_value = aux_sym_value;
+	        current_sym_code = N_LSYM;
+	        dbxout_type (build_reference_type (TREE_TYPE (parms)), 0, 0);
+	        dbxout_finish_symbol (parms);
+	      }
 	  }
       }
 }

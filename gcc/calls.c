@@ -1763,6 +1763,7 @@ expand_call (exp, target, ignore)
 	    d = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
 	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 1, 0, 1);
 	    mark_addressable (d);
+	    mark_temp_addr_taken (DECL_RTL (d));
 	    structure_value_addr = XEXP (DECL_RTL (d), 0);
 	    TREE_USED (d) = 1;
 	    target = 0;

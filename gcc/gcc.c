@@ -100,6 +100,10 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 
 #define MIN_FATAL_STATUS 1
 
+/* Flag saying to pass the greatest exit code returned by a sub-process
+   to the calling program.  */
+static int pass_exit_codes;
+
 /* Flag saying to print the directories gcc will search through looking for
    programs, libraries, etc.  */
 
@@ -167,6 +171,10 @@ static char *cross_compile = "0";
 /* The number of errors that have occurred; the link phase will not be
    run if this is non-zero.  */
 static int error_count = 0;
+
+/* Greatest exit code of sub-processes that has been encountered up to
+   now.  */
+static int greatest_status = 1;
 
 /* This is the obstack which we use to allocate many strings.  */
 
@@ -769,6 +777,7 @@ static const char *link_command_spec = "\
 			%{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
 			%{static:} %{L*} %o\
 			%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
+   {"--pass-exit-codes", "-pass-exit-codes", 0},
 			%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
 			%{T*}\
 			\n }}}}}}";
@@ -2363,7 +2372,11 @@ execute ()
 		    }
 		  else if (WIFEXITED (status)
 			   && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
-		    ret_code = -1;
+		    {
+		      if (WEXITSTATUS (status) > greatest_status)
+			greatest_status = WEXITSTATUS (status);
+		      ret_code = -1;
+		    }
 		}
 #ifdef HAVE_GETRUSAGE
 	      if (report_times && ut + st != 0)
@@ -2490,6 +2503,7 @@ display_help ()
   printf ("Usage: %s [options] file...\n", programname);
   printf ("Options:\n");
 
+  printf ("  -pass-exit-codes         Exit with highest error code from a phase\n");
   printf ("  --help                   Display this information\n");
   if (! verbose_flag)
     printf ("  (Use '-v --help' to display command line options of sub-processes)\n");
@@ -2793,6 +2807,11 @@ process_command (argc, argv)
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
 	}
+      else if (! strcmp (argv[i], "-pass-exit-codes"))
+	{
+	  pass_exit_codes = 1;
+	  n_switches++;
+	}
       else if (! strcmp (argv[i], "-print-search-dirs"))
 	print_search_dirs = 1;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
@@ -3086,6 +3105,8 @@ process_command (argc, argv)
   /* Use 2 as fourth arg meaning try just the machine as a suffix,
      as well as trying the machine and the version.  */
 #ifndef OS2
+  add_prefix (&exec_prefixes, standard_exec_prefix, "GCC",
+	      0, 1, warn_std_ptr);
   add_prefix (&exec_prefixes, standard_exec_prefix, "BINUTILS",
 	      0, 2, warn_std_ptr);
   add_prefix (&exec_prefixes, standard_exec_prefix_1, "BINUTILS",
@@ -3160,6 +3181,8 @@ process_command (argc, argv)
       if (! strncmp (argv[i], "-Wa,", 4))
 	;
       else if (! strncmp (argv[i], "-Wp,", 4))
+	;
+      else if (! strcmp (argv[i], "-pass-exit-codes"))
 	;
       else if (! strcmp (argv[i], "-print-search-dirs"))
 	;
@@ -5198,7 +5221,9 @@ main (argc, argv)
       printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>\n");
     }
   
-  return (error_count > 0 ? (signal_count ? 2 : 1) : 0);
+  return (signal_count != 0 ? 2
+	  : error_count > 0 ? (pass_exit_codes ? greatest_status : 1)
+	  : 0);
 }
 
 /* Find the proper compilation spec for the file name NAME,

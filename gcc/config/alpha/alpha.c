@@ -625,6 +625,7 @@ input_operand (op, mode)
       return mode == ptr_mode || mode == DImode;
 
     case REG:
+    case ADDRESSOF:
       return 1;
 
     case SUBREG:

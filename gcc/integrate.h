@@ -114,7 +114,7 @@ struct inline_remap
 
 /* Return a copy of an rtx (as needed), substituting pseudo-register,
    labels, and frame-pointer offsets as necessary.  */
-extern rtx copy_rtx_and_substitute PROTO((rtx, struct inline_remap *));
+extern rtx copy_rtx_and_substitute PROTO((rtx, struct inline_remap *, int));
 
 extern void try_constants PROTO((rtx, struct inline_remap *));
 

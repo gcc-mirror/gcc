@@ -403,6 +403,7 @@ reg_referenced_p (x, body)
 
     case CALL:
     case USE:
+    case IF_THEN_ELSE:
       return reg_overlap_mentioned_p (x, body);
 
     case TRAP_IF:

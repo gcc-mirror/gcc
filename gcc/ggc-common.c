@@ -1,22 +1,22 @@
 /* Simple garbage collection for the GNU compiler.
    Copyright (C) 1999 Free Software Foundation, Inc.
 
-   This file is part of GNU CC.
+This file is part of GNU CC.
 
-   GNU CC is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+GNU CC is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2, or (at your option) any
+later version.
 
-   GNU CC is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+GNU CC is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNU CC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 /* Generic garbage collection (GC) functions and data, not specific to
    any particular GC implementation.  */
@@ -63,7 +63,7 @@ static void
 ggc_mark_rtx_ptr (elt)
      void *elt;
 {
-  ggc_mark_rtx (*(rtx *)elt);
+  ggc_mark_rtx (*(rtx *) elt);
 }
 
 /* Type-correct function to pass to ggc_add_root.  It just forwards
@@ -73,7 +73,7 @@ static void
 ggc_mark_tree_ptr (elt)
      void *elt;
 {
-  ggc_mark_tree (*(tree *)elt);
+  ggc_mark_tree (*(tree *) elt);
 }
 
 /* Type-correct function to pass to ggc_add_root.  It just forwards
@@ -83,7 +83,7 @@ static void
 ggc_mark_tree_varray_ptr (elt)
      void *elt;
 {
-  ggc_mark_tree_varray (*(varray_type *)elt);
+  ggc_mark_tree_varray (*(varray_type *) elt);
 }
 
 /* Type-correct function to pass to ggc_add_root.  It just forwards
@@ -104,7 +104,7 @@ static void
 ggc_mark_string_ptr (elt)
      void *elt;
 {
-  ggc_mark_string (*(char **)elt);
+  ggc_mark_string (*(char **) elt);
 }
 
 /* Add BASE as a new garbage collection root.  It is an array of

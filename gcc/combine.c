@@ -358,6 +358,7 @@ static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx, void *));
 static int can_combine_p	PROTO((rtx, rtx, rtx, rtx, rtx *, rtx *));
 static int sets_function_arg_p	PROTO((rtx));
 static int combinable_i3pat	PROTO((rtx, rtx *, rtx, rtx, int, rtx *));
+static int contains_muldiv	PROTO((rtx));
 static rtx try_combine		PROTO((rtx, rtx, rtx));
 static void undo_all		PROTO((void));
 static rtx *find_split_point	PROTO((rtx *, rtx));
@@ -1350,6 +1351,37 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
   return 1;
 }
 
+/* Return 1 if X is an arithmetic expression that contains a multiplication
+   and division.  We don't count multiplications by powers of two here.  */
+
+static int
+contains_muldiv (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case MOD:  case DIV:  case UMOD:  case UDIV:
+      return 1;
+
+    case MULT:
+      return ! (GET_CODE (XEXP (x, 1)) == CONST_INT
+		&& exact_log2 (INTVAL (XEXP (x, 1))) >= 0);
+    default:
+      switch (GET_RTX_CLASS (GET_CODE (x)))
+	{
+	case 'c':  case '<':  case '2':
+	  return contains_muldiv (XEXP (x, 0))
+	    || contains_muldiv (XEXP (x, 1));
+
+	case '1':
+	  return contains_muldiv (XEXP (x, 0));
+
+	default:
+	  return 0;
+	}
+    }
+}
+
 /* Try to combine the insns I1 and I2 into I3.
    Here I1 and I2 appear earlier than I3.
    I1 can be zero; then we combine just I2 into I3.
@@ -2201,7 +2233,9 @@ try_combine (i3, i2, i1)
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 				  XVECEXP (newpat, 0, 0))
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 0)),
-				  XVECEXP (newpat, 0, 1)))
+				  XVECEXP (newpat, 0, 1))
+	   && ! (contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 0)))
+		 && contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 1)))))
     {
       /* Normally, it doesn't matter which of the two is done first,
 	 but it does if one references cc0.  In that case, it has to
@@ -3848,12 +3882,16 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	return SUBREG_REG (XEXP (x, 0));
 
       /* If we know that the value is already truncated, we can
-         replace the TRUNCATE with a SUBREG if TRULY_NOOP_TRUNCATION is
-	 nonzero for the corresponding modes.  */
+         replace the TRUNCATE with a SUBREG if TRULY_NOOP_TRUNCATION
+         is nonzero for the corresponding modes.  But don't do this
+         for an (LSHIFTRT (MULT ...)) since this will cause problems
+         with the umulXi3_highpart patterns.  */
       if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				 GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
 	  && num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	     >= GET_MODE_BITSIZE (mode) + 1)
+	     >= GET_MODE_BITSIZE (mode) + 1
+	  && ! (GET_CODE (XEXP (x, 0)) == LSHIFTRT
+ 		&& GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT))
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
 
       /* A truncate of a comparison can be replaced with a subreg if
@@ -6898,10 +6936,19 @@ if_then_else_cond (x, ptrue, pfalse)
   rtx cond0, cond1, true0, true1, false0, false1;
   unsigned HOST_WIDE_INT nz;
 
+  /* If we are comparing a value against zero, we are done.  */
+  if ((code == NE || code == EQ)
+      && GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
+    {
+      *ptrue = (code == NE) ? const1_rtx : const0_rtx;
+      *pfalse = (code == NE) ? const0_rtx : const1_rtx;
+      return XEXP (x, 0);
+    }
+
   /* If this is a unary operation whose operand has one of two values, apply
      our opcode to compute those values.  */
-  if (GET_RTX_CLASS (code) == '1'
-      && (cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0)) != 0)
+  else if (GET_RTX_CLASS (code) == '1'
+	   && (cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0)) != 0)
     {
       *ptrue = gen_unary (code, mode, GET_MODE (XEXP (x, 0)), true0);
       *pfalse = gen_unary (code, mode, GET_MODE (XEXP (x, 0)), false0);
@@ -10459,6 +10506,32 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 
+	  /* Likewise if OP0 is a PLUS of a sign extension with a
+	     constant, which is usually represented with the PLUS
+	     between the shifts.  */
+	  if (! unsigned_comparison_p
+	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && GET_CODE (XEXP (op0, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
+	      && GET_CODE (XEXP (XEXP (op0, 0), 0)) == ASHIFT
+	      && XEXP (op0, 1) == XEXP (XEXP (XEXP (op0, 0), 0), 1)
+	      && (tmode = mode_for_size (mode_width - INTVAL (XEXP (op0, 1)),
+					 MODE_INT, 1)) != BLKmode
+	      && ((unsigned HOST_WIDE_INT) const_op <= GET_MODE_MASK (tmode)
+		  || ((unsigned HOST_WIDE_INT) - const_op
+		      <= GET_MODE_MASK (tmode))))
+	    {
+	      rtx inner = XEXP (XEXP (XEXP (op0, 0), 0), 0);
+	      rtx add_const = XEXP (XEXP (op0, 0), 1);
+	      rtx new_const = gen_binary (ASHIFTRT, GET_MODE (op0), add_const,
+					  XEXP (op0, 1));
+
+	      op0 = gen_binary (PLUS, tmode,
+				gen_lowpart_for_combine (tmode, inner),
+				new_const);
+	      continue;
+	    }
+
 	  /* ... fall through ...  */
 	case LSHIFTRT:
 	  /* If we have (compare (xshiftrt FOO N) (const_int C)) and
@@ -10563,6 +10636,17 @@ simplify_comparison (code, pop0, pop1)
 		  && (num_sign_bit_copies (op1, tmode)
 		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
 	    {
+	      /* If OP0 is an AND and we don't have an AND in MODE either,
+		 make a new AND in the proper mode.  */
+	      if (GET_CODE (op0) == AND
+		  && (add_optab->handlers[(int) mode].insn_code
+		      == CODE_FOR_nothing))
+		op0 = gen_binary (AND, tmode,
+				  gen_lowpart_for_combine (tmode,
+							   XEXP (op0, 0)),
+				  gen_lowpart_for_combine (tmode,
+							   XEXP (op0, 1)));
+
 	      op0 = gen_lowpart_for_combine (tmode, op0);
 	      op1 = gen_lowpart_for_combine (tmode, op1);
 	      break;
@@ -10690,8 +10774,20 @@ record_value_for_reg (reg, insn, value)
       subst_low_cuid = INSN_CUID (insn);
       tem = get_last_value (reg);      
 
+      /* If TEM is simply a binary operation with two CLOBBERs as operands,
+	 it isn't going to be useful and will take a lot of time to process,
+	 so just use the CLOBBER.  */
+
       if (tem)
-	value = replace_rtx (copy_rtx (value), reg, tem);
+	{
+	  if ((GET_RTX_CLASS (GET_CODE (tem)) == '2'
+	       || GET_RTX_CLASS (GET_CODE (tem)) == 'c')
+	      && GET_CODE (XEXP (tem, 0)) == CLOBBER
+	      && GET_CODE (XEXP (tem, 1)) == CLOBBER)
+	    tem = XEXP (tem, 0);
+
+	  value = replace_rtx (copy_rtx (value), reg, tem);
+	}
     }
 
   /* For each register modified, show we don't know its value, that

@@ -1543,17 +1543,15 @@ simplify_plus_minus (code, mode, op0, op1)
 
 struct cfc_args
 {
-  /* Input */
-  rtx op0, op1;
-  /* Output */
-  int equal, op0lt, op1lt;
+  rtx op0, op1;			/* Input */
+  int equal, op0lt, op1lt;	/* Output */
 };
 
 static void
 check_fold_consts (data)
   PTR data;
 {
-  struct cfc_args * args = (struct cfc_args *) data;
+  struct cfc_args *args = (struct cfc_args *) data;
   REAL_VALUE_TYPE d0, d1;
 
   REAL_VALUE_FROM_CONST_DOUBLE (d0, args->op0);

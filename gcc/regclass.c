@@ -1436,14 +1436,19 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		  struct costs *pp = &this_op_costs[i];
 
 		  for (class = 0; class < N_REG_CLASSES; class++)
-		    pp->cost[class] = may_move_cost[class][(int) classes[i]];
+		    pp->cost[class]
+		      = (recog_data.operand_type[i] == OP_IN
+			 ? may_move_cost[class][(int) classes[i]]
+			 : move_cost[(int) classes[i]][class]);
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
 		     load it.  */
 
-		  pp->mem_cost = (MEMORY_MOVE_COST (mode, classes[i], 1)
-				  - allows_mem);
+		  pp->mem_cost
+		    = (MEMORY_MOVE_COST (mode, classes[i], 
+					 recog_data.operand_type[i] == OP_IN)
+		       - allows_mem);
 
 		  /* If we have assigned a class to this register in our
 		     first pass, add a cost to this alternative corresponding
@@ -1452,7 +1457,8 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 		  if (prefclass)
 		    alt_cost
-		      += may_move_cost[(unsigned char)prefclass[REGNO (op)]][(int) classes[i]];
+		      += (may_move_cost[(unsigned char) prefclass[REGNO (op)]]
+			  [(int) classes[i]]);
 		}
 	    }
 

@@ -1020,6 +1020,11 @@ register_operand (op, mode)
       op = SUBREG_REG (op);
     }
 
+  /* If we have an ADDRESSOF, consider it valid since it will be
+     converted into something that will not be a MEM. */
+  if (GET_CODE (op) == ADDRESSOF)
+    return 1;
+
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
   return (GET_CODE (op) == REG

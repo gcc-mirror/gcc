@@ -291,13 +291,14 @@ static rtx this_insn;
 static int *reg_next_eqv;
 static int *reg_prev_eqv;
 
-struct cse_reg_info {
+struct cse_reg_info
+{
   /* The number of times the register has been altered in the current
      basic block.  */
   int reg_tick;
 
   /* The next cse_reg_info structure in the free or used list.  */
-  struct cse_reg_info* next;
+  struct cse_reg_info *next;
 
   /* The REG_TICK value at which rtx's containing this register are
      valid in the hash table.  If this does not equal the current
@@ -576,7 +577,8 @@ static int constant_pool_entries_cost;
 
 /* This data describes a block that will be processed by cse_basic_block.  */
 
-struct cse_basic_block_data {
+struct cse_basic_block_data
+{
   /* Lowest CUID value of insns in block.  */
   int low_cuid;
   /* Highest CUID value of insns in block.  */
@@ -588,14 +590,15 @@ struct cse_basic_block_data {
   /* Size of current branch path, if any.  */
   int path_size;
   /* Current branch path, indicating which branches will be taken.  */
-  struct branch_path {
-    /* The branch insn.  */
-    rtx branch;
-    /* Whether it should be taken or not.  AROUND is the same as taken
-       except that it is used when the destination label is not preceded
+  struct branch_path
+    {
+      /* The branch insn.  */
+      rtx branch;
+      /* Whether it should be taken or not.  AROUND is the same as taken
+	 except that it is used when the destination label is not preceded
        by a BARRIER.  */
-    enum taken {TAKEN, NOT_TAKEN, AROUND} status;
-  } path[PATHLENGTH];
+      enum taken {TAKEN, NOT_TAKEN, AROUND} status;
+    } path[PATHLENGTH];
 };
 
 /* Nonzero if X has the form (PLUS frame-pointer integer).  We check for
@@ -692,7 +695,9 @@ static void record_jump_equiv	PROTO((rtx, int));
 static void record_jump_cond	PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx, int));
 static void cse_insn		PROTO((rtx, rtx));
-static int note_mem_written	PROTO((rtx));
+#ifdef AUTO_INC_DEC
+static int addr_affects_sp_p	PROTO((rtx));
+#endif
 static void invalidate_from_clobbers PROTO((rtx));
 static rtx cse_process_notes	PROTO((rtx, rtx));
 static void cse_around_loop	PROTO((rtx));
@@ -1721,21 +1726,18 @@ flush_hash_table ()
 	  remove_from_table (p, i);
       }
 }
+
+/* Remove from the hash table, or mark as invalid, all expressions whose
+   values could be altered by storing in X.  X is a register, a subreg, or
+   a memory reference with nonvarying address (because, when a memory
+   reference with a varying address is stored in, all memory references are
+   removed by invalidate_memory so specific invalidation is superfluous).
+   FULL_MODE, if not VOIDmode, indicates that this much should be
+   invalidated instead of just the amount indicated by the mode of X.  This
+   is only used for bitfield stores into memory.
 
-
-/* Remove from the hash table, or mark as invalid,
-   all expressions whose values could be altered by storing in X.
-   X is a register, a subreg, or a memory reference with nonvarying address
-   (because, when a memory reference with a varying address is stored in,
-   all memory references are removed by invalidate_memory
-   so specific invalidation is superfluous).
-   FULL_MODE, if not VOIDmode, indicates that this much should be invalidated
-   instead of just the amount indicated by the mode of X.  This is only used
-   for bitfield stores into memory.
-
-   A nonvarying address may be just a register or just
-   a symbol reference, or it may be either of those plus
-   a numeric offset.  */
+   A nonvarying address may be just a register or just a symbol reference,
+   or it may be either of those plus a numeric offset.  */
 
 static void
 invalidate (x, full_mode)
@@ -1745,130 +1747,118 @@ invalidate (x, full_mode)
   register int i;
   register struct table_elt *p;
 
-  /* If X is a register, dependencies on its contents
-     are recorded through the qty number mechanism.
-     Just change the qty number of the register,
-     mark it as invalid for expressions that refer to it,
-     and remove it itself.  */
-
-  if (GET_CODE (x) == REG)
+  switch (GET_CODE (x))
     {
-      register int regno = REGNO (x);
-      register unsigned hash = HASH (x, GET_MODE (x));
+    case REG:
+      {
+	/* If X is a register, dependencies on its contents are recorded
+	   through the qty number mechanism.  Just change the qty number of
+	   the register, mark it as invalid for expressions that refer to it,
+	   and remove it itself.  */
+	register int regno = REGNO (x);
+	register unsigned hash = HASH (x, GET_MODE (x));
 
-      /* Remove REGNO from any quantity list it might be on and indicate
-	 that its value might have changed.  If it is a pseudo, remove its
-	 entry from the hash table.
+	/* Remove REGNO from any quantity list it might be on and indicate
+	   that its value might have changed.  If it is a pseudo, remove its
+	   entry from the hash table.
 
-	 For a hard register, we do the first two actions above for any
-	 additional hard registers corresponding to X.  Then, if any of these
-	 registers are in the table, we must remove any REG entries that
-	 overlap these registers.  */
+	   For a hard register, we do the first two actions above for any
+	   additional hard registers corresponding to X.  Then, if any of these
+	   registers are in the table, we must remove any REG entries that
+	   overlap these registers.  */
 
-      delete_reg_equiv (regno);
-      REG_TICK (regno)++;
+	delete_reg_equiv (regno);
+	REG_TICK (regno)++;
 
-      if (regno >= FIRST_PSEUDO_REGISTER)
-	{
-	  /* Because a register can be referenced in more than one mode,
-	     we might have to remove more than one table entry.  */
+	if (regno >= FIRST_PSEUDO_REGISTER)
+	  {
+	    /* Because a register can be referenced in more than one mode,
+	       we might have to remove more than one table entry.  */
+	    struct table_elt *elt;
 
-	  struct table_elt *elt;
+	    while ((elt = lookup_for_remove (x, hash, GET_MODE (x))))
+	      remove_from_table (elt, hash);
+	  }
+	else
+	  {
+	    HOST_WIDE_INT in_table
+	      = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
+	    int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	    int tregno, tendregno;
+	    register struct table_elt *p, *next;
 
-	  while ((elt = lookup_for_remove (x, hash, GET_MODE (x))))
-	    remove_from_table (elt, hash);
-	}
-      else
-	{
-	  HOST_WIDE_INT in_table
-	    = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
-	  int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
-	  int tregno, tendregno;
-	  register struct table_elt *p, *next;
+	    CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
 
-	  CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
+	    for (i = regno + 1; i < endregno; i++)
+	      {
+		in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, i);
+		CLEAR_HARD_REG_BIT (hard_regs_in_table, i);
+		delete_reg_equiv (i);
+		REG_TICK (i)++;
+	      }
 
-	  for (i = regno + 1; i < endregno; i++)
-	    {
-	      in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, i);
-	      CLEAR_HARD_REG_BIT (hard_regs_in_table, i);
-	      delete_reg_equiv (i);
-	      REG_TICK (i)++;
-	    }
-
-	  if (in_table)
-	    for (hash = 0; hash < NBUCKETS; hash++)
-	      for (p = table[hash]; p; p = next)
-		{
-		  next = p->next_same_hash;
+	    if (in_table)
+	      for (hash = 0; hash < NBUCKETS; hash++)
+		for (p = table[hash]; p; p = next)
+		  {
+		    next = p->next_same_hash;
 
 		  if (GET_CODE (p->exp) != REG
 		      || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
 		    continue;
-
-		  tregno = REGNO (p->exp);
-		  tendregno
-		    = tregno + HARD_REGNO_NREGS (tregno, GET_MODE (p->exp));
-		  if (tendregno > regno && tregno < endregno)
-		    remove_from_table (p, hash);
-		}
-	}
-
+		  
+		    tregno = REGNO (p->exp);
+		    tendregno
+		      = tregno + HARD_REGNO_NREGS (tregno, GET_MODE (p->exp));
+		    if (tendregno > regno && tregno < endregno)
+		      remove_from_table (p, hash);
+		  }
+	  }
+      }
       return;
-    }
 
-  if (GET_CODE (x) == SUBREG)
-    {
-      if (GET_CODE (SUBREG_REG (x)) != REG)
-	abort ();
+    case SUBREG:
       invalidate (SUBREG_REG (x), VOIDmode);
       return;
-    }
 
-  /* If X is a parallel, invalidate all of its elements.  */
-
-  if (GET_CODE (x) == PARALLEL)
-    {
+    case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0 ; --i)
 	invalidate (XVECEXP (x, 0, i), VOIDmode);
       return;
-    }
 
-  /* If X is an expr_list, this is part of a disjoint return value;
-     extract the location in question ignoring the offset.  */
-
-  if (GET_CODE (x) == EXPR_LIST)
-    {
+    case EXPR_LIST:
+      /* This is part of a disjoint return value; extract the location in
+	 question ignoring the offset.  */
       invalidate (XEXP (x, 0), VOIDmode);
       return;
-    }
 
-  /* X is not a register; it must be a memory reference with
-     a nonvarying address.  Remove all hash table elements
-     that refer to overlapping pieces of memory.  */
+    case MEM:
+      /* Remove all hash table elements that refer to overlapping pieces of
+	 memory.  */
+      if (full_mode == VOIDmode)
+	full_mode = GET_MODE (x);
 
-  if (GET_CODE (x) != MEM)
-    abort ();
-
-  if (full_mode == VOIDmode)
-    full_mode = GET_MODE (x);
-
-  for (i = 0; i < NBUCKETS; i++)
-    {
-      register struct table_elt *next;
-      for (p = table[i]; p; p = next)
+      for (i = 0; i < NBUCKETS; i++)
 	{
-	  next = p->next_same_hash;
-	  /* Invalidate ASM_OPERANDS which reference memory (this is easier
-	     than checking all the aliases).  */
-	  if (p->in_memory
-	      && (GET_CODE (p->exp) != MEM
-		  || true_dependence (x, full_mode, p->exp, cse_rtx_varies_p)))
-	    remove_from_table (p, i);
+	  register struct table_elt *next;
+
+	  for (p = table[i]; p; p = next)
+	    {
+	      next = p->next_same_hash;
+	      if (p->in_memory
+		  && (GET_CODE (p->exp) != MEM
+		      || true_dependence (x, full_mode, p->exp,
+					  cse_rtx_varies_p)))
+		remove_from_table (p, i);
+	    }
 	}
+      return;
+
+    default:
+      abort ();
     }
 }
-
+
 /* Remove all expressions that refer to register REGNO,
    since they are already invalid, and we are about to
    mark that register valid again and don't want the old
@@ -2215,7 +2205,9 @@ canon_hash (x, mode)
       return hash;
 
     case MEM:
-      if (MEM_VOLATILE_P (x))
+      /* We don't record if marked volatile or if BLKmode since we don't
+	 know the size of the move.  */
+      if (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode)
 	{
 	  do_not_record = 1;
 	  return 0;
@@ -6171,6 +6163,7 @@ cse_insn (insn, libcall_insn)
 }
 
 /* Remove from the hash table all expressions that reference memory.  */
+
 static void
 invalidate_memory ()
 {
@@ -6186,13 +6179,15 @@ invalidate_memory ()
       }
 }
 
-/* XXX ??? The name of this function bears little resemblance to
-   what this function actually does.  FIXME.  */
+#ifdef AUTO_INC_DEC
+
+/* If ADDR is an address that implicitly affects the stack pointer, return
+   1 and update the register tables to show the effect.  Else, return 0.  */
+
 static int
-note_mem_written (addr)
+addr_affects_sp_p (addr)
      register rtx addr;
 {
-  /* Pushing or popping the stack invalidates just the stack pointer.  */
   if ((GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC
        || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
       && GET_CODE (XEXP (addr, 0)) == REG
@@ -6204,10 +6199,13 @@ note_mem_written (addr)
       /* This should be *very* rare.  */
       if (TEST_HARD_REG_BIT (hard_regs_in_table, STACK_POINTER_REGNUM))
 	invalidate (stack_pointer_rtx, VOIDmode);
+
       return 1;
     }
+
   return 0;
 }
+#endif
 
 /* Perform invalidation on the basis of everything about an insn
    except for invalidating the actual places that are SET in it.
@@ -6432,7 +6430,9 @@ invalidate_skipped_set (dest, set, data)
   enum rtx_code code = GET_CODE (dest);
 
   if (code == MEM
-      && ! note_mem_written (dest)	/* If this is not a stack push ... */
+#ifdef AUTO_INC_DEC
+      && ! addr_affects_sp_p (dest)	/* If this is not a stack push ... */
+#endif
       /* There are times when an address can appear varying and be a PLUS
 	 during this scan when it would be a fixed address were we to know
 	 the proper equivalences.  So invalidate all memory if there is
@@ -6605,10 +6605,13 @@ cse_set_around_loop (x, insn, loop_start)
 	    }
     }
 
-  /* Now invalidate anything modified by X.  */
-  note_mem_written (SET_DEST (x));
+#ifdef AUTO_INC_DEC
+  /* Deal with the destination of X affecting the stack pointer.  */
+  addr_affects_sp_p (SET_DEST (x));
+#endif
 
-  /* See comment on similar code in cse_insn for explanation of these tests.  */
+  /* See comment on similar code in cse_insn for explanation of these
+     tests.  */
   if (GET_CODE (SET_DEST (x)) == REG || GET_CODE (SET_DEST (x)) == SUBREG
       || GET_CODE (SET_DEST (x)) == MEM)
     invalidate (SET_DEST (x), VOIDmode);

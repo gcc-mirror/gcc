@@ -3359,12 +3359,9 @@ build_type_attribute_variant (ttype, attribute)
   if ( ! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
       register int hashcode;
-      register struct obstack *ambient_obstack = current_obstack;
       tree ntype;
 
-      if (ambient_obstack != &permanent_obstack)
-        current_obstack = TYPE_OBSTACK (ttype);
-
+      push_obstacks (TYPE_OBSTACK (ttype), TYPE_OBSTACK (ttype));
       ntype = copy_node (ttype);
 
       TYPE_POINTER_TO (ntype) = 0;
@@ -3400,12 +3397,7 @@ build_type_attribute_variant (ttype, attribute)
 
       ntype = type_hash_canon (hashcode, ntype);
       ttype = build_qualified_type (ntype, TYPE_QUALS (ttype));
-
-      /* We must restore the current obstack after the type_hash_canon call,
-	 because type_hash_canon calls type_hash_add for permanent types, and
-	 then type_hash_add calls oballoc expecting to get something permanent
-	 back.  */
-      current_obstack = ambient_obstack;
+      pop_obstacks ();
     }
 
   return ttype;
