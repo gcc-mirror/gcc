@@ -5799,6 +5799,47 @@ choose_reload_regs (insn, avoid_return_reg)
 					 reload_opnum[r],
 					 reload_when_needed[r]))
 	reload_inherited[r] = 0;
+      /* If we can inherit a RELOAD_FOR_INPUT, then we do not need its related
+	 RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS reloads.
+	 ??? This could be extended to other reload types, but these are
+         more tricky to handle:
+	 RELOAD_FOR_OTHER_ADDRESS reloads might have been merged, so we
+	 can't eliminate them without a check that *all* references are
+	 now unused due to inheritance.
+	 While RELOAD_FOR_INPADDR_ADDRESS and RELOAD_FOR_OUTADDR_ADDRESS are
+	 not merged, we can't be sure that we have eliminated the use of
+	 that particular reload if we have seen just one
+	 RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_OUTPUT_ADDRESS being inherited,
+	 since there might be multiple of the latter two reloads for a single
+	 operand.
+	 RELOAD_FOR_OPADDR_ADDR reloads for different operands are not
+	 merged, but might share the same register by courtesy of
+	 reload_reg_free_for_value_p.  reload_reg_used_in_op_addr_reload
+	 does not differentiate by opnum, thus calling clear_reload_reg_in_use
+	 for one of these reloads would mark the register as free even though
+	 another RELOAD_FOR_OPADDR_ADDR reload might still use it.  */
+      else if (reload_inherited[r] && reload_when_needed[r] == RELOAD_FOR_INPUT)
+	{
+	  for (i = 0; i < n_reloads; i++)
+	    {
+	      if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
+		   || reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS)
+		  && reload_opnum[i] == reload_opnum[r]
+		  && reload_in[i] && reload_reg_rtx[i])
+		{
+		  int regno = true_regnum (reload_reg_rtx[i]);
+
+		  reload_in[i] = 0;
+		  if (spill_reg_order[regno] >= 0)
+		    clear_reload_reg_in_use (regno, reload_opnum[i],
+					     reload_when_needed[i],
+					     reload_mode[i]);
+		  reload_reg_rtx[i] = 0;
+		  reload_spill_index[i] = -1;
+		  remove_replacements (i);
+		}
+	    }
+	}
 
       /* If we found a better place to reload from,
 	 validate it in the same fashion, if it is a reload reg.  */
