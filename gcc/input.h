@@ -15,10 +15,6 @@ struct file_stack
     char *name;
     struct file_stack *next;
     int line;
-    /* This is for front ends that do include processing
-       internally rather than having a preprocessor do it.
-       Modula 2 needs this.  */
-    FILE *fd;
   };
 
 /* Stack of currently pending input files.
