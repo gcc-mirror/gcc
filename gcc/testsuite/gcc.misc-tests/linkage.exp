@@ -63,6 +63,11 @@ if [isnative] then {
 	    if [ string match "*ELF-64*" $file_string ] {
 		set native_cflags "+DD64"
 	    }
+	} elseif [istarget "powerpc64*-*-linux*"] {
+	    set file_string [exec file "linkage-x.o"]
+	    if [ string match "*64-bit*" $file_string ] {
+		set native_cflags "-m64"
+	    }
 	}
 
 	if [file exists "linkage-y.o"] then {
