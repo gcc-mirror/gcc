@@ -2332,6 +2332,8 @@ do {									     \
 	    ? COSTS_N_INSNS (2)						\
 	    : COSTS_N_INSNS (1));					\
   case MULT:								\
+    if (optimize_size)							\
+      return COSTS_N_INSNS (2);						\
     switch (rs6000_cpu)							\
       {									\
       case PROCESSOR_RIOS1:						\
