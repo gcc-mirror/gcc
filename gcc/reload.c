@@ -868,9 +868,11 @@ push_reload (in, out, inloc, outloc, class,
      the class whose registers cannot be referenced in a different size
      and M1 is not the same size as M2.  If SUBREG_WORD is nonzero, we
      cannot reload just the inside since we might end up with the wrong
-     register class.  */
+     register class.  But if it is inside a STRICT_LOW_PART, we have
+     no choice, so we hope we do get the right register class there.  */
 
-  if (in != 0 && GET_CODE (in) == SUBREG && SUBREG_WORD (in) == 0
+  if (in != 0 && GET_CODE (in) == SUBREG
+      && (SUBREG_WORD (in) == 0 || strict_low)
 #ifdef CLASS_CANNOT_CHANGE_SIZE
       && class != CLASS_CANNOT_CHANGE_SIZE
 #endif
@@ -980,7 +982,8 @@ push_reload (in, out, inloc, outloc, class,
      storing in a subreg is entitled to clobber it all
      (except in the case of STRICT_LOW_PART,
      and in that case the constraint should label it input-output.)  */
-  if (out != 0 && GET_CODE (out) == SUBREG && SUBREG_WORD (out) == 0
+  if (out != 0 && GET_CODE (out) == SUBREG
+      && (SUBREG_WORD (out) == 0 || strict_low)
 #ifdef CLASS_CANNOT_CHANGE_SIZE
       && class != CLASS_CANNOT_CHANGE_SIZE
 #endif
