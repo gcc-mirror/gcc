@@ -1821,7 +1821,7 @@ invoke_build_dtable (int is_invoke_interface, tree arg_list)
    METHOD. If this method has not been seen before, it will be added to the 
    otable_methods. If it has, the existing otable slot will be reused. */
 
-int
+static int
 get_offset_table_index (tree method)
 {
   int i = 1;

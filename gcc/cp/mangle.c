@@ -2138,7 +2138,7 @@ write_template_arg (tree node)
 			::= <name>
 			::= <substitution>  */
 
-void
+static void
 write_template_template_arg (const tree decl)
 {
   MANGLE_TRACE_TREE ("template-template-arg", decl);

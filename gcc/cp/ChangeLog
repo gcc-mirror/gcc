@@ -1,3 +1,13 @@
+2003-06-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (build_typename_type)
+	* mangle.c (write_template_template_arg)
+	* parser.c (cp_parser_scope_through_which_access_occurs)
+	* pt.c (push_access_scope_real, push_access_scope, pop_access_scope)
+	* repo.c (get_base_filename)
+	* semantics.c (maybe_convert_cond):
+	Mark the definition static, matching the forward declaration.
+
 2003-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10468
@@ -24,10 +34,10 @@
 
 2003-06-26  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/8266
-        * pt.c (check_explicit_specialization): When looking up a
-        template function from an identifier outside class-scope, bind
-        it to CP_DECL_CONTEXT.
+	PR c++/8266
+	* pt.c (check_explicit_specialization): When looking up a
+	template function from an identifier outside class-scope, bind
+	it to CP_DECL_CONTEXT.
 
 2003-06-25  Mark Mitchell  <mark@codesourcery.com>
 
@@ -43,7 +53,7 @@
 	* cp-tree.h (perform_direct_initialization_if_possible): Declare it.
 	* typeck.c (check_for_casting_away_constness): New function.
 	(build_static_cast): Rewrite.
-	
+
 2003-06-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (enforce_access): Assert we get a binfo.
@@ -178,7 +188,7 @@ Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* decl2.c (get_guard): Use pushdecl_top_level_and_finish.
 	* rtti.c (get_tinfo_decl): Use pushdecl_top_level_and_finish.
 	(tinfo_base_init): Likewise.
-	
+
 2003-06-19  Matt Austern  <austern@apple.com>
 
 	PR c++/11228
@@ -186,7 +196,7 @@ Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	is an integer constant.
 	(build_default_init) Don't use build_zero_init for arrays with
 	variable number of elements.
-	
+
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
 	* cp-tree.h: Remove duplicated declarations.

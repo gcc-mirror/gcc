@@ -1,3 +1,9 @@
+2003-06-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-format.c (check_format_string, get_constant)
+	* cfgrtl.c (rtl_split_edge):
+	Mark the definition static, matching the forward declaration.
+
 2003-06-27  Gunther Nikl <gni@gecko.de>
 
 	* unwind-c.c (PERSONALITY_FUNCTION): Delete duplicate define.
@@ -11,9 +17,9 @@
 
 	* config/s390/s390.h (SECONDARY_OUTPUT_RELOAD_CLASS): Define.
 	* config/s390/s390.c (s390_secondary_output_reload_class): New function.
-	* config/s390/s390-protos.h (s390_secondary_output_reload_class): 
+	* config/s390/s390-protos.h (s390_secondary_output_reload_class):
 	Declare it.
-	* config/s390/s390.md ("reload_outti", "reload_outdi", 
+	* config/s390/s390.md ("reload_outti", "reload_outdi",
 	"reload_outdf"): New expanders.
 
 	* config/s390/s390.md ("movti" + splitters): Handle non-offsettable
@@ -63,9 +69,9 @@
 
 2003-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
-        * ggc-page.c (inverse_table): Change type of mult to size_t.
-        (compute_inverse): Compute inverse using size_t, not unsigned int.
-        Compute inverse also for sizes larger than half a machine page.
+	* ggc-page.c (inverse_table): Change type of mult to size_t.
+	(compute_inverse): Compute inverse using size_t, not unsigned int.
+	Compute inverse also for sizes larger than half a machine page.
 
 Fri Jun 27 18:36:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 

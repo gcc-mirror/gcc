@@ -1,3 +1,10 @@
+2003-06-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* class.c (build_method_symbols_entry)
+	* expr.c (get_offset_table_index)
+	* jcf-parse.c (jcf_parse):
+	Mark the definition static, matching the forward declaration.
+
 2003-06-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.c (java_handle_option): Don't check for missing arguments.
