@@ -1,3 +1,7 @@
+2000-10-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.c-torture/compile/20001024-1.c: New test.
+
 2000-10-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/g++.exp (g++_include_flags): Trust HAVE_LIBSTDCXX_V3
