@@ -464,7 +464,7 @@ extern char *note_insn_name[];
    each CODE_LABEL starts a chain that goes through
    all the LABEL_REFs that jump to that label.
    The chain eventually winds up at the CODE_LABEL; it is circular.  */
-#define LABEL_REFS(LABEL) ((LABEL)->fld[5].rtx)
+#define LABEL_REFS(LABEL) ((LABEL)->fld[6].rtx)
 
 /* This is the field in the LABEL_REF through which the circular chain
    of references to a particular label is linked.

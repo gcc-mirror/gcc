@@ -368,8 +368,8 @@ DEF_RTL_EXPR(BARRIER, "barrier", "iuu", 'x')
    3: is a number that is unique in the entire compilation.
    4: is the user-given name of the label, if any.
    5: is used in jump.c for the use-count of the label.
-   and in flow.c to point to the chain of label_ref's to this label.  */
-DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuis0", 'x')
+   6: is used in flow.c to point to the chain of label_ref's to this label.  */
+DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuis00", 'x')
      
 /* Say where in the code a source line starts, for symbol table's sake.
    Contains a filename and a line number.  Line numbers <= 0 are special:
@@ -385,7 +385,7 @@ DEF_RTL_EXPR(NOTE, "note", "iuusn", 'x')
    it contains helps to build the mapping function between the rtx's of
    the function to be inlined and the current function being expanded.  */
 
-DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEss", 'x')
+DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEsse", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
@@ -570,6 +570,15 @@ DEF_RTL_EXPR(SYMBOL_REF, "symbol_ref", "s", 'o')
    results; but instructions that look at the condition code
    pretend to be looking at the entire value and comparing it.  */
 DEF_RTL_EXPR(CC0, "cc0", "", 'o')
+
+/* Reference to the address of a register.  Removed by purge_addressof after
+   CSE has elided as many as possible.
+   1st operand: the register we may need the address of.
+   2nd operand: the original pseudo regno we were generated for.
+   3rd operand: the decl for the object in the register, for
+     put_reg_in_stack.  */
+
+DEF_RTL_EXPR(ADDRESSOF, "addressof", "ei0", 'o')
 
 /* =====================================================================
    A QUEUED expression really points to a member of the queue of instructions
