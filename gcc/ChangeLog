@@ -1,3 +1,20 @@
+Fri Jun 26 06:58:54 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Only need a secondary reload
+	if reloading a MEM.
+
+	* arm.h (arm_adjust_cost): Renamed bogus prototype from 
+	arm_adjust_code.
+	(bad_signed_byte_operand): Add prototype.
+	* arm.c (arm_override_options): Make I unsigned.
+	(const_ok_for_arm): Add casts to the constants.	
+	(load_multiple_operation): Don't redeclare elt in sub-block.
+	(arm_gen_movstrqi): Delete external declaration of optimize.
+	(gen_compare_reg): Declare parameter fp.
+
+	* arm.c (final_prescan_insn): Only initialize scanbody if the insn
+	has a pattern.
+
 Fri Jun 26 09:31:24 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.c: Include system.h and toplev.h.
