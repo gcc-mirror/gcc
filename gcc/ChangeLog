@@ -1,3 +1,10 @@
+2003-10-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Function Attributes): Fix title of GNU C
+	Preprocessor manual.
+	(C++ Extensions): Fix reference to "Predefined Macros" in the
+	GNU C Preprocessor manual.
+
 2003-10-04  Richard Earnshaw  <reanrsha@arm.com>
 
 	* doc/extend.texi: Document how GCC estimates and relies on the size
