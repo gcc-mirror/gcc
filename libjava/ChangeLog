@@ -1,3 +1,8 @@
+2001-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* java/net/natInetAddress.cc (java::net::InetAddress::aton):
+	Wrap use of inet_pton in HAVE_INET6.
+
 2001-04-25  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	java.security merge and ClassLoader compliance fixes.
