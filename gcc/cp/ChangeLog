@@ -1,3 +1,8 @@
+2001-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (compute_array_index_type): Don't try to do anything with
+	the indices when processing a template.
+
 2001-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (do_using_directive): Revert previous patch.

@@ -9207,12 +9207,6 @@ compute_array_index_type (name, size)
 {
   tree itype;
 
-  /* The size might be the result of a cast. */
-  STRIP_TYPE_NOPS (size);
-
-  /* It might be a const variable or enumeration constant.  */
-  size = decl_constant_value (size);
-
   /* If this involves a template parameter, it will be a constant at
      instantiation time, but we don't know what the value is yet.
      Even if no template parameters are involved, we may an expression
@@ -9234,6 +9228,12 @@ compute_array_index_type (name, size)
       return build_index_type (build_min (MINUS_EXPR, sizetype,
 					  size, integer_one_node));
     }
+
+  /* The size might be the result of a cast. */
+  STRIP_TYPE_NOPS (size);
+
+  /* It might be a const variable or enumeration constant.  */
+  size = decl_constant_value (size);
 
   /* The array bound must be an integer type.  */
   if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
