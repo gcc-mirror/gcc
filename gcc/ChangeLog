@@ -1,3 +1,9 @@
+2001-08-28  Daniel Berlin  <dan@cgsoftware.com>
+
+	* ssa-ccp.c (ssa_ccp_df_delete_unreachable_insns): For unreachable
+	blocks, the BB_REACHABLE is now set, rather than aux being
+	non-NULL. Update the test to reflect this.
+	
 2001-08-28  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/crtn.asm: Add comment explaining 16 byte alignment.
