@@ -643,7 +643,7 @@ DEFTREECODE (BIT_NOT_EXPR, "bit_not_expr", '1', 1)
    needed or not (for side effects).  The operand may have
    BOOLEAN_TYPE or INTEGER_TYPE.  In either case, the argument will be
    either zero or one.  For example, a TRUTH_NOT_EXPR will never have
-   a INTEGER_TYPE VAR_DECL as its argument; instead, a NE_EXPR will be
+   an INTEGER_TYPE VAR_DECL as its argument; instead, a NE_EXPR will be
    used to compare the VAR_DECL to zero, thereby obtaining a node with
    value zero or one.  */
 DEFTREECODE (TRUTH_ANDIF_EXPR, "truth_andif_expr", 'e', 2)
@@ -776,7 +776,7 @@ DEFTREECODE (VA_ARG_EXPR, "va_arg_expr", 'e', 1)
 DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", 'e', 2)
 
 /* Evaluate the first operand.
-   The second operand is a a cleanup expression which is evaluated
+   The second operand is a cleanup expression which is evaluated
    before an exit (normal, exception, or jump out) from this expression.
 
    Like a CLEANUP_POINT_EXPR/WITH_CLEANUP_EXPR combination, but those

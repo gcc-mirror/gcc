@@ -2311,7 +2311,7 @@ is not really supported on the platform.  The native @command{as} and
 @command{ld} still are recommended.  The native AIX tools do
 interoperate with GCC@.
 
-Building @file{libstdc++.a} requires a fix for a AIX Assembler bug
+Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).
 
 Linking executables and shared libraries may produce warnings of

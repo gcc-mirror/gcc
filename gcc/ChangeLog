@@ -1,3 +1,8 @@
+2002-05-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree.def: Fix typos.
+	* doc/install.texi: Likewise.
+
 2002-05-25  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (HAVE_AS_TLS): Add ia64 test.
