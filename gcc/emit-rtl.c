@@ -4298,7 +4298,8 @@ emit_insn_after_scope (pattern, after, scope)
   after = NEXT_INSN (after);
   while (1)
     {
-      INSN_SCOPE (after) = scope;
+      if (active_insn_p (after))
+	INSN_SCOPE (after) = scope;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4317,7 +4318,8 @@ emit_jump_insn_after_scope (pattern, after, scope)
   after = NEXT_INSN (after);
   while (1)
     {
-      INSN_SCOPE (after) = scope;
+      if (active_insn_p (after))
+	INSN_SCOPE (after) = scope;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4336,7 +4338,8 @@ emit_call_insn_after_scope (pattern, after, scope)
   after = NEXT_INSN (after);
   while (1)
     {
-      INSN_SCOPE (after) = scope;
+      if (active_insn_p (after))
+	INSN_SCOPE (after) = scope;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4356,7 +4359,8 @@ emit_insn_before_scope (pattern, before, scope)
   first = NEXT_INSN (first);
   while (1)
     {
-      INSN_SCOPE (first) = scope;
+      if (active_insn_p (first))
+	INSN_SCOPE (first) = scope;
       if (first == last)
 	break;
       first = NEXT_INSN (first);
