@@ -1,3 +1,7 @@
+Sun Apr 25 12:28:59 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.dg/990424-1.c: New test.
+
 1999-04-24  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/execute/u77-test.f (main): Bug involving
