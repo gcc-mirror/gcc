@@ -52,5 +52,5 @@ int
 main()
 {
   foo();
-  exit();
+  exit(0);
 }
