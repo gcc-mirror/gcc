@@ -340,7 +340,13 @@ case $basic_machine in
 		;;
 	next)
 		basic_machine=m68k-next
-		os=-bsd
+		case $os in
+		    -ns2*)
+			;;
+		    *)
+		      $os=-ns3
+			;;
+		esac
 		;;
 	nh3000)
 		basic_machine=m68k-harris
@@ -539,7 +545,7 @@ case $os in
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
-	      | -lynxos* | -bosx* )
+	      | -lynxos* | -bosx* | -ns*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
