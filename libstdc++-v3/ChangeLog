@@ -1,3 +1,11 @@
+2000-07-03  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* bits/std_memory.h: Revert.
+
+2000-07-03  Brendan Kehoe  <brendan@zen.org>
+
+	* bits/std_complex.h: Fix parens. Format.
+	
 2000-07-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 	    Ulrich Drepper  <drepper@purist.soma.redhat.com>
 
