@@ -1,3 +1,7 @@
+2002-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/va-arg-22.c: New test.
+
 Sat Mar  9 07:47:50 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c-torture/compile/20020309-1.c: New test.
