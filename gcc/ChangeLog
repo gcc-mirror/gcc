@@ -1,3 +1,12 @@
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+        
+	* gcc.texi: Update e-mail addresses and URLs to gcc.gnu.org.
+	Removed paragraph about compression of files and size limitation,
+	duplicated in the FAQ.  Use gcc-patches for posting patches.
+	* gcc.c (main): Updated URL with bug reporting instructions to
+	gcc.gnu.org.  Removed e-mail address.
+	* system.h (abort): Likewise.
+
 1999-07-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (stmp-multilib-sub): Make the files extracted

@@ -2252,13 +2252,12 @@ for improvement of GNU CC or GNU C++ are welcome in any case.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex egcs-bugs@@egcs.cygnus.com
-Send bug reports for GNU C to @samp{egcs-bugs@@egcs.cygnus.com}.
+@kindex gcc-bugs@@gcc.gnu.org
+Send bug reports for the GNU Compiler Collection to
+@samp{gcc-bugs@@gcc.gnu.org}.
 
-@kindex egcs-bugs@@egcs.cygnus.com
-@kindex egcs-bugs@@egcs.cygnus.com
-Send bug reports for GNU C++ and the C++ runtime libraries to
-@samp{egcs-bugs@@egcs.cygnus.com}.
+Please read @samp{<URL:http://gcc.gnu.org/faq.html#bugreport>} for
+bug reporting instructions before you post a bug report.
 
 Often people think of posting bug reports to the newsgroup instead of
 mailing them.  This appears to work, but it has one problem which can be
@@ -2279,6 +2278,9 @@ Boston, MA 02111-1307, USA
 @node Bug Reporting
 @section How to Report Bugs
 @cindex compiler bugs, reporting
+
+You may find additional and/or more up-to-date instructions at
+@samp{<URL:http://gcc.gnu.org/faq.html#bugreport>}.
 
 The fundamental principle of reporting bugs usefully is this:
 @strong{report all the facts}.  If you are not sure whether to state a
@@ -2311,20 +2313,6 @@ in your response, as well as the information that was missing.
 Please report each bug in a separate message.  This makes it easier for
 us to track which bugs have been fixed and to forward your bugs reports
 to the appropriate maintainer.
-
-If you include source code in your message, you can send it as clear
-text if it is small. If the message is larger, you may compress it using
-@file{gzip}, @file{bzip2}, or @file{pkzip}. Please be aware that sending
-compressed files needs an additional binary-safe mechanism such as
-@code{MIME} or @code{uuencode}. There is a 100k message limit on the
-@samp{egcs-bugs@@egcs.cygnus.com} mailing list at the time of this
-writing (March 1999).  We're trying to create some mechanism for larger
-bug reports to be submitted; please check the on-line FAQ for more
-up-to-date instructions.  Don't think that just posting a URL to the
-code is better, we do want to archive bug reports, and not all
-maintainers have good network connectivity to download large pieces of
-software when they need them; it's much easier for them to have them in
-their mailboxes.
 
 To enable someone to investigate the bug, you should include all these
 things:
@@ -2551,8 +2539,8 @@ we should be able to reproduce the crash ourselves.
 @section Sending Patches for GNU CC
 
 If you would like to write bug fixes or improvements for the GNU C
-compiler, that is very helpful.  Send suggested fixes to the bug report
-mailing list, @code{egcs-bugs@@egcs.cygnus.com}.
+compiler, that is very helpful.  Send suggested fixes to the patches
+mailing list, @code{gcc-patches@@gcc.gnu.org}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -2672,8 +2660,8 @@ ways to find it:
 @itemize @bullet
 @item
 Send a message to a suitable network mailing list.  First try
-@code{egcs-bugs@@egcs.cygnus.com}, and if that brings no response, try
-@code{egcs@@egcs.cygnus.com}.
+@code{gcc-bugs@@gcc.gnu.org}, and if that brings no response, try
+@code{gcc@@gcc.gnu.org}.
 
 @item
 Look in the service directory for someone who might help you for a fee.
