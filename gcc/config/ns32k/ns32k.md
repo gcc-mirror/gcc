@@ -833,10 +833,10 @@
   if (which_alternative == 1)
     {
       int i = INTVAL (operands[2]);
-      if ( i < 0x40000000 && i >= -0x40000000 )
-	  return \"addr %c2(%1),%0\";
+      if (NS32K_DISPLACEMENT_P (i))
+	return \"addr %c2(%1),%0\";
       else
-	  return \"movd %1,%0\;addd %2,%0\";
+	return \"movd %1,%0\;addd %2,%0\";
     }
   if (GET_CODE (operands[2]) == CONST_INT)
     {
