@@ -231,8 +231,8 @@ do {									\
   SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)	\
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP)
 
-extern void sbss_section		PARAMS ((void));
-extern void sdata_section		PARAMS ((void));
+extern void sbss_section (void);
+extern void sdata_section (void);
 
 #undef  SECTION_FUNCTION_TEMPLATE
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\

@@ -155,13 +155,10 @@ Boston, MA 02111-1307, USA.  */
 /* Attempt to turn on access permissions for the stack.  */
 
 #define TRANSFER_FROM_TRAMPOLINE					\
-extern void __enable_execute_stack PARAMS ((void *));			\
-									\
 void									\
-__enable_execute_stack (addr)						\
-     void *addr;							\
+__enable_execute_stack (void *addr)					\
 {									\
-  extern int mprotect PARAMS ((const void *, size_t, int));		\
+  extern int mprotect (const void *, size_t, int);			\
   long size = getpagesize ();						\
   long mask = ~(size-1);						\
   char *page = (char *) (((long) addr) & mask);				\
