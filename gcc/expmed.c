@@ -3951,7 +3951,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       && GET_MODE_CLASS (mode) == MODE_INT
       && (normalizep || STORE_FLAG_VALUE == 1
 	  || (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	      && (STORE_FLAG_VALUE 
+	      && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
 		  == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))))
     {
       subtarget = target;
@@ -4145,7 +4145,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	normalizep = STORE_FLAG_VALUE;
 
       else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	       && (STORE_FLAG_VALUE
+	       && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
 		   == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))
 	;
       else
