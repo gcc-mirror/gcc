@@ -668,6 +668,10 @@ java_post_options (const char **pfilename)
 	    }
 	}
     }
+#ifdef USE_MAPPED_LOCATION
+  linemap_add (&line_table, LC_ENTER, false, filename, 0);
+  linemap_add (&line_table, LC_RENAME, false, "<built-in>", 0);
+#endif
 
   /* Initialize the compiler back end.  */
   return false;
