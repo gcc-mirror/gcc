@@ -1,9 +1,5 @@
 #include <std/std_valarray.h>
 
-// Some Explicit Instanciations.
-template class multiplies<size_t>;
-template size_t accumulate(size_t*, size_t*, size_t, multiplies<size_t>);
-
 template void
    __valarray_fill(size_t* __restrict__, size_t, const size_t&);
 
@@ -15,7 +11,19 @@ template valarray<size_t>::~valarray();
 template valarray<size_t>::valarray(const valarray<size_t>&);
 template size_t valarray<size_t>::size() const;
 template size_t& valarray<size_t>::operator[](size_t);
-template size_t valarray<size_t>::product() const;
+
+
+inline size_t
+__valarray_product(const valarray<size_t>& __a)
+{
+  // XXX: This ugly cast is necessary because
+  //      valarray::operator[]() const returns a VALUE!
+  //      Try to get the committee to correct that gross error.
+  typedef const size_t* __restrict__ _Tp;
+  const size_t __n = __a.size();
+  valarray<size_t>& __t = const_cast<valarray<size_t>&>(__a);
+  return __valarray_product(&__t[0], &__t[0] + __n);
+}
 
 
 void __gslice_to_index(size_t __o, const valarray<size_t>& __l,
@@ -43,7 +51,7 @@ void __gslice_to_index(size_t __o, const valarray<size_t>& __l,
 _Indexer::_Indexer(size_t __o, const valarray<size_t>& __l,
                    const valarray<size_t>& __s)
         : _M_count(1), _M_start(__o), _M_size(__l), _M_stride(__s),
-          _M_index(__l.size() ? __l.product() : 0)
+          _M_index(__l.size() ? __valarray_product(__l) : 0)
 { __gslice_to_index(__o, __l, __s, _M_index); }
 
 
