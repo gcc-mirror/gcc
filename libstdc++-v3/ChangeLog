@@ -1,3 +1,7 @@
+2002-06-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.target (CPULIMITSH): Use powerpc directory for rs6000.
+
 2002-06-14  J.T. Conklin  <jtc@acorntoolworks.com>
 
 	* configure.in (target_alias): Fix.

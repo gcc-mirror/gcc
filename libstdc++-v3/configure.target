@@ -173,7 +173,7 @@ case "${target}" in
    mmix-*-*)
      CPULIMITSH=config/cpu/mmix
      ;;
-   powerpc-*-*)
+   powerpc-*-* | rs6000-*-*)
      CPULIMITSH=config/cpu/powerpc
      ;;
    s390-*-* | s390x-*-*)
