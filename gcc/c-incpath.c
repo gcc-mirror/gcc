@@ -211,7 +211,8 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 	  /* Remove this one if it is in the system chain.  */
 	  reason = REASON_DUP_SYS;
 	  for (tmp = system; tmp; tmp = tmp->next)
-	    if (INO_T_EQ (tmp->ino, cur->ino) && tmp->dev == cur->dev)
+           if (INO_T_EQ (tmp->ino, cur->ino) && tmp->dev == cur->dev
+               && cur->construct == tmp->construct)
 	      break;
 
 	  if (!tmp)
@@ -219,14 +220,16 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 	      /* Duplicate of something earlier in the same chain?  */
 	      reason = REASON_DUP;
 	      for (tmp = head; tmp != cur; tmp = tmp->next)
-		if (INO_T_EQ (cur->ino, tmp->ino) && cur->dev == tmp->dev)
+               if (INO_T_EQ (cur->ino, tmp->ino) && cur->dev == tmp->dev
+                   && cur->construct == tmp->construct)
 		  break;
 
 	      if (tmp == cur
 		  /* Last in the chain and duplicate of JOIN?  */
 		  && !(cur->next == NULL && join
 		       && INO_T_EQ (cur->ino, join->ino)
-		       && cur->dev == join->dev))
+                      && cur->dev == join->dev
+                      && cur->construct == join->construct))
 		{
 		  /* Unique, so keep this directory.  */
 		  pcur = &cur->next;
