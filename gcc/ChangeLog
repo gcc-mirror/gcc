@@ -1,3 +1,8 @@
+2000-04-07  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (conflict.o): Depend on $(RTL_H) and $(BASIC_BLOCK_H)
+	not the raw files.
+
 2000-04-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (do_elif): Skip the rest of the line if we're

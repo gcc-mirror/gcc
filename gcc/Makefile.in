@@ -1592,8 +1592,8 @@ lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h insn-attr.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) $(BASIC_BLOCK_H) \
    output.h insn-config.h
-conflict.o : conflict.c $(CONFIG_H) $(OBSTACK_H) $(HASHTAB_H) \
-   rtl.h basic-block.h
+conflict.o : conflict.c $(CONFIG_H) system.h $(OBSTACK_H) $(HASHTAB_H) \
+   $(RTL_H) $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h function.h insn-config.h \
    $(GGC_H)
