@@ -1,3 +1,9 @@
+2003-05-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* include/bits/stl_alloc.h (__default_alloc_template::_S_chunk_alloc):
+	Cast via void* to avoid -Wcast-align warnings.
+	(__default_alloc_template::_S_refill): Likewise.
+
 2003-05-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/README: Move to...
