@@ -1,3 +1,8 @@
+2003-12-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (stmp-fixinc): Don't bail out if SYSTEM_HEADER_DIR
+	does not exist and it's the default sys-include directory.
+
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/ia64/hpux.h (TARGET_HAVE_TLS): Define it to false.

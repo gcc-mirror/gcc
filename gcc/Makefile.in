@@ -2378,7 +2378,8 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	@if test ! -d ${SYSTEM_HEADER_DIR}; then \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
-	  exit 1; \
+	  if test "x${SYSTEM_HEADER_DIR}" = "x${gcc_tooldir}/sys-include"; \
+	  then sleep 1; else exit 1; fi; \
 	fi
 	rm -rf include; mkdir include
 	-chmod a+rx include
