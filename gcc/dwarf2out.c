@@ -6451,7 +6451,7 @@ output_line_info ()
 	  current_file = line_info->dw_file_num;
 	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
 	  dw2_asm_output_data_uleb128 (current_file, "(\"%s\")",
-				       file_table.table[current_file]);
+				       line_file_table.table[current_file]);
 	}
 
       /* Emit debug info for the current line number, choosing the encoding
@@ -6562,7 +6562,7 @@ output_line_info ()
 	  current_file = line_info->dw_file_num;
 	  dw2_asm_output_data (1, DW_LNS_set_file, "DW_LNS_set_file");
 	  dw2_asm_output_data_uleb128 (current_file, "(\"%s\")",
-				       file_table.table[current_file]);
+				       line_file_table.table[current_file]);
 	}
 
       /* Emit debug info for the current line number, choosing the encoding
