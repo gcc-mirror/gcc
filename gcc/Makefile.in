@@ -858,6 +858,8 @@ cp-expr.o : cp-expr.c $(CONFIG_H) $(CPLUS_TREE_H) $(RTL_H) flags.h \
 cp-edsel.o : cp-edsel.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
 cp-xref.o : cp-xref.c $(CONFIG_H) $(CPLUS_TREE_H) input.h
 cp-pt.o : cp-pt.c $(CONFIG_H) $(CPLUS_TREE_H) cp-decl.h cp-parse.h
+cp-error.o : cp-error.c $(CONFIG_H) $(CPLUS_TREE_H)
+cp-errfn.o : cp-errfn.c $(CONFIG_H) $(CPLUS_TREE_H)
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
