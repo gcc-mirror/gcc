@@ -23,9 +23,6 @@
 #
 #	See README-fixinc for more information.
 
-# Directory where gcc sources (and sometimes special include files) live.
-SRCDIR=${3-${SRCDIR-.}}
-
 # Directory containing the original header files.
 INPUT=${2-${INPUT-/usr/include}}
 
