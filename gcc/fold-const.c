@@ -1437,10 +1437,10 @@ size_int (number)
   /* Type-size nodes already made for small sizes.  */
   static tree size_table[2*HOST_BITS_PER_WIDE_INT + 1];
 
-  if (number >= 0 && number < 2*HOST_BITS_PER_WIDE_INT + 1
+  if (number < 2*HOST_BITS_PER_WIDE_INT + 1
       && size_table[number] != 0)
     return size_table[number];
-  if (number >= 0 && number < 2*HOST_BITS_PER_WIDE_INT + 1)
+  if (number < 2*HOST_BITS_PER_WIDE_INT + 1)
     {
       push_obstacks_nochange ();
       /* Make this a permanent node.  */
@@ -2309,7 +2309,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   /* Make the mask to be used against the extracted field.  */
   mask = build_int_2 (~0, ~0);
   TREE_TYPE (mask) = unsigned_type;
-  force_fit_type (mask);
+  force_fit_type (mask, 0);
   mask = convert (unsigned_type, mask);
   mask = const_binop (LSHIFT_EXPR, mask, size_int (lnbitsize - lbitsize), 0);
   mask = const_binop (RSHIFT_EXPR, mask,
@@ -2471,7 +2471,7 @@ all_ones_mask_p (mask, size)
 
   tmask = build_int_2 (~0, ~0);
   TREE_TYPE (tmask) = signed_type (type);
-  force_fit_type (tmask);
+  force_fit_type (tmask, 0);
   return
     operand_equal_p (mask, 
 		     const_binop (RSHIFT_EXPR,
