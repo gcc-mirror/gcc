@@ -1,3 +1,18 @@
+2002-02-19  Eric Christopher  <echristo@redhat.com>
+
+	PR 5405 Backport march/mtune patches for compatibility with
+	recent binutils.
+	* config/mips/mips.c (mips_parse_cpu): New.
+	(mips_arch, mips_arch_string): Ditto.
+	(mips_tune, mips_tune_string): Ditto.
+	(override_options): Use above. Add warning for isa and arch
+	incompatibility.
+	(mips_asm_file_start): Use above.
+	* config/mips/mips.h (mips_cpu_attr): Use mips_tune.
+	(TARGET_OPTIONS): Add mtune/march.
+	Change mips_cpu to mips_tune for scheduling.
+	* config/mips/mips.md: Change mips_cpu to mips_arch in patterns.
+
 2002-02-19  Robert Lipe  <robertlipe@usa.net>
 
 	* config/i386/t-sco5gas: (CRTSTUFF_T_CFLAGS_S): Delete -mcoff.
@@ -24,7 +39,7 @@
 	Fix PR 5209:
 	* rtlanal.c (parms_set, find_first_parameter_load): Break out
 	from ...
-	* except.c (sjlj_mark_call_sites): ... here.  Handle multiple 
+	* except.c (sjlj_mark_call_sites): ... here.  Handle multiple
 	sets.
 	* rtl.h (find_first_parameter_load): Add prototype.
 
@@ -57,7 +72,7 @@
 	(genrtl_for_stmt): Likewise.
 
 2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
- 
+
 	* doc/install.texi (avr): Update outdated URL.
 
 2002-01-31  Zack Weinberg  <zack@codesourcery.com>
@@ -134,7 +149,7 @@
 	* doc/extend.texi: Correct documentation of __alignof__.
 
 2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
- 
+
 	PR java/4972
 	* aclocal.m4 (AM_ICONV): Put linking flags for libiconv
 	in LIBICONV variable.
@@ -167,12 +182,12 @@
 	* config/i386/netbsd-elf.h: New file (backport from mainline).
 
 2002-01-21  Neil Booth  <neil@daikokuya.demon.co.uk>
-	
+
 	PR preprocessor/3571
 	* tradcpp.c (handle_directive): Skip non-vertical space.
 
 2002-01-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
- 
+
 	* doc/install.texi (hppa*-hp-hpux11): Clarify that GCC 2.95.x cannot
 	be used for bootstrapping GCC 3.0.  Clarify that --enable-threads
 	does not work.
@@ -273,7 +288,7 @@ doc:
 
 	PR c++/5041
 	* expr.c: Merge from mainline:
-	2001-09-20  DJ Delorie  <dj@redhat.com> 
+	2001-09-20  DJ Delorie  <dj@redhat.com>
 	* expr.c (store_constructor): Handle zero-length arrays and
 	flexible arrays correctly.
 
@@ -364,7 +379,7 @@ doc:
 2001-11-20  Zoltan Hidvegi <hzoli@hzoli.2y.net>
 
 	* doloop.c (doloop_modify_runtime): Correct calculation of
-	iterations. 
+	iterations.
 	* unroll.c (unroll_loop): Correct special exit cases.
 
 2001-11-30  Jakub Jelinek  <jakub@redhat.com>
@@ -452,7 +467,7 @@ doc:
 	output when dumping dependencies.
 
 2001-11-19  Brad Kaiser  <bkaiser@acelink.net>
- 
+
 	* reload1.c (elimination_effects): Use function_invariant_p
 	instead of CONSTANT_P when considering register equivalences.
 
@@ -466,7 +481,7 @@ doc:
 
 	PR c/4448
 	* gthr-win32.h: (__gthread_objc_thread_exit): Fix variable
-	name __objc_thread_exit_status so that it matches the 
+	name __objc_thread_exit_status so that it matches the
 	variable defined in objc/thr.h.
 
 2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
@@ -533,7 +548,7 @@ doc:
 	binutils and glibc.
 
 2001-11-12  Craig Rodrigues  <rodrigc@gcc.gnu.org>
- 
+
 	PR bootstrap/3451
 	* c-pragma.c: Rename macros BAD, BAD2, BAD_ACTION to
 	GCC_BAD, GCC_BAD2, GCC_BAD_ACTION.
@@ -1133,7 +1148,7 @@ Thu Sep 20 12:18:41 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* fixinc/inclhack.def(hpux11_size_t): Keep HP-UX headers from
 	defining __size_t and leaving size_t undefined.
-	
+
 2001-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcse.c (gcse_main): Fix comment typo.
@@ -1151,7 +1166,7 @@ Thu Sep 20 12:18:41 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* dwarf2out.c (incomplete_types, decl_scope_table): Make them
 	into varray's and register them as roots with the garbage
-	collector so they are not collected too soon.  
+	collector so they are not collected too soon.
 
 2001-09-10  David Edelsohn  <edelsohn@gnu.org>
 
