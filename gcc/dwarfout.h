@@ -18,9 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void dwarfout_init 		PARAMS ((FILE *, const char *));
-extern void dwarfout_finish		PARAMS ((void));
-
 extern void dwarfout_define		PARAMS ((unsigned, const char *));
 extern void dwarfout_undef 		PARAMS ((unsigned, const char *));
 extern void dwarfout_file_scope_decl 	PARAMS ((tree , int));

@@ -57,6 +57,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "ggc.h"
 #include "tm_p.h"
 #include "gsyms.h"
+#include "debug.h"
 
 /* 1 if PARM is passed to this function in memory.  */
 
@@ -91,6 +92,7 @@ extern tree current_function_decl;
 
 #include "sdbout.h"
 
+static void sdbout_init			PARAMS ((FILE *, const char *));
 static char *gen_fake_label		PARAMS ((void));
 static int plain_type			PARAMS ((tree));
 static int template_name_p		PARAMS ((tree));
@@ -287,7 +289,13 @@ static struct sdb_file *current_file;
 
 #endif /* MIPS_DEBUGGING_INFO */
 
-
+/* The target debug structure.  */
+struct gcc_debug_hooks sdb_debug_hooks =
+{
+  sdbout_init,
+  debug_nothing_init_finish
+};
+
 #if 0
 
 /* return the tag identifier for type
@@ -1607,11 +1615,10 @@ sdbout_resume_previous_source_file ()
 
 /* Set up for SDB output at the start of compilation.  */
 
-void
-sdbout_init (asm_file, input_file_name, syms)
+static void
+sdbout_init (asm_file, input_file_name)
      FILE *asm_file ATTRIBUTE_UNUSED;
      const char *input_file_name ATTRIBUTE_UNUSED;
-     tree syms ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
   current_file = (struct sdb_file *) xmalloc (sizeof *current_file);
@@ -1621,7 +1628,7 @@ sdbout_init (asm_file, input_file_name, syms)
 
 #ifdef RMS_QUICK_HACK_1
   tree t;
-  for (t = syms; t; t = TREE_CHAIN (t))
+  for (t = getdecls (); t; t = TREE_CHAIN (t))
     if (DECL_NAME (t) && IDENTIFIER_POINTER (DECL_NAME (t)) != 0
 	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__vtbl_ptr_type"))
       sdbout_symbol (t, 0);

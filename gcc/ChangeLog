@@ -1,3 +1,33 @@
+2001-07-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (toplev.o, sdbout.o, dbxout.o, dwarfout.o,
+	dwarf2out.o): Depend on debug.h, wrap long lines.
+	* dbxout.c: Include debug.h.
+	(dbx_debug_hooks): New.
+	(dbxout_init): Make static, take just 2 args.
+	(dbxout_finish): Make static.
+	* dbxout.h (dbxout_init, dbxout_finish): Delete.
+	* debug.c: New file.
+	* debug.h: New file.
+	* dwarf2out.c: Include debug.h.
+	(dwarf2_debug_hooks): New.
+	(dwarf2out_init): Make static.
+	(dwarf2out_finish): Make static, take 2 args.
+	* dwarf2out.h (dwarf2out_init, dwarf2out_finish): Delete.
+	* dwarfout.c: Include debug.h.
+	(dwarf_debug_hooks): New.
+	(dwarfout_init): Make static.
+	(dwarfout_finish): Make static, take 2 args.
+	* dwarfout.h (dwarfout_init, dwarfout_finish): Delete.
+	* sdbout.c: Include debug.h.
+	(sdb_debug_hooks): New.
+	(sdbout_init): Make static, take 2 args.
+	* sdbout.h (sdbout_init): Delete.
+	* toplev.c: Include debug.h.
+	(debug_hooks): New.
+	(compile_file): Set deubg_hooks based on command line options.
+	Use the hooks unconditionally rather than conditional compilation.
+
 Tue Jul 10 09:04:45 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-ccp.c (first_phi_node): Remove.  Replace uses with calls to

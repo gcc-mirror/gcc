@@ -57,6 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #include "md5.h"
 #include "tm_p.h"
 #include "diagnostic.h"
+#include "debug.h"
 
 /* DWARF2 Abbreviation Glossary:
    CFA = Canonical Frame Address
@@ -231,6 +232,8 @@ static unsigned current_funcdef_fde;
 
 /* Forward declarations for functions defined in this file.  */
 
+static void dwarf2out_init 		PARAMS ((FILE *, const char *));
+static void dwarf2out_finish		PARAMS ((FILE *, const char *));
 static char *stripattributes		PARAMS ((const char *));
 static const char *dwarf_cfi_name	PARAMS ((unsigned));
 static dw_cfi_ref new_cfi		PARAMS ((void));
@@ -360,7 +363,15 @@ expand_builtin_dwarf_fp_regnum ()
 #ifndef INCOMING_FRAME_SP_OFFSET
 #define INCOMING_FRAME_SP_OFFSET 0
 #endif
+
+/* The target debug structure.  */
 
+struct gcc_debug_hooks dwarf2_debug_hooks =
+{
+  dwarf2out_init,
+  dwarf2out_finish
+};
+
 /* Return a pointer to a copy of the section string name S with all
    attributes stripped off, and an asterisk prepended (for assemble_name).  */
 
@@ -11355,7 +11366,7 @@ dwarf2out_undef (lineno, buffer)
 
 /* Set up for Dwarf output at the start of compilation.  */
 
-void
+static void
 dwarf2out_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
      register const char *main_input_filename;
@@ -11445,8 +11456,10 @@ dwarf2out_init (asm_out_file, main_input_filename)
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
-void
-dwarf2out_finish ()
+static void
+dwarf2out_finish (asm_out_file, input_filename)
+     register FILE *asm_out_file;
+     register const char *input_filename ATTRIBUTE_UNUSED;
 {
   limbo_die_node *node, *next_node;
   dw_die_ref die = 0;

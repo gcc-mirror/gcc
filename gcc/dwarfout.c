@@ -577,6 +577,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarfout.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "debug.h"
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
@@ -786,6 +787,8 @@ static int in_class;
 
 /* Forward declarations for functions defined in this file.  */
 
+static void dwarfout_init 		PARAMS ((FILE *, const char *));
+static void dwarfout_finish		PARAMS ((FILE *, const char *));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
 static const char *dwarf_stack_op_name	PARAMS ((unsigned));
@@ -1357,6 +1360,13 @@ static void retry_incomplete_types	PARAMS ((void));
   ASM_OUTPUT_DWARF_STRING (FILE,P), ASM_OUTPUT_DWARF_STRING (FILE,"\n") 
 #endif
 
+
+/* The target debug structure.  */
+struct gcc_debug_hooks dwarf_debug_hooks =
+{
+  dwarfout_init,
+  dwarfout_finish
+};
 
 /************************ general utility functions **************************/
 
@@ -6166,7 +6176,7 @@ dwarfout_undef (lineno, buffer)
 
 /* Set up for Dwarf output at the start of compilation.	 */
 
-void
+static void
 dwarfout_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
      register const char *main_input_filename;
@@ -6356,8 +6366,10 @@ dwarfout_init (asm_out_file, main_input_filename)
 
 /* Output stuff that dwarf requires at the end of every file.  */
 
-void
-dwarfout_finish ()
+static void
+dwarfout_finish (asm_out_file, main_input_filename)
+     register FILE *asm_out_file;
+     register const char *main_input_filename ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 

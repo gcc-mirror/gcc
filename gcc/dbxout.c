@@ -82,6 +82,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 #include "ggc.h"
+#include "debug.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -283,6 +284,8 @@ static int current_sym_nchars;
 #define CONTIN do { } while (0)
 #endif
 
+static void dbxout_init			PARAMS ((FILE *, const char *));
+static void dbxout_finish		PARAMS ((FILE *, const char *));
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PARAMS ((void));
 #endif
@@ -305,6 +308,13 @@ static void dbxout_prepare_symbol	PARAMS ((tree));
 static void dbxout_finish_symbol	PARAMS ((tree));
 static void dbxout_block		PARAMS ((tree, int, tree));
 static void dbxout_really_begin_function PARAMS ((tree));
+
+/* The target debug structure.  */
+struct gcc_debug_hooks dbx_debug_hooks =
+{
+  dbxout_init,
+  dbxout_finish
+};
 
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void
@@ -332,13 +342,13 @@ dbxout_function_end ()
 /* At the beginning of compilation, start writing the symbol table.
    Initialize `typevec' and output the standard data types of C.  */
 
-void
-dbxout_init (asm_file, input_file_name, syms)
+static void
+dbxout_init (asm_file, input_file_name)
      FILE *asm_file;
      const char *input_file_name;
-     tree syms;
 {
   char ltext_label_name[100];
+  tree syms = getdecls ();
 
   asmfile = asm_file;
 
@@ -535,7 +545,7 @@ dbxout_source_line (file, filename, lineno)
    Unless you define DBX_OUTPUT_MAIN_SOURCE_FILE_END, the default is
    to do nothing.  */
 
-void
+static void
 dbxout_finish (file, filename)
      FILE *file ATTRIBUTE_UNUSED;
      const char *filename ATTRIBUTE_UNUSED;
