@@ -1,3 +1,28 @@
+Tue Feb 11 13:50:48 1997  Mike Stump  <mrs@cygnus.com>
+
+	* new1.cc: Include a declaration for malloc, to avoid warning, and
+ 	avoid lossing on systems that require one (ones that define malloc
+ 	in xm.h).
+
+Mon Feb 10 22:51:13 1997  Bruno Haible	<bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* decl2.c (max_tinst_depth): New variable.
+	(lang_decode_option): Parse "-ftemplate-depth-NN" command line
+	option.
+	* pt.c (max_tinst_depth): Variable moved.
+	* lang-options.h: Declare "-ftemplate-depth-NN" command line option
+	as legal.
+
+Fri Feb  7 15:43:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (xref_basetypes): Allow a base class that depends on
+ 	template parms to be incomplete.
+
+	* decl2.c (build_expr_from_tree): Support typeid(type).
+	* rtti.c (get_typeid): Support templates.
+	(expand_si_desc, expand_class_desc): Fix string length.
+	(expand_ptr_desc, expand_attr_desc, expand_generic_desc): Likewise.
+
 Tue Feb  4 11:28:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (unify, case TEMPLATE_CONST_PARM): Use cp_tree_equal.

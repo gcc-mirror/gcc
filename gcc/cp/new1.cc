@@ -27,6 +27,8 @@
 
 #include "new"
 
+extern "C" void *malloc (size_t);
+
 typedef void (*vfp)(void);
 extern vfp __new_handler;
 extern void __default_new_handler (void);

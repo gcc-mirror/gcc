@@ -376,6 +376,11 @@ int flag_new_for_scope = 1;
 
 int flag_weak = 1;
 
+/* Maximum template instantiation depth. Must be at least 17 for ANSI
+   compliance. */
+
+int max_tinst_depth = 17;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -491,6 +496,22 @@ lang_decode_option (p)
 	  flag_use_repository = 1;
 	  flag_implicit_templates = 0;
 	  found = 1;
+	}
+      else if (!strncmp (p, "template-depth-", 15))
+	{
+	  char *endp = p + 15;
+	  while (*endp)
+	    {
+	      if (*endp >= '0' && *endp <= '9')
+		endp++;
+	      else
+		{
+		  error ("Invalid option `%s'", p - 2);
+		  goto template_depth_lose;
+		}
+	    }
+	  max_tinst_depth = atoi (p + 15);
+	template_depth_lose: ;
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
@@ -3442,6 +3463,8 @@ build_expr_from_tree (t)
       }
 
     case TYPEID_EXPR:
+      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 0))) == 't')
+	return get_typeid (TREE_OPERAND (t, 0));
       return build_x_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
 
     case VAR_DECL:

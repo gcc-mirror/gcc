@@ -53,38 +53,6 @@ Access checking is unimplemented for nested types.
 @item
 @code{volatile} is not implemented in general.
 
-@cindex pointers to members
-@item
-Pointers to members are only minimally supported, and there are places
-where the grammar doesn't even properly accept them yet.
-
-@cindex multiple inheritance
-@item
-@code{this} will be wrong in virtual members functions defined in a
-virtual base class, when they are overridden in a derived class, when
-called via a non-left most object.
-
-An example would be:
-
-@example
-extern "C" int printf(const char*, ...);
-struct A @{ virtual void f() @{ @} @};
-struct B : virtual A @{ int b; B() : b(0) @{@} void f() @{ b++; @} @};
-struct C : B @{@};
-struct D : B @{@};
-struct E : C, D @{@};
-int main()
-@{
-  E e;
-  C& c = e; D& d = e;
-  c.f(); d.f();
-  printf ("C::b = %d, D::b = %d\n", e.C::b, e.D::b);
-  return 0;
-@}
-@end example
-
-This will print out 2, 0, instead of 1,1.
-
 @end itemize
 
 @node Routines, Implementation Specifics, Limitations of g++, Top
@@ -1507,21 +1475,6 @@ between a cleanup-rethrower, and a real handler, if would also have to
 have a way to know if a handler `matches' a thrown exception, and this
 is frontend specific.
 
-The UNSAVE_EXPR tree code has to be migrated to the backend.  Exprs such
-as TARGET_EXPRs, WITH_CLEANUP_EXPRs, CALL_EXPRs and RTL_EXPRs have to be
-changed to support unsaving.  This is meant to be a complete list.
-SAVE_EXPRs can be unsaved already.  expand_decl_cleanup should be
-changed to unsave it's argument, if needed.  See
-cp/tree.c:cp_expand_decl_cleanup, unsave_expr_now, unsave_expr, and
-cp/expr.c:cplus_expand_expr(case UNSAVE_EXPR:) for the UNSAVE_EXPR code.
-Now, as to why...  because kenner already tripped over the exact same
-problem in Ada, we talked about it, he didn't like any of the solution,
-but yet, didn't like no solution either.  He was willing to live with
-the drawbacks of this solution.  The drawback is unsave_expr_now.  It
-should have a callback into the frontend, to allow the unsaveing of
-frontend special codes.  The callback goes in, inplace of the call to
-my_friendly_abort.
-
 The stack unwinder is one of the hardest parts to do.  It is highly
 machine dependent.  The form that kenner seems to like was a couple of
 macros, that would do the machine dependent grunt work.  One preexisting
@@ -1530,31 +1483,15 @@ macro he seemed to want was __builtin_return_address, and the other
 would do the hard work of fixing up the registers, adjusting the stack
 pointer, frame pointer, arg pointer and so on.
 
-The eh archive (~mrs/eh) might be good reading for understanding the Ada
-perspective, and some of kenners mindset, and a detailed explanation
-(Message-Id: <9308301130.AA10543@@vlsi1.ultra.nyu.edu>) of the concepts
-involved.
-
-Here is a guide to existing backend type code.  It is all in
-cp/except.c.  Check out do_unwind, and expand_builtin_throw for current
-code on how to figure out what handler matches an exception,
-emit_exception_table for code on emitting the PC range table that is
-built during compilation, expand_exception_blocks for code that emits
-all the handlers at the end of a functions, end_protect to mark the end
-of an exception region, start_protect to mark the start of an exception
-region, lang_interim_eh is the master hook used by the backend into the
-EH backend that now exists in the frontend, and expand_internal_throw to
-raise an exception.
-
 
 @node Free Store, Concept Index, Exception Handling, Top
 @section Free Store
 
-operator new [] adds a magic cookie to the beginning of arrays for which
-the number of elements will be needed by operator delete [].  These are
-arrays of objects with destructors and arrays of objects that define
-operator delete [] with the optional size_t argument.  This cookie can
-be examined from a program as follows:
+@code{operator new []} adds a magic cookie to the beginning of arrays
+for which the number of elements will be needed by @code{operator delete
+[]}.  These are arrays of objects with destructors and arrays of objects
+that define @code{operator delete []} with the optional size_t argument.
+This cookie can be examined from a program as follows:
 
 @example
 typedef unsigned long size_t;
