@@ -1,3 +1,7 @@
+Tue Nov 13 05:45:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (change_address): Fix typo in alias setting.
+
 2001-11-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (cfgcleanup.o): Depend on insn-config.h
