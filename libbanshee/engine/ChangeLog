@@ -1,3 +1,7 @@
+2004-05-28 Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
+
+	* engine/util.c (vfail): Remove unnecessary sync, fsync, and fflush.
+
 2003-07-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	* bool.h: Can't include gcc's system.h and bool.h at the same time.

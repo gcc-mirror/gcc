@@ -44,13 +44,8 @@ static void vfail(const char *fmt, va_list args) __attribute__((__noreturn__));
 static void vfail(const char *fmt, va_list args)
 {
   vfprintf(stderr, fmt, args);
-  fflush(stdin);
   fflush(stderr);
   fflush(stdout);
-  sync();
-  fsync(STDIN_FILENO);
-  fsync(STDERR_FILENO);
-  fsync(STDOUT_FILENO);
   abort();
   while (1); /* Work around stupid gcc-2.96-85 bug */
 }
