@@ -1263,6 +1263,7 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
 			 const JNINativeMethod *methods,
 			 jint nMethods)
 {
+#ifdef INTERPRETER
   // For now, this only matters for interpreted methods.  FIXME.
   if (! _Jv_IsInterpretedClass (k))
     {
@@ -1307,6 +1308,9 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass k,
     }
 
   return JNI_OK;
+#else /* INTERPRETER */
+  return JNI_ERR;
+#endif /* INTERPRETER */
 }
 
 static jint
