@@ -2982,17 +2982,15 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      if (DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)) == NULL_TREE)
-	{
-	  if (! duplicate_decls (DECL_TEMPLATE_RESULT (newdecl),
-				 DECL_TEMPLATE_RESULT (olddecl)))
-	    cp_error ("invalid redeclaration of %D", newdecl);
-	  TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
-	  DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
-	  DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
-	}
-      DECL_TEMPLATE_SPECIALIZATIONS (newdecl)
-	= DECL_TEMPLATE_SPECIALIZATIONS (olddecl);
+      if (! duplicate_decls (DECL_TEMPLATE_RESULT (newdecl),
+			     DECL_TEMPLATE_RESULT (olddecl)))
+	cp_error ("invalid redeclaration of %D", newdecl);
+      TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
+      DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
+      DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
+      DECL_TEMPLATE_SPECIALIZATIONS (olddecl) 
+	= chainon (DECL_TEMPLATE_SPECIALIZATIONS (olddecl),
+		   DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
  
       return 1;
     }
@@ -3067,6 +3065,9 @@ duplicate_decls (newdecl, olddecl)
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
 	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
+	  if (DECL_LANG_SPECIFIC (newdecl)
+	      && DECL_LANG_SPECIFIC (olddecl))
+	    DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
 	}
 
       /* Merge the section attribute.
