@@ -2401,7 +2401,7 @@ s390_adjust_priority (insn, priority)
 /* Split all branches that exceed the maximum distance.  */
 
 static void 
-s390_split_branches (void)
+s390_split_branches ()
 {
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   rtx insn, pat, label, target, jump, tmp;
@@ -2819,7 +2819,7 @@ int s390_pool_overflow = 0;
 #define S390_POOL_CHUNK_MAX	0xe00
 
 static void 
-s390_chunkify_pool (void)
+s390_chunkify_pool ()
 {
   rtx base_reg = gen_rtx_REG (Pmode, 
 			      TARGET_64BIT? BASE_REGISTER : RETURN_REGNUM);

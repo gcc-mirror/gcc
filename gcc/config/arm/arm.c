@@ -115,6 +115,8 @@ static void	 thumb_output_function_prologue PARAMS ((FILE *, Hint));
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes  PARAMS ((tree));
 static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
+static int	 count_insns_for_constant	PARAMS ((HOST_WIDE_INT, int));
+static int	 arm_get_strip_length		PARAMS ((int));
 #ifdef OBJECT_FORMAT_ELF
 static void	 arm_elf_asm_named_section	PARAMS ((const char *, unsigned int));
 #endif
@@ -1068,7 +1070,9 @@ arm_split_constant (code, mode, val, target, source, subtargets)
 }
 
 static int
-count_insns_for_constant (HOST_WIDE_INT remainder, int i)
+count_insns_for_constant (remainder, i)
+     HOST_WIDE_INT remainder;
+     int i;
 {
   HOST_WIDE_INT temp1;
   int num_insns = 0;
@@ -9811,7 +9815,8 @@ thumb_shiftable_const (val)
    or might contain a far jump.  */
 
 int
-thumb_far_jump_used_p (int in_prologue)
+thumb_far_jump_used_p (in_prologue)
+     int in_prologue;
 {
   rtx insn;
 
@@ -10764,7 +10769,8 @@ thumb_reload_in_hi (operands)
     that starts with the character 'c'.  */
 
 static int
-arm_get_strip_length (char c)
+arm_get_strip_length (c)
+     int c;
 {
   switch (c)
     {
@@ -10777,7 +10783,8 @@ arm_get_strip_length (char c)
    and all prefix encodings stripped from it.  */
 
 const char *
-arm_strip_name_encoding (const char * name)
+arm_strip_name_encoding (name)
+     const char * name;
 {
   int skip;
   

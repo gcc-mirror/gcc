@@ -116,7 +116,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
 void
-arc_init (void)
+arc_init ()
 {
   char *tmp;
   

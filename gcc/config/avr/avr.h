@@ -1754,7 +1754,7 @@ do {									    \
 #define EXTRA_SECTION_FUNCTIONS						      \
 									      \
 void									      \
-progmem_section (void)							      \
+progmem_section ()							      \
 {									      \
   if (in_section != in_progmem)						      \
     {									      \

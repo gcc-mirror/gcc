@@ -5757,7 +5757,7 @@ sh_handle_trap_exit_attribute (node, name, args, flags, no_add_attrs)
 }
 
 int
-sh_cfun_interrupt_handler_p (void)
+sh_cfun_interrupt_handler_p ()
 {
   return (lookup_attribute ("interrupt_handler",
 			    DECL_ATTRIBUTES (current_function_decl))

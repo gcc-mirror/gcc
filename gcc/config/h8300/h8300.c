@@ -2942,7 +2942,8 @@ output_a_shift (operands)
 }
 
 static unsigned int
-h8300_asm_insn_count (const char *template)
+h8300_asm_insn_count (template)
+     const char *template;
 {
   unsigned int count = 1;
 
