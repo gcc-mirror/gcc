@@ -57,6 +57,9 @@ $!
 $!	INDEPENDENT:
 $!		Compile language independent source modules. (On by default).
 $!
+$!	BC:
+$!		Compile byte compiler source modules. (On by default).
+$!
 $!	DEBUG:	Link images with /debug.
 $!
 $! If you want to list more than one option, you should use a spaces to
@@ -84,6 +87,7 @@ $goto cinit
 $cinit_done: close cfile$
 $DO_INDEPENDENT = 1
 $DO_DEFAULT = 1
+$DO_BC = 1
 $loop:
 $string = f$element(i," ",p1)
 $if string.eqs." " then goto done
@@ -108,6 +112,7 @@ $if DO_CC1.eq.1 then echo "   Compile C specific object modules."
 $if DO_CC1PLUS.eq.1 then echo "   Compile C++ specific object modules."
 $if DO_CC1OBJ.eq.1 then echo "   Compile obj-C specific object modules."
 $if DO_INDEPENDENT.eq.1 then echo "   Compile language independent object modules."
+$if DO_BC.eq.1 then echo "   Compile byte compiler object modules."
 $link_only:
 $if DO_CC1.eq.1 then	echo "   Link C compiler (gcc-cc1.exe)."
 $if DO_CC1PLUS.eq.1 then echo "   Link C++ compiler (gcc-cc1plus.exe)."
@@ -144,6 +149,24 @@ $!
 $ if DO_DEBUG.eq.1 then LDFLAGS :='LDFLAGS'/debug
 $!
 $if DO_LINK.eq.1 then goto compile_cc1
+$!
+$if DO_BC.eq.1 
+$	THEN 
+$	call compile bi_all.opt ""
+$	open ifile$ bc_all.opt
+$	read ifile$ bc_line
+$	close ifile$
+$	bc_index = 0
+$bc_loop:
+$	tfile = f$element(bc_index, " ", bc_line)
+$	if tfile.eqs." " then goto bc_done
+$	call bc_generate 'tfile' "bi_all.opt/opt,"
+$	bc_index = bc_index + 1
+$	goto bc_loop
+$bc_done:
+$	endif
+$!
+$!
 $if DO_INDEPENDENT.eq.1 
 $	THEN 
 $!
@@ -357,5 +380,35 @@ $!
 $set verify
 $	assign/user 'p1' sys$output:
 $	mcr sys$disk:[]GEN'root1' md
+$!'f$verify(0)
+$endsubroutine
+$!
+$! This subroutine generates the bc-* files.  The first argument is the
+$! name of the bc-* file to generate.  The second argument contains a 
+$! list of any other object modules which must be linked to the gen*.c
+$! program.
+$!
+$! If a previous version of bc-* exists, it is compared to the new one,
+$! and if it has not changed, then the new one is discarded.  This is
+$! done so that make like programs do not get thrown off.
+$!
+$bc_generate:
+$subroutine
+$if f$extract(0,3,p1).nes."BC-"
+$	then
+$	write sys$error "Unknown file passed to generate."
+$	exit 1
+$	endif
+$root1=f$parse(f$extract(3,255,p1),,,"NAME")
+$	set verify
+$ 'CC 'CFLAGS BI-'root1'.C
+$ link 'LDFLAGS' BI-'root1','p2' -
+	  'LIBS'
+$!	'f$verify(0)
+$!
+$set verify
+$	assign/user bytecode.def sys$input:
+$	assign/user 'p1' sys$output:
+$	mcr sys$disk:[]BI-'root1'
 $!'f$verify(0)
 $endsubroutine
