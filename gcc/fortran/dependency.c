@@ -277,11 +277,11 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
   switch (expr2->expr_type)
     {
     case EXPR_OP:
-      n = gfc_check_dependency (expr1, expr2->op1, vars, nvars);
+      n = gfc_check_dependency (expr1, expr2->value.op.op1, vars, nvars);
       if (n)
 	return n;
-      if (expr2->op2)
-	return gfc_check_dependency (expr1, expr2->op2, vars, nvars);
+      if (expr2->value.op.op2)
+	return gfc_check_dependency (expr1, expr2->value.op.op2, vars, nvars);
       return 0;
 
     case EXPR_VARIABLE:

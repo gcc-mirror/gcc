@@ -36,12 +36,9 @@ gfc_get_expr (void)
   e = gfc_getmem (sizeof (gfc_expr));
 
   gfc_clear_ts (&e->ts);
-  e->op1 = NULL;
-  e->op2 = NULL;
   e->shape = NULL;
   e->ref = NULL;
   e->symtree = NULL;
-  e->uop = NULL;
 
   return e;
 }
@@ -170,10 +167,10 @@ free_expr0 (gfc_expr * e)
       break;
 
     case EXPR_OP:
-      if (e->op1 != NULL)
-	gfc_free_expr (e->op1);
-      if (e->op2 != NULL)
-	gfc_free_expr (e->op2);
+      if (e->value.op.op1 != NULL)
+	gfc_free_expr (e->value.op.op1);
+      if (e->value.op.op2 != NULL)
+	gfc_free_expr (e->value.op.op2);
       break;
 
     case EXPR_FUNCTION:
@@ -437,17 +434,17 @@ gfc_copy_expr (gfc_expr * p)
       break;
 
     case EXPR_OP:
-      switch (q->operator)
+      switch (q->value.op.operator)
 	{
 	case INTRINSIC_NOT:
 	case INTRINSIC_UPLUS:
 	case INTRINSIC_UMINUS:
-	  q->op1 = gfc_copy_expr (p->op1);
+	  q->value.op.op1 = gfc_copy_expr (p->value.op.op1);
 	  break;
 
 	default:		/* Binary operators */
-	  q->op1 = gfc_copy_expr (p->op1);
-	  q->op2 = gfc_copy_expr (p->op2);
+	  q->value.op.op1 = gfc_copy_expr (p->value.op.op1);
+	  q->value.op.op2 = gfc_copy_expr (p->value.op.op2);
 	  break;
 	}
 
@@ -584,8 +581,8 @@ gfc_type_convert_binary (gfc_expr * e)
 {
   gfc_expr *op1, *op2;
 
-  op1 = e->op1;
-  op2 = e->op2;
+  op1 = e->value.op.op1;
+  op2 = e->value.op.op2;
 
   if (op1->ts.type == BT_UNKNOWN || op2->ts.type == BT_UNKNOWN)
     {
@@ -619,17 +616,17 @@ gfc_type_convert_binary (gfc_expr * e)
       e->ts = op1->ts;
 
       /* Special case for ** operator.  */
-      if (e->operator == INTRINSIC_POWER)
+      if (e->value.op.operator == INTRINSIC_POWER)
 	goto done;
 
-      gfc_convert_type (e->op2, &e->ts, 2);
+      gfc_convert_type (e->value.op.op2, &e->ts, 2);
       goto done;
     }
 
   if (op1->ts.type == BT_INTEGER)
     {
       e->ts = op2->ts;
-      gfc_convert_type (e->op1, &e->ts, 2);
+      gfc_convert_type (e->value.op.op1, &e->ts, 2);
       goto done;
     }
 
@@ -640,9 +637,9 @@ gfc_type_convert_binary (gfc_expr * e)
   else
     e->ts.kind = op2->ts.kind;
   if (op1->ts.type != BT_COMPLEX || op1->ts.kind != e->ts.kind)
-    gfc_convert_type (e->op1, &e->ts, 2);
+    gfc_convert_type (e->value.op.op1, &e->ts, 2);
   if (op2->ts.type != BT_COMPLEX || op2->ts.kind != e->ts.kind)
-    gfc_convert_type (e->op2, &e->ts, 2);
+    gfc_convert_type (e->value.op.op2, &e->ts, 2);
 
 done:
   return;
@@ -665,9 +662,9 @@ gfc_is_constant_expr (gfc_expr * e)
   switch (e->expr_type)
     {
     case EXPR_OP:
-      rv = (gfc_is_constant_expr (e->op1)
-	    && (e->op2 == NULL
-		|| gfc_is_constant_expr (e->op2)));
+      rv = (gfc_is_constant_expr (e->value.op.op1)
+	    && (e->value.op.op2 == NULL
+		|| gfc_is_constant_expr (e->value.op.op2)));
 
       break;
 
@@ -729,11 +726,11 @@ simplify_intrinsic_op (gfc_expr * p, int type)
 {
   gfc_expr *op1, *op2, *result;
 
-  if (p->operator == INTRINSIC_USER)
+  if (p->value.op.operator == INTRINSIC_USER)
     return SUCCESS;
 
-  op1 = p->op1;
-  op2 = p->op2;
+  op1 = p->value.op.op1;
+  op2 = p->value.op.op2;
 
   if (gfc_simplify_expr (op1, type) == FAILURE)
     return FAILURE;
@@ -745,10 +742,10 @@ simplify_intrinsic_op (gfc_expr * p, int type)
     return SUCCESS;
 
   /* Rip p apart */
-  p->op1 = NULL;
-  p->op2 = NULL;
+  p->value.op.op1 = NULL;
+  p->value.op.op2 = NULL;
 
-  switch (p->operator)
+  switch (p->value.op.operator)
     {
     case INTRINSIC_UPLUS:
       result = gfc_uplus (op1);
@@ -1191,15 +1188,17 @@ static try check_init_expr (gfc_expr *);
 static try
 check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
 {
+  gfc_expr *op1 = e->value.op.op1;
+  gfc_expr *op2 = e->value.op.op2;
 
-  if ((*check_function) (e->op1) == FAILURE)
+  if ((*check_function) (op1) == FAILURE)
     return FAILURE;
 
-  switch (e->operator)
+  switch (e->value.op.operator)
     {
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
-      if (!numeric_type (et0 (e->op1)))
+      if (!numeric_type (et0 (op1)))
 	goto not_numeric;
       break;
 
@@ -1209,11 +1208,11 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
     case INTRINSIC_GE:
     case INTRINSIC_LT:
     case INTRINSIC_LE:
-      if ((*check_function) (e->op2) == FAILURE)
+      if ((*check_function) (op2) == FAILURE)
 	return FAILURE;
       
-      if (!(et0 (e->op1) == BT_CHARACTER && et0 (e->op2) == BT_CHARACTER)
-	  && !(numeric_type (et0 (e->op1)) && numeric_type (et0 (e->op2))))
+      if (!(et0 (op1) == BT_CHARACTER && et0 (op2) == BT_CHARACTER)
+	  && !(numeric_type (et0 (op1)) && numeric_type (et0 (op2))))
 	{
 	  gfc_error ("Numeric or CHARACTER operands are required in "
 		     "expression at %L", &e->where);
@@ -1226,34 +1225,34 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
     case INTRINSIC_TIMES:
     case INTRINSIC_DIVIDE:
     case INTRINSIC_POWER:
-      if ((*check_function) (e->op2) == FAILURE)
+      if ((*check_function) (op2) == FAILURE)
 	return FAILURE;
 
-      if (!numeric_type (et0 (e->op1)) || !numeric_type (et0 (e->op2)))
+      if (!numeric_type (et0 (op1)) || !numeric_type (et0 (op2)))
 	goto not_numeric;
 
-      if (e->operator == INTRINSIC_POWER
-	  && check_function == check_init_expr && et0 (e->op2) != BT_INTEGER)
+      if (e->value.op.operator == INTRINSIC_POWER
+	  && check_function == check_init_expr && et0 (op2) != BT_INTEGER)
 	{
 	  gfc_error ("Exponent at %L must be INTEGER for an initialization "
-		     "expression", &e->op2->where);
+		     "expression", &op2->where);
 	  return FAILURE;
 	}
 
       break;
 
     case INTRINSIC_CONCAT:
-      if ((*check_function) (e->op2) == FAILURE)
+      if ((*check_function) (op2) == FAILURE)
 	return FAILURE;
 
-      if (et0 (e->op1) != BT_CHARACTER || et0 (e->op2) != BT_CHARACTER)
+      if (et0 (op1) != BT_CHARACTER || et0 (op2) != BT_CHARACTER)
 	{
 	  gfc_error ("Concatenation operator in expression at %L "
-		     "must have two CHARACTER operands", &e->op1->where);
+		     "must have two CHARACTER operands", &op1->where);
 	  return FAILURE;
 	}
 
-      if (e->op1->ts.kind != e->op2->ts.kind)
+      if (op1->ts.kind != op2->ts.kind)
 	{
 	  gfc_error ("Concat operator at %L must concatenate strings of the "
 		     "same kind", &e->where);
@@ -1263,10 +1262,10 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
       break;
 
     case INTRINSIC_NOT:
-      if (et0 (e->op1) != BT_LOGICAL)
+      if (et0 (op1) != BT_LOGICAL)
 	{
 	  gfc_error (".NOT. operator in expression at %L must have a LOGICAL "
-		     "operand", &e->op1->where);
+		     "operand", &op1->where);
 	  return FAILURE;
 	}
 
@@ -1276,10 +1275,10 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
     case INTRINSIC_OR:
     case INTRINSIC_EQV:
     case INTRINSIC_NEQV:
-      if ((*check_function) (e->op2) == FAILURE)
+      if ((*check_function) (op2) == FAILURE)
 	return FAILURE;
 
-      if (et0 (e->op1) != BT_LOGICAL || et0 (e->op2) != BT_LOGICAL)
+      if (et0 (op1) != BT_LOGICAL || et0 (op2) != BT_LOGICAL)
 	{
 	  gfc_error ("LOGICAL operands are required in expression at %L",
 		     &e->where);

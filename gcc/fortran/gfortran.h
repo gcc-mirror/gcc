@@ -1044,15 +1044,11 @@ typedef struct gfc_expr
   int rank;
   mpz_t *shape;		/* Can be NULL if shape is unknown at compile time */
 
-  gfc_intrinsic_op operator;
-
   /* Nonnull for functions and structure constructors */
   gfc_symtree *symtree;
 
-  gfc_user_op *uop;
   gfc_ref *ref;
 
-  struct gfc_expr *op1, *op2;
   locus where;
 
   union
@@ -1067,6 +1063,14 @@ typedef struct gfc_expr
       mpfr_t r, i;
     }
     complex;
+
+    struct
+    {
+      gfc_intrinsic_op operator;
+      gfc_user_op *uop;
+      struct gfc_expr *op1, *op2;
+    }
+    op;
 
     struct
     {

@@ -1598,10 +1598,10 @@ eval_intrinsic (gfc_intrinsic_op operator,
 
       temp.expr_type = EXPR_OP;
       gfc_clear_ts (&temp.ts);
-      temp.operator = operator;
+      temp.value.op.operator = operator;
 
-      temp.op1 = op1;
-      temp.op2 = op2;
+      temp.value.op.op1 = op1;
+      temp.value.op.op2 = op2;
 
       gfc_type_convert_binary (&temp);
 
@@ -1671,10 +1671,10 @@ runtime:
   result->ts = temp.ts;
 
   result->expr_type = EXPR_OP;
-  result->operator = operator;
+  result->value.op.operator = operator;
 
-  result->op1 = op1;
-  result->op2 = op2;
+  result->value.op.op1 = op1;
+  result->value.op.op2 = op2;
 
   result->where = op1->where;
 
