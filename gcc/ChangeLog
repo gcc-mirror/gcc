@@ -1,4 +1,4 @@
-2003-12-19  James E. Wilson  <wilson@specifixinc.com>
+2003-12-19  James E Wilson  <wilson@specifixinc.com>
 
 	* configure.in: Delete libunwind_has_eh_support test.
 	* configure: Regenerate.
