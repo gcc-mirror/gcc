@@ -33,6 +33,8 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <locale.h>
 #endif
 
+#include <stdio.h>
+
 typedef unsigned char U_CHAR;
 
 /* This is used for communicating lists of keywords with cccp.c.  */
