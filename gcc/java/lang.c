@@ -926,6 +926,24 @@ merge_init_test_initialization (void **entry, void *x)
   if (!*init_test_decl)
     *init_test_decl = (tree)n->value;
 
+  /* This fixes a weird case.  
+
+  The front end assumes that once we have called a method that
+  initializes some class, we can assume the class is initialized.  It
+  does this by setting the DECL_INITIAL of the init_test_decl for that
+  class, and no initializations are emitted for that class.
+  
+  However, what if the method that is suppoed to do the initialization
+  is itself inlined in the caller?  When expanding the called method
+  we'll assume that the class initalization has already been done,
+  because the DECL_INITIAL of the init_test_decl is set.
+  
+  To fix this we remove the DECL_INITIAL (in the caller scope) of all
+  the init_test_decls corresponding to classes initialized by the
+  inlined method.  This makes the caller no longer assume that the
+  method being inlined does any class initializations.  */
+  DECL_INITIAL (*init_test_decl) = NULL;
+
   return true;
 }
 
