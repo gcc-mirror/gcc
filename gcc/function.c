@@ -3580,8 +3580,11 @@ assign_parms (fndecl, second_time)
 	  int regno, regnoi, regnor;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
+
+#ifdef PROMOTE_FUNCTION_ARGS
 	  nominal_mode = promote_mode (TREE_TYPE (parm), nominal_mode,
 				       &unsignedp, 1);
+#endif
 
 	  parmreg = gen_reg_rtx (nominal_mode);
 	  REG_USERVAR_P (parmreg) = 1;
