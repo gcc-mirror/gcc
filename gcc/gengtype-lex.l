@@ -270,7 +270,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
 
 "/*"				{ BEGIN(in_struct_comment); }
 
-^"%{"				{ BEGIN(in_yacc_escape); }
+^"%{"				{ BEGIN(in_yacc_escape); } /* } */
 
 ^"@@".*				/* Used for c-parse.in C/ObjC demarcation.  */
 
@@ -307,7 +307,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
   char *ptr = yytext;
 
   macro = ptr;
-  while (*ptr != '(' && !ISSPACE (*ptr))
+  while (*ptr != '(' && !ISSPACE (*ptr)) /* )*/
     ptr++;
   macro_len = ptr - macro;
   while (*ptr == '(' || ISSPACE (*ptr))
@@ -360,6 +360,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
   BEGIN(INITIAL);
   return PERCENTPERCENT;
 }
+
+"#define"[^\n]*\n		{lexer_line.line++;}
 
 .				{
   error_at_line (&lexer_line, "unexpected character `%s'", yytext);
