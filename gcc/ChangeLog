@@ -1,3 +1,6 @@
+2003-12-05  Stuart Hastings  <stuart@apple.com>
+	* config/rs6000/rs6000.md: Correct macro test of TARGET_MACHO.
+
 2003-12-05  Stuart Menefy <stuart.menefy@st.com>
             J"orn Rennecke <joern.rennecke@superh.com>
 
