@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "function.h"
+#include "defaults.h"
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -609,7 +610,8 @@ do_unwind (inner_throw_label)
      rtx inner_throw_label;
 {
 #if defined (SPARC_STACK_ALIGN) /* was sparc */
-  /* This doesn't work for the flat model sparc, I bet.  */
+  /* This doesn't work for the flat model sparc, nor does it need to
+     as the default unwinder is only used to unwind non-flat frames.  */
   tree fcall;
   tree params;
   rtx next_pc;
@@ -704,6 +706,7 @@ do_unwind (inner_throw_label)
 void
 expand_builtin_throw ()
 {
+#ifndef DWARF2_UNWIND_INFO
   tree fcall;
   tree params;
   rtx handler;
@@ -897,6 +900,7 @@ expand_builtin_throw ()
   pop_momentary ();
 
   finish_function (lineno, 0, 0);
+#endif /* DWARF2_UNWIND_INFO */
 }
 
 
@@ -1149,7 +1153,6 @@ expand_throw (exp)
 	  expand_expr (object, const0_rtx, VOIDmode, 0);
 	  end_anon_func ();
 	  mark_addressable (cleanup);
-
 	}
 
       if (cleanup == empty_fndecl)

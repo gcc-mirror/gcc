@@ -2910,10 +2910,8 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 	    {
 	      fprintf (file, "\tstx %s,[%s+%d]\n",
 		       reg_names[i], base, offset + 4 * n_regs);
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
+	      if (dwarf2out_do_frame ())
 		dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
-#endif
 	      n_regs += 2;
 	    }
 	}
@@ -2927,34 +2925,28 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 	      {
 		fprintf (file, "\tstd %s,[%s+%d]\n",
 			 reg_names[i], base, offset + 4 * n_regs);
-#ifdef DWARF2_DEBUGGING_INFO
-		if (write_symbols == DWARF2_DEBUG)
+		if (dwarf2out_do_frame ())
 		  {
 		    char *l = (char *) dwarf2out_cfi_label ();
 		    dwarf2out_reg_save (l, i, real_offset + 4 * n_regs);
 		    dwarf2out_reg_save (l, i+1, real_offset + 4 * n_regs + 4);
 		  }
-#endif
 		n_regs += 2;
 	      }
 	    else
 	      {
 		fprintf (file, "\tst %s,[%s+%d]\n",
 			 reg_names[i], base, offset + 4 * n_regs);
-#ifdef DWARF2_DEBUGGING_INFO
-		if (write_symbols == DWARF2_DEBUG)
+		if (dwarf2out_do_frame ())
 		  dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
-#endif
 		n_regs += 2;
 	      }
 	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
 	    {
 	      fprintf (file, "\tst %s,[%s+%d]\n",
 		       reg_names[i+1], base, offset + 4 * n_regs + 4);
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
+	      if (dwarf2out_do_frame ())
 		dwarf2out_reg_save ("", i + 1, real_offset + 4 * n_regs + 4);
-#endif
 	      n_regs += 2;
 	    }
 	}
@@ -3196,8 +3188,7 @@ output_function_prologue (file, size, leaf_function)
 	}
     }
 
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG && actual_fsize)
+  if (dwarf2out_do_frame () && actual_fsize)
     {
       char *label = (char *) dwarf2out_cfi_label ();
 
@@ -3217,7 +3208,6 @@ output_function_prologue (file, size, leaf_function)
 	  dwarf2out_return_reg (label, 31);
 	}
     }
-#endif
 
   /* If doing anything with PIC, do it now.  */
   if (! flag_pic)
@@ -4739,15 +4729,13 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 		      fprintf (file, "\t%s %s,[%s+%d]\n",
 			       doubleword_op, reg_names[regno],
 			       base_reg, offset);
-#ifdef DWARF2_DEBUGGING_INFO
-		      if (write_symbols == DWARF2_DEBUG)
+		      if (dwarf2out_do_frame ())
 			{
 			  char *l = (char *) dwarf2out_cfi_label ();
 			  dwarf2out_reg_save (l, regno, offset + base_offset);
 			  dwarf2out_reg_save
 			    (l, regno+1, offset+base_offset + UNITS_PER_WORD);
 			}
-#endif
 		    }
 		  else
 		    fprintf (file, "\t%s [%s+%d],%s\n",
@@ -4764,10 +4752,8 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 		      fprintf (file, "\t%s %s,[%s+%d]\n",
 			       word_op, reg_names[regno],
 			       base_reg, offset);
-#ifdef DWARF2_DEBUGGING_INFO
-		      if (write_symbols == DWARF2_DEBUG)
+		      if (dwarf2out_do_frame ())
 			dwarf2out_reg_save ("", regno, offset + base_offset);
-#endif
 		    }
 		  else
 		    fprintf (file, "\t%s [%s+%d],%s\n",
@@ -4790,10 +4776,8 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 		  fprintf (file, "\t%s %s,[%s+%d]\n",
 			   word_op, reg_names[regno],
 			   base_reg, offset);
-#ifdef DWARF2_DEBUGGING_INFO
-		  if (write_symbols == DWARF2_DEBUG)
+		  if (dwarf2out_do_frame ())
 		    dwarf2out_reg_save ("", regno, offset + base_offset);
-#endif
 		}
 	      else
 		fprintf (file, "\t%s [%s+%d],%s\n",
@@ -4891,8 +4875,7 @@ sparc_flat_output_function_prologue (file, size)
 		  reg_offset += 4;
 		}
 	    }
-#ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG)
+	  if (dwarf2out_do_frame ())
 	    {
 	      char *l = (char *) dwarf2out_cfi_label ();
 	      if (gmask & FRAME_POINTER_MASK)
@@ -4904,15 +4887,12 @@ sparc_flat_output_function_prologue (file, size)
 	      else
 		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, size);
 	    }
-#endif
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
 	      fprintf (file, "\tst %s,[%s+%d]\n",
 		       reg_names[RETURN_ADDR_REGNUM], sp_str, reg_offset);
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
+	      if (dwarf2out_do_frame ())
 		dwarf2out_return_save ("", reg_offset - size);
-#endif
 	      reg_offset += 4;
 	    }
 	  sparc_flat_save_restore (file, sp_str, reg_offset,
@@ -4951,8 +4931,7 @@ sparc_flat_output_function_prologue (file, size)
 		  offset += 4;
 		}
 	    }
-#ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG)
+	  if (dwarf2out_do_frame ())
 	    {
 	      char *l = (char *) dwarf2out_cfi_label ();
 	      if (gmask & FRAME_POINTER_MASK)
@@ -4964,17 +4943,14 @@ sparc_flat_output_function_prologue (file, size)
 	      else
 		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, size1);
 	    }
-#endif
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
 	      fprintf (file, "\tst %s,[%s+%d]\n",
 		       reg_names[RETURN_ADDR_REGNUM], sp_str, offset);
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
+	      if (dwarf2out_do_frame ())
 		/* offset - size1 == reg_offset - size
 		   if reg_offset were updated above like offset.  */
 		dwarf2out_return_save ("", offset - size1);
-#endif
 	      offset += 4;
 	    }
 	  sparc_flat_save_restore (file, sp_str, offset,
@@ -4983,11 +4959,9 @@ sparc_flat_output_function_prologue (file, size)
 				   "st", "std", -size1);
 	  fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
 		   size - size1, t1_str, sp_str, t1_str, sp_str);
-#ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG)
+	  if (dwarf2out_do_frame ())
 	    if (! (gmask & FRAME_POINTER_MASK))
 	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, size);
-#endif
 	}
     }
 

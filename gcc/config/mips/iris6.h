@@ -249,6 +249,10 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_LONG64 ? ".section\t.dtors,1,2,0,8" : ".section\t.dtors,1,2,0,4")
 #endif /* defined (CRT_BEGIN) || defined (CRT_END) */
 
+/* dwarf2out will handle padding this data properly.  We definitely don't
+   want it 8-byte aligned on n32.  */
+#define EH_FRAME_SECTION_ASM_OP ".section\t.eh_frame,1,2,0,1"
+
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
    should override this definition in the target-specific file which
@@ -538,5 +542,5 @@ do {									 \
 %{!static: \
   %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
-%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors} \
+%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors,__EH_FRAME_BEGIN__} \
 -_SYSTYPE_SVR4 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} %{!mabi*: -n32}"

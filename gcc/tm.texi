@@ -5987,6 +5987,26 @@ A C expression to output text to mark the end of an exception region.
 
 This macro need not be defined on most platforms.
 
+@findex EXCEPTION_SECTION
+@item EXCEPTION_SECTION ()
+A C expression to switch to the section in which the main
+exception table is to be placed (@pxref{Sections}).  The default is a
+section named @code{.gcc_except_table} on machines that support named
+sections via @code{ASM_OUTPUT_SECTION_NAME}, otherwise if @samp{-fpic}
+or @samp{-fPIC} is in effect, the @code{data_section}, otherwise the
+@code{readonly_data_section}.
+
+@findex EH_FRAME_SECTION_ASM_OP
+@item EH_FRAME_SECTION_ASM_OP
+If defined, a C string constant for the assembler operation to switch to
+the section for exception handling frame unwind information.  If not
+defined, GNU CC will provide a default definition if the target supports
+named sections.  @file{crtstuff.c} uses this macro to switch to the
+appropriate section.
+
+You should define this symbol if your target supports DWARF 2 frame
+unwind information and the default definition does not work.
+
 @findex OMIT_EH_TABLE
 @item OMIT_EH_TABLE ()
 A C expression that is nonzero if the normal exception table output
@@ -6011,6 +6031,23 @@ for details on when to define this, and how.
 @item MASK_RETURN_ADDR
 An rtx used to mask the return address found via RETURN_ADDR_RTX, so
 that it does not contain any extraneous set bits in it.
+
+@findex DWARF2_UNWIND_INFO
+@item DWARF2_UNWIND_INFO
+Define this macro to 0 if your target supports DWARF 2 frame unwind
+information, but it does not yet work with exception handling.
+Otherwise, if your target supports this information (if it defines
+@samp{INCOMING_RETURN_ADDR_RTX} and either @samp{UNALIGNED_INT_ASM_OP}
+or @samp{OBJECT_FORMAT_ELF}), GCC will provide a default definition of
+1.
+
+If this macro is defined to 1, the DWARF 2 unwinder will be the default
+exception handling mechanism; otherwise, setjmp/longjmp will be used by
+default.
+
+If this macro is defined to anything, the DWARF 2 unwinder will be used
+instead of inline unwinders and __unwind_function in the non-setjmp case.
+
 @end table
 
 @node Alignment Output

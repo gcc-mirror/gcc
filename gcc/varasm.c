@@ -170,6 +170,9 @@ static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
   , in_bss
 #endif
+#ifdef EH_FRAME_SECTION_ASM_OP
+  , in_eh_frame
+#endif
 #ifdef EXTRA_SECTIONS
   , EXTRA_SECTIONS
 #endif
@@ -401,6 +404,18 @@ asm_output_aligned_bss (file, decl, name, size, align)
 
 #endif /* BSS_SECTION_ASM_OP */
 
+#ifdef EH_FRAME_SECTION_ASM_OP
+void
+eh_frame_section ()
+{
+  if (in_section != in_eh_frame)
+    {
+      fprintf (asm_out_file, "%s\n", EH_FRAME_SECTION_ASM_OP);
+      in_section = in_eh_frame;
+    }
+} 
+#endif
+
 /* Switch to the section for function DECL.
 
    If DECL is NULL_TREE, switch to the text section.
@@ -461,15 +476,15 @@ variable_section (decl, reloc)
 void
 exception_section ()
 {
+#if defined (EXCEPTION_SECTION)
+  EXCEPTION_SECTION ();
+#else
 #ifdef ASM_OUTPUT_SECTION_NAME
   named_section (NULL_TREE, ".gcc_except_table", 0);
 #else
   if (flag_pic)
     data_section ();
   else
-#if defined (EXCEPTION_SECTION)
-    EXCEPTION_SECTION ();
-#else
     readonly_data_section ();
 #endif
 #endif

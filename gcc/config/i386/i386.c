@@ -1866,6 +1866,7 @@ function_prologue (file, size)
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   long tsize = get_frame_size ();
+  int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
 
   /* pic references don't explicitly mention pic_offset_table_rtx */
   if (TARGET_SCHEDULE_PROLOGUE)
@@ -1881,13 +1882,34 @@ function_prologue (file, size)
   if (frame_pointer_needed)
     {
       output_asm_insn ("push%L1 %1", xops); 
+      if (dwarf2out_do_frame ())
+	{
+	  char *l = (char *) dwarf2out_cfi_label ();
+	  cfa_store_offset += 4;
+	  cfa_offset = cfa_store_offset;
+	  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_store_offset);
+	}
       output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
+      if (dwarf2out_do_frame ())
+	dwarf2out_def_cfa ("", FRAME_POINTER_REGNUM, cfa_offset);
     }
 
   if (tsize == 0)
     ;
   else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
-    output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+    {
+      output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+      if (dwarf2out_do_frame ())
+	{
+	  cfa_store_offset += tsize;
+	  if (! frame_pointer_needed)
+	    {
+	      cfa_offset = cfa_store_offset;
+	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
+	    }
+	}
+    }
   else 
     {
       xops[3] = gen_rtx (REG, SImode, 0);
@@ -1913,6 +1935,17 @@ function_prologue (file, size)
       {
 	xops[0] = gen_rtx (REG, SImode, regno);
 	output_asm_insn ("push%L0 %0", xops);
+	if (dwarf2out_do_frame ())
+	  {
+	    char *l = (char *) dwarf2out_cfi_label ();
+	    cfa_store_offset += 4;
+	    if (! frame_pointer_needed)
+	      {
+		cfa_offset = cfa_store_offset;
+		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
+	      }
+	    dwarf2out_reg_save (l, regno, -cfa_store_offset);
+	  }
       }
 
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
