@@ -100,10 +100,8 @@ GCC_FOR_TARGET = ./xgcc -B./
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
-# It also specifies -B$(tooldir)/ to find as and ld for a cross compiler
-# and -I./include.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) \
-  -B$(TARGET_TOOLPREFIX) -I./include
+# It also specifies -I./include to find, e.g., stddef.h.
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
