@@ -794,23 +794,23 @@ current_scope ()
 
    This will be static when lookup_fnfield comes into this file.
 
-   access_public means that the field can be accessed by the current lexical
+   access_public_node means that the field can be accessed by the current lexical
    scope.
 
-   access_protected means that the field cannot be accessed by the current
+   access_protected_node means that the field cannot be accessed by the current
    lexical scope because it is protected.
 
-   access_private means that the field cannot be accessed by the current
+   access_private_node means that the field cannot be accessed by the current
    lexical scope because it is private. */
 
 #if 0
-#define PUBLIC_RETURN return (DECL_PUBLIC (field) = 1), access_public
-#define PROTECTED_RETURN return (DECL_PROTECTED (field) = 1), access_protected
-#define PRIVATE_RETURN return (DECL_PRIVATE (field) = 1), access_private
+#define PUBLIC_RETURN return (DECL_PUBLIC (field) = 1), access_public_node
+#define PROTECTED_RETURN return (DECL_PROTECTED (field) = 1), access_protected_node
+#define PRIVATE_RETURN return (DECL_PRIVATE (field) = 1), access_private_node
 #else
-#define PUBLIC_RETURN return access_public
-#define PROTECTED_RETURN return access_protected
-#define PRIVATE_RETURN return access_private
+#define PUBLIC_RETURN return access_public_node
+#define PROTECTED_RETURN return access_protected_node
+#define PRIVATE_RETURN return access_private_node
 #endif
 
 #if 0
@@ -818,11 +818,11 @@ current_scope ()
 static tree previous_scope = NULL_TREE;
 #endif
 
-enum access_type
+tree
 compute_access (basetype_path, field)
      tree basetype_path, field;
 {
-  enum access_type access;
+  tree access;
   tree types;
   tree context;
   int protected_ok, via_protected;
@@ -836,11 +836,11 @@ compute_access (basetype_path, field)
      || (TREE_CODE (field) != FUNCTION_DECL && TREE_STATIC (field)));
 
   if (! flag_access_control)
-    return access_public;
+    return access_public_node;
 
   /* The field lives in the current class.  */
   if (BINFO_TYPE (basetype_path) == current_class_type)
-    return access_public;
+    return access_public_node;
 
 #if 0
   /* Disabled until pushing function scope clears these out.  If ever.  */
@@ -848,17 +848,17 @@ compute_access (basetype_path, field)
   if (current_scope () == previous_scope)
     {
       if (DECL_PUBLIC (field))
-	return access_public;
+	return access_public_node;
       if (DECL_PROTECTED (field))
-	return access_protected;
+	return access_protected_node;
       if (DECL_PRIVATE (field))
-	return access_private;
+	return access_private_node;
     }
 #endif
 
   /* We don't currently support access control on nested types.  */
   if (TREE_CODE (field) == TYPE_DECL)
-    return access_public;
+    return access_public_node;
 
   previous_scope = current_scope ();
   
@@ -912,7 +912,7 @@ compute_access (basetype_path, field)
   basetype_path = reverse_path (basetype_path);
   types = basetype_path;
   via_protected = 0;
-  access = access_default;
+  access = access_default_node;
   protected_ok = static_mem && current_class_type
     && ACCESSIBLY_DERIVED_FROM_P (BINFO_TYPE (types), current_class_type);
 
@@ -934,7 +934,7 @@ compute_access (basetype_path, field)
       member = purpose_member (type, DECL_ACCESS (field));
       if (member)
 	{
-	  access = (enum access_type) TREE_VALUE (member);
+	  access = TREE_VALUE (member);
 	  break;
 	}
 
@@ -948,7 +948,7 @@ compute_access (basetype_path, field)
 	    via_protected = 1;
 	  else if (! TREE_VIA_PUBLIC (types) && ! private_ok)
 	    {
-	      access = access_private;
+	      access = access_private_node;
 	      break;
 	    }
 	}
@@ -959,30 +959,30 @@ compute_access (basetype_path, field)
 
   /* No special visibilities apply.  Use normal rules.  */
 
-  if (access == access_default)
+  if (access == access_default_node)
     {
       if (is_friend (context, previous_scope))
-	access = access_public;
+	access = access_public_node;
       else if (TREE_PRIVATE (field))
-	access = access_private;
+	access = access_private_node;
       else if (TREE_PROTECTED (field))
-	access = access_protected;
+	access = access_protected_node;
       else
-	access = access_public;
+	access = access_public_node;
     }
 
-  if (access == access_public && via_protected)
-    access = access_protected;
+  if (access == access_public_node && via_protected)
+    access = access_protected_node;
 
-  if (access == access_protected && protected_ok)
-    access = access_public;
+  if (access == access_protected_node && protected_ok)
+    access = access_public_node;
 
 #if 0
-  if (access == access_public)
+  if (access == access_public_node)
     DECL_PUBLIC (field) = 1;
-  else if (access == access_protected)
+  else if (access == access_protected_node)
     DECL_PROTECTED (field) = 1;
-  else if (access == access_private)
+  else if (access == access_private_node)
     DECL_PRIVATE (field) = 1;
   else my_friendly_abort (96);
 #endif
@@ -1072,9 +1072,9 @@ lookup_field (xbasetype, name, protect, want_type)
   int head = 0, tail = 0;
   tree rval, rval_binfo = NULL_TREE, rval_binfo_h;
   tree type, basetype_chain, basetype_path;
-  enum access_type this_v = access_default;
+  tree this_v = access_default_node;
   tree entry, binfo, binfo_h;
-  enum access_type own_access = access_default;
+  tree own_access = access_default_node;
   int vbase_name_p = VBASE_NAME_P (name);
 
   /* rval_binfo is the binfo associated with the found member, note,
@@ -1179,16 +1179,16 @@ lookup_field (xbasetype, name, protect, want_type)
 	    this_v = compute_access (basetype_path, rval);
 	  if (TREE_CODE (rval) == CONST_DECL)
 	    {
-	      if (this_v == access_private)
+	      if (this_v == access_private_node)
 		errstr = "enum `%D' is a private value of class `%T'";
-	      else if (this_v == access_protected)
+	      else if (this_v == access_protected_node)
 		errstr = "enum `%D' is a protected value of class `%T'";
 	    }
 	  else
 	    {
-	      if (this_v == access_private)
+	      if (this_v == access_private_node)
 		errstr = "member `%D' is a private member of class `%T'";
-	      else if (this_v == access_protected)
+	      else if (this_v == access_protected_node)
 		errstr = "member `%D' is a protected member of class `%T'";
 	    }
 	}
@@ -1370,14 +1370,14 @@ lookup_field (xbasetype, name, protect, want_type)
 	    /* If is possible for one of the derived types on the path to
 	       have defined special access for this field.  Look for such
 	       declarations and report an error if a conflict is found.  */
-	    enum access_type new_v;
+	    tree new_v;
 
-	    if (this_v != access_default)
+	    if (this_v != access_default_node)
 	      new_v = compute_access (TREE_VALUE (TREE_CHAIN (*tp)), rval);
-	    if (this_v != access_default && new_v != this_v)
+	    if (this_v != access_default_node && new_v != this_v)
 	      {
 		errstr = "conflicting access to member `%D'";
-		this_v = access_default;
+		this_v = access_default_node;
 	      }
 	    own_access = new_v;
 	    CLEAR_BINFO_FIELDS_MARKED (TREE_VALUE (TREE_CHAIN (*tp)));
@@ -1397,15 +1397,15 @@ lookup_field (xbasetype, name, protect, want_type)
 
   if (errstr == 0)
     {
-      if (own_access == access_private)
+      if (own_access == access_private_node)
 	errstr = "member `%D' declared private";
-      else if (own_access == access_protected)
+      else if (own_access == access_protected_node)
 	errstr = "member `%D' declared protected";
-      else if (this_v == access_private)
+      else if (this_v == access_private_node)
 	errstr = TREE_PRIVATE (rval)
 	  ? "member `%D' is private"
 	    : "member `%D' is from private base class";
-      else if (this_v == access_protected)
+      else if (this_v == access_protected_node)
 	errstr = TREE_PROTECTED (rval)
 	  ? "member `%D' is protected"
 	    : "member `%D' is from protected base class";
@@ -3334,10 +3334,14 @@ dfs_compress_decls (binfo)
    lattice.  Where ambiguities result, we mark them
    with `error_mark_node' so that if they are encountered
    without explicit qualification, we can emit an error
-   message.  */
+   message.
+
+   ONLY_TYPES is set when defining TYPE so that inherited types are visible
+   in the derived class.  */
 void
-push_class_decls (type)
+push_class_decls (type, only_types)
      tree type;
+     int only_types;
 {
   tree id;
   struct obstack *ambient_obstack = current_obstack;
@@ -3392,7 +3396,12 @@ push_class_decls (type)
       /* Install the original class value in order to make
 	 pushdecl_class_level work correctly.  */
       IDENTIFIER_CLASS_VALUE (id) = TREE_VALUE (closed_envelopes);
-      if (TREE_CODE (new) == TREE_LIST)
+      if (only_types)
+	{
+	  if (TREE_CODE (new) == TYPE_DECL)
+	    set_identifier_type_value (id, TREE_TYPE (new));
+	} 
+      else if (TREE_CODE (new) == TREE_LIST)
 	push_class_level_binding (id, new);
       else
 	pushdecl_class_level (new);

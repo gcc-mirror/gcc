@@ -1104,17 +1104,22 @@ poplevel (keep, reverse, functionbody)
 	{
 	  if (decls || tags || subblocks)
 	    {
-	      if (BLOCK_VARS (block) || BLOCK_TYPE_TAGS (block) || BLOCK_SUBBLOCKS (block))
+	      if (BLOCK_VARS (block) || BLOCK_TYPE_TAGS (block))
 		{
 		  warning ("internal compiler error: debugging info corrupted");
 		}
 	      BLOCK_VARS (block) = decls;
 	      BLOCK_TYPE_TAGS (block) = tags;
-	      /* Recover from too many blocks by chaining them together. */
-	      BLOCK_SUBBLOCKS (block) = chainon (BLOCK_SUBBLOCKS (block), subblocks);
+
+	      /* We can have previous subblocks and new subblocks when
+		 doing fixup_gotos with complex cleanups.  We chain the new
+		 subblocks onto the end of any pre-existing subblocks.  */
+	      BLOCK_SUBBLOCKS (block) = chainon (BLOCK_SUBBLOCKS (block),
+						 subblocks);
 	    }
-	  /* If we created the block earlier on, and we are just diddling it now, then
-	     it already should have a proper BLOCK_END_NOTE value associated with it.  */
+	  /* If we created the block earlier on, and we are just
+	     diddling it now, then it already should have a proper
+	     BLOCK_END_NOTE value associated with it.  */
 	}
       else
 	{
@@ -3140,6 +3145,10 @@ pushdecl (x)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
 		fatal ("parse errors have confused me too much");
+
+	      /* Check for duplicate params. */
+	      if (duplicate_decls (x, t))
+		return t;
 	    }
 	  else if (((TREE_CODE (x) == FUNCTION_DECL && DECL_LANGUAGE (x) == lang_c)
 	       || (TREE_CODE (x) == TEMPLATE_DECL
@@ -6909,7 +6918,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		 was initialized was ever used.  Don't do this if it has a
 		 destructor, so we don't complain about the 'resource
 		 allocation is initialization' idiom.  */
-	      if (TYPE_NEEDS_CONSTRUCTING (type) && cleanup == NULL_TREE)
+	      if (TYPE_NEEDS_CONSTRUCTING (type)
+		  && cleanup == NULL_TREE
+		  && DECL_NAME (decl))
 		TREE_USED (decl) = 0;
 
 	      /* Store the cleanup, if there was one.  */
@@ -7069,6 +7080,7 @@ expand_static_init (decl, init)
 				  build_function_type (void_type_node,
 						       pfvlist),
 				  NOT_BUILT_IN, NULL_PTR);
+	      assemble_external (atexit_fndecl);
 	      Atexit = default_conversion (atexit_fndecl);
 	      pop_lang_context ();
 	      pop_obstacks ();
@@ -7690,222 +7702,211 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
   {
-    tree last = NULL_TREE;
-    register tree decl = declarator;
+    tree *next = &declarator;
+    register tree decl;
     name = NULL;
 
-    while (decl)
-      switch (TREE_CODE (decl))
-        {
-	case COND_EXPR:
-	  ctype = NULL_TREE;
-	  decl = TREE_OPERAND (decl, 0);
-	  break;
-
-	case BIT_NOT_EXPR:      /* for C++ destructors!  */
+    while (next && *next)
+      {
+	decl = *next;
+	switch (TREE_CODE (decl))
 	  {
-	    tree name = TREE_OPERAND (decl, 0);
-	    tree rename = NULL_TREE;
+	  case COND_EXPR:
+	    ctype = NULL_TREE;
+	    next = &TREE_OPERAND (decl, 0);
+	    break;
 
-	    my_friendly_assert (flags == NO_SPECIAL, 152);
-	    flags = DTOR_FLAG;
-	    return_type = return_dtor;
-	    my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 153);
-	    if (ctype == NULL_TREE)
-	      {
-		if (current_class_type == NULL_TREE)
-		  {
-		    error ("destructors must be member functions");
-		    flags = NO_SPECIAL;
-		  }
-		else
-		  {
-		    tree t = constructor_name (current_class_name);
-		    if (t != name)
-		      rename = t;
-		  }
-	      }
-	    else
-	      {
-		tree t = constructor_name (ctype);
-		if (t != name)
-		  rename = t;
-	      }
-
-	    if (rename)
-	      {
-		error ("destructor `%s' must match class name `%s'",
-		       IDENTIFIER_POINTER (name),
-		       IDENTIFIER_POINTER (rename));
-		TREE_OPERAND (decl, 0) = rename;
-	      }
-	    decl = name;
-	  }
-	  break;
-
-	case ADDR_EXPR:         /* C++ reference declaration */
-	  /* fall through */
-	case ARRAY_REF:
-	case INDIRECT_REF:
-	  ctype = NULL_TREE;
-	  innermost_code = TREE_CODE (decl);
-	  last = decl;
-	  decl = TREE_OPERAND (decl, 0);
-	  break;
-
-	case CALL_EXPR:
-	  if (parmlist_is_exprlist (TREE_OPERAND (decl, 1)))
+	  case BIT_NOT_EXPR:	/* for C++ destructors!  */
 	    {
-	      /* This is actually a variable declaration using constructor
-		 syntax.  We need to call start_decl and cp_finish_decl so we
-		 can get the variable initialized...  */
+	      tree name = TREE_OPERAND (decl, 0);
+	      tree rename = NULL_TREE;
 
-	      if (last)
-		/* We need to insinuate ourselves into the declarator in place
-		   of the CALL_EXPR.  */
-		TREE_OPERAND (last, 0) = TREE_OPERAND (decl, 0);
-	      else
-		declarator = TREE_OPERAND (decl, 0);
-
-	      init = TREE_OPERAND (decl, 1);
-
-	      decl = start_decl (declarator, declspecs, 1, NULL_TREE);
-	      finish_decl (decl, init, NULL_TREE);
-	      return 0;
-	    }
-	  innermost_code = TREE_CODE (decl);
-	  if (decl_context == FIELD && ctype == NULL_TREE)
-	    ctype = current_class_type;
-	  if (ctype
-	      && TREE_OPERAND (decl, 0) == constructor_name_full (ctype))
-	    TREE_OPERAND (decl, 0) = constructor_name (ctype);
-	  decl = TREE_OPERAND (decl, 0);
-	  if (ctype != NULL_TREE
-	      && decl != NULL_TREE && flags != DTOR_FLAG
-	      && decl == constructor_name (ctype))
-	    {
-	      return_type = return_ctor;
-	      ctor_return_type = ctype;
-	    }
-	  ctype = NULL_TREE;
-	  break;
-
-	case IDENTIFIER_NODE:
-	  dname = decl;
-	  decl = NULL_TREE;
-
-	  if (! IDENTIFIER_OPNAME_P (dname)
-	      /* Linux headers use '__op'.  Arrgh.  */
-	      || IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname))
-	    name = IDENTIFIER_POINTER (dname);
-	  else
-	    {
-	      if (IDENTIFIER_TYPENAME_P (dname))
+	      my_friendly_assert (flags == NO_SPECIAL, 152);
+	      flags = DTOR_FLAG;
+	      return_type = return_dtor;
+	      my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 153);
+	      if (ctype == NULL_TREE)
 		{
-		  my_friendly_assert (flags == NO_SPECIAL, 154);
-		  flags = TYPENAME_FLAG;
-		  ctor_return_type = TREE_TYPE (dname);
-		  return_type = return_conversion;
+		  if (current_class_type == NULL_TREE)
+		    {
+		      error ("destructors must be member functions");
+		      flags = NO_SPECIAL;
+		    }
+		  else
+		    {
+		      tree t = constructor_name (current_class_name);
+		      if (t != name)
+			rename = t;
+		    }
 		}
-	      name = operator_name_string (dname);
+	      else
+		{
+		  tree t = constructor_name (ctype);
+		  if (t != name)
+		    rename = t;
+		}
+
+	      if (rename)
+		{
+		  error ("destructor `%s' must match class name `%s'",
+			 IDENTIFIER_POINTER (name),
+			 IDENTIFIER_POINTER (rename));
+		  TREE_OPERAND (decl, 0) = rename;
+		}
+	      next = &name;
 	    }
-	  break;
+	    break;
 
-	case RECORD_TYPE:
-	case UNION_TYPE:
-	case ENUMERAL_TYPE:
-	  /* Parse error puts this typespec where
-	     a declarator should go.  */
-	  error ("declarator name missing");
-	  dname = TYPE_NAME (decl);
-	  if (dname && TREE_CODE (dname) == TYPE_DECL)
-	    dname = DECL_NAME (dname);
-	  name = dname ? IDENTIFIER_POINTER (dname) : "<nameless>";
-	  declspecs = temp_tree_cons (NULL_TREE, decl, declspecs);
-	  decl = NULL_TREE;
-	  break;
+	  case ADDR_EXPR:	/* C++ reference declaration */
+	    /* fall through */
+	  case ARRAY_REF:
+	  case INDIRECT_REF:
+	    ctype = NULL_TREE;
+	    innermost_code = TREE_CODE (decl);
+	    next = &TREE_OPERAND (decl, 0);
+	    break;
 
-	  /* C++ extension */
-	case SCOPE_REF:
-	  {
-	    /* Perform error checking, and convert class names to types.
-	       We may call grokdeclarator multiple times for the same
-	       tree structure, so only do the conversion once.  In this
-	       case, we have exactly what we want for `ctype'.  */
-	    tree cname = TREE_OPERAND (decl, 0);
-	    if (cname == NULL_TREE)
-	      ctype = NULL_TREE;
-	    /* Can't use IS_AGGR_TYPE because CNAME might not be a type.  */
-	    else if (IS_AGGR_TYPE_CODE (TREE_CODE (cname))
-		     || TREE_CODE (cname) == UNINSTANTIATED_P_TYPE)
-	      ctype = cname;
-	    else if (! is_aggr_typedef (cname, 1))
+	  case CALL_EXPR:
+	    if (parmlist_is_exprlist (TREE_OPERAND (decl, 1)))
 	      {
-		TREE_OPERAND (decl, 0) = NULL_TREE;
+		/* This is actually a variable declaration using constructor
+		   syntax.  We need to call start_decl and cp_finish_decl so we
+		   can get the variable initialized...  */
+
+		*next = TREE_OPERAND (decl, 0);
+		init = TREE_OPERAND (decl, 1);
+
+		decl = start_decl (declarator, declspecs, 1, NULL_TREE);
+		finish_decl (decl, init, NULL_TREE);
+		return 0;
 	      }
-	    /* Must test TREE_OPERAND (decl, 1), in case user gives
-	       us `typedef (class::memfunc)(int); memfunc *memfuncptr;'  */
-	    else if (TREE_OPERAND (decl, 1)
-		     && TREE_CODE (TREE_OPERAND (decl, 1)) == INDIRECT_REF)
+	    innermost_code = TREE_CODE (decl);
+	    if (decl_context == FIELD && ctype == NULL_TREE)
+	      ctype = current_class_type;
+	    if (ctype && TREE_OPERAND (decl, 0) == ctype)
+	      TREE_OPERAND (decl, 0) = constructor_name (ctype);
+	    next = &TREE_OPERAND (decl, 0);
+	    decl = *next;
+	    if (ctype != NULL_TREE
+		&& decl != NULL_TREE && flags != DTOR_FLAG
+		&& decl == constructor_name (ctype))
 	      {
-		TREE_OPERAND (decl, 0) = IDENTIFIER_TYPE_VALUE (cname);
+		return_type = return_ctor;
+		ctor_return_type = ctype;
 	      }
-	    else if (ctype == NULL_TREE)
+	    ctype = NULL_TREE;
+	    break;
+
+	  case IDENTIFIER_NODE:
+	    dname = decl;
+	    next = 0;
+
+	    if (is_rid (dname))
 	      {
-		ctype = IDENTIFIER_TYPE_VALUE (cname);
-		TREE_OPERAND (decl, 0) = ctype;
+		cp_error ("declarator-id missing; using reserved word `%D'",
+			  dname);
+		name = IDENTIFIER_POINTER (dname);
 	      }
-	    else if (TREE_COMPLEXITY (decl) == current_class_depth)
-	      TREE_OPERAND (decl, 0) = ctype;
+	    if (! IDENTIFIER_OPNAME_P (dname)
+		/* Linux headers use '__op'.  Arrgh.  */
+		|| IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname))
+	      name = IDENTIFIER_POINTER (dname);
 	    else
 	      {
-		if (! UNIQUELY_DERIVED_FROM_P (IDENTIFIER_TYPE_VALUE (cname),
-					       ctype))
+		if (IDENTIFIER_TYPENAME_P (dname))
 		  {
-		    cp_error ("type `%T' is not derived from type `%T'",
-			      IDENTIFIER_TYPE_VALUE (cname), ctype);
-		    TREE_OPERAND (decl, 0) = NULL_TREE;
+		    my_friendly_assert (flags == NO_SPECIAL, 154);
+		    flags = TYPENAME_FLAG;
+		    ctor_return_type = TREE_TYPE (dname);
+		    return_type = return_conversion;
 		  }
-		else
-		  {
-		    ctype = IDENTIFIER_TYPE_VALUE (cname);
-		    TREE_OPERAND (decl, 0) = ctype;
-		  }
+		name = operator_name_string (dname);
 	      }
+	    break;
 
-	    if (ctype
-		&& TREE_OPERAND (decl, 1) == constructor_name_full (ctype))
-	      TREE_OPERAND (decl, 1) = constructor_name (ctype);
-	    decl = TREE_OPERAND (decl, 1);
-	    if (ctype)
+	    /* C++ extension */
+	  case SCOPE_REF:
+	    {
+	      /* Perform error checking, and decide on a ctype.  */
+	      tree cname = TREE_OPERAND (decl, 0);
+	      if (cname == NULL_TREE)
+		ctype = NULL_TREE;
+	      else if (! is_aggr_type (cname, 1))
+		TREE_OPERAND (decl, 0) = NULL_TREE;
+	      /* Must test TREE_OPERAND (decl, 1), in case user gives
+		 us `typedef (class::memfunc)(int); memfunc *memfuncptr;'  */
+	      else if (TREE_OPERAND (decl, 1)
+		       && TREE_CODE (TREE_OPERAND (decl, 1)) == INDIRECT_REF)
+		ctype = cname;
+	      else if (ctype == NULL_TREE)
+		ctype = cname;
+	      else if (TREE_COMPLEXITY (decl) == current_class_depth)
+		TREE_OPERAND (decl, 0) = ctype;
+	      else
+		{
+		  if (! UNIQUELY_DERIVED_FROM_P (cname, ctype))
+		    {
+		      cp_error ("type `%T' is not derived from type `%T'",
+				cname, ctype);
+		      TREE_OPERAND (decl, 0) = NULL_TREE;
+		    }
+		  else
+		    ctype = cname;
+		}
+
+	      if (ctype
+		  && TREE_OPERAND (decl, 1) == constructor_name_full (ctype))
+		TREE_OPERAND (decl, 1) = constructor_name (ctype);
+	      next = &TREE_OPERAND (decl, 1);
+	      decl = *next;
+	      if (ctype)
+		{
+		  if (TREE_CODE (decl) == IDENTIFIER_NODE
+		      && constructor_name (ctype) == decl)
+		    {
+		      return_type = return_ctor;
+		      ctor_return_type = ctype;
+		    }
+		  else if (TREE_CODE (decl) == BIT_NOT_EXPR
+			   && TREE_CODE (TREE_OPERAND (decl, 0)) == IDENTIFIER_NODE
+			   && (constructor_name (ctype) == TREE_OPERAND (decl, 0)
+			       || constructor_name_full (ctype) == TREE_OPERAND (decl, 0)))
+		    {
+		      return_type = return_dtor;
+		      ctor_return_type = ctype;
+		      flags = DTOR_FLAG;
+		      TREE_OPERAND (decl, 0) = constructor_name (ctype);
+		      next = &TREE_OPERAND (decl, 0);
+		    }
+		}
+	    }
+	    break;
+
+	  case ERROR_MARK:
+	    next = 0;
+	    break;
+
+	  default:
+	    if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
 	      {
-		if (TREE_CODE (decl) == IDENTIFIER_NODE
-		    && constructor_name (ctype) == decl)
-		  {
-		    return_type = return_ctor;
-		    ctor_return_type = ctype;
-		  }
-		else if (TREE_CODE (decl) == BIT_NOT_EXPR
-			 && TREE_CODE (TREE_OPERAND (decl, 0)) == IDENTIFIER_NODE
-			 && (constructor_name (ctype) == TREE_OPERAND (decl, 0)
-			     || constructor_name_full (ctype) == TREE_OPERAND (decl, 0)))
-		  {
-		    return_type = return_dtor;
-		    ctor_return_type = ctype;
-		    flags = DTOR_FLAG;
-		    decl = TREE_OPERAND (decl, 0) = constructor_name (ctype);
-		  }
+		/* Parse error puts this typespec where
+		   a declarator should go.  */
+		error ("typename specified as declarator-id");
+		if (current_class_type)
+		  cp_error ("  perhaps you want `%T' for a constructor",
+			    current_class_name);
+		dname = TYPE_IDENTIFIER (decl);
+		name = dname ? IDENTIFIER_POINTER (dname) : "<nameless>";
+		declspecs = temp_tree_cons (NULL_TREE, integer_type_node,
+					    declspecs);
+		*next = dname;
+		next = 0;
+		break;
 	      }
+	    cp_compiler_error ("`%D' as declarator", decl);
+	    return 0; /* We used to do a 155 abort here.  */
 	  }
-	  break;
-
-	case ERROR_MARK:
-	  decl = NULL_TREE;
-	  break;
-
-	default:
-	  return 0; /* We used to do a 155 abort here.  */
-	}
+      }
     if (name == NULL)
       name = "type name";
   }
@@ -10587,7 +10588,13 @@ xref_tag (code_type_node, name, binfo, globalize)
 
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
-  t = IDENTIFIER_TYPE_VALUE (name);
+  if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+    {
+      t = name;
+      name = TYPE_NESTED_NAME (t);
+    }
+  else
+    t = IDENTIFIER_TYPE_VALUE (name);
   if (t && TREE_CODE (t) != code)
     t = NULL_TREE;
 
@@ -10770,17 +10777,17 @@ xref_basetypes (code_type_node, name, ref, binfo)
     {
       /* The base of a derived struct is public by default.  */
       int via_public
-	= (TREE_PURPOSE (binfo) == (tree)access_public
-	   || TREE_PURPOSE (binfo) == (tree)access_public_virtual
+	= (TREE_PURPOSE (binfo) == access_public_node
+	   || TREE_PURPOSE (binfo) == access_public_virtual_node
 	   || (tag_code != class_type
-	       && (TREE_PURPOSE (binfo) == (tree)access_default
-		   || TREE_PURPOSE (binfo) == (tree)access_default_virtual)));
-      int via_protected = TREE_PURPOSE (binfo) == (tree)access_protected;
+	       && (TREE_PURPOSE (binfo) == access_default_node
+		   || TREE_PURPOSE (binfo) == access_default_virtual_node)));
+      int via_protected = TREE_PURPOSE (binfo) == access_protected_node;
       int via_virtual
-	= (TREE_PURPOSE (binfo) == (tree)access_private_virtual
-	   || TREE_PURPOSE (binfo) == (tree)access_public_virtual
-	   || TREE_PURPOSE (binfo) == (tree)access_default_virtual);
-      tree basetype = TREE_TYPE (TREE_VALUE (binfo));
+	= (TREE_PURPOSE (binfo) == access_private_virtual_node
+	   || TREE_PURPOSE (binfo) == access_public_virtual_node
+	   || TREE_PURPOSE (binfo) == access_default_virtual_node);
+      tree basetype = TREE_VALUE (binfo);
       tree base_binfo;
 
       GNU_xref_hier (IDENTIFIER_POINTER (name),

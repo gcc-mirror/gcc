@@ -176,7 +176,7 @@ int warn_traditional;
 /* Nonzero means warn about sizeof(function) or addition/subtraction
    of function pointers.  */
 
-int warn_pointer_arith;
+int warn_pointer_arith = 1;
 
 /* Nonzero means warn for non-prototype function decls
    or non-prototyped defs without previous prototype.  */
@@ -2026,7 +2026,9 @@ constructor_name_full (thing)
 {
   if (TREE_CODE (thing) == UNINSTANTIATED_P_TYPE)
     return DECL_NAME (UPT_TEMPLATE (thing));
-  if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
+  else if (TREE_CODE (thing) == TEMPLATE_TYPE_PARM)
+    thing = TYPE_NAME (thing);
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
     {
       if (TYPE_WAS_ANONYMOUS (thing) && TYPE_HAS_CONSTRUCTOR (thing))
 	thing = DECL_NAME (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (thing), 0));

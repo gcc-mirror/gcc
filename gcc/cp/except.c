@@ -155,7 +155,7 @@ exception_section ()
   if (flag_pic)
     data_section ();
   else
-#if defined(TARGET_POWERPC) /* are we on a __rs6000? */
+#if defined (TARGET_POWERPC) /* are we on a __rs6000? */
     data_section ();
 #else
     readonly_data_section ();
@@ -1012,6 +1012,10 @@ expand_start_catch_block (declspecs, declarator)
 	  return;
 	}
 
+      /* Make sure we mark the catch param as used, otherwise we'll get
+	 a warning about an unused ((anonymous)).  */
+      TREE_USED (decl) = 1;
+
       /* Figure out the type that the initializer is. */
       init_type = TREE_TYPE (decl);
       if (TREE_CODE (init_type) != REFERENCE_TYPE
@@ -1167,7 +1171,8 @@ static void
 do_unwind (inner_throw_label)
      rtx inner_throw_label;
 {
-#if defined(SPARC_STACK_ALIGN) /* was sparc */
+#if defined (SPARC_STACK_ALIGN) /* was sparc */
+  /* This doesn't work for the flat model sparc, I bet.  */
   tree fcall;
   tree params;
   rtx return_val_rtx;
@@ -1186,7 +1191,7 @@ do_unwind (inner_throw_label)
   easy_expand_asm ("restore");
   emit_barrier ();
 #endif
-#if defined(ARM_FRAME_RTX)  /* was __arm */
+#if defined (ARM_FRAME_RTX)  /* was __arm */
   if (flag_omit_frame_pointer)
     sorry ("this implementation of exception handling requires a frame pointer");
 
@@ -1195,7 +1200,7 @@ do_unwind (inner_throw_label)
   emit_move_insn (hard_frame_pointer_rtx,
 		  gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -12)));
 #endif
-#if defined(TARGET_88000) /* was m88k */
+#if defined (TARGET_88000) /* was m88k */
   rtx temp_frame = frame_pointer_rtx;
 
   temp_frame = memory_address (Pmode, temp_frame);
@@ -1218,17 +1223,18 @@ do_unwind (inner_throw_label)
 						     (HOST_WIDE_INT)m88k_debugger_offset (arg_pointer_rtx, 0))));
 #endif
 #endif
-#if !defined(TARGET_88000) && !defined(ARM_FRAME_RTX) && !defined(SPARC_STACK_ALIGN)
+#if ! defined (TARGET_88000) && ! defined (ARM_FRAME_RTX) && ! defined (SPARC_STACK_ALIGN)
   tree fcall;
   tree params;
   rtx return_val_rtx;
 
+#if 0
+  /* I would like to do this here, but the move below doesn't seem to work. */
   /* call to  __builtin_return_address () */
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
-#if 0
-  /* I would like to do this here, but doesn't seem to work. */
+
   emit_move_insn (return_val_rtx, inner_throw_label);
   /* So, for now, just pass throw label to stack unwinder. */
 #endif
@@ -1241,6 +1247,48 @@ do_unwind (inner_throw_label)
 #endif
 }
 
+
+/* Given the return address, compute the new pc to throw.  This has to
+   work for the current frame of the current function, and the one
+   above it in the case of throw.  */
+rtx
+eh_outer_context (addr)
+     rtx addr;
+{
+#if defined (ARM_FRAME_RTX)  /* was __arm */
+  /* On the ARM, '__builtin_return_address',  must have 4
+     subtracted from it. */
+  emit_insn (gen_add2_insn (addr, GEN_INT (-4)));
+
+  /* If we are generating code for an ARM2/ARM3 machine or for an ARM6
+     in 26 bit mode, the condition codes must be masked out of the
+     return value, or else they will confuse BuiltinReturnAddress.
+     This does not apply to ARM6 and later processors when running in
+     32 bit mode. */
+  if (!TARGET_6)
+    emit_insn (gen_rtx (SET, Pmode,
+			addr,
+			gen_rtx (AND, Pmode,
+				 addr, GEN_INT (0x03fffffc))));
+#else
+#if ! defined (SPARC_STACK_ALIGN) /* was sparc */
+#if defined (TARGET_SNAKE)
+  /* On HPPA, the low order two bits hold the priviledge level, so we
+     must get rid of them.  */
+  emit_insn (gen_rtx (SET, Pmode,
+		      addr,
+		      gen_rtx (AND, Pmode,
+			       addr, GEN_INT (0xfffffffc))));
+#endif
+
+  /* On the SPARC, __builtin_return_address is already -8 or -12, no
+     need to subtract any more from it. */
+  addr = plus_constant (addr, -1);
+#endif
+#endif
+
+  return addr;
+}
 
 /* is called from expand_exception_blocks () to generate the code in a function
    to "throw" if anything in the function needs to perform a throw.
@@ -1320,8 +1368,9 @@ expand_builtin_throw ()
   emit_label (gotta_rethrow_it);
 
   /* call to  __builtin_return_address () */
-#if defined(ARM_FRAME_RTX)  /* was __arm */
-/* This replaces a 'call' to __builtin_return_address */
+#if defined (ARM_FRAME_RTX)  /* was __arm */
+  /* This should be moved into arm.h:RETURN_ADDR_RTX */
+  /* This replaces a 'call' to __builtin_return_address */
   return_val_rtx = gen_reg_rtx (Pmode);
   emit_move_insn (return_val_rtx, gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -4)));
 #else
@@ -1336,28 +1385,10 @@ expand_builtin_throw ()
 
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
-#if defined(ARM_FRAME_RTX)  /* was __arm */
-  /* On the ARM, '__builtin_return_address',  must have 4
-     subtracted from it. */
-  emit_insn (gen_add2_insn (return_val_rtx, GEN_INT (-4)));
+  return_val_rtx = eh_outer_context (return_val_rtx);
 
-  /* If we are generating code for an ARM2/ARM3 machine or for an ARM6 in 26 bit
-     mode, the condition codes must be masked out of the return value, or else
-     they will confuse BuiltinReturnAddress.  This does not apply to ARM6 and
-     later processors when running in 32 bit mode. */
-  if (!TARGET_6)
-    emit_insn (gen_rtx (SET, Pmode, return_val_rtx, gen_rtx (AND, Pmode, return_val_rtx, GEN_INT (0x03fffffc))));
-#else
-#if !defined(SPARC_STACK_ALIGN) /* was sparc */
-  /* On the SPARC, __builtin_return_address is already -8, no need to
-     subtract any more from it. */
-  return_val_rtx = plus_constant (return_val_rtx, -1);
-#endif
-#endif
-
-  /* yes it did */
-  t = build_modify_expr (saved_pc, NOP_EXPR, make_tree (ptr_type_node, return_val_rtx));
-  expand_expr (t, const0_rtx, VOIDmode, 0);
+  /* Yes it did.  */
+  emit_move_insn (DECL_RTL (saved_pc), return_val_rtx);
 
   do_unwind (gen_rtx (LABEL_REF, Pmode, top_of_loop));
   emit_jump (top_of_loop);
@@ -1700,6 +1731,9 @@ expand_throw (exp)
 	    }
 	}
 
+      if (cleanup == empty_fndecl)
+	assemble_external (empty_fndecl);
+	
       e = build_modify_expr (saved_throw_type, NOP_EXPR, throw_type);
       expand_expr (e, const0_rtx, VOIDmode, 0);
 
@@ -1823,11 +1857,9 @@ end_eh_unwinder (end)
   ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 					0, hard_frame_pointer_rtx);
   return_val_rtx = copy_to_reg (ret_val);
-#ifdef RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (return_val_rtx, RETURN_ADDR_OFFSET-1);
-#else
-  return_val_rtx = plus_constant (return_val_rtx, -1);
-#endif
+
+  return_val_rtx = eh_outer_context (return_val_rtx);
+
   emit_move_insn (DECL_RTL (saved_pc), return_val_rtx);
   
 #ifdef JUMP_TO_THROW

@@ -1461,8 +1461,8 @@ resolve_scope_to_name (outer_type, inner_stuff)
 /* Build a method call of the form `EXP->SCOPES::NAME (PARMS)'.
    This is how virtual function calls are avoided.  */
 tree
-build_scoped_method_call (exp, scopes, name, parms)
-     tree exp, scopes, name, parms;
+build_scoped_method_call (exp, basetype, name, parms)
+     tree exp, basetype, name, parms;
 {
   /* Because this syntactic form does not allow
      a pointer to a base class to be `stolen',
@@ -1470,15 +1470,12 @@ build_scoped_method_call (exp, scopes, name, parms)
      that happens here.
      
      @@ But we do have to check access privileges later.  */
-  tree basename = resolve_scope_to_name (NULL_TREE, scopes);
-  tree basetype, binfo, decl;
+  tree binfo, decl;
   tree type = TREE_TYPE (exp);
 
   if (type == error_mark_node
-      || basename == NULL_TREE)
+      || basetype == error_mark_node)
     return error_mark_node;
-
-  basetype = IDENTIFIER_TYPE_VALUE (basename);
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
@@ -1486,7 +1483,7 @@ build_scoped_method_call (exp, scopes, name, parms)
   /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
      that explicit ~int is caught in the parser; this deals with typedefs
      and template parms.  */
-  if (TREE_CODE (name) == BIT_NOT_EXPR && ! is_aggr_typedef (basename, 0))
+  if (TREE_CODE (name) == BIT_NOT_EXPR && ! IS_AGGR_TYPE (basetype))
     {
       if (type != basetype)
 	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
@@ -1498,7 +1495,7 @@ build_scoped_method_call (exp, scopes, name, parms)
       return convert (void_type_node, exp);
     }
 
-  if (! is_aggr_typedef (basename, 1))
+  if (! is_aggr_type (basetype, 1))
     return error_mark_node;
 
   if (! IS_AGGR_TYPE (type))
@@ -1516,7 +1513,7 @@ build_scoped_method_call (exp, scopes, name, parms)
 	decl = build_indirect_ref (convert_pointer_to (binfo,
 						       build_unary_op (ADDR_EXPR, exp, 0)), NULL_PTR);
       else
-	decl = build_scoped_ref (exp, scopes);
+	decl = build_scoped_ref (exp, basetype);
 
       /* Call to a destructor.  */
       if (TREE_CODE (name) == BIT_NOT_EXPR)
@@ -1613,7 +1610,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   register tree baselink, result, method_name, parmtypes, parm;
   tree last;
   int pass;
-  enum access_type access = access_public;
+  tree access = access_public_node;
 
   /* Range of cases for vtable optimization.  */
   enum vtable_needs { not_needed, maybe_needed, unneeded, needed };
@@ -2422,7 +2419,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (flags & LOOKUP_PROTECT)
     access = compute_access (basetype_path, function);
 
-  if (access == access_private)
+  if (access == access_private_node)
     {
       if (flags & LOOKUP_COMPLAIN)
 	{
@@ -2433,7 +2430,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	}
       return error_mark_node;
     }
-  else if (access == access_protected)
+  else if (access == access_protected_node)
     {
       if (flags & LOOKUP_COMPLAIN)
 	{

@@ -371,10 +371,10 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
   last = tree_cons (NULL_TREE, NULL_TREE, current_base_init_list);
   for (x = TREE_CHAIN (last); x; x = TREE_CHAIN (x))
     {
-      tree basename = TREE_PURPOSE (x);
+      tree basetype = TREE_PURPOSE (x);
       tree binfo;
 
-      if (basename == NULL_TREE)
+      if (basetype == NULL_TREE)
 	{
 	  /* Initializer for single base class.  Must not
 	     use multiple inheritance or this is ambiguous.  */
@@ -393,9 +393,9 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 	    }
 	  binfo = TREE_VEC_ELT (binfos, 0);
 	}
-      else if (is_aggr_typedef (basename, 1))
+      else if (is_aggr_type (basetype, 1))
 	{
-	  binfo = binfo_or_else (IDENTIFIER_TYPE_VALUE (basename), t);
+	  binfo = binfo_or_else (basetype, t);
 	  if (binfo == NULL_TREE)
 	    continue;
 
@@ -420,8 +420,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 	      if (i < 0)
 		{
 		  cp_error ("`%T' is not an immediate base class of `%T'",
-			    IDENTIFIER_TYPE_VALUE (basename),
-			    current_class_type);
+			    basetype, current_class_type);
 		  continue;
 		}
 	    }
@@ -931,6 +930,12 @@ expand_member_init (exp, name, init)
 
   type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
+  if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+    {
+      basetype = name;
+      name = TYPE_IDENTIFIER (name);
+    }
+
   if (name == NULL_TREE && IS_AGGR_TYPE (type))
     switch (CLASSTYPE_N_BASECLASSES (type))
       {
@@ -958,7 +963,7 @@ expand_member_init (exp, name, init)
       if (init == void_type_node)
 	init = NULL_TREE;
 
-      if (name == NULL_TREE || IDENTIFIER_HAS_TYPE_VALUE (name))
+      if (name == NULL_TREE || basetype)
 	{
 	  tree base_init;
 
@@ -976,7 +981,6 @@ expand_member_init (exp, name, init)
 	    }
 	  else
 	    {
-	      basetype = IDENTIFIER_TYPE_VALUE (name);
 	      if (basetype != type
 		  && ! binfo_member (basetype, TYPE_BINFO (type))
 		  && ! binfo_member (basetype, CLASSTYPE_VBASECLASSES (type)))
@@ -984,32 +988,28 @@ expand_member_init (exp, name, init)
 		  if (IDENTIFIER_CLASS_VALUE (name))
 		    goto try_member;
 		  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-		    error ("type `%s' is not an immediate or virtual basetype for `%s'",
-			   IDENTIFIER_POINTER (name),
-			   TYPE_NAME_STRING (type));
+		    cp_error ("type `%T' is not an immediate or virtual basetype for `%T'",
+			      basetype, type);
 		  else
-		    error ("type `%s' is not an immediate basetype for `%s'",
-			   IDENTIFIER_POINTER (name),
-			   TYPE_NAME_STRING (type));
+		    cp_error ("type `%T' is not an immediate basetype for `%T'",
+			      basetype, type);
 		  return;
 		}
 	    }
 
-	  if (purpose_member (name, current_base_init_list))
+	  if (purpose_member (basetype, current_base_init_list))
 	    {
-	      error ("base class `%s' already initialized",
-		     IDENTIFIER_POINTER (name));
+	      cp_error ("base class `%T' already initialized", basetype);
 	      return;
 	    }
 
 	  if (warn_reorder && current_member_init_list)
 	    {
-	      warning ("base initializer for `%s'", IDENTIFIER_POINTER (name));
+	      cp_warning ("base initializer for `%T'", basetype);
 	      warning ("   will be re-ordered to precede member initializations");
 	    }
 
-	  base_init = build_tree_list (name, init);
-	  TREE_TYPE (base_init) = basetype;
+	  base_init = build_tree_list (basetype, init);
 	  current_base_init_list = chainon (current_base_init_list, base_init);
 	}
       else
@@ -1024,12 +1024,11 @@ expand_member_init (exp, name, init)
 
 	  if (purpose_member (name, current_member_init_list))
 	    {
-	      error ("field `%s' already initialized", IDENTIFIER_POINTER (name));
+	      cp_error ("field `%D' already initialized", field);
 	      return;
 	    }
 
 	  member_init = build_tree_list (name, init);
-	  TREE_TYPE (member_init) = TREE_TYPE (field);
 	  current_member_init_list = chainon (current_member_init_list, member_init);
 	}
       return;
@@ -1741,6 +1740,26 @@ is_aggr_typedef (name, or_else)
   return 1;
 }
 
+/* Report an error if TYPE is not a user-defined, aggregate type.  If
+   OR_ELSE is nonzero, give an error message.  */
+int
+is_aggr_type (type, or_else)
+     tree type;
+     int or_else;
+{
+  if (type == error_mark_node)
+    return 0;
+
+  if (! IS_AGGR_TYPE (type)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM)
+    {
+      if (or_else)
+	cp_error ("`%T' is not an aggregate type", type);
+      return 0;
+    }
+  return 1;
+}
+
 /* Like is_aggr_typedef, but returns typedef if successful.  */
 tree
 get_aggr_from_typedef (name, or_else)
@@ -1788,13 +1807,13 @@ get_type_value (name)
 /* This code could just as well go in `class.c', but is placed here for
    modularity.  */
 
-/* For an expression of the form CNAME :: NAME (PARMLIST), build
+/* For an expression of the form TYPE :: NAME (PARMLIST), build
    the appropriate function call.  */
 tree
-build_member_call (cname, name, parmlist)
-     tree cname, name, parmlist;
+build_member_call (type, name, parmlist)
+     tree type, name, parmlist;
 {
-  tree type, t;
+  tree t;
   tree method_name = name;
   int dtor = 0;
   int dont_use_this = 0;
@@ -1806,22 +1825,19 @@ build_member_call (cname, name, parmlist)
       dtor = 1;
     }
 
-  if (TREE_CODE (cname) == SCOPE_REF)
-    cname = resolve_scope_to_name (NULL_TREE, cname);
-
   /* This shouldn't be here, and build_member_call shouldn't appear in
      parse.y!  (mrs)  */
-  if (cname && get_aggr_from_typedef (cname, 0) == 0
-      && TREE_CODE (cname) == IDENTIFIER_NODE)
+  if (type && TREE_CODE (type) == IDENTIFIER_NODE
+      && get_aggr_from_typedef (type, 0) == 0)
     {
-      tree ns = lookup_name (cname, 0);
+      tree ns = lookup_name (type, 0);
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
 	{
-	  return build_x_function_call (build_offset_ref (cname, name), parmlist, current_class_decl);
+	  return build_x_function_call (build_offset_ref (type, name), parmlist, current_class_decl);
 	}
     }
 
-  if (cname == NULL_TREE || ! (type = get_aggr_from_typedef (cname, 1)))
+  if (type == NULL_TREE || ! is_aggr_type (type, 1))
     return error_mark_node;
 
   /* An operator we did not like.  */
@@ -1914,29 +1930,26 @@ build_member_call (cname, name, parmlist)
 
 /* Build a reference to a member of an aggregate.  This is not a
    C++ `&', but really something which can have its address taken,
-   and then act as a pointer to member, for example CNAME :: FIELD
-   can have its address taken by saying & CNAME :: FIELD.
+   and then act as a pointer to member, for example TYPE :: FIELD
+   can have its address taken by saying & TYPE :: FIELD.
 
    @@ Prints out lousy diagnostics for operator <typename>
    @@ fields.
 
    @@ This function should be rewritten and placed in search.c.  */
 tree
-build_offset_ref (cname, name)
-     tree cname, name;
+build_offset_ref (type, name)
+     tree type, name;
 {
-  tree decl, type, fnfields, fields, t = error_mark_node;
+  tree decl, fnfields, fields, t = error_mark_node;
   tree basetypes = NULL_TREE;
   int dtor = 0;
 
-  if (TREE_CODE (cname) == SCOPE_REF)
-    cname = resolve_scope_to_name (NULL_TREE, cname);
-
   /* Handle namespace names fully here.  */
-  if (TREE_CODE (cname) == IDENTIFIER_NODE
-      && get_aggr_from_typedef (cname, 0) == 0)
+  if (TREE_CODE (type) == IDENTIFIER_NODE
+      && get_aggr_from_typedef (type, 0) == 0)
     {
-      tree ns = lookup_name (cname, 0);
+      tree ns = lookup_name (type, 0);
       tree val;
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
 	{
@@ -1948,16 +1961,17 @@ build_offset_ref (cname, name)
 	}
     }
 
-  if (cname == NULL_TREE || ! is_aggr_typedef (cname, 1))
+  if (type == NULL_TREE || ! is_aggr_type (type, 1))
     return error_mark_node;
-
-  type = IDENTIFIER_TYPE_VALUE (cname);
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       dtor = 1;
       name = TREE_OPERAND (name, 0);
     }
+
+  if (name == constructor_name_full (type))
+    name = constructor_name (type);
 
   if (TYPE_SIZE (type) == 0)
     {
@@ -1983,24 +1997,14 @@ build_offset_ref (cname, name)
       return error_mark_node;
     }
 
-#if 0
-  if (TREE_CODE (name) == TYPE_EXPR)
-    /* Pass a TYPE_DECL to build_component_type_expr.  */
-    return build_component_type_expr (TYPE_NAME (TREE_TYPE (cname)),
-				      name, NULL_TREE, 1);
-#endif
-
   if (current_class_type == 0
       || get_base_distance (type, current_class_type, 0, &basetypes) == -1)
     {
       basetypes = TYPE_BINFO (type);
-      decl = build1 (NOP_EXPR,
-		     IDENTIFIER_TYPE_VALUE (cname),
-		     error_mark_node);
+      decl = build1 (NOP_EXPR, type, error_mark_node);
     }
   else if (current_class_decl == 0)
-    decl = build1 (NOP_EXPR, IDENTIFIER_TYPE_VALUE (cname),
-		   error_mark_node);
+    decl = build1 (NOP_EXPR, type, error_mark_node);
   else
     decl = C_C_D;
 
@@ -2044,18 +2048,18 @@ build_offset_ref (cname, name)
 
 	  if (DECL_CHAIN (t) == NULL_TREE || dtor)
 	    {
-	      enum access_type access;
+	      tree access;
 
 	      /* unique functions are handled easily.  */
 	    unique:
 	      access = compute_access (basetypes, t);
-	      if (access == access_protected)
+	      if (access == access_protected_node)
 		{
 		  cp_error_at ("member function `%#D' is protected", t);
 		  error ("in this context");
 		  return error_mark_node;
 		}
-	      if (access == access_private)
+	      if (access == access_private_node)
 		{
 		  cp_error_at ("member function `%#D' is private", t);
 		  error ("in this context");
@@ -2066,7 +2070,7 @@ build_offset_ref (cname, name)
 	    }
 
 	  /* overloaded functions may need more work.  */
-	  if (cname == name)
+	  if (name == constructor_name (type))
 	    {
 	      if (TYPE_HAS_DESTRUCTOR (type)
 		  && DECL_CHAIN (DECL_CHAIN (t)) == NULL_TREE)
@@ -2134,11 +2138,13 @@ build_offset_ref (cname, name)
     }
 
   /* static class functions too.  */
-  if (TREE_CODE (t) == FUNCTION_DECL && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
+  if (TREE_CODE (t) == FUNCTION_DECL
+      && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
     my_friendly_abort (53);
 
-  /* In member functions, the form `cname::name' is no longer
-     equivalent to `this->cname::name'.  */
+  /* In member functions, the form `type::name' is no longer
+     equivalent to `this->type::name', at least not until
+     resolve_offset_ref.  */
   return build (OFFSET_REF, build_offset_type (type, TREE_TYPE (t)), decl, t);
 }
 
@@ -2271,8 +2277,7 @@ resolve_offset_ref (exp)
 	  || (TREE_CODE (base) == NOP_EXPR
 	      && TREE_OPERAND (base, 0) == error_mark_node)))
     {
-      tree basetype_path;
-      enum access_type access;
+      tree basetype_path, access;
 
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
 	basetype = TYPE_OFFSET_BASETYPE (type);
@@ -2288,16 +2293,16 @@ resolve_offset_ref (exp)
 	}
       addr = convert_pointer_to (basetype, base);
       access = compute_access (basetype_path, member);
-      if (access == access_public)
+      if (access == access_public_node)
 	return build (COMPONENT_REF, TREE_TYPE (member),
 		      build_indirect_ref (addr, NULL_PTR), member);
-      if (access == access_protected)
+      if (access == access_protected_node)
 	{
 	  cp_error_at ("member `%D' is protected", member);
 	  error ("in this context");
 	  return error_mark_node;
 	}
-      if (access == access_private)
+      if (access == access_private_node)
 	{
 	  cp_error_at ("member `%D' is private", member);
 	  error ("in this context");
@@ -3928,15 +3933,15 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       if (flags & LOOKUP_PROTECT)
 	{
-	  enum access_type access = compute_access (basetypes, dtor);
+	  tree access = compute_access (basetypes, dtor);
 
-	  if (access == access_private)
+	  if (access == access_private_node)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
 		cp_error ("destructor for type `%T' is private in this scope", type);
 	      return error_mark_node;
 	    }
-	  else if (access == access_protected)
+	  else if (access == access_protected_node)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
 		cp_error ("destructor for type `%T' is protected in this scope", type);

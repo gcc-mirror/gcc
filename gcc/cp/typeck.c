@@ -1532,15 +1532,14 @@ build_object_ref (datum, basetype, field)
 		basetype, field, dtype);
       return error_mark_node;
     }
-  else if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (basetype)))
+  else if (IS_SIGNATURE (basetype))
     {
       warning ("signature name in scope resolution ignored");
       return build_component_ref (datum, field, NULL_TREE, 1);
     }
-  else if (is_aggr_typedef (basetype, 1))
+  else if (is_aggr_type (basetype, 1))
     {
-      tree real_basetype = IDENTIFIER_TYPE_VALUE (basetype);
-      tree binfo = binfo_or_else (real_basetype, TREE_TYPE (datum));
+      tree binfo = binfo_or_else (basetype, TREE_TYPE (datum));
       if (binfo)
 	return build_component_ref (build_scoped_ref (datum, basetype),
 				    field, binfo, 1);
@@ -1590,15 +1589,14 @@ build_component_ref_1 (datum, field, protect)
 
   if (datum == C_C_D)
     {
-      enum access_type access
-	= compute_access (TYPE_BINFO (current_class_type), field);
+      tree access = compute_access (TYPE_BINFO (current_class_type), field);
 
-      if (access == access_private)
+      if (access == access_private_node)
 	{
 	  cp_error ("field `%D' is private", field);
 	  return error_mark_node;
 	}
-      else if (access == access_protected)
+      else if (access == access_protected_node)
 	{
 	  cp_error ("field `%D' is protected", field);
 	  return error_mark_node;
@@ -1748,14 +1746,13 @@ build_component_ref (datum, component, basetype_path, protect)
 	      if (TREE_CHAIN (fndecls) == NULL_TREE
 		  && DECL_CHAIN (TREE_VALUE (fndecls)) == NULL_TREE)
 		{
-		  enum access_type access;
-		  tree fndecl;
+		  tree access, fndecl;
 
 		  /* Unique, so use this one now.  */
 		  basetype = TREE_PURPOSE (fndecls);
 		  fndecl = TREE_VALUE (fndecls);
 		  access = compute_access (TREE_PURPOSE (fndecls), fndecl);
-		  if (access == access_public)
+		  if (access == access_public_node)
 		    {
 		      if (DECL_VINDEX (fndecl)
 			  && ! resolves_to_fixed_type_p (datum, 0))
@@ -1769,7 +1766,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		      mark_used (fndecl);
 		      return fndecl;
 		    }
-		  if (access == access_protected)
+		  if (access == access_protected_node)
 		    cp_error ("member function `%D' is protected", fndecl);
 		  else
 		    cp_error ("member function `%D' is private", fndecl);
@@ -3727,7 +3724,7 @@ pointer_int_sum (resultcode, ptrop, intop)
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == OFFSET_TYPE)
     {
-      if (pedantic)
+      if (pedantic || warn_pointer_arith)
 	pedwarn ("ANSI C++ forbids using pointer to a member in arithmetic");
       size_exp = integer_one_node;
     }
@@ -3793,7 +3790,7 @@ pointer_diff (op0, op1)
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
 
-  if (pedantic)
+  if (pedantic || warn_pointer_arith)
     {
       if (TREE_CODE (target_type) == VOID_TYPE)
 	pedwarn ("ANSI C++ forbids using pointer of type `void *' in subtraction");
@@ -6169,9 +6166,10 @@ build_modify_expr (lhs, modifycode, rhs)
       /* Can't initialize directly from a TARGET_EXPR, since that would
 	 cause the lhs to be constructed twice, and possibly result in
 	 accidental self-initialization.  So we force the TARGET_EXPR to be
-	 expanded.  expand_expr should really do this by itself.  */
+	 expanded without a target.  */
       if (TREE_CODE (newrhs) == TARGET_EXPR)
-	newrhs = expand_target_expr (newrhs);
+	newrhs = build (COMPOUND_EXPR, TREE_TYPE (newrhs), newrhs,
+			TREE_VALUE (newrhs));
     }
 
   if (TREE_CODE (newrhs) == ERROR_MARK)

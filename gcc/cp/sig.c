@@ -530,7 +530,7 @@ build_signature_table_constructor (sig_ty, rhs)
 
 	  if (rhs_method == NULL_TREE
 	      || (compute_access (basetypes, rhs_method)
-		  != access_public))
+		  != access_public_node))
 	    {
 	      error ("class `%s' does not contain a method conforming to `%s'",
 		     TYPE_NAME_STRING (rhstype),

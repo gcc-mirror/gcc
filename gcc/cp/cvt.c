@@ -896,8 +896,7 @@ convert_to_aggr (type, expr, msgp, protect)
   tree basetype = type;
   tree name = TYPE_IDENTIFIER (basetype);
   tree function, fndecl, fntype, parmtypes, parmlist, result;
-  tree method_name;
-  enum access_type access;
+  tree method_name, access;
   int can_be_private, can_be_protected;
 
   if (! TYPE_HAS_CONSTRUCTOR (basetype))
@@ -907,7 +906,7 @@ convert_to_aggr (type, expr, msgp, protect)
       return error_mark_node;
     }
 
-  access = access_public;
+  access = access_public_node;
   can_be_private = 0;
   can_be_protected = IDENTIFIER_CLASS_VALUE (name) || name == current_class_name;
 
@@ -987,20 +986,20 @@ convert_to_aggr (type, expr, msgp, protect)
 	    if (protect)
 	      {
 		if (TREE_PRIVATE (fndecl))
-		  access = access_private;
+		  access = access_private_node;
 		else if (TREE_PROTECTED (fndecl))
-		  access = access_protected;
+		  access = access_protected_node;
 		else
-		  access = access_public;
+		  access = access_public_node;
 	      }
 	    else
-	      access = access_public;
+	      access = access_public_node;
 
-	    if (access == access_private
+	    if (access == access_private_node
 		? (basetype == current_class_type
 		   || is_friend (basetype, cp->function)
 		   || purpose_member (basetype, DECL_ACCESS (fndecl)))
-		: access == access_protected
+		: access == access_protected_node
 		? (can_be_protected
 		   || purpose_member (basetype, DECL_ACCESS (fndecl)))
 		: 1)
@@ -1011,7 +1010,7 @@ convert_to_aggr (type, expr, msgp, protect)
 	      }
 	    else
 	      {
-		if (access == access_private)
+		if (access == access_private_node)
 		  saw_private = 1;
 		else
 		  saw_protected = 1;
@@ -1061,7 +1060,7 @@ convert_to_aggr (type, expr, msgp, protect)
   /* NOTREACHED */
 
  found:
-  if (access == access_private)
+  if (access == access_private_node)
     if (! can_be_private)
       {
 	if (msgp)
@@ -1070,7 +1069,7 @@ convert_to_aggr (type, expr, msgp, protect)
 	    : "conversion to type `%s' is from private base class";
 	return error_mark_node;
       }
-  if (access == access_protected)
+  if (access == access_protected_node)
     if (! can_be_protected)
       {
 	if (msgp)

@@ -98,6 +98,15 @@ char *dont_allow_type_definitions;
    via this node.  */
 static tree base_layout_decl;
 
+/* Constants used for access control.  */
+tree access_default_node; /* 0 */
+tree access_public_node; /* 1 */
+tree access_protected_node; /* 2 */
+tree access_private_node; /* 3 */
+tree access_default_virtual_node; /* 4 */
+tree access_public_virtual_node; /* 5 */
+tree access_private_virtual_node; /* 6 */
+
 /* Variables shared between class.c and call.c.  */
 
 int n_vtables = 0;
@@ -1108,10 +1117,10 @@ static int
 alter_access (t, fdecl, access)
      tree t;
      tree fdecl;
-     enum access_type access;
+     tree access;
 {
   tree elem = purpose_member (t, DECL_ACCESS (fdecl));
-  if (elem && TREE_VALUE (elem) != (tree)access)
+  if (elem && TREE_VALUE (elem) != access)
     {
       if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
 	{
@@ -1123,25 +1132,24 @@ alter_access (t, fdecl, access)
     }
   else if (TREE_PRIVATE (fdecl))
     {
-      if (access != access_private)
+      if (access != access_private_node)
 	cp_error_at ("cannot make private `%D' non-private", fdecl);
       goto alter;
     }
   else if (TREE_PROTECTED (fdecl))
     {
-      if (access != access_protected)
+      if (access != access_protected_node)
 	cp_error_at ("cannot make protected `%D' non-protected", fdecl);
       goto alter;
     }
   /* ARM 11.3: an access declaration may not be used to restrict access
      to a member that is accessible in the base class.  */
-  else if (access != access_public)
+  else if (access != access_public_node)
     cp_error_at ("cannot reduce access of public member `%D'", fdecl);
   else if (elem == NULL_TREE)
     {
     alter:
-      DECL_ACCESS (fdecl) = tree_cons (t, (tree)access,
-					   DECL_ACCESS (fdecl));
+      DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }
   return 0;
@@ -2957,16 +2965,16 @@ finish_struct_1 (t, warn_anon)
       if (DECL_NAME (x) && TREE_CODE (DECL_NAME (x)) == SCOPE_REF)
 	{
 	  tree fdecl = TREE_OPERAND (DECL_NAME (x), 1);
-	  enum access_type access
-	    = TREE_PRIVATE (x) ? access_private :
-	      TREE_PROTECTED (x) ? access_protected : access_public;
+	  tree access
+	    = TREE_PRIVATE (x) ? access_private_node :
+	      TREE_PROTECTED (x) ? access_protected_node : access_public_node;
 
 	  if (last_x)
 	    TREE_CHAIN (last_x) = TREE_CHAIN (x);
 	  else
 	    fields = TREE_CHAIN (x);
 
-	  access_decls = tree_cons ((tree) access, fdecl, access_decls);
+	  access_decls = tree_cons (access, fdecl, access_decls);
 	  continue;
 	}
 
@@ -3411,7 +3419,7 @@ finish_struct_1 (t, warn_anon)
 	tree fdecl = TREE_VALUE (access_decls);
 	tree flist = NULL_TREE;
 	tree name;
-	enum access_type access = (enum access_type)TREE_PURPOSE(access_decls);
+	tree access = TREE_PURPOSE(access_decls);
 	int i = TREE_VEC_ELT (method_vec, 0) ? 0 : 1;
 	tree tmp;
 
@@ -4053,7 +4061,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   tree *tail = &TYPE_METHODS (t);
   tree name = TYPE_NAME (t);
   tree x, last_x = NULL_TREE;
-  enum access_type access;
+  tree access;
 
   if (TREE_CODE (name) == TYPE_DECL)
     {
@@ -4083,21 +4091,21 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   if (CLASSTYPE_DECLARED_CLASS (t) == 0)
     {
       if (list_of_fieldlists
-	  && TREE_PURPOSE (list_of_fieldlists) == (tree)access_default)
-	TREE_PURPOSE (list_of_fieldlists) = (tree)access_public;
+	  && TREE_PURPOSE (list_of_fieldlists) == access_default_node)
+	TREE_PURPOSE (list_of_fieldlists) = access_public_node;
     }
   else if (list_of_fieldlists
-	   && TREE_PURPOSE (list_of_fieldlists) == (tree)access_default)
-    TREE_PURPOSE (list_of_fieldlists) = (tree)access_private;
+	   && TREE_PURPOSE (list_of_fieldlists) == access_default_node)
+    TREE_PURPOSE (list_of_fieldlists) = access_private_node;
 
   while (list_of_fieldlists)
     {
-      access = (enum access_type)TREE_PURPOSE (list_of_fieldlists);
+      access = TREE_PURPOSE (list_of_fieldlists);
 
       for (x = TREE_VALUE (list_of_fieldlists); x; x = TREE_CHAIN (x))
 	{
-	  TREE_PRIVATE (x) = access == access_private;
-	  TREE_PROTECTED (x) = access == access_protected;
+	  TREE_PRIVATE (x) = access == access_private_node;
+	  TREE_PROTECTED (x) = access == access_protected_node;
 
 	  /* Check for inconsistent use of this name in the class body.
              Enums, types and static vars have already been checked.  */
@@ -4306,6 +4314,14 @@ init_class_processing ()
   current_lang_base = (tree *)xmalloc(current_lang_stacksize * sizeof (tree));
   current_lang_stack = current_lang_base;
 
+  access_default_node = build_int_2 (0, 0);
+  access_public_node = build_int_2 (1, 0);
+  access_protected_node = build_int_2 (2, 0);
+  access_private_node = build_int_2 (3, 0);
+  access_default_virtual_node = build_int_2 (4, 0);
+  access_public_virtual_node = build_int_2 (5, 0);
+  access_private_virtual_node = build_int_2 (6, 0);
+
   /* Keep these values lying around.  */
   the_null_vtable_entry = build_vtable_entry (integer_zero_node, integer_zero_node);
   base_layout_decl = build_lang_field_decl (FIELD_DECL, NULL_TREE, error_mark_node);
@@ -4400,7 +4416,7 @@ pushclass (type, modify)
       else if (type != previous_class_type || current_class_depth > 1)
 	{
 	  build_mi_matrix (type);
-	  push_class_decls (type);
+	  push_class_decls (type, !modify);
 	  free_mi_matrix ();
 	  if (current_class_depth == 1)
 	    previous_class_type = type;
@@ -4436,6 +4452,12 @@ pushclass (type, modify)
 	}
 
       current_function_decl = this_fndecl;
+    }
+  else if (CLASSTYPE_LOCAL_TYPEDECLS (type))
+    {
+      build_mi_matrix (type);
+      push_class_decls (type, !modify);
+      free_mi_matrix ();
     }
 
   if (flag_cadillac)

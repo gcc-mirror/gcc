@@ -3018,9 +3018,8 @@ do_identifier (token)
       if (IDENTIFIER_CLASS_VALUE (token) == id)
 	{
 	  /* Check access.  */
-	  enum access_type access
-	    = compute_access (TYPE_BINFO (current_class_type), id);
-	  if (access == access_private)
+	  tree access = compute_access (TYPE_BINFO (current_class_type), id);
+	  if (access == access_private_node)
 	    cp_error ("enum `%D' is private", id);
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
@@ -3279,13 +3278,13 @@ real_yylex ()
 		      switch (ptr->rid)
 			{
 			case RID_PUBLIC:
-			  yylval.itype = access_public;
+			  yylval.ttype = access_public_node;
 			  break;
 			case RID_PRIVATE:
-			  yylval.itype = access_private;
+			  yylval.ttype = access_private_node;
 			  break;
 			case RID_PROTECTED:
-			  yylval.itype = access_protected;
+			  yylval.ttype = access_protected_node;
 			  break;
 			default:
 			  my_friendly_abort (63);
@@ -4392,6 +4391,13 @@ done:
 #endif
 
   return value;
+}
+
+int
+is_rid (t)
+     tree t;
+{
+  return !!is_reserved_word (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 }
 
 typedef enum

@@ -1582,8 +1582,7 @@ hack_identifier (value, name, yychar)
       if (DECL_LANG_SPECIFIC (value)
 	  && DECL_CLASS_CONTEXT (value) != current_class_type)
 	{
-	  tree path;
-	  enum access_type access;
+	  tree path, access;
 	  register tree context
 	    = (TREE_CODE (value) == FUNCTION_DECL && DECL_VIRTUAL_P (value))
 	      ? DECL_CLASS_CONTEXT (value)
@@ -1593,7 +1592,7 @@ hack_identifier (value, name, yychar)
 	  if (path)
 	    {
 	      access = compute_access (path, value);
-	      if (access != access_public)
+	      if (access != access_public_node)
 		{
 		  if (TREE_CODE (value) == VAR_DECL)
 		    error ("static member `%s' is %s",
@@ -2101,7 +2100,7 @@ do_build_copy_constructor (fndecl)
 	    (build_reference_type (basetype), parm,
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
-	  current_base_init_list = tree_cons (TYPE_NESTED_NAME (basetype),
+	  current_base_init_list = tree_cons (basetype,
 					      p, current_base_init_list);
 	}
 	
@@ -2116,7 +2115,7 @@ do_build_copy_constructor (fndecl)
 	    (build_reference_type (basetype), parm,
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
-	  current_base_init_list = tree_cons (TYPE_NESTED_NAME (basetype),
+	  current_base_init_list = tree_cons (basetype,
 					      p, current_base_init_list);
 	}
       for (; fields; fields = TREE_CHAIN (fields))
@@ -2192,8 +2191,7 @@ do_build_assign_ref (fndecl)
 		(build_reference_type (basetype), parm,
 		 CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	      p = convert_from_reference (p);
-	      p = build_member_call (TYPE_NESTED_NAME (basetype),
-				     ansi_opname [MODIFY_EXPR],
+	      p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
 				     build_tree_list (NULL_TREE, p));
 	      expand_expr_stmt (p);
 	    }
