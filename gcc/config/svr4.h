@@ -132,12 +132,6 @@ Boston, MA 02111-1307, USA.
 #undef	LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
 
-/* Provide a LIBGCC_SPEC appropriate for svr4.  We also want to exclude
-   libgcc when -symbolic.  */
-
-#undef  LIBGCC_SPEC
-#define LIBGCC_SPEC "%{!shared:%{!symbolic:-lgcc}}"
-
 /* Provide an ENDFILE_SPEC appropriate for svr4.  Here we tack on our own
    magical crtend.o file (see crtstuff.c) which provides part of the
    support for getting C++ file-scope static object constructed before
