@@ -483,12 +483,7 @@ conflict_graph_compute (regs, p)
   	         we're in SSA form, if a reg is set here it isn't set
   	         anywhere elso, so this insn is where the reg is born.  */
 	      CLEAR_REG_SET (born);
-	      note_stores (PATTERN (insn), mark_reg, (void *) born);
-#ifdef AUTO_INC_DEC
-	      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) == REG_INC)
-		  mark_reg (XEXP (link, 0), NULL_RTX, NULL);
-#endif
+	      note_stores (PATTERN (insn), mark_reg, born);
 	      AND_REG_SET (born, regs);
 	  
 	      /* Regs born here were not live before this insn.  */
