@@ -94,6 +94,16 @@ longlong:
 .ffi_call_V8_end:
 	.size	ffi_call_V8,.ffi_call_V8_end-ffi_call_V8
 
+#ifdef SPARC64
+#define WS 8
+#define nword	xword
+#define uanword	uaxword
+#else
+#define WS 4
+#define nword	long
+#define uanword	uaword
+#endif
+
 	.section	".eh_frame",#alloc,#write
 .LLframe1:
 	.uaword	.LLECIE1-.LLSCIE1	! Length of Common Information Entry
@@ -102,22 +112,22 @@ longlong:
 	.byte	0x1	! CIE Version
 	.ascii "zR\0"	! CIE Augmentation
 	.byte	0x1	! uleb128 0x1; CIE Code Alignment Factor
-	.byte	0x7c	! sleb128 -4; CIE Data Alignment Factor
+	.byte	0x80-WS	! sleb128 -WS; CIE Data Alignment Factor
 	.byte	0xf	! CIE RA Column
 	.byte	0x1	! uleb128 0x1; Augmentation size
 	.byte	0x50	! FDE Encoding (aligned absolute)
 	.byte	0xc	! DW_CFA_def_cfa
 	.byte	0xe	! uleb128 0xe
 	.byte	0x0	! uleb128 0x0
-	.align 4
+	.align	WS
 .LLECIE1:
 .LLSFDE1:
 	.uaword	.LLEFDE1-.LLASFDE1	! FDE Length
 .LLASFDE1:
 	.uaword	.LLASFDE1-.LLframe1	! FDE CIE offset
-	.align 4
-	.long	.LLFB1
-	.uaword	.LLFE1-.LLFB1	! FDE address range
+	.align	WS
+	.nword	.LLFB1
+	.uanword .LLFE1-.LLFB1	! FDE address range
 	.byte	0x0	! uleb128 0x0; Augmentation size
 	.byte	0x4	! DW_CFA_advance_loc4
 	.uaword	.LLCFI0-.LLFB1
@@ -127,5 +137,5 @@ longlong:
 	.byte	0x9	! DW_CFA_register
 	.byte	0xf	! uleb128 0xf
 	.byte	0x1f	! uleb128 0x1f
-	.align 4
+	.align	WS
 .LLEFDE1:

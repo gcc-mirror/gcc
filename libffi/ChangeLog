@@ -1,3 +1,7 @@
+2002-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/sparc/v8.S: Make .eh_frame dependent on target word size.
+
 2002-04-06  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* configure.in (alpha*-*-netbsd*): Add target.
