@@ -2026,7 +2026,12 @@ finish_base_specifier (access_specifier, base_class)
 {
   tree result;
 
-  if (! is_aggr_type (base_class, 1))
+  if (base_class == error_mark_node)
+    {
+      error ("invalid base-class specification");
+      result = NULL_TREE;
+    }
+  else if (! is_aggr_type (base_class, 1))
     result = NULL_TREE;
   else
     {
