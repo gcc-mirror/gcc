@@ -287,6 +287,84 @@
 ;; not be in the same register, what we don't want is for something being
 ;; written to partially overlap something that is an input.
 
+;; Split up 64bit addition so that the component insns can schedule
+;; independently.
+(define_split
+  [(set (match_operand:DI          0 "s_register_operand" "")
+	(plus:DI (match_operand:DI 1 "s_register_operand"  "")
+		 (match_operand:DI 2 "s_register_operand"   "")))
+   (clobber (reg:CC 24))]
+  "reload_completed"
+  [(parallel [(set (reg:CC_C 24)
+		      (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
+				    (match_dup 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+			       (plus:SI (match_dup 4) (match_dup 5))))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_highpart (SImode, operands[2]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
+;; The first insn created by this splitter must set the low part of
+;; operand0 as well as the carry bit in the CC register.  The second
+;; insn must compute the sum of the carry bit, the sign extension of
+;; operand 2 from 32 to 64 bits and the high part of operand 1.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(plus:DI (sign_extend:DI
+		  (match_operand:SI 2 "s_register_operand" ""))
+		  (match_operand:DI 1 "s_register_operand" "")))
+   (clobber (reg:CC 24))]
+  "reload_completed"
+  [(parallel [(set (reg:CC_C 24)
+		      (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
+				    (match_dup 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+			       (plus:SI (ashiftrt:SI (match_dup 2)
+						     (const_int 31))
+					(match_dup 4))))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
+;; The first insn created by this splitter must set the low part of
+;; operand0 as well as the carry bit in the CC register.  The second
+;; insn must compute the sum of the carry bit and the high bits from
+;; operand 1
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(plus:DI (zero_extend:DI
+		  (match_operand:SI 2 "s_register_operand" ""))
+		  (match_operand:DI 1 "s_register_operand" "")))
+   (clobber (reg:CC 24))]
+  "reload_completed"
+  [(parallel [(set (reg:CC_C 24)
+		      (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
+				    (match_dup 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+			       (plus:SI (match_dup 4) (const_int 0))))]
+  "
+{
+  operands[3] = gen_highpart (SImode, operands[0]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_highpart (SImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+}")
+
 ;; Addition insns.
 
 (define_insn "adddi3"
@@ -295,7 +373,7 @@
 		 (match_operand:DI 2 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
   ""
-  "adds\\t%Q0, %Q1, %Q2\;adc\\t%R0, %R1, %R2"
+  "#"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -306,7 +384,7 @@
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
   ""
-  "adds\\t%Q0, %Q1, %2\;adc\\t%R0, %R1, %2, asr #31"
+  "#"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -317,7 +395,7 @@
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
   ""
-  "adds\\t%Q0, %Q1, %2\;adc\\t%R0, %R1, #0"
+  "#"
 [(set_attr "conds" "clob")
  (set_attr "length" "8")])
 
@@ -451,6 +529,19 @@
   ""
   "adc%?\\t%0, %1, %2"
 [(set_attr "conds" "use")])
+
+(define_insn "*addsi3_carryin_shift"
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(plus:SI (ltu:SI (reg:CC_C 24) (const_int 0))
+		 (plus:SI
+		   (match_operator:SI 2 "shift_operator"
+		      [(match_operand:SI 3 "s_register_operand" "")
+		       (match_operand:SI 4 "reg_or_int_operand" "")])
+		    (match_operand:SI 1 "s_register_operand" ""))))]
+  ""
+  "adc%?\\t%0, %1, %3%S2"
+  [(set_attr "conds" "use")]
+)
 
 (define_insn "*addsi3_carryin_alt1"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
