@@ -227,6 +227,34 @@ if [ \! -z "$file_to_fix" ]; then
   rm -f /tmp/$base
 fi
 
+# Fix third broken decl of getcwd on SCO.  Also fix incorrect decl of
+# link.
+file=prototypes.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e 's/getcwd(char \*, int)/getcwd(char *, size_t)/' $file_to_fix \
+    | sed -e 's/const  int	link(const char \*, char \*)/extern  int	link(const char *, const char *)/' > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 # Fix an error in this file: the #if says _cplusplus, not the double
 # underscore __cplusplus that it should be
 file=tinfo.h
