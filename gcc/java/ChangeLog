@@ -1,3 +1,18 @@
+2004-05-29  Ranjit Mathew  <rmathew@hotmail.com>
+            Per Bothner  <per@bothner.com>
+
+	* java-tree.h (DECL_LOCAL_FINAL_IUD): New macro to test if a
+	local variable was initialised upon declaration.
+	* parse.y (declare_local_variables): Set DECL_LOCAL_FINAL_IUD if
+	variable was final and initialised upon declaration.
+	* check-init.c (check_final_reassigned): Give error only if a blank
+	final is not definitely unassigned or if an initialised final is
+	reassigned.
+	(check_bool_init): Respect JLS2 16.1.7 requirements for boolean
+	assignment expressions. Remove case MODIFY_EXPR, label do_default.
+	(check_init): Perform initialised-variable-removing-optimisation
+	only on non-final local variables.
+
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* jcf-write.c (generate_bytecode_conditional): Handle binops 

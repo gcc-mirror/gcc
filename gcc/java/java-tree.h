@@ -902,8 +902,8 @@ union lang_tree_node
 /* Safely tests whether FIELD_INNER_ACCESS exists or not. */
 #define FIELD_INNER_ACCESS_P(DECL) \
   DECL_LANG_SPECIFIC (DECL) && FIELD_INNER_ACCESS (DECL)
-/* True if a final variable was initialized upon its declaration,
-   or (if a field) in an initializer.  Set after definite assignment. */
+/* True if a final field was initialized upon its declaration
+   or in an initializer.  Set after definite assignment.  */
 #define DECL_FIELD_FINAL_IUD(NODE)  (DECL_LANG_SPECIFIC (NODE)->u.v.final_iud)
 /* The original WFL of a final variable. */
 #define DECL_FIELD_FINAL_WFL(NODE)  (DECL_LANG_SPECIFIC(NODE)->u.v.wfl)
@@ -911,6 +911,8 @@ union lang_tree_node
 #define DECL_OWNER(NODE)            (DECL_LANG_SPECIFIC(NODE)->u.v.owner)
 /* True if NODE is a local variable final. */
 #define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && DECL_FINAL (NODE))
+/* True if a final local variable was initialized upon its declaration.  */
+#define DECL_LOCAL_FINAL_IUD(NODE)  (DECL_LANG_SPECIFIC (NODE)->u.v.final_iud)
 /* True if NODE is a final field. */
 #define FINAL_VARIABLE_P(NODE) (FIELD_FINAL (NODE) && !FIELD_STATIC (NODE))
 /* True if NODE is a class final field. */

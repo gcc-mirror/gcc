@@ -210,7 +210,8 @@ check_final_reassigned (tree decl, words before)
      assigned must be reported as errors */
   if (DECL_FINAL (decl) && index != -2
       && (index < loop_current_locals /* I.e. -1, or outside current loop. */
-	  || ! UNASSIGNED_P (before, index)))
+          || (DECL_LOCAL_FINAL_IUD (decl) ? ASSIGNED_P (before, index)
+              : ! UNASSIGNED_P (before, index))))
     {
       final_assign_error (DECL_NAME (decl));
     }
@@ -337,27 +338,6 @@ check_bool_init (tree exp, words before, words when_false, words when_true)
     case TRUTH_NOT_EXPR:
       check_bool_init (TREE_OPERAND (exp, 0), before, when_true, when_false);
       return;
-    case MODIFY_EXPR:
-      {
-	tree tmp = TREE_OPERAND (exp, 0);
-	if ((tmp = get_variable_decl (tmp)) != NULL_TREE)
-	  {
-	    int index;
-	    check_bool_init (TREE_OPERAND (exp, 1), before,
-			     when_false, when_true);
-	    check_final_reassigned (tmp, before);
-	    index = DECL_BIT_INDEX (tmp);
-	    if (index >= 0)
-	      {
-		SET_ASSIGNED (when_false, index);
-		SET_ASSIGNED (when_true, index);
-		CLEAR_UNASSIGNED (when_false, index);
-		CLEAR_UNASSIGNED (when_true, index);
-	      }
-	    break;
-	  }
-      }
-      goto do_default;
 
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
@@ -390,8 +370,8 @@ check_bool_init (tree exp, words before, words when_false, words when_true)
 	  COPY (when_true, before);
 	}
       break;
+
     default:
-    do_default:
       check_init (exp, before);
       COPY (when_false, before);
       COPY (when_true, before);
@@ -531,6 +511,7 @@ check_init (tree exp, words before)
 	     definitely assigned when once we checked the whole
 	     function. */
 	  if (! STATIC_CLASS_INIT_OPT_P () /* FIXME */
+	      && ! DECL_FINAL (tmp)
 	      && index >= start_current_locals
 	      && index == num_current_locals - 1)
 	    {
