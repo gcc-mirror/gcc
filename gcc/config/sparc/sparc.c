@@ -2993,9 +2993,10 @@ sparc_type_code (type)
 	case CHAR_TYPE:		/* GNU Pascal CHAR type.  Not used in C.  */
 	case BOOLEAN_TYPE:	/* GNU Fortran BOOLEAN type.  */
 	case FILE_TYPE:		/* GNU Pascal FILE type.  */
-	case STRING_TYPE:	/* GNU Fortran STRING type. */
+	case STRING_TYPE:	/* GNU Fortran STRING type.  */
+	case SET_TYPE:		/* GNU Pascal SET type.  */
 	case LANG_TYPE:		/* ? */
-	  abort ();
+	  return qualifiers;
   
 	default:
 	  abort ();		/* Not a type! */
