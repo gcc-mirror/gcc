@@ -642,7 +642,7 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
 #  them before rtl.o is compiled.
 GEN= genemit genoutput genrecog genextract genflags gencodes genconfig \
- genpeep gengenrtl
+ genpeep gengenrtl gencheck
 
 CCCP=cccp
 # Uncomment this line if you want to use cppmain (w/cpplib) as cpp.
@@ -651,7 +651,7 @@ CCCP=cccp
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
- insn-attr.h insn-attrtab.c insn-opinit.c genrtl.c genrtl.h \
+ insn-attr.h insn-attrtab.c insn-opinit.c genrtl.c genrtl.h tree-check.h \
  s-flags s-config s-codes s-mlib \
  s-output s-recog s-emit s-extract s-peep \
  s-attr s-attrtab s-opinit s-crt s-crtS s-crt0 \
@@ -659,6 +659,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
+ gencheck$(build_exeext) \
  xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
