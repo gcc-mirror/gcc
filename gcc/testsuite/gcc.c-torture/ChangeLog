@@ -1,3 +1,7 @@
+Wed Mar 17 12:22:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/ieee/980619-1.x: New.  Expected fail on x86.
+
 Fri Mar 12 16:17:28 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* execute/970312-1.c, execute/980605-1.c (f): Change printf to sprintf.
