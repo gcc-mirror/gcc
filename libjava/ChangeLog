@@ -1,5 +1,10 @@
 2004-09-10  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.am: Reverted accidently commited stuff.
+	* configure: Regenerated.
+
+2004-09-10  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/file/Connection.java
 	(lineSeparator): Made non-final.
 	(static): Removed.
