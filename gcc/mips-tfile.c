@@ -3678,9 +3678,15 @@ parse_stabs_common (string_start, string_end, rest)
 
       code = strtol (p+3, &p, 0);
       ch = *++p;
-      if (code <= 0 || p[-1] != ',' || isdigit (ch) || !IS_ASM_IDENT (ch))
+      if (p[-1] != ',' || isdigit (ch) || !IS_ASM_IDENT (ch))
 	{
 	  error ("Illegal line number .stabs/.stabn directive");
+	  return;
+	}
+
+      if (code < 0 || code >= 0x100000)
+	{
+	  error ("Line number for .stabs/.stabn directive cannot fit in index field (20 bits)");
 	  return;
 	}
 
