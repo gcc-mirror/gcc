@@ -290,12 +290,9 @@ build_base_path (code, expr, binfo, nonnull)
     }
 
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
-  if (fixed_type_p < 0)
-    /* Virtual base layout is not fixed, even in ctors and dtors. */
-    fixed_type_p = 0;
-  if (!fixed_type_p && TREE_SIDE_EFFECTS (expr))
+  if (fixed_type_p <= 0 && TREE_SIDE_EFFECTS (expr))
     expr = save_expr (expr);
-    
+
   if (!want_pointer)
     expr = build_unary_op (ADDR_EXPR, expr, 0);
   else if (!nonnull)
@@ -303,7 +300,7 @@ build_base_path (code, expr, binfo, nonnull)
   
   offset = BINFO_OFFSET (binfo);
   
-  if (v_binfo && !fixed_type_p)
+  if (v_binfo && fixed_type_p <= 0)
     {
       /* Going via virtual base V_BINFO.  We need the static offset
          from V_BINFO to BINFO, and the dynamic offset from D_BINFO to
@@ -324,7 +321,17 @@ build_base_path (code, expr, binfo, nonnull)
 			   size_diffop (offset, BINFO_OFFSET (v_binfo)));
 
       if (!integer_zerop (offset))
-	offset = build (code, ptrdiff_type_node, v_offset, offset);
+	v_offset = build (code, ptrdiff_type_node, v_offset, offset);
+
+      if (fixed_type_p < 0)
+	/* Negative fixed_type_p means this is a constructor or destructor;
+	   virtual base layout is fixed in in-charge [cd]tors, but not in
+	   base [cd]tors.  */
+	offset = build (COND_EXPR, ptrdiff_type_node,
+			build (EQ_EXPR, boolean_type_node,
+			       current_in_charge_parm, integer_zero_node),
+			v_offset,
+			BINFO_OFFSET (binfo));
       else
 	offset = v_offset;
     }
@@ -351,7 +358,7 @@ build_base_path (code, expr, binfo, nonnull)
     expr = build (COND_EXPR, target_type, null_test,
 		  build1 (NOP_EXPR, target_type, integer_zero_node),
 		  expr);
-  
+
   return expr;
 }
 

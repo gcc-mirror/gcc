@@ -1,5 +1,9 @@
 2002-03-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4460
+	* class.c (build_base_path): Virtual base layout is fixed in
+	in-charge [cd]tors.
+
 	PR c++/5757
 	* init.c (build_new_1): Pass the right pointer to op delete.
 
