@@ -5573,9 +5573,10 @@ readonly_fields_p (type)
   tree field;
 
   for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
-    if (TREE_READONLY (field)
-	|| (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
-	    && readonly_fields_p (TREE_TYPE (field))))
+    if (TREE_CODE (field) == FIELD_DECL 
+	&& (TREE_READONLY (field)
+	    || (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+		&& readonly_fields_p (TREE_TYPE (field)))))
       return 1;
 
   return 0;
