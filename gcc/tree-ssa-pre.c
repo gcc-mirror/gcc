@@ -1103,6 +1103,7 @@ clean (value_set_t set)
 }
 
 DEF_VEC_MALLOC_P (basic_block);
+sbitmap has_abnormal_preds;
 
 /* Compute the ANTIC set for BLOCK.
 
@@ -1121,6 +1122,7 @@ DEF_VEC_MALLOC_P (basic_block);
 static bool
 compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 {
+  basic_block son;
   bool changed = false;
   value_set_t S, old, ANTIC_OUT;
   value_set_node_t node;
@@ -1185,7 +1187,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   ANTIC_IN (block) = bitmap_set_subtract_from_value_set (EXP_GEN (block), 
 							 TMP_GEN (block),
 							 true);
-  
+
   /* Then union in the ANTIC_OUT - TMP_GEN values,
      to get ANTIC_OUT U EXP_GEN - TMP_GEN */
   for (node = S->head; node; node = node->next)
@@ -1205,19 +1207,24 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	print_value_set (dump_file, S, "S", block->index);
     }
 
+  for (son = first_dom_son (CDI_POST_DOMINATORS, block);
+       son;
+       son = next_dom_son (CDI_POST_DOMINATORS, son))
+    {
+      changed |= compute_antic_aux (son,
+				    TEST_BIT (has_abnormal_preds, son->index));
+    }
   return changed;
 }
 
-/* Compute ANTIC sets.  Iterates until fixpointed.  */
+/* Compute ANTIC sets.  */
 
 static void
 compute_antic (void)
 {
-  bool changed= true;
+  bool changed = true;
   int num_iterations = 0;
-  basic_block block, *worklist;
-  size_t sp = 0;
-  sbitmap has_abnormal_preds;
+  basic_block block;
 
   /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
      We pre-build the map of blocks with incoming abnormal edges here.  */
@@ -1229,11 +1236,11 @@ compute_antic (void)
       edge e;
 
       FOR_EACH_EDGE (e, ei, block->preds)
-        if (e->flags & EDGE_ABNORMAL)
-          {
-            SET_BIT (has_abnormal_preds, block->index);
-            break;
-          }
+	if (e->flags & EDGE_ABNORMAL)
+	  {
+	    SET_BIT (has_abnormal_preds, block->index);
+	    break;
+	  }
 
       /* While we are here, give empty ANTIC_IN sets to each block.  */
       ANTIC_IN (block) = set_new (true);
@@ -1241,41 +1248,13 @@ compute_antic (void)
   /* At the exit block we anticipate nothing.  */
   ANTIC_IN (EXIT_BLOCK_PTR) = set_new (true);
 
-  /* Allocate the worklist.  */
-  worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
-
-  /* Loop until fixpointed.  */
   while (changed)
     {
-      basic_block son, bb;
-
-      changed = false;
       num_iterations++;
-
-      /* Seed the algorithm by putting post-dominator children of
-         the exit block in the worklist.  */
-      for (son = first_dom_son (CDI_POST_DOMINATORS, EXIT_BLOCK_PTR);
-	   son;
-	   son = next_dom_son (CDI_POST_DOMINATORS, son))
-	worklist[sp++] = son;
-
-      /* Now visit all blocks in a DFS of the post dominator tree.  */
-      while (sp)
-	{
-	  bool bb_has_abnormal_pred;
-
-	  bb = worklist[--sp];
-	  bb_has_abnormal_pred = TEST_BIT (has_abnormal_preds, bb->index);
- 	  changed |= compute_antic_aux (bb, bb_has_abnormal_pred);
-
-	  for (son = first_dom_son (CDI_POST_DOMINATORS, bb);
-	       son;
-	       son = next_dom_son (CDI_POST_DOMINATORS, son))
-	    worklist[sp++] = son;
-	}
+      changed = false;
+      changed = compute_antic_aux (EXIT_BLOCK_PTR, false);
     }
 
-  free (worklist);
   sbitmap_free (has_abnormal_preds);
 
   if (dump_file && (dump_flags & TDF_STATS))
