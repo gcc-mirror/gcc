@@ -264,7 +264,7 @@ static int
 gnu_special PARAMS ((struct work_stuff *, const char **, string *));
 
 static int
-arm_special PARAMS ((struct work_stuff *, const char **, string *));
+arm_special PARAMS ((const char **, string *));
 
 static void
 string_need PARAMS ((string *, int));
@@ -1696,7 +1696,7 @@ demangle_prefix (work, mangled, declp)
 	 then find the next "__" that separates the prefix from the signature.
 	 */
       if (!(ARM_DEMANGLING || LUCID_DEMANGLING)
-	  || (arm_special (work, mangled, declp) == 0))
+	  || (arm_special (mangled, declp) == 0))
 	{
 	  while (*scan == '_')
 	    {
@@ -1940,8 +1940,8 @@ LOCAL FUNCTION
 SYNOPSIS
 
 	static int
-	arm_special (struct work_stuff *work, const char **mangled,
-			string *declp);
+	arm_special (const char **mangled,
+		     string *declp);
 
 
 DESCRIPTION
@@ -1955,8 +1955,7 @@ DESCRIPTION
  */
 
 static int
-arm_special (work, mangled, declp)
-     struct work_stuff *work;
+arm_special (mangled, declp)
      const char **mangled;
      string *declp;
 {

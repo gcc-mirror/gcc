@@ -1921,6 +1921,9 @@ get_type_decl (t)
     return TYPE_STUB_DECL (t);
   
   my_friendly_abort (42);
+
+  /* Stop compiler from complaining control reaches end of non-void function.  */
+  return 0;
 }
 
 int
