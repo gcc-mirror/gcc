@@ -1,3 +1,9 @@
+2002-06-13  Alan Lehotsky  <apl@alum.mit.edu>
+
+	* reload.c (get_secondary_mem,find_reloads_address,
+	find_reloads_address_1): Pass reference to MEM to find_reloads_address
+	so that LEGITIMIZE_RELOAD_ADDRESS will be called.
+	
 2002-06-13  Jessica Han  <jessica@cup.hp.com>
 
 	* defaults.h (TARGET_VTABLE_ENTRY_ALIGN): New.
