@@ -1,3 +1,20 @@
+2004-12-18  Roger Sayle  <roger@eyesopen.com>
+
+	* Makefile.in (stor-layout.o): Depend upon gt-stor-layout.h.
+	(tree-ssa-propagate.o): Depend upon gt-tree-ssa-propagate.h.
+	(tree-ssa-operands.o): Depend upon gt-tree-ssa-operands.h.
+	(tree-mudflap.o): Depend upon gt-tree-mudflap.h.
+	(expr.o): Depend upon gt-expr.h.
+	(regclass.o): Depend upon gt-regclass.h.
+	(bitmap.o): Depend upon gt-bitmap.h.
+	(lists.o): Depend upon gt-lists.h.
+
+	(cfgexpand.o): Don't depend upon gt-tree-cfg.h.
+
+	(GTFILES): Remove fold-const.c.
+	(gt-stmt.h, gt-fold-const.h, gt-input.h, gt-tree-ssa-ccp.h):
+	Remove rules.
+
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
 	* stor-layout.c (layout_decl): Unshare size expressions copied
