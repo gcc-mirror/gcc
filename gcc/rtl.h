@@ -1715,8 +1715,6 @@ extern int rtx_renumbered_equal_p	PARAMS ((rtx, rtx));
 extern int true_regnum			PARAMS ((rtx));
 extern int redirect_jump_1		PARAMS ((rtx, rtx));
 extern int redirect_jump		PARAMS ((rtx, rtx, int));
-extern void jump_optimize		PARAMS ((rtx, int, int));
-extern void jump_optimize_minimal	PARAMS ((rtx));
 extern void rebuild_jump_labels		PARAMS ((rtx));
 extern void thread_jumps		PARAMS ((rtx, int, int));
 extern int rtx_equal_for_thread_p	PARAMS ((rtx, rtx, rtx));
@@ -1727,10 +1725,8 @@ extern enum rtx_code reversed_comparison_code_parts PARAMS ((enum rtx_code,
 extern void delete_for_peephole		PARAMS ((rtx, rtx));
 extern int condjump_in_parallel_p	PARAMS ((rtx));
 extern void never_reached_warning	PARAMS ((rtx));
-
-/* Flags for jump_optimize() */
-#define JUMP_NOOP_MOVES			1
-#define JUMP_AFTER_REGSCAN		1
+extern void purge_line_number_notes	PARAMS ((rtx));
+extern void copy_loop_headers		PARAMS ((rtx));
 
 /* In emit-rtl.c. */
 extern int max_reg_num				PARAMS ((void));

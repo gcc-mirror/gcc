@@ -2774,7 +2774,7 @@ rest_of_compilation (decl)
   purge_hard_subreg_sets (get_insns ());
   emit_initial_value_sets ();
 
-  /* Don't return yet if -Wreturn-type; we need to do jump_optimize.  */
+  /* Don't return yet if -Wreturn-type; we need to do cleanup_cfg.  */
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
     goto exit_rest_of_compilation;
 
@@ -2839,7 +2839,11 @@ rest_of_compilation (decl)
   expected_value_to_br_prob ();
 
   reg_scan (insns, max_reg_num (), 0);
-  jump_optimize (insns, !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
+  rebuild_jump_labels (insns);
+  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
+  copy_loop_headers (insns);
+  purge_line_number_notes (insns);
 
   timevar_pop (TV_JUMP);
 
@@ -2981,7 +2985,9 @@ rest_of_compilation (decl)
       if (tem || optimize > 1)
 	{
 	  timevar_push (TV_JUMP);
-	  jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	  rebuild_jump_labels (insns);
+	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
 	  timevar_pop (TV_JUMP);
 	}
 
@@ -3053,7 +3059,8 @@ rest_of_compilation (decl)
 	{
 	  tem = tem2 = 0;
 	  timevar_push (TV_JUMP);
-	  jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	  rebuild_jump_labels (insns);
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
 	  timevar_pop (TV_JUMP);
 
 	  if (flag_expensive_optimizations)
@@ -3126,7 +3133,6 @@ rest_of_compilation (decl)
 	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
 
 	  reg_scan (insns, max_reg_num (), 0);
-	  jump_optimize (insns, !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
 
 	  timevar_push (TV_IFCVT);
 
@@ -3144,7 +3150,9 @@ rest_of_compilation (decl)
 	  if (tem)
 	    {
 	      timevar_push (TV_JUMP);
-	      jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	      rebuild_jump_labels (insns);
+	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	      cleanup_cfg (CLEANUP_EXPENSIVE);
 	      timevar_pop (TV_JUMP);
 	    }
 	}
@@ -3461,8 +3469,8 @@ rest_of_compilation (decl)
   timevar_push (TV_FLOW2);
   open_dump_file (DFI_flow2, decl);
 
-  jump_optimize (insns, JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  cleanup_cfg (0);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between
@@ -3598,6 +3606,8 @@ rest_of_compilation (decl)
 #endif
 
   /* CFG no longer kept up to date.  */
+
+  purge_line_number_notes (insns);
 
   /* If a scheduling pass for delayed branches is to be done,
      call the scheduling code.  */

@@ -3467,7 +3467,7 @@ expand_nl_handler_label (slot, before_insn)
   rtx insns;
   rtx handler_label = gen_label_rtx ();
 
-  /* Don't let jump_optimize delete the handler.  */
+  /* Don't let cleanup_cfg delete the handler.  */
   LABEL_PRESERVE_P (handler_label) = 1;
 
   start_sequence ();

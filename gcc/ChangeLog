@@ -1,3 +1,20 @@
+Sun Jul 22 21:31:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c: Update comments.
+	(delete_barrier_successors, delete_unreferenced_labels,
+	delete_noop_moves, tension_vector_labels, delete_from_jump_chain,
+	delete_labelref_insn, redirect_tablejump, jump_optimize_1,
+	jump_optimize, jump_optimize_minimal): Kill.
+	(rebuild_jump_labels): Move code from jump_optimize_1.
+	(purge_line_number_notes): Likewise.
+	(copy_loop_headers): Likewise.
+	* reg-stack.c: Update comment.
+	* stmt.c: Likewise.
+	* rtl.h (jump_optimize, jump_optimize_1, JUMP_NOOP_MOVES,
+	JUMP_AFTER_REGSCAN): Kill.
+	* toplev.c (rest_of_compilation): Use cleanup_cfg, call
+	purge_line_number_notes and copy_loop_headers.
+
 2001-07-22 Neil Booth  <neil@daikokuya.demon.co.uk>
 	   Richard Henderson  <rth@redhat.com>
 
