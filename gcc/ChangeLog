@@ -1,3 +1,17 @@
+2000-10-17  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* c-tree.h (warn_sequence_point): Move declaration to...
+	* c-common.h (warn_sequence_point): ... here.
+	* c-decl.c (warn_sequence_point): Move definition to...
+	* c-common.c (warn_sequence_point): ... here.
+	(struct reverse_tree): New.
+	(reverse_list, reverse_max_depth): New static variables.
+	(build_reverse_tree, common_ancestor, modify_ok
+	verify_sequence_points): New functions.
+	(c_expand_expr_stmt): Call verify_sequence_points if -Wsequence-point.
+	* c-typeck.c (check_modify_expr): Delete.
+	(build_modify_expr): Don't call it.
+
 2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.h (warn_missing_format_attribute): New variable.

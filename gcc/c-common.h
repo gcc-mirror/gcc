@@ -337,6 +337,10 @@ extern int flag_const_strings;
 
 extern int warn_format;
 
+/* Warn about possible violations of sequence point rules.  */
+
+extern int warn_sequence_point;
+
 /* Warn about functions which might be candidates for format attributes.  */
 
 extern int warn_missing_format_attribute;
