@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.238 1998/06/07 22:13:42 karl Exp $
+% $Id: texinfo.tex,v 2.239 1998/06/10 20:50:51 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.238 $
+\deftexinfoversion$Revision: 2.239 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1190,11 +1190,12 @@ where each line of input produces a line of output.}
 % Do not make many font distinctions in general in the index, since they
 % aren't very useful.
 \setfont\ninett\ttshape{9}{1000}
+\setfont\ninettsl\ttslshape{9}{1000}
 \setfont\indrm\rmshape{9}{1000}
 \setfont\indit\slshape{9}{1000}
 \let\indsl=\indit
 \let\indtt=\ninett
-\let\indttsl=\ninett
+\let\indttsl=\ninettsl
 \let\indsf=\indrm
 \let\indbf=\indrm
 \setfont\indsc\scshape{10}{900}
@@ -3747,49 +3748,52 @@ width0pt\relax} \fi
   \fi
 }
 
-% To ending an @example-like environment, we first end the paragraph
-% (via \afterenvbreak's vertical glue), and then the group.  That way we
-% keep the zero \parskip that the environments set -- \parskip glue
-% will be inserted at the beginning of the next paragraph in the
-% document, after the environment.
+% Define the \E... control sequence only if we are inside the particular
+% environment, so the error checking in \end will work.
+% 
+% To end an @example-like environment, we first end the paragraph (via
+% \afterenvbreak's vertical glue), and then the group.  That way we keep
+% the zero \parskip that the environments set -- \parskip glue will be
+% inserted at the beginning of the next paragraph in the document, after
+% the environment.
 %
-\def\nonfillfinish{\afterenvbreak\endgroup}%
+\def\nonfillfinish{\afterenvbreak\endgroup}
 
+% @lisp: indented, narrowed, typewriter font.
 \def\lisp{\begingroup
   \nonfillstart
   \let\Elisp = \nonfillfinish
   \tt
-  % Make @kbd do something special, if requested.
-  \let\kbdfont\kbdexamplefont
-  \rawbackslash % have \ input char produce \ char from current font
-  \gobble
+  \let\kbdfont = \kbdexamplefont % Allow @kbd to do something special.
+  \gobble       % eat return
 }
 
-% Define the \E... control sequence only if we are inside the
-% environment, so the error checking in \end will work.
-%
-% We must call \lisp last in the definition, since it reads the
-% return following the @example (or whatever) command.
-%
+% @example: Same as @lisp.
 \def\example{\begingroup \def\Eexample{\nonfillfinish\endgroup}\lisp}
-\def\smallexample{\begingroup \def\Esmallexample{\nonfillfinish\endgroup}\lisp}
-\def\smalllisp{\begingroup \def\Esmalllisp{\nonfillfinish\endgroup}\lisp}
 
-% @smallexample and @smalllisp.  This is not used unless the @smallbook
-% command is given.  Originally contributed by Pavel@xerox.
+% @small... is usually equivalent to the non-small (@smallbook
+% redefines).  We must call \example (or whatever) last in the
+% definition, since it reads the return following the @example (or
+% whatever) command.
+% 
+% This actually allows (for example) @end display inside an
+% @smalldisplay.  Too bad, but makeinfo will catch the error anyway.
 %
+\def\smalldisplay{\begingroup\def\Esmalldisplay{\nonfillfinish\endgroup}\display}
+\def\smallexample{\begingroup\def\Esmallexample{\nonfillfinish\endgroup}\lisp}
+\def\smallformat{\begingroup\def\Esmallformat{\nonfillfinish\endgroup}\format}
+\def\smalllisp{\begingroup\def\Esmalllisp{\nonfillfinish\endgroup}\lisp}
+
+% Real @smallexample and @smalllisp (when @smallbook): use smaller fonts.
+% Originally contributed by Pavel@xerox.
 \def\smalllispx{\begingroup
-  \nonfillstart
-  \let\Esmalllisp = \nonfillfinish
-  \let\Esmallexample = \nonfillfinish
-  %
-  % Smaller fonts for small examples.
-  \indexfonts \tt
-  \rawbackslash % make \ output the \ character from the current font (tt)
-  \gobble
+  \def\Esmalllisp{\nonfillfinish\endgroup}%
+  \def\Esmallexample{\nonfillfinish\endgroup}%
+  \indexfonts
+  \lisp
 }
 
-% This is @display; same as @lisp except use roman font.
+% @display: same as @lisp except keep current font.
 %
 \def\display{\begingroup
   \nonfillstart
@@ -3797,7 +3801,15 @@ width0pt\relax} \fi
   \gobble
 }
 
-% This is @format; same as @display except don't narrow margins.
+% @smalldisplay (when @smallbook): @display plus smaller fonts.
+%
+\def\smalldisplayx{\begingroup
+  \def\Esmalldisplay{\nonfillfinish\endgroup}%
+  \indexfonts \rm
+  \display
+}
+
+% @format: same as @display except don't narrow margins.
 %
 \def\format{\begingroup
   \let\nonarrowing = t
@@ -3806,20 +3818,27 @@ width0pt\relax} \fi
   \gobble
 }
 
-% @flushleft (same as @format) and @flushright.
+% @smallformat (when @smallbook): @format plus smaller fonts.
 %
-\def\flushleft{\begingroup
-  \let\nonarrowing = t
-  \nonfillstart
-  \let\Eflushleft = \nonfillfinish
-  \gobble
+\def\smallformatx{\begingroup
+  \def\Esmallformat{\nonfillfinish\endgroup}%
+  \indexfonts \rm
+  \format
 }
+
+% @flushleft (same as @format).
+%
+\def\flushleft{\begingroup \def\Eflushleft{\nonfillfinish\endgroup}\format}
+
+% @flushright.
+% 
 \def\flushright{\begingroup
   \let\nonarrowing = t
   \nonfillstart
   \let\Eflushright = \nonfillfinish
   \advance\leftskip by 0pt plus 1fill
-  \gobble}
+  \gobble
+}
 
 % @quotation does normal linebreaking (hence we can't use \nonfillstart)
 % and narrows the margins.
@@ -3841,6 +3860,7 @@ width0pt\relax} \fi
     \let\nonarrowing = \relax
   \fi
 }
+
 
 \message{defuns,}
 % Define formatter for defuns
@@ -4202,7 +4222,7 @@ width0pt\relax} \fi
 \def\defspecx #1 {\errmessage{@defspecx in invalid context}}
 \def\deftypefnx #1 {\errmessage{@deftypefnx in invalid context}}
 \def\deftypemethodx #1 {\errmessage{@deftypemethodx in invalid context}}
-\def\deftypefunx #1 {\errmessage{@deftypeunx in invalid context}}
+\def\deftypefunx #1 {\errmessage{@deftypefunx in invalid context}}
 
 % @defmethod, and so on
 
@@ -5093,9 +5113,10 @@ width0pt\relax} \fi
   \deftypemargin = 0pt
   \defbodyindent = .5cm
   %
-  \let\smalllisp = \smalllispx
+  \let\smalldisplay = \smalldisplayx
   \let\smallexample = \smalllispx
-  \def\Esmallexample{\Esmalllisp}%
+  \let\smallformat = \smallformatx
+  \let\smalllisp = \smalllispx
 }}
 
 % Use @afourpaper to print on European A4 paper.
