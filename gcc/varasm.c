@@ -750,7 +750,9 @@ decode_reg_name (const char *asmspec)
 void
 make_decl_rtl (tree decl, const char *asmspec)
 {
-  int top_level = (DECL_CONTEXT (decl) == NULL_TREE);
+  int top_level = (DECL_CONTEXT (decl) == NULL_TREE
+		   || (TREE_CODE (DECL_CONTEXT (decl))
+		       == TRANSLATION_UNIT_DECL));
   const char *name = 0;
   const char *new_name = 0;
   int reg_number;
