@@ -708,12 +708,12 @@ gen_lowpart_common (mode, x)
       else
 	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
 
-/* TARGET_DOUBLE takes the addressing order of the target machine. */
-#ifdef WORDS_BIG_ENDIAN
-      i[0] = high, i[1] = low;
-#else
-      i[0] = low, i[1] = high;
-#endif
+      /* REAL_VALUE_TARGET_DOUBLE takes the addressing order of the
+	 target machine. */
+      if (WORDS_BIG_ENDIAN)
+	i[0] = high, i[1] = low;
+      else
+	i[0] = low, i[1] = high;
 
       r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
       return immed_real_const_1 (r, mode);
@@ -870,16 +870,16 @@ gen_highpart (mode, x)
   else if (GET_CODE (x) == MEM)
     {
       register int offset = 0;
-#if !WORDS_BIG_ENDIAN
-      offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
-		- MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
-#endif
-#if !BYTES_BIG_ENDIAN
-      if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+      if (! WORDS_BIG_ENDIAN)
+	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
+		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+
+      if (! BYTES_BIG_ENDIAN
+	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	offset -= (GET_MODE_SIZE (mode)
 		   - MIN (UNITS_PER_WORD,
 			  GET_MODE_SIZE (GET_MODE (x))));
-#endif
+
       return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
     }
   else if (GET_CODE (x) == SUBREG)
@@ -895,12 +895,12 @@ gen_highpart (mode, x)
     {
       int word = 0;
 
-#if !WORDS_BIG_ENDIAN
-      if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+      if (! WORDS_BIG_ENDIAN
+	  && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
 	word = ((GET_MODE_SIZE (GET_MODE (x))
 		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
 		/ UNITS_PER_WORD);
-#endif
+
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	  /* integrate.c can't handle parts of a return value register. */
 	  && (! REG_FUNCTION_VALUE_P (x)
