@@ -1714,8 +1714,6 @@ ia64_print_operand (file, x, code)
 {
   switch (code)
     {
-      /* XXX Add other codes here.  */
-
     case 0:
       /* Handled below.  */
       break;
@@ -1840,6 +1838,36 @@ ia64_print_operand (file, x, code)
 	output_operand_lossage ("invalid %%r value");
       return;
 
+    case '+':
+      {
+	const char *which;
+	
+	/* For conditional branches, returns or calls, substitute
+	   sptk, dptk, dpnt, or spnt for %s.  */
+	x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
+	if (x)
+	  {
+	    int pred_val = INTVAL (XEXP (x, 0));
+
+	    /* Guess top and bottom 10% statically predicted.  */
+	    if (pred_val < REG_BR_PROB_BASE / 10)
+	      which = ".spnt";
+	    else if (pred_val < REG_BR_PROB_BASE / 2)
+	      which = ".dpnt";
+	    else if (pred_val < REG_BR_PROB_BASE * 9 / 10)
+	      which = ".dptk";
+	    else
+	      which = ".sptk";
+	  }
+	else if (GET_CODE (current_output_insn) == CALL_INSN)
+	  which = ".sptk";
+	else
+	  which = ".dptk";
+
+	fputs (which, file);
+	return;
+      }
+
     default:
       output_operand_lossage ("ia64_print_operand: unknown code");
       return;
@@ -1871,48 +1899,6 @@ ia64_print_operand (file, x, code)
     }
 
   return;
-}
-
-/* For conditional branches, returns or calls, substitute
-   sptk, dptk, dpnt, or spnt for %s.  */
-
-const char *
-ia64_expand_prediction (insn, template)
-     rtx insn;
-     const char *template;
-{
-  static char const pred_name[4][5] = {
-	"spnt", "dpnt", "dptk", "sptk"
-  };
-  static char new_template[64];
-
-  int pred_val, pred_which;
-  rtx note;
-
-  note = find_reg_note (insn, REG_BR_PROB, 0);
-  if (note)
-    {
-      pred_val = INTVAL (XEXP (note, 0));
-
-      /* Guess top and bottom 10% statically predicted.  */
-      if (pred_val < REG_BR_PROB_BASE / 10)
-	pred_which = 0;
-      else if (pred_val < REG_BR_PROB_BASE / 2)
-	pred_which = 1;
-      else if (pred_val < REG_BR_PROB_BASE * 9 / 10)
-	pred_which = 2;
-      else
-	pred_which = 3;
-    }
-  else
-    pred_which = 2;
-
-  if (strlen (template) >= sizeof (new_template) - 3)
-    abort ();
-
-  sprintf (new_template, template, pred_name[pred_which]);
-
-  return new_template;
 }
 
 
