@@ -486,6 +486,10 @@ namespace std
     return _S_c_locale;
   }
 
+  const char*
+  locale::facet::_S_get_c_name()
+  { return _S_c_name; }
+
   // Definitions for static const data members of time_base.
   template<> 
     const char*

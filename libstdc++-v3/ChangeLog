@@ -1,3 +1,12 @@
+2003-10-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_classes.h (locale::facet::_S_get_c_name): Add.
+	* src/locale.cc: Define.
+	* src/localename.cc: Use it.
+	* config/locale/generic/time_members.h: Same.
+	* config/locale/gnu/messages_members.h: Same.
+	* config/locale/gnu/time_members.h: Same.
+
 2003-10-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/12232

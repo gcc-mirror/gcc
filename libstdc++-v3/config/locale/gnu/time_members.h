@@ -39,7 +39,7 @@
     : facet(__refs), _M_data(NULL)
     { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-      _M_name_timepunct = _S_c_name;
+      _M_name_timepunct = _S_get_c_name();
 #endif
       _M_initialize_timepunct(); 
     }
@@ -49,7 +49,7 @@
     : facet(__refs), _M_data(__cache)
     { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-      _M_name_timepunct = _S_c_name;
+      _M_name_timepunct = _S_get_c_name();
 #endif
       _M_initialize_timepunct(); 
     }
@@ -72,7 +72,7 @@
     __timepunct<_CharT>::~__timepunct()
     { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-      if (_S_c_name != _M_name_timepunct)
+      if (_M_name_timepunct != _S_get_c_name())
 	delete [] _M_name_timepunct;
 #endif
       delete _M_data; 

@@ -224,9 +224,13 @@ namespace std
     static void
     _S_destroy_c_locale(__c_locale& __cloc);
 
-    // Returns data from the underlying "C" library for the classic locale.
+    // Returns data from the underlying "C" library data for the
+    // classic locale.
     static __c_locale
     _S_get_c_locale();
+
+    static const char*
+    _S_get_c_name();
 
   private:
     inline void
