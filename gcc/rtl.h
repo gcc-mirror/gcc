@@ -301,6 +301,13 @@ typedef struct rtvec_def{
    dependencies.  REG_DEP_OUTPUT is used in LOG_LINKS which represent output
    (write after write) dependencies.  Data dependencies, which are the only
    type of LOG_LINK created by flow, are represented by a 0 reg note kind.  */
+/*   REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs when the flag
+   -fbranch-probabilities is given.  It has an integer value.  For jumps,
+   it is the probability that this is a taken branch.  For calls, it is the
+   probability that this call won't return.
+     REG_EXEC_COUNT is attached to the first insn of each basic block, and
+   the first insn after each CALL_INSN.  It indicates how many times this
+   block was executed.  */
 
 #define REG_NOTES(INSN)	((INSN)->fld[6].rtx)
 
@@ -309,7 +316,10 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 		REG_EQUAL = 5, REG_RETVAL = 6, REG_LIBCALL = 7,
 		REG_NONNEG = 8, REG_NO_CONFLICT = 9, REG_UNUSED = 10,
 		REG_CC_SETTER = 11, REG_CC_USER = 12, REG_LABEL = 13,
-		REG_DEP_ANTI = 14, REG_DEP_OUTPUT = 15 };
+		REG_DEP_ANTI = 14, REG_DEP_OUTPUT = 15, REG_BR_PROB = 16,
+		REG_EXEC_COUNT = 17 };
+/* The base value for branch probability notes.  */
+#define REG_BR_PROB_BASE  10000
 
 /* Define macros to extract and insert the reg-note kind in an EXPR_LIST.  */
 #define REG_NOTE_KIND(LINK) ((enum reg_note) GET_MODE (LINK))
@@ -394,6 +404,10 @@ extern char *reg_note_name[];
 /* These note where exception handling regions begin and end.  */
 #define NOTE_INSN_EH_REGION_BEG -14
 #define NOTE_INSN_EH_REGION_END -15
+/* Generated whenever a duplicate line number note is output.  For example,
+   one is output after the end of an inline function, in order to prevent
+   the line containing the inline call from being counted twice in gcov. */
+#define NOTE_REPEATED_LINE_NUMBER -16
 
 
 #if 0 /* These are not used, and I don't know what they were for. --rms.  */
