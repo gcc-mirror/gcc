@@ -356,6 +356,16 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 
   *picode = CODE_FOR_nothing;
 
+  /* If X is a paradoxical SUBREG, use the inner value to determine both the
+     mode and object being reloaded.  */
+  if (GET_CODE (x) == SUBREG
+      && (GET_MODE_SIZE (GET_MODE (x))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+    {
+      x = SUBREG_REG (x);
+      reload_mode = GET_MODE (x);
+    }
+
   /* If X is a pseudo-register that has an equivalent MEM (actually, if it
      is still a pseudo-register by now, it *must* have an equivalent MEM
      but we don't want to assume that), use that equivalent when seeing if
