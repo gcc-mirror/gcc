@@ -5374,6 +5374,57 @@ constant_boolean_node (int value, tree type)
     return build_int_cst (type, value);
 }
 
+
+/* Return true if expr looks like an ARRAY_REF and set base and
+   offset to the appropriate trees.  If there is no offset,
+   offset is set to NULL_TREE.  */
+
+static bool
+extract_array_ref (tree expr, tree *base, tree *offset)
+{
+  /* We have to be careful with stripping nops as with the
+     base type the meaning of the offset can change.  */
+  tree inner_expr = expr;
+  STRIP_NOPS (inner_expr);
+  /* One canonical form is a PLUS_EXPR with the first
+     argument being an ADDR_EXPR with a possible NOP_EXPR
+     attached.  */
+  if (TREE_CODE (expr) == PLUS_EXPR)
+    {
+      tree op0 = TREE_OPERAND (expr, 0);
+      STRIP_NOPS (op0);
+      if (TREE_CODE (op0) == ADDR_EXPR)
+	{
+	  *base = TREE_OPERAND (expr, 0);
+	  *offset = TREE_OPERAND (expr, 1);
+	  return true;
+	}
+    }
+  /* Other canonical form is an ADDR_EXPR of an ARRAY_REF,
+     which we transform into an ADDR_EXPR with appropriate
+     offset.  For other arguments to the ADDR_EXPR we assume
+     zero offset and as such do not care about the ADDR_EXPR
+     type and strip possible nops from it.  */
+  else if (TREE_CODE (inner_expr) == ADDR_EXPR)
+    {
+      tree op0 = TREE_OPERAND (inner_expr, 0);
+      if (TREE_CODE (op0) == ARRAY_REF)
+	{
+	  *base = build_fold_addr_expr (TREE_OPERAND (op0, 0));
+	  *offset = TREE_OPERAND (op0, 1);
+	}
+      else
+	{
+	  *base = inner_expr;
+	  *offset = NULL_TREE;
+	}
+      return true;
+    }
+
+  return false;
+}
+
+
 /* Transform `a + (b ? x : y)' into `b ? (a + x) : (a + y)'.
    Transform, `a + (x < y)' into `(x < y) ? (a + 1) : (a + 0)'.  Here
    CODE corresponds to the `+', COND to the `(b ? x : y)' or `(x < y)'
@@ -8245,6 +8296,33 @@ fold (tree expr)
 	return constant_boolean_node (operand_equal_p (arg0, arg1, 0)
 				      ? code == EQ_EXPR : code != EQ_EXPR,
 				      type);
+
+      /* If this is a comparison of two exprs that look like an
+	 ARRAY_REF of the same object, then we can fold this to a
+	 comparison of the two offsets.  */
+      if (COMPARISON_CLASS_P (t))
+	{
+	  tree base0, offset0, base1, offset1;
+
+	  if (extract_array_ref (arg0, &base0, &offset0)
+	      && extract_array_ref (arg1, &base1, &offset1)
+	      && operand_equal_p (base0, base1, 0))
+	    {
+	      if (offset0 == NULL_TREE
+		  && offset1 == NULL_TREE)
+		{
+		  offset0 = integer_zero_node;
+		  offset1 = integer_zero_node;
+		}
+	      else if (offset0 == NULL_TREE)
+		offset0 = build_int_cst (TREE_TYPE (offset1), 0);
+	      else if (offset1 == NULL_TREE)
+		offset1 = build_int_cst (TREE_TYPE (offset0), 0);
+
+	      if (TREE_TYPE (offset0) == TREE_TYPE (offset1))
+		return fold (build2 (code, type, offset0, offset1));
+	    }
+	}
 
       if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
 	{
