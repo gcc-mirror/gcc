@@ -1,5 +1,13 @@
 2003-04-27  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10506
+	* method.c (use_thunk): Decrement immediate_size_expand.
+
+	PR c++/10503
+	* cp-tree.h (DECL_VAR_MARKED_P): New macro.
+	(DECL_MAYBE_TEMPLATE): Remove.
+	* class.c (fixed_type_or_null): Avoid infinite recursion.
+
 	* decl.c (maybe_commonize_var): Make the code match the comments.
 	* pt.c (instantiate_decl): Move call to import_export_decl.
 

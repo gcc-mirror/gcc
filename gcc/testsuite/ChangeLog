@@ -1,3 +1,11 @@
+2003-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10506
+	* g++.dg/init/new6.C: New test.
+
+	PR c++/10503
+	* g++.dg/init/ref6.C: New test.
+
 2003-04-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/warn/weak1.C: XFAIL on AIX4.

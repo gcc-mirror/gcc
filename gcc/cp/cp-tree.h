@@ -95,7 +95,7 @@ struct diagnostic_context;
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
-      DECL_MAYBE_TEMPLATE (in a FUNCTION_DECL)
+      DECL_VAR_MARKED_P (in a VAR_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
@@ -2131,6 +2131,12 @@ struct lang_decl GTY(())
   (DECL_LANG_SPECIFIC (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK (NODE)) \
    ->decl_flags.u.template_info)
 
+/* For a VAR_DECL, indicates that the variable has been processed.
+   This flag is set and unset throughout the code; it is always
+   used for a temporary purpose.  */
+#define DECL_VAR_MARKED_P(NODE) \
+  (DECL_LANG_FLAG_4 (VAR_DECL_CHECK (NODE)))
+
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) \
   (LANG_TYPE_CLASS_CHECK (RECORD_OR_UNION_TYPE_CHECK (NODE))->template_info)
@@ -2806,9 +2812,6 @@ struct lang_decl GTY(())
    full specialization.  */
 #define PROCESSING_REAL_TEMPLATE_DECL_P() \
   (processing_template_decl > template_class_depth (current_class_type))
-
-/* This function may be a guiding decl for a template.  */
-#define DECL_MAYBE_TEMPLATE(NODE) DECL_LANG_FLAG_4 (NODE)
 
 /* Nonzero if this VAR_DECL or FUNCTION_DECL has already been
    instantiated, i.e. its definition has been generated from the

@@ -5388,11 +5388,21 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
           /* Reference variables should be references to objects.  */
           if (nonnull)
 	    *nonnull = 1;
-
-	  if (TREE_CODE (instance) == VAR_DECL
-	      && DECL_INITIAL (instance))
-	    return fixed_type_or_null (DECL_INITIAL (instance),
-				       nonnull, cdtorp);
+	  
+	  /* DECL_VAR_MARKED_P is used to prevent recursion; a
+	     variable's initializer may refer to the variable
+	     itself.  */
+	  if (TREE_CODE (instance) == VAR_DECL 
+	      && DECL_INITIAL (instance)
+	      && !DECL_VAR_MARKED_P (instance))
+	    {
+	      tree type;
+	      DECL_VAR_MARKED_P (instance) = 1;
+	      type = fixed_type_or_null (DECL_INITIAL (instance),
+					 nonnull, cdtorp);
+	      DECL_VAR_MARKED_P (instance) = 0;
+	      return type;
+	    }
 	}
       return NULL_TREE;
 
