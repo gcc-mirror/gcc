@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -345,34 +345,38 @@ decl_attributes (decl, attributes)
 	    continue;
 	  }
 
-	/* Verify that the format_num argument is actually a string, in case
-	   the format attribute is in error.  */
+	/* If a parameter list is specified, verify that the format_num
+	   argument is actually a string, in case the format attribute
+	   is in error.  */
 	argument = TYPE_ARG_TYPES (TREE_TYPE (decl));
-	for (arg_num = 1; ; ++arg_num)
+	if (argument)
 	  {
-	    if (argument == 0 || arg_num == format_num)
-	      break;
-	    argument = TREE_CHAIN (argument);
-	  }
-	if (! argument
-	    || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-	    || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-		!= char_type_node))
-	  {
-	    error_with_decl (decl,
-			     "format string arg not a string type, for `%s'");
-	    continue;
-	  }
-	if (first_arg_num != 0)
-	  {
-	    /* Verify that first_arg_num points to the last arg, the ... */
-	    while (argument)
-	      arg_num++, argument = TREE_CHAIN (argument);
-	    if (arg_num != first_arg_num)
+	    for (arg_num = 1; ; ++arg_num)
+	      {
+		if (argument == 0 || arg_num == format_num)
+		  break;
+		argument = TREE_CHAIN (argument);
+	      }
+	    if (! argument
+		|| TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
+		|| (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
+		    != char_type_node))
 	      {
 		error_with_decl (decl,
-				 "args to be formatted is not ..., for `%s'");
+			     "format string arg not a string type, for `%s'");
 		continue;
+	      }
+	    if (first_arg_num != 0)
+	      {
+		/* Verify that first_arg_num points to the last arg, the ... */
+		while (argument)
+		  arg_num++, argument = TREE_CHAIN (argument);
+		if (arg_num != first_arg_num)
+		  {
+		    error_with_decl (decl,
+				 "args to be formatted is not ..., for `%s'");
+		    continue;
+		  }
 	      }
 	  }
 
