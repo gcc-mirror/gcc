@@ -1,3 +1,9 @@
+2004-11-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/17279
+	* c-common.c (c_common_nodes_and_builtins): Ask the back-end if we
+	support TImode before adding __int128_t and __uint128_t types.
+
 2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-opt/18400
