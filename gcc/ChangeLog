@@ -1,3 +1,9 @@
+
+2000-03-14  Jason Eckhardt  <jle@cygnus.com>
+	* flow.c (reorder_basic_blocks): Account for barriers when writing
+	over NEXT_INSN (last_bb->end).
+	(verify_flow_info): Add check for missing barriers.
+
 2000-03-14  Greg McGary  <gkm@gnu.org>
 
 	* c-lex.h (enum rid): Add RID_BOUNDED & RID_UNBOUNDED.
