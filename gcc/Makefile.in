@@ -271,6 +271,7 @@ host_xm_file_list=@host_xm_file_list@
 host_xm_file=@host_xm_file@
 host_xm_defines=@host_xm_defines@
 xm_file=@xm_file@
+xm_defines=@xm_defines@
 lang_specs_files=@lang_specs_files@
 lang_options_files=@lang_options_files@
 lang_tree_files=@lang_tree_files@
@@ -886,7 +887,8 @@ cs-hconfig.h: Makefile
 	$(SHELL) $(srcdir)/mkconfig.sh hconfig.h
 
 cs-tconfig.h: Makefile
-	HEADERS="$(xm_file)" DEFINES="" TARGET_CPU_DEFAULT="" \
+	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
+	TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
 
 cs-tm_p.h: Makefile
