@@ -1,3 +1,7 @@
+Fri Apr 28 16:30:33 2000  Marc Espie <espie@cvs.openbsd.org>
+
+	* gcc.texi: Fixes for makeinfo 4.0 --html.
+
 2000-04-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* pcp.h: Delete file.
