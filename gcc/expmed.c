@@ -421,7 +421,9 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       /* If xop0 is a register, we need it in MAXMODE
 	 to make it acceptable to the format of insv.  */
       if (GET_CODE (xop0) == SUBREG)
-	PUT_MODE (xop0, maxmode);
+	/* We can't just change the mode, because this might clobber op0,
+	   and we will need the original value of op0 if insv fails.  */
+	xop0 = gen_rtx (SUBREG, maxmode, SUBREG_REG (xop0), SUBREG_WORD (xop0));
       if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
 	xop0 = gen_rtx (SUBREG, maxmode, xop0, 0);
 
