@@ -47,7 +47,7 @@ LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++/include
 INCLUDES = \
 	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include \
 	$(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDES) \
-	$(CONFIG_INCLUDES)
+	$(CONFIG_INCLUDES) -I$(top_builddir)
 
 headers = \
 	include/cxxabi.h \
@@ -67,6 +67,7 @@ sources = \
 	new_opnt.cc \
 	new_opv.cc \
 	new_opvnt.cc \
+	pure.cc \
 	tinfo.cc \
 	tinfo2.cc \
 	vec.cc

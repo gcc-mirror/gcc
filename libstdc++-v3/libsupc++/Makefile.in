@@ -115,13 +115,13 @@ noinst_LTLIBRARIES = libsupc++convenience.la
 
 LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++/include
 
-INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	$(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDES) 	$(CONFIG_INCLUDES)
+INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	$(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDES) 	$(CONFIG_INCLUDES)	-I$(top_builddir)
 
 
 headers =  	include/cxxabi.h 	include/exception 	include/new 	include/new.h 	include/typeinfo
 
 
-sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
+sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
 
 
 libsupc___la_SOURCES = $(sources)
@@ -169,12 +169,12 @@ libsupc__convenience_la_LDFLAGS =
 libsupc__convenience_la_LIBADD = 
 libsupc__convenience_la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo \
 del_opvnt.lo exception.lo new_handler.lo new_op.lo new_opnt.lo \
-new_opv.lo new_opvnt.lo tinfo.lo tinfo2.lo vec.lo
+new_opv.lo new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 libsupc___la_LDFLAGS = 
 libsupc___la_LIBADD = 
 libsupc___la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo del_opvnt.lo \
 exception.lo new_handler.lo new_op.lo new_opnt.lo new_opv.lo \
-new_opvnt.lo tinfo.lo tinfo2.lo vec.lo
+new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 CXXFLAGS = @CXXFLAGS@
 CXXLD = $(CXX)
 DIST_COMMON =  Makefile.am Makefile.in configure configure.in
