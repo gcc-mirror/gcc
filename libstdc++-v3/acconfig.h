@@ -52,6 +52,18 @@
 // Define if you have the modfl function.
 #undef HAVE_MODFL
 
+// Define if you have the expf function.
+#undef HAVE_EXPF
+
+// Define if you have the expl function.
+#undef HAVE_EXPL
+
+// Define if you have the hypotf function.
+#undef HAVE_HYPOTF
+
+// Define if you have the hypotl function.
+#undef HAVE_HYPOTL
+
 // Define if the compiler/host combination has __builtin_abs
 #undef HAVE___BUILTIN_ABS
 
