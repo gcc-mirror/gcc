@@ -34,6 +34,7 @@ exception statement from your version. */
 package java.io;
 
 import java.nio.channels.FileChannel;
+import gnu.java.nio.FileChannelImpl;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
@@ -124,6 +125,12 @@ public class FileInputStream extends InputStream
 
   public FileChannel getChannel ()
   {
-    return ch;
+    synchronized (this)
+      {
+        if (ch == null)
+          ch = new FileChannelImpl (fd, false, this);
+    
+        return ch;
+      }
   }
 }

@@ -1,5 +1,18 @@
 2003-03-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/FileInputStream.java
+	(getChannel): New implementation.
+	* java/io/FileOutputStream.java
+	(ch): New member variable.
+	(getChannel): Implemented.
+	* java/io/RandomAccessFile.java
+	(RandomAccessFile): Throws FileNotFoundException instead of
+	IOException.
+	(getChannel): New method.
+	(ch): New member variable.
+
+2003-03-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/DataOutputStream.java,
 	java/io/File.java,
 	java/io/FileInputStream.java,
