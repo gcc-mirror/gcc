@@ -1,3 +1,7 @@
+Wed Feb 19 17:22:51 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movsfcc_1, movdfcc_1): Fix constrains.
+
 2003-02-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Initialize
