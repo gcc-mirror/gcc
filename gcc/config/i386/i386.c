@@ -74,8 +74,120 @@ enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 /* Test and compare insns in i386.md store the information needed to
    generate branch and scc insns here.  */
 
-struct rtx_def *i386_compare_op0, *i386_compare_op1;
+struct rtx_def *i386_compare_op0 = NULL_RTX;
+struct rtx_def *i386_compare_op1 = NULL_RTX;
 struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
+
+/* Register allocation order */
+char *i386_reg_alloc_order = (char *)0;
+static char regs_allocated[FIRST_PSEUDO_REGISTER];
+
+
+/* Sometimes certain combinations of command options do not make
+   sense on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
+
+void
+override_options ()
+{
+  int ch, i, regno;
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
+  /* Validate registers in register allocation order */
+  if (i386_reg_alloc_order)
+    {
+      for (i = 0; (ch = i386_reg_alloc_order[i]) != '\0'; i++)
+	{
+	  switch (ch)
+	    {
+	    case 'a':	regno = 0;	break;
+	    case 'd':	regno = 1;	break;
+	    case 'c':	regno = 2;	break;
+	    case 'b':	regno = 3;	break;
+	    case 'S':	regno = 4;	break;
+	    case 'D':	regno = 5;	break;
+	    case 'B':	regno = 6;	break;
+
+	    default:	fatal ("Register '%c' is unknown", ch);
+	    }
+
+	  if (regs_allocated[regno])
+	    fatal ("Register '%c' was already specified in the allocation order", ch);
+
+	  regs_allocated[regno] = 1;
+	}
+    }
+}
+
+/* A C statement (sans semicolon) to choose the order in which to
+   allocate hard registers for pseudo-registers local to a basic
+   block.
+
+   Store the desired register order in the array `reg_alloc_order'.
+   Element 0 should be the register to allocate first; element 1, the
+   next register; and so on.
+
+   The macro body should not assume anything about the contents of
+   `reg_alloc_order' before execution of the macro.
+
+   On most machines, it is not necessary to define this macro.  */
+
+void
+order_regs_for_local_alloc ()
+{
+  int i, ch, order, regno;
+
+  /* User specified the register allocation order */
+  if (i386_reg_alloc_order)
+    {
+      for (i = order = 0; (ch = i386_reg_alloc_order[i]) != '\0'; i++)
+	{
+	  switch (ch)
+	    {
+	    case 'a':	regno = 0;	break;
+	    case 'd':	regno = 1;	break;
+	    case 'c':	regno = 2;	break;
+	    case 'b':	regno = 3;	break;
+	    case 'S':	regno = 4;	break;
+	    case 'D':	regno = 5;	break;
+	    case 'B':	regno = 6;	break;
+	    }
+
+	  reg_alloc_order[order++] = regno;
+	}
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	{
+	  if (!regs_allocated[i])
+	    reg_alloc_order[order++] = i;
+	}
+    }
+
+  /* If users did not specify a register allocation order, favor eax
+     normally except if cse is following jumps, then favor edx so
+     that function returns are cse'ed */
+  else
+    {
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	reg_alloc_order[i] = i;
+
+      if (optimize && flag_cse_follow_jumps && !leaf_function_p ())
+	{
+	  reg_alloc_order[0] = 1;	/* edx */
+	  reg_alloc_order[1] = 2;	/* ecx */
+	  reg_alloc_order[2] = 0;	/* eax */
+	}
+    }
+}
+
 
 /* Output an insn whose source is a 386 integer register.  SRC is the
    rtx for the register, and TEMPLATE is the op-code template.  SRC may
