@@ -301,8 +301,8 @@ namespace std
     return __old;
   }
 
-  ios_base::ios_base() : _M_callbacks(0), _M_word(_M_local_word),
-			 _M_word_size(_S_local_word_size)
+  ios_base::ios_base() : _M_callbacks(0), _M_word_size(_S_local_word_size),
+			 _M_word(_M_local_word)
   {
     // Do nothing: basic_ios::init() does it.  
     // NB: _M_callbacks and _M_word must be zero for non-initialized
