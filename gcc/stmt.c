@@ -5539,11 +5539,11 @@ emit_case_nodes (index, node, default_label, index_type)
 {
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
   int unsignedp = TREE_UNSIGNED (index_type);
-  typedef rtx rtx_function ();
-  rtx_function *gen_bgt_pat = unsignedp ? gen_bgtu : gen_bgt;
-  rtx_function *gen_bge_pat = unsignedp ? gen_bgeu : gen_bge;
-  rtx_function *gen_blt_pat = unsignedp ? gen_bltu : gen_blt;
-  rtx_function *gen_ble_pat = unsignedp ? gen_bleu : gen_ble;
+  typedef rtx rtx_fn ();
+  rtx_fn *gen_bgt_pat = unsignedp ? gen_bgtu : gen_bgt;
+  rtx_fn *gen_bge_pat = unsignedp ? gen_bgeu : gen_bge;
+  rtx_fn *gen_blt_pat = unsignedp ? gen_bltu : gen_blt;
+  rtx_fn *gen_ble_pat = unsignedp ? gen_bleu : gen_ble;
   enum machine_mode mode = GET_MODE (index);
 
   /* See if our parents have already tested everything for us.
