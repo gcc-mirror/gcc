@@ -1020,7 +1020,7 @@ do									      \
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  fprintf (FILE, "\t%s  (sp),%s\n\t\addq  $8,sp\n",	\
+  fprintf (FILE, "\t%s  (sp),%s\n\taddq  $8,sp\n",	\
 	   (REGNO) < 16 ? "loadw" : "loadd", reg_names[REGNO])
 /* This is how to output an element of a case-vector that is absolute */
 
