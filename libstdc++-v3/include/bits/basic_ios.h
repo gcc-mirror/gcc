@@ -66,10 +66,7 @@ namespace std
       basic_ostream<_CharT, _Traits>* 	_M_tie;
       mutable char_type 		_M_fill;
       mutable bool			_M_fill_init;
-      iostate 				_M_exception;
-
       basic_streambuf<_CharT, _Traits>* _M_streambuf;
-      iostate 				_M_streambuf_state;
 
       // Cached use_facet<ctype>, which is based on the current locale info.
       const __ctype_type*		_M_ios_fctype;      

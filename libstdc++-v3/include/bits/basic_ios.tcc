@@ -64,8 +64,8 @@ namespace std
       // associated with imbue()
 
       // Alloc any new word array first, so if it fails we have "rollback".
-      _Words* __words = (__rhs._M_word_limit <= _S_local_words) ?
-	_M_word_array : new _Words[__rhs._M_word_limit];
+      _Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
+	_M_local_word : new _Words[__rhs._M_word_size];
 
       // XXX This is the only reason _Callback_list was defined
       // inline. The suspicion is that this increased compilation
@@ -78,17 +78,23 @@ namespace std
       if (__cb) 
 	__cb->_M_add_reference();
       _M_call_callbacks(erase_event);
-      if (_M_words != _M_word_array) 
-	delete [] _M_words;
+      if (_M_word != _M_local_word) 
+	{
+	  delete [] _M_word;
+	  _M_word = 0;
+	}
       _M_dispose_callbacks();
 
       _M_callbacks = __cb;  // NB: Don't want any added during above.
-      for (int __i = 0; __i < __rhs._M_word_limit; ++__i)
-	__words[__i] = __rhs._M_words[__i];
-      if (_M_words != _M_word_array) 
-	delete [] _M_words;
-      _M_words = __words;
-      _M_word_limit = __rhs._M_word_limit;
+      for (int __i = 0; __i < __rhs._M_word_size; ++__i)
+	__words[__i] = __rhs._M_word[__i];
+      if (_M_word != _M_local_word) 
+	{
+	  delete [] _M_word;
+	  _M_word = 0;
+	}
+      _M_word = __words;
+      _M_word_size = __rhs._M_word_size;
 
       this->flags(__rhs.flags());
       this->width(__rhs.width());

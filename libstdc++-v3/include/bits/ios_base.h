@@ -158,6 +158,8 @@ namespace std
       explicit 
       failure(const string& __str) throw();
 
+      // This declaration is not useless:
+      // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
       virtual 
       ~failure() throw();
 
@@ -238,6 +240,8 @@ namespace std
     streamsize 		_M_precision;
     streamsize 		_M_width;
     fmtflags 		_M_flags;
+    iostate 		_M_exception;
+    iostate 	       	_M_streambuf_state;
 
     // 27.4.2.6  Members for callbacks
     // 27.4.2.6  ios_base callbacks
@@ -256,9 +260,9 @@ namespace std
       void 
       _M_add_reference() { __atomic_add(&_M_refcount, 1); }
 
+      // 0 => OK to delete.
       int 
       _M_remove_reference() { return __exchange_and_add(&_M_refcount, -1); }
-      // 0 => OK to delete
     };
 
      _Callback_list*  	_M_callbacks;
@@ -274,13 +278,19 @@ namespace std
     { 
       void* 	_M_pword; 
       long 	_M_iword; 
+      _Words() : _M_pword(0), _M_iword(0) { }
     };
 
-    static const int 	_S_local_words = 8;
-    _Words  		_M_word_array[_S_local_words];  // Guaranteed storage.
-    _Words  		_M_dummy;    // Only for failed iword/pword calls.
-    _Words* 		_M_words;
-    int     		_M_word_limit;
+    // Only for failed iword/pword calls.
+    _Words  		_M_word_zero;    
+
+    // Guaranteed storage.
+    static const int 	_S_local_word_size = 8;
+    _Words  		_M_local_word[_S_local_word_size];  
+
+    // Allocated storage.
+    int     		_M_word_size;
+    _Words* 		_M_word;
  
     _Words& 
     _M_grow_words(int __index);
@@ -386,16 +396,16 @@ namespace std
     inline long& 
     iword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_limit) 
-			? _M_words[__ix] : _M_grow_words(__ix);
+      _Words& __word = (__ix < _M_word_size) 
+			? _M_word[__ix] : _M_grow_words(__ix);
       return __word._M_iword;
     }
 
     inline void*& 
     pword(int __ix)
     {
-      _Words& __word = (__ix < _M_word_limit) 
-			? _M_words[__ix] : _M_grow_words(__ix);
+      _Words& __word = (__ix < _M_word_size) 
+			? _M_word[__ix] : _M_grow_words(__ix);
       return __word._M_pword;
     }
 

@@ -1,6 +1,6 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,10 +41,53 @@ void test01()
   out.pword(++x4); // should not crash
 }
 
+// libstdc++/3129
+void test02()
+{
+  bool test = true;
+  int max = std::numeric_limits<int>::max();
+  std::stringbuf        strbuf;
+  std::ios              ios(&strbuf);
+
+  long l = 0;
+  void* v = 0;
+
+  // pword
+  try 
+    {
+      v = ios.pword(max);
+    }
+  catch(std::ios_base::failure& obj)
+    {
+      // Ok.
+      VERIFY( ios.bad() );
+    }
+  catch(...)
+    {
+      VERIFY( test = false );
+    }
+  VERIFY( v == 0 );
+
+  // iword
+  try 
+    {
+      l = ios.iword(max);
+    }
+  catch(std::ios_base::failure& obj)
+    {
+      // Ok.
+      VERIFY( ios.bad() );
+    }
+  catch(...)
+    {
+      VERIFY( test = false );
+    }
+  VERIFY( l == 0 );
+}
 
 int main(void)
 {
   test01();
-
+  test02();
   return 0;
 }
