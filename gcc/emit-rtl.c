@@ -664,7 +664,7 @@ gen_lowpart_common (mode, x)
 	       || GET_MODE_SIZE (mode) == GET_MODE_UNIT_SIZE (GET_MODE (x))))
     return (GET_MODE (SUBREG_REG (x)) == mode && SUBREG_WORD (x) == 0
 	    ? SUBREG_REG (x)
-	    : gen_rtx (SUBREG, mode, SUBREG_REG (x), SUBREG_WORD (x)));
+	    : gen_rtx (SUBREG, mode, SUBREG_REG (x), SUBREG_WORD (x) + word));
   else if (GET_CODE (x) == REG)
     {
       /* If the register is not valid for MODE, return 0.  If we don't
