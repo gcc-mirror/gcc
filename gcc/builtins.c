@@ -4165,15 +4165,10 @@ expand_builtin_va_end (tree arglist)
 {
   tree valist = TREE_VALUE (arglist);
 
-#ifdef EXPAND_BUILTIN_VA_END
-  valist = stabilize_va_list (valist, 0);
-  EXPAND_BUILTIN_VA_END (arglist);
-#else
   /* Evaluate for side effects, if needed.  I hate macros that don't
      do that.  */
   if (TREE_SIDE_EFFECTS (valist))
     expand_expr (valist, const0_rtx, VOIDmode, EXPAND_NORMAL);
-#endif
 
   return const0_rtx;
 }

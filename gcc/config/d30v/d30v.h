@@ -1421,13 +1421,6 @@ typedef struct machine_function GTY(())
 
 #define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE)				\
 (d30v_expand_builtin_va_arg (VALIST, TYPE))
-
-/* Implement the stdarg/varargs va_end macro.
-   VALIST is the variable of type va_list as a tree.  */
-
-/* #define EXPAND_BUILTIN_VA_END(VALIST) */
-
-
 
 /* Trampolines for Nested Functions.  */
 

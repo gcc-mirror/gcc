@@ -508,11 +508,6 @@ enum reg_class
    va_list as a tree, TYPE is the type passed to va_arg.  */
 #define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
   xstormy16_expand_builtin_va_arg (VALIST, TYPE)
-
-/* Implement the stdarg/varargs va_end macro.  VALIST is the variable of type
-   va_list as a tree.  */
-/* #define EXPAND_BUILTIN_VA_END(VALIST) */
-
 
 /* Trampolines for Nested Functions.  */
 
