@@ -335,7 +335,7 @@ extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
 extern void do_toplevel_using_decl (tree, tree, tree);
 extern void do_local_using_decl (tree, tree, tree);
-extern tree do_class_using_decl (tree);
+extern tree do_class_using_decl (tree, tree);
 extern void do_using_directive (tree);
 extern tree lookup_arg_dependent (tree, tree, tree);
 extern bool is_associated_namespace (tree, tree);

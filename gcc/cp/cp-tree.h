@@ -3591,9 +3591,12 @@ struct cp_declarator {
   union {
     /* For identifiers.  */
     struct {
-      /* The name of the function -- an IDENTIFIER_NODE, BIT_NOT_EXPR,
-	 TEMPLATE_ID_EXPR, or SCOPE_REF.  */
-      tree name;
+      /* If non-NULL, the qualifiying scope (a NAMESPACE_DECL or
+         *_TYPE) for this identifier.  */
+      tree qualifying_scope;
+      /* The unqualified name of the entity -- an IDENTIFIER_NODE,
+	 BIT_NOT_EXPR, or TEMPLATE_ID_EXPR.  */
+      tree unqualified_name;
       /* If this is the name of a function, what kind of special
 	 function (if any).  */
       special_function_kind sfk;

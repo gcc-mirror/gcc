@@ -2686,33 +2686,23 @@ push_class_level_binding (tree name, tree x)
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ok);
 }
 
+/* Process "using SCOPE::NAME" in a class scope.  Return the
+   USING_DECL created.  */
+
 tree
-do_class_using_decl (tree decl)
+do_class_using_decl (tree scope, tree name)
 {
-  tree name, value, scope, type;
+  tree value, type;
   
-  if (TREE_CODE (decl) != SCOPE_REF
-      || !TREE_OPERAND (decl, 0)
-      || !TYPE_P (TREE_OPERAND (decl, 0)))
+  if (!scope || !TYPE_P (scope))
     {
       error ("using-declaration for non-member at class scope");
       return NULL_TREE;
     }
-  scope = TREE_OPERAND (decl, 0);
-  name = TREE_OPERAND (decl, 1);
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       error ("using-declaration cannot name destructor");
       return NULL_TREE;
-    }
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
-  else if (TREE_CODE (name) == TEMPLATE_DECL)
-     name = DECL_NAME (name);
-  else if (BASELINK_P (name))
-    {
-      tree fns = BASELINK_FUNCTIONS (name);
-      name = DECL_NAME (get_first_fn (fns));
     }
 
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);

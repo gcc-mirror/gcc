@@ -830,11 +830,11 @@ grokfield (const cp_declarator *declarator,
 
   if (!declspecs->any_specifiers_p
       && declarator->kind == cdk_id
-      && TREE_CODE (declarator->u.id.name) == SCOPE_REF
-      && (TREE_CODE (TREE_OPERAND (declarator->u.id.name, 1)) 
-	  == IDENTIFIER_NODE))
+      && declarator->u.id.qualifying_scope 
+      && TREE_CODE (declarator->u.id.unqualified_name) == IDENTIFIER_NODE)
     /* Access declaration */
-    return do_class_using_decl (declarator->u.id.name);
+    return do_class_using_decl (declarator->u.id.qualifying_scope,
+				declarator->u.id.unqualified_name);
 
   if (init
       && TREE_CODE (init) == TREE_LIST

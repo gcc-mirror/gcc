@@ -1938,6 +1938,15 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
     }
 
+  /* The DECL_LANG_SPECIFIC information in OLDDECL will be replaced
+     with that from NEWDECL below.  */
+  if (DECL_LANG_SPECIFIC (olddecl))
+    {
+      gcc_assert (DECL_LANG_SPECIFIC (olddecl) 
+		  != DECL_LANG_SPECIFIC (newdecl));
+      ggc_free (DECL_LANG_SPECIFIC (olddecl));
+    }
+
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       int function_size;
@@ -1998,6 +2007,11 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  || (TREE_CODE (olddecl) == VAR_DECL
 	      && TREE_STATIC (olddecl))))
     make_decl_rtl (olddecl);
+
+  /* The NEWDECL will no longer be needed.  Because every out-of-class
+     declaration of a member results in a call to duplicate_decls,
+     freeing these nodes represents in a significant savings.  */
+  ggc_free (newdecl);
 
   return olddecl;
 }
@@ -6327,9 +6341,8 @@ get_scope_of_declarator (const cp_declarator *declarator)
   /* If the declarator-id is a SCOPE_REF, the scope in which the
      declaration occurs is the first operand.  */
   if (declarator
-      && declarator->u.id.name
-      && TREE_CODE (declarator->u.id.name) == SCOPE_REF)
-    return TREE_OPERAND (declarator->u.id.name, 0);
+      && declarator->u.id.qualifying_scope)
+    return declarator->u.id.qualifying_scope;
 
   /* Otherwise, the declarator is not a qualified name; the entity will
      be declared in the current scope.  */
@@ -6628,26 +6641,15 @@ grokdeclarator (const cp_declarator *declarator,
 
 	case cdk_id:
 	  {
-	    tree decl = id_declarator->u.id.name;
+	    tree qualifying_scope = id_declarator->u.id.qualifying_scope;
+	    tree decl = id_declarator->u.id.unqualified_name;
 	    if (!decl)
 	      break;
-	    if (TREE_CODE (decl) == SCOPE_REF)
+	    if (qualifying_scope)
 	      {
-		tree qualifying_scope = TREE_OPERAND (decl, 0);
-
-		/* It is valid to write:
-
-		   class C { void f(); };
-		   typedef C D;
-		   void D::f();
-
-		 The standard is not clear about whether `typedef const C D' is
-		 legal; as of 2002-09-15 the committee is considering
-		 that question.  EDG 3.0 allows that syntax.
-		 Therefore, we do as well.  */
-		if (qualifying_scope && TYPE_P (qualifying_scope))
+		if (TYPE_P (qualifying_scope))
 		  {
-		    ctype = TYPE_MAIN_VARIANT (qualifying_scope);
+		    ctype = qualifying_scope;
 		    if (innermost_code != cdk_function
 			&& current_class_type
 			&& !UNIQUELY_DERIVED_FROM_P (ctype,
@@ -6655,13 +6657,11 @@ grokdeclarator (const cp_declarator *declarator,
 		      {
 			error ("type %qT is not derived from type %qT",
 			       ctype, current_class_type);
-			ctype = NULL_TREE;
+			return error_mark_node;
 		      }
-		    TREE_OPERAND (decl, 0) = ctype;
 		  }
 		else if (TREE_CODE (qualifying_scope) == NAMESPACE_DECL)
 		  in_namespace = qualifying_scope;
-		decl = TREE_OPERAND (decl, 1);
 	      }
 	    if (TREE_CODE (decl) == BASELINK)
 	      decl = BASELINK_FUNCTIONS (decl);
@@ -7125,9 +7125,9 @@ grokdeclarator (const cp_declarator *declarator,
 		{
 		  /* Avoid trying to get an operand off an identifier node.  */
 		  if (declarator->kind != cdk_id)
-		    tmp = declarator->declarator->u.id.name;
+		    tmp = declarator->declarator->u.id.unqualified_name;
 		  else
-		    tmp = declarator->u.id.name;
+		    tmp = declarator->u.id.unqualified_name;
 		  op = IDENTIFIER_OPNAME_P (tmp);
 		  if (IDENTIFIER_TYPENAME_P (tmp))
 		    {
@@ -7192,9 +7192,7 @@ grokdeclarator (const cp_declarator *declarator,
     unqualified_id = NULL_TREE;
   else
     {
-      unqualified_id = id_declarator->u.id.name;
-      if (TREE_CODE (unqualified_id) == SCOPE_REF)
-	unqualified_id = TREE_OPERAND (unqualified_id, 1);
+      unqualified_id = id_declarator->u.id.unqualified_name;
       if (TREE_CODE (unqualified_id) == BASELINK)
 	unqualified_id = BASELINK_FUNCTIONS (unqualified_id);
       switch (TREE_CODE (unqualified_id))
@@ -7489,17 +7487,13 @@ grokdeclarator (const cp_declarator *declarator,
   /* If DECLARATOR is non-NULL, we know it is a cdk_id declarator;
      otherwise, we would not have exited the loop above.  */
   if (declarator
-      && TREE_CODE (declarator->u.id.name) == SCOPE_REF
-      /* If the qualifying scope was invalid, it will have been set to
-	 NULL_TREE above.  */
-      && TREE_OPERAND (declarator->u.id.name, 0)
-      && TYPE_P (TREE_OPERAND (declarator->u.id.name, 0)))
+      && declarator->u.id.qualifying_scope
+      && TYPE_P (declarator->u.id.qualifying_scope))
     {
       tree t;
 
-      ctype = TREE_OPERAND (declarator->u.id.name, 0);
-      if (TYPE_P (ctype))
-	ctype = TYPE_MAIN_VARIANT (ctype);
+      ctype = declarator->u.id.qualifying_scope;
+      ctype = TYPE_MAIN_VARIANT (ctype);
       t = ctype;
       while (t != NULL_TREE && CLASS_TYPE_P (t))
 	{
@@ -7537,7 +7531,7 @@ grokdeclarator (const cp_declarator *declarator,
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
-	  tree sname = TREE_OPERAND (declarator->u.id.name, 1);
+	  tree sname = declarator->u.id.unqualified_name;
 
 	  if (TREE_CODE (sname) == IDENTIFIER_NODE
 	      && NEW_DELETE_OPNAME_P (sname))
