@@ -379,10 +379,13 @@ namespace std
 		   size_type __n, const _Alloc& __a);
 
       /**
-       *  @brief  Construct string as copy of a C substring.
-       *  @param  s  Source C string.
+       *  @brief  Construct string initialized by a character array.
+       *  @param  s  Source character array.
        *  @param  n  Number of characters to copy.
        *  @param  a  Allocator to use (default is default allocator).
+       *  
+       *  NB: s must have at least n characters, '\0' has no special
+       *  meaning.
        */
       basic_string(const _CharT* __s, size_type __n,
 		   const _Alloc& __a = _Alloc());
@@ -1955,21 +1958,23 @@ namespace std
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
 
       /**
-       *  @brief  Compare substring against a C substring.
+       *  @brief  Compare substring against a character array.
        *  @param pos1  Index of first character of substring.
        *  @param n1  Number of characters in substring.
-       *  @param s  C string to compare against.
-       *  @param n2  Number of characters in substring of s.
+       *  @param s  character array to compare against.
+       *  @param n2  Number of characters of s.
        *  @return  Integer < 0, 0, or > 0.
        *
        *  Form the substring of this string from the @a n1 characters starting
-       *  at @a pos1.  Form the substring of @a s from the first @a n
-       *  characters of @a s.  Returns an integer < 0 if this substring is
-       *  ordered before the substring of @a s, 0 if their values are
-       *  equivalent, or > 0 if this substring is ordered after the substring
-       *  of @a s.  If the lengths of this substring and @a n are different,
-       *  the shorter one is ordered first.  If they are the same, returns the
-       *  result of traits::compare(substring.data(),s,size());
+       *  at @a pos1.  Form a string from the first @a n2 characters of @a s.
+       *  Returns an integer < 0 if this substring is ordered before the string
+       *  from @a s, 0 if their values are equivalent, or > 0 if this substring
+       *  is ordered after the string from @a s. If the lengths of this substring
+       *  and @a n2 are different, the shorter one is ordered first.  If they are
+       *  the same, returns the result of traits::compare(substring.data(),s,size());
+       *
+       *  NB: s must have at least n2 characters, '\0' has no special
+       *  meaning.
       */
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
