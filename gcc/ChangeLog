@@ -1,3 +1,8 @@
+2003-08-18  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	PR c/11207
+	* c-typeck.c (set_init_index): Check for negative index.
+
 2003-08-18  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/crti.asm (_init, _fini): Add alternate code for new

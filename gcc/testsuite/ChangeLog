@@ -1,3 +1,7 @@
+2003-08-18  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gcc.dg/noncompile/20030818-1.c: New.
+
 2003-08-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/scope2.C: New test.
