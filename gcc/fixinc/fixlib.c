@@ -23,7 +23,10 @@ load_file_data (fp)
       if (space_left < 1024)
         {
           space_left += 4096;
-          pz_data = realloc ((void*)pz_data, space_left + space_used + 1 );
+         if (pz_data)
+            pz_data = realloc ((void*)pz_data, space_left + space_used + 1 );
+         else
+            pz_data = malloc (space_left + space_used + 1 );
         }
       size_read = fread (pz_data + space_used, 1, space_left, fp);
 
