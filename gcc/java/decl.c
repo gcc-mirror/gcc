@@ -553,10 +553,6 @@ java_init_decl_processing (void)
     lookup_class (get_identifier ("java.lang.RuntimeException"));
   error_exception_type_node = 
     lookup_class (get_identifier ("java.lang.Error"));
-  class_not_found_type_node = 
-    lookup_class (get_identifier ("java.lang.ClassNotFoundException"));
-  no_class_def_found_type_node = 
-    lookup_class (get_identifier ("java.lang.NoClassDefFoundError"));
 
   rawdata_ptr_type_node
     = promote_type (lookup_class (get_identifier ("gnu.gcj.RawData")));

@@ -1,5 +1,31 @@
 2003-11-17  Jeff Sturm  <jsturm@one-point.com>
 
+	Fix PR java/12857.
+
+	decl.c (java_init_decl_processing): Don't initialize
+	class_not_found_type_node, no_class_def_found_type_node.
+
+	java-tree.h (JTI_CLASS_NOT_FOUND_TYPE_NODE,
+	JTI_NO_CLASS_DEF_FOUND_TYPE_NODE): Remove from java_tree_index.
+	(class_not_found_type_node, no_class_def_found_type_node):
+	Don't define.
+
+	parse.y (build_dot_class_method_invocation): Add this_class
+	argument.  Qualify method invocations to a different class.
+	(create_new_parser_context): Initialize saved_data_ctx to 0.
+	(java_parser_context_save_global): Initialize saved_data_ctx to 1.
+	(build_dot_class_method): Don't load classes.  Register
+	incomplete types.
+	(build_incomplete_class_ref): Special cases for interfaces
+	and inner classes.  Move build_dot_class_method call to here...
+	(patch_incomplete_class_ref): ...from here.  Pass current_class
+	to build_dot_class_method_invocation.
+	(build_assertion): Pass class_type to
+	build_dot_class_method_invocation.
+	(encapsulate_with_try_catch): Handle EXPR_WITH_FILE_LOCATION node.
+
+2003-11-17  Jeff Sturm  <jsturm@one-point.com>
+
 	Fix PR java/12739.
 	* java-tree.h (BLOCK_EMPTY_P): Define.
 	* parse.y (java_complete_lhs): Check for empty blocks
