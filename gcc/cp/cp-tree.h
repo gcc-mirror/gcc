@@ -1408,7 +1408,20 @@ struct lang_type
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)
 
 /* A chain of BINFOs for the direct and indirect virtual base classes
-   that this type uses in depth-first left-to-right order.  */
+   that this type uses in depth-first left-to-right order.  These
+   BINFOs are distinct from those in the TYPE_BINFO hierarchy.  So,
+   given: 
+
+     struct A {};
+     struct B : public A {};
+     struct C : virtual public B {};
+     struct D : virtual public B {};
+     struct E : public C, public D {};
+
+   there will be two copies of `A' and `B' in the TYPE_BINFO hierarchy
+   for `E'.  On the CLASSTYPE_VBASECLASSES list, there will be just
+   one copy of `A' (distinct from the other two) with its own copy of `B'
+   (also distinct from the copies in the TYPE_BINFO hierarchy.)  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 
 /* The BINFO (if any) for the virtual baseclass T of the class C.  */

@@ -1,3 +1,11 @@
+2000-01-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_VBASECLASSES): Improve documentation.
+	* class.c (layout_basetypes): Don't set BINFO_INHERITANCE_CHAIN
+	or unshare_base_binfos for virtual bases here.
+	* search.c (dfs_get_vbase_types): Do it here.
+	(get_vbase_types): Adjust.
+	
 2000-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_VFIELDS): Move definition.

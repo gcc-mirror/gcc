@@ -2907,33 +2907,32 @@ dfs_get_vbase_types (binfo, data)
      tree binfo;
      void *data;
 {
-  tree *vbase_types = (tree *) data;
+  tree type = (tree) data;
 
   if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
     {
       tree new_vbase = make_binfo (integer_zero_node, binfo,
 				   BINFO_VTABLE (binfo),
 				   BINFO_VIRTUALS (binfo));
-      TREE_CHAIN (new_vbase) = *vbase_types;
+      unshare_base_binfos (new_vbase);
       TREE_VIA_VIRTUAL (new_vbase) = 1;
-      *vbase_types = new_vbase;
+      BINFO_INHERITANCE_CHAIN (new_vbase) = TYPE_BINFO (type);
+      TREE_CHAIN (new_vbase) = CLASSTYPE_VBASECLASSES (type);
+      CLASSTYPE_VBASECLASSES (type) = new_vbase;
       SET_BINFO_VBASE_MARKED (binfo);
     }
   SET_BINFO_MARKED (binfo);
   return NULL_TREE;
 }
 
-/* Return a list of binfos for the virtual base classes for TYPE, in
-   depth-first search order.  The list is freshly allocated, so
-   no modification is made to  the current binfo hierarchy.  */
+/* Set CLASSTYPE_VBASECLASSES for TYPE.  */
 
 void
 get_vbase_types (type)
      tree type;
 {
   CLASSTYPE_VBASECLASSES (type) = NULL_TREE;
-  dfs_walk (TYPE_BINFO (type), dfs_get_vbase_types, unmarkedp,
-	    &CLASSTYPE_VBASECLASSES (type));
+  dfs_walk (TYPE_BINFO (type), dfs_get_vbase_types, unmarkedp, type);
   /* Rely upon the reverse dfs ordering from dfs_get_vbase_types, and now
      reverse it so that we get normal dfs ordering.  */
   CLASSTYPE_VBASECLASSES (type) = nreverse (CLASSTYPE_VBASECLASSES (type));
