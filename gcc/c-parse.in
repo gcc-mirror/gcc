@@ -1127,8 +1127,7 @@ init:
 		    pop_momentary_nofree (); }
 
 	| error
-		{ $$ = error_mark_node;
-		  pop_momentary (); }
+		{ $$ = error_mark_node; }
 	;
 
 /* `initlist_maybe_comma' is the guts of an initializer in braces.  */
