@@ -373,11 +373,6 @@ struct cpp_options
 
   /* Nonzero means __STDC__ should have the value 0 in system headers.  */
   unsigned char stdc_0_in_system_headers;
-
-  /* Nonzero means output a directory line marker right after the
-     initial file name line marker, and before a duplicate initial
-     line marker.  */
-  bool working_directory;
 };
 
 /* Call backs to cpplib client.  */
@@ -536,14 +531,12 @@ extern const struct line_maps *cpp_get_line_maps (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 
-/* This function finds the main file, but does not start reading it.
-   Returns true iff the file was found.  */
-extern bool cpp_find_main_file (cpp_reader *, const char *);
-
-/* This function reads the file, but does not start preprocessing.
-   This will generate at least one file change callback, and possibly
-   a line change callback.  */
-extern void cpp_push_main_file (cpp_reader *);
+/* This function reads the file, but does not start preprocessing.  It
+   returns the name of the original file; this is the same as the
+   input file, except for preprocessed input.  This will generate at
+   least one file change callback, and possibly a line change callback
+   too.  If there was an error opening the file, it returns NULL. */
+extern const char *cpp_read_main_file (cpp_reader *, const char *);
 
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);

@@ -334,6 +334,22 @@ cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, fileline line,
   print.line++;
 }
 
+/* Callback called when -fworking-director and -E to emit working
+   diretory in cpp output file. */
+
+void
+pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
+{
+  size_t to_file_len = strlen (dir);
+  unsigned char *to_file_quoted = alloca (to_file_len * 4 + 1);
+  unsigned char *p;
+
+  /* cpp_quote_string does not nul-terminate, so we have to do it ourselves. */
+  p = cpp_quote_string (to_file_quoted, (unsigned char *) dir, to_file_len);
+  *p = '\0';
+  fprintf (print.outf, "# 1 \"%s//\"\n", to_file_quoted);
+}
+
 /* The file name, line number or system header flags have changed, as
    described in MAP.  From this point on, the old print.map might be
    pointing to freed memory, and so must not be dereferenced.  */
