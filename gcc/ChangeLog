@@ -1,3 +1,9 @@
+2000-02-10  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.md (epilogue): Include a (return) in the
+	generated insn, and emit it using emit_jump_insn not
+	emit_insn. 
+
 Thu Feb 10 18:28:59 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (assign_temp): Change zero-sized arrays to size 1.
