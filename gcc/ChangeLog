@@ -1,3 +1,33 @@
+2005-03-29  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/m32r/little.h (TARGET_ENDIAN_DEFAULT): Delete.
+	(TARGET_LITTLE_ENDIAN): New macro.
+	* config/m32r/m32r.h (SUBTARGET_SWITCHES, target_flags)
+	(TARGET_RELAX_MASK, TARGET_DEBUG_MASK, TARGET_DEBUG)
+	(TARGET_ALIGN_LOOPS_MASK, TARGET_ALIGN_LOOPS)
+	(TARGET_LOW_ISSUE_RATE_MASK, TARGET_LOW_ISSUE_RATE)
+	(TARGET_BRANCH_COST_MASK, TARGET_BRANCH_COST, TARGET_M32RX_MASK)
+	(TARGET_M32RX, TARGET_M32R2_MASK, TARGET_M32R2, LITTLE_ENDIAN_BIT)
+	(TARGET_ENDIAN_DEFAULT, SUBTARGET_SWITCHES, TARGET_DEFAULT)
+	(TARGET_SWITCHES, m32r_model_string, m32r_sdata_string)
+	(m32r_cache_flush_trap_string, SUBTARGET_OPTIONS)
+	(TARGET_OPTIONS): Delete.
+	(M32R_MODEL_DEFAULT, M32R_SDATA_DEFAULT): Turn into enums.
+	(CACHE_FLUSH_TRAP): Turn into an integer.
+	(TARGET_LITTLE_ENDIAN): Define to 0 by default.
+	(INITIALIZE_TRAMPOLINE): Check m32r_cache_trap >= 0 to see if
+	-mflush-trap is in use.
+	* config/m32r/m32r.c (m32r_model_string, m32r_sdata_string)
+	(m32r_cache_flush_trap_string): Delete.
+	(m32r_model) Initialize to M32R_MODEL_DEFAULT.
+	(m32r_sdata): Likewise M32R_SDATA_DEFAULT.
+	(m32r_cache_trap): Likewise CACHE_FLUSH_TRAP.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(m32r_handle_option): New function.  Move -mflush-trap=, -mflush-func=,
+	-mmodel= and -msdata= handling from...
+	(m32r_init): ...here.
+	* config/m32r/m32r.opt: New file.
+
 2005-03-29  Keith Besaw  <kbesaw@us.ibm.com>
 
 	* tree-ssanames.c (duplicate_ssa_name_ptr_info): New function.

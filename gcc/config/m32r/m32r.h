@@ -36,7 +36,6 @@
 #undef LINK_SPEC
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
-#undef SUBTARGET_SWITCHES
 
 #undef ASM_APP_ON
 #undef ASM_APP_OFF
@@ -59,12 +58,6 @@
 /* Use m32rx specific crt0/crtinit/crtfini files.  */
 #define STARTFILE_CPU_SPEC "%{!shared:crt0.o%s} %{m32rx:m32rx/crtinit.o%s} %{!m32rx:crtinit.o%s}"
 #define ENDFILE_CPU_SPEC "-lgloss %{m32rx:m32rx/crtfini.o%s} %{!m32rx:crtfini.o%s}"
-
-/* Extra machine dependent switches.  */
-#define SUBTARGET_SWITCHES							\
-    { "32rx",			TARGET_M32RX_MASK, "Compile for the m32rx" },	\
-    { "32r2",			TARGET_M32R2_MASK, "Compile for the m32r2" },	\
-    { "32r",			-(TARGET_M32RX_MASK+TARGET_M32R2_MASK), "" },
 
 /* Define this macro as a C expression for the initializer of an array of
    strings to tell the driver program which options are defaults for this
@@ -204,124 +197,21 @@
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
-extern int target_flags;
-
-/* If nonzero, tell the linker to do relaxing.
-   We don't do anything with the option, other than recognize it.
-   LINK_SPEC handles passing -relax to the linker.
-   This can cause incorrect debugging information as line numbers may
-   turn out wrong.  This shouldn't be specified unless accompanied with -O2
-   [where the user expects debugging information to be less accurate].  */
-#define TARGET_RELAX_MASK 	(1 << 0)
-
-/* For miscellaneous debugging purposes.  */
-#define TARGET_DEBUG_MASK 	(1 << 1)
-#define TARGET_DEBUG 		(target_flags & TARGET_DEBUG_MASK)
-
-/* Align loops to 32 byte boundaries (cache line size).  */
-/* ??? This option is experimental and is not documented.  */
-#define TARGET_ALIGN_LOOPS_MASK (1 << 2)
-#define TARGET_ALIGN_LOOPS 	(target_flags & TARGET_ALIGN_LOOPS_MASK)
-
-/* Change issue rate.  */
-#define TARGET_LOW_ISSUE_RATE_MASK	(1 << 3)
-#define TARGET_LOW_ISSUE_RATE	(target_flags & TARGET_LOW_ISSUE_RATE_MASK)
-
-/* Change branch cost */
-#define TARGET_BRANCH_COST_MASK	(1 << 4)
-#define TARGET_BRANCH_COST	(target_flags & TARGET_BRANCH_COST_MASK)
-
-/* Target machine to compile for.  */
-#define TARGET_M32R 		1
-
-/* Support extended instruction set.  */
-#define TARGET_M32RX_MASK       (1 << 5)
-#define TARGET_M32RX            (target_flags & TARGET_M32RX_MASK)
-#undef  TARGET_M32R
-#define TARGET_M32R             (! TARGET_M32RX)
-
-/* Support extended instruction set of m32r2.  */
-#define TARGET_M32R2_MASK       (1 << 6)
-#define TARGET_M32R2            (target_flags & TARGET_M32R2_MASK)
-#undef  TARGET_M32R
 #define TARGET_M32R             (! TARGET_M32RX && ! TARGET_M32R2)
 
-/* Little Endian Flag.  */
-#define LITTLE_ENDIAN_BIT 	(1 << 7)
-#define TARGET_LITTLE_ENDIAN	(target_flags & LITTLE_ENDIAN_BIT)
-#define TARGET_BIG_ENDIAN       (! TARGET_LITTLE_ENDIAN)
-
-/* This defaults us to big-endian.  */
-#ifndef TARGET_ENDIAN_DEFAULT
-#define TARGET_ENDIAN_DEFAULT 0
+#ifndef TARGET_LITTLE_ENDIAN
+#define TARGET_LITTLE_ENDIAN	0
 #endif
+#define TARGET_BIG_ENDIAN       (! TARGET_LITTLE_ENDIAN)
 
 /* This defaults us to m32r.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
 #endif
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#ifndef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES
-#endif
-
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (TARGET_CPU_DEFAULT | TARGET_ENDIAN_DEFAULT)
-#endif
-
-#define TARGET_SWITCHES							\
-{									\
-/*  { "relax",			TARGET_RELAX_MASK, "" },		\
-    { "no-relax",		-TARGET_RELAX_MASK, "" },*/		\
-    { "debug",			TARGET_DEBUG_MASK, 			\
-	N_("Display compile time statistics") },			\
-    { "align-loops",		TARGET_ALIGN_LOOPS_MASK, 		\
-	N_("Align all loops to 32 byte boundary") },			\
-    { "no-align-loops",		-TARGET_ALIGN_LOOPS_MASK, "" },		\
-    { "issue-rate=1",		TARGET_LOW_ISSUE_RATE_MASK, 		\
-	N_("Only issue one instruction per cycle") },			\
-    { "issue-rate=2",		-TARGET_LOW_ISSUE_RATE_MASK, "" },	\
-    { "branch-cost=1",		TARGET_BRANCH_COST_MASK, 		\
-	N_("Prefer branches over conditional execution") },		\
-    { "branch-cost=2",		-TARGET_BRANCH_COST_MASK, "" },		\
-    SUBTARGET_SWITCHES							\
-    { "", TARGET_DEFAULT, "" }						\
-}
-
-extern const char * m32r_model_string;
-extern const char * m32r_sdata_string;
-
 /* Cache-flush support.  */
 extern const char * m32r_cache_flush_func;
-extern const char * m32r_cache_flush_trap_string;
 extern int m32r_cache_flush_trap;
-
-#ifndef SUBTARGET_OPTIONS
-#define SUBTARGET_OPTIONS
-#endif
-
-#define TARGET_OPTIONS							\
-{									\
-  { "model=", & m32r_model_string,					\
-    N_("Code size: small, medium or large"), 0},			\
-  { "sdata=", & m32r_sdata_string,					\
-    N_("Small data area: none, sdata, use"), 0},			\
-  { "no-flush-func", & m32r_cache_flush_func,				\
-    N_("Don't call any cache flush functions") },			\
-  { "flush-func=", & m32r_cache_flush_func,				\
-    N_("Specify cache flush function") },				\
-  { "no-flush-trap", & m32r_cache_flush_trap_string,			\
-    N_("Don't call any cache flush trap") },				\
-  { "flush-trap=", & m32r_cache_flush_trap_string,			\
-    N_("Specify cache flush trap number") }				\
-  SUBTARGET_OPTIONS							\
-}
 
 /* Code Models
 
@@ -357,7 +247,7 @@ extern enum m32r_model m32r_model;
 
 /* The default is the small model.  */
 #ifndef M32R_MODEL_DEFAULT
-#define M32R_MODEL_DEFAULT "small"
+#define M32R_MODEL_DEFAULT M32R_MODEL_SMALL
 #endif
 
 /* Small Data Area
@@ -407,7 +297,7 @@ extern enum m32r_sdata m32r_sdata;
 /* Default is to disable the SDA
    [for upward compatibility with previous toolchains].  */
 #ifndef M32R_SDATA_DEFAULT
-#define M32R_SDATA_DEFAULT "none"
+#define M32R_SDATA_DEFAULT M32R_SDATA_NONE
 #endif
 
 /* Define this macro as a C expression for the initializer of an array of
@@ -1191,7 +1081,7 @@ L2:     .word STATIC
 #define CACHE_FLUSH_FUNC "_flush_cache"
 #endif
 #ifndef CACHE_FLUSH_TRAP
-#define CACHE_FLUSH_TRAP "12"
+#define CACHE_FLUSH_TRAP 12
 #endif
 
 /* Length in bytes of the trampoline for entering a nested function.  */
@@ -1219,7 +1109,7 @@ L2:     .word STATIC
 		      (CXT));							\
       emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 20)),		\
 		      (FNADDR));						\
-      if (m32r_cache_flush_trap_string && m32r_cache_flush_trap_string[0])	\
+      if (m32r_cache_flush_trap >= 0)						\
 	emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)),\
 				     GEN_INT (m32r_cache_flush_trap) ));	\
       else if (m32r_cache_flush_func && m32r_cache_flush_func[0])		\
