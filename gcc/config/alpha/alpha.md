@@ -3160,6 +3160,7 @@
       if (reload_in_progress)
 	{
 	  emit_move_insn (operands[0], XEXP (operands[1], 0));
+	  operands[1] = copy_rtx (operands[1]);
 	  XEXP (operands[1], 0) = operands[0];
 	}
       else
