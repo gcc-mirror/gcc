@@ -1,3 +1,8 @@
+2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (initialize_argument_information): Fix typo in previous
+	change.
+
 2000-04-04  Richard Henderson  <rth@cygnus.com>
 
 	* regrename.c (consider_available): Test fixed_regs not
