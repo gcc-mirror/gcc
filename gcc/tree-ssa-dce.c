@@ -684,7 +684,7 @@ remove_dead_phis (basic_block bb)
 	      fprintf (dump_file, "\n");
 	    }
 
-	  remove_phi_node (phi, prev, bb);
+	  remove_phi_node (phi, prev);
 	  stats.removed_phis++;
 	  phi = next;
 	}

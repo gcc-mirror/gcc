@@ -402,7 +402,7 @@ remove_phi_args (edge e)
    used as the node immediately before PHI in the linked list.  */
 
 void
-remove_phi_node (tree phi, tree prev, basic_block bb)
+remove_phi_node (tree phi, tree prev)
 {
   tree *loc;
 
@@ -412,7 +412,7 @@ remove_phi_node (tree phi, tree prev, basic_block bb)
     }
   else
     {
-      for (loc = &(bb_ann (bb)->phi_nodes);
+      for (loc = &(bb_ann (bb_for_stmt (phi))->phi_nodes);
 	   *loc != phi;
 	   loc = &PHI_CHAIN (*loc))
 	;

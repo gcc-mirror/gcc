@@ -2327,7 +2327,7 @@ perfect_nestify (struct loops *loops,
   while (phi_nodes (olddest) != NULL)
     {
       SET_PHI_RESULT (phi_nodes (olddest), NULL);
-      remove_phi_node (phi_nodes (olddest), NULL, olddest);
+      remove_phi_node (phi_nodes (olddest), NULL);
     }      
 
   /* and add them back to the new basic block.  */
