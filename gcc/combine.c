@@ -10779,6 +10779,21 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			     && find_reg_fusage (tem, USE, XEXP (note, 0))))
 		  {
 		    place = tem;
+
+		    /* If we are doing a 3->2 combination, and we have a
+		       register which formerly died in i3 and was not used
+		       by i2, which now no longer dies in i3 and is used in
+		       i2 but does not die in i2, and place is between i2
+		       and i3, then we may need to move a link from place to
+		       i2.  */
+		    if (i2 && INSN_CUID (place) > INSN_CUID (i2)
+			&& from_insn && INSN_CUID (from_insn) > INSN_CUID (i2)
+			&& reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
+		      {
+			rtx links = LOG_LINKS (place);
+			LOG_LINKS (place) = 0;
+			distribute_links (links);
+		      }
 		    break;
 		  }
 		}
