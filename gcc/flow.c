@@ -221,10 +221,6 @@ int max_regno;
 
 varray_type reg_n_info;
 
-/* Size of the reg_n_info table.  */
-
-unsigned int reg_n_max;
-
 /* Size of a regset for the current function,
    in (1) bytes and (2) elements.  */
 
