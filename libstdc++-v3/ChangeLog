@@ -1,3 +1,11 @@
+2000-10-30  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* acinclude.m4: Update URL on egcs.cygnus.com to point to
+	gcc.gnu.org.
+	* aclocal.m4, configure: Regenerate.
+	* src/gen-num-limits.cc, include/bits/c++config,
+	include/bits/stl_config.h: Remove EGCS references.
+
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* mkcheck.in (test_file): Use -rpath, rather than --rpath, when

@@ -26,7 +26,7 @@
 // the GNU General Public License.
 
 //
-// Written by Gabriel Dos Reis <gdr@egcs.cygnus.com>
+// Written by Gabriel Dos Reis <gdr@gcc.gnu.org>
 // 
 // Note: This program outputs speciliazations of ISO C++ class template
 // numeric_limits<> as described in 18.2.1.
