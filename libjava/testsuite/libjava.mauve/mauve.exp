@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation.
 # Written by Tom Tromey <tromey@cygnus.com>.
 # Incorporate Mauve into libjava's DejaGNU test suite framework.
 
@@ -86,25 +86,25 @@ proc test_mauve {} {
   set full_srcdir [pwd]
   cd $here/mauve-build
 
-    global env
-    global GCJ_UNDER_TEST
-    global TOOL_EXECUTABLE
+  global env libgcj_jar
+  global GCJ_UNDER_TEST
+  global TOOL_EXECUTABLE
 
-    if ![info exists GCJ_UNDER_TEST] {
-	if [info exists TOOL_EXECUTABLE] {
-	    set GCJ_UNDER_TEST $TOOL_EXECUTABLE;
-	} else {
-	    if [info exists env(GCJ)] {
-		set GCJ_UNDER_TEST env(GCJ)
-	    } else {
-		set GCJ_UNDER_TEST "[find_gcj]"
-	    }
-	}
+  if ![info exists GCJ_UNDER_TEST] {
+    if [info exists TOOL_EXECUTABLE] {
+      set GCJ_UNDER_TEST $TOOL_EXECUTABLE;
+    } else {
+      if [info exists env(GCJ)] {
+	set GCJ_UNDER_TEST env(GCJ)
+      } else {
+	set GCJ_UNDER_TEST "[find_gcj]"
+      }
     }
+  }
 
-    # Append -B and -I so that libgcj.spec and libgcj.zip are found
-    # before they're installed.
-    set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$objdir/../libgcj.jar"
+  # Append -B and -I so that libgcj.spec and libgcj.jar are found
+  # before they're installed.
+  set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$libgcj_jar"
 
   if {[catch {
     system "$env(MAUVEDIR)/configure --with-gcj 2>&1"
