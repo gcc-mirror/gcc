@@ -4778,6 +4778,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
   tree cleanup;
   const char *asmspec = NULL;
   int was_readonly = 0;
+  bool var_definition_p = false;
 
   if (decl == error_mark_node)
     return;
@@ -4930,6 +4931,11 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  /* Remember that the initialization for this variable has
 	     taken place.  */
 	  DECL_INITIALIZED_P (decl) = 1;
+	  /* This declaration is the definition of this variable,
+	     unless we are initializing a static data member within
+	     the class specifier.  */
+	  if (!DECL_EXTERNAL (decl))
+	    var_definition_p = true;
 	}
       /* If the variable has an array type, lay out the type, even if
 	 there is no initializer.  It is valid to index through the
@@ -5004,8 +5010,16 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 		initialize_local_var (decl, init);
 	    }
 
-	  if (TREE_STATIC (decl))
-	    expand_static_init (decl, init);
+	  /* If a variable is defined, and then a subsequent
+	     definintion with external linkage is encountered, we will
+	     get here twice for the same variable.  We want to avoid
+	     calling expand_static_init more than once.  For variables
+	     that are not static data members, we can call
+	     expand_static_init only when we actually process the
+	     initializer.  It is not legal to redeclare a static data
+	     member, so this issue does not arise in that case.  */
+	  if (var_definition_p && TREE_STATIC (decl))
+	    expand_static_init (decl, init); 
 	}
     finish_end0:
 

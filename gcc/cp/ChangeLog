@@ -1,3 +1,9 @@
+2004-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17976
+	* decl.c (cp_finish_decl): Do not call expand_static_init more
+	than once for a single variable.
+
 2004-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15786
