@@ -1,3 +1,9 @@
+2004-02-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* real.c (encode_ibm_extended): Normalize the input value before
+	converting it to a double.  Handle the case where a normal value
+	rounds to infinity.
+
 2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-objc-common.c (): Fix a typo in a warning.
