@@ -1,5 +1,9 @@
 2000-05-30  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (get_pos_from_mask): Test exact_log2 result as signed.
+
+2000-05-30  Richard Henderson  <rth@cygnus.com>
+
 	* bb-reorder.c (emit_jump_to_block_after): Protect use of HAVE_return.
 
 2000-05-30  Bruce Korb  <bkorb@gnu.org>

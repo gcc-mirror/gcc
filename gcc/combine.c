@@ -6588,17 +6588,19 @@ get_pos_from_mask (m, plen)
 {
   /* Get the bit number of the first 1 bit from the right, -1 if none.  */
   int pos = exact_log2 (m & - m);
+  int len;
 
   if (pos < 0)
     return -1;
 
   /* Now shift off the low-order zero bits and see if we have a power of
      two minus 1.  */
-  *plen = exact_log2 ((m >> pos) + 1);
+  len = exact_log2 ((m >> pos) + 1);
 
-  if (*plen <= 0)
+  if (len <= 0)
     return -1;
 
+  *plen = len;
   return pos;
 }
 
