@@ -893,7 +893,7 @@ build_overload_identifier (name)
     {
       tree template, parmlist, arglist, tname;
       template = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name));
-      arglist = TREE_VALUE (template);
+      arglist = innermost_args (TREE_VALUE (template), 0);
       template = TREE_PURPOSE (template);
       tname = DECL_NAME (template);
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);

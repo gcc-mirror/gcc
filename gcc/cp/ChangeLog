@@ -1,5 +1,52 @@
 Mon May 11 07:16:30 1998  Mark Mitchell  <mmitchell@usa.net>
 
+	* call.c (add_template_candidate): Adjust for changes to
+	fn_type_unification. 
+	(add_template_candidate_real): Likewise.
+	(add_template_conv_candidate): Likewise.
+	(build_user_type_conversion_1): Likewise.
+	(build_new_function_call): Likewise.
+	(build_object_call): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+	* class.c (instantiate_type): Likewise.
+	* cp-tree.h (unification_kind_t): New type.
+	(fn_type_unification): Adjust prototype.
+	(type_unificaiton): Likewise.
+	* pt.c (UNIFY_ALLOW_NONE): New macro.
+	(UNIFY_ALLOW_MORE_CV_QUAL): Likewise.
+	(UNIFY_ALLOW_LESS_CV_QUAL): Likewise.
+	(UNIFY_ALLOW_DERIVED): Likewise.
+	(unify): Change prototype.
+	(maybe_adjust_types_for_deduction): New function.
+	(check_cv_quals_for_unify): Likewise.
+	(determine_specialization): Adjust.
+	(fn_type_unification): Likewise.
+	(type_unification): Likewise.
+	(type_unification_real): Likewise.  Use
+	maybe_adjust_types_for_deduction.  Fix mishandling of
+	back-unification of template functions passed as arguments.  Pass
+	appropriate combination of UNIFY_ALLOW_* to unify.
+	(unify): Remove unused NTPARMS parameter.  Use
+	check_cv_quals_for_unify.  Remove bogus code that allowed
+	too-generous unification in order to adhere more closely to standard.
+	(get_bindings_real): Adjust.
+	(get_class_bindings): Likewise.
+
+	* method.c (build_overload_identifier): Only use the innermost
+	template arguments when mangling.
+	* pt.c (tsubst_template_argument_vector): New function.
+	(complete_template_args): Deal with the situation where the
+	extra_args contain more than one level of arguments.
+	(lookup_template_class): Deal with member template classes, which
+	may have more than one level of arguments.
+	(tsubst): Don't tsbust into the TREE_TYPE of an IDENTIFIER_NODE.
+	Improve handling of member template classes.  Use
+	DECL_PRIMARY_TEMPLATE instead of inline expansion.  Use
+	tsubst_template_argument_vector where appropriate.
+	(regenerate_decl_from_template): Break out from ...
+	(instantiate_decl): Here.
+	
 	* lex.c (yyprint): Remove TYPENAME_ELLIPSIS.
 	* parse.h: Regenerated.
 	* parse.c: Really regenerated.
