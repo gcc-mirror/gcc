@@ -1,3 +1,8 @@
+Mon Sep 15 11:52:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (joust): Disable warnings until they can be moved to the
+	right place.
+
 Fri Sep 12 16:11:13 1997  Per Bothner  <bothner@cygnus.com>
 
 	* Makefile.in, config-lang.in:  Convert to autoconf.
