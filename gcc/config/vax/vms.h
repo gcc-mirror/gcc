@@ -94,13 +94,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MAYBE_VMS_FUNCTION_PROLOGUE(FILE)	\
 { extern char *current_function_name;		\
   if (!strcmp ("main", current_function_name))	\
-    fprintf(FILE, "\tjsb _c$main_args\n"); 	\
+    fprintf(FILE, "\tjsb _C$MAIN_ARGS\n"); 	\
   else {					\
     char *p = current_function_name;		\
     while (*p != '\0')				\
       if (*p == *__MAIN_NAME)			\
         if (strncmp(p, __MAIN_NAME, (sizeof __MAIN_NAME)-1) == 0) {\
-          fprintf(FILE, "\tjsb _c$main_args\n");\
+          fprintf(FILE, "\tjsb _C$MAIN_ARGS\n");\
           break;				\
         } else					\
           p++;					\
