@@ -259,10 +259,22 @@ private:
 	    if (source == NULL)
 	      return false;
 	  }
+	else if (source->isInterface ())
+	  {
+	    for (int i = 0; i < target->interface_count; ++i)
+	      {
+		// We use a recursive call because we also need to
+		// check superinterfaces.
+		if (is_assignable_from_slow (target->interfaces[i], source))
+		  return true;
+	      }
+	    target = target->getSuperclass ();
+	    if (target == NULL)
+	      return false;
+	  }
 	else if (target == &java::lang::Object::class$)
 	  return true;
-	else if (source->isInterface ()
-		 || source == &java::lang::Object::class$)
+	else if (source == &java::lang::Object::class$)
 	  return false;
 	else
 	  source = source->getSuperclass ();
