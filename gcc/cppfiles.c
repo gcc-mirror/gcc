@@ -172,7 +172,8 @@ static cpp_dir *make_cpp_dir (cpp_reader *, const char *dir_name, int sysp);
 static void allocate_file_hash_entries (cpp_reader *pfile);
 static struct file_hash_entry *new_file_hash_entry (cpp_reader *pfile);
 static int report_missing_guard (void **slot, void *b);
-static int hash_string_eq (const void *p, const void *q);
+static hashval_t file_hash_hash (const void *p);
+static int file_hash_eq (const void *p, const void *q);
 static char *read_filename_string (int ch, FILE *f);
 static void read_name_map (cpp_dir *dir);
 static char *remap_filename (cpp_reader *pfile, _cpp_file *file);
@@ -367,7 +368,9 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
     cpp_error (pfile, CPP_DL_ICE, "NULL directory in find_file");
 
   hash_slot = (struct file_hash_entry **)
-    htab_find_slot (pfile->file_hash, fname, INSERT);
+    htab_find_slot_with_hash (pfile->file_hash, fname,
+			      htab_hash_string (fname),
+			      INSERT);
 
   /* First check the cache before we resort to memory allocation.  */
   entry = search_cache (*hash_slot, start_dir);
@@ -797,7 +800,9 @@ make_cpp_dir (cpp_reader *pfile, const char *dir_name, int sysp)
   cpp_dir *dir;
 
   hash_slot = (struct file_hash_entry **)
-    htab_find_slot (pfile->file_hash, dir_name, INSERT);
+    htab_find_slot_with_hash (pfile->file_hash, dir_name,
+			      htab_hash_string (dir_name),
+			      INSERT);
 
   /* Have we already hashed this directory?  */
   for (entry = *hash_slot; entry; entry = entry->next)
@@ -848,7 +853,8 @@ cpp_included (cpp_reader *pfile, const char *fname)
 {
   struct file_hash_entry *entry;
 
-  entry = htab_find (pfile->file_hash, fname);
+  entry = htab_find_with_hash (pfile->file_hash, fname,
+			       htab_hash_string (fname));
 
   while (entry && (entry->start_dir == NULL || entry->u.file->err_no))
     entry = entry->next;
@@ -856,9 +862,24 @@ cpp_included (cpp_reader *pfile, const char *fname)
   return entry != NULL;
 }
 
+/* Calculate the hash value of a file hash entry P. */
+
+static hashval_t
+file_hash_hash (const void *p)
+{
+  struct file_hash_entry *entry = (struct file_hash_entry *) p;
+  const char *hname;
+  if (entry->start_dir)
+    hname = entry->u.file->name;
+  else
+    hname = entry->u.dir->name;
+
+  return htab_hash_string (hname);
+}
+
 /* Compare a string Q against a file hash entry P.  */
 static int
-hash_string_eq (const void *p, const void *q)
+file_hash_eq (const void *p, const void *q)
 {
   struct file_hash_entry *entry = (struct file_hash_entry *) p;
   const char *fname = (const char *) q;
@@ -876,7 +897,7 @@ hash_string_eq (const void *p, const void *q)
 void
 _cpp_init_files (cpp_reader *pfile)
 {
-  pfile->file_hash = htab_create_alloc (127, htab_hash_string, hash_string_eq,
+  pfile->file_hash = htab_create_alloc (127, file_hash_hash, file_hash_eq,
 					NULL, xcalloc, free);
   allocate_file_hash_entries (pfile);
 }
