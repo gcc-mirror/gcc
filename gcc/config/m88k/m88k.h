@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.73 $"
+#define VERSION_INFO2   "$Revision: 1.74 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.73 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.74 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -1687,7 +1687,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* A C expressions returning the cost of moving data of MODE from a register
    to or from memory.  This is more costly than between registers.  */
-#define MEMORY_MOVE_COST(MODE) 4
+#define MEMORY_MOVE_COST(MODE,CLASS,IN) 4
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST (TARGET_88100 ? 1 : 2)
