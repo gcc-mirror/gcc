@@ -2819,13 +2819,16 @@ function_arg (cum, mode, type, named)
   switch (mode)
     {
     case SFmode:
-      if (cum->gp_reg_found || cum->arg_number >= 2)
+      if (cum->gp_reg_found || cum->arg_number >= 2 || TARGET_SOFT_FLOAT)
 	regbase = GP_ARG_FIRST;
-      else {
-	regbase = (TARGET_SOFT_FLOAT) ? GP_ARG_FIRST : FP_ARG_FIRST;
-	if (cum->arg_words == 1)	/* first arg was float */
-	  bias = 1;			/* use correct reg */
-      }
+      else
+	{
+	  regbase = FP_ARG_FIRST;
+	  /* If the first arg was a float in a floating point register,
+	     then set bias to align this float arg properly.  */
+	  if (cum->arg_words == 1)
+	    bias = 1;
+	}
 
       break;
 
