@@ -291,6 +291,8 @@ in the following sections.
 @emph{MN10300 Options}
 -mmult-bug
 -mno-mult-bug
+-mam33
+-mno-am33
 -mrelax
 
 @emph{M32R/D Options}
@@ -4640,6 +4642,14 @@ processors.  This is the default.
 @item -mno-mult-bug
 Do not generate code to avoid bugs in the multiply instructions for the
 MN10300 processors.
+
+@table @code
+@item -mam33
+Generate code which uses features specific to the AM33 processor.
+
+@item -mno-am33
+Do not generate code which uses features specific to the AM33 processor.  This
+is the default.
 
 @item -mrelax
 Indicate to the linker that it should perform a relaxation optimization pass
