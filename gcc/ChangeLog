@@ -1,3 +1,7 @@
+Tue Oct 30 19:00:43 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* sched-rgn.c (schedule_insns): Fix comment.
+
 2001-10-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: Correct previous change: don't assume that
