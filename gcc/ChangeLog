@@ -1,5 +1,9 @@
 Thu Aug 27 20:10:46 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (scan_loop): Count down from max_reg_num - 1 to
+	FIRST_PSEUDO_REGISTER to avoid calilng max_reg_num each iteration
+	of the loop.
+
 	* i386.c (print_operand): Remove obsolete 'c' docs.
 
 Wed Aug 26 17:13:37 1998  Tom Tromey  <tromey@cygnus.com>
