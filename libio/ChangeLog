@@ -1,3 +1,7 @@
+Tue Nov 11 01:40:17 1997  Oleg Krivosheev <kriol@fnal.gov>
+
+	* iomanip.h: Fix guiding decls.
+
 Wed Oct 29 23:01:47 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* gen-params: Override NULL.
