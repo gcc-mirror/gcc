@@ -1,3 +1,9 @@
+2004-08-28  Andreas Schwab  <schwab@suse.de>
+	    Andreas Jaeger <aj@suse.de>
+
+	* configure.ac: Set PACKAGE correctly.
+	* configure: Regenerated.
+
 2004-08-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Add back top_builddir.
