@@ -79,6 +79,7 @@ echo "exec_prefix = ${exec_prefix-'${prefix}'}"
 
 echo 'bindir = $(exec_prefix)/bin'
 echo 'libdir = $(exec_prefix)/lib'
+echo 'libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)'
 
 echo 'datadir = $(prefix)/lib'
 echo 'mandir = $(prefix)/man'
