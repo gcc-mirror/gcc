@@ -1,3 +1,8 @@
+2004-03-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14545
+	* g++.dg/parse/template15.C: New test.
+
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/expr/dtor2.C: New test.

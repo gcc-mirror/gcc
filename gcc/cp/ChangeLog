@@ -1,3 +1,12 @@
+2004-03-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14545
+	* parser.c (cp_parser_functional_cast): A cast to anything
+	but integral or enumaration type is not an integral constant
+	expression.
+	* pt.c (value_dependent_expression_p): Handle cast expressions
+	without operands (such as "int()").
+
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_pseudo_destructor_expr): Allow differing

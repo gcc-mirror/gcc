@@ -14399,12 +14399,23 @@ static tree
 cp_parser_functional_cast (cp_parser* parser, tree type)
 {
   tree expression_list;
+  tree cast;
 
-  expression_list 
+  expression_list
     = cp_parser_parenthesized_expression_list (parser, false,
 					       /*non_constant_p=*/NULL);
 
-  return build_functional_cast (type, expression_list);
+  cast = build_functional_cast (type, expression_list);
+  /* [expr.const]/1: In an integral constant expression "only type
+     conversions to integral or enumeration type can be used".  */
+  if (cast != error_mark_node && !type_dependent_expression_p (type) 
+      && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (type)))
+    {
+      if (cp_parser_non_integral_constant_expression 
+	  (parser, "a call to a constructor"))
+	return error_mark_node;
+    }
+  return cast;
 }
 
 /* Save the tokens that make up the body of a member function defined
