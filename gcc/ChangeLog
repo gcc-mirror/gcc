@@ -1,3 +1,8 @@
+2003-04-08  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (push_regs, calc_live_regs): Return int.  Take single
+	HARD_REG_SET * parameter.  Changed all callers.
+
 Tue Apr  8 11:12:07 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (legitimate_pic_address_disp_p): Do not accept PLUS in the
