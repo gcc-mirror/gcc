@@ -1,3 +1,8 @@
+2004-07-21  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/16175
+	* g++.dg/template/ttp10.C: New test.
+
 2004-07-21  Jakub Jelinek  <jakub@redhat.com>
 	    Jan Hubicka  <jh@suse.cz>
 

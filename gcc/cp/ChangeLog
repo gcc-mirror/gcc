@@ -1,3 +1,9 @@
+2004-07-21  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/16175
+	* error.c (dump_type) <BOUND_TEMPLATE_TEMPLATE_PARM case>: Output
+	cv qualifier.
+
 2004-07-20  Mark Mitchell  <mark@codesourcery.com>
 
 	(cp_parser_simple_type_specifier): Fix typo.

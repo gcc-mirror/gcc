@@ -359,6 +359,7 @@ dump_type (tree t, int flags)
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       {
 	tree args = TYPE_TI_ARGS (t);
+	dump_qualifiers (t, after);
 	pp_tree_identifier (cxx_pp, TYPE_IDENTIFIER (t));
 	pp_template_argument_list_start (cxx_pp);
         dump_template_argument_list (args, flags);
