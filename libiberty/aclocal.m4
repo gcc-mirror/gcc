@@ -1,4 +1,6 @@
 sinclude(../config/accross.m4)
+sinclude(../config/acx.m4)
+sinclude(../config/no-executables.m4)
 
 dnl See whether strncmp reads past the end of its string parameters.
 dnl On some versions of SunOS4 at least, strncmp reads a word at a time
@@ -71,7 +73,7 @@ main ()
   ac_cv_func_strncmp_works=no)
 rm -f core core.* *.core])
 if test $ac_cv_func_strncmp_works = no ; then
-  LIBOBJS="$LIBOBJS strncmp.o"
+  AC_LIBOBJ([strncmp])
 fi
 ])
 
@@ -117,48 +119,6 @@ if test $libiberty_cv_decl_needed_$1 = yes; then
             [Define if $1 is not declared in system header files.])
 fi
 ])dnl
-
-# FIXME: We temporarily define our own version of AC_PROG_CC.  This is
-# copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We
-# are probably using a cross compiler, which will not be able to fully
-# link an executable.  This should really be fixed in autoconf
-# itself.
-
-AC_DEFUN(LIB_AC_PROG_CC,
-[AC_BEFORE([$0], [AC_PROG_CPP])dnl
-AC_PROVIDE([AC_PROG_CC])
-AC_CHECK_PROG(CC, gcc, gcc)
-if test -z "$CC"; then
-  AC_CHECK_PROG(CC, cc, cc, , , /usr/ucb/cc)
-  test -z "$CC" && AC_MSG_ERROR([no acceptable cc found in \$PATH])
-fi
-
-AC_PROG_CC_GNU
-
-if test $ac_cv_prog_gcc = yes; then
-  GCC=yes
-  ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
-dnl Check whether -g works, even if CFLAGS is set, in case the package
-dnl plays around with CFLAGS (such as to build both debugging and
-dnl normal versions of a library), tasteless as that idea is.
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS=
-  AC_PROG_CC_G
-  if test "$ac_test_CFLAGS" = set; then
-    CFLAGS="$ac_save_CFLAGS"
-  elif test $ac_cv_prog_cc_g = yes; then
-    CFLAGS="-g -O2"
-  else
-    CFLAGS="-O2"
-  fi
-else
-  GCC=
-  ac_libiberty_warn_cflags=
-  test "${CFLAGS+set}" = set || CFLAGS="-g"
-fi
-AC_SUBST(ac_libiberty_warn_cflags)
-])
 
 # Work around a bug in autoheader.  This can go away when we switch to
 # autoconf >2.50.  The use of define instead of AC_DEFUN is

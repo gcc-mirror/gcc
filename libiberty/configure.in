@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script
 
-AC_PREREQ(2.13)
+AC_PREREQ(2.57)
 AC_INIT(xmalloc.c)
 
 # This works around the fact that libtool configuration may change LD
@@ -99,7 +99,13 @@ dnl to call AC_CHECK_PROG.
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
-LIB_AC_PROG_CC
+GCC_NO_EXECUTABLES
+AC_PROG_CC
+
+if test x$GCC = xyes; then
+  ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
+fi
+AC_SUBST(ac_libiberty_warn_cflags)
 
 AC_PROG_CC_C_O
 # autoconf is lame and doesn't give us any substitution variable for this.
@@ -111,7 +117,6 @@ fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
 AC_SUBST(OUTPUT_OPTION)
 
-AC_ISC_POSIX
 AC_C_CONST
 AC_C_INLINE
 AC_C_BIGENDIAN_CROSS
@@ -250,7 +255,12 @@ if test -n "${with_target_subdir}"; then
   # newlib provide and which ones we will be expected to provide.
 
   if test "x${with_newlib}" = "xyes"; then
-    LIBOBJS="asprintf.o basename.o insque.o random.o strdup.o vasprintf.o"
+    AC_LIBOBJ([asprintf])
+    AC_LIBOBJ([basename])
+    AC_LIBOBJ([insque])
+    AC_LIBOBJ([random])
+    AC_LIBOBJ([strdup])
+    AC_LIBOBJ([vasprintf])
 
     for f in $funcs; do
       case "$f" in
@@ -318,8 +328,16 @@ if test -z "${setobjs}"; then
     # Handle VxWorks configuration specially, since on VxWorks the
     # libraries are actually on the target board, not in the file
     # system.
-    LIBOBJS="basename.o getpagesize.o insque.o random.o strcasecmp.o"
-    LIBOBJS="$LIBOBJS strncasecmp.o strdup.o vfork.o waitpid.o vasprintf.o"
+    AC_LIBOBJ([basename])
+    AC_LIBOBJ([getpagesize])
+    AC_LIBOBJ([insque])
+    AC_LIBOBJ([random])
+    AC_LIBOBJ([strcasecmp])
+    AC_LIBOBJ([strncasecmp])
+    AC_LIBOBJ([strdup])
+    AC_LIBOBJ([vfork])
+    AC_LIBOBJ([waitpid])
+    AC_LIBOBJ([vasprintf])
     for f in $funcs; do
       case "$f" in
 	basename | getpagesize | insque | random | strcasecmp)
@@ -366,7 +384,7 @@ if test -z "${setobjs}"; then
     if test -n "${with_target_subdir}"
     then
       funcs="`echo $funcs | sed -e 's/random//'`"
-      LIBOBJS="$LIBOBJS random.o"
+      AC_LIBOBJ([random])
       vars="`echo $vars | sed -e 's/sys_siglist//'`"
       checkfuncs="`echo $checkfuncs | sed -e 's/strsignal//' -e 's/psignal//'`"
     fi
@@ -402,12 +420,12 @@ if test -z "${setobjs}"; then
 
   # We haven't set the list of objects yet.  Use the standard autoconf
   # tests.  This will only work if the compiler works.
-  AC_PROG_CC_WORKS
+  AC_ISC_POSIX
   AC_REPLACE_FUNCS($funcs)
   libiberty_AC_FUNC_C_ALLOCA
   AC_FUNC_VFORK
   if test $ac_cv_func_vfork_works = no; then
-    LIBOBJS="$LIBOBJS vfork.o"
+    AC_LIBOBJ([vfork])
   fi
   # We only need _doprnt if we might use it to implement v*printf.
   if test $ac_cv_func_vprintf != yes \
