@@ -1,3 +1,34 @@
+2004-02-06  Daniel Berlin <dberlin@dberlin.org>
+            Josef Zlomek  <zlomekj@suse.cz>
+
+	* dwarf2out.c (struct gcc_debug_hooks): Call dwarf2out_begin_function
+	at the beginning of function, call dwarf2out_var_location for
+	NOTE_INSN_VAR_LOCATION note.
+	(struct var_loc_node, struct var_loc_list_def, loclabel_num,
+	decl_loc_table): New.
+	(lookup_decl_loc): New function.
+	(add_var_loc_to_decl): New function.
+	(based_loc_descr): Added parameter can_use_fbreg, DW_OP_fbreg is used
+	only if can_use_fbreg.
+	(mem_loc_descriptor): Added parameter can_use_fbreg, pass it to other
+	functions.
+	(loc_descriptor): Likewise. Process VAR_LOCATION.
+	(concat_loc_descriptor): Call loc_descriptor with can_use_fbreg == true.
+	(loc_descriptor_from_tree): Call mem_loc_descriptor with
+	can_use_fbreg == true.
+	(add_location_or_const_value_attribute): Added parameter enum
+	dwarf_attribute attr, generate attribute ATTR.  Create the location list.
+	(add_bound_info): Call loc_descriptor with can_use_fbreg == true.
+	(gen_formal_parameter_die): Call add_location_or_const_value_attribute
+	with attr == DW_AT_location.
+	(gen_subprogram_die): Generate the location list for DW_AT_frame_base
+	if frame_base_decl is defined and has a location list.
+	(gen_variable_die): Call add_location_or_const_value_attribute with
+	attr == DW_AT_location.
+	(dwarf2out_var_location): New function.
+	(dwarf2out_begin_function): New function.
+	(dwarf2out_init): Create decl_loc_table.
+
 2004-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* loop.c (force_movables): Transitively increase the priorities of
