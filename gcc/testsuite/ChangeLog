@@ -1,3 +1,8 @@
+2004-01-18  James A. Morrison  <ja2morri@uwaterloo.ca>
+
+        * lib/treelang.exp: Fill out this file.
+        * lib/treelang-dg.exp: New File.
+
 2004-01-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.c-torture/compile/981022-1.c: Remove.
