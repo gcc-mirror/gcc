@@ -2603,24 +2603,25 @@ receiver_is_class_object (receiver)
    * ...check if it is a call to objc_getClass, if so, give it
    * special treatment.
    */
-  tree exp = 0;
+  tree exp = TREE_OPERAND (receiver, 0);
 
-  if ((exp = TREE_OPERAND (receiver, 0)) && (TREE_CODE (exp) == ADDR_EXPR))
+  if (exp != 0 && (TREE_CODE (exp) == ADDR_EXPR))
     {
-      if ((exp = TREE_OPERAND (exp, 0)) && 
-	  (TREE_CODE (exp) == FUNCTION_DECL) && exp == objc_getClass_decl)
+      exp = TREE_OPERAND (exp, 0);
+      if (exp != 0
+	  && TREE_CODE (exp) == FUNCTION_DECL && exp == objc_getClass_decl)
 	{
 	  /* we have a call to objc_getClass! */
-	  tree arg = 0;
-    
-	  if ((arg = TREE_OPERAND (receiver, 1)) &&
-	      (TREE_CODE (arg) == TREE_LIST) &&
-	      (arg = TREE_VALUE (arg)) &&
-	      (TREE_CODE (arg) == NOP_EXPR) &&
-	      (arg = TREE_OPERAND (arg, 0)) &&
-	      (TREE_CODE (arg) == ADDR_EXPR) &&
-	      (arg = TREE_OPERAND (arg, 0)) &&
-	      (TREE_CODE (arg) == STRING_CST))
+	  tree arg = TREE_OPERAND (receiver, 1);
+
+	  if (arg != 0
+	      && TREE_CODE (arg) == TREE_LIST
+	      && arg = TREE_VALUE (arg)
+	      && TREE_CODE (arg) == NOP_EXPR
+	      && arg = TREE_OPERAND (arg, 0)
+	      && TREE_CODE (arg) == ADDR_EXPR
+	      && arg = TREE_OPERAND (arg, 0)
+	      && TREE_CODE (arg) == STRING_CST)
 	    /* finally, we have the class name */
 	    return get_identifier (TREE_STRING_POINTER (arg));
 	}
