@@ -1,3 +1,8 @@
+2001-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.c (ia64_single_set): Return first set for
+	prologue_allocate_stack and epilogue_deallocate_stack instructions.
+
 2001-12-19  Dale Johannesen  <dalej@apple.com>
 
 	 * config/rs6000/rs6000.h: LEGITIMIZE_RELOAD_ADDRESS:
