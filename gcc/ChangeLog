@@ -1,5 +1,8 @@
 2002-05-03  David S. Miller  <davem@redhat.com>
 
+	* config/sparc/sparc.c (LEAF_REGISTERS): Do not do ifdef
+	checks on it, always defined for Sparc.
+
 	* config/sparc/sparc.h (REG_ALLOC_ORDER, REG_LEAF_ALLOC_ORDER):
 	Tweak, and add more detailed comments.
 
