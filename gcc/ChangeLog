@@ -5,7 +5,7 @@
 
 2003-06-16  Andreas Jaeger  <aj@suse.de>
 
-	* tracer.c: Remove duplication declaration.
+	* tracer.c: Remove duplicate declaration.
 
 	* toplev.c: Remove extra declaration of decode_d_option.
 
