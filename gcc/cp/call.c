@@ -1,5 +1,5 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -551,6 +551,9 @@ build_call (function, result_type, parms)
 
   if (decl && DECL_CONSTRUCTOR_P (decl))
     is_constructor = 1;
+
+  if (decl)
+    my_friendly_assert (TREE_USED (decl), 990125);
 
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.

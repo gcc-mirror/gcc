@@ -1,3 +1,19 @@
+1999-01-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (resolve_address_of_overloaded_function): Mark the
+	chosen function used.
+
+	* call.c (build_call): Make sure that a function coming in has
+	been marked used already.
+	* decl.c (expand_static_init): Call mark_used instead of
+	assemble_external.
+	* except.c (call_eh_info, do_pop_exception, expand_end_eh_spec, 
+	alloc_eh_object, expand_throw): Likewise.
+	* init.c (build_builtin_delete_call): Likewise.
+	* rtti.c (call_void_fn, get_tinfo_fn, build_dynamic_cast_1, 
+	expand_si_desc, expand_class_desc, expand_ptr_desc, expand_attr_desc,
+	expand_generic_desc): Likewise.
+
 1999-01-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* tree.c (equal_functions): New function.

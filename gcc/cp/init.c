@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-98, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1861,7 +1861,7 @@ static tree
 build_builtin_delete_call (addr)
      tree addr;
 {
-  assemble_external (global_delete_fndecl);
+  mark_used (global_delete_fndecl);
   return build_call (global_delete_fndecl, 
 		     void_type_node, build_expr_list (NULL_TREE, addr));
 }
