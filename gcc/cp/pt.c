@@ -1079,8 +1079,8 @@ register_specialization (tree spec, tree tmpl, tree args)
 	 more convenient to simply allow this than to try to prevent it.  */
       if (fn == spec)
 	return spec;
-      else if (comp_template_args (TREE_PURPOSE (s), args)
-	       && DECL_TEMPLATE_SPECIALIZATION (spec))
+      else if (DECL_TEMPLATE_SPECIALIZATION (spec)
+	       && comp_template_args (TREE_PURPOSE (s), args))
 	{
 	  if (DECL_TEMPLATE_INSTANTIATION (fn))
 	    {
