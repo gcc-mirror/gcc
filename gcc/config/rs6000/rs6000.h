@@ -1423,8 +1423,9 @@ typedef struct rs6000_args
 #define RS6000_ARG_SIZE(MODE, TYPE, NAMED)				\
 (! (NAMED) ? 0								\
  : (MODE) != BLKmode							\
- ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD 	\
- : (int_size_in_bytes (TYPE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+ ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD	\
+ : ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) 			\
+    + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
