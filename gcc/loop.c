@@ -2701,6 +2701,11 @@ mark_loop_jump (x, loop_num)
       mark_loop_jump (XEXP (x, 1), loop_num);
       return;
 
+    case LO_SUM:
+      /* This may refer to a LABEL_REF or SYMBOL_REF.  */
+      mark_loop_jump (XEXP (x, 1), loop_num);
+      return;
+
     case SIGN_EXTEND:
     case ZERO_EXTEND:
       mark_loop_jump (XEXP (x, 0), loop_num);
@@ -2788,21 +2793,21 @@ mark_loop_jump (x, loop_num)
       return;
 
     default:
-      /* Treat anything else (such as a symbol_ref)
-	 as a branch out of this loop, but not into any loop.  */
-
+      /* Strictly speaking this is not a jump into the loop, only a possible
+	 jump out of the loop.  However, we have no way to link the destination
+	 of this jump onto the list of exit labels.  To be safe we mark this
+	 loop and any containing loops as invalid.  */
       if (loop_num != -1)
 	{
-#ifdef HAIFA
-	  LABEL_OUTSIDE_LOOP_P (x) = 1;
-	  LABEL_NEXTREF (x) = loop_number_exit_labels[loop_num];
-#endif  /* HAIFA */
-
-	  loop_number_exit_labels[loop_num] = x;
-
 	  for (outer_loop = loop_num; outer_loop != -1;
 	       outer_loop = loop_outer_loop[outer_loop])
-	    loop_number_exit_count[outer_loop]++;
+	    {
+	      if (loop_dump_stream && ! loop_invalid[outer_loop])
+		fprintf (loop_dump_stream,
+			 "\nLoop at %d ignored due to unknown exit jump.\n",
+			 INSN_UID (loop_number_loop_starts[outer_loop]));
+	      loop_invalid[outer_loop] = 1;
+	    }
 	}
       return;
     }
