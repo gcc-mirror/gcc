@@ -10,6 +10,7 @@ details.  */
 
 #include <config.h>
 #include <jvm.h>
+#include <sys/timeb.h>
 
 #include "platform.h"
 #include <java/lang/ArithmeticException.h>
@@ -39,10 +40,11 @@ _Jv_platform_initialize (void)
 }
 
 // gettimeofday implementation.
-void
-_Jv_platform_gettimeofday (struct timeval *tv)
+jlong
+_Jv_platform_gettimeofday ()
 {
-  // FIXME
-  return;
+  struct timeb t;
+  ftime (&t);
+  return t.time * 1000 + t.millitm;
 }
 
