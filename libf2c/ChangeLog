@@ -1,3 +1,10 @@
+Mon Nov 23 16:52:22 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	*  configure.in: Use AC_PREREQ(2.12.1).
+	*  libF77/configure.in: Likewise.
+	*  libI77/configure.in: Likewise.
+	*  libU77/configure.in: Likewise.
+
 1998-10-24  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in: Touch g2c.h in AC_OUTPUT after multilib
