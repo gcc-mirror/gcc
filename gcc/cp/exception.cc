@@ -30,6 +30,7 @@
 #include "typeinfo"
 #include "exception"
 #include <stddef.h>
+#include "gansidecl.h" /* Needed to support macros used in eh-common.h. */
 #include "eh-common.h"
 
 /* Define terminate, unexpected, set_terminate, set_unexpected as

@@ -1,3 +1,9 @@
+Sat Nov  7 15:48:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h: Don't include gansidecl.h.
+	* exception.cc: Include gansidecl.h (since we don't include config.h)
+	* g++spec.c: Don't include gansidecl.h.
+
 1998-11-06  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (lang_decl_flags): Add defined_in_class.  Decrease

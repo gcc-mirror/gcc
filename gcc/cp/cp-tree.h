@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _CP_TREE_H
 #define _CP_TREE_H
 
-#include "gansidecl.h"
-
 /* Usage of TREE_LANG_FLAG_?:
    0: TREE_NONLOCAL_FLAG (in TREE_LIST or _TYPE).
       BINFO_MARKED (BINFO nodes).
