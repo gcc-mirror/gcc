@@ -1,5 +1,11 @@
 2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
+	* src/codecvt.cc
+        (codecvt<char, char, mbstate_t>::do_in, do_out):
+        Tweak parameters to avoid unused parameter warnings.
+
+2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9151
 	* include/bits/locale_facets.cc (num_put::_M_convert_float):
 	Limit __prec to digits10 + 2, not digits10 + 1, taking into

@@ -60,8 +60,8 @@ namespace std
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
   do_out(state_type&, const intern_type* __from, 
-	 const intern_type* __from_end, const intern_type*& __from_next,
-	 extern_type* __to, extern_type* __to_end, 
+	 const intern_type*, const intern_type*& __from_next,
+	 extern_type* __to, extern_type*, 
 	 extern_type*& __to_next) const
   { 
     // _GLIBCPP_RESOLVE_LIB_DEFECTS
@@ -84,8 +84,8 @@ namespace std
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
   do_in(state_type&, const extern_type* __from, 
-	const extern_type* __from_end, const extern_type*& __from_next,
-	intern_type* __to, intern_type* __to_end, 
+	const extern_type*, const extern_type*& __from_next,
+	intern_type* __to, intern_type*, 
 	intern_type*& __to_next) const
   {
     // _GLIBCPP_RESOLVE_LIB_DEFECTS
