@@ -1,5 +1,10 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileChannelImpl.java
+	(write): Removed.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/ByteBufferImpl.java
 	(ByteBufferImpl): Made it a package-private class
 	* java/nio/CharBufferImpl.java

@@ -276,12 +276,6 @@ public class FileChannelImpl extends FileChannel
     return ch.buf;			 
   }
 
-  public long write (ByteBuffer[] srcs)
-    throws IOException
-  {
-    return write (srcs, 0, srcs.length);
-  }
-				   
   /**
    * msync with the disk
    */
