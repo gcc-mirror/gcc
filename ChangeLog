@@ -1,3 +1,7 @@
+2002-03-11  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (.NOTPARALLEL): Add fake tag.
+
 2002-03-07  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in: Enable gprof for mips*-*-linux*.
