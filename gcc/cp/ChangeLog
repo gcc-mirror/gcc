@@ -1,3 +1,8 @@
+2003-01-08  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_primary_expression): See through explicitly
+	scoped ALIAS_DECLs, too.
+
 2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* decl.c: ANSIfy function declarations.

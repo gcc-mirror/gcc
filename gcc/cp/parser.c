@@ -3023,14 +3023,15 @@ cp_parser_primary_expression (cp_parser *parser,
 		if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
 		  *qualifying_class = parser->scope;
 	      }
-	    /* Resolve references to variables of anonymous unions
-	       into COMPONENT_REFs.  */
-	    else if (TREE_CODE (decl) == ALIAS_DECL)
-	      decl = DECL_INITIAL (decl);
 	    else
 	      /* Transform references to non-static data members into
 		 COMPONENT_REFs.  */
 	      decl = hack_identifier (decl, id_expression);
+
+	    /* Resolve references to variables of anonymous unions
+	       into COMPONENT_REFs.  */
+	    if (TREE_CODE (decl) == ALIAS_DECL)
+	      decl = DECL_INITIAL (decl);
 	  }
 
 	if (TREE_DEPRECATED (decl))
