@@ -316,7 +316,7 @@ frame_dummy (void)
   if (__register_frame_info)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
 #endif
-#endif /* EH_FRAME_SECTION_NAME */
+#endif /* USE_EH_FRAME_REGISTRY */
 #ifdef JCR_SECTION_NAME
   if (__JCR_LIST__[0] && _Jv_RegisterClasses)
     _Jv_RegisterClasses (__JCR_LIST__);
@@ -324,7 +324,7 @@ frame_dummy (void)
 }
 
 CRT_CALL_STATIC_FUNCTION (INIT_SECTION_ASM_OP, frame_dummy)
-#endif /* EH_FRAME_SECTION_NAME || JCR_SECTION_NAME */
+#endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */
 
 #else  /* OBJECT_FORMAT_ELF */
 
@@ -413,7 +413,7 @@ __do_global_ctors_1(void)
     _Jv_RegisterClasses (__JCR_LIST__);
 #endif
 }
-#endif /* EH_FRAME_SECTION_NAME || JCR_SECTION_NAME */
+#endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */
 
 #else /* ! INIT_SECTION_ASM_OP && ! HAS_INIT_SECTION */
 #error "What are you doing with crtstuff.c, then?"
