@@ -39,3 +39,5 @@ extern bool hook_pass_by_reference_false
   (CUMULATIVE_ARGS *, enum machine_mode mode, tree, bool);
 extern bool hook_pass_by_reference_must_pass_in_stack
   (CUMULATIVE_ARGS *, enum machine_mode mode, tree, bool);
+
+extern void default_unwind_emit (FILE *, rtx);

@@ -1347,7 +1347,7 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 
   (*debug_hooks->begin_prologue) (last_linenum, last_filename);
 
-#if defined (DWARF2_UNWIND_INFO) || defined (IA64_UNWIND_INFO)
+#if defined (DWARF2_UNWIND_INFO) || defined (TARGET_UNWIND_INFO)
   if (write_symbols != DWARF2_DEBUG && write_symbols != VMS_AND_DWARF2_DEBUG)
     dwarf2out_begin_prologue (0, NULL);
 #endif
@@ -1732,9 +1732,10 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	      && !scan_ahead_for_unlikely_executed_note (insn))
 	    text_section ();
 
-#ifdef IA64_UNWIND_INFO
-	  IA64_UNWIND_EMIT (asm_out_file, insn);
+#ifdef TARGET_UNWIND_INFO
+	  targetm.asm_out.unwind_emit (asm_out_file, insn);
 #endif
+
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s basic block %d\n",
 		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->index);
@@ -2525,11 +2526,14 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	if (prescan > 0)
 	  break;
 
-#ifdef IA64_UNWIND_INFO
-	IA64_UNWIND_EMIT (asm_out_file, insn);
+#ifdef TARGET_UNWIND_INFO
+	/* ??? This will put the directives in the wrong place if
+	   get_insn_template outputs assembly directly.  However calling it
+	   before get_insn_template breaks if the insns is split.  */
+	targetm.asm_out.unwind_emit (asm_out_file, insn);
 #endif
-	/* Output assembler code from the template.  */
 
+	/* Output assembler code from the template.  */
 	output_asm_insn (template, recog_data.operand);
 
 	/* If necessary, report the effect that the instruction has on

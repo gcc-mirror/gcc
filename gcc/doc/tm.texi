@@ -7503,6 +7503,11 @@ true if this is a placeholder label for an omitted FDE.
 The default is that FDEs are not given nonlocal labels.
 @end deftypefn
 
+@deftypefn {Taget Hook} void TARGET_UNWIND_EMIT (FILE * @var{stream}, rtx @var{insn})
+This target hook emits and assembly directives required to unwind the
+given instruction.  This is only used when TARGET_UNWIND_INFO is set.
+@end deftypefn
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 
@@ -7550,6 +7555,11 @@ default.
 
 If this macro is defined to anything, the DWARF 2 unwinder will be used
 instead of inline unwinders and @code{__unwind_function} in the non-@code{setjmp} case.
+@end defmac
+
+@defmac TARGET_UNWIND_INFO
+Define this macro if your target has ABI specified unwind tables.  Usually
+these will be output by @code{TARGET_UNWIND_EMIT}.
 @end defmac
 
 @defmac MUST_USE_SJLJ_EXCEPTIONS

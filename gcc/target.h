@@ -85,6 +85,9 @@ struct gcc_target
        this is only a placeholder for an omitted FDE.  */
     void (* unwind_label) (FILE *, tree, int, int);
 
+    /* Emit any directives required to unwind this instruction.  */
+    void (* unwind_emit) (FILE *, rtx);
+
     /* Output an internal label.  */
     void (* internal_label) (FILE *, const char *, unsigned long);
 

@@ -1,3 +1,23 @@
+2004-07-15  Paul Brook  <paul@codesourcery.com>
+
+	* dwarf2out.c (dwarf2out_begin_prologue): Rename IA64_UNWIND_INFO
+	to TARGET_UNWIND_INFO.
+	* except.c (output_function_exception_table): Ditto.
+	* except.h: Ditto.
+	* opts.c (decode_options): Ditto.
+	* passes.c (rest_of_handle_final): Ditto.
+	* final.c (final_start_function): Ditto.
+	(final_scan_insn, final_scan_insn): Replace IA64_UNWIND_EMIT with
+	target hook.
+	* targhooks.h (default_unwind_emit): Declare.
+	* targhooks.c (default_unwind_emit): New function.
+	* target-def.h: Define and use TARGET_UNWIND_EMIT.
+	* target.h (struct gcc_target): Add unwind_emit.
+	* config/ia64/ia64.c (TARGET_UNWIND_EMIT): Define.
+	* config/ia64/ia64.h: Rename IA64_UNWIND_INFO to TARGET_UNWIND_INFO.
+	Remove IA64_UNWIND_EMIT.
+	* doc/tm.texi: Document TARGET_UNWIND_EMIT and TARGET_UNWIND_INFO.
+
 2004-07-14  Richard Henderson  <rth@redhat.com>
 
 	* print-tree.c (print_node): Handle SSA_NAME.

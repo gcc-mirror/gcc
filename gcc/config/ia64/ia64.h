@@ -2265,8 +2265,7 @@ do {									\
 
 extern int ia64_final_schedule;
 
-#define IA64_UNWIND_INFO	1
-#define IA64_UNWIND_EMIT(f,i)	process_for_unwind_directive (f,i)
+#define TARGET_UNWIND_INFO	1
 
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 15 : INVALID_REGNUM)
 
