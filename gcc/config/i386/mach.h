@@ -63,15 +63,18 @@
   auto unsigned short ostatus;						\
   auto unsigned short nstatus;						\
   auto int ret;								\
+  auto double tmp;							\
 									\
   &ostatus;			/* guarantee these land in memory */	\
   &nstatus;								\
   &ret;									\
+  &tmp;									\
 									\
   asm volatile ("fnstcw %0" : "=m" (ostatus));				\
   nstatus = ostatus | 0x0c00;						\
   asm volatile ("fldcw %0" : /* no outputs */ : "m" (nstatus));		\
-  asm volatile ("fldl %0" : /* no outputs */ : "m" (a));		\
+  tmp = a;								\
+  asm volatile ("fldl %0" : /* no outputs */ : "m" (tmp));		\
   asm volatile ("fistpl %0" : "=m" (ret));				\
   asm volatile ("fldcw %0" : /* no outputs */ : "m" (ostatus));		\
 									\
