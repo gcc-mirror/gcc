@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -403,7 +403,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 
@@ -418,7 +418,7 @@ extern void __gnat_install_handler (void);
 /* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
    __gnat_install_handler ();
 }
@@ -543,7 +543,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 
@@ -657,7 +657,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 
@@ -806,7 +806,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
 }
 
@@ -817,142 +817,27 @@ __gnat_initialize (void)
 #elif defined (__MINGW32__)
 #include <windows.h>
 
-static LONG WINAPI __gnat_error_handler (PEXCEPTION_POINTERS);
-
-/* __gnat_initialize (mingw32).  */
-
-static LONG WINAPI
-__gnat_error_handler (PEXCEPTION_POINTERS info)
-{
-  struct Exception_Data *exception;
-  const char *msg;
-
-  switch (info->ExceptionRecord->ExceptionCode)
-    {
-    case EXCEPTION_ACCESS_VIOLATION:
-      /* If the failing address isn't maximally-aligned or if the page
-	 before the faulting page is not accessible, this is a program error.
-      */
-      if ((info->ExceptionRecord->ExceptionInformation[1] & 3) != 0
-	  || IsBadCodePtr
-	  ((void *)(info->ExceptionRecord->ExceptionInformation[1] + 4096)))
-	{
-	  exception = &program_error;
-	  msg = "EXCEPTION_ACCESS_VIOLATION";
-	}
-      else
-	{
-	  /* otherwise it is a stack overflow  */
-	  exception = &storage_error;
-	  msg = "stack overflow (or erroneous memory access)";
-	}
-      break;
-
-    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-      exception = &constraint_error;
-      msg = "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
-      break;
-
-    case EXCEPTION_DATATYPE_MISALIGNMENT:
-      exception = &constraint_error;
-      msg = "EXCEPTION_DATATYPE_MISALIGNMENT";
-      break;
-
-    case EXCEPTION_FLT_DENORMAL_OPERAND:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_DENORMAL_OPERAND";
-      break;
-
-    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_DENORMAL_OPERAND";
-      break;
-
-    case EXCEPTION_FLT_INVALID_OPERATION:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_INVALID_OPERATION";
-      break;
-
-    case EXCEPTION_FLT_OVERFLOW:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_OVERFLOW";
-      break;
-
-    case EXCEPTION_FLT_STACK_CHECK:
-      exception = &program_error;
-      msg = "EXCEPTION_FLT_STACK_CHECK";
-      break;
-
-    case EXCEPTION_FLT_UNDERFLOW:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_UNDERFLOW";
-      break;
-
-    case EXCEPTION_INT_DIVIDE_BY_ZERO:
-      exception = &constraint_error;
-      msg = "EXCEPTION_INT_DIVIDE_BY_ZERO";
-      break;
-
-    case EXCEPTION_INT_OVERFLOW:
-      exception = &constraint_error;
-      msg = "EXCEPTION_INT_OVERFLOW";
-      break;
-
-    case EXCEPTION_INVALID_DISPOSITION:
-      exception = &program_error;
-      msg = "EXCEPTION_INVALID_DISPOSITION";
-      break;
-
-    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-      exception = &program_error;
-      msg = "EXCEPTION_NONCONTINUABLE_EXCEPTION";
-      break;
-
-    case EXCEPTION_PRIV_INSTRUCTION:
-      exception = &program_error;
-      msg = "EXCEPTION_PRIV_INSTRUCTION";
-      break;
-
-    case EXCEPTION_SINGLE_STEP:
-      exception = &program_error;
-      msg = "EXCEPTION_SINGLE_STEP";
-      break;
-
-    case EXCEPTION_STACK_OVERFLOW:
-      exception = &storage_error;
-      msg = "EXCEPTION_STACK_OVERFLOW";
-      break;
-
-   default:
-      exception = &program_error;
-      msg = "unhandled signal";
-    }
-
-  Raise_From_Signal_Handler (exception, msg);
-  return 0; /* This is never reached, avoid compiler warning */
-}
-
 void
 __gnat_install_handler (void)
 {
-  SetUnhandledExceptionFilter (__gnat_error_handler);
-  __gnat_handler_installed = 1;
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
-
    /* Initialize floating-point coprocessor. This call is needed because
       the MS libraries default to 64-bit precision instead of 80-bit
       precision, and we require the full precision for proper operation,
       given that we have set Max_Digits etc with this in mind */
-
    __gnat_init_float ();
 
-   /* initialize a lock for a process handle list - see a-adaint.c for the
+   /* Initialize a lock for a process handle list - see a-adaint.c for the
       implementation of __gnat_portable_no_block_spawn, __gnat_portable_wait */
    __gnat_plist_init();
+
+   /* Install the Structured Exception handler.  */
+   if (eh)
+     __gnat_install_SEH_handler (eh);
 }
 
 /***************************************/
@@ -1023,7 +908,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
    __gnat_init_float ();
 }
@@ -1035,7 +920,7 @@ __gnat_initialize (void)
 #elif defined (__Lynx__)
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
    __gnat_init_float ();
 }
@@ -1057,7 +942,7 @@ __gnat_install_handler (void)
 #elif defined (__EMX__) /* OS/2 dependent initialization */
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 
@@ -1224,7 +1109,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 
@@ -1332,7 +1217,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 
@@ -1564,7 +1449,7 @@ __gnat_install_handler (void)
 }
 
 void
-__gnat_initialize(void)
+__gnat_initialize(void *eh)
 {
 }
 
@@ -1636,7 +1521,7 @@ __gnat_install_handler ()
 }
 
 void
-__gnat_initialize ()
+__gnat_initialize (void *eh)
 {
    __gnat_install_handler ();
 
@@ -1694,7 +1579,9 @@ void
 __gnat_clear_exception_count (void)
 {
 #ifdef VTHREADS
-  taskIdCurrent->vThreads.excCnt = 0;
+  WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf();
+
+  currentTask->vThreads.excCnt = 0;
 #endif
 }
 
@@ -1824,7 +1711,7 @@ __gnat_init_float (void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
   __gnat_init_float ();
 
@@ -1832,20 +1719,20 @@ __gnat_initialize (void)
      the frame tables.
 
      For applications loaded as a set of "modules", the crtstuff objects
-     linked in (crtbegin/endS) are tailored to provide this service a-la C++
-     static constructor fashion, typically triggered by the VxWorks loader.
-     This is achieved by way of a special variable declaration in the crt
-     object, the name of which has been deduced by analyzing the output of the
-     "munching" step documented for C++.  The de-registration call is handled
-     symetrically, a-la C++ destructor fashion and typically triggered by the
-     dynamic unloader. Note that since the tables shall be registered against
-     a common datastructure, libgcc should be one of the modules (vs beeing
+     linked in (crtbegin/end) are tailored to provide this service a-la C++
+     constructor fashion, typically triggered by the VxWorks loader.  This is
+     achieved by way of a special variable declaration in the crt object, the
+     name of which has been deduced by analyzing the output of the "munching"
+     step documented for C++.  The de-registration is handled symetrically,
+     a-la C++ destructor fashion and typically triggered by the dynamic
+     unloader.  Note that since the tables shall be registered against a
+     common datastructure, libgcc should be one of the modules (vs beeing
      partially linked against all the others at build time) and shall be
      loaded first.
 
      For applications linked with the kernel, the scheme above would lead to
      duplicated symbols because the VxWorks kernel build "munches" by default.
-     To prevent those conflicts, we link against crtbegin/end objects that
+     To prevent those conflicts, we link against crtbegin/endS objects that
      don't include the special variable and directly call the appropriate
      function here. We'll never unload that, so there is no de-registration to
      worry about.
@@ -1856,15 +1743,15 @@ __gnat_initialize (void)
 
      We can differentiate by looking at the __module_has_ctors value provided
      by each class of crt objects. As of today, selecting the crt set with the
-     static ctors/dtors capabilities (first scheme above) is triggered by
-     adding "-static" to the gcc *link* command line options. Without this,
-     the other set of crt objects is fetched.
+     ctors/dtors capabilities (first scheme above) is triggered by adding
+     "-dynamic" to the gcc *link* command line options. Selecting the other
+     set of crt objects is achieved by "-static" instead.
 
      This is a first approach, tightly synchronized with a number of GCC
      configuration and crtstuff changes. We need to ensure that those changes
      are there to activate this circuitry.  */
 
-#if DWARF2_UNWIND_INFO && defined (_ARCH_PPC)
+#if (__GNUC__ >= 3) && (defined (_ARCH_PPC) || defined (__ppc))
  {
    /* The scheme described above is only useful for the actual ZCX case, and
       we don't want any reference to the crt provided symbols otherwise.  We
@@ -1947,7 +1834,7 @@ __gnat_install_handler(void)
 }
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
   __gnat_install_handler ();
   __gnat_init_float ();
@@ -1963,7 +1850,7 @@ __gnat_initialize (void)
 /***************************************/
 
 void
-__gnat_initialize (void)
+__gnat_initialize (void *eh)
 {
 }
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -217,7 +217,7 @@ extern char **gnat_argv;
 
 
 /* Declare functions we use as part of startup.  */
-extern void __gnat_initialize	(void);
+extern void __gnat_initialize	(void *);
 extern void adainit		(void);
 extern void _ada_gnat1drv	(void);
 
@@ -227,7 +227,7 @@ static void
 gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
   /* call the target specific initializations */
-  __gnat_initialize();
+  __gnat_initialize (NULL);
 
   /* Call the front-end elaboration procedures */
   adainit ();

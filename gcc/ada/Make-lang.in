@@ -146,7 +146,7 @@ GNAT_ADA_OBJS = ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
  ada/stylesw.o ada/validsw.o ada/system.o ada/table.o ada/targparm.o \
  ada/tbuild.o ada/tree_gen.o ada/tree_io.o ada/treepr.o ada/treeprs.o \
  ada/ttypef.o ada/ttypes.o ada/types.o ada/uintp.o ada/uname.o ada/urealp.o \
- ada/usage.o ada/widechar.o ada/s-crtl.o
+ ada/usage.o ada/widechar.o ada/s-crtl.o ada/seh_init.o
 
 # Object files for gnat executables
 GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
@@ -161,6 +161,7 @@ GNATBIND_OBJS = \
  ada/cstreams.o   \
  ada/final.o      \
  ada/init.o       \
+ ada/seh_init.o   \
  ada/link.o       \
  ada/raise.o      \
  ada/tracebak.o   \
