@@ -1,3 +1,8 @@
+Thu May  9 12:21:48 2002  Jeffrey A Law  (law@redhat.com)
+
+ 	* pa.c (hppa_profile_hook): Use force_reg to get the address
+	of the profile hook into an appropriate pseudo register.
+
 2002-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* mklibgcc.in: Set shlib_slibdir_qual to empty string if
