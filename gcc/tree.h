@@ -1542,7 +1542,9 @@ extern tree global_trees[TI_MAX];
 #define complex_long_double_type_node	global_trees[TI_COMPLEX_LONG_DOUBLE_TYPE]
 
 #define void_type_node			global_trees[TI_VOID_TYPE]
+/* The C type `void *'.  */
 #define ptr_type_node			global_trees[TI_PTR_TYPE]
+/* The C type `const void *'.  */
 #define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]

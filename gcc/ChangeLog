@@ -1,3 +1,15 @@
+1999-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* crtstuff.c (__dso_handle): Declare.
+	(__cxa_finalize): Likewise.
+	(do_global_dtors_aux): Call __cxa_finalize if __dso_handle is
+	non-NULL.
+
+	* invoke.texi: Document -fuse-cxa-atexit.
+	
+	* tree.h (ptr_type_node): Document.
+	(const_ptr_type_node): Likewise.
+
 Fri Dec 17 01:32:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* regmove.c (optimize_reg_copy_1): Ignore LOOP notes.
