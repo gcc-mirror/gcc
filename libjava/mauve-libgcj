@@ -20,3 +20,4 @@ JDBC2.0
 !java.lang.reflect.Array.newInstance
 !java.util.ResourceBundle.getBundle
 !java.util.zip.GZIPInputStream.basic
+!java.net.DatagramSocket.DatagramSocketTest2
