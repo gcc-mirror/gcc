@@ -1,3 +1,9 @@
+Sun Jul 30 20:38:26 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (simplify_set, make_extraction, make_compound_operation
+	make_field_assignment): Use full mask instead of GET_MODE_MASK (mode)
+	as force_to_mode argument.
+
 Sun Jul 30 20:30:41 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (if_then_else_cond): Be sure that mode fits in HOST_WIDE_INT
