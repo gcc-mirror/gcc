@@ -4761,6 +4761,7 @@ static void
 include_empty_classes (record_layout_info rli)
 {
   tree eoc;
+  tree rli_size;
 
   /* It might be the case that we grew the class to allocate a
      zero-sized base class.  That won't be reflected in RLI, yet,
@@ -4769,11 +4770,20 @@ include_empty_classes (record_layout_info rli)
      to reflect the entire class.  */
   eoc = end_of_class (rli->t, 
 		      CLASSTYPE_AS_BASE (rli->t) != NULL_TREE);
-  if (TREE_CODE (rli_size_unit_so_far (rli)) == INTEGER_CST
-      && INT_CST_LT_UNSIGNED (rli_size_unit_so_far (rli), eoc))
+  rli_size = rli_size_unit_so_far (rli);
+  if (TREE_CODE (rli_size) == INTEGER_CST
+      && INT_CST_LT_UNSIGNED (rli_size, eoc))
     {
-      rli->offset = size_binop (MAX_EXPR, rli->offset, eoc);
-      rli->bitpos = bitsize_zero_node;
+      rli->bitpos = round_up (rli->bitpos, BITS_PER_UNIT);
+      rli->bitpos 
+	= size_binop (PLUS_EXPR, 
+		      rli->bitpos,
+		      size_binop (MULT_EXPR,
+				  convert (bitsizetype,
+					   size_binop (MINUS_EXPR,
+						       eoc, rli_size)),
+				  bitsize_int (BITS_PER_UNIT)));
+      normalize_rli (rli);
     }
 }
 
@@ -4947,10 +4957,13 @@ layout_class_type (tree t, int *vfuns_p, tree *virtuals_p)
     }
 
   if (abi_version_at_least (2) && !integer_zerop (rli->bitpos))
-    /* Make sure that we are on a byte boundary so that the size of
-       the class without virtual bases will always be a round number
-       of bytes.  */
-    rli->bitpos = round_up (rli->bitpos, BITS_PER_UNIT);
+    {
+      /* Make sure that we are on a byte boundary so that the size of
+	 the class without virtual bases will always be a round number
+	 of bytes.  */
+      rli->bitpos = round_up (rli->bitpos, BITS_PER_UNIT);
+      normalize_rli (rli);
+    }
 
   /* Make sure that empty classes are reflected in RLI at this 
      point.  */
