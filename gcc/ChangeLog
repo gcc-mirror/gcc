@@ -5,6 +5,10 @@
 
 	* cfg.c (rbi_pool): Make it static.
 
+	* gimple-low.c (lower_stmt_body): Make it static.
+	* tree-flow.h: Remove the corresponding prototype.  Don't
+	declare lower_data.
+
 2005-03-08  Julian Brown  <julian@codesourcery.com>
 
 	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK

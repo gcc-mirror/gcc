@@ -145,7 +145,7 @@ struct tree_opt_pass pass_lower_cf =
    when they are changed -- if this has to be done, the lowering routine must
    do it explicitly.  DATA is passed through the recursion.  */
 
-void
+static void
 lower_stmt_body (tree expr, struct lower_data *data)
 {
   tree_stmt_iterator tsi;
