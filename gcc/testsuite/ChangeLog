@@ -1,5 +1,9 @@
 2004-11-08  Steve Ellcey  <sje@cup.hp.com>
 
+	* testsuite/gcc.dg/uninit-H.c: Add ifdefs for __hppa__ and __ia64__.
+
+2004-11-08  Steve Ellcey  <sje@cup.hp.com>
+
 	* testsuite/gcc.dg/20030225-2.c: Add prototype for abort and
 	exit. 
 
