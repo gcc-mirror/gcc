@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2205,7 +2205,12 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
       int unsignedp = TREE_UNSIGNED (*restype_ptr);
       tree val;
 
-      type = signed_or_unsigned_type (unsignedp0, TREE_TYPE (primop0));
+      /* It is safer to always get a type corresponding to the precision
+	 of primop0 instead of calling signed_or_unsigned_type here since
+	 we want to be sure we use the highest and lowest values corresponding
+	 to the mode, not the type, because we may be optimizing a test
+	 to ensure the value is within its defined range (e.g., for enums).  */
+      type = type_for_size (unsignedp, TYPE_PRECISION (TREE_TYPE (primop0)));
 
       maxval = TYPE_MAX_VALUE (type);
       minval = TYPE_MIN_VALUE (type);
