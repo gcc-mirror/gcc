@@ -3593,9 +3593,11 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
     = compare_from_rtx (op0, op1, code, unsignedp, cmode, NULL_RTX, 0);
 
   /* ??? Watch for const0_rtx (nop) and const_true_rtx (unconditional)?  */
+  /* We can get const0_rtx or const_true_rtx in some circumstances.  Just
+     return NULL and let the caller figure out how best to deal with this
+     situation.  */
   if (GET_CODE (comparison) != code)
-    /* This shouldn't happen.  */
-    abort ();
+    return NULL_RTX;
   
   insn = GEN_FCN (icode) (subtarget, comparison, op2, op3);
 
