@@ -1,3 +1,8 @@
+2001-10-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Document libf2c being built as a shared library.
+	Use of array elements in bounds of adjustable arrays ditto.
+
 2001-10-03  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Make-lang.in: Remove reference to FORTRAN_INIT.

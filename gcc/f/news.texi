@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001
 
-@set last-update-news 2001-06-03
+@set last-update-news 2001-10-05
 
 @include root.texi
 
@@ -155,6 +155,23 @@ The following information was last updated on @value{last-update-news}:
 @heading In development, 0.5.27, @code{GCC} 3.1 versus @code{GCC} 3.0:
 @itemize @bullet
 @ifclear USERVISONLY
+@item
+Based on work done by Juergen Pfeifer (@email{juergen.pfeifer@@gmx.net})
+libf2c is now a shared library.  One can still link in all objects with
+the program by specifying the @code{-static} option.
+
+@item
+Robert Anderson (@email{rwa@@alumni.princeton.edu}) thought up a two
+line change that enables g77 to compile such code as:
+@smallexample
+SUBROUTINE SUB(A, N)
+DIMENSION N(2)
+DIMENSION A(N(1),N(2))
+A(1,1) = 1.
+END
+@end smallexample
+Note the use of array elements in the bounds of the adjustable array A.
+
 @item
 George Helffrich (@email{george@@geo.titech.ac.jp}) implemented a change
 in substring index checking (when specifying @code{-fbounds-check})
