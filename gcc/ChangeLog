@@ -1,3 +1,8 @@
+Fri Apr  2 16:03:05 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc.dgux, fixinc.interix, fixinc.irix, fixinc.ptx: Deleted.
+	* fixinc.sco, fixinc.svr4, fixinc.winnt, fixinc.wrap: Likewise.
+
 Fri Apr  2 15:46:25 1999  Donn Terry (donn@interix.com)
 
         * configure.in: Set and substitute quoted_cc_set_by_configure.
