@@ -3842,7 +3842,7 @@ reload_as_needed (live_known)
 
       else if (INSN_P (insn))
 	{
-	  rtx oldpat = PATTERN (insn);
+	  rtx oldpat = copy_rtx (PATTERN (insn));
 
 	  /* If this is a USE and CLOBBER of a MEM, ensure that any
 	     references to eliminable registers have been removed.  */
