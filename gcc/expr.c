@@ -3321,7 +3321,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
   if (extra && args_addr == 0 && where_pad == stack_direction)
     anti_adjust_stack (GEN_INT (extra));
  
-  if (alignment_pad)
+  if (alignment_pad && args_addr == 0)
     anti_adjust_stack (alignment_pad);
 }
 
