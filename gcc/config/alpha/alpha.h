@@ -1210,6 +1210,10 @@ extern struct alpha_compare alpha_compare;
 
 #define PROFILE_BEFORE_PROLOGUE 1
 
+/* Never use profile counters.  */
+
+#define NO_PROFILE_COUNTERS 1
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Under OSF/1, profiling is enabled
    by simply passing -pg to the assembler and linker.  */
@@ -1808,22 +1812,6 @@ do {						\
     }									      \
   }									      \
   while (0)
-
-/* This is how to output an insn to push a register on the stack.
-   It need not be very fast code.  */
-
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
- fprintf (FILE, "\tsubq $30,8,$30\n\tst%s $%s%d,0($30)\n",		\
-	  (REGNO) > 32 ? "t" : "q", (REGNO) > 32 ? "f" : "",		\
-	  (REGNO) & 31);
-
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
-
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)					\
-  fprintf (FILE, "\tld%s $%s%d,0($30)\n\taddq $30,8,$30\n",		\
-	  (REGNO) > 32 ? "t" : "q", (REGNO) > 32 ? "f" : "",		\
-	  (REGNO) & 31);
 
 /* This is how to output an element of a case-vector that is absolute.
    (Alpha does not use such vectors, but we must define this macro anyway.)  */

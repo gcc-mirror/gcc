@@ -1,5 +1,10 @@
 2003-01-10  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.h (NO_PROFILE_COUNTERS): Set.
+	(ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Kill.
+
+2003-01-10  Richard Henderson  <rth@redhat.com>
+
 	* combine.c (make_compound_operation): Use SCALAR_INT_MODE_P,
 	not INTEGRAL_MODE_P when widening extensions.
 
