@@ -1,3 +1,19 @@
+2003-07-31  Tom Tromey  <tromey@redhat.com>
+
+	More for PR libgcj/11737:
+	* java/io/ObjectInputStream.java (processResolution): Use
+	getMethod.
+	(getMethod): Make method accessible.
+	(getField): Make field accessible.
+	(setBooleanField): Don't call setAccessible here.
+	(setByteField, setCharField, setDoubleField, setFloatField,
+	setIntField, setLongField, setShortField, setObjectField):
+	Likewise.
+	(callReadMethod): Don't check whether method is null.  Catch
+	NoSuchMethodException.
+	* java/io/ObjectOutputStream.java (callWriteMethod): Initialize
+	cause on thrown exceptions.
+
 2003-07-31  Stepan Koltsov  <yozh@mx1.ru>
 
 	Fix for PR libgcj/11728:

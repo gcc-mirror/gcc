@@ -1197,7 +1197,8 @@ public class ObjectOutputStream extends OutputStream
   }
 
 
-  private void callWriteMethod (Object obj, ObjectStreamClass osc) throws IOException
+  private void callWriteMethod (Object obj, ObjectStreamClass osc)
+    throws IOException
   {
     Class klass = osc.forClass();
     try
@@ -1220,13 +1221,19 @@ public class ObjectOutputStream extends OutputStream
 	if (exception instanceof IOException)
 	  throw (IOException) exception;
 
-	throw new IOException ("Exception thrown from writeObject() on " +
-			       klass + ": " + exception.getClass().getName());
+	IOException ioe
+	  = new IOException ("Exception thrown from writeObject() on " +
+			     klass + ": " + exception.getClass().getName());
+	ioe.initCause(exception);
+	throw ioe;
       }
     catch (Exception x)
       {
-	throw new IOException ("Failure invoking writeObject() on " +
-			       klass + ": " + x.getClass().getName());
+	IOException ioe
+	  = new IOException ("Failure invoking writeObject() on " +
+			     klass + ": " + x.getClass().getName());
+	ioe.initCause(x);
+	throw ioe;
       }
   }
 
