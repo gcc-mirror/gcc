@@ -220,6 +220,14 @@ tree unsigned_type_node;
 tree long_unsigned_type_node;
 tree long_long_unsigned_type_node;
 
+/* These are used for integer literals that are larger than 
+   a long long.  The largest integer literals we can handle
+   are the width of two HOST_WIDE_INTs.  If two HOST_WIDE_INTs
+   are not larger than the target's long long, then these
+   will never be used. */
+tree widest_integer_literal_type_node;
+tree widest_unsigned_literal_type_node;
+
 tree ptrdiff_type_node;
 
 tree unsigned_char_type_node;
@@ -6355,6 +6363,15 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
   unsigned_char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
   record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
+
+  /* Create the widest literal types. */
+  widest_integer_literal_type_node = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, 
+			widest_integer_literal_type_node));
+
+  widest_unsigned_literal_type_node = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
+  pushdecl (build_decl (TYPE_DECL, NULL_TREE, 
+			widest_unsigned_literal_type_node));
 
   /* These are types that type_for_size and type_for_mode use.  */
   intQI_type_node = make_signed_type (GET_MODE_BITSIZE (QImode));

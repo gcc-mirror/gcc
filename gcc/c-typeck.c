@@ -739,6 +739,8 @@ unsigned_type (type)
     return long_unsigned_type_node;
   if (type1 == long_long_integer_type_node)
     return long_long_unsigned_type_node;
+  if (type1 == widest_integer_literal_type_node)
+    return widest_unsigned_literal_type_node;
   if (type1 == intDI_type_node)
     return unsigned_intDI_type_node;
   if (type1 == intSI_type_node)
@@ -768,6 +770,8 @@ signed_type (type)
     return long_integer_type_node;
   if (type1 == long_long_unsigned_type_node)
     return long_long_integer_type_node;
+  if (type1 == widest_unsigned_literal_type_node)
+    return widest_integer_literal_type_node;
   if (type1 == unsigned_intDI_type_node)
     return intDI_type_node;
   if (type1 == unsigned_intSI_type_node)
@@ -802,6 +806,9 @@ signed_or_unsigned_type (unsignedp, type)
   if (TYPE_PRECISION (type) == TYPE_PRECISION (long_long_integer_type_node)) 
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
+  if (TYPE_PRECISION (type) == TYPE_PRECISION (widest_integer_literal_type_node)) 
+    return (unsignedp ? widest_unsigned_literal_type_node
+	    : widest_integer_literal_type_node);
   return type;
 }
 

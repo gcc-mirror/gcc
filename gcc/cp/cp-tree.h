@@ -336,6 +336,7 @@ extern tree ptrdiff_type_node;
 extern tree short_integer_type_node, short_unsigned_type_node;
 extern tree long_integer_type_node, long_unsigned_type_node;
 extern tree long_long_integer_type_node, long_long_unsigned_type_node;
+extern tree widest_integer_literal_type_node, widest_unsigned_literal_type_node;
 extern tree unsigned_type_node;
 extern tree string_type_node, char_array_type_node, int_array_type_node;
 extern tree wchar_array_type_node;

@@ -1818,10 +1818,17 @@ yylex ()
 		else if (! spec_long_long)
 		  traditional_type = (spec_unsigned ? long_unsigned_type_node
 				      : long_integer_type_node);
-		else
+		else if (int_fits_type_p (yylval.ttype,
+					  spec_unsigned 
+					  ? long_long_unsigned_type_node
+					  : long_long_integer_type_node)) 
 		  traditional_type = (spec_unsigned
 				      ? long_long_unsigned_type_node
 				      : long_long_integer_type_node);
+		else
+		  traditional_type = (spec_unsigned
+				      ? widest_unsigned_literal_type_node
+				      : widest_integer_literal_type_node);
 	      }
 	    if (warn_traditional || ! flag_traditional)
 	      {
@@ -1843,8 +1850,15 @@ yylex ()
 			 && int_fits_type_p (yylval.ttype,
 					     long_long_integer_type_node))
 		  ansi_type = long_long_integer_type_node;
-		else
+		else if (int_fits_type_p (yylval.ttype,
+					  long_long_unsigned_type_node))
 		  ansi_type = long_long_unsigned_type_node;
+		else if (! spec_unsigned
+			 && int_fits_type_p (yylval.ttype,
+					     widest_integer_literal_type_node))
+		  ansi_type = widest_integer_literal_type_node;
+		else
+		  ansi_type = widest_unsigned_literal_type_node;
 	      }
 
 	    type = flag_traditional ? traditional_type : ansi_type;

@@ -3937,8 +3937,15 @@ real_yylex ()
 		     && int_fits_type_p (yylval.ttype,
 					 long_long_integer_type_node))
 	      type = long_long_integer_type_node;
-	    else
+	    else if (int_fits_type_p (yylval.ttype,
+				      long_long_unsigned_type_node))
 	      type = long_long_unsigned_type_node;
+	    else if (! spec_unsigned
+		     && int_fits_type_p (yylval.ttype,
+					 widest_integer_literal_type_node))
+	      type = widest_integer_literal_type_node;
+	    else
+	      type = widest_unsigned_literal_type_node;
 
 	    if (!int_fits_type_p (yylval.ttype, type) && !warn)
 	      pedwarn ("integer constant is larger than the maximum value for its type");

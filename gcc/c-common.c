@@ -2081,6 +2081,10 @@ type_for_size (bits, unsignedp)
     return (unsignedp ? long_long_unsigned_type_node
 	    : long_long_integer_type_node);
 
+  if (bits == TYPE_PRECISION (widest_integer_literal_type_node))
+    return (unsignedp ? widest_unsigned_literal_type_node
+	    : widest_integer_literal_type_node);
+
   if (bits <= TYPE_PRECISION (intQI_type_node))
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
@@ -2119,6 +2123,10 @@ type_for_mode (mode, unsignedp)
 
   if (mode == TYPE_MODE (long_long_integer_type_node))
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
+
+  if (mode == TYPE_MODE (widest_integer_literal_type_node))
+    return unsignedp ? widest_unsigned_literal_type_node 
+                     : widest_integer_literal_type_node;
 
   if (mode == TYPE_MODE (intQI_type_node))
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;

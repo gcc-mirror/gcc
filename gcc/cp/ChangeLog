@@ -1,3 +1,14 @@
+1999-07-02  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* cp-tree.h (widest_integer_literal_type_node,
+	widest_unsigned_literal_type) : New.
+	* decl.c (widest_integer_literal_type_node,
+	widest_unsigned_literal_type) : New.
+	(init_decl_processing): Handle/use the two new types.
+	* lex.c (real_yylex): Same.
+	* typeck.c (unsigned_type,signed_type,signed_or_unsigned_type) :
+	Same. 
+
 1999-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Don't give names "for linkage purposes"
