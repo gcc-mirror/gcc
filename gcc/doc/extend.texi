@@ -2636,9 +2636,9 @@ option.
 
 @item dllimport
 @cindex @code{__declspec(dllimport)}
-On Windows targets, the @code{dllimport} attribute causes the compiler
+On Microsoft Windows targets, the @code{dllimport} attribute causes the compiler
 to reference a function or variable via a global pointer to a pointer
-that is set up by the Windows dll library. The pointer name is formed by
+that is set up by the Microsoft Windows dll library. The pointer name is formed by
 combining @code{_imp__} and the function or variable name. The attribute
 implies @code{extern} storage.
 
@@ -2656,7 +2656,7 @@ using thunks.
 
 On cygwin, mingw and arm-pe targets, @code{__declspec(dllimport)} is
 recognized as a synonym for @code{__attribute__ ((dllimport))} for
-compatibility with other Windows compilers.
+compatibility with other Microsoft Windows compilers.
 
 The use of the @code{dllimport} attribute on functions is not necessary,
 but provides a small performance benefit by eliminating a thunk in the
@@ -2672,7 +2672,7 @@ attribute can be disabled for functions by setting the
 
 @item dllexport
 @cindex @code{__declspec(dllexport)}
-On Windows targets the @code{dllexport} attribute causes the compiler to
+On Microsoft Windows targets the @code{dllexport} attribute causes the compiler to
 provide a global pointer to a pointer in a dll, so that it can be
 referenced with the @code{dllimport} attribute. The pointer name is
 formed by combining @code{_imp__} and the function or variable name.
@@ -2689,7 +2689,7 @@ out-of-class.
 
 On cygwin, mingw and arm-pe targets, @code{__declspec(dllexport)} is
 recognized as a synonym for @code{__attribute__ ((dllexport))} for
-compatibility with other Windows compilers.
+compatibility with other Microsoft Windows compilers.
 
 Alternative methods for including the symbol in the dll's export table
 are to use a .def file with an @code{EXPORTS} section or, with GNU ld,
@@ -3299,7 +3299,7 @@ section, consider using the facilities of the linker instead.
 
 @item shared
 @cindex @code{shared} variable attribute
-On Windows, in addition to putting variable definitions in a named
+On Microsoft Windows, in addition to putting variable definitions in a named
 section, the section can also be shared among all running copies of an
 executable or DLL@.  For example, this small program defines shared data
 by putting it in a named section @code{shared} and marking the section
@@ -3322,7 +3322,7 @@ You may only use the @code{shared} attribute along with @code{section}
 attribute with a fully initialized global definition because of the way
 linkers work.  See @code{section} attribute for more information.
 
-The @code{shared} attribute is only available on Windows@.
+The @code{shared} attribute is only available on Microsoft Windows@.
 
 @item tls_model ("@var{tls_model}")
 @cindex @code{tls_model} attribute
@@ -3425,7 +3425,7 @@ data between functions compiled with GCC and the native Microsoft compiler
 (either via function call or as data in a file), it may be necessary to access
 either format.
 
-Currently @option{-m[no-]ms-bitfields} is provided for the Windows X86
+Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
 @end table
 
@@ -3721,7 +3721,7 @@ data between functions compiled with GCC and the native Microsoft compiler
 (either via function call or as data in a file), it may be necessary to access
 either format.
 
-Currently @option{-m[no-]ms-bitfields} is provided for the Windows X86
+Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
 @end table
 
@@ -7905,7 +7905,7 @@ but there are other options as well.
 @end table
 
 When used with GNU ld version 2.8 or later on an ELF system such as
-Linux/GNU or Solaris 2, or on Microsoft Windows, duplicate copies of
+GNU/Linux or Solaris 2, or on Microsoft Windows, duplicate copies of
 these constructs will be discarded at link time.  This is known as
 COMDAT support.
 
@@ -8082,7 +8082,7 @@ compiled separately.
 @end table
 
 When used with GNU ld version 2.8 or later on an ELF system such as
-Linux/GNU or Solaris 2, or on Microsoft Windows, g++ supports the
+GNU/Linux or Solaris 2, or on Microsoft Windows, g++ supports the
 Borland model.  On other systems, g++ implements neither automatic
 model.
 

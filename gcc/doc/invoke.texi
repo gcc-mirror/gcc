@@ -7178,7 +7178,7 @@ option are incompatible.
 @itemx -malign-power
 @opindex malign-natural
 @opindex malign-power
-On AIX, Darwin, and 64-bit PowerPC Linux, the option
+On AIX, Darwin, and 64-bit PowerPC GNU/Linux, the option
 @option{-malign-natural} overrides the ABI-defined alignment of larger
 types, such as floating-point doubles, on their natural size-based boundary.
 The option @option{-malign-power} instructs GCC to follow the ABI-specified
@@ -9919,7 +9919,7 @@ Generate code for a big endian target.  This is the default for HP-UX@.
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a little endian target.  This is the default for AIX5
-and Linux.
+and GNU/Linux.
 
 @item -mgnu-as
 @itemx -mno-gnu-as
@@ -10106,8 +10106,8 @@ which does not have this limitation.
 @opindex m64
 @opindex m31
 When @option{-m31} is specified, generate code compliant to the
-Linux for S/390 ABI@.  When @option{-m64} is specified, generate
-code compliant to the Linux for zSeries ABI@.  This allows GCC in
+GNU/Linux for S/390 ABI@.  When @option{-m64} is specified, generate
+code compliant to the GNU/Linux for zSeries ABI@.  This allows GCC in
 particular to generate 64-bit instructions.  For the @samp{s390}
 targets, the default is @option{-m31}, while the @samp{s390x}
 targets default to @option{-m64}.
@@ -10121,9 +10121,9 @@ instructions available on z/Architecture.
 When @option{-mesa} is specified, generate code using the 
 instructions available on ESA/390. Note that @option{-mesa} is
 not possible with @option{-m64}.
-When generating code compliant to the Linux for S/390 ABI,
+When generating code compliant to the GNU/Linux for S/390 ABI,
 the default is @option{-mesa}.  When generating code compliant
-to the Linux for zSeries ABI, the default is @option{-mzarch}.
+to the GNU/Linux for zSeries ABI, the default is @option{-mzarch}.
 
 @item -mmvcle
 @itemx -mno-mvcle

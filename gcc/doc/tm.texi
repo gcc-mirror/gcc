@@ -8305,7 +8305,7 @@ call @code{merge_attributes} to handle machine-independent merging.
 
 @findex TARGET_DLLIMPORT_DECL_ATTRIBUTES
 If the only target-specific handling you require is @samp{dllimport} for
-Windows targets, you should define the macro
+Microsoft Windows targets, you should define the macro
 @code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  This links in a function
 called @code{merge_dllimport_decl_attributes} which can then be defined
 as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
@@ -9100,7 +9100,7 @@ lists.
 Define this macro to a C expression representing a variant of the
 method call @var{mdecl}, if Java Native Interface (JNI) methods
 must be invoked differently from other methods on your target.
-For example, on 32-bit Windows, JNI methods must be invoked using
+For example, on 32-bit Microsoft Windows, JNI methods must be invoked using
 the @code{stdcall} calling convention and this macro is then
 defined as this expression:
 
