@@ -1,3 +1,15 @@
+2002-09-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libmath/Makefile.am (LIBTOOL): Use --tag CC always for this
+	directory.
+	* libmath/Makefile.in: Regenerate.
+	* src/Makefile.am: Tweak comment.
+	* src/Makefile.in: Regenerate.
+	
+	* config/locale/gnu/c_locale.h: Remove warnings.
+	Inject __uselocale into __gnu_cxx.
+	* config/locale/generic/c_locale.h: Match.
+	
 2002-09-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (__convert_from_v): Remove.

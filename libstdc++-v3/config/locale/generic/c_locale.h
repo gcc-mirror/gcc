@@ -44,12 +44,13 @@ namespace std
     __convert_from_v(char* __out, const int __size, const char* __fmt,
 		     _Tv __v, const __c_locale&, int __prec = -1)
     {
-      int __ret;
       char* __old = setlocale(LC_ALL, NULL);
       char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
       if (__sav)
         strcpy(__sav, __old);
       setlocale(LC_ALL, "C");
+
+      int __ret;
 #ifdef _GLIBCPP_USE_C99
       if (__prec >= 0)
         __ret = snprintf(__out, __size, __fmt, __prec, __v);
