@@ -1085,7 +1085,7 @@ coerce_template_parms (parms, arglist, in_decl)
 	    }
 	  else if (!TREE_CONSTANT (val))
 	    {
-	      cp_error ("non-const `%E' cannot be used as template argument",
+	      cp_error ("non-constant `%E' cannot be used as template argument",
 			arg);
 	      val = error_mark_node;
 	    }
