@@ -1,5 +1,6 @@
 2003-09-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	PR target/11674
 	* config/i386/i386.c (x86_emit_floatuns): Also handle SImode operand.
 
 2003-09-18  Roger Sayle  <roger@eyesopen.com>
