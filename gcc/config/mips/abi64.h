@@ -144,7 +144,7 @@ extern struct rtx_def *mips_function_value ();
 				   - PRETEND_SIZE)),			\
 	   (MAX_ARGS_IN_REGISTERS - (CUM).arg_words			\
 	    - ! current_function_varargs),				\
-	   PRETEND_SIZE, 0);						\
+	   PRETEND_SIZE);						\
     }									\
 }
 
