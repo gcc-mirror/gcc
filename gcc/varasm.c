@@ -1333,7 +1333,13 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
       rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
-
+      
+#if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
+      if (warn_bss_align && (DECL_ALIGN (decl) / BITS_PER_UNIT) > rounded)
+         warning_with_decl 
+           (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
+#endif
+       
 #ifdef DBX_DEBUGGING_INFO
       /* File-scope global variables are output here.  */
       if (write_symbols == DBX_DEBUG && top_level)
