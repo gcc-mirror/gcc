@@ -249,7 +249,6 @@ static HARD_REG_SET elim_reg_set;
 
 /* Forward declarations */
 static void find_basic_blocks		PROTO((rtx, rtx));
-static int jmp_uses_reg_or_mem		PROTO((rtx));
 static void mark_label_ref		PROTO((rtx, rtx, int));
 static void life_analysis		PROTO((rtx, int));
 void allocate_for_life_analysis		PROTO((void));
@@ -492,65 +491,33 @@ find_basic_blocks (f, nonlocal_label_list)
       /* Find all indirect jump insns and mark them as possibly jumping to all
 	 the labels whose addresses are explicitly used.  This is because,
 	 when there are computed gotos, we can't tell which labels they jump
-	 to, of all the possibilities.
-
-	 Tablejumps and casesi insns are OK and we can recognize them by
-	 a (use (label_ref)).  */
+	 to, of all the possibilities.  */
 
       for (insn = f; insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == JUMP_INSN)
+	if (computed_jump_p (insn))
 	  {
-	    rtx pat = PATTERN (insn);
-	    int computed_jump = 0;
-
-	    if (GET_CODE (pat) == PARALLEL)
+	    if (label_value_list_marked_live == 0)
 	      {
-		int len = XVECLEN (pat, 0);
-		int has_use_labelref = 0;
+		label_value_list_marked_live = 1;
 
-		for (i = len - 1; i >= 0; i--)
-		  if (GET_CODE (XVECEXP (pat, 0, i)) == USE
-		      && (GET_CODE (XEXP (XVECEXP (pat, 0, i), 0))
-			  == LABEL_REF))
-		    has_use_labelref = 1;
+		/* This could be made smarter by only considering
+		   these live, if the computed goto is live.  */
 
-		if (! has_use_labelref)
-		  for (i = len - 1; i >= 0; i--)
-		    if (GET_CODE (XVECEXP (pat, 0, i)) == SET
-			&& SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
-			&& jmp_uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
-		      computed_jump = 1;
-	      }
-	    else if (GET_CODE (pat) == SET
-		     && SET_DEST (pat) == pc_rtx
-		     && jmp_uses_reg_or_mem (SET_SRC (pat)))
-	      computed_jump = 1;
-		    
-	    if (computed_jump)
-	      {
-		if (label_value_list_marked_live == 0)
-		  {
-		    label_value_list_marked_live = 1;
-
-		    /* This could be made smarter by only considering
-		       these live, if the computed goto is live.  */
-
-		    /* Don't delete the labels (in this function) that
-		       are referenced by non-jump instructions.  */
-
-		    for (x = label_value_list; x; x = XEXP (x, 1))
-		      if (! LABEL_REF_NONLOCAL_P (x))
-			block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
-		  }
+		/* Don't delete the labels (in this function) that
+		   are referenced by non-jump instructions.  */
 
 		for (x = label_value_list; x; x = XEXP (x, 1))
-		  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-				  insn, 0);
-
-		for (x = forced_labels; x; x = XEXP (x, 1))
-		  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-			      insn, 0);
+		  if (! LABEL_REF_NONLOCAL_P (x))
+		    block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
 	      }
+
+	    for (x = label_value_list; x; x = XEXP (x, 1))
+	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+			      insn, 0);
+
+	    for (x = forced_labels; x; x = XEXP (x, 1))
+	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+			      insn, 0);
 	  }
 
       /* Find all call insns and mark them as possibly jumping
@@ -768,56 +735,6 @@ find_basic_blocks (f, nonlocal_label_list)
 }
 
 /* Subroutines of find_basic_blocks.  */
-
-/* Return 1 if X, the SRC_SRC of  SET of (pc) contain a REG or MEM that is
-   not in the constant pool and not in the condition of an IF_THEN_ELSE.  */
-
-static int
-jmp_uses_reg_or_mem (x)
-     rtx x;
-{
-  enum rtx_code code = GET_CODE (x);
-  int i, j;
-  char *fmt;
-
-  switch (code)
-    {
-    case CONST:
-    case LABEL_REF:
-    case PC:
-      return 0;
-
-    case REG:
-      return 1;
-
-    case MEM:
-      return ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)));
-
-    case IF_THEN_ELSE:
-      return (jmp_uses_reg_or_mem (XEXP (x, 1))
-	      || jmp_uses_reg_or_mem (XEXP (x, 2)));
-
-    case PLUS:  case MINUS:  case MULT:
-      return (jmp_uses_reg_or_mem (XEXP (x, 0))
-	      || jmp_uses_reg_or_mem (XEXP (x, 1)));
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e'
-	  && jmp_uses_reg_or_mem (XEXP (x, i)))
-	return 1;
-
-      if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (jmp_uses_reg_or_mem (XVECEXP (x, i, j)))
-	    return 1;
-    }
-
-  return 0;
-}
 
 /* Check expression X for label references;
    if one is found, add INSN to the label's chain of references.
