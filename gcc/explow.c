@@ -1059,7 +1059,7 @@ allocate_dynamic_stack_space (size, target, known_align)
     {
       /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
 	 but we know it can't.  So add ourselves and then do TRUNC_DIV_EXPR. */
-      target = expand_binop (Pmode, add_opatab, target,
+      target = expand_binop (Pmode, add_optab, target,
 			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
       target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
