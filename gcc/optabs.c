@@ -1552,7 +1552,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       if (target_piece != x)
 	emit_move_insn (target_piece, x);
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
 
       emit_no_conflict_block (seq, target, op0, 0,
