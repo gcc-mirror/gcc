@@ -5549,6 +5549,11 @@ expand_function_end (filename, line, end_bindings)
 			  current_function_decl);
 #endif
       REG_FUNCTION_VALUE_P (real_decl_result) = 1;
+      /* If this is a BLKmode structure being returned in registers, then use
+	 the mode computed in expand_return.  */
+      if (GET_MODE (real_decl_result) == BLKmode)
+	PUT_MODE (real_decl_result,
+		  GET_MODE (DECL_RTL (DECL_RESULT (current_function_decl))));
       emit_move_insn (real_decl_result,
 		      DECL_RTL (DECL_RESULT (current_function_decl)));
       emit_insn (gen_rtx (USE, VOIDmode, real_decl_result));
