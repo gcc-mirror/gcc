@@ -2480,6 +2480,33 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
   return result;
 }
 
+/* Return 1 if the first and last unrolled copy of the address giv V is valid
+   for the instruction that is using it.  Do not make any changes to that
+   instruction.  */
+
+static int
+verify_addresses (v, giv_inc, unroll_number)
+     struct induction *v;
+     rtx giv_inc;
+     int unroll_number;
+{
+  int ret = 1;
+  rtx orig_addr = *v->location;
+  rtx last_addr = plus_constant (v->dest_reg,
+				 INTVAL (giv_inc) * (unroll_number - 1));
+
+  /* First check to see if either address would fail.  */
+  if (! validate_change (v->insn, v->location, v->dest_reg, 0)
+      || ! validate_change (v->insn, v->location, last_addr, 0))
+    ret = 0;
+
+  /* Now put things back the way they were before.  This will always
+   succeed.  */
+  validate_change (v->insn, v->location, orig_addr, 0);
+
+  return ret;
+}
+
 /* For every giv based on the biv BL, check to determine whether it is
    splittable.  This is a subroutine to find_splittable_regs ().
 
@@ -2711,11 +2738,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			 Try to validate both the first and the last
 			 address resulting from loop unrolling, if
 			 one fails, then can't do const elim here.  */
-		      if (memory_address_p (v->mem_mode, v->dest_reg)
-			  && memory_address_p (v->mem_mode,
-				       plus_constant (v->dest_reg,
-						      INTVAL (giv_inc)
-						      * (unroll_number - 1))))
+		      if (! verify_addresses (v, giv_inc, unroll_number))
 			{
 			  /* Save the negative of the eliminated const, so
 			     that we can calculate the dest_reg's increment
@@ -2736,13 +2759,10 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  
 		  /* If the address hasn't been checked for validity yet, do so
 		     now, and fail completely if either the first or the last
-		     unrolled copy of the address is not a valid address.  */
+		     unrolled copy of the address is not a valid address
+		     for the instruction that uses it.  */
 		  if (v->dest_reg == tem
-		      && (! memory_address_p (v->mem_mode, v->dest_reg)
-			  || ! memory_address_p (v->mem_mode,
-				 plus_constant (v->dest_reg,
-						INTVAL (giv_inc)
-						* (unroll_number -1)))))
+		      && ! verify_addresses (v, giv_inc, unroll_number))
 		    {
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
@@ -2788,11 +2808,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  
 		  /* Check the resulting address for validity, and fail
 		     if the resulting address would be invalid.  */
-		  if (! memory_address_p (v->mem_mode, v->dest_reg)
-		      || ! memory_address_p (v->mem_mode,
-				     plus_constant (v->dest_reg,
-						    INTVAL (giv_inc) *
-						    (unroll_number -1))))
+		  if (! verify_addresses (v, giv_inc, unroll_number))
 		    {
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
