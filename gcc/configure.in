@@ -353,6 +353,16 @@ for machine in $build $host $target; do
 		tmake_file=arm/t-semiaof
 		fixincludes=Makefile.in # There is nothing to fix
 		;;
+	arm-*-linuxaout)		# ARM Linux
+		cpu_type=arm
+		xm_file=arm/xm-linux.h
+		xmake_file=x-linux
+		tm_file=arm/linux-gas.h
+		tmake_file=arm/t-linux
+		fixincludes=Makefile.in
+		broken_install=yes
+		gnu_ld=yes
+		;;
 	arm-*-*)			# generic version
 		;;
 	c1-convex-*)			# Convex C1
