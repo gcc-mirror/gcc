@@ -1,5 +1,13 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.c (check_insn_for_bivs): Use ivs->n_regs to check array bounds.
+	(find_mem_givs, record_biv, maybe_eliminate_biv): Likewise.
+	(record_initial): Likewise.
+	* unroll.c (copy_loop_body, loop_iterations): Likewise.
+	(remap_split_bivs): Likewise.
+
+2001-01-01  Michael Hayes  <mhayes@redhat.com>	
+
 	* loop.c (loop_ivs_free): New function.
 	(strength_reduce): Break out from...
 
