@@ -3869,29 +3869,34 @@ assign_parms (fndecl, second_time)
 				  XEXP (entry_parm, 0)))
 	    {
 	      rtx linsn = get_last_insn ();
+	      rtx sinsn, set;
 
 	      /* Mark complex types separately.  */
 	      if (GET_CODE (parmreg) == CONCAT)
-	        {
-	          REG_NOTES (linsn)
-	              = gen_rtx (EXPR_LIST, REG_EQUIV,
-				 parm_reg_stack_loc[regnoi], REG_NOTES (linsn));
-
-		  /* Now search backward for where we set the real part.  */
-		  for (; linsn != 0
-		       && ! reg_referenced_p (parm_reg_stack_loc[regnor],
-					      PATTERN (linsn));
-		       linsn = prev_nonnote_insn (linsn))
-		    ;
-
-	          REG_NOTES (linsn)
-	              = gen_rtx (EXPR_LIST, REG_EQUIV,
-				 parm_reg_stack_loc[regnor], REG_NOTES (linsn));
-		}
-	      else
+		/* Scan backwards for the set of the real and
+		   imaginary parts.  */
+		for (sinsn = linsn; sinsn != 0;
+		     sinsn = prev_nonnote_insn (sinsn))
+		  {
+		    set = single_set (sinsn);
+		    if (set != 0
+			&& SET_DEST (set) == regno_reg_rtx [regnoi])
+		      REG_NOTES (sinsn)
+			= gen_rtx (EXPR_LIST, REG_EQUIV,
+				   parm_reg_stack_loc[regnoi],
+				   REG_NOTES (sinsn));
+		    else if (set != 0
+			     && SET_DEST (set) == regno_reg_rtx [regnor])
+		      REG_NOTES (sinsn)
+			= gen_rtx (EXPR_LIST, REG_EQUIV,
+				   parm_reg_stack_loc[regnor],
+				   REG_NOTES (sinsn));
+		  }
+	      else if ((set = single_set (linsn)) != 0
+		       && SET_DEST (set) == parmreg)
 	        REG_NOTES (linsn)
-	         = gen_rtx (EXPR_LIST, REG_EQUIV,
-			    entry_parm, REG_NOTES (linsn));
+		  = gen_rtx (EXPR_LIST, REG_EQUIV,
+			     entry_parm, REG_NOTES (linsn));
 	    }
 
 	  /* For pointer data type, suggest pointer register.  */
