@@ -1,5 +1,6 @@
 /* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
-   Copyright (C) 1991, 93, 94, 96, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -105,12 +106,12 @@ extern const unsigned char mode_wider_mode[];
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */
 
-extern enum machine_mode mode_for_size PARAMS ((unsigned int, enum mode_class, int));
+extern enum machine_mode mode_for_size PARAMS ((int, enum mode_class, int));
 
 /* Similar, but find the smallest mode for a given width.  */
 
-extern enum machine_mode smallest_mode_for_size  PARAMS ((unsigned int,
-                                                        enum mode_class));
+extern enum machine_mode smallest_mode_for_size 
+				PARAMS ((int, enum mode_class));
 
 
 /* Return an integer mode of the exact same size as the input mode,
