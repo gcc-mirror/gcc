@@ -1,3 +1,8 @@
+2003-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7982
+	* g++.dg/warn/implicit-typename1.C: New test.
+
 2003-02-22  Kelley Cook <kelleycook@comcast.net>
 
         * g++.old-deja/g++.other/store-expr1.C: Replace "mcpu" 
