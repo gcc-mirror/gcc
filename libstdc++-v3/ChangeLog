@@ -1,5 +1,22 @@
 2004-02-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/deque.tcc: Wrap overlong lines, constify
+	a few variables, reformat according to the coding standards.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_function.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* include/bits/stl_iterator_base_funcs.h: Likewise.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_relops.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+
+2004-02-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_bvector.h: Wrap overlong lines, constify
 	a few variables, reformat according to the coding standards.
 	* include/bits/stl_tree.h: Likewise.

@@ -94,7 +94,6 @@ namespace __gnu_norm
       _Tp _M_data;                ///< User's data.
     };
   
-  
   /**
    *  @brief A list::iterator.
    *
@@ -324,7 +323,6 @@ namespace __gnu_norm
         this->_M_node._M_prev = &this->_M_node;
       }
     };
-  
   
   /**
    *  @brief A standard container with linear time access to elements,
@@ -573,7 +571,8 @@ namespace __gnu_norm
   
       /// Get a copy of the memory allocation object.
       allocator_type
-      get_allocator() const { return _Base::get_allocator(); }
+      get_allocator() const
+      { return _Base::get_allocator(); }
       
       // iterators
       /**
@@ -581,7 +580,8 @@ namespace __gnu_norm
        *  %list.  Iteration is done in ordinary element order.
        */
       iterator
-      begin() { return this->_M_node._M_next; }
+      begin()
+      { return this->_M_node._M_next; }
       
       /**
        *  Returns a read-only (constant) iterator that points to the
@@ -589,7 +589,8 @@ namespace __gnu_norm
        *  element order.
        */
       const_iterator
-      begin() const { return this->_M_node._M_next; }
+      begin() const
+      { return this->_M_node._M_next; }
       
       /**
        *  Returns a read/write iterator that points one past the last
@@ -605,7 +606,8 @@ namespace __gnu_norm
        *  element order.
        */
       const_iterator
-      end() const { return &this->_M_node; }
+      end() const
+      { return &this->_M_node; }
       
       /**
        *  Returns a read/write reverse iterator that points to the last
@@ -613,7 +615,8 @@ namespace __gnu_norm
        *  order.
        */
       reverse_iterator
-      rbegin() { return reverse_iterator(end()); }
+      rbegin()
+      { return reverse_iterator(end()); }
       
       /**
        *  Returns a read-only (constant) reverse iterator that points to
@@ -621,7 +624,8 @@ namespace __gnu_norm
        *  element order.
        */
       const_reverse_iterator
-      rbegin() const { return const_reverse_iterator(end()); }
+      rbegin() const
+      { return const_reverse_iterator(end()); }
       
       /**
        *  Returns a read/write reverse iterator that points to one
@@ -629,7 +633,8 @@ namespace __gnu_norm
        *  reverse element order.
        */
       reverse_iterator
-      rend() { return reverse_iterator(begin()); }
+      rend()
+      { return reverse_iterator(begin()); }
       
       /**
        *  Returns a read-only (constant) reverse iterator that points to one
@@ -646,15 +651,18 @@ namespace __gnu_norm
        *  end().)
        */
       bool
-      empty() const { return this->_M_node._M_next == &this->_M_node; }
+      empty() const
+      { return this->_M_node._M_next == &this->_M_node; }
       
       /**  Returns the number of elements in the %list.  */
       size_type
-      size() const { return std::distance(begin(), end()); }
+      size() const
+      { return std::distance(begin(), end()); }
       
       /**  Returns the size() of the largest possible %list.  */
       size_type
-      max_size() const { return size_type(-1); }
+      max_size() const
+      { return size_type(-1); }
       
       /**
        *  @brief Resizes the %list to the specified number of elements.
@@ -679,7 +687,8 @@ namespace __gnu_norm
        *  and new elements are default-constructed.
        */
       void
-      resize(size_type __new_size) { this->resize(__new_size, value_type()); }
+      resize(size_type __new_size)
+      { this->resize(__new_size, value_type()); }
       
       // element access
       /**
@@ -687,28 +696,32 @@ namespace __gnu_norm
        *  element of the %list.
        */
       reference
-      front() { return *begin(); }
+      front()
+      { return *begin(); }
       
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %list.
        */
       const_reference
-      front() const { return *begin(); }
+      front() const
+      { return *begin(); }
       
       /**
        *  Returns a read/write reference to the data at the last element
        *  of the %list.
        */
       reference
-      back() { return *(--end()); }
+      back()
+      { return *(--end()); }
       
       /**
        *  Returns a read-only (constant) reference to the data at the last
        *  element of the %list.
        */
       const_reference
-      back() const { return *(--end()); }
+      back() const
+      { return *(--end()); }
       
       // [23.2.2.3] modifiers
       /**
@@ -722,7 +735,8 @@ namespace __gnu_norm
        *  references.
        */
       void
-      push_front(const value_type& __x) { this->_M_insert(begin(), __x); }
+      push_front(const value_type& __x)
+      { this->_M_insert(begin(), __x); }
   
       /**
        *  @brief  Removes first element.
@@ -737,7 +751,8 @@ namespace __gnu_norm
        *  called.
        */
       void
-      pop_front() { this->_M_erase(begin()); }
+      pop_front()
+      { this->_M_erase(begin()); }
       
       /**
        *  @brief  Add data to the end of the %list.
@@ -750,7 +765,8 @@ namespace __gnu_norm
        *  references.
        */
       void
-      push_back(const value_type& __x) { this->_M_insert(end(), __x); }
+      push_back(const value_type& __x)
+      { this->_M_insert(end(), __x); }
       
       /**
        *  @brief  Removes last element.
@@ -764,7 +780,8 @@ namespace __gnu_norm
        *  is needed, it should be retrieved before pop_back() is called.
        */
       void
-      pop_back() { this->_M_erase(this->_M_node._M_prev); }
+      pop_back()
+      { this->_M_erase(this->_M_node._M_prev); }
       
       /**
        *  @brief  Inserts given value into %list before specified iterator.
@@ -876,7 +893,8 @@ namespace __gnu_norm
        *  function.
        */
       void
-      swap(list& __x) { _List_node_base::swap(this->_M_node,__x._M_node); }
+      swap(list& __x)
+      { _List_node_base::swap(this->_M_node,__x._M_node); }
   
       /**
        *  Erases all the elements.  Note that this function only erases
@@ -922,7 +940,8 @@ namespace __gnu_norm
       {
 	iterator __j = __i;
 	++__j;
-	if (__position == __i || __position == __j) return;
+	if (__position == __i || __position == __j)
+	  return;
 	this->_M_transfer(__position, __i, __j);
       }
   
@@ -1037,7 +1056,8 @@ namespace __gnu_norm
        *  Reverse the order of elements in the list in linear time.
        */
       void
-      reverse() { this->_M_node.reverse(); }
+      reverse()
+      { this->_M_node.reverse(); }
   
       /**
        *  @brief  Sort the elements.
@@ -1118,16 +1138,13 @@ namespace __gnu_norm
       // Moves the elements from [first,last) before position.
       void
       _M_transfer(iterator __position, iterator __first, iterator __last)
-      {
-        __position._M_node->transfer(__first._M_node,__last._M_node);
-      }
+      { __position._M_node->transfer(__first._M_node,__last._M_node); }
 
       // Inserts new element at position given and with value given.
       void
       _M_insert(iterator __position, const value_type& __x)
       {
         _Node* __tmp = _M_create_node(__x);
-
         __tmp->hook(__position._M_node);
       }
 
@@ -1141,7 +1158,6 @@ namespace __gnu_norm
         _M_put_node(__n);
       }
     };
-  
   
   /**
    *  @brief  List equality comparison.
@@ -1167,7 +1183,7 @@ namespace __gnu_norm
 	{
 	  ++__i1;
 	  ++__i2;
-      }
+	}
       return __i1 == __end1 && __i2 == __end2;
     }
   
@@ -1185,10 +1201,8 @@ namespace __gnu_norm
   template<typename _Tp, typename _Alloc>
     inline bool
     operator<(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
-    {
-      return std::lexicographical_compare(__x.begin(), __x.end(),
-					  __y.begin(), __y.end());
-    }
+    { return std::lexicographical_compare(__x.begin(), __x.end(),
+					  __y.begin(), __y.end()); }
   
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
