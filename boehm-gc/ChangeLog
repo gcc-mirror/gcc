@@ -1,3 +1,14 @@
+2002-03-12  Adam Megacz  <adam@xwt.org>
+
+        * dyn_load.c: Renamed GC_win32s to GC_no_win32_dlls.
+        * misc.c: Renamed GC_is_win32s() to GC_no_win32_dlls
+        * os_dep.c: Renamed GC_win32s to GC_no_win32_dlls and
+        statically initialized it to TRUE if compiling with GCC.
+        * win32_threads.c (thread_start): We no longer use SEH if
+        compiling with GCC.
+        * mark.c (GC_mark_some): We no longer use SEH if
+        compiling with GCC.
+	
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* include/gc_priv.h: Define ALIGN_DOUBLE on 32 bit targets if GCJ 
