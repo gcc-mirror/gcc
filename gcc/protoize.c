@@ -185,18 +185,12 @@ typedef char * const_pointer_type;
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
 
-#ifndef abort
-typedef void voidfn ();
-extern VOLATILE voidfn abort;
-#endif
 extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
 extern int open (const char *, int, ...);
 #endif /* 0 */
-extern void exit ();
-extern void free ();
 extern int read ();
 extern int write ();
 extern int close ();
