@@ -636,8 +636,8 @@ cplus_demangle_opname (opname, result, options)
 	}
     }
   else if (opname[0] == '_' && opname[1] == '_'
-	   && opname[2] >= 'a' && opname[2] <= 'z'
-	   && opname[3] >= 'a' && opname[3] <= 'z')
+	   && islower(opname[2])
+	   && islower(opname[3]))
     {
       if (opname[4] == '\0')
 	{
@@ -4188,8 +4188,8 @@ demangle_function_name (work, mangled, declp, scan)
 	}
     }
   else if (declp->b[0] == '_' && declp->b[1] == '_'
-	   && declp->b[2] >= 'a' && declp->b[2] <= 'z'
-	   && declp->b[3] >= 'a' && declp->b[3] <= 'z')
+	   && islower(declp->b[2])
+	   && islower(declp->b[3]))
     {
       if (declp->b[4] == '\0')
 	{
