@@ -82,6 +82,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define O_RDONLY 0
 #endif
 
+extern void cpp_fatal ();
+
 sstring buf;
 
 int verbose = 0;
@@ -571,7 +573,7 @@ recognized_function (fname, fname_length,
 
 void
 check_macro_names (pfile, names)
-     struct parse_file *pfile;
+     cpp_reader *pfile;
      namelist names;
 {
   while (*names)
@@ -596,13 +598,17 @@ read_scan_file (in_fname, argc, argv)
 
   obstack_init (&scan_file_obstack); 
 
-  init_parse_file (&scan_in);
+  cpp_reader_init (&scan_in);
   scan_in.data = &scan_options;
-  init_parse_options (&scan_options);
+  cpp_options_init (&scan_options);
   i = cpp_handle_options (&scan_in, argc, argv);
-  if (i < argc)
-    fatal ("Invalid option `%s'", argv[i]);
-  push_parse_file (&scan_in, in_fname);
+  if (i < argc && scan_in.errors < CPP_FATAL_LIMIT)
+    cpp_fatal (&scan_in, "Invalid option `%s'", argv[i]);
+  if (scan_in.errors >= CPP_FATAL_LIMIT)
+    exit (FATAL_EXIT_CODE);
+
+  if (! cpp_start_read (&scan_in, in_fname))
+    exit (FATAL_EXIT_CODE);
   CPP_OPTIONS (&scan_in)->no_line_commands = 1;
 
   scan_decls (&scan_in, argc, argv);
@@ -1297,15 +1303,17 @@ cpp_print_containing_files (pfile)
 {
 }
 
-/* IS_ERROR is 1 for error, 0 for warning */
+/* IS_ERROR is 2 for fatal error, 1 for error, 0 for warning */
 void cpp_message (pfile, is_error, msg, arg1, arg2, arg3)
      int is_error;
      cpp_reader *pfile;
      char *msg;
      char *arg1, *arg2, *arg3;
 {
-  if (is_error)
+  if (is_error == 1)
     pfile->errors++;
+  else if (is_error > 1)
+    pfile->errors = CPP_FATAL_LIMIT;
   if (!verbose)
     return;
   if (!is_error)
@@ -1322,6 +1330,14 @@ fatal (str, arg)
   fprintf (stderr, str, arg);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
+}
+
+void
+cpp_fatal (pfile, str, arg)
+     cpp_reader *pfile;
+     char *str, *arg;
+{
+  fatal (str, arg);
 }
 
 void
