@@ -1,3 +1,8 @@
+2005-02-09  Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/19583
+	* g++.dg/warn/Wreturn-type-3.C: New test.
+
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR middle-end/19402
