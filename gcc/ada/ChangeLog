@@ -1,3 +1,10 @@
+2001-10-30  Vincent Celier <celier@gnat.com>
+
+	* gnatcmd.adb (MAKE, BIND, LINK, LIST, FIND, XREF): Add translations 
+	for project file switches (-P (/PROJECT_FILE=),
+	 -X (/EXTERNAL_REFERENCE=) and -vPx (/PROJECT_FILE_VERBOSITY=DEFAULT 
+	or MEDIUM or HIGH)
+
 2001-10-30  Geert Bosch <bosch@gnat.com>
 
 	* decl.c: Minor whitespace fixes.
