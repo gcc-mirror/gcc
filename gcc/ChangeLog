@@ -1,3 +1,39 @@
+Mon Jul 20 16:16:38 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* configure.in (enable_c_mbchar): New configure option.
+	(extra_cpp_objs): Always available now.
+
+	* cexp.y (mbchar.h): #include it.
+	(yylex): Handle Multibyte characters in character literals.
+
+	* cccp.c (mbchar.h): #include it.
+	(main): Set character set based on LANG environment variable.
+	(rescan): Handle multibyte characters in comments.
+	(skip_if_group): See above.
+	(validate_else): See above.
+	(skip_to_end_of_comment): See above.
+	(macarg1): See above.
+	(discard_comments): See above.
+	(rescan): Handle multibyte characters in string and character literals.
+	(collect_expansion): See above.
+	(skip_quoted_string): See above.
+	(macroexpand): See above.
+	(macarg1): See above.
+	(discard_comments): See above.
+	(change_newlines): See above.
+
+	* c-lex.c (mbchar.h): #include it.
+	(GET_ENVIRONMENT): New macro.
+	(init_lex): Set character set based on LANG environment variable.
+	(yylex): Handle multibyte characters in character literals.
+	(yylex): Handle multibyte characters in string literals.
+
+	* Makefile.in (mbchar.o): New target.
+	(cccp$(exeext)): @extra_cpp_objs@ is always available.
+	(cppmain$(exeext)): @extra_cpp_objs@ is always available.
+
+	* mbchar.[ch]: New files for multibyte character handling.
+
 Mon Jul 20 01:11:11 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* jump.c (jump_optimize): When simplifying noop moves and

@@ -45,6 +45,11 @@ typedef unsigned char U_CHAR;
 #include "gansidecl.h"
 #include "pcp.h"
 
+#ifdef MULTIBYTE_CHARS
+#include "mbchar.h"
+#include <locale.h>
+#endif /* MULTIBYTE_CHARS */
+
 #ifndef GET_ENVIRONMENT
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
 #endif
@@ -1307,6 +1312,12 @@ main (argc, argv)
   bzero ((char *) pend_undefs, argc * sizeof (char *));
   bzero ((char *) pend_assertions, argc * sizeof (char *));
   bzero ((char *) pend_includes, argc * sizeof (char *));
+
+#ifdef MULTIBYTE_CHARS
+  /* Change to the native locale for multibyte conversions.  */
+  setlocale (LC_CTYPE, "");
+  GET_ENVIRONMENT (literal_codeset, "LANG");
+#endif
 
   /* Process switches and find input file name.  */
 
@@ -2774,9 +2785,27 @@ do { ip = &instack[indepth];		\
 	      bp += 2;
 	    else if (*bp == '/' && bp[1] == '*') {
 	      bp += 2;
-	      while (!(*bp == '*' && bp[1] == '/'))
-		bp++;
-	      bp += 2;
+	      while (1)
+		{
+		  if (*bp == '*')
+		    {
+		      if (bp[1] == '/')
+			{
+			  bp += 2;
+			  break;
+			}
+		    }
+		  else
+		    {
+#ifdef MULTIBYTE_CHARS
+		      int length;
+		      length = local_mblen (bp, limit - bp);
+		      if (length > 1)
+			bp += (length - 1);
+#endif
+		    }
+		  bp++;
+		}
 	    }
 	    /* There is no point in trying to deal with C++ // comments here,
 	       because if there is one, then this # must be part of the
@@ -2937,6 +2966,24 @@ do { ip = &instack[indepth];		\
 	  if (ibp[-1] == c)
 	    goto while2end;
 	  break;
+#ifdef MULTIBYTE_CHARS
+	default:
+	  {
+	    int length;
+	    --ibp;
+	    length = local_mblen (ibp, limit - ibp);
+	    if (length > 0)
+	      {
+		--obp;
+		bcopy (ibp, obp, length);
+		obp += length;
+		ibp += length;
+	      }
+	    else
+	      ++ibp;
+	  }
+	  break;
+#endif
 	}
       }
     while2end:
@@ -2983,6 +3030,15 @@ do { ip = &instack[indepth];		\
 		*obp++ = '\n';
 	      ++op->lineno;
 	    }
+	    else
+	      {
+#ifdef MULTIBYTE_CHARS
+		int length;
+		length = local_mblen (ibp, limit - ibp);
+		if (length > 1)
+		  ibp += (length - 1);
+#endif
+	      }
 	  }
 	  break;
 	}
@@ -3071,6 +3127,16 @@ do { ip = &instack[indepth];		\
 	      goto limit_reached;
 	    }
 	    break;
+#ifdef MULTIBYTE_CHARS
+	  default:
+	    {
+	      int length;
+	      length = local_mblen (ibp, limit - ibp);
+	      if (length > 1)
+		ibp += (length - 1);
+	    }
+	    break;
+#endif
 	  }
 	}
       comment_end:
@@ -3433,11 +3499,27 @@ randomchar:
 			      break;
 			    }
 			  }
-			  if (*ibp == '\n') {
+			  else if (*ibp == '\n') {
 			    /* Newline in a file.  Count it.  */
 			    ++ip->lineno;
 			    ++op->lineno;
 			  }
+			  else
+			    {
+#ifdef MULTIBYTE_CHARS
+			      int length;
+			      length = local_mblen (ibp, limit - ibp);
+			      if (length > 1)
+				{
+				  if (put_out_comments)
+				    {
+				      bcopy (ibp, obp, length - 1);
+				      obp += length - 1;
+				    }
+				  ibp += (length - 1);
+				}
+#endif
+			    }
 			  if (put_out_comments)
 			    *obp++ = *ibp;
 			}
@@ -3448,9 +3530,32 @@ randomchar:
 			} else if (! traditional) {
 			  *obp++ = ' ';
 			}
-			for (ibp += 2; *ibp != '\n' || ibp[-1] == '\\'; ibp++)
-			  if (put_out_comments)
-			    *obp++ = *ibp;
+			for (ibp += 2; ; ibp++)
+			  {
+			    if (*ibp == '\n')
+			      {
+				if (ibp[-1] != '\\')
+				  break;
+			      }
+			    else
+			      {
+#ifdef MULTIBYTE_CHARS
+				int length;
+				length = local_mblen (ibp, limit - ibp);
+				if (length > 1)
+				  {
+				    if (put_out_comments)
+				      {
+					bcopy (ibp, obp, length - 1);
+					obp += length - 1;
+				      }
+				    ibp += (length - 1);
+				  }
+#endif
+			      }
+			    if (put_out_comments)
+			      *obp++ = *ibp;
+			  }
 		      } else
 			break;
 		    }
@@ -6186,6 +6291,25 @@ collect_expansion (buf, end, nargs, arglist)
       }
     }
 
+#ifdef MULTIBYTE_CHARS
+    /* Handle multibyte characters inside string and character literals.  */
+    if (expected_delimiter != '\0')
+      {
+	int length;
+	--p;
+	length = local_mblen (p, limit - p);
+	if (length > 1)
+	  {
+	    --exp_p;
+	    bcopy (p, exp_p, length);
+	    p += length;
+	    exp_p += length;
+	    continue;
+	  }
+	++p;
+      }
+#endif
+
     /* Handle the start of a symbol.  */
     if (is_idchar[c] && nargs > 0) {
       U_CHAR *id_beg = p - 1;
@@ -7412,9 +7536,27 @@ skip_if_group (ip, any, op)
 	    bp += 2;
 	  else if (*bp == '/' && bp[1] == '*') {
 	    bp += 2;
-	    while (!(*bp == '*' && bp[1] == '/'))
-	      bp++;
-	    bp += 2;
+	    while (1)
+	      {
+		if (*bp == '*')
+		  {
+		    if (bp[1] == '/')
+		      {
+			bp += 2;
+			break;
+		      }
+		  }
+		else
+		  {
+#ifdef MULTIBYTE_CHARS
+		    int length;
+		    length = local_mblen (bp, endb - bp);
+		    if (length > 1)
+		      bp += (length - 1);
+#endif
+		  }
+		bp++;
+	      }
 	  }
 	  /* There is no point in trying to deal with C++ // comments here,
 	     because if there is one, then this # must be part of the
@@ -7458,6 +7600,15 @@ skip_if_group (ip, any, op)
 		if (bp[1] == '/')
 		  break;
 	      }
+	      else
+		{
+#ifdef MULTIBYTE_CHARS
+		  int length;
+		  length = local_mblen (bp, endb - bp);
+		  if (length > 1)
+		    bp += (length - 1);
+#endif
+		}
 	    }
 	    bp += 2;
 	  } else if (bp[1] == '/' && cplusplus_comments) {
@@ -7469,6 +7620,15 @@ skip_if_group (ip, any, op)
 		  warning ("multiline `//' comment");
 		ip->lineno++;
 	      }
+	      else
+		{
+#ifdef MULTIBYTE_CHARS
+		  int length;
+		  length = local_mblen (bp, endb - bp);
+		  if (length > 1)
+		    bp += (length - 1);
+#endif
+		}
 	    }
 	  } else
 	    break;
@@ -7764,6 +7924,15 @@ validate_else (p, limit)
 	      break;
 	    }
 	  }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      int length;
+	      length = local_mblen (p, limit - p);
+	      if (length > 1)
+		p += (length - 1);
+#endif
+	    }
 	}
       }
       else if (cplusplus_comments && p[1] == '/')
@@ -7817,6 +7986,22 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
 	if (op)
 	  ++op->lineno;
       }
+      else
+	{
+#ifdef MULTIBYTE_CHARS
+	  int length;
+	  length = local_mblen (bp, limit - bp);
+	  if (length > 1)
+	    {
+	      if (op)
+		{
+		  bcopy (bp, op->bufp, length - 1);
+		  op->bufp += (length - 1);
+		}
+	      bp += (length - 1);
+	    }
+#endif
+	}
       if (op)
 	*op->bufp++ = *bp;
     }
@@ -7854,6 +8039,23 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
 	return bp;
       }
       break;
+#ifdef MULTIBYTE_CHARS
+    default:
+      {
+	int length;
+	bp--;
+	length = local_mblen (bp, limit - bp);
+	if (length <= 0)
+	  length = 1;
+	if (op)
+	  {
+	    op->bufp--;
+	    bcopy (bp, op->bufp, length);
+	    op->bufp += length;
+	  }
+	bp += length;
+      }
+#endif
     }
   }
 
@@ -7944,6 +8146,16 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
       }
     } else if (c == match)
       break;
+#ifdef MULTIBYTE_CHARS
+    {
+      int length;
+      --bp;
+      length = local_mblen (bp, limit - bp);
+      if (length <= 0)
+	length = 1;
+      bp += length;
+    }
+#endif
   }
   return bp;
 }
@@ -8381,9 +8593,23 @@ macroexpand (hp, op)
 	    else {
 	      if (c == '\\')
 		escaped = 1;
-	      if (in_string) {
+	      else if (in_string) {
 		if (c == in_string)
 		  in_string = 0;
+		else
+		  {
+#ifdef MULTIBYTE_CHARS
+		    int length;
+		    length = local_mblen (arg->raw + i, arglen - i);
+		    if (length > 1)
+		      {
+			bcopy (arg->raw + i, xbuf + totlen, length);
+			i += length - 1;
+			totlen += length;
+			continue;
+		      }
+#endif
+		  }
 	      } else if (c == '\"' || c == '\'')
 		in_string = c;
 	    }
@@ -8717,6 +8943,15 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
 	      break;
 	    }
 	  }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      int length;
+	      length = local_mblen (bp, limit - bp);
+	      if (length > 1)
+		bp += (length - 1);
+#endif
+	    }
 	}
       } else if (bp[1] == '/' && cplusplus_comments) {
 	*comments = 1;
@@ -8728,6 +8963,15 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
 	    if (warn_comments)
 	      warning ("multiline `//' comment");
 	  }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      int length;
+	      length = local_mblen (bp, limit - bp);
+	      if (length > 1)
+		bp += (length - 1);
+#endif
+	    }
 	}
       }
       break;
@@ -8751,6 +8995,15 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
 	    if (quotec == '\'')
 	      break;
 	  }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      int length;
+	      length = local_mblen (bp, limit - bp);
+	      if (length > 1)
+		bp += (length - 1);
+#endif
+	    }
 	}
       }
       break;
@@ -8828,8 +9081,23 @@ discard_comments (start, length, newlines)
 	/* Comments are equivalent to spaces.  */
 	obp[-1] = ' ';
 	ibp++;
-	while (ibp < limit && (*ibp != '\n' || ibp[-1] == '\\'))
-	  ibp++;
+	while (ibp < limit)
+	  {
+	    if (*ibp == '\n')
+	      {
+		if (ibp[-1] != '\\')
+		  break;
+	      }
+	    else
+	      {
+#ifdef MULTIBYTE_CHARS
+		int length = local_mblen (ibp, limit - ibp);
+		if (length > 1)
+		  ibp += (length - 1);
+#endif
+	      }
+	    ibp++;
+	  }
 	break;
       }
       if (ibp[0] != '*' || ibp + 1 >= limit)
@@ -8849,6 +9117,14 @@ discard_comments (start, length, newlines)
 	    break;
 	  }
 	}
+	else
+	  {
+#ifdef MULTIBYTE_CHARS
+	    int length = local_mblen (ibp, limit - ibp);
+	    if (length > 1)
+	      ibp += (length - 1);
+#endif
+	  }
       }
       break;
 
@@ -8863,9 +9139,12 @@ discard_comments (start, length, newlines)
 	  *obp++ = c = *ibp++;
 	  if (c == quotec)
 	    break;
-	  if (c == '\n' && quotec == '\'')
-	    break;
-	  if (c == '\\') {
+	  if (c == '\n')
+	    {
+	      if (quotec == '\'')
+		break;
+	    }
+	  else if (c == '\\') {
 	    if (ibp < limit && *ibp == '\n') {
 	      ibp++;
 	      obp--;
@@ -8876,6 +9155,23 @@ discard_comments (start, length, newlines)
 		*obp++ = *ibp++;
 	    }
 	  }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      int length;
+	      ibp--;
+	      length = local_mblen (ibp, limit - ibp);
+	      if (length > 1)
+		{
+		  obp--;
+		  bcopy (ibp, obp, length);
+		  ibp += length;
+		  obp += length;
+		}
+	      else
+		ibp++;
+#endif
+	    }
 	}
       }
       break;
@@ -8925,10 +9221,33 @@ change_newlines (start, length)
 	int quotec = c;
 	while (ibp < limit) {
 	  *obp++ = c = *ibp++;
-	  if (c == quotec && ibp[-2] != '\\')
-	    break;
-	  if (c == '\n' && quotec == '\'')
-	    break;
+	  if (c == quotec)
+	    {
+	      if (ibp[-2] != '\\')
+		break;
+	    }
+	  else if (c == '\n')
+	    {
+	      if (quotec == '\'')
+		break;
+	    }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      int length;
+	      ibp--;
+	      length = local_mblen (ibp, limit - ibp);
+	      if (length > 1)
+		{
+		  obp--;
+		  bcopy (ibp, obp, length);
+		  ibp += length;
+		  obp += length;
+		}
+	      else
+		ibp++;
+#endif
+	    }
 	}
       }
       break;

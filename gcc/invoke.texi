@@ -5964,8 +5964,9 @@ the language standard.  You should not need to use these options yourself.
 @cindex environment variables
 
 This section describes several environment variables that affect how GNU
-CC operates.  They work by specifying directories or prefixes to use
-when searching for various kinds of files.
+CC operates.  Some of them work by specifying directories or prefixes to use
+when searching for various kinds of files. Some are used to specify other
+ascpects of the compilation environment.
 
 @ifclear INTERNALS
 Note that you can also specify places to search using options such as
@@ -6065,6 +6066,28 @@ which case the Make rules are written to that file, guessing the target
 name from the source file name.  Or the value can have the form
 @samp{@var{file} @var{target}}, in which case the rules are written to
 file @var{file} using @var{target} as the target name.
+
+@item LANG
+@findex LANG
+@cindex locale definition
+This variable is used to pass locale information to the compiler. One way in
+which this information is used is to determine the character set to be used
+when character literals, string literals and comments are parsed in C and C++.
+When the compiler is configured to allow multibyte characters,
+the following values for @code{LANG} are recognized:
+
+@table @code
+@item C-JIS
+Recognize JIS characters.
+@item C-SJIS
+Recognize SJIS characters.
+@item C-EUCJP
+Recognize EUCJP characters.
+@end table
+
+If @code{LANG} is not defined, or if it has some ther value, then the
+compiler will use mblen and mbtowc as defined by the default locale to
+recognize and translate multibyte characters.
 @end table
 
 @node Running Protoize
