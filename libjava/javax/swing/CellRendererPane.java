@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Component;
@@ -43,6 +44,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;

@@ -1,5 +1,5 @@
 /* InputVerifier.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,43 +37,39 @@ exception statement from your version. */
 
 package javax.swing;
 
+
 /**
  * InputVerifier
- * @author	Andrew Selkirk
- * @version	1.0
+ * @author Andrew Selkirk
+ * @version 1.0
  */
-public abstract class InputVerifier {
+public abstract class InputVerifier
+{
+  /**
+   * Creates a <code>InputVerifier</code>
+   */
+  public InputVerifier()
+  {
+  }
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * verify
+   *
+   * @param component the component to verify
+   *
+   * @return <code>true</code> if valid, <code>false</code> otherwise.
+   */
+  public abstract boolean verify(JComponent component);
 
-	/**
-	 * Constructor InputVerifier
-	 */
-	public InputVerifier() {
-	} // InputVerifier()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * verify
-	 * @param component TODO
-	 * @returns boolean
-	 */
-	public abstract boolean verify(JComponent component);
-
-	/**
-	 * shouldYieldFocus
-	 * @param component TODO
-	 * @returns boolean
-	 */
-	public boolean shouldYieldFocus(JComponent component) {
-		return verify(component);
-	} // shouldYieldFocus()
-
-
-} // InputVerifier
+  /**
+   * shouldYieldFocus
+   *
+   * @param component the component to verify
+   *
+   * @return <code>true</code> if valid, <code>false</code> otherwise.
+   */
+  public boolean shouldYieldFocus(JComponent component)
+  {
+    return verify(component);
+  }
+}

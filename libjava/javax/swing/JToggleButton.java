@@ -38,17 +38,103 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
 import javax.swing.plaf.ButtonUI;
 
+/**
+ * The <code>JToggleButton</code> component provides a stateful button,
+ * which can be either selected or unselected.  This provides the basis
+ * for the implementations of radio buttons (<code>JRadioButton</code>)
+ * and check boxes (<code>JCheckBox</code>).
+ *
+ * @author Michael Koch  <konqueror@gmx.de>
+ * @author Graydon Hoare  <graydon@redhat.com>
+ * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+ * @see JRadioButton
+ * @see JCheckBox
+ * @since 1.2
+ */
 public class JToggleButton extends AbstractButton implements Accessible
 {
+  
+  /**
+   * This class provides accessibility support for the toggle button.
+   */
+  protected class AccessibleJToggleButton
+    extends AccessibleAbstractButton
+    implements ItemListener
+  {
 
+    /**
+     * Constructor for the accessible toggle button.
+     */
+    public AccessibleJToggleButton()
+    {
+      super();
+      /* Register the accessible toggle button as a listener for item events */
+      addItemListener(this);
+    }
+
+    /**
+     * Returns the accessible role for the toggle button.
+     *
+     * @return An instance of <code>AccessibleRole</code>, describing
+     *         the role of the toggle button.
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.TOGGLE_BUTTON;
+    }
+    
+    /**
+     * Monitors the toggle button for state changes and fires accessible
+     * property change events when they occur.
+     *
+     * @param event the event that occurred.
+     */
+    public void itemStateChanged(ItemEvent event)
+    {
+        /* Fire a state property change event as the button's state has changed */
+        if (event.getStateChange() == ItemEvent.SELECTED)
+          {
+            /* State has changed from unselected (null) to selected */
+            firePropertyChange(ACCESSIBLE_STATE_PROPERTY, null, AccessibleState.SELECTED);
+          } 
+        else
+          {
+            /* State has changed from selected to unselected (null) */
+            firePropertyChange(ACCESSIBLE_STATE_PROPERTY, AccessibleState.ENABLED, null);
+          }
+    }
+    
+  }
+
+  /**
+   * The model handles the storage and maintenance of the state of
+   * the toggle button.  This follows the same paradigm (the MVC
+   * or Model-View-Controller design pattern) employed by
+   * other Swing components, where the data associated with a component
+   * is stored separately from the display aspects.
+   */
   public static class ToggleButtonModel extends DefaultButtonModel
   {
+    /**
+     * Compatible with Sun's JDK.
+     */
     private static final long serialVersionUID = -1589950750899943974L;
   
+    /**
+     * Sets the pressed state of the button.  The selected state
+     * of the button also changes follwing the button being pressed.
+     *
+     * @param b true if the button is pressed down.
+     */
     public void setPressed(boolean b)  
     {
       if (! isEnabled())
@@ -63,44 +149,97 @@ public class JToggleButton extends AbstractButton implements Accessible
     }
   }
 
-
+  /**
+   * Compatible with Sun's JDK.
+   */
   private static final long serialVersionUID = -3128248873429850443L;
     
+  /**
+   * Constructs an unselected toggle button with no text or icon.
+   */ 
   public JToggleButton()
   {
-    this(null, null);
+    this(null, null, false);
   }
+
+  /**
+   * Constructs a toggle button using the labelling, state
+   * and icon specified by the supplied action.
+   *
+   * @param a the action to use to define the properties of the button.
+   */
   public JToggleButton(Action a)
   {
     this();
     setAction(a);
   }
 
+  /**
+   * Constructs an unselected toggle button with the supplied icon
+   * and no text.
+   *
+   * @param icon the icon to use.
+   */
   public JToggleButton(Icon icon)
   { 
-    this(null, icon);
+    this(null, icon, false);
   }    
   
-  public JToggleButton (Icon icon, boolean selected) 
+  /**
+   * Constructs a toggle button with the supplied icon and state.
+   *
+   * @param icon the icon to use.
+   * @param selected if true, the toggle button is initially in the
+   *        selected state.  Otherwise, the button is unselected.
+   */
+  public JToggleButton(Icon icon, boolean selected) 
   {
     this(null, icon, selected);
   }
   
+  /**
+   * Constructs an unselected toggle button using the supplied text
+   * and no icon.
+   *
+   * @param text the text to use.
+   */ 
   public JToggleButton(String text)
   {
-    this(text, null);
+    this(text, null, false);
   }
       
+  /**
+   * Constructs a toggle button with the supplied text and state.
+   *
+   * @param text the text to use.
+   * @param selected if true, the toggle button is initially in the
+   *        selected state.  Otherwise, the button is unselected.
+   */
   public JToggleButton(String text, boolean selected)
   {
     this(text, null, selected);
   }
 
+  /**
+   * Constructs an unselected toggle button with the supplied text
+   * and icon.
+   *
+   * @param text the text to use.
+   * @param icon the icon to use.
+   */
   public JToggleButton(String text, Icon icon)
   {
     this(text, icon, false);
   }
 
+  /**
+   * Constructs a toggle button with the supplied text, icon and state.
+   *
+   * @param text the text to use.
+   * @param icon the icon to use.
+   * @param selected if true, the toggle button is initially in the
+   *        selected state.  Otherwise, the button is unselected.
+   */
   public JToggleButton (String text, Icon icon, boolean selected) 
   {
     super(text, icon);
@@ -112,34 +251,54 @@ public class JToggleButton extends AbstractButton implements Accessible
 
   /**
    * Gets the AccessibleContext associated with this <code>JToggleButton</code>.
+   * The context is created, if necessary.
    *
    * @return the associated context
    */
   public AccessibleContext getAccessibleContext()
   {
-    return null;
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      {
+        /* Create the context */
+	accessibleContext = new AccessibleJToggleButton();
+      }
+    return accessibleContext;
   }
   
   /**
    * Returns a string that specifies the name of the Look and Feel
    * class that renders this component.
+   *
+   * @return The Look and Feel UI class in <code>String</code> form.
    */
   public String getUIClassID()
   {
     return "ToggleButtonUI";
   }
   
+  /**
+   * Returns a textual representation of this component for debugging.
+   * Users should not depend on anything as regards the content or formatting
+   * of this string, except for the fact that the returned string may never be
+   * null (only empty).
+   *
+   * @return the component in <code>String</code> form for debugging.
+   */
   protected  String paramString()
   {
     return "JToggleButton";
   }
   
-  
+  /**
+   * This method resets the toggle button's UI delegate to the default UI for
+   * the current look and feel.
+   */
   public void updateUI()
   {	
-    ButtonUI b = (ButtonUI)UIManager.getUI(this);
-    setUI(b);
+    setUI((ButtonUI)UIManager.getUI(this));
   }
+
 }
 
 

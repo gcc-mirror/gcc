@@ -1,5 +1,5 @@
 /* DefaultSingleSelectionModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,10 +35,12 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.io.Serializable;
 import java.util.EventListener;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -77,7 +79,7 @@ public class DefaultSingleSelectionModel
 
   /**
    * getSelectedIndex
-   * @returns int
+   * @return int
    */
   public int getSelectedIndex ()
   {
@@ -111,7 +113,7 @@ public class DefaultSingleSelectionModel
 
   /**
    * isSelected
-   * @returns boolean
+   * @return boolean
    */
   public boolean isSelected ()
   {
@@ -120,7 +122,8 @@ public class DefaultSingleSelectionModel
 
   /**
    * addChangeListener
-   * @param listener TODO
+   *
+   * @param listener the listener to add
    */
   public void addChangeListener (ChangeListener listener)
   {
@@ -129,7 +132,8 @@ public class DefaultSingleSelectionModel
 
   /**
    * removeChangeListener
-   * @param listener TODO
+   *
+   * @param listener the listener to remove
    */
   public void removeChangeListener (ChangeListener listener)
   {
@@ -159,8 +163,12 @@ public class DefaultSingleSelectionModel
 
   /**
    * getListeners
-   * @param listenerClass TODO
-   * @returns EventListener[]
+   *
+   * @param listenerClass the type fo listener
+   *
+   * @return an array of listeners
+   *
+   * @since 1.3
    */
   public EventListener[] getListeners (Class listenerClass)
   {
@@ -169,6 +177,8 @@ public class DefaultSingleSelectionModel
 
   /**
    * getChangeListeners
+   *
+   * @since 1.4
    */
   public ChangeListener[] getChangeListeners ()
   {

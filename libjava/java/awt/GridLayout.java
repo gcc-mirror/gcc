@@ -1,6 +1,5 @@
-// GridLayout.java - Grid-based layout engine
-
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
+/* GridLayout.java -- Grid-based layout engine
+   Copyright (C) 1999, 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -63,7 +62,7 @@ public class GridLayout implements LayoutManager, Serializable
   /** Add a new component to the layout.  This particular implementation
    * does nothing.
    * @param name The name of the component to add.
-   * @param component The component to add.
+   * @param comp The component to add.
    */
   public void addLayoutComponent (String name, Component comp)
   {

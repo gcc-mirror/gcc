@@ -1,6 +1,6 @@
 /* AffineTransformOp.java --  This class performs affine 
- * transformation between two images or rasters in 2 
- * dimensions. Copyright (C) 2004 Free Software Foundation
+   transformation between two images or rasters in 2 dimensions.
+   Copyright (C) 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,30 +38,39 @@ exception statement from your version. */
 
 package java.awt.image;
 
-import java.awt.*;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.*;
-
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 
 /**
  * This class performs affine transformation between two images or 
  * rasters in 2 dimensions. 
  *
- * @author Olga Rodimina <rodimina@redhat.com> 
+ * @author Olga Rodimina (rodimina@redhat.com) 
  */
- 
 public class AffineTransformOp implements BufferedImageOp, RasterOp
 {
-    public static final int TYPE_BILINEAR = 0;
     public static final int TYPE_NEAREST_NEIGHBOR = 1;
+    
+    public static final int TYPE_BILINEAR = 2;
+    
+    /**
+     * @since 1.5.0
+     */
+    public static final int TYPE_BICUBIC = 3;
 
     private AffineTransform transform;
     private RenderingHints hints;
     
     /**
      * Construct AffineTransformOp with the given xform and interpolationType.
-     * Interpolation type can be either TYPE_BILINEAR or TYPE_NEAREST_NEIGHBOR.
+     * Interpolation type can be TYPE_BILINEAR, TYPE_BICUBIC or
+     * TYPE_NEAREST_NEIGHBOR.
      *
      * @param xform AffineTransform that will applied to the source image 
      * @param interpolationType type of interpolation used
@@ -69,15 +78,23 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     public AffineTransformOp (AffineTransform xform, int interpolationType)
     {
       this.transform = xform;
+      if (xform.getDeterminant() == 0)
+        throw new ImagingOpException(null);
 
-      if (interpolationType == 0) 
+      switch (interpolationType)
+      {
+      case TYPE_BILINEAR:
         hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION, 
                                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-				   
-      else
+        break;
+      case TYPE_BICUBIC:
+        hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION, 
+				    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        break;
+      default:
         hints = new RenderingHints (RenderingHints.KEY_INTERPOLATION,
                                     RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-
+      }
     }
 
     /**
@@ -90,6 +107,8 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
     {
       this.transform = xform;
       this.hints = hints;
+      if (xform.getDeterminant() == 0)
+        throw new ImagingOpException(null);
     }
 
     /**
@@ -149,7 +168,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param dst destination image
      * @return transformed source image
      */
-    public BufferedImage filter (BufferedImage src, BufferedImage dst)
+    public final BufferedImage filter (BufferedImage src, BufferedImage dst)
     {
 
       if (dst == src)
@@ -180,9 +199,99 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param dst destination raster
      * @return transformed raster
      */
-    public WritableRaster filter (Raster src, WritableRaster dst)
+    public final WritableRaster filter (Raster src, WritableRaster dst)
     {
-      throw new UnsupportedOperationException ("not implemented yet");	
+      if (dst == src)
+        throw new IllegalArgumentException("src image cannot be the same as"
+					   + " the dst image");
+
+      if (dst == null)
+        dst = createCompatibleDestRaster(src);
+
+      if (src.getNumBands() != dst.getNumBands())
+        throw new IllegalArgumentException("src and dst must have same number"
+					   + " of bands");
+      
+      double[] dpts = new double[dst.getWidth() * 2];
+      double[] pts = new double[dst.getWidth() * 2];
+      for (int x = 0; x < dst.getWidth(); x++)
+      {
+	dpts[2 * x] = x + dst.getMinX();
+	dpts[2 * x + 1] = x;
+      }
+      Rectangle srcbounds = src.getBounds();
+      if (hints.containsValue(RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR))
+      {
+	for (int y = dst.getMinY(); y < dst.getMinY() + dst.getHeight(); y++)
+	  {
+	    try {
+	      transform.inverseTransform(dpts, 0, pts, 0, dst.getWidth() * 2);
+	    } catch (NoninvertibleTransformException e) {
+	      // Can't happen since the constructor traps this
+	      e.printStackTrace();
+	    }
+        
+	    for (int x = 0; x < dst.getWidth(); x++)
+	      {
+		if (!srcbounds.contains(pts[2 * x], pts[2 * x + 1]))
+		  continue;
+		dst.setDataElements(x + dst.getMinX(), y,
+				    src.getDataElements((int)pts[2 * x],
+							(int)pts[2 * x + 1],
+							null));
+	      }
+	  }
+      }
+      else if (hints.containsValue(RenderingHints.VALUE_INTERPOLATION_BILINEAR))
+      {
+        double[] tmp = new double[4 * src.getNumBands()];
+        for (int y = dst.getMinY(); y < dst.getMinY() + dst.getHeight(); y++)
+        {
+          try {
+            transform.inverseTransform(dpts, 0, pts, 0, dst.getWidth() * 2);
+          } catch (NoninvertibleTransformException e) {
+            // Can't happen since the constructor traps this
+            e.printStackTrace();
+          }
+	    
+          for (int x = 0; x < dst.getWidth(); x++)
+          {
+            if (!srcbounds.contains(pts[2 * x], pts[2 * x + 1]))
+              continue;
+            int xx = (int)pts[2 * x];
+            int yy = (int)pts[2 * x + 1];
+            double dx = (pts[2 * x] - xx);
+            double dy = (pts[2 * x + 1] - yy);
+		
+            // TODO write this more intelligently
+            if (xx == src.getMinX() + src.getWidth() - 1 ||
+                yy == src.getMinY() + src.getHeight() - 1)
+            {
+              // bottom or right edge
+              Arrays.fill(tmp, 0);
+              src.getPixel(xx, yy, tmp);
+            }
+            else
+	    {
+              // Normal case
+              src.getPixels(xx, yy, 2, 2, tmp);
+	      for (int b = 0; b < src.getNumBands(); b++)
+		tmp[b] = dx * dy * tmp[b]
+		  + (1 - dx) * dy * tmp[b + src.getNumBands()]
+		  + dx * (1 - dy) * tmp[b + 2 * src.getNumBands()]
+		  + (1 - dx) * (1 - dy) * tmp[b + 3 * src.getNumBands()];
+	    }
+            dst.setPixel(x, y, tmp);
+          }
+        }
+      }
+      else
+      {
+        // Bicubic
+        throw new UnsupportedOperationException("not implemented yet");
+      }
+      
+      return dst;  
     }
 
     /**
@@ -192,7 +301,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param src image to be transformed
      * @return bounds of the transformed image.
      */
-    public Rectangle2D getBounds2D (BufferedImage src)
+    public final Rectangle2D getBounds2D (BufferedImage src)
     {
       return getBounds2D (src.getRaster());
     }
@@ -203,7 +312,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param src raster to be transformed
      * @return bounds of the transformed raster.
      */
-    public Rectangle2D getBounds2D (Raster src)
+    public final Rectangle2D getBounds2D (Raster src)
     {
       // determine new size for the transformed raster.
       // Need to calculate transformed coordinates of the lower right
@@ -222,7 +331,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      *
      * @return interpolation type
      */
-    public int getInterpolationType ()
+    public final int getInterpolationType ()
     {
       if(hints.containsValue (RenderingHints.VALUE_INTERPOLATION_BILINEAR))
         return TYPE_BILINEAR;
@@ -243,21 +352,23 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
       return transform.transform (srcPt, dstPt);
     }
 
-    /** Returns rendering hints that are used during transformation.
+    /**
+     * Returns rendering hints that are used during transformation.
      *
      * @return rendering hints
      */
-    public RenderingHints getRenderingHints ()
+    public final RenderingHints getRenderingHints ()
     {
       return hints;
     }
 
-    /** Returns transform used in transformation between source and destination
+    /**
+     * Returns transform used in transformation between source and destination
      * image.
      *
      * @return transform
      */
-    public AffineTransform getTransform ()
+    public final AffineTransform getTransform ()
     {
       return transform;
     }

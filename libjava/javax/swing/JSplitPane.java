@@ -40,14 +40,13 @@ package javax.swing;
 
 import java.awt.Component;
 import java.awt.Graphics;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
-import javax.swing.UIManager;
 import javax.swing.plaf.SplitPaneUI;
-
 
 /**
  * This class implements JSplitPane. It is used to divide two components. By

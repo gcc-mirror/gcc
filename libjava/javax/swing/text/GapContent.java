@@ -93,7 +93,7 @@ public class GapContent
 
   public String getString(int where, int len) throws BadLocationException
   {
-    return buf.toString();
+    return buf.substring(where, where+len);
   }
 
   public void getChars(int where, int len, Segment txt)

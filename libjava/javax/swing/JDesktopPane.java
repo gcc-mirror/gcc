@@ -35,17 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Component;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.swing.plaf.DesktopPaneUI;
-
 
 /**
  * JDesktopPane is a container (usually for JInternalFrames) that simulates a
@@ -63,14 +62,18 @@ public class JDesktopPane extends JLayeredPane implements Accessible
   /**
    * This specifies that when dragged, a JInternalFrame should be completely
    * visible.
+   *
+   * @specnote final since 1.5.0.
    */
-  public static int LIVE_DRAG_MODE = 0;
+  public static final int LIVE_DRAG_MODE = 0;
 
   /**
    * This specifies that when dragged, a JInternalFrame should only be visible
    * as an outline.
+   *
+   * @specnote final since 1.5.0.
    */
-  public static int OUTLINE_DRAG_MODE = 1;
+  public static final int OUTLINE_DRAG_MODE = 1;
 
   /** The selected frame in the JDesktopPane. */
   private transient JInternalFrame selectedFrame;
@@ -151,7 +154,10 @@ public class JDesktopPane extends JLayeredPane implements Accessible
 
     // FIXME: Unsupported mode.
     if (mode == OUTLINE_DRAG_MODE)
-      throw new IllegalArgumentException("Outline drag modes are unsupported.");
+      {
+        // throw new IllegalArgumentException("Outline drag modes are unsupported.");
+        mode = LIVE_DRAG_MODE;
+      }
 
     dragMode = mode;
   }

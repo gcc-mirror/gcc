@@ -37,28 +37,19 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import javax.swing.JComponent;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-
 
 /**
  * This class is responsible for the registration of JToolTips to Components
@@ -461,7 +452,13 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
   {
     currentPoint = event.getPoint();
     if (currentTip != null)
-      currentTip.setTipText(((JComponent) currentComponent).getToolTipText(event));
+      {
+	if (currentComponent == null)
+	  currentComponent = (Component) event.getSource();
+	
+	String text = ((JComponent) currentComponent).getToolTipText(event);
+	currentTip.setTipText(text);
+      }
     if (enterTimer.isRunning())
       enterTimer.restart();
   }
@@ -473,7 +470,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
    */
   private void showTip()
   {
-    if (! enabled)
+    if (! enabled || currentComponent == null)
       return;
 
     if (currentTip == null

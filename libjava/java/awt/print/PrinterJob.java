@@ -1,5 +1,5 @@
 /* PrinterJob.java -- This job is the printer control class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,219 +38,246 @@ exception statement from your version. */
 
 package java.awt.print;
 
+import javax.print.DocFlavor;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+//import javax.print.StreamPrintServiceFactory;
+import javax.print.attribute.PrintRequestAttributeSet;
+
 /**
-  * This class controls printing.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This class controls printing.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public abstract class PrinterJob
 {
+  // The print service associated with this job
+  private PrintService printer = null;
 
-/*
- * Class Methods
- */
-
-/**
-  * Creates a new print job.
-  *
-  * @return A <code>PrinterJob</code> object for the newly created print job.
-  */
-public static PrinterJob
-getPrinterJob()
-{
+  /**
+   * Creates a new print job.
+   *
+   * @return A <code>PrinterJob</code> object for the newly created print job.
+   */
+  public static PrinterJob getPrinterJob()
+  {
   // FIXME: Need to fix this to load a default implementation instance.
-  return(null);
+    return null;
+  }
+
+  /**
+   * Initializes a new instance of <code>PrinterJob</code>. 
+   */
+  public PrinterJob()
+  {
+  }
+
+  /**
+   * Returns the number of copies to be printed.
+   *
+   * @return The number of copies to be printed.
+   */
+  public abstract int getCopies();
+
+  /**
+   * Sets the number of copies to be printed.
+   *
+   * @param copies The number of copies to be printed.
+   */
+  public abstract void setCopies(int copies);
+
+  /**
+   * Returns the name of the print job.
+   *
+   * @return The name of the print job.
+   */
+  public abstract String getJobName();
+
+  /**
+   * Sets the name of the print job.
+   *
+   * @param job_name The name of the print job.
+   */
+  public abstract void setJobName(String job_name);
+
+  /**
+   * Returns the printing user name.
+   *
+   * @return The printing username.
+   */
+  public abstract String getUserName();
+
+  /**
+   * Cancels an in progress print job.
+   */
+  public abstract void cancel();
+
+  /**
+   * Tests whether or not this job has been cancelled.
+   *
+   * @return <code>true</code> if this job has been cancelled, <code>false</code>
+   * otherwise.
+   */
+  public abstract boolean isCancelled();
+
+  /**
+   * Returns an instance of the default page which will have the default
+   * paper and orientation.
+   *
+   * @return A default instance of <code>PageFormat</code>.
+   */
+  public PageFormat defaultPage()
+  {
+    return new PageFormat();
+  }
+
+  /**
+   * Clones the specified <code>PageFormat</code> object then alters the
+   * clone so that it represents the default page format.
+   *
+   * @param page_format The <code>PageFormat</code> to clone.
+   *
+   * @return A new default page format.
+   */
+  public abstract PageFormat defaultPage(PageFormat page_format);
+
+  /**
+   * Displays a dialog box to the user which allows the page format
+   * attributes to be modified.
+   *
+   * @param page_format The <code>PageFormat</code> object to modify.
+   *
+   * @return The modified <code>PageFormat</code>.
+   */
+  public abstract PageFormat pageDialog(PageFormat page_format);
+
+  /**
+   * Prints the pages.
+   */
+  public abstract void print () throws PrinterException;
+
+  /**
+   * Prints the page with given attributes.
+   */
+  public abstract void print (PrintRequestAttributeSet attributes)
+    throws PrinterException;
+
+  /**
+   * Displays a dialog box to the user which allows the print job
+   * attributes to be modified.
+   *
+   * @return <code>false</code> if the user cancels the dialog box,
+   * <code>true</code> otherwise.
+   */
+  public abstract boolean printDialog();
+
+  /**
+   * Displays a dialog box to the user which allows the print job
+   * attributes to be modified.
+   *
+   * @return <code>false</code> if the user cancels the dialog box,
+   * <code>true</code> otherwise.
+   */
+  public abstract boolean printDialog(PrintRequestAttributeSet attributes);
+
+  /**
+   * This sets the pages that are to be printed.
+   *
+   * @param pageable The pages to be printed, which may not be <code>null</code>.
+   */
+  public abstract void setPageable(Pageable pageable);
+
+  /**
+   * Sets this specified <code>Printable</code> as the one to use for
+   * rendering the pages on the print device.
+   *
+   * @param printable The <code>Printable</code> for the print job.
+   */
+  public abstract void setPrintable(Printable printable);
+
+  /**
+   * Sets the <code>Printable</code> and the page format for the pages
+   * to be printed.
+   *
+   * @param printable The <code>Printable</code> for the print job.
+   * @param page_format The <code>PageFormat</code> for the print job.
+   */
+  public abstract void setPrintable(Printable printable, PageFormat page_format);
+
+  /**
+   * Makes any alterations to the specified <code>PageFormat</code>
+   * necessary to make it work with the current printer.  The alterations
+   * are made to a clone of the input object, which is then returned.
+   *
+   * @param page_format The <code>PageFormat</code> to validate.
+   *
+   * @return The validated <code>PageFormat</code>.
+   */
+  public abstract PageFormat validatePage(PageFormat page_format);
+
+  /**
+   * Find and return 2D image print services.
+   * 
+   * This is the same as calling PrintServiceLookup.lookupPrintServices()
+   * with Pageable service-specified DocFlavor.
+   * @return Array of PrintService objects, could be empty.
+   * @since 1.4
+   */
+  public static PrintService[] lookupPrintServices()
+  {
+    return new PrintService[0];
+    // FIXME:
+    // Enable this when javax.print has this implemented.
+//    return PrintServiceLookup.lookupPrintServices(
+//          new DocFlavor("application/x-java-jvm-local-objectref",
+//                        "java.awt.print.Pageable"),
+//          null);
+  }
+
+  /**
+   * Find and return 2D image stream print services.
+   * 
+   * This is the same as calling
+   * StreamPrintServiceFactory.lookupStreamPrintServices()
+   * with Pageable service-specified DocFlavor.
+   * @param mimeType The output format mime type, or null for any type.
+   * @return Array of stream print services, could be empty.
+   * @since 1.4
+   */
+  	// FIXME:
+  	// Enable when javax.print has StreamPrintServiceFactory 
+//  public static StreamPrintServiceFactory[] lookupStreamPrintServices(String mimeType)
+//  {
+//    return StreamPrintServiceFactory.lookupStreamServiceFactories(
+//      new DocFlavor("application/x-java-jvm-local-objectref",
+//      "java.awt.print.Pageable"),
+//    	mimeType);
+//  }
+
+  /**
+   * Return the printer for this job.  If print services aren't supported by
+   * the subclass, returns null.
+   * 
+   * @return The associated PrintService.
+   * @since 1.4
+   */
+  public PrintService getPrintService()
+  {
+    return null;
+  }
+
+  /**
+   * Change the printer for this print job to service.  Subclasses that
+   * support setting the print service override this method.  Throws
+   * PrinterException when the class doesn't support setting the printer,
+   * the service doesn't support Pageable or Printable interfaces for 2D
+   * print output.
+   * @param service The new printer to use.
+   * @throws PrinterException if service is not valid.
+   */
+  public void setPrintService(PrintService service)
+    throws PrinterException
+  {
+    throw new PrinterException();
+  }
 }
-
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * Initializes a new instance of <code>PrinterJob</code>. 
-  */
-public
-PrinterJob()
-{
-  ;
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * Returns the number of copies to be printed.
-  *
-  * @return The number of copies to be printed.
-  */
-public abstract int
-getCopies();
-
-/*************************************************************************/
-
-/**
-  * Sets the number of copies to be printed.
-  *
-  * @param copies The number of copies to be printed.
-  */
-public abstract void setCopies (int copies);
-
-/*************************************************************************/
-
-/**
-  * Returns the name of the print job.
-  *
-  * @return The name of the print job.
-  */
-public abstract String
-getJobName();
-
-/*************************************************************************/
-
-/**
-  * Sets the name of the print job.
-  *
-  * @param job_name The name of the print job.
-  */
-public abstract void setJobName (String job_name);
-
-/*************************************************************************/
-
-/**
-  * Returns the printing user name.
-  *
-  * @return The printing username.
-  */
-public abstract String
-getUserName();
-
-/*************************************************************************/
-
-/**
-  * Cancels an in progress print job.
-  */
-public abstract void
-cancel();
-
-/*************************************************************************/
-
-/**
-  * Tests whether or not this job has been cancelled.
-  *
-  * @param <code>true</code> if this job has been cancelled, <code>false</code>
-  * otherwise.
-  */
-public abstract boolean
-isCancelled();
-
-/*************************************************************************/
-
-/**
-  * Returns an instance of the default page which will have the default
-  * paper and orientation.
-  *
-  * @return A default instance of <code>PageFormat</code>.
-  */
-public PageFormat
-defaultPage()
-{
-  return(new PageFormat());
-}
-
-/*************************************************************************/
-
-/**
-  * Clones the specified <code>PageFormat</code> object then alters the
-  * clone so that it represents the default page format.
-  *
-  * @param page_format The <code>PageFormat</code> to clone.
-  *
-  * @return A new default page format.
-  */
-public abstract PageFormat
-defaultPage(PageFormat page_format);
-
-/*************************************************************************/
-
-/**
-  * Displays a dialog box to the user which allows the page format
-  * attributes to be modified.
-  *
-  * @param page_format The <code>PageFormat</code> object to modify.
-  *
-  * @return The modified <code>PageFormat</code>.
-  */
-public abstract PageFormat
-pageDialog(PageFormat page_format);
-
-/*************************************************************************/
-
-/**
-  * Prints the pages.
-  */
-public abstract void print () throws PrinterException;
-
-/**
-  * Displays a dialog box to the user which allows the print job
-  * attributes to be modified.
-  *
-  * @return <code>false</code> if the user cancels the dialog box,
-  * <code>true</code> otherwise.
-  */
-public abstract boolean
-printDialog();
-
-/*************************************************************************/
-
-/**
-  * This sets the pages that are to be printed.
-  *
-  * @param pageable The pages to be printed, which may not be <code>null</code>.
-  */
-public abstract void
-setPageable(Pageable pageable);
-
-/*************************************************************************/
-
-/**
-  * Sets this specified <code>Printable</code> as the one to use for
-  * rendering the pages on the print device.
-  *
-  * @param printable The <code>Printable</code> for the print job.
-  */
-public abstract void
-setPrintable(Printable printable);
-
-/*************************************************************************/
-
-/**
-  * Sets the <code>Printable</code> and the page format for the pages
-  * to be printed.
-  *
-  * @param printable The <code>Printable</code> for the print job.
-  * @param page_format The <code>PageFormat</code> for the print job.
-  */
-public abstract void
-setPrintable(Printable printable, PageFormat page_format);
-
-/*************************************************************************/
-
-/**
-  * Makes any alterations to the specified <code>PageFormat</code>
-  * necessary to make it work with the current printer.  The alterations
-  * are made to a clone of the input object, which is then returned.
-  *
-  * @param page_format The <code>PageFormat</code> to validate.
-  *
-  * @return The validated <code>PageFormat</code>.
-  */
-public abstract PageFormat
-validatePage(PageFormat page);
-
-} // class PrinterJob
-

@@ -57,19 +57,139 @@ import javax.accessibility.AccessibleContext;
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class JFrame extends Frame implements WindowConstants, RootPaneContainer
+public class JFrame extends Frame
+  implements WindowConstants, RootPaneContainer
 {
   private static final long serialVersionUID = -3362141868504252139L;
-  
-  protected  AccessibleContext accessibleContext;
-  
-  private int close_action = HIDE_ON_CLOSE;    
-  
-  private static boolean defaultLookAndFeelDecorated = false;    
+  private static boolean defaultLookAndFeelDecorated;
+  private int close_action = HIDE_ON_CLOSE;
+  protected AccessibleContext accessibleContext;
+  protected JRootPane rootPane;
+  protected boolean rootPaneCheckingEnabled;
 
-  public static void setDefaultLookAndFeelDecorated(boolean d)
+  public JFrame()
   {
-    defaultLookAndFeelDecorated = d;
+    super("JFrame");
+    frameInit();
+  }
+
+  public JFrame(String title)
+  {
+    super(title);
+    frameInit();
+  }
+
+  protected void frameInit()
+  {
+    super.setLayout(new BorderLayout(1, 1));
+    enableEvents(AWTEvent.WINDOW_EVENT_MASK);
+    getRootPane(); // will do set/create
+  }
+
+  public Dimension getPreferredSize()
+  {
+    return super.getPreferredSize();
+  }
+
+  public JMenuBar getJMenuBar()
+  {
+    return getRootPane().getJMenuBar();
+  }
+
+  public void setJMenuBar(JMenuBar menubar)
+  {
+    getRootPane().setJMenuBar(menubar);
+  }
+
+  public void setLayout(LayoutManager manager)
+  {
+    super.setLayout(manager);
+  }
+
+  public void setLayeredPane(JLayeredPane layeredPane)
+  {
+    getRootPane().setLayeredPane(layeredPane);
+  }
+
+  public JLayeredPane getLayeredPane()
+  {
+    return getRootPane().getLayeredPane();
+  }
+
+  public JRootPane getRootPane()
+  {
+    if (rootPane == null)
+      setRootPane(createRootPane());
+    return rootPane;
+  }
+
+  public void setRootPane(JRootPane root)
+  {
+    if (rootPane != null)
+      remove(rootPane);
+
+    rootPane = root;
+    add(rootPane, BorderLayout.CENTER);
+  }
+
+  public JRootPane createRootPane()
+  {
+    return new JRootPane();
+  }
+
+  public Container getContentPane()
+  {
+    return getRootPane().getContentPane();
+  }
+
+  public void setContentPane(Container contentPane)
+  {
+    getRootPane().setContentPane(contentPane);
+  }
+
+  public Component getGlassPane()
+  {
+    return getRootPane().getGlassPane();
+  }
+
+  public void setGlassPane(Component glassPane)
+  {
+    getRootPane().setGlassPane(glassPane);
+  }
+
+  protected void addImpl(Component comp, Object constraints, int index)
+  {
+    super.addImpl(comp, constraints, index);
+  }
+
+  public void remove(Component comp)
+  {
+    getContentPane().remove(comp);
+  }
+
+  protected boolean isRootPaneCheckingEnabled()
+  {
+    return rootPaneCheckingEnabled;
+  }
+
+  protected void setRootPaneCheckingEnabled(boolean enabled)
+  {
+    rootPaneCheckingEnabled = enabled;
+  }
+
+  public void update(Graphics g)
+  {
+    paint(g);
+  }
+
+  protected void processKeyEvent(KeyEvent e)
+  {
+    super.processKeyEvent(e);
+  }
+
+  public static void setDefaultLookAndFeelDecorated(boolean decorated)
+  {
+    defaultLookAndFeelDecorated = decorated;
   }
 
   public static boolean isDefaultLookAndFeelDecorated()
@@ -77,202 +197,83 @@ public class JFrame extends Frame implements WindowConstants, RootPaneContainer
     return defaultLookAndFeelDecorated;
   }
 
-    /***************************************************
-     *
-     *  initia
-     *
-     *
-     *************/
-    
-
-    public JFrame()
-    {
-	super("JFrame");
-	frameInit();
-    }
-  
-    public JFrame(String title)
-    {
-	super(title);
-	frameInit();
-    }
-  
-
-    /***************************************************
-     *
-     *
-     *  methods, this part is shared with JDialog, JFrame
-     *
-     *
-     *************/
-
-  
-    private boolean checking;
-    protected  JRootPane         rootPane;
-
-
-    protected  void frameInit()
-    {
-      super.setLayout(new BorderLayout(1, 1));
-      enableEvents(AWTEvent.WINDOW_EVENT_MASK);
-      getRootPane(); // will do set/create
-    }
-  
-  public Dimension getPreferredSize()
-  {
-    Dimension d = super.getPreferredSize();
-    return d;
-  }
-
-  public JMenuBar getJMenuBar()
-    {    return getRootPane().getJMenuBar();   }
-    
-  public void setJMenuBar(JMenuBar menubar)
-    {    getRootPane().setJMenuBar(menubar); }
-    
-
-  public  void setLayout(LayoutManager manager)
-  {    super.setLayout(manager);  }
-
-  public void setLayeredPane(JLayeredPane layeredPane) 
-    {   getRootPane().setLayeredPane(layeredPane);   }
-  
-  public JLayeredPane getLayeredPane()
-    {   return getRootPane().getLayeredPane();     }
-  
-  public JRootPane getRootPane()
-    {
-	if (rootPane == null)
-	    setRootPane(createRootPane());
-	return rootPane;          
-    }
-
-  public void setRootPane(JRootPane root)
-    {
-	if (rootPane != null)
-	    remove(rootPane);
-	    
-	rootPane = root; 
-	add(rootPane, BorderLayout.CENTER);
-    }
-
-  public JRootPane createRootPane()
-    {   return new JRootPane();    }
-
-  public Container getContentPane()
-    {    return getRootPane().getContentPane();     }
-
-  public void setContentPane(Container contentPane)
-    {    getRootPane().setContentPane(contentPane);    }
-  
-  public Component getGlassPane()
-    {    return getRootPane().getGlassPane();   }
-  
-  public void setGlassPane(Component glassPane)
-    {   getRootPane().setGlassPane(glassPane);   }
-
-    
-    protected  void addImpl(Component comp, Object constraints, int index)
-    {	super.addImpl(comp, constraints, index);    }
-
-
-    public void remove(Component comp)
-    {   getContentPane().remove(comp);  }
-  
-    protected  boolean isRootPaneCheckingEnabled()
-    {    return checking;        }
-
-
-    protected  void setRootPaneCheckingEnabled(boolean enabled)
-    { checking = enabled;  }
-
-
-    public void update(Graphics g)
-    {   paint(g);  }
-
-    protected  void processKeyEvent(KeyEvent e)
-    {	super.processKeyEvent(e);    }
-
-    /////////////////////////////////////////////////////////////////////////////////
-  
   public AccessibleContext getAccessibleContext()
   {
     return accessibleContext;
   }
-  
-    public int getDefaultCloseOperation()
-    {    return close_action;   }
 
-    
-    
-    protected  String paramString()
-    {   return "JFrame";     }
+  public int getDefaultCloseOperation()
+  {
+    return close_action;
+  }
 
+  protected String paramString()
+  {
+    return "JFrame";
+  }
 
-    protected  void processWindowEvent(WindowEvent e)
-    {
-	super.processWindowEvent(e); 
-	switch (e.getID())
+  protected void processWindowEvent(WindowEvent e)
+  {
+    super.processWindowEvent(e);
+    switch (e.getID())
+      {
+      case WindowEvent.WINDOW_CLOSING:
+        {
+	  switch (close_action)
 	    {
-	    case WindowEvent.WINDOW_CLOSING:
-		{
-		    switch(close_action)
-			{
-			case EXIT_ON_CLOSE:
-			    {
-				System.exit(0);
-				break;
-			    }
-			case DISPOSE_ON_CLOSE:
-			    {
-				dispose();
-				break;
-			    }
-			case HIDE_ON_CLOSE:
-			    {
-				setVisible(false);
-				break;
-			    }
-			case DO_NOTHING_ON_CLOSE:
-			    break;
-			}
-		    break;
-		}
-		
-	    case WindowEvent.WINDOW_CLOSED:
-	    case WindowEvent.WINDOW_OPENED:
-	    case WindowEvent.WINDOW_ICONIFIED:
-	    case WindowEvent.WINDOW_DEICONIFIED:
-	    case WindowEvent.WINDOW_ACTIVATED:
-	    case WindowEvent.WINDOW_DEACTIVATED:
+	    case EXIT_ON_CLOSE:
+	      {
+		System.exit(0);
 		break;
+	      }
+	    case DISPOSE_ON_CLOSE:
+	      {
+		dispose();
+		break;
+	      }
+	    case HIDE_ON_CLOSE:
+	      {
+		setVisible(false);
+		break;
+	      }
+	    case DO_NOTHING_ON_CLOSE:
+	      break;
 	    }
-    }   
- 
-    /**
-     * Defines what happens when this frame is closed. Can be one off
-     * <code>EXIT_ON_CLOSE</code>,
-     * <code>DISPOSE_ON_CLOSE</code>,
-     * <code>HIDE_ON_CLOSE</code> or
-     * <code>DO_NOTHING_ON_CLOSE</code>.
-     * The default is <code>HIDE_ON_CLOSE</code>.
-     * When <code>EXIT_ON_CLOSE</code> is specified this method calls
-     * <code>SecurityManager.checkExit(0)</code> which might throw a
-     * <code>SecurityException</code>. When the specified operation is
-     * not one of the above a <code>IllegalArgumentException</code> is
-     * thrown.
-     */
-    public void setDefaultCloseOperation(int operation)
-    {
-      SecurityManager sm = System.getSecurityManager();
-      if (sm != null && operation == EXIT_ON_CLOSE)
-	sm.checkExit(0);
+	  break;
+        }
+      case WindowEvent.WINDOW_CLOSED:
+      case WindowEvent.WINDOW_OPENED:
+      case WindowEvent.WINDOW_ICONIFIED:
+      case WindowEvent.WINDOW_DEICONIFIED:
+      case WindowEvent.WINDOW_ACTIVATED:
+      case WindowEvent.WINDOW_DEACTIVATED:
+	break;
+      }
+  }
 
-      if (operation != EXIT_ON_CLOSE && operation != DISPOSE_ON_CLOSE
-	  && operation != HIDE_ON_CLOSE && operation != DO_NOTHING_ON_CLOSE)
-	throw new IllegalArgumentException("operation = " + operation);
-	  
-      close_action = operation;
-    }
+  /**
+   * Defines what happens when this frame is closed. Can be one off
+   * <code>EXIT_ON_CLOSE</code>,
+   * <code>DISPOSE_ON_CLOSE</code>,
+   * <code>HIDE_ON_CLOSE</code> or
+   * <code>DO_NOTHING_ON_CLOSE</code>.
+   * The default is <code>HIDE_ON_CLOSE</code>.
+   * When <code>EXIT_ON_CLOSE</code> is specified this method calls
+   * <code>SecurityManager.checkExit(0)</code> which might throw a
+   * <code>SecurityException</code>. When the specified operation is
+   * not one of the above a <code>IllegalArgumentException</code> is
+   * thrown.
+   */
+  public void setDefaultCloseOperation(int operation)
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null && operation == EXIT_ON_CLOSE)
+      sm.checkExit(0);
 
+    if (operation != EXIT_ON_CLOSE && operation != DISPOSE_ON_CLOSE
+        && operation != HIDE_ON_CLOSE && operation != DO_NOTHING_ON_CLOSE)
+      throw new IllegalArgumentException("operation = " + operation);
+
+    close_action = operation;
+  }
 }

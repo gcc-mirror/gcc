@@ -1,4 +1,4 @@
-/* BasicToolBarUI.java
+/* BasicToolBarUI.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -53,15 +52,14 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Enumeration;
 import java.util.Hashtable;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -74,12 +72,10 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputListener;
-import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.BorderUIResource.EtchedBorderUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ToolBarUI;
 import javax.swing.plaf.UIResource;
-
 
 /**
  * This is the Basic Look and Feel UI class for JToolBar.
@@ -1331,10 +1327,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   private static class ToolBarBorder implements Border
   {
     /** The size of the larger, draggable side of the border. */
-    private static int offset = 10;
+    private static final int offset = 10;
 
     /** The other sides. */
-    private static int regular = 2;
+    private static final int regular = 2;
 
     /**
      * This method returns the border insets for the JToolBar.

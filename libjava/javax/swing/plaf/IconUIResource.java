@@ -1,5 +1,5 @@
-/* IconUIResource.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* IconUIResource.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,8 +41,8 @@ package javax.swing.plaf;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.io.Serializable;
-import javax.swing.Icon;
 
+import javax.swing.Icon;
 
 /**
  * An icon that is marked as <code>UIResource</code>, which

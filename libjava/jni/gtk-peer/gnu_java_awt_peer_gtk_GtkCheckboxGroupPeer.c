@@ -39,7 +39,8 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h"
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_dispose
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_dispose
   (JNIEnv *env, jobject obj)
 {
   /* The actual underlying widget is owned by a different class.  So
@@ -47,7 +48,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_dispose
   NSA_DEL_PTR (env, obj);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
   (JNIEnv *env, jobject obj, jobject checkbox)
 {
   GtkRadioButton *button;

@@ -1,5 +1,5 @@
-/* BorderFactory.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* BorderFactory.java --
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package javax.swing;
 
 import java.awt.Color;
 import java.awt.Font;
+
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -51,6 +52,11 @@ import javax.swing.border.TitledBorder;
 
 public class BorderFactory
 {
+  private BorderFactory()
+  {
+    // Do nothing.
+  }
+  
   /**
    * Creates a line border withe the specified color.
    *

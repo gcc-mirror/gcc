@@ -1,5 +1,5 @@
 /* GtkButtonPeer.java -- Implements ButtonPeer with GTK
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,8 +43,8 @@ import java.awt.Button;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.peer.ButtonPeer;
 
 public class GtkButtonPeer extends GtkComponentPeer
@@ -52,13 +52,15 @@ public class GtkButtonPeer extends GtkComponentPeer
 {
   native void create (String label);
 
-  public native void connectJObject ();
   public native void connectSignals ();
 
-  native void gtkSetFont (String name, int style, int size);
+  native void gtkWidgetModifyFont (String name, int style, int size);
   native void gtkSetLabel (String label);
   native void gtkWidgetSetForeground (int red, int green, int blue);
+  native void gtkWidgetSetBackground (int red, int green, int blue);
   native void gtkActivate ();
+  native void gtkWidgetRequestFocus ();
+  native void setNativeBounds (int x, int y, int width, int height);
 
   public GtkButtonPeer (Button b)
   {
@@ -86,8 +88,8 @@ public class GtkButtonPeer extends GtkComponentPeer
 	if (!me.isConsumed ()
 	    && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
 	    && awtComponent.getBounds().contains(p))
-	  postActionEvent (((Button)awtComponent).getActionCommand (), 
-			   me.getModifiersEx ());
+          postActionEvent (((Button) awtComponent).getActionCommand (), 
+                           me.getModifiersEx ());
       }
 
     if (e.getID () == KeyEvent.KEY_PRESSED)

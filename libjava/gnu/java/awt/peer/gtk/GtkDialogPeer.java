@@ -42,9 +42,9 @@ import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Graphics;
-import java.awt.peer.DialogPeer;
 import java.awt.Rectangle;
 import java.awt.event.PaintEvent;
+import java.awt.peer.DialogPeer;
 
 public class GtkDialogPeer extends GtkWindowPeer
   implements DialogPeer
@@ -75,11 +75,12 @@ public class GtkDialogPeer extends GtkWindowPeer
 
   protected void postExposeEvent (int x, int y, int width, int height)
   {
-    q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
-				 new Rectangle (x + insets.left, 
-						y + insets.top, 
-						width, height)));
-  }  
+    if (!isInRepaint)
+      q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
+                                   new Rectangle (x + insets.left, 
+                                                  y + insets.top, 
+                                                  width, height)));
+  }
 
   void create ()
   {

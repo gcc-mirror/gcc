@@ -35,12 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Vector;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.event.TreeExpansionEvent;
@@ -50,10 +54,15 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.plaf.TreeUI;
 import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 
 public class JTree extends JComponent
@@ -61,18 +70,43 @@ public class JTree extends JComponent
 {
   private static final long serialVersionUID = 7559816092864483649L;
 
+  public static final String ANCHOR_SELECTION_PATH_PROPERTY = "anchorSelectionPath";
+  public static final String CELL_EDITOR_PROPERTY = "cellEditor";
+  public static final String CELL_RENDERER_PROPERTY = "cellRenderer";
+  public static final String EDITABLE_PROPERTY = "editable";
+  public static final String EXPANDS_SELECTED_PATHS_PROPERTY = "expandsSelectedPaths";
+  public static final String INVOKES_STOP_CELL_EDITING_PROPERTY = "invokesStopCellEditing";
+  public static final String LARGE_MODEL_PROPERTY = "largeModel";
+  public static final String LEAD_SELECTION_PATH_PROPERTY = "leadSelectionPath";
+  public static final String ROOT_VISIBLE_PROPERTY = "rootVisible";
+  public static final String ROW_HEIGHT_PROPERTY = "rowHeight";
+  public static final String SCROLLS_ON_EXPAND_PROPERTY = "scrollsOnExpand";
+  public static final String SELECTION_MODEL_PROPERTY = "selectionModel";
+  public static final String SHOWS_ROOT_HANDLES_PROPERTY = "showsRootHandles";
+  public static final String TOGGLE_CLICK_COUNT_PROPERTY = "toggleClickCount";
+  public static final String TREE_MODEL_PROPERTY = "model";
+  public static final String VISIBLE_ROW_COUNT_PROPERTY = "visibleRowCount";
+
+  protected TreeCellEditor cellEditor;
   protected TreeCellRenderer cellRenderer;
   protected boolean editable;
+  protected boolean invokesStopCellEditing;
+  protected boolean largeModel;
   protected boolean rootVisible;
+  protected int rowHeight;
+  protected boolean scrollsOnExpand;
+  protected TreeSelectionModel selectionModel;
   protected boolean showsRootHandles;
+  protected int toggleClickCount;
   protected TreeModel treeModel;
+  protected int visibleRowCount;
 
   /**
    * Creates a new <code>JTree</code> object.
    */
   public JTree()
   {
-    treeModel = createTreeModel(null);
+    this(createTreeModel(null));
   }
 
   /**
@@ -82,7 +116,7 @@ public class JTree extends JComponent
    */
   public JTree(Hashtable value)
   {
-    treeModel = createTreeModel(value);
+    this(createTreeModel(value));
   }
 
   /**
@@ -92,7 +126,7 @@ public class JTree extends JComponent
    */
   public JTree(Object[] value)
   {
-    treeModel = createTreeModel(value);
+    this(createTreeModel(value));
   }
 
   /**
@@ -103,6 +137,8 @@ public class JTree extends JComponent
   public JTree(TreeModel model)
   {
     treeModel = model;
+    setCellRenderer(new DefaultTreeCellRenderer());
+    updateUI();
   }
 
   /**
@@ -124,6 +160,7 @@ public class JTree extends JComponent
    */
   public JTree(TreeNode root, boolean asksAllowChildren)
   {
+    this(new DefaultTreeModel(root, asksAllowChildren));
   }
 
   /**
@@ -133,7 +170,81 @@ public class JTree extends JComponent
    */
   public JTree(Vector value)
   {
-    treeModel = createTreeModel(value);
+    this(createTreeModel(value));
+  }
+
+  public static class DynamicUtilTreeNode 
+    extends DefaultMutableTreeNode
+  {
+    protected Object childValue;
+    protected boolean loadedChildren;
+    public DynamicUtilTreeNode(Object value,
+                               Object children) 
+    {
+      super(value);
+      childValue = children;
+      loadedChildren = false;
+    }
+
+    public int getChildCount()
+    {
+      loadChildren();
+      return super.getChildCount();
+    }
+
+    protected void loadChildren()
+    {
+      if (!loadedChildren)
+        {
+          createChildren(this, childValue);
+          loadedChildren = true;
+        }
+    }
+    
+    public Enumeration children()
+    {
+      loadChildren();
+      return super.children();
+    }
+
+    public boolean isLeaf() 
+    {
+      return (childValue == null || 
+              !(childValue instanceof Hashtable
+               || childValue instanceof Vector
+               || childValue.getClass().isArray()));
+    }
+
+    public static void createChildren(DefaultMutableTreeNode parent,
+                                      Object children)
+    {
+      if (children instanceof Hashtable)
+        {
+          Hashtable tab = (Hashtable) children;
+          Enumeration e = tab.keys();
+          while (e.hasMoreElements()) 
+            {
+              Object key = e.nextElement();
+              Object val = tab.get(key);
+              parent.add(new DynamicUtilTreeNode(key, val));
+            }
+        }
+      else if (children instanceof Vector)
+        {
+          Iterator i = ((Vector)children).iterator();
+          while (i.hasNext())
+            {
+              Object n = i.next();
+              parent.add(new DynamicUtilTreeNode(n,n));
+            }
+        }
+      else if (children.getClass().isArray())
+        {
+          Object[] arr = (Object[]) children;
+          for (int i = 0; i < arr.length; ++i)
+            parent.add(new DynamicUtilTreeNode(arr[i], arr[i]));
+      }
+    }
   }
 
   /**
@@ -143,8 +254,7 @@ public class JTree extends JComponent
    */
   protected static TreeModel createTreeModel(Object value)
   {
-    // FIXME: Implement this.
-    return null;
+    return new DefaultTreeModel(new DynamicUtilTreeNode(value, value));
   }
 
   /**
@@ -173,6 +283,8 @@ public class JTree extends JComponent
   public void updateUI()
   {
     setUI((TreeUI) UIManager.getUI(this));
+    revalidate();
+    repaint();
   }
 
   /**
@@ -441,7 +553,7 @@ public class JTree extends JComponent
    * @return <code>true</code> if the root element is visible,
    * <code>false</code> otherwise
    */
-  public boolean isRootVisbile()
+  public boolean isRootVisible()
   {
     return rootVisible;
   }
@@ -456,11 +568,21 @@ public class JTree extends JComponent
     return showsRootHandles;
   }
 
-  public void setShowRootHandles(boolean flag)
+  public void setShowsRootHandles(boolean flag)
   {
     showsRootHandles = flag;
   }
 
+  public TreeCellEditor getCellEditor()
+  {
+    return cellEditor;
+  }
+
+  public void setCellEditor(TreeCellEditor editor)
+  {
+    cellEditor = editor;
+  }
+  
   public TreeCellRenderer getCellRenderer()
   {
     return cellRenderer;
@@ -469,5 +591,81 @@ public class JTree extends JComponent
   public void setCellRenderer(TreeCellRenderer newRenderer)
   {
     cellRenderer = newRenderer;
+  }
+
+  public TreeSelectionModel getSelectionModel()
+  {
+    return selectionModel;
+  }
+
+  public void setSelectionModel(TreeSelectionModel model)
+  {
+    selectionModel = model;
+  }
+
+  public int getVisibleRowCount()
+  {
+    return visibleRowCount;
+  }
+
+  public void setVisibleRowCount(int rows)
+  {
+    visibleRowCount = rows;
+  }
+
+  public boolean isLargeModel()
+  {
+    return largeModel;
+  }
+
+  public void setLargeModel(boolean large)
+  {
+    largeModel = large;
+  }
+
+  public int getRowHeight()
+  {
+    return rowHeight;
+  }
+
+  public void setRowHeight(int height)
+  {
+    rowHeight = height;
+  }
+
+  public boolean getInvokesStopCellEditing()
+  {
+    return invokesStopCellEditing;
+  }
+
+  public void setInvokesStopCellEditing(boolean invoke)
+  {
+    invokesStopCellEditing = invoke;
+  }
+
+  /**
+   * @since 1.3
+   */
+  public int getToggleClickCount()
+  {
+    return toggleClickCount;
+  }
+
+  /**
+   * @since 1.3
+   */
+  public void setToggleClickCount(int count)
+  {
+    toggleClickCount = count;
+  }
+
+  public boolean getScrollsOnExpand()
+  {
+    return scrollsOnExpand;
+  }
+
+  public void setScrollsOnExpand(boolean scroll)
+  {
+    scrollsOnExpand = scroll;
   }
 }

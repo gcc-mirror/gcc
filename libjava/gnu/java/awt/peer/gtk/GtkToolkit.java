@@ -1,5 +1,5 @@
 /* GtkToolkit.java -- Implements an AWT Toolkit using GTK for peers
-   Copyright (C) 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,36 +38,40 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Configuration;
+import gnu.java.awt.EmbeddedWindow;
+import gnu.java.awt.EmbeddedWindowSupport;
+import gnu.java.awt.peer.ClasspathFontPeer;
+import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+import gnu.java.awt.peer.EmbeddedWindowPeer;
+import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.peer.DragSourceContextPeer;
+import java.awt.font.FontRenderContext;
 import java.awt.font.TextAttribute;
 import java.awt.im.InputMethodHighlight;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.ImageObserver;
 import java.awt.image.ImageConsumer;
+import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
-import java.awt.GraphicsEnvironment;
 import java.awt.peer.*;
 import java.net.URL;
+import java.text.AttributedString;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
-import gnu.java.awt.EmbeddedWindow;
-import gnu.java.awt.EmbeddedWindowSupport;
-import gnu.java.awt.peer.EmbeddedWindowPeer;
-import gnu.java.awt.peer.ClasspathFontPeer;
-import gnu.classpath.Configuration;
-import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
 
 /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
    This merits comment.  We are basically calling Sun's bluff on this one.
-   We think Sun has deprecated it simply to discourage its use as it is 
+   We think Sun has deprecated it simply to discourage its use as it is
    bad programming style.  However, we need to get at a component's peer in
    this class.  If getPeer() ever goes away, we can implement a hash table
    that will keep up with every window's peer, but for now this is faster. */
@@ -79,7 +83,6 @@ import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
  * drawing contexts. Any other value will cause the older GdkGraphics
  * object to be used.
  */
-
 public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   implements EmbeddedWindowSupport
 {
@@ -87,7 +90,6 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   Hashtable containers = new Hashtable();
   static EventQueue q = new EventQueue();
   static Clipboard systemClipboard;
-
   static boolean useGraphics2dSet;
   static boolean useGraphics2d;
 
@@ -120,14 +122,21 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   public int checkImage (Image image, int width, int height, 
 			 ImageObserver observer) 
   {
-    int status = ((GtkImage) image).checkImage ();
+    int status = ImageObserver.ALLBITS 
+      | ImageObserver.WIDTH 
+      | ImageObserver.HEIGHT;
+
+    if (image instanceof GtkImage)
+      {        
+        status = ((GtkImage) image).checkImage ();
+      }
 
     if (observer != null)
       observer.imageUpdate (image, status,
                             -1, -1,
                             image.getWidth (observer),
                             image.getHeight (observer));
-
+    
     return status;
   }
 
@@ -304,22 +313,59 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 			   "SansSerif" });
   }
 
+  private class LRUCache extends java.util.LinkedHashMap
+  {    
+    int max_entries;
+    public LRUCache(int max)
+    {
+      super(max, 0.75f, true);
+      max_entries = max;
+    }
+    protected boolean removeEldestEntry(Map.Entry eldest)
+    {
+      return size() > max_entries;
+    }
+  }
+
+  private LRUCache fontCache = new LRUCache(50);
+  private LRUCache metricsCache = new LRUCache(50);
+  private LRUCache imageCache = new LRUCache(50);
+
   public FontMetrics getFontMetrics (Font font) 
   {
-    if (useGraphics2D())
-      return new GdkClasspathFontPeerMetrics (font);
+    if (metricsCache.containsKey(font))
+      return (FontMetrics) metricsCache.get(font);
     else
-      return new GdkFontMetrics (font);
+      {
+        FontMetrics m;
+        m = new GdkFontMetrics (font);
+        metricsCache.put(font, m);
+        return m;
+      }    
   }
 
   public Image getImage (String filename) 
   {
-    return createImage (filename);
+    if (imageCache.containsKey(filename))
+      return (Image) imageCache.get(filename);
+    else
+      {
+        Image im = createImage(filename);
+        imageCache.put(filename, im);
+        return im;
+      }
   }
 
   public Image getImage (URL url) 
   {
-    return createImage (url);
+    if (imageCache.containsKey(url))
+      return (Image) imageCache.get(url);
+    else
+      {
+        Image im = createImage(url);
+        imageCache.put(url, im);
+        return im;
+      }
   }
 
   public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
@@ -510,8 +556,10 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
    */
   private FontPeer getFontPeer (String name, int style, int size) 
   {
-    GtkFontPeer fp = new GtkFontPeer (name, style, size);
-    return fp;
+    Map attrs = new HashMap ();
+    ClasspathFontPeer.copyStyleToAttrs (style, attrs);
+    ClasspathFontPeer.copySizeToAttrs (size, attrs);
+    return getClasspathFontPeer (name, attrs);
   }
 
   /**
@@ -522,38 +570,26 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   public ClasspathFontPeer getClasspathFontPeer (String name, Map attrs)
   {
-    if (useGraphics2D())
-      return new GdkClasspathFontPeer (name, attrs);
+    Map keyMap = new HashMap (attrs);
+    // We don't know what kind of "name" the user requested (logical, face,
+    // family), and we don't actually *need* to know here. The worst case
+    // involves failure to consolidate fonts with the same backend in our
+    // cache. This is harmless.
+    keyMap.put ("GtkToolkit.RequestedFontName", name);
+    if (fontCache.containsKey (keyMap))
+      return (ClasspathFontPeer) fontCache.get (keyMap);
     else
       {
-        // Default values
-        int size = 12;
-        int style = Font.PLAIN;
-        if (name == null)
-          name = "Default";
-
-        if (attrs.containsKey (TextAttribute.WEIGHT))
-          {
-            Float weight = (Float) attrs.get (TextAttribute.WEIGHT);
-            if (weight.floatValue () >= TextAttribute.WEIGHT_BOLD.floatValue ())
-              style += Font.BOLD;
-          }
-        
-        if (attrs.containsKey (TextAttribute.POSTURE))
-          {
-            Float posture = (Float) attrs.get (TextAttribute.POSTURE);
-            if (posture.floatValue () >= TextAttribute.POSTURE_OBLIQUE.floatValue ())
-              style += Font.ITALIC;
-          }
-        
-        if (attrs.containsKey (TextAttribute.SIZE))
-          {
-            Float fsize = (Float) attrs.get (TextAttribute.SIZE);
-            size = fsize.intValue();
-          }
- 
-        return (ClasspathFontPeer) this.getFontPeer (name, style, size);
+        ClasspathFontPeer newPeer = new GdkFontPeer (name, attrs);
+        fontCache.put (keyMap, newPeer);
+        return newPeer;
       }
+  }
+
+  public ClasspathTextLayoutPeer getClasspathTextLayoutPeer (AttributedString str, 
+                                                             FontRenderContext frc)
+  {
+    return new GdkTextLayout(str, frc);
   }
 
   protected EventQueue getSystemEventQueueImpl() 

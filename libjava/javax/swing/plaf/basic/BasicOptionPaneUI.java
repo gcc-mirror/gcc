@@ -1,4 +1,4 @@
-/* BasicOptionPaneUI.java
+/* BasicOptionPaneUI.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.BorderLayout;
@@ -42,21 +43,19 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -75,9 +74,7 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.IconUIResource;
 import javax.swing.plaf.OptionPaneUI;
-
 
 /**
  * This class is the UI delegate for JOptionPane in the Basic Look and Feel.
@@ -475,7 +472,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
    * A helper class that implements Icon. This is used temporarily until
    * ImageIcons are fixed.
    */
-  private static class messageIcon implements Icon
+  private static class MessageIcon implements Icon
   {
     /**
      * This method returns the width of the icon.
@@ -512,7 +509,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
   }
 
   /** The icon displayed for ERROR_MESSAGE. */
-  private static messageIcon errorIcon = new messageIcon()
+  private static MessageIcon errorIcon = new MessageIcon()
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
@@ -534,7 +531,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
     };
 
   /** The icon displayed for INFORMATION_MESSAGE. */
-  private static messageIcon infoIcon = new messageIcon()
+  private static MessageIcon infoIcon = new MessageIcon()
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
@@ -560,7 +557,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
     };
 
   /** The icon displayed for WARNING_MESSAGE. */
-  private static messageIcon warningIcon = new messageIcon()
+  private static MessageIcon warningIcon = new MessageIcon()
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {
@@ -585,7 +582,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
     };
 
   /** The icon displayed for MESSAGE_ICON. */
-  private static messageIcon questionIcon = new messageIcon()
+  private static MessageIcon questionIcon = new MessageIcon()
     {
       public void paintIcon(Component c, Graphics g, int x, int y)
       {

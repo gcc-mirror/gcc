@@ -35,35 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleSelection;
-import javax.accessibility.AccessibleStateSet;
-import javax.accessibility.AccessibleValue;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.MenuDragMouseEvent;
-import javax.swing.event.MenuDragMouseListener;
-import javax.swing.event.MenuKeyEvent;
-import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.MenuBarUI;
-import javax.swing.plaf.MenuItemUI;
-
 
 /**
  * <p>
@@ -480,8 +463,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    */
   public void updateUI()
   {
-    MenuBarUI ui = ((MenuBarUI) UIManager.getUI(this));
-    setUI(ui);
+    setUI((MenuBarUI) UIManager.getUI(this));
     invalidate();
   }
 }

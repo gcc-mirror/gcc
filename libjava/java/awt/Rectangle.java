@@ -338,7 +338,7 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    * its upper left corner.
    *
    * @return the point where this rectangle is located
-   * @see setLocation(Point)
+   * @see #setLocation(Point)
    * @since 1.1
    */
   public Point getLocation()

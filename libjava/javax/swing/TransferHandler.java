@@ -38,6 +38,8 @@ exception statement from your version. */
 package javax.swing;
 
 import java.io.Serializable;
+import java.awt.event.InputEvent;
+import java.awt.datatransfer.*;
 
 public class TransferHandler implements Serializable
 {
@@ -48,8 +50,66 @@ public class TransferHandler implements Serializable
   public static final int MOVE = 2;
   public static final int COPY_OR_MOVE = 3;
 
+  static Action getCopyAction ()
+  {
+    return null;
+  }
+
+  static Action getCutAction ()
+  {
+    return null;
+  }
+
+  static Action getPasteAction ()
+  {
+    return null;
+  }
+
+
   protected TransferHandler()
   {
     // Do nothing here.
   }
+
+  public TransferHandler(String property)
+  {
+  }
+
+  public boolean canImport (JComponent c, DataFlavor[] flavors)
+  {
+    return false;
+  }
+
+  public Transferable createTransferable(JComponent c) 
+  {
+    return null;
+  }
+
+  public void exportAsDrag (JComponent c, InputEvent e, int action) 
+  {    
+  }
+
+  protected void exportDone (JComponent c, Transferable data, int action) 
+  {
+  }
+
+  public void exportToClipboard(JComponent c, Clipboard clip, int action) 
+  {
+  } 
+
+  public int getSourceActions (JComponent c)
+  {
+    return 0;
+  }
+
+  public Icon getVisualRepresentation (Transferable t)
+  {
+    return null;
+  }
+
+  public boolean importData (JComponent c, Transferable t) 
+  {
+    return false;
+  }
+
 }

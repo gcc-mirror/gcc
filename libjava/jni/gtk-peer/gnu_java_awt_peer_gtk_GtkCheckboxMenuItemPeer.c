@@ -46,7 +46,6 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create
   GtkWidget *widget;
   const char *str;
 
-  /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   str = (*env)->GetStringUTFChars (env, label, NULL);
@@ -54,7 +53,6 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create
   gdk_threads_enter ();
   
   widget = gtk_check_menu_item_new_with_label (str);
-  gtk_check_menu_item_set_show_toggle (GTK_CHECK_MENU_ITEM (widget), 1);
   gtk_widget_show (widget);
 
   gdk_threads_leave ();

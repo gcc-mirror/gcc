@@ -39,102 +39,76 @@ exception statement from your version. */
 package java.awt.datatransfer;
 
 /**
-  * This class allows data to be transferred using a cut and paste type
-  * mechanism.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This class allows data to be transferred using a cut and paste type
+ * mechanism.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public class Clipboard
 {
+  /**
+   * The data being transferred.
+   */
+  protected Transferable contents;
 
-/*
- * Instance Variables
- */
+  /**
+   * The owner of this clipboard.
+   */
+  protected ClipboardOwner owner;
 
-/**
-  * The data being transferred.
-  */
-protected Transferable contents;
+  // The clipboard name
+  private String name;
 
-/**
-  * The owner of this clipboard.
-  */
-protected ClipboardOwner owner;
+  /**
+   * Initializes a new instance of <code>Clipboard</code> with the
+   * specified name.
+   *
+   * @param name The clipboard name.
+   */
+  public Clipboard(String name)
+  {
+    this.name = name;
+  }
 
-// The clipboard name
-private String name;
+  /**
+    * Returns the name of the clipboard.
+    */
+  public String getName()
+  {
+    return name;
+  }
 
-/*************************************************************************/
+  /**
+   * Returns the contents of the clipboard.
+   *
+   * @param requestor The object requesting the contents.
+   *
+   * @exception IllegalStateException If the clipboard is currently unavailable
+   */
+  public synchronized Transferable getContents(Object requestor)
+  {
+    return contents;
+  }
 
-/*
- * Constructors
- */
-
-/**
-  * Initializes a new instance of <code>Clipboard</code> with the
-  * specified name.
-  *
-  * @param name The clipboard name.
-  */
-public 
-Clipboard(String name)
-{
-  this.name = name;
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * Returns the name of the clipboard.
-  */
-public String
-getName()
-{
-  return(name);
-}
-
-/*************************************************************************/
-
-/**
-  * Returns the contents of the clipboard.
-  *
-  * @param requestor The object requesting the contents.
-  *
-  * @exception IllegalStateException If the clipboard is currently unavailable
-  */
-public synchronized Transferable
-getContents(Object requestor)
-{
-  return(contents);
-}
-
-/*************************************************************************/
-
-/**
-  * Sets the content and owner of this clipboard.
-  * If the given owner is different from the current owner
-  * then lostOwnership is called on the current owner.
-  * XXX - is this called with the old or new contents.
-  *
-  * @param contents The new clipboard contents.
-  * @param owner The new clipboard owner
-  *
-  * @exception IllegalStateException If the clipboard is currently unavailable
-  */
-public synchronized void
-setContents(Transferable contents, ClipboardOwner owner)
-{
-  if (this.owner != owner)
-    if (this.owner != null)
-      this.owner.lostOwnership(this, contents);
+  /**
+   * Sets the content and owner of this clipboard.
+   * If the given owner is different from the current owner
+   * then lostOwnership is called on the current owner.
+   * XXX - is this called with the old or new contents.
+   *
+   * @param contents The new clipboard contents.
+   * @param owner The new clipboard owner
+   *
+   * @exception IllegalStateException If the clipboard is currently unavailable
+   */
+  public synchronized void setContents(Transferable contents, ClipboardOwner owner)
+  {
+    if (this.owner != owner)
+      if (this.owner != null)
+        this.owner.lostOwnership(this, contents);
  
-  this.owner = owner;
-  this.contents = contents;
+    this.owner = owner;
+    this.contents = contents;
+  }
 }
-
-} // class Clipboard
 

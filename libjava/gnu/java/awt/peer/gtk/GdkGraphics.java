@@ -90,17 +90,31 @@ public class GdkGraphics extends Graphics
   GdkGraphics (GtkComponentPeer component)
   {
     this.component = component;
+    font = component.awtComponent.getFont ();
+
+    if (component.isRealized ())
+      initComponentGraphics ();
+    else
+      connectSignals (component);
+  }
+
+  void initComponentGraphics ()
+  {
     initState (component);
     color = component.awtComponent.getForeground ();
-    font = component.awtComponent.getFont ();
     Dimension d = component.awtComponent.getSize ();
     clip = new Rectangle (0, 0, d.width, d.height);
   }
+
+  native void connectSignals (GtkComponentPeer component);
 
   public native void clearRect (int x, int y, int width, int height);
 
   public void clipRect (int x, int y, int width, int height)
   {
+    if (component != null && ! component.isRealized ())
+      return;
+
     clip = clip.intersection (new Rectangle (x, y, width, height));
     setClipRectangle (clip.x, clip.y, clip.width, clip.height);
   }
@@ -113,16 +127,6 @@ public class GdkGraphics extends Graphics
     return new GdkGraphics (this);
   }
 
-//    public Graphics create (int x, int y, int width, int height)
-//    {
-//      GdkGraphics g = new GdkGraphics (this);
-//      System.out.println ("translating by: " + x +" " + y);
-//      g.translate (x, y);
-//      g.clipRect (0, 0, width, height);
-
-//      return g;
-//    }
-  
   native public void dispose ();
 
   native void copyPixmap (Graphics g, int x, int y, int width, int height);
@@ -134,24 +138,45 @@ public class GdkGraphics extends Graphics
   public boolean drawImage (Image img, int x, int y, 
 			    Color bgcolor, ImageObserver observer)
   {
+    if (component != null && ! component.isRealized ())
+      return false;
+
     if (img instanceof GtkOffScreenImage)
       {
+        int width = img.getWidth (null);
+        int height = img.getHeight (null);
 	copyPixmap (img.getGraphics (), 
-		    x, y, img.getWidth (null), img.getHeight (null));
+		    x, y, width, height);
+        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
+        if (observer != null)
+          observer.imageUpdate (img,
+                                ImageObserver.FRAMEBITS,
+                                x, y, width, height);
 	return true;
       }
 
     GtkImage image = (GtkImage) img;
-    new GtkImagePainter (image, this, x, y, -1, -1, bgcolor);
+    new GtkImagePainter (image, this, x, y, -1, -1, bgcolor, observer);
     return image.isLoaded ();
   }
 
   public boolean drawImage (Image img, int x, int y, ImageObserver observer)
   {
+    if (component != null && ! component.isRealized ())
+      return false;
+
     if (img instanceof GtkOffScreenImage)
       {
+        int width = img.getWidth (null);
+        int height = img.getHeight (null);
 	copyPixmap (img.getGraphics (), 
-		    x, y, img.getWidth (null), img.getHeight (null));
+		    x, y, width, height);
+
+        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
+        if (observer != null)
+          observer.imageUpdate (img,
+                                ImageObserver.FRAMEBITS,
+                                x, y, width, height);
 	return true;
       }
 
@@ -164,22 +189,33 @@ public class GdkGraphics extends Graphics
   public boolean drawImage (Image img, int x, int y, int width, int height, 
 			    Color bgcolor, ImageObserver observer)
   {
+    if (component != null && ! component.isRealized ())
+      return false;
+
     if (img instanceof GtkOffScreenImage)
       {
         copyAndScalePixmap (img.getGraphics (), false, false,
                             0, 0, img.getWidth (null), img.getHeight (null), 
                             x, y, width, height);
+        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
+        if (observer != null)
+          observer.imageUpdate (img,
+                                ImageObserver.FRAMEBITS,
+                                x, y, width, height);
         return true;
       }
 
     GtkImage image = (GtkImage) img;
-    new GtkImagePainter (image, this, x, y, width, height, bgcolor);
+    new GtkImagePainter (image, this, x, y, width, height, bgcolor, observer);
     return image.isLoaded ();
   }
 
   public boolean drawImage (Image img, int x, int y, int width, int height, 
 			    ImageObserver observer)
   {
+    if (component != null && ! component.isRealized ())
+      return false;
+
     if (component != null)
       return drawImage (img, x, y, width, height, component.getBackground (),
                         observer);
@@ -192,6 +228,9 @@ public class GdkGraphics extends Graphics
 			    int sx1, int sy1, int sx2, int sy2, 
 			    Color bgcolor, ImageObserver observer)
   {
+    if (component != null && ! component.isRealized ())
+      return false;
+
     if (img instanceof GtkOffScreenImage)
       {
         int dx_start, dy_start, d_width, d_height;
@@ -247,12 +286,18 @@ public class GdkGraphics extends Graphics
         copyAndScalePixmap (img.getGraphics (), x_flip, y_flip,
                             sx_start, sy_start, s_width, s_height, 
                             dx_start, dy_start, d_width, d_height);
+
+        // FIXME: need to differentiate between SOMEBITS and FRAMEBITS.
+        if (observer != null)
+          observer.imageUpdate (img,
+                                ImageObserver.FRAMEBITS,
+                                dx_start, dy_start, d_width, d_height);
         return true;
       }
 
     GtkImage image = (GtkImage) img;
     new GtkImagePainter (image, this, dx1, dy1, dx2, dy2, 
-			 sx1, sy1, sx2, sy2, bgcolor);
+			 sx1, sy1, sx2, sy2, bgcolor, observer);
     return image.isLoaded ();
   }
 
@@ -260,6 +305,9 @@ public class GdkGraphics extends Graphics
 			    int sx1, int sy1, int sx2, int sy2, 
 			    ImageObserver observer) 
   {
+    if (component != null && ! component.isRealized ())
+      return false;
+
     if (component != null)
       return drawImage (img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2,
                         component.getBackground (), observer);
@@ -285,11 +333,17 @@ public class GdkGraphics extends Graphics
   native public void drawRect(int x, int y, int width, int height);
   native public void fillRect (int x, int y, int width, int height);
 
-  native void drawString (String str, int x, int y, String fname, int style, int size);
+  GdkFontPeer getFontPeer() 
+  {
+    return (GdkFontPeer) getFont().getPeer(); 
+  }
+
+  native void drawString (GdkFontPeer f, String str, int x, int y);
   public void drawString (String str, int x, int y)
   {
-    drawString (str, x, y, font.getName(), font.getStyle(), font.getSize());
+    drawString(getFontPeer(), str, x, y);
   }
+  
 
   public void drawString (AttributedCharacterIterator ci, int x, int y)
   {
@@ -350,7 +404,6 @@ public class GdkGraphics extends Graphics
 
   public Rectangle getClipBounds ()
   {
-//      System.out.println ("returning CLIP: " + clip);
     return new Rectangle (clip.x, clip.y, clip.width, clip.height);
   }
 
@@ -373,6 +426,9 @@ public class GdkGraphics extends Graphics
 
   public void setClip (int x, int y, int width, int height)
   {
+    if (component != null && ! component.isRealized ())
+      return;
+
     clip.x = x;
     clip.y = y;
     clip.width = width;
@@ -396,7 +452,7 @@ public class GdkGraphics extends Graphics
   public void setColor (Color c)
   {
     if (c == null)
-      color = new Color (0, 0, 0);
+      color = Color.BLACK;
     else
       color = c;
 
@@ -407,7 +463,7 @@ public class GdkGraphics extends Graphics
 		  color.getGreen () ^ xorColor.getGreen (),
 		  color.getBlue  () ^ xorColor.getBlue ());
   }
-
+  
   public void setFont (Font font)
   {
     this.font = font;
@@ -437,6 +493,9 @@ public class GdkGraphics extends Graphics
 
   public void translate (int x, int y)
   {
+    if (component != null && ! component.isRealized ())
+      return;
+
     clip.x -= x;
     clip.y -= y;
 

@@ -1,5 +1,5 @@
 /* ClasspathToolkit.java -- Abstract superclass for Classpath toolkits.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,26 +38,26 @@ exception statement from your version. */
 
 package gnu.java.awt;
 
+import gnu.java.awt.peer.ClasspathFontPeer;
+import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+
 import java.awt.Image;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.Font;
-import java.awt.FontFormatException;
 import java.awt.FontMetrics;
 import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.awt.font.FontRenderContext;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageProducer;
 import java.io.File;
 import java.io.InputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.Map;
-
-import gnu.java.awt.peer.ClasspathFontPeer;
 
 
 /**
@@ -170,6 +170,9 @@ public abstract class ClasspathToolkit
    */
 
   public abstract ClasspathFontPeer getClasspathFontPeer (String name, Map attrs); 
+
+  public abstract ClasspathTextLayoutPeer 
+  getClasspathTextLayoutPeer (AttributedString str, FontRenderContext frc); 
 
 
   /** 

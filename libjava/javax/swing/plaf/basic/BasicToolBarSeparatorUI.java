@@ -1,4 +1,4 @@
-/* BasicToolBarSeparatorUI.java
+/* BasicToolBarSeparatorUI.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,22 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Rectangle;
+
 import javax.swing.JComponent;
-import javax.swing.JToolBar.Separator;
 import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.SeparatorUI;
-
 
 /**
  * The Basic Look and Feel UI delegate for Separator.

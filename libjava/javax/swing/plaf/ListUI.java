@@ -1,5 +1,5 @@
-/* ListUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* ListUI.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,8 +40,8 @@ package javax.swing.plaf;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import javax.swing.JList;
 
+import javax.swing.JList;
 
 /**
  * An abstract base class for delegates that implement the pluggable

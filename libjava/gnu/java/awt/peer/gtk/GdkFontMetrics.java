@@ -1,5 +1,5 @@
 /* GdkFontMetrics.java
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,33 +38,63 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.java.awt.ClasspathToolkit;
+
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Toolkit;
 
 public class GdkFontMetrics extends FontMetrics
 {
-  private final int native_state = GtkGenericPeer.getUniqueInteger();
+  
+  private int[] font_metrics;
+  GdkFontPeer peer;
 
-  private static final int ASCENT = 0, MAX_ASCENT = 1, 
-                       DESCENT = 2, MAX_DESCENT = 3, 
-                       MAX_ADVANCE = 4;
+  static final int FONT_METRICS_ASCENT = 0;
+  static final int FONT_METRICS_MAX_ASCENT = 1;
+  static final int FONT_METRICS_DESCENT = 2;
+  static final int FONT_METRICS_MAX_DESCENT = 3;
+  static final int FONT_METRICS_MAX_ADVANCE = 4;
 
-  private int[] metrics;
-  private native int[] initState (String fname, int style, int size);
+  static final int TEXT_METRICS_X_BEARING = 0;
+  static final int TEXT_METRICS_Y_BEARING = 1;
+  static final int TEXT_METRICS_WIDTH = 2;
+  static final int TEXT_METRICS_HEIGHT = 3;
+  static final int TEXT_METRICS_X_ADVANCE = 4;
+  static final int TEXT_METRICS_Y_ADVANCE = 5;
+
+  static native void getPeerFontMetrics(GdkFontPeer peer, double [] metrics);
+  static native void getPeerTextMetrics(GdkFontPeer peer, String str, double [] metrics);
 
   public GdkFontMetrics (Font font)
-  {
-    super (font);
-    metrics = initState (font.getName (), font.getStyle (), font.getSize ());
+  {    
+    super (font.getPeer() instanceof GdkFontPeer 
+           ? font 
+           : ((ClasspathToolkit)(Toolkit.getDefaultToolkit ()))
+           .getFont (font.getName(), font.getAttributes ()));
+    
+    peer = (GdkFontPeer) this.font.getPeer();
+
+    font_metrics = new int[5];
+    double [] hires = new double[5];
+
+    if (GtkToolkit.useGraphics2D ())
+      GdkGraphics2D.getPeerFontMetrics(peer, hires);
+    else
+      getPeerFontMetrics (peer, hires);
+
+    for (int i = 0; i < 5; ++i)
+      font_metrics[i] = (int) hires[i];
   }
-
-  native public int stringWidth (String fname, int style, int size,
-                                 String str);
-
+  
   public int stringWidth (String str)
   {
-    return stringWidth (font.getName (), font.getStyle (), font.getSize (),
-                        str);
+    double [] hires = new double[6];
+    if (GtkToolkit.useGraphics2D())
+      GdkGraphics2D.getPeerTextMetrics(peer, str, hires);
+    else
+      getPeerTextMetrics(peer, str, hires);
+    return (int) hires [TEXT_METRICS_WIDTH];
   }
 
   public int charWidth (char ch)
@@ -77,34 +107,39 @@ public class GdkFontMetrics extends FontMetrics
     return stringWidth (new String (data, off, len));
   }
 
-  // Sun's Motif implementation always returns 0 or 1 here (???).
+  /* 
+     Sun's Motif implementation always returns 0 or 1 here (???), but
+     going by the X11 man pages, it seems as though we should return
+     font.ascent + font.descent.
+  */
   public int getLeading ()
   {
-    return 0;
+    return 1;
+//      return metrics[ASCENT] + metrics[DESCENT];
   }
 
   public int getAscent ()
   {
-    return metrics[ASCENT];
+    return font_metrics[FONT_METRICS_ASCENT];
   }
 
   public int getMaxAscent ()
   {
-    return metrics[MAX_ASCENT];
+    return font_metrics[FONT_METRICS_MAX_ASCENT];
   }
 
   public int getDescent ()
   {
-    return metrics[DESCENT];
+    return font_metrics[FONT_METRICS_DESCENT];
   }
 
   public int getMaxDescent ()
   {
-    return metrics[MAX_DESCENT];
+    return font_metrics[FONT_METRICS_MAX_DESCENT];
   }
 
   public int getMaxAdvance ()
   {
-    return metrics[MAX_ADVANCE];
+    return font_metrics[FONT_METRICS_MAX_ADVANCE];
   }
 }

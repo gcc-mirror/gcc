@@ -1,5 +1,5 @@
 /* KeyboardFocusManager.java -- manage component focusing via the keyboard
-   Copyright (C) 2002 Free Software Foundation
+   Copyright (C) 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
@@ -55,20 +55,64 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// FIXME: finish documentation
-
 /**
- *
- * FIXME: discuss applet contexts and thread groups and codebases
- * being insulated.
- *
- * FIXME: discuss where default focus traversal key sets apply
- * (inherited by child Components etc.)
+ * The <code>KeyboardFocusManager</code> handles the focusing of
+ * windows for receiving keyboard events.  The manager handles
+ * the dispatch of all <code>FocusEvent</code>s and
+ * <code>KeyEvent</code>s, along with <code>WindowEvent</code>s
+ * relating to the focused window.  Users can use the manager
+ * to ascertain the current focus owner and fire events.
+ * <br />
+ * <br />
+ * The focus owner is the <code>Component</code> that receives
+ * key events.  The focus owner is either the currently focused
+ * window or a component within this window.
+ * <br />
+ * <br />
+ * The underlying native windowing system may denote the active
+ * window or its children with special decorations (e.g. a highlighted
+ * title bar).  The active window is always either a <code>Frame</code>
+ * or <code>Dialog</code>, and is either the currently focused
+ * window or its owner.
+ * <br />
+ * <br />
+ * Applets may be partitioned into different applet contexts, according
+ * to their code base.  In this case, each context has its own
+ * <code>KeyboardFocusManager</code>, as opposed to the global
+ * manager maintained by applets which share the same context.
+ * Each context is insulated from the others, and they don't interact.
+ * The resulting behaviour, as with context division, depends on the browser
+ * supporting the applets.  Regardless, there can only ever be
+ * one focused window, one active window and one focus owner
+ * per <code>ClassLoader</code>.
+ * <br />
+ * <br />
+ * To support this separation of focus managers, the manager instances
+ * and the internal state information is grouped by the
+ * <code>ThreadGroup</code> to which it pertains.  With respect to
+ * applets, each code base has its own <code>ThreadGroup</code>, so the
+ * isolation of each context is enforced within the manager.
+ * <br />
+ * <br />
+ * By default, the manager defines TAB and Ctrl+TAB as the
+ * forward focus traversal keys and Shift+TAB and Ctrl+Shift+TAB
+ * as the backward focus traversal keys.  No up or down cycle
+ * traversal keys are defined by default.  Traversal takes effect
+ * on the firing of a relevant <code>KEY_PRESSED</code> event.
+ * However, all other key events related to the use of the
+ * defined focus traversal key sequence are consumed and not
+ * dispatched.
+ * <br />
+ * <br />
+ * These default traversal keys come into effect on all windows
+ * for which no alternative set of keys is defined.  This also
+ * applies recursively to any child components of such a window,
+ * which define no traversal keys of their own.
  *
  * @author Eric Blake <ebb9@email.byu.edu>
  * @author Thomas Fitzsimmons <fitzsim@redhat.com>
+ * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
  * @since 1.4
- * @status partially updated to 1.4, needs documentation.
  */
 public abstract class KeyboardFocusManager
   implements KeyEventDispatcher, KeyEventPostProcessor
@@ -182,7 +226,14 @@ public abstract class KeyboardFocusManager
     Collections.EMPTY_SET, Collections.EMPTY_SET
   };
 
+  /**
+   * A utility class to support the handling of events relating to property changes.
+   */
   private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport (this);
+
+  /**
+   * A utility class to support the handling of events relating to vetoable changes.
+   */
   private final VetoableChangeSupport vetoableChangeSupport = new VetoableChangeSupport (this);
 
   /** A list of {@link KeyEventDispatcher}s that process {@link
@@ -211,6 +262,10 @@ public abstract class KeyboardFocusManager
   public static KeyboardFocusManager getCurrentKeyboardFocusManager ()
   {
     ThreadGroup currentGroup = Thread.currentThread ().getThreadGroup ();
+
+    if (currentKeyboardFocusManagers.get (currentGroup) == null)
+      setCurrentKeyboardFocusManager (null);
+
     return (KeyboardFocusManager) currentKeyboardFocusManagers.get (currentGroup);
   }
 
@@ -623,29 +678,99 @@ public abstract class KeyboardFocusManager
     setGlobalObject (currentFocusCycleRoots, cycleRoot, "currentFocusCycleRoot");
   }
 
+  /**
+   * Registers the supplied property change listener for receiving
+   * events caused by the following property changes:
+   *
+   * <ul>
+   * <li>the current focus owner ("focusOwner")</li>
+   * <li>the permanent focus owner ("permanentFocusOwner")</li>
+   * <li>the focused window ("focusedWindow")</li>
+   * <li>the active window ("activeWindow")</li>
+   * <li>the default focus traversal policy ("defaultFocusTraversalPolicy")</li>
+   * <li>the default set of forward traversal keys ("forwardDefaultFocusTraversalKeys")</li>
+   * <li>the default set of backward traversal keys ("backwardDefaultFocusTraversalKeys")</li>
+   * <li>the default set of up cycle traversal keys ("upCycleDefaultFocusTraversalKeys")</li>
+   * <li>the default set of down cycle traversal keys ("downCycleDefaultFocusTraversalKeys")</li>
+   * <li>the current focus cycle root ("currentFocusCycleRoot")</li>
+   * </ul>
+   *
+   * If the supplied listener is null, nothing occurs.
+   *
+   * @param l the new listener to register.
+   * @see KeyboardFocusManager#addPropertyChangeListener(String, java.beans.PropertyChangeListener)
+   */
   public void addPropertyChangeListener(PropertyChangeListener l)
   {
     if (l != null)
       propertyChangeSupport.addPropertyChangeListener(l);
   }
 
+  /**
+   * Removes the supplied property change listener from the list
+   * of registered listeners.  If the supplied listener is null,
+   * nothing occurs.
+   *
+   * @param l the listener to remove.
+   */
   public void removePropertyChangeListener(PropertyChangeListener l)
   {
     if (l != null)
       propertyChangeSupport.removePropertyChangeListener(l);
   }
 
+  /**
+   * Returns the currently registered property change listeners
+   * in array form.  The returned array is empty if no listeners are
+   * currently registered.
+   *
+   * @return an array of registered property change listeners.
+   */
   public PropertyChangeListener[] getPropertyChangeListeners()
   {
     return propertyChangeSupport.getPropertyChangeListeners();
   }
 
+  /**
+   * Registers a property change listener for receiving events relating
+   * to a change to a specified property.  The supplied property name can be
+   * either user-defined or one from the following list of properties
+   * relevant to this class:
+   *
+   * <ul>
+   * <li>the current focus owner ("focusOwner")</li>
+   * <li>the permanent focus owner ("permanentFocusOwner")</li>
+   * <li>the focused window ("focusedWindow")</li>
+   * <li>the active window ("activeWindow")</li>
+   * <li>the default focus traversal policy ("defaultFocusTraversalPolicy")</li>
+   * <li>the default set of forward traversal keys ("forwardDefaultFocusTraversalKeys")</li>
+   * <li>the default set of backward traversal keys ("backwardDefaultFocusTraversalKeys")</li>
+   * <li>the default set of up cycle traversal keys ("upCycleDefaultFocusTraversalKeys")</li>
+   * <li>the default set of down cycle traversal keys ("downCycleDefaultFocusTraversalKeys")</li>
+   * <li>the current focus cycle root ("currentFocusCycleRoot")</li>
+   * </ul>
+   *
+   * Nothing occurs if a null listener is supplied.  null is regarded as a valid property name.
+   *
+   * @param name the name of the property to handle change events for.
+   * @param l the listener to register for changes to the specified property. 
+   * @see KeyboardFocusManager#addPropertyChangeListener(java.beans.PropertyChangeListener)
+   */
   public void addPropertyChangeListener(String name, PropertyChangeListener l)
   {
     if (l != null)
       propertyChangeSupport.addPropertyChangeListener(name, l);
   }
 
+  /**
+   * Removes the supplied property change listener registered for the
+   * specified property from the list of registered listeners.  If the
+   * supplied listener is null, nothing occurs.
+   *
+   * @param name the name of the property the listener is
+   *        monitoring changes to.
+   * @param l the listener to remove.
+   */
   public void removePropertyChangeListener(String name,
                                            PropertyChangeListener l)
   {
@@ -653,39 +778,117 @@ public abstract class KeyboardFocusManager
       propertyChangeSupport.removePropertyChangeListener(name, l);
   }
 
+  /**
+   * Returns the currently registered property change listeners
+   * in array form, which listen for changes to the supplied property.
+   * The returned array is empty, if no listeners are currently registered
+   * for events pertaining to the supplied property.
+   *
+   * @param name The property the returned listeners monitor for changes.
+   * @return an array of registered property change listeners which
+   *         listen for changes to the supplied property.
+   */
   public PropertyChangeListener[] getPropertyChangeListeners(String name)
   {
     return propertyChangeSupport.getPropertyChangeListeners(name);
   }
 
+  /**
+   * Fires a property change event as a response to a change to
+   * to the specified property.  The event is only fired if a
+   * change has actually occurred (i.e. o and n are different).
+   *
+   * @param name The name of the property to which a change occurred.
+   * @param o The old value of the property.
+   * @param n The new value of the property.
+   */
   protected void firePropertyChange(String name, Object o, Object n)
   {
     propertyChangeSupport.firePropertyChange(name, o, n);
   }
 
+  /**
+   * Registers a vetoable property change listener for receiving events
+   * relating to the following properties:
+   *
+   * <ul>
+   * <li>the current focus owner ("focusOwner")</li>
+   * <li>the permanent focus owner ("permanentFocusOwner")</li>
+   * <li>the focused window ("focusedWindow")</li>
+   * <li>the active window ("activeWindow")</li>
+   * </ul>
+   *
+   * Nothing occurs if a null listener is supplied.
+   *
+   * @param l the listener to register. 
+   * @see KeyboardFocusManager#addVetoableChangeListener(String, java.beans.VetoableChangeListener)
+   */
   public void addVetoableChangeListener(VetoableChangeListener l)
   {
     if (l != null)
       vetoableChangeSupport.addVetoableChangeListener(l);
   }
 
+  /**
+   * Removes the supplied vetoable property change listener from
+   * the list of registered listeners.  If the supplied listener
+   * is null, nothing occurs.
+   *
+   * @param l the listener to remove.
+   */
   public void removeVetoableChangeListener(VetoableChangeListener l)
   {
     if (l != null)
       vetoableChangeSupport.removeVetoableChangeListener(l);
   }
 
+  /**
+   * Returns the currently registered vetoable property change listeners
+   * in array form.  The returned array is empty if no listeners are
+   * currently registered.
+   *
+   * @return an array of registered vetoable property change listeners.
+   * @since 1.4
+   */
   public VetoableChangeListener[] getVetoableChangeListeners()
   {
     return vetoableChangeSupport.getVetoableChangeListeners();
   }
 
+  /**
+   * Registers a vetoable property change listener for receiving events relating
+   * to a vetoable change to a specified property.  The supplied property name can be
+   * either user-defined or one from the following list of properties
+   * relevant to this class:
+   *
+   * <ul>
+   * <li>the current focus owner ("focusOwner")</li>
+   * <li>the permanent focus owner ("permanentFocusOwner")</li>
+   * <li>the focused window ("focusedWindow")</li>
+   * <li>the active window ("activeWindow")</li>
+   * </ul>
+   *
+   * Nothing occurs if a null listener is supplied.  null is regarded as a valid property name.
+   *
+   * @param name the name of the property to handle change events for.
+   * @param l the listener to register for changes to the specified property. 
+   * @see KeyboardFocusManager#addVetoableChangeListener(java.beans.VetoableChangeListener)
+   */
   public void addVetoableChangeListener(String name, VetoableChangeListener l)
   {
     if (l != null)
       vetoableChangeSupport.addVetoableChangeListener(name, l);
   }
 
+  /**
+   * Removes the supplied vetoable property change listener registered
+   * for the specified property from the list of registered listeners.
+   * If the supplied listener is null, nothing occurs.
+   *
+   * @param name the name of the vetoable property the listener is
+   *        monitoring changes to.
+   * @param l the listener to remove.
+   */
   public void removeVetoableChangeListener(String name,
                                            VetoableChangeListener l)
   {
@@ -693,51 +896,210 @@ public abstract class KeyboardFocusManager
       vetoableChangeSupport.removeVetoableChangeListener(name, l);
   }
 
+  /**
+   * Returns the currently registered vetoable property change listeners
+   * in array form, which listen for changes to the supplied property.
+   * The returned array is empty, if no listeners are currently registered
+   * for events pertaining to the supplied property.
+   *
+   * @param name The property the returned listeners monitor for changes.
+   * @return an array of registered property change listeners which
+   *         listen for changes to the supplied property.
+   * @since 1.4
+   */
   public VetoableChangeListener[] getVetoableChangeListeners(String name)
   {
     return vetoableChangeSupport.getVetoableChangeListeners(name);
   }
 
+  /**
+   * Fires a property change event as a response to a vetoable change to
+   * to the specified property.  The event is only fired if a
+   * change has actually occurred (i.e. o and n are different).
+   * In the event that the property change is vetoed, the following
+   * occurs:
+   *
+   * <ol>
+   * <li>
+   * This method throws a <code>PropertyVetoException</code> to
+   * the proposed change.
+   * </li>
+   * <li>
+   * A new event is fired to reverse the previous change.
+   * </li>
+   * <li>
+   * This method again throws a <code>PropertyVetoException</code>
+   * in response to the reversion.
+   * </li>
+   * </ol>
+   *
+   * @param name The name of the property to which a change occurred.
+   * @param o The old value of the property.
+   * @param n The new value of the property.
+   * @throws PropertyVetoException if one of the listeners vetos
+   *         the change by throwing this exception.
+   */
   protected void fireVetoableChange(String name, Object o, Object n)
     throws PropertyVetoException
   {
     vetoableChangeSupport.fireVetoableChange(name, o, n);
   }
 
+  /**
+   * Adds a key event dispatcher to the list of registered dispatchers.
+   * When a key event is fired, each dispatcher's <code>dispatchKeyEvent</code>
+   * method is called in the order that they were added, prior to the manager
+   * dispatching the event itself.  Notifications halt when one of the
+   * dispatchers returns true.
+   * <br />
+   * <br />
+   * The same dispatcher can exist multiple times within the list
+   * of registered dispatchers, and there is no limit on the length
+   * of this list.  A null dispatcher is simply ignored.
+   *
+   * @param dispatcher The dispatcher to register.
+   */
   public void addKeyEventDispatcher(KeyEventDispatcher dispatcher)
   {
     if (dispatcher != null)
       keyEventDispatchers.add(dispatcher);
   }
 
+  /**
+   * Removes the specified key event dispatcher from the list of
+   * registered dispatchers.  The manager always dispatches events,
+   * regardless of its existence within the list.  The manager
+   * can be added and removed from the list, as with any other
+   * dispatcher, but this does not affect its ability to dispatch
+   * key events.  Non-existent and null dispatchers are simply ignored
+   * by this method.
+   *
+   * @param dispatcher The dispatcher to remove.
+   */
   public void removeKeyEventDispatcher(KeyEventDispatcher dispatcher)
   {
     keyEventDispatchers.remove(dispatcher);
   }
 
+  /**
+   * Returns the currently registered key event dispatchers in <code>List</code>
+   * form.  At present, this only includes dispatchers explicitly registered
+   * via the <code>addKeyEventDispatcher()</code> method, but this behaviour
+   * is subject to change and should not be depended on.  The manager itself
+   * may be a member of the list, but only if explicitly registered.  If no
+   * dispatchers have been registered, the list will be empty.
+   *
+   * @return A list of explicitly registered key event dispatchers.
+   * @see KeyboardFocusManager#addKeyEventDispatcher(java.awt.KeyEventDispatcher)
+   */
   protected List getKeyEventDispatchers ()
   {
     return (List) keyEventDispatchers.clone ();
   }
 
+  /**
+   * Adds a key event post processor to the list of registered post processors.
+   * Post processors work in the same way as key event dispatchers, except
+   * that they are invoked after the manager has dispatched the key event,
+   * and not prior to this.  Each post processor's <code>postProcessKeyEvent</code>
+   * method is called to see if any post processing needs to be performed.  THe
+   * processors are called in the order in which they were added to the list,
+   * and notifications continue until one returns true.  As with key event
+   * dispatchers, the manager is implicitly called following this process,
+   * regardless of whether or not it is present within the list.
+   * <br />
+   * <br />
+   * The same post processor can exist multiple times within the list
+   * of registered post processors, and there is no limit on the length
+   * of this list.  A null post processor is simply ignored.
+   *
+   * @param postProcessor the post processor to register.
+   * @see KeyboardFocusManager#addKeyEventDispatcher(java.awt.KeyEventDispatcher)
+   */
   public void addKeyEventPostProcessor (KeyEventPostProcessor postProcessor)
   {
     if (postProcessor != null)
       keyEventPostProcessors.add (postProcessor);
   }
 
+  /**
+   * Removes the specified key event post processor from the list of
+   * registered post processors.  The manager always post processes events,
+   * regardless of its existence within the list.  The manager
+   * can be added and removed from the list, as with any other
+   * post processor, but this does not affect its ability to post process
+   * key events.  Non-existent and null post processors are simply ignored
+   * by this method.
+   *
+   * @param postProcessor the post processor to remove.
+   */
   public void removeKeyEventPostProcessor (KeyEventPostProcessor postProcessor)
   {
     keyEventPostProcessors.remove (postProcessor);
   }
 
+  /**
+   * Returns the currently registered key event post processors in <code>List</code>
+   * form.  At present, this only includes post processors explicitly registered
+   * via the <code>addKeyEventPostProcessor()</code> method, but this behaviour
+   * is subject to change and should not be depended on.  The manager itself
+   * may be a member of the list, but only if explicitly registered.  If no
+   * post processors have been registered, the list will be empty.
+   *
+   * @return A list of explicitly registered key event post processors.
+   * @see KeyboardFocusManager#addKeyEventPostProcessor(java.awt.KeyEventPostProcessor)
+   */
   protected List getKeyEventPostProcessors ()
   {
     return (List) keyEventPostProcessors.clone ();
   }
 
+  /**
+   * The AWT event dispatcher uses this method to request that the manager
+   * handle a particular event.  If the manager fails or refuses to
+   * dispatch the supplied event (this method returns false), the
+   * AWT event dispatcher will try to dispatch the event itself.
+   * <br />
+   * <br />
+   * The manager is expected to handle all <code>FocusEvent</code>s
+   * and <code>KeyEvent</code>s, and <code>WindowEvent</code>s
+   * relating to the focus.  Dispatch is done with regard to the
+   * the focus owner and the currently focused and active windows.
+   * In handling the event, the source of the event may be overridden.
+   * <br />
+   * <br />
+   * The actual dispatching is performed by calling
+   * <code>redispatchEvent()</code>.  This avoids the infinite recursion
+   * of dispatch requests which may occur if this method is called on
+   * the target component.  
+   *
+   * @param e the event to dispatch.
+   * @return true if the event was dispatched.
+   * @see KeyboardFocusManager#redispatchEvent(java.awt.Component, java.awt.AWTEvent)
+   * @see KeyEvent
+   * @see FocusEvent
+   * @see WindowEvent
+   */
   public abstract boolean dispatchEvent (AWTEvent e);
 
+  /**
+   * Handles redispatching of an event so that recursion of
+   * dispatch requests does not occur.  Event dispatch methods
+   * within this manager (<code>dispatchEvent()</code>) and
+   * the key event dispatchers should use this method to handle
+   * dispatching rather than the dispatch method of the target
+   * component.  
+   * <br />
+   * <br />
+   * <strong>
+   * This method is not intended for general consumption, and is
+   * only for the use of the aforementioned classes.
+   * </strong>
+   * 
+   * @param target the target component to which the event is
+   *        dispatched.
+   * @param e the event to dispatch.
+   */
   public final void redispatchEvent (Component target, AWTEvent e)
   {
     synchronized (e)
@@ -747,42 +1109,203 @@ public abstract class KeyboardFocusManager
       }
   }
 
+  /**
+   * Attempts to dispatch key events for which no key event dispatcher
+   * has so far succeeded.  This method is usually called by
+   * <code>dispatchEvent()</code> following the sending of the key
+   * event to any registered key event dispatchers.  If the key
+   * event reaches this stage, none of the dispatchers returned
+   * true.  This is, of course, always the case if there are no
+   * registered dispatchers.
+   * <br />
+   * <br />
+   * If this method also fails to handle the key event, then
+   * false is returned to the caller.  In the case of
+   * <code>dispatchEvent()</code>, the calling method may try
+   * to handle the event itself or simply forward on the
+   * false result to its caller.  When the event is dispatched
+   * by this method, a true result is propogated through the
+   * calling methods.
+   *
+   * @param e the key event to dispatch.
+   * @return true if the event was dispatched successfully.
+   */
   public abstract boolean dispatchKeyEvent (KeyEvent e);
 
+  /**
+   * Handles the post processing of key events.  By default,
+   * this method will map unhandled key events to appropriate
+   * <code>MenuShortcut</code>s.  The event is consumed
+   * in the process and the shortcut is activated.  This
+   * method is usually called by <code>dispatchKeyEvent</code>.
+   *
+   * @param e the key event to post process.
+   * @return true by default, as the event was handled.
+   */
   public abstract boolean postProcessKeyEvent (KeyEvent e);
 
+  /**
+   * Handles focus traversal operations for key events which
+   * represent focus traversal keys in relation to the supplied
+   * component.  The supplied component is assumed to have the
+   * focus, whether it does so or not, and the operation is
+   * carried out as appropriate, with this in mind.
+   *
+   * @param focused the component on which to perform focus traversal,
+   *        on the assumption that this component has the focus.
+   * @param e the possible focus traversal key event.
+   */
   public abstract void processKeyEvent (Component focused, KeyEvent e);
 
+  /**
+   * Delays all key events following the specified timestamp until the
+   * supplied component has focus.  The AWT calls this method when it is
+   * determined that a focus change may occur within the native windowing
+   * system.  Any key events which occur following the time specified by
+   * after are delayed until a <code>FOCUS_GAINED</code> event is received
+   * for the untilFocused component.  The manager is responsible for ensuring
+   * this takes place.
+   *
+   * @param after the timestamp beyond which all key events are delayed until
+   *        the supplied component gains focus.
+   * @param untilFocused the component to wait on gaining focus.
+   */
   protected abstract void enqueueKeyEvents (long after, Component untilFocused);
 
+  /**
+   * Removes the key event block specified by the supplied timestamp and component.
+   * All delayed key events are released for normal dispatching following its
+   * removal and subsequent key events that would have been blocked are now
+   * immediately dispatched.  If the specified timestamp is below 0, then
+   * the request with the oldest timestamp is removed.
+   *
+   * @param after the timestamp of the key event block to be removed, or a
+   *        value smaller than 0 if the oldest is to be removed.
+   * @param untilFocused the component of the key event block to be removed.
+   */
   protected abstract void dequeueKeyEvents (long after, Component untilFocused);
 
+  /**
+   * Discards all key event blocks relating to focus requirements for
+   * the supplied component, regardless of timestamp.
+   *
+   * @param comp the component of the key event block(s) to be removed.
+   */
   protected abstract void discardKeyEvents (Component comp);
 
-  public abstract void focusNextComponent (Component comp);
+  /**
+   * Moves the current focus to the next component following
+   * comp, based on the current focus traversal policy.  By
+   * default, only visible, displayable, accepted components
+   * can receive focus.  <code>Canvas</code>es, <code>Panel</code>s,
+   * <code>Label</code>s, <code>ScrollPane</code>s, <code>Scrollbar</code>s,
+   * <code>Window</code>s and lightweight components are judged
+   * to be unacceptable by default.  See the
+   * <code>DefaultFocusTraversalPolicy</code> for more details.
+   *
+   * @param comp the component prior to the one which will
+   *        become the focus, following execution of this method.
+   * @see DefaultFocusTraversalPolicy
+   */
+  public abstract void focusNextComponent(Component comp);
 
-  public abstract void focusPreviousComponent (Component comp);
+  /**
+   * Moves the current focus to the previous component, prior to
+   * comp, based on the current focus traversal policy.  By
+   * default, only visible, displayable, accepted components
+   * can receive focus.  <code>Canvas</code>es, <code>Panel</code>s,
+   * <code>Label</code>s, <code>ScrollPane</code>s, <code>Scrollbar</code>s,
+   * <code>Window</code>s and lightweight components are judged
+   * to be unacceptable by default.  See the
+   * <code>DefaultFocusTraversalPolicy</code> for more details.
+   *
+   * @param comp the component following the one which will
+   *        become the focus, following execution of this method.
+   * @see DefaultFocusTraversalPolicy
+   */
+  public abstract void focusPreviousComponent(Component comp);
 
-  public abstract void upFocusCycle (Component comp);
+  /**
+   * Moves the current focus upwards by one focus cycle.
+   * Both the current focus owner and current focus cycle root
+   * become the focus cycle root of the supplied component.
+   * However, in the case of a <code>Window</code>, the default
+   * focus component becomes the focus owner and the focus cycle
+   * root is not changed.
+   * 
+   * @param comp the component used as part of the focus traversal.
+   */ 
+  public abstract void upFocusCycle(Component comp);
 
-  public abstract void downFocusCycle (Container cont);
+  /**
+   * Moves the current focus downwards by one focus cycle.
+   * If the supplied container is a focus cycle root, then this
+   * becomes the current focus cycle root and the focus goes
+   * to the default component of the specified container.
+   * Nothing happens for non-focus cycle root containers. 
+   * 
+   * @param cont the container used as part of the focus traversal.
+   */ 
+  public abstract void downFocusCycle(Container cont);
 
-  public final void focusNextComponent ()
+  /**
+   * Moves the current focus to the next component, based on the
+   * current focus traversal policy.  By default, only visible,
+   * displayable, accepted component can receive focus.
+   * <code>Canvas</code>es, <code>Panel</code>s,
+   * <code>Label</code>s, <code>ScrollPane</code>s, <code>Scrollbar</code>s,
+   * <code>Window</code>s and lightweight components are judged
+   * to be unacceptable by default.  See the
+   * <code>DefaultFocusTraversalPolicy</code> for more details.
+   *
+   * @see DefaultFocusTraversalPolicy
+   */
+  public final void focusNextComponent()
   {
     focusNextComponent (null);
   }
 
-  public final void focusPreviousComponent ()
+  /**
+   * Moves the current focus to the previous component, based on the
+   * current focus traversal policy.  By default, only visible,
+   * displayable, accepted component can receive focus.
+   * <code>Canvas</code>es, <code>Panel</code>s,
+   * <code>Label</code>s, <code>ScrollPane</code>s, <code>Scrollbar</code>s,
+   * <code>Window</code>s and lightweight components are judged
+   * to be unacceptable by default.  See the
+   * <code>DefaultFocusTraversalPolicy</code> for more details.
+   *
+   * @see DefaultFocusTraversalPolicy
+   */
+  public final void focusPreviousComponent()
   {
     focusPreviousComponent (null);
   }
 
-  public final void upFocusCycle ()
+  /**
+   * Moves the current focus upwards by one focus cycle,
+   * so that the new focus owner is the focus cycle root
+   * of the current owner.  The current focus cycle root then
+   * becomes the focus cycle root of the new focus owner.
+   * However, in the case of the focus cycle root of the
+   * current focus owner being a <code>Window</code>, the default
+   * component of this window becomes the focus owner and the
+   * focus cycle root is not changed.
+   */
+  public final void upFocusCycle()
   {
     upFocusCycle (null);
   }
 
-  public final void downFocusCycle ()
+  /**
+   * Moves the current focus downwards by one focus cycle,
+   * iff the current focus cycle root is a <code>Container</code>.
+   * Usually, the new focus owner is set to the default component
+   * of the container and the current focus cycle root is set
+   * to the current focus owner.  Nothing occurs if the current
+   * focus cycle root is not a container.
+   */
+  public final void downFocusCycle()
   {
     Component focusOwner = getGlobalFocusOwner ();
     if (focusOwner instanceof Container

@@ -91,13 +91,29 @@ public class Utilities
     FontMetrics metrics = g.getFontMetrics();
     int ascent = metrics.getAscent();
 
+    int pixelWidth = 0;
+    int pos = 0;
+    int len = 0;
+
     for (int offset = s.offset; offset < (s.offset + s.count); ++offset)
       {
-	switch (buffer[offset])
+        char c = buffer[offset];
+        if (c == '\t' || c == '\n')
+          {
+            if (len > 0) {
+              g.drawChars(buffer, pos, len, pixelX, pixelY + ascent);            
+              pixelX += pixelWidth;
+              pixelWidth = 0;
+            }
+            pos = offset+1;
+            len = 0;
+          }
+        
+	switch (c)
 	  {
 	  case '\t':
 	    // In case we have a tab, we just 'jump' over the tab.
-	    // When we have no tab expander we just use the width of 'm'.
+	    // When we have no tab expander we just use the width of ' '.
 	    if (e != null)
 	      pixelX = (int) e.nextTabStop((float) pixelX,
 					   startOffset + offset - s.offset);
@@ -105,20 +121,20 @@ public class Utilities
 	      pixelX += metrics.charWidth(' ');
 	    break;
 	  case '\n':
-	    // In case we have a newline, we must draw
-	    // the buffer and jump on the next line.
-	    g.drawChars(buffer, offset, 1, pixelX, y);
+	    // In case we have a newline, we must jump to the next line.
 	    pixelY += metrics.getHeight();
 	    pixelX = x;
 	    break;
 	  default:
-	    // Here we draw the char.
-	    g.drawChars(buffer, offset, 1, pixelX, pixelY + ascent);
-	    pixelX += metrics.charWidth(buffer[offset]);
+            ++len;
+	    pixelWidth += metrics.charWidth(buffer[offset]);
 	    break;
 	  }
       }
 
+    if (len > 0)
+      g.drawChars(buffer, pos, len, pixelX, pixelY + ascent);            
+    
     return pixelX;
   }
 

@@ -44,7 +44,7 @@ import javax.swing.event.UndoableEditListener;
 public interface Document
 {
   String StreamDescriptionProperty = "stream";
-  String TitleProperty = "text";
+  String TitleProperty = "title";
 
   void addDocumentListener(DocumentListener listener);
 

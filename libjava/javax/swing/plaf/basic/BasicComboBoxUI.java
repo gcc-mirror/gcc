@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
@@ -58,7 +59,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.EventListener;
+
 import javax.accessibility.Accessible;
 import javax.swing.CellRendererPane;
 import javax.swing.ComboBoxEditor;
@@ -66,21 +67,14 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicComboPopup;
-import javax.swing.plaf.basic.BasicGraphicsUtils;
-
 
 /**
  * UI Delegate for JComboBox
@@ -796,7 +790,7 @@ public class BasicComboBoxUI extends ComboBoxUI
 	                                                           currentValue,
 	                                                           -1,
 	                                                           isPressed,
-	                                                           isPressed);
+	                                                           hasFocus);
 	    if (! comboBox.isEnabled())
 	      comp.setEnabled(false);
 
@@ -1127,8 +1121,9 @@ public class BasicComboBoxUI extends ComboBoxUI
      */
     public void intervalRemoved(ListDataEvent e)
     {
-      // must determine if the size of the combo box should change
-      // FIXME: need to implement
+      // recalculate display size of the JComboBox.
+      largestItemSize = getLargestItemSize();
+      comboBox.repaint();
     }
   }
 
@@ -1142,11 +1137,13 @@ public class BasicComboBoxUI extends ComboBoxUI
     {
     }
 
+    /**
+     * This method is invoked whenever bound property of JComboBox changes.
+     */
     public void propertyChange(PropertyChangeEvent e)
     {
       if (e.getPropertyName().equals(JComboBox.ENABLED_CHANGED_PROPERTY))
         {
-	  // disable arrow button	
 	  arrowButton.setEnabled(comboBox.isEnabled());
 
 	  if (comboBox.isEditable())
@@ -1168,6 +1165,16 @@ public class BasicComboBoxUI extends ComboBoxUI
 
 	  comboBox.revalidate();
 	  comboBox.repaint();
+        }
+      else if (e.getPropertyName().equals(JComboBox.MODEL_CHANGED_PROPERTY))
+        {
+	  // remove ListDataListener from old model and add it to new model
+	  ComboBoxModel oldModel = (ComboBoxModel) e.getOldValue();
+	  if (oldModel != null)
+	    oldModel.removeListDataListener(listDataListener);
+
+	  if ((ComboBoxModel) e.getNewValue() != null)
+	    comboBox.getModel().addListDataListener(listDataListener);
         }
 
       // FIXME: Need to handle changes in other bound properties.	

@@ -1,5 +1,5 @@
 /* DefaultKeyboardFocusManager.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,15 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.util.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 // FIXME: finish documentation
 public class DefaultKeyboardFocusManager extends KeyboardFocusManager
@@ -164,18 +171,15 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
 
         if (e.id == FocusEvent.FOCUS_GAINED)
           {
-            if (((FocusEvent) e).isTemporary ())
-              setGlobalFocusOwner (target);
-            else
-              setGlobalPermanentFocusOwner (target);
-          }
-        else if (e.id == FocusEvent.FOCUS_LOST)
-          {
-            // We need to set the window's focus owner here; we can't
-            // set it when the window loses focus because by that time
-            // the previous focus owner has already lost focus
-            // (FOCUS_LOST events are delivered before
-            // WINDOW_LOST_FOCUS events).
+            if (! (target instanceof Window))
+              {
+                if (((FocusEvent) e).isTemporary ())
+                  setGlobalFocusOwner (target);
+                else
+                  setGlobalPermanentFocusOwner (target);
+              }
+
+            // Keep track of this window's focus owner.
 
             // Find the target Component's top-level ancestor.
             Container parent = target.getParent ();
@@ -188,9 +192,12 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
               (Window) target : (Window) parent;
 
             Component focusOwner = getFocusOwner ();
-            if (focusOwner != null)
+            if (focusOwner != null
+                && ! (focusOwner instanceof Window))
               toplevel.setFocusOwner (focusOwner);
-
+          }
+        else if (e.id == FocusEvent.FOCUS_LOST)
+          {
             if (((FocusEvent) e).isTemporary ())
               setGlobalFocusOwner (null);
             else

@@ -1,6 +1,5 @@
-// GridBagConstraints.java - Constraints for GridBag layout manager
-
-/* Copyright (C) 2000, 2001, 2002  Free Software Foundation
+/* GridBagConstraints.java -- Constraints for GridBag layout manager
+   Copyright (C) 2000, 2001, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -41,8 +40,10 @@ package java.awt;
 
 import java.io.Serializable;
 
-/** This specifies the constraints for a component managed by the
- * GridBagLayout layout manager.  */
+/**
+ * This specifies the constraints for a component managed by the
+ * GridBagLayout layout manager.
+ */
 public class GridBagConstraints implements Cloneable, Serializable
 {
   static final long serialVersionUID = -1000070633030801713L;

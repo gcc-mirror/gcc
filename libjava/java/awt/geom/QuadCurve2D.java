@@ -59,6 +59,7 @@ import java.util.NoSuchElementException;
 public abstract class QuadCurve2D implements Shape, Cloneable
 {
   private static final double BIG_VALUE = java.lang.Double.MAX_VALUE / 10.0;
+  private static final double EPSILON = 1E-10;
 
   /**
    * Constructs a new QuadCurve2D. Typical users will want to
@@ -962,12 +963,12 @@ public abstract class QuadCurve2D implements Shape, Cloneable
        If this is not done,bad behaviour may result for points on that axis. */
     if (a0 == 0.0 || a2 == 0.0)
       {
-	double small = getFlatness() * (1E-10);
+	double small = getFlatness() * EPSILON;
 	if (a0 == 0.0)
-	  a0 += small;
+	  a0 -= small;
 
 	if (a2 == 0.0)
-	  a2 += small;
+	  a2 -= small;
       }
 
     r[0] = a0;
@@ -990,12 +991,12 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
     if (useYaxis)
       {
-	if (Line2D.linesIntersect(b0, a0, b2, a2, 0.0, 0.0, distance, 0.0))
+	if (Line2D.linesIntersect(b0, a0, b2, a2, EPSILON, 0.0, distance, 0.0))
 	  nCrossings++;
       }
     else
       {
-	if (Line2D.linesIntersect(a0, b0, a2, b2, 0.0, 0.0, 0.0, distance))
+	if (Line2D.linesIntersect(a0, b0, a2, b2, 0.0, EPSILON, 0.0, distance))
 	  nCrossings++;
       }
 

@@ -1,5 +1,5 @@
-/* TextLayout.java
-   Copyright (C) 2003 Free Software Foundation, Inc.
+/* TextLayout.java --
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,17 +38,18 @@ exception statement from your version. */
 
 package java.awt.font;
 
+import gnu.java.awt.ClasspathToolkit;
+import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.Map;
-import java.awt.font.TextAttribute;
-
 
 /**
  * @author Michael Koch
@@ -56,6 +57,7 @@ import java.awt.font.TextAttribute;
 public final class TextLayout implements Cloneable
 {
   public static final CaretPolicy DEFAULT_CARET_POLICY = new CaretPolicy ();
+  ClasspathTextLayoutPeer peer;
 
   public static class CaretPolicy
   {
@@ -67,37 +69,39 @@ public final class TextLayout implements Cloneable
     public TextHitInfo getStrongCaret (TextHitInfo hit1, TextHitInfo hit2,
                                        TextLayout layout)
     {
-      throw new Error ("not implemented");
+      return layout.peer.getStrongCaret(hit1, hit2);
     }
   }
 
-  private AttributedString attributedString;
-  private FontRenderContext fontRenderContext;
-  
   public TextLayout (AttributedCharacterIterator text, FontRenderContext frc)
   {    
-    attributedString = new AttributedString (text);
-    fontRenderContext = frc;
+    AttributedString as = new AttributedString (text);
+    ClasspathToolkit tk = (ClasspathToolkit)(Toolkit.getDefaultToolkit ());
+    peer = tk.getClasspathTextLayoutPeer(as, frc);
   }
 
   public TextLayout (String string, Font font, FontRenderContext frc) 
   {
-    attributedString = new AttributedString (string);
-    attributedString.addAttribute (TextAttribute.FONT, font);
-    fontRenderContext = frc;
+    AttributedString as = new AttributedString (string);
+    as.addAttribute (TextAttribute.FONT, font);
+    ClasspathToolkit tk = (ClasspathToolkit)(Toolkit.getDefaultToolkit ());
+    peer = tk.getClasspathTextLayoutPeer(as, frc);
   }
 
-  public TextLayout (String string, Map attributes, FontRenderContext frc) 
+  public TextLayout (String string, Map attributes, FontRenderContext frc)  
   {
-    attributedString = new AttributedString (string, attributes);
-    fontRenderContext = frc;
+    AttributedString as = new AttributedString (string, attributes);
+    ClasspathToolkit tk = (ClasspathToolkit)(Toolkit.getDefaultToolkit ());
+    peer = tk.getClasspathTextLayoutPeer(as, frc);
   }
 
   protected Object clone ()
   {
     try
       {
-        return super.clone ();
+        TextLayout tl = (TextLayout) super.clone ();
+        tl.peer = (ClasspathTextLayoutPeer) this.peer.clone();
+        return tl;
       }
     catch (CloneNotSupportedException e)
       {
@@ -107,146 +111,9 @@ public final class TextLayout implements Cloneable
   }
 
 
-  protected class CharacterIteratorProxy 
-    implements CharacterIterator
-  {
-    public CharacterIterator target;
-    public int begin;
-    public int limit;
-    public int index;
-
-    public CharacterIteratorProxy (CharacterIterator ci)
-    {
-      target = ci;
-    }
-
-    public int getBeginIndex ()
-    {
-      return begin;
-    }
-
-    public int getEndIndex ()
-    {
-      return limit;
-    }
-
-    public int getIndex ()
-    {
-      return index;
-    }
-
-    public char setIndex (int idx) 
-      throws IllegalArgumentException
-    {
-      if (idx < begin || idx >= limit)
-        throw new IllegalArgumentException ();
-      char ch = target.setIndex (idx);
-      index = idx;
-      return ch;
-    }
-
-    public char first ()
-    {
-      int save = target.getIndex ();
-      char ch = target.setIndex (begin);
-      target.setIndex (save);
-      return ch;
-    }
-
-    public char last ()
-    {
-      if (begin == limit)
-        return this.first ();
-
-      int save = target.getIndex ();
-      char ch = target.setIndex (limit - 1);
-      target.setIndex (save);
-      return ch;
-    }
-
-    public char current ()
-    {
-      return target.current();
-    }
-
-    public char next ()
-    {
-      if (index >= limit - 1)
-        return CharacterIterator.DONE;
-      else
-        {
-          index++;
-          return target.next();
-        }
-    }
-
-    public char previous ()
-    {
-      if (index <= begin)
-        return CharacterIterator.DONE;
-      else
-        {
-          index--;
-          return target.previous ();
-        }
-    }
-
-    public Object clone ()
-    {
-      CharacterIteratorProxy cip = new CharacterIteratorProxy (this.target);
-      cip.begin = this.begin;
-      cip.limit = this.limit;
-      cip.index = this.index;
-      return cip;
-    }
-    
-  }
-
-
   public void draw (Graphics2D g2, float x, float y) 
   {
-    AttributedCharacterIterator ci = attributedString.getIterator ();
-    CharacterIteratorProxy proxy = new CharacterIteratorProxy (ci);
-    Font defFont = g2.getFont ();
-
-    /* Note: this implementation currently only interprets FONT text
-     * attributes. There is a reasonable argument to be made for some
-     * attributes being interpreted out here, where we have control of the
-     * Graphics2D and can construct or derive new fonts, and some
-     * attributes being interpreted by the GlyphVector itself. So far, for
-     * all attributes except FONT we do neither.
-     */
-
-    for (char c = ci.first ();
-         c != CharacterIterator.DONE;
-         c = ci.next ())
-      {                
-        proxy.begin = ci.getIndex ();
-        proxy.limit = ci.getRunLimit(TextAttribute.FONT);
-        if (proxy.limit <= proxy.begin)
-          continue;
-
-        proxy.index = proxy.begin;
-
-        Object fnt = ci.getAttribute(TextAttribute.FONT);
-        GlyphVector gv;
-        if (fnt instanceof Font)
-          gv = ((Font)fnt).createGlyphVector (fontRenderContext, proxy);
-        else
-          gv = defFont.createGlyphVector (fontRenderContext, proxy);
-
-        g2.drawGlyphVector (gv, x, y);
-
-        int n = gv.getNumGlyphs ();
-        for (int i = 0; i < n; ++i)
-          {
-            GlyphMetrics gm = gv.getGlyphMetrics (i);
-            if (gm.getAdvanceX() == gm.getAdvance ())
-              x += gm.getAdvanceX ();
-            else
-              y += gm.getAdvanceY ();
-          }
-      }
+    peer.draw(g2, x, y);
   }
 
   public boolean equals (Object obj)
@@ -259,207 +126,207 @@ public final class TextLayout implements Cloneable
 
   public boolean equals (TextLayout tl)
   {
-    throw new Error ("not implemented");
+    return this.peer.equals(tl.peer);
   }
 
   public float getAdvance ()
   {
-    throw new Error ("not implemented");
+    return peer.getAdvance();
   }
 
   public float getAscent ()
   {
-    throw new Error ("not implemented");
+    return peer.getAscent();
   }
 
   public byte getBaseline ()
   {
-    throw new Error ("not implemented");
+    return peer.getBaseline();
   }
 
   public float[] getBaselineOffsets ()
   {
-    throw new Error ("not implemented");
+    return peer.getBaselineOffsets();
   }
 
   public Shape getBlackBoxBounds (int firstEndpoint, int secondEndpoint)
   {
-    throw new Error ("not implemented");
+    return peer.getBlackBoxBounds(firstEndpoint, secondEndpoint);
   }
 
   public Rectangle2D getBounds()
   {
-    throw new Error ("not implemented");
+    return peer.getBounds();
   }
 
   public float[] getCaretInfo (TextHitInfo hit)
   {
-    throw new Error ("not implemented");
+    return getCaretInfo(hit, getBounds());
   }
 
   public float[] getCaretInfo (TextHitInfo hit, Rectangle2D bounds)
   {
-    throw new Error ("not implemented");
+    return peer.getCaretInfo(hit, bounds);
   }
 
   public Shape getCaretShape (TextHitInfo hit)
   {
-    throw new Error ("not implemented");
+    return getCaretShape(hit, getBounds());
   }
 
   public Shape getCaretShape (TextHitInfo hit, Rectangle2D bounds)
   {
-    throw new Error ("not implemented");
+    return peer.getCaretShape(hit, bounds);
   }
 
   public Shape[] getCaretShapes (int offset)
   {
-    throw new Error ("not implemented");
+    return getCaretShapes(offset, getBounds());
   }
 
   public Shape[] getCaretShapes (int offset, Rectangle2D bounds)
   {
-    throw new Error ("not implemented");
+    return getCaretShapes(offset, getBounds(), DEFAULT_CARET_POLICY);
   }
 
   public Shape[] getCaretShapes (int offset, Rectangle2D bounds,
                                  TextLayout.CaretPolicy policy)
   {
-    throw new Error ("not implemented");
+    return peer.getCaretShapes(offset, bounds, policy);
   }
 
   public int getCharacterCount ()
   {
-    throw new Error ("not implemented");
+    return peer.getCharacterCount();
   }
 
   public byte getCharacterLevel (int index)
   {
-    throw new Error ("not implemented");
+    return peer.getCharacterLevel(index);
   }
 
   public float getDescent ()
   {
-    throw new Error ("not implemented");
+    return peer.getDescent();
   }
 
   public TextLayout getJustifiedLayout (float justificationWidth)
   {
-    throw new Error ("not implemented");
+    return peer.getJustifiedLayout(justificationWidth);
   }
 
   public float getLeading ()
   {
-    throw new Error ("not implemented");
+    return peer.getLeading();
   }
 
   public Shape getLogicalHighlightShape (int firstEndpoint, int secondEndpoint)
   {
-    throw new Error ("not implemented");
+    return getLogicalHighlightShape (firstEndpoint, secondEndpoint, getBounds());
   }
 
   public Shape getLogicalHighlightShape (int firstEndpoint, int secondEndpoint,
                                          Rectangle2D bounds)
   {
-    throw new Error ("not implemented");
+    return peer.getLogicalHighlightShape(firstEndpoint, secondEndpoint, bounds);
   }
 
   public int[] getLogicalRangesForVisualSelection (TextHitInfo firstEndpoint,
                                                    TextHitInfo secondEndpoint)
   {
-    throw new Error ("not implemented");
+    return peer.getLogicalRangesForVisualSelection(firstEndpoint, secondEndpoint);
   }
 
   public TextHitInfo getNextLeftHit (int offset)
   {
-    throw new Error ("not implemented");
+    return getNextLeftHit(offset, DEFAULT_CARET_POLICY);
   }
 
   public TextHitInfo getNextLeftHit (int offset, TextLayout.CaretPolicy policy)
   {
-    throw new Error ("not implemented");
+    return peer.getNextLeftHit(offset, policy);
   }
 
   public TextHitInfo getNextLeftHit (TextHitInfo hit)
   {
-    throw new Error ("not implemented");
+    return getNextLeftHit(hit.getCharIndex());
   }
 
   public TextHitInfo getNextRightHit (int offset)
   {
-    throw new Error ("not implemented");
+    return getNextRightHit(offset, DEFAULT_CARET_POLICY);
   }
 
   public TextHitInfo getNextRightHit (int offset, TextLayout.CaretPolicy policy)
   {
-    throw new Error ("not implemented");
+    return peer.getNextRightHit(offset, policy);
   }
 
   public TextHitInfo getNextRightHit (TextHitInfo hit)
   {
-    throw new Error ("not implemented");
+    return getNextRightHit(hit.getCharIndex());
   }
 
   public Shape getOutline (AffineTransform tx)
   {
-    throw new Error ("not implemented");
+    return peer.getOutline(tx);
   }
 
   public float getVisibleAdvance ()
   {
-    throw new Error ("not implemented");
+    return peer.getVisibleAdvance();
   }
 
   public Shape getVisualHighlightShape (TextHitInfo firstEndpoint,
                                         TextHitInfo secondEndpoint)
   {
-    throw new Error ("not implemented");
+    return getVisualHighlightShape(firstEndpoint, secondEndpoint, getBounds());
   }
 
   public Shape getVisualHighlightShape (TextHitInfo firstEndpoint,
                                         TextHitInfo secondEndpoint,
                                         Rectangle2D bounds)
   {
-    throw new Error ("not implemented");
+    return peer.getVisualHighlightShape(firstEndpoint, secondEndpoint, bounds);
   }
 
   public TextHitInfo getVisualOtherHit (TextHitInfo hit)
   {
-    throw new Error ("not implemented");
+    return peer.getVisualOtherHit(hit);
   }
 
   protected void handleJustify (float justificationWidth)
   {
-    throw new Error ("not implemented");
+    peer.handleJustify(justificationWidth);
   }
 
   public int hashCode ()
   {
-    throw new Error ("not implemented");
+    return peer.hashCode();
   }
 
   public TextHitInfo hitTestChar (float x, float y)
   {
-    throw new Error ("not implemented");
+    return hitTestChar(x, y, getBounds());
   }
 
   public TextHitInfo hitTestChar (float x, float y, Rectangle2D bounds)
   {
-    throw new Error ("not implemented");
+    return peer.hitTestChar(x, y, bounds);
   }
 
   public boolean isLeftToRight ()
   {
-    throw new Error ("not implemented");
+    return peer.isLeftToRight();
   }
 
   public boolean isVertical ()
   {
-    throw new Error ("not implemented");
+    return peer.isVertical();
   }
 
   public String toString ()
   {
-    throw new Error ("not implemented");
+    return peer.toString();
   }
 }

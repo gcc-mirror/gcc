@@ -38,18 +38,20 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.util.Locale;
 
-
 public class GdkGraphicsEnvironment extends GraphicsEnvironment
 {
-  
   public GdkGraphicsEnvironment ()
   {
-  	super();
+    super();
   }
 
   public GraphicsDevice[] getScreenDevices ()
@@ -66,22 +68,28 @@ public class GdkGraphicsEnvironment extends GraphicsEnvironment
   {
     return new GdkGraphics2D (image);
   }
+    native private int nativeGetNumFontFamilies ();
+    native private void nativeGetFontFamilies (String[] family_names);
 
   public Font[] getAllFonts ()
   {
     throw new java.lang.UnsupportedOperationException ();
   }
 
-  public String[] getAvailableFontFamilyNames ()
-  {
-    throw new java.lang.UnsupportedOperationException ();
-  }
+    public String[] getAvailableFontFamilyNames ()
+    {
+	String[] family_names;
+	int array_size;
+
+	array_size = nativeGetNumFontFamilies();
+	family_names = new String[array_size];
+
+	nativeGetFontFamilies(family_names);
+	return family_names;
+    }
 
   public String[] getAvailableFontFamilyNames (Locale l)
   {
     throw new java.lang.UnsupportedOperationException ();
   }
-
-
-} // class GdkGraphicsEnvironment
-
+}

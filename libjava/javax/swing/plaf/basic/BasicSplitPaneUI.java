@@ -1,4 +1,4 @@
-/* BasicSplitPaneUI.java
+/* BasicSplitPaneUI.java --
    Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Canvas;
@@ -51,10 +52,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JButton;
+
 import javax.swing.JComponent;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
@@ -62,7 +62,6 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.SplitPaneUI;
-
 
 /**
  * This is the Basic Look and Feel implementation of the SplitPaneUI  class.
@@ -682,7 +681,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * This is a deprecated class. It is supposed to be used for handling down
    * and right key presses.
    */
-  protected class KeyboardDownRightHandler implements ActionListener
+  public class KeyboardDownRightHandler implements ActionListener
   {
     /**
      * This method is called when the down or right keys are pressed.
@@ -699,7 +698,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * This is a deprecated class. It is supposed to be used for handling end
    * key presses.
    */
-  protected class KeyboardEndHandler implements ActionListener
+  public class KeyboardEndHandler implements ActionListener
   {
     /**
      * This method is called when the end key is pressed.
@@ -716,7 +715,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * This is a deprecated class. It is supposed to be used for handling home
    * key presses.
    */
-  protected class KeyboardHomeHandler implements ActionListener
+  public class KeyboardHomeHandler implements ActionListener
   {
     /**
      * This method is called when the home key is pressed.
@@ -733,7 +732,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * This is a deprecated class. It is supposed to be used for handling resize
    * toggles.
    */
-  protected class KeyboardResizeToggleHandler implements ActionListener
+  public class KeyboardResizeToggleHandler implements ActionListener
   {
     /**
      * This method is called when a resize is toggled.
@@ -750,7 +749,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * This is a deprecated class. It is supposed to be used for handler up and
    * left key presses.
    */
-  protected class KeyboardUpLeftHandler implements ActionListener
+  public class KeyboardUpLeftHandler implements ActionListener
   {
     /**
      * This method is called when the left or up keys are pressed.
@@ -767,7 +766,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * This helper class handles PropertyChangeEvents from the JSplitPane. When
    * a property changes, this will update the UI accordingly.
    */
-  protected class PropertyHandler implements PropertyChangeListener
+  public class PropertyHandler implements PropertyChangeListener
   {
     /**
      * This method is called whenever one of the JSplitPane's properties
@@ -846,43 +845,43 @@ public class BasicSplitPaneUI extends SplitPaneUI
   /** The JSplitPane's focus handler. */
   protected FocusListener focusListener;
 
-  /** Deprecated. The handler for down and right key presses. */
+  /** @deprecated The handler for down and right key presses. */
   protected ActionListener keyboardDownRightListener;
 
-  /** Deprecated. The handler for end key presses. */
+  /** @deprecated The handler for end key presses. */
   protected ActionListener keyboardEndListener;
 
-  /** Deprecated. The handler for home key presses. */
+  /** @deprecated The handler for home key presses. */
   protected ActionListener keyboardHomeListener;
 
-  /** Deprecated. The handler for toggling resizes. */
+  /** @deprecated The handler for toggling resizes. */
   protected ActionListener keyboardResizeToggleListener;
 
-  /** Deprecated. The handler for up and left key presses. */
+  /** @deprecated The handler for up and left key presses. */
   protected ActionListener keyboardUpLeftListener;
 
   /** The JSplitPane's current layout manager. */
   protected BasicHorizontalLayoutManager layoutManager;
 
-  /** Deprecated. The divider resize toggle key. */
+  /** @deprecated The divider resize toggle key. */
   protected KeyStroke dividerResizeToggleKey;
 
-  /** Deprecated. The down key. */
+  /** @deprecated The down key. */
   protected KeyStroke downKey;
 
-  /** Deprecated. The end key. */
+  /** @deprecated The end key. */
   protected KeyStroke endKey;
 
-  /** Deprecated. The home key. */
+  /** @deprecated The home key. */
   protected KeyStroke homeKey;
 
-  /** Deprecated. The left key. */
+  /** @deprecated The left key. */
   protected KeyStroke leftKey;
 
-  /** Deprecated. The right key. */
+  /** @deprecated The right key. */
   protected KeyStroke rightKey;
 
-  /** Deprecated. The up key. */
+  /** @deprecated The up key. */
   protected KeyStroke upKey;
 
   /** Set to true when dragging heavy weight components. */
@@ -892,7 +891,8 @@ public class BasicSplitPaneUI extends SplitPaneUI
    * The constraints object used when adding the non-continuous divider to the
    * JSplitPane.
    */
-  protected static String NON_CONTINUOUS_DIVIDER;
+  protected static final String NON_CONTINUOUS_DIVIDER
+    = "nonContinuousDivider";
 
   /** The dark divider used when dragging in non-continuous layout mode. */
   protected Component nonContinuousLayoutDivider;
@@ -1042,10 +1042,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
   }
 
   /**
-   * Deprecated. This method creates a new ActionListener for up and left key
-   * presses.
+   * This method creates a new ActionListener for up and left key presses.
    *
    * @return A new ActionListener for up and left keys.
+   *
+   * @deprecated 1.3
    */
   protected ActionListener createKeyboardUpLeftListener()
   {
@@ -1053,10 +1054,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
   }
 
   /**
-   * Deprecated. This method creates a new ActionListener for down and right
-   * key presses.
+   * This method creates a new ActionListener for down and right key presses.
    *
    * @return A new ActionListener for down and right keys.
+   *
+   * @deprecated 1.3
    */
   protected ActionListener createKeyboardDownRightListener()
   {
@@ -1064,10 +1066,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
   }
 
   /**
-   * Deprecated. This method creates a new ActionListener for home key
-   * presses.
+   * This method creates a new ActionListener for home key presses.
    *
    * @return A new ActionListener for home keys.
+   *
+   * @deprecated
    */
   protected ActionListener createKeyboardHomeListener()
   {
@@ -1075,9 +1078,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
   }
 
   /**
-   * Deprecated. This method creates a new ActionListener for end key presses.
+   * This method creates a new ActionListener for end key presses.i
    *
    * @return A new ActionListener for end keys.
+   *
+   * @deprecated 1.3
    */
   protected ActionListener createKeyboardEndListener()
   {
@@ -1085,10 +1090,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
   }
 
   /**
-   * Depcreated. This method creates a new ActionListener for resize toggle
-   * key events.
+   * This method creates a new ActionListener for resize toggle key events.
    *
    * @return A new ActionListener for resize toggle keys.
+   *
+   * @deprecated 1.3
    */
   protected ActionListener createKeyboardResizeToggleListener()
   {
@@ -1482,10 +1488,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
   }
 
   /**
-   * Deprecated. This method returns the width of one of the sides of the
-   * divider's border.
+   * This method returns the width of one of the sides of the divider's border.
    *
    * @return The width of one side of the divider's border.
+   *
+   * @deprecated 1.3
    */
   protected int getDividerBorderSize()
   {

@@ -43,9 +43,10 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager;
-import java.awt.Rectangle;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.Serializable;
+
 import javax.swing.border.Border;
 
 /**
@@ -320,7 +321,6 @@ public class ScrollPaneLayout
               insetsSize.setSize(insets.left + insets.right,
                                  insets.top + insets.bottom);
 
-            maybeSetMinimumSize(viewport, viewportSize);
             maybeSetMinimumSize(colHead, columnHeaderSize);
             maybeSetMinimumSize(rowHead, rowHeaderSize);
 

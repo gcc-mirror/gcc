@@ -1,5 +1,5 @@
 /* BasicGraphicsUtils.java
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -455,7 +455,9 @@ public class BasicGraphicsUtils
 
     drawUnderline = (underlinedIndex >= 0) && (underlinedIndex < textLength);
 
-    if (!(g instanceof Graphics2D))
+    // FIXME: unfortunately pango and cairo can't agree on metrics
+    // so for the time being we continue to *not* use TextLayouts.
+    if (true || !(g instanceof Graphics2D))
     {
       /* Fall-back. This is likely to produce garbage for any text
        * containing right-to-left (Hebrew or Arabic) characters, even

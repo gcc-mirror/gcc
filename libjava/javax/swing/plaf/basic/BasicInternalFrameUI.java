@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.AWTEvent;
@@ -42,29 +43,22 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+
 import javax.swing.DefaultDesktopManager;
 import javax.swing.DesktopManager;
-import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -76,7 +70,6 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.InternalFrameUI;
 import javax.swing.plaf.UIResource;
-
 
 /**
  * This is the UI delegate for the Basic look and feel for JInternalFrames.
@@ -1053,7 +1046,10 @@ public class BasicInternalFrameUI extends InternalFrameUI
   /** The JComponent placed at the west region of the JInternalFrame. */
   protected JComponent westPane;
 
-  /** The Keystroke bound to open the menu. */
+  /**
+   * The Keystroke bound to open the menu.
+   * @deprecated
+   */
   protected KeyStroke openMenuKey;
 
   /** The TitlePane displayed at the top of the JInternalFrame. */

@@ -66,8 +66,8 @@ public interface FlavorTable extends FlavorMap
    * list should be sorted from best to worst. The list must be modifiable
    * without affecting this table.
    *
-   * @param native the native to look up, or null to return all flavors
+   * @param name the native name to look up, or null to return all flavors
    * @return the sorted list of flavors
    */
   List getFlavorsForNative(String name);
-} // interface FlavorTable
+}

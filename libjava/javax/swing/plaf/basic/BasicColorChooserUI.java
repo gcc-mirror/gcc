@@ -1,4 +1,4 @@
-/* BasicColorChooserUI.java
+/* BasicColorChooserUI.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,17 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -58,7 +55,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ColorChooserUI;
 import javax.swing.plaf.ComponentUI;
-
 
 /**
  * This is the UI Class for the JColorChooser in the Basic Look and Feel.

@@ -1,5 +1,5 @@
 /* Point2D.java -- generic point in 2-D space
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.geom;
 
 /**
@@ -42,8 +43,8 @@ package java.awt.geom;
  * representation is left up to the subclass. Point includes two useful
  * nested classes, for float and double storage respectively.
  *
- * @author Per Bothner <bothner@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Per Bothner (bothner@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */
@@ -52,7 +53,7 @@ public abstract class Point2D implements Cloneable
   /**
    * The default constructor.
    *
-   * @see Point
+   * @see java.awt.Point
    * @see Point2D.Float
    * @see Point2D.Double
    */
@@ -120,7 +121,7 @@ public abstract class Point2D implements Cloneable
    * @param y2 the y coordinate of point 2
    * @return the distance from (x1,y1) to (x2,y2)
    */
-  static public double distance(double x1, double y1, double x2, double y2)
+  public static double distance(double x1, double y1, double x2, double y2)
   {
     return Math.sqrt(distanceSq(x1, y1, x2, y2));
   }

@@ -45,8 +45,7 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create 
   (JNIEnv *env, jobject obj)
 {
-  GtkWidget *menu;
-  GtkComboBox *combobox;
+  GtkWidget *combobox;
 
   NSA_SET_GLOBAL_REF (env, obj);
 
@@ -181,7 +180,6 @@ void selection_changed (GtkComboBox *combobox, jobject peer)
   jstring label;
   GtkTreeModel *model;
   GtkTreeIter iter;
-  GValue value;
   gchar *selected;
   gint index;
 

@@ -40,10 +40,6 @@ package javax.swing.text;
 import java.awt.Graphics;
 import java.awt.Shape;
 
-import javax.swing.text.JTextComponent;
-import javax.swing.text.View;
-
-
 public abstract class LayeredHighlighter
   implements Highlighter
 {

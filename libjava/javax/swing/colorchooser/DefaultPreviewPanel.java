@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.colorchooser;
 
 import java.awt.Color;
@@ -43,11 +44,11 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
+
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-
 
 /**
  * This is the default preview panel for the JColorChooser. The default

@@ -43,7 +43,9 @@ import javax.swing.UIDefaults;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 
 public class MetalLookAndFeel extends BasicLookAndFeel
- {	   
+{	   
+  private static final long serialVersionUID = 6680646159193457980L;
+  
      public boolean isNativeLookAndFeel()        { return true; }
      public boolean isSupportedLookAndFeel()     { return true; }
      public String getDescription()              { return "Metal look and feel"; }

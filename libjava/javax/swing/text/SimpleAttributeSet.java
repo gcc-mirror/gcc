@@ -35,19 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text;
 
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.lang.Cloneable;
 
 public class SimpleAttributeSet
   implements MutableAttributeSet, Serializable, Cloneable
 {
-  Hashtable tab;
+  public static final AttributeSet EMPTY = new SimpleAttributeSet();
 
-  static AttributeSet EMPTY = new SimpleAttributeSet();
+  Hashtable tab;
 
   public SimpleAttributeSet()
   {
@@ -57,7 +57,8 @@ public class SimpleAttributeSet
   public SimpleAttributeSet(AttributeSet a)
   {
     tab = new Hashtable();
-    addAttributes(a);
+    if (a != null)
+      addAttributes(a);
   }
 
   public void addAttribute(Object name, Object value)

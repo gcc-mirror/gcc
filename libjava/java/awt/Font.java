@@ -38,35 +38,33 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.font.LineMetrics;
-import java.awt.font.TextAttribute;
-import java.awt.font.TransformAttribute;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
-import java.awt.peer.FontPeer;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.StringTokenizer;
-import java.text.CharacterIterator;
-import java.text.AttributedCharacterIterator;
-import java.text.StringCharacterIterator;
-
 import gnu.java.awt.ClasspathToolkit;
 import gnu.java.awt.peer.ClasspathFontPeer;
 
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.peer.FontPeer;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.text.AttributedCharacterIterator;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
+
 /**
-  * This class represents a windowing system font.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
- * @author Graydon Hoare <graydon@redhat.com>
-  */
+ * This class represents a windowing system font.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Graydon Hoare (graydon@redhat.com)
+ */
 public class Font implements Serializable
 {
 
@@ -163,6 +161,26 @@ public static final int HANGING_BASELINE = 2;
    */
   public static final int LAYOUT_NO_LIMIT_CONTEXT = 4;
 
+  /**
+   * The logical name of this font.
+   *
+   * @since 1.0
+   */
+  protected String name;
+
+  /**
+   * The size of this font in pixels.
+   *
+   * @since 1.0
+   */
+  protected int size;
+
+  /**
+   * The style of this font -- PLAIN, BOLD, ITALIC or BOLD+ITALIC.
+   *
+   * @since 1.0
+   */
+  protected int style;
 
 // Serialization constant
 private static final long serialVersionUID = -4206021311591459213L;
@@ -235,7 +253,11 @@ private static final long serialVersionUID = -4206021311591459213L;
         size = tokenval;
     }
 
-    return getFontFromToolkit (name, attrsToMap (style, size));
+    HashMap attrs = new HashMap();
+    ClasspathFontPeer.copyStyleToAttrs (style, attrs);
+    ClasspathFontPeer.copySizeToAttrs (size, attrs);
+
+    return getFontFromToolkit (name, attrs);
 }
 
   /* These methods delegate to the toolkit. */
@@ -243,23 +265,6 @@ private static final long serialVersionUID = -4206021311591459213L;
   protected static ClasspathToolkit tk ()
   {
     return (ClasspathToolkit)(Toolkit.getDefaultToolkit ());
-  }
-
-  protected static Map attrsToMap(int style, int size)
-  {
-    Map attrs = new HashMap();
-    attrs.put (TextAttribute.SIZE, new Float ((float)size));
-    
-    if ((style & BOLD) == BOLD)
-      attrs.put (TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
-    else
-      attrs.put (TextAttribute.WEIGHT, TextAttribute.WEIGHT_REGULAR);
-
-    if ((style & ITALIC) == ITALIC)
-      attrs.put (TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
-    else
-      attrs.put (TextAttribute.POSTURE, TextAttribute.POSTURE_REGULAR);
-    return attrs;
   }
 
   /* Every factory method in Font should eventually call this. */
@@ -281,7 +286,7 @@ private static final long serialVersionUID = -4206021311591459213L;
   * Returns a <code>Font</code> object from the passed property name.
   *
   * @param propname The name of the system property.
-  * @param default Value to use if the property is not found.
+  * @param defval Value to use if the property is not found.
   *
   * @return The requested font, or <code>default</code> if the property 
   * not exist or is malformed.
@@ -326,7 +331,10 @@ private static final long serialVersionUID = -4206021311591459213L;
 
   public Font (String name, int style, int size)
   {
-    this.peer = getPeerFromToolkit (name, attrsToMap (style, size));
+    HashMap attrs = new HashMap();
+    ClasspathFontPeer.copyStyleToAttrs (style, attrs);
+    ClasspathFontPeer.copySizeToAttrs (size, attrs);
+    this.peer = getPeerFromToolkit (name, attrs);
   }
 
   public Font (Map attrs)
@@ -629,7 +637,7 @@ private static final long serialVersionUID = -4206021311591459213L;
   * GlyphVector} with a mapped glyph for each input glyph code. 
   *
   * @param ctx The rendering context used for precise glyph placement.
-  * @param chars Array of characters to convert to glyphs.
+  * @param glyphCodes Array of characters to convert to glyphs.
   *
   * @return A new {@link GlyphVector} containing glyphs mapped from str,
   * through the font's cmap table.

@@ -84,21 +84,6 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_create
   NSA_SET_PTR (env, obj, widget);
 }
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_connectJObject
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr = NSA_GET_PTR (env, obj);
-
-  gdk_threads_enter ();
-
-  gtk_widget_realize (GTK_WIDGET (ptr));
-
-  connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
-
-  gdk_threads_leave ();
-}
-
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_connectSignals
   (JNIEnv *env, jobject obj)
@@ -108,8 +93,6 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_connectSignals
   g_assert (gref);
 
   gdk_threads_enter ();
-
-  gtk_widget_realize (GTK_WIDGET (ptr));
 
   g_signal_connect (G_OBJECT (GTK_DIALOG (ptr)),
                     "response", 
@@ -144,10 +127,9 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeGetDirectory
    This function extracts the filename from the GtkFileFilterInfo object,
    and passes it to the Java method.  The Java method will call the filter's
    accept() method and will give back the return value. */
-gboolean filenameFilterCallback (const GtkFileFilterInfo *filter_info,
-                                 gpointer obj)
+static gboolean filenameFilterCallback (const GtkFileFilterInfo *filter_info,
+					gpointer obj)
 {
-  gchar* dirname;
   jclass cx;
   jmethodID id;
   jstring *filename;
@@ -168,8 +150,8 @@ gboolean filenameFilterCallback (const GtkFileFilterInfo *filter_info,
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFilenameFilter
-    (JNIEnv *env, jobject obj, jobject filter_obj)
-    {
+    (JNIEnv *env, jobject obj, jobject filter_obj __attribute__((unused)))
+{
   void *ptr;
   GtkFileFilter *filter;
 
@@ -178,11 +160,8 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFilenameFilter
   gdk_threads_enter ();
 
   filter = gtk_file_filter_new();
-  gtk_file_filter_add_custom(filter,
-                             GTK_FILE_FILTER_FILENAME,
-                             G_CALLBACK(filenameFilterCallback),
-                             obj,
-                             NULL);
+  gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_FILENAME,
+			     filenameFilterCallback, obj, NULL);
 
   gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(ptr), filter);
 
@@ -237,7 +216,7 @@ handle_response (GtkDialog *dialog __attribute__((unused)),
   static jmethodID disposeID;
   void *ptr;
   G_CONST_RETURN gchar *fileName;
-  jstring str_fileName;
+  jstring str_fileName = NULL;
 
   /* We only need this for the case when the user closed the window,
      or clicked ok or cancel. */
@@ -269,8 +248,6 @@ handle_response (GtkDialog *dialog __attribute__((unused)),
   if (responseId == GTK_RESPONSE_OK) {
     fileName = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (GTK_WIDGET (ptr)));
     str_fileName = (*gdk_env)->NewStringUTF (gdk_env, fileName);
-  } else if (responseId == GTK_RESPONSE_CANCEL) {
-    str_fileName = NULL;
   }
   
   if (!isIDSet)

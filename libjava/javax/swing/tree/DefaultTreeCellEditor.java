@@ -56,6 +56,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.Border;
 import javax.swing.event.CellEditorListener;
+import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 
@@ -63,440 +64,453 @@ import javax.swing.event.TreeSelectionListener;
  * DefaultTreeCellEditor
  * @author Andrew Selkirk
  */
-public class DefaultTreeCellEditor implements ActionListener, TreeCellEditor, TreeSelectionListener {
-
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * EditorContainer
-	 */
-	public class EditorContainer extends Container {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor EditorContainer
-		 * @param value0 TODO
-		 */
-		public EditorContainer(DefaultTreeCellEditor value0) {
-			// TODO
-		} // EditorContainer()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getPreferredSize
-		 * @returns Dimension
-		 */
-		public Dimension getPreferredSize() {
-			return null; // TODO
-		} // getPreferredSize()
-
-		/**
-		 * paint
-		 * @param value0 TODO
-		 */
-		public void paint(Graphics value0) {
-			// TODO
-		} // paint()
-
-		/**
-		 * doLayout
-		 */
-		public void doLayout() {
-			// TODO
-		} // doLayout()
-
-
-	} // EditorContainer
-
-	/**
-	 * DefaultTextField
-	 */
-	public class DefaultTextField extends JTextField {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * border
-		 */
-		protected Border border;
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor DefaultTextField
-		 * @param value0 TODO
-		 * @param value1 TODO
-		 */
-		public DefaultTextField(DefaultTreeCellEditor value0, Border value1) {
-			// TODO
-		} // DefaultTextField()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getFont
-		 * @returns Font
-		 */
-		public Font getFont() {
-			return null; // TODO
-		} // getFont()
-
-		/**
-		 * getBorder
-		 * @returns Border
-		 */
-		public Border getBorder() {
-			return null; // TODO
-		} // getBorder()
-
-		/**
-		 * getPreferredSize
-		 * @returns Dimension
-		 */
-		public Dimension getPreferredSize() {
-			return null; // TODO
-		} // getPreferredSize()
-
-
-	} // DefaultTextField
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * realEditor
-	 */
-	protected TreeCellEditor realEditor;
-
-	/**
-	 * renderer
-	 */
-	protected DefaultTreeCellRenderer renderer;
-
-	/**
-	 * editingContainer
-	 */
-	protected Container editingContainer;
-
-	/**
-	 * editingComponent
-	 */
-	protected transient Component editingComponent;
-
-	/**
-	 * canEdit
-	 */
-	protected boolean canEdit;
-
-	/**
-	 * offset
-	 */
-	protected transient int offset;
-
-	/**
-	 * tree
-	 */
-	protected transient JTree tree;
-
-	/**
-	 * lastPath
-	 */
-	protected transient TreePath lastPath;
-
-	/**
-	 * timer
-	 */
-	protected transient javax.swing.Timer timer; // TODO
-
-	/**
-	 * lastRow
-	 */
-	protected transient int lastRow;
-
-	/**
-	 * borderSelectionColor
-	 */
-	protected Color borderSelectionColor;
-
-	/**
-	 * editingIcon
-	 */
-	protected transient Icon editingIcon;
-
-	/**
-	 * font
-	 */
-	protected Font font;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor DefaultTreeCellEditor
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public DefaultTreeCellEditor(JTree value0, DefaultTreeCellRenderer value1) {
-		// TODO
-	} // DefaultTreeCellEditor()
-
-	/**
-	 * Constructor DefaultTreeCellEditor
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @param value2 TODO
-	 */
-	public DefaultTreeCellEditor(JTree value0, DefaultTreeCellRenderer value1, TreeCellEditor value2) {
-		// TODO
-	} // DefaultTreeCellEditor()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * writeObject
-	 * @param value0 TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream value0) throws IOException {
-		// TODO
-	} // writeObject()
-
-	/**
-	 * readObject
-	 * @param value0 TODO
-	 * @exception IOException TODO
-	 * @exception ClassNotFoundException TODO
-	 */
-	private void readObject(ObjectInputStream value0) throws IOException, ClassNotFoundException {
-		// TODO
-	} // readObject()
-
-	/**
-	 * setBorderSelectionColor
-	 * @param value0 TODO
-	 */
-	public void setBorderSelectionColor(Color value0) {
-		// TODO
-	} // setBorderSelectionColor()
-
-	/**
-	 * getBorderSelectionColor
-	 * @returns Color
-	 */
-	public Color getBorderSelectionColor() {
-		return null; // TODO
-	} // getBorderSelectionColor()
-
-	/**
-	 * setFont
-	 * @param value0 TODO
-	 */
-	public void setFont(Font value0) {
-		// TODO
-	} // setFont()
-
-	/**
-	 * getFont
-	 * @returns Font
-	 */
-	public Font getFont() {
-		return null; // TODO
-	} // getFont()
-
-	/**
-	 * getTreeCellEditorComponent
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @param value2 TODO
-	 * @param value3 TODO
-	 * @param value4 TODO
-	 * @param value5 TODO
-	 * @returns Component
-	 */
-	public Component getTreeCellEditorComponent(JTree value0, Object value1, boolean value2, boolean value3, boolean value4, int value5) {
-		return null; // TODO
-	} // getTreeCellEditorComponent()
-
-	/**
-	 * getCellEditorValue
-	 * @returns Object
-	 */
-	public Object getCellEditorValue() {
-		return null; // TODO
-	} // getCellEditorValue()
-
-	/**
-	 * isCellEditable
-	 * @param value0 TODO
-	 * @returns boolean
-	 */
-	public boolean isCellEditable(EventObject value0) {
-		return false; // TODO
-	} // isCellEditable()
-
-	/**
-	 * shouldSelectCell
-	 * @param value0 TODO
-	 * @returns boolean
-	 */
-	public boolean shouldSelectCell(EventObject value0) {
-		return false; // TODO
-	} // shouldSelectCell()
-
-	/**
-	 * stopCellEditing
-	 * @returns boolean
-	 */
-	public boolean stopCellEditing() {
-		return false; // TODO
-	} // stopCellEditing()
-
-	/**
-	 * cancelCellEditing
-	 */
-	public void cancelCellEditing() {
-		// TODO
-	} // cancelCellEditing()
-
-	/**
-	 * addCellEditorListener
-	 * @param value0 TODO
-	 */
-	public void addCellEditorListener(CellEditorListener value0) {
-		// TODO
-	} // addCellEditorListener()
-
-	/**
-	 * removeCellEditorListener
-	 * @param value0 TODO
-	 */
-	public void removeCellEditorListener(CellEditorListener value0) {
-		// TODO
-	} // removeCellEditorListener()
-
-	/**
-	 * valueChanged
-	 * @param value0 TODO
-	 */
-	public void valueChanged(TreeSelectionEvent value0) {
-		// TODO
-	} // valueChanged()
-
-	/**
-	 * actionPerformed
-	 * @param value0 TODO
-	 */
-	public void actionPerformed(ActionEvent value0) {
-		// TODO
-	} // actionPerformed()
-
-	/**
-	 * setTree
-	 * @param value0 TODO
-	 */
-	protected void setTree(JTree value0) {
-		// TODO
-	} // setTree()
-
-	/**
-	 * shouldStartEditingTimer
-	 * @param value0 TODO
-	 * @returns boolean
-	 */
-	protected boolean shouldStartEditingTimer(EventObject value0) {
-		return false; // TODO
-	} // shouldStartEditingTimer()
-
-	/**
-	 * startEditingTimer
-	 */
-	protected void startEditingTimer() {
-		// TODO
-	} // startEditingTimer()
-
-	/**
-	 * canEditImmediately
-	 * @param value0 TODO
-	 * @returns boolean
-	 */
-	protected boolean canEditImmediately(EventObject value0) {
-		return false; // TODO
-	} // canEditImmediately()
-
-	/**
-	 * inHitRegion
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @returns boolean
-	 */
-	protected boolean inHitRegion(int value0, int value1) {
-		return false; // TODO
-	} // inHitRegion()
-
-	/**
-	 * determineOffset
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @param value2 TODO
-	 * @param value3 TODO
-	 * @param value4 TODO
-	 * @param value5 TODO
-	 */
-	protected void determineOffset(JTree value0, Object value1, boolean value2, boolean value3, boolean value4, int value5) {
-		// TODO
-	} // determineOffset()
-
-	/**
-	 * prepareForEditing
-	 */
-	protected void prepareForEditing() {
-		// TODO
-	} // prepareForEditing()
-
-	/**
-	 * createContainer
-	 * @returns Container
-	 */
-	protected Container createContainer() {
-		return null; // TODO
-	} // createContainer()
-
-	/**
-	 * createTreeCellEditor
-	 * @returns TreeCellEditor
-	 */
-	protected TreeCellEditor createTreeCellEditor() {
-		return null; // TODO
-	} // createTreeCellEditor()
-
-
-} // DefaultTreeCellEditor
+public class DefaultTreeCellEditor
+  implements ActionListener, TreeCellEditor, TreeSelectionListener
+{
+  /**
+   * EditorContainer
+   */
+  public class EditorContainer extends Container
+  {
+    /**
+     * Creates an <code>EditorContainer</code> object.
+     */
+    public EditorContainer()
+    {
+      // Do nothing here.
+    }
+
+    /**
+     * This method only exists for API compatibility and is useless as it does
+     * nothing. It got probably introduced by accident.
+     */
+    public void EditorContainer()
+    {
+      // Do nothing here.
+    }
+
+    /**
+     * getPreferredSize
+     * @return Dimension
+     */
+    public Dimension getPreferredSize()
+    {
+      return null; // TODO
+    }
+
+    /**
+     * paint
+     * @param value0 TODO
+     */
+    public void paint(Graphics value0)
+    {
+      // TODO
+    }
+
+    /**
+     * doLayout
+     */
+    public void doLayout()
+    {
+      // TODO
+    }
+  }
+
+  /**
+   * DefaultTextField
+   */
+  public class DefaultTextField extends JTextField
+  {
+    /**
+     * border
+     */
+    protected Border border;
+
+    /**
+     * Creates a <code>DefaultTextField</code> object.
+     *
+     * @param border the border to use
+     */
+    public DefaultTextField(Border border)
+    {
+      this.border = border;
+    }
+
+    /**
+     * getFont
+     * @return Font
+     */
+    public Font getFont()
+    {
+      return null; // TODO
+    }
+
+    /**
+     * Returns the border of the text field.
+     *
+     * @return the border
+     */
+    public Border getBorder()
+    {
+      return border;
+    }
+
+    /**
+     * getPreferredSize
+     * @return Dimension
+     */
+    public Dimension getPreferredSize()
+    {
+      return null; // TODO
+    }
+  }
+
+  private EventListenerList listenerList = new EventListenerList();
+
+  /**
+   * realEditor
+   */
+  protected TreeCellEditor realEditor;
+
+  /**
+   * renderer
+   */
+  protected DefaultTreeCellRenderer renderer;
+
+  /**
+   * editingContainer
+   */
+  protected Container editingContainer;
+
+  /**
+   * editingComponent
+   */
+  protected transient Component editingComponent;
+
+  /**
+   * canEdit
+   */
+  protected boolean canEdit;
+
+  /**
+   * offset
+   */
+  protected transient int offset;
+
+  /**
+   * tree
+   */
+  protected transient JTree tree;
+
+  /**
+   * lastPath
+   */
+  protected transient TreePath lastPath;
+
+  /**
+   * timer
+   */
+  protected transient javax.swing.Timer timer; // TODO
+
+  /**
+   * lastRow
+   */
+  protected transient int lastRow;
+
+  /**
+   * borderSelectionColor
+   */
+  protected Color borderSelectionColor;
+
+  /**
+   * editingIcon
+   */
+  protected transient Icon editingIcon;
+
+  /**
+   * font
+   */
+  protected Font font;
+
+  /**
+   * Constructor DefaultTreeCellEditor
+   * @param value0 TODO
+   * @param value1 TODO
+   */
+  public DefaultTreeCellEditor(JTree value0, DefaultTreeCellRenderer value1)
+  {
+    // TODO
+  }
+
+  /**
+   * Constructor DefaultTreeCellEditor
+   * @param value0 TODO
+   * @param value1 TODO
+   * @param value2 TODO
+   */
+  public DefaultTreeCellEditor(JTree value0, DefaultTreeCellRenderer value1,
+                               TreeCellEditor value2)
+  {
+    // TODO
+  }
+
+  /**
+   * writeObject
+   * @param value0 TODO
+   * @exception IOException TODO
+   */
+  private void writeObject(ObjectOutputStream value0) throws IOException
+  {
+    // TODO
+  }
+
+  /**
+   * readObject
+   * @param value0 TODO
+   * @exception IOException TODO
+   * @exception ClassNotFoundException TODO
+   */
+  private void readObject(ObjectInputStream value0)
+    throws IOException, ClassNotFoundException
+  {
+    // TODO
+  }
+
+  /**
+   * setBorderSelectionColor
+   * @param value0 TODO
+   */
+  public void setBorderSelectionColor(Color value0)
+  {
+    // TODO
+  }
+
+  /**
+   * getBorderSelectionColor
+   * @return Color
+   */
+  public Color getBorderSelectionColor()
+  {
+    return null; // TODO
+  }
+
+  /**
+   * setFont
+   * @param value0 TODO
+   */
+  public void setFont(Font value0)
+  {
+    // TODO
+  }
+
+  /**
+   * getFont
+   * @return Font
+   */
+  public Font getFont()
+  {
+    return null; // TODO
+  }
+
+  /**
+   * getTreeCellEditorComponent
+   * @param value0 TODO
+   * @param value1 TODO
+   * @param value2 TODO
+   * @param value3 TODO
+   * @param value4 TODO
+   * @param value5 TODO
+   * @return Component
+   */
+  public Component getTreeCellEditorComponent(JTree value0, Object value1,
+                                              boolean value2, boolean value3,
+                                              boolean value4, int value5)
+  {
+    return null; // TODO
+  }
+
+  /**
+   * getCellEditorValue
+   * @return Object
+   */
+  public Object getCellEditorValue()
+  {
+    return null; // TODO
+  }
+
+  /**
+   * isCellEditable
+   * @param value0 TODO
+   * @return boolean
+   */
+  public boolean isCellEditable(EventObject value0)
+  {
+    return false; // TODO
+  }
+
+  /**
+   * shouldSelectCell
+   * @param value0 TODO
+   * @return boolean
+   */
+  public boolean shouldSelectCell(EventObject value0)
+  {
+    return false; // TODO
+  }
+
+  /**
+   * stopCellEditing
+   * @return boolean
+   */
+  public boolean stopCellEditing()
+  {
+    return false; // TODO
+  }
+
+  /**
+   * cancelCellEditing
+   */
+  public void cancelCellEditing()
+  {
+    // TODO
+  }
+
+  /**
+   * Adds a <code>CellEditorListener</code> object to this editor.
+   *
+   * @param listener the listener to add
+   */
+  public void addCellEditorListener(CellEditorListener listener)
+  {
+    listenerList.add(CellEditorListener.class, listener);
+  }
+
+  /**
+   * Removes a <code>CellEditorListener</code> object.
+   *
+   * @param listener the listener to remove
+   */
+  public void removeCellEditorListener(CellEditorListener listener)
+  {
+    listenerList.remove(CellEditorListener.class, listener);
+  }
+
+  /**
+   * Returns all added <code>CellEditorListener</code> objects to this editor.
+   *
+   * @return an array of listeners
+   *
+   * @since 1.4
+   */
+  public CellEditorListener[] getCellEditorListeners()
+  {
+    return (CellEditorListener[]) listenerList.getListeners(CellEditorListener.class);
+  }
+
+  /**
+   * valueChanged
+   * @param value0 TODO
+   */
+  public void valueChanged(TreeSelectionEvent value0)
+  {
+    // TODO
+  }
+
+  /**
+   * actionPerformed
+   * @param value0 TODO
+   */
+  public void actionPerformed(ActionEvent value0)
+  {
+    // TODO
+  }
+
+  /**
+   * setTree
+   * @param value0 TODO
+   */
+  protected void setTree(JTree value0)
+  {
+    // TODO
+  }
+
+  /**
+   * shouldStartEditingTimer
+   * @param value0 TODO
+   * @return boolean
+   */
+  protected boolean shouldStartEditingTimer(EventObject value0)
+  {
+    return false; // TODO
+  }
+
+  /**
+   * startEditingTimer
+   */
+  protected void startEditingTimer()
+  {
+    // TODO
+  }
+
+  /**
+   * canEditImmediately
+   * @param value0 TODO
+   * @return boolean
+   */
+  protected boolean canEditImmediately(EventObject value0)
+  {
+    return false; // TODO
+  }
+
+  /**
+   * inHitRegion
+   * @param value0 TODO
+   * @param value1 TODO
+   * @return boolean
+   */
+  protected boolean inHitRegion(int value0, int value1)
+  {
+    return false; // TODO
+  }
+
+  /**
+   * determineOffset
+   * @param value0 TODO
+   * @param value1 TODO
+   * @param value2 TODO
+   * @param value3 TODO
+   * @param value4 TODO
+   * @param value5 TODO
+   */
+  protected void determineOffset(JTree value0, Object value1, boolean value2,
+                                 boolean value3, boolean value4, int value5)
+  {
+    // TODO
+  }
+
+  /**
+   * prepareForEditing
+   */
+  protected void prepareForEditing()
+  {
+    // TODO
+  }
+
+  /**
+   * createContainer
+   * @return Container
+   */
+  protected Container createContainer()
+  {
+    return null; // TODO
+  }
+
+  /**
+   * createTreeCellEditor
+   * @return TreeCellEditor
+   */
+  protected TreeCellEditor createTreeCellEditor()
+  {
+    return null; // TODO
+  }
+}

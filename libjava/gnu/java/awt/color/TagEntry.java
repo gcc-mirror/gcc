@@ -1,5 +1,5 @@
-/* GdkClasspathFontPeerMetrics.java
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+/* TagEntry.java -- A utility class used for storing the tags in ICC_Profile
+   Copyright (C) 2004 Free Software Foundation
 
    This file is part of GNU Classpath.
 
@@ -33,84 +33,90 @@
    or based on this library.  If you modify this library, you may extend
    this exception to your version of the library, but you are not
    obligated to do so.  If you do not wish to do so, delete this
-   exception statement from your version. */
+   exception statement from your version.
+*/
+
+package gnu.java.awt.color;
 
 
-package gnu.java.awt.peer.gtk;
-
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-
-public class GdkClasspathFontPeerMetrics extends FontMetrics
+/**
+ * TagEntry - stores a profile tag.
+ * These are conveniently stored in a hashtable with the tag signature
+ * as a key. A legal profile can only have one tag with a given sig,
+ * so we can conveniently ignore collisions.
+ *
+ * @author Sven de Marothy
+ */
+public class TagEntry
 {
-  private final int native_state = GtkGenericPeer.getUniqueInteger();
+  // tag table entry size
+  public static final int entrySize = 12;
+  private int signature;
+  private int size;
+  private int offset;
+  private byte[] data;
 
-  private static final int ASCENT = 0, MAX_ASCENT = 1, 
-                       DESCENT = 2, MAX_DESCENT = 3, 
-                       MAX_ADVANCE = 4;
-
-  private int[] metrics;
-  private native int[] initState (Object font);
-
-  public GdkClasspathFontPeerMetrics (Font font)
+  public TagEntry(int sig, int offset, int size, byte[] data)
   {
-    super (font);
-    metrics = initState (font.getPeer());
+    this.signature = sig;
+    this.offset = offset;
+    this.size = size;
+    this.data = new byte[size];
+    System.arraycopy(data, offset, this.data, 0, size);
   }
 
-  public int stringWidth (String str)
+  public TagEntry(int sig, byte[] data)
   {
-    GlyphVector gv = font.createGlyphVector 
-      (new FontRenderContext 
-       (new AffineTransform (), false, false), str);
-    Rectangle2D r = gv.getVisualBounds ();
-    return (int) r.getWidth ();
+    this.signature = sig;
+    this.size = data.length;
+    this.data = new byte[size];
+    System.arraycopy(data, offset, this.data, 0, size);
   }
 
-  public int charWidth (char ch)
+  public byte[] getData()
   {
-    return stringWidth (new String (new char[] { ch }));
+    byte[] d = new byte[size];
+    System.arraycopy(this.data, 0, d, 0, size);
+    return d;
   }
 
-  public int charsWidth (char data[], int off, int len)
+  public String hashKey()
   {
-    return stringWidth (new String (data, off, len));
+    return tagHashKey(signature);
   }
 
-  /* 
-     Sun's Motif implementation always returns 0 or 1 here (???), but
-     going by the X11 man pages, it seems as though we should return
-     font.ascent + font.descent.
-  */
-  public int getLeading ()
+  public String toString()
   {
-    return 1;
-//      return metrics[ASCENT] + metrics[DESCENT];
+    String s = "";
+    s = s + (char) ((byte) ((signature >> 24) & 0xFF));
+    s = s + (char) ((byte) ((signature >> 16) & 0xFF));
+    s = s + (char) ((byte) ((signature >> 8) & 0xFF));
+    s = s + (char) ((byte) (signature & 0xFF));
+    return s;
   }
 
-  public int getAscent ()
+  public int getSignature()
   {
-    return metrics[ASCENT];
+    return signature;
   }
 
-  public int getMaxAscent ()
+  public int getSize()
   {
-    return metrics[MAX_ASCENT];
+    return size;
   }
 
-  public int getDescent ()
+  public int getOffset()
   {
-    return metrics[DESCENT];
+    return offset;
   }
 
-  public int getMaxDescent ()
+  public void setOffset(int offset)
   {
-    return metrics[MAX_DESCENT];
+    this.offset = offset;
   }
 
-  public int getMaxAdvance ()
+  public static String tagHashKey(int sig)
   {
-    return metrics[MAX_ADVANCE];
+    return "" + sig;
   }
 }

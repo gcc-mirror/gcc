@@ -44,10 +44,6 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.Vector;
 
-import javax.swing.text.JTextComponent;
-import javax.swing.text.View;
-
-
 public class DefaultHighlighter extends LayeredHighlighter
 {
   public static class DefaultHighlightPainter
@@ -168,11 +164,22 @@ public class DefaultHighlighter extends LayeredHighlighter
   
   private JTextComponent textComponent;
   private Vector highlights = new Vector();
+  private boolean drawsLayeredHighlights = true;
   
   public DefaultHighlighter()
   {
   }
 
+  public boolean getDrawsLayeredHighlights()
+  {
+    return drawsLayeredHighlights;
+  }
+
+  public void setDrawsLayeredHighlights(boolean newValue)
+  {
+    drawsLayeredHighlights = newValue;
+  }
+  
   private void checkPositions(int p0, int p1)
     throws BadLocationException
   {

@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002, 2004  Free Software Foundation
+/* ComponentColorModel.java --
+   Copyright (C) 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,9 +38,10 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import gnu.java.awt.Buffers;
+
 import java.awt.Point;
 import java.awt.color.ColorSpace;
-import gnu.java.awt.Buffers;
 
 public class ComponentColorModel extends ColorModel
 {
@@ -58,6 +60,32 @@ public class ComponentColorModel extends ColorModel
   {
     super(sum(bits), bits, colorSpace, hasAlpha, isAlphaPremultiplied,
 	  transparency, transferType);
+  }
+
+  /**
+   * Construct a new ComponentColorModel.
+   * 
+   * This constructor makes all bits of each sample significant, so for a
+   * transferType of DataBuffer.BYTE, the bits per sample is 8, etc.  If
+   * both hasAlpha and isAlphaPremultiplied are true, color samples are
+   * assumed to be premultiplied by the alpha component.  Transparency may be
+   * one of OPAQUE, BITMASK, or TRANSLUCENT. 
+   * 
+   * @param colorSpace The colorspace for this color model.
+   * @param hasAlpha True if there is an alpha component.
+   * @param isAlphaPremultiplied True if colors are already multiplied by
+   * alpha.
+   * @param transparency The type of alpha values.
+   * @param transferType Data type of pixel sample values.
+   * @since 1.4
+   */
+  public ComponentColorModel(ColorSpace colorSpace,
+			     boolean hasAlpha,
+			     boolean isAlphaPremultiplied,
+			     int transparency, int transferType)
+  {	
+    this(colorSpace, null, hasAlpha, isAlphaPremultiplied,
+         transparency, transferType);
   }
 
   public int getRed(int pixel)
@@ -95,12 +123,6 @@ public class ComponentColorModel extends ColorModel
   }
 
 
-  /* FIXME: Is the values returned from toRGB() in the [0.0, 1.0] or the
-     [0.0, 256) range? 
-     
-     we assume it is in the [0.0, 1.0] range along with the
-     other color spaces. */
-  
   /* Note, it's OK to pass a to large array to toRGB(). Extra
      elements are ignored. */
   

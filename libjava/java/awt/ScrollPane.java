@@ -1,5 +1,5 @@
 /* ScrollPane.java -- Scrolling window
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package java.awt;
 import java.awt.event.MouseEvent;
 import java.awt.peer.ComponentPeer;
 import java.awt.peer.ScrollPanePeer;
+
 import javax.accessibility.Accessible;
 
 /**

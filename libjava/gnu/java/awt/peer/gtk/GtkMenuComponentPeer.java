@@ -38,15 +38,28 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import java.awt.Font;
+import java.awt.MenuComponent;
 import java.awt.peer.MenuComponentPeer;
 
 public class GtkMenuComponentPeer extends GtkGenericPeer
   implements MenuComponentPeer
 {
+  void create ()
+  {
+    throw new RuntimeException ();
+  }
+
+  void setFont ()
+  {
+  }
+
   public GtkMenuComponentPeer (Object awtWidget)
   {
     super (awtWidget);
+    create ();
+    setFont ();
   }
-  
+
   public native void dispose();
 }

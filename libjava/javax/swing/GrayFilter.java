@@ -1,5 +1,5 @@
 /* GrayFilter.java -- Java class for filtering Pixels to produce Gray Pictures
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,9 +39,9 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.RGBImageFilter;
-import java.awt.Toolkit;
 
 public class GrayFilter extends RGBImageFilter
 {

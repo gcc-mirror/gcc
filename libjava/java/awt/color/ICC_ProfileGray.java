@@ -1,5 +1,5 @@
 /* ICC_ProfileGray.java -- the ICC profile for a Gray colorspace
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,22 @@ exception statement from your version. */
 package java.awt.color;
 
 /**
- * STUBBED
+ * ICC_ProfileGray - a special case of ICC_Profiles.
+ *
+ * The ICC_Profile.getInstance() method will return an instance of the 
+ * ICC_ProfileGray subclass when all the following conditions are met:
+ * The device color space of the profile is TYPE_GRAY.
+ * The profile contains a gray TRCTag.
+ * The profile contains a mediaWhitePointTag.
+ *
+ * As per the ICC specification, the color space conversion can then
+ * be done through the following method:
+ * linearGray = grayTRC[deviceGray]
+ *
+ * Note that if the profile contains a CLUT for the color space conversion,
+ * it should be used instead, and the TRC information ignored. 
+ *
+ * @author Sven de Marothy
  * @since 1.2
  */
 public class ICC_ProfileGray extends ICC_Profile
@@ -48,24 +63,71 @@ public class ICC_ProfileGray extends ICC_Profile
    * Compatible with JDK 1.2+.
    */
   private static final long serialVersionUID = -1124721290732002649L;
+  private transient float[] whitePoint;
 
-  ICC_ProfileGray()
+  /**
+   * Package-private constructor used by ICC_ColorSpace for creating an
+   * ICC_ProfileGray from a predefined ColorSpace (CS_GRAY)
+   */
+  ICC_ProfileGray(int cspace)
   {
-    super(ColorSpace.CS_GRAY);
+    super(cspace);
+    whitePoint = getXYZData(icSigMediaWhitePointTag);
   }
 
+  /**
+   * Package-private constructor used by ICC_ColorSpace for creating an
+   * ICC_ProfileGray from profile data.
+   */
+  ICC_ProfileGray(byte[] data)
+  {
+    super(data);
+    whitePoint = getXYZData(icSigMediaWhitePointTag);
+  }
+
+
+  /**
+   * Returns the media white point of the profile.
+   */
   public float[] getMediaWhitePoint()
   {
-    return null;
+    float[] wp = new float[3];
+    wp[0] = whitePoint[0];
+    wp[1] = whitePoint[1];
+    wp[2] = whitePoint[2];
+    return wp;
   }
 
+  /**
+   * Returns the TRC gamma value.
+   * @throws ProfileDataException if the TRC is described by a lookup
+   * table and not a gamma value.
+   */
   public float getGamma()
   {
-    return 0;
+    short[] data = getCurve(icSigGrayTRCTag);
+    if (data == null)
+      throw new IllegalArgumentException("Couldn't read Gray TRC data.");
+    if (data.length != 1)
+      throw new ProfileDataException("TRC is a table, not a gamma value.");
+
+    // convert the unsigned 7.8 fixed-point gamma to a float.
+    double gamma = (double) (data[0] & (0xFFFF)) / 256.0;
+    return (float) gamma;
   }
 
+  /**
+   * Returns the TRC lookup table.
+   * @throws ProfileDataException if the TRC is described by a gamma value
+   * and not a lookup table.
+   */
   public short[] getTRC()
   {
-    return null;
+    short[] data = getCurve(icSigGrayTRCTag);
+    if (data == null)
+      throw new IllegalArgumentException("Couldn't read Gray TRC data.");
+    if (data.length <= 1)
+      throw new ProfileDataException("Gamma value, not a TRC table.");
+    return data;
   }
 } // class ICC_ProfileGray

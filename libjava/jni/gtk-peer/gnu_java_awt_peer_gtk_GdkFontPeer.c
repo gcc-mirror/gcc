@@ -1,5 +1,5 @@
 /* gnu_java_awt_GdkFont.c
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    
    This file is part of GNU Classpath.
    
@@ -36,7 +36,7 @@
    exception statement from your version. */
 
 #include "gdkfont.h"
-#include "gnu_java_awt_peer_gtk_GdkClasspathFontPeer.h"
+#include "gnu_java_awt_peer_gtk_GdkFontPeer.h"
 
 struct state_table *native_font_state_table;
 
@@ -47,6 +47,7 @@ pango text objects:
   Font              <->    - PangoFont
                            - PangoFontDescription
                            - PangoContext
+                           - PangoLayout (for rendering and measuring)
 
   GlyphVector       <->    - GList of PangoGlyphItem
                            - PangoFontDescription
@@ -68,17 +69,18 @@ enum java_awt_font_baseline {
   java_awt_font_HANGING_BASELINE = 2
 };
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_initStaticState 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontPeer_initStaticState 
   (JNIEnv *env, jclass clazz)
 {
   NSA_FONT_INIT (env, clazz);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_initState
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontPeer_initState
   (JNIEnv *env, jobject self)
 {
   struct peerfont *pfont = NULL;
-
   gdk_threads_enter ();
   g_assert (self != NULL);
   pfont = (struct peerfont *) g_malloc0 (sizeof (struct peerfont));
@@ -88,7 +90,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_initState
 }
 
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_dispose
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontPeer_dispose
   (JNIEnv *env, jobject self)
 {
   struct peerfont *pfont = NULL;
@@ -96,23 +99,26 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_dispose
   gdk_threads_enter ();
   pfont = (struct peerfont *)NSA_DEL_FONT_PTR (env, self);
   g_assert (pfont != NULL);
-  if (pfont->ctx != NULL)
-    g_object_unref (pfont->ctx);
+  if (pfont->layout != NULL)
+    g_object_unref (pfont->font);
   if (pfont->font != NULL)
     g_object_unref (pfont->font);
+  if (pfont->ctx != NULL)
+    g_object_unref (pfont->ctx);
   if (pfont->desc != NULL)
     pango_font_description_free (pfont->desc);
   g_free (pfont);
   gdk_threads_leave ();
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_setFont
-  (JNIEnv *env, jobject self, jstring family_name_str, jint style_int, jint size)
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont
+  (JNIEnv *env, jobject self, jstring family_name_str, jint style_int, jint size, jboolean useGraphics2D)
 {
   struct peerfont *pfont = NULL;
-  PangoFontMap *map = NULL; 
   char const *family_name = NULL;
   enum java_awt_font_style style;
+  PangoFT2FontMap *ft2_map;
 
   gdk_threads_enter ();
   style = (enum java_awt_font_style) style_int;
@@ -143,24 +149,37 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_setFont
 
   if (style & java_awt_font_ITALIC)
     pango_font_description_set_style (pfont->desc, PANGO_STYLE_ITALIC);
-  
-  /* 
-     FIXME: these are possibly wrong, and should in any case
-     probably be cached between calls.
-   */
 
-  map = pango_ft2_font_map_for_display ();
-  g_assert (map != NULL);
-  
-  if (pfont->ctx == NULL)
-    pfont->ctx = pango_ft2_font_map_create_context (PANGO_FT2_FONT_MAP (map));  
+  if (useGraphics2D)
+    {
+      if (pfont->ctx == NULL)
+	{
+	  ft2_map = PANGO_FT2_FONT_MAP(pango_ft2_font_map_for_display ());
+	  pfont->ctx = pango_ft2_font_map_create_context (ft2_map);
+	}
+    }
+  else
+    {
+      if (pfont->ctx == NULL)
+	pfont->ctx = gdk_pango_context_get();
+    }
+
   g_assert (pfont->ctx != NULL);
-
+  
   if (pfont->font != NULL)
-    g_object_unref (pfont->font);
-
-  pfont->font = pango_font_map_load_font (map, pfont->ctx, pfont->desc);
+    {
+      g_object_unref (pfont->font);
+      pfont->font = NULL;
+    }
+  
+  pango_context_set_font_description (pfont->ctx, pfont->desc);
+  pango_context_set_language (pfont->ctx, gtk_get_default_language());
+  pfont->font = pango_context_load_font (pfont->ctx, pfont->desc);
   g_assert (pfont->font != NULL);
+
+  if (pfont->layout == NULL)
+    pfont->layout = pango_layout_new (pfont->ctx);
+  g_assert (pfont->layout != NULL);
 
   gdk_threads_leave ();
 }

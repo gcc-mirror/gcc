@@ -43,9 +43,9 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 
 public class GtkClipboard extends Clipboard
 {
@@ -60,15 +60,13 @@ public class GtkClipboard extends Clipboard
 
   static boolean hasSelection = false;
 
-  protected 
-  GtkClipboard ()
+  protected GtkClipboard()
   {
-    super ("System Clipboard");
-    initNativeState ();
+    super("System Clipboard");
+    initNativeState();
   }
 
-  public Transferable 
-  getContents (Object requestor)
+  public Transferable getContents(Object requestor)
   {
     synchronized (this)
       {
@@ -77,72 +75,76 @@ public class GtkClipboard extends Clipboard
       }
 
     /* Java doesn't own the selection, so we need to ask X11 */
+    // XXX: Does this hold with Swing too ?
     synchronized (selectionLock)
       {
-	requestStringConversion ();
+	requestStringConversion();
+	
 	try 
 	  {
-	    selectionLock.wait (SELECTION_RECEIVED_TIMEOUT);
+	    selectionLock.wait(SELECTION_RECEIVED_TIMEOUT);
 	  } 
 	catch (InterruptedException e)
 	  {
 	    return null;
 	  }
 	
-	return (selection == null) ? null : new StringSelection (selection);
+	return selection == null ? null : new StringSelection(selection);
       }
   }
 
-  void 
-  stringSelectionReceived (String newSelection)
+  void stringSelectionReceived(String newSelection)
   {
     synchronized (selectionLock)
       {
 	selection = newSelection;
-	selectionLock.notify ();
+	selectionLock.notify();
       }
   }
 
   /* convert Java clipboard data into a String suitable for sending
      to another application */
-  synchronized String
-  stringSelectionHandler () throws IOException
+  synchronized String stringSelectionHandler() throws IOException
   {
     String selection = null;
 
-    try {
-      if (contents.isDataFlavorSupported (DataFlavor.stringFlavor))
-	selection = (String)contents.getTransferData (DataFlavor.stringFlavor);
-      else if (contents.isDataFlavorSupported (DataFlavor.plainTextFlavor))
-	{
-	  StringBuffer sbuf = new StringBuffer ();
-	  InputStreamReader reader;
-	  char readBuf[] = new char[512];
-	  int numChars;
+    try
+      {
+	if (contents.isDataFlavorSupported(DataFlavor.stringFlavor))
+	  selection = (String)contents.getTransferData(DataFlavor.stringFlavor);
+	else if (contents.isDataFlavorSupported(DataFlavor.plainTextFlavor))
+	  {
+	    StringBuffer sbuf = new StringBuffer();
+	    InputStreamReader reader;
+	    char readBuf[] = new char[512];
+	    int numChars;
 	  
-	  reader = new InputStreamReader 
-	    ((InputStream) 
-	     contents.getTransferData (DataFlavor.plainTextFlavor), "UNICODE");
+	    reader = new InputStreamReader 
+	      ((InputStream) 
+	       contents.getTransferData(DataFlavor.plainTextFlavor), "UNICODE");
 	  
-	  while (true)
-	    {
-	      numChars = reader.read (readBuf);
-	      if (numChars == -1)
-		break;
-	      sbuf.append (readBuf, 0, numChars);
-	    }
+	    while (true)
+	      {
+		numChars = reader.read(readBuf);
+		if (numChars == -1)
+		  break;
+		sbuf.append(readBuf, 0, numChars);
+	      }
 	  
-	  selection = new String (sbuf);
-	}
-    } catch (Exception e) { }
+	    selection = new String(sbuf);
+	  }
+      }
+    catch (Exception e)
+      {
+      }
     
     return selection;
   }
 
-  public synchronized void
-  setContents (Transferable contents, ClipboardOwner owner)
+  public synchronized void setContents(Transferable contents,
+				       ClipboardOwner owner)
   {
-    selectionGet ();
+    selectionGet();
 
     this.contents = contents;
     this.owner = owner;
@@ -150,20 +152,19 @@ public class GtkClipboard extends Clipboard
     hasSelection = true;
   }
 
-  synchronized
-  void selectionClear ()
+  synchronized void selectionClear()
   {
     hasSelection = false;
 
     if (owner != null)
       {
-	owner.lostOwnership (this, contents);
+	owner.lostOwnership(this, contents);
 	owner = null;
 	contents = null;
       }
   }
 
-  native void initNativeState ();
-  native static void requestStringConversion ();
-  native static void selectionGet ();
+  native void initNativeState();
+  native static void requestStringConversion();
+  native static void selectionGet();
 }

@@ -63,7 +63,7 @@ public abstract class HierarchyBoundsAdapter implements HierarchyBoundsListener
    *
    * @param event the event, ignored in this implementation
    */
-  public void ancestorMoved(HierarchyEvent e)
+  public void ancestorMoved(HierarchyEvent event)
   {
   }
 
@@ -72,7 +72,7 @@ public abstract class HierarchyBoundsAdapter implements HierarchyBoundsListener
    *
    * @param event the event, ignored in this implementation
    */
-  public void ancestorResized(HierarchyEvent e)
+  public void ancestorResized(HierarchyEvent event)
   {
   }
-} // class HierarchyBoundsAdapter
+}

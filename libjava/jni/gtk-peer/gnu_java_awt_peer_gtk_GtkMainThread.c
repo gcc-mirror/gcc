@@ -61,6 +61,13 @@ jmethodID postListItemEventID;
 jmethodID postTextEventID;
 jmethodID postWindowEventID;
 
+jmethodID beginNativeRepaintID;
+jmethodID endNativeRepaintID;
+
+jmethodID initComponentGraphicsID;
+jmethodID initComponentGraphics2DID;
+jmethodID setCursorID;
+
 JNIEnv *gdk_env;
 
 GtkWindowGroup *global_gtk_window_group;
@@ -69,7 +76,7 @@ static void init_glib_threads(JNIEnv *, jint);
 
 double dpi_conversion_factor;
 
-static void init_dpi_conversion_factor ();
+static void init_dpi_conversion_factor (void);
 static void dpi_changed_cb (GtkSettings  *settings,
                             GParamSpec   *pspec);
 
@@ -91,9 +98,8 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz,
   int argc = 1;
   char **argv;
   char *homedir, *rcpath = NULL;
-/*    jclass gtkgenericpeer; */
   jclass gtkcomponentpeer, gtkchoicepeer, gtkwindowpeer, gtkscrollbarpeer, gtklistpeer,
-    gtkmenuitempeer, gtktextcomponentpeer, window;
+    gtkmenuitempeer, gtktextcomponentpeer, window, gdkgraphics, gdkgraphics2d;
 
   NSA_INIT (env, clazz);
   gdk_env = env;
@@ -141,8 +147,6 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz,
   g_free (argv);
 
   /* setup cached IDs for posting GTK events to Java */
-/*    gtkgenericpeer = (*env)->FindClass (env,  */
-/*  				      "gnu/java/awt/peer/gtk/GtkGenericPeer"); */
 
   window = (*env)->FindClass (env, "java/awt/Window");
 
@@ -159,13 +163,10 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz,
                                      "gnu/java/awt/peer/gtk/GtkMenuItemPeer");
   gtktextcomponentpeer = (*env)->FindClass (env,
                                      "gnu/java/awt/peer/gtk/GtkTextComponentPeer");
-/*    gdkColor = (*env)->FindClass (env, */
-/*  				"gnu/java/awt/peer/gtk/GdkColor"); */
-/*    gdkColorID = (*env)->GetMethodID (env, gdkColor, "<init>", "(III)V"); */
-/*    postActionEventID = (*env)->GetMethodID (env, gtkgenericpeer,  */
-/*  					   "postActionEvent",  */
-/*  					   "(Ljava/lang/String;I)V"); */
-
+  gdkgraphics = (*env)->FindClass (env,
+                                   "gnu/java/awt/peer/gtk/GdkGraphics");
+  gdkgraphics2d = (*env)->FindClass (env,
+                                     "gnu/java/awt/peer/gtk/GdkGraphics2D");
   setBoundsCallbackID = (*env)->GetMethodID (env, window,
 					     "setBoundsCallback",
 					     "(IIII)V");
@@ -175,6 +176,14 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz,
 					       "()V");
   postMouseEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
                                           "postMouseEvent", "(IJIIIIZ)V");
+  setCursorID = (*env)->GetMethodID (env, gtkcomponentpeer,
+                                     "setCursor", "()V");
+  beginNativeRepaintID = (*env)->GetMethodID (env, gtkcomponentpeer, 
+                                              "beginNativeRepaint", "()V");
+
+  endNativeRepaintID = (*env)->GetMethodID (env, gtkcomponentpeer, 
+                                            "endNativeRepaint", "()V");
+
   postConfigureEventID = (*env)->GetMethodID (env, gtkwindowpeer, 
 					      "postConfigureEvent", "(IIII)V");
   postWindowEventID = (*env)->GetMethodID (env, gtkwindowpeer,
@@ -201,6 +210,12 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz,
   postTextEventID = (*env)->GetMethodID (env, gtktextcomponentpeer,
 					     "postTextEvent",
 					     "()V");
+  initComponentGraphicsID = (*env)->GetMethodID (env, gdkgraphics,
+                                                 "initComponentGraphics",
+                                                 "()V");
+  initComponentGraphics2DID = (*env)->GetMethodID (env, gdkgraphics2d,
+                                                   "initComponentGraphics2D",
+                                                   "()V");
   global_gtk_window_group = gtk_window_group_new ();
 
   init_dpi_conversion_factor ();

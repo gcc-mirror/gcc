@@ -1,5 +1,5 @@
-/* BasicBorders.java
-   Copyright (C) 2003 Free Software Foundation, Inc.
+/* BasicBorders.java --
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,7 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.io.Serializable;
+
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
@@ -55,10 +56,9 @@ import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
-import javax.swing.plaf.UIResource;
 import javax.swing.plaf.BorderUIResource;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
-
 
 /**
  * Provides various borders for the Basic look and feel.

@@ -57,8 +57,8 @@ import java.awt.geom.Rectangle2D;
  * @author Aaron M. Renn <arenn@urbanophile.com>
  * @see PathIterator
  * @see AffineTransform
- * @see FlatteningPathIterator
- * @see GeneralPath
+ * @see java.awt.geom.FlatteningPathIterator
+ * @see java.awt.geom.GeneralPath
  * @since 1.0
  * @status updated to 1.4
  */
@@ -109,15 +109,15 @@ public interface Shape
    * Test if a high-precision rectangle intersects the shape. This is true
    * if any point in the rectangle is in the shape, with the caveat that the
    * operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link Area} class can
-   * be used for more precise answers.
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * class can be used for more precise answers.
    *
    * @param x the x coordinate of the rectangle
    * @param y the y coordinate of the rectangle
    * @param w the width of the rectangle, undefined results if negative
    * @param h the height of the rectangle, undefined results if negative
    * @return true if the rectangle intersects this shape
-   * @see Area
+   * @see java.awt.geom.Area
    * @since 1.2
    */
   boolean intersects(double x, double y, double w, double h);
@@ -126,8 +126,8 @@ public interface Shape
    * Test if a high-precision rectangle intersects the shape. This is true
    * if any point in the rectangle is in the shape, with the caveat that the
    * operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link Area} class can
-   * be used for more precise answers.
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * class can be used for more precise answers.
    *
    * @param r the rectangle
    * @return true if the rectangle intersects this shape
@@ -141,15 +141,15 @@ public interface Shape
    * Test if a high-precision rectangle lies completely in the shape. This is
    * true if all points in the rectangle are in the shape, with the caveat
    * that the operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link Area} class can
-   * be used for more precise answers.
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * class can be used for more precise answers.
    *
    * @param x the x coordinate of the rectangle
    * @param y the y coordinate of the rectangle
    * @param w the width of the rectangle, undefined results if negative
    * @param h the height of the rectangle, undefined results if negative
    * @return true if the rectangle is contained in this shape
-   * @see Area
+   * @see java.awt.geom.Area
    * @since 1.2
    */
   boolean contains(double x, double y, double w, double h);
@@ -158,8 +158,8 @@ public interface Shape
    * Test if a high-precision rectangle lies completely in the shape. This is
    * true if all points in the rectangle are in the shape, with the caveat
    * that the operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link Area} class can
-   * be used for more precise answers.
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * class can be used for more precise answers.
    *
    * @param r the rectangle
    * @return true if the rectangle is contained in this shape
@@ -195,7 +195,7 @@ public interface Shape
    * iterations from future changes to the boundary, and document this fact.
    *
    * @param transform an optional transform to apply to the iterator
-   * @param double the maximum distance for deviation from the real boundary
+   * @param flatness the maximum distance for deviation from the real boundary
    * @return a new iterator over the boundary
    * @since 1.2
    */

@@ -58,7 +58,8 @@ menu_pos (GtkMenu *menu __attribute__((unused)),
   *push_in = TRUE;
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_show
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_show
   (JNIEnv *env, jobject obj, jint x, jint y, jlong time)
 {
   void *ptr;

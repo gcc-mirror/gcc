@@ -1,5 +1,5 @@
 /* DefaultTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package javax.swing.table;
 
 import java.io.Serializable;
 import java.util.Vector;
+
 import javax.swing.event.TableModelEvent;
 
 /**

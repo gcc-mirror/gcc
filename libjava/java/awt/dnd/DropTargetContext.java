@@ -1,5 +1,5 @@
 /* DropTargetContext.java --
-   Copyright (C) 2002, 2003 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,13 +37,12 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
-import java.awt.dnd.peer.DropTargetContextPeer;
-import java.io.Serializable;
-import java.io.IOException;
 import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 

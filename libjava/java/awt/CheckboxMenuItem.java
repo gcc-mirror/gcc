@@ -1,5 +1,5 @@
 /* CheckboxMenuItem.java -- A menu option with a checkbox on it.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,6 @@ package java.awt;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.peer.CheckboxMenuItemPeer;
-import java.awt.peer.MenuItemPeer;
 import java.util.EventListener;
 
 /**
@@ -175,7 +174,7 @@ setState(boolean state)
   * Returns an array of length 1 with the menu item label for this object
   * if the state is on.  Otherwise <code>null</code> is returned.
   *
-  * @param An array with this menu item's label if it has a state of on,
+  * @return An array with this menu item's label if it has a state of on,
   * or <code>null</code> otherwise.
   */
 public Object[]
@@ -198,12 +197,9 @@ getSelectedObjects()
 public synchronized void
 addNotify()
 {
-  if (peer != null)
-    {
-      // This choice of toolkit seems unsatisfying, but I'm not sure
-      // what else to do.
-      peer = getToolkit().createCheckboxMenuItem(this);
-    }
+  if (peer == null)
+    peer = getToolkit().createCheckboxMenuItem(this);
+
   super.addNotify ();
 }
 

@@ -35,18 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-
 
 public class DefaultEditorKit extends EditorKit
 {

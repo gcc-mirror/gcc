@@ -78,6 +78,12 @@ public class Applet extends Panel
   /** The applet stub for this applet. */
   private transient AppletStub stub;
 
+  /** Some applets call setSize in their constructors.  In that case,
+      these fields are used to store width and height values until a
+      stub is set. */
+  private transient int width;
+  private transient int height;
+
   /**
    * The accessibility context for this applet.
    *
@@ -107,6 +113,9 @@ public class Applet extends Panel
   public final void setStub(AppletStub stub)
   {
     this.stub = stub;
+
+    if (width != 0 && height != 0)
+      stub.appletResize (width, height);
   }
 
   /**
@@ -174,7 +183,13 @@ public class Applet extends Panel
    */
   public void resize(int width, int height)
   {
-    stub.appletResize(width, height);
+    if (stub == null)
+      {
+        this.width = width;
+        this.height = height;
+      }
+    else
+      stub.appletResize(width, height);
   }
 
   /**

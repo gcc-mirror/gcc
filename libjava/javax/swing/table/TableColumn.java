@@ -1,5 +1,5 @@
 /* TableColumn.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.table;
 
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import javax.swing.event.SwingPropertyChangeSupport;
 
+import javax.swing.event.SwingPropertyChangeSupport;
 
 /**
  * TableColumn
@@ -52,89 +53,91 @@ public class TableColumn
 {
   static final long serialVersionUID = -6113660025878112608L;
 
-	/**
-	 * COLUMN_WIDTH_PROPERTY
-	 */
-	public static final String COLUMN_WIDTH_PROPERTY = "columWidth";
+  /**
+   * COLUMN_WIDTH_PROPERTY
+   */
+  public static final String COLUMN_WIDTH_PROPERTY = "columWidth";
 
-	/**
-	 * HEADER_VALUE_PROPERTY
-	 */
-	public static final String HEADER_VALUE_PROPERTY = "headerValue";
+  /**
+   * HEADER_VALUE_PROPERTY
+   */
+  public static final String HEADER_VALUE_PROPERTY = "headerValue";
 
-	/**
-	 * HEADER_RENDERER_PROPERTY
-	 */
-	public static final String HEADER_RENDERER_PROPERTY = "headerRenderer";
+  /**
+   * HEADER_RENDERER_PROPERTY
+   */
+  public static final String HEADER_RENDERER_PROPERTY = "headerRenderer";
 
-	/**
-	 * CELL_RENDERER_PROPERTY
-	 */
-	public static final String CELL_RENDERER_PROPERTY = "cellRenderer";
+  /**
+   * CELL_RENDERER_PROPERTY
+   */
+  public static final String CELL_RENDERER_PROPERTY = "cellRenderer";
 
-	/**
-	 * modelIndex
-	 */
-	protected int modelIndex;
+  /**
+   * modelIndex
+   */
+  protected int modelIndex;
 
-	/**
-	 * identifier
-	 */
-	protected Object identifier;
+  /**
+   * identifier
+   */
+  protected Object identifier;
 
-	/**
-	 * width
-	 */
-	protected int width;
+  /**
+   * width
+   */
+  protected int width;
 
-	/**
-	 * minWidth
-	 */
-	protected int minWidth	= 15;
+  /**
+   * minWidth
+   */
+  protected int minWidth = 15;
 
-	/**
-	 * preferredWidth
-	 */
-	private int preferredWidth;
+  /**
+   * preferredWidth
+   */
+  private int preferredWidth;
 
-	/**
-	 * maxWidth
-	 */
-	protected int maxWidth	= Integer.MAX_VALUE;
+  /**
+   * maxWidth
+   */
+  protected int maxWidth = Integer.MAX_VALUE;
 
-	/**
-	 * headerRenderer
-	 */
-	protected TableCellRenderer headerRenderer;
+  /**
+   * headerRenderer
+   */
+  protected TableCellRenderer headerRenderer;
 
-	/**
-	 * headerValue
-	 */
-	protected Object headerValue;
+  /**
+   * headerValue
+   */
+  protected Object headerValue;
 
-	/**
-	 * cellRenderer
-	 */
-	protected TableCellRenderer cellRenderer;
+  /**
+   * cellRenderer
+   */
+  protected TableCellRenderer cellRenderer;
 
-	/**
-	 * cellEditor
-	 */
-	protected TableCellEditor cellEditor;
+  /**
+   * cellEditor
+   */
+  protected TableCellEditor cellEditor;
 
-	/**
-	 * isResizable
-	 */
-	protected boolean isResizable	= true;
+  /**
+   * isResizable
+   */
+  protected boolean isResizable = true;
 
-	/**
-	 * resizedPostingDisableCount
-	 */
-	protected transient int resizedPostingDisableCount;
+  /**
+   * resizedPostingDisableCount
+   *
+   * @deprecated 1.3
+   */
+  protected transient int resizedPostingDisableCount;
 
-	/**
-	 * changeSupport
-	 */
+  /**
+   * changeSupport
+   */
   private SwingPropertyChangeSupport changeSupport =
     new SwingPropertyChangeSupport(this);
 
@@ -215,14 +218,15 @@ public class TableColumn
 	 */
   private void firePropertyChange(String property, boolean oldValue,
                                   boolean newValue)
-	{
-		firePropertyChange(property, new Boolean(oldValue), new Boolean(newValue));
-	}
+  {
+    firePropertyChange(property, Boolean.valueOf(oldValue),
+		       Boolean.valueOf(newValue));
+  }
 
-	/**
-	 * setModelIndex
-	 * @param modelIndex TODO
-	 */
+  /**
+   * setModelIndex
+   * @param modelIndex TODO
+   */
   public void setModelIndex(int modelIndex)
   {
 		this.modelIndex = modelIndex;
@@ -470,17 +474,21 @@ public class TableColumn
 		// TODO
   }
 
-	/**
-	 * disableResizedPosting
-	 */
+  /**
+   * disableResizedPosting
+   *
+   * @deprecated 1.3
+   */
   public void disableResizedPosting()
   {
 		// Does nothing
   }
 
-	/**
-	 * enableResizedPosting
-	 */
+  /**
+   * enableResizedPosting
+   *
+   * @deprecated 1.3
+   */
   public void enableResizedPosting()
   {
 		// Does nothing
@@ -504,8 +512,16 @@ public class TableColumn
 		changeSupport.removePropertyChangeListener(listener);
   }
 
-	/**
-	 * createDefaultHeaderRenderer
+  /**
+   * @since 1.4
+   */
+  public PropertyChangeListener[] getPropertyChangeListeners()
+  {
+    return changeSupport.getPropertyChangeListeners();
+  }
+
+  /**
+   * createDefaultHeaderRenderer
    * @return TableCellRenderer
 	 */
   protected TableCellRenderer createDefaultHeaderRenderer()

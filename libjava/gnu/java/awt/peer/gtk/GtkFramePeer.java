@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -57,51 +58,72 @@ public class GtkFramePeer extends GtkWindowPeer
   private int menuBarHeight;
   private MenuBarPeer menuBar;
   native int getMenuBarHeight (MenuBarPeer bar);
-
+  native void setMenuBarWidth (MenuBarPeer bar, int width);
   native void setMenuBarPeer (MenuBarPeer bar);
   native void removeMenuBarPeer ();
-  native void moveLayout (int offset);
-  native void gtkLayoutSetVisible (boolean vis);
+  native void gtkFixedSetVisible (boolean visible);
+
+  int getMenuBarHeight ()
+  {
+    return menuBar == null ? 0 : getMenuBarHeight (menuBar);
+  }
 
   public void setMenuBar (MenuBar bar)
   {
-    if (bar == null)
-    {    
-      if (menuBar != null)
+    if (bar == null && menuBar != null)
       {
-        gtkLayoutSetVisible(false);
-        removeMenuBarPeer(); 
+        // We're removing the menubar.
+        gtkFixedSetVisible (false);
         menuBar = null;
-        moveLayout(menuBarHeight);
+        removeMenuBarPeer ();
         insets.top -= menuBarHeight;
-        menuBarHeight = 0;      
-        awtComponent.doLayout();
-        gtkLayoutSetVisible(true);
+        menuBarHeight = 0;
+        awtComponent.validate ();
+        gtkFixedSetVisible (true);
       }
-    }
-    else
-    {
-      gtkLayoutSetVisible(false);
-      int oldHeight = 0;
-      if (menuBar != null)
+    else if (bar != null && menuBar == null)
       {
-        removeMenuBarPeer();
-        oldHeight = menuBarHeight;
-        insets.top -= menuBarHeight;
+        // We're adding a menubar where there was no menubar before.
+        gtkFixedSetVisible (false);
+        menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer();
+        setMenuBarPeer (menuBar);
+        int menuBarWidth =
+          awtComponent.getWidth () - insets.left - insets.right;
+        if (menuBarWidth > 0)
+          setMenuBarWidth (menuBar, menuBarWidth);
+        menuBarHeight = getMenuBarHeight ();
+        insets.top += menuBarHeight;
+        awtComponent.validate ();
+        gtkFixedSetVisible (true);
       }
-      menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer();
-      setMenuBarPeer(menuBar);
-      menuBarHeight = getMenuBarHeight (menuBar);
-      if (oldHeight != menuBarHeight)
-        moveLayout(oldHeight - menuBarHeight);
-      insets.top += menuBarHeight;
-      awtComponent.doLayout();
-      gtkLayoutSetVisible(true);
-    }
+    else if (bar != null && menuBar != null)
+      {
+        // We're swapping the menubar.
+        gtkFixedSetVisible (false);
+        removeMenuBarPeer();
+        int oldHeight = menuBarHeight;
+        int menuBarWidth =
+          awtComponent.getWidth () - insets.left - insets.right;
+        menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer ();
+        setMenuBarPeer (menuBar);
+        if (menuBarWidth > 0)
+          setMenuBarWidth (menuBar, menuBarWidth);
+        menuBarHeight = getMenuBarHeight ();
+        if (oldHeight != menuBarHeight)
+          {
+            insets.top += (menuBarHeight - oldHeight);
+            awtComponent.validate ();
+          }
+        gtkFixedSetVisible (true);
+      }
   }
 
   public void setBounds (int x, int y, int width, int height)
   {
+    int menuBarWidth = width - insets.left - insets.right;
+    if (menuBar != null && menuBarWidth > 0)
+      setMenuBarWidth (menuBar, menuBarWidth);
+
     nativeSetBounds (x, y,
 		     width - insets.left - insets.right,
 		     height - insets.top - insets.bottom
@@ -151,7 +173,7 @@ public class GtkFramePeer extends GtkWindowPeer
   native void nativeSetIconImageFromData (int[] pixels, int width, int height);
   public void setIconImage (Image image) 
   {
-      if (image != null)
+      if (image != null && image instanceof GtkImage)
         {
           GtkImage img = (GtkImage) image;
           // FIXME: Image should be loaded, but if not, do image loading here.
@@ -206,15 +228,20 @@ public class GtkFramePeer extends GtkWindowPeer
         || frame_width != awtComponent.getWidth()
         || frame_height != awtComponent.getHeight())
       {
+        if (frame_width != awtComponent.getWidth() && menuBar != null
+            && width > 0)
+          setMenuBarWidth (menuBar, width);
+
         setBoundsCallback ((Window) awtComponent,
                            frame_x,
                            frame_y,
                            frame_width,
                            frame_height);
       }
+
     awtComponent.validate();
   }
-  
+
   protected void postMouseEvent(int id, long when, int mods, int x, int y, 
 				int clickCount, boolean popupTrigger)
   {
@@ -225,10 +252,11 @@ public class GtkFramePeer extends GtkWindowPeer
 
   protected void postExposeEvent (int x, int y, int width, int height)
   {
-    q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
-				 new Rectangle (x + insets.left, 
-						y + insets.top, 
-						width, height)));
+    if (!isInRepaint)
+      q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
+                                   new Rectangle (x + insets.left, 
+                                                  y + insets.top, 
+                                                  width, height)));
   }
 
   public int getState ()

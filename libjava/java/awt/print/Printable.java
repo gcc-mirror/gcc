@@ -1,5 +1,5 @@
 /* Printable.java -- Renders a page to the print device
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,56 +35,46 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.awt.print;
 
 import java.awt.Graphics;
 
+
 /**
-  * This interface provides a mechanism for the actual printing of pages to the
-  * printer.  The object implementing this interface performs the page
-  * rendering.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface provides a mechanism for the actual printing of pages to the
+ * printer.  The object implementing this interface performs the page
+ * rendering.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface Printable
 {
+  /**
+   * This value is returned by the <code>print()</code> method to indicate
+   * that the requested page exists and has been printed.
+   */
+  int PAGE_EXISTS = 0;
 
-/*
- * Static Variables
- */
+  /**
+   * This value is returned by the <code>print()</code> method to indicate
+   * that the requested page number does not exist.
+   */
+  int NO_SUCH_PAGE = 1;
 
-/**
-  * This value is returned by the <code>print()</code> method to indicate
-  * that the requested page number does not exist.
-  */
-int NO_SUCH_PAGE = 0;
-
-/**
-  * This value is returned by the <code>print()</code> method to indicate
-  * that the requested page exists and has been printed.
-  */
-int PAGE_EXISTS = 1;
-
-/*************************************************************************/
-
-/**
-  * This method prints the specified page to the specified graphics
-  * context in the specified format.  The pages are numbered starting
-  * from zero.
-  *
-  * @param graphics The graphics context to render the pages on.
-  * @param format The format in which to print the page.
-  * @param page_number The page number to print, where numbers start at zero.
-  *
-  * @return <code>PAGE_EXISTS</code> if the requested page exists and was
-  * successfully printed, <code>NO_SUCH_PAGE</code> otherwise.
-  *
-  * @exception PrinterException If an error occurs during printing.
-  */
-int
-print(Graphics graphics, PageFormat format, int page_number) 
-      throws PrinterException;
-
-} // interface Printable
-
+  /**
+   * This method prints the specified page to the specified graphics
+   * context in the specified format.  The pages are numbered starting
+   * from zero.
+   *
+   * @param graphics The graphics context to render the pages on.
+   * @param format The format in which to print the page.
+   * @param page_number The page number to print, where numbers start at zero.
+   *
+   * @return <code>PAGE_EXISTS</code> if the requested page exists and was
+   * successfully printed, <code>NO_SUCH_PAGE</code> otherwise.
+   *
+   * @exception PrinterException If an error occurs during printing.
+   */
+  int print(Graphics graphics, PageFormat format, int page_number)
+    throws PrinterException;
+}

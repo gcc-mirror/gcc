@@ -181,7 +181,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void componentResized(ComponentEvent e)
   {
@@ -193,7 +193,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void componentMoved(ComponentEvent e)
   {
@@ -205,7 +205,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void componentShown(ComponentEvent e)
   {
@@ -217,7 +217,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void componentHidden(ComponentEvent e)
   {
@@ -229,7 +229,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void componentAdded(ContainerEvent e)
   {
@@ -241,7 +241,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void componentRemoved(ContainerEvent e)
   {
@@ -253,7 +253,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void focusGained(FocusEvent e)
   {
@@ -265,7 +265,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void focusLost(FocusEvent e)
   {
@@ -277,7 +277,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void keyTyped(KeyEvent e)
   {
@@ -289,7 +289,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void keyPressed(KeyEvent e)
   {
@@ -301,7 +301,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void keyReleased(KeyEvent e)
   {
@@ -313,7 +313,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mouseClicked(MouseEvent e)
   {
@@ -325,7 +325,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mousePressed(MouseEvent e)
   {
@@ -337,7 +337,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mouseReleased(MouseEvent e)
   {
@@ -349,7 +349,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mouseEntered(MouseEvent e)
   {
@@ -361,7 +361,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mouseExited(MouseEvent e)
   {
@@ -373,7 +373,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mouseDragged(MouseEvent e)
   {
@@ -385,7 +385,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void mouseMoved(MouseEvent e)
   {
@@ -397,7 +397,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowOpened(WindowEvent e)
   {
@@ -409,7 +409,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowClosing(WindowEvent e)
   {
@@ -421,7 +421,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowClosed(WindowEvent e)
   {
@@ -433,7 +433,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowIconified(WindowEvent e)
   {
@@ -445,7 +445,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowDeiconified(WindowEvent e)
   {
@@ -457,7 +457,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowActivated(WindowEvent e)
   {
@@ -469,7 +469,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void windowDeactivated(WindowEvent e)
   {
@@ -481,7 +481,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.4
    */
   public void windowStateChanged(WindowEvent e)
@@ -494,7 +494,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.4
    */
   public void windowGainedFocus(WindowEvent e)
@@ -507,7 +507,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.4
    */
   public void windowLostFocus(WindowEvent e)
@@ -520,7 +520,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void actionPerformed(ActionEvent e)
   {
@@ -532,7 +532,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void itemStateChanged(ItemEvent e)
   {
@@ -544,7 +544,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void adjustmentValueChanged(AdjustmentEvent e)
   {
@@ -556,7 +556,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    */
   public void textValueChanged(TextEvent e)
   {
@@ -568,7 +568,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.2
    */
   public void inputMethodTextChanged(InputMethodEvent e)
@@ -581,7 +581,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.2
    */
   public void caretPositionChanged(InputMethodEvent e)
@@ -594,7 +594,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.3
    */
   public void hierarchyChanged(HierarchyEvent e)
@@ -607,7 +607,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.3
    */
   public void ancestorMoved(HierarchyEvent e)
@@ -620,7 +620,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.3
    */
   public void ancestorResized(HierarchyEvent e)
@@ -633,7 +633,7 @@ public class AWTEventMulticaster
    * Handles this event by dispatching it to the "a" and "b" listener
    * instances.
    *
-   * @param event the event to handle
+   * @param e the event to handle
    * @since 1.4
    */
   public void mouseWheelMoved(MouseWheelEvent e)

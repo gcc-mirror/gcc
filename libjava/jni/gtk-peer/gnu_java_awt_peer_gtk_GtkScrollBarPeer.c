@@ -78,23 +78,6 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectJObject
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  gdk_threads_enter ();
-
-  gtk_widget_realize (GTK_WIDGET (ptr));
-
-  connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
-
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {

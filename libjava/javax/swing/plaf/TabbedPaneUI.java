@@ -1,5 +1,5 @@
-/* TabbedPaneUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* TabbedPaneUI.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,8 +39,8 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 import java.awt.Rectangle;
-import javax.swing.JTabbedPane;
 
+import javax.swing.JTabbedPane;
 
 /**
  * An abstract base class for delegates that implement the pluggable

@@ -59,6 +59,10 @@ public class GtkChoicePeer extends GtkComponentPeer
 	  
 	append (items);
       }
+
+    int selected = c.getSelectedIndex();
+    if (selected >= 0)
+      select(selected);
   }
 
   native void create ();

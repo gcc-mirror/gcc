@@ -542,7 +542,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    * @param newMin The new minimum.
    * @param newMax The new maximum.
    */
-  public void setValue(int newValue, int newExtent, int newMin, int newMax)
+  public void setValues(int newValue, int newExtent, int newMin, int newMax)
   {
     if (!isEnabled())
       newValue = model.getValue();

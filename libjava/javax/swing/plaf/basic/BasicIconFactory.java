@@ -1,5 +1,5 @@
-/* BasicIconFactory.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* BasicIconFactory.java --
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,17 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.io.Serializable;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Polygon;
+import java.io.Serializable;
+
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+
 /**
  * STUBBED
  */
@@ -54,7 +56,7 @@ public class BasicIconFactory implements Serializable
 {
   static final long serialVersionUID = 5605588811185324383L;
 
-  static private class DummyIcon 
+  private static class DummyIcon 
     implements Icon
   {    
     public int getIconHeight() { return 10; }

@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.table;
 
 import java.beans.PropertyChangeEvent;
@@ -43,15 +44,15 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Vector;
-import javax.swing.ListSelectionModel;
+
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
-
 
 /**
  * DefaultTableColumnModel
@@ -288,26 +289,35 @@ public class DefaultTableColumnModel
 
   /**
    * addColumnModelListener
-   * @param value0 TODO
+   * @param listener the listener to add
    */
   public void addColumnModelListener(TableColumnModelListener listener)
   {
     listenerList.add(TableColumnModelListener.class, listener);
   }
 
-	/**
-	 * removeColumnModelListener
-	 * @param value0 TODO
-	 */
-  public void removeColumnModelListener(TableColumnModelListener value0)
+  /**
+   * removeColumnModelListener
+   * @param listener the listener to remove
+   */
+  public void removeColumnModelListener(TableColumnModelListener listener)
   {
-		// TODO
+    listenerList.remove(TableColumnModelListener.class, listener);
   }
 
-	/**
-	 * fireColumnAdded
-	 * @param value0 TODO
-	 */
+  /**
+   * @since 1.4
+   */
+  public TableColumnModelListener[] getColumnModelListeners()
+  {
+    return (TableColumnModelListener[])
+      listenerList.getListeners(TableColumnModelListener.class);
+  }	  
+
+  /**
+   * fireColumnAdded
+   * @param value0 TODO
+   */
   protected void fireColumnAdded(TableColumnModelEvent value0)
   {
 		// TODO

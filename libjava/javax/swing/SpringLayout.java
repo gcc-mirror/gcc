@@ -42,11 +42,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.Spring;
 
 /**
  * A very flexible layout manager. Components are laid out by defining the
@@ -91,7 +88,7 @@ public class SpringLayout implements LayoutManager2
    *
    * @author Roman Kennke (roman@ontographics.com)
    */
-  public final static class Constraints
+  public static class Constraints
   {
 
     // The constraints for each edge, and width and height.

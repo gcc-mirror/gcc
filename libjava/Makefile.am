@@ -235,9 +235,6 @@ libgcj_la_LINK = $(LIBLINK)
 # Gtk/Cairo JNI sources.
 if GTK_CAIRO
 gtk_cairo_c_source_files = \
-jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeer.c \
-jni/gtk-peer/gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.c \
-jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
 else
 gtk_cairo_c_source_files = 
@@ -246,8 +243,12 @@ endif
 ## Gtk JNI sources.
 gtk_c_source_files = \
 $(gtk_cairo_c_source_files) \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkTextLayout.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
@@ -260,6 +261,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFramePeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c \
@@ -287,9 +289,9 @@ jni/classpath/primlib.c
 
 ## Java sources for Gtk peers.
 gtk_awt_peer_sources = \
-gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java \
-gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.java \
+gnu/java/awt/peer/gtk/GdkTextLayout.java \
 gnu/java/awt/peer/gtk/GdkFontMetrics.java \
+gnu/java/awt/peer/gtk/GdkFontPeer.java \
 gnu/java/awt/peer/gtk/GdkGlyphVector.java \
 gnu/java/awt/peer/gtk/GdkGraphics.java \
 gnu/java/awt/peer/gtk/GdkGraphics2D.java \
@@ -307,7 +309,6 @@ gnu/java/awt/peer/gtk/GtkContainerPeer.java \
 gnu/java/awt/peer/gtk/GtkDialogPeer.java \
 gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java \
 gnu/java/awt/peer/gtk/GtkFileDialogPeer.java \
-gnu/java/awt/peer/gtk/GtkFontPeer.java \
 gnu/java/awt/peer/gtk/GtkFramePeer.java	\
 gnu/java/awt/peer/gtk/GtkGenericPeer.java \
 gnu/java/awt/peer/gtk/GtkImage.java \
@@ -335,10 +336,95 @@ gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java
 
 gtk_jni_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
 
-$(gtk_jni_headers): $(gtk_awt_peer_sources)
+jniinclude/gnu_java_awt_peer_gtk_GdkFontMetrics.h: gnu/java/awt/peer/gtk/GdkFontMetrics.java
+jniinclude/gnu_java_awt_peer_gtk_GdkGlyphVector.h: gnu/java/awt/peer/gtk/GdkGlyphVector.java
+jniinclude/gnu_java_awt_peer_gtk_GdkGraphics.h: gnu/java/awt/peer/gtk/GdkGraphics.java
+jniinclude/gnu_java_awt_peer_gtk_GdkGraphics2D.h: gnu/java/awt/peer/gtk/GdkGraphics2D.java
+jniinclude/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h: gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
+jniinclude/gnu_java_awt_peer_gtk_GdkPixbufDecoder.h: gnu/java/awt/peer/gtk/GdkPixbufDecoder.java
+jniinclude/gnu_java_awt_peer_gtk_GtkButtonPeer.h: gnu/java/awt/peer/gtk/GtkButtonPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkCanvasPeer.h: gnu/java/awt/peer/gtk/GtkCanvasPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h: gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h: gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkCheckboxPeer.h: gnu/java/awt/peer/gtk/GtkCheckboxPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkChoicePeer.h: gnu/java/awt/peer/gtk/GtkChoicePeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkClipboard.h: gnu/java/awt/peer/gtk/GtkClipboard.java
+jniinclude/gnu_java_awt_peer_gtk_GtkComponentPeer.h: gnu/java/awt/peer/gtk/GtkComponentPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkContainerPeer.h: gnu/java/awt/peer/gtk/GtkContainerPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkDialogPeer.h: gnu/java/awt/peer/gtk/GtkDialogPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.h: gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkFileDialogPeer.h: gnu/java/awt/peer/gtk/GtkFileDialogPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkFontPeer.h: gnu/java/awt/peer/gtk/GtkFontPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkFramePeer.h: gnu/java/awt/peer/gtk/GtkFramePeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkGenericPeer.h: gnu/java/awt/peer/gtk/GtkGenericPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkImage.h: gnu/java/awt/peer/gtk/GtkImage.java
+jniinclude/gnu_java_awt_peer_gtk_GtkImagePainter.h: gnu/java/awt/peer/gtk/GtkImagePainter.java
+jniinclude/gnu_java_awt_peer_gtk_GtkLabelPeer.h: gnu/java/awt/peer/gtk/GtkLabelPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkListPeer.h: gnu/java/awt/peer/gtk/GtkListPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkMainThread.h: gnu/java/awt/peer/gtk/GtkMainThread.java
+jniinclude/gnu_java_awt_peer_gtk_GtkMenuBarPeer.h: gnu/java/awt/peer/gtk/GtkMenuBarPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.h: gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkMenuItemPeer.h: gnu/java/awt/peer/gtk/GtkMenuItemPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkMenuPeer.h: gnu/java/awt/peer/gtk/GtkMenuPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkOffScreenImage.h: gnu/java/awt/peer/gtk/GtkOffScreenImage.java
+jniinclude/gnu_java_awt_peer_gtk_GtkPanelPeer.h: gnu/java/awt/peer/gtk/GtkPanelPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.h: gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkScrollPanePeer.h: gnu/java/awt/peer/gtk/GtkScrollPanePeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkScrollbarPeer.h: gnu/java/awt/peer/gtk/GtkScrollbarPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkTextAreaPeer.h: gnu/java/awt/peer/gtk/GtkTextAreaPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkTextComponentPeer.h: gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h: gnu/java/awt/peer/gtk/GtkTextFieldPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GtkToolkit.h: gnu/java/awt/peer/gtk/GtkToolkit.java
+jniinclude/gnu_java_awt_peer_gtk_GtkWindowPeer.h: gnu/java/awt/peer/gtk/GtkWindowPeer.java
+jniinclude/gnu_java_awt_peer_gtk_GThreadMutex.h: gnu/java/awt/peer/gtk/GThreadMutex.java
+jniinclude/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h: gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java
+jniinclude/gnu_java_awt_peer_gtk_GdkTextLayout.h: gnu/java/awt/peer/gtk/GdkTextLayout.java
+jniinclude/gnu_java_awt_peer_gtk_GdkFontPeer.h: gnu/java/awt/peer/gtk/GdkFontPeer.java
+
+$(gtk_jni_headers): %.h:
 	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
+
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkFontMetrics.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkFontPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkGlyphVector.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkGraphics2D.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkGraphics.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkPixbufDecoder.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkTextLayout.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GdkTextLayout.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkButtonPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkCanvasPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkCheckboxPeer.h $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkComponentPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkChoicePeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkClipboard.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkComponentPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkFileDialogPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFramePeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkFramePeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkGenericPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkImagePainter.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkLabelPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkListPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkMainThread.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkMenuBarPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkMenuItemPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkMenuPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkPanelPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkScrollbarPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkScrollPanePeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkTextAreaPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkTextComponentPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkToolkit.h
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.lo: $(top_builddir)/jniinclude/gnu_java_awt_peer_gtk_GtkWindowPeer.h
+
 
 ## For the peer library, DEPENDENCIES need to come before OBJECTS so
 ## that JNI headers are built before JNI C files.
@@ -1046,11 +1132,25 @@ gnu/java/awt/ClasspathToolkit.java \
 gnu/java/awt/EmbeddedWindow.java \
 gnu/java/awt/EmbeddedWindowSupport.java \
 gnu/java/awt/EventModifier.java \
+gnu/java/awt/color/CieXyzConverter.java \
+gnu/java/awt/color/ClutProfileConverter.java \
+gnu/java/awt/color/ColorLookUpTable.java \
+gnu/java/awt/color/ColorSpaceConverter.java \
+gnu/java/awt/color/GrayProfileConverter.java \
+gnu/java/awt/color/GrayScaleConverter.java \
+gnu/java/awt/color/LinearRGBConverter.java \
+gnu/java/awt/color/ProfileHeader.java \
+gnu/java/awt/color/PyccConverter.java \
+gnu/java/awt/color/RgbProfileConverter.java \
+gnu/java/awt/color/SrgbConverter.java \
+gnu/java/awt/color/TagEntry.java \
+gnu/java/awt/color/ToneReproductionCurve.java \
 gnu/java/awt/image/ImageDecoder.java \
 gnu/java/awt/image/XBMDecoder.java \
 gnu/java/awt/peer/EmbeddedWindowPeer.java \
 gnu/java/awt/peer/GLightweightPeer.java \
 gnu/java/awt/peer/ClasspathFontPeer.java \
+gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
@@ -1230,12 +1330,17 @@ java/awt/geom/CubicCurve2D.java \
 java/awt/geom/FlatteningPathIterator.java \
 java/awt/geom/GeneralPath.java \
 java/awt/geom/QuadCurve2D.java \
+java/awt/image/BandCombineOp.java \
+java/awt/image/BandedSampleModel.java \
 java/awt/image/AffineTransformOp.java \
 java/awt/image/BufferedImage.java \
+java/awt/image/BufferedImageFilter.java \
 java/awt/image/ByteLookupTable.java \
+java/awt/image/ColorConvertOp.java \
 java/awt/image/ColorModel.java \
 java/awt/image/ComponentColorModel.java \
 java/awt/image/ComponentSampleModel.java \
+java/awt/image/ConvolveOp.java \
 java/awt/image/DataBuffer.java \
 java/awt/image/DataBufferByte.java \
 java/awt/image/DataBufferDouble.java \
@@ -1249,11 +1354,14 @@ java/awt/image/ImageObserver.java \
 java/awt/image/ImageProducer.java \
 java/awt/image/IndexColorModel.java \
 java/awt/image/Kernel.java \
+java/awt/image/LookupOp.java \
 java/awt/image/LookupTable.java \
+java/awt/image/MultiPixelPackedSampleModel.java \
 java/awt/image/PackedColorModel.java \
 java/awt/image/PixelInterleavedSampleModel.java \
 java/awt/image/Raster.java \
 java/awt/image/RasterOp.java \
+java/awt/image/RescaleOp.java \
 java/awt/image/SampleModel.java \
 java/awt/image/ShortLookupTable.java \
 java/awt/image/SinglePixelPackedSampleModel.java \
@@ -1491,6 +1599,7 @@ javax/swing/plaf/basic/BasicTableUI.java \
 javax/swing/plaf/basic/BasicTableHeaderUI.java \
 javax/swing/plaf/basic/BasicTextAreaUI.java \
 javax/swing/plaf/basic/BasicTextFieldUI.java \
+javax/swing/plaf/basic/BasicTextPaneUI.java \
 javax/swing/plaf/basic/BasicTextUI.java \
 javax/swing/plaf/basic/BasicToggleButtonUI.java \
 javax/swing/plaf/basic/BasicToolBarSeparatorUI.java \
@@ -1614,6 +1723,7 @@ javax/swing/ListModel.java \
 javax/swing/ListSelectionModel.java \
 javax/swing/LookAndFeel.java \
 javax/swing/Scrollable.java \
+javax/swing/SpinnerListModel.java \
 javax/swing/SpinnerModel.java \
 javax/swing/SpinnerNumberModel.java \
 javax/swing/Spring.java \
@@ -1690,6 +1800,7 @@ javax/swing/text/Keymap.java \
 javax/swing/text/LayeredHighlighter.java \
 javax/swing/text/MutableAttributeSet.java \
 javax/swing/text/NavigationFilter.java \
+javax/swing/text/PasswordView.java \
 javax/swing/text/PlainDocument.java \
 javax/swing/text/PlainView.java \
 javax/swing/text/Position.java \

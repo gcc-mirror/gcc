@@ -53,6 +53,5 @@ public interface ClipboardOwner
    * @param contents The contents of the clipboard which are no longer owned.
    */
   void lostOwnership (Clipboard clipboard, Transferable contents); 
-
-} // interface ClipboardOwner
+}
 

@@ -35,19 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text;
 
 import java.awt.AWTEvent;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -58,7 +56,6 @@ import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleText;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
@@ -72,7 +69,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.TextUI;
-
 
 public abstract class JTextComponent extends JComponent
   implements Scrollable, Accessible
@@ -629,7 +625,7 @@ public abstract class JTextComponent extends JComponent
    * @see #setKeymap()
    * @see #keymap
    */
-  Keymap getKeymap() 
+  public Keymap getKeymap() 
   {
     return keymap;
   }
@@ -800,6 +796,7 @@ public abstract class JTextComponent extends JComponent
   private Color selectionColor;
   private boolean editable;
   private Insets margin;
+  private boolean dragEnabled;
 
   /**
    * Creates a new <code>JTextComponent</code> instance.
@@ -921,6 +918,26 @@ public abstract class JTextComponent extends JComponent
   }
 
   /**
+   * Retrieves the currently selected text in this text document.
+   *
+   * @return the selected text
+   *
+   * @exception NullPointerException if the underlaying document is null
+   */
+  public String getSelectedText()
+  {
+    try
+      {
+	return doc.getText(getSelectionStart(), getSelectionEnd());
+      }
+    catch (BadLocationException e)
+      {
+	// This should never happen.
+	return null;
+      }
+  }
+
+  /**
    * Returns a string that specifies the name of the Look and Feel class
    * that renders this component.
    *
@@ -998,12 +1015,16 @@ public abstract class JTextComponent extends JComponent
   /**
    * Enables/disabled this text component's editability.
    *
-   * @param editable true to make it editable, false otherwise.
+   * @param newValue true to make it editable, false otherwise.
    */
-  public void setEditable(boolean editable)
+  public void setEditable(boolean newValue)
   {
-    firePropertyChange("editable", this.editable, editable);
-    this.editable = editable;
+    if (editable == newValue)
+      return;
+
+    boolean oldValue = editable;
+    editable = newValue;
+    firePropertyChange("editable", oldValue, newValue);
   }
 
   /**
@@ -1225,17 +1246,22 @@ public abstract class JTextComponent extends JComponent
 
     try
       {
+	int start = getSelectionStart();
+	int end = getSelectionEnd();
+	
 	// Remove selected text.
 	if (dot != mark)
-	  doc.remove(Math.min(dot, mark), Math.max(dot, mark));
+	  doc.remove(start, end - start);
 
 	// Insert new text.
-	doc.insertString(Math.min(dot, mark), content, null);
+	doc.insertString(start, content, null);
+
+	// Set dot to new position.
+	setCaretPosition(start + content.length());
       }
     catch (BadLocationException e)
       {
 	// This should never happen.
-	System.out.println("Michael: JTextComponent.replaceSelection: Error");
       }
   }
 
@@ -1332,5 +1358,15 @@ public abstract class JTextComponent extends JComponent
   public Rectangle modelToView(int position) throws BadLocationException
   {
     return getUI().modelToView(this, position);
+  }
+
+  public boolean getDragEnabled()
+  {
+    return dragEnabled;
+  }
+
+  public void setDragEnabled(boolean enabled)
+  {
+    dragEnabled = enabled;
   }
 }

@@ -37,19 +37,15 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
-import javax.swing.JInternalFrame.JDesktopIcon;
 
+import javax.swing.JInternalFrame.JDesktopIcon;
 
 /**
  * DefaultDesktopManager is the default implementation of DesktopManager for

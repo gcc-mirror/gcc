@@ -1,5 +1,5 @@
 /* AWTKeyStroke.java -- an immutable key stroke
-   Copyright (C) 2002 Free Software Foundation
+   Copyright (C) 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -48,9 +48,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**

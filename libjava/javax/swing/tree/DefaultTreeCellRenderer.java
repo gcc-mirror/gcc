@@ -1,5 +1,5 @@
 /* DefaultTreeCellRenderer.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,9 +44,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.UIResource;
 
 /**
  * DefaultTreeCellRenderer
@@ -124,8 +128,18 @@ public class DefaultTreeCellRenderer
 	 * Constructor DefaultTreeCellRenderer
 	 */
 	public DefaultTreeCellRenderer() {
-		// TODO
-	} // DefaultTreeCellRenderer()
+          UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+            
+          setLeafIcon(getDefaultLeafIcon());
+          setOpenIcon(getDefaultOpenIcon());
+          setClosedIcon(getDefaultClosedIcon());
+
+          setTextNonSelectionColor(defaults.getColor("Tree.textForeground"));
+          setTextSelectionColor(defaults.getColor("Tree.selectionForeground"));
+          setBackgroundNonSelectionColor(defaults.getColor("Tree.textBackground"));
+          setBackgroundSelectionColor(defaults.getColor("Tree.selectionBackground"));
+          setBorderSelectionColor(defaults.getColor("Tree.selectionBorderColor"));
+	}
 
 
 	//-------------------------------------------------------------
@@ -137,168 +151,172 @@ public class DefaultTreeCellRenderer
 	 * @returns Icon
 	 */
 	public Icon getDefaultOpenIcon() {
-		return null; // TODO
-	} // getDefaultOpenIcon()
+          return UIManager.getLookAndFeelDefaults().getIcon("Tree.openIcon");
+	}
 
 	/**
 	 * getDefaultClosedIcon
 	 * @returns Icon
 	 */
 	public Icon getDefaultClosedIcon() {
-		return null; // TODO
-	} // getDefaultClosedIcon()
+          return UIManager.getLookAndFeelDefaults().getIcon("Tree.closedIcon");
+	}
 
 	/**
 	 * getDefaultLeafIcon
 	 * @returns Icon
 	 */
 	public Icon getDefaultLeafIcon() {
-		return null; // TODO
-	} // getDefaultLeafIcon()
+          return UIManager.getLookAndFeelDefaults().getIcon("Tree.leafIcon");
+	}
 
 	/**
 	 * setOpenIcon
 	 * @param value0 TODO
 	 */
-	public void setOpenIcon(Icon value0) {
-		// TODO
-	} // setOpenIcon()
+	public void setOpenIcon(Icon i) {
+          openIcon = i;
+	}
 
 	/**
 	 * getOpenIcon
 	 * @returns Icon
 	 */
 	public Icon getOpenIcon() {
-		return null; // TODO
-	} // getOpenIcon()
+          return openIcon;
+	} 
 
 	/**
 	 * setClosedIcon
 	 * @param value0 TODO
 	 */
-	public void setClosedIcon(Icon value0) {
-		// TODO
-	} // setClosedIcon()
+	public void setClosedIcon(Icon i) {
+          closedIcon = i;
+	} 
 
 	/**
 	 * getClosedIcon
 	 * @returns Icon
 	 */
 	public Icon getClosedIcon() {
-		return null; // TODO
-	} // getClosedIcon()
+          return closedIcon;
+	} 
 
 	/**
 	 * setLeafIcon
 	 * @param value0 TODO
 	 */
-	public void setLeafIcon(Icon value0) {
-		// TODO
-	} // setLeafIcon()
+	public void setLeafIcon(Icon i) {
+          leafIcon = i;
+	}
 
 	/**
 	 * getLeafIcon
 	 * @returns Icon
 	 */
 	public Icon getLeafIcon() {
-		return null; // TODO
-	} // getLeafIcon()
+          return leafIcon;
+	}
 
 	/**
 	 * setTextSelectionColor
 	 * @param value0 TODO
 	 */
-	public void setTextSelectionColor(Color value0) {
-		// TODO
-	} // setTextSelectionColor()
+	public void setTextSelectionColor(Color c) {
+          textSelectionColor = c;
+	}
 
 	/**
 	 * getTextSelectionColor
 	 * @returns Color
 	 */
 	public Color getTextSelectionColor() {
-		return null; // TODO
-	} // getTextSelectionColor()
+          return textSelectionColor;
+	}
 
 	/**
 	 * setTextNonSelectionColor
 	 * @param value0 TODO
 	 */
-	public void setTextNonSelectionColor(Color value0) {
-		// TODO
-	} // setTextNonSelectionColor()
+	public void setTextNonSelectionColor(Color c) {
+          textNonSelectionColor = c;
+	}
 
 	/**
 	 * getTextNonSelectionColor
 	 * @returns Color
 	 */
 	public Color getTextNonSelectionColor() {
-		return null; // TODO
-	} // getTextNonSelectionColor()
+          return textNonSelectionColor;
+	}
 
 	/**
 	 * setBackgroundSelectionColor
 	 * @param value0 TODO
 	 */
-	public void setBackgroundSelectionColor(Color value0) {
-		// TODO
-	} // setBackgroundSelectionColor()
+	public void setBackgroundSelectionColor(Color c) {
+          backgroundSelectionColor = c;
+	}
 
 	/**
 	 * getBackgroundSelectionColor
 	 * @returns Color
 	 */
 	public Color getBackgroundSelectionColor() {
-		return null; // TODO
-	} // getBackgroundSelectionColor()
+          return backgroundSelectionColor;		
+	}
 
 	/**
 	 * setBackgroundNonSelectionColor
 	 * @param value0 TODO
 	 */
-	public void setBackgroundNonSelectionColor(Color value0) {
-		// TODO
-	} // setBackgroundNonSelectionColor()
+	public void setBackgroundNonSelectionColor(Color c) {
+          backgroundNonSelectionColor = c;
+	}
 
 	/**
 	 * getBackgroundNonSelectionColor
 	 * @returns Color
 	 */
 	public Color getBackgroundNonSelectionColor() {
-		return null; // TODO
-	} // getBackgroundNonSelectionColor()
+          return backgroundNonSelectionColor;
+	}
 
 	/**
 	 * setBorderSelectionColor
 	 * @param value0 TODO
 	 */
-	public void setBorderSelectionColor(Color value0) {
-		// TODO
-	} // setBorderSelectionColor()
+	public void setBorderSelectionColor(Color c) {
+          borderSelectionColor = c;
+	}
 
 	/**
 	 * getBorderSelectionColor
 	 * @returns Color
 	 */
 	public Color getBorderSelectionColor() {
-		return null; // TODO
-	} // getBorderSelectionColor()
+          return borderSelectionColor;
+	}
 
 	/**
 	 * setFont
 	 * @param value0 TODO
 	 */
-	public void setFont(Font value0) {
-		// TODO
-	} // setFont()
+	public void setFont(Font f) {
+          if (f != null && f instanceof UIResource)
+            f = null;
+          super.setFont(f);
+	}
 
 	/**
 	 * setBackground
 	 * @param value0 TODO
 	 */
-	public void setBackground(Color value0) {
-		// TODO
-	} // setBackground()
+	public void setBackground(Color c) {
+          if (c != null && c instanceof UIResource)
+            c = null;
+          super.setBackground(c);
+	}
 
 	/**
 	 * getTreeCellRendererComponent
@@ -311,17 +329,37 @@ public class DefaultTreeCellRenderer
 	 * @param value6 TODO
 	 * @returns Component
 	 */
-	public Component getTreeCellRendererComponent(JTree value0, Object value1, boolean value2, boolean value3, boolean value4, int value5, boolean value6) {
-		return null; // TODO
-	} // getTreeCellRendererComponent()
+	public Component getTreeCellRendererComponent(JTree tree, 
+                                                      Object val, 
+                                                      boolean selected, 
+                                                      boolean expanded, 
+                                                      boolean leaf, 
+                                                      int row, 
+                                                      boolean hasFocus) {
+          this.selected = selected;
+          this.hasFocus = hasFocus;
+
+          if (leaf)
+            setIcon(getLeafIcon());
+          else if (expanded)
+            setIcon(getOpenIcon());
+          else
+            setIcon(getClosedIcon());
+
+          setText(val.toString());
+          setHorizontalAlignment(LEFT);
+          setVerticalAlignment(TOP);
+
+          return this;
+	}
 
 	/**
 	 * paint
 	 * @param value0 TODO
 	 */
-	public void paint(Graphics value0) {
-		// TODO
-	} // paint()
+	public void paint(Graphics g) {
+          super.paint(g);
+	}
 
 	/**
 	 * getPreferredSize

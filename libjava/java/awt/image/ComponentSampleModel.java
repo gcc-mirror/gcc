@@ -41,6 +41,21 @@ import gnu.java.awt.Buffers;
 /* FIXME: This class does not yet support data type TYPE_SHORT */
 
 /**
+ * ComponentSampleModel supports a flexible organization of pixel samples in
+ * memory, permitting pixel samples to be interleaved by band, by scanline,
+ * and by pixel.
+ *
+ * A DataBuffer for this sample model has K banks of data.  Pixels have N
+ * samples, so there are N bands in the DataBuffer.  Each band is completely
+ * contained in one bank of data, but a bank may contain more than one band.
+ * Each pixel sample is stored in a single data element.
+ *
+ * Within a bank, each band begins at an offset stored in bandOffsets.  The
+ * banks containing the band is given by bankIndices.  Within the bank, there
+ * are three dimensions - band, pixel, and scanline.  The dimension ordering
+ * is controlled by bandOffset, pixelStride, and scanlineStride, which means
+ * that any combination of interleavings is supported.
+ *
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  */
 public class ComponentSampleModel extends SampleModel
@@ -86,6 +101,7 @@ public class ComponentSampleModel extends SampleModel
     this.bandOffsets = bandOffsets;
     this.bankIndices = bankIndices;
 
+    this.numBanks = 0;
     for (int b=0; b<bankIndices.length; b++)
       this.numBanks = Math.max(this.numBanks, bankIndices[b]+1);
 
@@ -249,6 +265,18 @@ public class ComponentSampleModel extends SampleModel
 	      }
 	    return outUShort;
 
+	  case DataBuffer.TYPE_SHORT:
+	    DataBufferShort inShort = (DataBufferShort) data;
+	    short[] outShort = (short[]) obj;
+	    if (outShort == null) outShort = new short[numBands];
+		
+	    for (int b=0; b<numBands; b++)
+	      {
+		int dOffset = totalBandDataOffsets[b];
+		outShort[b] = inShort.getData(bankIndices[b])[dOffset];
+	      }
+	    return outShort;
+
 	  case DataBuffer.TYPE_INT:
 	    DataBufferInt inInt = (DataBufferInt) data;
 	    int[] outInt = (int[]) obj;
@@ -260,8 +288,31 @@ public class ComponentSampleModel extends SampleModel
 		outInt[b] = inInt.getData(bankIndices[b])[dOffset];
 	      }
 	    return outInt;
-		
-	    // FIXME: Fill in the other possible types.
+
+	  case DataBuffer.TYPE_FLOAT:
+	    DataBufferFloat inFloat = (DataBufferFloat) data;
+	    float[] outFloat = (float[]) obj;
+	    if (outFloat == null) outFloat = new float[numBands];
+
+	    for (int b=0; b<numBands; b++)
+	      {
+		int dOffset = totalBandDataOffsets[b];
+		outFloat[b] = inFloat.getData(bankIndices[b])[dOffset];
+	      }
+	    return outFloat;
+	    
+	  case DataBuffer.TYPE_DOUBLE:
+	    DataBufferDouble inDouble = (DataBufferDouble) data;
+	    double[] outDouble = (double[]) obj;
+	    if (outDouble == null) outDouble = new double[numBands];
+
+	    for (int b=0; b<numBands; b++)
+	      {
+		int dOffset = totalBandDataOffsets[b];
+		outDouble[b] = inDouble.getData(bankIndices[b])[dOffset];
+	      }
+	    return outDouble;
+	    
 	  default:
 	      throw new IllegalStateException("unknown transfer type " +
 					      getTransferType());
@@ -433,10 +484,40 @@ public class ComponentSampleModel extends SampleModel
 	  
 	  return;
 	}
+      case DataBuffer.TYPE_SHORT:
+	{
+	  DataBufferShort out = (DataBufferShort) data;
+	  short[] in = (short[]) obj;
+	  
+	  for (int b=0; b<numBands; b++)
+	    out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
+	  
+	  return;
+	}
       case DataBuffer.TYPE_INT:
 	{
 	  DataBufferInt out = (DataBufferInt) data;
 	  int[] in = (int[]) obj;
+	  
+	  for (int b=0; b<numBands; b++)
+	    out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
+	  
+	  return;
+	}
+      case DataBuffer.TYPE_FLOAT:
+	{
+	  DataBufferFloat out = (DataBufferFloat) data;
+	  float[] in = (float[]) obj;
+	  
+	  for (int b=0; b<numBands; b++)
+	    out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];
+	  
+	  return;
+	}
+      case DataBuffer.TYPE_DOUBLE:
+	{
+	  DataBufferDouble out = (DataBufferDouble) data;
+	  double[] in = (double[]) obj;
 	  
 	  for (int b=0; b<numBands; b++)
 	    out.getData(bankIndices[b])[totalBandDataOffsets[b]] = in[b];

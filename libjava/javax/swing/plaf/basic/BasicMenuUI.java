@@ -35,26 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
@@ -68,8 +60,6 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.MenuItemUI;
-
 
 /**
  * UI Delegate for JMenu

@@ -827,14 +827,16 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
   static guint button_number = -1;
   static jint click_count = 1;
   static int hasBeenDragged;
+  union widget_union w;
 
   /* If it is not a focus change event, the widget must be realized already.
      If not, ignore the event (Gtk+ will do the same). */
   if (!(event->type == GDK_FOCUS_CHANGE || GTK_WIDGET_REALIZED(widget)))
     return FALSE;
-    
+
   /* Do not handle propagated events.  AWT has its own propagation rules */
-  gdk_window_get_user_data (event->any.window, (void **) &event_widget);
+  w.widget = &event_widget;
+  gdk_window_get_user_data (event->any.window, w.void_widget);
   if (event_widget != widget)
     return FALSE;
 
@@ -1010,23 +1012,12 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
       }
       break;
     case GDK_EXPOSE:
-      {
-        /* This filters out unwanted feedback expose events from gtk/X
-           when we explictly invalidate and update heavyweight components,
-           thus avoiding an infinite loop.
-           FIXME: I'm not quite sure why we're getting these expose events. 
-                  Maybe there is a way to avoid them? */
-        if((event->any.window == widget->window && event->any.send_event)
-           || GTK_IS_LAYOUT(widget))
-          {
-	    (*gdk_env)->CallVoidMethod (gdk_env, peer,
-				        postExposeEventID,
-				        (jint)event->expose.area.x,
-				        (jint)event->expose.area.y,
-				        (jint)event->expose.area.width,
-				        (jint)event->expose.area.height);
-          }
-      }
+      (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                  postExposeEventID,
+                                  (jint)event->expose.area.x,
+                                  (jint)event->expose.area.y,
+                                  (jint)event->expose.area.width,
+                                  (jint)event->expose.area.height);
       break;
 
     case GDK_FOCUS_CHANGE:
@@ -1133,3 +1124,24 @@ connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...)
   va_end (ap);
 }
 
+/*
+ * Attach a Java object that is backed by widget.  This callback is
+ * called after the widget's window has been realized.  That way, we
+ * can be sure that widget->window is non-NULL, and so can have data
+ * connected to it.
+ */
+void connect_awt_hook_cb (GtkWidget *widget __attribute__((unused)),
+			  jobject peer)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (gdk_env, peer);
+
+  connect_awt_hook (gdk_env, peer, 1, GTK_WIDGET (ptr)->window);
+
+  gdk_threads_leave ();
+
+  (*gdk_env)->CallVoidMethod (gdk_env, peer, setCursorID);
+
+  gdk_threads_enter ();
+}

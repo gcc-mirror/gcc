@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.AWTError;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import java.awt.LayoutManager;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.AWTError;
 
 /**
  * A component that uses a {@link BoxLayout} as Layout Manager.

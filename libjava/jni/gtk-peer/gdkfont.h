@@ -38,7 +38,7 @@
    obligated to do so.  If you do not wish to do so, delete this
    exception statement from your version. */
 
-#include "gtkcairopeer.h"
+#include "gtkpeer.h"
 
 #include <pango/pango.h>
 #include <pango/pango-context.h>
@@ -47,6 +47,7 @@
 
 extern struct state_table *native_font_state_table;
 extern struct state_table *native_glyphvector_state_table;
+extern struct state_table *native_text_layout_state_table;
 
 #define NSA_FONT_INIT(env, clazz) \
   native_font_state_table = init_state_table (env, clazz)
@@ -73,11 +74,49 @@ extern struct state_table *native_glyphvector_state_table;
 #define NSA_DEL_GV_PTR(env, obj) \
   remove_state_slot (env, obj, native_glyphvector_state_table)
 
+
+#define NSA_TEXT_LAYOUT_INIT(env, clazz) \
+  native_text_layout_state_table = init_state_table (env, clazz)
+
+#define NSA_GET_TEXT_LAYOUT_PTR(env, obj) \
+  get_state (env, obj, native_text_layout_state_table)
+
+#define NSA_SET_TEXT_LAYOUT_PTR(env, obj, ptr) \
+  set_state (env, obj, native_text_layout_state_table, (void *)ptr)
+
+#define NSA_DEL_TEXT_LAYOUT_PTR(env, obj) \
+  remove_state_slot (env, obj, native_text_layout_state_table)
+
+#define FONT_METRICS_ASCENT      0
+#define FONT_METRICS_MAX_ASCENT  1
+#define FONT_METRICS_DESCENT     2
+#define FONT_METRICS_MAX_DESCENT 3
+#define FONT_METRICS_MAX_ADVANCE 4
+#define NUM_FONT_METRICS 5
+
+#define TEXT_METRICS_X_BEARING 0
+#define TEXT_METRICS_Y_BEARING 1
+#define TEXT_METRICS_WIDTH     2
+#define TEXT_METRICS_HEIGHT    3
+#define TEXT_METRICS_X_ADVANCE 4
+#define TEXT_METRICS_Y_ADVANCE 5
+#define NUM_TEXT_METRICS 6
+
 struct peerfont
 {
   PangoFont *font;
   PangoFontDescription *desc;
   PangoContext *ctx;
+  PangoLayout *layout;
+  /* 
+   * The GdkGraphics2D (using cairo) may store a pointer to a
+   * cairo_font_t here; since we want to work equally well with
+   * the GdkGraphics class (using GDK) we do not explicitly mention
+   * cairo types here; it is up to the higher level driver routine
+   * in GdkClasspathFontPeer.java to decide which backend functions
+   * to invoke. 
+   */
+  void *graphics_resource;
 };
 
 struct glyphvec 
@@ -88,6 +127,11 @@ struct glyphvec
   PangoFontDescription *desc;
   PangoFont *font;
   PangoContext *ctx;
+};
+
+struct textlayout
+{
+  PangoLayout *pango_layout;
 };
 
 #endif /* __GDKFONT_H__ */

@@ -1,5 +1,5 @@
-/* TreeUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* TreeUI.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,9 +39,9 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 import java.awt.Rectangle;
+
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
-
 
 /**
  * An abstract base class for delegates that provide the user

@@ -42,6 +42,9 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import javax.accessibility.AccessibleStateSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -82,6 +85,16 @@ public class JTextField extends JTextComponent
   private int columns;
 
   private int align;
+
+  private int scrollOffset;
+
+  /** @since 1.3 */
+  private Action action;
+
+  /** @since 1.3 */
+  private String actionCommand;
+  
+  private PropertyChangeListener actionPropertyChangeListener;
 
   /**
    * Creates a new instance of <code>JTextField</code>.
@@ -241,11 +254,14 @@ public class JTextField extends JTextComponent
 
   public void setHorizontalAlignment(int newAlign)
   {
+    if (align == newAlign)
+      return;
+
     int oldAlign = align;
     align = newAlign;
+    firePropertyChange("horizontalAlignment", oldAlign, newAlign);
     invalidate();
     repaint();
-    firePropertyChange("horizontalAlignment", oldAlign, newAlign);
   }
 
   public void setFont(Font newFont)
@@ -271,5 +287,135 @@ public class JTextField extends JTextComponent
       }
 
     return size;
+  }
+
+  /**
+   * Returns the scroll offset in pixels.
+   *
+   * @return the scroll offset
+   */
+  public int getScrollOffset()
+  {
+    return scrollOffset;
+  }
+
+  /**
+   * Sets the scroll offset in pixels.
+   * 
+   * @param offset the scroll offset
+   */
+  public void setScrollOffset(int offset)
+  {
+    scrollOffset = offset;
+  }
+
+  public void postActionEvent()
+  {
+    ActionEvent event = new ActionEvent(this, 0, actionCommand);
+    ActionListener[] listeners = getActionListeners();
+
+    for (int index = 0; index < listeners.length; ++index)
+      listeners[index].actionPerformed(event);
+  }
+  
+  /**
+   * @since 1.3
+   */
+  public Action getAction()
+  {
+    return action;
+  }
+
+  /**
+   * @since 1.3
+   */
+  public void setAction(Action newAction)
+  {
+    if (action == newAction)
+      return;
+
+    if (action != null)
+      {
+	removeActionListener(action);
+	action.removePropertyChangeListener(actionPropertyChangeListener);
+	actionPropertyChangeListener = null;
+      }
+    
+    Action oldAction = action;
+    action = newAction;
+
+    if (action != null)
+      {
+	addActionListener(action);
+	actionPropertyChangeListener =
+	  createActionPropertyChangeListener(action);
+	action.addPropertyChangeListener(actionPropertyChangeListener);
+      }
+    
+    firePropertyChange("horizontalAlignment", oldAction, newAction);
+  }
+
+  /**
+   * @since 1.3
+   */
+  public String getActionCommand()
+  {
+    return actionCommand;
+  }
+
+  /**
+   * @since 1.3
+   */
+  public void setActionCommand(String command)
+  {
+    this.actionCommand = command;
+  }
+
+  /**
+   * @since 1.3
+   */
+  protected PropertyChangeListener createActionPropertyChangeListener(Action action)
+  {
+    return new PropertyChangeListener()
+      {
+	public void propertyChange(PropertyChangeEvent event)
+	{
+	  // Update properties "action" and "horizontalAlignment".
+	  String name = event.getPropertyName();
+
+	  if (name.equals("enabled"))
+	    {
+	      boolean enabled = ((Boolean) event.getNewValue()).booleanValue();
+	      JTextField.this.setEnabled(enabled);
+	    }
+	  else if (name.equals(Action.SHORT_DESCRIPTION))
+	    {
+	      JTextField.this.setToolTipText((String) event.getNewValue());
+	    }
+	}
+      };
+  }
+
+  /**
+   * @since 1.3
+   */
+  protected void configurePropertiesFromAction(Action action)
+  {
+    if (action != null)
+      {
+	setEnabled(action.isEnabled());
+	setToolTipText((String) action.getValue(Action.SHORT_DESCRIPTION));
+      }
+    else
+      {
+	setEnabled(true);      
+	setToolTipText(null);
+      }
+  }
+
+  protected int getColumnWidth()
+  {
+    FontMetrics metrics = getToolkit().getFontMetrics(getFont());
+    return metrics.charWidth('m');
   }
 }

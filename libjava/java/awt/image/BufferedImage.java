@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
+/* BufferedImage.java --
+   Copyright (C) 2000, 2002, 2003, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import gnu.java.awt.ComponentDataBlitOp;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -45,11 +48,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import java.util.Hashtable;
-import java.util.Vector;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
-import gnu.java.awt.ComponentDataBlitOp;
+import java.util.Vector;
 
 /**
  * A buffered image always starts at coordinates (0, 0).
@@ -59,7 +61,7 @@ import gnu.java.awt.ComponentDataBlitOp;
  * height of the image. This tile is always considered to be checked
  * out.
  * 
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class BufferedImage extends Image
   implements WritableRenderedImage
@@ -79,20 +81,20 @@ public class BufferedImage extends Image
                           TYPE_BYTE_BINARY    = 12,
                           TYPE_BYTE_INDEXED   = 13;
   
-  final static int[] bits3 = { 8, 8, 8 };
-  final static int[] bits4 = { 8, 8, 8 };
-  final static int[] bits1byte = { 8 };
-  final static int[] bits1ushort = { 16 };
+  static final int[] bits3 = { 8, 8, 8 };
+  static final int[] bits4 = { 8, 8, 8 };
+  static final int[] bits1byte = { 8 };
+  static final int[] bits1ushort = { 16 };
   
-  final static int[] masks_int = { 0x00ff0000,
+  static final int[] masks_int = { 0x00ff0000,
 				   0x0000ff00,
 				   0x000000ff,
 				   DataBuffer.TYPE_INT };
-  final static int[] masks_565 = { 0xf800,
+  static final int[] masks_565 = { 0xf800,
 				   0x07e0,
 				   0x001f,
 				   DataBuffer.TYPE_USHORT};
-  final static int[] masks_555 = { 0x7c00,
+  static final int[] masks_555 = { 0x7c00,
 				   0x03e0,
 				   0x001f,
 				   DataBuffer.TYPE_USHORT};

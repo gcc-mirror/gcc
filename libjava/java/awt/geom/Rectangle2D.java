@@ -49,8 +49,8 @@ import java.util.NoSuchElementException;
  * in methods like <code>contains</code> or <code>intersects</code> is
  * undefined unless the rectangle has positive width and height.
  *
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */
@@ -71,14 +71,14 @@ public abstract class Rectangle2D extends RectangularShape
   public static final int OUT_TOP = 2;
 
   /**
-   * The point lies right of the rectangle (p.x > r.maxX).
+   * The point lies right of the rectangle (p.x &gt; r.maxX).
    *
    * @see #outcode()
    */
   public static final int OUT_RIGHT = 4;
 
   /**
-   * The point lies below of the rectangle (p.y > r.maxY).
+   * The point lies below of the rectangle (p.y &gt; r.maxY).
    *
    * @see #outcode()
    */
@@ -335,8 +335,8 @@ public abstract class Rectangle2D extends RectangularShape
    * inside the rectangle, a subsequent call to <code>contains</code> may
    * return false.
    *
-   * @param x the X coordinate of the point to add to this rectangle
-   * @param y the Y coordinate of the point to add to this rectangle
+   * @param newx the X coordinate of the point to add to this rectangle
+   * @param newy the Y coordinate of the point to add to this rectangle
    */
   public void add(double newx, double newy)
   {
@@ -368,7 +368,7 @@ public abstract class Rectangle2D extends RectangularShape
    *
    * @param r the rectangle to add to this rectangle
    * @throws NullPointerException if r is null
-   * @see #union(Rectangle2D)
+   * @see #union(Rectangle2D, Rectangle2D, Rectangle2D)
    */
   public void add(Rectangle2D r)
   {
@@ -382,7 +382,7 @@ public abstract class Rectangle2D extends RectangularShape
    * safe; modifications to the rectangle do not affect the results of this
    * path instance.
    *
-   * @param transform an optional transform to apply to the iterator
+   * @param at an optional transform to apply to the iterator
    * @return a new iterator over the boundary
    * @since 1.2
    */
@@ -490,8 +490,8 @@ public abstract class Rectangle2D extends RectangularShape
    * path instance. As the rectangle is already flat, the flatness parameter
    * is ignored.
    *
-   * @param transform an optional transform to apply to the iterator
-   * @param double the maximum distance for deviation from the real boundary
+   * @param at an optional transform to apply to the iterator
+   * @param flatness the maximum distance for deviation from the real boundary
    * @return a new iterator over the boundary
    * @since 1.2
    */
@@ -508,7 +508,7 @@ public abstract class Rectangle2D extends RectangularShape
    *   + 37 * Double.doubleToLongBits(getY())
    *   + 43 * Double.doubleToLongBits(getWidth())
    *   + 47 * Double.doubleToLongBits(getHeight());
-   * return (int) ((l >> 32) ^ l);
+   * return (int) ((l &gt;&gt; 32) ^ l);
    * </pre>
    *
    * @return the hashcode
@@ -543,7 +543,7 @@ public abstract class Rectangle2D extends RectangularShape
   /**
    * This class defines a rectangle in <code>double</code> precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    * @status updated to 1.4
    */
@@ -747,12 +747,12 @@ public abstract class Rectangle2D extends RectangularShape
       return getClass().getName() + "[x=" + x + ",y=" + y + ",w=" + width
         + ",h=" + height + ']';
     }
-  } // class Double
+  }
 
   /**
    * This class defines a rectangle in <code>float</code> precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    * @status updated to 1.4
    */
@@ -988,5 +988,5 @@ public abstract class Rectangle2D extends RectangularShape
       return getClass().getName() + "[x=" + x + ",y=" + y + ",w=" + width
         + ",h=" + height + ']';
     }
-  } // class Float
-} // class Rectangle2D
+  }
+}

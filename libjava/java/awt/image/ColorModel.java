@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2002, 2003  Free Software Foundation
+/* ColorModel.java --
+   Copyright (C) 1999, 2000, 2002, 2003, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,11 +38,13 @@ exception statement from your version. */
 
 package java.awt.image;
 
-import java.util.Arrays;
+import gnu.java.awt.Buffers;
+
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import gnu.java.awt.Buffers;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 /**
  * A color model operates with colors in several formats:
@@ -76,8 +79,8 @@ import gnu.java.awt.Buffers;
  *
  * </ul>
  *
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
- * @author C. Brian Jones <cbj@gnu.org>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public abstract class ColorModel implements Transparency
 {
@@ -108,7 +111,7 @@ public abstract class ColorModel implements Transparency
    * Constructs the default color model.  The default color model 
    * can be obtained by calling <code>getRGBdefault</code> of this
    * class.
-   * @param b the number of bits wide used for bit size of pixel values
+   * @param bits the number of bits wide used for bit size of pixel values
    */
   public ColorModel(int bits)
   {
@@ -156,6 +159,32 @@ public abstract class ColorModel implements Transparency
     this.transferType = transferType;
   }
 
+  // This is a hook for ColorConvertOp to create a colormodel with
+  // a new colorspace
+  ColorModel cloneColorModel(ColorSpace cspace)
+  {
+    Class cls = this.getClass();
+    ColorModel cm;
+    try {
+      // This constructor will exist.
+      Constructor ctor =
+        cls.getConstructor(new Class[]{int.class, int[].class,
+				       ColorSpace.class, boolean.class,
+				       boolean.class, int.class, int.class});
+      cm = (ColorModel)ctor.
+        newInstance(new Object[]{new Integer(pixel_bits),
+				 bits, cspace, Boolean.valueOf(hasAlpha),
+				 Boolean.valueOf(isAlphaPremultiplied),
+				 new Integer(transparency),
+				 new Integer(transferType)});
+    }
+    catch (Exception e)
+    {
+      throw new IllegalArgumentException();
+    }
+    return cm;
+  }
+  
   public void finalize()
   {
     // Do nothing here.
@@ -294,7 +323,7 @@ public abstract class ColorModel implements Transparency
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.
    * 
-   * @param array of transferType containing a single pixel.  The
+   * @param inData array of transferType containing a single pixel.  The
    * pixel should be encoded in the natural way of the color model.
    */
   public int getRed(Object inData)
@@ -508,40 +537,89 @@ public abstract class ColorModel implements Transparency
    * <code>(pixel == cm.getDataElement(cm.getComponents(pixel, null,
    * 0), 0))</code>.
    *
-   * This method is typically overriden in subclasses to provide a
-   * more efficient implementation.
+   * This method is overriden in subclasses since this abstract class throws
+   * UnsupportedOperationException().
    *
-   * @param arrays of unnormalized component samples of single
-   * pixel.  The scale and multiplication state of the samples are
-   * according to the color model. Each component sample is stored
-   * as a separate element in the array.
+   * @param components Array of unnormalized component samples of single
+   * pixel.  The scale and multiplication state of the samples are according
+   * to the color model. Each component sample is stored as a separate element
+   * in the array.
+   * @param offset Position of the first value of the pixel in components.
    *
    * @return pixel value encoded according to the color model.
    */
   public int getDataElement(int[] components, int offset)
   {
-    // subclasses has to implement this method.
+    // subclasses have to implement this method.
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Converts the normalized component samples from an array to a pixel
+   * value. I.e. composes the pixel from component samples, but does not
+   * perform any color conversion or scaling of the samples.
+   * 
+   * This method is typically overriden in subclasses to provide a
+   * more efficient implementation.  The method provided by this abstract
+   * class converts the components to unnormalized form and returns
+   * getDataElement(int[], int).
+   *
+   * @param components Array of normalized component samples of single pixel.
+   * The scale and multiplication state of the samples are according to the
+   * color model. Each component sample is stored as a separate element in the
+   * array.
+   * @param offset Position of the first value of the pixel in components.
+   *
+   * @return pixel value encoded according to the color model.
+   * @since 1.4
+   */
   public int getDataElement (float[] components, int offset)
   {
-    // subclasses has to implement this method.
-    throw new UnsupportedOperationException();
+    return
+      getDataElement(getUnnormalizedComponents(components, offset, null, 0),
+		     0);
   }
   
   public Object getDataElements(int[] components, int offset, Object obj)
   {
-    // subclasses has to implement this method.
+    // subclasses have to implement this method.
     throw new UnsupportedOperationException();
   }
 
-  public int getDataElements (float[] components, Object obj)
+  /**
+   * Converts the normalized component samples from an array to an array of
+   * TransferType values. I.e. composes the pixel from component samples, but
+   * does not perform any color conversion or scaling of the samples.
+   *
+   * If obj is null, a new array of TransferType is allocated and returned.
+   * Otherwise the results are stored in obj and obj is returned.  If obj is
+   * not long enough, ArrayIndexOutOfBounds is thrown.  If obj is not an array
+   * of primitives, ClassCastException is thrown.
+   * 
+   * This method is typically overriden in subclasses to provide a
+   * more efficient implementation.  The method provided by this abstract
+   * class converts the components to unnormalized form and returns
+   * getDataElement(int[], int, Object).
+   *
+   * @param components Array of normalized component samples of single pixel.
+   * The scale and multiplication state of the samples are according to the
+   * color model. Each component sample is stored as a separate element in the
+   * array.
+   * @param offset Position of the first value of the pixel in components.
+   * @param obj Array of TransferType or null.
+   *
+   * @return pixel value encoded according to the color model.
+   * @throws ArrayIndexOutOfBounds
+   * @throws ClassCastException
+   * @since 1.4
+   */
+  public Object getDataElements(float[] components, int offset, Object obj)
   {
-    // subclasses has to implement this method.
-    throw new UnsupportedOperationException();
+    return
+      getDataElements(getUnnormalizedComponents(components, offset, null, 0),
+		      0, obj);
   }
-  
+
   public boolean equals(Object obj)
   {
     if (!(obj instanceof ColorModel)) return false;
