@@ -1,3 +1,9 @@
+2004-04-02  Jakub Jelinek  <jakuB@redhat.com>
+
+	PR optimization/13424, optimization/12419
+	* gcc.dg/20040302-1.c: New test.
+	* gcc.c-torture/execute/20040401-1.c: New test.
+
 2004-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14803

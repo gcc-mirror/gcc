@@ -4583,14 +4583,27 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	{
 	  rtx xtarget = target;
 
-	  if (readonly_fields_p (type))
+	  if (RTX_UNCHANGING_P (target))
 	    {
-	      xtarget = copy_rtx (xtarget);
-	      RTX_UNCHANGING_P (xtarget) = 1;
+	      xtarget = copy_rtx (target);
+	      RTX_UNCHANGING_P (xtarget) = 0;
 	    }
 
 	  clear_storage (xtarget, GEN_INT (size));
 	  cleared = 1;
+	  if (RTX_UNCHANGING_P (target) || readonly_fields_p (type))
+	    {
+	      /* ??? Emit a blockage to prevent the scheduler from swapping
+		 the memory write issued above without the /u flag and
+		 memory writes that will be issued later with it.
+		 Note that the clearing above cannot be simply disabled
+		 in the unsafe cases because the C front-end relies on
+		 it to implement the semantics of constructors for
+		 automatic objects.  However, not all machine descriptions
+		 define a blockage insn, so emit an ASM_INPUT to
+		 act as one.  */
+	      emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
+	    }
 	}
 
       if (! cleared)
@@ -4822,9 +4835,28 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	  if (! cleared)
 	    {
 	      if (REG_P (target))
-		emit_move_insn (target,  CONST0_RTX (GET_MODE (target)));
+		emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 	      else
-		clear_storage (target, GEN_INT (size));
+		{
+		  rtx xtarget = target;
+
+		  if (RTX_UNCHANGING_P (target))
+		    {
+		      xtarget = copy_rtx (target);
+		      RTX_UNCHANGING_P (xtarget) = 0;
+		    }
+
+		  clear_storage (xtarget, GEN_INT (size));
+
+		  if (RTX_UNCHANGING_P (target))
+		    {
+		      /* ??? Emit a blockage to prevent the scheduler from
+			 swapping the memory write issued above without the
+			 /u flag and memory writes that will be issued later
+			 with it.  */
+		      emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
+		    }
+		}
 	    }
 	  cleared = 1;
 	}
