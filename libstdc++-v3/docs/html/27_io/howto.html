@@ -159,15 +159,18 @@
       because the data needs to appear quickly (a prime example is a
       log file for security-related information).  The way to do this is
       just to turn off the buffering <em>before any I/O operations at
-      all</em> have been done, i.e., as soon as possible after opening:
+      all</em> have been done (note that opening counts as an I/O operation):
    </p>
    <pre>
-   std::ofstream    os (&quot;/foo/bar/baz&quot;);
-   std::ifstream    is (&quot;/qux/quux/quuux&quot;);
+   std::ofstream    os;
+   std::ifstream    is;
    int   i;
 
    os.rdbuf()-&gt;pubsetbuf(0,0);
    is.rdbuf()-&gt;pubsetbuf(0,0);
+
+   os.open(&quot;/foo/bar/baz&quot;);
+   is.open(&quot;/qux/quux/quuux&quot;);
    ...
    os &lt;&lt; &quot;this data is written immediately\n&quot;;
    is &gt;&gt; i;   // and this will probably cause a disk read </pre>
