@@ -1,5 +1,5 @@
 /* UTF_8.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -84,7 +84,8 @@ final class UTF_8 extends Charset
 
   private static final class Decoder extends CharsetDecoder
   {
-    private Decoder (Charset cs)
+    // Package-private to avoid a trampoline constructor.
+    Decoder (Charset cs)
     {
       super (cs, 1.0f, 1.0f);
     }
@@ -171,7 +172,8 @@ final class UTF_8 extends Charset
 
   private static final class Encoder extends CharsetEncoder
   {
-    private Encoder (Charset cs)
+    // Package-private to avoid a trampoline constructor.
+    Encoder (Charset cs)
     {
       // According to
       // http://www-106.ibm.com/developerworks/unicode/library/utfencodingforms/index.html
