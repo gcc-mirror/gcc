@@ -300,8 +300,9 @@ bitmap_find_bit (head, bit)
   bitmap_element *element;
   unsigned HOST_WIDE_INT indx = bit / BITMAP_ELEMENT_ALL_BITS;
 
-  if (head->current == 0)
-    return 0;
+  if (head->current == 0
+      || head->indx == indx)
+    return head->current;
 
   if (head->indx > indx)
     for (element = head->current;
