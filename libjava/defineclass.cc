@@ -56,8 +56,6 @@ static void throw_no_class_def_found_error (char *msg)
 	__attribute__ ((__noreturn__));
 static void throw_class_format_error (jstring msg)
 	__attribute__ ((__noreturn__));
-static void throw_class_format_error (char *msg)
-	__attribute__ ((__noreturn__));
 static void throw_incompatible_class_change_error (jstring msg)
 	__attribute__ ((__noreturn__));
 static void throw_class_circularity_error (jstring msg)
@@ -191,6 +189,36 @@ struct _Jv_ClassReader {
       throw_class_format_error ("erroneous constant pool tag");
   }
 
+  inline void verify_identifier (_Jv_Utf8Const* name)
+  {
+    if (! _Jv_VerifyIdentifier (name))
+      throw_class_format_error ("erroneous identifier");
+  }
+
+  inline void verify_classname (unsigned char* ptr, _Jv_ushort length)
+  {
+    if (! _Jv_VerifyClassName (ptr, length))
+      throw_class_format_error ("erroneous class name");
+  }
+
+  inline void verify_classname (_Jv_Utf8Const *name)
+  {
+    if (! _Jv_VerifyClassName (name))
+      throw_class_format_error ("erroneous class name");
+  }
+
+  inline void verify_field_signature (_Jv_Utf8Const *sig)
+  {
+    if (! _Jv_VerifyFieldSignature (sig))
+      throw_class_format_error ("erroneous type descriptor");
+  }
+
+  inline void verify_method_signature (_Jv_Utf8Const *sig)
+  {
+    if (! _Jv_VerifyMethodSignature (sig))
+      throw_class_format_error ("erroneous type descriptor");
+  }
+
   _Jv_ClassReader (jclass klass, jbyteArray data, jint offset, jint length)
   {
     if (klass == 0 || length < 0 || offset+length > data->length)
@@ -213,6 +241,7 @@ struct _Jv_ClassReader {
   void read_one_method_attribute (int method);
   void read_one_code_attribute (int method);
   void read_one_field_attribute (int field);
+  void throw_class_format_error (char *msg);
 
   /** check an utf8 entry, without creating a Utf8Const object */
   bool is_attribute_name (int index, char *name);
@@ -699,7 +728,7 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	prepare_pool_entry (utf_index, JV_CONSTANT_Utf8);
 
 	if (verify)
-	  _Jv_VerifyClassName (pool_data[utf_index].utf8);
+	  verify_classname (pool_data[utf_index].utf8);
 		
 	pool_data[index].utf8 = pool_data[utf_index].utf8;
 	pool_tags[index] = JV_CONSTANT_Class;
@@ -742,7 +771,7 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 		  || _Jv_equalUtf8Consts (name, init_name)))
 	    /* ignore */;
 	  else
-	    _Jv_VerifyIdentifier (pool_data[name_index].utf8);
+	    verify_identifier (pool_data[name_index].utf8);
 	}
 	    
 	_Jv_storeIndexes (&pool_data[index], class_index, nat_index);
@@ -1030,7 +1059,7 @@ void _Jv_ClassReader::handleField (int field_no,
 #endif
 
   if (verify)
-    _Jv_VerifyIdentifier (field_name);
+    verify_identifier (field_name);
 
   // ignore flags we don't know about.  
   field->flags = flags & Modifier::ALL_FLAGS;
@@ -1184,7 +1213,7 @@ void _Jv_ClassReader::handleMethod
 	  || _Jv_equalUtf8Consts (method->name, init_name))
 	/* ignore */;
       else
-	_Jv_VerifyIdentifier (method->name);
+	verify_identifier (method->name);
 
       _Jv_VerifyMethodSignature (method->signature);
 
@@ -1274,6 +1303,36 @@ void _Jv_ClassReader::handleMethodsEnd ()
 
 }
 
+void _Jv_ClassReader::throw_class_format_error (char *msg)
+{
+  jstring str;
+  if (def->name != NULL)
+    {
+      jsize mlen = strlen (msg);
+      unsigned char* data = (unsigned char*) def->name->data;
+      int ulen = def->name->length;
+      unsigned char* limit = data + ulen;
+      jsize nlen = _Jv_strLengthUtf8 ((char *) data, ulen);
+      jsize len = nlen + mlen + 3;
+      str = JvAllocString(len);
+      jchar *chrs = JvGetStringChars(str);
+      while (data < limit)
+	*chrs++ = UTF8_GET(data, limit);
+      *chrs++ = ' ';
+      *chrs++ = '(';
+      for (;;)
+	{
+	  char c = *msg++;
+	  if (c == 0)
+	    break;
+	  *chrs++ = c & 0xFFFF;
+	}
+      *chrs++ = ')';
+    }
+  else
+    str = JvNewStringLatin1 (msg);
+  ::throw_class_format_error (str);
+}
 
 /** This section takes care of verifying integrity of identifiers,
     signatures, field ddescriptors, and class names */
@@ -1314,7 +1373,8 @@ _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
 	    return 0;
 		
 	} while (ch != ';');
-	_Jv_VerifyClassName (start, (unsigned short) (end-start));
+	if (! _Jv_VerifyClassName (start, (unsigned short) (end-start)))
+	  return 0;
       }
       break;
 
@@ -1333,7 +1393,7 @@ _Jv_VerifyOne (unsigned char* ptr, unsigned char* limit, bool void_ok)
 
 /** verification and loading procedures **/
 
-void
+bool
 _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig)
 {
   unsigned char* ptr = (unsigned char*) sig->data;
@@ -1341,36 +1401,28 @@ _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig)
 
   ptr = _Jv_VerifyOne (ptr, limit, false);
 
-  if (ptr != limit)
-    throw_class_format_error ("erroneous type descriptor");
+  return ptr == limit;
 }
 
-void
+bool
 _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig)
 {
   unsigned char* ptr = (unsigned char*) sig->data;
   unsigned char* limit = ptr + sig->length;
 
-  if (ptr == limit)
-    throw_class_format_error ("erroneous type descriptor");
-
-  if (UTF8_GET(ptr,limit) != '(')
-    throw_class_format_error ("erroneous type descriptor");
+  if (ptr == limit || UTF8_GET(ptr,limit) != '(')
+    return false;
 
   while (ptr && UTF8_PEEK (ptr, limit) != ')')
     ptr = _Jv_VerifyOne (ptr, limit, false);
     
   if (UTF8_GET (ptr, limit) != ')')
-    throw_class_format_error ("erroneous type descriptor");
+    return false;
 
   // get the return type
   ptr = _Jv_VerifyOne (ptr, limit, true);
 
-  if (ptr != limit)
-    throw_class_format_error ("erroneous type descriptor");
-
-  return;
-
+  return ptr == limit;
 }
 
 /* we try to avoid calling the Character methods all the time, 
@@ -1408,7 +1460,7 @@ is_identifier_part (int c)
   return character->isJavaIdentifierStart ((jchar) ch);
 }
 
-void 
+bool
 _Jv_VerifyIdentifier (_Jv_Utf8Const* name)
 {
   unsigned char *ptr   = (unsigned char*) name->data;
@@ -1417,18 +1469,18 @@ _Jv_VerifyIdentifier (_Jv_Utf8Const* name)
 
   if ((ch = UTF8_GET (ptr, limit))==-1
       || ! is_identifier_start (ch))
-    throw_class_format_error ("erroneous identifier");
+    return false;
 
   while (ptr != limit)
     {
       if ((ch = UTF8_GET (ptr, limit))==-1
 	  || ! is_identifier_part (ch))
-	throw_class_format_error ("erroneous identifier");
+	return false;
     }
+  return true;
 }
 
-
-void
+bool
 _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length)
 {
   unsigned char *limit = ptr+length;
@@ -1437,38 +1489,36 @@ _Jv_VerifyClassName (unsigned char* ptr, _Jv_ushort length)
   if ('[' == UTF8_PEEK (ptr, limit))
     {
       if (! _Jv_VerifyOne (++ptr, limit, false))
-        throw_class_format_error ("erroneous class name");
+	return false;
       else
-        return;
+        return true;
     }
 
  next_level:
-  do {
+  for (;;) {
     if ((ch = UTF8_GET (ptr, limit))==-1)
-      throw_class_format_error ("erroneous class name");
+      return false;
     if (! is_identifier_start (ch))
-      throw_class_format_error ("erroneous class name");
-    do {
+      return false;
+    for (;;) {
       if (ptr == limit)
-	return;
+	return true;
       else if ((ch = UTF8_GET (ptr, limit))==-1)
-	throw_class_format_error ("erroneous class name");
+	return false;
       else if (ch == '.')
 	goto next_level;
       else if (! is_identifier_part (ch))
-	throw_class_format_error ("erroneous class name");
-    } while (true);
-  } while (true);
-
+	return false;
+    }
+  }
 }
 
-void
+bool
 _Jv_VerifyClassName (_Jv_Utf8Const *name)
 {
-    _Jv_VerifyClassName ((unsigned char*)&name->data[0],
-			 (_Jv_ushort) name->length);
+  return _Jv_VerifyClassName ((unsigned char*)&name->data[0],
+			      (_Jv_ushort) name->length);
 }
-
 
 /** returns true, if name1 and name2 represents classes in the same
     package. */
@@ -1545,12 +1595,6 @@ throw_class_format_error (jstring msg)
     JvThrow (new java::lang::ClassFormatError);
   else
     JvThrow (new java::lang::ClassFormatError (msg));
-}
-
-static void
-throw_class_format_error (char *msg)
-{
-  throw_class_format_error (JvNewStringLatin1 (msg));
 }
 
 static void
