@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 extern void   arm_override_options	PARAMS ((void));
 extern int    use_return_insn		PARAMS ((int));
 extern int    arm_regno_class 		PARAMS ((int));
-extern void   arm_finalize_pic		PARAMS ((void));
+extern void   arm_finalize_pic		PARAMS ((int));
 extern int    arm_volatile_func		PARAMS ((void));
 extern const char * arm_output_epilogue	PARAMS ((int));
 extern void   output_func_epilogue	PARAMS ((int));
@@ -52,7 +52,6 @@ extern int    arm_split_constant	PARAMS ((RTX_CODE, enum machine_mode,
 extern RTX_CODE arm_canonicalize_comparison PARAMS ((RTX_CODE, rtx *));
 extern int    legitimate_pic_operand_p	PARAMS ((rtx));
 extern rtx    legitimize_pic_address	PARAMS ((rtx, enum machine_mode, rtx));
-extern int    is_pic			PARAMS ((rtx));
 extern int    arm_rtx_costs		PARAMS ((rtx, RTX_CODE, RTX_CODE));
 extern int    arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 extern int    const_double_rtx_ok_for_fpu	PARAMS ((rtx));

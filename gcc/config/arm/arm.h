@@ -2523,7 +2523,7 @@ extern const char * arm_pic_register_string;
    data addresses in memory.  */
 #define PIC_OFFSET_TABLE_REGNUM arm_pic_register
 
-#define FINALIZE_PIC arm_finalize_pic ()
+#define FINALIZE_PIC arm_finalize_pic (1)
 
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
@@ -2851,18 +2851,9 @@ extern int making_const_table;
   else						\
     THUMB_PRINT_OPERAND_ADDRESS (STREAM, X)
      
-/* Handles PIC addr specially */
 #define OUTPUT_INT_ADDR_CONST(STREAM, X) 				\
   {									\
-    if (flag_pic && GET_CODE (X) == CONST && is_pic (X))		\
-      {									\
-	output_addr_const (STREAM, XEXP (XEXP (XEXP (X, 0), 0), 0));	\
-	fputs (" - (", STREAM);						\
-	output_addr_const (STREAM, XEXP (XEXP (XEXP (X, 0), 1), 0));	\
-	fputs (")", STREAM);						\
-      }									\
-    else								\
-      output_addr_const (STREAM, X);					\
+    output_addr_const (STREAM, X);					\
 									\
     /* Mark symbols as position independent.  We only do this in the	\
       .text segment, not in the .data segment. */			\

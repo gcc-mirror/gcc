@@ -4238,6 +4238,15 @@
   [(set_attr "predicable" "yes")]
 )
 
+(define_expand "builtin_setjmp_receiver"
+  [(label_ref (match_operand 0 "" ""))]
+  "flag_pic"
+  "
+{
+  arm_finalize_pic (0);
+  DONE;
+}")
+
 ;; If copying one reg to another we can set the condition codes according to
 ;; its value.  Such a move is common after a return from subroutine and the
 ;; result is being tested against zero.

@@ -2230,22 +2230,16 @@ legitimize_pic_address (orig, mode, reg)
   return orig;
 }
 
-static rtx pic_rtx;
-
-int
-is_pic (x)
-     rtx x;
-{
-  if (x == pic_rtx)
-    return 1;
-  return 0;
-}
-
+/* Generate code to load the PIC register.  PROLOGUE is true if
+   called from arm_expand_prologue (in which case we want the 
+   generated insns at the start of the function);  false if called
+   by an exception receiver that needs the PIC register reloaded
+   (in which case the insns are just dumped at the current location).  */
 void
-arm_finalize_pic ()
+arm_finalize_pic (int prologue)
 {
 #ifndef AOF_ASSEMBLER
-  rtx l1, pic_tmp, pic_tmp2, seq;
+  rtx l1, pic_tmp, pic_tmp2, seq, pic_rtx;
   rtx global_offset_table;
 
   if (current_function_uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
@@ -2282,7 +2276,10 @@ arm_finalize_pic ()
 
   seq = gen_sequence ();
   end_sequence ();
-  emit_insn_after (seq, get_insns ());
+  if (prologue)
+    emit_insn_after (seq, get_insns ());
+  else
+    emit_insn (seq);
 
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
