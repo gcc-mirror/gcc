@@ -1535,8 +1535,8 @@
 
 (define_insn "get_pc_sp32"
   [(set (pc) (label_ref (match_operand 0 "" "")))
-   (set (reg:SI 15) (label_ref (match_dup 0)))]
-  "! TARGET_PTR64"
+   (set (reg:SI 15) (label_ref (match_operand 1 "" "")))]
+  ""
   "call %l0%#"
   [(set_attr "type" "uncond_branch")])
 
@@ -1611,7 +1611,12 @@
   /* Don't output a 64 bit constant, since we can't trust the assembler to
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+    operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+  else if (GET_CODE (operands[2]) == CONST_INT
+	   && HOST_BITS_PER_WIDE_INT > 32
+	   && INTVAL (operands[2]) > 0xffffffff)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffffffff);
+
   return \"or %L1,%%lo(%a2),%L0\";
 }"
   ;; Need to set length for this arith insn because operand2
@@ -1630,7 +1635,12 @@
   /* Don't output a 64 bit constant, since we can't trust the assembler to
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+    operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+  else if (GET_CODE (operands[2]) == CONST_INT
+	   && HOST_BITS_PER_WIDE_INT > 32
+	   && INTVAL (operands[2]) > 0xffffffff)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffffffff);
+
   /* Note that we use add here.  This is important because Medium/Anywhere
      code model support depends on it.  */
   return \"add %1,%%lo(%a2),%0\";
@@ -1662,11 +1672,11 @@
   else if (GET_CODE (op1) == CONST_DOUBLE)
     {
       operands[0] = operand_subword (op0, 1, 0, DImode);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
+      operands[1] = GEN_INT (CONST_DOUBLE_LOW (op1));
       output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
 
       operands[0] = operand_subword (op0, 0, 0, DImode);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
+      operands[1] = GEN_INT (CONST_DOUBLE_HIGH (op1));
       return singlemove_string (operands);
     }
   else
@@ -1700,6 +1710,7 @@
   "TARGET_ARCH64 && check_pic (1)"
   "*
 {
+#if HOST_BITS_PER_WIDE_INT == 32
   rtx high, low;
   
   split_double (operands[1], &high, &low);
@@ -1719,6 +1730,26 @@
       if (low != const0_rtx)
 	output_asm_insn (\"sethi %%hi(%a1),%%g1; or %0,%%g1,%0\", operands);
     }
+#else
+  rtx op = operands[1];
+
+  if (! SPARC_SETHI_P (INTVAL(op)))
+    {
+      operands[1] = GEN_INT (INTVAL (op) >> 32);
+      output_asm_insn (singlemove_string (operands), operands);
+
+      output_asm_insn (\"sllx %0,32,%0\", operands);
+      if (INTVAL (op) & 0xffffffff)
+	{
+	  operands[1] = GEN_INT (INTVAL (op) & 0xffffffff);
+	  output_asm_insn (\"sethi %%hi(%a1),%%g1; or %0,%%g1,%0\", operands);
+	}
+    }
+  else
+    {
+      output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
+    }
+#endif
 
   return \"\";
 }"
@@ -2030,8 +2061,7 @@
 	return \"sethi %%hi(%a1),%0\";
       else
 	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 ~ INTVAL (operands[1]));
+	  operands[1] = GEN_INT (~INTVAL (operands[1]));
 	  output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
 	  /* The low 10 bits are already zero, but invert the rest.
 	     Assemblers don't accept 0x1c00, so use -0x400 instead.  */
@@ -2698,7 +2728,7 @@
 				 (const_int 0)])
 		      (match_operand:TF 3 "register_operand" "e,0")
 		      (match_operand:TF 4 "register_operand" "0,e")))]
-  "TARGET_V9 && TARGET_FPU"
+  "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "@
    fmovq%C1 %x2,%3,%0
    fmovq%c1 %x2,%4,%0"
@@ -2809,7 +2839,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_16 = gen_rtx (CONST_INT, VOIDmode, 16);
+  rtx shift_16 = GEN_INT (16);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -2887,7 +2917,7 @@
   "
 {
   rtx temp = gen_reg_rtx (DImode);
-  rtx shift_48 = gen_rtx (CONST_INT, VOIDmode, 48);
+  rtx shift_48 = GEN_INT (48);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -2981,7 +3011,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_16 = gen_rtx (CONST_INT, VOIDmode, 16);
+  rtx shift_16 = GEN_INT (16);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3011,7 +3041,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_24 = gen_rtx (CONST_INT, VOIDmode, 24);
+  rtx shift_24 = GEN_INT (24);
   int op1_subword = 0;
   int op0_subword = 0;
 
@@ -3048,7 +3078,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_24 = gen_rtx (CONST_INT, VOIDmode, 24);
+  rtx shift_24 = GEN_INT (24);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3078,7 +3108,7 @@
   "
 {
   rtx temp = gen_reg_rtx (DImode);
-  rtx shift_56 = gen_rtx (CONST_INT, VOIDmode, 56);
+  rtx shift_56 = GEN_INT (56);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3108,7 +3138,7 @@
   "
 {
   rtx temp = gen_reg_rtx (DImode);
-  rtx shift_48 = gen_rtx (CONST_INT, VOIDmode, 48);
+  rtx shift_48 = GEN_INT (48);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3164,7 +3194,7 @@
   int pos = 32 - INTVAL (operands[2]) - len;
   unsigned mask = ((1 << len) - 1) << pos;
 
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, mask);
+  operands[1] = GEN_INT (mask);
   return \"andcc %0,%1,%%g0\";
 }")
 
@@ -3180,9 +3210,9 @@
 {
   int len = INTVAL (operands[1]);
   int pos = 64 - INTVAL (operands[2]) - len;
-  unsigned mask = ((1 << len) - 1) << pos;
+  unsigned HOST_WIDE_INT mask = (((unsigned HOST_WIDE_INT) 1 << len) - 1) << pos;
 
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, mask);
+  operands[1] = GEN_INT (mask);
   return \"andcc %0,%1,%%g0\";
 }")
 
@@ -4100,7 +4130,7 @@
    (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 1)))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_insn "*and_not_di_sp32"
@@ -4186,7 +4216,7 @@
    (set (match_dup 0) (ior:SI (not:SI (match_dup 3)) (match_dup 1)))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_insn "*or_not_di_sp32"
@@ -4272,7 +4302,7 @@
    (set (match_dup 0) (not:SI (xor:SI (match_dup 3) (match_dup 1))))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_split
@@ -4287,7 +4317,7 @@
    (set (match_dup 0) (xor:SI (match_dup 3) (match_dup 1)))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 ;; xnor patterns.  Note that (a ^ ~b) == (~a ^ b) == ~(a ^ b).
@@ -4855,7 +4885,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 31)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sll %1,%2,%0\";
@@ -4870,7 +4900,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 63)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return \"sllx %1,%2,%0\";
@@ -4903,7 +4933,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 31)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sra %1,%2,%0\";
@@ -4918,7 +4948,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 63)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return \"srax %1,%2,%0\";
@@ -4932,7 +4962,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 31)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"srl %1,%2,%0\";
@@ -4947,7 +4977,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 63)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return \"srlx %1,%2,%0\";
@@ -5075,9 +5105,9 @@
      means 6 on the sparc.  */
 #if 0
   if (operands[2])
-    nregs_rtx = gen_rtx (CONST_INT, VOIDmode, REGNO (operands[2]) - 8);
+    nregs_rtx = GEN_INT (REGNO (operands[2]) - 8);
   else
-    nregs_rtx = gen_rtx (CONST_INT, VOIDmode, 6);
+    nregs_rtx = GEN_INT (6);
 #else
   nregs_rtx = const0_rtx;
 #endif
