@@ -1778,8 +1778,8 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		    replacement->new = gen_reg_rtx (GET_MODE (var));
 		  SUBREG_REG (tem) = replacement->new;
 		}
-
-	      tem = fixup_memory_subreg (tem, insn, 0);
+	      else
+		tem = fixup_memory_subreg (tem, insn, 0);
 	    }
 	  else
 	    tem = fixup_stack_1 (tem, insn);
