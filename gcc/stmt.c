@@ -2844,7 +2844,9 @@ expand_return (retval)
   cleanups = 1;
 #endif
 
-  if (TREE_CODE (retval) == RESULT_DECL)
+  if (retval == error_mark_node)
+    retval_rhs = NULL_TREE;
+  else if (TREE_CODE (retval) == RESULT_DECL)
     retval_rhs = retval;
   else if ((TREE_CODE (retval) == MODIFY_EXPR || TREE_CODE (retval) == INIT_EXPR)
 	   && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)

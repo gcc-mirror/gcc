@@ -28,9 +28,11 @@
 // the GNU General Public License.
 
 #include <stddef.h>
-#include <stdlib.h>		// for abort
 #include "tinfo.h"
 #include "new"			// for placement new
+
+// We can't rely on having stdlib.h if we're freestanding.
+extern "C" void abort ();
 
 using std::type_info;
 

@@ -1,3 +1,11 @@
+2000-06-09  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* timevar.def: Add TV_EXPAND.
+	* timevar.c (timevar_print): Update timing information.
+	* calls.c (try_to_integrate): Push to TV_INTEGRATION for inlining.
+
+	* stmt.c (expand_return): Check for error_mark_node.
+
 2000-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Also avoid wrapping auto-build.h with IN_GCC.

@@ -35,6 +35,7 @@
 #include "ggc.h"
 #include "rtl.h"
 #include "output.h"
+#include "timevar.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -2788,6 +2789,8 @@ expand_body (fn)
       return;
     }
 
+  timevar_push (TV_EXPAND);
+
   /* Optimize the body of the function before expanding it.  */
   optimize_function (fn);
 
@@ -2838,4 +2841,6 @@ expand_body (fn)
   /* And restore the current source position.  */
   lineno = saved_lineno;
   input_filename = saved_input_filename;
+
+  timevar_pop (TV_EXPAND);
 }

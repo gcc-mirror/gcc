@@ -405,9 +405,27 @@ timevar_print (fp)
 #if defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME) || defined (HAVE_WALL_TIME)
   timevar_id_t id;
   struct timevar_time_def *total = &timevars[TV_TOTAL].elapsed;
+  struct timevar_time_def now;
 
   if (!TIMEVAR_ENABLE)
     return;
+
+  /* Update timing information in case we're calling this from GDB.  */
+
+  if (fp == 0)
+    fp = stderr;
+
+  /* What time is it?  */
+  get_time (&now);
+
+  /* If the stack isn't empty, attribute the current elapsed time to
+     the old topmost element.  */
+  if (stack)
+    timevar_accumulate (&stack->timevar->elapsed, &start_time, &now);
+
+  /* Reset the start time; from now on, time is attributed to
+     TIMEVAR. */
+  start_time = now;
 
   fprintf (fp, "\nExecution times (seconds)\n");
   for (id = 0; id < TIMEVAR_LAST; ++id)

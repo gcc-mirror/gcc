@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "output.h"
 #include "tm_p.h"
+#include "timevar.h"
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #define ACCUMULATE_OUTGOING_ARGS 0
@@ -1733,7 +1734,7 @@ load_register_parameters (args, num_actuals, call_fusage, flags)
     }
 }
 
-/* Try to integreate function.  See expand_inline_function for documentation
+/* Try to integrate function.  See expand_inline_function for documentation
    about the parameters.  */
 
 static rtx
@@ -1761,9 +1762,13 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
 
   before_call = get_last_insn ();
 
+  timevar_push (TV_INTEGRATION);
+
   temp = expand_inline_function (fndecl, actparms, target,
 				 ignore, type,
 				 structure_value_addr);
+
+  timevar_pop (TV_INTEGRATION);
 
   /* If inlining succeeded, return.  */
   if (temp != (rtx) (HOST_WIDE_INT) - 1)

@@ -13649,8 +13649,7 @@ start_function (declspecs, declarator, attrs, flags)
     begin_stmt_tree (&DECL_SAVED_TREE (decl1));
 
   /* Let the user know we're compiling this function.  */
-  if (processing_template_decl || !building_stmt_tree ())
-    announce_function (decl1);
+  announce_function (decl1);
 
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
