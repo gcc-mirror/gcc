@@ -5,4 +5,4 @@ int foo ()
   return 1;
 }
 
-register char *stack_ptr asm ("%esp");
+register char *stack_ptr __asm ("%esp");
