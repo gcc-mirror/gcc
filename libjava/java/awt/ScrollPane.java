@@ -476,7 +476,7 @@ paramString()
 }
 
   /**
-   * Tells wether or not an event is enabled.
+   * Tells whether or not an event is enabled.
    *
    * @since 1.4
    */
@@ -489,7 +489,7 @@ paramString()
   }
 
   /**
-   * Tells wether or not wheel scrolling is enabled.
+   * Tells whether or not wheel scrolling is enabled.
    *
    * @since 1.4
    */

@@ -1,5 +1,11 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/Component.java,
+	java/awt/ScrollPane.java:
+	Fixed typos.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/dnd/DnDEventMulticaster.java: New file.
 	* java/awt/dnd/DragSource.java
 	(flavorMap): New member variable.
