@@ -153,7 +153,7 @@ area_updated (GdkPixbufLoader *loader,
 }
 
 static void
-closed (GdkPixbufLoader *loader, jobject *decoder)
+closed (GdkPixbufLoader *loader __attribute__((unused)), jobject *decoder)
 {
   gdk_threads_leave ();
   (*gdk_env)->DeleteGlobalRef (gdk_env, *decoder); 
