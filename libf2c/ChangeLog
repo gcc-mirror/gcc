@@ -1,3 +1,7 @@
+1998-09-21  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/Version.c: Update.
+
 Sat Sep  5 23:06:56 1998  Craig Burley  <burley@gnu.org>
 
 	* libI77/sfe.c (e_wdfe): Restore resetting of f__init
