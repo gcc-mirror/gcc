@@ -1429,6 +1429,20 @@ the whole enclosing structure, even if it is unnamed; except that
 (iii) a zero-sized bit-field will be disregarded unless it follows
 another bit-field of non-zero size.  If this hook returns @code{true},
 other macros that control bit-field layout are ignored.
+
+When a bit-field is inserted into a packed record, the whole size
+of the underlying type is used by one or more same-size adjacent
+bit-fields (that is, if its long:3, 32 bits is used in the record,
+and any additional adjacent long bit-fields are packed into the same
+chunk of 32 bits. However, if the size changes, a new field of that
+size is allocated). In an unpacked record, this is the same as using
+alignment, but not equivalent when packing.
+
+If both MS bit-fields and @samp{__attribute__((packed))} are used,
+the latter will take precedence. If @samp{__attribute__((packed))} is
+used on a single field when MS bit-fields are in use, it will take
+precedence for that field, but the alignment of the rest of the structure
+may affect its placement.
 @end deftypefn
 
 @node Type Layout
@@ -8801,6 +8815,21 @@ The pack pragma specifies the maximum alignment (in bytes) of fields
 within a structure, in much the same way as the @samp{__aligned__} and
 @samp{__packed__} @code{__attribute__}s do.  A pack value of zero resets
 the behavior to the default.
+
+A subtlety for Microsoft Visual C/C++ style bit-field packing
+(e.g. -mms-bitfields) for targets that support it:
+When a bit-field is inserted into a packed record, the whole size
+of the underlying type is used by one or more same-size adjacent
+bit-fields (that is, if its long:3, 32 bits is used in the record,
+and any additional adjacent long bit-fields are packed into the same
+chunk of 32 bits. However, if the size changes, a new field of that
+size is allocated).
+
+If both MS bit-fields and @samp{__attribute__((packed))} are used,
+the latter will take precedence. If @samp{__attribute__((packed))} is
+used on a single field when MS bit-fields are in use, it will take
+precedence for that field, but the alignment of the rest of the structure
+may affect its placement.
 
 The weak pragma only works if @code{SUPPORTS_WEAK} and
 @code{ASM_WEAKEN_LABEL} are defined.  If enabled it allows the creation
