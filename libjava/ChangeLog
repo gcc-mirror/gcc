@@ -1,3 +1,32 @@
+2003-03-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/rmi/RMISecurityManager.java
+	(checkAccept): Removed.
+	(checkAccess): Likewise.
+	(checkAccess): Likewise.
+	(checkAwtEventQueueAccess): Likewise.
+	(checkConnect): Likewise.
+	(checkCreateClassLoader): Likewise.
+	(checkDelete): Likewise.
+	(checkExec): Likewise.
+	(checkExit): Likewise.
+	(checkLink): Likewise.
+	(checkListen): Likewise.
+	(checkMemberAccess): Likewise.
+	(checkMulticast): Likewise.
+	(checkPackageAccess): Likewise.
+	(checkPackageDefinition): Likewise.
+	(checkPermission): Likewise.
+	(checkPrintJobAccess): Likewise.
+	(checkPropertiesAccess): Likewise.
+	(checkPropertyAccess): Likewise.
+	(checkRead): Likewise.
+	(checkSecurityAccess): Likewise.
+	(checkSetFactory): Likewise.
+	(checkSystemClipboardAccess): Likewise.
+	(checkTopLevelWindow): Likewise.
+	(checkWrite): Likewise.
+
 2003-03-20  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/FileChannelImpl.java
