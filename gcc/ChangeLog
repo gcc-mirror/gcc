@@ -1,5 +1,8 @@
 2001-05-21  Richard Henderson  <rth@redhat.com>
 
+	* combine.c (subst): Do not substitute for a register as
+	a destination subreg/strict_low_part/zero_extract.
+
 	* combine.c (simplify_comparison): Update op1 after constant
 	extension.
 	* recog.c (const_int_operand): Accept only constants valid
