@@ -1,3 +1,8 @@
+Tue Aug 31 11:51:06 1999  Jim Kingdon  <http://developer.redhat.com>
+
+	* i386.c (output_strlen_unroll): Don't write xops[7]
+	label if it wasn't set.
+
 1999-08-31 12:44 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* cpplib.c (struct directive): Const-ify name pointer and
