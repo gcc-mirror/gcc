@@ -277,10 +277,13 @@ extern char *rs6000_cpu_string;
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD 32
+#define BITS_PER_WORD (TARGET_POWERPC64 ? 64 : 32)
+#define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD 4
+#define UNITS_PER_WORD (TARGET_POWERPC64 ? 8 : 4)
+#define MAX_UNITS_PER_WORD 8
+#define UNITS_PER_FP_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
@@ -434,7 +437,7 @@ extern char *rs6000_cpu_string;
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   (FP_REGNO_P (REGNO)			\
-   ? ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
+   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -447,7 +450,7 @@ extern char *rs6000_cpu_string;
   (FP_REGNO_P (REGNO) ?						\
    (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
     || (GET_MODE_CLASS (MODE) == MODE_INT			\
-	&& GET_MODE_SIZE (MODE) == 2 * UNITS_PER_WORD))		\
+	&& GET_MODE_SIZE (MODE) == UNITS_PER_FP_WORD))		\
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC	\
    : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT	\
 			      && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD) \
@@ -718,7 +721,7 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    except in the FP regs, where a single reg is enough for two words.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
  ((CLASS) == FLOAT_REGS			\
-  ? ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
+  ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* If defined, gives a class of registers that cannot be used as the
@@ -1364,7 +1367,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX 16
+#define MOVE_MAX (TARGET_POWER ? 16 : (TARGET_POWERPC64 ? 8 : 4))
+#define MAX_MOVE_MAX 16
 
 /* Nonzero if access to memory by bytes is no faster than for words.
    Also non-zero if doing byte operations (specifically shifts) in registers
