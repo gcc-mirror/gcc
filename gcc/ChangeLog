@@ -1,3 +1,9 @@
+Mon Jun 12 17:04:17 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* print-rtl.c (print_rtx, case MEM): Use HOST_WIDE_INT_PRINT_DEC
+	to print the alias set.
+	* print-tree.c (print_node, DECL_* nodes and case 't'): Similarly.
+
 2000-06-12  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
         * config/float-vax.h: Add GFLOAT defines.

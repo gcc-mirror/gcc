@@ -425,7 +425,11 @@ print_node (file, prefix, node, indent)
 		 built_in_names[(int) DECL_FUNCTION_CODE (node)]);
 
       if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
-	fprintf (file, " alias set %d", DECL_POINTER_ALIAS_SET (node));
+	{
+	  fprintf (file, " alias set ");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+		   DECL_POINTER_ALIAS_SET (node));
+	}
 
       if (TREE_CODE (node) == FIELD_DECL)
 	{
@@ -518,7 +522,8 @@ print_node (file, prefix, node, indent)
 
       fprintf (file, " align %d", TYPE_ALIGN (node));
       fprintf (file, " symtab %d", TYPE_SYMTAB_ADDRESS (node));
-      fprintf (file, " alias set %d", TYPE_ALIAS_SET (node));
+      fprintf (file, " alias set ");
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, TYPE_ALIAS_SET (node));
 
       print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
 
