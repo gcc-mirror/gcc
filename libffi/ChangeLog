@@ -1,3 +1,11 @@
+2004-11-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Remove no-dependencies.  Add ACLOCAL_AMFLAGS.
+	* acinclude.m4: Delete logic for sincludes.
+	* aclocal.m4, Makefile.in, configure: Regenerate.
+	* include/Makefile: Likewise.
+	* testsuite/Makefile: Likewise.
+
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* src/sparc/ffi.c (ffi_prep_closure): Align doubles and 64-bit integers
