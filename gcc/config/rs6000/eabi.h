@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use the simulator crt0 or mvme and libgloss/newlib libraries if desired */
 #undef  STARTFILE_SPEC
-#define	STARTFILE_SPEC "crti.o \
+#define	STARTFILE_SPEC "crti.o%s \
 %{mmvme: mvme-crt0.o%s} \
 %{msim:  sim-crt0.o%s}"
 
@@ -83,4 +83,4 @@ Boston, MA 02111-1307, USA.  */
 #define	LIBGCC_SPEC "libgcc.a%s"
 
 #undef	ENDFILE_SPEC
-#define	ENDFILE_SPEC "crtn.o"
+#define	ENDFILE_SPEC "crtn.o%s"

@@ -71,6 +71,6 @@ __FIXUP_START__:
 __CTOR_LIST__:
 
 	.section ".dtors","w"
-	.globl	__CTOR_LIST__
-	.type	__CTOR_LIST__,@object
+	.globl	__DTOR_LIST__
+	.type	__DTOR_LIST__,@object
 __DTOR_LIST__:
