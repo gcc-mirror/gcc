@@ -384,18 +384,22 @@ extern void override_options ();
    ??? Kludge this and the next macro for the moment by not doing anything if
    we don't optimize and also if we are writing ECOFF symbols to work around
    a bug in DEC's assembler. */
+/* Aligning past 2**3 wastes insn cache lines, and doesn't buy much 
+   issue-wise on average anyway.  */
 
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
   if (optimize > 0 && write_symbols != SDB_DEBUG)  \
-    ASM_OUTPUT_ALIGN (FILE, 5)
+    ASM_OUTPUT_ALIGN (FILE, 3)
 
 /* This is how to align an instruction for optimal branching.
    On Alpha we'll get better performance by aligning on a quadword
    boundary.  */
+/* Aligning past 2**3 wastes insn cache lines, and doesn't buy much 
+   issue-wise on average anyway.  */
 
 #define ASM_OUTPUT_ALIGN_CODE(FILE)	\
   if (optimize > 0 && write_symbols != SDB_DEBUG) \
-    ASM_OUTPUT_ALIGN ((FILE), 4)
+    ASM_OUTPUT_ALIGN ((FILE), 3)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
@@ -406,8 +410,12 @@ extern void override_options ();
 
 /* Align all constants and variables to at least a word boundary so
    we can pick up pieces of them faster.  */
+/* ??? Only if block-move stuff knows about different source/destination
+   alignment.  */
+#if 0
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
 #define DATA_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
+#endif
 
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.
@@ -1508,6 +1516,12 @@ extern void alpha_init_expanders ();
    in one reasonably fast instruction.  */
 
 #define MOVE_MAX 8
+
+/* Controls how many units are moved by expr.c before resorting to movstr.
+   Without byte/word accesses, we want no more than one; with, several single
+   byte accesses are better.   */
+
+#define MOVE_RATIO  (TARGET_BWX ? 7 : 2)
 
 /* Largest number of bytes of an object that can be placed in a register.
    On the Alpha we have plenty of registers, so use TImode.  */

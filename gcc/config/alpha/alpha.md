@@ -1431,7 +1431,7 @@
   "ext%M2l %r1,%s3,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "extxl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
 			 (match_operand:DI 2 "mode_width_operand" "n")
@@ -1441,7 +1441,7 @@
   "ext%M2l %r1,%3,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "extqh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (match_operand:DI 1 "reg_or_0_operand" "rJ")
@@ -1456,7 +1456,7 @@
   "extqh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "extlh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
@@ -1472,7 +1472,7 @@
   "extlh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "extwh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
 	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
@@ -1538,7 +1538,7 @@
   "insll %1,%s2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "insbl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
@@ -1547,7 +1547,7 @@
   "insbl %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "inswl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
@@ -1556,7 +1556,7 @@
   "inswl %1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn ""
+(define_insn "insll"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
@@ -1565,10 +1565,30 @@
   "insll %1,%2,%0"
   [(set_attr "type" "shift")])
 
+(define_insn "insql"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ashift:DI (match_operand:DI 1 "register_operand" "r")
+		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			      (const_int 3))))]
+  ""
+  "insql %1,%2,%0"
+  [(set_attr "type" "shift")])
+
 ;; We do not include the insXh insns because they are complex to express
 ;; and it does not appear that we would ever want to generate them.
+;;
+;; Since we need them for block moves, though, cop out and use unspec.
 
-(define_insn ""
+(define_insn "insxh"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec [(match_operand:DI 1 "register_operand" "r")
+		 (match_operand:DI 2 "mode_width_operand" "n")
+		 (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 2))]
+  ""
+  "ins%M2h %1,%3,%0"
+  [(set_attr "type" "shift")])
+
+(define_insn "mskxl"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (not:DI (ashift:DI
 			 (match_operand:DI 2 "mode_mask_operand" "n")
@@ -1580,8 +1600,19 @@
   "msk%U2l %r1,%3,%0"
   [(set_attr "type" "shift")])
 
-;; We do not include the mskXh insns because it does not appear we would ever
-;; generate one.
+;; We do not include the mskXh insns because it does not appear we would
+;; ever generate one.
+;;
+;; Again, we do for block moves and we use unspec again.
+
+(define_insn "mskxh"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec [(match_operand:DI 1 "register_operand" "r")
+		 (match_operand:DI 2 "mode_width_operand" "n")
+		 (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 3))]
+  ""
+  "msk%M2h %1,%3,%0"
+  [(set_attr "type" "shift")])
 
 ;; Floating-point operations.  All the double-precision insns can extend
 ;; from single, so indicate that.  The exception are the ones that simply
@@ -4779,6 +4810,122 @@
     }
 
   DONE;
+}")
+
+;; Bit field extract patterns which use ext[wlq][lh]
+
+(define_expand "extv"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extract:DI (match_operand:QI 1 "memory_operand" "")
+			 (match_operand:DI 2 "immediate_operand" "")
+			 (match_operand:DI 3 "immediate_operand" "")))]
+  ""
+  "
+{
+  /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
+  if (INTVAL (operands[3]) % 8 != 0
+      || (INTVAL (operands[2]) != 16
+	  && INTVAL (operands[2]) != 32
+	  && INTVAL (operands[2]) != 64))
+    FAIL;
+
+  /* From mips.md: extract_bit_field doesn't verify that our source
+     matches the predicate, so we force it to be a MEM here.  */
+  if (GET_CODE (operands[1]) != MEM)
+    FAIL;
+
+  alpha_expand_unaligned_load (operands[0], operands[1],
+			       INTVAL (operands[2]) / 8,
+			       INTVAL (operands[3]) / 8, 1);
+  DONE;
+}")
+
+(define_expand "extzv"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extract:DI (match_operand:QI 1 "memory_operand" "")
+			 (match_operand:DI 2 "immediate_operand" "")
+			 (match_operand:DI 3 "immediate_operand" "")))]
+  ""
+  "
+{
+  /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
+  if (INTVAL (operands[3]) % 8 != 0
+      || (INTVAL (operands[2]) != 16
+	  && INTVAL (operands[2]) != 32
+	  && INTVAL (operands[2]) != 64))
+    FAIL;
+
+  /* From mips.md: extract_bit_field doesn't verify that our source
+     matches the predicate, so we force it to be a MEM here.  */
+  if (GET_CODE (operands[1]) != MEM)
+    FAIL;
+
+  alpha_expand_unaligned_load (operands[0], operands[1],
+			       INTVAL (operands[2]) / 8,
+			       INTVAL (operands[3]) / 8, 0);
+  DONE;
+}")
+
+(define_expand "insv"
+  [(set (zero_extract:DI (match_operand:QI 0 "memory_operand" "")
+			 (match_operand:DI 1 "immediate_operand" "")
+			 (match_operand:DI 2 "immediate_operand" ""))
+	(match_operand:DI 3 "register_operand" ""))]
+  ""
+  "
+{
+  /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
+  if (INTVAL (operands[2]) % 8 != 0
+      || (INTVAL (operands[1]) != 16
+	  && INTVAL (operands[1]) != 32
+	  && INTVAL (operands[1]) != 64))
+    FAIL;
+
+  /* From mips.md: store_bit_field doesn't verify that our source
+     matches the predicate, so we force it to be a MEM here.  */
+  if (GET_CODE (operands[0]) != MEM)
+    FAIL;
+
+  alpha_expand_unaligned_store (operands[0], operands[3],
+			        INTVAL (operands[1]) / 8,
+			        INTVAL (operands[2]) / 8);
+  DONE;
+}")
+
+
+
+;; Block move/clear, see alpha.c for more details.
+;; Argument 0 is the destination
+;; Argument 1 is the source
+;; Argument 2 is the length
+;; Argument 3 is the alignment
+
+(define_expand "movstrqi"
+  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
+		   (match_operand:BLK 1 "general_operand" ""))
+	      (use (match_operand:DI 2 "immediate_operand" ""))
+	      (use (match_operand:DI 3 "immediate_operand" ""))])]
+  ""
+  "
+{
+  if (alpha_expand_block_move (operands))
+    DONE;
+  else
+    FAIL;
+}")
+
+(define_expand "clrstrqi"
+  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
+		   (const_int 0))
+	      (use (match_operand:DI 1 "immediate_operand" ""))
+	      (use (match_operand:DI 2 "immediate_operand" ""))])]
+  ""
+  "
+{
+  if (alpha_expand_block_clear (operands))
+    DONE;
+  else
+    FAIL;
 }")
 
 ;; Subroutine of stack space allocation.  Perform a stack probe.

@@ -3353,7 +3353,7 @@ init_decl_processing ()
   builtin_function ("__builtin_memcmp", int_ftype_cptr_cptr_sizet,
 		    BUILT_IN_MEMCMP, "memcmp");
   builtin_function ("__builtin_memset", memset_ftype,
-		    BUILT_IN_MEMSET, NULL_PTR);
+		    BUILT_IN_MEMSET, "memset");
   builtin_function ("__builtin_strcmp", int_ftype_string_string,
 		    BUILT_IN_STRCMP, "strcmp");
   builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
@@ -3450,8 +3450,6 @@ init_decl_processing ()
 		    BUILT_IN_FMOD, NULL_PTR);
   builtin_function ("__builtin_frem", double_ftype_double_double,
 		    BUILT_IN_FREM, NULL_PTR);
-  builtin_function ("__builtin_memset", ptr_ftype_ptr_int_int,
-		    BUILT_IN_MEMSET, NULL_PTR);
   builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
 		    NULL_PTR);
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,

@@ -1,3 +1,26 @@
+Fri Jan  2 04:34:14 1998  Richard Henderson  <rth@cygnus.com>
+
+	* c-decl.c (init_decl_processing): Provide proper fallback symbol
+	for __builtin_memset.
+	* expr.c (expand_builtin) [MEMSET]: Arg 3 type code is INTEGER_TYPE
+	not INTEGER_CST.  Assert arg 3 is a constant.
+
+	* alpha.c (mode_width_operand): Accept 64-bit modes.
+	(mode_mask_operand): Likewise.
+	(print_operand): Likewise for 'M' and 'U' codes.
+	(alpha_expand_unaligned_load): New function.
+	(alpha_expand_unaligned_store): Likewise.
+	(alpha_expand_unaligned_load_words): Likewise.
+	(alpha_expand_unaligned_store_words): Likewise.
+	(alpha_expand_block_move): Likewise.
+	(alpha_expand_block_clear): Likewise.
+	* alpha.h (MOVE_RATIO): New define.
+	* alpha.md (extxl, ext*h, ins*l, mskxl): Name them.
+	(insql, insxh, mskxh, extv, extzv, insv, movstrqi, clrstrqi): New.
+
+	* alpha.h (ASM_OUTPUT_LOOP_ALIGN, ASM_OUTPUT_ALIGN_CODE): Set to 3.
+	(CONSTANT_ALIGNMENT, DATA_ALIGNMENT): Disable.
+
 Thu Jan  1 15:40:15 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Put parenthesis around TARGET_CPU_DEFAULT's value.
