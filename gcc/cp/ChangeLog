@@ -1,5 +1,9 @@
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10549
+	* class.c (layout_class_type): Mark overlong bitfields as having
+	the maximum size permitted by their type, after layout.
+
 	PR c++/10527
 	* error.c (dump_expr): Correctly handling of NEW_EXPR.4
 

@@ -1,5 +1,8 @@
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10549
+	* g++.dg/other/bitfield1.C: New test.
+
 	PR c++/10527
 	* g++.dg/init/new7.C: New test.
 
