@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -2351,6 +2351,24 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      return SHIFT_SPECIAL;
 	    }
 	}
+      else if (count == 8 && !TARGET_H8300)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      *assembler_p = "mov.w\t%e0,%f4\n\tmov.b\t%s4,%t4\n\tmov.b\t%t0,%s4\n\tmov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f4,%e0";
+	      *cc_valid_p = 0;
+	      return SHIFT_SPECIAL;
+	    case SHIFT_LSHIFTRT:
+	      *assembler_p = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\textu.w\t%f4\n\tmov.w\t%f4,%e0";
+	      *cc_valid_p = 0;
+	      return SHIFT_SPECIAL;
+	    case SHIFT_ASHIFTRT:
+	      *assembler_p = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\texts.w\t%f4\n\tmov.w\t%f4,%e0";
+	      *cc_valid_p = 0;
+	      return SHIFT_SPECIAL;
+	    }
+	}
       else if (count == 16)
 	{
 	  switch (shift_type)
@@ -2458,6 +2476,24 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      return SHIFT_SPECIAL;
 	    case SHIFT_ASHIFTRT:
 	      *assembler_p = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t#2,%S0";
+	      *cc_valid_p = 0;
+	      return SHIFT_SPECIAL;
+	    }
+	}
+      else if (count == 24 && !TARGET_H8300)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      *assembler_p = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
+	      *cc_valid_p = 0;
+	      return SHIFT_SPECIAL;
+	    case SHIFT_LSHIFTRT:
+	      *assembler_p = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
+	      *cc_valid_p = 0;
+	      return SHIFT_SPECIAL;
+	    case SHIFT_ASHIFTRT:
+	      *assembler_p = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
 	      *cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
