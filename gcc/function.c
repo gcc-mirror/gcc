@@ -2535,7 +2535,7 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
   if (GET_CODE (entry_parm) == PARALLEL
       && data->nominal_mode != BLKmode
       && XVECLEN (entry_parm, 0) > 1
-      && optimize)
+      && use_register_for_decl (parm))
     {
       rtx parmreg = gen_reg_rtx (data->nominal_mode);
 

@@ -1,3 +1,9 @@
+2004-09-09  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17367
+	* function.c (assign_parm_setup_block): Only put PARALLELs into
+	a register if use_register_for_decl.
+
 2004-09-09  Eric Christopher  <echristo@redhat.com>
 
 	* ra-colorize.c (reset_lists): Move variable declaration inside
