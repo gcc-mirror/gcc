@@ -28,17 +28,27 @@ GLIBCPP_3.2 {
     # All but the last are terminated with a semicolon.
     extern "C++"
     {
-      std::[A-Za-k]*;
+      std::[A-Za-b]*;
+      std::c[a-n]*;
+      std::co[a-c]*;
+      std::codecvt_byname*;
+      std::codecvt::[A-Za-b]*;
+      std::codecvt::[A-Zd-z]*;
+      std::codecvt_c;
+      std::codecvt_w;
+      std::co[e-z]*;
+      std::c[p-z]*;
+      std::c_[a-z]*;
+      std::[A-Zd-k]*;
       std::length_error*;
       std::logic_error*;
       std::locale::[A-Za-z]*;
-      std::locale::_Impl*;
+      std::locale::_[A-Ra-z]*;
       std::locale::_S_classic;
       std::locale::_S_global;
       std::locale::_S_num_categories;
-      std::locale::facet*;
-      std::locale::id*;
-      std::locale::locale*;
+      std::locale::_S_normalize_category*;
+      std::locale::_[T-Za-z]*;
       std::[A-Zm-z]*;
       std::__throw_*;
       std::__basic_file*;
@@ -53,10 +63,32 @@ GLIBCPP_3.2 {
 
     # Names not in an 'extern' block are mangled names.
 
-    _ZNSt6localeC1E*;
-    _ZNSt6locale11_M_coalesceERKS_S1_j;
-    _ZNSt6locale21_S_normalize_categoryEj;
+    # std::locale destructors
     _ZNSt6localeD*;
+	 
+    # std::codecvt<char> members.
+    _ZNKSt7codecvtIcc11__mbstate_tE*;
+    # std::codecvt<char>::~codecvt
+    _ZNSt7codecvtIcc11__mbstate_tED*;
+    # std::codecvt<char>::codecvt default
+    _ZNSt7codecvtIcc11__mbstate_tEC1Ej;
+    _ZNSt7codecvtIcc11__mbstate_tEC2Ej;
+    # std::codecvt<char>::id
+    _ZNSt7codecvtIcc11__mbstate_tE2idE;
+
+    # std::codecvt<wchar_t> members.
+    _ZNKSt7codecvtIwc11__mbstate_tE*;
+    # std::codecvt<wchar_t>::~codecvt
+    _ZNSt7codecvtIwc11__mbstate_tED*;
+    # std::codecvt<wchar_t>::codecvt default
+    _ZNSt7codecvtIwc11__mbstate_tEC1Ej;
+    _ZNSt7codecvtIwc11__mbstate_tEC2Ej;
+    # std::codecvt<wchar_t>::id
+    _ZNSt7codecvtIwc11__mbstate_tE2idE;
+
+     # std::use_facet<codecvt>
+    _ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale;
+    _ZSt9use_facetISt7codecvtIwc11__mbstate_tEERKT_RKSt6locale;
 
     # std::has_facet*
     _ZSt9has_facet*;
