@@ -7,6 +7,11 @@
 	* testsuite/27_io/filebuf.cc (filebuf): Use _M_buf_size_opt
 	instead of _M_buf_size.
 
+2000-05-04  Branko Cibej  <branko.cibej@hermes.si>
+
+        * src/complex_io.cc: Don't instantiate inserters and extractors
+        for wide-character streams unless _GLIBCPP_USE_WCHAR_T is defined.
+
 2000-05-03  Phil Edwards  <pme@sourceware.cygnus.com>
             Felix Natter <fnatter@gmx.net>
 

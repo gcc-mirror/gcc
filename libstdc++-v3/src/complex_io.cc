@@ -92,65 +92,69 @@ namespace std
 
 
   template
-    basic_istream< char, char_traits<char> >&
+    basic_istream<char, char_traits<char> >&
     operator>>(basic_istream< char, char_traits<char> >&,
                complex<float>&);
 
   template
-    basic_ostream< char, char_traits<char> >&
+    basic_ostream<char, char_traits<char> >&
     operator<<(basic_ostream< char, char_traits<char> >&,
                const complex<float>&);
 
   template
-    basic_istream< char, char_traits<char> >&
+    basic_istream<char, char_traits<char> >&
     operator>>(basic_istream< char, char_traits<char> >&,
                complex<double>&);
 
   template
-    basic_ostream< char, char_traits<char> >&
+    basic_ostream<char, char_traits<char> >&
     operator<<(basic_ostream< char, char_traits<char> >&,
                const complex<double>&);
 
   template
-    basic_istream< char, char_traits<char> >&
+    basic_istream<char, char_traits<char> >&
     operator>>(basic_istream< char, char_traits<char> >&,
                complex<long double>&);
 
   template
-    basic_ostream< char, char_traits<char> >&
+    basic_ostream<char, char_traits<char> >&
     operator<<(basic_ostream< char, char_traits<char> >&,
                const complex<long double>&);
 
+#ifdef _GLIBCPP_USE_WCHAR_T
   template
-    basic_istream< wchar_t, char_traits<wchar_t> >&
+    basic_istream<wchar_t, char_traits<wchar_t> >&
     operator>>(basic_istream< wchar_t, char_traits<wchar_t> >&,
                complex<float>&);
 
   template
-    basic_ostream< wchar_t, char_traits<wchar_t> >&
+    basic_ostream<wchar_t, char_traits<wchar_t> >&
     operator<<(basic_ostream< wchar_t, char_traits<wchar_t> >&,
                const complex<float>&);
 
   template
-    basic_istream< wchar_t, char_traits<wchar_t> >&
+    basic_istream<wchar_t, char_traits<wchar_t> >&
     operator>>(basic_istream< wchar_t, char_traits<wchar_t> >&,
                complex<double>&);
 
   template
-    basic_ostream< wchar_t, char_traits<wchar_t> >&
+    basic_ostream<wchar_t, char_traits<wchar_t> >&
     operator<<(basic_ostream< wchar_t, char_traits<wchar_t> >&,
                const complex<double>&);
 
   template
-    basic_istream< wchar_t, char_traits<wchar_t> >&
+    basic_istream<wchar_t, char_traits<wchar_t> >&
     operator>>(basic_istream< wchar_t, char_traits<wchar_t> >&,
                complex<long double>&);
 
   template
-    basic_ostream< wchar_t, char_traits<wchar_t> >&
+    basic_ostream<wchar_t, char_traits<wchar_t> >&
     operator<<(basic_ostream< wchar_t, char_traits<wchar_t> >&,
                const complex<long double>&);
+#endif //_GLIBCPP_USE_WCHAR_T
 }
+
+
 
 
 
