@@ -150,26 +150,33 @@ extern struct rtx_def *mips_function_value ();
 	      && ! TARGET_SOFT_FLOAT					\
 	      && (CUM).fp_arg_words < MAX_ARGS_IN_REGISTERS - mips_fp_off) \
 	    {								\
+	      enum machine_mode mode = TARGET_SINGLE_FLOAT ? SFmode : DFmode; \
+	      int size = GET_MODE_SIZE (mode);				\
 	      int off;							\
 	      int i;							\
 	      /* We can't use move_block_from_reg, because it will use	\
                  the wrong mode.  */					\
-	      off = (- (mips_save_gp_regs * UNITS_PER_WORD)		\
-		     - (mips_save_fp_regs * UNITS_PER_FPREG));		\
+	      off = - (mips_save_gp_regs * UNITS_PER_WORD);		\
+	      if (! TARGET_SINGLE_FLOAT)				\
+	        off &= ~ 7;						\
+	      if (! TARGET_FLOAT64 || TARGET_SINGLE_FLOAT)		\
+		off -= (mips_save_fp_regs / 2) * size;			\
+	      else							\
+		off -= mips_save_fp_regs * size;			\
 	      for (i = 0; i < mips_save_fp_regs; i++)			\
 		{							\
 		  rtx tem =						\
-		    gen_rtx (MEM, DFmode,				\
+		    gen_rtx (MEM, mode,					\
 			     plus_constant (virtual_incoming_args_rtx,	\
-					    (off			\
-					     + i * GET_MODE_SIZE (DFmode)))); \
+					    off));			\
 		  emit_move_insn (tem,					\
-				  gen_rtx (REG, DFmode,			\
+				  gen_rtx (REG, mode,			\
 					   ((CUM).fp_arg_words		\
 					    + FP_ARG_FIRST		\
 					    + i				\
 					    + mips_fp_off)));		\
-		  if (! TARGET_FLOAT64)					\
+		  off += size;						\
+		  if (! TARGET_FLOAT64 || TARGET_SINGLE_FLOAT)		\
 		    ++i;						\
 		}							\
 	    }								\
