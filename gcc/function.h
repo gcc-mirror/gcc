@@ -95,7 +95,7 @@ struct function
   rtx save_expr_regs;
   rtx stack_slot_list;
   rtx parm_birth_insn;
-  int frame_offset;
+  HOST_WIDE_INT frame_offset;
   rtx tail_recursion_label;
   rtx tail_recursion_reentry;
   rtx internal_arg_pointer;
@@ -222,6 +222,11 @@ extern struct function *outer_function_chain;
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.  */
 extern tree *identify_blocks PROTO((tree, rtx));
+
+/* Return size needed for stack frame based on slots so far allocated.
+   This size counts from zero.  It is not rounded to STACK_BOUNDARY;
+   the caller may have to do that.  */
+extern HOST_WIDE_INT get_frame_size PROTO((void));
 
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
