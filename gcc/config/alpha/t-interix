@@ -8,3 +8,9 @@ USER_H=$(LANG_EXTRA_HEADERS)
 INSTALL_ASSERT_H=
 
 
+
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIBGCC1 = libgcc1-asm.a
+
+LIB1ASMSRC = alpha/lib1funcs.asm
+LIB1ASMFUNCS = _divqu _divq _divlu _divl _remqu _remq _remlu _reml
