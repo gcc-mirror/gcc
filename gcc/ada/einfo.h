@@ -450,6 +450,7 @@
    INLINE B Is_Statically_Allocated            (E Id);
    INLINE B Is_Tag                             (E Id);
    INLINE B Is_Tagged_Type                     (E Id);
+   INLINE B Is_Thread_Body                     (E Id);
    INLINE B Is_True_Constant                   (E Id);
    INLINE B Is_Unchecked_Union                 (E Id);
    INLINE B Is_Unsigned_Type                   (E Id);
@@ -1437,6 +1438,9 @@
 
    INLINE B Is_Tagged_Type (E Id)
       { return Flag55 (Id); }
+
+   INLINE B Is_Thread_Body (E Id)
+      { return Flag77 (Id); }
 
    INLINE B Is_True_Constant (E Id)
       { return Flag163 (Id); }

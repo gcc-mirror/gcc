@@ -326,21 +326,22 @@ extern unsigned char Get_Pragma_Id (int);
 #define  Pragma_Task_Info                   124
 #define  Pragma_Task_Name                   125
 #define  Pragma_Task_Storage                126
-#define  Pragma_Time_Slice                  127
-#define  Pragma_Title                       128
-#define  Pragma_Unchecked_Union             129
-#define  Pragma_Unimplemented_Unit          130
-#define  Pragma_Unreferenced                131
-#define  Pragma_Unreserve_All_Interrupts    132
-#define  Pragma_Volatile                    133
-#define  Pragma_Volatile_Components         134
-#define  Pragma_Weak_External               135
+#define  Pragma_Thread_Body                 127
+#define  Pragma_Time_Slice                  128
+#define  Pragma_Title                       129
+#define  Pragma_Unchecked_Union             130
+#define  Pragma_Unimplemented_Unit          131
+#define  Pragma_Unreferenced                132
+#define  Pragma_Unreserve_All_Interrupts    133
+#define  Pragma_Volatile                    134
+#define  Pragma_Volatile_Components         135
+#define  Pragma_Weak_External               136
 
 /* The following are deliberately out of alphabetical order, see Snames */
 
-#define  Pragma_AST_Entry                   136
-#define  Pragma_Storage_Size                137
-#define  Pragma_Storage_Unit                138
+#define  Pragma_AST_Entry                   137
+#define  Pragma_Storage_Size                138
+#define  Pragma_Storage_Unit                139
 
 /* Define the numeric values for the conventions.  */
 

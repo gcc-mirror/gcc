@@ -3315,7 +3315,6 @@ package body Sem_Res is
       --  dereference made explicit in Analyze_Call.
 
       if Ekind (Etype (Subp)) = E_Subprogram_Type then
-
          if not Is_Overloaded (Subp) then
             Nam := Etype (Subp);
 
@@ -3421,6 +3420,12 @@ package body Sem_Res is
                end if;
             end loop;
          end;
+      end if;
+
+      --  Cannot call thread body directly
+
+      if Is_Thread_Body (Nam) then
+         Error_Msg_N ("cannot call thread body directly", N);
       end if;
 
       --  If the subprogram is not global, then kill all checks. This is

@@ -9082,6 +9082,80 @@ package body Sem_Prag is
             end if;
          end Task_Storage;
 
+         -----------------
+         -- Thread_Body --
+         -----------------
+
+         --  pragma Thread_Body
+         --    (  [Entity =>]               LOCAL_NAME
+         --     [,[Secondary_Stack_Size =>] static_integer_EXPRESSION]);
+
+         when Pragma_Thread_Body => Thread_Body : declare
+            Id : Node_Id;
+            SS : Node_Id;
+            E  : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (2);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Id := Expression (Arg1);
+
+            if not Is_Entity_Name (Id)
+              or else not Is_Subprogram (Entity (Id))
+            then
+               Error_Pragma_Arg ("subprogram name required", Arg1);
+            end if;
+
+            E := Entity (Id);
+
+            --  Go to renamed subprogram if present, since Thread_Body applies
+            --  to the actual renamed entity, not to the renaming entity.
+
+            if Present (Alias (E))
+              and then Nkind (Parent (Declaration_Node (E))) =
+                         N_Subprogram_Renaming_Declaration
+            then
+               E := Alias (E);
+            end if;
+
+            --  Various error checks
+
+            if Nkind (Parent (Declaration_Node (E))) = N_Subprogram_Body then
+               Error_Pragma
+                 ("pragma% requires separate spec and must come before body");
+
+            elsif Rep_Item_Too_Early (E, N)
+                 or else
+               Rep_Item_Too_Late (E, N)
+            then
+               raise Pragma_Exit;
+
+            elsif Is_Thread_Body (E) then
+               Error_Pragma_Arg
+                 ("only one thread body pragma allowed", Arg1);
+
+            elsif Present (Homonym (E))
+              and then Scope (Homonym (E)) = Current_Scope
+            then
+               Error_Pragma_Arg
+                 ("thread body subprogram must not be overloaded", Arg1);
+            end if;
+
+            Set_Is_Thread_Body (E);
+
+            --  Deal with secondary stack argument
+
+            if Arg_Count = 2 then
+               Check_Optional_Identifier (Arg2, Name_Secondary_Stack_Size);
+               SS := Expression (Arg2);
+               Analyze_And_Resolve (SS, Any_Integer);
+            end if;
+         end Thread_Body;
+
          ----------------
          -- Time_Slice --
          ----------------
@@ -9812,6 +9886,7 @@ package body Sem_Prag is
       Pragma_Task_Info                    => -1,
       Pragma_Task_Name                    => -1,
       Pragma_Task_Storage                 =>  0,
+      Pragma_Thread_Body                  => +2,
       Pragma_Time_Slice                   => -1,
       Pragma_Title                        => -1,
       Pragma_Unchecked_Union              => -1,

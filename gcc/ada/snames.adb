@@ -62,8 +62,8 @@ package body Snames is
      "off#" &
      "space#" &
      "time#" &
-     "_alignment#" &
      "_abort_signal#" &
+     "_alignment#" &
      "_assign#" &
      "_chain#" &
      "_clean#" &
@@ -77,6 +77,8 @@ package body Snames is
      "_master#" &
      "_object#" &
      "_priority#" &
+     "_process_atsd#" &
+     "_secondary_stack#" &
      "_service#" &
      "_size#" &
      "_tags#" &
@@ -274,6 +276,7 @@ package body Snames is
      "task_info#" &
      "task_name#" &
      "task_storage#" &
+     "thread_body#" &
      "time_slice#" &
      "title#" &
      "unchecked_union#" &
@@ -336,6 +339,7 @@ package body Snames is
      "result_type#" &
      "runtime#" &
      "sb#" &
+     "secondary_stack_size#" &
      "section#" &
      "semaphore#" &
      "spec_file_name#" &

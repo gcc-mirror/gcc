@@ -298,6 +298,7 @@ package Rtsfind is
       System_String_Ops_Concat_5,
       System_Task_Info,
       System_Tasking,
+      System_Threads,
       System_Unsigned_Types,
       System_Val_Bool,
       System_Val_Char,
@@ -1034,6 +1035,7 @@ package Rtsfind is
      RE_IS_Ilf,                          -- System.Scalar_Values
      RE_IS_Ill,                          -- System.Scalar_Values
 
+     RE_Default_Secondary_Stack_Size,    -- System.Secondary_Stack
      RE_Mark_Id,                         -- System.Secondary_Stack
      RE_SS_Allocate,                     -- System.Secondary_Stack
      RE_SS_Pool,                         -- System.Secondary_Stack
@@ -1163,6 +1165,11 @@ package Rtsfind is
      RE_Get_Current_Excep,               -- System.Soft_Links
      RE_Get_GNAT_Exception,              -- System.Soft_Links
      RE_Update_Exception,                -- System.Soft_Links
+
+     RE_ATSD,                            -- System.Threads
+     RE_Thread_Body_Enter,               -- System.Threads
+     RE_Thread_Body_Exceptional_Exit,    -- System.Threads
+     RE_Thread_Body_Leave,               -- System.Threads
 
      RE_Bits_1,                          -- System.Unsigned_Types
      RE_Bits_2,                          -- System.Unsigned_Types
@@ -1968,6 +1975,7 @@ package Rtsfind is
      RE_IS_Ilf                           => System_Scalar_Values,
      RE_IS_Ill                           => System_Scalar_Values,
 
+     RE_Default_Secondary_Stack_Size     => System_Secondary_Stack,
      RE_Mark_Id                          => System_Secondary_Stack,
      RE_SS_Allocate                      => System_Secondary_Stack,
      RE_SS_Mark                          => System_Secondary_Stack,
@@ -2097,6 +2105,11 @@ package Rtsfind is
      RE_Get_Current_Excep                => System_Soft_Links,
      RE_Get_GNAT_Exception               => System_Soft_Links,
      RE_Update_Exception                 => System_Soft_Links,
+
+     RE_ATSD                             => System_Threads,
+     RE_Thread_Body_Enter                => System_Threads,
+     RE_Thread_Body_Exceptional_Exit     => System_Threads,
+     RE_Thread_Body_Leave                => System_Threads,
 
      RE_Bits_1                           => System_Unsigned_Types,
      RE_Bits_2                           => System_Unsigned_Types,

@@ -3713,7 +3713,8 @@ package body Exp_Ch4 is
                   exit when Chars (Node (Prim)) = Name_Op_Eq
                     and then Etype (First_Formal (Node (Prim))) =
                              Etype (Next_Formal (First_Formal (Node (Prim))))
-                    and then Etype (Node (Prim)) = Standard_Boolean;
+                    and then
+                      Base_Type (Etype (Node (Prim))) = Standard_Boolean;
 
                   Next_Elmt (Prim);
                   pragma Assert (Present (Prim));

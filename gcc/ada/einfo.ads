@@ -2276,6 +2276,10 @@ package Einfo is
 --    Is_Task_Type (synthesized)
 --       Applies to all entities, true for task types and subtypes
 
+--    Is_Thread_Body (Flag77)
+--       Applies to subprogram entities. Set if a valid Thread_Body pragma
+--       applies to this subprogram, which is thus a thread body.
+
 --    Is_True_Constant (Flag163)
 --       This flag is set in constants and variables which have an initial
 --       value specified but which are never assigned, partially or in the
@@ -4252,6 +4256,7 @@ package Einfo is
    --    Is_Overriding_Operation       (Flag39)   (non-generic case only)
    --    Is_Private_Descendant         (Flag53)
    --    Is_Pure                       (Flag44)
+   --    Is_Thread_Body                (Flag77)   (non-generic case only)
    --    Is_Visible_Child_Unit         (Flag116)
    --    Needs_No_Actuals              (Flag22)
    --    Return_Present                (Flag54)
@@ -4496,6 +4501,7 @@ package Einfo is
    --    Is_Overriding_Operation       (Flag39)   (non-generic case only)
    --    Is_Private_Descendant         (Flag53)
    --    Is_Pure                       (Flag44)
+   --    Is_Thread_Body                (Flag77)   (non-generic case only)
    --    Is_Valued_Procedure           (Flag127)
    --    Is_Visible_Child_Unit         (Flag116)
    --    Needs_No_Actuals              (Flag22)
@@ -5117,6 +5123,7 @@ package Einfo is
    function Is_Statically_Allocated            (Id : E) return B;
    function Is_Tag                             (Id : E) return B;
    function Is_Tagged_Type                     (Id : E) return B;
+   function Is_Thread_Body                     (Id : E) return B;
    function Is_True_Constant                   (Id : E) return B;
    function Is_Unchecked_Union                 (Id : E) return B;
    function Is_Unsigned_Type                   (Id : E) return B;
@@ -5589,6 +5596,7 @@ package Einfo is
    procedure Set_Is_Statically_Allocated       (Id : E; V : B := True);
    procedure Set_Is_Tag                        (Id : E; V : B := True);
    procedure Set_Is_Tagged_Type                (Id : E; V : B := True);
+   procedure Set_Is_Thread_Body                (Id : E; V : B := True);
    procedure Set_Is_True_Constant              (Id : E; V : B := True);
    procedure Set_Is_Unchecked_Union            (Id : E; V : B := True);
    procedure Set_Is_Unsigned_Type              (Id : E; V : B := True);
@@ -6111,6 +6119,7 @@ package Einfo is
    pragma Inline (Is_Subprogram);
    pragma Inline (Is_Tag);
    pragma Inline (Is_Tagged_Type);
+   pragma Inline (Is_Thread_Body);
    pragma Inline (Is_True_Constant);
    pragma Inline (Is_Task_Type);
    pragma Inline (Is_Type);
@@ -6418,6 +6427,7 @@ package Einfo is
    pragma Inline (Set_Is_Statically_Allocated);
    pragma Inline (Set_Is_Tag);
    pragma Inline (Set_Is_Tagged_Type);
+   pragma Inline (Set_Is_Thread_Body);
    pragma Inline (Set_Is_True_Constant);
    pragma Inline (Set_Is_Unchecked_Union);
    pragma Inline (Set_Is_Unsigned_Type);

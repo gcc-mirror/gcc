@@ -570,7 +570,7 @@ extern tree create_param_decl (tree, tree, int);
 
    INLINE_FLAG, PUBLIC_FLAG, and EXTERN_FLAG are used to set the appropriate
    fields in the FUNCTION_DECL.  */
-extern tree create_subprog_decl (tree, tree, tree, tree, int, int, int, 
+extern tree create_subprog_decl (tree, tree, tree, tree, int, int, int,
 				 struct attrib *);
 
 /* Returns a LABEL_DECL node for LABEL_NAME.  */
@@ -720,6 +720,25 @@ extern tree fill_vms_descriptor (tree, Entity_Id);
 /* Indicate that we need to make the address of EXPR_NODE and it therefore
    should not be allocated in a register.  Return true if successful.  */
 extern bool gnat_mark_addressable (tree);
+
+/* This function is called by the front end to enumerate all the supported
+   modes for the machine.  We pass a function which is called back with
+   the following integer parameters:
+
+   FLOAT_P	nonzero if this represents a floating-point mode
+   COMPLEX_P	nonzero is this represents a complex mode
+   COUNT	count of number of items, nonzero for vector mode
+   PRECISION	number of bits in data representation
+   MANTISSA	number of bits in mantissa, if FP and known, else zero.
+   SIZE		number of bits used to store data
+   ALIGN	number of bits to which mode is aligned.  */
+extern void enumerate_modes (void (*f) (int, int, int, int, int, int,
+					unsigned int));
+
+/* These are temporary function to deal with recent GCC changes related to
+   FP type sizes and precisions.  */
+extern int fp_prec_to_size (int);
+extern int fp_size_to_prec (int);
 
 /* These functions return the basic data type sizes and related parameters
    about the target machine.  */

@@ -302,6 +302,7 @@ package body Einfo is
    --    Is_CPP_Class                   Flag74
    --    Has_Non_Standard_Rep           Flag75
    --    Is_Constructor                 Flag76
+   --    Is_Thread_Body                 Flag77
    --    Is_Tag                         Flag78
    --    Has_All_Calls_Remote           Flag79
    --    Is_Constr_Subt_For_U_Nominal   Flag80
@@ -420,7 +421,6 @@ package body Einfo is
 
    --  Remaining flags are currently unused and available
 
-   --    (unused)                       Flag77
    --    (unused)                       Flag136
    --    (unused)                       Flag183
 
@@ -1639,6 +1639,11 @@ package body Einfo is
    begin
       return Flag55 (Id);
    end Is_Tagged_Type;
+
+   function Is_Thread_Body (Id : E) return B is
+   begin
+      return Flag77 (Id);
+   end Is_Thread_Body;
 
    function Is_True_Constant (Id : E) return B is
    begin
@@ -3580,6 +3585,11 @@ package body Einfo is
    begin
       Set_Flag55 (Id, V);
    end Set_Is_Tagged_Type;
+
+   procedure Set_Is_Thread_Body (Id : E; V : B := True) is
+   begin
+      Set_Flag77 (Id, V);
+   end Set_Is_Thread_Body;
 
    procedure Set_Is_True_Constant (Id : E; V : B := True) is
    begin
@@ -6199,6 +6209,7 @@ package body Einfo is
       W ("Is_Statically_Allocated",       Flag28  (Id));
       W ("Is_Tag",                        Flag78  (Id));
       W ("Is_Tagged_Type",                Flag55  (Id));
+      W ("Is_Thread_Body",                Flag77  (Id));
       W ("Is_True_Constant",              Flag163 (Id));
       W ("Is_Unchecked_Union",            Flag117 (Id));
       W ("Is_Unsigned_Type",              Flag144 (Id));

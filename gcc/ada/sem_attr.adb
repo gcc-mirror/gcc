@@ -372,8 +372,8 @@ package body Sem_Attr is
          ----------------------------------
 
          procedure Build_Access_Subprogram_Type (P : Node_Id) is
-            Index    : Interp_Index;
-            It       : Interp;
+            Index : Interp_Index;
+            It    : Interp;
 
             function Get_Kind (E : Entity_Id) return Entity_Kind;
             --  Distinguish between access to regular and protected
@@ -395,6 +395,10 @@ package body Sem_Attr is
          --  Start of processing for Build_Access_Subprogram_Type
 
          begin
+            --  In the case of an access to subprogram, use the name of the
+            --  subprogram itself as the designated type. Type-checking in
+            --  this case compares the signatures of the designated types.
+
             if not Is_Overloaded (P) then
                Acc_Type :=
                  New_Internal_Entity
@@ -408,7 +412,6 @@ package body Sem_Attr is
                Set_Etype (N, Any_Type);
 
                while Present (It.Nam) loop
-
                   if not Is_Intrinsic_Subprogram (It.Nam) then
                      Acc_Type :=
                        New_Internal_Entity
@@ -437,16 +440,19 @@ package body Sem_Attr is
               ("prefix of % attribute cannot be enumeration literal", P);
          end if;
 
-         --  In the case of an access to subprogram, use the name of the
-         --  subprogram itself as the designated type. Type-checking in
-         --  this case compares the signatures of the designated types.
+         --  Case of access to subprogram
 
          if Is_Entity_Name (P)
            and then Is_Overloadable (Entity (P))
          then
+            --  Not allowed for nested subprograms if No_Implicit_Dynamic_Code
+            --  restriction set (since in general a trampoline is required).
+
             if not Is_Library_Level_Entity (Entity (P)) then
                Check_Restriction (No_Implicit_Dynamic_Code, P);
             end if;
+
+            --  Build the appropriate subprogram type
 
             Build_Access_Subprogram_Type (P);
 
@@ -460,7 +466,7 @@ package body Sem_Attr is
 
             return;
 
-         --  Component is an operation of a protected type.
+         --  Component is an operation of a protected type
 
          elsif Nkind (P) = N_Selected_Component
            and then Is_Overloadable (Entity (Selector_Name (P)))
@@ -6406,7 +6412,6 @@ package body Sem_Attr is
             end if;
 
             if Is_Entity_Name (P) then
-
                if Is_Overloaded (P) then
                   Get_First_Interp (P, Index, It);
 
@@ -6437,19 +6442,18 @@ package body Sem_Attr is
                   Resolve (P);
                end if;
 
+               Error_Msg_Name_1 := Aname;
+
                if not Is_Entity_Name (P) then
                   null;
 
                elsif Is_Abstract (Entity (P))
                  and then Is_Overloadable (Entity (P))
                then
-                  Error_Msg_Name_1 := Aname;
                   Error_Msg_N ("prefix of % attribute cannot be abstract", P);
                   Set_Etype (N, Any_Type);
 
                elsif Convention (Entity (P)) = Convention_Intrinsic then
-                  Error_Msg_Name_1 := Aname;
-
                   if Ekind (Entity (P)) = E_Enumeration_Literal then
                      Error_Msg_N
                        ("prefix of % attribute cannot be enumeration literal",
@@ -6460,6 +6464,10 @@ package body Sem_Attr is
                   end if;
 
                   Set_Etype (N, Any_Type);
+
+               elsif Is_Thread_Body (Entity (P)) then
+                  Error_Msg_N
+                    ("prefix of % attribute cannot be a thread body", P);
                end if;
 
                --  Assignments, return statements, components of aggregates,

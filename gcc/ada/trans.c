@@ -4406,7 +4406,7 @@ static void
 process_decls (List_Id gnat_decls,
                List_Id gnat_decls2,
                Node_Id gnat_end_list,
-               int pass1p, 
+               int pass1p,
                int pass2p)
 {
   List_Id gnat_decl_array[2];

@@ -3233,8 +3233,7 @@ package body Sem_Ch10 is
       Unum             : Unit_Number_Type :=
                            Get_Source_Unit (Library_Unit (N));
       P_Unit           : Entity_Id := Unit (Library_Unit (N));
-      P                : Entity_Id :=
-                           Defining_Unit_Name (Specification (P_Unit));
+      P                : Entity_Id;
       Lim_Elmt         : Elmt_Id;
       Lim_Typ          : Entity_Id;
       Is_Child_Package : Boolean := False;
@@ -3261,6 +3260,33 @@ package body Sem_Ch10 is
    --  Start of processing for Install_Limited_Withed_Unit
 
    begin
+      --  In case of limited with_clause on subprograms, generics, instances,
+      --  or generic renamings, the corresponding error was previously posted
+      --  and we have nothing to do here.
+
+      case Nkind (P_Unit) is
+
+         when N_Package_Declaration =>
+            null;
+
+         when N_Subprogram_Declaration                 |
+              N_Generic_Package_Declaration            |
+              N_Generic_Subprogram_Declaration         |
+              N_Package_Instantiation                  |
+              N_Function_Instantiation                 |
+              N_Procedure_Instantiation                |
+              N_Generic_Package_Renaming_Declaration   |
+              N_Generic_Procedure_Renaming_Declaration |
+              N_Generic_Function_Renaming_Declaration =>
+            return;
+
+         when others =>
+            pragma Assert (False);
+            null;
+      end case;
+
+      P := Defining_Unit_Name (Specification (P_Unit));
+
       if Nkind (P) = N_Defining_Program_Unit_Name then
 
          --  Retrieve entity of child package
@@ -3803,23 +3829,27 @@ package body Sem_Ch10 is
          when N_Subprogram_Declaration =>
             Error_Msg_N ("subprograms not allowed in "
                          & "limited with_clauses", N);
+            return;
 
          when N_Generic_Package_Declaration |
               N_Generic_Subprogram_Declaration =>
             Error_Msg_N ("generics not allowed in "
                          & "limited with_clauses", N);
+            return;
 
          when N_Package_Instantiation |
               N_Function_Instantiation |
               N_Procedure_Instantiation =>
             Error_Msg_N ("generic instantiations not allowed in "
                          & "limited with_clauses", N);
+            return;
 
          when N_Generic_Package_Renaming_Declaration |
               N_Generic_Procedure_Renaming_Declaration |
               N_Generic_Function_Renaming_Declaration =>
             Error_Msg_N ("generic renamings not allowed in "
                          & "limited with_clauses", N);
+            return;
 
          when others =>
             pragma Assert (False);

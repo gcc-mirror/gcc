@@ -59,12 +59,14 @@ with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
+with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
@@ -2849,6 +2851,8 @@ package body Exp_Ch6 is
 
    --  Reset Pure indication if any parameter has root type System.Address
 
+   --  Wrap thread body
+
    procedure Expand_N_Subprogram_Body (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       H        : constant Node_Id    := Handled_Statement_Sequence (N);
@@ -2866,6 +2870,9 @@ package body Exp_Ch6 is
       --  the latter test is not critical, it does not matter if we add a
       --  few extra returns, since they get eliminated anyway later on.
 
+      procedure Expand_Thread_Body;
+      --  Perform required expansion of a thread body
+
       ----------------
       -- Add_Return --
       ----------------
@@ -2881,6 +2888,165 @@ package body Exp_Ch6 is
             Append_To (S, Make_Return_Statement (Sloc (End_Label (H))));
          end if;
       end Add_Return;
+
+      ------------------------
+      -- Expand_Thread_Body --
+      ------------------------
+
+      --  The required expansion of a thread body is as follows
+
+      --  procedure <thread body procedure name> is
+
+      --    _Secondary_Stack : aliased
+      --       Storage_Elements.Storage_Array
+      --         (1 .. Storage_Offset (Sec_Stack_Size));
+      --    for _Secondary_Stack'Alignment use Standard'Maximum_Alignment;
+
+      --    _Process_ATSD : aliased System.Threads.ATSD;
+
+      --  begin
+      --     System.Threads.Thread_Body_Enter;
+      --       (_Secondary_Stack'Address,
+      --        _Secondary_Stack'Length,
+      --        _Process_ATSD'Address);
+
+      --     declare
+      --        <user declarations>
+      --     begin
+      --        <user statements>
+      --     <user exception handlers>
+      --     end;
+
+      --    System.Threads.Thread_Body_Leave;
+
+      --  exception
+      --     when E : others =>
+      --       System.Threads.Thread_Body_Exceptional_Exit (E);
+      --  end;
+
+      --  Note the exception handler is omitted if pragma Restriction
+      --  No_Exception_Handlers is currently active.
+
+      procedure Expand_Thread_Body is
+         User_Decls    : constant List_Id := Declarations (N);
+         Sec_Stack_Len : Node_Id;
+
+         TB_Pragma  : constant Node_Id :=
+                        Get_Rep_Pragma (Spec_Id, Name_Thread_Body);
+
+         Ent_SS   : Entity_Id;
+         Ent_ATSD : Entity_Id;
+         Ent_EO   : Entity_Id;
+
+         Decl_SS   : Node_Id;
+         Decl_ATSD : Node_Id;
+
+         Excep_Handlers : List_Id;
+
+      begin
+         --  Get proper setting for secondary stack size
+
+         if List_Length (Pragma_Argument_Associations (TB_Pragma)) = 2 then
+            Sec_Stack_Len :=
+              Expression (Last (Pragma_Argument_Associations (TB_Pragma)));
+         else
+            Sec_Stack_Len :=
+              Make_Integer_Literal (Loc,
+                Intval =>
+                  Expr_Value
+                   (Expression (RTE (RE_Default_Secondary_Stack_Size))));
+         end if;
+
+         Sec_Stack_Len := Convert_To (RTE (RE_Storage_Offset), Sec_Stack_Len);
+
+         --  Build and set declarations for the wrapped thread body
+
+         Ent_SS   := Make_Defining_Identifier (Loc, Name_uSecondary_Stack);
+         Ent_ATSD := Make_Defining_Identifier (Loc, Name_uProcess_ATSD);
+
+         Decl_SS :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Ent_SS,
+             Aliased_Present     => True,
+             Object_Definition   =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (RTE (RE_Storage_Array), Loc),
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => New_List (
+                       Make_Range (Loc,
+                         Low_Bound  => Make_Integer_Literal (Loc, 1),
+                         High_Bound => Sec_Stack_Len)))));
+
+         Decl_ATSD :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Ent_ATSD,
+             Aliased_Present     => True,
+             Object_Definition   => New_Occurrence_Of (RTE (RE_ATSD), Loc));
+
+         Set_Declarations (N, New_List (Decl_SS, Decl_ATSD));
+         Analyze (Decl_SS);
+         Analyze (Decl_ATSD);
+         Set_Alignment (Ent_SS, UI_From_Int (Maximum_Alignment));
+
+         --  Create new exception handler
+
+         if Restrictions (No_Exception_Handlers) then
+            Excep_Handlers := No_List;
+
+         else
+            Check_Restriction (No_Exception_Handlers, N);
+
+            Ent_EO := Make_Defining_Identifier (Loc, Name_uE);
+
+            Excep_Handlers := New_List (
+              Make_Exception_Handler (Loc,
+                Choice_Parameter => Ent_EO,
+                Exception_Choices => New_List (
+                  Make_Others_Choice (Loc)),
+                Statements => New_List (
+                  Make_Procedure_Call_Statement (Loc,
+                    Name =>
+                      New_Occurrence_Of
+                        (RTE (RE_Thread_Body_Exceptional_Exit), Loc),
+                    Parameter_Associations => New_List (
+                      New_Occurrence_Of (Ent_EO, Loc))))));
+         end if;
+
+         --  Now build new handled statement sequence and analyze it
+
+         Set_Handled_Statement_Sequence (N,
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements => New_List (
+
+               Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (RTE (RE_Thread_Body_Enter), Loc),
+                 Parameter_Associations => New_List (
+
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Occurrence_Of (Ent_SS, Loc),
+                     Attribute_Name => Name_Address),
+
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Occurrence_Of (Ent_SS, Loc),
+                     Attribute_Name => Name_Length),
+
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Occurrence_Of (Ent_ATSD, Loc),
+                     Attribute_Name => Name_Address))),
+
+               Make_Block_Statement (Loc,
+                 Declarations => User_Decls,
+                 Handled_Statement_Sequence => H),
+
+               Make_Procedure_Call_Statement (Loc,
+                 Name => New_Occurrence_Of (RTE (RE_Thread_Body_Leave), Loc))),
+
+             Exception_Handlers => Excep_Handlers));
+
+         Analyze (Handled_Statement_Sequence (N));
+      end Expand_Thread_Body;
 
    --  Start of processing for Expand_N_Subprogram_Body
 
@@ -3148,6 +3314,12 @@ package body Exp_Ch6 is
                Next_Formal (Formal);
             end loop;
          end;
+      end if;
+
+      --  Deal with thread body
+
+      if Is_Thread_Body (Spec_Id) then
+         Expand_Thread_Body;
       end if;
 
       --  If the subprogram does not have pending instantiations, then we

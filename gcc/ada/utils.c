@@ -2306,7 +2306,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       if (TYPE_VAX_FLOATING_POINT_P (type))
-	switch ((int) TYPE_DIGITS_VALUE (type))
+	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
 	  {
 	  case 6:
 	    dtype = 10;
@@ -2346,7 +2346,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     case COMPLEX_TYPE:
       if (TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 	  && TYPE_VAX_FLOATING_POINT_P (type))
-	switch ((int) TYPE_DIGITS_VALUE (type))
+	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
 	  {
 	  case 6:
 	    dtype = 12;
@@ -2544,7 +2544,8 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 /* Utility routine for above code to make a field.  */
 
 static tree
-make_descriptor_field (const char *name, tree type, tree rec_type, tree initial)
+make_descriptor_field (const char *name, tree type,
+		       tree rec_type, tree initial)
 {
   tree field
     = create_field_decl (get_identifier (name), type, rec_type, 0, 0, 0, 0);

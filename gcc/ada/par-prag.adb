@@ -980,6 +980,7 @@ begin
            Pragma_Task_Info                    |
            Pragma_Task_Name                    |
            Pragma_Task_Storage                 |
+           Pragma_Thread_Body                  |
            Pragma_Time_Slice                   |
            Pragma_Title                        |
            Pragma_Unchecked_Union              |

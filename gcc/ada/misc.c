@@ -39,6 +39,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "real.h"
 #include "rtl.h"
 #include "errors.h"
 #include "diagnostic.h"
@@ -146,7 +147,7 @@ static void gnat_adjust_rli		(record_layout_info);
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-/* Tables describing GCC tree codes used only by GNAT.  
+/* Tables describing GCC tree codes used only by GNAT.
 
    Table indexed by tree code giving a string containing a character
    classifying the tree code.  Possibilities are
@@ -272,7 +273,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 
     case OPT_gant:
       warning ("`-gnat' misspelled as `-gant'");
- 
+
       /* ... fall through ... */
 
     case OPT_gnat:
@@ -283,7 +284,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argc++;
 
       if (arg[0] == 'O')
-	for (i = 1; i < save_argc - 1; i++) 
+	for (i = 1; i < save_argc - 1; i++)
 	  if (!strncmp (save_argv[i], "-gnatO", 6))
 	    if (save_argv[++i][0] != '-')
 	      {
@@ -304,8 +305,8 @@ static unsigned int
 gnat_init_options (unsigned int argc, const char **argv)
 {
   /* Initialize gnat_argv with save_argv size.  */
-  gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0])); 
-  gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */ 
+  gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0]));
+  gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */
   gnat_argc = 1;
 
   save_argc = argc;
@@ -706,7 +707,7 @@ static int
 gnat_eh_type_covers (tree a, tree b)
 {
   /* a catches b if they represent the same exception id or if a
-     is an "others". 
+     is an "others".
 
      ??? integer_zero_node for "others" is hardwired in too many places
      currently.  */
@@ -886,3 +887,108 @@ must_pass_by_ref (tree gnu_type)
 	  || (TYPE_SIZE (gnu_type) != 0
 	      && TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST));
 }
+
+/* This function is called by the front end to enumerate all the supported
+   modes for the machine.  We pass a function which is called back with
+   the following integer parameters:
+
+   FLOAT_P	nonzero if this represents a floating-point mode
+   COMPLEX_P	nonzero is this represents a complex mode
+   COUNT	count of number of items, nonzero for vector mode
+   PRECISION	number of bits in data representation
+   MANTISSA	number of bits in mantissa, if FP and known, else zero.
+   SIZE		number of bits used to store data
+   ALIGN	number of bits to which mode is aligned.  */
+
+void
+enumerate_modes (void (*f) (int, int, int, int, int, int, unsigned int))
+{
+  enum machine_mode i;
+
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    {
+      enum machine_mode j;
+      bool float_p = 0;
+      bool complex_p = 0;
+      bool vector_p = 0;
+      bool skip_p = 0;
+      int mantissa = 0;
+      enum machine_mode inner_mode = i;
+
+      switch (GET_MODE_CLASS (i))
+	{
+	case MODE_INT:
+	  break;
+	case MODE_FLOAT:
+	  float_p = 1;
+	  break;
+	case MODE_COMPLEX_INT:
+	  complex_p = 1;
+	  inner_mode = GET_MODE_INNER (i);
+	  break;
+	case MODE_COMPLEX_FLOAT:
+	  float_p = 1;
+	  complex_p = 1;
+	  inner_mode = GET_MODE_INNER (i);
+	  break;
+	case MODE_VECTOR_INT:
+	  vector_p = 1;
+	  inner_mode = GET_MODE_INNER (i);
+	  break;
+	case MODE_VECTOR_FLOAT:
+	  float_p = 1;
+	  vector_p = 1;
+	  inner_mode = GET_MODE_INNER (i);
+	  break;
+	default:
+	  skip_p = 1;
+	}
+
+      /* Skip this mode if it's one the front end doesn't need to know about
+	 (e.g., the CC modes) or if there is no add insn for that mode (or
+	 any wider mode), meaning it is not supported by the hardware.  If
+	 this a complex or vector mode, we care about the inner mode.  */
+      for (j = inner_mode; j != VOIDmode; j = GET_MODE_WIDER_MODE (j))
+	if (add_optab->handlers[j].insn_code != CODE_FOR_nothing)
+	  break;
+
+      if (float_p)
+	{
+	  const struct real_format *fmt = REAL_MODE_FORMAT (inner_mode);
+
+	  mantissa = fmt->p * fmt->log2_b;
+	}
+
+      if (!skip_p && j != VOIDmode)
+	(*f) (float_p, complex_p, vector_p ? GET_MODE_NUNITS (i) : 0,
+	      GET_MODE_BITSIZE (i), mantissa,
+	      GET_MODE_SIZE (i) * BITS_PER_UNIT, GET_MODE_ALIGNMENT (i));
+    }
+}
+
+int
+fp_prec_to_size (int prec)
+{
+  enum machine_mode mode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_BITSIZE (mode) == prec)
+      return GET_MODE_SIZE (mode) * BITS_PER_UNIT;
+
+  abort ();
+}
+
+int
+fp_size_to_prec (int size)
+{
+  enum machine_mode mode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (GET_MODE_SIZE (mode) * BITS_PER_UNIT == size)
+      return GET_MODE_BITSIZE (mode);
+
+  abort ();
+}
+
