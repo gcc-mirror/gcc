@@ -601,7 +601,9 @@ tree_ssa_useless_type_conversion (tree expr)
      the top of the RHS to the type of the LHS and the type conversion
      is "safe", then strip away the type conversion so that we can
      enter LHS = RHS into the const_and_copies table.  */
-  if (TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR)
+  if (TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR
+      || TREE_CODE (expr) == VIEW_CONVERT_EXPR
+      || TREE_CODE (expr) == NON_LVALUE_EXPR)
     return tree_ssa_useless_type_conversion_1 (TREE_TYPE (expr),
 					       TREE_TYPE (TREE_OPERAND (expr,
 									0)));
