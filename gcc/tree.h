@@ -3392,17 +3392,6 @@ extern void expand_start_cond (tree, int);
 extern void expand_end_cond (void);
 extern void expand_start_else (void);
 extern void expand_start_elseif (tree);
-extern struct nesting *expand_start_loop (int);
-extern struct nesting *expand_start_loop_continue_elsewhere (int);
-extern struct nesting *expand_start_null_loop (void);
-extern void expand_loop_continue_here (void);
-extern void expand_end_loop (void);
-extern void expand_end_null_loop (void);
-extern int expand_continue_loop (struct nesting *);
-extern int expand_exit_loop (struct nesting *);
-extern int expand_exit_loop_if_false (struct nesting *,tree);
-extern int expand_exit_loop_top_cond (struct nesting *, tree);
-extern int expand_exit_something (void);
 
 extern void expand_stack_alloc (tree, tree);
 extern rtx expand_stack_save (void);

@@ -1,3 +1,20 @@
+2004-05-19  Steven Bosscher  <stevenb@suse.de>
+
+	* expr.c (store_constructor): Build loop start and end by hand
+	instead of via loop functions from stmt.c.
+	(expand_expr_real_1): Abort if we see an EXIT_EXPR or a LOOP_EXPR.
+	Remove the code to expand them.
+
+	* stmt.c (loop_stack): Remove this and everything related.
+	(struct nesting, enum nesting_desc): Update.
+	(expand_fixup): Likewise.
+	(expand_loop_start, expand_start_loop_continue_elsewhere,
+	expand_start_null_loop, expand_loop_continue_here, expand_end_loop,
+	expand_end_null_loop, expand_continue_loop, expand_exit_loop,
+	expand_exit_loop_if_false, expand_exit_loop_top_cond,
+	expand_exit_something): Remove.
+	* tree.h: Remove prototypes.
+
 2004-05-18  Mike Stump  <mrs@apple.com>
 	    Devang Patel  <dpatel@apple.com>
 

@@ -4963,8 +4963,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    {
 	      tree lo_index = TREE_OPERAND (index, 0);
 	      tree hi_index = TREE_OPERAND (index, 1);
-	      rtx index_r, pos_rtx, loop_end;
-	      struct nesting *loop;
+	      rtx index_r, pos_rtx;
 	      HOST_WIDE_INT lo, hi, count;
 	      tree position;
 
@@ -5005,9 +5004,11 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		}
 	      else
 		{
-		  expand_expr (hi_index, NULL_RTX, VOIDmode, 0);
-		  loop_end = gen_label_rtx ();
+		  rtx loop_start = gen_label_rtx ();
+		  rtx loop_end = gen_label_rtx ();
+		  tree exit_cond;
 
+		  expand_expr (hi_index, NULL_RTX, VOIDmode, 0);
 		  unsignedp = TYPE_UNSIGNED (domain);
 
 		  index = build_decl (VAR_DECL, NULL_TREE, domain);
@@ -5025,7 +5026,11 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		      emit_queue ();
 		    }
 		  store_expr (lo_index, index_r, 0);
-		  loop = expand_start_loop (0);
+
+		  /* Build the head of the loop.  */
+		  do_pending_stack_adjust ();
+		  emit_queue ();
+		  emit_label (loop_start);
 
 		  /* Assign value to element index.  */
 		  position
@@ -5046,14 +5051,19 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  else
 		    store_expr (value, xtarget, 0);
 
-		  expand_exit_loop_if_false (loop,
-					     build (LT_EXPR, integer_type_node,
-						    index, hi_index));
+		  /* Generate a conditional jump to exit the loop.  */
+		  exit_cond = build (LT_EXPR, integer_type_node,
+				     index, hi_index);
+		  jumpif (exit_cond, loop_end);
 
+		  /* Update the loop counter, and jump to the head of
+		     the loop.  */
 		  expand_increment (build (PREINCREMENT_EXPR,
 					   TREE_TYPE (index),
 					   index, integer_one_node), 0, 0);
-		  expand_end_loop ();
+		  emit_jump (loop_start);
+
+		  /* Build the end of the loop.  */
 		  emit_label (loop_end);
 		}
 	    }
@@ -6804,10 +6814,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	expand_computed_goto (TREE_OPERAND (exp, 0));
       return const0_rtx;
 
+    /* These are lowered during gimplification, so we should never ever
+       see them here.  */
+    case LOOP_EXPR:
     case EXIT_EXPR:
-      expand_exit_loop_if_false (NULL,
-				 invert_truthvalue (TREE_OPERAND (exp, 0)));
-      return const0_rtx;
+      abort ();
 
     case LABELED_BLOCK_EXPR:
       if (LABELED_BLOCK_BODY (exp))
@@ -6821,15 +6832,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (EXIT_BLOCK_RETURN (exp))
 	sorry ("returned value in block_exit_expr");
       expand_goto (LABELED_BLOCK_LABEL (EXIT_BLOCK_LABELED_BLOCK (exp)));
-      return const0_rtx;
-
-    case LOOP_EXPR:
-      push_temp_slots ();
-      expand_start_loop (1);
-      expand_expr_stmt_value (TREE_OPERAND (exp, 0), 0, 1);
-      expand_end_loop ();
-      pop_temp_slots ();
-
       return const0_rtx;
 
     case BIND_EXPR:
