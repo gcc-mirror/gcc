@@ -966,6 +966,10 @@ dump_bb (basic_block bb, FILE *outf)
 	   bb->index, bb->loop_depth);
   fprintf (outf, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
   putc ('\n', outf);
+  fputs (";; Predecessors: ", outf);
+  for (e = bb->pred; e; e = e->pred_next)
+    dump_edge_info (outf, e, 0);
+  putc ('\n', outf);
 
   cfg_hooks->dump_bb (bb, outf);
 
