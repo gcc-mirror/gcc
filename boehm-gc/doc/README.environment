@@ -5,6 +5,8 @@ platforms.
 GC_INITIAL_HEAP_SIZE=<bytes> -	Initial heap size in bytes.  May speed up
 				process start-up.
 
+GC_MAXIMUM_HEAP_SIZE=<bytes> - Maximum collected heap size.
+
 GC_LOOP_ON_ABORT - Causes the collector abort routine to enter a tight loop.
 		   This may make it easier to debug, such a process, especially
 		   for multithreaded platforms that don't produce usable core
@@ -19,6 +21,11 @@ GC_PRINT_STATS - Turn on as much logging as is easily feasible without
 		 by setting GC_quiet.  On by default if the collector
 		 was built without -DSILENT.
 
+GC_DUMP_REGULARLY - Generate a GC debugging dump GC_dump() on startup
+		    and during every collection.  Very verbose.  Useful
+		    if you have a bug to report, but please include only the
+		    last complete dump.
+
 GC_PRINT_ADDRESS_MAP - Linux only.  Dump /proc/self/maps, i.e. various address
 		       maps for the process, to stderr on every GC.  Useful for
 		       mapping root addresses to source for deciphering leak
@@ -27,7 +34,14 @@ GC_PRINT_ADDRESS_MAP - Linux only.  Dump /proc/self/maps, i.e. various address
 GC_NPROCS=<n> - Linux w/threads only.  Explicitly sets the number of processors
 	        that the GC should expect to use.  Note that setting this to 1
 		when multiple processors are available will preserve
-		correctness, but may lead to really horrible performance.
+		correctness, but may lead to really horrible performance,
+		since the lock implementation will immediately yield without
+		first spinning.
+
+GC_MARKERS=<n> - Linux w/threads and parallel marker only.  Set the number
+		of marker threads.  This is normaly set to the number of
+		processors.  It is safer to adjust GC_MARKERS than GC_NPROCS,
+		since GC_MARKERS has no impact on the lock implementation.
 
 GC_NO_BLACKLIST_WARNING - Prevents the collector from issuing
 		warnings about allocations of very large blocks.
@@ -62,6 +76,20 @@ GC_PRINT_BACK_HEIGHT - Print max length of chain through unreachable objects
 		     of Conservative Garbage Collectors", POPL 2001, or
 		     http://lib.hpl.hp.com/techpubs/2001/HPL-2001-251.html .
 
+GC_RETRY_SIGNALS, GC_NO_RETRY_SIGNALS - Try to compensate for lost
+		     thread suspend signals in linux_threads.c.  On by
+		     default for GC_OSF1_THREADS, off otherwise.  Note 
+		     that this does not work around a possible loss of
+		     thread restart signals.  This seems to be necessary for
+		     some versions of Tru64.  Since we've previously seen
+		     similar issues on some other operating systems, it
+		     was turned into a runtime flag to enable last-minute
+		     work-arounds.
+
+The following turn on runtime flags that are also program settable.  Checked
+only during initialization.  We expect that they will usually be set through
+other means, but this may help with debugging and testing:
+
 GC_ENABLE_INCREMENTAL - Turn on incremental collection at startup.  Note that,
 		     depending on platform and collector configuration, this
 		     may involve write protecting pieces of the heap to
@@ -71,22 +99,20 @@ GC_ENABLE_INCREMENTAL - Turn on incremental collection at startup.  Note that,
 		     Use with caution.
 
 GC_PAUSE_TIME_TARGET - Set the desired garbage collector pause time in msecs.
-		     This only has an effect if incremental collection is enabled.
-		     If a collection requires appreciably more time than this,
-		     the client will be restarted, and the collector will need
-		     to do additional work to compensate.  The special value
-		     "999999" indicates that pause time is unlimited, and the
-		     incremental collector will behave completely like a
-		     simple generational collector.  If the collector is
-		     configured for parallel marking, and run on a multiprocessor,
-		     incremental collection should only be used with unlimited
-		     pause time.
+		     This only has an effect if incremental collection is
+		     enabled.  If a collection requires appreciably more time
+		     than this, the client will be restarted, and the collector
+		     will need to do additional work to compensate.  The
+		     special value "999999" indicates that pause time is
+		     unlimited, and the incremental collector will behave
+		     completely like a simple generational collector.  If
+		     the collector is configured for parallel marking, and
+		     run on a multiprocessor, incremental collection should
+		     only be used with unlimited pause time.
 
-The following turn on runtime flags that are also program settable.  Checked
-only during initialization.  We expect that they will usually be set through
-other means, but this may help with debugging and testing:
-
-GC_FIND_LEAK - Turns on GC_find_leak and thus leak detection.
+GC_FIND_LEAK - Turns on GC_find_leak and thus leak detection.  Forces a
+	       collection at program termination to detect leaks that would
+	       otherwise occur after the last GC.
 
 GC_ALL_INTERIOR_POINTERS - Turns on GC_all_interior_pointers and thus interior
 			   pointer recognition.

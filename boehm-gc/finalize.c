@@ -207,7 +207,8 @@ signed_word * log_size_ptr;
 	UNLOCK();
     	ENABLE_SIGNALS();
 #     endif
-      new_dl = GC_oom_fn(sizeof(struct disappearing_link));
+      new_dl = (struct disappearing_link *)
+	      GC_oom_fn(sizeof(struct disappearing_link));
       if (0 == new_dl) {
 	GC_finalization_failures++;
 	return(0);
@@ -433,7 +434,8 @@ finalization_mark_proc * mp;
 	UNLOCK();
     	ENABLE_SIGNALS();
 #     endif
-      new_fo = GC_oom_fn(sizeof(struct finalizable_object));
+      new_fo = (struct finalizable_object *)
+	      GC_oom_fn(sizeof(struct finalizable_object));
       if (0 == new_fo) {
 	GC_finalization_failures++;
 	return;
@@ -759,8 +761,9 @@ int GC_should_invoke_finalizers GC_PROTO((void))
 /* Should be called without allocation lock.				*/
 int GC_invoke_finalizers()
 {
-    register struct finalizable_object * curr_fo;
-    register int count = 0;
+    struct finalizable_object * curr_fo;
+    int count = 0;
+    word mem_freed_before;
     DCL_LOCK_STATE;
     
     while (GC_finalize_now != 0) {
@@ -768,6 +771,9 @@ int GC_invoke_finalizers()
 	    DISABLE_SIGNALS();
 	    LOCK();
 #	endif
+	if (count == 0) {
+	    mem_freed_before = GC_mem_freed;
+	}
     	curr_fo = GC_finalize_now;
 #	ifdef THREADS
  	    if (curr_fo != 0) GC_finalize_now = fo_next(curr_fo);
@@ -789,6 +795,11 @@ int GC_invoke_finalizers()
     	    GC_free((GC_PTR)curr_fo);
 #	endif
     }
+    if (count != 0 && mem_freed_before != GC_mem_freed) {
+        LOCK();
+	GC_finalizer_mem_freed += (GC_mem_freed - mem_freed_before);
+	UNLOCK();
+    }
     return count;
 }
 
@@ -801,7 +812,9 @@ void GC_notify_or_invoke_finalizers GC_PROTO((void))
     if (GC_finalize_now == 0) return;
     if (!GC_finalize_on_demand) {
 	(void) GC_invoke_finalizers();
-	GC_ASSERT(GC_finalize_now == 0);
+#	ifndef THREADS
+	  GC_ASSERT(GC_finalize_now == 0);
+#	endif	/* Otherwise GC can run concurrently and add more */
 	return;
     }
     if (GC_finalizer_notifier != (void (*) GC_PROTO((void)))0
@@ -839,3 +852,17 @@ void GC_notify_or_invoke_finalizers GC_PROTO((void))
     return(result);
 }
 
+#if !defined(NO_DEBUGGING)
+
+void GC_print_finalization_stats()
+{
+    struct finalizable_object *fo = GC_finalize_now;
+    size_t ready = 0;
+
+    GC_printf2("%lu finalization table entries; %lu disappearing links\n",
+	       GC_fo_entries, GC_dl_entries);
+    for (; 0 != fo; fo = fo_next(fo)) ++ready;
+    GC_printf1("%lu objects are eligible for immediate finalization\n", ready);
+}
+
+#endif /* NO_DEBUGGING */

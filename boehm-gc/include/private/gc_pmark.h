@@ -137,7 +137,7 @@ extern mse * GC_mark_stack;
 #ifdef __STDC__
 # ifdef PRINT_BLACK_LIST
     ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p,
-		    	ptr_t source);
+		    	word source);
 # else
     ptr_t GC_find_start(ptr_t current, hdr *hhdr, hdr **new_hdr_p);
 # endif
@@ -145,7 +145,7 @@ extern mse * GC_mark_stack;
   ptr_t GC_find_start();
 #endif
 
-mse *GC_signal_mark_stack_overflow(mse *msp);
+mse * GC_signal_mark_stack_overflow GC_PROTO((mse *msp));
 
 # ifdef GATHERSTATS
 #   define ADD_TO_ATOMIC(sz) GC_atomic_in_use += (sz)
@@ -174,14 +174,6 @@ mse *GC_signal_mark_stack_overflow(mse *msp);
     } \
 }
 
-#ifdef PRINT_BLACK_LIST
-#   define GC_FIND_START(current, hhdr, new_hdr_p, source) \
-	GC_find_start(current, hhdr, new_hdr_p, source)
-#else
-#   define GC_FIND_START(current, hhdr, new_hdr_p, source) \
-	GC_find_start(current, hhdr, new_hdr_p)
-#endif
-
 /* Push the contents of current onto the mark stack if it is a valid	*/
 /* ptr to a currently unmarked object.  Mark it.			*/
 /* If we assumed a standard-conforming compiler, we could probably	*/
@@ -195,8 +187,7 @@ mse *GC_signal_mark_stack_overflow(mse *msp);
     GET_HDR(my_current, my_hhdr); \
     if (IS_FORWARDING_ADDR_OR_NIL(my_hhdr)) { \
 	 hdr * new_hdr = GC_invalid_header; \
-         my_current = GC_FIND_START(my_current, my_hhdr, \
-			 	    &new_hdr, (word)source); \
+         my_current = GC_find_start(my_current, my_hhdr, &new_hdr); \
          my_hhdr = new_hdr; \
     } \
     PUSH_CONTENTS_HDR(my_current, mark_stack_top, mark_stack_limit, \
@@ -290,21 +281,39 @@ exit_label: ; \
 
 /*
  * Push a single value onto mark stack. Mark from the object pointed to by p.
+ * Invoke FIXUP_POINTER(p) before any further processing.
  * P is considered valid even if it is an interior pointer.
  * Previously marked objects are not pushed.  Hence we make progress even
  * if the mark stack overflows.
  */
-# define GC_PUSH_ONE_STACK(p, source) \
-    if ((ptr_t)(p) >= (ptr_t)GC_least_plausible_heap_addr 	\
+
+# if NEED_FIXUP_POINTER
+    /* Try both the raw version and the fixed up one.	*/
+#   define GC_PUSH_ONE_STACK(p, source) \
+      if ((ptr_t)(p) >= (ptr_t)GC_least_plausible_heap_addr 	\
 	 && (ptr_t)(p) < (ptr_t)GC_greatest_plausible_heap_addr) {	\
 	 PUSH_ONE_CHECKED_STACK(p, source);	\
-    }
+      } \
+      FIXUP_POINTER(p); \
+      if ((ptr_t)(p) >= (ptr_t)GC_least_plausible_heap_addr 	\
+	 && (ptr_t)(p) < (ptr_t)GC_greatest_plausible_heap_addr) {	\
+	 PUSH_ONE_CHECKED_STACK(p, source);	\
+      }
+# else /* !NEED_FIXUP_POINTER */
+#   define GC_PUSH_ONE_STACK(p, source) \
+      if ((ptr_t)(p) >= (ptr_t)GC_least_plausible_heap_addr 	\
+	 && (ptr_t)(p) < (ptr_t)GC_greatest_plausible_heap_addr) {	\
+	 PUSH_ONE_CHECKED_STACK(p, source);	\
+      }
+# endif
+
 
 /*
  * As above, but interior pointer recognition as for
  * normal for heap pointers.
  */
 # define GC_PUSH_ONE_HEAP(p,source) \
+    FIXUP_POINTER(p); \
     if ((ptr_t)(p) >= (ptr_t)GC_least_plausible_heap_addr 	\
 	 && (ptr_t)(p) < (ptr_t)GC_greatest_plausible_heap_addr) {	\
 	    GC_mark_stack_top = GC_mark_and_push( \

@@ -13,10 +13,24 @@
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
  */
+
+/*
+ * This header is private to the gc.  It is almost always included from
+ * gc_priv.h.  However it is possible to include it by itself if just the
+ * configuration macros are needed.  In that
+ * case, a few declarations relying on types declared in gc_priv.h will be
+ * omitted.
+ */
  
 #ifndef GCCONFIG_H
 
 # define GCCONFIG_H
+
+# ifndef GC_PRIVATE_H
+    /* Fake ptr_t declaration, just to avoid compilation errors.	*/
+    /* This avoids many instances if "ifndef GC_PRIVATE_H" below.	*/
+    typedef struct GC_undefined_struct * ptr_t;
+# endif
 
 /* Machine dependent parameters.  Some tuning parameters can be found	*/
 /* near the top of gc_private.h.					*/
@@ -25,7 +39,9 @@
 
 /* First a unified test for Linux: */
 # if defined(linux) || defined(__linux__)
+#  ifndef LINUX
 #    define LINUX
+#  endif
 # endif
 
 /* And one for NetBSD: */
@@ -44,9 +60,9 @@
 # endif
 
 /* Determine the machine type: */
-# if defined(__arm__) || defined(__thumb__)
+# if defined(__XSCALE__)
 #    define ARM32
-#    if !defined(LINUX) && !defined(NETBSD)
+#    if !defined(LINUX)
 #      define NOSYS
 #      define mach_type_known
 #    endif
@@ -69,7 +85,7 @@
 #    define SPARC
 #    define mach_type_known
 # endif
-# if defined(NETBSD) && defined(m68k)
+# if defined(NETBSD) && (defined(m68k) || defined(__m68k__))
 #    define M68K
 #    define mach_type_known
 # endif
@@ -77,7 +93,7 @@
 #    define POWERPC
 #    define mach_type_known
 # endif
-# if defined(NETBSD) && defined(__arm__)
+# if defined(NETBSD) && (defined(__arm32__) || defined(__arm__))
 #    define ARM32
 #    define mach_type_known
 # endif
@@ -88,6 +104,10 @@
 #    else
 #	define BSD
 #    endif
+#    define mach_type_known
+# endif
+# if defined(__NetBSD__) && defined(__vax__)
+#    define VAX
 #    define mach_type_known
 # endif
 # if defined(mips) || defined(__mips) || defined(_mips)
@@ -107,6 +127,13 @@
 #	 endif
 #      endif
 #    endif /* !LINUX */
+#    define mach_type_known
+# endif
+# if defined(DGUX) && (defined(i386) || defined(__i386__))
+#    define I386
+#    ifndef _USING_DGUX
+#    define _USING_DGUX
+#    endif
 #    define mach_type_known
 # endif
 # if defined(sequent) && (defined(i386) || defined(__i386__))
@@ -198,7 +225,11 @@
 #    define IA64
 #    define mach_type_known
 # endif
-# if defined(LINUX) && (defined(powerpc) || defined(__powerpc__))
+# if defined(LINUX) && defined(__arm__)
+#    define ARM32
+#    define mach_type_known
+# endif
+# if defined(LINUX) && (defined(powerpc) || defined(__powerpc__) || defined(powerpc64) || defined(__powerpc64__))
 #    define POWERPC
 #    define mach_type_known
 # endif
@@ -237,19 +268,19 @@
 #   define MACOS
 #   define mach_type_known
 # endif
-# if defined(__MWERKS__) && defined(__powerc)
+# if defined(__MWERKS__) && defined(__powerc) && !defined(__MACH__)
 #   define POWERPC
 #   define MACOS
 #   define mach_type_known
 # endif
 # if defined(macosx) || \
      defined(__APPLE__) && defined(__MACH__) && defined(__ppc__)
-#    define MACOSX
+#    define DARWIN
 #    define POWERPC
 #    define mach_type_known
 # endif
 # if defined(__APPLE__) && defined(__MACH__) && defined(__i386__)
-#    define MACOSX
+#    define DARWIN
 #    define I386
      --> Not really supported, but at least we recognize it.
 # endif
@@ -291,7 +322,7 @@
 #   define CX_UX
 #   define mach_type_known
 # endif
-# if defined(DGUX)
+# if defined(DGUX) && defined(m88k)
 #   define M88K
     /* DGUX defined */
 #   define mach_type_known
@@ -419,17 +450,18 @@
 		    /* 		        (CX_UX and DGUX)		*/
 		    /* 		   S370	      ==> 370-like machine	*/
 		    /* 			running Amdahl UTS4		*/
-		    /*		   S390       ==> 390-like machine      */
-		    /*			running LINUX			*/
+                    /*             S390       ==> 390-like machine      */
+		    /*                  running LINUX                   */
 		    /* 		   ARM32      ==> Intel StrongARM	*/
 		    /* 		   IA64	      ==> Intel IPF		*/
 		    /*				  (e.g. Itanium)	*/
 		    /*			(LINUX and HPUX)	        */
-		    /* 		   IA64_32    ==> IA64 w/32 bit ABI	*/
-		    /* 			(HPUX)				*/
 		    /*		   SH	      ==> Hitachi SuperH	*/
 		    /* 			(LINUX & MSWINCE)		*/
 		    /* 		   X86_64     ==> AMD x86-64		*/
+		    /*		   POWERPC    ==> IBM/Apple PowerPC	*/
+		    /*			(MACOS(<=9),DARWIN(incl.MACOSX),*/
+		    /*			 LINUX, NETBSD, NOSYS variants)	*/
 
 
 /*
@@ -450,7 +482,12 @@
  * defining it to be 1 will always work, but perform poorly.
  *
  * DATASTART is the beginning of the data segment.
- * On UNIX systems, the collector will scan the area between DATASTART
+ * On some platforms SEARCH_FOR_DATA_START is defined.
+ * SEARCH_FOR_DATASTART will cause GC_data_start to
+ * be set to an address determined by accessing data backwards from _end
+ * until an unmapped page is found.  DATASTART will be defined to be
+ * GC_data_start.
+ * On UNIX-like systems, the collector will scan the area between DATASTART
  * and DATAEND for root pointers.
  *
  * DATAEND, if not `end' where `end' is defined as ``extern int end[];''.
@@ -470,8 +507,13 @@
  * 1) define STACK_GROWS_UP if the stack grows toward higher addresses, and
  * 2) define exactly one of
  *	STACKBOTTOM (should be defined to be an expression)
+ *	LINUX_STACKBOTTOM
  *	HEURISTIC1
  *	HEURISTIC2
+ * If STACKBOTTOM is defined, then it's value will be used directly as the
+ * stack base.  If LINUX_STACKBOTTOM is defined, then it will be determined
+ * with a method appropriate for most Linux systems.  Currently we look
+ * first for __libc_stack_end, and if that fails read it from /proc.
  * If either of the last two macros are defined, then STACKBOTTOM is computed
  * during collector startup using one of the following two heuristics:
  * HEURISTIC1:  Take an address inside GC_init's frame, and round it up to
@@ -536,6 +578,9 @@
  * An architecture may also define CLEAR_DOUBLE(x) to be a fast way to
  * clear the two words at GC_malloc-aligned address x.  By default,
  * word stores of 0 are used instead.
+ *
+ * HEAP_START may be defined as the initial address hint for mmap-based
+ * allocation.
  */
 
 /* If we are using a recent version of gcc, we can use __builtin_unwind_init()
@@ -560,18 +605,25 @@
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
 #	define HEURISTIC2
-	extern char etext[];
-#	define DATASTART ((ptr_t)(etext))
+#	ifdef __ELF__
+#	  define DATASTART GC_data_start
+#	  define DYNAMIC_LOADING
+#	else
+	  extern char etext[];
+#	  define DATASTART ((ptr_t)(etext))
+#       endif
 #   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
 #       define STACKBOTTOM ((ptr_t)0xf0000000)
+#       define USE_GENERIC_PUSH_REGS
+		/* We never got around to the assembly version. */
 /* #       define MPROTECT_VDB - Reported to not work  9/17/01 */
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
 #	     include <features.h>
 #	     if defined(__GLIBC__)&& __GLIBC__>=2
-#              define LINUX_DATA_START
+#              define SEARCH_FOR_DATA_START
 #	     else /* !GLIBC2 */
                extern char **__environ;
 #              define DATASTART ((ptr_t)(&__environ))
@@ -666,26 +718,49 @@
 #     define DATAEND  /* not needed */
 #   endif
 #   ifdef LINUX
-#     define ALIGNMENT 4	/* Guess.  Can someone verify?	*/
+#     if (defined (powerpc64) || defined(__powerpc64__))
+#       define ALIGNMENT 8
+#       define CPP_WORDSZ 64
+#     else
+#       define ALIGNMENT 4	/* Guess.  Can someone verify?	*/
 				/* This was 2, but that didn't sound right. */
+#     endif
 #     define OS_TYPE "LINUX"
-#     define DYNAMIC_LOADING
+      /* HEURISTIC1 has been reliably reported to fail for a 32-bit	*/
+      /* executable on a 64 bit kernel.					*/
 #     define LINUX_STACKBOTTOM
-	/* Stack usually starts at 0x80000000 */
-#     define LINUX_DATA_START
+#     define DYNAMIC_LOADING
+#     define SEARCH_FOR_DATA_START
       extern int _end[];
 #     define DATAEND (_end)
 #   endif
-#   ifdef MACOSX
-      /* There are reasons to suspect this may not be reliable. 	*/
+#   ifdef DARWIN
 #     define ALIGNMENT 4
-#     define OS_TYPE "MACOSX"
+#     define OS_TYPE "DARWIN"
+#     define DYNAMIC_LOADING
+      /* XXX: see get_end(3), get_etext() and get_end() should not be used.
+         These aren't used when dyld support is enabled (it is by default) */
 #     define DATASTART ((ptr_t) get_etext())
+#     define DATAEND	((ptr_t) get_end())
 #     define STACKBOTTOM ((ptr_t) 0xc0000000)
-#     define DATAEND	/* not needed */
-#     undef MPROTECT_VDB
+#     define USE_MMAP
+#     define USE_MMAP_ANON
+#     define USE_ASM_PUSH_REGS
+      /* This is potentially buggy. It needs more testing. See the comments in
+         os_dep.c */
+#     define MPROTECT_VDB
 #     include <unistd.h>
 #     define GETPAGESIZE() getpagesize()
+#     if defined(USE_PPC_PREFETCH) && defined(__GNUC__)
+	/* The performance impact of prefetches is untested */
+#	define PREFETCH(x) \
+	  __asm__ __volatile__ ("dcbt 0,%0" : : "r" ((const void *) (x)))
+#	define PREFETCH_FOR_WRITE(x) \
+	  __asm__ __volatile__ ("dcbtst 0,%0" : : "r" ((const void *) (x)))
+#     endif
+      /* There seems to be some issues with trylock hanging on darwin. This
+         should be looked into some more */
+#     define NO_PTHREAD_TRYLOCK
 #   endif
 #   ifdef NETBSD
 #     define ALIGNMENT 4
@@ -746,8 +821,8 @@
 #	define OS_TYPE "SUNOS5"
 	extern int _etext[];
 	extern int _end[];
-	extern char * GC_SysVGetDataStart();
-#       define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, _etext)
+	extern ptr_t GC_SysVGetDataStart();
+#       define DATASTART GC_SysVGetDataStart(0x10000, _etext)
 #	define DATAEND (_end)
 #	if !defined(USE_MMAP) && defined(REDIRECT_MALLOC)
 #	    define USE_MMAP
@@ -801,9 +876,9 @@
 #   endif
 #   ifdef DRSNX
 #	define OS_TYPE "DRSNX"
-	extern char * GC_SysVGetDataStart();
+	extern ptr_t GC_SysVGetDataStart();
 	extern int etext[];
-#       define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, etext)
+#       define DATASTART GC_SysVGetDataStart(0x10000, etext)
 #	define MPROTECT_VDB
 #       define STACKBOTTOM ((ptr_t) 0xdfff0000)
 #	define DYNAMIC_LOADING
@@ -819,13 +894,14 @@
       extern int _etext[];
 #     define DATAEND (_end)
 #     define SVR4
+      extern ptr_t GC_SysVGetDataStart();
 #     ifdef __arch64__
+#	define DATASTART GC_SysVGetDataStart(0x100000, _etext)
 	/* libc_stack_end is not set reliably for sparc64 */
-#       define STACKBOTTOM ((ptr_t) 0x80000000000)
-#	define DATASTART (ptr_t)GC_SysVGetDataStart(0x100000, _etext)
+#       define STACKBOTTOM ((ptr_t) 0x80000000000ULL)
 #     else
-#       define LINUX_STACKBOTTOM
-#	define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, _etext)
+#       define DATASTART GC_SysVGetDataStart(0x10000, _etext)
+#	define LINUX_STACKBOTTOM
 #     endif
 #   endif
 #   ifdef OPENBSD
@@ -876,7 +952,7 @@
 #   ifdef SUNOS5
 #	define OS_TYPE "SUNOS5"
         extern int _etext[], _end[];
-  	extern char * GC_SysVGetDataStart();
+  	extern ptr_t GC_SysVGetDataStart();
 #       define DATASTART GC_SysVGetDataStart(0x1000, _etext)
 #	define DATAEND (_end)
 /*	# define STACKBOTTOM ((ptr_t)(_start)) worked through 2.7,  	*/
@@ -921,6 +997,28 @@
 #       define DYNAMIC_LOADING
 #	define ELF_CLASS ELFCLASS32
 #   endif
+#   ifdef DGUX
+#	define OS_TYPE "DGUX"
+	extern int _etext, _end;
+	extern ptr_t GC_SysVGetDataStart();
+#	define DATASTART GC_SysVGetDataStart(0x1000, &_etext)
+#	define DATAEND (&_end)
+#	define STACK_GROWS_DOWN
+#	define HEURISTIC2
+#	include <unistd.h>
+#	define GETPAGESIZE()  sysconf(_SC_PAGESIZE)
+#	define DYNAMIC_LOADING
+#	ifndef USE_MMAP
+#	  define USE_MMAP
+#	endif /* USE_MMAP */
+#	define MAP_FAILED (void *) -1
+#	ifdef USE_MMAP
+#	  define HEAP_START (ptr_t)0x40000000
+#	else /* USE_MMAP */
+#	  define HEAP_START DATAEND
+#	endif /* USE_MMAP */
+#   endif /* DGUX */
+
 #   ifdef LINUX
 #	ifndef __GNUC__
 	  /* The Intel compiler doesn't like inline assembly */
@@ -944,6 +1042,9 @@
 	    /* possibly because Linux threads is itself a malloc client */
 	    /* and can't deal with the signals.				*/
 #	endif
+#	define HEAP_START 0x1000
+		/* This encourages mmap to give us low addresses,	*/
+		/* thus allowing the heap to grow to ~3GB		*/
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
 #	     ifdef UNDEFINED	/* includes ro data */
@@ -952,7 +1053,7 @@
 #	     endif
 #	     include <features.h>
 #	     if defined(__GLIBC__) && __GLIBC__ >= 2
-#		 define LINUX_DATA_START
+#		 define SEARCH_FOR_DATA_START
 #	     else
      	         extern char **__environ;
 #                define DATASTART ((ptr_t)(&__environ))
@@ -1006,8 +1107,12 @@
   	/*	DATAEND	    = _data_end__		*/
   	/* To get it right for both, we take the	*/
   	/* minumum/maximum of the two.			*/
+#     ifndef MAX
 #   	define MAX(x,y) ((x) > (y) ? (x) : (y))
+#     endif
+#     ifndef MIN
 #   	define MIN(x,y) ((x) < (y) ? (x) : (y))
+#     endif
 #       define DATASTART ((ptr_t) MIN(_data_start__, _bss_start__))
 #       define DATAEND	 ((ptr_t) MAX(_data_end__, _bss_end__))
 #	undef STACK_GRAN
@@ -1061,16 +1166,9 @@
 #	ifdef __ELF__
 #	    define DYNAMIC_LOADING
 #	endif
-/* Handle unmapped hole i386*-*-freebsd[45]* may put between etext and edata. */
 	extern char etext[];
-	extern char edata[];
-	extern char end[];
-#	define NEED_FIND_LIMIT
-#	define DATASTART ((ptr_t)(etext))
-#   	define MIN(x,y) ((x) < (y) ? (x) : (y))
-#	define DATAEND (MIN (GC_find_limit (DATASTART, TRUE), DATASTART2))
-#	define DATASTART2 ((ptr_t)(edata))
-#	define DATAEND2 ((ptr_t)(end))
+	extern char * GC_FreeBSDGetDataStart();
+#	define DATASTART GC_FreeBSDGetDataStart(0x1000, &etext)
 #   endif
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
@@ -1149,7 +1247,11 @@
 #     define DATASTART ((ptr_t)(__data_start))
 #     define ALIGNMENT 4
 #     define USE_GENERIC_PUSH_REGS
-#     define LINUX_STACKBOTTOM
+#     if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 2 || __GLIBC__ > 2
+#        define LINUX_STACKBOTTOM
+#     else
+#        define STACKBOTTOM 0x80000000
+#     endif
 #   endif /* Linux */
 #   ifdef EWS4800
 #      define HEURISTIC2
@@ -1203,7 +1305,8 @@
 			      /* heap sections so they're not 		*/
 			      /* considered as roots.			*/
 #	define OS_TYPE "IRIX5"
-#       define MPROTECT_VDB
+/*#       define MPROTECT_VDB DOB: this should work, but there is evidence */
+/* 	  	of recent breakage.					   */
 #       ifdef _MIPS_SZPTR
 #	  define CPP_WORDSZ _MIPS_SZPTR
 #	  define ALIGNMENT (_MIPS_SZPTR/8)
@@ -1226,28 +1329,46 @@
 #     define ALIGNMENT 4
 #     define HEURISTIC2
 #     define USE_GENERIC_PUSH_REGS
-      extern int _fdata[];
-#     define DATASTART ((ptr_t)(_fdata))
-      extern int _end[];
-#     define DATAEND ((ptr_t)(_end))
-#     define DYNAMIC_LOADING
+#     ifdef __ELF__
+        extern int etext[];
+#       define DATASTART GC_data_start
+#       define NEED_FIND_LIMIT
+#       define DYNAMIC_LOADING
+#     else
+#       define DATASTART ((ptr_t) 0x10000000)
+#       define STACKBOTTOM ((ptr_t) 0x7ffff000)
+#     endif /* _ELF_ */
 #  endif
 # endif
 
 # ifdef RS6000
 #   define MACH_TYPE "RS6000"
+#   ifdef ALIGNMENT
+#     undef ALIGNMENT
+#   endif
+#   ifdef IA64
+#     undef IA64 /* DOB: some AIX installs stupidly define IA64 in /usr/include/sys/systemcfg.h */
+#   endif
 #   ifdef __64BIT__
 #     define ALIGNMENT 8
 #     define CPP_WORDSZ 64
+#     define STACKBOTTOM ((ptr_t)0x1000000000000000)
 #   else
 #     define ALIGNMENT 4
 #     define CPP_WORDSZ 32
+#     define STACKBOTTOM ((ptr_t)((ulong)&errno))
 #   endif
+ /* From AIX linker man page:
+ _text Specifies the first location of the program.
+ _etext Specifies the first location after the program.
+ _data Specifies the first location of the data.
+ _edata Specifies the first location after the initialized data
+ _end or end Specifies the first location after all data.
+ */
     extern int _data[], _end[];
 #   define DATASTART ((ptr_t)((ulong)_data))
 #   define DATAEND ((ptr_t)((ulong)_end))
     extern int errno;
-#   define STACKBOTTOM ((ptr_t)((ulong)&errno))
 #   define USE_GENERIC_PUSH_REGS
 #   define DYNAMIC_LOADING
 	/* For really old versions of AIX, this may have to be removed. */
@@ -1311,15 +1432,23 @@
 #     define OS_TYPE "LINUX"
 #     define LINUX_STACKBOTTOM
 #     define DYNAMIC_LOADING
-#     define LINUX_DATA_START
+#     define SEARCH_FOR_DATA_START
       extern int _end[];
-#     define DATAEND (_end)
+#     define DATAEND (&_end)
 #   endif /* LINUX */
 # endif /* HP_PA */
 
 # ifdef ALPHA
 #   define MACH_TYPE "ALPHA"
 #   define ALIGNMENT 8
+#   define CPP_WORDSZ 64
+#   ifndef LINUX
+#     define USE_GENERIC_PUSH_REGS
+      /* Gcc and probably the DEC/Compaq compiler spill pointers to preserved */
+      /* fp registers in some cases when the target is a 21264.  The assembly */
+      /* code doesn't handle that yet, and version dependencies make that a   */
+      /* bit tricky.  Do the easy thing for now.				    */
+#   endif
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
 #	define HEURISTIC2
@@ -1327,13 +1456,11 @@
 #	define ELFCLASS32 32
 #	define ELFCLASS64 64
 #	define ELF_CLASS ELFCLASS64
-#   	define CPP_WORDSZ 64
 #       define DYNAMIC_LOADING
 #   endif
 #   ifdef OPENBSD
 #	define OS_TYPE "OPENBSD"
 #	define HEURISTIC2
-#   	define CPP_WORDSZ 64
 #   	ifdef __ELF__	/* since OpenBSD/Alpha 2.9 */
 #	   define DATASTART GC_data_start
 #   	   define ELFCLASS32 32
@@ -1357,17 +1484,16 @@
 	extern char edata[];
 	extern char end[];
 #	define NEED_FIND_LIMIT
-#	define DATASTART ((ptr_t)(etext))
+#	define DATASTART ((ptr_t)(&etext))
 #	define DATAEND (GC_find_limit (DATASTART, TRUE))
-#	define DATASTART2 ((ptr_t)(edata))
-#	define DATAEND2 ((ptr_t)(end))
-#	define CPP_WORDSZ 64
+#	define DATASTART2 ((ptr_t)(&edata))
+#	define DATAEND2 ((ptr_t)(&end))
 #   endif
 #   ifdef OSF1
 #	define OS_TYPE "OSF1"
 #   	define DATASTART ((ptr_t) 0x140000000)
 	extern int _end[];
-#   	define DATAEND ((ptr_t) _end)
+#   	define DATAEND ((ptr_t) &_end)
  	extern char ** environ;
 	/* round up from the value of environ to the nearest page boundary */
 	/* Probably breaks if putenv is called before collector 	   */
@@ -1378,19 +1504,19 @@
 	/* the text segment immediately follows the stack.		*/
 	/* Hence we give an upper pound.				*/
 	/* This is currently unused, since we disabled HEURISTIC2	*/
-    	extern int __start[];
+   	extern int __start[];
 #   	define HEURISTIC2_LIMIT ((ptr_t)((word)(__start) & ~(getpagesize()-1)))
-#   	define CPP_WORDSZ 64
-#   	define MPROTECT_VDB
+#	ifndef GC_OSF1_THREADS
+	  /* Unresolved signal issues with threads.	*/
+#   	  define MPROTECT_VDB
+#       endif
 #   	define DYNAMIC_LOADING
 #   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
-#       define CPP_WORDSZ 64
 #       define STACKBOTTOM ((ptr_t) 0x120000000)
 #       ifdef __ELF__
 #	  define SEARCH_FOR_DATA_START
-#	  define DATASTART GC_data_start
 #         define DYNAMIC_LOADING
 #       else
 #           define DATASTART ((ptr_t) 0x140000000)
@@ -1468,7 +1594,6 @@
 	extern char * GC_register_stackbottom;
 #	define BACKING_STORE_BASE ((ptr_t)GC_register_stackbottom)
 #	define SEARCH_FOR_DATA_START
-#	define DATASTART GC_data_start
 #	ifdef __GNUC__
 #         define DYNAMIC_LOADING
 #	else
@@ -1502,23 +1627,25 @@
 #   endif
 #   ifdef  DGUX
 #	define OS_TYPE "DGUX"
-	extern char * GC_SysVGetDataStart();
-#       define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, etext)
+	extern ptr_t GC_SysVGetDataStart();
+#       define DATASTART GC_SysVGetDataStart(0x10000, etext)
 #   endif
 #   define STACKBOTTOM ((char*)0xf0000000) /* determined empirically */
 # endif
 
 # ifdef S370
+    /* If this still works, and if anyone cares, this should probably	*/
+    /* be moved to the S390 category.					*/
 #   define MACH_TYPE "S370"
 #   define ALIGNMENT 4	/* Required by hardware	*/
 #   define USE_GENERIC_PUSH_REGS
 #   ifdef UTS4
 #       define OS_TYPE "UTS4"
-        extern int etext[];
+       extern int etext[];
 	extern int _etext[];
 	extern int _end[];
-	extern char * GC_SysVGetDataStart();
-#       define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, _etext)
+	extern ptr_t GC_SysVGetDataStart();
+#       define DATASTART GC_SysVGetDataStart(0x10000, _etext)
 #	define DATAEND (_end)
 #	define HEURISTIC2
 #   endif
@@ -1528,23 +1655,23 @@
 #   define MACH_TYPE "S390"
 #   define USE_GENERIC_PUSH_REGS
 #   ifndef __s390x__
-#	define ALIGNMENT 4
-#	define CPP_WORDSZ 32
+#   define ALIGNMENT 4
+#   define CPP_WORDSZ 32
 #   else
-#	define ALIGNMENT 8
-#	define CPP_WORDSZ 64
-#	define HBLKSIZE 4096
+#   define ALIGNMENT 8
+#   define CPP_WORDSZ 64
+#   define HBLKSIZE 4096
 #   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
 #       define LINUX_STACKBOTTOM
 #       define DYNAMIC_LOADING
-        extern int __data_start[];
+       extern int __data_start[];
 #       define DATASTART ((ptr_t)(__data_start))
-	extern int _end[];
-#	define DATAEND (_end)
-#	define CACHE_LINE_SIZE 256
-#	define GETPAGESIZE() 4096
+    extern int _end[];
+#   define DATAEND (_end)
+#   define CACHE_LINE_SIZE 256
+#   define GETPAGESIZE() 4096
 #   endif
 # endif
 
@@ -1562,13 +1689,8 @@
 #   ifdef NETBSD
 #       define OS_TYPE "NETBSD"
 #       define HEURISTIC2
-#	ifdef __ELF__
-#	    define DATASTART GC_data_start
-#	    define DYNAMIC_LOADING
-#	else
-            extern char etext[];
-#           define DATASTART ((ptr_t)(etext))
-#	endif
+       extern char etext[];
+#       define DATASTART ((ptr_t)(etext))
 #       define USE_GENERIC_PUSH_REGS
 #   endif
 #   ifdef LINUX
@@ -1581,7 +1703,7 @@
 #            define DYNAMIC_LOADING
 #	     include <features.h>
 #	     if defined(__GLIBC__) && __GLIBC__ >= 2
-#		 define LINUX_DATA_START
+#		 define SEARCH_FOR_DATA_START
 #	     else
      	         extern char **__environ;
 #                define DATASTART ((ptr_t)(&__environ))
@@ -1628,7 +1750,7 @@
 #     define STACKBOTTOM ((ptr_t) 0x7c000000)
 #     define USE_GENERIC_PUSH_REGS
 #     define DYNAMIC_LOADING
-#     define LINUX_DATA_START
+#     define SEARCH_FOR_DATA_START
       extern int _end[];
 #     define DATAEND (_end)
 #   endif
@@ -1645,7 +1767,9 @@
 #   define MACH_TYPE "X86_64"
 #   define ALIGNMENT 8
 #   define CPP_WORDSZ 64
-#   define HBLKSIZE 4096
+#   ifndef HBLKSIZE
+#     define HBLKSIZE 4096
+#   endif
 #   define CACHE_LINE_SIZE 64
 #   define USE_GENERIC_PUSH_REGS
 #   ifdef LINUX
@@ -1665,7 +1789,7 @@
 #              define DATASTART ((ptr_t)((((word) (_etext)) + 0xfff) & ~0xfff))
 #	     endif
 #	     include <features.h>
-#	     define LINUX_DATA_START
+#	     define SEARCH_FOR_DATA_START
 	     extern int _end[];
 #	     define DATAEND (_end)
 #	else
@@ -1678,19 +1802,6 @@
 	  __asm__ __volatile__ ("	prefetchw	%0": : "m"(*(char *)(x)))
 #   endif
 # endif
-
-#ifdef LINUX_DATA_START
-    /* Some Linux distributions arrange to define __data_start.  Some	*/
-    /* define data_start as a weak symbol.  The latter is technically	*/
-    /* broken, since the user program may define data_start, in which	*/
-    /* case we lose.  Nonetheless, we try both, prefering __data_start.	*/
-    /* We assume gcc.	*/
-#   pragma weak __data_start
-    extern int __data_start[];
-#   pragma weak data_start
-    extern int data_start[];
-#   define DATASTART ((ptr_t)(__data_start != 0? __data_start : data_start))
-#endif
 
 #if defined(LINUX) && defined(REDIRECT_MALLOC)
     /* Rld appears to allocate some memory with its own allocator, and	*/
@@ -1730,15 +1841,15 @@
 # endif
 
 # if defined(SUNOS5) || defined(DRSNX) || defined(UTS4)
-    /* OS has SVR4 generic features.  Probably others also qualify.	*/
+	    /* OS has SVR4 generic features.  Probably others also qualify.	*/
 #   define SVR4
 # endif
 
 # if defined(SUNOS5) || defined(DRSNX)
-    /* OS has SUNOS5 style semi-undocumented interface to dynamic 	*/
-    /* loader.								*/
+	    /* OS has SUNOS5 style semi-undocumented interface to dynamic 	*/
+	    /* loader.								*/
 #   define SUNOS5DL
-    /* OS has SUNOS5 style signal handlers.				*/
+	    /* OS has SUNOS5 style signal handlers.				*/
 #   define SUNOS5SIGS
 # endif
 
@@ -1747,13 +1858,14 @@
 # endif
 
 # if defined(SVR4) || defined(LINUX) || defined(IRIX) || defined(HPUX) \
-    || defined(OPENBSD) || defined(NETBSD) || defined(FREEBSD) \
-    || defined(BSD) || defined(_AIX) || defined(MACOSX) || defined(OSF1)
+	    || defined(OPENBSD) || defined(NETBSD) || defined(FREEBSD) \
+	    || defined(DGUX) || defined(BSD) \
+	    || defined(_AIX) || defined(DARWIN) || defined(OSF1)
 #   define UNIX_LIKE   /* Basic Unix-like system calls work.	*/
 # endif
 
 # if CPP_WORDSZ != 32 && CPP_WORDSZ != 64
-   -> bad word size
+	   -> bad word size
 # endif
 
 # ifdef PCR
@@ -1767,13 +1879,13 @@
 # endif
 
 # ifdef SRC_M3
-/* Postponed for now. */
+	/* Postponed for now. */
 #   undef PROC_VDB
 #   undef MPROTECT_VDB
 # endif
 
 # ifdef SMALL_CONFIG
-/* Presumably not worth the space it takes. */
+	/* Presumably not worth the space it takes. */
 #   undef PROC_VDB
 #   undef MPROTECT_VDB
 # endif
@@ -1813,49 +1925,50 @@
     /* platforms as well, though it should be avoided in win32.		*/
 # endif /* LINUX */
 
-# if defined(SEARCH_FOR_DATA_START) && defined(GC_PRIVATE_H)
+# if defined(SEARCH_FOR_DATA_START)
     extern ptr_t GC_data_start;
+#   define DATASTART GC_data_start
 # endif
 
 # ifndef CLEAR_DOUBLE
 #   define CLEAR_DOUBLE(x) \
-	((word*)x)[0] = 0; \
-	((word*)x)[1] = 0;
+		((word*)x)[0] = 0; \
+		((word*)x)[1] = 0;
 # endif /* CLEAR_DOUBLE */
 
-/* Internally we use GC_SOLARIS_THREADS to test for either old or pthreads. */
+	/* Internally we use GC_SOLARIS_THREADS to test for either old or pthreads. */
 # if defined(GC_SOLARIS_PTHREADS) && !defined(GC_SOLARIS_THREADS)
 #   define GC_SOLARIS_THREADS
 # endif
 
 # if defined(GC_IRIX_THREADS) && !defined(IRIX5)
---> inconsistent configuration
+	--> inconsistent configuration
 # endif
 # if defined(GC_LINUX_THREADS) && !defined(LINUX)
---> inconsistent configuration
+	--> inconsistent configuration
 # endif
 # if defined(GC_SOLARIS_THREADS) && !defined(SUNOS5)
---> inconsistent configuration
+	--> inconsistent configuration
 # endif
 # if defined(GC_HPUX_THREADS) && !defined(HPUX)
---> inconsistent configuration
+	--> inconsistent configuration
 # endif
-# if defined(GC_WIN32_THREADS) && !defined(MSWIN32)
-    /* Ideally CYGWIN32 should work, in addition to MSWIN32.  I suspect	*/
-    /* the necessary code is mostly there, but nobody has actually made */
-    /* sure the right combination of pieces is compiled in, etc.	*/
---> inconsistent configuration
+# if defined(GC_AIX_THREADS) && !defined(_AIX)
+	--> inconsistent configuration
+# endif
+# if defined(GC_WIN32_THREADS) && !defined(MSWIN32) && !defined(CYGWIN32)
+	--> inconsistent configuration
 # endif
 
 # if defined(PCR) || defined(SRC_M3) || \
-	defined(GC_SOLARIS_THREADS) || defined(GC_WIN32_THREADS) || \
-	defined(GC_PTHREADS)
+		defined(GC_SOLARIS_THREADS) || defined(GC_WIN32_THREADS) || \
+		defined(GC_PTHREADS)
 #   define THREADS
 # endif
 
-# if defined(HP_PA) || defined(M88K) || defined(POWERPC) && !defined(MACOSX) \
-     || defined(LINT) || defined(MSWINCE) \
-     || (defined(I386) && defined(__LCC__))
+# if defined(HP_PA) || defined(M88K) || defined(POWERPC) && !defined(DARWIN) \
+	     || defined(LINT) || defined(MSWINCE) || defined(ARM32) \
+	     || (defined(I386) && defined(__LCC__))
 	/* Use setjmp based hack to mark from callee-save registers.    */
 	/* The define should move to the individual platform 		*/
 	/* descriptions.						*/
@@ -1867,36 +1980,26 @@
 				/* include assembly code to do it well.	*/
 # endif
 
-/* Can we save call chain in objects for debugging?   		        */
-/* SET NFRAMES (# of saved frames) and NARGS (#of args for each frame)	*/
-/* to reasonable values for the platform.				*/
-/* Set SAVE_CALL_CHAIN if we can.  SAVE_CALL_COUNT can be specified at	*/
-/* build time, though we feel free to adjust it slightly.		*/
-/* Define NEED_CALLINFO if we either save the call stack or 		*/
-/* GC_ADD_CALLER is defined.						*/
-#ifdef LINUX
-# include <features.h>
-# if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 1 || __GLIBC__ > 2
-#   define HAVE_BUILTIN_BACKTRACE
-# endif
-#endif
+  /* Can we save call chain in objects for debugging?   	        */
+  /* SET NFRAMES (# of saved frames) and NARGS (#of args for each 	*/
+  /* frame) to reasonable values for the platform.			*/
+  /* Set SAVE_CALL_CHAIN if we can.  SAVE_CALL_COUNT can be specified 	*/
+  /* at build time, though we feel free to adjust it slightly.		*/
+  /* Define NEED_CALLINFO if we either save the call stack or 		*/
+  /* GC_ADD_CALLER is defined.						*/
+  /* GC_CAN_SAVE_CALL_STACKS is set in gc.h.				*/
 
 #if defined(SPARC)
-# define CAN_SAVE_CALL_STACKS
 # define CAN_SAVE_CALL_ARGS
 #endif
 #if (defined(I386) || defined(X86_64)) && defined(LINUX)
-    /* SAVE_CALL_CHAIN is supported if the code is compiled to save	*/
-    /* frame pointers by default, i.e. no -fomit-frame-pointer flag.	*/
-# define CAN_SAVE_CALL_STACKS
+	    /* SAVE_CALL_CHAIN is supported if the code is compiled to save	*/
+	    /* frame pointers by default, i.e. no -fomit-frame-pointer flag.	*/
 # define CAN_SAVE_CALL_ARGS
-#endif
-#if defined(HAVE_BUILTIN_BACKTRACE) && !defined(CAN_SAVE_CALL_STACKS)
-# define CAN_SAVE_CALL_STACKS
 #endif
 
 # if defined(SAVE_CALL_COUNT) && !defined(GC_ADD_CALLER) \
-     && defined(CAN_SAVE_CALL_STACKS)
+	     && defined(GC_CAN_SAVE_CALL_STACKS)
 #   define SAVE_CALL_CHAIN 
 # endif
 # ifdef SAVE_CALL_CHAIN
@@ -1909,7 +2012,7 @@
 # ifdef SAVE_CALL_CHAIN
 #   ifndef SAVE_CALL_COUNT
 #     define NFRAMES 6	/* Number of frames to save. Even for		*/
-			/* alignment reasons.				*/
+				/* alignment reasons.				*/
 #   else
 #     define NFRAMES ((SAVE_CALL_COUNT + 1) & ~1)
 #   endif
@@ -1924,5 +2027,97 @@
 # if defined(MAKE_BACK_GRAPH) && !defined(DBG_HDRS_ALL)
 #   define DBG_HDRS_ALL
 # endif
+
+# if defined(POINTER_MASK) && !defined(POINTER_SHIFT)
+#   define POINTER_SHIFT 0
+# endif
+
+# if defined(POINTER_SHIFT) && !defined(POINTER_MASK)
+#   define POINTER_MASK ((GC_word)(-1))
+# endif
+
+# if !defined(FIXUP_POINTER) && defined(POINTER_MASK)
+#   define FIXUP_POINTER(p) (p) = ((p) & (POINTER_MASK) << POINTER_SHIFT)
+# endif
+
+# if defined(FIXUP_POINTER)
+#   define NEED_FIXUP_POINTER 1
+# else
+#   define NEED_FIXUP_POINTER 0
+#   define FIXUP_POINTER(p)
+# endif
+
+#ifdef GC_PRIVATE_H
+	/* This relies on some type definitions from gc_priv.h, from	*/
+        /* where it's normally included.				*/
+	/*								*/
+	/* How to get heap memory from the OS:				*/
+	/* Note that sbrk()-like allocation is preferred, since it 	*/
+	/* usually makes it possible to merge consecutively allocated	*/
+	/* chunks.  It also avoids unintented recursion with		*/
+	/* -DREDIRECT_MALLOC.						*/
+	/* GET_MEM() returns a HLKSIZE aligned chunk.			*/
+	/* 0 is taken to mean failure. 					*/
+	/* In the case os USE_MMAP, the argument must also be a 	*/
+	/* physical page size.						*/
+	/* GET_MEM is currently not assumed to retrieve 0 filled space, */
+	/* though we should perhaps take advantage of the case in which */
+	/* does.							*/
+	struct hblk;	/* See gc_priv.h.	*/
+# ifdef PCR
+	    char * real_malloc();
+#   define GET_MEM(bytes) HBLKPTR(real_malloc((size_t)bytes + GC_page_size) \
+					  + GC_page_size-1)
+# else
+#   ifdef OS2
+	      void * os2_alloc(size_t bytes);
+#     define GET_MEM(bytes) HBLKPTR((ptr_t)os2_alloc((size_t)bytes \
+					    + GC_page_size) \
+					    + GC_page_size-1)
+#   else
+#     if defined(NEXT) || defined(DOS4GW) || \
+		 (defined(AMIGA) && !defined(GC_AMIGA_FASTALLOC)) || \
+		 (defined(SUNOS5) && !defined(USE_MMAP))
+#       define GET_MEM(bytes) HBLKPTR((size_t) \
+					      calloc(1, (size_t)bytes + GC_page_size) \
+					      + GC_page_size-1)
+#     else
+#	ifdef MSWIN32
+	  extern ptr_t GC_win32_get_mem();
+#         define GET_MEM(bytes) (struct hblk *)GC_win32_get_mem(bytes)
+#	else
+#	  ifdef MACOS
+#	    if defined(USE_TEMPORARY_MEMORY)
+			extern Ptr GC_MacTemporaryNewPtr(size_t size,
+							 Boolean clearMemory);
+#               define GET_MEM(bytes) HBLKPTR( \
+			    GC_MacTemporaryNewPtr(bytes + GC_page_size, true) \
+			    + GC_page_size-1)
+#	    else
+#         	    define GET_MEM(bytes) HBLKPTR( \
+				NewPtrClear(bytes + GC_page_size) + GC_page_size-1)
+#	    endif
+#	  else
+#	    ifdef MSWINCE
+	      extern ptr_t GC_wince_get_mem();
+#	      define GET_MEM(bytes) (struct hblk *)GC_wince_get_mem(bytes)
+#	    else
+#	      if defined(AMIGA) && defined(GC_AMIGA_FASTALLOC)
+			extern void *GC_amiga_get_mem(size_t size);
+#			define GET_MEM(bytes) HBLKPTR((size_t) \
+			  GC_amiga_get_mem((size_t)bytes + GC_page_size) \
+			  + GC_page_size-1)
+#	      else
+		extern ptr_t GC_unix_get_mem();
+#               define GET_MEM(bytes) (struct hblk *)GC_unix_get_mem(bytes)
+#	      endif
+#	    endif
+#	  endif
+#	endif
+#     endif
+#   endif
+# endif
+
+#endif /* GC_PRIVATE_H */
 
 # endif /* GCCONFIG_H */

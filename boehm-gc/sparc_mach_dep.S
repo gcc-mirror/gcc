@@ -37,7 +37,7 @@ loop:
 	stx %g0,[%o3]		! *(long *)p = 0
 	cmp %o3,%o1
 	bgu,pt %xcc, loop	! if (p > limit) goto loop
-        add %o3,-8,%o3		! p -= 8 (delay slot)
+          add %o3,-8,%o3	! p -= 8 (delay slot)
 	retl
     	  mov %o2,%sp		! Restore sp., delay slot	
 #else  /* 32 bit SPARC */

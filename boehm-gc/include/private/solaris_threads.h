@@ -16,7 +16,8 @@
 #      define DETACHED 2       /* Thread is intended to be detached.   */
 #      define CLIENT_OWNS_STACK        4
                                /* Stack was supplied by client.        */
-#      define SUSPENDED 8      /* Currently suspended. */
+#      define SUSPNDED 8       /* Currently suspended.			*/
+    			       /* SUSPENDED is used insystem header.	*/
     ptr_t stack;
     size_t stack_size;
     cond_t join_cv;

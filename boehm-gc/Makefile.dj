@@ -152,7 +152,7 @@ CFLAGS= -O -I$(srcdir)/include -DATOMIC_UNCOLLECTABLE -DNO_SIGNALS -DALL_INTERIO
 #   currently probably works only with Linux.
 
 
-CXXFLAGS= $(CFLAGS) -DOPERATOR_NEW_ARRAY
+CXXFLAGS= $(CFLAGS) -DGC_OPERATOR_NEW_ARRAY
 AR= ar
 RANLIB= ranlib
 
@@ -165,8 +165,8 @@ CORD_SRCS=  cord/cordbscs.c cord/cordxtra.c cord/cordprnt.c cord/de.c cord/cordt
 
 CORD_OBJS=  cord/cordbscs.o cord/cordxtra.o cord/cordprnt.o
 
-SRCS= $(CSRCS) mips_sgi_mach_dep.s rs6000_mach_dep.s alpha_mach_dep.s \
-    sparc_mach_dep.s include/gc.h include/gc_typed.h \
+SRCS= $(CSRCS) mips_sgi_mach_dep.S rs6000_mach_dep.s alpha_mach_dep.S \
+    sparc_mach_dep.S include/gc.h include/gc_typed.h \
     include/private/gc_hdrs.h include/private/gc_priv.h \
     include/private/gcconfig.h include/private/gc_mark.h \
     include/gc_inl.h include/gc_inline.h gc.man \
@@ -177,7 +177,7 @@ SRCS= $(CSRCS) mips_sgi_mach_dep.s rs6000_mach_dep.s alpha_mach_dep.s \
     include/private/solaris_threads.h include/gc_backptr.h \
     hpux_test_and_clear.s include/gc_gcj.h \
     include/gc_local_alloc.h include/private/dbg_mlc.h \
-    include/private/specific.h powerpc_macosx_mach_dep.s \
+    include/private/specific.h powerpc_darwin_mach_dep.s \
     include/leak_detector.h $(CORD_SRCS)
 
 OTHER_FILES= Makefile PCR-Makefile OS2_MAKEFILE NT_MAKEFILE BCC_MAKEFILE \
@@ -284,16 +284,16 @@ liblinuxgc.so: $(OBJS) dyn_load.o
 	gcc -shared -o liblinuxgc.so $(OBJS) dyn_load.o -lo
 	ln liblinuxgc.so libgc.so
 
-mach_dep.o: $(srcdir)/mach_dep.c $(srcdir)/mips_sgi_mach_dep.s $(srcdir)/mips_ultrix_mach_dep.s \
-            $(srcdir)/rs6000_mach_dep.s $(srcdir)/powerpc_macosx_mach_dep.s $(UTILS)
+mach_dep.o: $(srcdir)/mach_dep.c $(srcdir)/mips_sgi_mach_dep.S $(srcdir)/mips_ultrix_mach_dep.s \
+            $(srcdir)/rs6000_mach_dep.s $(srcdir)/powerpc_darwin_mach_dep.s $(UTILS)
 	rm -f mach_dep.o
-	./if_mach MIPS IRIX5 $(AS) -o mach_dep.o $(srcdir)/mips_sgi_mach_dep.s
+	./if_mach MIPS IRIX5 $(AS) -o mach_dep.o $(srcdir)/mips_sgi_mach_dep.S
 	./if_mach MIPS RISCOS $(AS) -o mach_dep.o $(srcdir)/mips_ultrix_mach_dep.s
 	./if_mach MIPS ULTRIX $(AS) -o mach_dep.o $(srcdir)/mips_ultrix_mach_dep.s
 	./if_mach RS6000 "" $(AS) -o mach_dep.o $(srcdir)/rs6000_mach_dep.s
-	./if_mach POWERPC MACOSX $(AS) -o mach_dep.o $(srcdir)/powerpc_macosx_mach_dep.s
-	./if_mach ALPHA "" $(AS) -o mach_dep.o $(srcdir)/alpha_mach_dep.s
-	./if_mach SPARC SUNOS5 $(AS) -o mach_dep.o $(srcdir)/sparc_mach_dep.s
+	./if_mach POWERPC MACOSX $(AS) -o mach_dep.o $(srcdir)/powerpc_darwin_mach_dep.s
+	./if_mach ALPHA "" $(AS) -o mach_dep.o $(srcdir)/alpha_mach_dep.S
+	./if_mach SPARC SUNOS5 $(AS) -o mach_dep.o $(srcdir)/sparc_mach_dep.S
 	./if_mach SPARC SUNOS4 $(AS) -o mach_dep.o $(srcdir)/sparc_sunos4_mach_dep.s
 	./if_not_there mach_dep.o $(CC) -c $(SPECIALCFLAGS) $(srcdir)/mach_dep.c
 

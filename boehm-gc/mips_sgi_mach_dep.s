@@ -1,5 +1,10 @@
 #include <sys/regdef.h>
 #include <sys/asm.h>
+/* This file must be preprocessed.  But the SGI assembler always does	*/
+/* that.  Furthermore, a generic preprocessor won't do, since some of	*/
+/* the SGI-supplied include files rely on behavior of the MIPS 		*/
+/* assembler.  Hence we treat and name this file as though it required	*/
+/* no preprocessing.							*/
 
 # define call_push(x)     move    $4,x;    jal     GC_push_one
 

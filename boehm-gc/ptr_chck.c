@@ -79,7 +79,7 @@ void (*GC_same_obj_print_proc) GC_PROTO((GC_PTR, GC_PTR))
 	return(p);
     }
     sz = WORDS_TO_BYTES(hhdr -> hb_sz);
-    if (sz > WORDS_TO_BYTES(MAXOBJSZ)) {
+    if (sz > MAXOBJBYTES) {
       base = (ptr_t)HBLKPTR(p);
       limit = base + sz;
       if ((ptr_t)p >= limit) {
@@ -165,7 +165,7 @@ void (*GC_is_valid_displacement_print_proc) GC_PROTO((GC_PTR)) =
     pdispl = HBLKDISPL(p);
     map_entry = MAP_ENTRY((hhdr -> hb_map), pdispl);
     if (map_entry == OBJ_INVALID
-    	|| sz > MAXOBJSZ && (ptr_t)p >= (ptr_t)h + sz) {
+    	|| sz > MAXOBJBYTES && (ptr_t)p >= (ptr_t)h + sz) {
     	goto fail;
     }
     return(p);

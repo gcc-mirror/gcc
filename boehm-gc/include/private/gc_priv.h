@@ -30,14 +30,20 @@
 #   define BSD_TIME
 #endif
 
+#ifdef DGUX
+#   include <sys/types.h>
+#   include <sys/time.h>
+#   include <sys/resource.h>
+#endif /* DGUX */
+
 #ifdef BSD_TIME
 #   include <sys/types.h>
 #   include <sys/time.h>
 #   include <sys/resource.h>
 #endif /* BSD_TIME */
 
-# ifndef GC_H
-#   include "gc.h"
+# ifndef _GC_H
+#   include "../gc.h"
 # endif
 
 # ifndef GC_MARK_H
@@ -206,10 +212,9 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 #endif
 
 #if defined(GC_GCJ_SUPPORT) && ALIGNMENT < 8 && !defined(ALIGN_DOUBLE)
-   /* GCJ's Hashtable synchronization code requires 64-bit alignment.	*/
+   /* GCJ's Hashtable synchronization code requires 64-bit alignment.  */
 #  define ALIGN_DOUBLE
 #endif
-
 
 /* ALIGN_DOUBLE requires MERGE_SIZES at present. */
 # if defined(ALIGN_DOUBLE) && !defined(MERGE_SIZES)
@@ -347,7 +352,8 @@ void GC_print_callers GC_PROTO((struct callinfo info[NFRAMES]));
 #   include <string.h>
 #   define BCOPY_EXISTS
 # endif
-# if defined(MACOSX)
+# if defined(DARWIN)
+#   include <string.h>
 #   define BCOPY_EXISTS
 # endif
 
@@ -358,68 +364,6 @@ void GC_print_callers GC_PROTO((struct callinfo info[NFRAMES]));
 # else
 #   define BCOPY(x,y,n) bcopy((char *)(x),(char *)(y),(int)(n))
 #   define BZERO(x,n) bzero((char *)(x),(int)(n))
-# endif
-
-/* HBLKSIZE aligned allocation.  0 is taken to mean failure 	*/
-/* space is assumed to be cleared.				*/
-/* In the case os USE_MMAP, the argument must also be a 	*/
-/* physical page size.						*/
-/* GET_MEM is currently not assumed to retrieve 0 filled space, */
-/* though we should perhaps take advantage of the case in which */
-/* does.							*/
-struct hblk;	/* See below.	*/
-# ifdef PCR
-    char * real_malloc();
-#   define GET_MEM(bytes) HBLKPTR(real_malloc((size_t)bytes + GC_page_size) \
-				  + GC_page_size-1)
-# else
-#   ifdef OS2
-      void * os2_alloc(size_t bytes);
-#     define GET_MEM(bytes) HBLKPTR((ptr_t)os2_alloc((size_t)bytes \
-				    + GC_page_size) \
-                                    + GC_page_size-1)
-#   else
-#     if defined(NEXT) || defined(MACOSX) || defined(DOS4GW) || \
-	 (defined(AMIGA) && !defined(GC_AMIGA_FASTALLOC)) || \
-	 (defined(SUNOS5) && !defined(USE_MMAP))
-#       define GET_MEM(bytes) HBLKPTR((size_t) \
-				      calloc(1, (size_t)bytes + GC_page_size) \
-                                      + GC_page_size-1)
-#     else
-#	ifdef MSWIN32
-          extern ptr_t GC_win32_get_mem();
-#         define GET_MEM(bytes) (struct hblk *)GC_win32_get_mem(bytes)
-#	else
-#	  ifdef MACOS
-#	    if defined(USE_TEMPORARY_MEMORY)
-		extern Ptr GC_MacTemporaryNewPtr(size_t size,
-						 Boolean clearMemory);
-#               define GET_MEM(bytes) HBLKPTR( \
-		    GC_MacTemporaryNewPtr(bytes + GC_page_size, true) \
-		    + GC_page_size-1)
-#	    else
-#         	    define GET_MEM(bytes) HBLKPTR( \
-			NewPtrClear(bytes + GC_page_size) + GC_page_size-1)
-#	    endif
-#	  else
-#	    ifdef MSWINCE
-	      extern ptr_t GC_wince_get_mem();
-#	      define GET_MEM(bytes) (struct hblk *)GC_wince_get_mem(bytes)
-#	    else
-#	      if defined(AMIGA) && defined(GC_AMIGA_FASTALLOC)
-	        extern void *GC_amiga_get_mem(size_t size);
-		define GET_MEM(bytes) HBLKPTR((size_t) \
-                  GC_amiga_get_mem((size_t)bytes + GC_page_size) \
-		  + GC_page_size-1)
-#	      else
-                extern ptr_t GC_unix_get_mem();
-#               define GET_MEM(bytes) (struct hblk *)GC_unix_get_mem(bytes)
-#	      endif
-#	    endif
-#	  endif
-#	endif
-#     endif
-#   endif
 # endif
 
 /* Delay any interrupts or signals that may abort this thread.  Data	*/
@@ -486,7 +430,7 @@ struct hblk;	/* See below.	*/
 #   ifdef SMALL_CONFIG
 #	define ABORT(msg) abort();
 #   else
-	GC_API void GC_abort();
+	GC_API void GC_abort GC_PROTO((GC_CONST char * msg));
 #       define ABORT(msg) GC_abort(msg);
 #   endif
 # endif
@@ -646,9 +590,10 @@ extern GC_warn_proc GC_current_warn_proc;
  */
  
 # ifdef LARGE_CONFIG
-#   define LOG_PHT_ENTRIES  19  /* Collisions likely at 512K blocks,	*/
-				/* which is >= 2GB.  Each table takes	*/
-				/* 64KB.				*/
+#   define LOG_PHT_ENTRIES  20  /* Collisions likely at 1M blocks,	*/
+				/* which is >= 4GB.  Each table takes	*/
+				/* 128KB, some of which may never be	*/
+				/* touched.				*/
 # else
 #   ifdef SMALL_CONFIG
 #     define LOG_PHT_ENTRIES  14 /* Collisions are likely if heap grows	*/
@@ -656,7 +601,7 @@ extern GC_warn_proc GC_current_warn_proc;
 				 /* Each hash table occupies 2K bytes.   */
 #   else /* default "medium" configuration */
 #     define LOG_PHT_ENTRIES  16 /* Collisions are likely if heap grows	*/
-				 /* to more than 16K hblks >= 256MB.	*/
+				 /* to more than 64K hblks >= 256MB.	*/
 				 /* Each hash table occupies 8K bytes.  */
 #   endif
 # endif
@@ -897,6 +842,10 @@ struct _GC_arrays {
   word _mem_freed;
   	/* Number of explicitly deallocated words of memory	*/
   	/* since last collection.				*/
+  word _finalizer_mem_freed;
+  	/* Words of memory explicitly deallocated while 	*/
+  	/* finalizers were running.  Used to approximate mem.	*/
+  	/* explicitly deallocated by finalizers.		*/
   ptr_t _scratch_end_ptr;
   ptr_t _scratch_last_end_ptr;
 	/* Used by headers.c, and can easily appear to point to	*/
@@ -957,7 +906,7 @@ struct _GC_arrays {
   		       /* OFFSET_TOO_BIG if the value j would be too 	*/
   		       /* large to fit in the entry.  (Note that the	*/
   		       /* size of these entries matters, both for 	*/
-  		       /* space consumption and for cache utilization.	*/
+  		       /* space consumption and for cache utilization.)	*/
 #   define OFFSET_TOO_BIG 0xfe
 #   define OBJ_INVALID 0xff
 #   define MAP_ENTRY(map, bytes) (map)[bytes]
@@ -1067,6 +1016,7 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # define GC_words_finalized GC_arrays._words_finalized
 # define GC_non_gc_bytes_at_gc GC_arrays._non_gc_bytes_at_gc
 # define GC_mem_freed GC_arrays._mem_freed
+# define GC_finalizer_mem_freed GC_arrays._finalizer_mem_freed
 # define GC_scratch_end_ptr GC_arrays._scratch_end_ptr
 # define GC_scratch_last_end_ptr GC_arrays._scratch_last_end_ptr
 # define GC_mark_procs GC_arrays._mark_procs
@@ -1201,17 +1151,19 @@ extern struct hblk * GC_hblkfreelist[];
 				/* header structure associated with	*/
 				/* block.				*/
 
-extern GC_bool GC_is_initialized;	/* GC_init() has been run.	*/
-
 extern GC_bool GC_objects_are_marked;	/* There are marked objects in  */
 					/* the heap.			*/
 
 #ifndef SMALL_CONFIG
   extern GC_bool GC_incremental;
 			/* Using incremental/generational collection. */
+# define TRUE_INCREMENTAL \
+	(GC_incremental && GC_time_limit != GC_TIME_UNLIMITED)
+	/* True incremental, not just generational, mode */
 #else
 # define GC_incremental FALSE
 			/* Hopefully allow optimizer to remove some code. */
+# define TRUE_INCREMENTAL FALSE
 #endif
 
 extern GC_bool GC_dirty_maintained;
@@ -1228,6 +1180,10 @@ extern long GC_large_alloc_warn_interval;
 
 extern long GC_large_alloc_warn_suppressed;
 	/* Number of warnings suppressed so far.	*/
+
+#ifdef THREADS
+  extern GC_bool GC_world_stopped;
+#endif
 
 /* Operations */
 # ifndef abs
@@ -1403,6 +1359,11 @@ extern void (*GC_start_call_back) GC_PROTO((void));
 # else
   void GC_push_regs GC_PROTO((void));
 # endif
+# if defined(SPARC) || defined(IA64)
+  /* Cause all stacked registers to be saved in memory.  Return a	*/
+  /* pointer to the top of the corresponding memory stack.		*/
+  word GC_save_regs_in_stack GC_PROTO((void));
+# endif
 			/* Push register contents onto mark stack.	*/
   			/* If NURSERY is defined, the default push	*/
   			/* action can be overridden with GC_push_proc	*/
@@ -1452,6 +1413,7 @@ void GC_set_fl_marks GC_PROTO((ptr_t p));
 				    /* Set all mark bits associated with */
 				    /* a free list.			 */
 void GC_add_roots_inner GC_PROTO((char * b, char * e, GC_bool tmp));
+void GC_remove_roots_inner GC_PROTO((char * b, char * e));
 GC_bool GC_is_static_root GC_PROTO((ptr_t p));
   		/* Is the address p in one of the registered static	*/
   		/* root sections?					*/
@@ -1462,11 +1424,10 @@ GC_bool GC_is_tmp_root GC_PROTO((ptr_t p));
 # endif
 void GC_register_dynamic_libraries GC_PROTO((void));
   		/* Add dynamic library data sections to the root set. */
-
 GC_bool GC_register_main_static_data GC_PROTO((void));
-               /* We need to register the main data segment.  Returns  */
-               /* TRUE unless this is done implicitly as part of       */
-               /* dynamic library registration.                        */
+		/* We need to register the main data segment.  Returns	*/
+		/* TRUE unless this is done implicitly as part of	*/
+		/* dynamic library registration.			*/
   
 /* Machine dependent startup routines */
 ptr_t GC_get_stack_base GC_PROTO((void));	/* Cold end of stack */
@@ -1624,6 +1585,8 @@ GC_bool GC_collect_or_expand GC_PROTO(( \
   				/* until the blocks are available or	*/
   				/* until it fails by returning FALSE.	*/
 
+extern GC_bool GC_is_initialized;	/* GC_init() has been run.	*/
+
 #if defined(MSWIN32) || defined(MSWINCE)
   void GC_deinit GC_PROTO((void));
                                 /* Free any resources allocated by      */
@@ -1665,6 +1628,8 @@ ptr_t GC_allocobj GC_PROTO((word sz, int kind));
   				/* Make the indicated 			*/
   				/* free list nonempty, and return its	*/
   				/* head.				*/
+
+void GC_free_inner(GC_PTR p);
   
 void GC_init_headers GC_PROTO((void));
 struct hblkhdr * GC_install_header GC_PROTO((struct hblk *h));
@@ -1694,6 +1659,12 @@ void GC_notify_or_invoke_finalizers GC_PROTO((void));
 			/* Call *GC_finalizer_notifier if there are	*/
 			/* finalizers to be run, and we haven't called	*/
 			/* this procedure yet this GC cycle.		*/
+
+GC_API GC_PTR GC_make_closure GC_PROTO((GC_finalization_proc fn, GC_PTR data));
+GC_API void GC_debug_invoke_finalizer GC_PROTO((GC_PTR obj, GC_PTR data));
+			/* Auxiliary fns to make finalization work	*/
+			/* correctly with displaced pointers introduced	*/
+			/* by the debugging allocators.			*/
   			
 void GC_add_to_heap GC_PROTO((struct hblk *p, word bytes));
   			/* Add a HBLKSIZE aligned chunk to the heap.	*/
@@ -1704,15 +1675,35 @@ void GC_print_obj GC_PROTO((ptr_t p));
   			/* description of the object to stderr.		*/
 extern void (*GC_check_heap) GC_PROTO((void));
   			/* Check that all objects in the heap with 	*/
-  			/* debugging info are intact.  Print 		*/
-  			/* descriptions of any that are not.		*/
+  			/* debugging info are intact.  			*/
+  			/* Add any that are not to GC_smashed list.	*/
+extern void (*GC_print_all_smashed) GC_PROTO((void));
+			/* Print GC_smashed if it's not empty.		*/
+			/* Clear GC_smashed list.			*/
+extern void GC_print_all_errors GC_PROTO((void));
+			/* Print smashed and leaked objects, if any.	*/
+			/* Clear the lists of such objects.		*/
 extern void (*GC_print_heap_obj) GC_PROTO((ptr_t p));
   			/* If possible print s followed by a more	*/
   			/* detailed description of the object 		*/
   			/* referred to by p.				*/
+#if defined(LINUX) && defined(__ELF__) && !defined(SMALL_CONFIG)
+  void GC_print_address_map GC_PROTO((void));
+  			/* Print an address map of the process.		*/
+#endif
 
+extern GC_bool GC_have_errors;  /* We saw a smashed or leaked object.	*/
+				/* Call error printing routine 		*/
+				/* occasionally.			*/
 extern GC_bool GC_print_stats;	/* Produce at least some logging output	*/
 				/* Set from environment variable.	*/
+
+#ifndef NO_DEBUGGING
+  extern GC_bool GC_dump_regularly;  /* Generate regular debugging dumps. */
+# define COND_DUMP if (GC_dump_regularly) GC_dump();
+#else
+# define COND_DUMP
+#endif
 
 /* Macros used for collector internal allocation.	*/
 /* These assume the collector lock is held.		*/
@@ -1785,6 +1776,7 @@ void GC_print_block_list GC_PROTO((void));
 void GC_print_hblkfreelist GC_PROTO((void));
 void GC_print_heap_sects GC_PROTO((void));
 void GC_print_static_roots GC_PROTO((void));
+void GC_print_finalization_stats GC_PROTO((void));
 void GC_dump GC_PROTO((void));
 
 #ifdef KEEP_BACK_PTRS
@@ -1866,6 +1858,16 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
 #	define GC_ASSERT(expr)
 # endif
 
+/* Check a compile time assertion at compile time.  The error	*/
+/* message for failure is a bit baroque, but ...		*/
+#if defined(mips) && !defined(__GNUC__)
+/* DOB: MIPSPro C gets an internal error taking the sizeof an array type. 
+   This code works correctly (ugliness is to avoid "unused var" warnings) */
+# define GC_STATIC_ASSERT(expr) do { if (0) { char j[(expr)? 1 : -1]; j[0]='\0'; j[0]=j[0]; } } while(0)
+#else
+# define GC_STATIC_ASSERT(expr) sizeof(char[(expr)? 1 : -1])
+#endif
+
 # if defined(PARALLEL_MARK) || defined(THREAD_LOCAL_ALLOC)
     /* We need additional synchronization facilities from the thread	*/
     /* support.  We believe these are less performance critical		*/
@@ -1911,7 +1913,7 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
   /* in Linux glibc, but it's not exported.)  Thus we continue to use	*/
   /* the same hard-coded signals we've always used.			*/
 #  if !defined(SIG_SUSPEND)
-#   if defined(GC_LINUX_THREADS)
+#   if defined(GC_LINUX_THREADS) || defined(GC_DGUX386_THREADS)
 #    if defined(SPARC) && !defined(SIGPWR)
        /* SPARC/Linux doesn't properly define SIGPWR in <signal.h>.
         * It is aliased to SIGLOST in asm/signal.h, though.		*/

@@ -437,6 +437,7 @@ void GC_init_explicit_typing()
     for (; bm != 0; bm >>= 1, current_p++) {
     	if (bm & 1) {
     	    current = *current_p;
+	    FIXUP_POINTER(current);
     	    if ((ptr_t)current >= least_ha && (ptr_t)current <= greatest_ha) {
     	        PUSH_CONTENTS((ptr_t)current, mark_stack_ptr,
 			      mark_stack_limit, current_p, exit1);
@@ -674,9 +675,9 @@ DCL_LOCK_STATE;
         if( !FASTLOCK_SUCCEEDED() || (op = *opp) == 0 ) {
             FASTUNLOCK();
             op = (ptr_t)GENERAL_MALLOC((word)lb, GC_explicit_kind);
-	    if (0 == op) return(0);
+	    if (0 == op) return 0;
 #	    ifdef MERGE_SIZES
-		lw = GC_size_map[lb];	/* May have been uninitialized.	*/            
+		lw = GC_size_map[lb];	/* May have been uninitialized.	*/
 #	    endif
         } else {
             *opp = obj_link(op);
@@ -720,7 +721,7 @@ DCL_LOCK_STATE;
             FASTUNLOCK();
             op = (ptr_t)GENERAL_MALLOC_IOP(lb, GC_explicit_kind);
 #	    ifdef MERGE_SIZES
-		lw = GC_size_map[lb];	/* May have been uninitialized.	*/            
+		lw = GC_size_map[lb];	/* May have been uninitialized.	*/
 #	    endif
         } else {
             *opp = obj_link(op);

@@ -21,6 +21,13 @@ registrations are ignored, but not terribly quickly.)
 pointers.  And the VirtualQuery call has different semantics under
 the two systems, and under different versions of win32s.)
 
+Win32 applications compiled with some flavor of gcc currently behave
+like win32s applications, in that dynamic library data segments are
+not scanned.  (Gcc does not directly support Microsoft's "structured
+exception handling".  It turns out that use of this feature is
+unavoidable if you scan arbitrary memory segments obtained from
+VirtualQuery.)
+
 The collector test program "gctest" is linked as a GUI application,
 but does not open any windows.  Its output appears in the file
 "gc.log".  It may be started from the file manager.  The hour glass
@@ -50,12 +57,19 @@ This appears to cause problems under Windows NT and Windows 2000 (but
 not Windows 95/98) if the memory is later passed to CreateDIBitmap.
 To work around this problem, build the collector with -DUSE_GLOBAL_ALLOC.
 This is currently incompatible with -DUSE_MUNMAP.  (Thanks to Jonathan
-Clark for tracking this down.)
+Clark for tracking this down.  There's some chance this may be fixed
+in 6.1alpha4, since we now separate heap sections with an unused page.)
 
 For Microsoft development tools, rename NT_MAKEFILE as
 MAKEFILE.  (Make sure that the CPU environment variable is defined
 to be i386.)  In order to use the gc_cpp.h C++ interface, all
 client code should include gc_cpp.h.
+
+If you would prefer a VC++.NET project file, ask boehm@acm.org.  One has
+been contributed, but it seems to contain some absolute paths etc., so
+it can presumably only be a starting point, and is not in the standard
+distribution.  It is unclear (to me, Hans Boehm) whether it is feasible to
+change that.
 
 Clients may need to define GC_NOT_DLL before including gc.h, if the
 collector was built as a static library (as it normally is in the
@@ -64,7 +78,7 @@ absence of thread support).
 For GNU-win32, use the regular makefile, possibly after uncommenting
 the line "include Makefile.DLLs".  The latter should be necessary only
 if you want to package the collector as a DLL.  The GNU-win32 port is
-believed to work only for b18, not b19, probably dues to linker changes
+believed to work only for b18, not b19, probably due to linker changes
 in b19.  This is probably fixable with a different definition of
 DATASTART and DATAEND in gcconfig.h.
 
@@ -147,7 +161,7 @@ To compile the collector and testing programs use the command:
 All programs using gc should be compiled with 4-byte alignment.
 For further explanations on this see comments about Borland.
 
-If gc compiled as dll, the macro ``GC_DLL'' should be defined before
+If the gc is compiled as dll, the macro ``GC_DLL'' should be defined before
 including "gc.h" (for example, with -DGC_DLL compiler option). It's
 important, otherwise resulting programs will not run.
 

@@ -37,6 +37,10 @@
 # include <unistd.h>
 # include <errno.h>
 
+#ifdef HANDLE_FORK
+  --> Not yet supported.  Try porting the code from linux_threads.c.
+#endif
+
 /*
  * This is the default size of the LWP arrays. If there are more LWPs
  * than this when a stop-the-world GC happens, set_max_lwps will be
@@ -361,7 +365,7 @@ static void restart_all_lwps()
 		       sizeof (prgregset_t)) != 0) {
 		    int j;
 
-		    for(j = 0; j < NGREG; j++)
+		    for(j = 0; j < NPRGREG; j++)
 		    {
 			    GC_printf3("%i: %x -> %x\n", j,
 				       GC_lwp_registers[i][j],
@@ -821,7 +825,7 @@ int GC_thr_suspend(thread_t target_thread)
     if (result == 0) {
     	t = GC_lookup_thread(target_thread);
     	if (t == 0) ABORT("thread unknown to GC");
-        t -> flags |= SUSPENDED;
+        t -> flags |= SUSPNDED;
     }
     UNLOCK();
     return(result);
@@ -837,7 +841,7 @@ int GC_thr_continue(thread_t target_thread)
     if (result == 0) {
     	t = GC_lookup_thread(target_thread);
     	if (t == 0) ABORT("thread unknown to GC");
-        t -> flags &= ~SUSPENDED;
+        t -> flags &= ~SUSPNDED;
     }
     UNLOCK();
     return(result);
@@ -923,7 +927,7 @@ GC_thr_create(void *stack_base, size_t stack_size,
     	my_flags |= CLIENT_OWNS_STACK;
     }
     if (flags & THR_DETACHED) my_flags |= DETACHED;
-    if (flags & THR_SUSPENDED) my_flags |= SUSPENDED;
+    if (flags & THR_SUSPENDED) my_flags |= SUSPNDED;
     result = thr_create(stack, stack_size, start_routine,
    		        arg, flags & ~THR_DETACHED, &my_new_thread);
     if (result == 0) {

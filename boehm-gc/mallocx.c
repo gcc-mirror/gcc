@@ -142,7 +142,11 @@ int obj_kind;
     }
 }
 
-# if defined(REDIRECT_MALLOC) || defined(REDIRECT_REALLOC)
+# if defined(REDIRECT_MALLOC) && !defined(REDIRECT_REALLOC)
+#   define REDIRECT_REALLOC GC_realloc
+# endif
+
+# ifdef REDIRECT_REALLOC
 # ifdef __STDC__
     GC_PTR realloc(GC_PTR p, size_t lb)
 # else
@@ -151,13 +155,9 @@ int obj_kind;
     size_t lb;
 # endif
   {
-#   ifdef REDIRECT_REALLOC
-      return(REDIRECT_REALLOC(p, lb));
-#   else
-      return(GC_realloc(p, lb));
-#   endif
+    return(REDIRECT_REALLOC(p, lb));
   }
-# endif /* REDIRECT_MALLOC */
+# endif /* REDIRECT_REALLOC */
 
 
 /* The same thing, except caller does not hold allocation lock.	*/
@@ -177,6 +177,7 @@ register int k;
     lw = ROUNDED_UP_WORDS(lb);
     n_blocks = OBJ_SZ_TO_BLOCKS(lw);
     init = GC_obj_kinds[k].ok_init;
+    if (GC_have_errors) GC_print_all_errors();
     GC_INVOKE_FINALIZERS();
     DISABLE_SIGNALS();
     LOCK();
@@ -286,6 +287,7 @@ register struct obj_kind * kind = GC_obj_kinds + k;
 register ptr_t op;
 DCL_LOCK_STATE;
 
+    if (GC_have_errors) GC_print_all_errors();
     GC_INVOKE_FINALIZERS();
     DISABLE_SIGNALS();
     LOCK();
@@ -354,6 +356,7 @@ DCL_LOCK_STATE;
         return;
     }
     lw = ALIGNED_WORDS(lb);
+    if (GC_have_errors) GC_print_all_errors();
     GC_INVOKE_FINALIZERS();
     DISABLE_SIGNALS();
     LOCK();
@@ -375,6 +378,7 @@ DCL_LOCK_STATE;
     	while ((hbp = *rlh) != 0) {
             hhdr = HDR(hbp);
             *rlh = hhdr -> hb_next;
+	    hhdr -> hb_last_reclaimed = (unsigned short) GC_gc_no;
 #	    ifdef PARALLEL_MARK
 		{
 		  signed_word my_words_allocd_tmp = GC_words_allocd_tmp;
@@ -574,6 +578,44 @@ DCL_LOCK_STATE;
 	return((GC_PTR) op);
     }
 }
+
+#ifdef __STDC__
+/* Not well tested nor integrated.	*/
+/* Debug version is tricky and currently missing.	*/
+#include <limits.h>
+
+GC_PTR GC_memalign(size_t align, size_t lb) 
+{ 
+    size_t new_lb;
+    size_t offset;
+    ptr_t result;
+
+#   ifdef ALIGN_DOUBLE
+	if (align <= WORDS_TO_BYTES(2) && lb > align) return GC_malloc(lb);
+#   endif
+    if (align <= WORDS_TO_BYTES(1)) return GC_malloc(lb);
+    if (align >= HBLKSIZE/2 || lb >= HBLKSIZE/2) {
+        if (align > HBLKSIZE) return GC_oom_fn(LONG_MAX-1024) /* Fail */;
+	return GC_malloc(lb <= HBLKSIZE? HBLKSIZE : lb);
+	    /* Will be HBLKSIZE aligned.	*/
+    }
+    /* We could also try to make sure that the real rounded-up object size */
+    /* is a multiple of align.  That would be correct up to HBLKSIZE.	   */
+    new_lb = lb + align - 1;
+    result = GC_malloc(new_lb);
+    offset = (word)result % align;
+    if (offset != 0) {
+	offset = align - offset;
+        if (!GC_all_interior_pointers) {
+	    if (offset >= VALID_OFFSET_SZ) return GC_malloc(HBLKSIZE);
+	    GC_register_displacement(offset);
+	}
+    }
+    result = (GC_PTR) ((ptr_t)result + offset);
+    GC_ASSERT((word)result % align == 0);
+    return result;
+}
+#endif 
 
 # ifdef ATOMIC_UNCOLLECTABLE
 /* Allocate lb bytes of pointerfree, untraced, uncollectable data 	*/

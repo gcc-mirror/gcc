@@ -72,7 +72,7 @@
 //   implementations, and it sometimes has a significant performance
 //   impact.  However, it is dangerous for many not-quite-ANSI C
 //   programs that call things like printf in asynchronous signal handlers.
-// -DOPERATOR_NEW_ARRAY declares that the C++ compiler supports the
+// -DGC_OPERATOR_NEW_ARRAY declares that the C++ compiler supports the
 //   new syntax "operator new[]" for allocating and deleting arrays.
 //   See gc_cpp.h for details.  No effect on the C part of the collector.
 //   This is defined implicitly in a few environments.

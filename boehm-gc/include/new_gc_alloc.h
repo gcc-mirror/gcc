@@ -64,6 +64,14 @@
 #endif
 #endif
 
+/* A hack to deal with gcc 3.1.  If you are using gcc3.1 and later,	*/
+/* you should probably really use gc_allocator.h instead.		*/
+#if defined (__GNUC__) && \
+    (__GNUC > 3 || (__GNUC__ == 3 && (__GNUC_MINOR__ >= 1)))
+# define simple_alloc __simple_alloc
+#endif
+
+
 
 #define GC_ALLOC_H
 
