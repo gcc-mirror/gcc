@@ -1,4 +1,4 @@
-@c Copyright (C) 1995-1999 Free Software Foundation, Inc.
+@c Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
@@ -7,7 +7,7 @@
 
 @c Keep this the same as the dates above, since it's used
 @c in the standalone derivations of this file (e.g. INSTALL).
-@set copyrights 1995-1999
+@set copyrights 1995, 1996, 1997, 1998, 1999
 
 @set last-update-install 1999-07-17
 

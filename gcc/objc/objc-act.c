@@ -1,5 +1,6 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 93-95, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GNU CC.

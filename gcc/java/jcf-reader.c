@@ -2,7 +2,7 @@
    It is not stand-alone:  It depends on tons of macros, and the
    intent is you #include this file after you've defined the macros.
 
-   Copyright (C) 1996, 97-99, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

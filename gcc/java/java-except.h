@@ -1,6 +1,6 @@
 /* Definitions for exception handling for use by the GNU compiler
    for the Java(TM) language compiler.
-   Copyright (C) 1997, 98-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

@@ -3,7 +3,8 @@
 it is normally included within source distributions.
 
    This file lists known bugs in the GCC-2.95 version of the GNU
-Fortran compiler.  Copyright (C) 1995-1999 Free Software Foundation,
+Fortran compiler.  Copyright (C) 1995, 1996, 1997, 1998,
+1999 Free Software Foundation,
 Inc.  You may copy, distribute, and modify it freely as long as you
 preserve this copyright notice and permission notice.
 
