@@ -1,5 +1,11 @@
 1998-10-12  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* inc/typeinfo: Add #pragma interface.
+	(operator!=): Just call operator==.
+	* tinfo.cc: Add #pragma implementation.
+	(operator==): Move from inc/typeinfo and tinfo2.cc.
+	Check __COMMON_UNRELIABLE instead of _WIN32.
+
 	* typeck2.c (my_friendly_abort): Add URL.
 
 1998-10-12  Alastair J. Houghton <ajh8@doc.ic.ac.uk>

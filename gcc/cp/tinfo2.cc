@@ -49,20 +49,6 @@ type_info::before (const type_info &arg) const
   return fast_compare (name (), arg.name ()) < 0;
 }
 
-#ifdef _WIN32
-bool type_info::
-operator== (const type_info& arg) const
-{
-  return fast_compare (name (), arg.name ()) == 0;
-}
-
-bool type_info::
-operator!= (const type_info& arg) const
-{
-  return fast_compare (name (), arg.name ()) != 0;
-}
-#endif
-
 // type info for pointer type.
 
 struct __pointer_type_info : public type_info {
