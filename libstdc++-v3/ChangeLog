@@ -1,3 +1,9 @@
+2002-10-18  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  Use target, not target_alias, when matching triplet
+	patterns.
+	* configure:  Regenerate.
+
 2002-10-17  Momchil Velikov  <velco@fadata.bg>
 	    Loren J. Rittle  <ljrittle@acm.org>
 
