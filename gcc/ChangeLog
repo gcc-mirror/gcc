@@ -1,3 +1,9 @@
+2000-05-10  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (libgcc.a, stmp-multilib): Depend on FPBIT and DPBIT.
+	* mklibgcc.in: Rewrite to not use functions.  Don't shortcut
+	dependancies on FPBIT and DPBIT.
+
 2000-05-10  Nick Clifton  <nickc@redhat.com>
 
 	* flow.c (find_auto_inc): Do not bias REG_N_REFS by loop_depth
