@@ -198,6 +198,11 @@ Thu Dec 24 10:39:57 1998  Stan Cox  <scox@cygnus.com>
 
 	* gcc.c (execute): Enable -pipe with win32.
 
+Wed Dec 23 17:30:18 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c (do_undef): EOF immediately after '#undef FOO' is not an
+	error.
+
 Wed Dec 23 10:27:44 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/t-arm-elf: Add multiplib option for leading

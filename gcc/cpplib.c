@@ -3309,7 +3309,7 @@ do_undef (pfile, keyword)
   name[limit - buf] = '\0';
 
   token = get_directive_token (pfile);
-  if (token != CPP_VSPACE)
+  if (token != CPP_VSPACE && token != CPP_POP)
   {
       cpp_pedwarn (pfile, "junk on line after #undef");
       skip_rest_of_line (pfile);
