@@ -274,7 +274,7 @@ DEFTREECODE (COMPLEX_CST, "complex_cst", 'c', 0)
 /* Contents are in TREE_VECTOR_CST_ELTS field.  */
 DEFTREECODE (VECTOR_CST, "vector_cst", 'c', 0)     
 
-/* Contents are TREE_STRING_LENGTH and the actual contents of the string.  */
+/* Contents are TREE_STRING_LENGTH and TREE_STRING_POINTER fields.  */
 DEFTREECODE (STRING_CST, "string_cst", 'c', 0)
 
 /* Declarations.  All references to names are represented as ..._DECL

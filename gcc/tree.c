@@ -168,8 +168,7 @@ tree_size (tree node)
 	case REAL_CST:		return sizeof (struct tree_real_cst);
 	case COMPLEX_CST:	return sizeof (struct tree_complex);
 	case VECTOR_CST:	return sizeof (struct tree_vector);
-	case STRING_CST:
-	  return sizeof (struct tree_string) + TREE_STRING_LENGTH (node);
+	case STRING_CST:	return sizeof (struct tree_string);
 	default:
 	  return (*lang_hooks.tree_size) (code);
 	}
@@ -213,8 +212,8 @@ make_node (enum tree_code code)
   struct tree_common ttmp;
 
   /* We can't allocate a TREE_VEC without knowing how many elements
-     it will have; likewise a STRING_CST without knowing the length.  */
-  if (code == TREE_VEC || code == STRING_CST)
+     it will have.  */
+  if (code == TREE_VEC)
     abort ();
 
   TREE_SET_CODE ((tree)&ttmp, code);
@@ -526,23 +525,10 @@ build_real_from_int_cst (tree type, tree i)
 tree
 build_string (int len, const char *str)
 {
-  tree s;
-  size_t length;
-  
-  length = len + sizeof (struct tree_string);
+  tree s = make_node (STRING_CST);
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int) c_kind]++;
-  tree_node_sizes[(int) c_kind] += length;
-#endif  
-
-  s = ggc_alloc_tree (length);
-
-  memset (s, 0, sizeof (struct tree_common));
-  TREE_SET_CODE (s, STRING_CST);
   TREE_STRING_LENGTH (s) = len;
-  memcpy ((char *) TREE_STRING_POINTER (s), str, len);
-  ((char *) TREE_STRING_POINTER (s))[len] = '\0';
+  TREE_STRING_POINTER (s) = ggc_alloc_string (str, len);
 
   return s;
 }
