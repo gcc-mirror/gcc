@@ -685,8 +685,7 @@ qualifier_flags (type)
      tree type;
 {
   int flags = 0;
-  /* we want the qualifiers on this type, not any array core, it might have */
-  int quals = TYPE_QUALS (type);
+  int quals = cp_type_quals (type);
   
   if (quals & TYPE_QUAL_CONST)
     flags |= 1;
