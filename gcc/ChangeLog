@@ -1,3 +1,13 @@
+2002-02-18 Philip Blundell <pb@nexus.co.uk>
+
+	* config/arm/arm.c (arm_compute_save_reg_mask): Fix typo in
+	comment.
+	(output_return_instruction): Allow use of LDR to unstack
+	return addresss even for interrupt handlers or when
+	interworking.  If compiling for ARMv5, use interworking-safe
+	return instructions by default.  Remove duplicated code and
+	lengthy "strcat" sequences.
+
 2002-02-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/sysv4.h (STARTFILE_SPEC): Use crtbeginT.o for -static.

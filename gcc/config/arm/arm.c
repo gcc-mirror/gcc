@@ -7136,7 +7136,7 @@ arm_compute_save_reg_mask ()
   /* Decide if we need to save the link register.
      Interrupt routines have their own banked link register,
      so they never need to save it.
-     Otheriwse if we do not use the link register we do not need to save
+     Otherwise if we do not use the link register we do not need to save
      it.  If we are pushing other registers onto the stack however, we
      can save an instruction in the epilogue by pushing the link register
      now and then popping it back into the PC.  This incurs extra memory
@@ -7204,21 +7204,20 @@ output_return_instruction (operand, really_return, reverse)
 
   live_regs_mask = arm_compute_save_reg_mask ();
 
-  /* On some ARM architectures it is faster to use LDR rather than LDM to
-     load a single register.  On other architectures, the cost is the same.
-     In 26 bit mode we have to use LDM in order to be able to restore the CPSR.  */
-  if ((live_regs_mask  == (1 << LR_REGNUM))
-      && ! TARGET_INTERWORK
-      && ! IS_INTERRUPT (func_type)
-      && (! really_return || TARGET_APCS_32))
+  if (live_regs_mask)
     {
-      if (! really_return)
-	sprintf (instr, "ldr%s\t%%|lr, [%%|sp], #4", conditional);
+      const char * return_reg;
+
+      /* If we do not have any special requirements for function exit 
+	 (eg interworking, or ISR) then we can load the return address 
+	 directly into the PC.  Otherwise we must load it into LR.  */
+      if (really_return
+	  && ! IS_INTERRUPT (func_type)
+	  && ! TARGET_INTERWORK)
+	return_reg = reg_names[PC_REGNUM];
       else
-	sprintf (instr, "ldr%s\t%%|pc, [%%|sp], #4", conditional);
-    }
-  else if (live_regs_mask)
-    {
+	return_reg = reg_names[LR_REGNUM];
+
       if ((live_regs_mask & (1 << IP_REGNUM)) == (1 << IP_REGNUM))
 	/* There are two possible reasons for the IP register being saved.
 	   Either a stack frame was created, in which case IP contains the
@@ -7230,46 +7229,65 @@ output_return_instruction (operand, really_return, reverse)
 	    live_regs_mask |=   (1 << SP_REGNUM);
 	  }
 
-      /* Generate the load multiple instruction to restore the registers.  */
-      if (frame_pointer_needed)
-	sprintf (instr, "ldm%sea\t%%|fp, {", conditional);
-      else
-	sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
-
-      for (reg = 0; reg <= SP_REGNUM; reg++)
-	if (live_regs_mask & (1 << reg))
-	  {
-	    strcat (instr, "%|");
-	    strcat (instr, reg_names[reg]);
-	    strcat (instr, ", ");
-	  }
-
-      if ((live_regs_mask & (1 << LR_REGNUM)) == 0)
+      /* On some ARM architectures it is faster to use LDR rather than LDM to
+	 load a single register.  On other architectures, the cost is the same.
+	 In 26 bit mode we have to use LDM in order to be able to restore the 
+	 CPSR.  */
+      if ((live_regs_mask  == (1 << LR_REGNUM))
+	  && (! really_return || TARGET_APCS_32))
 	{
-	  /* If we are not restoring the LR register then we will
-	     have added one too many commas to the list above.
-	     Replace it with a closing brace.  */
-	  instr [strlen (instr) - 2] =  '}';
+	  sprintf (instr, "ldr%s\t%%|%s, [%%|sp], #4", conditional, return_reg);
 	}
       else
 	{
-	  strcat (instr, "%|");
+	  char *p;
+	  int first = 1;
 
-	  /* At this point there should only be one or two registers left in
-	     live_regs_mask: always LR, and possibly PC if we created a stack
-	     frame.  LR contains the return address.  If we do not have any
-	     special requirements for function exit (eg interworking, or ISR)
-	     then we can load this value directly into the PC and save an
-	     instruction.  */
-	  if (! TARGET_INTERWORK
-	      && ! IS_INTERRUPT (func_type)
-	      && really_return)
-	    strcat (instr, reg_names [PC_REGNUM]);
+	  /* Generate the load multiple instruction to restore the registers.  */
+	  if (frame_pointer_needed)
+	    sprintf (instr, "ldm%sea\t%%|fp, {", conditional);
 	  else
-	    strcat (instr, reg_names [LR_REGNUM]);
+	    sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
 
-	  strcat (instr, (TARGET_APCS_32 || !really_return) ? "}" : "}^");
+	  p = instr + strlen (instr);
+
+	  for (reg = 0; reg <= SP_REGNUM; reg++)
+	    if (live_regs_mask & (1 << reg))
+	      {
+		int l = strlen (reg_names[reg]);
+
+		if (first)
+		  first = 0;
+		else
+		  {
+		    memcpy (p, ", ", 2);
+		    p += 2;
+		  }
+
+		memcpy (p, "%|", 2);
+		memcpy (p + 2, reg_names[reg], l);
+		p += l + 2;
+	      }
+	  
+	  if (live_regs_mask & (1 << LR_REGNUM))
+	    {
+	      int l = strlen (return_reg);
+
+	      if (! first)
+		{
+		  memcpy (p, ", ", 2);
+		  p += 2;
+		}
+
+	      memcpy (p, "%|", 2);
+	      memcpy (p + 2, return_reg, l);
+	      strcpy (p + 2 + l, (TARGET_APCS_32 || !really_return) ? "}" : "}^");
+	    }
+	  else
+	    strcpy (p, "}");
 	}
+
+      output_asm_insn (instr, & operand);
 
       if (really_return)
 	{
@@ -7279,47 +7297,22 @@ output_return_instruction (operand, really_return, reverse)
 	    {
 	    case ARM_FT_ISR:
 	    case ARM_FT_FIQ:
-	      output_asm_insn (instr, & operand);
-
-	      strcpy (instr, "sub");
-	      strcat (instr, conditional);
-	      strcat (instr, "s\t%|pc, %|lr, #4");
-	      break;
-
 	    case ARM_FT_EXCEPTION:
-	      output_asm_insn (instr, & operand);
-
-	      strcpy (instr, "mov");
-	      strcat (instr, conditional);
-	      strcat (instr, "s\t%|pc, %|lr");
-	      break;
-
 	    case ARM_FT_INTERWORKED:
-	      output_asm_insn (instr, & operand);
-
-	      strcpy (instr, "bx");
-	      strcat (instr, conditional);
-	      strcat (instr, "\t%|lr");
+	      /* A separate return instruction is always needed.  */
 	      break;
 
 	    default:
-	      /* The return has already been handled
+	      /* The return may have already been handled
 		 by loading the LR into the PC.  */
-	      if ((live_regs_mask & (1 << LR_REGNUM)) == 0)
-		{
-		  output_asm_insn (instr, & operand);
-
-		  strcpy (instr, "mov");
-		  strcat (instr, conditional);
-		  if (! TARGET_APCS_32)
-		    strcat (instr, "s");
-		  strcat (instr, "\t%|pc, %|lr");
-		}
+	      if ((live_regs_mask & (1 << LR_REGNUM)) != 0)
+		really_return = 0;
 	      break;
 	    }
 	}
     }
-  else if (really_return)
+  
+  if (really_return)
     {
       switch ((int) ARM_FUNC_TYPE (func_type))
 	{
@@ -7337,18 +7330,19 @@ output_return_instruction (operand, really_return, reverse)
 	  break;
 
 	default:
-	  sprintf (instr, "mov%s%s\t%%|pc, %%|lr",
-		   conditional, TARGET_APCS_32 ? "" : "s");
+	  /* ARMv5 implementations always provide BX, so interworking
+	     is the default unless APCS-26 is in use.  */
+	  if ((insn_flags & FL_ARCH5) != 0 && TARGET_APCS_32)
+	    sprintf (instr, "bx%s\t%%|lr", conditional);	    
+	  else
+	    sprintf (instr, "mov%s%s\t%%|pc, %%|lr",
+		     conditional, TARGET_APCS_32 ? "" : "s");
 	  break;
 	}
-    }
-  else
-    /* Nothing to load off the stack, and
-       no return instruction to generate.  */
-    return "";
 
-  output_asm_insn (instr, & operand);
-      
+      output_asm_insn (instr, & operand);
+    }
+
   return "";
 }
 
