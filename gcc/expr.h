@@ -320,6 +320,8 @@ extern optab abs_optab;		/* Abs value */
 extern optab one_cmpl_optab;	/* Bitwise not */
 extern optab ffs_optab;		/* Find first bit set */
 extern optab sqrt_optab;	/* Square root */
+extern optab sin_optab;		/* Sine */
+extern optab cos_optab;		/* Cosine */
 extern optab strlen_optab;	/* String length */
 
 /* Passed to expand_binop and expand_unop to say which options to try to use
