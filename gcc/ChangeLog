@@ -1,3 +1,8 @@
+2003-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/10955
+	* unroll.c (unroll_loop): Fix off-by-one bug.
+
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/10475
