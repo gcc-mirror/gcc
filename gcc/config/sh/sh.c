@@ -36,6 +36,7 @@
 #define MSW (TARGET_LITTLE_ENDIAN ? 1 : 0)
 #define LSW (TARGET_LITTLE_ENDIAN ? 0 : 1)
 
+/* ??? The pragma interrupt support will not work for SH3.  */
 /* This is set by #pragma interrupt and #pragma trapa, and causes gcc to
    output code for the next function appropriate for an interrupt handler.  */
 int pragma_interrupt;
@@ -735,6 +736,9 @@ shiftcosts (x)
   /* If shift by a non constant, then this will be expensive.  */
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     {
+      if (TARGET_SH3)
+	return 2;
+      /* If not an sh3 then we don't even have an instruction for it.  */
       return 20;
     }
 
@@ -836,6 +840,8 @@ gen_ashift (type, n, reg)
 /* Output RTL to split a constant shift into its component SH constant
    shift instructions.  */
    
+/* ??? For SH3, should reject constant shifts when slower than loading the
+   shift count into a register?  */
 
 int
 gen_shifty_op (code, operands)
@@ -884,6 +890,13 @@ expand_ashiftrt (operands)
   tree func_name;
   int value;
 
+  if (TARGET_SH3 && GET_CODE (operands[2]) != CONST_INT)
+    {
+      rtx count = copy_to_mode_reg (SImode, operands[2]);
+      emit_insn (gen_negsi2 (count, count));
+      emit_insn (gen_ashrsi3_d (operands[0], operands[1], count));
+      return 1;
+    }
   if (GET_CODE (operands[2]) != CONST_INT)
     return 0;
 
