@@ -1,5 +1,9 @@
 Tue Aug 25 19:43:11 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* From Alexandre:
+	* configure.in: Do not set thread_file to "irix" since no such
+	support exists yet.
+
 	* reorg.c (fill_simple_delay_slots): Do not abort if we encounter
 	an insn on the unfilled_slots_list that has no delay slots.
 	(fill_eager_delay_slots): Similarly.
