@@ -1,3 +1,10 @@
+2002-03-24  Andrew Cagney  <ac131313@redhat.com>
+
+	* stmt.c (check_for_full_enumeration_handling): Remove tests of
+	warn_switch.  Update description.
+	(expand_end_case_type): Call check_for_full_enumeration_handling
+	when warn_switch.
+
 2002-03-24  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_autoinc_compatible_p): New function.
