@@ -1,3 +1,7 @@
+1999-07-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (NEEDED): Add bcmp, bcopy, bzero.
+
 1999-07-07  Jason Merrill  <jason@yorick.cygnus.com>
 
         * Makefile.in (needed-list): Only include stuff we actually need
