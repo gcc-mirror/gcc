@@ -593,7 +593,8 @@ in the following sections.
 @gccoptlist{
 -mlibfuncs -mno-libfuncs -mepsilon -mno-epsilon -mabi=gnu @gol
 -mabi=mmixware -mzero-extend -mknuthdiv -mtoplevel-symbols @gol
--melf -mbranch-predict -mno-branch-predict}
+-melf -mbranch-predict -mno-branch-predict -mbase-addresses @gol
+-mno-base-addresses}
 
 @emph{IA-64 Options}
 @gccoptlist{
@@ -9513,6 +9514,19 @@ Generate an executable in the ELF format, rather than the default
 @opindex mno-branch-predict
 Use (do not use) the probable-branch instructions, when static branch
 prediction indicates a probable branch.
+
+@item -mbase-addresses
+@itemx -mno-base-addresses
+@opindex mbase-addresses
+@opindex mno-base-addresses
+Generate (do not generate) code that uses @emph{base addresses}.  Using a
+base address automatically generates a request (handled by the assembler
+and the linker) for a constant to be set up in a global register.  The
+register is used for one or more base address requests within the range 0
+to 255 from the value held in the register.  The generally leads to short
+and fast code, but the number of different data items that can be
+addressed is limited.  This means that a program that uses lots of static
+data may require @option{-mno-base-addresses}.
 @end table
 
 @node PDP-11 Options
