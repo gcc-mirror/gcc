@@ -266,7 +266,7 @@ clear_hash_table_slot (htab, slot)
 void
 traverse_hash_table (htab, callback, info)
      hash_table_t htab;
-     int (*callback) (hash_table_entry_t, void *);
+     int (*callback) PARAMS ((hash_table_entry_t, void *));
      void *info;
 {
   hash_table_entry_t *entry_ptr;
