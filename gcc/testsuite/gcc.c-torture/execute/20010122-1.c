@@ -78,15 +78,14 @@ void *test6a (char * p)
 
 void *(*func1[6])(void) = { test1, test2, test3, test4, test5, test6 };
 
-char * call_func1 (int i)
+char * call_func1_ (int i)
 {
-  char * save = (char*) alloca (4);
-
   save_ret1[i] = func1[i] ();
-
-  return save;
 }
 
+/* We dont' want call_func1_ to be inlined, so call it through a
+   pointer.  */
+void (*call_func1)(int) = call_func1_;
 
 static void *ret_addr;
 void *save_ret2[6];
@@ -164,15 +163,15 @@ char * dummy (void)
 
 void (*func2[6])(void) = { test7, test8, test9, test10, test11, test12 };
 
-char * call_func2 (int i)
+void call_func2_ (int i)
 {
-  char * save = (char*) alloca (4);
-
   func2[i] ();
   save_ret2[i] = ret_addr;
-
-  return save;
 }
+
+/* We dont' want call_func2_ to be inlined, so call it through a
+   pointer.  */
+void (*call_func2)(int) = call_func2_;
 
 int main (void)
 {

@@ -1,3 +1,8 @@
+2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/20010122-1.c: Don't assume alloca() is
+	enough to avoid inlining.
+
 2001-10-04  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* lib/g77.exp: set libg2c_dir correctly.
