@@ -1,3 +1,11 @@
+2003-03-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcse.c (bypass_block, bypass_conditional_jumps): Do not create
+	irreducible loops.
+
+	* loop-unroll.c (unroll_loop_runtime_iterations): Update irreducible
+	loops info correctly.
+
 2003-03-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/7796

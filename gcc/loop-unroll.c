@@ -895,7 +895,8 @@ unroll_loop_runtime_iterations (loops, loop)
 	  swtch = loop_split_edge_with (swtch->pred, branch_code, loops);
 	  set_immediate_dominator (loops->cfg.dom, preheader, swtch);
 	  swtch->succ->probability = REG_BR_PROB_BASE - p;
-	  e = make_edge (swtch, preheader, 0);
+	  e = make_edge (swtch, preheader,
+			 swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
 	  e->probability = p;
 	}
     }
@@ -925,7 +926,8 @@ unroll_loop_runtime_iterations (loops, loop)
       swtch = loop_split_edge_with (swtch->succ, branch_code, loops);
       set_immediate_dominator (loops->cfg.dom, preheader, swtch);
       swtch->succ->probability = REG_BR_PROB_BASE - p;
-      e = make_edge (swtch, preheader, 0);
+      e = make_edge (swtch, preheader,
+		     swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
       e->probability = p;
     }
 
