@@ -1,3 +1,7 @@
+1998-02-18  Brendan Kehoe  <brendan@cygnus.com>
+
+	* cp-tree.h (strip_attrs): Remove decl.
+
 1998-02-18  Doug Evans  <devans@cygnus.com>
 
 	* decl.c (duplicate_decls): Call merge_machine_decl_attributes.
