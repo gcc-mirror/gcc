@@ -2816,10 +2816,7 @@ init_alias_analysis (void)
   reg_seen = xmalloc (maxreg);
   if (! reload_completed && flag_old_unroll_loops)
     {
-      /* ??? Why are we realloc'ing if we're just going to zero it?  */
-      alias_invariant = xrealloc (alias_invariant,
-				  maxreg * sizeof (rtx));
-      memset (alias_invariant, 0, maxreg * sizeof (rtx));
+      alias_invariant = ggc_calloc (maxreg, sizeof (rtx));
       alias_invariant_size = maxreg;
     }
 
@@ -3019,7 +3016,6 @@ end_alias_analysis (void)
   reg_known_equiv_p = 0;
   if (alias_invariant)
     {
-      free (alias_invariant);
       alias_invariant = 0;
       alias_invariant_size = 0;
     }

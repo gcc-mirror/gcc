@@ -1,3 +1,10 @@
+2004-05-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR bootstrap/14671
+	* alias.c (init_alias_analysis): Allocate alias_invariant array with
+	ggc_calloc instead of xrealloc.
+	(end_alias_analysis): Don't free alias_invariant.
+
 2004-05-28  DJ Delorie  <dj@redhat.com>
 
 	* stor-layout.c (place_field): Revert erroneous commit.
