@@ -475,8 +475,8 @@ mode_mask_operand (op, mode)
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) == 0xff
 	      || INTVAL (op) == 0xffff
-#if HOST_BITS_PER_WIDE_INT == 64
 	      || INTVAL (op) == 0xffffffff
+#if HOST_BITS_PER_WIDE_INT == 64
 	      || INTVAL (op) == 0xffffffffffffffff
 #endif
 	      ));
@@ -2278,6 +2278,8 @@ print_operand (file, x, code)
 	fprintf (file, "b");
       else if (GET_CODE (x) == CONST_INT && INTVAL (x) == 0xffff)
 	fprintf (file, "w");
+      else if (GET_CODE (x) == CONST_INT && INTVAL (x) == 0xffffffff)
+	fprintf (file, "l");
 #if HOST_BITS_PER_WIDE_INT == 32
       else if (GET_CODE (x) == CONST_DOUBLE
 	       && CONST_DOUBLE_HIGH (x) == 0
@@ -2288,8 +2290,6 @@ print_operand (file, x, code)
 	       && CONST_DOUBLE_LOW (x) == -1)
 	fprintf (file, "q");
 #else
-      else if (GET_CODE (x) == CONST_INT && INTVAL (x) == 0xffffffff)
-	fprintf (file, "l");
       else if (GET_CODE (x) == CONST_INT && INTVAL (x) == 0xffffffffffffffff)
 	fprintf (file, "q");
       else if (GET_CODE (x) == CONST_DOUBLE

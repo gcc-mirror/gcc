@@ -1,5 +1,8 @@
 Mon Jan 19 11:15:38 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* alpha.c (mode_mask_operand): Accept 0xffffffff on 32 bit host.
+	(print_operand): Handle 0xffffffff on 32 bit host.
+
 	* configure.in (thread_file): Rename uses before main loop to
 	target_thread_file.  Initialize to empty in main loop.  Set thread_file
 	to target_thread_file after main loop if not set.
