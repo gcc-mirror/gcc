@@ -1,5 +1,5 @@
 #  GNU Objective C Runtime Makefile
-#  Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+#  Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 #
 #  This file is part of GNU CC.
 #
@@ -72,6 +72,7 @@ objc-runtime:
 copy-headers: 
 	-rm -fr $(incinstalldir)/objc
 	-mkdir $(incinstalldir)/objc
+	-chmod a+rx $(incinstalldir)/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/$${file}; \
 	  cp $${realfile} $(incinstalldir)/objc; \
