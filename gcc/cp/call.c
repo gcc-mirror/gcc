@@ -395,10 +395,7 @@ build_call (function, result_type, parms)
       if (is_empty_class (TREE_TYPE (TREE_VALUE (tmp)))
 	  && ! TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (tmp))))
 	{
-	  tree t = make_node (RTL_EXPR);
-	  TREE_TYPE (t) = TREE_TYPE (TREE_VALUE (tmp));
-	  RTL_EXPR_RTL (t) = const0_rtx;
-	  RTL_EXPR_SEQUENCE (t) = NULL_RTX;
+	  tree t = build (EMPTY_CLASS_EXPR, TREE_TYPE (TREE_VALUE (tmp)));
 	  TREE_VALUE (tmp) = build (COMPOUND_EXPR, TREE_TYPE (t),
 				    TREE_VALUE (tmp), t);
 	}
