@@ -1,3 +1,8 @@
+2005-02-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_iargc): remove boolean argument.
+	(gfc_conv_intrinsic_function): update function calls
+
 2005-02-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/20058

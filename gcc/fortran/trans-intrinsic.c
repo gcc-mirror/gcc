@@ -2649,11 +2649,10 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 }
 
 
-/* Generate code for the IARGC intrinsic.  If args_only is true this is
-   actually the COMMAND_ARGUMENT_COUNT intrinsic, so return IARGC - 1.  */
+/* Generate code for the IARGC intrinsic.  */
 
 static void
-gfc_conv_intrinsic_iargc (gfc_se * se, gfc_expr * expr, bool args_only)
+gfc_conv_intrinsic_iargc (gfc_se * se, gfc_expr * expr)
 {
   tree tmp;
   tree fndecl;
@@ -2667,8 +2666,6 @@ gfc_conv_intrinsic_iargc (gfc_se * se, gfc_expr * expr, bool args_only)
   type = gfc_typenode_for_spec (&expr->ts);
   tmp = fold_convert (type, tmp);
 
-  if (args_only)
-    tmp = build2 (MINUS_EXPR, type, tmp, build_int_cst (type, 1));
   se->expr = tmp;
 }
 
@@ -2827,7 +2824,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_COMMAND_ARGUMENT_COUNT:
-      gfc_conv_intrinsic_iargc (se, expr, TRUE);
+      gfc_conv_intrinsic_iargc (se, expr);
       break;
 
     case GFC_ISYM_CONJG:
@@ -2869,7 +2866,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_IARGC:
-      gfc_conv_intrinsic_iargc (se, expr, FALSE);
+      gfc_conv_intrinsic_iargc (se, expr);
       break;
 
     case GFC_ISYM_IEOR:
