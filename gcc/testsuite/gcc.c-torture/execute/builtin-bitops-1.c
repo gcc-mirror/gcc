@@ -1,6 +1,40 @@
 #include <limits.h>
 #include <assert.h>
 
+#if __INT_MAX__ > 2147483647L
+# if __INT_MAX__ >= 9223372036854775807L
+#  define BITSIZEOF_INT 64
+# else
+#  define BITSIZEOF_INT 32
+# endif
+#else
+# if __INT_MAX__ >= 2147483647L
+#  define BITSIZEOF_INT 32
+# else
+#  define BITSIZEOF_INT 16
+# endif
+#endif
+
+#if __LONG_MAX__ > 2147483647L
+# if __LONG_MAX__ >= 9223372036854775807L
+#  define BITSIZEOF_LONG 64
+# else
+#  define BITSIZEOF_LONG 32
+# endif
+#else
+# define BITSIZEOF_LONG 32
+#endif
+
+#if __LONG_LONG_MAX__ > 2147483647L
+# if __LONG_LONG_MAX__ >= 9223372036854775807L
+#  define BITSIZEOF_LONG_LONG 64
+# else
+#  define BITSIZEOF_LONG_LONG 32
+# endif
+#else
+# define BITSIZEOF_LONG_LONG 32
+#endif
+
 #define MAKE_FUNS(suffix, type)						\
 int my_ffs##suffix(type x) {						\
     int i;								\
@@ -53,21 +87,36 @@ MAKE_FUNS (ll, unsigned long long);
 extern void abort (void);
 extern void exit (int);
 
+#define NUMS16					\
+  {						\
+    0x0000U,					\
+    0x0001U,					\
+    0x8000U,					\
+    0x0002U,					\
+    0x4000U,					\
+    0x0100U,					\
+    0x0080U,					\
+    0xa5a5U,					\
+    0x5a5aU,					\
+    0xcafeU,					\
+    0xffffU					\
+  }
+
 #define NUMS32					\
   {						\
-    0x00000000U,				\
-    0x00000001U,				\
-    0x80000000U,				\
-    0x00000002U,				\
-    0x40000000U,				\
-    0x00010000U,				\
-    0x00008000U,				\
-    0xa5a5a5a5U,				\
-    0x5a5a5a5aU,				\
-    0xcafe0000U,				\
-    0x00cafe00U,				\
-    0x0000cafeU,				\
-    0xffffffffU					\
+    0x00000000UL,				\
+    0x00000001UL,				\
+    0x80000000UL,				\
+    0x00000002UL,				\
+    0x40000000UL,				\
+    0x00010000UL,				\
+    0x00008000UL,				\
+    0xa5a5a5a5UL,				\
+    0x5a5a5a5aUL,				\
+    0xcafe0000UL,				\
+    0x00cafe00UL,				\
+    0x0000cafeUL,				\
+    0xffffffffUL				\
   }
 
 #define NUMS64					\
@@ -87,16 +136,28 @@ extern void exit (int);
     0xffffffffffffffffULL			\
   }
 
-unsigned int ints[] = NUMS32;
+unsigned int ints[] =
+#if BITSIZEOF_INT == 64
+NUMS64;
+#elif BITSIZEOF_INT == 32
+NUMS32;
+#else
+NUMS16;
+#endif
 
 unsigned long longs[] =
-#if __LONG_MAX__ >= 9223372036854775807L
+#if BITSIZEOF_LONG == 64
 NUMS64;
 #else
 NUMS32;
 #endif
 
-unsigned long long longlongs[] = NUMS64;
+unsigned long long longlongs[] =
+#if BITSIZEOF_LONG_LONG == 64
+NUMS64;
+#else
+NUMS32;
+#endif
 
 #define N(table) (sizeof (table) / sizeof (table[0]))
 
@@ -167,6 +228,7 @@ main (void)
   if (__builtin_parity##suffix (x) != my_parity##suffix (x))		\
     abort ();
 
+#if BITSIZEOF_INT == 32
   TEST(0x00000000UL,);
   TEST(0x00000001UL,);
   TEST(0x80000000UL,);
@@ -179,7 +241,9 @@ main (void)
   TEST(0x00cafe00UL,);
   TEST(0x0000cafeUL,);
   TEST(0xffffffffUL,);
+#endif
 
+#if BITSIZEOF_LONG_LONG == 64
   TEST(0x0000000000000000ULL, ll);
   TEST(0x0000000000000001ULL, ll);
   TEST(0x8000000000000000ULL, ll);
@@ -193,6 +257,7 @@ main (void)
   TEST(0x0000cafecafe0000ULL, ll);
   TEST(0x00000000cafecafeULL, ll);
   TEST(0xffffffffffffffffULL, ll);
+#endif
 
   exit (0);
 }

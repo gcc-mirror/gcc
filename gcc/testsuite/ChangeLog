@@ -1,3 +1,10 @@
+2003-02-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/builtin-bitops-1.c: When testing the
+	int-wide bitops, use the constants of the same width.
+	Likewise, if long long is 32-bit wide, test bitops using
+	32-bit constants.
+
 2003-02-07  Loren James Rittle  <ljrittle@acm.org>
 
 	* gcc.dg/20021014-1.c: Annotate with expected notice text.
