@@ -1198,12 +1198,18 @@ walk_tree (tp, func, data, htab)
   if (result)
     return result;
 
+  code = TREE_CODE (*tp);
+
   /* Even if we didn't, FUNC may have decided that there was nothing
      interesting below this point in the tree.  */
   if (!walk_subtrees)
-    return NULL_TREE;
-
-  code = TREE_CODE (*tp);
+    {
+      if (statement_code_p (code) || code == TREE_LIST || code == OVERLOAD)
+	/* But we still need to check our siblings.  */
+	return walk_tree (&TREE_CHAIN (*tp), func, data, htab);
+      else
+	return NULL_TREE;
+    }
 
   /* Handle common cases up front.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
