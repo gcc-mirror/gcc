@@ -1,5 +1,10 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Follow spelling conventions.
+	* doc/tm.texi: Likewise.
+
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/install.texi: Fix typos.
 	* doc/invoke.texi: Likewise.
 
