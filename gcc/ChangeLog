@@ -1,3 +1,8 @@
+Wed Oct 14 22:13:28 1998  Joel Sherrill (joel@OARcorp.com)
+
+	* Makefile.in (stmp-fixinc): Do not install assert.h if not desired.
+	* config/t-rtems: Do not install assert.h -- use newlib's.
+
 Wed Oct 14 21:57:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* combine.c (combine_instructions): When finished, call init_recog.
