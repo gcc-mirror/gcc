@@ -1197,35 +1197,6 @@ mmix_function_profiler (stream, labelno)
   sorry ("function_profiler support for MMIX");
 }
 
-/* FUNCTION_BLOCK_PROFILER.  */
-
-void
-mmix_function_block_profiler (stream, labelno)
-     FILE *stream ATTRIBUTE_UNUSED;
-     int labelno ATTRIBUTE_UNUSED;
-{
-  sorry ("function_block_profiler support for MMIX");
-}
-
-/* BLOCK_PROFILER.  */
-
-void
-mmix_block_profiler (stream, labelno)
-     FILE *stream ATTRIBUTE_UNUSED;
-     int labelno ATTRIBUTE_UNUSED;
-{
-  sorry ("block_profiler support for MMIX");
-}
-
-/* FUNCTION_BLOCK_PROFILER_EXIT.  */
-
-void
-mmix_function_block_profiler_exit (stream)
-     FILE *stream ATTRIBUTE_UNUSED;
-{
-  sorry ("block_profiler_exit support for MMIX");
-}
-
 /* SETUP_INCOMING_VARARGS.  */
 
 void

@@ -1,3 +1,15 @@
+2001-12-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_function_block_profiler,
+	mmix_block_profiler, mmix_function_block_profiler_exit): Delete
+	unused functions.
+	* config/mmix/mmix-protos.h (mmix_function_block_profiler,
+	mmix_block_profiler, mmix_function_block_profiler_exit): Delete
+	prototypes.
+
+	* config/cris/cris.h (FUNCTION_BLOCK_PROFILER, BLOCK_PROFILER):
+	Delete obsoleted macros.
+
 2001-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/cpp.texi, doc/cppinternals.texi, doc/invoke.texi,
