@@ -19,13 +19,21 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* eABI local switches -- put here rather than eabi.h, so the switches
-   can be tested in macros.  */
+/* Small data support types */
+enum rs6000_sdata_type {
+  SDATA_NONE,			/* no small data support */
+  SDATA_DATA,			/* just put data in .sbss/.sdata, don't use relocs */
+  SDATA_SYSV,			/* Use r13 to point to .sdata/.sbss */
+  SDATA_EABI			/* Use r13 like above, r2 points to .sdata2/.sbss2 */
+};
 
+extern enum rs6000_sdata_type rs6000_sdata;
+
+/* V.4/eabi switches */
 #define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0 */
 #define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
-#define	MASK_SDATA		0x08000000	/* use eabi .sdata/.sdata2/.sbss relocations */
+#define	MASK_SDATA		0x08000000	/* use small data areas */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
 #define MASK_REGNAMES		0x02000000	/* use alternate register names.  */
 #define MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args */
@@ -67,6 +75,7 @@ Boston, MA 02111-1307, USA.  */
   { "relocatable",	-MASK_SDATA },					\
   { "no-relocatable",	-MASK_RELOCATABLE },				\
   { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
+  { "relocatable-lib",	-MASK_SDATA },					\
   { "no-relocatable-lib", -MASK_RELOCATABLE },				\
   { "sdata",		 MASK_SDATA },					\
   { "no-sdata",		-MASK_SDATA },					\
@@ -89,13 +98,16 @@ Boston, MA 02111-1307, USA.  */
   { "emb",		 0 },						\
   { "newlib",		 0 },
 
-/* Which abi to adhere to */
-extern char *rs6000_abi_name;
-
 /* Default ABI to use */
 #define RS6000_ABI_NAME "sysv"
 
-#define SUBTARGET_OPTIONS {"call-", &rs6000_abi_name}
+/* Strings provided by SUBTARGET_OPTIONS */
+extern char *rs6000_abi_name;
+extern char *rs6000_sdata_name;
+
+#define SUBTARGET_OPTIONS						\
+  { "call-",  &rs6000_abi_name},					\
+  { "sdata=", &rs6000_sdata_name}
 
 /* Max # of bytes for variables to automatically be put into the .sdata
    or .sdata2 sections.  */
@@ -152,14 +164,41 @@ do {									\
       error ("Bad value for -mcall-%s", rs6000_abi_name);		\
     }									\
 									\
-  /* CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
-  if (TARGET_SDATA)							\
-    flag_combine_statics = 0;						\
-  /* END CYGNUS LOCAL -fcombine-statics vs. -msdata */			\
+  if (rs6000_sdata_name)						\
+    {									\
+      target_flags |= MASK_SDATA;					\
+      if (!strcmp (rs6000_sdata_name, "none"))				\
+	{								\
+	  rs6000_sdata = SDATA_NONE;					\
+	  target_flags &= ~MASK_SDATA;					\
+	}								\
+      else if (!strcmp (rs6000_sdata_name, "data"))			\
+	rs6000_sdata = SDATA_DATA;					\
+      else if (!strcmp (rs6000_sdata_name, "default"))			\
+	rs6000_sdata = (TARGET_EABI) ? SDATA_EABI : SDATA_SYSV;		\
+      else if (!strcmp (rs6000_sdata_name, "sysv"))			\
+	rs6000_sdata = SDATA_SYSV;					\
+      else if (!strcmp (rs6000_sdata_name, "eabi"))			\
+	rs6000_sdata = SDATA_EABI;					\
+      else								\
+	error ("Bad value for -msdata=%s", rs6000_sdata_name);		\
+    }									\
+  else if (TARGET_SDATA)						\
+    rs6000_sdata = (TARGET_EABI) ? SDATA_EABI : SDATA_SYSV;		\
+  else if (!TARGET_RELOCATABLE && !flag_pic				\
+	   && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))	\
+    {									\
+      rs6000_sdata = SDATA_DATA;					\
+      target_flags |= MASK_SDATA;					\
+    }									\
+  else									\
+    rs6000_sdata = SDATA_NONE;						\
 									\
-  if (TARGET_RELOCATABLE && TARGET_SDATA)				\
+  if (TARGET_RELOCATABLE &&						\
+      (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
     {									\
       target_flags &= ~MASK_SDATA;					\
+      rs6000_sdata = SDATA_NONE;					\
       error ("-mrelocatable and -msdata are incompatible.");		\
     }									\
 									\
@@ -729,51 +768,9 @@ do {									\
    to readd the prefixes.  */
 
 #undef	ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL)					\
-  do {									\
-    if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-      {									\
-	rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
-	if (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))		\
-	  SYMBOL_REF_FLAG (sym_ref) = 1;				\
-									\
-	if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)		\
-	  {								\
-	    char *prefix = (DEFAULT_ABI == ABI_AIX) ? "." : "..";	\
-	    char *str = permalloc (strlen (prefix) + 1			\
-				   + strlen (XSTR (sym_ref, 0)));	\
-	    strcpy (str, prefix);					\
-	    strcat (str, XSTR (sym_ref, 0));				\
-	    XSTR (sym_ref, 0) = str;					\
-	  }								\
-      }									\
-    else if (TARGET_SDATA						\
-	     && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)	\
-	     && TREE_CODE (DECL) == VAR_DECL)				\
-      {									\
-	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
-	tree section_name = DECL_SECTION_NAME (DECL);			\
-	char *name = ((section_name)					\
-			    ? IDENTIFIER_POINTER (section_name)		\
-			    : (char *)0);				\
-									\
-	if ((size > 0 && size <= 8)					\
-	    || (name							\
-		&& (strcmp (name, ".sdata") == 0			\
-		    || strcmp (name, ".sdata2") == 0			\
-		    || strcmp (name, ".sbss") == 0			\
-		    || strcmp (name, ".sbss2") == 0			\
-		    || strcmp (name, ".PPC.EMB.sdata0") == 0		\
-		    || strcmp (name, ".PPC.EMB.sbss0") == 0)))		\
-	  {								\
-	    rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
-	    char *str = permalloc (2 + strlen (XSTR (sym_ref, 0)));	\
-	    strcpy (str, "@");						\
-	    strcat (str, XSTR (sym_ref, 0));				\
-	    XSTR (sym_ref, 0) = str;					\
-	  }								\
-      }									\
-  } while (0)
+#define ENCODE_SECTION_INFO(DECL) rs6000_encode_section_info (DECL)
+
+extern void rs6000_encode_section_info ();
 
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard
@@ -842,7 +839,8 @@ do {									\
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu) %{mregnames} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{mrelocatable} %{mrelocatable-lib} %{memb} %{msdata: -memb} \
+%{mrelocatable} %{mrelocatable-lib} \
+%{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-solaris: -mlittle} %{mcall-linux: -mbig} }}}}"
@@ -856,6 +854,7 @@ do {									\
     %{mcall-solaris: -mlittle } \
     %{mcall-linux: -mbig} }}}} \
 %{mcall-solaris: -mregnames } \
+%{mno-sdata: -msdata=none } \
 %{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
     %{mcall-solaris: -mno-eabi } \

@@ -82,6 +82,12 @@ int rs6000_pic_labelno;
 
 /* Which abi to adhere to */
 char *rs6000_abi_name = RS6000_ABI_NAME;
+
+/* Semantics of the small data area */
+enum rs6000_sdata_type rs6000_sdata = SDATA_DATA;
+
+/* Which small data model to use */
+char *rs6000_sdata_name = (char *)0;
 #endif
 
 /* Whether a System V.4 varargs area was created.  */
@@ -223,6 +229,16 @@ output_options (file, f_options, f_len, W_options, W_len)
   for (j = 0; j < sizeof (rs6000_select) / sizeof(rs6000_select[0]); j++)
     if (rs6000_select[j].string != (char *)0)
       pos = output_option (file, rs6000_select[j].name, rs6000_select[j].string, pos);
+
+#ifdef USING_SVR4_H
+  switch (rs6000_sdata)
+    {
+    case SDATA_NONE: pos = output_option (file, "-msdata=", "none", pos); break;
+    case SDATA_DATA: pos = output_option (file, "-msdata=", "data", pos); break;
+    case SDATA_SYSV: pos = output_option (file, "-msdata=", "sysv", pos); break;
+    case SDATA_EABI: pos = output_option (file, "-msdata=", "eabi", pos); break;
+    }
+#endif
 
   fputs ("\n\n", file);
 }
@@ -1014,12 +1030,11 @@ small_data_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+#ifdef TARGET_SDATA
   rtx sym_ref, const_part;
 
-#ifdef TARGET_SDATA
-  if (!TARGET_SDATA)
+  if (rs6000_sdata == SDATA_NONE || rs6000_sdata == SDATA_DATA)
     return 0;
-#endif
 
   if (DEFAULT_ABI != ABI_V4 /* && DEFAULT_ABI != ABI_SOLARIS */)
     return 0;
@@ -1040,6 +1055,10 @@ small_data_operand (op, mode)
     return 0;
 
   return 1;
+
+#else
+  return 0;
+#endif
 }
 
 
@@ -2080,8 +2099,8 @@ ccr_bit (op, scc_p)
 
 /* Print an operand.  Recognize special options, documented below.  */
 
-#ifdef TARGET_EABI
-#define SMALL_DATA_RELOC ((TARGET_EABI) ? "sda21" : "sdarel")
+#ifdef TARGET_SDATA
+#define SMALL_DATA_RELOC ((rs6000_sdata == SDATA_EABI) ? "sda21" : "sdarel")
 #else
 #define SMALL_DATA_RELOC "sda21"
 #endif
@@ -4609,20 +4628,18 @@ rs6000_select_section (decl, reloc)
 	  || (DECL_INITIAL (decl) != error_mark_node
 	      && !TREE_CONSTANT (DECL_INITIAL (decl))))
 	{
-	  if (TARGET_SDATA && (size > 0) && (size <= g_switch_value))
+	  if (rs6000_sdata != SDATA_NONE && (size > 0) && (size <= g_switch_value))
 	    sdata_section ();
 	  else
 	    data_section ();
 	}
       else
 	{
-	  if (TARGET_SDATA && (size > 0) && (size <= g_switch_value))
+	  if (rs6000_sdata != SDATA_NONE && (size > 0) && (size <= g_switch_value))
 	    {
-#ifdef TARGET_EABI
-	      if (TARGET_EABI)
+	      if (rs6000_sdata == SDATA_EABI)
 		sdata2_section ();
 	      else
-#endif
 		sdata_section ();	/* System V doesn't have .sdata2/.sbss2 */
 	    }
 	  else
@@ -4632,6 +4649,75 @@ rs6000_select_section (decl, reloc)
   else
     const_section ();
 }
+
+
+
+/* If we are referencing a function that is static or is known to be
+   in this file, make the SYMBOL_REF special.  We can use this to indicate
+   that we can branch to this function without emitting a no-op after the
+   call.  For real AIX and NT calling sequences, we also replace the
+   function name with the real name (1 or 2 leading .'s), rather than
+   the function descriptor name.  This saves a lot of overriding code
+   to readd the prefixes.  */
+
+void
+rs6000_encode_section_info (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      rtx sym_ref = XEXP (DECL_RTL (decl), 0);
+      if (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
+	SYMBOL_REF_FLAG (sym_ref) = 1;
+
+      if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)
+	{
+	  char *prefix = (DEFAULT_ABI == ABI_AIX) ? "." : "..";
+	  char *str = permalloc (strlen (prefix) + 1
+				 + strlen (XSTR (sym_ref, 0)));
+	  strcpy (str, prefix);
+	  strcat (str, XSTR (sym_ref, 0));
+	  XSTR (sym_ref, 0) = str;
+	}
+    }
+  else if (rs6000_sdata != SDATA_NONE
+	   && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+	   && TREE_CODE (decl) == VAR_DECL)
+    {
+      int size = int_size_in_bytes (TREE_TYPE (decl));
+      tree section_name = DECL_SECTION_NAME (decl);
+      char *name = (char *)0;
+      int len = 0;
+
+      if (section_name)
+	{
+	  if (TREE_CODE (section_name) == STRING_CST)
+	    {
+	      name = TREE_STRING_POINTER (section_name);
+	      len = TREE_STRING_LENGTH (section_name);
+	    }
+	  else
+	    abort ();
+	}
+
+      if ((size > 0 && size <= g_switch_value)
+	  || (name
+	      && ((len == sizeof (".sdata")-1 && strcmp (name, ".sdata") == 0)
+		  || (len == sizeof (".sdata2")-1 && strcmp (name, ".sdata2") == 0)
+		  || (len == sizeof (".sbss")-1 && strcmp (name, ".sbss") == 0)
+		  || (len == sizeof (".sbss2")-1 && strcmp (name, ".sbss2") == 0)
+		  || (len == sizeof (".PPC.EMB.sdata0")-1 && strcmp (name, ".PPC.EMB.sdata0") == 0)
+		  || (len == sizeof (".PPC.EMB.sbss0")-1 && strcmp (name, ".PPC.EMB.sbss0") == 0))))
+	{
+	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
+	  char *str = permalloc (2 + strlen (XSTR (sym_ref, 0)));
+	  strcpy (str, "@");
+	  strcat (str, XSTR (sym_ref, 0));
+	  XSTR (sym_ref, 0) = str;
+	}
+    }
+}
+
 #endif /* USING_SVR4_H */
 
 
