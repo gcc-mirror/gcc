@@ -2201,10 +2201,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	 equivalent), get the preferred class to reload it into.  */
       code = GET_CODE (recog_operand[i]);
       preferred_class[i]
-	= ((code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER)
+	= ((code == REG && REGNO (recog_operand[i]) >= FIRST_PSEUDO_REGISTER)
 	   ? reg_preferred_class (REGNO (recog_operand[i])) : NO_REGS);
       pref_or_nothing[i]
-	= (code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER
+	= (code == REG && REGNO (recog_operand[i]) >= FIRST_PSEUDO_REGISTER
 	   && reg_alternate_class (REGNO (recog_operand[i])) == NO_REGS);
     }
 
