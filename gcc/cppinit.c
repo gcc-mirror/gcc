@@ -203,7 +203,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
      cpp_reader *pfile;
      char *dir;
      int path;
-     int cxx_aware;
+     int cxx_aware ATTRIBUTE_UNUSED;
 {
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
   struct file_name_list *new;
@@ -554,6 +554,8 @@ cpp_create_reader (lang)
   s = &pfile->spec_nodes;
   s->n_L                = cpp_lookup (pfile, DSC("L"));
   s->n_defined		= cpp_lookup (pfile, DSC("defined"));
+  s->n_true		= cpp_lookup (pfile, DSC("true"));
+  s->n_false		= cpp_lookup (pfile, DSC("false"));
   s->n__Pragma		= cpp_lookup (pfile, DSC("_Pragma"));
   s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
   s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
