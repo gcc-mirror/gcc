@@ -23,6 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
 #undef FLOAT /* Likewise.  */
 #undef ABS /* Likewise.  */
+#undef PC /* Likewise.  */
 
 /* Register Transfer Language EXPRESSIONS CODES */
 
