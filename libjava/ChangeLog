@@ -2899,7 +2899,7 @@
 	gnu/xml/xpath/Predicate.java: Use constants relative to 
 	declaring class or interface.
 
-2005-02-08  Andrew Haley  <aph@redhat.com>
+2005-02-16  Andrew Haley  <aph@redhat.com>
 
 	* javax/security/auth/Subject.java (doAsPrivileged): If acc is
 	null, create a new AccessControlContext.
