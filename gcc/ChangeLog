@@ -1,3 +1,11 @@
+2002-07-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md: Enable patterns using rlwinm for
+	PowerPC64.  Replace "T" and "S" constraints with "n" when the
+	predicate will do.  Formatting fixes.
+	(extzvsi_internal2): Use "andi.", "andis." and attr type of "compare"
+	as for extzvsi_internal1.
+
 2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* dwarfout.c (VERSION_ASM_OP, DERIV_BEGIN_LABEL_FMT,
