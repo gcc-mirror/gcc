@@ -397,6 +397,12 @@ if test x$ac_fold_checking != x ; then
 fi
 valgrind_path_defines=
 valgrind_command=
+
+dnl # This check AC_REQUIREs various stuff, so it *must not* be inside
+dnl # an if statement.  This was the source of very frustrating bugs
+dnl # in converting to autoconf 2.5x!
+AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
+
 if test x$ac_checking_valgrind != x ; then
   # It is certainly possible that there's valgrind but no valgrind.h.
   # GCC relies on making annotations so we must have both.
@@ -418,7 +424,6 @@ if test x$ac_checking_valgrind != x ; then
   [gcc_cv_header_memcheck_h=yes], 
   gcc_cv_header_memcheck_h=no)
   AC_MSG_RESULT($gcc_cv_header_memcheck_h)
-  AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
   AM_PATH_PROG_WITH_TEST(valgrind_path, valgrind,
 	[$ac_dir/$ac_word --version | grep valgrind- >/dev/null 2>&1])
   if test "x$valgrind_path" = "x" \

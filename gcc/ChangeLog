@@ -1,3 +1,9 @@
+2003-12-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Pull AC_CHECK_HEADER call out of shell if statement
+	to avoid trouble when updating to autoconf 2.5x.
+	* configure: Regenerate (with autoconf 2.13 still).
+
 2003-12-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (truncdiqi2): Use andi opcode for immediate.
