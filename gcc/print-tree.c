@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -525,7 +525,7 @@ print_node (file, prefix, node, indent)
 	      indent_to (file, indent + 4);
 	      fprintf (file, "rtl %d ", i);
 	      if (TREE_OPERAND (node, i))
-		print_rtl (file, (rtx) TREE_OPERAND (node, i));
+		print_rtl (file, (struct rtx_def *) TREE_OPERAND (node, i));
 	      else
 		fprintf (file, "(nil)");
 	      fprintf (file, "\n");
