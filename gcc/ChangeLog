@@ -1,5 +1,7 @@
 Sat Nov 29 12:44:57 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
+	* rs6000.c (function_arg_partial_nregs): Undo Nov. 26 patch.
+
 	* rs6000/aix41.h (ASM_CPU_SPEC): Define.
 
 Fri Nov 28 10:00:27 1997  Jeffrey A Law  (law@cygnus.com)

@@ -1387,9 +1387,6 @@ function_arg_partial_nregs (cum, mode, type, named)
 	return 0;
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
-    return 0;
-
   if (cum->words < GP_ARG_NUM_REG
       && GP_ARG_NUM_REG < (cum->words + RS6000_ARG_SIZE (mode, type, named)))
     {
