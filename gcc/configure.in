@@ -707,7 +707,7 @@ for machine in $build $host $target; do
 		xm_file=i386/xm-aix.h
 		xmake_file=i386/x-aix
 		;;
-	i[456]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
+	i[[456]]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
 		xm_file=i386/xm-sysv4.h
 		xmake_file=i386/x-ncr3000
 		if [[ x$stabs = xyes -a x$gas = xyes ]]
