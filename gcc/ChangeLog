@@ -1,3 +1,10 @@
+2000-06-25  Philipp Thomas  <pthomas@suse.de>
+
+	* aclocal.m4 (AM_WITH_NLS): Set create_catalogs=no if no catalog
+	compiler found.
+	AM_GNU_GETTEXT: Don't set CATALOGS if create_catalogs=no.
+	* configure: Rebuilt.
+	
 2000-06-25  John David Anglin  <dave.anglin@nrc.ca>
 
         * config/vax/vax.h (TARGET_SWITCHES): Provide descriptions.
