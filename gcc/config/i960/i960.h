@@ -1316,7 +1316,7 @@ extern struct rtx_def *gen_compare_reg ();
       assemble_name ((FILE), (NAME)),			\
       fputs ("\n.comm ", (FILE)),			\
       assemble_name ((FILE), (NAME)),			\
-      fprintf ((FILE), ",%d\n", (ROUNDED));		\
+      fprintf ((FILE), ",%d\n", (SIZE));		\
     }							\
 }
 
