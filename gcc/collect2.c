@@ -1056,6 +1056,14 @@ main (argc, argv)
       *ld1++ = *ld2++ = arg;
 
       if (arg[0] == '-')
+	{
+#ifdef COLLECT_SUPPRESS_OPTIONS
+	  if (index (COLLECT_SUPPRESS_OPTIONS, arg[1]))
+	    {
+	      ld1--;
+	      continue;
+	    }
+#endif
 	  switch (arg[1])
 	    {
 	    case 'd':
@@ -1093,7 +1101,7 @@ main (argc, argv)
 		vflag = 1;
 	      break;
 	    }
-
+	}
       else if (first_file
 	       && (p = rindex (arg, '.')) != (char *)0
 	       && strcmp (p, ".o") == 0)
