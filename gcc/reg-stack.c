@@ -1587,8 +1587,12 @@ emit_swap_insn (insn, regstack, reg)
 	return;
     }
 
-  if (sets_cc0_p (PATTERN (i1)))
-    link_cc0_insns (i1);
+  if (GET_RTX_CLASS (GET_CODE (i1)) == 'i' && sets_cc0_p (PATTERN (i1)))
+    {
+      i1 = next_nonnote_insn (i1);
+      if (i1 == insn)
+	abort ();
+    }
 
   swap_rtx = gen_swapdf (FP_mode_reg[hard_regno][(int) DFmode],
 			 FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
