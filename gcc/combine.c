@@ -5486,6 +5486,20 @@ expand_compound_operation (x)
     default:
       return x;
     }
+  /* Convert sign extension to zero extension, if we know that the high
+     bit is not set, as this is easier to optimize.  It will be converted
+     back to cheaper alternative in make_extraction.  */
+  if (GET_CODE (x) == SIGN_EXTEND
+      && (GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
+	  && ((nonzero_bits (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
+		& ~ (((unsigned HOST_WIDE_INT)
+		      GET_MODE_MASK (GET_MODE (XEXP (x, 0))))
+		     >> 1))
+	       == 0)))
+    {
+      rtx temp = gen_rtx_ZERO_EXTEND (GET_MODE (x), XEXP (x, 0));
+      return expand_compound_operation (temp);
+    }
 
   /* We can optimize some special cases of ZERO_EXTEND.  */
   if (GET_CODE (x) == ZERO_EXTEND)
@@ -5533,30 +5547,6 @@ expand_compound_operation (x)
 	      & ~ GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
 	return SUBREG_REG (XEXP (x, 0));
 
-      /* If sign extension is cheaper than zero extension, then use it
-	 if we know that no extraneous bits are set, and that the high
-	 bit is not set.  */
-      if (flag_expensive_optimizations
-	  && ((GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
-	       && ((nonzero_bits (XEXP (x, 0), GET_MODE (x))
-		    & ~ (((unsigned HOST_WIDE_INT)
-			  GET_MODE_MASK (GET_MODE (XEXP (x, 0))))
-			 >> 1))
-		   == 0))
-	      || (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-		  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
-		      <= HOST_BITS_PER_WIDE_INT)
-		  && (((HOST_WIDE_INT) STORE_FLAG_VALUE
-		       & ~ (((unsigned HOST_WIDE_INT)
-			     GET_MODE_MASK (GET_MODE (XEXP (x, 0))))
-			    >> 1))
-		      == 0))))
-	{
-	  rtx temp = gen_rtx_SIGN_EXTEND (GET_MODE (x), XEXP (x, 0));
-
-	  if (rtx_cost (temp, SET) < rtx_cost (x, SET))
-	    return expand_compound_operation (temp);
-	}
     }
 
   /* If we reach here, we want to return a pair of shifts.  The inner
@@ -5894,12 +5884,35 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 		   ? gen_rtx_CLOBBER (tmode, const0_rtx)
 		   : gen_rtx_combine (STRICT_LOW_PART, VOIDmode, new)));
 
+      if (mode == tmode)
+	return new;
+
+      /* If we know that no extraneous bits are set, and that the high
+	 bit is not set, convert the extraction to the cheaper of
+	 sign and zero extension, that are equivalent in these cases.  */
+      if (flag_expensive_optimizations
+	  && (GET_MODE_BITSIZE (tmode) <= HOST_BITS_PER_WIDE_INT
+	      && ((nonzero_bits (new, tmode)
+		   & ~ (((unsigned HOST_WIDE_INT)
+			 GET_MODE_MASK (tmode))
+			>> 1))
+		  == 0)))
+	{
+	  rtx temp = gen_rtx_ZERO_EXTEND (mode, new);
+	  rtx temp1 = gen_rtx_SIGN_EXTEND (mode, new);
+
+	  /* Prefer ZERO_EXTENSION, since it gives more information to
+	     backends.  */
+	  if (rtx_cost (temp, SET) < rtx_cost (temp1, SET))
+	    return temp;
+	  return temp1;
+	}
+
       /* Otherwise, sign- or zero-extend unless we already are in the
 	 proper mode.  */
 
-      return (mode == tmode ? new
-	      : gen_rtx_combine (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
-				 mode, new));
+      return (gen_rtx_combine (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
+			       mode, new));
     }
 
   /* Unless this is a COMPARE or we have a funny memory reference,
@@ -6088,7 +6101,30 @@ make_extraction (mode, inner, pos, pos_rtx, len,
      have to zero extend.  Otherwise, we can just use a SUBREG.  */
   if (pos_rtx != 0
       && GET_MODE_SIZE (pos_mode) > GET_MODE_SIZE (GET_MODE (pos_rtx)))
-    pos_rtx = gen_rtx_combine (ZERO_EXTEND, pos_mode, pos_rtx);
+    {
+      rtx temp = gen_rtx_combine (ZERO_EXTEND, pos_mode, pos_rtx);
+
+      /* If we know that no extraneous bits are set, and that the high
+	 bit is not set, convert extraction to cheaper one - eighter
+	 SIGN_EXTENSION or ZERO_EXTENSION, that are equivalent in these
+	 cases.  */
+      if (flag_expensive_optimizations
+	  && (GET_MODE_BITSIZE (GET_MODE (pos_rtx)) <= HOST_BITS_PER_WIDE_INT
+	      && ((nonzero_bits (pos_rtx, GET_MODE (pos_rtx))
+		   & ~ (((unsigned HOST_WIDE_INT)
+			 GET_MODE_MASK (GET_MODE (pos_rtx)))
+			>> 1))
+		  == 0)))
+	{
+	  rtx temp1 = gen_rtx_SIGN_EXTEND (pos_mode, pos_rtx);
+
+	  /* Preffer ZERO_EXTENSION, since it gives more information to
+	     backends.  */
+	  if (rtx_cost (temp1, SET) < rtx_cost (temp, SET))
+	    temp = temp1;
+	}
+      pos_rtx = temp;
+    }
   else if (pos_rtx != 0
 	   && GET_MODE_SIZE (pos_mode) < GET_MODE_SIZE (GET_MODE (pos_rtx)))
     pos_rtx = gen_lowpart_for_combine (pos_mode, pos_rtx);
