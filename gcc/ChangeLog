@@ -1,3 +1,10 @@
+1999-04-17 20:11 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* c-aux-info.c, emit-rtl.c, explow.c, expmed.c, gcse.c,
+	haifa-sched.c, optabs.c, reorg.c, resource.c, sched.c: Include
+	toplev.h for real declaration of trim_filename.
+	* Makefile.in: Update dependencies.
+
 Sat Apr 17 14:36:19 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* tree.c (chainon): Check for circularity only if

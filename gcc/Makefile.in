@@ -1338,7 +1338,8 @@ c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h toplev.h \
 c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h c-tree.h \
     $(srcdir)/c-parse.h input.h intl.h flags.h $(srcdir)/c-gperf.h c-pragma.h \
     toplev.h output.h mbchar.h
-c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h
+c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
+    toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) except.h \
     function.h defaults.h c-pragma.h toplev.h
@@ -1474,16 +1475,18 @@ except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h except.h toplev.h
 expr.o : expr.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h \
-   $(REGS_H) insn-flags.h insn-codes.h $(EXPR_H) insn-config.h $(RECOG_H) output.h \
-   typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h
+   $(REGS_H) insn-flags.h insn-codes.h $(EXPR_H) insn-config.h $(RECOG_H) \
+   output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h
 calls.o : calls.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h $(EXPR_H) \
    insn-flags.h $(REGS_H) toplev.h output.h
 expmed.o : expmed.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
-   insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) real.h
+   insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) real.h toplev.h
 explow.o : explow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
-   hard-reg-set.h insn-config.h $(EXPR_H) $(RECOG_H) insn-flags.h insn-codes.h
+   hard-reg-set.h insn-config.h $(EXPR_H) $(RECOG_H) insn-flags.h \
+   insn-codes.h toplev.h
 optabs.o : optabs.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
-   insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) reload.h
+   insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) reload.h \
+   toplev.h
 dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h dbxout.h \
    toplev.h
@@ -1500,7 +1503,7 @@ xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h toplev.h output.h dbxout.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    except.h function.h $(REGS_H) insn-config.h $(RECOG_H) real.h \
-   $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h
+   $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h toplev.h
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 getpwd.o : getpwd.c $(CONFIG_H) system.h
 
@@ -1517,10 +1520,11 @@ stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h output.h \
    $(srcdir)/../include/splay-tree.h
-gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
-   real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) output.h
+gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
+   flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
+   output.h toplev.h
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
-   $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h
+   $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h toplev.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
@@ -1558,8 +1562,8 @@ caller-save.o : caller-save.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    $(REGS_H) hard-reg-set.h insn-config.h $(BASIC_BLOCK_H) \
    $(RECOG_H) reload.h $(EXPR_H) toplev.h
 reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
-   $(BASIC_BLOCK_H) $(REGS_H) insn-config.h insn-attr.h \
-   insn-flags.h $(RECOG_H) flags.h output.h $(EXPR_H)
+   $(BASIC_BLOCK_H) $(REGS_H) insn-config.h insn-attr.h insn-flags.h \
+   $(RECOG_H) flags.h output.h $(EXPR_H) toplev.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h \
    $(REGS_H) toplev.h output.h $(EXPR_H) 
 regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
