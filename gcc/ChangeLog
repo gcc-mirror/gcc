@@ -1,3 +1,11 @@
+2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/vax/bsd.h, config/vax/elf.h, config/vax/netbsd-elf.h,
+	config/vax/netbsd.h, config/vax/openbsd.h, config/vax/openbsd1.h,
+	config/vax/ultrix.h, config/vax/vax-protos.h, config/vax/vax.c,
+	config/vax/vax.h, config/vax/vax.md, config/vax/vaxv.h: GCC, not
+	GNU CC.
+
 2003-03-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* cpppch.c (cpp_valid_state): Use DL_WARNING_SYSHDR, not DL_WARNING.
