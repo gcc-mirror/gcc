@@ -1,6 +1,6 @@
 // 1999-05-11 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,6 @@
 // 21.3.3 string capacity
 
 #include <string>
-#include <cstdio>
 #include <testsuite_hooks.h>
 
 template<typename T>
@@ -37,7 +36,7 @@ template<typename T>
 
 struct B { };
 
-bool test01()
+void test01()
 {
   // 1 POD types : resize, capacity, reserve
   bool test = true;
@@ -161,17 +160,11 @@ bool test01()
   VERIFY( b01 == true );
   sz04 = str02.size();  
   VERIFY( sz03 >= sz04 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-  
-  return test;
 }
 
 // libstdc++/4548
 // http://gcc.gnu.org/ml/libstdc++/2001-11/msg00150.html
-bool test02()
+void test02()
 {
   bool test = true;
 
@@ -180,12 +173,6 @@ bool test02()
   std::string str02 = str01;
   str01.reserve(1);
   VERIFY( str01.capacity() == 12 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
-  return test;
 }
 
 #if !__GXX_WEAK__
@@ -206,7 +193,3 @@ int main()
 
   return 0;
 }
-
-
-
-
