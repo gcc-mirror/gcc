@@ -16,6 +16,7 @@
 # LIB2FUNCS
 # LIB2FUNCS_EH
 # LIB2ADD
+# LIB2ADD_ST
 # FPBIT
 # FPBIT_FUNCS
 # DPBIT
@@ -241,6 +242,26 @@ for file in $LIB2ADD; do
   libgcc2_objs="$libgcc2_objs ${oname}${objext}"
 done
 
+libgcc2_st_objs=""
+
+for file in $LIB2ADD_ST; do
+  name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+  oname=`echo $name | sed -e 's,.*/,,'`
+
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${oname}${objext}"
+    if [ ${name}.asm = ${file} ]; then
+      flags="$flags -xassembler-with-cpp"
+    fi
+
+    echo $out: stmp-dirs $file
+    echo "	$gcc_compile" $flags -c $file -o $out
+  done
+  libgcc2_st_objs="$libgcc2_st_objs ${oname}${objext}"
+done
+
 # SHLIB_MKMAP
 # SHLIB_MAPFILES
 for ml in $MULTILIBS; do
@@ -260,6 +281,11 @@ for ml in $MULTILIBS; do
   done
   shlib_deps="$libgcc_objs"
 
+  libgcc_st_objs=""
+  for o in $libgcc2_st_objs; do
+    libgcc_st_objs="$libgcc_st_objs libgcc/${dir}/$o"
+  done
+
   if [ "$SHLIB_LINK" -a "$SHLIB_MKMAP" -a -z "$mapfile" ]; then
     mapfile="libgcc.map"
     echo ""
@@ -276,9 +302,9 @@ for ml in $MULTILIBS; do
   done
 
   echo ""
-  echo "${dir}/libgcc.a: $libgcc_objs"
+  echo "${dir}/libgcc.a: $libgcc_objs $libgcc_st_objs"
   echo "	-rm -rf ${dir}/libgcc.a"
-  echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_objs
+  echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_objs $libgcc_st_objs
   echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
   echo '	  $(RANLIB_FOR_TARGET)' ${dir}/libgcc.a ';' \\
   echo '	else true; fi;'

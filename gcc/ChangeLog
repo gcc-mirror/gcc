@@ -1,3 +1,11 @@
+2001-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* Makefile.in (LIB2FUNCS_STATIC_EXTRA): New macro.
+	(LIB2ADD_ST): New macro, pass it to mklibgcc.
+	* mklibgcc.in (libgcc2_st_objs): New variable, set it from LIB2ADD_ST.
+        (libgcc_st_objs): New, set from libgcc2_st_objs. Use it for libgcc.a.
+	* config/rs6000/t-ppccomm (LIB2FUNCS_STATIC_EXTRA): New macro.
+
 2001-04-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* configure.in: Add check for lstat.
