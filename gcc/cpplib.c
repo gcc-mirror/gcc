@@ -183,7 +183,7 @@ skip_rest_of_line (pfile)
 {
   cpp_token token;
 
-  /* Discard all lookaheads.  */
+  /* Discard all input lookaheads.  */
   while (pfile->la_read)
     _cpp_release_lookahead (pfile);
 
@@ -221,18 +221,22 @@ _cpp_handle_directive (pfile, indented)
      cpp_reader *pfile;
      int indented;
 {
+  struct cpp_lookahead *la_saved;
   cpp_buffer *buffer = pfile->buffer;
   const directive *dir = 0;
   cpp_token dname;
   int not_asm = 1;
 
+  /* Setup in-directive state.  */
+  pfile->state.in_directive = 1;
+  pfile->state.save_comments = 0;
+
   /* Some handlers need the position of the # for diagnostics.  */
   pfile->directive_pos = pfile->lexer_pos;
 
-  /* We're now in a directive.  This ensures we get pedantic warnings
-     about /v and /f in whitespace.  */
-  pfile->state.in_directive = 1;
-  pfile->state.save_comments = 0;
+  /* Don't save directive tokens for external clients.  */
+  la_saved = pfile->la_write;
+  pfile->la_write = 0;
 
   /* Lex the directive name directly.  */
   _cpp_lex_token (pfile, &dname);
@@ -334,6 +338,9 @@ _cpp_handle_directive (pfile, indented)
   /* Save the lookahead token for assembler.  */
   if (not_asm)
     skip_rest_of_line (pfile);
+
+  /* Restore state.  */
+  pfile->la_write = la_saved;
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   pfile->state.in_directive = 0;
   pfile->state.angled_headers = 0;
@@ -496,7 +503,7 @@ glue_header_name (pfile, header)
   buffer = (unsigned char *) xmalloc (capacity);
   for (;;)
     {
-      _cpp_get_token (pfile, &token);
+      cpp_get_token (pfile, &token);
 
       if (token.type == CPP_GREATER || token.type == CPP_EOF)
 	break;
@@ -703,7 +710,7 @@ do_line (pfile)
   cpp_token token;
 
   /* #line commands expand macros.  */
-  _cpp_get_token (pfile, &token);
+  cpp_get_token (pfile, &token);
   if (token.type != CPP_NUMBER
       || strtoul_for_line (token.val.str.text, token.val.str.len, &new_lineno))
     {
@@ -715,7 +722,7 @@ do_line (pfile)
   if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
     cpp_pedwarn (pfile, "line number out of range");
 
-  _cpp_get_token (pfile, &token);
+  cpp_get_token (pfile, &token);
 
   if (token.type != CPP_EOF)
     {
@@ -829,7 +836,7 @@ do_ident (pfile)
 {
   cpp_token str;
 
-  _cpp_get_token (pfile, &str);
+  cpp_get_token (pfile, &str);
   if (str.type != CPP_STRING)
     cpp_error (pfile, "invalid #ident");
   else if (pfile->cb.ident)
@@ -1403,7 +1410,7 @@ parse_answer (pfile, answerp, type)
 	  token = &answer->first[answer->count];
 	}
 
-      _cpp_get_token (pfile, token);
+      cpp_get_token (pfile, token);
       if (token->type == CPP_CLOSE_PAREN)
 	break;
 
@@ -1432,9 +1439,7 @@ parse_answer (pfile, answerp, type)
 
 /* Parses an assertion, returning a pointer to the hash node of the
    predicate, or 0 on error.  If an answer was supplied, it is placed
-   in ANSWERP, otherwise it is set to 0.  We use _cpp_get_raw_token,
-   since we cannot assume tokens are consecutive in a #if statement
-   (we may be in a macro), and we don't want to macro expand.  */
+   in ANSWERP, otherwise it is set to 0.  */
 static cpp_hashnode *
 parse_assertion (pfile, answerp, type)
      cpp_reader *pfile;
@@ -1451,7 +1456,7 @@ parse_assertion (pfile, answerp, type)
   pfile->string_pool = &pfile->ident_pool;
 
   *answerp = 0;
-  _cpp_get_token (pfile, &predicate);
+  cpp_get_token (pfile, &predicate);
   if (predicate.type == CPP_EOF)
     cpp_error (pfile, "assertion without predicate");
   else if (predicate.type != CPP_NAME)

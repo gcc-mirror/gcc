@@ -1,3 +1,20 @@
+2000-11-14  Neil Booth  <neilb@earthling.net>
+
+	* cppexp.c (parse_defined): Call cpp_get_token not
+	_cpp_get_token.
+	(lex): Similarly.
+	* cpplex.c (cpp_output_line): Similarly.
+	* cpplib.c (glue_header_name, do_line, do_ident,
+	parse_answer, parse_assertion): Similarly.
+	(_cpp_handle_diretive): Don't save to lookaheads
+	when processing directives.
+	* cppmacro.c (parse_arg, expand_arg): Call cpp_get_token not
+	_cpp_get_token.
+	(funlike_invocation_p): Don't save to lookaheads
+	when pre-expanding arguments.
+	(_cpp_get_token): Delete.
+	(cpp_get_token): Merge contents of _cpp_get_token.
+
 2000-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin_setjmp): Set
