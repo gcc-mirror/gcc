@@ -285,7 +285,9 @@ public class BigInteger extends Number implements Comparable
   public int signum()
   {
     int top = words == null ? ival : words[ival-1];
-    return top > 0 ? 1 : top < 0 ? -1 : 0;
+    if (top == 0 && words == null)
+      return 0;
+    return top < 0 ? -1 : 1;
   }
 
   private static int compareTo(BigInteger x, BigInteger y)
