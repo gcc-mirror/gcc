@@ -1,5 +1,10 @@
 2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* java/lang/natThrowable.cc (fillInStackTrace): Use "stackTraceBytes",
+	not "stackTrace".
+
+2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	Merge JDK 1.4 java.security changes from classpath.
 
 	* java/security/AccessControlException.java: Merge from Classpath.
