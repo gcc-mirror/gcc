@@ -2,7 +2,7 @@
 
 /* { dg-do run } */
 /* { dg-options "" } */
-/* { dg-options "-march=i386" { target i?86-*-* } } */
+/* { dg-options "-march=i386" { target { i?86-*-* && ilp32 } } } */
 
 /* We used to optimize the DImode shift-by-32 to zero because in combine
    we turned:
