@@ -2260,8 +2260,11 @@ sparc_builtin_saveregs (arglist)
   rtx address;
   int regno;
 
+#if 0 /* This code seemed to have no effect except to make
+	 varargs not work right when va_list wasn't the first arg.  */
   if (! stdarg)
     first_reg = 0;
+#endif
 
   for (regno = first_reg; regno < NPARM_REGS; regno++)
     emit_move_insn (gen_rtx (MEM, word_mode,
