@@ -1,3 +1,7 @@
+2002-12-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_a_shift): Remove unused code.
+
 2002-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* stor-layout.c (update_alignment_for_field): Guard use of
