@@ -404,6 +404,18 @@ _cpp_free_definition (h)
 {
   if (h->type == T_MACRO)
     free ((PTR) h->value.expansion);
+  else if (h->type == T_ASSERTION)
+    {
+      struct answer *temp, *next;
+
+      for (temp = h->value.answers; temp; temp = next)
+	{
+	  next = temp->next;
+	  FREE_ANSWER (temp);
+	}
+    }
+
+  h->type = T_VOID;
   h->value.expansion = NULL;
 }
 

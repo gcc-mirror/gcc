@@ -1,5 +1,13 @@
 2000-08-17  Neil Booth  <NeilB@earthling.net>
 
+	* cppinit.c (cpp_cleanup): Free include dir chains.
+	* cpplib.c (do_undef): Let _cpp_free_definition make the node void.
+	(do_unassert): Free the assert with _cpp_free_definition.
+	* cppmacro.c (_cpp_free_definition): Free memory allocated for
+	assertions.  Make the node a T_VOID node.
+
+2000-08-17  Neil Booth  <NeilB@earthling.net>
+
 	* cppinit.c (path_include, append_include_chain):
 	Remove 2nd parameter (struct cpp_pending *).
 	(path_include, initialize_standard_includes, cpp_handle_option):

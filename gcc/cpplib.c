@@ -298,7 +298,6 @@ do_undef (pfile)
 	cpp_warning (pfile, "undefining \"%s\"", node->name);
 
       _cpp_free_definition (node);
-      node->type = T_VOID;
     }
 }
 
@@ -1369,14 +1368,7 @@ do_unassert (pfile)
 		node->type = T_VOID;
 	    }
 	  else
-	    {
-	      for (temp = node->value.answers; temp; temp = next)
-		{
-		  next = temp->next;
-		  FREE_ANSWER (temp);
-		}
-	      node->type = T_VOID;
-	    }
+	    _cpp_free_definition (node);
 	}
 
       if (answer)
