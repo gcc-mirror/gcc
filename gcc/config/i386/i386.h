@@ -300,10 +300,10 @@ extern int target_flags;
    On the i386, copying between floating-point and fixed-point
    registers is expensive.  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)		\
-  ((((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS)	\
-    || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS))	\
-   ? 10 : 2)
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)			\
+  (((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))		\
+    || (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2))) ? 10	\
+   : 2)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -388,6 +388,8 @@ enum reg_class
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
+
+#define FLOAT_CLASS_P(CLASS) (reg_class_subset_p (CLASS, FLOAT_REGS))
 
 /* Give names of register classes as strings for dump file.   */
 
@@ -512,8 +514,8 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
   ((C) == 'G' ? standard_80387_constant_p (VALUE) : 0)
 
 /* Place additional restrictions on the register class to use when it
-   is necessary to be able to hold a value of mode @var{mode} in a reload
-   register for which class @var{class} would ordinarily be used. */
+   is necessary to be able to hold a value of mode MODE in a reload
+   register for which class CLASS would ordinarily be used. */
 
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
   ((MODE) == QImode && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS) \
@@ -534,7 +536,7 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode ? NO_REGS	\
    : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
-   : ((CLASS) == FLOAT_REGS						\
+   : (FLOAT_CLASS_P (CLASS)						\
       && (GET_MODE (X) == VOIDmode					\
 	  || GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)) ? GENERAL_REGS	\
    : (CLASS) == ALL_REGS ? GENERAL_REGS					\
@@ -548,18 +550,16 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    location.  */
 
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
-  (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS)	\
-   || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS))
+  ((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))	\
+   || (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2)))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 80386, this is the size of MODE in words,
    except in the FP regs, where a single reg is always enough.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
- ((CLASS) == FLOAT_REGS ? 1 :		\
-  (CLASS) == FP_TOP_REG ? 1 :		\
-  (CLASS) == FP_SECOND_REG ? 1 :	\
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+ (FLOAT_CLASS_P (CLASS) ? 1 :		\
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1242,7 +1242,7 @@ while (0)
 
 #define SELECT_CC_MODE(OP,X,Y) \
   (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
-   && ((OP) == EQ || (OP) == NE) ? CCFPEQmode : CCmode)
+   && ((OP) == EQ || (OP) == NE) ? CCFPEQmode : VOIDmode)
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
