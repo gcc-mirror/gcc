@@ -3586,8 +3586,10 @@ finish_decl (decl, init, asmspec_tree)
 		   Also if it is not file scope.
 		   Otherwise, let it through, but if it is not `extern'
 		   then it may cause an error message later.  */
-		(DECL_INITIAL (decl) != 0
-		 || current_binding_level != global_binding_level)
+	      /* We must use DECL_CONTEXT instead of current_binding_level,
+		 because a duplicate_decls call could have changed the binding
+		 level of this decl.  */
+		(DECL_INITIAL (decl) != 0 || DECL_CONTEXT (decl) != 0)
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
@@ -3629,8 +3631,7 @@ finish_decl (decl, init, asmspec_tree)
 	  end_temporary_allocation ();
 	  /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
 	  maybe_objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, asmspec,
-				    current_binding_level == global_binding_level,
+	  rest_of_decl_compilation (decl, asmspec, DECL_CONTEXT (decl) == 0,
 				    0);
 	  pop_obstacks ();
 	}
@@ -3638,11 +3639,10 @@ finish_decl (decl, init, asmspec_tree)
 	{
 	  /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
 	  maybe_objc_check_decl (decl);
-	  rest_of_decl_compilation (decl, asmspec,
-				    current_binding_level == global_binding_level,
+	  rest_of_decl_compilation (decl, asmspec, DECL_CONTEXT (decl) == 0,
 				    0);
 	}
-      if (current_binding_level != global_binding_level)
+      if (DECL_CONTEXT (decl) != 0)
 	{
 	  /* Recompute the RTL of a local array now
 	     if it used to be an incomplete type.  */
@@ -3666,8 +3666,7 @@ finish_decl (decl, init, asmspec_tree)
     {
       /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
       maybe_objc_check_decl (decl);
-      rest_of_decl_compilation (decl, NULL_PTR,
-				current_binding_level == global_binding_level,
+      rest_of_decl_compilation (decl, NULL_PTR, DECL_CONTEXT (decl) == 0,
 				0);
     }
 
