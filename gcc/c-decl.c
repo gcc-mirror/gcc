@@ -5317,11 +5317,17 @@ parmlist_tags_warning ()
       if (code == UNION_TYPE && TREE_PURPOSE (elt) == 0 && !pedantic)
 	continue;
       if (TREE_PURPOSE (elt) != 0)
-	warning ("`%s %s' declared inside parameter list",
-		 (code == RECORD_TYPE ? "struct"
-		  : code == UNION_TYPE ? "union"
-		  : "enum"),
-		 IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
+        {
+          if (code == RECORD_TYPE)
+            warning ("`struct %s' declared inside parameter list",
+                     IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
+          else if (code == UNION_TYPE)
+            warning ("`union %s' declared inside parameter list",
+                     IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
+          else
+            warning ("`enum %s' declared inside parameter list",
+                     IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
+        }
       else
 	{
 	  /* For translation these need to be separate warnings */
@@ -5411,9 +5417,14 @@ start_struct (code, name)
       C_TYPE_BEING_DEFINED (ref) = 1;
       TYPE_PACKED (ref) = flag_pack_struct;
       if (TYPE_FIELDS (ref))
-	error ("redefinition of `%s %s'",
-	       code == UNION_TYPE ? "union" : "struct",
-	       IDENTIFIER_POINTER (name));
+        {
+	  if (code == UNION_TYPE)
+	    error ("redefinition of `union %s'",
+		   IDENTIFIER_POINTER (name));
+          else
+	    error ("redefinition of `struct %s'",
+		   IDENTIFIER_POINTER (name));
+	}  
 
       return ref;
     }
@@ -6995,12 +7006,21 @@ check_for_loop_decls ()
   for (t = gettags (); t; t = TREE_CHAIN (t))
     {
       if (TREE_PURPOSE (t) != 0)
-	error ("`%s %s' declared in `for' loop initial declaration",
-	       (TREE_CODE (TREE_VALUE (t)) == RECORD_TYPE ? "struct"
-		: TREE_CODE (TREE_VALUE (t)) == UNION_TYPE ? "union"
-		: "enum"),
-	       IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+        {
+          enum tree_code code = TREE_CODE (TREE_VALUE (t));
+	  
+          if (code == RECORD_TYPE)
+            error ("`struct %s' declared in `for' loop initial declaration",
+                   IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+          else if (code == UNION_TYPE)
+            error ("`union %s' declared in `for' loop initial declaration",
+                   IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+          else
+            error ("`enum %s' declared in `for' loop initial declaration",
+                   IDENTIFIER_POINTER (TREE_PURPOSE (t)));
+        }
     }
+
   for (t = getdecls (); t; t = TREE_CHAIN (t))
     {
       if (TREE_CODE (t) != VAR_DECL && DECL_NAME (t))

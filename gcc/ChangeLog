@@ -1,3 +1,23 @@
+2001-10-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	Localization fixes.
+	* c-decl.c (parmlist_tags_warning, start_struct,
+	check_for_loop_decls): Separate messages for struct, union and
+	enum cases to allow for languages in which they have different
+	genders.
+	* c-format.c (scanf_flag_specs): Separate short and long name of
+	the assignment suppression feature.
+	(check_format_types): Localize "pointer" and "different types"
+	strings.
+	* c-lex.c (lex_number): Localize "an unsigned long int" and
+	related strings.
+	(lex_string) [MULTIBYTE_CHARS]: Use initial lowercase letter on
+	warning message.
+	* c-typeck.c (build_unary_up): Separate messages for increment and
+	decrement cases to allow for languages in which they use different
+	articles.  Localize the strings "increment" and "decrement" in one
+	case.
+
 Tue Oct 30 11:08:11 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* lcm.c (optimize_mode_switching):  Do not rebuild liveness information

@@ -639,12 +639,12 @@ static const format_flag_pair printf_flag_pairs[] =
 
 static const format_flag_spec scanf_flag_specs[] =
 {
-  { '*',  0, 0, N_("assignment suppression"), N_("assignment suppression"),          STD_C89 },
-  { 'a',  0, 0, N_("`a' flag"),               N_("the `a' scanf flag"),              STD_EXT },
-  { 'w',  0, 0, N_("field width"),            N_("field width in scanf format"),     STD_C89 },
-  { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"), STD_C89 },
-  { '\'', 0, 0, N_("`'' flag"),               N_("the `'' scanf flag"),              STD_EXT },
-  { 'I',  0, 0, N_("`I' flag"),               N_("the `I' scanf flag"),              STD_EXT },
+  { '*',  0, 0, N_("assignment suppression"), N_("the assignment suppression scanf feature"), STD_C89 },
+  { 'a',  0, 0, N_("`a' flag"),               N_("the `a' scanf flag"),                       STD_EXT },
+  { 'w',  0, 0, N_("field width"),            N_("field width in scanf format"),              STD_C89 },
+  { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"),          STD_C89 },
+  { '\'', 0, 0, N_("`'' flag"),               N_("the `'' scanf flag"),                       STD_EXT },
+  { 'I',  0, 0, N_("`I' flag"),               N_("the `I' scanf flag"),                       STD_EXT },
   { 0, 0, 0, NULL, NULL, 0 }
 };
 
@@ -2385,9 +2385,9 @@ check_format_types (status, types)
 	if (that == 0)
 	  {
 	    if (TREE_CODE (orig_cur_type) == POINTER_TYPE)
-	      that = "pointer";
+	      that = _("pointer");
 	    else
-	      that = "different type";
+	      that = _("different type");
 	  }
 
 	/* Make the warning better in case of mismatch of int vs long.  */
