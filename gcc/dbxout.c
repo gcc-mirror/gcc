@@ -112,6 +112,11 @@ extern int errno;
 #define DBX_REGPARM_STABS_LETTER 'P'
 #endif
 
+/* This is used for parameters passed by invisible reference in a register.  */
+#ifndef GDB_INV_REF_REGPARM_STABS_LETTER
+#define GDB_INV_REF_REGPARM_STABS_LETTER 'a'
+#endif
+
 #ifndef DBX_MEMPARM_STABS_LETTER
 #define DBX_MEMPARM_STABS_LETTER 'p'
 #endif
@@ -2200,7 +2205,10 @@ dbxout_parms (parms)
 	    /* Parm passed in registers and lives in registers or nowhere.  */
 
 	    current_sym_code = DBX_REGPARM_STABS_CODE;
-	    regparm_letter = DBX_REGPARM_STABS_LETTER;
+	    if (use_gnu_debug_info_extensions)
+	      regparm_letter = GDB_INV_REF_REGPARM_STABS_LETTER;
+	    else
+	      regparm_letter = DBX_REGPARM_STABS_LETTER;
 
 	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.
 	       If it is an unallocated pseudo-reg, then use the register where
@@ -2220,13 +2228,13 @@ dbxout_parms (parms)
 
 		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
 			 IDENTIFIER_POINTER (DECL_NAME (parms)),
-			 DBX_REGPARM_STABS_LETTER);
+			 regparm_letter);
 	      }
 	    else
 	      {
 		current_sym_nchars = 8;
 		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
-			 DBX_REGPARM_STABS_LETTER);
+			 regparm_letter);
 	      }
 
 	    dbxout_type (TREE_TYPE (parms), 0, 0);
