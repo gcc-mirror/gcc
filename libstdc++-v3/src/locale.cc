@@ -554,20 +554,32 @@ namespace std {
 
   locale::locale(const char* __name)
   {
-    _S_initialize();
-    if (strcmp(__name, "C") == 0 || strcmp(__name, "POSIX") == 0)
-      (_M_impl = _S_classic)->_M_add_reference();
-    else
+    if (__name)
       {
+	if (strcmp(__name, "C") == 0 || strcmp(__name, "POSIX") == 0)
+	  (_M_impl = _S_classic)->_M_add_reference();
 	// Might throw:
-	_M_impl = new _Impl(*_S_classic, __name, all, 1);
-        _M_impl->_M_has_name = true;
+	else
+	  _M_impl = new _Impl(*_S_classic, __name, all, 1);
       }
+    else
+      throw runtime_error("attempt to create named locale from NULL name");
   }
 
   locale::locale(const locale& __other, const char* __name, category __cat)
-  : _M_impl(new _Impl(*__other._M_impl, __name, _S_normalize_category(__cat), 1))
-  { }
+  { 
+    if (__name)
+      {
+	if (__other.name() == __name)
+	  (_M_impl = __other._M_impl)->_M_add_reference();
+	// Might throw:
+	else
+	  _M_impl = new _Impl(*__other._M_impl, __name,
+			      _S_normalize_category(__cat), 1);
+      }
+    else
+      throw runtime_error("attempt to create locale from NULL named locale");
+  }
 
   bool
   locale::operator==(const locale& __rhs) const throw()

@@ -63,7 +63,7 @@ void test01()
   locale loc07("");
   VERIFY (loc07 != loc01);  
   VERIFY (loc07 != loc02);  
-  VERIFY (loc06.name() == "");
+  VERIFY (loc07.name() == "");
   try
     { locale loc08(static_cast<const char*>(NULL)); }
   catch(runtime_error& obj)
@@ -73,6 +73,29 @@ void test01()
 
   // 4
   // locale(const locale& other, const char* std_name, category)
+  locale loc09(loc06, "C", locale::ctype);
+  VERIFY (loc09.name() == "fr_FR");
+  VERIFY (loc09 != loc01);  
+  VERIFY (loc09 != loc06);  
+  // XXX somehow check that the ctype, codecvt facets have "C" locale bits...
+
+  locale loc10(loc02, "C", locale::ctype);
+  VERIFY (loc10.name() == "*");
+  VERIFY (loc10 != loc01);   // As not named, even tho facets same...
+  VERIFY (loc10 != loc02);  
+  // XXX somehow check that the ctype, codecvt facets have "C" locale bits...
+
+  locale loc11(loc01, "C", locale::ctype);
+  VERIFY (loc11.name() == "C");
+  VERIFY (loc11 == loc01);  
+  // XXX somehow check that the ctype, codecvt facets have "C" locale bits...
+
+  try
+    { locale loc12(loc01, static_cast<const char*>(NULL), locale::ctype); }
+  catch(runtime_error& obj)
+    { VERIFY (true); }
+  catch(...)
+    { VERIFY (false); }
   
 
 

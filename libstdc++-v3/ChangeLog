@@ -1,3 +1,19 @@
+2000-09-15  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/locale.cc (locale::locale(const char* __name)): Consolidate
+	name setting. Add checks for NULL __name pointers. Remove calls to
+	_S_initialize() as initial locale initialization can either be
+	assumed, or needs to be made consistent throughout locale
+	constructors.
+	(locale::locale(const locale& __other, const char* __name,
+	category __cat): Add checks for NULL name. Add checks for
+	assignment to self.
+	* src/localename.cc (locale::_Impl:: _Impl(const _Impl& __other,
+	const string& __name, category __cat, size_t __refs)): Set correct
+	name, has_name values.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test01): More tests.
+	* docs/22_locale/locale.html: New file, more unfinished docs...
+	
 2000-09-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/locale.cc (locale::name()): Implement.
