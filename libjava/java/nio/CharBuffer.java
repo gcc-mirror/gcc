@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.nio;
 
 public abstract class CharBuffer extends Buffer
+  implements Cloneable, CharSequence
 {
   private ByteOrder endian = ByteOrder.BIG_ENDIAN;
 
