@@ -694,6 +694,9 @@ _cpp_get_fresh_line (cpp_reader *pfile)
     {
       cpp_buffer *buffer = pfile->buffer;
 
+      if (buffer == NULL)
+	return false;
+
       if (!buffer->need_line)
 	return true;
 
@@ -759,7 +762,8 @@ _cpp_lex_direct (cpp_reader *pfile)
 
  fresh_line:
   result->flags = 0;
-  if (pfile->buffer->need_line)
+  buffer = pfile->buffer;
+  if (buffer == NULL || buffer->need_line)
     {
       if (!_cpp_get_fresh_line (pfile))
 	{
@@ -781,8 +785,8 @@ _cpp_lex_direct (cpp_reader *pfile)
       result->flags = BOL;
       if (pfile->state.parsing_args == 2)
 	result->flags |= PREV_WHITE;
+      buffer = pfile->buffer;
     }
-  buffer = pfile->buffer;
  update_tokens_line:
   result->line = pfile->line;
 
