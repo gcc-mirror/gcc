@@ -1,3 +1,19 @@
+2000-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (SUBDIRS): Define.
+	(AM_MAKEFLAGS): Likewise.
+	(Multilib support.): Add section.
+	* Makefile.in: Rebuilt.
+	* ltconfig (extra_compiler_flags, extra_compiler_flags_value):
+        New variables. Set for gcc using -print-multi-lib. Export them
+        to libtool.
+        (sparc64-*-linux-gnu*): Use libsuff 64 for search paths.
+        * ltmain.sh (B|b|V): Don't throw away gcc's -B, -b and -V options
+        for -shared links.
+        (extra_compiler_flags_value, extra_compiler_flags): Check these
+        for extra compiler options which need to be passed down in
+        compiler_flags.
+
 2000-04-16  Anthony Green  <green@redhat.com>
 
 	* configure: Rebuilt.

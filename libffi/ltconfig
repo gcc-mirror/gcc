@@ -985,6 +985,29 @@ else
 fi
 echo "$ac_t$with_gnu_ld" 1>&6
 
+extra_compiler_flags=
+extra_compiler_flags_value=
+if test "$with_gcc" = yes; then
+  extra_compiler_flags_value="-B|-b|-V"
+  extra_compiler_flags="-B*|-b*|-V*"
+  # Check to see what are the possible multilibing options
+  echo $ac_n "checking what multilib options $compiler supports ... $ac_c" 1>&6
+  multilibopts=
+  if ${CC-cc} -print-multi-lib >/dev/null 2>&1; then
+    for dir in `${CC-cc} -print-multi-lib 2>/dev/null`; do
+      multilibopts="$multilibopts`echo $dir | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`"
+    done
+  fi
+  # Kill any whitespace at the beginning and end
+  multilibopts=`echo $multilibopts`
+  if test -n "$multilibopts"; then
+    extra_compiler_flags="$extra_compiler_flags`echo $multilibopts | sed -e 's/ -/|-/g' -e 's/^-/|-/'`"
+    echo "$ac_t$multilibopts" 1>&6
+  else
+    echo "$ac_t"none 1>&6
+  fi
+fi
+
 # See if the linker supports building shared libraries.
 echo $ac_n "checking whether the linker ($LD) supports shared libraries... $ac_c" 1>&6
 
@@ -1109,8 +1132,8 @@ EOF
 
   *)
     if $LD --help 2>&1 | egrep ': supported targets:.* elf' > /dev/null; then
-      archive_cmds='$CC -shared $libobjs $deplibs $linkopts ${wl}-soname $wl$soname -o $lib'
-      archive_expsym_cmds='$CC -shared $libobjs $deplibs $linkopts ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
+      archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags $linkopts ${wl}-soname $wl$soname -o $lib'
+      archive_expsym_cmds='$CC -shared $libobjs $deplibs $compiler_flags $linkopts ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
     else
       ld_shlibs=no
     fi
@@ -1217,7 +1240,7 @@ else
 
   # FreeBSD 3 and greater uses gcc -shared to do shared libraries.
   freebsd*)
-    archive_cmds='$CC -shared -o $lib $libobjs $deplibs $linkopts'
+    archive_cmds='$CC -shared -o $lib $libobjs $deplibs $compiler_flags $linkopts'
     hardcode_libdir_flag_spec='-R$libdir'
     hardcode_direct=yes
     hardcode_minus_L=no
@@ -1242,9 +1265,9 @@ else
 
   irix5* | irix6*)
     if test "$with_gcc" = yes; then
-      archive_cmds='$CC -shared $libobjs $deplibs $linkopts ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` -o $lib'
+      archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags $linkopts ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` -o $lib'
     else
-      archive_cmds='$LD -shared $libobjs $deplibs $linkopts -soname $soname `test -n "$verstring" && echo -set_version $verstring` -o $lib'
+      archive_cmds='$LD -shared $libobjs $deplibs $compiler_flags $linkopts -soname $soname `test -n "$verstring" && echo -set_version $verstring` -o $lib'
     fi
     hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
     hardcode_libdir_separator=:
@@ -1279,7 +1302,7 @@ else
   osf3* | osf4*)
     if test "$with_gcc" = yes; then
       allow_undefined_flag=' ${wl}-expect_unresolved ${wl}\*'
-      archive_cmds='$CC -shared${allow_undefined_flag} $libobjs $deplibs $linkopts ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` -o $lib'
+      archive_cmds='$CC -shared${allow_undefined_flag} $libobjs $deplibs $compiler_flags $linkopts ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` -o $lib'
     else
       allow_undefined_flag=' -expect_unresolved \*'
       archive_cmds='$LD -shared${allow_undefined_flag} $libobjs $deplibs $linkopts -soname $soname `test -n "$verstring" && echo -set_version $verstring` -o $lib'
@@ -1771,6 +1794,13 @@ linux-gnu*)
     *) dynamic_linker='Linux ld.so' ;;
     esac
   fi
+  case "$host_cpu" in
+  sparc64)
+    libsuff=64
+    sys_lib_search_path_spec="/lib${libsuff} /usr/lib${libsuff} /usr/local/lib${libsuff}"
+    sys_lib_dlsearch_path_spec="/lib${libsuff} /usr/lib${libsuff}"
+    ;;
+  esac
   ;;
 
 netbsd*)
@@ -2428,7 +2458,8 @@ case "$ltmain" in
     finish_cmds finish_eval global_symbol_pipe global_symbol_to_cdecl \
     hardcode_libdir_flag_spec hardcode_libdir_separator  \
     sys_lib_search_path_spec sys_lib_dlsearch_path_spec \
-    compiler_c_o compiler_o_lo need_locks exclude_expsyms include_expsyms; do
+    compiler_c_o compiler_o_lo need_locks exclude_expsyms include_expsyms \
+    extra_compiler_flags extra_compiler_flags_value; do
 
     case "$var" in
     reload_cmds | old_archive_cmds | old_archive_from_new_cmds | \
@@ -2653,6 +2684,10 @@ archive_cmds=$archive_cmds
 archive_expsym_cmds=$archive_expsym_cmds
 postinstall_cmds=$postinstall_cmds
 postuninstall_cmds=$postuninstall_cmds
+
+# Case patterns for extra compiler flags needed for linking
+extra_compiler_flags=$extra_compiler_flags
+extra_compiler_flags_value=$extra_compiler_flags_value
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method=$deplibs_check_method

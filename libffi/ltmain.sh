@@ -787,6 +787,7 @@ compiler."
     finalize_command="$CC"
 
     compile_rpath=
+    compiler_flags=
     finalize_rpath=
     compile_shlibpath=
     finalize_shlibpath=
@@ -914,6 +915,13 @@ compiler."
 	xrpath)
 	  xrpath="$xrpath $arg"
 	  prev=
+	  continue
+	  ;;
+	B|b|V)
+	  compiler_flags="$compiler_flags -$prev$qarg"
+	  prev=
+	  compile_command="$compile_command -$prev$qarg"
+	  finalize_command="$finalize_command -$prev$qarg"
 	  continue
 	  ;;
 	*)
@@ -1076,6 +1084,17 @@ compiler."
 
       # Some other compiler flag.
       -* | +*)
+	if test "X$extra_compiler_flags_value" != "X"; then
+	    is_extra_compiler_flag=
+	    eval "case \"\$arg\" in \
+	      $extra_compiler_flags_value) \
+		is_extra_compiler_flag=yes ;; \
+	      esac"
+	    if test "$is_extra_compiler_flag"; then
+	      prev=`echo "X$arg" | $Xsed -e 's/^-//'`
+	      continue
+	    fi
+	fi
 	# Unknown arguments in both finalize_command and compile_command need
 	# to be aesthetically quoted because they are evaled later.
 	arg=`$echo "X$arg" | $Xsed -e "$sed_quote_subst"`
@@ -1084,6 +1103,16 @@ compiler."
 	  arg="\"$arg\""
 	  ;;
 	esac
+	if test "X$extra_compiler_flags" != "X"; then
+	    is_extra_compiler_flag=
+	    eval "case \"\$arg\" in \
+	      $extra_compiler_flags) \
+		is_extra_compiler_flag=yes ;; \
+	      esac"
+	    if test "$is_extra_compiler_flag"; then
+	      compiler_flags="$compiler_flags $arg"
+	    fi
+	fi
 	;;
 
       *.o | *.obj | *.a | *.lib)
