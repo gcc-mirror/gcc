@@ -1919,7 +1919,8 @@ i960_function_arg_advance (cum, mode, type, named)
   i960_arg_size_and_align (mode, type, &size, &align);
 
   if (named == 0 || size > 4 || cum->ca_nstackparms != 0
-      || (size + ROUND (cum->ca_nregparms, align)) > NPARM_REGS)
+      || (size + ROUND (cum->ca_nregparms, align)) > NPARM_REGS
+      || MUST_PASS_IN_STACK (mode, type))
     cum->ca_nstackparms = ROUND (cum->ca_nstackparms, align) + size;
   else
     cum->ca_nregparms = ROUND (cum->ca_nregparms, align) + size;
@@ -1941,7 +1942,8 @@ i960_function_arg (cum, mode, type, named)
   i960_arg_size_and_align (mode, type, &size, &align);
 
   if (named == 0 || size > 4 || cum->ca_nstackparms != 0
-      || (size + ROUND (cum->ca_nregparms, align)) > NPARM_REGS)
+      || (size + ROUND (cum->ca_nregparms, align)) > NPARM_REGS
+      || MUST_PASS_IN_STACK (mode, type))
     {
       cum->ca_nstackparms = ROUND (cum->ca_nstackparms, align);
       ret = 0;

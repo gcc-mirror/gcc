@@ -1485,15 +1485,27 @@ expand_call (exp, target, ignore)
   else if (structure_value_addr)
     {
       if (target == 0 || GET_CODE (target) != MEM)
-	target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
-			  memory_address (TYPE_MODE (TREE_TYPE (exp)),
-					  structure_value_addr));
+	{
+	  target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
+			    memory_address (TYPE_MODE (TREE_TYPE (exp)),
+					    structure_value_addr));
+	  MEM_IN_STRUCT_P (target)
+	    = (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+	       || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE);
+	}
     }
   else if (pcc_struct_value)
     {
       if (target == 0)
-	target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
-			  copy_to_reg (valreg));
+	{
+	  target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
+			    copy_to_reg (valreg));
+	  MEM_IN_STRUCT_P (target)
+	    = (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+	       || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE);
+	}
       else if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
 	emit_move_insn (target, gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
 					 copy_to_reg (valreg)));

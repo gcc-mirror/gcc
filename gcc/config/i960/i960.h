@@ -790,8 +790,13 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 /* Indicate the alignment boundary for an argument of the specified mode and
    type.  */
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-  ((TYPE) && TYPE_ALIGN (TYPE) > PARM_BOUNDARY ? TYPE_ALIGN (TYPE)	\
-   : PARM_BOUNDARY)
+  (((TYPE) != 0)							\
+   ? ((TYPE_ALIGN (TYPE) <= PARM_BOUNDARY)				\
+      ? PARM_BOUNDARY							\
+      : TYPE_ALIGN (TYPE))						\
+   : ((GET_MODE_ALIGNMENT (MODE) <= PARM_BOUNDARY)			\
+      ? PARM_BOUNDARY							\
+      : GET_MODE_ALIGNMENT (MODE)))
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
