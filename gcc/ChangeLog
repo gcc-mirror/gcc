@@ -1,5 +1,8 @@
 2000-04-13  Andreas Jaeger  <aj@suse.de>
 
+	* config/mips/mips.c (expand_block_move): Pass alignment
+        argument to move_by_pieces in bits, not bytes.
+
 	* config/mips/linux.h (CPP_PREDEFINES): Also define __PIC__ and
 	__pic__ for little endian.
 
