@@ -9169,7 +9169,7 @@ ix86_hard_regno_mode_ok (regno, mode)
     return 0;
   /* Take care for QImode values - they can be in non-QI regs, but then
      they do cause partial register stalls.  */
-  if (regno < 4 || mode != QImode)
+  if (regno < 4 || mode != QImode || TARGET_64BIT)
     return 1;
   return reload_in_progress || reload_completed || !TARGET_PARTIAL_REG_STALL;
 }
