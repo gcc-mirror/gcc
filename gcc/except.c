@@ -643,17 +643,6 @@ expand_eh_region_start ()
   if (! doing_eh (0))
     return;
 
-  /* We need a new block to record the start and end of the dynamic
-     handler chain.  We also want to prevent jumping into a try block.  */
-  expand_start_bindings (2);
-
-  /* But we don't need or want a new temporary level.  */
-  pop_temp_slots ();
-
-  /* Mark this block as created by expand_eh_region_start.  This is so
-     that we can pop the block with expand_end_bindings automatically.  */
-  mark_block_as_eh_region ();
-
   /* Insert a new blank region as a leaf in the tree.  */
   new_region = (struct eh_region *) xcalloc (1, sizeof (*new_region));
   cur_region = cfun->eh->cur_region;
@@ -691,20 +680,6 @@ expand_eh_region_end ()
   /* Pop.  */
   cfun->eh->cur_region = cur_region->outer;
 
-  /* If we have already started ending the bindings, don't recurse.  */
-  if (is_eh_region ())
-    {
-      /* Because we don't need or want a new temporary level and
-	 because we didn't create one in expand_eh_region_start,
-	 create a fake one now to avoid removing one in
-	 expand_end_bindings.  */
-      push_temp_slots ();
-
-      mark_block_as_not_eh_region ();
-
-      expand_end_bindings (NULL_TREE, 0, 0);
-    }
-
   return cur_region;
 }
 
@@ -739,7 +714,7 @@ expand_eh_region_end_cleanup (handler)
      it, we need to save the EH return data registers around it.  */
   data_save[0] = gen_reg_rtx (Pmode);
   emit_move_insn (data_save[0], get_exception_pointer ());
-  data_save[1] = gen_reg_rtx (Pmode);
+  data_save[1] = gen_reg_rtx (word_mode);
   emit_move_insn (data_save[1], get_exception_filter ());
 
   expand_expr (handler, const0_rtx, VOIDmode, 0);

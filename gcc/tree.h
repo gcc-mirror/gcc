@@ -2552,13 +2552,8 @@ extern void start_cleanup_deferral		PARAMS ((void));
 extern void end_cleanup_deferral		PARAMS ((void));
 extern int is_body_block			PARAMS ((tree));
 
-extern void mark_block_as_eh_region		PARAMS ((void));
-extern void mark_block_as_not_eh_region		PARAMS ((void));
-extern int is_eh_region				PARAMS ((void));
 extern int conditional_context			PARAMS ((void));
 extern tree last_cleanup_this_contour		PARAMS ((void));
-extern int expand_dhc_cleanup			PARAMS ((tree));
-extern int expand_dcc_cleanup			PARAMS ((tree));
 extern void expand_start_case			PARAMS ((int, tree, tree,
 						       const char *));
 extern void expand_end_case			PARAMS ((tree));

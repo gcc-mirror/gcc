@@ -3380,28 +3380,6 @@ is_body_block (stmt)
   return 0;
 }
 
-/* Mark top block of block_stack as an implicit binding for an
-   exception region.  This is used to prevent infinite recursion when
-   ending a binding with expand_end_bindings.  It is only ever called
-   by expand_eh_region_start, as that it the only way to create a
-   block stack for a exception region.  */
-
-void
-mark_block_as_eh_region ()
-{
-  block_stack->data.block.exception_region = 1;
-  if (block_stack->next
-      && block_stack->next->data.block.conditional_code)
-    {
-      block_stack->data.block.conditional_code
-	= block_stack->next->data.block.conditional_code;
-      block_stack->data.block.last_unconditional_cleanup
-	= block_stack->next->data.block.last_unconditional_cleanup;
-      block_stack->data.block.cleanup_ptr
-	= block_stack->next->data.block.cleanup_ptr;
-    }
-}
-
 /* True if we are currently emitting insns in an area of output code
    that is controlled by a conditional expression.  This is used by
    the cleanup handling code to generate conditional cleanup actions.  */
@@ -3410,29 +3388,6 @@ int
 conditional_context ()
 {
   return block_stack && block_stack->data.block.conditional_code;
-}
-
-/* Mark top block of block_stack as not for an implicit binding for an
-   exception region.  This is only ever done by expand_eh_region_end
-   to let expand_end_bindings know that it is being called explicitly
-   to end the binding layer for just the binding layer associated with
-   the exception region, otherwise expand_end_bindings would try and
-   end all implicit binding layers for exceptions regions, and then
-   one normal binding layer.  */
-
-void
-mark_block_as_not_eh_region ()
-{
-  block_stack->data.block.exception_region = 0;
-}
-
-/* True if the top block of block_stack was marked as for an exception
-   region by mark_block_as_eh_region.  */
-
-int
-is_eh_region ()
-{
-  return cfun && block_stack && block_stack->data.block.exception_region;
 }
 
 /* Emit a handler label for a nonlocal goto handler.
@@ -3637,26 +3592,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      int mark_ends;
      int dont_jump_in;
 {
-  register struct nesting *thisblock;
-
-  while (block_stack->data.block.exception_region)
-    {
-      /* Because we don't need or want a new temporary level and
-	 because we didn't create one in expand_eh_region_start,
-	 create a fake one now to avoid removing one in
-	 expand_end_bindings.  */
-      push_temp_slots ();
-
-      block_stack->data.block.exception_region = 0;
-
-      expand_end_bindings (NULL_TREE, 0, 0);
-    }
-
-  /* Since expand_eh_region_start does an expand_start_bindings, we
-     have to first end all the bindings that were created by
-     expand_eh_region_start.  */
-
-  thisblock = block_stack;
+  register struct nesting *thisblock = block_stack;
 
   /* If any of the variables in this scope were not used, warn the
      user.  */
@@ -4076,9 +4012,6 @@ expand_decl_cleanup (decl, cleanup)
 	TREE_ADDRESSABLE (t) = 1;
       else
 	expand_eh_region_start ();
-
-      /* If that started a new EH region, we're in a new block.  */
-      thisblock = block_stack;
 
       if (cond_context)
 	{
