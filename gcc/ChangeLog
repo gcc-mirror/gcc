@@ -24,6 +24,25 @@
 	references.  Replace TYPE_{UNARY,BINARY,MOVE} references with
 	TYPE_IALU.
 	
+	Simplify length insn attribute and make more judicious use
+	of insn attribute defaulting.
+	* config/sparc/sparc.md (all insns with length > one): Mark as
+	insn type multi if real instructions, else use default if
+	it is a forced splitter.
+	(all insns with length == one): Use default insn length.
+	(all insns of type ialu): Use default insn type.
+
+	Fix erroneous insn attribute settings.
+	(addx): Set insn type to misc.
+	(mulsidi3_sp64, const_mulsidi3_sp64, umulsidi3_sp64,
+	const_umulsidi3_sp64): Set insn type to imul.
+	
+	Track SFmode vs DFmode insns according to UltraSPARC
+	scheduling rules.
+	* config/sparc/sparc.md ("fptype"): New attribute, default
+	to "single".
+	(all DFmode single insns): Mark as fptype "double".
+
 2001-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* loop.c (express_from_1): Fix CONSTANT_P(a) case.
