@@ -291,6 +291,11 @@ extern int flag_fast_math;
 
 extern int flag_rerun_loop_opt;
 
+/* Nonzero means to assume that a structure or an array reference at
+   a varying address cannot alias a scalar at a fixed address. */
+
+extern int flag_structure_noalias;
+
 /* Nonzero means make functions that look like good inline candidates
    go inline.  */
 

@@ -158,6 +158,7 @@ in the following sections.
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
 -funroll-all-loops  -funroll-loops
 -fmove-all-movables  -freduce-all-givs -fstrict-aliasing
+-fstructure-noalias
 -O  -O0  -O1  -O2  -O3 -Os
 @end smallexample
 
@@ -2501,6 +2502,17 @@ allowed to alias.  For an example, see the C front-end function
 @code{c_get_alias_set}.
 @end ifset
 
+@item -fstructure-noalias
+Allows the compiler to assume that structure / varying array references
+do not alias fixed scalars.
+
+Although this optimization is safe, GCC can occasionally lose track
+of which references refer to scalars and which to structures,
+leading it to perform unsafe transformations.  Release 1.2 of EGCS
+will incorporate changes which allow GCC to track the
+scalar/structure distinction safely.  Thus, the optimization will
+always be same, and this option will likely be removed or will have
+no effect.
 @end table
 
 @node Preprocessor Options

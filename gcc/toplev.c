@@ -554,6 +554,11 @@ static int flag_gcse;
 
 static int flag_rerun_cse_after_loop;
 
+/* Nonzero means to assume that a structure or an array reference at
+   a varying address cannot alias a scalar at a fixed address. */
+
+int flag_structure_noalias = 0;
+
 /* Nonzero means to run loop optimizations twice.  */
 
 int flag_rerun_loop_opt;
@@ -840,6 +845,8 @@ lang_independent_options f_options[] =
    "Perform the global common subexpression elimination" },
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1,
    "Run CSE pass after loop optimisations"},
+  {"structure-noalias", &flag_structure_noalias, 1,
+   "Assume structure / array reference and fixed scalar cannot alias"},
   {"rerun-loop-opt", &flag_rerun_loop_opt, 1,
    "Run the loop optimiser twice"},
   {"pretend-float", &flag_pretend_float, 1,
