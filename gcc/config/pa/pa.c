@@ -1373,28 +1373,36 @@ output_move_double (operands)
   /* If the first move would clobber the source of the second one,
      do them in the other order.
 
-     RMS says "This happens only for registers;
-     such overlap can't happen in memory unless the user explicitly
-     sets it up, and that is an undefined circumstance."
+     This can happen in two cases:
 
-     but it happens on the HP-PA when loading parameter registers,
-     so I am going to define that circumstance, and make it work
-     as expected.  */
+	mem -> register where the first half of the destination register
+ 	is the same register used in the memory's address.  Reload
+	can create such insns.
 
-  if (optype0 == REGOP && (optype1 == MEMOP || optype1 == OFFSOP)
-	   && reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0)))
+	mem in this case will be either register indirect or register
+	indirect plus a valid offset. 
+
+	register -> register move where REGNO(dst) == REGNO(src + 1)
+	someone (Tim/Tege?) claimed this can happen for parameter loads. 
+
+     Handle mem -> register case first.  */
+  if (optype0 == REGOP
+      && (optype1 == MEMOP || optype1 == OFFSOP)
+      && refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
+			    operands[1], 0))
     {
-      /* XXX THIS PROBABLY DOESN'T WORK.  */
       /* Do the late half first.  */
       if (addreg1)
 	output_asm_insn ("ldo 4(%0),%0", &addreg1);
       output_asm_insn (singlemove_string (latehalf), latehalf);
+
+      /* Then clobber.  */
       if (addreg1)
 	output_asm_insn ("ldo -4(%0),%0", &addreg1);
-      /* Then clobber.  */
       return singlemove_string (operands);
     }
 
+  /* Now handle register -> register case.  */
   if (optype0 == REGOP && optype1 == REGOP
       && REGNO (operands[0]) == REGNO (operands[1]) + 1)
     {
