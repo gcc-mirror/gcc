@@ -1,5 +1,12 @@
 2002-09-07  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (udivmodqi4): Split the pattern into
+	an expander and an anonymous pattern.  Zero out the upper half
+	of the dividend in the expander.
+	(udivmodqi4): Likewise.
+
+2002-09-07  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c: Fix formatting.
 	* config/h8300/h8300.h: Likewise.
 	* config/h8300/h8300.md: Likewise.
