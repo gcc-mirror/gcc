@@ -1,3 +1,8 @@
+2003-02-11  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        PR optimization/9651
+        * rtlanal.c (may_trap_p): Handle FIX.
+
 Tue Feb 11 19:06:24 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (choose_function_section): Choose sections correctly.

@@ -2418,6 +2418,12 @@ may_trap_p (x)
 	return 1;
       break;
 
+    case FIX:
+      /* Conversion of floating point might trap.  */
+      if (flag_trapping_math && HONOR_NANS (GET_MODE (XEXP (x, 0))))
+	return 1;
+      break;
+
     case NEG:
     case ABS:
       /* These operations don't trap even with floating point.  */
