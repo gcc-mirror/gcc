@@ -1,3 +1,8 @@
+2000-12-18  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/awt/Window.java (addNotify): Remove peer casting hack now that 
+	gcj/312 is fixed.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* COPYING: Update to current
