@@ -1,3 +1,38 @@
+2001-10-03  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-parse.in (objc_inherit_code, objc_pq_context,
+	objc_public_flag): Make static.
+	(objc_interface_context, objc_implementation_context,
+	objc_method_context, objc_ivar_chain, objc_ivar_context): Move to
+	global tree array in objc/objc-act.[ch].
+	(methoddef): Remove unnecessary code.
+
+	* objc/objc-act.c: (hashed_attribute, hashed_entry, imp_entry):
+	Hoist struct definitions to objc-act.h.
+	(nst_method_hash_list, cls_method_hash_list, imp_list, imp_count,
+	cat_count): Place declaration in objc-act.h.
+	(objc_tree_index): Move enumeration to objc-act.h.
+	(objc_global_trees): Place declaration and macro accessors in
+	objc-act.h.
+	(implementation_context): Remove duplicate; use
+	objc_implementation_context instead:
+	(method_context): Remove duplicate; use objc_method_context
+	instead.
+	(objc_ellipsis_node, objc_method_prototype_template,
+	implemented_classes, function_type): Move global vars to
+	objc_global_trees.
+	(init_objc): Use LAST_BASE_TREE_CODE instead of LAST_CODE.
+	(build_message_expr): Move actual construction of ObjC message
+	send nodes to finish_message_expr.
+	(finish_message_expr): New routine, contains code formerly in
+	build_message_expr.
+	* objc/objc-act.h (finish_message_expr): New prototype.
+	(objc_ivar_chain, objc_method_context, objc_ellipsis_node): Remove
+	declarations; these vars are now part of objc_global_trees.
+	(objc_tree_index, objc_global_trees): Move definitions from
+	objc-act.c.
+	* objc/objc-tree.def: Update copyright info.
+
 Wed Oct  3 12:22:11 EDT 2001  John Wehle  (john@feith.com)
 
 	* dwarf2asm.c (unaligned_integer_asm_op): Abort if

@@ -281,23 +281,16 @@ static tree declspec_stack;
   } while (0)
 
 ifobjc
-/* Objective-C specific information */
+/* Objective-C specific parser/lexer information */
 
-tree objc_interface_context;
-tree objc_implementation_context;
-tree objc_method_context;
-tree objc_ivar_chain;
-tree objc_ivar_context;
-enum tree_code objc_inherit_code;
-int objc_receiver_context;
-int objc_public_flag;
-int objc_pq_context;
+static enum tree_code objc_inherit_code;
+static int objc_pq_context = 0, objc_public_flag = 0;
 
 /* The following flag is needed to contextualize ObjC lexical analysis.
    In some cases (e.g., 'int NSObject;'), it is undesirable to bind 
    an identifier to an ObjC class, even if a class with that name 
    exists.  */
-int objc_need_raw_identifier;
+static int objc_need_raw_identifier;
 #define OBJC_NEED_RAW_IDENTIFIER(VAL)	objc_need_raw_identifier = VAL
 end ifobjc
 
@@ -324,13 +317,6 @@ c_parse_init ()
   ggc_add_tree_root (&current_declspecs, 1);
   ggc_add_tree_root (&prefix_attributes, 1);
   ggc_add_tree_root (&all_prefix_attributes, 1);
-ifobjc
-  ggc_add_tree_root (&objc_interface_context, 1);
-  ggc_add_tree_root (&objc_implementation_context, 1);
-  ggc_add_tree_root (&objc_method_context, 1);
-  ggc_add_tree_root (&objc_ivar_chain, 1);
-  ggc_add_tree_root (&objc_ivar_context, 1);
-end ifobjc
 }
 
 %}
@@ -2948,7 +2934,6 @@ methoddef:
 		  else
 		    add_instance_method (objc_implementation_context, $3);
 		  start_method_def ($3);
-		  objc_method_context = $3;
 		}
 	  optarglist
 		{
@@ -2957,7 +2942,6 @@ methoddef:
 	  compstmt_or_error
 		{
 		  finish_method_def ();
-		  objc_method_context = NULL_TREE;
 		}
 	;
 
