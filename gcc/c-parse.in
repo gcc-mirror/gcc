@@ -310,11 +310,22 @@ datadef:
 		{ if (pedantic)
 		    error ("ANSI C forbids data definition with no type or storage class");
 		  else if (!flag_traditional)
-		    warning ("data definition has no type or storage class"); }
+		    warning ("data definition has no type or storage class"); 
+
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($1); }
         | declmods setspecs notype_initdecls ';'
-	  {}
+		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| typed_declspecs setspecs initdecls ';'
-	  {}
+		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2);  }
         | declmods ';'
 	  { pedwarn ("empty declaration"); }
 	| typed_declspecs ';'
@@ -334,9 +345,16 @@ fndef:
 	  xdecls
 		{ store_parm_decls (); }
 	  compstmt_or_error
-		{ finish_function (0); }
+		{ finish_function (0); 
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| typed_declspecs setspecs declarator error
-		{ }
+		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| declmods setspecs notype_declarator
 		{ if (! start_function ($1, $3, prefix_attributes, 0))
 		    YYERROR1;
@@ -344,9 +362,16 @@ fndef:
 	  xdecls
 		{ store_parm_decls (); }
 	  compstmt_or_error
-		{ finish_function (0); }
+		{ finish_function (0); 
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| declmods setspecs notype_declarator error
-		{ }
+		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| setspecs notype_declarator
 		{ if (! start_function (NULL_TREE, $2, prefix_attributes, 0))
 		    YYERROR1;
@@ -354,9 +379,16 @@ fndef:
 	  xdecls
 		{ store_parm_decls (); }
 	  compstmt_or_error
-		{ finish_function (0); }
+		{ finish_function (0); 
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($1); }
 	| setspecs notype_declarator error
-		{ }
+		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($1); }
 	;
 
 identifier:
@@ -2145,13 +2177,18 @@ parm:
    where either a parmlist or an identifier list is ok.
    Its value is a list of ..._TYPE nodes or a list of identifiers.  */
 parmlist_or_identifiers:
+          setspecs
 		{ pushlevel (0);
 		  clear_parm_order ();
 		  declare_parm_level (1); }
 	  parmlist_or_identifiers_1
-		{ $$ = $2;
+		{ $$ = $3;
 		  parmlist_tags_warning ();
-		  poplevel (0, 0, 0); }
+		  poplevel (0, 0, 0);
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($1); }
 	;
 
 parmlist_or_identifiers_1:
@@ -2410,15 +2447,17 @@ ivar_decls:
 
 ivar_decl:
 	typed_typespecs setspecs ivars
-	        {
-                  $$ = $3;
-		  resume_momentary ($2);
-                }
+	        { $$ = $3;
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| nonempty_type_quals setspecs ivars
-		{
-                  $$ = $3;
-		  resume_momentary ($2);
-                }
+		{ $$ = $3;
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| error
 		{ $$ = NULL_TREE; }
 	;
@@ -2595,7 +2634,10 @@ mydecls:
 
 mydecl:
 	typed_declspecs setspecs myparms ';'
-		{ resume_momentary ($2); }
+		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2); }
 	| typed_declspecs ';'
 		{ shadow_tag ($1); }
 	| declmods ';'
