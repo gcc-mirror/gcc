@@ -44,60 +44,67 @@ import java.util.EventObject;
  * Generic superclass for events fired by <code>BeanContext</code>s.
  *
  * @author John Keiser
- * @since JDK1.2
+ * @since 1.2
  */
 
 public abstract class BeanContextEvent extends EventObject
 {
-	/**
-	 * The <code>BeanContext</code> that most recently passed this
-	 * event on.
-	 */
-	protected BeanContext propagatedFrom;
+  private static final long serialVersionUID = 7267998073569045052L;
+  
+  /**
+   * The <code>BeanContext</code> that most recently passed this
+   * event on.
+   */
+  protected BeanContext propagatedFrom;
 
-	/**
-	 * Create a new event, from the specified <code>BeanContext</code>.
-	 * <code>propagatedFrom</code> will be initialized to
-	 * <code>null</code>.
-	 *
-	 * @param source the source of the event.
-	 */
-	protected BeanContextEvent(BeanContext source) {
-		super(source);
-	}
+  /**
+   * Create a new event, from the specified <code>BeanContext</code>.
+   * <code>propagatedFrom</code> will be initialized to
+   * <code>null</code>.
+   *
+   * @param source the source of the event.
+   */
+  protected BeanContextEvent(BeanContext source)
+  {
+    super(source);
+  }
 
-	/**
-	 * Get the <code>BeanContext</code> that originated this event.
-	 * @return the originator of this event.
-	 */
-	public BeanContext getBeanContext() {
-		return (BeanContext)getSource();
-	}
+  /**
+   * Get the <code>BeanContext</code> that originated this event.
+   * @return the originator of this event.
+   */
+  public BeanContext getBeanContext()
+  {
+    return (BeanContext)getSource();
+  }
 
-	/**
-	 * Get the most recent propagator of this event.
-	 * If this value is <code>null</code>, you have received the event
-	 * straight from the source.
-	 *
-	 * @return the most recent propagator of this event.
-	 */
-	public BeanContext getPropagatedFrom() {
-		return propagatedFrom;
-	}
+  /**
+   * Get the most recent propagator of this event.
+   * If this value is <code>null</code>, you have received the event
+   * straight from the source.
+   *
+   * @return the most recent propagator of this event.
+   */
+  public BeanContext getPropagatedFrom()
+  {
+    return propagatedFrom;
+  }
 
-	/**
-	 * Tell whether this event has been propagated.
-	 * @return <code>true</code> iff <code>getPropagatedFrom() != null</code>.
-	 */
-	public boolean isPropagated() {
-		return propagatedFrom != null;
-	}
+  /**
+   * Tell whether this event has been propagated.
+   * @return <code>true</code> iff <code>getPropagatedFrom() != null</code>.
+   */
+  public boolean isPropagated()
+  {
+    return propagatedFrom != null;
+  }
 
-	/**
-	 * Set the most recent propagator of this event.
-	 * @param propagator the most recent propagator of this event.
-	 */
-	public void setPropagatedFrom(BeanContext propagator) {
-		propagatedFrom = propagator;
-	}
+  /**
+   * Set the most recent propagator of this event.
+   * @param propagator the most recent propagator of this event.
+   */
+  public void setPropagatedFrom(BeanContext propagator)
+  {
+    propagatedFrom = propagator;
+  }
 }
