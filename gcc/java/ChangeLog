@@ -1,3 +1,11 @@
+2004-07-04  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* verify.c: Insert a short blurb at the start referring to the JVMS.
+	(merge_type_state): Remove redundant nested if statement.
+	(verify_jvm_instructions): Ensure current_subr is initialised to
+	NULL_TREE.
+	Minor formatting fixes all over the place.
+
 2004-07-02  Richard Henderson  <rth@redhat.com>
 
 	* jcf-write.c (generate_bytecode_insns <case SAVE_EXPR>): Rewrite.
