@@ -5,7 +5,7 @@
 	(us_write): Ditto.
 	(next_record_w): Ditto.
 
-2004-12-05  Steven G. Kargl  <kargls@comcast.net>
+2004-12-14  Steven G. Kargl  <kargls@comcast.net>
 
 	PR libfortran/18966
 	* gfortran.h: typedef GFC_INTEGER_1 and GFC_INTEGER_2
