@@ -1,3 +1,10 @@
+2003-08-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11174
+	* g++.dg/parse/access4.C: New test.
+	* g++.dg/parse/access5.C: Likewise.
+	* g++.old-deja/g++.jason/access17.C: Adjust error message.
+
 2003-08-18  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* gcc.dg/noncompile/20030818-1.c: New.

@@ -1502,8 +1502,20 @@ build_offset_ref (tree type, tree name, bool address_p)
 	  /* Get rid of a potential OVERLOAD around it */
 	  t = OVL_CURRENT (t);
 
-	  /* unique functions are handled easily.  */
-	  perform_or_defer_access_check (basebinfo, t);
+	  /* Unique functions are handled easily.  */
+
+	  /* For non-static member of base class, we need a special rule
+	     for access checking [class.protected]:
+
+	       If the access is to form a pointer to member, the
+	       nested-name-specifier shall name the derived class
+	       (or any class derived from that class).  */
+	  if (address_p && DECL_P (t)
+	      && DECL_NONSTATIC_MEMBER_P (t))
+	    perform_or_defer_access_check (TYPE_BINFO (type), t);
+	  else
+	    perform_or_defer_access_check (basebinfo, t);
+
 	  mark_used (t);
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
@@ -1515,6 +1527,11 @@ build_offset_ref (tree type, tree name, bool address_p)
 	  member = fnfields;
 	}
     }
+  else if (address_p && TREE_CODE (member) == FIELD_DECL)
+    /* We need additional test besides the one in
+       check_accessibility_of_qualified_id in case it is
+       a pointer to non-static member.  */
+    perform_or_defer_access_check (TYPE_BINFO (type), member);
 
   if (!address_p)
     {

@@ -13,7 +13,7 @@ struct B: public A {
 };
 
 int A::* B::p = &A::i;         // { dg-error "" } 
-int (A::* B::fp)() = &A::f;    // ERROR -
+int (A::* B::fp)() = &A::f;    // { dg-error "" }
 
 struct C {
   static int A::*p;

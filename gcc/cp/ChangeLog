@@ -1,3 +1,9 @@
+2003-08-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11174
+	* init.c (build_offset_ref): Perform access checking for
+	pointer to member correctly.
+
 2003-08-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-lang.c (LANG_HOOKS_INITIALIZE_DIAGNOSTICS): Fix spelling.
