@@ -354,11 +354,9 @@ struct cpp_reader
   /* Buffer of -M output.  */
   struct deps *deps;
 
-  /* A buffer and a table, used only by read_and_prescan (in cppfiles.c)
-     which are allocated once per cpp_reader object to keep them off the
-     stack and avoid setup costs.  */
+  /* A buffer used only by read_and_prescan (in cppfiles.c), which is
+     allocated once per cpp_reader object to keep it off the stack.  */
   unsigned char *input_buffer;
-  unsigned char *input_speccase;
   size_t input_buffer_len;
 
   /* User visible options.  */

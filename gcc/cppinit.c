@@ -572,8 +572,7 @@ cpp_cleanup (pfile)
   if (pfile->input_buffer)
     {
       free (pfile->input_buffer);
-      free (pfile->input_speccase);
-      pfile->input_buffer = pfile->input_speccase = NULL;
+      pfile->input_buffer = NULL;
       pfile->input_buffer_len = 0;
     }
 
