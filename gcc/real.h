@@ -67,6 +67,34 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define REAL_IS_NOT_DOUBLE
 #endif
 
+#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+
+/* Convert a type `double' value in host format first to a type `float'
+   value in host format and then to a single type `long' value which
+   is the bitwise equivalent of the `float' value.  */
+#define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT)				\
+do { float f = (float) (IN);						\
+     (OUT) = *(long *) &f;						\
+  } while (0)
+
+/* Convert a type `double' value in host format to a pair of type `long'
+   values which is its bitwise equivalent, but put the two words into
+   proper word order for the target.  */
+#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
+#define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)				\
+do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
+     (OUT)[0] = ((long *) &in)[0];					\
+     (OUT)[1] = ((long *) &in)[1];					\
+   } while (0)
+#else
+#define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)				\
+do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
+     (OUT)[1] = ((long *) &in)[0];					\
+     (OUT)[0] = ((long *) &in)[1];					\
+   } while (0)
+#endif
+#endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
+
 /* Compare two floating-point values for equality.  */
 #ifndef REAL_VALUES_EQUAL
 #define REAL_VALUES_EQUAL(x,y) ((x) == (y))
