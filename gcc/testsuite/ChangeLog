@@ -1,3 +1,8 @@
+2002-04-01  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* g++.dg/inherit/template-as-base.C: Expect error.
+	* g++.dg/inherit/namespace-as-base.C: Likewise.
+
 2002-03-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g++.dg/ext/instantiate1.C, g++.dg/ext/instantiate2.C,
