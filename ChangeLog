@@ -1,3 +1,7 @@
+2001-07-27  Richard Henderson  <rth@redhat.com>
+
+	* .cvsignore: Add LAST_UPDATED.
+
 2001-07-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* MAINTAINERS (Various maintainers: s390 port): Added myself.

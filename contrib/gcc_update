@@ -214,4 +214,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+{
+  date
+  TZ=UTC date
+} > LAST_UPDATED
 touch_files_reexec
