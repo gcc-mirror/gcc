@@ -146,14 +146,25 @@ output_function_prologue (stream, size)
   else if (fsize)
     {
       /* Adding negative number is faster on the 68040.  */
-      if (fsize + 4 < 0x8000 && ! TARGET_5200)
+      if (fsize + 4 < 0x8000)
 	{
-	/* asm_fprintf() cannot handle %. */
+	  if (TARGET_5200)
+	    {
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea (%0I%d,%Rsp),%Rsp\n", - (fsize + 4));
 #else
-	  asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea %Rsp@(%0I%d),%Rsp\n", - (fsize + 4));
 #endif
+	    }
+	  else
+	    {
+	      /* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
+#else
+	      asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", - (fsize + 4));
+#endif
+	    }
 	}
       else
 	{
@@ -228,11 +239,41 @@ output_function_prologue (stream, size)
     }
   else if (mask)
     {
+      if (TARGET_5200)
+	{
+	  /* The coldfire does not support the predecrement form of the 
+	     movml instruction, so we must adjust the stack pointer and
+	     then use the plain address register indirect mode.  We also
+	     have to invert the register save mask to use the new mode.
+
+	     FIXME: if num_saved_regs was calculated earlier, we could
+	     combine the stack pointer adjustment with any adjustment
+	     done when the initial stack frame is created.  This would
+	     save an instruction */
+	     
+	  int newmask = 0;
+	  int i;
+
+	  for (i = 0; i < 16; i++)
+	    if (mask & (1 << i))
+		newmask |= (1 << (15-i));
+
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\tmovm.l %0I0x%x,-(%Rsp)\n", mask);
+	  asm_fprintf (stream, "\tlea (%0I%d,%Rsp),%Rsp\n", -num_saved_regs*4);
+	  asm_fprintf (stream, "\tmovm.l %0I0x%x,(%Rsp)\n", newmask);
 #else
-      asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@-\n", mask);
+	  asm_fprintf (stream, "\tlea %Rsp@(%0I%d),%Rsp\n", -num_saved_regs*4);
+	  asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@\n", newmask);
 #endif
+	}
+      else
+	{
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\tmovm.l %0I0x%x,-(%Rsp)\n", mask);
+#else
+	  asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@-\n", mask);
+#endif
+	}
     }
   if (flag_pic && current_function_uses_pic_offset_table)
     {
@@ -351,7 +392,7 @@ output_function_epilogue (stream, size)
 #endif
       fsize = 0, big = 1;
     }
-  if (nregs <= 2)
+  if (TARGET_5200 || nregs <= 2)
     {
       /* Restore each separately in the same order moveml does.
          Using two movel instructions instead of a single moveml
@@ -524,14 +565,25 @@ output_function_epilogue (stream, size)
 	     reg_names[FRAME_POINTER_REGNUM]);
   else if (fsize)
     {
-      if (fsize + 4 < 0x8000 && ! TARGET_5200)
+      if (fsize + 4 < 0x8000)
 	{
-	/* asm_fprintf() cannot handle %. */
+	  if (TARGET_5200)
+	    { 
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea (%0I%d,%Rsp),%Rsp\n", fsize + 4);
 #else
-	  asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea %Rsp@(%0I%d),%Rsp\n", fsize + 4);
 #endif
+	    }
+	  else
+	    {
+	      /* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
+#else
+	      asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", fsize + 4);
+#endif
+	    }
 	}
       else
 	{
