@@ -73,6 +73,11 @@ now are recognized by @code{g77}
 as if they ended in @samp{.for} and @samp{.fpp}, respectively.
 
 @item
+@code{g77} now warns about a reference to a function
+when the corresponding @emph{subsequent} function program unit
+disagrees with the reference concerning the type of the function.
+
+@item
 Improve documentation and indexing,
 including information on Year 2000 (Y2K) compliance.
 @end itemize
