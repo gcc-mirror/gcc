@@ -1,3 +1,7 @@
+2000-03-26  Anthony Green  <green@redhat.com>
+
+	* misc.c (GC_enable): Always define GC_enable and GC_disable.
+
 2000-02-14  Tom Tromey  <tromey@cygnus.com>
 
 	* gc.h (dlopen): Define as GC_dlopen on Linux.
