@@ -1,3 +1,7 @@
+2002-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* cse.c (fold_rtx): Don't optimize if SUBREG changes mode class.
+
 2002-05-26  Andreas Jaeger  <aj@suse.de>
 
 	* cfg.c (dump_flow_info): Remove extra argument to fprintf.
