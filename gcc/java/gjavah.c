@@ -89,8 +89,6 @@ struct JCF *current_jcf;
    If 0 then we haven't previously examined any field.  */
 static JCF_u2 last_access;
 
-#define ACC_VISIBILITY (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)
-
 /* Pass this macro the flags for a class and for a method.  It will
    return true if the method should be considered `final'.  */
 #define METHOD_IS_FINAL(Class, Method) \

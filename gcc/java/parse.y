@@ -414,7 +414,7 @@ static tree package_list = NULL_TREE;
 %token   STRING_LIT_TK   CHAR_LIT_TK        INT_LIT_TK        FP_LIT_TK
 %token   TRUE_TK         FALSE_TK           BOOL_LIT_TK       NULL_TK
 
-%type    <value>	modifiers MODIFIER_TK
+%type    <value>	modifiers MODIFIER_TK final
 
 %type    <node>		super ID_TK identifier
 %type    <node>		name simple_name qualified_name
@@ -1280,7 +1280,7 @@ local_variable_declaration_statement:
 local_variable_declaration:
 	type variable_declarators
 		{ declare_local_variables (0, $1, $2); }
-|	modifiers type variable_declarators /* Added, JDK1.1 final locals */
+|	final type variable_declarators /* Added, JDK1.1 final locals */
 		{ declare_local_variables ($1, $2, $3); }
 ;
 
@@ -4896,7 +4896,7 @@ java_check_regular_methods (class_decl)
 	 one that was found elsewhere. Do not issue this warning when
 	 the match was found in java.lang.Object.  */
       if (DECL_CONTEXT (found) != object_type_node
-	  && ((aflags & 0x7) == 0)
+	  && ((aflags & ACC_VISIBILITY) == 0)
 	  && !class_in_current_package (DECL_CONTEXT (found))
 	  && DECL_NAME (found) != clinit_identifier_node
 	  && flag_not_overriding)

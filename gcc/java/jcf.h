@@ -206,6 +206,8 @@ typedef struct JCF {
 #define ACC_INTERFACE 0x0200
 #define ACC_ABSTRACT 0x0400
 
+#define ACC_VISIBILITY (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)
+
 #define CONSTANT_Class 7
 #define CONSTANT_Fieldref 9
 #define CONSTANT_Methodref 10
