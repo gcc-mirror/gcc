@@ -840,9 +840,9 @@ stamp-objlist: $(OBJS)
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
 xgcc$(exeext): gcc.o version.o choose-temp.o pexecute.o prefix.o version.o \
-   $(LIBDEPS) $(EXTRA_GCC_OBJS)
+   mkstemp.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o prefix.o version.o \
-	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  choose-temp.o pexecute.o mkstemp.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc$(exeext)
@@ -1282,11 +1282,11 @@ c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     flags.h toplev.h expr.h insn-codes.h
 
 collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
-	version.o choose-temp.o $(LIBDEPS)
+	version.o choose-temp.o mkstemp.o $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o tlink.o hash.o \
-	  cplus-dem.o underscore.o version.o choose-temp.o $(LIBS)
+	  cplus-dem.o underscore.o version.o choose-temp.o mkstemp.o $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h obstack.h \
 	$(DEMANGLE_H)
@@ -1350,6 +1350,7 @@ dumpvers: dumpvers.c
 version.o: version.c
 obstack.o: obstack.c $(CONFIG_H)
 choose-temp.o: choose-temp.c $(CONFIG_H) gansidecl.h system.h
+mkstemp.o: mkstemp.c $(CONFIG_H) gansidecl.h system.h
 pexecute.o: pexecute.c $(CONFIG_H) system.h gansidecl.h
 prefix.o: prefix.c $(CONFIG_H) system.h gansidecl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1862,16 +1863,16 @@ cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h system.h gansidecl.h
 proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
 
 protoize$(exeext): protoize.o getopt.o getopt1.o getpwd.o version.o \
-    pexecute.o choose-temp.o $(LIBDEPS)
+    pexecute.o choose-temp.o mkstemp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  protoize.o getopt.o getopt1.o getpwd.o version.o \
-	  pexecute.o choose-temp.o $(LIBS)
+	  pexecute.o choose-temp.o mkstemp.o $(LIBS)
 
 unprotoize$(exeext): unprotoize.o getopt.o getopt1.o getpwd.o version.o \
-    pexecute.o choose-temp.o $(LIBDEPS)
+    pexecute.o choose-temp.o mkstemp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
-	  pexecute.o choose-temp.o $(LIBS)
+	  pexecute.o choose-temp.o mkstemp.o $(LIBS)
 
 protoize.o: protoize.c getopt.h $(CONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

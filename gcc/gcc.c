@@ -1271,6 +1271,9 @@ static int argbuf_length;
 
 static int argbuf_index;
 
+/* We want this on by default all the time now.  */
+#define MKTEMP_EACH_FILE
+
 #ifdef MKTEMP_EACH_FILE
 /* This is the list of suffixes and codes (%g/%u/%U) and the associated
    temp file.  */
@@ -4547,8 +4550,10 @@ main (argc, argv)
 
   /* Choose directory for temp files.  */
 
+#ifndef MKTEMP_EACH_FILE
   temp_filename = choose_temp_base ();
   temp_filename_length = strlen (temp_filename);
+#endif
 
   /* Make a table of what switches there are (switches, n_switches).
      Make a table of specified input files (infiles, n_infiles).
