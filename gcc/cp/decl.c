@@ -2604,7 +2604,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
       return error_mark_node;
     }
 
-  if (! uses_template_parms (context)
+  if (!dependent_type_p (context)
       || currently_open_class (context))
     {
       if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
@@ -2663,7 +2663,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 
   /* If the CONTEXT is not a template type, then either the field is
      there now or its never going to be.  */
-  if (!uses_template_parms (context))
+  if (!dependent_type_p (context))
     {
       if (complain & tf_error)
 	error ("no type named `%#T' in `%#T'", name, context);
@@ -2692,7 +2692,7 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     abort ();
 
-  if (!uses_template_parms (context)
+  if (!dependent_type_p (context)
       || currently_open_class (context))
     {
       tree tmpl = NULL_TREE;
