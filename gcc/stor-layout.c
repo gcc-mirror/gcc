@@ -1582,9 +1582,12 @@ layout_type (tree type)
 
     case FUNCTION_TYPE:
     case METHOD_TYPE:
-      TYPE_MODE (type) = mode_for_size (2 * POINTER_SIZE, MODE_INT, 0);
-      TYPE_SIZE (type) = bitsize_int (2 * POINTER_SIZE);
-      TYPE_SIZE_UNIT (type) = size_int ((2 * POINTER_SIZE) / BITS_PER_UNIT);
+      /* It's hard to see what the mode and size of a function ought to
+	 be, but we do know the alignment is FUNCTION_BOUNDARY, so
+	 make it consistent with that.  */
+      TYPE_MODE (type) = mode_for_size (FUNCTION_BOUNDARY, MODE_INT, 0);
+      TYPE_SIZE (type) = bitsize_int (FUNCTION_BOUNDARY);
+      TYPE_SIZE_UNIT (type) = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
       break;
 
     case POINTER_TYPE:
