@@ -1775,8 +1775,8 @@ EOF
 		[Define if your assembler and linker support unaligned PC relative relocs against hidden symbols.])
     fi
 
-    case "$tm_file" in
-    *64*)
+    case "$target" in
+    sparcv9-* | sparc64-*)
 	AC_CACHE_CHECK([for 64 bit support in assembler ($gcc_cv_as)],
 	    gcc_cv_as_flags64, [
 		if test -n "$gcc_cv_as"; then
@@ -1799,10 +1799,8 @@ EOF
 		fi
 	])
 	if test "x$gcc_cv_as_flags64" = xno; then
-changequote(, )
-	    tmake_file=`echo " $tmake_file " | sed -e 's, sparc/t-sol2-64 , ,' -e 's,^ ,,' -e 's, $,,'`
-	    dep_tmake_file=`echo " $dep_tmake_file " | sed -e 's, [^ ]*/config/sparc/t-sol2-64 , ,' -e 's,^ ,,' -e 's, $,,'`
-changequote([, ])
+	    AC_MSG_ERROR([Assembler does not support 64-bit compilation.])
+	    exit 1
 	else
 	    AC_DEFINE_UNQUOTED(AS_SPARC64_FLAG, "$gcc_cv_as_flags64",
 			[Define if the assembler supports 64bit sparc.])
