@@ -1,3 +1,15 @@
+2001-09-10  Zack Weinberg  <zackw@panix.com>
+
+	* cpplex.c (parse_identifier): Fast-path optimize.  Avoid
+	copying identifier when we're just going to throw it away.
+	(parse_identifier_slow): New routine to handle abnormal cases.
+	(_cpp_lex_token): Update call site.
+
+	* hashtable.c (ht_lookup): Don't assume that the string we've
+	been given is NUL-terminated.
+	* system.h: #define __builtin_expect(a, b) to (a) if not
+	GCC >=3.0.
+
 2001-09-10  Michael Meissner  <meissner@redhat.com>
 
 	* config.gcc (sparc64-*-solaris2): Add alias to be compatible with
@@ -16,7 +28,7 @@ Mon Sep 10 16:26:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (incomplete_types, decl_scope_table): Make them
 	into varray's and register them as roots with the garbage
-	collector so they are not collected too soon.  
+	collector so they are not collected too soon.
 
 Mon Sep 10 14:21:26 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
@@ -31,7 +43,7 @@ Mon Sep 10 14:21:26 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(basic_block_for_insn, label_value_list): Move from flow.c; make global.
 	(n_basic_blocks, n_edges, basic_block_info, entry_exit_blocks,
 	init_flow, clear_edges, can_delete_note_p, can_delete_label_p,
-	flow_delete_insn, flow_delete_insn_chain, create_basic_block, 
+	flow_delete_insn, flow_delete_insn_chain, create_basic_block,
 	expunge_block, flow_delete_block, compute_bb_for_insn,
 	update_bb_for_insn, set_block_for_insn, set_block_for_new_insns,
 	make_edge, remove_edge, redirect_edge_succ, redirect_edge_succ_nodup,
@@ -40,7 +52,7 @@ Mon Sep 10 14:21:26 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	redirect_edge_and_branch, redirect_edge_and_branch_force,
 	tidy_fallthru_edge, tidy_fallthru_edges, back_edge_of_syntactic_loop_p,
 	split_edge, insert_insn_on_edge, commit_one_edge_insertion,
-	commit_edge_insertions, dump_flow_info, debug_flow_info, 
+	commit_edge_insertions, dump_flow_info, debug_flow_info,
 	dump_edge_info, dump_bb, debug_bb, debug_bb_n, print_rtl_with_bb,
 	verify_flow_info, purge_dead_edges, purge_all_dead_edges):
 	Move here from flow.c

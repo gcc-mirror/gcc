@@ -88,7 +88,9 @@ static int skip_block_comment PARAMS ((cpp_reader *));
 static int skip_line_comment PARAMS ((cpp_reader *));
 static void adjust_column PARAMS ((cpp_reader *));
 static void skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
-static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *, cppchar_t));
+static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *));
+static cpp_hashnode *parse_identifier_slow PARAMS ((cpp_reader *,
+						    const U_CHAR *));
 static void parse_number PARAMS ((cpp_reader *, cpp_string *, cppchar_t, int));
 static int unescaped_terminator_p PARAMS ((cpp_reader *, const U_CHAR *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
@@ -470,40 +472,101 @@ name_p (pfile, string)
   return 1;  
 }
 
-/* Parse an identifier, skipping embedded backslash-newlines.
-   Calculate the hash value of the token while parsing, for improved
-   performance.  The hashing algorithm *must* match cpp_lookup().  */
+/* Parse an identifier, skipping embedded backslash-newlines.  This is
+   a critical inner loop.  The common case is an identifier which has
+   not been split by backslash-newline, does not contain a dollar
+   sign, and has already been scanned (roughly 10:1 ratio of
+   seen:unseen identifiers in normal code; the distribution is
+   Poisson-like).  Second most common case is a new identifier, not
+   split and no dollar sign.  The other possibilities are rare and
+   have been relegated to parse_identifier_slow.  */
 
 static cpp_hashnode *
-parse_identifier (pfile, c)
+parse_identifier (pfile)
      cpp_reader *pfile;
-     cppchar_t c;
 {
   cpp_hashnode *result;
-  cpp_buffer *buffer = pfile->buffer;
-  unsigned int saw_dollar = 0, len;
-  struct obstack *stack = &pfile->hash_table->stack;
+  const U_CHAR *cur, *rlimit;
 
+  /* Fast-path loop.  Skim over a normal identifier.
+     N.B. ISIDNUM does not include $.  */
+  cur    = pfile->buffer->cur - 1;
+  rlimit = pfile->buffer->rlimit;
+  do
+    cur++;
+  while (cur < rlimit && ISIDNUM (*cur));
+
+  /* Check for slow-path cases.  */
+  if (cur < rlimit && (*cur == '?' || *cur == '\\' || *cur == '$'))
+    result = parse_identifier_slow (pfile, cur);
+  else
+    {
+      const U_CHAR *base = pfile->buffer->cur - 1;
+      result = (cpp_hashnode *)
+	ht_lookup (pfile->hash_table, base, cur - base, HT_ALLOC);
+      pfile->buffer->cur = cur;
+    }
+
+  /* Rarely, identifiers require diagnostics when lexed.
+     XXX Has to be forced out of the fast path.  */
+  if (__builtin_expect ((result->flags & NODE_DIAGNOSTIC)
+			&& !pfile->state.skipping, 0))
+    {
+      /* It is allowed to poison the same identifier twice.  */
+      if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
+	cpp_error (pfile, "attempt to use poisoned \"%s\"",
+		   NODE_NAME (result));
+
+      /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
+	 replacement list of a variadic macro.  */
+      if (result == pfile->spec_nodes.n__VA_ARGS__
+	  && !pfile->state.va_args_ok)
+	cpp_pedwarn (pfile,
+	"__VA_ARGS__ can only appear in the expansion of a C99 variadic macro");
+    }
+
+  return result;
+}
+
+/* Slow path.  This handles identifiers which have been split, and
+   identifiers which contain dollar signs.  The part of the identifier
+   from PFILE->buffer->cur-1 to CUR has already been scanned.  */
+static cpp_hashnode *
+parse_identifier_slow (pfile, cur)
+     cpp_reader *pfile;
+     const U_CHAR *cur;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  const U_CHAR *base = buffer->cur - 1;
+  struct obstack *stack = &pfile->hash_table->stack;
+  unsigned int c, saw_dollar = 0, len;
+
+  /* Copy the part of the token which is known to be okay.  */
+  obstack_grow (stack, base, cur - base);
+
+  /* Now process the part which isn't.  We are looking at one of
+     '$', '\\', or '?' on entry to this loop.  */
+  c = *cur++;
+  buffer->cur = cur;
   do
     {
-      do
-	{
-	  obstack_1grow (stack, c);
+      while (is_idchar (c))
+        {
+          obstack_1grow (stack, c);
 
-	  if (c == '$')
-	    saw_dollar++;
+          if (c == '$')
+            saw_dollar++;
 
-	  c = EOF;
-	  if (buffer->cur == buffer->rlimit)
-	    break;
+          c = EOF;
+          if (buffer->cur == buffer->rlimit)
+            break;
 
-	  c = *buffer->cur++;
-	}
-      while (is_idchar (c));
+          c = *buffer->cur++;
+        }
 
       /* Potential escaped newline?  */
       if (c != '?' && c != '\\')
-	break;
+        break;
       c = skip_escaped_newlines (pfile, c);
     }
   while (is_idchar (c));
@@ -521,26 +584,8 @@ parse_identifier (pfile, c)
   len = obstack_object_size (stack);
   obstack_1grow (stack, '\0');
 
-  /* This routine commits the memory if necessary.  */
-  result = (cpp_hashnode *)
+  return (cpp_hashnode *)
     ht_lookup (pfile->hash_table, obstack_finish (stack), len, HT_ALLOCED);
-
-  /* Some identifiers require diagnostics when lexed.  */
-  if (result->flags & NODE_DIAGNOSTIC && !pfile->state.skipping)
-    {
-      /* It is allowed to poison the same identifier twice.  */
-      if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-	cpp_error (pfile, "attempt to use poisoned \"%s\"",
-		   NODE_NAME (result));
-
-      /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
-	 replacement list of a variadic macro.  */
-      if (result == pfile->spec_nodes.n__VA_ARGS__
-	  && !pfile->state.va_args_ok)
-	cpp_pedwarn (pfile, "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro");
-    }
-
-  return result;
 }
 
 /* Parse a number, skipping embedded backslash-newlines.  */
@@ -1003,14 +1048,17 @@ _cpp_lex_token (pfile, result)
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;
-      result->val.node = parse_identifier (pfile, c);
+      result->val.node = parse_identifier (pfile);
 
       /* 'L' may introduce wide characters or strings.  */
       if (result->val.node == pfile->spec_nodes.n_L)
 	{
-	  c = buffer->read_ahead; /* For make_string.  */
+	  c = buffer->read_ahead;
+	  if (c == EOF && buffer->cur < buffer->rlimit)
+	    c = *buffer->cur;
 	  if (c == '\'' || c == '"')
 	    {
+	      buffer->cur++;
 	      ACCEPT_CHAR (c == '"' ? CPP_WSTRING: CPP_WCHAR);
 	      goto make_string;
 	    }
