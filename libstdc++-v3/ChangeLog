@@ -1,3 +1,16 @@
+2000-06-08  Branko Cibej  <branko.cibej@hermes.si>
+
+	* acinclude.m4 (GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT):  Check for
+	  sinf, cosf, fabsf, and sqrtf; add to LIBMATHOBJS if missing.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+	* math/cosf.c:  New file.
+	* math/fabsf.c:  Likewise.
+	* math/sinf.c:  Likewise.
+	* math/sqrtf.c:  Likewise.
+	* math/Makefile.am (EXTRA_DIST):  Add those four files.
+	* math/Makefile.in:  Regenerate.
+
 2000-06-08  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* testsuite/26_numerics/complex_inserters_extractors.cc:  Need cmath.

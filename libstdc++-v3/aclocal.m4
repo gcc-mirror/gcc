@@ -1039,11 +1039,12 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   AC_SUBST(USE_LONG_DOUBLE)
 
   dnl Check to see if basic C math functions have float, long double versions.
+  AC_REPLACE_MATHFUNCS(cosf fabsf sinf sqrtf)
   AC_CHECK_FUNCS(isnan isnanf isnanl isinf isinff isinfl copysign copysignl \
-  acosf acosl asinf asinl atanf atanl atan2f atan2l ceilf ceill cosf cosl \
-  coshf coshl expf expl fabsf fabsl floorf floorl frexpf frexpl ldexpf \
-  ldexpl logf logl log10f log10l modf modff modfl powf powl sinf sinl sinhf \
-  sinhl sqrtf sqrtl tanf tanl tanhf tanhl strtof strtold sincos sincosf \
+  acosf acosl asinf asinl atanf atanl atan2f atan2l ceilf ceill cosl \
+  coshf coshl expf expl fabsl floorf floorl frexpf frexpl ldexpf \
+  ldexpl logf logl log10f log10l modf modff modfl powf powl sinl sinhf \
+  sinhl sqrtl tanf tanl tanhf tanhl strtof strtold sincos sincosf \
   sincosl finite finitef finitel fqfinite fpclass qfpclass)
 
 #Some runtimes have these functions with a preceding underscore. Please
