@@ -1,3 +1,8 @@
+2003-06-17  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/10750
+        * g++.dg/parse/constant2.C: New test.
+
 2003-06-30  Giovanni Bajo <giovannibajo@libero.it>
 
         PR c++/11106
