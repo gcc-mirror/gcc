@@ -53,7 +53,7 @@ typedef struct cp_token GTY (())
   ENUM_BITFIELD (rid) keyword : 8;
   /* Token flags.  */
   unsigned char flags;
-  /* True if this token is from a system header. */
+  /* True if this token is from a system header.  */
   BOOL_BITFIELD in_system_header : 1;
   /* True if this token is from a context where it is implicitly extern "C" */
   BOOL_BITFIELD implicit_extern_c : 1;
@@ -80,7 +80,7 @@ static const cp_token eof_token =
 /* The cp_lexer structure represents the C++ lexer.  It is responsible
    for managing the token stream from the preprocessor and supplying
    it to the parser.  Tokens are never added to the cp_lexer after
-   it is created. */
+   it is created.  */
 
 typedef struct cp_lexer GTY (())
 {
@@ -92,7 +92,7 @@ typedef struct cp_lexer GTY (())
   size_t buffer_length;
   
   /* A pointer just past the last available token.  The tokens
-     in this lexer are [buffer, last_token). */
+     in this lexer are [buffer, last_token).  */
   cp_token_position GTY ((skip)) last_token;
 
   /* The next available token.  If NEXT_TOKEN is &eof_token, then there are
@@ -116,14 +116,14 @@ typedef struct cp_lexer GTY (())
    allocate heap memory for it, since tokens are never removed from the
    lexer's array.  There is also no need for the GC to walk through
    a cp_token_cache, since everything in here is referenced through
-   a lexer. */
+   a lexer.  */
 
 typedef struct cp_token_cache GTY(())
 {
-  /* The beginning of the token range. */
+  /* The beginning of the token range.  */
   cp_token * GTY((skip)) first;
 
-  /* Points immediately after the last token in the range. */
+  /* Points immediately after the last token in the range.  */
   cp_token * GTY ((skip)) last;
 } cp_token_cache;
 
@@ -211,7 +211,7 @@ static cp_token_cache *cp_token_cache_new
 
 /* A token type for tokens that are not tokens at all; these are used
    to represent slots in the array where there used to be a token
-   that has now been deleted. */
+   that has now been deleted.  */
 #define CPP_PURGED ((enum cpp_ttype) (CPP_NESTED_NAME_SPECIFIER + 1))
 
 /* The number of token types, including C++-specific ones.  */
@@ -237,7 +237,7 @@ cp_lexer_new_main (void)
   size_t space;
   cp_token *buffer;
 
-  /* Tell cpplib we want CPP_PRAGMA tokens. */
+  /* Tell cpplib we want CPP_PRAGMA tokens.  */
   cpp_get_options (parse_in)->defer_pragmas = true;
 
   /* Tell c_lex not to merge string constants.  */
@@ -267,7 +267,7 @@ cp_lexer_new_main (void)
   pos = buffer;
   *pos = first_token;
   
-  /* Get the remaining tokens from the preprocessor. */
+  /* Get the remaining tokens from the preprocessor.  */
   while (pos->type != CPP_EOF)
     {
       pos++;
@@ -321,7 +321,7 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   return lexer;
 }
 
-/* Frees all resources associated with LEXER. */
+/* Frees all resources associated with LEXER.  */
 
 static void
 cp_lexer_destroy (cp_lexer *lexer)
@@ -382,7 +382,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 
   /* On some systems, some header files are surrounded by an 
      implicit extern "C" block.  Set a flag in the token if it
-     comes from such a header. */
+     comes from such a header.  */
   is_extern_c += pending_lang_change;
   pending_lang_change = 0;
   token->implicit_extern_c = is_extern_c > 0;
@@ -405,7 +405,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
     token->keyword = RID_MAX;
 }
 
-/* Update the globals input_location and in_system_header from TOKEN.   */
+/* Update the globals input_location and in_system_header from TOKEN.  */
 static inline void
 cp_lexer_set_source_position_from_token (cp_token *token)
 {
@@ -588,7 +588,7 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
     }
 }
 
-/* Consume and handle a pragma token.   */
+/* Consume and handle a pragma token.  */
 static void
 cp_lexer_handle_pragma (cp_lexer *lexer)
 {
@@ -715,7 +715,7 @@ cp_lexer_stop_debugging (cp_lexer* lexer)
 
 #endif /* ENABLE_CHECKING */
 
-/* Create a new cp_token_cache, representing a range of tokens. */
+/* Create a new cp_token_cache, representing a range of tokens.  */
 
 static cp_token_cache *
 cp_token_cache_new (cp_token *first, cp_token *last)
@@ -1265,7 +1265,7 @@ typedef struct cp_parser GTY(())
   bool in_type_id_in_expr_p;
 
   /* TRUE if we are currently in a header file where declarations are
-     implicitly extern "C". */
+     implicitly extern "C".  */
   bool implicit_extern_c;
 
   /* TRUE if strings in expressions should be translated to the execution
@@ -2361,7 +2361,7 @@ cp_parser_new (void)
   /* We are not parsing a type-id inside an expression.  */
   parser->in_type_id_in_expr_p = false;
 
-  /* Declarations aren't implicitly extern "C". */
+  /* Declarations aren't implicitly extern "C".  */
   parser->implicit_extern_c = false;
 
   /* String literals should be translated to the execution character set.  */
@@ -2557,7 +2557,7 @@ cp_parser_translation_unit (cp_parser* parser)
       /* If there are no tokens left then all went well.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
 	{
-	  /* Get rid of the token array; we don't need it any more. */
+	  /* Get rid of the token array; we don't need it any more.  */
 	  cp_lexer_destroy (parser->lexer);
 	  parser->lexer = NULL;
 
@@ -5299,7 +5299,7 @@ cp_parser_binary_expression (cp_parser* parser)
            will happen repeatedly;
          - or, we found an operator which has lower priority.  This is the case 
            where the recursive descent *ascends*, as in `3 * 4 + 5' after
-           parsing `3 * 4'. */
+           parsing `3 * 4'.  */
       if (new_prec <= prec)
         {
           if (sp == stack)
@@ -5311,7 +5311,7 @@ cp_parser_binary_expression (cp_parser* parser)
      get_rhs:
       tree_type = binops_by_token[token->type].tree_type;
 
-      /* We used the operator token. */
+      /* We used the operator token.  */
       cp_lexer_consume_token (parser->lexer);
 
       /* Extract another operand.  It may be the RHS of this expression
@@ -5320,7 +5320,7 @@ cp_parser_binary_expression (cp_parser* parser)
 
       /* Get another operator token.  Look up its precedence to avoid
          building a useless (immediately popped) stack entry for common
-         cases such as 3 + 4 + 5 or 3 * 4 + 5.   */
+         cases such as 3 + 4 + 5 or 3 * 4 + 5.  */
       token = cp_lexer_peek_token (parser->lexer);
       lookahead_prec = TOKEN_PRECEDENCE (token);
       if (lookahead_prec > new_prec)
@@ -6603,7 +6603,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	}
 
       /* If we're entering or exiting a region that's implicitly
-	 extern "C", modify the lang context appropriately. */
+	 extern "C", modify the lang context appropriately.  */
       if (!parser->implicit_extern_c && token->implicit_extern_c)
 	{
 	  push_lang_context (lang_name_c);
@@ -8188,7 +8188,7 @@ cp_parser_type_parameter (cp_parser* parser)
 	    && cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
 	  {
 	    identifier = cp_parser_identifier (parser);
-	    /* Treat invalid names as if the parameter were nameless. */
+	    /* Treat invalid names as if the parameter were nameless.  */
 	    if (identifier == error_mark_node)
 	      identifier = NULL_TREE;
 	  }
@@ -9799,7 +9799,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
 
   /* Look for trailing attributes to apply to this enumeration, and
-     apply them if appropriate. */
+     apply them if appropriate.  */
   if (cp_parser_allow_gnu_extensions_p (parser))
     {
       tree trailing_attr = cp_parser_attributes_opt (parser);
@@ -11729,7 +11729,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  cp_token *token;
 
 	  /* Add tokens until we have processed the entire default
-	     argument.  We add the range [first_token, token). */
+	     argument.  We add the range [first_token, token).  */
 	  first_token = cp_lexer_peek_token (parser->lexer);
 	  while (true)
 	    {
@@ -15503,7 +15503,7 @@ cp_parser_next_token_starts_class_definition_p (cp_parser *parser)
 }
 
 /* Returns TRUE iff the next token is the "," or ">" ending a
-   template-argument.   */
+   template-argument.  */
 
 static bool
 cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
@@ -15642,7 +15642,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   parser->object_scope = NULL_TREE;
 }
 
-/* Consume tokens up through a non-nested END token. */
+/* Consume tokens up through a non-nested END token.  */
 
 static void
 cp_parser_cache_group (cp_parser *parser,

@@ -1,3 +1,8 @@
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c, decl.c, lex.c, name-lookup.c, parser.c, pt.c,
+	search.c, typeck2.c: Fix comment formatting.
+
 2004-11-04  Ulrich Weigand  <uweigand@de.ibm.com>
 	
 	PR tree-optimization/18184

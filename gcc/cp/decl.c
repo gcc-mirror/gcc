@@ -5992,7 +5992,7 @@ grokvardecl (tree type,
 	 or enumeration declared in a local scope) shall not be used to
 	 declare an entity with linkage.
 
-	 Only check this for public decls for now. */
+	 Only check this for public decls for now.  */
       tree t1 = TREE_TYPE (decl);
       tree t = no_linkage_check (t1, /*relaxed_p=*/false);
       if (t)
@@ -6010,11 +6010,11 @@ grokvardecl (tree type,
 
 		   Note that while this construct is well formed in C++03
 		   it is likely to become ill formed in C++0x.  See open
-		   CWG issue 389 and related issues. */
+		   CWG issue 389 and related issues.  */
 		;
 	      else
 		{
-		  /* It's a typedef referring to an anonymous type. */
+		  /* It's a typedef referring to an anonymous type.  */
 		  pedwarn ("non-local variable %q#D uses anonymous type",
 			   decl);
 		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
@@ -6437,7 +6437,7 @@ check_special_function_return_type (special_function_kind sfk,
 /* A variable or data member (whose unqualified name is IDENTIFIER)
    has been declared with the indicated TYPE.  If the TYPE is not
    acceptable, issue an error message and return a type to use for
-   error-recovery purposes. */
+   error-recovery purposes.  */
 
 tree
 check_var_type (tree identifier, tree type)
@@ -9298,7 +9298,7 @@ xref_basetypes (tree ref, tree base_list)
 {
   tree *basep;
   tree binfo, base_binfo;
-  unsigned max_vbases = 0; /* Maximum direct & indirect virtual bases. */
+  unsigned max_vbases = 0; /* Maximum direct & indirect virtual bases.  */
   unsigned max_bases = 0;  /* Maximum direct bases.  */
   int i;
   tree default_access;
@@ -9606,7 +9606,7 @@ finish_enum (tree enumtype)
      a smaller integral type would work, unless the user has
      explicitly requested that we use the smallest possible type.  The
      user can request that for all enumerations with a command line
-     flag, or for just one enumeration with an attribute. */
+     flag, or for just one enumeration with an attribute.  */
 
   use_short_enum = flag_short_enums
     || lookup_attribute ("packed", TYPE_ATTRIBUTES (enumtype));
