@@ -2,7 +2,7 @@
 // Contributed by Wolfgang Wieser <wwieser at gmx dot de>
 // PR c++/15967: ICE with ambiguous operator new
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 struct A { void *operator new(size_t s){} };
 struct B { void *operator new(size_t s){} };
