@@ -1,3 +1,7 @@
+2002-06-08  H.J. Lu  (hjl@gnu.org)
+
+	* jcf-path.c (jcf_path_init): Allocate 1 more byte for string.
+
 2002-06-03  Mark Mitchell  <mark@codesourcery.com>
 
 	2002-05-18  Mark Mitchell  <mark@codesourcery.com>
