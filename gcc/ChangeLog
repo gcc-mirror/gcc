@@ -1,8 +1,16 @@
+Wed Oct 13 00:09:18 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* invoke.texi: Label -Wbad-function-cast, -Wmissing-prototypes,
+ 	-Wnested-externs, -Wstrict-prototypes, and -Wtraditional as C only
+	options. Also add a new item "C-only Warning Options" to the
+	option summary.
+
 1999-10-14  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* libgcc2.c (__do_global_dtors): Protect __deregister_frame_info
 	from multiple calls.
 
+>>>>>>> 1.4674
 Thu Oct 14 04:54:54 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (call value patterns): Move to the end of the file.
@@ -259,6 +267,7 @@ Wed Oct 13 10:07:54 1999  Richard Henderson  <rth@cygnus.com>
 	(struct rtvec_def): Likewise.
 	* tree.h (struct tree_common): Likewise.
 
+>>>>>>> 1.4673
 Wed Oct 13 01:44:29 1999  Carol LePage  <carolo@hal.com>
 
         * configure.in (sparc-hal-solaris2*): Fix xm_file, xm_defines,
@@ -305,6 +314,7 @@ Tue Oct 12 07:38:41 1999  Bruce Korb  <autogen@linuxbox.com>
 	* fixincl/fixlib.h: protect against doubly defining t_bool
 	* fixincl/server.h: protect against doubly defining t_bool
 
+>>>>>>> 1.4648
 Mon Oct 11 20:18:41 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* genoutput.c: Include toplev.h.

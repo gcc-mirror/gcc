@@ -120,7 +120,7 @@ in the following sections.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @smallexample
 -fsyntax-only  -pedantic  -pedantic-errors
--w  -W  -Wall  -Waggregate-return  -Wbad-function-cast
+-w  -W  -Wall  -Waggregate-return 
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment
 -Wconversion  -Werror  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
@@ -128,12 +128,17 @@ in the following sections.
 -Werror-implicit-function-declaration  -Wfloat-equal -Winline
 -Wlarger-than-@var{len}  -Wlong-long
 -Wmain  -Wmissing-declarations  -Wmissing-noreturn
--Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
+-Wmultichar  -Wno-import  
 -Wparentheses -Wpointer-arith  -Wredundant-decls
--Wreturn-type -Wshadow  -Wsign-compare  -Wstrict-prototypes  
--Wswitch  -Wtraditional  
+-Wreturn-type -Wshadow  -Wsign-compare -Wswitch
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunknown-pragmas -Wunreachable-code 
 -Wunused  -Wwrite-strings
+@end smallexample
+
+@item C-only Warning Options
+@smallexample
+-Wbad-function-cast -Wmissing-prototypes -Wnested-externs
+-Wstrict-prototypes -Wtraditional
 @end smallexample
 
 @item Debugging Options
@@ -1647,7 +1652,7 @@ struct s x = @{ 3, 4 @};
 @item -Wfloat-equal
 Warn if floating point values are used in equality comparisons.
 
-@item -Wtraditional
+@item -Wtraditional (C only)
 Warn about certain constructs that behave differently in traditional and
 ANSI C.
 
@@ -1689,7 +1694,7 @@ of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
 to functions.
 
-@item -Wbad-function-cast
+@item -Wbad-function-cast (C only)
 Warn whenever a function call is cast to a non-matching type.
 For example, warn if @code{int malloc()} is cast to @code{anything *}.
 
@@ -1739,13 +1744,13 @@ Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
 
-@item -Wstrict-prototypes
+@item -Wstrict-prototypes (C only)
 Warn if a function is declared or defined without specifying the
 argument types.  (An old-style function definition is permitted without
 a warning if preceded by a declaration which specifies the argument
 types.)
 
-@item -Wmissing-prototypes
+@item -Wmissing-prototypes (C only)
 Warn if a global function is defined without a previous prototype
 declaration.  This warning is issued even if the definition itself
 provides a prototype.  The aim is to detect global functions that fail
@@ -1768,7 +1773,7 @@ bugs could be introduced.
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
-@item -Wnested-externs
+@item -Wnested-externs (C only)
 Warn if an @code{extern} declaration is encountered within a function.
 
 @item -Wunreachable-code
