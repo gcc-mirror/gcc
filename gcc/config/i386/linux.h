@@ -230,9 +230,13 @@ Boston, MA 02111-1307, USA.  */
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
 #ifdef IN_LIBGCC2
+/* There's no sys/ucontext.h for some (all?) libc1, so no
+   signal-turned-exceptions for them.  There's also no configure-run for
+   the target, so we can't check on (e.g.) HAVE_SYS_UCONTEXT_H.  Using the
+   target libc1 macro should be enough.  */
+#ifndef USE_GNULIBC_1
 #include <signal.h>
 #include <sys/ucontext.h>
-#endif
 
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
@@ -287,3 +291,5 @@ Boston, MA 02111-1307, USA.  */
     (FS)->retaddr_column = 8;						\
     goto SUCCESS;							\
   } while (0)
+#endif /* not USE_GNULIBC_1 */
+#endif /* IN_LIBGCC2 */

@@ -1519,6 +1519,21 @@ fix = {
 
 
 /*
+ *  Fix libc1 _G_va_list definition, used in declarations of several
+ *  more-or-less standard functions, for example vasprintf.
+ */
+fix = {
+    hackname = libc1_G_va_list;
+    files    = _G_config.h;
+    mach     = '*-*-linux*libc1';
+    select   = 'typedef void \* _G_va_list;';
+    c_fix     = format;
+    c_fix_arg = "typedef __builtin_va_list _G_va_list;";
+    test_text = 'typedef __builtin_va_list _G_va_list;';
+};
+
+
+/*
  *  In limits.h, put #ifndefs around things that are supposed to be defined
  *  in float.h to avoid redefinition errors if float.h is included first.
  *  On HP/UX this patch does not work, because on HP/UX limits.h uses
