@@ -1,3 +1,8 @@
+Fri Oct 29 11:50:11 1999  Catherine Moore  <clm@cygnus.com>
+
+	* calls.c (emit_library_call_value): Fix declaration of alignment_pad.
+	* function.c (pad_to_arg_alignment): Add missing braces.
+
 Fri Oct 29 13:53:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha/alpha-protos.h (literal_section): Add prototype.
