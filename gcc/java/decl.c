@@ -473,7 +473,7 @@ init_decl_processing ()
   integer_one_node = build_int_2 (1, 0);
   integer_two_node = build_int_2 (2, 0);
   integer_four_node = build_int_2 (4, 0);
-  integer_negative_one_node = build_int_2 (-1, 0);
+  integer_minus_one_node = build_int_2 (-1, -1);
 
   size_zero_node = size_int (0);
   size_one_node = size_int (1);

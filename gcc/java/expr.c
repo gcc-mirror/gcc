@@ -1299,11 +1299,11 @@ build_java_binop (op, type, arg1, arg2)
 	tree second_compare = fold (build (COND_EXPR, int_type_node,
 					   ifexp2, integer_zero_node,
 					   op == COMPARE_L_EXPR
-					   ? integer_negative_one_node
+					   ? integer_minus_one_node
 					   : integer_one_node));
 	return fold (build (COND_EXPR, int_type_node, ifexp1,
 			    op == COMPARE_L_EXPR ? integer_one_node
-			    : integer_negative_one_node,
+			    : integer_minus_one_node,
 			    second_compare));
       }
     case COMPARE_EXPR:
@@ -1315,7 +1315,7 @@ build_java_binop (op, type, arg1, arg2)
 					    ifexp2, integer_one_node,
 					    integer_zero_node));
 	return fold (build (COND_EXPR, int_type_node,
-			    ifexp1, integer_negative_one_node, second_compare));
+			    ifexp1, integer_minus_one_node, second_compare));
       }      
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:

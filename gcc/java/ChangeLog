@@ -1,3 +1,10 @@
+2000-01-30  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java-tree.h: Remove JTI_INTEGER_NEGATIVE_ONE_NODE.
+	* decl.c (init_decl_processing): Use integer_minus_one_node, not
+	integer_negative_one_node.
+	* expr.c (build_java_binop): Likewise.
+
 2000-01-24  Jeff Sturm  <jeff.sturm@commerceone.com>
 
 	* zextract.c (read_zip_archive): Read file_offset before writing
