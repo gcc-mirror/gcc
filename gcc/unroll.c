@@ -727,8 +727,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 
   if (max_labelno > 0)
     {
-      map->label_map = (rtx *) xmalloc (max_labelno * sizeof (rtx));
-
+      map->label_map = (rtx *) xcalloc (max_labelno, sizeof (rtx));
       local_label = (char *) xcalloc (max_labelno, sizeof (char));
     }
 
