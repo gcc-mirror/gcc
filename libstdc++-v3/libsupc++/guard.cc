@@ -30,7 +30,7 @@
 
 #include <cxxabi.h>
 
-// The IA64/generic ABI uses the fist byte of the guard variable.
+// The IA64/generic ABI uses the first byte of the guard variable.
 // The ARM EABI uses the least significant bit.
 
 namespace __cxxabiv1 
