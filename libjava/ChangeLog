@@ -1,3 +1,8 @@
+2004-09-24  Andrew Haley  <aph@redhat.com>
+
+	PR java/16927
+	* testsuite/libjava.compile/AssertBug.java: New file.
+
 2004-09-24  Casey Marshall <csm@gnu.org>
 
 	* java/util/PropertyPermissionCollection.java
