@@ -35,19 +35,30 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.nio;
 
-
+/**
+ * @author Michael Koch
+ * @since 1.4
+ */
 public final class ByteOrder
 {
   public static final ByteOrder BIG_ENDIAN     = new ByteOrder();
   public static final ByteOrder LITTLE_ENDIAN  = new ByteOrder();
 
-  public static ByteOrder nativeOrder()
+  /**
+   * Returns the native byte order of the platform currently running.
+   */
+  public static ByteOrder nativeOrder ()
   {
-    return BIG_ENDIAN;
+    return (System.getProperty ("gnu.cpu.endian") == "big"
+            ? BIG_ENDIAN : LITTLE_ENDIAN);
   }
 
+  /**
+   * Returns a string representation of the byte order.
+   */
   public String toString()
   {
     return this == BIG_ENDIAN ? "BIG_ENDIAN" : "LITTLE_ENDIAN";

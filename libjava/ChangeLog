@@ -1,5 +1,11 @@
 2003-03-10  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteOrder.java
+	(nativeOrder): Working implementation, added documentation.
+	(toString): Added documentation.
+
+2003-03-10  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java,
 	java/net/MulticastSocket.java,
 	java/net/Socket.java,
