@@ -496,11 +496,6 @@ enum reg_class
   if (! SECOND_TIME) \
     xstormy16_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
 
-/* Build up the stdarg/varargs va_list type tree, assigning it to NODE.  If not
-   defined, it is assumed that va_list is a void * pointer.  */
-#define BUILD_VA_LIST_TYPE(NODE) \
-  ((NODE) = xstormy16_build_va_list ())
-
 /* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
    variable to initialize.  NEXTARG is the machine independent notion of the

@@ -39,7 +39,6 @@ extern rtx xstormy16_function_arg
 #  endif
 extern void xstormy16_setup_incoming_varargs 
  (CUMULATIVE_ARGS, int, tree, int *);
-extern tree xstormy16_build_va_list (void);
 #endif
 
 #if defined (TREE_CODE) && defined (RTX_CODE)
