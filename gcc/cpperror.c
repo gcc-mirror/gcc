@@ -124,7 +124,7 @@ v_cpp_message (pfile, is_error, msgid, ap)
 }
 
 void
-cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msgid, ...))
+cpp_message VPARAMS ((cpp_reader *pfile, int is_error, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
@@ -152,7 +152,7 @@ cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msgid, ...))
    CPP_FATAL_ERRORS.  */
 
 void
-cpp_fatal VPROTO ((cpp_reader *pfile, const char *msgid, ...))
+cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {  
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
@@ -188,7 +188,7 @@ cpp_pfatal_with_name (pfile, name)
 /* Print an error message.  */
 
 void
-cpp_notice VPROTO ((const char *msgid, ...))
+cpp_notice VPARAMS ((const char *msgid, ...))
 {  
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
