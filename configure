@@ -3,7 +3,7 @@
 ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
 
 # Configuration script
-# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 1997
+# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 97, 98, 1999
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -654,8 +654,8 @@ case "${TMPDIR}" in
 *) ;;
 esac
 
-# keep this filename short for &%*%$*# 14 char file names
-tmpfile=${TMPDIR}/cONf$$
+# keep this filename short for &%*%$*# 14 char file names and 8+3 file names
+tmpfile=${TMPDIR}/cNf$$
 # Note that under many versions of sh a trap handler for 0 will *override* any
 # exit status you explicitly specify!  At this point, the only non-error exit
 # is at the end of the script; these actions are duplicated there, minus
@@ -911,6 +911,7 @@ if [ "${build}" != "${host}" ]; then
   tools="${tools} HOST_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
   tools="${tools} NM_FOR_TARGET RANLIB RANLIB_FOR_TARGET"
   tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
+  tools="${tools} OBJCOPY OBJDUMP"
 
   for var in ${tools}; do
     if eval [ -z \"\$${var}\" ] && [ -r Makefile ]; then
@@ -954,6 +955,8 @@ t loop
   RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET-${target_alias}-ranlib}
   WINDRES=${WINDRES-${host_alias}-windres}
   WINDRES_FOR_TARGET=${WINDRES_FOR_TARGET-${target_alias}-windres}
+  OBJCOPY=${OBJCOPY-${host_alias}-objcopy}
+  OBJDUMP=${OBJDUMP-${host_alias}-objdump}
 
   if [ -z "${YACC}" ]; then
     IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
@@ -1004,6 +1007,8 @@ t loop
   export NM
   export RANLIB
   export WINDRES
+  export OBJCOPY
+  export OBJDUMP
 else
   # If CC is still not set, try to get gcc.
   if [ -z "${CC}" ]; then
@@ -1062,14 +1067,12 @@ case "$host" in
 	    enable_gdbtk=no ;;
 	*msdosdjgpp*)
 	    enable_gdbtk=no ;;
-	*cygwin32*)
-	    enable_gdbtk=no ;;
 esac
 
 # FIXME: This should be in configure.in, not configure
 # Determine whether gdb needs tk/tcl or not.
 if [ "$enable_gdbtk" != "no" ]; then
-	GDB_TK="all-tcl all-tk all-itcl all-tix"
+	GDB_TK="all-tcl all-tk all-itcl all-tix all-libgui"
 else
 	GDB_TK=""
 fi
@@ -1403,7 +1406,6 @@ EOF
 			s%^CXXFLAGS[ 	]*=.*$%CXXFLAGS = ${CXXFLAGS}%
 			}" \
 		    -e "s|^SHELL[	 ]*=.*$|SHELL = ${config_shell}|" \
-		    -e "s:^GDB_TK[	 ]*=.*$:GDB_TK = ${GDB_TK}:" \
                     -e "s|^srcdir[ 	]*=.*$|srcdir = ${makesrcdir}|" \
                     -e "s///" \
                     -e "s:^program_prefix[ 	]*=.*$:program_prefix = ${program_prefix}:" \
@@ -1415,6 +1417,9 @@ EOF
 		    -e "s:^DEFAULT_LEX[	 ]*=.*$:DEFAULT_LEX = ${DEFAULT_LEX}:" \
 		    -e "s:^DEFAULT_M4[  ]*=.*$:DEFAULT_M4 = ${DEFAULT_M4}:" \
                     ${subdir}/Makefile.tem >> ${Makefile}
+  
+	    sed -e "s:^GDB_TK[	 ]*=.*$:GDB_TK = ${GDB_TK}:" ${Makefile} >${Makefile}.tem
+	    mv -f ${Makefile}.tem ${Makefile}
 
 	    # If this is a Canadian Cross, preset the values of many more
 	    # tools.

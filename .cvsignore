@@ -2,7 +2,6 @@
 *-co
 *-dirs
 *-done
-*-info
 *-install-info
 *-src
 *-stamp-*
@@ -28,3 +27,6 @@ configure.vr
 configure.vrs
 dir.info
 Makefile
+lost+found
+update.out
+

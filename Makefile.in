@@ -40,7 +40,6 @@ gxx_include_dir=${includedir}/g++
 tooldir = $(exec_prefix)/$(target_alias)
 build_tooldir = $(exec_prefix)/$(target_alias)
 
-
 program_transform_name =
 
 man1dir = $(mandir)/man1
@@ -61,7 +60,7 @@ GDB_NLM_DEPS =
 SHELL = /bin/sh
 
 # INSTALL_PROGRAM_ARGS is changed by configure.in to use -x for a
-# cygwin32 host.
+# cygwin host.
 INSTALL_PROGRAM_ARGS =
 
 INSTALL = $(SHELL) $$s/install-sh -c
@@ -86,6 +85,7 @@ HOST_PREFIX_1 = loser-
 CFLAGS = -g
 CXXFLAGS = -g -O2
 
+LDFLAGS = 
 LIBCFLAGS = $(CFLAGS)
 CFLAGS_FOR_TARGET = $(CFLAGS)
 LDFLAGS_FOR_TARGET = 
@@ -111,8 +111,8 @@ NM = nm
 
 LD = ld
 
-# Not plain GZIP, since gzip looks there for extra command-line options.
-GZIPPROG = gzip
+BZIPPROG = bzip2
+MD5PROG = md5sum
 
 # These values are substituted by configure.
 DEFAULT_YACC = yacc
@@ -169,7 +169,7 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss newlib libio librx libstdc++ libg++ winsup opcodes libstub cygmon libf2c libchill libobjc
+TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib libio librx libstdc++ libg++ winsup opcodes bsp libstub cygmon libf2c libchill libobjc
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
@@ -215,18 +215,14 @@ CC_FOR_TARGET = ` \
     if [ -f $$r/$(TARGET_SUBDIR)/newlib/Makefile ] ; then \
       case "$(target_canonical)" in \
         i[3456]86-*-cygwin*) \
-          echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/winsup/include -idirafter $$s/winsup/cygwin/include -idirafter $$s/winsup/w32api/include -idirafter $$s/newlib/libc/include -idirafter $$s/newlib/libc/sys/cygwin -idirafter $$s/newlib/libc/sys/cygwin32 -nostdinc; \
+          echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/winsup/include -idirafter $$s/winsup/cygwin/include -idirafter $$s/winsup/w32api/include -idirafter $$s/newlib/libc/include -idirafter $$s/newlib/libc/sys/cygwin -idirafter $$s/newlib/libc/sys/cygwin32 -nostdinc; \
           ;; \
         *) \
-          if [ -f $$r/$(TARGET_SUBDIR)/winsup/Makefile ] ; then \
-            echo $$r/gcc/xgcc -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -L$$r/$(TARGET_SUBDIR)/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
-          else \
-            echo $$r/gcc/xgcc -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
-          fi; \
+          echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
 	  ;; \
       esac \
     else \
-      echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/; \
+      echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -isystem $(build_tooldir)/include; \
     fi; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
@@ -240,11 +236,11 @@ CC_FOR_TARGET = ` \
 # variable is passed down to the gcc Makefile, where it is used to
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
-GCC_FOR_TARGET = $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -I$(build_tooldir)/include
+GCC_FOR_TARGET = $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -isystem $(build_tooldir)/include
 
 CHILL_FOR_TARGET = ` \
   if [ -f $$r/gcc/xgcc ] ; then \
-    echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -L$$r/gcc/ch/runtime/; \
+    echo $$r/gcc/xgcc -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -L$$r/gcc/ch/runtime/; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
       echo $(CC); \
@@ -258,18 +254,14 @@ CXX_FOR_TARGET = ` \
     if [ -f $$r/$(TARGET_SUBDIR)/newlib/Makefile ] ; then \
       case "$(target_canonical)" in \
         i[3456]86-*-cygwin*) \
-          echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -L$$r/$(TARGET_SUBDIR)/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/winsup/cygwin/include -idirafter $$s/winsup/w32api/include -idirafter $$s/newlib/libc/include -idirafter $$s/newlib/libc/sys/cygwin -idirafter $$s/newlib/libc/sys/cygwin32 -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
+          echo $$r/gcc/g++ -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -L$$r/$(TARGET_SUBDIR)/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/winsup/cygwin/include -idirafter $$s/winsup/w32api/include -idirafter $$s/newlib/libc/include -idirafter $$s/newlib/libc/sys/cygwin -idirafter $$s/newlib/libc/sys/cygwin32 -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
           ;; \
         *) \
-          if [ -f $$r/$(TARGET_SUBDIR)/winsup/Makefile ] ; then \
-            echo $$r/gcc/g++ -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -L$$r/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
-          else \
-            echo $$r/gcc/g++ -B$$r/gcc/ -B$(build_tooldir)/bin/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
-          fi; \
+          echo $$r/gcc/g++ -B$(build_tooldir)/bin/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$$r/gcc/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc -L$$r/$(TARGET_SUBDIR)/libstdc++; \
 	  ;; \
       esac \
     else \
-      echo $$r/gcc/g++ -B$$r/gcc/ -B$(build_tooldir)/bin/ -L$$r/$(TARGET_SUBDIR)/libstdc++; \
+      echo $$r/gcc/g++ -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -B$$r/gcc/ -isystem $(build_tooldir)/include -L$$r/$(TARGET_SUBDIR)/libstdc++; \
     fi; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
@@ -557,6 +549,7 @@ ALL_MODULES = \
 	all-ld \
 	all-libgui \
 	all-libiberty \
+	all-libtool \
 	all-m4 \
 	all-make \
 	all-mmalloc \
@@ -575,6 +568,7 @@ ALL_MODULES = \
 	all-snavigator \
 	all-tar \
 	all-tcl \
+	all-tcl8.1 \
 	all-texinfo \
 	all-textutils \
 	all-tgas \
@@ -700,6 +694,7 @@ INSTALL_MODULES = \
 	install-intl \
 	install-ispell \
 	install-tcl \
+	install-tcl8.1 \
 	install-itcl \
 	install-ld \
 	install-libgui \
@@ -720,7 +715,6 @@ INSTALL_MODULES = \
 	install-sim \
 	install-snavigator \
 	install-tar \
-	install-texinfo \
 	install-textutils \
 	install-tgas \
 	install-time \
@@ -740,6 +734,7 @@ ALL_X11_MODULES = \
 	all-guile \
 	all-tclX \
 	all-tk \
+	all-tk8.1 \
 	all-tix
 
 # This is a list of the check targets for all of the modules which are
@@ -765,6 +760,7 @@ INSTALL_X11_MODULES = \
 	install-gash \
 	install-tclX \
 	install-tk \
+	install-tk8.1 \
 	install-tix
 
 # This is a list of the targets for all of the modules which are compiled
@@ -779,6 +775,7 @@ ALL_TARGET_MODULES = \
 	all-target-libf2c \
 	all-target-libchill \
 	all-target-libobjc \
+	all-target-libtermcap \
 	all-target-winsup \
 	all-target-libgloss \
 	all-target-libiberty \
@@ -790,6 +787,7 @@ ALL_TARGET_MODULES = \
 	all-target-zlib \
 	all-target-boehm-gc \
 	all-target-qthreads \
+	all-target-bsp \
 	all-target-cygmon
 
 # This is a list of the configure targets for all of the modules which
@@ -804,6 +802,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-libf2c \
 	configure-target-libchill \
 	configure-target-libobjc \
+	configure-target-libtermcap \
 	configure-target-winsup \
 	configure-target-libgloss \
 	configure-target-libiberty \
@@ -815,6 +814,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-zlib \
 	configure-target-boehm-gc \
 	configure-target-qthreads \
+	configure-target-bsp \
 	configure-target-cygmon
 
 # This is a list of the check targets for all of the modules which are
@@ -848,6 +848,7 @@ INSTALL_TARGET_MODULES = \
 	install-target-libf2c \
 	install-target-libchill \
 	install-target-libobjc \
+	install-target-libtermcap \
 	install-target-winsup \
 	install-target-libgloss \
 	install-target-libiberty \
@@ -924,7 +925,6 @@ CLEAN_MODULES = \
 	clean-wdiff \
 	clean-zip
 
-
 # All of the target modules that can be cleaned
 CLEAN_TARGET_MODULES = \
 	clean-target-libio \
@@ -947,6 +947,7 @@ CLEAN_TARGET_MODULES = \
 	clean-target-zlib \
 	clean-target-boehm-gc \
 	clean-target-qthreads \
+	clean-target-bsp \
 	clean-target-cygmon
 
 # All of the x11 modules that can be cleaned
@@ -960,10 +961,6 @@ CLEAN_X11_MODULES = \
 	clean-tclX \
 	clean-tk \
 	clean-tix
-
-# The first rule in the file had better be this one.  Don't put any above it.
-all: all.normal
-.PHONY: all
 
 # The target built for a native build.
 .PHONY: all.normal
@@ -1586,11 +1583,13 @@ all-binutils: all-libiberty all-opcodes all-bfd all-flex all-bison all-byacc all
 all-bison: all-texinfo
 configure-target-boehm-gc: configure-target-newlib configure-target-qthreads
 all-target-boehm-gc: configure-target-boehm-gc
+configure-target-bsp: $(ALL_GCC)
+all-target-bsp: configure-target-bsp all-gcc all-binutils all-target-newlib
 all-byacc:
 all-bzip2:
 all-cvssrc:
 configure-target-cygmon: $(ALL_GCC)
-all-target-cygmon: configure-target-cygmon all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio all-target-libstub
+all-target-cygmon: configure-target-cygmon all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio all-target-libstub all-target-bsp
 all-db:
 all-dejagnu: all-tcl all-expect all-tk
 all-diff: all-libiberty
@@ -1627,7 +1626,7 @@ all-indent:
 all-inet: all-tcl all-send-pr all-perl
 all-intl:
 all-ispell: all-emacs19
-all-itcl: all-tcl all-tk
+all-itcl: all-tcl all-tk all-tcl8.1 all-tk8.1
 all-ld: all-libiberty all-bfd all-opcodes all-bison all-byacc all-flex all-intl
 configure-target-libg++: $(ALL_GCC) configure-target-librx
 all-target-libg++: configure-target-libg++ all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio all-target-librx all-target-libstdc++
@@ -1635,8 +1634,8 @@ configure-target-libgloss: $(ALL_GCC)
 all-target-libgloss: configure-target-libgloss configure-target-newlib
 configure-target-libio: $(ALL_GCC)
 all-target-libio: configure-target-libio all-gas all-ld all-gcc all-target-libiberty all-target-newlib
-check-target-libio: all-target-libstdc++
-all-libgui: all-tcl all-tk all-itcl
+check-target-libio:
+all-libgui: all-tcl all-tk all-tcl8.1 all-tk8.1 all-itcl
 all-libiberty:
 configure-target-libffi: $(ALL_GCC) 
 configure-target-libjava: $(ALL_GCC) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-newlib configure-target-libffi
@@ -1658,7 +1657,9 @@ all-m4: all-libiberty
 all-make: all-libiberty
 all-mmalloc:
 configure-target-newlib: $(ALL_GCC)
+configure-target-libtermcap: $(ALL_GCC)
 all-target-newlib: configure-target-newlib all-binutils all-gas all-gcc
+all-target-libtermcap: configure-target-libtermcap all-binutils all-gas all-gcc
 all-opcodes: all-bfd all-libiberty
 all-patch: all-libiberty
 all-perl:
@@ -1675,15 +1676,17 @@ all-sim: all-libiberty all-bfd all-opcodes all-readline
 all-snavigator: all-tcl all-tk all-itcl all-db all-grep all-libgui
 all-tar: all-libiberty
 all-tcl:
+all-tcl8.1:
 all-tclX: all-tcl all-tk
 all-tk: all-tcl
+all-tk8.1: all-tcl8.1
 all-texinfo: all-libiberty
 all-textutils:
 all-tgas: all-libiberty all-bfd all-opcodes
 all-time:
-all-tix: all-tcl all-tk
+all-tix: all-tcl all-tk all-tcl8.1 all-tk8.1
 all-wdiff:
-all-target-winsup: all-target-newlib all-target-libiberty all-target-libio configure-target-winsup 
+all-target-winsup: all-target-newlib all-target-libiberty all-target-libtermcap configure-target-winsup
 configure-target-winsup: configure-target-newlib
 all-uudecode: all-libiberty
 all-zip:
@@ -1693,7 +1696,7 @@ configure-target-libiberty: $(ALL_GCC) configure-target-newlib
 all-target-libiberty: configure-target-libiberty all-gcc all-ld all-target-newlib
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
-
+install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
 ### other supporting targets
 
 MAKEDIRS= \
@@ -1751,11 +1754,53 @@ ETC_SUPPORT= Makefile.in configure configure.in standards.texi \
 # this macro.
 SUPPORT_FILES = list-of-support-files-for-tool-in-question
 
-.PHONY: taz
+# NOTE: No double quotes in the below.  It is used within shell script
+# as VER="$(VER)"
+VER = `	if grep AM_INIT_AUTOMAKE $(TOOL)/configure.in >/dev/null 2>&1; then \
+	  sed < $(TOOL)/configure.in -n 's/AM_INIT_AUTOMAKE[^,]*, *\([^)]*\))/\1/p'; \
+	else \
+	  sed < $(TOOL)/Makefile.in -n 's/^VERSION *= *//p'; \
+	fi`
+PACKAGE = $(TOOL)
 
-taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) \
-  texinfo/texinfo.tex texinfo/gpl.texinfo texinfo/lgpl.texinfo
-	# Take out texinfo from a few places
+.PHONY: taz
+taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
+	$(MAKE) -f Makefile.in do-proto-toplev \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-md5sum \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-tar-bz2 \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+
+.PHONY: gdb-taz
+gdb-taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
+	$(MAKE) -f Makefile.in do-proto-toplev \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-md5sum \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-djunpack \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+	$(MAKE) -f Makefile.in do-tar-bz2 \
+		TOOL=$(TOOL) PACKAGE="$(PACKAGE)" VER="$(VER)" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(SUPPORT_FILES)"
+
+.PHONY: do-proto-toplev
+do-proto-toplev: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
+	echo "==> Making $(PACKAGE)-$(VER)/"
+	# Take out texinfo from a few places.
 	sed -e '/^all\.normal: /s/\all-texinfo //' \
 	    -e '/^	install-texinfo /d' \
 	<Makefile.in >tmp
@@ -1799,68 +1844,114 @@ taz: $(DEVO_SUPPORT) $(SUPPORT_FILES) \
 	#
 	mkdir proto-toplev/texinfo
 	ln -s ../../texinfo/texinfo.tex		proto-toplev/texinfo/
-	ln -s ../../texinfo/gpl.texinfo		proto-toplev/texinfo/
-	ln -s ../../texinfo/lgpl.texinfo	proto-toplev/texinfo/
 	if test -r texinfo/util/tex3patch ; then \
 	  mkdir proto-toplev/texinfo/util && \
 	  ln -s ../../../texinfo/util/tex3patch	proto-toplev/texinfo/util ; \
 	else true; fi
 	chmod -R og=u . || chmod og=u `find . -print`
-	if grep AM_INIT_AUTOMAKE $(TOOL)/configure.in >/dev/null 2>&1; then \
-	  ver=`sed < $(TOOL)/configure.in -n 's/AM_INIT_AUTOMAKE[^,]*, *\([^)]*\))/\1/p'`; \
-	else \
-	  ver=`sed <$(TOOL)/Makefile.in -n 's/^VERSION *= *//p'`; \
-	fi; \
-	$(MAKE) -f Makefile.in do-tar-gz TOOL=$(TOOL) VER=$$ver
+	#
+	-rm -f $(PACKAGE)-$(VER)
+	ln -s proto-toplev $(PACKAGE)-$(VER)
 
-do-tar-gz:
-	echo "==> Making $(TOOL)-$(VER).tar.gz"
-	-rm -f $(TOOL)-$(VER)
-	ln -s proto-toplev $(TOOL)-$(VER)
-	tar cfh $(TOOL)-$(VER).tar $(TOOL)-$(VER)
-	$(GZIPPROG) -v -9 $(TOOL)-$(VER).tar
+.PHONY: do-tar-bz2
+do-tar-bz2:
+	echo "==> Making $(PACKAGE)-$(VER).tar.bz2"
+	-rm -f $(PACKAGE)-$(VER).tar.bz2
+	find $(PACKAGE)-$(VER) -follow -name CVS -prune -o -type f -print \
+		| tar cTfh - $(PACKAGE)-$(VER).tar
+	$(BZIPPROG) -v -9 $(PACKAGE)-$(VER).tar
 
-TEXINFO_SUPPORT= texinfo/texinfo.tex texinfo/gpl.texinfo texinfo/lgpl.texinfo
+.PHONY: do-md5sum
+do-md5sum:
+	echo "==> Adding md5 checksum to top-level directory"
+	cd proto-toplev && find * -follow -name CVS -prune -o -type f -print \
+		| xargs $(MD5PROG) > ../md5.sum
+	mv md5.sum proto-toplev
+
+.PHONY: do-djunpack
+do-djunpack:
+	echo "==> Adding updated djunpack.bat to top-level directory"
+	echo - 's /gdb-[0-9\.]*/gdb-'"$(VER)"'/'
+	sed < djunpack.bat > djunpack.new \
+		-e 's/gdb-[0-9][0-9\.]*/gdb-'"$(VER)"'/'
+	mv djunpack.new djunpack.bat
+	-rm -f proto-toplev/djunpack.bat
+	ln -s ../djunpack.bat proto-toplev/djunpack.bat
+
+TEXINFO_SUPPORT= texinfo/texinfo.tex
 DIST_SUPPORT= $(DEVO_SUPPORT) $(TEXINFO_SUPPORT)
 
-.PHONY: gas.tar.gz
-GAS_SUPPORT_DIRS= bfd include libiberty opcodes intl setup.com makefile.vms
-gas.tar.gz: $(DIST_SUPPORT) $(GAS_SUPPORT_DIRS) gas
+.PHONY: gas.tar.bz2
+GAS_SUPPORT_DIRS= bfd include libiberty opcodes intl setup.com makefile.vms mkdep
+gas.tar.bz2: $(DIST_SUPPORT) $(GAS_SUPPORT_DIRS) gas
 	$(MAKE) -f Makefile.in taz TOOL=gas \
+		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(GAS_SUPPORT_DIRS)"
 
 # The FSF "binutils" release includes gprof and ld.
-.PHONY: binutils.tar.gz
-BINUTILS_SUPPORT_DIRS= bfd gas include libiberty opcodes ld gprof intl setup.com makefile.vms
-binutils.tar.gz: $(DIST_SUPPORT) $(BINUTILS_SUPPORT_DIRS) binutils
+.PHONY: binutils.tar.bz2
+BINUTILS_SUPPORT_DIRS= bfd gas include libiberty opcodes ld gprof intl setup.com makefile.vms mkdep
+binutils.tar.bz2: $(DIST_SUPPORT) $(BINUTILS_SUPPORT_DIRS) binutils
 	$(MAKE) -f Makefile.in taz TOOL=binutils \
-		SUPPORT_FILES="$(BINUTILS_SUPPORT_DIRS) makeall.bat configure.bat"
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(BINUTILS_SUPPORT_DIRS)"
 
-.PHONY: gas+binutils.tar.gz
+.PHONY: gas+binutils.tar.bz2
 GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils ld gprof
-gas+binutils.tar.gz: $(DIST_SUPPORT) $(GASB_SUPPORT_DIRS) gas
+gas+binutils.tar.bz2: $(DIST_SUPPORT) $(GASB_SUPPORT_DIRS) gas
 	$(MAKE) -f Makefile.in taz TOOL=gas \
-		SUPPORT_FILES="$(GASB_SUPPORT_DIRS) makeall.bat configure.bat"
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(GASB_SUPPORT_DIRS)"
 
-.PHONY: libg++.tar.gz
+.PHONY: libg++.tar.bz2
 LIBGXX_SUPPORT_DIRS=include libstdc++ libio librx libiberty
-libg++.tar.gz: $(DIST_SUPPORT) libg++
+libg++.tar.bz2: $(DIST_SUPPORT) libg++
 	$(MAKE) -f Makefile.in taz TOOL=libg++ \
+		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(LIBGXX_SUPPORT_DIRS)"
 
 GNATS_SUPPORT_DIRS=include libiberty send-pr
-gnats.tar.gz: $(DIST_SUPPORT) $(GNATS_SUPPORT_DIRS) gnats
+gnats.tar.bz2: $(DIST_SUPPORT) $(GNATS_SUPPORT_DIRS) gnats
 	$(MAKE) -f  Makefile.in taz TOOL=gnats \
+		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(GNATS_SUPPORT_DIRS)"
 
-.PHONY: gdb.tar.gz
+.PHONY: gdb.tar.bz2
 GDB_SUPPORT_DIRS= bfd include libiberty mmalloc opcodes readline sim utils intl
-GDBTK_SUPPORT_DIRS= `if [ -d tcl -a -d tk ] ; then echo tcl tk ; fi`
-gdb.tar.gz: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
-	$(MAKE) -f Makefile.in taz TOOL=gdb \
-		SUPPORT_FILES="$(GDB_SUPPORT_DIRS) $(GDBTK_SUPPORT_DIRS)"
+gdb.tar.bz2: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(GDB_SUPPORT_DIRS)"
 
-.PHONY: newlib.tar.gz
+.PHONY: dejagnu.tar.bz2
+DEJAGNU_SUPPORT_DIRS=  tcl expect libiberty
+dejagnu.tar.bz2: $(DIST_SUPPORT) $(DEJAGNU_SUPPORT_DIRS) dejagnu
+	$(MAKE) -f Makefile.in taz TOOL=dejagnu \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(DEJAGNU_SUPPORT_DIRS)"
+
+.PHONY: gdb+dejagnu.tar.bz2
+GDBD_SUPPORT_DIRS= $(GDB_SUPPORT_DIRS) tcl expect dejagnu
+gdb+dejagnu.tar.bz2: $(DIST_SUPPORT) $(GDBD_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb PACKAGE=gdb+dejagnu \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(GDBD_SUPPORT_DIRS)"
+
+.PHONY: insight.tar.bz2
+INSIGHT_SUPPORT_DIRS= $(GDB_SUPPORT_DIRS) tcl tk itcl tix libgui
+insight.tar.bz2: $(DIST_SUPPORT) $(GDB_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb PACKAGE=insight \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(INSIGHT_SUPPORT_DIRS)"
+
+.PHONY: insight+dejagnu.tar.bz2
+INSIGHTD_SUPPORT_DIRS= $(INSIGHT_SUPPORT_DIRS) expect dejagnu
+insight+dejagnu.tar.bz2: $(DIST_SUPPORT) $(INSIGHTD_SUPPORT_DIRS) gdb
+	$(MAKE) -f Makefile.in gdb-taz TOOL=gdb PACKAGE="insight+dejagnu" \
+		MD5PROG="$(MD5PROG)" \
+		SUPPORT_FILES="$(INSIGHTD_SUPPORT_DIRS)"
+
+.PHONY: newlib.tar.bz2
 NEWLIB_SUPPORT_DIRS=libgloss
 # taz configures for the sun4 target which won't configure newlib.
 # We need newlib configured so that the .info files are made.
@@ -1873,8 +1964,9 @@ NEWLIB_SUPPORT_DIRS=libgloss
 # the make distclean.  For now punt on the issue of shipping newlib info files
 # with newlib net releases and wait for a day when some native target (sun4?)
 # supports newlib (if only minimally).
-newlib.tar.gz: $(DIST_SUPPORT) $(NEWLIB_SUPPORT_DIRS) newlib
+newlib.tar.bz2: $(DIST_SUPPORT) $(NEWLIB_SUPPORT_DIRS) newlib
 	$(MAKE) -f Makefile.in taz TOOL=newlib \
+		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(NEWLIB_SUPPORT_DIRS)" \
 		DEVO_SUPPORT="$(DEVO_SUPPORT) COPYING.NEWLIB" newlib
 
