@@ -1227,33 +1227,23 @@ These are part of the full distribution, but if you downloaded the
 separately.
 
 Second, you must have the testing tools installed.  This includes
-a @uref{http://www.gnu.org/software/dejagnu/,,current version of DejaGnu};
-dejagnu 1.3 is not sufficient.
-It also includes Tcl and Expect; the DejaGnu site has links to these.
+@uref{http://www.gnu.org/software/dejagnu/,,DejaGnu} 1.4.2 (or later),
+Tcl, and Expect; the DejaGnu site has links to these.
 
-Now you may need specific preparations:
-
-@itemize @bullet
-
-@item
-The following environment variables may need to be set appropriately, as in
-the following example (which assumes that DejaGnu has been installed
-under @file{/usr/local}):
+If the directories where @command{runtest} and @command{expect} were
+installed are not in the @env{PATH}, you may need to set the following
+environment variables appropriately, as in the following example (which
+assumes that DejaGnu has been installed under @file{/usr/local}):
 
 @example
      TCL_LIBRARY = /usr/local/share/tcl8.0
      DEJAGNULIBS = /usr/local/share/dejagnu
 @end example
 
-On systems such as Cygwin, these paths are required to be actual
+(On systems such as Cygwin, these paths are required to be actual
 paths, not mounts or links; presumably this is due to some lack of
-portability in the DejaGnu code.
+portability in the DejaGnu code.)
 
-If the directories where @command{runtest} and @command{expect} were
-installed are in the @env{PATH}, it should not be necessary to set these
-environment variables.
-
-@end itemize
 
 Finally, you can run the testsuite (which may take a long time):
 @example

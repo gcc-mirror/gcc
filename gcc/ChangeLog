@@ -1,3 +1,8 @@
+2003-02-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Testing): Simplify and compress instructions
+	concerning Dejagnu.
+
 2003-02-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* collect2.c (pexecute_pid): Rename to pid.
