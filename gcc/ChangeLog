@@ -1,6 +1,5 @@
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
-	* config-ml.in: Replace PWD with PWD_COMMAND.
 	* Makefile.in: Likewise.
 
 2003-07-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
