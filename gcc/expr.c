@@ -5648,7 +5648,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
 	temp = expand_shift (RSHIFT_EXPR, GET_MODE (temp), temp,
 			     size_int (GET_MODE_BITSIZE (GET_MODE (temp))
 				       - bitsize),
-			     temp, 1);
+			     NULL_RTX, 1);
 
       /* Unless MODE is VOIDmode or BLKmode, convert TEMP to
 	 MODE.  */
@@ -5888,8 +5888,20 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
 	  continue;
 	}
+
+      /* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
+	 conversions that don't change the mode, and all view conversions
+	 except those that need to "step up" the alignment.  */
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
-	       && TREE_CODE (exp) != VIEW_CONVERT_EXPR
+	       && ! (TREE_CODE (exp) == VIEW_CONVERT_EXPR
+		     && ! ((TYPE_ALIGN (TREE_TYPE (exp))
+			    > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
+			   && STRICT_ALIGNMENT
+			   && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
+			       < BIGGEST_ALIGNMENT)
+			   && (TYPE_ALIGN_OK (TREE_TYPE (exp))
+			       || TYPE_ALIGN_OK (TREE_TYPE
+						 (TREE_OPERAND (exp, 0))))))
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
 		      || TREE_CODE (exp) == CONVERT_EXPR)
 		     && (TYPE_MODE (TREE_TYPE (exp))
@@ -9245,7 +9257,7 @@ expand_expr (exp, target, tmode, modifier)
 				   op0);
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF
-		   || GET_CODE (op0) == PARALLEL)
+		   || GET_CODE (op0) == PARALLEL || GET_CODE (op0) == LO_SUM)
 	    {
 	      /* If the operand is a SAVE_EXPR, we can deal with this by
 		 forcing the SAVE_EXPR into memory.  */
