@@ -235,6 +235,11 @@ enum insn_code movstr_optab[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block clears.  */
 enum insn_code clrstr_optab[NUM_MACHINE_MODES];
 
+/* These arrays record the insn_code of two different kinds of insns
+   to perform block compares.  */
+enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
+enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
+
 /* Stack of EXPR_WITH_FILE_LOCATION nested expressions.  */
 struct file_stack *expr_wfl_stack;
 

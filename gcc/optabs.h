@@ -348,6 +348,11 @@ extern enum insn_code movstr_optab[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block clears.  */
 extern enum insn_code clrstr_optab[NUM_MACHINE_MODES];
 
+/* These arrays record the insn_code of two different kinds of insns
+   to perform block compares.  */
+extern enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
+extern enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
+
 /* Define functions given in optabs.c.  */
 
 /* Expand a binary operation given optab and rtx operands.  */

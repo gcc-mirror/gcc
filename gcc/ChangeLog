@@ -1,3 +1,14 @@
+2003-10-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* expr.c (cmpstr_optab, cmpmem_optab): New.
+	* genopinit.c: Initialize them.
+	* optabs.h: Declare them.
+	* optabs.c (init_optabs): Clear them.
+	(prepare_cmp_insn):  Use cmpstr_optab and cmpmem_optab to find
+	block memory compare insns, not conditional chains.  Restructure
+	the fallback generation of a call to memcmp/bcmp for better
+	readability.
+
 2003-10-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (MIPS_MAX_FIRST_STACK_STEP): New macro.
