@@ -1,3 +1,8 @@
+1998-10-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* spew.c (yylex): Clear looking_for_typename if we got
+	'enum { ... };'.
+
 Fri Oct  2 02:07:26 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* parse.y (nomods_initdcl0): Set up the parser stack correctly.

@@ -387,6 +387,11 @@ yylex ()
   if (tmp_token.yychar != '~')
     got_object = NULL_TREE;
 
+  /* Clear looking_for_typename if we got 'enum { ... };'.  */
+  if (tmp_token.yychar == '{' || tmp_token.yychar == ':'
+      || tmp_token.yychar == ';')
+    looking_for_typename = 0;
+
   yylval = tmp_token.yylval;
   yychar = tmp_token.yychar;
   end_of_file = tmp_token.end_of_file;
