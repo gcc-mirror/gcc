@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.java.rmi.server;
 
-import java.lang.Exception;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.java.rmi.server;
 
 import java.lang.reflect.Method;
-import java.lang.Class;
 import gnu.java.io.NullOutputStream;
 import gnu.java.lang.reflect.TypeSignature;
 import java.security.MessageDigest;

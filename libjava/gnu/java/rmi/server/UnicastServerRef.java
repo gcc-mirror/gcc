@@ -1,5 +1,6 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
+/* UnicastServerRef.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,8 +58,6 @@ import java.rmi.server.RemoteCall;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.Thread;
-import java.lang.Exception;
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
