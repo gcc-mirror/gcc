@@ -1,3 +1,7 @@
+Mon Aug 18 13:46:47 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (stmp-multilib-sub): Fix typo in last change.
+
 Thu Aug  7 10:33:13 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (sub-makes): Pass the current value of LANGUAGES down
