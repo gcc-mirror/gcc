@@ -1,3 +1,7 @@
+Sat Jan 13 16:57:40 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* README.AVR: URLs corrected.
+
 Sat Jan 13 07:30:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (start_function): Don't warn if old prototype is builtin
