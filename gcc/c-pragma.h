@@ -63,7 +63,7 @@ extern struct weak_syms * weak_decls;
 /* Define HANDLE_GENERIC_PRAGMAS if any kind of front-end pragma
    parsing is to be done.  The code in GCC's generic C source files
    will only look for the definition of this constant.  They will
-   ignore definitions of HANDLE_PRAGMA_PACk and so on.  */
+   ignore definitions of HANDLE_PRAGMA_PACK and so on.  */
 #define HANDLE_GENERIC_PRAGMAS 1
 #endif
 
