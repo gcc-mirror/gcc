@@ -1,3 +1,8 @@
+2004-04-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* convert.c (convert_to_integer): Convert (long)round -> lround,
+	etc.
+
 2004-04-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000.c (registers_ok_for_quad_peep):

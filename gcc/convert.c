@@ -332,6 +332,52 @@ convert_to_integer (tree type, tree expr)
       return error_mark_node;
     }
 
+  /* Convert e.g. (long)round(d) -> lround(d).  */
+  /* If we're converting to char, we may encounter differing behavior
+     between converting from double->char vs double->long->char.
+     We're in "undefined" territory but we prefer to be conservative,
+     so only proceed in "unsafe" math mode.  */
+  if (optimize
+      && (flag_unsafe_math_optimizations
+	  || outprec >= TYPE_PRECISION (long_integer_type_node)))
+    {
+      tree s_expr = strip_float_extensions (expr);
+      tree s_intype = TREE_TYPE (s_expr);
+      const enum built_in_function fcode = builtin_mathfn_code (s_expr);
+      tree fn = 0;
+      
+      switch (fcode)
+        {
+	case BUILT_IN_ROUND: case BUILT_IN_ROUNDF: case BUILT_IN_ROUNDL:
+	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LLROUND);
+	  else
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LROUND);
+	  break;
+
+	case BUILT_IN_RINT: case BUILT_IN_RINTF: case BUILT_IN_RINTL:
+	  /* Only convert rint* if we can ignore math exceptions.  */
+	  if (flag_trapping_math)
+	    break;
+	  /* ... Fall through ...  */
+	case BUILT_IN_NEARBYINT: case BUILT_IN_NEARBYINTF: case BUILT_IN_NEARBYINTL:
+	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
+            fn = mathfn_built_in (s_intype, BUILT_IN_LLRINT);
+	  else
+            fn = mathfn_built_in (s_intype, BUILT_IN_LRINT);
+	  break;
+	default:
+	  break;
+	}
+      
+      if (fn)
+        {
+	  tree arglist = TREE_OPERAND (s_expr, 1);
+	  tree newexpr = build_function_call_expr (fn, arglist);
+	  return convert_to_integer (type, newexpr);
+	}
+    }
+
   switch (TREE_CODE (intype))
     {
     case POINTER_TYPE:
