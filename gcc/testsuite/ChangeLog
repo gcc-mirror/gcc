@@ -1,3 +1,14 @@
+2004-06-26  Geoffrey Keating  <geoffk@apple.com>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* gcc.dg/cleanup-10.c: Run on all Linux platforms and powerpc-darwin.
+	Use SA_RESETHAND rather than SA_ONESHOT.  Trap SIGBUS as well
+	as SIGSEGV.
+	* gcc.dg/cleanup-11.c: Likewise.
+	* gcc.dg/cleanup-8.c: Likewise.
+	* gcc.dg/cleanup-9.c: Likewise.
+	* gcc.dg/cleanup-5.c: Run on all platforms.
+
 2004-06-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* g++.dg/warn/nonnull1.C: New test.

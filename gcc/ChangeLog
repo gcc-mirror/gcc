@@ -1,3 +1,41 @@
+2004-06-28  Geoffrey Keating  <geoffk@apple.com>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	PR 15813
+	* dwarf2out.c (reg_save): Output DW_CFA_same_value when a
+	register is saved in itself.
+	(initial_return_save): If the return address is a register,
+	it's already there, don't bother to mention it in the CFI.
+	(struct queued_reg_save): Add field saved_reg.
+	(struct reg_saved_in_data): New.
+	(regs_saved_in_regs): New.
+	(num_regs_saved_in_regs): New.
+	(queue_reg_save): Add extra parameter to specify register saved
+	in register.  Remove duplicate entries from queue.  Add comment
+	for function.
+	(flush_queued_reg_saves): Handle registers saved in registers.
+	Update regs_saved_in_regs.  Add comment for function.
+	(clobbers_queued_reg_save): Add comment for function.  Allow
+	for regs_saved_in_regs.
+	(reg_saved_in): New.
+	(dwarf2out_frame_debug_expr): Handle saving registers in other
+	registers.
+	(dwarf2out_frame_debug): Reset regs_saved_in_regs.
+	* unwind-dw2.c (execute_cfa_program): Correct handling of
+	DW_CFA_same_value.  Add FIXME comment about incorrect implementation
+	of DW_CFA_restore_extended.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Let
+	dwarf2out_frame_debug_expr see instructions that save registers
+	in other registers or save those other registers in memory.
+
+	* unwind-dw2.c (DWARF_FRAME_REGISTERS): Move to unwind-dw2.h.
+	(_Unwind_FrameState): Likewise.
+	* unwind-dw2.h: New.
+	* Makefile.in (LIB2ADDEHDEP): Add unwind-dw2.h.
+	* config/rs6000/darwin-fallback.c: New file.
+	* config/rs6000/darwin.h (MD_FALLBACK_FRAME_STATE_FOR): Define.
+	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Add darwin-fallback.o.
+
 2004-07-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): Rewrite.

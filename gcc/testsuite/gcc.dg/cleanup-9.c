@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* alpha*-*-linux* powerpc*-*-linux* s390*-*-linux* sparc*-*-linux* mips*-*-linux* } } */
+/* { dg-do run { target *-*-linux* powerpc*-*-darwin* } } */
 /* { dg-options "-fasynchronous-unwind-tables -fexceptions -O2" } */
 /* Verify that cleanups work with exception handling through realtime
    signal frames.  */
@@ -80,8 +80,9 @@ static int __attribute__((noinline)) fn1 ()
   struct sigaction s;
   sigemptyset (&s.sa_mask);
   s.sa_sigaction = fn4;
-  s.sa_flags = SA_ONESHOT | SA_SIGINFO;
+  s.sa_flags = SA_RESETHAND | SA_SIGINFO;
   sigaction (SIGSEGV, &s, NULL);
+  sigaction (SIGBUS, &s, NULL);
   fn2 ();
   return 0;
 }

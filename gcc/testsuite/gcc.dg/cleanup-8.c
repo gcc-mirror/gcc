@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* alpha*-*-linux* powerpc*-*-linux* s390*-*-linux* sparc*-*-linux* } } */
+/* { dg-do run { target *-*-linux* powerpc*-*-darwin* } } */
 /* { dg-options "-fasynchronous-unwind-tables -fexceptions -O2" } */
 /* Verify that cleanups work with exception handling through signal
    frames.  */
@@ -78,6 +78,7 @@ static int __attribute__((noinline)) fn2 ()
 static int __attribute__((noinline)) fn1 ()
 {
   signal (SIGSEGV, fn4);
+  signal (SIGBUS, fn4);
   fn2 ();
   return 0;
 }

@@ -232,10 +232,10 @@ EOF
 	    ;;
 	esac
 	;;
-  *-*-darwin*)
+  powerpc*-*-darwin*)
 	enable_hash_synchronization_default=no
 	slow_pthread_self=
-	can_unwind_signal=no
+	can_unwind_signal=yes
 	;;
   *-*-freebsd*)
 	slow_pthread_self=
