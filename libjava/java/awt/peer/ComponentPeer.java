@@ -1,23 +1,48 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 2000  Free Software Foundation
 
-   This file is part of libjava.
+   This file is part of libgcj.
 
 This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
+Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.awt.peer;
-import java.awt.*;
 
-/* A very incomplete placeholder. */
+import java.awt.*;
+import java.awt.image.*;
 
 public interface ComponentPeer
 {
-  public abstract Toolkit getToolkit ();
-
-  public Dimension getMinimumSize ();
-
-  public Dimension getPreferredSize ();
-
-  public void setBounds (int x, int y, int w, int h);
+  int checkImage(Image img, int width, int height, ImageObserver o);
+  Image createImage(ImageProducer prod);
+  Image createImage(int width, int height);
+  void disable();
+  void dispose();
+  void enable();
+  ColorModel getColorModel();
+  FontMetrics getFontMetrics(Font f);
+  Graphics getGraphics();
+  Point getLocationOnScreen();
+  Dimension getMinimumSize();
+  Dimension getPreferredSize();
+  Toolkit getToolkit();
+  void handleEvent(AWTEvent e);
+  void hide();
+  boolean isFocusTraversable();
+  Dimension minimumSize();
+  Dimension preferredSize();
+  void paint(Graphics graphics);
+  boolean prepareImage(Image img, int width, int height, ImageObserver o);
+  void print(Graphics graphics);
+  void repaint(long tm, int x, int y, int width, int height);
+  void requestFocus();
+  void reshape(int x, int y, int width, int height);
+  void setBackground(Color color);
+  void setBounds(int x, int y, int width, int height);
+  void setCursor(Cursor cursor);
+  void setEnabled(boolean enabled);
+  void setFont(Font font);
+  void setForeground(Color color);
+  void setVisible(boolean visible);
+  void show();
 }

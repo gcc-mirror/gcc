@@ -37,6 +37,25 @@ public class ComponentEvent extends AWTEvent
 
   public String paramString ()
   {
-    return super.paramString ();
+    String r;
+    switch (id)
+      {
+        case COMPONENT_HIDDEN:
+	  r = "COMPONENT_HIDDEN";
+	break;
+        case COMPONENT_MOVED:
+	  r = "COMPONENT_MOVED";
+	break;
+        case COMPONENT_RESIZED:
+	  r = "COMPONENT_RESIZED";
+	break;
+        case COMPONENT_SHOWN:
+	  r = "COMPONENT_SHOWN";
+	break;
+	default:
+	  r = "unknown id";
+	break;	
+      }      
+    return r;
   }
 }

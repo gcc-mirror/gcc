@@ -42,8 +42,21 @@ public class FocusEvent extends AWTEvent
 
   public String paramString ()
   {
-    return ("FocusEvent[" + temporary
-	    + ";" + super.paramString () + "]");
+    String r = "";
+    switch (id)
+      {
+        case FOCUS_GAINED:
+	  r += "FOCUS_GAINED";
+	break;
+	case FOCUS_LOST:
+	  r += "FOCUS_LOST";
+	break;
+	default:
+	  r += "unknown id";
+	break;
+      }
+    r += (temporary ? "temporary" : "permanent");
+    return r;
   }
 
   private boolean temporary;

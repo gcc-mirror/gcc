@@ -28,6 +28,12 @@ public abstract class ResourceBundle
   public ResourceBundle ()
     {
     }
+    
+  public Locale getLocale()
+  {
+    // FIXME: Stub added for this missing method because it is needed for AWT.
+    return null;
+  }
 
   public final String getString (String key) throws MissingResourceException
     {
@@ -110,9 +116,14 @@ public abstract class ResourceBundle
 
 	  // Look for a properties file.
 	  {
+	    String prop_name = (bundleName.replace('.', '/') + ".properties");
+	    System.out.println ("trying '" + prop_name + "' for '" + bundleName);
+	    InputStream i = ClassLoader.getSystemResourceAsStream (prop_name);
+	    /*
 	    InputStream i = 
 		ClassLoader.getSystemResourceAsStream (bundleName.replace ('.', '/') 
 						       + ".properties");
+	    */
 	    if (i != null)
 	      {
 		try {

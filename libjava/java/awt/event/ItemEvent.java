@@ -48,8 +48,32 @@ public class ItemEvent extends AWTEvent
 
   public String paramString ()
   {
-    return ("ItemEvent[" + item + "," + stateChange
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+        case ITEM_STATE_CHANGED:
+	  r = "ITEM_STATE_CHANGED";
+	break;
+	default:
+	  r = "unknown id";
+	break;
+      }
+    
+    r += ",item=" + item + ",stateChange=";
+    switch (stateChange)
+      {
+        case SELECTED:
+	  r += "SELECTED";
+	break;
+	case DESELECTED:
+	  r += "DESELECTED";
+	break;
+	default:
+	  r += "unknown";
+	break;
+      }
+      
+    return r;
   }
 
   private Object item;

@@ -24,6 +24,6 @@ public class TextEvent extends AWTEvent
 
   public String paramString ()
   {
-    return super.paramString ();
+    return "TEXT_VALUE_CHANGED";
   }
 }

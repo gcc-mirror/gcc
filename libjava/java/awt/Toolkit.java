@@ -15,6 +15,7 @@ import java.net.URL;
 public abstract class Toolkit
 {
   static Toolkit defaultToolkit;
+  static EventQueue systemEventQueue = new EventQueue();
 
   public static synchronized Toolkit getDefaultToolkit()
   {
@@ -25,6 +26,11 @@ public abstract class Toolkit
 
   protected abstract FramePeer createFrame(Frame target);
   public abstract Image getImage(URL url);
+
+  public final EventQueue getSystemEventQueue()
+  {
+    return systemEventQueue;
+  }
 
   private static void init() { }
   // private static native void init();

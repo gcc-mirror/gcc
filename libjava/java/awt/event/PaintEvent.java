@@ -36,8 +36,22 @@ public class PaintEvent extends ComponentEvent
 
   public String paramString ()
   {
-    return ("PaintEvent[" + updateRect
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+        case UPDATE:
+	  r = "UPDATE";
+	break;
+	case PAINT:
+	  r = "PAINT";
+	break;
+	default:
+	  r = "unknown id";
+	break;	
+      }
+    
+    r += ",updateRect=" + updateRect;
+    return r;
   }
 
   public void setUpdateRect (Rectangle updateRect)

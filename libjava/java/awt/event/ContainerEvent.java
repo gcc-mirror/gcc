@@ -23,8 +23,8 @@ public class ContainerEvent extends ComponentEvent
   public static final int CONTAINER_FIRST = 300;
   public static final int CONTAINER_LAST = 301;
 
-  // FIXME: jdk1.2 docs say source is a Component.
-  public ContainerEvent (Container source, int id, Component child)
+  /** @specnote In JDK1.2 and 1.3, source is a Component. */
+  public ContainerEvent (Component source, int id, Component child)
   {
     super (source, id);
     this.child = child;
@@ -35,15 +35,29 @@ public class ContainerEvent extends ComponentEvent
     return child;
   }
 
-  public Component getContainer ()
+  public Component getComponent ()
   {
-    return (Container) source;
+    return (Component) source;
   }
 
   public String paramString ()
   {
-    return ("ContainerEvent[" + child
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+        case COMPONENT_ADDED:
+	 r = "COMPONENT_ADDED";
+	break;
+	case COMPONENT_REMOVED:
+	 r = "COMPONENT_REMOVED";
+	break;
+	default:
+	  r = "unknown id";
+	break;
+
+      }
+    r += ",child=" + child;
+    return r;
   }
 
   private Component child;

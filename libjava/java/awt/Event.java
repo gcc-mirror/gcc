@@ -11,8 +11,7 @@ package java.awt;
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Believed complete and correct, except for the paramString()
- * method, which is stubbed.
+ * Status:  Believed complete and correct.
  */
 
 public class Event
@@ -132,7 +131,7 @@ public class Event
 
   protected String paramString ()
   {
-    return "Event.paramString() not implemented";
+    return "id=" + id + ",x=" + x + ",y=" + y + "target=" + target;
   }
 
   public boolean shiftDown() 
@@ -142,9 +141,7 @@ public class Event
 
   public String toString()
   {
-    String r = getClass() + "[id=" + id + ",x=" + x + ",y=" + y + "target=" 
-               + ((target == null) ? "null" : target) + "]";
-    return r;
+    return getClass().getName() + "[" + paramString() + "]";
   }
 
   public void translate (int x, int y)
