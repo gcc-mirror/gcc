@@ -961,9 +961,6 @@ extern void finish_file	(void);
 #define SWITCH_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 #define CASE_LABEL_DECL(NODE)   TREE_OPERAND (CASE_LABEL_CHECK (NODE), 2)
 
-/* True for goto created artificially by the compiler.  */
-#define GOTO_FAKE_P(NODE)	(TREE_LANG_FLAG_0 (GOTO_STMT_CHECK (NODE)))
-
 /* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
    statements associated with a compound statement. The result is the
    first statement in the list. Succeeding nodes can be accessed by
@@ -980,10 +977,6 @@ extern void finish_file	(void);
 /* Nonzero if this statement-expression does not have an associated scope.  */
 #define STMT_EXPR_NO_SCOPE(NODE) \
    TREE_LANG_FLAG_0 (STMT_EXPR_CHECK (NODE))
-
-/* LABEL_STMT accessor. This gives access to the label associated with
-   the given label statement.  */
-#define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
 
 /* COMPOUND_LITERAL_EXPR accessors.  */
 #define COMPOUND_LITERAL_EXPR_DECL_STMT(NODE)		\
@@ -1016,8 +1009,7 @@ enum c_tree_code {
    DECL_STMT,		IF_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
    BREAK_STMT,		CONTINUE_STMT,			\
-   SWITCH_STMT,		GOTO_STMT,	LABEL_STMT,	\
-   ASM_STMT,		CASE_LABEL
+   SWITCH_STMT,		ASM_STMT,	CASE_LABEL
 
 /* TRUE if a code represents a statement.  The front end init
    langhook should take care of initialization of this array.  */

@@ -3900,13 +3900,13 @@ c_add_case_label (splay_tree cases, tree cond, tree low_value,
   return case_label;
 
  error_out:
-  /* Add a label so that the back-end doesn't think that the beginning o
+  /* Add a label so that the back-end doesn't think that the beginning of
      the switch is unreachable.  Note that we do not add a case label, as
      that just leads to duplicates and thence to aborts later on.  */
   if (!cases->root)
     {
       tree t = create_artificial_label ();
-      add_stmt (build_stmt (LABEL_STMT, t));
+      add_stmt (build_stmt (LABEL_EXPR, t));
     }
   return error_mark_node;
 }

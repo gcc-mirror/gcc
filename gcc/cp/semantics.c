@@ -435,7 +435,7 @@ finish_goto_stmt (tree destination)
   
   check_goto (destination);
 
-  return add_stmt (build_stmt (GOTO_STMT, destination));
+  return add_stmt (build_stmt (GOTO_EXPR, destination));
 }
 
 /* COND is the condition-expression for an if, while, etc.,
@@ -1086,7 +1086,7 @@ tree
 finish_label_stmt (tree name)
 {
   tree decl = define_label (input_location, name);
-  return add_stmt (build_stmt (LABEL_STMT, decl));
+  return add_stmt (build_stmt (LABEL_EXPR, decl));
 }
 
 /* Finish a series of declarations for local labels.  G++ allows users

@@ -5721,7 +5721,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
      case constant-expression ... constant-expression : statement
 
    Returns the new CASE_LABEL, for a `case' or `default' label.  For
-   an ordinary label, returns a LABEL_STMT.  */
+   an ordinary label, returns a LABEL_EXPR.  */
 
 static tree
 cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
@@ -6241,8 +6241,7 @@ cp_parser_for_init_statement (cp_parser* parser)
    jump-statement:
      goto * expression ;
 
-   Returns the new BREAK_STMT, CONTINUE_STMT, RETURN_STMT, or
-   GOTO_STMT.  */
+   Returns the new BREAK_STMT, CONTINUE_STMT, RETURN_STMT, or GOTO_EXPR.  */
 
 static tree
 cp_parser_jump_statement (cp_parser* parser)
