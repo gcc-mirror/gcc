@@ -2316,6 +2316,10 @@ try_combine (i3, i2, i1, new_direct_jump_p)
      copy.  This saves at least one insn, more if register allocation can
      eliminate the copy.
 
+     We cannot do this if the destination of the first assignment is a
+     condition code register or cc0.  We eliminate this case by making sure
+     the SET_DEST and SET_SRC have the same mode.
+
      We cannot do this if the destination of the second assignment is
      a register that we have already assumed is zero-extended.  Similarly
      for a SUBREG of such a register.  */
@@ -2325,6 +2329,8 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	   && XVECLEN (newpat, 0) == 2
 	   && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
 	   && GET_CODE (SET_SRC (XVECEXP (newpat, 0, 0))) == SIGN_EXTEND
+	   && (GET_MODE (SET_DEST (XVECEXP (newpat, 0, 0)))
+	       == GET_MODE (SET_SRC (XVECEXP (newpat, 0, 0))))
 	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
 	   && rtx_equal_p (SET_SRC (XVECEXP (newpat, 0, 1)),
 			   XEXP (SET_SRC (XVECEXP (newpat, 0, 0)), 0))
