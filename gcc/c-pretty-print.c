@@ -41,18 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        pp_c_whitespace (PP);                 \
    } while (0)
 
-#define pp_c_left_brace(PP)           \
-  do {                                \
-    pp_left_brace (PP);               \
-    pp_base (PP)->padding = pp_none;  \
-  } while (0)
-
-#define pp_c_right_brace(PP)          \
-  do {                                \
-    pp_right_brace (PP);              \
-    pp_base (PP)->padding = pp_none;  \
-  } while (0)
-
 #define pp_c_left_bracket(PP)         \
   do {                                \
     pp_left_bracket (PP);             \
@@ -112,6 +100,20 @@ void
 pp_c_right_paren (c_pretty_printer *pp)
 {
   pp_right_paren (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
+pp_c_left_brace (c_pretty_printer *pp)
+{
+  pp_left_brace (pp);
+  pp_base (pp)->padding = pp_none;
+}
+
+void
+pp_c_right_brace (c_pretty_printer *pp)
+{
+  pp_right_brace (pp);
   pp_base (pp)->padding = pp_none;
 }
 

@@ -45,6 +45,8 @@ static void pp_cxx_template_parameter (cxx_pretty_printer *, tree);
 #define pp_cxx_whitespace(PP)  pp_c_whitespace (pp_c_base (PP))
 #define pp_cxx_left_paren(PP)  pp_c_left_paren (pp_c_base (PP))
 #define pp_cxx_right_paren(PP) pp_c_right_paren (pp_c_base (PP))
+#define pp_cxx_left_brace(PP)  pp_c_left_brace (pp_c_base (PP))
+#define pp_cxx_right_brace(PP) pp_c_right_brace (pp_c_base (PP))
 #define pp_cxx_dot(PP)         pp_c_dot (pp_c_base (PP))
 #define pp_cxx_arrow(PP)       pp_c_arrow (pp_c_base (PP))
 #define pp_cxx_semicolon(PP)   pp_c_semicolon (pp_c_base (PP))
@@ -1471,6 +1473,45 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
     }
 }
 
+/* original-namespace-definition:
+      namespace identifier { namespace-body }
+
+  As an edge case, we also handle unnamed namespace definition here.  */
+
+static void
+pp_cxx_original_namespace_definition (cxx_pretty_printer *pp, tree t)
+{
+  pp_cxx_identifier (pp, "namespace");
+  if (DECL_NAME (t) != anonymous_namespace_name)
+    pp_cxx_unqualified_id (pp, t);
+  pp_cxx_whitespace (pp);
+  pp_cxx_left_brace (pp);
+  /* We do not print the namespace-body.  */
+  pp_cxx_whitespace (pp);
+  pp_cxx_right_brace (pp);
+}
+
+/* namespace-alias:
+      identifier
+
+   namespace-alias-definition:
+      namespace identifier = qualified-namespace-specifier ;
+
+   qualified-namespace-specifier:
+      ::(opt) nested-name-specifier(opt) namespace-name   */
+
+static void
+pp_cxx_namespace_alias_definition (cxx_pretty_printer *pp, tree t)
+{
+  pp_cxx_identifier (pp, "namespace");
+  pp_cxx_unqualified_id (pp, t);
+  pp_cxx_whitespace (pp);
+  pp_equal (pp);
+  pp_cxx_whitespace (pp);
+  pp_cxx_qualified_id (pp, DECL_NAMESPACE_ALIAS (t));
+  pp_cxx_semicolon (pp);
+}
+
 /* simple-declaration:
       decl-specifier-seq(opt) init-declarator-list(opt)  */
 static void
@@ -1618,9 +1659,13 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
 {
   if (!DECL_LANG_SPECIFIC (t))
     pp_cxx_simple_declaration (pp, t);
-  else if (DECL_USE_TEMPLATE (t) > 1)
+  else if (DECL_USE_TEMPLATE (t))
     switch (DECL_USE_TEMPLATE (t))
       {
+      case 1:
+        pp_cxx_template_declaration (pp, t);
+        break;
+        
       case 2:
         pp_cxx_explicit_specialization (pp, t);
         break;
@@ -1632,8 +1677,6 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
       default:
         break;
       }
-  else if (DECL_TEMPLATE_INFO (t))
-    pp_cxx_template_declaration (pp, t);
   else switch (TREE_CODE (t))
     {
     case VAR_DECL:
@@ -1646,6 +1689,13 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
         pp_cxx_function_definition (pp, t);
       else
         pp_cxx_simple_declaration (pp, t);
+      break;
+
+    case NAMESPACE_DECL:
+      if (DECL_NAMESPACE_ALIAS (t))
+        pp_cxx_namespace_alias_definition (pp, t);
+      else
+        pp_cxx_original_namespace_definition (pp, t);
       break;
 
     default:
