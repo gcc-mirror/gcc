@@ -692,7 +692,7 @@ static const char *cpp_unique_options =
    options used to set target flags.  Those special target flags settings may
    in turn cause preprocessor symbols to be defined specially.  */
 static const char *cpp_options =
-"%(cpp_unique_options) %1 %{std*} %{W*&pedantic*} %{w} %{m*} %{f*}\
+"%(cpp_unique_options) %1 %{m*} %{std*} %{ansi} %{W*&pedantic*} %{w} %{f*}\
  %{O*} %{undef}";
 
 /* This contains cpp options which are not passed when the preprocessor
@@ -847,7 +847,7 @@ static const struct compiler default_compilers[] =
         %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {"-",
    "%{!E:%e-E required when input is from standard input}\
-    %(trad_capable_cpp) %(cpp_options)", 0},
+    %(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)", 0},
   {".h", "@c-header", 0},
   {"@c-header",
    "%{!E:%ecompilation of header file requested} \
