@@ -1015,6 +1015,8 @@ insert_regs (x, classp, modified)
 	  qty_mode[reg_qty[regno]] = GET_MODE (x);
 	  return 1;
 	}
+
+      return 0;
     }
 
   /* If X is a SUBREG, we will likely be inserting the inner register in the
@@ -3164,7 +3166,6 @@ simplify_unary_operation (code, mode, op, op_mode)
     {
       REAL_VALUE_TYPE d;
       jmp_buf handler;
-      rtx x;
       HOST_WIDE_INT val;
 
       if (setjmp (handler))
@@ -7184,7 +7185,6 @@ cse_process_notes (x, object)
 {
   enum rtx_code code = GET_CODE (x);
   char *fmt = GET_RTX_FORMAT (code);
-  int qty;
   int i;
 
   switch (code)
@@ -7362,7 +7362,6 @@ invalidate_skipped_block (start)
      rtx start;
 {
   rtx insn;
-  int i;
   static struct write_data init = {0, 0, 0, 0};
   static struct write_data everything = {0, 1, 1, 1};
 
@@ -7430,7 +7429,6 @@ cse_set_around_loop (x, insn, loop_start)
      rtx insn;
      rtx loop_start;
 {
-  rtx p;
   struct table_elt *src_elt;
   static struct write_data init = {0, 0, 0, 0};
   struct write_data writes_memory;
