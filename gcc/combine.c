@@ -9046,7 +9046,14 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 
       /* Convert ROTATERT to ROTATE.  */
       if (code == ROTATERT)
-	code = ROTATE, count = GET_MODE_BITSIZE (result_mode) - count;
+	{
+	  unsigned int bitsize = GET_MODE_BITSIZE (result_mode);;
+	  code = ROTATE;
+	  if (VECTOR_MODE_P (result_mode))
+	    count = bitsize / GET_MODE_NUNITS (result_mode) - count;
+	  else
+	    count = bitsize - count;
+	}
 
       /* We need to determine what mode we will do the shift in.  If the
 	 shift is a right shift or a ROTATE, we must always do it in the mode
