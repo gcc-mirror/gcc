@@ -17,6 +17,17 @@
 	resource files.
 	* gcj.texi (Code Generation): Add documentation for -R flag.
 
+2001-09-05 Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* jcf-write.c (generate_classfile): Issue an error in case of
+	field/initial value mismatch.
+	* parse.y (analyze_clinit_body): Keep <clinit> if an array is
+	being initialized and we're generating bytecode.
+	(java_complete_lhs): In MODIFY_EXPR section: added comments,
+	set DECL_INITIAL properly when appropriate.
+	Fixes PR java/4230
+	Fixes PR java/4204
+
 2001-09-01  Per Bothner  <per@bothner.com>
 
 	* parse.y (maybe_yank_clinit):  A field without an initializer is not

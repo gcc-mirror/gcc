@@ -7813,6 +7813,11 @@ analyze_clinit_body (bbody)
 	break;
 	
       case MODIFY_EXPR:
+	/* If we're generating to class file and we're dealing with an
+	   array initialization, we return 1 to keep <clinit> */
+	if (TREE_CODE (TREE_OPERAND (bbody, 1)) == NEW_ARRAY_INIT
+	    && flag_emit_class_files)
+	  return 1;
 	/* Return 0 if the operand is constant, 1 otherwise.  */
 	return ! TREE_CONSTANT (TREE_OPERAND (bbody, 1));
 
@@ -11898,16 +11903,31 @@ java_complete_lhs (node)
 	  
 	  value = fold_constant_for_init (nn, nn);
 
+	  /* When we have a primitype type, or a string and we're not
+             emitting a class file, we actually don't want to generate
+             anything for the assignment. */
 	  if (value != NULL_TREE &&
 	      (JPRIMITIVE_TYPE_P (TREE_TYPE (value)) || 
 	       (TREE_TYPE (value) == string_ptr_type_node &&
 		! flag_emit_class_files)))
 	    {
+	      /* Prepare node for patch_assignment */
 	      TREE_OPERAND (node, 1) = value;
+	      /* Call patch assignment to verify the assignment */
 	      if (patch_assignment (node, wfl_op1, value) == error_mark_node)
 		return error_mark_node;
+	      /* Set DECL_INITIAL properly (a conversion might have
+                 been decided by patch_assignment) and return the
+                 empty statement. */
 	      else
-		return empty_stmt_node;
+		{
+		  tree patched = patch_string (TREE_OPERAND (node, 1));
+		  if (patched)
+		    DECL_INITIAL (nn) = patched;
+		  else
+		    DECL_INITIAL (nn) = TREE_OPERAND (node, 1);
+		  return empty_stmt_node;
+		}
 	    }
 	  if (! flag_emit_class_files)
 	    DECL_INITIAL (nn) = NULL_TREE;
@@ -11999,7 +12019,18 @@ java_complete_lhs (node)
 		       || JSTRING_P (TREE_TYPE (node))))
 	    node = java_refold (node);
 	}
-      
+
+      /* Seek to set DECL_INITIAL to a proper value, since it might have
+	 undergone a conversion in patch_assignment. We do that only when
+	 it's necessary to have DECL_INITIAL properly set. */
+      nn = TREE_OPERAND (node, 0);
+      if (TREE_CODE (nn) == VAR_DECL 
+	  && DECL_INITIAL (nn) && CONSTANT_VALUE_P (DECL_INITIAL (nn))
+	  && FIELD_STATIC (nn) && FIELD_FINAL (nn) 
+	  && (JPRIMITIVE_TYPE_P (TREE_TYPE (nn))
+	      || TREE_TYPE (nn) == string_ptr_type_node))
+	DECL_INITIAL (nn) = TREE_OPERAND (node, 1);
+
       CAN_COMPLETE_NORMALLY (node) = 1;
       return node;
 
