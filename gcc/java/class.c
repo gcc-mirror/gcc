@@ -1126,6 +1126,7 @@ build_static_field_ref (tree fdecl)
       ref = build (COMPONENT_REF, ptr_type_node,
 		   ref, TREE_CHAIN (TYPE_FIELDS (field_info_union_node)),
 		   NULL_TREE);
+      ref = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (fdecl)), ref);
       return fold (build1 (INDIRECT_REF, TREE_TYPE(fdecl), ref));
     }
 }

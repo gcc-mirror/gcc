@@ -1,5 +1,8 @@
 2004-07-07  Per Bothner  <per@bothner.com>
 
+	* class.c (build_static_field_ref):  Add a NOP_EXPR; otherwise we
+	get internal error due to mismatched types.
+
 	* gcj.texi (Invoking gij):  Document new -verbose:class flag.
 
 	* gcj.texi (Linking):   New node.  Document -lgij usage.
