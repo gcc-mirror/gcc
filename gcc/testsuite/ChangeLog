@@ -1,3 +1,7 @@
+2002-02-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/debug/20020224-1.c: New.
+
 2002-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/debug/debug4.C: New test.
