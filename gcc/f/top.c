@@ -173,7 +173,7 @@ ffe_decode_option (argc, argv)
       if (strcmp (&opt[2], "version") == 0)
 	{
 	  ffe_set_is_version (TRUE);
-	  ffe_is_do_internal_checks_ = TRUE;
+	  ffe_set_is_do_internal_checks (TRUE);
 	}
       else if (strcmp (&opt[2], "null-version") == 0)
 	ffe_set_is_null_version (TRUE);

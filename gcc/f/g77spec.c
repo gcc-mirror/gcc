@@ -511,8 +511,8 @@ Report bugs to <egcs-bugs@cygnus.org>.\n");
 	    {
 	      if (saw_library == 1)
 		saw_library = 2;	/* -l<library> -lm. */
-            else
-              append_arg (FORTRAN_LIBRARY);
+	      else
+		append_arg (FORTRAN_LIBRARY);
 	    }
 	  else if (strcmp (argv[i], FORTRAN_LIBRARY) == 0)
 	    saw_library = 1;	/* -l<library>. */

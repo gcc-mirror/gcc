@@ -46,17 +46,8 @@ Miscellany
 This order is not strict---for example, some items
 involve a combination of these elements.
 
-@heading In 0.5.24:
+@heading In @code{egcs} 1.1:
 @itemize @bullet
-@item
-The @code{g77} driver now ensures that @samp{-lg2c}
-is specified in the link phase prior to any
-occurrence of @samp{-lm}.
-This prevents accidentally linking to a routine
-in the SunOS4 @samp{-lm} library
-when the generated code wants to link to the one
-in @code{libf2c} (@code{libg2c}).
-
 @item
 @code{g77} no longer produces incorrect code
 and initial values
@@ -81,6 +72,41 @@ for these cases.
 Previously, @code{g77} treated these expressions
 as denoting special ``pointer'' arguments
 for the purposes of filewide analysis.
+
+@item
+The @code{g77} driver now ensures that @samp{-lg2c}
+is specified in the link phase prior to any
+occurrence of @samp{-lm}.
+This prevents accidentally linking to a routine
+in the SunOS4 @samp{-lm} library
+when the generated code wants to link to the one
+in @code{libf2c} (@code{libg2c}).
+
+@item
+@code{g77} emits more debugging information when
+@samp{-g} is used.
+
+This new information allows, for example,
+@kbd{which __g77_length_a} to be used in @code{gdb}
+to determine the type of the phantom length argument
+supplied with @samp{CHARACTER} variables.
+
+This information pertains to internally-generated
+type, variable, and other information,
+not to the longstanding deficiencies vis-a-vis
+@samp{COMMON} and @samp{EQUIVALENCE}.
+
+@item
+The F90 @samp{DATE_AND_TIME} intrinsic now is
+supported.
+
+@item
+The F90 @samp{SYSTEM_CLOCK} intrinsic allows
+the optional arguments (except for the @samp{Count}
+argument) to be omitted.
+
+@item
+Upgrade to @code{libf2c} as of 1998-06-18.
 
 @item
 Improve documentation and indexing.
