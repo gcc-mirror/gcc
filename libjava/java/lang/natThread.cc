@@ -78,6 +78,12 @@ finalize_native (jobject ptr)
 {
   natThread *nt = (natThread *) ptr;
   _Jv_ThreadDestroyData (nt->thread);
+#ifdef _Jv_HaveCondDestroy
+  _Jv_CondDestroy (&nt->join_cond);
+#endif
+#ifdef _Jv_HaveMutexDestroy
+  _Jv_MutexDestroy (&nt->join_mutex);
+#endif
 }
 
 jint
