@@ -29,6 +29,9 @@ Sun Jun  7 15:29:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 
 Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alpha.h (EXTRA_CONSTRAINT, case 'S'): New case.
+	* alpha.md ({ashl,ashr,lshr}di3): Use 'S' for constraint.
+
 	* i386.md (cmpxf): Add missing extend pattern from SFmode and fix
 	operand numbers in one extend pattern from DFmode.
 
