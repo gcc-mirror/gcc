@@ -74,7 +74,6 @@ static HARD_REG_SET current_live_regs;
 static HARD_REG_SET pending_dead_regs;
 
 static void update_live_status		PROTO ((rtx, rtx));
-static int find_basic_block		PROTO ((rtx));
 static rtx next_insn_no_annul		PROTO ((rtx));
 static rtx find_dead_or_set_registers	PROTO ((rtx, struct resources*,
 						rtx*, int, struct resources,
@@ -111,40 +110,6 @@ update_live_status (dest, x)
 	SET_HARD_REG_BIT (current_live_regs, i);
 	CLEAR_HARD_REG_BIT (pending_dead_regs, i);
       }
-}
-/* Find the number of the basic block that starts closest to INSN.  Return -1
-   if we couldn't find such a basic block.  */
-
-static int
-find_basic_block (insn)
-     rtx insn;
-{
-  int i;
-
-  /* Scan backwards to the previous BARRIER.  Then see if we can find a
-     label that starts a basic block.  Return the basic block number.  */
-
-  for (insn = prev_nonnote_insn (insn);
-       insn && GET_CODE (insn) != BARRIER;
-       insn = prev_nonnote_insn (insn))
-    ;
-
-  /* The start of the function is basic block zero.  */
-  if (insn == 0)
-    return 0;
-
-  /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
-     anything other than a CODE_LABEL or note, we can't find this code.  */
-  for (insn = next_nonnote_insn (insn);
-       insn && GET_CODE (insn) == CODE_LABEL;
-       insn = next_nonnote_insn (insn))
-    {
-      for (i = 0; i < n_basic_blocks; i++)
-	if (insn == BLOCK_HEAD (i))
-	  return i;
-    }
-
-  return -1;
 }
 
 /* Similar to next_insn, but ignores insns in the delay slots of
@@ -867,7 +832,7 @@ mark_target_live_regs (insns, target, res)
     }
 
   if (b == -1)
-    b = find_basic_block (target);
+    b = BLOCK_NUM (target);
 
   if (target_hash_table != NULL)
     {
@@ -1171,6 +1136,8 @@ init_resource_info (epilogue_insn)
   target_hash_table = (struct target_info **)
     xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
   bb_ticks = (int *) xcalloc (n_basic_blocks, sizeof (int));
+
+  compute_bb_for_insn (get_max_uid ());
 }
 
 /* Free up the resources allcated to mark_target_live_regs ().  This
@@ -1218,7 +1185,7 @@ void
 incr_ticks_for_insn (insn)
      rtx insn;
 {
-  int b = find_basic_block (insn);
+  int b = BLOCK_NUM (insn);
 
   if (b != -1)
     bb_ticks[b]++;
