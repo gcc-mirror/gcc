@@ -6470,7 +6470,12 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 (define_insn "prologue_mcount"
   [(unspec_volatile [(const_int 0)] UNSPECV_MCOUNT)]
   ""
-  "lda $28,_mcount\;jsr $28,($28),_mcount"
+{
+  if (TARGET_EXPLICIT_RELOCS)
+    return "ldq $28,_mcount($29)\t\t!literal!%#\;jsr $28,($28),_mcount\t\t!lituse_jsr!%#";
+  else
+    return "lda $28,_mcount\;jsr $28,($28),_mcount";
+}
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
