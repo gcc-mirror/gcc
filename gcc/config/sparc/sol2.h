@@ -39,11 +39,17 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusa"
 #endif
 
+#if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusb"
+#endif
+
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "\
 %{mcpu=v8plus:-xarch=v8plus} \
 %{mcpu=v9:-xarch=v8plus} \
 %{mcpu=ultrasparc:-xarch=v8plusa} \
+%{mcpu=ultrasparc3:-xarch=v8plusb} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 

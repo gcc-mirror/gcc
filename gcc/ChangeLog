@@ -1,3 +1,11 @@
+2004-07-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sol2-bi.h: Handle TARGET_CPU_ultrasparc3.
+	(CPP_CPU_SPEC): Handle -mcpu=ultrasparc3.
+	(ASM_CPU_SPEC): Likewise
+	* config/sparc/sol2.h: Handle TARGET_CPU_ultrasparc3.
+	(ASM_CPU_SPEC): Handle -mcpu=ultrasparc3.
+
 2004-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_indirect_call): Only use %r2 as the link register in
