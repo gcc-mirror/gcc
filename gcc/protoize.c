@@ -64,7 +64,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef POSIX
+#if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
 #else
 #include <sys/dir.h>
