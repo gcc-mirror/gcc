@@ -937,10 +937,10 @@ static char *standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
 static char *standard_startfile_prefix_1 = "/lib/";
 static char *standard_startfile_prefix_2 = "/usr/lib/";
 
-#ifndef TOOLDIR_PREFIX
-#define TOOLDIR_PREFIX "/usr/local/"
+#ifndef TOOLDIR_BASE_PREFIX
+#define TOOLDIR_BASE_PREFIX "/usr/local/"
 #endif
-static char *tooldir_base_prefix = TOOLDIR_PREFIX;
+static char *tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
 static char *tooldir_prefix;
 
 /* Clear out the vector of arguments (after a command is executed).  */
