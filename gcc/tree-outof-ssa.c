@@ -1280,8 +1280,7 @@ free_temp_expr_table (temp_expr_table_p t)
 #ifdef ENABLE_CHECKING
   int x;
   for (x = 0; x <= num_var_partitions (t->map); x++)
-    if (t->partition_dep_list[x] != NULL)
-      gcc_unreachable ();
+    gcc_assert (!t->partition_dep_list[x]);
 #endif
 
   while ((p = t->free_list))

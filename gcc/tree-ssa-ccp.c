@@ -219,8 +219,8 @@ set_lattice_value (tree var, value val)
   else if (val.lattice_val == CONSTANT)
     /* VARYING -> CONSTANT is an invalid state transition, except
 	for objects which start off in a VARYING state.  */
-    gcc_assert (old->lattice_val == VARYING
-		|| get_default_value (var).lattice_val != VARYING);
+    gcc_assert (old->lattice_val != VARYING
+		|| get_default_value (var).lattice_val == VARYING);
 
   /* If the constant for VAR has changed, then this VAR is really varying.  */
   if (old->lattice_val == CONSTANT

@@ -1,3 +1,9 @@
+2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree-outof-ssa.c (free_temp_expr_table): Add missed assert.
+	* tree-ssa-ccp.c (set_lattice_value): Correct missapplied de
+	Morgan's theorem in last checkin.
+
 2004-09-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
