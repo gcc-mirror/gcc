@@ -3109,7 +3109,7 @@ make_range (exp, pin_p, plow, phigh)
      tree *plow, *phigh;
 {
   enum tree_code code;
-  tree arg0, arg1, type = NULL_TREE;
+  tree arg0 = NULL_TREE, arg1 = NULL_TREE, type = NULL_TREE;
   tree orig_type = NULL_TREE;
   int in_p, n_in_p;
   tree low, high, n_low, n_high;
@@ -4767,7 +4767,7 @@ fold (expr)
 	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR)
 	    {
 	      tree arg00, arg01, arg10, arg11;
-	      tree alt0, alt1, same;
+	      tree alt0 = NULL_TREE, alt1 = NULL_TREE, same;
 
 	      /* (A * C) + (B * C) -> (A+B) * C.
 		 We are most concerned about the case where C is a constant,

@@ -5037,7 +5037,7 @@ void
 expand_end_case (orig_index)
      tree orig_index;
 {
-  tree minval, maxval, range, orig_minval;
+  tree minval = NULL_TREE, maxval = NULL_TREE, range, orig_minval;
   rtx default_label = 0;
   register struct case_node *n;
   unsigned int count;
