@@ -1,3 +1,7 @@
+2002-09-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/deduce1.C: New test.
+
 2002-09-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/simd-1.c: Force all use of int to
