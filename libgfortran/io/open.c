@@ -481,7 +481,10 @@ st_open (void)
     flags.position = POSITION_ASIS;
 
   if (ioparm.library_return != LIBRARY_OK)
+  {
+    library_end ();
     return;
+  }
 
   u = find_unit (ioparm.unit);
 
