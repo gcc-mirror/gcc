@@ -1,5 +1,6 @@
 2002-10-09  Zack Weinberg  <zack@codesourcery.com>
 
+	PR c/7353
 	* decl.c (start_decl): Unconditionally issue error for
 	'typedef foo = bar'.
 	(cp_finish_decl): Remove special case for TYPE_DECL with initializer.
