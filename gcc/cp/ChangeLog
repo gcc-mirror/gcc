@@ -1,3 +1,9 @@
+2003-07-01  Giovanni Bajo  <giovannibajo@libero.it>
+	
+        PR c++/8046
+        * error.c (dump_decl): Handle BIT_NOT_EXPR as
+        pseudo destructor calls.
+
 2003-07-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (define_label): Replace filename and lineno
