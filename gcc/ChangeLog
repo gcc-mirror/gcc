@@ -1,3 +1,9 @@
+2005-01-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/18761
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align):
+	Skip all DECLs except for FIELD_DECLs.
+
 2005-01-11  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Return error if
