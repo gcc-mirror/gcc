@@ -1,3 +1,7 @@
+Fri Jul 31 17:08:59 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* ns32k/netbsd.h: Fix typo.
+
 Thu Jul 30 19:11:30 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (fp cmp): Replicate patterns for ALPHA_TP_INSN.
