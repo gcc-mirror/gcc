@@ -2105,11 +2105,9 @@ may_trap_p (rtx x)
     case UMOD:
       if (HONOR_SNANS (GET_MODE (x)))
 	return 1;
-      if (! CONSTANT_P (XEXP (x, 1))
-	  || (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
-	      && flag_trapping_math))
-	return 1;
-      if (XEXP (x, 1) == const0_rtx)
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	return flag_trapping_math;
+      if (!CONSTANT_P (XEXP (x, 1)) || (XEXP (x, 1) == const0_rtx))
 	return 1;
       break;
 

@@ -1787,8 +1787,8 @@ tree_could_trap_p (tree expr)
     case RDIV_EXPR:
       if (honor_snans || honor_trapv)
 	return true;
-      if (fp_operation && flag_trapping_math)
-	return true;
+      if (fp_operation)
+	return flag_trapping_math;
       t = TREE_OPERAND (expr, 1);
       if (!TREE_CONSTANT (t) || integer_zerop (t))
         return true;
