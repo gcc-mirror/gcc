@@ -214,16 +214,15 @@ init_expr_once ()
   int num_clobbers;
   rtx mem, mem1;
 
-  start_sequence ();
-
   /* Try indexing by frame ptr and try by stack ptr.
      It is known that on the Convex the stack ptr isn't a valid index.
      With luck, one or the other is valid on any machine.  */
   mem = gen_rtx_MEM (VOIDmode, stack_pointer_rtx);
   mem1 = gen_rtx_MEM (VOIDmode, frame_pointer_rtx);
 
-  insn = emit_insn (gen_rtx_SET (0, NULL_RTX, NULL_RTX));
-  pat = PATTERN (insn);
+  insn = rtx_alloc (INSN);
+  pat = gen_rtx_SET (0, NULL_RTX, NULL_RTX);
+  PATTERN (insn) = pat;
 
   for (mode = VOIDmode; (int) mode < NUM_MACHINE_MODES;
        mode = (enum machine_mode) ((int) mode + 1))
@@ -291,8 +290,6 @@ init_expr_once ()
 	    float_extend_from_mem[mode][srcmode] = true;
 	}
     }
-
-  end_sequence ();
 }
 
 /* This is run at the start of compiling a function.  */

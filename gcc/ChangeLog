@@ -1,3 +1,10 @@
+2002-05-17  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (init_expr_once): Don't use start/end_sequence.
+	Use rtx_alloc instead of emit_insn.
+	* toplev.c (lang_dependent_init): Run init_expr_once here ...
+	(lang_independent_init): ... not here.
+
 2002-05-17  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sh/lib1funcs.asm (GLOBAL): Use __USER_LABEL_PREFIX__.
