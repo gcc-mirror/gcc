@@ -3442,6 +3442,13 @@ check_field_decls (t, access_decls, empty_p,
 	    |= CLASSTYPE_READONLY_FIELDS_NEED_INIT (type);
 	}
 
+      /* Core issue 80: A nonstatic data member is required to have a
+	 different name from the class iff the class has a
+	 user-defined constructor.  */
+      if (DECL_NAME (x) == constructor_name (t)
+	  && TYPE_HAS_CONSTRUCTOR (t))
+	cp_error_at ("field `%#D' with same name as class", x);
+
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
       if (DECL_C_BIT_FIELD (x))

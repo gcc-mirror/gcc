@@ -1,3 +1,8 @@
+2000-05-11  Jason Merrill  <jason@casey.cygnus.com>
+
+	* class.c (check_field_decls): Complain about non-static data
+	members with same name as class in class with constructor.
+
 2000-05-10  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (grokdeclarator): Allow non-static data members with
