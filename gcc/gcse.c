@@ -4102,9 +4102,7 @@ cprop_cc0_jump (bb, insn, reg_used, src)
     return 0;
 
   /* If we succeeded, delete the cc0 setter.  */
-  PUT_CODE (insn, NOTE);
-  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-  NOTE_SOURCE_FILE (insn) = 0;
+  delete_insn (insn);
 
   return 1;
  }

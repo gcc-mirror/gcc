@@ -106,14 +106,9 @@ try_simplify_condjump (cbranch_block)
   if (!can_fallthru (jump_block, cbranch_dest_block))
     return false;
 
-  /* Invert the conditional branch.  Prevent jump.c from deleting
-     "unreachable" instructions.  */
-  LABEL_NUSES (JUMP_LABEL (cbranch_insn))++;
-  if (!invert_jump (cbranch_insn, block_label (jump_dest_block), 1))
-    {
-      LABEL_NUSES (JUMP_LABEL (cbranch_insn))--;
-      return false;
-    }
+  /* Invert the conditional branch.  */
+  if (!invert_jump (cbranch_insn, block_label (jump_dest_block), 0))
+    return false;
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Simplifying condjump %i around jump %i\n",
@@ -1054,6 +1049,9 @@ try_optimize_cfg (mode)
   bool changed;
   int iterations = 0;
 
+  if (mode & CLEANUP_CROSSJUMP)
+    add_noreturn_fake_exit_edges ();
+
   /* Attempt to merge blocks as made possible by edge removal.  If a block
      has only one successor, and the successor has only one predecessor,
      they may be combined.  */
@@ -1184,6 +1182,10 @@ try_optimize_cfg (mode)
       changed_overall |= changed;
     }
   while (changed);
+
+  if (mode & CLEANUP_CROSSJUMP)
+    remove_fake_edges ();
+
   return changed_overall;
 }
 

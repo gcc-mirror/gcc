@@ -747,7 +747,7 @@ OBJS =									\
  sdbout.o sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o         \
  ssa-dce.o stmt.o stor-layout.o stringpool.o timevar.o toplev.o tree.o  \
  unroll.o varasm.o varray.o version.o xcoffout.o cfg.o cfganal.o	\
- cfgbuild.o cfgcleanup.o cfgloop.o        \
+ cfgbuild.o cfgcleanup.o cfgloop.o cfgrtl.o        \
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
@@ -1495,6 +1495,9 @@ flow.o : flow.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h insn-config.h
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(EXPR_H) ssa.h $(GGC_H) $(TM_P_H)
 cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h insn-config.h \
+   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
+   function.h except.h $(GGC_H) $(TM_P_H)
+cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    function.h except.h $(GGC_H) $(TM_P_H)
 cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \

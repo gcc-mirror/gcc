@@ -1719,11 +1719,7 @@ fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
 		     find_reg_note (XEXP (note, 0), REG_RETVAL,
 				    NULL_RTX));
 
-      /* In unoptimized compilation, we shouldn't call delete_insn
-	 except in jump.c doing warnings.  */
-      PUT_CODE (insn, NOTE);
-      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-      NOTE_SOURCE_FILE (insn) = 0;
+      delete_insn (insn);
     }
 
   /* The insn to load VAR from a home in the arglist
@@ -1744,11 +1740,7 @@ fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
 		   && SET_DEST (prev_set) == SET_SRC (set)
 		   && rtx_equal_p (SET_SRC (prev_set), var))))
     {
-      /* In unoptimized compilation, we shouldn't call delete_insn
-	 except in jump.c doing warnings.  */
-      PUT_CODE (insn, NOTE);
-      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-      NOTE_SOURCE_FILE (insn) = 0;
+      delete_insn (insn);
     }
   else
     {
@@ -2360,9 +2352,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		  REG_NOTES (insn) = REG_NOTES (last);
 		PATTERN (insn) = PATTERN (last);
 
-		PUT_CODE (last, NOTE);
-		NOTE_LINE_NUMBER (last) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (last) = 0;
+		delete_insn (last);
 	      }
 	    else
 	      PATTERN (insn) = pat;
@@ -2405,9 +2395,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		  REG_NOTES (insn) = REG_NOTES (last);
 		PATTERN (insn) = PATTERN (last);
 
-		PUT_CODE (last, NOTE);
-		NOTE_LINE_NUMBER (last) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (last) = 0;
+		delete_insn (last);
 	      }
 	    else
 	      PATTERN (insn) = pat;
@@ -7154,9 +7142,7 @@ keep_stack_depressed (seq)
 	    sp_modified_unknown = 1;
 
 	  /* Don't allow the SP modification to happen.  */
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
+	  delete_insn (insn);
 	}
       else if (reg_referenced_p (stack_pointer_rtx, PATTERN (insn)))
 	{

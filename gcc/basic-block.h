@@ -291,7 +291,6 @@ extern void compute_bb_for_insn		PARAMS ((int));
 extern void free_bb_for_insn		PARAMS ((void));
 extern void update_bb_for_insn		PARAMS ((basic_block));
 extern void set_block_for_insn		PARAMS ((rtx, basic_block));
-extern void set_block_for_new_insns	PARAMS ((rtx, basic_block));
 
 extern void free_basic_block_vars	PARAMS ((int));
 
@@ -630,6 +629,7 @@ extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void expunge_block		PARAMS ((basic_block));
+extern basic_block alloc_block		PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern void delete_noop_moves		PARAMS ((rtx));
 extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
@@ -645,6 +645,12 @@ extern void flow_nodes_print		PARAMS ((const char *, const sbitmap,
 						 FILE *));
 extern void flow_edge_list_print	PARAMS ((const char *, const edge *,
 						 int, FILE *));
+extern void alloc_aux_for_block		PARAMS ((basic_block, int));
+extern void alloc_aux_for_blocks	PARAMS ((int));
+extern void free_aux_for_blocks		PARAMS ((void));
+extern void alloc_aux_for_edge		PARAMS ((edge, int));
+extern void alloc_aux_for_edges		PARAMS ((int));
+extern void free_aux_for_edges		PARAMS ((void));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about

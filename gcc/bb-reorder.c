@@ -660,7 +660,7 @@ fixup_reorder_chain ()
 
       if (nb)
 	{
-	  nb->aux = xmalloc (sizeof (struct reorder_block_def));
+	  alloc_aux_for_block (nb, sizeof (struct reorder_block_def));
 	  RBI (nb)->eff_head = nb->head;
 	  RBI (nb)->eff_end = NEXT_INSN (nb->end);
 	  RBI (nb)->scope = RBI (bb)->scope;
@@ -1327,15 +1327,11 @@ void
 reorder_basic_blocks ()
 {
   scope_forest_info forest;
-  int i;
 
   if (n_basic_blocks <= 1)
     return;
 
-  for (i = 0; i < n_basic_blocks; i++)
-    BASIC_BLOCK (i)->aux = xcalloc (1, sizeof (struct reorder_block_def));
-
-  EXIT_BLOCK_PTR->aux = xcalloc (1, sizeof (struct reorder_block_def));
+  alloc_aux_for_blocks (sizeof (struct reorder_block_def));
 
   build_scope_forest (&forest);
   remove_scope_notes ();
@@ -1356,10 +1352,7 @@ reorder_basic_blocks ()
   free_scope_forest (&forest);
   reorder_blocks ();
 
-  for (i = 0; i < n_basic_blocks; i++)
-    free (BASIC_BLOCK (i)->aux);
-
-  free (EXIT_BLOCK_PTR->aux);
+  free_aux_for_blocks ();
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

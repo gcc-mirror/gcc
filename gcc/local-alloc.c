@@ -1107,9 +1107,7 @@ update_equiv_regs ()
 		      remove_death (regno, insn);
 		      REG_N_REFS (regno) = 0;
 		      REG_FREQ (regno) = 0;
-		      PUT_CODE (equiv_insn, NOTE);
-		      NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
-		      NOTE_SOURCE_FILE (equiv_insn) = 0;
+		      delete_insn (equiv_insn);
 		      
 		      reg_equiv[regno].init_insns
 			= XEXP (reg_equiv[regno].init_insns, 1);
@@ -1128,9 +1126,7 @@ update_equiv_regs ()
 			 otherwise eliminate_regs_in_insn will abort.  */
 		      INSN_CODE (new_insn) = INSN_CODE (equiv_insn);
 
-		      PUT_CODE (equiv_insn, NOTE);
-		      NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
-		      NOTE_SOURCE_FILE (equiv_insn) = 0;
+		      delete_insn (equiv_insn);
 
 		      XEXP (reg_equiv[regno].init_insns, 0) = new_insn;
 

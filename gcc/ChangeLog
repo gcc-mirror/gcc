@@ -1,3 +1,66 @@
+Tue Sep 25 17:13:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cfgrtl.o): Add.
+	* basic-block.h (alloc_block, alloc_aux_for_block, alloc_aux_for_blocks,
+	free_aux_for_block, alloc_aux_for_edge, alloc_aux_for_edges,
+	free_aux_for_edge): Declare.
+	* cfg.c
+	(HAVE_return): Undefine.
+	* basic-block.h (alloc_block, alloc_aux_for_block, alloc_aux_for_blocks,
+	free_aux_for_block, alloc_aux_for_edge, alloc_aux_for_edges,
+	free_aux_for_edge): New global functions.
+	(first_delete_block): New static variable.
+	(init_flow): Clear first_delete_block.
+	(basic_block_for_insn, label_value_list, tail_recursion_label_list,
+	 can_delete_note_p, can_delete_label_p, commit_one_edge_insertion,
+	 try_redirect_by_replacing_jump, last_loop_beg_note,
+	 back_edge_of_syntactic_loop_p, force_nonfallthru_and_redirect,
+	 delete_insn, delete_insn_chain, create_basic_block_structure,
+	 create_basic_block, flow_delete_block, compute_bb_for_insn,
+	 free_bb_for_insn, update_bb_for_insn, set_block_for_insn,
+	 set_block_for_new_insns, split_block, merge_blocks_nomove,
+	 block_label, try_redirect_by_replacing_jump, last_loop_beg_note,
+	 redirect_edge_and_branch, force_nonfallthru_and_redirect,
+	 force_nonfallthru, redirect_edge_and_branch_force, tidy_fallthru_edge,
+	 tidy_fallthru_edges, split_edge, insert_insn_on_edge,
+	 commit_one_edge_insertion, commit_edge_insertions, dump_bb, debug_bb,
+	 debug_bb_n, print_rtl_with_bb, verify_flow_info, purge_dead_edges,
+	 purge_all_dead_edges): Move to ....
+	* cfgrtl.c: New file; .... Here.
+
+	* bb-reorder.c (fixup_reorder_chain): Use alloc_aux_for_block.
+	(reroder_basic_block): Use alloc_aux_for_blocks.
+	* predict.c (estimate_bb_frequencies): Likewise; use
+	alloc_aux_for_edges.
+	* profile.c (compute_branch_probabilities): Likewise.
+	(branch_prob): Likewise.
+	* reg-stack.c (reg_to_stack): Likewise.
+
+	* emit-rtl.c (emit_insns_after): Never return NULL.
+
+	* basic-block.h (set_block_for_new_insns): Delete.
+	* cfgrtl.c (set_block_for_new_insns): Delete.
+
+	* cfgcleanup.c (try_optimize_cfg): Add fake exit edges for noreturn
+	calls when crossjumping.
+
+	* cfgcleanup.c (try_simplify_condjump): Cleanup invert_jump call.
+	* unroll.c (copy_loop_body): Use delete_insn.
+
+	* final.c (final, final_scan_insn): Use delete_insn/delete_note.
+	* function.c (fixup_var_refs_insn, fixup_var_refs_1,
+	keep_stack_depressed): Likewise.
+	* gcse.c (cprop_cc0_jump): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	* loop.c (scan_loop, loop_delete_insns): Likewise.
+	* regmove.c (try_auto_increment, fixup_match_1): Likewise.
+	* reload1.c (reload, calculate_needs_all_insns, reload_as_needed,
+	delete_output_reload, delete_address_reloads_1,
+	reload_cse_delete_noop_set, reload_combine, reload_cse_move2add):
+	Likewise.
+	* sibcall.c (replace_call_placeholder): Likewise.
+	* cse.c (cse_insn): Likewise.
+
 2001-09-25  Bernd Schmidt  <bernds@redhat.com>
 
 	From Graham Stott  <grahams@redhat.com>

@@ -832,9 +832,6 @@ static void
 estimate_bb_frequencies (loops)
      struct loops *loops;
 {
-  block_info bi;
-  edge_info ei;
-  int edgenum = 0;
   int i;
   double freq_max = 0;
 
@@ -891,8 +888,8 @@ estimate_bb_frequencies (loops)
   ENTRY_BLOCK_PTR->succ->probability = REG_BR_PROB_BASE;
 
   /* Set up block info for each basic block.  */
-  bi = (block_info) xcalloc ((n_basic_blocks + 2), sizeof (*bi));
-  ei = (edge_info) xcalloc ((n_edges), sizeof (*ei));
+  alloc_aux_for_blocks (sizeof (struct block_info_def));
+  alloc_aux_for_edges (sizeof (struct edge_info_def));
   for (i = -2; i < n_basic_blocks; i++)
     {
       edge e;
@@ -904,14 +901,10 @@ estimate_bb_frequencies (loops)
 	bb = EXIT_BLOCK_PTR;
       else
 	bb = BASIC_BLOCK (i);
-      bb->aux = bi + i + 2;
       BLOCK_INFO (bb)->tovisit = 0;
       for (e = bb->succ; e; e = e->succ_next)
-	{
-	  e->aux = ei + edgenum, edgenum++;
-	  EDGE_INFO (e)->back_edge_prob = ((double) e->probability
-					   / REG_BR_PROB_BASE);
-	}
+	EDGE_INFO (e)->back_edge_prob = ((double) e->probability
+					 / REG_BR_PROB_BASE);
     }
   /* First compute probabilities locally for each loop from innermost
      to outermost to examine probabilities for back edges.  */
@@ -940,6 +933,6 @@ estimate_bb_frequencies (loops)
 		       + 0.5);
     }
 
-  free (ei);
-  free (bi);
+  free_aux_for_blocks ();
+  free_aux_for_edges ();
 }

@@ -148,11 +148,7 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
 		    = gen_rtx_EXPR_LIST (REG_INC,
 					 reg, REG_NOTES (insn));
 		  if (! inc_insn_set)
-		    {
-		      PUT_CODE (inc_insn, NOTE);
-		      NOTE_LINE_NUMBER (inc_insn) = NOTE_INSN_DELETED;
-		      NOTE_SOURCE_FILE (inc_insn) = 0;
-		    }
+		    delete_insn (inc_insn);
 		  return 1;
 		}
 	    }
@@ -1895,9 +1891,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  rtx notes = REG_NOTES (insn);
 
 	  emit_insn_after_with_line_notes (pat, PREV_INSN (p), insn);
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
+	  delete_insn (insn);
 	  /* emit_insn_after_with_line_notes has no
 	     return value, so search for the new insn.  */
 	  insn = p;
@@ -1949,9 +1943,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	  if (q && set2 && SET_DEST (set2) == src && CONSTANT_P (SET_SRC (set2))
 	      && validate_change (insn, &SET_SRC (set), XEXP (note, 0), 0))
 	    {
-	      PUT_CODE (q, NOTE);
-	      NOTE_LINE_NUMBER (q) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (q) = 0;
+	      delete_insn (q);
 	      REG_N_SETS (REGNO (src))--;
 	      REG_N_CALLS_CROSSED (REGNO (src)) -= num_calls2;
 	      REG_LIVE_LENGTH (REGNO (src)) -= s_length2;

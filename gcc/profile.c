@@ -217,18 +217,15 @@ compute_branch_probabilities ()
   int hist_br_prob[20];
   int num_never_executed;
   int num_branches;
-  struct bb_info *bb_infos;
 
   /* Attach extra info block to each bb.  */
 
-  bb_infos = (struct bb_info *)
-    xcalloc (n_basic_blocks + 2, sizeof (struct bb_info));
+  alloc_aux_for_blocks (sizeof (struct bb_info));
   for (i = 0; i < n_basic_blocks + 2; i++)
     {
       basic_block bb = GCOV_INDEX_TO_BB (i);
       edge e;
 
-      bb->aux = &bb_infos[i];
       for (e = bb->succ; e; e = e->succ_next)
 	if (!EDGE_INFO (e)->ignore)
 	  BB_INFO (bb)->succ_count++;
@@ -496,7 +493,7 @@ compute_branch_probabilities ()
       fputc ('\n', rtl_dump_file);
     }
 
-  free (bb_infos);
+  free_aux_for_blocks ();
 }
 
 /* Instrument and/or analyze program behavior based on program flow graph.
@@ -520,7 +517,6 @@ branch_prob ()
 {
   int i;
   int num_edges, ignored_edges;
-  struct edge_info *edge_infos;
   struct edge_list *el;
 
   /* Start of a function.  */
@@ -612,15 +608,13 @@ branch_prob ()
 
   el = create_edge_list ();
   num_edges = NUM_EDGES (el);
-  edge_infos = (struct edge_info *)
-    xcalloc (num_edges, sizeof (struct edge_info));
+  alloc_aux_for_edges (sizeof (struct edge_info));
 
   ignored_edges = 0;
   for (i = 0 ; i < num_edges ; i++)
     {
       edge e = INDEX_EDGE (el, i);
       e->count = 0;
-      e->aux = &edge_infos[i];
 
       /* Mark edges we've replaced by fake edges above as ignored.  */
       if ((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL))
@@ -803,7 +797,7 @@ branch_prob ()
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
 
-  free (edge_infos);
+  free_aux_for_edges ();
   free_edge_list (el);
 }
 
@@ -904,6 +898,11 @@ find_spanning_tree (el)
 	  union_groups (e->src, e->dest);
 	}
     }
+
+  EXIT_BLOCK_PTR->aux = NULL;
+  ENTRY_BLOCK_PTR->aux = NULL;
+  for (i = 0; i < n_basic_blocks; i++)
+    BASIC_BLOCK (i)->aux = NULL;
 }
 
 /* Perform file-level initialization for branch-prob processing.  */
