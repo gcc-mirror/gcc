@@ -1,3 +1,9 @@
+2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (tree_forwarder_block_p): Don't set forwardable.
+	(thread_jumps): Use forwardable as cache of
+	tree_forwarder_block_p throughout the function.
+
 2004-10-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* cfg.c (dump_flow_info): Remove redundant dump of reg life info.
