@@ -31,7 +31,11 @@
 #define _CPP_CPPCONFIG 1
 
 // The current version of the C++ library in compressed ISO date format.
-#define __GLIBCPP__ 20000324
+#define __GLIBCPP__ 20000911
+
+// By enabling this, __USE_ISOC99 is also enabled, along with other
+// bits like POSIX, SVID, X/Open and GNU extensions.
+#define _GNU_SOURCE 1
 
 // This flag controls the error handling in string, and perhaps other
 // bits as time goes on: check out bits/basic_string.h for more

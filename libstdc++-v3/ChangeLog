@@ -1,3 +1,20 @@
+2000-09-11  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Remove test != "0". 
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+	* bits/c++config (__GLIBCPP__): Update, in the hopes of making a
+	snapshot release soon.
+	(_GNU_SOURCE): Define this in the header files, as ISO C99 support
+	is pretty much assumed.
+
+	* testsuite/22_locale/global_templates.cc: New file. Add tests for
+	use_facet and has_facet.
+
+	* bits/codecvt.h (codecvt<_InT, _ExT, __enc_traits>::do_out):
+	Modify/correct iconv signatures for glibc2.2.
+
 2000-09-10  Branko Cibej  <branko.cibej@hermes.si>
 
 	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Replace "grep -q" with
