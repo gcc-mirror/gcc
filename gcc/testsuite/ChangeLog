@@ -1,3 +1,11 @@
+2001-08-01  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/fwd-proto-1.m: New.
+	* objc.dg/local-decl-1.m: New.
+	* objc.dg/naming-1.m: New.
+	* objc.dg/naming-2.m: New.
+	* objc.dg/proto-hier-1.m: New.
+
 2001-07-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/c99-scope-2.c: Don't generally assume adding more
