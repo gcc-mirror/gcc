@@ -2376,10 +2376,13 @@ get_computation_at (struct loop *loop,
   if (stmt_after_increment (loop, cand, at))
     cbase = fold (build2 (PLUS_EXPR, uutype, cbase, cstep));
 
-  /* use = ubase + ratio * (var - cbase).  If either cbase is a constant
-     or |ratio| == 1, it is better to handle this like
-     
-     ubase - ratio * cbase + ratio * var.  */
+  /* use = ubase - ratio * cbase + ratio * var.
+
+     In general case ubase + ratio * (var - cbase) could be better (one less
+     multiplication), but often it is possible to eliminate redundant parts
+     of computations from (ubase - ratio * cbase) term, and if it does not
+     happen, fold is able to apply the distributive law to obtain this form
+     anyway.  */
 
   if (ratioi == 1)
     {
@@ -2391,20 +2394,13 @@ get_computation_at (struct loop *loop,
       delta = fold (build2 (PLUS_EXPR, uutype, ubase, cbase));
       expr = fold (build2 (MINUS_EXPR, uutype, delta, expr));
     }
-  else if (TREE_CODE (cbase) == INTEGER_CST)
+  else
     {
       ratio = build_int_cst_type (uutype, ratioi);
       delta = fold (build2 (MULT_EXPR, uutype, ratio, cbase));
       delta = fold (build2 (MINUS_EXPR, uutype, ubase, delta));
       expr = fold (build2 (MULT_EXPR, uutype, ratio, expr));
       expr = fold (build2 (PLUS_EXPR, uutype, delta, expr));
-    }
-  else
-    {
-      expr = fold (build2 (MINUS_EXPR, uutype, expr, cbase));
-      ratio = build_int_cst_type (uutype, ratioi);
-      expr = fold (build2 (MULT_EXPR, uutype, ratio, expr));
-      expr = fold (build2 (PLUS_EXPR, uutype, ubase, expr));
     }
 
   return fold_convert (utype, expr);
