@@ -826,7 +826,7 @@ gen_mod_subtract (enum machine_mode mode, enum rtx_code operation,
 static bool
 mod_subtract_transform (rtx insn)
 {
-  rtx set, set_src, set_dest, op1, op2, value, histogram;
+  rtx set, set_src, set_dest, op1, op2, histogram;
   enum rtx_code code;
   enum machine_mode mode;
   gcov_type wrong_values, counts[2], count, all;
@@ -858,7 +858,6 @@ mod_subtract_transform (rtx insn)
     return false;
 
   histogram = XEXP (XEXP (histogram, 0), 1);
-  value = XEXP (histogram, 0);
   histogram = XEXP (histogram, 1);
 
   all = 0;

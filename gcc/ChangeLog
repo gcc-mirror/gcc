@@ -12,6 +12,9 @@
 	* tree-vect-transform.c (vect_get_new_vect_var): Remove local
 	variable prefix_len.
 
+	* value-prof.c (mod_subtract_transform): Remove local variable
+	value.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
