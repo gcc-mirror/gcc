@@ -1267,7 +1267,7 @@ extern int sparc_mode_class[];
     || TYPE_MODE (TYPE) == TFmode			\
     || TYPE_MODE (TYPE) == TCmode)			\
  : (TYPE_MODE (TYPE) == BLKmode				\
-    && int_size_in_bytes (TYPE) > 32))
+    && (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 32))
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.

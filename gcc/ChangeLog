@@ -1,3 +1,8 @@
+Wed Jan  3 10:48:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.h (RETURN_IN_MEMORY): Return 0 for variable
+	sized types.
+
 Wed Jan  3 12:22:32 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* build-make (HOST_CFLAGS): Added `-DGENERATOR_FILE'.
