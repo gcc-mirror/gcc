@@ -1,3 +1,8 @@
+Thu Jun  3 22:27:50 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* i386/udk.h (LINK_SPEC): Correct linker search path for 
+	system libraries.
+
 Fri Jun  4 03:20:40 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (fixup_addr_diff_vecs): Emit braf reference label.
