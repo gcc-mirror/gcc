@@ -761,7 +761,7 @@ ALL_TARGET_MODULES = \
 	all-target-zlib \
 	all-target-boehm-gc \
 	all-target-qthreads \
-	all-target-rda 
+	all-target-rda
 
 # This is a list of the configure targets for all of the modules which
 # are compiled using the target tools.
@@ -781,7 +781,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-zlib \
 	configure-target-boehm-gc \
 	configure-target-qthreads \
-	configure-target-rda 
+	configure-target-rda
 
 # This is a list of the check targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -798,7 +798,7 @@ CHECK_TARGET_MODULES = \
 	check-target-zlib \
 	check-target-boehm-gc \
 	check-target-qthreads \
-	check-target-rda 
+	check-target-rda
 
 # This is a list of the install targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -816,7 +816,7 @@ INSTALL_TARGET_MODULES = \
 	install-target-zlib \
 	install-target-boehm-gc \
 	install-target-qthreads \
-	install-target-rda 
+	install-target-rda
 
 # This is a list of the targets for which we can do a clean-{target}.
 CLEAN_MODULES = \
@@ -879,7 +879,7 @@ CLEAN_MODULES = \
 	clean-uudecode \
 	clean-wdiff \
 	clean-zip \
-	clean-zlib 
+	clean-zlib
 
 # All of the target modules that can be cleaned
 CLEAN_TARGET_MODULES = \
@@ -897,7 +897,7 @@ CLEAN_TARGET_MODULES = \
 	clean-target-zlib \
 	clean-target-boehm-gc \
 	clean-target-qthreads \
-	clean-target-rda 
+	clean-target-rda
 
 # All of the x11 modules that can be cleaned
 CLEAN_X11_MODULES = \

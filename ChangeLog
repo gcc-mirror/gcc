@@ -1,3 +1,15 @@
+2002-12-13  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.tpl (check-gcc-c++): Renamed from check-c++.  Don't run
+	library tests.
+	(check-c++): Just depend on it and check-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
+2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.tpl (configure-target-rda): Depend on $(ALL_GCC_C).
+	* Makefile.in: Rebuilt.
+
 2002-12-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config.sub: Import from master repository

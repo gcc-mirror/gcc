@@ -1327,17 +1327,19 @@ check-gcc:
 	  true; \
 	fi
 
-.PHONY: check-c++
-check-c++:
+.PHONY: check-gcc-c++
+check-gcc-c++:
 	@if [ -f ./gcc/Makefile ] ; then \
 	  r=`${PWD}`; export r; \
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
-	  $(MAKE) check-target-libstdc++-v3; \
 	else \
 	  true; \
-	fi 
+	fi
+
+.PHONY: check-c++
+check-c++: check-target-libstdc++-v3 check-gcc-c++
 
 .PHONY: install-gcc
 install-gcc:
@@ -1466,6 +1468,7 @@ all-textutils:
 all-time:
 all-tix: all-tcl all-tk
 all-wdiff:
+configure-target-rda: $(ALL_GCC_C)
 configure-target-winsup: $(ALL_GCC_C)
 all-target-winsup: all-target-libiberty all-target-libtermcap
 all-uudecode: all-libiberty
