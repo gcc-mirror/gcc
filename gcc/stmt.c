@@ -1206,8 +1206,18 @@ expand_expr_stmt (exp)
       if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
 	copy_to_reg (last_expr_value);
       else
-	/* This case needs to be written.  */
-	abort ();
+	{
+	  rtx lab = gen_label_rtx ();
+	  
+	  /* Compare the value with itself to reference it.  */
+	  emit_cmp_insn (last_expr_value, last_expr_value, EQ,
+			 expand_expr (TYPE_SIZE (last_expr_type),
+				      0, VOIDmode, 0),
+			 BLKmode, 0,
+			 TYPE_ALIGN (last_expr_type) / BITS_PER_UNIT);
+	  emit_jump_insn ((*bcc_gen_fctn[(int) EQ]) (lab));
+	  emit_label (lab);
+	}
     }
 
   /* If this expression is part of a ({...}) and is in memory, we may have
@@ -1291,6 +1301,11 @@ warn_if_unused_value (exp)
 	return 0;
 
     default:
+      /* Referencing a volatile value is a side effect, so don't warn.  */
+      if ((TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
+	  && TREE_THIS_VOLATILE (exp))
+	return 0;
       warning_with_file_and_line (emit_filename, emit_lineno,
 				  "value computed is not used");
       return 1;
