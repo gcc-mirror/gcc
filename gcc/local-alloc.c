@@ -1724,7 +1724,7 @@ qty_sugg_compare_1 (const void *q1p, const void *q2p)
    We don't actually combine a hard reg with a pseudo; instead
    we just record the hard reg as the suggestion for the pseudo's quantity.
    If we really combined them, we could lose if the pseudo lives
-   across an insn that clobbers the hard reg (eg, movstr).
+   across an insn that clobbers the hard reg (eg, movmem).
 
    ALREADY_DEAD is nonzero if USEDREG is known to be dead even though
    there is no REG_DEAD note on INSN.  This occurs during the processing

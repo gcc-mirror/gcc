@@ -298,15 +298,15 @@
 }")
 
 ;; This is here to accept 4 arguments and pass the first 3 along
-;; to the movstrhi1 pattern that really does the work.
-(define_expand "movstrhi"
+;; to the movmemhi1 pattern that really does the work.
+(define_expand "movmemhi"
   [(set (match_operand:BLK 0 "general_operand" "=g")
 	(match_operand:BLK 1 "general_operand" "g"))
    (use (match_operand:HI 2 "general_operand" "g"))
    (match_operand 3 "" "")]
   ""
   "
-  emit_insn (gen_movstrhi1 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_movmemhi1 (operands[0], operands[1], operands[2]));
   DONE;
 ")
 
@@ -314,7 +314,7 @@
 ;; but it should suffice
 ;; that anything generated as this insn will be recognized as one
 ;; and that it won't successfully combine with anything.
-(define_insn "movstrhi1"
+(define_insn "movmemhi1"
   [(set (match_operand:BLK 0 "memory_operand" "=m")
 	(match_operand:BLK 1 "memory_operand" "m"))
    (use (match_operand:HI 2 "general_operand" "g"))

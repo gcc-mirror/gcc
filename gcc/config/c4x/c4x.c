@@ -2348,7 +2348,7 @@ c4x_rptb_insert (rtx insn)
   rtx count_reg;
 
   /* If the count register has not been allocated to RC, say if
-     there is a movstr pattern in the loop, then do not insert a
+     there is a movmem pattern in the loop, then do not insert a
      RPTB instruction.  Instead we emit a decrement and branch
      at the end of the loop.  */
   count_reg = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 0), 0);

@@ -8088,7 +8088,7 @@ mov.l\\t1f,r0\\n\\
 
 ;; String/block move insn.
 
-(define_expand "movstrsi"
+(define_expand "movmemsi"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "" ""))
 		   (mem:BLK (match_operand:BLK 1 "" "")))
 	      (use (match_operand:SI 2 "nonmemory_operand" ""))

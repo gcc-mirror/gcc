@@ -11102,9 +11102,9 @@ ix86_zero_extend_to_Pmode (rtx exp)
 }
 
 /* Expand string move (memcpy) operation.  Use i386 string operations when
-   profitable.  expand_clrstr contains similar code.  */
+   profitable.  expand_clrmem contains similar code.  */
 int
-ix86_expand_movstr (rtx dst, rtx src, rtx count_exp, rtx align_exp)
+ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 {
   rtx srcreg, destreg, countreg, srcexp, destexp;
   enum machine_mode counter_mode;
@@ -11381,9 +11381,9 @@ ix86_expand_movstr (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 }
 
 /* Expand string clear operation (bzero).  Use i386 string operations when
-   profitable.  expand_movstr contains similar code.  */
+   profitable.  expand_movmem contains similar code.  */
 int
-ix86_expand_clrstr (rtx dst, rtx count_exp, rtx align_exp)
+ix86_expand_clrmem (rtx dst, rtx count_exp, rtx align_exp)
 {
   rtx destreg, zeroreg, countreg, destexp;
   enum machine_mode counter_mode;

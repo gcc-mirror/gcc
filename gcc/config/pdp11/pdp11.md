@@ -688,7 +688,7 @@
 ;; maybe fiddle a bit with move_ratio, then 
 ;; let constraints only accept a register ...
 
-(define_expand "movstrhi"
+(define_expand "movmemhi"
   [(parallel [(set (match_operand:BLK 0 "general_operand" "=g,g")
 		   (match_operand:BLK 1 "general_operand" "g,g"))
 	      (use (match_operand:HI 2 "arith_operand" "n,&mr"))
@@ -712,7 +712,7 @@
 }")
 
 
-(define_insn "" ; "movstrhi"
+(define_insn "" ; "movmemhi"
   [(set (mem:BLK (match_operand:HI 0 "general_operand" "=r,r"))
 	(mem:BLK (match_operand:HI 1 "general_operand" "r,r")))
    (use (match_operand:HI 2 "arith_operand" "n,&r"))

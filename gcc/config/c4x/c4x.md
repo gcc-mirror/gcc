@@ -5574,7 +5574,7 @@
   "0"
   "")
 
-(define_expand "movstrqi_small"
+(define_expand "movmemqi_small"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "src_operand" ""))
                    (mem:BLK (match_operand:BLK 1 "src_operand" "")))
               (use (match_operand:QI 2 "immediate_operand" ""))
@@ -5634,7 +5634,7 @@
 ; operand 3 is the shared alignment
 ; operand 4 is a scratch register
 
-(define_insn "movstrqi_large"
+(define_insn "movmemqi_large"
   [(set (mem:BLK (match_operand:QI 0 "addr_reg_operand" "a"))
         (mem:BLK (match_operand:QI 1 "addr_reg_operand" "a")))
    (use (match_operand:QI 2 "immediate_operand" "i"))
@@ -5681,7 +5681,7 @@
  [(set_attr "type" "multi")])
 
 ; Operand 2 is the count, operand 3 is the alignment.
-(define_expand "movstrqi"
+(define_expand "movmemqi"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "src_operand" ""))
                    (mem:BLK (match_operand:BLK 1 "src_operand" "")))
               (use (match_operand:QI 2 "immediate_operand" ""))
@@ -5702,11 +5702,11 @@
    tmp = gen_reg_rtx (QImode);
    /* Disabled because of reload problems.  */
    if (0 && INTVAL (operands[2]) < 8)
-     emit_insn (gen_movstrqi_small (operands[0], operands[1], operands[2],
+     emit_insn (gen_movmemqi_small (operands[0], operands[1], operands[2],
                                     operands[3], tmp));
    else
      {
-      emit_insn (gen_movstrqi_large (operands[0], operands[1], operands[2],
+      emit_insn (gen_movmemqi_large (operands[0], operands[1], operands[2],
                                      operands[3], tmp));
      }
    DONE;

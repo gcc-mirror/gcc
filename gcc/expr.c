@@ -125,7 +125,7 @@ static unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
 static void move_by_pieces_1 (rtx (*) (rtx, ...), enum machine_mode,
 			      struct move_by_pieces *);
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_movstr (rtx, rtx, rtx, unsigned);
+static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned);
 static rtx emit_block_move_via_libcall (rtx, rtx, rtx);
 static tree emit_block_move_libcall_fn (int);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
@@ -134,7 +134,7 @@ static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static void store_by_pieces_1 (struct store_by_pieces *, unsigned int);
 static void store_by_pieces_2 (rtx (*) (rtx, ...), enum machine_mode,
 			       struct store_by_pieces *);
-static bool clear_storage_via_clrstr (rtx, rtx, unsigned);
+static bool clear_storage_via_clrmem (rtx, rtx, unsigned);
 static rtx clear_storage_via_libcall (rtx, rtx);
 static tree clear_storage_libcall_fn (int);
 static rtx compress_float_constant (rtx, rtx);
@@ -194,10 +194,10 @@ static bool float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
 #endif
 
 /* This array records the insn_code of insns to perform block moves.  */
-enum insn_code movstr_optab[NUM_MACHINE_MODES];
+enum insn_code movmem_optab[NUM_MACHINE_MODES];
 
 /* This array records the insn_code of insns to perform block clears.  */
-enum insn_code clrstr_optab[NUM_MACHINE_MODES];
+enum insn_code clrmem_optab[NUM_MACHINE_MODES];
 
 /* These arrays record the insn_code of two different kinds of insns
    to perform block compares.  */
@@ -1372,7 +1372,7 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
 
   if (GET_CODE (size) == CONST_INT && MOVE_BY_PIECES_P (INTVAL (size), align))
     move_by_pieces (x, y, INTVAL (size), align, 0);
-  else if (emit_block_move_via_movstr (x, y, size, align))
+  else if (emit_block_move_via_movmem (x, y, size, align))
     ;
   else if (may_use_call)
     retval = emit_block_move_via_libcall (x, y, size);
@@ -1434,11 +1434,11 @@ block_move_libcall_safe_for_call_parm (void)
   return true;
 }
 
-/* A subroutine of emit_block_move.  Expand a movstr pattern;
+/* A subroutine of emit_block_move.  Expand a movmem pattern;
    return true if successful.  */
 
 static bool
-emit_block_move_via_movstr (rtx x, rtx y, rtx size, unsigned int align)
+emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align)
 {
   rtx opalign = GEN_INT (align / BITS_PER_UNIT);
   int save_volatile_ok = volatile_ok;
@@ -1454,7 +1454,7 @@ emit_block_move_via_movstr (rtx x, rtx y, rtx size, unsigned int align)
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      enum insn_code code = movstr_optab[(int) mode];
+      enum insn_code code = movmem_optab[(int) mode];
       insn_operand_predicate_fn pred;
 
       if (code != CODE_FOR_nothing
@@ -2543,7 +2543,7 @@ clear_storage (rtx object, rtx size)
       else if (GET_CODE (size) == CONST_INT
 	  && CLEAR_BY_PIECES_P (INTVAL (size), align))
 	clear_by_pieces (object, INTVAL (size), align);
-      else if (clear_storage_via_clrstr (object, size, align))
+      else if (clear_storage_via_clrmem (object, size, align))
 	;
       else
 	retval = clear_storage_via_libcall (object, size);
@@ -2552,11 +2552,11 @@ clear_storage (rtx object, rtx size)
   return retval;
 }
 
-/* A subroutine of clear_storage.  Expand a clrstr pattern;
+/* A subroutine of clear_storage.  Expand a clrmem pattern;
    return true if successful.  */
 
 static bool
-clear_storage_via_clrstr (rtx object, rtx size, unsigned int align)
+clear_storage_via_clrmem (rtx object, rtx size, unsigned int align)
 {
   /* Try the most limited insn first, because there's no point
      including more than one in the machine description unless
@@ -2568,7 +2568,7 @@ clear_storage_via_clrstr (rtx object, rtx size, unsigned int align)
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      enum insn_code code = clrstr_optab[(int) mode];
+      enum insn_code code = clrmem_optab[(int) mode];
       insn_operand_predicate_fn pred;
 
       if (code != CODE_FOR_nothing

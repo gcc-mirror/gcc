@@ -5174,7 +5174,7 @@ dsrl\t%3,%3,1\n\
 ;; Argument 2 is the length
 ;; Argument 3 is the alignment
 
-(define_expand "movstrsi"
+(define_expand "movmemsi"
   [(parallel [(set (match_operand:BLK 0 "general_operand")
 		   (match_operand:BLK 1 "general_operand"))
 	      (use (match_operand:SI 2 ""))

@@ -970,7 +970,7 @@ expand_builtin_prefetch (tree arglist)
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
-   to be used to be used in a string instruction (cmpstrsi, movstrsi, ..).  */
+   to be used to be used in a string instruction (cmpstrsi, movmemsi, ..).  */
 
 static rtx
 get_memory_rtx (tree exp)

@@ -2715,7 +2715,7 @@ m32r_expand_block_move (rtx operands[])
 	 to the word after the end of the source block, and dst_reg to point
 	 to the last word of the destination block, provided that the block
 	 is MAX_MOVE_BYTES long.  */
-      emit_insn (gen_movstrsi_internal (dst_reg, src_reg, at_a_time,
+      emit_insn (gen_movmemsi_internal (dst_reg, src_reg, at_a_time,
 					new_dst_reg, new_src_reg));
       emit_move_insn (dst_reg, new_dst_reg);
       emit_move_insn (src_reg, new_src_reg);
@@ -2729,7 +2729,7 @@ m32r_expand_block_move (rtx operands[])
     }
 
   if (leftover)
-    emit_insn (gen_movstrsi_internal (dst_reg, src_reg, GEN_INT (leftover),
+    emit_insn (gen_movmemsi_internal (dst_reg, src_reg, GEN_INT (leftover),
 				      gen_reg_rtx (SImode),
 				      gen_reg_rtx (SImode)));
 }

@@ -3029,17 +3029,17 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
 /* Emit code to move LEN bytes from DST to SRC.  */
 
 void
-s390_expand_movstr (rtx dst, rtx src, rtx len)
+s390_expand_movmem (rtx dst, rtx src, rtx len)
 {
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
-        emit_insn (gen_movstr_short (dst, src, GEN_INT (INTVAL (len) - 1)));
+        emit_insn (gen_movmem_short (dst, src, GEN_INT (INTVAL (len) - 1)));
     }
 
   else if (TARGET_MVCLE)
     {
-      emit_insn (gen_movstr_long (dst, src, convert_to_mode (Pmode, len, 1)));
+      emit_insn (gen_movmem_long (dst, src, convert_to_mode (Pmode, len, 1)));
     }
 
   else
@@ -3081,7 +3081,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 
       emit_label (loop_start_label);
 
-      emit_insn (gen_movstr_short (dst, src, GEN_INT (255)));
+      emit_insn (gen_movmem_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
       s390_load_address (src_addr,
@@ -3097,7 +3097,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
       emit_jump (loop_start_label);
       emit_label (loop_end_label);
 
-      emit_insn (gen_movstr_short (dst, src,
+      emit_insn (gen_movmem_short (dst, src,
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
@@ -3106,17 +3106,17 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 /* Emit code to clear LEN bytes at DST.  */
 
 void
-s390_expand_clrstr (rtx dst, rtx len)
+s390_expand_clrmem (rtx dst, rtx len)
 {
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
-        emit_insn (gen_clrstr_short (dst, GEN_INT (INTVAL (len) - 1)));
+        emit_insn (gen_clrmem_short (dst, GEN_INT (INTVAL (len) - 1)));
     }
 
   else if (TARGET_MVCLE)
     {
-      emit_insn (gen_clrstr_long (dst, convert_to_mode (Pmode, len, 1)));
+      emit_insn (gen_clrmem_long (dst, convert_to_mode (Pmode, len, 1)));
     }
 
   else
@@ -3156,7 +3156,7 @@ s390_expand_clrstr (rtx dst, rtx len)
 
       emit_label (loop_start_label);
 
-      emit_insn (gen_clrstr_short (dst, GEN_INT (255)));
+      emit_insn (gen_clrmem_short (dst, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
 
@@ -3170,7 +3170,7 @@ s390_expand_clrstr (rtx dst, rtx len)
       emit_jump (loop_start_label);
       emit_label (loop_end_label);
 
-      emit_insn (gen_clrstr_short (dst, convert_to_mode (Pmode, count, 1)));
+      emit_insn (gen_clrmem_short (dst, convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
 }

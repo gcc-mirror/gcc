@@ -82,10 +82,10 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM = 2, EXPAND_SUM,
 #define OK_DEFER_POP (inhibit_defer_pop -= 1)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction sequences, we will do a movstr or libcall instead.  */
+   move-instruction sequences, we will do a movmem or libcall instead.  */
 
 #ifndef MOVE_RATIO
-#if defined (HAVE_movstrqi) || defined (HAVE_movstrhi) || defined (HAVE_movstrsi) || defined (HAVE_movstrdi) || defined (HAVE_movstrti)
+#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
 #define MOVE_RATIO 2
 #else
 /* If we are optimizing for space (-Os), cut down the default move ratio.  */
@@ -94,10 +94,10 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM = 2, EXPAND_SUM,
 #endif
 
 /* If a clear memory operation would take CLEAR_RATIO or more simple
-   move-instruction sequences, we will do a clrstr or libcall instead.  */
+   move-instruction sequences, we will do a clrmem or libcall instead.  */
 
 #ifndef CLEAR_RATIO
-#if defined (HAVE_clrstrqi) || defined (HAVE_clrstrhi) || defined (HAVE_clrstrsi) || defined (HAVE_clrstrdi) || defined (HAVE_clrstrti)
+#if defined (HAVE_clrmemqi) || defined (HAVE_clrmemhi) || defined (HAVE_clrmemsi) || defined (HAVE_clrmemdi) || defined (HAVE_clrmemti)
 #define CLEAR_RATIO 2
 #else
 /* If we are optimizing for space, cut down the default clear ratio.  */

@@ -345,7 +345,7 @@
 ;;=========================================================================
 ;; move string (like memcpy)
 
-(define_expand "movstrhi"
+(define_expand "movmemhi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
 		   (match_operand:BLK 1 "memory_operand" ""))
 	      (use (match_operand:HI 2 "const_int_operand" ""))
@@ -376,7 +376,7 @@
   operands[1] = gen_rtx_MEM (BLKmode, addr1);
 }")
 
-(define_insn "*movstrqi_insn"
+(define_insn "*movmemqi_insn"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
 	(mem:BLK (match_operand:HI 1 "register_operand" "e")))
    (use (match_operand:QI 2 "register_operand" "r"))
@@ -392,7 +392,7 @@
   [(set_attr "length" "4")
    (set_attr "cc" "clobber")])
 
-(define_insn "*movstrhi"
+(define_insn "*movmemhi"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e,e"))
 	(mem:BLK (match_operand:HI 1 "register_operand" "e,e")))
    (use (match_operand:HI 2 "register_operand" "!w,d"))
@@ -420,7 +420,7 @@
 ;; =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0
 ;; memset (%0, 0, %1)
 
-(define_expand "clrstrhi"
+(define_expand "clrmemhi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
 		   (const_int 0))
 	      (use (match_operand:HI 1 "const_int_operand" ""))
@@ -448,7 +448,7 @@
   operands[0] = gen_rtx_MEM (BLKmode, addr0);
 }")
 
-(define_insn "*clrstrqi"
+(define_insn "*clrmemqi"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
 	(const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
@@ -462,7 +462,7 @@
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
 
-(define_insn "*clrstrhi"
+(define_insn "*clrmemhi"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e,e"))
 	(const_int 0))
    (use (match_operand:HI 1 "register_operand" "!w,d"))

@@ -68,7 +68,7 @@ test (long *buf3, char *buf4, char *buf6, int n)
 
   __builtin_memcpy (buf3, "aBcdEFghijklmnopq\0", 19);
 
-  /* These should be handled either by movstrendM or mempcpy
+  /* These should be handled either by movmemendM or mempcpy
      call.  */
   if (mempcpy ((char *) buf3 + 4, buf5, n + 6) != (char *) buf1 + 10
       || memcmp (buf1, "aBcdRSTUVWklmnopq\0", 19))
@@ -125,7 +125,7 @@ test (long *buf3, char *buf4, char *buf6, int n)
 
   __builtin_memcpy (buf4, "aBcdEFghijklmnopq\0", 19);
 
-  /* These should be handled either by movstrendM or mempcpy
+  /* These should be handled either by movmemendM or mempcpy
      call.  */
   if (mempcpy (buf4 + 4, buf7, n + 6) != buf2 + 10
       || memcmp (buf2, "aBcdRSTUVWklmnopq\0", 19))

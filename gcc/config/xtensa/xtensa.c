@@ -1464,7 +1464,7 @@ xtensa_expand_block_move (rtx *operands)
   operands[0] = validize_mem (dest);
   operands[1] = validize_mem (src);
 
-  emit_insn (gen_movstrsi_internal (operands[0], operands[1],
+  emit_insn (gen_movmemsi_internal (operands[0], operands[1],
 				    operands[2], operands[3]));
   return 1;
 }

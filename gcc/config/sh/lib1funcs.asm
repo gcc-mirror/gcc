@@ -710,128 +710,128 @@ LOCAL(lshrsi3_0):
 	ENDFUNC(GLOBAL(lshrsi3))
 #endif
 
-#ifdef L_movstr
+#ifdef L_movmem
 	.text
 ! done all the large groups, do the remainder
 
-! jump to movstr+
+! jump to movmem+
 done:
 	add	#64,r5
-	mova	GLOBAL(movstrSI0),r0
+	mova	GLOBAL(movmemSI0),r0
 	shll2	r6
 	add	r6,r0
 	jmp	@r0
 	add	#64,r4
 	.align	4
-	.global	GLOBAL(movstrSI64)
-	FUNC(GLOBAL(movstrSI64))
-GLOBAL(movstrSI64):
+	.global	GLOBAL(movmemSI64)
+	FUNC(GLOBAL(movmemSI64))
+GLOBAL(movmemSI64):
 	mov.l	@(60,r5),r0
 	mov.l	r0,@(60,r4)
-	.global	GLOBAL(movstrSI60)
-	FUNC(GLOBAL(movstrSI60))
-GLOBAL(movstrSI60):
+	.global	GLOBAL(movmemSI60)
+	FUNC(GLOBAL(movmemSI60))
+GLOBAL(movmemSI60):
 	mov.l	@(56,r5),r0
 	mov.l	r0,@(56,r4)
-	.global	GLOBAL(movstrSI56)
-	FUNC(GLOBAL(movstrSI56))
-GLOBAL(movstrSI56):
+	.global	GLOBAL(movmemSI56)
+	FUNC(GLOBAL(movmemSI56))
+GLOBAL(movmemSI56):
 	mov.l	@(52,r5),r0
 	mov.l	r0,@(52,r4)
-	.global	GLOBAL(movstrSI52)
-	FUNC(GLOBAL(movstrSI52))
-GLOBAL(movstrSI52):
+	.global	GLOBAL(movmemSI52)
+	FUNC(GLOBAL(movmemSI52))
+GLOBAL(movmemSI52):
 	mov.l	@(48,r5),r0
 	mov.l	r0,@(48,r4)
-	.global	GLOBAL(movstrSI48)
-	FUNC(GLOBAL(movstrSI48))
-GLOBAL(movstrSI48):
+	.global	GLOBAL(movmemSI48)
+	FUNC(GLOBAL(movmemSI48))
+GLOBAL(movmemSI48):
 	mov.l	@(44,r5),r0
 	mov.l	r0,@(44,r4)
-	.global	GLOBAL(movstrSI44)
-	FUNC(GLOBAL(movstrSI44))
-GLOBAL(movstrSI44):
+	.global	GLOBAL(movmemSI44)
+	FUNC(GLOBAL(movmemSI44))
+GLOBAL(movmemSI44):
 	mov.l	@(40,r5),r0
 	mov.l	r0,@(40,r4)
-	.global	GLOBAL(movstrSI40)
-	FUNC(GLOBAL(movstrSI40))
-GLOBAL(movstrSI40):
+	.global	GLOBAL(movmemSI40)
+	FUNC(GLOBAL(movmemSI40))
+GLOBAL(movmemSI40):
 	mov.l	@(36,r5),r0
 	mov.l	r0,@(36,r4)
-	.global	GLOBAL(movstrSI36)
-	FUNC(GLOBAL(movstrSI36))
-GLOBAL(movstrSI36):
+	.global	GLOBAL(movmemSI36)
+	FUNC(GLOBAL(movmemSI36))
+GLOBAL(movmemSI36):
 	mov.l	@(32,r5),r0
 	mov.l	r0,@(32,r4)
-	.global	GLOBAL(movstrSI32)
-	FUNC(GLOBAL(movstrSI32))
-GLOBAL(movstrSI32):
+	.global	GLOBAL(movmemSI32)
+	FUNC(GLOBAL(movmemSI32))
+GLOBAL(movmemSI32):
 	mov.l	@(28,r5),r0
 	mov.l	r0,@(28,r4)
-	.global	GLOBAL(movstrSI28)
-	FUNC(GLOBAL(movstrSI28))
-GLOBAL(movstrSI28):
+	.global	GLOBAL(movmemSI28)
+	FUNC(GLOBAL(movmemSI28))
+GLOBAL(movmemSI28):
 	mov.l	@(24,r5),r0
 	mov.l	r0,@(24,r4)
-	.global	GLOBAL(movstrSI24)
-	FUNC(GLOBAL(movstrSI24))
-GLOBAL(movstrSI24):
+	.global	GLOBAL(movmemSI24)
+	FUNC(GLOBAL(movmemSI24))
+GLOBAL(movmemSI24):
 	mov.l	@(20,r5),r0
 	mov.l	r0,@(20,r4)
-	.global	GLOBAL(movstrSI20)
-	FUNC(GLOBAL(movstrSI20))
-GLOBAL(movstrSI20):
+	.global	GLOBAL(movmemSI20)
+	FUNC(GLOBAL(movmemSI20))
+GLOBAL(movmemSI20):
 	mov.l	@(16,r5),r0
 	mov.l	r0,@(16,r4)
-	.global	GLOBAL(movstrSI16)
-	FUNC(GLOBAL(movstrSI16))
-GLOBAL(movstrSI16):
+	.global	GLOBAL(movmemSI16)
+	FUNC(GLOBAL(movmemSI16))
+GLOBAL(movmemSI16):
 	mov.l	@(12,r5),r0
 	mov.l	r0,@(12,r4)
-	.global	GLOBAL(movstrSI12)
-	FUNC(GLOBAL(movstrSI12))
-GLOBAL(movstrSI12):
+	.global	GLOBAL(movmemSI12)
+	FUNC(GLOBAL(movmemSI12))
+GLOBAL(movmemSI12):
 	mov.l	@(8,r5),r0
 	mov.l	r0,@(8,r4)
-	.global	GLOBAL(movstrSI8)
-	FUNC(GLOBAL(movstrSI8))
-GLOBAL(movstrSI8):
+	.global	GLOBAL(movmemSI8)
+	FUNC(GLOBAL(movmemSI8))
+GLOBAL(movmemSI8):
 	mov.l	@(4,r5),r0
 	mov.l	r0,@(4,r4)
-	.global	GLOBAL(movstrSI4)
-	FUNC(GLOBAL(movstrSI4))
-GLOBAL(movstrSI4):
+	.global	GLOBAL(movmemSI4)
+	FUNC(GLOBAL(movmemSI4))
+GLOBAL(movmemSI4):
 	mov.l	@(0,r5),r0
 	mov.l	r0,@(0,r4)
-	.global	GLOBAL(movstrSI0)
-	FUNC(GLOBAL(movstrSI0))
-GLOBAL(movstrSI0):
+	.global	GLOBAL(movmemSI0)
+	FUNC(GLOBAL(movmemSI0))
+GLOBAL(movmemSI0):
 	rts
 	nop
 
-	ENDFUNC(GLOBAL(movstrSI64))
-	ENDFUNC(GLOBAL(movstrSI60))
-	ENDFUNC(GLOBAL(movstrSI56))
-	ENDFUNC(GLOBAL(movstrSI52))
-	ENDFUNC(GLOBAL(movstrSI48))
-	ENDFUNC(GLOBAL(movstrSI44))
-	ENDFUNC(GLOBAL(movstrSI40))
-	ENDFUNC(GLOBAL(movstrSI36))
-	ENDFUNC(GLOBAL(movstrSI32))
-	ENDFUNC(GLOBAL(movstrSI28))
-	ENDFUNC(GLOBAL(movstrSI24))
-	ENDFUNC(GLOBAL(movstrSI20))
-	ENDFUNC(GLOBAL(movstrSI16))
-	ENDFUNC(GLOBAL(movstrSI12))
-	ENDFUNC(GLOBAL(movstrSI8))
-	ENDFUNC(GLOBAL(movstrSI4))
-	ENDFUNC(GLOBAL(movstrSI0))
+	ENDFUNC(GLOBAL(movmemSI64))
+	ENDFUNC(GLOBAL(movmemSI60))
+	ENDFUNC(GLOBAL(movmemSI56))
+	ENDFUNC(GLOBAL(movmemSI52))
+	ENDFUNC(GLOBAL(movmemSI48))
+	ENDFUNC(GLOBAL(movmemSI44))
+	ENDFUNC(GLOBAL(movmemSI40))
+	ENDFUNC(GLOBAL(movmemSI36))
+	ENDFUNC(GLOBAL(movmemSI32))
+	ENDFUNC(GLOBAL(movmemSI28))
+	ENDFUNC(GLOBAL(movmemSI24))
+	ENDFUNC(GLOBAL(movmemSI20))
+	ENDFUNC(GLOBAL(movmemSI16))
+	ENDFUNC(GLOBAL(movmemSI12))
+	ENDFUNC(GLOBAL(movmemSI8))
+	ENDFUNC(GLOBAL(movmemSI4))
+	ENDFUNC(GLOBAL(movmemSI0))
 
 	.align	4
 
-	.global	GLOBAL(movstr)
-	FUNC(GLOBAL(movstr))
-GLOBAL(movstr):
+	.global	GLOBAL(movmem)
+	FUNC(GLOBAL(movmem))
+GLOBAL(movmem):
 	mov.l	@(60,r5),r0
 	mov.l	r0,@(60,r4)
 
@@ -885,36 +885,36 @@ GLOBAL(movstr):
 	bf	done
 
 	add	#64,r5
-	bra	GLOBAL(movstr)
+	bra	GLOBAL(movmem)
 	add	#64,r4
 
-	FUNC(GLOBAL(movstr))
+	FUNC(GLOBAL(movmem))
 #endif
 
-#ifdef L_movstr_i4
+#ifdef L_movmem_i4
 	.text
-	.global	GLOBAL(movstr_i4_even)
-	.global	GLOBAL(movstr_i4_odd)
-	.global	GLOBAL(movstrSI12_i4)
+	.global	GLOBAL(movmem_i4_even)
+	.global	GLOBAL(movmem_i4_odd)
+	.global	GLOBAL(movmemSI12_i4)
 
-	FUNC(GLOBAL(movstr_i4_even))
-	FUNC(GLOBAL(movstr_i4_odd))
-	FUNC(GLOBAL(movstrSI12_i4))
+	FUNC(GLOBAL(movmem_i4_even))
+	FUNC(GLOBAL(movmem_i4_odd))
+	FUNC(GLOBAL(movmemSI12_i4))
 
 	.p2align	5
-L_movstr_2mod4_end:
+L_movmem_2mod4_end:
 	mov.l	r0,@(16,r4)
 	rts
 	mov.l	r1,@(20,r4)
 
 	.p2align	2
 
-GLOBAL(movstr_i4_even):
+GLOBAL(movmem_i4_even):
 	mov.l	@r5+,r0
-	bra	L_movstr_start_even
+	bra	L_movmem_start_even
 	mov.l	@r5+,r1
 
-GLOBAL(movstr_i4_odd):
+GLOBAL(movmem_i4_odd):
 	mov.l	@r5+,r1
 	add	#-4,r4
 	mov.l	@r5+,r2
@@ -922,29 +922,29 @@ GLOBAL(movstr_i4_odd):
 	mov.l	r1,@(4,r4)
 	mov.l	r2,@(8,r4)
 
-L_movstr_loop:
+L_movmem_loop:
 	mov.l	r3,@(12,r4)
 	dt	r6
 	mov.l	@r5+,r0
-	bt/s	L_movstr_2mod4_end
+	bt/s	L_movmem_2mod4_end
 	mov.l	@r5+,r1
 	add	#16,r4
-L_movstr_start_even:
+L_movmem_start_even:
 	mov.l	@r5+,r2
 	mov.l	@r5+,r3
 	mov.l	r0,@r4
 	dt	r6
 	mov.l	r1,@(4,r4)
-	bf/s	L_movstr_loop
+	bf/s	L_movmem_loop
 	mov.l	r2,@(8,r4)
 	rts
 	mov.l	r3,@(12,r4)
 
-	ENDFUNC(GLOBAL(movstr_i4_even))
-	ENDFUNC(GLOBAL(movstr_i4_odd))
+	ENDFUNC(GLOBAL(movmem_i4_even))
+	ENDFUNC(GLOBAL(movmem_i4_odd))
 
 	.p2align	4
-GLOBAL(movstrSI12_i4):
+GLOBAL(movmemSI12_i4):
 	mov.l	@r5,r0
 	mov.l	@(4,r5),r1
 	mov.l	@(8,r5),r2
@@ -953,7 +953,7 @@ GLOBAL(movstrSI12_i4):
 	rts
 	mov.l	r2,@(8,r4)
 
-	ENDFUNC(GLOBAL(movstrSI12_i4))
+	ENDFUNC(GLOBAL(movmemSI12_i4))
 #endif
 
 #ifdef L_mulsi3

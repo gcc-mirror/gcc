@@ -95,8 +95,8 @@ static int pa_can_combine_p (rtx, rtx, rtx, int, rtx, rtx, rtx);
 static int forward_branch_p (rtx);
 static int shadd_constant_p (int);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
-static int compute_movstr_length (rtx);
-static int compute_clrstr_length (rtx);
+static int compute_movmem_length (rtx);
+static int compute_clrmem_length (rtx);
 static bool pa_assemble_integer (rtx, unsigned int, int);
 static void remove_useless_addtr_insns (int);
 static void store_reg (int, HOST_WIDE_INT, int);
@@ -2802,7 +2802,7 @@ output_block_move (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
    count insns rather than emit them.  */
 
 static int
-compute_movstr_length (rtx insn)
+compute_movmem_length (rtx insn)
 {
   rtx pat = PATTERN (insn);
   unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 7), 0));
@@ -2944,7 +2944,7 @@ output_block_clear (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
    count insns rather than emit them.  */
 
 static int
-compute_clrstr_length (rtx insn)
+compute_clrmem_length (rtx insn)
 {
   rtx pat = PATTERN (insn);
   unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 4), 0));
@@ -4805,7 +4805,7 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
-    return compute_movstr_length (insn) - 4;
+    return compute_movmem_length (insn) - 4;
   /* Block clear pattern.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) == PARALLEL
@@ -4813,7 +4813,7 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
 	   && XEXP (XVECEXP (pat, 0, 0), 1) == const0_rtx
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode)
-    return compute_clrstr_length (insn) - 4;
+    return compute_clrmem_length (insn) - 4;
   /* Conditional branch with an unfilled delay slot.  */
   else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn))
     {

@@ -1014,7 +1014,7 @@ output_block_move (rtx *operands)
 #if 0
   rtx zoperands[10];
 #endif
-  static int movstrsi_label = 0;
+  static int movmemsi_label = 0;
   int i;
   rtx temp1 = operands[4];
   rtx alignrtx = operands[3];
@@ -1115,7 +1115,7 @@ output_block_move (rtx *operands)
 
   /* Generate number for unique label.  */
 
-  xoperands[3] = GEN_INT (movstrsi_label++);
+  xoperands[3] = GEN_INT (movmemsi_label++);
 
   /* Calculate the size of the chunks we will be trying to move first.  */
 
