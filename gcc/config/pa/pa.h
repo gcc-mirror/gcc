@@ -999,7 +999,7 @@ extern union tree_node *current_function_decl;
   /* fdc and fic only use registers for the address to flush,	\
      they do not accept integer displacements.  */ 		\
   addr = force_reg (SImode, (TRAMP));				\
-  emit_insn (gen_cacheflush (gen_rtx (MEM, Pmode, addr)));	\
+  emit_insn (gen_cacheflush (addr));				\
 }
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
