@@ -1065,7 +1065,7 @@ extern int fixuplabelno;
 
 /* GNU/Linux support.  */
 #define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
-%{!mnewlib: %{shared:-lc} %{!shared: %{pthread:-lpthread } \
+%{!mnewlib: %{shared:-lc} %{pthread:-lpthread } %{!shared: \
 %{profile:-lc_p} %{!profile:-lc}}}"
 
 #ifdef HAVE_LD_PIE
