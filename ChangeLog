@@ -1,3 +1,7 @@
+2000-08-04  David E. O'Brien  <obrien@FreeBSD.org>
+
+	* MAINTAINERS: Add self to Write After Approval list.
+
 2000-08-27  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config.guess: Import CVS version 1.152.
