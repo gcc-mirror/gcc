@@ -1,3 +1,10 @@
+2003-04-22  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (do_add): Change to return a bool indicating that the
+	result of the operation may be inexact due to loss of precision.
+	(do_multiply): Likewise.
+	(do_divide): Likewise.
+
 2003-04-22  Geoffrey Keating  <geoffk@apple.com>
 	    Loren James Rittle  <ljrittle@acm.org>
 
