@@ -1,3 +1,18 @@
+2002-12-09  Richard Henderson  <rth@redhat.com>
+
+	* target.h (gcc_target): Add cannot_force_const_mem.
+	* target-def.h (TARGET_CANNOT_FORCE_CONST_MEM): New.
+	(TARGET_INITIALIZER): Add it.
+	* varasm.c (force_const_mem): Fail if cannot_force_const_mem.
+	* expr.c (emit_move_insn): Be prepared for force_const_mem to fail.
+	* reload1.c (reload): Likewise.
+	* hooks.c (hook_bool_rtx_false): New.
+	* hooks.h: Declare it.
+
+	* config/i386/i386.c (ix86_cannot_force_const_mem): New.
+	(TARGET_CANNOT_FORCE_CONST_MEM): New.
+	(ix86_expand_move): Remove de-const-pooling hack.
+
 Mon Dec  9 21:33:38 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (dump_file): Fix order to match reality.
