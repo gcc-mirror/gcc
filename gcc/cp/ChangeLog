@@ -1,3 +1,17 @@
+2004-06-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15227
+	* parser.c (cp_parser_direct_declarator): Robustify.
+
+	PR c++/15877
+	* pt.c (tsubst_copy): Use decl_constant_value on enumeration
+	constants in non-dependent contexts.
+
+	PR c++/14211
+	PR c++/15076
+	* typeck.c (build_static_cast): Wrap casts in NON_LVALUE_EXPR when
+	necessary.
+
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/14791
