@@ -1,3 +1,8 @@
+2001-06-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* INSTALL/README: Update wrt. to the installation instructions now
+	residing in gcc/doc/install.texi.
+
 2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* README: Replace with a cut-down and updated version of gcc/README.
