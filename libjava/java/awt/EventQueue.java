@@ -116,7 +116,8 @@ public class EventQueue
 
     if (next_in != next_out)
       return queue[next_out];
-    else return null;
+    else
+      return null;
   }
 
   /**
@@ -142,7 +143,7 @@ public class EventQueue
       {
         AWTEvent qevt = queue[i];
         if (qevt.id == id)
-	  return qevt;
+          return qevt;
       }
     return null;
   }
@@ -159,7 +160,7 @@ public class EventQueue
     if (next != null)
       {
         next.postEvent(evt);
-	return;
+        return;
       }
     // FIXME: Security checks?
 
@@ -169,25 +170,25 @@ public class EventQueue
     while (i != next_in)
       {
         AWTEvent qevt = queue[i];
-	Object src;
-	if (qevt.id == evt.id
-	    && (src = qevt.getSource()) == evt.getSource()
-	    && src instanceof Component)
-	  {
-	    /* If there are, call coalesceEvents on the source component 
-	       to see if they can be combined. */
-	    Component srccmp = (Component) src;
-	    AWTEvent coalesced_evt = srccmp.coalesceEvents(qevt, evt);
-	    if (coalesced_evt != null)
-	      {
-	        /* Yes. Replace the existing event with the combined event. */
-	        queue[i] = coalesced_evt;
-		return;
-	      }
+        Object src;
+        if (qevt.id == evt.id
+            && (src = qevt.getSource()) == evt.getSource()
+            && src instanceof Component)
+          {
+            /* If there are, call coalesceEvents on the source component 
+               to see if they can be combined. */
+            Component srccmp = (Component) src;
+            AWTEvent coalesced_evt = srccmp.coalesceEvents(qevt, evt);
+            if (coalesced_evt != null)
+              {
+                /* Yes. Replace the existing event with the combined event. */
+                queue[i] = coalesced_evt;
+                return;
+              }
             break;
-	  }
-	if (++i == queue.length)
-	  i = 0;
+          }
+        if (++i == queue.length)
+          i = 0;
       }
 
     queue[next_in] = evt;    
@@ -198,15 +199,15 @@ public class EventQueue
       {
         /* Queue is full. Extend it. */
         AWTEvent[] oldQueue = queue;
-	queue = new AWTEvent[queue.length * 2];
+        queue = new AWTEvent[queue.length * 2];
 
-	int len = oldQueue.length - next_out;
-	System.arraycopy(oldQueue, next_out, queue, 0, len);
-	if (next_out != 0)
-	  System.arraycopy(oldQueue, 0, queue, len, next_out);
+        int len = oldQueue.length - next_out;
+        System.arraycopy(oldQueue, next_out, queue, 0, len);
+        if (next_out != 0)
+          System.arraycopy(oldQueue, 0, queue, len, next_out);
 
-	next_out = 0;
-	next_in = oldQueue.length;
+        next_out = 0;
+        next_in = oldQueue.length;
       }
     notify();
   }
@@ -237,8 +238,8 @@ public class EventQueue
 
     synchronized (current)
       {
-	eq.postEvent(ie);
-	current.wait();
+        eq.postEvent(ie);
+        current.wait();
       }
 
     Exception exception;
@@ -247,7 +248,9 @@ public class EventQueue
       throw new InvocationTargetException(exception);
   }
 
-  /** @since JDK1.2 */
+  /**
+   * @since 1.2
+   */
   public static void invokeLater(Runnable runnable)
   {
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
@@ -264,22 +267,26 @@ public class EventQueue
     return (Thread.currentThread() == eq.dispatchThread);
   }
 
-  /** Allows a custom EventQueue implementation to replace this one. 
-    * All pending events are transferred to the new queue. Calls to postEvent,
-    * getNextEvent, and peekEvent are forwarded to the pushed queue until it
-    * is removed with a pop().
-    *
-    * @exception NullPointerException if newEventQueue is null.
-    */
+  /**
+   * Allows a custom EventQueue implementation to replace this one. 
+   * All pending events are transferred to the new queue. Calls to postEvent,
+   * getNextEvent, and peekEvent are forwarded to the pushed queue until it
+   * is removed with a pop().
+   *
+   * @exception NullPointerException if newEventQueue is null.
+   */
   public synchronized void push(EventQueue newEventQueue)
   {
+    if (newEventQueue == null)
+      throw new NullPointerException ();
+
     int i = next_out;
     while (i != next_in)
       {
         newEventQueue.postEvent(queue[i]);
-	next_out = i;
-	if (++i == queue.length)
-	  i = 0;
+        next_out = i;
+        if (++i == queue.length)
+          i = 0;
       }
 
     next = newEventQueue;
@@ -301,19 +308,19 @@ public class EventQueue
     // occur.
     synchronized (prev)
       {
-	prev.next = null;
+        prev.next = null;
       }
 
     synchronized (this)
       {
-	int i = next_out;
-	while (i != next_in)
-	  {
+        int i = next_out;
+        while (i != next_in)
+          {
             prev.postEvent(queue[i]);
-	    next_out = i;
-	    if (++i == queue.length)
-	      i = 0;
-	  }
+            next_out = i;
+            if (++i == queue.length)
+              i = 0;
+          }
       }
   }
 
@@ -328,22 +335,22 @@ public class EventQueue
     if (evt instanceof ActiveEvent)
       {
         ActiveEvent active_evt = (ActiveEvent) evt;
-	active_evt.dispatch();
+        active_evt.dispatch();
       }
     else
       {
-	Object source = evt.getSource();
+        Object source = evt.getSource();
 
-	if (source instanceof Component)
-	  {
+        if (source instanceof Component)
+          {
             Component srccmp = (Component) source;
-	    srccmp.dispatchEvent(evt);
-	  }
-	else if (source instanceof MenuComponent)
-	  {
-	    MenuComponent srccmp = (MenuComponent) source;
-	    srccmp.dispatchEvent(evt);
-	  }
+            srccmp.dispatchEvent(evt);
+          }
+        else if (source instanceof MenuComponent)
+          {
+            MenuComponent srccmp = (MenuComponent) source;
+            srccmp.dispatchEvent(evt);
+          }
       }
   }
 

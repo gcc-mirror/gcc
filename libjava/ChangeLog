@@ -1,5 +1,36 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/Component.java
+	(eventTypeEnabled): New method.
+	(dispatchEventImpl): Moved checks for event to eventTypeEnabled.
+	* java/awt/Container.java
+	(changeSupport): New member variable.
+	(addPropertyChangeListener): New methods.
+	* java/awt/ContainerOrderFocusTraversalPolicy.java
+	(ContainerOrderFocusTraversalPolicy): Added comment.
+	(getComponentAfter): Throw exception, documentation added.
+	(getComponentBefore): Throw exception, documentation added.
+	(getFirstComponent): Throw exception, documentation added.
+	(getLastComponent): Throw exception, documentation added.
+	(getDefaultComponent): Throw exception, documentation added.
+	* java/awt/EventQueue.java: Reindented.
+	* java/awt/FocusTraversalPolicy.java:
+	(FocusTraversalPolicy): Added comment.
+	(getComponentAfter): Documentation added.
+	(getComponentBefore): Documentation added.
+	(getFirstComponent): Documentation added.
+	(getLastComponent): Documentation added.
+	(getDefaultComponent): Documentation added.
+	(getInitialComponent): Documentation added.
+	* java/awt/ScrollPane.java
+	(wheelScrollingEnabled): New member variable.
+	(ScrollPane): Initialize wheelScollingEnabled.
+	(eventTypeEnabled): New method.
+	(isWheelScrollingEnabled): New method.
+	(setWheelScrollingEnabled): New method.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(closed): New member variable.
 	(close): Use closed variable.

@@ -45,6 +45,7 @@ import java.awt.peer.ComponentPeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.LightweightPeer;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -89,6 +90,7 @@ public class Container extends Component
 
   /* Anything else is non-serializable, and should be declared "transient". */
   transient ContainerListener containerListener;
+  transient PropertyChangeSupport changeSupport; 
 
   /**
    * Default constructor for subclasses.
@@ -1125,12 +1127,27 @@ public class Container extends Component
       throw new NullPointerException ();
   }
   
-  public void addPropertyChangeListener(PropertyChangeListener l)
+  public void addPropertyChangeListener (PropertyChangeListener listener)
   {
+    if (listener == null)
+      return;
+
+    if (changeSupport == null)
+      changeSupport = new PropertyChangeSupport (this);
+
+    changeSupport.addPropertyChangeListener (listener);
   }
   
-  public void addPropertyChangeListener(String name, PropertyChangeListener l)
+  public void addPropertyChangeListener (String name,
+                                         PropertyChangeListener listener)
   {
+    if (listener == null)
+      return;
+    
+    if (changeSupport == null)
+      changeSupport = new PropertyChangeSupport (this);
+
+    changeSupport.addPropertyChangeListener (name, listener);
   }
 
   // Hidden helper methods.
