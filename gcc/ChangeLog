@@ -1,3 +1,16 @@
+2005-03-14  Daniel Berlin <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/20458
+
+	* tree-flow-inline.h (mark_call_clobbered): Don't fiddle
+	DECL_EXTERNAL on STRUCT_FIELD tags.
+	(clear_call_clobbered): Ditto.
+	* tree-ssa-operands.c (note_addressable): Make sure the original
+	variable doesn't slip into the addressable list if we have
+	subvars.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Look at STRUCT_FIELD
+	tags too.
+	
 2005-03-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/cppopts.texi (-fexec-charset): Add concept index entry.

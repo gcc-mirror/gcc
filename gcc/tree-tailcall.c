@@ -137,14 +137,15 @@ suitable_for_tail_opt_p (void)
   if (current_function_stdarg)
     return false;
 
-  /* No local variable should be call-clobbered.  We ignore any kind
-     of memory tag, as these are not real variables.  */
+  /* No local variable nor structure field should be call-clobbered.  We
+     ignore any kind of memory tag, as these are not real variables.  */
   for (i = 0; i < (int) VARRAY_ACTIVE_SIZE (referenced_vars); i++)
     {
       tree var = VARRAY_TREE (referenced_vars, i);
 
       if (!(TREE_STATIC (var) || DECL_EXTERNAL (var))
-	  && var_ann (var)->mem_tag_kind == NOT_A_TAG
+	  && (var_ann (var)->mem_tag_kind == NOT_A_TAG
+	      || var_ann (var)->mem_tag_kind == STRUCT_FIELD)
 	  && is_call_clobbered (var))
 	return false;
     }

@@ -1729,7 +1729,7 @@ note_addressable (tree var, stmt_ann_t s_ann)
       if (s_ann->addresses_taken == NULL)
 	s_ann->addresses_taken = BITMAP_GGC_ALLOC ();      
       
-      bitmap_set_bit (s_ann->addresses_taken, var_ann (var)->uid);
+
       if (var_can_have_subvars (var)
 	  && (svars = get_subvars_for_var (var)))
 	{
@@ -1737,6 +1737,8 @@ note_addressable (tree var, stmt_ann_t s_ann)
 	  for (sv = svars; sv; sv = sv->next)
 	    bitmap_set_bit (s_ann->addresses_taken, var_ann (sv->var)->uid);
 	}
+      else
+	bitmap_set_bit (s_ann->addresses_taken, var_ann (var)->uid);
     }
 }
 
