@@ -1,3 +1,8 @@
+2002-04-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.in: Enable alpha*-*-freebsd*.
+	* configure: Rebuilt.
+
 2002-03-30  Krister Walfridsson  <cato@df.lth.se>
 
 	* configure.in: Enable i*86-*-netbsdelf*.
