@@ -1,3 +1,7 @@
+Thu Oct 14 02:54:13 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fold-const.c (fold): Detect rotates built from BIT_XOR_EXPRs.
+
 Thu Oct 14 02:18:19 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* combine.c (simplify_logical): Recognize xor pattern that encodes

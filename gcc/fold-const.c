@@ -5097,10 +5097,14 @@ fold (expr)
       if (t1 != NULL_TREE)
 	return t1;
 
+     bit_rotate:
       /* (A << C1) | (A >> C2) if A is unsigned and C1+C2 is the size of A
 	 is a rotate of A by C1 bits.  */
       /* (A << B) | (A >> (Z - B)) if A is unsigned and Z is the size of A
 	 is a rotate of A by B bits.  */
+
+      /* Both transformations noted above also apply to when the inner
+	 operation is an XOR.  */
 
       code0 = TREE_CODE (arg0);
       code1 = TREE_CODE (arg1);
@@ -5170,7 +5174,9 @@ fold (expr)
 	return non_lvalue (convert (type, arg0));
       if (integer_all_onesp (arg1))
 	return fold (build1 (BIT_NOT_EXPR, type, arg0));
-      goto associate;
+      /* See if this can be simplified into a rotate first.  If that
+	 is unsuccessful we will jump to the association code.  */
+      goto bit_rotate;
 
     case BIT_AND_EXPR:
     bit_and:
