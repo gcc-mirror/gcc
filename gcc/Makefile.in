@@ -2814,6 +2814,20 @@ s-macro_list : $(GCC_PASSES)
 	$(SHELL) $(srcdir)/../move-if-change tmp-macro_list macro_list
 	$(STAMP) s-macro_list
 
+# The line below is supposed to avoid accidentally matching the
+# built-in suffix rule `.o:' to build fixincl out of fixincl.o.  You'd
+# expect fixincl to be newer than fixincl.o, such that this situation
+# would never come up.  As it turns out, if you use ccache with
+# CCACHE_HARDLINK enabled, the compiler doesn't embed the current
+# working directory in object files (-g absent, or -fno-working-dir
+# present), and build and host are the same, fixincl for the host will
+# build after fixincl for the build machine, getting a cache hit,
+# thereby updating the timestamp of fixincl.o in the the host tree.
+# Because of CCACHE_HARDLINK, this will also update the timestamp in
+# the build tree, and so fixincl in the build tree will appear to be
+# out of date.  Yuck.
+../$(build_subdir)/fixincludes/fixincl: ; @ :
+
 # Build fixed copies of system files.
 stmp-fixinc: gsyslimits.h macro_list \
   ../$(build_subdir)/fixincludes/fixincl \
