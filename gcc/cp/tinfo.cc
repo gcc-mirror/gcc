@@ -685,11 +685,13 @@ struct __class_type_info::__dyncast_result
   __sub_kind whole2dst;       // path from most derived object to target
   __sub_kind whole2src;       // path from most derived object to sub object
   __sub_kind dst2src;         // path from target to sub object
+  int whole_details;          // details of the whole class heirarchy
   
   public:
-  __dyncast_result ()
+  __dyncast_result (int details_ = __vmi_class_type_info::__flags_unknown_mask)
     :dst_ptr (NULL), whole2dst (__unknown),
-     whole2src (__unknown), dst2src (__unknown)
+     whole2src (__unknown), dst2src (__unknown),
+     whole_details (details_)
     {}
 };
 
@@ -869,6 +871,9 @@ __do_dyncast (ptrdiff_t src2dst,
               const void *src_ptr,
               __dyncast_result &__restrict result) const
 {
+  if (result.whole_details & __flags_unknown_mask)
+    result.whole_details = vmi_flags;
+  
   if (obj_ptr == src_ptr && *this == *src_type)
     {
       // The src object we started from. Indicate how we are accessible from
@@ -887,10 +892,11 @@ __do_dyncast (ptrdiff_t src2dst,
         result.dst2src = __not_contained;
       return false;
     }
+
   bool result_ambig = false;
   for (size_t i = vmi_base_count; i--;)
     {
-      __dyncast_result result2;
+      __dyncast_result result2 (result.whole_details);
       void const *base = obj_ptr;
       __sub_kind base_access = access_path;
       ptrdiff_t offset = vmi_bases[i].__offset ();
@@ -901,7 +907,17 @@ __do_dyncast (ptrdiff_t src2dst,
       base = convert_to_base (base, is_virtual, offset);
 
       if (!vmi_bases[i].__is_public_p ())
-        base_access = __sub_kind (base_access & ~__contained_public_mask);
+        {
+          if (src2dst == -2 &&
+              !(result.whole_details
+                & (non_diamond_repeat_mask | diamond_shaped_mask)))
+            // The hierarchy has no duplicate bases (which might ambiguate
+            // things) and where we started is not a public base of what we
+            // want (so it cannot be a downcast). There is nothing of interest
+            // hiding in a non-public base.
+            continue;
+          base_access = __sub_kind (base_access & ~__contained_public_mask);
+        }
       
       bool result2_ambig
           = vmi_bases[i].base->__do_dyncast (src2dst, base_access,
@@ -925,6 +941,10 @@ __do_dyncast (ptrdiff_t src2dst,
           result.dst_ptr = result2.dst_ptr;
           result.whole2dst = result2.whole2dst;
           result_ambig = result2_ambig;
+          if (result.dst_ptr && result.whole2src != __unknown
+              && !(vmi_flags & non_diamond_repeat_mask))
+            // Found dst and src and we don't have repeated bases.
+            return result_ambig;
         }
       else if (result.dst_ptr && result.dst_ptr == result2.dst_ptr)
         {
@@ -933,9 +953,8 @@ __do_dyncast (ptrdiff_t src2dst,
           result.whole2dst =
               __sub_kind (result.whole2dst | result2.whole2dst);
         }
-      else if ((result.dst_ptr && result2.dst_ptr)
-               || (result_ambig && result2.dst_ptr)
-               || (result2_ambig && result.dst_ptr))
+      else if ((result.dst_ptr != 0 | result_ambig)
+               && (result2.dst_ptr != 0 | result2_ambig))
         {
           // Found two different DST_TYPE bases, or a valid one and a set of
           // ambiguous ones, must disambiguate. See whether SRC_PTR is
@@ -948,11 +967,14 @@ __do_dyncast (ptrdiff_t src2dst,
           __sub_kind new_sub_kind = result2.dst2src;
           __sub_kind old_sub_kind = result.dst2src;
           
-          if (contained_nonvirtual_p (result.whole2src))
+          if (contained_p (result.whole2src)
+              && (!virtual_p (result.whole2src)
+                  || !(result.whole_details & diamond_shaped_mask)))
             {
-              // We already found SRC_PTR as a non-virtual base of most
-              // derived. Therefore if it is in either choice, it can only be
-              // in one of them, and we will already know.
+              // We already found SRC_PTR as a base of most derived, and
+              // either it was non-virtual, or the whole heirarchy is
+              // not-diamond shaped. Therefore if it is in either choice, it
+              // can only be in one of them, and we will already know.
               if (old_sub_kind == __unknown)
                 old_sub_kind = __not_contained;
               if (new_sub_kind == __unknown)
@@ -962,9 +984,11 @@ __do_dyncast (ptrdiff_t src2dst,
             {
               if (old_sub_kind >= __not_contained)
                 ;// already calculated
-              else if (contained_nonvirtual_p (new_sub_kind))
-                // Already found non-virtually inside the other choice,
-                // cannot be in this.
+              else if (contained_p (new_sub_kind)
+                       && (!virtual_p (new_sub_kind)
+                           || !(vmi_flags & diamond_shaped_mask)))
+                // Already found inside the other choice, and it was
+                // non-virtual or we are not diamond shaped.
                 old_sub_kind = __not_contained;
               else
                 old_sub_kind = dst_type->__find_public_src
@@ -972,9 +996,11 @@ __do_dyncast (ptrdiff_t src2dst,
           
               if (new_sub_kind >= __not_contained)
                 ;// already calculated
-              else if (contained_nonvirtual_p (old_sub_kind))
-                // Already found non-virtually inside the other choice,
-                // cannot be in this.
+              else if (contained_p (old_sub_kind)
+                       && (!virtual_p (old_sub_kind)
+                           || !(vmi_flags & diamond_shaped_mask)))
+                // Already found inside the other choice, and it was
+                // non-virtual or we are not diamond shaped.
                 new_sub_kind = __not_contained;
               else
                 new_sub_kind = dst_type->__find_public_src
@@ -1159,18 +1185,17 @@ __dynamic_cast (const void *src_ptr,    // object started from
   if (!result.dst_ptr)
     return NULL;
   if (contained_public_p (result.dst2src))
+    // Src is known to be a public base of dst.
     return const_cast <void *> (result.dst_ptr);
   if (contained_public_p (__class_type_info::__sub_kind (result.whole2src & result.whole2dst)))
-    // Found a valid cross cast
+    // Both src and dst are known to be public bases of whole. Found a valid
+    // cross cast.
     return const_cast <void *> (result.dst_ptr);
   if (contained_nonvirtual_p (result.whole2src))
-    // Found an invalid cross cast, which cannot also be a down cast
+    // Src is known to be a non-public nonvirtual base of whole, and not a
+    // base of dst. Found an invalid cross cast, which cannot also be a down
+    // cast
     return NULL;
-  #if 0 // FIXME: we need to discover this lazily
-  if (!(whole_type->details & __class_type_info::private_base_mask))
-    // whole type has no private bases
-    return const_cast <void *> (result.dst_ptr);
-  #endif
   if (result.dst2src == __class_type_info::__unknown)
     result.dst2src = dst_type->__find_public_src (src2dst, result.dst_ptr,
                                                   src_type, src_ptr);
