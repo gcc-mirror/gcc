@@ -4961,32 +4961,19 @@ instantiate_class_template (type)
     {
       tree friends;
 
-      DECL_FRIENDLIST (typedecl)
-	= tree_cons (TREE_PURPOSE (t), NULL_TREE, 
-		     DECL_FRIENDLIST (typedecl));
-
       for (friends = TREE_VALUE (t);
 	   friends != NULL_TREE;
 	   friends = TREE_CHAIN (friends))
-	{
-	  if (TREE_PURPOSE (friends) == error_mark_node)
-	    {
-	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		= tree_cons (error_mark_node, 
-			     tsubst_friend_function (TREE_VALUE (friends),
-						     args),
-			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
-	    }
-	  else
-	    {
-	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		= tree_cons (tsubst (TREE_PURPOSE (friends), args, 
-				     /*complain=*/1, NULL_TREE),
-			     NULL_TREE,
-			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
-
-	    }
-	}
+	if (TREE_PURPOSE (friends) == error_mark_node)
+	  add_friend (type, 
+		      tsubst_friend_function (TREE_VALUE (friends),
+					      args));
+	else
+	  add_friends (type, 
+		       tsubst_copy (TREE_PURPOSE (t), args,
+				    /*complain=*/1, NULL_TREE),
+		       tsubst (TREE_PURPOSE (friends), args,
+			       /*complain=*/1, NULL_TREE));
     }
 
   for (t = CLASSTYPE_FRIEND_CLASSES (pattern);

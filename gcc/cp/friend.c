@@ -27,9 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 
-static void add_friend PROTO((tree, tree));
-static void add_friends PROTO((tree, tree, tree));
-
 /* Friend data structures are described in cp-tree.h.  */
 
 /* Returns non-zero if SUPPLICANT is a friend of TYPE.  */
@@ -140,7 +137,7 @@ is_friend (type, supplicant)
 /* Add a new friend to the friends of the aggregate type TYPE.
    DECL is the FUNCTION_DECL of the friend being added.  */
 
-static void
+void
 add_friend (type, decl)
      tree type, decl;
 {
@@ -176,15 +173,16 @@ add_friend (type, decl)
   DECL_FRIENDLIST (typedecl)
     = tree_cons (DECL_NAME (decl), build_tree_list (error_mark_node, decl),
 		 DECL_FRIENDLIST (typedecl));
-  DECL_BEFRIENDING_CLASSES (decl) 
-    = tree_cons (NULL_TREE, type,
-		 DECL_BEFRIENDING_CLASSES (decl));
+  if (!uses_template_parms (type))
+    DECL_BEFRIENDING_CLASSES (decl) 
+      = tree_cons (NULL_TREE, type,
+		   DECL_BEFRIENDING_CLASSES (decl));
 }
 
 /* Declare that every member function NAME in FRIEND_TYPE
    (which may be NULL_TREE) is a friend of type TYPE.  */
 
-static void
+void
 add_friends (type, name, friend_type)
      tree type, name, friend_type;
 {
@@ -298,9 +296,10 @@ make_friend_class (type, friend_type)
 	= tree_cons (NULL_TREE, friend_type, CLASSTYPE_FRIEND_CLASSES (type));
       if (is_template_friend)
 	friend_type = TREE_TYPE (friend_type);
-      CLASSTYPE_BEFRIENDING_CLASSES (friend_type)
-	= tree_cons (NULL_TREE, type, 
-		     CLASSTYPE_BEFRIENDING_CLASSES (friend_type)); 
+      if (!uses_template_parms (type))
+	CLASSTYPE_BEFRIENDING_CLASSES (friend_type)
+	  = tree_cons (NULL_TREE, type, 
+		       CLASSTYPE_BEFRIENDING_CLASSES (friend_type)); 
     }
 }
 

@@ -3028,6 +3028,8 @@ extern void do_case				PROTO((tree, tree));
 /* friend.c */
 extern int is_friend				PROTO((tree, tree));
 extern void make_friend_class			PROTO((tree, tree));
+extern void add_friend                          PROTO((tree, tree));
+extern void add_friends                         PROTO((tree, tree, tree));
 extern tree do_friend				PROTO((tree, tree, tree, tree, enum overload_flags, tree, int));
 
 /* in init.c */
