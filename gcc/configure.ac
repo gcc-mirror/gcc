@@ -1295,15 +1295,24 @@ AC_SUBST(gthread_flags)
 # UNSORTED
 # --------
 
+use_cxa_atexit=no
 if test x$enable___cxa_atexit = xyes || \
    test x$enable___cxa_atexit = x -a x$default_use_cxa_atexit = xyes; then
-   AC_CHECK_FUNC(__cxa_atexit,
-	[AC_DEFINE(DEFAULT_USE_CXA_ATEXIT, 1,
-   	[Define if you want to use __cxa_atexit, rather than atexit, to
-   	register C++ destructors for local statics and global objects.
-   	This is essential for fully standards-compliant handling of
-   	destructors, but requires __cxa_atexit in libc.])],
-	echo "__cxa_atexit can't be enabled on this target")
+  if test x$host = x$target; then
+    AC_CHECK_FUNC(__cxa_atexit,[use_cxa_atexit=yes],
+	[echo "__cxa_atexit can't be enabled on this target"])
+  else
+    # We can't check for __cxa_atexit when building a cross, so assume
+    # it is available 
+    use_cxa_atexit=yes
+  fi
+  if test x$use_cxa_atexit = xyes; then
+    AC_DEFINE(DEFAULT_USE_CXA_ATEXIT, 1,
+      [Define if you want to use __cxa_atexit, rather than atexit, to
+      register C++ destructors for local statics and global objects.
+      This is essential for fully standards-compliant handling of
+      destructors, but requires __cxa_atexit in libc.])
+  fi
 fi
 
 # Look for a file containing extra machine modes.
