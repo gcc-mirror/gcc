@@ -983,7 +983,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   AC_MSG_RESULT($ac_c99_complex)
 
   if test x"$ac_c99_complex" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX_MATH)
+    AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX)
   fi
 
   # Check for the existence in <stdio.h> of vscanf, et. al.

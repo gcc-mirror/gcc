@@ -20,7 +20,7 @@
 #undef _GLIBCXX_USE_C99_MATH
 
 // Define if C99 complex math functions should be used in std::complex.
-#undef _GLIBCXX_USE_C99_COMPLEX_MATH
+#undef _GLIBCXX_USE_C99_COMPLEX
 
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCXX_USE_WCHAR_T

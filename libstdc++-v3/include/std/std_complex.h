@@ -561,7 +561,7 @@ namespace std
       return __s * sqrt(__x * __x + __y * __y);
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline float
   __complex_abs(__complex__ float __z) { return __builtin_cabsf(__z); }
 
@@ -588,7 +588,7 @@ namespace std
     __complex_arg(const complex<_Tp>& __z)
     { return  atan2(__z.imag(), __z.real()); }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline float
   __complex_arg(__complex__ float __z) { return __builtin_cargf(__z); }
 
@@ -666,7 +666,7 @@ namespace std
       return complex<_Tp>(cos(__x) * cosh(__y), -sin(__x) * sinh(__y));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_cos(__complex__ float __z) { return __builtin_ccosf(__z); }
 
@@ -696,7 +696,7 @@ namespace std
       return complex<_Tp>(cosh(__x) * cos(__y), sinh(__x) * sin(__y));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_cosh(__complex__ float __z) { return __builtin_ccoshf(__z); }
 
@@ -722,7 +722,7 @@ namespace std
     __complex_exp(const complex<_Tp>& __z)
     { return std::polar(exp(__z.real()), __z.imag()); }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_exp(__complex__ float __z) { return __builtin_cexpf(__z); }
 
@@ -782,7 +782,7 @@ namespace std
       return complex<_Tp>(sin(__x) * cosh(__y), cos(__x) * sinh(__y)); 
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_sin(__complex__ float __z) { return __builtin_csinf(__z); }
 
@@ -812,7 +812,7 @@ namespace std
       return complex<_Tp>(sinh(__x) * cos(__y), cosh(__x) * sin(__y));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_sinh(__complex__ float __z) { return __builtin_csinhf(__z); }      
 
@@ -856,7 +856,7 @@ namespace std
         }
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_sqrt(__complex__ float __z) { return __builtin_csqrtf(__z); }
 
@@ -883,7 +883,7 @@ namespace std
     __complex_tan(const complex<_Tp>& __z)
     { return std::sin(__z) / std::cos(__z); }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_tan(__complex__ float __z) { return __builtin_ctanf(__z); }
 
@@ -911,7 +911,7 @@ namespace std
     __complex_tanh(const complex<_Tp>& __z)
     { return std::sinh(__z) / std::cosh(__z); }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_tanh(__complex__ float __z) { return __builtin_ctanhf(__z); }
 
@@ -956,7 +956,7 @@ namespace std
     __complex_pow(const complex<_Tp>& __x, const complex<_Tp>& __y)
     { return __x == _Tp() ? _Tp() : std::exp(__y * std::log(__x)); }
 
-#if _GLIBCXX_USE_C99_COMPLEX_MATH
+#if _GLIBCXX_USE_C99_COMPLEX
   inline __complex__ float
   __complex_pow(__complex__ float __x, __complex__ float __y)
   { return __builtin_cpowf(__x, __y); }

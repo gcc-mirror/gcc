@@ -1,3 +1,12 @@
+2005-02-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_complex.h: _GLIBCXX_USE_C99_COMPLEX_MATH to
+	_GLIBCXX_USE_C99_COMPLEX.
+	* acinclude.m4: Same.
+	* acconfig.h: Same.
+	* configure: Regenerate.
+	* config.h.in: Same.
+	
 2005-02-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional (mem_fn): Avoid _T, badname on

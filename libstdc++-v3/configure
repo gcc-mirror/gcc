@@ -8633,7 +8633,7 @@ echo "${ECHO_T}$ac_c99_complex" >&6
 
   if test x"$ac_c99_complex" = x"yes"; then
     cat >>confdefs.h <<\_ACEOF
-#define _GLIBCXX_USE_C99_COMPLEX_MATH 1
+#define _GLIBCXX_USE_C99_COMPLEX 1
 _ACEOF
 
   fi
