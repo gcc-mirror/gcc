@@ -1,3 +1,7 @@
+Tue Sep 12 17:31:33 1995  Douglas Rupp  (drupp@cs.washington.edu)
+
+	* Make-lang.in (cc1plus) : Removed unnecessary $(exeext).
+
 Tue Aug 22 17:20:07 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* decl2.c (flag_new_for_scope):  Add a new mode that follows ANSI
