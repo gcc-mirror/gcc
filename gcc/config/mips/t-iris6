@@ -19,3 +19,9 @@ tp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '# define TFLOAT' >> tp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> tp-bit.c
 	echo '#endif' >> tp-bit.c
+
+$(T)irix-csr.o: $(srcdir)/config/mips/irix-csr.c $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	  -c -o $@ $<
+
+EXTRA_MULTILIB_PARTS += irix-csr.o
