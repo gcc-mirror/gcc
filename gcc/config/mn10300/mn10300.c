@@ -1051,11 +1051,15 @@ legitimize_address (x, oldx, mode)
       if (GET_CODE (y) == CONST)
         y = XEXP (y, 0);
 
-      regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
-      regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
-      regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
-      regx1 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
-      return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+      if (GET_CODE (y) == PLUS || GET_CODE (y) == MINUS)
+	{
+	  regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
+	  regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
+	  regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
+	  regx1 = force_reg (Pmode,
+			     gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
+	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+	}
     }
   return x;
 }
