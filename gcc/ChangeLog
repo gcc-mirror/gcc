@@ -1,3 +1,8 @@
+Fri Nov 12 08:04:45 1999  Catherine Moore  <clm@cygnus.com>
+
+	* defaults.h (ASM_OUTPUT_ALTERNATE_LABEL_NAME):  Use
+        ASM_OUTPUT_LABEL.
+
 Fri Nov 12 13:31:54 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* config/arm/arm.h (LEGITIMIZE_RELOAD_ADDRESS): Treat QImode
