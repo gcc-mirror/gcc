@@ -13,6 +13,20 @@
 	V_MAY_DEF instead of VDEF.
 	* gcc.dg/tree-ssa/20040517-1.c: Ditto.
 
+2004-06-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14211
+	* g++.dg/conversion/const1.C: New test.
+
+	PR c++/15076
+	* g++.dg/conversion/reinterpret1.C: New test.
+
+	PR c++/15877
+	* g++.dg/template/enum2.C: New test.
+
+	PR c++/15227
+	* g++.dg/template/error13.C: New test.
+
 2004-06-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14957
