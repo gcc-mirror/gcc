@@ -1,3 +1,8 @@
+2001-02-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (resolve_qualified_expression_name): Try to resolve as
+	an inner class access only if `decl' is a TYPE_DECL.
+
 2001-02-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (classdollar_identifier_node): Initialize.

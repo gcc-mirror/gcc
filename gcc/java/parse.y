@@ -9362,8 +9362,9 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      field_decl = lookup_field_wrapper (type,
 						 EXPR_WFL_NODE (qual_wfl));
 
-	      /* Maybe what we're trying to access an inner class. */
-	      if (!field_decl)
+	      /* Maybe what we're trying to access to is an inner
+		 class, only if decl is a TYPE_DECL. */
+	      if (!field_decl && TREE_CODE (decl) == TYPE_DECL)
 		{
 		  tree ptr, inner_decl;
 
