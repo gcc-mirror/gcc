@@ -1,3 +1,11 @@
+2001-12-28  Hans Bohem  <hans_boehm@hp.com>
+
+	* config/ia64/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
+	* config/ia64/unwind-ia64.c (uw_init_context_1): Redo sp, psp,
+	bsp setup.  Set pri_unat_loc to something reasonable.
+	(uw_install_context): Add missing cast.
+	(unw_access_gr): Fix off-by-1 indexing error.
+
 2001-12-28  Kazu Hirata  <kazu@hxi.com>
 
 	* except.c: Fix comment formatting.
