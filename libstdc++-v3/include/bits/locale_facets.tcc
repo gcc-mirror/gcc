@@ -939,7 +939,7 @@ namespace std
       if ((__flags & ios_base::boolalpha) == 0)
         {
           unsigned long __uv = __v;
-          _M_convert_int(__s, __io, __fill, 'u', char_type(), __uv);
+          __s = _M_convert_int(__s, __io, __fill, 'u', char_type(), __uv);
         }
       else
         {
@@ -957,7 +957,7 @@ namespace std
               __ws = __np.falsename().c_str();
               __len = __np.falsename().size();
             }
-	  _M_insert(__s, __io, __fill, __ws, __len); 
+	  __s = _M_insert(__s, __io, __fill, __ws, __len); 
 	}
       return __s;
     }
@@ -1015,8 +1015,8 @@ namespace std
       __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
       try 
 	{
-	  _M_convert_int(__s, __io, __fill, 'u', char_type(),
-			 reinterpret_cast<unsigned long>(__v));
+	  __s = _M_convert_int(__s, __io, __fill, 'u', char_type(),
+			       reinterpret_cast<unsigned long>(__v));
 	  __io.flags(__flags);
 	}
       catch (...) 

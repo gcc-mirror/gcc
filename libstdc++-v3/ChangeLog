@@ -1,4 +1,14 @@
 2002-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc (num_put::do_put(bool): Fix.
+	(num_put::do_put(void*)): Fix.
+	* testsuite/22_locale/num_put_members_char.cc (test02): Add.
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test02): Add.
+	* testsuite/22_locale/num_get_members_char.cc (test02): Add
+	long double, void, bool types.
+	* testsuite/22_locale/num_get_members_wchar_t.cc (test02): Add.
+	
+2002-01-15  Benjamin Kosnik  <bkoz@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* libmath/Makefile.am (LINK): Add --tag CC.

@@ -1,6 +1,6 @@
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -219,12 +219,80 @@ void test01()
 #endif
 }
 
+void test02()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check num_put works with other iterators besides streambuf
+  // output iterators. (As long as output_iterator requirements are met.)
+  typedef string::iterator iter_type;
+  typedef char_traits<char> traits;
+  typedef num_put<char, iter_type> num_put_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  const locale loc_c = locale::classic();
+  const string str("1798 Lady Elgin");
+  const string str2("0 true 0xbffff74c Mary Nisbet");
+  const string x(15, 'x'); // have to have allocated string!
+  string res;
+
+  ostringstream oss; 
+  oss.imbue(locale(loc_c, new num_put_type));
+
+  // Iterator advanced, state, output.
+  const num_put_type& tp = use_facet<num_put_type>(oss.getloc());
+
+  // 01 put(long)
+  // 02 put(long double)
+  // 03 put(bool)
+  // 04 put(void*)
+
+  // 01 put(long)
+  const long l = 1798;
+  res = x;
+  iter_type ret1 = tp.put(res.begin(), oss, ' ', l);
+  string sanity1(res.begin(), ret1);
+  VERIFY( res == "1798xxxxxxxxxxx" );
+  VERIFY( sanity1 == "1798" );
+
+  // 02 put(long double)
+  const long double ld = 1798;
+  res = x;
+  iter_type ret2 = tp.put(res.begin(), oss, ' ', ld);
+  string sanity2(res.begin(), ret2);
+  VERIFY( res == "1798xxxxxxxxxxx" );
+  VERIFY( sanity2 == "1798" );
+
+  // 03 put(bool)
+  bool b = 1;
+  res = x;
+  iter_type ret3 = tp.put(res.begin(), oss, ' ', b);
+  string sanity3(res.begin(), ret3);
+  VERIFY( res == "1xxxxxxxxxxxxxx" );
+  VERIFY( sanity3 == "1" );
+
+  b = 0;
+  res = x;
+  oss.setf(ios_base::boolalpha);
+  iter_type ret4 = tp.put(res.begin(), oss, ' ', b);
+  string sanity4(res.begin(), ret4);
+  VERIFY( res == "falsexxxxxxxxxx" );
+  VERIFY( sanity4 == "false" );
+
+  // 04 put(void*)
+  oss.clear();
+  const void* cv = &ld;
+  res = x;
+  oss.setf(ios_base::fixed, ios_base::floatfield);
+  iter_type ret5 = tp.put(res.begin(), oss, ' ', cv);
+  string sanity5(res.begin(), ret5);
+  VERIFY( !char_traits<char>::find(sanity5.c_str(), 'x', sanity5.size()) );
+}
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }
-
-
-
