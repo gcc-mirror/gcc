@@ -2139,8 +2139,10 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
   if (!high || tree_int_cst_equal (low, high))
     {
       /* If the simple case value is unreachable, ignore it.  */
-      if (tree_int_cst_compare (low, min_value) < 0
-	  || tree_int_cst_compare (low, max_value) > 0)
+      if ((TREE_CODE (min_value) == INTEGER_CST
+            && tree_int_cst_compare (low, min_value) < 0)
+	  || (TREE_CODE (max_value) == INTEGER_CST
+	      && tree_int_cst_compare (low, max_value) > 0))
 	return head;
       low = fold_convert (type, low);
       high = low;
@@ -2148,19 +2150,23 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
   else
     {
       /* If the entire case range is unreachable, ignore it.  */
-      if (tree_int_cst_compare (high, min_value) < 0
-	  || tree_int_cst_compare (low, max_value) > 0)
+      if ((TREE_CODE (min_value) == INTEGER_CST
+            && tree_int_cst_compare (high, min_value) < 0)
+	  || (TREE_CODE (max_value) == INTEGER_CST
+	      && tree_int_cst_compare (low, max_value) > 0))
 	return head;
 
       /* If the lower bound is less than the index type's minimum
 	 value, truncate the range bounds.  */
-      if (tree_int_cst_compare (low, min_value) < 0)
+      if (TREE_CODE (min_value) == INTEGER_CST
+            && tree_int_cst_compare (low, min_value) < 0)
 	low = min_value;
       low = fold_convert (type, low);
 
       /* If the upper bound is greater than the index type's maximum
 	 value, truncate the range bounds.  */
-      if (tree_int_cst_compare (high, max_value) > 0)
+      if (TREE_CODE (max_value) == INTEGER_CST
+	  && tree_int_cst_compare (high, max_value) > 0)
 	high = max_value;
       high = fold_convert (type, high);
     }

@@ -1,5 +1,10 @@
 2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* stmt.c (add_case_node): Make sure that we have integer
+	constant before calling tree_int_cst_compare.
+
+2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/17967
 	Revert:
 		* tree-cfg.c (remove_usless_stmts_cond):  Fold statement.
