@@ -107,26 +107,37 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   tree decl;								\
   int i;								\
 									\
-  for (i=1;*dtyps[i];i++) {						\
-	decl = IDENTIFIER_GLOBAL_VALUE (get_identifier (dtyps[i]));	\
-	if (decl) {							\
+  for (i=1;*dtyps[i];i++)						\
+    for (decl = syms; decl; decl = TREE_CHAIN(decl))			\
+	if ((TREE_CODE (decl) == TYPE_DECL) &&				\
+	    !strcmp(IDENTIFIER_POINTER(DECL_NAME(decl)), dtyps[i])) {	\
 		TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;		\
 		typevec[i] = TYPE_DEFINED;				\
 		dbxout_symbol (decl, 0);				\
+		break;							\
 	}								\
-  }									\
 									\
-  decl = IDENTIFIER_GLOBAL_VALUE (get_identifier ("long int"));		\
-  TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;				\
-  typevec[i] = TYPE_DEFINED;						\
-  fprintf(asmfile,".stab \"long int:t%d=3\",0,0x%x,0,0\n",i++,N_LSYM);	\
-  TREE_ASM_WRITTEN (decl) = 1;						\
+  for (decl = syms; decl; decl = TREE_CHAIN(decl))			\
+    if ((TREE_CODE (decl) == TYPE_DECL) &&				\
+	!strcmp(IDENTIFIER_POINTER(DECL_NAME(decl)),"long int")) {	\
+      TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;			\
+      typevec[i] = TYPE_DEFINED;					\
+      fprintf(asmfile,".stab \"long int:t%d=3\",0,0x%x,0,0\n",		\
+		i++,N_LSYM);						\
+      TREE_ASM_WRITTEN (decl) = 1;					\
+      break;								\
+    }									\
 									\
-  decl = IDENTIFIER_GLOBAL_VALUE (get_identifier ("long unsigned int"));\
-  TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;				\
-  typevec[i] = TYPE_DEFINED;						\
-  fprintf(asmfile,".stab \"long unsigned int:t%d=17\",0,0x%x,0,0\n",i++,N_LSYM);\
-  TREE_ASM_WRITTEN (decl) = 1;						\
+  for (decl = syms; decl; decl = TREE_CHAIN(decl))			\
+    if ((TREE_CODE (decl) == TYPE_DECL) && !strcmp(			\
+	IDENTIFIER_POINTER(DECL_NAME(decl)),"long unsigned int")) {	\
+      TYPE_SYMTAB_ADDRESS (TREE_TYPE (decl)) = i;			\
+      typevec[i] = TYPE_DEFINED;					\
+      fprintf(asmfile,".stab \"long unsigned int:t%d=17\",0,0x%x,0,0\n",\
+		i++,N_LSYM);						\
+      TREE_ASM_WRITTEN (decl) = 1;					\
+      break;								\
+    }									\
   next_type_number = i; };
 
 /* Alliant dbx doesn't understand split names... */
