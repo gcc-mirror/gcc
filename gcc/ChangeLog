@@ -1,3 +1,7 @@
+2004-02-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (adddi3_internal_2): Remove superfluous %s.
+
 2004-01-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Restructure and update.
