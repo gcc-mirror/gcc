@@ -1,3 +1,13 @@
+2002-03-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLEANUP_DECL): Remove.
+	(CLEANUP_EXPR): Likewise.
+	* decl.c (destroy_local_var): Simplify.
+	(maybe_build_cleanup): Tidy.
+	* dump.c (cp_dump_tree): Remove handling of CLEANUP_STMT.
+	* semantics.c (cp_expand_stmt): Likewise.
+	* cp/tree.c (cp_statement_code_p): Likewise.
+
 2002-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5857
