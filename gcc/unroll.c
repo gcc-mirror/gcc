@@ -1262,11 +1262,16 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   insn = NEXT_INSN (copy_start);
   while (insn != safety_label)
     {
-      /* ??? We can't delete a NOTE_INSN_DELETED_LABEL unless we fix the
-	 DECL_RTL field of the associated LABEL_DECL to point to (one of)
-	 the new copies of the label.  Otherwise, we hit an abort in
-	 dwarfout.c/dwarf2out.c.  */
+      /* ??? Don't delete named code labels.  They will be deleted when the
+	 jump that references them is deleted.  Otherwise, we end up deleting
+	 them twice, which causes them to completely disappear instead of turn
+	 into NOTE_INSN_DELETED_LABEL notes.  This in turn causes aborts in
+	 dwarfout.c/dwarf2out.c.  We could perhaps fix the dwarf*out.c files
+	 to handle deleted labels instead.  Or perhaps fix DECL_RTL of the
+	 associated LABEL_DECL to point to one of the new label instances.  */
+      /* ??? Likewise, we can't delete a NOTE_INSN_DELETED_LABEL note.  */
       if (insn != start_label
+	  && ! (GET_CODE (insn) == CODE_LABEL && LABEL_NAME (insn))
 	  && ! (GET_CODE (insn) == NOTE
 		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))
 	insn = delete_insn (insn);
