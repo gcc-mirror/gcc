@@ -48,11 +48,11 @@ void test05()
 
   // 2
   oss.str(empty);
-  iterator_type os_it05 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+  iterator_type os_it05 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
 				      date, date + traits::length(date));
   wstring result5 = oss.str();
   VERIFY( result5 == L"Sunday, the second of April");
-  iterator_type os_it06 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+  iterator_type os_it06 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
 				      date_ex, date_ex + traits::length(date));
   wstring result6 = oss.str();
   VERIFY( result6 != result5 );

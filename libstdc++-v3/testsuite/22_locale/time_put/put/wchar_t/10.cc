@@ -1,6 +1,6 @@
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ void test10()
 
   // 02 char format
   res = x;
-  iter_type ret2 = tp.put(res.begin(), oss, ' ', &time_sanity, 'A');
+  iter_type ret2 = tp.put(res.begin(), oss, L' ', &time_sanity, 'A');
   wstring sanity2(res.begin(), ret2);
   VERIFY( err == goodbit );
   VERIFY( res == L"Tuesdayxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" );

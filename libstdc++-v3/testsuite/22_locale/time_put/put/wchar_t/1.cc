@@ -48,21 +48,21 @@ void test01()
   // put(iter_type s, ios_base& str, char_type fill, const tm* t,
   //	 char format, char modifier = 0) const;
   oss.str(empty);
-  iterator_type os_it01 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
+  iterator_type os_it01 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'a');
   wstring result1 = oss.str();
   VERIFY( result1 == L"Sun" );
 
   oss.str(empty);
-  iterator_type os_it21 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  iterator_type os_it21 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x');
   wstring result21 = oss.str(); // "04/04/71"
   oss.str(empty);
-  iterator_type os_it22 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  iterator_type os_it22 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X');
   wstring result22 = oss.str(); // "12:00:00"
   oss.str(empty);
-  iterator_type os_it31 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  iterator_type os_it31 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x', 'E');
   wstring result31 = oss.str(); // "04/04/71"
   oss.str(empty);
-  iterator_type os_it32 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  iterator_type os_it32 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X', 'E');
   wstring result32 = oss.str(); // "12:00:00"
 }
 

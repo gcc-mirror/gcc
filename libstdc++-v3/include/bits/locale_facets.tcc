@@ -658,7 +658,6 @@ namespace std
       else
         {
 	  // Parse bool values as alphanumeric.
-	  typedef char_traits<_CharT>                     __traits_type;
 	  typedef typename numpunct<_CharT>::__cache_type __cache_type;
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
@@ -955,10 +954,9 @@ namespace std
 	    __new[0] = __cs[0];
 	    __new[1] = __cs[1];
 	  }
-      _CharT* __p;
-      __p = std::__add_grouping(__new + __off, __sep, __grouping,
-				__grouping_size, __cs + __off,
-				__cs + __len);
+      _CharT* __p = std::__add_grouping(__new + __off, __sep, __grouping,
+					__grouping_size, __cs + __off,
+					__cs + __len);
       __len = __p - __new;
     }
 
@@ -1024,10 +1022,10 @@ namespace std
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 282. What types does numpunct grouping refer to?
       // Add grouping, if necessary.
-      _CharT* __p2;
       const int __declen = __p ? __p - __cs : __len;
-      __p2 = std::__add_grouping(__new, __sep, __grouping, __grouping_size,
-				 __cs, __cs + __declen);
+      _CharT* __p2 = std::__add_grouping(__new, __sep, __grouping,
+					 __grouping_size,
+					 __cs, __cs + __declen);
 
       // Tack on decimal part.
       int __newlen = __p2 - __new;
@@ -2278,7 +2276,6 @@ namespace std
       return std::__write(__s, __res, char_traits<char_type>::length(__res));
     }
 
-
   // Generic version does nothing.
   template<typename _CharT>
     int
@@ -2361,7 +2358,7 @@ namespace std
 	      __len = __res + 1;
 	      __c = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							  * __len));
-	      __res = _M_transform(__c, __p, __res + 1);
+	      __res = _M_transform(__c, __p, __len);
 	    }
 
 	  __ret.append(__c, __res);

@@ -48,11 +48,11 @@ void test06()
   oss.imbue(loc_de);
   const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
 
-  iterator_type os_it07 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+  iterator_type os_it07 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
 				      date, date + traits::length(date));
   wstring result7 = oss.str();
   VERIFY( result7 == L"Sonntag, the second of April");
-  iterator_type os_it08 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+  iterator_type os_it08 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
 				      date_ex, date_ex + traits::length(date));
   wstring result8 = oss.str();
   VERIFY( result8 != result7 );
