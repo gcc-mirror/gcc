@@ -1,3 +1,10 @@
+2001-04-28  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/doxygen/run_doxygen:  Minor tweaks.
+	* docs/doxygen/style.css:  New file.
+	* docs/doxygen/user.cfg.in:  Update using "doxygen -u" to get the
+	latest parameters available.  Use style.css.
+
 2001-04-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/mainpage.doxy: New.
