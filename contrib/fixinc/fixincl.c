@@ -73,27 +73,28 @@ struct test_desc
     regex_t *pTestRegex;
   };
 
-typedef enum
-  {
-    PATCH_SED, PATCH_SHELL
-  }
-tePatch;
-
 typedef struct patch_desc tPatchDesc;
+
+#define FD_MACH_ONLY      0x0000
+#define FD_MACH_IFNOT     0x0001
+#define FD_SKIP_TEST      0x8000
 
 typedef struct fix_desc tFixDesc;
 struct fix_desc
   {
-    const char *pzFixName;
-    const char *pzFileList;
-    regex_t *pListRegex;
-    int testCt;
-    tTestDesc *pTestDesc;
-    const char **papzPatchArgs;
+    const char*   pzFixName;     /* Name of the fix */
+    const char*   pzFileList;    /* List of files it applies to */
+    const char**  papzMachs;     /* List of machine/os-es it applies to */
+    regex_t*      pListRegex;
+    int           testCt;
+    int           fdFlags;
+    tTestDesc*    pTestDesc;
+    const char**  papzPatchArgs;
   };
 
-char *pzDestDir = (char *) NULL;
-char *pzSrcDir = (char *) NULL;
+char *pzDestDir   = (char *) NULL;
+char *pzSrcDir    = (char *) NULL;
+char   zMachine[] = TARGET_MACHINE;
 
 pid_t chainHead = (pid_t) - 1;
 
@@ -127,16 +128,16 @@ main (argc, argv)
   if (argc != 1)
     {
       if (argc != 2)
-	{
-	  fputs ("fixincl ERROR:  files specified on command line (not stdin)\n",
-		 stderr);
-	  exit (EXIT_FAILURE);
-	}
+        {
+          fputs ("fixincl ERROR:  files specified on command line (not stdin)\n",
+                 stderr);
+          exit (EXIT_FAILURE);
+        }
 
       if (strcmp (argv[1], "-v") == 0)
-	{
-	  fputs ("$Id: fixincl.c,v 1.3 1998/06/02 07:00:12 korbb Exp $\n", stderr);
-	  exit (EXIT_SUCCESS);
+        {
+          fputs ("$Id: fixincl.c,v 1.4 1998/08/05 10:20:11 korbb Exp $\n", stderr);
+          exit (EXIT_SUCCESS);
         }
 
       freopen (argv[1], "r", stdin);
@@ -146,7 +147,7 @@ main (argc, argv)
   if (pzDestDir == (char *) NULL)
     {
       fprintf (stderr, "fixincl ERROR:  %s cannot find destination dir\n"
-	       "\t(`DESTDIR' must be an environment variable)\n", *argv);
+               "\t(`DESTDIR' must be an environment variable)\n", *argv);
       exit (EXIT_FAILURE);
     }
 
@@ -154,7 +155,7 @@ main (argc, argv)
   if (pzSrcDir == (char *) NULL)
     {
       fprintf (stderr, "fixincl ERROR:  %s cannot find source dir\n"
-	       "\t(`SRCDIR' must be an environment variable)\n", *argv);
+               "\t(`SRCDIR' must be an environment variable)\n", *argv);
       exit (EXIT_FAILURE);
     }
 
@@ -172,36 +173,36 @@ main (argc, argv)
        *  parent to skip forward?  Pipes and files behave differently.)
        */
       for (fileNameCt = 0, pzBuf = zFileNameBuf;
-	   (fileNameCt < 128)
-	   && (pzBuf
-	       < (zFileNameBuf + sizeof (zFileNameBuf) - MAXPATHLEN));
-	)
-	{
+           (fileNameCt < 128)
+           && (pzBuf
+               < (zFileNameBuf + sizeof (zFileNameBuf) - MAXPATHLEN));
+        )
+        {
 
-	  if (fgets (pzBuf, MAXPATHLEN, stdin) == (char *) NULL)
-	    break;
-	  while (isspace (*pzBuf))
-	    pzBuf++;
-	  apzNames[fileNameCt++] = pzBuf;
-	  pzBuf += strlen (pzBuf);
-	  while (isspace (pzBuf[-1]))
-	    pzBuf--;
-	  *pzBuf++ = '\0';
-	}
+          if (fgets (pzBuf, MAXPATHLEN, stdin) == (char *) NULL)
+            break;
+          while (isspace (*pzBuf))
+            pzBuf++;
+          apzNames[fileNameCt++] = pzBuf;
+          pzBuf += strlen (pzBuf);
+          while (isspace (pzBuf[-1]))
+            pzBuf--;
+          *pzBuf++ = '\0';
+        }
 
       if (fileNameCt == 0)
-	return EXIT_SUCCESS;
+        return EXIT_SUCCESS;
 
       child = fork ();
       if (child == NULLPROCESS)
-	break;
+        break;
 
       if (child == NOPROCESS)
-	{
-	  fprintf (stderr, "Error %d (%s) forking in main\n",
-		   errno, strerror (errno));
-	  exit (EXIT_FAILURE);
-	}
+        {
+          fprintf (stderr, "Error %d (%s) forking in main\n",
+                   errno, strerror (errno));
+          exit (EXIT_FAILURE);
+        }
 
       waitpid (child, (int *) NULL, 0);
     }
@@ -219,21 +220,21 @@ main (argc, argv)
       char *pzFile = apzNames[loopCt];
 
       if (access (pzFile, R_OK) != 0)
-	{
-	  int erno = errno;
-	  fprintf (stderr, "Cannot access %s from %s\n\terror %d (%s)\n",
-		   pzFile, getcwd ((char *) NULL, MAXPATHLEN),
-		   erno, strerror (erno));
-	}
+        {
+          int erno = errno;
+          fprintf (stderr, "Cannot access %s from %s\n\terror %d (%s)\n",
+                   pzFile, getcwd ((char *) NULL, MAXPATHLEN),
+                   erno, strerror (erno));
+        }
       else if (pzData = loadFile (pzFile),
-	       (pzData != (char *) NULL))
-	{
+               (pzData != (char *) NULL))
+        {
 
-	  if (strstr (pzData, zGnuLib) == (char *) NULL)
-	    process (pzData, pzDestDir, pzFile);
+          if (strstr (pzData, zGnuLib) == (char *) NULL)
+            process (pzData, pzDestDir, pzFile);
 
-	  free ((void *) pzData);
-	}
+          free ((void *) pzData);
+        }
     }
 
   return EXIT_SUCCESS;
@@ -251,9 +252,9 @@ loadFile (pzFile)
     struct stat stbf;
     if (stat (pzFile, &stbf) != 0)
       {
-	fprintf (stderr, "error %d (%s) stat-ing %s\n",
-		 errno, strerror (errno), pzFile);
-	return (char *) NULL;
+        fprintf (stderr, "error %d (%s) stat-ing %s\n",
+                 errno, strerror (errno), pzFile);
+        return (char *) NULL;
       }
     fileSize = stbf.st_size;
   }
@@ -264,7 +265,7 @@ loadFile (pzFile)
   if (pzDta == (char *) NULL)
     {
       fprintf (stderr, "error:  could not malloc %d bytes\n",
-	       fileSize);
+               fileSize);
       exit (EXIT_FAILURE);
     }
 
@@ -275,33 +276,33 @@ loadFile (pzFile)
 
     if (fp == (FILE *) NULL)
       {
-	fprintf (stderr, "error %d (%s) opening %s\n", errno,
-		 strerror (errno), pzFile);
-	free ((void *) pzDta);
-	return (char *) NULL;
+        fprintf (stderr, "error %d (%s) opening %s\n", errno,
+                 strerror (errno), pzFile);
+        free ((void *) pzDta);
+        return (char *) NULL;
       }
 
     do
       {
-	size_t sizeRead = fread ((void *) readPtr, 1, sizeLeft, fp);
+        size_t sizeRead = fread ((void *) readPtr, 1, sizeLeft, fp);
 
-	if (sizeRead == 0)
-	  {
-	    if (feof (fp))
-	      break;
+        if (sizeRead == 0)
+          {
+            if (feof (fp))
+              break;
 
-	    if (ferror (fp))
-	      {
-		fprintf (stderr, "error %d (%s) reading %s\n", errno,
-			 strerror (errno), pzFile);
-		free ((void *) pzDta);
-		fclose (fp);
-		return (char *) NULL;
-	      }
-	  }
+            if (ferror (fp))
+              {
+                fprintf (stderr, "error %d (%s) reading %s\n", errno,
+                         strerror (errno), pzFile);
+                free ((void *) pzDta);
+                fclose (fp);
+                return (char *) NULL;
+              }
+          }
 
-	readPtr += sizeRead;
-	sizeLeft -= sizeRead;
+        readPtr += sizeRead;
+        sizeLeft -= sizeRead;
       }
     while (sizeLeft != 0);
 
@@ -316,7 +317,7 @@ void
 runCompiles ()
 {
   tSCC zBadComp[] = "fixincl ERROR:  cannot compile %s regex for %s\n"
-  "\texpr = `%s'\n" "\terror %s\n";
+    "\texpr = `%s'\n" "\terror %s\n";
   tFixDesc *pFD = fixDescList;
   int fixCt = FIX_COUNT;
   tTestDesc *pTD;
@@ -328,61 +329,95 @@ runCompiles ()
   if (pRegex == (regex_t *) NULL)
     {
       fprintf (stderr, "fixincl ERROR:  cannot allocate %d bytes for regex\n",
-	       REGEX_COUNT * sizeof (regex_t));
+               REGEX_COUNT * sizeof (regex_t));
       exit (EXIT_FAILURE);
     }
 
   re_set_syntax (RE_SYNTAX_EGREP);
   pzErr = re_compile_pattern (zInclQuote, strlen (zInclQuote),
-			      &inclQuoteRegex);
+                              &inclQuoteRegex);
   if (pzErr != (char *) NULL)
     {
       fprintf (stderr, zBadComp, "quoted include", "runCompiles",
-	       zInclQuote, pzErr);
+               zInclQuote, pzErr);
       exit (EXIT_FAILURE);
     }
 
   /*
    *  FOR every fixup, ...
    */
-  for (;;)
+  do
     {
       pTD = pFD->pTestDesc;
       tstCt = pFD->testCt;
+
+      if (pFD->papzMachs != (const char**)NULL) {
+        const char** papzMachs = pFD->papzMachs;
+        char*        pz = zFileNameBuf;
+        char*        pzSep = "";
+        tCC*         pzIfTrue;
+        tCC*         pzIfFalse;
+        tSCC         zSkip[] = "skip";
+        tSCC         zRun[]  = "run";
+
+        sprintf( pz, "case %s in\n", zMachine );
+        pz += strlen( pz );
+
+        if (pFD->fdFlags & FD_MACH_IFNOT) {
+          pzIfTrue  = zSkip;
+          pzIfFalse = zRun;
+        } else {
+          pzIfTrue  = zRun;
+          pzIfFalse = zSkip;
+        }
+
+        for (;;) {
+          const char* pzMach = *(papzMachs++);
+          if (pzMach == (const char*)NULL)
+            break;
+          sprintf( pz, "%s  %s", pzSep, pzMach );
+          pz += strlen( pz );
+          pzSep = " | \\\n";
+        }
+        sprintf( pz, " )\n    echo %s ;;\n  * )\n    echo %s ;;\nesac",
+                 pzIfTrue, pzIfFalse );
+        pz = runShell( zFileNameBuf );
+        if (*pz == 's') {
+          pFD->fdFlags |= FD_SKIP_TEST;
+          continue;
+        }
+      }
 
       /*
        *  FOR every test for the fixup, ...
        */
       while (--tstCt >= 0)
-	{
-	  switch (pTD->type)
-	    {
-	    case TT_EGREP:
-	    case TT_NEGREP:
-	      if (--reCt < 0)
-		{
-		  fputs ("out of RE's\n", stderr);
-		  exit (EXIT_FAILURE);
-		}
+        {
+          switch (pTD->type)
+            {
+            case TT_EGREP:
+            case TT_NEGREP:
+              if (--reCt < 0)
+                {
+                  fputs ("out of RE's\n", stderr);
+                  exit (EXIT_FAILURE);
+                }
 
-	      pTD->pTestRegex = pRegex++;
-	      pzErr = re_compile_pattern (pTD->pzTest,
-					  strlen (pTD->pzTest),
-					  pTD->pTestRegex);
-	      if (pzErr != (char *) NULL)
-		{
-		  fprintf (stderr, zBadComp, "select test", pFD->pzFixName,
-			   pTD->pzTest, pzErr);
-		  exit (EXIT_FAILURE);
-		}
-	    }
-	  pTD++;
-	}
-
-      if (--fixCt <= 0)
-	break;
-      pFD++;
+              pTD->pTestRegex = pRegex++;
+              pzErr = re_compile_pattern (pTD->pzTest,
+                                          strlen (pTD->pzTest),
+                                          pTD->pTestRegex);
+              if (pzErr != (char *) NULL)
+                {
+                  fprintf (stderr, zBadComp, "select test", pFD->pzFixName,
+                           pTD->pzTest, pzErr);
+                  exit (EXIT_FAILURE);
+                }
+            }
+          pTD++;
+        }
     }
+  while (pFD++, --fixCt > 0);
 }
 
 
@@ -405,23 +440,23 @@ createFile (pzFile)
       struct stat stbf;
 
       while (pzDir != (char *) NULL)
-	{
-	  *pzDir = NUL;
-	  if (stat (fname, &stbf) < 0)
-	    {
-	      mkdir (fname, S_IFDIR | S_IRWXU | S_IRGRP | S_IXGRP
-		     | S_IROTH | S_IXOTH);
-	    }
+        {
+          *pzDir = NUL;
+          if (stat (fname, &stbf) < 0)
+            {
+              mkdir (fname, S_IFDIR | S_IRWXU | S_IRGRP | S_IXGRP
+                     | S_IROTH | S_IXOTH);
+            }
 
-	  *pzDir = '/';
-	  pzDir = strchr (pzDir + 1, '/');
-	}
+          *pzDir = '/';
+          pzDir = strchr (pzDir + 1, '/');
+        }
       fd = open (fname, O_WRONLY | O_CREAT);
     }
   if (fd < 0)
     {
       fprintf (stderr, "Error %d (%s) creating %s\n",
-	       errno, strerror (errno), fname);
+               errno, strerror (errno), fname);
       exit (EXIT_FAILURE);
     }
   fprintf (stderr, "Fixed:  %s\n", pzFile);
@@ -510,7 +545,7 @@ extractQuotedFiles (pzDta, pzFile, pMatch)
        *  Skip forward to the included file name
        */
       while (isspace (*pzInclQuot))
-	pzInclQuot++;
+        pzInclQuot++;
       while (isspace (*++pzInclQuot));
       pzInclQuot += sizeof ("include") - 1;
       while (*pzInclQuot++ != '"');
@@ -526,7 +561,7 @@ extractQuotedFiles (pzDta, pzFile, pMatch)
        *  Append to the directory the relative path of the desired file
        */
       while (*pzInclQuot != '"')
-	putc (*pzInclQuot++, stdout);
+        putc (*pzInclQuot++, stdout);
 
       /*
        *  Now print the destination directory appended with the relative
@@ -534,7 +569,7 @@ extractQuotedFiles (pzDta, pzFile, pMatch)
        */
       printf ("  %s/%s/", pzDestDir, pzFile);
       while (*pzDirEnd != '"')
-	putc (*pzDirEnd++, stdout);
+        putc (*pzDirEnd++, stdout);
 
       /*
        *  End of entry
@@ -545,7 +580,7 @@ extractQuotedFiles (pzDta, pzFile, pMatch)
        *  Find the next entry
        */
       if (regexec (&inclQuoteRegex, pzInclQuot, 1, pMatch, 0) != 0)
-	break;
+        break;
     }
 }
 
@@ -600,29 +635,32 @@ process (pzDta, pzDir, pzFile)
       int tstCt;
       tSuccess egrepRes;
 
+      if (pFD->fdFlags & FD_SKIP_TEST)
+        continue;
+
       /*
        *  IF there is a file name restriction,
        *  THEN ensure the current file name matches one in the pattern
        */
       if (pFD->pzFileList != (char *) NULL)
-	{
-	  const char *pzFil = pzFile;
-	  const char *pzScn = pFD->pzFileList;
-	  size_t nmLen;
+        {
+          const char *pzFil = pzFile;
+          const char *pzScn = pFD->pzFileList;
+          size_t nmLen;
 
-	  while ((pzFil[0] == '.') && (pzFil[1] == '/'))
-	    pzFil += 2;
-	  nmLen = strlen (pzFil);
+          while ((pzFil[0] == '.') && (pzFil[1] == '/'))
+            pzFil += 2;
+          nmLen = strlen (pzFil);
 
-	  for (;;)
-	    {
-	      pzScn = strstr (pzScn + 1, pzFil);
-	      if (pzScn == (char *) NULL)
-		goto nextFix;
-	      if ((pzScn[-1] == '|') && (pzScn[nmLen] == '|'))
-		break;
-	    }
-	}
+          for (;;)
+            {
+              pzScn = strstr (pzScn + 1, pzFil);
+              if (pzScn == (char *) NULL)
+                goto nextFix;
+              if ((pzScn[-1] == '|') && (pzScn[nmLen] == '|'))
+                break;
+            }
+        }
 
       egrepRes = PROBLEM;
 
@@ -631,86 +669,86 @@ process (pzDta, pzDir, pzFile)
        *  THEN we always run the fixup
        */
       for (pTD = pFD->pTestDesc, tstCt = pFD->testCt;
-	   tstCt-- > 0;
-	   pTD++)
-	{
-	  switch (pTD->type)
-	    {
-	    case TT_TEST:
-	      /*
-	       *  IF *any* of the shell tests fail,
-	       *  THEN do not process the fix.
-	       */
-	      if (!SUCCESSFUL (testTest (pTD, pzFile)))
-		goto nextFix;
-	      break;
+           tstCt-- > 0;
+           pTD++)
+        {
+          switch (pTD->type)
+            {
+            case TT_TEST:
+              /*
+               *  IF *any* of the shell tests fail,
+               *  THEN do not process the fix.
+               */
+              if (!SUCCESSFUL (testTest (pTD, pzFile)))
+                goto nextFix;
+              break;
 
-	    case TT_EGREP:
-	      /*
-	       *  IF       we have not had a successful egrep test
-	       *    *AND*  this test does not pass,
-	       *  THEN mark the egrep test as failing.  It starts
-	       *       out as a "PROBLEM", meaning that if we do not
-	       *       encounter any egrep tests, then we will let it pass.
-	       */
-	      if ((!SUCCESSFUL (egrepRes))
-		  && (!SUCCESSFUL (egrepTest (pzDta, pTD))))
+            case TT_EGREP:
+              /*
+               *  IF       we have not had a successful egrep test
+               *    *AND*  this test does not pass,
+               *  THEN mark the egrep test as failing.  It starts
+               *       out as a "PROBLEM", meaning that if we do not
+               *       encounter any egrep tests, then we will let it pass.
+               */
+              if ((!SUCCESSFUL (egrepRes))
+                  && (!SUCCESSFUL (egrepTest (pzDta, pTD))))
 
-		egrepRes = FAILURE;
+                egrepRes = FAILURE;
 
-	      break;
+              break;
 
-	    case TT_NEGREP:
-	      /*
-	       *  IF *any* of the negative egrep tests fail,
-	       *  THEN do not process the fix.
-	       */
-	      if (SUCCESSFUL (egrepTest (pzDta, pTD)))
-		goto nextFix;
-	      break;
-	    }
-	}
+            case TT_NEGREP:
+              /*
+               *  IF *any* of the negative egrep tests fail,
+               *  THEN do not process the fix.
+               */
+              if (SUCCESSFUL (egrepTest (pzDta, pTD)))
+                goto nextFix;
+              break;
+            }
+        }
 
       /*
        *  IF there were no egrep tests *OR* at least one passed, ...
        */
       if (!FAILED (egrepRes))
-	{
-	  fprintf (stderr, "Applying %-32s to %s\n",
-		   pFD->pzFixName, pzFile);
+        {
+          fprintf (stderr, "Applying %-32s to %s\n",
+                   pFD->pzFixName, pzFile);
 
-	  if (fdp.readFd == -1)
-	    {
-	      fdp.readFd = open (pzFile, O_RDONLY);
-	      if (fdp.readFd < 0)
-		{
-		  fprintf (stderr, "Error %d (%s) opening %s\n", errno,
-			   strerror (errno), pzFile);
-		  exit (EXIT_FAILURE);
-		}
-	    }
+          if (fdp.readFd == -1)
+            {
+              fdp.readFd = open (pzFile, O_RDONLY);
+              if (fdp.readFd < 0)
+                {
+                  fprintf (stderr, "Error %d (%s) opening %s\n", errno,
+                           strerror (errno), pzFile);
+                  exit (EXIT_FAILURE);
+                }
+            }
 
-	  for (;;)
-	    {
-	      int newFd = chainOpen (fdp.readFd,
-				     (tpChar *) pFD->papzPatchArgs,
-				     (chainHead == -1)
-				     ? &chainHead : (pid_t *) NULL);
-	      if (newFd != -1)
-		{
-		  fdp.readFd = newFd;
-		  break;
-		}
+          for (;;)
+            {
+              int newFd = chainOpen (fdp.readFd,
+                                     (tpChar *) pFD->papzPatchArgs,
+                                     (chainHead == -1)
+                                     ? &chainHead : (pid_t *) NULL);
+              if (newFd != -1)
+                {
+                  fdp.readFd = newFd;
+                  break;
+                }
 
-	      fprintf (stderr, "Error %d (%s) starting filter process "
-		       "for %s\n", errno, strerror (errno),
-		       pFD->pzFixName);
+              fprintf (stderr, "Error %d (%s) starting filter process "
+                       "for %s\n", errno, strerror (errno),
+                       pFD->pzFixName);
 
-	      if (errno != EAGAIN)
-		exit (EXIT_FAILURE);
-	      sleep (1);
-	    }
-	}
+              if (errno != EAGAIN)
+                exit (EXIT_FAILURE);
+              sleep (1);
+            }
+        }
 
     nextFix:;
     }
@@ -729,40 +767,40 @@ process (pzDta, pzDir, pzFile)
 
     for (;;)
       {
-	int ch;
+        int ch;
 
-	ch = getc (inFp);
-	if (ch == EOF)
-	  break;
+        ch = getc (inFp);
+        if (ch == EOF)
+          break;
 
-	if (oFp != (FILE *) NULL)
-	  putc (ch, oFp);
+        if (oFp != (FILE *) NULL)
+          putc (ch, oFp);
 
-	else if (ch != *pzCmp)
-	  {
-	    oFp = createFile (pzFile);
-	    if (pzCmp != pzDta)
-	      {
-		char c = *pzCmp;
-		*pzCmp = NUL;
-		fputs (pzDta, oFp);
-		*pzCmp = c;
-	      }
-	    putc (ch, oFp);
+        else if (ch != *pzCmp)
+          {
+            oFp = createFile (pzFile);
+            if (pzCmp != pzDta)
+              {
+                char c = *pzCmp;
+                *pzCmp = NUL;
+                fputs (pzDta, oFp);
+                *pzCmp = c;
+              }
+            putc (ch, oFp);
 
-	  }
-	else
-	  pzCmp++;
+          }
+        else
+          pzCmp++;
       }
 
     if (oFp != (FILE *) NULL)
       {
-	regmatch_t match;
+        regmatch_t match;
 
-	fchmod (fileno (oFp), S_IRUSR | S_IRGRP | S_IROTH);
-	fclose (oFp);
-	if (regexec (&inclQuoteRegex, pzDta, 1, &match, 0) == 0)
-	  extractQuotedFiles (pzDta, pzFile, &match);
+        fchmod (fileno (oFp), S_IRUSR | S_IRGRP | S_IROTH);
+        fclose (oFp);
+        if (regexec (&inclQuoteRegex, pzDta, 1, &match, 0) == 0)
+          extractQuotedFiles (pzDta, pzFile, &match);
       }
 
     fclose (inFp);

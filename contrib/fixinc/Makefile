@@ -34,7 +34,7 @@ regex.o: regex.c
 	-$(CC) -g -DSTDC_HEADERS=1 -c regex.c
 
 fixincl.o : fixincl.x fixincl.c
-	-$(CC) $(CFLAGS) -o $@ -c fixincl.c
+	-$(CC) $(CFLAGS) '-DTARGET_MACHINE="$(TARGET)"' -o $@ -c fixincl.c
 
 server.o : server.c server.h
 	-$(CC) $(CFLAGS) -o $@ -c server.c
@@ -71,7 +71,7 @@ install: $(TARGETS)
 		echo cp fixincl.sh $(DESTDIR)/fixinc.sh ; \
 		cp fixincl.sh $(DESTDIR)/fixinc.sh ; \
 		chmod 555 $(DESTDIR)/fixinc.sh ; \
-    	rm -f $(DESTDIR)/fixincl ; \
+	rm -f $(DESTDIR)/fixincl ; \
 		echo cp fixincl $(DESTDIR) ; \
 		cp fixincl $(DESTDIR) ; \
 		chmod 555 $(DESTDIR)/fixincl ; \

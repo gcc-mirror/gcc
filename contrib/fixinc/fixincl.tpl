@@ -33,6 +33,20 @@ tSCC z[=hackname _cap=]List[] =[=
 
   _ELSE =]
 #define z[=hackname _cap=]List (char*)NULL[=
+  _ENDIF "files _exist" =]
+/*
+ *  Machine/OS name selection pattern
+ */[=
+
+  _IF mach _exist=]
+tSCC* apz[=hackname _cap=]Machs[] = {[=
+    _FOR mach =]
+        [=mach _str=],[=
+    /mach=]
+        (const char*)NULL };[=
+
+  _ELSE =]
+#define apz[=hackname _cap=]Machs (const char**)NULL[=
   _ENDIF "files _exist" =][=
 
   _IF exesel _exist=]
@@ -143,9 +157,13 @@ tFixDesc fixDescList[ [=_eval fix _count =] ] = {[=
 
 
 _FOR fix ",\n" =]
-  {  z[=hackname _cap=]Name,    z[=hackname _cap=]List, (regex_t*)NULL,
-     [=hackname  _up=]_TEST_CT, a[=hackname _cap=]Tests,
-     apz[=hackname _cap=]Patch }[=
+  {  z[=hackname _cap=]Name,    z[=hackname _cap=]List,
+     apz[=hackname _cap=]Machs, (regex_t*)NULL,
+     [=hackname  _up=]_TEST_CT, [=
+       _IF not_machine _exist =]FD_MACH_IFNOT[=
+       _ELSE                  =]FD_MACH_ONLY[=
+       _ENDIF =],
+     a[=hackname _cap=]Tests,   apz[=hackname _cap=]Patch }[=
 
 /fix=]
 };

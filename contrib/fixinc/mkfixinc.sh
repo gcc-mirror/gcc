@@ -113,7 +113,7 @@ then
     exit 0
 fi
 
-echo $MAKE install DESTDIR=`dirname $dest`
-$MAKE install DESTDIR=`dirname $dest`
+echo $MAKE install DESTDIR=`dirname $dest` TARGET=$machine
+$MAKE install DESTDIR=`dirname $dest` TARGET=$machine
 
 exit 1
