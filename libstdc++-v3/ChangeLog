@@ -5,7 +5,7 @@
 
 	libstdc++/944
 	* include/bits/istream.tcc (istream::sentry::sentry()): Set
-	failbit if the tate of the stream is not good.
+	failbit if the state of the stream is not good.
 	* testsuite/27_io/istream_sentry.cc (test02): Add test.
 	* testsuite/27_io/istream_manip.cc (test01): Modify.
 
