@@ -342,15 +342,31 @@ struct tree_common GTY(())
 #define TREE_CHECK(T, CODE) __extension__				\
 ({  const tree __t = (T);						\
     if (TREE_CODE (__t) != (CODE))					\
-      tree_check_failed (__t, (CODE), __FILE__, __LINE__, __FUNCTION__); \
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 	\
+			 (CODE), 0);					\
+    __t; })
+
+#define TREE_NOT_CHECK(T, CODE) __extension__				\
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) == (CODE))					\
+      tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
+			     (CODE), 0);				\
     __t; })
 
 #define TREE_CHECK2(T, CODE1, CODE2) __extension__			\
 ({  const tree __t = (T);						\
     if (TREE_CODE (__t) != (CODE1)					\
 	&& TREE_CODE (__t) != (CODE2))					\
-      tree_check2_failed (__t, (CODE1), (CODE2), __FILE__, __LINE__,	\
-			  __FUNCTION__);				\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
+ 			 (CODE1), (CODE2), 0);				\
+    __t; })
+
+#define TREE_NOT_CHECK2(T, CODE1, CODE2) __extension__			\
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) == (CODE1)					\
+	|| TREE_CODE (__t) == (CODE2))					\
+      tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
+			     (CODE1), (CODE2), 0);			\
     __t; })
 
 #define TREE_CHECK3(T, CODE1, CODE2, CODE3) __extension__		\
@@ -358,8 +374,17 @@ struct tree_common GTY(())
     if (TREE_CODE (__t) != (CODE1)					\
 	&& TREE_CODE (__t) != (CODE2)					\
 	&& TREE_CODE (__t) != (CODE3))					\
-      tree_check3_failed (__t, (CODE1), (CODE2), (CODE3), __FILE__,	\
-			  __LINE__, __FUNCTION__);			\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
+			     (CODE1), (CODE2), (CODE3), 0);		\
+    __t; })
+
+#define TREE_NOT_CHECK3(T, CODE1, CODE2, CODE3) __extension__		\
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) == (CODE1)					\
+	|| TREE_CODE (__t) == (CODE2)					\
+	|| TREE_CODE (__t) == (CODE3))					\
+      tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
+			     (CODE1), (CODE2), (CODE3), 0);		\
     __t; })
 
 #define TREE_CHECK4(T, CODE1, CODE2, CODE3, CODE4) __extension__	\
@@ -368,8 +393,18 @@ struct tree_common GTY(())
 	&& TREE_CODE (__t) != (CODE2)					\
 	&& TREE_CODE (__t) != (CODE3)					\
 	&& TREE_CODE (__t) != (CODE4))					\
-      tree_check4_failed (__t, (CODE1), (CODE2), (CODE3), (CODE4),	\
-			   __FILE__, __LINE__, __FUNCTION__);		\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
+			     (CODE1), (CODE2), (CODE3), (CODE4), 0);	\
+    __t; })
+
+#define NON_TREE_CHECK4(T, CODE1, CODE2, CODE3, CODE4) __extension__	\
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) == (CODE1)					\
+	|| TREE_CODE (__t) == (CODE2)					\
+	|| TREE_CODE (__t) == (CODE3)					\
+	|| TREE_CODE (__t) == (CODE4))					\
+      tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
+			     (CODE1), (CODE2), (CODE3), (CODE4), 0);	\
     __t; })
 
 #define TREE_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) __extension__	\
@@ -379,8 +414,19 @@ struct tree_common GTY(())
 	&& TREE_CODE (__t) != (CODE3)					\
 	&& TREE_CODE (__t) != (CODE4)					\
 	&& TREE_CODE (__t) != (CODE5))					\
-      tree_check5_failed (__t, (CODE1), (CODE2), (CODE3), (CODE4),	\
-			  (CODE5), __FILE__, __LINE__, __FUNCTION__);	\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
+			     (CODE1), (CODE2), (CODE3), (CODE4), (CODE5), 0);\
+    __t; })
+
+#define TREE_NOT_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) __extension__ \
+({  const tree __t = (T);						\
+    if (TREE_CODE (__t) == (CODE1)					\
+	|| TREE_CODE (__t) == (CODE2)					\
+	|| TREE_CODE (__t) == (CODE3)					\
+	|| TREE_CODE (__t) == (CODE4)					\
+	|| TREE_CODE (__t) == (CODE5))					\
+      tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
+			     (CODE1), (CODE2), (CODE3), (CODE4), (CODE5), 0);\
     __t; })
 
 #define TREE_CLASS_CHECK(T, CLASS) __extension__			\
@@ -412,8 +458,8 @@ struct tree_common GTY(())
 (*({const tree __t = (T);						\
     const int __i = (I);						\
     if (TREE_CODE (__t) != TREE_VEC)					\
-      tree_check_failed (__t, TREE_VEC,					\
-			 __FILE__, __LINE__, __FUNCTION__);		\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
+  			 TREE_VEC, 0);					\
     if (__i < 0 || __i >= __t->vec.length)				\
       tree_vec_elt_check_failed (__i, __t->vec.length,			\
 				 __FILE__, __LINE__, __FUNCTION__);	\
@@ -423,8 +469,8 @@ struct tree_common GTY(())
 (*({const tree __t = t;							\
     const int __i = (i);						\
     if (TREE_CODE (__t) != PHI_NODE)					\
-      tree_check_failed (__t, PHI_NODE,					\
-			 __FILE__, __LINE__, __FUNCTION__);		\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
+			 PHI_NODE, 0);					\
     if (__i < 0 || __i >= __t->phi.capacity)				\
       phi_node_elt_check_failed (__i, __t->phi.num_args,		\
 				 __FILE__, __LINE__, __FUNCTION__);	\
@@ -443,7 +489,7 @@ struct tree_common GTY(())
 (*({const tree __t = (T);						\
     const int __i = (I);						\
     if (TREE_CODE (__t) != CODE)					\
-      tree_check_failed (__t, CODE, __FILE__, __LINE__, __FUNCTION__);	\
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, (CODE), 0);\
     if (__i < 0 || __i >= TREE_CODE_LENGTH (CODE))			\
       tree_operand_check_failed (__i, (CODE),				\
 				 __FILE__, __LINE__, __FUNCTION__);	\
@@ -454,30 +500,16 @@ struct tree_common GTY(())
  ({const tree __t = (T);						\
     const int __i = (I);						\
     if (TREE_CODE (__t) != (CODE))					\
-      tree_check_failed (__t, (CODE), __FILE__, __LINE__, __FUNCTION__); \
+      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, (CODE), 0); \
     if (__i < 0 || __i >= TREE_CODE_LENGTH ((CODE)))			\
       tree_operand_check_failed (__i, (CODE),				\
 				 __FILE__, __LINE__, __FUNCTION__);	\
     &__t->exp.operands[__i]; }))
 
-extern void tree_check_failed (const tree, enum tree_code,
-			       const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
-extern void tree_check2_failed (const tree, enum tree_code, enum tree_code,
-			       const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
-extern void tree_check3_failed (const tree, enum tree_code, enum tree_code,
-				enum tree_code, const char *, int,
-				const char *)
-    ATTRIBUTE_NORETURN;
-extern void tree_check4_failed (const tree, enum tree_code, enum tree_code,
-				enum tree_code, enum tree_code,
-				const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
-extern void tree_check5_failed (const tree, enum tree_code, enum tree_code,
-				enum tree_code, enum tree_code, enum tree_code,
-				const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
+extern void tree_check_failed (const tree, const char *, int, const char *,
+			       ...) ATTRIBUTE_NORETURN;
+extern void tree_not_check_failed (const tree, const char *, int, const char *,
+				   ...) ATTRIBUTE_NORETURN;
 extern void tree_class_check_failed (const tree, int,
 				     const char *, int, const char *)
     ATTRIBUTE_NORETURN;
@@ -494,10 +526,15 @@ extern void tree_operand_check_failed (int, enum tree_code,
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
 
 #define TREE_CHECK(T, CODE)			(T)
+#define TREE_NOT_CHECK(T, CODE)			(T)
 #define TREE_CHECK2(T, CODE1, CODE2)		(T)
+#define TREE_NOT_CHECK2(T, CODE1, CODE2)	(T)
 #define TREE_CHECK3(T, CODE1, CODE2, CODE3)	(T)
+#define TREE_NOT_CHECK3(T, CODE1, CODE2, CODE3)	(T)
 #define TREE_CHECK4(T, CODE1, CODE2, CODE3, CODE4) (T)
+#define TREE_NOT_CHECK4(T, CODE1, CODE2, CODE3, CODE4) (T)
 #define TREE_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) (T)
+#define TREE_NOT_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) (T)
 #define TREE_CLASS_CHECK(T, CODE)		(T)
 #define EXPR_CHECK(T)				(T)
 #define NON_TYPE_CHECK(T)			(T)

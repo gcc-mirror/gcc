@@ -1,5 +1,12 @@
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK,
+	VAR_FUNCTION_OR_PARM_DECL_CHECK, RECORD_OR_UNION_TYPE_CHECK,
+	BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK): Use appropriate
+	TREE_CHECK macro.
+
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (struct deferred_access): Move to ...
 	* semantics.c (struct deferred_access): ... here. Adjust.
 	(deferred_access_stack): Make a VEC(deferred_access),
