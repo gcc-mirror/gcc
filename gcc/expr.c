@@ -3858,23 +3858,36 @@ expand_assignment (tree to, tree from, int want_value)
 	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	}
 
-      if (mode1 == VOIDmode && !want_value
-	  && bitpos + bitsize <= BITS_PER_WORD
-	  && bitsize < BITS_PER_WORD
-	  && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD
-	  && !TREE_SIDE_EFFECTS (to)
-	  && TREE_CODE (TREE_TYPE (from)) == INTEGER_TYPE
-	  && TREE_CODE_CLASS (TREE_CODE (from)) == '2'
-	  && operand_equal_p (to, TREE_OPERAND (from, 0), 0))
+      while (mode1 == VOIDmode && !want_value
+	     && bitpos + bitsize <= BITS_PER_WORD
+	     && bitsize < BITS_PER_WORD
+	     && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD
+	     && !TREE_SIDE_EFFECTS (to)
+	     && !TREE_THIS_VOLATILE (to))
 	{
+	  tree src, op0, op1;
 	  rtx value;
 	  HOST_WIDE_INT count = bitpos;
+	  optab binop;
+
+	  src = from;
+	  STRIP_NOPS (src);
+	  if (TREE_CODE (TREE_TYPE (src)) != INTEGER_TYPE
+	      || TREE_CODE_CLASS (TREE_CODE (src)) != '2')
+	    break;
+
+	  op0 = TREE_OPERAND (src, 0);
+	  op1 = TREE_OPERAND (src, 1);
+	  STRIP_NOPS (op0);
+
+	  if (! operand_equal_p (to, op0, 0))
+	    break;
 
 	  if (BYTES_BIG_ENDIAN)
 	    count = GET_MODE_BITSIZE (GET_MODE (to_rtx)) - bitpos - bitsize;
 
 	  /* Special case some bitfield op= exp.  */
-	  switch (TREE_CODE (from))
+	  switch (TREE_CODE (src))
 	    {
 	    case PLUS_EXPR:
 	    case MINUS_EXPR:
@@ -3882,22 +3895,29 @@ expand_assignment (tree to, tree from, int want_value)
 	        break;
 
 	      /* For now, just optimize the case of the topmost bitfield
-		 where we don't need to do any masking.
+		 where we don't need to do any masking and also
+		 1 bit bitfields where xor can be used.
 		 We might win by one instruction for the other bitfields
 		 too if insv/extv instructions aren't used, so that
 		 can be added later.  */
-	      if (count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx)))
+	      if (count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx))
+		  && (bitsize != 1 || TREE_CODE (op1) != INTEGER_CST))
 		break;
-	      value = expand_expr (TREE_OPERAND (from, 1), NULL_RTX,
-				   VOIDmode, 0);
+	      value = expand_expr (op1, NULL_RTX, VOIDmode, 0);
 	      value = protect_from_queue (value, 0);
 	      to_rtx = protect_from_queue (to_rtx, 1);
+	      binop = TREE_CODE (src) == PLUS_EXPR ? add_optab : sub_optab;
+	      if (bitsize == 1
+		  && count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx)))
+		{
+		  value = expand_and (GET_MODE (to_rtx), value, const1_rtx,
+				      NULL_RTX);
+		  binop = xor_optab;
+		}
 	      value = expand_shift (LSHIFT_EXPR, GET_MODE (to_rtx),
 				    value, build_int_2 (count, 0),
 				    NULL_RTX, 1);
-	      result = expand_binop (GET_MODE (to_rtx),
-				     TREE_CODE (from) == PLUS_EXPR
-				     ? add_optab : sub_optab, to_rtx,
+	      result = expand_binop (GET_MODE (to_rtx), binop, to_rtx,
 				     value, to_rtx, 1, OPTAB_WIDEN);
 	      if (result != to_rtx)
 		emit_move_insn (to_rtx, result);
@@ -3907,6 +3927,8 @@ expand_assignment (tree to, tree from, int want_value)
 	    default:
 	      break;
 	    }
+
+	  break;
 	}
 
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,

@@ -1,3 +1,9 @@
+2004-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (expand_assignment): Optimize bitfld += cst for 1 bit
+	bitfields as well.  STRIP_NOPS from src operand and PLUS_EXPR's
+	first operand.  Don't optimize if the bitfield is volatile.
+
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-pretty-print.c (pp_c_postfix_expression): Handle
