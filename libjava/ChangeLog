@@ -1,3 +1,10 @@
+2000-12-02  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
+	* java/awt/CardLayout.java: New file.
+	* java/awt/AWTPermission.java: New file.
+
 2000-12-01  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/Vector.java (insertElementAt): Unconditionally

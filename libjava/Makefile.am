@@ -563,11 +563,13 @@ java/awt/AWTError.java \
 java/awt/AWTEvent.java \
 java/awt/AWTEventMulticaster.java \
 java/awt/AWTException.java \
+java/awt/AWTPermission.java \
 java/awt/ActiveEvent.java \
 java/awt/Adjustable.java \
 java/awt/BorderLayout.java \
 java/awt/Button.java \
 java/awt/Canvas.java \
+java/awt/CardLayout.java \
 java/awt/Checkbox.java \
 java/awt/CheckboxGroup.java \
 java/awt/CheckboxMenuItem.java \
