@@ -849,7 +849,7 @@ reg_not_elim_operand (op, mode)
   return register_operand (op, mode);
 }
 
-/* Return 1 is OP is a memory location that is not an reference (using
+/* Return 1 is OP is a memory location that is not a reference (using
    an AND) to an unaligned location.  Take into account what reload
    will do.  */
 
@@ -870,6 +870,20 @@ normal_memory_operand (op, mode)
     }
 
   return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) != AND;
+}
+
+/* Accept a register, but not a subreg of any kind.  This allows us to
+   avoid pathological cases in reload wrt data movement common in 
+   int->fp conversion.  */
+
+int
+reg_no_subreg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == SUBREG)
+    return 0;
+  return register_operand (op, mode);
 }
 
 /* Return 1 if this function can directly return via $26.  */
