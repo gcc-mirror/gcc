@@ -536,15 +536,18 @@ be removed in GCC 3.1.  You may use continued lines instead, or string
 constant concatenation.  @xref{Differences from previous versions}.
 
 @cindex punctuators
+@cindex digraphs
+@cindex alternative tokens
 @dfn{Punctuators} are all the usual bits of punctuation which are
 meaningful to C and C++.  All but three of the punctuation characters in
 ASCII are C punctuators.  The exceptions are @samp{@@}, @samp{$}, and
 @samp{`}.  In addition, all the two- and three-character operators are
-punctuators.  There are also six @dfn{digraphs}, which are merely
-alternate ways to spell other punctuators.  This is a second attempt to
-work around missing punctuation in obsolete systems.  It has no negative
-side effects, unlike trigraphs, but does not cover as much ground.  The
-digraphs and their corresponding normal punctuators are:
+punctuators.  There are also six @dfn{digraphs}, which the C++ standard
+calls @dfn{alternative tokens}, which are merely alternate ways to spell
+other punctuators.  This is a second attempt to work around missing
+punctuation in obsolete systems.  It has no negative side effects,
+unlike trigraphs, but does not cover as much ground.  The digraphs and
+their corresponding normal punctuators are:
 
 @example
 Digraph:        <%  %>  <:  :>  %:  %:%:
@@ -1506,10 +1509,10 @@ token pasting.
 However, two tokens that don't together form a valid token cannot be
 pasted together.  For example, you cannot concatenate @code{x} with
 @code{+} in either order.  If you try, the preprocessor issues a warning
-and emits the two tokens as if they had been written next to each other.
-It is common to find unnecessary uses of @samp{##} in complex macros.
-If you get this warning, it is likely that you can simply remove the
-@samp{##}.
+and emits the two tokens.  Whether it puts white space between the
+tokens is undefined.  It is common to find unnecessary uses of @samp{##}
+in complex macros.  If you get this warning, it is likely that you can
+simply remove the @samp{##}.
 
 Both the tokens combined by @samp{##} could come from the macro body,
 but you could just as well write them as one token in the first place.
@@ -2949,12 +2952,12 @@ are used as the error message.
 You would use @samp{#error} inside of a conditional that detects a
 combination of parameters which you know the program does not properly
 support.  For example, if you know that the program will not run
-properly on a Vax, you might write
+properly on a VAX, you might write
 
 @example
 @group
 #ifdef __vax__
-#error "Won't work on Vaxen.  See comments at get_last_object."
+#error "Won't work on VAXen.  See comments at get_last_object."
 #endif
 @end group
 @end example
