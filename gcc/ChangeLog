@@ -1,3 +1,8 @@
+Wed Jun 26 16:32:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/crt1.asm: remove _stack label definition
+	and sentinel value.
+
 2002-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* varasm.c: Include real.h before output.h.

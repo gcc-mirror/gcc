@@ -174,10 +174,3 @@ ___main:
 	rts
 	nop
 #endif
-
-#ifdef __ELF__
-	.section .stack,"aw"
-#else
-	.section .stack
-#endif
-_stack:	.long	0xdeaddead
