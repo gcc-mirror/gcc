@@ -49,21 +49,27 @@ Optimize for space rather than speed
 
 W
 Common RejectNegative
+This switch is deprecated; use -Wextra instead
 
 Waggregate-return
 Common
+Warn about returning structures, unions or arrays
 
 Wcast-align
 Common
+Warn about pointer casts which increase alignment
 
 Wdeprecated-declarations
 Common
+Warn about uses of __attribute__((deprecated)) declarations
 
 Wdisabled-optimization
 Common
+Warn when an optimization pass is disabled
 
 Werror
 Common
+Treat all warnings as errors
 
 Wextra
 Common
@@ -71,6 +77,7 @@ Print extra (possibly unwanted) warnings
 
 Winline
 Common
+Warn when an inlined function cannot be inlined
 
 Wlarger-than-
 Common RejectNegative Joined UInteger
@@ -78,36 +85,47 @@ Common RejectNegative Joined UInteger
 
 Wmissing-noreturn
 Common
+Warn about functions which might be candidates for __attribute__((noreturn))
 
 Wpacked
 Common
+Warn when the packed attribute has no effect on struct layout
 
 Wpadded
 Common
+Warn when padding is required to align structure members
 
 Wshadow
 Common
+Warn when one local variable shadows another
 
 Wstrict-aliasing
 Common
+Warn about code which might break strict aliasing rules
 
 Wswitch
 Common
+Warn about enumerated switches, with no default, missing a case
 
 Wswitch-default
 Common
+Warn about enumerated switches missing a \"default:\" statement
 
 Wswitch-enum
 Common
+Warn about all enumerated switches missing a specific case
 
 Wsystem-headers
 Common
+Suppress warnings from system headers
 
 Wuninitialized
 Common
+Warn about uninitialized automatic variables
 
 Wunreachable-code
 Common
+Warn about code that will never be executed
 
 Wunused
 Common
@@ -115,18 +133,23 @@ Enable all -Wunused- warnings
 
 Wunused-function
 Common
+Warn when a function is unused
 
 Wunused-label
 Common
+Warn when a label is unused
 
 Wunused-parameter
 Common
+Warn when a function parameter is unused
 
 Wunused-value
 Common
+Warn when an expression value is unused
 
 Wunused-variable
 Common
+Warn when a variable is unused
 
 aux-info
 Common Separate

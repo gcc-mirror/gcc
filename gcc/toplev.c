@@ -1503,65 +1503,10 @@ static const struct
 target_options[] = TARGET_OPTIONS;
 #endif
 
-/* Options controlling warnings.  */
-
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
 
 int warn_return_type;
-
-/* Used for the -W options array temporarily.  */
-static int warn_dummy;
-
-/* Like f_options, but for -W.  */
-
-static const lang_independent_options W_options[] =
-{
-  {"unused-function", &warn_dummy, 1,
-   N_("Warn when a function is unused") },
-  {"unused-label", &warn_dummy, 1,
-   N_("Warn when a label is unused") },
-  {"unused-parameter", &warn_dummy, 1,
-   N_("Warn when a function parameter is unused") },
-  {"unused-variable", &warn_dummy, 1,
-   N_("Warn when a variable is unused") },
-  {"unused-value", &warn_dummy, 1,
-   N_("Warn when an expression value is unused") },
-  {"system-headers", &warn_dummy, 1,
-   N_("Do not suppress warnings from system headers") },
-  {"error", &warn_dummy, 1,
-   N_("Treat all warnings as errors") },
-  {"shadow", &warn_dummy, 1,
-   N_("Warn when one local variable shadows another") },
-  {"switch", &warn_dummy, 1,
-   N_("Warn about enumerated switches, with no default, missing a case") },
-  {"switch-default", &warn_dummy, 1,
-   N_("Warn about enumerated switches missing a default case") },
-  {"switch-enum", &warn_dummy, 1,
-   N_("Warn about all enumerated switches missing a specific case") },
-  {"aggregate-return", &warn_dummy, 1,
-   N_("Warn about returning structures, unions or arrays") },
-  {"cast-align", &warn_dummy, 1,
-   N_("Warn about pointer casts which increase alignment") },
-  {"unreachable-code", &warn_dummy, 1,
-   N_("Warn about code that will never be executed") },
-  {"uninitialized", &warn_dummy, 1,
-   N_("Warn about uninitialized automatic variables") },
-  {"inline", &warn_dummy, 1,
-   N_("Warn when an inlined function cannot be inlined") },
-  {"packed", &warn_dummy, 1,
-   N_("Warn when the packed attribute has no effect on struct layout") },
-  {"padded", &warn_dummy, 1,
-   N_("Warn when padding is required to align struct members") },
-  {"disabled-optimization", &warn_dummy, 1,
-   N_("Warn when an optimization pass is disabled") },
-  {"deprecated-declarations", &warn_dummy, 1,
-   N_("Warn about uses of __attribute__((deprecated)) declarations") },
-  {"missing-noreturn", &warn_dummy, 1,
-   N_("Warn about functions which might be candidates for attribute noreturn") },
-  {"strict-aliasing", &warn_dummy, 1,
-   N_ ("Warn about code which might break the strict aliasing rules") }
-};
 
 /* Output files for assembler code (real compiler output)
    and debugging dumps.  */
@@ -3964,15 +3909,6 @@ display_help (void)
 		compiler_params[i].option,
 		length > 0 ? length : 1, "                     ",
 		_(description));
-    }
-
-  for (i = ARRAY_SIZE (W_options); i--;)
-    {
-      const char *description = W_options[i].description;
-
-      if (description != NULL && *description != 0)
-	printf ("  -W%-21s %s\n",
-		W_options[i].string, _(description));
     }
 
   for (i = ARRAY_SIZE (debug_args); i--;)

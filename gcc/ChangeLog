@@ -1,3 +1,9 @@
+2003-07-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* toplev.c (warn_dummy, W_options): Die.
+	(display_help): Don't print W_options.
+	* common.opt: Add W_options help from toplev.c.
+
 2003-07-09  Andreas Jaeger  <aj@suse.de>
 
 	* opts.c (wrap_help): Only pass int arguments as arguments to
