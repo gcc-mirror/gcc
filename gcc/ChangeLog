@@ -1,3 +1,7 @@
+2001-09-24  DJ Delorie  <dj@redhat.com>
+
+	* varasm.c (array_size_for_constructor): Handle STRING_CSTs also.
+
 2001-09-24  Ulrich Weigand  <uweigand@de.ibm.com>:
 
 	* flow.c (delete_dead_jumptables): Delete jumptable if the only

@@ -4585,6 +4585,13 @@ array_size_for_constructor (val)
 {
   tree max_index, i;
 
+  if (TREE_CODE (val) == STRING_CST)
+    {
+      HOST_WIDE_INT len = TREE_STRING_LENGTH(val);
+      HOST_WIDE_INT esz = int_size_in_bytes (TREE_TYPE (TREE_TYPE (val)));
+      HOST_WIDE_INT tsz = len * esz;
+      return tsz;
+    }
   max_index = NULL_TREE;
   for (i = CONSTRUCTOR_ELTS (val); i ; i = TREE_CHAIN (i))
     {
