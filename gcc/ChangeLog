@@ -1,3 +1,7 @@
+2001-08-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.c (do_line): Correct line number after pop_buffer.
+
 2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR preprocessor/3824
