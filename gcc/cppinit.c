@@ -207,7 +207,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
      cpp_reader *pfile;
      char *dir;
      int path;
-     int cxx_aware ATTRIBUTE_UNUSED;
+     int cxx_aware;
 {
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
   struct search_path *new;
@@ -252,11 +252,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
      include files since these two lists are really just a concatenation
      of one "system" list.  */
   if (path == SYSTEM || path == AFTER)
-#ifdef NO_IMPLICIT_EXTERN_C
-    new->sysp = 1;
-#else
     new->sysp = cxx_aware ? 1 : 2;
-#endif
   else
     new->sysp = 0;
   new->name_map = NULL;
