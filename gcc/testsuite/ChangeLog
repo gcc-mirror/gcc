@@ -1,3 +1,10 @@
+2002-05-16  David.Billinghurst <David.Billinghurst@riotinto.com>
+
+	* gcc.dg/weak-3.c: Add dg-excess-error comment for
+	cygwin, coff and h8300-*-hms targets
+	* gcc.dg/weak-5.c: Likewise
+	* gcc.dg/weak-7.c: Likewise
+
 2002-05-16  Jason Merrill  <jason@redhat.com>
 
 	* lib/scanasm.exp (scan-assembler): Use upvar, not uplevel.
