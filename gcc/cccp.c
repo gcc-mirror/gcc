@@ -1636,11 +1636,7 @@ main (argc, argv)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
-#ifdef WINNT
-  p = (char *) getenv ("Include");
-#else
   p = (char *) getenv ("CPATH");
-#endif
   if (p != 0 && ! no_standard_includes)
     path_include (p);
 
