@@ -1,3 +1,8 @@
+2004-05-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR/14924
+	* config/rs6000/rs6000.c (spe_expand_stv_builtin): New.
+
 2004-05-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/gcc.texi, doc/gccint.texi, doc/include/gcc-common.texi:
