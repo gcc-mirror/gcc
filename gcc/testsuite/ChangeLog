@@ -1,3 +1,7 @@
+2004-04-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/funcorder.c: xfail hppa*64*-*-*.
+
 2004-04-17  John David Anglin  <dava.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/const-elim-1.c: XFAIL hppa-*-*.
