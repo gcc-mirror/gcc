@@ -1,5 +1,9 @@
 2003-03-01  Tom Tromey  <tromey@redhat.com>
 
+	* java/rmi/registry/RegistryHandler.java: Deprecate.
+
+2003-03-01  Tom Tromey  <tromey@redhat.com>
+
 	* javax/accessibility/AccessibleEditableText.java,
 	javax/accessibility/AccessibleHyperlink.java: New versions from
 	Classpath.

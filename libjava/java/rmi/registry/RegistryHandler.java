@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,10 +40,16 @@ package java.rmi.registry;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
 
+/**
+ * An internal interface that should no longer be used.
+ * @deprecated
+ */
 public interface RegistryHandler {
 
+/** @deprecated */
 public Registry registryStub(String host, int port) throws RemoteException, UnknownHostException;
 
+/** @deprecated */
 public Registry registryImpl(int port) throws RemoteException;
 
 }
