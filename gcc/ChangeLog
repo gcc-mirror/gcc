@@ -1,5 +1,15 @@
 2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md (move peephole2): New peepholes to optimize
+	sequences of moves.
+	(add peepholes): New peepholes to optimize sequences adding small
+	constants.
+	(bset peepholes): New peepholes to transform an OR in a bset form
+	(bclr peepholes): Likewise for bclr form.
+	(cmp peepholes): New peepholes to avoid register copies when comparing.
+
+2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md ("*pushdi_internal"): New insn and split
 	to separate push from moves.
 	("*pushdf_internal"): Likewise.
