@@ -1,3 +1,8 @@
+2005-03-08  Julian Brown  <julian@codesourcery.com>
+
+	* Patch from 2005-03-08 reverted for causing regressions and
+	ppc-darwin bootstrap failure.
+
 2005-03-08  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.c (invalid_arg_for_unprototyped_fn): 
