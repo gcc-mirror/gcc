@@ -1,3 +1,13 @@
+2005-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19060
+	* tree-ssa-dom.c (extract_range_from_cond) <case LT_EXPR, GT_EXPR>:
+	Return 0 if op1 <= TYPE_MIN_VALUE () resp. op1 >= TYPE_MAX_VALUE ().
+	(simplify_cond_and_lookup_avail_expr): Add assert for dummy == 0
+	and handle extract_range_from_cond returning false.
+	* fold-const.c (fold): Optimize comparisons with min/max even for
+	width > HOST_BITS_PER_WIDE_INT.
+
 2005-01-15  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/mips/rtems.h (MIPS_DEFAULT_GVALUE): Set to 0.

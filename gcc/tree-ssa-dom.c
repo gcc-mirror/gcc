@@ -1,5 +1,5 @@
 /* SSA Dominator optimizations for trees
-   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -2088,10 +2088,18 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	      tree tmp_high, tmp_low;
 	      int dummy;
 
-	      /* The last element has not been processed.  Process it now.  */
-	      extract_range_from_cond (element->cond, &tmp_high,
-				       &tmp_low, &dummy);
-	  
+	      /* The last element has not been processed.  Process it now.
+		 record_range should ensure for cond inverted is not set.
+		 This call can only fail if cond is x < min or x > max,
+		 which fold should have optimized into false.
+		 If that doesn't happen, just pretend all values are
+		 in the range.  */
+	      if (! extract_range_from_cond (element->cond, &tmp_high,
+					     &tmp_low, &dummy))
+		gcc_unreachable ();
+	      else
+		gcc_assert (dummy == 0);
+
 	      /* If this is the only element, then no merging is necessary, 
 		 the high/low values from extract_range_from_cond are all
 		 we need.  */
@@ -3204,8 +3212,10 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
       break;
 
     case GT_EXPR:
-      low = int_const_binop (PLUS_EXPR, op1, integer_one_node, 1);
       high = TYPE_MAX_VALUE (type);
+      if (!tree_int_cst_lt (op1, high))
+	return 0;
+      low = int_const_binop (PLUS_EXPR, op1, integer_one_node, 1);
       inverted = 0;
       break;
 
@@ -3216,8 +3226,10 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
       break;
 
     case LT_EXPR:
-      high = int_const_binop (MINUS_EXPR, op1, integer_one_node, 1);
       low = TYPE_MIN_VALUE (type);
+      if (!tree_int_cst_equal (low, op1))
+	return 0;
+      high = int_const_binop (MINUS_EXPR, op1, integer_one_node, 1);
       inverted = 0;
       break;
 
