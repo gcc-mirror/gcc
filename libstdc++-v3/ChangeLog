@@ -1,3 +1,10 @@
+2002-11-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/6745 (continued)
+	* include/bits/streambuf.tcc (__copy_streambufs):
+	Deal with interactive input by using isatty as in the
+	fix for libstdc++/8399.
+
 2002-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linker-map.gnu: Export _S_construct even if size_t is
