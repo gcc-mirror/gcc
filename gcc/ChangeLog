@@ -1,3 +1,8 @@
+Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case INDIRECT_EXPR): A dereference of
+	a REFERENCE_TYPE is always considered in a structure.
+
 Sat Jun  6 17:25:14 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* mips.md (reload_{in,out}di): Allow other operand to be invalid
