@@ -1,3 +1,54 @@
+2003-08-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitmate_constant_p): Use LARL on
+	zSeries machines even in 31-bit addressing mode.
+	(legitimate_reload_constant_p): Likewise.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(s390_split_branches): Likewise.
+	(s390_dump_pool): Likewise.
+	(s390_mainpool_finish): Likewise.
+	(s390_chunkify_start): Likewise.
+	(s390_select_rtx_section): Likewise.
+	* config/s390/s390.md ("doloop_si"): Likewise.
+	("pool_start_31", "pool_end_31"): Likewise.
+	("pool_start_64", "pool_end_64"): Likewise.
+	("main_base_31_small", "main_base_31_large"): Likewise.
+	("main_base_64"): Likewise.
+	("reload_base_31", "reload_base_64"): Likewise.
+	("*movsi_larl"): New insn.
+	("cjump", "icjump"): Use long branches on zSeries machines.
+	("jump"): Likewise.
+	("call"): Use BRASL on zSeries machines.
+	("call_value", "call_value_tls"): Likewise.
+	("brasl", "bras", "basr_64", "basr_31", "bas_64", "bas_31"): Remove 
+	and replace by ...
+	("*bras", "*brasl", "*basr") ... these new insns.
+	("brasl_r", "bras_r", "basr_64_r", "basr_31_r", "bas_64_r", 
+	"bas_31_r"): Remove and replace by ...
+	("*bras_r", "*brasl_r", "*basr_r") ... these new insns.
+	("brasl_tls", "bras_tls", "basr_64_tls", "basr_31_tls", 
+	"bas_64_tls", "bas_31_tls"): Remove and replace by ...
+	("*bras_tls", "*brasl_tls", "*basr_tls") ... these new insns.
+	("*return_si", "*return_di"): Remove and replace by ...
+	("*return"): ... this new insn.
+	("rotlsi3"): Allow on zSeries machines.
+
+	* config/s390/s390.c (legitimize_reload_constant_p): Use
+	LL/LH type instructions in z/Architecture mode.
+	* config/s390/s390.md ("*movsi_lli"): Likewise.
+	("*andsi3_ni", "*andhi3_ni", "*andqi3_ni"): Likewise.
+	("*iorsi3_ni", "*iorhi3_ni", "*iorqi3_ni"): Likewise.
+	("*extendqisi2"): Use LB in z/Architecture mode.
+	("*zero_extendqisi2_64", "*zero_extendqisi2_31"): Use LLGC in 
+	z/Architecture mode.
+	("zero_extendqihi2", "*zero_extendqihi2_64", "*zero_extendqihi2_31"): 
+	Likewise.
+	
+	* config/s390/s390.md ("*tmdi_ext"): Allow in both 64-bit
+	and 31-bit mode.
+	("ptr_extend"): Allow only in 64-bit mode.
+
 2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
 
 	* gcc.c (STANDARD_EXEC_PREFIX, STANDARD_STARTFILE_PREFIX)
