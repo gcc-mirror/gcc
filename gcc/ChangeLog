@@ -1,3 +1,9 @@
+2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (check_bitfield_type_and_width): Require bit-field
+	width to have integer type.
+	(build_enumerator): Require enumerator value to have integer type.
+
 2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (__builtin_inf): Move statement about INFINITY
