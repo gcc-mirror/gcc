@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Namet;       use Namet;
+with Osint;       use Osint;
 with Prj;         use Prj;
 with Prj.Ext;
 with Prj.Util;
@@ -32,7 +33,31 @@ with Snames;      use Snames;
 with Table;
 with Types;       use Types;
 
+with System.HTable;
+
 package body Makeutl is
+
+   type Mark_Key is record
+      File  : File_Name_Type;
+      Index : Int;
+   end record;
+   --  Identify either a mono-unit source (when Index = 0) or a specific unit
+   --  in a multi-unit source.
+
+   Max_Mask_Num : constant := 2048;
+
+   subtype Mark_Num is Union_Id range 0 .. Max_Mask_Num - 1;
+
+   function Hash (Key : Mark_Key) return Mark_Num;
+
+   package Marks is new System.HTable.Simple_HTable
+     (Header_Num => Mark_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Mark_Key,
+      Hash       => Hash,
+      Equal      => "=");
+   --  A hash table to keep tracks of the marked units.
 
    type Linker_Options_Data is record
       Project : Project_Id;
@@ -83,6 +108,24 @@ package body Makeutl is
       end if;
    end Add_Linker_Option;
 
+   ----------------------
+   -- Delete_All_Marks --
+   ----------------------
+
+   procedure Delete_All_Marks is
+   begin
+      Marks.Reset;
+   end Delete_All_Marks;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (Key : Mark_Key) return Mark_Num is
+   begin
+      return Union_Id (Key.File) mod Max_Mask_Num;
+   end Hash;
+
    ----------------------------
    -- Is_External_Assignment --
    ----------------------------
@@ -123,6 +166,19 @@ package body Makeutl is
          return True;
       end if;
    end Is_External_Assignment;
+
+   ---------------
+   -- Is_Marked --
+   ---------------
+
+   function Is_Marked
+     (Source_File : File_Name_Type;
+      Index       : Int := 0)
+      return Boolean
+   is
+   begin
+      return Marks.Get (K => (File => Source_File, Index => Index));
+   end Is_Marked;
 
    -----------------------------
    -- Linker_Options_Switches --
@@ -166,6 +222,7 @@ package body Makeutl is
                   Options :=
                     Prj.Util.Value_Of
                       (Name => Name_Ada,
+                       Index => 0,
                        Attribute_Or_Array_Name => Name_Linker_Options,
                        In_Package => Linker_Package);
 
@@ -305,6 +362,15 @@ package body Makeutl is
 
    end Mains;
 
+   ----------
+   -- Mark --
+   ----------
+
+   procedure Mark (Source_File : File_Name_Type; Index : Int := 0) is
+   begin
+      Marks.Set (K => (File => Source_File, Index => Index), E => True);
+   end Mark;
+
    ---------------------------
    -- Test_If_Relative_Path --
    ---------------------------
@@ -383,5 +449,59 @@ package body Makeutl is
          end;
       end if;
    end Test_If_Relative_Path;
+
+   -------------------
+   -- Unit_Index_Of --
+   -------------------
+
+   function Unit_Index_Of (ALI_File : File_Name_Type) return Int is
+      Start  : Natural;
+      Finish : Natural;
+      Result : Int := 0;
+   begin
+      Get_Name_String (ALI_File);
+
+      --  First, find the last dot
+
+      Finish := Name_Len;
+
+      while Finish >= 1 and then Name_Buffer (Finish) /= '.' loop
+         Finish := Finish - 1;
+      end loop;
+
+      if Finish = 1 then
+         return 0;
+      end if;
+
+      --  Now check that the dot is preceded by digits
+
+      Start := Finish;
+      Finish := Finish - 1;
+
+      while Start >= 1 and then Name_Buffer (Start - 1) in '0' .. '9' loop
+         Start := Start - 1;
+      end loop;
+
+      --  If there is no difits, or if the digits are not preceded by
+      --  the character that precedes a unit index, this is not the ALI file
+      --  of a unit in a multi-unit source.
+
+      if Start > Finish or else
+        Start = 1 or else
+        Name_Buffer (Start - 1) /= Multi_Unit_Index_Character
+      then
+         return 0;
+      end if;
+
+      --  Build the index from the digit(s)
+
+      while Start <= Finish loop
+         Result := (Result * 10) + Character'Pos (Name_Buffer (Start))
+           - Character'Pos ('0');
+         Start := Start + 1;
+      end loop;
+
+      return Result;
+   end Unit_Index_Of;
 
 end Makeutl;

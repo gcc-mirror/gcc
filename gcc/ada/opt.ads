@@ -638,6 +638,11 @@ package Opt is
    --  Set to True when either Compile_Only, Bind_Only or Link_Only is
    --  set to True.
 
+   Main_Index : Int := 0;
+   --  GNATMAKE
+   --  This is set to non-zero by gnatmake switch -eInnn to indicate that
+   --  the main program is the nnn unit in a multi-unit source file.
+
    Mapping_File_Name : String_Ptr := null;
    --  GNAT
    --  File name of mapping between unit names, file names and path names.

@@ -839,8 +839,9 @@ begin
                          (Name => Name_Default_Switches,
                           In_Arrays => Element.Decl.Arrays);
                      The_Switches := Prj.Util.Value_Of
-                       (Index => Name_Ada,
-                        In_Array => Default_Switches_Array);
+                       (Index     => Name_Ada,
+                        Src_Index => 0,
+                        In_Array  => Default_Switches_Array);
                   end if;
                end if;
 

@@ -584,7 +584,8 @@ package body Prj.Env is
       procedure Put
         (Unit_Name : Name_Id;
          File_Name : Name_Id;
-         Unit_Kind : Spec_Or_Body);
+         Unit_Kind : Spec_Or_Body;
+         Index     : Int);
       --  Put an SFN pragma in the temporary file
 
       procedure Put (File : File_Descriptor; S : String);
@@ -742,7 +743,8 @@ package body Prj.Env is
       procedure Put
         (Unit_Name : Name_Id;
          File_Name : Name_Id;
-         Unit_Kind : Spec_Or_Body)
+         Unit_Kind : Spec_Or_Body;
+         Index     : Int)
       is
       begin
          --  A temporary file needs to be open
@@ -761,7 +763,14 @@ package body Prj.Env is
          end if;
 
          Put (File, Namet.Get_Name_String (File_Name));
-         Put_Line (File, """);");
+         Put (File, """");
+
+         if Index /= 0 then
+            Put (File, ", Index =>");
+            Put (File, Index'Img);
+         end if;
+
+         Put_Line (File, ");");
       end Put;
 
       procedure Put (File : File_Descriptor; S : String) is
@@ -788,7 +797,7 @@ package body Prj.Env is
          Last : Natural;
 
       begin
-         --  Add an ASCII.LF to the string. As this gnat.adc is supposed to
+         --  Add an ASCII.LF to the string. As this config file is supposed to
          --  be used only by the compiler, we don't care about the characters
          --  for the end of line. In fact we could have put a space, but
          --  it is more convenient to be able to read gnat.adc during
@@ -831,13 +840,15 @@ package body Prj.Env is
                if Unit.File_Names (Specification).Needs_Pragma then
                   Put (Unit.Name,
                        Unit.File_Names (Specification).Name,
-                       Specification);
+                       Specification,
+                       Unit.File_Names (Specification).Index);
                end if;
 
                if Unit.File_Names (Body_Part).Needs_Pragma then
                   Put (Unit.Name,
                        Unit.File_Names (Body_Part).Name,
-                       Body_Part);
+                       Body_Part,
+                       Unit.File_Names (Body_Part).Index);
                end if;
 
                Current_Unit := Current_Unit + 1;
@@ -1268,7 +1279,6 @@ package body Prj.Env is
                         if Current_Verbosity = High then
                            Write_Line ("   OK");
                         end if;
-
 
                         if Full_Path then
                            return Get_Name_String

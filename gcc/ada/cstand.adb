@@ -402,6 +402,11 @@ package body CStand is
       Set_Etype (R_Node, Standard_Boolean);
       Set_Parent (R_Node, Standard_Boolean);
 
+      --  Record entity identifiers for boolean literals in the
+      --  Boolean_Literals array, for easy reference during expansion.
+
+      Boolean_Literals := (False => Standard_False, True => Standard_True);
+
       --  Create type definition nodes for predefined integer types
 
       Build_Signed_Integer_Type

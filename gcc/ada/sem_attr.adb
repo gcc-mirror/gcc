@@ -4820,19 +4820,9 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Definite =>
-         declare
-            Result : Node_Id;
-
-         begin
-            if Is_Indefinite_Subtype (P_Entity) then
-               Result := New_Occurrence_Of (Standard_False, Loc);
-            else
-               Result := New_Occurrence_Of (Standard_True, Loc);
-            end if;
-
-            Rewrite (N, Result);
-            Analyze_And_Resolve (N, Standard_Boolean);
-         end;
+         Rewrite (N, New_Occurrence_Of (
+           Boolean_Literals (not Is_Indefinite_Subtype (P_Entity)), Loc));
+         Analyze_And_Resolve (N, Standard_Boolean);
 
       ------------
       -- Denorm --
@@ -4961,19 +4951,9 @@ package body Sem_Attr is
       -----------------------
 
       when Attribute_Has_Discriminants =>
-         declare
-            Result : Node_Id;
-
-         begin
-            if Has_Discriminants (P_Entity) then
-               Result := New_Occurrence_Of (Standard_True, Loc);
-            else
-               Result := New_Occurrence_Of (Standard_False, Loc);
-            end if;
-
-            Rewrite (N, Result);
-            Analyze_And_Resolve (N, Standard_Boolean);
-         end;
+         Rewrite (N, New_Occurrence_Of (
+           Boolean_Literals (Has_Discriminants (P_Entity)), Loc));
+         Analyze_And_Resolve (N, Standard_Boolean);
 
       --------------
       -- Identity --
@@ -5962,13 +5942,10 @@ package body Sem_Attr is
          Typ : constant Entity_Id := Underlying_Type (P_Type);
 
       begin
-         if Is_Array_Type (P_Type)
-           and then not Is_Constrained (Typ)
-         then
-            Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-         else
-            Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-         end if;
+         Rewrite (N, New_Occurrence_Of (
+           Boolean_Literals (
+             Is_Array_Type (P_Type)
+              and then not Is_Constrained (Typ)), Loc));
 
          --  Analyze and resolve as boolean, note that this attribute is
          --  a static attribute in GNAT.

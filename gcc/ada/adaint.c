@@ -862,7 +862,7 @@ win32_filetime (HANDLE h)
 
 /* Return a GNAT time stamp given a file name.  */
 
-time_t
+OS_Time
 __gnat_file_time_name (char *name)
 {
 
@@ -870,7 +870,7 @@ __gnat_file_time_name (char *name)
   int fd = open (name, O_RDONLY | O_BINARY);
   time_t ret = __gnat_file_time_fd (fd);
   close (fd);
-  return ret;
+  return (OS_Time)ret;
 
 #elif defined (_WIN32)
   time_t ret = 0;
@@ -882,22 +882,25 @@ __gnat_file_time_name (char *name)
       ret = win32_filetime (h);
       CloseHandle (h);
     }
-  return ret;
+  return (OS_Time) ret;
 #else
   struct stat statbuf;
-  (void) __gnat_stat (name, &statbuf);
+  if (__gnat_stat (name, &statbuf) != 0) {
+     return (OS_Time)-1;
+  } else {
 #ifdef VMS
-  /* VMS has file versioning.  */
-  return statbuf.st_ctime;
+     /* VMS has file versioning.  */
+     return (OS_Time)statbuf.st_ctime;
 #else
-  return statbuf.st_mtime;
+     return (OS_Time)statbuf.st_mtime;
 #endif
+  }
 #endif
 }
 
 /* Return a GNAT time stamp given a file descriptor.  */
 
-time_t
+OS_Time
 __gnat_file_time_fd (int fd)
 {
   /* The following workaround code is due to the fact that under EMX and
@@ -965,24 +968,26 @@ __gnat_file_time_fd (int fd)
   tot_secs += file_hour * 3600;
   tot_secs += file_min * 60;
   tot_secs += file_tsec * 2;
-  return tot_secs;
+  return (OS_Time) tot_secs;
 
 #elif defined (_WIN32)
   HANDLE h = (HANDLE) _get_osfhandle (fd);
   time_t ret = win32_filetime (h);
-  return ret;
+  return (OS_Time) ret;
 
 #else
   struct stat statbuf;
 
-  (void) fstat (fd, &statbuf);
-
+  if (fstat (fd, &statbuf) != 0) {
+     return (OS_Time) -1;
+  } else {
 #ifdef VMS
-  /* VMS has file versioning.  */
-  return statbuf.st_ctime;
+     /* VMS has file versioning.  */
+     return (OS_Time) statbuf.st_ctime;
 #else
-  return statbuf.st_mtime;
+     return (OS_Time) statbuf.st_mtime;
 #endif
+  }
 #endif
 }
 

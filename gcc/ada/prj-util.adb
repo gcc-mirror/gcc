@@ -76,6 +76,7 @@ package body Prj.Util is
    function Executable_Of
      (Project  : Project_Id;
       Main     : Name_Id;
+      Index    : Int;
       Ada_Main : Boolean := True) return Name_Id
    is
       pragma Assert (Project /= No_Project);
@@ -91,12 +92,14 @@ package body Prj.Util is
       Executable : Variable_Value :=
                      Prj.Util.Value_Of
                        (Name                    => Main,
+                        Index                   => Index,
                         Attribute_Or_Array_Name => Name_Executable,
                         In_Package              => Builder_Package);
 
       Executable_Suffix : constant Variable_Value :=
                             Prj.Util.Value_Of
                               (Name                    => Main,
+                               Index                   => 0,
                                Attribute_Or_Array_Name =>
                                  Name_Executable_Suffix,
                                In_Package              => Builder_Package);
@@ -158,6 +161,7 @@ package body Prj.Util is
                   Executable :=
                     Prj.Util.Value_Of
                       (Name                    => Name_Find,
+                       Index                   => 0,
                        Attribute_Or_Array_Name => Name_Executable,
                        In_Package              => Builder_Package);
                end if;
@@ -395,8 +399,8 @@ package body Prj.Util is
    end Value_Of;
 
    function Value_Of
-     (Index    : Name_Id;
-      In_Array : Array_Element_Id) return Name_Id
+     (Index     : Name_Id;
+      In_Array  : Array_Element_Id) return Name_Id
    is
       Current    : Array_Element_Id := In_Array;
       Element    : Array_Element;
@@ -431,8 +435,9 @@ package body Prj.Util is
    end Value_Of;
 
    function Value_Of
-     (Index    : Name_Id;
-      In_Array : Array_Element_Id) return Variable_Value
+     (Index     : Name_Id;
+      Src_Index : Int := 0;
+      In_Array  : Array_Element_Id) return Variable_Value
    is
       Current : Array_Element_Id := In_Array;
       Element : Array_Element;
@@ -454,7 +459,9 @@ package body Prj.Util is
       while Current /= No_Array_Element loop
          Element := Array_Elements.Table (Current);
 
-         if Real_Index = Element.Index then
+         if Real_Index = Element.Index and then
+           Src_Index = Element.Src_Index
+         then
             return Element.Value;
          else
             Current := Element.Next;
@@ -466,6 +473,7 @@ package body Prj.Util is
 
    function Value_Of
      (Name                    : Name_Id;
+      Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id) return Variable_Value
    is
@@ -483,8 +491,9 @@ package body Prj.Util is
               In_Arrays => Packages.Table (In_Package).Decl.Arrays);
          The_Attribute :=
            Value_Of
-             (Index    => Name,
-              In_Array => The_Array);
+             (Index     => Name,
+              Src_Index => Index,
+              In_Array  => The_Array);
 
          --  If there is no array element, look for a variable
 

@@ -197,6 +197,7 @@ package Prj is
    Nil_String : constant String_List_Id := 0;
    type String_Element is record
       Value    : Name_Id        := No_Name;
+      Index    : Int            := 0;
       Display_Value : Name_Id   := No_Name;
       Location : Source_Ptr     := No_Location;
       Flag     : Boolean        := False;
@@ -233,6 +234,7 @@ package Prj is
             Values : String_List_Id := Nil_String;
          when Single =>
             Value : Name_Id := No_Name;
+            Index : Int     := 0;
       end case;
    end record;
    --  Values for variables and array elements.
@@ -267,6 +269,7 @@ package Prj is
    No_Array_Element : constant Array_Element_Id := 0;
    type Array_Element is record
       Index                : Name_Id;
+      Src_Index            : Int := 0;
       Index_Case_Sensitive : Boolean := True;
       Value                : Variable_Value;
       Next                 : Array_Element_Id := No_Array_Element;

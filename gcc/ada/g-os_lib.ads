@@ -103,6 +103,7 @@ pragma Elaborate_Body (OS_Lib);
    --  file (of course in Unix systems, this *is* in GMT form).
 
    type OS_Time is private;
+   Invalid_Time : constant OS_Time;
 
    subtype Year_Type   is Integer range 1900 .. 2099;
    subtype Month_Type  is Integer range    1 ..   12;
@@ -368,9 +369,11 @@ pragma Elaborate_Body (OS_Lib);
    function File_Time_Stamp (Name : String) return OS_Time;
    --  Given the name of a file or directory, Name, obtains and returns the
    --  time stamp. This function can be used for an unopened file.
+   --  Returns Invalid_Time is Name doesn't correspond to an existing file.
 
    function File_Time_Stamp (FD : File_Descriptor) return OS_Time;
    --  Get time stamp of file from file descriptor FD
+   --  Returns Invalid_Time is FD doesn't correspond to an existing file.
 
    function Normalize_Pathname
      (Name           : String;
@@ -542,6 +545,7 @@ pragma Elaborate_Body (OS_Lib);
       Success      : out Boolean);
 
    function File_Time_Stamp (Name : C_File_Name) return OS_Time;
+   --  Returns Invalid_Time is Name doesn't correspond to an existing file.
 
    function Is_Regular_File (Name : C_File_Name) return Boolean;
 
@@ -734,6 +738,9 @@ private
    --  It would actually be nice to use pragma Import (Intrinsic) here,
    --  but this was not properly supported till GNAT 3.15a, so that would
    --  cause bootstrap path problems. To be changed later ???
+
+   Invalid_Time : constant OS_Time := -1;
+   --  This value should match the return valud by __gnat_file_time_*
 
    pragma Inline ("<");
    pragma Inline (">");

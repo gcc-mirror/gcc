@@ -549,40 +549,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<5zml-tgt.adb
 
-  EXTRA_HIE_NONE_TARGET_PAIRS= \
-  system.ads<50system.ads
-
-  EXTRA_RAVEN_SOURCES=i-vxwork.ads s-vxwork.ads
-  EXTRA_RAVEN_OBJS=i-vxwork.o s-vxwork.o
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
-  HIE_RAVEN_TARGET_PAIRS=\
-  $(HIE_NONE_TARGET_PAIRS) \
-  a-reatim.ads<1areatim.ads \
-  a-reatim.adb<1areatim.adb \
-  a-retide.adb<1aretide.adb \
-  a-interr.adb<1ainterr.adb \
-  s-interr.ads<1sinterr.ads \
-  s-interr.adb<1sinterr.adb \
-  s-taskin.ads<1staskin.ads \
-  s-taskin.adb<1staskin.adb \
-  s-taspri.ads<1staspri.ads \
-  s-tarest.adb<1starest.adb \
-  s-tposen.ads<1stposen.ads \
-  s-tposen.adb<1stposen.adb \
-  s-osinte.adb<1sosinte.adb \
-  s-taprop.ads<1staprop.ads \
-  s-taprop.adb<1staprop.adb \
-  s-taprob.ads<1staprob.ads \
-  s-taprob.adb<1staprob.adb \
-  a-sytaco.ads<1asytaco.ads \
-  a-sytaco.adb<1asytaco.adb \
-  a-intnam.ads<4zintnam.ads \
-  s-osinte.ads<5zosinte.ads \
-  s-parame.ads<5zparame.ads \
-  s-vxwork.ads<5pvxwork.ads \
-  a-taside.adb<1ataside.adb \
-
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
     LIBGNAT_TARGET_PAIRS += \
     s-traces.adb<7straces.adb \
@@ -591,22 +557,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
     s-tratas.adb<7stratas.adb \
     s-tfsetr.adb<5ztfsetr.adb 
   endif
-endif
-
-ifeq ($(strip $(filter-out powerpc% unknown elf,$(targ))),)
-  EXTRA_HIE_NONE_TARGET_PAIRS= \
-  system.ads<59system.ads
-
-  LIBGNAT_TARGET_PAIRS = \
-  $(HIE_NONE_TARGET_PAIRS)
-endif
-
-ifeq ($(strip $(filter-out sparc% unknown elf,$(targ))),)
-  EXTRA_HIE_NONE_TARGET_PAIRS= \
-  system.ads<5rsystem.ads
-
-  LIBGNAT_TARGET_PAIRS = \
-  $(HIE_NONE_TARGET_PAIRS)
 endif
 
 ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
@@ -1182,6 +1132,10 @@ ifeq ($(strip $(filter-out alpha% ia64 dec hp vms% openvms% alphavms%,$(host))),
 soext  = .exe
 hyphen = _
 
+ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
+AR = iar
+endif
+
 .SUFFIXES: .sym
 
 .o.sym: 
@@ -1393,131 +1347,6 @@ include $(fsrcdir)/Makefile.rtl
 
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
   g-trasym.o memtrack.o
-
-# Files which are suitable in no run time/hi integrity mode
-
-COMPILABLE_HIE_SOURCES= \
- system.ads   \
- ada.ads      \
- gnat.ads     \
- g-souinf.ads \
- interfac.ads \
- i-c.ads      \
- s-stoele.ads \
- s-stoele.adb \
- s-maccod.ads \
- s-unstyp.ads \
- s-fatflt.ads \
- s-fatlfl.ads \
- s-fatllf.ads \
- s-fatsfl.ads \
- s-secsta.ads \
- s-secsta.adb \
- a-tags.ads   \
- a-tags.adb  \
- a-except.ads \
- a-except.adb $(EXTRA_HIE_SOURCES)
-
-NON_COMPILABLE_HIE_SOURCES= \
- a-unccon.ads \
- a-uncdea.ads \
- s-fatgen.adb \
- s-fatgen.ads \
- unchconv.ads \
- s-atacco.ads \
- s-atacco.adb \
- unchdeal.ads
-
-
-HIE_SOURCES = $(NON_COMPILABLE_HIE_SOURCES) $(COMPILABLE_HIE_SOURCES)
-
-# Object to generate for the HI run time
-
-HIE_OBJS =  \
- system.o   \
- ada.o      \
- a-except.o \
- gnat.o     \
- g-souinf.o \
- interfac.o \
- i-c.o      \
- s-stoele.o \
- s-maccod.o \
- s-unstyp.o \
- s-fatflt.o \
- s-fatlfl.o \
- s-fatllf.o \
- s-fatsfl.o \
- s-secsta.o \
- a-tags.o $(EXTRA_HIE_OBJS)
-
-# Files which are needed in ravenscar mode
-
-COMPILABLE_RAVEN_SOURCES = \
-$(COMPILABLE_HIE_SOURCES) \
- s-parame.ads \
- s-parame.adb \
- s-purexc.ads \
- s-osinte.ads \
- s-osinte.adb \
- s-tasinf.ads \
- s-tasinf.adb \
- s-taspri.ads \
- s-taprop.ads \
- s-taprop.adb \
- s-taskin.ads \
- s-taskin.adb \
- s-interr.ads \
- s-interr.adb \
- a-interr.ads \
- a-interr.adb \
- a-intnam.ads \
- a-reatim.ads \
- a-reatim.adb \
- a-retide.ads \
- a-retide.adb \
- s-taprob.ads \
- s-taprob.adb \
- s-tposen.ads \
- s-tposen.adb \
- s-tasres.ads \
- s-tarest.ads \
- s-tarest.adb \
- a-sytaco.ads \
- a-sytaco.adb \
- a-taside.ads \
- a-taside.adb $(EXTRA_RAVEN_SOURCES)
-
-NON_COMPILABLE_RAVEN_SOURCES= $(NON_COMPILABLE_HIE_SOURCES)
-
-RAVEN_SOURCES = $(NON_COMPILABLE_RAVEN_SOURCES) $(COMPILABLE_RAVEN_SOURCES)
-
-# Objects to generate for the ravenscar run time
-
-RAVEN_LIBGNARL_OBJS = \
- s-parame.o  \
- s-purexc.o  \
- s-osinte.o  \
- s-tasinf.o  \
- s-taspri.o  \
- s-taprop.o  \
- s-taskin.o  \
- s-interr.o  \
- a-interr.o  \
- a-intnam.o  \
- a-reatim.o  \
- a-retide.o  \
- s-osinte.o  \
- s-taprob.o  \
- s-tposen.o  \
- s-tasres.o  \
- s-tarest.o  \
- a-sytaco.o \
- a-taside.o $(EXTRA_RAVEN_OBJS)
-
-RAVEN_OBJS = \
- $(HIE_OBJS) \
- $(RAVEN_LIBGNARL_OBJS)
 
 # Default run time files
 
@@ -1877,88 +1706,6 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
         endif
 	$(CHMOD) a-wx rts/*.ali
 	touch ../stamp-gnatlib
-
-HIE_NONE_TARGET_PAIRS=\
- a-except.ads<1aexcept.ads \
- a-except.adb<1aexcept.adb \
- a-tags.ads<1atags.ads \
- a-tags.adb<1atags.adb \
- s-secsta.ads<1ssecsta.ads \
- s-secsta.adb<1ssecsta.adb \
- i-c.ads<1ic.ads $(EXTRA_HIE_NONE_TARGET_PAIRS)
-
-# This target needs RTS_NAME, RTS_SRCS, RTS_TARGET_PAIRS to be set properly
-# it creates a rts with the proper structure and the right target 
-# dependant srcs
-prepare-rts:
-	$(RMDIR) rts-$(RTS_NAME)
-	$(MKDIR) rts-$(RTS_NAME)
-	$(CHMOD) u+w rts-$(RTS_NAME)
-	$(MKDIR) rts-$(RTS_NAME)/adalib
-	$(MKDIR) rts-$(RTS_NAME)/adainclude
-	$(CHMOD) u+w rts-$(RTS_NAME)/*
-# Generate the project file
-	$(ECHO) "project $(RTS_NAME) is" > rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "   for Source_Dirs use (\"adainclude\");" \
-		>> rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "   for Object_Dir use \"adalib\";" \
-		>> rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "   for Source_List_File use " \
-		>>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "      \"rts-$(RTS_NAME)_source_list.txt\";" \
-		>>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "   package Builder is" >>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "     for Default_Switches (\"Ada\") use (\"-a\");" \
-		 >>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "  end Builder;" >>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "  package Compiler is" >> rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "     for Default_Switches (\"Ada\") use (\"-nostdinc\");" \
-		 >>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "  end Compiler;" >>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-	$(ECHO) "end $(RTS_NAME);" >>rts-$(RTS_NAME)/$(RTS_NAME).gpr
-
-	$(foreach f, $(COMPILABLE_SOURCES), \
-		$(ECHO) $(f) >> \
-			rts-$(RTS_NAME)/rts-$(RTS_NAME)_source_list.txt ;) true
-# Copy target independent sources
-	$(foreach f,$(RTS_SRCS), \
-	  $(CP) $(fsrcpfx)$(f) rts-$(RTS_NAME)/adainclude/ ;) true
-# Remove files to be replaced by target dependent sources
-	$(RM) $(foreach PAIR,$(RTS_TARGET_PAIRS), \
-	         rts-$(RTS_NAME)/adainclude/$(word 1,$(subst <, ,$(PAIR))))
-# Copy new target dependent sources
-	$(foreach PAIR,$(RTS_TARGET_PAIRS), \
-	    $(CP) $(fsrcpfx)$(word 2,$(subst <, ,$(PAIR))) \
-	            rts-$(RTS_NAME)/adainclude/$(word 1,$(subst <, ,$(PAIR)));)
-
-install-rts: force
-	$(CP) -r rts-$(RTS_NAME) $(DESTDIR)$(libsubdir)/
-
-rts-zfp: force
-	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \
-	   RTS_NAME=zfp RTS_SRCS="$(HIE_SOURCES)" \
-	   RTS_TARGET_PAIRS="$(HIE_NONE_TARGET_PAIRS)" \
-	   COMPILABLE_SOURCES="$(COMPILABLE_HIE_SOURCES)" 
-	$(GNATMAKE) -Prts-zfp/zfp.gpr --GCC="../../../xgcc -B../../../"
-	cd rts-zfp/adalib/ ; $(AR) r libgnat.a *.o
-	$(RM) rts-zfp/adalib/*.o
-	$(CHMOD) a-wx rts-zfp/adalib/*.ali
-	$(CHMOD) a-wx rts-zfp/adalib/libgnat.a
-
-rts-ravenscar: force
-	$(MAKE)  $(FLAGS_TO_PASS) prepare-rts \
-	   RTS_NAME=ravenscar RTS_SRCS="$(RAVEN_SOURCES)" \
-	   RTS_TARGET_PAIRS="$(HIE_RAVEN_TARGET_PAIRS)" \
-	   COMPILABLE_SOURCES="$(COMPILABLE_RAVEN_SOURCES)" 
-	$(GNATMAKE) -Prts-ravenscar/ravenscar.gpr \
-	   --GCC="../../../xgcc -B../../../"
-	cd rts-ravenscar/adalib ; \
-	$(foreach FILE,$(RAVEN_LIBGNARL_OBJS), $(AR) r libgnarl.a $(FILE);) \
-	$(foreach FILE,$(HIE_OBJS), $(AR) r libgnat.a $(FILE);)
-	$(RM) rts-ravenscar/adalib/*.o
-	$(CHMOD) a-wx rts-ravenscar/adalib/*.ali
-	$(CHMOD) a-wx rts-ravenscar/adalib/libgnat.a
-	$(CHMOD) a-wx rts-ravenscar/adalib/libgnarl.a
 
 # Warning: this target assumes that LIBRARY_VERSION has been set correctly.
 gnatlib-shared-default:

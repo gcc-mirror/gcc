@@ -136,9 +136,10 @@ package body Prj.Makr is
       Args : Argument_List  (1 .. Preproc_Switches'Length + 6);
 
       type SFN_Pragma is record
-         Unit : Name_Id;
-         File : Name_Id;
-         Spec : Boolean;
+         Unit  : Name_Id;
+         File  : Name_Id;
+         Index : Int := 0;
+         Spec  : Boolean;
       end record;
 
       package SFN_Pragmas is new Table.Table
@@ -254,7 +255,7 @@ package body Prj.Makr is
                   then
                      Output.Write_Str ("   Checking """);
                      Output.Write_Str (Str (1 .. Last));
-                     Output.Write_Str (""": ");
+                     Output.Write_Line (""": ");
                   end if;
 
                   --  If the file name matches one of the regular expressions,
@@ -362,7 +363,7 @@ package body Prj.Makr is
                            if End_Of_File (File) then
                               if Opt.Verbose_Mode then
                                  if not Success then
-                                    Output.Write_Str ("(process died) ");
+                                    Output.Write_Str ("      (process died) ");
                                  end if;
                               end if;
 
@@ -383,10 +384,11 @@ package body Prj.Makr is
                                           Name_Buffer (1 .. Name_Len) :=
                                             Text_Line (6 .. J - 7);
                                           SFN_Prag :=
-                                            (Unit => Name_Find,
-                                             File => File_Name_Id,
-                                             Spec => Text_Line (J - 5 .. J) =
-                                                       "(spec)");
+                                            (Unit  => Name_Find,
+                                             File  => File_Name_Id,
+                                             Index => 0,
+                                             Spec  => Text_Line (J - 5 .. J) =
+                                                        "(spec)");
 
                                           SFN_Pragmas.Increment_Last;
                                           SFN_Pragmas.Table
@@ -400,107 +402,116 @@ package body Prj.Makr is
 
                            if Save_Last_Pragma_Index = SFN_Pragmas.Last then
                               if Opt.Verbose_Mode then
-                                 Output.Write_Line ("not a unit");
-                              end if;
-
-                           elsif SFN_Pragmas.Last >
-                             Save_Last_Pragma_Index + 1
-                           then
-                              SFN_Pragmas.Set_Last (Save_Last_Pragma_Index);
-
-                              if Opt.Verbose_Mode then
-                                 Output.Write_Line
-                                   ("file contains multiple units");
+                                 Output.Write_Line ("      not a unit");
                               end if;
 
                            else
-                              SFN_Prag := SFN_Pragmas.Table
-                                (SFN_Pragmas.Last);
-
-                              if Opt.Verbose_Mode then
-                                 if SFN_Prag.Spec then
-                                    Output.Write_Str ("spec of ");
-
-                                 else
-                                    Output.Write_Str ("body of ");
-                                 end if;
-
-                                 Output.Write_Line
-                                   (Get_Name_String (SFN_Prag.Unit));
+                              if SFN_Pragmas.Last >
+                                   Save_Last_Pragma_Index + 1
+                              then
+                                 for Index in Save_Last_Pragma_Index + 1 ..
+                                                SFN_Pragmas.Last
+                                 loop
+                                    SFN_Pragmas.Table (Index).Index :=
+                                      Int (Index - Save_Last_Pragma_Index);
+                                 end loop;
                               end if;
 
-                              if Project_File then
+                              for Index in Save_Last_Pragma_Index + 1 ..
+                                             SFN_Pragmas.Last
+                              loop
+                                 SFN_Prag := SFN_Pragmas.Table (Index);
 
-                                 --  Add the corresponding attribute in the
-                                 --  Naming package of the naming project.
-
-                                 declare
-                                    Decl_Item : constant Project_Node_Id :=
-                                                  Default_Project_Node
-                                                   (Of_Kind =>
-                                                      N_Declarative_Item);
-
-                                    Attribute : constant Project_Node_Id :=
-                                                  Default_Project_Node
-                                                   (Of_Kind =>
-                                                      N_Attribute_Declaration);
-
-                                    Expression : constant Project_Node_Id :=
-                                                   Default_Project_Node
-                                                    (Of_Kind => N_Expression,
-                                                     And_Expr_Kind => Single);
-
-                                    Term : constant Project_Node_Id :=
-                                             Default_Project_Node
-                                               (Of_Kind => N_Term,
-                                                And_Expr_Kind => Single);
-
-                                    Value : constant Project_Node_Id :=
-                                              Default_Project_Node
-                                                (Of_Kind => N_Literal_String,
-                                                 And_Expr_Kind => Single);
-
-                                 begin
-                                    Set_Next_Declarative_Item
-                                      (Decl_Item,
-                                       To => First_Declarative_Item_Of
-                                         (Naming_Package));
-                                    Set_First_Declarative_Item_Of
-                                      (Naming_Package, To => Decl_Item);
-                                    Set_Current_Item_Node
-                                      (Decl_Item, To => Attribute);
-
-                                    --  Is it a spec or a body?
-
+                                 if Opt.Verbose_Mode then
                                     if SFN_Prag.Spec then
-                                       Set_Name_Of
-                                         (Attribute, To => Name_Spec);
+                                       Output.Write_Str ("      spec of ");
+
                                     else
-                                       Set_Name_Of
-                                         (Attribute,
-                                          To => Name_Body);
+                                       Output.Write_Str ("      body of ");
                                     end if;
 
-                                    --  Get the name of the unit
+                                    Output.Write_Line
+                                      (Get_Name_String (SFN_Prag.Unit));
+                                 end if;
 
-                                    Get_Name_String (SFN_Prag.Unit);
-                                    To_Lower (Name_Buffer (1 .. Name_Len));
-                                    Set_Associative_Array_Index_Of
-                                      (Attribute, To => Name_Find);
+                                 if Project_File then
 
-                                    Set_Expression_Of
-                                      (Attribute, To => Expression);
-                                    Set_First_Term
-                                      (Expression, To => Term);
-                                    Set_Current_Term (Term, To => Value);
+                                    --  Add the corresponding attribute in the
+                                    --  Naming package of the naming project.
 
-                                    --  And set the name of the file
+                                    declare
+                                       Decl_Item : constant Project_Node_Id :=
+                                         Default_Project_Node
+                                           (Of_Kind =>
+                                                N_Declarative_Item);
 
-                                    Set_String_Value_Of
-                                      (Value, To => File_Name_Id);
-                                 end;
+                                       Attribute : constant Project_Node_Id :=
+                                         Default_Project_Node
+                                           (Of_Kind =>
+                                                N_Attribute_Declaration);
 
-                                 --  Add source file name to source list file
+                                       Expression : constant Project_Node_Id :=
+                                         Default_Project_Node
+                                           (Of_Kind => N_Expression,
+                                            And_Expr_Kind => Single);
+
+                                       Term : constant Project_Node_Id :=
+                                         Default_Project_Node
+                                           (Of_Kind => N_Term,
+                                            And_Expr_Kind => Single);
+
+                                       Value : constant Project_Node_Id :=
+                                         Default_Project_Node
+                                           (Of_Kind => N_Literal_String,
+                                            And_Expr_Kind => Single);
+
+                                    begin
+                                       Set_Next_Declarative_Item
+                                         (Decl_Item,
+                                          To => First_Declarative_Item_Of
+                                            (Naming_Package));
+                                       Set_First_Declarative_Item_Of
+                                         (Naming_Package, To => Decl_Item);
+                                       Set_Current_Item_Node
+                                         (Decl_Item, To => Attribute);
+
+                                       --  Is it a spec or a body?
+
+                                       if SFN_Prag.Spec then
+                                          Set_Name_Of
+                                            (Attribute, To => Name_Spec);
+                                       else
+                                          Set_Name_Of
+                                            (Attribute,
+                                             To => Name_Body);
+                                       end if;
+
+                                       --  Get the name of the unit
+
+                                       Get_Name_String (SFN_Prag.Unit);
+                                       To_Lower (Name_Buffer (1 .. Name_Len));
+                                       Set_Associative_Array_Index_Of
+                                         (Attribute, To => Name_Find);
+
+                                       Set_Expression_Of
+                                         (Attribute, To => Expression);
+                                       Set_First_Term
+                                         (Expression, To => Term);
+                                       Set_Current_Term (Term, To => Value);
+
+                                       --  And set the name of the file
+
+                                       Set_String_Value_Of
+                                         (Value, To => File_Name_Id);
+                                       Set_Source_Index_Of
+                                         (Value, To => SFN_Prag.Index);
+                                    end;
+                                 end if;
+                              end loop;
+
+                              if Project_File then
+                                 --  Add source file name to source list
+                                 --  file.
 
                                  Last := Last + 1;
                                  Str (Last) := ASCII.LF;
@@ -1273,7 +1284,15 @@ package body Prj.Makr is
 
                Write_A_String
                  (Get_Name_String (SFN_Pragmas.Table (Index).File));
-               Write_A_String (""");");
+
+               Write_A_String ("""");
+
+               if SFN_Pragmas.Table (Index).Index /= 0 then
+                  Write_A_String (", Index =>");
+                  Write_A_String (SFN_Pragmas.Table (Index).Index'Img);
+               end if;
+
+               Write_A_String (");");
                Write_Eol;
             end loop;
 

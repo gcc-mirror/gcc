@@ -88,6 +88,11 @@ begin
    Write_Str ("  -D dir   Specify dir as the object directory");
    Write_Eol;
 
+   --  Line for -eI
+
+   Write_Str ("  -eI      Index of unit in multi-unit source file");
+   Write_Eol;
+
    --  Line for -eL
 
    Write_Str ("  -eL      Follow symbolic links when processing " &

@@ -815,7 +815,9 @@ package body MLib.Prj is
                      if Defaults /= No_Array_Element then
                         Switches :=
                           Value_Of
-                            (Index => Name_Ada, In_Array => Defaults);
+                            (Index     => Name_Ada,
+                             Src_Index => 0,
+                             In_Array  => Defaults);
 
                         if not Switches.Default then
                            Switch := Switches.Values;

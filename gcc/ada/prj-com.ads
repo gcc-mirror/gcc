@@ -56,6 +56,7 @@ package Prj.Com is
 
    type File_Name_Data is record
       Name         : Name_Id := No_Name;
+      Index        : Int     := 0;
       Display_Name : Name_Id := No_Name;
       Path         : Name_Id := No_Name;
       Display_Path : Name_Id := No_Name;

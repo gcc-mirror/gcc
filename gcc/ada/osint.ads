@@ -92,7 +92,9 @@ package Osint is
    function Number_Of_Files return Int;
    --  gives the total number of filenames found on the command line.
 
-   procedure Add_File (File_Name : String);
+   No_Index : constant := -1;
+
+   procedure Add_File (File_Name : String; Index : Int := No_Index);
    --  Called by the subprogram processing the command line for each
    --  file name found.
 
@@ -379,6 +381,9 @@ package Osint is
    --  every single time the routines are called unless you have previously
    --  called Source_File_Data (Cache => True). See below.
 
+   function Current_File_Index return Int;
+   --  Return the index in its source file of the current main unit
+
    function Matching_Full_Source_Name
      (N : File_Name_Type;
       T : Time_Stamp_Type) return File_Name_Type;
@@ -572,6 +577,11 @@ private
    --  The strings do not have terminating NUL files. The array is
    --  extensible, because when using project files, there may be
    --  more files than arguments on the command line.
+
+   type File_Index_Array is array (Int range <>) of Int;
+   type File_Index_Array_Ptr is access File_Index_Array;
+   File_Indexes : File_Index_Array_Ptr :=
+                    new File_Index_Array (1 .. Int (Argument_Count) + 2);
 
    Current_File_Name_Index : Int := 0;
    --  The index in File_Names of the last file opened by Next_Main_Source

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Scans;     use Scans;
 with Snames;
 with Table;
 with Types;     use Types;
+with Uintp;     use Uintp;
 
 package body Prj.Strt is
 
@@ -115,7 +116,8 @@ package body Prj.Strt is
      (Term            : out Project_Node_Id;
       Expr_Kind       : in out Variable_Kind;
       Current_Project : Project_Node_Id;
-      Current_Package : Project_Node_Id);
+      Current_Package : Project_Node_Id;
+      Optional_Index  : Boolean);
    --  Recursive procedure to parse one term or several terms concatenated
    --  using "&".
 
@@ -454,7 +456,8 @@ package body Prj.Strt is
    procedure Parse_Expression
      (Expression      : out Project_Node_Id;
       Current_Project : Project_Node_Id;
-      Current_Package : Project_Node_Id)
+      Current_Package : Project_Node_Id;
+      Optional_Index  : Boolean)
    is
       First_Term      : Project_Node_Id := Empty_Node;
       Expression_Kind : Variable_Kind := Undefined;
@@ -470,7 +473,8 @@ package body Prj.Strt is
       Terms (Term            => First_Term,
              Expr_Kind       => Expression_Kind,
              Current_Project => Current_Project,
-             Current_Package => Current_Package);
+             Current_Package => Current_Package,
+             Optional_Index  => Optional_Index);
 
       --  Set the first term and the expression kind
 
@@ -1077,7 +1081,8 @@ package body Prj.Strt is
      (Term            : out Project_Node_Id;
       Expr_Kind       : in out Variable_Kind;
       Current_Project : Project_Node_Id;
-      Current_Package : Project_Node_Id)
+      Current_Package : Project_Node_Id;
+      Optional_Index  : Boolean)
    is
       Next_Term          : Project_Node_Id := Empty_Node;
       Term_Id            : Project_Node_Id := Empty_Node;
@@ -1143,7 +1148,8 @@ package body Prj.Strt is
                   Current_Location := Token_Ptr;
                   Parse_Expression (Expression      => Next_Expression,
                                     Current_Project => Current_Project,
-                                    Current_Package => Current_Package);
+                                    Current_Package => Current_Package,
+                                    Optional_Index  => Optional_Index);
 
                   --  The expression kind is String list, report an error
 
@@ -1198,6 +1204,37 @@ package body Prj.Strt is
             --  Scan past the string literal
 
             Scan;
+
+            if Token = Tok_At then
+               if not Optional_Index then
+                  Error_Msg ("index not allowed here", Token_Ptr);
+                  Scan;
+
+                  if Token = Tok_Integer_Literal then
+                     Scan;
+                  end if;
+
+               else
+                  Scan;
+                  Expect (Tok_Integer_Literal, "integer literal");
+
+                  if Token = Tok_Integer_Literal then
+                     declare
+                        Index : constant Int := UI_To_Int (Int_Literal_Value);
+                     begin
+                        if Index = 0 then
+                           Error_Msg ("index cannot be zero", Token_Ptr);
+
+                        else
+                           --  Set the index
+                           Set_Source_Index_Of (Term_Id, To => Index);
+                        end if;
+                     end;
+
+                     Scan;
+                  end if;
+               end if;
+            end if;
 
          when Tok_Identifier =>
             Current_Location := Token_Ptr;
@@ -1292,7 +1329,8 @@ package body Prj.Strt is
          Terms (Term            => Next_Term,
                 Expr_Kind       => Expr_Kind,
                 Current_Project => Current_Project,
-                Current_Package => Current_Package);
+                Current_Package => Current_Package,
+                Optional_Index  => Optional_Index);
 
          --  And link the next term to this term
 

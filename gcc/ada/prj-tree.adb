@@ -111,6 +111,7 @@ package body Prj.Tree is
             Packages         => Empty_Node,
             Pkg_Id           => Empty_Package,
             Name             => No_Name,
+            Src_Index        => 0,
             Path_Name        => No_Name,
             Value            => No_Name,
             Field1           => Empty_Node,
@@ -157,6 +158,7 @@ package body Prj.Tree is
                Packages         => Empty_Node,
                Pkg_Id           => Empty_Package,
                Name             => No_Name,
+               Src_Index        => 0,
                Path_Name        => No_Name,
                Value            => Comments.Table (J).Value,
                Field1           => Empty_Node,
@@ -203,7 +205,6 @@ package body Prj.Tree is
 
       Comments.Set_Last (0);
    end Add_Comments;
-
 
    --------------------------------
    -- Associative_Array_Index_Of --
@@ -310,6 +311,7 @@ package body Prj.Tree is
          Packages         => Empty_Node,
          Pkg_Id           => Empty_Package,
          Name             => No_Name,
+         Src_Index        => 0,
          Path_Name        => No_Name,
          Value            => No_Name,
          Field1           => Empty_Node,
@@ -379,6 +381,7 @@ package body Prj.Tree is
          Packages         => Empty_Node,
          Pkg_Id           => Empty_Package,
          Name             => No_Name,
+         Src_Index        => 0,
          Path_Name        => No_Name,
          Value            => No_Name,
          Field1           => Empty_Node,
@@ -411,6 +414,7 @@ package body Prj.Tree is
                Packages         => Empty_Node,
                Pkg_Id           => Empty_Package,
                Name             => No_Name,
+               Src_Index        => 0,
                Path_Name        => No_Name,
                Value            => No_Name,
                Field1           => Empty_Node,
@@ -441,6 +445,7 @@ package body Prj.Tree is
                   Packages         => Empty_Node,
                   Pkg_Id           => Empty_Package,
                   Name             => No_Name,
+                  Src_Index        => 0,
                   Path_Name        => No_Name,
                   Value            => Comments.Table (J).Value,
                   Field1           => Empty_Node,
@@ -2323,6 +2328,24 @@ package body Prj.Tree is
       Project_Nodes.Table (Node).Field1 := To;
    end Set_Project_Of_Renamed_Package_Of;
 
+   -------------------------
+   -- Set_Source_Index_Of --
+   -------------------------
+
+   procedure Set_Source_Index_Of
+     (Node : Project_Node_Id;
+      To   : Int)
+   is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+           (Project_Nodes.Table (Node).Kind = N_Literal_String
+            or else
+            Project_Nodes.Table (Node).Kind = N_Attribute_Declaration));
+      Project_Nodes.Table (Node).Src_Index := To;
+   end Set_Source_Index_Of;
+
    ------------------------
    -- Set_String_Type_Of --
    ------------------------
@@ -2367,6 +2390,21 @@ package body Prj.Tree is
              Project_Nodes.Table (Node).Kind = N_Literal_String));
       Project_Nodes.Table (Node).Value := To;
    end Set_String_Value_Of;
+
+   ---------------------
+   -- Source_Index_Of --
+   ---------------------
+
+   function Source_Index_Of (Node : Project_Node_Id) return Int is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+           (Project_Nodes.Table (Node).Kind = N_Literal_String
+            or else
+            Project_Nodes.Table (Node).Kind = N_Attribute_Declaration));
+      return Project_Nodes.Table (Node).Src_Index;
+   end Source_Index_Of;
 
    --------------------
    -- String_Type_Of --
@@ -2449,6 +2487,5 @@ package body Prj.Tree is
    begin
       return Unkept_Comments;
    end There_Are_Unkept_Comments;
-
 
 end Prj.Tree;

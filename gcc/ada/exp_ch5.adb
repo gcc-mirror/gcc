@@ -702,13 +702,9 @@ package body Exp_Ch5 is
                     Duplicate_Subexpr (Right_Lo, Name_Req => True),
                     Duplicate_Subexpr (Right_Hi, Name_Req => True));
 
-                  if Forwards_OK (N) then
-                     Append_To (Actuals,
-                       New_Occurrence_Of (Standard_False, Loc));
-                  else
-                     Append_To (Actuals,
-                       New_Occurrence_Of (Standard_True, Loc));
-                  end if;
+                  Append_To (Actuals,
+                    New_Occurrence_Of (
+                      Boolean_Literals (not Forwards_OK (N)), Loc));
 
                   Rewrite (N,
                     Make_Procedure_Call_Statement (Loc,

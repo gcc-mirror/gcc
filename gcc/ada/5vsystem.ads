@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (OpenVMS DEC Threads Version)                      --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -63,6 +63,7 @@ pragma Pure (System);
    --  Storage-related Declarations
 
    type Address is private;
+   subtype Short_Address is Address;
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;

@@ -191,7 +191,6 @@ package VMS_Data is
    -- Switches for GNAT BIND --
    ----------------------------
 
-
    S_Bind_Bind    : aliased constant S := "/BIND_FILE="                    &
                                             "ADA "                         &
                                                "-A "                       &
@@ -489,7 +488,6 @@ package VMS_Data is
    S_Bind_ReportX : aliased constant S := "/NOREPORT_ERRORS "              &
                                             "!-b,!-v";
    --  NODOC (see /REPORT_ERRORS)
-
 
    S_Bind_Restr   : aliased constant S := "/RESTRICTION_LIST "             &
                                             "-r";
@@ -814,6 +812,13 @@ package VMS_Data is
    --
    --   Output a message explaining the usage of gnatclean.
 
+   S_Clean_Index   : aliased constant S := "/SOURCE_INDEX=#"               &
+                                             "-i#";
+   --        /SOURCE_INDEX=nnn
+   --
+   --   Specifies the index of the units in the source file
+   --   By default, source files are mono-unit and there is no index
+
    S_Clean_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="       &
                                             "DEFAULT "                     &
                                                "-vP0 "                     &
@@ -832,7 +837,6 @@ package VMS_Data is
    --
    --      HIGH        A great number of messages are output, most of them not
    --                  being useful for the user.
-
 
    S_Clean_Object  : aliased constant S := "/OBJECT_SEARCH=*"              &
                                             "-aO*";
@@ -892,6 +896,7 @@ package VMS_Data is
       S_Clean_Ext    'Access,
       S_Clean_Full   'Access,
       S_Clean_Help   'Access,
+      S_Clean_Index  'Access,
       S_Clean_Mess   'Access,
       S_Clean_Object 'Access,
       S_Clean_Project'Access,
@@ -3738,6 +3743,15 @@ package VMS_Data is
    --   are found on the Ada object path, the new object and ALI files are
    --   created in the directory containing the source being compiled.
 
+   S_Make_Index   : aliased constant S := "/SOURCE_INDEX=#"               &
+                                             "-eI#";
+   --        /SOURCE_INDEX=nnn
+   --
+   --   Specifies the index of the units in the source file
+   --   By default, source files are mono-unit and there is no index
+   --   When /SOURCE_INDEX=nnn is specified, only one main may be specified
+   --   on the command line.
+
    S_Make_Library : aliased constant S := "/LIBRARY_SEARCH=*"              &
                                             "-L*";
    --        /LIBRARY_SEARCH=(directory[,...])
@@ -3965,6 +3979,7 @@ package VMS_Data is
       S_Make_Force   'Access,
       S_Make_Full    'Access,
       S_Make_Inplace 'Access,
+      S_Make_Index   'Access,
       S_Make_Library 'Access,
       S_Make_Link    'Access,
       S_Make_Make    'Access,

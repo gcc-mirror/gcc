@@ -35,6 +35,7 @@ package Prj.Util is
    function Executable_Of
      (Project  : Project_Id;
       Main     : Name_Id;
+      Index    : Int;
       Ada_Main : Boolean := True) return Name_Id;
    --  Return the value of the attribute Builder'Executable for file Main in
    --  the project Project, if it exists. If there is no attribute Executable
@@ -59,8 +60,9 @@ package Prj.Util is
    --  associative array.
 
    function Value_Of
-     (Index    : Name_Id;
-      In_Array : Array_Element_Id) return Variable_Value;
+     (Index     : Name_Id;
+      Src_Index : Int := 0;
+      In_Array  : Array_Element_Id) return Variable_Value;
    --  Get a string array component (single String or String list).
    --  Returns Nil_Variable_Value if there is no component Index
    --  or if In_Array is null.
@@ -72,6 +74,7 @@ package Prj.Util is
 
    function Value_Of
      (Name                    : Name_Id;
+      Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id) return Variable_Value;
    --  In a specific package,

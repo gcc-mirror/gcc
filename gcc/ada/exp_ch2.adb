@@ -218,12 +218,13 @@ package body Exp_Ch2 is
 
          and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
 
-         --  Same for Asm_Input and Asm_Output attribute references.
+         --  Same for Asm_Input and Asm_Output attribute references
 
          and then not (Nkind (Parent (N)) = N_Attribute_Reference
-           and then (Attribute_Name (Parent (N)) = Name_Asm_Input
-             or else Attribute_Name (Parent (N)) = Name_Asm_Output))
-
+                         and then
+                           (Attribute_Name (Parent (N)) = Name_Asm_Input
+                              or else
+                            Attribute_Name (Parent (N)) = Name_Asm_Output))
       then
          --  Case of Current_Value is a compile time known value
 

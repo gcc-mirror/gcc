@@ -269,10 +269,12 @@ begin
    Write_Switch_Char ("Q");
    Write_Line ("Don't quit, write ali/tree file even if compile errors");
 
-   --  Line for -gnatR switch
+   --  Lines for -gnatR switch
 
    Write_Switch_Char ("R?");
-   Write_Line ("List rep inf (?=0/1/2/3 for none/types/all/variable)");
+   Write_Line ("List rep info (?=0/1/2/3 for none/types/all/variable)");
+   Write_Switch_Char ("R?s");
+   Write_Line ("List rep info to file.rep instead of standard output");
 
    --  Lines for -gnats switch
 

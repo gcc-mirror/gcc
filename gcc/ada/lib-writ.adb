@@ -600,6 +600,7 @@ package body Lib.Writ is
          Pname      : constant Unit_Name_Type :=
                         Get_Parent_Spec_Name (Unit_Name (Main_Unit));
          Body_Fname : File_Name_Type;
+         Body_Index : Nat;
 
       begin
          --  Loop to build the with table. A with on the main unit itself
@@ -657,12 +658,18 @@ package body Lib.Writ is
                       (Get_Body_Name (Uname),
                        Subunit => False, May_Fail => True);
 
+                  Body_Index :=
+                    Get_Unit_Index
+                      (Get_Body_Name (Uname));
+
                   if Body_Fname = No_File then
                      Body_Fname := Get_File_Name (Uname, Subunit => False);
+                     Body_Index := Get_Unit_Index (Uname);
                   end if;
 
                else
                   Body_Fname := Get_File_Name (Uname, Subunit => False);
+                  Body_Index := Get_Unit_Index (Uname);
                end if;
 
                --  A package is considered to have a body if it requires
@@ -675,7 +682,7 @@ package body Lib.Writ is
                   Write_Info_Name (Body_Fname);
                   Write_Info_Tab (49);
                   Write_Info_Name
-                    (Lib_File_Name (Body_Fname, Munit_Index (Unum)));
+                    (Lib_File_Name (Body_Fname, Body_Index));
                else
                   Write_Info_Name (Fname);
                   Write_Info_Tab (49);

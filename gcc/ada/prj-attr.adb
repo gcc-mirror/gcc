@@ -39,7 +39,9 @@ package body Prj.Attr is
 
    --  The first letter is one of
    --    'S' for Single
-   --    'L' for list
+   --    's' for Single with optional index
+   --    'L' for List
+   --    'l' for List of strings with optional indexes
 
    --  The second letter is one of
    --    'V' for single variable
@@ -47,6 +49,7 @@ package body Prj.Attr is
    --    'a' for case insensitive associative array
    --    'b' for associative array, case insensitive if file names are case
    --        insensitive
+   --    'c' same as 'b', with optional index
 
    --  End is indicated by two consecutive '#'.
 
@@ -72,7 +75,7 @@ package body Prj.Attr is
      "SVlibrary_symbol_file#" &
      "SVlibrary_symbol_policy#" &
      "SVlibrary_reference_symbol_file#" &
-     "LVmain#" &
+     "lVmain#" &
      "LVlanguages#" &
      "SVmain_language#" &
 
@@ -86,10 +89,10 @@ package body Prj.Attr is
      "SVseparate_suffix#" &
      "SVcasing#" &
      "SVdot_replacement#" &
-     "SAspecification#" &
-     "SAspec#" &
-     "SAimplementation#" &
-     "SAbody#" &
+     "sAspecification#" &
+     "sAspec#" &
+     "sAimplementation#" &
+     "sAbody#" &
      "Laspecification_exceptions#" &
      "Laimplementation_exceptions#" &
 
@@ -97,15 +100,15 @@ package body Prj.Attr is
 
      "Pcompiler#" &
      "Ladefault_switches#" &
-     "Lbswitches#" &
+     "Lcswitches#" &
      "SVlocal_configuration_pragmas#" &
 
    --  package Builder
 
      "Pbuilder#" &
      "Ladefault_switches#" &
-     "Lbswitches#" &
-     "Sbexecutable#" &
+     "Lcswitches#" &
+     "Scexecutable#" &
      "SVexecutable_suffix#" &
      "SVglobal_configuration_pragmas#" &
 
@@ -118,13 +121,13 @@ package body Prj.Attr is
 
      "Pbinder#" &
      "Ladefault_switches#" &
-     "Lbswitches#" &
+     "Lcswitches#" &
 
    --  package Linker
 
      "Plinker#" &
      "Ladefault_switches#" &
-     "Lbswitches#" &
+     "Lcswitches#" &
      "LVlinker_options#" &
 
    --  package Cross_Reference
@@ -184,6 +187,7 @@ package body Prj.Attr is
       Current_Attribute : Attribute_Node_Id  := Empty_Attribute;
       Is_An_Attribute   : Boolean            := False;
       Kind_1            : Variable_Kind      := Undefined;
+      Optional_Index    : Boolean            := False;
       Kind_2            : Attribute_Kind     := Single;
       Package_Name      : Name_Id            := No_Name;
       Attribute_Name    : Name_Id            := No_Name;
@@ -232,10 +236,20 @@ package body Prj.Attr is
                Start := Finish + 1;
 
             when 'S' =>
-               Kind_1 := Single;
+               Kind_1         := Single;
+               Optional_Index := False;
+
+            when 's' =>
+               Kind_1         := Single;
+               Optional_Index := True;
 
             when 'L' =>
-               Kind_1 := List;
+               Kind_1         := List;
+               Optional_Index := False;
+
+            when 'l' =>
+               Kind_1         := List;
+               Optional_Index := True;
 
             when others =>
                raise Program_Error;
@@ -263,6 +277,14 @@ package body Prj.Attr is
                      Kind_2 := Case_Insensitive_Associative_Array;
                   end if;
 
+               when 'c' =>
+                  if File_Names_Case_Sensitive then
+                     Kind_2 := Optional_Index_Associative_Array;
+                  else
+                     Kind_2 :=
+                       Optional_Index_Case_Insensitive_Associative_Array;
+                  end if;
+
                when others =>
                   raise Program_Error;
             end case;
@@ -279,6 +301,7 @@ package body Prj.Attr is
               To_Lower (Initialization_Data (Start .. Finish - 1));
             Attribute_Name := Name_Find;
             Attributes.Increment_Last;
+
             if Current_Attribute = Empty_Attribute then
                First_Attribute := Attributes.Last;
 
@@ -306,10 +329,11 @@ package body Prj.Attr is
 
             Current_Attribute := Attributes.Last;
             Attributes.Table (Current_Attribute) :=
-              (Name    => Attribute_Name,
-               Kind_1  => Kind_1,
-               Kind_2  => Kind_2,
-               Next    => Empty_Attribute);
+              (Name           => Attribute_Name,
+               Kind_1         => Kind_1,
+               Optional_Index => Optional_Index,
+               Kind_2         => Kind_2,
+               Next           => Empty_Attribute);
             Start := Finish + 1;
          end if;
       end loop;
