@@ -42,6 +42,13 @@
 #include <bits/std_cstdarg.h>
 
 #if _GLIBCPP_HAVE_WCHAR_H
+// Need to mangle these "C" functions because C++ modifies their signature.
+#define wcschr  __glibcpp_wcschr
+#define wcsbrk  __glibcpp_wcspbrk
+#define wcsrchr  __glibcpp_wcsrchr
+#define wcsstr  __glibcpp_wcsstr
+#define wmemchr  __glibcpp_wmemchr
+
 #pragma GCC system_header
 #include <wchar.h>
 #endif
@@ -156,54 +163,40 @@ namespace std
   extern "C" int wcscoll(const wchar_t*, const wchar_t*); 
   extern "C" int wcsncmp(const wchar_t*, const wchar_t*, size_t); 
   extern "C" size_t wcsxfrm(wchar_t*, const wchar_t*, size_t); 
-
-  inline const wchar_t*
-  wcschr(const wchar_t* __p, wchar_t __c)
-  { return const_cast<const wchar_t*>(::wcschr(__p, __c)); }
-
+  extern "C" const wchar_t* wcschr(const wchar_t*, wchar_t); 
   inline wchar_t*
   wcschr(wchar_t* __p, wchar_t __c)
-  { return ::wcschr(const_cast<const wchar_t*>(__p), __c); }
-
+  {
+    return const_cast<wchar_t*>(wcschr(const_cast<const wchar_t*>(__p), __c));
+  }
   extern "C" size_t wcscspn(const wchar_t*, const wchar_t*); 
   extern "C" size_t wcslen(const wchar_t*); 
-
-  inline const wchar_t*
-  wcspbrk(const wchar_t* __s1, wchar_t* __s2)
-  { return const_cast<const wchar_t*>(::wcspbrk(__s1, __s2)); }
-
+  extern "C" const wchar_t* wcspbrk(const wchar_t*, const wchar_t*); 
   inline wchar_t*
   wcspbrk(wchar_t* __s1, wchar_t* __s2)
-  { return ::wcspbrk(const_cast<const wchar_t*>(__s1), __s2); }
-
-  inline const wchar_t*
-  wcsrchr(const wchar_t* __p, wchar_t __c)
-  { return const_cast<const wchar_t*>(::wcsrchr(__p, __c)); }
-
+  {
+    return const_cast<wchar_t*>(wcspbrk(const_cast<const wchar_t*>(__s1), __s2));
+  }
+  extern "C" const wchar_t* wcsrchr(const wchar_t*, wchar_t); 
   inline wchar_t*
   wcsrchr(wchar_t* __p, wchar_t __c)
-  { return ::wcsrchr(const_cast<const wchar_t*>(__p), __c); }
-
+  {
+    return const_cast<wchar_t*>(wcsrchr(const_cast<const wchar_t*>(__p), __c));
+  }
   extern "C" size_t wcsspn(const wchar_t*, const wchar_t*); 
-
-  inline const wchar_t*
-  wcsstr(const wchar_t* __s1, wchar_t* __s2)
-  { return const_cast<const wchar_t*>(::wcsstr(__s1, __s2)); }
-
+  extern "C" const wchar_t* wcsstr(const wchar_t*, const wchar_t*); 
   inline wchar_t*
   wcsstr(wchar_t* __s1, wchar_t* __s2)
-  { return ::wcsstr(const_cast<const wchar_t*>(__s1), __s2); }
-
+  {
+    return const_cast<wchar_t*>(wcsstr(const_cast<const wchar_t*>(__s1), __s2));
+  }
   extern "C" wchar_t* wcstok(wchar_t*, const wchar_t*, wchar_t**); 
-
-  inline const wchar_t*
-  wmemchr(const wchar_t* __p, wchar_t __c, size_t __n)
-  { return const_cast<wchar_t*>(::wmemchr(__p, __c, __n)); }
-
+  extern "C" const wchar_t* wmemchr(const wchar_t*, wchar_t, size_t);
   inline wchar_t*
   wmemchr(wchar_t* __p, wchar_t __c, size_t __n)
-  { return ::wmemchr(const_cast<const wchar_t*>(__p), __c, __n); }
-
+  {
+    return const_cast<wchar_t*>(wmemchr(const_cast<const wchar_t*>(__p), __c, __n));
+  }
   extern "C" int wmemcmp(const wchar_t*, const wchar_t*, size_t); 
   extern "C" wchar_t* wmemcpy(wchar_t*, const wchar_t*, size_t); 
   extern "C" wchar_t* wmemmove(wchar_t*, const wchar_t*, size_t); 

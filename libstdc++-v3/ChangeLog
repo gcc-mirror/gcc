@@ -1,3 +1,21 @@
+2001-05-21  Stephen M. Webb  <stephen@bregmasoft.com>
+
+	* include/c_std/bits/std_cstring.h (memchr): Define "C" functions to
+	__glibcpp_memchr.
+	(strchr): Same, but to __glibcpp_strchr.
+	(strpbrk): Same.
+	(strrchr): Same.
+	(strstr): Same.  
+	* include/c_std/bits/std_cwchar.h (wcschr): Same.
+	(wcsbrk): Same.
+	(wcsrchr): Same.
+	(wcsstr): Same.
+	(wmemchr): Same.
+
+2001-05-21  Benjamin Kosnik  <bkoz@kredhat.com>
+
+	* testsuite/21_strings/c_strings.cc (main): Fix.
+
 2001-05-19  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4:  Fix --help spacing, correct comments.
