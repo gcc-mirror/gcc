@@ -1,3 +1,8 @@
+Wed Jun  9 06:50 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	*fixinc/inclhack.def(sun_auth_proto): bypass the patch if
+	the typed arguments are not part of a comment
+
 Wed Jun  9 22:57:02 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* invoke.texi: Add C4x invocation docs.
