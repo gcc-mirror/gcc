@@ -659,8 +659,8 @@ LSYM(Lml_r):
 	orr	r3, r3, xh, lsl r5
 	mov	xl, xh, lsr r4
 	bic	xh, xh, #0x7fffffff
-	adds	xl, xl, r3, lsr #31
-	adc	xh, xh, #0
+	bic	xl, xl, xh, lsr r4
+	add	xl, xl, r3, lsr #31
 	orrs	r6, r6, lr
 	teqeq	r3, #0x80000000
 	biceq	xl, xl, #1
