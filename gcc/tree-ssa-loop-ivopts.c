@@ -2908,7 +2908,7 @@ iv_value (struct iv *iv, tree niter)
   tree type = TREE_TYPE (iv->base);
 
   niter = fold_convert (type, niter);
-  val = fold (build2 (MULT_EXPR, type, iv->step, niter));
+  val = fold (build2 (MULT_EXPR, type, iv->step, unsave_expr_now (niter)));
 
   return fold (build2 (PLUS_EXPR, type, iv->base, val));
 }
