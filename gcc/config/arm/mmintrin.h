@@ -419,7 +419,7 @@ _mm_madd_pu16 (__m64 __m1, __m64 __m2)
 static __inline __m64
 _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
 {
-  return (__m64) __builtin_arm_wmulsh ((__v4hi)__m1, (__v4hi)__m2);
+  return (__m64) __builtin_arm_wmulsm ((__v4hi)__m1, (__v4hi)__m2);
 }
 
 /* Multiply four signed 16-bit values in M1 by four signed 16-bit values in
@@ -427,7 +427,7 @@ _mm_mulhi_pi16 (__m64 __m1, __m64 __m2)
 static __inline __m64
 _mm_mulhi_pu16 (__m64 __m1, __m64 __m2)
 {
-  return (__m64) __builtin_arm_wmuluh ((__v4hi)__m1, (__v4hi)__m2);
+  return (__m64) __builtin_arm_wmulum ((__v4hi)__m1, (__v4hi)__m2);
 }
 
 /* Multiply four 16-bit values in M1 by four 16-bit values in M2 and produce
@@ -986,18 +986,18 @@ _mm_setzero_si64 (void)
    the rest are reserved.  */
 
 static __inline void
-_mm_setwcx (const int __regno, const int __value)
+_mm_setwcx (const int __value, const int __regno)
 {
   switch (__regno)
     {
-    case 0:  __builtin_arm_setwcx (0, __value); break;
-    case 1:  __builtin_arm_setwcx (1, __value); break;
-    case 2:  __builtin_arm_setwcx (2, __value); break;
-    case 3:  __builtin_arm_setwcx (3, __value); break;
-    case 8:  __builtin_arm_setwcx (8, __value); break;
-    case 9:  __builtin_arm_setwcx (9, __value); break;
-    case 10: __builtin_arm_setwcx (10, __value); break;
-    case 11: __builtin_arm_setwcx (11, __value); break;
+    case 0:  __builtin_arm_setwcx (__value, 0); break;
+    case 1:  __builtin_arm_setwcx (__value, 1); break;
+    case 2:  __builtin_arm_setwcx (__value, 2); break;
+    case 3:  __builtin_arm_setwcx (__value, 3); break;
+    case 8:  __builtin_arm_setwcx (__value, 8); break;
+    case 9:  __builtin_arm_setwcx (__value, 9); break;
+    case 10: __builtin_arm_setwcx (__value, 10); break;
+    case 11: __builtin_arm_setwcx (__value, 11); break;
     default: break;
     }
 }

@@ -1,3 +1,19 @@
+2004-02-14  Ben Elliston  <bje@wasabisystems.com>
+
+	* config/arm/mmintrin.h (_mm_setwcx): Reverse arguments in call to
+	__builtin_arm_setwcx ().
+	* config/arm/arm.c (arm_expand_builtin): Generate operands
+	correctly and reverse their order in call to gen_iwmmxt_tmcr ().
+
+2004-02-14  Ben Elliston  <bje@wasabisystems.com>
+
+	* config/arm/arm.c (bdesc_2arg): Correct builtin names "wmulsh"
+	and "wmuluh" to "wmulsm" and "wmulum", respectively.
+	* config/arm/arm.h (enum arm_builtins): Rename enumerators to
+	ARM_BUILTIN_WMULSM and ARM_BUILTIN_WMULUM.
+	* config/arm/mmintrin.h (_mm_mulhi_pi16): Update intrinsic call.
+	(_mm_mulhi_pu16): Likewise.
+
 2004-02-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* xcoffout.c (xcoff_assign_fundamental_type_number): Check
