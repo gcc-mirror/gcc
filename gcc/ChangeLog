@@ -1,3 +1,10 @@
+Wed Sep 16 01:29:12 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* global.c (reg_allocno): Now static.
+	* reload1.c (reg_allocno): Delete declaration.
+	(order_regs_for_reload): Take no arguments.  Don't treat regs
+	allocated by global differently than those allocated by local-alloc.
+
 Wed Sep 16 01:09:01 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* m68k/m68k.c (output_function_prologue): Reverse NO_ADDSUB_Q
