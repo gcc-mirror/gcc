@@ -474,15 +474,19 @@ AC_ARG_ENABLE(coverage,
 			  optimization. Values are opt, noopt,
 			  default is noopt],
 [case "${enableval}" in
-yes|noopt)
-	coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O0"
-	;;
-opt)
-	coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O2"
-	;;
-*)
-	AC_MSG_ERROR(unknown coverage setting $enableval)
-	;;
+  yes|noopt)
+    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O0"
+    ;;
+  opt)
+    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O2"
+    ;;
+  no)
+    # a.k.a. --disable-coverage
+    coverage_flags=""
+    ;;
+  *)
+    AC_MSG_ERROR(unknown coverage setting $enableval)
+    ;;
 esac],
 [coverage_flags=""])
 AC_SUBST(coverage_flags)
