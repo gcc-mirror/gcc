@@ -2428,7 +2428,7 @@ duplicate_loop_exit_test (loop_start)
 	  if (++num_insns > 20
 	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
 	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX)
-	      || asm_noperands (PATTERN (insn)))
+	      || asm_noperands (PATTERN (insn)) > 0)
 	    return 0;
 	  break;
 	default:
