@@ -209,7 +209,7 @@ toc_section ()						\
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate
    that we can branch to this function without emitting a no-op after the
-   call.  Do not set this flag if the function is weakly defined. */
+   call.  Do not set this flag if the function is weakly defined.  */
 
 #define ENCODE_SECTION_INFO(DECL)			\
   if (TREE_CODE (DECL) == FUNCTION_DECL			\
@@ -403,7 +403,7 @@ toc_section ()						\
 
 /* This is how to output a label for a jump table.  Arguments are the same as
    for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
-   passed. */
+   passed.  */
 
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
 { ASM_OUTPUT_ALIGN (FILE, 2); ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM); }

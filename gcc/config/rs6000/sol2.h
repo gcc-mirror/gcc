@@ -152,7 +152,7 @@ while (0)
 
 
 /* Sun-ppc assembler does not permit '.' in some symbol names.
-   Use 'name_.labelno' instead. */
+   Use 'name_.labelno' instead.  */
 #undef ASM_FORMAT_PRIVATE_NAME
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
