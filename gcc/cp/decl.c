@@ -2529,7 +2529,9 @@ duplicate_decls (newdecl, olddecl)
 	  else if (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == FUNCTION_DECL
 		   && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == FUNCTION_DECL
 		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl))),
-				 TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (newdecl))), 3))
+				 TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (newdecl))), 3)
+		   && comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
+					   DECL_TEMPLATE_PARMS (olddecl)))
 	    {
 	      cp_error ("new declaration `%#D'", newdecl);
 	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
@@ -2563,19 +2565,31 @@ duplicate_decls (newdecl, olddecl)
 	  cp_error_at ("previous declaration as `%#D'", olddecl);
 	}
     }
-  else if ((TREE_CODE (olddecl) == FUNCTION_DECL 
-	    && DECL_TEMPLATE_SPECIALIZATION (olddecl)
-	    && (!DECL_TEMPLATE_SPECIALIZATION (newdecl)
-		|| (DECL_TI_TEMPLATE (newdecl) 
-		    != DECL_TI_TEMPLATE (olddecl))))
-	   || (TREE_CODE (newdecl) == FUNCTION_DECL
-	       && DECL_TEMPLATE_SPECIALIZATION (newdecl)
-	       && (!DECL_TEMPLATE_SPECIALIZATION (olddecl)
-		   || (DECL_TI_TEMPLATE (olddecl) != DECL_TI_TEMPLATE
-		       (newdecl)))))
+  else if (TREE_CODE (newdecl) == FUNCTION_DECL 
+	    && ((DECL_TEMPLATE_SPECIALIZATION (olddecl)
+		 && (!DECL_TEMPLATE_INFO (newdecl)
+		     || (DECL_TI_TEMPLATE (newdecl) 
+			 != DECL_TI_TEMPLATE (olddecl))))
+		|| (DECL_TEMPLATE_SPECIALIZATION (newdecl)
+		    && (!DECL_TEMPLATE_INFO (olddecl)
+			|| (DECL_TI_TEMPLATE (olddecl) 
+			    != DECL_TI_TEMPLATE (newdecl))))))
     /* It's OK to have a template specialization and a non-template
        with the same type, or to have specializations of two
-       different templates with the same type. */
+       different templates with the same type.  Note that if one is a
+       specialization, and the other is an instantiation of the same
+       template, that we do not exit at this point.  That situation
+       can occur if we instantiate a template class, and then
+       specialize one of its methods.  This situation is legal, but
+       the declarations must be merged in the usual way.  */
+    return 0;
+  else if (TREE_CODE (newdecl) == FUNCTION_DECL 
+	   && ((DECL_TEMPLATE_INSTANTIATION (olddecl) 
+		&& !DECL_USE_TEMPLATE (newdecl))
+	       || (DECL_TEMPLATE_INSTANTIATION (newdecl)
+		   && !DECL_USE_TEMPLATE (olddecl))))
+    /* One of the declarations is a template instantiation, and the
+       other is not a template at all.  That's OK.  */
     return 0;
   else
     {
@@ -2860,9 +2874,29 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      if (DECL_TEMPLATE_INSTANTIATION (olddecl) &&
-	  !DECL_TEMPLATE_INSTANTIATION (newdecl)) 
-	DECL_USE_TEMPLATE (olddecl) = DECL_USE_TEMPLATE (newdecl);
+      if (DECL_TEMPLATE_INSTANTIATION (olddecl) 
+	  && !DECL_TEMPLATE_INSTANTIATION (newdecl)) 
+	{
+	  /* If newdecl is not a specialization, then it is not a
+	     template-related function at all.  And that means that we
+	     shoud have exited above, returning 0.  */
+	  my_friendly_assert (DECL_TEMPLATE_SPECIALIZATION (newdecl),
+			      0);
+
+	  if (TREE_USED (olddecl)) 
+	    /* From [temp.expl.spec]:
+	       
+	       If a template, a member template or the member of a class
+	       template is explicitly specialized then that
+	       specialization shall be declared before the first use of
+	       that specialization that would cause an implicit
+	       instantiation to take place, in every translation unit in
+	       which such a use occurs.  */
+	    cp_error ("explicit specialization of %D after first use", 
+		      olddecl);
+
+	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
+	}
       DECL_THIS_INLINE (newdecl) |= DECL_THIS_INLINE (olddecl);
 
       /* If either decl says `inline', this fn is inline, unless its
@@ -2922,8 +2956,8 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      DECL_TEMPLATE_INSTANTIATIONS (newdecl)
-	= DECL_TEMPLATE_INSTANTIATIONS (olddecl);
+      DECL_TEMPLATE_SPECIALIZATIONS (newdecl)
+	= DECL_TEMPLATE_SPECIALIZATIONS (olddecl);
       if (DECL_CHAIN (newdecl) == NULL_TREE)
 	DECL_CHAIN (newdecl) = DECL_CHAIN (olddecl);
     }
@@ -2964,6 +2998,38 @@ duplicate_decls (newdecl, olddecl)
 
 #define ROUND(x) ((x + obstack_alignment_mask (&permanent_obstack)) \
 		  & ~ obstack_alignment_mask (&permanent_obstack))
+
+      if (DECL_TEMPLATE_INSTANTIATION (newdecl))
+	{
+	  /* If newdecl is a template instantiation, it is possible that
+	     the following sequence of events has occurred:
+
+	     o A friend function was declared in a class template.  The
+	     class template was instantiated.  
+
+	     o The instantiation of the friend declaration was 
+	     recorded on the instantiation list, and is newdecl.  
+
+	     o Later, however, instantiate_class_template called pushdecl
+	     on the newdecl to perform name injection.  But, pushdecl in
+	     turn called duplicate_decls when it discovered that another
+	     declaration of a global function with the same name already
+	     existed. 
+
+	     o Here, in duplicate_decls, we decided to clobber newdecl.
+
+	     If we're going to do that, we'd better make sure that
+	     olddecl, and not newdecl, is on the list of
+	     instantiations so that if we try to do the instantiation
+	     again we won't get the clobbered declaration.  */
+
+	  tree tmpl = DECL_TI_TEMPLATE (newdecl); 
+	  tree decls = DECL_TEMPLATE_SPECIALIZATIONS (tmpl); 
+
+	  for (; decls; decls = TREE_CHAIN (decls))
+	    if (TREE_VALUE (decls) == newdecl)
+	      TREE_VALUE (decls) = olddecl;
+	}
 
       if ((char *)newdecl + ROUND (function_size)
 	  + ROUND (sizeof (struct lang_decl))
@@ -6024,6 +6090,13 @@ start_decl (declarator, declspecs, initialized)
 			      context, DECL_NAME (decl));
 		  DECL_CONTEXT (decl) = DECL_CONTEXT (field);
 		}
+	      /* Static data member are tricky; an in-class initialization
+		 still doesn't provide a definition, so the in-class
+		 declaration will have DECL_EXTERNAL set, but will have an
+		 initialization.  Thus, duplicate_decls won't warn
+		 about this situation, and so we check here.  */
+	      if (DECL_INITIAL (decl) && DECL_INITIAL (field))
+		cp_error ("duplicate initialization of %D", decl);
 	      if (duplicate_decls (decl, field))
 		decl = field;
 	    }
@@ -6056,7 +6129,13 @@ start_decl (declarator, declspecs, initialized)
   
   if ((TREE_CODE (decl) != PARM_DECL && DECL_CONTEXT (decl) != NULL_TREE)
       || (TREE_CODE (decl) == TEMPLATE_DECL && !global_bindings_p ())
-      || TREE_CODE (type) == LANG_TYPE)
+      || TREE_CODE (type) == LANG_TYPE
+      /* The declaration of template specializations does not affect
+	 the functions available for overload resolution, so we do not
+	 call pushdecl.  */
+      || (!flag_guiding_decls 
+	  && TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_TEMPLATE_SPECIALIZATION (decl)))
     tem = decl;
   else
     tem = pushdecl (decl);
@@ -6397,9 +6476,12 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl))
 	{
 	  tree stmt = DECL_VINDEX (decl);
-	  DECL_VINDEX (decl) = NULL_TREE;
-	  TREE_OPERAND (stmt, 2) = copy_to_permanent (init);
-	  add_tree (stmt);
+	  if (stmt != NULL_TREE)
+	    {
+	      DECL_VINDEX (decl) = NULL_TREE;
+	      TREE_OPERAND (stmt, 2) = copy_to_permanent (init);
+	      add_tree (stmt);
+	    }
 	}
 
       goto finish_end0;
@@ -6685,7 +6767,11 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       || TREE_CODE (decl) == RESULT_DECL)
     {
       /* ??? FIXME: What about nested classes?  */
-      int toplev = toplevel_bindings_p () || pseudo_global_level_p ();
+      /* We check for FUNCTION_DECL here so that member functions of
+	 local classes, which will have internal linkage, are not
+	 given bizarre names by make_decl_rtl.  */
+      int toplev = toplevel_bindings_p () || pseudo_global_level_p ()
+	|| TREE_CODE (decl) == FUNCTION_DECL;
       int was_temp
 	= (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
 	   && allocation_temporary_p ());
@@ -7367,12 +7453,12 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	break;
       }
 
-  /* Caller will do the rest of this.  */
-  check_explicit_specialization (orig_declarator, decl,
-				 template_count, 
-				 funcdef_flag ? 2 : 
-				 (friendp ? 3 : 0));
+  if (friendp && 
+      TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
+    /* A friend declaration of the form friend void f<>().  */
+    SET_DECL_IMPLICIT_INSTANTIATION (decl);
 
+  /* Caller will do the rest of this.  */
   if (check < 0)
     return decl;
 
@@ -7390,6 +7476,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       DECL_CONSTRUCTOR_P (decl) = 1;
 
       grokclassfn (ctype, declarator, decl, flags, quals);
+
+      check_explicit_specialization (orig_declarator, decl,
+				     template_count, 
+				     funcdef_flag ? 2 : 
+				     (friendp ? 3 : 0));
 
       if (check)
 	{
@@ -7433,12 +7524,17 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       if (ctype != NULL_TREE)
 	grokclassfn (ctype, cname, decl, flags, quals);
 
+      check_explicit_specialization (orig_declarator, decl,
+				     template_count, 
+				     funcdef_flag ? 2 : 
+				     (friendp ? 3 : 0));
+
       if (ctype != NULL_TREE && check)
 	{
 	  tmp = check_classfn (ctype, decl);
 
 	  if (tmp && TREE_CODE (tmp) == TEMPLATE_DECL)
-	    tmp = DECL_TEMPLATE_RESULT(tmp);
+	    tmp = DECL_TEMPLATE_RESULT (tmp);
 	      
 	  if (tmp && DECL_STATIC_FUNCTION_P (tmp)
 	      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
@@ -7466,19 +7562,27 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	 methods, though.  */
       if (! current_function_decl)
 	{
-	  /* FIXME: this should only need to look at
-             IDENTIFIER_GLOBAL_VALUE.  */
-	  tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
-	  if (tmp == NULL_TREE)
-	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
-	  else if (TREE_CODE (tmp) != TREE_CODE (decl))
-	    cp_error ("inconsistent declarations for `%D'", decl);
-	  else
+	  if (!DECL_TEMPLATE_SPECIALIZATION (decl))
 	    {
-	      duplicate_decls (decl, tmp);
-	      decl = tmp;
-	      /* avoid creating circularities.  */
-	      DECL_CHAIN (decl) = NULL_TREE;
+	      /* We don't do this for specializations since the
+		 equivalent checks will be done later.  Also, at this
+		 point the DECL_ASSEMBLER_NAME is not yet fully
+		 accurate.  */
+
+	      /* FIXME: this should only need to look at
+		 IDENTIFIER_GLOBAL_VALUE.  */
+	      tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
+	      if (tmp == NULL_TREE)
+		IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
+	      else if (TREE_CODE (tmp) != TREE_CODE (decl))
+		cp_error ("inconsistent declarations for `%D'", decl);
+	      else
+		{
+		  duplicate_decls (decl, tmp);
+		  decl = tmp;
+		  /* avoid creating circularities.  */
+		  DECL_CHAIN (decl) = NULL_TREE;
+		}
 	    }
 
 	  if (attrlist)
@@ -9169,7 +9273,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    t = ctype;
 	    while (t != NULL_TREE) 
 	      {
-		if (CLASSTYPE_TEMPLATE_INFO (t))
+		if (CLASSTYPE_TEMPLATE_INFO (t) &&
+		    !CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
 		  template_count += 1;
 		t = TYPE_MAIN_DECL (t);
 		if (DECL_LANG_SPECIFIC (t))
@@ -9595,7 +9700,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
-	    publicp = (! friendp || ! staticp);
+	    publicp = (! friendp || ! staticp) && !is_local_class (ctype);
 	    decl = grokfndecl (ctype, type, 
 			       TREE_CODE (declarator) != TEMPLATE_ID_EXPR
 			       ? declarator : dname,
@@ -9811,7 +9916,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	decl = grokfndecl (ctype, type, original_name, declarator,
 			   virtualp, flags, quals, raises, attrlist,
-			   friendp ? 2 : 1, friendp,
+			   1, friendp,
 			   publicp, inlinep, funcdef_flag, 
 			   template_count);
 	if (decl == NULL_TREE)
@@ -10926,8 +11031,8 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	}
 #if 1
       /* This code replaces similar code in layout_basetypes.  */
-      else if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE
-	       && ! (current_template_parms && uses_template_parms (basetype)))
+      else if (! (current_template_parms && uses_template_parms (basetype))
+	       && TYPE_SIZE (complete_type (basetype)) == NULL_TREE)
 	{
 	  cp_error ("base class `%T' has incomplete type", basetype);
 	  continue;
@@ -11506,7 +11611,10 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     push_template_decl (decl1);
   else if (pre_parsed_p == 0)
     {
-      decl1 = pushdecl (decl1);
+      /* A specialization is not used to guide overload resolution.  */
+      if (flag_guiding_decls 
+	  || !DECL_TEMPLATE_SPECIALIZATION (decl1))
+	decl1 = pushdecl (decl1);
       DECL_MAIN_VARIANT (decl1) = decl1;
       fntype = TREE_TYPE (decl1);
     }
@@ -11637,7 +11745,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   if (processing_template_decl)
     {
-      extern tree last_tree;
       ++minimal_parse_mode;
       last_tree = DECL_SAVED_TREE (decl1)
 	= build_nt (EXPR_STMT, void_zero_node);
@@ -12361,8 +12468,20 @@ finish_function (lineno, call_poplevel, nested)
 
   if (! processing_template_decl)
     {
+      int saved_flag_keep_inline_functions =
+	flag_keep_inline_functions;
+
       /* So we can tell if jump_optimize sets it to 1.  */
       can_reach_end = 0;
+
+      if (DECL_CONTEXT (fndecl) != NULL_TREE
+	  && is_local_class (DECL_CONTEXT (fndecl)))
+	/* Trick rest_of_compilation into not deferring output of this
+	   function, even if it is inline, since the rtl_obstack for
+	   this function is the function_obstack of the enclosing
+	   function and will be deallocated when the enclosing
+	   function is gone.  See save_tree_status.  */
+	flag_keep_inline_functions = 1;
 
       /* Run the optimizers and output the assembler code for this
          function.  */
@@ -12383,6 +12502,8 @@ finish_function (lineno, call_poplevel, nested)
 	}
       else
 	rest_of_compilation (fndecl);
+
+      flag_keep_inline_functions = saved_flag_keep_inline_functions;
 
       if (DECL_SAVED_INSNS (fndecl) && ! TREE_ASM_WRITTEN (fndecl))
 	{
@@ -12529,7 +12650,7 @@ start_method (declspecs, declarator)
   if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;
 
-  if (processing_template_decl && ! current_function_decl)
+  if (processing_template_decl)
     push_template_decl (fndecl);
 
   /* We read in the parameters on the maybepermanent_obstack,

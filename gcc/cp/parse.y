@@ -56,7 +56,6 @@ extern int errno;
 
 extern int end_of_file;
 extern int current_class_depth;
-extern tree last_tree;
 
 /* FSF LOCAL dje prefix attributes */
 extern tree strip_attrs		PROTO((tree));
@@ -73,6 +72,7 @@ extern tree strip_attrs		PROTO((tree));
 static char *cond_stmt_keyword;
 
 static tree empty_parms PROTO((void));
+static tree finish_member_template_decl PROTO((tree, tree));
 
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
@@ -94,6 +94,32 @@ empty_parms ()
     parms = NULL_TREE;
   return parms;
 }
+
+
+static tree
+finish_member_template_decl (template_arguments, decl)
+  tree template_arguments;
+  tree decl;
+{
+  if (template_arguments)
+    end_template_decl();
+  else
+    end_specialization();
+
+  if (decl && DECL_TEMPLATE_INFO (decl) &&
+      !DECL_TEMPLATE_SPECIALIZATION (decl))
+    {
+      check_member_template (DECL_TI_TEMPLATE (decl));
+      return DECL_TI_TEMPLATE (decl);
+    }
+
+  if (decl)
+    return decl;
+
+  cp_error ("invalid member template declaration");
+  return NULL_TREE;
+}
+
 %}
 
 %start program
@@ -260,7 +286,7 @@ empty_parms ()
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm
 %type <code>  template_close_bracket
-%type <ttype> template_type template_arg_list template_arg
+%type <ttype> template_type template_arg_list template_arg_list_opt template_arg
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> complete_type_name notype_identifier nonnested_type
@@ -716,26 +742,7 @@ fn.def2:
 	| constructor_declarator
 		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
         | template_header fn.def2 
-                { 
-                  if ($1)
-                    end_template_decl (); 
-		  else
-		    end_specialization ();
-
-		  if ($2 && DECL_TEMPLATE_INFO ($2)
-		      && !DECL_TEMPLATE_SPECIALIZATION ($2))
-		    {
-		      $$ = DECL_TI_TEMPLATE ($2); 
-		      check_member_template ($$);
-		    }
-		  else if ($2)
-		    $$ = $2;
-		  else 
-		    {
-		      cp_error("invalid member template declaration");
-		      $$ = NULL_TREE;
-		    }
-		}
+                { $$ = finish_member_template_decl ($1, $2); }
 	;
 
 return_id:
@@ -848,54 +855,57 @@ identifier_defn:
 	;
 
 explicit_instantiation:
-	  TEMPLATE typespec ';'
-		{ do_type_instantiation ($2.t, NULL_TREE);
+	  TEMPLATE begin_explicit_instantiation typespec ';'
+		{ do_type_instantiation ($3.t, NULL_TREE);
 		  yyungetc (';', 1); }
-	| TEMPLATE typed_declspecs declarator
-		{ tree specs = strip_attrs ($2.t);
-		  do_decl_instantiation (specs, $3, NULL_TREE); }
-	| TEMPLATE notype_declarator
-		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
-	| TEMPLATE constructor_declarator
-		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
-	| SCSPEC TEMPLATE typespec ';'
-		{ do_type_instantiation ($3.t, $1);
-		  yyungetc (';', 1); }
-	| SCSPEC TEMPLATE typed_declspecs declarator
+          end_explicit_instantiation
+	| TEMPLATE begin_explicit_instantiation typed_declspecs declarator
 		{ tree specs = strip_attrs ($3.t);
-		  do_decl_instantiation (specs, $4, $1); }
-	| SCSPEC TEMPLATE notype_declarator
-		{ do_decl_instantiation (NULL_TREE, $3, $1); }
-	| SCSPEC TEMPLATE constructor_declarator
-		{ do_decl_instantiation (NULL_TREE, $3, $1); }
+		  do_decl_instantiation (specs, $4, NULL_TREE); }
+          end_explicit_instantiation
+	| TEMPLATE begin_explicit_instantiation notype_declarator
+		{ do_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
+          end_explicit_instantiation
+	| TEMPLATE begin_explicit_instantiation constructor_declarator
+		{ do_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
+          end_explicit_instantiation
+	| SCSPEC TEMPLATE begin_explicit_instantiation typespec ';'
+		{ do_type_instantiation ($4.t, $1);
+		  yyungetc (';', 1); }
+          end_explicit_instantiation
+	| SCSPEC TEMPLATE begin_explicit_instantiation typed_declspecs 
+          declarator
+		{ tree specs = strip_attrs ($4.t);
+		  do_decl_instantiation (specs, $5, $1); }
+          end_explicit_instantiation
+	| SCSPEC TEMPLATE begin_explicit_instantiation notype_declarator
+		{ do_decl_instantiation (NULL_TREE, $4, $1); }
+          end_explicit_instantiation
+	| SCSPEC TEMPLATE begin_explicit_instantiation constructor_declarator
+		{ do_decl_instantiation (NULL_TREE, $4, $1); }
+          end_explicit_instantiation
 	;
+
+begin_explicit_instantiation: 
+      { begin_explicit_instantiation(); }
+
+end_explicit_instantiation: 
+      { end_explicit_instantiation(); }
 
 /* The TYPENAME expansions are to deal with use of a template class name as
   a template within the class itself, where the template decl is hidden by
   a type decl.  Got all that?  */
 
 template_type:
-	  PTYPENAME '<' template_arg_list template_close_bracket
+	  PTYPENAME '<' template_arg_list_opt template_close_bracket
 		{
-		  $$ = lookup_template_class ($1, $3, NULL_TREE);
+		  $$ = lookup_template_class ($1, $3, NULL_TREE, NULL_TREE);
 		  if ($$ != error_mark_node)
 		    $$ = TYPE_STUB_DECL ($$);
 		}
-	| PTYPENAME '<' template_close_bracket
+	| TYPENAME  '<' template_arg_list_opt template_close_bracket
 		{
-		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
-		  if ($$ != error_mark_node)
-		    $$ = TYPE_STUB_DECL ($$);
-		}
-	| TYPENAME  '<' template_arg_list template_close_bracket
-		{
-		  $$ = lookup_template_class ($1, $3, NULL_TREE);
-		  if ($$ != error_mark_node)
-		    $$ = TYPE_STUB_DECL ($$);
-		}
-	| TYPENAME '<' template_close_bracket
-		{
-		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
+		  $$ = lookup_template_class ($1, $3, NULL_TREE, NULL_TREE);
 		  if ($$ != error_mark_node)
 		    $$ = TYPE_STUB_DECL ($$);
 		}
@@ -903,15 +913,9 @@ template_type:
 	;
 
 self_template_type:
-	  SELFNAME  '<' template_arg_list template_close_bracket
+	  SELFNAME  '<' template_arg_list_opt template_close_bracket
 		{
-		  $$ = lookup_template_class ($1, $3, NULL_TREE);
-		  if ($$ != error_mark_node)
-		    $$ = TYPE_STUB_DECL ($$);
-		}
-	| SELFNAME '<' template_close_bracket
-		{
-		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
+		  $$ = lookup_template_class ($1, $3, NULL_TREE, NULL_TREE);
 		  if ($$ != error_mark_node)
 		    $$ = TYPE_STUB_DECL ($$);
 		}
@@ -927,8 +931,14 @@ template_close_bracket:
 		}
 	;
 
+template_arg_list_opt:
+         /* empty */
+                 { $$ = NULL_TREE; }
+       | template_arg_list
+       ;
+
 template_arg_list:
-	  template_arg
+        template_arg
 		{ $$ = build_tree_list (NULL_TREE, $$); }
 	| template_arg_list ',' template_arg
 		{ $$ = chainon ($$, build_tree_list (NULL_TREE, $3)); }
@@ -1297,22 +1307,19 @@ do_id:
 		{ $$ = do_identifier ($<ttype>-1, 1); }
 
 template_id:
-          PFUNCNAME '<' do_id template_arg_list template_close_bracket 
+          PFUNCNAME '<' do_id template_arg_list_opt template_close_bracket 
                 { $$ = lookup_template_function ($3, $4); }
-        | PFUNCNAME '<' do_id template_close_bracket
-                { $$ = lookup_template_function ($3, NULL_TREE); }
-        | operator_name '<' do_id template_arg_list template_close_bracket
+        | operator_name '<' do_id template_arg_list_opt template_close_bracket
                 { $$ = lookup_template_function ($3, $4); }
-        | operator_name '<' do_id template_close_bracket
-                { $$ = lookup_template_function ($3, NULL_TREE); }
 	;
 
 object_template_id:
-        TEMPLATE identifier '<' template_arg_list template_close_bracket
+        TEMPLATE identifier '<' template_arg_list_opt template_close_bracket
                 { $$ = lookup_template_function ($2, $4); }
-        | TEMPLATE PFUNCNAME '<' template_arg_list template_close_bracket
+        | TEMPLATE PFUNCNAME '<' template_arg_list_opt template_close_bracket
                 { $$ = lookup_template_function ($2, $4); }
-        | TEMPLATE operator_name '<' template_arg_list template_close_bracket
+        | TEMPLATE operator_name '<' template_arg_list_opt 
+          template_close_bracket
                 { $$ = lookup_template_function ($2, $4); }
         ;
 
@@ -1333,7 +1340,7 @@ expr_or_declarator:
 	;
 
 notype_template_declarator:
-	  IDENTIFIER '<' template_arg_list template_close_bracket
+	  IDENTIFIER '<' template_arg_list_opt template_close_bracket
                 { $$ = lookup_template_function ($1, $3); }
 	| NSNAME '<' template_arg_list template_close_bracket
                 { $$ = lookup_template_function ($1, $3); }
@@ -2261,7 +2268,6 @@ structsp:
 		  $$.new_type_flag = 0; }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly 
-                { reset_specialization(); }
           opt.component_decl_list '}' maybe_attribute
 		{
 		  int semi;
@@ -2285,7 +2291,7 @@ structsp:
 		    ;
 		  else
 		    {
-		      $<ttype>$ = finish_struct ($1, $4, $6, semi);
+		      $<ttype>$ = finish_struct ($1, $3, $5, semi);
 		      if (semi) note_got_semicolon ($<ttype>$);
 		    }
 
@@ -2304,10 +2310,13 @@ structsp:
 		}
 	  pending_inlines
 		{ 
-		  $$.t = $<ttype>7;
+		  $$.t = $<ttype>6;
 		  $$.new_type_flag = 1; 
 		  if (current_class_type == NULL_TREE)
 		    clear_inline_text_obstack (); 
+
+		  /* Undo the begin_tree in left_curly.  */
+		  end_tree ();
 		}
 	| class_head  %prec EMPTY
 		{
@@ -2670,6 +2679,12 @@ left_curly:
 		  if (t && IDENTIFIER_TEMPLATE (t))
 		    overload_template_name (t, 1);
 #endif
+		  reset_specialization();
+
+		  /* In case this is a local class within a template
+		     function, we save the current tree structure so
+		     that we can get it back later.  */
+		  begin_tree ();
 		}
 	;
 
@@ -2791,26 +2806,7 @@ component_decl_1:
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
         | template_header component_decl_1 
-                { 
-                  if ($1)
-		    end_template_decl (); 
-                  else
-                    end_specialization ();
-
-		  if ($2 && DECL_TEMPLATE_INFO ($2)
-		      && !DECL_TEMPLATE_SPECIALIZATION ($2))
-		    {
-		      $$ = DECL_TI_TEMPLATE ($2); 
-		      check_member_template ($$);
-		    }
-		  else if ($2)
-		    $$ = $2;
-		  else
-		    {
-		      cp_error("invalid member template declaration");
-		      $$ = NULL_TREE;
-		    }
-		}
+                { $$ = finish_member_template_decl ($1, $2); }
 
 /* The case of exactly one component is handled directly by component_decl.  */
 /* ??? Huh? ^^^ */

@@ -2107,53 +2107,6 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	obstack_free (current_obstack, baselink_vec);
     }
 
-  /* Now, figure out what any member template specializations were
-     specializing.  */
-  for (i = 0; i < TREE_VEC_LENGTH (method_vec); ++i)
-    {
-      tree fn;
-      for (fn = TREE_VEC_ELT (method_vec, i);
-	   fn != NULL_TREE;
-	   fn = DECL_CHAIN (fn))
-	if (DECL_TEMPLATE_SPECIALIZATION (fn))
-	  {
-	    tree f;
-	    tree spec_args;
-
-	    /* If there is a template, and t uses template parms, we
-	       are dealing with a specialization of a member
-	       template in a template class, and we must grab the
-	       template, rather than the function.  */
-	    if (DECL_TI_TEMPLATE (fn) && uses_template_parms (t))
-	      f = DECL_TI_TEMPLATE (fn);
-	    else
-	      f = fn;
-
-	    /* We want the specialization arguments, which will be the
-	       innermost ones.  */
-	    if (DECL_TI_ARGS (f) 
-		&& TREE_CODE (DECL_TI_ARGS (f)) == TREE_VEC)
-	      spec_args 
-		= TREE_VEC_ELT (DECL_TI_ARGS (f), 0);
-	    else
-	      spec_args = DECL_TI_ARGS (f);
-		
-	    check_explicit_specialization 
-	      (lookup_template_function (DECL_NAME (f), spec_args),
-	       f, 0, 1);
-
-	    /* Now, the assembler name will be correct for fn, so we
-	       make its RTL.  */
-	    DECL_RTL (f) = 0;
-	    make_decl_rtl (f, NULL_PTR, 1);
-	    if (f != fn)
-	      {
-		DECL_RTL (fn) = 0;
-		make_decl_rtl (fn, NULL_PTR, 1);
-	      }
-	  }
-    }
-
   return method_vec;
 }
 
@@ -4350,10 +4303,13 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 {
   tree fields = NULL_TREE;
   tree *tail = &TYPE_METHODS (t);
+  tree specializations = NULL_TREE;
+  tree *specialization_tail = &specializations;
   tree name = TYPE_NAME (t);
   tree x, last_x = NULL_TREE;
   tree access;
   tree dummy = NULL_TREE;
+  tree next_x = NULL_TREE;
 
   if (TREE_CODE (name) == TYPE_DECL)
     {
@@ -4402,8 +4358,10 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	    access = access_private_node;
 	}
 
-      for (x = TREE_VALUE (list_of_fieldlists); x; x = TREE_CHAIN (x))
+      for (x = TREE_VALUE (list_of_fieldlists); x; x = next_x)
 	{
+	  next_x = TREE_CHAIN (x);
+
 	  TREE_PRIVATE (x) = access == access_private_node;
 	  TREE_PROTECTED (x) = access == access_protected_node;
 
@@ -4441,8 +4399,23 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	      || DECL_FUNCTION_TEMPLATE_P (x))
 	    {
 	      DECL_CLASS_CONTEXT (x) = t;
+
 	      if (last_x)
-		TREE_CHAIN (last_x) = TREE_CHAIN (x);
+		TREE_CHAIN (last_x) = next_x;
+
+	      if (DECL_TEMPLATE_SPECIALIZATION (x))
+		/* We don't enter the specialization into the class
+		   method vector since specializations don't affect
+		   overloading.  Instead we keep track of the
+		   specializations, and process them after the method
+		   vector is complete.  */
+		{
+		  *specialization_tail = x;
+		  specialization_tail = &TREE_CHAIN (x);
+		  TREE_CHAIN (x) = NULL_TREE;
+		  continue;
+		}
+
 	      /* Link x onto end of TYPE_METHODS.  */
 	      *tail = x;
 	      tail = &TREE_CHAIN (x);
@@ -4524,6 +4497,53 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
     t = finish_struct_1 (t, warn_anon);
 
   TYPE_BEING_DEFINED (t) = 0;
+
+  /* Now, figure out what any member template specializations were
+     specializing.  */
+  for (x = specializations; x != NULL_TREE; x = TREE_CHAIN (x))
+    {
+      tree spec_args;
+      tree fn;
+
+      if (uses_template_parms (t))
+	/* If t is a template class, and x is a specialization, then x
+	   is itself really a template.  Due to the vagaries of the
+	   parser, however, we will have a handle to a function
+	   declaration, rather than the template declaration, at this
+	   point.  */
+	{
+	  my_friendly_assert (DECL_TEMPLATE_INFO (x) != NULL_TREE, 0);
+	  my_friendly_assert (DECL_TI_TEMPLATE (x) != NULL_TREE, 0);
+	  fn = DECL_TI_TEMPLATE (x);
+	}
+      else
+	fn = x;
+
+      /* We want the specialization arguments, which will be the
+	 innermost ones.  */
+      if (DECL_TI_ARGS (fn) && TREE_CODE (DECL_TI_ARGS (fn)) == TREE_VEC)
+	spec_args 
+	  = TREE_VEC_ELT (DECL_TI_ARGS (fn), 0);
+      else
+	spec_args = DECL_TI_ARGS (fn);
+      
+      check_explicit_specialization 
+	(lookup_template_function (DECL_NAME (fn), spec_args),
+	 fn, 0, 1 | (8 * (int) TREE_CHAIN (DECL_TEMPLATE_INFO (fn))));
+
+      TREE_CHAIN (DECL_TEMPLATE_INFO (fn)) = NULL_TREE;
+
+      /* Now, the assembler name will be correct for fn, so we
+	 make its RTL.  */
+      DECL_RTL (fn) = 0;
+      make_decl_rtl (fn, NULL_PTR, 1);
+
+      if (x != fn)
+	{
+	  DECL_RTL (x) = 0;
+	  make_decl_rtl (x, NULL_PTR, 1);
+	}
+    }
 
   if (current_class_type)
     popclass (0);
@@ -5484,3 +5504,21 @@ build_self_reference ()
   pushdecl_class_level (value);
   return value;
 }
+
+
+/* Returns non-zero iff the TYPE is a local class; i.e., if it is
+   declared in a function context, or within a local class.  */
+
+int
+is_local_class (type)
+     tree type;
+{
+  if (type == NULL_TREE || TYPE_CONTEXT (type) == NULL_TREE)
+    return 0;
+
+  if (TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
+    return 1;
+
+  return is_local_class (TYPE_CONTEXT (type));
+}
+

@@ -4481,9 +4481,11 @@ build_unary_op (code, xarg, noconvert)
 	  /* We don't require a match here; it's possible that the
 	     context (like a cast to a particular type) will resolve
 	     the particular choice of template.  */
-	  fn = determine_explicit_specialization (arg, NULL_TREE,
-						  &targs,
-						  0, 0);
+	  fn = determine_specialization (arg,
+					 NULL_TREE,
+					 &targs, 
+					 0, 
+					 0);
 
 	  if (fn)
 	    {
