@@ -2808,6 +2808,7 @@ cacheflush (char *beg, int size, int flag)
 #endif /* sony_news */
 #endif /* L_trampoline */
 
+#ifndef __CYGWIN32__
 #ifdef L__main
 
 #include "gbl-ctors.h"
@@ -2889,6 +2890,7 @@ SYMBOL__MAIN ()
 #endif /* no HAS_INIT_SECTION or INVOKE__main */
 
 #endif /* L__main */
+#endif /* __CYGWIN32__ */
 
 #ifdef L_ctors
 
