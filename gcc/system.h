@@ -159,6 +159,8 @@ extern int errno;
 
 #ifdef HAVE_SYS_PARAM_H
 # include <sys/param.h>
+/* We use this identifier later and it appears in some vendor param.h's. */
+# undef PREFETCH
 #endif
 
 #if HAVE_LIMITS_H
