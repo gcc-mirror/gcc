@@ -2429,7 +2429,7 @@ undo_all ()
     }
 
   obfree (undobuf.storage);
-  undobuf.undos = 0;
+  undobuf.undos = undobuf.previous_undos = 0;
 
   /* Clear this here, so that subsequent get_last_value calls are not
      affected.  */
