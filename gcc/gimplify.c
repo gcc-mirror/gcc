@@ -1426,34 +1426,6 @@ gimplify_conversion (tree *expr_p)
   return GS_OK;
 }
 
-/* Reduce MIN/MAX_EXPR to a COND_EXPR for further gimplification.  */
-
-static enum gimplify_status
-gimplify_minimax_expr (tree *expr_p, tree *pre_p, tree *post_p)
-{
-  tree op1 = TREE_OPERAND (*expr_p, 0);
-  tree op2 = TREE_OPERAND (*expr_p, 1);
-  enum tree_code code;
-  enum gimplify_status r0, r1;
-
-  if (TREE_CODE (*expr_p) == MIN_EXPR)
-    code = LE_EXPR;
-  else
-    code = GE_EXPR;
-
-  r0 = gimplify_expr (&op1, pre_p, post_p, is_gimple_val, fb_rvalue);
-  r1 = gimplify_expr (&op2, pre_p, post_p, is_gimple_val, fb_rvalue);
-
-  *expr_p = build (COND_EXPR, TREE_TYPE (*expr_p),
-		   build (code, boolean_type_node, op1, op2),
-		   op1, op2);
-
-  if (r0 == GS_ERROR || r1 == GS_ERROR)
-    return GS_ERROR;
-  else
-    return GS_OK;
-}
-
 /* Subroutine of gimplify_compound_lval.
    Converts an ARRAY_REF to the equivalent *(&array + offset) form.  */
 
@@ -3883,11 +3855,6 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 			        is_gimple_val, fb_rvalue);
 	    ret = MIN (r0, r1);
 	  }
-	  break;
-
-	case MIN_EXPR:
-	case MAX_EXPR:
-	  ret = gimplify_minimax_expr (expr_p, pre_p, post_p);
 	  break;
 
 	case LABEL_DECL:
