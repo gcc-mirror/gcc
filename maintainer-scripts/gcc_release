@@ -267,6 +267,8 @@ build_tarfiles() {
   build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
 
   # Now, build one for each of the languages.
+  build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
+  build_tarfile gcc-chill-${RELEASE} ${CHILL_DIRS}
   build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
   build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
   build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
@@ -275,8 +277,8 @@ build_tarfiles() {
    
   # The core is everything else.
   EXCLUDES=""
-  for x in ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} ${JAVA_DIRS} \
-           ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
+  for x in ${ADA_DIRS} ${CHILL_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} \
+	   ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
   build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
@@ -292,7 +294,7 @@ build_tarfiles() {
   # Build .bz2 files.
   for f in ${FILE_LIST}; do
     bzfile=${f%.gz}.bz2
-    zcat $f | ${BZIP2} > ${bzfile}
+    (zcat $f | ${BZIP2} > ${bzfile}) || error "Could not create ${bzfile}"
     FILE_LIST="${FILE_LIST} ${bzfile}"
   done
 }
@@ -322,10 +324,11 @@ build_diff() {
   changedir $tmpdir
   tar xfz $1 || error "Could not unpack $1 for diffs"
   tar xfz $3 || error "Could not unpack $3 for diffs"
-  ${DIFF} $2 $4 | ${GZIP} > ../$5
+  ${DIFF} $2 $4 > ../${5%.gz}
   if [ $? -eq 2 ]; then
     error "Trouble making diffs from $1 to $3"
   fi
+  ${GZIP} ../${5%.gz} || error "Could not gzip ../${5%.gz}"
   changedir ..
   rm -rf $tmpdir
   FILE_LIST="${FILE_LIST} $5"
@@ -406,6 +409,8 @@ SOURCE_DIRECTORY=""
 
 # The directories that should be part of the various language-specific
 # tar files.  These are all relative to the top of the source tree.
+ADA_DIRS="gcc/ada"
+CHILL_DIRS="gcc/ch libchill"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN_DIRS="gcc/f libf2c"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
@@ -507,8 +512,8 @@ if [ $SNAPSHOT -eq 0 ]; then
   fi
 else
   RELEASE=$DATE
-  # For now snapshots come from the 3.0 branch.
-  BRANCH=gcc-3_0-branch
+  # For now snapshots come from the mainline.
+  BRANCH=HEAD
   FTP_PATH="${FTP_PATH}/snapshots/${LONG_DATE}"
   TAG=gcc_ss_${DATE}
 
@@ -529,6 +534,8 @@ SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
 
 # Recompute the names of all the language-specific directories,
 # relative to the WORKING_DIRECTORY.
+ADA_DIRS=`adjust_dirs ${ADA_DIRS}`
+CHILL_DIRS=`adjust_dirs ${CHILL_DIRS}`
 CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
 FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
 JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
