@@ -1200,39 +1200,9 @@ dnl Default is no threads, which also disables _IO_MTSAFE_IO in
 dnl libio.  Any actual thread package will enable it.
 dnl
 AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
-  dnl Note this comes from the gcc/config.in and libjava/config.in
-  dnl Efforts should be made to keep this in sync.
-  AC_MSG_CHECKING([for threads package to use])
-  AC_ARG_ENABLE(threads,
-  [  --enable-threads       enable thread usage for target GCC.
-     --enable-threads=LIB   use LIB thread package for target GCC. [default=no]
-  ],
-  if test x$enable_threads = xno; then
-    enable_threads=''
-  fi,
-    enable_threads='')
-
-  enable_threads_flag=$enable_threads
-
-  dnl Check if a valid thread package
-  case x${enable_threads_flag} in
-        x | xno | xnone)
-                # No threads
-                target_thread_file='single'
-                ;;
-        xyes)
-                # default
-                target_thread_file='posix'
-                ;;
-        xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-        xsolaris | xwin32 | xdce | xvxworks)
-                target_thread_file=$enable_threads_flag
-                ;;
-        *)
-                echo "$enable_threads is an unknown thread package" 1>&2
-                exit 1
-                ;;
-  esac
+  AC_MSG_CHECKING([for thread model used by GCC])
+  target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+  AC_MSG_RESULT([$target_thread_file])
 
   dnl Check for thread package actually supported in libstdc++ 
   THREADH=
@@ -1244,13 +1214,13 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
       THREADH=threads-posix.h
       ;;
     decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
-      AC_MSG_ERROR(thread package $THREADS not yet supported)
+      AC_MSG_WARN(disabling unsupported thread package $target_thread_file)
+      THREADH=threads-no.h
       ;;
     *)
-      AC_MSG_ERROR($THREADS is an unsupported/unknown thread package)
+      AC_MSG_ERROR($target_thread_file: unsupported/unknown thread package)
       ;;
   esac
-  AC_MSG_RESULT($THREADH)
 
   AC_LINK_FILES(config/$THREADH, include/bits/c++threads.h)
   if test $THREADH != threads-no.h; then
