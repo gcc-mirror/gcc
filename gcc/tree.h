@@ -2784,7 +2784,6 @@ extern tree fold_builtin				PARAMS ((tree));
 extern enum built_in_function builtin_mathfn_code	PARAMS ((tree));
 extern tree build_function_call_expr			PARAMS ((tree, tree));
 extern tree mathfn_built_in				PARAMS ((tree, enum built_in_function fn));
-extern tree strip_float_extensions			PARAMS ((tree));
 
 /* In convert.c */
 extern tree strip_float_extensions			PARAMS ((tree));
