@@ -3950,7 +3950,7 @@ verify_sequence_points (expr)
   obstack_free (&tlist_obstack, tlist_firstobj);
 }
 
-void
+tree
 c_expand_expr_stmt (expr)
      tree expr;
 {
@@ -3969,7 +3969,7 @@ c_expand_expr_stmt (expr)
     error ("expression statement has incomplete type");
 
   last_expr_type = TREE_TYPE (expr); 
-  add_stmt (build_stmt (EXPR_STMT, expr));
+  return add_stmt (build_stmt (EXPR_STMT, expr));
 }
 
 /* Validate the expression after `case' and apply default promotions.  */

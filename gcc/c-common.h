@@ -467,7 +467,7 @@ extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error			PARAMS ((enum tree_code));
-extern void c_expand_expr_stmt			PARAMS ((tree));
+extern tree c_expand_expr_stmt			PARAMS ((tree));
 extern void c_expand_start_cond			PARAMS ((tree, int));
 extern void c_finish_then                       PARAMS ((void));
 extern void c_expand_start_else			PARAMS ((void));
@@ -713,8 +713,8 @@ extern int anon_aggr_type_p                     PARAMS ((tree));
 extern void emit_local_var                      PARAMS ((tree));
 extern void make_rtl_for_local_static           PARAMS ((tree));
 extern tree expand_cond                         PARAMS ((tree));
-extern void c_expand_return			PARAMS ((tree));
-extern void do_case				PARAMS ((tree, tree));
+extern tree c_expand_return			PARAMS ((tree));
+extern tree do_case				PARAMS ((tree, tree));
 extern tree build_stmt                          PARAMS ((enum tree_code, ...));
 extern tree build_case_label                    PARAMS ((tree, tree, tree));
 extern tree build_continue_stmt                 PARAMS ((void));

@@ -1,3 +1,20 @@
+2000-12-20  Richard Henderson  <rth@redhat.com>
+
+        * c-typeck.c (build_asm_stmt): New, broken out from ...
+        (c_expand_asm_operands): ... here.  Just do rtl expansion.
+        (c_expand_return): Return the new stmt node.
+        (c_start_case, do_case): Likewise.
+        * c-common.c (c_expand_expr_stmt): Likewise.
+        * c-common.h: Update declarations.
+        * c-tree.h: Likewise.
+        * c-semantics.c (build_stmt): Use STMT_LINENO not TREE_COMPLEXITY.
+        * c-parse.in (fndef): Set DECL_SOURCE_LINE to the open brace.
+        (nested_function, notype_nested_function): Likewise.
+        (compstmt): Return the compound statement not the binding level.
+        (lineno_labeled_stmt): Simplify.
+        (lineno_stmt, lineno_label): Set STMT_LINENO.
+        (stmt, label): Return the new stmt node.
+
 2000-12-20  Bernd Schmidt  <bernds@redhat.com>
 
 	* Makefile.in (OBJS): Add sched-ebb.o.

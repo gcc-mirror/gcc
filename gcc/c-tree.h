@@ -275,6 +275,8 @@ extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
 extern tree c_start_case                        PARAMS ((tree));
 extern void c_finish_case                       PARAMS ((void));
+extern tree build_asm_stmt			PARAMS ((tree, tree, tree,
+							 tree, tree));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
