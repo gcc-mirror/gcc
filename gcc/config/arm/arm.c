@@ -53,8 +53,8 @@ static int arm_gen_constant PROTO ((enum rtx_code, enum machine_mode,
 				    HOST_WIDE_INT, rtx, rtx, int, int));
 static int arm_naked_function_p PROTO ((tree));
 static void init_fpa_table PROTO ((void));
-static enum machine_mode select_dominance_cc_mode PROTO ((enum rtx_code, rtx,
-							  rtx, HOST_WIDE_INT));
+static enum machine_mode select_dominance_cc_mode PROTO ((rtx, rtx,
+							  HOST_WIDE_INT));
 static HOST_WIDE_INT add_constant PROTO ((rtx, enum machine_mode, int *));
 static void dump_table PROTO ((rtx));
 static int fixit PROTO ((rtx, enum machine_mode, int));
@@ -68,11 +68,11 @@ static int function_really_clobbers_lr PROTO ((rtx));
 static void emit_multi_reg_push PROTO ((int));
 static void emit_sfm PROTO ((int, int));
 static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
+static int const_ok_for_op RTX_CODE_PROTO ((Hint, Rcode));
 
 /*  Define the information needed to generate branch insns.  This is
    stored from the compare operation. */
 rtx arm_compare_op0, arm_compare_op1;
-int arm_compare_fp;
 
 /* What type of floating point are we tuning for? */
 enum floating_point_type arm_fpu;
@@ -629,11 +629,10 @@ const_ok_for_arm (i)
 }
 
 /* Return true if I is a valid constant for the operation CODE. */
-int
-const_ok_for_op (i, code, mode)
+static int
+const_ok_for_op (i, code)
      HOST_WIDE_INT i;
      enum rtx_code code;
-     enum machine_mode mode;
 {
   if (const_ok_for_arm (i))
     return 1;
@@ -1593,9 +1592,9 @@ arm_finalize_pic ()
    || (X) == arg_pointer_rtx)
 
 int
-arm_rtx_costs (x, code, outer_code)
+arm_rtx_costs (x, code)
      rtx x;
-     enum rtx_code code, outer_code;
+     enum rtx_code code;
 {
   enum machine_mode mode = GET_MODE (x);
   enum rtx_code subcode;
@@ -1701,14 +1700,14 @@ arm_rtx_costs (x, code, outer_code)
 	return (4 + extra_cost + (REG_OR_SUBREG_REG (XEXP (x, 0)) ? 0 : 8)
 		+ ((REG_OR_SUBREG_REG (XEXP (x, 1))
 		    || (GET_CODE (XEXP (x, 1)) == CONST_INT
-			&& const_ok_for_op (INTVAL (XEXP (x, 1)), code, mode)))
+			&& const_ok_for_op (INTVAL (XEXP (x, 1)), code)))
 		   ? 0 : 8));
 
       if (REG_OR_SUBREG_REG (XEXP (x, 0)))
 	return (1 + (GET_CODE (XEXP (x, 1)) == CONST_INT ? 0 : extra_cost)
 		+ ((REG_OR_SUBREG_REG (XEXP (x, 1))
 		    || (GET_CODE (XEXP (x, 1)) == CONST_INT
-			&& const_ok_for_op (INTVAL (XEXP (x, 1)), code, mode)))
+			&& const_ok_for_op (INTVAL (XEXP (x, 1)), code)))
 		   ? 0 : 4));
 
       else if (REG_OR_SUBREG_REG (XEXP (x, 1)))
@@ -1995,7 +1994,7 @@ reg_or_int_operand (op, mode)
 int
 reload_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int regno = true_regnum (op);
 
@@ -2181,7 +2180,7 @@ fpu_add_operand (op, mode)
 int
 power_of_two_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONST_INT)
     {
@@ -2312,7 +2311,7 @@ shift_operator (x, mode)
 
 int equality_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (x) == EQ || GET_CODE (x) == NE;
 }
@@ -2501,7 +2500,7 @@ adjacent_mem_locations (a, b)
 int
 load_multiple_operation (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT count = XVECLEN (op, 0);
   int dest_regno;
@@ -2570,7 +2569,7 @@ load_multiple_operation (op, mode)
 int
 store_multiple_operation (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT count = XVECLEN (op, 0);
   int src_regno;
@@ -3052,7 +3051,7 @@ emit_stm_seq (operands, nops)
 int
 multi_register_push (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != PARALLEL
       || (GET_CODE (XVECEXP (op, 0, 0)) != SET)
@@ -3076,9 +3075,8 @@ multi_register_push (op, mode)
    to do the right thing.  */
 
 int
-arm_valid_machine_decl_attribute (decl, attributes, attr, args)
+arm_valid_machine_decl_attribute (decl, attr, args)
      tree decl;
-     tree attributes;
      tree attr;
      tree args;
 {
@@ -3398,8 +3396,7 @@ gen_rotated_half_load (memref)
 }
 
 static enum machine_mode
-select_dominance_cc_mode (op, x, y, cond_or)
-     enum rtx_code op;
+select_dominance_cc_mode (x, y, cond_or)
      rtx x;
      rtx y;
      HOST_WIDE_INT cond_or;
@@ -3569,7 +3566,7 @@ arm_select_cc_mode (op, x, y)
 	  || XEXP (x, 2) == const1_rtx)
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
-    return select_dominance_cc_mode (op, XEXP (x, 0), XEXP (x, 1), 
+    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 
 				     INTVAL (XEXP (x, 2)));
 
   if (GET_MODE (x) == QImode && (op == EQ || op == NE))
@@ -3588,10 +3585,9 @@ arm_select_cc_mode (op, x, y)
    floating point compare: I don't think that it is needed on the arm.  */
 
 rtx
-gen_compare_reg (code, x, y, fp)
+gen_compare_reg (code, x, y)
      enum rtx_code code;
      rtx x, y;
-     int fp;
 {
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   rtx cc_reg = gen_rtx_REG (mode, 24);
@@ -5962,10 +5958,8 @@ get_arm_condition_code (comparison)
 
 
 void
-final_prescan_insn (insn, opvec, noperands)
+arm_final_prescan_insn (insn)
      rtx insn;
-     rtx *opvec;
-     int noperands;
 {
   /* BODY will hold the body of INSN.  */
   register rtx body = PATTERN (insn);
