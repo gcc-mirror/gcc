@@ -1,5 +1,5 @@
 /* Interface for the Object class for Objective-C.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -93,8 +93,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - perform:(SEL)aSel with:anObject1 with:anObject2;
 
         /* Forwarding */
-- forward:(SEL)aSel :(arglist_t)argFrame;
-- performv:(SEL)aSel :(arglist_t)argFrame;
+- (retval_t)forward:(SEL)aSel :(arglist_t)argFrame;
+- (retval_t)performv:(SEL)aSel :(arglist_t)argFrame;
 
         /* Posing */
 + poseAs:(Class*)aClassObject;
@@ -112,14 +112,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
         /* Archiving */
 + (int)version;
 + setVersion:(int)aVersion;
-
-#ifndef __alpha__ /* TypedStream not supported on alpha yet.  */
 + (int)streamVersion: (TypedStream*)aStream;
 
 - read: (TypedStream*)aStream;
 - write: (TypedStream*)aStream;
-#endif
-
 - awake;
 
 @end

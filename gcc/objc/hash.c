@@ -39,6 +39,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define EXPANSION(cache) \
   ((cache)->size * 2)
 
+void *__objc_xcalloc (size_t, size_t);
+
 cache_ptr
 hash_new (unsigned int size, hash_func_type hash_func,
 	  compare_func_type compare_func)

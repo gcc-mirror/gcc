@@ -40,6 +40,11 @@ const char* __objc_sparse2_id = "2 level sparse indices";
 const char* __objc_sparse3_id = "3 level sparse indices";
 #endif
 
+#ifdef __alpha__
+const void *memcpy (void*, const void*, size_t);
+void free (const void*);
+#endif
+
 void
 sarray_at_put(struct sarray* array, sidx index, void* element)
 {
@@ -117,7 +122,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
     /* The bucket was previously empty (or something like that), */
     /* allocate a new.  This is the effect of `lazy' allocation */  
     *the_bucket = (struct sbucket*)__objc_xmalloc(sizeof(struct sbucket));
-    memcpy( *the_bucket,array->empty_bucket, sizeof(struct sbucket));
+    memcpy((void *) *the_bucket, (const void*)array->empty_bucket, sizeof(struct sbucket));
     (*the_bucket)->version = array->version;
     nbuckets += 1;
 

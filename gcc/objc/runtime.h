@@ -61,12 +61,14 @@ extern BOOL __objc_class_links_resolved;
 extern int __objc_selector_max_index;
 
 #ifdef DEBUG
-#define DEBUG_PRINTF printf
+#define DEBUG_PRINTF(format, args...) printf (format, ## args)
 #else
-#define DEBUG_PRINTF
+#define DEBUG_PRINTF(format, args...)
 #endif 
 
 BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
+SEL  __sel_register_typed_name (const char*, const char*, 
+				struct objc_selector*);
 
 #endif /* not __objc_runtime_INCLUDE_GNU */
 

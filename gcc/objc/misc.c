@@ -30,6 +30,12 @@ void objc_error(id object, const char* fmt, va_list);
 
 void (*_objc_error)(id, const char*, va_list) = objc_error;
 
+#ifdef __alpha__
+#include <stdlib.h>
+extern int write (int, const char*, int);
+extern size_t strlen (const char*);
+#endif
+
 void
 objc_error(id object, const char* fmt, va_list ap)
 {
@@ -40,7 +46,7 @@ objc_error(id object, const char* fmt, va_list ap)
 volatile void
 objc_fatal(const char* msg)
 {
-  write(2, msg, (size_t)strlen((char*)msg));
+  write(2, msg, (int)strlen((const char*)msg));
   abort();
 }
 
@@ -65,8 +71,12 @@ __objc_xrealloc(void* mem, size_t size)
 void*
 __objc_xcalloc(size_t nelem, size_t size)
 {
-  void* res = (void*)calloc(nelem, size);
+#ifdef __alpha__
+  extern bzero (void *, size_t);
+#endif
+  void* res = (void*)malloc(nelem * size);
   if(!res)
     objc_fatal("Virtual memory exhausted\n");
+  bzero (res, nelem * size);
   return res;
 }

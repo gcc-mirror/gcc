@@ -28,7 +28,7 @@ You should have received a copy of the GNU General Public License along with
 
 /* The version number of this runtime.  This must match the number 
    defined in gcc (objc-act.c) */
-#define OBJC_VERSION 5
+#define OBJC_VERSION 6
 #define PROTOCOL_VERSION 2
 
 /* This list contains all modules currently loaded into the runtime */
@@ -48,6 +48,11 @@ static void __objc_class_add_protocols (Class*, struct objc_protocol_list*);
 
 /* Is all categories/classes resolved? */
 BOOL __objc_dangling_categories = NO;
+
+extern SEL
+__sel_register_typed_name (const char *name, const char *types, 
+			   struct objc_selector *orig);
+
 
 /* This function is called by constructor functions generated for each
    module compiled.  (_GLOBAL_$I$...) The purpose of this function is to
@@ -70,7 +75,7 @@ __objc_exec_class (Module_t module)
   struct objc_list** cell;
 
   /* The table of selector references for this module */
-  SEL *selectors = symtab->refs; 
+  SEL selectors = symtab->refs; 
 
   /* dummy counter */
   int i;
@@ -90,6 +95,19 @@ __objc_exec_class (Module_t module)
 
   /* Save the module pointer for later processing. (not currently used) */
   __objc_module_list = list_cons(module, __objc_module_list);
+
+  /* Replace referenced selectors from names to SEL's.  */
+  if (selectors)
+    {
+      for (i = 0; selectors[i].sel_id; ++i)
+	{
+	  const char *name, *type;
+	  name = (char*)selectors[i].sel_id;
+	  type = (char*)selectors[i].sel_types;
+	  __sel_register_typed_name (name, type, 
+				     (struct objc_selector*)&(selectors[i]));
+	}
+    }
 
   /* Parse the classes in the load module and gather selector information.  */
   DEBUG_PRINTF ("gathering selectors from module: %s\n", module->name);
@@ -116,13 +134,6 @@ __objc_exec_class (Module_t module)
       if (class->protocols)
 	__objc_init_protocols (class->protocols);
    }
-
-  /* Replace referenced selectors from names to SEL's.  */
-  if (selectors)
-    {
-      for (i = 0; selectors[i]; ++i)
-	selectors[i] = sel_register_name ((const char *) selectors[i]);
-    }
 
   /* Process category information from the module.  */
   for (i = 0; i < symtab->cat_def_cnt; ++i)
@@ -166,7 +177,7 @@ __objc_exec_class (Module_t module)
      categories to objects.  */
   for (cell = &unclaimed_categories;
        *cell;
-       *cell && ((cell = &(*cell)->tail)))
+       ({ if (*cell) cell = &(*cell)->tail; }))
     {
       Category_t category = (*cell)->head;
       Class* class = objc_lookup_class (category->class_name);
@@ -209,7 +220,7 @@ static void init_check_module_version(Module_t module)
   if ((module->version != OBJC_VERSION) || (module->size != sizeof (Module)))
     {
       fprintf (stderr, "Module %s version %d doesn't match runtime %d\n",
-	       module->name, module->version, OBJC_VERSION);
+	       module->name, (int)module->version, OBJC_VERSION);
       if(module->version > OBJC_VERSION)
 	fprintf (stderr, "Runtime (libobjc.a) is out of date\n");
       else if (module->version < OBJC_VERSION)
@@ -255,7 +266,7 @@ __objc_init_protocols (struct objc_protocol_list* protos)
 	{
 	  fprintf (stderr,
 		   "Version %d doesn't match runtime protocol version %d\n",
-		   ((size_t)protos->list[i]->class_pointer),
+		   (int)((char*)protos->list[i]->class_pointer-(char*)0),
 		   PROTOCOL_VERSION);
 	  abort ();
 	}

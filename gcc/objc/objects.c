@@ -43,7 +43,7 @@ class_create_instance(Class* class)
     new = (*_objc_object_alloc)(class);
   if (new!=nil)
     {
-      bzero (new, class->instance_size);
+      memchr (new, 0, class->instance_size);
       new->class_pointer = class;
     }
   return new;
