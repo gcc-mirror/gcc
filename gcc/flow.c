@@ -4252,7 +4252,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 #ifdef HAVE_conditional_execution
       /* Consider conditional death in deciding that the register needs
 	 a death note.  */
-      if (some_was_live
+      if (some_was_live && ! not_dead
 	  /* The stack pointer is never dead.  Well, not strictly true,
 	     but it's very difficult to tell from here.  Hopefully
 	     combine_stack_adjustments will fix up the most egregious
