@@ -66,7 +66,7 @@ static id
 #endif
 __objc_block_forward(id, SEL, ...);
 static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
-static Method_t search_for_method_in_list(MethodList_t list, SEL op);
+Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
 
 /* Given a selector, return the proper forwarding implementation. */
@@ -464,7 +464,7 @@ search_for_method_in_hierarchy (Class cls, SEL sel)
 /* Given a linked list of method and a method's name.  Search for the named
    method's method structure.  Return a pointer to the method's method
    structure if found.  NULL otherwise. */  
-static Method_t
+Method_t
 search_for_method_in_list (MethodList_t list, SEL op)
 {
   MethodList_t method_list = list;
