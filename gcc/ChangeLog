@@ -1,3 +1,8 @@
+Wed Nov 21 12:38:37 CET 2001  Jan Hubicka
+
+	* profile.c (compute_branch_probabilites):  Compute probabilities
+	for entry/exit edges; estimate probabilities for zero counts.
+
 2001-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* explow.c (probe_stack_range): Use LCT_NORMAL as second argument

@@ -411,38 +411,32 @@ compute_branch_probabilities ()
   num_never_executed = 0;
   num_branches = 0;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  for (i = 0; i <= n_basic_blocks + 1; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = GCOV_INDEX_TO_BB (i);
       edge e;
       gcov_type total;
       rtx note;
 
       total = bb->count;
       if (total)
-	for (e = bb->succ; e; e = e->succ_next)
-	  {
-	      e->probability = (e->count * REG_BR_PROB_BASE + total / 2) / total;
-	      if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
-		{
-		  error ("Corrupted profile info: prob for %d-%d thought to be %d",
-			 e->src->index, e->dest->index, e->probability);
-		  e->probability = REG_BR_PROB_BASE / 2;
-		}
-	  }
-      if (any_condjump_p (bb->end)
-	  && bb->succ->succ_next)
 	{
-	  int prob;
-	  edge e;
-
-	  if (total == 0)
-	    prob = -1;
-	  else
-	  if (total == -1)
-	    num_never_executed++;
-	  else
+	  for (e = bb->succ; e; e = e->succ_next)
 	    {
+		e->probability = (e->count * REG_BR_PROB_BASE + total / 2) / total;
+		if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
+		  {
+		    error ("Corrupted profile info: prob for %d-%d thought to be %d",
+			   e->src->index, e->dest->index, e->probability);
+		    e->probability = REG_BR_PROB_BASE / 2;
+		  }
+	    }
+	  if (bb->index >= 0
+	      && any_condjump_p (bb->end)
+	      && bb->succ->succ_next)
+	    {
+	      int prob;
+	      edge e;
 	      int index;
 
 	      /* Find the branch edge.  It is possible that we do have fake
@@ -467,9 +461,37 @@ compute_branch_probabilities ()
 		REG_NOTES (bb->end)
 		  = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
 				       REG_NOTES (bb->end));
+	      num_branches++;
 	    }
-	  num_branches++;
-
+	}
+      /* Otherwise distribute the probabilities evenly so we get sane sum.
+	 Use simple heuristics that if there are normal edges, give all abnormals
+	 frequency of 0, otherwise distribute the frequency over abnormals
+	 (this is the case of noreturn calls).  */
+      else
+	{
+	  for (e = bb->succ; e; e = e->succ_next)
+	    if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
+	      total ++;
+	  if (total)
+	    {
+	      for (e = bb->succ; e; e = e->succ_next)
+		if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
+		  e->probability = REG_BR_PROB_BASE / total;
+		else
+		  e->probability = 0;
+	    }
+	  else
+	    {
+	      for (e = bb->succ; e; e = e->succ_next)
+		total ++;
+	      for (e = bb->succ; e; e = e->succ_next)
+		e->probability = REG_BR_PROB_BASE / total;
+	    }
+	  if (bb->index >= 0
+	      && any_condjump_p (bb->end)
+	      && bb->succ->succ_next)
+	    num_branches++, num_never_executed;
 	}
     }
 
