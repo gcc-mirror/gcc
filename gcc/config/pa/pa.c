@@ -61,6 +61,14 @@ static int out_of_line_prologue_epilogue;
 
 static rtx find_addr_reg ();
 
+/* Kludgery.  We hold the operands to a fmpy insn here so we can
+   compare them with the operands for an fadd/fsub to determine if
+   they can be combined into a fmpyadd/fmpysub insn.
+
+   This _WILL_ disappear as the code to combine independent insns
+   matures.  */
+static rtx fmpy_operands[3];
+
 /* Keep track of the number of bytes we have output in the CODE subspaces
    during this compilation so we'll know when to emit inline long-calls.  */
 
@@ -5299,6 +5307,169 @@ following_call (insn)
   return 0;
 }
 
+/* Return nonzero if this is a floating point multiply (fmpy) which
+   could be combined with a suitable floating point add or sub insn.  */
+
+combinable_fmpy (insn)
+     rtx insn;
+{
+  rtx src, dest, pattern = PATTERN (insn);
+  enum machine_mode mode;
+
+  /* Only on 1.1 and later cpus.  */
+  if (!TARGET_SNAKE)
+    return 0;
+
+  /* Must be a (set (reg) (mult (reg) (reg))).  */
+  if (GET_CODE (pattern) != SET
+      || GET_CODE (SET_SRC (pattern)) != MULT
+      || GET_CODE (SET_DEST (pattern)) != REG)
+    return 0;
+
+  src = SET_SRC (pattern);
+  dest = SET_DEST (pattern);
+
+  /* Must be registers.  */
+  if (GET_CODE (XEXP (src, 0)) != REG
+      || GET_CODE (XEXP (src, 1)) != REG)
+    return 0;
+
+  /* Must be a floating point mode.  Must match the mode of the fmul.  */
+  mode = GET_MODE (dest);
+  if (mode != DFmode && mode != SFmode)
+    return 0;
+ 
+  /* SFmode limits the registers which can be used to the upper
+     32 32bit FP registers.  */
+  if (mode == SFmode
+      && (REGNO (dest) < 57
+	  || REGNO (XEXP (src, 0)) < 57
+	  || REGNO (XEXP (src, 1)) < 57))
+    return 0;
+     
+  /* Save our operands, we'll need to verify they don't conflict with
+     those in the fadd or fsub.  XXX This needs to disasppear soon.  */
+  fmpy_operands[0] = dest;
+  fmpy_operands[1] = XEXP (src, 0);
+  fmpy_operands[2] = XEXP (src, 1);
+
+  return 1;
+}
+
+/* Return nonzero if INSN is a floating point add suitable for combining
+   with the most recently examined floating point multiply.  */
+
+combinable_fadd (insn)
+     rtx insn;
+{
+  rtx src, dest, pattern = PATTERN (insn);
+  enum machine_mode mode;
+
+  /* Must be a (set (reg) (plus (reg) (reg))).  */
+  if (GET_CODE (pattern) != SET
+      || GET_CODE (SET_SRC (pattern)) != PLUS
+      || GET_CODE (SET_DEST (pattern)) != REG)
+    return 0;
+
+  src = SET_SRC (pattern);
+  dest = SET_DEST (pattern);
+
+  /* Must be registers.  */
+  if (GET_CODE (XEXP (src, 0)) != REG
+      || GET_CODE (XEXP (src, 1)) != REG)
+    return 0;
+
+  /* Must be a floating point mode.  Must match the mode of the fmul.  */
+  mode = GET_MODE (dest);
+  if (mode != DFmode && mode != SFmode)
+    return 0;
+ 
+  if (mode != GET_MODE (fmpy_operands[0]))
+    return 0;
+
+  /* SFmode limits the registers which can be used to the upper
+     32 32bit FP registers.  */
+  if (mode == SFmode
+      && (REGNO (dest) < 57
+	  || REGNO (XEXP (src, 0)) < 57
+	  || REGNO (XEXP (src, 1)) < 57))
+    return 0;
+     
+  /* Only 2 real operands to the addition.  One of the input operands
+     must be the same as the output operand.  */
+  if (! rtx_equal_p (dest, XEXP (src, 0))
+      && ! rtx_equal_p (dest, XEXP (src, 1)))
+    return 0;
+
+  /* Inout operand of the add can not conflict with any operands from the
+     multiply.  */
+  if (rtx_equal_p (dest, fmpy_operands[0])
+      || rtx_equal_p (dest, fmpy_operands[1])
+      || rtx_equal_p (dest, fmpy_operands[2]))
+    return 0;
+
+  /* The multiply can not feed into the addition.  */
+  if (rtx_equal_p (fmpy_operands[0], XEXP (src, 0))
+      || rtx_equal_p (fmpy_operands[0], XEXP (src, 1)))
+    return 0;
+
+  return 1;
+}
+
+/* Return nonzero if INSN is a floating point sub suitable for combining
+   with the most recently examined floating point multiply.  */
+
+combinable_fsub (insn)
+     rtx insn;
+{
+  rtx src, dest, pattern = PATTERN (insn);
+  enum machine_mode mode;
+
+  /* Must be (set (reg) (minus (reg) (reg))).  */
+  if (GET_CODE (pattern) != SET
+      || GET_CODE (SET_SRC (pattern)) != MINUS
+      || GET_CODE (SET_DEST (pattern)) != REG)
+    return 0;
+
+  src = SET_SRC (pattern);
+  dest = SET_DEST (pattern);
+
+  if (GET_CODE (XEXP (src, 0)) != REG
+      || GET_CODE (XEXP (src, 1)) != REG)
+    return 0;
+
+  /* Must be a floating point mode.  Must match the mode of the fmul.  */
+  mode = GET_MODE (dest);
+  if (mode != DFmode && mode != SFmode)
+    return 0;
+ 
+  if (mode != GET_MODE (fmpy_operands[0]))
+    return 0;
+
+  /* SFmode limits the registers which can be used to the upper
+     32 32bit FP registers.  */
+  if (mode == SFmode && (REGNO (dest) < 57 || REGNO (XEXP (src, 1)) < 57))
+    return 0;
+     
+  /* Only 2 real operands to the subtraction.  Output must be the
+     same as the first operand of the MINUS.  */
+  if (! rtx_equal_p (dest, XEXP (src, 0)))
+    return;
+
+  /* Inout operand of the sub can not conflict with any operands from the
+     multiply.  */
+  if (rtx_equal_p (dest, fmpy_operands[0])
+      || rtx_equal_p (dest, fmpy_operands[1])
+      || rtx_equal_p (dest, fmpy_operands[2]))
+    return 0;
+
+  /* The multiply can not feed into the subtraction.  */
+  if (rtx_equal_p (fmpy_operands[0], XEXP (src, 0))
+      || rtx_equal_p (fmpy_operands[0], XEXP (src, 1)))
+    return 0;
+
+  return 1;
+}
 
 /* We use this hook to perform a PA specific optimization which is difficult
    to do in earlier passes.
