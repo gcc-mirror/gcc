@@ -84,9 +84,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     // XXX - Should we read this data from a file?
     tz = new SimpleTimeZone(-11000 * 3600, "MIT");
     timezones.put("MIT", tz);
-    timezones.put("Pacific/Niue", tz);
     timezones.put("Pacific/Apia", tz);
     timezones.put("Pacific/Midway", tz);
+    timezones.put("Pacific/Niue", tz);
     timezones.put("Pacific/Pago_Pago", tz);
     tz = new SimpleTimeZone
       (-10000 * 3600, "America/Adak",
@@ -100,19 +100,19 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Pacific/Johnston", tz);
     timezones.put("Pacific/Rarotonga", tz);
     timezones.put("Pacific/Tahiti", tz);
+    tz = new SimpleTimeZone(-9500 * 3600, "Pacific/Marquesas");
+    timezones.put("Pacific/Marquesas", tz);
     tz = new SimpleTimeZone
       (-9000 * 3600, "AST",
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("AST", tz);
-    timezones.put("America/Juneau", tz);
     timezones.put("America/Anchorage", tz);
+    timezones.put("America/Juneau", tz);
     timezones.put("America/Nome", tz);
     timezones.put("America/Yakutat", tz);
     tz = new SimpleTimeZone(-9000 * 3600, "Pacific/Gambier");
     timezones.put("Pacific/Gambier", tz);
-    tz = new SimpleTimeZone(-8500 * 3600, "Pacific/Marquesas");
-    timezones.put("Pacific/Marquesas", tz);
     tz = new SimpleTimeZone
       (-8000 * 3600, "PST",
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
@@ -126,10 +126,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("US/Pacific-New", tz);
     tz = new SimpleTimeZone(-8000 * 3600, "Pacific/Pitcairn");
     timezones.put("Pacific/Pitcairn", tz);
-    tz = new SimpleTimeZone(-7000 * 3600, "PNT");
-    timezones.put("PNT", tz);
-    timezones.put("America/Dawson_Creek", tz);
-    timezones.put("America/Phoenix", tz);
     tz = new SimpleTimeZone
       (-7000 * 3600, "MST",
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
@@ -143,16 +139,11 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("America/Mazatlan", tz);
     timezones.put("America/Shiprock", tz);
     timezones.put("America/Yellowknife", tz);
-    tz = new SimpleTimeZone(-6000 * 3600, "America/Regina");
-    timezones.put("America/Regina", tz);
-    timezones.put("America/Belize", tz);
-    timezones.put("America/Costa_Rica", tz);
-    timezones.put("America/El_Salvador", tz);
-    timezones.put("America/Guatemala", tz);
-    timezones.put("America/Managua", tz);
-    timezones.put("America/Swift_Current", tz);
-    timezones.put("America/Tegucigalpa", tz);
-    timezones.put("Pacific/Galapagos", tz);
+    tz = new SimpleTimeZone(-7000 * 3600, "PNT");
+    timezones.put("PNT", tz);
+    timezones.put("America/Dawson_Creek", tz);
+    timezones.put("America/Hermosillo", tz);
+    timezones.put("America/Phoenix", tz);
     tz = new SimpleTimeZone
       (-6000 * 3600, "CST",
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
@@ -161,13 +152,22 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("America/Cambridge_Bay", tz);
     timezones.put("America/Cancun", tz);
     timezones.put("America/Chicago", tz);
-    timezones.put("America/Iqaluit", tz);
     timezones.put("America/Menominee", tz);
+    timezones.put("America/Merida", tz);
     timezones.put("America/Mexico_City", tz);
-    timezones.put("America/Pangnirtung", tz);
+    timezones.put("America/Monterrey", tz);
     timezones.put("America/Rainy_River", tz);
-    timezones.put("America/Rankin_Inlet", tz);
     timezones.put("America/Winnipeg", tz);
+    tz = new SimpleTimeZone(-6000 * 3600, "America/Belize");
+    timezones.put("America/Belize", tz);
+    timezones.put("America/Costa_Rica", tz);
+    timezones.put("America/El_Salvador", tz);
+    timezones.put("America/Guatemala", tz);
+    timezones.put("America/Managua", tz);
+    timezones.put("America/Regina", tz);
+    timezones.put("America/Swift_Current", tz);
+    timezones.put("America/Tegucigalpa", tz);
+    timezones.put("Pacific/Galapagos", tz);
     tz = new SimpleTimeZone
       (-6000 * 3600, "Pacific/Easter",
        Calendar.OCTOBER, 9, -Calendar.SUNDAY, 0 * 3600,
@@ -178,32 +178,34 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.APRIL, 1, Calendar.SUNDAY, 0 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 0 * 3600);
     timezones.put("America/Grand_Turk", tz);
-    tz = new SimpleTimeZone
-      (-5000 * 3600, "America/Havana",
-       Calendar.APRIL, 1, 0, 0 * 3600,
-       Calendar.OCTOBER, -1, Calendar.SUNDAY, 0 * 3600);
     timezones.put("America/Havana", tz);
     tz = new SimpleTimeZone(-5000 * 3600, "IET");
     timezones.put("IET", tz);
     timezones.put("America/Bogota", tz);
     timezones.put("America/Cayman", tz);
+    timezones.put("America/Eirunepe", tz);
     timezones.put("America/Guayaquil", tz);
     timezones.put("America/Indiana/Indianapolis", tz);
     timezones.put("America/Indiana/Knox", tz);
     timezones.put("America/Indiana/Marengo", tz);
     timezones.put("America/Indiana/Vevay", tz);
     timezones.put("America/Indianapolis", tz);
+    timezones.put("America/Iqaluit", tz);
     timezones.put("America/Jamaica", tz);
     timezones.put("America/Lima", tz);
     timezones.put("America/Panama", tz);
+    timezones.put("America/Pangnirtung", tz);
     timezones.put("America/Port-au-Prince", tz);
     timezones.put("America/Porto_Acre", tz);
+    timezones.put("America/Rankin_Inlet", tz);
     tz = new SimpleTimeZone
       (-5000 * 3600, "EST",
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("EST", tz);
     timezones.put("America/Detroit", tz);
+    timezones.put("America/Kentucky/Louisville", tz);
+    timezones.put("America/Kentucky/Monticello", tz);
     timezones.put("America/Louisville", tz);
     timezones.put("America/Montreal", tz);
     timezones.put("America/Nassau", tz);
@@ -216,6 +218,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("America/Antigua", tz);
     timezones.put("America/Aruba", tz);
     timezones.put("America/Barbados", tz);
+    timezones.put("America/Boa_Vista", tz);
     timezones.put("America/Caracas", tz);
     timezones.put("America/Curacao", tz);
     timezones.put("America/Dominica", tz);
@@ -236,52 +239,66 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("America/St_Vincent", tz);
     timezones.put("America/Tortola", tz);
     tz = new SimpleTimeZone
-      (-4000 * 3600, "America/Cuiaba",
+      (-4000 * 3600, "America/Asuncion",
        Calendar.OCTOBER, 1, Calendar.SUNDAY, 0 * 3600,
        Calendar.FEBRUARY, -1, Calendar.SUNDAY, 0 * 3600);
-    timezones.put("America/Cuiaba", tz);
     timezones.put("America/Asuncion", tz);
-    timezones.put("America/Boa_Vista", tz);
     tz = new SimpleTimeZone
-      (-4000 * 3600, "America/Thule",
+      (-4000 * 3600, "America/Cuiaba",
+       Calendar.OCTOBER, 2, Calendar.SUNDAY, 0 * 3600,
+       Calendar.FEBRUARY, 3, Calendar.SUNDAY, 0 * 3600);
+    timezones.put("America/Cuiaba", tz);
+    tz = new SimpleTimeZone
+      (-4000 * 3600, "America/Goose_Bay",
+       Calendar.APRIL, 1, Calendar.SUNDAY, 60000,
+       Calendar.OCTOBER, -1, Calendar.SUNDAY, 60000);
+    timezones.put("America/Goose_Bay", tz);
+    tz = new SimpleTimeZone
+      (-4000 * 3600, "America/Glace_Bay",
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
-    timezones.put("America/Thule", tz);
     timezones.put("America/Glace_Bay", tz);
-    timezones.put("America/Goose_Bay", tz);
     timezones.put("America/Halifax", tz);
+    timezones.put("America/Thule", tz);
     timezones.put("Atlantic/Bermuda", tz);
     tz = new SimpleTimeZone
-      (-4000 * 3600, "Antarctica/Palmer",
+      (-4000 * 3600, "America/Santiago",
        Calendar.OCTOBER, 9, -Calendar.SUNDAY, 0 * 3600,
        Calendar.MARCH, 9, -Calendar.SUNDAY, 0 * 3600);
-    timezones.put("Antarctica/Palmer", tz);
     timezones.put("America/Santiago", tz);
+    timezones.put("Antarctica/Palmer", tz);
     tz = new SimpleTimeZone
       (-4000 * 3600, "Atlantic/Stanley",
        Calendar.SEPTEMBER, 2, Calendar.SUNDAY, 0 * 3600,
        Calendar.APRIL, 16, -Calendar.SUNDAY, 0 * 3600);
     timezones.put("Atlantic/Stanley", tz);
+    tz = new SimpleTimeZone
+      (-3500 * 3600, "CNT",
+       Calendar.APRIL, 1, Calendar.SUNDAY, 60000,
+       Calendar.OCTOBER, -1, Calendar.SUNDAY, 60000);
+    timezones.put("CNT", tz);
+    timezones.put("America/St_Johns", tz);
+    tz = new SimpleTimeZone
+      (-3000 * 3600, "America/Araguaina",
+       Calendar.OCTOBER, 2, Calendar.SUNDAY, 0 * 3600,
+       Calendar.FEBRUARY, 3, Calendar.SUNDAY, 0 * 3600);
+    timezones.put("America/Araguaina", tz);
+    timezones.put("America/Sao_Paulo", tz);
     tz = new SimpleTimeZone(-3000 * 3600, "AGT");
     timezones.put("AGT", tz);
-    timezones.put("America/Buenos_Aires", tz);
     timezones.put("America/Belem", tz);
+    timezones.put("America/Buenos_Aires", tz);
     timezones.put("America/Catamarca", tz);
     timezones.put("America/Cayenne", tz);
     timezones.put("America/Cordoba", tz);
+    timezones.put("America/Fortaleza", tz);
     timezones.put("America/Jujuy", tz);
+    timezones.put("America/Maceio", tz);
     timezones.put("America/Mendoza", tz);
     timezones.put("America/Montevideo", tz);
     timezones.put("America/Paramaribo", tz);
+    timezones.put("America/Recife", tz);
     timezones.put("America/Rosario", tz);
-    tz = new SimpleTimeZone
-      (-3000 * 3600, "America/Fortaleza",
-       Calendar.OCTOBER, 1, Calendar.SUNDAY, 0 * 3600,
-       Calendar.FEBRUARY, -1, Calendar.SUNDAY, 0 * 3600);
-    timezones.put("America/Fortaleza", tz);
-    timezones.put("America/Araguaina", tz);
-    timezones.put("America/Maceio", tz);
-    timezones.put("America/Sao_Paulo", tz);
     tz = new SimpleTimeZone
       (-3000 * 3600, "America/Godthab",
        Calendar.MARCH, 30, -Calendar.SATURDAY, 22000 * 3600,
@@ -292,12 +309,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("America/Miquelon", tz);
-    tz = new SimpleTimeZone
-      (-3500 * 3600, "CNT",
-       Calendar.APRIL, 1, Calendar.SUNDAY, 2000 * 3600,
-       Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
-    timezones.put("CNT", tz);
-    timezones.put("America/St_Johns", tz);
     tz = new SimpleTimeZone(-2000 * 3600, "America/Noronha");
     timezones.put("America/Noronha", tz);
     timezones.put("Atlantic/South_Georgia", tz);
@@ -312,6 +323,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Atlantic/Jan_Mayen", tz);
     tz = new SimpleTimeZone(0 * 3600, "GMT");
     timezones.put("GMT", tz);
+    timezones.put("UTC", tz);
     timezones.put("Africa/Abidjan", tz);
     timezones.put("Africa/Accra", tz);
     timezones.put("Africa/Bamako", tz);
@@ -333,7 +345,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Europe/Belfast", tz);
     timezones.put("Europe/Dublin", tz);
     timezones.put("Europe/London", tz);
-    timezones.put("UTC", tz);
     tz = new SimpleTimeZone
       (0 * 3600, "WET",
        Calendar.MARCH, -1, Calendar.SUNDAY, 1000 * 3600,
@@ -368,6 +379,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("CET", tz);
     timezones.put("ECT", tz);
+    timezones.put("MET", tz);
     timezones.put("Africa/Ceuta", tz);
     timezones.put("Arctic/Longyearbyen", tz);
     timezones.put("Europe/Amsterdam", tz);
@@ -399,21 +411,19 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Europe/Warsaw", tz);
     timezones.put("Europe/Zagreb", tz);
     timezones.put("Europe/Zurich", tz);
-    timezones.put("MET", tz);
     tz = new SimpleTimeZone
-      (2000 * 3600, "Africa/Cairo",
+      (2000 * 3600, "ART",
        Calendar.APRIL, -1, Calendar.FRIDAY, 0 * 3600,
        Calendar.SEPTEMBER, -1, Calendar.THURSDAY, 23000 * 3600);
-    timezones.put("Africa/Cairo", tz);
     timezones.put("ART", tz);
+    timezones.put("Africa/Cairo", tz);
     tz = new SimpleTimeZone(2000 * 3600, "CAT");
     timezones.put("CAT", tz);
-    timezones.put("Africa/Gaborone", tz);
     timezones.put("Africa/Blantyre", tz);
     timezones.put("Africa/Bujumbura", tz);
+    timezones.put("Africa/Gaborone", tz);
     timezones.put("Africa/Harare", tz);
     timezones.put("Africa/Johannesburg", tz);
-    timezones.put("Africa/Khartoum", tz);
     timezones.put("Africa/Kigali", tz);
     timezones.put("Africa/Lubumbashi", tz);
     timezones.put("Africa/Lusaka", tz);
@@ -421,17 +431,24 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Africa/Maseru", tz);
     timezones.put("Africa/Mbabane", tz);
     timezones.put("Africa/Tripoli", tz);
+    timezones.put("Europe/Riga", tz);
     timezones.put("Europe/Tallinn", tz);
+    timezones.put("Europe/Vilnius", tz);
     tz = new SimpleTimeZone
       (2000 * 3600, "Asia/Amman",
-       Calendar.APRIL, 1, 0, 0 * 3600, Calendar.OCTOBER, 1, 0, 0 * 3600);
+       Calendar.MARCH, -1, Calendar.THURSDAY, 0 * 3600,
+       Calendar.SEPTEMBER, -1, Calendar.THURSDAY, 0 * 3600);
     timezones.put("Asia/Amman", tz);
-    timezones.put("Asia/Damascus", tz);
     tz = new SimpleTimeZone
       (2000 * 3600, "Asia/Beirut",
        Calendar.MARCH, -1, Calendar.SUNDAY, 0 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 0 * 3600);
     timezones.put("Asia/Beirut", tz);
+    tz = new SimpleTimeZone
+      (2000 * 3600, "Asia/Damascus",
+       Calendar.APRIL, 1, 0, 0 * 3600,
+       Calendar.OCTOBER, 1, 0, 0 * 3600);
+    timezones.put("Asia/Damascus", tz);
     tz = new SimpleTimeZone
       (2000 * 3600, "Asia/Gaza",
        Calendar.APRIL, 3, Calendar.FRIDAY, 0 * 3600,
@@ -439,8 +456,8 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Asia/Gaza", tz);
     tz = new SimpleTimeZone
       (2000 * 3600, "Asia/Jerusalem",
-       Calendar.APRIL, 1, Calendar.FRIDAY, 2000 * 3600,
-       Calendar.SEPTEMBER, 1, Calendar.FRIDAY, 2000 * 3600);
+       Calendar.APRIL, 1, 0, 1000 * 3600,
+       Calendar.OCTOBER, 1, 0, 1000 * 3600);
     timezones.put("Asia/Jerusalem", tz);
     tz = new SimpleTimeZone
       (2000 * 3600, "EET",
@@ -455,37 +472,36 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Europe/Helsinki", tz);
     timezones.put("Europe/Istanbul", tz);
     timezones.put("Europe/Kiev", tz);
-    timezones.put("Europe/Riga", tz);
+    timezones.put("Europe/Nicosia", tz);
     timezones.put("Europe/Simferopol", tz);
     timezones.put("Europe/Sofia", tz);
     timezones.put("Europe/Uzhgorod", tz);
-    timezones.put("Europe/Vilnius", tz);
     timezones.put("Europe/Zaporozhye", tz);
     tz = new SimpleTimeZone
-      (2000 * 3600, "Europe/Minsk",
+      (2000 * 3600, "Europe/Kaliningrad",
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
-    timezones.put("Europe/Minsk", tz);
     timezones.put("Europe/Kaliningrad", tz);
+    timezones.put("Europe/Minsk", tz);
     tz = new SimpleTimeZone
       (3000 * 3600, "Asia/Baghdad",
        Calendar.APRIL, 1, 0, 3000 * 3600,
        Calendar.OCTOBER, 1, 0, 3000 * 3600);
     timezones.put("Asia/Baghdad", tz);
     tz = new SimpleTimeZone
-      (3000 * 3600, "Europe/Tiraspol",
+      (3000 * 3600, "Europe/Moscow",
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
-    timezones.put("Europe/Tiraspol", tz);
     timezones.put("Europe/Moscow", tz);
+    timezones.put("Europe/Tiraspol", tz);
     tz = new SimpleTimeZone(3000 * 3600, "EAT");
     timezones.put("EAT", tz);
-    timezones.put("Indian/Comoro", tz);
     timezones.put("Africa/Addis_Ababa", tz);
     timezones.put("Africa/Asmera", tz);
     timezones.put("Africa/Dar_es_Salaam", tz);
     timezones.put("Africa/Djibouti", tz);
     timezones.put("Africa/Kampala", tz);
+    timezones.put("Africa/Khartoum", tz);
     timezones.put("Africa/Mogadishu", tz);
     timezones.put("Africa/Nairobi", tz);
     timezones.put("Antarctica/Syowa", tz);
@@ -495,6 +511,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Asia/Qatar", tz);
     timezones.put("Asia/Riyadh", tz);
     timezones.put("Indian/Antananarivo", tz);
+    timezones.put("Indian/Comoro", tz);
     timezones.put("Indian/Mayotte", tz);
     tz = new SimpleTimeZone(3500 * 3600, "Asia/Tehran");
     timezones.put("Asia/Tehran", tz);
@@ -504,11 +521,11 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 1000 * 3600);
     timezones.put("Asia/Baku", tz);
     tz = new SimpleTimeZone
-      (4000 * 3600, "Asia/Tbilisi",
+      (4000 * 3600, "Asia/Aqtau",
        Calendar.MARCH, -1, Calendar.SUNDAY, 0 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 0 * 3600);
-    timezones.put("Asia/Tbilisi", tz);
     timezones.put("Asia/Aqtau", tz);
+    timezones.put("Asia/Tbilisi", tz);
     tz = new SimpleTimeZone
       (4000 * 3600, "Asia/Yerevan",
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
@@ -517,10 +534,10 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Europe/Samara", tz);
     tz = new SimpleTimeZone(4000 * 3600, "NET");
     timezones.put("NET", tz);
-    timezones.put("Indian/Mauritius", tz);
     timezones.put("Asia/Dubai", tz);
     timezones.put("Asia/Muscat", tz);
     timezones.put("Indian/Mahe", tz);
+    timezones.put("Indian/Mauritius", tz);
     timezones.put("Indian/Reunion", tz);
     tz = new SimpleTimeZone(4500 * 3600, "Asia/Kabul");
     timezones.put("Asia/Kabul", tz);
@@ -541,13 +558,13 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Asia/Yekaterinburg", tz);
     tz = new SimpleTimeZone(5000 * 3600, "PLT");
     timezones.put("PLT", tz);
-    timezones.put("Indian/Kerguelen", tz);
-    timezones.put("Asia/Ashkhabad", tz);
+    timezones.put("Asia/Ashgabat", tz);
     timezones.put("Asia/Dushanbe", tz);
     timezones.put("Asia/Karachi", tz);
     timezones.put("Asia/Samarkand", tz);
     timezones.put("Asia/Tashkent", tz);
     timezones.put("Indian/Chagos", tz);
+    timezones.put("Indian/Kerguelen", tz);
     timezones.put("Indian/Maldives", tz);
     tz = new SimpleTimeZone(5500 * 3600, "IST");
     timezones.put("IST", tz);
@@ -558,19 +575,19 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("BST", tz);
     timezones.put("Antarctica/Mawson", tz);
     timezones.put("Asia/Colombo", tz);
-    timezones.put("Asia/Dacca", tz);
-    timezones.put("Asia/Thimbu", tz);
+    timezones.put("Asia/Dhaka", tz);
+    timezones.put("Asia/Thimphu", tz);
     tz = new SimpleTimeZone
       (6000 * 3600, "Asia/Almaty",
        Calendar.MARCH, -1, Calendar.SUNDAY, 0 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 0 * 3600);
     timezones.put("Asia/Almaty", tz);
     tz = new SimpleTimeZone
-      (6000 * 3600, "Asia/Omsk",
+      (6000 * 3600, "Asia/Novosibirsk",
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
-    timezones.put("Asia/Omsk", tz);
     timezones.put("Asia/Novosibirsk", tz);
+    timezones.put("Asia/Omsk", tz);
     tz = new SimpleTimeZone(6500 * 3600, "Asia/Rangoon");
     timezones.put("Asia/Rangoon", tz);
     timezones.put("Indian/Cocos", tz);
@@ -578,6 +595,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("VST", tz);
     timezones.put("Antarctica/Davis", tz);
     timezones.put("Asia/Bangkok", tz);
+    timezones.put("Asia/Hovd", tz);
     timezones.put("Asia/Jakarta", tz);
     timezones.put("Asia/Phnom_Penh", tz);
     timezones.put("Asia/Saigon", tz);
@@ -593,7 +611,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Antarctica/Casey", tz);
     timezones.put("Asia/Brunei", tz);
     timezones.put("Asia/Chungking", tz);
-    timezones.put("Asia/Dili", tz);
     timezones.put("Asia/Harbin", tz);
     timezones.put("Asia/Hong_Kong", tz);
     timezones.put("Asia/Kashgar", tz);
@@ -605,6 +622,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Asia/Singapore", tz);
     timezones.put("Asia/Taipei", tz);
     timezones.put("Asia/Ujung_Pandang", tz);
+    timezones.put("Asia/Ulaanbaatar", tz);
     timezones.put("Asia/Urumqi", tz);
     timezones.put("Australia/Perth", tz);
     tz = new SimpleTimeZone
@@ -612,13 +630,9 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("Asia/Irkutsk", tz);
-    tz = new SimpleTimeZone
-      (8000 * 3600, "Asia/Ulan_Bator",
-       Calendar.MARCH, -1, Calendar.SUNDAY, 0 * 3600,
-       Calendar.SEPTEMBER, -1, Calendar.SUNDAY, 0 * 3600);
-    timezones.put("Asia/Ulan_Bator", tz);
     tz = new SimpleTimeZone(9000 * 3600, "JST");
     timezones.put("JST", tz);
+    timezones.put("Asia/Dili", tz);
     timezones.put("Asia/Jayapura", tz);
     timezones.put("Asia/Pyongyang", tz);
     timezones.put("Asia/Seoul", tz);
@@ -658,12 +672,12 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("Australia/Hobart", tz);
     tz = new SimpleTimeZone
-      (10000 * 3600, "Australia/Melbourne",
+      (10000 * 3600, "AET",
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600);
+    timezones.put("AET", tz);
     timezones.put("Australia/Melbourne", tz);
     timezones.put("Australia/Sydney", tz);
-    timezones.put("AET", tz);
     tz = new SimpleTimeZone
       (10500 * 3600, "Australia/Lord_Howe",
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600,
@@ -676,38 +690,34 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Asia/Magadan", tz);
     tz = new SimpleTimeZone(11000 * 3600, "SST");
     timezones.put("SST", tz);
-    timezones.put("Pacific/Ponape", tz);
     timezones.put("Pacific/Efate", tz);
     timezones.put("Pacific/Guadalcanal", tz);
     timezones.put("Pacific/Kosrae", tz);
     timezones.put("Pacific/Noumea", tz);
+    timezones.put("Pacific/Ponape", tz);
     tz = new SimpleTimeZone(11500 * 3600, "Pacific/Norfolk");
     timezones.put("Pacific/Norfolk", tz);
     tz = new SimpleTimeZone
-      (12000 * 3600, "Antarctica/McMurdo",
+      (12000 * 3600, "NST",
        Calendar.OCTOBER, 1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.MARCH, 3, Calendar.SUNDAY, 2000 * 3600);
+    timezones.put("NST", tz);
     timezones.put("Antarctica/McMurdo", tz);
     timezones.put("Antarctica/South_Pole", tz);
     timezones.put("Pacific/Auckland", tz);
-    timezones.put("NST", tz);
     tz = new SimpleTimeZone
-      (12000 * 3600, "Asia/Kamchatka",
+      (12000 * 3600, "Asia/Anadyr",
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
-    timezones.put("Asia/Kamchatka", tz);
     timezones.put("Asia/Anadyr", tz);
-    tz = new SimpleTimeZone
-      (12000 * 3600, "Pacific/Fiji",
-       Calendar.NOVEMBER, 1, Calendar.SUNDAY, 2000 * 3600,
-       Calendar.FEBRUARY, -1, Calendar.SUNDAY, 3000 * 3600);
+    timezones.put("Asia/Kamchatka", tz);
+    tz = new SimpleTimeZone(12000 * 3600, "Pacific/Fiji");
     timezones.put("Pacific/Fiji", tz);
-    tz = new SimpleTimeZone(12000 * 3600, "Pacific/Tarawa");
-    timezones.put("Pacific/Tarawa", tz);
     timezones.put("Pacific/Funafuti", tz);
     timezones.put("Pacific/Kwajalein", tz);
     timezones.put("Pacific/Majuro", tz);
     timezones.put("Pacific/Nauru", tz);
+    timezones.put("Pacific/Tarawa", tz);
     timezones.put("Pacific/Wake", tz);
     timezones.put("Pacific/Wallis", tz);
     tz = new SimpleTimeZone
@@ -717,10 +727,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
     timezones.put("Pacific/Chatham", tz);
     tz = new SimpleTimeZone(13000 * 3600, "Pacific/Enderbury");
     timezones.put("Pacific/Enderbury", tz);
-    tz = new SimpleTimeZone
-      (13000 * 3600, "Pacific/Tongatapu",
-       Calendar.OCTOBER, 1, Calendar.SATURDAY, 2000 * 3600,
-       Calendar.APRIL, 16, -Calendar.SUNDAY, 2000 * 3600);
     timezones.put("Pacific/Tongatapu", tz);
     tz = new SimpleTimeZone(14000 * 3600, "Pacific/Kiritimati");
     timezones.put("Pacific/Kiritimati", tz);
