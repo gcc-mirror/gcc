@@ -3129,7 +3129,8 @@ assign_parms (fndecl, second_time)
   register rtx entry_parm = 0;
   register rtx stack_parm = 0;
   CUMULATIVE_ARGS args_so_far;
-  enum machine_mode promoted_mode, passed_mode, nominal_mode;
+  enum machine_mode promoted_mode, passed_mode;
+  enum machine_mode nominal_mode, promoted_nominal_mode;
   int unsignedp;
   /* Total space needed so far for args on the stack,
      given as a constant and a tree-expression.  */
@@ -3219,7 +3220,9 @@ assign_parms (fndecl, second_time)
       struct args_size stack_offset;
       struct args_size arg_size;
       int passed_pointer = 0;
+      int did_conversion = 0;
       tree passed_type = DECL_ARG_TYPE (parm);
+      tree nominal_type = TREE_TYPE (parm);
 
       /* Set LAST_NAMED if this is last named arg before some
 	 anonymous args.  We treat it as if it were anonymous too.  */
@@ -3247,7 +3250,7 @@ assign_parms (fndecl, second_time)
       /* Find mode of arg as it is passed, and mode of arg
 	 as it should be during execution of this function.  */
       passed_mode = TYPE_MODE (passed_type);
-      nominal_mode = TYPE_MODE (TREE_TYPE (parm));
+      nominal_mode = TYPE_MODE (nominal_type);
 
       /* If the parm's mode is VOID, its value doesn't matter,
 	 and avoid the usual things like emit_move_insn that could crash.  */
@@ -3278,7 +3281,7 @@ assign_parms (fndecl, second_time)
 #endif
 	  )
 	{
-	  passed_type = build_pointer_type (passed_type);
+	  passed_type = nominal_type = build_pointer_type (passed_type);
 	  passed_pointer = 1;
 	  passed_mode = nominal_mode = Pmode;
 	}
@@ -3300,8 +3303,8 @@ assign_parms (fndecl, second_time)
 				 passed_type, ! last_named);
 #endif
 
-      if (entry_parm)
-	passed_mode = promoted_mode;
+      if (entry_parm == 0)
+	promoted_mode = passed_mode;
 
 #ifdef SETUP_INCOMING_VARARGS
       /* If this is the last named parameter, do any required setup for
@@ -3316,7 +3319,7 @@ assign_parms (fndecl, second_time)
 	 Also, indicate when RTL generation is to be suppressed.  */
       if (last_named && !varargs_setup)
 	{
-	  SETUP_INCOMING_VARARGS (args_so_far, passed_mode, passed_type,
+	  SETUP_INCOMING_VARARGS (args_so_far, promoted_mode, passed_type,
 				  current_function_pretend_args_size,
 				  second_time);
 	  varargs_setup = 1;
@@ -3336,17 +3339,17 @@ assign_parms (fndecl, second_time)
 	 In this case, we call FUNCTION_ARG with NAMED set to 1 instead of
 	 0 as it was the previous time.  */
 
-      locate_and_pad_parm (passed_mode, passed_type,
+      locate_and_pad_parm (promoted_mode, passed_type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			   1,
 #else
 #ifdef FUNCTION_INCOMING_ARG
-			   FUNCTION_INCOMING_ARG (args_so_far, passed_mode,
+			   FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
 						  passed_type,
 						  (! last_named
 						   || varargs_setup)) != 0,
 #else
-			   FUNCTION_ARG (args_so_far, passed_mode,
+			   FUNCTION_ARG (args_so_far, promoted_mode,
 					 passed_type,
 					 ! last_named || varargs_setup) != 0,
 #endif
@@ -3358,9 +3361,9 @@ assign_parms (fndecl, second_time)
 	  rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
 
 	  if (offset_rtx == const0_rtx)
-	    stack_parm = gen_rtx (MEM, passed_mode, internal_arg_pointer);
+	    stack_parm = gen_rtx (MEM, promoted_mode, internal_arg_pointer);
 	  else
-	    stack_parm = gen_rtx (MEM, passed_mode,
+	    stack_parm = gen_rtx (MEM, promoted_mode,
 				  gen_rtx (PLUS, Pmode,
 					   internal_arg_pointer, offset_rtx));
 
@@ -3371,7 +3374,7 @@ assign_parms (fndecl, second_time)
 
       /* If this parameter was passed both in registers and in the stack,
 	 use the copy on the stack.  */
-      if (MUST_PASS_IN_STACK (passed_mode, passed_type))
+      if (MUST_PASS_IN_STACK (promoted_mode, passed_type))
 	entry_parm = 0;
 
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
@@ -3385,7 +3388,7 @@ assign_parms (fndecl, second_time)
 
       if (entry_parm)
 	{
-	  int nregs = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, passed_mode,
+	  int nregs = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
 						  passed_type, ! last_named);
 
 	  if (nregs > 0)
@@ -3442,7 +3445,7 @@ assign_parms (fndecl, second_time)
 
       /* Update info on where next arg arrives in registers.  */
 
-      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode,
+      FUNCTION_ARG_ADVANCE (args_so_far, promoted_mode,
 			    passed_type, ! last_named);
 
       /* If this is our second time through, we are done with this parm. */
@@ -3454,7 +3457,7 @@ assign_parms (fndecl, second_time)
 	 We'll make another stack slot, if we need one.  */
       {
 	int thisparm_boundary
-	  = FUNCTION_ARG_BOUNDARY (passed_mode, passed_type);
+	  = FUNCTION_ARG_BOUNDARY (promoted_mode, passed_type);
 
 	if (GET_MODE_ALIGNMENT (nominal_mode) > thisparm_boundary)
 	  stack_parm = 0;
@@ -3527,8 +3530,9 @@ assign_parms (fndecl, second_time)
 	  /* If a BLKmode arrives in registers, copy it to a stack slot.  */
 	  if (GET_CODE (entry_parm) == REG)
 	    {
-	      int size_stored = CEIL_ROUND (int_size_in_bytes (TREE_TYPE (parm)),
-					    UNITS_PER_WORD);
+	      int size_stored
+		= CEIL_ROUND (int_size_in_bytes (TREE_TYPE (parm)),
+			      UNITS_PER_WORD);
 
 	      /* Note that we will be storing an integral number of words.
 		 So we have to be careful to ensure that we allocate an
@@ -3541,9 +3545,11 @@ assign_parms (fndecl, second_time)
 	      if (stack_parm == 0)
 		{
 		  stack_parm
-		    = assign_stack_local (GET_MODE (entry_parm), size_stored, 0);
-		  /* If this is a memory ref that contains aggregate components,
-		     mark it as such for cse and loop optimize.  */
+		    = assign_stack_local (GET_MODE (entry_parm),
+					  size_stored, 0);
+
+		  /* If this is a memory ref that contains aggregate
+		     components, mark it as such for cse and loop optimize.  */
 		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
 		}
 
@@ -3581,28 +3587,34 @@ assign_parms (fndecl, second_time)
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
 
-#ifdef PROMOTE_FUNCTION_ARGS
-	  nominal_mode = promote_mode (TREE_TYPE (parm), nominal_mode,
-				       &unsignedp, 1);
-#endif
+	  promoted_nominal_mode
+	    = promote_mode (TREE_TYPE (parm), nominal_mode, &unsignedp, 0);
 
-	  parmreg = gen_reg_rtx (nominal_mode);
+	  parmreg = gen_reg_rtx (promoted_nominal_mode);
 	  REG_USERVAR_P (parmreg) = 1;
 
 	  /* If this was an item that we received a pointer to, set DECL_RTL
 	     appropriately.  */
 	  if (passed_pointer)
 	    {
-	      DECL_RTL (parm) = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (passed_type)), parmreg);
+	      DECL_RTL (parm)
+		= gen_rtx (MEM, TYPE_MODE (TREE_TYPE (passed_type)), parmreg);
 	      MEM_IN_STRUCT_P (DECL_RTL (parm)) = aggregate;
 	    }
 	  else
 	    DECL_RTL (parm) = parmreg;
 
 	  /* Copy the value into the register.  */
-	  if (GET_MODE (parmreg) != GET_MODE (entry_parm))
+	  if (nominal_mode != passed_mode
+	      || promoted_nominal_mode != promoted_mode)
 	    {
-	      /* If ENTRY_PARM is a hard register, it might be in a register
+	      /* ENTRY_PARM has been converted to PROMOTED_MODE, its
+		 mode, by the caller.  We now have to convert it to 
+		 NOMINAL_MODE, if different.  However, PARMREG may be in
+		 a diffent mode than NOMINAL_MODE if it is being stored
+		 promoted.
+
+		 If ENTRY_PARM is a hard register, it might be in a register
 		 not valid for operating in its mode (e.g., an odd-numbered
 		 register for a DFmode).  In that case, moves are the only
 		 thing valid, so we can't do a convert from there.  This
@@ -3618,10 +3630,13 @@ assign_parms (fndecl, second_time)
 	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
 
 	      emit_move_insn (tempreg, validize_mem (entry_parm));
+	      tempreg = gen_lowpart (nominal_mode, tempreg);
 
 	      push_to_sequence (conversion_insns);
-	      convert_move (parmreg, tempreg, unsignedp);
+	      expand_assignment (parm,
+				 make_tree (nominal_type, tempreg), 0, 0);
 	      conversion_insns = get_insns ();
+	      did_conversion = 1;
 	      end_sequence ();
 	    }
 	  else
@@ -3688,6 +3703,7 @@ assign_parms (fndecl, second_time)
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
 	      conversion_insns = get_insns ();
+	      did_conversion = 1;
 	      end_sequence ();
 	    }
 #endif /* FUNCTION_ARG_CALLEE_COPIES */
@@ -3747,7 +3763,7 @@ assign_parms (fndecl, second_time)
 	     an invalid address, such memory-equivalences
 	     as we make here would screw up life analysis for it.  */
 	  if (nominal_mode == passed_mode
-	      && ! conversion_insns
+	      && ! did_conversion
 	      && GET_CODE (entry_parm) == MEM
 	      && entry_parm == stack_parm
 	      && stack_offset.var == 0
@@ -3789,7 +3805,7 @@ assign_parms (fndecl, second_time)
 	  /* Value must be stored in the stack slot STACK_PARM
 	     during function execution.  */
 
-	  if (passed_mode != nominal_mode)
+	  if (promoted_mode != nominal_mode)
 	    {
 	      /* Conversion is required.   */
 	      rtx tempreg = gen_reg_rtx (GET_MODE (entry_parm));
@@ -3800,6 +3816,7 @@ assign_parms (fndecl, second_time)
 	      entry_parm = convert_to_mode (nominal_mode, tempreg,
 					    TREE_UNSIGNED (TREE_TYPE (parm)));
 	      conversion_insns = get_insns ();
+	      did_conversion = 1;
 	      end_sequence ();
 	    }
 
@@ -3815,7 +3832,7 @@ assign_parms (fndecl, second_time)
 		  MEM_IN_STRUCT_P (stack_parm) = aggregate;
 		}
 
-	      if (passed_mode != nominal_mode)
+	      if (promoted_mode != nominal_mode)
 		{
 		  push_to_sequence (conversion_insns);
 		  emit_move_insn (validize_mem (stack_parm),
@@ -3926,7 +3943,8 @@ promoted_input_arg (regno, pmode, punsignedp)
   for (arg = DECL_ARGUMENTS (current_function_decl); arg;
        arg = TREE_CHAIN (arg))
     if (GET_CODE (DECL_INCOMING_RTL (arg)) == REG
-	&& REGNO (DECL_INCOMING_RTL (arg)) == regno)
+	&& REGNO (DECL_INCOMING_RTL (arg)) == regno
+	&& TYPE_MODE (DECL_ARG_TYPE (arg)) == TYPE_MODE (TREE_TYPE (arg)))
       {
 	enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
 	int unsignedp = TREE_UNSIGNED (TREE_TYPE (arg));
