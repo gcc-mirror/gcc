@@ -1,43 +1,44 @@
 2004-10-22  Michael Koch  <konqueror@gmx.de>
 
-	* java/lang/Math.java
-	* java/lang/StackTraceElement.java
-	* java/nio/Buffer.java
-	* java/nio/ByteBuffer.java
-	* java/nio/CharBuffer.java
-	* java/nio/DoubleBuffer.java
-	* java/nio/FloatBuffer.java
-	* java/nio/IntBuffer.java
-	* java/nio/LongBuffer.java
-	* java/nio/ShortBuffer.java
-	* java/nio/charset/Charset.java
-	* java/rmi/server/RMIClassLoader.java
-	* java/rmi/server/RMISocketFactory.java
-	* java/security/Policy.java
-	* java/text/ChoiceFormat.java
-	* java/text/CollationElementIterator.java
-	* java/text/DateFormat.java
-	* java/text/DecimalFormat.java
-	* java/text/DecimalFormatSymbols.java
-	* java/text/MessageFormat.java
-	* java/text/NumberFormat.java
-	* java/text/RuleBasedCollator.java
-	* java/text/SimpleDateFormat.java
-	* java/util/BitSet.java
-	* java/util/Calendar.java
-	* java/util/Collections.java
-	* java/util/IdentityHashMap.java
-	* java/util/Locale.java
-	* java/util/TreeMap.java
-	* java/util/logging/LogRecord.java
-	* java/util/logging/XMLFormatter.java
-	* java/util/prefs/AbstractPreferences.java
-	* java/util/prefs/Preferences.java
-	* javax/crypto/interfaces/DHPrivateKey.java
-	* javax/crypto/interfaces/DHPublicKey.java
-	* javax/crypto/interfaces/PBEKey.java
-	* javax/net/ssl/HandshakeCompletedEvent.java
-	* javax/security/auth/Subject.java
+	* java/lang/Math.java,
+	java/lang/StackTraceElement.java,
+	java/nio/Buffer.java,
+	java/nio/ByteBuffer.java,
+	java/nio/CharBuffer.java,
+	java/nio/DoubleBuffer.java,
+	java/nio/FloatBuffer.java,
+	java/nio/IntBuffer.java,
+	java/nio/LongBuffer.java,
+	java/nio/ShortBuffer.java,
+	java/nio/charset/Charset.java,
+	java/rmi/server/RMIClassLoader.java,
+	java/rmi/server/RMISocketFactory.java,
+	java/security/Policy.java,
+	java/text/ChoiceFormat.java,
+	java/text/CollationElementIterator.java,
+	java/text/DateFormat.java,
+	java/text/DecimalFormat.java,
+	java/text/DecimalFormatSymbols.java,
+	java/text/MessageFormat.java,
+	java/text/NumberFormat.java,
+	java/text/RuleBasedCollator.java,
+	java/text/SimpleDateFormat.java,
+	java/util/BitSet.java,
+	java/util/Calendar.java,
+	java/util/Collections.java,
+	java/util/IdentityHashMap.java,
+	java/util/Locale.java,
+	java/util/TreeMap.java,
+	java/util/logging/LogRecord.java,
+	java/util/logging/XMLFormatter.java,
+	java/util/prefs/AbstractPreferences.java,
+	java/util/prefs/Preferences.java,
+	javax/crypto/interfaces/DHPrivateKey.java,
+	javax/crypto/interfaces/DHPublicKey.java,
+	javax/crypto/interfaces/PBEKey.java,
+	javax/net/ssl/HandshakeCompletedEvent.java,
+	javax/security/auth/Subject.java:
+	Removed redundant and reordered modifiers.
 
 2004-10-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
