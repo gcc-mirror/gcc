@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -50,17 +50,6 @@ details.  */
 #include <gcj/method.h>
 
 #include <java-cpool.h>
-
-
-
-// FIXME: remove these.
-#define CloneableClass java::lang::Cloneable::class$
-#define ObjectClass java::lang::Object::class$
-#define ErrorClass java::lang::Error::class$
-#define ClassClass java::lang::Class::class$
-#define MethodClass java::lang::reflect::Method::class$
-#define FieldClass java::lang::reflect::Field::class$
-#define ConstructorClass java::lang::reflect::Constructor::class$
 
 
 
@@ -174,7 +163,9 @@ java::lang::Class::_getConstructors (jboolean declared)
     }
   JArray<java::lang::reflect::Constructor *> *result
     = (JArray<java::lang::reflect::Constructor *> *)
-    JvNewObjectArray (numConstructors, &ConstructorClass, NULL);
+    JvNewObjectArray (numConstructors,
+		      &java::lang::reflect::Constructor::class$,
+		      NULL);
   java::lang::reflect::Constructor** cptr = elements (result);
   for (i = 0;  i < max;  i++)
     {
@@ -273,7 +264,7 @@ java::lang::Class::getDeclaredFields (void)
     s->checkMemberAccess (this, java::lang::reflect::Member::DECLARED);
   JArray<java::lang::reflect::Field *> *result
     = (JArray<java::lang::reflect::Field *> *)
-    JvNewObjectArray (field_count, &FieldClass, NULL);
+    JvNewObjectArray (field_count, &java::lang::reflect::Field::class$, NULL);
   java::lang::reflect::Field** fptr = elements (result);
   for (int i = 0;  i < field_count;  i++)
     {
@@ -366,7 +357,7 @@ java::lang::Class::getDeclaredMethods (void)
     }
   JArray<java::lang::reflect::Method *> *result
     = (JArray<java::lang::reflect::Method *> *)
-    JvNewObjectArray (numMethods, &MethodClass, NULL);
+    JvNewObjectArray (numMethods, &java::lang::reflect::Method::class$, NULL);
   java::lang::reflect::Method** mptr = elements (result);
   for (i = 0;  i < max;  i++)
     {
@@ -402,7 +393,8 @@ java::lang::Class::getClasses (void)
   // Until we have inner classes, it always makes sense to return an
   // empty array.
   JArray<jclass> *result
-    = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass, NULL);
+    = (JArray<jclass> *) JvNewObjectArray (0, &java::lang::Class::class$,
+					   NULL);
   return result;
 }
 
@@ -413,7 +405,8 @@ java::lang::Class::getDeclaredClasses (void)
   // Until we have inner classes, it always makes sense to return an
   // empty array.
   JArray<jclass> *result
-    = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass, NULL);
+    = (JArray<jclass> *) JvNewObjectArray (0, &java::lang::Class::class$,
+					   NULL);
   return result;
 }
 
@@ -474,7 +467,7 @@ java::lang::Class::getFields (void)
 
   JArray<java::lang::reflect::Field *> *result
     = ((JArray<java::lang::reflect::Field *> *)
-       JvNewObjectArray (count, &FieldClass, NULL));
+       JvNewObjectArray (count, &java::lang::reflect::Field::class$, NULL));
 
   _getFields (result, 0);
 
@@ -614,7 +607,9 @@ java::lang::Class::getMethods (void)
   jint count = _getMethods (NULL, 0);
 
   JArray<Method *> *result
-    = ((JArray<Method *> *) JvNewObjectArray (count, &MethodClass, NULL));
+    = ((JArray<Method *> *) JvNewObjectArray (count,
+					      &Method::class$,
+					      NULL));
 
   // When filling the array for real, we get the actual count.  Then
   // we resize the array.
@@ -623,7 +618,8 @@ java::lang::Class::getMethods (void)
   if (real_count != count)
     {
       JArray<Method *> *r2
-	= ((JArray<Method *> *) JvNewObjectArray (real_count, &MethodClass,
+	= ((JArray<Method *> *) JvNewObjectArray (real_count,
+						  &Method::class$,
 						  NULL));
       
       Method **destp = elements (r2);
@@ -663,7 +659,7 @@ java::lang::Class::newInstance (void)
   // seem to be any way to do these.
   // FIXME: we special-case one check here just to pass a Plum Hall
   // test.  Once access checking is implemented, remove this.
-  if (this == &ClassClass)
+  if (this == &java::lang::Class::class$)
     throw new java::lang::IllegalAccessException;
 
   if (isPrimitive ()
@@ -780,7 +776,7 @@ java::lang::Class::initializeClass (void)
     }
   catch (java::lang::Throwable *except)
     {
-      if (! ErrorClass.isInstance(except))
+      if (! java::lang::Error::class$.isInstance(except))
 	{
 	  try
 	    {
@@ -872,14 +868,14 @@ static void
 _Jv_AddMethodToCache (jclass klass,
                        _Jv_Method *method)
 {
-  _Jv_MonitorEnter (&ClassClass); 
+  _Jv_MonitorEnter (&java::lang::Class::class$); 
 
   int index = method->name->hash & MCACHE_SIZE;
 
   method_cache[index].method = method;
   method_cache[index].klass = klass;
 
-  _Jv_MonitorExit (&ClassClass);
+  _Jv_MonitorExit (&java::lang::Class::class$);
 }
 
 void *
@@ -967,7 +963,7 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
   if (__builtin_expect (target->isPrimitive(), false))
     return false;
     
-  if (target == &ObjectClass)
+  if (target == &java::lang::Object::class$)
     {
       if (source->isPrimitive())
         return false;
@@ -1067,7 +1063,7 @@ _Jv_PrepareConstantTimeTables (jclass klass)
    
   jclass klass0 = klass;
   jboolean has_interfaces = 0;
-  while (klass0 != &ObjectClass)
+  while (klass0 != &java::lang::Object::class$)
     {
       has_interfaces += klass0->interface_count;
       klass0 = klass0->superclass;

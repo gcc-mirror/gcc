@@ -1,5 +1,17 @@
 2002-06-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/net/natPlainDatagramSocketImpl.cc (BooleanClass): Removed.
+	(IntegerClass): Likewise.
+	* java/lang/natClass.cc (CloneableClass): Removed.
+	(ObjectClass, ErrorClass, ClassClass, MethodClass, FieldClass,
+	ConstructorClass): Likewise.
+	* java/lang/natClassLoader.cc (CloneableClass): Removed.
+	(ObjectClass, ClassClass, VMClassLoaderClass, ClassLoaderClass,
+	SerializableClass): Likewise.
+	* java/lang/reflect/natMethod.cc (BooleanClass): Removed.
+	(VoidClass, ByteClass, ShortClass, CharacterClass, IntegerClass,
+	LongClass, FloatClass, DoubleClass): Likewise.
+
 	* verify.cc (branch_prepass): Updated for change to exception
 	handler type.
 	(verify_instructions_0): Likewise.

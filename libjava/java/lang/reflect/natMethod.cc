@@ -42,17 +42,6 @@ details.  */
 #include <java/lang/UnsupportedOperationException.h>
 #endif
 
-// FIXME: remove these.
-#define BooleanClass java::lang::Boolean::class$
-#define VoidClass java::lang::Void::class$
-#define ByteClass java::lang::Byte::class$
-#define ShortClass java::lang::Short::class$
-#define CharacterClass java::lang::Character::class$
-#define IntegerClass java::lang::Integer::class$
-#define LongClass java::lang::Long::class$
-#define FloatClass java::lang::Float::class$
-#define DoubleClass java::lang::Double::class$
-
 struct cpair
 {
   jclass prim;
@@ -64,16 +53,16 @@ struct cpair
 static cpair primitives[] =
 {
 #define BOOLEAN 0
-  { JvPrimClass (boolean), &BooleanClass },
-  { JvPrimClass (byte), &ByteClass },
+  { JvPrimClass (boolean), &java::lang::Boolean::class$ },
+  { JvPrimClass (byte), &java::lang::Byte::class$ },
 #define SHORT 2
-  { JvPrimClass (short), &ShortClass },
+  { JvPrimClass (short), &java::lang::Short::class$ },
 #define CHAR 3
-  { JvPrimClass (char), &CharacterClass },
-  { JvPrimClass (int), &IntegerClass },
-  { JvPrimClass (long), &LongClass },
-  { JvPrimClass (float), &FloatClass },
-  { JvPrimClass (double), &DoubleClass },
+  { JvPrimClass (char), &java::lang::Character::class$ },
+  { JvPrimClass (int), &java::lang::Integer::class$ },
+  { JvPrimClass (long), &java::lang::Long::class$ },
+  { JvPrimClass (float), &java::lang::Float::class$ },
+  { JvPrimClass (double), &java::lang::Double::class$ },
   { NULL, NULL }
 };
 

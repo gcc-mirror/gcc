@@ -69,10 +69,6 @@ _Jv_bind (int fd, struct sockaddr *addr, int addrlen)
 #include <java/lang/Boolean.h>
 #include <java/lang/Integer.h>
 
-// FIXME: remove these
-#define BooleanClass java::lang::Boolean::class$
-#define IntegerClass java::lang::Integer::class$
-
 #ifdef DISABLE_JAVA_NET
 
 void
@@ -504,13 +500,13 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
   if (fnum < 0)
     throw new java::net::SocketException (JvNewStringUTF ("Socket closed"));
 
-  if (_Jv_IsInstanceOf (value, &BooleanClass))
+  if (_Jv_IsInstanceOf (value, &java::lang::Boolean::class$))
     {
       java::lang::Boolean *boolobj = 
         static_cast<java::lang::Boolean *> (value);
       val = boolobj->booleanValue() ? 1 : 0;
     }
-  else if (_Jv_IsInstanceOf (value, &IntegerClass))
+  else if (_Jv_IsInstanceOf (value, &java::lang::Integer::class$))
     {
       java::lang::Integer *intobj = 
         static_cast<java::lang::Integer *> (value);          

@@ -41,14 +41,6 @@ details.  */
 #include <java/io/Serializable.h>
 #include <java/lang/Cloneable.h>
 
-// FIXME: remove these.
-#define CloneableClass java::lang::Cloneable::class$
-#define ObjectClass java::lang::Object::class$
-#define ClassClass java::lang::Class::class$
-#define VMClassLoaderClass gnu::gcj::runtime::VMClassLoader::class$
-#define ClassLoaderClass java::lang::ClassLoader::class$
-#define SerializableClass java::io::Serializable::class$
-
 /////////// java.lang.ClassLoader native methods ////////////
 
 java::lang::Class *
@@ -60,7 +52,8 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 {
 #ifdef INTERPRETER
   jclass klass;
-  klass = (jclass) JvAllocObject (&ClassClass, sizeof (_Jv_InterpClass));
+  klass = (jclass) JvAllocObject (&java::lang::Class::class$,
+				  sizeof (_Jv_InterpClass));
   _Jv_InitNewClassFields (klass);
 
   // synchronize on the class, so that it is not
@@ -295,7 +288,7 @@ _Jv_PrepareCompiledClass (jclass klass)
 	  int mod = f->getModifiers ();
 	  // If we have a static String field with a non-null initial
 	  // value, we know it points to a Utf8Const.
-	  if (f->getClass () == &StringClass
+	  if (f->getClass () == &java::lang::String::class$
 	      && java::lang::reflect::Modifier::isStatic (mod))
 	    {
 	      jstring *strp = (jstring *) f->u.addr;
@@ -353,7 +346,7 @@ static jclass loaded_classes[HASH_LEN];
 jclass
 _Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 {
-  _Jv_MonitorEnter (&ClassClass);
+  _Jv_MonitorEnter (&java::lang::Class::class$);
   jint hash = HASH_UTF (name);
 
   // first, if LOADER is a defining loader, then it is also initiating
@@ -381,7 +374,7 @@ _Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 	}
     }
 
-  _Jv_MonitorExit (&ClassClass);
+  _Jv_MonitorExit (&java::lang::Class::class$);
 
   return klass;
 }
@@ -389,7 +382,7 @@ _Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 void
 _Jv_UnregisterClass (jclass the_class)
 {
-  _Jv_MonitorEnter (&ClassClass);
+  _Jv_MonitorEnter (&java::lang::Class::class$);
   jint hash = HASH_UTF(the_class->name);
 
   jclass *klass = &(loaded_classes[hash]);
@@ -414,7 +407,7 @@ _Jv_UnregisterClass (jclass the_class)
 	break;
     }
 
-  _Jv_MonitorExit (&ClassClass);
+  _Jv_MonitorExit (&java::lang::Class::class$);
 }
 
 void
@@ -424,12 +417,12 @@ _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
   _Jv_LoaderInfo *info = (_Jv_LoaderInfo *) _Jv_Malloc (sizeof(_Jv_LoaderInfo));
   jint hash = HASH_UTF(klass->name);
 
-  _Jv_MonitorEnter (&ClassClass);
+  _Jv_MonitorEnter (&java::lang::Class::class$);
   info->loader = loader;
   info->klass  = klass;
   info->next   = initiated_classes[hash];
   initiated_classes[hash] = info;
-  _Jv_MonitorExit (&ClassClass);
+  _Jv_MonitorExit (&java::lang::Class::class$);
 }
 
 // This function is called many times during startup, before main() is
@@ -582,7 +575,7 @@ jclass
 _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 	      java::lang::ClassLoader *loader)
 {
-  jclass ret = (jclass) JvAllocObject (&ClassClass);
+  jclass ret = (jclass) JvAllocObject (&java::lang::Class::class$);
   _Jv_InitNewClassFields (ret);
   ret->name = name;
   ret->superclass = superclass;
@@ -646,13 +639,14 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   }
 
   // Create new array class.
-  jclass array_class = _Jv_NewClass (array_name, &ObjectClass,
+  jclass array_class = _Jv_NewClass (array_name, &java::lang::Object::class$,
   				     element->loader);
 
   // Note that `vtable_method_count' doesn't include the initial
   // gc_descr slot.
-  JvAssert (ObjectClass.vtable_method_count == NUM_OBJECT_METHODS);
-  int dm_count = ObjectClass.vtable_method_count;
+  JvAssert (java::lang::Object::class$.vtable_method_count
+	    == NUM_OBJECT_METHODS);
+  int dm_count = java::lang::Object::class$.vtable_method_count;
 
   // Create a new vtable by copying Object's vtable.
   _Jv_VTable *vtable;
@@ -661,18 +655,23 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   else
     vtable = _Jv_VTable::new_vtable (dm_count);
   vtable->clas = array_class;
-  vtable->gc_descr = ObjectClass.vtable->gc_descr;
+  vtable->gc_descr = java::lang::Object::class$.vtable->gc_descr;
   for (int i = 0; i < dm_count; ++i)
-    vtable->set_method (i, ObjectClass.vtable->get_method (i));
+    vtable->set_method (i, java::lang::Object::class$.vtable->get_method (i));
 
   array_class->vtable = vtable;
-  array_class->vtable_method_count = ObjectClass.vtable_method_count;
+  array_class->vtable_method_count
+    = java::lang::Object::class$.vtable_method_count;
 
   // Stash the pointer to the element type.
   array_class->methods = (_Jv_Method *) element;
 
   // Register our interfaces.
-  static jclass interfaces[] = { &CloneableClass, &SerializableClass };
+  static jclass interfaces[] =
+    {
+      &java::lang::Cloneable::class$,
+      &java::io::Serializable::class$
+    };
   array_class->interfaces = interfaces;
   array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
 
