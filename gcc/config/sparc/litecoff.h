@@ -48,3 +48,31 @@ Boston, MA 02111-1307, USA.  */
 
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
+
+/* These compiler options take an argument.  We ignore -target for now.  */
+
+#define WORD_SWITCH_TAKES_ARG(STR)				\
+ (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)				\
+  || !strcmp (STR, "target") || !strcmp (STR, "assert"))
+
+/* Output the label for a function definition.  */
+
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
+do {									\
+  ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
+  ASM_OUTPUT_LABEL (FILE, NAME);					\
+} while (0)
+
+/* Output before read-only data.  */
+
+#define TEXT_SECTION_ASM_OP "\t.text"
+
+/* Output before writable data.  */
+
+#define DATA_SECTION_ASM_OP "\t.data"
+
+/* How to renumber registers for dbx and gdb.  In the flat model, the frame
+   pointer is really %i7.  */
+
+#define DBX_REGISTER_NUMBER(REGNO) \
+  (TARGET_FLAT && REGNO == FRAME_POINTER_REGNUM ? 31 : REGNO)

@@ -70,6 +70,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler,
    and we want to retain compatibility with older gcc versions.  */
+#undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 #undef LIB_SPEC

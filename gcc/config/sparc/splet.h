@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
 
+#define CPP_PREDEFINES "-Dsparc -Acpu=sparc -Amachine=sparc" 
+
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						      \
 {"big-endian", -MASK_LITTLE_ENDIAN, N_("Generate code for big endian") },     \

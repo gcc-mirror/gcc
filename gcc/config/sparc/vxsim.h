@@ -18,6 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (sparc VxSim)"); 
+
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
 
 #undef CPP_PREDEFINES

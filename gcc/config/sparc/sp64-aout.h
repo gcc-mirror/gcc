@@ -31,6 +31,3 @@ Boston, MA 02111-1307, USA.  */
 /* The only code model supported is Medium/Low.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Acpu=sparc -Amachine=sparc"
