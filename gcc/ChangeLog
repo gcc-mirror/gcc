@@ -1,3 +1,8 @@
+2000-01-05  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): When disabling a reload, also
+	set reload_spill_index to -1.
+
 2000-01-04  Joel Sherrill (joel@OARcorp.com>
 
 	* configure.in (m68*-*-rtemscoff*): New target, formal name for
