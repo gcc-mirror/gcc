@@ -1,5 +1,8 @@
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (layout_var_decl): Call layout_decl even for variables 
+	whose type is an array with unspecified bounds.
+
 	PR c++/7176
 	* lex.c (do_identifier): Add another option for the parsing
 	parameter.
