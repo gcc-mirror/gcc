@@ -1,3 +1,26 @@
+Wed Mar  5 02:04:04 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation):  Deffer RTL compilation only when
+	RTL inlining is done.
+
+	* cgraphunit.c (cgraph_mark_local_functions): New local function.
+	(cgraph_optimize): Mark local functions.
+	* i386-protos.h (init_cumulative_args): Update prototype.
+	* i386.c (init_cumulative_args): Use register passing convention for
+	local functions.
+
+	* cgraph.c (cgraph_global_info_ready): New global variable
+	(cgraph_local_info, cgraph_global_info): New functions.
+	* cgraph.h (struct cgraph_local_info, cgraph_global_info): New
+	structures.
+	(cgraph_local_info, cgraph_global_info, cgraph_global_info_ready):
+	Declare.
+	* cgraphunit.c (cgraph_finalize_function): Set inline_many.
+	(cgraph_mark_functions_to_output): Use inline_many.
+	(cgraph_expand_function): Free DECL_SAVED_TREE uncondtionally.
+	(cgraph_expand_functions): Expand inline functions last.
+	(cgraph_optimize): Do not emit uneeded functions.
+
 2003-03-04  Steve Ellcey  <sje@cup.hp.com>
 
 	* expr.c (convert_modes): Check for legal hard register.

@@ -194,7 +194,7 @@ extern void x86_emit_floatuns PARAMS ((rtx [2]));
 
 
 #ifdef TREE_CODE
-extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
+extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx, tree));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern int function_arg_pass_by_reference PARAMS ((CUMULATIVE_ARGS *,
 						   enum machine_mode,
@@ -226,6 +226,7 @@ extern int x86_field_alignment PARAMS ((tree, int));
 
 extern rtx ix86_tls_get_addr PARAMS ((void));
 extern void x86_machine_dependent_reorg PARAMS ((rtx));
+extern bool ix86_must_pass_in_stack PARAMS ((enum machine_mode mode, tree));
 
 /* In winnt.c  */
 extern int i386_pe_dllexport_name_p PARAMS ((const char *));

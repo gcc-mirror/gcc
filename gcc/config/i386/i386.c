@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"
+#include "cgraph.h"
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -1765,13 +1766,15 @@ ix86_function_arg_regno_p (regno)
    For a library call, FNTYPE is 0.  */
 
 void
-init_cumulative_args (cum, fntype, libname)
+init_cumulative_args (cum, fntype, libname, fndecl)
      CUMULATIVE_ARGS *cum;	/* Argument info to initialize */
      tree fntype;		/* tree ptr for function decl */
      rtx libname;		/* SYMBOL_REF of library name or 0 */
+     tree fndecl;
 {
   static CUMULATIVE_ARGS zero_cum;
   tree param, next_param;
+  bool user_convention = false;
 
   if (TARGET_DEBUG_ARG)
     {
@@ -1797,7 +1800,10 @@ init_cumulative_args (cum, fntype, libname)
       tree attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (fntype));
 
       if (attr)
-	cum->nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+	{
+	  cum->nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+	  user_convention = true;
+	}
     }
   cum->maybe_vaarg = false;
 
@@ -1808,6 +1814,23 @@ init_cumulative_args (cum, fntype, libname)
 	{
 	  cum->nregs = 2;
 	  cum->fastcall = 1;
+	  user_convention = true;
+	}
+    }
+
+  /* Use register calling convention for local functions when possible.  */
+  if (!TARGET_64BIT && !user_convention && fndecl
+      && flag_unit_at_a_time)
+    {
+      struct cgraph_local_info *i = cgraph_local_info (fndecl);
+      if (i && i->local)
+	{
+	  /* We can't use regparm(3) for nested functions as these use
+	     static chain pointer in third argument.  */
+	  if (DECL_CONTEXT (fndecl) && !DECL_NO_STATIC_CHAIN (fndecl))
+	    cum->nregs = 2;
+	  else
+	    cum->nregs = 3;
 	}
     }
 
@@ -1912,6 +1935,10 @@ classify_argument (mode, type, classes, bit_offset)
 
   /* Variable sized entities are always passed/returned in memory.  */
   if (bytes < 0)
+    return 0;
+
+  if (mode != VOIDmode
+      && MUST_PASS_IN_STACK (mode, type))
     return 0;
 
   if (type && AGGREGATE_TYPE_P (type))
@@ -15637,6 +15664,17 @@ x86_emit_floatuns (operands)
   emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_PLUS (mode, f0, f0)));
 
   emit_label (donelab);
+}
+
+/* Return if we do not know how to pass TYPE solely in registers.  */
+bool
+ix86_must_pass_in_stack (mode, type)
+	enum machine_mode mode;
+	tree type;
+{
+   if (default_must_pass_in_stack (mode, type))
+     return true;
+   return (!TARGET_64BIT && type && mode == TImode);
 }
 
 #include "gt-i386.h"
