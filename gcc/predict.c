@@ -782,6 +782,51 @@ counts_to_freqs ()
     }
 }
 
+/* Return true if function is likely to be expensive, so there is no point
+   to optimizer performance of prologue, epilogue or do inlining at the
+   expense of code size growth.  THRESHOLD is the limit of number
+   of isntructions function can execute at average to be still considered
+   not expensive.  */
+bool
+expensive_function_p (threshold)
+	int threshold;
+{
+  unsigned int sum = 0;
+  int i;
+  int limit;
+
+  /* We can not compute accurately for large thresholds due to scaled
+     frequencies.  */
+  if (threshold > BB_FREQ_MAX)
+    abort ();
+
+  /* Frequencies are out of range.  This eighter means that function contains
+     internal loop executing more than BB_FREQ_MAX times or profile feedback
+     is available and function has not been executed at all.  */
+  if (ENTRY_BLOCK_PTR->frequency == 0)
+    return true;
+    
+  /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
+  limit = ENTRY_BLOCK_PTR->frequency * threshold;
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      rtx insn;
+
+      for (insn = bb->head; insn != NEXT_INSN (bb->end);
+	   insn = NEXT_INSN (insn))
+	{
+	  if (active_insn_p (insn))
+	    {
+	      sum += bb->frequency;
+	      if (sum > limit)
+		return true;
+	    }
+	}
+    }
+  return false;
+}
+
 /* Estimate basic blocks frequency by given branch probabilities.  */
 static void
 estimate_bb_frequencies (loops)

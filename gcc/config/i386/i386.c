@@ -319,6 +319,14 @@ const int x86_accumulate_outgoing_args = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_prologue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_epilogue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 
+/* In case the avreage insn count for single function invocation is
+   lower than this constant, emit fast (but longer) prologue and
+   epilogue code.  */
+#define FAST_PROLOGUE_INSN_COUNT 30
+/* Set by prologue expander and used by epilogue expander to determine
+   the style used.  */
+static int use_fast_prologue_epilogue;
+
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
 const char * const hi_reg_name[] = HI_REGISTER_NAMES;
@@ -2653,9 +2661,15 @@ ix86_expand_prologue ()
 				  || current_function_uses_const_pool)
 		      && !TARGET_64BIT);
   struct ix86_frame frame;
-  int use_mov = (TARGET_PROLOGUE_USING_MOVE && !optimize_size);
+  int use_mov = 0;
   HOST_WIDE_INT allocate;
 
+  if (TARGET_PROLOGUE_USING_MOVE && !optimize_size)
+    {
+      use_fast_prologue_epilogue
+	 = !expensive_function_p (FAST_PROLOGUE_INSN_COUNT);
+      use_mov = use_fast_prologue_epilogue;
+    }
   ix86_compute_frame_layout (&frame);
 
   /* Note: AT&T enter does NOT have reversed args.  Enter is probably
@@ -2794,10 +2808,11 @@ ix86_expand_epilogue (style)
      tuning in future.  */
   if ((!sp_valid && frame.nregs <= 1)
       || (TARGET_EPILOGUE_USING_MOVE && !optimize_size
+	  && use_fast_prologue_epilogue
 	  && (frame.nregs > 1 || frame.to_allocate))
       || (frame_pointer_needed && !frame.nregs && frame.to_allocate)
       || (frame_pointer_needed && TARGET_USE_LEAVE && !optimize_size
-	  && frame.nregs == 1)
+	  && use_fast_prologue_epilogue && frame.nregs == 1)
       || style == 2)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
@@ -2844,7 +2859,7 @@ ix86_expand_epilogue (style)
 		    GEN_INT (frame.to_allocate
 			     + frame.nregs * UNITS_PER_WORD)));
       /* If not an i386, mov & pop is faster than "leave".  */
-      else if (TARGET_USE_LEAVE || optimize_size)
+      else if (TARGET_USE_LEAVE || optimize_size || !use_fast_prologue_epilogue)
 	emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
       else
 	{
