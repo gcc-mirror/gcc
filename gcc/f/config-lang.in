@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU FORTRAN.
-#   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -33,3 +33,5 @@ compilers="f771\$(exeext)"
 stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext)"
 
 diff_excludes="-x f/BUGS -x f/NEWS -x f/INSTALL -x f/intdoc.texi"
+
+target_libs=target-libf2c

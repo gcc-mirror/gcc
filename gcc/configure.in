@@ -1499,23 +1499,19 @@ changequote(,)dnl
 	${srcdir}/[*]/config-lang.in) ;;
 	*)
 	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
+	  this_lang_libs=`sed -n -e 's,^target_libs=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^target_libs=\([^ 	]*\).*$,\1,p' $lang`
+	  build_by_default=`sed -n -e 's,^build_by_default=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^build_by_default=\([^ 	]*\).*$,\1,p' $lang`
 	  if test "x$lang_alias" = x
 	  then
 		echo "$lang doesn't set \$language." 1>&2
 		exit 1
 	  fi
-	  if test x"${enable_languages}" = xall && test x"${lang_alias}" != xCHILL; then
-	  	add_this_lang=yes
-	  else
-		case "${enable_languages}" in
-		    ${lang_alias} | "${lang_alias},"* | *",${lang_alias},"* | *",${lang_alias}" )
-			add_this_lang=yes
-			;;
-		    * )
-			add_this_lang=no
-			;;
-		esac
-	  fi
+	  case ${build_by_default},${enable_languages}, in
+	  *,$lang_alias,*) add_this_lang=yes ;;
+	  no,*) add_this_lang=no ;;
+	  *,all,*) add_this_lang=yes ;;
+	  *) add_this_lang=no ;;
+	  esac
 	  if test x"${add_this_lang}" = xyes; then
 		case $lang in
 		    ${srcdir}/ada/config-lang.in)
