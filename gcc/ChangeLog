@@ -1,3 +1,15 @@
+2000-07-27  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.md (movqicc_astep, movqi_internal_astep): New.
+	(movhicc_astep, movhi_internal_astep): New.
+	(movsicc_astep, movsi_internal_astep): New.
+	(movdicc_astep, movdi_internal_astep): New.
+	(movsfcc_astep, movsf_internal_astep): New.
+	(movdfcc_astep, movdf_internal_astep): New.
+	(movxfcc_astep, movxf_internal_astep): New.
+	(cmovdi_internal_astep, cmovsi_internal_astep): New.
+	Unify the cmov[ds]i splitters.
+
 2000-07-27  Rodney Brown  <RodneyBrown@pmsc.com>
 
 	* real.c (asctoeg): Rename `error' label to unexpected_char_error
