@@ -2552,6 +2552,10 @@ expand_call (exp, target, ignore)
       int save_pending_stack_adjust = pending_stack_adjust;
       int save_stack_pointer_delta = stack_pointer_delta;
 
+      /* Emit any queued insns now; otherwise they would end up in
+	 only one of the alternates.  */
+      emit_queue ();
+
       /* Use a new sequence to hold any RTL we generate.  We do not even
 	 know if we will use this RTL yet.  The final decision can not be
 	 made until after RTL generation for the entire function is

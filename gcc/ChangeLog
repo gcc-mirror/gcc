@@ -1,3 +1,8 @@
+2000-11-30  Richard Henderson  <rth@redhat.com>
+
+	* calls.c (expand_call): Emit queued insns before creating
+	the tail recursion sequence.
+
 2000-11-30  J. David Anglin  <dave.anglin@nrc.ca>
             Bruce Korb  <bkorb@gnu.org>
 
