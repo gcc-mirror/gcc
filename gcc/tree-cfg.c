@@ -2148,6 +2148,7 @@ cleanup_control_flow (void)
 	  tree label;
 	  edge_iterator ei;
 	  basic_block target_block;
+	  bool removed_edge = false;
 
 	  /* First look at all the outgoing edges.  Delete any outgoing
 	     edges which do not go to the right block.  For the one
@@ -2157,7 +2158,10 @@ cleanup_control_flow (void)
 	  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	    {
 	      if (e->dest != target_block)
-		remove_edge (e);
+		{
+		  removed_edge = true;
+		  remove_edge (e);
+		}
 	      else
 	        {
 		  /* Turn off the EDGE_ABNORMAL flag.  */
@@ -2168,6 +2172,11 @@ cleanup_control_flow (void)
 		  ei_next (&ei);
 		}
 	    }
+
+	  /* If we removed one or more edges, then we will need to fix the
+	     dominators.  It may be possible to incrementally update them.  */
+	  if (removed_edge)
+	    free_dominance_info (CDI_DOMINATORS);
 
 	  /* Remove the GOTO_EXPR as it is not needed.  The CFG has all the
 	     relevant information we need.  */

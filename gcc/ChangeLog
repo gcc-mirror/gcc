@@ -1,3 +1,9 @@
+2005-03-08  Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (cleanup_control_flow): If removal of a computed
+	goto results in the removal of edges in the CFG, then we need
+	to recompute dominators.
+
 2005-03-09  Ben Elliston  <bje@au.ibm.com>
 
 	* c-common.c (c_do_switch_warnings): Comment fix.
