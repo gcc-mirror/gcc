@@ -1,5 +1,10 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* reload1.c (reloads_conflict, gen_reload): Make them static.
+	* reload.h: Remove the corresponding prototypes.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* reload.c (refers_to_mem_for_reload_p,
 	refers_to_regno_for_reload_p): Make them static.
 	* reload.h: Remove the corresponding prototypes.

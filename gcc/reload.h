@@ -331,7 +331,6 @@ extern int push_reload (rtx, rtx, rtx *, rtx *, enum reg_class,
 extern void reload_cse_regs (rtx);
 
 /* Functions in reload1.c:  */
-extern int reloads_conflict (int, int);
 
 /* Initialize the reload pass once per compilation.  */
 extern void init_reload (void);
@@ -346,11 +345,6 @@ extern void mark_home_live (int);
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp), plus an offset.  */
 extern rtx eliminate_regs (rtx, enum machine_mode, rtx);
-
-/* Emit code to perform a reload from IN (which may be a reload register) to
-   OUT (which may also be a reload register).  IN or OUT is from operand
-   OPNUM with reload type TYPE.  */
-extern rtx gen_reload (rtx, rtx, int, enum reload_type);
 
 /* Deallocate the reload register used by reload number R.  */
 extern void deallocate_reload_reg (int r);
