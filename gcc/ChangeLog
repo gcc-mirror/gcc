@@ -1,5 +1,10 @@
 2004-03-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR other/14630
+	* doc/install.texi: Add info directory category and entry.
+
+2004-03-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/14635
 	* builtins.def (nan, nanf, nanl, nans, nansf, nansl): Change to
 	DEF_GCC_BUILTIN.

@@ -55,21 +55,37 @@
 @ifset vms
 @setfilename gnat_ug_vms.info
 @settitle GNAT User's Guide for OpenVMS Alpha
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ug_vms).   GNAT User's Guide for OpenVMS Alpha.
+@end direntry
 @end ifset
 
 @ifset wnt
 @setfilename gnat_ug_wnt.info
 @settitle GNAT User's Guide for Windows NT
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ug_wnt).   GNAT User's Guide for Windows NT.
+@end direntry
 @end ifset
 
 @ifset unx
 @setfilename gnat_ug_unx.info
 @settitle GNAT User's Guide for Unix Platforms
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ug_unx).   GNAT User's Guide for Unix Platforms.
+@end direntry
 @end ifset
 
 @ifset vxworks
 @setfilename gnat_ug_vxw.info
 @settitle GNAT User's Guide for Cross Platforms
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ug_vxw).   GNAT User's Guide for Cross Platforms.
+@end direntry
 @end ifset
 
 @include gcc-common.texi

@@ -87,6 +87,10 @@ Free Documentation License}''.
 @ifinfo
 @insertcopying
 @end ifinfo
+@dircategory Programming
+@direntry
+* gccinstall: (gccinstall).    Installing the GNU Compiler Collection.
+@end direntry
 
 @c Part 3 Titlepage and Copyright
 @titlepage

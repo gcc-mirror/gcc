@@ -1,3 +1,10 @@
+2004-03-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR other/14630
+	* gnat_ug.texi: Add info directory category and entry.
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Regenerate.
+
 2004-03-19  Laurent GUERBY <laurent@guerby.net>
 
 	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of 

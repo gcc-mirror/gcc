@@ -57,6 +57,10 @@
 
 @setfilename gnat_ug_vxw.info
 @settitle GNAT User's Guide for Cross Platforms
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ug_vxw).   GNAT User's Guide for Cross Platforms.
+@end direntry
 
 @include gcc-common.texi
 

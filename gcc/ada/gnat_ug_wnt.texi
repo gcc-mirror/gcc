@@ -55,6 +55,10 @@
 
 @setfilename gnat_ug_wnt.info
 @settitle GNAT User's Guide for Windows NT
+@dircategory GNU Ada tools
+@direntry
+* GNAT User's Guide (gnat_ug_wnt).   GNAT User's Guide for Windows NT.
+@end direntry
 
 
 
