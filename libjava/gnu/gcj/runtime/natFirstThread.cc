@@ -1,6 +1,6 @@
 // natFirstThread.cc - Implementation of FirstThread native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -26,7 +26,8 @@ gnu::gcj::runtime::FirstThread::call_main (void)
   Utf8Const* main_signature = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
   Utf8Const* main_name = _Jv_makeUtf8Const ("main", 4);
 
-  _Jv_Method *meth = _Jv_GetMethodLocal (klass, main_name, main_signature);
+  _Jv_Method *meth = _Jv_LookupDeclaredMethod (klass, main_name,
+					       main_signature);
 
   // Some checks from Java Spec section 12.1.4.
   const char *msg = NULL;
