@@ -1403,7 +1403,7 @@ fix = {
 fix = {
     hackname = sun_catmacro;
     files  = pixrect/memvar.h;
-    select = "^#define[ \t]+CAT(a,b)";
+    select = "^#define[ \t]+CAT\\(a,b\\)";
     sed    = "/^#define[ \t]CAT(a,b)/ i\\\n"
                  "#ifdef __STDC__ \\\n"
                  "#define CAT(a,b) a##b\\\n"

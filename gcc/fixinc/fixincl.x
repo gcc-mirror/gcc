@@ -2422,7 +2422,7 @@ tSCC zSun_CatmacroList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zSun_CatmacroSelect0[] =
-       "^#define[ \t]+CAT(a,b)";
+       "^#define[ \t]+CAT\\(a,b\\)";
 
 #define    SUN_CATMACRO_TEST_CT  1
 #define    SUN_CATMACRO_RE_CT    1
