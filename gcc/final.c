@@ -2418,14 +2418,19 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn),
 				     NEXT_INSN (insn));
 #else
-	      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
+              if (LABEL_ALTERNATE_NAME (insn))
+                ASM_OUTPUT_ALTERNATE_LABEL_NAME (file, insn);
+              else
+	        ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
 #endif
 #endif
 	      break;
 	    }
 	}
-
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
+      if (LABEL_ALTERNATE_NAME (insn))
+        ASM_OUTPUT_ALTERNATE_LABEL_NAME (file, insn);
+      else
+        ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
       break;
 
     default:

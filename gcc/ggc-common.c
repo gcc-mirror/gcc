@@ -252,6 +252,7 @@ ggc_mark_rtx_children (r)
       break;
     case CODE_LABEL:
       ggc_mark_rtx (LABEL_REFS (r));
+      ggc_mark_string (LABEL_ALTERNATE_NAME (r));
       break;
     case LABEL_REF:
       ggc_mark_rtx (LABEL_NEXTREF (r));

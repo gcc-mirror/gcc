@@ -2433,7 +2433,9 @@ delete_unreferenced_labels (f)
 
   for (insn = f; insn; )
     {
-      if (GET_CODE (insn) == CODE_LABEL && LABEL_NUSES (insn) == 0)
+      if (GET_CODE (insn) == CODE_LABEL
+          && LABEL_NUSES (insn) == 0
+          && LABEL_ALTERNATE_NAME (insn) == NULL)
 	insn = delete_insn (insn);
       else
 	{
