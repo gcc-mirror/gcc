@@ -1241,7 +1241,7 @@ _cpp_lex_token (pfile, result)
     random_char:
     default:
       result->type = CPP_OTHER;
-      result->val.aux = c;
+      result->val.c = c;
       break;
     }
 }
@@ -1321,7 +1321,7 @@ cpp_spell_token (pfile, token, buffer)
       break;
 
     case SPELL_CHAR:
-      *buffer++ = token->val.aux;
+      *buffer++ = token->val.c;
       break;
 
     case SPELL_NONE:
@@ -1410,7 +1410,7 @@ cpp_output_token (token, fp)
       break;
 
     case SPELL_CHAR:
-      putc (token->val.aux, fp);
+      putc (token->val.c, fp);
       break;
 
     case SPELL_NONE:
@@ -1431,9 +1431,9 @@ _cpp_equiv_tokens (a, b)
       case SPELL_OPERATOR:
 	return 1;
       case SPELL_CHAR:
-	return a->val.aux == b->val.aux; /* Character.  */
+	return a->val.c == b->val.c; /* Character.  */
       case SPELL_NONE:
-	return (a->type != CPP_MACRO_ARG || a->val.aux == b->val.aux);
+	return (a->type != CPP_MACRO_ARG || a->val.c == b->val.c);
       case SPELL_IDENT:
 	return a->val.node == b->val.node;
       case SPELL_STRING:
@@ -1565,7 +1565,7 @@ cpp_can_paste (pfile, token1, token2, digraph)
       break;
 
     case CPP_OTHER:
-      if (CPP_OPTION (pfile, objc) && token1->val.aux == '@')
+      if (CPP_OPTION (pfile, objc) && token1->val.c == '@')
 	{
 	  if (b == CPP_NAME)	return CPP_NAME;
 	  if (b == CPP_STRING)	return CPP_OSTRING;
@@ -1627,7 +1627,7 @@ cpp_avoid_paste (pfile, token1, token2)
     case CPP_NUMBER:	return (b == CPP_NUMBER || b == CPP_NAME
 				|| c == '.' || c == '+' || c == '-');
     case CPP_OTHER:	return (CPP_OPTION (pfile, objc)
-				&& token1->val.aux == '@'
+				&& token1->val.c == '@'
 				&& (b == CPP_NAME || b == CPP_STRING));
     default:		break;
     }

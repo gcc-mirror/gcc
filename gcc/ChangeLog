@@ -1,3 +1,14 @@
+2000-11-06  Neil Booth  <neilb@earthling.net>
+
+	* c-lex.c (c_lex): Replace tok.val.aux with tok.val.c or
+	tok.val.arg_no as appropriate.
+	* cppexp.c (lex): Similarly.
+	* cpplex.c (_cpp_lex_token, cpp_spell_token, cpp_output_token,
+	cpp_equiv_tokens, cpp_can_paste, cpp_avoid_paste): Similarly.
+	* cppmacro.c (stringify_arg, replace_args, lex_expansion_token,
+	cpp_macro_definition): Similarly.
+	* cpplib.h (struct cpp_token): Replace aux with c and arg_no.
+
 2000-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (adddi3): If operands[2] is 4096 and
