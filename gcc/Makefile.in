@@ -384,6 +384,9 @@ FIXPROTO_DEFINES =
 # Extra flags to use when compiling crt{begin,end}.o.
 CRTSTUFF_T_CFLAGS = 
 
+# Extra flags to use when compiling [m]crt0.o.
+CRT0STUFF_T_CFLAGS = 
+
 # End of variables for you to override.
 
 # Definition of `all' is here so that new rules inserted by sed
@@ -541,7 +544,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c \
  stamp-flags stamp-config stamp-codes \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
- stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt stamp-crtS \
+ stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt stamp-crtS stamp-crt0 \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
  genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
@@ -1053,6 +1056,17 @@ stamp-crtS:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	  -g0 -c $(srcdir)/crtstuff.c
 	mv crtstuff$(objext) crtendS$(objext)
 	touch stamp-crtS
+
+# Compile the start modules crt0.o and mcrt0.o that are linked with every program
+crt0.o: stamp-crt0 ; @true
+mcrt0.o: stamp-crt0; @true
+
+stamp-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(CRT0STUFF_T_CFLAGS) \
+	  -o crt0.o -c $(CRT0_S)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(CRT0STUFF_T_CFLAGS) \
+	  -o mcrt0.o -c $(MCRT0_S)
+	touch stamp-crt0
 
 # Compiling object files from source files.
 
