@@ -1,3 +1,9 @@
+Sun Jul 15 12:53:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (integrate.o): Add debug.h.
+	* integrate.c (debug.h): Add.
+	(output_inline_function): Save, reset, and restore debug_hooks.
+
 2001-07-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Use CCmode
