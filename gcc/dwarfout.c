@@ -393,8 +393,8 @@ static inline int type_of_for_scope	PROTO((tree, tree));
 static void output_pending_types_for_scope PROTO((tree));
 static void output_type			PROTO((tree, tree));
 static void output_tagged_type_instantiation PROTO((tree));
-static void output_block		PROTO((tree));
-static void output_decls_for_scope	PROTO((tree));
+static void output_block		PROTO((tree, int));
+static void output_decls_for_scope	PROTO((tree, int));
 static void output_decl			PROTO((tree, tree));
 static void shuffle_filename_entry	PROTO((filename_entry *));
 static void geneate_new_sfname_entry	PROTO((void));
@@ -2992,25 +2992,14 @@ type_tag (type)
       /* Find the IDENTIFIER_NODE for the type name.  */
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
 	t = TYPE_NAME (type);
-#if 0
-      /* The g++ front end makes the TYPE_NAME of *each* tagged type point
-	 to a TYPE_DECL node, regardless of whether or not a `typedef' was
-	 involved.  This is distinctly different from what the gcc front-end
-	 does.  It always makes the TYPE_NAME for each tagged type be either
-	 NULL (signifying an anonymous tagged type) or else a pointer to an
-	 IDENTIFIER_NODE.  Obviously, we would like to generate correct Dwarf
-	 for both C and C++, but given this inconsistency in the TREE
-	 representation of tagged types for C and C++ in the GNU front-ends,
-	 we cannot support both languages correctly unless we introduce some
-	 front-end specific code here, and rms objects to that, so we can
-	 only generate correct Dwarf for one of these two languages.  C is
-	 more important, so for now we'll do the right thing for C and let
-	 g++ go fish.  */
 
+      /* The g++ front end makes the TYPE_NAME of *each* tagged type point to 
+         a TYPE_DECL node, regardless of whether or not a `typedef' was
+         involved.  */
       else
 	if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
 	  t = DECL_NAME (TYPE_NAME (type));
-#endif
+
       /* Now get the name as a string, or invent one.  */
       if (t != 0)
 	name = IDENTIFIER_POINTER (t);
@@ -4142,7 +4131,10 @@ output_type (type, containing_scope)
 	   type as we are ever going to know, so at that point in time, we
 	   can safely generate correct Dwarf descriptions for these file-
 	   scope tagged types.
-	*/
+
+	   This loses for C++ nested types that are defined after their
+	   containing class, but I don't see a good way to fix it.  I doubt
+	   many people will be using DWARF 1 for C++ in any case.  */
 
 	if (TYPE_SIZE (type) == 0 && TYPE_CONTEXT (type) == NULL && !finalizing)
 	  return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
@@ -4204,30 +4196,14 @@ output_type (type, containing_scope)
 	    }
 
 	    {
-	      register tree vec_base;
+	      register tree func_member;
 
 	      /* Now output info about the function members (if any).  */
 
-	      vec_base = TYPE_METHODS (type);
-	      if (vec_base)
-		{
-		  register tree first_func_member = TREE_VEC_ELT (vec_base, 0);
-		  register tree func_member;
-
-		  /* This isn't documented, but the first element of the
-		     vector of member functions can be NULL in cases where
-		     the class type in question didn't have either a
-		     constructor or a destructor declared for it.  We have
-		     to make allowances for that here.  */
-
-		  if (first_func_member == NULL)
-		    first_func_member = TREE_VEC_ELT (vec_base, 1);
-
-		  for (func_member = first_func_member;
-		       func_member;
-		       func_member = TREE_CHAIN (func_member))
-		    output_decl (func_member, type);
-		}
+	      for (func_member = TYPE_METHODS (type);
+		   func_member;
+		   func_member = TREE_CHAIN (func_member))
+		output_decl (func_member, type);
 	    }
 
 	    /* RECORD_TYPEs, UNION_TYPEs, and QUAL_UNION_TYPEs are themselves
@@ -4302,8 +4278,9 @@ output_tagged_type_instantiation (type)
    the things which are local to the given block.  */
 
 static void
-output_block (stmt)
+output_block (stmt, depth)
     register tree stmt;
+    int depth;
 {
   register int must_output_die = 0;
   register tree origin;
@@ -4341,7 +4318,7 @@ output_block (stmt)
 	 not represent a "body block inlining" before trying to set the
 	 `must_output_die' flag.  */
 
-      if (origin == NULL || ! is_body_block (origin))
+      if (! is_body_block (origin ? origin : stmt))
 	{
 	  /* Determine if this block directly contains any "significant"
 	     local declarations which we will need to output DIEs for.  */
@@ -4375,32 +4352,35 @@ output_block (stmt)
      a "significant" local declaration gets restricted to include only
      inlined function instances and local (nested) function definitions.  */
 
-  if (must_output_die)
+  if (origin_code == FUNCTION_DECL && BLOCK_ABSTRACT (stmt))
+    /* We don't care about an abstract inlined subroutine.  */;
+  else if (must_output_die)
     {
       output_die ((origin_code == FUNCTION_DECL)
 		    ? output_inlined_subroutine_die
 		    : output_lexical_block_die,
 		  stmt);
-      output_decls_for_scope (stmt);
+      output_decls_for_scope (stmt, depth);
       end_sibling_chain ();
     }
   else
-    output_decls_for_scope (stmt);
+    output_decls_for_scope (stmt, depth);
 }
 
 /* Output all of the decls declared within a given scope (also called
    a `binding contour') and (recursively) all of it's sub-blocks.  */
 
 static void
-output_decls_for_scope (stmt)
+output_decls_for_scope (stmt, depth)
      register tree stmt;
+     int depth;
 {
   /* Ignore blocks never really used to make RTL.  */
 
   if (! stmt || ! TREE_USED (stmt))
     return;
 
-  if (! BLOCK_ABSTRACT (stmt))
+  if (! BLOCK_ABSTRACT (stmt) && depth > 0)
     next_block_number++;
 
   /* Output the DIEs to represent all of the data objects, functions,
@@ -4425,7 +4405,7 @@ output_decls_for_scope (stmt)
     for (subblocks = BLOCK_SUBBLOCKS (stmt);
          subblocks;
          subblocks = BLOCK_CHAIN (subblocks))
-      output_block (subblocks);
+      output_block (subblocks, depth + 1);
   }
 }
 
@@ -4639,28 +4619,12 @@ output_decl (decl, containing_scope)
 	       with a list of the LABEL_DECL nodes for the function however,
 	       and we output DWARF info for those here.
 
-	       Just within the `outer_scope' there will be another BLOCK
-	       node representing the function's outermost pair of curly
-	       braces.  We mustn't generate a lexical_block DIE for this
-	       outermost pair of curly braces because that is not really an
-	       independent scope according to ANSI C rules.  Rather, it is
-	       the same scope in which the parameters were declared.  */
+	       Just within the `outer_scope' there will be a BLOCK node
+	       representing the function's outermost pair of curly braces,
+	       and any blocks used for the base and member initializers of
+	       a C++ constructor function.  */
 
-	    {
-	      register tree label;
-
-	      for (label = BLOCK_VARS (outer_scope);
-		   label;
-		   label = TREE_CHAIN (label))
-		output_decl (label, outer_scope);
-	    }
-
-	    /* Note here that `BLOCK_SUBBLOCKS (outer_scope)' points to a
-	       list of BLOCK nodes which is always only one element long.
-	       That one element represents the outermost pair of curley
-	       braces for the function body.  */
-
-	    output_decls_for_scope (BLOCK_SUBBLOCKS (outer_scope));
+	    output_decls_for_scope (outer_scope, 0);
 
 	    /* Finally, force out any pending types which are local to the
 	       outermost block of this function definition.  These will
@@ -4710,12 +4674,9 @@ output_decl (decl, containing_scope)
 	 TYPE_DECL node for each complete tagged type, each array type,
 	 and each function type node created) the g++ front end generates
 	 a *named* TYPE_DECL node for each tagged type node created.
-	 Unfortunately, these g++ TYPE_DECL nodes cause us to output many
-	 superfluous and unnecessary TAG_typedef DIEs here.  When g++ is
-	 fixed to stop generating these superfluous named TYPE_DECL nodes,
-	 the superfluous TAG_typedef DIEs will likewise cease.  */
-
-      if (DECL_NAME (decl))
+	 These TYPE_DECLs have DECL_ARTIFICIAL set, so we know not to
+	 generate a DW_TAG_typedef DIE for them.  */
+      if (DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
 	/* Output a DIE to represent the typedef itself.  */
 	output_die (output_typedef_die, decl);
       break;
@@ -4862,7 +4823,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 the compiler never generates any out-of-lines instances of such
 	 things (despite the fact that they *are* definitions).  The
 	 important point is that the C front-end marks these "extern inline"
-	 functions as DECL_EXTERNAL, but we need to generate DWARf for them
+	 functions as DECL_EXTERNAL, but we need to generate DWARF for them
 	 anyway.
 
 	 Note that the C++ front-end also plays some similar games for inline
