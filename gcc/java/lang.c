@@ -301,7 +301,7 @@ java_handle_option (size_t scode, const char *arg, int value)
       dependency_tracking |= DEPEND_ENABLE;
       break;
 
-    case OPT_MD:
+    case OPT_MD_:
       jcf_dependency_init (1);
       dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
       break;
@@ -316,7 +316,7 @@ java_handle_option (size_t scode, const char *arg, int value)
       dependency_tracking |= DEPEND_ENABLE;
       break;
 
-    case OPT_MMD:
+    case OPT_MMD_:
       jcf_dependency_init (0);
       dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
       break;
