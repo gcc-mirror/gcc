@@ -23,8 +23,9 @@ details.  */
 #include <java/nio/channels/spi/SelectorProvider.h>
 
 void
-gnu::java::nio::VMPipe::init (gnu::java::nio::PipeImpl *self,
-			      ::java::nio::channels::spi::SelectorProvider* /*provider*/)
+gnu::java::nio::VMPipe::init (gnu::java::nio::PipeImpl*, /*self*/
+			      ::java::nio::channels::spi::SelectorProvider*
+			      /*provider*/)
 {
   int filedes [2];
 

@@ -1,3 +1,26 @@
+2005-03-05  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* java/lang/dtoa.c (_dtoa_r): Initialize variables ilim, ilim1 and
+	spec_case. Initialize pointer mlo.
+
+	* java/lang/strtod.c (_strtod_r): Initialize pointers bb, bd, ds and
+	delta.
+
+	* java/lang/e_asin.c (__ieee754_asin): Initialize variable t.
+
+	* java/lang/e_exp.c (__ieee754_exp): Initialize variables hi, lo
+	and k.
+
+	* java/lang/e_rem_pio2.c (__ieee754_rem_pio2): Initialize
+	uninitialized variable z.
+
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (mcastGrp): Ifdef
+	possible unused variables.
+
+	* gnu/java/nio/natPipeImplPosix.cc (init): Remove self.
+
+	* jawt.c: Include <stdlib.h> to fix implict declaration of malloc.
+
 2005-03-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/20292

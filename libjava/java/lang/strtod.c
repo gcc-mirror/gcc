@@ -118,7 +118,7 @@ _DEFUN (_strtod_r, (ptr, s00, se),
   unsigned long y, z;
   union double_union rv, rv0;
 
-  _Jv_Bigint *bb, *bb1, *bd, *bd0, *bs, *delta;
+  _Jv_Bigint *bb = NULL, *bb1, *bd = NULL, *bd0, *bs = NULL, *delta = NULL;
   sign = nz0 = nz = 0;
   rv.d = 0.;
   for (s = s00;; s++)

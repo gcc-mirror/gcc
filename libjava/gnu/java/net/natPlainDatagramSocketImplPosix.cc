@@ -429,9 +429,12 @@ gnu::java::net::PlainDatagramSocketImpl::mcastGrp (::java::net::InetAddress *ine
 {
   // FIXME: implement use of NetworkInterface
 
-  union McastReq u;
   jbyteArray haddress = inetaddr->addr;
+#if HAVE_STRUCT_IP_MREQ || HAVE_STRUCT_IPV6_MREQ
+  union McastReq u;
   jbyte *bytes = elements (haddress);
+#endif
+
   int len = haddress->length;
   int level, opname;
   const char *ptr;
