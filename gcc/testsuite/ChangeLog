@@ -119,6 +119,9 @@ Fri Feb 12 11:04:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 1999-02-11  Nick Clifton  <nickc@cygnus.com>
 
+	* lib/gcc.exp (proc gcc_target_compile): Add support for timeout
+	specified by target.
+
 	* lib/chill.exp: Fix typo: doesn'timeout -> doesn't
 
 Thu Feb 11 01:12:12 1999  Jeffrey A Law  (law@cygnus.com)
@@ -182,6 +185,14 @@ Sat Jan 30 16:22:47 1999  Richard Henderson  <rth@cygnus.com>
 Sat Jan 30 11:10:06 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990130-1.c: New test.
+
+1999-01-27  Felix Lee  <flee@cygnus.com>
+
+	* lib/c-torture.exp (c-torture-compile): pull out code for
+	analyzing gcc error messages.
+	(c-torture-execute): ditto, and fix some (harmless) false
+	positives.
+	* lib/gcc.exp (gcc_check_compile): new function.
 
 Sun Jan 17 00:02:33 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -627,6 +638,12 @@ Sun Aug 30 17:38:20 1998  Jeffrey A Law  (law@cygnus.com)
 Thu Aug 27 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980827-1.c: New test.
+
+Wed Aug 26 16:25:38 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lib/c-torture.exp: Add support for
+	torture_eval_before_compile and torture_eval_before_execute
+	variables.
 
 Tue Aug 25 19:42:13 1998  Jeffrey A Law  (law@cygnus.com)
 
