@@ -129,8 +129,8 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     Tek43[0-9][0-9]:UTek:*:*) # Tektronix 4300 system running UTek (BSD)
 	echo m68k-tektronix-bsd
 	exit 0 ;;
-    *:IRIX:*:*)
-	echo mips-sgi-irix${UNAME_RELEASE}
+    *:IRIX*:*:*)
+	echo mips-sgi-irix`echo ${UNAME_RELEASE}|sed -e 's/-/_/g'`
 	exit 0 ;;
    ????????:AIX?:[12].1:2)   # AIX 2.2.1 or AIX 2.1.1 is RT/PC AIX.
 	echo romp-ibm-aix      # uname -m gives an 8 hex-code CPU id
