@@ -1,3 +1,20 @@
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* include/std/std_limits.h (__glibcpp_f32_infinity_bytes,
+	__glibcpp_f32_has_infinity, __glibcpp_f64_infinity_bytes,
+	__glibcpp_f64_has_infinity, __glibcpp_f80_infinity_bytes,
+	__glibcpp_f80_has_infinity, __glibcpp_f96_infinity_bytes,
+	__glibcpp_f96_has_infinity, __glibcpp_f128_infinity_bytes,
+	__glibcpp_f128_has_infinity, __glibcpp_float_infinity_bytes,
+	__glibcpp_float_has_infinity, __glibcpp_double_infinity_bytes,
+	__glibcpp_double_has_infinity, __glibcpp_long_double_infinity_bytes,
+	__glibcpp_long_double_has_infinity): Remove.
+	(std::numeric_limits<float>, std::numeric_limits<double>,
+	std::numeric_limits<long double>): Use __builtin_huge_val
+	to implement has_infinity and infinity().
+	* src/limits.cc (__glibcpp_float_infinity, __glibcpp_double_infinity,
+	__glibcpp_long_double_infinity): Remove.
+
 2002-09-03  Richard Henderson  <rth@redhat.com>
 
 	* include/std/std_limits.h (__glibcpp_f32_min, __glibcpp_f32_max,
