@@ -77,6 +77,9 @@
    ALIAS_1 '\0' CANONICAL_1 '\0' ... ALIAS_n '\0' CANONICAL_n '\0' '\0'  */
 static const char * volatile charset_aliases;
 
+/* GCC LOCAL: Static function prototypes.  */
+static const char *get_charset_aliases PARAMS ((void));
+
 /* Return a pointer to the contents of the charset.alias file.  */
 static const char *
 get_charset_aliases ()
@@ -194,11 +197,9 @@ get_charset_aliases ()
    into one of the canonical names listed in config.charset.
    The result must not be freed; it is statically allocated.
    If the canonical name cannot be determined, the result is a non-canonical
-   name.  */
+   name.
+   GCC LOCAL: Get rid of STATIC nonsense. */
 
-#ifdef STATIC
-STATIC
-#endif
 const char *
 locale_charset ()
 {

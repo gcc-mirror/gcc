@@ -1381,7 +1381,9 @@ AC_DEFUN([AM_WITH_NLS],
 
     BUILD_INCLUDED_LIBINTL=no
     USE_INCLUDED_LIBINTL=no
+dnl GCC LOCAL: Separate concept of link command line from dependencies.
     INTLLIBS=
+    INTLDEPS=
 
     dnl If we use NLS figure out what method
     if test "$USE_NLS" = "yes"; then
@@ -1487,6 +1489,7 @@ return (int) gettext ("")]ifelse([$2], need-ngettext, [ + (int) ngettext ("", ""
 	USE_INCLUDED_LIBINTL=yes
         CATOBJEXT=.gmo
 	INTLLIBS="ifelse([$3],[],\$(top_builddir)/intl,[$3])/libintl.ifelse([$1], use-libtool, [l], [])a $LIBICONV"
+	INTLDEPS="ifelse([$3],[],\$(top_builddir)/intl,[$3])/libintl.ifelse([$1], use-libtool, [l], [])a"
 	LIBS=`echo " $LIBS " | sed -e 's/ -lintl / /' -e 's/^ //' -e 's/ $//'`
       fi
 
@@ -1605,6 +1608,7 @@ changequote([,])dnl
     AC_SUBST(CATOBJEXT)
     AC_SUBST(GMOFILES)
     AC_SUBST(INTLLIBS)
+    AC_SUBST(INTLDEPS)
     AC_SUBST(INTLOBJS)
     AC_SUBST(POFILES)
     AC_SUBST(POSUB)
