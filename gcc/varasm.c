@@ -4597,7 +4597,7 @@ assemble_alias (decl, target)
    VISIBILITY_TYPE.  */
 
 void
-assemble_visibility (decl, visibility_type)
+default_assemble_visibility (decl, visibility_type)
      tree decl;
      const char *visibility_type ATTRIBUTE_UNUSED;
 {

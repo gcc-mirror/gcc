@@ -59,7 +59,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif
 
 #ifndef TARGET_ASM_ASSEMBLE_VISIBILITY
-#define TARGET_ASM_ASSEMBLE_VISIBILITY assemble_visibility
+#define TARGET_ASM_ASSEMBLE_VISIBILITY default_assemble_visibility
 #endif
 
 #define TARGET_ASM_FUNCTION_PROLOGUE default_function_pro_epilogue

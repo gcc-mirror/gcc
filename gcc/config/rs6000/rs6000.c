@@ -8168,7 +8168,7 @@ rs6000_assemble_visibility (decl, visibility_type)
      tree decl;
      const char *visibility_type;
 {
-  assemble_visibility (decl, visibility_type);
+  default_assemble_visibility (decl, visibility_type);
 
   /* Functions need to have their entry point symbol visibility set as
      well as their descriptor symbol visibility.  */
