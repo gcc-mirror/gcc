@@ -3937,8 +3937,13 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 int
 const_uint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
+  /* It doesn't make sense to ask this question with a mode that is
+     not larger than 32 bits.  */
+  if (GET_MODE_BITSIZE (mode) <= 32)
+    abort ();
+
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
@@ -3956,8 +3961,13 @@ const_uint32_operand (op, mode)
 int
 const_sint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
+  /* It doesn't make sense to ask this question with a mode that is
+     not larger than 32 bits.  */
+  if (GET_MODE_BITSIZE (mode) <= 32)
+    abort ();
+
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));

@@ -1,5 +1,16 @@
 2001-07-22  Richard Henderson  <rth@redhat.com>
 
+	* m68k.c (const_uint32_operand): Abort if mode is <= 32 bits.
+	(const_sint32_operand): Likewise.
+	* m68k.md (anon mulsi pattern): Use const_int_operand not
+	const_sint32_operand.
+	(umulsi3_highpart): Zero extend a constant input.
+	(smulsi3_highpart): Don't bother checking SImode constant.
+	(const_umulsi3_highpart): Give op3 DImode.
+	(const_smulsi3_highpart): Likewise.
+
+2001-07-22  Richard Henderson  <rth@redhat.com>
+
 	* flow.c (split_block): Make sure bb_note is included in the
 	new block when splitting before a label.
 
@@ -208,8 +219,8 @@ Fri Jul 20 21:59:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-20  Catherine Moore  <clm@redhat.com>
 
-        * config/v850/v850.md (casesi): Generate LABEL_REF
-        with Pmode.
+	* config/v850/v850.md (casesi): Generate LABEL_REF
+	with Pmode.
 
 Fri Jul 20 14:12:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
@@ -231,7 +242,7 @@ Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-20  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/mips/mips.h (ISA_HAS_NMADD_NMSUB): New macro.
+	* config/mips/mips.h (ISA_HAS_NMADD_NMSUB): New macro.
 
 	* config/mips/mips.md (nmadd/nmsub): Use macro.
 
@@ -320,7 +331,7 @@ Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-19  Catherine Moore  <clm@cygnus.com>
 
-        * config/v850/v850.h (ASM_OUTPUT_LABELREF): Restore. 
+	* config/v850/v850.h (ASM_OUTPUT_LABELREF): Restore. 
 
 2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
 
