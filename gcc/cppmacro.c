@@ -897,7 +897,7 @@ replace_args (pfile, node, macro, args)
 	count = arg->expanded_count, from = arg->expanded;
 
       /* Padding on the left of an argument (unless RHS of ##).  */
-      if (!pfile->state.in_directive
+      if ((!pfile->state.in_directive || pfile->state.directive_wants_padding)
 	  && src != macro->exp.tokens && !(src[-1].flags & PASTE_LEFT))
 	*dest++ = padding_token (pfile, src);
 
