@@ -1,3 +1,8 @@
+2003-03-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9791
+	* class.c (get_basefndecls): Use lookup_fnfields_1.
+
 2003-03-02  Matt Austern  <austern@apple.com>
 
 	* decl.c (cp_binding_level): Add static_decls varray member.

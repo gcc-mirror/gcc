@@ -2539,11 +2539,19 @@ get_basefndecls (name, t)
   int n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
   int i;
 
-  for (methods = TYPE_METHODS (t); methods; methods = TREE_CHAIN (methods))
-    if (TREE_CODE (methods) == FUNCTION_DECL
-	&& DECL_VINDEX (methods) != NULL_TREE
-	&& DECL_NAME (methods) == name)
-      base_fndecls = tree_cons (NULL_TREE, methods, base_fndecls);
+  /* Find virtual functions in T with the indicated NAME.  */
+  i = lookup_fnfields_1 (t, name);
+  if (i != -1)
+    for (methods = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), i);
+	 methods;
+	 methods = OVL_NEXT (methods))
+      {
+	tree method = OVL_CURRENT (methods);
+
+	if (TREE_CODE (method) == FUNCTION_DECL
+	    && DECL_VINDEX (method))
+	  base_fndecls = tree_cons (NULL_TREE, method, base_fndecls);
+      }
 
   if (base_fndecls)
     return base_fndecls;
