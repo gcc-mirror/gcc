@@ -10407,6 +10407,21 @@ move_deaths (x, from_cuid, to_insn, pnotes)
 			       gen_rtx (REG, reg_raw_mode[i], i),
 			       REG_NOTES (where_dead));
 	    }
+	  /* If we didn't find any note, and we have a multi-reg hard
+	     register, then to be safe we must check for REG_DEAD notes
+	     for each register other than the first.  They could have
+	     their own REG_DEAD notes lying around.  */
+	  else if (note == 0 && regno < FIRST_PSEUDO_REGISTER
+		   && HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
+	    {
+	      int ourend = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	      int i;
+	      rtx oldnotes = 0;
+
+	      for (i = regno + 1; i < ourend; i++)
+		move_deaths (gen_rtx (REG, reg_raw_mode[i], i),
+			     from_cuid, to_insn, &oldnotes);
+	    }
 
 	  if (note != 0 && GET_MODE (XEXP (note, 0)) == GET_MODE (x))
 	    {
