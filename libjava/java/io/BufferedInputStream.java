@@ -61,6 +61,7 @@ package java.io;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy <warrenl@cygnus.com>
+ * @author Jeroen Frijters <jeroen@frijters.net>
  */
 public class BufferedInputStream extends FilterInputStream
 {
@@ -79,13 +80,13 @@ public class BufferedInputStream extends FilterInputStream
    * The number of valid bytes currently in the buffer.  It is also the index
    * of the buffer position one byte past the end of the valid data.
    */
-  protected int count = 0;
+  protected int count;
 
   /**
    * The index of the next character that will by read from the buffer.
    * When <code>pos == count</code>, the buffer is empty.
    */
-  protected int pos = 0;
+  protected int pos;
 
   /**
    * The value of <code>pos</code> when the <code>mark()</code> method was
@@ -100,7 +101,7 @@ public class BufferedInputStream extends FilterInputStream
    * After this may bytes are read, the <code>reset()</code> method
    * may not be called successfully.
    */
-  protected int marklimit = 0;
+  protected int marklimit;
 
   /**
    * This is the maximum size we have to allocate for the mark buffer.
@@ -260,7 +261,7 @@ public class BufferedInputStream extends FilterInputStream
    */
   public synchronized int read(byte[] b, int off, int len) throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
+    if (off < 0 || len < 0 || b.length - off < len)
       throw new IndexOutOfBoundsException();
 
     if (pos >= count && !refill())
@@ -286,13 +287,13 @@ public class BufferedInputStream extends FilterInputStream
    * passed when establishing the mark.
    *
    * @exception IOException If <code>mark()</code> was never called or more
-   *            then <code>markLimit</code> bytes were read since the last
+   *            then <code>marklimit</code> bytes were read since the last
    *            call to <code>mark()</code>
    */
   public synchronized void reset() throws IOException
   {
-    if (markpos < 0)
-      throw new IOException();
+    if (markpos == -1)
+      throw new IOException(buf == null ? "Stream closed." : "Invalid mark.");
 
     pos = markpos;
   }
@@ -310,6 +311,9 @@ public class BufferedInputStream extends FilterInputStream
    */
   public synchronized long skip(long n) throws IOException
   {
+    if (buf == null)
+	throw new IOException("Stream closed.");
+
     final long origN = n;
 
     while (n > 0L)
@@ -332,14 +336,16 @@ public class BufferedInputStream extends FilterInputStream
   }
 
   /**
-   * Called to refill the buffer (when count is equal or greater the pos).
-   * Package local so BufferedReader can call it when needed.
+   * Called to refill the buffer (when count is equal to pos).
    *
-   * @return <code>true</code> when <code>buf</code> can be (partly) refilled,
-   *         <code>false</code> otherwise.
+   * @return <code>true</code> when at least one additional byte was read
+   *         into <code>buf</code>, <code>false</code> otherwise (at EOF).
    */
   boolean refill() throws IOException
   {
+    if (buf == null)
+	throw new IOException("Stream closed.");
+
     if (markpos < 0)
       count = pos = 0;
     else if (markpos > 0)

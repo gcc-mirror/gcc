@@ -1,3 +1,15 @@
+2004-09-27  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/BufferedInputStream.java
+	(BufferedInputStream): Added Jeroen Frijters to authors.
+	(count): Don't explicitely initialize with default value.
+	(pos): Likewise.
+	(marklimit): Likewise.
+	(read): Changed boolean expression to match GNU classpath' version.
+	(reset): Add proper message to exception.
+	(skip): Check for closed stream.
+	(refill): Likewise.
+
 2004-09-26  Per Bothner  <per@bothner.com>
 
 	* prims.cc (unblock_signal): Annotate signum with __unused__ to
