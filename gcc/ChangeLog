@@ -1,3 +1,8 @@
+2000-06-30  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa/som.h (ASM_WEAKEN_LABEL): Export weak data symbols so that they
+	have global scope.
+
 2000-06-30  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* invoke.texi (-Wreturn-type): In C++, a missing return type is
