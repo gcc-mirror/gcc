@@ -742,7 +742,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      if (this->_M_buf_locale != __loc)
+      if (this->getloc() != __loc)
 	{
 	  bool __testfail = false;
 	  if (this->is_open())
@@ -758,7 +758,6 @@ namespace std
 
 	  if (!__testfail)
 	    {
-	      this->_M_buf_locale = __loc;
 	      if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
 		_M_codecvt = &use_facet<__codecvt_type>(__loc);
 	      else

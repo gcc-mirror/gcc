@@ -1,3 +1,21 @@
+2003-11-13  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/13007
+	* include/bits/fstream.tcc (imbue): Don't touch the stored
+	locale.
+	* include/std/std_streambuf.h (imbue): According to the
+	standard, base class version does nothing.
+	(pubimbue): Store the locale.
+	* testsuite/27_io/basic_filebuf/imbue/char/13007.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13007.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Tweak.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/13007-1.cc: New.
+	* testsuite/27_io/basic_streambuf/imbue/char/13007-2.cc: New.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-1.cc: New.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-2.cc: New.
+
 2003-11-13  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/12594
