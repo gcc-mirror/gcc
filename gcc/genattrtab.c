@@ -1,6 +1,6 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
 
@@ -96,7 +96,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "hconfig.h"
 /* gvarargs must always be included after *config.h.  */
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 #include <stdio.h>
@@ -355,11 +359,10 @@ static char *alternative_name;
 rtx frame_pointer_rtx, hard_frame_pointer_rtx, stack_pointer_rtx;
 rtx arg_pointer_rtx;
 
-#if 0
 static rtx attr_rtx		PROTO((enum rtx_code, ...));
+#ifdef HAVE_VPRINTF
 static char *attr_printf	PROTO((int, char *, ...));
 #else
-static rtx attr_rtx ();
 static char *attr_printf ();
 #endif
 
@@ -524,11 +527,12 @@ attr_hash_add_string (hashcode, str)
 
 /*VARARGS1*/
 static rtx
-attr_rtx (va_alist)
-     va_dcl
+attr_rtx VPROTO((enum rtx_code code, ...))
 {
-  va_list p;
+#ifndef __STDC__
   enum rtx_code code;
+#endif
+  va_list p;
   register int i;		/* Array indices...			*/
   register char *fmt;		/* Current rtx's format...		*/
   register rtx rt_val;		/* RTX to return to caller...		*/
@@ -536,8 +540,11 @@ attr_rtx (va_alist)
   register struct attr_hash *h;
   struct obstack *old_obstack = rtl_obstack;
 
-  va_start (p);
+  VA_START (p, code);
+
+#ifndef __STDC__
   code = va_arg (p, enum rtx_code);
+#endif
 
   /* For each of several cases, search the hash table for an existing entry.
      Use that entry if one is found; otherwise create a new RTL and add it
@@ -719,19 +726,24 @@ attr_rtx (va_alist)
 
 /*VARARGS2*/
 static char *
-attr_printf (va_alist)
-     va_dcl
+attr_printf VPROTO((register int len, register char *fmt, ...))
 {
-  va_list p;
+#ifndef __STDC__
   register int len;
   register char *fmt;
+#endif
+  va_list p;
   register char *str;
 
-  /* Print the string into a temporary location.  */
-  va_start (p);
+  VA_START (p, fmt);
+
+#ifndef __STDC__
   len = va_arg (p, int);
+  fmt = va_arg (p, char*);
+#endif
+
+  /* Print the string into a temporary location.  */
   str = (char *) alloca (len);
-  fmt = va_arg (p, char *);
   vsprintf (str, fmt, p);
   va_end (p);
 
