@@ -1,5 +1,10 @@
 2001-06-12  Alexandre Oliva  <aoliva@redhat.com>
 
+	Reverted:
+	2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+	* configure.in (sparc*-*-*): Check assembler R_SPARC_UA32 support.
+	* configure: Rebuilt.
+
 	* doc/extend.texi (Function Attributes): Document SH's sp_switch
 	and trap_exit.
 
