@@ -2909,7 +2909,6 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
     {
       new_bb->index = then_bb_index;
       BASIC_BLOCK (then_bb_index) = new_bb;
-      /* ??? Should be then_bb? */
       BB_COPY_PARTITION (new_bb, test_bb);
     }
   /* We've possibly created jump to next insn, cleanup_cfg will solve that

@@ -2,6 +2,7 @@
 
 	* basic-block.h (BB_SET_PARTITION): Clear old value first.
 	* cfg.c (clear_bb_flags): Don't clear partition setting.
+	* ifcvt.c (find_if_case_1): Remove ??? comment.
 
 2004-08-25  Alan Modra  <amodra@bigpond.net.au>
 
