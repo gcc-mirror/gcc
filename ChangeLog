@@ -1,3 +1,7 @@
+2000-08-07  DJ Delorie  <dj@delorie.com>
+
+	* MAINTAINERS: Add self as a DJGPP maintainer
+
 2000-08-07  DJ Delorie  <dj@redhat.com>
 
 	* configure.in (FLAGS_FOR_TARGET): invert test for xgcc, should mean
