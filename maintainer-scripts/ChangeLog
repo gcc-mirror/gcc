@@ -1,5 +1,8 @@
 2001-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* update_web_docs: Eliminate warnings about keeping files from web
+	page preprocessing.
+
 	* update_web_docs: Allow for the same file name in different
 	directories.
 

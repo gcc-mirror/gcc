@@ -167,7 +167,7 @@ if [ "$RELEASE" = "HEAD" ]; then
 
   # Preprocess the entire web site, not just the install docs!
   echo "Invoking $WWWPREPROCESS"
-  $WWWPREPROCESS
+  $WWWPREPROCESS |grep -v '^  Warning: Keeping'
 fi
 
 # Clean up behind us.
