@@ -1,3 +1,8 @@
+Fri Jul 10 19:06:59 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* varray.h: Include system.h if it hasn't already been included
+	before to get size_t declared.
+
 Fri Jul 10 12:53:58 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* jump.c (jump_optimize): If after_regscan and our transformations

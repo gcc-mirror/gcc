@@ -30,6 +30,10 @@
 #include "machmode.h"
 #endif
 
+#ifndef __GCC_SYSTEM_H__
+#include "system.h"
+#endif
+
 /* Union of various array types that are used.  */
 typedef union varray_data_tag {
   char			 c[1];
