@@ -1,3 +1,26 @@
+Thu Sep 20 09:00:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (hashtab.h): Include.
+	(int_const_binop): Remove FORSIZE arg and compute from type; all
+	callers changed.
+	Call size_int_type_wide for all single-word constants.
+	(size_htab_hash, size_htab_eq): New functions.
+	(size_int_type_wide): Rework to use hash table.
+	* ggc-common.c (hashtab.h): Include.
+	(struct d_htab_root): New struct.
+	(d_htab_roots): New variable.
+	(ggc_add_deletable_htab, ggc_htab_delete): New functions
+	(ggc_mark_roots): Handle deletable htabs.
+	* ggc-page.c (ggc_marked_p): New function.
+	* ggc-simple.c (ggc_marked_p): Likewise.
+	* ggc.h: Reformatting throughout.
+	(ggc_marked_p, ggc_add_deletable_htab): New declarations.
+	* tree.c (init_obstacks): Make type_hash_table a deletable root.
+	(type_hash_add): Allocate struct type_hash from GC memory.
+	(mark_hash_entry, mark_type_hash): Deleted.
+	(type_hash_marked_p, type_hash_mark): New functions.
+	* Makefile.in (ggc-common.o, fold-const.o): Include hashtab.h.
+
 Thu Sep 20 12:49:34 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* sh.c (shiftcosts): Don't use shiftcosts array for modes wider
