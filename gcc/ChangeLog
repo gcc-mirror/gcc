@@ -1,3 +1,9 @@
+Wed Aug 19 13:51:35 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* tm.texi (Caller Saves): Say that DEFAULT_CALLER_SAVES has no
+	effect when -O2 and higher.
+	* invoke.texi (Optimize Options): Likewise for -fcaller-saves.
+
 1998-08-19  Michael Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* regclass.c: Changed register set documentation to be consistent

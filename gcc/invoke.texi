@@ -2397,8 +2397,11 @@ function calls, by emitting extra instructions to save and restore the
 registers around such calls.  Such allocation is done only when it
 seems to result in better code than would otherwise be produced.
 
-This option is enabled by default on certain machines, usually those
-which have no call-preserved registers to use instead.
+This option is always enabled by default on certain machines, usually
+those which have no call-preserved registers to use instead.
+
+For all machines, optimization level 2 and higher enables this flag by
+default.
 
 @item -funroll-loops
 Perform the optimization of loop unrolling.  This is only done for loops
