@@ -2766,6 +2766,9 @@ eliminate_regs (x, mem_mode, insn)
 	if (ep->to_rtx == XEXP (x, 0))
 	  ep->can_eliminate = 0;
 
+      new = eliminate_regs (XEXP (x, 0), mem_mode, NULL_RTX);
+      if (new != XEXP (x, 0))
+	return gen_rtx (code, GET_MODE (x), new);
       return x;
 
     case ASM_OPERANDS:
