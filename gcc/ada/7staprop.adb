@@ -995,8 +995,8 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Finalize_TCB (T : Task_ID) is
-      Result : Interfaces.C.int;
-      Tmp    : Task_ID := T;
+      Result  : Interfaces.C.int;
+      Tmp     : Task_ID := T;
       Is_Self : constant Boolean := T = Self;
 
       procedure Free is new
@@ -1018,10 +1018,8 @@ package body System.Task_Primitives.Operations is
       Free (Tmp);
 
       if Is_Self then
-         Result := pthread_setspecific (ATCB_Key, System.Null_Address);
-         pragma Assert (Result = 0);
+         Specific.Set (null);
       end if;
-
    end Finalize_TCB;
 
    ---------------

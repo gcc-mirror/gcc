@@ -1,3 +1,88 @@
+2004-03-18  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 5atpopsp.adb: Remove RTEMS from list of platforms using this file.
+
+	Code clean up:
+	* 5ataprop.adb, 5ftaprop.adb, 5htaprop.adb, 5itaprop.adb, 5staprop.adb,
+	5vtaprop.adb, 5wtaprop.adb, 7staprop.adb (Finalize_TCB): Use
+	Specific.Set instead of direct call to e.g pthread_setspecific.
+
+2004-03-18  Thomas Quinot  <quinot@act-europe.fr>
+
+	* adaint.c: Update comments.
+
+	* Makefile.in: set PREFIX_OBJS, SYMLIB, THREADSLIB, and
+	GNATLIB_SHARED for FreeBSD.
+
+2004-03-18  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* init.c [VxWorks]: Do not fix the stack size for the environment task.
+	When needed (stack checking) the stack size is retrieved
+	from the VxWorks kernel.
+
+	* Makefile.in: Flag -nostdinc is required when building the run time
+	for avoiding looking for files in the base compiler.
+	Add the VxWorks specific version of the package body for
+	System.Stack_checking.Operations (5zstchop.adb).
+
+	* Make-lang.in: Add the object file for
+	System.Stack_Checking.Operations.
+
+	* Makefile.rtl: Add object file for the package
+	System.Stack_Checking.Operations.
+
+	* s-stchop.ads, s-stchop.adb, 5zstchop.adb: New files.
+
+	* s-stache.ads, s-stache.adb: Move the operations related to stack
+	checking from this package to package System.Stack_Checking.Operations.
+	This way, stack checking operations are only linked in the final
+	executable when using the -fstack-check flag.
+
+2004-03-18  Doug Rupp  <rupp@gnat.com>
+
+	* Makefile.in [VMS]: Handle 64 bit specs (5qsystem.ads, 5xcrtl.ads).
+	Reorganize ifeq's.
+
+	* 5qsystem.ads, 5xcrtl.ads: New files.
+
+2004-03-18  Vincent Celier  <celier@gnat.com>
+
+	* prj.adb (Reset): Reset hash table Files_Htable
+
+	* prj-env.adb (Source_Paths, Object_Paths): New tables.
+	(Add_To_Source_Path, Add_To_Object_Path): New procedures, to replace
+	the procedures Add_To_Path_File.
+	(Set_Ada_Paths): Accumulate source and object dirs in the tables,
+	making sure that each directory is present only once and, for object
+	dirs, when a directory already present is added, the duplicate is
+	removed and the directory is always put as the last in the table.
+	Write the path files at the end of these accumulations.
+
+	* prj-nmsc.adb (Record_Source): Add source file name in hash table
+	Files_Htable for all sources.
+
+	* prj-proc.adb (Process): Remove restrictions between not directly
+	related extending projects.
+
+2004-03-18  Emmanuel Briot  <briot@act-europe.fr>
+
+	* prj-nmsc.ads, prj-nmsc.adb (Ada_Check): New parameter Trusted_Mode.
+	(Find_Sources): Minor speed optimization.
+
+	* prj-proc.ads, prj-proc.adb (Check, Recursive_Check, Process): New
+	parameter Trusted_Mode.
+
+2004-03-18  Sergey Rybin  <rybin@act-europe.fr>
+
+	* scn.adb (Determine_License): Take into account a degenerated case
+	when the source contains only comments.
+
+2004-03-18  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_warn.adb (Check_References): For a warning on a selected
+	component that does not come from source, locate an uninitialized
+	component of the record type to produce a more precise error message.
+
 2004-03-15  Jerome Guitton  <guitton@act-europe.fr>
 
 	* 3zsoccon.ads: Fix multicast options.

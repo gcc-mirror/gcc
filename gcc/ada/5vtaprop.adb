@@ -879,8 +879,7 @@ package body System.Task_Primitives.Operations is
       Free (Tmp);
 
       if Is_Self then
-         Result := pthread_setspecific (ATCB_Key, System.Null_Address);
-         pragma Assert (Result = 0);
+         Specific.Set (null);
       end if;
    end Finalize_TCB;
 

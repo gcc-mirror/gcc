@@ -1777,20 +1777,6 @@ __gnat_initialize (void)
 {
   __gnat_init_float ();
 
-  /* Assume an environment task stack size of 20kB.
-
-     Using a constant is necessary because we do not want each Ada application
-     to depend on the optional taskShow library,
-     which is required to get the actual stack information.
-
-     The consequence of this is that with -fstack-check
-     the environment task must have an actual stack size
-     of at least 20kB and the usable size will be about 14kB.
-  */
-
-  __gnat_set_stack_size (14336);
-  /* Allow some head room for the stack checking code, and for
-     stack space consumed during initialization */
 }
 
 /********************************/

@@ -87,6 +87,24 @@ package body Prj.Env is
    --  A Boolean array type used in Create_Mapping_File to select the projects
    --  in the closure of a specific project.
 
+   package Source_Paths is new Table.Table
+     (Table_Component_Type => Name_Id,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 50,
+      Table_Increment      => 50,
+      Table_Name           => "Prj.Env.Source_Paths");
+   --  A table to store the source dirs before creating the source path file
+
+   package Object_Paths is new Table.Table
+     (Table_Component_Type => Name_Id,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 50,
+      Table_Increment      => 50,
+      Table_Name           => "Prj.Env.Source_Paths");
+   --  A table to store the object dirs, before creating the object path file
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -109,16 +127,13 @@ package body Prj.Env is
    --  If Ada_Path_Length /= 0, prepend a Path_Separator character to
    --  Path.
 
-   procedure Add_To_Path_File
-     (Source_Dirs : String_List_Id;
-      Path_File   : File_Descriptor);
-   --  Add to Ada_Path_Buffer all the source directories in string list
+   procedure Add_To_Source_Path (Source_Dirs : String_List_Id);
+   --  Add to Ada_Path_B all the source directories in string list
    --  Source_Dirs, if any. Increment Ada_Path_Length.
 
-   procedure Add_To_Path_File
-     (Path      : String;
-      Path_File : File_Descriptor);
-   --  Add Path to path file
+   procedure Add_To_Object_Path (Object_Dir : Name_Id);
+   --  Add Object_Dir to object path table. Make sure it is not duplicate
+   --  and it is the last one in the current table.
 
    procedure Create_New_Path_File
      (Path_FD   : out File_Descriptor;
@@ -311,6 +326,34 @@ package body Prj.Env is
       return Projects.Table (Project).Ada_Objects_Path;
    end Ada_Objects_Path;
 
+   ------------------------
+   -- Add_To_Object_Path --
+   ------------------------
+
+   procedure Add_To_Object_Path (Object_Dir : Name_Id) is
+   begin
+      --  Check if the directory is already in the table
+
+      for Index in 1 .. Object_Paths.Last loop
+         --  If it is, remove it, and add it as the last one
+
+         if Object_Paths.Table (Index) = Object_Dir then
+            for Index2 in Index + 1 .. Object_Paths.Last loop
+               Object_Paths.Table (Index2 - 1) :=
+                 Object_Paths.Table (Index2);
+            end loop;
+
+            Object_Paths.Table (Object_Paths.Last) := Object_Dir;
+            return;
+         end if;
+      end loop;
+
+      --  The directory is not already in the table, add it
+
+      Object_Paths.Increment_Last;
+      Object_Paths.Table (Object_Paths.Last) := Object_Dir;
+   end Add_To_Object_Path;
+
    -----------------
    -- Add_To_Path --
    -----------------
@@ -402,41 +445,43 @@ package body Prj.Env is
       Ada_Path_Length := Ada_Path_Length + Dir'Length;
    end Add_To_Path;
 
-   ----------------------
-   -- Add_To_Path_File --
-   ----------------------
+   ------------------------
+   -- Add_To_Source_Path --
+   ------------------------
 
-   procedure Add_To_Path_File
-     (Source_Dirs : String_List_Id;
-      Path_File   : File_Descriptor)
-   is
+   procedure Add_To_Source_Path (Source_Dirs : String_List_Id) is
       Current    : String_List_Id := Source_Dirs;
       Source_Dir : String_Element;
+      Add_It     : Boolean;
 
    begin
+      --  Add each source directory
+
       while Current /= Nil_String loop
          Source_Dir := String_Elements.Table (Current);
-         Add_To_Path_File (Get_Name_String (Source_Dir.Value), Path_File);
+         Add_It := True;
+
+         --  Check if the source directory is already in the table
+
+         for Index in 1 .. Source_Paths.Last loop
+            --  If it is already, no need to add it
+
+            if Source_Paths.Table (Index) = Source_Dir.Value then
+               Add_It := False;
+               exit;
+            end if;
+         end loop;
+
+         if Add_It then
+            Source_Paths.Increment_Last;
+            Source_Paths.Table (Source_Paths.Last) := Source_Dir.Value;
+         end if;
+
+         --  Next source directory
+
          Current := Source_Dir.Next;
       end loop;
-   end Add_To_Path_File;
-
-   procedure Add_To_Path_File
-     (Path      : String;
-      Path_File : File_Descriptor)
-   is
-      Line : String (1 .. Path'Length + 1);
-      Len  : Natural;
-
-   begin
-      Line (1 .. Path'Length) := Path;
-      Line (Line'Last) := ASCII.LF;
-      Len := Write (Path_File, Line (1)'Address, Line'Length);
-
-      if Len /= Line'Length then
-         Prj.Com.Fail ("disk full");
-      end if;
-   end Add_To_Path_File;
+   end Add_To_Source_Path;
 
    -----------------------
    -- Body_Path_Name_Of --
@@ -1845,87 +1890,100 @@ package body Prj.Env is
       Status : Boolean;
       --  For calls to Close
 
-      procedure Add (Project : Project_Id);
+      Len : Natural;
+
+      procedure Add (Proj : Project_Id);
       --  Add all the source/object directories of a project to the path only
-      --  if this project has not been visited. Calls itself recursively for
-      --  projects being extended, and imported projects.
+      --  if this project has not been visited. Calls an internal procedure
+      --  recursively for projects being extended, and imported projects.
 
       ---------
       -- Add --
       ---------
 
-      procedure Add (Project : Project_Id) is
-      begin
-         --  If Seen is False, then the project has not yet been visited
+      procedure Add (Proj : Project_Id) is
 
-         if not Projects.Table (Project).Seen then
-            Projects.Table (Project).Seen := True;
+         procedure Recursive_Add (Project : Project_Id);
+         --  Recursive procedure to add the source/object paths of extended/
+         --  imported projects.
 
-            declare
-               Data : constant Project_Data := Projects.Table (Project);
-               List : Project_List := Data.Imported_Projects;
+         -------------------
+         -- Recursive_Add --
+         -------------------
 
-            begin
-               if Process_Source_Dirs then
+         procedure Recursive_Add (Project : Project_Id) is
+         begin
+            --  If Seen is False, then the project has not yet been visited
 
-                  --  Add to path all source directories of this project
-                  --  if there are Ada sources.
+            if not Projects.Table (Project).Seen then
+               Projects.Table (Project).Seen := True;
 
-                  if Projects.Table (Project).Sources_Present then
-                     Add_To_Path_File (Data.Source_Dirs, Source_FD);
-                  end if;
-               end if;
+               declare
+                  Data : constant Project_Data := Projects.Table (Project);
+                  List : Project_List := Data.Imported_Projects;
 
-               if Process_Object_Dirs then
+               begin
+                  if Process_Source_Dirs then
 
-                  --  Add to path the object directory of this project
-                  --  except if we don't include library project and
-                  --  this is a library project.
+                     --  Add to path all source directories of this project
+                     --  if there are Ada sources.
 
-                  if (Data.Library and then Including_Libraries)
-                    or else
-                     (Data.Object_Directory /= No_Name
-                        and then
-                         (not Including_Libraries or else not Data.Library))
-                  then
-                     --  For a library project, add the library directory
-
-                     if Data.Library then
-                        declare
-                           New_Path : constant String :=
-                                        Get_Name_String (Data.Library_Dir);
-
-                        begin
-                           Add_To_Path_File (New_Path, Object_FD);
-                        end;
-
-                     else
-                        --  For a non library project, add the object directory
-
-                        declare
-                           New_Path : constant String :=
-                             Get_Name_String (Data.Object_Directory);
-                        begin
-                           Add_To_Path_File (New_Path, Object_FD);
-                        end;
+                     if Projects.Table (Project).Sources_Present then
+                        Add_To_Source_Path (Data.Source_Dirs);
                      end if;
                   end if;
-               end if;
 
-               --  Call Add to the project being extended, if any
+                  if Process_Object_Dirs then
 
-               if Data.Extends /= No_Project then
-                  Add (Data.Extends);
-               end if;
+                     --  Add to path the object directory of this project
+                     --  except if we don't include library project and
+                     --  this is a library project.
 
-               --  Call Add for each imported project, if any
+                     if (Data.Library and then Including_Libraries)
+                       or else
+                         (Data.Object_Directory /= No_Name
+                          and then
+                            (not Including_Libraries or else not Data.Library))
+                     then
+                        --  For a library project, add the library directory
 
-               while List /= Empty_Project_List loop
-                  Add (Project_Lists.Table (List).Project);
-                  List := Project_Lists.Table (List).Next;
-               end loop;
-            end;
-         end if;
+                        if Data.Library then
+                           Add_To_Object_Path (Data.Library_Dir);
+
+                        else
+                           --  For a non library project, add the object
+                           --  directory.
+
+                           Add_To_Object_Path (Data.Object_Directory);
+                        end if;
+                     end if;
+                  end if;
+
+                  --  Call Add to the project being extended, if any
+
+                  if Data.Extends /= No_Project then
+                     Recursive_Add (Data.Extends);
+                  end if;
+
+                  --  Call Add for each imported project, if any
+
+                  while List /= Empty_Project_List loop
+                     Recursive_Add (Project_Lists.Table (List).Project);
+                     List := Project_Lists.Table (List).Next;
+                  end loop;
+               end;
+            end if;
+         end Recursive_Add;
+
+      begin
+         Source_Paths.Set_Last (0);
+         Object_Paths.Set_Last (0);
+
+         for Index in 1 .. Projects.Last loop
+            Projects.Table (Index).Seen := False;
+         end loop;
+
+         Recursive_Add (Proj);
       end Add;
 
    --  Start of processing for Set_Ada_Paths
@@ -1966,16 +2024,23 @@ package body Prj.Env is
       --  then call the recursive procedure Add for Project.
 
       if Process_Source_Dirs or Process_Object_Dirs then
-         for Index in 1 .. Projects.Last loop
-            Projects.Table (Index).Seen := False;
-         end loop;
-
          Add (Project);
       end if;
 
-      --  Close any file that has been created.
+      --  Write and close any file that has been created.
 
       if Source_FD /= Invalid_FD then
+         for Index in 1 .. Source_Paths.Last loop
+            Get_Name_String (Source_Paths.Table (Index));
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := ASCII.LF;
+            Len := Write (Source_FD, Name_Buffer (1)'Address, Name_Len);
+
+            if Len /= Name_Len then
+               Prj.Com.Fail ("disk full");
+            end if;
+         end loop;
+
          Close (Source_FD, Status);
 
          if not Status then
@@ -1984,6 +2049,17 @@ package body Prj.Env is
       end if;
 
       if Object_FD /= Invalid_FD then
+         for Index in 1 .. Object_Paths.Last loop
+            Get_Name_String (Object_Paths.Table (Index));
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := ASCII.LF;
+            Len := Write (Object_FD, Name_Buffer (1)'Address, Name_Len);
+
+            if Len /= Name_Len then
+               Prj.Com.Fail ("disk full");
+            end if;
+         end loop;
+
          Close (Object_FD, Status);
 
          if not Status then

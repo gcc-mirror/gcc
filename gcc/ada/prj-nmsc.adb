@@ -587,7 +587,8 @@ package body Prj.Nmsc is
 
    procedure Ada_Check
      (Project      : Project_Id;
-      Report_Error : Put_Line_Access)
+      Report_Error : Put_Line_Access;
+      Trusted_Mode : Boolean)
    is
       Data         : Project_Data;
       Languages    : Variable_Value := Nil_Variable_Value;
@@ -665,9 +666,12 @@ package body Prj.Nmsc is
                Source_Recorded := False;
                Element := String_Elements.Table (Source_Dir);
                if Element.Value /= No_Name then
+                  Get_Name_String (Element.Display_Value);
                   declare
                      Source_Directory : constant String :=
-                       Get_Name_String (Element.Display_Value);
+                        Name_Buffer (1 .. Name_Len) & Directory_Separator;
+                     Dir_Last  : constant Natural :=
+                        Compute_Directory_Last (Source_Directory);
 
                   begin
                      if Current_Verbosity = High then
@@ -677,7 +681,8 @@ package body Prj.Nmsc is
 
                      --  We look to every entry in the source directory
 
-                     Open (Dir, Source_Directory);
+                     Open (Dir, Source_Directory
+                             (Source_Directory'First .. Dir_Last));
 
                      --  Canonical_Case_File_Name (Source_Directory);
 
@@ -693,20 +698,16 @@ package body Prj.Nmsc is
 
                         declare
                            File_Name : constant Name_Id := Name_Find;
-                           Dir       : constant String :=
-                                         Source_Directory &
-                                         Directory_Separator;
-                           Dir_Last  : constant Natural :=
-                                         Compute_Directory_Last (Dir);
                            Path      : constant String :=
                                   Normalize_Pathname
                                     (Name      => Name_Buffer (1 .. Name_Len),
-                                     Directory => Dir (Dir'First .. Dir_Last));
+                                     Directory => Source_Directory
+                                       (Source_Directory'First .. Dir_Last),
+                                     Resolve_Links => not Trusted_Mode);
                            Path_Name : Name_Id;
 
                         begin
-                           if Is_Regular_File (Path) then
-
+                           if Trusted_Mode or else Is_Regular_File (Path) then
                               Name_Len := Path'Length;
                               Name_Buffer (1 .. Name_Len) := Path;
                               Path_Name := Name_Find;
@@ -3749,6 +3750,11 @@ package body Prj.Nmsc is
                      Remove_Forbidden_File_Name
                        (The_Unit_Data.File_Names (Unit_Kind).Name);
                   end if;
+
+                  --  Record the file name in the hash table Files_Htable
+
+                  Unit_Prj := (Unit => The_Unit, Project => Project);
+                  Files_Htable.Set (Canonical_File_Name, Unit_Prj);
 
                   The_Unit_Data.File_Names (Unit_Kind) :=
                     (Name         => Canonical_File_Name,

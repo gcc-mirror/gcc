@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2000-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2000-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,17 @@ private package Prj.Nmsc is
 
    procedure Ada_Check
      (Project      : Project_Id;
-      Report_Error : Put_Line_Access);
+      Report_Error : Put_Line_Access;
+      Trusted_Mode : Boolean);
    --  Call Language_Independent_Check.
    --  Check the naming scheme for Ada.
    --  Find the Ada source files if any.
    --  If Report_Error is null , use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
+   --  If Trusted_Mode is True, it is assumed that the project doesn't contain
+   --  any file duplicated through symbolic links (although the latter are
+   --  still valid if they point to a file which is outside of the project),
+   --  and that no directory has a name which is a valid source name.
 
    procedure Language_Independent_Check
      (Project      : Project_Id;
