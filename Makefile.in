@@ -812,6 +812,7 @@ INSTALL_TARGET_MODULES = \
 	install-target-libgloss \
 	install-target-libiberty \
 	install-target-gperf \
+	install-target-libffi \
 	install-target-libjava \
 	install-target-zlib \
 	install-target-boehm-gc \

@@ -1,3 +1,8 @@
+2002-12-31  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.def (target_modules) [libffi]: Allow installation.
+
 2002-12-13  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.tpl (check-gcc-c++): Renamed from check-c++.  Don't run
