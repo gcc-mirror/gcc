@@ -96,7 +96,7 @@ Constants and quantity numbers
    in the appropriate element of qty_const.  This is in addition to
    putting the constant in the hash table as is usual for non-regs.
 
-   Whether a reg or a constant is prefered is determined by the configuration
+   Whether a reg or a constant is preferred is determined by the configuration
    macro CONST_COSTS and will often depend on the constant value.  In any
    event, expressions containing constants can be simplified, by fold_rtx.
 
@@ -323,7 +323,7 @@ static int cse_basic_block_start;
 static int cse_basic_block_end;
 
 /* Vector mapping INSN_UIDs to cuids.
-   The cuids are like uids but increase monononically always.
+   The cuids are like uids but increase monotonically always.
    We use them to see whether a reg is used outside a given basic block.  */
 
 static short *uid_cuid;
@@ -2754,6 +2754,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    return 0;
 	  break;
 
+	case SQRT:
+	  return 0;
+
 	default:
 	  abort ();
 	}
@@ -2814,6 +2817,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    return 0;
 	  break;
 
+	case SQRT:
+	  return 0;
+
 	default:
 	  return 0;
 	}
@@ -2865,6 +2871,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case UNSIGNED_FIX:
 	  d = (double) REAL_VALUE_UNSIGNED_FIX_TRUNCATE (d);
 	  break;
+
+	case SQRT:
+	  return 0;
 
 	default:
 	  abort ();
@@ -5504,6 +5513,49 @@ cse_insn (insn, in_libcall_block)
 	    }
         }
 
+      /* Another possibility is that we have an AND with a constant in
+	 a mode narrower than a word.  If so, it might have been generated
+	 as part of an "if" which would narrow the AND.  If we already
+	 have done the AND in a wider mode, we can use a SUBREG of that
+	 value.  */
+
+      if (flag_expensive_optimizations && ! src_related
+	  && GET_CODE (src) == AND && GET_CODE (XEXP (src, 1)) == CONST_INT
+	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	{
+	  enum machine_mode tmode;
+	  rtx new_and = gen_rtx (AND, VOIDmode, 0, XEXP (src, 1));
+
+	  for (tmode = GET_MODE_WIDER_MODE (mode);
+	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
+	       tmode = GET_MODE_WIDER_MODE (tmode))
+	    {
+	      rtx inner = gen_lowpart_if_possible (tmode, XEXP (src, 0));
+	      struct table_elt *larger_elt;
+
+	      if (inner)
+		{
+		  PUT_MODE (new_and, tmode);
+		  XEXP (new_and, 0) = inner;
+		  larger_elt = lookup (new_and, HASH (new_and, tmode), tmode);
+		  if (larger_elt == 0)
+		    continue;
+
+		  for (larger_elt = larger_elt->first_same_value;
+		       larger_elt; larger_elt = larger_elt->next_same_value)
+		    if (GET_CODE (larger_elt->exp) == REG)
+		      {
+			src_related
+			  = gen_lowpart_if_possible (mode, larger_elt->exp);
+			break;
+		      }
+
+		  if (src_related)
+		    break;
+		}
+	    }
+	}
+		  
       if (src == src_folded)
         src_folded = 0;
 
@@ -5734,7 +5786,7 @@ cse_insn (insn, in_libcall_block)
       /* If this is a single SET, we are setting a register, and we have an
 	 equivalent constant, we want to add a REG_NOTE.   We don't want
 	 to write a REG_EQUAL note for a constant pseudo since verifying that
-	 that psuedo hasn't been eliminated is a pain.  Such a note also
+	 that pseudo hasn't been eliminated is a pain.  Such a note also
 	 won't help anything.  */
       if (n_sets == 1 && src_const && GET_CODE (dest) == REG
 	  && GET_CODE (src_const) != REG)
@@ -6761,7 +6813,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
       /* If this is a conditional jump, we can follow it if -fcse-follow-jumps
 	 was specified, we haven't reached our maximum path length, there are
 	 insns following the target of the jump, this is the only use of the
-	 jump label, and the target label is preceeded by a BARRIER.  */
+	 jump label, and the target label is preceded by a BARRIER.  */
       else if (follow_jumps && path_size < PATHLENGTH - 1
 	       && GET_CODE (p) == JUMP_INSN
       	       && GET_CODE (PATTERN (p)) == SET
@@ -7115,7 +7167,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 
       /* See if it is ok to keep on going past the label
 	 which used to end our basic block.  Remember that we incremented
-	 the count of that label, so we decremement it here.  If we made
+	 the count of that label, so we decrement it here.  If we made
 	 a jump unconditional, TO_USAGE will be one; in that case, we don't
 	 want to count the use in that jump.  */
 
@@ -7132,7 +7184,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 	  /* Find the end of the following block.  Note that we won't be
 	     following branches in this case.  If TO was the last insn
 	     in the function, we are done.  Similarly, if we deleted the
-	     insn after TO, it must have been because it was preceeded by
+	     insn after TO, it must have been because it was preceded by
 	     a BARRIER.  In that case, we are done with this block because it
 	     has no continuation.  */
 
@@ -7266,6 +7318,7 @@ delete_dead_from_cse (insns, nreg)
 {
   int *counts = (int *) alloca (nreg * sizeof (int));
   rtx insn;
+  rtx tem;
   int i;
 
   /* First count the number of times each register is used.  */
@@ -7287,6 +7340,14 @@ delete_dead_from_cse (insns, nreg)
 	      && SET_DEST (PATTERN (insn)) == SET_SRC (PATTERN (insn)))
 	    ;
 
+#ifdef HAVE_cc0
+	  else if (GET_CODE (SET_DEST (PATTERN (insn))) == CC0
+		   && ! side_effects_p (SET_SRC (PATTERN (insn)))
+		   && ((tem = next_nonnote_insn (insn)) == 0
+		       || GET_RTX_CLASS (GET_CODE (tem)) != 'i'
+		       || ! reg_referenced_p (cc0_rtx, PATTERN (tem))))
+	    ;
+#endif
 	  else if (GET_CODE (SET_DEST (PATTERN (insn))) != REG
 		   || REGNO (SET_DEST (PATTERN (insn))) < FIRST_PSEUDO_REGISTER
 		   || counts[REGNO (SET_DEST (PATTERN (insn)))] != 0
@@ -7304,6 +7365,14 @@ delete_dead_from_cse (insns, nreg)
 		    && SET_DEST (elt) == SET_SRC (elt))
 		  ;
 
+#ifdef HAVE_cc0
+		else if (GET_CODE (SET_DEST (elt)) == CC0
+			 && ! side_effects_p (SET_SRC (elt))
+			 && ((tem = next_nonnote_insn (insn)) == 0
+			     || GET_RTX_CLASS (GET_CODE (tem)) != 'i'
+			     || ! reg_referenced_p (cc0_rtx, PATTERN (tem))))
+		  ;
+#endif
 		else if (GET_CODE (SET_DEST (elt)) != REG
 			 || REGNO (SET_DEST (elt)) < FIRST_PSEUDO_REGISTER
 			 || counts[REGNO (SET_DEST (elt))] != 0

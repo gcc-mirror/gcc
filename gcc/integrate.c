@@ -508,6 +508,7 @@ save_for_inline_copying (fndecl)
 
 	case CODE_LABEL:
 	  copy = label_map[CODE_LABEL_NUMBER (insn)];
+	  LABEL_NAME (copy) = LABEL_NAME (insn);
 	  break;
 
 	case BARRIER:
@@ -2101,7 +2102,7 @@ try_constants (insn, map)
 
 /* Substitute known constants for pseudo regs in the contents of LOC,
    which are part of INSN.
-   If INSN is zero, the substition should always be done (this is used to
+   If INSN is zero, the substitution should always be done (this is used to
    update DECL_RTL).
    These changes are taken out by try_constants if the result is not valid.
 

@@ -241,10 +241,9 @@ static void change_stack ();
 static void convert_regs ();
 static void dump_stack_info ();
 
-/* Return non-zero if any stack register is mentioned somewhere within
-   PAT. */
+/* Return non-zero if any stack register is mentioned somewhere within PAT.  */
 
-static int
+int
 stack_regs_mentioned_p (pat)
      register rtx pat;
 {
@@ -1450,7 +1449,7 @@ stack_reg_life_analysis (first)
 }
 
 /*****************************************************************************
-   This section deals with stack register substition, and forms the second
+   This section deals with stack register substitution, and forms the second
    pass over the RTL.
  *****************************************************************************/
 
@@ -2623,7 +2622,7 @@ goto_block_pat (insn, regstack, pat)
 }
 
 /* Traverse all basic blocks in a function, converting the register
-   refereces in each insn from the "flat" register file that gcc uses, to
+   references in each insn from the "flat" register file that gcc uses, to
    the stack-like registers the 387 uses. */
 
 static void

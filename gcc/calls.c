@@ -508,7 +508,8 @@ expand_call (exp, target, ignore, modifier)
 	      mark_addressable (fndecl);
 	    }
 
-	  if (TREE_READONLY (fndecl) && ! TREE_THIS_VOLATILE (fndecl))
+	  if (TREE_READONLY (fndecl) && ! TREE_THIS_VOLATILE (fndecl)
+	      && TYPE_MODE (TREE_TYPE (exp)) != VOIDmode)
 	    is_const = 1;
 	}
     }
@@ -717,7 +718,7 @@ expand_call (exp, target, ignore, modifier)
      If SETUP_INCOMING_VARARGS is defined, this machine will be able to
      place unnamed args that were passed in registers into the stack.  So
      treat all args as named.  This allows the insns emitting for a specific
-     argument list to be independant of the function declaration.
+     argument list to be independent of the function declaration.
 
      If SETUP_INCOMING_VARARGS is not defined, we do not have any reliable
      way to pass unnamed args in registers, so we must force them into
@@ -1620,7 +1621,7 @@ target_for_arg (type, size, args_addr, offset)
    *ARG describes the argument value and where to pass it.
 
    ARGBLOCK is the address of the stack-block for all the arguments,
-   or 0 on a machine where arguemnts are pushed individually.
+   or 0 on a machine where arguments are pushed individually.
 
    MAY_BE_ALLOCA nonzero says this could be a call to `alloca'
    so must be careful about how the stack is used. 

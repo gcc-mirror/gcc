@@ -586,7 +586,7 @@ attr_string (str, len)
   /* Search the table for the string.  */
   for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
     if (h->hashcode == -hashcode
-	&& !strcmp (h->u.str, str))
+	&& !strncmp (h->u.str, str, len))
       return h->u.str;			/* <-- return if found.  */
 
   /* Not found; create a permanent copy and add it to the hash table.  */
@@ -2191,7 +2191,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 
       /* If either side is an IOR and we have (eq_attr "alternative" ..")
 	 present on both sides, apply the distributive law since this will
-	 yield simplications.  */
+	 yield simplifications.  */
       if ((GET_CODE (left) == IOR || GET_CODE (right) == IOR)
 	  && compute_alternative_mask (left, IOR)
 	  && compute_alternative_mask (right, IOR))

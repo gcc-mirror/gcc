@@ -47,6 +47,7 @@ static tree convert_sequence ();
 static tree unary_complex_lvalue ();
 static tree process_init_constructor ();
 static tree convert_arguments ();
+static char *get_spelling ();
 tree digest_init ();
 static void pedantic_lvalue_warning ();
 tree truthvalue_conversion ();
@@ -384,7 +385,7 @@ comptypes (type1, type2)
   if (TYPE_VOLATILE (t1) != TYPE_VOLATILE (t2))
     return 0;
 
-  /* If generating auxilliary info, allow for two different type nodes which
+  /* If generating auxiliary info, allow for two different type nodes which
      have essentially the same definition.  */
 
   if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
@@ -1101,7 +1102,7 @@ build_indirect_ref (ptr, errorstring)
 	    return error_mark_node;
 	  }
 
-	/* We *must* set TREE_READONLY when dereferencinga pointer to const,
+	/* We *must* set TREE_READONLY when dereferencing a pointer to const,
 	   so that we get the proper error message if the result is used
 	   to assign to.  Also, &* is supposed to be a no-op.
 	   And ANSI C seems to specify that the type of the result
@@ -1943,7 +1944,8 @@ convert_arguments (typelist, values, name)
 		}
 #endif
 
-	      /* Optionally warn about conversions that can overflow.  */
+	      /* Optionally warn about conversions that
+		 differ from the default conversions.  */
 	      if (warn_conversion)
 		{
 		  int formal_prec = TYPE_PRECISION (type);
@@ -1956,28 +1958,36 @@ convert_arguments (typelist, values, name)
 		  else if (TREE_CODE (type) == REAL_TYPE
 		      && TREE_CODE (TREE_TYPE (val)) != REAL_TYPE)
 		    warning ("integer argument converted to floating");
+		  else if (TREE_CODE (type) == REAL_TYPE
+			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
+		    {
+		      /* Warn if any argument is passed as `float',
+			 since withtout a prototype it would be `double'.  */
+		      if (formal_prec == TYPE_PRECISION (float_type_node))
+			warning ("floating argument passed as `float' rather than `double'");
+		    }
 		  /* Detect integer changing in width or signedness.  */
 		  else if ((TREE_CODE (type) == INTEGER_TYPE
 			    || TREE_CODE (type) == ENUMERAL_TYPE)
 			   && (TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE
-			       || TREE_CODE (TREE_TYPE (val)) == ENUMERAL_TYPE)
-			   && ((TREE_UNSIGNED (type)
-				!= TREE_UNSIGNED (TREE_TYPE (val)))
-			       || (MAX (formal_prec, int_prec)
-				   != MAX (actual_prec, int_prec))))
+			       || TREE_CODE (TREE_TYPE (val)) == ENUMERAL_TYPE))
 		    {
-		      if (MAX (formal_prec, int_prec)
-			  != MAX (actual_prec, int_prec))
-			warning ("integer argument converted in width");
+		      tree would_have_been = default_conversion (val);
+		      tree type1 = TREE_TYPE (would_have_been);
+
+		      if (TYPE_PRECISION (type) != TYPE_PRECISION (type))
+			warning ("prototype changes width used for integer argument");
+		      else if (TREE_UNSIGNED (type) == TREE_UNSIGNED (type1))
+			;
 		      else if (TREE_CODE (val) == INTEGER_CST
 			       && int_fits_type_p (val, type))
 			/* Change in signedness doesn't matter
 			   if a constant value is unaffected.  */
 			;
 		      else if (TREE_UNSIGNED (type))
-			warning ("signed argument converted to unsigned");
+			warning ("argument passed as unsigned due to prototype");
 		      else
-			warning ("unsigned argument converted to signed");
+			warning ("argument passed as signed due to prototype");
 		    }
 		}
 
@@ -2315,18 +2325,18 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      if (TREE_INT_CST_LOW (op1) >= TYPE_PRECISION (type0))
 		warning ("shift count exceeds width of value shifted");
 	    }
+	  /* Use the type of the value to be shifted.
+	     This is what most traditional C compilers do.  */
+	  result_type = type0;
 	  /* Unless traditional, convert the shift-count to an integer,
 	     regardless of size of value being shifted.  */
 	  if (! flag_traditional)
 	    {
-	      result_type = type0;
 	      if (TREE_TYPE (op1) != integer_type_node)
 		op1 = convert (integer_type_node, op1);
 	      /* Avoid converting op1 to result_type later.  */
 	      converted = 1;
 	    }
-	  else
-	    common = 1;
 	}
       break;
 
@@ -2339,18 +2349,18 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (TREE_CODE (op1) == INTEGER_CST
 	      && TREE_INT_CST_LOW (op1) >= TYPE_PRECISION (type0))
 	    warning ("shift count exceeds width of value shifted");
+	  /* Use the type of the value to be shifted.
+	     This is what most traditional C compilers do.  */
+	  result_type = type0;
 	  /* Unless traditional, convert the shift-count to an integer,
 	     regardless of size of value being shifted.  */
 	  if (! flag_traditional)
 	    {
-	      result_type = type0;
 	      if (TREE_TYPE (op1) != integer_type_node)
 		op1 = convert (integer_type_node, op1);
 	      /* Avoid converting op1 to result_type later.  */
 	      converted = 1;
 	    }
-	  else
-	    common = 1;
 	}
       break;
 
@@ -2364,18 +2374,18 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (TREE_CODE (op1) == INTEGER_CST
 	      && TREE_INT_CST_LOW (op1) >= TYPE_PRECISION (type0))
 	    warning ("shift count >= width of value shifted");
+	  /* Use the type of the value to be shifted.
+	     This is what most traditional C compilers do.  */
+	  result_type = type0;
 	  /* Unless traditional, convert the shift-count to an integer,
 	     regardless of size of value being shifted.  */
 	  if (! flag_traditional)
 	    {
-	      result_type = type0;
 	      if (TREE_TYPE (op1) != integer_type_node)
 		op1 = convert (integer_type_node, op1);
 	      /* Avoid converting op1 to result_type later.  */
 	      converted = 1;
 	    }
-	  else
-	    common = 1;
 	}
       break;
 
@@ -2748,10 +2758,15 @@ pointer_int_sum (resultcode, ptrop, intop)
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (intop, 0))) == INTEGER_TYPE)
     {
       enum tree_code subcode = resultcode;
+      tree int_type = TREE_TYPE (intop);
       if (TREE_CODE (intop) == MINUS_EXPR)
 	subcode = (subcode == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR);
-      ptrop = build_binary_op (subcode, ptrop, TREE_OPERAND (intop, 1), 1);
-      intop = TREE_OPERAND (intop, 0);
+      /* Convert both subexpression types to the type of intop,
+	 because weird cases involving pointer arithmetic
+	 can result in a sum or difference with different type args.  */
+      ptrop = build_binary_op (subcode, ptrop,
+			       convert (int_type, TREE_OPERAND (intop, 1)), 1);
+      intop = convert (int_type, TREE_OPERAND (intop, 0));
     }
 
   /* Convert the integer argument to a type the same size as a pointer
@@ -3621,7 +3636,7 @@ build_c_cast (type, expr)
 	value = default_conversion (value);
       otype = TREE_TYPE (value);
 
-      /* Optionally warn about potentially worrysome casts.  */
+      /* Optionally warn about potentially worrisome casts.  */
 
       if (warn_cast_qual
 	  && TREE_CODE (type) == POINTER_TYPE
@@ -3636,15 +3651,13 @@ build_c_cast (type, expr)
 	}
 
       /* Warn about possible alignment problems.  */
-#ifdef STRICT_ALIGNMENT
-      if (warn_cast_align
+      if (STRICT_ALIGNMENT && warn_cast_align
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
 	warning ("cast increases required alignment of target type");
-#endif
 
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
@@ -3829,7 +3842,9 @@ build_modify_expr (lhs, modifycode, rhs)
    for assignments that are not allowed in C.
    ERRTYPE is a string to use in error messages:
    "assignment", "return", etc.  If it is null, this is parameter passing
-   for a function call (and different error messages are output).
+   for a function call (and different error messages are output).  Otherwise,
+   it may be a name stored in the spelling stack and interpreted by
+   get_spelling.
 
    FUNNAME is the name of the function being called,
    as an IDENTIFIER_NODE, or null.
@@ -3900,7 +3915,7 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
 		   && !integer_zerop (rhs)
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
 	    warn_for_assignment ("ANSI forbids %s between function pointer and `void *'",
-				 errtype, funname, parmnum);
+				 get_spelling (errtype), funname, parmnum);
 	  /* Const and volatile mean something different for function types,
 	     so the usual warnings are not appropriate.  */
 	  else if (TREE_CODE (ttr) != FUNCTION_TYPE
@@ -3908,10 +3923,10 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
 	    {
 	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 		warn_for_assignment ("%s discards `const' from pointer target type",
-				     errtype, funname, parmnum);
+				     get_spelling (errtype), funname, parmnum);
 	      if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 		warn_for_assignment ("%s discards `volatile' from pointer target type",
-				     errtype, funname, parmnum);
+				     get_spelling (errtype), funname, parmnum);
 	    }
 	  else
 	    {
@@ -3921,19 +3936,19 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_READONLY (ttl) && ! TYPE_READONLY (ttr))
 		warn_for_assignment ("%s makes `const *' function pointer from non-const",
-				     errtype, funname, parmnum);
+				     get_spelling (errtype), funname, parmnum);
 	      if (TYPE_VOLATILE (ttl) && ! TYPE_VOLATILE (ttr))
 		warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
-				     errtype, funname, parmnum);
+				     get_spelling (errtype), funname, parmnum);
 	    }
 	}
       else if (unsigned_type (TYPE_MAIN_VARIANT (ttl))
 	       == unsigned_type (TYPE_MAIN_VARIANT (ttr)))
 	warn_for_assignment ("pointer targets in %s differ in signedness",
-			     errtype, funname, parmnum);
+			     get_spelling (errtype), funname, parmnum);
       else
 	warn_for_assignment ("%s from incompatible pointer type",
-			     errtype, funname, parmnum);
+			     get_spelling (errtype), funname, parmnum);
       return convert (type, rhs);
     }
   else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
@@ -3941,7 +3956,7 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
       if (! integer_zerop (rhs))
 	{
 	  warn_for_assignment ("%s makes pointer from integer without a cast",
-			       errtype, funname, parmnum);
+			       get_spelling (errtype), funname, parmnum);
 	  return convert (type, rhs);
 	}
       return null_pointer_node;
@@ -3949,7 +3964,7 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
       warn_for_assignment ("%s makes integer from pointer without a cast",
-			   errtype, funname, parmnum);
+			   get_spelling (errtype), funname, parmnum);
       return convert (type, rhs);
     }
 
@@ -3963,7 +3978,7 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
 	       parmnum);
     }
   else
-    error ("incompatible types in %s", errtype);
+    error ("incompatible types in %s", get_spelling (errtype));
 
   return error_mark_node;
 }
@@ -4131,7 +4146,7 @@ store_init_value (decl, init)
 #if 0
   /* Note that this is the only place we can detect the error
      in a case such as   struct foo bar = (struct foo) { x, y };
-     where there is one initial value which is a constuctor expression.  */
+     where there is one initial value which is a constructor expression.  */
   if (value == error_mark_node)
     ;
   else if (TREE_STATIC (decl) && ! TREE_CONSTANT (value))
@@ -4160,18 +4175,190 @@ store_init_value (decl, init)
   DECL_INITIAL (decl) = value;
 }
 
+/* Methods for storing and printing names for error messages.
+
+/* Implement a spelling stack that allows components of a name to be pushed
+   and popped.  Each element on the stack is this structure.  */
+
+struct spelling
+{
+  int kind;
+  union
+    {
+      int i;
+      char *s;
+    } u;
+};
+
+#define SPELLING_STRING 1
+#define SPELLING_MEMBER 2
+#define SPELLING_BOUNDS 3
+
+static struct spelling *spelling;	/* Next stack element (unused).  */
+static struct spelling *spelling_base;	/* Spelling stack base.  */
+static int spelling_size;		/* Size of the spelling stack.  */
+
+/* Macros to save and restore the spelling stack around push_... functions.
+   Alternative to SAVE_SPELLING_STACK.  */
+
+#define SPELLING_DEPTH() (spelling - spelling_base)
+#define RESTORE_SPELLING_DEPTH(depth) (spelling = spelling_base + depth)
+
+/* Save and restore the spelling stack around arbitrary C code.  */
+
+#define SAVE_SPELLING_DEPTH(code)		\
+{						\
+  int __depth = SPELLING_DEPTH ();		\
+  code;						\
+  RESTORE_SPELLING_DEPTH (__depth);		\
+}
+
+/* Push an element on the spelling stack with type KIND and assign VALUE
+   to MEMBER.  */
+
+#define PUSH_SPELLING(KIND, VALUE, MEMBER)				\
+{									\
+  int depth = SPELLING_DEPTH ();					\
+									\
+  if (depth >= spelling_size)						\
+    {									\
+      spelling_size += 10;						\
+      if (spelling_base == 0)						\
+	spelling_base							\
+	  = (struct spelling *) xmalloc (spelling_size * sizeof (struct spelling));	\
+      else								\
+        spelling_base							\
+	  = (struct spelling *) xrealloc (spelling_base,		\
+					  spelling_size * sizeof (struct spelling));	\
+      RESTORE_SPELLING_DEPTH (depth);					\
+    }									\
+									\
+  spelling->kind = (KIND);						\
+  spelling->MEMBER = (VALUE);						\
+  spelling++;								\
+}
+
+/* Push STRING on the stack.  Printed literally.  */
+
+static void
+push_string (string)
+     char *string;
+{
+  PUSH_SPELLING (SPELLING_STRING, string, u.s);
+}
+
+/* Push a member name on the stack.  Printed as '.' STRING.  */
+
+static void
+push_member_name (string)
+     char *string;
+{
+  PUSH_SPELLING (SPELLING_MEMBER, string, u.s);
+}
+
+/* Push an array bounds on the stack.  Printed as [BOUNDS].  */
+
+static void
+push_array_bounds (bounds)
+     int bounds;
+{
+  PUSH_SPELLING (SPELLING_BOUNDS, bounds, u.i);
+}
+
+/* Compute the maximum size in bytes of the printed spelling.  */
+
+static int
+spelling_length ()
+{
+  register int size = 0;
+  register struct spelling *p;
+
+  for (p = spelling_base; p < spelling; p++)
+    {
+      if (p->kind == SPELLING_BOUNDS)
+	size += 25;
+      else
+	size += strlen (p->u.s) + 1;
+    }
+
+  return size;
+}
+
+/* Print the spelling to BUFFER and return it.  */
+
+static char *
+print_spelling (buffer)
+     register char *buffer;
+{
+  register char *d = buffer;
+  register char *s;
+  register struct spelling *p;
+
+  for (p = spelling_base; p < spelling; p++)
+    if (p->kind == SPELLING_BOUNDS)
+      {
+	sprintf (d, "[%d]", p->u.i);
+	d += strlen (d);
+      }
+    else
+      {
+	if (p->kind == SPELLING_MEMBER)
+	  *d++ = '.';
+	for (s = p->u.s; *d = *s++; d++)
+	  ;
+      }
+  *d++ = '\0';
+  return buffer;
+}
+
+/* Provide a means to pass component names derived from the spelling stack.  */
+
+char initialization_message;
+
+/* Interpret the spelling of the given ERRTYPE message.  */
+
+static char *
+get_spelling (errtype)
+     char *errtype;
+{
+  static char *buffer;
+  static int size = -1;
+
+  if (errtype == &initialization_message)
+    {
+      /* Avoid counting chars */
+      static char message[] = "initialization of `%s'";
+      register int needed = sizeof (message) + spelling_length () + 1;
+
+      if (size < 0)
+	buffer = (char *) xmalloc (size = needed);
+      if (needed > size)
+	buffer = (char *) xrealloc (buffer, size = needed);
+
+      sprintf (buffer, message, print_spelling (alloca (needed)));
+      return buffer;
+    }
+
+  return errtype;
+}
+
 /* Issue an error message for a bad initializer component.
    FORMAT describes the message.  OFWHAT is the name for the component.
    LOCAL is a format string for formatting the insertion of the name
    into the message.
 
-   If OFWHAT is a null string, then LOCAL is omitted entirely.  */
+   If OFWHAT is null, the component name is stored on the spelling stack.
+   If the compoment name is a null string, then LOCAL is omitted entirely.  */
 
 void
 error_init (format, local, ofwhat)
      char *format, *local, *ofwhat;
 {
-  char *buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
+  char *buffer;
+
+  if (ofwhat == 0)
+    ofwhat = print_spelling (alloca (spelling_length () + 1));
+  buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
 
   if (*ofwhat)
     sprintf (buffer, local, ofwhat);
@@ -4186,13 +4373,18 @@ error_init (format, local, ofwhat)
    LOCAL is a format string for formatting the insertion of the name
    into the message.
 
-   If OFWHAT is a null string, then LOCAL is omitted entirely.  */
+   If OFWHAT is null, the component name is stored on the spelling stack.
+   If the compoment name is a null string, then LOCAL is omitted entirely.  */
 
 void
 pedwarn_init (format, local, ofwhat)
      char *format, *local, *ofwhat;
 {
-  char *buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
+  char *buffer;
+
+  if (ofwhat == 0)
+    ofwhat = print_spelling (alloca (spelling_length () + 1));
+  buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
 
   if (*ofwhat)
     sprintf (buffer, local, ofwhat);
@@ -4215,8 +4407,9 @@ pedwarn_init (format, local, ofwhat)
    if non-constant initializers or elements are seen.  CONSTRUCTOR_CONSTANT
    applies only to elements of constructors.
 
-   If OFWHAT is nonzero, it specifies what we are initializing, for error
-   messages.   Examples: variable name, variable.member, array[44].  */
+   If OFWHAT is nonnull, it specifies what we are initializing, for error
+   messages.   Examples: variable name, variable.member, array[44].
+   If OFWHAT is null, the component name is stored on the spelling stack.  */
 
 tree
 digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
@@ -4227,7 +4420,6 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   enum tree_code code = TREE_CODE (type);
   tree element = 0;
   tree old_tail_contents;
-  char *member_str;		/* For building strings about member names.  */
   /* Nonzero if INIT is a braced grouping, which comes in as a CONSTRUCTOR
      tree node which has no TREE_TYPE.  */
   int raw_constructor
@@ -4404,23 +4596,29 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	  return error_mark_node;
 	}
 
-      /* Build the name of this member, with a "." for membership.  */
-      member_str = (char *) alloca (strlen (ofwhat)
-			+ IDENTIFIER_LENGTH (DECL_NAME (field)) + 2);
-      sprintf (member_str, "%s.%s", ofwhat, 
-			  IDENTIFIER_POINTER (DECL_NAME (field)));
+      SAVE_SPELLING_DEPTH
+	({
+	  if (ofwhat)
+	    push_string (ofwhat);
+	  push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
 
-      if (raw_constructor)
-	return process_init_constructor (type, init, 0,
-					 require_constant,
-					 constructor_constant, member_str);
-      else if (tail != 0)
-	{
-	  *tail = old_tail_contents;
-	  return process_init_constructor (type, 0, tail,
-					   require_constant,
-					   constructor_constant, member_str);
-	}
+	  if (raw_constructor)
+	    result = process_init_constructor (type, init, 0,
+					       require_constant,
+					       constructor_constant, 0);
+	  else if (tail != 0)
+	    {
+	      *tail = old_tail_contents;
+	      result = process_init_constructor (type, 0, tail,
+						 require_constant,
+						 constructor_constant, 0);
+	    }
+	  else
+	    result = 0;
+	});
+
+      if (result)
+	return result;
     }
 
   /* Handle scalar types, including conversions.  */
@@ -4449,16 +4647,13 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	}
 #endif
 
-      /* Build the name of the member being initialized, for error msgs.  */
-      {
-	/* Avoid counting chars */
-	static char message[] = "initialization of `%s'";
-	member_str = (char *) alloca (strlen (ofwhat) + sizeof (message) + 1);
-	sprintf (member_str, message, ofwhat);
-      }
-
-      init = convert_for_assignment (type, default_conversion (init),
-				     member_str, NULL_TREE, 0);
+      SAVE_SPELLING_DEPTH
+	({
+	  if (ofwhat)
+	    push_string (ofwhat);
+	  init = convert_for_assignment (type, default_conversion (init),
+					 &initialization_message, NULL_TREE, 0);
+	});
 
       if (require_constant && ! TREE_CONSTANT (init))
 	{
@@ -4533,7 +4728,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 
    OFWHAT is a character string describing the object being initialized,
    for error messages.  It might be "variable" or "variable.member"
-   or "variable[17].member[5]".  */
+   or "variable[17].member[5]".  If OFWHAT is null, the description string
+   is stored on the spelling stack.  */
 
 static tree
 process_init_constructor (type, init, elts, constant_value, constant_element,
@@ -4546,12 +4742,14 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
   /* List of the elements of the result constructor,
      in reverse order.  */
   register tree members = NULL;
-  int members_length = 0;
   tree result;
   int allconstant = 1;
   int allsimple = 1;
   int erroneous = 0;
-  char *member_str;		/* String used to pass member names.  */
+  int depth = SPELLING_DEPTH ();
+
+  if (ofwhat)
+    push_string (ofwhat);
 
   /* Make TAIL be the list of elements to use for the initialization,
      no matter how the data was given to us.  */
@@ -4567,21 +4765,34 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree domain = TYPE_DOMAIN (type);
-      register long len;
-      register int i;
+      tree min_index, max_index, current_index, members_index;
+      tree bound_type;
+      tree one;
 
-      if (domain)
-	len = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain))
-	       - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
-	       + 1);
+      /* If we have array bounds, set our bounds from that.  Otherwise,
+	 we have a lower bound of zero and an unknown upper bound.  Also
+	 set the type of the bounds; use "int" as default.  */
+      if (TYPE_DOMAIN (type))
+	{
+	  min_index = members_index = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+	  max_index = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	  bound_type = TREE_TYPE (min_index);
+	}
       else
-	len = -1;  /* Take as many as there are */
+	{
+	  min_index = members_index = integer_zero_node;
+	  max_index = 0;
+	  bound_type = integer_type_node;
+	}
 
-      /* Don't leave the loop based on i if the next item has an explicit
-	 index value that will override i. */
+      one = convert (bound_type, integer_one_node);
 
-      for (i = 0; tail != 0; i++)
+      /* Don't leave the loop based on index if the next item has an explicit
+	 index value that will override it. */
+
+      for (current_index = min_index; tail != 0;
+	   current_index = fold (build (PLUS_EXPR, bound_type,
+					current_index, one)))
 	{
 	  register tree next1;
 
@@ -4595,20 +4806,18 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		error ("field name used as index in array initializer");
 	      else if (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST)
 		error ("non-constant array index in initializer");
-	      else if (domain != 0
-			&& (tree_int_cst_lt (TREE_PURPOSE (tail),
-					     TYPE_MIN_VALUE (domain))
-			    || tree_int_cst_lt (TYPE_MAX_VALUE (domain),
-						TREE_PURPOSE (tail))))
+	      else if (tree_int_cst_lt (TREE_PURPOSE (tail), min_index)
+		       || (max_index && tree_int_cst_lt (max_index,
+							 TREE_PURPOSE (tail))))
 		error ("array index out of range in initializer");
 	      else
-		i = TREE_INT_CST_LOW (TREE_PURPOSE (tail)), win = 1;
+		current_index = TREE_PURPOSE (tail), win = 1;
 
 	      if (!win)
 		TREE_VALUE (tail) = error_mark_node;
 	    }
 
-	  if (len >= 0 && i >= len)
+	  if (max_index && tree_int_cst_lt (max_index, current_index))
 	    break;  /* Stop if we've indeed run out of elements. */
 
 	  /* Now digest the value specified.  */
@@ -4616,24 +4825,26 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	    {
 	      tree tail1 = tail;
 
-	      /* Build the index of this member, with a "." for membership.  */
-	      member_str = (char *) alloca (25 + strlen (ofwhat));
-	      sprintf (member_str, "%s[%d]", ofwhat, i);
-
-	      next1 = digest_init (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
-				   TREE_VALUE (tail), &tail1,
-				   /* Both of these are the same because
-				      a value here is an elt overall.  */
-				   constant_element, constant_element,
-				   member_str);
+	      /* Build the element of this array, with "[]" notation.  For
+		 error messages, we assume that the index fits within a
+		 host int.  */
+	      SAVE_SPELLING_DEPTH
+		({
+		  push_array_bounds (TREE_INT_CST_LOW (current_index));
+		  next1 = digest_init (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
+				       TREE_VALUE (tail), &tail1,
+				       /* Both of these are the same because
+					  a value here is an elt overall.  */
+				       constant_element, constant_element, 0);
+		});
 
 	      if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
 		abort ();
-	      if (tail == tail1 && len < 0)
+	      if (tail == tail1 && TYPE_DOMAIN (type) == 0)
 		{
 		  error_init (
 		    "non-empty initializer for array%s of empty elements",
-		    " `%s'", ofwhat);
+		    " `%s'", 0);
 		  /* Just ignore what we were supposed to use.  */
 		  tail1 = 0;
 		}
@@ -4654,17 +4865,22 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 
 	  /* Now store NEXT1 in the list, I elements from the *end*.
 	     Make the list longer if necessary.  */
-	  while (i >= members_length)
+	  while (! tree_int_cst_lt (current_index, members_index))
 	    {
 	      members = tree_cons (NULL_TREE, NULL_TREE, members);
-	      members_length++;
+	      members_index = fold (build (PLUS_EXPR, bound_type,
+					   members_index, one));
 	    }
+
 	  {
 	    tree temp;
-	    int j;
+	    tree idx;
 
 	    temp = members;
-	    for (j = members_length - 1; j > i; j--)
+	    for (idx = fold (build (MINUS_EXPR, bound_type,
+				    members_index, one));
+		 tree_int_cst_lt (current_index, idx);
+		 idx = fold (build (MINUS_EXPR, bound_type, idx, one)))
 	      temp = TREE_CHAIN (temp);
 	    TREE_VALUE (temp) = next1;
 	  }
@@ -4673,6 +4889,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
   if (TREE_CODE (type) == RECORD_TYPE)
     {
       register tree field;
+      int members_length = 0;
       int i;
 
       /* Don't leave the loop based on field just yet; see if next item
@@ -4721,15 +4938,13 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      tree tail1 = tail;
 
 	      /* Build the name of this member, with a "." for membership.  */
-	      member_str = (char *) alloca (strlen (ofwhat)
-				+ IDENTIFIER_LENGTH (DECL_NAME (field)) + 2);
-	      sprintf (member_str, "%s.%s", ofwhat, 
-				  IDENTIFIER_POINTER (DECL_NAME (field)));
-
-	      next1 = digest_init (TREE_TYPE (field),
-				   TREE_VALUE (tail), &tail1,
-				   constant_element, constant_element,
-				   member_str);
+	      SAVE_SPELLING_DEPTH
+		({
+		  push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
+		  next1 = digest_init (TREE_TYPE (field),
+				       TREE_VALUE (tail), &tail1,
+				       constant_element, constant_element, 0);
+		});
 	      if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
 		abort ();
 	      tail = tail1;
@@ -4807,14 +5022,13 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	  tree tail1 = tail;
 
 	  /* Build the name of this member, with a "." for membership.  */
-	  member_str = (char *) alloca (strlen (ofwhat)
-			    + IDENTIFIER_LENGTH (DECL_NAME (field)) + 2);
-	  sprintf (member_str, "%s.%s", ofwhat, 
-			      IDENTIFIER_POINTER (DECL_NAME (field)));
-
-	  next1 = digest_init (TREE_TYPE (field),
-			       TREE_VALUE (tail), &tail1,
-			       constant_value, constant_element, member_str);
+	  SAVE_SPELLING_DEPTH
+	    ({
+	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
+	      next1 = digest_init (TREE_TYPE (field),
+				   TREE_VALUE (tail), &tail1,
+				   constant_value, constant_element, 0);
+	    });
 	  if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
 	    abort ();
 	  tail = tail1;
@@ -4844,14 +5058,20 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
       if (TREE_CODE (type) == UNION_TYPE)
 	{
 	  pedwarn_init ("excess elements in union initializer%s",
-			" after `%s'", ofwhat);
+			" after `%s'", 0);
 	}
       else
 	{
 	  pedwarn_init ("excess elements in aggregate initializer%s",
-			" after `%s'", ofwhat);
+			" after `%s'", 0);
 	}
     }
+
+  /* It might be possible to use SAVE_SPELLING_DEPTH, but I suspect that
+     some preprocessor somewhere won't accept that much text as an argument.
+     It's also likely to make debugging difficult.  */
+
+  RESTORE_SPELLING_DEPTH (depth);
 
   if (erroneous)
     return error_mark_node;

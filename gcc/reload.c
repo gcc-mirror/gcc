@@ -284,6 +284,16 @@ find_secondary_reload (x, reload_class, reload_mode, in_p, picode, pmode,
   enum machine_mode t_mode = VOIDmode;
   enum insn_code t_icode = CODE_FOR_nothing;
 
+  /* If X is a pseudo-register that has an equivalent MEM (actually, if it
+     is still a pseudo-register by now, it *must* have an equivalent MEM
+     but we don't want to assume that), use that equivalent when seeing if
+     a secondary reload is needed since whether or not a reload is needed
+     might be sensitive to the form of the MEM.  */
+
+  if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER
+      && reg_equiv_mem[REGNO (x)] != 0)
+    x = reg_equiv_mem[REGNO (x)];
+
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
   if (in_p)
     class = SECONDARY_INPUT_RELOAD_CLASS (reload_class, reload_mode, x);
@@ -323,8 +333,10 @@ find_secondary_reload (x, reload_class, reload_mode, in_p, picode, pmode,
 	 in operand 1.  Outputs should have an initial "=", which we must
 	 skip.  */
 
+      char insn_letter = insn_operand_constraint[(int) icode][!in_p][in_p];
       enum reg_class insn_class
-	= REG_CLASS_FROM_LETTER (insn_operand_constraint[(int) icode][!in_p][in_p]);
+	= (insn_letter == 'r' ? GENERAL_REGS
+	   : REG_CLASS_FROM_LETTER (insn_letter));
 
       if (insn_class == NO_REGS
 	  || (in_p && insn_operand_constraint[(int) icode][!in_p][0] != '=')
@@ -337,10 +349,11 @@ find_secondary_reload (x, reload_class, reload_mode, in_p, picode, pmode,
 	mode = insn_operand_mode[(int) icode][2];
       else
 	{
+	  char t_letter = insn_operand_constraint[(int) icode][2][2];
 	  class = insn_class;
 	  t_mode = insn_operand_mode[(int) icode][2];
-	  t_class
-	    = REG_CLASS_FROM_LETTER (insn_operand_constraint[(int) icode][2][2]);
+	  t_class = (t_letter == 'r' ? GENERAL_REGS
+		     : REG_CLASS_FROM_LETTER (t_letter));
 	  t_icode = icode;
 	  icode = CODE_FOR_nothing;
 	}
@@ -1831,7 +1844,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      bcopy (constraints, constraints1, noperands * sizeof (char *));
 	      n_alternatives = n_occurrences (',', constraints[0]) + 1;
 	      for (i = 1; i < noperands; i++)
-		if (n_alternatives != n_occurrences (',', constraints[0]) + 1)
+		if (n_alternatives != n_occurrences (',', constraints[i]) + 1)
 		  {
 		    error_for_asm (insn, "operand constraints differ in number of alternatives");
 		    /* Avoid further trouble with this insn.  */
@@ -2012,6 +2025,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 				    &XEXP (recog_operand[i], 0),
 				    recog_operand[i], ind_levels);
 	      substed_operand[i] = recog_operand[i] = *recog_operand_loc[i];
+
+	      /* This is no longer a psuedo register.  To prevent later code
+		 from thinking it still is, we must reset the preferred_class
+		 to NO_REGS.  */
+	      preferred_class[i] = NO_REGS;
 	    }
 	}
     }
@@ -3403,7 +3421,7 @@ find_reloads_address (mode, memrefloc, ad, loc, operand, ind_levels)
      is that it is itself a MEM.  This can happen when the frame pointer is
      being eliminated, a pseudo is not allocated to a hard register, and the
      offset between the frame and stack pointers is not its initial value.
-     In that case the psuedo will have been replaced by a MEM referring to
+     In that case the pseudo will have been replaced by a MEM referring to
      the stack pointer.  */
   if (GET_CODE (ad) == MEM)
     {

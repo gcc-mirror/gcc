@@ -368,7 +368,7 @@ local_alloc ()
   update_equiv_regs ();
 
   /* This sets the maximum number of quantities we can have.  Quantity
-     numbers start at zero and we can have one for each psuedo plus the
+     numbers start at zero and we can have one for each pseudo plus the
      number of SCRATCHs in the largest block, in the worst case.  */
   max_qty = (max_regno - FIRST_PSEUDO_REGISTER) + max_scratch;
 
@@ -640,7 +640,7 @@ memref_used_between_p (memref, start, end)
    register-register copy.  */
 
 static void
-optimize_reg_copy (insn, dest, src)
+optimize_reg_copy_1 (insn, dest, src)
      rtx insn;
      rtx dest;
      rtx src;
@@ -755,6 +755,85 @@ optimize_reg_copy (insn, dest, src)
 	}
     }
 }
+
+/* INSN is a copy of SRC to DEST, in which SRC dies.  See if we now have
+   a sequence of insns that modify DEST followed by an insn that sets
+   SRC to DEST in which DEST dies, with no prior modification of DEST.
+   (There is no need to check if the insns in between actually modify
+   DEST.  We should not have cases where DEST is not modified, but
+   the optimization is safe if no such modification is detected.)
+   In that case, we can replace all uses of DEST, starting with INSN and
+   ending with the set of SRC to DEST, with SRC.  We do not do this
+   optimization if a CALL_INSN is crossed unless SRC already crosses a
+   call.
+
+   It is assumed that DEST and SRC are pseudos; it is too complicated to do
+   this for hard registers since the substitutions we may make might fail.  */
+
+static void
+optimize_reg_copy_2 (insn, dest, src)
+     rtx insn;
+     rtx dest;
+     rtx src;
+{
+  rtx p, q;
+  rtx set;
+  int sregno = REGNO (src);
+  int dregno = REGNO (dest);
+
+  for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
+    {
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
+	  || (GET_CODE (p) == NOTE
+	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
+		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+	break;
+
+      if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+	continue;
+
+      set = single_set (p);
+      if (set && SET_SRC (set) == dest && SET_DEST (set) == src
+	  && find_reg_note (p, REG_DEAD, dest))
+	{
+	  /* We can do the optimization.  Scan forward from INSN again,
+	     replacing regs as we go.  */
+
+	  /* Set to stop at next insn.  */
+	  for (q = insn; q != NEXT_INSN (p); q = NEXT_INSN (q))
+	    if (GET_RTX_CLASS (GET_CODE (q)) == 'i')
+	      {
+		if (reg_mentioned_p (dest, PATTERN (q)))
+		  {
+		    PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
+
+		    /* We assume that a register is used exactly once per
+		       insn in the updates below.  If this is not correct,
+		       no great harm is done.  */
+		    reg_n_refs[sregno] -= loop_depth;
+		    reg_n_refs[dregno] += loop_depth;
+		  }
+
+
+	      if (GET_CODE (q) == CALL_INSN)
+		{
+		  reg_n_calls_crossed[dregno]--;
+		  reg_n_calls_crossed[sregno]++;
+		}
+	      }
+
+	  remove_note (p, find_reg_note (p, REG_DEAD, dest));
+	  reg_n_deaths[dregno]--;
+	  remove_note (insn, find_reg_note (insn, REG_DEAD, src));
+	  reg_n_deaths[sregno]--;
+	  return;
+	}
+
+      if (reg_set_p (src, p)
+	  || (GET_CODE (p) == CALL_INSN && reg_n_calls_crossed[sregno] == 0))
+	break;
+    }
+}
 	      
 /* Find registers that are equivalent to a single value throughout the
    compilation (either because they can be referenced in memory or are set once
@@ -825,7 +904,15 @@ update_equiv_regs ()
       if (flag_expensive_optimizations && GET_CODE (dest) == REG
 	  && GET_CODE (SET_SRC (set)) == REG
 	  && ! find_reg_note (insn, REG_DEAD, SET_SRC (set)))
-	optimize_reg_copy (insn, dest, SET_SRC (set));
+	optimize_reg_copy_1 (insn, dest, SET_SRC (set));
+
+      /* Similarly for a pseudo-pseudo copy when SRC is dead.  */
+      else if (flag_expensive_optimizations && GET_CODE (dest) == REG
+	       && REGNO (dest) >= FIRST_PSEUDO_REGISTER
+	       && GET_CODE (SET_SRC (set)) == REG
+	       && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER
+	       && find_reg_note (insn, REG_DEAD, SET_SRC (set)))
+	optimize_reg_copy_2 (insn, dest, SET_SRC (set));
 
       /* Otherwise, we only handle the case of a pseudo register being set
 	 once.  */

@@ -1207,11 +1207,11 @@ abspath (cwd, rel_filename)
   /* Setup the current working directory as needed.  */
   const char *cwd2 = (cwd) ? cwd : cwd_buffer;
   char *const abs_buffer
-    = (char *) alloca (strlen (cwd2) + strlen (rel_filename) + 1);
+    = (char *) alloca (strlen (cwd2) + strlen (rel_filename) + 2);
   char *endp = abs_buffer;
   char *outp, *inp;
 
-  /* Copy the  filename (possibly preceeded by the current working
+  /* Copy the  filename (possibly preceded by the current working
      directory name) into the absolutization buffer.  */
 
   {
@@ -1501,7 +1501,7 @@ referenced_file_is_newer (l, aux_info_mtime)
    a function definition or declaration.
 
    Link this record onto the list of such records for the particular file in
-   which it occured in proper (descending) line number order (for now).
+   which it occurred in proper (descending) line number order (for now).
 
    If there is an identical record already on the list for the file, throw
    this one away.  Doing so takes care of the (useless and troublesome)
@@ -1678,7 +1678,7 @@ save_def_or_dec (l, is_syscalls)
          character of the name of the function that was declared/defined.
          If p points to another right paren, then this indicates that we
          are dealing with multiple formals lists.  In that case, there
-         really should be another right paren preceeding this right paren.  */
+         really should be another right paren preceding this right paren.  */
 
       if (*p != ')')
         break;
@@ -2580,7 +2580,7 @@ connect_defs_and_decs (hp)
      prototypes *should* all match exactly with one another and with the
      prototype for the actual function definition.  We don't check for this
      here however, since we assume that the compiler must have already done
-     this consistancy checking when it was creating the .X files.  */
+     this consistency checking when it was creating the .X files.  */
 
   for (dd_p = hp->ddip; dd_p; dd_p = dd_p->next_for_func)
     if (dd_p->prototyped)
@@ -3418,7 +3418,7 @@ add_local_decl (def_dec_p, clean_text_p)
       output_string (decl);
     }
 
-    /* Finally, write out a new indent string, just like the preceeding one
+    /* Finally, write out a new indent string, just like the preceding one
        that we found.  This will typically include a newline as the first
        character of the indent string.  */
 

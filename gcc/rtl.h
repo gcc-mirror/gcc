@@ -108,7 +108,7 @@ typedef struct rtx_def
      1 in a LABEL_REF if this is a reference to a label outside the
      current loop.
      1 in an INSN, JUMP_INSN, or CALL_INSN if this insn must be scheduled
-     together with the preceeding insn.  Valid only within sched.
+     together with the preceding insn.  Valid only within sched.
      1 in an INSN, JUMP_INSN, or CALL_INSN if insn is in a delay slot and
      from the target of a branch.  Valid from reorg until end of compilation;
      cleared before used.  */
@@ -271,7 +271,7 @@ typedef struct rtvec_def{
      REG_LABEL points to a CODE_LABEL.  Used by non-JUMP_INSNs to
    say that the CODE_LABEL contained in the REG_LABEL note is used
    by the insn.
-    REG_DEP_ANTI is used in LOG_LINKS which represent anti (write after read)
+     REG_DEP_ANTI is used in LOG_LINKS which represent anti (write after read)
    dependencies.  REG_DEP_OUTPUT is used in LOG_LINKS which represent output
    (write after write) dependencies.  Data dependencies, which are the only
    type of LOG_LINK created by flow, are represented by a 0 reg note kind.  */
@@ -433,7 +433,7 @@ extern char *note_insn_name[];
 #define REG_LOOP_TEST_P(RTX) ((RTX)->in_struct)
 
 /* During sched, for an insn, 1 means that the insn must be scheduled together
-   with the preceeding insn.  */
+   with the preceding insn.  */
 #define SCHED_GROUP_P(INSN) ((INSN)->in_struct)
 
 /* For a SET rtx, SET_DEST is the place that is set
