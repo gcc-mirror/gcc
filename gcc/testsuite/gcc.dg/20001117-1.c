@@ -13,3 +13,10 @@ foo (double a, double b)
     return 0;
   return 2.0 * (b - c);
 }
+
+int main ()
+{
+  if (foo (1.0, 4.0) != 6.0)
+    abort ();
+  exit (0);
+}

@@ -4,6 +4,8 @@
 	tests.
 	* gcc.c-torture/execute/string-opt-6.c: New test.
 
+	* gcc.dg/20001117-1.c: Add main.
+
 2000-11-28  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.dg/noncompile/940510-1.c: Update to test c89 functionality.
