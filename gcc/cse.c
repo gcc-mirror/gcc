@@ -328,6 +328,9 @@ static int cse_basic_block_end;
 
 static int *uid_cuid;
 
+/* Highest UID in UID_CUID.  */
+static int max_uid;
+
 /* Get the cuid of an insn.  */
 
 #define INSN_CUID(INSN) (uid_cuid[INSN_UID (INSN)])
@@ -7382,10 +7385,13 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
       else if (GET_CODE (p) != NOTE)
 	nsets += 1;
 	
-      if (INSN_CUID (p) > high_cuid)
+      /* Ignore insns made by CSE; they cannot affect the boundaries of
+	 the basic block.  */
+
+      if (INSN_UID (p) <= max_uid && INSN_CUID (p) > high_cuid)
 	high_cuid = INSN_CUID (p);
-      if (INSN_CUID (p) < low_cuid)
-	low_cuid = INSN_CUID(p);
+      if (INSN_UID (p) <= max_uid && INSN_CUID (p) < low_cuid)
+	low_cuid = INSN_CUID (p);
 
       /* See if this insn is in our branch path.  If it is and we are to
 	 take it, do so.  */
@@ -7569,9 +7575,9 @@ cse_main (f, nregs, after_loop, file)
 
   /* Find the largest uid.  */
 
-  i = get_max_uid ();
-  uid_cuid = (int *) alloca ((i + 1) * sizeof (int));
-  bzero (uid_cuid, (i + 1) * sizeof (int));
+  max_uid = get_max_uid ();
+  uid_cuid = (int *) alloca ((max_uid + 1) * sizeof (int));
+  bzero (uid_cuid, (max_uid + 1) * sizeof (int));
 
   /* Compute the mapping from uids to cuids.
      CUIDs are numbers assigned to insns, like uids,
