@@ -252,6 +252,8 @@ cp_convert_to_pointer (type, expr, force)
       else
 	expr = build_int_2 (0, 0);
       TREE_TYPE (expr) = type;
+      /* Fix up the representation of -1 if appropriate.  */
+      force_fit_type (expr, 0);
       return expr;
     }
 
