@@ -4607,6 +4607,10 @@ if test x"${enable_languages+set}" != xset; then
 	else
 		enable_languages=all
 	fi
+else
+	if test x"${enable_languages}" = x; then
+		AC_MSG_ERROR([--enable-languages needs at least one argument])
+	fi
 fi
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
