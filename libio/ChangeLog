@@ -1,3 +1,9 @@
+1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* strstream.h (strstreambuf::streambuf): Rename parameters to
+	avoid shadow warning.
+	* stream.h (WS): Likewise.
+
 Thu Sep 30 01:08:04 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* editbuf.cc, parsestream.cc, pfstream.cc: Include string.h.

@@ -1,5 +1,5 @@
 /* This is part of libio/iostream, providing -*- C++ -*- input/output.
-Copyright (C) 1993 Free Software Foundation
+Copyright (C) 1993, 1999 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -50,8 +50,8 @@ class strstreambuf : public streambuf
     virtual ~strstreambuf();
     strstreambuf() { init_dynamic(0, 0); }
     strstreambuf(int initial_size) { init_dynamic(0, 0, initial_size); }
-    strstreambuf(void *(*alloc)(_IO_size_t), void (*free)(void*))
-	{ init_dynamic(alloc, free); }
+    strstreambuf(void *(*__alloc)(_IO_size_t), void (*__free)(void*))
+	{ init_dynamic(__alloc, __free); }
     strstreambuf(char *ptr, int size, char *pstart = NULL)
 	{ init_static(ptr, size, pstart); }
     strstreambuf(unsigned char *ptr, int size, unsigned char *pstart = NULL)
