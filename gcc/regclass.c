@@ -1866,18 +1866,19 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	  size_t max_index = reg_data->max_index;
 
 	  reg_next = reg_data->next;
-	  if (min_index <= regno_allocated)
+	  if (min <= max_index)
 	    {
 	      size_t max = max_index;
-	      if (max > regno_allocated)
-		max = regno_allocated;
+	      size_t local_min = min - min_index;
+	      if (min < min_index)
+		local_min = 0;
 	      if (!reg_data->used_p)	/* page just allocated with calloc */
 		reg_data->used_p = 1;	/* no need to zero */
 	      else
-		bzero ((char *) &reg_data->data,
-		       sizeof (reg_info) * (max - min_index + 1));
+		bzero ((char *) &reg_data->data[local_min],
+		       sizeof (reg_info) * (max - min_index - local_min + 1));
 
-	      for (i = min_index; i <= max; i++)
+	      for (i = min_index+local_min; i <= max; i++)
 		{
 		  VARRAY_REG (reg_n_info, i) = &reg_data->data[i-min_index];
 		  REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
