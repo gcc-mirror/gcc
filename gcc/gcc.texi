@@ -1013,7 +1013,7 @@ PTF releases (3.2.2, 3.2.3, or 3.2.3e).  Users of AIX 3.1 should request
 PTF U403044 from IBM and users of AIX 3.2 should request PTF U416277.
 See the file @file{README.RS6000} for more details on these updates.
 
-You can test for the presense of a fixed assembler by using the
+You can test for the presence of a fixed assembler by using the
 command
 
 @smallexample
@@ -1861,7 +1861,7 @@ problem.
 @code{unprotoize} can become confused when trying to convert a function
 definition or declaration which contains a declaration for a
 pointer-to-function formal argument which has the same name as the
-function being defined or declared.  We recommand you avoid such choices
+function being defined or declared.  We recommend you avoid such choices
 of formal parameter names.
 
 @item

@@ -813,7 +813,7 @@ them as a single variable with a complex type.
 @section Hex Floats
 @cindex hex floats
 
-GNU CC recognizes floating-point numbers writen not only in the usual
+GNU CC recognizes floating-point numbers written not only in the usual
 decimal notation, such as @code{1.55e1}, but also numbers such as
 @code{0x1.fp3} written in hexadecimal format.  In that format the
 @code{0x} hex introducer and the @code{p} or @code{P} exponent field are
@@ -1310,7 +1310,7 @@ hack ((union foo) x);
 @cindex functions that never return
 @cindex functions that have no side effects
 @cindex functions in arbitrary sections
-@cindex functions that bahave like malloc
+@cindex functions that behave like malloc
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
 @cindex functions with @code{printf}, @code{scanf} or @code{strftime} style arguments
@@ -1399,7 +1399,7 @@ fewer times than the program says.
 Some of common examples of pure functions are @code{strlen} or @code{memcmp}.
 Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
-two consetuctive calls (such as @code{feof} in multithreding environment).
+two consecutive calls (such as @code{feof} in a multithreading environment).
 
 The attribute @code{pure} is not implemented in GNU C versions earlier
 than 2.96.
@@ -1408,7 +1408,7 @@ than 2.96.
 Many functions do not examine any values except their arguments, and
 have no effects except the return value.  Basically this is just slightly
 more strict class than the "pure" attribute above, since function is not
-alloved to read global memory.
+allowed to read global memory.
 
 @cindex pointer arguments
 Note that a function that has pointer arguments and examines the data
@@ -2073,7 +2073,7 @@ section, consider using the facilities of the linker instead.
 
 @item shared
 @cindex @code{shared} variable attribute
-On Windows NT, in addition to nputting variable definitions in a named 
+On Windows NT, in addition to putting variable definitions in a named 
 section, the section can also be shared among all running copies of an 
 executable or DLL. For example, this small program defines shared data 
 by putting it in a named section "shared" and marking the section 
