@@ -515,28 +515,21 @@ struct _Jv_mcache {
 };
 
 static _Jv_mcache method_cache[MCACHE_SIZE];
-static int method_cache_count;
 
-static void*
+static void *
 _Jv_FindMethodInCache (jclass klass,
 		       _Jv_Utf8Const *name,
 		       _Jv_Utf8Const *signature)
 {
-  for (int index = name->hash % MCACHE_SIZE;
-       method_cache[index].klass != NULL;
-       index = (index+1) % MCACHE_SIZE)
-    {
-      _Jv_mcache *mc = (method_cache+index);
-      _Jv_Method *m  = mc->method;
+  int index = name->hash & MCACHE_SIZE;
+  _Jv_mcache *mc = method_cache + index;
+  _Jv_Method *m = mc->method;
 
-      if (mc->klass == klass
-	  && m != NULL		// thread safe check
-	  && _Jv_equalUtf8Consts (m->name, name)
-	  && _Jv_equalUtf8Consts (m->signature, signature))
-	{
-	  return mc->method->ncode;
-	}
-    }  
+  if (mc->klass == klass
+      && m != NULL		// thread safe check
+      && _Jv_equalUtf8Consts (m->name, name)
+      && _Jv_equalUtf8Consts (m->signature, signature))
+    return mc->method->ncode;
   return NULL;
 }
 
@@ -546,22 +539,11 @@ _Jv_AddMethodToCache (jclass klass,
 {
   _Jv_MonitorEnter (&ClassClass); 
 
-  if (method_cache_count > MCACHE_SIZE*2/3)
-    {
-      for (int i = 0; i < MCACHE_SIZE; i++)
-	method_cache[i].klass = 0;
-    }
+  int index = method->name->hash & MCACHE_SIZE;
 
-  for (int index = method->name->hash % MCACHE_SIZE;
-       method_cache[index].klass != NULL;
-       index = (index+1) % MCACHE_SIZE)
-    {
-      method_cache[index].method = method;
-      method_cache[index].klass = klass;
-    }
+  method_cache[index].method = method;
+  method_cache[index].klass = klass;
 
-  method_cache_count += 1;
-  
   _Jv_MonitorExit (&ClassClass);
 }
 
