@@ -1,3 +1,35 @@
+2001-06-28  Zack Weinberg  <zackw@stanford.edu>
+
+	* config/i386/i386.md: Global update to use new string syntax
+	where it will improve readability.  Warning fixes:
+	(*truncdfsf2_2): Abort if which_alternative is not 0 or 1.
+	(*adddi_1_rex64, *adddi_2_rex64, *adddi_3_rex64,
+	*adddi_4_rex64, *adddi_5_rex64): Cast 1 to unsigned int.
+
+	* read-rtl.c: Syntactic sugar for C embedded in strings in
+	machine descriptions.
+	(read_string): Break inner loop into separate function.  Takes
+	an int.  Dispatch to read_quoted_string or read_braced_string
+	as appropriate.  Automatically insert a leading star on braced
+	strings if STAR_IF_BRACED is true.
+	(read_quoted_string, read_braced_string): New functions.
+	* doc/rtl.texi, doc/md.texi: Document new syntax.  Update
+	examples to match.
+
+	* rtl.c: Split RTL reader (read_rtx, read_skip_spaces,
+	traverse_md_constants, fatal_with_file_and_line,
+	fatal_expected_char, read_name, read_string, def_hash,
+	def_name_eq_p, read_constants, and related data) to its own
+	file.  Weed out now-unnecessary #includes.
+	* read-rtl.c: New file.
+	* Makefile.in (HOST_RTL): Add read-rtl.o.
+	(read-rtl.o): New rule.
+	(rtl.o, $(HOST_PREFIX_1)rtl.o): Update dependencies.
+	* doc/gcc.texi (Passes): Talk briefly about the support
+	library used by genfoo.
+	* doc/rtl.texi (Reading RTL): read_rtx is not available in the
+	compiler itself.
+
 2001-06-28  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.h (REGISTER_TARGET_PRAGMAS): Define.
@@ -121,7 +153,7 @@ Wed Jun 27 18:01:09 2001  Jeffrey A Law  (law@cygnus.com)
 	. at end of sentences preceded by a capital letter with @..
 
 2001-06-26  Daniel Berlin  <dan@cgsoftware.com>
-	
+
 	* doc/invoke.texi: Add description of max-gcse-passes param.
 
 	* gcse.c (gcse_main): Use MAX_GCSE_PASSES instead of MAX_PASSES.
@@ -439,7 +471,7 @@ Tue Jun 26 12:40:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* config/ia64/quadlib.c: New.
 	* config/ia64/t-hpux: New.
 	* config/i386/i386.h (INTEL_EXTENDED_IEEE_FORMAT): Define to one.
-	
+
 2001-06-25  Jim Wilson  <wilson@redhat.com>
 
 	* config/i960/t-960bare (i960-c.o): Add missing header dependencies.
@@ -734,7 +766,7 @@ Thu Jun 21 22:15:10 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-06-21  DJ Delorie  <dj@redhat.com>
 
 	* integrate.c (mark_hard_reg_initial_vals): Check for NULL.
-	
+
 	* integrate.c (ggc.h): Include.
 	(initial_value_pair, initial_value_struct,
 	setup_initial_hard_reg_value_integration): Add prototypes.
@@ -796,7 +828,7 @@ Wed Jun 20 08:35:02 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa.c (rename_block): Update parameter to remove_phi_alternative
 	(convert_from_ssa): Do create REG_DEAD and REG_UNUSED notes when
-	re-running life analysis. 
+	re-running life analysis.
 
 2001-06-20  Stan Shebs  <shebs@apple.com>
 

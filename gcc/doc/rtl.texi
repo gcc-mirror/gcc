@@ -70,6 +70,21 @@ pointers instead of strings are valid.  Within RTL code, strings are most
 commonly found inside @code{symbol_ref} expressions, but they appear in
 other contexts in the RTL expressions that make up machine descriptions.
 
+In a machine description, strings are normally written with double
+quotes, as you would in C.  However, strings in machine descriptions may
+extend over many lines, which is invalid C, and adjacent string
+constants are not concatenated as they are in C.  Any string constant
+may be surrounded with a single set of parentheses.  Sometimes this
+makes the machine description easier to read.
+
+There is also a special syntax for strings, which can be useful when C
+code is embedded in a machine description.  Wherever a string can
+appear, it is also valid to write a C-style brace block.  The entire
+brace block, including the outermost pair of braces, is considered to be
+the string constant.  Double quote characters inside the braces are not
+special.  Therefore, if you write string constants in the C code, you
+need not escape each quote character with a backslash.
+
 A vector contains an arbitrary number of pointers to expressions.  The
 number of elements in the vector is explicitly present in the vector.
 The written form of a vector consists of square brackets
@@ -3182,11 +3197,10 @@ combiner is finished with the insn.  This is done by calling
 @section Reading RTL
 
 To read an RTL object from a file, call @code{read_rtx}.  It takes one
-argument, a stdio stream, and returns a single RTL object.
-
-Reading RTL from a file is very slow.  This is not currently a
-problem since reading RTL occurs only as part of building the
-compiler.
+argument, a stdio stream, and returns a single RTL object.  This routine
+is defined in @file{read-rtl.c}.  It is not available in the compiler
+itself, only the various programs that generate the compiler back end
+from the machine description.
 
 People frequently have the idea of using RTL stored as text in a file as
 an interface between a language front end and the bulk of GCC@.  This
