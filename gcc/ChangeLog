@@ -1,3 +1,10 @@
+2002-04-18  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* flow.c (update_life_info): Ignore return value of cleanup_cfg.
+	Mask out PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE in
+	propagate_block calls after relaxation loop using new variable
+	stabilized_prop_flags.
+
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c: Include except.h.

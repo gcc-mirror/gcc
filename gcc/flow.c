@@ -636,6 +636,7 @@ update_life_info (blocks, extent, prop_flags)
   regset tmp;
   regset_head tmp_head;
   int i;
+  int stabilized_prop_flags = prop_flags;
 
   tmp = INITIALIZE_REG_SET (tmp_head);
 
@@ -679,8 +680,21 @@ update_life_info (blocks, extent, prop_flags)
 					      | PROP_KILL_DEAD_CODE));
 	    }
 
-	  if (! changed || ! cleanup_cfg (CLEANUP_EXPENSIVE))
+	  /* Don't pass PROP_SCAN_DEAD_CODE or PROP_KILL_DEAD_CODE to
+	     subsequent propagate_block calls, since removing or acting as
+	     removing dead code can affect global register liveness, which
+	     is supposed to be finalized for this call after this loop.  */
+	  stabilized_prop_flags
+	    &= ~(PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
+
+	  if (! changed)
 	    break;
+
+	  /* We repeat regardless of what cleanup_cfg says.  If there were
+	     instructions deleted above, that might have been only a
+	     partial improvement (see MAX_MEM_SET_LIST_LEN usage).
+	     Further improvement may be possible.  */
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
 	}
 
       /* If asked, remove notes from the blocks we'll update.  */
@@ -695,7 +709,7 @@ update_life_info (blocks, extent, prop_flags)
 	  basic_block bb = BASIC_BLOCK (i);
 
 	  COPY_REG_SET (tmp, bb->global_live_at_end);
-	  propagate_block (bb, tmp, NULL, NULL, prop_flags);
+	  propagate_block (bb, tmp, NULL, NULL, stabilized_prop_flags);
 
 	  if (extent == UPDATE_LIFE_LOCAL)
 	    verify_local_live_at_start (tmp, bb);
@@ -708,7 +722,8 @@ update_life_info (blocks, extent, prop_flags)
 	  basic_block bb = BASIC_BLOCK (i);
 
 	  COPY_REG_SET (tmp, bb->global_live_at_end);
-	  propagate_block (bb, tmp, NULL, NULL, prop_flags);
+
+	  propagate_block (bb, tmp, NULL, NULL, stabilized_prop_flags);
 
 	  if (extent == UPDATE_LIFE_LOCAL)
 	    verify_local_live_at_start (tmp, bb);
