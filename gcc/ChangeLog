@@ -1,5 +1,11 @@
 2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/arm/arm-protos.h: Remove #ifdef GCC_C_PRAGMA_H.
+	* config/h8300/h8300-protos.h: Likewise.
+	* config/sh/sh-protos.h: Likewise.
+
+2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arm/arm-protos.h: Use struct cpp_reader instead of
 	cpp_reader.
 	* config/h8300/h8300-protos.h: Likewise.

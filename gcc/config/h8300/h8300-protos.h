@@ -91,9 +91,7 @@ extern void asm_file_start PARAMS ((FILE *));
 extern void asm_file_end PARAMS ((FILE *));
 extern int h8300_initial_elimination_offset PARAMS ((int, int));
 
-#ifdef GCC_C_PRAGMA_H
 extern void h8300_pr_interrupt PARAMS ((struct cpp_reader *));
 extern void h8300_pr_saveall PARAMS ((struct cpp_reader *));
-#endif
 
 #endif /* ! GCC_H8300_PROTOS_H */

@@ -137,10 +137,8 @@ extern int sh_register_move_cost
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
 #endif
 
-#ifdef GCC_C_PRAGMA_H
 extern void sh_pr_interrupt PARAMS ((struct cpp_reader *));
 extern void sh_pr_trapa PARAMS ((struct cpp_reader *));
 extern void sh_pr_nosave_low_regs PARAMS ((struct cpp_reader *));
-#endif
 
 #endif /* ! GCC_SH_PROTOS_H */
