@@ -619,7 +619,7 @@ extern int ix86_arch;
    eliminated during reloading in favor of either the stack or frame
    pointer. */
 
-#define FIRST_PSEUDO_REGISTER 20
+#define FIRST_PSEUDO_REGISTER 21
 
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER.  */
@@ -631,7 +631,9 @@ extern int ix86_arch;
    On the 80386, the stack pointer is such, as is the arg pointer. */
 #define FIXED_REGISTERS \
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg,flags,fpsr, dir*/ \
-{  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,  1,    0,   0,   0 }
+{  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,  1,    0,   0,   0,  \
+/*frame									    */ \
+   1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -642,7 +644,9 @@ extern int ix86_arch;
 
 #define CALL_USED_REGISTERS \
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg,flags,fpsr, dir*/ \
-{  1, 1, 1, 0, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1,    1,   1,   1 }
+{  1, 1, 1, 0, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1,    1,   1,   1,  \
+/*frame									    */ \
+   1}
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -665,7 +669,9 @@ extern int ix86_arch;
 
 #define REG_ALLOC_ORDER \
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg,cc,fpsr, dir*/ \
-{  0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16,17,  18,  19 }
+{  0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16,17,  18,  19,  \
+/*frame									 */ \
+  20}
 
 /* A C statement (sans semicolon) to choose the order in which to
    allocate hard registers for pseudo-registers local to a basic
@@ -762,7 +768,10 @@ extern int ix86_arch;
 #define STACK_POINTER_REGNUM 7
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 6
+#define HARD_FRAME_POINTER_REGNUM 6
+
+/* Base register for access to local variables of the function.  */
+#define FRAME_POINTER_REGNUM 20
 
 /* First floating point reg */
 #define FIRST_FLOAT_REG 8
@@ -853,7 +862,7 @@ enum reg_class
   AREG, DREG, CREG, BREG, SIREG, DIREG,
   AD_REGS,			/* %eax/%edx for DImode */
   Q_REGS,			/* %eax %ebx %ecx %edx */
-  NON_Q_REGS,			/* %esi %edi %ebp %esi */
+  NON_Q_REGS,			/* %esi %edi %ebp %esp */
   INDEX_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp */
   GENERAL_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
@@ -893,13 +902,13 @@ enum reg_class
     {0x10},   {0x20},		/* SIREG, DIREG */		\
      {0x3},			/* AD_REGS */			\
      {0xf},			/* Q_REGS */			\
-    {0xf0},			/* NON_Q_REGS */		\
+{0x1100f0},			/* NON_Q_REGS */		\
     {0x7f},			/* INDEX_REGS */		\
- {0x100ff},			/* GENERAL_REGS */		\
+{0x1100ff},			/* GENERAL_REGS */		\
   {0x0100}, {0x0200},		/* FP_TOP_REG, FP_SECOND_REG */	\
   {0xff00},			/* FLOAT_REGS */		\
-  {0x1ffff},			/* FLOAT_INT_REGS */		\
- {0x7ffff}							\
+{0x11ffff},			/* FLOAT_INT_REGS */		\
+{0x17ffff}							\
 }
 
 /* The same information, inverted:
@@ -1392,15 +1401,16 @@ do {								\
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.
 
-   We have two registers that can be eliminated on the i386.  First, the
-   frame pointer register can often be eliminated in favor of the stack
-   pointer register.  Secondly, the argument pointer register can always be
-   eliminated; it is replaced with either the stack or frame pointer. */
+   We have three registers that can be eliminated on the i386.  First, the
+   hard frame pointer register can often be eliminated in favor of the stack
+   pointer register.  Secondly, the argument and frame pointer register can
+   always be eliminated; They are replaced with either the stack or frame pointer. */
 
-#define ELIMINABLE_REGS				\
-{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},   \
- { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+#define ELIMINABLE_REGS					\
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}	\
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
@@ -1410,9 +1420,10 @@ do {								\
 
    All other eliminations are valid.  */
 
-#define CAN_ELIMINATE(FROM, TO)					\
- ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM	\
-  ? ! frame_pointer_needed					\
+#define CAN_ELIMINATE(FROM, TO)						\
+ ((((FROM) == ARG_POINTER_REGNUM || (FROM) == FRAME_POINTER_REGNUM)	\
+   && (TO) == STACK_POINTER_REGNUM)					\
+  ? ! frame_pointer_needed						\
   : 1)
 
 /* Define the offset between two registers, one to be eliminated, and the other
@@ -1444,6 +1455,7 @@ do {								\
 #define REGNO_OK_FOR_BASE_P(REGNO) \
   ((REGNO) <= STACK_POINTER_REGNUM \
    || (REGNO) == ARG_POINTER_REGNUM \
+   || (REGNO) == FRAME_POINTER_REGNUM \
    || (unsigned) reg_renumber[REGNO] <= STACK_POINTER_REGNUM)
 
 #define REGNO_OK_FOR_SIREG_P(REGNO) ((REGNO) == 4 || reg_renumber[REGNO] == 4)
@@ -1471,6 +1483,7 @@ do {								\
 #define REG_OK_FOR_BASE_NONSTRICT_P(X)					\
   (REGNO (X) <= STACK_POINTER_REGNUM					\
    || REGNO (X) == ARG_POINTER_REGNUM					\
+   || REGNO (X) == FRAME_POINTER_REGNUM \
    || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 #define REG_OK_FOR_STRREG_NONSTRICT_P(X)				\
@@ -2153,7 +2166,7 @@ while (0)
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
  "st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)","",	\
- "flags","fpsr", "dirflag" }
+ "flags","fpsr", "dirflag", "frame" }
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
@@ -2365,6 +2378,8 @@ do { long l;						\
 	 { fputs ("fpsr", FILE); break; }		\
        if (REGNO (X) == ARG_POINTER_REGNUM)		\
 	 { fputs ("argp", FILE); break; }		\
+       if (REGNO (X) == FRAME_POINTER_REGNUM)		\
+	 { fputs ("frame", FILE); break; }		\
        if (STACK_TOP_P (X))				\
 	 { fputs ("st(0)", FILE); break; }		\
        if (FP_REG_P (X))				\

@@ -1,3 +1,37 @@
+Mon Jan 24 17:37:31 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (FIRST_PSEUDO_REGISTER): Set to 21.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS,
+	 REG_ALLOC_ORDER): Add frame pointer
+	(FRAME_POINTER_REGNUM): Set to 20
+	(HARD_FRAME_POINTER_REGNUM): New macro.
+	(ELIMINABLE_REGS): Eliminate ARG_POINTER and FRAME_POINTER
+	to HARD_FRAME_POINTER.
+	(REGNO_OK_FOR_BASE_P): Accept FRAME_POINTER_REGNUM
+	(REG_OK_FOR_INDEX_NONSTRICT_P): Likewise.
+	(REG_OK_FOR_BASE_NONSTRICT_P): Likewise.
+	(HI_REGISTER_NAMES): Add "frame".
+	(CAN_ELIMINATE): Handle FRAME_POINTER_REGNUM elimination.
+	(debug_reg): Handle FRAME_POINTER_REGNUM.
+	(reg_class): Add arg pointer and frame pointer to NON_Q_REGS,
+	GENERAL_REGS and INDEX_REGS.
+	* i386.c (SAVED_REGS_FIRST): new macro.
+	(AT_BP): Use hard_frame_pointer_rtx instead of frame_pointer_rtx
+	(ix86_decompose_address, memory_address_length): Likewise.
+	(regclass_map): Add frame pointer.
+	(call_insn_operand): Handle frame_pointer_rtx.
+	(reg_no_sp_operand): Likewise.
+	(ix86_decompose_address): Handle frame_pointer_rtx as stack_pointer_rtx.
+	(print_operand, legitimize_pic_address): Fix formating.
+	(ix86_compute_frame_size): Make static, update prototype, new
+	parameters padding1, padding2, use ix86_nsaved_regs, use
+	stack_alignment_needed.
+	(ix86_initial_elimination_offset): Handle FRAME_POINTER_REGNUM
+	to HARD_FRAME_POINTER_REGNUM conversions.
+	(ix86_expand_prologue): Handle SAVED_REGS_FIRST prologues.
+	(ix86_expand_epilogue): Handle SAVED_REGS_FIRST epilogues.
+	(print_reg): Abort on FRAME_POINTER_REGNUM
+
 Mon Jan 24 16:50:08 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (PREDICATE_CODES): Add aligned_operand.

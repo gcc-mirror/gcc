@@ -41,6 +41,16 @@ Boston, MA 02111-1307, USA. */
 #include "basic-block.h"
 #include "ggc.h"
 
+/* True when we want to do pushes before allocating stack to get better
+   scheduling.
+
+   Saving registers first is win in the most cases except for LEAVE
+   instruction.  Macro is 0 iff we will use LEAVE.  */
+
+#define SAVED_REGS_FIRST \
+  (!frame_pointer_needed || (!TARGET_USE_LEAVE && !optimize_size))
+
+
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
    constraint in REG_CLASS_FROM_LETTER will no longer work, and various
@@ -214,7 +224,7 @@ const int x86_split_long_moves = m_PPRO;
 const int x86_promote_QImode = m_K6 | m_PENT | m_386 | m_486;
 const int x86_single_stringop = m_386;
 
-#define AT_BP(mode) (gen_rtx_MEM ((mode), frame_pointer_rtx))
+#define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
 const char * const hi_reg_name[] = HI_REGISTER_NAMES;
 const char * const qi_reg_name[] = QI_REGISTER_NAMES;
@@ -234,8 +244,8 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,
   /* arg pointer */
   NON_Q_REGS,
-  /* flags, fpsr, dirflag */
-  NO_REGS, NO_REGS, NO_REGS
+  /* flags, fpsr, dirflag, frame */
+  NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS
 };
 
 /* The "default" register map.  */
@@ -397,7 +407,8 @@ static void ix86_init_machine_status PARAMS ((struct function *));
 static void ix86_mark_machine_status PARAMS ((struct function *));
 static void ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
-static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT, int *));
+static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT,
+						     int *, int *, int *));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
 static void ix86_emit_restore_regs PARAMS((void));
@@ -1051,6 +1062,7 @@ call_insn_operand (op, mode)
      compiler aborts when trying to eliminate them.  */
   if (GET_CODE (op) == REG
       && (op == arg_pointer_rtx
+	  || op == frame_pointer_rtx
 	  || (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      && REGNO (op) <= LAST_VIRTUAL_REGISTER)))
     return 0;
@@ -1150,7 +1162,7 @@ reg_no_sp_operand (op, mode)
   rtx t = op;
   if (GET_CODE (t) == SUBREG)
     t = SUBREG_REG (t);
-  if (t == stack_pointer_rtx || t == arg_pointer_rtx)
+  if (t == stack_pointer_rtx || t == arg_pointer_rtx || t == frame_pointer_rtx)
     return 0;
 
   return register_operand (op, mode);
@@ -1644,91 +1656,133 @@ ix86_initial_elimination_offset (from, to)
      int from;
      int to;
 {
-  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
-    return 8;			/* Skip saved PC and previous frame pointer */
+  int padding1;
+  int nregs;
+
+  /* Stack grows downward:
+    
+     [arguments]
+						<- ARG_POINTER
+     saved pc
+
+     saved frame pointer if frame_pointer_needed
+						<- HARD_FRAME_POINTER
+     [saved regs if SAVED_REGS_FIRST]
+
+     [padding1]   \
+		   |				<- FRAME_POINTER
+     [frame]	   > tsize
+		   |
+     [padding2]   /
+
+     [saved regs if !SAVED_REGS_FIRST]
+     						<- STACK_POINTER
+    */
+
+  if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    /* Skip saved PC and previous frame pointer.
+       Executed only when frame_pointer_needed.  */
+    return 8;
+  else if (from == FRAME_POINTER_REGNUM
+	   && to == HARD_FRAME_POINTER_REGNUM)
+    {
+      ix86_compute_frame_size (get_frame_size (), &nregs, &padding1, (int *)0);
+      if (SAVED_REGS_FIRST)
+	padding1 += nregs * UNITS_PER_WORD;
+      return -padding1;
+    }
   else
     {
-      int nregs;
-      int poffset;
-      int offset;
-      int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+      /* ARG_POINTER or FRAME_POINTER to STACK_POINTER elimination.  */
+      int frame_size = frame_pointer_needed ? 8 : 4;
       HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (),
-						     &nregs);
+						     &nregs, &padding1, (int *)0);
 
-      offset = (tsize + nregs * UNITS_PER_WORD);
 
-      poffset = 4;
-      if (frame_pointer_needed)
-	poffset += UNITS_PER_WORD;
-
-      if (from == ARG_POINTER_REGNUM)
-	offset += poffset;
+      if (to != STACK_POINTER_REGNUM)
+	abort ();
+      else if (from == ARG_POINTER_REGNUM)
+	return tsize + nregs * UNITS_PER_WORD + frame_size;
+      else if (from != FRAME_POINTER_REGNUM)
+	abort ();
+      else if (SAVED_REGS_FIRST)
+	return tsize - padding1;
       else
-	offset -= ((poffset + preferred_alignment - 1)
-		   & -preferred_alignment) - poffset;
-      return offset;
+	return tsize + nregs * UNITS_PER_WORD - padding1;
     }
 }
 
 /* Compute the size of local storage taking into consideration the
    desired stack alignment which is to be maintained.  Also determine
-   the number of registers saved below the local storage.  */
+   the number of registers saved below the local storage.  
+ 
+   PADDING1 returns padding before stack frame and PADDING2 returns
+   padding after stack frame;
+ */
 
-HOST_WIDE_INT
-ix86_compute_frame_size (size, nregs_on_stack)
+static HOST_WIDE_INT
+ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
      HOST_WIDE_INT size;
      int *nregs_on_stack;
+     int *rpadding1;
+     int *rpadding2;
 {
-  int limit;
   int nregs;
-  int regno;
-  int padding;
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
+  int padding1 = 0;
+  int padding2 = 0;
   HOST_WIDE_INT total_size;
+  int stack_alignment_needed = cfun->stack_alignment_needed / BITS_PER_UNIT;
 
-  limit = frame_pointer_needed
-	  ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM;
+  nregs = ix86_nsaved_regs ();
 
-  nregs = 0;
-
-  for (regno = limit - 1; regno >= 0; regno--)
-    if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-      nregs++;
-
-  padding = 0;
-  total_size = size + (nregs * UNITS_PER_WORD);
+  total_size = size;
 
 #ifdef PREFERRED_STACK_BOUNDARY
   {
     int offset;
     int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
 
-    offset = 4;
-    if (frame_pointer_needed)
-      offset += UNITS_PER_WORD;
+    offset = frame_pointer_needed ? 8 : 4;
+
+    /* When frame is not empty we ought to have recorded the alignment.  */
+    if (size && !stack_alignment_needed)
+      abort ();
+
+    if (stack_alignment_needed < 4)
+      stack_alignment_needed = 4;
+
+    if (stack_alignment_needed > preferred_alignment)
+      abort ();
+
+    if (SAVED_REGS_FIRST)
+      offset += nregs * UNITS_PER_WORD;
+    else
+      total_size += nregs * UNITS_PER_WORD;
 
     total_size += offset;
-    
-    padding = ((total_size + preferred_alignment - 1)
-	       & -preferred_alignment) - total_size;
 
-    if (padding < (((offset + preferred_alignment - 1)
-		    & -preferred_alignment) - offset))
-      padding += preferred_alignment;
+    /* Align start of frame for local function.  */
+    padding1 = ((offset + stack_alignment_needed - 1)
+		& -stack_alignment_needed) - offset;
+    total_size += padding1;
 
-    /* Don't bother aligning the stack of a leaf function
-       which doesn't allocate any stack slots.  */
-    if (size == 0 && current_function_is_leaf)
-      padding = 0;
+    /* Align stack boundary. */
+    if (!current_function_is_leaf)
+      padding2 = ((total_size + preferred_alignment - 1)
+		  & -preferred_alignment) - total_size;
   }
 #endif
 
   if (nregs_on_stack)
     *nregs_on_stack = nregs;
 
-  return size + padding;
+  if (rpadding1)
+    *rpadding1 = padding1;
+
+  if (rpadding2)
+    *rpadding2 = padding2;
+
+  return size + padding1 + padding2;
 }
 
 /* Emit code to save registers in the prologue.  */
@@ -1742,7 +1796,7 @@ ix86_emit_save_regs ()
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   limit = (frame_pointer_needed
-	   ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+	   ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
 
   for (regno = limit - 1; regno >= 0; regno--)
     if ((regs_ever_live[regno] && !call_used_regs[regno])
@@ -1758,22 +1812,26 @@ ix86_emit_save_regs ()
 void
 ix86_expand_prologue ()
 {
+  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), (int *)0, (int *)0,
+						 (int *)0);
+  rtx insn;
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
-  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), (int *)0);
-  rtx insn;
 
   /* Note: AT&T enter does NOT have reversed args.  Enter is probably
      slower on all targets.  Also sdb doesn't like it.  */
 
   if (frame_pointer_needed)
     {
-      insn = emit_insn (gen_push (frame_pointer_rtx));
+      insn = emit_insn (gen_push (hard_frame_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
 
-      insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+      insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+
+  if (SAVED_REGS_FIRST)
+    ix86_emit_save_regs ();
 
   if (tsize == 0)
     ;
@@ -1783,7 +1841,7 @@ ix86_expand_prologue ()
 	insn = emit_insn (gen_prologue_allocate_stack (stack_pointer_rtx,
 						       stack_pointer_rtx,
 						       GEN_INT (-tsize),
-						       frame_pointer_rtx));
+						       hard_frame_pointer_rtx));
       else
         insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				      GEN_INT (-tsize)));
@@ -1807,7 +1865,9 @@ ix86_expand_prologue ()
 			     CALL_INSN_FUNCTION_USAGE (insn));
     }
 
-  ix86_emit_save_regs ();
+  if (!SAVED_REGS_FIRST)
+    ix86_emit_save_regs ();
+
 #ifdef SUBTARGET_PROLOGUE
   SUBTARGET_PROLOGUE;
 #endif  
@@ -1830,7 +1890,7 @@ ix86_emit_restore_regs ()
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   int limit = (frame_pointer_needed
-	       ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+	       ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
   int regno;
 
   for (regno = 0; regno < limit; regno++)
@@ -1900,20 +1960,38 @@ ix86_expand_epilogue ()
 				  || current_function_uses_const_pool);
   int sp_valid = !frame_pointer_needed || current_function_sp_is_unchanging;
   HOST_WIDE_INT offset;
-  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), &nregs);
+  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), &nregs, (int *)0,
+						 (int *)0);
 
   /* SP is often unreliable so we may have to go off the frame pointer. */
 
   offset = -(tsize + nregs * UNITS_PER_WORD);
+
+  if (SAVED_REGS_FIRST)
+    {
+      if (!sp_valid)
+        {
+	  if (nregs)
+	    emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				    gen_rtx_PLUS (SImode, hard_frame_pointer_rtx,
+						  GEN_INT (- nregs * UNITS_PER_WORD))));
+	  else
+	    emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
+						   hard_frame_pointer_rtx));
+	}
+      else if (tsize)
+	ix86_emit_epilogue_esp_adjustment (tsize);
+      ix86_emit_restore_regs ();
+    }
 
   /* If we're only restoring one register and sp is not valid then
      using a move instruction to restore the register since it's
      less work than reloading sp and popping the register.  Otherwise,
      restore sp (if necessary) and pop the registers. */
 
-  if (nregs > 1 || sp_valid)
+  else if (nregs > 1 || sp_valid)
     {
-      if ( !sp_valid )
+      if (!sp_valid)
 	{
 	  rtx addr_offset;
 	  addr_offset = adj_offsettable_operand (AT_BP (QImode), offset);
@@ -1927,7 +2005,7 @@ ix86_expand_epilogue ()
   else
     {
       limit = (frame_pointer_needed
-	       ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+	       ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
       for (regno = 0; regno < limit; regno++)
 	if ((regs_ever_live[regno] && ! call_used_regs[regno])
 	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
@@ -1941,16 +2019,17 @@ ix86_expand_epilogue ()
   if (frame_pointer_needed)
     {
       /* If not an i386, mov & pop is faster than "leave". */
-      if (TARGET_USE_LEAVE)
-	emit_insn (gen_leave());
+      if (TARGET_USE_LEAVE || optimize_size)
+	emit_insn (gen_leave ());
       else
 	{
-	  emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
-						    frame_pointer_rtx));
-	  emit_insn (gen_popsi1 (frame_pointer_rtx));
+	  if (!SAVED_REGS_FIRST)
+	    emit_insn (gen_epilogue_deallocate_stack (stack_pointer_rtx,
+						   hard_frame_pointer_rtx));
+	  emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
 	}
     }
-  else if (tsize)
+  else if (!SAVED_REGS_FIRST && tsize)
     ix86_emit_epilogue_esp_adjustment (tsize);
 
 #ifdef FUNCTION_BLOCK_PROFILER_EXIT
@@ -2071,7 +2150,8 @@ ix86_decompose_address (addr, out)
 
   /* Allow arg pointer and stack pointer as index if there is not scaling */
   if (base && index && scale == 1
-      && (index == arg_pointer_rtx || index == stack_pointer_rtx))
+      && (index == arg_pointer_rtx || index == frame_pointer_rtx
+          || index == stack_pointer_rtx))
     {
       rtx tmp = base;
       base = index;
@@ -2079,7 +2159,9 @@ ix86_decompose_address (addr, out)
     }
 
   /* Special case: %ebp cannot be encoded as a base without a displacement.  */
-  if (base == frame_pointer_rtx && !disp)
+  if ((base == hard_frame_pointer_rtx
+       || base == frame_pointer_rtx
+       || base == arg_pointer_rtx) && !disp)
     disp = const0_rtx;
 
   /* Special case: on K6, [%esi] makes the instruction vector decoded.
@@ -2388,7 +2470,7 @@ legitimize_pic_address (orig, reg)
 	      /* Check that the unspec is one of the ones we generate?  */
 	    }
 	  else if (GET_CODE (addr) != PLUS)
-	    abort();
+	    abort ();
 	}
       if (GET_CODE (addr) == PLUS)
 	{
@@ -2807,6 +2889,7 @@ print_reg (x, code, file)
      FILE *file;
 {
   if (REGNO (x) == ARG_POINTER_REGNUM
+      || REGNO (x) == FRAME_POINTER_REGNUM
       || REGNO (x) == FLAGS_REG
       || REGNO (x) == FPSR_REG)
     abort ();
@@ -3029,7 +3112,7 @@ print_operand (file, x, code)
 	    case 8: size = "QWORD"; break;
 	    case 12: size = "XWORD"; break;
 	    default:
-	      abort();
+	      abort ();
 	    }
 	  fputs (size, file);
 	  fputs (" PTR ", file);
@@ -3251,7 +3334,7 @@ split_di (operands, num, lo_half, hi_half)
 	  hi_half[num] = change_address (op, SImode, hi_addr);
 	}
       else
-	abort();
+	abort ();
     }
 }
 
@@ -5580,7 +5663,8 @@ memory_address_length (addr)
       /* Special cases: ebp and esp need the two-byte modrm form.  */
       if (addr == stack_pointer_rtx
 	  || addr == arg_pointer_rtx
-	  || addr == frame_pointer_rtx)
+	  || addr == frame_pointer_rtx
+	  || addr == hard_frame_pointer_rtx)
 	len = 1;
     }
 
