@@ -1,3 +1,9 @@
+2005-02-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++/20071
+	* include/tr1/functional (hash<std::wstring>): Wrap in #ifdef
+	_GLIBCXX_USE_WCHAR_T.
+
 2005-02-18  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/10606
