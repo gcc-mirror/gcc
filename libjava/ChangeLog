@@ -1,5 +1,11 @@
 2001-08-02  Tom Tromey  <tromey@redhat.com>
 
+	* prims.cc (JNI_OnLoad): Don't declare.
+	(_JNI_OnLoad): Don't define.
+	(_Jv_CreateJavaVM): Don't handle JNI_OnLoad.
+
+2001-08-02  Tom Tromey  <tromey@redhat.com>
+
 	* java/io/RandomAccessFile.java (seek): Let seek go past end of
 	file.
 	(skipBytes): Don't fail if seeking past end of file.
