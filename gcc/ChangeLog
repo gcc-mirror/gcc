@@ -1,3 +1,9 @@
+Sun Sep  7 13:16:06 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (out_file): Emit definition to config.status in order
+	to have a defined value for configure.lang.
+	* configure: Re-built.
+
 Sun Sep  7 09:59:08 1997  Jan-Jaap van der Heijden (J.J.vanderHeijden@student.utwente.nl)
 
         * configure.in: Make symlink to as-new rather than as.new.  Similarly
