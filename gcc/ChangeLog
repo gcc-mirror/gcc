@@ -1,3 +1,9 @@
+Thu Aug 13 19:55:05 1998  Jim Wilson  <wilson@cygnus.com>
+
+        * reload1.c (eliminate_regs_in_insn): Handle another case when
+        eliminating the frame pointer to the hard frame pointer.  Add
+        missing ep->to_rtx check to one existing case.
+
 Tue Aug 11 17:45:39 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* README.g77: Update from Craig.
