@@ -1,3 +1,9 @@
+Tue Apr 21 16:36:01 1998  John Carr  <jfc@mit.edu>
+
+	* alias.c (mode_alias_check): New function.
+	(true_dependence, anti_dependence, output_dependence): Call
+	mode_alias_check.
+
 Tue Apr 21 12:05:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-common.c (type_for_mode): Handle TI types.
