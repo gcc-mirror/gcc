@@ -1,3 +1,9 @@
+2001-08-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (libstdc___la_LDFLAGS): Use -release instead of
+	-version-info, use substituted VERSION info.
+	* src/Makefile.in: Regenerate.
+	
 2001-08-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Implement std::messages.
