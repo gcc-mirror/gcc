@@ -481,7 +481,7 @@ AC_LINK_FILES(gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc, gnu/ja
 
 case "${host}" in
     *mingw*)
-      SYSTEMSPEC="-lgdi32 -lwsock32 -lws2_32"
+      SYSTEMSPEC="-lgdi32 -lws2_32"
       if test "${with_win32_nlsapi}" = "unicows"; then
         SYSTEMSPEC="-lunicows $SYSTEMSPEC"
       fi

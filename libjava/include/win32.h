@@ -22,6 +22,8 @@ details.  */
 
 // Includes
 #define WIN32_LEAN_AND_MEAN
+// Force Winsock 2 interface.
+#include <winsock2.h>
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 #undef STRICT
