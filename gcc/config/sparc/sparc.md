@@ -2857,12 +2857,28 @@
   [(clobber (const_int 0))]
   "
 {
+#if HOST_BITS_PER_WIDE_INT == 32
   emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
 			(INTVAL (operands[1]) < 0) ?
 			constm1_rtx :
 			const0_rtx));
   emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
 			operands[1]));
+#else
+  unsigned int low, high;
+
+  low = INTVAL (operands[1]) & 0xffffffff;
+  high = (INTVAL (operands[1]) >> 32) & 0xffffffff;
+  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]), GEN_INT (high)));
+
+  /* Slick... but this trick loses if this subreg constant part
+     can be done in one insn.  */
+  if (low == high && (low & 0x3ff) != 0 && low + 0x1000 >= 0x2000)
+    emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
+			  gen_highpart (SImode, operands[0])));
+  else
+    emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), GEN_INT (low)));
+#endif
   DONE;
 }")
 
@@ -5575,6 +5591,7 @@
   operands[5] = gen_lowpart (SImode, operands[2]);
   operands[6] = gen_highpart (SImode, operands[0]);
   operands[7] = gen_highpart (SImode, operands[1]);
+#if HOST_BITS_PER_WIDE_INT == 32
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL (operands[2]) < 0)
@@ -5583,6 +5600,7 @@
 	operands[8] = const0_rtx;
     }
   else
+#endif
     operands[8] = gen_highpart (SImode, operands[2]);
 }")
 
@@ -5609,6 +5627,7 @@
   operands[5] = gen_lowpart (SImode, operands[2]);
   operands[6] = gen_highpart (SImode, operands[0]);
   operands[7] = gen_highpart (SImode, operands[1]);
+#if HOST_BITS_PER_WIDE_INT == 32
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       if (INTVAL (operands[2]) < 0)
@@ -5617,6 +5636,7 @@
 	operands[8] = const0_rtx;
     }
   else
+#endif
     operands[8] = gen_highpart (SImode, operands[2]);
 }")
 
@@ -6716,6 +6736,7 @@
   operands[5] = gen_lowpart (SImode, operands[0]);
   operands[6] = gen_highpart (SImode, operands[2]);
   operands[7] = gen_lowpart (SImode, operands[2]);
+#if HOST_BITS_PER_WIDE_INT == 32
   if (GET_CODE (operands[3]) == CONST_INT)
     {
       if (INTVAL (operands[3]) < 0)
@@ -6724,6 +6745,7 @@
 	operands[8] = const0_rtx;
     }
   else
+#endif
     operands[8] = gen_highpart (SImode, operands[3]);
   operands[9] = gen_lowpart (SImode, operands[3]);
 }")
