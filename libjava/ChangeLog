@@ -1,5 +1,15 @@
 2003-12-18  Michael Koch  <konqueror@gmx.de>
 
+	* libltdl/.cvsignore: Ignore autom4te.cache
+	* libltdl/Makefile.in: Regenerated.
+	* libltdl/aclocal.m4: Regenerated.
+	* libltdl/acconfig.h: Removed (obsolete).
+	* libltdl/config-h.in: Regenerated.
+	* libltdl/configure.ac: Added AM_MAINTAINER_MODE.
+	* libltdl/configure: Regenerated.
+
+2003-12-18  Michael Koch  <konqueror@gmx.de>
+
 	* mauve-libgcj: Removed the disabling of java.text.ACIAttribute and
 	java.text.CollationElementIterator tests as they compile again.
 	* testsuite/libjava.mauve/xfails: Added failing
