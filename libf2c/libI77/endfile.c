@@ -129,7 +129,7 @@ done:
 	f__cf = b->ufd = bf;
 #else  /* !defined(HAVE_FTRUNCATE) */
 	fflush(b->ufd);
-	rc = ftruncate(fileno(b->ufd),loc);
+	rc = ftruncate(fileno(b->ufd), (off_t)loc);
 #endif /* !defined(HAVE_FTRUNCATE) */
 	if (rc)
 		err(a->aerr,111,"endfile");
