@@ -1,3 +1,35 @@
+Thu Mar 12 09:25:29 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* bitmap.c (bitmap_element_allocate): Remove unused parameter;
+	change callers accordingly.
+
+	* cplus-dem.c (arm_special): Remove unused parameter work in prototype
+	and definition; change all callers accordingly.
+
+	* except.c (init_eh): Avoid assignment of unused return value of
+	build_pointer_type; cast it to void, instead, and remove unused
+	variable type.
+
+	* gcc.c (lang_specific_driver): Define prototype only #ifdef
+	LANG_SPECIFIC_DRIVER.
+	(temp_names): Define only #ifdef MKTEMP_EACH_FILE.
+
+	* genoutput.c (output_epilogue): Initialize next_name to 0.
+
+	* real.c (efrexp): #if 0 prototype and function definition.
+	(eremain): Likewise.
+	(uditoe): Likewise.
+	(ditoe): Likewise.
+	(etoudi): Likewise.
+	(etodi): Likewise.
+	(esqrt): Likewise.
+
+	* reload.c (push_secondary_reload): Define prototype only
+	#ifdef HAVE_SECONDARY_RELOADS.
+
+	* varasm.c (assemble_static_space): Define rounded only
+	#ifndef ASM_OUTPUT_ALIGNED_LOCAL.
+
 Thu Mar 12 09:11:35 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* i386.md (andsi): Add default case in enumeration switch.

@@ -4899,8 +4899,6 @@ tree
 build_x_conditional_expr (ifexp, op1, op2)
      tree ifexp, op1, op2;
 {
-  tree rval = NULL_TREE;
-
   if (processing_template_decl)
     return build_min_nt (COND_EXPR, ifexp, op1, op2);
 

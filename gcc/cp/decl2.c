@@ -3710,6 +3710,7 @@ add_using_namespace (user, used, indirect)
    XXX I don't want to repeat the entire duplicate_decls here */
 static tree
 ambiguous_decl (name, val1, val2)
+     int name;
      tree val1, val2;
 {
   my_friendly_assert (val1 != val2, 376);

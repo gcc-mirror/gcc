@@ -1790,7 +1790,7 @@ init_eh ()
 {
   /* Generate rtl to reference the variable in which the PC of the
      current context is saved.  */
-  tree type = build_pointer_type (make_node (VOID_TYPE));
+  (void) build_pointer_type (make_node (VOID_TYPE));
 }
 
 /* Initialize the per-function EH information.  */

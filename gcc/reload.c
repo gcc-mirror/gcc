@@ -306,9 +306,11 @@ static int output_reloadnum;
       ? RELOAD_FOR_OUTADDR_ADDRESS			\
       : (type)))
 
+#ifdef HAVE_SECONDARY_RELOADS
 static int push_secondary_reload PROTO((int, rtx, int, int, enum reg_class,
 					enum machine_mode, enum reload_type,
 					enum insn_code *));
+#endif
 static enum reg_class find_valid_class PROTO((enum machine_mode, int));
 static int push_reload		PROTO((rtx, rtx, rtx *, rtx *, enum reg_class,
 				       enum machine_mode, enum machine_mode,

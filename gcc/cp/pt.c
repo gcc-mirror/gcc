@@ -3129,8 +3129,7 @@ instantiate_class_template (type)
       /* These will add themselves to CLASSTYPE_TAGS for the new type.  */
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	{
-	  tree newtag = tsubst_enum (tag, args, field_chain);
-
+	  (void) tsubst_enum (tag, args, field_chain);
 	  while (*field_chain)
 	    {
 	      DECL_FIELD_CONTEXT (*field_chain) = type;
@@ -5857,8 +5856,6 @@ do_decl_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
 {
   tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL_TREE);
-  tree name;
-  tree fn;
   tree result = NULL_TREE;
   int extern_p = 0;
 

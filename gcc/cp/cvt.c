@@ -761,7 +761,6 @@ ocp_convert (type, expr, convtype, flags)
     {
       tree dtype = TREE_TYPE (e);
       tree ctor = NULL_TREE;
-      tree conversion = NULL_TREE;
 
       dtype = TYPE_MAIN_VARIANT (dtype);
 
