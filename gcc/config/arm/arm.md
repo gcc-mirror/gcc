@@ -8522,10 +8522,7 @@
 			 (match_dup 0)
 			 (match_operand 4 "" "")))
    (clobber (reg:CC CC_REGNUM))]
-  ;; Note we have to suppress this split for the iwmmxt because it
-  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
-  ;; is not predicable.  This sucks.
-  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
+  "TARGET_ARM && reload_completed"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_dup 7)
 	      (set (match_dup 0) (match_dup 4)))]
@@ -8553,10 +8550,7 @@
 			 (match_operand 4 "" "")
 			 (match_dup 0)))
    (clobber (reg:CC CC_REGNUM))]
-  ;; Note we have to suppress this split for the iwmmxt because it
-  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
-  ;; is not predicable.  This sucks.
-  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
+  "TARGET_ARM && reload_completed"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_op_dup 1 [(match_dup 5) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))]
@@ -8577,10 +8571,7 @@
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
    (clobber (reg:CC CC_REGNUM))]
-  ;; Note we have to suppress this split for the iwmmxt because it
-  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
-  ;; is not predicable.  This sucks.
-  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
+  "TARGET_ARM && reload_completed"
   [(set (match_dup 6) (match_dup 7))
    (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))
@@ -8612,10 +8603,7 @@
 			 (not:SI
 			  (match_operand:SI 5 "s_register_operand" ""))))
    (clobber (reg:CC CC_REGNUM))]
-  ;; Note we have to suppress this split for the iwmmxt because it
-  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
-  ;; is not predicable.  This sucks.
-  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
+  "TARGET_ARM && reload_completed"
   [(set (match_dup 6) (match_dup 7))
    (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))
