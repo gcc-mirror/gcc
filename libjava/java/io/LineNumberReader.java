@@ -100,7 +100,7 @@ public class LineNumberReader extends BufferedReader
   /**
     * This method returns the current line number
     *
-    * @returns The current line number
+    * @return The current line number
     */
   public int getLineNumber()
   {

@@ -57,19 +57,19 @@ public class ObjectInputStream extends InputStream
   implements ObjectInput, ObjectStreamConstants
 {
   /**
-     Creates a new <code>ObjectInputStream</code> that will do all of
-     its reading from <code>in</code>.  This method also checks
-     the stream by reading the header information (stream magic number
-     and stream version).
-
-     @exception IOException Reading stream header from underlying
-     stream cannot be completed.
-
-     @exception StreamCorruptedException An invalid stream magic
-     number or stream version was read from the stream.
-
-     @see readStreamHeader ()
-  */
+   * Creates a new <code>ObjectInputStream</code> that will do all of
+   * its reading from <code>in</code>.  This method also checks
+   * the stream by reading the header information (stream magic number
+   * and stream version).
+   *
+   * @exception IOException Reading stream header from underlying
+   * stream cannot be completed.
+   *
+   * @exception StreamCorruptedException An invalid stream magic
+   * number or stream version was read from the stream.
+   *
+   * @see #readStreamHeader()
+   */
   public ObjectInputStream (InputStream in)
     throws IOException, StreamCorruptedException
   {
@@ -104,20 +104,20 @@ public class ObjectInputStream extends InputStream
 
 
   /**
-     Returns the next deserialized object read from the underlying stream.
-
-     This method can be overriden by a class by implementing
-     <code>private void readObject (ObjectInputStream)</code>.
-
-     If an exception is thrown from this method, the stream is left in
-     an undefined state.
-
-     @exception ClassNotFoundException The class that an object being
-     read in belongs to cannot be found.
-
-     @exception IOException Exception from underlying
-     <code>InputStream</code>.
-  */
+   * Returns the next deserialized object read from the underlying stream.
+   *
+   * This method can be overriden by a class by implementing
+   * <code>private void readObject (ObjectInputStream)</code>.
+   *
+   * If an exception is thrown from this method, the stream is left in
+   * an undefined state.
+   *
+   * @exception ClassNotFoundException The class that an object being
+   * read in belongs to cannot be found.
+   *
+   * @exception IOException Exception from underlying
+   * <code>InputStream</code>.
+   */
   public final Object readObject () throws ClassNotFoundException, IOException
   {
     if (this.useSubclassMethod)
@@ -452,24 +452,24 @@ public class ObjectInputStream extends InputStream
   }
 
   /**
-     Reads the current objects non-transient, non-static fields from
-     the current class from the underlying output stream.
-
-     This method is intended to be called from within a object's
-     <code>private void readObject (ObjectInputStream)</code>
-     method.
-
-     @exception ClassNotFoundException The class that an object being
-     read in belongs to cannot be found.
-
-     @exception NotActiveException This method was called from a
-     context other than from the current object's and current class's
-     <code>private void readObject (ObjectInputStream)</code>
-     method.
-
-     @exception IOException Exception from underlying
-     <code>OutputStream</code>.
-  */
+   * Reads the current objects non-transient, non-static fields from
+   * the current class from the underlying output stream.
+   *
+   * This method is intended to be called from within a object's
+   * <code>private void readObject (ObjectInputStream)</code>
+   * method.
+   *
+   * @exception ClassNotFoundException The class that an object being
+   * read in belongs to cannot be found.
+   *
+   * @exception NotActiveException This method was called from a
+   * context other than from the current object's and current class's
+   * <code>private void readObject (ObjectInputStream)</code>
+   * method.
+   *
+   * @exception IOException Exception from underlying
+   * <code>OutputStream</code>.
+   */
   public void defaultReadObject ()
     throws ClassNotFoundException, IOException, NotActiveException
   {
@@ -488,23 +488,23 @@ public class ObjectInputStream extends InputStream
 
 
   /**
-     Registers a <code>ObjectInputValidation</code> to be carried out
-     on the object graph currently being deserialized before it is
-     returned to the original caller of <code>readObject ()</code>.
-     The order of validation for multiple
-     <code>ObjectInputValidation</code>s can be controled using
-     <code>priority</code>.  Validators with higher priorities are
-     called first.
-
-     @see java.io.ObjectInputValidation
-
-     @exception InvalidObjectException <code>validator</code> is
-     <code>null</code>
-
-     @exception NotActiveException an attempt was made to add a
-     validator outside of the <code>readObject</code> method of the
-     object currently being deserialized
-  */
+   * Registers a <code>ObjectInputValidation</code> to be carried out
+   * on the object graph currently being deserialized before it is
+   * returned to the original caller of <code>readObject ()</code>.
+   * The order of validation for multiple
+   * <code>ObjectInputValidation</code>s can be controled using
+   * <code>priority</code>.  Validators with higher priorities are
+   * called first.
+   *
+   * @see java.io.ObjectInputValidation
+   *
+   * @exception InvalidObjectException <code>validator</code> is
+   * <code>null</code>
+   *
+   * @exception NotActiveException an attempt was made to add a
+   * validator outside of the <code>readObject</code> method of the
+   * object currently being deserialized
+   */
   public void registerValidation (ObjectInputValidation validator,
 				  int priority)
     throws InvalidObjectException, NotActiveException
@@ -521,21 +521,21 @@ public class ObjectInputStream extends InputStream
 
 
   /**
-     Called when a class is being deserialized.  This is a hook to
-     allow subclasses to read in information written by the
-     <code>annotateClass (Class)</code> method of an
-     <code>ObjectOutputStream</code>.
-
-     This implementation looks up the active call stack for a
-     <code>ClassLoader</code>; if a <code>ClassLoader</code> is found,
-     it is used to load the class associated with <code>osc</code>,
-     otherwise, the default system <code>ClassLoader</code> is used.
-
-     @exception IOException Exception from underlying
-     <code>OutputStream</code>.
-
-     @see java.io.ObjectOutputStream#annotateClass (java.lang.Class)
-  */
+   * Called when a class is being deserialized.  This is a hook to
+   * allow subclasses to read in information written by the
+   * <code>annotateClass (Class)</code> method of an
+   * <code>ObjectOutputStream</code>.
+   *
+   * This implementation looks up the active call stack for a
+   * <code>ClassLoader</code>; if a <code>ClassLoader</code> is found,
+   * it is used to load the class associated with <code>osc</code>,
+   * otherwise, the default system <code>ClassLoader</code> is used.
+   *
+   * @exception IOException Exception from underlying
+   * <code>OutputStream</code>.
+   *
+   * @see java.io.ObjectOutputStream#annotateClass (java.lang.Class)
+   */
   protected Class resolveClass (ObjectStreamClass osc)
     throws ClassNotFoundException, IOException
   {
@@ -555,18 +555,18 @@ public class ObjectInputStream extends InputStream
   }
 
   /**
-     Allows subclasses to resolve objects that are read from the
-     stream with other objects to be returned in their place.  This
-     method is called the first time each object is encountered.
-
-     This method must be enabled before it will be called in the
-     serialization process.
-
-     @exception IOException Exception from underlying
-     <code>OutputStream</code>.
-
-     @see enableResolveObject (boolean)
-  */
+   * Allows subclasses to resolve objects that are read from the
+   * stream with other objects to be returned in their place.  This
+   * method is called the first time each object is encountered.
+   *
+   * This method must be enabled before it will be called in the
+   * serialization process.
+   *
+   * @exception IOException Exception from underlying
+   * <code>OutputStream</code>.
+   *
+   * @see #enableResolveObject(boolean)
+   */
   protected Object resolveObject (Object obj) throws IOException
   {
     return obj;
@@ -600,13 +600,13 @@ public class ObjectInputStream extends InputStream
   }
   
   /**
-     If <code>enable</code> is <code>true</code> and this object is
-     trusted, then <code>resolveObject (Object)</code> will be called
-     in subsequent calls to <code>readObject (Object)</code>.
-     Otherwise, <code>resolveObject (Object)</code> will not be called.
-
-     @exception SecurityException This class is not trusted.
-  */
+   * If <code>enable</code> is <code>true</code> and this object is
+   * trusted, then <code>resolveObject (Object)</code> will be called
+   * in subsequent calls to <code>readObject (Object)</code>.
+   * Otherwise, <code>resolveObject (Object)</code> will not be called.
+   *
+   * @exception SecurityException This class is not trusted.
+   */
   protected boolean enableResolveObject (boolean enable)
     throws SecurityException
   {
@@ -622,16 +622,15 @@ public class ObjectInputStream extends InputStream
     return old_val;
   }
 
-
   /**
-     Reads stream magic and stream version information from the
-     underlying stream.
-
-     @exception IOException Exception from underlying stream.
-
-     @exception StreamCorruptedException An invalid stream magic
-     number or stream version was read from the stream.
-  */
+   * Reads stream magic and stream version information from the
+   * underlying stream.
+   *
+   * @exception IOException Exception from underlying stream.
+   *
+   * @exception StreamCorruptedException An invalid stream magic
+   * number or stream version was read from the stream.
+   */
   protected void readStreamHeader ()
     throws IOException, StreamCorruptedException
   {
@@ -643,7 +642,6 @@ public class ObjectInputStream extends InputStream
     if (this.realInputStream.readShort () != STREAM_VERSION)
       throw new StreamCorruptedException ("Invalid stream version number");
   }
-
 
   public int read () throws IOException
   {
@@ -769,9 +767,9 @@ public class ObjectInputStream extends InputStream
   }
 
   /**
-     @deprecated
-     @see java.io.DataInputStream#readLine ()
-  */
+   * @deprecated
+   * @see java.io.DataInputStream#readLine ()
+   */
   public String readLine () throws IOException
   {
     return this.dataInputStream.readLine ();
@@ -782,13 +780,12 @@ public class ObjectInputStream extends InputStream
     return this.dataInputStream.readUTF ();
   }
 
-
   /**
-     This class allows a class to specify exactly which fields should
-     be read, and what values should be read for these fields.
-
-     XXX: finish up comments
-  */
+   * This class allows a class to specify exactly which fields should
+   * be read, and what values should be read for these fields.
+   *
+   * XXX: finish up comments
+   */
   public static abstract class GetField
   {
     public abstract ObjectStreamClass getObjectStreamClass ();
@@ -1018,18 +1015,17 @@ public class ObjectInputStream extends InputStream
 
   }
 
-
   /**
-     Protected constructor that allows subclasses to override
-     deserialization.  This constructor should be called by subclasses
-     that wish to override <code>readObject (Object)</code>.  This
-     method does a security check <i>NOTE: currently not
-     implemented</i>, then sets a flag that informs
-     <code>readObject (Object)</code> to call the subclasses
-     <code>readObjectOverride (Object)</code> method.
-
-     @see readObjectOverride (Object)
-  */
+   * Protected constructor that allows subclasses to override
+   * deserialization.  This constructor should be called by subclasses
+   * that wish to override <code>readObject (Object)</code>.  This
+   * method does a security check <i>NOTE: currently not
+   * implemented</i>, then sets a flag that informs
+   * <code>readObject (Object)</code> to call the subclasses
+   * <code>readObjectOverride (Object)</code> method.
+   *
+   * @see #readObjectOverride()
+   */
   protected ObjectInputStream ()
     throws IOException, SecurityException
   {
@@ -1039,22 +1035,20 @@ public class ObjectInputStream extends InputStream
     this.useSubclassMethod = true;
   }
 
-
   /**
-     This method allows subclasses to override the default
-     de serialization mechanism provided by
-     <code>ObjectInputStream</code>.  To make this method be used for
-     writing objects, subclasses must invoke the 0-argument
-     constructor on this class from their constructor.
-
-     @see ObjectInputStream ()
-  */
+   * This method allows subclasses to override the default
+   * de serialization mechanism provided by
+   * <code>ObjectInputStream</code>.  To make this method be used for
+   * writing objects, subclasses must invoke the 0-argument
+   * constructor on this class from their constructor.
+   *
+   * @see #ObjectInputStream()
+   */
   protected Object readObjectOverride ()
     throws ClassNotFoundException, IOException, OptionalDataException
   {
     throw new IOException ("Subclass of ObjectInputStream must implement readObjectOverride");
   }
-
 
   // assigns the next availible handle to OBJ
   private int assignNewHandle (Object obj)
@@ -1063,7 +1057,6 @@ public class ObjectInputStream extends InputStream
 				new ObjectIdentityWrapper (obj));
     return this.nextOID++;
   }
-
 
   private Object processResolution (Object obj, int handle)
     throws IOException
@@ -1099,19 +1092,16 @@ public class ObjectInputStream extends InputStream
     return obj;
   }
 
-
   private void clearHandles ()
   {
     this.objectLookupTable.clear ();
     this.nextOID = baseWireHandle;
   }
 
-
   private void readNextBlock () throws IOException
   {
     readNextBlock (this.realInputStream.readByte ());
   }
-
 
   private void readNextBlock (byte marker) throws IOException
   {
@@ -1138,7 +1128,6 @@ public class ObjectInputStream extends InputStream
     this.realInputStream.readFully (this.blockData, 0, this.blockDataBytes);
     this.blockDataPosition = 0;
   }
-
 
   private void readArrayElements (Object array, Class clazz)
     throws ClassNotFoundException, IOException
@@ -1209,7 +1198,6 @@ public class ObjectInputStream extends InputStream
  	  cast_array[i] = readObject ();
       }
   }
-
 
   private void readFields (Object obj, ObjectStreamClass stream_osc)
     throws ClassNotFoundException, IOException
@@ -1374,7 +1362,6 @@ public class ObjectInputStream extends InputStream
     return oldmode;
   }
 
-
   // returns a new instance of REAL_CLASS that has been constructed
   // only to the level of CONSTRUCTOR_CLASS (a super class of REAL_CLASS)
   private Object newObject (Class real_class, Class constructor_class)
@@ -1390,7 +1377,6 @@ public class ObjectInputStream extends InputStream
 	return null;
       }
   }
-
 
   // runs all registered ObjectInputValidations in prioritized order
   // on OBJ
@@ -1410,7 +1396,6 @@ public class ObjectInputStream extends InputStream
 	this.validators.removeAllElements ();
       }
   }
-
 
   // this native method is used to get access to the protected method
   // of the same name in SecurityManger
