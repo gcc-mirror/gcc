@@ -489,8 +489,7 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
       }
 
 #ifdef DWARF_ALT_FRAME_RETURN_COLUMN
-  if (! wrote_return_column)
-    abort ();
+  gcc_assert (wrote_return_column);
   i = DWARF_ALT_FRAME_RETURN_COLUMN;
   wrote_return_column = false;
 #else
@@ -829,8 +828,7 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
 	   description.  */
 	HOST_WIDE_INT check_offset = offset / DWARF_CIE_DATA_ALIGNMENT;
 
-	if (check_offset * DWARF_CIE_DATA_ALIGNMENT != offset)
-	  abort ();
+	gcc_assert (check_offset * DWARF_CIE_DATA_ALIGNMENT == offset);
       }
 #endif
       offset /= DWARF_CIE_DATA_ALIGNMENT;
@@ -934,25 +932,22 @@ initial_return_save (rtx rtl)
       switch (GET_CODE (rtl))
 	{
 	case REG:
-	  if (REGNO (rtl) != STACK_POINTER_REGNUM)
-	    abort ();
+	  gcc_assert (REGNO (rtl) == STACK_POINTER_REGNUM);
 	  offset = 0;
 	  break;
 
 	case PLUS:
-	  if (REGNO (XEXP (rtl, 0)) != STACK_POINTER_REGNUM)
-	    abort ();
+	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
 	  offset = INTVAL (XEXP (rtl, 1));
 	  break;
 
 	case MINUS:
-	  if (REGNO (XEXP (rtl, 0)) != STACK_POINTER_REGNUM)
-	    abort ();
+	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
 	  offset = -INTVAL (XEXP (rtl, 1));
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       break;
@@ -961,13 +956,12 @@ initial_return_save (rtx rtl)
       /* The return address is at some offset from any value we can
 	 actually load.  For instance, on the SPARC it is in %i7+8. Just
 	 ignore the offset for now; it doesn't matter for unwinding frames.  */
-      if (GET_CODE (XEXP (rtl, 1)) != CONST_INT)
-	abort ();
+      gcc_assert (GET_CODE (XEXP (rtl, 1)) == CONST_INT);
       initial_return_save (XEXP (rtl, 0));
       return;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (reg != DWARF_FRAME_RETURN_COLUMN)
@@ -1012,9 +1006,8 @@ stack_adjust_offset (rtx pattern)
 	    {
 	      rtx val = XEXP (XEXP (src, 1), 1);
 	      /* We handle only adjustments by constant amount.  */
-	      if (GET_CODE (XEXP (src, 1)) != PLUS ||
-		  GET_CODE (val) != CONST_INT)
-		abort ();
+	      gcc_assert (GET_CODE (XEXP (src, 1)) == PLUS
+			  && GET_CODE (val) == CONST_INT);
 	      offset = -INTVAL (val);
 	      break;
 	    }
@@ -1074,8 +1067,7 @@ dwarf2out_stack_adjust (rtx insn)
 	insn = XVECEXP (insn, 0, 0);
       if (GET_CODE (insn) == SET)
 	insn = SET_SRC (insn);
-      if (GET_CODE (insn) != CALL)
-	abort ();
+      gcc_assert (GET_CODE (insn) == CALL);
 
       dwarf2out_args_size ("", INTVAL (XEXP (insn, 1)));
       return;
@@ -1208,8 +1200,7 @@ flush_queued_reg_saves (void)
 	  break;
       if (q->saved_reg && i == num_regs_saved_in_regs)
 	{
-	  if (i == ARRAY_SIZE (regs_saved_in_regs))
-	    abort ();
+	  gcc_assert (i != ARRAY_SIZE (regs_saved_in_regs));
 	  num_regs_saved_in_regs++;
 	}
       if (i != num_regs_saved_in_regs)
@@ -1466,8 +1457,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
       return;
     }
 
-  if (GET_CODE (expr) != SET)
-    abort ();
+  gcc_assert (GET_CODE (expr) == SET);
 
   src = SET_SRC (expr);
   dest = SET_DEST (expr);
@@ -1500,14 +1490,13 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      cfa_temp.reg = cfa.reg;
 	      cfa_temp.offset = cfa.offset;
 	    }
-	  else if (call_used_regs [REGNO (dest)] 
-		   && ! fixed_regs [REGNO (dest)])
+	  else
 	    {
 	      /* Saving a register in a register.  */
+	      gcc_assert (call_used_regs [REGNO (dest)]
+			  && !fixed_regs [REGNO (dest)]);
 	      queue_reg_save (label, src, dest, 0);
 	    }
-	  else
-	    abort ();
 	  break;
 
 	case PLUS:
@@ -1523,26 +1512,25 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 		  offset = INTVAL (XEXP (src, 1));
 		  break;
 		case REG:
-		  if ((unsigned) REGNO (XEXP (src, 1)) != cfa_temp.reg)
-		    abort ();
+		  gcc_assert ((unsigned) REGNO (XEXP (src, 1))
+			      == cfa_temp.reg);
 		  offset = cfa_temp.offset;
 		  break;
 		default:
-		  abort ();
+		  gcc_unreachable ();
 		}
 
 	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
 		{
 		  /* Restoring SP from FP in the epilogue.  */
-		  if (cfa.reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
-		    abort ();
+		  gcc_assert (cfa.reg == (unsigned) HARD_FRAME_POINTER_REGNUM);
 		  cfa.reg = STACK_POINTER_REGNUM;
 		}
 	      else if (GET_CODE (src) == LO_SUM)
 		/* Assume we've set the source reg of the LO_SUM from sp.  */
 		;
-	      else if (XEXP (src, 0) != stack_pointer_rtx)
-		abort ();
+	      else
+		gcc_assert (XEXP (src, 0) == stack_pointer_rtx);
 
 	      if (GET_CODE (src) != MINUS)
 		offset = -offset;
@@ -1556,26 +1544,20 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      /* Rule 3 */
 	      /* Either setting the FP from an offset of the SP,
 		 or adjusting the FP */
-	      if (! frame_pointer_needed)
-		abort ();
+	      gcc_assert (frame_pointer_needed);
 
-	      if (REG_P (XEXP (src, 0))
-		  && (unsigned) REGNO (XEXP (src, 0)) == cfa.reg
-		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
-		{
-		  offset = INTVAL (XEXP (src, 1));
-		  if (GET_CODE (src) != MINUS)
-		    offset = -offset;
-		  cfa.offset += offset;
-		  cfa.reg = HARD_FRAME_POINTER_REGNUM;
-		}
-	      else
-		abort ();
+	      gcc_assert (REG_P (XEXP (src, 0))
+			  && (unsigned) REGNO (XEXP (src, 0)) == cfa.reg
+			  && GET_CODE (XEXP (src, 1)) == CONST_INT);
+	      offset = INTVAL (XEXP (src, 1));
+	      if (GET_CODE (src) != MINUS)
+		offset = -offset;
+	      cfa.offset += offset;
+	      cfa.reg = HARD_FRAME_POINTER_REGNUM;
 	    }
 	  else
 	    {
-	      if (GET_CODE (src) == MINUS)
-		abort ();
+	      gcc_assert (GET_CODE (src) != MINUS);
 
 	      /* Rule 4 */
 	      if (REG_P (XEXP (src, 0))
@@ -1599,8 +1581,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 		{
 		  /* Setting a scratch register that we will use instead
 		     of SP for saving registers to the stack.  */
-		  if (cfa.reg != STACK_POINTER_REGNUM)
-		    abort ();
+		  gcc_assert (cfa.reg == STACK_POINTER_REGNUM);
 		  cfa_store.reg = REGNO (dest);
 		  cfa_store.offset = cfa.offset - cfa_temp.offset;
 		}
@@ -1613,7 +1594,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 		  cfa_temp.offset = INTVAL (XEXP (src, 1));
 		}
 	      else
-		abort ();
+		gcc_unreachable ();
 	    }
 	  break;
 
@@ -1625,10 +1606,9 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 
 	  /* Rule 7 */
 	case IOR:
-	  if (!REG_P (XEXP (src, 0))
-	      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp.reg
-	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
-	    abort ();
+	  gcc_assert (REG_P (XEXP (src, 0))
+		      && (unsigned) REGNO (XEXP (src, 0)) == cfa_temp.reg
+		      && GET_CODE (XEXP (src, 1)) == CONST_INT);
 
 	  if ((unsigned) REGNO (dest) != cfa_temp.reg)
 	    cfa_temp.reg = REGNO (dest);
@@ -1642,15 +1622,14 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       def_cfa_1 (label, &cfa);
       break;
 
     case MEM:
-      if (!REG_P (src))
-	abort ();
+      gcc_assert (REG_P (src));
 
       /* Saving a register to the stack.  Make sure dest is relative to the
 	 CFA register.  */
@@ -1660,13 +1639,12 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  /* With a push.  */
 	case PRE_MODIFY:
 	  /* We can't handle variable size modifications.  */
-	  if (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1)) != CONST_INT)
-	    abort ();
+	  gcc_assert (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1))
+		      == CONST_INT);
 	  offset = -INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1));
 
-	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
-	      || cfa_store.reg != STACK_POINTER_REGNUM)
-	    abort ();
+	  gcc_assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM
+		      && cfa_store.reg == STACK_POINTER_REGNUM);
 
 	  cfa_store.offset += offset;
 	  if (cfa.reg == STACK_POINTER_REGNUM)
@@ -1682,9 +1660,8 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
 	    offset = -offset;
 
-	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
-	      || cfa_store.reg != STACK_POINTER_REGNUM)
-	    abort ();
+	  gcc_assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM
+		      && cfa_store.reg == STACK_POINTER_REGNUM);
 
 	  cfa_store.offset += offset;
 	  if (cfa.reg == STACK_POINTER_REGNUM)
@@ -1698,41 +1675,52 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	case PLUS:
 	case MINUS:
 	case LO_SUM:
-	  if (GET_CODE (XEXP (XEXP (dest, 0), 1)) != CONST_INT)
-	    abort ();
-	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
-	  if (GET_CODE (XEXP (dest, 0)) == MINUS)
-	    offset = -offset;
+	  {
+	    int regno;
+	    
+	    gcc_assert (GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT);
+	    offset = INTVAL (XEXP (XEXP (dest, 0), 1));
+	    if (GET_CODE (XEXP (dest, 0)) == MINUS)
+	      offset = -offset;
 
-	  if (cfa_store.reg == (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
-	    offset -= cfa_store.offset;
-	  else if (cfa_temp.reg == (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
-	    offset -= cfa_temp.offset;
-	  else
-	    abort ();
+	    regno = REGNO (XEXP (XEXP (dest, 0), 0));
+	    
+	    if (cfa_store.reg == (unsigned) regno)
+	      offset -= cfa_store.offset;
+	    else
+	      {
+		gcc_assert (cfa_temp.reg == (unsigned) regno);
+		offset -= cfa_temp.offset;
+	      }
+	  }
 	  break;
 
 	  /* Rule 13 */
 	  /* Without an offset.  */
 	case REG:
-	  if (cfa_store.reg == (unsigned) REGNO (XEXP (dest, 0)))
-	    offset = -cfa_store.offset;
-	  else if (cfa_temp.reg == (unsigned) REGNO (XEXP (dest, 0)))
-	    offset = -cfa_temp.offset;
-	  else
-	    abort ();
+	  {
+	    int regno = REGNO (XEXP (dest, 0));
+	    
+	    if (cfa_store.reg == (unsigned) regno)
+	      offset = -cfa_store.offset;
+	    else
+	      {
+		gcc_assert (cfa_temp.reg == (unsigned) regno);
+		offset = -cfa_temp.offset;
+	      }
+	  }
 	  break;
 
 	  /* Rule 14 */
 	case POST_INC:
-	  if (cfa_temp.reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
-	    abort ();
+	  gcc_assert (cfa_temp.reg
+		      == (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)));
 	  offset = -cfa_temp.offset;
 	  cfa_temp.offset -= GET_MODE_SIZE (GET_MODE (dest));
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       if (REGNO (src) != STACK_POINTER_REGNUM
@@ -1758,8 +1746,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 
 	      if (!REG_P (x))
 		x = XEXP (x, 0);
-	      if (!REG_P (x))
-		abort ();
+	      gcc_assert (REG_P (x));
 
 	      cfa.reg = REGNO (x);
 	      cfa.base_offset = offset;
@@ -1774,7 +1761,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1797,8 +1784,8 @@ dwarf2out_frame_debug (rtx insn)
 
       /* Set up state for generating call frame debug info.  */
       lookup_cfa (&cfa);
-      if (cfa.reg != (unsigned long) DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
-	abort ();
+      gcc_assert (cfa.reg
+		  == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
 
       cfa.reg = STACK_POINTER_REGNUM;
       cfa_store = cfa;
@@ -1879,7 +1866,7 @@ dw_cfi_oprnd1_desc (enum dwarf_call_frame_info cfi)
       return dw_cfi_oprnd_loc;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2030,7 +2017,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 
 	case DW_CFA_GNU_negative_offset_extended:
 	  /* Obsoleted by DW_CFA_offset_extended_sf.  */
-	  abort ();
+	  gcc_unreachable ();
 
 	default:
 	  break;
@@ -2185,8 +2172,7 @@ output_call_frame_info (int for_eh)
 
 	  /* Augmentations should be small, so there's scarce need to
 	     iterate for a solution.  Die if we exceed one uleb128 byte.  */
-	  if (size_of_uleb128 (augmentation_size) != 1)
-	    abort ();
+	  gcc_assert (size_of_uleb128 (augmentation_size) == 1);
 	}
     }
 
@@ -2289,8 +2275,7 @@ output_call_frame_info (int for_eh)
 		  int pad = -offset & (PTR_SIZE - 1);
 
 		  size += pad;
-		  if (size_of_uleb128 (size) != 1)
-		    abort ();
+		  gcc_assert (size_of_uleb128 (size) == 1);
 		}
 
 	      dw2_asm_output_data_uleb128 (size, "Augmentation size");
@@ -3089,8 +3074,7 @@ output_loc_operands (dw_loc_descr_ref loc)
       break;
     case DW_OP_const8u:
     case DW_OP_const8s:
-      if (HOST_BITS_PER_LONG < 64)
-	abort ();
+      gcc_assert (HOST_BITS_PER_LONG >= 64);
       dw2_asm_output_data (8, val1->v.val_int, NULL);
       break;
     case DW_OP_skip:
@@ -3098,10 +3082,8 @@ output_loc_operands (dw_loc_descr_ref loc)
       {
 	int offset;
 
-	if (val1->val_class == dw_val_class_loc)
-	  offset = val1->v.val_loc->dw_loc_addr - (loc->dw_loc_addr + 3);
-	else
-	  abort ();
+	gcc_assert (val1->val_class == dw_val_class_loc);
+	offset = val1->v.val_loc->dw_loc_addr - (loc->dw_loc_addr + 3);
 
 	dw2_asm_output_data (2, offset, NULL);
       }
@@ -3120,7 +3102,7 @@ output_loc_operands (dw_loc_descr_ref loc)
 	 aligned properly like we do for the main unwind info, so
 	 don't support emitting things larger than a byte if we're
 	 only doing unwinding.  */
-      abort ();
+      gcc_unreachable ();
 #endif
     case DW_OP_const1u:
     case DW_OP_const1s:
@@ -3196,7 +3178,7 @@ output_loc_operands (dw_loc_descr_ref loc)
 			       val1->v.val_addr);
       fputc ('\n', asm_out_file);
 #else
-      abort ();
+      gcc_unreachable ();
 #endif
       break;
 
@@ -3248,8 +3230,7 @@ build_cfa_loc (dw_cfa_location *cfa)
 {
   struct dw_loc_descr_struct *head, *tmp;
 
-  if (cfa->indirect == 0)
-    abort ();
+  gcc_assert (cfa->indirect);
 
   if (cfa->base_offset)
     {
@@ -4585,12 +4566,9 @@ decl_ultimate_origin (tree decl)
   if (DECL_ABSTRACT (decl) && DECL_ABSTRACT_ORIGIN (decl) == decl)
     return NULL_TREE;
 
-#ifdef ENABLE_CHECKING
-  if (DECL_FROM_INLINE (DECL_ORIGIN (decl)))
-    /* Since the DECL_ABSTRACT_ORIGIN for a DECL is supposed to be the
-       most distant ancestor, this should never happen.  */
-    abort ();
-#endif
+  /* Since the DECL_ABSTRACT_ORIGIN for a DECL is supposed to be the
+     most distant ancestor, this should never happen.  */
+  gcc_assert (!DECL_FROM_INLINE (DECL_ORIGIN (decl)));
 
   return DECL_ABSTRACT_ORIGIN (decl);
 }
@@ -4688,10 +4666,8 @@ add_AT_flag (dw_die_ref die, enum dwarf_attribute attr_kind, unsigned int flag)
 static inline unsigned
 AT_flag (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_flag)
-    return a->dw_attr_val.v.val_flag;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_flag);
+  return a->dw_attr_val.v.val_flag;
 }
 
 /* Add a signed integer attribute value to a DIE.  */
@@ -4711,10 +4687,8 @@ add_AT_int (dw_die_ref die, enum dwarf_attribute attr_kind, HOST_WIDE_INT int_va
 static inline HOST_WIDE_INT
 AT_int (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_const)
-    return a->dw_attr_val.v.val_int;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_const);
+  return a->dw_attr_val.v.val_int;
 }
 
 /* Add an unsigned integer attribute value to a DIE.  */
@@ -4735,10 +4709,8 @@ add_AT_unsigned (dw_die_ref die, enum dwarf_attribute attr_kind,
 static inline unsigned HOST_WIDE_INT
 AT_unsigned (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_unsigned_const)
-    return a->dw_attr_val.v.val_unsigned;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_unsigned_const);
+  return a->dw_attr_val.v.val_unsigned;
 }
 
 /* Add an unsigned double integer attribute value to a DIE.  */
@@ -4820,10 +4792,8 @@ add_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind, const char *str)
 static inline const char *
 AT_string (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_str)
-    return a->dw_attr_val.v.val_str->str;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_str);
+  return a->dw_attr_val.v.val_str->str;
 }
 
 /* Find out whether a string should be output inline in DIE
@@ -4832,38 +4802,35 @@ AT_string (dw_attr_ref a)
 static int
 AT_string_form (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_str)
-    {
-      struct indirect_string_node *node;
-      unsigned int len;
-      char label[32];
+  struct indirect_string_node *node;
+  unsigned int len;
+  char label[32];
 
-      node = a->dw_attr_val.v.val_str;
-      if (node->form)
-	return node->form;
+  gcc_assert (a && AT_class (a) == dw_val_class_str);
+  
+  node = a->dw_attr_val.v.val_str;
+  if (node->form)
+    return node->form;
+  
+  len = strlen (node->str) + 1;
 
-      len = strlen (node->str) + 1;
+  /* If the string is shorter or equal to the size of the reference, it is
+     always better to put it inline.  */
+  if (len <= DWARF_OFFSET_SIZE || node->refcount == 0)
+    return node->form = DW_FORM_string;
 
-      /* If the string is shorter or equal to the size of the reference, it is
-	 always better to put it inline.  */
-      if (len <= DWARF_OFFSET_SIZE || node->refcount == 0)
-	return node->form = DW_FORM_string;
+  /* If we cannot expect the linker to merge strings in .debug_str
+     section, only put it into .debug_str if it is worth even in this
+     single module.  */
+  if ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) == 0
+      && (len - DWARF_OFFSET_SIZE) * node->refcount <= len)
+    return node->form = DW_FORM_string;
 
-      /* If we cannot expect the linker to merge strings in .debug_str
-	 section, only put it into .debug_str if it is worth even in this
-	 single module.  */
-      if ((DEBUG_STR_SECTION_FLAGS & SECTION_MERGE) == 0
-	  && (len - DWARF_OFFSET_SIZE) * node->refcount <= len)
-	return node->form = DW_FORM_string;
+  ASM_GENERATE_INTERNAL_LABEL (label, "LASF", dw2_string_counter);
+  ++dw2_string_counter;
+  node->label = xstrdup (label);
 
-      ASM_GENERATE_INTERNAL_LABEL (label, "LASF", dw2_string_counter);
-      ++dw2_string_counter;
-      node->label = xstrdup (label);
-
-      return node->form = DW_FORM_strp;
-    }
-
-  abort ();
+  return node->form = DW_FORM_strp;
 }
 
 /* Add a DIE reference attribute value to a DIE.  */
@@ -4888,18 +4855,15 @@ static inline void
 add_AT_specification (dw_die_ref die, dw_die_ref targ_die)
 {
   add_AT_die_ref (die, DW_AT_specification, targ_die);
-  if (targ_die->die_definition)
-    abort ();
+  gcc_assert (!targ_die->die_definition);
   targ_die->die_definition = die;
 }
 
 static inline dw_die_ref
 AT_ref (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_die_ref)
-    return a->dw_attr_val.v.val_die_ref.die;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_die_ref);
+  return a->dw_attr_val.v.val_die_ref.die;
 }
 
 static inline int
@@ -4914,10 +4878,8 @@ AT_ref_external (dw_attr_ref a)
 static inline void
 set_AT_ref_external (dw_attr_ref a, int i)
 {
-  if (a && AT_class (a) == dw_val_class_die_ref)
-    a->dw_attr_val.v.val_die_ref.external = i;
-  else
-    abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_die_ref);
+  a->dw_attr_val.v.val_die_ref.external = i;
 }
 
 /* Add an FDE reference attribute value to a DIE.  */
@@ -4951,10 +4913,8 @@ add_AT_loc (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_descr_ref loc
 static inline dw_loc_descr_ref
 AT_loc (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_loc)
-    return a->dw_attr_val.v.val_loc;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_loc);
+  return a->dw_attr_val.v.val_loc;
 }
 
 static inline void
@@ -4973,10 +4933,8 @@ add_AT_loc_list (dw_die_ref die, enum dwarf_attribute attr_kind, dw_loc_list_ref
 static inline dw_loc_list_ref
 AT_loc_list (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_loc_list)
-    return a->dw_attr_val.v.val_loc_list;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_loc_list);
+  return a->dw_attr_val.v.val_loc_list;
 }
 
 /* Add an address constant attribute value to a DIE.  */
@@ -4996,10 +4954,8 @@ add_AT_addr (dw_die_ref die, enum dwarf_attribute attr_kind, rtx addr)
 static inline rtx
 AT_addr (dw_attr_ref a)
 {
-  if (a && AT_class (a) == dw_val_class_addr)
-    return a->dw_attr_val.v.val_addr;
-
-  abort ();
+  gcc_assert (a && AT_class (a) == dw_val_class_addr);
+  return a->dw_attr_val.v.val_addr;
 }
 
 /* Add a label identifier attribute value to a DIE.  */
@@ -5063,11 +5019,9 @@ add_AT_range_list (dw_die_ref die, enum dwarf_attribute attr_kind,
 static inline const char *
 AT_lbl (dw_attr_ref a)
 {
-  if (a && (AT_class (a) == dw_val_class_lbl_id
-	    || AT_class (a) == dw_val_class_lbl_offset))
-    return a->dw_attr_val.v.val_lbl_id;
-
-  abort ();
+  gcc_assert (a && (AT_class (a) == dw_val_class_lbl_id
+		    || AT_class (a) == dw_val_class_lbl_offset));
+  return a->dw_attr_val.v.val_lbl_id;
 }
 
 /* Get the attribute of type attr_kind.  */
@@ -5317,8 +5271,7 @@ add_child_die (dw_die_ref die, dw_die_ref child_die)
 {
   if (die != NULL && child_die != NULL)
     {
-      if (die == child_die)
-	abort ();
+      gcc_assert (die != child_die);
 
       child_die->die_parent = die;
       child_die->die_sib = die->die_child;
@@ -5344,9 +5297,9 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
 	child = tmp;
     }
 
-  if (child->die_parent != parent
-      && child->die_parent != get_AT_ref (parent, DW_AT_specification))
-    abort ();
+  gcc_assert (child->die_parent == parent
+	      || (child->die_parent
+		  == get_AT_ref (parent, DW_AT_specification)));
 
   for (p = &(child->die_parent->die_child); *p; p = &((*p)->die_sib))
     if (*p == child)
@@ -5778,15 +5731,8 @@ attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
 
     case dw_val_class_addr:
       r = AT_addr (at);
-      switch (GET_CODE (r))
-	{
-	case SYMBOL_REF:
-	  CHECKSUM_STRING (XSTR (r, 0));
-	  break;
-
-	default:
-	  abort ();
-	}
+      gcc_assert (GET_CODE (r) == SYMBOL_REF);
+      CHECKSUM_STRING (XSTR (r, 0));
       break;
 
     case dw_val_class_offset:
@@ -5886,14 +5832,8 @@ same_dw_val_p (dw_val_node *v1, dw_val_node *v2, int *mark)
       r2 = v2->v.val_addr;
       if (GET_CODE (r1) != GET_CODE (r2))
 	return 0;
-      switch (GET_CODE (r1))
-	{
-	case SYMBOL_REF:
-	  return !strcmp (XSTR (r1, 0), XSTR (r2, 0));
-
-	default:
-	  abort ();
-	}
+      gcc_assert (GET_CODE (r1) == SYMBOL_REF);
+      return !strcmp (XSTR (r1, 0), XSTR (r2, 0));
 
     case dw_val_class_offset:
       return v1->v.val_offset == v2->v.val_offset;
@@ -6269,8 +6209,7 @@ break_out_includes (dw_die_ref die)
 #if 0
   /* We can only use this in debugging, since the frontend doesn't check
      to make sure that we leave every include file we enter.  */
-  if (unit != NULL)
-    abort ();
+  gcc_assert (!unit);
 #endif
 
   assign_symbol_names (die);
@@ -6351,8 +6290,7 @@ build_abbrev_table (dw_die_ref die)
     if (AT_class (d_attr) == dw_val_class_die_ref
 	&& AT_ref (d_attr)->die_mark == 0)
       {
-	if (AT_ref (d_attr)->die_symbol == 0)
-	  abort ();
+	gcc_assert (AT_ref (d_attr)->die_symbol);
 
 	set_AT_ref_external (d_attr, 1);
       }
@@ -6497,7 +6435,7 @@ size_of_die (dw_die_ref die)
 	    size += strlen (a->dw_attr_val.v.val_str->str) + 1;
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -6535,8 +6473,7 @@ mark_dies (dw_die_ref die)
 {
   dw_die_ref c;
 
-  if (die->die_mark)
-    abort ();
+  gcc_assert (!die->die_mark);
 
   die->die_mark = 1;
   for (c = die->die_child; c; c = c->die_sib)
@@ -6550,8 +6487,7 @@ unmark_dies (dw_die_ref die)
 {
   dw_die_ref c;
 
-  if (!die->die_mark)
-    abort ();
+  gcc_assert (die->die_mark);
 
   die->die_mark = 0;
   for (c = die->die_child; c; c = c->die_sib)
@@ -6627,11 +6563,15 @@ value_format (dw_attr_ref a)
       return DW_FORM_addr;
     case dw_val_class_range_list:
     case dw_val_class_offset:
-      if (DWARF_OFFSET_SIZE == 4)
-	return DW_FORM_data4;
-      if (DWARF_OFFSET_SIZE == 8)
-	return DW_FORM_data8;
-      abort ();
+      switch (DWARF_OFFSET_SIZE)
+	{
+	case 4:
+	  return DW_FORM_data4;
+	case 8:
+	  return DW_FORM_data8;
+	default:
+	  gcc_unreachable ();
+	}
     case dw_val_class_loc_list:
       /* FIXME: Could be DW_FORM_data8, with a > 32 bit size
 	 .debug_loc section */
@@ -6644,7 +6584,7 @@ value_format (dw_attr_ref a)
 	case 2:
 	  return DW_FORM_block2;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     case dw_val_class_const:
       return DW_FORM_sdata;
@@ -6660,7 +6600,7 @@ value_format (dw_attr_ref a)
 	case 8:
 	  return DW_FORM_data8;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     case dw_val_class_long_long:
       return DW_FORM_block1;
@@ -6683,7 +6623,7 @@ value_format (dw_attr_ref a)
       return AT_string_form (a);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -6826,8 +6766,7 @@ output_loc_list (dw_loc_list_ref list_head)
       size = size_of_locs (curr->expr);
 
       /* Output the block length for this list of location operations.  */
-      if (size > 0xffff)
-	abort ();
+      gcc_assert (size <= 0xffff);
       dw2_asm_output_data (2, size, "%s", "Location expression size");
 
       output_loc_sequence (curr->expr);
@@ -6962,8 +6901,7 @@ output_die (dw_die_ref die)
 	  {
 	    char *sym = AT_loc_list (a)->ll_symbol;
 
-	    if (sym == 0)
-	      abort ();
+	    gcc_assert (sym);
 	    dw2_asm_output_offset (DWARF_OFFSET_SIZE, sym, "%s", name);
 	  }
 	  break;
@@ -6973,15 +6911,15 @@ output_die (dw_die_ref die)
 	    {
 	      char *sym = AT_ref (a)->die_symbol;
 
-	      if (sym == 0)
-		abort ();
+	      gcc_assert (sym);
 	      dw2_asm_output_offset (DWARF2_ADDR_SIZE, sym, "%s", name);
 	    }
-	  else if (AT_ref (a)->die_offset == 0)
-	    abort ();
 	  else
-	    dw2_asm_output_data (DWARF_OFFSET_SIZE, AT_ref (a)->die_offset,
-				 "%s", name);
+	    {
+	      gcc_assert (AT_ref (a)->die_offset);
+	      dw2_asm_output_data (DWARF_OFFSET_SIZE, AT_ref (a)->die_offset,
+				   "%s", name);
+	    }
 	  break;
 
 	case dw_val_class_fde_ref:
@@ -7012,7 +6950,7 @@ output_die (dw_die_ref die)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -7155,8 +7093,7 @@ output_pubnames (void)
       pubname_ref pub = &pubname_table[i];
 
       /* We shouldn't see pubnames for DIEs outside of the main CU.  */
-      if (pub->die->die_mark == 0)
-	abort ();
+      gcc_assert (pub->die->die_mark);
 
       dw2_asm_output_data (DWARF_OFFSET_SIZE, pub->die->die_offset,
 			   "DIE offset");
@@ -7229,8 +7166,7 @@ output_aranges (void)
       dw_die_ref die = arange_table[i];
 
       /* We shouldn't see aranges for DIEs outside of the main CU.  */
-      if (die->die_mark == 0)
-	abort ();
+      gcc_assert (die->die_mark);
 
       if (die->die_tag == DW_TAG_subprogram)
 	{
@@ -7247,12 +7183,10 @@ output_aranges (void)
 	  dw_attr_ref a = get_AT (die, DW_AT_location);
 	  dw_loc_descr_ref loc;
 
-	  if (! a || AT_class (a) != dw_val_class_loc)
-	    abort ();
+	  gcc_assert (a && AT_class (a) == dw_val_class_loc);
 
 	  loc = AT_loc (a);
-	  if (loc->dw_loc_opc != DW_OP_addr)
-	    abort ();
+	  gcc_assert (loc->dw_loc_opc == DW_OP_addr);
 
 	  dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE,
 				   loc->dw_loc_oprnd1.v.val_addr, "Address");
@@ -8007,7 +7941,7 @@ base_type_die (tree type)
 
     default:
       /* No other TREE_CODEs are Dwarf fundamental types.  */
-      abort ();
+      gcc_unreachable ();
     }
 
   base_type_result = new_die (DW_TAG_base_type, comp_unit_die, type);
@@ -8085,7 +8019,7 @@ is_base_type (tree type)
       return 0;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return 0;
@@ -8323,8 +8257,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 	    /* Vectors have the debugging information in the type,
 	       not the main variant.  */
 	    mod_type_die = lookup_type_die (type);
-	  if (mod_type_die == NULL)
-	    abort ();
+	  gcc_assert (mod_type_die);
 	}
 
       /* We want to equate the qualified type to the die below.  */
@@ -8365,8 +8298,7 @@ dbx_reg_number (rtx rtl)
 {
   unsigned regno = REGNO (rtl);
 
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
   return DBX_REGISTER_NUMBER (regno);
 }
@@ -8438,8 +8370,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
 
   /* Now onto stupid register sets in non contiguous locations.  */
 
-  if (GET_CODE (regs) != PARALLEL)
-    abort ();
+  gcc_assert (GET_CODE (regs) == PARALLEL);
 
   size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
   loc_result = NULL;
@@ -8734,7 +8665,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return mem_loc_result;
@@ -8844,7 +8775,7 @@ loc_descriptor (rtx rtl, bool can_use_fbreg)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return loc_result;
@@ -9247,7 +9178,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 #ifdef ENABLE_CHECKING
       /* Otherwise this is a generic code; we should just lists all of
 	 these explicitly.  Aborting means we forgot one.  */
-      abort ();
+      gcc_unreachable ();
 #else
       /* In a release build, we want to degrade gracefully: better to
 	 generate incomplete debugging information than to crash.  */
@@ -9350,8 +9281,8 @@ field_byte_offset (tree decl)
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
-  else if (TREE_CODE (decl) != FIELD_DECL)
-    abort ();
+  
+  gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
   type = field_type (decl);
   field_size_tree = DECL_SIZE (decl);
@@ -9513,8 +9444,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
 
 	  /* Calculate the address of the offset.  */
 	  offset = tree_low_cst (BINFO_VPTR_FIELD (decl), 0);
-	  if (offset >= 0)
-	    abort ();
+	  gcc_assert (offset < 0);
 
 	  tmp = int_loc_descriptor (-offset);
 	  add_loc_descr (&loc_descr, tmp);
@@ -9649,8 +9579,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	else
 	  {
 	    /* ??? We really should be using HOST_WIDE_INT throughout.  */
-	    if (HOST_BITS_PER_LONG != HOST_BITS_PER_WIDE_INT)
-	      abort ();
+	    gcc_assert (HOST_BITS_PER_LONG == HOST_BITS_PER_WIDE_INT);
 
 	    add_AT_long_long (die, DW_AT_const_value,
 			      CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
@@ -9667,32 +9596,38 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	unsigned int i;
 	unsigned char *p;
 
-	if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	switch (GET_MODE_CLASS (mode))
 	  {
+	  case MODE_VECTOR_INT:
 	    for (i = 0, p = array; i < length; i++, p += elt_size)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
 		HOST_WIDE_INT lo, hi;
-		if (GET_CODE (elt) == CONST_INT)
+		
+		switch (GET_CODE (elt))
 		  {
+		  case CONST_INT:
 		    lo = INTVAL (elt);
 		    hi = -(lo < 0);
-		  }
-		else if (GET_CODE (elt) == CONST_DOUBLE)
-		  {
+		    break;
+		    
+		  case CONST_DOUBLE:
 		    lo = CONST_DOUBLE_LOW (elt);
 		    hi = CONST_DOUBLE_HIGH (elt);
+		    break;
+		    
+		  default:
+		    gcc_unreachable ();
 		  }
-		else
-		  abort ();
-
+		
 		if (elt_size <= sizeof (HOST_WIDE_INT))
 		  insert_int (lo, elt_size, p);
-		else if (elt_size == 2 * sizeof (HOST_WIDE_INT))
+		else
 		  {
 		    unsigned char *p0 = p;
 		    unsigned char *p1 = p + sizeof (HOST_WIDE_INT);
-
+		    
+		    gcc_assert (elt_size == 2 * sizeof (HOST_WIDE_INT));
 		    if (WORDS_BIG_ENDIAN)
 		      {
 			p0 = p1;
@@ -9701,20 +9636,20 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 		    insert_int (lo, sizeof (HOST_WIDE_INT), p0);
 		    insert_int (hi, sizeof (HOST_WIDE_INT), p1);
 		  }
-		else
-		  abort ();
 	      }
-	  }
-	else if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	  {
+	    break;
+
+	  case MODE_VECTOR_FLOAT:
 	    for (i = 0, p = array; i < length; i++, p += elt_size)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
 		insert_float (elt, p);
 	      }
+	    break;
+
+	  default:
+	    gcc_unreachable ();
 	  }
-	else
-	  abort ();
 
 	add_AT_vec (die, DW_AT_const_value, length, elt_size, array);
       }
@@ -9747,7 +9682,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     default:
       /* No other kinds of rtx should be possible here.  */
-      abort ();
+      gcc_unreachable ();
     }
 
 }
@@ -9963,8 +9898,7 @@ rtl_for_decl_location (tree decl)
 	  rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
 			     EXPAND_INITIALIZER);
 	  /* If expand_expr returns a MEM, it wasn't immediate.  */
-	  if (rtl && MEM_P (rtl))
-	    abort ();
+	  gcc_assert (!rtl || !MEM_P (rtl));
 	}
     }
 
@@ -10001,9 +9935,9 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
-  else if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != PARM_DECL
-	   && TREE_CODE (decl) != RESULT_DECL)
-    abort ();
+
+  gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
+	      || TREE_CODE (decl) == RESULT_DECL);
 
   /* See if we possibly have multiple locations for this variable.  */
   loc_list = lookup_decl_loc (decl);
@@ -10344,7 +10278,7 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
       size = simple_type_size_in_bits (field_type (tree_node)) / BITS_PER_UNIT;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Note that `size' might be -1 when we get to this point.  If it is, that
@@ -10381,9 +10315,7 @@ add_bit_offset_attribute (dw_die_ref die, tree decl)
   HOST_WIDE_INT unsigned bit_offset;
 
   /* Must be a field and a bit field.  */
-  if (!type
-      || TREE_CODE (decl) != FIELD_DECL)
-    abort ();
+  gcc_assert (type && TREE_CODE (decl) == FIELD_DECL);
 
   /* We can't yet handle bit-fields whose offsets are variable, so if we
      encounter such things, just return without generating any attribute
@@ -10423,9 +10355,8 @@ static inline void
 add_bit_size_attribute (dw_die_ref die, tree decl)
 {
   /* Must be a field and a bit field.  */
-  if (TREE_CODE (decl) != FIELD_DECL
-      || ! DECL_BIT_FIELD_TYPE (decl))
-    abort ();
+  gcc_assert (TREE_CODE (decl) == FIELD_DECL
+	      && DECL_BIT_FIELD_TYPE (decl));
 
   if (host_integerp (DECL_SIZE (decl), 1))
     add_AT_unsigned (die, DW_AT_bit_size, tree_low_cst (DECL_SIZE (decl), 1));
@@ -10474,8 +10405,7 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
   else if (TYPE_P (origin))
     origin_die = lookup_type_die (origin);
 
-  if (origin_die == NULL)
-    abort ();
+  gcc_assert (origin_die);
 
   add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
 }
@@ -10562,8 +10492,7 @@ push_decl_scope (tree scope)
 static inline void
 pop_decl_scope (void)
 {
-  if (VARRAY_ACTIVE_SIZE (decl_scope_table) <= 0)
-    abort ();
+  gcc_assert (VARRAY_ACTIVE_SIZE (decl_scope_table) > 0);
 
   VARRAY_POP (decl_scope_table);
 }
@@ -10582,8 +10511,7 @@ scope_die_for (tree t, dw_die_ref context_die)
   int i;
 
   /* Non-types always go in the current scope.  */
-  if (! TYPE_P (t))
-    abort ();
+  gcc_assert (TYPE_P (t));
 
   containing_scope = TYPE_CONTEXT (t);
 
@@ -10615,9 +10543,8 @@ scope_die_for (tree t, dw_die_ref context_die)
 
       if (i < 0)
 	{
-	  if (debug_info_level > DINFO_LEVEL_TERSE
-	      && !TREE_ASM_WRITTEN (containing_scope))
-	    abort ();
+	  gcc_assert (debug_info_level <= DINFO_LEVEL_TERSE
+		      || TREE_ASM_WRITTEN (containing_scope));
 
 	  /* If none of the current dies are suitable, we get file scope.  */
 	  scope_die = comp_unit_die;
@@ -10744,12 +10671,10 @@ decl_start_label (tree decl)
   const char *fnname;
 
   x = DECL_RTL (decl);
-  if (!MEM_P (x))
-    abort ();
+  gcc_assert (MEM_P (x));
 
   x = XEXP (x, 0);
-  if (GET_CODE (x) != SYMBOL_REF)
-    abort ();
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
   fnname = XSTR (x, 0);
   return fnname;
@@ -11018,7 +10943,7 @@ gen_formal_parameter_die (tree node, dw_die_ref context_die)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return parm_die;
@@ -11107,8 +11032,7 @@ gen_type_die_for_member (tree type, tree member, dw_die_ref context_die)
   if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type))
       && ! lookup_decl_die (member))
     {
-      if (decl_ultimate_origin (member))
-	abort ();
+      gcc_assert (!decl_ultimate_origin (member));
 
       push_decl_scope (type);
       if (TREE_CODE (member) == FUNCTION_DECL)
@@ -11187,14 +11111,12 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   if (origin && declaration && class_or_namespace_scope_p (context_die))
     {
       origin = NULL;
-      if (old_die)
-	abort ();
+      gcc_assert (!old_die);
     }
 
   if (origin != NULL)
     {
-      if (declaration && ! local_scope_p (context_die))
-	abort ();
+      gcc_assert (!declaration || local_scope_p (context_die));
 
       /* Fixup die_parent for the abstract instance of a nested
 	 inline function.  */
@@ -11220,9 +11142,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	     we should detect this case and ignore it.  For now, if we have
 	     already reported an error, any error at all, then assume that
 	     we got here because of an input error, not a dwarf2 bug.  */
-	  if (errorcount)
-	    return;
-	  abort ();
+	  gcc_assert (errorcount);
+	  return;
 	}
 
       /* If the definition comes from the same place as the declaration,
@@ -11563,8 +11484,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
 	     represent source-level labels which were explicitly declared by
 	     the user.  This really shouldn't be happening though, so catch
 	     it if it ever does happen.  */
-	  if (INSN_DELETED_P (insn))
-	    abort ();
+	  gcc_assert (!INSN_DELETED_P (insn));
 
 	  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (insn));
 	  add_AT_lbl_id (lbl_die, DW_AT_low_pc, label);
@@ -12022,10 +11942,8 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 	{
 	  type = DECL_ORIGINAL_TYPE (decl);
 
-	  if (type == TREE_TYPE (decl))
-	    abort ();
-	  else
-	    equate_type_number_to_die (TREE_TYPE (decl), type_die);
+	  gcc_assert (type != TREE_TYPE (decl));
+	  equate_type_number_to_die (TREE_TYPE (decl), type_die);
 	}
       else
 	type = TREE_TYPE (decl);
@@ -12055,8 +11973,7 @@ gen_type_die (tree type, dw_die_ref context_die)
 	return;
 
       /* Prevent broken recursion; we can't hand off to the same type.  */
-      if (DECL_ORIGINAL_TYPE (TYPE_NAME (type)) == type)
-	abort ();
+      gcc_assert (DECL_ORIGINAL_TYPE (TYPE_NAME (type)) != type);
 
       TREE_ASM_WRITTEN (type) = 1;
       gen_decl_die (TYPE_NAME (type), context_die);
@@ -12113,7 +12030,8 @@ gen_type_die (tree type, dw_die_ref context_die)
 
     case FILE_TYPE:
       gen_type_die (TREE_TYPE (type), context_die);
-      abort ();			/* No way to represent these in Dwarf yet!  */
+      /* No way to represent these in Dwarf yet!  */
+      gcc_unreachable ();
       break;
 
     case FUNCTION_TYPE:
@@ -12199,7 +12117,7 @@ gen_type_die (tree type, dw_die_ref context_die)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   TREE_ASM_WRITTEN (type) = 1;
@@ -12217,8 +12135,7 @@ gen_tagged_type_instantiation_die (tree type, dw_die_ref context_die)
      this type (i.e. without any const or volatile qualifiers) so make sure
      that we have the main variant (i.e. the unqualified version) of this
      type now.  */
-  if (type != type_main_variant (type))
-    abort ();
+  gcc_assert (type == type_main_variant (type));
 
   /* Do not check TREE_ASM_WRITTEN (type) as it may not be set if this is
      an instance of an unresolved type.  */
@@ -12242,7 +12159,7 @@ gen_tagged_type_instantiation_die (tree type, dw_die_ref context_die)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -12453,15 +12370,14 @@ force_decl_die (tree decl)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
   
       /* See if we can find the die for this deci now.
 	 If not then abort.  */
       if (!decl_die)
 	decl_die = lookup_decl_die (decl);
-      if (!decl_die)
-	abort ();
+      gcc_assert (decl_die);
     }
   
   return decl_die;
@@ -12488,8 +12404,7 @@ force_type_die (tree type)
 
       gen_type_die (type, context_die);
       type_die = lookup_type_die (type);
-      if (!type_die)
-	abort();
+      gcc_assert (type_die);
     }
   return type_die;
 }
@@ -12726,10 +12641,9 @@ gen_decl_die (tree decl, dw_die_ref context_die)
       break;
 
     default:
-      if ((int)TREE_CODE (decl) > NUM_TREE_CODES)
-	/* Probably some frontend-internal decl.  Assume we don't care.  */
-	break;
-      abort ();
+      /* Probably some frontend-internal decl.  Assume we don't care.  */
+      gcc_assert ((int)TREE_CODE (decl) > NUM_TREE_CODES);
+      break;
     }
 }
 
@@ -12791,8 +12705,7 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
   if (debug_info_level <= DINFO_LEVEL_TERSE)
     return;
 
-  if (!decl)
-    abort ();
+  gcc_assert (decl);
 
   /* To emit DW_TAG_imported_module or DW_TAG_imported_decl, we need two DIEs.
      We need decl DIE for reference and scope die. First, get DIE for the decl 
@@ -13523,8 +13436,8 @@ static void
 prune_unused_types_prune (dw_die_ref die)
 {
   dw_die_ref c, p, n;
-  if (!die->die_mark)
-    abort();
+  
+  gcc_assert (die->die_mark);
 
   p = NULL;
   for (c = die->die_child; c; c = n)
@@ -13623,7 +13536,6 @@ dwarf2out_finish (const char *filename)
       if (die->die_parent == NULL)
 	{
 	  dw_die_ref origin = get_AT_ref (die, DW_AT_abstract_origin);
-	  tree context;
 
 	  if (origin)
 	    add_child_die (origin->die_parent, die);
@@ -13632,25 +13544,28 @@ dwarf2out_finish (const char *filename)
 	  else if (errorcount > 0 || sorrycount > 0)
 	    /* It's OK to be confused by errors in the input.  */
 	    add_child_die (comp_unit_die, die);
-	  else if (node->created_for
-		   && ((DECL_P (node->created_for)
-			&& (context = DECL_CONTEXT (node->created_for)))
-		       || (TYPE_P (node->created_for)
-			   && (context = TYPE_CONTEXT (node->created_for))))
-		   && TREE_CODE (context) == FUNCTION_DECL)
+	  else
 	    {
 	      /* In certain situations, the lexical block containing a
 		 nested function can be optimized away, which results
 		 in the nested function die being orphaned.  Likewise
 		 with the return type of that nested function.  Force
 		 this to be a child of the containing function.  */
+	      tree context = NULL_TREE;
+
+	      gcc_assert (node->created_for);
+
+	      if (DECL_P (node->created_for))
+		context = DECL_CONTEXT (node->created_for);
+	      else if (TYPE_P (node->created_for))
+		context = TYPE_CONTEXT (node->created_for);
+		
+	      gcc_assert (context && TREE_CODE (context) == FUNCTION_DECL);
+	      
 	      origin = lookup_decl_die (context);
-	      if (! origin)
-		abort ();
+	      gcc_assert (origin);
 	      add_child_die (origin, die);
 	    }
-	  else
-	    abort ();
 	}
     }
 

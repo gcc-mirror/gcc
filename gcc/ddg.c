@@ -164,8 +164,7 @@ create_ddg_dependence (ddg_ptr g, ddg_node_ptr src_node,
   if (interloop)
      distance = 1;
 
-  if (!link)
-    abort ();
+  gcc_assert (link);
 
   /* Note: REG_DEP_ANTI applies to MEM ANTI_DEP as well!!  */
   if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
@@ -240,8 +239,7 @@ add_deps_for_def (ddg_ptr g, struct df *df, struct ref *rd)
 	  rtx use_insn = DF_REF_INSN (r_use->ref);
 	  ddg_node_ptr dest_node = get_node_of_insn (g, use_insn);
 
-	  if (!src_node || !dest_node)
-	    abort ();
+	  gcc_assert (src_node && dest_node);
 
 	  /* Any such upwards exposed use appears before the rd def.  */
 	  use_before_def = true;
@@ -296,8 +294,7 @@ add_deps_for_use (ddg_ptr g, struct df *df, struct ref *use)
   use_node = get_node_of_insn (g, use->insn);
   def_node = get_node_of_insn (g, first_def->insn);
 
-  if (!use_node || !def_node)
-    abort ();
+  gcc_assert (use_node && def_node);
 
   /* Make sure there are no defs after USE.  */
   for (i = use_node->cuid + 1; i < g->num_nodes; i++)
@@ -484,10 +481,8 @@ create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
 	}
       if (JUMP_P (insn))
 	{
-	  if (g->closing_branch)
-	    abort (); /* Found two branches in DDG.  */
-	  else
-	    g->closing_branch = &g->nodes[i];
+	  gcc_assert (!g->closing_branch);
+	  g->closing_branch = &g->nodes[i];
 	}
       else if (GET_CODE (PATTERN (insn)) == USE)
 	{
@@ -505,9 +500,10 @@ create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
       g->nodes[i++].insn = insn;
       first_note = NULL_RTX;
     }
-
-  if (!g->closing_branch)
-    abort ();  /* Found no branch in DDG.  */
+  
+  /* We must have found a branch in DDG.  */
+  gcc_assert (g->closing_branch);
+  
 
   /* Build the data dependency graph.  */
   build_intra_loop_deps (g);
@@ -646,8 +642,8 @@ add_edge_to_ddg (ddg_ptr g ATTRIBUTE_UNUSED, ddg_edge_ptr e)
   ddg_node_ptr src = e->src;
   ddg_node_ptr dest = e->dest;
 
-  if (!src->successors || !dest->predecessors)
-    abort (); /* Should have allocated the sbitmaps.  */
+  /* Should have allocated the sbitmaps.  */
+  gcc_assert (src->successors && dest->predecessors);
 
   SET_BIT (src->successors, dest->cuid);
   SET_BIT (dest->predecessors, src->cuid);

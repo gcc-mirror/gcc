@@ -265,7 +265,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
     case COMPOUND_EXPR:
     case COND_EXPR:
       /* Lowered by gimplify.c.  */
-      abort ();
+      gcc_unreachable ();
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
@@ -301,10 +301,12 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       {
         tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 
-        if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
-            || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
-	  abort ();
-        else if (integer_zerop (TREE_OPERAND (exp, 1)))
+        gcc_assert (GET_MODE_CLASS (TYPE_MODE (inner_type))
+		    != MODE_COMPLEX_FLOAT);
+	gcc_assert (GET_MODE_CLASS (TYPE_MODE (inner_type))
+		    != MODE_COMPLEX_INT);
+	
+        if (integer_zerop (TREE_OPERAND (exp, 1)))
           do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
         else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
                  && !can_compare_p (EQ, TYPE_MODE (inner_type), ccp_jump))
@@ -318,10 +320,12 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       {
         tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 
-        if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
-            || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
-	  abort ();
-        else if (integer_zerop (TREE_OPERAND (exp, 1)))
+        gcc_assert (GET_MODE_CLASS (TYPE_MODE (inner_type))
+		    != MODE_COMPLEX_FLOAT);
+	gcc_assert (GET_MODE_CLASS (TYPE_MODE (inner_type))
+		    != MODE_COMPLEX_INT);
+	
+        if (integer_zerop (TREE_OPERAND (exp, 1)))
           do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
         else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
            && !can_compare_p (NE, TYPE_MODE (inner_type), ccp_jump))
@@ -511,8 +515,10 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
                && ! can_compare_p (NE, GET_MODE (temp), ccp_jump))
         /* Note swapping the labels gives us not-equal.  */
         do_jump_by_parts_equality_rtx (temp, if_true_label, if_false_label);
-      else if (GET_MODE (temp) != VOIDmode)
+      else
 	{
+	  gcc_assert (GET_MODE (temp) != VOIDmode);
+	  
 	  /* The RTL optimizers prefer comparisons against pseudos.  */
 	  if (GET_CODE (temp) == SUBREG)
 	    {
@@ -528,8 +534,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 				   GET_MODE (temp), NULL_RTX,
 				   if_false_label, if_true_label);
 	}
-      else
-        abort ();
     }
 }
 

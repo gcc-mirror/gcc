@@ -1683,8 +1683,7 @@ dbxout_type (tree type, int full)
 	    /* We shouldn't be outputting a reference to a type before its
 	       definition unless the type has a tag name.
 	       A typedef name without a tag name should be impossible.  */
-	    if (TREE_CODE (TYPE_NAME (type)) != IDENTIFIER_NODE)
-	      abort ();
+	    gcc_assert (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE);
 #endif
 	    if (TYPE_NAME (type) != 0)
 	      dbxout_type_name (type);
@@ -1919,7 +1918,7 @@ dbxout_type (tree type, int full)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2040,19 +2039,19 @@ print_wide_int (HOST_WIDE_INT c)
 static void
 dbxout_type_name (tree type)
 {
-  tree t;
-  if (TYPE_NAME (type) == 0)
-    abort ();
-  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+  tree t = TYPE_NAME (type);
+  
+  gcc_assert (t);
+  switch (TREE_CODE (t))
     {
-      t = TYPE_NAME (type);
+    case IDENTIFIER_NODE:
+      break;
+    case TYPE_DECL:
+      t = DECL_NAME (t);
+      break;
+    default:
+      gcc_unreachable ();
     }
-  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
-    {
-      t = DECL_NAME (TYPE_NAME (type));
-    }
-  else
-    abort ();
 
   fprintf (asmfile, "%s", IDENTIFIER_POINTER (t));
   CHARS (IDENTIFIER_LENGTH (t));
@@ -2386,7 +2385,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
     case PARM_DECL:
       /* Parm decls go in their own separate chains
 	 and are output by dbxout_reg_parms and dbxout_parms.  */
-      abort ();
+      gcc_unreachable ();
 
     case RESULT_DECL:
       /* Named return value, treat like a VAR_DECL.  */

@@ -333,8 +333,9 @@ size_of_encoded_value (int encoding)
       return 4;
     case DW_EH_PE_udata8:
       return 8;
+    default:
+      gcc_unreachable ();
     }
-  abort ();
 }
 
 /* Yield a name for a given pointer encoding.  */
@@ -486,12 +487,12 @@ eh_data_format_name (int format)
 #if HAVE_DESIGNATED_INITIALIZERS
   };
 
-  if (format < 0 || format > 0xff || format_names[format] == NULL)
-    abort ();
+  gcc_assert (format >= 0 && format < 0x100 && format_names[format]);
+  
   return format_names[format];
 #else
   }
-  abort ();
+  gcc_unreachable ();
 #endif
 }
 
@@ -635,7 +636,7 @@ dw2_asm_output_delta_uleb128 (const char *lab1 ATTRIBUTE_UNUSED,
   fputc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
 #else
-  abort ();
+  gcc_unreachable ();
 #endif
 
   if (flag_debug_asm && comment)
@@ -663,7 +664,7 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
   fputc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
 #else
-  abort ();
+  gcc_unreachable ();
 #endif
 
   if (flag_debug_asm && comment)
@@ -704,8 +705,7 @@ dw2_force_const_mem (rtx x)
   if (! indirect_pool)
     indirect_pool = splay_tree_new_ggc (splay_tree_compare_pointers);
 
-  if (GET_CODE (x) != SYMBOL_REF)
-    abort ();
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
   str = targetm.strip_name_encoding (XSTR (x, 0));
   node = splay_tree_lookup (indirect_pool, (splay_tree_key) str);
@@ -836,8 +836,7 @@ dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr,
 	  break;
 
 	case DW_EH_PE_pcrel:
-	  if (GET_CODE (addr) != SYMBOL_REF)
-	    abort ();
+	  gcc_assert (GET_CODE (addr) == SYMBOL_REF);
 #ifdef ASM_OUTPUT_DWARF_PCREL
 	  ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, XSTR (addr, 0));
 #else
@@ -848,7 +847,7 @@ dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr,
 	default:
 	  /* Other encodings should have been handled by
 	     ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX.  */
-	  abort ();
+	  gcc_unreachable ();
 	}
 
 #ifdef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
