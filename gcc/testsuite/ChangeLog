@@ -1,3 +1,7 @@
+2001-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/other/debug1.C: New test.
+
 2001-11-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* gcc.c-torture/compile/20010327-1.c: Use __SIZE_TYPE__ instead

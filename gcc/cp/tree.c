@@ -2250,6 +2250,7 @@ cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
 	  DECL_NAME (var) = DECL_NAME (nrv);
 	  DECL_SOURCE_FILE (var) = DECL_SOURCE_FILE (nrv);
 	  DECL_SOURCE_LINE (var) = DECL_SOURCE_LINE (nrv);
+	  DECL_ABSTRACT_ORIGIN (var) = DECL_ORIGIN (nrv);
 	  splay_tree_insert (decl_map,
 			     (splay_tree_key) nrv,
 			     (splay_tree_value) var);
