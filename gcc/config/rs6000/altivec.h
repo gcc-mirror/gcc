@@ -8395,212 +8395,205 @@ __ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
     __builtin_altivec_compiletime_error ("vec_cmplt"))))))))
 
 #define vec_ctf(a1, a2) \
-__ch (__bin_args_eq (vector unsigned int, (a1), const int, (a2)), \
+__ch (__un_args_eq (vector unsigned int, (a1)), \
       ((vector float) __builtin_altivec_vcfux ((vector signed int) (a1), (const int) (a2))), \
-__ch (__bin_args_eq (vector signed int, (a1), const int, (a2)), \
+__ch (__un_args_eq (vector signed int, (a1)), \
       ((vector float) __builtin_altivec_vcfsx ((vector signed int) (a1), (const int) (a2))), \
     __builtin_altivec_compiletime_error ("vec_ctf")))
 
 #define vec_vcfsx(a1, a2) \
-__ch (__bin_args_eq (vector signed int, (a1), int, (a2)), \
+__ch (__un_args_eq (vector signed int, (a1)), \
       ((vector float) __builtin_altivec_vcfsx ((vector signed int) (a1), (const int) (a2))), \
-__ch (__bin_args_eq (vector signed int, (a1), unsigned int, (a2)), \
-      ((vector float) __builtin_altivec_vcfsx ((vector signed int) (a1), (const int) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vcfsx")))
+  __builtin_altivec_compiletime_error ("vec_vcfsx"))
 
 #define vec_vcfux(a1, a2) \
-__ch (__bin_args_eq (vector unsigned int, (a1), int, (a2)), \
+__ch (__un_args_eq (vector unsigned int, (a1)), \
       ((vector float) __builtin_altivec_vcfux ((vector signed int) (a1), (const int) (a2))), \
-__ch (__bin_args_eq (vector unsigned int, (a1), unsigned int, (a2)), \
-      ((vector float) __builtin_altivec_vcfux ((vector signed int) (a1), (const int) (a2))), \
-  __builtin_altivec_compiletime_error ("vec_vcfux")))
+  __builtin_altivec_compiletime_error ("vec_vcfux"))
 
 #define vec_cts(a1, a2) \
-__ch (__bin_args_eq (vector float, (a1), const int, (a2)), \
+__ch (__un_args_eq (vector float, (a1)), \
       ((vector signed int) __builtin_altivec_vctsxs ((vector float) (a1), (const int) (a2))), \
     __builtin_altivec_compiletime_error ("vec_cts"))
 
 #define vec_ctu(a1, a2) \
-__ch (__bin_args_eq (vector float, (a1), const int, (a2)), \
+__ch (__un_args_eq (vector float, (a1)), \
       ((vector unsigned int) __builtin_altivec_vctuxs ((vector float) (a1), (const int) (a2))), \
     __builtin_altivec_compiletime_error ("vec_ctu"))
 
-#define vec_dss(a1) \
-__ch (__un_args_eq (const int, (a1)), \
-      __builtin_altivec_dss ((const int) (a1)), \
-    __builtin_altivec_compiletime_error ("vec_dss"))
+#define vec_dss(a1) __builtin_altivec_dss ((const int) (a1));
 
 #define vec_dssall() __builtin_altivec_dssall ()
 
 #define vec_dst(a1, a2, a3) \
-__ch (__tern_args_eq (const vector unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned char, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed char, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool char, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned short, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed short, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool short, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector pixel, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector pixel, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned int, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed int, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool int, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector float, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned char, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const signed char, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned short, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const short, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned int, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const int, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned long, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const long, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const float, *(a1)), \
       __builtin_altivec_dst ((void *) (a1), (a2), (a3)), \
   __builtin_altivec_compiletime_error ("vec_dst")))))))))))))))))))))
 
 #define vec_dstst(a1, a2, a3) \
-__ch (__tern_args_eq (const vector unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned char, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed char, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool char, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned short, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed short, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool short, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector pixel, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector pixel, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned int, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed int, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool int, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector float, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned char, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const signed char, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned short, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const short, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned int, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const int, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned long, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const long, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const float, *(a1)), \
       __builtin_altivec_dstst ((void *) (a1), (a2), (a3)), \
   __builtin_altivec_compiletime_error ("vec_dstst")))))))))))))))))))))
 
 #define vec_dststt(a1, a2, a3) \
-__ch (__tern_args_eq (const vector unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned char, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed char, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool char, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned short, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed short, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool short, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector pixel, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector pixel, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned int, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed int, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool int, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector float, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned char, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const signed char, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned short, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const short, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned int, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const int, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned long, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const long, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const float, *(a1)), \
       __builtin_altivec_dststt ((void *) (a1), (a2), (a3)), \
   __builtin_altivec_compiletime_error ("vec_dststt")))))))))))))))))))))
 
 #define vec_dstt(a1, a2, a3) \
-__ch (__tern_args_eq (const vector unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned char, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed char, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool char, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned short, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed short, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool short, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector pixel, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector pixel, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector unsigned int, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector signed int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector signed int, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector bool int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector bool int, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const vector float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const vector float, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned char, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const signed char, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const signed char, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned short, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const short, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const short, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned int, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const int, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const int, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const unsigned long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const unsigned long, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const long, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const long, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
-__ch (__tern_args_eq (const float, *(a1), int, (a2), const int, (a3)), \
+__ch (__un_args_eq (const float, *(a1)), \
       __builtin_altivec_dstt ((void *) (a1), (a2), (a3)), \
   __builtin_altivec_compiletime_error ("vec_dstt")))))))))))))))))))))
 
@@ -8615,66 +8608,66 @@ __ch (__un_args_eq (vector float, (a1)), \
   __builtin_altivec_compiletime_error ("vec_floor"))
 
 #define vec_ld(a, b) \
-__ch (__bin_args_eq (int, (a), const vector unsigned char, *(b)), \
+__ch (__un_args_eq (const vector unsigned char, *(b)), \
       ((vector unsigned char) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned char, *(b)), \
+__ch (__un_args_eq (const unsigned char, *(b)), \
       ((vector unsigned char) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector signed char, *(b)), \
+__ch (__un_args_eq (const vector signed char, *(b)), \
       ((vector signed char) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const signed char, *(b)), \
+__ch (__un_args_eq (const signed char, *(b)), \
       ((vector signed char) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector bool char, *(b)), \
+__ch (__un_args_eq (const vector bool char, *(b)), \
       ((vector bool char) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector unsigned short, *(b)), \
+__ch (__un_args_eq (const vector unsigned short, *(b)), \
       ((vector unsigned short) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned short, *(b)), \
+__ch (__un_args_eq (const unsigned short, *(b)), \
       ((vector unsigned short) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector signed short, *(b)), \
+__ch (__un_args_eq (const vector signed short, *(b)), \
       ((vector signed short) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const short, *(b)), \
+__ch (__un_args_eq (const short, *(b)), \
       ((vector signed short) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector bool short, *(b)), \
+__ch (__un_args_eq (const vector bool short, *(b)), \
       ((vector bool short) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector pixel, *(b)), \
+__ch (__un_args_eq (const vector pixel, *(b)), \
       ((vector pixel) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector unsigned int, *(b)), \
+__ch (__un_args_eq (const vector unsigned int, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned int, *(b)), \
+__ch (__un_args_eq (const unsigned int, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned long, *(b)), \
+__ch (__un_args_eq (const unsigned long, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector signed int, *(b)), \
+__ch (__un_args_eq (const vector signed int, *(b)), \
       ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const int, *(b)), \
+__ch (__un_args_eq (const int, *(b)), \
       ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const long, *(b)), \
+__ch (__un_args_eq (const long, *(b)), \
       ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector bool int, *(b)), \
+__ch (__un_args_eq (const vector bool int, *(b)), \
       ((vector bool int) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector float, *(b)), \
+__ch (__un_args_eq (const vector float, *(b)), \
       ((vector float) __builtin_altivec_lvx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const float, *(b)), \
+__ch (__un_args_eq (const float, *(b)), \
       ((vector float) __builtin_altivec_lvx ((a), (b))), \
 __builtin_altivec_compiletime_error ("vec_ld")))))))))))))))))))))
 
 #define vec_lde(a, b) \
-__ch (__bin_args_eq (int, (a), const unsigned char, *(b)), \
+__ch (__un_args_eq (const unsigned char, *(b)), \
       ((vector unsigned char) __builtin_altivec_lvebx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const signed char, *(b)), \
+__ch (__un_args_eq (const signed char, *(b)), \
       ((vector signed char) __builtin_altivec_lvebx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned short, *(b)), \
+__ch (__un_args_eq (const unsigned short, *(b)), \
       ((vector unsigned short) __builtin_altivec_lvehx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const short, *(b)), \
+__ch (__un_args_eq (const short, *(b)), \
       ((vector signed short) __builtin_altivec_lvehx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned long, *(b)), \
+__ch (__un_args_eq (const unsigned long, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvewx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const long, *(b)), \
+__ch (__un_args_eq (const long, *(b)), \
       ((vector signed int) __builtin_altivec_lvewx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned int, *(b)), \
+__ch (__un_args_eq (const unsigned int, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvewx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const int, *(b)), \
+__ch (__un_args_eq (const int, *(b)), \
       ((vector signed int) __builtin_altivec_lvewx ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const float, *(b)), \
+__ch (__un_args_eq (const float, *(b)), \
       ((vector float) __builtin_altivec_lvewx ((a), (b))), \
 __builtin_altivec_compiletime_error ("vec_lde"))))))))))
 
@@ -8706,45 +8699,45 @@ __ch (__un_args_eq (signed char, *(b)), \
 __builtin_altivec_compiletime_error ("vec_lvebx")))
 
 #define vec_ldl(a, b) \
-__ch (__bin_args_eq (int, (a), const vector unsigned char, *(b)), \
+__ch (__un_args_eq (const vector unsigned char, *(b)), \
       ((vector unsigned char) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned char, *(b)), \
+__ch (__un_args_eq (const unsigned char, *(b)), \
       ((vector unsigned char) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector signed char, *(b)), \
+__ch (__un_args_eq (const vector signed char, *(b)), \
       ((vector signed char) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const signed char, *(b)), \
+__ch (__un_args_eq (const signed char, *(b)), \
       ((vector signed char) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector bool char, *(b)), \
+__ch (__un_args_eq (const vector bool char, *(b)), \
       ((vector bool char) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector unsigned short, *(b)), \
+__ch (__un_args_eq (const vector unsigned short, *(b)), \
       ((vector unsigned short) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned short, *(b)), \
+__ch (__un_args_eq (const unsigned short, *(b)), \
       ((vector unsigned short) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector signed short, *(b)), \
+__ch (__un_args_eq (const vector signed short, *(b)), \
       ((vector signed short) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const short, *(b)), \
+__ch (__un_args_eq (const short, *(b)), \
       ((vector signed short) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector bool short, *(b)), \
+__ch (__un_args_eq (const vector bool short, *(b)), \
       ((vector bool short) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector pixel, *(b)), \
+__ch (__un_args_eq (const vector pixel, *(b)), \
       ((vector pixel) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector unsigned int, *(b)), \
+__ch (__un_args_eq (const vector unsigned int, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned int, *(b)), \
+__ch (__un_args_eq (const unsigned int, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const unsigned long, *(b)), \
+__ch (__un_args_eq (const unsigned long, *(b)), \
       ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector signed int, *(b)), \
+__ch (__un_args_eq (const vector signed int, *(b)), \
       ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const int, *(b)), \
+__ch (__un_args_eq (const int, *(b)), \
       ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const long, *(b)), \
+__ch (__un_args_eq (const long, *(b)), \
       ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector bool int, *(b)), \
+__ch (__un_args_eq (const vector bool int, *(b)), \
       ((vector bool int) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const vector float, *(b)), \
+__ch (__un_args_eq (const vector float, *(b)), \
       ((vector float) __builtin_altivec_lvxl ((a), (b))), \
-__ch (__bin_args_eq (int, (a), const float, *(b)), \
+__ch (__un_args_eq (const float, *(b)), \
       ((vector float) __builtin_altivec_lvxl ((a), (b))), \
 __builtin_altivec_compiletime_error ("vec_ldl")))))))))))))))))))))
 
@@ -8754,44 +8747,44 @@ __ch (__un_args_eq (vector float, (a1)), \
   __builtin_altivec_compiletime_error ("vec_loge"))
 
 #define vec_lvsl(a1, a2) \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned char, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned char, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed char, *(a2)), \
+__ch (__un_args_eq (const volatile signed char, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned short, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned short, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed short, *(a2)), \
+__ch (__un_args_eq (const volatile signed short, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned int, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned int, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed int, *(a2)), \
+__ch (__un_args_eq (const volatile signed int, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned long, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned long, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed long, *(a2)), \
+__ch (__un_args_eq (const volatile signed long, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile float, *(a2)), \
+__ch (__un_args_eq (const volatile float, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsl ((a1), (void *) (a2))), \
 __builtin_altivec_compiletime_error ("vec_lvsl"))))))))))
 
 #define vec_lvsr(a1, a2) \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned char, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned char, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed char, *(a2)), \
+__ch (__un_args_eq (const volatile signed char, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned short, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned short, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed short, *(a2)), \
+__ch (__un_args_eq (const volatile signed short, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned int, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned int, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed int, *(a2)), \
+__ch (__un_args_eq (const volatile signed int, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile unsigned long, *(a2)), \
+__ch (__un_args_eq (const volatile unsigned long, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile signed long, *(a2)), \
+__ch (__un_args_eq (const volatile signed long, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
-__ch (__bin_args_eq (int, (a1), const volatile float, *(a2)), \
+__ch (__un_args_eq (const volatile float, *(a2)), \
       ((vector unsigned char) __builtin_altivec_lvsr ((a1), (void *) (a2))), \
 __builtin_altivec_compiletime_error ("vec_lvsr"))))))))))
 
@@ -9549,27 +9542,27 @@ __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
 __builtin_altivec_compiletime_error ("vec_vslb")))
 
 #define vec_sld(a1, a2, a3) \
-__ch (__tern_args_eq (vector float, (a1), vector float, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector float, (a1), vector float, (a2)), \
       ((vector float) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector signed int, (a1), vector signed int, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector signed int, (a1), vector signed int, (a2)), \
       ((vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector unsigned int, (a1), vector unsigned int, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, (a2)), \
       ((vector unsigned int) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector bool int, (a1), vector bool int, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector bool int, (a2)), \
       ((vector bool int) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector signed short, (a1), vector signed short, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector signed short, (a1), vector signed short, (a2)), \
       ((vector signed short) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector unsigned short, (a1), vector unsigned short, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, (a2)), \
       ((vector unsigned short) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector bool short, (a1), vector bool short, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector bool short, (a2)), \
       ((vector bool short) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector pixel, (a1), vector pixel, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), vector pixel, (a2)), \
       ((vector pixel) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector signed char, (a1), vector signed char, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector signed char, (a1), vector signed char, (a2)), \
       ((vector signed char) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector unsigned char, (a1), vector unsigned char, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
       ((vector unsigned char) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-__ch (__tern_args_eq (vector bool char, (a1), vector bool char, (a2), int, (a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector bool char, (a2)), \
       ((vector bool char) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
     __builtin_altivec_compiletime_error ("vec_sld"))))))))))))
 
@@ -9672,96 +9665,64 @@ __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
     __builtin_altivec_compiletime_error ("vec_slo")))))))))))))))))
 
 #define vec_splat(a1, a2) \
-__ch (__bin_args_eq (vector signed char, ((a1)), int, ((a2))), \
-      ((vector signed char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned char, ((a1)), int, ((a2))), \
-      ((vector unsigned char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector bool char, ((a1)), int, ((a2))), \
-      ((vector bool char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector signed short, ((a1)), int, ((a2))), \
-      ((vector signed short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned short, ((a1)), int, ((a2))), \
-      ((vector unsigned short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector bool short, ((a1)), int, ((a2))), \
-      ((vector bool short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector pixel, ((a1)), int, ((a2))), \
-      ((vector pixel) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector float, ((a1)), int, ((a2))), \
-      ((vector float) __builtin_altivec_vspltw ((vector signed int) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector signed int, ((a1)), int, ((a2))), \
-      ((vector signed int) __builtin_altivec_vspltw ((vector signed int) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned int, ((a1)), int, ((a2))), \
-      ((vector unsigned int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector bool int, ((a1)), int, ((a2))), \
-      ((vector bool int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) ((a2)))), \
+__ch (__un_args_eq (vector signed char, (a1)), \
+      ((vector signed char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector unsigned char, (a1)), \
+      ((vector unsigned char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector bool char, (a1)), \
+      ((vector bool char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector signed short, (a1)), \
+      ((vector signed short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector unsigned short, (a1)), \
+      ((vector unsigned short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector bool short, (a1)), \
+      ((vector bool short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector pixel, (a1)), \
+      ((vector pixel) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector float, (a1)), \
+      ((vector float) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector signed int, (a1)), \
+      ((vector signed int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector unsigned int, (a1)), \
+      ((vector unsigned int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector bool int, (a1)), \
+      ((vector bool int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
     __builtin_altivec_compiletime_error ("vec_splat"))))))))))))
 
 #define vec_vspltw(a1, a2) \
-__ch (__bin_args_eq (vector float, ((a1)), int, ((a2))), \
-      ((vector float) __builtin_altivec_vspltw ((vector signed int) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector float, ((a1)), unsigned int, ((a2))), \
-      ((vector float) __builtin_altivec_vspltw ((vector signed int) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector signed int, ((a1)), int, ((a2))), \
-      ((vector signed int) __builtin_altivec_vspltw ((vector signed int) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector signed int, ((a1)), unsigned int, ((a2))), \
-      ((vector signed int) __builtin_altivec_vspltw ((vector signed int) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned int, ((a1)), int, ((a2))), \
-      ((vector unsigned int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned int, ((a1)), unsigned int, ((a2))), \
-      ((vector unsigned int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) ((a2)))), \
-__builtin_altivec_compiletime_error ("vec_vspltw")))))))
+__ch (__un_args_eq (vector float, (a1)), \
+      ((vector float) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector signed int, (a1)), \
+      ((vector signed int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector unsigned int, (a1)), \
+      ((vector unsigned int) __builtin_altivec_vspltw ((vector signed int) (a1), (const int) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vspltw"))))
 
 #define vec_vsplth(a1, a2) \
-__ch (__bin_args_eq (vector signed short, ((a1)), int, ((a2))), \
-      ((vector signed short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector signed short, ((a1)), unsigned int, ((a2))), \
-      ((vector signed short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned short, ((a1)), int, ((a2))), \
-      ((vector unsigned short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned short, ((a1)), unsigned int, ((a2))), \
-      ((vector unsigned short) __builtin_altivec_vsplth ((vector signed short) ((a1)), (const int) ((a2)))), \
-__builtin_altivec_compiletime_error ("vec_vsplth")))))
+__ch (__un_args_eq (vector signed short, (a1)), \
+      ((vector signed short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector unsigned short, (a1)), \
+      ((vector unsigned short) __builtin_altivec_vsplth ((vector signed short) (a1), (const int) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vsplth")))
 
 #define vec_vspltb(a1, a2) \
-__ch (__bin_args_eq (vector signed char, ((a1)), int, ((a2))), \
-      ((vector signed char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector signed char, ((a1)), unsigned int, ((a2))), \
-      ((vector signed char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned char, ((a1)), int, ((a2))), \
-      ((vector unsigned char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__ch (__bin_args_eq (vector unsigned char, ((a1)), unsigned int, ((a2))), \
-      ((vector unsigned char) __builtin_altivec_vspltb ((vector signed char) ((a1)), (const int) ((a2)))), \
-__builtin_altivec_compiletime_error ("vec_vspltb")))))
+__ch (__un_args_eq (vector signed char, (a1)), \
+      ((vector signed char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
+__ch (__un_args_eq (vector unsigned char, (a1)), \
+      ((vector unsigned char) __builtin_altivec_vspltb ((vector signed char) (a1), (const int) (a2))), \
+__builtin_altivec_compiletime_error ("vec_vspltb")))
 
-#define vec_splat_s8(a1) \
-__ch (__un_args_eq (int, (a1)), \
-      ((vector signed char) __builtin_altivec_vspltisb ((a1))), \
-__builtin_altivec_compiletime_error ("vec_splat_s8"))
+#define vec_splat_s8(a1) ((vector signed char) __builtin_altivec_vspltisb (a1))
 
-#define vec_splat_s16(a1) \
-__ch (__un_args_eq (int, (a1)), \
-      ((vector signed short) __builtin_altivec_vspltish ((a1))), \
-__builtin_altivec_compiletime_error ("vec_splat_s16"))
+#define vec_splat_s16(a1) ((vector signed short) __builtin_altivec_vspltish (a1))
 
-#define vec_splat_s32(a1) \
-__ch (__un_args_eq (int, (a1)), \
-      ((vector signed int) __builtin_altivec_vspltisw ((a1))), \
-__builtin_altivec_compiletime_error ("vec_splat_s32"))
+#define vec_splat_s32(a1) ((vector signed int) __builtin_altivec_vspltisw (a1))
 
-#define vec_splat_u8(a1) \
-__ch (__un_args_eq (int, (a1)), \
-      ((vector unsigned char) __builtin_altivec_vspltisb ((a1))), \
-__builtin_altivec_compiletime_error ("vec_splat_u8"))
+#define vec_splat_u8(a1) ((vector unsigned char) __builtin_altivec_vspltisb (a1))
 
-#define vec_splat_u16(a1) \
-__ch (__un_args_eq (int, (a1)), \
-      ((vector unsigned short) __builtin_altivec_vspltish ((a1))), \
-__builtin_altivec_compiletime_error ("vec_splat_u16"))
+#define vec_splat_u16(a1) ((vector unsigned short) __builtin_altivec_vspltish (a1))
 
-#define vec_splat_u32(a1) \
-__ch (__un_args_eq (int, (a1)), \
-      ((vector unsigned int) __builtin_altivec_vspltisw ((a1))), \
-__builtin_altivec_compiletime_error ("vec_splat_u32"))
+#define vec_splat_u32(a1) ((vector unsigned int) __builtin_altivec_vspltisw (a1))
 
 #define vec_sr(a1, a2) \
 __ch (__bin_args_eq (vector signed char, (a1), vector unsigned char, (a2)), \
@@ -9934,145 +9895,145 @@ __ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, (a2)), \
     __builtin_altivec_compiletime_error ("vec_sro")))))))))))))))))
 
 #define vec_st(a1, a2, a3) \
-__ch (__tern_args_eq (vector unsigned char, (a1), int, (a2), vector unsigned char, *(a3)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned char, (a1), int, (a2), unsigned char, *(a3)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), unsigned char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed char, (a1), int, (a2), vector signed char, *(a3)), \
+__ch (__bin_args_eq (vector signed char, (a1), vector signed char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed char, (a1), int, (a2), signed char, *(a3)), \
+__ch (__bin_args_eq (vector signed char, (a1), signed char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool char, (a1), int, (a2), vector bool char, *(a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector bool char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool char, (a1), int, (a2), unsigned char, *(a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), unsigned char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool char, (a1), int, (a2), signed char, *(a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), signed char, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned short, (a1), int, (a2), vector unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned short, (a1), int, (a2), unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), unsigned short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed short, (a1), int, (a2), vector signed short, *(a3)), \
+__ch (__bin_args_eq (vector signed short, (a1), vector signed short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed short, (a1), int, (a2), short, *(a3)), \
+__ch (__bin_args_eq (vector signed short, (a1), short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool short, (a1), int, (a2), vector bool short, *(a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector bool short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool short, (a1), int, (a2), unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), unsigned short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool short, (a1), int, (a2), short, *(a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector pixel, (a1), int, (a2), vector pixel, *(a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), vector pixel, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector pixel, (a1), int, (a2), unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), unsigned short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector pixel, (a1), int, (a2), short, *(a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), short, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned int, (a1), int, (a2), vector unsigned int, *(a3)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned int, (a1), int, (a2), unsigned int, *(a3)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), unsigned int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed int, (a1), int, (a2), vector signed int, *(a3)), \
+__ch (__bin_args_eq (vector signed int, (a1), vector signed int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed int, (a1), int, (a2), int, *(a3)), \
+__ch (__bin_args_eq (vector signed int, (a1), int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool int, (a1), int, (a2), vector bool int, *(a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector bool int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool int, (a1), int, (a2), unsigned int, *(a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), unsigned int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool int, (a1), int, (a2), int, *(a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), int, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector float, (a1), int, (a2), vector float, *(a3)), \
+__ch (__bin_args_eq (vector float, (a1), vector float, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector float, (a1), int, (a2), float, *(a3)), \
+__ch (__bin_args_eq (vector float, (a1), float, *(a3)), \
   __builtin_altivec_stvx ((vector signed int) (a1), (a2), (void *) (a3)), \
 __builtin_altivec_compiletime_error ("vec_st")))))))))))))))))))))))))))
 
 #define vec_stl(a1, a2, a3) \
-__ch (__tern_args_eq (vector unsigned char, (a1), int, (a2), vector unsigned char, *(a3)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), vector unsigned char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned char, (a1), int, (a2), unsigned char, *(a3)), \
+__ch (__bin_args_eq (vector unsigned char, (a1), unsigned char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed char, (a1), int, (a2), vector signed char, *(a3)), \
+__ch (__bin_args_eq (vector signed char, (a1), vector signed char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed char, (a1), int, (a2), signed char, *(a3)), \
+__ch (__bin_args_eq (vector signed char, (a1), signed char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool char, (a1), int, (a2), vector bool char, *(a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), vector bool char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool char, (a1), int, (a2), unsigned char, *(a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), unsigned char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool char, (a1), int, (a2), signed char, *(a3)), \
+__ch (__bin_args_eq (vector bool char, (a1), signed char, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned short, (a1), int, (a2), vector unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), vector unsigned short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned short, (a1), int, (a2), unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector unsigned short, (a1), unsigned short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed short, (a1), int, (a2), vector signed short, *(a3)), \
+__ch (__bin_args_eq (vector signed short, (a1), vector signed short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed short, (a1), int, (a2), short, *(a3)), \
+__ch (__bin_args_eq (vector signed short, (a1), short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool short, (a1), int, (a2), vector bool short, *(a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), vector bool short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool short, (a1), int, (a2), unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), unsigned short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool short, (a1), int, (a2), short, *(a3)), \
+__ch (__bin_args_eq (vector bool short, (a1), short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector pixel, (a1), int, (a2), vector pixel, *(a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), vector pixel, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector pixel, (a1), int, (a2), unsigned short, *(a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), unsigned short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector pixel, (a1), int, (a2), short, *(a3)), \
+__ch (__bin_args_eq (vector pixel, (a1), short, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned int, (a1), int, (a2), vector unsigned int, *(a3)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), vector unsigned int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector unsigned int, (a1), int, (a2), unsigned int, *(a3)), \
+__ch (__bin_args_eq (vector unsigned int, (a1), unsigned int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed int, (a1), int, (a2), vector signed int, *(a3)), \
+__ch (__bin_args_eq (vector signed int, (a1), vector signed int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector signed int, (a1), int, (a2), int, *(a3)), \
+__ch (__bin_args_eq (vector signed int, (a1), int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool int, (a1), int, (a2), vector bool int, *(a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), vector bool int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool int, (a1), int, (a2), unsigned int, *(a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), unsigned int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector bool int, (a1), int, (a2), int, *(a3)), \
+__ch (__bin_args_eq (vector bool int, (a1), int, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector float, (a1), int, (a2), vector float, *(a3)), \
+__ch (__bin_args_eq (vector float, (a1), vector float, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
-__ch (__tern_args_eq (vector float, (a1), int, (a2), float, *(a3)), \
+__ch (__bin_args_eq (vector float, (a1), float, *(a3)), \
   __builtin_altivec_stvxl ((vector signed int) (a1), (a2), (void *) (a3)), \
 __builtin_altivec_compiletime_error ("vec_stl")))))))))))))))))))))))))))
 
 #define vec_ste(a, b, c) \
-__ch (__tern_args_eq (vector unsigned char, (a), int, (b), unsigned char, *(c)), \
+__ch (__bin_args_eq (vector unsigned char, (a), unsigned char, *(c)), \
       __builtin_altivec_stvebx ((vector signed char) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector signed char, (a), int, (b), signed char, *(c)), \
+__ch (__bin_args_eq (vector signed char, (a), signed char, *(c)), \
       __builtin_altivec_stvebx ((vector signed char) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector bool char, (a), int, (b), unsigned char, *(c)), \
+__ch (__bin_args_eq (vector bool char, (a), unsigned char, *(c)), \
       __builtin_altivec_stvebx ((vector signed char) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector bool char, (a), int, (b), signed char, *(c)), \
+__ch (__bin_args_eq (vector bool char, (a), signed char, *(c)), \
       __builtin_altivec_stvebx ((vector signed char) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector unsigned short, (a), int, (b), unsigned short, *(c)), \
+__ch (__bin_args_eq (vector unsigned short, (a), unsigned short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector signed short, (a), int, (b), short, *(c)), \
+__ch (__bin_args_eq (vector signed short, (a), short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector bool short, (a), int, (b), unsigned short, *(c)), \
+__ch (__bin_args_eq (vector bool short, (a), unsigned short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector bool short, (a), int, (b), short, *(c)), \
+__ch (__bin_args_eq (vector bool short, (a), short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector pixel, (a), int, (b), unsigned short, *(c)), \
+__ch (__bin_args_eq (vector pixel, (a), unsigned short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector pixel, (a), int, (b), short, *(c)), \
+__ch (__bin_args_eq (vector pixel, (a), short, *(c)), \
      __builtin_altivec_stvehx ((vector signed short) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector unsigned int, (a), int, (b), unsigned int, *(c)), \
+__ch (__bin_args_eq (vector unsigned int, (a), unsigned int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector signed int, (a), int, (b), int, *(c)), \
+__ch (__bin_args_eq (vector signed int, (a), int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector bool int, (a), int, (b), unsigned int, *(c)), \
+__ch (__bin_args_eq (vector bool int, (a), unsigned int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector bool int, (a), int, (b), int, *(c)), \
+__ch (__bin_args_eq (vector bool int, (a), int, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (void *) (c)), \
-__ch (__tern_args_eq (vector float, (a), int, (b), float, *(c)), \
+__ch (__bin_args_eq (vector float, (a), float, *(c)), \
      __builtin_altivec_stvewx ((vector signed int) (a), (b), (void *) (c)), \
      __builtin_altivec_compiletime_error ("vec_ste"))))))))))))))))
 

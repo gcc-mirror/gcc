@@ -1,3 +1,13 @@
+2004-05-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/rs6000/altivec.h (vec_ctf, vec_vcfsx, vec_vcfux, vec_cts,
+	vec_ctu, vec_dss, vec_dst, vec_dstst, vec_dststt, vec_dstt, vec_ld,
+	vec_ldl, vec_lvsl, vec_lvsr, vec_sld, vec_splat, vec_vspltw,
+	vec_vsplth, vec_vspltb, vec_splat_s8, vec_splat_s16, vec_splat_s32,
+	vec_splat_u8, vec_splat_u16, vec_splat_u32, vec_st, vec_stl,
+	vec_ste): Remove type checks for integral parameters and literals
+	from '..._args_eq' macros.
+
 2004-05-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.c (fname_as_string): Fix xcalloc to xmalloc.
