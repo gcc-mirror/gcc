@@ -5,6 +5,11 @@ Sun Dec 13 00:24:14 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Sat Dec 12 23:39:10 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* m68k/t-m68kelf (MULTILIB_OPTIONS): Add mcpu32.
+	(MULTILIB_MATCHES): -m68332 now uses mcpu32 libraries, not m68000.
+	(MULTILIB_EXCEPTIONS): Don't build 68881 libraries for m68000,
+	mcpu32 or m5200.
+
 	* i386/next.h (ASM_OUTPUT_ALIGN): Use 0x90 for fill character.
 
 	* rtlanal.c (multiple_sets): New function.
