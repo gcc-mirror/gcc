@@ -398,14 +398,13 @@ add_dependency (tree def, struct lim_aux_data *data, struct loop *loop,
 static unsigned
 stmt_cost (tree stmt)
 {
-  tree lhs, rhs;
+  tree rhs;
   unsigned cost = 1;
 
   /* Always try to create possibilities for unswitching.  */
   if (TREE_CODE (stmt) == COND_EXPR)
     return LIM_EXPENSIVE;
 
-  lhs = TREE_OPERAND (stmt, 0);
   rhs = TREE_OPERAND (stmt, 1);
 
   /* Hoisting memory references out should almost surely be a win.  */

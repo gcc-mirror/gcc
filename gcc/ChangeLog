@@ -32,6 +32,8 @@
 
 	* tree-ssa-alias.c (may_alias_p): Remove v_ann.
 
+	* tree-ssa-loop-im.c (lhs): Remove.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
