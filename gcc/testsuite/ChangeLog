@@ -1,3 +1,7 @@
+2002-12-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/parse/angle-bracket.C (main): No longer fails.
+
 2002-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/eh/spec4.C: Remove stray semicolon.
