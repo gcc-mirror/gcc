@@ -108,7 +108,8 @@ scan_ident (fp, s, c)
   return c;
 }
 
-int scan_string (fp, s, init)
+int
+scan_string (fp, s, init)
      register FILE *fp;
      register sstring *s;
 {
@@ -140,7 +141,8 @@ int scan_string (fp, s, init)
 
 /* Skip horizontal white spaces (spaces, tabs, and C-style comments). */
 
-int skip_spaces (fp, c)
+int
+skip_spaces (fp, c)
      register FILE *fp;
      int c;
 {
