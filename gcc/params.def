@@ -260,6 +260,11 @@ DEFPARAM(GGC_MIN_HEAPSIZE,
 #undef GGC_MIN_EXPAND_DEFAULT
 #undef GGC_MIN_HEAPSIZE_DEFAULT
 
+DEFPARAM(PARAM_MAX_RELOAD_SEARCH_INSNS,
+	 "max-reload-search-insns",
+	 "The maximum number of instructions to search backward when looking for equivalent reload",
+	 100)
+
 /*
 Local variables:
 mode:c
