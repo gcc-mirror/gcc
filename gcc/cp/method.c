@@ -679,7 +679,7 @@ build_overload_value (type, value, in_template)
 	REAL_VALUE_TYPE val;
 	char *bufp = digit_buffer;
 
-	pedwarn ("ANSI C++ forbids floating-point template arguments");
+	cp_pedwarn (ec_forbids_floatingpoint_template_arguments);
 
 	my_friendly_assert (TREE_CODE (value) == REAL_CST, 244);
 	val = TREE_REAL_CST (value);
@@ -1814,12 +1814,12 @@ hack_identifier (value, name)
 #ifdef DEAD
 	      if (DECL_CHAIN (fndecl) == NULL_TREE)
 		{
-		  warning ("methods cannot be converted to function pointers");
+		  cp_warning (ec_methods_cannot_be_converted_to_function_pointers);
 		  return fndecl;
 		}
 	      else
 		{
-		  error ("ambiguous request for method pointer `%s'",
+		  cp_error (ec_ambiguous_request_for_method_pointer_s,
 			 IDENTIFIER_POINTER (name));
 		  return error_mark_node;
 		}
@@ -1840,13 +1840,13 @@ hack_identifier (value, name)
 	{
 	  if (current_function_decl 
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
-	    cp_error ("invalid use of member `%D' in static member function",
+	    cp_error (ec_invalid_use_of_member_in_static_member_function,
 		      value);
 	  else
 	    /* We can get here when processing a bad default
 	       argument, like:
 	         struct S { int a; void f(int i = a); }  */
-	    cp_error ("invalid use of member `%D'", value);
+	    cp_error (ec_invalid_use_of_member, value);
 
 	  return error_mark_node;
 	}
@@ -1887,12 +1887,12 @@ hack_identifier (value, name)
     }
   else if (TREE_CODE (value) == NAMESPACE_DECL)
     {
-      cp_error ("use of namespace `%D' as expression", value);
+      cp_error (ec_use_of_namespace_as_expression, value);
       return error_mark_node;
     }
   else if (DECL_CLASS_TEMPLATE_P (value))
     {
-      cp_error ("use of class template `%T' as expression", value);
+      cp_error (ec_use_of_class_template_as_expression, value);
       return error_mark_node;
     }
   else
@@ -1904,10 +1904,10 @@ hack_identifier (value, name)
       if (context != NULL_TREE && context != current_function_decl
 	  && ! TREE_STATIC (value))
 	{
-	  cp_error ("use of %s from containing function",
+	  cp_error (ec_use_of_s_from_containing_function,
 		      (TREE_CODE (value) == VAR_DECL
 		       ? "`auto' variable" : "parameter"));
-	  cp_error_at ("  `%#D' declared here", value);
+	  cp_error_at (ec_declared_here, value);
 	  value = error_mark_node;
 	}
     }
@@ -1930,12 +1930,12 @@ hack_identifier (value, name)
 	      if (access != access_public_node)
 		{
 		  if (TREE_CODE (value) == VAR_DECL)
-		    error ("static member `%s' is %s",
+		    cp_error (ec_static_member_s_is_s,
 			   IDENTIFIER_POINTER (name),
 			   TREE_PRIVATE (value) ? "private"
 						: "from a private base class");
 		  else
-		    error ("enum `%s' is from private base class",
+		    cp_error (ec_enum_s_is_from_private_base_class,
 			   IDENTIFIER_POINTER (name));
 		  return error_mark_node;
 		}
@@ -1946,7 +1946,7 @@ hack_identifier (value, name)
     {
       if (type == 0)
 	{
-	  error ("request for member `%s' is ambiguous in multiple inheritance lattice",
+	  cp_error (ec_request_for_member_s_is_ambiguous_in_multiple_inheritance_lattice,
 		 IDENTIFIER_POINTER (name));
 	  return error_mark_node;
 	}
@@ -1992,7 +1992,7 @@ make_thunk (function, delta)
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
   if (thunk && TREE_CODE (thunk) != THUNK_DECL)
     {
-      cp_error ("implementation-reserved name `%D' used", thunk_id);
+      cp_error (ec_implementationreserved_name_used, thunk_id);
       thunk = NULL_TREE;
       SET_IDENTIFIER_GLOBAL_VALUE (thunk_id, thunk);
     }
@@ -2061,7 +2061,7 @@ emit_thunk (thunk_fndecl)
     tree a, t;
 
     if (varargs_function_p (function))
-      cp_error ("generic thunk code fails for method `%#D' which uses `...'",
+      cp_error (ec_generic_thunk_code_fails_for_method_which_uses,
 		function);
 
     /* Set up clone argument trees for the thunk.  */
@@ -2173,7 +2173,7 @@ do_build_copy_constructor (fndecl)
 	  p = convert_from_reference (p);
 
 	  if (p == error_mark_node)
-	    cp_error ("in default copy constructor");
+	    cp_error (ec_in_default_copy_constructor);
 	  else 
 	    current_base_init_list = tree_cons (basetype,
 						p, current_base_init_list);
@@ -2191,7 +2191,7 @@ do_build_copy_constructor (fndecl)
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 
 	  if (p == error_mark_node) 
-	    cp_error ("in default copy constructor");
+	    cp_error (ec_in_default_copy_constructor);
 	  else 
 	    {
 	      p = convert_from_reference (p);
@@ -2299,17 +2299,17 @@ do_build_assign_ref (fndecl)
 	  if (TREE_READONLY (field))
 	    {
 	      if (DECL_NAME (field))
-		cp_error ("non-static const member `%#D', can't use default assignment operator", field);
+		cp_error (ec_nonstatic_const_member_cant_use_default_assignment_operator, field);
 	      else
-		cp_error ("non-static const member in type `%T', can't use default assignment operator", current_class_type);
+		cp_error (ec_nonstatic_const_member_in_type_cant_use_default_assignment_operator, current_class_type);
 	      continue;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
 	    {
 	      if (DECL_NAME (field))
-		cp_error ("non-static reference member `%#D', can't use default assignment operator", field);
+		cp_error (ec_nonstatic_reference_member_cant_use_default_assignment_operator, field);
 	      else
-		cp_error ("non-static reference member in type `%T', can't use default assignment operator", current_class_type);
+		cp_error (ec_nonstatic_reference_member_in_type_cant_use_default_assignment_operator, current_class_type);
 	      continue;
 	    }
 

@@ -832,7 +832,7 @@ open_xref_file(file)
 
   if (xref_file == NULL)
     {
-      error("Can't create cross-reference file `%s'", xref_name);
+      cp_error (ec_ant_create_crossreference_file_s, xref_name);
       doing_xref = 0;
     }
 }

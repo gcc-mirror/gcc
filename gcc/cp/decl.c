@@ -133,7 +133,7 @@ static struct stack_level *decl_stack;
 
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
-static char *redeclaration_error_message	PROTO((tree, tree));
+static error_code redeclaration_error_message	PROTO((tree, tree));
 static tree push_overloaded_decl		PROTO((tree, int));
 
 static struct stack_level *push_decl_level PROTO((struct stack_level *,
@@ -1117,7 +1117,7 @@ poplevel (keep, reverse, functionbody)
 	    {
 	      if (BLOCK_VARS (block) || BLOCK_TYPE_TAGS (block))
 		{
-		  warning ("internal compiler error: debugging info corrupted");
+		  cp_warning (ec_internal_compiler_error_debugging_info_corrupted);
 		}
 	      BLOCK_VARS (block) = decls;
 	      BLOCK_TYPE_TAGS (block) = tags;
@@ -1257,12 +1257,12 @@ poplevel (keep, reverse, functionbody)
 
 	  if (DECL_INITIAL (label) == NULL_TREE)
 	    {
-	      cp_error_at ("label `%D' used but not defined", label);
+	      cp_error_at (ec_label_used_but_not_defined, label);
 	      /* Avoid crashing later.  */
 	      define_label (input_filename, 1, DECL_NAME (label));
 	    }
 	  else if (warn_unused && !TREE_USED (label))
-	    cp_warning_at ("label `%D' defined but not used", label);
+	    cp_warning_at (ec_label_defined_but_not_used, label);
 	  SET_IDENTIFIER_LABEL_VALUE (DECL_NAME (label), NULL_TREE);
 
           /* Put the labels into the "variables" of the
@@ -1808,7 +1808,7 @@ push_namespace (name)
           need_new = 0;
           if (DECL_NAMESPACE_ALIAS (d))
             {
-              cp_error ("namespace alias `%D' not allowed here, assuming `%D'",
+              cp_error (ec_namespace_alias_not_allowed_here_assuming,
                         d, DECL_NAMESPACE_ALIAS (d));
               d = DECL_NAMESPACE_ALIAS (d);
             }
@@ -2520,9 +2520,9 @@ decls_match (newdecl, olddecl)
       if (TREE_CODE (f1) != TREE_CODE (f2))
 	{
 	  if (TREE_CODE (f1) == OFFSET_TYPE)
-	    cp_compiler_error ("`%D' redeclared as member function", newdecl);
+	    cp_compiler_error (ec_redeclared_as_member_function, newdecl);
 	  else
-	    cp_compiler_error ("`%D' redeclared as non-member function", newdecl);
+	    cp_compiler_error (ec_redeclared_as_nonmember_function, newdecl);
 	  return 0;
 	}
 
@@ -2603,11 +2603,6 @@ warn_extern_redeclared_static (newdecl, olddecl)
 {
   tree name;
 
-  static char *explicit_extern_static_warning
-    = "`%D' was declared `extern' and later `static'";
-  static char *implicit_extern_static_warning
-    = "`%D' was declared implicitly `extern' and later `static'";
-
   if (TREE_CODE (newdecl) == TYPE_DECL)
     return;
 
@@ -2623,10 +2618,10 @@ warn_extern_redeclared_static (newdecl, olddecl)
 		 || DECL_BUILT_IN_NONANSI (olddecl))))
 	{
 	  cp_pedwarn (IDENTIFIER_IMPLICIT_DECL (name)
-		      ? implicit_extern_static_warning
-		      : explicit_extern_static_warning, newdecl);
+		      ? ec_implicit_extern_static
+		      : ec_explicit_extern_static, newdecl);
 	  if (olddecl != NULL_TREE)
-	    cp_pedwarn_at ("previous declaration of `%D'", olddecl);
+	    cp_pedwarn_at (ec_previous_declaration_of, olddecl);
 	}
     }
 }
@@ -2674,7 +2669,7 @@ duplicate_decls (newdecl, olddecl)
 	      && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl)))
 	{
 	  if (warn_shadow)
-	    cp_warning ("shadowing %s function `%#D'",
+	    cp_warning (ec_shadowing_s_function,
 			DECL_BUILT_IN (olddecl) ? "built-in" : "library",
 			olddecl);
 	  /* Discard the old built-in function.  */
@@ -2687,19 +2682,19 @@ duplicate_decls (newdecl, olddecl)
 	      /* If the built-in is not ansi, then programs can override
 		 it even globally without an error.  */
 	      if (! DECL_BUILT_IN (olddecl))
-		cp_warning ("library function `%#D' redeclared as non-function `%#D'",
+		cp_warning (ec_library_function_redeclared_as_nonfunction,
 			    olddecl, newdecl);
 	      else
 		{
-		  cp_error ("declaration of `%#D'", newdecl);
-		  cp_error ("conflicts with built-in declaration `%#D'",
+		  cp_error (ec_declaration_of, newdecl);
+		  cp_error (ec_conflicts_with_builtin_declaration,
 			    olddecl);
 		}
 	      return 0;
 	    }
 
-	  cp_warning ("declaration of `%#D'", newdecl);
-	  cp_warning ("conflicts with built-in declaration `%#D'",
+	  cp_warning (ec_declaration_of, newdecl);
+	  cp_warning (ec_conflicts_with_builtin_declaration,
 		      olddecl);
 	}
     }
@@ -2729,10 +2724,10 @@ duplicate_decls (newdecl, olddecl)
 	      && DECL_FUNCTION_TEMPLATE_P (newdecl)))
 	return 0;
 
-      cp_error ("`%#D' redeclared as different kind of symbol", newdecl);
+      cp_error (ec_redeclared_as_different_kind_of_symbol, newdecl);
       if (TREE_CODE (olddecl) == TREE_LIST)
 	olddecl = TREE_VALUE (olddecl);
-      cp_error_at ("previous declaration of `%#D'", olddecl);
+      cp_error_at (ec_previous_declaration_of, olddecl);
 
       /* New decl is completely inconsistent with the old one =>
 	 tell caller to replace the old one.  */
@@ -2749,8 +2744,8 @@ duplicate_decls (newdecl, olddecl)
 	  if (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == TYPE_DECL
 	      || TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
 	    {
-	      cp_error ("declaration of template `%#D'", newdecl);
-	      cp_error_at ("conflicts with previous declaration `%#D'",
+	      cp_error (ec_declaration_of_template, newdecl);
+	      cp_error_at (ec_conflicts_with_previous_declaration,
 			   olddecl);
 	    }
 	  else if (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == FUNCTION_DECL
@@ -2760,8 +2755,8 @@ duplicate_decls (newdecl, olddecl)
 		   && comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
 					   DECL_TEMPLATE_PARMS (olddecl)))
 	    {
-	      cp_error ("new declaration `%#D'", newdecl);
-	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
+	      cp_error (ec_new_declaration, newdecl);
+	      cp_error_at (ec_ambiguates_old_declaration, olddecl);
 	    }
 	  return 0;
 	}
@@ -2770,15 +2765,15 @@ duplicate_decls (newdecl, olddecl)
 	  if (DECL_LANGUAGE (newdecl) == lang_c
 	      && DECL_LANGUAGE (olddecl) == lang_c)
 	    {
-	      cp_error ("declaration of C function `%#D' conflicts with",
+	      cp_error (ec_declaration_of_function_conflicts_with,
 			newdecl);
-	      cp_error_at ("previous declaration `%#D' here", olddecl);
+	      cp_error_at (ec_previous_declaration_here, olddecl);
 	    }
 	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 			      TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 3))
 	    {
-	      cp_error ("new declaration `%#D'", newdecl);
-	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
+	      cp_error (ec_new_declaration, newdecl);
+	      cp_error_at (ec_ambiguates_old_declaration, olddecl);
 	    }
 	  else
 	    return 0;
@@ -2788,8 +2783,8 @@ duplicate_decls (newdecl, olddecl)
       else if (current_class_type == NULL_TREE
 	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
 	{
-	  cp_error ("conflicting types for `%#D'", newdecl);
-	  cp_error_at ("previous declaration as `%#D'", olddecl);
+	  cp_error (ec_conflicting_types_for, newdecl);
+	  cp_error_at (ec_previous_declaration_as, olddecl);
 	}
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL 
@@ -2825,15 +2820,15 @@ duplicate_decls (newdecl, olddecl)
     return 1;
   else
     {
-      char *errmsg = redeclaration_error_message (newdecl, olddecl);
-      if (errmsg)
+      error_code ec = redeclaration_error_message (newdecl, olddecl);
+      if (ec != ec_last_error_code)
 	{
-	  cp_error (errmsg, newdecl);
+	  cp_error (ec, newdecl);
 	  if (DECL_NAME (olddecl) != NULL_TREE)
 	    cp_error_at ((DECL_INITIAL (olddecl)
 			  && namespace_bindings_p ())
-			 ? "`%#D' previously defined here"
-			 : "`%#D' previously declared here", olddecl);
+			 ? ec_previously_defined_here
+			 : ec_previously_declared_here_2, olddecl);
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != NULL_TREE
@@ -2841,8 +2836,8 @@ duplicate_decls (newdecl, olddecl)
 	       && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != NULL_TREE)
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
-	  cp_warning_at ("prototype for `%#D'", newdecl);
-	  cp_warning_at ("follows non-prototype definition here", olddecl);
+	  cp_warning_at (ec_prototype_for, newdecl);
+	  cp_warning_at (ec_follows_nonprototype_definition_here, olddecl);
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
@@ -2854,9 +2849,9 @@ duplicate_decls (newdecl, olddecl)
 	    DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
 	  else
 	    {
-	      cp_error_at ("previous declaration of `%#D' with %L linkage",
+	      cp_error_at (ec_previous_declaration_of_with_linkage,
 			   olddecl, DECL_LANGUAGE (olddecl));
-	      cp_error ("conflicts with new declaration with %L linkage",
+	      cp_error (ec_conflicts_with_new_declaration_with_linkage,
 			DECL_LANGUAGE (newdecl));
 	    }
 	}
@@ -2881,17 +2876,17 @@ duplicate_decls (newdecl, olddecl)
 		  {
 		    if (pedantic)
 		      {
-			cp_pedwarn ("default argument given for parameter %d of `%#D'",
+			cp_pedwarn (ec_default_argument_given_for_parameter_d_of,
 				    i, newdecl);
-			cp_pedwarn_at ("after previous specification in `%#D'",
+			cp_pedwarn_at (ec_after_previous_specification_in,
 				       olddecl);
 		      }
 		  }
 		else
 		  {
-		    cp_error ("default argument given for parameter %d of `%#D'",
+		    cp_error (ec_default_argument_given_for_parameter_d_of,
 			      i, newdecl);
-		    cp_error_at ("after previous specification in `%#D'",
+		    cp_error_at (ec_after_previous_specification_in,
 				 olddecl);
 		  }
 	      }
@@ -2899,9 +2894,9 @@ duplicate_decls (newdecl, olddecl)
 	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl)
 	      && TREE_ADDRESSABLE (olddecl) && warn_inline)
 	    {
-	      cp_warning ("`%#D' was used before it was declared inline",
+	      cp_warning (ec_was_used_before_it_was_declared_inline,
 			  newdecl);
-	      cp_warning_at ("previous non-inline declaration here",
+	      cp_warning_at (ec_previous_noninline_declaration_here,
 			     olddecl);
 	    }
 	}
@@ -2909,8 +2904,8 @@ duplicate_decls (newdecl, olddecl)
       else if (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
 	       || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl))
 	{
-	  cp_pedwarn ("type qualifiers for `%#D'", newdecl);
-	  cp_pedwarn_at ("conflict with previous decl `%#D'", olddecl);
+	  cp_pedwarn (ec_type_qualifiers_for, newdecl);
+	  cp_pedwarn_at (ec_conflict_with_previous_decl, olddecl);
 	}
     }
 
@@ -2950,8 +2945,8 @@ duplicate_decls (newdecl, olddecl)
 	  /* Don't warn about friends, let add_friend take care of it. */
 	  && ! DECL_FRIEND_P (newdecl))
 	{
-	  cp_warning ("redundant redeclaration of `%D' in same scope", newdecl);
-	  cp_warning_at ("previous declaration of `%D'", olddecl);
+	  cp_warning (ec_redundant_redeclaration_of_in_same_scope, newdecl);
+	  cp_warning_at (ec_previous_declaration_of, olddecl);
 	}
     }
 
@@ -2979,7 +2974,7 @@ duplicate_decls (newdecl, olddecl)
     {
       if (! duplicate_decls (DECL_TEMPLATE_RESULT (newdecl),
 			     DECL_TEMPLATE_RESULT (olddecl)))
-	cp_error ("invalid redeclaration of %D", newdecl);
+	cp_error (ec_invalid_redeclaration_of, newdecl);
       TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
       DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
       if (DECL_TEMPLATE_INFO (newdecl))
@@ -3027,9 +3022,9 @@ duplicate_decls (newdecl, olddecl)
 	      && flag_exceptions
 	      && ! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	    {
-	      cp_pedwarn ("declaration of `%D' throws different exceptions",
+	      cp_pedwarn (ec_declaration_of_throws_different_exceptions,
 			newdecl);
-	      cp_pedwarn_at ("previous declaration here", olddecl);
+	      cp_pedwarn_at (ec_previous_declaration_here, olddecl);
 	    }
 	}
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
@@ -3143,7 +3138,7 @@ duplicate_decls (newdecl, olddecl)
 	       that specialization that would cause an implicit
 	       instantiation to take place, in every translation unit in
 	       which such a use occurs.  */
-	    cp_error ("explicit specialization of %D after first use", 
+	    cp_error (ec_explicit_specialization_of_after_first_use, 
 		      olddecl);
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
@@ -3364,7 +3359,7 @@ pushdecl (x)
 	{
 	  /* error_mark_node is 0 for a while during initialization!  */
 	  t = NULL_TREE;
-	  cp_error_at ("`%#D' used prior to declaration", x);
+	  cp_error_at (ec_used_prior_to_declaration, x);
 	}
 
       else if (t != NULL_TREE)
@@ -3391,7 +3386,7 @@ pushdecl (x)
 	  else if (t == wchar_decl_node)
 	    {
 	      if (pedantic && ! DECL_IN_SYSTEM_HEADER (x))
-		cp_pedwarn ("redeclaration of wchar_t as `%T'", TREE_TYPE (x));
+		cp_pedwarn (ec_redeclaration_of_wchar_t_as, TREE_TYPE (x));
 
 	      /* Throw away the redeclaration.  */
 	      return t;
@@ -3415,7 +3410,7 @@ pushdecl (x)
 
 		  if (extra_warnings)
 		    {
-		      cp_warning ("`static' missing from declaration of `%D'",
+		      cp_warning (ec_static_missing_from_declaration_of,
 				  t);
 		      warning_with_file_and_line (file, line,
 						  "previous declaration of `%s'",
@@ -3448,8 +3443,8 @@ pushdecl (x)
 		 [basic.start.main]
 
 	         This function shall not be overloaded.  */
-	      cp_error_at ("invalid redeclaration of `%D'", t);
-	      cp_error ("as `%D'", x);
+	      cp_error_at (ec_invalid_redeclaration_of, t);
+	      cp_error (ec_as, x);
 	      /* We don't try to push this declaration since that
 		 causes a crash.  */
 	      return x;
@@ -3517,8 +3512,8 @@ pushdecl (x)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl), 1))
 	    {
-	      cp_pedwarn ("type mismatch with previous external decl", x);
-	      cp_pedwarn_at ("previous external decl of `%#D'", decl);
+	      cp_pedwarn (ec_type_mismatch_with_previous_external_decl, x);
+	      cp_pedwarn_at (ec_previous_external_decl_of, decl);
 	    }
 	}
 
@@ -3561,8 +3556,7 @@ pushdecl (x)
 	      /* If this real decl matches the implicit, don't complain.  */
 	      && ! (TREE_CODE (x) == FUNCTION_DECL
 		    && TREE_TYPE (TREE_TYPE (x)) == integer_type_node))
-	    cp_warning
-	      ("`%D' was previously implicitly declared to return `int'", x);
+	    cp_warning (ec_was_previously_implicitly_declared_to_return_int, x); 
 
 	  /* If new decl is `static' and an `extern' was seen previously,
 	     warn about it.  */
@@ -3605,8 +3599,8 @@ pushdecl (x)
 		/* OK */;
 	      else
 		{
-		  cp_warning ("extern declaration of `%#D' doesn't match", x);
-		  cp_warning_at ("global declaration `%#D'", oldglobal);
+		  cp_warning (ec_extern_declaration_of_doesnt_match, x);
+		  cp_warning_at (ec_global_declaration, oldglobal);
 		}
 	    }
 	  /* If we have a local external declaration,
@@ -3637,14 +3631,14 @@ pushdecl (x)
 
 	      /* ARM $8.3 */
 	      if (b->parm_flag == 1)
-		cp_error ("declaration of `%#D' shadows a parameter", name);
+		cp_error (ec_declaration_of_shadows_a_parameter, name);
 	    }
 	  else if (warn_shadow && oldlocal != NULL_TREE && b->is_for_scope
 		   && !DECL_DEAD_FOR_LOCAL (oldlocal))
 	    {
-	      warning ("variable `%s' shadows local",
+	      cp_warning (ec_variable_s_shadows_local,
 		       IDENTIFIER_POINTER (name));
-	      cp_warning_at ("  this is the shadowed declaration", oldlocal);
+	      cp_warning_at (ec_this_is_the_shadowed_declaration, oldlocal);
 	    }		   
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !DECL_EXTERNAL (x)
@@ -3676,8 +3670,8 @@ pushdecl (x)
  	    {
  	      if (decl_template_parm_p (oldlocal))
  		{
-		  cp_error ("re-using name of template parameter `%T' in this scope", name);
- 		  cp_error_at (" previously declared here `%#D'", oldlocal);
+		  cp_error (ec_reusing_name_of_template_parameter_in_this_scope, name);
+ 		  cp_error_at (ec_previously_declared_here, oldlocal);
  		}
  	    }
 	}
@@ -3825,8 +3819,8 @@ pushdecl_class_level (x)
 	      && !(DECL_DECLARES_TYPE_P (icv)
 		   && DECL_CONTEXT (icv) == current_class_type))
 	    {
-	      cp_pedwarn ("declaration of identifier `%D' as `%#D'", name, x);
-	      cp_pedwarn_at ("conflicts with previous use in class as `%#D'",
+	      cp_pedwarn (ec_declaration_of_identifier_as, name, x);
+	      cp_pedwarn_at (ec_conflicts_with_previous_use_in_class_as,
 			     icv);
 	    }
 
@@ -3837,8 +3831,8 @@ pushdecl_class_level (x)
 	    {
 	      if (decl_template_parm_p (ilv))
 		{
-		  cp_error ("re-using name of template parameter `%T' in this scope", name);
-		  cp_error_at (" previously declared here `%#D'", ilv);
+		  cp_error (ec_reusing_name_of_template_parameter_in_this_scope, name);
+		  cp_error_at (ec_previously_declared_here, ilv);
 		}
 	    }
 	}
@@ -4006,7 +4000,7 @@ push_overloaded_decl (decl, forgettable)
 	  if (IS_AGGR_TYPE (t) && warn_shadow
 	      && (! DECL_IN_SYSTEM_HEADER (decl)
 		  || ! DECL_IN_SYSTEM_HEADER (old)))
-	    cp_warning ("`%#D' hides constructor for `%#T'", decl, t);
+	    cp_warning (ec_hides_constructor_for, decl, t);
 	  old = NULL_TREE;
 	}
       else if (is_overloaded_fn (old))
@@ -4020,8 +4014,8 @@ push_overloaded_decl (decl, forgettable)
 	}
       else
 	{
-	  cp_error_at ("previous non-function declaration `%#D'", old);
-	  cp_error ("conflicts with function declaration `%#D'", decl);
+	  cp_error_at (ec_previous_nonfunction_declaration, old);
+	  cp_error (ec_conflicts_with_function_declaration, decl);
 	  return decl;
 	}
     }
@@ -4079,7 +4073,7 @@ implicitly_declare (functionid)
       /* Only one warning per identifier.  */
       && IDENTIFIER_IMPLICIT_DECL (functionid) == NULL_TREE)
     {
-      cp_pedwarn ("implicit declaration of function `%#D'", decl);
+      cp_pedwarn (ec_implicit_declaration_of_function, decl);
     }
 
   SET_IDENTIFIER_IMPLICIT_DECL (functionid, decl);
@@ -4089,13 +4083,13 @@ implicitly_declare (functionid)
   return decl;
 }
 
-/* Return zero if the declaration NEWDECL is valid
+/* Return ec_last_error_code if the declaration NEWDECL is valid
    when the declaration OLDDECL (assumed to be for the same name)
    has already been seen.
    Otherwise return an error message format string with a %s
    where the identifier should go.  */
 
-static char *
+static error_code
 redeclaration_error_message (newdecl, olddecl)
      tree newdecl, olddecl;
 {
@@ -4105,9 +4099,9 @@ redeclaration_error_message (newdecl, olddecl)
 	 constructs like "typedef struct foo { ... } foo"
 	 would look like an erroneous redeclaration.  */
       if (comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 0))
-	return 0;
+	return ec_last_error_code;
       else
-	return "redefinition of `%#D'";
+	return ec_redefinition_of;
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
@@ -4115,13 +4109,13 @@ redeclaration_error_message (newdecl, olddecl)
 	 the original initialization to `0' (which we force to call
 	 abort()).  Don't complain about redefinition in this case.  */
       if (DECL_LANG_SPECIFIC (olddecl) && DECL_ABSTRACT_VIRTUAL_P (olddecl))
-	return 0;
+	return ec_last_error_code;
 
       /* If both functions come from different namespaces, this is not
 	 a redeclaration - this is a conflict with a used function. */
       if (DECL_NAMESPACE_SCOPE_P (olddecl)
 	  && DECL_CONTEXT (olddecl) != DECL_CONTEXT (newdecl))
-	return "`%D' conflicts with used function";
+	return ec_conflicts_with_used_function;
 
       /* We'll complain about linkage mismatches in
          warn_extern_redeclared_static.  */
@@ -4131,11 +4125,11 @@ redeclaration_error_message (newdecl, olddecl)
 	  && DECL_INITIAL (newdecl) != NULL_TREE)
 	{
 	  if (DECL_NAME (olddecl) == NULL_TREE)
-	    return "`%#D' not declared in class";
+	    return ec_not_declared_in_class;
 	  else
-	    return "redefinition of `%#D'";
+	    return ec_redefinition_of;
 	}
-      return 0;
+      return ec_last_error_code;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -4145,17 +4139,17 @@ redeclaration_error_message (newdecl, olddecl)
 	  || (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL
 	      && TYPE_SIZE (TREE_TYPE (newdecl))
 	      && TYPE_SIZE (TREE_TYPE (olddecl))))
-	return "redefinition of `%#D'";
-      return 0;
+	return ec_redefinition_of;
+      return ec_last_error_code;
     }
   else if (toplevel_bindings_p ())
     {
       /* Objects declared at top level:  */
       /* If at least one is a reference, it's ok.  */
       if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
-	return 0;
+	return ec_last_error_code;
       /* Reject two definitions.  */
-      return "redefinition of `%#D'";
+      return ec_redefinition_of;
     }
   else
     {
@@ -4163,8 +4157,8 @@ redeclaration_error_message (newdecl, olddecl)
       /* Reject two definitions, and reject a definition
 	 together with an external reference.  */
       if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)))
-	return "redeclaration of `%#D'";
-      return 0;
+	return ec_redeclaration_of;
+      return ec_last_error_code;
     }
 }
 
@@ -4180,7 +4174,7 @@ lookup_label (id)
 
   if (current_function_decl == NULL_TREE)
     {
-      error ("label `%s' referenced outside of any function",
+      cp_error (ec_label_s_referenced_outside_of_any_function,
 	     IDENTIFIER_POINTER (id));
       return NULL_TREE;
     }
@@ -4297,11 +4291,11 @@ define_label (filename, line, name)
     }
 
   if (name == get_identifier ("wchar_t"))
-    cp_pedwarn ("label named wchar_t");
+    cp_pedwarn (ec_label_named_wchar_t);
 
   if (DECL_INITIAL (decl) != NULL_TREE)
     {
-      cp_error ("duplicate label `%D'", decl);
+      cp_error (ec_duplicate_label, decl);
       return 0;
     }
   else
@@ -4340,13 +4334,13 @@ define_label (filename, line, name)
 		      {
 			if (! identified) 
 			  {
-			    cp_error ("jump to label `%D'", decl);
+			    cp_error (ec_jump_to_label, decl);
 			    error_with_file_and_line (uses->filename_o_goto,
 						      uses->lineno_o_goto,
 						      "  from here");
 			    identified = 1;
 			}
-			cp_error_at ("  crosses initialization of `%#D'",
+			cp_error_at (ec_crosses_initialization_of,
 				     new_decls);
 		      }
 		    new_decls = TREE_CHAIN (new_decls);
@@ -4411,12 +4405,12 @@ define_case_label (decl)
   if (cleanup)
     {
       static int explained = 0;
-      cp_warning_at ("destructor needed for `%#D'", TREE_PURPOSE (cleanup));
-      warning ("where case label appears here");
+      cp_warning_at (ec_destructor_needed_for, TREE_PURPOSE (cleanup));
+      cp_warning (ec_where_case_label_appears_here);
       if (!explained)
 	{
-	  warning ("(enclose actions of previous case statements requiring");
-	  warning ("destructors in their own binding contours.)");
+	  cp_warning (ec_enclose_actions_of_previous_case_statements_requiring);
+	  cp_warning (ec_destructors_in_their_own_binding_contours);
 	  explained = 1;
 	}
     }
@@ -4437,9 +4431,9 @@ define_case_label (decl)
 		  || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls))))
 	    {
 	      if (! identified)
-		error ("jump to case label");
+		cp_error (ec_jump_to_case_label);
 	      identified = 1;
-	      cp_error_at ("  crosses initialization of `%#D'",
+	      cp_error_at (ec_crosses_initialization_of,
 			   new_decls);
 	    }
 	}
@@ -4549,7 +4543,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	    if (old && TREE_CODE (old) != form
 		&& !(form != ENUMERAL_TYPE && TREE_CODE (old) == TEMPLATE_DECL))
 	      {
-		cp_error ("`%#D' redeclared as %C", old, form);
+		cp_error (ec_redeclared_as, old, form);
 		return NULL_TREE;
 	      }
 	    if (old)
@@ -4569,7 +4563,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 		    && !(form != ENUMERAL_TYPE && code == TEMPLATE_DECL))
 		  {
 		    /* Definition isn't the kind we were looking for.  */
-		    cp_error ("`%#D' redeclared as %C", TREE_VALUE (tail),
+		    cp_error (ec_redeclared_as, TREE_VALUE (tail),
 			      form);
 		    return NULL_TREE;
 		  }
@@ -4624,7 +4618,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 			    {
 			      if (TREE_CODE (TREE_VALUE (these_tags)) != form)
 				{
-				  cp_error ("`%#D' redeclared as %C in class scope",
+				  cp_error (ec_redeclared_as_in_class_scope,
 					    TREE_VALUE (tail), form);
 				  return NULL_TREE;
 				}
@@ -4761,7 +4755,7 @@ lookup_namespace_name (namespace, name)
       return val;
     }
 
-  cp_error ("`%D' undeclared in namespace `%D'", name, namespace);
+  cp_error (ec_undeclared_in_namespace, name, namespace);
   return error_mark_node;
 }
 
@@ -4801,7 +4795,7 @@ make_typename_type (context, name)
 	  if (t == NULL_TREE || TREE_CODE (t) != TEMPLATE_DECL
 	      || TREE_CODE (DECL_RESULT (t)) != TYPE_DECL)
 	    {
-	      cp_error ("no class template named `%#T' in `%#T'",
+	      cp_error (ec_no_class_template_named_in,
 			name, context);
 	      return error_mark_node;
 	    }
@@ -4819,7 +4813,7 @@ make_typename_type (context, name)
 
 	  if (t == NULL_TREE)
 	    {
-	      cp_error ("no type named `%#T' in `%#T'", name, context);
+	      cp_error (ec_no_type_named_in, name, context);
 	      return error_mark_node;
 	    }
 
@@ -5155,13 +5149,12 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       if (val && nsval && TREE_CODE (nsval) == TYPE_DECL)
 	{
 	  static int explained;
-	  cp_warning ("namespace-scope type `%#D'", nsval);
-	  cp_warning
-	    ("  is used instead of `%D' from dependent base class", val);
+	  cp_warning (ec_namespacescope_type, nsval);
+	  cp_warning (ec_used_instead_of_decl_from_base, val);
 	  if (! explained)
 	    {
 	      explained = 1;
-	      cp_warning ("  (use `typename %D' if that's what you meant)",
+	      cp_warning (ec_use_typename_if_thats_what_you_meant,
 			  val);
 	    }
 	  val = nsval;
@@ -5178,9 +5171,9 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	      && TREE_CODE (val) == TYPE_DECL
 	      && TREE_TYPE (from_obj) != TREE_TYPE (val))
 	    {
-	      cp_pedwarn ("lookup of `%D' in the scope of `%#T' (`%#T')",
+	      cp_pedwarn (ec_lookup_of_in_the_scope_of,
 			  name, got_object, TREE_TYPE (from_obj));
-	      cp_pedwarn ("  does not match lookup in the current scope (`%#T')",
+	      cp_pedwarn (ec_does_not_match_lookup_in_the_current_scope,
 			  TREE_TYPE (val));
 	    }
 
@@ -6356,7 +6349,7 @@ shadow_tag (declspecs)
       /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
 	 function members.  */
       if (TYPE_METHODS (t))
-	error ("an anonymous union cannot have function members");
+	cp_error (ec_an_anonymous_union_cannot_have_function_members);
 
       if (TYPE_FIELDS (t))
 	{
@@ -6374,19 +6367,19 @@ shadow_tag (declspecs)
 	{
 	  if (ob_modifier == ridpointers[(int) RID_INLINE]
 	      || ob_modifier == ridpointers[(int) RID_VIRTUAL])
-	    cp_error ("`%D' can only be specified for functions", ob_modifier);
+	    cp_error (ec_can_only_be_specified_for_functions, ob_modifier);
 	  else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
-	    cp_error ("`%D' can only be specified for constructors",
+	    cp_error (ec_can_only_be_specified_for_constructors,
 		      ob_modifier);
 	  else
-	    cp_error ("`%D' can only be specified for objects and functions",
+	    cp_error (ec_can_only_be_specified_for_objects_and_functions,
 		      ob_modifier);
 	}
 
       if (found_tag == 0)
-	cp_error ("abstract declarator used as declaration");
+	cp_error (ec_abstract_declarator_used_as_declaration);
       else if (found_tag > 1)
-	pedwarn ("multiple types in one declaration");
+	cp_pedwarn (ec_multiple_types_in_one_declaration);
     }
 }
 
@@ -6503,13 +6496,13 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	   Any other case of an initialization in a TYPE_DECL is an error.  */
 	if (pedantic || list_length (declspecs) > 1)
 	  {
-	    cp_error ("typedef `%D' is initialized", decl);
+	    cp_error (ec_typedef_is_initialized, decl);
 	    initialized = 0;
 	  }
 	break;
 
       case FUNCTION_DECL:
-	cp_error ("function `%#D' is initialized like a variable", decl);
+	cp_error (ec_function_is_initialized_like_a_variable, decl);
 	initialized = 0;
 	break;
 
@@ -6521,8 +6514,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 		if (TYPE_SIZE (type) != NULL_TREE
 		    && ! TREE_CONSTANT (TYPE_SIZE (type)))
 		  {
-		    cp_error
-		      ("variable-sized object `%D' may not be initialized",
+		    cp_error (ec_variablesized_object_may_not_be_initialized,
 		       decl);
 		    initialized = 0;
 		  }
@@ -6530,8 +6522,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 		if (TREE_CODE (type) == ARRAY_TYPE
 		    && TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
 		  {
-		    cp_error
-		      ("elements of array `%#D' have incomplete type", decl);
+		    cp_error (ec_elements_of_array_have_incomplete_type, decl);
 		    initialized = 0;
 		  }
 	      }
@@ -6542,7 +6533,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
     {
       if (! toplevel_bindings_p ()
 	  && DECL_EXTERNAL (decl))
-	cp_warning ("declaration of `%#D' has `extern' and is initialized",
+	cp_warning (ec_declaration_of_has_extern_and_is_initialized,
 		    decl);
       DECL_EXTERNAL (decl) = 0;
       if (toplevel_bindings_p ())
@@ -6560,12 +6551,12 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	{
 	  tree field = lookup_field (context, DECL_NAME (decl), 0, 0);
 	  if (field == NULL_TREE || TREE_CODE (field) != VAR_DECL)
-	    cp_error ("`%#D' is not a static member of `%#T'", decl, context);
+	    cp_error (ec_is_not_a_static_member_of, decl, context);
 	  else
 	    {
 	      if (DECL_CONTEXT (field) != context)
 		{
-		  cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'",
+		  cp_pedwarn (ec_does_not_permit_to_be_defined_as,
 			      DECL_CONTEXT (field), DECL_NAME (decl),
 			      context, DECL_NAME (decl));
 		  DECL_CONTEXT (decl) = DECL_CONTEXT (field);
@@ -6576,7 +6567,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 		 initialization.  Thus, duplicate_decls won't warn
 		 about this situation, and so we check here.  */
 	      if (DECL_INITIAL (decl) && DECL_INITIAL (field))
-		cp_error ("duplicate initialization of %D", decl);
+		cp_error (ec_duplicate_initialization_of, decl);
 	      if (duplicate_decls (decl, field))
 		decl = field;
 	    }
@@ -6595,7 +6586,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 
       if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl))
-	cp_pedwarn ("declaration of `%#D' outside of class is not definition",
+	cp_pedwarn (ec_declaration_of_outside_of_class_is_not_definition,
 		    decl);
 
       pushclass (context, 2);
@@ -6706,7 +6697,7 @@ start_decl_1 (decl)
 	;			/* A complete type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
-	  cp_error ("variable `%#D' has initializer but incomplete type",
+	  cp_error (ec_variable_has_initializer_but_incomplete_type,
 		    decl);
 	  initialized = 0;
 	  type = TREE_TYPE (decl) = error_mark_node;
@@ -6714,7 +6705,7 @@ start_decl_1 (decl)
       else if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
 	{
 	  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
-	    cp_error ("elements of array `%#D' have incomplete type", decl);
+	    cp_error (ec_elements_of_array_have_incomplete_type, decl);
 	  /* else we already gave an error in start_decl.  */
 	  initialized = 0;
 	}
@@ -6728,7 +6719,7 @@ start_decl_1 (decl)
       if ((! processing_template_decl || ! uses_template_parms (type))
 	  && TYPE_SIZE (complete_type (type)) == NULL_TREE)
 	{
-	  cp_error ("aggregate `%#D' has incomplete type and cannot be initialized",
+	  cp_error (ec_aggregate_has_incomplete_type_and_cannot_be_initialized,
 		 decl);
 	  /* Change the type so that assemble_variable will give
 	     DECL an rtl we can live with: (mem (const_int 0)).  */
@@ -6785,7 +6776,7 @@ grok_reference_init (decl, type, init)
 	   || DECL_IN_AGGR_P (decl) == 0)
 	  && ! DECL_THIS_EXTERN (decl))
 	{
-	  cp_error ("`%D' declared as reference but not initialized", decl);
+	  cp_error (ec_declared_as_reference_but_not_initialized, decl);
 	  if (TREE_CODE (decl) == VAR_DECL)
 	    SET_DECL_REFERENCE_SLOT (decl, error_mark_node);
 	}
@@ -6798,7 +6789,7 @@ grok_reference_init (decl, type, init)
   if (TREE_CODE (type) == REFERENCE_TYPE
       && TREE_CODE (init) == CONSTRUCTOR)
     {
-      cp_error ("ANSI C++ forbids use of initializer list to initialize reference `%D'", decl);
+      cp_error (ec_forbids_use_of_initializer_list_to_initialize_reference, decl);
       return;
     }
 
@@ -6832,7 +6823,7 @@ grok_reference_init (decl, type, init)
     }
   else
     {
-      cp_error ("cannot initialize `%T' from `%T'", type, TREE_TYPE (init));
+      cp_error (ec_cannot_initialize_from, type, TREE_TYPE (init));
       goto fail;
     }
 
@@ -6927,7 +6918,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   if (! decl)
     {
       if (init)
-	error ("assignment (not initialization) in declaration");
+	cp_error (ec_assignment_not_initialization_in_declaration);
       return;
     }
 
@@ -6937,7 +6928,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
   if (init && TREE_CODE (init) == NAMESPACE_DECL)
     {
-      cp_error ("Cannot initialize `%D' to namespace `%D'",
+      cp_error (ec_annot_initialize_to_namespace,
 		decl, init);
       init = NULL_TREE;
     }
@@ -7002,7 +6993,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  && IS_AGGR_TYPE (type) && DECL_NAME (decl))
 	{
 	  if (TREE_TYPE (DECL_NAME (decl)) && TREE_TYPE (decl) != type)
-	    cp_warning ("shadowing previous type declaration of `%#D'", decl);
+	    cp_warning (ec_shadowing_previous_type_declaration_of, decl);
 	  set_identifier_type_value (DECL_NAME (decl), type);
 	  CLASSTYPE_GOT_SEMICOLON (type) = 1;
 	}
@@ -7090,7 +7081,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	    {
 	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{
-		  cp_error ("`%D' must be initialized by constructor, not by `{...}'",
+		  cp_error (ec_must_be_initialized_by_constructor_not_by,
 			    decl);
 		  init = error_mark_node;
 		}
@@ -7121,9 +7112,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (! TYPE_NEEDS_CONSTRUCTING (ctype))
 	{
 	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (ctype))
-	    cp_error ("structure `%D' with uninitialized const members", decl);
+	    cp_error (ec_structure_with_uninitialized_const_members, decl);
 	  if (CLASSTYPE_REF_FIELDS_NEED_INIT (ctype))
-	    cp_error ("structure `%D' with uninitialized reference members",
+	    cp_error (ec_structure_with_uninitialized_reference_members,
 		      decl);
 	}
 
@@ -7131,7 +7122,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  && !DECL_INITIAL (decl)
 	  && !TYPE_NEEDS_CONSTRUCTING (type)
 	  && (TYPE_READONLY (type) || TREE_READONLY (decl)))
-	cp_error ("uninitialized const `%D'", decl);
+	cp_error (ec_uninitialized_const, decl);
 
       if (TYPE_SIZE (type) != NULL_TREE
 	  && TYPE_NEEDS_CONSTRUCTING (type))
@@ -7150,7 +7141,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (! DECL_INITIAL (decl)
 	  && TREE_CODE (type) != ARRAY_TYPE
 	  && (!pedantic || !current_class_type))
-	cp_error ("uninitialized const `%#D'", decl);
+	cp_error (ec_uninitialized_const, decl);
     }
 
   /* For top-level declaration, the initial value was read in
@@ -7177,12 +7168,12 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       int failure = complete_array_type (type, initializer, do_default);
 
       if (failure == 1)
-	cp_error ("initializer fails to determine size of `%D'", decl);
+	cp_error (ec_initializer_fails_to_determine_size_of, decl);
 
       if (failure == 2)
 	{
 	  if (do_default)
-	    cp_error ("array size missing in `%D'", decl);
+	    cp_error (ec_array_size_missing_in, decl);
 	  /* If a `static' var's size isn't known, make it extern as
 	     well as static, so it does not get allocated.  If it's not
 	     `static', then don't mark it extern; finish_incomplete_decl
@@ -7194,7 +7185,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (pedantic && TYPE_DOMAIN (type) != NULL_TREE
 	  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
 			      integer_zero_node))
-	cp_error ("zero-size array `%D'", decl);
+	cp_error (ec_zerosize_array, decl);
 
       layout_decl (decl, 0);
     }
@@ -7212,7 +7203,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	     Otherwise, let it through, but if it is not `extern'
 	     then it may cause an error message later.  */
 	  if (DECL_INITIAL (decl) != NULL_TREE)
-	    cp_error ("storage size of `%D' isn't known", decl);
+	    cp_error (ec_storage_size_of_isnt_known, decl);
 	  init = NULL_TREE;
 	}
       else if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
@@ -7220,7 +7211,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  /* An automatic variable with an incomplete type: that is an error.
 	     Don't talk about array types here, since we took care of that
 	     message in grokdeclarator.  */
-	  cp_error ("storage size of `%D' isn't known", decl);
+	  cp_error (ec_storage_size_of_isnt_known, decl);
 	  TREE_TYPE (decl) = error_mark_node;
 	}
       else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
@@ -7237,7 +7228,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
 	    constant_expression_warning (DECL_SIZE (decl));
 	  else
-	    cp_error ("storage size of `%D' isn't constant", decl);
+	    cp_error (ec_storage_size_of_isnt_constant, decl);
 	}
 
       if (! DECL_EXTERNAL (decl) && TYPE_NEEDS_DESTRUCTOR (type)
@@ -7459,7 +7450,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		  /* XXX: Why don't we use decl here?  */
 		  /* Ans: Because it was already expanded? */
 		  if (! expand_decl_cleanup (NULL_TREE, cleanup))
-		    cp_error ("parser lost in parsing declaration of `%D'",
+		    cp_error (ec_parser_lost_in_parsing_declaration_of,
 			      decl);
 		  /* Cleanup used up here.  */
 		  cleanup = NULL_TREE;
@@ -7555,7 +7546,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      if (cleanup)
 		{
 		  if (! expand_decl_cleanup (decl, cleanup))
-		    cp_error ("parser lost in parsing declaration of `%D'",
+		    cp_error (ec_parser_lost_in_parsing_declaration_of,
 			      decl);
 		}
 	    }
@@ -7634,7 +7625,7 @@ expand_static_init (decl, init)
   if (oldstatic)
     {
       if (TREE_PURPOSE (oldstatic) && init != NULL_TREE)
-	cp_error ("multiple initializations given for `%D'", decl);
+	cp_error (ec_multiple_initializations_given_for, decl);
     }
   else if (! toplevel_bindings_p () && ! pseudo_global_level_p ())
     {
@@ -7831,16 +7822,16 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
      int virtualp, quals, friendp, raises, inlinep;
 {
   if (virtualp)
-    cp_error ("`%D' declared as a `virtual' %s", object, type);
+    cp_error (ec_declared_as_a_virtual_s, object, type);
   if (inlinep)
-    cp_error ("`%D' declared as an `inline' %s", object, type);
+    cp_error (ec_declared_as_an_inline_s, object, type);
   if (quals)
-    cp_error ("`const' and `volatile' function specifiers on `%D' invalid in %s declaration",
+    cp_error (ec_const_and_volatile_function_specifiers_on_invalid_in_s_declaration,
 	      object, type);
   if (friendp)
-    cp_error_at ("invalid friend declaration", object);
+    cp_error_at (ec_invalid_friend_declaration, object);
   if (raises)
-    cp_error_at ("invalid exception specifications", object);
+    cp_error_at (ec_invalid_exception_specifications, object);
 }
 
 /* CTYPE is class type, or null if non-class.
@@ -7905,9 +7896,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (ctype == NULL_TREE && MAIN_NAME_P (declarator))
     {
       if (inlinep)
-	error ("cannot declare `main' to be inline");
+	cp_error (ec_cannot_declare_main_to_be_inline);
       else if (! publicp)
-	error ("cannot declare `main' to be static");
+	cp_error (ec_cannot_declare_main_to_be_static);
       inlinep = 0;
       publicp = 1;
     }
@@ -7927,9 +7918,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       if (t)
 	{
 	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
-	    cp_pedwarn ("non-local function `%#D' uses anonymous type", decl);
+	    cp_pedwarn (ec_nonlocal_function_uses_anonymous_type, decl);
 	  else
-	    cp_pedwarn ("non-local function `%#D' uses local type `%T'",
+	    cp_pedwarn (ec_nonlocal_function_uses_local_type,
 			decl, t);
 	}
     }
@@ -7947,7 +7938,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   DECL_EXTERNAL (decl) = 1;
   if (quals != NULL_TREE && TREE_CODE (type) == FUNCTION_TYPE)
     {
-      cp_error ("%smember function `%D' cannot have `%T' method qualifier",
+      cp_error (ec_smember_function_cannot_have_method_qualifier,
 		(ctype ? "static " : "non-"), decl, TREE_VALUE (quals));
       quals = NULL_TREE;
     }
@@ -7970,15 +7961,14 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
     {
       if (funcdef_flag)
-	cp_error
-	  ("defining explicit specialization `%D' in friend declaration",
+	cp_error (ec_defining_explicit_specialization_in_friend_declaration,
 	   orig_declarator);
       else
 	{
 	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    {
 	      /* Something like `template <class T> friend void f<T>()'.  */
-	      cp_error ("template-id `%D' in declaration of primary template", 
+	      cp_error (ec_templateid_in_declaration_of_primary_template, 
 			orig_declarator);
 	      return error_mark_node;
 	    }
@@ -8028,7 +8018,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	    tmp = DECL_TEMPLATE_RESULT(tmp);
 
 	  if (tmp && DECL_ARTIFICIAL (tmp))
-	    cp_error ("definition of implicitly-declared `%D'", tmp);
+	    cp_error (ec_definition_of_implicitlydeclared, tmp);
 	  if (tmp && duplicate_decls (decl, tmp))
 	    return tmp;
 	}
@@ -8042,7 +8032,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	  if (tmp == NULL_TREE)
 	    SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl), decl);
 	  else if (TREE_CODE (tmp) != TREE_CODE (decl))
-	    cp_error ("inconsistent declarations for `%D'", decl);
+	    cp_error (ec_inconsistent_declarations_for, decl);
 	  else
 	    {
 	      duplicate_decls (decl, tmp);
@@ -8086,7 +8076,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	      last_function_parms = TREE_CHAIN (last_function_parms);
 	    }
 	  if (tmp && DECL_ARTIFICIAL (tmp))
-	    cp_error ("definition of implicitly-declared `%D'", tmp);
+	    cp_error (ec_definition_of_implicitlydeclared, tmp);
 	  if (tmp)
 	    {
 	      if (!duplicate_decls (decl, tmp))
@@ -8116,7 +8106,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	      if (tmp == NULL_TREE)
 		SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl), decl);
 	      else if (TREE_CODE (tmp) != TREE_CODE (decl))
-		cp_error ("inconsistent declarations for `%D'", decl);
+		cp_error (ec_inconsistent_declarations_for, decl);
 	      else
 		{
 		  duplicate_decls (decl, tmp);
@@ -8220,7 +8210,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
 	    /* Ignore for now; `enum { foo } e' is pretty common.  */;
 	  else
-	    cp_pedwarn ("non-local variable `%#D' uses local type `%T'",
+	    cp_pedwarn (ec_nonlocal_variable_uses_local_type,
 			decl, t);
 	}
     }
@@ -8428,7 +8418,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		{
 		  if (current_class_type == NULL_TREE)
 		    {
-		      error ("destructors must be member functions");
+		      cp_error (ec_destructors_must_be_member_functions);
 		      flags = NO_SPECIAL;
 		    }
 		  else
@@ -8447,7 +8437,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	      if (rename)
 		{
-		  cp_error ("destructor `%T' must match class name `%T'",
+		  cp_error (ec_destructor_must_match_class_name,
 			    name, rename);
 		  TREE_OPERAND (decl, 0) = rename;
 		}
@@ -8528,7 +8518,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (is_rid (dname))
 	      {
-		cp_error ("declarator-id missing; using reserved word `%D'",
+		cp_error (ec_declaratorid_missing_using_reserved_word,
 			  dname);
 		name = IDENTIFIER_POINTER (dname);
 	      }
@@ -8572,9 +8562,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      else if (TREE_CODE (cname) == TEMPLATE_TYPE_PARM
 		       || TREE_CODE (cname) == TEMPLATE_TEMPLATE_PARM)
 		{
-		  cp_error ("`%T::%D' is not a valid declarator", cname,
+		  cp_error (ec_is_not_a_valid_declarator, cname,
 			    TREE_OPERAND (decl, 1));
-		  cp_error ("  perhaps you want `typename %T::%D' to make it a type",
+		  cp_error (ec_perhaps_you_want_typename_to_make_it_a_type,
 			    cname, TREE_OPERAND (decl, 1));
 		  return void_type_node;
 		}
@@ -8586,7 +8576,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		{
 		  if (! UNIQUELY_DERIVED_FROM_P (cname, ctype))
 		    {
-		      cp_error ("type `%T' is not derived from type `%T'",
+		      cp_error (ec_type_is_not_derived_from_type,
 				cname, ctype);
 		      TREE_OPERAND (decl, 0) = NULL_TREE;
 		    }
@@ -8632,9 +8622,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  case TYPE_DECL:
 	    /* Parse error puts this typespec where
 	       a declarator should go.  */
-	    cp_error ("`%T' specified as declarator-id", DECL_NAME (decl));
+	    cp_error (ec_specified_as_declaratorid, DECL_NAME (decl));
 	    if (TREE_TYPE (decl) == current_class_type)
-	      cp_error ("  perhaps you want `%T' for a constructor",
+	      cp_error (ec_perhaps_you_want_for_a_constructor,
 			current_class_name);
 	    dname = DECL_NAME (decl);
 	    name = IDENTIFIER_POINTER (dname);
@@ -8649,7 +8639,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    break;
 
 	  default:
-	    cp_compiler_error ("`%D' as declarator", decl);
+	    cp_compiler_error (ec_as_declarator, decl);
 	    return 0; /* We used to do a 155 abort here.  */
 	  }
       }
@@ -8667,7 +8657,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       && innermost_code != CALL_EXPR
       && ! (ctype && declspecs == NULL_TREE))
     {
-      cp_error ("declaration of `%D' as non-function", dname);
+      cp_error (ec_declaration_of_as_nonfunction, dname);
       return void_type_node;
     }
 
@@ -8734,9 +8724,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      if (type)
 		{
 		  if (id == ridpointers[(int) RID_BOOL])
-		    error ("`bool' is now a keyword");
+		    cp_error (ec_bool_is_now_a_keyword);
 		  else
-		    cp_error ("extraneous `%T' ignored", id);
+		    cp_error (ec_extraneous_ignored, id);
 		}
 	      else
 		{
@@ -8752,7 +8742,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (IDENTIFIER_HAS_TYPE_VALUE (id))
 	    {
 	      if (type)
-		cp_error ("multiple declarations `%T' and `%T'", type, id);
+		cp_error (ec_multiple_declarations_and, type, id);
 	      else
 		type = IDENTIFIER_TYPE_VALUE (id);
 	      goto found;
@@ -8765,14 +8755,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  if (i == (int) RID_LONG && RIDBIT_SETP (i, specbits))
 		    {
 		      if (pedantic && ! in_system_header && warn_long_long)
-			pedwarn ("ANSI C++ does not support `long long'");
+			cp_pedwarn (ec_does_not_support_long_long);
 		      if (longlong)
-			error ("`long long long' is too long for GCC");
+			cp_error (ec_long_long_long_is_too_long_for);
 		      else
 			longlong = 1;
 		    }
 		  else if (RIDBIT_SETP (i, specbits))
-		    pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		    cp_pedwarn (ec_duplicate_s, IDENTIFIER_POINTER (id));
 		  RIDBIT_SET (i, specbits);
 		  goto found;
 		}
@@ -8782,7 +8772,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       else if (TREE_CODE (id) == TYPE_DECL || TREE_CODE (id) == TEMPLATE_DECL)
 	{
 	  if (type)
-	    cp_error ("multiple declarations `%T' and `%T'", type,
+	    cp_error (ec_multiple_declarations_and, type,
 		      TREE_TYPE (id));
 	  else
 	    {
@@ -8792,12 +8782,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  goto found;
 	}
       if (type)
-	error ("two or more data types in declaration of `%s'", name);
+	cp_error (ec_two_or_more_data_types_in_declaration_of_s, name);
       else if (TREE_CODE (id) == IDENTIFIER_NODE)
 	{
 	  register tree t = lookup_name (id, 1);
 	  if (!t || TREE_CODE (t) != TYPE_DECL)
-	    error ("`%s' fails to be a typedef or built in type",
+	    cp_error (ec_s_fails_to_be_a_typedef_or_built_in_type,
 		   IDENTIFIER_POINTER (id));
 	  else
 	    {
@@ -8863,14 +8853,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		warn_about_return_type = 1;
 	    }
 	  else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
-	    pedwarn ("ANSI C++ forbids typedef which does not specify a type");
+	    cp_pedwarn (ec_forbids_typedef_which_does_not_specify_a_type);
 	  else if (innermost_code != CALL_EXPR || pedantic
 		   || (warn_return_type && return_type == return_normal))
 	    {
 	      if (innermost_code == CALL_EXPR)
-		cp_pedwarn ("return-type of `%D' defaults to `int'", dname);
+		cp_pedwarn (ec_returntype_of_defaults_to_int, dname);
 	      else
-		cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
+		cp_pedwarn (ec_forbids_declaration_with_no_type,
 			    dname);
 	    }
 	  type = integer_type_node;
@@ -8878,21 +8868,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     }
   else if (return_type == return_dtor)
     {
-      error ("return type specification for destructor invalid");
+      cp_error (ec_return_type_specification_for_destructor_invalid);
       type = void_type_node;
     }
   else if (return_type == return_ctor)
     {
-      error ("return type specification for constructor invalid");
+      cp_error (ec_return_type_specification_for_constructor_invalid);
       type = build_pointer_type (ctor_return_type);
     }
   else if (return_type == return_conversion)
     {
       if (comptypes (type, ctor_return_type, 1) == 0)
-	cp_error ("operator `%T' declared to return `%T'",
+	cp_error (ec_operator_declared_to_return,
 		  ctor_return_type, type);
       else
-	cp_pedwarn ("return type specified for `operator %T'",
+	cp_pedwarn (ec_return_type_specified_for_operator,
 		    ctor_return_type);
 
       type = ctor_return_type;
@@ -8923,29 +8913,29 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       int ok = 0;
 
       if (TREE_CODE (type) == REAL_TYPE)
-	error ("short, signed or unsigned invalid for `%s'", name);
+	cp_error (ec_short_signed_or_unsigned_invalid_for_s, name);
       else if (TREE_CODE (type) != INTEGER_TYPE)
-	error ("long, short, signed or unsigned invalid for `%s'", name);
+	cp_error (ec_long_short_signed_or_unsigned_invalid_for_s, name);
       else if (RIDBIT_SETP (RID_LONG, specbits)
 	       && RIDBIT_SETP (RID_SHORT, specbits))
-	error ("long and short specified together for `%s'", name);
+	cp_error (ec_long_and_short_specified_together_for_s, name);
       else if ((RIDBIT_SETP (RID_LONG, specbits)
 		|| RIDBIT_SETP (RID_SHORT, specbits))
 	       && explicit_char)
-	error ("long or short specified with char for `%s'", name);
+	cp_error (ec_long_or_short_specified_with_char_for_s, name);
       else if ((RIDBIT_SETP (RID_LONG, specbits)
 		|| RIDBIT_SETP (RID_SHORT, specbits))
 	       && TREE_CODE (type) == REAL_TYPE)
-	error ("long or short specified with floating type for `%s'", name);
+	cp_error (ec_long_or_short_specified_with_floating_type_for_s, name);
       else if (RIDBIT_SETP (RID_SIGNED, specbits)
 	       && RIDBIT_SETP (RID_UNSIGNED, specbits))
-	error ("signed and unsigned given together for `%s'", name);
+	cp_error (ec_signed_and_unsigned_given_together_for_s, name);
       else
 	{
 	  ok = 1;
 	  if (!explicit_int && !defaulted_int && !explicit_char && pedantic)
 	    {
-	      pedwarn ("long, short, signed or unsigned used invalidly for `%s'",
+	      cp_pedwarn (ec_long_short_signed_or_unsigned_used_invalidly_for_s,
 		       name);
 	      if (flag_pedantic_errors)
 		ok = 0;
@@ -8966,7 +8956,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   if (RIDBIT_SETP (RID_COMPLEX, specbits)
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
     {
-      error ("complex invalid for `%s'", name);
+      cp_error (ec_complex_invalid_for_s, name);
       RIDBIT_RESET (RID_COMPLEX, specbits);
     }
 
@@ -9033,7 +9023,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   if (return_type == return_conversion 
       && (RIDBIT_SETP (RID_CONST, specbits)
 	  || RIDBIT_SETP (RID_VOLATILE, specbits)))
-    cp_error ("`operator %T' cannot be cv-qualified",
+    cp_error (ec_operator_cannot_be_cvqualified,
 	      ctor_return_type);
 
   /* Set CONSTP if this declaration is `const', whether by
@@ -9055,7 +9045,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   if (virtualp && staticp == 2)
     {
-      cp_error ("member `%D' cannot be declared both virtual and static",
+      cp_error (ec_member_cannot_be_declared_both_virtual_and_static,
 		dname);
       staticp = 0;
     }
@@ -9066,12 +9056,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       if (decl_context == PARM)
 	{
-	  error ("non-member `%s' cannot be declared `mutable'", name);
+	  cp_error (ec_nonmember_s_cannot_be_declared_mutable, name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
       else if (friendp || decl_context == TYPENAME)
 	{
-	  error ("non-object member `%s' cannot be declared `mutable'", name);
+	  cp_error (ec_nonobject_member_s_cannot_be_declared_mutable, name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
     }
@@ -9083,11 +9073,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (RIDBIT_SETP (RID_STATIC, specbits)) nclasses++;
       if (RIDBIT_SETP (RID_EXTERN, specbits)) nclasses++;
       if (decl_context == PARM && nclasses > 0)
-	error ("storage class specifiers invalid in parameter declarations");
+	cp_error (ec_storage_class_specifiers_invalid_in_parameter_declarations);
       if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	{
 	  if (decl_context == PARM)
-	    error ("typedef declaration invalid in parameter declaration");
+	    cp_error (ec_typedef_declaration_invalid_in_parameter_declaration);
 	  nclasses++;
 	}
       if (RIDBIT_SETP (RID_AUTO, specbits)) nclasses++;
@@ -9098,12 +9088,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   if (virtualp
       && (current_class_name == NULL_TREE || decl_context != FIELD))
     {
-      error ("virtual outside class declaration");
+      cp_error (ec_virtual_outside_class_declaration);
       virtualp = 0;
     }
   if (current_class_name == NULL_TREE && RIDBIT_SETP (RID_MUTABLE, specbits))
     {
-      error ("only members can be declared mutable");
+      cp_error (ec_only_members_can_be_declared_mutable);
       RIDBIT_RESET (RID_MUTABLE, specbits);
     }
 
@@ -9121,29 +9111,29 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       if (constp)
 	{
-	  error ("`const' specified for signature member function `%s'", name);
+	  cp_error (ec_const_specified_for_signature_member_function_s, name);
 	  constp = 0;
 	}
       if (volatilep)
 	{
-	  error ("`volatile' specified for signature member function `%s'",
+	  cp_error (ec_volatile_specified_for_signature_member_function_s,
 		 name);
 	  volatilep = 0;
 	}
       if (inlinep)
 	{
-	  error ("`inline' specified for signature member function `%s'", name);
+	  cp_error (ec_inline_specified_for_signature_member_function_s, name);
 	  /* Later, we'll make signature member functions inline.  */
 	  inlinep = 0;
 	}
       if (friendp)
 	{
-	  error ("`friend' declaration in signature definition");
+	  cp_error (ec_friend_declaration_in_signature_definition);
 	  friendp = 0;
 	}
       if (virtualp)
 	{
-	  error ("`virtual' specified for signature member function `%s'",
+	  cp_error (ec_virtual_specified_for_signature_member_function_s,
 		 name);
 	  /* Later, we'll make signature member functions virtual.  */
 	  virtualp = 0;
@@ -9154,7 +9144,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      kinds of declarations (parameters, typenames, etc.).  */
 
   if (nclasses > 1)
-    error ("multiple storage classes in declaration of `%s'", name);
+    cp_error (ec_multiple_storage_classes_in_declaration_of_s, name);
   else if (decl_context != NORMAL && nclasses > 0)
     {
       if ((decl_context == PARM || decl_context == CATCHPARM)
@@ -9186,7 +9176,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    tmp = TREE_OPERAND (declarator, 0);
 		  op = IDENTIFIER_OPNAME_P (tmp);
 		}
-	      error ("storage class specified for %s `%s'",
+	      cp_error (ec_storage_class_specified_for_s_s,
 		     IS_SIGNATURE (current_class_type)
 		     ? (op
 			? "signature member operator"
@@ -9216,22 +9206,22 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  /* It's common practice (and completely valid) to have a const
 	     be initialized and declared extern.  */
 	  if (! constp)
-	    warning ("`%s' initialized and declared `extern'", name);
+	    cp_warning (ec_s_initialized_and_declared_extern, name);
 	}
       else
-	error ("`%s' has both `extern' and initializer", name);
+	cp_error (ec_s_has_both_extern_and_initializer, name);
     }
   else if (RIDBIT_SETP (RID_EXTERN, specbits) && funcdef_flag
 	   && ! toplevel_bindings_p ())
-    error ("nested function `%s' declared `extern'", name);
+    cp_error (ec_nested_function_s_declared_extern, name);
   else if (toplevel_bindings_p ())
     {
       if (RIDBIT_SETP (RID_AUTO, specbits))
-	error ("top-level declaration of `%s' specifies `auto'", name);
+	cp_error (ec_toplevel_declaration_of_s_specifies_auto, name);
     }
 
   if (nclasses > 0 && friendp)
-    error ("storage class specifiers invalid in friend function declarations");
+    cp_error (ec_storage_class_specifiers_invalid_in_friend_function_declarations);
 
   /* Now figure out the structure of the declarator proper.
      Descend through it, creating more complex types, until we reach
@@ -9298,13 +9288,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (TREE_CODE (type) == VOID_TYPE)
 	      {
-		cp_error ("declaration of `%D' as array of voids", dname);
+		cp_error (ec_declaration_of_as_array_of_voids, dname);
 		type = error_mark_node;
 	      }
 
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
-		cp_error ("declaration of `%D' as array of functions", dname);
+		cp_error (ec_declaration_of_as_array_of_functions, dname);
 		type = error_mark_node;
 	      }
 
@@ -9315,23 +9305,23 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    if (TREE_CODE (type) == REFERENCE_TYPE)
 	      {
 		if (decl_context == TYPENAME)
-		  cp_error ("cannot make arrays of references");
+		  cp_error (ec_cannot_make_arrays_of_references);
 		else
-		  cp_error ("declaration of `%D' as array of references",
+		  cp_error (ec_declaration_of_as_array_of_references,
 			    dname);
 		type = error_mark_node;
 	      }
 
 	    if (TREE_CODE (type) == OFFSET_TYPE)
 	      {
-		  cp_error ("declaration of `%D' as array of data members",
+		  cp_error (ec_declaration_of_as_array_of_data_members,
 			    dname);
 		type = error_mark_node;
 	      }
 
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      {
-		cp_error ("declaration of `%D' as array of function members",
+		cp_error (ec_declaration_of_as_array_of_function_members,
 			  dname);
 		type = error_mark_node;
 	      }
@@ -9370,14 +9360,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
 		    && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE)
 		  {
-		    cp_error ("size of array `%D' has non-integer type",
+		    cp_error (ec_size_of_array_has_noninteger_type,
 			      dname);
 		    size = integer_one_node;
 		  }
 		if (TREE_READONLY_DECL_P (size))
 		  size = decl_constant_value (size);
 		if (pedantic && integer_zerop (size))
-		  cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", dname);
+		  cp_pedwarn (ec_forbids_zerosize_array, dname);
 		if (TREE_CONSTANT (size))
 		  {
 		    int old_flag_pedantic_errors = flag_pedantic_errors;
@@ -9389,7 +9379,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    flag_pedantic_errors = old_flag_pedantic_errors;
 		    if (INT_CST_LT (size, integer_zero_node))
 		      {
-			cp_error ("size of array `%D' is negative", dname);
+			cp_error (ec_size_of_array_is_negative, dname);
 			size = integer_one_node;
 		      }
 		  }
@@ -9398,10 +9388,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    if (pedantic)
 		      {
 			if (dname)
-			  cp_pedwarn ("ANSI C++ forbids variable-size array `%D'",
+			  cp_pedwarn (ec_forbids_variablesize_array_name,
 				      dname);
 			else
-			  cp_pedwarn ("ANSI C++ forbids variable-size array");
+			  cp_pedwarn (ec_forbids_variablesize_array);
 		      }
 		  }
 
@@ -9414,7 +9404,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  itype = variable_size (itype);
 		else if (TREE_OVERFLOW (itype))
 		  {
-		    error ("overflow in array dimension");
+		    cp_error (ec_overflow_in_array_dimension);
 		    TREE_OVERFLOW (itype) = 0;
 		  }
 
@@ -9461,7 +9451,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 #if 0
 	    /* Is this an error?  Should they be merged into TYPE here?  */
 	    if (pedantic && (constp || volatilep))
-	      pedwarn ("function declared to return const or volatile result");
+	      cp_pedwarn (ec_function_declared_to_return_const_or_volatile_result);
 #else
 	    /* Merge any constancy or volatility into the function return
                type.  */
@@ -9480,12 +9470,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
-		error ("`%s' declared as function returning a function", name);
+		cp_error (ec_s_declared_as_function_returning_a_function, name);
 		type = integer_type_node;
 	      }
 	    if (TREE_CODE (type) == ARRAY_TYPE)
 	      {
-		error ("`%s' declared as function returning an array", name);
+		cp_error (ec_s_declared_as_function_returning_an_array, name);
 		type = integer_type_node;
 	      }
 
@@ -9530,10 +9520,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       not be declared const or volatile.  A destructor
 		       may not be static.  */
 		    if (staticp == 2)
-		      error ("destructor cannot be static member function");
+		      cp_error (ec_destructor_cannot_be_static_member_function);
 		    if (quals)
 		      {
-			error ("destructors cannot be declared `const' or `volatile'");
+			cp_error (ec_destructors_cannot_be_declared_const_or_volatile);
 			return void_type_node;
 		      }
 		    if (decl_context == FIELD)
@@ -9551,15 +9541,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       not be declared const or volatile.  A constructor may
 		       not be virtual.  A constructor may not be static.  */
 		    if (staticp == 2)
-		      error ("constructor cannot be static member function");
+		      cp_error (ec_constructor_cannot_be_static_member_function);
 		    if (virtualp)
 		      {
-			pedwarn ("constructors cannot be declared virtual");
+			cp_pedwarn (ec_constructors_cannot_be_declared_virtual);
 			virtualp = 0;
 		      }
 		    if (quals)
 		      {
-			error ("constructors cannot be declared `const' or `volatile'");
+			cp_error (ec_constructors_cannot_be_declared_const_or_volatile);
 			return void_type_node;
  		      }
 		    {
@@ -9568,13 +9558,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      RIDBIT_RESET (RID_INLINE, tmp_bits);
 		      RIDBIT_RESET (RID_STATIC, tmp_bits);
 		      if (RIDBIT_ANY_SET (tmp_bits))
-			error ("return value type specifier for constructor ignored");
+			cp_error (ec_return_value_type_specifier_for_constructor_ignored);
 		    }
 		    type = build_pointer_type (ctype);
 		    if (decl_context == FIELD
 			&& IS_SIGNATURE (current_class_type))
 		      {
-			error ("constructor not allowed in signature");
+			cp_error (ec_constructor_not_allowed_in_signature);
 			return void_type_node;
 		      }			  
 		    else if (decl_context == FIELD)
@@ -9593,18 +9583,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    else if (friendp)
 	      {
 		if (initialized)
-		  error ("can't initialize friend function `%s'", name);
+		  cp_error (ec_cant_initialize_friend_function_s, name);
 		if (virtualp)
 		  {
 		    /* Cannot be both friend and virtual.  */
-		    error ("virtual functions cannot be friends");
+		    cp_error (ec_virtual_functions_cannot_be_friends);
 		    RIDBIT_RESET (RID_FRIEND, specbits);
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
-		  error ("friend declaration not in class definition");
+		  cp_error (ec_friend_declaration_not_in_class_definition);
 		if (current_function_decl && funcdef_flag)
-		  cp_error ("can't define friend function `%s' in a local class definition",
+		  cp_error (ec_cant_define_friend_function_s_in_a_local_class_definition,
 			    name);
 	      }
 
@@ -9633,7 +9623,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    else if (arg_types == NULL_TREE
 			     || arg_types != void_list_node)
 		      {
-			error ("destructors cannot be specified with parameters");
+			cp_error (ec_destructors_cannot_be_specified_with_parameters);
 			arg_types = void_list_node;
 		      }
 		  }
@@ -9663,7 +9653,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      error ("cannot declare %s to references",
+	      cp_error (ec_cannot_declare_s_to_references,
 		     TREE_CODE (declarator) == ADDR_EXPR
 		     ? "references" : "pointers");
 	      declarator = TREE_OPERAND (declarator, 0);
@@ -9674,7 +9664,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      && (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE
 		  || TREE_CODE (TREE_TYPE (type)) == REFERENCE_TYPE))
 	    {
-	      cp_error ("cannot declare pointer to `%#T' member",
+	      cp_error (ec_cannot_declare_pointer_to_member,
 			TREE_TYPE (type));
 	      type = TREE_TYPE (type);
 	    }
@@ -9704,7 +9694,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		{
 		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE
 		      && TYPE_SIZE (type))
-		    cp_warning ("empty signature `%T' used in signature reference declaration",
+		    cp_warning (ec_empty_signature_used_in_signature_reference_declaration,
 				type);
 #if 0
 		  type = build_signature_reference_type (type,
@@ -9718,7 +9708,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		{
 		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE
 		      && TYPE_SIZE (type))
-		    cp_warning ("empty signature `%T' used in signature pointer declaration",
+		    cp_warning (ec_empty_signature_used_in_signature_pointer_declaration,
 				type);
 		  type = build_signature_pointer_type (type,
 						       constp, volatilep);
@@ -9730,13 +9720,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    {
 	      if (TREE_CODE (type) == FUNCTION_TYPE)
 		{
-		  error ("cannot declare references to functions; use pointer to function instead");
+		  cp_error (ec_cannot_declare_references_to_functions_use_pointer_to_function_instead);
 		  type = build_pointer_type (type);
 		}
 	      else
 		{
 		  if (TREE_CODE (type) == VOID_TYPE)
-		    error ("invalid type: `void &'");
+		    cp_error (ec_invalid_type_void);
 		  else
 		    type = build_reference_type (type);
 		}
@@ -9765,22 +9755,22 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  else if (!erred)
 		    {
 		      erred = 1;
-		      error ("invalid type modifier within %s declarator",
+		      cp_error (ec_invalid_type_modifier_within_s_declarator,
 			     TREE_CODE (declarator) == ADDR_EXPR
 			     ? "reference" : "pointer");
 		    }
 		}
 	      if (constp > 1)
-		pedwarn ("duplicate `const'");
+		cp_pedwarn (ec_duplicate_const);
 	      if (volatilep > 1)
-		pedwarn ("duplicate `volatile'");
+		cp_pedwarn (ec_duplicate_volatile);
 	      if (TREE_CODE (declarator) == ADDR_EXPR
 		  && (constp || volatilep))
 		{
 		  if (constp)
-		    pedwarn ("discarding `const' applied to a reference");
+		    cp_pedwarn (ec_discarding_const_applied_to_a_reference);
 		  if (volatilep)
-		    pedwarn ("discarding `volatile' applied to a reference");
+		    cp_pedwarn (ec_discarding_volatile_applied_to_a_reference);
 		  constp = volatilep = 0;
 		}
 	    }
@@ -9880,7 +9870,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       Is this ill-formed?  */
 
 		    if (pedantic)
-		      cp_pedwarn ("extra qualification `%T::' on member `%s' ignored",
+		      cp_pedwarn (ec_extra_qualification_on_member_s_ignored,
 				  ctype, name);
 		  }
 		else if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -9891,7 +9881,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 						      TREE_TYPE (type), TYPE_ARG_TYPES (type));
 		    else
 		      {
-			cp_error ("cannot declare member function `%T::%s' within `%T'",
+			cp_error (ec_cannot_declare_member_function_s_within,
 				  ctype, name, current_class_type);
 			return void_type_node;
 		      }
@@ -9906,7 +9896,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		    if (current_class_type)
 		      {
-			cp_error ("cannot declare member `%T::%s' within `%T'",
+			cp_error (ec_cannot_declare_member_s_within,
 				  ctype, name, current_class_type);
 			return void_type_node;
 		      }
@@ -9924,7 +9914,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   		  }
 		else
 		  {
-		    cp_error ("structure `%T' not yet defined", ctype);
+		    cp_error (ec_structure_not_yet_defined, ctype);
 		    return error_mark_node;
 		  }
 
@@ -9971,7 +9961,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   if (explicitp == 1)
     {
-      error ("only constructors can be declared `explicit'");
+      cp_error (ec_only_constructors_can_be_declared_explicit);
       explicitp = 0;
     }
 
@@ -9983,12 +9973,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       if (constp)
 	{
-	  error ("const `%s' cannot be declared `mutable'", name);
+	  cp_error (ec_const_s_cannot_be_declared_mutable, name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
       else if (staticp)
 	{
-	  error ("static `%s' cannot be declared `mutable'", name);
+	  cp_error (ec_static_s_cannot_be_declared_mutable, name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
     }
@@ -10007,7 +9997,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (decl_context == FIELD)
 	{
 	  if (declarator == current_class_name)
-	    cp_pedwarn ("ANSI C++ forbids nested type `%D' with same name as enclosing class",
+	    cp_pedwarn (ec_forbids_nested_type_with_same_name_as_enclosing_class,
 			declarator);
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
 	  if (IS_SIGNATURE (current_class_type) && opaque_typedef)
@@ -10066,7 +10056,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       if (TREE_CODE (type) == OFFSET_TYPE || TREE_CODE (type) == METHOD_TYPE)
 	{
-	  cp_error_at ("typedef name may not be class-qualified", decl);
+	  cp_error_at (ec_typedef_name_may_not_be_classqualified, decl);
 	  return NULL_TREE;
 	}
       else if (quals)
@@ -10074,7 +10064,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (ctype == NULL_TREE)
 	    {
 	      if (TREE_CODE (type) != METHOD_TYPE)
-		cp_error_at ("invalid type qualifier for non-method type", decl);
+		cp_error_at (ec_invalid_type_qualifier_for_nonmethod_type, decl);
 	      else
 		ctype = TYPE_METHOD_BASETYPE (type);
 	    }
@@ -10088,14 +10078,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       if (RIDBIT_SETP (RID_MUTABLE, specbits))
 	{
-	  error ("non-object member `%s' cannot be declared mutable", name);
+	  cp_error (ec_nonobject_member_s_cannot_be_declared_mutable, name);
 	}
 
       bad_specifiers (decl, "type", virtualp, quals != NULL_TREE,
 		      inlinep, friendp, raises != NULL_TREE);
 
       if (initialized)
-	error ("typedef declaration includes an initializer");
+	cp_error (ec_typedef_declaration_includes_an_initializer);
 
       return decl;
     }
@@ -10122,7 +10112,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (constp || volatilep)
 	{
 	  if (IS_SIGNATURE (type))
-	    error ("`const' or `volatile' specified with signature type");
+	    cp_error (ec_const_or_volatile_specified_with_signature_type);
 	  else  
 	    type = cp_build_type_variant (type, constp, volatilep);
 	}
@@ -10132,12 +10122,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	{
 	  if (volatilep)
 	    {
-	      cp_error ("`volatile' specified for friend class declaration");
+	      cp_error (ec_volatile_specified_for_friend_class_declaration);
 	      volatilep = 0;
 	    }
 	  if (inlinep)
 	    {
-	      cp_error ("`inline' specified for friend class declaration");
+	      cp_error (ec_inline_specified_for_friend_class_declaration);
 	      inlinep = 0;
 	    }
 
@@ -10148,7 +10138,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      if (current_class_type)
 		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
 	      else
-		error ("trying to make class `%s' a friend of global scope",
+		cp_error (ec_trying_to_make_class_s_a_friend_of_global_scope,
 		       TYPE_NAME_STRING (type));
 	      type = void_type_node;
 	    }
@@ -10172,7 +10162,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	   && TREE_CODE (type) != UNION_TYPE
 	   && ! bitfield)
     {
-      cp_error ("abstract declarator `%T' used as declaration", type);
+      cp_error (ec_abstract_declarator_type_used_as_declaration, type);
       declarator = make_anon_name ();
     }
 
@@ -10184,16 +10174,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   if (TREE_CODE (type) == VOID_TYPE && decl_context != PARM)
     {
       if (! declarator)
-	error ("unnamed variable or field declared void");
+	cp_error (ec_unnamed_variable_or_field_declared_void);
       else if (TREE_CODE (declarator) == IDENTIFIER_NODE)
 	{
 	  if (IDENTIFIER_OPNAME_P (declarator))
 	    my_friendly_abort (356);
 	  else
-	    error ("variable or field `%s' declared void", name);
+	    cp_error (ec_variable_or_field_s_declared_void, name);
 	}
       else
-	error ("variable or field declared void");
+	cp_error (ec_variable_or_field_declared_void);
       type = integer_type_node;
     }
 
@@ -10206,7 +10196,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     if (decl_context == PARM)
       {
 	if (ctype || in_namespace)
-	  error ("cannot use `::' in parameter declaration");
+	  cp_error (ec_cannot_use_in_parameter_declaration);
 
 	/* A parameter declared as an array of T is really a pointer to T.
 	   One declared as a function is really a pointer to a function.
@@ -10225,7 +10215,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  type = build_pointer_type (type);
 	else if (TREE_CODE (type) == VOID_TYPE && declarator)
 	  {
-	    error ("declaration of `%s' as void", name);
+	    cp_error (ec_declaration_of_s_as_void, name);
 	    return NULL_TREE;
 	  }
 
@@ -10237,11 +10227,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    && IS_SIGNATURE (current_class_type))
 	  {
 	    if (inlinep)
-	      error ("parameter of signature member function declared `inline'");
+	      cp_error (ec_parameter_of_signature_member_function_declared_inline);
 	    if (RIDBIT_SETP (RID_AUTO, specbits))
-	      error ("parameter of signature member function declared `auto'");
+	      cp_error (ec_parameter_of_signature_member_function_declared_auto);
 	    if (RIDBIT_SETP (RID_REGISTER, specbits))
-	      error ("parameter of signature member function declared `register'");
+	      cp_error (ec_parameter_of_signature_member_function_declared_register);
 	  }
 
 	/* Compute the type actually passed in the parmlist,
@@ -10262,7 +10252,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	else if (in_namespace)
 	  {
 	    /* Something like struct S { int N::j; };  */
-	    cp_error ("invalid use of `::'");
+	    cp_error (ec_invalid_use_of_scope);
 	    decl = NULL_TREE;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -10274,7 +10264,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       typedefs.  */
 	    if (friendp && declarator == ridpointers[(int) RID_SIGNED])
 	      {
-		cp_error ("function `%D' cannot be declared friend",
+		cp_error (ec_function_cannot_be_declared_friend,
 			  declarator);
 		friendp = 0;
 	      }
@@ -10286,7 +10276,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		if (ctype == NULL_TREE)
 		  {
-		    cp_error ("can't make `%D' into a method -- not in a class",
+		    cp_error (ec_cant_make_into_a_method_not_in_a_class,
 			      declarator);
 		    return void_type_node;
 		  }
@@ -10295,7 +10285,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   ARM 9.5 */
 		if (virtualp && TREE_CODE (ctype) == UNION_TYPE)
 		  {
-		    cp_error ("function `%D' declared virtual inside a union",
+		    cp_error (ec_function_declared_virtual_inside_a_union,
 			      declarator);
 		    return void_type_node;
 		  }
@@ -10307,7 +10297,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  {
 		    if (virtualp)
 		      {
-			cp_error ("`%D' cannot be declared virtual, since it is always static",
+			cp_error (ec_cannot_be_declared_virtual_since_it_is_always_static,
 				  declarator);
 			virtualp = 0;
 		      }
@@ -10358,9 +10348,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
 	  {
 	    if (declarator)
-	      cp_error ("field `%D' has incomplete type", declarator);
+	      cp_error (ec_field_has_incomplete_type, declarator);
 	    else
-	      cp_error ("name `%T' has incomplete type", type);
+	      cp_error (ec_name_has_incomplete_type, type);
 
 	    /* If we're instantiating a template, tell them which
 	       instantiation made the field's type be incomplete.  */
@@ -10369,7 +10359,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		&& IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type))
 		&& declspecs && TREE_VALUE (declspecs)
 		&& TREE_TYPE (TREE_VALUE (declspecs)) == type)
-	      cp_error ("  in instantiation of template `%T'",
+	      cp_error (ec_in_instantiation_of_template,
 			current_class_type);
 
 	    type = error_mark_node;
@@ -10379,7 +10369,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  {
 	    if (friendp)
 	      {
-		error ("`%s' is neither function nor method; cannot be declared friend",
+		cp_error (ec_s_is_neither_function_nor_method_cannot_be_declared_friend,
 		       IDENTIFIER_POINTER (declarator));
 		friendp = 0;
 	      }
@@ -10390,7 +10380,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  {
 	    /* Friends are treated specially.  */
 	    if (ctype == current_class_type)
-	      warning ("member functions are implicitly friends of their class");
+	      cp_warning (ec_member_functions_are_implicitly_friends_of_their_class);
 	    else
 	      {
 		tree t = NULL_TREE;
@@ -10437,10 +10427,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       the rest of the compiler does not correctly
 		       handle the initialization unless the member is
 		       static so we make it static below.  */
-		    cp_pedwarn ("ANSI C++ forbids initialization of %s `%D'",
+		    cp_pedwarn (ec_forbids_initialization_of_s,
 				constp ? "const member" : "member", 
 				declarator);
-		    cp_pedwarn ("making `%D' static", declarator);
+		    cp_pedwarn (ec_making_static, declarator);
 		    staticp = 1;
 		  }
 
@@ -10454,7 +10444,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		if (CLASS_TYPE_P (type)
 		    || TREE_CODE (type) == REFERENCE_TYPE)
 		  {
-		    cp_error ("in-class initialization of static data member of non-integral type `%T'", 
+		    cp_error (ec_inclass_initialization_of_static_data_member_of_nonintegral_type, 
 			      type);
 		    /* If we just return the declaration, crashes will
 		       sometimes occur.  We therefore return
@@ -10464,18 +10454,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    return void_type_node;
 		  }
 		else if (!constp)
-		  cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
+		  cp_error (ec_forbids_inclass_initialization_of_nonconst_static_member,
 			    declarator);
 		else if (pedantic && ! INTEGRAL_TYPE_P (type) 
 			 && !uses_template_parms (type))
-		  cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", declarator, type);
+		  cp_pedwarn (ec_forbids_initialization_of_member_constant_of_nonintegral_type, declarator, type);
 	      }
 
 	    if (staticp)
 	      {
 		/* ANSI C++ Apr '95 wp 9.2 */
 		if (declarator == current_class_name)
-		  cp_pedwarn ("ANSI C++ forbids static member `%D' with same name as enclosing class",
+		  cp_pedwarn (ec_forbids_static_member_with_same_name_as_enclosing_class,
 			      declarator);
 
 		/* C++ allows static class members.
@@ -10515,9 +10505,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  original_name = declarator;
 
 	if (RIDBIT_SETP (RID_AUTO, specbits))
-	  error ("storage class `auto' invalid for function `%s'", name);
+	  cp_error (ec_storage_class_auto_invalid_for_function_s, name);
 	else if (RIDBIT_SETP (RID_REGISTER, specbits))
-	  error ("storage class `register' invalid for function `%s'", name);
+	  cp_error (ec_storage_class_register_invalid_for_function_s, name);
 
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
@@ -10528,16 +10518,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    && pedantic)
 	  {
 	    if (RIDBIT_SETP (RID_STATIC, specbits))
-	      pedwarn ("storage class `static' invalid for function `%s' declared out of global scope", name);
+	      cp_pedwarn (ec_storage_class_static_invalid_for_function_s_declared_out_of_global_scope, name);
 	    else
-	      pedwarn ("storage class `inline' invalid for function `%s' declared out of global scope", name);
+	      cp_pedwarn (ec_storage_class_inline_invalid_for_function_s_declared_out_of_global_scope, name);
 	  }
 	
 	if (ctype == NULL_TREE)
 	  {
 	    if (virtualp)
 	      {
-		error ("virtual non-class function `%s'", name);
+		cp_error (ec_virtual_nonclass_function_s, name);
 		virtualp = 0;
 	      }
 
@@ -10588,13 +10578,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       declaring main to be static.  */
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      {
-		cp_pedwarn ("cannot declare member function `%D' to have static linkage", decl);
+		cp_pedwarn (ec_cannot_declare_member_function_to_have_static_linkage, decl);
 		illegal_static = 1;
 	      }
 	    else if (current_function_decl)
 	      {
 		/* FIXME need arm citation */
-		error ("cannot declare static function inside another function");
+		cp_error (ec_cannot_declare_static_function_inside_another_function);
 		illegal_static = 1;
 	      }
 
@@ -10614,7 +10604,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    if (ctype)
 	      {
 		ctype = NULL_TREE;
-		error ("cannot use `::' in parameter declaration");
+		cp_error (ec_cannot_use_in_parameter_declaration);
 	      }
 
 	    /* A parameter declared as an array of T is really a pointer to T.
@@ -10646,18 +10636,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
-	        cp_pedwarn ("static member `%D' re-declared as static", decl);
+	        cp_pedwarn (ec_static_member_redeclared_as_static, decl);
 	        staticp = 0;
 		RIDBIT_RESET (RID_STATIC, specbits);
 	      }
 	    if (RIDBIT_SETP (RID_REGISTER, specbits) && TREE_STATIC (decl))
 	      {
-		cp_error ("static member `%D' declared `register'", decl);
+		cp_error (ec_static_member_declared_register, decl);
 		RIDBIT_RESET (RID_REGISTER, specbits);
 	      }
 	    if (RIDBIT_SETP (RID_EXTERN, specbits) && pedantic)
 	      {
-	        cp_pedwarn ("cannot explicitly declare member `%#D' to have extern linkage",
+	        cp_pedwarn (ec_cannot_explicitly_declare_member_to_have_extern_linkage,
 			    decl);
 		RIDBIT_RESET (RID_EXTERN, specbits);
 	      }
@@ -10666,7 +10656,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
     if (RIDBIT_SETP (RID_MUTABLE, specbits))
       {
-	error ("`%s' cannot be declared mutable", name);
+	cp_error (ec_s_cannot_be_declared_mutable, name);
       }
 
     /* Record `register' declaration for warnings on &
@@ -10740,10 +10730,10 @@ require_complete_types_for_parms (parms)
       if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
 	{
 	  if (DECL_NAME (parms))
-	    error ("parameter `%s' has incomplete type",
+	    cp_error (ec_parameter_s_has_incomplete_type,
 		   IDENTIFIER_POINTER (DECL_NAME (parms)));
 	  else
-	    error ("parameter has incomplete type");
+	    cp_error (ec_parameter_has_incomplete_type);
 	  TREE_TYPE (parms) = error_mark_node;
 	}
 #if 0
@@ -10764,10 +10754,10 @@ require_complete_types_for_parms (parms)
 	  if (TYPE_SIZE (type) == NULL_TREE)
 	    {
 	      if (DECL_NAME (parm) != NULL_TREE)
-		warning ("parameter `%s' points to incomplete type",
+		cp_warning (ec_parameter_s_points_to_incomplete_type,
 			 IDENTIFIER_POINTER (DECL_NAME (parm)));
 	      else
-		warning ("parameter points to incomplete type");
+		cp_warning (ec_parameter_points_to_incomplete_type);
 	    }
 	}
 #endif
@@ -10822,7 +10812,7 @@ grokparms (first_parm, funcdef_flag)
       && TREE_CODE (TREE_VALUE (first_parm)) == IDENTIFIER_NODE)
     {
       if (! funcdef_flag)
-	pedwarn ("parameter names (without types) in function declaration");
+	cp_pedwarn (ec_parameter_names_without_types_in_function_declaration);
       last_function_parms = first_parm;
       return NULL_TREE;
     }
@@ -10855,9 +10845,9 @@ grokparms (first_parm, funcdef_flag)
 		{
 		  /* Give various messages as the need arises.  */
 		  if (TREE_CODE (decl) == STRING_CST)
-		    cp_error ("invalid string constant `%E'", decl);
+		    cp_error (ec_invalid_string_constant, decl);
 		  else if (TREE_CODE (decl) == INTEGER_CST)
-		    error ("invalid integer constant in parameter list, did you forget to give parameter name?");
+		    cp_error (ec_invalid_integer_constant_in_parameter_list_did_you_forget_to_give_parameter_name);
 		  continue;
 		}
 
@@ -10877,20 +10867,20 @@ grokparms (first_parm, funcdef_flag)
 		      if (DECL_NAME (decl))
 			/* Cannot use the decl here because
 			   we don't have DECL_CONTEXT set up yet.  */
-			cp_error ("parameter `%D' invalidly declared method type",
+			cp_error (ec_parameter_invalidly_declared_method_type,
 				  DECL_NAME (decl));
 		      else
-			error ("parameter invalidly declared method type");
+			cp_error (ec_parameter_invalidly_declared_method_type);
 		      type = build_pointer_type (type);
 		      TREE_TYPE (decl) = type;
 		    }
 		  else if (TREE_CODE (type) == OFFSET_TYPE)
 		    {
 		      if (DECL_NAME (decl))
-			cp_error ("parameter `%D' invalidly declared offset type",
+			cp_error (ec_parameter_invalidly_declared_offset_type,
 				  DECL_NAME (decl));
 		      else
-			error ("parameter invalidly declared offset type");
+			cp_error (ec_parameter_invalidly_declared_offset_type);
 		      type = build_pointer_type (type);
 		      TREE_TYPE (decl) = type;
 		    }
@@ -10916,7 +10906,7 @@ grokparms (first_parm, funcdef_flag)
 				 && TYPE_DOMAIN (t) != NULL_TREE))
 			t = TREE_TYPE (t);
 		      if (TREE_CODE (t) == ARRAY_TYPE)
-			cp_error ("parameter type `%T' includes pointer to array of unknown bound",
+			cp_error (ec_parameter_type_includes_pointer_to_array_of_unknown_bound,
 				  type);
 		    }
 		}
@@ -10935,7 +10925,7 @@ grokparms (first_parm, funcdef_flag)
 		    }
 		  if (chain
 		      && (chain != void_list_node || TREE_CHAIN (chain)))
-		    error ("`void' in parameter list must be entire list");
+		    cp_error (ec_void_in_parameter_list_must_be_entire_list);
 		  break;
 		}
 
@@ -10969,7 +10959,7 @@ grokparms (first_parm, funcdef_flag)
 			      /* If extern int i; within a function is not
 				 considered a local variable, then this code is
 				 wrong.  */
-			      cp_error ("local variable `%D' may not be used as a default argument", init);
+			      cp_error (ec_local_variable_may_not_be_used_as_a_default_argument, init);
 			      any_error = 1;
 			    }
 			  else if (TREE_READONLY_DECL_P (init))
@@ -10981,7 +10971,7 @@ grokparms (first_parm, funcdef_flag)
 			  && init != error_mark_node
 			  && TREE_CODE (init) != DEFAULT_ARG
 			  && ! can_convert_arg (type, TREE_TYPE (init), init))
-			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
+			cp_pedwarn (ec_invalid_type_for_default_argument_to_decl,
 				    TREE_TYPE (init), decl);
 		    }
 		}
@@ -11045,7 +11035,7 @@ replace_defarg (arg, init)
 {
   if (! processing_template_decl
       && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
-    cp_pedwarn ("invalid type `%T' for default argument to `%T'",
+    cp_pedwarn (ec_invalid_type_for_default_argument_to,
 		TREE_TYPE (init), TREE_VALUE (arg));
   TREE_PURPOSE (arg) = init;
 }
@@ -11110,7 +11100,7 @@ grok_ctor_properties (ctype, decl)
 	   && TREE_CHAIN (parmtypes) != NULL_TREE
 	   && TREE_CHAIN (parmtypes) == void_list_node)
     {
-      cp_error ("invalid constructor; you probably meant `%T (const %T&)'",
+      cp_error (ec_invalid_constructor_you_probably_meant_const,
 		ctype, ctype);
       SET_IDENTIFIER_ERROR_LOCUS (DECL_NAME (decl), ctype);
       return 0;
@@ -11233,13 +11223,13 @@ grok_op_properties (decl, virtualp, friendp)
 	      || name == ansi_opname[(int) MODIFY_EXPR]
 	      || name == ansi_opname[(int) COMPONENT_REF]
 	      || name == ansi_opname[(int) ARRAY_REF])
-	    cp_error ("`%D' must be a nonstatic member function", decl);
+	    cp_error (ec_must_be_a_nonstatic_member_function, decl);
 	  else
 	    {
 	      tree p = argtypes;
 
 	      if (DECL_STATIC_FUNCTION_P (decl))
-		cp_error ("`%D' must be either a non-static member function or a non-member function", decl);
+		cp_error (ec_must_be_either_a_nonstatic_member_function_or_a_nonmember_function, decl);
 
 	      if (p)
 		for (; TREE_CODE (TREE_VALUE (p)) != VOID_TYPE ; p = TREE_CHAIN (p))
@@ -11255,8 +11245,7 @@ grok_op_properties (decl, virtualp, friendp)
 			|| TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
 		      goto foundaggr;
 		  }
-	      cp_error
-		("`%D' must have an argument of class or enumerated type",
+	      cp_error (ec_must_have_an_argument_of_class_or_enumerated_type,
 		 decl);
 	    foundaggr:
 	      ;
@@ -11270,7 +11259,7 @@ grok_op_properties (decl, virtualp, friendp)
 	{
 	  tree t = TREE_TYPE (name);
 	  if (TREE_CODE (t) == VOID_TYPE)
-	    pedwarn ("void is not a valid type conversion operator");
+	    cp_pedwarn (ec_void_is_not_a_valid_type_conversion_operator);
 	  else if (! friendp)
 	    {
 	      int ref = (TREE_CODE (t) == REFERENCE_TYPE);
@@ -11287,7 +11276,7 @@ grok_op_properties (decl, virtualp, friendp)
 		what = "a base class";
 
 	      if (what)
-		warning ("conversion to %s%s will never use a type conversion operator",
+		cp_warning (ec_conversion_to_ss_will_never_use_a_type_conversion_operator,
 			 ref ? "a reference to " : "", what);
 	    }
 	}
@@ -11298,7 +11287,7 @@ grok_op_properties (decl, virtualp, friendp)
 
 	  if (list_length (argtypes) != 3 && methodp)
 	    {
-	      cp_error ("`%D' must take exactly one argument", decl);
+	      cp_error (ec_must_take_exactly_one_argument, decl);
 	      return;
 	    }
 	  parmtype = TREE_VALUE (TREE_CHAIN (argtypes));
@@ -11315,9 +11304,9 @@ grok_op_properties (decl, virtualp, friendp)
       else if (name == ansi_opname[(int) COND_EXPR])
 	{
 	  /* 13.4.0.3 */
-	  pedwarn ("ANSI C++ prohibits overloading operator ?:");
+	  cp_pedwarn (ec_prohibits_overloading_operator);
 	  if (list_length (argtypes) != 4)
-	    cp_error ("`%D' must take exactly three arguments", decl);
+	    cp_error (ec_must_take_exactly_three_arguments, decl);
 	}	  
       else if (ambi_op_p (name))
 	{
@@ -11331,20 +11320,19 @@ grok_op_properties (decl, virtualp, friendp)
 		  && TREE_VALUE (TREE_CHAIN (argtypes)) != integer_type_node)
 		{
 		  if (methodp)
-		    cp_error ("postfix `%D' must take `int' as its argument",
+		    cp_error (ec_postfix_must_take_int_as_its_argument,
 			      decl);
 		  else
-		    cp_error
-		      ("postfix `%D' must take `int' as its second argument",
-		       decl);
+		    cp_error (ec_postfix_must_take_int_as_its_second_argument,
+			      decl);
 		}
 	    }
 	  else
 	    {
 	      if (methodp)
-		cp_error ("`%D' must take either zero or one argument", decl);
+		cp_error (ec_must_take_either_zero_or_one_argument, decl);
 	      else
-		cp_error ("`%D' must take either one or two arguments", decl);
+		cp_error (ec_must_take_either_one_or_two_arguments, decl);
 	    }
 
 	  /* More Effective C++ rule 6.  */
@@ -11362,13 +11350,13 @@ grok_op_properties (decl, virtualp, friendp)
 		  if (TREE_CODE (ret) != REFERENCE_TYPE
 		      || !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
 				     arg, 1))
-		    cp_warning ("prefix `%D' should return `%T'", decl,
+		    cp_warning (ec_prefix_should_return, decl,
 				build_reference_type (arg));
 		}
 	      else
 		{
 		  if (!comptypes (TYPE_MAIN_VARIANT (ret), arg, 1))
-		    cp_warning ("postfix `%D' should return `%T'", decl, arg);
+		    cp_warning (ec_postfix_should_return, decl, arg);
 		}
 	    }
 	}
@@ -11377,9 +11365,9 @@ grok_op_properties (decl, virtualp, friendp)
 	  if (list_length (argtypes) != 2)
 	    {
 	      if (methodp)
-		cp_error ("`%D' must take `void'", decl);
+		cp_error (ec_must_take_void, decl);
 	      else
-		cp_error ("`%D' must take exactly one argument", decl);
+		cp_error (ec_must_take_exactly_one_argument, decl);
 	    }
 	}
       else /* if (binary_op_p (name)) */
@@ -11387,9 +11375,9 @@ grok_op_properties (decl, virtualp, friendp)
 	  if (list_length (argtypes) != 3)
 	    {
 	      if (methodp)
-		cp_error ("`%D' must take exactly one argument", decl);
+		cp_error (ec_must_take_exactly_one_argument, decl);
 	      else
-		cp_error ("`%D' must take exactly two arguments", decl);
+		cp_error (ec_must_take_exactly_two_arguments, decl);
 	    }
 
 	  /* More Effective C++ rule 7.  */
@@ -11397,7 +11385,7 @@ grok_op_properties (decl, virtualp, friendp)
 	      && (name == ansi_opname [TRUTH_ANDIF_EXPR]
 		  || name == ansi_opname [TRUTH_ORIF_EXPR]
 		  || name == ansi_opname [COMPOUND_EXPR]))
-	    cp_warning ("user-defined `%D' always evaluates both arguments",
+	    cp_warning (ec_userdefined_always_evaluates_both_arguments,
 			decl);
 	}
 
@@ -11409,7 +11397,7 @@ grok_op_properties (decl, virtualp, friendp)
 	      || name == ansi_opname [TRUNC_DIV_EXPR]
 	      || name == ansi_opname [MULT_EXPR])
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
-	cp_warning ("`%D' should return by value", decl);
+	cp_warning (ec_should_return_by_value, decl);
 
       /* 13.4.0.8 */
       if (argtypes)
@@ -11421,10 +11409,10 @@ grok_op_properties (decl, virtualp, friendp)
 		  || name == ansi_opname[(int) POSTDECREMENT_EXPR])
 		{
 		  if (pedantic)
-		    cp_pedwarn ("`%D' cannot have default arguments", decl);
+		    cp_pedwarn (ec_cannot_have_default_arguments, decl);
 		}
 	      else
-		cp_error ("`%D' cannot have default arguments", decl);
+		cp_error (ec_cannot_have_default_arguments, decl);
 	    }
     }
 }
@@ -11500,8 +11488,8 @@ xref_tag (code_type_node, name, globalize)
       if (t && (TREE_CODE (t) == TEMPLATE_TYPE_PARM 
 			    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM))
 	{
-	  cp_error ("redeclaration of template type-parameter `%T'", name);
-	  cp_error_at ("  previously declared here `%#D'", 
+	  cp_error (ec_redeclaration_of_template_typeparameter, name);
+	  cp_error_at (ec_previously_declared_here, 
 		       TEMPLATE_TYPE_DECL (t));
 	}
       if (t && TYPE_CONTEXT (t) && got_type)
@@ -11587,7 +11575,7 @@ xref_tag (code_type_node, name, globalize)
 
       if (code == ENUMERAL_TYPE)
 	{
-	  cp_error ("use of enum `%#D' without previous declaration", name);
+	  cp_error (ec_use_of_enum_without_previous_declaration, name);
 
 	  ref = make_node (ENUMERAL_TYPE);
 
@@ -11701,7 +11689,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
   if (tag_code == union_type)
     {
-      cp_error ("derived union `%T' invalid", ref);
+      cp_error (ec_derived_union_invalid, ref);
       return;
     }
 
@@ -11739,7 +11727,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	      && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
 	      && TREE_CODE (basetype) != TEMPLATE_TEMPLATE_PARM))
 	{
-	  cp_error ("base type `%T' fails to be a struct or class type",
+	  cp_error (ec_base_type_fails_to_be_a_struct_or_class_type,
 		    TREE_VALUE (binfo));
 	  continue;
 	}
@@ -11752,7 +11740,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
       if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE
 	  && ! (current_template_parms && uses_template_parms (basetype)))
 	{
-	  cp_error ("base class `%T' has incomplete type", basetype);
+	  cp_error (ec_base_class_has_incomplete_type, basetype);
 	  continue;
 	}
 #endif
@@ -11761,9 +11749,9 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	  if (CLASSTYPE_MARKED (basetype))
 	    {
 	      if (basetype == ref)
-		cp_error ("recursive type `%T' undefined", basetype);
+		cp_error (ec_recursive_type_undefined, basetype);
 	      else
-		cp_error ("duplicate base type `%T' invalid", basetype);
+		cp_error (ec_duplicate_base_type_invalid, basetype);
 	      continue;
 	    }
 
@@ -11862,7 +11850,7 @@ start_enum (name)
     enumtype = lookup_tag (ENUMERAL_TYPE, name, b, 1);
 
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
-    cp_error ("multiple definition of `%#T'", enumtype);
+    cp_error (ec_multiple_definition_of, enumtype);
   else
     {
       enumtype = make_node (ENUMERAL_TYPE);
@@ -12047,7 +12035,7 @@ build_enumerator (name, value, type)
 	   }
 	 else
 	   {
-	     cp_error ("enumerator value for `%D' not integer constant", name);
+	     cp_error (ec_enumerator_value_for_not_integer_constant, name);
 	     value = NULL_TREE;
 	   }
        }
@@ -12057,7 +12045,7 @@ build_enumerator (name, value, type)
        {
 	 value = enum_next_value;
 	 if (enum_overflow)
-	   cp_error ("overflow in enumeration values at `%D'", name);
+	   cp_error (ec_overflow_in_enumeration_values_at, name);
        }
 
      /* Remove no-op casts from the value.  */
@@ -12236,11 +12224,11 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	{
 	  tree binding = binding_for_name (DECL_NAME (decl1), 
 					   current_namespace);
-	  cp_error ("redeclaration of `%#D'", decl1);
+	  cp_error (ec_redeclaration_of, decl1);
 	  if (IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)))
-	    cp_error_at ("previous declaration here", IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)));
+	    cp_error_at (ec_previous_declaration_here, IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)));
 	  else if (BINDING_VALUE (binding))
-	    cp_error_at ("previous declaration here", BINDING_VALUE (binding));
+	    cp_error_at (ec_previous_declaration_here, BINDING_VALUE (binding));
 	}
 #endif
 
@@ -12291,7 +12279,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       if (IS_AGGR_TYPE (restype) && ! TYPE_PTRMEMFUNC_P (restype)
 	  && ! CLASSTYPE_GOT_SEMICOLON (restype))
 	{
-	  cp_error ("semicolon missing after declaration of `%#T'", restype);
+	  cp_error (ec_semicolon_missing_after_declaration_of, restype);
 	  shadow_tag (build_expr_list (NULL_TREE, restype));
 	  CLASSTYPE_GOT_SEMICOLON (restype) = 1;
 	  if (TREE_CODE (fntype) == FUNCTION_TYPE)
@@ -12312,7 +12300,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  if (TREE_TYPE (TREE_TYPE (decl1)) != integer_type_node)
 	    {
 	      if (pedantic || warn_return_type)
-		pedwarn ("return type for `main' changed to `int'");
+		cp_pedwarn (ec_return_type_for_main_changed_to_int);
 	      TREE_TYPE (decl1) = fntype = default_function_type;
 	    }
 	  warn_about_return_type = 0;
@@ -12323,7 +12311,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      (but not if we warned then).  */
   if (! warn_implicit
       && IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)) != NULL_TREE)
-    cp_warning_at ("`%D' implicitly declared before its definition", IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)));
+    cp_warning_at (ec_implicitly_declared_before_its_definition, IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)));
 
   current_function_decl = decl1;
   /* Save the parm names or decls from this function's declarator
@@ -12337,7 +12325,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     {
       if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
 	{
-	  cp_error ("return-type `%#T' is an incomplete type",
+	  cp_error (ec_returntype_is_an_incomplete_type,
 		    TREE_TYPE (fntype));
 
 	  /* Make it return void instead, but don't change the
@@ -12365,13 +12353,13 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     }
 
   if (warn_about_return_type)
-    pedwarn ("return-type defaults to `int'");
+    cp_pedwarn (ec_returntype_defaults_to_int);
 
   /* Effective C++ rule 15.  See also c_expand_return.  */
   if (warn_ecpp
       && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
-    cp_warning ("`operator=' should return a reference to `*this'");
+    cp_warning (ec_operator_should_return_a_reference_to_this);
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
@@ -12643,7 +12631,7 @@ store_parm_decls ()
 		  pushdecl (parm);
 		}
 	      else if (TREE_CODE (TREE_TYPE (parm)) == VOID_TYPE)
-		cp_error ("parameter `%D' declared void", parm);
+		cp_error (ec_parameter_declared_void, parm);
 	      else
 		{
 		  /* Now fill in DECL_REFERENCE_SLOT for any of the parm decls.
@@ -12722,7 +12710,7 @@ store_parm_decls ()
       for (cleanups = nreverse (cleanups); cleanups; cleanups = TREE_CHAIN (cleanups))
 	{
 	  if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), TREE_VALUE (cleanups)))
-	    cp_error ("parser lost in parsing declaration of `%D'",
+	    cp_error (ec_parser_lost_in_parsing_declaration_of,
 		      TREE_PURPOSE (cleanups));
 	}
     }
@@ -12760,7 +12748,7 @@ store_return_init (return_id, init)
     /* Give this error as many times as there are occurrences,
        so that users can use Emacs compilation buffers to find
        and fix all such places.  */
-    pedwarn ("ANSI C++ does not permit named return values");
+    cp_pedwarn (ec_does_not_permit_named_return_values);
 
   if (return_id != NULL_TREE)
     {
@@ -12770,13 +12758,13 @@ store_return_init (return_id, init)
 	  DECL_ASSEMBLER_NAME (decl) = return_id;
 	}
       else
-	cp_error ("return identifier `%D' already in place", decl);
+	cp_error (ec_return_identifier_already_in_place, decl);
     }
 
   /* Can't let this happen for constructors.  */
   if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      error ("can't redefine default return value for constructors");
+      cp_error (ec_cant_redefine_default_return_value_for_constructors);
       return;
     }
 
@@ -13326,20 +13314,20 @@ finish_function (lineno, call_poplevel, nested)
 	current_function_returns_null = 0;
 
       if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
-	cp_warning ("`noreturn' function `%D' does return", fndecl);
+	cp_warning (ec_noreturn_function_does_return, fndecl);
       else if ((warn_return_type || pedantic)
 	       && current_function_returns_null
 	       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE)
 	{
 	  /* If this function returns non-void and control can drop through,
 	     complain.  */
-	  cp_warning ("control reaches end of non-void function `%D'", fndecl);
+	  cp_warning (ec_control_reaches_end_of_nonvoid_function, fndecl);
 	}
       /* With just -W, complain only if function returns both with
 	 and without a value.  */
       else if (extra_warnings
 	       && current_function_returns_value && current_function_returns_null)
-	warning ("this function may return with or without a value");
+	cp_warning (ec_this_function_may_return_with_or_without_a_value);
     }
 
   --function_depth;
@@ -13437,8 +13425,8 @@ start_method (declspecs, declarator)
 	{
 	  if (DECL_CONTEXT (fndecl) 
 	      && TREE_CODE( DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
-	    cp_error ("`%D' is already defined in class %s", fndecl,
-			     TYPE_NAME_STRING (DECL_CONTEXT (fndecl)));
+	    cp_error (ec_is_already_defined_in_class, fndecl,
+		      TYPE_NAME_STRING (DECL_CONTEXT (fndecl)));
 	}
       return void_type_node;
     }
@@ -13600,7 +13588,7 @@ hack_incomplete_structures (type)
 	      cleanup = maybe_build_cleanup (decl);
 	      expand_decl_init (decl);
 	      if (! expand_decl_cleanup (decl, cleanup))
-		cp_error ("parser lost in parsing declaration of `%D'",
+		cp_error (ec_parser_lost_in_parsing_declaration_of,
 			  decl);
 	    }
 	  *list = TREE_CHAIN (*list);
@@ -13701,16 +13689,16 @@ cplus_expand_expr_stmt (exp)
   if (TREE_TYPE (exp) == unknown_type_node)
     {
       if (TREE_CODE (exp) == ADDR_EXPR || TREE_CODE (exp) == TREE_LIST)
-	error ("address of overloaded function with no contextual type information");
+	cp_error (ec_address_of_overloaded_function_with_no_contextual_type_information);
       else if (TREE_CODE (exp) == COMPONENT_REF)
-	warning ("useless reference to a member function name, did you forget the ()?");
+	cp_warning (ec_useless_reference_to_a_member_function_name_did_you_forget_the);
     }
   else
     {
       if (TREE_CODE (exp) == FUNCTION_DECL)
 	{
-	  cp_warning ("reference, not call, to function `%D'", exp);
-	  warning ("at this point in file");
+	  cp_warning (ec_reference_not_call_to_function, exp);
+	  cp_warning (ec_at_this_point_in_file);
 	}
 
 #if 0
@@ -13779,9 +13767,9 @@ revert_static_member_fn (decl, fn, argtypes)
   tree args = argtypes ? *argtypes : TYPE_ARG_TYPES (function);
 
   if (TYPE_READONLY (TREE_TYPE (TREE_VALUE (args))))
-    cp_error ("static member function `%#D' declared const", *decl);
+    cp_error (ec_static_member_function_declared_const, *decl);
   if (TYPE_VOLATILE (TREE_TYPE (TREE_VALUE (args))))
-    cp_error ("static member function `%#D' declared volatile", *decl);
+    cp_error (ec_static_member_function_declared_volatile, *decl);
 
   args = TREE_CHAIN (args);
   tmp = build_function_type (TREE_TYPE (function), args);

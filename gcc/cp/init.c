@@ -190,7 +190,7 @@ perform_member_init (member, name, init, explicit)
 		init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
 	      else if (TREE_CODE (type) == REFERENCE_TYPE)
 		{
-		  cp_error ("default-initialization of `%#D', which has reference type",
+		  cp_error (ec_defaultinitialization_of_which_has_reference_type,
 			    member);
 		  init = error_mark_node;
 		}
@@ -199,7 +199,7 @@ perform_member_init (member, name, init, explicit)
 	    }
 	  /* member traversal: note it leaves init NULL */
 	  else if (TREE_CODE (TREE_TYPE (member)) == REFERENCE_TYPE)
-	    cp_pedwarn ("uninitialized reference member `%D'", member);
+	    cp_pedwarn (ec_uninitialized_reference_member, member);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	{
@@ -207,7 +207,7 @@ perform_member_init (member, name, init, explicit)
 	     work in that case.  */
 	  if (TREE_CHAIN (init))
 	    {
-	      warning ("initializer list treated as compound expression");
+	      cp_warning (ec_initializer_list_treated_as_compound_expression);
 	      init = build_compound_expr (init);
 	    }
 	  else
@@ -298,9 +298,9 @@ sort_member_init (t)
 		{
 		  if (pos < last_pos)
 		    {
-		      cp_warning_at ("member initializers for `%#D'", last_field);
-		      cp_warning_at ("  and `%#D'", field);
-		      warning ("  will be re-ordered to match declaration order");
+		      cp_warning_at (ec_member_initializers_for, last_field);
+		      cp_warning_at (ec_and, field);
+		      cp_warning (ec_will_be_reordered_to_match_declaration_order);
 		    }
 		  last_pos = pos;
 		  last_field = field;
@@ -329,7 +329,7 @@ sort_member_init (t)
 	{
 	  if (purpose_member (name, init_list))
 	    {
-	      cp_error ("multiple initializations given for member `%D'",
+	      cp_error (ec_multiple_initializations_given_for_member,
 			IDENTIFIER_CLASS_VALUE (name));
 	      continue;
 	    }
@@ -377,13 +377,13 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 	  switch (n_baseclasses)
 	    {
 	    case 0:
-	      cp_error ("`%T' does not have a base class to initialize",
+	      cp_error (ec_does_not_have_a_base_class_to_initialize,
 			current_class_type);
 	      return;
 	    case 1:
 	      break;
 	    default:
-	      cp_error ("unnamed initializer ambiguous for `%T' which uses multiple inheritance",
+	      cp_error (ec_unnamed_initializer_ambiguous_for_which_uses_multiple_inheritance,
 			current_class_type);
 	      return;
 	    }
@@ -415,7 +415,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 		  break;
 	      if (i < 0)
 		{
-		  cp_error ("`%T' is not an immediate base class of `%T'",
+		  cp_error (ec_is_not_an_immediate_base_class_of,
 			    basetype, current_class_type);
 		  continue;
 		}
@@ -453,9 +453,9 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 		{
 		  if (pos < last_pos)
 		    {
-		      cp_warning_at ("base initializers for `%#T'", last_base);
-		      cp_warning_at ("  and `%#T'", BINFO_TYPE (binfo));
-		      warning ("  will be re-ordered to match inheritance order");
+		      cp_warning_at (ec_base_initializers_for, last_base);
+		      cp_warning_at (ec_and, BINFO_TYPE (binfo));
+		      cp_warning (ec_will_be_reordered_to_match_inheritance_order);
 		    }
 		  last_pos = pos;
 		  last_base = BINFO_TYPE (binfo);
@@ -578,7 +578,7 @@ emit_base_init (t, immediately)
 	{
 	  init = NULL_TREE;
 	  if (extra_warnings && copy_args_p (current_function_decl))
-	    cp_warning ("base class `%#T' should be explicitly initialized in the copy constructor",
+	    cp_warning (ec_base_class_should_be_explicitly_initialized_in_the_copy_constructor,
 			BINFO_TYPE (base_binfo));
 	}
 
@@ -658,7 +658,7 @@ emit_base_init (t, immediately)
 	  if (warn_ecpp && init == NULL_TREE
 	      && !DECL_ARTIFICIAL (member)
 	      && TREE_CODE (TREE_TYPE (member)) != ARRAY_TYPE)
-	    cp_warning ("`%D' should be initialized in the member initialization list", member);	    
+	    cp_warning (ec_should_be_initialized_in_the_member_initialization_list, member);	    
 	}
 
       perform_member_init (member, name, init, from_init_list);
@@ -683,7 +683,7 @@ emit_base_init (t, immediately)
 	    {
 	      field = TREE_VALUE (field);
 	      if (decl_type_context (field) != current_class_type)
-		cp_error ("field `%D' not in immediate context", field);
+		cp_error (ec_field_not_in_immediate_context, field);
 	    }
 
 #if 0
@@ -731,7 +731,7 @@ check_base_init (t)
   tree member;
   for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
     if (DECL_NAME (member) && TREE_USED (member))
-      cp_error ("field `%D' used before initialized (after assignment to `this')",
+      cp_error (ec_field_used_before_initialized_after_assignment_to_this,
 		member);
 }
 
@@ -855,13 +855,13 @@ member_init_ok_or_else (field, type, member_name)
     return 0;
   if (field == NULL_TREE || initializing_context (field) != type)
     {
-      cp_error ("class `%T' does not have any field named `%s'", type,
+      cp_error (ec_class_does_not_have_any_field_named_s, type,
 		member_name);
       return 0;
     }
   if (TREE_STATIC (field))
     {
-      cp_error ("field `%#D' is static; only point of initialization is its declaration",
+      cp_error (ec_field_is_static_only_point_of_initialization_is_its_declaration,
 		field);
       return 0;
     }
@@ -907,14 +907,14 @@ expand_member_init (exp, name, init)
     switch (CLASSTYPE_N_BASECLASSES (type))
       {
       case 0:
-	error ("base class initializer specified, but no base class to initialize");
+	cp_error (ec_base_class_initializer_specified_but_no_base_class_to_initialize);
 	return;
       case 1:
 	basetype = TYPE_BINFO_BASETYPE (type, 0);
 	break;
       default:
-	error ("initializer for unnamed base class ambiguous");
-	cp_error ("(type `%T' uses multiple inheritance)", type);
+	cp_error (ec_initializer_for_unnamed_base_class_ambiguous);
+	cp_error (ec_type_uses_multiple_inheritance, type);
 	return;
       }
 
@@ -940,7 +940,7 @@ expand_member_init (exp, name, init)
 	    name = TYPE_IDENTIFIER (basetype);
 	  else
 	    {
-	      error ("no base class to initialize");
+	      cp_error (ec_no_base_class_to_initialize);
 	      return;
 	    }
 #endif
@@ -954,24 +954,24 @@ expand_member_init (exp, name, init)
 	  if (IDENTIFIER_CLASS_VALUE (name))
 	    goto try_member;
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-	    cp_error ("type `%T' is not an immediate or virtual basetype for `%T'",
+	    cp_error (ec_type_is_not_an_immediate_or_virtual_basetype_for,
 		      basetype, type);
 	  else
-	    cp_error ("type `%T' is not an immediate basetype for `%T'",
+	    cp_error (ec_type_is_not_an_immediate_basetype_for,
 		      basetype, type);
 	  return;
 	}
 
       if (purpose_member (basetype, current_base_init_list))
 	{
-	  cp_error ("base class `%T' already initialized", basetype);
+	  cp_error (ec_base_class_already_initialized, basetype);
 	  return;
 	}
 
       if (warn_reorder && current_member_init_list)
 	{
-	  cp_warning ("base initializer for `%T'", basetype);
-	  warning ("   will be re-ordered to precede member initializations");
+	  cp_warning (ec_base_initializer_for, basetype);
+	  cp_warning (ec_will_be_reordered_to_precede_member_initializations);
 	}
 
       base_init = build_tree_list (basetype, init);
@@ -989,7 +989,7 @@ expand_member_init (exp, name, init)
 
       if (purpose_member (name, current_member_init_list))
 	{
-	  cp_error ("field `%D' already initialized", field);
+	  cp_error (ec_field_already_initialized, field);
 	  return;
 	}
 
@@ -1080,7 +1080,7 @@ expand_aggr_init (exp, init, alias_this, flags)
 	       COMPLEX zees(1.0, 0.0)[10];
 	     }
 	  */
-	  error ("bad array initializer");
+	  cp_error (ec_bad_array_initializer);
 	  return;
 	}
       expand_vec_init (exp, exp, array_type_nelts (type), init,
@@ -1268,7 +1268,7 @@ is_aggr_typedef (name, or_else)
   else
     {
       if (or_else)
-	cp_error ("`%T' is not an aggregate typedef", name);
+	cp_error (ec_is_not_an_aggregate_typedef, name);
       return 0;
     }
 
@@ -1277,7 +1277,7 @@ is_aggr_typedef (name, or_else)
       && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
-	cp_error ("`%T' is not an aggregate type", type);
+	cp_error (ec_is_not_an_aggregate_type, type);
       return 0;
     }
   return 1;
@@ -1299,7 +1299,7 @@ is_aggr_type (type, or_else)
       && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
-	cp_error ("`%T' is not an aggregate type", type);
+	cp_error (ec_is_not_an_aggregate_type, type);
       return 0;
     }
   return 1;
@@ -1322,7 +1322,7 @@ get_aggr_from_typedef (name, or_else)
   else
     {
       if (or_else)
-	cp_error ("`%T' fails to be an aggregate typedef", name);
+	cp_error (ec_fails_to_be_an_aggregate_typedef, name);
       return NULL_TREE;
     }
 
@@ -1331,7 +1331,7 @@ get_aggr_from_typedef (name, or_else)
       && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
-	cp_error ("type `%T' is of non-aggregate type", type);
+	cp_error (ec_type_is_of_nonaggregate_type, type);
       return NULL_TREE;
     }
   return type;
@@ -1415,7 +1415,7 @@ build_member_call (type, name, parmlist)
 
   if (dtor)
     {
-      cp_error ("cannot call destructor `%T::~%T' without object", type,
+      cp_error (ec_cannot_call_destructor_without_object, type,
 		method_name);
       return error_mark_node;
     }
@@ -1470,7 +1470,7 @@ build_member_call (type, name, parmlist)
 	{
 	  if (dont_use_this)
 	    {
-	      cp_error ("invalid use of non-static field `%D'", t);
+	      cp_error (ec_invalid_use_of_nonstatic_field, t);
 	      return error_mark_node;
 	    }
 	  decl = build (COMPONENT_REF, TREE_TYPE (t), decl, t);
@@ -1479,7 +1479,7 @@ build_member_call (type, name, parmlist)
 	decl = t;
       else
 	{
-	  cp_error ("invalid use of member `%D'", t);
+	  cp_error (ec_invalid_use_of_member, t);
 	  return error_mark_node;
 	}
       if (TYPE_LANG_SPECIFIC (TREE_TYPE (decl)))
@@ -1489,7 +1489,7 @@ build_member_call (type, name, parmlist)
     }
   else
     {
-      cp_error ("no method `%T::%D'", type, name);
+      cp_error (ec_no_method, type, name);
       return error_mark_node;
     }
 }
@@ -1555,7 +1555,7 @@ build_offset_ref (type, name)
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       if (! check_dtor_name (type, name))
-	cp_error ("qualified type `%T' does not match destructor name `~%T'",
+	cp_error (ec_qualified_type_does_not_match_destructor_name,
 		  type, TREE_OPERAND (name, 0));
       name = dtor_identifier;
     }
@@ -1574,7 +1574,7 @@ build_offset_ref (type, name)
 	t = NULL_TREE;
       if (t == 0)
 	{
-	  cp_error ("incomplete type `%T' does not have member `%D'", type,
+	  cp_error (ec_incomplete_type_does_not_have_member, type,
 		      name);
 	  return error_mark_node;
 	}
@@ -1652,14 +1652,14 @@ build_offset_ref (type, name)
 	  access = compute_access (basebinfo, t);
 	  if (access == access_protected_node)
 	    {
-	      cp_error_at ("member function `%#D' is protected", t);
-	      error ("in this context");
+	      cp_error_at (ec_member_function_is_protected, t);
+	      cp_error (ec_in_this_context);
 	      return error_mark_node;
 	    }
 	  if (access == access_private_node)
 	    {
-	      cp_error_at ("member function `%#D' is private", t);
-	      error ("in this context");
+	      cp_error_at (ec_member_function_is_private, t);
+	      cp_error (ec_in_this_context);
 	      return error_mark_node;
 	    }
 	  mark_used (t);
@@ -1693,7 +1693,7 @@ build_offset_ref (type, name)
 
   if (t == NULL_TREE)
     {
-      cp_error ("`%D' is not a member of type `%T'", name, type);
+      cp_error (ec_is_not_a_member_of_type, name, type);
       return error_mark_node;
     }
 
@@ -1712,7 +1712,7 @@ build_offset_ref (type, name)
 
   if (TREE_CODE (t) == FIELD_DECL && DECL_BIT_FIELD (t))
     {
-      cp_error ("illegal pointer to bit field `%D'", t);
+      cp_error (ec_illegal_pointer_to_bit_field, t);
       return error_mark_node;
     }
 
@@ -1741,7 +1741,7 @@ resolve_offset_ref (exp)
 
   if (TREE_CODE (exp) == TREE_LIST)
     {
-      cp_pedwarn ("assuming & on overloaded member function");
+      cp_pedwarn (ec_assuming_on_overloaded_member_function);
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
 
@@ -1755,7 +1755,7 @@ resolve_offset_ref (exp)
       my_friendly_assert (TREE_CODE (type) == OFFSET_TYPE, 214);
       if (TYPE_OFFSET_BASETYPE (type) != current_class_type)
 	{
-	  error ("object missing in use of pointer-to-member construct");
+	  cp_error (ec_object_missing_in_use_of_pointertomember_construct);
 	  return error_mark_node;
 	}
       member = exp;
@@ -1784,9 +1784,9 @@ resolve_offset_ref (exp)
     {
       if (TREE_ADDRESSABLE (member) == 0)
 	{
-	  cp_error_at ("member `%D' is non-static but referenced as a static member",
+	  cp_error_at (ec_member_is_nonstatic_but_referenced_as_a_static_member,
 		       member);
-	  error ("at this point in file");
+	  cp_error (ec_at_this_point_in_file);
 	  TREE_ADDRESSABLE (member) = 1;
 	}
       return error_mark_node;
@@ -1822,11 +1822,11 @@ resolve_offset_ref (exp)
       /* Issue errors if there was an access violation.  */
       if (access != access_public_node)
 	{
-	  cp_error_at ("member `%D' is %s", 
+	  cp_error_at (ec_member_is_s, 
 		       access == access_private_node 
 		       ? "private" : "protected",
 		       member);
-	  cp_error ("in this context");
+	  cp_error (ec_in_this_context);
 	} 
 
       /* Even in the case of illegal access, we form the
@@ -1852,7 +1852,7 @@ resolve_offset_ref (exp)
     {
       if (addr == error_mark_node)
 	{
-	  cp_error ("object missing in `%E'", exp);
+	  cp_error (ec_object_missing_in, exp);
 	  return error_mark_node;
 	}
 
@@ -2012,7 +2012,7 @@ build_new (placement, decl, init, use_global_new)
 	  if (this_nelts != error_mark_node)
 	    {
 	      if (this_nelts == NULL_TREE)
-		error ("new of array type fails to specify size");
+		cp_error (ec_new_of_array_type_fails_to_specify_size);
 	      else if (processing_template_decl)
 		{
 		  nelts = this_nelts;
@@ -2024,7 +2024,7 @@ build_new (placement, decl, init, use_global_new)
 		  absdcl = TREE_OPERAND (absdcl, 0);
 	          if (this_nelts == integer_zero_node)
 		    {
-		      warning ("zero size array reserves no space");
+		      cp_warning (ec_zero_size_array_reserves_no_space);
 		      nelts = integer_zero_node;
 		    }
 		  else
@@ -2099,13 +2099,13 @@ build_new (placement, decl, init, use_global_new)
      returned by new.'' ARM 5.3.3 */
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
-      error ("new cannot be applied to a reference type");
+      cp_error (ec_new_cannot_be_applied_to_a_reference_type);
       type = TREE_TYPE (type);
     }
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
-      error ("new cannot be applied to a function type");
+      cp_error (ec_new_cannot_be_applied_to_a_function_type);
       return error_mark_node;
     }
 
@@ -2232,7 +2232,7 @@ build_new_1 (exp)
 
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
-      error ("invalid type `void' for new");
+      cp_error (ec_invalid_type_void_for_new);
       return error_mark_node;
     }
 
@@ -2276,7 +2276,7 @@ build_new_1 (exp)
       code = VEC_NEW_EXPR;
 
       if (init && pedantic)
-	cp_pedwarn ("initialization in array new");
+	cp_pedwarn (ec_initialization_in_array_new);
     }
 
   /* Allocate the object.  */
@@ -2288,7 +2288,7 @@ build_new_1 (exp)
 	rval = NULL_TREE;
       else
 	{
-	  error ("constructors take parameter lists");
+	  cp_error (ec_constructors_take_parameter_lists);
 	  return error_mark_node;
 	}
     }
@@ -2405,10 +2405,10 @@ build_new_1 (exp)
 	  TREE_READONLY (deref) = 0;
 
 	  if (TREE_CHAIN (init) != NULL_TREE)
-	    pedwarn ("initializer list being treated as compound expression");
+	    cp_pedwarn (ec_initializer_list_being_treated_as_compound_expression);
 	  else if (TREE_CODE (init) == CONSTRUCTOR)
 	    {
-	      pedwarn ("initializer list appears where operand should be used");
+	      cp_pedwarn (ec_initializer_list_appears_where_operand_should_be_used);
 	      init = TREE_OPERAND (init, 1);
 	    }
 	  init = build_compound_expr (init);
@@ -2533,7 +2533,7 @@ build_new_1 (exp)
 	}
     }
   else if (TYPE_READONLY (true_type))
-    cp_error ("uninitialized const in `new' of `%#T'", true_type);
+    cp_error (ec_uninitialized_const_in_new_of, true_type);
 
  done:
 
@@ -2856,7 +2856,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 		   && TYPE_NEEDS_CONSTRUCTING (type)
 		   && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
 	    {
-	      error ("initializer ends prematurely");
+	      cp_error (ec_initializer_ends_prematurely);
 	      return error_mark_node;
 	    }
 	}
@@ -3047,7 +3047,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	addr = save_expr (addr);
       if (TYPE_DOMAIN (type) == NULL_TREE)
 	{
-	  error ("unknown array size in delete");
+	  cp_error (ec_unknown_array_size_in_delete);
 	  return error_mark_node;
 	}
       return build_vec_delete (addr, array_type_nelts (type),
@@ -3295,7 +3295,7 @@ build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
   else
     {
       if (base != error_mark_node)
-	error ("type to vector delete is neither pointer or array type");
+	cp_error (ec_type_to_vector_delete_is_neither_pointer_or_array_type);
       return error_mark_node;
     }
 
