@@ -3490,7 +3490,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* None of these optimizations can be done for IEEE
 	     floating point.  */
 	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && ! FLOAT_MODE_P (mode))
+	      && FLOAT_MODE_P (mode))
 	    break;
 
 	  /* We can't assume x-x is 0 even with non-IEEE floating point.  */
