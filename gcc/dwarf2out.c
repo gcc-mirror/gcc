@@ -7058,10 +7058,22 @@ add_bound_info (subrange_die, bound_attr, bound)
 	{
 	  register dw_die_ref ctx = lookup_decl_die (current_function_decl);
 	  register dw_die_ref decl_die = new_die (DW_TAG_variable, ctx);
+	  register rtx loc = SAVE_EXPR_RTL (bound);
+
+	  /* If the RTL for the SAVE_EXPR is memory, handle the case where
+	     it references an outer function's frame.  */
+
+	  if (GET_CODE (loc) == MEM)
+	    {
+	      rtx new_addr = fix_lexical_addr (XEXP (loc, 0), bound);
+
+	      if (XEXP (loc, 0) != new_addr)
+		loc = gen_rtx (MEM, GET_MODE (loc), new_addr);
+	    }
+
 	  add_AT_flag (decl_die, DW_AT_artificial, 1);
 	  add_type_attribute (decl_die, TREE_TYPE (bound), 1, 0, ctx);
-	  add_AT_location_description (decl_die, DW_AT_location,
-				       SAVE_EXPR_RTL (bound));
+	  add_AT_location_description (decl_die, DW_AT_location, loc);
 	  add_AT_die_ref (subrange_die, bound_attr, decl_die);
 	}
 
