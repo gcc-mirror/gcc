@@ -51,5 +51,5 @@ package java.io;
   */
 public interface Serializable
 {
-  static final long serialVersionUID = 1196656838076753133L;
+  long serialVersionUID = 1196656838076753133L;
 } // interface Serializable

@@ -52,7 +52,6 @@ package java.io;
  */
 public interface FileFilter
 {
-
   /**
    * This method determines whether or not a given pathname should be included
    * in a pathname listing.
@@ -62,7 +61,5 @@ public interface FileFilter
    * @return <code>true</code> if the path should be included in the list, 
    * <code>false</code> otherwise.
    */
-  public abstract boolean accept(File pathname);
-
-} // interface FileFilter
-
+  boolean accept(File pathname);
+}

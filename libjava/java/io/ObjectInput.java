@@ -58,7 +58,7 @@ public interface ObjectInput extends DataInput
     *
     * @exception IOException If an error occurs
     */
-  public abstract int available() throws IOException;
+  int available() throws IOException;
 
   /**
     * This method reading a byte of data from a stream.  It returns that byte
@@ -69,7 +69,7 @@ public interface ObjectInput extends DataInput
     *
     * @exception IOException If an error occurs
     */
-  public abstract int read() throws IOException;
+  int read() throws IOException;
 
   /**
     * This method reads raw bytes and stores them them a byte array buffer.
@@ -83,7 +83,7 @@ public interface ObjectInput extends DataInput
     *
     * @exception IOException If an error occurs
     */
-  public abstract int read(byte[] buf) throws IOException;
+  int read(byte[] buf) throws IOException;
 
   /**
     * This method reads raw bytes and stores them in a byte array buffer
@@ -102,7 +102,7 @@ public interface ObjectInput extends DataInput
     *
     * @exception IOException If an error occurs
     */
-  public abstract int read(byte[] buf, int offset, int len) throws IOException;
+  int read(byte[] buf, int offset, int len) throws IOException;
 
   /**
     * Reads an object instance and returns it.  If the class for the object
@@ -115,7 +115,7 @@ public interface ObjectInput extends DataInput
     * found
     * @exception IOException If any other error occurs
     */
-  public abstract Object readObject() 
+  Object readObject() 
     throws ClassNotFoundException, IOException;
 
   /**
@@ -129,14 +129,12 @@ public interface ObjectInput extends DataInput
     *
     * @exception IOException If an error occurs
     */
-  public abstract long skip(long numBytes) throws IOException;
+  long skip(long numBytes) throws IOException;
 
   /**
     * This method closes the input source
     *
     * @exception IOException If an error occurs
     */
-  public abstract void close() throws IOException;
-
-} // interface ObjectInput
-
+  void close() throws IOException;
+}

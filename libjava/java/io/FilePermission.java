@@ -189,12 +189,15 @@ public final class FilePermission extends Permission implements Serializable
   public boolean implies(Permission p) 
   {
     FilePermission fp;
+    
     if(!(p instanceof FilePermission))
       return false;
+    
     fp = (FilePermission)p;
     
     String f1 = getName();
     String f2 = fp.getName();
+    
     if(f1.charAt(0) != File.separatorChar) 
       {
         f1 = CURRENT_DIRECTORY + f1;
@@ -204,7 +207,8 @@ public final class FilePermission extends Permission implements Serializable
         f2 = CURRENT_DIRECTORY + f2;
       }
     
-    String sub1, sub2a, sub2b;
+    String sub1;
+    
     switch(f1.charAt(f1.length() - 1)) 
       {
         case '*':

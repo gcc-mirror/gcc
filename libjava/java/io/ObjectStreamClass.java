@@ -249,8 +249,6 @@ public class ObjectStreamClass implements Serializable
   {
     ObjectStreamClass osc = ObjectStreamClass.lookup (clazz);
 
-    ObjectStreamClass[] ret_val;
-
     if (osc == null)
       return new ObjectStreamClass[0];
     else
