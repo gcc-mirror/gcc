@@ -35,19 +35,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.util.zip;
 
 import java.io.BufferedInputStream;
 import java.io.DataInput;
+import java.io.EOFException;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.EOFException;
 import java.io.RandomAccessFile;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * This class represents a Zip archive.  You can ask for the contained

@@ -1,5 +1,25 @@
 2004-10-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/sql/Timestamp.java,
+	java/text/AttributedCharacterIterator.java,
+	java/text/AttributedString.java,
+	java/util/zip/CheckedOutputStream.java,
+	java/util/zip/DeflaterOutputStream.java,
+	java/util/zip/ZipFile.java,
+	javax/crypto/Cipher.java,
+	javax/crypto/ExemptionMechanismException.java,
+	javax/crypto/SecretKey.java,
+	javax/crypto/SecretKeyFactory.java,
+	javax/naming/directory/ModificationItem.java,
+	javax/naming/directory/SearchControls.java,
+	javax/naming/event/NamingListener.java,
+	javax/naming/ldap/Control.java,
+	javax/naming/ldap/ExtendedResponse.java,
+	javax/net/ssl/SSLSocketFactory.java:
+	Reorganized imports and fixed copyright headers.
+
+2004-10-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/logging/ConsoleHandler.java,
 	java/util/logging/ErrorManager.java,
 	java/util/logging/FileHandler.java,
