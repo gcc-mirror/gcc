@@ -1866,9 +1866,11 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
 # Using basename would be simpler, but some systems don't have it.
+# The touch command is here to workaround an AIX/Linux NFS bug.
 	for file in .. $(USER_H); do \
 	  if [ X$$file != X.. ]; then \
 	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    touch include/$$realfile; \
 	    rm -f include/$$realfile; \
 	    cp $$file include; \
 	    chmod a+r include/$$realfile; \
