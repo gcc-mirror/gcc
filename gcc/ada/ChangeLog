@@ -1,5 +1,15 @@
 2004-10-04  Ed Schonberg  <schonberg@gnat.com>
 
+	* sem_ch6.adb (Analyze_Subprogram_Body): Do not treat Inline as
+	Inline_Always when in Configurable_Run_Time mode.
+
+	* sem_prag.adb (Process_Convention): If entity is an inherited
+	subprogram, apply convention to parent subprogram if in same scope.
+	(Analyze_Pragma, case Inline): Do not treat Inline as Inline_Always
+	when in Configurable_Run_Time mode.
+
+2004-10-04  Ed Schonberg  <schonberg@gnat.com>
+
 	* sem_ch3.adb (Build_Derived_Record_Type): Set First/Last entity of
 	class_wide type after component list has been inherited.
 

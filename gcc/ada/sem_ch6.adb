@@ -1175,8 +1175,7 @@ package body Sem_Ch6 is
          Check_Following_Pragma;
 
          if Is_Always_Inlined (Spec_Id)
-           or else (Has_Pragma_Inline (Spec_Id)
-             and then (Front_End_Inlining or else Configurable_Run_Time_Mode))
+           or else (Has_Pragma_Inline (Spec_Id) and then Front_End_Inlining)
          then
             Build_Body_To_Inline (N, Spec_Id);
          end if;
