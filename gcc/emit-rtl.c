@@ -1966,15 +1966,17 @@ adjust_address_1 (memref, mode, offset, validate, adjust)
   rtx size = 0;
   unsigned int memalign = MEM_ALIGN (memref);
 
-  if (adjust == 0 || offset == 0)
-    /* ??? Prefer to create garbage instead of creating shared rtl.  */
-    addr = copy_rtx (addr);
+  /* ??? Prefer to create garbage instead of creating shared rtl.
+     This may happen even if adjust is non-zero -- consider
+     (plus (plus reg reg) const_int) -- so do this always.  */
+  addr = copy_rtx (addr);
+
   /* If MEMREF is a LO_SUM and the offset is within the alignment of the
      object, we can merge it into the LO_SUM.  */
-  else if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
-	   && offset >= 0
-	   && (unsigned HOST_WIDE_INT) offset
-	      < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
+  if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
+      && offset >= 0
+      && (unsigned HOST_WIDE_INT) offset
+	  < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
     addr = gen_rtx_LO_SUM (Pmode, XEXP (addr, 0),
 			   plus_constant (XEXP (addr, 1), offset));
   else
