@@ -4048,6 +4048,10 @@ sh_expand_epilogue ()
   /* Switch back to the normal stack if necessary.  */
   if (sp_switch)
     emit_insn (gen_sp_switch_2 ());
+
+  /* Tell flow the insn that pops PR isn't dead.  */
+  if (live_regs_mask & (1 << PR_REG))
+    emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, PR_REG)));
 }
 
 static int sh_need_epilogue_known = 0;
