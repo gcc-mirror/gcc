@@ -1,5 +1,7 @@
 Wed Aug  4 12:53:44 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* expr.c (expand_expr, case PLUS_EXPR): Fix parallel case, too.
+
 	* c-lex.c: Sync with C++ frontend.
 	(linemode): New variable.
 	(parse_float): imag, conversion_errno, and type are output only.
