@@ -38,7 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef DBX_DEBUGGING_INFO
 
 /* Like the default, except no -lg.  */
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
+#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-L/lib/libp/ -lc}%{pg:-L/lib/libp/ -lc}"
 
 /* Control how gcc finds libgcc.a and how it passes -L options.  */
 #define LINK_LIBGCC_SPECIAL
