@@ -1,3 +1,8 @@
+Thu Sep  4 11:17:16 1997  Mikeael Meissner  (meissner@cygnus.com)
+
+	* bitmap.c: Conditionally include stdlib.h.
+        (free): Provide a declaration if NEED_DECLARATION_FREE.
+
 Thu Sep  4 09:58:53 1997  Joel Sherrill  (joel@OARcorp.com)
 
 	* i960/i960.h: Added default for SUBTARGET_SWITCHES macro.
