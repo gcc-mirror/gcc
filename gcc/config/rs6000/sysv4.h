@@ -909,7 +909,7 @@ do {									\
 
 /* Pass various options to the assembler */
 #undef ASM_SPEC
-#define ASM_SPEC "%(asm_cpu) %{mregnames} \
+#define ASM_SPEC "%(asm_cpu) %{mregnames} %{mno-regnames} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} \
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
