@@ -1241,7 +1241,7 @@ extern int current_function_anonymous_args;
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) do			\
 {									\
   emit_move_insn (gen_rtx_MEM (SImode, (TRAMP)),			\
 		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0xd301dd02 : 0xdd02d301));\
@@ -1259,7 +1259,7 @@ extern int current_function_anonymous_args;
       else								\
 	emit_insn (gen_ic_invalidate_line (TRAMP));			\
     }									\
-}
+} while (0)
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.

@@ -1,3 +1,8 @@
+2000-12-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (INITIALIZE_TRAMPOLINE): Enclose the block
+	statement in do/while(0).
+
 Sat Dec 16 19:56:24 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ashrsi3_cmpno, ashrhi3_cmpno, ashrqi3_cmpno, lshrsi3_cmpno,
