@@ -1,3 +1,8 @@
+2004-12-17  Steven Bosscher  <stevenb@suse.de>
+
+	* tree.c (type_contains_placeholder_1): Always return false
+	for VECTOR_TYPE if its TREE_TYPE does not contain a placeholder.
+
 2004-12-17  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (extendsfdf2, *extendsfdf2_1,
@@ -26,8 +31,8 @@
 	* global.c: Fix a comment typo.
 
 2004-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Roger Sayle  <roger@eyesopen.com>
- 
+	    Roger Sayle  <roger@eyesopen.com>
+
 	PR tree-optimization/18707
 	* cfgloopmanip.c (create_preheader): Move the preheader
 	only if the latch was falling through to the header.
@@ -407,6 +412,7 @@
 2004-12-13  Jeff Law  <law@redhat.com>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 
+	PR tree-optimization/18694
 	* tree-ssa-dom.c (thread_across_edge): Do not thread jumps if a
 	PHI argument is set from a PHI_RESULT in the same block and the
 	PHI argument is not the same as the PHI result.
