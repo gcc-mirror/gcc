@@ -87,9 +87,19 @@ typedef void *__gnuc_va_list;
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 
+#if defined (__arm__) || defined (__i386__) || defined (__ns32000__) || defined (__vax__)
+/* This is for little-endian machines; small args are padded upward.  */
 #define va_arg(AP, TYPE)						\
- (AP += __va_rounded_size (TYPE),					\
-  *((TYPE *) (AP - __va_rounded_size (TYPE))))
+ (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
+  *((TYPE *) (void *) ((char *) (AP) - __va_rounded_size (TYPE))))
+#else /* big-endian */
+/* This is for big-endian machines; small args are padded downward.  */
+#define va_arg(AP, TYPE)						\
+ (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
+  *((TYPE *) (void *) ((char *) (AP) - ((sizeof (TYPE) < 4		\
+					 ? sizeof (TYPE)		\
+					 : __va_rounded_size (TYPE))))))
+#endif /* big-endian */
 
 #endif /* not alpha */
 #endif /* not i960 */
