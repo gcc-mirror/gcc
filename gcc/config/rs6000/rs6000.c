@@ -9446,7 +9446,6 @@ function_ok_for_sibcall (fndecl)
   return 0;
 }
 
-/* function rewritten to handle sibcalls */
 static int
 rs6000_ra_ever_killed ()
 {
@@ -9458,19 +9457,21 @@ rs6000_ra_ever_killed ()
   if (current_function_is_thunk)
     return 0;
 #endif
-  /* regs_ever_live has LR marked as used if any sibcalls
-     are present.  Which it is, but this should not force
-     saving and restoring in the prologue/epilog.  Likewise,
-     reg_set_between_p thinks a sibcall clobbers LR, so
-     that is inappropriate. */
+  /* regs_ever_live has LR marked as used if any sibcalls are present,
+     but this should not force saving and restoring in the
+     pro/epilogue.  Likewise, reg_set_between_p thinks a sibcall
+     clobbers LR, so that is inappropriate. */
+
   /* Also, the prologue can generate a store into LR that
      doesn't really count, like this:
+
         move LR->R0
         bcl to set PIC register
         move LR->R31
         move R0->LR
-     When we're called from the epilog, we need to avoid counting
-     this as a store; thus we ignore any insns with a REG_MAYBE_DEAD note. */
+
+     When we're called from the epilogue, we need to avoid counting
+     this as a store.  */
          
   push_topmost_sequence ();
   top = get_insns ();
@@ -9486,8 +9487,8 @@ rs6000_ra_ever_killed ()
 	  else if (GET_CODE (insn) == CALL_INSN 
 		   && !SIBLING_CALL_P (insn))
 	    return 1;
-	  else if (set_of (reg, insn) != NULL_RTX 
-		   && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
+	  else if (set_of (reg, insn) != NULL_RTX
+		   && !prologue_epilogue_contains (insn))
 	    return 1;
     	}
     }

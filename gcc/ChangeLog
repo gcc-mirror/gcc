@@ -1,3 +1,8 @@
+2002-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_ra_ever_killed): Call
+	prologue_epilogue_contains instead of using REG_MAYBE_DEAD notes.
+
 Wed Oct  9 15:54:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (ffssi2): Fix emitted code.
