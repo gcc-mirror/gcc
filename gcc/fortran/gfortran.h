@@ -651,6 +651,9 @@ typedef struct gfc_symbol
 
   struct gfc_symbol *old_symbol, *tlink;
   unsigned mark:1, new:1;
+  /* Nonzero if all equivalences associated with this symbol have been
+     processed.  */
+  unsigned equiv_built:1;
   int refs;
   struct gfc_namespace *ns;	/* namespace containing this symbol */
 

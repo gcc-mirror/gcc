@@ -1,3 +1,9 @@
+2004-05-23  Paul Brook  <paul@codesourcery.com>
+	Victor Leikehman  <lei@haifasphere.co.il>
+
+	* gfortran.fortran-torture/execute/common_init_1.f90: New test.
+	* gfortran.fortran-torture/execute/equiv_init.f90: New test.
+
 2004-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15285

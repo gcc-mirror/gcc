@@ -1,3 +1,20 @@
+2004-05-23  Paul Brook  <paul@codesourcery.com>
+	Victor Leikehman  <lei@haifasphere.co.il>
+
+	* gfortran.h (struct gfc_symbol): Add equiv_built.
+	* trans-common.c: Change int to HOST_WIDE_INT.  Capitalize error
+	messages.
+	(current_length): Remove.
+	(add_segments): New function.
+	(build_equiv_decl): Create initialized common blocks.
+	(build_common_decl): Always add decl to bindings.
+	(create_common): Create initializers.
+	(find_segment_info): Reformat to match coding conventions.
+	(new_condition): Use add_segments.
+	(add_condition, find_equivalence, add_equivalences): Move iteration
+	inside functions.  Only process each segment once.
+	(new_segment, finish_equivalences, translate_common): Simplify.
+
 2004-05-23  Steven G. Kargl  <kargls@comcast.net>
 
 	* check.c (gfc_check_random_seed): Issue for too many arguments.
