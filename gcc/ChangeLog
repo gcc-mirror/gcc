@@ -1,5 +1,32 @@
 2004-07-28  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-optimize.c (init_tree_optimization_passes): Schedule
+	pass_may_alias right after the program is renamed into SSA.
+	* tree-pass.h (PROP_alias): Define.
+	* tree-outof-ssa.c (pass_del_ssa): Require PROP_alias.
+	* tree-sra.c (pass_sra): Likewise.
+	* tree-ssa-ccp.c (pass_ccp): Likewise.
+	* tree-ssa-copyrename.c (pass_rename_ssa_ccp): Likewise.
+	* tree-ssa-dce.c (pass_dce): Likewise.
+	* tree-ssa-dom.c (pass_dominator): Likewise.
+	* tree-ssa-dse.c (pass_dse): Likewise.
+	* tree-ssa-forwprop.c (pass_forwprop): Likewise.
+	* tree-ssa-loop-ch.c (pass_ch): Likewise.
+	* tree-ssa-phiopt.c (pass_phiopt): Likewise.
+	* tree-ssa-pre.c (pass_pre): Likewise.
+	* tree-tailcall.c (pass_tail_recursion): Likewise.
+	* tree-ssa.c (pass_redundant_phi): Likewise.
+	* tree-ssa-alias.c (aliases_computed_p): Remove.
+	Update all users.
+	(init_alias_info): Do not mark all type tags for renaming
+	unconditionally.
+	Clear may_aliases from every symbol.
+	(setup_pointers_and_addressables): If a pointer has not been
+	dereferenced and it had a type tag, clear it and mark the old
+	tag for renaming.
+
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
 	PR tree-optimization/16705
 	* tree-ssa-alias.c (create_global_var): Set DECL_EXTERNAL on
 	.GLOBAL_VAR.
