@@ -10178,9 +10178,18 @@ do_jump (exp, if_false_label, if_true_label)
 
       else
 	{
+	  rtx seq1, seq2;
+	  tree cleanups_left_side, cleanups_right_side, old_cleanups;
+
 	  register rtx label1 = gen_label_rtx ();
 	  drop_through_label = gen_label_rtx ();
+
 	  do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
+
+	  /* We need to save the cleanups for the lhs and rhs separately. 
+	     Keep track of the cleanups seen before the lhs. */
+	  old_cleanups = cleanups_this_call;
+	  start_sequence ();
 	  /* Now the THEN-expression.  */
 	  do_jump (TREE_OPERAND (exp, 1),
 		   if_false_label ? if_false_label : drop_through_label,
@@ -10188,10 +10197,71 @@ do_jump (exp, if_false_label, if_true_label)
 	  /* In case the do_jump just above never jumps.  */
 	  do_pending_stack_adjust ();
 	  emit_label (label1);
+	  seq1 = get_insns ();
+	  /* Now grab the cleanups for the lhs. */
+	  cleanups_left_side = defer_cleanups_to (old_cleanups);
+	  end_sequence ();
+
+	  /* And keep track of where we start before the rhs. */
+	  old_cleanups = cleanups_this_call;
+	  start_sequence ();
 	  /* Now the ELSE-expression.  */
 	  do_jump (TREE_OPERAND (exp, 2),
 		   if_false_label ? if_false_label : drop_through_label,
 		   if_true_label ? if_true_label : drop_through_label);
+	  seq2 = get_insns ();
+	  /* Grab the cleanups for the rhs. */
+	  cleanups_right_side = defer_cleanups_to (old_cleanups);
+	  end_sequence ();
+
+	  if (cleanups_left_side || cleanups_right_side)
+	    {
+	      /* Make the cleanups for the THEN and ELSE clauses
+		 conditional based on which half is executed. */
+	      rtx flag = gen_reg_rtx (word_mode);
+	      tree new_cleanups;
+	      tree cond;
+
+	      /* Set the flag to 0 so that we know we executed the lhs. */
+	      emit_move_insn (flag, const0_rtx);
+	      emit_insns (seq1);
+
+	      /* Set the flag to 1 so that we know we executed the rhs. */
+	      emit_move_insn (flag, const1_rtx);
+	      emit_insns (seq2);
+
+	      /* Make sure the cleanup lives on the function_obstack. */
+	      push_obstacks_nochange ();
+	      resume_temporary_allocation ();
+
+	      /* Now, build up a COND_EXPR that tests the value of the
+		 flag, and then either do the cleanups for the lhs or the
+		 rhs. */
+	      cond = make_node (RTL_EXPR);
+	      TREE_TYPE (cond) = integer_type_node;
+	      RTL_EXPR_RTL (cond) = flag;
+	      RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+	      cond = save_expr (cond);
+	      
+	      new_cleanups = build (COND_EXPR, void_type_node,
+				    truthvalue_conversion (cond),
+				    cleanups_right_side, cleanups_left_side);
+	      new_cleanups = fold (new_cleanups);
+
+	      pop_obstacks ();
+
+	      /* Now add in the conditionalized cleanups.  */
+	      cleanups_this_call
+		= tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
+	      expand_eh_region_start ();
+	    }
+	  else 
+	    {
+	      /* No cleanups were needed, so emit the two sequences
+		 directly. */
+	      emit_insns (seq1);
+	      emit_insns (seq2);
+	    }
 	}
       break;
 
