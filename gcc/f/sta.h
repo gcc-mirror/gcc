@@ -90,11 +90,11 @@ ffesymbol ffesta_sym_end_transition (ffesymbol s);
 ffesymbol ffesta_sym_exec_transition (ffesymbol s);
 void ffesta_ffebad_1p (ffebad msg, ffelexToken names_token,
 		       ffeTokenLength index, ffelexToken next_token);
-void ffesta_ffebad_1sp (ffebad msg, char *s, ffelexToken names_token,
+void ffesta_ffebad_1sp (ffebad msg, const char *s, ffelexToken names_token,
 			ffeTokenLength index, ffelexToken next_token);
-void ffesta_ffebad_1st (ffebad msg, char *s, ffelexToken t);
+void ffesta_ffebad_1st (ffebad msg, const char *s, ffelexToken t);
 void ffesta_ffebad_1t (ffebad msg, ffelexToken t);
-void ffesta_ffebad_2st (ffebad msg, char *s, ffelexToken t1, ffelexToken t2);
+void ffesta_ffebad_2st (ffebad msg, const char *s, ffelexToken t1, ffelexToken t2);
 void ffesta_ffebad_2t (ffebad msg, ffelexToken t1, ffelexToken t2);
 ffelexHandler ffesta_zero (ffelexToken t);
 ffelexHandler ffesta_two (ffelexToken first, ffelexToken second);

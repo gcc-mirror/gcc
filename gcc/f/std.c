@@ -526,25 +526,25 @@ static void ffestd_subr_f90_ (void);
 static void ffestd_subr_labels_ (bool unexpected);
 static void ffestd_R1001dump_ (ffests s, ffesttFormatList list);
 static void ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1010_1_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f,
-				      char *string);
+				      const char *string);
 static void ffestd_R1001error_ (ffesttFormatList f);
 static void ffestd_R1001rtexpr_ (ffests s, ffesttFormatList f, ffebld expr);
 
@@ -4487,7 +4487,7 @@ ffestd_R1001dump_ (ffests s, ffesttFormatList list)
    The format is dumped with form [r]X[w].  */
 
 static void
-ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (!f->u.R1005.R1007_or_R1008.present);
   assert (!f->u.R1005.R1009.present);
@@ -4519,7 +4519,7 @@ ffestd_R1001dump_1005_1_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form [r]Xw.  */
 
 static void
-ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (!f->u.R1005.R1007_or_R1008.present);
   assert (!f->u.R1005.R1009.present);
@@ -4549,7 +4549,7 @@ ffestd_R1001dump_1005_2_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form [r]Xw[.m].  */
 
 static void
-ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (!f->u.R1005.R1009.present);
   assert (f->u.R1005.R1006.present);
@@ -4588,7 +4588,7 @@ ffestd_R1001dump_1005_3_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form [r]Xw.d.  */
 
 static void
-ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (!f->u.R1005.R1009.present);
   assert (f->u.R1005.R1007_or_R1008.present);
@@ -4624,7 +4624,7 @@ ffestd_R1001dump_1005_4_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form [r]Xw.d[Ee].	*/
 
 static void
-ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (f->u.R1005.R1007_or_R1008.present);
   assert (f->u.R1005.R1006.present);
@@ -4668,7 +4668,7 @@ ffestd_R1001dump_1005_5_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form X.  */
 
 static void
-ffestd_R1001dump_1010_1_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1010_1_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (!f->u.R1010.val.present);
 
@@ -4683,7 +4683,7 @@ ffestd_R1001dump_1010_1_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form [r]X.	 */
 
 static void
-ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, const char *string)
 {
   if (f->u.R1010.val.present)
     {
@@ -4704,7 +4704,7 @@ ffestd_R1001dump_1010_2_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form nX.  */
 
 static void
-ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (f->u.R1010.val.present);
 
@@ -4724,7 +4724,7 @@ ffestd_R1001dump_1010_3_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form kX.  Note that k is signed.  */
 
 static void
-ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (f->u.R1010.val.present);
 
@@ -4744,7 +4744,7 @@ ffestd_R1001dump_1010_4_ (ffests s, ffesttFormatList f, char *string)
    The format is dumped with form Xn.  */
 
 static void
-ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f, char *string)
+ffestd_R1001dump_1010_5_ (ffests s, ffesttFormatList f, const char *string)
 {
   assert (f->u.R1010.val.present);
 

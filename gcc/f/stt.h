@@ -181,7 +181,7 @@ void ffestt_dimlist_kill (ffesttDimList list);
 ffestpDimtype ffestt_dimlist_type (ffesttDimList dims, bool is_ugly_assumed);
 void ffestt_exprlist_append (ffesttExprList list, ffebld expr, ffelexToken t);
 ffesttExprList ffestt_exprlist_create (void);
-void ffestt_exprlist_drive (ffesttExprList list, void (*fn) ());
+void ffestt_exprlist_drive (ffesttExprList list, void (*fn) (ffebld, ffelexToken));
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffestt_exprlist_dump (ffesttExprList list);
 #endif
@@ -196,14 +196,14 @@ void ffestt_formatlist_kill (ffesttFormatList list);
 void ffestt_implist_append (ffesttImpList list, ffelexToken first,
 			    ffelexToken last);
 ffesttImpList ffestt_implist_create (void);
-void ffestt_implist_drive (ffesttImpList list, void (*fn) ());
+void ffestt_implist_drive (ffesttImpList list, void (*fn) (ffelexToken, ffelexToken));
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffestt_implist_dump (ffesttImpList list);
 #endif
 void ffestt_implist_kill (ffesttImpList list);
 void ffestt_tokenlist_append (ffesttTokenList list, ffelexToken t);
 ffesttTokenList ffestt_tokenlist_create (void);
-void ffestt_tokenlist_drive (ffesttTokenList list, void (*fn) ());
+void ffestt_tokenlist_drive (ffesttTokenList list, void (*fn) (ffelexToken));
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffestt_tokenlist_dump (ffesttTokenList list);
 #endif

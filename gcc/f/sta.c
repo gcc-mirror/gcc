@@ -1701,7 +1701,7 @@ ffesta_ffebad_1p (ffebad errnum, ffelexToken names_token, ffeTokenLength index,
 }
 
 void
-ffesta_ffebad_1sp (ffebad errnum, char *s, ffelexToken names_token,
+ffesta_ffebad_1sp (ffebad errnum, const char *s, ffelexToken names_token,
 		   ffeTokenLength index, ffelexToken next_token)
 {
   ffewhereLine line;
@@ -1735,7 +1735,7 @@ ffesta_ffebad_1sp (ffebad errnum, char *s, ffelexToken names_token,
 }
 
 void
-ffesta_ffebad_1st (ffebad errnum, char *s, ffelexToken t)
+ffesta_ffebad_1st (ffebad errnum, const char *s, ffelexToken t)
 {
   if (ffesta_ffebad_start (errnum))
     {
@@ -1764,7 +1764,7 @@ ffesta_ffebad_1t (ffebad errnum, ffelexToken t)
 }
 
 void
-ffesta_ffebad_2st (ffebad errnum, char *s, ffelexToken t1, ffelexToken t2)
+ffesta_ffebad_2st (ffebad errnum, const char *s, ffelexToken t1, ffelexToken t2)
 {
   if (ffesta_ffebad_start (errnum))
     {

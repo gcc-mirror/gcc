@@ -118,11 +118,11 @@ extern ffestw ffestw_stack_top_;
 
 /* Declare functions with prototypes. */
 
-void ffestw_display_state ();
+void ffestw_display_state (void);
 void ffestw_kill (ffestw block);
 void ffestw_init_0 (void);
-ffestw ffestw_new ();
-ffestw ffestw_pop ();
+ffestw ffestw_new (void);
+ffestw ffestw_pop (void);
 ffestw ffestw_push (ffestw block);
 ffestw ffestw_update (ffestw block);
 ffestw ffestw_use (ffestw block);

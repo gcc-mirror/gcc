@@ -60,14 +60,14 @@ struct _ffests_
 
 void ffests_kill (ffests s);
 void ffests_new (ffests s, mallocPool pool, ffestsLength size);
-void ffests_printf_1D (ffests s, char *ctl, long arg1);
-void ffests_printf_1U (ffests s, char *ctl, unsigned long arg1);
-void ffests_printf_1s (ffests s, char *ctl, char *arg1);
-void ffests_printf_2Us (ffests s, char *ctl, unsigned long arg1,
-			char *arg2);
+void ffests_printf_1D (ffests s, const char *ctl, long arg1);
+void ffests_printf_1U (ffests s, const char *ctl, unsigned long arg1);
+void ffests_printf_1s (ffests s, const char *ctl, const char *arg1);
+void ffests_printf_2Us (ffests s, const char *ctl, unsigned long arg1,
+			const char *arg2);
 void ffests_putc (ffests s, char c);
-void ffests_puts (ffests s, char *string);
-void ffests_puttext (ffests s, char *text, ffestsLength length);
+void ffests_puts (ffests s, const char *string);
+void ffests_puttext (ffests s, const char *text, ffestsLength length);
 
 /* Define macros. */
 
