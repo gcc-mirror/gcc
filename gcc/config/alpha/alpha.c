@@ -1621,15 +1621,45 @@ alpha_builtin_saveregs (arglist)
     }
 }
 
+#if OPEN_VMS
+#define REG_PV 27
+#define REG_RA 26
+#else
+#define REG_RA 26
+#endif
+
+/* Find the current function's return address.
+
+   ??? It would be better to arrange things such that if we would ordinarily
+   have been a leaf function and we didn't spill the hard reg that we
+   wouldn't have to save the register in the prolog.  But it's not clear
+   how to get the right information at the right time.  */
+
+static rtx alpha_return_addr_rtx;
+
+rtx
+alpha_return_addr ()
+{
+  rtx ret;
+
+  if ((ret = alpha_return_addr_rtx) == NULL)
+    {
+      alpha_return_addr_rtx = ret = gen_reg_rtx (Pmode);
+
+      emit_insn_after (gen_rtx (SET, VOIDmode, ret,
+			        gen_rtx (REG, Pmode, REG_RA)),
+		       get_insns ());
+    }
+
+  return ret;
+}
+
 /* This page contains routines that are used to determine what the function
    prologue and epilogue code will do and write them out.  */
 
 /* Compute the size of the save area in the stack.  */
 
 #if OPEN_VMS
-
-#define REG_PV 27
-#define REG_RA 26
 
 /* These variables are used for communication between the following functions.
    They indicate various things about the current function being compiled
@@ -2296,6 +2326,8 @@ output_epilog (file, size)
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+
+  alpha_return_addr_rtx = 0;
 }
 
 #else /* !OPEN_VMS */
@@ -2618,6 +2650,8 @@ output_epilog (file, size)
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+
+  alpha_return_addr_rtx = 0;
 }
 #endif /* !OPEN_VMS */
 
