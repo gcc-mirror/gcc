@@ -78,17 +78,17 @@ public final class Method extends AccessibleObject implements Member
 	getType ();
 
       StringBuffer b = new StringBuffer ();
-      b.append(Modifier.toString(getModifiers()));
+      Modifier.toString(getModifiers(), b);
       b.append(" ");
       b.append(return_type.toString());
       b.append(" ");
-      b.append(declaringClass.toString());
+      b.append(declaringClass.getName());
       b.append(".");
       b.append(name);
       b.append("(");
       for (int i = 0; i < parameter_types.length; ++i)
 	{
-	  b.append(parameter_types[i].toString());
+	  b.append(parameter_types[i].getName());
 	  if (i < parameter_types.length - 1)
 	    b.append(",");
 	}
@@ -98,7 +98,7 @@ public final class Method extends AccessibleObject implements Member
 	  b.append(" throws ");
 	  for (int i = 0; i < exception_types.length; ++i)
 	    {
-	      b.append(exception_types[i].toString());
+	      b.append(exception_types[i].getName());
 	      if (i < exception_types.length - 1)
 		b.append(",");
 	    }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -253,10 +253,13 @@ public final class Field extends AccessibleObject implements Member
     StringBuffer sbuf = new StringBuffer ();
     int mods = getModifiers();
     if (mods != 0)
-      Modifier.toString(mods, sbuf);
+      {
+	Modifier.toString(mods, sbuf);
+	sbuf.append(' ');
+      }
     sbuf.append(getType());
     sbuf.append(' ');
-    sbuf.append(getDeclaringClass());
+    sbuf.append(getDeclaringClass().getName());
     sbuf.append('.');
     sbuf.append(getName());
     return sbuf.toString();
