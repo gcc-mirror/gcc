@@ -2026,7 +2026,10 @@ namespace std
 	      __s = this->do_put(__s, __io, __fill, __tm, __format, __mod);
 	    }
 	  else
-	    *__s++ = __tmp;
+	    {
+	      *__s = __tmp;
+	      ++__s;
+	    }
 	}
       return __s;
     }
