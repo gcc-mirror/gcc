@@ -33,12 +33,12 @@ SORT=sort		# Could be /bin/sort or /usr/bin/sort
 C_FILE=$1; shift
 H_FILE=$1; shift
 
-cat "$@" | ${AWK} '
+${AWK} '
 	BEGIN{ RS=""; FS="\n" }
 	# Ignore comments and blank lines
 	/^[ \t]*(;|$)/	{ next }
 	/^[^ \t]/ 	{ gsub ("\n", "\034", $0); print }
-' | ${SORT} | ${AWK} '
+' "$@" | ${SORT} | ${AWK} '
     function switch_flags (langs,   flags)
     {
 	langs = ":" langs ":"

@@ -1,3 +1,9 @@
+2003-06-14  Roger Sayle  <roger@eyesopen.com>
+
+	* opts.sh: Work around a mysterious feature in cygwin's gawk
+	where specifying the input files explicitly has a different
+	behavior to piping them via stdin.
+
 2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	* doc/sourcebuild.texi: Update.
