@@ -260,7 +260,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   else if (CODE == '-') fprintf (FILE, "-(sp)");			\
   else if (CODE == '+') fprintf (FILE, "(sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(sp)");				\
-  else if (CODE == '!') fprintf (FILE, "ccr");				\
+  else if (CODE == '!') fprintf (FILE, "fpcr");				\
   else if (CODE == '$') {if (TARGET_68040_ONLY) fprintf (FILE, "s");}	\
   else if (CODE == '&') {if (TARGET_68040_ONLY) fprintf (FILE, "d");}	\
   else if (GET_CODE (X) == REG)						\
