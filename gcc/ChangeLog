@@ -1,3 +1,7 @@
+Sat Apr  6 18:26:32 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* ifcvt.c (if_convert): Clear aux fields of blocks.
+
 2002-04-05  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/freebsd.h (ENDFILE_SPEC): Add crtfastmath bits.
