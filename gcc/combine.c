@@ -2132,6 +2132,12 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	    }
 	}
 
+      /* If we've split a jump pattern, we'll wind up with a sequence even
+	 with one instruction.  We can handle that below, so extract it.  */
+      if (m_split && GET_CODE (m_split) == SEQUENCE
+	  && XVECLEN (m_split, 0) == 1)
+	m_split = PATTERN (XVECEXP (m_split, 0, 0));
+
       if (m_split && GET_CODE (m_split) != SEQUENCE)
 	{
 	  insn_code_number = recog_for_combine (&m_split, i3, &new_i3_notes);
