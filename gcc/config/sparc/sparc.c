@@ -6475,7 +6475,8 @@ ultrasparc_adjust_cost (insn, link, dep_insn, cost)
     return 0;
 
 #define SLOW_FP(dep_type) \
-(dep_type == TYPE_FPSQRT || dep_type == TYPE_FPDIVS || dep_type == TYPE_FPDIVD)
+(dep_type == TYPE_FPSQRTS || dep_type == TYPE_FPSQRTD || \
+ dep_type == TYPE_FPDIVS || dep_type == TYPE_FPDIVD)
 
   switch (REG_NOTE_KIND (link))
     {
@@ -6701,7 +6702,8 @@ ultra_code_from_mask (type_mask)
 			TMASK (TYPE_FPSTORE)))
     return LSU;
   else if (type_mask & (TMASK (TYPE_FPMUL) | TMASK (TYPE_FPDIVS) |
-			TMASK (TYPE_FPDIVD) | TMASK (TYPE_FPSQRT)))
+			TMASK (TYPE_FPDIVD) | TMASK (TYPE_FPSQRTS) |
+			TMASK (TYPE_FPSQRTD)))
     return FPM;
   else if (type_mask & (TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPCMOVE) |
 			TMASK (TYPE_FP) | TMASK (TYPE_FPCMP)))
@@ -6780,7 +6782,8 @@ ultra_fpmode_conflict_exists (fpmode)
 	      && GET_CODE (SET_SRC (pat)) != NEG
 	      && ((TMASK (get_attr_type (insn)) &
 		   (TMASK (TYPE_FPDIVS) | TMASK (TYPE_FPDIVD) |
-		    TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPSQRT) |
+		    TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPSQRTS) |
+		    TMASK (TYPE_FPSQRTD) |
                     TMASK (TYPE_LOAD) | TMASK (TYPE_STORE))) == 0))
 	    return 1;
 	}
@@ -6938,6 +6941,7 @@ ultra_schedule_insn (ip, ready, this, type)
 {
   int pipe_slot;
   char mask = ultra_pipe.free_slot_mask;
+  rtx temp;
 
   /* Obtain free slot.  */
   for (pipe_slot = 0; pipe_slot < 4; pipe_slot++)
@@ -6959,13 +6963,13 @@ ultra_schedule_insn (ip, ready, this, type)
   ultra_pipe.commit[pipe_slot] = 0;
 
   /* Update ready list.  */
-  if (ip != &ready[this])
+  temp = *ip;
+  while (ip != &ready[this])
     {
-      rtx temp = *ip;
-
-      *ip = ready[this];
-      ready[this] = temp;
+      ip[0] = ip[1];
+      ++ip;
     }
+  *ip = temp;
 }
 
 /* Advance to the next pipeline group.  */
@@ -7170,7 +7174,8 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 	  }
 	else if ((ip = ultra_find_type ((TMASK (TYPE_FPDIVS) |
 					 TMASK (TYPE_FPDIVD) |
-					 TMASK (TYPE_FPSQRT)),
+					 TMASK (TYPE_FPSQRTS) |
+					 TMASK (TYPE_FPSQRTD)),
 					ready, this_insn)) != 0)
 	  {
 	    ultra_schedule_insn (ip, ready, this_insn, FPM);

@@ -98,7 +98,7 @@
 ;; type "call_no_delay_slot" is a call followed by an unimp instruction.
 
 (define_attr "type"
-  "move,unary,binary,compare,load,sload,store,ialu,shift,uncond_branch,branch,call,call_no_delay_slot,return,address,imul,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrt,cmove,multi,misc"
+  "move,unary,binary,compare,load,sload,store,ialu,shift,uncond_branch,branch,call,call_no_delay_slot,return,address,imul,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
   (const_string "binary"))
 
 ;; Set true if insn uses call-clobbered intermediate register.
@@ -273,7 +273,7 @@
 
 (define_function_unit "fp_mds" 1 0
   (and (eq_attr "cpu" "cypress")
-    (eq_attr "type" "fpsqrt"))
+    (eq_attr "type" "fpsqrts,fpsqrtd"))
   63 63)
 
 ;; ----- The TMS390Z55 scheduling
@@ -340,7 +340,7 @@
 
 (define_function_unit "fp_mds" 1 0
   (and (eq_attr "cpu" "supersparc")
-    (eq_attr "type" "fpsqrt"))
+    (eq_attr "type" "fpsqrts,fpsqrtd"))
   12 10)
 
 (define_function_unit "fp_mds" 1 0
@@ -387,7 +387,7 @@
 
 (define_function_unit "fp_mds" 1 0
   (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
-    (eq_attr "type" "fpsqrt"))
+    (eq_attr "type" "fpsqrts,fpsqrtd"))
   17 15)
 
 (define_function_unit "fp_mds" 1 0
@@ -478,13 +478,17 @@
 ;; Timings; throughput/latency
 ;; FMOV     1/1    fmov, fabs, fneg
 ;; FMOVcc   1/2
-;; FADD     1/4    add/sub, format conv, compar
-;; FMUL     1/4
+;; FADD     1/3    add/sub, format conv, compar
+;; FMUL     1/3
 ;; FDIVs    12/12
 ;; FDIVd    22/22
 ;; FSQRTs   12/12
 ;; FSQRTd   22/22
 ;; FCMP takes 1 cycle to branch, 2 cycles to conditional move.
+;;
+;; FDIV{s,d}/FSQRT{s,d} are given their own unit since they only
+;; use the FPM multiplier for final rounding 3 cycles before the
+;; end of their latency and we have no real way to model that.
 ;;
 ;; ??? This is really bogus because the timings really depend upon
 ;; who uses the result.  We should record who the user is with
@@ -504,7 +508,7 @@
 (define_function_unit "fadd" 1 0
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "fp"))
-  4 1)
+  3 1)
 
 (define_function_unit "fadd" 1 0
   (and (eq_attr "cpu" "ultrasparc")
@@ -514,27 +518,32 @@
 (define_function_unit "fmul" 1 0
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "fpmul"))
-  4 1)
+  3 1)
 
 (define_function_unit "fadd" 1 0
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "fpcmove"))
   2 1)
 
-(define_function_unit "fmul" 1 0
+(define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "fpdivs"))
   12 12)
 
-(define_function_unit "fmul" 1 0
+(define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "fpdivd"))
   22 22)
 
-(define_function_unit "fmul" 1 0
+(define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "fpsqrt"))
+    (eq_attr "type" "fpsqrts"))
   12 12)
+
+(define_function_unit "fdiv" 1 0
+  (and (eq_attr "cpu" "ultrasparc")
+    (eq_attr "type" "fpsqrtd"))
+  22 22)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
@@ -6884,7 +6893,7 @@
 	(sqrt:TF (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fsqrtq\\t%1, %0"
-  [(set_attr "type" "fpsqrt")
+  [(set_attr "type" "fpsqrtd")
    (set_attr "length" "1")])
 
 (define_insn "sqrtdf2"
@@ -6892,7 +6901,7 @@
 	(sqrt:DF (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU"
   "fsqrtd\\t%1, %0"
-  [(set_attr "type" "fpsqrt")
+  [(set_attr "type" "fpsqrtd")
    (set_attr "length" "1")])
 
 (define_insn "sqrtsf2"
@@ -6900,7 +6909,7 @@
 	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_FPU"
   "fsqrts\\t%1, %0"
-  [(set_attr "type" "fpsqrt")
+  [(set_attr "type" "fpsqrts")
    (set_attr "length" "1")])
 
 ;;- arithmetic shift instructions
