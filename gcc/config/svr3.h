@@ -165,12 +165,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    PREFIX is the class of label and NUM is the number within the class.
 
    For most svr3 systems, the convention is that any symbol which begins
-   with a period is not put into the linker symbol table by the assembler.
-*/
+   with a period is not put into the linker symbol table by the assembler.  */
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+  asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -178,12 +177,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    This is suitable for output with `assemble_name'.
 
    For most svr3 systems, the convention is that any symbol which begins
-   with a period is not put into the linker symbol table by the assembler.
-*/
+   with a period is not put into the linker symbol table by the assembler.  */
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, ".%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+
+/* We want local labels to start with period if made with asm_fprintf.  */
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."
 
 /* Support const sections and the ctors and dtors sections for g++.
    Note that there appears to be two different ways to support const
@@ -237,7 +239,6 @@ do {								\
   func_ptr *p, *beg = alloca (0);				\
   for (p = beg; *p; )						\
     (*p++) ();							\
-#endif								\
 } while (0)
 
 #endif /* STACK_GROWS_DOWNWARD */
