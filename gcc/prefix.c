@@ -350,7 +350,7 @@ update_path (path, key)
   return result;
 }
 
-/* Reset the standard prefix */
+/* Reset the standard prefix.  */
 void
 set_std_prefix (prefix, len)
   const char *prefix;

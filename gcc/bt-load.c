@@ -89,7 +89,7 @@ typedef struct btr_def_s
   btr_user uses;
   /* If this def has a reaching use which is not a simple use
      in a branch instruction, then has_ambiguous_use will be true,
-     and we will not attempt to migrate this definition.       */
+     and we will not attempt to migrate this definition.  */
   char has_ambiguous_use;
   /* live_range is an approximation to the true live range for this
      def/use web, because it records the set of blocks that contain
@@ -421,7 +421,7 @@ typedef struct {
 /* Called via note_stores or directly to register stores into /
    clobbers of a branch target register DEST that are not recognized as
    straightforward definitions.  DATA points to information about the
-   current basic block that needs updating.   */
+   current basic block that needs updating.  */
 static void
 note_btr_set (rtx dest, rtx set ATTRIBUTE_UNUSED, void *data)
 {
@@ -593,7 +593,7 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
       For each block,
 	BB_IN  = union over predecessors of BB_OUT(pred)
 	BB_OUT = (BB_IN - BB_KILL) + BB_GEN
-     Iterate until the bb_out sets stop growing.   */
+     Iterate until the bb_out sets stop growing.  */
   int i;
   int changed;
   sbitmap bb_in = sbitmap_alloc (max_uid);
@@ -652,7 +652,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 
 	      if (user != NULL)
 		{
-		  /* Find all the reaching defs for this use */
+		  /* Find all the reaching defs for this use.  */
 		  sbitmap reaching_defs_of_reg = sbitmap_alloc(max_uid);
 		  int uid;
 
@@ -679,7 +679,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		    {
 		      btr_def def = def_array[uid];
 
-		      /* We now know that def reaches user */
+		      /* We now know that def reaches user.  */
 
 		      if (rtl_dump_file)
 			fprintf (rtl_dump_file,
@@ -1004,7 +1004,7 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 	  btr = choose_btr (combined_btrs_live);
 	  if (btr != -1)
 	    {
-	      /* We can combine them */
+	      /* We can combine them.  */
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file,
 			 "Combining def in insn %d with def in insn %d\n",
@@ -1037,7 +1037,7 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 		def->other_btr_uses_after_use = 1;
 	      COPY_HARD_REG_SET (*btrs_live_in_range, combined_btrs_live);
 
-	      /* Delete the old target register initialization */
+	      /* Delete the old target register initialization.  */
 	      delete_insn (other_def->insn);
 
 	    }
@@ -1108,7 +1108,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
     fprintf (rtl_dump_file, "New pt is insn %d, inserted after insn %d\n",
 	     INSN_UID (def->insn), INSN_UID (insp));
 
-  /* Delete the old target register initialization */
+  /* Delete the old target register initialization.  */
   delete_insn (old_insn);
 
   /* Replace each use of the old target register by a use of the new target
@@ -1185,7 +1185,7 @@ migrate_btr_def (btr_def def, int min_cost)
 	     INSN_UID (def->insn), def->cost, min_cost);
 
   if (!def->group || def->has_ambiguous_use)
-    /* These defs are not migratable */
+    /* These defs are not migratable.  */
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "it's not migratable\n");

@@ -968,7 +968,7 @@ static const struct compiler default_compilers[] =
    , 0},
   
 #include "specs.h"
-  /* Mark end of table */
+  /* Mark end of table.  */
   {0, 0, 0}
 };
 
@@ -2593,7 +2593,7 @@ add_prefix (pprefix, prefix, component, priority, require_machine_suffix,
        prev = &(*prev)->next)
     ;
 
-  /* Keep track of the longest prefix */
+  /* Keep track of the longest prefix.  */
 
   prefix = update_path (prefix, component);
   len = strlen (prefix);
@@ -2609,7 +2609,7 @@ add_prefix (pprefix, prefix, component, priority, require_machine_suffix,
   if (warn)
     *warn = 0;
 
-  /* Insert after PREV */
+  /* Insert after PREV.  */
   pl->next = (*prev);
   (*prev) = pl;
 }
@@ -6636,7 +6636,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
   pfatal_with_name (errmsg_fmt);
 }
 
-/* Output an error message and exit */
+/* Output an error message and exit.  */
 
 void
 fancy_abort ()
@@ -6644,7 +6644,7 @@ fancy_abort ()
   fatal ("internal gcc abort");
 }
 
-/* Output an error message and exit */
+/* Output an error message and exit.  */
 
 void
 fatal (const char *msgid, ...)

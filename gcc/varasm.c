@@ -2293,7 +2293,7 @@ const_hash_1 (exp)
       return code;
     }
 
-  /* Compute hashing function */
+  /* Compute hashing function.  */
   hi = len;
   for (i = 0; i < len; i++)
     hi = ((hi * 613) + (unsigned) (p[i]));
@@ -2992,7 +2992,7 @@ const_hash_rtx (mode, x)
 
   decode_rtx_const (mode, x, &u.value);
 
-  /* Compute hashing function */
+  /* Compute hashing function.  */
   hi = 0;
   for (i = 0; i < ARRAY_SIZE (u.data); i++)
     hi = hi * 613 + u.data[i];

@@ -782,7 +782,8 @@ int flag_exceptions;
 
 int flag_unwind_tables = 0;
 
-/* Nonzero means generate frame unwind info table exact at each insn boundary */
+/* Nonzero means generate frame unwind info table exact at each insn
+   boundary.  */
 
 int flag_asynchronous_unwind_tables = 0;
 
@@ -4815,7 +4816,7 @@ backend_init (void)
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
 #ifdef VMS_DEBUGGING_INFO
-		    /* Enable line number info for traceback */
+		    /* Enable line number info for traceback.  */
 		    || debug_info_level > DINFO_LEVEL_NONE
 #endif
 		    || flag_test_coverage

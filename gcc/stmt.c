@@ -5684,7 +5684,7 @@ expand_end_case_type (orig_index, orig_type)
 	    if (labelvec[i] == 0)
 	      labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
 
-	  /* Output the table */
+	  /* Output the table.  */
 	  emit_label (table_label);
 
 	  if (CASE_VECTOR_PC_RELATIVE || flag_pic)

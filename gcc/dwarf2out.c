@@ -6694,7 +6694,7 @@ new_loc_list (expr, begin, end, section, gensym)
   return retlist;
 }
 
-/* Add a location description expression to a location list */
+/* Add a location description expression to a location list.  */
 
 static inline void
 add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
@@ -6710,11 +6710,11 @@ add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
   for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
     ;
 
-  /* Add a new location list node to the list */
+  /* Add a new location list node to the list.  */
   *d = new_loc_list (descr, begin, end, section, 0);
 }
 
-/* Output the location list given to us */
+/* Output the location list given to us.  */
 
 static void
 output_loc_list (list_head)
@@ -7764,7 +7764,7 @@ output_line_info ()
 	{
 	  function = line_info->function;
 
-	  /* Set the address register to the first line in the function */
+	  /* Set the address register to the first line in the function.  */
 	  dw2_asm_output_data (1, 0, "DW_LNE_set_address");
 	  dw2_asm_output_data_uleb128 (1 + DWARF2_ADDR_SIZE, NULL);
 	  dw2_asm_output_data (1, DW_LNE_set_address, NULL);
@@ -11120,7 +11120,7 @@ gen_subprogram_die (decl, context_die)
     gen_formal_types_die (decl, subr_die);
   else
     {
-      /* Generate DIEs to represent all known formal parameters */
+      /* Generate DIEs to represent all known formal parameters.  */
       tree arg_decls = DECL_ARGUMENTS (decl);
       tree parm;
 
@@ -11752,7 +11752,7 @@ gen_subroutine_type_die (type, context_die)
   gen_formal_types_die (type, subr_die);
 }
 
-/* Generate a DIE for a type definition */
+/* Generate a DIE for a type definition.  */
 
 static void
 gen_typedef_die (decl, context_die)

@@ -3274,7 +3274,7 @@ insns_safe_to_move_p (from, to, new_to)
   return 0;
 }
 
-/* Return nonzero if IN contains a piece of rtl that has the address LOC */
+/* Return nonzero if IN contains a piece of rtl that has the address LOC.  */
 int
 loc_mentioned_in_p (loc, in)
      rtx *loc, in;

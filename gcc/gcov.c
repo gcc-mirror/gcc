@@ -652,7 +652,7 @@ create_file_names (file_name)
   
   if (base)
     {
-      /* Append source file name */
+      /* Append source file name.  */
       cptr = strrchr (file_name, '/');
       strcat (name, cptr ? cptr + 1 : file_name);
     }
@@ -943,7 +943,7 @@ read_graph_file ()
 	fn_n = fn->next;
 	fn->next = fn_p;
 
-	/* Reverse the arcs */
+	/* Reverse the arcs.  */
 	for (ix = fn->num_blocks; ix--;)
 	  {
 	    arc_t *arc, *arc_p, *arc_n;
@@ -1623,7 +1623,7 @@ accumulate_line_counts (src)
 	  block_t *block, *block_p, *block_n;
 	  gcov_type count = 0;
 	  
-	  /* Reverse the block information */
+	  /* Reverse the block information.  */
 	  for (block = line->u.blocks, block_p = NULL; block;
 	       block_p = block, block = block_n)
 	    {

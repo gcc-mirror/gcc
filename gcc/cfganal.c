@@ -724,7 +724,7 @@ connect_infinite_loops_to_exit (void)
   return;
 }
 
-/* Compute reverse top sort order */
+/* Compute reverse top sort order.  */
 
 void
 flow_reverse_top_sort_order_compute (int *rts_order)

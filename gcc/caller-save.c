@@ -670,7 +670,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 	    ok = 0;
 	    break;
 	  }
-      /* Must do this one restore at a time */
+      /* Must do this one restore at a time.  */
       if (! ok)
 	continue;
 
@@ -742,7 +742,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
 	    ok = 0;
 	    break;
 	  }
-      /* Must do this one save at a time */
+      /* Must do this one save at a time.  */
       if (! ok)
 	continue;
 

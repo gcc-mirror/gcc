@@ -175,12 +175,12 @@ pool_alloc (alloc_pool pool)
       size_t i;
       alloc_pool_list block_header;
 
-      /* Make the block */
+      /* Make the block.  */
       block = (char *) xmalloc (pool->block_size);
       block_header = (alloc_pool_list) block;
       block += align_eight (sizeof (struct alloc_pool_list_def));
 
-      /* Throw it on the block list */
+      /* Throw it on the block list.  */
       block_header->next = pool->block_list;
       pool->block_list = block_header;
 

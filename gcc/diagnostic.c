@@ -486,7 +486,7 @@ output_format (output_buffer *buffer, text_info *text)
         default:
           break;
         }
-      /* We don't support precision behond that of "long long".   */
+      /* We don't support precision behond that of "long long".  */
       if (precision > 2)
         abort();
 

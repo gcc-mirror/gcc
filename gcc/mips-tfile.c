@@ -2888,7 +2888,7 @@ parse_def (name_start)
 	  && memcmp (dir_start, ".endef", sizeof (".endef")-1) == 0)
 	break;
 
-      /* Pick up the subdirective now */
+      /* Pick up the subdirective now.  */
       for (dir_end_p1 = dir_start+1;
 	   (ch = *dir_end_p1) != ' ' && ch != '\t';
 	   dir_end_p1++)
@@ -3817,7 +3817,7 @@ parse_input ()
 
   while ((p = read_line ()) != (char *) 0)
     {
-      /* Skip leading blanks */
+      /* Skip leading blanks.  */
       while (ISSPACE ((unsigned char)*p))
 	p++;
 
@@ -5536,7 +5536,7 @@ free_thead (ptr)
 #endif /* MIPS_DEBUGGING_INFO */
 
 
-/* Output an error message and exit */
+/* Output an error message and exit.  */
 
 void
 fatal (const char *format, ...)

@@ -840,7 +840,7 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
 	    ++LABEL_NUSES (new_label);
 	  }
 
-      /* Handle casesi dispatch insns */
+      /* Handle casesi dispatch insns.  */
       if ((tmp = single_set (insn)) != NULL
 	  && SET_DEST (tmp) == pc_rtx
 	  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE

@@ -1228,7 +1228,7 @@ df_insn_refs_record (df, bb, insn)
     {
       rtx note;
 
-      /* Record register defs */
+      /* Record register defs.  */
       df_defs_record (df, PATTERN (insn), bb, insn);
 
       if (df->flags & DF_EQUIV_NOTES)

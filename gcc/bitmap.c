@@ -265,7 +265,7 @@ bitmap_copy (bitmap to, bitmap from)
 
   bitmap_clear (to);
 
-  /* Copy elements in forward direction one at a time */
+  /* Copy elements in forward direction one at a time.  */
   for (from_ptr = from->first; from_ptr; from_ptr = from_ptr->next)
     {
       bitmap_element *to_elt = bitmap_element_allocate (to);

@@ -3922,7 +3922,7 @@ debug_queue_symbol (tree decl)
   symbol_queue[symbol_queue_index++] = decl;
 }     
 
-/* Free symbol queue */
+/* Free symbol queue.  */
 void
 debug_free_queue ()
 {

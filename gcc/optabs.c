@@ -1552,7 +1552,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       rtx equiv_value;
       int ok = 0;
 
-      /* Find the correct mode for the real and imaginary parts */
+      /* Find the correct mode for the real and imaginary parts.  */
       enum machine_mode submode = GET_MODE_INNER(mode);
 
       if (submode == BLKmode)
@@ -2600,7 +2600,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       rtx x;
       rtx seq;
 
-      /* Find the correct mode for the real and imaginary parts */
+      /* Find the correct mode for the real and imaginary parts.  */
       enum machine_mode submode = GET_MODE_INNER (mode);
 
       if (submode == BLKmode)
