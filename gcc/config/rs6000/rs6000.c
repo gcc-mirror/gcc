@@ -720,8 +720,7 @@ expand_block_move (operands)
 	      emit_insn (gen_movstrsi_8reg (dest_reg,
 					    src_reg,
 					    GEN_INT ((move_bytes == 32) ? 0 : move_bytes),
-					    align_rtx,
-					    GEN_INT ((bytes > move_bytes) ? move_bytes : 0)));
+					    align_rtx));
 	    }
 	  else if (bytes > 16	/* move up to 24 bytes at a time */
 		   && !fixed_regs[7]
@@ -735,8 +734,7 @@ expand_block_move (operands)
 	      emit_insn (gen_movstrsi_6reg (dest_reg,
 					    src_reg,
 					    GEN_INT (move_bytes),
-					    align_rtx,
-					    GEN_INT ((bytes > move_bytes) ? move_bytes : 0)));
+					    align_rtx));
 	    }
 	  else if (bytes > 8	/* move up to 16 bytes at a time */
 		   && !fixed_regs[9]
@@ -748,8 +746,7 @@ expand_block_move (operands)
 	      emit_insn (gen_movstrsi_4reg (dest_reg,
 					    src_reg,
 					    GEN_INT (move_bytes),
-					    align_rtx,
-					    GEN_INT ((bytes > move_bytes) ? move_bytes : 0)));
+					    align_rtx));
 	    }
 	  else if (bytes > 4 && !TARGET_64BIT)
 	    {			/* move up to 8 bytes at a time */
@@ -757,8 +754,7 @@ expand_block_move (operands)
 	      emit_insn (gen_movstrsi_2reg (dest_reg,
 					    src_reg,
 					    GEN_INT (move_bytes),
-					    align_rtx,
-					    GEN_INT ((bytes > move_bytes) ? move_bytes : 0)));
+					    align_rtx));
 	    }
 	  else if (bytes >= 4 && (align >= 4 || !STRICT_ALIGNMENT))
 	    {			/* move 4 bytes */
@@ -766,11 +762,6 @@ expand_block_move (operands)
 	      tmp_reg = gen_reg_rtx (SImode);
 	      emit_move_insn (tmp_reg, gen_rtx (MEM, SImode, src_reg));
 	      emit_move_insn (gen_rtx (MEM, SImode, dest_reg), tmp_reg);
-	      if (bytes > move_bytes)
-		{
-		  emit_insn (gen_addsi3 (src_reg, src_reg, GEN_INT (move_bytes)));
-		  emit_insn (gen_addsi3 (dest_reg, dest_reg, GEN_INT (move_bytes)));
-		}
 	    }
 	  else if (bytes == 2 && (align >= 2 || !STRICT_ALIGNMENT))
 	    {			/* move 2 bytes */
@@ -792,9 +783,14 @@ expand_block_move (operands)
 	      emit_insn (gen_movstrsi_1reg (dest_reg,
 					    src_reg,
 					    GEN_INT (move_bytes),
-					    align_rtx,
-					    GEN_INT ((bytes > move_bytes) ? move_bytes : 0)));
+					    align_rtx));
 	    }
+	}
+
+      if (bytes > move_bytes)
+	{
+	  emit_insn (gen_addsi3 (src_reg, src_reg, GEN_INT (move_bytes)));
+	  emit_insn (gen_addsi3 (dest_reg, dest_reg, GEN_INT (move_bytes)));
 	}
     }
 
