@@ -129,15 +129,6 @@ package body Sem_Ch6 is
    --  N is the N_Subprogram_Body node for a subprogram. This routine applies
    --  the alpha ordering rule for N if this ordering requirement applicable.
 
-   function Is_Non_Overriding_Operation
-     (Prev_E : Entity_Id;
-      New_E  : Entity_Id) return Boolean;
-   --  Enforce the rule given in 12.3(18): a private operation in an instance
-   --  overrides an inherited operation only if the corresponding operation
-   --  was overriding in the generic. This can happen for primitive operations
-   --  of types derived (in the generic unit) from formal private or formal
-   --  derived types.
-
    procedure Check_Returns
      (HSS  : Node_Id;
       Mode : Character;
@@ -171,6 +162,15 @@ package body Sem_Ch6 is
    --  that simply placing the subprogram on the scope stack is not
    --  sufficient: the formals must become the current entities for
    --  their names.
+
+   function Is_Non_Overriding_Operation
+     (Prev_E : Entity_Id;
+      New_E  : Entity_Id) return Boolean;
+   --  Enforce the rule given in 12.3(18): a private operation in an instance
+   --  overrides an inherited operation only if the corresponding operation
+   --  was overriding in the generic. This can happen for primitive operations
+   --  of types derived (in the generic unit) from formal private or formal
+   --  derived types.
 
    procedure Make_Inequality_Operator (S : Entity_Id);
    --  Create the declaration for an inequality operator that is implicitly

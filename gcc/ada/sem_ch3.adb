@@ -401,11 +401,11 @@ package body Sem_Ch3 is
    --    SI is the N_Subtype_Indication node containing the constraint and
    --    the unconstrained type to constrain.
    --
-   --    Def_Id is the entity for the resulting constrained subtype. A
-   --    value of Empty for Def_Id indicates that an implicit type must be
-   --    created, but creation is delayed (and must be done by this procedure)
-   --    because other subsidiary implicit types must be created first (which
-   --    is why Def_Id is an in/out parameter).
+   --    Def_Id is the entity for the resulting constrained subtype. A value
+   --    of Empty for Def_Id indicates that an implicit type must be created,
+   --    but creation is delayed (and must be done by this procedure) because
+   --    other subsidiary implicit types must be created first (which is why
+   --    Def_Id is an in/out parameter).
    --
    --    Related_Nod gives the place where this type has to be inserted
    --    in the tree
@@ -452,9 +452,9 @@ package body Sem_Ch3 is
       Related_Id   : Entity_Id;
       Suffix       : Character;
       Suffix_Index : Nat);
-   --  Process an index constraint in a constrained array declaration.
-   --  The constraint can be a subtype name, or a range with or without
-   --  an explicit subtype mark. The index is the corresponding index of the
+   --  Process an index constraint in a constrained array declaration. The
+   --  constraint can be a subtype name, or a range with or without an
+   --  explicit subtype mark. The index is the corresponding index of the
    --  unconstrained array. The Related_Id and Suffix parameters are used to
    --  build the associated Implicit type name.
 
@@ -732,12 +732,12 @@ package body Sem_Ch3 is
       Set_Is_Access_Constant (Anon_Type, Constant_Present (N));
 
       --  The context is either a subprogram declaration or an access
-      --  discriminant, in a private or a full type declaration. In
-      --  the case of a subprogram, If the designated type is incomplete,
-      --  the operation will be a primitive operation of the full type, to
-      --  be updated subsequently. If the type is imported through a limited
-      --  with clause, it is not a primitive operation of the type (which
-      --  is declared elsewhere in some other scope).
+      --  discriminant, in a private or a full type declaration. In the case
+      --  of a subprogram, If the designated type is incomplete, the operation
+      --  will be a primitive operation of the full type, to be updated
+      --  subsequently. If the type is imported through a limited with clause,
+      --  it is not a primitive operation of the type (which is declared
+      --  elsewhere in some other scope).
 
       if Ekind (Desig_Type) = E_Incomplete_Type
         and then not From_With_Type (Desig_Type)
@@ -783,10 +783,10 @@ package body Sem_Ch3 is
          Process_Formals (Formals, Parent (T_Def));
 
          --  A bit of a kludge here, End_Scope requires that the parent
-         --  pointer be set to something reasonable, but Itypes don't
-         --  have parent pointers. So we set it and then unset it ???
-         --  If and when Itypes have proper parent pointers to their
-         --  declarations, this kludge can be removed.
+         --  pointer be set to something reasonable, but Itypes don't have
+         --  parent pointers. So we set it and then unset it ??? If and when
+         --  Itypes have proper parent pointers to their declarations, this
+         --  kludge can be removed.
 
          Set_Parent (Desig_Type, T_Name);
          End_Scope;
@@ -1098,8 +1098,8 @@ package body Sem_Ch3 is
       Set_Etype (Id, T);
       Set_Is_Aliased (Id, Aliased_Present (Component_Definition (N)));
 
-      --  The component declaration may have a per-object constraint, set the
-      --  appropriate flag in the defining identifier of the subtype.
+      --  The component declaration may have a per-object constraint, set
+      --  the appropriate flag in the defining identifier of the subtype.
 
       if Present (Subtype_Indication (Component_Definition (N))) then
          declare
@@ -1226,14 +1226,14 @@ package body Sem_Ch3 is
          end if;
 
          --  At the end of a declarative part, freeze remaining entities
-         --  declared in it. The end of the visible declarations of a
-         --  package specification is not the end of a declarative part
-         --  if private declarations are present. The end of a package
-         --  declaration is a freezing point only if it a library package.
-         --  A task definition or protected type definition is not a freeze
-         --  point either. Finally, we do not freeze entities in generic
-         --  scopes, because there is no code generated for them and freeze
-         --  nodes will be generated for the instance.
+         --  declared in it. The end of the visible declarations of package
+         --  specification is not the end of a declarative part if private
+         --  declarations are present. The end of a package declaration is a
+         --  freezing point only if it a library package. A task definition or
+         --  protected type definition is not a freeze point either. Finally,
+         --  we do not freeze entities in generic scopes, because there is no
+         --  code generated for them and freeze nodes will be generated for
+         --  the instance.
 
          --  The end of a package instantiation is not a freeze point, but
          --  for now we make it one, because the generic body is inserted
@@ -1330,9 +1330,9 @@ package body Sem_Ch3 is
 
       End_Scope;
 
-      --  If the type has discriminants, non-trivial subtypes may be
-      --  be declared before the full view of the type. The full views
-      --  of those subtypes will be built after the full view of the type.
+      --  If the type has discriminants, non-trivial subtypes may be be
+      --  declared before the full view of the type. The full views of those
+      --  subtypes will be built after the full view of the type.
 
       Set_Private_Dependents (T, New_Elmt_List);
       Set_Is_Pure (T, F);
@@ -1511,12 +1511,12 @@ package body Sem_Ch3 is
       --  worthile building the corresponding subtype.
 
       function Count_Tasks (T : Entity_Id) return Uint;
-      --  This function is called when a library level object of type T
-      --  is declared. It's function is to count the static number of
-      --  tasks declared within the type (it is only called if Has_Tasks
-      --  is set for T). As a side effect, if an array of tasks with
-      --  non-static bounds or a variant record type is encountered,
-      --  Check_Restrictions is called indicating the count is unknown.
+      --  This function is called when a library level object of type is
+      --  declared. It's function is to count the static number of tasks
+      --  declared within the type (it is only called if Has_Tasks is set for
+      --  T). As a side effect, if an array of tasks with non-static bounds or
+      --  a variant record type is encountered, Check_Restrictions is called
+      --  indicating the count is unknown.
 
       ---------------------------
       -- Build_Default_Subtype --
@@ -2346,17 +2346,17 @@ package body Sem_Ch3 is
       --  where the defining identifier has already been entered into the
       --  scope but the declaration as a whole needs to be analyzed.
 
-      --  This case in particular happens for derived enumeration types.
-      --  The derived enumeration type is processed as an inserted enumeration
+      --  This case in particular happens for derived enumeration types. The
+      --  derived enumeration type is processed as an inserted enumeration
       --  type declaration followed by a rewritten subtype declaration. The
       --  defining identifier, however, is entered into the name scope very
       --  early in the processing of the original type declaration and
       --  therefore needs to be avoided here, when the created subtype
       --  declaration is analyzed. (See Build_Derived_Types)
 
-      --  This also happens when the full view of a private type is a
-      --  derived type with constraints. In this case the entity has been
-      --  introduced in the private declaration.
+      --  This also happens when the full view of a private type is derived
+      --  type with constraints. In this case the entity has been introduced
+      --  in the private declaration.
 
       if Present (Etype (Id))
         and then (Is_Private_Type (Etype (Id))
@@ -2882,9 +2882,9 @@ package body Sem_Ch3 is
 
       begin
          --  In the case where the base type is different from the first
-         --  subtype, we pre-allocate a freeze node, and set the proper
-         --  link to the first subtype. Freeze_Entity will use this
-         --  preallocated freeze node when it freezes the entity.
+         --  subtype, we pre-allocate a freeze node, and set the proper link
+         --  to the first subtype. Freeze_Entity will use this preallocated
+         --  freeze node when it freezes the entity.
 
          if B /= T then
             Ensure_Freeze_Node (B);
@@ -3805,10 +3805,9 @@ package body Sem_Ch3 is
          Insert_Before (N, Type_Decl);
          Analyze (Type_Decl);
 
-         --  After the implicit base is analyzed its Etype needs to be
-         --  changed to reflect the fact that it is derived from the
-         --  parent type which was ignored during analysis. We also set
-         --  the size at this point.
+         --  After the implicit base is analyzed its Etype needs to be changed
+         --  to reflect the fact that it is derived from the parent type which
+         --  was ignored during analysis. We also set the size at this point.
 
          Set_Etype (Implicit_Base, Parent_Type);
 
@@ -3839,8 +3838,8 @@ package body Sem_Ch3 is
 
                else
                   --  Constraint is a Range attribute. Replace with the
-                  --  explicit mention of the bounds of the prefix, which
-                  --  must be a subtype.
+                  --  explicit mention of the bounds of the prefix, which must
+                  --  be a subtype.
 
                   Analyze (Prefix (R));
                   Hi :=
@@ -3897,17 +3896,16 @@ package body Sem_Ch3 is
 
          Analyze (N);
 
-         --  If pragma Discard_Names applies on the first subtype
-         --  of the parent type, then it must be applied on this
-         --  subtype as well.
+         --  If pragma Discard_Names applies on the first subtype of the
+         --  parent type, then it must be applied on this subtype as well.
 
          if Einfo.Discard_Names (First_Subtype (Parent_Type)) then
             Set_Discard_Names (Derived_Type);
          end if;
 
-         --  Apply a range check. Since this range expression doesn't
-         --  have an Etype, we have to specifically pass the Source_Typ
-         --  parameter. Is this right???
+         --  Apply a range check. Since this range expression doesn't have an
+         --  Etype, we have to specifically pass the Source_Typ parameter. Is
+         --  this right???
 
          if Nkind (Indic) = N_Subtype_Indication then
             Apply_Range_Check (Range_Expression (Constraint (Indic)),
@@ -3943,9 +3941,9 @@ package body Sem_Ch3 is
 
       Discard_Node (Process_Subtype (Indic, N));
 
-      --  Introduce an implicit base type for the derived type even if
-      --  there is no constraint attached to it, since this seems closer
-      --  to the Ada semantics.
+      --  Introduce an implicit base type for the derived type even if there
+      --  is no constraint attached to it, since this seems closer to the Ada
+      --  semantics.
 
       Implicit_Base :=
         Create_Itype (Ekind (Parent_Base), N, Derived_Type, 'B');
@@ -3975,9 +3973,9 @@ package body Sem_Ch3 is
          Set_Includes_Infinities (Scalar_Range (Implicit_Base));
       end if;
 
-      --  The Derived_Type, which is the entity of the declaration, is
-      --  a subtype of the implicit base. Its Ekind is a subtype, even
-      --  in the absence of an explicit constraint.
+      --  The Derived_Type, which is the entity of the declaration, is a
+      --  subtype of the implicit base. Its Ekind is a subtype, even in the
+      --  absence of an explicit constraint.
 
       Set_Etype (Derived_Type, Implicit_Base);
 
@@ -3988,9 +3986,9 @@ package body Sem_Ch3 is
          Set_Ekind (Derived_Type, Subtype_Kind (Ekind (Parent_Type)));
       end if;
 
-      --  If we did not have a range constraint, then set the range
-      --  from the parent type. Otherwise, the call to Process_Subtype
-      --  has set the bounds.
+      --  If we did not have a range constraint, then set the range from the
+      --  parent type. Otherwise, the call to Process_Subtype has set the
+      --  bounds.
 
       if No_Constraint
         or else not Has_Range_Constraint (Indic)
@@ -4029,11 +4027,11 @@ package body Sem_Ch3 is
 
       elsif Is_Fixed_Point_Type (Parent_Type) then
 
-         --  Small of base type and derived type are always copied from
-         --  the parent base type, since smalls never change. The delta
-         --  of the base type is also copied from the parent base type.
-         --  However the delta of the derived type will have been set
-         --  already if a constraint was present.
+         --  Small of base type and derived type are always copied from the
+         --  parent base type, since smalls never change. The delta of the
+         --  base type is also copied from the parent base type. However the
+         --  delta of the derived type will have been set already if a
+         --  constraint was present.
 
          Set_Small_Value (Derived_Type,  Small_Value (Parent_Base));
          Set_Small_Value (Implicit_Base, Small_Value (Parent_Base));
@@ -4075,8 +4073,8 @@ package body Sem_Ch3 is
       Convert_Scalar_Bounds (N, Parent_Type, Derived_Type, Loc);
 
       --  The implicit_base should be frozen when the derived type is frozen,
-      --  but note that it is used in the conversions of the bounds. For
-      --  fixed types we delay the determination of the bounds until the proper
+      --  but note that it is used in the conversions of the bounds. For fixed
+      --  types we delay the determination of the bounds until the proper
       --  freezing point. For other numeric types this is rejected by GCC, for
       --  reasons that are currently unclear (???), so we choose to freeze the
       --  implicit base now. In the case of integers and floating point types
@@ -4152,10 +4150,9 @@ package body Sem_Ch3 is
          if Present (Full_View (Parent_Type)) then
             if not Is_Completion then
 
-               --  Copy declaration for subsequent analysis, to
-               --  provide a completion for what is a private
-               --  declaration. Indicate that the full type is
-               --  internally generated.
+               --  Copy declaration for subsequent analysis, to provide a
+               --  completion for what is a private declaration. Indicate that
+               --  the full type is internally generated.
 
                Full_Decl := New_Copy_Tree (N);
                Full_Der  := New_Copy (Derived_Type);
@@ -4210,10 +4207,9 @@ package body Sem_Ch3 is
                Swapped := True;
             end if;
 
-            --  Build full view of derived type from full view of
-            --  parent which is now installed.
-            --  Subprograms have been derived on the partial view,
-            --  the completion does not derive them anew.
+            --  Build full view of derived type from full view of parent which
+            --  is now installed. Subprograms have been derived on the partial
+            --  view, the completion does not derive them anew.
 
             if not Is_Tagged_Type (Parent_Type) then
                Build_Derived_Record_Type
@@ -4241,15 +4237,14 @@ package body Sem_Ch3 is
             Set_Full_View (Derived_Type, Full_Der);
             Set_Full_View (Der_Base, Base_Type (Full_Der));
 
-            --  Copy the discriminant list from full view to
-            --  the partial views (base type and its subtype).
-            --  Gigi requires that the partial and full views
-            --  have the same discriminants.
-            --  ??? Note that since the partial view is pointing
-            --  to discriminants in the full view, their scope
-            --  will be that of the full view. This might
-            --  cause some front end problems and need
-            --  adjustment?
+            --  Copy the discriminant list from full view to the partial views
+            --  (base type and its subtype). Gigi requires that the partial
+            --  and full views have the same discriminants.
+
+            --  Note that since the partial view is pointing to discriminants
+            --  in the full view, their scope will be that of the full view.
+            --  This might cause some front end problems and need
+            --  adjustment???
 
             Discr := First_Discriminant (Base_Type (Full_Der));
             Set_First_Entity (Der_Base, Discr);
@@ -4361,9 +4356,9 @@ package body Sem_Ch3 is
               (Base_Type (Derived_Type), Finalize_Storage_Only (Parent_Type));
          end if;
 
-         --  Construct the implicit full view by deriving from full
-         --  view of the parent type. In order to get proper visibility,
-         --  we install the parent scope and its declarations.
+         --  Construct the implicit full view by deriving from full view of
+         --  the parent type. In order to get proper visibility, we install
+         --  the parent scope and its declarations.
 
          --  ??? if the parent is untagged private and its completion is
          --  tagged, this mechanism will not work because we cannot derive
@@ -4389,10 +4384,10 @@ package body Sem_Ch3 is
                Copy_And_Build;
                Uninstall_Declarations (Par_Scope);
 
-            --  If parent scope is open and in another unit, and
-            --  parent has a completion, then the derivation is taking
-            --  place in the visible part of a child unit. In that
-            --  case retrieve the full view of the parent momentarily.
+            --  If parent scope is open and in another unit, and parent has a
+            --  completion, then the derivation is taking place in the visible
+            --  part of a child unit. In that case retrieve the full view of
+            --  the parent momentarily.
 
             elsif not In_Same_Source_Unit (N, Parent_Type) then
                Full_P := Full_View (Parent_Type);
@@ -4500,8 +4495,8 @@ package body Sem_Ch3 is
    --  in R and T have the same position in objects of type R and T.
 
    --  This has two implications. The first is that the entire tree for R's
-   --  declaration needs to be copied for T in the untagged case, so that
-   --  T can be viewed as a record type of its own with its own representation
+   --  declaration needs to be copied for T in the untagged case, so that T
+   --  can be viewed as a record type of its own with its own representation
    --  clauses. The second implication is the way we handle discriminants.
    --  Specifically, in the untagged case we need a way to communicate to Gigi
    --  what are the real discriminants in the record, while for the semantics
@@ -4531,10 +4526,10 @@ package body Sem_Ch3 is
    --  o The discriminants specified by a new KNOWN_DISCRIMINANT_PART, if
    --    there is one;
 
-   --  o Otherwise, each discriminant of the parent type (implicitly
-   --    declared in the same order with the same specifications). In this
-   --    case, the discriminants are said to be "inherited", or if unknown in
-   --    the parent are also unknown in the derived type.
+   --  o Otherwise, each discriminant of the parent type (implicitly declared
+   --    in the same order with the same specifications). In this case, the
+   --    discriminants are said to be "inherited", or if unknown in the parent
+   --    are also unknown in the derived type.
 
    --  Furthermore if a KNOWN_DISCRIMINANT_PART is provided, then [3.7(13-18)]:
 
@@ -4756,6 +4751,7 @@ package body Sem_Ch3 is
    --  components are inherited in the derived type from the parent type. In
    --  the absence of discriminants component, inheritance is straightforward
    --  as components can simply be copied from the parent.
+
    --  If the parent has discriminants, inheriting components constrained with
    --  these discriminants requires caution. Consider the following example:
 
@@ -4850,19 +4846,18 @@ package body Sem_Ch3 is
    --  9. IMPLEMENTATION OF TYPE DERIVATION FOR PRIVATE EXTENSIONS
 
    --  The full view of a private extension is handled exactly as described
-   --  above. The model chose for the private view of a private extension
-   --  is the same for what concerns discriminants (ie they receive the same
+   --  above. The model chose for the private view of a private extension is
+   --  the same for what concerns discriminants (ie they receive the same
    --  treatment as in the tagged case). However, the private view of the
    --  private extension always inherits the components of the parent base,
-   --  without replacing any discriminant reference. Strictly speaking this
-   --  is incorrect. However, Gigi never uses this view to generate code so
-   --  this is a purely semantic issue. In theory, a set of transformations
-   --  similar to those given in 5. and 6. above could be applied to private
-   --  views of private extensions to have the same model of component
-   --  inheritance as for non private extensions. However, this is not done
-   --  because it would further complicate private type processing.
-   --  Semantically speaking, this leaves us in an uncomfortable
-   --  situation. As an example consider:
+   --  without replacing any discriminant reference. Strictly speaking this is
+   --  incorrect. However, Gigi never uses this view to generate code so this
+   --  is a purely semantic issue. In theory, a set of transformations similar
+   --  to those given in 5. and 6. above could be applied to private views of
+   --  private extensions to have the same model of component inheritance as
+   --  for non private extensions. However, this is not done because it would
+   --  further complicate private type processing. Semantically speaking, this
+   --  leaves us in an uncomfortable situation. As an example consider:
 
    --          package Pack is
    --             type R (D : integer) is tagged record
@@ -4901,6 +4896,7 @@ package body Sem_Ch3 is
    --  a private extension such as T, we first mark T as unconstrained, we
    --  process it, we perform program derivation and just before returning from
    --  Build_Derived_Record_Type we mark T as constrained.
+
    --  ??? Are there are other uncomfortable cases that we will have to
    --      deal with.
 
@@ -5100,9 +5096,9 @@ package body Sem_Ch3 is
          Mark_Rewrite_Insertion (New_Decl);
          Insert_Before (N, New_Decl);
 
-         --  Note that this call passes False for the Derive_Subps
-         --  parameter because subprogram derivation is deferred until
-         --  after creating the subtype (see below).
+         --  Note that this call passes False for the Derive_Subps parameter
+         --  because subprogram derivation is deferred until after creating
+         --  the subtype (see below).
 
          Build_Derived_Type
            (New_Decl, Parent_Base, New_Base,
@@ -5323,9 +5319,9 @@ package body Sem_Ch3 is
                   exit;
                end if;
 
-               --  If a new discriminant is used in the constraint,
-               --  then its subtype must be statically compatible
-               --  with the parent discriminant's subtype (3.7(15)).
+               --  If a new discriminant is used in the constraint, then its
+               --  subtype must be statically compatible with the parent
+               --  discriminant's subtype (3.7(15)).
 
                if Present (Corresponding_Discriminant (Discrim))
                  and then
@@ -5756,9 +5752,9 @@ package body Sem_Ch3 is
          return;
       end if;
 
-      --  Set delayed freeze and then derive subprograms, we need to do
-      --  this in this order so that derived subprograms inherit the
-      --  derived freeze if necessary.
+      --  Set delayed freeze and then derive subprograms, we need to do this
+      --  in this order so that derived subprograms inherit the derived freeze
+      --  if necessary.
 
       Set_Has_Delayed_Freeze (Derived_Type);
       if Derive_Subps then
@@ -6400,8 +6396,8 @@ package body Sem_Ch3 is
       while Present (Elmt) loop
          Subp := Node (Elmt);
 
-         --  Special exception, do not complain about failure to
-         --  override _Input and _Output, since we always provide
+         --  Special exception, do not complain about failure to override the
+         --  stream routines _Input and _Output, since we always provide
          --  automatic overridings for these subprograms.
 
          if Is_Abstract (Subp)
@@ -6471,9 +6467,8 @@ package body Sem_Ch3 is
       C : Entity_Id;
 
    begin
-      --  ??? Also need to check components of record extensions,
-      --  but not components of protected types (which are always
-      --  limited).
+      --  ??? Also need to check components of record extensions, but not
+      --  components of protected types (which are always limited).
 
       if not Is_Limited_Type (T) then
          if Ekind (T) = E_Record_Type then
@@ -6551,9 +6546,9 @@ package body Sem_Ch3 is
          end if;
 
          --  If a generated entity has no completion, then either previous
-         --  semantic errors have disabled the expansion phase, or else
-         --  we had missing subunits, or else we are compiling without expan-
-         --  sion, or else something is very wrong.
+         --  semantic errors have disabled the expansion phase, or else we had
+         --  missing subunits, or else we are compiling without expan- sion,
+         --  or else something is very wrong.
 
          if not Comes_From_Source (E) then
             pragma Assert
@@ -6636,7 +6631,7 @@ package body Sem_Ch3 is
          --  parent:
 
          --    procedure Parent.Child (...);
-         --
+
          --    with Parent.Child;
          --    package body Parent is
 
@@ -6690,10 +6685,9 @@ package body Sem_Ch3 is
          then
             Post_Error;
 
-         --  A single task declared in the current scope is
-         --  a constant, verify that the body of its anonymous
-         --  type is in the same scope. If the task is defined
-         --  elsewhere, this may be a renaming declaration for
+         --  A single task declared in the current scope is a constant, verify
+         --  that the body of its anonymous type is in the same scope. If the
+         --  task is defined elsewhere, this may be a renaming declaration for
          --  which no completion is needed.
 
          elsif Ekind (E) = E_Constant
@@ -6976,10 +6970,10 @@ package body Sem_Ch3 is
       Set_First_Rep_Item     (Full, First_Rep_Item (Full_Base));
       Set_Depends_On_Private (Full, Has_Private_Component (Full));
 
-      --  Freeze the private subtype entity if its parent is delayed,
-      --  and not already frozen. We skip this processing if the type
-      --  is an anonymous subtype of a record component, or is the
-      --  corresponding record of a protected type, since ???
+      --  Freeze the private subtype entity if its parent is delayed, and not
+      --  already frozen. We skip this processing if the type is an anonymous
+      --  subtype of a record component, or is the corresponding record of a
+      --  protected type, since ???
 
       if not Is_Type (Scope (Full)) then
          Set_Has_Delayed_Freeze (Full,
@@ -7038,10 +7032,10 @@ package body Sem_Ch3 is
          Set_Cloned_Subtype (Full, Full_Base);
       end if;
 
-      --  It is unsafe to share to bounds of a scalar type, because the
-      --  Itype is elaborated on demand, and if a bound is non-static
-      --  then different orders of elaboration in different units will
-      --  lead to different external symbols.
+      --  It is unsafe to share to bounds of a scalar type, because the Itype
+      --  is elaborated on demand, and if a bound is non-static then different
+      --  orders of elaboration in different units will lead to different
+      --  external symbols.
 
       if Is_Scalar_Type (Full_Base) then
          Set_Scalar_Range (Full,
@@ -7061,9 +7055,9 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  ??? It seems that a lot of fields are missing that should be
-      --  copied from  Full_Base to Full. Here are some that are introduced
-      --  in a non-disruptive way but a cleanup is necessary.
+      --  ??? It seems that a lot of fields are missing that should be copied
+      --  from Full_Base to Full. Here are some that are introduced in a
+      --  non-disruptive way but a cleanup is necessary.
 
       if Is_Tagged_Type (Full_Base) then
          Set_Is_Tagged_Type (Full);
@@ -7505,9 +7499,9 @@ package body Sem_Ch3 is
 
       function Build_Constrained_Array_Type
         (Old_Type : Entity_Id) return Entity_Id;
-      --  If Old_Type is an array type, one of whose indices is
-      --  constrained by a discriminant, build an Itype whose constraint
-      --  replaces the discriminant with its value in the constraint.
+      --  If Old_Type is an array type, one of whose indices is constrained
+      --  by a discriminant, build an Itype whose constraint replaces the
+      --  discriminant with its value in the constraint.
 
       function Build_Constrained_Discriminated_Type
         (Old_Type : Entity_Id) return Entity_Id;
@@ -7734,8 +7728,8 @@ package body Sem_Ch3 is
          Btyp        : Entity_Id := Base_Type (T);
 
       begin
-         --  The Related_Node better be here or else we won't be able
-         --  to attach new itypes to a node in the tree.
+         --  The Related_Node better be here or else we won't be able to
+         --  attach new itypes to a node in the tree.
 
          pragma Assert (Present (Related_Node));
 
@@ -7800,9 +7794,9 @@ package body Sem_Ch3 is
 
          --  The corresponding_Discriminant mechanism is incomplete, because
          --  the correspondence between new and old discriminants is not one
-         --  to one: one new discriminant can constrain several old ones.
-         --  In that case, scan sequentially the stored_constraint, the list
-         --  of discriminants of the parents, and the constraints.
+         --  to one: one new discriminant can constrain several old ones. In
+         --  that case, scan sequentially the stored_constraint, the list of
+         --  discriminants of the parents, and the constraints.
 
          if Is_Derived_Type (Typ)
            and then Present (Stored_Constraint (Typ))
@@ -8567,9 +8561,9 @@ package body Sem_Ch3 is
       Set_First_Entity               (Full, First_Entity            (Priv));
       Set_Last_Entity                (Full, Last_Entity             (Priv));
 
-      --  If access types have been recorded for later handling, keep them
-      --  in the full view so that they get handled when the full view
-      --  freeze node is expanded.
+      --  If access types have been recorded for later handling, keep them in
+      --  the full view so that they get handled when the full view freeze
+      --  node is expanded.
 
       if Present (Freeze_Node (Priv))
         and then Present (Access_Types_To_Process (Freeze_Node (Priv)))
@@ -8670,8 +8664,8 @@ package body Sem_Ch3 is
 
       procedure Collect_Fixed_Components (Typ : Entity_Id) is
       begin
-      --  Build association list for discriminants, and find components of
-      --  the variant part selected by the values of the discriminants.
+      --  Build association list for discriminants, and find components of the
+      --  variant part selected by the values of the discriminants.
 
          Old_C := First_Discriminant (Typ);
          Discr_Val := First_Elmt (Constraints);
@@ -9086,9 +9080,9 @@ package body Sem_Ch3 is
          Prev : Entity_Id;
 
       begin
-         --  The visible operation that is overriden is a homonym of
-         --  the parent subprogram. We scan the homonym chain to find
-         --  the one whose alias is the subprogram we are deriving.
+         --  The visible operation that is overriden is a homonym of the
+         --  parent subprogram. We scan the homonym chain to find the one
+         --  whose alias is the subprogram we are deriving.
 
          Prev := Homonym (Parent_Subp);
          while Present (Prev) loop
@@ -9265,15 +9259,14 @@ package body Sem_Ch3 is
       --  or if we are in the private part of an instance. This test
       --  should still be refined ???
 
-      --  The test for In_Instance_Not_Visible avoids inheriting the
-      --  derived operation as a non-visible operation in cases where
-      --  the parent subprogram might not be visible now, but was
-      --  visible within the original generic, so it would be wrong
-      --  to make the inherited subprogram non-visible now. (Not
-      --  clear if this test is fully correct; are there any cases
-      --  where we should declare the inherited operation as not
-      --  visible to avoid it being overridden, e.g., when the
-      --  parent type is a generic actual with private primitives ???)
+      --  The test for In_Instance_Not_Visible avoids inheriting the derived
+      --  operation as a non-visible operation in cases where the parent
+      --  subprogram might not be visible now, but was visible within the
+      --  original generic, so it would be wrong to make the inherited
+      --  subprogram non-visible now. (Not clear if this test is fully
+      --  correct; are there any cases where we should declare the inherited
+      --  operation as not visible to avoid it being overridden, e.g., when
+      --  the parent type is a generic actual with private primitives ???)
 
       --  (they should be treated the same as other private inherited
       --  subprograms, but it's not clear how to do this cleanly). ???
@@ -9301,9 +9294,9 @@ package body Sem_Ch3 is
          New_Formal := New_Copy (Formal);
 
          --  Normally we do not go copying parents, but in the case of
-         --  formals, we need to link up to the declaration (which is
-         --  the parameter specification), and it is fine to link up to
-         --  the original formal's parameter specification in this case.
+         --  formals, we need to link up to the declaration (which is the
+         --  parameter specification), and it is fine to link up to the
+         --  original formal's parameter specification in this case.
 
          Set_Parent (New_Formal, Parent (Formal));
 
@@ -9356,11 +9349,11 @@ package body Sem_Ch3 is
            (New_Subp, Is_Valued_Procedure (Parent_Subp));
       end if;
 
-      --  A derived function with a controlling result is abstract.
-      --  If the Derived_Type is a nonabstract formal generic derived
-      --  type, then inherited operations are not abstract: check is
-      --  done at instantiation time. If the derivation is for a generic
-      --  actual, the function is not abstract unless the actual is.
+      --  A derived function with a controlling result is abstract. If the
+      --  Derived_Type is a nonabstract formal generic derived type, then
+      --  inherited operations are not abstract: the required check is done at
+      --  instantiation time. If the derivation is for a generic actual, the
+      --  function is not abstract unless the actual is.
 
       if Is_Generic_Type (Derived_Type)
         and then not Is_Abstract (Derived_Type)
@@ -9394,12 +9387,11 @@ package body Sem_Ch3 is
 
       New_Overloaded_Entity (New_Subp, Derived_Type);
 
-      --  Check for case of a derived subprogram for the instantiation
-      --  of a formal derived tagged type, if so mark the subprogram as
-      --  dispatching and inherit the dispatching attributes of the
-      --  parent subprogram. The derived subprogram is effectively a
-      --  renaming of the actual subprogram, so it needs to have the
-      --  same attributes as the actual.
+      --  Check for case of a derived subprogram for the instantiation of a
+      --  formal derived tagged type, if so mark the subprogram as dispatching
+      --  and inherit the dispatching attributes of the parent subprogram. The
+      --  derived subprogram is effectively renaming of the actual subprogram,
+      --  so it needs to have the same attributes as the actual.
 
       if Present (Actual_Subp)
         and then Is_Dispatching_Operation (Parent_Subp)
@@ -9411,8 +9403,8 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Indicate that a derived subprogram does not require a body
-      --  and that it does not require processing of default expressions.
+      --  Indicate that a derived subprogram does not require a body and that
+      --  it does not require processing of default expressions.
 
       Set_Has_Completion (New_Subp);
       Set_Default_Expressions_Processed (New_Subp);
@@ -9457,8 +9449,8 @@ package body Sem_Ch3 is
          Act_Elmt := No_Elmt;
       end if;
 
-      --  Literals are derived earlier in the process of building the
-      --  derived type, and are skipped here.
+      --  Literals are derived earlier in the process of building the derived
+      --  type, and are skipped here.
 
       Elmt := First_Elmt (Op_List);
       while Present (Elmt) loop
@@ -9578,9 +9570,9 @@ package body Sem_Ch3 is
         or else (Is_Class_Wide_Type (Parent_Type)
                   and then Etype (Parent_Type) = T)
       then
-         --  If Parent_Type is undefined or illegal, make new type into
-         --  a subtype of Any_Type, and set a few attributes to prevent
-         --  cascaded errors. If this is a self-definition, emit error now.
+         --  If Parent_Type is undefined or illegal, make new type into a
+         --  subtype of Any_Type, and set a few attributes to prevent cascaded
+         --  errors. If this is a self-definition, emit error now.
 
          if T = Parent_Type
            or else T = Etype (Parent_Type)
@@ -9718,11 +9710,11 @@ package body Sem_Ch3 is
 
       elsif No (Extension) and then Taggd then
 
-         --  If this is within a private part (or body) of a generic
-         --  instantiation then the derivation is allowed (the parent
-         --  type can only appear tagged in this case if it's a generic
-         --  actual type, since it would otherwise have been rejected
-         --  in the analysis of the generic template).
+         --  If this declaration is within a private part (or body) of a
+         --  generic instantiation then the derivation is allowed (the parent
+         --  type can only appear tagged in this case if it's a generic actual
+         --  type, since it would otherwise have been rejected in the analysis
+         --  of the generic template).
 
          if not Is_Generic_Actual_Type (Parent_Type)
            or else In_Visible_Part (Scope (Parent_Type))
@@ -9940,8 +9932,8 @@ package body Sem_Ch3 is
 
          elsif Ekind (Prev) = E_Incomplete_Type then
 
-            --  Indicate that the incomplete declaration has a matching
-            --  full declaration. The defining occurrence of the incomplete
+            --  Indicate that the incomplete declaration has a matching full
+            --  declaration. The defining occurrence of the incomplete
             --  declaration remains the visible one, and the procedure
             --  Get_Full_View dereferences it whenever the type is used.
 
@@ -10140,10 +10132,10 @@ package body Sem_Ch3 is
              Subtype_Indication  => Relocate_Node (Obj_Def)));
 
          --  This subtype may need freezing, and this will not be done
-         --  automatically if the object declaration is not in a
-         --  declarative part. Since this is an object declaration, the
-         --  type cannot always be frozen here. Deferred constants do not
-         --  freeze their type (which often enough will be private).
+         --  automatically if the object declaration is not in declarative
+         --  part. Since this is an object declaration, the type cannot always
+         --  be frozen here. Deferred constants do not freeze their type
+         --  (which often enough will be private).
 
          if Nkind (P) = N_Object_Declaration
            and then Constant_Present (P)
@@ -10354,9 +10346,8 @@ package body Sem_Ch3 is
 
    --       type T0 (Dx, Dy, Dz...)
 
-   --  There are zero or more levels of derivation, with each
-   --  derivation either purely inheriting the discriminants, or
-   --  defining its own.
+   --  There are zero or more levels of derivation, with each derivation
+   --  either purely inheriting the discriminants, or defining its own.
 
    --       type Ti      is new Ti-1
    --  or
@@ -10364,9 +10355,8 @@ package body Sem_Ch3 is
    --  or
    --       subtype Ti is ...
 
-   --  The subtype issue is avoided by the use of
-   --    Original_Record_Component, and the fact that derived subtypes
-   --    also derive the constraints.
+   --  The subtype issue is avoided by the use of Original_Record_Component,
+   --  and the fact that derived subtypes also derive the constraints.
 
    --  This chain leads back from
 
@@ -10630,10 +10620,10 @@ package body Sem_Ch3 is
         (Old_C          : Entity_Id;
          Plain_Discrim  : Boolean := False;
          Stored_Discrim : Boolean := False);
-      --  Inherits component Old_C from Parent_Base to the Derived_Base.
-      --  If Plain_Discrim is True, Old_C is a discriminant.
-      --  If Stored_Discrim is True, Old_C is a stored discriminant.
-      --  If they are both false then Old_C is a regular component.
+      --  Inherits component Old_C from Parent_Base to the Derived_Base. If
+      --  Plain_Discrim is True, Old_C is a discriminant. If Stored_Discrim is
+      --  True, Old_C is a stored discriminant. If they are both false then
+      --  Old_C is a regular component.
 
       -----------------------
       -- Inherit_Component --
@@ -10786,12 +10776,12 @@ package body Sem_Ch3 is
 
       --  See if we can apply the second transformation for derived types, as
       --  explained in point 6. in the comments above Build_Derived_Record_Type
-      --  This is achieved by appending Derived_Base discriminants into
-      --  Discs, which has the side effect of returning a non empty Discs
-      --  list to the caller of Inherit_Components, which is what we want.
-      --  This must be done for private derived types if there are explicit
-      --  stored discriminants, to ensure that we can retrieve the values of
-      --  the constraints provided in the ancestors.
+      --  This is achieved by appending Derived_Base discriminants into Discs,
+      --  which has the side effect of returning a non empty Discs list to the
+      --  caller of Inherit_Components, which is what we want. This must be
+      --  done for private derived types if there are explicit stored
+      --  discriminants, to ensure that we can retrieve the values of the
+      --  constraints provided in the ancestors.
 
       if Inherit_Discr
         and then Is_Empty_Elmt_List (Discs)
@@ -10915,9 +10905,9 @@ package body Sem_Ch3 is
       Type_Scope     : Entity_Id;
 
       function Is_Local_Type (Typ : Entity_Id) return Boolean;
-      --  Check whether parent type of inherited component is declared
-      --  locally, possibly within a nested package or instance. The
-      --  current scope is the derived record itself.
+      --  Check whether parent type of inherited component is declared locally,
+      --  possibly within a nested package or instance. The current scope is
+      --  the derived record itself.
 
       -------------------
       -- Is_Local_Type --
@@ -10970,9 +10960,9 @@ package body Sem_Ch3 is
       elsif not Comes_From_Source (Original_Comp) then
          return True;
 
-      --  If we are in the body of an instantiation, the component is
-      --  visible even when the parent type (possibly defined in an
-      --  enclosing unit or in a parent unit) might not.
+      --  If we are in the body of an instantiation, the component is visible
+      --  even when the parent type (possibly defined in an enclosing unit or
+      --  in a parent unit) might not.
 
       elsif In_Instance_Body then
          return True;
@@ -11035,8 +11025,8 @@ package body Sem_Ch3 is
       --     private
       --       type T is new A2 with null record;
 
-      --  In this case, the full view of T inherits F1 and F2 but the
-      --  private view inherits only F1
+      --  In this case, the full view of T inherits F1 and F2 but the private
+      --  view inherits only F1
 
       else
          declare
@@ -11226,8 +11216,8 @@ package body Sem_Ch3 is
            and then Is_Type (Entity (Prefix (Low_Bound (I))))
            and then Is_Discrete_Type (Entity (Prefix (Low_Bound (I))))
          then
-            --  The type of the index will be the type of the prefix,
-            --  as long as the upper bound is 'Last of the same type.
+            --  The type of the index will be the type of the prefix, as long
+            --  as the upper bound is 'Last of the same type.
 
             Def_Id := Entity (Prefix (Low_Bound (I)));
 
@@ -11349,18 +11339,17 @@ package body Sem_Ch3 is
          return;
       end if;
 
-      --  We will now create the appropriate Itype to describe the
-      --  range, but first a check. If we originally had a subtype,
-      --  then we just label the range with this subtype. Not only
-      --  is there no need to construct a new subtype, but it is wrong
-      --  to do so for two reasons:
+      --  We will now create the appropriate Itype to describe the range, but
+      --  first a check. If we originally had a subtype, then we just label
+      --  the range with this subtype. Not only is there no need to construct
+      --  a new subtype, but it is wrong to do so for two reasons:
 
-      --    1. A legality concern, if we have a subtype, it must not
-      --       freeze, and the Itype would cause freezing incorrectly
+      --    1. A legality concern, if we have a subtype, it must not freeze,
+      --       and the Itype would cause freezing incorrectly
 
-      --    2. An efficiency concern, if we created an Itype, it would
-      --       not be recognized as the same type for the purposes of
-      --       eliminating checks in some circumstances.
+      --    2. An efficiency concern, if we created an Itype, it would not be
+      --       recognized as the same type for the purposes of eliminating
+      --       checks in some circumstances.
 
       --  We signal this case by setting the subtype entity in Def_Id
 
@@ -11604,8 +11593,8 @@ package body Sem_Ch3 is
 
       Set_Delta_Value (Implicit_Base, Delta_Val);
 
-      --  Compute default small from given delta, which is the largest
-      --  power of two that does not exceed the given delta value.
+      --  Compute default small from given delta, which is the largest power
+      --  of two that does not exceed the given delta value.
 
       declare
          Tmp   : Ureal := Ureal_1;
@@ -11661,11 +11650,11 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  The range for both the implicit base and the declared first
-      --  subtype cannot be set yet, so we use the special routine
-      --  Set_Fixed_Range to set a temporary range in place. Note that
-      --  the bounds of the base type will be widened to be symmetrical
-      --  and to fill the available bits when the type is frozen.
+      --  The range for both the implicit base and the declared first subtype
+      --  cannot be set yet, so we use the special routine Set_Fixed_Range to
+      --  set a temporary range in place. Note that the bounds of the base
+      --  type will be widened to be symmetrical and to fill the available
+      --  bits when the type is frozen.
 
       --  We could do this with all discrete types, and probably should, but
       --  we absolutely have to do it for fixed-point, since the end-points
@@ -11704,9 +11693,10 @@ package body Sem_Ch3 is
    begin
       if Present (Full_B) then
 
-         --  The Base_Type is already completed, we can complete the
-         --  subtype now. We have to create a new entity with the same name,
-         --  Thus we can't use Create_Itype.
+         --  The Base_Type is already completed, we can complete the subtype
+         --  now. We have to create a new entity with the same name, Thus we
+         --  can't use Create_Itype.
+
          --  This is messy, should be fixed ???
 
          Full := Make_Defining_Identifier (Sloc (Id), Chars (Id));
@@ -12110,11 +12100,10 @@ package body Sem_Ch3 is
       end if;
 
       --  Create a full declaration for all its subtypes recorded in
-      --  Private_Dependents and swap them similarly to the base type.
-      --  These are subtypes that have been define before the full
-      --  declaration of the private type. We also swap the entry in
-      --  Private_Dependents list so we can properly restore the
-      --  private view on exit from the scope.
+      --  Private_Dependents and swap them similarly to the base type. These
+      --  are subtypes that have been define before the full declaration of
+      --  the private type. We also swap the entry in Private_Dependents list
+      --  so we can properly restore the private view on exit from the scope.
 
       declare
          Priv_Elmt : Elmt_Id;
@@ -12191,15 +12180,15 @@ package body Sem_Ch3 is
             else
                --  In this case the partial view is untagged, so here we
                --  locate all of the earlier primitives that need to be
-               --  treated as dispatching (those that appear between the
-               --  two views). Note that these additional operations must
-               --  all be new operations (any earlier operations that
-               --  override inherited operations of the full view will
-               --  already have been inserted in the primitives list and
-               --  marked as dispatching by Check_Operation_From_Private_View.
-               --  Note that implicit "/=" operators are excluded from being
-               --  added to the primitives list since they shouldn't be
-               --  treated as dispatching (tagged "/=" is handled specially).
+               --  treated as dispatching (those that appear between the two
+               --  views). Note that these additional operations must all be
+               --  new operations (any earlier operations that override
+               --  inherited operations of the full view will already have
+               --  been inserted in the primitives list and marked as
+               --  dispatching by Check_Operation_From_Private_View. Note that
+               --  implicit "/=" operators are excluded from being added to
+               --  the primitives list since they shouldn't be treated as
+               --  dispatching (tagged "/=" is handled specially).
 
                Prim := Next_Entity (Full_T);
                while Present (Prim) and then Prim /= Priv_T loop
@@ -12406,12 +12395,11 @@ package body Sem_Ch3 is
             Set_Etype (Hi, T);
          end if;
 
-         --  If the bounds of the range have been mistakenly given as
-         --  string literals (perhaps in place of character literals),
-         --  then an error has already been reported, but we rewrite
-         --  the string literal as a bound of the range's type to
-         --  avoid blowups in later processing that looks at static
-         --  values.
+         --  If the bounds of the range have been mistakenly given as string
+         --  literals (perhaps in place of character literals), then an error
+         --  has already been reported, but we rewrite the string literal as a
+         --  bound of the range's type to avoid blowups in later processing
+         --  that looks at static values.
 
          if Nkind (Lo) = N_String_Literal then
             Rewrite (Lo,
@@ -12443,8 +12431,10 @@ package body Sem_Ch3 is
          --  not be raised.
 
          --  ??? The following code should be cleaned up as follows
+
          --  1. The Is_Null_Range (Lo, Hi) test should disappear since it
          --     is done in the call to Range_Check (R, T); below
+
          --  2. The use of R_Check_Off should be investigated and possibly
          --     removed, this would clean up things a bit.
 
@@ -12680,11 +12670,11 @@ package body Sem_Ch3 is
             Def_Id := Defining_Identifier (Parent (P));
 
          --  Implicit case, the Def_Id must be created as an implicit type.
-         --  The one exception arises in the case of concurrent types,
-         --  array and access types, where other subsidiary implicit types
-         --  may be created and must appear before the main implicit type.
-         --  In these cases we leave Def_Id set to Empty as a signal that
-         --  Create_Itype has not yet been called to create Def_Id.
+         --  The one exception arises in the case of concurrent types, array
+         --  and access types, where other subsidiary implicit types may be
+         --  created and must appear before the main implicit type. In these
+         --  cases we leave Def_Id set to Empty as a signal that Create_Itype
+         --  has not yet been called to create Def_Id.
 
          else
             if Is_Array_Type (Subtype_Mark_Id)
@@ -13064,18 +13054,17 @@ package body Sem_Ch3 is
    --     A small clause may affect the values of the end-points
    --     We try to include the end-points if it does not affect the size
 
-   --  This means that the actual end-points must be established at the
-   --  point when the type is frozen. Meanwhile, we first narrow the range
-   --  as permitted (so that it will fit if necessary in a small specified
-   --  size), and then build a range subtree with these narrowed bounds.
+   --  This means that the actual end-points must be established at the point
+   --  when the type is frozen. Meanwhile, we first narrow the range as
+   --  permitted (so that it will fit if necessary in a small specified size),
+   --  and then build a range subtree with these narrowed bounds.
 
-   --  Set_Fixed_Range constructs the range from real literal values, and
-   --  sets the range as the Scalar_Range of the given fixed-point type
-   --  entity.
+   --  Set_Fixed_Range constructs the range from real literal values, and sets
+   --  the range as the Scalar_Range of the given fixed-point type entity.
 
-   --  The parent of this range is set to point to the entity so that it
-   --  is properly hooked into the tree (unlike normal Scalar_Range entries
-   --  for other scalar types, which are just pointers to the range in the
+   --  The parent of this range is set to point to the entity so that it is
+   --  properly hooked into the tree (unlike normal Scalar_Range entries for
+   --  other scalar types, which are just pointers to the range in the
    --  original tree, this would otherwise be an orphan).
 
    --  The tree is left unanalyzed. When the type is frozen, the processing

@@ -661,7 +661,7 @@ package body Exp_Ch2 is
       Set_Etype  (N, Etype (Prival (E)));
       Scop := Current_Scope;
 
-      --  Find entity for protected operation, which must be on scope stack.
+      --  Find entity for protected operation, which must be on scope stack
 
       while not Is_Protected_Type (Scope (Scop)) loop
          Scop := Scope (Scop);

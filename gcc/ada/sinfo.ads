@@ -2159,7 +2159,7 @@ package Sinfo is
 
       --  INTEGER_TYPE_DEFINITION ::=
       --    SIGNED_INTEGER_TYPE_DEFINITION
-      --    MODULAR_TYPE_DEFINITION
+      --  | MODULAR_TYPE_DEFINITION
 
       -------------------------------------------
       -- 3.5.4  Signed Integer Type Definition --
@@ -2168,17 +2168,17 @@ package Sinfo is
       --  SIGNED_INTEGER_TYPE_DEFINITION ::=
       --    range static_SIMPLE_EXPRESSION .. static_SIMPLE_EXPRESSION
 
-      --  Note: the Low_Bound and High_Bound fields are set to Empty for
-      --  integer types defined in package Standard.
+      --  Note: the Low_Bound and High_Bound fields are set to Empty
+      --  for integer types defined in package Standard.
 
       --  N_Signed_Integer_Type_Definition
       --  Sloc points to RANGE
       --  Low_Bound (Node1)
       --  High_Bound (Node2)
 
-      -----------------------------------------
-      -- 3.5.4  Unsigned Range Specification --
-      -----------------------------------------
+      ------------------------------------
+      -- 3.5.4  Modular Type Definition --
+      ------------------------------------
 
       --  MODULAR_TYPE_DEFINITION ::= mod static_EXPRESSION
 
@@ -2235,9 +2235,6 @@ package Sinfo is
       --    delta static_EXPRESSION REAL_RANGE_SPECIFICATION
 
       --  Note: In Ada 83, the EXPRESSION must be a SIMPLE_EXPRESSION
-
-      --  Note: the Delta_Expression and Real_Range_Specification fields
-      --  are set to Empty for fixed point types declared in Standard.
 
       --  N_Ordinary_Fixed_Point_Definition
       --  Sloc points to DELTA

@@ -92,7 +92,7 @@ package body Sem_Ch7 is
    --  is an inner package.
 
    function Is_Private_Base_Type (E : Entity_Id) return Boolean;
-   --  True for a private type that is not a subtype.
+   --  True for a private type that is not a subtype
 
    function Is_Visible_Dependent (Dep : Entity_Id) return Boolean;
    --  If the private dependent is a private type whose full view is
@@ -288,7 +288,7 @@ package body Sem_Ch7 is
          Append_Entity (Body_Id, Scope (Spec_Id));
       end if;
 
-      --  Indicate that we are currently compiling the body of the package.
+      --  Indicate that we are currently compiling the body of the package
 
       Set_In_Package_Body (Spec_Id);
       Set_Has_Completion (Spec_Id);
@@ -377,7 +377,7 @@ package body Sem_Ch7 is
 
       End_Package_Scope (Spec_Id);
 
-      --  All entities declared in body are not visible.
+      --  All entities declared in body are not visible
 
       declare
          E : Entity_Id;
@@ -877,7 +877,7 @@ package body Sem_Ch7 is
          Analyze_Declarations (Vis_Decls);
       end if;
 
-      --  Verify that incomplete types have received full declarations.
+      --  Verify that incomplete types have received full declarations
 
       E := First_Entity (Id);
       while Present (E) loop
@@ -1485,7 +1485,7 @@ package body Sem_Ch7 is
          Next_Entity (Id);
       end loop;
 
-      --  Next make other declarations in the private part visible as well.
+      --  Next make other declarations in the private part visible as well
 
       Id := First_Private_Entity (P);
 
@@ -1669,7 +1669,7 @@ package body Sem_Ch7 is
       --  that need to be available for the partial view also.
 
       function Type_In_Use (T : Entity_Id) return Boolean;
-      --  Check whether type or base type appear in an active use_type clause.
+      --  Check whether type or base type appear in an active use_type clause
 
       ------------------------------
       -- Preserve_Full_Attributes --
@@ -1767,7 +1767,7 @@ package body Sem_Ch7 is
               In_Use (P) and not Is_Hidden (Id));
          end if;
 
-         --  Local entities are not immediately visible outside of the package.
+         --  Local entities are not immediately visible outside of the package
 
          Set_Is_Immediately_Visible (Id, False);
 

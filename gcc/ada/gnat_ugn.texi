@@ -176,6 +176,7 @@ Ada Core Technologies, Inc.@*
 * GNAT Project Manager::
 * The Cross-Referencing Tools gnatxref and gnatfind::
 * The GNAT Pretty-Printer gnatpp::
+* The GNAT Metric Tool gnatmetric::
 * File Name Krunching Using gnatkr::
 * Preprocessing Using gnatprep::
 @ifset vms
@@ -394,6 +395,10 @@ The GNAT Pretty-Printer gnatpp
 
 * Switches for gnatpp::
 * Formatting Rules::
+
+The GNAT Metrics Tool gnatmetric
+
+* Switches for gnatmetric::
 
 File Name Krunching Using gnatkr
 
@@ -722,6 +727,11 @@ way to navigate through sources.
 @ref{The GNAT Pretty-Printer gnatpp}, shows how to produce a reformatted
 version of an Ada source file with control over casing, indentation,
 comment placement, and other elements of program presentation style.
+
+@item
+@ref{The GNAT Metric Tool gnatmetric}, shows how to compute various
+metrics for an Ada source file, such as the number of types and subprograms,
+and assorted complexity measures.
 
 @item
 @ref{File Name Krunching Using gnatkr}, describes the @code{gnatkr}
@@ -11185,11 +11195,17 @@ case insensitive. The following package names are legal:
 @item
 @code{Eliminate}
 @item
+@code{Pretty_Printer}
+@item
+@code{Metrics}
+@item
 @code{gnatls}
 @item
 @code{gnatstub}
 @item
 @code{IDE}
+@item
+@code{Language_Processing}
 @end itemize
 
 @noindent
@@ -13205,6 +13221,8 @@ are project-aware:
 @command{^gnatls^gnatls^},
 @command{^gnatelim^gnatelim^},
 @command{^gnatpp^gnatpp^},
+@command{^gnatmetric^gnatmetric^},
+@command{^gnatstub^gnatstub^},
 and @command{^gnatxref^gnatxref^}. However, none of these tools can be invoked
 directly with a project file switch (@option{^-P^/PROJECT_FILE=^}).
 They must be invoked through the @command{gnat} driver.
@@ -13244,6 +13262,8 @@ NAME to invoke @command{^gnatname^gnatname^}
 PREP or PREPROCESS to invoke @command{^gnatprep^gnatprep^}
 @item
 PP or PRETTY to invoke @command{^gnatpp^gnatpp^}
+@item
+METRIC to invoke @command{^gnatmetric^gnatmetric^}
 @item
 STUB to invoke @command{^gnatstub^gnatstub^}
 @item
@@ -13286,8 +13306,8 @@ files may be specified with their path name preceded by '@@'.
 @end smallexample
 
 @noindent
-In addition, for command BIND, COMP or COMPILE, FIND, ELIM, LS or LIST, LINK,
-PP or PRETTY and XREF, the project file related switches
+In addition, for commands BIND, COMP or COMPILE, FIND, ELIM, LS or LIST, LINK,
+METRIC, PP or PRETTY, STUB and XREF, the project file related switches
 (@option{^-P^/PROJECT_FILE^},
 @option{^-X^/EXTERNAL_REFERENCE^} and
 @option{^-vP^/MESSAGES_PROJECT_FILE=^x}) may be used in addition to
@@ -13299,8 +13319,15 @@ specified on the command line, it invokes @command{^gnatpp^gnatpp^} with all
 the immediate sources of the specified project file.
 
 @noindent
-For each of these commands, there is optionally a corresponding  package
-in the main project.
+When GNAT METRIC is used with a project file, but with no source
+specified on the command line, it invokes @command{^gnatmetric^gnatmetric^}
+with all the immediate sources of the specified project file and with
+@option{^-d^/DIRECTORY^} with the parameter pointing to the object directory
+of the project.
+
+@noindent
+For each of the following commands, there is optionally a corresponding
+package in the main project.
 
 @itemize @bullet
 @item
@@ -13323,8 +13350,16 @@ package @code{Gnatls} for command LS or LIST (invoking @code{^gnatls^gnatls^})
 package @code{Linker} for command LINK (invoking @code{^gnatlink^gnatlink^})
 
 @item
+package @code{Metrics} for command METRIC
+(invoking @code{^gnatmetric^gnatmetric^})
+
+@item
 package @code{Pretty_Printer} for command PP or PRETTY
 (invoking @code{^gnatpp^gnatpp^})
+
+@item
+package @code{Gnatstub} for command STUB
+(invoking @code{^gnatstub^gnatstub^})
 
 @item
 package @code{Cross_Reference} for command XREF (invoking
@@ -15395,6 +15430,474 @@ end Test;
 @end cartouche
 @end smallexample
 
+@c *********************************
+@node The GNAT Metric Tool gnatmetric
+@chapter The GNAT Metric Tool @command{gnatmetric}
+@findex gnatmetric
+@cindex Metric tool
+
+@noindent
+^The @command{gnatmetric} tool^GNAT METRIC^ is an ASIS-based utility
+for computing various program metrics.
+It takes an Ada source file as input and generates a file containing the
+metrics data as output. Various switches control which
+metrics are computed and output.
+
+@command{gnatmetric} generates and uses the ASIS
+tree for the input source and thus requires the input to be syntactically and
+semantically legal.
+If this condition is not met, @command{gnatmetric} will generate
+an error message; no metric information for this file will be
+computed and reported.
+
+If the compilation unit contained in the input source depends semantically
+upon units located outside the current directory, you have to provide the
+source search path when invoking @command{gnatmetric}.
+If these units are contained in files
+with names that do not follow the GNAT file naming rules, you have to provide
+the configuration file describing the corresponding naming scheme; see the
+description of the @command{gnatmetric} switches below. Another possibility
+is to use a project file and to
+call @command{gnatmetric} through the @command{gnat} driver
+
+The @command{gnatmetric} command has the form
+
+@smallexample
+$ gnatmetric [@var{switches}] @var{filename} [@var{-cargs gcc_switches}]
+@end smallexample
+
+@noindent
+where
+@itemize @bullet
+@item
+@var{switches} is an optional sequence of switches specifying
+the set of metrics to compute and defining the destination for the
+output information
+
+@item
+@var{filename} is the name (including the extension) of the source file to
+process; ``wildcards'' or several file names on the same @command{gnatmetric}
+command are allowed.  The file name may contain path information; in this case
+it does not have to follow the GNAT file naming rules
+
+@item
+@option{-cargs gcc_switches} is a list of switches that are valid switches for
+@command{gcc}. They will be passed on to all compiler invocations made by
+@command{gnatmetric} to generate the ASIS trees. Here you can provide
+@option{-I} switches to form the source search path,
+and use the @var{-gnatec} switch to set the configuration file.
+@end itemize
+
+@menu
+* Switches for gnatmetric::
+@end menu
+
+@node Switches for gnatmetric
+@section Switches for @command{gnatmetric}
+
+@noindent
+The following subsections describe the various switches accepted by
+@command{gnatmetric}, organized by category.
+
+@menu
+* Output Files Control::
+* Disable Metrics For Local Units::
+* Line Metrics Control::
+* Syntax Metrics Control::
+* Complexity Metrics Control::
+* Other gnatmetric Switches::
+@end menu
+
+@node Output Files Control
+@subsection Output File Control
+@cindex Output file control in @command{gnatmetric}
+
+@noindent
+@command{gnatmetric} has two output formats. It can generate the output in
+textual (human-readable) form, and also as XML. By default only textual
+output is generated.
+
+When generating the output in textual form, @command{gnatmetric} creates
+for each Ada source file a corresponding text file
+containing the computed metrics. By default, this file
+is placed in the same directory as where the source file is located, and
+its name is obtained
+by appending the ^@file{.metrix}^@file{$METRIX}^ suffix to the name of the
+input file.
+
+All the output information generated in XML format is placed in a single
+file. By default this file is placed in the current directory and has the
+name ^@file{metrix.xml}^@file{METRIX$XML}^.
+
+Some of the computed metrics are summed over the units passed to
+@command{gnatmetric}; for example, the total number of lines of code.
+By default this information is sent to @file{stdout}, but a file
+can be specified with the @option{-og} switch.
+
+The following switches may be used to control the @command{gnatmetric} output:
+
+@table @option
+@cindex @option{^-x^/XML^} (@command{gnatmetric})
+@item ^-x^/XML^
+Generate the XML output
+
+@cindex @option{^-nt^/NO_TEXT^} (@command{gnatmetric})
+@item ^-nt^/NO_TEXT^
+Do not generate the output in text form (implies @option{^-x^/XML^})
+
+@cindex @option{^-d^/DIRECTORY^} (@command{gnatmetric})
+@item ^-d @var{output_dir}^/DIRECTORY=@var{output_dir}^
+Put textual files with detailed metrics into @var{output_dir}
+
+@cindex @option{^-o^/SUFFIX_DETAILS^} (@command{gnatmetric})
+@item ^-o @var{file_suffix}^/SUFFIX_DETAILS=@var{file_suffix}^
+Use @var{file_suffix} to form the name of the file for the detailed metrics.
+
+@cindex @option{^-og^/GLOBAL_OUTPUT^} (@command{gnatmetric})
+@item ^-og @var{file_name}^/GLOBAL_OUTPUT=@var{file_name}^
+Put global metrics info into @var{file_name}
+
+@cindex @option{^-ox^/XML_OUTPUT^} (@command{gnatmetric})
+@item ^-ox @var{file_name}^/XML_OUTPUT=@var{file_name}^
+Put the XML output into @var{file_name} (also implies @option{^-x^/XML^})
+
+@cindex @option{^-sfn^/SHORT_SOURCE_FILE_NAME^} (@command{gnatmetric})
+@item ^-sfn^/SHORT_SOURCE_FILE_NAME^
+Use short source file names in the output
+
+@end table
+
+@node Disable Metrics For Local Units
+@subsection Disable Metrics For Local Units
+@cindex Disable Metrics For Local Units in @command{gnatmetric}
+
+@noindent
+@command{gnatmetric} relies on the GNAT compilation model @minus{}
+one compilation
+unit per one source file. It computes some metrics for the whole source
+file (mostly ``number of lines'' metrics) and it always computes metrics for
+the top program unit of the corresponding compilation unit.
+
+@command{gnatmetric} considers the following constructs as program units to
+compute metrics for:
+
+@itemize @bullet
+@item
+a library item or a subunit into a compilation unit;
+
+@item
+all kinds of bodies;
+
+@item
+declarations of tasks and protected types and objects, package and generic
+
+@item
+package declarations;
+
+@end itemize
+
+@noindent
+That is, a subprogram declaration, a generic instantiation or a renaming is
+considered as a program unit only if it is a library item of a compilation
+unit.
+
+@table @option
+@cindex @option{^-n@var{x}^/SUPPRESS^} (@command{gnatmetric})
+@item ^-nolocal^/SUPPRESS=LOCAL_DETAILS^
+Do not compute detailed metrics for local program units
+
+@end table
+
+@node Line Metrics Control
+@subsection Line Metrics Control
+@cindex Line metrics control in @command{gnatmetric}
+
+@noindent
+For any source file containing a legal compilation unit, and for any program
+unit, @command{gnatmetric} computes the following metrics:
+
+@itemize @bullet
+@item
+the total number of lines in the file;
+
+@item
+the total number of code lines (i.e., non-blank lines that are not comments)
+
+@item
+the number of comment lines
+
+@item
+the number of code lines containing end-of-line comments;
+
+@item
+the number of empty lines and lines containing only space characters and/or
+format effectors (blank lines)
+
+@end itemize
+
+If @command{gnatmetric} is invoked on more than one source file, it sums the
+values of the line metrics for all the files being processed and then prints
+out the cumulative results.
+
+By default, all the line metrics are computed and reported. You can use the
+following switches to select the specific line metrics to be computed and
+reported (if any of these parameters is set, only explicitly specified line
+metrics are computed)
+
+@table @option
+@cindex @option{^-la^/LINES_ALL^} (@command{gnatmetric})
+@item ^-la^/LINES_ALL^
+Compute and print out the number of all lines
+
+@cindex @option{^-lcode^/CODE_LINES^} (@command{gnatmetric})
+@item ^-lcode^/CODE_LINES^
+Compute and print out the number of code lines
+
+@cindex @option{^-lcomm^/COMENT_LINES^} (@command{gnatmetric})
+@item ^-lcomm^/COMENT_LINES^
+Compute and print out the number of comment lines
+
+@cindex @option{^-leol^/MIXED_CODE_COMMENTS^} (@command{gnatmetric})
+@item ^-leol^/MIXED_CODE_COMMENTS^
+Compute and print out the number of code lines containing
+end-of-line comments
+
+@cindex @option{^-lb^/BLANK_LINES^} (@command{gnatmetric})
+@item ^-lb^/BLANK_LINES^
+ Compute and print out the number of blank lines
+
+@end table
+
+@node Syntax Metrics Control
+@subsection Syntax Metrics Control
+@cindex Syntax metrics control in @command{gnatmetric}
+
+@noindent
+For any program unit, @command{gnatmetri}c computes the total number of
+declarations and the total number of statements.  The sum of all the statements
+and all the declarations is considered as @emph{LSLOC} (Logical Source
+Lines Of Code)
+and is reported as a separate metric.
+
+For any body and any task, protected, package and generic package declaration a
+maximal nesting level of nested program units is computed. According to
+@cite{Ada 95 Language Reference Manual}, 10.1(1), ``A program unit is either a
+package, a task unit, a protected unit, a
+protected entry, a generic unit, or an explicitly declared subprogram other
+than an enumeration literal.''
+
+For any program unit @command{gnatmetric} computes the maximal nesting level of
+composite syntactic constructs.  This corresponds to the notion of the
+maximum nesting level in the GNAT built-in style checks
+(see @ref{Style Checking})
+
+For any library-level program unit @command{gnatmetric} additionally computes
+the following metrics:
+
+@table @emph
+@item Public subprograms
+This metric is computed for non-private compilation units only. It is a number
+of the subprograms and generic subprograms declared in the given compilation
+unit that can be called
+or instantiated outside the unit. Formal generic subprograms and generic
+instantiations are not counted. Protected subprograms are counted in the same
+way as non-protected ones.
+
+@item All subprograms
+This metric is computed for all the library level bodies and subunits. The
+metric is equal to a total number of subprogram bodies in the compilation unit.
+Neither generic instantiations nor renamings-as-a-body nor body stubs
+are counted. Any subprogram body is counted, independently of its nesting
+level and enclosing constructs. Generic bodies and bodies of protected
+subprograms are counted in the same way as ``usual'' subprogram bodies.
+
+@item Public types
+This metric is computed only for non-private package declarations and
+generic package declarations. It is the total number of types
+that can be referenced from outside this compilation unit, plus the
+number of types from all the visible parts of all the visible generic packages.
+Generic formal types are not counted.
+
+@noindent
+Along with counting the total number of public types, the following
+types are counted and reported separately:
+
+@itemize @bullet
+@item
+abstract types;
+
+@item
+tagged types (abstract, non-abstract, private, non-private). Type
+extensions are @emph{not} counted as tagged types; the idea is to count
+possible roots for classes of extendable types;
+
+@item
+private types (including private extensions);
+
+@item
+task types;
+
+@item
+protected types.
+
+@end itemize
+
+@item All types
+This metric is computed for any compilation unit. It is equal to the total
+number of the declarations of different types given in the compilation unit.
+The private and the corresponding full type declaration are counted as one
+type declaration. Incomplete type declarations and generic formal types
+are not counted.
+No distinction is made among different kinds of types (abstract,
+private etc.); the total number of types is computed and reported.
+
+@end table
+
+@noindent
+By default, all the syntax metrics are computed and reported. You can use the
+following switches to select specific syntax metrics;
+if any of these is set, only the explicitly specified metrics are computed.
+
+@table @option
+@cindex @option{^-ed^/DECLARATION_TOTAL^} (@command{gnatmetric})
+@item ^-ed^/DECLARATION_TOTAL^
+Compute and print out the total number of declarations
+
+@cindex @option{^-es^/STATEMENT_TOTAL^} (@command{gnatmetric})
+@item ^-es^/STATEMENT_TOTAL^
+Compute and print out the total number of statements
+
+@cindex @option{^-eps^/^} (@command{gnatmetric})
+@item ^-eps^/INT_SUBPROGRAMS^
+Compute and print out the number of public subprograms in a
+compilation unit
+
+@cindex @option{^-eas^/SUBPROGRAMS_ALL^} (@command{gnatmetric})
+@item ^-eas^/SUBPROGRAMS_ALL^
+Compute and print out the number of all the subprograms in a
+compilation unit
+
+@cindex @option{^-ept^/INT_TYPES^} (@command{gnatmetric})
+@item ^-ept^/INT_TYPES^
+Compute and print out the number of public types in a compilation
+unit
+
+@cindex @option{^-eat^/TYPES_ALL^} (@command{gnatmetric})
+@item ^-eat^/TYPES_ALL^
+Compute and print out the number of all the types in a compilation
+unit
+
+@cindex @option{^-enu^/PROGRAM_NESTING_MAX^} (@command{gnatmetric})
+@item ^-enu^/PROGRAM_NESTING_MAX^
+Compute and print out the maximal program unit nesting level
+
+@cindex @option{^-ec^/CONSTRUCT_NESTING_MAX^} (@command{gnatmetric})
+@item ^-ec^/CONSTRUCT_NESTING_MAX^
+Compute and print out the maximal construct nesting level
+
+@end table
+
+@node Complexity Metrics Control
+@subsection Complexity Metrics Control
+@cindex Complexity metrics control in @command{gnatmetric}
+
+@noindent
+For a program unit that is an executable body (a subprogram body (including
+generic bodies), task body, entry body or a package body containing
+its own statement sequence ) @command{gnatmetric} computes the following
+complexity metrics:
+
+@itemize @bullet
+@item
+McCabe cyclomatic complexity;
+
+@item
+McCabe essential complexity;
+
+@item
+maximal loop nesting level
+
+@end itemize
+
+@noindent
+The McCabe complexity metrics are defined
+in @url{www.mccabe.com/pdf/nist235r.pdf}
+
+According to McCabe, both control statements and short-circuit control forms
+should be taken into account when computing cyclomatic complexity. For each
+body, we compute three metric values:
+
+@itemize @bullet
+@item
+the complexity introduced by control
+statements only, without taking into account short-circuit forms,
+
+@item
+the complexity introduced by short-circuit control forms only, and
+
+@item
+the total
+cyclomatic complexity, which is the sum of these two values.
+@end itemize
+
+@noindent
+When computing cyclomatic and essential complexity, @command{gnatmetric} skips
+the code in the exception handlers and in all the nested program units
+
+By default, all the complexity metrics are computed and reported.
+For more finely-grained control you can use
+the following switches:
+
+@table @option
+@cindex @option{^-n@var{x}^/SUPPRESS^} (@command{gnatmetric})
+
+@item ^-nocc^/SUPPRESS=CYCLOMATIC_COMPLEXITY^
+Do not compute the McCabe Cyclomatic Complexity
+
+@item ^noec-^/SUPPRESS=ESSENTIAL_COMPLEXITY^
+Do not compute the Essential Complexity
+
+@item ^-nonl^/SUPPRESS=MAXIMAL_LOOP_NESTING^
+Do not compute maximal loop nesting level
+
+@item ^-ne^/SUPPRESS=EXITS_AS_GOTOS^
+Do not consider @code{exit} statements as @code{goto}s when
+computing Essential Complexity
+
+@end table
+
+@node Other gnatmetric Switches
+@subsection Other @code{gnatmetric} Switches
+
+@noindent
+Additional @command{gnatmetric} switches are as follows:
+
+@table @option
+@item ^-files @var{filename}^/FILES=@var{filename}^
+@cindex @option{^-files^/FILES^} (@code{gnatmetric})
+Take the argument source files from the specified file. This file should be an
+ordinary textual file containing file names separated by spaces or
+line breaks. You can use this switch more then once in the same call to
+@command{gnatmetric}. You also can combine this switch with explicit list of
+files.
+
+@item ^-v^/VERBOSE^
+@cindex @option{^-v^/VERBOSE^} (@code{gnatmetric})
+Verbose mode;
+@command{gnatmetric} generates version information and then
+a trace of sources being procesed.
+
+@item ^-dv^/DEBUG_OUTPUT^
+@cindex @option{^-dv^/DEBUG_OUTPUT^} (@code{gnatmetric})
+Debug mode;
+@command{gnatmetric} generates various messages useful to understand what
+happens during the metrics computation
+
+@item ^-q^/QUIET^
+@cindex @option{^-q^/QUIET^} (@code{gnatmetric})
+Quiet mode.
+@end table
+
 @c ***********************************
 @node File Name Krunching Using gnatkr
 @chapter File Name Krunching Using @code{gnatkr}
@@ -16084,7 +16587,7 @@ equivalent @code{gnatmake} flag (see @ref{Switches for gnatmake}).
 
 @item ^-v^/OUTPUT=VERBOSE^
 @cindex @option{^-v^/OUTPUT=VERBOSE^} (@code{gnatls})
-Verbose mode. Output the complete source and object paths. Do not use
+Verbose mode. Output the complete source, object and project paths. Do not use
 the default column layout but instead use long format giving as much as
 information possible on each requested units, including special
 characteristics such as:
@@ -16130,7 +16633,8 @@ object paths are affected by the -I switch.
 @smallexample
 $ gnatls -v -I.. demo1.o
 
-GNATLS 3.10w (970212) Copyright 1999 Free Software Foundation, Inc.
+GNATLS 5.03w (20041123-34)
+Copyright 1997-2004 Free Software Foundation, Inc.
 
 Source Search Path:
    <Current_Directory>
@@ -16141,6 +16645,10 @@ Object Search Path:
    <Current_Directory>
    ../
    /home/comar/local/lib/gcc-lib/mips-sni-sysv4/2.7.2/adalib/
+
+Project Search Path:
+   <Current_Directory>
+   /home/comar/local/lib/gnat/
 
 ./demo1.o
    Unit =>

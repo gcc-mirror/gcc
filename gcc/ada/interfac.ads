@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -69,103 +69,83 @@ pragma Pure (Interfaces);
 
    function Shift_Left
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Shift_Right
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Rotate_Left
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Rotate_Right
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Shift_Left
      (Value  : Unsigned_16;
-      Amount : Natural)
-     return    Unsigned_16;
+      Amount : Natural) return    Unsigned_16;
 
    function Shift_Right
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Rotate_Left
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Rotate_Right
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Shift_Left
      (Value  : Unsigned_32;
-      Amount : Natural)
-     return    Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Shift_Right
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Rotate_Left
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Rotate_Right
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Shift_Left
      (Value  : Unsigned_64;
-      Amount : Natural)
-     return    Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Shift_Right
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Rotate_Left
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Rotate_Right
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    pragma Import (Intrinsic, Shift_Left);
    pragma Import (Intrinsic, Shift_Right);
