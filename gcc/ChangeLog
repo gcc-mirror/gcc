@@ -25,6 +25,7 @@ Mon Sep 30 14:57:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-09-29  Richard Henderson  <rth@redhat.com>
 
+	PR c/8002
 	* combine.c (force_to_mode): Handle FLOAT_MODE destinations
 	for CONST_INT.
 
