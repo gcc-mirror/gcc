@@ -5095,23 +5095,18 @@ build_static_cast (type, expr)
       ? can_convert_arg (type, intype, expr)
       : can_convert_arg (strip_all_pointer_quals (type),
                          strip_all_pointer_quals (intype), expr))
+    /* This is a standard conversion. */
     ok = 1;
   else if (TYPE_PTROB_P (type) && TYPE_PTROB_P (intype))
     {
+      /* They're pointers to objects. They must be aggregates that
+         are related non-virtually. */
+      
       tree binfo;
+      
       if (IS_AGGR_TYPE (TREE_TYPE (type)) && IS_AGGR_TYPE (TREE_TYPE (intype))
 	  && (binfo = get_binfo (TREE_TYPE (intype), TREE_TYPE (type), 0))
-	  && ! TREE_VIA_VIRTUAL (binfo))
-	ok = 1;
-    }
-  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
-    {
-      if (same_type_ignoring_top_level_qualifiers_p
-	  (TREE_TYPE (TREE_TYPE (type)),
-	   TREE_TYPE (TREE_TYPE (intype)))
-	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
-				 TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)), 0))
-	  && ! TREE_VIA_VIRTUAL (binfo))
+	  && !binfo_from_vbase (binfo))
 	ok = 1;
     }
   else if (TREE_CODE (intype) != BOOLEAN_TYPE

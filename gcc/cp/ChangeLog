@@ -1,3 +1,10 @@
+2000-12-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (standard_conversion): Reject pointer to member
+	conversions from ambiguous, inaccessible or virtual bases.
+	* typeck.c (build_static_cast): Don't check pointers to members
+	specially.
+
 2000-11-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* method.c (do_build_copy_constructor): Preserve cv
