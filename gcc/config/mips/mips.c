@@ -10449,175 +10449,76 @@ void
 mips_init_builtins (void)
 {
   const struct builtin_description *d;
-  size_t i;
-  tree v2sf_ftype_v2sf_v2sf;
-  tree v2sf_ftype_sf_sf;
-  tree sf_ftype_v2sf;
-  tree v2sf_ftype_v2sf;
-  tree int_ftype_v2sf_v2sf;
-  tree int_ftype_v2sf_v2sf_v2sf_v2sf;
-  tree v2sf_ftype_v2sf_v2sf_int;
-  tree int_ftype_sf_sf;
-  tree int_ftype_df_df;
-  tree sf_ftype_sf;
-  tree df_ftype_df;
-  tree sf_ftype_sf_sf;
-  tree df_ftype_df_df;
-  tree v2sf_ftype_v2sf_v2sf_v2sf_v2sf;
-  tree V2SF_type_node = build_vector_type_for_mode (float_type_node, V2SFmode);
+  tree types[(int) MIPS_MAX_FTYPE_MAX];
+  tree V2SF_type_node;
 
   /* We have only builtins for -mpaired-single and -mips3d.  */
   if (!TARGET_PAIRED_SINGLE_FLOAT)
     return;
 
-  int_ftype_sf_sf
-    = build_function_type_list (integer_type_node, 
-				float_type_node, float_type_node, 
-				NULL_TREE);
+  V2SF_type_node = build_vector_type_for_mode (float_type_node, V2SFmode);
 
-  int_ftype_df_df 
-    = build_function_type_list (integer_type_node, 
-				double_type_node, double_type_node, 
-				NULL_TREE);
-
-  v2sf_ftype_v2sf_v2sf 
-    = build_function_type_list (V2SF_type_node, 
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
-
-  v2sf_ftype_sf_sf 
-    = build_function_type_list (V2SF_type_node, 
-				float_type_node, float_type_node, 
-				NULL_TREE);
-
-  sf_ftype_v2sf 
-    = build_function_type_list (float_type_node, V2SF_type_node, NULL_TREE);
-
-  v2sf_ftype_v2sf 
+  types[MIPS_V2SF_FTYPE_V2SF]
     = build_function_type_list (V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  int_ftype_v2sf_v2sf 
+  types[MIPS_V2SF_FTYPE_V2SF_V2SF]
+    = build_function_type_list (V2SF_type_node,
+				V2SF_type_node, V2SF_type_node, NULL_TREE);
+
+  types[MIPS_V2SF_FTYPE_V2SF_V2SF_INT]
+    = build_function_type_list (V2SF_type_node,
+				V2SF_type_node, V2SF_type_node,
+				integer_type_node, NULL_TREE);
+
+  types[MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF]
+    = build_function_type_list (V2SF_type_node,
+				V2SF_type_node, V2SF_type_node,
+				V2SF_type_node, V2SF_type_node, NULL_TREE);
+
+  types[MIPS_V2SF_FTYPE_SF_SF]
+    = build_function_type_list (V2SF_type_node,
+				float_type_node, float_type_node, NULL_TREE);
+
+  types[MIPS_INT_FTYPE_V2SF_V2SF]
     = build_function_type_list (integer_type_node,
 				V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  int_ftype_v2sf_v2sf_v2sf_v2sf
+  types[MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF]
     = build_function_type_list (integer_type_node,
 				V2SF_type_node, V2SF_type_node,
 				V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  v2sf_ftype_v2sf_v2sf_v2sf_v2sf
-    = build_function_type_list (V2SF_type_node,
-				V2SF_type_node, V2SF_type_node, 
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
+  types[MIPS_INT_FTYPE_SF_SF]
+    = build_function_type_list (integer_type_node,
+				float_type_node, float_type_node, NULL_TREE);
 
-  v2sf_ftype_v2sf_v2sf_int
-    = build_function_type_list (V2SF_type_node, 
-				V2SF_type_node, V2SF_type_node, 
-				integer_type_node, NULL_TREE);
+  types[MIPS_INT_FTYPE_DF_DF]
+    = build_function_type_list (integer_type_node,
+				double_type_node, double_type_node, NULL_TREE);
 
-  sf_ftype_sf
-    = build_function_type_list (float_type_node, 
+  types[MIPS_SF_FTYPE_V2SF]
+    = build_function_type_list (float_type_node, V2SF_type_node, NULL_TREE);
+
+  types[MIPS_SF_FTYPE_SF]
+    = build_function_type_list (float_type_node,
 				float_type_node, NULL_TREE);
 
-  df_ftype_df
-    = build_function_type_list (double_type_node, 
+  types[MIPS_SF_FTYPE_SF_SF]
+    = build_function_type_list (float_type_node,
+				float_type_node, float_type_node, NULL_TREE);
+
+  types[MIPS_DF_FTYPE_DF]
+    = build_function_type_list (double_type_node,
 				double_type_node, NULL_TREE);
 
-  sf_ftype_sf_sf
-    = build_function_type_list (float_type_node, 
-				float_type_node, float_type_node, 
-				NULL_TREE);
+  types[MIPS_DF_FTYPE_DF_DF]
+    = build_function_type_list (double_type_node,
+				double_type_node, double_type_node, NULL_TREE);
 
-  df_ftype_df_df
-    = build_function_type_list (double_type_node, 
-				double_type_node, double_type_node, 
-				NULL_TREE);
-
-  for (i = 0, d = mips_bdesc; i < ARRAY_SIZE (mips_bdesc); i++, d++)
-    {
-      if ((d->target_flags & MASK_PAIRED_SINGLE)
-	  && !TARGET_PAIRED_SINGLE_FLOAT)
-	continue;
-
-      if ((d->target_flags & MASK_MIPS3D) 
-	  && !TARGET_MIPS3D)
-	continue;
-
-      switch (d->ftype)
-	{
-	case MIPS_V2SF_FTYPE_V2SF_V2SF:
-	  lang_hooks.builtin_function (d->name, v2sf_ftype_v2sf_v2sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_V2SF_FTYPE_SF_SF:
-	  lang_hooks.builtin_function (d->name, v2sf_ftype_sf_sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_SF_FTYPE_V2SF:
-	  lang_hooks.builtin_function (d->name, sf_ftype_v2sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_V2SF_FTYPE_V2SF:
-	  lang_hooks.builtin_function (d->name, v2sf_ftype_v2sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_INT_FTYPE_V2SF_V2SF:
-	  lang_hooks.builtin_function (d->name, int_ftype_v2sf_v2sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF:
-	  lang_hooks.builtin_function (d->name, int_ftype_v2sf_v2sf_v2sf_v2sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_V2SF_FTYPE_V2SF_V2SF_INT:
-	  lang_hooks.builtin_function (d->name, v2sf_ftype_v2sf_v2sf_int,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF:
-	  lang_hooks.builtin_function (d->name, v2sf_ftype_v2sf_v2sf_v2sf_v2sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_SF_FTYPE_SF:
-	  lang_hooks.builtin_function (d->name, sf_ftype_sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_DF_FTYPE_DF:
-	  lang_hooks.builtin_function (d->name, df_ftype_df,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_INT_FTYPE_SF_SF:
-	  lang_hooks.builtin_function (d->name, int_ftype_sf_sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_INT_FTYPE_DF_DF:
-	  lang_hooks.builtin_function (d->name, int_ftype_df_df,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_SF_FTYPE_SF_SF:
-	  lang_hooks.builtin_function (d->name, sf_ftype_sf_sf,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	case MIPS_DF_FTYPE_DF_DF:
-	  lang_hooks.builtin_function (d->name, df_ftype_df_df,
-				       d->code, BUILT_IN_MD, NULL, NULL_TREE);
-	  break;
-
-	default:
-	  break;
-	}
-    }
+  for (d = mips_bdesc; d < &mips_bdesc[ARRAY_SIZE (mips_bdesc)]; d++)
+    if ((d->target_flags & target_flags) == d->target_flags)
+      lang_hooks.builtin_function (d->name, types[d->ftype],
+				   d->code, BUILT_IN_MD, NULL, NULL_TREE);
 }
 
 /* Expand a __builtin_mips_movt_*_ps() or __builtin_mips_movf_*_ps()
