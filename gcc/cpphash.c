@@ -295,7 +295,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 
   if (limit < buf)
     {
-      cpp_fatal (pfile, "internal error: limit < buf in collect_expansion");
+      cpp_ice (pfile, "limit < buf in collect_expansion");
       limit = buf; /* treat it like a null defn */
     }
 
@@ -974,7 +974,7 @@ special_symbol (hp, pfile)
       break;
 
     default:
-      cpp_fatal (pfile, "cpplib internal error: invalid special hash type");
+      cpp_ice (pfile, "invalid special hash type");
       return;
     }
 }
@@ -1351,7 +1351,7 @@ macroexpand (pfile, hp)
 
 	  if (totlen > xbuf_len)
 	    {
-	      cpp_fatal (pfile, "internal_error: buffer overrun in macroexpand");
+	      cpp_ice (pfile, "buffer overrun in macroexpand");
 	      return;
 	    }
 	}

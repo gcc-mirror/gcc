@@ -733,7 +733,7 @@ cpp_parse_expr (pfile)
       switch (op.op)
 	{
 	case NAME:
-	  cpp_fatal (pfile, "internal error: cpp_lex returns a NAME");
+	  cpp_ice (pfile, "cpp_lex returns a NAME");
 	  goto syntax_error;
 	case INT:  case CHAR:
 	  top->value = op.value;
@@ -1020,7 +1020,7 @@ cpp_parse_expr (pfile)
       if (op.op == 0)
 	{
 	  if (top != stack)
-	    cpp_error (pfile, "internal error in #if expression");
+	    cpp_ice (pfile, "unbalanced stack in #if expression");
 	  if (stack != init_stack)
 	    free (stack);
 	  return top->value;

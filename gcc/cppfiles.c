@@ -26,6 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
+#include "intl.h"
 
 /* The entry points to this file are: find_include_file, finclude,
    include_hash, append_include_chain, deps_output, and file_cleanup.
@@ -126,7 +127,8 @@ merge_include_chains (opts)
 	    && cur->dev == other->dev)
           {
 	    if (opts->verbose)
-	      cpp_notice ("ignoring duplicate directory `%s'\n", cur->name);
+	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+		       cur->name);
 
 	    prev->next = cur->next;
 	    free (cur->name);
@@ -145,7 +147,8 @@ merge_include_chains (opts)
 	    && cur->dev == other->dev)
           {
 	    if (opts->verbose)
-	      cpp_notice ("ignoring duplicate directory `%s'\n", cur->name);
+	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+		       cur->name);
 
 	    prev->next = cur->next;
 	    free (cur->name);
@@ -163,8 +166,8 @@ merge_include_chains (opts)
 	  if (quote == qtail)
 	    {
 	      if (opts->verbose)
-		cpp_notice ("ignoring duplicate directory `%s'\n",
-			    quote->name);
+		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+			 quote->name);
 
 	      free (quote->name);
 	      free (quote);
@@ -177,8 +180,8 @@ merge_include_chains (opts)
 		  cur = cur->next;
 	      cur->next = brack;
 	      if (opts->verbose)
-		cpp_notice ("ignoring duplicate directory `%s'\n",
-			    qtail->name);
+		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+			 qtail->name);
 
 	      free (qtail->name);
 	      free (qtail);

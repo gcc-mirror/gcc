@@ -74,7 +74,6 @@ static int do_warning PARAMS ((cpp_reader *, const struct directive *));
 
 /* Forward declarations.  */
 
-static const char *my_strerror		PARAMS ((int));
 static void validate_else		PARAMS ((cpp_reader *, const char *));
 static HOST_WIDEST_INT eval_if_expression PARAMS ((cpp_reader *));
 static void conditional_skip		PARAMS ((cpp_reader *, int,
@@ -96,15 +95,6 @@ static void pass_thru_directive		PARAMS ((const U_CHAR *, size_t,
 						 const struct directive *));
 static enum cpp_token get_directive_token PARAMS ((cpp_reader *));
 static int read_line_number		PARAMS ((cpp_reader *, int *));
-static void cpp_print_file_and_line	PARAMS ((cpp_reader *));
-static void v_cpp_error			PARAMS ((cpp_reader *, const char *,
-						 va_list));
-static void v_cpp_warning		PARAMS ((cpp_reader *, const char *,
-						 va_list));
-static void v_cpp_error_with_line	PARAMS ((cpp_reader *, int, int,
-						 const char *, va_list));
-static void v_cpp_warning_with_line	PARAMS ((cpp_reader *, int, int,
-						 const char *, va_list));
 static U_CHAR *detect_if_not_defined	PARAMS ((cpp_reader *));
 static int consider_directive_while_skipping PARAMS ((cpp_reader *,
 						      IF_STACK_FRAME *));
@@ -551,8 +541,8 @@ handle_directive (pfile)
   if (ident_length == 0)
     {
       /* A line of just `#' becomes blank.  A line with something
-         other than an identifier after the # is reparsed as a non-
-         directive line.  */
+	 other than an identifier after the # is reparsed as a non-
+	 directive line.  */
       CPP_SET_WRITTEN (pfile, old_written);
       return (PEEKC() == '\n');
     }
@@ -661,7 +651,7 @@ do_define (pfile, keyword)
   buf = pfile->token_buffer + here;
   end = CPP_PWRITTEN (pfile);
   macro = (U_CHAR *) alloca (end - buf + 1);
-  bcopy (buf, macro, end - buf + 1);
+  memcpy (macro, buf, end - buf + 1);
   end = macro + (end - buf);
 
   CPP_SET_WRITTEN (pfile, here);
@@ -697,7 +687,7 @@ do_define (pfile, keyword)
 	    cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
 	  if (hp->type == T_MACRO && CPP_OPTIONS (pfile)->done_initializing)
 	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file,
-					    hp->value.defn->line,
+					    hp->value.defn->line, -1,
 			"this is the location of the previous definition");
 	}
       if (hp->type != T_POISON)
@@ -838,7 +828,7 @@ cpp_expand_to_buffer (pfile, buf, length)
 
   if (length < 0)
     {
-      cpp_fatal (pfile, "internal error: length < 0 in cpp_expand_to_buffer");
+      cpp_ice (pfile, "length < 0 in cpp_expand_to_buffer");
       return;
     }
 
@@ -1000,7 +990,7 @@ get_directive_token (pfile)
       /* token cannot be vspace, it would have been caught above.  */
       if (token == CPP_VSPACE)
 	{
-	  cpp_fatal (pfile, "VSPACE in get_directive_token");
+	  cpp_ice (pfile, "VSPACE in get_directive_token");
 	  return token;
 	}
 
@@ -1010,12 +1000,12 @@ get_directive_token (pfile)
 
       if (! CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
 	{
-	  cpp_fatal (pfile, "POP of file buffer in get_directive_token");
+	  cpp_ice (pfile, "POP of file buffer in get_directive_token");
 	  return token;
 	}
 
-      /* We must pop the buffer by hand, else cpp_get_token might hand
-	 us whitespace or newline on the next invocation.  */
+      /* We must pop the buffer by hand, or else cpp_get_token might
+	 hand us white space or newline on the next invocation.  */
       cpp_pop_buffer (pfile);
     }
 }
@@ -1145,7 +1135,7 @@ do_include (pfile, keyword)
 
   if (fp == CPP_NULL_BUFFER (pfile))
     {
-      cpp_fatal (pfile, "cpp internal error: fp == NULL_BUFFER in do_include");
+      cpp_ice (pfile, "fp == NULL_BUFFER in do_include");
       return 0;
     }
   
@@ -2253,7 +2243,7 @@ if_directive_name (pfile, ifs)
     case T_ELIF:    return "#elif";
     case T_ELSE:    return "#else";
     default:
-      cpp_fatal (pfile, "impossible if_stack->type value %d", ifs->type);
+      cpp_ice (pfile, "impossible if_stack->type value %d", ifs->type);
       return "unknown";
     }
 }
@@ -2448,9 +2438,7 @@ cpp_get_token (pfile)
 			     here.  Just delete 'em. */
 			  int d = GETC();
 			  if (d != '-' && d != ' ')
-			    cpp_fatal (pfile,
-				  "internal error: unrecognized escape \\r%c",
-				       d);
+			    cpp_ice (pfile, "unrecognized escape \\r%c", d);
 			  CPP_ADJUST_WRITTEN (pfile, -1);
 			}			  
 		    }
@@ -2707,8 +2695,7 @@ cpp_get_token (pfile)
 		}
 	      else
 		{
-		  cpp_fatal (pfile,
-			     "internal error: unrecognized escape \\r%c", c);
+		  cpp_ice (pfile, "unrecognized escape \\r%c", c);
 		  goto get_next;
 		}
 	    }
@@ -2868,8 +2855,7 @@ parse_string (pfile, c)
 	  CPP_ADJUST_WRITTEN (pfile, -1);
 	  if (CPP_BUFFER (pfile)->has_escapes)
 	    {
-	      cpp_fatal (pfile,
-			 "internal error: \\r escape inside string constant");
+	      cpp_ice (pfile, "\\r escape inside string constant");
 	      FORWARD(1);
 	    }
 	  else
@@ -3015,8 +3001,7 @@ do_assert (pfile, keyword)
   else if (base->type != T_ASSERT)
   {
     /* Token clash - but with what?! */
-    cpp_fatal (pfile,
-	       "cpp internal error: base->type != T_ASSERT in do_assert");
+    cpp_ice (pfile, "base->type != T_ASSERT in do_assert");
     goto error;
   }
 
@@ -3145,8 +3130,7 @@ parse_set_mark (pfile)
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   if (ip->mark != -1)
-      cpp_fatal (pfile,
-		 "cpp internal error: ip->mark != -1 in parse_set_mark");
+      cpp_ice (pfile, "ip->mark != -1 in parse_set_mark");
 
   ip->mark = ip->cur - ip->buf;
 }
@@ -3159,8 +3143,7 @@ parse_clear_mark (pfile)
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   if (ip->mark == -1)
-      cpp_fatal (pfile,
-		 "cpp internal error: ip->mark == -1 in parse_clear_mark");
+      cpp_ice (pfile, "ip->mark == -1 in parse_clear_mark");
 
   ip->mark = -1;
 }
@@ -3174,340 +3157,8 @@ parse_goto_mark (pfile)
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   if (ip->mark == -1)
-      cpp_fatal (pfile,
-		 "cpp internal error: ip->mark == -1 in parse_goto_mark");
+      cpp_ice (pfile, "ip->mark == -1 in parse_goto_mark");
 
   ip->cur = ip->buf + ip->mark;
   ip->mark = -1;
-}
-
-static void
-cpp_print_file_and_line (pfile)
-     cpp_reader *pfile;
-{
-  cpp_buffer *ip = cpp_file_buffer (pfile);
-
-  if (ip != NULL)
-    {
-      long line, col;
-      cpp_buf_line_and_col (ip, &line, &col);
-      cpp_file_line_for_message (pfile, ip->nominal_fname,
-				 line, pfile->show_column ? col : -1);
-    }
-}
-
-static void
-v_cpp_error (pfile, msgid, ap)
-  cpp_reader *pfile;
-  const char *msgid;
-  va_list ap;
-{
-  cpp_print_containing_files (pfile);
-  cpp_print_file_and_line (pfile);
-  v_cpp_message (pfile, 1, msgid, ap);
-}
-
-void
-cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START(ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  v_cpp_error (pfile, msgid, ap);
-  va_end(ap);
-}
-
-/* Print error message but don't count it.  */
-
-static void
-v_cpp_warning (pfile, msgid, ap)
-  cpp_reader *pfile;
-  const char *msgid;
-  va_list ap;
-{
-  if (CPP_OPTIONS (pfile)->inhibit_warnings)
-    return;
-
-  if (CPP_OPTIONS (pfile)->warnings_are_errors)
-    pfile->errors++;
-
-  cpp_print_containing_files (pfile);
-  cpp_print_file_and_line (pfile);
-  v_cpp_message (pfile, 0, msgid, ap);
-}
-
-void
-cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  v_cpp_warning (pfile, msgid, ap);
-  va_end(ap);
-}
-
-/* Print an error message and maybe count it.  */
-
-void
-cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  if (CPP_OPTIONS (pfile)->pedantic_errors)
-    v_cpp_error (pfile, msgid, ap);
-  else
-    v_cpp_warning (pfile, msgid, ap);
-  va_end(ap);
-}
-
-static void
-v_cpp_error_with_line (pfile, line, column, msgid, ap)
-  cpp_reader * pfile;
-  int line;
-  int column;
-  const char * msgid;
-  va_list ap;
-{
-  cpp_buffer *ip = cpp_file_buffer (pfile);
-
-  cpp_print_containing_files (pfile);
-
-  if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
-
-  v_cpp_message (pfile, 1, msgid, ap);
-}
-
-void
-cpp_error_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
-			     const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int line;
-  int column;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  line = va_arg (ap, int);
-  column = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  v_cpp_error_with_line(pfile, line, column, msgid, ap);
-  va_end(ap);
-}
-
-static void
-v_cpp_warning_with_line (pfile, line, column, msgid, ap)
-  cpp_reader * pfile;
-  int line;
-  int column;
-  const char *msgid;
-  va_list ap;
-{
-  cpp_buffer *ip;
-
-  if (CPP_OPTIONS (pfile)->inhibit_warnings)
-    return;
-
-  if (CPP_OPTIONS (pfile)->warnings_are_errors)
-    pfile->errors++;
-
-  cpp_print_containing_files (pfile);
-
-  ip = cpp_file_buffer (pfile);
-
-  if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
-
-  v_cpp_message (pfile, 0, msgid, ap);
-}  
-
-void
-cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
-			       const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int line;
-  int column;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  line = va_arg (ap, int);
-  column = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  v_cpp_warning_with_line (pfile, line, column, msgid, ap);
-  va_end(ap);
-}
-
-void
-cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
-			       const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int line;
-  int column;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  line = va_arg (ap, int);
-  column = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  if (CPP_OPTIONS (pfile)->pedantic_errors)
-    v_cpp_error_with_line (pfile, column, line, msgid, ap);
-  else
-    v_cpp_warning_with_line (pfile, line, column, msgid, ap);
-  va_end(ap);
-}
-
-/* Report a warning (or an error if pedantic_errors)
-   giving specified file name and line number, not current.  */
-
-void
-cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile, const char *file,
-					int line, const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *file;
-  int line;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  file = va_arg (ap, const char *);
-  line = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  if (!CPP_OPTIONS (pfile)->pedantic_errors
-      && CPP_OPTIONS (pfile)->inhibit_warnings)
-    return;
-  cpp_file_line_for_message (pfile, file, line, -1);
-  v_cpp_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors, msgid, ap);
-  va_end(ap);
-}
-
-/* my_strerror - return the descriptive text associated with an
-   `errno' code.  */
-
-static const char *
-my_strerror (errnum)
-     int errnum;
-{
-  const char *result;
-
-#ifndef VMS
-#ifndef HAVE_STRERROR
-  result = (char *) ((errnum < sys_nerr) ? sys_errlist[errnum] : 0);
-#else
-  result = strerror (errnum);
-#endif
-#else	/* VMS */
-  /* VAXCRTL's strerror() takes an optional second argument, which only
-     matters when the first argument is EVMSERR.  However, it's simplest
-     just to pass it unconditionally.  `vaxc$errno' is declared in
-     <errno.h>, and maintained by the library in parallel with `errno'.
-     We assume that caller's `errnum' either matches the last setting of
-     `errno' by the library or else does not have the value `EVMSERR'.  */
-
-  result = strerror (errnum, vaxc$errno);
-#endif
-
-  if (!result)
-    result = "errno = ?";
-
-  return result;
-}
-
-/* Error including a message from `errno'.  */
-
-void
-cpp_error_from_errno (pfile, name)
-     cpp_reader *pfile;
-     const char *name;
-{
-  cpp_message_from_errno (pfile, 1, name);
-}
-
-void
-cpp_message_from_errno (pfile, is_error, name)
-     cpp_reader *pfile;
-     int is_error;
-     const char *name;
-{
-  int e = errno;
-  cpp_buffer *ip = cpp_file_buffer (pfile);
-
-  cpp_print_containing_files (pfile);
-
-  if (ip != NULL)
-    cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
-
-  cpp_message (pfile, is_error, "%s: %s", name, my_strerror (e));
-}
-
-void
-cpp_perror_with_name (pfile, name)
-     cpp_reader *pfile;
-     const char *name;
-{
-  cpp_message (pfile, 1, "%s: %s: %s", progname, name, my_strerror (errno));
 }
