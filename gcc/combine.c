@@ -2615,7 +2615,13 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	 The simplest way to remove the link is to point it at I1,
 	 which we know will be a NOTE.  */
 
-      ni2dest = SET_DEST (newi2pat);
+      /* newi2pat is usually a SET here; however, recog_for_combine might
+	 have added some clobbers.  */
+      if (GET_CODE (newi2pat) == PARALLEL)
+	ni2dest = SET_DEST (XVECEXP (newi2pat, 0, 0));
+      else
+	ni2dest = SET_DEST (newi2pat);
+
       for (insn = NEXT_INSN (i3);
 	   insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR
 		    || insn != BB_HEAD (this_basic_block->next_bb));
