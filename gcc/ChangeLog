@@ -1,3 +1,7 @@
+Wed Dec 30 22:50:13 1998  Geoffrey Noer  <noer@cygnus.com>
+
+	* i386/xm-cygwin.h: change DIR_SEPARATOR to forward slash.
+
 1998-12-30  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* loop.c (check_dbra_loop): While reversing the loop, if the
