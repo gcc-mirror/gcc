@@ -1028,7 +1028,7 @@ oprintf (outf_p o, const char *format, ...)
       do {
 	new_len *= 2;
       } while (o->bufused + slength >= new_len);
-      o->buf = (char *) xrealloc (o->buf, new_len);
+      o->buf = XRESIZEVEC (char, o->buf, new_len);
       o->buflength = new_len;
     }
   memcpy (o->buf + o->bufused, s, slength);

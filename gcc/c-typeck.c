@@ -3755,11 +3755,8 @@ static int spelling_size;		/* Size of the spelling stack.  */
   if (depth >= spelling_size)						\
     {									\
       spelling_size += 10;						\
-      if (spelling_base == 0)						\
-	spelling_base = XNEWVEC (struct spelling, spelling_size);	\
-      else								\
-        spelling_base = XRESIZEVEC (struct spelling, spelling_base,	\
-				    spelling_size);			\
+      spelling_base = XRESIZEVEC (struct spelling, spelling_base,	\
+				  spelling_size);			\
       RESTORE_SPELLING_DEPTH (depth);					\
     }									\
 									\

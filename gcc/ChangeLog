@@ -1,5 +1,12 @@
 2004-07-26  Bernardo Innocenti  <bernie@develer.com>
 
+	* gengtype.c (oprintf): Replace xrealloc () with XRESIZEVEC ().
+	* gengtype-yacc.y: Likewise.  Replace free() with XDELETE ().
+	* c-typeck.c (PUSH_SPELLING): Remove redundant NULL-pointer
+	check on invocation of XRESIZEVEC ().
+
+2004-07-26  Bernardo Innocenti  <bernie@develer.com>
+
 	* c-common.c (disable_builtin_function): Rename variable n to
 	new_disabled_builtin.
 	* c-decl.c (duplicate_decls): Rename parameter decl to new_decl.

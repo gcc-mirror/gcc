@@ -314,9 +314,9 @@ stringseq: STRING
 	     {
 	       size_t l1 = strlen ($1);
 	       size_t l2 = strlen ($2);
-	       char *s = (char *) xrealloc ((char *)$1, l1 + l2 + 1);
+	       char *s = XRESIZEVEC (char, $1, l1 + l2 + 1);
 	       memcpy (s + l1, $2, l2 + 1);
-	       free ((void *)$2);
+	       XDELETE ($2);
 	       $$ = s;
 	     }
 	   ;
