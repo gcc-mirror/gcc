@@ -1,3 +1,10 @@
+2004-11-02  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/17265
+	* class.c: Reinstate 2004-08-18 patch. 
+	(make_local_function_alias): Don't create an alias for extern (native)
+	functions.
+
 2004-10-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR java/17265
