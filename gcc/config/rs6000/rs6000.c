@@ -1429,9 +1429,23 @@ rs6000_override_options (const char *default_cpu)
       targetm.asm_out.unaligned_op.di = NULL;
     }
 
-  /* Set maximum branch target alignment at two instructions, eight bytes.  */
-  align_jumps_max_skip = 8;
-  align_loops_max_skip = 8;
+  /* Set branch target alignment, if not optimizing for size.  */
+  if (!optimize_size)
+    {
+      if (rs6000_sched_groups)
+	{
+	  if (align_functions <= 0)
+	    align_functions = 16;
+	  if (align_jumps <= 0)
+	    align_jumps = 16;
+	  if (align_loops <= 0)
+	    align_loops = 16;
+	}
+      if (align_jumps_max_skip <= 0)
+	align_jumps_max_skip = 15;
+      if (align_loops_max_skip <= 0)
+	align_loops_max_skip = 15;
+    }
 
   /* Arrange to save and restore machine status around nested functions.  */
   init_machine_status = rs6000_init_machine_status;
@@ -17070,8 +17084,7 @@ rs6000_binds_local_p (tree decl)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
-		  int *total)
+rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
 
