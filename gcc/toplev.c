@@ -2678,7 +2678,13 @@ rest_of_handle_inlining (tree decl)
 
   if (inlinable
       || (DECL_INLINE (decl)
-	  && flag_inline_functions
+	  /* Egad.  This RTL deferral test conflicts with Fortran assumptions
+	     for unreferenced symbols.  See g77.f-torture/execute/980520-1.f.
+	     But removing this line from the check breaks all languages that
+	     use the call graph to output symbols.  This hard-coded check is
+	     the least invasive work-around.  */
+	  && (flag_inline_functions
+	      || strcmp (lang_hooks.name, "GNU F77") == 0)
 	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 	       && ! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 	       && ! flag_keep_inline_functions)
