@@ -975,14 +975,11 @@ general_operand (rtx op, enum machine_mode mode)
 	return 0;
 
       /* Use the mem's mode, since it will be reloaded thus.  */
-      mode = GET_MODE (op);
-      GO_IF_LEGITIMATE_ADDRESS (mode, y, win);
+      if (memory_address_p (GET_MODE (op), y))
+	return 1;
     }
 
   return 0;
-
- win:
-  return 1;
 }
 
 /* Return 1 if OP is a valid memory address for a memory reference

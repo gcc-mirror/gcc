@@ -1,3 +1,9 @@
+2004-08-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* explow.c (memory_address): Use memory_address_p.
+	* recog.c (general_operand): Likewise.
+	* regrename.c: No need to define REG_OK_STRICT.
+
 2004-08-09  Steven Bosscher  <stevenb@suse.de>
 
 	* timevar.def (TV_CPROP1, TV_CPROP2, TV_PRE, TV_HOIST, TV_LSM):
@@ -172,7 +178,7 @@
 	(CC1PLUS_SPEC): Define it to be the same as CC1_SPEC.
 
 2004-08-06  Roman Zippel  <zippel@linux-m68k.org>
- 
+
 	* config/m68k/m68k.c (post_inc_operand,pre_dec_operand): New.
 	* config/m68k/m68k.h (PREDICATE_CODES): add post_inc_operand,
 	pre_dec_operand.
@@ -215,7 +221,7 @@
 	(dllimport): Likewise.
 	* doc/tm.texi (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Mention
 	handle_dll_attribute.
-	
+
 2004-08-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-manip.c: New file.
