@@ -1,5 +1,11 @@
 2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (FUNCTION_VALUE): Use R0_REG.
+	(FUNCTION_VALUE_REGNO_P): Likewise.
+	* config/h8300/h8300.md: Define R0_REG.
+
+2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c: Fix formatting.
 	* config/h8300/h8300.md: Likewise.
 
