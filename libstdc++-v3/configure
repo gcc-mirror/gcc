@@ -2529,7 +2529,7 @@ fi
       ;;
     posix | pthreads)
       THREADS=posix
-      case "$host" in
+      case "$target" in
         *-*-linux*)
 	;;
       esac

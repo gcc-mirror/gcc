@@ -15,7 +15,8 @@
 	* configure.in (AC_OUTPUT_COMMANDS): Link $THREADS.h and
 	c++threads.h instead of copying.
 	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Do link here.
-
+	Tweaks.
+	
 	* config/c_io_libio.cc (__basic_file::_M_open_mode): Consolidate.
 	* bits/basic_file.h: Declare.
 
