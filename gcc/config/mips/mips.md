@@ -2029,51 +2029,6 @@ move\\t%0,%z4\\n\\
    (set (subreg:SI (match_dup 0) 1) (not:SI (subreg:SI (match_dup 1) 1)))]
   "")
 
-;; Simple hack to recognize the "nor" instruction on the MIPS
-;; This must appear before the normal or patterns, so that the
-;; combiner will correctly fold things.
-
-(define_insn "norsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(not:SI (ior:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
-			(match_operand:SI 2 "reg_or_0_operand" "dJ"))))]
-  ""
-  "nor\\t%0,%z1,%z2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "nordi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(not:DI (ior:DI (match_operand:DI 1 "se_register_operand" "d")
-			(match_operand:DI 2 "se_register_operand" "d"))))]
-  ""
-  "*
-{
-  if (TARGET_64BIT)
-    return \"nor\\t%0,%z1,%z2\";
-  return \"nor\\t%M0,%M1,%M2\;nor\\t%L0,%L1,%L2\";
-}"
-  [(set_attr "type"	"darith")
-   (set_attr "mode"	"DI")
-   (set (attr "length")
-	(if_then_else (ge (symbol_ref "mips_isa") (const_int 3))
-		       (const_int 1)
-		       (const_int 2)))])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(not:DI (ior:DI (match_operand:DI 1 "register_operand" "")
-			(match_operand:DI 2 "register_operand" ""))))]
-  "reload_completed && !TARGET_64BIT && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
-   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
-   && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
-
-  [(set (subreg:SI (match_dup 0) 0) (not:SI (ior:SI (subreg:SI (match_dup 1) 0) (subreg:SI (match_dup 2) 0))))
-   (set (subreg:SI (match_dup 0) 1) (not:SI (ior:SI (subreg:SI (match_dup 1) 1) (subreg:SI (match_dup 2) 1))))]
-  "")
-
 
 ;;
 ;;  ....................
@@ -2109,7 +2064,7 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"darith")
    (set_attr "mode"	"DI")
    (set (attr "length")
-	(if_then_else (ge (symbol_ref "mips_isa") (const_int 3))
+	(if_then_else (ne (symbol_ref "TARGET_64BIT") (const_int 0))
 		       (const_int 1)
 		       (const_int 2)))])
 
@@ -2167,7 +2122,7 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"darith")
    (set_attr "mode"	"DI")
    (set (attr "length")
-	(if_then_else (ge (symbol_ref "mips_isa") (const_int 3))
+	(if_then_else (ne (symbol_ref "TARGET_64BIT") (const_int 0))
 		       (const_int 1)
 		       (const_int 2)))])
 
@@ -2212,7 +2167,7 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"darith")
    (set_attr "mode"	"DI")
    (set (attr "length")
-	(if_then_else (ge (symbol_ref "mips_isa") (const_int 3))
+	(if_then_else (ne (symbol_ref "TARGET_64BIT") (const_int 0))
 		       (const_int 1)
 		       (const_int 2)))])
 
@@ -2239,6 +2194,69 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"DI")
    (set_attr "length"	"1")])
 
+(define_insn "*norsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(and:SI (not:SI (match_operand:SI 1 "register_operand" "d"))
+		(not:SI (match_operand:SI 2 "register_operand" "d"))))]
+  ""
+  "nor\\t%0,%z1,%z2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+(define_insn "*nordi3"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(and:DI (not:DI (match_operand:DI 1 "se_register_operand" "d"))
+		(not:DI (match_operand:DI 2 "se_register_operand" "d"))))]
+  ""
+  "*
+{
+  if (TARGET_64BIT)
+    return \"nor\\t%0,%z1,%z2\";
+  return \"nor\\t%M0,%M1,%M2\;nor\\t%L0,%L1,%L2\";
+}"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"DI")
+   (set (attr "length")
+	(if_then_else (ne (symbol_ref "TARGET_64BIT") (const_int 0))
+		       (const_int 1)
+		       (const_int 2)))])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (not:DI (match_operand:DI 1 "register_operand" ""))
+		(not:DI (match_operand:DI 2 "register_operand" ""))))]
+  "reload_completed && !TARGET_64BIT && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE
+   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
+   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
+   && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
+
+  [(set (subreg:SI (match_dup 0) 0) (and:SI (not:SI (subreg:SI (match_dup 1) 0)) (not:SI (subreg:SI (match_dup 2) 0))))
+   (set (subreg:SI (match_dup 0) 1) (and:SI (not:SI (subreg:SI (match_dup 1) 1)) (not:SI (subreg:SI (match_dup 2) 1))))]
+  "")
+
+(define_insn "*norsi3_const"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(and:SI (not:SI (match_operand:SI 1 "register_operand" "d"))
+		(match_operand:SI 2 "complemented_arith_operand" "")))]
+  ""
+  "nor\\t%0,%z1,%e2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+(define_insn "*nordi3_const"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(and:DI (not:DI (match_operand:DI 1 "se_register_operand" "d"))
+		(match_operand:DI 2 "complemented_arith_operand" "")))]
+  "TARGET_64BIT"
+  "nor\\t%0,%z1,%e2"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"DI")
+   (set (attr "length")
+	(if_then_else (ne (symbol_ref "TARGET_64BIT") (const_int 0))
+		       (const_int 1)
+		       (const_int 2)))])
 
 ;;
 ;;  ....................
