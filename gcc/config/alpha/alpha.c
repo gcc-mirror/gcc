@@ -3405,8 +3405,8 @@ alpha_expand_prologue ()
 
       if (frame_size != 0)
 	{
-	  FRP (emit_move_insn (stack_pointer_rtx,
-			       plus_constant (stack_pointer_rtx, -frame_size)));
+	  FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				      GEN_INT (-frame_size))));
 	}
     }
   else
@@ -3423,7 +3423,7 @@ alpha_expand_prologue ()
       rtx count = gen_rtx_REG (DImode, 23);
 
       emit_move_insn (count, GEN_INT (blocks));
-      emit_move_insn (ptr, plus_constant (stack_pointer_rtx, 4096));
+      emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (4096)));
 
       /* Because of the difficulty in emitting a new basic block this
 	 late in the compilation, generate the loop as a single insn.  */
@@ -3436,18 +3436,38 @@ alpha_expand_prologue ()
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      ptr = emit_move_insn (stack_pointer_rtx, plus_constant (ptr, -leftover));
+      if (TARGET_WINDOWS_NT)
+	{
+	  /* For NT stack unwind (done by 'reverse execution'), it's
+	     not OK to take the result of a loop, even though the value
+	     is already in ptr, so we reload it via a single operation
+	     and add it to sp.  */
 
-      /* This alternative is special, because the DWARF code cannot possibly
-	 intuit through the loop above.  So we invent this note it looks at
-	 instead.  */
-      RTX_FRAME_RELATED_P (ptr) = 1;
-      REG_NOTES (ptr)
-	= gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			     gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-					     GEN_INT (-frame_size))),
-			     REG_NOTES (ptr));
+	  HOST_WIDE_INT lo, hi;
+	  lo = ((-frame_size & 0xffff) ^ 0x8000) - 0x8000;
+	  hi = -frame_size - lo;
+
+	  FRP (emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (hi))));
+	  FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, ptr, GEN_INT (lo))));
+	}
+      else
+	{
+	  rtx seq;
+
+	  seq = emit_insn (gen_adddi3 (stack_pointer_rtx, ptr,
+				       GEN_INT (-leftover)));
+
+	  /* This alternative is special, because the DWARF code cannot
+	     possibly intuit through the loop above.  So we invent this
+	     note it looks at instead.  */
+	  RTX_FRAME_RELATED_P (seq) = 1;
+	  REG_NOTES (seq)
+	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				 gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+						 GEN_INT (-frame_size))),
+				 REG_NOTES (seq));
+	}
     }
 
   /* Cope with very large offsets to the register save area.  */
@@ -3463,7 +3483,7 @@ alpha_expand_prologue ()
 	bias = reg_offset, reg_offset = 0;
 
       sa_reg = gen_rtx_REG (DImode, 24);
-      FRP (emit_move_insn (sa_reg, plus_constant (stack_pointer_rtx, bias)));
+      FRP (emit_insn (gen_adddi3 (sa_reg, stack_pointer_rtx, GEN_INT (bias))));
     }
     
   /* Save regs in stack order.  Beginning with VMS PV.  */
