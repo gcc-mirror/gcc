@@ -104,6 +104,9 @@ Boston, MA 02111-1307, USA.  */
 #undef	BIGGEST_FIELD_ALIGNMENT
 #define BIGGEST_FIELD_ALIGNMENT 64
 
+#undef  ADJUST_FIELD_ALIGN
+#undef  ROUND_TYPE_ALIGN
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC PE)");
 
