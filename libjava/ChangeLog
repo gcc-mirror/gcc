@@ -1,3 +1,9 @@
+2001-07-01  Jeremy Nimmer  <jwnimmer@alum.mit.edu>
+
+	For PR libgcj/3523:
+	* java/io/LineNumberReader.java (reset): Pass correct arguments to
+	countLines.
+
 2001-06-27  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/convert/IOConverter.java: Manually maintained alias now

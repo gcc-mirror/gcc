@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -94,7 +94,7 @@ public class LineNumberReader extends BufferedReader
 	if (markPos > 0 && pos > markPos && buffer[markPos-1] == '\r'
 	    && buffer[markPos] == '\n')
 	  lineNumber--;
-	lineNumber -= countLines(buffer, pos, markPos);
+	lineNumber -= countLines(buffer, markPos, pos - markPos);
 	pos = markPos;
       }
   }
