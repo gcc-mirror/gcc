@@ -1,3 +1,8 @@
+Tue Jun  2 23:14:01 1998  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize): Remove debug messages accidentally left in
+	with the previous change.
+
 Tue Jun  2 22:46:08 1998  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (store_expr): Revert stray patch associated with
