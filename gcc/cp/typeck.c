@@ -2541,6 +2541,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       tree fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
 
       tree instance_ptr = *instance_ptrptr;
+      tree instance_save_expr = 0;
       if (instance_ptr == error_mark_node)
 	{
 	  if (TREE_CODE (function) == PTRMEM_CST)
@@ -2560,7 +2561,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	}
 
       if (TREE_SIDE_EFFECTS (instance_ptr))
-	instance_ptr = save_expr (instance_ptr);
+	instance_ptr = instance_save_expr = save_expr (instance_ptr);
 
       if (TREE_SIDE_EFFECTS (function))
 	function = save_expr (function);
@@ -2621,9 +2622,9 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       
       /* Make sure this doesn't get evaluated first inside one of the
 	 branches of the COND_EXPR.  */
-      if (TREE_CODE (instance_ptr) == SAVE_EXPR)
+      if (instance_save_expr)
 	e1 = build (COMPOUND_EXPR, TREE_TYPE (e1),
-		    instance_ptr, e1);
+		    instance_save_expr, e1);
 
       function = e1;
     }
