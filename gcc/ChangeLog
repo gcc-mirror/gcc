@@ -1,3 +1,10 @@
+2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-parse.in (STATIC): New terminal.
+	(scspec): New non-terminal.  Update productions accordingly.
+	(program): Remove bogus ifc / end ifc.
+	(array_declarator): Simplify production using STATIC.
+
 2002-02-28  Jim Meyering  <meyering@lucent.com>
 
 	* cpplex.c (cpp_parse_escape): Restore mistakenly-removed code:
