@@ -1,3 +1,13 @@
+2002-03-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (FP_INC, UNITS_PER_FPVALUE): New macros.
+	* config/mips/mips.c (compute_frame_size): Retrofit them here.
+	(save_restore_insns, mips_expand_epilogue): And here.
+	(build_mips16_call_stub): And here.
+	(mips_function_value): Use the new macros to decide whether a single
+	or complex float can be returned in floating-point registers.  Return
+	a parallel rtx in the complex case.
+
 Thu Mar 14 11:03:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Add CLEANUP_UPDATE_LIFE to cfg_cleanup
