@@ -2996,6 +2996,14 @@ eliminate_regs_in_insn (insn, replace)
   new_body = eliminate_regs (old_body, 0, replace ? insn : NULL_RTX);
   if (new_body != old_body)
     {
+      /* If we aren't replacing things permanently and we changed something,
+	 make another copy to ensure that all the RTL is new.  Otherwise
+	 things can go wrong if find_reload swaps commutative operands
+	 and one is inside RTL that has been copied while the other is not. */
+
+      if (! replace)
+	new_body = copy_rtx (new_body);
+
       /* If we had a move insn but now we don't, rerecognize it.  */
       if ((GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
 	   && (GET_CODE (new_body) != SET
