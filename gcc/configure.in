@@ -665,6 +665,10 @@ changequote([,])dnl
 		tm_file=arm/coff.h
 		tmake_file=arm/t-bare
 		;;
+	arm-*-vxworks*)
+		tm_file="arm/coff.h arm/vxarm.h"
+		tmake_file=arm/t-bare
+		;;
 changequote(,)dnl
 	arm-*-riscix1.[01]*)		# Acorn RISC machine (early versions)
 changequote([,])dnl

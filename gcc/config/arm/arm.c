@@ -320,6 +320,7 @@ arm_override_options ()
 	{ TARGET_CPU_arm2,      "arm2" },
 	{ TARGET_CPU_arm6,      "arm6" },
 	{ TARGET_CPU_arm610,    "arm610" },
+	{ TARGET_CPU_arm710,	"arm710" },
 	{ TARGET_CPU_arm7m,     "arm7m" },
 	{ TARGET_CPU_arm7500fe, "arm7500fe" },
 	{ TARGET_CPU_arm7tdmi,  "arm7tdmi" },
