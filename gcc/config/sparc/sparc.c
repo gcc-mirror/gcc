@@ -5685,7 +5685,7 @@ registers_ok_for_ldd_peep (reg1, reg2)
    	ld [%o0], %o0
 	ld [%o0 + 4], %o1
    to
-   	ldd [%o0], o0
+   	ldd [%o0], %o0
    For stores we don't have a similar problem, so dependent_reg_rtx is
    NULL_RTX.  */
 
