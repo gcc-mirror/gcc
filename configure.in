@@ -1208,10 +1208,17 @@ if test -d ${srcdir}/gcc; then
             ;;
         esac
 
-	# Disable language that need GMP if it isn't available.
-	if test  x"$need_gmp" = xyes && test x"$have_gmp" = xno; then
-	  add_this_lang=no
-	fi
+        # Disable languages that need GMP if it isn't available.
+        case ,${enable_languages},:${have_gmp}:${need_gmp} in
+          *,${language},*:no:yes)
+            # Specifically requested language; tell them.
+            AC_MSG_ERROR([GMP with MPFR support is required to build $language])
+            ;;
+          *:no:yes)
+            # Silently disable.
+            add_this_lang=no
+            ;;
+        esac
         
 	case $add_this_lang in
 	  no)
