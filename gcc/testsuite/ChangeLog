@@ -1,3 +1,6 @@
+2002-07-02 Devang Patel <dpatel@apple.com>
+	* objc.dg/param-1.m: New test.
+
 2002-07-03  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/trad/directive.c: Add test.
