@@ -1,3 +1,251 @@
+2005-03-17  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h, adaint.c (__gnat_waitpid): Moved to expect.c where it is
+	used.
+
+	* expect.c (__gnat_waitpid): Moved here from adaint.c.
+	Reimplement under Win32 using Win32 API.
+
+	(__gnat_kill) [Win32]: Properly close the process handle before leaving
+	this routine.
+
+2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada-tree.h: (DECL_RENAMING_GLOBAL_P): New predicate.
+	(DECL_RENAMED_OBJECT): New accessor macro.
+	(SET_DECL_RENAMED_OBJECT): New setter macro.
+
+	* decl.c (gnat_to_gnu_entity) <E_Variable>: Stabilize the renamed
+	object in all cases.  Attach the renamed object to the VAR_DECL.
+	(gnat_to_gnu_field): Do not lift the record wrapper if the size of the
+	field is not prescribed.
+
+	* misc.c (gnat_handle_option): Handle -gnatO separately.
+	(gnat_print_decl) <VAR_DECL>: New case.
+	Print the DECL_RENAMED_OBJECT node.
+
+	* lang.opt:  Declare separate -gnatO option.
+
+	* trans.c (tree_transform) <N_Identifier>: If the object is a renaming
+	pointer, replace it with the renamed object.
+	<N_Validate_Unchecked_Conversion>: Warn for a conversion to a fat
+	pointer type if the source is not a fat pointer type whose underlying
+	array has the same non-zero alias set as that of the destination array.
+
+2005-03-17  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Get_Expanded_Name): Removed.
+	(Get_Inheritance_Depth): Removed.
+	(Set_Inheritance_Depth): Removed.
+
+	* rtsfind.ads, exp_disp.ads, exp_disp.adb: Remove support to call the
+	subprogram Get_Expanded_Name because it is not referenced by the
+	frontend.
+
+	* i-cpp.ads, i-cpp.adb (CPP_Get_Expanded_Name): Removed.
+	(CPP_Get_Inheritance_Depth): Removed.
+	(CPP_Set_Inheritance_Depth): Removed.
+
+	* tbuild.ads, tbuild.adb (Make_DT_Component): Removed.
+
+2005-03-17  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Array_Size_Check): Completely remove this for GCC
+	3, since we now expect GCC 3 to do all the work.
+
+2005-03-17  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (First_Private_Entity, Set_First_Private_Entity): Addition
+	of one barrier to avoid wrong usage of this attribute.
+
+	* sem_ch12.adb (Formal_Entity): Fix erroneous usage of the attribute
+	First_Private_Entity.
+
+	* sem_ch7.adb (Install_Visible_Declarations): Add a barrier to protect
+	the subprogram against wrong usage.
+	Adapt the code to traverse the entities in the
+	scope of a record_type because in addition to its usage regarding
+	packages, this subprogram is also called by Expand_N_Freeze_Entity
+	to install the visible declarations of the enclosing scope of a
+	record_type_with_private to establish the proper visibility before
+	freezing the entity and related subprograms.
+
+2005-03-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch2.adb (In_Assignment_Context): Recognize slice assignments to
+	entry formals.
+
+2005-03-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb (Check_Attr): New subprogram.
+	(Check_Stream_Attribute): Move the code for 13.13.2(9/1) enforcement
+	into a new Check_Attr subprogram, in order to provide a more
+	explanatory error message (including the name of the missing attribute).
+	(Stream_Operation_OK): Renamed from Stream_Operations_OK. This
+	subprogram determines whether a default implementation exists for a
+	given stream attribute.
+	(Make_Predefined_Primitive_Specs, Predefined_Primitive_Bodies):
+	Determine whether to generate a default implementation for each stream
+	attribute separately, as this depends on the specific attribute.
+
+	* exp_strm.adb (Make_Field_Attribute): For the case of an illegal
+	limited extension where a stream attribute is missing for a limited
+	component (which will have been flagged in Exp_Ch3.Sem_Attr), do not
+	generate a bogus reference to the missing attribute to prevent
+	cascaded errors. Instead, generate a null statement.
+
+	* sem_attr.adb (Check_Stream_Attribute): A stream attribute is
+	available for a limited type if it has been specified for an ancestor
+	of the type.
+
+2005-03-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): handle the case when the renamed
+	entity is an operator.
+
+2005-03-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Get_PCS_Name): Move from Exp_Dist body to Sem_Dist
+	spec, to make this predicate available to other units.
+
+	* rtsfind.adb (Check_RPC): Use Sem_Dist.Get_PCS_Name instead of
+	reimplementing it.
+
+	* sem_ch8.adb: Disable expansion of remote access-to-subprogram types
+	when no distribution runtime library is available.
+
+	* sem_res.adb, sem_dist.adb: Disable expansion of remote
+	access-to-subprogram types when no distribution runtime library is
+	available.
+	(Get_PCS_Name): Move from Exp_Dist body to Sem_Dist spec, to make this
+	predicate available to other units.
+
+	* sem_dist.ads (Get_PCS_Name): Move from Exp_Dist body to Sem_Dist
+	spec, to make this predicate available to other units.
+
+2005-03-17  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Insert_Project_Sources): Make sure the Q is always
+	initialized.
+
+	* prj-nmsc.adb (Check_Ada_Naming_Scheme_Validity): Check Naming against
+	the default for the tree, not the global default naming.
+
+	* prj-proc.adb (Recursive_Process): No need to put the default naming
+	in the project data, it's already there.
+
+2005-03-17  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.in: (ia64-hp-*vms*): Use s-crtl-vms64.ads.
+
+        * 5xcrtl.ads: Renamed to...
+        * s-crtl-vms64.ads: ...this new file
+
+2005-03-17  Robert Dewar  <dewar@adacore.com>
+
+	PR ada/19519
+
+	* namet.adb (Copy_One_Character): Set proper wide character encoding
+	for upper half character if we have upper half encoding.
+
+2005-03-17  Robert Dewar  <dewar@adacore.com>
+
+	* par.adb (Par): Improved msg for attempt to recompile predefined unit
+
+2005-03-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (New_Stream_Function, New_Stream_Procedure): For a
+	tagged limited type, the TSS is a newly built renaming declaration:
+	insert it using Set_TSS, not Copy_TSS.
+
+2005-03-17  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Try_Primitive_Operation, Class_Wide_Operation and
+	Try_Object_Operation): Analyze the object that is accessible
+	through the prefix of the subprogram call before we apply
+	the transformation of the object-operation notation.
+
+2005-03-17  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprob.adb (Initialize_Protection): Initialize the protected
+	object's owner to Null_Task.
+	(Lock): If pragma Detect_Blocking is in effect and the caller of this
+	procedure is already the protected object's owner then Program_Error
+	is raised. In addition the protected object's owner is updated.
+	(Lock_Read_Only): If pragma Detect_Blocking is in effect and the caller
+	of this procedure is already the protected object's owner then
+	Program_Error is raised.
+	In addition the protected object's owner is updated.
+	(Unlock): Remove the ownership of the protected object.
+
+	* s-taprob.ads (Protection): Add the field Owner, used to store the
+	protected object's owner.
+	This component is needed for detecting one type of potentially blocking
+	operations (external calls on a protected subprogram with the same
+	target object as that of the protected action). Document the rest of
+	the components.
+
+	* s-tposen.adb, s-tpoben.adb (Initialize_Protection_Entries):
+	Initialize the protected object's owner to Null_Task.
+	(Lock_Read_Only_Entries): If pragma Detect_Blocking is in effect and the
+	caller of this procedure is already the protected object's owner then
+	Program_Error is raised.
+	Do not raise Program_Error when this procedure is called from a
+	protected action.
+	(Unlock_Entries): Remove the ownership of the protected object.
+	(Lock_Entries): If pragma Detect_Blocking is in effect and the caller
+	of this procedure is already the protected object's owner then
+	Program_Error is raised.
+	Do not raise Program_Error when this procedure is called from
+	a protected action.
+
+	* s-tposen.ads, s-tpoben.ads (Protection_Entries): Add the field Owner,
+	used to store the protected object's owner.
+
+	* s-tpobop.adb (Protected_Entry_Call): If pragma Detect_Blocking is in
+	effect and this procedure (a potentially blocking operation) is called
+	from whithin a protected action, Program_Error is raised.
+	(Timed_Protected_Entry_Call): If pragma Detect_Blocking is in effect
+	and this procedure (a potentially blocking operation) is called from
+	whithin a protected action, Program_Error is raised.
+
+2005-03-17  Vincent Celier  <celier@adacore.com>
+	    Nicolas Setton  <setton@adacore.com>
+
+	* mlib-tgt-darwin.adb (Build_Dynamic_Library): Remove the "-fini"
+	switch, not supported by the linker on Darwin. Add '_' before
+	<library>init, as this character is added unconditionally by the
+	compiler.
+	(Is_Archive_Ext): Replace the wrong library extension ".dyld" by the
+	correct one ".dylib". This fixes detection of the archive files when
+	building library projects.
+
+2005-03-17  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Recognize switches
+	-gnat83, -gnat95 and -gnat05.
+
+2005-03-17  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: Document gnatmem restriction
+
+2005-03-17  Thomas Quinot  <quinot@adacore.com>
+
+	* snames.adb: Document new TSS names introduced by exp_dist/exp_tss
+	cleanup
+
+2005-03-17  Robert Dewar  <dewar@adacore.com>
+
+	* s-interr.ads, s-interr.adb, sem_ch3.adb, prj.ads, prj.adb,
+	a-interr.adb, a-interr.ads, s-interr-sigaction.adb, s-interr-dummy.adb,
+	s-interr-vms.adb, s-interr-vxworks.adb: Minor reformatting
+
+	* casing.adb: Comment improvements
+
+2005-03-17  Pascal Obry  <obry@adacore.com>
+
+	* g-expect.adb: Minor reformatting.
+
 2005-03-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (doc/gnat_ugn_unw.info, doc/gnat_rm.info)
