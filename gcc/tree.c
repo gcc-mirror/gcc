@@ -2147,9 +2147,16 @@ tree
 array_type_nelts (type)
      tree type;
 {
-  tree index_type = TYPE_DOMAIN (type);
-  tree min = TYPE_MIN_VALUE (index_type);
-  tree max = TYPE_MAX_VALUE (index_type);
+  tree index_type, min, max;
+
+  /* If they did it with unspecified bounds, then we should have already
+     given an error about it before we got here.  */
+  if (! TYPE_DOMAIN (type))
+    return error_mark_node;
+
+  index_type = TYPE_DOMAIN (type);
+  min = TYPE_MIN_VALUE (index_type);
+  max = TYPE_MAX_VALUE (index_type);
 
   if (! TREE_CONSTANT (min))
     {
