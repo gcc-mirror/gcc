@@ -5225,13 +5225,13 @@ strength_reduce (loop, flags)
   /* In case number of iterations is known, drop branch prediction note
      in the branch.  Do that only in second loop pass, as loop unrolling
      may change the number of iterations performed.  */
-  if ((flags & LOOP_BCT)
-      && loop_info->n_iterations / loop_info->unroll_number > 1)
+  if (flags & LOOP_BCT)
     {
-      int n = loop_info->n_iterations / loop_info->unroll_number;
-      predict_insn (PREV_INSN (loop->end),
-		    PRED_LOOP_ITERATIONS,
-		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / n);
+      unsigned HOST_WIDE_INT n
+	= loop_info->n_iterations / loop_info->unroll_number;
+      if (n > 1)
+	predict_insn (PREV_INSN (loop->end), PRED_LOOP_ITERATIONS,
+		      REG_BR_PROB_BASE - REG_BR_PROB_BASE / n);
     }
 
   if (loop_dump_stream)
