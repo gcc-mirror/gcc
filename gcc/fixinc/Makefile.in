@@ -59,23 +59,38 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 LIBERTY = ../../libiberty/libiberty.a
-OBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
+
+ALLOBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
       gnu-regex.o fixlib.o
 
-HDR = server.h gnu-regex.h fixlib.h machname.h
+TESTOBJ = fixincl.o fixlib.o fixtests.o gnu-regex.o
+FIXOBJ  = fixfixes.o fixlib.o gnu-regex.o
 
-TARGETS = fixincl@build_exeext@
+HDR = server.h gnu-regex.h fixlib.h machname.h
+FI  = fixincl@build_exeext@
+AF  = applyfix@build_exeext@
 
 all : $(TARGETS)
 gen : $(srcdir)/fixincl.x
 
-fixincl@build_exeext@: $(OBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(OBJ) $(LIBERTY)
+oneprocess : full-stamp
+twoprocess : test-stamp $(AF)
 
-$(OBJ)      : $(HDR)
-fixincl.o   : $(srcdir)/fixincl.x fixincl.c
+full-stamp : $(ALLOBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBERTY)
+	touch $@
+
+test-stamp : $(TESTOBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBERTY)
+	touch $@
+
+$(AF): $(FIXOBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBERTY)
+
+$(ALLOBJ)   : $(HDR)
+fixincl.o   : fixincl.c  $(srcdir)/fixincl.x
 fixtests.o  : fixtests.c
-fixfixes.o  : fixfixes.c
+fixfixes.o  : fixfixes.c $(srcdir)/fixincl.x
 server.o    : server.c
 procopen.o  : procopen.c
 gnu-regex.o : gnu-regex.c
@@ -91,7 +106,7 @@ $(srcdir)/fixincl.x: fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 clean:
-	rm -f *.o $(TARGETS) machname.h *~
+	rm -f *.o *-stamp $(AF) $(FI) machname.h *~
 
 maintainer-clean : clean
 	rm -f $(srcdir)/fixincl.x
@@ -103,11 +118,7 @@ install-bin : $(TARGETS)
 	./fixincl -v
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
-	@if [ -f ./fixincl.sh ] ; \
-	then echo cp ./fixincl.sh ../fixinc.sh ; \
-		cp ./fixincl.sh ../fixinc.sh ; \
-	else echo cp $(srcdir)/fixincl.sh ../fixinc.sh ; \
-		cp $(srcdir)/fixincl.sh ../fixinc.sh ; fi
+	@cp $(srcdir)/fixincl.sh ../fixinc.sh
 	chmod 755 ../fixinc.sh
 
 Makefile: Makefile.in ../config.status

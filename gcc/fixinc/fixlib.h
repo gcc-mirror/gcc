@@ -51,6 +51,11 @@ typedef int t_success;
 #define FAILED(p)       ((p) < SUCCESS)
 #define HADGLITCH(p)    ((p) > SUCCESS)
 
+#ifndef DEBUG
+# define STATIC static
+#else
+# define STATIC
+#endif
 
 #define tSCC static const char
 #define tCC  const char
@@ -81,13 +86,12 @@ typedef int t_success;
 #define EXIT_PANIC	99
 #endif /* NOPROCESS */
 
-#ifndef HAVE_T_BOOL_ENUM
-#define HAVE_T_BOOL_ENUM
+#define IGNORE_ARG(a)   ((void)(a))
+
 typedef enum
 {
   BOOL_FALSE, BOOL_TRUE
 } t_bool;
-#endif
 
 typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
 

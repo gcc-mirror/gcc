@@ -50,34 +50,9 @@
 #include "system.h"
 
 #include "server.h"
+#include "fixlib.h"
 
-/* If this particular system's header files define the macro `MAXPATHLEN',
-   we happily take advantage of it; otherwise we use a value which ought
-   to be large enough.  */
-#ifndef MAXPATHLEN
-# define MAXPATHLEN     4096
-#endif
-
-#ifndef STDIN_FILENO
-# define STDIN_FILENO	0
-#endif
-#ifndef STDOUT_FILENO
-# define STDOUT_FILENO	1
-#endif
-
-#ifdef DEBUG
-#define STATIC
-#else
-#define STATIC static
-#endif
-#ifndef tSCC
-#define tSCC static const char
-#endif
-#ifndef NUL
-#define NUL '\0'
-#endif
-
-STATIC t_pchar def_args[] =
+STATIC const char* def_args[] =
 { (char *) NULL, (char *) NULL };
 
 /*
@@ -92,12 +67,12 @@ STATIC t_pchar def_args[] =
 int
 chain_open (stdin_fd, pp_args, p_child)
      int stdin_fd;
-     t_pchar *pp_args;
+     tCC **pp_args;
      pid_t *p_child;
 {
   t_fd_pair stdout_pair;
   pid_t ch_id;
-  char *pz_cmd;
+  tCC *pz_cmd;
 
   stdout_pair.read_fd = stdout_pair.write_fd = -1;
 
@@ -115,7 +90,7 @@ chain_open (stdin_fd, pp_args, p_child)
   /*
    *  If we did not get an arg list, use the default
    */
-  if (pp_args == (t_pchar *) NULL)
+  if (pp_args == (tCC **) NULL)
     pp_args = def_args;
 
   /*
@@ -192,7 +167,7 @@ chain_open (stdin_fd, pp_args, p_child)
   if (*pp_args == (char *) NULL)
     *pp_args = pz_cmd;
 
-  execvp (pz_cmd, pp_args);
+  execvp (pz_cmd, (char**)pp_args);
   fprintf (stderr, "Error %d:  Could not execvp( '%s', ... ):  %s\n",
            errno, pz_cmd, xstrerror (errno));
   exit (EXIT_PANIC);
@@ -212,7 +187,7 @@ chain_open (stdin_fd, pp_args, p_child)
 pid_t
 proc2_open (p_pair, pp_args)
      t_fd_pair *p_pair;
-     t_pchar *pp_args;
+     tCC **pp_args;
 {
   pid_t ch_id;
 
@@ -239,7 +214,7 @@ proc2_open (p_pair, pp_args)
 pid_t
 proc2_fopen (pf_pair, pp_args)
      t_pf_pair *pf_pair;
-     t_pchar *pp_args;
+     tCC **pp_args;
 {
   t_fd_pair fd_pair;
   pid_t ch_id = proc2_open (&fd_pair, pp_args);

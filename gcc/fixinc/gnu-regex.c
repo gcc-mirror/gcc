@@ -22,6 +22,8 @@
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+#include "auto-host.h"
+
 #undef	_GNU_SOURCE
 #define _GNU_SOURCE
 
@@ -75,18 +77,6 @@
    strings.  */
 # define gettext_noop(String) String
 #endif
-
-/* The `emacs' switch turns on certain matching commands
-   that make sense only in Emacs. */
-#ifdef emacs
-
-# include "lisp.h"
-# include "buffer.h"
-# include "syntax.h"
-
-#else  /* not emacs */
-
-# include "auto-host.h"
 
 # if !defined(volatile) && !defined(HAVE_VOLATILE)
 #  define volatile
@@ -191,8 +181,6 @@ init_syntax_once ()
 # endif /* not SYNTAX_TABLE */
 
 # define SYNTAX(c) re_syntax_table[c]
-
-#endif /* not emacs */
 
 /* Get the interface, including the syntax bits.  */
 /* GCC LOCAL: call it gnu-regex.h, not regex.h, to avoid name conflicts */
@@ -922,7 +910,7 @@ printchar (c)
    syntax, so it can be changed between regex compilations.  */
 /* This has no initializer because initialized variables in Emacs
    become read-only after dumping.  */
-static reg_syntax_t re_syntax_options;
+reg_syntax_t re_syntax_options;
 
 
 /* Specify the precise syntax of regexps for compilation.  This provides
@@ -5710,6 +5698,7 @@ regerror (errcode, preg, errbuf, errbuf_size)
 {
   const char *msg;
   size_t msg_size;
+  (void)preg;
 
   if (errcode < 0
       || errcode >= (int) (sizeof (re_error_msgid)

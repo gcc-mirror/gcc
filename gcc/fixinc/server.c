@@ -53,32 +53,6 @@
 
 #include "server.h"
 
-/* If this particular system's header files define the macro `MAXPATHLEN',
-   we happily take advantage of it; otherwise we use a value which ought
-   to be large enough.  */
-#ifndef MAXPATHLEN
-# define MAXPATHLEN     4096
-#endif
-
-#ifndef STDIN_FILENO
-# define STDIN_FILENO	0
-#endif
-#ifndef STDOUT_FILENO
-# define STDOUT_FILENO	1
-#endif
-
-#ifdef DEBUG
-#define STATIC
-#else
-#define STATIC static
-#endif
-#ifndef tSCC
-#define tSCC static const char
-#endif
-#ifndef NUL
-#define NUL '\0'
-#endif
-
 #if !defined(volatile) && !defined(HAVE_VOLATILE)
 # define volatile
 #endif
@@ -86,7 +60,7 @@
 STATIC volatile t_bool read_pipe_timeout;
 STATIC pid_t server_master_pid = NOPROCESS;
 
-static t_pchar def_args[] =
+tSCC* def_args[] =
 { (char *) NULL, (char *) NULL };
 STATIC t_pf_pair server_pair =
 { (FILE *) NULL, (FILE *) NULL };
@@ -97,7 +71,7 @@ STATIC pid_t server_id = NULLPROCESS;
  *  the terminating output line.
  */
 tSCC z_done[] = "ShElL-OuTpUt-HaS-bEeN-cOmPlEtEd";
-STATIC t_pchar p_cur_dir = (char *) NULL;
+tSCC* p_cur_dir = (char *) NULL;
 
 /*
  *  load_data
@@ -257,8 +231,8 @@ server_setup ()
  *  override with $CONFIG_SHELL, so we do the same.
  */
 
-static char *find_shell PARAMS ((void));
-static char *
+static const char *find_shell PARAMS ((void));
+static const char *
 find_shell ()
 {
   char * shell = getenv ("CONFIG_SHELL");

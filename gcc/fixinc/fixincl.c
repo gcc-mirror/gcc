@@ -1,4 +1,4 @@
-
+:1066
 /* Install modified versions of certain ANSI-incompatible system header
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GNU C will search.
@@ -1066,7 +1066,7 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
       int fd;
 
       fd = chain_open (read_fd,
-                       (t_pchar *) p_fixd->patch_args,
+                       (tCC **) p_fixd->patch_args,
                        (process_chain_head == -1)
                        ? &process_chain_head : (pid_t *) NULL);
 

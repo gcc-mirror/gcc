@@ -63,7 +63,7 @@ if [ $# -eq 0 ] ; then
   set -- fixincl.x
 fi
 
-AG="autogen $AG"
+AG="autogen4 $AG"
 set -e
 
 case "$1" in

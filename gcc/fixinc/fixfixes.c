@@ -257,6 +257,7 @@ FIX_PROC_HEAD( format_fix )
   tCC*  pz_fmt = p_fixd->patch_args[1];
   regex_t re;
   regmatch_t rm[10];
+  IGNORE_ARG(filname);
 
   /*
    *  We must have a format
@@ -335,6 +336,7 @@ FIX_PROC_HEAD( char_macro_use_fix )
   regmatch_t rm[1];
   const char *p, *limit;
   size_t len;
+  IGNORE_ARG(filname);
 
   if (str == NULL)
     {
@@ -419,6 +421,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
   const char *p, *limit;
   char arg;
   size_t len;
+  IGNORE_ARG(filname);
 
   if (str == NULL)
     {
@@ -511,6 +514,8 @@ FIX_PROC_HEAD( machine_name_fix )
   regex_t *label_re, *name_re;
   char scratch[SCRATCHSZ];
   size_t len;
+  IGNORE_ARG(filname);
+  IGNORE_ARG(p_fixd);
 
   mn_get_regexps (&label_re, &name_re, "machine_name_fix");
 
@@ -598,7 +603,7 @@ FIX_PROC_HEAD( machine_name_fix )
 FIX_PROC_HEAD( wrap_fix )
 {
   tSCC   z_no_wrap_pat[] = "^#if.*__need_";
-  static regex_t no_wrapping_re = { NULL, 0, 0 };
+  static regex_t no_wrapping_re; /* assume zeroed data */
 
   char   z_fixname[ 64 ];
   tCC*   pz_src  = p_fixd->fix_name;
@@ -606,6 +611,7 @@ FIX_PROC_HEAD( wrap_fix )
   char*  pz_dst  = z_fixname;
   int    do_end  = 0;
   size_t len     = 0;
+  IGNORE_ARG(filname);
 
   if (no_wrapping_re.allocated == 0)
     compile_re( z_no_wrap_pat, &no_wrapping_re, 0, "no-wrap pattern",
@@ -670,6 +676,7 @@ FIX_PROC_HEAD( gnu_type_fix )
   const char* pz_pat;
   regex_t    re;
   regmatch_t rm[GTYPE_SE_CT+1];
+  IGNORE_ARG(filname);
 
   {
     tTestDesc* pTD = p_fixd->p_test_desc;
