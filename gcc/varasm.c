@@ -4536,7 +4536,8 @@ output_constructor (exp, size)
 		  if (shift < HOST_BITS_PER_WIDE_INT
 		      && shift + this_time > HOST_BITS_PER_WIDE_INT)
 		    {
-		      this_time = (HOST_BITS_PER_WIDE_INT - shift);
+		      this_time = shift + this_time - HOST_BITS_PER_WIDE_INT;
+		      shift = HOST_BITS_PER_WIDE_INT;
 		    }
 
 		  /* Now get the bits from the appropriate constant word.  */
