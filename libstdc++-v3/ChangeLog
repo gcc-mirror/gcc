@@ -1,3 +1,10 @@
+2002-07-08  Eric Christopher  <echristo@redhat.com>
+
+	* configure.target: Fix comment for mips atomicity. Add
+	mips*-*-linux* target, enable atomic operations there.
+	* config/cpu/mips/atomicity.h: Fix comments, remove
+	#ifndef/#endif. Add push/pop mips2.
+
 2002-07-08  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* include/bits/stl_deque.h (_Deque_alloc_base):  Change order of
@@ -22,7 +29,7 @@
 	* include/std/std_streambuf.h (basic_streambuf::_M_buf): Change to
 	size_t, from int_type.
  	(basic_streambuf::_M_buf_size_opt): Same.
- 	(basic_streambuf::_S_pback_sizex): Same.	
+ 	(basic_streambuf::_S_pback_sizex): Same.
 	* include/bits/streambuf.tcc: Same.
 	* include/std/std_streambuf.h (basic_streambuf::snextc): Use
 	eq_int_type.
@@ -43,15 +50,15 @@
 	* testsuite/23_containers/map_operators.cc (test01): Split into..
 	* testsuite/23_containers/map_operators_neg.cc (test01): ...this. New.
 	* testsuite/23_containers/set_operators.cc: Move to...
-	* testsuite/23_containers/set_operators_neg.cc: ...here.	
+	* testsuite/23_containers/set_operators_neg.cc: ...here.
 	* testsuite/README: Add some more naming rules.
-	
+
 2002-07-03  Steev Wilcox  <steev@paradigmds.com>
-	 
+
 	PR libstdc++/7057
 	* include/ext/stl_hashtable.h: Fix.
 	* testsuite/ext/hash_map.cc: New.
-	
+
 2002-07-03  Jack Reeves  <jackw_reeves@hotmail.com>
             Kenny Simpson  <theonetruekenny@yahoo.com>
             Phil Edwards  <pme@gcc.gnu.org>
@@ -111,7 +118,7 @@
 	* include/Makefile.am (backward_headers): Remove strstream.h.
 	* include/Makefile.in: Regenerate.
 	* config/linker-map.gnu: Export strstream bits.
-	
+
 	* src/fstream-inst.cc: Tweak.
 	* src/io-inst.cc: Same.
 	* src/istream-inst.cc: Same.
@@ -125,7 +132,7 @@
 
 	* configure.in (libtool_VERSION): Bump to 5:0:0.
 	* configure: Regenerate.
-	
+
 2002-06-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/7157, PR libstdc++/7158, PR libstdc++/7161
@@ -146,7 +153,7 @@
 	(libstdcxx_interface): Change. Use gcc methods to determine version.
 	* configure: Regenerate.
 	* aclocal.m4: Regenerate.
-	
+
 2002-06-25  DJ Delorie  <dj@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CONFIGURE): Split out
@@ -214,8 +221,8 @@
 	* include/c/std_cwchar.h: Include cstddef for size_t.
 
 	* include/c_std/std_cmath.h: Remove extra function.
-	
-	Pendantic std usage in testsuites.	
+
+	Pendantic std usage in testsuites.
 	* testsuite/17_intro/header_cstdlib.cc (test01): Qualify ldiv_t
 	with std.
 	* testsuite/17_intro/header_cwchar.cc: Tweak.
@@ -248,7 +255,7 @@
 	* testsuite/26_numerics/fabs_inline.cc: Use std::printf.
 	* testsuite/27_io/istream_seeks.cc (test02): Qualify abort.
 	* testsuite/27_io/istream_extractor_arith.cc (test11): Qualify strtol.
-	
+
 2002-06-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/Makefile.am (libsupc__convenience_la_SOURCES): Add
@@ -274,16 +281,16 @@
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* configure.target (c_model, c_compatibility): Add.
-	
+
 	* libsupc++/Makefile.am (c_sources): New.
 	(libsupc___la_SOURCES): Add c_sources.
 	(LTCOMPILE): Remove INCLUDES.
 	(GCC_INCLUDES): New.
 	(C_COMPILE): New, like COMPILE but without INCLUDES.
 	(cxa_demangle.o): Use C_COMPILE.
-	(dyn-string.o): Use C_COMPILE.	
-	
-	* include/c/std_cstdarg.h: Define __need___va_list.  
+	(dyn-string.o): Use C_COMPILE.
+
+	* include/c/std_cstdarg.h: Define __need___va_list.
 	* include/c/std_cstddef.h: Define need_size_t, need_ptrdiff_t,
 	need_NULL, need_offsetof.
 
@@ -308,7 +315,7 @@
 	* src/Makefile.am (sources): Remove cmath.cc.
 	* src/Makefile.in: Regenerate.
 	* src/cmath.cc: Remove.
-	
+
 2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.target:  Force mips to use the generic cpu routines.
@@ -368,14 +375,14 @@
 
 2002-06-11  J.T. Conklin  <jtc@acorntoolworks.com>
             Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* configure.target: Set os_include_dir to config/os/qnx/qnx6.1
 	under *-qnx6.[12]*.
 	* configure.in: Add support for *-qnx6.[12]*.
 	* configure: Regenerate.
 
 	* config/os/qnx, config/os/qnx/qnx6.1, config/os/qnx/qnx6.1/bits:
-	New directories.  
+	New directories.
 	* config/os/qnx/qnx6.1/bits/ctype_base.h, ctype_inline.h,
 	ctype_noninline.h, os_defines.h: New files.
 
@@ -398,7 +405,7 @@
 
 	* include/backwards/strstream: Format.
 	* src/strstream.cc: Format.
-	
+
 2002-06-08  Andreas Schwab  <schwab@suse.de>
 
 	* src/strstream.cc (strstreambuf::overflow): Set _M_buf,
@@ -415,7 +422,7 @@
 	* include/bits/istream.tcc (basic_istream): Ditto.
 	(ws) Ditto.
 	(operator>>) Ditto.
-	* include/bits/ostream.tcc (basic_ostream): Ditto. 
+	* include/bits/ostream.tcc (basic_ostream): Ditto.
 	(endl): Ditto.
 	(ends): Ditto.
 	(flush): Ditto.
@@ -465,7 +472,7 @@
 	* testsuite/22_locale/money_put_members_wchar_t.cc:
 	(test02, test03, test06): Likewise.
 	* testsuite/22_locale/num_get_members_char.cc:
-	(test02, test01): Likewise; suffix long long constants with LL.	
+	(test02, test01): Likewise; suffix long long constants with LL.
 	* testsuite/22_locale/num_get_members_wchar_t.cc:
 	(test02, test01): Likewise.
 	* testsuite/22_locale/num_put_members_char.cc:
@@ -536,24 +543,24 @@
 	* src/misc-inst.cc: Define unnecessary algorithm
 	instantiations. Break apart instantiations into groupings below.
 	* src/fstream-inst.cc: New.
-	* src/io-inst.cc: New.	
-	* src/istream-inst.cc: New.	
-	* src/ostream-inst.cc: New.		
-	* src/streambuf-inst.cc: New.	
-	* src/sstream-inst.cc: New.		
+	* src/io-inst.cc: New.
+	* src/istream-inst.cc: New.
+	* src/ostream-inst.cc: New.
+	* src/streambuf-inst.cc: New.
+	* src/sstream-inst.cc: New.
 	* src/Makefile.am (sources): Add files.
 	* src/Makefile.in: Regenerate.
 
 	* acinclude.m4: Work around automake 1.4-p5 bug, change
 	AM_GNU_GETTEXT in comments to AM-GNU-GETTEXT.
-	
+
 2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6795.
 	* config/os/solaris/solaris2.6/bits/ctype_noninline.h
 	(classic_table): Fix.
 	* config/os/solaris/solaris2.5/bits/ctype_noninline.h: Same.
-	
+
 2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/ctype_is_wchar_t.cc: Guard with
@@ -561,7 +568,7 @@
 	* testsuite/22_locale/ctype_narrow_wchar_t.cc: Same.
 	* testsuite/22_locale/ctype_to_wchar_t.cc: Same.
 	* testsuite/22_locale/ctype_widen_wchar_t.cc: Same.
-	
+
 2002-05-26  Carlo Wood  <carlo@alinoe.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
@@ -581,7 +588,7 @@
 
 	PR libstdc++/6701
 	* testsuite/22_locale/ctype_narrow_char.cc: New.
-	* testsuite/22_locale/ctype_narrow_wchar_t.cc: New.	
+	* testsuite/22_locale/ctype_narrow_wchar_t.cc: New.
 	* testsuite/22_locale/ctype_widen_char.cc: New.
 	* testsuite/22_locale/ctype_widen_wchar_t.cc: New.
 	* testsuite/22_locale/ctype_members_char.cc: Move some bits into...
@@ -592,13 +599,13 @@
 	* testsuite/22_locale/ctype_to_wchar_t.cc: ...and this.
 
 	* testsuite/22_locale/ctype_scan_wchar_t.cc: Should pass.
-	
+
 2002-05-24  Dale Peakall <dale@peakall.net>
 
 	PR libstdc++/6701
 	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_narrow): Fix.
 	* config/locale/generic/ctype_members.cc: Same.
-	
+
 2002-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6750
@@ -609,13 +616,13 @@
 	(ostream<char>::operator<<(streambuf*)): Same.
 	* testsuite/27_io/ostream_inserter_char.cc (test08): Add tests.
 	* testsuite/27_io/ostream_inserter_other.cc (test02): Modify.
-	
+
 2002-05-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (release_VERSION): Update to 3.1.1.
 	(libtool_VERSION): Update to 4:1:0.
 	* configure: Regenerate.
-	
+
 2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_pair.h:  Tweak comment markup.
@@ -689,7 +696,7 @@
 	(ostream::operator<<(const _CharT*)): Same.
 	(ostream<char>::operator<<(const char*)): Same.
 	* testsuite/27_io/ostream_inserter_char.cc (test07): Add test.
-	
+
 2002-05-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6594
@@ -706,10 +713,10 @@
 2002-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/ctype_scan_char.cc: Tweak.
-	* testsuite/22_locale/ctype_scan_wchar_t.cc: New.	
+	* testsuite/22_locale/ctype_scan_wchar_t.cc: New.
 
 	* docs/html/install.html: Fix.
-	
+
 2002-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/fstream.tcc
@@ -721,7 +728,7 @@
 	for the 22_locale tests when using the gnu model.
 
 	* testsuite/27_io/istream_sentry.cc: Tweak.
-	
+
 2002-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/os/irix/irix5.2/bits/ctype_inline.h (scan_is, scan_not):
@@ -823,16 +830,16 @@
 	* testsuite/22_locale/messages_members_char.cc: Add test03.
 	* testsuite/22_locale/money_get_members_char.cc: Add test08.
 	* testsuite/22_locale/money_get_members_wchar_t.cc: Likewise.
-	* testsuite/22_locale/money_put_members_char.cc: Add test07. 
+	* testsuite/22_locale/money_put_members_char.cc: Add test07.
 	* testsuite/22_locale/money_put_members_wchar_t.cc: Likewise.
 	* testsuite/22_locale/moneypunct_members_char.cc: Add test03.
 	* testsuite/22_locale/moneypunct_members_wchar_t.cc: Likewise.
 	* testsuite/22_locale/num_get_members_char.cc: Add test06.
-	* testsuite/22_locale/num_get_members_wchar_t.cc: Likewise. 
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Likewise.
 	* testsuite/22_locale/numpunct_members_char.cc: Add test03.
-	* testsuite/22_locale/numpunct_members_wchar_t.cc: Likewise. 
+	* testsuite/22_locale/numpunct_members_wchar_t.cc: Likewise.
 	* testsuite/22_locale/time_get_members_char.cc: Add test08.
-	* testsuite/22_locale/time_get_members_wchar_t.cc: Likewise. 
+	* testsuite/22_locale/time_get_members_wchar_t.cc: Likewise.
 	* testsuite/22_locale/time_put_members_char.cc: Add test04.
 	* testsuite/22_locale/time_put_members_wchar_t.cc: Likewise.
 
@@ -883,7 +890,7 @@
 	PR libstdc++/6549.
 	* include/bits/fstream.tcc (filebuf::_M_underflow_common): Revert.
 	* testsuite/27_io/narrow_stream_objects.cc (test07): Add.
-	
+
 2002-05-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/os/irix/irix5.2/bits/ctype_noninline.h (classic_table):
@@ -926,7 +933,7 @@
 	PR libstdc++/6533
 	* include/bits/streambuf_iterator.h (istreambuf_iterator::_M_get): New.
 	(istreambuf_iterator::equal): Use it.
-	(istreambuf_iterator::operator*): Use it.	
+	(istreambuf_iterator::operator*): Use it.
 
 2002-05-01  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -938,7 +945,7 @@
 	* testsuite/23_containers/vector_ctor.cc: Add test04.
 
 2002-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
-	
+
 	PR libstdc++/6501
 	* include/c_std/std_cctype.h: Include bits/c++config.h.
 	* config/os/hpux/bits/os_defines.h (_SB_CTYPE_MACROS): Define.
@@ -946,9 +953,9 @@
 2002-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/stdio_filebuf.h: New file.
-	* include/ext/enc_filebuf.h: New file.	
+	* include/ext/enc_filebuf.h: New file.
 	* config/io/basic_file_stdio.h (__basic_file::sys_open): Add fd ctor.
-	* config/io/basic_file_stdio.cc: Same.	
+	* config/io/basic_file_stdio.cc: Same.
 	* include/bits/fstream.tcc (filebuf::_M_allocate_internal_buffer):
 	Remove _M_unbuf hacks.
 	(filebuf::_M_destroy_internal_buffer): Same.
@@ -956,7 +963,7 @@
 	(filebuf::fd): Remove.
 	* include/std/std_fstream.h (filebuf::_M_unbuf): Remove.
 	(filebuf::filebuf(__c_file*, openmode, int_type)): Remove.
-	(filebuf::fd): Remove.	
+	(filebuf::fd): Remove.
 	* src/ios.cc (ios_base::_S_ios_create): Change to use specialized
 	filebufs.
 	(ios_base::_S_ios_destroy): Same.
@@ -978,12 +985,12 @@
 	(istreambuf_iterator::operator++): Invalidate on eof.
 	(istreambuf_iterator::operator++(int)): Same.
 	(istreambuf_iterator::operator*): Same.
-	
+
 2002-04-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set all
 	of LD_LIBRARY_PATH, SHLIB_PATH, LD_LIBRARYN32_PATH,
-	LD_LIBRARY64_PATH. 
+	LD_LIBRARY64_PATH.
 
 2002-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -994,7 +1001,7 @@
 	* include/bits/fstream.tcc (basic_filebuf::_M_underflow_common):
 	Use sys_getc for unbuffered input.
 	* testsuite/27_io/narrow_stream_objects.cc (test06): New.
-	
+
 	* src/ios.cc (_M_grow_words): Adjust error checking.
 	* testsuite/27_io/ios_base_storage.cc: Same.
 
@@ -1057,11 +1064,11 @@
 2002-04-20  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/4150
-	* include/std/std_streambuf.h (basic_streambuf::_M_set_indeterminate): 
+	* include/std/std_streambuf.h (basic_streambuf::_M_set_indeterminate):
 	Move to filebuf.
 	(basic_streambuf::_M_set_determinate): Likewise.
 	(basic_streambuf::_M_is_indeterminate): Likewise.
-	* include/bits/std_fstream.h (basic_filebuf::_M_filepos): New 
+	* include/bits/std_fstream.h (basic_filebuf::_M_filepos): New
 	non-static data member.
 	(basic_filebuf::_M_underflow_common): New non-static member function.
 	(basic_filebuf::_M_underflow, _M_uflow): Call it.
@@ -1073,13 +1080,13 @@
 	* include/bits/fstream.tcc (basic_filebuf::_M_really_overflow): Seek
 	back to _M_out_beg if necessary.
 	(basic_filebuf::seekoff): Likewise.
-	(basic_filebuf::_M_underflow_common): Generalization of old 
+	(basic_filebuf::_M_underflow_common): Generalization of old
 	underflow().  Don't seek back to _M_in_beg.
 	* src/ios.cc: Lose _GLIBCPP_AVOID_FSEEK stuff.
 	* config/os/solaris/solaris2.?/bits/os_defines.h: Likewise.
 	* config/os/bsd/freebsd/bits/os_defines.h: Likewise.
 	* config/os/mingw32/bits/os_defines.h: Likewise.
-	* testsuite/27_io/filebuf_virtuals.cc (test05): Don't overspecify 
+	* testsuite/27_io/filebuf_virtuals.cc (test05): Don't overspecify
 	ungetc test.
 
 2002-04-22  Benjamin Kosnik  <bkoz@redhat.com>
@@ -1094,7 +1101,7 @@
 	delimiter as is.
 	* include/bits/streambuf.tcc: Use this->gptr.
 	* testsuite/27_io/istream_unformatted.cc (test08): Add test.
-	
+
 2002-04-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/localefwd.h (locale::id::_M_id): Do this correctly,
@@ -1106,7 +1113,7 @@
 	* testsuite/21_strings/inserters_extractors.cc: Tweaks.
 	* testsuite/27_io/instantiations.cc (test): Add bool variable...
 	* testsuite/21_strings/capacity.cc: Clean.
-		
+
 2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/doxygroups.cc:  New group on binary searching.
@@ -1129,11 +1136,11 @@
 2002-04-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (__malloc_alloc_template): Add.
-	(__default_alloc_template): Same.	
+	(__default_alloc_template): Same.
 	* include/bits/stl_alloc.h (__malloc_alloc_template): Add extern
 	template.
 	(__default_alloc_template): Same.
-	
+
 2002-04-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/filebuf_virtuals.cc: Add _S_pback_size instantiation.
@@ -1147,11 +1154,11 @@
 	* include/bits/istream.tcc: Remove sputbackc calls.
 
 	* testsuite/19_diagnostics/stdexceptions.cc: Fix comment.
-	
+
 2002-04-16  Paolo Carlini <pcarlini@unitus.it>
 
  	* testsuite/24_iterators/rel_ops.cc: New test.
-	
+
 2002-04-16  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/type_traits.h (__normal_iterator): Declare in
@@ -1170,11 +1177,11 @@
 	Valgrind fixes.
 	* config/io/basic_file_stdio.cc (__basic_file::~__basic_file):
 	Call close.
-	(__basic_file::close): Call fflush. Correct return if fclose ok. 
+	(__basic_file::close): Call fflush. Correct return if fclose ok.
 	(__basic_file::is_open): Make const.
 	Change __c_file_type to __c_file.
 	* config/io/basic_file_stdio.h: Change __c_file_type to __c_file.
-	(__basic_file::is_open): Make const.	
+	(__basic_file::is_open): Make const.
 	* config/io/c_io_stdio.h: Change __c_file_type to __c_file.
 	* include/std/std_fstream.h (filebuf::_M_allocate_file): Remove.
 	(filebuf::_M_unbuf): Add.
@@ -1185,7 +1192,7 @@
 	Change initialization list for _M_file change.
 	(filebuf::_M_allocate_pback_buffer): Remove.
 	Change _M_file usage to reflect non-pointer data member.
-	
+
 	* config/locale/generic/c_locale.cc
 	(locale::facet::_S_create_c_locale): Add parameter.
 	* config/locale/generic/collate_members.cc: Change
@@ -1212,7 +1219,7 @@
 	* config/locale/ieee_1003.1-2001/c_locale.h: Correct typedef.
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Remove
 	bogus ctor.
-	
+
 	* include/bits/locale_facets.h (moneypunct): Use string literals.
 	Don't define dtor.
 	(numpunct): Same.
@@ -1229,7 +1236,7 @@
 	(locale::_Impl::_Impl(facet**, size_t, bool)): Add.
 	(locale::_Impl::_Impl(string, size_t)): Change to
 	(locale::_Impl::_Impl(const char*, size_t)): This.
-	
+
 	* include/bits/streambuf.tcc (streambuf::_S_pback_size): Define.
 	* include/std/std_streambuf.h (streambuf::_M_pback_size): Change to
 	(streambuf::_S_pback_size): This.
@@ -1241,12 +1248,12 @@
 	* src/localename.cc: Same.
 
 	* include/bits/stl_vector.h: Fix odd formatting.
-	
+
 	* include/bits/basic_string.tcc: Tweak comment.
 
 	* libsupc++/new: Make sure parameters are uglified.
 	* libsupc++/typeinfo: Same.
-		
+
 	* testsuite/22_locale/num_get_members_char.cc: Fixup.
 	* testsuite/22_locale/num_get_members_wchar_t.cc: Same.
 	* testsuite/27_io/filebuf_members.cc: Same.
@@ -1287,13 +1294,13 @@
 	(has_locale): Adjust.
 	* src/locale.cc: Adjust.
 	* src/localename.cc: Same.
-	
+
 2002-04-09  Benjamin Kosnik  <bkoz@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
 	* include/bits/sstream.tcc: Clean up bit ops.
 	* include/bits/fstream.tcc: Same.
-	
+
 2002-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/locale_facets.h (__num_base::_S_scale_hex): Remove.
@@ -1312,7 +1319,7 @@
 	Format.
 	* src/bitset.cc: Adjust.
 	* config/linker-map.gnu: Export.
-	
+
 2002-04-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/5180
@@ -1323,7 +1330,7 @@
 	open modes and which modes.
 	(stringbuf::seekpos): Same.
 	* testsuite/27_io/stringbuf_virtuals.cc: New tests.
-	
+
 2002-04-05  Jonathan Wakely <jw@kayari.org>
 
 	* include/bits/stl_algo.h (unique_copy, __gcd, rotate, rotate_copy,
@@ -1337,24 +1344,24 @@
 
 2002-04-04  Benjamin Kosnik  <bkoz@redhat.com>
 
-	libstdc++/3457 
+	libstdc++/3457
 	via gawrilow@math.tu-berlin.de
 	* acinclude.m4 (version_specific_libs): Fix combo usage with
 	--with-gxx-include-dir.
 	* aclocal.m4: Regenerate.
 	* configure: Same.
-	
+
 2002-04-03  Benjamin Kosnik  <bkoz@redhat.com>
 
         As per DR 184, libstdc++/3139
         * include/std/std_limits.h (__glibcpp_bool_digits): Change to 1.
         (numeric_limits<bool>::is_iec559): False.
-        (numeric_limits<bool>::is_modulo): False.       
+        (numeric_limits<bool>::is_modulo): False.
 
 	* testsuite/27_io/ios_init.cc: Add instantiations.
 
 2002-04-02  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	libstdc++/5268
 	* src/ios.cc: (ios_base::Init::_S_ios_destroy): Remove flush calls.
 	* testsuite/27_io/ios_init.cc (tests04): Add test.
@@ -1366,7 +1373,7 @@
 	* include/bits/istream.tcc: Use _M_fctype, make consistent with
 	ostream.
 	* testsuite/27_io/ios_init.cc (tests03): Add test.
-	
+
 2002-04-02  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/Makefile.am (install-data-local):  Use mkinstalldirs.
@@ -1418,31 +1425,31 @@
 	verbose_terminate_handler into line with reality.
 
 2002-04-01  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	libstdc++/3129
 	* include/bits/basic_ios.h (basic_ios::_M_exception): Move.
-	(basic_ios::_M_streambuf_state): Move.	
+	(basic_ios::_M_streambuf_state): Move.
 	* include/bits/ios_base (ios_base): To here.
 	* include/bits/ios_base.h (ios_base::_S_local_words): To
 	_S_local_word_size.
 	(ios_base::_M_word_array): To _M_local_word.
-	(ios_base::_M_words_limit): To _M_word_size.	
-	(ios_base::_M_words): To _M_word.		
+	(ios_base::_M_words_limit): To _M_word_size.
+	(ios_base::_M_words): To _M_word.
 	Comment.
-	* include/bits/basic_ios.tcc: Adjust.	
+	* include/bits/basic_ios.tcc: Adjust.
 	* src/ios.cc (ios_base::_M_grow_words): Tweak.
 	* testsuite/27_io/ios_base_storage.cc: Add tests.
 
 	libstdc++/5207
 	Kenny Simpson <theonetruekenny@yahoo.com>
 	* include/bits/ios_base.h: Fix.
-	
+
 	Richard Henderson  <rth@redhat.com>
 	* include/bits/ostream.tcc (ostream::operator<<(_CharT)): Correct
 	last change.
 
 	* include/bits/basic_string.h: Tweak formatting.
-	
+
 2002-04-01  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h

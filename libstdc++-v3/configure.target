@@ -28,7 +28,7 @@
 #
 #   c_model                the model to use for "C" headers, defaults to c_std.
 #
-#   c_compatibility        if "C" compatibility headers are necessary, 
+#   c_compatibility        if "C" compatibility headers are necessary,
 #                              defaults to no.
 #
 # It possibly modifies the following variables:
@@ -58,10 +58,10 @@ c_model=c_std
 c_compatibility=no
 
 
-# TARGET-SPECIFIC OVERRIDES 
+# TARGET-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
 # Here we override defaults and catch more general cases due to naming
-# conventions (e.g., chip_name* to catch all variants).  
+# conventions (e.g., chip_name* to catch all variants).
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${target_cpu}" in
   alpha*)
@@ -77,8 +77,9 @@ case "${target_cpu}" in
   m68k | m680[246]0)
     cpu_include_dir="cpu/m68k"
     ;;
-  mips)
-    # This is only until the mips routines are fixed.
+  mips*)
+    # MIPS chips are unreliable as to sc/ll support. By default
+    # don't use atomic instructions and override for the OS.
     cpu_include_dir="cpu/generic"
     ;;
   mmix)
@@ -123,7 +124,7 @@ unset _cpu_incdir_fullpath
 
 
 # Set any OS-dependent bits.
-# Set the os_include_dir.  
+# Set the os_include_dir.
 # Set c_model, c_compatibility here.
 # If atomic ops and/or numeric limits are OS-specific rather than
 # CPU-specifc, set those here too.
@@ -202,5 +203,7 @@ case "${target}" in
   alpha*-*-*osf5*)
     CPULIMITSH="os/osf/osf5.0"
     ;;
+  mips*-*-linux*)
+    ATOMICITYH="cpu/mips"
+    ;;
 esac
-
