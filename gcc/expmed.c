@@ -1891,11 +1891,16 @@ extract_force_align_mem_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
   if (STRICT_ALIGNMENT)
     {
       base = plus_constant (XEXP (op0, 0), bitpos / BITS_PER_UNIT);
-      base = force_operand (base, NULL);
       bitpos %= BITS_PER_UNIT;
 
-      /* Force alignment of the address; load two sequential values.  */
-      a1 = expand_simple_binop (Pmode, AND, base,
+      /* We load two values to be concatenate.  There's an edge condition
+	 that bears notice -- an aligned value at the end of a page can
+	 only load one value lest we segfault.  So the two values we load
+	 are at "base & -size" and "(base + size - 1) & -size".  If base
+	 is unaligned, the addresses will be aligned and sequential; if
+	 base is aligned, the addresses will both be equal to base.  */
+
+      a1 = expand_simple_binop (Pmode, AND, force_operand (base, NULL),
 				GEN_INT (-(HOST_WIDE_INT)m_size),
 				NULL, true, OPTAB_LIB_WIDEN);
       mark_reg_pointer (a1, m_bitsize);
@@ -1903,7 +1908,10 @@ extract_force_align_mem_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       set_mem_align (v1, m_bitsize);
       v1 = force_reg (mode, validize_mem (v1));
 
-      a2 = plus_constant (a1, GET_MODE_SIZE (mode));
+      a2 = plus_constant (base, GET_MODE_SIZE (mode) - 1);
+      a2 = expand_simple_binop (Pmode, AND, force_operand (a2, NULL),
+				GEN_INT (-(HOST_WIDE_INT)m_size),
+				NULL, true, OPTAB_LIB_WIDEN);
       v2 = gen_rtx_MEM (mode, a2);
       set_mem_align (v2, m_bitsize);
       v2 = force_reg (mode, validize_mem (v2));

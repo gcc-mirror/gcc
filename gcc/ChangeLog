@@ -1,3 +1,8 @@
+2004-11-08  Richard Henderson  <rth@redhat.com>
+
+	* expmed.c (extract_force_align_mem_bit_field): Correct handling at
+	the end of a page.
+
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* sched-deps.c (add_insn_mem_dependence): Make it static.
