@@ -481,7 +481,10 @@ cgraph_optimize_function (struct cgraph_node *node)
       struct cgraph_edge *e;
 
       for (e = node->callees; e; e = e->next_callee)
-	if (!e->inline_failed || warn_inline)
+	if (!e->inline_failed || warn_inline
+	    || (DECL_DECLARED_INLINE_P (e->callee->decl)
+		&& lookup_attribute ("always_inline",
+				     DECL_ATTRIBUTES (e->callee->decl))))
 	  break;
       if (e)
         optimize_inline_calls (decl);
@@ -1178,10 +1181,10 @@ cgraph_decide_inlining (void)
 		     cgraph_node_name (node->callees->caller),
 	             node->callees->caller->global.insns);
 	}
-	if (cgraph_dump_file && node->global.cloned_times > 0)
-	  fprintf (cgraph_dump_file, 
-		   " Inlined %i times for a net change of %+i insns.\n",
-		   node->global.cloned_times, overall_insns - old_insns);
+      if (cgraph_dump_file && node->global.cloned_times > 0)
+	fprintf (cgraph_dump_file, 
+		 " Inlined %i times for a net change of %+i insns.\n",
+		 node->global.cloned_times, overall_insns - old_insns);
       for (y = 0; y < ninlined; y++)
 	inlined[y]->output = 0, node->aux = 0;
     }

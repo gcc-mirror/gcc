@@ -1,3 +1,13 @@
+2004-01-13  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_optimize_function):  Always do
+	optimize_inline_calls when there is always_inline callee.
+	(cgraph_decide_inlining): Fix formating.
+	* tree-inline.c (inlinable_function_p): Do sorry for alwaysinline
+	functions.
+	(expand_call_inline): Likewise.
+	* toplev.h (sorry): Fix prototype.
+
 2004-01-12  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_expect_jump): Simplify logic. Handle

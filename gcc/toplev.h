@@ -60,7 +60,7 @@ extern void error (const char *, ...);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
 extern void pedwarn (const char *, ...);
-extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void sorry (const char *, ...);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, const char *, int, int);

@@ -12,7 +12,6 @@ void pp_c_string_literal (c_pretty_printer *, tree);
 static __inline__  __attribute__((always_inline)) void
 pp_c_shift_expression (c_pretty_printer *pp, tree e)
 {
-        pp_c_shift_expression (pp,e);
 }
 
 static void
