@@ -36,10 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
 #include <locale.h>
-
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
-#endif
 #endif /* MULTIBYTE_CHARS */
 
 #if USE_CPPLIB
@@ -230,7 +226,7 @@ init_lex ()
 #ifdef MULTIBYTE_CHARS
   /* Change to the native locale for multibyte conversions.  */
   setlocale (LC_CTYPE, "");
-  GET_ENVIRONMENT (literal_codeset, "LANG");
+  literal_codeset = getenv ("LANG");
 #endif
 
   maxtoken = 40;
