@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 115 fixup scripts.
+# This script contains 113 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -1264,22 +1264,6 @@ struct rusage;
 
 
     #
-    # Fix No_Double_Slash
-    #
-    if ${FIXTESTS} ${file} double_slash
-    then
-    fixlist="${fixlist}
-      no_double_slash"
-    if [ ! -r ${DESTFILE} ]
-    then infile=${file}
-    else infile=${DESTFILE} ; fi 
-    ${FIXFIXES} ${file} no_double_slash < $infile > ${DESTDIR}/fixinc.tmp
-    rm -f ${DESTFILE}
-    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of c_test 'if'
-
-
-    #
     # Fix Ecd_Cursor
     #
     case "${file}" in ./sunwindow/win_lock.h | \
@@ -1330,22 +1314,6 @@ extern "C"\
 
 
     #
-    # Fix End_Else_Label
-    #
-    if ${FIXTESTS} ${file} else_endif_label
-    then
-    fixlist="${fixlist}
-      end_else_label"
-    if [ ! -r ${DESTFILE} ]
-    then infile=${file}
-    else infile=${DESTFILE} ; fi 
-    ${FIXFIXES} ${file} else_endif_label < $infile > ${DESTDIR}/fixinc.tmp
-    rm -f ${DESTFILE}
-    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of c_test 'if'
-
-
-    #
     # Fix Hp_Inline
     #
     case "${file}" in ./sys/spinlock.h )
@@ -1379,7 +1347,7 @@ extern "C"\
     then infile=${file}
     else infile=${DESTFILE} ; fi 
 
-    sed -e 's/(\.\.\.)/(struct file * ...)/' \
+    sed -e 's/(\.\.\.)/(struct file *, ...)/' \
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
@@ -2060,12 +2028,12 @@ static __inline__ double fake_hypot (x, y)\
     then infile=${file}
     else infile=${DESTFILE} ; fi 
 
-    sed -e '/struct exception/i\
+    sed -e '1i\
 #ifdef __cplusplus\
 #define exception __math_exception\
 #endif
 ' \
-        -e '/struct exception/a\
+        -e '$a\
 #ifdef __cplusplus\
 #undef exception\
 #endif

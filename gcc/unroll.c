@@ -234,7 +234,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 {
   int i, j;
   unsigned HOST_WIDE_INT temp;
-  int unroll_number = 1;
+  int unroll_number;
   rtx copy_start, copy_end;
   rtx insn, sequence, pattern, tem;
   int max_labelno, max_insnno;
@@ -248,7 +248,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   rtx start_label;
   struct iv_class *bl;
   int splitting_not_safe = 0;
-  enum unroll_types unroll_type;
+  enum unroll_types unroll_type = UNROLL_NAIVE;
   int loop_preconditioned = 0;
   rtx safety_label;
   /* This points to the last real insn in the loop, which should be either
@@ -437,7 +437,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 
   /* Default case, calculate number of times to unroll loop based on its
      size.  */
-  if (unroll_number == 1)
+  if (unroll_type == UNROLL_NAIVE)
     {
       if (8 * insn_count < MAX_UNROLLED_INSNS)
 	unroll_number = 8;
@@ -445,8 +445,6 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	unroll_number = 4;
       else
 	unroll_number = 2;
-
-      unroll_type = UNROLL_NAIVE;
     }
 
   /* Now we know how many times to unroll the loop.  */

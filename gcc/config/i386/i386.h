@@ -1288,11 +1288,11 @@ typedef struct ix86_args {
 	Note that function `__bb_trace_ret' must not change the
 	machine state, especially the flag register. To grant
 	this, you must output code to save and restore registers
-	either in this macro or in the macros MACHINE_STATE_SAVE_RET
-	and MACHINE_STATE_RESTORE_RET. The last two macros will be
+	either in this macro or in the macros MACHINE_STATE_SAVE
+	and MACHINE_STATE_RESTORE. The last two macros will be
 	used in the function `__bb_trace_ret', so you must make
 	sure that the function prologue does not change any 
-	register prior to saving it with MACHINE_STATE_SAVE_RET.
+	register prior to saving it with MACHINE_STATE_SAVE.
 
    else if profiling_block_flag != 0:
 
@@ -1324,20 +1324,21 @@ emit_call_insn (gen_call (gen_rtx_MEM (Pmode,		\
    On the i386 the initialization code at the begin of
    function `__bb_trace_func' contains a `sub' instruction
    therefore we handle save and restore of the flag register 
-   in the BLOCK_PROFILER macro. */
+   in the BLOCK_PROFILER macro.
+
+   Note that ebx, esi, and edi are callee-save, so we don't have to
+   preserve them explicitly.  */
 
 #define MACHINE_STATE_SAVE(ID)					\
 do {								\
   register int eax_ __asm__("eax");				\
   register int ecx_ __asm__("ecx");				\
   register int edx_ __asm__("edx");				\
-  register int esi_ __asm__("esi");				\
-  __asm__ __volatile__ (					\
-	"push{l} %0\n\t"					\
-	"push{l} %1\n\t"					\
-	"push{l} %2\n\t"					\
-	"push{l} %3"						\
-	: : "r"(eax_), "r"(ecx_), "r"(edx_), "r"(esi_));	\
+  __asm__ __volatile__ ("\
+push{l} %0\n\t\
+push{l} %1\n\t\
+push{l} %2"							\
+	: : "r"(eax_), "r"(ecx_), "r"(edx_));			\
 } while (0);
 
 #define MACHINE_STATE_RESTORE(ID)				\
@@ -1345,13 +1346,11 @@ do {								\
   register int eax_ __asm__("eax");				\
   register int ecx_ __asm__("ecx");				\
   register int edx_ __asm__("edx");				\
-  register int esi_ __asm__("esi");				\
-  __asm__ __volatile__ (					\
-	"pop{l} %3\n\t"						\
-	"pop{l} %2\n\t"						\
-	"pop{l} %1\n\t"						\
-	"pop{l} %0"						\
-	: "=r"(eax_), "=r"(ecx_), "=r"(edx_), "=r"(esi_));	\
+  __asm__ __volatile__ ("\
+pop{l} %2\n\t\
+pop{l} %1\n\t\
+pop{l} %0"							\
+	: "=r"(eax_), "=r"(ecx_), "=r"(edx_));			\
 } while (0);
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,

@@ -1881,11 +1881,6 @@ __bb_fork_func (void)
 
 #define BBINBUFSIZE 500
 
-/* BBINBUFSIZE-1 with double quotes. We could use #BBINBUFSIZE or
-   "BBINBUFSIZE" but want to avoid trouble with preprocessors.  */
-
-#define BBINBUFSIZESTR "499"
-
 struct bb_edge
 {
   struct bb_edge *next;
@@ -2163,8 +2158,8 @@ found:        ;
                struct bb_edge *bucket = bb_hashbuckets[i];
                for ( ; bucket; bucket = bucket->next )
                  {
-                   fprintf (file, "Jump from block 0x%.*lx to "
-                                  "block 0x%.*lx executed %*lu time(s)\n", 
+                   fprintf (file,
+	"Jump from block 0x%.*lx to block 0x%.*lx executed %*lu time(s)\n", 
                             addr_len, bucket->src_addr, 
                             addr_len, bucket->dst_addr, 
                             cnt_len, bucket->count);
@@ -2235,8 +2230,12 @@ __bb_init_prg (void)
   if (!(file = fopen ("bb.in", "r")))
     return;
 
-  while(fscanf (file, " %" BBINBUFSIZESTR "s ", buf) != EOF)
+  while(fgets (buf, BBINBUFSIZE, file) != 0)
     {
+      i = strlen (buf);
+      if (buf[i] == '\n')
+	buf[i--] = '\0';
+
       p = buf;
       if (*p == '-') 
         { 

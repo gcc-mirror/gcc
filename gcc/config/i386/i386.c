@@ -4917,7 +4917,7 @@ ix86_expand_int_movcc (operands)
     {
       /* Try a few things more with specific constants and a variable.  */
 
-      optab op = NULL;
+      optab op;
       rtx var, orig_out, out, tmp;
 
       if (optimize_size)
@@ -4933,6 +4933,8 @@ ix86_expand_int_movcc (operands)
 	    operands[3] = constm1_rtx, op = and_optab;
 	  else if (INTVAL (operands[2]) == -1)
 	    operands[3] = const0_rtx, op = ior_optab;
+	  else
+	    return 0; /* FAIL */
 	}
       else if (GET_CODE (operands[3]) == CONST_INT)
 	{
@@ -4941,9 +4943,10 @@ ix86_expand_int_movcc (operands)
 	    operands[2] = constm1_rtx, op = and_optab;
 	  else if (INTVAL (operands[3]) == -1)
 	    operands[2] = const0_rtx, op = ior_optab;
+	  else
+	    return 0; /* FAIL */
 	}
-
-      if (op == NULL)
+      else
         return 0; /* FAIL */
 
       orig_out = operands[0];
@@ -5901,17 +5904,21 @@ ix86_flags_dependant (insn, dep_insn, insn_type)
       set = SET_DEST (XVECEXP (PATTERN (dep_insn), 0, 0));
       set2 = SET_DEST (XVECEXP (PATTERN (dep_insn), 0, 0));
     }
+  else
+    return 0;
 
-  if (set && GET_CODE (set) == REG && REGNO (set) == FLAGS_REG)
-    {
-      /* This test is true if the dependant insn reads the flags but
-	 not any other potentially set register.  */
-      if (reg_overlap_mentioned_p (set, PATTERN (insn))
-	  && (!set2 || !reg_overlap_mentioned_p (set2, PATTERN (insn))))
-	return 1;
-    }
+  if (GET_CODE (set) != REG || REGNO (set) != FLAGS_REG)
+    return 0;
 
-  return 0;
+  /* This test is true if the dependant insn reads the flags but
+     not any other potentially set register.  */
+  if (!reg_overlap_mentioned_p (set, PATTERN (insn)))
+    return 0;
+
+  if (set2 && reg_overlap_mentioned_p (set2, PATTERN (insn)))
+    return 0;
+
+  return 1;
 }
 
 /* A subroutine of ix86_adjust_cost -- return true iff INSN has a memory
@@ -6208,19 +6215,170 @@ ix86_pent_find_pair (e_ready, ready, type, first)
   return bestinsnp;
 }
 
+/* Subroutines of ix86_sched_reorder.  */
+
+void
+ix86_sched_reorder_pentium (ready, e_ready)
+     rtx *ready;
+     rtx *e_ready;
+{
+  enum attr_pent_pair pair1, pair2;
+  rtx *insnp;
+
+  /* This wouldn't be necessary if Haifa knew that static insn ordering
+     is important to which pipe an insn is issued to.  So we have to make
+     some minor rearrangements.  */
+
+  pair1 = ix86_safe_pent_pair (*e_ready);
+
+  /* If the first insn is non-pairable, let it be.  */
+  if (pair1 == PENT_PAIR_NP)
+    return;
+
+  pair2 = PENT_PAIR_NP;
+  insnp = 0;
+
+  /* If the first insn is UV or PV pairable, search for a PU
+     insn to go with.  */
+  if (pair1 == PENT_PAIR_UV || pair1 == PENT_PAIR_PV)
+    {
+      insnp = ix86_pent_find_pair (e_ready-1, ready,
+				   PENT_PAIR_PU, *e_ready);
+      if (insnp)
+	pair2 = PENT_PAIR_PU;
+    }
+
+  /* If the first insn is PU or UV pairable, search for a PV
+     insn to go with.  */
+  if (pair2 == PENT_PAIR_NP
+      && (pair1 == PENT_PAIR_PU || pair1 == PENT_PAIR_UV))
+    {
+      insnp = ix86_pent_find_pair (e_ready-1, ready,
+				   PENT_PAIR_PV, *e_ready);
+      if (insnp)
+	pair2 = PENT_PAIR_PV;
+    }
+
+  /* If the first insn is pairable, search for a UV
+     insn to go with.  */
+  if (pair2 == PENT_PAIR_NP)
+    {
+      insnp = ix86_pent_find_pair (e_ready-1, ready,
+				   PENT_PAIR_UV, *e_ready);
+      if (insnp)
+	pair2 = PENT_PAIR_UV;
+    }
+
+  if (pair2 == PENT_PAIR_NP)
+    return;
+
+  /* Found something!  Decide if we need to swap the order.  */
+  if (pair1 == PENT_PAIR_PV || pair2 == PENT_PAIR_PU
+      || (pair1 == PENT_PAIR_UV && pair2 == PENT_PAIR_UV
+	  && ix86_safe_memory (*e_ready) == MEMORY_BOTH
+	  && ix86_safe_memory (*insnp) == MEMORY_LOAD))
+    ix86_reorder_insn (insnp, e_ready);
+  else
+    ix86_reorder_insn (insnp, e_ready - 1);
+}
+
+void
+ix86_sched_reorder_ppro (ready, e_ready)
+     rtx *ready;
+     rtx *e_ready;
+{
+  rtx decode[3];
+  enum attr_ppro_uops cur_uops;
+  int issued_this_cycle;
+  rtx *insnp;
+  int i;
+
+  /* At this point .ppro.decode contains the state of the three 
+     decoders from last "cycle".  That is, those insns that were
+     actually independent.  But here we're scheduling for the 
+     decoder, and we may find things that are decodable in the
+     same cycle.  */
+
+  memcpy (decode, ix86_sched_data.ppro.decode, sizeof(decode));
+  issued_this_cycle = 0;
+
+  insnp = e_ready;
+  cur_uops = ix86_safe_ppro_uops (*insnp);
+
+  /* If the decoders are empty, and we've a complex insn at the
+     head of the priority queue, let it issue without complaint.  */
+  if (decode[0] == NULL)
+    {
+      if (cur_uops == PPRO_UOPS_MANY)
+	{
+	  decode[0] = *insnp;
+	  goto ppro_done;
+	}
+
+      /* Otherwise, search for a 2-4 uop unsn to issue.  */
+      while (cur_uops != PPRO_UOPS_FEW)
+	{
+	  if (insnp == ready)
+	    break;
+	  cur_uops = ix86_safe_ppro_uops (*--insnp);
+	}
+
+      /* If so, move it to the head of the line.  */
+      if (cur_uops == PPRO_UOPS_FEW)
+	ix86_reorder_insn (insnp, e_ready);
+
+      /* Issue the head of the queue.  */
+      issued_this_cycle = 1;
+      decode[0] = *e_ready--;
+    }
+
+  /* Look for simple insns to fill in the other two slots.  */
+  for (i = 1; i < 3; ++i)
+    if (decode[i] == NULL)
+      {
+	if (ready >= e_ready)
+	  goto ppro_done;
+
+	insnp = e_ready;
+	cur_uops = ix86_safe_ppro_uops (*insnp);
+	while (cur_uops != PPRO_UOPS_ONE)
+	  {
+	    if (insnp == ready)
+	      break;
+	    cur_uops = ix86_safe_ppro_uops (*--insnp);
+	  }
+
+	/* Found one.  Move it to the head of the queue and issue it.  */
+	if (cur_uops == PPRO_UOPS_ONE)
+	  {
+	    ix86_reorder_insn (insnp, e_ready);
+	    decode[i] = *e_ready--;
+	    issued_this_cycle++;
+	    continue;
+	  }
+
+	/* ??? Didn't find one.  Ideally, here we would do a lazy split
+	   of 2-uop insns, issue one and queue the other.  */
+      }
+
+ ppro_done:
+  if (issued_this_cycle == 0)
+    issued_this_cycle = 1;
+  ix86_sched_data.ppro.issued_this_cycle = issued_this_cycle;
+}
+
+  
 /* We are about to being issuing insns for this clock cycle.  
    Override the default sort algorithm to better slot instructions.  */
-
 int
 ix86_sched_reorder (dump, sched_verbose, ready, n_ready, clock_var)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
      rtx *ready;
-     int n_ready, clock_var ATTRIBUTE_UNUSED;
+     int n_ready;
+     int clock_var ATTRIBUTE_UNUSED;
 {
   rtx *e_ready = ready + n_ready - 1;
-  rtx *insnp;
-  int i;
 
   if (n_ready < 2)
     goto out;
@@ -6228,146 +6386,14 @@ ix86_sched_reorder (dump, sched_verbose, ready, n_ready, clock_var)
   switch (ix86_cpu)
     {
     default:
-      goto out;
+      break;
 
     case PROCESSOR_PENTIUM:
-      /* This wouldn't be necessary if Haifa knew that static insn ordering
-	 is important to which pipe an insn is issued to.  So we have to make
-	 some minor rearrangements.  */
-      {
-	enum attr_pent_pair pair1, pair2;
-
-	pair1 = ix86_safe_pent_pair (*e_ready);
-
-	/* If the first insn is non-pairable, let it be.  */
-	if (pair1 == PENT_PAIR_NP)
-	  goto out;
-	pair2 = PENT_PAIR_NP;
-
-	/* If the first insn is UV or PV pairable, search for a PU
-	   insn to go with.  */
-	if (pair1 == PENT_PAIR_UV || pair1 == PENT_PAIR_PV)
-	  {
-	    insnp = ix86_pent_find_pair (e_ready-1, ready,
-					 PENT_PAIR_PU, *e_ready);
-	    if (insnp)
-	      pair2 = PENT_PAIR_PU;
-	  }
-
-	/* If the first insn is PU or UV pairable, search for a PV
-	   insn to go with.  */
-	if (pair2 == PENT_PAIR_NP
-	    && (pair1 == PENT_PAIR_PU || pair1 == PENT_PAIR_UV))
-	  {
-	    insnp = ix86_pent_find_pair (e_ready-1, ready,
-					 PENT_PAIR_PV, *e_ready);
-	    if (insnp)
-	      pair2 = PENT_PAIR_PV;
-	  }
-
-	/* If the first insn is pairable, search for a UV
-	   insn to go with.  */
-	if (pair2 == PENT_PAIR_NP)
-	  {
-	    insnp = ix86_pent_find_pair (e_ready-1, ready,
-					 PENT_PAIR_UV, *e_ready);
-	    if (insnp)
-	      pair2 = PENT_PAIR_UV;
-	  }
-
-	if (pair2 == PENT_PAIR_NP)
-	  goto out;
-
-	/* Found something!  Decide if we need to swap the order.  */
-	if (pair1 == PENT_PAIR_PV || pair2 == PENT_PAIR_PU
-	    || (pair1 == PENT_PAIR_UV && pair2 == PENT_PAIR_UV
-		&& ix86_safe_memory (*e_ready) == MEMORY_BOTH
-		&& ix86_safe_memory (*insnp) == MEMORY_LOAD))
-	  ix86_reorder_insn (insnp, e_ready);
-	else
-	  ix86_reorder_insn (insnp, e_ready - 1);
-      }
+      ix86_sched_reorder_pentium (ready, e_ready);
       break;
 
     case PROCESSOR_PENTIUMPRO:
-      {
-	rtx decode[3];
-	enum attr_ppro_uops cur_uops;
-	int issued_this_cycle;
-
-	/* At this point .ppro.decode contains the state of the three 
-	   decoders from last "cycle".  That is, those insns that were
-	   actually independant.  But here we're scheduling for the 
-	   decoder, and we may find things that are decodable in the
-	   same cycle.  */
-
-	memcpy (decode, ix86_sched_data.ppro.decode, sizeof(decode));
-	issued_this_cycle = 0;
-
-	insnp = e_ready;
-	cur_uops = ix86_safe_ppro_uops (*insnp);
-
-	/* If the decoders are empty, and we've a complex insn at the
-	   head of the priority queue, let it issue without complaint.  */
-	if (decode[0] == NULL)
-	  {
-	    if (cur_uops == PPRO_UOPS_MANY)
-	      {
-		decode[0] = *insnp;
-		goto ppro_done;
-	      }
-
-	    /* Otherwise, search for a 2-4 uop unsn to issue.  */
-	    while (cur_uops != PPRO_UOPS_FEW)
-	      {
-		if (insnp == ready)
-		  break;
-		cur_uops = ix86_safe_ppro_uops (*--insnp);
-	      }
-
-	    /* If so, move it to the head of the line.  */
-	    if (cur_uops == PPRO_UOPS_FEW)
-	      ix86_reorder_insn (insnp, e_ready);
-
-	    /* Issue the head of the queue.  */
-	    issued_this_cycle = 1;
-	    decode[0] = *e_ready--;
-	  }
-
-	/* Look for simple insns to fill in the other two slots.  */
-	for (i = 1; i < 3; ++i)
-	  if (decode[i] == NULL)
-	    {
-	      if (ready >= e_ready)
-		goto ppro_done;
-
-	      insnp = e_ready;
-	      cur_uops = ix86_safe_ppro_uops (*insnp);
-	      while (cur_uops != PPRO_UOPS_ONE)
-		{
-		  if (insnp == ready)
-		    break;
-		  cur_uops = ix86_safe_ppro_uops (*--insnp);
-		}
-
-	      /* Found one.  Move it to the head of the queue and issue it.  */
-	      if (cur_uops == PPRO_UOPS_ONE)
-		{
-		  ix86_reorder_insn (insnp, e_ready);
-		  decode[i] = *e_ready--;
-		  issued_this_cycle++;
-		  continue;
-		}
-
-	      /* ??? Didn't find one.  Ideally, here we would do a lazy split
-		 of 2-uop insns, issue one and queue the other.  */
-	    }
-
-      ppro_done:
-	if (issued_this_cycle == 0)
-	  issued_this_cycle = 1;
-	ix86_sched_data.ppro.issued_this_cycle = issued_this_cycle;
-      }
+      ix86_sched_reorder_ppro (ready, e_ready);
       break;
     }
 

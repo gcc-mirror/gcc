@@ -122,7 +122,11 @@ is_cxx_header (fname, text)
       tSCC cxxpat[] = "\
 extern[ \t]*\"C\\+\\+\"|\
 -\\*-[ \t]*([mM]ode:[ \t]*)?[cC]\\+\\+[; \t]*-\\*-|\
-template[ \t]*<";
+template[ \t]*<|\
+^[ \t]*class[ \t]|\
+(public|private|protected):|\
+^[ \t]*#[ \t]*pragma[ \t]+(interface|implementation)\
+";
       static regex_t cxxre;
       static int compiled;
 
@@ -187,12 +191,16 @@ static regex_t mn_name_re;
 
 static int mn_compiled = 0;
 
-void
+int
 mn_get_regexps( label_re, name_re, who )
      regex_t **label_re;
      regex_t **name_re;
      tCC *who;
 {
+  /* Maybe we don't need to do this fix at all?  */
+  if (mn_name_pat[0] == '\0')
+    return 1;
+
   if (! mn_compiled)
     {
       compile_re (mn_label_pat, &mn_label_re, 1, "label pattern", who);
@@ -201,4 +209,5 @@ mn_get_regexps( label_re, name_re, who )
     }
   *label_re = &mn_label_re;
   *name_re = &mn_name_re;
+  return 0;
 }
