@@ -162,7 +162,7 @@ dw_fde_node;
 /* The size in bytes of a DWARF field indicating an offset or length
    relative to a debug info section, specified to be 4 bytes in the
    DWARF-2 specification.  The SGI/MIPS ABI defines it to be the same
-   as DWARF2_ADDR_SIZE.  */
+   as PTR_SIZE.  */
 
 #ifndef DWARF_OFFSET_SIZE
 #define DWARF_OFFSET_SIZE 4
