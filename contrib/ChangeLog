@@ -1,3 +1,13 @@
+2002-10-16  Richard Henderson  <rth@redhat.com>
+
+	* paranoia.cc (ENUM_BITFIELD): New.
+	(class): Define as klass around real.h.
+	(real_c_float): Not a template any longer; define MODE as a
+	class static constant; use real_format elements for SIZE.
+	Update uses of real_to_decimal and real_to_hexadecimal.
+	(main): Change -g argument to use a format name.
+	(mode_for_size): Remove.
+
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	* paranoia.cc: New file.
