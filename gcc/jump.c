@@ -933,6 +933,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      if (insert_after
 		  && no_labels_between_p (insert_after, temp)
 		  && ! reg_referenced_between_p (temp1, insert_after, temp)
+		  && ! reg_referenced_between_p (temp1, temp3,
+						 NEXT_INSN (temp2))
 		  && ! reg_set_between_p (temp1, insert_after, temp)
 		  && (GET_CODE (SET_SRC (temp4)) == CONST_INT
 		      || ! reg_set_between_p (SET_SRC (temp4),
