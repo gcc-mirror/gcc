@@ -1,3 +1,7 @@
+2000-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* ifcvt.c (if_convert): Update life info globally.
+
 2000-05-24  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* emit-rtl.c (unshare_all_decls): New function.
