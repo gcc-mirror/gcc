@@ -1,3 +1,8 @@
+2002-03-27  Andreas Schwab  <schwab@suse.de>
+
+	* config/i386/i386.c (classify_argument): Also check for
+	QUAL_UNION_TYPE.
+
 2002-03-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (alpha*-dec-osf*): Don't need --enable-libgcj
