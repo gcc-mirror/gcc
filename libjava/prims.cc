@@ -38,7 +38,7 @@ details.  */
 #include <java/lang/String.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ThreadGroup.h>
-#include <java/lang/FirstThread.h>
+#include <gnu/gcj/runtime/FirstThread.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/ClassFormatError.h>
@@ -850,7 +850,8 @@ JvRunMain (jclass klass, int argc, const char **argv)
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);
-  main_thread = new java::lang::FirstThread (main_group, klass, arg_vec);
+  main_thread = new gnu::gcj::runtime::FirstThread (main_group, 
+						    klass, arg_vec);
 
   main_thread->start();
   _Jv_ThreadWait ();
@@ -873,9 +874,9 @@ _Jv_RunMain (const char *class_name, int argc, const char **argv)
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);
-  main_thread = new java::lang::FirstThread (main_group,
-					     JvNewStringLatin1 (class_name),
-					     arg_vec);
+  main_thread = new gnu::gcj::runtime::FirstThread (main_group,
+						    JvNewStringLatin1 (class_name),
+						    arg_vec);
   main_thread->start();
   _Jv_ThreadWait ();
 

@@ -215,7 +215,7 @@ java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
 		$(basename $<)
 
 ## Our internal main program needs to be able to create a FirstThread.
-java/lang/FirstThread.h: java/lang/FirstThread.class libgcj.zip
+gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'void JvRunMain (jclass, int, const char **);' \
 		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
@@ -521,6 +521,7 @@ gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/jni/NativeThread.java \
 gnu/gcj/runtime/VMClassLoader.java \
+gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -611,7 +612,6 @@ java/lang/Double.java \
 java/lang/Error.java \
 java/lang/Exception.java \
 java/lang/ExceptionInInitializerError.java \
-java/lang/FirstThread.java \
 java/lang/Float.java \
 java/lang/IllegalAccessError.java \
 java/lang/IllegalAccessException.java \
@@ -804,6 +804,7 @@ gnu/gcj/convert/natInput_SJIS.cc \
 gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/jni/natNativeThread.cc \
+gnu/gcj/runtime/natFirstThread.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \
@@ -811,7 +812,6 @@ java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
 java/lang/natConcreteProcess.cc \
 java/lang/natDouble.cc \
-java/lang/natFirstThread.cc \
 java/lang/natFloat.cc \
 java/lang/natMath.cc \
 java/lang/natObject.cc \

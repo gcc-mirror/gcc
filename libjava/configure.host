@@ -58,8 +58,10 @@ case "${host}" in
  	enable_getenv_properties_default=no
 	;;
   i686-*|i586-*|i486-*|i386-*)
-	libgcj_flags="${libgcj_flags} -ffloat-store -D__NO_MATH_INLINES"
+	libgcj_flags="${libgcj_flags} -ffloat-store"
 	libgcj_interpreter=yes
+	libgcj_cxxflags="-D__NO_MATH_INLINES"
+	libgcj_cflags="-D__NO_MATH_INLINES"
 	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
   sparc-*)

@@ -15,7 +15,7 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
-#include <java/lang/FirstThread.h>
+#include <gnu/gcj/runtime/FirstThread.h>
 #include <java/lang/Class.h>
 #include <java/lang/String.h>
 #include <java/lang/System.h>
@@ -27,7 +27,7 @@ details.  */
 typedef void main_func (jobject);
 
 void
-java::lang::FirstThread::run (void)
+gnu::gcj::runtime::FirstThread::run (void)
 {
   Utf8Const* main_signature = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
   Utf8Const* main_name = _Jv_makeUtf8Const ("main", 4);
