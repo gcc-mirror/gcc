@@ -1,3 +1,7 @@
+1998-10-02  Dave Love  <d.love@dl.ac.uk>
+
+	* com.c (ffecom_expr_intrinsic_): Fix return type for RAND.
+
 Fri Oct  2 01:27:06 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* Make-lang.in (f77.install-common): Add missing "else true;".
