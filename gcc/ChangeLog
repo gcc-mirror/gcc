@@ -1,3 +1,8 @@
+2000-09-15  Greg McGary  <greg@mcgary.org>
+
+	* cppmacro.c (check_trad_stringification): Check token
+	text pointers against limit before dereferencing.
+
 2000-09-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (format_wanted_type): New structure.
