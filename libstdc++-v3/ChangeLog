@@ -1,3 +1,9 @@
+2004-03-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/thread/pthread7-rope.cc: Fix, unpredictably, depending
+	on allocator behavior, the memory pointed by data2 may well be not
+	trashed.
+
 2004-03-28  Chavdar Botev  <cbotev@yahoo.com>
 
 	PR libstdc++/14245
