@@ -1982,6 +1982,14 @@ dump_expr (tree t, int flags)
       print_right_paren (scratch_buffer);
       break;
 
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      print_identifier (scratch_buffer,
+                        operator_name_info[TREE_CODE (t)].name);
+      output_add_space (scratch_buffer);
+      dump_expr (TREE_OPERAND (t, 0), flags);
+      break;
+
     case DEFAULT_ARG:
       print_identifier (scratch_buffer, "<unparsed>");
       break;

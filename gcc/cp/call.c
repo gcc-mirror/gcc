@@ -3010,6 +3010,11 @@ op_error (enum tree_code code, enum tree_code code2,
     case ARRAY_REF:
       error ("%s for 'operator[]' in '%E[%E]'", problem, arg1, arg2);
       break;
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      error ("%s for '%s' in '%s %E'", problem, opname, opname, arg1);
+      break;
       
     default:
       if (arg2)

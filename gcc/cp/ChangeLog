@@ -1,5 +1,12 @@
 2003-07-14  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
+	PR c++/11510
+	* call.c (op_error): Properly format  REALPART_EXPR and
+	IMAGPART_EXPR. 
+	* error.c (dump_expr): Likewise.
+
+2003-07-14  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
 	* error.c (dump_expr): Handle EMPTY_CLASS_EXPR.
 
 2003-07-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
