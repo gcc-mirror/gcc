@@ -1,3 +1,7 @@
+Mon Sep 27 23:27:21 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.h (struct rtx_def): Move gc_mark to align mode field.
+
 Mon Sep 27 23:20:29 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (struct tree_decl): Use `bclass', not `class', in name of
