@@ -674,7 +674,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE)
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
   (TREE_CODE (TYPE1) == TREE_CODE (TYPE2)	\
-   && IS_AGGR_TYPE (TYPE1)&IS_AGGR_TYPE (TYPE2))
+   && IS_AGGR_TYPE (TYPE1) && IS_AGGR_TYPE (TYPE2))
 #define IS_OVERLOAD_TYPE(t) \
   (IS_AGGR_TYPE (t) || TREE_CODE (t) == ENUMERAL_TYPE)
 
