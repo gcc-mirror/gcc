@@ -1,3 +1,8 @@
+Tue Sep  1 16:23:11 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: Remove installation instructions and refer to the
+	INSTALL directory instead.
+
 Wed Sep 30 22:20:50 1998  Robert Lipe  <robertl@dgii.com>
 	
 	* config.sub: Add support for i[34567]86-pc-udk.
