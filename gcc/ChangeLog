@@ -1,3 +1,10 @@
+Fri Feb 21 11:05:44 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (commit_one_edge_insertion): Only mark BB for splitting.
+	(commit_edge_insertions): Call find_many_sub_basic_blocks
+
+	* reg-stack.c (convert_regs): Cleax aux for blocks.
+
 Fri Feb 21 10:29:52 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (parse_options_and_default_flags): Undo accidental commit.
