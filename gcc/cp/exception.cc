@@ -120,7 +120,7 @@ extern "C" cp_eh_info **__get_eh_info (); 	// actually void **
 
 /* Exception allocate and free, defined in libgcc2. */
 extern "C" void *__eh_alloc(size_t);
-extern "C" void __eh_free();
+extern "C" void __eh_free(void *);
 
 /* Is P the type_info node for a pointer of some kind?  */
 

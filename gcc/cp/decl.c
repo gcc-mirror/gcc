@@ -4019,15 +4019,12 @@ pushdecl (x)
 	{
 	  tree decl;
 
-	  if (IDENTIFIER_NAMESPACE_VALUE (name) != NULL_TREE
-	      && IDENTIFIER_NAMESPACE_VALUE (name) != error_mark_node
-	      && (DECL_EXTERNAL (IDENTIFIER_NAMESPACE_VALUE (name))
-		  || TREE_PUBLIC (IDENTIFIER_NAMESPACE_VALUE (name))))
-	    decl = IDENTIFIER_NAMESPACE_VALUE (name);
-	  else
-	    decl = NULL_TREE;
+	  decl = IDENTIFIER_NAMESPACE_VALUE (name);
+	  if (decl && TREE_CODE (decl) == OVERLOAD)
+	    decl = OVL_FUNCTION (decl);
 
-	  if (decl
+	  if (decl && decl != error_mark_node
+	      && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
 	      /* If different sort of thing, we already gave an error.  */
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
