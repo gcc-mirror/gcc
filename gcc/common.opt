@@ -139,17 +139,56 @@ Common Joined
 dumpbase
 Common Separate
 
+fPIC
+Common
+
+fPIE
+Common
+
+falign-functions
+Common
+
 falign-functions=
 Common RejectNegative Joined UInteger
+
+falign-jumps
+Common
 
 falign-jumps=
 Common RejectNegative Joined UInteger
 
+falign-labels
+Common
+
 falign-labels=
 Common RejectNegative Joined UInteger
 
+falign-loops
+Common
+
 falign-loops=
 Common RejectNegative Joined UInteger
+
+fargument-alias
+Common
+
+fargument-noalias
+Common
+
+fargument-noalias-global
+Common
+
+fasynchronous-unwind-tables
+Common
+
+fbounds-check
+Common
+
+fbranch-count-reg
+Common
+
+fbranch-probabilities
+Common
 
 fbranch-target-load-optimize
 Common
@@ -166,6 +205,12 @@ Common Joined RejectNegative
 fcaller-saves
 Common
 
+fcommon
+Common
+
+fcprop-registers
+Common
+
 fcrossjumping
 Common
 
@@ -173,6 +218,9 @@ fcse-follow-jumps
 Common
 
 fcse-skip-blocks
+Common
+
+fdata-sections
 Common
 
 fdefer-pop
@@ -187,16 +235,25 @@ Common
 fdiagnostics-show-location=
 Common Joined RejectNegative
 
+fdump-unnumbered
+Common
+
 feliminate-dwarf2-dups
 Common
 
 feliminate-unused-debug-types
 Common
 
+fexceptions
+Common
+
 fexpensive-optimizations
 Common
 
 ffast-math
+Common
+
+ffinite-math-only
 Common
 
 ffixed-
@@ -214,6 +271,9 @@ Common
 ffunction-cse
 Common
 
+ffunction-sections
+Common
+
 fgcse
 Common
 
@@ -223,10 +283,22 @@ Common
 fgcse-sm
 Common
 
+fgnu-linker
+Common
+
+fguess-branch-probability
+Common
+
+fident
+Common
+
 fif-conversion
 Common
 
 fif-conversion2
+Common
+
+finhibit-size-directive
 Common
 
 finline
@@ -235,19 +307,43 @@ Common
 finline-functions
 Common
 
+finstrument-functions
+Common
+
 fkeep-inline-functions
 Common
 
 fkeep-static-consts
 Common
 
+fleading-underscore
+Common
+
 floop-optimize
+Common
+
+fmath-errno
+Common
+
+fmem-report
+Common
+
+fmerge-all-constants
+Common
+
+fmerge-constants
 Common
 
 fmessage-length=
 Common RejectNegative Joined UInteger
 
 fmove-all-movables
+Common
+
+fnew-ra
+Common
+
+fnon-call-exceptions
 Common
 
 fold-unroll-loops
@@ -259,7 +355,13 @@ Common
 fomit-frame-pointer
 Common
 
+foptimize-register-move
+Common
+
 foptimize-sibling-calls
+Common
+
+fpack-struct
 Common
 
 fpcc-struct-return
@@ -271,7 +373,22 @@ Common
 fpeephole
 Common
 
+fpeephole2
+Common
+
+fpic
+Common
+
+fpie
+Common
+
 fprefetch-loop-arrays
+Common
+
+fprofile
+Common
+
+fprofile-arcs
 Common
 
 frandom-seed
@@ -286,14 +403,44 @@ Common
 freg-struct-return
 Common
 
+fregmove
+Common
+
+frename-registers
+Common
+
+freorder-blocks
+Common
+
+freorder-functions
+Common
+
 frerun-cse-after-loop
 Common
 
 frerun-loop-opt
 Common
 
+fsched-interblock
+Common
+
+fsched-spec
+Common
+
+fsched-spec-load
+Common
+
+fsched-spec-load-dangerous
+Common
+
 fsched-verbose=
 Common RejectNegative Joined
+
+fsched2-use-superblocks
+Common
+
+fsched2-use-traces
+Common
 
 fschedule-insns
 Common
@@ -302,6 +449,24 @@ fschedule-insns2
 Common
 
 fshared-data
+Common
+
+fsignaling-nans
+Common
+
+fsingle-precision-constant
+Common
+
+fssa
+Common
+
+fssa-ccp
+Common
+
+fssa-dce
+Common
+
+fstack-check
 Common
 
 fstack-limit
@@ -316,16 +481,31 @@ Common RejectNegative Joined
 fstrength-reduce
 Common
 
+fstrict-aliasing
+Common
+
 fsyntax-only
 Common
 
+ftest-coverage
+Common
+
 fthread-jumps
+Common
+
+ftime-report
 Common
 
 ftls-model=
 Common Joined RejectNegative
 
 ftracer
+Common
+
+ftrapping-math
+Common
+
+ftrapv
 Common
 
 funit-at-a-time
@@ -337,10 +517,25 @@ Common
 funroll-all-loops
 Common
 
+funsafe-math-optimizations
+Common
+
 funswitch-loops
 Common
 
+funwind-tables
+Common
+
+fverbose-asm
+Common
+
+fwrapv
+Common
+
 fwritable-strings
+Common
+
+fzero-initialized-in-bss
 Common
 
 g
