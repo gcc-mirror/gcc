@@ -219,6 +219,9 @@ extern void real_inf		PARAMS ((REAL_VALUE_TYPE *));
 extern bool real_nan		PARAMS ((REAL_VALUE_TYPE *, const char *,
 					 int, enum machine_mode));
 
+extern void real_maxval		PARAMS ((REAL_VALUE_TYPE *, int,
+					 enum machine_mode));
+
 extern void real_2expN		PARAMS ((REAL_VALUE_TYPE *, int));
 
 extern unsigned int real_hash	PARAMS ((const REAL_VALUE_TYPE *));
