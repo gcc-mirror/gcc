@@ -24,6 +24,11 @@
 	* rename.c: Include config.h, unistd.h
 	* waitpid.c: Include config.h, sys/wait.h
 
+2000-07-24  Daniel Berlin <dberlin@redhat.com>
+
+	* cplus-dem.c (demangle_signature): Change if (GNU_DEMANGLING) to 
+	if (AUTO_DEMANGLING || GNU_DEMANGLING)
+
 2000-07-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_ctor_dtor_name): Remove not-in-charge
