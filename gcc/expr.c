@@ -4430,12 +4430,12 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    *pbitpos += TREE_INT_CST_LOW (index);
 	  else
 	    {
+	      if (contains_placeholder_p (index))
+		index = build (WITH_RECORD_EXPR, sizetype, index, exp);
+
 	      offset = size_binop (PLUS_EXPR, offset,
 				   size_binop (FLOOR_DIV_EXPR, index,
 					       size_int (BITS_PER_UNIT)));
-
-	      if (contains_placeholder_p (offset))
-		offset = build (WITH_RECORD_EXPR, sizetype, offset, exp);
 	    }
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
@@ -5295,7 +5295,7 @@ expand_expr (exp, target, tmode, modifier)
 	tree placeholder_expr;
 
 	/* If there is an object on the head of the placeholder list,
-	   see if some object in its references is of type TYPE.  For
+	   see if some object in it of type TYPE or a pointer to it.  For
 	   further information, see tree.def.  */
 	for (placeholder_expr = placeholder_list;
 	     placeholder_expr != 0;
@@ -5306,26 +5306,38 @@ expand_expr (exp, target, tmode, modifier)
 	    tree old_list = placeholder_list;
 	    tree elt;
 
-	    /* See if the object is the type that we want.  */
-	    if ((TYPE_MAIN_VARIANT (TREE_TYPE
-				    (TREE_PURPOSE (placeholder_expr)))
-		 == need_type))
-	      object = TREE_PURPOSE (placeholder_expr);
-
-	    /* Find the outermost reference that is of the type we want.  */
+	    /* Find the outermost reference that is of the type we want.
+	       If none, see if any object has a type that is a pointer to 
+	       the type we want.  */
 	    for (elt = TREE_PURPOSE (placeholder_expr);
-		 elt != 0 && object == 0
-		 && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e');
-		 elt = ((TREE_CODE (elt) == COMPOUND_EXPR
-			 || TREE_CODE (elt) == COND_EXPR)
-			? TREE_OPERAND (elt, 1) : TREE_OPERAND (elt, 0)))
-	      if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
+		 elt != 0 && object == 0;
+		 elt
+		 = ((TREE_CODE (elt) == COMPOUND_EXPR
+		     || TREE_CODE (elt) == COND_EXPR)
+		    ? TREE_OPERAND (elt, 1)
+		    : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		       || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		    ? TREE_OPERAND (elt, 0) : 0))
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (elt)) == need_type)
+		object = elt;
+
+	    for (elt = TREE_PURPOSE (placeholder_expr);
+		 elt != 0 && object == 0;
+		 elt
+		 = ((TREE_CODE (elt) == COMPOUND_EXPR
+		     || TREE_CODE (elt) == COND_EXPR)
+		    ? TREE_OPERAND (elt, 1)
+		    : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		       || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		       || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		    ? TREE_OPERAND (elt, 0) : 0))
+	      if (POINTER_TYPE_P (TREE_TYPE (elt))
+		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
 		      == need_type))
-		object = TREE_OPERAND (elt, 0);
+		object = build1 (INDIRECT_REF, need_type, elt);
 
 	    if (object != 0)
 	      {
