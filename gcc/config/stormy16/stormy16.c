@@ -1621,7 +1621,7 @@ xstormy16_expand_casesi (index, lower_bound, range, table, default_label)
     sorry ("switch statement of size %lu entries too large", 
 	   (unsigned long) range_i);
 
-  index = expand_binop (SImode, sub_optab, index, lower_bound, index, 0,
+  index = expand_binop (SImode, sub_optab, index, lower_bound, NULL_RTX, 0,
 			OPTAB_LIB_WIDEN);
   emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, SImode, 1,
 			   0, default_label);

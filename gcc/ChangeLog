@@ -1,3 +1,8 @@
+2001-11-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_casesi): 
+	Don't change INDEX.
+
 Fri Nov  9 17:51:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (nonoverlapping_memrefs_p): New function.
