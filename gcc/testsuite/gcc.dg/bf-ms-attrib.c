@@ -9,7 +9,7 @@
    testing nonstandard stuff to begin with. */
 /* { dg-options "-ansi" } */
 
-#include <stdio.h>
+extern void abort(void);
 
 struct one_gcc {
   int d;

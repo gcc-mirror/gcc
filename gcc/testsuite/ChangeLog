@@ -1,3 +1,8 @@
+2004-10-30  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/bf-ms-attrib.c: Add protototype for abort.
+	Remove unnecessary inclusion of stdio.h.
+
 2004-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17581
