@@ -1,3 +1,7 @@
+2004-05-27  Jan Hubicka  <jh@suse.cz>
+
+	* cfgbuild.c (control_flow_insn_p):  Notice noreturn call
+
 2004-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (gen_binary): Remove.
