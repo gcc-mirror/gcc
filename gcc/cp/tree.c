@@ -80,6 +80,9 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
     case WITH_CLEANUP_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+      /* This shouldn't be here, but there are lots of places in the compiler
+         that are sloppy about tacking on NOP_EXPRs to the same type when
+	 no actual conversion is happening.  */
     case NOP_EXPR:
       return lvalue_p_1 (TREE_OPERAND (ref, 0),
 			 treat_class_rvalues_as_lvalues);
