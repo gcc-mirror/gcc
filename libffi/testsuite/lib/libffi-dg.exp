@@ -156,7 +156,8 @@ proc libffi_target_compile { source dest type options } {
 	lappend  options [concat "additional_flags=$TOOL_OPTIONS" $options];
     }
 
-    lappend options "additional_flags=-I${libffi_include}"
+    # search for ffi_mips.h in srcdir, too
+    lappend options "additional_flags=-I${libffi_include} -I${srcdir}/../include"
     lappend options "additional_flags=${libffi_link_flags}"
     lappend options "libs= -lffi"
     verbose "options: $options"
