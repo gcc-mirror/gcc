@@ -501,6 +501,8 @@ public abstract class ClasspathFontPeer
 
   public AffineTransform getTransform (Font font)
   {
+    if (transform == null)
+      transform = new AffineTransform ();
     return transform;
   }
 
