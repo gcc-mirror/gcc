@@ -1,3 +1,8 @@
+2002-06-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-inline.c (expand_call_inline): Make the statement
+	expression we generate have a COMPOUND_STMT.	
+
 2002-06-01  Roger Sayle  <roger@eyesopen.com>
 
 	* gcse.c (cprop_cc0_jump): Function deleted.
@@ -3264,6 +3269,7 @@ config/alpha:
 	(CPP_SPEC): Remove ieee defines.
 	* freebsd.h, netbsd.h: Remove ieee defines and cpp_cpu.
 
+>>>>>>> 1.14095
 2002-05-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_save_reg): Make regno unsigned.
