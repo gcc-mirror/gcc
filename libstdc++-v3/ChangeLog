@@ -1,3 +1,38 @@
+2002-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_limits.h: Move static const data members out of
+	generic template, into base class __numeric_limits_base.
+	* src/limits.cc: Add definitions.
+	* config/linker-map.gnu: Add __numeric_limits_base.
+	* testsuite/18_support/numeric_limits.cc: Declare test in scope.
+	
+2002-03-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_alloc.h: Add extern implicit allocator
+	instantiations.
+	* include/bits/basic_string.tcc: Tweak.
+	* include/bits/loqcale_facets.tcc: Remove default args. Add
+	has_facet, use_facet extern instantiations.
+	* src/stl-inst.cc: Add explicit instantiation.
+	* src/locale-inst.cc: Clean. Remove locale member template
+	instantiations.
+
+	* testsuite/22_locale/operators.cc (test02): Enable.
+
+2002-03-06  Benjamin Kosnik  <bkoz@redhat.com>
+	    Stephen M. Webb  <stephen.webb@bregmasoft.com>
+
+	* include/bits/stl_tree.h (_S_rb_tree_red): Make enum.
+	(_S_rb_tree_black): Make enum.
+	Clean. Format.
+	* include/bits/stl_bvector.h (__WORD_BIT): To _M_word_bit, enum.
+	* include/bits/stl_algo.h (__stl_chunk_size): _M_chunk_size, enum.
+	(__stl_threshold): _M_threshold, enum.
+	* src/stl-inst.cc: Same.
+	* config/linker-map.gnu: Remove.
+	
+	* testsuite/23_containers/vector_bool.cc: New.
+
 2002-03-08  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/basic_string.h (basic_string::_S_construct):  Fix
@@ -113,6 +148,16 @@
 	Group all the integral types, not only decs.
 	* testsuite/27_io/ios_manip_basefield.cc (test01): Tweak existing
 	tests, add a few more.
+
+2002-02-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/ios.cc (ios_base::~ios_base): Tweak.
+	(ios_base::_M_call_callbacks): Deal with null __p.
+	(ios_base::ios_base): Set _M_callbacks.
+	* include/bits/basic_ios.tcc (basic_ios::init): Adjust comment.
+	* testsuite/27_io/ios_init.cc (test02): Fix.
+
+	* mkcheck.in (static_fail): Failed links go to output file.
 
 2002-02-25  Phil Edwards  <pme@gcc.gnu.org>
 

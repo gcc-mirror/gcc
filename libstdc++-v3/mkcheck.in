@@ -362,8 +362,8 @@ test_file()
     else
         # the file did not compile/link.
         printf "\n" >> $LOG_FILE
-#        `cat compile.out >> $LOG_FILE` 
-#        rm compile.out
+        `cat compile.out >> $LOG_FILE` 
+        rm compile.out
         RESULT="-b"
         TEXT="0"
         DATA="0"

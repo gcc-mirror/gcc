@@ -922,6 +922,11 @@ struct _Alloc_traits<_Tp, __allocator<_Tp1, __debug_alloc<_Alloc> > >
 };
 //@}
 
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.  
+  // NB: This syntax is a GNU extension.
+  extern template class allocator<char>;
+  extern template class allocator<wchar_t>;
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_ALLOC_H */

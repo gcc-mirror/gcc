@@ -1,6 +1,6 @@
 // Static data members of -*- C++ -*- numeric_limits classes
 
-// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,29 @@
 
 namespace std 
 {
+  const bool __numeric_limits_base::is_specialized;
+  const int  __numeric_limits_base::digits;
+  const int  __numeric_limits_base::digits10;
+  const bool __numeric_limits_base::is_signed;
+  const bool __numeric_limits_base::is_integer;
+  const bool __numeric_limits_base::is_exact;
+  const int  __numeric_limits_base::radix;
+  const int  __numeric_limits_base::min_exponent;
+  const int  __numeric_limits_base::min_exponent10;
+  const int  __numeric_limits_base::max_exponent;
+  const int  __numeric_limits_base::max_exponent10;
+  const bool __numeric_limits_base::has_infinity;
+  const bool __numeric_limits_base::has_quiet_NaN;
+  const bool __numeric_limits_base::has_signaling_NaN;
+  const float_denorm_style __numeric_limits_base::has_denorm;
+  const bool __numeric_limits_base::has_denorm_loss;
+  const bool __numeric_limits_base::is_iec559;
+  const bool __numeric_limits_base::is_bounded;
+  const bool __numeric_limits_base::is_modulo;
+  const bool __numeric_limits_base::traps;
+  const bool __numeric_limits_base::tinyness_before;
+  const float_round_style __numeric_limits_base::round_style;
+
   // bool
   const bool numeric_limits<bool>::is_specialized;
   const int  numeric_limits<bool>::digits;
