@@ -1,3 +1,10 @@
+Wed Jul 22 12:37:14 1998  Alexandre Petit-Bianco <apbianco@cygnus.com>
+
+	* tree.def (EXPR_WITH_FILE_LOCATION): Defined as an 'e' expression
+ 	so WFL are expanded correctly when contained in a COMPOUND_EXPR.
+	* tree.h (EXPR_WFL_EMIT_LINE_NOTE): Change macro not to use
+ 	lang_flag_0. Added documentation in the flag table.
+
 Tue Jul 21 23:28:35 1998  Klaus Kaempf <kkaempf@rmi.de>
 
 	* cccp.c (do_include): Fix vax c style include handling.
