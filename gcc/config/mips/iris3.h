@@ -52,7 +52,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LINK_SPEC "\
 %{G*} \
 %{!mgas: %{mips1} %{mips2} %{mips3} \
-	 %{bestGnum}}"
+	 %{bestGnum} %{shared} %{non_shared}}"
 
 /* Always use 1 for .file number.  I [meissner@osf.org] wonder why
    IRIS needs this.  */

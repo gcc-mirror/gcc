@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!mgas: \
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
-	%{bestGnum} \
+	%{bestGnum} %{shared} %{non_shared} \
 	%{mips1} %{mips2} %{mips3} \
 	-systype /svr4/}"
 		    

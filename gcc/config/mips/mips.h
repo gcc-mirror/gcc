@@ -424,7 +424,7 @@ while (0)
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
 	%{mips1} %{mips2} %{mips3} \
-	%{bestGnum}}"
+	%{bestGnum} %{shared} %{non_shared}}"
 #endif				/* LINK_SPEC defined */
 
 /* Define this macro meaning that `gcc' should find the library
