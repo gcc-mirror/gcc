@@ -7128,8 +7128,9 @@ cse_insn (insn, in_libcall_block)
 	   already entered SRC and DEST of the SET in the table.  */
 
 	if (GET_CODE (dest) == SUBREG
-	    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) / UNITS_PER_WORD
-		== GET_MODE_SIZE (GET_MODE (dest)) / UNITS_PER_WORD)
+	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
+		 / UNITS_PER_WORD)
+		== (GET_MODE_SIZE (GET_MODE (dest)) - 1)/ UNITS_PER_WORD)
 	    && (GET_MODE_SIZE (GET_MODE (dest))
 		>= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))
 	    && sets[i].src_elt != 0)
