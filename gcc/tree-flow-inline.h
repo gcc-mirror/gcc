@@ -363,8 +363,6 @@ bb_ann (basic_block bb)
 static inline tree
 phi_nodes (basic_block bb)
 {
-  if (bb->index < 0)
-    return NULL;
   return bb_ann (bb)->phi_nodes;
 }
 

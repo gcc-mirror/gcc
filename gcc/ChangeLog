@@ -1,3 +1,8 @@
+2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-flow-inline.h (phi_nodes): Remove an unnecessary check
+	for ENTRY_BLOCK_PTR and EXIT_BLOCK_PTR.
+
 2004-10-07  Geoffrey Keating  <geoffk@apple.com>
 
 	Radar 3813796
