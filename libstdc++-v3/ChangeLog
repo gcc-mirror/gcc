@@ -1,3 +1,25 @@
+2004-10-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/mt_allocator.h (__common_pool_policy): Add template
+	template parameter for pool class type.
+	(__per_type_pool_policy): Same.
+	(__mt_allocator): Don't inherit policy. Qualify policy_type calls.
+	* testsuite/ext/mt_allocator/check_deallocate_null.cc: Fix.
+	* testsuite/ext/mt_allocator/check_deallocate_null_thread.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/instantiate.cc: Same.
+	* testsuite/ext/mt_allocator/tune-1.cc: Same.
+	* testsuite/ext/mt_allocator/tune-2.cc: Same.
+	* testsuite/ext/mt_allocator/tune-3.cc: Same.
+	* testsuite/ext/mt_allocator/tune-4.cc: Same.
+
 2004-10-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
