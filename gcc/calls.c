@@ -546,10 +546,14 @@ special_function_p (name, fndecl, returns_twice, is_longjmp,
 {
   *returns_twice = 0;
   *is_longjmp = 0;
-  *is_malloc = 0;
   *may_be_alloca = 0;
 
-  if (name != 0 && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
+  /* The function decl may have the `malloc' attribute.  */
+  *is_malloc = fndecl && DECL_IS_MALLOC (fndecl);
+
+  if (! is_malloc 
+      && name != 0 
+      && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
       /* Exclude functions not at the file scope, or not `extern',
 	 since they are not the magic functions we would otherwise
 	 think they are.  */
@@ -602,8 +606,8 @@ special_function_p (name, fndecl, returns_twice, is_longjmp,
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
 	*is_longjmp = 1;
-      /* XXX should have "malloc" attribute on functions instead
-	 of recognizing them by name.  */
+      /* Do not add any more malloc-like functions to this list,
+	 instead mark as malloc functions using the malloc attribute.  */
       else if (! strcmp (tname, "malloc")
 	       || ! strcmp (tname, "calloc")
 	       || ! strcmp (tname, "realloc")
