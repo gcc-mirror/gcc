@@ -1,3 +1,8 @@
+2005-02-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (delete_trivially_dead_insns): Speed up by minimizing
+	calls to find_reg_note.
+
 2005-02-24  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/20127
