@@ -234,6 +234,9 @@ static rtx this_insn;
 
 static rtx *reg_equiv_replacement;
 
+/* Used for communication between update_equiv_regs and no_equiv.  */
+static rtx *reg_equiv_init_insns;
+
 static void alloc_qty		PROTO((int, enum machine_mode, int, int));
 static void validate_equiv_mem_from_store PROTO((rtx, rtx));
 static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
@@ -241,6 +244,7 @@ static int contains_replace_regs PROTO((rtx, char *));
 static int memref_referenced_p	PROTO((rtx, rtx));
 static int memref_used_between_p PROTO((rtx, rtx, rtx));
 static void update_equiv_regs	PROTO((void));
+static void no_equiv		PROTO((rtx, rtx));
 static void block_alloc		PROTO((int));
 static int qty_sugg_compare    	PROTO((int, int));
 static int qty_sugg_compare_1	PROTO((const GENERIC_PTR, const GENERIC_PTR));
@@ -633,7 +637,6 @@ memref_used_between_p (memref, start, end)
 static void
 update_equiv_regs ()
 {
-  rtx *reg_equiv_init_insn = (rtx *) alloca (max_regno * sizeof (rtx));
   /* Set when an attempt should be made to replace a register with the
      associated reg_equiv_replacement entry at the end of this function.  */
   char *reg_equiv_replace
@@ -641,9 +644,10 @@ update_equiv_regs ()
   rtx insn;
   int block, depth;
 
+  reg_equiv_init_insns = (rtx *) alloca (max_regno * sizeof (rtx));
   reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx));
 
-  bzero ((char *) reg_equiv_init_insn, max_regno * sizeof (rtx));
+  bzero ((char *) reg_equiv_init_insns, max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_replacement, max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_replace, max_regno * sizeof *reg_equiv_replace);
 
@@ -657,7 +661,7 @@ update_equiv_regs ()
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx note;
-      rtx set = single_set (insn);
+      rtx set;
       rtx dest, src;
       int regno;
 
@@ -669,9 +673,33 @@ update_equiv_regs ()
 	    loop_depth--;
 	}
 
-      /* If this insn contains more (or less) than a single SET, ignore it.  */
-      if (set == 0)
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
+
+      for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+	if (REG_NOTE_KIND (note) == REG_INC)
+	  no_equiv (XEXP (note, 0), note);
+
+      set = single_set (insn);
+
+      /* If this insn contains more (or less) than a single SET,
+	 only mark all destinations as having no known equivalence.  */
+      if (set == 0)
+	{
+	  note_stores (PATTERN (insn), no_equiv);
+	  continue;
+	}
+      else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+	{
+	  int i;
+
+	  for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+	    {
+	      rtx part = XVECEXP (PATTERN (insn), 0, i);
+	      if (part != set)
+		note_stores (part, no_equiv);
+	    }
+	}
 
       dest = SET_DEST (set);
       src = SET_SRC (set);
@@ -688,35 +716,63 @@ update_equiv_regs ()
 	 If one of the regs in the address is marked as reg_equiv_replace,
 	 then we can't add this REG_EQUIV note.  The reg_equiv_replace
 	 optimization may move the set of this register immediately before
-	 insn, which puts it after reg_equiv_init_insn[regno], and hence
+	 insn, which puts it after reg_equiv_init_insns[regno], and hence
 	 the mention in the REG_EQUIV note would be to an uninitialized
 	 pseudo.  */
+      /* ????? This test isn't good enough; we might see a MEM with a use of
+	 a pseudo register before we see its setting insn that will cause
+	 reg_equiv_replace for that pseudo to be set.
+	 Equivalences to MEMs should be made in another pass, after the
+	 reg_equiv_replace information has been gathered.  */
 
-      if (GET_CODE (dest) == MEM && GET_CODE (SET_SRC (set)) == REG
-	  && (regno = REGNO (SET_SRC (set))) >= FIRST_PSEUDO_REGISTER
+      if (GET_CODE (dest) == MEM && GET_CODE (src) == REG
+	  && (regno = REGNO (src)) >= FIRST_PSEUDO_REGISTER
 	  && REG_BASIC_BLOCK (regno) >= 0
-	  && reg_equiv_init_insn[regno] != 0
+	  && REG_N_SETS (regno) == 1
+	  && reg_equiv_init_insns[regno] != 0
+	  && reg_equiv_init_insns[regno] != const0_rtx
 	  && ! find_reg_note (insn, REG_EQUIV, NULL_RTX)
-	  && ! contains_replace_regs (XEXP (dest, 0), reg_equiv_replace)
-	  && validate_equiv_mem (reg_equiv_init_insn[regno], SET_SRC (set),
-				 dest)
-	  && ! memref_used_between_p (SET_DEST (set),
-				      reg_equiv_init_insn[regno], insn))
-	REG_NOTES (reg_equiv_init_insn[regno])
-	  = gen_rtx_EXPR_LIST (REG_EQUIV, dest,
-			       REG_NOTES (reg_equiv_init_insn[regno]));
+	  && ! contains_replace_regs (XEXP (dest, 0), reg_equiv_replace))
+	{
+	  rtx init_insn = XEXP (reg_equiv_init_insns[regno], 0);
+	  if (validate_equiv_mem (init_insn, src, dest)
+	      && ! memref_used_between_p (dest, init_insn, insn))
+	    REG_NOTES (init_insn)
+	      = gen_rtx_EXPR_LIST (REG_EQUIV, dest, REG_NOTES (init_insn));
+	}
 
       /* We only handle the case of a pseudo register being set
-	 once and only if neither the source nor the destination are
-	 in a register class that's likely to be spilled.  */
+	 once, or always to the same value.  */
+      /* ??? The mn10200 port breaks if we add equivalences for
+	 values that need an ADDRESS_REGS register and set them equivalent
+	 to a MEM of a pseudo.  The actual problem is in the over-conservative
+	 handling of INPADDR_ADDRESS / INPUT_ADDRESS / INPUT triples in
+	 calculate_needs, but we traditionally work around this problem
+	 here by rejecting equivalences when the destination is in a register
+	 that's likely spilled.  This is fragile, of course, since the
+	 preferred class of a pseudo depends on all intructions that set
+	 or use it.  */
+
       if (GET_CODE (dest) != REG
 	  || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
-	  || REG_N_SETS (regno) != 1
-	  || CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (dest)))
-	  || (GET_CODE (src) == REG
-	      && REGNO (src) >= FIRST_PSEUDO_REGISTER
-	      && CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (src)))))
-	continue;
+	  || reg_equiv_init_insns[regno] == const0_rtx
+	  || (CLASS_LIKELY_SPILLED_P (reg_preferred_class (regno))
+	      && GET_CODE (src) == MEM))
+	{
+	  /* This might be seting a SUBREG of a pseudo, a pseudo that is
+	     also set somewhere else to a constant.  */
+	  note_stores (set, no_equiv);
+	  continue;
+	}
+      /* Don't handle the equivalence if the source is in a register
+	 class that's likely to be spilled.  */
+      if (GET_CODE (src) == REG
+	  && REGNO (src) >= FIRST_PSEUDO_REGISTER
+	  && CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (src))))
+	{
+	  no_equiv (dest, set);
+	  continue;
+	}
 
       note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
@@ -736,8 +792,19 @@ update_equiv_regs ()
         note = NULL;
 #endif
 
+      if (REG_N_SETS (regno) != 1
+	  && (! note
+	      || ! CONSTANT_P (XEXP (note, 0))
+	      || (reg_equiv_replacement[regno]
+		  && ! rtx_equal_p (XEXP (note, 0),
+				    reg_equiv_replacement[regno]))))
+	{
+	  no_equiv (dest, set);
+	  continue;
+	}
       /* Record this insn as initializing this register.  */
-      reg_equiv_init_insn[regno] = insn;
+      reg_equiv_init_insns[regno]
+	= gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init_insns[regno]);
 
       /* If this register is known to be equal to a constant, record that
 	 it is always equivalent to the constant.  */
@@ -849,7 +916,12 @@ update_equiv_regs ()
 	      if (! reg_equiv_replace[regno])
 		continue;
 
-	      equiv_insn = reg_equiv_init_insn[regno];
+	      /* reg_equiv_replace[REGNO] gets set only when
+		 REG_N_REFS[REGNO] is 2, i.e. the register is set
+		 once and used once.  (If it were only set, but not used,
+		 flow would have deleted the setting insns.)  Hence 
+		 there can only be one insn in reg_equiv_init_insns.  */
+	      equiv_insn = XEXP (reg_equiv_init_insns[regno], 0);
 
 	      if (validate_replace_rtx (regno_reg_rtx[regno],
 					reg_equiv_replacement[regno], insn))
@@ -895,6 +967,35 @@ update_equiv_regs ()
 	    }
 	}
     }
+}
+
+/* Mark REG as having no known equivalence.
+   Some instructions might have been proceessed before and furnished
+   with REG_EQUIV notes for this register; these notes will have to be
+   removed.
+   STORE is the piece of RTL that does the non-constant / conflicting
+   assignment - a SET, CLOBBER or REG_INC note.  It is currently not used,
+   but needs to be there because this function is called from note_stores.  */
+static void
+no_equiv (reg, store)
+     rtx reg, store;
+{
+  int regno;
+  rtx list;
+
+  if (GET_CODE (reg) != REG)
+    return;
+  regno = REGNO (reg);
+  list = reg_equiv_init_insns[regno];
+  if (list == const0_rtx)
+    return;
+  for (; list; list =  XEXP (list, 1))
+    {
+      rtx insn = XEXP (list, 0);
+      remove_note (insn, find_reg_note (insn, REG_EQUIV, NULL_RTX));
+    }
+  reg_equiv_init_insns[regno] = const0_rtx;
+  reg_equiv_replacement[regno] = NULL_RTX;
 }
 
 /* Allocate hard regs to the pseudo regs used only within block number B.

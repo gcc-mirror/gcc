@@ -114,7 +114,7 @@ rtx *reg_equiv_mem;
 /* Widest width in which each pseudo reg is referred to (via subreg).  */
 static int *reg_max_ref_width;
 
-/* Element N is the insn that initialized reg N from its equivalent
+/* Element N is the list of insns that initialized reg N from its equivalent
    constant or memory slot.  */
 static rtx *reg_equiv_init;
 
@@ -710,7 +710,8 @@ reload (first, global, dumpfile)
 		     So don't mark this insn now.  */
 		  if (GET_CODE (x) != MEM
 		      || rtx_equal_p (SET_SRC (set), x))
-		    reg_equiv_init[i] = insn;
+		    reg_equiv_init[i]
+		      = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[i]);
 		}
 	    }
 	}
@@ -722,7 +723,9 @@ reload (first, global, dumpfile)
 	       && reg_equiv_memory_loc[REGNO (SET_SRC (set))]
 	       && rtx_equal_p (SET_DEST (set),
 			       reg_equiv_memory_loc[REGNO (SET_SRC (set))]))
-	reg_equiv_init[REGNO (SET_SRC (set))] = insn;
+	reg_equiv_init[REGNO (SET_SRC (set))]
+	  = gen_rtx_INSN_LIST (VOIDmode, insn,
+			       reg_equiv_init[REGNO (SET_SRC (set))]);
 
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	scan_paradoxical_subregs (PATTERN (insn));
@@ -971,22 +974,30 @@ reload (first, global, dumpfile)
      If that insn didn't set the register (i.e., it copied the register to
      memory), just delete that insn instead of the equivalencing insn plus
      anything now dead.  If we call delete_dead_insn on that insn, we may
-     delete the insn that actually sets the register if the register die
+     delete the insn that actually sets the register if the register dies
      there and that is incorrect.  */
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (reg_renumber[i] < 0 && reg_equiv_init[i] != 0
-	&& GET_CODE (reg_equiv_init[i]) != NOTE)
-      {
-	if (reg_set_p (regno_reg_rtx[i], PATTERN (reg_equiv_init[i])))
-	  delete_dead_insn (reg_equiv_init[i]);
-	else
-	  {
-	    PUT_CODE (reg_equiv_init[i], NOTE);
-	    NOTE_SOURCE_FILE (reg_equiv_init[i]) = 0;
-	    NOTE_LINE_NUMBER (reg_equiv_init[i]) = NOTE_INSN_DELETED;
-	  }
-      }
+    {
+      if (reg_renumber[i] < 0 && reg_equiv_init[i] != 0)
+	{
+	  rtx list;
+	  for (list = reg_equiv_init[i]; list; list = XEXP (list, 1))
+	    {
+	      rtx equiv_insn = XEXP (list, 0);
+	      if (GET_CODE (equiv_insn) == NOTE)
+		continue;
+	      if (reg_set_p (regno_reg_rtx[i], PATTERN (equiv_insn)))
+		delete_dead_insn (equiv_insn);
+	      else
+		{
+		  PUT_CODE (equiv_insn, NOTE);
+		  NOTE_SOURCE_FILE (equiv_insn) = 0;
+		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
+		}
+	    }
+	}
+    }
 
   /* Use the reload registers where necessary
      by generating move instructions to move the must-be-register
