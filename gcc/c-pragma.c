@@ -1,0 +1,219 @@
+/* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
+   Copyright (C) 1992 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+#ifdef HANDLE_SYSV_PRAGMA
+
+/* When structure field packing is in effect, this variable is the
+   number of bits to use as the maximum alignment.  When packing is not
+   in effect, this is zero. */
+
+extern int maximum_field_alignment;
+
+/* Handle a #pragma directive.  INPUT is the current input stream,
+   and C is a character to reread.
+   Returns a character for the caller to reread,
+   or -1 meaning there isn't one.  */
+
+int
+handle_sysv_pragma (input, c)
+     FILE *input;
+     int c;
+{
+  while (c == ' ' || c == '\t')
+    c = getc (input);
+  if (c == '\n' || c == EOF)
+    {
+      handle_pragma_token (0, 0);
+      return c;
+    }
+  ungetc (c, input);
+  switch (yylex ())
+    {
+    case IDENTIFIER:
+    case TYPENAME:
+    case STRING:
+    case CONSTANT:
+      handle_pragma_token (token_buffer, yylval.ttype);
+      break;
+    default:
+      handle_pragma_token (token_buffer, 0);
+    }
+  return -1;
+}
+
+/* Handle one token of a pragma directive.  TOKEN is the
+   current token, and STRING is its printable form.  */
+
+void
+handle_pragma_token (string, token)
+     char *string;
+     tree token;
+{
+  static enum pragma_state
+    {
+      ps_start,
+      ps_done,
+      ps_bad,
+      ps_weak,
+      ps_name,
+      ps_equals,
+      ps_value,
+      ps_pack,
+      ps_left,
+      ps_align,
+      ps_right
+      } state = ps_start, type;
+  static char *name;
+  static char *value;
+  static int align;
+
+  if (string == 0)
+    {
+      if (type == ps_pack)
+	{
+	  if (state == ps_right)
+	    maximum_field_alignment = align * 8;
+	  else
+	    warning ("malformed `#pragma pack'");
+	}
+#ifdef WEAK_ASM_OP
+      else if (type == ps_weak)
+	{
+	  if (state == ps_name || state == ps_value)
+	    {
+	      fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
+	      ASM_OUTPUT_LABELREF (asm_out_file, name);
+	      fputc ('\n', asm_out_file);
+	      if (state == ps_value)
+		{
+		  fprintf (asm_out_file, "\t%s\t", SET_ASM_OP);
+		  ASM_OUTPUT_LABELREF (asm_out_file, name);
+		  fputc (',', asm_out_file);
+		  ASM_OUTPUT_LABELREF (asm_out_file, value);
+		  fputc ('\n', asm_out_file);
+		}
+	    }
+	  else if (! (state == ps_done || state == ps_start))
+	    warning ("malformed `#pragma weak'");
+	}
+#endif /* WEAK_ASM_OP */
+
+      type = state = ps_start;
+      return;
+    }
+
+  switch (state)
+    {
+    case ps_start:
+      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
+	{
+	  if (strcmp (IDENTIFIER_POINTER (token), "pack") == 0)
+	    type = state = ps_pack;
+#ifdef WEAK_ASM_OP
+	  else if (strcmp (IDENTIFIER_POINTER (token), "weak") == 0)
+	    type = state = ps_weak;
+#endif
+	  else
+	    type = state = ps_done;
+	}
+      else
+	type = state = ps_done;
+      break;
+
+#ifdef WEAK_ASM_OP
+    case ps_weak:
+      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
+	{
+	  name = IDENTIFIER_POINTER (token);
+	  state = ps_name;
+	}
+      else
+	state = ps_bad;
+      break;
+
+    case ps_name:
+      state = (strcmp (string, "=") ? ps_bad : ps_equals);
+      break;
+
+    case ps_equals:
+      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
+	{
+	  value = IDENTIFIER_POINTER (token);
+	  state = ps_value;
+	}
+      else
+	state = ps_bad;
+      break;
+
+    case ps_value:
+      state = ps_bad;
+      break;
+#endif /* WEAK_ASM_OP */
+
+    case ps_pack:
+      if (strcmp (string, "(") == 0)
+	state = ps_left;
+      else
+	state = ps_bad;
+      break;
+
+    case ps_left:
+      if (token && TREE_CODE (token) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (token) == 0)
+	switch (TREE_INT_CST_LOW (token))
+	  {
+	  case 1:
+	  case 2:
+	  case 4:
+	    align = TREE_INT_CST_LOW (token);
+	    state = ps_align;
+	    break;
+
+	  default:
+	    state = ps_bad;
+	  }
+      else if (! token && strcmp (string, ")") == 0)
+	{
+	  align = 0;
+	  state = ps_right;
+	}
+      else
+	state = ps_bad;
+      break;
+
+    case ps_align:
+      if (strcmp (string, ")") == 0)
+	state = ps_right;
+      else
+	state = ps_bad;
+      break;
+
+    case ps_right:
+      state = ps_bad;
+      break;
+
+    case ps_bad:
+    case ps_done:
+      break;
+
+    default:
+      abort ();
+    }
+}
+#endif /* HANDLE_SYSV_PRAGMA */
