@@ -1,5 +1,8 @@
 2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR target/16796
+	* gcc.dg/ppc-mov-1.c: New.
+
 	PR target/16458
 	* gcc.dg/ppc-compare-1.c: New.
 
