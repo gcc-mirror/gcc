@@ -1,5 +1,7 @@
 2002-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* mbchar.c (JIS_state_table, JIS_action_table): Const-ify.
+
 	* attribs.c (decl_attributes): Fix signed/unsigned warning.
 
 2002-03-10  Hans-Peter Nilsson  <hp@bitrange.com>

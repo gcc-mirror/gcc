@@ -51,7 +51,7 @@ typedef enum {COPYA, COPYJ, COPYJ2, MAKE_A, MAKE_J, NOOP,
    Thus, maximum returned length is:
      2 (switch to JIS) + 2 (JIS characters) + 2 (switch back to ASCII) = 6.  */
 
-static JIS_STATE JIS_state_table[JIS_S_NUM][JIS_C_NUM] = {
+static const JIS_STATE JIS_state_table[JIS_S_NUM][JIS_C_NUM] = {
 /*            ESCAPE DOLLAR   BRACKET   AT     B      J     NUL JIS_CHAR OTH*/
 /*ASCII*/   { A_ESC, ASCII,   ASCII,    ASCII, ASCII, ASCII, ASCII,ASCII,ASCII},
 /*A_ESC*/   { ASCII, A_ESC_DL,ASCII,    ASCII, ASCII, ASCII, ASCII,ASCII,ASCII},
@@ -65,7 +65,7 @@ static JIS_STATE JIS_state_table[JIS_S_NUM][JIS_C_NUM] = {
 /*J2_ESC_BR*/{INV,   INV,     INV,      INV,   ASCII, ASCII, INV,  INV,  INV },
 };
 
-static JIS_ACTION JIS_action_table[JIS_S_NUM][JIS_C_NUM] = {
+static const JIS_ACTION JIS_action_table[JIS_S_NUM][JIS_C_NUM] = {
 /*            ESCAPE DOLLAR BRACKET AT     B       J      NUL  JIS_CHAR OTH */
 /*ASCII */   {NOOP,  COPYA, COPYA, COPYA,  COPYA,  COPYA, EMPTY, COPYA, COPYA},
 /*A_ESC */   {COPYA, NOOP,  COPYA, COPYA,  COPYA,  COPYA, COPYA, COPYA, COPYA},
