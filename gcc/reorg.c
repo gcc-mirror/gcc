@@ -506,11 +506,17 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
       if (include_delayed_effects)
 	{
 	  rtx next = NEXT_INSN (x);
+	  rtx prev = PREV_INSN (x);
 
 	  res->cc = res->memory = 1;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (call_used_regs[i] || global_regs[i])
 	      SET_HARD_REG_BIT (res->regs, i);
+
+	  /* If X is part of a delay slot sequence, then NEXT should be
+	     the first insn after the sequence.  */
+	  if (NEXT_INSN (prev) != x)
+	    next = NEXT_INSN (NEXT_INSN (prev));
 
 	  /* Skip any possible labels between the CALL_INSN and CLOBBERs.  */
 	  while (GET_CODE (next) == CODE_LABEL)
@@ -520,6 +526,12 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 		  && GET_CODE (PATTERN (next)) == CLOBBER);
 	       next = NEXT_INSN (next))
 	    mark_set_resources (XEXP (PATTERN (next), 0), res, 1, 0);
+
+	  /* Check for a NOTE_INSN_SETJMP.  If it exists, then we must
+	     assume that this call can clobber any register.  */
+	  if (next && GET_CODE (next) == NOTE
+	      && NOTE_LINE_NUMBER (next) == NOTE_INSN_SETJMP)
+	    SET_HARD_REG_SET (res->regs);
 	}
 
       /* ... and also what it's RTL says it modifies, if anything.  */
