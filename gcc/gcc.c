@@ -245,8 +245,7 @@ or with constant text in a single argument.
  %A	process ASM_FINAL_SPEC as a spec.  A capital A is actually
 	used here.  This can be used to run a post-processor after the
 	assembler has done it's job.
- %D	Dump out a -L option for each directory in library_prefix,
-	followed by a -L option for each directory in startfile_prefix.
+ %D	Dump out a -L option for each directory in startfile_prefix.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
  %S     process STARTFILE_SPEC as a spec.  A capital S is actually used here.
@@ -1098,10 +1097,6 @@ static struct path_prefix exec_prefix = { 0, 0, "exec" };
 /* List of prefixes to try when looking for startup (crt0) files. */
 
 static struct path_prefix startfile_prefix = { 0, 0, "startfile" };
-
-/* List of prefixes to try when looking for libraries. */
-
-static struct path_prefix library_prefix = { 0, 0, "libraryfile" };
 
 /* Suffix to attach to directories searched for commands.
    This looks like `MACHINE/VERSION/'.  */
@@ -2120,8 +2115,6 @@ process_command (argc, argv)
 	      else
 		nstore[endp-startp] = 0;
 	      add_prefix (&startfile_prefix, nstore, 0, 0, NULL_PTR);
-	      /* Make separate list of dirs that came from LIBRARY_PATH.  */
-	      add_prefix (&library_prefix, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -2156,8 +2149,6 @@ process_command (argc, argv)
 	      else
 		nstore[endp-startp] = 0;
 	      add_prefix (&startfile_prefix, nstore, 0, 0, NULL_PTR);
-	      /* Make separate list of dirs that came from LIBRARY_PATH.  */
-	      add_prefix (&library_prefix, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -2734,71 +2725,69 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	     followed by the absolute directories
 	     that we search for startfiles.  */
 	  case 'D':
-	    for (i = 0; i < 2; i++)
-	      {
-		struct prefix_list *pl
-		  = (i == 0 ? library_prefix.plist : startfile_prefix.plist);
-		int bufsize = 100;
-		char *buffer = (char *) xmalloc (bufsize);
-		int idx;
+	    {
+	      struct prefix_list *pl = startfile_prefix.plist;
+	      int bufsize = 100;
+	      char *buffer = (char *) xmalloc (bufsize);
+	      int idx;
 
-		for (; pl; pl = pl->next)
-		  {
+	      for (; pl; pl = pl->next)
+		{
 #ifdef RELATIVE_PREFIX_NOT_LINKDIR
-		    /* Used on systems which record the specified -L dirs
-		       and use them to search for dynamic linking.  */
-		    /* Relative directories always come from -B,
-		       and it is better not to use them for searching
-		       at run time.  In particular, stage1 loses  */
-		    if (pl->prefix[0] != '/')
-		      continue;
+		  /* Used on systems which record the specified -L dirs
+		     and use them to search for dynamic linking.  */
+		  /* Relative directories always come from -B,
+		     and it is better not to use them for searching
+		     at run time.  In particular, stage1 loses  */
+		  if (pl->prefix[0] != '/')
+		    continue;
 #endif
-		    if (machine_suffix)
-		      {
-			if (is_linker_dir (pl->prefix, machine_suffix))
-			  {
-			    do_spec_1 ("-L", 0, NULL_PTR);
+		  if (machine_suffix)
+		    {
+		      if (is_linker_dir (pl->prefix, machine_suffix))
+			{
+			  do_spec_1 ("-L", 0, NULL_PTR);
 #ifdef SPACE_AFTER_L_OPTION
-			    do_spec_1 (" ", 0, NULL_PTR);
+			  do_spec_1 (" ", 0, NULL_PTR);
 #endif
-			    do_spec_1 (pl->prefix, 1, NULL_PTR);
-			    /* Remove slash from machine_suffix.  */
-			    if (strlen (machine_suffix) >= bufsize)
-			      bufsize = strlen (machine_suffix) * 2 + 1;
-			    buffer = (char *) xrealloc (buffer, bufsize);
-			    strcpy (buffer, machine_suffix);
-			    idx = strlen (buffer);
-			    if (buffer[idx - 1] == '/')
-			      buffer[idx - 1] = 0;
-			    do_spec_1 (buffer, 1, NULL_PTR);
-			    /* Make this a separate argument.  */
-			    do_spec_1 (" ", 0, NULL_PTR);
-			  }
-		      }
-		    if (!pl->require_machine_suffix)
-		      {
-			if (is_linker_dir (pl->prefix, ""))
-			  {
-			    do_spec_1 ("-L", 0, NULL_PTR);
+			  do_spec_1 (pl->prefix, 1, NULL_PTR);
+			  /* Remove slash from machine_suffix.  */
+			  if (strlen (machine_suffix) >= bufsize)
+			    bufsize = strlen (machine_suffix) * 2 + 1;
+			  buffer = (char *) xrealloc (buffer, bufsize);
+			  strcpy (buffer, machine_suffix);
+			  idx = strlen (buffer);
+			  if (buffer[idx - 1] == '/')
+			    buffer[idx - 1] = 0;
+			  do_spec_1 (buffer, 1, NULL_PTR);
+			  /* Make this a separate argument.  */
+			  do_spec_1 (" ", 0, NULL_PTR);
+			}
+		    }
+		  if (!pl->require_machine_suffix)
+		    {
+		      if (is_linker_dir (pl->prefix, ""))
+			{
+			  do_spec_1 ("-L", 0, NULL_PTR);
 #ifdef SPACE_AFTER_L_OPTION
-			    do_spec_1 (" ", 0, NULL_PTR);
+			  do_spec_1 (" ", 0, NULL_PTR);
 #endif
-			    /* Remove slash from pl->prefix.  */
-			    if (strlen (pl->prefix) >= bufsize)
-			      bufsize = strlen (pl->prefix) * 2 + 1;
-			    buffer = (char *) xrealloc (buffer, bufsize);
-			    strcpy (buffer, pl->prefix);
-			    idx = strlen (buffer);
-			    if (buffer[idx - 1] == '/')
-			      buffer[idx - 1] = 0;
-			    do_spec_1 (buffer, 1, NULL_PTR);
-			    /* Make this a separate argument.  */
-			    do_spec_1 (" ", 0, NULL_PTR);
-			  }
-		      }
-		  }
-		free (buffer);
-	      }
+			  /* Remove slash from pl->prefix.  */
+			  if (strlen (pl->prefix) >= bufsize)
+			    bufsize = strlen (pl->prefix) * 2 + 1;
+			  buffer = (char *) xrealloc (buffer, bufsize);
+			  strcpy (buffer, pl->prefix);
+			  idx = strlen (buffer);
+			  if (buffer[idx - 1] == '/')
+			    buffer[idx - 1] = 0;
+			  do_spec_1 (buffer, 1, NULL_PTR);
+			  /* Make this a separate argument.  */
+			  do_spec_1 (" ", 0, NULL_PTR);
+			}
+		    }
+		}
+	      free (buffer);
+	    }
 	    break;
 
 	  case 'e':
