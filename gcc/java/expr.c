@@ -355,24 +355,11 @@ pop_type_0 (type, messagep)
       else if (CLASS_INTERFACE (TYPE_NAME (TREE_TYPE (type))))
 	return object_ptr_type_node;
     }
-  {
-    const char *str1 = "expected type '";
-    const char *str3 = "' but stack contains '";
-    const char *str5 = "'";
-    int len1 = strlen (str1);
-    int len2 = strlen (lang_printable_name (type, 0));
-    int len3 = strlen (str3);
-    int len4 = strlen (lang_printable_name (t, 0));
-    int len5 = strlen (str5);
-    char *msg = xmalloc (len1 + len2 + len3 + len4 + len5 + 1);
-    *messagep = msg;
-    strcpy (msg, str1);  msg += len1;
-    strcpy (msg, lang_printable_name (type, 0));  msg += len2;
-    strcpy (msg, str3);  msg += len3;
-    strcpy (msg, lang_printable_name (t, 0));  msg += len4;
-    strcpy (msg, str5);
-    return type;
-  }
+
+  *messagep = concat ("expected type '", lang_printable_name (type, 0),
+		      "' but stack contains '", lang_printable_name (t, 0),
+		      "'", NULL);
+  return type;
 }
 
 /* Pop a type from the type stack.
@@ -387,7 +374,7 @@ pop_type (type)
   type = pop_type_0 (type, &message);
   if (message != NULL)
     {
-      error (message);
+      error ("%s", message);
       free (message);
     }
   return type;
