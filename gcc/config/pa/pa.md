@@ -4150,7 +4150,7 @@
   "*
 {
   output_arg_descriptor (insn);
-  return output_call (insn, operands[0], gen_rtx_REG (SImode, 2));
+  return output_call (insn, operands[0]);
 }"
   [(set_attr "type" "call")
    (set (attr "length")
@@ -4309,7 +4309,7 @@
   "*
 {
   output_arg_descriptor (insn);
-  return output_call (insn, operands[1], gen_rtx_REG (SImode, 2));
+  return output_call (insn, operands[1]);
 }"
   [(set_attr "type" "call")
    (set (attr "length")
