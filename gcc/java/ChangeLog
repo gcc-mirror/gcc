@@ -1,3 +1,8 @@
+1999-08-14  Anthony Green  <green@cygnus.com>
+
+	* expr.c (java_lang_expand_expr): Mark static array data as
+	referenced.
+
 Tue Aug	10 00:28:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* jvgenmain.c (main): NUL-terminate name_obstack.
