@@ -2530,6 +2530,7 @@ leaf_renumber_regs_insn (in_rtx)
       case 's':
       case '0':
       case 'i':
+      case 'w':
       case 'n':
       case 'u':
 	break;
