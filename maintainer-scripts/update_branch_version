@@ -11,7 +11,7 @@ cd /tmp/$$
 
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
-FILES="egcs/gcc/version.c egcs/gcc/f/version.c egcs/libf2c/libF77/Version.c egcs/libf2c/libI77/Version.c egcs/libf2c/libU77/Version.c"
+FILES="gcc/gcc/version.c gcc/gcc/f/version.c gcc/libf2c/libF77/Version.c gcc/libf2c/libI77/Version.c gcc/libf2c/libU77/Version.c"
 
 /usr/local/bin/cvs co -r$BRANCH $FILES
 
