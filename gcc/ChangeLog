@@ -1,5 +1,9 @@
 2003-07-15  Richard Sandiford  <rsandifo@redhat.com>
 
+	* doc/invoke.texi: Resync MIPS -march documentation.
+
+2003-07-15  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (PROCESSOR_R9000): New processor_type.
 	(TARGET_MIPS9000, TUNE_MIPS9000): New macros.
 	(GENERATE_MULT3_SI): True for TARGET_MIPS9000.
