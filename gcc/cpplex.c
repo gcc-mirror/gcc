@@ -1935,8 +1935,8 @@ spell_token (pfile, token, buffer)
 
 /* Macro expansion algorithm.  TODO.  */
 
-static const cpp_token placemarker_token = {0, 0, CPP_PLACEMARKER, 0, {0}};
-static const cpp_token eof_token = {0, 0, CPP_EOF, 0, {0}};
+static const cpp_token placemarker_token = {0, 0, CPP_PLACEMARKER, 0 UNION_INIT_ZERO};
+static const cpp_token eof_token = {0, 0, CPP_EOF, 0 UNION_INIT_ZERO};
 
 #define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
 #define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)

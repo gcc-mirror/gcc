@@ -600,4 +600,14 @@ extern void abort PARAMS ((void));
 #define offsetof(TYPE, MEMBER)	((size_t) &((TYPE *)0)->MEMBER)
 #endif
 
+/* Traditional C cannot initialize union members of structs.  Provide
+   a macro which expands appropriately to handle it.  This only works
+   if you intend to initalize the union member to zero since it relies
+   on default initialization to zero in the traditional C case.  */
+#ifdef __STDC__
+#define UNION_INIT_ZERO , {0}
+#else
+#define UNION_INIT_ZERO
+#endif
+
 #endif /* __GCC_SYSTEM_H__ */

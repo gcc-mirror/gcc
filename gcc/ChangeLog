@@ -1,3 +1,10 @@
+2000-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (UNION_INIT_ZERO): New macro for initializing union
+	members in structs.
+
+	* cpplex.c (placemarker_token, eof_token): Use UNION_INIT_ZERO.
+
 2000-07-07  Neil Booth  <NeilB@earthling.net>
 
 	* cpp.texi: Update.
