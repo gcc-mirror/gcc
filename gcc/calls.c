@@ -4567,7 +4567,11 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
       /*  If parm is passed both in stack and in register and offset is 
 	  greater than reg_parm_stack_space, split the offset.  */
+#ifndef STACK_PARMS_IN_REG_PARM_AREA
       if (arg->reg && arg->pass_on_stack)
+#else
+      if (1)
+#endif
 	{
 	  if (arg->offset.constant < reg_parm_stack_space && arg->offset.var)
 	    error ("variable offset is passed paritially in stack and in reg");
@@ -4583,8 +4587,6 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 			    excess, argblock, ARGS_SIZE_RTX (arg->offset),
 			    reg_parm_stack_space,
 		            ARGS_SIZE_RTX (arg->alignment_pad));
-
-	    size_rtx = GEN_INT (INTVAL(size_rtx) - reg_parm_stack_space);
 	  }
 	}
 	

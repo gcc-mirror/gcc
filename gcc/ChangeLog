@@ -1,3 +1,8 @@
+2001-09-10  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* calls.c (store_one_arg): Make sure that the entire argument is
+	pushed if STACK_PARMS_IN_REG_PARM_AREA is defined.
+
 2001-09-09  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (adjust_address): Fix mode for LO_SUM.
