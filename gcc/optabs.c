@@ -2743,6 +2743,8 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
       else
 #endif
 	{
+	  rtx result;
+
 #ifdef TARGET_MEM_FUNCTIONS
 	  emit_library_call (memcmp_libfunc, 0,
 			     TYPE_MODE (integer_type_node), 3,
@@ -2759,7 +2761,14 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 					      TREE_UNSIGNED (integer_type_node)),
 			     TYPE_MODE (integer_type_node));
 #endif
-	  emit_cmp_insn (hard_libcall_value (TYPE_MODE (integer_type_node)),
+
+	  /* Immediately move the result of the libcall into a pseudo
+	     register so reload doesn't clobber the value if it needs
+	     the return register for a spill reg.  */
+	  result = gen_reg_rtx (TYPE_MODE (integer_type_node));
+	  emit_move_insn (result,
+			  hard_libcall_value (TYPE_MODE (integer_type_node)));
+	  emit_cmp_insn (result,
 			 const0_rtx, comparison, NULL_RTX,
 			 TYPE_MODE (integer_type_node), 0, 0);
 	}
@@ -2836,6 +2845,8 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
       && class != MODE_FLOAT)
     {
       rtx libfunc = cmp_optab->handlers[(int) mode].libfunc;
+      rtx result;
+
       /* If we want unsigned, and this mode has a distinct unsigned
 	 comparison routine, use that.  */
       if (unsignedp && ucmp_optab->handlers[(int) mode].libfunc)
@@ -2844,11 +2855,16 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
       emit_library_call (libfunc, 1,
 			 word_mode, 2, x, mode, y, mode);
 
+      /* Immediately move the result of the libcall into a pseudo
+	 register so reload doesn't clobber the value if it needs
+	 the return register for a spill reg.  */
+      result = gen_reg_rtx (word_mode);
+      emit_move_insn (result, hard_libcall_value (word_mode));
+
       /* Integer comparison returns a result that must be compared against 1,
 	 so that even if we do an unsigned compare afterward,
 	 there is still a value that can represent the result "less than".  */
-
-      emit_cmp_insn (hard_libcall_value (word_mode), const1_rtx,
+      emit_cmp_insn (result, const1_rtx,
 		     comparison, NULL_RTX, word_mode, unsignedp, 0);
       return;
     }
@@ -2887,6 +2903,7 @@ emit_float_lib_cmp (x, y, comparison)
 {
   enum machine_mode mode = GET_MODE (x);
   rtx libfunc = 0;
+  rtx result;
 
   if (mode == HFmode)
     switch (comparison)
@@ -3051,7 +3068,13 @@ emit_float_lib_cmp (x, y, comparison)
   emit_library_call (libfunc, 1,
 		     word_mode, 2, x, mode, y, mode);
 
-  emit_cmp_insn (hard_libcall_value (word_mode), const0_rtx, comparison,
+  /* Immediately move the result of the libcall into a pseudo
+     register so reload doesn't clobber the value if it needs
+     the return register for a spill reg.  */
+  result = gen_reg_rtx (word_mode);
+  emit_move_insn (result, hard_libcall_value (word_mode));
+
+  emit_cmp_insn (result, const0_rtx, comparison,
 		 NULL_RTX, word_mode, 0, 0);
 }
 
