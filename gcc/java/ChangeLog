@@ -1,3 +1,8 @@
+2003-06-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+	* lang.c: Include opts.h. Define cl_options_count and cl_options.
+
 2003-06-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.c (java_init_options): Update.

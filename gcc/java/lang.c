@@ -45,6 +45,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-inline.h"
 #include "splay-tree.h"
 #include "tree-dump.h"
+#include "opts.h"
+
+const unsigned int cl_options_count;
+const struct cl_option cl_options[1];
 
 struct string_option
 {
