@@ -1136,6 +1136,10 @@ i[34567]86-*-netbsd*)
 	tmake_file=t-netbsd
 	use_collect2=yes
 	;;
+x86_64-*-netbsd*)
+	tm_file="i386/biarch64.h i386/i386.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	float_format=i386
+	;;
 i[34567]86-*-openbsd*)
 	# needed to unconfuse gdb
 	tmake_file="t-libc-ok t-openbsd i386/t-openbsd"
