@@ -1,3 +1,8 @@
+2004-11-22  Nick Clifton  <nickc@redhat.com>
+
+	* sbitmap.c (sbitmap_union_of_preds): Set 'e' to the next edge
+	predecessor in the first for-loop.
+
 2004-11-21  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c: (rs6000_darwin64_function_arg): Add
