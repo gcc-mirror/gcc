@@ -1,3 +1,13 @@
+2004-11-07  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Process.java:
+	Import cleanups.
+
+2004-11-07  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/zip/ZipEntry.java
+	(KNOWN_SIZE, KNOWN_CSIZE, KNOWN_CRC, KNOWN_TIME): Made final.
+
 2004-11-07  Robert Schuster  <theBohemian@gmx.net>
 
 	Fixes bug #10908
