@@ -1,3 +1,11 @@
+2005-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/19857
+	* fold-const.c (fold): Don't optimize (T)(x & cst) to
+	(T)x & (T)cst if (T)cst overflows.
+	* convert.c (convert_to_integer) <case POINTER_TYPE>: Pass
+	TYPE_UNSIGNED (type) as type_for_size's UNSIGNEDP argument.
+
 2005-02-15  Jeff Law  <law@redhat.com>
 
 	* gcse.c (blocks_with_calls): New bitmap.

@@ -6874,9 +6874,14 @@ fold (tree expr)
 #endif
 	    }
 	  if (change)
-	    return fold (build2 (BIT_AND_EXPR, type,
-				 fold_convert (type, and0),
-				 fold_convert (type, and1)));
+	    {
+	      tem = build_int_cst_wide (type, TREE_INT_CST_LOW (and1),
+					TREE_INT_CST_HIGH (and1));
+	      tem = force_fit_type (tem, 0, TREE_OVERFLOW (and1),
+				    TREE_CONSTANT_OVERFLOW (and1));
+	      return fold (build2 (BIT_AND_EXPR, type,
+				   fold_convert (type, and0), tem));
+	    }
 	}
 
       /* Convert (T1)((T2)X op Y) into (T1)X op Y, for pointer types T1 and
