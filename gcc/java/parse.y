@@ -10823,7 +10823,7 @@ patch_synchronized_statement (node, wfl_op1)
   tree expr = java_complete_tree (TREE_OPERAND (node, 0));
   tree block = TREE_OPERAND (node, 1);
 
-  tree enter, exit, finally, expr_decl;
+  tree enter, exit, finally, expr_decl, assignment;
 
   if (expr == error_mark_node)
     {
@@ -10863,13 +10863,13 @@ patch_synchronized_statement (node, wfl_op1)
   BUILD_MONITOR_EXIT (exit, expr_decl);
   CAN_COMPLETE_NORMALLY (enter) = 1;
   CAN_COMPLETE_NORMALLY (exit) = 1;
+  assignment = build (MODIFY_EXPR, NULL_TREE, expr_decl, expr);
+  TREE_SIDE_EFFECTS (assignment) = 1;
   node = build1 (CLEANUP_POINT_EXPR, NULL_TREE,
 		 build (COMPOUND_EXPR, NULL_TREE,
 			build (WITH_CLEANUP_EXPR, NULL_TREE,
 			       build (COMPOUND_EXPR, NULL_TREE,
-				      build (MODIFY_EXPR, NULL_TREE,
-					     expr_decl, expr),
-				      enter),
+				      assignment, enter),
 			       NULL_TREE, exit),
 			block));
   node = build_expr_block (node, expr_decl);

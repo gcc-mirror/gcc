@@ -2250,7 +2250,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/cygnus/gnupro-98r1/share/bison.simple"
+#line 3 "/usr/local/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2443,7 +2443,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/cygnus/gnupro-98r1/share/bison.simple"
+#line 196 "/usr/local/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4701,7 +4701,7 @@ case 492:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/cygnus/gnupro-98r1/share/bison.simple"
+#line 498 "/usr/local/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -13461,7 +13461,7 @@ patch_synchronized_statement (node, wfl_op1)
   tree expr = java_complete_tree (TREE_OPERAND (node, 0));
   tree block = TREE_OPERAND (node, 1);
 
-  tree enter, exit, finally, expr_decl;
+  tree enter, exit, finally, expr_decl, assignment;
 
   if (expr == error_mark_node)
     {
@@ -13501,13 +13501,13 @@ patch_synchronized_statement (node, wfl_op1)
   BUILD_MONITOR_EXIT (exit, expr_decl);
   CAN_COMPLETE_NORMALLY (enter) = 1;
   CAN_COMPLETE_NORMALLY (exit) = 1;
+  assignment = build (MODIFY_EXPR, NULL_TREE, expr_decl, expr);
+  TREE_SIDE_EFFECTS (assignment) = 1;
   node = build1 (CLEANUP_POINT_EXPR, NULL_TREE,
 		 build (COMPOUND_EXPR, NULL_TREE,
 			build (WITH_CLEANUP_EXPR, NULL_TREE,
 			       build (COMPOUND_EXPR, NULL_TREE,
-				      build (MODIFY_EXPR, NULL_TREE,
-					     expr_decl, expr),
-				      enter),
+				      assignment, enter),
 			       NULL_TREE, exit),
 			block));
   node = build_expr_block (node, expr_decl);
