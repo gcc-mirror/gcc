@@ -1,3 +1,8 @@
+1999-11-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (maybe_make_one_only): Always make things comdat on
+	ELF targets, too.
+
 1999-10-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (finish_function): Call free_after_parsing for functions
