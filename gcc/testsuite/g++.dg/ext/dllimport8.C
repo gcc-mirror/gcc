@@ -12,12 +12,12 @@ struct  __attribute__((dllimport)) Foo
     static void static_func2();
  };
 
-void Foo::static_func1()
-  {		//  { dg-warning "defined" }
+void Foo::static_func1()	//  { dg-warning "defined" }
+  {
   }
 
-inline void Foo::static_func2()
- {		//  { dg-warning "inline function" }
+inline void Foo::static_func2()	//  { dg-warning "inline function" }
+ {
  }
 
 void testfoo()

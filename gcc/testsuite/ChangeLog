@@ -1,3 +1,9 @@
+2004-10-22  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* g++.dg/ext/dllimport1.C: Move dg-warnings.
+	* g++.dg/ext/dllimport2.C: Same.
+	* g++.dg/ext/dllimport8.C: Same.
+
 2004-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10841
