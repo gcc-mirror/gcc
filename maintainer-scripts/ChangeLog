@@ -1,5 +1,8 @@
 2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* update_web_docs: Set SOURCEDIR so that install manual can be
+	found when running install.texi2html.
+
 	* gcc_release: Don't require a username if running locally.
 
 2001-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
