@@ -125,8 +125,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 
   protected ZipEntry createZipEntry (String name)
   {
-    // FIXME - must figure out what this is supposed to do.
-    return null;
+    return new ZipEntry (name);
   }
   
   public int read (byte[] b, int off, int len)  throws IOException
