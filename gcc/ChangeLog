@@ -31,8 +31,6 @@ Sat Jan 20 12:46:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* function.c (fixup_var_refs): Move CALL_PLACEHOLDER handling...
 	(fixup_var_refs_insns): ...here.
 
-	* gcc.c-torture/compile/20010118-1.c: New test.
-
 2001-01-20  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* function.c (fixup_var_refs_insns): Break up into
