@@ -55,10 +55,9 @@ DEFTREECODE (TYPE_EXPR, "type_expr", "e", 1)
 DEFTREECODE (NEW_EXPR, "nw_expr", "e", 3)
 DEFTREECODE (VEC_NEW_EXPR, "vec_nw_expr", "e", 3)
 
-/* Distinguish variables that are only used to identify exceptions
-   that were caught.  Only the DECL_NAME (and TREE_CHAIN)
-   is really used.  */
-DEFTREECODE (CPLUS_CATCH_DECL, "catch_decl", "d", 0)
+/* A throw expression.  operand 0 is the expression, if there was one,
+   else it is NULL_TREE.  */
+DEFTREECODE (THROW_EXPR, "throw_expr", "e", 1)
 
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for

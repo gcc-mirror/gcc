@@ -1494,44 +1494,6 @@ build_exception_variant (ctype, type, raises)
   int constp = TYPE_READONLY (type);
   int volatilep = TYPE_VOLATILE (type);
 
-  if (raises && TREE_CHAIN (raises))
-    {
-      for (i = 0, t = raises; t; t = TREE_CHAIN (t), i++)
-	a[i] = t;
-      /* NULL terminator for list.  */
-      a[i] = NULL_TREE;
-      qsort (a, i, sizeof (tree), id_cmp);
-      while (i--)
-	TREE_CHAIN (a[i]) = a[i+1];
-      raises = a[0];
-    }
-  else if (raises)
-    /* do nothing.  */;
-  else
-    return build_type_variant (v, constp, volatilep);
-
-  if (ctype)
-    {
-      cname = TYPE_NAME (ctype);
-      if (TREE_CODE (cname) == TYPE_DECL)
-	cname = DECL_NAME (cname);
-    }
-  else
-    cname = NULL_TREE;
-
-  for (t = raises; t; t = TREE_CHAIN (t))
-    {
-      /* See that all the exceptions we are thinking about
-	 raising have been declared.  */
-      tree this_cname = lookup_exception_cname (ctype, cname, t);
-      tree decl = lookup_exception_object (this_cname, TREE_VALUE (t), 1);
-
-      if (decl == NULL_TREE)
-	decl = lookup_exception_object (this_cname, TREE_VALUE (t), 0);
-      /* Place canonical exception decl into TREE_TYPE of RAISES list.  */
-      TREE_TYPE (t) = decl;
-    }
-
   for (v = TYPE_NEXT_VARIANT (v); v; v = TYPE_NEXT_VARIANT (v))
     {
       if (TYPE_READONLY (v) != constp

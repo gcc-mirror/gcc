@@ -271,10 +271,6 @@ extern int interface_only, interface_unknown;
 
 extern int flag_elide_constructors;
 
-/* Nonzero means recognize and handle exception handling constructs.  */
-
-extern int flag_handle_exceptions;
-
 /* Nonzero means handle things in ANSI, instead of GNU fashion.  */
 
 extern int flag_ansi;
@@ -282,7 +278,7 @@ extern int flag_ansi;
 /* Nonzero means recognize and handle ansi-style exception handling
    constructs.  */
 
-extern int flag_ansi_exceptions;
+extern int flag_handle_exceptions;
 
 /* Nonzero means do argument matching for overloading according to the
    ANSI rules, rather than what g++ used to believe to be correct.  */
@@ -1083,10 +1079,14 @@ struct lang_decl
    or virtual baseclasses.  */
 #define TYPE_USES_COMPLEX_INHERITANCE(NODE) (TREE_LANG_FLAG_1 (NODE))
 
+/* Nonzero in IDENTIFIER_NODE means that this name is not the name the user
+   gave; it's a DECL_NESTED_TYPENAME.  Someone may want to set this on
+   mangled function names, too, but it isn't currently.  */
+#define TREE_MANGLED(NODE) (TREE_LANG_FLAG_0 (NODE))
+
 #if 0				/* UNUSED */
 /* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
    should be looked up in a non-standard way.  */
-#define TREE_OVERLOADED(NODE) (TREE_LANG_FLAG_0 (NODE))
 #define DECL_OVERLOADED(NODE) (DECL_LANG_FLAG_4 (NODE))
 #endif
 
@@ -1921,27 +1921,20 @@ extern tree lookup_name_nonclass		PROTO((tree));
 /* in edsel.c */
 
 /* in except.c */
-extern tree lookup_exception_cname		PROTO((tree, tree, tree));
-extern tree lookup_exception_tname		PROTO((tree));
-extern tree lookup_exception_object		PROTO((tree, tree, int));
-extern tree lookup_exception_type		PROTO((tree, tree, tree));
-extern tree finish_exception			PROTO((tree, tree));
-extern void finish_exception_decl		PROTO((tree, tree));
-extern void end_exception_decls			PROTO((void));
-extern void cplus_expand_start_try		PROTO((int));
-extern tree cplus_expand_end_try		PROTO((int));
-extern void cplus_expand_start_except		PROTO((tree, tree));
-extern void cplus_expand_end_except		PROTO((tree));
-extern void cplus_expand_raise			PROTO((tree, tree, tree, int));
-extern tree ansi_exception_object_lookup	PROTO((tree));
-extern void cplus_expand_throw			PROTO((tree));
-extern tree cplus_expand_start_catch		PROTO((tree));
-extern tree ansi_expand_start_catch		PROTO((tree));
-extern void cplus_expand_end_catch		PROTO((int));
-extern void cplus_expand_reraise		PROTO((tree));
-extern void setup_exception_throw_decl		PROTO((void));
+
+extern void start_protect			PROTO((void));
+extern void end_protect				PROTO((tree));
+extern void expand_exception_blocks		PROTO((void));
+extern void expand_start_try_stmts		PROTO((void));
+extern void expand_end_try_stmts		PROTO((void));
+extern void expand_start_all_catch		PROTO((void));
+extern void expand_end_all_catch		PROTO((void));
+extern void start_catch_block			PROTO((tree, tree));
+extern void end_catch_block			PROTO((void));
+extern void expand_throw			PROTO((tree));
+extern void build_exception_table		PROTO((void));
+extern tree build_throw				PROTO((tree));
 extern void init_exception_processing		PROTO((void));
-extern void init_exception_processing_1		PROTO((void));
 
 /* in expr.c */
 /* skip cplus_expand_expr */
@@ -2290,18 +2283,6 @@ extern void GNU_xref_function			PROTO((tree, tree));
 extern void GNU_xref_assign			PROTO((tree));
 extern void GNU_xref_hier			PROTO((char *, char *, int, int, int));
 extern void GNU_xref_member			PROTO((tree, tree));
-
-#define in_try_block(X) (0)
-#define in_exception_handler(X) (0)
-#define expand_raise(X) (0)
-#define expand_start_try(A,B,C) ((void)0)
-#define expand_end_try() ((void)0)
-#define expand_start_except(A,B) ((void)0)
-#define expand_escape_except() (0)
-#define expand_end_except() (NULL_TREE)
-#define expand_catch(X) (0)
-#define expand_catch_default() (0)
-#define expand_end_catch() (0)
 
 /* -- end of C++ */
 

@@ -2280,6 +2280,7 @@ build_function_call_real (function, params, require_complete, flags)
 	     function, coerced_params, NULL_TREE);
 
     TREE_SIDE_EFFECTS (result) = 1;
+    /* Remove this sometime. */
     TREE_RAISES (result) |= !! TYPE_RAISES_EXCEPTIONS (fntype);
     if (! require_complete)
       return result;

@@ -766,40 +766,16 @@ init_lex ()
   do { struct resword *s = is_reserved_word (STRING, sizeof (STRING) - 1); \
        if (s) s->name = ""; } while (0)
 
-  if (flag_ansi_exceptions)
-      flag_handle_exceptions = 2;
-
-  if (!flag_ansi_exceptions)
+#if 0
+  /* let's parse things, and if they use it, then give them an error.  */
+  if (!flag_handle_exceptions)
     {
+      UNSET_RESERVED_WORD ("throw");
+      UNSET_RESERVED_WORD ("try");
       UNSET_RESERVED_WORD ("catch");
     }
+#endif
 
-  if (! flag_handle_exceptions)
-    {
-      /* Easiest way to not recognize exception
-	 handling extensions...  */
-      UNSET_RESERVED_WORD ("all");
-      UNSET_RESERVED_WORD ("except");
-      UNSET_RESERVED_WORD ("exception");
-      UNSET_RESERVED_WORD ("raise");
-      UNSET_RESERVED_WORD ("raises");
-      UNSET_RESERVED_WORD ("reraise");
-      UNSET_RESERVED_WORD ("try");
-      UNSET_RESERVED_WORD ("throw");
-    }
-  else if (flag_ansi_exceptions)
-    {
-      /* Easiest way to not recognize exception
-	 handling extensions...  */
-      UNSET_RESERVED_WORD ("exception");
-      UNSET_RESERVED_WORD ("all");
-      UNSET_RESERVED_WORD ("except");
-      UNSET_RESERVED_WORD ("raise");
-      UNSET_RESERVED_WORD ("raises");
-      UNSET_RESERVED_WORD ("reraise");
-      is_reserved_word ("try", sizeof ("try") - 1)->token = ANSI_TRY;
-      is_reserved_word ("throw", sizeof ("throw") - 1)->token = ANSI_THROW;
-    }
   if (! (flag_gc || flag_dossier))
     {
       UNSET_RESERVED_WORD ("classof");
@@ -3171,6 +3147,13 @@ do_identifier (token)
 	}
     }
 
+  /* Remember that this name has been used in the class definition, as per
+     [class.scope0] */
+  if (id && current_class_type
+      && TYPE_BEING_DEFINED (current_class_type)
+      && ! IDENTIFIER_CLASS_VALUE (token))
+    pushdecl_class_level (id);
+    
   if (!id || id == error_mark_node)
     {
       if (id == error_mark_node && current_class_type != NULL_TREE)
@@ -3496,7 +3479,14 @@ real_yylex ()
 	if (strcmp ("catch", token_buffer) == 0
 	    || strcmp ("throw", token_buffer) == 0
 	    || strcmp ("try", token_buffer) == 0)
-	  pedwarn ("`catch', `throw', and `try' are all C++ reserved words");
+	  {
+	    static int did_warn = 0;
+	    if (! did_warn  && ! flag_handle_exceptions)
+	      {
+		pedwarn ("`catch', `throw', and `try' are all C++ reserved words");
+		did_warn = 1;
+	      }
+	  }
 
 	if (value == IDENTIFIER || value == TYPESPEC)
 	  GNU_xref_ref (current_function_decl, token_buffer);

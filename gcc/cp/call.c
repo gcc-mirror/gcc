@@ -2924,18 +2924,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	need_vtbl = maybe_needed;
       instance_ptr = build1 (ADDR_EXPR, TYPE_POINTER_TO (basetype), instance);
     }
-  else if (instance == current_exception_object)
-    {
-      instance_ptr = build1 (ADDR_EXPR, TYPE_POINTER_TO (current_exception_type),
-			    TREE_OPERAND (current_exception_object, 0));
-      mark_addressable (TREE_OPERAND (current_exception_object, 0));
-      result = build_field_call (TYPE_BINFO (current_exception_type),
-				 instance_ptr, name, parms);
-      if (result)
-	return result;
-      cp_error ("exception member `%D' cannot be invoked", name);
-      return error_mark_node;
-    }
   else
     {
       /* The MAIN_VARIANT of the type that `instance_ptr' winds up being.  */
