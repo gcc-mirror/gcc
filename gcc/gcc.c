@@ -373,10 +373,12 @@ or with constant text in a single argument.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
  %G     process LIBGCC_SPEC as a spec.
+ %M     output multilib_dir with directory separators replaced with "_";
+	if multilib_dir is not set or is ".", output "".
  %S     process STARTFILE_SPEC as a spec.  A capital S is actually used here.
  %E     process ENDFILE_SPEC as a spec.  A capital E is actually used here.
  %c	process SIGNED_CHAR_SPEC as a spec.
- %C     process CPP_SPEC as a spec.  A capital C is actually used here.
+ %C     process CPP_SPEC as a spec.
  %1	process CC1_SPEC as a spec.
  %2	process CC1PLUS_SPEC as a spec.
  %|	output "-" if the input for the current command is coming from a pipe.
@@ -1282,6 +1284,80 @@ init_spec ()
       sl->next = next;
       next = sl;
     }
+
+#ifdef ENABLE_SHARED_LIBGCC
+  /* ??? If neither -shared-libgcc nor --static-libgcc was
+     seen, then we should be making an educated guess.  Some proposed
+     heuristics for ELF include:
+
+	(1) If "-Wl,--export-dynamic", then it's a fair bet that the
+	    program will be doing dynamic loading, which will likely
+	    need the shared libgcc.
+
+	(2) If "-ldl", then it's also a fair bet that we're doing
+	    dynamic loading.
+
+	(3) For each ET_DYN we're linking against (either through -lfoo
+	    or /some/path/foo.so), check to see whether it or one of
+	    its dependancies depends on a shared libgcc.
+
+	(4) If "-shared"
+
+	    If the runtime is fixed to look for program headers instead
+	    of calling __register_frame_info at all, for each object,
+	    use the shared libgcc if any EH symbol referenced.
+
+	    If crtstuff is fixed to not invoke __register_frame_info
+	    automatically, for each object, use the shared libgcc if
+	    any non-empty unwind section found.
+
+     Doing any of this probably requires invoking an external program to
+     do the actual object file scanning.  */
+  {
+    const char *p = libgcc_spec;
+    int in_sep = 1;
+ 
+    /* Transform the extant libgcc_spec into one that uses the shared libgcc
+       when given the proper command line arguments.  */
+    while (*p)
+      {
+	const char *r;
+        if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
+	  {
+#ifdef NO_SHARED_LIBGCC_MULTILIB
+	    r = "%{shared-libgcc:-lgcc_s}%{!shared-libgcc:-lgcc}";
+#else
+	    r = "%{shared-libgcc:-lgcc_s%M}%{!shared-libgcc:-lgcc}";
+#endif
+	    obstack_grow (&obstack, r, strlen(r));
+	    p += 5;
+	    in_sep = 0;
+	  }
+	else if (in_sep && *p == 'l' && strncmp (p, "libgcc.a%s", 10) == 0)
+	  {
+	    /* Ug.  We don't know shared library extensions.  Hope that
+	       systems that use this form don't do shared libraries.  */
+#ifdef NO_SHARED_LIBGCC_MULTILIB
+	    r = "%{shared-libgcc:-lgcc_s}%{!shared-libgcc:libgcc.a%s}";
+#else
+	    r = "%{shared-libgcc:-lgcc_s%M}%{!shared-libgcc:libgcc.a%s}";
+#endif
+	    obstack_grow (&obstack, r, strlen(r));
+	    p += 10;
+	    in_sep = 0;
+	  }
+	else
+	  {
+	    obstack_1grow (&obstack, *p);
+	    in_sep = (*p == ' ');
+	    p += 1;
+	  }
+      }
+
+    obstack_1grow (&obstack, '\0');
+    libgcc_spec = obstack_finish (&obstack);
+  }
+#endif
 
   specs = sl;
 }
@@ -3552,7 +3628,7 @@ process_command (argc, argv)
            switches[n_switches].part1     = "--target-help";
            switches[n_switches].args      = 0;
            switches[n_switches].live_cond = SWITCH_OK;
-           switches[n_switches].validated     = 0;
+           switches[n_switches].validated = 0;
 
            n_switches++;
         }
@@ -3570,7 +3646,7 @@ process_command (argc, argv)
 	      switches[n_switches].part1     = "--help";
 	      switches[n_switches].args      = 0;
 	      switches[n_switches].live_cond = SWITCH_OK;
-	      switches[n_switches].validated     = 0;
+	      switches[n_switches].validated = 0;
 
 	      n_switches++;
 	    }
@@ -3697,8 +3773,10 @@ process_command (argc, argv)
 
 	  switches[n_switches].live_cond = SWITCH_OK;
 	  switches[n_switches].validated = 0;
-	  /* This is always valid, since gcc.c itself understands it.  */
-	  if (!strcmp (p, "save-temps"))
+	  /* These are always valid, since gcc.c itself understands it.  */
+	  if (!strcmp (p, "save-temps")
+	      || !strcmp (p, "static-libgcc")
+	      || !strcmp (p, "shared-libgcc"))
 	    switches[n_switches].validated = 1;
 	  else
 	    {
@@ -4344,6 +4422,23 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    value = do_spec_1 (libgcc_spec, 0, NULL_PTR);
 	    if (value != 0)
 	      return value;
+	    break;
+
+	  case 'M':
+	    if (multilib_dir && strcmp (multilib_dir, ".") != 0)
+	      {
+		char *p;
+		const char *q;
+		size_t len;
+
+		len = strlen (multilib_dir);
+		obstack_blank (&obstack, len + 1);
+		p = obstack_next_free (&obstack) - len;
+
+		*p++ = '_';
+		for (q = multilib_dir; *q ; ++q, ++p)
+		  *p = (IS_DIR_SEPARATOR (*q) ? '_' : *q);
+	      }
 	    break;
 
 	  case 'p':
