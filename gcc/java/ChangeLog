@@ -1,5 +1,8 @@
 2001-03-17  Per Bothner  <per@bothner.com>
 
+	* jcf-write.c (generate_bytecode_insns):  Handle emitting iinc
+	when result is is needed (target is STACK_TARGET).
+
 	* parse.h (JDEP_SOLV):  Removed.
 	* parse.y (incomplete_class_list):  Removed.
 	(register_incomplete_type):  Use JDEP_TO_RESOLVE instead of JDEP_SOLV.
