@@ -1064,6 +1064,11 @@ Fri Aug 15 13:43:39 1997  Michael Meissner  <meissner@cygnus.com>
 	print out the names of the notes.  Print out the name of the insn
 	that is not a note, and not an {,CALL_,JUMP_}INSN.
 
+Wed Aug 13 17:32:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (expand_expr, case TARGET_EXPR): Call mark_addressable
+ 	again for the slot after we give it RTL.
+
 Wed Aug 13 01:03:37 1997  Doug Evans  <dje@canuck.cygnus.com>
 
 	* configure.in (haifa configury): Fix typo.
