@@ -51,10 +51,10 @@ struct input_source {
   /* linked list maintenance */
   struct input_source *next;
   /* values to restore after reading all of current string */
-  char *filename;
-  int lineno;
   struct pending_input *input;
 #if !USE_CPPLIB
+  char *filename;
+  int lineno;
   struct putback_buffer putback;
 #endif
 };
@@ -136,6 +136,8 @@ feed_input (str, len, file, line)
   inp->length = len;
   inp->offset = 0;
   inp->putback = putback;
+  inp->filename = input_filename;
+  inp->lineno = lineno;
   putback.buffer = NULL;
   putback.buffer_size = 0;
   putback.index = -1;
@@ -143,8 +145,6 @@ feed_input (str, len, file, line)
   input_filename = file;
 #endif
   inp->next = input;
-  inp->filename = input_filename;
-  inp->lineno = lineno;
   inp->input = save_pending_input ();
   input = inp;
 }
@@ -160,12 +160,12 @@ end_input ()
   cpp_pop_buffer (&parse_in);
 #else
   putback = inp->putback;
+  input_filename = inp->filename;
+  lineno = inp->lineno;
 #endif
 
   end_of_file = 0;
   input = inp->next;
-  input_filename = inp->filename;
-  lineno = inp->lineno;
   /* Get interface/implementation back in sync.  */
   extract_interface_info ();
   restore_pending_input (inp->input);

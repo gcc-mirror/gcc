@@ -1,5 +1,8 @@
 1999-07-26  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* input.c (feed_input): Only touch lineno and input_filename
+	if !USE_CPPLIB.  Save the old values before setting the new ones.
+
 	* input.c (feed_input): Add file, line parms.
 	* lex.c (begin_definition_of_inclass_inline, feed_defarg): Adjust.
 	(real_yylex): Check linemode before input_redirected().
