@@ -1,3 +1,8 @@
+2001-04-12  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.md (extendsfdf2, extendsftf2, extenddftf2): Simplify
+	to just emit an fnorm.
+
 2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.h (truthvalue_conversion, type_for_mode,
