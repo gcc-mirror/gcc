@@ -990,11 +990,6 @@ extern tree global_namespace;
 
 extern int dollars_in_ident;
 
-/* Nonzero means allow type mismatches in conditional expressions;
-   just make their values `void'.   */
-
-extern int flag_cond_mismatch;
-
 /* Nonzero means don't recognize the keyword `asm'.  */
 
 extern int flag_no_asm;

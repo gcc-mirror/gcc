@@ -1071,7 +1071,8 @@ string constants can contain the newline character as typed.)
 
 @item -fcond-mismatch
 Allow conditional expressions with mismatched types in the second and
-third arguments.  The value of such an expression is void.
+third arguments.  The value of such an expression is void.  This option
+is not supported for C++.
 
 @item -funsigned-char
 Let the type @code{char} be unsigned, like @code{unsigned char}.

@@ -1,5 +1,10 @@
 2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* invoke.texi: Document that -fcond-mismatch isn't supported for
+	C++.
+
+2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.texi: Define macro gcctabopt.
 	* invoke.texi: Add manpage sections BUGS and AUTHOR.  Use
 	@command, @env and @option in some places where appropriate.  Use
