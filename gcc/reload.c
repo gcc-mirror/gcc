@@ -690,6 +690,7 @@ find_valid_class (m1, n)
    combine.  P_IN points to the corresponding value of IN, which can be
    modified by this function.
    DONT_SHARE is nonzero if we can't share any input-only reload for IN.  */
+
 static int
 find_reusable_reload (p_in, out, class, type, opnum, dont_share)
      rtx *p_in, out;
@@ -780,8 +781,8 @@ reload_inner_reg_of_subreg (x, mode)
 
   inner = SUBREG_REG (x);
 
-  /* If INNER is a constant, then INNER must be reloaded.  */
-  if (CONSTANT_P (inner))
+  /* If INNER is a constant or PLUS, then INNER must be reloaded.  */
+  if (CONSTANT_P (inner) || GET_CODE (inner) == PLUS)
     return 1;
 
   /* If INNER is not a hard register, then INNER will not need to
@@ -1030,18 +1031,23 @@ push_reload (in, out, inloc, outloc, class,
 
   if (in != 0 && reload_inner_reg_of_subreg (in, inmode))
     {
+      enum reg_class in_class = class;
+
+      if (GET_CODE (SUBREG_REG (in)) == REG)
+	in_class
+	  = find_valid_class (inmode,
+			      subreg_regno_offset (REGNO (SUBREG_REG (in)),
+						   GET_MODE (SUBREG_REG (in)),
+						   SUBREG_BYTE (in),
+						   GET_MODE (in)));
+
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for input reloads of type RELOAD_OTHER in the same
 	 order as the reloads.  Thus if the outer reload is also of type
 	 RELOAD_OTHER, we are guaranteed that this inner reload will be
 	 output before the outer reload.  */
-      push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), (rtx*)0,
-		   find_valid_class (inmode,
-				     subreg_regno_offset (REGNO (SUBREG_REG (in)),
-							  GET_MODE (SUBREG_REG (in)),
-							  SUBREG_BYTE (in),
-							  GET_MODE (in))),
-		   VOIDmode, VOIDmode, 0, 0, opnum, type);
+      push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), NULL_RTX,
+		   in_class, VOIDmode, VOIDmode, 0, 0, opnum, type);
       dont_remove_subreg = 1;
     }
 
