@@ -2011,6 +2011,7 @@ rs6000_legitimate_address (mode, x, reg_ok_strict)
   if (LEGITIMATE_INDIRECT_ADDRESS_P (x, reg_ok_strict))
     return 1;
   if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == PRE_DEC)
+      && !ALTIVEC_VECTOR_MODE (mode)
       && TARGET_UPDATE
       && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (x, 0), reg_ok_strict))
     return 1;

@@ -1,3 +1,10 @@
+2002-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	Fix c/8252.
+
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Disallow
+	vectors from PRE_INC/DEC.
+
 2002-11-06  Richard Henderson  <rth@redhat.com>
 
 	PR optimization/7520
