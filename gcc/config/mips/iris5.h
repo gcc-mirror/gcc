@@ -135,8 +135,7 @@ Boston, MA 02111-1307, USA.  */
 -_SYSTYPE_SVR4"
 
 /* We now support shared libraries.  */
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "\
+#define IRIX_STARTFILE_SPEC "\
 %{!static: \
   %{!shared:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}}} \
 %{static: \
@@ -144,11 +143,16 @@ Boston, MA 02111-1307, USA.  */
   %{!pg:%{p:/usr/lib/nonshared/mcrt1.o%s libprof1.a%s} \
   %{!p:/usr/lib/nonshared/crt1.o%s}}}"
 
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%(irix_startfile_spec)"
+
 #undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{p:-lprof1} %{pg:-lprof1} -lc}"
 
+#define IRIX_ENDFILE_SPEC "%{!shared:crtn.o%s}"
+
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!shared:crtn.o%s}"
+#define ENDFILE_SPEC "%(irix_endfile_spec)"
 
 /* We do not want to run mips-tfile!  */
 #undef ASM_FINAL_SPEC
@@ -291,3 +295,8 @@ do {							\
 
 /* Handle #pragma weak and #pragma pack.  */
 #define HANDLE_SYSV_PRAGMA 1
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "irix_startfile_spec", IRIX_STARTFILE_SPEC }, \
+  { "irix_endfile_spec", IRIX_ENDFILE_SPEC },

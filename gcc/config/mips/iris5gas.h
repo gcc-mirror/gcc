@@ -43,17 +43,10 @@
 /* Override iris5.h versions to include crtbegin.o and crtend.o.  */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "\
-%{!static: \
-  %{!shared:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}}} \
-%{static: \
-  %{pg:gcrt1.o%s} \
-  %{!pg:%{p:/usr/lib/nonshared/mcrt1.o%s libprof1.a%s} \
-  %{!p:/usr/lib/nonshared/crt1.o%s}}} \
-crtbegin.o%s"
+#define STARTFILE_SPEC "%(irix_startfile_spec) crtbegin.o%s"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s %{!shared:crtn.o%s}"
+#define ENDFILE_SPEC "crtend.o%s %(irix_endfile_spec)"
 
 /* Irix 5 does not have some strange restrictions that Irix 3 had.  */
 #undef SET_FILE_NUMBER

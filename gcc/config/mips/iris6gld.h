@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6 with
    GNU ld.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -48,10 +48,10 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=32: -melf32bsmip}%{mabi=n32: -melf32bmipn32}%{mabi=64: -melf64bmip}%{!mabi*: -melf32bmipn32}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%(irix6_startfile_spec) irix6-crti.o%s crtbegin.o%s"
+#define STARTFILE_SPEC "%(irix_startfile_spec) irix-crti.o%s crtbegin.o%s"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s irix6-crtn.o%s %(irix6_endfile_spec)"
+#define ENDFILE_SPEC "crtend.o%s irix-crtn.o%s %(irix_endfile_spec)"
 
 /* The GNU linker supports one-only sections.  */
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
