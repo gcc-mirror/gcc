@@ -1,6 +1,6 @@
 // Build don't link:
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 Apr 1999 <nathan@acm.org>
 // derived from a bug report by <rch@larissa.sd.bi.ruhr-uni-bochum.de>
 // http://gcc.gnu.org/ml/gcc-bugs/1999-04n/msg00631.html
@@ -26,7 +26,7 @@ struct B {
   struct A::fink {    // ERROR - no such member
   int m;
   };
-  struct A::Z {       // ERROR XFAIL - A::Z not a member of B
+  struct A::Z {       // ERROR - A::Z not a member of B
     int m;
   };
   int m;
@@ -34,14 +34,14 @@ struct B {
   struct ::Q {        // ERROR XFAIL - ::Q not a member of B
     int m;
   };
-  int A::fn() {       // ERROR - A::fn not a member of B
+  int A::fn() {       // ERROR XFAIL - A::fn not a member of B
     return 0;
   }
   void fn(struct ::Q &);
-  void foo(struct A::y);  // ERROR - no such member
+  void foo(struct A::y);  // ERROR XFAIL - no such member
 };
 
-struct ::C {          // WARNING - extra qualification
+struct ::C {          // WARNING XFAIL - extra qualification
   int i;
 };
 
@@ -54,19 +54,19 @@ namespace NMS
 {
   void NMS::fn();     // WARNING - extra qualification XFAIL
   int NMS::i;         // WARNING - extra qualification XFAIL
-  struct NMS::D {     // WARNING - extra qualification
+  struct NMS::D {     // WARNING - extra qualification XFAIL
     int i;
   };
-  struct N::E {       // ERROR - no such type
+  struct N::E {       // ERROR - no such type XFAIL
     int i;
   };
-  struct ::F {        // ERROR - no such type
+  struct ::F {        // ERROR - no such type XFAIL
     int i;
   };
-  int N::fn() {       // ERROR - N::fn not a member of NMS
+  int N::fn() {       // ERROR - N::fn not a member of NMS XFAIL
     return 0;
   }
-  struct N::F {       // ERROR XFAIL - N::F not a member of NMS
+  struct N::F {       // ERROR XFAIL - N::F not a member of NMS XFAIL
     int i;
   };
 }

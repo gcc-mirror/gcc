@@ -3717,6 +3717,7 @@ extern tree lookup_name_namespace_only          PARAMS ((tree));
 extern void begin_only_namespace_names          PARAMS ((void));
 extern void end_only_namespace_names            PARAMS ((void));
 extern tree namespace_ancestor			PARAMS ((tree, tree));
+extern bool is_ancestor                         (tree, tree);
 extern tree unqualified_namespace_lookup	PARAMS ((tree, int, tree *));
 extern tree check_for_out_of_scope_variable     (tree);
 extern bool lookup_using_namespace (tree, cxx_binding *, tree, tree, int, tree *);

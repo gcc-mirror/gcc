@@ -1,3 +1,13 @@
+2003-03-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9912
+	* cp-tree.h (is_ancestor): New function.
+	* decl2.c (is_namespace_ancestor): Rename to ...
+	(is_ancestor): ... this.
+	(namespace_ancestor): Use it.
+	(set_decl_namespace): Likewise.
+	(handle_class_head): Check for invalid class definitions.
+
 2003-03-10  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	Compile-time improvement: 2/n.

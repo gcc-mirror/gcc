@@ -1,3 +1,9 @@
+2003-03-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9912
+	* g++.dg/parse/class1.C: New test.
+	* g++.old-deja/g++.other/decl5.C: Adjust.
+	
 2003-03-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-loop-1.c: New test.

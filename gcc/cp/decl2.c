@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -62,7 +62,6 @@ typedef struct priority_info_s {
 static void mark_vtable_entries PARAMS ((tree));
 static void grok_function_init PARAMS ((tree, tree));
 static int maybe_emit_vtables (tree);
-static int is_namespace_ancestor PARAMS ((tree, tree));
 static void add_using_namespace PARAMS ((tree, tree, int));
 static cxx_binding *ambiguous_decl (tree, cxx_binding *, cxx_binding *,int);
 static tree build_anon_union_vars PARAMS ((tree, tree*, int, int));
@@ -3635,21 +3634,38 @@ finish_decl_parsing (decl)
     }
 }
 
-/* Return 1 if root encloses child.  */
+/* Returns true if ROOT (a namespace, class, or function) encloses
+   CHILD.  CHILD may be either a class type or a namespace.  */
 
-static int
-is_namespace_ancestor (root, child)
-     tree root, child;
+bool
+is_ancestor (tree root, tree child)
 {
-  if (root == child)
-    return 1;
-  if (root == global_namespace)
-    return 1;
-  if (child == global_namespace)
-    return 0;
-  return is_namespace_ancestor (root, CP_DECL_CONTEXT (child));
-}
+  my_friendly_assert ((TREE_CODE (root) == NAMESPACE_DECL
+		       || TREE_CODE (root) == FUNCTION_DECL
+		       || CLASS_TYPE_P (root)), 20030307);
+  my_friendly_assert ((TREE_CODE (child) == NAMESPACE_DECL
+		       || TREE_CODE (root) == FUNCTION_DECL
+		       || CLASS_TYPE_P (child)),
+		      20030307);
   
+  /* The global namespace encloses everything.  */
+  if (root == global_namespace)
+    return true;
+
+  while (true)
+    {
+      /* If we've run out of scopes, stop.  */
+      if (!child)
+	return false;
+      /* If we've reached the ROOT, it encloses CHILD.  */
+      if (root == child)
+	return true;
+      /* Go out one level.  */
+      if (TYPE_P (child))
+	child = TYPE_NAME (child);
+      child = DECL_CONTEXT (child);
+    }
+}
 
 /* Return the namespace that is the common ancestor 
    of two given namespaces.  */
@@ -3659,7 +3675,7 @@ namespace_ancestor (ns1, ns2)
      tree ns1, ns2;
 {
   timevar_push (TV_NAME_LOOKUP);
-  if (is_namespace_ancestor (ns1, ns2))
+  if (is_ancestor (ns1, ns2))
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ns1);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
                           namespace_ancestor (CP_DECL_CONTEXT (ns1), ns2));
@@ -3935,7 +3951,7 @@ set_decl_namespace (decl, scope, friendp)
   scope = ORIGINAL_NAMESPACE (scope);
   
   /* It is ok for friends to be qualified in parallel space.  */
-  if (!friendp && !is_namespace_ancestor (current_namespace, scope))
+  if (!friendp && !is_ancestor (current_namespace, scope))
     error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
@@ -4904,6 +4920,15 @@ handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
 
       if (IMPLICIT_TYPENAME_P (context))
 	context = TREE_TYPE (context);
+
+      /* If that scope does not contain the scope in which the
+	 class was originally declared, the program is invalid.  */
+      if (current && !is_ancestor (current, context))
+	{
+	  error ("declaration of `%D' in `%D' which does not "
+		 "enclose `%D'", decl, current, CP_DECL_CONTEXT (decl));
+	  return NULL_TREE;
+	}
 
       *new_type_p = (current != context
 		     && TREE_CODE (context) != TEMPLATE_TYPE_PARM
