@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2135,9 +2135,9 @@ dbxout_parms (parms)
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
-/*		 && rtx_equal_p (XEXP (DECL_RTL (parms), 0),
-				 DECL_INCOMING_RTL (parms))) */
+		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
+		 && (REGNO (XEXP (DECL_RTL (parms), 0))
+		     >= FIRST_PSEUDO_REGISTER))
 	  {
 	    /* Parm was passed via invisible reference.
 	       That is, its address was passed in a register.
