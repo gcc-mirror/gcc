@@ -1,3 +1,9 @@
+2003-01-15  John David Anglin  <dave.anglin@nrc.gc.ca>
+
+	* expr.h (emit_conditional_add): Add PARAMS to declaration.
+	* gengtype-lex.l (malloc, realloc): Move defines after include of
+	system.h.  Remove duplicate include of system.h.
+
 2003-01-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/9009
