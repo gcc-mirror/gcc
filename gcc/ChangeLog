@@ -1,3 +1,8 @@
+2000-07-20  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.h (ASM_OUTPUT_MI_THUNK): Handle DELTA values
+	larger than 14 bits.
+
 2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppmacro.c (CAN_PASTE_AFTER): New macro.

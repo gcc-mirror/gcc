@@ -1486,12 +1486,19 @@ do {									\
 /* A C compound statement that outputs the assembler code for a thunk function,
    used to implement C++ virtual function calls with multiple inheritance.  */
 
-/* ??? This only supports deltas up to 14 bits.  If we need more, then we
-   must load the delta into a register first.  */
-
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
 do {									\
-  fprintf (FILE, "\tadd r32 = %d, r32\n", (DELTA));			\
+  if (CONST_OK_FOR_I (DELTA))						\
+    fprintf (FILE, "\tadds r32 = %d, r32\n", (DELTA));			\
+  else									\
+    {									\
+      if (CONST_OK_FOR_J (DELTA))					\
+        fprintf (FILE, "\taddl r2 = %d, r0\n", (DELTA));		\
+      else								\
+	fprintf (FILE, "\tmovl r2 = %d\n", (DELTA));			\
+      fprintf (FILE, "\t;;\n");						\
+      fprintf (FILE, "\tadd r32 = r2, r32\n");				\
+    }									\
   fprintf (FILE, "\tbr ");						\
   assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
   fprintf (FILE, "\n");							\
