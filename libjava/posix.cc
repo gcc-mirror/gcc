@@ -62,6 +62,18 @@ _Jv_platform_initialize (void)
 #endif
 }
 
+static inline void
+internal_gettimeofday (struct timeval *result)
+{
+#if defined (HAVE_GETTIMEOFDAY)
+  gettimeofday (result, NULL);
+#else
+  jlong val = _Jv_platform_gettimeofday ();
+  result->tv_sec = val / 1000;
+  result->tv_usec = (val % 1000) * 1000;
+#endif /* HAVE_GETTIMEOFDAY */
+}
+
 // A wrapper for select() which ignores EINTR.
 int
 _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
@@ -72,7 +84,7 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
   struct timeval end, delay;
   if (timeout)
     {
-      _Jv_platform_gettimeofday (&end);
+      internal_gettimeofday (&end);
       end.tv_usec += timeout->tv_usec;
       if (end.tv_usec >= 1000000)
 	{
@@ -102,7 +114,7 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
       struct timeval after;
       if (timeout)
 	{
-	  _Jv_platform_gettimeofday (&after);
+	  internal_gettimeofday (&after);
 	  // Now compute new timeout argument.
 	  delay.tv_usec = end.tv_usec - after.tv_usec;
 	  delay.tv_sec = end.tv_sec - after.tv_sec;
