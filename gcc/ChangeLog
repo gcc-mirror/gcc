@@ -1,3 +1,15 @@
+2002-08-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpphash.h (struct printer): New from cppmain.c.
+	(cpp_reader): New member.
+	* cppmain.c (struct printer): Move to cpphash.h.
+	(options, print): Remove.
+	(account_for_newlines, print_line, maybe_print_line,
+	cpp_preprocess_file, setup_callbacks, scan_translation_unit,
+	scan_translation_unit_trad, cb_line_change, cb_ident,
+	cb_define, cb_undef, cb_include, cb_file_change, dump_macro,
+	cb_def_pragma): Make reentrant.
+
 2002-08-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* real.c (ieee_64): Always define.
