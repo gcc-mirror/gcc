@@ -1,3 +1,7 @@
+1998-06-25  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
+
+	* decl.c (start_enum): Put local enums on permanant_obstack.
+
 1998-06-25  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (c_get_alias_set): Declare.
