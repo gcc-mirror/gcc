@@ -4772,7 +4772,7 @@ Enable the use of assembler directives only GAS understands.
 @item -mschedule=@var{cpu type}
 Schedule code according to the constraints for the machine type
 @var{cpu type}.  The choices for @var{cpu type} are @samp{700} for
-7@var{n}0 machines, @samp{7100} for 7@var{n}5 machines, and @samp{7100}
+7@var{n}0 machines, @samp{7100} for 7@var{n}5 machines, and @samp{7100LC}
 for 7@var{n}2 machines.  @samp{7100} is the default for @var{cpu type}.
 
 Note the @samp{7100LC} scheduling information is incomplete and using
