@@ -5992,7 +5992,10 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
 				   op0);
 	  else if (GET_CODE (op0) == MEM)
-	    temp = XEXP (op0, 0);
+	    {
+	      mark_temp_addr_taken (op0);
+	      temp = XEXP (op0, 0);
+	    }
 
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		   || GET_CODE (op0) == CONCAT)
