@@ -1,5 +1,10 @@
 2002-07-01  Neil Booth  <neil@daikokuya.co.uk>
 
+	* Makefile.in: Remove all trace of tradcpp.c, tradcpp.h,
+	tradcif.y and related files.
+
+2002-07-01  Neil Booth  <neil@daikokuya.co.uk>
+
 	* cpptrad.c (skip_whitespace): Pass pointer to prior char.
 
 2002-07-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
