@@ -85,7 +85,7 @@ __do_upcast (const abi::__class_type_info *, void **) const
   return false;
 }
 
-};
+}
 
 namespace {
 
@@ -172,7 +172,7 @@ inline bool contained_nonvirtual_p (__class_type_info::__sub_kind access_path)
 static const __class_type_info *const nonvirtual_base_type =
     static_cast <const __class_type_info *> (0) + 1;
 
-}; // namespace
+} // namespace
 
 namespace __cxxabiv1
 {
@@ -735,4 +735,4 @@ __dynamic_cast (const void *src_ptr,    // object started from
   return NULL;
 }
 
-}; // namespace __cxxabiv1
+} // namespace __cxxabiv1

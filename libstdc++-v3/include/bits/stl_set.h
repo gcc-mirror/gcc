@@ -1,6 +1,6 @@
 // Set implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -86,7 +86,7 @@ class set
 {
   // concept requirements
   __glibcpp_class_requires(_Key, _SGIAssignableConcept)
-  __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept);
+  __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
 
 public:
   // typedefs:
