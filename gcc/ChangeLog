@@ -1,3 +1,7 @@
+2002-06-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c: Include ggc.h
+
 2002-06-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (_cpp_push_text_context): Update.
