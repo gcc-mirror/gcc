@@ -1,5 +1,10 @@
 2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* testsuite/libjava.lang/Thread_HoldsLock.java: New test case.
+	* testsuite/libjava.lang/Thread_HoldsLock.out: New.	
+
+2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* java/io/File.java (toURI): Throw RuntimeException, not 
 	InternalError.
 	* java/lang/Runtime.java (exit): Qualify static sleep() call with
