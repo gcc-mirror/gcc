@@ -1,3 +1,12 @@
+2004-11-07  Andrew John Hughes <gnu_andrew@member.fsf.org>
+
+	* java/util/Currency.java
+	Documented variables and methods more fully.
+	Caches the currency instances, so that a request
+	for a locale, l, only ever returns the same
+	instance (i.e. successive calls to getInstance(l)
+	are reference equivalent (==)).
+
 2004-11-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* java/util/Date.java
