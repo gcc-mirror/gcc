@@ -445,6 +445,12 @@ struct label_chain
   struct label_chain *next;
   tree label;
 };
+
+
+/* Non-zero if we are using EH to handle cleanus.  */
+static int using_eh_for_cleanups_p = 0;
+
+
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
 static void bc_expand_goto_internal	PROTO((enum bytecode_opcode,
 					       struct bc_label *, tree));
@@ -488,6 +494,12 @@ static struct case_node *case_tree2list	PROTO((case_node *, case_node *));
 extern rtx bc_allocate_local ();
 extern rtx bc_allocate_variable_array ();
 
+void
+using_eh_for_cleanups ()
+{
+  using_eh_for_cleanups_p = 1;
+}
+
 void
 init_stmt ()
 {
@@ -3977,7 +3989,8 @@ expand_decl_cleanup (decl, cleanup)
       /* If this was optimized so that there is no exception region for the
 	 cleanup, then mark the TREE_LIST node, so that we can later tell
 	 if we need to call expand_eh_region_end.  */
-      if (expand_eh_region_start_tree (decl, cleanup))
+      if (! using_eh_for_cleanups_p
+	  || expand_eh_region_start_tree (decl, cleanup))
 	TREE_ADDRESSABLE (t) = 1;
 
       if (cond_context)
