@@ -1,3 +1,8 @@
+2002-05-28  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):
+	Rebuild the wrapper file every time this proc is called.
+
 2002-05-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/Makefile.am (noinst_LIBRARIES):  New target.  Pull in
