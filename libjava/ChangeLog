@@ -1,3 +1,31 @@
+2000-05-05  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natClass.cc (isInstance): Use __builtin_expect.
+	(_Jv_IsAssignableFrom): Ditto.
+	(_Jv_IsInstanceOf): Ditto.
+	(_Jv_CheckCast): Ditto.
+	(_Jv_CheckArrayStore): Ditto.
+	* java/lang/Class.h (_Jv_InitClass): Ditto.	
+	* java/lang/natObject.cc (_Jv_MonitorEnter): __builtin_expect `false',
+	not `0'.
+	(notify): Ditto.
+	(notifyAll): Ditto.
+	(wait): Ditto.
+	(_Jv_MonitorExit): Ditto.
+	* boehm.cc (_Jv_MarkObj): Ditto.
+	(_Jv_MarkObj): Ditto.
+	(_Jv_MarkArray): Ditto.
+	* prims.cc (_Jv_AllocObject): Ditto.
+	(_Jv_NewObjectArray): Ditto.
+	(_Jv_NewPrimArray): Ditto.
+	(_Jv_Malloc): Ditto.
+	(_Jv_Realloc): Ditto.
+	(_Jv_MallocUnchecked): Ditto.
+	(_Jv_divI): Ditto.
+	(_Jv_remI): Ditto.
+	(_Jv_divJ): Ditto.
+	(_Jv_remJ): Ditto.
+
 2000-05-04  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/Locale.java (Locale): Don't explicitly check for

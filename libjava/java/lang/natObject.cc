@@ -172,10 +172,10 @@ java::lang::Object::sync_init (void)
 void
 java::lang::Object::notify (void)
 {
-  if (__builtin_expect (INIT_NEEDED (this), 0))
+  if (__builtin_expect (INIT_NEEDED (this), false))
     sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
-  if (__builtin_expect (_Jv_CondNotify (&si->condition, &si->mutex), 0))
+  if (__builtin_expect (_Jv_CondNotify (&si->condition, &si->mutex), false))
     JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
                                               ("current thread not owner")));
 }
@@ -183,10 +183,10 @@ java::lang::Object::notify (void)
 void
 java::lang::Object::notifyAll (void)
 {
-  if (__builtin_expect (INIT_NEEDED (this), 0))
+  if (__builtin_expect (INIT_NEEDED (this), false))
     sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
-  if (__builtin_expect (_Jv_CondNotifyAll (&si->condition, &si->mutex), 0))
+  if (__builtin_expect (_Jv_CondNotifyAll (&si->condition, &si->mutex), false))
     JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
                                               ("current thread not owner")));
 }
@@ -194,9 +194,9 @@ java::lang::Object::notifyAll (void)
 void
 java::lang::Object::wait (jlong timeout, jint nanos)
 {
-  if (__builtin_expect (INIT_NEEDED (this), 0))
+  if (__builtin_expect (INIT_NEEDED (this), false))
     sync_init ();
-  if (__builtin_expect (timeout < 0 || nanos < 0 || nanos > 999999, 0))
+  if (__builtin_expect (timeout < 0 || nanos < 0 || nanos > 999999, false))
     JvThrow (new IllegalArgumentException);
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   switch (_Jv_CondWait (&si->condition, &si->mutex, timeout, nanos))
@@ -226,10 +226,10 @@ jint
 _Jv_MonitorEnter (jobject obj)
 {
 #ifndef HANDLE_SEGV
-  if (__builtin_expect (! obj, 0))
+  if (__builtin_expect (! obj, false))
     JvThrow (new java::lang::NullPointerException);
 #endif
-  if (__builtin_expect (INIT_NEEDED (obj), 0))
+  if (__builtin_expect (INIT_NEEDED (obj), false))
     obj->sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) obj->sync_info;
   return _Jv_MutexLock (&si->mutex);
@@ -241,7 +241,7 @@ _Jv_MonitorExit (jobject obj)
   JvAssert (obj);
   JvAssert (! INIT_NEEDED (obj));
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) obj->sync_info;
-  if (__builtin_expect (_Jv_MutexUnlock (&si->mutex), 0))
+  if (__builtin_expect (_Jv_MutexUnlock (&si->mutex), false))
     JvThrow (new java::lang::IllegalMonitorStateException);
   return 0;
 }

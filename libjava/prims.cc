@@ -328,7 +328,7 @@ _Jv_AllocObject (jclass c, jint size)
   _Jv_InitClass (c);
 
   jobject obj = (jobject) _Jv_AllocObj (size);
-  if (__builtin_expect (! obj, 0))
+  if (__builtin_expect (! obj, false))
     JvThrow (no_memory);
   *((_Jv_VTable **) obj) = c->vtable;
 
@@ -345,7 +345,7 @@ _Jv_AllocObject (jclass c, jint size)
 #ifdef ENABLE_JVMPI
   // Service JVMPI request.
 
-  if (__builtin_expect (_Jv_JVMPI_Notify_OBJECT_ALLOC != 0, 0))
+  if (__builtin_expect (_Jv_JVMPI_Notify_OBJECT_ALLOC != 0, false))
     {
       JVMPI_Event event;
 
@@ -372,7 +372,7 @@ _Jv_AllocObject (jclass c, jint size)
 jobjectArray
 _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
 {
-  if (__builtin_expect (count < 0, 0))
+  if (__builtin_expect (count < 0, false))
     JvThrow (new java::lang::NegativeArraySizeException);
 
   JvAssert (! elementClass->isPrimitive ());
@@ -383,7 +383,7 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
 
   // Check for overflow.
   if (__builtin_expect ((size_t) count > 
-			(SIZE_T_MAX - size) / sizeof (jobject), 0))
+			(SIZE_T_MAX - size) / sizeof (jobject), false))
     JvThrow (no_memory);
 
   size += count * sizeof (jobject);
@@ -392,7 +392,7 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   jclass clas = _Jv_FindArrayClass (elementClass, 0);
 
   obj = (jobjectArray) _Jv_AllocArray (size);
-  if (__builtin_expect (! obj, 0))
+  if (__builtin_expect (! obj, false))
     JvThrow (no_memory);
   obj->length = count;
   jobject* ptr = elements(obj);
@@ -416,7 +416,7 @@ jobject
 _Jv_NewPrimArray (jclass eltype, jint count)
 {
   int elsize = eltype->size();
-  if (__builtin_expect (count < 0, 0))
+  if (__builtin_expect (count < 0, false))
     JvThrow (new java::lang::NegativeArraySizeException ());
 
   JvAssert (eltype->isPrimitive ());
@@ -425,11 +425,11 @@ _Jv_NewPrimArray (jclass eltype, jint count)
 
   // Check for overflow.
   if (__builtin_expect ((size_t) count > 
-			(SIZE_T_MAX - size) / elsize, 0))
+			(SIZE_T_MAX - size) / elsize, false))
     JvThrow (no_memory);
 
   __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count);
-  if (__builtin_expect (! arr, 0))
+  if (__builtin_expect (! arr, false))
     JvThrow (no_memory);
   arr->length = count;
   // Note that we assume we are given zeroed memory by the allocator.
@@ -932,10 +932,10 @@ _Jv_SetMaximumHeapSize (const char *arg)
 void *
 _Jv_Malloc (jsize size)
 {
-  if (__builtin_expect (size == 0, 0))
+  if (__builtin_expect (size == 0, false))
     size = 1;
   void *ptr = malloc ((size_t) size);
-  if (__builtin_expect (ptr == NULL, 0))
+  if (__builtin_expect (ptr == NULL, false))
     JvThrow (no_memory);
   return ptr;
 }
@@ -943,10 +943,10 @@ _Jv_Malloc (jsize size)
 void *
 _Jv_Realloc (void *ptr, jsize size)
 {
-  if (__builtin_expect (size == 0, 0))
+  if (__builtin_expect (size == 0, false))
     size = 1;
   ptr = realloc (ptr, (size_t) size);
-  if (__builtin_expect (ptr == NULL, 0))
+  if (__builtin_expect (ptr == NULL, false))
     JvThrow (no_memory);
   return ptr;
 }
@@ -954,7 +954,7 @@ _Jv_Realloc (void *ptr, jsize size)
 void *
 _Jv_MallocUnchecked (jsize size)
 {
-  if (__builtin_expect (size == 0, 0))
+  if (__builtin_expect (size == 0, false))
     size = 1;
   return malloc ((size_t) size);
 }
@@ -975,7 +975,7 @@ _Jv_Free (void* ptr)
 jint
 _Jv_divI (jint dividend, jint divisor)
 {
-  if (__builtin_expect (divisor == 0, 0))
+  if (__builtin_expect (divisor == 0, false))
     _Jv_Throw (arithexception);
   
   if (dividend == (jint) 0x80000000L && divisor == -1)
@@ -987,7 +987,7 @@ _Jv_divI (jint dividend, jint divisor)
 jint
 _Jv_remI (jint dividend, jint divisor)
 {
-  if (__builtin_expect (divisor == 0, 0))
+  if (__builtin_expect (divisor == 0, false))
     _Jv_Throw (arithexception);
   
   if (dividend == (jint) 0x80000000L && divisor == -1)
@@ -999,7 +999,7 @@ _Jv_remI (jint dividend, jint divisor)
 jlong
 _Jv_divJ (jlong dividend, jlong divisor)
 {
-  if (__builtin_expect (divisor == 0, 0))
+  if (__builtin_expect (divisor == 0, false))
     _Jv_Throw (arithexception);
   
   if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
@@ -1011,7 +1011,7 @@ _Jv_divJ (jlong dividend, jlong divisor)
 jlong
 _Jv_remJ (jlong dividend, jlong divisor)
 {
-  if (__builtin_expect (divisor == 0, 0))
+  if (__builtin_expect (divisor == 0, false))
     _Jv_Throw (arithexception);
   
   if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
