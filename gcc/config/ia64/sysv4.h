@@ -156,7 +156,9 @@ do {									\
 #define DO_SELECT_SECTION(SECNUM, DECL, RELOC)				\
   do									\
     {									\
-      if (TREE_CODE (DECL) == STRING_CST)				\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+	SECNUM = 0;							\
+      else if (TREE_CODE (DECL) == STRING_CST)				\
 	{								\
 	  if (! flag_writable_strings)					\
 	    SECNUM = 0x101;						\

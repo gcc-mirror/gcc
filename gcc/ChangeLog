@@ -1,3 +1,8 @@
+2002-05-30  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/sysv4.h (DO_SELECT_SECTION): Also handle
+	FUNCTION_DECLs.
+
 2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/i386/netbsd64.h (CPP_LP64_SPEC): Define.
