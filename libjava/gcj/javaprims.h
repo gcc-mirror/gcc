@@ -57,9 +57,11 @@ extern "Java"
       class Externalizable;
       class File;
       class FileDescriptor;
+      class FileFilter;
       class FileInputStream;
       class FileNotFoundException;
       class FileOutputStream;
+      class FilePermission;
       class FileReader;
       class FileWriter;
       class FilenameFilter;
@@ -129,6 +131,8 @@ extern "Java"
       class Byte;
       class CPlusPlusDemangler;
       class Character;
+      class Character$Subset;
+      class Character$UnicodeBlock;
       class Class;
       class ClassCastException;
       class ClassCircularityError;
@@ -176,6 +180,7 @@ extern "Java"
       class Runnable;
       class Runtime;
       class RuntimeException;
+      class RuntimePermission;
       class SecurityException;
       class SecurityManager;
       class Short;
@@ -194,6 +199,15 @@ extern "Java"
       class VerifyError;
       class VirtualMachineError;
       class Void;
+      namespace ref
+      {
+        class PhantomReference;
+        class Reference;
+        class ReferenceQueue;
+        class SoftReference;
+        class WeakReference;
+      };
+
       namespace reflect
       {
         class AccessibleObject;
@@ -204,6 +218,7 @@ extern "Java"
         class Member;
         class Method;
         class Modifier;
+        class ReflectPermission;
       };
     };
 
@@ -211,16 +226,33 @@ extern "Java"
     {
       class AbstractCollection;
       class AbstractList;
-      class AbstractList$SubList;
+      class AbstractList$AbstractListItr;
+      class AbstractMap;
+      class AbstractSequentialList;
       class AbstractSet;
+      class ArrayList;
       class Arrays;
       class Arrays$ListImpl;
-      class BasicMapEntry;
       class BitSet;
-      class Bucket;
-      class Bucket$Node;
       class Calendar;
       class Collection;
+      class Collections;
+      class Collections$SynchronizedCollection;
+      class Collections$SynchronizedIterator;
+      class Collections$SynchronizedList;
+      class Collections$SynchronizedListIterator;
+      class Collections$SynchronizedMap;
+      class Collections$SynchronizedSet;
+      class Collections$SynchronizedSortedMap;
+      class Collections$SynchronizedSortedSet;
+      class Collections$UnmodifiableCollection;
+      class Collections$UnmodifiableIterator;
+      class Collections$UnmodifiableList;
+      class Collections$UnmodifiableListIterator;
+      class Collections$UnmodifiableMap;
+      class Collections$UnmodifiableSet;
+      class Collections$UnmodifiableSortedMap;
+      class Collections$UnmodifiableSortedSet;
       class Comparator;
       class ConcurrentModificationException;
       class Date;
@@ -230,13 +262,18 @@ extern "Java"
       class EventListener;
       class EventObject;
       class GregorianCalendar;
+      class HashMap;
+      class HashMap$Entry;
+      class HashMap$HashIterator;
+      class HashSet;
       class Hashtable;
-      class Hashtable$HashtableCollection;
-      class Hashtable$HashtableEntry;
-      class Hashtable$HashtableEnumeration;
-      class Hashtable$HashtableIterator;
-      class Hashtable$HashtableSet;
+      class Hashtable$Entry;
+      class Hashtable$Enumerator;
+      class Hashtable$HashIterator;
       class Iterator;
+      class LinkedList;
+      class LinkedList$Entry;
+      class LinkedList$LinkedListItr;
       class List;
       class ListIterator;
       class ListResourceBundle;
@@ -248,20 +285,32 @@ extern "Java"
       class Observable;
       class Observer;
       class Properties;
+      class PropertyPermission;
       class PropertyResourceBundle;
       class Random;
       class ResourceBundle;
       class Set;
       class SimpleTimeZone;
+      class SortedMap;
+      class SortedSet;
       class Stack;
       class StringTokenizer;
+      class SubList;
       class TimeZone;
+      class Timer;
+      class Timer$Scheduler;
+      class Timer$TaskQueue;
+      class TimerTask;
       class TooManyListenersException;
       class Vector;
-      class VectorEnumeration;
+      class WeakHashMap;
+      class WeakHashMap$Entry;
+      class WeakHashMap$WeakBucket;
+      class WeakHashMap$WeakEntrySet;
       namespace jar
       {
-	class Attributes;
+        class Attributes;
+        class Attributes$Name;
         class JarEntry;
         class JarException;
         class JarFile;
@@ -295,92 +344,8 @@ extern "Java"
       };
     };
   };
-  namespace java
-  {
-    namespace io
-    {
-      class BlockDataException;
-      class BufferedInputStream;
-      class BufferedOutputStream;
-      class BufferedReader;
-      class BufferedWriter;
-      class ByteArrayInputStream;
-      class ByteArrayOutputStream;
-      class CharArrayReader;
-      class CharArrayWriter;
-      class CharConversionException;
-      class DataInput;
-      class DataInputStream;
-      class DataOutput;
-      class DataOutputStream;
-      class EOFException;
-      class Externalizable;
-      class File;
-      class FileDescriptor;
-      class FileInputStream;
-      class FileNotFoundException;
-      class FileOutputStream;
-      class FileReader;
-      class FileWriter;
-      class FilenameFilter;
-      class FilterInputStream;
-      class FilterOutputStream;
-      class FilterReader;
-      class FilterWriter;
-      class IOException;
-      class InputStream;
-      class InputStreamReader;
-      class InterfaceComparator;
-      class InterruptedIOException;
-      class InvalidClassException;
-      class InvalidObjectException;
-      class LineNumberInputStream;
-      class LineNumberReader;
-      class MemberComparator;
-      class NotActiveException;
-      class NotSerializableException;
-      class ObjectInput;
-      class ObjectInputStream;
-      class ObjectInputStream$GetField;
-      class ObjectInputValidation;
-      class ObjectOutput;
-      class ObjectOutputStream;
-      class ObjectOutputStream$PutField;
-      class ObjectStreamClass;
-      class ObjectStreamConstants;
-      class ObjectStreamException;
-      class ObjectStreamField;
-      class OptionalDataException;
-      class OutputStream;
-      class OutputStreamWriter;
-      class PipedInputStream;
-      class PipedOutputStream;
-      class PipedReader;
-      class PipedWriter;
-      class PrintStream;
-      class PrintWriter;
-      class PushbackInputStream;
-      class PushbackReader;
-      class RandomAccessFile;
-      class Reader;
-      class SequenceInputStream;
-      class Serializable;
-      class SerializablePermission;
-      class StreamCorruptedException;
-      class StreamTokenizer;
-      class StringBufferInputStream;
-      class StringReader;
-      class StringWriter;
-      class SyncFailedException;
-      class UTFDataFormatException;
-      class UnsupportedEncodingException;
-      class ValidatorAndPriority;
-      class WriteAbortedException;
-      class Writer;
-    };
-  };
 };
-
+  
 typedef struct java::lang::Object* jobject;
 typedef class java::lang::Class* jclass;
 typedef class java::lang::Throwable* jthrowable;
