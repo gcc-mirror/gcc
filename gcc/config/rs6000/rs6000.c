@@ -527,7 +527,13 @@ rs6000_override_options (default_cpu)
 	 {"405", PROCESSOR_PPC405,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
-	 {"405f", PROCESSOR_PPC405,
+	 {"405fp", PROCESSOR_PPC405,
+	    MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"440", PROCESSOR_PPC440,
+	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"440fp", PROCESSOR_PPC440,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"505", PROCESSOR_MPCCORE,
@@ -3175,12 +3181,12 @@ function_arg_padding (mode, type)
 
   /* This is the default definition.  */
   return (! BYTES_BIG_ENDIAN
-          ? upward
-          : ((mode == BLKmode
-              ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-                 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
-              : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
-             ? downward : upward));
+	  ? upward
+	  : ((mode == BLKmode
+	      ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+		 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+	      : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
+	     ? downward : upward));
 }
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
@@ -13664,6 +13670,12 @@ rs6000_rtx_costs (x, code, outer_code, total)
 		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));
 	  return true;
 
+	case PROCESSOR_PPC440:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? COSTS_N_INSNS (3)
+		    : COSTS_N_INSNS (2));
+	  return true;
+
 	case PROCESSOR_RS64A:
 	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
 		    ? GET_MODE (XEXP (x, 1)) != DImode
@@ -13764,6 +13776,10 @@ rs6000_rtx_costs (x, code, outer_code, total)
 
 	case PROCESSOR_PPC405:
 	  *total = COSTS_N_INSNS (35);
+	  return true;
+
+	case PROCESSOR_PPC440:
+	  *total = COSTS_N_INSNS (34);
 	  return true;
 
 	case PROCESSOR_PPC601:

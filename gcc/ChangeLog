@@ -1,3 +1,22 @@
+2003-05-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add mfjmpr.
+	(movsi_internal1): Use new mfjmpr attribute.
+	(movhi_internal): Same.
+	(movqi_internal): Same.
+	(movcc_internal1): Same.
+	(movdi_internal64): Same.
+	* config/rs6000/{40x.md,603.md,6xx.md,7450.md,7xx.md,mpc.md,
+	power4.md,rios1.md,rios2.md,rs64.md}: Add mfjmpr.
+	* config/rs6000/40x.md: Add fpu_405.
+	* config/rs6000/power4.md: Merge power4lsu and power4disp automata
+	into power4misc automata.  Remove extraneous parentheses.
+	* config/rs6000/440.md: New file.
+	* config/rs6000/rs6000.c (processor_target_table): Add 440,
+	440fp.  Rename 405f to 405fp.
+	(function_arg_padding): Correct formatting.
+	(rs6000_rtx_costs): Add PROCESSOR_PPC440 cases.
+
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* input.h (lineno): Rename to ...

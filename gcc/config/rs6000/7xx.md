@@ -134,6 +134,11 @@
        (eq_attr "cpu" "ppc750,ppc7400"))
   "nothing,sru_7xx*2")
 
+(define_insn_reservation "ppc750-mfjmpr" 3
+  (and (eq_attr "type" "mfjmpr")
+       (eq_attr "cpu" "ppc750,ppc7400"))
+  "nothing,sru_7xx*2")
+
 (define_insn_reservation "ppc750-jmpreg" 1
   (and (eq_attr "type" "jmpreg,branch")
        (eq_attr "cpu" "ppc750,ppc7400"))
