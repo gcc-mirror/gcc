@@ -9671,6 +9671,9 @@ static void
 record_dead_and_set_regs_1 (dest, setter)
      rtx dest, setter;
 {
+  if (GET_CODE (dest) == SUBREG)
+    dest = SUBREG_REG (dest);
+
   if (GET_CODE (dest) == REG)
     {
       /* If we are setting the whole register, we know its value.  Otherwise
