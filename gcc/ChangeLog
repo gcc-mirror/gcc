@@ -1,5 +1,14 @@
 2001-02-03  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
+	* c4x.c (group1_reg_operand, group1_mem_operand, arx_reg_operand,
+	c4x_arn_reg_operand, c4x_arn_mem_operand): Do not check register
+	number before reload.
+	(c4x_adjust_cost): Return zero before reload.
+	* c4x.md (load_immed_address+1, load_immed_address+2): Do not
+	split before reload.
+
+2001-02-03  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
 	* c4x.c (c4x_hard_regno_rename_ok): New.
 	* c4x-protos.h (c4x_hard_regno_rename_ok): New.
 	* c4x.h (HARD_REGNO_RENAME_OK): Define.
