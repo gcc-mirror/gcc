@@ -93,6 +93,6 @@ Boston, MA 02111-1307, USA.  */
    next argument, if that argument is smaller than its aligned space as
    controlled by PARM_BOUNDARY.  If this macro is not defined, all such
    arguments are padded down when BYTES_BIG_ENDIAN is true.  We don't
-   want aggregrates padded down.  */
+   want aggregates padded down.  */
 
 #define PAD_VARARGS_DOWN (!AGGREGATE_TYPE_P (type))

@@ -1467,7 +1467,7 @@ force_mode (mode, orig)
    normally.
 
    Note SCRATCH_REG may not be in the proper mode depending on how it
-   will be used.  This routine is resposible for creating a new copy
+   will be used.  This routine is responsible for creating a new copy
    of SCRATCH_REG in the proper mode.  */
 
 int
@@ -7585,7 +7585,7 @@ pa_function_ok_for_sibcall (decl, exp)
     return (decl != NULL_TREE);
 
   /* Sibcalls are not ok because the arg pointer register is not a fixed
-     register.  This prevents the sibcall optimization from occuring.  In
+     register.  This prevents the sibcall optimization from occurring.  In
      addition, there are problems with stub placement using GNU ld.  This
      is because a normal sibcall branch uses a 17-bit relocation while
      a regular call branch uses a 22-bit relocation.  As a result, more
@@ -8641,7 +8641,7 @@ function_arg (cum, mode, type, named)
 	     This is magic.  Normally, using a PARALLEL results in left
 	     justified data on a big-endian target.  However, using a
 	     single double-word register provides the required right
-	     justication for 5 to 8 byte structures.  This has nothing
+	     justification for 5 to 8 byte structures.  This has nothing
 	     to do with the direction of padding specified for the argument.
 	     It has to do with how the data is widened and shifted into
 	     and from the register.

@@ -38,7 +38,7 @@
 ;; the insn that sets CR bits should be separated from the branch insn
 ;; that evaluates them.  There is no advantage have more than 10 cycles
 ;; of separation.
-;; This could be artificially achieved by exagerating the latency of
+;; This could be artificially achieved by exaggerating the latency of
 ;; compare insns but at the expense of a poorer schedule.
 
 ;; Branches go straight to the BPU.  All other insns are handled

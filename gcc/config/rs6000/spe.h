@@ -992,7 +992,7 @@ __ev_set_s16_internal (__ev64_opaque__ a, int16_t b, uint32_t pos)
 #define __ev_lower_fs_tst_eq(a, b)	__builtin_spe_evfststeq (__pred_lower, (a), (b))
 #define __ev_select_fs_tst_eq		__builtin_spe_evsel_fststeq
 
-/* SPEFSCR accesor functions.  */
+/* SPEFSCR accessor functions.  */
 
 #define __SPEFSCR_SOVH		0x80000000
 #define __SPEFSCR_OVH		0x40000000
