@@ -1,3 +1,7 @@
+2003-04-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_cmpstr): Disable CLC loop.
+
 2003-04-22  Devang Patel  <dpatel@apple.com>
 
 	* cpptrad.c (_cpp_replacement_text_len): Add check for macro parameter count.
