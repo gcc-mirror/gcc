@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for the GNU compiler for the Java(TM)
 # language.
-#   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -374,15 +374,6 @@ java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  -DLIBGCJ_ZIP_FILE='"$(datadir)/java/libgcj-$(version).jar"' \
 	  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
-
-# jcf-tree-inline.o needs a -D.
-java/java-tree-inline.o: tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(TREE_H) $(RTL_H) expr.h flags.h params.h input.h insn-config.h \
-  $(INTEGRATE_H) $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) toplev.h \
-  langhooks.h $(C_COMMON_H) $(srcdir)/tree-inline.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	-DINLINER_FOR_JAVA=1 \
-	$(srcdir)/tree-inline.c -o $@
 
 TEXI_JAVA_FILES = java/gcj.texi $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
 	 $(docdir)/include/gcc-common.texi
