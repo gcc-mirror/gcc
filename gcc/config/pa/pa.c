@@ -66,7 +66,8 @@ call_operand_address (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (REG_P (op) || CONSTANT_P (op));
+  return (REG_P (op) 
+	  || (CONSTANT_P (op) && ! TARGET_LONG_CALLS));
 }
 
 int
