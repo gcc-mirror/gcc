@@ -1,3 +1,7 @@
+2004-04-15  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* ra-debug.c (ra_print_rtx): Add break's to case legs.
+
 2004-04-14  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (fixinc.sh): Set WARN_CFLAGS to empty string.
