@@ -290,6 +290,7 @@ static struct jcf_block * get_jcf_label_here PARAMS ((struct jcf_partial *));
 static void put_linenumber PARAMS ((int, struct jcf_partial *));
 static void localvar_alloc PARAMS ((tree, struct jcf_partial *));
 static void localvar_free PARAMS ((tree, struct jcf_partial *));
+static void localvar_finish PARAMS ((tree, struct jcf_partial *));
 static int get_access_flags PARAMS ((tree));
 static void write_chunks PARAMS ((FILE *, struct chunk *));
 static int adjust_typed_op PARAMS ((tree, int));
@@ -642,6 +643,25 @@ localvar_free (decl, state)
 	abort ();
       ptr[1] = NULL;
     }
+}
+
+/* Like localvar_free, but leaves the variable allocated.  This lets
+   us avoid problems with inappropriate variable reuse in some
+   situations.  */
+static void
+localvar_finish (decl, state)
+     tree decl;     
+     struct jcf_partial *state;
+{
+  struct jcf_block *end_label = get_jcf_label_here (state);
+  int index = DECL_LOCAL_INDEX (decl);
+  register struct localvar_info **ptr = &localvar_buffer [index];
+  register struct localvar_info *info = *ptr;
+
+  info->end_label = end_label;
+
+  if (info->decl != decl)
+    abort ();
 }
 
 
@@ -2379,7 +2399,7 @@ generate_bytecode_insns (exp, target, state)
 	RESERVE (1);
 	OP1 (OPCODE_athrow);
 	NOTE_POP (1);
-	localvar_free (exception_decl, state);
+	localvar_finish (exception_decl, state);
 
 	/* The finally block.  First save return PC into return_link. */
 	define_jcf_label (finally_label, state);
@@ -2388,7 +2408,7 @@ generate_bytecode_insns (exp, target, state)
 
 	generate_bytecode_insns (finally, IGNORE_TARGET, state);
 	maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
-	localvar_free (return_link, state);
+	localvar_finish (return_link, state);
 	define_jcf_label (finished_label, state);
       }
       break;
