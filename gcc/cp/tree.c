@@ -1935,6 +1935,7 @@ mapcar (t, func)
     case COMPONENT_REF:
     case CLEANUP_POINT_EXPR:
       t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       return t;
 

@@ -374,6 +374,10 @@ tree ctor_label;
 
 tree abort_fndecl;
 
+/* A FUNCTION_DECL for the default `::operator delete'.  */
+
+tree global_delete_fndecl;
+
 extern rtx cleanup_label, return_label;
 
 /* If original DECL_RESULT of current function was a register,
@@ -6325,7 +6329,8 @@ init_decl_processing ()
       (void_ftype_ptr, build_tree_list (NULL_TREE, NULL_TREE));
     auto_function (ansi_opname[(int) NEW_EXPR], newtype, NOT_BUILT_IN);
     auto_function (ansi_opname[(int) VEC_NEW_EXPR], newtype, NOT_BUILT_IN);
-    auto_function (ansi_opname[(int) DELETE_EXPR], deltype, NOT_BUILT_IN);
+    global_delete_fndecl
+      = auto_function (ansi_opname[(int) DELETE_EXPR], deltype, NOT_BUILT_IN);
     auto_function (ansi_opname[(int) VEC_DELETE_EXPR], deltype, NOT_BUILT_IN);
   }
 

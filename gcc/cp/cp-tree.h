@@ -1623,9 +1623,9 @@ extern int flag_new_for_scope;
 
 /* For a pointer-to-member constant `X::Y' this is the RECORD_TYPE for
    `X'.  */
-#define PTRMEM_CST_CLASS(NODE)				\
-   (TYPE_PTRMEM_P (TREE_TYPE (NODE)) 			\
-    ? TYPE_OFFSET_BASETYPE (TREE_TYPE (NODE))		\
+#define PTRMEM_CST_CLASS(NODE)				  \
+   (TYPE_PTRMEM_P (TREE_TYPE (NODE)) 			  \
+    ? TYPE_OFFSET_BASETYPE (TREE_TYPE (TREE_TYPE (NODE))) \
     : TYPE_PTRMEMFUNC_OBJECT_TYPE (TREE_TYPE (NODE)))
 
 /* For a pointer-to-member constant `X::Y' this is the _DECL for 
@@ -2059,6 +2059,10 @@ extern tree boolean_type_node, boolean_true_node, boolean_false_node;
 extern tree null_node;
 
 extern tree anonymous_namespace_name;
+
+/* The FUNCTION_DECL for the default `::operator delete'.  */
+
+extern tree global_delete_fndecl;
 
 /* in pt.c  */
 
