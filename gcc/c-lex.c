@@ -23,8 +23,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 
 #include "rtl.h"
-#include "expr.h"
 #include "tree.h"
+#include "expr.h"
 #include "input.h"
 #include "output.h"
 #include "c-lex.h"

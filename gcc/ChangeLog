@@ -1,6 +1,10 @@
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
-	* c-typeck.c:  Include rtl.h earlier.
+	* c-lex.c: Include tree.h before expr.h
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
+	* c-typeck.c: Include rtl.h earlier.
 
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
