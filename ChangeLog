@@ -1,3 +1,7 @@
+2001-07-25  Andrew Haley  <aph@cambridge.redhat.com>
+
+        * configure.in (sh-*-linux*): New.
+
 2001-07-27  Richard Henderson  <rth@redhat.com>
 
 	* .cvsignore: Add LAST_UPDATED.
