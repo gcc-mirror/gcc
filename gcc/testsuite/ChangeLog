@@ -1,3 +1,7 @@
+Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* gcc.c-torture/execute/920302-1.c: Cast 0 to pointer.
+
 2001-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c99-tag-1.c: New test.
