@@ -1,3 +1,19 @@
+2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* system.c (IN_RANGE): Use plain unsigned, not unsigned
+	HOST_WIDE_INT.
+	* tree.def (VOID_TYPE, INTEGER_TYPE, REAL_TYPE, COMPLEX_TYPE,
+	VECTOR_TYPE, OFFSET_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, CHAR_TYPE,
+	POINTER_TYPE, REFERENCE_TYPE, METHOD_TYPE, FUNCTION_TYPE,
+	FILE_TYPE, ARRAY_TYPE, RECORD_TYPE, UNION_TYPE,
+	QUAL_UNION_TYPE): Reorder for better code efficiency.
+	(CONST_DECL, TYPE_DECL, VAR_DECL, FIELD_DECL, PARM_DECL): Likewise.
+	(INDIRECT_REF, ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF): Likewise.
+	* tree.h (INDIRECT_REF_P): Reorder checks for better optimization.
+	(IS_EXPR_CODE_CLASS): Use IN_RANGE.
+	(INTEGRAL_TYPE_P, FLOAT_TYPE_P): Reorder checks for better
+	optimization.
+
 2004-12-21  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd-spec.h:  Use KSE pthread lib for -pthread.

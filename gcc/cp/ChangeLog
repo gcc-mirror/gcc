@@ -1,5 +1,15 @@
 2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.def (TEMPLATE_TYPE_PARM,
+	BOUND_TEMPLATE_TEMPLATE_PARM, TYPE_OF_TYPE, TYPENAME_TYPE): Reorder 
+	for better code efficiency.
+	* cp-tree.h (CLASS_TYPE_P): Short circuit IS_AGGR_TYPE check.
+	(CAN_HAVE_FULL_LANG_DECL_P): Reorder for better optimization.
+	(INTEGRAL_CODE_P, CP_INTEGRAL_TYPE_P,
+	INTEGRAL_OR_ENUMERATION_TYPE_P, SCALAR_TYPE_P,
+	CP_AGGREGATE_TYPE_P, TYPE_PTROB_P, TYPE_REF_OBJ_P,
+	TYPE_PTROBV_P): Likewise. 
+
 	PR c++/18975
 	* method.c (do_build_copy_constructor): Refactor. Don't const
 	qualify a mutable field.
