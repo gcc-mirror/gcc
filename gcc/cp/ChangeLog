@@ -1,5 +1,15 @@
 1998-05-22  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (lang_print_error_function): New fn.  
+	(init_decl_processing): Set print_error_function to use it.
+	* errfn.c (cp_thing): Don't call maybe_print_template_context here.
+
+	* call.c (maybe_handle_ref_bind): Propagate ICS_USER_FLAG and
+	ICS_BAD_FLAG.
+
+	* cvt.c (ocp_convert): Don't set LOOKUP_NO_CONVERSION for
+	copy-initialization.
+
 	* class.c (build_vtable_entry): Use int_fits_type_p.
 	(build_vtable): Pass a signed offset to build_vtable_entry.
 	(prepare_fresh_vtable, modify_one_vtable, fixup_vtable_deltas1,

@@ -59,6 +59,8 @@ extern int static_labelno;
 extern tree current_namespace;
 extern tree global_namespace;
 
+extern void (*print_error_function) PROTO((char *));
+
 /* Stack of places to restore the search obstack back to.  */
    
 /* Obstack used for remembering local class declarations (like
@@ -172,6 +174,7 @@ static void record_unknown_type PROTO((tree, char *));
 static int member_function_or_else PROTO((tree, tree, char *));
 static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 				  int));
+static void lang_print_error_function PROTO((char *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -5904,6 +5907,18 @@ init_decl_processing ()
 
   /* Show we use EH for cleanups.  */
   using_eh_for_cleanups ();
+
+  print_error_function = lang_print_error_function;
+}
+
+/* Function to print any language-specific context for an error message.  */
+
+static void
+lang_print_error_function (file)
+     char *file;
+{
+  default_print_error_function (file);
+  maybe_print_template_context ();
 }
 
 /* Make a definition for a builtin function named NAME and whose data type
