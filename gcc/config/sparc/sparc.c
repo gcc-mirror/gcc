@@ -282,7 +282,7 @@ sparc_override_options ()
     /* TI ultrasparc I, II, IIi */
     { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9
     /* Although insns using %y are deprecated, it is a clear win on current
-       ultrasparcs. */
+       ultrasparcs.  */
     						    |MASK_DEPRECATED_V8_INSNS},
     { 0, 0, 0, 0 }
   };
@@ -907,7 +907,7 @@ cc_arithopn (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* XOR is not here because combine canonicalizes (xor (not ...) ...)
-     and (xor ... (not ...)) to (not (xor ...)).   */
+     and (xor ... (not ...)) to (not (xor ...)).  */
   return (GET_CODE (op) == AND
 	  || GET_CODE (op) == IOR);
 }
@@ -1339,7 +1339,7 @@ sparc_emit_set_const32 (op0, op1)
 }
 
 
-/* Sparc-v9 code-model support. */
+/* Sparc-v9 code-model support.  */
 void
 sparc_emit_set_symbolic_const64 (op0, op1, temp1)
      rtx op0;
@@ -1603,7 +1603,7 @@ sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
       temp2 = temp;
     }
 
-  /* Now shift it up into place. */
+  /* Now shift it up into place.  */
   emit_insn (gen_rtx_SET (VOIDmode, op0,
 			  gen_rtx_ASHIFT (DImode, temp2,
 					  GEN_INT (shift_count))));
@@ -1718,11 +1718,11 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
       if (low3 != const0_rtx)
 	emit_insn (gen_rtx_SET (VOIDmode, op0,
 				gen_rtx_IOR (DImode, op0, low3)));
-      /* phew... */
+      /* phew...  */
     }
 }
 
-/* Analyze a 64-bit constant for certain properties. */
+/* Analyze a 64-bit constant for certain properties.  */
 static void analyze_64bit_constant
 	PARAMS ((unsigned HOST_WIDE_INT,
 	       unsigned HOST_WIDE_INT,
@@ -2116,7 +2116,7 @@ sparc_emit_set_const64 (op0, op1)
       return;
     }
 
-  /* The easiest way when all else fails, is full decomposition. */
+  /* The easiest way when all else fails, is full decomposition.  */
 #if 0
   printf ("sparc_emit_set_const64: Hard constant [%08lx%08lx] neg[%08lx%08lx]\n",
 	  high_bits, low_bits, ~high_bits, ~low_bits);
@@ -4680,7 +4680,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
   else
     {
       return ((type && TREE_CODE (type) == ARRAY_TYPE)
-	      /* Consider complex values as aggregates, so care for TCmode. */
+	      /* Consider complex values as aggregates, so care for TCmode.  */
 	      || GET_MODE_SIZE (mode) > 16
 	      || (type && AGGREGATE_TYPE_P (type)
 		  && int_size_in_bytes (type) > 16));
@@ -6847,7 +6847,7 @@ sparc_flat_function_prologue (file, size)
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
-   and regs. */
+   and regs.  */
 
 static void
 sparc_flat_function_epilogue (file, size)
@@ -7131,7 +7131,7 @@ hypersparc_adjust_cost (insn, link, dep_insn, cost)
 	{
 	case TYPE_STORE:
 	case TYPE_FPSTORE:
-	  /* Get the delay iff the address of the store is the dependence. */
+	  /* Get the delay iff the address of the store is the dependence.  */
 	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
 	    return cost;
 
@@ -7173,7 +7173,7 @@ hypersparc_adjust_cost (insn, link, dep_insn, cost)
 	break;
 
     case REG_DEP_ANTI:
-      /* Anti-dependencies only penalize the fpu unit. */
+      /* Anti-dependencies only penalize the fpu unit.  */
       if (insn_type == TYPE_IALU || insn_type == TYPE_SHIFT)
         return 0;
       break;
@@ -7290,7 +7290,7 @@ ultrasparc_adjust_cost (insn, link, dep_insn, cost)
 	  if (dep_type == TYPE_IALU
 	      && cost < 2)
 	    return 2;
-	  /* Otherwise check as for integer conditional moves. */
+	  /* Otherwise check as for integer conditional moves.  */
 
 	case TYPE_CMOVE:
 	  /* Conditional moves involving integer registers wait until
@@ -7307,7 +7307,7 @@ ultrasparc_adjust_cost (insn, link, dep_insn, cost)
       break;
 
     case REG_DEP_ANTI:
-      /* Divide and square root lock destination registers for full latency. */
+      /* Divide and square root lock destination registers for full latency.  */
       if (! SLOW_FP (dep_type))
 	return 0;
       break;
@@ -8149,7 +8149,7 @@ set_extends (insn)
 
   switch (GET_CODE (SET_SRC (pat)))
     {
-      /* Load and some shift instructions zero extend. */
+      /* Load and some shift instructions zero extend.  */
     case MEM:
     case ZERO_EXTEND:
       /* sethi clears the high bits */
@@ -8191,7 +8191,7 @@ set_extends (insn)
     case ASHIFT:
     case LSHIFTRT:
       return GET_MODE (SET_SRC (pat)) == SImode;
-      /* Positive integers leave the high bits zero. */
+      /* Positive integers leave the high bits zero.  */
     case CONST_DOUBLE:
       return ! (CONST_DOUBLE_LOW (SET_SRC (pat)) & 0x80000000);
     case CONST_INT:
@@ -8206,7 +8206,7 @@ set_extends (insn)
     }
 }
 
-/* We _ought_ to have only one kind per function, but... */
+/* We _ought_ to have only one kind per function, but...  */
 static rtx sparc_addr_diff_list;
 static rtx sparc_addr_list;
 
@@ -8402,7 +8402,7 @@ sparc_v8plus_shift (operands, insn, opcode)
 }
 
 
-/* Return 1 if DEST and SRC reference only global and in registers. */
+/* Return 1 if DEST and SRC reference only global and in registers.  */
 
 int
 sparc_return_peephole_ok (dest, src)

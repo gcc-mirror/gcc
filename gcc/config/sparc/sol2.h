@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 "
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used. */
+   It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC "\
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 "
 
 /* However it appears that Solaris 2.0 uses the same reg numbering as
-   the old BSD-style system did. */
+   the old BSD-style system did.  */
 
 #undef DBX_REGISTER_NUMBER
 /* Same as sparc.h */
@@ -91,7 +91,7 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
+/* The Solaris 2 assembler uses .skip, not .zero, so put this back.  */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))

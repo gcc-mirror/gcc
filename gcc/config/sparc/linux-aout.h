@@ -22,18 +22,18 @@ Boston, MA 02111-1307, USA.  */
 #include <aoutos.h>
 #include <sparc/sparc.h>
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
-   For now, we play safe. It may change later. */
+   For now, we play safe. It may change later.  */
 
 #if 0
 #undef MULTIBYTE_CHARS
 #define MULTIBYTE_CHARS 1
 #endif
 
-/* We need that too. */
+/* We need that too.  */
 #define HANDLE_SYSV_PRAGMA
 
 #undef MD_EXEC_PREFIX
@@ -93,7 +93,7 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC	"-m sparclinux"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used. */
+   It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{V} %{v:%{!V:-V}} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} %{fPIC:-K PIC}"

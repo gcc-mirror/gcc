@@ -21,11 +21,11 @@ Boston, MA 02111-1307, USA.  */
 
 #define LINUX_DEFAULT_ELF
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
-   For now, we play safe. It may change later. */
+   For now, we play safe. It may change later.  */
 
 #if 0
 #undef MULTIBYTE_CHARS
@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'. */
+   object constructed before entering `main'.  */
    
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC \
@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
-/* This is for -profile to use -lc_p instead of -lc. */
+/* This is for -profile to use -lc_p instead of -lc.  */
 #undef	CC1_SPEC
 #define	CC1_SPEC "%{profile:-p} \
 %{sun4:} %{target:} \
@@ -146,7 +146,7 @@ Boston, MA 02111-1307, USA.  */
    When the -shared link option is used a final link is not being
    done.  */
 
-/* If ELF is the default format, we should not use /lib/elf. */
+/* If ELF is the default format, we should not use /lib/elf.  */
 
 #undef  LINK_SPEC
 #ifdef USE_GNULIBC_1
@@ -179,7 +179,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used. */
+   It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{V} %{v:%{!V:-V}} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} \

@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LINK_SPEC
 
 /* Sparc version of libc.a has references to libm.a (printf calls pow for
-   instance), so we must always link both. */
+   instance), so we must always link both.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{mthreads:-L/lib/thread/}  \
