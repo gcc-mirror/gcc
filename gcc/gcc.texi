@@ -2252,9 +2252,14 @@ If you include source code in your message, you can send it as clear
 text if it is small. If the message is larger, you may compress it using
 @file{gzip}, @file{bzip2}, or @file{pkzip}. Please be aware that sending
 compressed files needs an additional binary-safe mechanism such as
-@code{MIME} or @code{uuencode}. There is a 40k message limit on the
+@code{MIME} or @code{uuencode}. There is a 40k message soft limit on the
 @samp{egcs-bugs@@cygnus.com} mailing list at the time of this writing
-(August 1998).
+(August 1998).  However, if you can't reduce a bug report to less than
+that, post it anyway; it will be manually approved as long as it is
+compressed. Don't think that posting a URL to the code is better, we do
+want to archive bug reports, and not all maintainers have good network
+connectivity to download large pieces of software when they need them;
+it's much easier for them to have them in their mailboxes.
 
 To enable someone to investigate the bug, you should include all these
 things:
