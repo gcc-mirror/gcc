@@ -1,5 +1,8 @@
 2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config/stormy16/stormy16.h (LIB_SPEC): Don't supply any libgloss
+	library at all if -T is used.
+
 	* config/stormy16/stormy16.c (stormy16_print_operand): Avoid
 	some uses of uninitialized variables in error cases.
 
