@@ -1,3 +1,8 @@
+2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16579
+	* gfortran.fortran-torture/execute/intrinsic_i_char.f90: New test.
+	
 2004-08-31  Bud Davis  <bdavis9659@comcast.net>
 
 	PR libfortran/16805

@@ -1,5 +1,11 @@
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/16579
+	* trans-types.c (gfc_init_types): Make gfc_character1_type_node an
+	unsigned char.
+
+2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* CONTRIB, NEWS, README, TODO: Remove obsolete files.
 
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
