@@ -1560,9 +1560,13 @@ bot_manip (tp, walk_subtrees, data)
 	}
       else 
 	{
+	  tree var;
+
 	  u = copy_node (t);
-	  TREE_OPERAND (u, 0) = build (VAR_DECL, TREE_TYPE (t));
-	  layout_decl (TREE_OPERAND (u, 0), 0);
+	  var = build (VAR_DECL, TREE_TYPE (t));
+	  DECL_CONTEXT (var) = current_function_decl;
+	  layout_decl (var, 0);
+	  TREE_OPERAND (u, 0) = var;
 	}
 
       /* Map the old variable to the new one.  */
