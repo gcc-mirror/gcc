@@ -2663,11 +2663,15 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
+  if (type)
+    mode = type_natural_mode (type);
+
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "function_adv (sz=%d, wds=%2d, nregs=%d, ssenregs=%d, "
 	     "mode=%s, named=%d)\n\n",
 	     words, cum->words, cum->nregs, cum->sse_nregs,
 	     GET_MODE_NAME (mode), named);
+
   if (TARGET_64BIT)
     {
       int int_nregs, sse_nregs;
@@ -2685,32 +2689,20 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
   else
     {
-      if (TARGET_SSE && SSE_REG_MODE_P (mode)
-	  && (!type || !AGGREGATE_TYPE_P (type)))
+      switch (mode)
 	{
-	  cum->sse_words += words;
-	  cum->sse_nregs -= 1;
-	  cum->sse_regno += 1;
-	  if (cum->sse_nregs <= 0)
-	    {
-	      cum->sse_nregs = 0;
-	      cum->sse_regno = 0;
-	    }
-	}
-      else if (TARGET_MMX && MMX_REG_MODE_P (mode)
-	       && (!type || !AGGREGATE_TYPE_P (type)))
-	{
-	  cum->mmx_words += words;
-	  cum->mmx_nregs -= 1;
-	  cum->mmx_regno += 1;
-	  if (cum->mmx_nregs <= 0)
-	    {
-	      cum->mmx_nregs = 0;
-	      cum->mmx_regno = 0;
-	    }
-	}
-      else
-	{
+	default:
+	  break;
+
+	case BLKmode:
+	  if (bytes < 0)
+	    break;
+	  /* FALLTHRU */
+
+	case DImode:
+	case SImode:
+	case HImode:
+	case QImode:
 	  cum->words += words;
 	  cum->nregs -= words;
 	  cum->regno += words;
@@ -2720,9 +2712,46 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      cum->nregs = 0;
 	      cum->regno = 0;
 	    }
+	  break;
+
+	case TImode:
+	case V16QImode:
+	case V8HImode:
+	case V4SImode:
+	case V2DImode:
+	case V4SFmode:
+	case V2DFmode:
+	  if (!type || !AGGREGATE_TYPE_P (type))
+	    {
+	      cum->sse_words += words;
+	      cum->sse_nregs -= 1;
+	      cum->sse_regno += 1;
+	      if (cum->sse_nregs <= 0)
+		{
+		  cum->sse_nregs = 0;
+		  cum->sse_regno = 0;
+		}
+	    }
+	  break;
+
+	case V8QImode:
+	case V4HImode:
+	case V2SImode:
+	case V2SFmode:
+	  if (!type || !AGGREGATE_TYPE_P (type))
+	    {
+	      cum->mmx_words += words;
+	      cum->mmx_nregs -= 1;
+	      cum->mmx_regno += 1;
+	      if (cum->mmx_nregs <= 0)
+		{
+		  cum->mmx_nregs = 0;
+		  cum->mmx_regno = 0;
+		}
+	    }
+	  break;
 	}
     }
-  return;
 }
 
 /* Define where to put the arguments to a function.
@@ -2999,10 +3028,11 @@ ix86_function_value_regno_p (int regno)
 rtx
 ix86_function_value (tree valtype)
 {
+  enum machine_mode natmode = type_natural_mode (valtype);
+
   if (TARGET_64BIT)
     {
-      rtx ret = construct_container (type_natural_mode (valtype),
-				     TYPE_MODE (valtype), valtype,
+      rtx ret = construct_container (natmode, TYPE_MODE (valtype), valtype,
 				     1, REGPARM_MAX, SSE_REGPARM_MAX,
 				     x86_64_int_return_registers, 0);
       /* For zero sized structures, construct_container return NULL, but we
@@ -3012,8 +3042,7 @@ ix86_function_value (tree valtype)
       return ret;
     }
   else
-    return gen_rtx_REG (TYPE_MODE (valtype),
-			ix86_value_regno (TYPE_MODE (valtype)));
+    return gen_rtx_REG (TYPE_MODE (valtype), ix86_value_regno (natmode));
 }
 
 /* Return false iff type is returned in memory.  */
@@ -3021,7 +3050,7 @@ int
 ix86_return_in_memory (tree type)
 {
   int needed_intregs, needed_sseregs, size;
-  enum machine_mode mode = TYPE_MODE (type);
+  enum machine_mode mode = type_natural_mode (type);
 
   if (TARGET_64BIT)
     return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);

@@ -1,3 +1,10 @@
+2005-01-10  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_function_value): Use type_natural_mode.
+	(ix86_return_in_memory): Likewise.
+	(function_arg_advance):  Likewise.  Mirror structure in function_arg
+	for choosing register to advance.
+
 2005-01-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vectorizer.c, tree.def: Fix comment typos.
