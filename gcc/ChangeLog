@@ -19,7 +19,7 @@
 
 2004-11-14  Eric Botcazou <ebotcazou@libertysurf.fr>
 
-	* doc/rtl.texi (SUBREG): Adjust BYTENUM value.
+	* doc/rtl.texi (SUBREG): Adjust BYTENUM value in example.
 
 2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
