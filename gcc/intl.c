@@ -51,8 +51,8 @@ gcc_init_libintl (void)
   setlocale (LC_ALL, "");
 #endif
 
-  (void) bindtextdomain ("gcc", LOCALEDIR);
-  (void) textdomain ("gcc");
+  (void) bindtextdomain (PACKAGE, LOCALEDIR);
+  (void) textdomain (PACKAGE);
 
   /* Opening quotation mark.  */
   open_quote = _("`");

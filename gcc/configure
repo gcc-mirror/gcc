@@ -9387,6 +9387,11 @@ EOF
 PACKAGE=gcc
 VERSION="$gcc_version"
 
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE "$PACKAGE"
+_ACEOF
+
+
 
 
 # If we haven't got the data from the intl directory,

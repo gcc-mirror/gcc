@@ -1392,6 +1392,8 @@ changequote([,])dnl
 # Internationalization
 PACKAGE=gcc
 VERSION="$gcc_version"
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE",
+  [The name of this program for internationalization purposes.])
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
