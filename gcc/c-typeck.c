@@ -1926,7 +1926,7 @@ build_function_call (tree function, tree params)
   if (!(TREE_CODE (fntype) == POINTER_TYPE
 	&& TREE_CODE (TREE_TYPE (fntype)) == FUNCTION_TYPE))
     {
-      error ("called object is not a function");
+      error ("called object %qE is not a function", function);
       return error_mark_node;
     }
 
