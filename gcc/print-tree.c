@@ -412,7 +412,11 @@ print_node (file, prefix, node, indent)
 	{
 	  fprintf (file, " align %d", DECL_ALIGN (node));
 	  if (TREE_CODE (node) == FIELD_DECL)
-	    fprintf (file, " offset_align %d", DECL_OFFSET_ALIGN (node));
+	    {
+	      fprintf (file, " offset_align ");
+	      fprintf (file, HOST_WIDE_INT_PRINT_UNSIGNED,
+		       DECL_OFFSET_ALIGN (node));
+	    }
 	}
       else if (DECL_INLINE (node))
 	{
@@ -478,23 +482,36 @@ print_node (file, prefix, node, indent)
       break;
 
     case 't':
-      if (TYPE_NO_FORCE_BLK (node))
+      /* The no-force-blk flag is used for different things in
+	 different types.  */
+      if ((TREE_CODE (node) == RECORD_TYPE
+	   || TREE_CODE (node) == UNION_TYPE
+	   || TREE_CODE (node) == QUAL_UNION_TYPE)
+	  && TYPE_NO_FORCE_BLK (node))
 	fputs (" no-force-blk", file);
+      else if (TREE_CODE (node) == INTEGER_TYPE
+	       && TYPE_IS_SIZETYPE (node))
+	fputs (" sizetype", file);
+      else if (TREE_CODE (node) == FUNCTION_TYPE
+	       && TYPE_RETURNS_STACK_DEPRESSED (node))
+	fputs (" returns-stack-depressed", file);
+
       if (TYPE_STRING_FLAG (node))
 	fputs (" string-flag", file);
       if (TYPE_NEEDS_CONSTRUCTING (node))
 	fputs (" needs-constructing", file);
+
       /* The transparent-union flag is used for different things in
 	 different nodes.  */
-      if (TYPE_CHECK (node)->type.transparent_union_flag)
-	{
-	  if (TREE_CODE (node) == UNION_TYPE)
-	    fputs (" transparent-union", file);
-	  else if (TREE_CODE (node) == ARRAY_TYPE)
-	    fputs (" nonaliased-component", file);
-	  else
-	    fputs (" tu-flag", file);
-	}
+      if (TREE_CODE (node) == UNION_TYPE && TYPE_TRANSPARENT_UNION (node))
+	fputs (" transparent-union", file);
+      else if (TREE_CODE (node) == ARRAY_TYPE
+	       && TYPE_NONALIASED_COMPONENT (node))
+	fputs (" nonaliased-component", file);
+      else if (TREE_CODE (node) == FUNCTION_TYPE
+	       && TYPE_AMBIENT_BOUNDEDNESS (node))
+	fputs (" ambient-boundedness", file);
+
       if (TYPE_PACKED (node))
 	fputs (" packed", file);
 
@@ -550,10 +567,12 @@ print_node (file, prefix, node, indent)
 	       || TREE_CODE (node) == UNION_TYPE
 	       || TREE_CODE (node) == QUAL_UNION_TYPE)
 	print_node (file, "fields", TYPE_FIELDS (node), indent + 4);
-      else if (TREE_CODE (node) == FUNCTION_TYPE || TREE_CODE (node) == METHOD_TYPE)
+      else if (TREE_CODE (node) == FUNCTION_TYPE
+	       || TREE_CODE (node) == METHOD_TYPE)
 	{
 	  if (TYPE_METHOD_BASETYPE (node))
-	    print_node_brief (file, "method basetype", TYPE_METHOD_BASETYPE (node), indent + 4);
+	    print_node_brief (file, "method basetype",
+			      TYPE_METHOD_BASETYPE (node), indent + 4);
 	  print_node (file, "arg-types", TYPE_ARG_TYPES (node), indent + 4);
 	}
       else if (TREE_CODE (node) == OFFSET_TYPE)
