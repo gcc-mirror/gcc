@@ -8478,6 +8478,8 @@ sparc_elf_asm_named_section (const char *name, unsigned int flags)
     fputs (",#alloc", asm_out_file);
   if (flags & SECTION_WRITE)
     fputs (",#write", asm_out_file);
+  if (flags & SECTION_TLS)
+    fputs (",#tls", asm_out_file);
   if (flags & SECTION_CODE)
     fputs (",#execinstr", asm_out_file);
 
