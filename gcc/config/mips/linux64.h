@@ -25,12 +25,15 @@ Boston, MA 02111-1307, USA.  */
    time, we also need t-linux64 to get the build-time specs in line
    with the setting in config.gcc.  */
 #define DRIVER_DEFAULT_ABI_SELF_SPEC "%{!mabi=*:-mabi=n32}"
+#undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
   { "driver_default_abi_self_spec", DRIVER_DEFAULT_ABI_SELF_SPEC },
 #define DRIVER_SELF_SPECS \
+"%{!EB:%{!EL:%(endian_spec)}}", \
 "%{mabi-fake-default:%{!mabi=*:-mabi=32}}", \
 "%(driver_default_abi_self_spec)", \
-"%{!mips*:%{mabi=32:-mips1}%{mabi=n32:-mips3}%{mabi=64:-mips4}}"
+"%{!mips*:%{!march=*:%{mabi=32:-mips1}%{mabi=n32|mabi=64:-mips3}}}"
+
 #undef SUBTARGET_TARGET_SWITCHES
 #define SUBTARGET_TARGET_SWITCHES \
   { "abi-fake-default", 0, N_("Same as -mabi=32, just trickier") },
@@ -39,8 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_ASM_SPEC "\
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared} \
-%{mabi=64:-64} %{mabi=n32:-n32} \
-%{!mips*: %{mabi=n32|mabi=32:-mips3} %{mabi=64:-mips4}}"
+%{mabi=64:-64} %{mabi=n32:-n32}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "\
@@ -65,9 +67,9 @@ Boston, MA 02111-1307, USA.  */
 	  %{mabi=64: -dynamic-linker /lib64/ld.so.1} \
 	  %{mabi=32: -dynamic-linker /lib/ld.so.1}}} \
       %{static:-static}}} \
-%{mabi=n32: -melf32btsmipn32} \
-%{mabi=64: -melf64btsmip} \
-%{mabi=32: -melf32btsmip}"
+%{mabi=n32:-melf32%{EB:b}%{EL:l}tsmipn32} \
+%{mabi=64:-melf64%{EB:b}%{EL:l}tsmip} \
+%{mabi=32:-melf32%{EB:b}%{EL:l}tsmip}"
 
 #undef STARTFILE_PREFIX_SPEC
 #define STARTFILE_PREFIX_SPEC "\
