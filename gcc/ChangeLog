@@ -1,3 +1,9 @@
+2004-05-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/15546
+	* config/ia64/ia64.h (ASM_OUTPUT_FDESC): Mark the DECL
+	as needed to be outputted.
+
 2004-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (__builtin_expect):  Mark the function as const&nothrow.
