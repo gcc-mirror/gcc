@@ -1,3 +1,36 @@
+Mon Mar 12 15:16:36 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (VALID_FP_MODE_P): XFmode is invalid on x86_64.
+	(MODES_TIEABLE_P): QImodes and DImodes are tiable on x86_64.
+	(HARD_REGNO_CALLER_SAVE_MODE): Save QImodes as QImodes for x86_64.
+	(STATIC_CHAIN_REGNUM): Set to r10 for x86_64.
+	(PIC_OFFSET_TABLE_REGNUM): Set to INVALID_REGNUM for x86_64.
+	(LIMIT_RELOAD_CLASS): Avoid limiting of QImodes on x86_64.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): No need to QImodes.
+	(PUSH_ROUNDING): x86_64 rounds to 64bits.
+	(CONSTANT_ADDRESS_P): Accept CONST_DOUBLE.
+	(REGPARM_MAX): Set to 6 for x86_64.
+	(SSE_REGPARM_MAX): Set to 16 for x86_64.
+	* i386.c (hard_regno_mode_ok): QImodes can be in all general purpose
+	registers.
+
+	* (patterns that does use upper halves): Update constraints
+	'q' to 'Q' and 'r' to 'R'.
+	(cmpqi_ext_1): Disable for 64bit.
+	(cmpqi_ext_3_insn): Likewise.
+	(movqi_extzv_1): Likewsie.
+	(addqi_ext_1): Liekwsie
+	(testqi_ext_1): Liekwsie
+	(andqi_ext_1): Liekwsie
+	(xorqi_ext_1): Liekwsie
+	(cmpqi_ext_1_rex64): New.
+	(cmpqi_ext_3_insn_rex64): Likewise.
+	(movqi_extzv_1_rex64): Likewsie.
+	(addqi_ext_1_rex64): Liekwsie
+	(testqi_ext_1_rex64): Liekwsie
+	(andqi_ext_1_rex64): Liekwsie
+	(xorqi_ext_1_rex64): Liekwsie
+
 2001-03-11  Zack Weinberg  <zackw@stanford.edu>
 
 	* configure.in: Move check for unsigned enumerated bitfields   

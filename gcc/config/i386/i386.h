@@ -861,9 +861,9 @@ extern int ix86_arch;
 
 #define VALID_FP_MODE_P(mode) \
     ((mode) == SFmode || (mode) == DFmode || (mode) == TFmode	\
-     || (mode) == XFmode					\
+     || (!TARGET_64BIT && (mode) == XFmode)			\
      || (mode) == SCmode || (mode) == DCmode || (mode) == TCmode\
-     || (mode) == XCmode)
+     || (!TARGET_64BIT && (mode) == XCmode))
 
 #define VALID_INT_MODE_P(mode) \
     ((mode) == QImode || (mode) == HImode || (mode) == SImode	\
@@ -883,8 +883,15 @@ extern int ix86_arch;
 
 #define MODES_TIEABLE_P(MODE1, MODE2)				\
   ((MODE1) == (MODE2)						\
-   || ((MODE1) == SImode && (MODE2) == HImode)			\
-   || ((MODE1) == HImode && (MODE2) == SImode))
+   || (((MODE1) == HImode || (MODE1) == SImode			\
+	|| ((MODE1) == QImode					\
+	    && (TARGET_64BIT || !TARGET_PARTIAL_REG_STALL))	\
+        || ((MODE1) == DImode && TARGET_64BIT))			\
+       && ((MODE2) == HImode || (MODE2) == SImode		\
+	   || ((MODE1) == QImode				\
+	       && (TARGET_64BIT || !TARGET_PARTIAL_REG_STALL))	\
+	   || ((MODE2) == DImode && TARGET_64BIT))))
+
 
 /* Specify the modes required to caller save a given hard regno.
    We do this on i386 to prevent flags from being saved at all.
@@ -896,8 +903,8 @@ extern int ix86_arch;
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode		\
    : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS)) \
    : (MODE) == HImode && !TARGET_PARTIAL_REG_STALL ? SImode	\
-   : (MODE) == QImode && (REGNO) >= 4 ? SImode : (MODE))
-
+   : (MODE) == QImode && (REGNO) >= 4 && !TARGET_64BIT ? SImode \
+   : (MODE))
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
@@ -955,12 +962,17 @@ extern int ix86_arch;
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 16
 
-/* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM 2
+/* Register in which static-chain is passed to a function.
+   We do use ECX as static chain register for 32 bit ABI.  On the
+   64bit ABI, ECX is an argument register, so we use R10 instead.  */
+#define STATIC_CHAIN_REGNUM (TARGET_64BIT ? FIRST_REX_INT_REG + 10 - 8 : 2)
 
 /* Register to hold the addressing base for position independent
-   code access to data items.  */
-#define PIC_OFFSET_TABLE_REGNUM 3
+   code access to data items.
+   We don't use PIC pointer for 64bit mode.  Define the regnum to
+   dummy value to prevent gcc from pesimizing code dealing with EBX.
+ */
+#define PIC_OFFSET_TABLE_REGNUM (TARGET_64BIT ? INVALID_REGNUM : 3)
 
 /* Register in which address to store a structure value
    arrives in the function.  On the 386, the prologue
@@ -1239,8 +1251,9 @@ enum reg_class
    is necessary to be able to hold a value of mode MODE in a reload
    register for which class CLASS would ordinarily be used. */
 
-#define LIMIT_RELOAD_CLASS(MODE, CLASS) \
-  ((MODE) == QImode && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS) \
+#define LIMIT_RELOAD_CLASS(MODE, CLASS) 			\
+  ((MODE) == QImode && !TARGET_64BIT				\
+   && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS) 		\
    ? Q_REGS : (CLASS))
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1269,7 +1282,8 @@ enum reg_class
    pseudo.  */
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,OUT) \
-  ((CLASS) == GENERAL_REGS && (MODE) == QImode ? Q_REGS : NO_REGS)
+  ((CLASS) == GENERAL_REGS && !TARGET_64BIT && (MODE) == QImode		\
+   ? Q_REGS : NO_REGS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -1340,9 +1354,15 @@ enum reg_class
    this says how many the stack pointer really advances by.
    On 386 pushw decrements by exactly 2 no matter what the position was.
    On the 386 there is no pushb; we use pushw instead, and this
-   has the effect of rounding up to 2.  */
+   has the effect of rounding up to 2.
+ 
+   For 64bit ABI we round up to 8 bytes.
+ */
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & (-2))
+#define PUSH_ROUNDING(BYTES) \
+  (TARGET_64BIT		     \
+   ? (((BYTES) + 7) & (-8))  \
+   : (((BYTES) + 1) & (-2)))
 
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable
@@ -1803,7 +1823,8 @@ pop{l} %0"							\
 
 #define CONSTANT_ADDRESS_P(X)					\
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST)
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST	\
+   || GET_CODE (X) == CONST_DOUBLE)
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
@@ -2183,7 +2204,9 @@ while (0)
    is also used as the pic register in ELF.  So for now, don't allow more than
    3 registers to be passed in registers.  */
 
-#define REGPARM_MAX 3
+#define REGPARM_MAX (TARGET_64BIT ? 6 : 3)
+
+#define SSE_REGPARM_MAX (TARGET_64BIT ? 16 : 0)
 
 
 /* Specify the machine mode that this machine uses
