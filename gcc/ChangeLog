@@ -1,3 +1,7 @@
+Wed Nov 14 06:37:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-lang.c (finish_file): Make I unsigned to eliminate warning.
+
 2001-11-13  Jeff Sturm  <jsturm@one-point.com>
 
 	* doc/install.texi (sparc-*-linux*): Mention requirements for
