@@ -1,3 +1,9 @@
+2004-12-27  Roger Sayle  <roger@eyesopen.com>
+
+	PR driver/16118
+	* doc/invoke.texi: Document the interaction between -save-temps
+	and -x.
+
 2004-12-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_eliminate_indexed_memrefs):
