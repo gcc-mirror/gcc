@@ -292,44 +292,27 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif
 
-#if (defined (__i370__) || defined (__mvs__)) && W_TYPE_SIZE == 32
-#define umul_ppmm(xh, xl, m0, m1) \
-  do {									\
-    union {UDItype __ll;						\
-	   struct {USItype __h, __l;} __i;				\
-	  } __xx;							\
-    USItype __m0 = (m0), __m1 = (m1);					\
-    __asm__ ("mr %0,%3"							\
-	     : "=r" (__xx.__i.__h),					\
-	       "=r" (__xx.__i.__l)					\
-	     : "%1" (__m0),						\
-	       "r" (__m1));						\
-    (xh) = __xx.__i.__h; (xl) = __xx.__i.__l;				\
-    (xh) += ((((SItype) __m0 >> 31) & __m1)				\
-	     + (((SItype) __m1 >> 31) & __m0));				\
-  } while (0)
+#if (defined (__i370__) || defined (__s390__) || defined (__mvs__)) && W_TYPE_SIZE == 32
 #define smul_ppmm(xh, xl, m0, m1) \
   do {									\
     union {DItype __ll;							\
 	   struct {USItype __h, __l;} __i;				\
-	  } __xx;							\
-    __asm__ ("mr %0,%3"							\
-	     : "=r" (__xx.__i.__h),					\
-	       "=r" (__xx.__i.__l)					\
-	     : "%1" (m0),						\
-	       "r" (m1));						\
-    (xh) = __xx.__i.__h; (xl) = __xx.__i.__l;				\
+	  } __x;							\
+    __asm__ ("lr %N0,%1\n\tmr %0,%2"					\
+	     : "=&r" (__x.__ll)						\
+	     : "r" (m0), "r" (m1));					\
+    (xh) = __x.__i.__h; (xl) = __x.__i.__l;				\
   } while (0)
 #define sdiv_qrnnd(q, r, n1, n0, d) \
   do {									\
     union {DItype __ll;							\
 	   struct {USItype __h, __l;} __i;				\
-	  } __xx;							\
-    __xx.__i.__h = n1; __xx.__i.__l = n0;				\
+	  } __x;							\
+    __x.__i.__h = n1; __x.__i.__l = n0;					\
     __asm__ ("dr %0,%2"							\
-	     : "=r" (__xx.__ll)						\
-	     : "0" (__xx.__ll), "r" (d));				\
-    (q) = __xx.__i.__l; (r) = __xx.__i.__h;				\
+	     : "=r" (__x.__ll)						\
+	     : "0" (__x.__ll), "r" (d));				\
+    (q) = __x.__i.__l; (r) = __x.__i.__h;				\
   } while (0)
 #endif
 
@@ -1201,6 +1184,20 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif
 
+/* If we lack umul_ppmm but have smul_ppmm, define umul_ppmm in terms of
+   smul_ppmm.  */
+#if !defined (umul_ppmm) && defined (smul_ppmm)
+#define umul_ppmm(w1, w0, u, v)						\
+  do {									\
+    UWtype __w1;							\
+    UWtype __xm0 = (u), __xm1 = (v);					\
+    smul_ppmm (__w1, w0, __xm0, __xm1);					\
+    (w1) = __w1 + (-(__xm0 >> (W_TYPE_SIZE - 1)) & __xm1)		\
+		+ (-(__xm1 >> (W_TYPE_SIZE - 1)) & __xm0);		\
+  } while (0)
+#endif
+
+/* If we still don't have umul_ppmm, define it using plain C.  */
 #if !defined (umul_ppmm)
 #define umul_ppmm(w1, w0, u, v)						\
   do {									\
