@@ -356,7 +356,9 @@ check_dtor_name (basetype, name)
     /* OK */;
   else if (TREE_CODE (name) == IDENTIFIER_NODE)
     {
-      if (IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
+      if ((IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
+	  || (TREE_CODE (basetype) == ENUMERAL_TYPE
+	      && name == TYPE_IDENTIFIER (basetype)))
 	name = basetype;
       else
 	name = get_type_value (name);
@@ -414,20 +416,29 @@ build_scoped_method_call (exp, basetype, name, parms)
     binfo = NULL_TREE;
 
   /* Check the destructor call syntax.  */
-  if (TREE_CODE (name) == BIT_NOT_EXPR && ! check_dtor_name (basetype, name))
-    cp_error ("qualified type `%T' does not match destructor name `~%T'",
-	      basetype, TREE_OPERAND (name, 0));
-
-  /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
-     that explicit ~int is caught in the parser; this deals with typedefs
-     and template parms.  */
-  if (TREE_CODE (name) == BIT_NOT_EXPR && ! IS_AGGR_TYPE (basetype))
+  if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (basetype))
-	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
-		  exp, basetype, type);
-      
-      return cp_convert (void_type_node, exp);
+      /* We can get here if someone writes their destructor call like
+	 `obj.NS::~T()'; this isn't really a scoped method call, so hand
+	 it off.  */
+      if (TREE_CODE (basetype) == NAMESPACE_DECL)
+	return build_method_call (exp, name, parms, NULL_TREE, LOOKUP_NORMAL);
+
+      if (! check_dtor_name (basetype, name))
+	cp_error ("qualified type `%T' does not match destructor name `~%T'",
+		  basetype, TREE_OPERAND (name, 0));
+
+      /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
+	 that explicit ~int is caught in the parser; this deals with typedefs
+	 and template parms.  */
+      if (! IS_AGGR_TYPE (basetype))
+	{
+	  if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (basetype))
+	    cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
+		      exp, basetype, type);
+
+	  return cp_convert (void_type_node, exp);
+	}
     }
 
   if (! is_aggr_type (basetype, 1))
