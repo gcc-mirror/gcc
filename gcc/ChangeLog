@@ -1,5 +1,9 @@
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* c-lex.c: Update copyright and file description.
+
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* config/fr30/fr30.h: Update to new CPP macros.
 
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
