@@ -1,3 +1,10 @@
+Thu Mar 19 11:51:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (get_bindings_real): Rename from get_bindings.  Add 
+	check_rettype parm.
+	(get_bindings): Pass 1.
+	(get_bindings_overload): Pass 0.
+
 Wed Mar 19 09:08:12 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (check_explicit_specialization): When reverting a static
