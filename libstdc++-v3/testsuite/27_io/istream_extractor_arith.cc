@@ -490,6 +490,29 @@ bool test10() {
   return test;
 }
 
+// In the presence of no fmtflags, the input operator should behave
+// like strtol(x, y, 0)
+// libstdc++/90
+bool test11()
+{
+  bool test = true;
+  const char* cstrlit = "0x2a";
+
+  // sanity check via 'C' library call
+  char* err;
+  long l = strtol(cstrlit, &err, 0);
+
+  std::istringstream iss(cstrlit);
+  iss.setf(std::ios::fmtflags(0), std::ios::basefield);
+  int i;
+  iss >> i;
+
+  VERIFY (!iss.fail());
+  VERIFY (l == i);
+
+  return test;
+}
+
 int main()
 {
   test01();
@@ -501,6 +524,8 @@ int main()
   test08();
   test09();
   test10();
+  
+  test11();
   return 0;
 }
 

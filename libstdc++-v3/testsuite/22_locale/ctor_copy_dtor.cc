@@ -26,11 +26,10 @@
 #include <debug_assert.h>
 
 #if _GLIBCPP_USE_WCHAR_T
-
-typedef std::codecvt<char, char, std::mbstate_t> 		c_codecvt;
-typedef std::codecvt_byname<char, char, std::mbstate_t> 	c_codecvt_byname;
-typedef std::codecvt<wchar_t, char, std::mbstate_t>		w_codecvt;
-typedef std::codecvt_byname<wchar_t, char, std::mbstate_t>	w_codecvt_byname;
+typedef std::codecvt<char, char, std::mbstate_t> 	      c_codecvt;
+typedef std::codecvt_byname<char, char, std::mbstate_t>       c_codecvt_byname;
+typedef std::codecvt<wchar_t, char, std::mbstate_t>	      w_codecvt;
+typedef std::codecvt_byname<wchar_t, char, std::mbstate_t>    w_codecvt_byname;
 
 class gnu_codecvt: public c_codecvt { }; 
 
@@ -168,7 +167,7 @@ int main ()
 {
 #if _GLIBCPP_USE_WCHAR_T
   test01();
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+#endif 
 
   return 0;
 }
