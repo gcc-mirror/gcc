@@ -1,5 +1,12 @@
 2003-10-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteOrder.java,
+	java/nio/DirectByteBufferImpl.java,
+	java/nio/channels/FileChannelImpl.java:
+	Add code to load library with code for native methods if needed.
+
+2003-10-21  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/PlainDatagramSocketImpl.java,
 	gnu/java/net/PlainSocketImpl.java,
 	gnu/java/net/natPlainDatagramSocketImplPosix.cc,

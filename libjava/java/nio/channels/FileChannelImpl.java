@@ -47,6 +47,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.MappedByteBufferImpl;
+import gnu.classpath.Configuration;
 import gnu.gcj.RawData;
 
 /**
@@ -59,6 +60,15 @@ import gnu.gcj.RawData;
 
 public class FileChannelImpl extends FileChannel
 {
+  static
+  {
+    // load the shared library needed for native methods.
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javanio");
+      }
+  }
+  
   public RawData map_address;
   
   int length;
