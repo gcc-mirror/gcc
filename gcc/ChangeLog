@@ -1,3 +1,7 @@
+2001-06-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/linux.h (CPLUSPLUS_CPP_SPEC): New.
+
 2001-06-11  Stan Shebs  <shebs@apple.com>
 
 	* darwin.c (darwin_encode_section_info):  Rewrite to simplify
