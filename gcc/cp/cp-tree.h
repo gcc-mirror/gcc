@@ -1848,8 +1848,7 @@ extern int flag_new_for_scope;
    flag for this because "A union for which objects or pointers are
    declared is not an anonymous union" [class.union].  */
 #define ANON_AGGR_TYPE_P(NODE)				\
-  (TYPE_LANG_SPECIFIC (NODE)				\
-   && TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr)
+  (CLASS_TYPE_P (NODE) && TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr)
 #define SET_ANON_AGGR_TYPE_P(NODE)			\
   (TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr = 1)
 
@@ -2763,8 +2762,8 @@ extern void add_method				PROTO((tree, tree *, tree));
 extern int currently_open_class			PROTO((tree));
 extern tree get_vfield_offset			PROTO((tree));
 extern void duplicate_tag_error			PROTO((tree));
-extern tree finish_struct			PROTO((tree, tree, int));
-extern void finish_struct_1			PROTO((tree, int));
+extern tree finish_struct			PROTO((tree, tree));
+extern void finish_struct_1			PROTO((tree));
 extern int resolves_to_fixed_type_p		PROTO((tree, int *));
 extern void init_class_processing		PROTO((void));
 extern int is_empty_class			PROTO((tree));

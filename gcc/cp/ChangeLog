@@ -1,5 +1,19 @@
 1999-07-20  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (warn_extern_redeclared_static): Check DECL_ARTIFICIAL,
+	not DECL_BUILT_IN, to determine if a function is internally declared.
+	(duplicate_decls): Likewise.  Improve handling of builtins.
+	(push_overloaded_decl): Remove special handling of builtins.
+
+	* cp-tree.h (ANON_AGGR_TYPE_P): Use CLASS_TYPE_P.
+
+	* decl.c (grokdeclarator): Pull out decl_constant_value in
+	templates, too.
+
+	* class.c (finish_struct, finish_struct_1): Remove 'warn_anon' parm.
+	* cp-tree.h, pt.c, semantics.c: Adjust.
+	* method.c (largest_union_member): Remove.
+
 	* lang-specs.h (c++-cpp-output): Pass -fpreprocessed.
 
 	* lex.c (token_getch, token_put_back): New fns.

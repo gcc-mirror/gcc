@@ -5183,7 +5183,7 @@ instantiate_class_template (type)
   input_filename = DECL_SOURCE_FILE (typedecl);
 
   unreverse_member_declarations (type);
-  finish_struct_1 (type, 0);
+  finish_struct_1 (type);
   CLASSTYPE_GOT_SEMICOLON (type) = 1;
 
   /* Clear this now so repo_template_used is happy.  */
