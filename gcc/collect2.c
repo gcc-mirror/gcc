@@ -188,6 +188,7 @@ static int   temp_filename_length;	/* Length of temp_filename */
 static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list. */
 static char *o_file;			/* <xxx>.o for constructor/destructor list. */
+static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
 static char *strip_file_name;		/* pathname of strip */
 
@@ -260,6 +261,9 @@ my_exit (status)
 
   if (o_file != 0 && o_file[0])
     maybe_unlink (o_file);
+
+  if (status != 0 && output_file != 0 && output_file[0])
+    maybe_unlink (output_file);
 
   exit (status);
 }
@@ -696,7 +700,6 @@ main (argc, argv)
   char *full_strip_suffix = strip_suffix;
   char *gstrip_suffix	= "gstrip";
   char *full_gstrip_suffix = gstrip_suffix;
-  char *outfile		= "a.out";
   char *arg;
   FILE *outf;
   char *ld_file_name;
@@ -719,6 +722,8 @@ main (argc, argv)
 #endif
 
   our_file_name = argv[0];
+
+  output_file = "a.out";
 
   /* We must check that we do not call ourselves in an infinite
      recursion loop. We save the name used for us in the COLLECT_NAME
@@ -933,7 +938,7 @@ main (argc, argv)
 	      break;
 
 	    case 'o':
-	      outfile = (arg[2] == '\0') ? argv[1] : &arg[2];
+	      output_file = (arg[2] == '\0') ? argv[1] : &arg[2];
 	      break;
 
 	    case 'r':
@@ -1033,7 +1038,7 @@ main (argc, argv)
   if (rflag)
     return 0;
 
-  scan_prog_file (outfile, PASS_FIRST);
+  scan_prog_file (output_file, PASS_FIRST);
 
   if (debug)
     {
@@ -1048,7 +1053,7 @@ main (argc, argv)
 	{
 	  char **strip_argv = (char **) xcalloc (sizeof (char *), 3);
 	  strip_argv[0] = strip_file_name;
-	  strip_argv[1] = outfile;
+	  strip_argv[1] = output_file;
 	  strip_argv[2] = (char *) 0;
 	  fork_execute ("strip", strip_argv);
 	}
@@ -1066,7 +1071,8 @@ main (argc, argv)
 
   if (debug)
     {
-      fprintf (stderr, "\n========== outfile = %s, c_file = %s\n", outfile, c_file);
+      fprintf (stderr, "\n========== output_file = %s, c_file = %s\n",
+	       output_file, c_file);
       write_c_file (stderr, "stderr");
       fprintf (stderr, "========== end of c_file\n\n");
     }
@@ -1079,7 +1085,7 @@ main (argc, argv)
 
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
-  scan_prog_file (outfile, PASS_SECOND);
+  scan_prog_file (output_file, PASS_SECOND);
 
   maybe_unlink (c_file);
   maybe_unlink (o_file);
