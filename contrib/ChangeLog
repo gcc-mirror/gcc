@@ -1,3 +1,8 @@
+2004-01-09  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_update (files_and_dependencies): Update fastjar/configure.in
+	to fastjar/configure.ac
+
 2004-01-07  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_update (files_and_dependencies): Remove non-existant files.

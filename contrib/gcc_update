@@ -86,9 +86,9 @@ libf2c/libU77/configure: libf2c/libU77/configure.in
 libf2c/libU77/stamp-h.in: libf2c/libU77/configure.in libf2c/libU77/acconfig.h
 libobjc/configure: libobjc/configure.in
 # fastjar
-fastjar/aclocal.m4: fastjar/configure.in
-fastjar/Makefile.in: fastjar/Makefile.am fastjar/configure.in fastjar/aclocal.m4
-fastjar/configure: fastjar/configure.in fastjar/aclocal.m4
+fastjar/aclocal.m4: fastjar/configure.ac
+fastjar/Makefile.in: fastjar/Makefile.am fastjar/configure.ac fastjar/aclocal.m4
+fastjar/configure: fastjar/configure.ac fastjar/aclocal.m4
 boehm-gc/aclocal.m4: boehm-gc/configure.in boehm-gc/acinclude.m4
 boehm-gc/Makefile.in: boehm-gc/Makefile.am boehm-gc/configure.in boehm-gc/aclocal.m4
 boehm-gc/configure: boehm-gc/configure.in boehm-gc/aclocal.m4
