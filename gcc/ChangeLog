@@ -1,3 +1,8 @@
+Thu Oct 28 11:05:13 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.md (casesi_insn): Add a clobber of the condition code
+	register.
+
 Mon Oct 18 21:16:06 1999  Fred Fish  <fnf@be.com>
 
 	* tm.texi (CC1PLUS_SPEC): Make it clear in the docs that CC1_SPEC is

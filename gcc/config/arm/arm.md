@@ -4686,6 +4686,7 @@
 		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
 				 (label_ref (match_operand 2 "" ""))))
 		(label_ref (match_operand 3 "" ""))))
+	      (clobber (reg:CC 24))
 	      (use (label_ref (match_dup 2)))])]
   ""
   "*
