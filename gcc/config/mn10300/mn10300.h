@@ -55,9 +55,9 @@ extern int target_flags;
 #define TARGET_SWITCHES  \
   {{ "mult-bug",	0x1,  N_("Work around hardware multiply bug")},	\
    { "no-mult-bug", 	-0x1, N_("Do not work around hardware multiply bug")},\
-   { "am33", 		0x2,  0},	\
-   { "am33", 		-(0x1), 0},\
-   { "no-am33", 	-0x2, 0},	\
+   { "am33", 		0x2,  N_("Target the AM33 processor")},	\
+   { "am33", 		-(0x1), ""},\
+   { "no-am33", 	-0x2, ""},	\
    { "", TARGET_DEFAULT, NULL}}
 
 #ifndef TARGET_DEFAULT
