@@ -109,7 +109,7 @@ AC_SUBST_FILE(host_makefile_frag)
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-AC_CHECK_HEADERS(sys/file.h sys/param.h stdlib.h string.h unistd.h strings.h sys/time.h sys/resource.h sys/stat.h)
+AC_CHECK_HEADERS(sys/file.h sys/param.h stdlib.h string.h unistd.h strings.h sys/time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h)
 AC_HEADER_SYS_WAIT
 
 # This is the list of functions which libiberty will provide if they
@@ -351,6 +351,8 @@ EOF
   done
   AC_CHECK_FUNCS($checkfuncs)
 fi
+
+libiberty_AC_FUNC_STRNCMP
 
 # Install a library built with a cross compiler in $(tooldir) rather
 # than $(libdir).
