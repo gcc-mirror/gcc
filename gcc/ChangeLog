@@ -1,3 +1,7 @@
+2001-05-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* optabs.c (emit_libcall_block): Don't mark calls as CONST_CALL_P.
+
 2001-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (finish_label_expr): New function, lifted from
