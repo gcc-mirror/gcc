@@ -22,6 +22,7 @@ includes @file{tm.h} and most compiler source files include
 @menu
 * Driver::              Controlling how the driver runs the compilation passes.
 * Run-time Target::     Defining @samp{-m} options like @samp{-m68000} and @samp{-m68020}.
+* Per-Function Data::   Defining data structures for per-function information.
 * Storage Layout::      Defining sizes and alignments of data.
 * Type Layout::         Defining sizes and properties of basic user data types.
 * Registers::           Naming and describing the hardware registers.
@@ -702,6 +703,80 @@ generated code.
 Define this macro if debugging can be performed even without a frame
 pointer.  If this macro is defined, GCC will turn on the
 @samp{-fomit-frame-pointer} option whenever @samp{-O} is specified.
+@end table
+
+@node Per-Function Data
+@section Defining data structures for per-function information.
+@cindex per-function data
+@cindex data structures
+
+If the target needs to store information on a per-function basis, GCC
+provides a macro and a couple of variables to allow this.  Note, just
+using statics to store the information is a bad idea, since GCC supports
+nested functions, so you can be halfway through encoding one function
+when another one comes along.
+
+GCC defines a data structure called @code{struct function} which
+contains all of the data specific to an individual function.  This
+structure contains a field called @code{machine} whose type is
+@code{struct machine_function *}, which can be used by targets to point
+to their own specific data.
+
+If a target needs per-function specific data it should define the type
+@code{struct machine_function} and also the macro
+@code{INIT_EXPANDERS}.  This macro should be used to initialise some or
+all of the function pointers @code{init_machine_status},
+@code{free_machine_status} and @code{mark_machine_status}.  These
+pointers are explained below. 
+
+One typical use of per-function, target specific data is to create an
+RTX to hold the register containing the function's return address.  This
+RTX can then be used to implement the @code{__builtin_return_address}
+function, for level 0.
+
+Note - earlier implementations of GCC used a single data area to hold
+all of the per-function information.  Thus when processing of a nested
+function began the old per-function data had to be pushed onto a
+stack, and when the processing was finished, it had to be popped off the
+stack.  GCC used to provide function pointers called
+@code{save_machine_status} and @code{restore_machine_status} to handle 
+the saving and restoring of the target specific information.  Since the
+single data area approach is no longer used, these pointers are no
+longer supported.
+
+The macro and function pointers are described below.
+
+@table @code
+@findex INIT_EXPANDERS
+@item   INIT_EXPANDERS
+Macro called to initialise any target specific information.  This macro
+is called once per function, before generation of any RTL has begun.
+The intention of this macro is to allow the initialisation of the
+function pointers below.
+
+@findex init_machine_status
+@item   init_machine_status
+This is a @code{void (*)(struct function *)} function pointer.  If this
+pointer is non-NULL it will be called once per function, before function
+compilation starts, in order to allow the target to perform any target
+specific initialisation of the @code{struct function} structure.  It is
+intended that this would be used to initialise the @code{machine} of
+that struture.
+
+@findex free_machine_status
+@item   free_machine_status
+This is a @code{void (*)(struct function *)} function pointer.  If this
+pointer is non-NULL it will be called once per function, after the
+function has been compiled, in order to allow any memory allocated
+during the @code{init_machine_status} function call to be freed.
+
+@findex mark_machine_status
+@item   mark_machine_status
+This is a @code{void (*)(struct function *)} function pointer.  If this
+pointer is non-NULL it will be called once per function in order to mark
+any data items in the @code{struct machine_function} structure which
+need garbage collection.
+
 @end table
 
 @node Storage Layout

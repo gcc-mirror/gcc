@@ -4080,9 +4080,9 @@ init_emit_once (line_numbers)
   ggc_add_rtx_root (global_rtl, GR_MAX);
 
 #ifdef INIT_EXPANDERS
-  /* This is to initialize save_machine_status and restore_machine_status before
-     the first call to push_function_context_to.  This is needed by the Chill
-     front end which calls push_function_context_to before the first cal to
+  /* This is to initialize {init|mark|free}_machine_status before the first
+     call to push_function_context_to.  This is needed by the Chill front
+     end which calls push_function_context_to before the first cal to
      init_function_start.  */
   INIT_EXPANDERS;
 #endif

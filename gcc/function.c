@@ -129,14 +129,14 @@ int current_function_uses_only_leaf_regs;
    assign_stack_local uses frame_pointer_rtx when this is nonzero.  */
 static int virtuals_instantiated;
 
-/* These variables hold pointers to functions to
-   save and restore machine-specific data,
-   in push_function_context and pop_function_context.  */
+/* These variables hold pointers to functions to create and destroy
+   target specific, per-function data structures.  */
 void (*init_machine_status) PARAMS ((struct function *));
-void (*save_machine_status) PARAMS ((struct function *));
-void (*restore_machine_status) PARAMS ((struct function *));
-void (*mark_machine_status) PARAMS ((struct function *));
 void (*free_machine_status) PARAMS ((struct function *));
+/* This variable holds a pointer to a function to register any
+   data items in the target specific, per-function data structure
+   that will need garbage collection.  */
+void (*mark_machine_status) PARAMS ((struct function *));
 
 /* Likewise, but for language-specific data.  */
 void (*init_lang_status) PARAMS ((struct function *));
@@ -358,8 +358,6 @@ push_function_context_to (context)
 
   if (save_lang_status)
     (*save_lang_status) (p);
-  if (save_machine_status)
-    (*save_machine_status) (p);
 
   cfun = 0;
 }
@@ -389,8 +387,6 @@ pop_function_context_from (context)
 
   restore_emit_status (p);
 
-  if (restore_machine_status)
-    (*restore_machine_status) (p);
   if (restore_lang_status)
     (*restore_lang_status) (p);
 
