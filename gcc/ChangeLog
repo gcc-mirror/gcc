@@ -1,3 +1,7 @@
+2004-08-20  Dale Johannesen  <dalej@apple.com>
+
+        * config/rs6000/rs6000.c (rs6000_rtx_costs): Improve DIV/MOD.
+
 2004-08-20  Daniel Jacobowitz  <dan@debian.org>
 
 	* regrename.c (kill_value_one_regno): Renamed from kill_value_regno.

@@ -17064,6 +17064,9 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	  || ((outer_code == IOR || outer_code == XOR)
 	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
 		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')))
+	  || ((outer_code == DIV || outer_code == UDIV
+	       || outer_code == MOD || outer_code == UMOD)
+	      && exact_log2 (INTVAL (x)) >= 0)
 	  || (outer_code == AND
 	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
 		  || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')
@@ -17232,20 +17235,30 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 				  : rs6000_cost->sdiv;
 	  return false;
 	}
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
-	{
-	  *total = COSTS_N_INSNS (2);
-	  return false;
-	}
       /* FALLTHRU */
 
     case UDIV:
     case UMOD:
-      if (GET_MODE (XEXP (x, 1)) == DImode)
-	*total = rs6000_cost->divdi;
-      else
-	*total = rs6000_cost->divsi;
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
+	{
+	  if (code == DIV || code == MOD)
+	    /* Shift, addze */
+	    *total = COSTS_N_INSNS (2);
+	  else
+	    /* Shift */
+	    *total = COSTS_N_INSNS (1);
+	}
+      else 
+	{
+	  if (GET_MODE (XEXP (x, 1)) == DImode)
+	    *total = rs6000_cost->divdi;
+	  else
+	    *total = rs6000_cost->divsi;
+	}
+      /* Add in shift and subtract for MOD. */
+      if (code == MOD || code == UMOD)
+	*total += COSTS_N_INSNS (2);
       return false;
 
     case FFS:
