@@ -1227,6 +1227,10 @@ VAX operand formatting codes:
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
+    { union { double d; int i[2]; } u;					\
+      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
+      fprintf (FILE, "$0f%.20e", u.d); }				\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
