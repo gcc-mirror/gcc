@@ -1,3 +1,8 @@
+Mon Oct  5 01:07:23 1998  Torbjorn Granlund  <tege@matematik.su.se>
+
+	* expmed.c (expand_divmod): Don't widen for computing remainder
+	if we seem to have a divmod pattern for needed mode.
+
 Mon Oct  5 01:01:42 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>  
 
 	* cpplib.c (macroexpand): Correct off-by-one error in handling

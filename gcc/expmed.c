@@ -3709,10 +3709,22 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
       if (rem_flag)
 	{
-	  /* Try to produce the remainder directly without a library call.  */
-	  remainder = sign_expand_binop (compute_mode, umod_optab, smod_optab,
-					 op0, op1, target,
-					 unsignedp, OPTAB_WIDEN);
+	  /* Try to produce the remainder without producing the quotient.
+	     If we seem to have a divmod patten that does not require widening,
+	     don't try windening here.  We should really have an WIDEN argument
+	     to expand_twoval_binop, since what we'd really like to do here is
+	     1) try a mod insn in compute_mode
+	     2) try a divmod insn in compute_mode
+	     3) try a div insn in compute_mode and multiply-subtract to get
+	        remainder
+	     4) try the same things with widening allowed.  */
+	  remainder
+	    = sign_expand_binop (compute_mode, umod_optab, smod_optab,
+				 op0, op1, target,
+				 unsignedp,
+				 ((optab2->handlers[(int) compute_mode].insn_code
+				   != CODE_FOR_nothing)
+				  ? OPTAB_DIRECT : OPTAB_WIDEN));
 	  if (remainder == 0)
 	    {
 	      /* No luck there.  Can we do remainder and divide at once
