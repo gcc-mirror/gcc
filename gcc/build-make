@@ -1,5 +1,5 @@
 # We have to use the cross-compiler we just built to compile it.
-CC = gcc -b $(target) -V $(version)
+CC = gcc -b $(target)
 
 # Need those to compile binaries running on host machine.
 # It is configured by
