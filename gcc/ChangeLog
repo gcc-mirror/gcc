@@ -1,3 +1,8 @@
+2004-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/16909
+	* config/i386/i386.md (*strsetdi_rex_1): Use DI instead of SI.
+
 2004-08-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (compat testing): Document available test
