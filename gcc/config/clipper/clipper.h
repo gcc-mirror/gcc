@@ -413,9 +413,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS, LIM_REG_CLASSES};
   ((N) == 0 || (N) == 1 || (N) == 16 || (N) == 17)
 
 /* Define this if PCC uses the nonreentrant convention for returning
-   structure and union values.  */
+   structure and union values. Old Green Hills C-Clipper returns static
+   structs but the newer Apogee compiler passes structs as hidden arg 0.
+   Structs etc are always passed in memory */
 
-#define PCC_STATIC_STRUCT_RETURN
+/* #define PCC_STATIC_STRUCT_RETURN */
 
 
 /* Define a data type for recording info about an argument list
