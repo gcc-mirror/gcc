@@ -411,7 +411,7 @@ arm_pe_unique_section (decl, reloc)
      int reloc;
 {
   int len;
-  char * name;
+  const char * name;
   char * string;
   char * prefix;
 

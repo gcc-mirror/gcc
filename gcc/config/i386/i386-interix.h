@@ -482,16 +482,17 @@ while (0)
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
 do {									\
-  char *_p;								\
-  char *_name = SYMBOL_NAME;						\
+  const char *_p;							\
+  const char *_name = SYMBOL_NAME;					\
   for (_p = _name; *_p && *_p != '@'; ++_p)				\
     ;									\
   if (*_p == '@')							\
     {									\
       int _len = _p - _name;						\
-      (VAR) = (char *) alloca (_len + 1);				\
-      strncpy ((VAR), _name, _len);					\
-      (VAR)[_len] = '\0';						\
+      _new_name = (char *) alloca (_len + 1);				\
+      strncpy (_new_name, _name, _len);					\
+      _new_name[_len] = '\0';						\
+      (VAR) = _new_name;						\
     }									\
   else									\
     (VAR) = _name;							\

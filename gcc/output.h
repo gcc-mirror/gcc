@@ -279,7 +279,7 @@ extern void assemble_label		PROTO((char *));
    Otherwise NAME is transformed in an implementation-defined way
    (usually by the addition of an underscore).
    Many macros in the tm file are defined to call this function.  */
-extern void assemble_name		PROTO((FILE *, char *));
+extern void assemble_name		PROTO((FILE *, const char *));
 
 #ifdef RTX_CODE
 /* Assemble the integer constant X into an object of SIZE bytes.

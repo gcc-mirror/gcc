@@ -4014,7 +4014,7 @@ rs6000_output_load_toc_table (file, reg)
       if (rs6000_pic_func_labelno != rs6000_pic_labelno)
 	{
 	  const char *init_ptr = TARGET_32BIT ? ".long" : ".quad";
-	  char *buf_ptr;
+	  const char *buf_ptr;
 
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCL", rs6000_pic_labelno);
 
@@ -4949,7 +4949,7 @@ output_toc (file, x, labelno)
 {
   char buf[256];
   char *name = buf;
-  char *real_name;
+  const char *real_name;
   rtx base = x;
   int offset = 0;
 

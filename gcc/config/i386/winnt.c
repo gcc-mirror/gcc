@@ -463,7 +463,8 @@ i386_pe_unique_section (decl, reloc)
      int reloc;
 {
   int len;
-  char *name,*string,*prefix;
+  const char *name;
+  char *string,*prefix;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   /* Strip off any encoding in fnname.  */

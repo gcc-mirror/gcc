@@ -5390,7 +5390,7 @@ output_call (insn, call_dest)
 	    {
 	      struct obstack *ambient_obstack = current_obstack;
 	      struct obstack *ambient_rtl_obstack = rtl_obstack;
-	      char *real_name;
+	      const char *real_name;
 
 	      /* Any RTL we create here needs to live until the end of
 		 the compilation unit and therefore must live on the

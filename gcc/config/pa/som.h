@@ -121,7 +121,7 @@ do {								\
    that the section name will have a "." prefix.  */
 #define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
   {									\
-    char *name;								\
+    const char *name;							\
     STRIP_NAME_ENCODING (name, NAME);					\
     if (TARGET_GAS && in_section == in_text) 				\
       fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
