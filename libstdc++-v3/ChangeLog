@@ -1,10 +1,14 @@
+2000-07-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* bits/istream.tcc (getline): Tweaks.
+
 2000-07-23  Brent Verner <brent@rcfile.org>
 
         * bits/istream.tcc: istream::getline(char_type*, streamsize,
 	char_type) make compliant
         * testsuite/27_io/istream_unformatted.cc: test for compliant behavior
 
-2000-07-23  Benjamin Kosnik  <bkoz@haight.constant.com>
+2000-07-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (enable_cshadow_headers): Fix problems with blddir
 	and srcdir used to define CSHADOW_INCLUDES..

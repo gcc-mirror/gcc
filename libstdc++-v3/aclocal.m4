@@ -1520,7 +1520,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: acinclude.m4,v 1.45 2000/07/21 20:59:23 gdr Exp $
+dnl @version $Id: acinclude.m4,v 1.46 2000/07/24 16:33:55 bkoz Exp $
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the

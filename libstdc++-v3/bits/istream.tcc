@@ -626,21 +626,26 @@ namespace std {
           try {
 	    __streambuf_type* __sb = this->rdbuf();
 	    int_type __c = __sb->sbumpc();
+	    ++_M_gcount;
             const int_type __idelim = traits_type::to_int_type(__delim);
             const int_type __eof = traits_type::eof();
 	    bool __testdelim = __c == __idelim;
 	    bool __testeof =  __c == __eof;
 	    
-	    while (++_M_gcount < __n && !__testeof && !__testdelim)
+	    while (_M_gcount < __n && !__testeof && !__testdelim)
 	      {
 		*__s++ = traits_type::to_char_type(__c);
 		__c = __sb->sbumpc();
+		++_M_gcount;
 		__testeof = __c == __eof;
 		__testdelim = __c == __idelim;
 	      }
 	    
 	    if (__testeof)
-	      this->setstate(ios_base::eofbit);
+	      {
+		--_M_gcount;
+		this->setstate(ios_base::eofbit);
+	      }
 	    else if (!__testdelim)
 	      {
 		--_M_gcount;
