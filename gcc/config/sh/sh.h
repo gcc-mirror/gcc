@@ -219,9 +219,6 @@ do {								\
 /* Allocation boundary (in *bits*) for the code of a function.
    32 bit alignment is faster, because instructions are always fetched as a
    pair from a longword boundary.  */
-/* ??? Perhaps also define ASM_OUTPUT_ALIGN_CODE and/or ASM_OUTPUT_LOOP_ALIGN
-   so as to align jump targets and/or loops to 4 byte boundaries when not
-   optimizing for space?  */
 #define FUNCTION_BOUNDARY  (TARGET_SMALLCODE ? 16 : 32)
 
 /* Alignment of field after `int : 0' in a structure.  */
@@ -1437,6 +1434,17 @@ do { char dstr[30];					\
 #define ASM_OUTPUT_BYTE(STREAM, VALUE)  	\
   fprintf (STREAM, "\t.byte\t%d\n", VALUE)  	\
 
+/* Align loops and labels after unconditional branches to get faster
+   code.  */
+
+#define ASM_OUTPUT_LOOP_ALIGN(FILE)	\
+  if (! TARGET_SMALLCODE)		\
+    ASM_OUTPUT_ALIGN ((FILE), 2)
+
+#define ASM_OUTPUT_ALIGN_CODE(FILE)	\
+  if (! TARGET_SMALLCODE)		\
+    ASM_OUTPUT_ALIGN ((FILE), (TARGET_SH3 || TARGET_SH3E) ? 4 : 2)
+
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 
@@ -1538,7 +1546,11 @@ extern int pragma_interrupt;
 #define MOVE_RATIO (TARGET_SMALLCODE ? 2 : 16)
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
-   the nop in the delay slot.  */
+   the nop in the delay slot.  Instructions at the start of loops, or
+   after unconditional branches, may take up extra room when they are
+   aligned.  ??? We would get more accurate results if we did instruction
+   alignment based on the value of INSN_CURRENT_ADDRESS; the approach used
+   here is too conservative.  */
 
 #define ADJUST_INSN_LENGTH(X, LENGTH)				\
   if (((GET_CODE (X) == INSN					\
@@ -1550,7 +1562,31 @@ extern int pragma_interrupt;
 	   && GET_CODE (PATTERN (X)) != ADDR_DIFF_VEC		\
 	   && GET_CODE (PATTERN (X)) != ADDR_VEC))		\
       && get_attr_needs_delay_slot (X) == NEEDS_DELAY_SLOT_YES)	\
-   LENGTH += 2;
+    LENGTH += 2;						\
+  if (! TARGET_SMALLCODE)					\
+    {								\
+       rtx aip;							\
+       for (aip = PREV_INSN (X); aip; aip = PREV_INSN (aip))	\
+	 {							\
+	   if (GET_CODE (aip) == BARRIER)			\
+	     {							\
+	       if (TARGET_SH3 || TARGET_SH3E)			\
+		 LENGTH += 14;					\
+	       else						\
+		 LENGTH += 2;					\
+	       break;						\
+	     }							\
+	   else if ((GET_CODE (aip) == NOTE			\
+		     && NOTE_LINE_NUMBER (aip) == NOTE_INSN_LOOP_BEG)) \
+	     {							\
+	       LENGTH += 2;					\
+	       break;						\
+	     }							\
+	   else if (GET_CODE (aip) != NOTE			\
+		    && GET_CODE (aip) != CODE_LABEL)		\
+	     break;						\
+	 }							\
+    }
 
 /* Enable a bug fix for the shorten_branches pass.  */
 #define SHORTEN_WITH_ADJUST_INSN_LENGTH
