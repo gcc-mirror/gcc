@@ -3186,6 +3186,15 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
    ? emit_i387_cw_initialization (assign_386_stack_local (HImode, 1),	\
 				  assign_386_stack_local (HImode, 2)), 0\
    : 0)
+
+/* Avoid renaming of stack registers, as doing so in combination with
+   scheduling just increases amount of live registers at time and in
+   the turn amount of fxch instructions needed.
+
+   ??? Maybe Pentium chips benefits from renaming, someone can try...  */
+
+#define HARD_REGNO_RENAME_OK(src,target)  \
+   ((src) < FIRST_STACK_REG || (src) > LAST_STACK_REG)
 
 
 /*
