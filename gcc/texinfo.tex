@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.203 1997/06/05 22:04:25 karl Exp karl $
+%% $Id: texinfo.tex,v 2.204 1997/06/06 14:31:32 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.203 $
+\deftexinfoversion$Revision: 2.204 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -185,7 +185,13 @@
       %
       \unvbox\headlinebox
       \pagebody{#1}%
-      \unvbox\footlinebox
+      \ifdim\ht\footlinebox > 0pt
+        % Only leave this space if the footline is nonempty.
+        % (We lessened \vsize for it in \oddfootingxxx.)
+        % The \baselineskip=24pt in plain's \makefootline has no effect.
+        \vskip 2\baselineskip
+        \unvbox\footlinebox
+      \fi
       %
       \ifcropmarks
           \egroup % end of \vbox\bgroup
@@ -1006,6 +1012,15 @@ where each line of input produces a line of output.}
    \openindices
    \fixbackslash  % Turn off hack to swallow `\input texinfo'.
    \global\let\setfilename=\comment % Ignore extra @setfilename cmds.
+   %
+   % If texinfo.cnf is present on the system, read it.
+   % Useful for site-wide @afourpaper, etc.
+   % Just to be on the safe side, close the input stream before the \input.
+   \openin 1 texinfo.cnf
+   \ifeof1 \let\temp=\relax \else \def\temp{\input texinfo.cnf }\fi
+   \closein1
+   \temp
+   %
    \comment % Ignore the actual filename.
 }
 
@@ -1504,10 +1519,7 @@ where each line of input produces a line of output.}
 \gdef\oddheadingyyy #1@|#2@|#3@|#4\finish{%
 \global\oddheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}}
 
-\gdef\everyheadingxxx #1{\everyheadingyyy #1@|@|@|@|\finish}
-\gdef\everyheadingyyy #1@|#2@|#3@|#4\finish{%
-\global\evenheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}
-\global\oddheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}}
+\gdef\everyheadingxxx#1{\oddheadingxxx{#1}\evenheadingxxx{#1}}%
 
 \gdef\evenfootingxxx #1{\evenfootingyyy #1@|@|@|@|\finish}
 \gdef\evenfootingyyy #1@|#2@|#3@|#4\finish{%
@@ -1515,12 +1527,15 @@ where each line of input produces a line of output.}
 
 \gdef\oddfootingxxx #1{\oddfootingyyy #1@|@|@|@|\finish}
 \gdef\oddfootingyyy #1@|#2@|#3@|#4\finish{%
-\global\oddfootline={\rlap{\centerline{#2}}\line{#1\hfil#3}}}
+  \global\oddfootline = {\rlap{\centerline{#2}}\line{#1\hfil#3}}%
+  %
+  % Leave some space for the footline.  Hopefully ok to assume
+  % @evenfooting will not be used by itself.
+  \global\advance\pageheight by -3\baselineskip
+  \global\advance\vsize by -3\baselineskip
+}
 
-\gdef\everyfootingxxx #1{\everyfootingyyy #1@|@|@|@|\finish}
-\gdef\everyfootingyyy #1@|#2@|#3@|#4\finish{%
-\global\evenfootline={\rlap{\centerline{#2}}\line{#1\hfil#3}}
-\global\oddfootline={\rlap{\centerline{#2}}\line{#1\hfil#3}}}
+\gdef\everyfootingxxx#1{\oddfootingxxx{#1}\evenfootingxxx{#1}}
 %
 }% unbind the catcode of @.
 
@@ -2244,7 +2259,13 @@ width0pt\relax} \fi
 %\def\char{\realbackslash char}%
 \def\TeX{\realbackslash TeX}%
 \def\dots{\realbackslash dots }%
-\def\copyright{\realbackslash copyright }%
+\def\result{\realbackslash result}%
+\def\equiv{\realbackslash equiv}%
+\def\expansion{\realbackslash expansion}%
+\def\print{\realbackslash print}%
+\def\error{\realbackslash error}%
+\def\point{\realbackslash point}%
+\def\copyright{\realbackslash copyright}%
 \def\tclose##1{\realbackslash tclose {##1}}%
 \def\code##1{\realbackslash code {##1}}%
 \def\dotless##1{\realbackslash dotless {##1}}%
@@ -2696,6 +2717,12 @@ width0pt\relax} \fi
   \def\print{\realbackslash print}%
   \def\TeX{\realbackslash TeX}%
   \def\dots{\realbackslash dots}%
+  \def\result{\realbackslash result}%
+  \def\equiv{\realbackslash equiv}%
+  \def\expansion{\realbackslash expansion}%
+  \def\print{\realbackslash print}%
+  \def\error{\realbackslash error}%
+  \def\point{\realbackslash point}%
   \def\copyright{\realbackslash copyright}%
   \def\tt{\realbackslash tt}%
   \def\bf{\realbackslash bf}%
