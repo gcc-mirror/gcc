@@ -1,5 +1,19 @@
 2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* pdp11-protos.h: New file.
+
+	* pdp11.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* pdp11.h: Move prototypes to pdp11-protos.h.  Fix compile time
+	warnings.
+	
+	* pdp11.md: Likewise.
+
+	* 2bsd.h: Likewise.
+
+2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* mn10300-protos.h: New file.
 
 	* mn10300.c: Include tm_p.h.  Add static prototypes.  Fix compile

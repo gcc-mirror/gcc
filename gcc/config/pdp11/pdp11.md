@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 95, 97-99, 2000 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GNU CC.
@@ -992,7 +992,6 @@
 
      or is lateoperands the low word?? - looks like it! */
 
-  unsigned int i;
   rtx lateoperands[3];
   
   lateoperands[0] = operands[0];
@@ -1017,7 +1016,7 @@
     return \"\";
   }
 
-  lateoperands[2] = GEN_INT (INTVAL (operands[2]) >> 16) & 0xffff);
+  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
   operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffff);
   
   if (INTVAL(operands[2]))
@@ -1095,7 +1094,6 @@
 
      or is lateoperands the low word?? - looks like it! */
 
-  unsigned int i;
   rtx lateoperands[3];
   
   lateoperands[0] = operands[0];
@@ -1203,7 +1201,6 @@
 
      or is lateoperands the low word?? - looks like it! */
 
-  unsigned int i;
   rtx lateoperands[3];
   
   lateoperands[0] = operands[0];
@@ -1269,7 +1266,6 @@
 
      or is lateoperands the low word?? - looks like it! */
 
-  unsigned int i;
   rtx lateoperands[3];
   
   lateoperands[0] = operands[0];
@@ -1332,7 +1328,6 @@
   "*
 { /* Here we trust that operands don't overlap */
 
-  unsigned int i;
   rtx lateoperands[3];
 
   lateoperands[0] = operands[0];
