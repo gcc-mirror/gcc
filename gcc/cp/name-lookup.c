@@ -2777,7 +2777,18 @@ push_class_level_binding (tree name, tree x)
   /* Make sure that this new member does not have the same name
      as a template parameter.  */
   if (TYPE_BEING_DEFINED (current_class_type))
-    check_template_shadow (x);
+    {
+      tree decl = x;
+
+      /* We could have been passed a tree list if this is an ambiguous
+	 declaration. If so, pull the declaration out because
+	 check_template_shadow will not handle a TREE_LIST. */
+      if (TREE_CODE (decl) == TREE_LIST 
+	  && TREE_TYPE (decl) == error_mark_node)
+	decl = TREE_VALUE (decl);
+      
+      check_template_shadow (decl);
+    }
 
   /* [class.mem]
 
