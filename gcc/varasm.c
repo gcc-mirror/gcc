@@ -840,10 +840,8 @@ make_decl_rtl (decl, asmspec)
     {
       /* If the old RTL had the wrong mode, fix the mode.  */
       if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
-	{
-	  rtx rtl = DECL_RTL (decl);
-	  PUT_MODE (rtl, DECL_MODE (decl));
-	}
+	SET_DECL_RTL (decl, adjust_address_nv (DECL_RTL (decl),
+					       DECL_MODE (decl), 0));
 
       /* ??? Another way to do this would be to do what halfpic.c does
 	 and maintain a hashed table of such critters.  */
