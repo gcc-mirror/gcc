@@ -33,6 +33,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include <string.h>
 
+#include "java-opcodes.h"
+
 /* The output file.  */
 FILE *out = NULL;
 
@@ -99,6 +101,7 @@ static struct method_name *method_name_list;
 static void print_field_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_method_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int, char *));
+static void decompile_method PROTO ((FILE *, JCF *, int));
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -122,7 +125,16 @@ static int field_pass;
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
 #define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT) \
-  if (out) print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS)
+  if (out) { decompiled = 0; \
+      print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS); \
+  }
+
+#define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
+  if (out) decompile_method (out, jcf, CODE_LENGTH);
+
+static int decompiled = 0;
+#define HANDLE_END_METHOD() \
+  if (out) fputs (decompiled ? "\n" : ";\n", out);
 
 #include "jcf-reader.c"
 
@@ -439,11 +451,37 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 	fputs ("virtual ", out);
     }
   print_c_decl (out, jcf, name_index, sig_index, flags, is_init, override);
+}
 
-  /* FIXME: it would be nice to decompile small methods here.  That
-     would allow for inlining.  */
+/* Try to decompile a method body.  Right now we just try to handle a
+   simple case that we can do.  Expand as desired.  */
+static void
+decompile_method (out, jcf, code_len)
+     FILE *out;
+     JCF *jcf;
+     int code_len;
+{
+  unsigned char *codes = jcf->read_ptr;
+  int index;
+  uint16 name_and_type, name;
 
-  fprintf(out, ";\n");
+  if (code_len == 5
+      && codes[0] == OPCODE_aload_0
+      && codes[1] == OPCODE_getfield
+      && codes[4] == OPCODE_areturn)
+    {
+      /* Found something useful to decompile.  */
+      fputs (" { return ", out);
+      index = (codes[2] << 8) | codes[3];
+      /* FIXME: ensure that tag is CONSTANT_Fieldref.  */
+      /* FIXME: ensure that the field's class is this class.  */
+      name_and_type = JPOOL_USHORT2 (jcf, index);
+      /* FIXME: ensure that tag is CONSTANT_NameAndType.  */
+      name = JPOOL_USHORT1 (jcf, name_and_type);
+      print_name (out, jcf, name);
+      fputs ("; }", out);
+      decompiled = 1;
+    }
 }
 
 /* Print one piece of a signature.  Returns pointer to next parseable
