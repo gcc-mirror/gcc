@@ -1,3 +1,8 @@
+2002-09-17  Samuel Figueroa  <figueroa@apple.com>
+	* final.c (final_scan_insn): Use new macro ASM_OUTPUT_ALIGN_WITH_NOP.
+	* config/sparc/sparc.h (ASM_OUTPUT_ALIGN_WITH_NOP) New macro.
+	* doc/tm.texi (ASM_OUTPUT_ALIGN_WITH_NOP) New description.
+
 2002-09-17  Dale Johannesen  <dalej@apple.com>
 	* cfgcleanup.c (try_forward_edges):  Do not forward a
 	branch to just after a loop exit before loop optimization;
