@@ -1,3 +1,8 @@
+2003-05-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload1.c (reload_cse_move2add): Don't turn an implicit
+	truncation into a self-set in the narrow mode.
+
 2003-05-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (clzsi2): The CLZ instruction is predicable.
