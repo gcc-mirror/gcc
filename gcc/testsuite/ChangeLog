@@ -1,3 +1,8 @@
+2003-03-22  Bud Davis  <bdavis9659@comcast.net>
+
+	* g77.f-torture/execute/select.f: New test.
+	* g77.f-torture/noncompile/select_no_compile.f: New test.
+
 2003-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9898
