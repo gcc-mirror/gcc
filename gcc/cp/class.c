@@ -72,7 +72,6 @@ struct class_level
 };
 
 tree current_class_decl, C_C_D;	/* PARM_DECL: the class instance variable */
-tree current_vtable_decl;
 
 /* The following two can be derived from the previous one */
 tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
@@ -430,14 +429,8 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
     basetype = TREE_TYPE (basetype);
 
   if (instance == C_C_D)
-    {
-      if (current_vtable_decl == NULL_TREE
-	  || current_vtable_decl == error_mark_node
-	  || !UNIQUELY_DERIVED_FROM_P (DECL_FCONTEXT (CLASSTYPE_VFIELD (current_class_type)), basetype))
-	vtbl = build_indirect_ref (build_vfield_ref (instance, basetype), NULL_PTR);
-      else
-	vtbl = current_vtable_decl;
-    }
+    vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
+			       NULL_PTR);
   else
     {
       if (optimize)
@@ -4011,13 +4004,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
   if (CLASSTYPE_VSIZE (t) != 0)
     {
-      if ((flag_this_is_variable & 1) == 0)
-	{
-	  tree vtbl_ptr = build_decl (VAR_DECL, get_identifier (VPTR_NAME),
-				      TREE_TYPE (vfield));
-	  DECL_REGISTER (vtbl_ptr) = 1;
-	  CLASSTYPE_VTBL_PTR (t) = vtbl_ptr;
-	}
 #if 0
       /* This is now done above. */
       if (DECL_FIELD_CONTEXT (vfield) != t)
@@ -4436,55 +4422,6 @@ popclass (modify)
   current_class_depth--;
   current_class_type = *--current_class_stack;
   current_class_name = *--current_class_stack;
-
-  if (current_class_type)
-    {
-      if (CLASSTYPE_VTBL_PTR (current_class_type))
-	{
-	  current_vtable_decl
-	    = lookup_name (DECL_NAME (CLASSTYPE_VTBL_PTR (current_class_type)),
-			   0);
-	  if (current_vtable_decl)
-	    current_vtable_decl = build_indirect_ref (current_vtable_decl,
-						      NULL_PTR);
-	}
-      current_class_decl = lookup_name (this_identifier, 0);
-      if (current_class_decl)
-	{
-	  if (TREE_CODE (TREE_TYPE (current_class_decl)) == POINTER_TYPE)
-	    {
-	      tree temp;
-	      if (CLASSTYPE_INST_VAR (current_class_type) == NULL_TREE)
-		{
-		  /* Can't call build_indirect_ref here, because it has special
-		     logic to return C_C_D given this argument.  */
-		  C_C_D = build1 (INDIRECT_REF, current_class_type, current_class_decl);
-		  CLASSTYPE_INST_VAR (current_class_type) = C_C_D;
-		}
-	      else
-		{
-		  C_C_D = CLASSTYPE_INST_VAR (current_class_type);
-		  /* `current_class_decl' is different for every
-		     function we compile.  */
-		  TREE_OPERAND (C_C_D, 0) = current_class_decl;
-		}
-	      temp = TREE_TYPE (TREE_TYPE (current_class_decl));
-	      TREE_READONLY (C_C_D) = TYPE_READONLY (temp);
-	      TREE_SIDE_EFFECTS (C_C_D) = TYPE_VOLATILE (temp);
-	      TREE_THIS_VOLATILE (C_C_D) = TYPE_VOLATILE (temp);
-	    }
-	  else
-	    C_C_D = current_class_decl;
-	}
-      else
-	C_C_D = NULL_TREE;
-    }
-  else
-    {
-      current_class_decl = NULL_TREE;
-      current_vtable_decl = NULL_TREE;
-      C_C_D = NULL_TREE;
-    }
 
   pop_memoized_context (modify);
 
