@@ -48,8 +48,9 @@ cat "$@" | ${AWK} '
         if (langs ~ ":ObjC:") flags = flags " | CL_OBJC"
         if (langs ~ ":C\\+\\+:") flags = flags " | CL_CXX"
         if (langs ~ ":ObjC\\+\\+:") flags = flags " | CL_OBJCXX"
-        if (langs ~ ":Joined") flags = flags " | CL_JOINED"
-        if (langs ~ ":Separate") flags = flags " | CL_SEPARATE"
+        if (langs ~ ":Joined:") flags = flags " | CL_JOINED"
+        if (langs ~ ":Separate:") flags = flags " | CL_SEPARATE"
+        if (langs ~ ":RejectNegative:") flags = flags " | CL_REJECT_NEGATIVE"
 	sub( "^0 \\| ", "", flags )
 	return flags
     }

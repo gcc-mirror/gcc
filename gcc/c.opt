@@ -24,7 +24,9 @@
 ; and each field appearing on its own line.  The first field is the
 ; command-line switch with the leading "-" removed.  All options
 ; beginning with "f" or "W" are implicitly assumed to take a "no-"
-; form; this form should not be listed.
+; form; this form should not be listed.  If you do not want this
+; negative form and you want it to be automatically rejected, add
+; RejectNegative to the second field.
 
 ; The second field is a space-separated list of which parts of the
 ; compiler recognize the switch.  Current valid entries are "C",
@@ -144,7 +146,7 @@ Werror
 C ObjC C++ ObjC++
 
 Werror-implicit-function-declaration
-C ObjC
+C ObjC RejectNegative
 
 Wfloat-equal
 C ObjC C++ ObjC++
@@ -339,7 +341,7 @@ fdollars-in-identifiers
 C ObjC C++ ObjC++
 
 fdump-
-C ObjC C++ ObjC++ Joined
+C ObjC C++ ObjC++ Joined RejectNegative
 
 felide-constructors
 C++ ObjC++
@@ -465,7 +467,7 @@ fstrict-prototype
 C++ ObjC++
 
 ftabstop=
-C ObjC C++ ObjC++ Joined
+C ObjC C++ ObjC++ Joined RejectNegative
 
 ftemplate-depth-
 C++ ObjC++ Joined
