@@ -1799,7 +1799,7 @@ nonoverlapping_memrefs_p (x, y)
     offsety += INTVAL (MEM_OFFSET (y)), sizey -= INTVAL (MEM_OFFSET (y));
 
   /* If a memref has both a size and an offset, we can use the smaller size.
-     We can't do this is the offset isn't know because we must view this
+     We can't do this if the offset isn't known because we must view this
      memref as being anywhere inside the DECL's MEM.  */
   if (MEM_SIZE (x) && MEM_OFFSET (x))
     sizex = INTVAL (MEM_SIZE (x));
