@@ -1,3 +1,9 @@
+2003-08-01  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/11241:
+	* java/util/WeakHashMap.java (WeakHashMap(int,float)): If
+	initialCapacity is 0, set it to 1.
+
 2003-08-01  Stephen Crawley <crawley@dstc.edu.au>
 
 	* java/net/SocketImpl.java (toString): Display the remote address
