@@ -264,11 +264,13 @@ enum dump_file_index
   DFI_bp,
   DFI_flow,
   DFI_combine,
+  DFI_ce,
   DFI_regmove,
   DFI_sched,
   DFI_lreg,
   DFI_greg,
   DFI_flow2,
+  DFI_ce2,
   DFI_peephole2,
   DFI_sched2,
   DFI_bbro,
@@ -281,7 +283,13 @@ enum dump_file_index
 };
 
 /* Describes all the dump files.  Should be kept in order of the
-   pass and in sync with dump_file_index above.  */
+   pass and in sync with dump_file_index above.
+
+   Remaining -d letters:
+
+	"       h      o q   u     "
+	"       H  K   OPQ  TUVWXYZ"
+*/
 
 struct dump_file_info dump_file[DFI_MAX] = 
 {
@@ -298,11 +306,13 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "bp",	'b', 1, 0, 0 },
   { "flow",	'f', 1, 0, 0 },
   { "combine",	'c', 1, 0, 0 },
+  { "ce",	'C', 1, 0, 0 },
   { "regmove",	'N', 1, 0, 0 },
   { "sched",	'S', 1, 0, 0 },
   { "lreg",	'l', 1, 0, 0 },
   { "greg",	'g', 1, 0, 0 },
   { "flow2",	'w', 1, 0, 0 },
+  { "ce2",	'E', 1, 0, 0 },
   { "peephole2", 'z', 1, 0, 0 },
   { "sched2",	'R', 1, 0, 0 },
   { "bbro",	'B', 1, 0, 0 },
@@ -2814,12 +2824,23 @@ rest_of_compilation (decl)
     }
 
   timevar_push (TV_JUMP);
-  /* Try to identify useless null pointer tests and delete them.  */
-  if (flag_delete_null_pointer_checks)
+
+  if (optimize > 0)
     {
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
       cleanup_cfg (insns);
-      delete_null_pointer_checks (insns);
+
+      /* ??? Run if-conversion before delete_null_pointer_checks,
+         since the later does not preserve the CFG.  This should
+	 be changed -- no since converting if's that are going to
+	 be deleted.  */
+      timevar_push (TV_IFCVT);
+      if_convert (0);
+      timevar_pop (TV_IFCVT);
+
+      /* Try to identify useless null pointer tests and delete them.  */
+      if (flag_delete_null_pointer_checks)
+	delete_null_pointer_checks (insns);
     }
 
   /* Jump optimization, and the removal of NULL pointer checks, may
@@ -2998,11 +3019,6 @@ rest_of_compilation (decl)
 	ggc_collect ();
     }
 
-  /* ??? Well, nearly.  If HAVE_conditional_arithmetic, jump_optimize
-     has put off all if-conversion until "after CSE".  If we put this
-     off any longer we may miss out doing if-conversion entirely.  */
-  cse_not_expected = 1;
-
   if (optimize > 0)
     {
       timevar_push (TV_CSE2);
@@ -3016,9 +3032,19 @@ rest_of_compilation (decl)
 	     max_reg_num so we must rerun reg_scan afterwards.
 	     ??? Rework to not call reg_scan so often.  */
 	  timevar_push (TV_JUMP);
+
 	  reg_scan (insns, max_reg_num (), 0);
 	  jump_optimize (insns, !JUMP_CROSS_JUMP,
 			 !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
+
+	  timevar_push (TV_IFCVT);
+
+	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	  cleanup_cfg (insns);
+	  if_convert (0);
+
+	  timevar_pop(TV_IFCVT);
+
 	  timevar_pop (TV_JUMP);
 	  
 	  reg_scan (insns, max_reg_num (), 0);
@@ -3049,6 +3075,8 @@ rest_of_compilation (decl)
       if (ggc_p)
 	ggc_collect ();
     }
+
+  cse_not_expected = 1;
 
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
@@ -3110,10 +3138,6 @@ rest_of_compilation (decl)
   if (ggc_p)
     ggc_collect ();
 
-  /* The first life analysis pass has finished.  From now on we can not
-     generate any new pseudos.  */
-  no_new_pseudos = 1;
-
   /* If -opt, try combining insns through substitution.  */
 
   if (optimize > 0)
@@ -3134,6 +3158,20 @@ rest_of_compilation (decl)
 	  timevar_push (TV_JUMP);
 	  rebuild_jump_labels (insns);
 	  timevar_pop (TV_JUMP);
+
+	  timevar_push (TV_FLOW);
+	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+	  cleanup_cfg (insns);
+
+	  /* Blimey.  We've got to have the CFG up to date for the call to
+	     if_convert below.  However, the random deletion of blocks
+	     without updating life info can wind up with Wierd Stuff in
+	     global_live_at_end.  We then run sched1, which updates things
+	     properly, discovers the wierdness and aborts.  */
+	  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+			    PROP_DEATH_NOTES);
+
+	  timevar_pop (TV_FLOW);
 	}
 
       close_dump_file (DFI_combine, print_rtl_with_bb, insns);
@@ -3141,6 +3179,19 @@ rest_of_compilation (decl)
 
       if (ggc_p)
 	ggc_collect ();
+    }
+
+  /* Rerun if-conversion, as combine may have simplified things enough to
+     now meet sequence length restrictions.  */
+  if (optimize > 0)
+    {
+      timevar_push (TV_IFCVT);
+      open_dump_file (DFI_ce, decl);
+
+      if_convert (1);
+
+      close_dump_file (DFI_ce, print_rtl_with_bb, insns);
+      timevar_pop (TV_IFCVT);
     }
 
   /* Register allocation pre-pass, to reduce number of moves
@@ -3185,6 +3236,10 @@ rest_of_compilation (decl)
 
       if (ggc_p)
 	ggc_collect ();
+
+      /* Register lifetime information is up to date.  From now on
+	 we can not generate any new pseudos.  */
+      no_new_pseudos = 1;
     }
 #endif
 
@@ -3204,7 +3259,13 @@ rest_of_compilation (decl)
   /* We recomputed reg usage as part of updating the rest
      of life info during sched.  */
   if (! flag_schedule_insns)
-    recompute_reg_usage (insns, ! optimize_size);
+    {
+      recompute_reg_usage (insns, ! optimize_size);
+
+      /* Register lifetime information is up to date.  From now on
+	 we can not generate any new pseudos.  */
+      no_new_pseudos = 1;
+    }
   regclass (insns, max_reg_num (), rtl_dump_file);
   rebuild_label_notes_after_reload = local_alloc ();
 
@@ -3317,12 +3378,23 @@ rest_of_compilation (decl)
   close_dump_file (DFI_flow2, print_rtl_with_bb, insns);
   timevar_pop (TV_FLOW2);
 
+  if (optimize > 0)
+    {
+      timevar_push (TV_IFCVT2);
+      open_dump_file (DFI_ce2, decl);
+
+      if_convert (1);
+
+      close_dump_file (DFI_ce2, print_rtl_with_bb, insns);
+      timevar_pop (TV_IFCVT2);
+    }
+
 #ifdef HAVE_peephole2
   if (optimize > 0 && flag_peephole2)
     {
       timevar_push (TV_PEEPHOLE2);
-
       open_dump_file (DFI_peephole2, decl);
+
       peephole2_optimize (rtl_dump_file);
 
       close_dump_file (DFI_peephole2, print_rtl_with_bb, insns);
@@ -3386,6 +3458,8 @@ rest_of_compilation (decl)
 
       jump_optimize (insns, JUMP_CROSS_JUMP, JUMP_NOOP_MOVES, 
 		     !JUMP_AFTER_REGSCAN);
+
+      /* CFG no longer kept up to date.  */
 
       close_dump_file (DFI_jump2, print_rtl_with_bb, insns);
       timevar_pop (TV_JUMP);

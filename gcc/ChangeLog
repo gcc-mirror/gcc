@@ -1,5 +1,20 @@
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
+	* ifcvt.c: New file.
+	* Makefile.in (OBJS): Add it.
+	(ifcvt.o): New target.
+	* jump.c (jump_optimize_1): Remove all code related to if-conversion, 
+	and conditional arithmetic.
+	(find_insert_position): Remove.
+	* timevar.def (TV_IFCVT, TV_IFCVT2): New.
+	* toplev.c (DFI_ce, DFI_ce2): New.
+	(dump_file): Add ce and ce2 dumps.
+	(rest_of_compilation): Run if_convert a couple o times.  Set
+	cse_not_expected after cse2.  Don't set no_new_pseudos until
+	after sched1 or recompute_reg_usage.
+
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
 	* config/alpha/t-crtbe (crtbegin.o): Add "-I.".
 	(crtend.o, crtbeginS.o, crtendS.o): Likewise.
 
