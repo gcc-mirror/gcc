@@ -1,3 +1,8 @@
+2003-08-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/mkfixinc.sh: Remove special case code for unsupported
+	arm and hppa variants.
+
 2003-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def (BT_FN_INT_FLOAT, BT_FN_INT_DOUBLE,
