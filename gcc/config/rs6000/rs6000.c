@@ -167,8 +167,10 @@ static void rs6000_parse_abi_options PARAMS ((void));
 static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
+static void is_gpr_return_reg PARAMS ((rtx, void *));
 int vrsave_operation PARAMS ((rtx, enum machine_mode));
-static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *));
+static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
+static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -4440,7 +4442,8 @@ vrsave_operation (op, mode)
     {
       rtx elt = XVECEXP (op, 0, i);
 
-      if (GET_CODE (elt) != CLOBBER)
+      if (GET_CODE (elt) != CLOBBER
+	  && GET_CODE (elt) != SET)
 	return 0;
     }
 
@@ -7585,6 +7588,32 @@ rs6000_emit_allocate_stack (size, copy_r12)
 		       REG_NOTES (insn));
 }
 
+/* Add a RTX_FRAME_RELATED note so that dwarf2out_frame_debug_expr
+   knows that:
+
+     (mem (plus (blah) (regXX)))
+
+   is really:
+
+     (mem (plus (blah) (const VALUE_OF_REGXX))).  */
+
+static void
+altivec_frame_fixup (insn, reg, val)
+     rtx insn, reg;
+     HOST_WIDE_INT val;
+{
+  rtx real;
+
+  real = copy_rtx (PATTERN (insn));
+
+  real = replace_rtx (real, reg, GEN_INT (val));
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					real,
+					REG_NOTES (insn));
+}
+
 /* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced
    with (plus:P (reg 1) VAL), and with REG2 replaced with RREG if REG2
    is not NULL.  It would be nice if dwarf2out_frame_debug_expr could
@@ -7668,9 +7697,10 @@ rs6000_frame_related (insn, reg, val, reg2, rreg)
    appropriate CLOBBERs.  */
 
 static rtx
-generate_set_vrsave (reg, info)
+generate_set_vrsave (reg, info, epiloguep)
      rtx reg;
      rs6000_stack_t *info;
+     int epiloguep;
 {
   int nclobs, i;
   rtx insn, clobs[TOTAL_ALTIVEC_REGS + 1];
@@ -7679,12 +7709,37 @@ generate_set_vrsave (reg, info)
 
   nclobs = 1;
 
-  /* CLOBBER the registers in the mask.  */
+  /* We need to clobber the registers in the mask so the scheduler
+     does not move sets to VRSAVE before sets of AltiVec registers.
+
+     However, if the function receives nonlocal gotos, reload will set
+     all call saved registers live.  We will end up with:
+
+     	(set (reg 999) (mem))
+	(parallel [ (set (reg vrsave) (unspec blah))
+		    (clobber (reg 999))])
+
+     The clobber will cause the store into reg 999 to be dead, and
+     flow will attempt to delete an epilogue insn.  In this case, we
+     need an unspec use/set of the register.  */
 
   for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
     if (info->vrsave_mask != 0 && ALTIVEC_REG_BIT (i) != 0)
-      clobs[nclobs++] = gen_rtx_CLOBBER (VOIDmode,
-					 gen_rtx_REG (V4SImode, i));
+      {
+	if (!epiloguep || call_used_regs [i])
+	  clobs[nclobs++] = gen_rtx_CLOBBER (VOIDmode,
+					     gen_rtx_REG (V4SImode, i));
+	else
+	  {
+	    rtx reg = gen_rtx_REG (V4SImode, i);
+	    rtvec r = rtvec_alloc (1);
+
+	    RTVEC_ELT (r, 0) = reg;
+
+	    clobs[nclobs++]
+	      = gen_rtx_SET (VOIDmode, reg, gen_rtx_UNSPEC (V4SImode, r, 27));
+	  }
+      }
 
   insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nclobs));
 
@@ -7732,6 +7787,69 @@ rs6000_emit_prologue ()
 				       )));
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie ();
+    }
+
+  /* Save AltiVec registers if needed.  */
+  if (TARGET_ALTIVEC_ABI && info->altivec_size != 0)
+    {
+      int i;
+
+      /* There should be a non inline version of this, for when we
+	 are saving lots of vector registers.  */
+      for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
+	if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
+	  {
+	    rtx areg, savereg, mem;
+	    int offset;
+
+	    offset = info->altivec_save_offset + sp_offset
+	      + 16 * (i - info->first_altivec_reg_save);
+
+	    savereg = gen_rtx_REG (V4SImode, i);
+
+	    areg = gen_rtx_REG (Pmode, 0);
+	    emit_move_insn (areg, GEN_INT (offset));
+
+	    /* AltiVec addressing mode is [reg+reg].  */
+	    mem = gen_rtx_MEM (V4SImode,
+			       gen_rtx_PLUS (Pmode, frame_reg_rtx, areg));
+			       
+	    set_mem_alias_set (mem, rs6000_sr_alias_set);
+
+	    insn = emit_move_insn (mem, savereg);
+
+	    altivec_frame_fixup (insn, areg, offset);
+	  }
+    }
+
+  /* VRSAVE is a bit vector representing which AltiVec registers
+     are used.  The OS uses this to determine which vector
+     registers to save on a context switch.  We need to save
+     VRSAVE on the stack frame, add whatever AltiVec registers we
+     used in this function, and do the corresponding magic in the
+     epilogue.  */
+
+  if (TARGET_ALTIVEC && info->vrsave_mask != 0)
+    {
+      rtx reg, mem;
+      int offset;
+
+      /* Get VRSAVE onto a GPR.  */
+      reg = gen_rtx_REG (SImode, 12);
+      emit_insn (gen_get_vrsave (reg));
+
+      /* Save VRSAVE.  */
+      offset = info->vrsave_save_offset + sp_offset;
+      mem
+	= gen_rtx_MEM (SImode,
+		       gen_rtx_PLUS (Pmode, frame_reg_rtx, GEN_INT (offset)));
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
+      insn = emit_move_insn (mem, reg);
+
+      /* Include the registers in the mask.  */
+      emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
+
+      insn = emit_insn (generate_set_vrsave (reg, info, 0));
     }
 
   /* If we use the link register, get it into r0.  */
@@ -7928,70 +8046,6 @@ rs6000_emit_prologue ()
   if (info->push_p && DEFAULT_ABI != ABI_V4)
     rs6000_emit_allocate_stack (info->total_size, FALSE);
 
-  /* Save AltiVec registers if needed.  */
-  if (TARGET_ALTIVEC_ABI && info->altivec_size != 0)
-    {
-      int i;
-
-      /* There should be a non inline version of this, for when we
-	 are saving lots of vector registers.  */
-      for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
-	if (regs_ever_live[i] && ! call_used_regs[i])
-	  {
-	    rtx addr, areg, savereg, mem;
-
-	    savereg = gen_rtx_REG (V4SImode, i);
-
-	    areg = gen_rtx_REG (Pmode, 0);
-	    emit_move_insn
-	      (areg, GEN_INT (info->altivec_save_offset
-			      + sp_offset
-			      + 16 * (i - info->first_altivec_reg_save)));
-
-	    /* AltiVec addressing mode is [reg+reg].  */
-	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
-	    mem = gen_rtx_MEM (V4SImode, addr);
-	    set_mem_alias_set (mem, rs6000_sr_alias_set);
-
-	    insn = emit_move_insn (mem, savereg);
-	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
-				  NULL_RTX, NULL_RTX);
-	  }
-    }
-
-  /* VRSAVE is a bit vector representing which AltiVec registers
-     are used.  The OS uses this to determine which vector
-     registers to save on a context switch.  We need to save
-     VRSAVE on the stack frame, add whatever AltiVec registers we
-     used in this function, and do the corresponding magic in the
-     epilogue.  */
-
-  if (TARGET_ALTIVEC && info->vrsave_mask != 0)
-    {
-      rtx reg, addr, mem;
-
-      /* Get VRSAVE onto a GPR.  */
-      reg = gen_rtx_REG (SImode, 12);
-      emit_insn (gen_get_vrsave (reg));
-
-      /* Save VRSAVE.  */
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (info->vrsave_save_offset + sp_offset));
-      mem = gen_rtx_MEM (SImode, addr);
-      set_mem_alias_set (mem, rs6000_sr_alias_set);
-      insn = emit_move_insn (mem, reg);
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-			    NULL_RTX, NULL_RTX);
-
-      /* Include the registers in the mask.  */
-      emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
-
-      insn = emit_insn (generate_set_vrsave (reg, info));
-
-      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-			    NULL_RTX, NULL_RTX);
-    }
-
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
     {
@@ -8154,6 +8208,46 @@ rs6000_emit_epilogue (sibcall)
 	}
     }
   
+  /* Restore AltiVec registers if needed.  */
+  if (TARGET_ALTIVEC_ABI && info->altivec_size != 0)
+    {
+      int i;
+
+      for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
+	if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
+	  {
+	    rtx addr, areg, mem;
+
+	    areg = gen_rtx_REG (Pmode, 0);
+	    emit_move_insn
+	      (areg, GEN_INT (info->altivec_save_offset
+			      + sp_offset
+			      + 16 * (i - info->first_altivec_reg_save)));
+
+	    /* AltiVec addressing mode is [reg+reg].  */
+	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
+	    mem = gen_rtx_MEM (V4SImode, addr);
+	    set_mem_alias_set (mem, rs6000_sr_alias_set);
+
+	    emit_move_insn (gen_rtx_REG (V4SImode, i), mem);
+	  }
+    }
+
+  /* Restore VRSAVE if needed.  */
+  if (TARGET_ALTIVEC_ABI && info->vrsave_mask != 0)
+    {
+      rtx addr, mem, reg;
+
+      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+			   GEN_INT (info->vrsave_save_offset + sp_offset));
+      mem = gen_rtx_MEM (SImode, addr);
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
+      reg = gen_rtx_REG (SImode, 12);
+      emit_move_insn (reg, mem);
+
+      emit_insn (generate_set_vrsave (reg, info, 1));
+    }
+
   /* Get the old lr if we saved it.  */
   if (info->lr_save_p)
     {
@@ -8268,46 +8362,6 @@ rs6000_emit_epilogue (sibcall)
 				       info->first_fp_reg_save + i),
 			  mem);
 	}
-
-  /* Restore AltiVec registers if needed.  */
-  if (TARGET_ALTIVEC_ABI && info->altivec_size != 0)
-    {
-      int i;
-
-      for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
-	if (regs_ever_live[i] && ! call_used_regs[i])
-	  {
-	    rtx addr, areg, mem;
-
-	    areg = gen_rtx_REG (Pmode, 0);
-	    emit_move_insn
-	      (areg, GEN_INT (info->altivec_save_offset
-			      + sp_offset
-			      + 16 * (i - info->first_altivec_reg_save)));
-
-	    /* AltiVec addressing mode is [reg+reg].  */
-	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
-	    mem = gen_rtx_MEM (V4SImode, addr);
-	    set_mem_alias_set (mem, rs6000_sr_alias_set);
-
-	    emit_move_insn (gen_rtx_REG (V4SImode, i), mem);
-	  }
-    }
-
-  /* Restore VRSAVE if needed.  */
-  if (TARGET_ALTIVEC_ABI && info->vrsave_mask != 0)
-    {
-      rtx addr, mem, reg;
-
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (info->vrsave_save_offset + sp_offset));
-      mem = gen_rtx_MEM (SImode, addr);
-      set_mem_alias_set (mem, rs6000_sr_alias_set);
-      reg = gen_rtx_REG (SImode, 12);
-      emit_move_insn (reg, mem);
-
-      emit_insn (generate_set_vrsave (reg, info));
-    }
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)
