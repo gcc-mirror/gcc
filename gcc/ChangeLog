@@ -1,3 +1,14 @@
+2004-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (return_prediction): New function.
+	(apply_return_prediction): Likewise.
+	(tree_bb_level_predictions): Likewise.
+	(tree_estimate_probability): Add noreturn exit edges; call
+	bb_level_predictions; fix logic of return heuristics.
+	(predict_paths_leading_to):  Rescuesce from old CVS version of
+	process_note_prediction function.
+	* predict.def (PRED_TREE_EARLY_RETURN): New predictor.
+
 2004-09-20  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_frame_info): Added alignment statement for

@@ -77,6 +77,7 @@ static void estimate_loops_at_level (struct loop *loop);
 static void propagate_freq (struct loop *);
 static void estimate_bb_frequencies (struct loops *);
 static int counts_to_freqs (void);
+static void predict_paths_leading_to (basic_block, int *, enum br_predictor, enum prediction);
 static bool last_basic_block_p (basic_block);
 static void compute_function_frequency (void);
 static void choose_function_section (void);
@@ -1119,6 +1120,152 @@ tree_predict_by_opcode (basic_block bb)
       }
 }
 
+/* Try to guess whether the value of return means error code.  */
+static enum br_predictor
+return_prediction (tree val, enum prediction *prediction)
+{
+  /* VOID.  */
+  if (!val)
+    return PRED_NO_PREDICTION;
+  /* Different heuristics for pointers and scalars.  */
+  if (POINTER_TYPE_P (TREE_TYPE (val)))
+    {
+      /* NULL is usually not returned.  */
+      if (integer_zerop (val))
+	{
+	  *prediction = NOT_TAKEN;
+	  return PRED_NULL_RETURN;
+	}
+    }
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (val)))
+    {
+      /* Negative return values are often used to indicate
+         errors.  */
+      if (TREE_CODE (val) == INTEGER_CST
+	  && tree_int_cst_sgn (val) < 0)
+	{
+	  *prediction = NOT_TAKEN;
+	  return PRED_NEGATIVE_RETURN;
+	}
+      /* Constant return values seems to be commonly taken.
+         Zero/one often represent booleans so exclude them from the
+	 heuristics.  */
+      if (TREE_CONSTANT (val)
+	  && (!integer_zerop (val) && !integer_onep (val)))
+	{
+	  *prediction = TAKEN;
+	  return PRED_NEGATIVE_RETURN;
+	}
+    }
+  return PRED_NO_PREDICTION;
+}
+
+/* Find the basic block with return expression and look up for possible
+   return value trying to apply RETURN_PREDICTION heuristics.  */
+static void
+apply_return_prediction (int *heads)
+{
+  tree return_stmt;
+  tree return_val;
+  edge e;
+  tree phi;
+  int phi_num_args, i;
+  enum br_predictor pred;
+  enum prediction direction;
+
+  for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+    {
+      return_stmt = last_stmt (e->src);
+      if (TREE_CODE (return_stmt) == RETURN_EXPR)
+	break;
+    }
+  if (!e)
+    return;
+  return_val = TREE_OPERAND (return_stmt, 0);
+  if (!return_val)
+    return;
+  if (TREE_CODE (return_val) == MODIFY_EXPR)
+    return_val = TREE_OPERAND (return_val, 1);
+  if (TREE_CODE (return_val) != SSA_NAME
+      || !SSA_NAME_DEF_STMT (return_val)
+      || TREE_CODE (SSA_NAME_DEF_STMT (return_val)) != PHI_NODE)
+    return;
+  phi = SSA_NAME_DEF_STMT (return_val);
+  while (phi)
+    {
+      tree next = PHI_CHAIN (phi);
+      if (PHI_RESULT (phi) == return_val)
+	break;
+      phi = next;
+    }
+  if (!phi)
+    return;
+  phi_num_args = PHI_NUM_ARGS (phi);
+  pred = return_prediction (PHI_ARG_DEF (phi, 0), &direction);
+
+  /* Avoid the degenerate case where all return values form the function
+     belongs to same category (ie they are all positive constants)
+     so we can hardly say something about them.  */
+  for (i = 1; i < phi_num_args; i++)
+    if (pred != return_prediction (PHI_ARG_DEF (phi, i), &direction))
+      break;
+  if (i != phi_num_args)
+    for (i = 0; i < phi_num_args; i++)
+      {
+	pred = return_prediction (PHI_ARG_DEF (phi, i), &direction);
+	if (pred != PRED_NO_PREDICTION)
+	  predict_paths_leading_to (PHI_ARG_EDGE (phi, i)->src, heads, pred,
+				    direction);
+      }
+}
+
+/* Look for basic block that contains unlikely to happen events
+   (such as noreturn calls) and mark all paths leading to execution
+   of this basic blocks as unlikely.  */
+
+static void
+tree_bb_level_predictions (void)
+{
+  basic_block bb;
+  int *heads;
+
+  heads = xmalloc (sizeof (int) * last_basic_block);
+  memset (heads, -1, sizeof (int) * last_basic_block);
+  heads[ENTRY_BLOCK_PTR->next_bb->index] = last_basic_block;
+
+  apply_return_prediction (heads);
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi = bsi_last (bb);
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	  switch (TREE_CODE (stmt))
+	    {
+	      case MODIFY_EXPR:
+		if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
+		  {
+		    stmt = TREE_OPERAND (stmt, 1);
+		    goto call_expr;
+		  }
+		break;
+	      case CALL_EXPR:
+call_expr:;
+		if (call_expr_flags (stmt) & ECF_NORETURN)
+		  predict_paths_leading_to (bb, heads, PRED_NORETURN,
+		      			    NOT_TAKEN);
+		break;
+	      default:
+		break;
+	    }
+	}
+    }
+
+  free (heads);
+}
+
 /* Predict branch probabilities and estimate profile of the tree CFG.  */
 static void
 tree_estimate_probability (void)
@@ -1130,9 +1277,12 @@ tree_estimate_probability (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (&loops_info, dump_file, NULL, 0);
 
+  add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  tree_bb_level_predictions ();
 
   predict_loops (&loops_info, false);
 
@@ -1143,18 +1293,23 @@ tree_estimate_probability (void)
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  /* Predict early returns to be probable, as we've already taken
-	     care for error returns and other are often used for fast paths
-	     trought function.  */
-	  if ((e->dest == EXIT_BLOCK_PTR
-	       || (e->dest->succ && !e->dest->succ->succ_next
-		   && e->dest->succ->dest == EXIT_BLOCK_PTR))
-	       && !predicted_by_p (bb, PRED_NULL_RETURN)
-	       && !predicted_by_p (bb, PRED_CONST_RETURN)
-	       && !predicted_by_p (bb, PRED_NEGATIVE_RETURN)
-	       && !last_basic_block_p (e->dest))
-	    predict_edge_def (e, PRED_EARLY_RETURN, TAKEN);
+	     care for error returns and other cases are often used for
+	     fast paths trought function.  */
+	  if (e->dest == EXIT_BLOCK_PTR
+	      && TREE_CODE (last_stmt (bb)) == RETURN_EXPR
+	      && bb->pred && bb->pred->pred_next)
+	    {
+	      edge e1;
 
-	  /* Look for block we are guarding (i.e. we dominate it,
+	      for (e1 = bb->pred; e1; e1 = e1->pred_next)
+	      	if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
+		    && !predicted_by_p (e1->src, PRED_CONST_RETURN)
+		    && !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN)
+		    && !last_basic_block_p (e1->src))
+		  predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
+	    }
+
+	  /* Look for block we are guarding (ie we dominate it,
 	     but it doesn't postdominate us).  */
 	  if (e->dest != EXIT_BLOCK_PTR && e->dest != bb
 	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
@@ -1286,6 +1441,62 @@ last_basic_block_p (basic_block bb)
 	  || (bb->next_bb->next_bb == EXIT_BLOCK_PTR
 	      && bb->succ && !bb->succ->succ_next
 	      && bb->succ->dest->next_bb == EXIT_BLOCK_PTR));
+}
+
+/* Sets branch probabilities according to PREDiction and
+   FLAGS. HEADS[bb->index] should be index of basic block in that we
+   need to alter branch predictions (i.e. the first of our dominators
+   such that we do not post-dominate it) (but we fill this information
+   on demand, so -1 may be there in case this was not needed yet).  */
+
+static void
+predict_paths_leading_to (basic_block bb, int *heads, enum br_predictor pred,
+			  enum prediction taken)
+{
+  edge e;
+  int y;
+
+  if (heads[bb->index] < 0)
+    {
+      /* This is first time we need this field in heads array; so
+         find first dominator that we do not post-dominate (we are
+         using already known members of heads array).  */
+      basic_block ai = bb;
+      basic_block next_ai = get_immediate_dominator (CDI_DOMINATORS, bb);
+      int head;
+
+      while (heads[next_ai->index] < 0)
+	{
+	  if (!dominated_by_p (CDI_POST_DOMINATORS, next_ai, bb))
+	    break;
+	  heads[next_ai->index] = ai->index;
+	  ai = next_ai;
+	  next_ai = get_immediate_dominator (CDI_DOMINATORS, next_ai);
+	}
+      if (!dominated_by_p (CDI_POST_DOMINATORS, next_ai, bb))
+	head = next_ai->index;
+      else
+	head = heads[next_ai->index];
+      while (next_ai != bb)
+	{
+	  next_ai = ai;
+	  if (heads[ai->index] == ENTRY_BLOCK)
+	    ai = ENTRY_BLOCK_PTR;
+	  else
+	    ai = BASIC_BLOCK (heads[ai->index]);
+	  heads[next_ai->index] = head;
+	}
+    }
+  y = heads[bb->index];
+
+  /* Now find the edge that leads to our branch and aply the prediction.  */
+
+  if (y == last_basic_block)
+    return;
+  for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
+    if (e->dest->index >= 0
+	&& dominated_by_p (CDI_POST_DOMINATORS, e->dest, bb))
+      predict_edge_def (e, pred, taken);
 }
 
 /* This is used to carry information about basic blocks.  It is
