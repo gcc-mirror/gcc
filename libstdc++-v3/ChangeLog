@@ -1,3 +1,10 @@
+2003-09-18  Petur Runolfsson  <peturr02@ru.is>
+
+	* config/io/basic_file_stdio.cc (sys_getc, sys_ungetc): Delete.
+	* config/io/basic_file_stdio.h: Same.
+	* include/std/std_fstream.h (__ctype_type): Delete.
+	* include/std/std_streambuf.h (__ctype_type, __state_type): Delete.
+	
 2003-09-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/12239

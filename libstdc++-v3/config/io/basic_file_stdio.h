@@ -76,12 +76,6 @@ namespace std
       __basic_file*
       sys_open(int __fd, ios_base::openmode __mode, bool __del);
 
-      int
-      sys_getc();
-
-      int
-      sys_ungetc(int);
-
       __basic_file* 
       close(); 
 

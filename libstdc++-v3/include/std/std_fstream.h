@@ -82,7 +82,6 @@ namespace std
       typedef __basic_file<char>		        __file_type;
       typedef typename traits_type::state_type          __state_type;
       typedef codecvt<char_type, char, __state_type>    __codecvt_type;
-      typedef ctype<char_type>                          __ctype_type;
       //@}
 
       friend class ios_base; // For sync_with_stdio.
