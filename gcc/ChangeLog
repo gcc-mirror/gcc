@@ -1,3 +1,10 @@
+2000-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (check_for_loop_decls): New function.
+	* c-parse.in (for_init_stmt): New.
+	(select_or_iter_stmt): Use for_init_stmt.
+	* c-tree.h (check_for_loop_decls): New declaration.
+
 2000-11-18  Neil Booth  <neilb@earthling.net>
 
 	* cppinit.c: Update comments.

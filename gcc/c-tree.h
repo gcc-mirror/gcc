@@ -170,6 +170,7 @@ extern tree build_enumerator                    PARAMS ((tree, tree));
 			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 extern int  c_decode_option                     PARAMS ((int, char **));
 extern void c_mark_varargs                      PARAMS ((void));
+extern void check_for_loop_decls                PARAMS ((void));
 extern tree check_identifier                    PARAMS ((tree, tree));
 extern void clear_parm_order                    PARAMS ((void));
 extern tree combine_parm_decls                  PARAMS ((tree, tree, int));
