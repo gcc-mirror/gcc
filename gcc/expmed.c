@@ -2389,6 +2389,7 @@ static unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
 						 int *, int *);
 static unsigned HOST_WIDE_INT invert_mod2n (unsigned HOST_WIDE_INT, int);
 static rtx extract_high_half (enum machine_mode, rtx);
+static rtx expand_mult_highpart (enum machine_mode, rtx, rtx, rtx, int, int);
 static rtx expand_mult_highpart_optab (enum machine_mode, rtx, rtx, rtx,
 				       int, int);
 /* Compute and return the best algorithm for multiplying by T.
@@ -3359,9 +3360,10 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
   return 0;
 }
 
-/* Emit code to multiply OP0 and CNST1, putting the high half of the result
-   in TARGET if that is convenient, and return where the result is.  If the
-   operation can not be performed, 0 is returned.
+/* Emit code to multiply OP0 and OP1 (where OP1 is an integer constant),
+   putting the high half of the result in TARGET if that is convenient,
+   and return where the result is.  If the operation can not be performed,
+   0 is returned.
 
    MODE is the mode of operation and result.
 
@@ -3369,23 +3371,22 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
 
    MAX_COST is the total allowed cost for the expanded RTL.  */
 
-rtx
-expand_mult_highpart (enum machine_mode mode, rtx op0,
-		      unsigned HOST_WIDE_INT cnst1, rtx target,
-		      int unsignedp, int max_cost)
+static rtx
+expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
+		      rtx target, int unsignedp, int max_cost)
 {
   enum machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
+  unsigned HOST_WIDE_INT cnst1;
   int extra_cost;
   bool sign_adjust = false;
   enum mult_variant variant;
   struct algorithm alg;
-  rtx op1, tem;
+  rtx tem;
 
   /* We can't support modes wider than HOST_BITS_PER_INT.  */
   gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT);
 
-  op1 = gen_int_mode (cnst1, wider_mode);
-  cnst1 &= GET_MODE_MASK (mode);
+  cnst1 = INTVAL (op1) & GET_MODE_MASK (mode);
 
   /* We can't optimize modes wider than BITS_PER_WORD. 
      ??? We might be able to perform double-word arithmetic if 
@@ -3916,7 +3917,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			      = (shift_cost[compute_mode][post_shift - 1]
 				 + shift_cost[compute_mode][1]
 				 + 2 * add_cost[compute_mode]);
-			    t1 = expand_mult_highpart (compute_mode, op0, ml,
+			    t1 = gen_int_mode (ml, compute_mode);
+			    t1 = expand_mult_highpart (compute_mode, op0, t1,
 						       NULL_RTX, 1,
 						       max_cost - extra_cost);
 			    if (t1 == 0)
@@ -3951,7 +3953,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			    extra_cost
 			      = (shift_cost[compute_mode][pre_shift]
 				 + shift_cost[compute_mode][post_shift]);
-			    t2 = expand_mult_highpart (compute_mode, t1, ml,
+			    t2 = gen_int_mode (ml, compute_mode);
+			    t2 = expand_mult_highpart (compute_mode, t1, t2,
 						       NULL_RTX, 1,
 						       max_cost - extra_cost);
 			    if (t2 == 0)
@@ -4072,7 +4075,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			extra_cost = (shift_cost[compute_mode][post_shift]
 				      + shift_cost[compute_mode][size - 1]
 				      + add_cost[compute_mode]);
-			t1 = expand_mult_highpart (compute_mode, op0, ml,
+			t1 = gen_int_mode (ml, compute_mode);
+			t1 = expand_mult_highpart (compute_mode, op0, t1,
 						   NULL_RTX, 0,
 						   max_cost - extra_cost);
 			if (t1 == 0)
@@ -4108,7 +4112,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			extra_cost = (shift_cost[compute_mode][post_shift]
 				      + shift_cost[compute_mode][size - 1]
 				      + 2 * add_cost[compute_mode]);
-			t1 = expand_mult_highpart (compute_mode, op0, ml,
+			t1 = gen_int_mode (ml, compute_mode);
+			t1 = expand_mult_highpart (compute_mode, op0, t1,
 						   NULL_RTX, 0,
 						   max_cost - extra_cost);
 			if (t1 == 0)
@@ -4202,7 +4207,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			extra_cost = (shift_cost[compute_mode][post_shift]
 				      + shift_cost[compute_mode][size - 1]
 				      + 2 * add_cost[compute_mode]);
-			t3 = expand_mult_highpart (compute_mode, t2, ml,
+			t3 = gen_int_mode (ml, compute_mode);
+			t3 = expand_mult_highpart (compute_mode, t2, t3,
 						   NULL_RTX, 1,
 						   max_cost - extra_cost);
 			if (t3 != 0)
