@@ -1,3 +1,19 @@
+2005-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	Merge from mainline:
+
+    2005-03-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc_update (silent): Unset instead of initializing to null.
+
+    2005-03-18  Andreas Schwab  <schwab@suse.de>
+
+	* gcc_update (apply_patch): Properly quote $1.
+
+    2005-03-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc_update: Add --silent option.
+
 2005-01-17  David O'Brien  <obrien@FreeBSD.org>
 
 	* contrib/gcc_update: Explicitly update the branch.
