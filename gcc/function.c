@@ -6542,36 +6542,9 @@ diddle_return_value (doit, arg)
      void *arg;
 {
   rtx outgoing = current_function_return_rtx;
-  int pcc;
 
   if (! outgoing)
     return;
-
-  pcc = (current_function_returns_struct
-	 || current_function_returns_pcc_struct);
-
-  if ((GET_CODE (outgoing) == REG
-       && REGNO (outgoing) >= FIRST_PSEUDO_REGISTER)
-      || pcc)
-    {
-      tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
-
-      /* A PCC-style return returns a pointer to the memory in which
-	 the structure is stored.  */
-      if (pcc)
-	type = build_pointer_type (type);
-
-#ifdef FUNCTION_OUTGOING_VALUE
-      outgoing = FUNCTION_OUTGOING_VALUE (type, current_function_decl);
-#else
-      outgoing = FUNCTION_VALUE (type, current_function_decl);
-#endif
-      /* If this is a BLKmode structure being returned in registers, then use
-	 the mode computed in expand_return.  */
-      if (GET_MODE (outgoing) == BLKmode)
-	PUT_MODE (outgoing, GET_MODE (current_function_return_rtx));
-      REG_FUNCTION_VALUE_P (outgoing) = 1;
-    }
 
   if (GET_CODE (outgoing) == REG)
     (*doit) (outgoing, arg);
@@ -6641,6 +6614,7 @@ expand_function_end (filename, line, end_bindings)
      int end_bindings;
 {
   tree link;
+  rtx clobber_after;
 
 #ifdef TRAMPOLINE_TEMPLATE
   static rtx initial_trampoline;
@@ -6787,17 +6761,11 @@ expand_function_end (filename, line, end_bindings)
      registers so that they are not propogated live to the rest of
      the function.  This can only happen with functions that drop
      through; if there had been a return statement, there would
-     have either been a return rtx, or a jump to the return label.  */
-  {
-    rtx before, after;
-    
-    before = get_last_insn ();
-    clobber_return_register ();
-    after = get_last_insn ();
-    
-    if (before != after)
-      cfun->x_clobber_return_insn = after;
-  }
+     have either been a return rtx, or a jump to the return label.
+
+     We delay actual code generation after the current_function_value_rtx
+     is computed.  */
+  clobber_after = get_last_insn ();
 
   /* Output the label for the actual return from the function,
      if one is expected.  This happens either because a function epilogue
@@ -6945,6 +6913,21 @@ expand_function_end (filename, line, end_bindings)
   /* If this is an implementation of throw, do what's necessary to
      communicate between __builtin_eh_return and the epilogue.  */
   expand_eh_return ();
+
+  /* Emit the actual code to clobber return register.  */
+  {
+    rtx seq, after;
+    
+    start_sequence ();
+    clobber_return_register ();
+    seq = gen_sequence ();
+    end_sequence ();
+
+    after = emit_insn_after (seq, clobber_after);
+    
+    if (clobber_after != after)
+      cfun->x_clobber_return_insn = after;
+  }
 
   /* ??? This should no longer be necessary since stupid is no longer with
      us, but there are some parts of the compiler (eg reload_combine, and
