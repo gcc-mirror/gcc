@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.39 $"
+version="$Revision: 1.40 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1071,22 +1071,6 @@ export CC
 export CXX
 export CFLAGS
 export CXXFLAGS
-
-# FIXME: This should be in configure.in, not configure
-case "$host" in
-	*go32*)
-	    enable_gdbtk=no ;;
-	*msdosdjgpp*)
-	    enable_gdbtk=no ;;
-esac
-
-# FIXME: This should be in configure.in, not configure
-# Determine whether gdb needs tk/tcl or not.
-if [ "$enable_gdbtk" != "no" ]; then
-	GDB_TK="all-tcl all-tk all-itcl all-tix all-libgui"
-else
-	GDB_TK=""
-fi
 
 all_build_modules=
 if test x"${build_alias}" != x"${host_alias}"
