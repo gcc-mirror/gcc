@@ -606,7 +606,7 @@ case "${target}" in
     ;;
   alpha*-*-linux*)
     # newlib is not 64 bit ready
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
     ;;
@@ -739,7 +739,6 @@ case "${target}" in
     fi
     ;;
   *-*-linux*)
-    noconfigdirs="${libgcj}"
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
     ;;
