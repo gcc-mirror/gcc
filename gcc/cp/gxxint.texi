@@ -1602,7 +1602,7 @@ The int parameter is a basic type, and does not receive a B encoding...
 @subsection Qualified names
 
 Both C++ and Java allow a class to be lexically nested inside another
-class.  C++ also supports namespaces (not yet implemented by G++).
+class.  C++ also supports namespaces.
 Java also supports packages.
 
 These are all mangled the same way:  First the letter @samp{Q}

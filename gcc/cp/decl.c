@@ -1125,14 +1125,17 @@ pop_label (link)
 {
   tree label = TREE_VALUE (link);
 
-  if (DECL_INITIAL (label) == NULL_TREE)
+  if (!processing_template_decl && doing_semantic_analysis_p ())
     {
-      cp_error_at ("label `%D' used but not defined", label);
-      /* Avoid crashing later.  */
-      define_label (input_filename, 1, DECL_NAME (label));
+      if (DECL_INITIAL (label) == NULL_TREE)
+	{
+	  cp_error_at ("label `%D' used but not defined", label);
+	  /* Avoid crashing later.  */
+	  define_label (input_filename, 1, DECL_NAME (label));
+	}
+      else if (warn_unused && !TREE_USED (label))
+	cp_warning_at ("label `%D' defined but not used", label);
     }
-  else if (warn_unused && !TREE_USED (label))
-    cp_warning_at ("label `%D' defined but not used", label);
 
   SET_IDENTIFIER_LABEL_VALUE (DECL_NAME (label), TREE_PURPOSE (link));
 }

@@ -1,4 +1,13 @@
+1999-09-18  Paul Burchard <burchard@pobox.com>
+
+	* gxxint.texi: G++ now implements namespaces.
+	
 1999-09-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (pop_label): Don't warn about unused labels more than
+	once.
+	* semantics.c (finish_goto_stmt): Always marked used labels as
+	used.
 
 	* decl.c (layout_var_decl): Change prototype.  Call layout_decl
 	even when the declaration is external.
