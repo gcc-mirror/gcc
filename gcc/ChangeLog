@@ -1,5 +1,26 @@
 Wed Nov 12 09:37:01 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* except.c: Do not include "assert.h".
+	(save_eh_status): Turn asserts into conditional aborts.
+	(restore_eh_status, scan_region): Likewise.
+	* dwarfout.c: Do not include "assert.h".
+	(bit_offset_attribute): Turn asserts into conditional aborts.
+	(bit_size_attribute, output_inlined_enumeration_type_die): Likewise.
+	(output_inlined_structure_type_die): Likewise.
+	(output_inlined_union_type_die): Likewise
+	(output_tagged_type_instantiation): Likewise.
+	(dwarfout_file_scope_decl): Likewise.
+	* dwarf2out.c: Do not include "assert.h"
+	(expand_builtin_dwarf_reg_size): Turn asserts into conditional aborts.
+	(reg_save, initial_return_save, dwarf2out_frame_debug): Likewise.
+	(add_child_die, modified_type_die, add_bit_offset_attribute): Likewise.
+	(add_bit_size_attribute, scope_die_for): Likewise.
+	(output_pending_types_for_scope): Likewise.
+	(get_inlined_enumeration_type_die): Likewise.
+	(get_inlined_structure_type_die): Likewise.
+	(get_inlined_union_type_die, gen_subprogram_die): Likewise.
+	(gen_tagged_type_instantiation_die): Likewise.
+
 	* flow.c (find_basic_blocks): Refine further to get a more correct
 	cfg, especially in the presense of exception handling, computed
 	gotos, and other non-trivial cases.  Call abort if an inaccuracy

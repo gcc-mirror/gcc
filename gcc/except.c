@@ -404,7 +404,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-#include "assert.h"
 
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */
@@ -1959,7 +1958,8 @@ void
 save_eh_status (p)
      struct function *p;
 {
-  assert (p != NULL);
+  if (p == NULL)
+    abort ();
 
   p->ehstack = ehstack;
   p->ehqueue = ehqueue;
@@ -1981,7 +1981,8 @@ void
 restore_eh_status (p)
      struct function *p;
 {
-  assert (p != NULL);
+  if (p == NULL)
+    abort ();
 
   protect_list = p->protect_list;
   caught_return_label_stack = p->caught_return_label_stack;
@@ -2046,11 +2047,12 @@ scan_region (insn, n, delete_outer)
   /* Assume we can delete the region.  */
   int delete = 1;
 
-  assert (insn != NULL_RTX
-	  && GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-	  && NOTE_BLOCK_NUMBER (insn) == n
-	  && delete_outer != NULL);
+  if (insn == NULL_RTX
+      || GET_CODE (insn) != NOTE
+      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
+      || NOTE_BLOCK_NUMBER (insn) != n
+      || delete_outer == NULL)
+    abort ();
 
   insn = NEXT_INSN (insn);
 
