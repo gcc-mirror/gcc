@@ -1,3 +1,8 @@
+2003-02-08  Roger Sayle  <roger@eyesopen.com>
+
+	* jcf-io.c (java_or_class_file): Use libiberty's lbasename
+	instead of basename to avoid compiler warnings on Tru64.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcj.texi: Update to GFDL 1.2.
