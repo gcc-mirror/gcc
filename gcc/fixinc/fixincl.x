@@ -4587,7 +4587,7 @@ tSCC zThread_KeywordList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zThread_KeywordSelect0[] =
-       "pthread_t __thread([^a-z0-9_])";
+       " __thread,";
 
 #define    THREAD_KEYWORD_TEST_CT  1
 static tTestDesc aThread_KeywordTests[] = {
@@ -4598,7 +4598,7 @@ static tTestDesc aThread_KeywordTests[] = {
  */
 static const char* apzThread_KeywordPatch[] = {
     "format",
-    "pthread_t __thr%1",
+    " __thr,",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *

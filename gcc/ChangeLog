@@ -1,3 +1,8 @@
+2002-05-22  Richard Henderson  <rth@redhat.com>
+
+	* fixinc/inclhack.def (thread_keyword): Allow as any prototype arg.
+	* fixinc/fixincl.x, fixinc/tests/base/pthread.h: Rebuild.
+
 Wed May 22 18:39:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* t-sh (LIB2FUNCS_EXTRA): Now embed-bb.c.

@@ -2892,11 +2892,13 @@ fix = {
     hackname  = thread_keyword;
     files     = "pthread.h";
     files     = "bits/sigthread.h";
-    select    = "pthread_t __thread([^a-z0-9_])";
+    select    = " __thread,";
     c_fix     = format;
-    c_fix_arg = 'pthread_t __thr%1';
+    c_fix_arg = " __thr,";
 
-    test_text = "extern int pthread_kill (pthread_t __thread, int __signo);";
+    test_text =
+	"extern int pthread_create (pthread_t *__restrict __thread,\n"
+	"extern int pthread_kill (pthread_t __thread, int __signo);";
 };
 
 /*
