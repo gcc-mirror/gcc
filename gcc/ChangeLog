@@ -1,3 +1,7 @@
+2003-07-21  H.J. Lu <hongjiu.lu@intel.com>
+
+	* config/ia64/ia64.md (prefetch): Support predicate.
+
 2003-07-21  Josef Zlomek  <zlomekj@suse.cz>
 
 	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Use tablejump_p.
