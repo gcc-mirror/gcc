@@ -65,7 +65,10 @@ struct diagnostic_context
 
   /* True if we should display the "warnings are being tread as error"
      message, usually displayed once per compiler run.  */
-  bool warnings_are_errors_message;
+  bool issue_warnings_are_errors_message;
+  
+  /* True if it has been requested that warnings be treated as errors.  */
+  bool warning_as_error_requested;
 
   /* True if we should raise a SIGABRT on errors.  */
   bool abort_on_error;
@@ -94,9 +97,6 @@ struct diagnostic_context
   int last_module;
 
   int lock;
-  
-  /* Hook for front-end extensions.  */
-  void *x_data;
 };
 
 /* Client supplied function to announce a diagnostic.  */

@@ -420,6 +420,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Werror:
       cpp_opts->warnings_are_errors = value;
+      global_dc->warning_as_error_requested = value;
       break;
 
     case OPT_Werror_implicit_function_declaration:
