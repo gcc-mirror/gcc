@@ -68,7 +68,7 @@
 #   define NEED_FIND_LIMIT
 # endif
 
-# if defined(LINUX) && defined(POWERPC)
+# if defined(LINUX) && (defined(POWERPC) || defined(ALPHA))
 #   define NEED_FIND_LIMIT
 # endif
 
@@ -145,6 +145,82 @@
 	/* This may need to be environ, without the underscore, for	*/
 	/* some versions.						*/
     GC_data_start = GC_find_limit((ptr_t)&_environ, FALSE);
+  }
+#endif
+
+#if defined(LINUX) && defined(ALPHA)
+  ptr_t GC_data_start;
+
+  void GC_init_linuxalpha()
+  {
+# ifdef USE_PROC
+    FILE *fp = fopen("/proc/self/maps", "r");
+
+    if (fp) {
+      extern void *_etext;
+      ptr_t stacktop = 0, stackbottom = 0;
+      ptr_t textstart = 0, textend = 0;
+      ptr_t datastart = 0, dataend = 0;
+      ptr_t bssstart = 0, bssend = 0;
+
+      while (!feof(fp)) {
+        ptr_t start, end, offset;
+        unsigned short major, minor;
+        char r, w, x, p;
+        unsigned int inode;
+
+        int n = fscanf(fp, "%lx-%lx %c%c%c%c %lx %hx:%hx %d",
+          &start, &end, &r, &w, &x, &p, &offset, &major, &minor, &inode);
+        if (n < 10) break;
+
+        /*
+         * If local variable lies within segment, it is stack.
+         * Else if segment lies below _end and is executable,
+         * it is text.  Otherwise, if segment start lies between
+         * _etext and _end and segment is writable and is mapped
+         * to the executable image it is data, otherwise bss.
+         */
+         if (start < (ptr_t)&fp && end > (ptr_t)&fp && w == 'w') {
+           stacktop = start;
+           stackbottom = end;
+         } else if (start < (ptr_t)&_end && w == '-' && x == 'x') {
+           textstart = start;
+           textend = end;
+         } else if (start >= (ptr_t)&_etext &&
+                      start < (ptr_t)&_end && w == 'w') {
+           if (inode > 0) {
+             datastart = start;
+             dataend = end;
+           } else {
+             bssstart = start;
+             bssend = end;
+           }
+         }
+
+         //printf("%016lx-%016lx %c%c%c%c %016lx %02hx:%02hx %d\n",
+         //      start, end, r, w, x, p, offset, major, minor, inode);
+
+         while (fgetc(fp) != '\n') ;
+       }
+       fclose(fp);
+
+       //fprintf(stderr, "text:  %lx-%lx\n", textstart, textend);
+       //fprintf(stderr, "data:  %lx-%lx\n", datastart, dataend);
+       //fprintf(stderr, "bss:   %lx-%lx\n", bssstart, bssend);
+       //fprintf(stderr, "stack: %lx-%lx\n", stacktop, stackbottom);
+
+       GC_data_start = datastart;
+     } else {
+# endif
+       extern ptr_t GC_find_limit();
+       extern int _edata;
+       /* This may need to be environ, without the underscore, for */
+       /* some versions.  */
+       GC_data_start = GC_find_limit((ptr_t)&_edata, FALSE);
+# ifdef USE_PROC
+     }
+# endif
+     //fprintf(stderr, "GC_data_start = %p\n", GC_data_start);
   }
 #endif
 

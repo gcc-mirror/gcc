@@ -844,8 +844,8 @@
 #       define CPP_WORDSZ 64
 #       define STACKBOTTOM ((ptr_t) 0x120000000)
 #       ifdef __ELF__
-            extern int __data_start;
-#           define DATASTART &__data_start
+#           define DATASTART GC_data_start
+#           define USE_PROC
 #           define DYNAMIC_LOADING
 #       else
 #           define DATASTART ((ptr_t) 0x140000000)
