@@ -82,6 +82,8 @@ void assemble_name ();
 int output_addressed_constants ();
 void output_constant ();
 void output_constructor ();
+void text_section ();
+void readonly_data_section ();
 void data_section ();
 
 #ifdef EXTRA_SECTIONS
