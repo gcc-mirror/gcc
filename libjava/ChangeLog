@@ -1,3 +1,8 @@
+2004-09-25  Tom Tromey  <tromey@redhat.com>
+
+	PR java/17500:
+	* testsuite/libjava.compile/pr17500.java: New file.
+
 2004-09-25  Shashank Bapat  <shashankbapat@yahoo.com>
             Mark Wielaard  <mark@klomp.org>
 
