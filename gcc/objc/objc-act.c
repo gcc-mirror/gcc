@@ -7325,62 +7325,42 @@ encode_next_bitfield (int width)
 }
 
 /* FORMAT will be OBJC_ENCODE_INLINE_DEFS or OBJC_ENCODE_DONT_INLINE_DEFS.  */
-
 static void
 encode_type (tree type, int curtype, int format)
 {
   enum tree_code code = TREE_CODE (type);
+  char c;
 
   if (code == INTEGER_TYPE)
     {
-      if (integer_zerop (TYPE_MIN_VALUE (type)))
+      switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
 	{
-	  /* Unsigned integer types.  */
-
-	  if (TYPE_MODE (type) == QImode)
-	    obstack_1grow (&util_obstack, 'C');
-	  else if (TYPE_MODE (type) == HImode)
-	    obstack_1grow (&util_obstack, 'S');
-	  else if (TYPE_MODE (type) == SImode)
-	    {
-	      if (type == long_unsigned_type_node)
-		obstack_1grow (&util_obstack, 'L');
-	      else
-		obstack_1grow (&util_obstack, 'I');
-	    }
-	  else if (TYPE_MODE (type) == DImode)
-	    obstack_1grow (&util_obstack, 'Q');
+	case 8:  c = TREE_UNSIGNED (type) ? 'C' : 'c'; break;
+	case 16: c = TREE_UNSIGNED (type) ? 'S' : 's'; break;
+	case 32: 
+	  if (type == long_unsigned_type_node
+	      || type == long_integer_type_node)
+	         c = TREE_UNSIGNED (type) ? 'L' : 'l';
+	  else
+	         c = TREE_UNSIGNED (type) ? 'I' : 'i';
+	  break;
+	case 64: c = TREE_UNSIGNED (type) ? 'Q' : 'q'; break;
+	default: abort ();
 	}
-
-      else
-	/* Signed integer types.  */
-	{
-	  if (TYPE_MODE (type) == QImode)
-	    obstack_1grow (&util_obstack, 'c');
-	  else if (TYPE_MODE (type) == HImode)
-	    obstack_1grow (&util_obstack, 's');
-	  else if (TYPE_MODE (type) == SImode)
-	    {
-	      if (type == long_integer_type_node)
-		obstack_1grow (&util_obstack, 'l');
-	      else
-		obstack_1grow (&util_obstack, 'i');
-	    }
-
-	  else if (TYPE_MODE (type) == DImode)
-	    obstack_1grow (&util_obstack, 'q');
-	}
+      obstack_1grow (&util_obstack, c);
     }
 
   else if (code == REAL_TYPE)
     {
       /* Floating point types.  */
-
-      if (TYPE_MODE (type) == SFmode)
-	obstack_1grow (&util_obstack, 'f');
-      else if (TYPE_MODE (type) == DFmode
-	       || TYPE_MODE (type) == TFmode)
-	obstack_1grow (&util_obstack, 'd');
+      switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
+	{
+	case 32:  c = 'f'; break;
+	case 64:
+	case 128: c = 'd'; break;
+	default: abort ();
+	}
+      obstack_1grow (&util_obstack, c);
     }
 
   else if (code == VOID_TYPE)
