@@ -9,6 +9,7 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
 	src/mips/ffi.c src/mips/n32.S src/mips/o32.S \
 	src/mips/ffitarget.h \
+	src/m32r/ffi.c src/m32r/sysv.S src/m32r/ffitarget.h \
 	src/m68k/ffi.c src/m68k/sysv.S src/m68k/ffitarget.h \
 	src/powerpc/ffi.c src/powerpc/sysv.S \
 	src/powerpc/linux64.S src/powerpc/linux64_closure.S \
@@ -100,6 +101,9 @@ nodist_libffi_la_SOURCES += src/alpha/ffi.c src/alpha/osf.S
 endif
 if IA64
 nodist_libffi_la_SOURCES += src/ia64/ffi.c src/ia64/unix.S
+endif
+if M32R
+nodist_libffi_la_SOURCES += src/m32r/sysv.S src/m32r/ffi.c
 endif
 if M68K
 nodist_libffi_la_SOURCES += src/m68k/ffi.c src/m68k/sysv.S
