@@ -152,6 +152,7 @@ static tree fold_builtin_cabs (tree, tree);
 static tree fold_builtin_sqrt (tree, tree);
 static tree fold_builtin_cbrt (tree, tree);
 static tree fold_builtin_pow (tree, tree, tree);
+static tree fold_builtin_powi (tree, tree, tree);
 static tree fold_builtin_sin (tree);
 static tree fold_builtin_cos (tree, tree, tree);
 static tree fold_builtin_tan (tree);
@@ -6948,6 +6949,53 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
   return NULL_TREE;
 }
 
+/* Fold a builtin function call to powi, powif, or powil.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_powi (tree fndecl ATTRIBUTE_UNUSED, tree arglist, tree type)
+{
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  if (!validate_arglist (arglist, REAL_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Optimize pow(1.0,y) = 1.0.  */
+  if (real_onep (arg0))
+    return omit_one_operand (type, build_real (type, dconst1), arg1);
+
+  if (host_integerp (arg1, 0))
+    {
+      HOST_WIDE_INT c = TREE_INT_CST_LOW (arg1);
+
+      /* Evaluate powi at compile-time.  */
+      if (TREE_CODE (arg0) == REAL_CST
+	  && ! TREE_CONSTANT_OVERFLOW (arg0))
+	{
+	  REAL_VALUE_TYPE x;
+	  x = TREE_REAL_CST (arg0);
+	  real_powi (&x, TYPE_MODE (type), &x, c);
+	  return build_real (type, x);
+	}
+
+      /* Optimize pow(x,0) = 1.0.  */
+      if (c == 0)
+	return omit_one_operand (type, build_real (type, dconst1),
+				 arg0);
+
+      /* Optimize pow(x,1) = x.  */
+      if (c == 1)
+	return arg0;
+
+      /* Optimize pow(x,-1) = 1.0/x.  */
+      if (c == -1)
+	return fold (build2 (RDIV_EXPR, type,
+			     build_real (type, dconst1), arg0));
+    }
+
+  return NULL_TREE;
+}
+
 /* A subroutine of fold_builtin to fold the various exponent
    functions.  EXP is the CALL_EXPR of a call to a builtin function.
    VALUE is the value which will be raised to a power.  */
@@ -7968,6 +8016,11 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_POWF:
     case BUILT_IN_POWL:
       return fold_builtin_pow (fndecl, arglist, type);
+
+    case BUILT_IN_POWI:
+    case BUILT_IN_POWIF:
+    case BUILT_IN_POWIL:
+      return fold_builtin_powi (fndecl, arglist, type);
 
     case BUILT_IN_INF:
     case BUILT_IN_INFF:

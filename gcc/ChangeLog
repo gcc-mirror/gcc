@@ -1,3 +1,8 @@
+2005-02-10  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* builtins.c (fold_builtin_powi): New function.
+	(fold_builtin_1): Call it.
+
 2005-02-10  Steven Bosscher  <stevenb@suse.de>
 
 	PR documentation/19309
