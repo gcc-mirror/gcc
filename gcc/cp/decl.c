@@ -4998,22 +4998,12 @@ init_decl_processing ()
 
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
-     and this must agree, even of long and int are the same size.  */
-  sizetype
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
+     and this must agree, even if long and int are the same size.  */
+  set_sizetype
+    (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE))));
 
   ptrdiff_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
-
-  TREE_TYPE (TYPE_SIZE (integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (char_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (unsigned_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_unsigned_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_long_integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_long_unsigned_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (short_integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (short_unsigned_type_node)) = sizetype;
 
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);

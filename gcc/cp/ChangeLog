@@ -1,3 +1,13 @@
+Sun Feb  1 12:45:34 1998 J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* decl.c (init_decl_processing): Use set_sizetype.
+	* decl2.c (sizetype): Don't declare.
+	* typeck.c (c_sizeof): Convert result of *_DIV_EXPR to sizetype.
+	(c_sizeof_nowarn, build_binary_op_nodefault): Likewise.
+	(build_component_addr, unary_complex_lvalue): Likewise.
+	* rtti.c (expand_class_desc): Likewise.
+	* class.c (get_vfield_offset): Likewise.
+
 Thu Jan 29 10:39:30 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (convert_nontype_argument): Move check for is_overloaded_fn

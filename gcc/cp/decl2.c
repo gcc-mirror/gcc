@@ -2370,8 +2370,6 @@ finish_builtin_type (type, name, fields, len, align_type)
    `operator new' and `operator delete' correspond to
    what compiler will be expecting.  */
 
-extern tree sizetype;
-
 tree
 coerce_new_type (type)
      tree type;
