@@ -1,3 +1,17 @@
+Tue Apr  6 22:09:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (expand_builtin_setjmp): Put setjmp return label on
+	nonlocal_goto_handler_labels for flow.
+
+Tue Apr  6 22:05:21 1999  Jan Hubicka  <hubicka@paru.cas.cz>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (verify_flow_info): New function.
+	(find_basic_blocks): Call it if ENABLE_CHECKING.
+	(merge_blocks): Don't merge if there are non-deletable labels.
+	* toplev.c (fatal_insn): Allow a printf-style arg list.
+	* toplev.h (fatal_insn): Update prototype.
+
 Tue Apr  6 16:18:58 1999  Jan Hubicka  <hubicka@paru.cas.cz>
 
 	* flow.c (split_edge) update correctly flow graph, disable
