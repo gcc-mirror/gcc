@@ -469,6 +469,7 @@ is_member_template (t)
   return 0;
 }
 
+#if 0 /* UNUSED */
 /* Returns non-zero iff T is a member template class.  See
    is_member_template for a description of what precisely constitutes
    a member template.  */
@@ -493,6 +494,7 @@ is_member_template_class (t)
   return  (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (t)) > 
 	   template_class_depth (DECL_CONTEXT (t)));
 }
+#endif
 
 /* Return a new template argument vector which contains all of ARGS,
    but has as its innermost set of arguments the EXTRA_ARGS.  The
@@ -2167,7 +2169,7 @@ push_template_decl_real (decl, is_friend)
   else
     {
       tree a, t, current, parms;
-      int mem, i;
+      int i;
 
       if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	cp_error ("must specialize `%#T' before defining member `%#D'",
@@ -2222,7 +2224,6 @@ push_template_decl_real (decl, is_friend)
 
       /* Make sure the template headers we got make sense.  */
 
-      mem = (is_member_template (tmpl) || is_member_template_class (tmpl));
       parms = DECL_TEMPLATE_PARMS (tmpl);
       i = TMPL_PARMS_DEPTH (parms);
       if (TMPL_ARGS_DEPTH (args) != i)
