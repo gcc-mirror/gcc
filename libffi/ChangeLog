@@ -1,3 +1,12 @@
+2003-02-06  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* libffi/src/powerpc/darwin_closure.S:
+	Fix alignement bug, allocate 8 bytes for the result.
+	* libffi/src/powerpc/aix_closure.S:
+	Likewise.
+	* libffi/src/powerpc/ffi_darwin.c:
+	Update stackframe description for aix/darwin_closure.S.
+
 2003-01-31  Christian Cornelssen  <ccorn@cs.tu-berlin.de>,
             Andreas Schwab  <schwab@suse.de>
 
