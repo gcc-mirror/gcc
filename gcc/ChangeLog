@@ -1,3 +1,7 @@
+Thu Sep 30 23:04:41 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* iris6.h (BUILD_VA_LIST_TYPE): Define.
+
 Thu Sep 30 18:44:50 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.c (rs6000_build_va_list): Create a TYPE_DECL node
