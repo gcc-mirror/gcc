@@ -98,10 +98,6 @@ Boston, MA 02111-1307, USA.  */
        > (2 * UNITS_PER_WORD)) 						 \
       || (int_size_in_bytes (TYPE) == -1)))
 
-#ifdef ANSI_PROTOTYPES
-union tree_node;
-#endif
-extern struct rtx_def *mips_function_value PARAMS ((union tree_node *, union tree_node *));
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)	mips_function_value (VALTYPE, FUNC)
 

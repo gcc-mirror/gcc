@@ -3264,7 +3264,8 @@ REAL_VALUE_TYPE values_FPA[38];
 
 /* This code has been fixed for cross-compilation.  */
 
-void
+static void init_FPA_table PARAMS ((void));
+static void
 init_FPA_table ()
 {
   enum machine_mode mode;
