@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for SPARC running in an embedded environment using the ELF file format.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
