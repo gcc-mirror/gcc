@@ -295,6 +295,28 @@
 }"
   [(set_attr "type" "*")])
 
+(define_insn "*save_world"
+ [(match_parallel 0 "save_world_operation"
+                  [(clobber (match_operand:SI 1 "register_operand" "=l"))
+                   (use (match_operand:SI 2 "call_operand" "s"))])]
+ "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
+ {
+    return "bl %z2";
+ }
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+(define_insn "*restore_world"
+ [(match_parallel 0 "restore_world_operation"
+                  [(return)
+                   (use (match_operand:SI 1 "register_operand" "l"))
+                   (use (match_operand:SI 2 "call_operand" "s"))
+                   (clobber (match_operand:SI 3 "gpc_reg_operand" "=r"))])]
+ "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
+ {
+    return "b %z2";
+ })
+
 ;; Simple binary operations.
 
 (define_insn "addv16qi3"

@@ -89,6 +89,8 @@ extern bool legitimate_constant_pool_address_p (rtx);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern int load_multiple_operation (rtx, enum machine_mode);
+extern int save_world_operation (rtx, enum machine_mode);
+extern int restore_world_operation (rtx, enum machine_mode);
 extern const char * rs6000_output_load_multiple (rtx[]);
 extern int store_multiple_operation (rtx, enum machine_mode);
 extern int branch_comparison_operator (rtx, enum machine_mode);
