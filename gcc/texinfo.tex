@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.221 1997/12/24 18:59:06 karl Exp karl $
+%% $Id: texinfo.tex,v 2.222 1998/01/26 20:40:21 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.221 $
+\deftexinfoversion$Revision: 2.222 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -4406,10 +4406,13 @@ width0pt\relax} \fi
 }
 
 % This is the macro invoked by entries in the aux file.
-\def\xrdef #1#2{{%
-  \catcode`\'=\other
-  \expandafter\gdef\csname X#1\endcsname{#2}%
-}}
+% 
+\def\xrdef#1{\begingroup
+  % Reenable \ as an escape while reading the second argument.
+  \catcode`\\ = 0
+  \afterassignment\endgroup
+  \expandafter\gdef\csname X#1\endcsname
+}
 
 % Read the last existing aux file, if any.  No error if none exists.
 \def\readauxfile{\begingroup
