@@ -2985,7 +2985,7 @@ do_scoped_id (token, parsing)
 	  LOOKUP_EXPR_GLOBAL (id) = 1;
 	  return id;
 	}
-      if (parsing && yychar == '(' || yychar == LEFT_RIGHT)
+      if (parsing && (yychar == '(' || yychar == LEFT_RIGHT))
 	id = implicitly_declare (token);
       else
 	{
