@@ -953,7 +953,7 @@ ccp_fold (tree stmt)
   if (retval)
     {
       if (TREE_TYPE (retval) != TREE_TYPE (rhs))
-	retval = convert (TREE_TYPE (rhs), retval);
+	retval = fold_convert (TREE_TYPE (rhs), retval);
 
       if (TREE_TYPE (retval) == TREE_TYPE (rhs))
 	return retval;

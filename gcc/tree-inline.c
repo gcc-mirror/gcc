@@ -779,7 +779,7 @@ setup_one_parameter (inline_data *id, tree p, tree value,
      the argument to the proper type in case it was promoted.  */
   if (value)
     {
-      tree rhs = convert (TREE_TYPE (var), value);
+      tree rhs = fold_convert (TREE_TYPE (var), value);
 
       if (rhs == error_mark_node)
 	return;

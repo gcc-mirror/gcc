@@ -1,3 +1,14 @@
+2004-06-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-complex.c (expand_complex_comparison): Use fold_convert instead
+	of convert.
+	* tree-inline.c (setup_one_parameter): Likewise.
+	* tree-sra.c (csc_build_component_ref): Likewise.
+	* tree-ssa-ccp.c (ccp_fold): Likewise.
+	* tree-ssa-copy.c (cprop_operand): Likewise.
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Likewise.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Likewise.
+
 2004-06-09  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR rtl-optimization/15521:

@@ -387,7 +387,7 @@ expand_complex_comparison (block_stmt_iterator *bsi, tree ar, tree ai,
       /* FALLTHRU */
     case MODIFY_EXPR:
       type = TREE_TYPE (TREE_OPERAND (stmt, 1));
-      TREE_OPERAND (stmt, 1) = convert (type, cc);
+      TREE_OPERAND (stmt, 1) = fold_convert (type, cc);
       break;
     case COND_EXPR:
       TREE_OPERAND (stmt, 0) = cc;
