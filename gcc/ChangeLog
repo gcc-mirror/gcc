@@ -1,5 +1,7 @@
 2000-11-24  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* c-common.c (verify_tree): Don't recurse into CONSTRUCTORs.
+
 	* combine.c (cant_combine_insn_p): New function.
 	(try_combine): Use it.
 
