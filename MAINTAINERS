@@ -119,7 +119,7 @@ caller-save.c		Jeff Law		law@redhat.com
 debugging code		Jim Wilson		wilson@redhat.com
 dwarf debugging code	Jason Merrill		jason@redhat.com
 c++ runtime libs	Paolo Carlini		pcarlini@unitus.it
-c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
+c++ runtime libs        Gabriel Dos Reis        gdr@integrable-solutions.net
 c++ runtime libs	Ulrich Drepper		drepper@redhat.com
 c++ runtime libs	Phil Edwards		pme@gcc.gnu.org
 c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
@@ -171,6 +171,7 @@ Andrew Cagney					cagney@redhat.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Chris Demetriou					cgd@broadcom.com
+Gabriel Dos Reis                                gdr@integrable-solutions.net
 *Paul Eggert					eggert@twinsun.com
 Steve Ellcey					sje@cup.hp.com
 Ben Elliston					bje@redhat.com
@@ -225,7 +226,6 @@ Alexandre Petit-Bianco				apbianco@redhat.com
 Clinton Popetz					cpopetz@cpopetz.com
 Ken Raeburn					raeburn@redhat.com
 Rolf Rasmussen					rolfwr@gcc.gnu.org
-Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
 Gavin Romig-Koch				gavin@redhat.com
