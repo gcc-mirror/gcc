@@ -69,6 +69,8 @@
 
 typedef unsigned int U_int32_t __attribute ((mode (SI)));
 typedef int Int32_t __attribute ((mode (SI)));
+typedef unsigned int U_int64_t __attribute ((mode (DI)));
+typedef int Uint64_t __attribute ((mode (DI)));
 
 #ifdef _GLIBCPP_HAVE_NAN_H
 # include <nan.h>
@@ -326,6 +328,44 @@ do {                                                            \
   (exp) = ge_u.parts.sign_exponent;                             \
 } while (0)
 
+#if BYTE_ORDER == BIG_ENDIAN
+typedef union
+{
+  long double value;
+  struct
+  {
+    U_int64_t msw;
+    U_int64_t lsw;
+  } parts64;
+  struct
+  {
+    U_int32_t w0, w1, w2, w3;
+  } parts32;
+} ieee_quad_double_shape_type;
+#endif
+#if BYTE_ORDER == LITTLE_ENDIAN
+typedef union
+{
+  long double value;
+  struct
+  {
+    U_int64_t lsw;
+    U_int64_t msw;
+  } parts64;
+  struct
+  {
+    U_int32_t w3, w2, w1, w0;
+  } parts32;
+} ieee_quad_double_shape_type;
+#endif
+/* Get most significant 64 bit int from a quad long double.  */
+#define GET_LDOUBLE_MSW64(msw,d)				\
+do {								\
+  ieee_quad_double_shape_type qw_u;				\
+  qw_u.value = (d);						\
+  (ix0) = qw_u.parts64.msw;					\
+} while (0)
+        
 
 /* Replacement for non-existing float functions.  */
 #if !defined(_GLIBCPP_HAVE_FABSF) && !defined(_GLIBCPP_HAVE___BUILTIN_FABSF)

@@ -27,8 +27,14 @@
    invalidate any other reasons why the executable file might be covered by
    the GNU General Public License.  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include <math.h>
 #include "mathconf.h"
+#ifndef M_PIl
+#define M_PIl M_PI
+#endif
 
 /* Thanks to SGI we have to trick here.  At least Irix 6.2 provides hypotl,
    but it has a wrong prototype.  Grrr.  */
@@ -43,7 +49,7 @@ clog10l (__complex__ long double x)
   if (x == 0.0)
     {
       /* Real and imaginary part are 0.0.  */
-      __imag__ result = signbit (__real__ x) ? M_PI : 0.0;
+      __imag__ result = signbit (__real__ x) ? M_PIl : 0.0;
       __imag__ result = copysignl (__imag__ result, __imag__ x);
       /* Yes, the following line raises an exception.  */
       __real__ result = -1.0 / fabsl (__real__ x);
