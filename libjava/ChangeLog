@@ -1,3 +1,8 @@
+2000-06-18  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClass.cc (forName): Removed dead code.  Initialize
+	returned class.  For PR gcj/260.
+
 2000-06-16  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR libgcj/261:
