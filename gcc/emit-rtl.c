@@ -1,5 +1,5 @@
 /* Emit RTL for the GNU C-Compiler expander.
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -887,6 +887,7 @@ gen_lowpart (mode, x)
       result = gen_lowpart_common (mode, copy_to_reg (x));
       if (result == 0)
 	abort ();
+      return result;
     }
   else if (GET_CODE (x) == MEM)
     {
