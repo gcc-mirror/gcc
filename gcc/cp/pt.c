@@ -90,6 +90,17 @@ static tree convert_nontype_argument PROTO((tree, tree));
 static tree get_bindings_overload PROTO((tree, tree, tree));
 static int for_each_template_parm PROTO((tree, tree_fn_t, void*));
 static tree build_template_parm_index PROTO((int, int, int, tree, tree));
+static tree original_template PROTO((tree));
+static int inline_needs_template_parms PROTO((tree));
+static void push_inline_template_parms_recursive PROTO((tree, int));
+static tree retrieve_specialization PROTO((tree, tree));
+static void register_specialization PROTO((tree, tree, tree));
+static void print_candidates PROTO((tree));
+static tree reduce_template_parm_level PROTO((tree, tree, int));
+static tree build_template_decl PROTO((tree, tree));
+static int mark_template_parm PROTO((tree, void *));
+static tree tsubst_friend_function PROTO((tree, tree));
+static tree get_bindings_real PROTO((tree, tree, tree, int));
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is

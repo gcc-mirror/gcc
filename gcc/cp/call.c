@@ -61,6 +61,8 @@ static struct z_candidate * splice_viable PROTO((struct z_candidate *));
 static int any_viable PROTO((struct z_candidate *));
 static struct z_candidate * add_template_candidate
 	PROTO((struct z_candidate *, tree, tree, tree, tree, int));
+static struct z_candidate * add_template_candidate_real
+	PROTO((struct z_candidate *, tree, tree, tree, tree, int, tree));
 static struct z_candidate * add_template_conv_candidate 
         PROTO((struct z_candidate *, tree, tree, tree, tree));
 static struct z_candidate * add_builtin_candidates

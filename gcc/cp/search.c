@@ -90,6 +90,8 @@ static tree virtual_context PROTO((tree, tree, tree));
 static tree get_template_base_recursive
 	PROTO((tree, tree, tree, int));
 static void dfs_walk PROTO((tree, void (*) (tree), int (*) (tree)));
+static void dfs_check_overlap PROTO((tree));
+static int dfs_no_overlap_yet PROTO((tree));
 static void envelope_add_decl PROTO((tree, tree, tree *));
 static int get_base_distance_recursive
 	PROTO((tree, int, int, int, int *, tree *, tree, tree *,

@@ -1,3 +1,42 @@
+Fri Apr 17 08:57:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* tree.c (avoid_overlap): Add prototype.
+
+	* spew.c (num_tokens): Add prototype.
+	(nth_noken, add_token, consume_token, debug_yychar): Likewise.
+
+	* search.c (dfs_check_overlap): Add prototype.
+	(dfs_no_overlap_yet): Likewise.
+
+	* pt.c (original_template): Add prototype.
+	(inline_needs_template_parms): Likewise.
+	(push_inline_template_parms_recursive): Likewise.
+	(retrieve_specialization, register_specialization): Likewise.
+	(print_candidates, reduce_template_parm_level): Likewise.
+	(build_template_decl, mark_template_parm): Likewise.
+	(tsubst_friend_function, get_bindings_real): Likewise.
+
+	* method.c (start_squangling): Add prototype.
+	(end_squangling, check_ktype, issue_ktype): Likewise.
+	(build_overloaded_scope_ref, check_btype): Likewise.
+	(build_mangled_template_parm_index): Likewise.
+
+	* lex.c (init_cpp_parse): Add prototype.
+	(handle_cp_pragma, handle_sysv_pragma): Likewise.
+	(reduce_cmp, token_cmp): Likewise.
+
+	* except.c (call_eh_info): Add prototype.
+	(push_eh_info, get_eh_info, get_eh_value, get_eh_type): Likewise.
+	(get_eh_caught, get_eh_handlers, do_pop_exception): Likewise.
+
+	* decl2.c (is_namespace_ancestor): Add prototype.
+	(namespace_ancestor, add_using_namespace): Likewise.
+	(ambiguous_decl): Likewise.
+
+	* decl.c (indent): Add prototype.
+
+	* call.c (add_template_candidate_real): Add prototype.
+
 Fri Apr 17 01:57:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (build_expr_from_tree): Just return a PMF.

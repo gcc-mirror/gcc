@@ -171,6 +171,10 @@ static int member_function_or_else PROTO((tree, tree, char *));
 static void bad_specifiers PROTO((tree, char *, int, int, int, int,
 				  int));
 
+#if defined (DEBUG_CP_BINDING_LEVELS)
+static void indent PROTO((void));
+#endif
+
 /* a node which has tree code ERROR_MARK, and whose type is itself.
    All erroneous expressions are replaced with this node.  All functions
    that accept nodes as arguments should avoid generating error messages

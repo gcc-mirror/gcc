@@ -47,6 +47,10 @@ static void grok_function_init PROTO((tree, tree));
 static int finish_vtable_vardecl PROTO((tree, tree));
 static int prune_vtable_vardecl PROTO((tree, tree));
 static void finish_sigtable_vardecl PROTO((tree, tree));
+static int is_namespace_ancestor PROTO((tree, tree));
+static tree namespace_ancestor PROTO((tree, tree));
+static void add_using_namespace PROTO((tree, tree, int));
+static tree ambiguous_decl PROTO((int, tree, tree));
 
 extern int current_class_depth;
 
