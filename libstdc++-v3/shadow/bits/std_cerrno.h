@@ -34,35 +34,35 @@
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <errno.h>
     }
 
     int& _CPP_errno_capture() { return errno; }
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 #  undef  errno
-#  define errno ::_C_Swamp::_CPP_errno_capture()
+#  define errno ::_C_legacy::_CPP_errno_capture()
 // # undef EDOM
 // # undef ERANGE
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
   namespace std { 
   } // close namespace std::
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

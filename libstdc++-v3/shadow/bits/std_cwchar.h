@@ -40,9 +40,9 @@
 # include <bits/std_ctime.h>    /* struct tm */
 # include <bits/std_cstring.h>  /* memset */
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <wchar.h>
     }
@@ -64,15 +64,15 @@
       { return putwchar(__c); }
 #endif
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 // #  undef size_t  /* handled in <cstddef> */
 # undef wchar_t
 # undef wint_t
 # undef mbstate_t
 # undef WEOF
-# define WEOF ::_C_Swamp::_CPP_WEOF_capture
+# define WEOF ::_C_legacy::_CPP_WEOF_capture
 
 // the following are not in glibc-2.0
 # undef fgetwc
@@ -159,105 +159,105 @@
 # undef wcspbrk
 # undef wcswcs
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
-      typedef ::_C_Swamp::_CPP_wint_t_capture wint_t; 
-      // typedef ::_C_Swamp::_CPP_wctype_t_capture wctype_t;
+  namespace _C_legacy {
+    namespace _C_shadow {
+      typedef ::_C_legacy::_CPP_wint_t_capture wint_t; 
+      // typedef ::_C_legacy::_CPP_wctype_t_capture wctype_t;
     }
   }
   namespace std {
 
-    // using ::_C_Swamp::wchar_t;
-    using ::_C_Swamp::_C_Shadow::wint_t;
-    // using ::_C_Swamp::WEOF;
+    // using ::_C_legacy::wchar_t;
+    using ::_C_legacy::_C_shadow::wint_t;
+    // using ::_C_legacy::WEOF;
 
    // XXX this might better be replaced with one unrelated to the C mbstate_t.
 
    struct mbstate_t { 
-     _C_Swamp::_CPP_mbstate_t_capture _M_dum; 
+     _C_legacy::_CPP_mbstate_t_capture _M_dum; 
      mbstate_t() { std::memset(&_M_dum,0,sizeof(_M_dum)); }
    };
 
 #if 0 /* glibc-2.0 does not implement these. */
     inline wint_t fgetwc(FILE* __f)
-      { return ::_C_Swamp::fgetwc(__f); }
+      { return ::_C_legacy::fgetwc(__f); }
     inline wchar_t* fgetws(wchar_t* __s, int __n, FILE* __f)
-      { return ::_C_Swamp::fgetws(__s,__n,__f); }
+      { return ::_C_legacy::fgetws(__s,__n,__f); }
     inline wint_t fputwc(wint_t __c, FILE* __f)
-      { return ::_C_Swamp::fputwc(__c,__f); }
+      { return ::_C_legacy::fputwc(__c,__f); }
     inline int fputws(const wchar_t* __s, FILE* __f)
-      { return ::_C_Swamp::fputws(__s,__f); }
+      { return ::_C_legacy::fputws(__s,__f); }
     inline wint_t ungetwc(wint_t __c, FILE* __f)
-      { return ::_C_Swamp::ungetwc(__c,__f); }
+      { return ::_C_legacy::ungetwc(__c,__f); }
 
     inline wint_t getwc(FILE* __f)
-      { return ::_C_Swamp::_CPP_getwc_capture(__f); }
+      { return ::_C_legacy::_CPP_getwc_capture(__f); }
     inline wint_t getwchar()
-      { return ::_C_Swamp::_CPP_getwchar_capture(); }
+      { return ::_C_legacy::_CPP_getwchar_capture(); }
     inline wint_t putwc(wint_t __c, FILE* __f)
-      { return ::_C_Swamp::_CPP_putwc_capture(__c,__f); }
+      { return ::_C_legacy::_CPP_putwc_capture(__c,__f); }
     inline wint_t putwchar(wint_t __c)
-      { return ::_C_Swamp::_CPP_putwchar_capture(__c); }
+      { return ::_C_legacy::_CPP_putwchar_capture(__c); }
 
     // similarly wprintf etc.
 #endif
 
-    using ::_C_Swamp::wcscpy;
-    using ::_C_Swamp::wcscat;
-    using ::_C_Swamp::wcscmp;
-    using ::_C_Swamp::wcscoll;
-    using ::_C_Swamp::wcsxfrm;
-    using ::_C_Swamp::wcschr;
-    using ::_C_Swamp::wcscspn;
-    using ::_C_Swamp::wcspbrk;
-    using ::_C_Swamp::wcstok;
-    using ::_C_Swamp::wcslen;
+    using ::_C_legacy::wcscpy;
+    using ::_C_legacy::wcscat;
+    using ::_C_legacy::wcscmp;
+    using ::_C_legacy::wcscoll;
+    using ::_C_legacy::wcsxfrm;
+    using ::_C_legacy::wcschr;
+    using ::_C_legacy::wcscspn;
+    using ::_C_legacy::wcspbrk;
+    using ::_C_legacy::wcstok;
+    using ::_C_legacy::wcslen;
 #ifndef __sun
-    using ::_C_Swamp::wcsdup;
-    using ::_C_Swamp::wcsstr;
-    using ::_C_Swamp::wmemchr;
-    using ::_C_Swamp::wmemcmp;
-    using ::_C_Swamp::wmemcpy;
-    using ::_C_Swamp::wmemmove;
-    using ::_C_Swamp::wmemset;
-    using ::_C_Swamp::btowc;
-    using ::_C_Swamp::wctob;
-    using ::_C_Swamp::mbsinit;
-    using ::_C_Swamp::mbrtowc;
-    using ::_C_Swamp::wcrtomb;
-    using ::_C_Swamp::mbrlen;
+    using ::_C_legacy::wcsdup;
+    using ::_C_legacy::wcsstr;
+    using ::_C_legacy::wmemchr;
+    using ::_C_legacy::wmemcmp;
+    using ::_C_legacy::wmemcpy;
+    using ::_C_legacy::wmemmove;
+    using ::_C_legacy::wmemset;
+    using ::_C_legacy::btowc;
+    using ::_C_legacy::wctob;
+    using ::_C_legacy::mbsinit;
+    using ::_C_legacy::mbrtowc;
+    using ::_C_legacy::wcrtomb;
+    using ::_C_legacy::mbrlen;
 #endif
 #ifdef __USE_GNU
-    using ::_C_Swamp::mbsrtowcs;
-    using ::_C_Swamp::wcsrtombs;
-    using ::_C_Swamp::mbsnrtowcs;
-    using ::_C_Swamp::mbsnrtombs;
-    using ::_C_Swamp::wcscmpy
-    using ::_C_Swamp::wcwidth;
-    using ::_C_Swamp::wcswidth;
+    using ::_C_legacy::mbsrtowcs;
+    using ::_C_legacy::wcsrtombs;
+    using ::_C_legacy::mbsnrtowcs;
+    using ::_C_legacy::mbsnrtombs;
+    using ::_C_legacy::wcscmpy
+    using ::_C_legacy::wcwidth;
+    using ::_C_legacy::wcswidth;
 #endif
-    using ::_C_Swamp::wcstod;
-    using ::_C_Swamp::wcstol;
-    using ::_C_Swamp::wcstoul;
-    using ::_C_Swamp::wcsncat;
-    using ::_C_Swamp::wcsncmp;
-    using ::_C_Swamp::wcsncpy;
-    using ::_C_Swamp::wcsrchr;
-    using ::_C_Swamp::wcsspn;
-    // using ::_C_Swamp::wcswcs;
+    using ::_C_legacy::wcstod;
+    using ::_C_legacy::wcstol;
+    using ::_C_legacy::wcstoul;
+    using ::_C_legacy::wcsncat;
+    using ::_C_legacy::wcsncmp;
+    using ::_C_legacy::wcsncpy;
+    using ::_C_legacy::wcsrchr;
+    using ::_C_legacy::wcsspn;
+    // using ::_C_legacy::wcswcs;
 
 #if 0  /* not implemented in glibc-2 */
     inline size_t wcsftime(wchar_t* __s, size_t __n, 
 		           char const* __fmt, struct tm const* __tmb)
-      { return ::_C_Swamp::wcsftime(__s,__n,__fmt,__tmb); }
+      { return ::_C_legacy::wcsftime(__s,__n,__fmt,__tmb); }
 
-    using ::_C_Swamp::wctype;
+    using ::_C_legacy::wctype;
 #endif
 
   }
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
 #if 0 /* XXX glibc-2.0 does not implement these. */
       using ::std::fgetwc;
       using ::std::fgetws;
@@ -274,6 +274,6 @@
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif

@@ -1,3 +1,25 @@
+2000-05-18  Chip Salzenberg  <chip@valinux.com>
+
+        * bits/ostream.tcc (_S_pad_char): Function template should not be
+        static.
+        * bits/streambuf.tcc (_S_copy_streambufs): Likewise.
+        * src/string-inst.cc (__destroy_aux): Instantiate for string*.
+
+2000-05-18  Nathan C. Myers  <ncm@cantrip.org>
+
+	* mkcshadow: Change C_Swamp to C_legacy.
+	* shadow/*: Same.
+	* shadow/bits/*: Same.
+	s/C_Swamp/C_legacy/g
+	s/SWAMP/LEGACY/g
+	s/_Shadow/_shadow/g
+
+2000-05-18  Anthony Williams  <anthony@anthonyw.cjb.net> 
+
+	* bits/locale_facets.tcc (num_get::_M_extract): Change char* to
+	const char*.
+	* src/string-inst.cc (string::_S_find): Same.
+	
 2000-05-18  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Change to

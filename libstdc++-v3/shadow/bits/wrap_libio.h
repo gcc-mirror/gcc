@@ -36,36 +36,36 @@
 #ifndef _CPP_WRAP_LIBIO_H
 #define _CPP_WRAP_LIBIO_H 1
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <libio.h>
     }
 
-    namespace _C_Shadow { }
-  } // close namespace ::_C_Swamp::
+    namespace _C_shadow { }
+  } // close namespace ::_C_legacy::
 
 // #  undef that
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       // typedef stuff
     }
   }
   namespace std {
 
-    // using ::_C_Swamp::stuff
+    // using ::_C_legacy::stuff
 
   } // close namespace std::
   
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       // using ::std::stuff
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

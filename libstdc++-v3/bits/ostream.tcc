@@ -1,4 +1,4 @@
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -407,7 +407,7 @@ namespace std {
   // __newlen > __oldlen
   // __news is allocated for __newlen size
   template<typename _CharT, typename _Traits>
-    static void
+    void
     _S_pad_char(basic_ios<_CharT, _Traits>& __ios, 
 		_CharT* __news, const _CharT* __olds,
 		const streamsize __newlen, const streamsize __oldlen)

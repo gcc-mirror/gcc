@@ -44,9 +44,9 @@
 # include <bits/std_cstddef.h>  /* pick up size_t, NULL */
 # include <bits/std_cstdarg.h>  /* pick up va_list, va_start, va_end */
 
-  namespace _C_Swamp {
+  namespace _C_legacy {
     extern "C" {
-#     define _IN_C_SWAMP_
+#     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <stdio.h>
     }
@@ -77,38 +77,38 @@
     inline int _CPP_putchar_capture(int __c)       { return putchar(__c); }
     inline int _CPP_feof_capture(FILE* __f)        { return feof(__f); }
 
-    namespace _C_Shadow {
+    namespace _C_shadow {
     }
 
-  } // close namespace ::_C_Swamp::
+  } // close namespace ::_C_legacy::
 
 // # undef size_t  /* handled in <cstddef> */
 # undef FILE 
 # undef fpos_t 
 # undef _IOFBF
-# define _IOFBF		::_C_Swamp::_CPP__IOFBF_capture
+# define _IOFBF		::_C_legacy::_CPP__IOFBF_capture
 # undef _IOLBF
-# define _IOLBF		::_C_Swamp::_CPP__IOLBF_capture
+# define _IOLBF		::_C_legacy::_CPP__IOLBF_capture
 # undef _IONBF	
-# define _IONBF		::_C_Swamp::_CPP__IONBF_capture
+# define _IONBF		::_C_legacy::_CPP__IONBF_capture
 # undef BUFSIZ
-# define BUFSIZ		::_C_Swamp::_CPP_BUFSIZ_capture
+# define BUFSIZ		::_C_legacy::_CPP_BUFSIZ_capture
 # undef EOF
-# define EOF		::_C_Swamp::_CPP_EOF_capture
+# define EOF		::_C_legacy::_CPP_EOF_capture
 # undef FOPEN_MAX
-# define FOPEN_MAX	::_C_Swamp::_CPP_FOPEN_MAX_capture
+# define FOPEN_MAX	::_C_legacy::_CPP_FOPEN_MAX_capture
 # undef FILENAME_MAX
-# define FILENAME_MAX	::_C_Swamp::_CPP_FILENAME_MAX_capture
+# define FILENAME_MAX	::_C_legacy::_CPP_FILENAME_MAX_capture
 # undef L_tmpnam
-# define L_tmpnam	::_C_Swamp::_CPP_L_tmpnam_capture
+# define L_tmpnam	::_C_legacy::_CPP_L_tmpnam_capture
 # undef SEEK_CUR
-# define SEEK_CUR	::_C_Swamp::_CPP_SEEK_CUR_capture
+# define SEEK_CUR	::_C_legacy::_CPP_SEEK_CUR_capture
 # undef SEEK_END
-# define SEEK_END	::_C_Swamp::_CPP_SEEK_END_capture
+# define SEEK_END	::_C_legacy::_CPP_SEEK_END_capture
 # undef SEEK_SET
-# define SEEK_SET	::_C_Swamp::_CPP_SEEK_SET_capture
+# define SEEK_SET	::_C_legacy::_CPP_SEEK_SET_capture
 # undef TMP_MAX
-# define TMP_MAX	::_C_Swamp::_CPP_TMP_MAX_capture
+# define TMP_MAX	::_C_legacy::_CPP_TMP_MAX_capture
 
 # undef remove
 # undef rename
@@ -152,157 +152,157 @@
 # undef ferror
 # undef perror
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
     }
   }
   namespace std {
 
     // Adopt C names into std::
 
-    struct FILE   : ::_C_Swamp::_CPP_FILE_capture { };
-    struct fpos_t { ::_C_Swamp::_CPP_fpos_t_capture _M_dummy; };
+    struct FILE   : ::_C_legacy::_CPP_FILE_capture { };
+    struct fpos_t { ::_C_legacy::_CPP_fpos_t_capture _M_dummy; };
 
     inline FILE* _CPP_stderr()
-      { return reinterpret_cast<FILE*>( ::_C_Swamp::_CPP_stderr_capture() ); }
+      { return reinterpret_cast<FILE*>( ::_C_legacy::_CPP_stderr_capture() ); }
     inline FILE* _CPP_stdin()
-      { return reinterpret_cast<FILE*>( ::_C_Swamp::_CPP_stdin_capture() ); }
+      { return reinterpret_cast<FILE*>( ::_C_legacy::_CPP_stdin_capture() ); }
     inline FILE* _CPP_stdout()
-      { return reinterpret_cast<FILE*>( ::_C_Swamp::_CPP_stdout_capture() ); }
+      { return reinterpret_cast<FILE*>( ::_C_legacy::_CPP_stdout_capture() ); }
 
-    using ::_C_Swamp::remove;
-    using ::_C_Swamp::rename;
+    using ::_C_legacy::remove;
+    using ::_C_legacy::rename;
 
     inline FILE*
-      tmpfile() { return reinterpret_cast<FILE*>(::_C_Swamp::tmpfile()); }
+      tmpfile() { return reinterpret_cast<FILE*>(::_C_legacy::tmpfile()); }
 
-    using ::_C_Swamp::tmpnam;
-
-    inline int
-      fclose(FILE* __f) { return ::_C_Swamp::fclose(__f); }
+    using ::_C_legacy::tmpnam;
 
     inline int
-      fflush(FILE* __f) { return ::_C_Swamp::fflush(__f); }
+      fclose(FILE* __f) { return ::_C_legacy::fclose(__f); }
+
+    inline int
+      fflush(FILE* __f) { return ::_C_legacy::fflush(__f); }
 
     inline FILE*
       fopen(char const* __name, char const* __mode) 
-        { return reinterpret_cast<FILE*>(::_C_Swamp::fopen(__name,__mode)); }
+        { return reinterpret_cast<FILE*>(::_C_legacy::fopen(__name,__mode)); }
 
     inline FILE*
       freopen(char const* __name, char const* __mode, FILE* __f) 
         { return reinterpret_cast<FILE*>(
-	  ::_C_Swamp::freopen(__name,__mode,__f)); }
+	  ::_C_legacy::freopen(__name,__mode,__f)); }
 
     inline void
       setbuf(FILE* __f, char* __buf) 
-        { return ::_C_Swamp::setbuf(__f, __buf); }
+        { return ::_C_legacy::setbuf(__f, __buf); }
 
     inline int
       setvbuf(FILE* __f, char* __buf, int __mode, size_t __size) 
-        { return ::_C_Swamp::setvbuf(__f, __buf, __mode, __size); }
+        { return ::_C_legacy::setvbuf(__f, __buf, __mode, __size); }
 
     inline int
       fprintf(FILE* __f, char const* __fmt, ...)
         { va_list __v; va_start(__v,__fmt); 
-          int __i = ::_C_Swamp::vfprintf(__f, __fmt, __v); va_end(__v);
+          int __i = ::_C_legacy::vfprintf(__f, __fmt, __v); va_end(__v);
 	    return __i; }
 
     inline int
       fscanf(FILE* __f, char const* __fmt, ...)
         { va_list __v; va_start(__v,__fmt); 
-          int __i = ::_C_Swamp::vfscanf(__f, __fmt, __v); va_end(__v);
+          int __i = ::_C_legacy::vfscanf(__f, __fmt, __v); va_end(__v);
 	    return __i; }
 
-    using ::_C_Swamp::printf;
-    using ::_C_Swamp::scanf;
-    using ::_C_Swamp::sprintf;
-    using ::_C_Swamp::sscanf;
+    using ::_C_legacy::printf;
+    using ::_C_legacy::scanf;
+    using ::_C_legacy::sprintf;
+    using ::_C_legacy::sscanf;
 
-    // using ::_C_Swamp::vfprintf;
+    // using ::_C_legacy::vfprintf;
     inline int
       vfprintf(FILE* __f, char const* __fmt, va_list __v)
-        { return ::_C_Swamp::vfprintf(__f, __fmt, __v); }
+        { return ::_C_legacy::vfprintf(__f, __fmt, __v); }
 
     inline int
       vprintf(char const* __fmt, va_list __v)
-        { return ::_C_Swamp::vprintf(__fmt, __v); }
+        { return ::_C_legacy::vprintf(__fmt, __v); }
 
     inline int
       vsprintf(char* __buf, char const* __fmt, va_list __v)
-        { return ::_C_Swamp::vsprintf(__buf, __fmt, __v); }
+        { return ::_C_legacy::vsprintf(__buf, __fmt, __v); }
 
     inline int
-      fgetc(FILE* __f) { return ::_C_Swamp::fgetc(__f); }
+      fgetc(FILE* __f) { return ::_C_legacy::fgetc(__f); }
 
-    // using ::_C_Swamp::fgets;
+    // using ::_C_legacy::fgets;
     inline char*
       fgets(char* __buf, int __n, FILE* __f) 
-        { return ::_C_Swamp::fgets(__buf, __n, __f); }
+        { return ::_C_legacy::fgets(__buf, __n, __f); }
 
     inline int
-      fputc(int __c, FILE* __f) { return ::_C_Swamp::fputc(__c, __f); }
+      fputc(int __c, FILE* __f) { return ::_C_legacy::fputc(__c, __f); }
 
     inline int
       fputs(char const* __s, FILE* __f) 
-        { return ::_C_Swamp::fputs(__s, __f); }
+        { return ::_C_legacy::fputs(__s, __f); }
 
     inline int
-      getc(FILE* __f) { return ::_C_Swamp::_CPP_getc_capture(__f); }
+      getc(FILE* __f) { return ::_C_legacy::_CPP_getc_capture(__f); }
 
     inline int
-      getchar() { return ::_C_Swamp::_CPP_getchar_capture(); }
+      getchar() { return ::_C_legacy::_CPP_getchar_capture(); }
 
-    using ::_C_Swamp::gets;
+    using ::_C_legacy::gets;
 
     inline int
       putc(int __c, FILE* __f) 
-        { return ::_C_Swamp::_CPP_putc_capture(__c, __f); }
+        { return ::_C_legacy::_CPP_putc_capture(__c, __f); }
 
     inline int
-      putchar(int __c) { return ::_C_Swamp::_CPP_putchar_capture(__c); }
+      putchar(int __c) { return ::_C_legacy::_CPP_putchar_capture(__c); }
 
-    using ::_C_Swamp::puts;
+    using ::_C_legacy::puts;
 
-    // using ::_C_Swamp::ungetc;
+    // using ::_C_legacy::ungetc;
     inline int
-      ungetc(int __c, FILE* __f) { return ::_C_Swamp::ungetc(__c, __f); }
+      ungetc(int __c, FILE* __f) { return ::_C_legacy::ungetc(__c, __f); }
 
     inline size_t
       fread(void* __p, size_t __z, size_t __n, FILE* __f)
-        { return ::_C_Swamp::fread(__p,__z,__n,__f); }
+        { return ::_C_legacy::fread(__p,__z,__n,__f); }
 
     inline size_t
       fwrite(void const* __p, size_t __z, size_t __n, FILE* __f)
-        { return ::_C_Swamp::fwrite(__p,__z,__n,__f); }
+        { return ::_C_legacy::fwrite(__p,__z,__n,__f); }
 
     inline int
       fgetpos(FILE* __f, fpos_t* __pos)
-        { return ::_C_Swamp::fgetpos(__f,&__pos->_M_dummy); }
+        { return ::_C_legacy::fgetpos(__f,&__pos->_M_dummy); }
 
     inline int
       fseek(FILE* __f, long __off, int __how)
-        { return ::_C_Swamp::fseek(__f,__off,__how); }
+        { return ::_C_legacy::fseek(__f,__off,__how); }
 
     inline int
       fsetpos(FILE* __f, fpos_t const* __pos)
-        { return ::_C_Swamp::fsetpos(__f,&__pos->_M_dummy); }
+        { return ::_C_legacy::fsetpos(__f,&__pos->_M_dummy); }
 
     inline long
-      ftell(FILE* __f) { return ::_C_Swamp::ftell(__f); }
+      ftell(FILE* __f) { return ::_C_legacy::ftell(__f); }
 
     inline void
-      rewind(FILE* __f) { return ::_C_Swamp::rewind(__f); }
+      rewind(FILE* __f) { return ::_C_legacy::rewind(__f); }
 
     inline void
-      clearerr(FILE* __f) { return ::_C_Swamp::clearerr(__f); }
+      clearerr(FILE* __f) { return ::_C_legacy::clearerr(__f); }
 
     inline int
-      feof(FILE* __f) { return ::_C_Swamp::_CPP_feof_capture(__f); }
+      feof(FILE* __f) { return ::_C_legacy::_CPP_feof_capture(__f); }
 
     inline int
-      ferror(FILE* __f) { return ::_C_Swamp::ferror(__f); }
+      ferror(FILE* __f) { return ::_C_legacy::ferror(__f); }
 
-    using ::_C_Swamp::perror;
+    using ::_C_legacy::perror;
 
   } // close namespace std::
   
@@ -313,8 +313,8 @@
 # undef stdout
 # define stdout ::std::_CPP_stdout()
 
-  namespace _C_Swamp {
-    namespace _C_Shadow {
+  namespace _C_legacy {
+    namespace _C_shadow {
       using ::std::FILE;
       using ::std::fpos_t;
 
@@ -362,7 +362,7 @@
     }
   }
 
-# undef _IN_C_SWAMP_
+# undef _IN_C_LEGACY_
 
 #endif
 

@@ -35,7 +35,7 @@
 # include <bits/generic_shadow.h>
 # undef _SHADOW_NAME
 
-# ifndef _IN_C_SWAMP_
+# ifndef _IN_C_LEGACY_
   using ::std::jmp_buf;
   using ::std::longjmp;
 # define _INCLUDED_CPP_SETJMP_H_ 1
