@@ -1,3 +1,11 @@
+2001-07-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* com.c (ffecom_expr_intrinsic_):
+	case FFEINTRIN_impIBITS: Remove TREE_SHIFT_FULLWIDTH define.
+	case FFEINTRIN_impISHFT: Ditto. Change LT_EXPR to NE_EXPR.
+	case FFEINTRIN_impISHFTC: Ditto.
+	case FFEINTRIN_impMVBITS: Ditto.
+
 2001-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* top.c (ffe_decode_option): Disallow lang-independent processing
