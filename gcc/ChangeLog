@@ -1,5 +1,8 @@
 Mon Mar  9 12:02:23 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* profile.c (branch_prob): If see computed goto, call fatal instead of
+	abort.
+
 	* config/mips/sni-svr4.h (CPP_PREDEFINE): Add -DSNI and -Dsinix.
 	
 	* configure.in (alpha-dec-osf): Add default case for osf* to switch.
