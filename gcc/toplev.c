@@ -2778,17 +2778,15 @@ rest_of_compilation (decl)
 
       if (DECL_DEFER_OUTPUT (decl))
 	{
-	  /* If -Wreturn-type, we have to do a bit of compilation.
-	     However, if we just fall through we will call
-	     save_for_inline_copying() which results in excessive
-	     memory use.  Instead, we just want to call
-	     jump_optimize() to figure out whether or not we can fall
-	     off the end of the function; we do the minimum amount of
-	     work necessary to make that safe.  And, we set optimize
-	     to zero to keep jump_optimize from working too hard.  */
+	  /* If -Wreturn-type, we have to do a bit of compilation.  We just
+	     want to call jump_optimize to figure out whether or not we can
+	     fall off the end of the function; we do the minimum amount of
+	     work necessary to make that safe.  And, we set optimize to zero
+	     to keep jump_optimize from working too hard.  */
 	  if (warn_return_type)
 	    {
 	      int saved_optimize = optimize;
+
 	      optimize = 0;
 	      find_exception_handler_labels ();
 	      jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
@@ -2803,7 +2801,7 @@ rest_of_compilation (decl)
 	    TREE_NOTHROW (current_function_decl) = 1;
 
 	  timevar_push (TV_INTEGRATION);
-	  save_for_inline_nocopy (decl);
+	  save_for_inline (decl);
 	  timevar_pop (TV_INTEGRATION);
 	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	  goto exit_rest_of_compilation;
@@ -2862,7 +2860,6 @@ rest_of_compilation (decl)
 #endif
 
   /* From now on, allocate rtl in current_obstack, not in saveable_obstack.
-     Note that that may have been done above, in save_for_inline_copying.
      The call to resume_temporary_allocation near the end of this function
      goes back to the usual state of affairs.  This must be done after
      we've built up any unwinders for exception handling, and done

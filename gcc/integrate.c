@@ -263,7 +263,7 @@ static tree *parmdecl_map;
 /* In save_for_inline, nonzero if past the parm-initialization insns.  */
 static int in_nonparm_insns;
 
-/* Subroutine for `save_for_inline_nocopy'.  Performs initialization
+/* Subroutine for `save_for_inline'.  Performs initialization
    needed to save FNDECL's insns and info for future inline expansion.  */
 
 static rtvec
@@ -399,7 +399,7 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
    functions at the end of compilation.  */
 
 void
-save_for_inline_nocopy (fndecl)
+save_for_inline (fndecl)
      tree fndecl;
 {
   rtx insn;
@@ -454,6 +454,7 @@ save_for_inline_nocopy (fndecl)
   cfun->inl_last_parm_insn = cfun->x_last_parm_insn;
   cfun->original_arg_vector = argvec;
   cfun->original_decl_initial = DECL_INITIAL (fndecl);
+  cfun->no_debugging_symbols = (write_symbols == NO_DEBUG);
   DECL_SAVED_INSNS (fndecl) = cfun;
 
   /* Clean up.  */
@@ -1213,8 +1214,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
    computed in expand_inline_function. This function may call itself for
    insns containing sequences.
 
-   Copying is done in two passes, first the insns and then their REG_NOTES,
-   just like save_for_inline.
+   Copying is done in two passes, first the insns and then their REG_NOTES.
 
    If static_chain_value is non-zero, it represents the context-pointer
    register for the function.  */
@@ -1234,7 +1234,7 @@ copy_insn_list (insns, map, static_chain_value)
 #endif
 
   /* Copy the insns one by one.  Do this in two passes, first the insns and
-     then their REG_NOTES, just like save_for_inline.  */
+     then their REG_NOTES.  */
 
   /* This loop is very similar to the loop in copy_loop_body in unroll.c.  */
 
@@ -1503,9 +1503,7 @@ copy_insn_list (insns, map, static_chain_value)
 	     discarded because it is important to have only one of
 	     each in the current function.
 
-	     NOTE_INSN_DELETED notes aren't useful (save_for_inline
-	     deleted these in the copy used for continuing compilation,
-	     not the copy used for inlining).
+	     NOTE_INSN_DELETED notes aren't useful.
 
 	     NOTE_INSN_BASIC_BLOCK is discarded because the saved bb
 	     pointer (which will soon be dangling) confuses flow's
@@ -2767,6 +2765,7 @@ output_inline_function (fndecl)
      tree fndecl;
 {
   struct function *old_cfun = cfun;
+  enum debug_info_type old_write_symbols = write_symbols;
   struct function *f = DECL_SAVED_INSNS (fndecl);
 
   cfun = f;
@@ -2782,6 +2781,10 @@ output_inline_function (fndecl)
   /* We're not deferring this any longer.  */
   DECL_DEFER_OUTPUT (fndecl) = 0;
 
+  /* If requested, suppress debugging information.  */
+  if (f->no_debugging_symbols)
+    write_symbols = NO_DEBUG;
+
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 
@@ -2791,4 +2794,5 @@ output_inline_function (fndecl)
 
   cfun = old_cfun;
   current_function_decl = old_cfun ? old_cfun->decl : 0;
+  write_symbols = old_write_symbols;
 }
