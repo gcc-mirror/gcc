@@ -1,5 +1,18 @@
 2005-01-20  Richard Henderson  <rth@redhat.com>
 
+	PR target/19530
+	* config/i386/mmintrin.h (_mm_cvtsi32_si64): Use
+	__builtin_ia32_vec_init_v2si.
+	(_mm_cvtsi64_si32): Use __builtin_ia32_vec_ext_v2si.
+	* config/i386/i386.c (IX86_BUILTIN_VEC_EXT_V2SI): New.
+	(ix86_init_mmx_sse_builtins): Create it.
+	(ix86_expand_builtin): Expand it.
+	(ix86_expand_vector_set): Handle V2SFmode and V2SImode.
+	* config/i386/mmx.md (vec_extractv2sf_0, vec_extractv2sf_1): New.
+	(vec_extractv2si_0, vec_extractv2si_1): New.
+
+2005-01-20  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_expand_push): New.
 	* config/i386/mmx.md (push<MMXMODE>1): New.
 	* config/i386/sse.md (push<SSEMODE>1): New.

@@ -58,8 +58,7 @@ _m_empty (void)
 static __inline __m64 
 _mm_cvtsi32_si64 (int __i)
 {
-  long long __tmp = (unsigned int)__i;
-  return (__m64) __tmp;
+  return (__m64) __builtin_ia32_vec_init_v2si (__i, 0);
 }
 
 static __inline __m64 
@@ -88,8 +87,7 @@ _mm_set_pi64x (long long __i)
 static __inline int
 _mm_cvtsi64_si32 (__m64 __i)
 {
-  long long __tmp = (long long)__i;
-  return __tmp;
+  return __builtin_ia32_vec_ext_v2si ((__v2si)__i, 0);
 }
 
 static __inline int

@@ -12654,6 +12654,7 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_EXT_V4SF,
   IX86_BUILTIN_VEC_EXT_V4SI,
   IX86_BUILTIN_VEC_EXT_V8HI,
+  IX86_BUILTIN_VEC_EXT_V2SI,
   IX86_BUILTIN_VEC_EXT_V4HI,
   IX86_BUILTIN_VEC_SET_V8HI,
   IX86_BUILTIN_VEC_SET_V4HI,
@@ -13663,6 +13664,11 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE | MASK_3DNOW_A, "__builtin_ia32_vec_ext_v4hi",
 	       ftype, IX86_BUILTIN_VEC_EXT_V4HI);
 
+  ftype = build_function_type_list (intSI_type_node, V2SI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_MMX, "__builtin_ia32_vec_ext_v2si",
+	       ftype, IX86_BUILTIN_VEC_EXT_V2SI);
+
   /* Access to the vec_set patterns.  */
   ftype = build_function_type_list (V8HI_type_node, V8HI_type_node,
 				    intHI_type_node,
@@ -14475,6 +14481,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_EXT_V4SF:
     case IX86_BUILTIN_VEC_EXT_V4SI:
     case IX86_BUILTIN_VEC_EXT_V8HI:
+    case IX86_BUILTIN_VEC_EXT_V2SI:
     case IX86_BUILTIN_VEC_EXT_V4HI:
       return ix86_expand_vec_ext_builtin (arglist, target);
 
@@ -16276,9 +16283,18 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
     {
     case V2SFmode:
     case V2SImode:
-      if (!mmx_ok)
-	break;
-      /* FALLTHRU */
+      if (mmx_ok)
+	{
+	  tmp = gen_reg_rtx (GET_MODE_INNER (mode));
+	  ix86_expand_vector_extract (true, tmp, target, 1 - elt);
+	  if (elt == 0)
+	    tmp = gen_rtx_VEC_CONCAT (mode, tmp, val);
+	  else
+	    tmp = gen_rtx_VEC_CONCAT (mode, val, tmp);
+	  emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+	  return;
+	}
+      break;
 
     case V2DFmode:
     case V2DImode:
