@@ -1,6 +1,7 @@
 Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* Makefile.in (distdir-start): If srcdir is CVS dir, do cvs update.
+	* Makefile.in (distdir-start): Depend on version.c.
+	If srcdir is cvs working directory, do cvs update.
 
 	* objc/Make-lang.in (objc-distdir): Properly rebuild objc-parse.c.
 
