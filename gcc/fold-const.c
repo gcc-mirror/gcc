@@ -2669,7 +2669,7 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
      for neither.  Then compute our result treating them as never equal
      and comparing bounds to non-bounds as above.  */
   sgn0 = arg0 != 0 ? 0 : (upper0_p ? 1 : -1);
-  sgn1 = arg1 != 0 ? 1 : (upper1_p ? 1 : -1);
+  sgn1 = arg1 != 0 ? 0 : (upper1_p ? 1 : -1);
   switch (code)
     {
     case EQ_EXPR:  case NE_EXPR:
