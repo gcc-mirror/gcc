@@ -1,3 +1,7 @@
+2001-06-13  Phil Edwards  <pme@sources.redhat.com>
+
+	* doc/contrib.texi:  Link to libstdc++'s thanks.html for now.
+
 2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Use more logical markup.  Include @node
