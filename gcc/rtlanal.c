@@ -754,8 +754,6 @@ reg_mentioned_p (reg, in)
       return 0;
 
     case CONST_INT:
-      return GET_CODE (reg) == CONST_INT && INTVAL (in) == INTVAL (reg);
-
     case CONST_VECTOR:
     case CONST_DOUBLE:
       /* These are kept unique for a given value.  */
