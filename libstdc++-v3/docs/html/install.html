@@ -88,46 +88,45 @@
       features if the underlying support is present.
    </p>
 
-    <p>Finally, a few system-specific requirements:
-      <dl>
-        <dt> linux
+    <p>Finally, a few system-specific requirements: </p>
+    <dl>
+      <dt> linux </dt>
 
-        <dd>If you are using gcc 3.1 or later on linux, and are using
-        the gnu locale model (enabled by default for sufficient
-        versions of glibc), the following locales are used and tested
-        in the libstdc++ testsuites: en_HK, en_US, fr_FR, fr_FR@euro,
-        de_DE, de_DE@euro, ja_JP.eucjp, and it_IT. Failure to have the
-        underlying "C" library locale information installed will mean
-        that C++ named locales for the above regions will not work:
-        because of this, the libstdc++ testsuite will not pass the
-        named locale tests. If this isn't an issue, don't worry about
-        it. If named locales are needed, the underlying locale
-        information must be installed. Note that rebuilding libstdc++
-        after locales are installed is not necessary.
+      <dd>If you are using gcc 3.1 or later on linux, and are using
+      the gnu locale model (enabled by default for sufficient
+      versions of glibc), the following locales are used and tested
+      in the libstdc++ testsuites: en_HK, en_US, fr_FR, fr_FR@euro,
+      de_DE, de_DE@euro, ja_JP.eucjp, and it_IT. Failure to have the
+      underlying "C" library locale information installed will mean
+      that C++ named locales for the above regions will not work:
+      because of this, the libstdc++ testsuite will not pass the
+      named locale tests. If this isn't an issue, don't worry about
+      it. If named locales are needed, the underlying locale
+      information must be installed. Note that rebuilding libstdc++
+      after locales are installed is not necessary.
 
-        <p> To install
-        support for locales, do only one of the following: </p>
-        <p>
-          <li> install all locales
-          <p> <code> export LC_ALL=C </code> </p>
-          <p> <code> rpm -e glibc-common --nodeps </code> </p>
-          <p> <code> rpm -i --define "_install_langs all"
-          glibc-common-2.2.5-34.i386.rpm </code> </p>
-          </li>
-          <li> install just the necessary locales
-          <p> <code> localedef -i de_DE -f ISO-8859-1 de_DE </code> </p>
-          </li>
-        </p>
-        </dd>
-      </dt>
+      <p> To install
+      support for locales, do only one of the following: </p>
+      <ul>
+        <li> install all locales
+        <p> <code> export LC_ALL=C </code> </p>
+        <p> <code> rpm -e glibc-common --nodeps </code> </p>
+        <p> <code> rpm -i --define "_install_langs all"
+                   glibc-common-2.2.5-34.i386.rpm </code> </p>
+        </li>
+        <li> install just the necessary locales
+        <p> <code> localedef -i de_DE -f ISO-8859-1 de_DE </code> </p>
+        </li>
+      </ul>
+      </dd>
     </dl>
-   </p>
 
 <hr>
 
 <h2><a name="srcsetup">Setting up the source directories</a></h2>
    <p>The following definitions will be used throughout the rest of this
       document:
+   </p>
       <ul>
          <li><em>gccsrcdir</em>:  The directory holding the source of the
                  compiler.  It should have several subdirectories like
@@ -142,7 +141,7 @@
                  the compiler/libraries, set with the --prefix option to
                  the configure script.
       </ul>
-      Note:
+      <p> Note: </p>
       <ol>
          <li>The 3.0 version and following are intended to replace the
              library that comes with the compiler, so <em>libsrcdir</em>
@@ -153,28 +152,27 @@
              separate directories. Please don't build out of the
              source directory.
       </ol>
-   </p>
 
    <p>Check out or download the GCC sources: the resulting source directory
       (<code>gcc</code> or <code>gcc-3.0.3</code>, for example) is
       <em>gccsrcdir</em>.
       Once in <em>gccsrcdir</em>, you'll need to rename or delete the
       libstdc++-v3 directory which comes with that snapshot:
-      <pre>
+   </p>
+   <pre>
    mv libstdc++-v3 libstdc++-v3-previous  <strong>[OR]</strong>
    rm -r libstdc++-v3</pre>
-   </p>
    <p>Next, unpack the libstdc++-v3 library tarball into this
       <em>gccsrcdir</em> directory; it will create a
       <em>libsrcdir</em> called <code>libstdc++-<em>version</em></code>:
-      <pre>
-   gzip -dc libstdc++-version.tar.gz | tar xf -</pre>
    </p>
+   <pre>
+   gzip -dc libstdc++-version.tar.gz | tar xf -</pre>
    <p>Finally, rename <em>libsrcdir</em> to <code>libstdc++-v3</code> so that
       gcc's configure flags will be able to deal with the new library.
-      <pre>
-   mv <em>libsrcdir</em> libstdc++-v3</pre>
    </p>
+   <pre>
+   mv <em>libsrcdir</em> libstdc++-v3</pre>
 
 
 <hr>
@@ -193,10 +191,9 @@
       building the C++ language parts.
    </p>
 
-   <p><pre>
+   <pre>
    cd <em>gccbuilddir</em>
    <em>gccsrcdir</em>/configure --prefix=<em>destdir</em> --other-opts...</pre>
-   </p>
 
 
 <hr>
@@ -214,9 +211,10 @@
    </p>
 
    <h3>[re]building only libstdc++</h3>
-   <p>To rebuild just libstdc++, use:
-      <pre>
+   <p>To rebuild just libstdc++, use: </p>
+   <pre>
    make all-target-libstdc++-v3</pre>
+   <p>
       This will configure and build the C++ library in the
       <em>gccbuilddir/cpu-vendor-os/</em>libstdc++ directory.
    </p>
@@ -229,39 +227,38 @@
       information is causing problems, you can delete it entirely, or
       simply edit it and remove lines.
    </p>
-   <p>You're done.  Now install the rebuilt pieces with
-      <pre>
+   <p>You're done.  Now install the rebuilt pieces with</p>
+   <pre>
    make install</pre>
-      or
-      <pre>
+   <p>or</p>
+   <pre>
    make install-gcc
    make install-target-libstdc++-v3</pre>
-   </p>
 
 
 <hr>
 <h2><a name="postinstall">Post-installation</a></h2>
    <p>Installation will create the <em>destdir</em> directory and
       populate it with subdirectories:
-      <pre>
+   </p>
+   <pre>
    lib/
    include/g++-v3/
       backward/
       bits/
       <em>cpu-vendor-os</em>/bits/
       ext/</pre>
-   </p>
    <p>If you used the version-specific-libs configure option, then most of
       the headers and library files will be moved under
       <code>lib/gcc-lib/</code> instead.
    </p>
-   <p>You can check the status of the build without installing it using
-      <pre>
+   <p>You can check the status of the build without installing it using</p>
+   <pre>
    make check</pre>
-      or you can check the status of the installed library using
-      <pre>
+   <p>or you can check the status of the installed library using</p>
+   <pre>
    make check-install</pre>
-      in the <em>libbuilddir</em> directory.
+   <p>in the <em>libbuilddir</em> directory.
       These commands will create a 'testsuite' directory underneath
       <em>libbuilddir</em> containing the results of the tests.  We are
       interested in any strange failures of the testsuite; please see
@@ -271,7 +268,7 @@
 
 <hr>
 <h2><a name="usage">Using the library</a></h2>
-   <li><B>Find the new library at runtime (shared linking only)</B>
+   <h3>Find the new library at runtime (shared linking only)</h3>
        <p>If you only built a static library (libstdc++.a), or if you
           specified static linking, you don't have to worry about this.
           But if you built a shared library (libstdc++.so) and linked
@@ -281,6 +278,7 @@
        <p>Methods vary for different platforms and different styles, but
           the usual ones are printed to the screen during installation.
           They include:
+       </p>
           <ul>
           <li>At runtime set LD_LIBRARY_PATH in your environment correctly,
               so that the shared library for libstdc++ can be found and
@@ -298,7 +296,6 @@
   <li>More...?  Let us know!
               </ul>
           </ul>
-       </p>
        <p>Use the <code>ldd(1)</code> utility to show which library the system
           thinks it will get at runtime.
        </p>
@@ -306,8 +303,6 @@
           you use Libtool to create your executables, these details are
           taken care of for you.
        </p>
-   </ol>
-   </p>
 
 
 <!--

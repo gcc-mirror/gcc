@@ -34,6 +34,7 @@ options</a></h1>
 <p>The canonical way to find out the configure options that are
    available for a given set of libstdc++ sources is to go to the
    source directory and then type:<code>  ./configure --help</code>
+</p>
 
 <dl>
  <dt><code>--enable-multilib  </code>[default]
@@ -156,16 +157,18 @@ options</a></h1>
         the following puts all the libstdc++ headers into a directory
         called &quot;2.97-20001008&quot; instead of the usual
         &quot;g++-v3&quot;.
+     </p>
         <pre>
    --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</pre>
-     </p>
 
  <dt><code>--enable-cxx-flags=FLAGS</code>
  <dd><p>With this option, you can pass a string of -f (functionality)
         flags to the compiler to use when building libstdc++.  FLAGS
         is a quoted string of options, like
+     </p>
         <pre>
   --enable-cxx-flags='-fvtable-gc -fomit-frame-pointer -ansi'</pre>
+     <p>
         Note that the flags don't necessarily have to all be -f flags,
         as shown, but usually those are the ones that will make sense
         for experimentation and configure-time overriding.
@@ -176,12 +179,13 @@ options</a></h1>
         as well, so that everything matches.
      </p>
      <p>Fun flags to try might include combinations of
+     </p>
         <pre>
   -fstrict-aliasing
   -fno-exceptions
   -ffunction-sections
   -fvtable-gc</pre>
-        and opposite forms (-fno-) of the same.  Tell us (the libstdc++
+     <p>and opposite forms (-fno-) of the same.  Tell us (the libstdc++
         mailing list) if you discover more!
      </p>
 
@@ -211,7 +215,6 @@ options</a></h1>
         on.  Hopefully people will volunteer to do other 'style' options.
      </p>
 </dl>
-</p>
 <p>Return <a href="#top">to the top of the page</a> or
    <a href="http://gcc.gnu.org/libstdc++/">to the libstdc++ homepage</a>.
 </p>

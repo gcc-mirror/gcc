@@ -1,9 +1,14 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
+  <title>
+  Notes on the ctype implementation.
+  </title>
+</head>
+<body>
   <h1>
   Notes on the ctype implementation.
   </h1>
-</head>
 <I>
 prepared by Benjamin Kosnik (bkoz@redhat.com) on August 30, 2000
 </I>
@@ -60,15 +65,13 @@ to wchar_t and wcsrtombs for conversions between wchar_t and char.
 Neither of these two required specializations deals with Unicode
 characters. As such, libstdc++-v3 implements 
 
-
-
 <p>
 <h2>
 5.  Examples
 </h2>
 
 <pre>
-  typedef ctype<char> cctype;
+  typedef ctype&lt;char&gt; cctype;
 </pre>
 
 More information can be found in the following testcases:
@@ -98,10 +101,10 @@ More information can be found in the following testcases:
 	straighten out the configure-time mess that is a by-product of
 	this class?
 
-	<li> get the ctype<wchar_t>::mask stuff under control. Need to
+	<li> get the ctype&lt;wchar_t&gt;::mask stuff under control. Need to
 	make some kind of static table, and not do lookup evertime
 	somebody hits the do_is... functions. Too bad we can't just
-	redefine mask for ctype<wchar_t>
+	redefine mask for ctype&lt;wchar_t&gt;
 	
 	<li> rename abstract base class. See if just smash-overriding
 	is a better approach. Clarify, add sanity to naming.
@@ -143,4 +146,5 @@ System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
 The Open Group/The Institute of Electrical and Electronics Engineers, Inc.
 http://www.opennc.org/austin/docreg.html
 
-
+</body>
+</html>
