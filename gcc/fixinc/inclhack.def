@@ -1609,12 +1609,13 @@ fix = {
     hackname = limits_ifndefs;
     files  = "sys/limits.h";
     files  = "limits.h";
+    select = "^[ \t]*#[ \t]*define[ \t]+"
+             "((FLT|DBL)_(MIN|MAX|DIG))[ \t].*";
     bypass = "ifndef[ \t]+FLT_(MIN|MAX)";
 
     c_fix     = format;
     c_fix_arg = "#ifndef %1\n%0\n#endif";
-    c_fix_arg = "^[ \t]*#[ \t]*define[ \t]+"
-                "((FLT|DBL)_(MIN|MAX|DIG))[ \t].*";
+    /* Second arg is select expression */
     test_text = " #\tdefine\tDBL_DIG \t 0  /* somthin' */";
 };
 

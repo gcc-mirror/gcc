@@ -1,5 +1,8 @@
 2003-07-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* fixinc/inclhack.def (limits_ifndefs): Add select test.
+	* fixinc/fixincl.x: Rebuild.
+
 	* fixinc/inclhack.def (math_exception):  Improve bypass and comment.
 	* fixinc/fixincl.x: Rebuild.
 
