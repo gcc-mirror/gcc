@@ -919,7 +919,6 @@ xcond:
 	  /* empty */
 		{ $$ = NULL_TREE; }
 	| condition
-		{ $$ = condition_conversion ($$); }
 	| error
 		{ $$ = NULL_TREE; }
 	;
