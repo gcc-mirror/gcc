@@ -9742,10 +9742,6 @@ print_operand_address (FILE *file, rtx x)
     abort ();
 }
 
-#ifndef RELOCATABLE_NEEDS_FIXUP
-#define RELOCATABLE_NEEDS_FIXUP 0
-#endif
-
 /* Target hook for assembling integer objects.  The PowerPC version has
    to handle fixup entries for relocatable code if RELOCATABLE_NEEDS_FIXUP
    is defined.  It also needs to handle DI-mode objects on 64-bit
@@ -9754,6 +9750,7 @@ print_operand_address (FILE *file, rtx x)
 static bool
 rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
+#ifndef RELOCATABLE_NEEDS_FIXUP
   /* Special handling for SI values.  */
   if (RELOCATABLE_NEEDS_FIXUP && size == 4 && aligned_p)
     {
@@ -9802,6 +9799,7 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	  return true;
 	}
     }
+#endif /* RELOCATABLE_NEEDS_FIXUP */
   return default_assemble_integer (x, size, aligned_p);
 }
 

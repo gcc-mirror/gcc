@@ -1,3 +1,8 @@
+2004-12-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): Put back the
+	#ifdef RELOCATABLE_NEEDS_FIXUP.
+
 2004-12-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR preprocessor/17651
