@@ -1,3 +1,8 @@
+2004-12-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-opt/16951
+	* gcc.c-torture/compile/20041211-1.c: New.
+
 2004-12-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/17564
