@@ -24,6 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "tree.h"
 #include "c-tree.h"
+#include "c-common.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
@@ -49,6 +50,8 @@ static void c_post_options PARAMS ((void));
 #define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
 #undef LANG_HOOKS_SAFE_FROM_P
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
+#undef LANG_HOOKS_PARSE_FILE
+#define LANG_HOOKS_PARSE_FILE c_common_parse_file
 #undef LANG_HOOKS_STATICP
 #define LANG_HOOKS_STATICP c_staticp
 #undef LANG_HOOKS_PRINT_IDENTIFIER

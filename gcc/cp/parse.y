@@ -228,9 +228,6 @@ cp_parse_init ()
   ggc_add_tree_root (&current_enum_type, 1);
   ggc_add_tree_root (&saved_scopes, 1);
 }
-
-/* Rename the "yyparse" function so that we can override it elsewhere.  */
-#define yyparse yyparse_1
 %}
 
 %start program

@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "c-lex.h"
 #include "c-tree.h"
+#include "c-common.h"
 #include "flags.h"
 #include "timevar.h"
 #include "cpplib.h"
@@ -155,13 +156,13 @@ init_c_lex (filename)
    Also, make sure the start_source_file debug hook gets called for
    the primary source file.  */
 
-int
-yyparse()
+void
+c_common_parse_file ()
 {
   (*debug_hooks->start_source_file) (lineno, input_filename);
   cpp_finish_options (parse_in);
 
-  return yyparse_1();
+  yyparse ();
 }
 
 struct c_fileinfo *

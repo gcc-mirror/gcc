@@ -85,6 +85,7 @@ static void gnat_print_type		PARAMS ((FILE *, tree, int));
 static const char *gnat_printable_name	PARAMS  ((tree, int));
 static tree gnat_eh_runtime_type	PARAMS ((tree));
 static int gnat_eh_type_covers		PARAMS ((tree, tree));
+static void gnat_parse_file		PARAMS ((void));
 
 /* Structure giving our language-specific hooks.  */
 
@@ -98,6 +99,8 @@ static int gnat_eh_type_covers		PARAMS ((tree, tree));
 #define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
 #undef  LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION	gnat_decode_option
+#undef LANG_HOOKS_PARSE_FILE
+#define LANG_HOOKS_PARSE_FILE		gnat_parse_file
 #undef LANG_HOOKS_HONOR_READONLY
 #define LANG_HOOKS_HONOR_READONLY	1
 #undef LANG_HOOKS_GET_ALIAS_SET
@@ -167,11 +170,10 @@ extern void __gnat_initialize	PARAMS((void));
 extern void adainit		PARAMS((void));
 extern void _ada_gnat1drv	PARAMS((void));
 
-/* For most front-ends, this is the parser for the language.  For us, we
-   process the GNAT tree.  */
+/* The parser for the language.  For us, we process the GNAT tree.  */
 
-int
-yyparse ()
+static void
+gnat_parse_file ()
 {
   /* call the target specific initializations */
   __gnat_initialize();
@@ -183,8 +185,6 @@ yyparse ()
 
   /* Call the front end */
   _ada_gnat1drv ();
-
-  return 0;
 }
 
 /* Decode all the language specific options that cannot be decoded by GCC.
