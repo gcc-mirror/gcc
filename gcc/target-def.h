@@ -287,6 +287,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS hook_void_void
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
+#define TARGET_FOLD_BUILTIN default_fold_builtin
 
 /* In varasm.c.  */
 #ifndef TARGET_SECTION_TYPE_FLAGS
@@ -477,6 +478,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_ALIGN_ANON_BITFIELD,			\
   TARGET_INIT_BUILTINS,				\
   TARGET_EXPAND_BUILTIN,			\
+  TARGET_FOLD_BUILTIN,				\
   TARGET_MANGLE_FUNDAMENTAL_TYPE,		\
   TARGET_INIT_LIBFUNCS,				\
   TARGET_SECTION_TYPE_FLAGS,			\

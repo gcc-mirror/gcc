@@ -97,6 +97,12 @@ default_expand_builtin_saveregs (void)
   return const0_rtx;
 }
 
+tree
+default_fold_builtin (tree t ATTRIBUTE_UNUSED, bool ignore ATTRIBUTE_UNUSED)
+{
+  return NULL_TREE;
+}
+  
 void
 default_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 				enum machine_mode mode ATTRIBUTE_UNUSED,

@@ -1,3 +1,12 @@
+2004-09-20  Paolo Bonzini  <bonzini@gnu.org>
+
+	* builtins.c (fold_builtin): Call the new omonymous
+	target hook for machine-dependent built-ins.
+	* target-def.h (TARGET_FOLD_BUILTIN): New.
+	* target.h (struct gcc_target): Add the fold_builtin hook.
+	* targhooks.c (default_fold_builtin): New.
+	* targhooks.h (default_fold_builtin): Declare it.
+
 2004-09-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfg.c, tree-ssa-threadupdate.c, tree-vectorizer.c: Fix
