@@ -1,3 +1,9 @@
+2001-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (gcc_cv_as_shf_merge): Fix a typo.
+	Use --fatal-warnings option for gas.
+	* configure: Rebuilt.
+
 2001-09-12  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* doc/install.texi (Specific, alphaev5-cray-unicosmk*): Document.
