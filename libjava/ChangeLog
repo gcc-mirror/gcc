@@ -1,4 +1,15 @@
-2000-02-03  Jeff Sturm  <jeff.sturm@commerceone.com>
+2001-02-07  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/Arrays.java: Removed "cmp" methods.
+	(qsort): Don't use "cmp".
+	(med3): Likewise.
+
+2001-02-07  Mark Benvenuto  <mcb54@columbia.edu>
+
+	* java/util/Arrays.java (qsort): Handle N value of 7 with insertion
+	sort. Fix for PR java/1895.
+
+2001-02-03  Jeff Sturm  <jeff.sturm@commerceone.com>
 
 	* configure.host: Use sjlj-exceptions for Alpha.
 
