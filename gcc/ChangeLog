@@ -1,3 +1,8 @@
+Tue Jun 22 00:20:05 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* final.c (shorten_branches): Don't try to split an insn that has
+	been deleted.
+
 Mon Jun 21 23:32:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Jun 17 15:07 1999  Bruce Korb <ddsinc09@ix.netcom.com>
