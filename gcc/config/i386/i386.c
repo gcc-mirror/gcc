@@ -1120,14 +1120,14 @@ override_options ()
      don't want additional code to keep the stack aligned when
      optimizing for code size.  */
   ix86_preferred_stack_boundary = (optimize_size
-				   ? TARGET_64BIT ? 64 : 32
+				   ? TARGET_64BIT ? 128 : 32
 				   : 128);
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
-      if (i < (TARGET_64BIT ? 3 : 2) || i > 12)
+      if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
 	error ("-mpreferred-stack-boundary=%d is not between %d and 12", i,
-	       TARGET_64BIT ? 3 : 2);
+	       TARGET_64BIT ? 4 : 2);
       else
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
