@@ -89,9 +89,7 @@ extern int target_flags;
 
 /* Target machine storage layout */
 
-/* Define for software floating point emulation of VAX format
-   when cross compiling from a non-VAX host.  */
-/* #define REAL_ARITHMETIC */
+#define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
