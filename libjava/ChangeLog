@@ -1,5 +1,8 @@
 2003-07-07  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c: Fix
+	formatting.
+
 	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
 	(setCaretPosition, setEditable): Rely entirely on native
 	implementation.
