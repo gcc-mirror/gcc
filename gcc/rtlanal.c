@@ -2417,6 +2417,40 @@ replace_rtx (x, from, to)
   if (x == 0)
     return 0;
 
+  if (GET_CODE (x) == SUBREG)
+    {
+      rtx new = replace_rtx (SUBREG_REG (x), from, to);
+
+      if (GET_CODE (new) == CONST_INT)
+	{
+	  x = simplify_subreg (GET_MODE (x), new,
+			       GET_MODE (SUBREG_REG (x)),
+			       SUBREG_BYTE (x));
+	  if (! x)
+	    abort ();
+	}
+      else
+	SUBREG_REG (x) = new;
+
+      return x;
+    }
+  else if (GET_CODE (x) == ZERO_EXTEND)
+    {
+      rtx new = replace_rtx (XEXP (x, 0), from, to);
+
+      if (GET_CODE (new) == CONST_INT)
+	{
+	  x = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
+					new, GET_MODE (XEXP (x, 0)));
+	  if (! x)
+	    abort ();
+	}
+      else
+	XEXP (x, 0) = new;
+
+      return x;
+    }
+
   fmt = GET_RTX_FORMAT (GET_CODE (x));
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     {
