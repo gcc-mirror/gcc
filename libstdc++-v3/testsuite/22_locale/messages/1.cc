@@ -30,8 +30,8 @@ void test01()
   typedef std::locale::facet base_type1;
   typedef std::messages_base base_type2;
   const test_type& obj = std::use_facet<test_type>(std::locale()); 
-  const base_type1* base1 = &obj;
-  const base_type2* base2 = &obj;
+  const base_type1* base1 __attribute__((unused)) = &obj;
+  const base_type2* base2 __attribute__((unused)) = &obj;
 
   // Check for required typedefs
   typedef test_type::char_type char_type;

@@ -26,7 +26,7 @@
 
 void test01() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str_01;
   const std::string str_02("coltrane playing 'softly as a morning sunrise'");
   const std::string str_03("coltrane");

@@ -34,7 +34,7 @@ struct B { };
 void test01()
 {
   // non POD types
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::vector< A<B> > vec01;
   typedef std::vector< A<B> >::size_type size_type;
 

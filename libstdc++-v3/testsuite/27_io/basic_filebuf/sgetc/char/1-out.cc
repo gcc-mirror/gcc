@@ -37,8 +37,8 @@ void test05()
   typedef std::filebuf::int_type 	int_type;
   typedef filebuf::traits_type 		traits_type;
 
-  bool 					test = true;
-  int_type 			c1, c2, c3;
+  bool test __attribute__((unused)) = true;
+  int_type 			c1, c2;
 
   // int_type sgetc()
   // if read_cur not avail, return uflow(), else return *read_cur  
@@ -62,7 +62,7 @@ void test05()
   }
 }
 
-main() 
+int main() 
 {
   test05();
   return 0;

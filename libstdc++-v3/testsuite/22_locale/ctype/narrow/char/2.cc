@@ -38,7 +38,7 @@ void test02()
   using namespace std;
   typedef char 	wide_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char dfault = '?';
   const locale loc_c = locale::classic();
   const ctype<wide_type>& ctype_c = use_facet<ctype<wide_type> >(loc_c); 
@@ -53,7 +53,7 @@ void test02()
   vector<char> 			narrow_chars(wide.length() + 1);
 
   // narrow(charT c, char dfault) const
-  for (int i = 0; i < wide.length(); ++i)
+  for (size_t i = 0; i < wide.length(); ++i)
     {
       char c = ctype_c.narrow(wide[i], dfault);
       VERIFY( c == narrow[i] );
@@ -62,7 +62,7 @@ void test02()
   // narrow(const charT* low, const charT* high, char dfault, char* dest) const
   ctype_c.narrow(&wide[0], &wide[0] + wide.length(), dfault, &narrow_chars[0]);
   VERIFY( narrow_chars[0] != dfault );
-  for (int i = 0; i < wide.length(); ++i)
+  for (size_t i = 0; i < wide.length(); ++i)
     VERIFY( narrow_chars[i] == narrow[i] );
 }
 

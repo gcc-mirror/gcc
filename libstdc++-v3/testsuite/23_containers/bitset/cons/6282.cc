@@ -30,7 +30,7 @@
 bool test02(void)
 {
   using std::char_traits;  using std::allocator;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::bitset<0>  z1;
   VERIFY( z1.any() == false );

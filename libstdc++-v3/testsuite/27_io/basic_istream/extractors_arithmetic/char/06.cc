@@ -48,8 +48,8 @@ std::stringstream ss_01(str_01);
 void test06()
 {
   // default locale, grouping is turned off
-  bool test = true;
-  unsigned int h4, h3, h2;
+  bool test __attribute__((unused)) = true;
+  unsigned int h4;
   char c;
   std::string s("205,199,144");
   std::istringstream is(s);

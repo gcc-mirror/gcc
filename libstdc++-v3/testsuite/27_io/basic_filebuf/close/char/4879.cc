@@ -40,7 +40,7 @@
 void
 test_04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "tmp_fifo1";
   signal(SIGPIPE, SIG_IGN);
   

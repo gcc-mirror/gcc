@@ -27,7 +27,7 @@
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef time_base::dateorder dateorder;
   typedef istreambuf_iterator<char> iterator_type;
 
@@ -41,12 +41,6 @@ void test01()
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
 
-  // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
-  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
-  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
-  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
-
   const string empty;
 
   // create an ostream-derived object, cache the time_get facet
@@ -59,11 +53,7 @@ void test01()
   ios_base::iostate errorstate = good;
 
   // create "C" time objects
-  const tm time_bday = { 0, 0, 12, 4, 3, 71 };
-  const char* all = "%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-                    "%w %W %x %X %y %Y %Z %%";
-  const char* date = "%A, the second of %B";
-  const char* date_ex = "%Ex";
+  const tm time_bday = { 0, 0, 12, 4, 3, 71, 0, 93, 0 };
 
   // 2
   // iter_type 

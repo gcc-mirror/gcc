@@ -33,7 +33,7 @@ test03()
 {
   typedef std::char_traits<char>	traits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char str_lit01[] = 
   "   sun*ra \n\t\t\t   & his arkestra, featuring john gilmore: \n"
   "                         "
@@ -49,10 +49,9 @@ test03()
   std::istream is_00(NULL);
   std::istream is_04(&sbuf_04);
   std::istream is_05(&sbuf_05);
-  std::ios_base::iostate state1, state2, statefail, stateeof;
+  std::ios_base::iostate statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
-  std::streamsize count1, count2;
   char carray1[400] = "";
 
   // int_type get()

@@ -162,7 +162,7 @@ protected:
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc;
   loc = locale(loc, new checksumcvt<wchar_t>);

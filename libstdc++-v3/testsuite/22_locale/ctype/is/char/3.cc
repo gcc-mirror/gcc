@@ -35,7 +35,7 @@ typedef char char_type;
 // Per Liboriussen <liborius@stofanet.dk>
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::ctype_base::mask maskdata[256];
   for (int i = 0; i < 256; ++i)
     maskdata[i] = std::ctype_base::alpha;

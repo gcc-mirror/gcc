@@ -30,7 +30,7 @@
 void test03() 
 {
   using namespace std;  
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(ios_base& (*pf) (ios_base&))
@@ -38,7 +38,6 @@ void test03()
     int i = 0;
     std::istringstream iss(" 43");
     iss >> std::noskipws >> i;
-    std::ios::iostate i3 = iss.rdstate();
     VERIFY ( !iss ); //should set failbit
   }
 

@@ -23,7 +23,7 @@
 #include <vector>
 #include "testsuite_hooks.h"
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // test the assign() function
 void
@@ -32,9 +32,9 @@ test03()
   const int K = 417;
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
   const int B[] = {K, K, K, K, K};
-  const int N = sizeof(A) / sizeof(int);
-  const int M = sizeof(B) / sizeof(int);
-  bool test = true;
+  const std::size_t N = sizeof(A) / sizeof(int);
+  const std::size_t M = sizeof(B) / sizeof(int);
+  bool test __attribute__((unused)) = true;
 
   // assign from pointer range
   std::vector<int> v3;

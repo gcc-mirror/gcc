@@ -27,14 +27,14 @@
 
 void test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const char str_lit01[] = "  venice ";
   const std::string str01(" santa barbara ");
   std::string str02(str_lit01);
   std::string str04;
   std::string str05;
-  std::ios_base::iostate flag1, flag2, flag3, flag4, flag5;
+  std::ios_base::iostate flag3, flag4, flag5;
 
   // template<_CharT, _Traits>
   //  basic_istream<_CharT, _Traits>& ws(basic_istream<_Char, _Traits>& is)

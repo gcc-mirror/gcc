@@ -29,7 +29,7 @@ void test06()
 {
   using namespace std;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   char buffer[] = "xxxxxxxxxx";
   typedef filebuf::int_type	int_type;
   filebuf fbuf01;
@@ -39,7 +39,7 @@ void test06()
   VERIFY( buffer[0] == '/' );
 }
 
-main() 
+int main() 
 {
   test06();
   return 0;

@@ -30,7 +30,7 @@ using namespace std;
 void
 test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   double pi = 3.14159265358979323846;
   ostringstream ostr;
   ostr.precision(20);

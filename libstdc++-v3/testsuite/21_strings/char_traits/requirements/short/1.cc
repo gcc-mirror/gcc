@@ -29,7 +29,7 @@
 
 void test02(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
  
   // 21.1.1 character traits requirements
 

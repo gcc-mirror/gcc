@@ -31,7 +31,7 @@ test04()
 {
   stringbuf strbuf1, strbuf2;
   ostream o1(&strbuf1), o2(&strbuf2);
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   o1 << hex << showbase << setw(6) << internal << 0xff;
   VERIFY( strbuf1.str() == "0x  ff" );

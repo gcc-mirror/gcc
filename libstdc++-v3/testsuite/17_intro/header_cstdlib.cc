@@ -1,6 +1,6 @@
 // 2000-01-01 bkoz
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,15 +25,15 @@
 // libstdc++/2190
 void test01()
 {
-  long a = std::abs(1L);
+  long a __attribute__((unused)) = std::abs(1L);
   std::div(2L, 1L);
-  std::ldiv_t b;
+  std::ldiv_t b __attribute__((unused));
 }
 
 void test02()
 {
   // Make sure size_t is in namespace std.
-  std::size_t i = 5;
+  std::size_t i __attribute__((unused)) = 5;
 }
 
 int main()

@@ -118,7 +118,7 @@ class gnu_ios: public std::basic_ios<gnu_char_type, gnu_char_traits>
 
 void test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   try
     { gnu_ios obj; }

@@ -38,8 +38,8 @@ void test05()
   typedef filebuf::traits_type 	traits_type;
   typedef size_t 			size_type;
 
-  bool 					test = true;
-  streamsize 			strmsz_1, strmsz_2;
+  bool test __attribute__((unused)) = true;
+  streamsize 			strmsz_1;
 
   // streamsize sputn(const char_typs* s, streamsize n)
   // write up to n chars to out_cur from s, returning number assigned
@@ -57,7 +57,7 @@ void test05()
   }
 }
 
-main() 
+int main() 
 {
   test05();
   return 0;

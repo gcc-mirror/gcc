@@ -30,12 +30,10 @@ void test07()
   typedef ostreambuf_iterator<wchar_t> iterator_type;
   typedef char_traits<wchar_t> traits;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // create "C" time objects
-  tm time1 = { 0, 0, 12, 4, 3, 71 };
-  const wchar_t* all = L"%a %A %b %B %c %d %H %I %j %m %M %p %s %U "
-    L"%w %W %x %X %y %Y %Z %%";
+  tm time1 = { 0, 0, 12, 4, 3, 71, 0, 93, 0 };
   const wchar_t* date = L"%A, the second of %B";
   const wchar_t* date_ex = L"%Ex";
 
@@ -48,12 +46,6 @@ void test07()
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
-
-  // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
-  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
-  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
-  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
   // create an ostream-derived object, cache the time_put facet
   const wstring empty;

@@ -35,7 +35,7 @@ protected:
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc_s(locale::classic(), new state_codecvt);
   wfilebuf ob;
@@ -48,7 +48,7 @@ void test03()
   VERIFY( ob.getloc() == loc_s );
 }
 
-main() 
+int main() 
 {
   test03();
   return 0;

@@ -31,14 +31,15 @@ void test02()
   const char* ccarray2 = "san francisco sunny-day park inspectors";
   char carray[50];
   strcpy(carray, ccarray1);
-  void* v = carray;
   const void* cv = ccarray1;
- 
-  memchr(cv, '/', 3);
-  strchr(ccarray1, '/');
-  strpbrk(ccarray1, ccarray2);
-  strrchr(ccarray1, 'c');
-  strstr(carray, carray);
+  void* v;
+  char* c;
+
+  v = memchr(cv, '/', 3);
+  c = strchr(ccarray1, '/');
+  c = strrchr(ccarray1, 'c');
+  c = strpbrk(ccarray1, ccarray2);
+  c = strstr(carray, carray);
 }
 
 int main()

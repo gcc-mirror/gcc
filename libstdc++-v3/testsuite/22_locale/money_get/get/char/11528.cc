@@ -27,7 +27,7 @@ void test01()
   using namespace std;
   typedef istreambuf_iterator<char> iterator_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc_us = __gnu_test::try_named_locale("en_US");
 

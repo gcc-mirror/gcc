@@ -32,7 +32,7 @@ test01()
 {
   typedef std::ios::traits_type traits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string str_01;
   const std::string str_02("soul eyes: john coltrane quartet");
   std::string strtmp;
@@ -47,8 +47,6 @@ test01()
   std::ios_base::iostate state1, state2, statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
-
-  char carray[60] = "";
 
   // istream& putback(char c)
   is_04.ignore(30);
@@ -72,7 +70,7 @@ test01()
   // int sync()
   is_00.ignore(10);
   int count1 = is_00.gcount();
-  int i = is_00.sync();
+  is_00.sync();
   int count2 = is_00.gcount();
   VERIFY (count1 == count2 );     // DR 60
 }

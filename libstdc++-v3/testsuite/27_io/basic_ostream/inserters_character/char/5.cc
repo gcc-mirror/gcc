@@ -30,7 +30,7 @@
 void
 test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str05, str10;
 
   typedef std::ostream::pos_type	pos_type;

@@ -78,7 +78,7 @@
 void
 test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   wchar_t array2[20];
   typedef std::wios::traits_type wtraits_type;

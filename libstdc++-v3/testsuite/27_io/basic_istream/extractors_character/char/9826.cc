@@ -45,9 +45,11 @@ void test02()
   // 1
   basic_string<pod_char, char_traits<pod_char> > str;
   sstr >> str;
+
   // 2
-  pod_char*  chr;
+  pod_char*  chr = NULL;
   sstr >> chr;
+
   // 3
   sstr >> ws;
 }

@@ -28,18 +28,16 @@
 
 void test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const char str_lit01[] = "  venice ";
   const std::string str01(" santa barbara ");
   std::string str02(str_lit01);
   std::string str04;
   std::string str05;
-  std::ios_base::iostate flag1, flag2, flag3, flag4, flag5;
 
   std::ostringstream oss01(str01);
   std::ostringstream oss02;
-  std::ostringstream::int_type i01, i02;
   typedef std::ostringstream::traits_type traits_type;
 
   // template<_CharT, _Traits>

@@ -45,7 +45,7 @@ struct My_money_io : public std::moneypunct<wchar_t,false>
 void test05()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef ostreambuf_iterator<wchar_t> OutIt;
 
   locale loc(locale::classic(), new My_money_io);

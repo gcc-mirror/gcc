@@ -38,7 +38,7 @@ protected:
 void test02()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   // Sanity check.
   locale loc_c = locale::classic();

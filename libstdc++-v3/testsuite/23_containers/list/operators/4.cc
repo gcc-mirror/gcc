@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // A comparison predicate to order by rightmost digit.  Tracks call counts for
 // performance checks.
@@ -86,7 +86,7 @@ test04()
   VERIFY(eq.count() == (N + M - 1));
 }
 
-main(int argc, char* argv[])
+int main()
 {
   test04();
   return 0;

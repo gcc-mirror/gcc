@@ -26,7 +26,7 @@ const char name_03[] = "tmp_11389-3";
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   filebuf fbout;
   fbout.open(name_03, ios_base::out);

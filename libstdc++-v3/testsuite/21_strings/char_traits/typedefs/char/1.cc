@@ -28,7 +28,7 @@ int main()
   // 21.1.3: char_traits<char>::int_type == int
   // dg-options -ansi -pedantic-err
   std::char_traits<char>::int_type* p = 0;
-  int* q = p;                   // dg-do compile
+  int* q __attribute__((unused)) = p;                   // dg-do compile
 
   return 0;
 }

@@ -49,7 +49,7 @@ bool test03()
   std::istream istr(&sbuf);
   std::ostream ostr(&sbuf);
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   long l01;
   ostr <<  "12220101";
   istr >>  l01; // _M_in_end set completely incorrectly here.

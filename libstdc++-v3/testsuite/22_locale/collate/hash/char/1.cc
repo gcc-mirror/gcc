@@ -26,7 +26,7 @@
 // Check "C" locale.
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::string str1("fffff");
   std::string str2("ffffffffffff");

@@ -33,7 +33,7 @@
 // http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00049.html
 void test06(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef std::wstring::size_type size_type;
   std::wstring str01(L"@silent");

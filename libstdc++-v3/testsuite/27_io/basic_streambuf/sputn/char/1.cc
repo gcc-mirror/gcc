@@ -46,7 +46,7 @@ public:
   bool
   check_pointers()
   { 
-    bool test = true;
+    bool test __attribute__((unused)) = true;
     VERIFY( this->eback() == NULL );
     VERIFY( this->gptr() == NULL );
     VERIFY( this->egptr() == NULL );
@@ -92,14 +92,15 @@ void test01()
   typedef testbuf::traits_type traits_type;
   typedef testbuf::int_type int_type;
 
-  bool test = true;
-  char* lit01 = "chicago underground trio/possible cube on delmark";
+  bool test __attribute__((unused)) = true;
   testbuf buf01;
-  int i01 = 3;
 
   // sputn/xsputn
-  char* lit02 = "isotope 217: the unstable molecule on thrill jockey";
-  int i02 = std::strlen(lit02);
+  const char* lit01 = "isotope 217: the unstable molecule on thrill jockey";
+  const int i02 = std::strlen(lit01);
+  char lit02[i02];
+  std::strcpy(lit02, lit01);
+
   char carray[i02 + 1];
   std::memset(carray, 0, i02 + 1);
 

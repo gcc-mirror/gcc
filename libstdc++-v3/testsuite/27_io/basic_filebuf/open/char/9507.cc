@@ -37,7 +37,7 @@
 // libstdc++/9507
 void test_06()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "tmp_fifo2";
 
   signal(SIGPIPE, SIG_IGN);

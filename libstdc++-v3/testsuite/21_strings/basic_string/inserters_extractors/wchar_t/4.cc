@@ -30,11 +30,11 @@
 
 // testing basic_stringbuf::xsputn via stress testing with large strings
 // based on a bug report libstdc++ 9
-void test04(int size)
+void test04(std::size_t size)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::wstring str(size, L's');
-  int expected_size = 2 * (size + 1);
+  std::size_t expected_size = 2 * (size + 1);
   std::wostringstream oss(str);
   
   // sanity checks

@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // splice(p, x, f, l) + sort + merge + unique
 void
@@ -66,7 +66,7 @@ test03()
   VERIFY(list0301 == list0304);
 }
 
-main(int argc, char* argv[])
+int main(void)
 {
   test03();
   return 0;

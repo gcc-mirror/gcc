@@ -25,7 +25,7 @@
 
 void test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string str_01("zuma beach");
   const std::string str_02("montara and ocean beach");
  

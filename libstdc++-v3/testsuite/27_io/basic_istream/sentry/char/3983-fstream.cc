@@ -125,7 +125,7 @@ namespace std
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // input streams
   basic_ifstream<unsigned char> ifs_uc;

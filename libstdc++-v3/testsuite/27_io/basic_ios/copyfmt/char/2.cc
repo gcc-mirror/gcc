@@ -36,7 +36,7 @@
 // copyfmt and locales.
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   using namespace std;
 

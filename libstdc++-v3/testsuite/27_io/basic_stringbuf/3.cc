@@ -57,7 +57,7 @@ struct gnu_char_traits
   typedef gnu_char_type	char_type;
   typedef long  		int_type;
   typedef long 		pos_type;
-  typedef unsigned long 	off_type;
+  typedef long 	off_type;
   typedef long   		state_type;
   
   static void 
@@ -115,7 +115,7 @@ struct gnu_char_traits
 
 void test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::basic_stringbuf<gnu_char_type, gnu_char_traits> gnu_ssbuf;
   
   try

@@ -29,7 +29,7 @@ void test01()
   typedef std::messages<char>::catalog catalog;
   typedef std::messages<char>::string_type string_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 
@@ -44,9 +44,6 @@ void test01()
   VERIFY( loc_de != loc_fr );
 
   // cache the messages facets
-  const messages<char>& mssg_c = use_facet<messages<char> >(loc_c); 
-  const messages<char>& mssg_us = use_facet<messages<char> >(loc_us); 
-  const messages<char>& mssg_fr = use_facet<messages<char> >(loc_fr); 
   const messages<char>& mssg_de = use_facet<messages<char> >(loc_de); 
 
   // catalog open(const string&, const locale&) const;

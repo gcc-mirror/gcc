@@ -27,7 +27,7 @@
 // on stdout.
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::wcout << L"Hello, ";
   VERIFY( std::fwide(stdout, 0) >= 0 );

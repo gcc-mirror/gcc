@@ -37,7 +37,7 @@ using __gnu_test::destructor;
 void
 test_reserve()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
@@ -67,14 +67,14 @@ test_reserve()
 void
 test_reserve_exception_guarantee()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
   typedef std::vector<T, tracker_alloc<T> > X;
 
   allocation_tracker::resetCounts();
   {
     X a(7);
-    const X::size_type old_size     = a.size();
+    const X::size_type old_size __attribute__((unused)) = a.size();
     const X::size_type old_capacity = a.capacity();
     const X::size_type new_capacity = old_capacity + 10;
     T::reset();
@@ -83,7 +83,7 @@ test_reserve_exception_guarantee()
     try
     {
       a.reserve(new_capacity);
-      VERIFY(("no exception thrown", false));
+      VERIFY(false);
     }
     catch (...)
     {

@@ -25,7 +25,7 @@
 
 bool test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::const_reference cref;
   typedef std::string::reference ref;

@@ -45,7 +45,7 @@ void test04()
   typedef wchar_t				int_type;
   typedef char					ext_type;
 
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit =
     "\x1\x2\x3\x4\x5\x6\x7\x8\x9\xa\xb\xc\xd\xe\xf\x10\x11\x12\x13"
     "\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x20!\"#$%&"
@@ -72,7 +72,6 @@ void test04()
     "\x80\x80\x80\xfc\x90\x80\x80\x80\x80\xfc\xa0\x80\x80\x80\x80"
     "\xfd\x80\x80\x80\x80\x80";
 
-  const ext_type*       efrom_next;
   const int_type 	i_lit[] = {
     0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc,
     0xd, 0xe, 0xf, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,

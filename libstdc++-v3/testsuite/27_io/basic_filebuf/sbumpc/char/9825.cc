@@ -30,7 +30,7 @@ const char name_06[] = "filebuf_virtuals-6.txt"; // empty file, need to create
 void test12()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   filebuf fbuf;
 
@@ -48,7 +48,7 @@ void test12()
   fbuf.close();  
 }
 
-main() 
+int main() 
 {
   test12();
   return 0;

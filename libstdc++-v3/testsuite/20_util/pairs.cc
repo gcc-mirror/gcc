@@ -46,7 +46,7 @@ template<typename T>
 // heterogeneous
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::pair<bool, long> p_bl_1(true, 433);
   std::pair<bool, long> p_bl_2 = std::make_pair(true, 433);
@@ -75,7 +75,7 @@ void test01()
 // homogeneous
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::pair<bool, bool> p_bb_1(true, false);
   std::pair<bool, bool> p_bb_2 = std::make_pair(true, false);
@@ -87,7 +87,7 @@ void test02()
 // const
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const std::pair<bool, long> p_bl_1(true, 433);
   const std::pair<bool, long> p_bl_2 = std::make_pair(true, 433);
@@ -116,7 +116,7 @@ void test03()
 // const&
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const gnu_obj& obj1 = gnu_obj(5);
   const std::pair<const char*, gnu_obj> p_sg_1("enlightenment", obj1);
   const std::pair<const char*, gnu_obj> p_sg_2 = 

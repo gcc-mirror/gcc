@@ -62,7 +62,7 @@ DEFINE_EXTREMA(long double, LDBL_MIN, LDBL_MAX);
 template<typename T>
 void test_extrema()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   T limits_min = std::numeric_limits<T>::min();
   T limits_max = std::numeric_limits<T>::max();
   T extrema_min = extrema<T>::min;
@@ -74,7 +74,7 @@ void test_extrema()
 template<typename T>
 void test_epsilon()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   T epsilon = std::numeric_limits<T>::epsilon();
   T one = 1;
 
@@ -89,7 +89,7 @@ void test_epsilon()
 
 void test_sign()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   VERIFY( std::numeric_limits<char>::is_signed == char_is_signed );
   VERIFY( std::numeric_limits<signed char>::is_signed == true );
   VERIFY( std::numeric_limits<unsigned char>::is_signed == false );
@@ -200,7 +200,7 @@ struct B
 
 bool test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::numeric_limits< A<B> > obj;
 
   VERIFY( !obj.is_specialized );
@@ -244,16 +244,16 @@ void test02()
   typedef std::numeric_limits<B> b_nl_type;
   
   // Should probably do all of them...
-  const int* pi1 = &b_nl_type::digits;
-  const int* pi2 = &b_nl_type::digits10;
-  const int* pi3 = &b_nl_type::max_exponent10;
-  const bool* pb1 = &b_nl_type::traps;
+  const int* __attribute__((unused)) pi1 = &b_nl_type::digits;
+  const int* __attribute__((unused)) pi2 = &b_nl_type::digits10;
+  const int* __attribute__((unused)) pi3 = &b_nl_type::max_exponent10;
+  const bool* __attribute__((unused)) pb1 = &b_nl_type::traps;
 }
 
 // libstdc++/5045
 bool test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   VERIFY( std::numeric_limits<bool>::digits10 == 0 );
   if (__CHAR_BIT__ == 8)
@@ -282,7 +282,7 @@ bool test03()
 // libstdc++/8949
 bool test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   VERIFY( !std::numeric_limits<short>::is_iec559 );
   VERIFY( !std::numeric_limits<unsigned short>::is_iec559 );

@@ -119,7 +119,7 @@ void test01()
   typedef __enc_traits				enc_type;
   typedef codecvt<int_type, ext_type, enc_type>	unicode_codecvt;
 
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
 

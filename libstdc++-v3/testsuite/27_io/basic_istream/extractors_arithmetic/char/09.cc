@@ -45,7 +45,7 @@ std::stringstream ss_01(str_01);
  
 bool test09()
 {
-   bool test = true;
+   bool test __attribute__((unused)) = true;
 
    std::string st("2.456e3-+0.567e-2");
    std::stringbuf sb(st);

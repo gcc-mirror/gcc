@@ -37,8 +37,8 @@ void test01()
   typedef std::filebuf::int_type 	int_type;
   typedef filebuf::traits_type 		traits_type;
 
-  bool 					test = true;
-  int_type 			c1, c2, c3;
+  bool test __attribute__((unused)) = true;
+  int_type 			c1, c2;
 
   // int_type sungetc()
   // if in_cur not avail, return pbackfail(), else decrement and
@@ -63,7 +63,7 @@ void test01()
   }
 }
 
-main() 
+int main() 
 {
   test01();
   return 0;

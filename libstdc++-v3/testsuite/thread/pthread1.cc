@@ -100,7 +100,7 @@ consume (void* t)
 }
 
 int
-main (int argc, char** argv)
+main ()
 {
   pthread_t prod[thread_pairs];
   pthread_t cons[thread_pairs];

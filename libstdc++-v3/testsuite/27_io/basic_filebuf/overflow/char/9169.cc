@@ -39,7 +39,7 @@ class Cvt_to_upper : public std::codecvt<char, char, mbstate_t>
 void test10()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale c_loc = locale::classic();
   locale loc(c_loc, new Cvt_to_upper);
@@ -65,7 +65,7 @@ void test10()
   VERIFY( tmp == str );
 }
 
-main() 
+int main() 
 {
   test10();
   return 0;

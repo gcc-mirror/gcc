@@ -39,7 +39,7 @@ class gnu_ios: public std::basic_ios<char> { };
 
 void test01() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // 01: Doesn't call basic_ios::init, which uses ctype<char_type>..
   // This should be unambiguously correct.

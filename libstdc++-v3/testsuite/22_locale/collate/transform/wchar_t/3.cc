@@ -28,7 +28,7 @@ void test03()
   using namespace std;
   typedef std::collate<wchar_t>::string_type string_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();

@@ -27,12 +27,12 @@
 
 bool test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // bitset()
   const size_t n1 = 5;
   std::bitset<n1> bit01;
-  for (int i = 0; i < n1; ++i)
+  for (size_t i = 0; i < n1; ++i)
     VERIFY( !bit01.test(i) );
 
   // bitset(unsigned long)

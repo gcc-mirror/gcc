@@ -36,16 +36,12 @@
 // 27.4.3.2 fpos requirements/invariants
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef std::mbstate_t state_type;
-  state_type state01;
-  state_type state02;
 
   std::streamoff off01;
   std::streamoff off02 = 997;
-  
-  int i01 = 0;
   int i02 = 999;
 
   // p(i), p = i

@@ -80,7 +80,7 @@ public:
 // libstdc++/1057
 void test04()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string text = "abcdefghijklmn";
   
   // 01

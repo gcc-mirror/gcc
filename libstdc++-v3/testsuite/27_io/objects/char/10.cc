@@ -26,7 +26,7 @@ void test10()
 {
   using namespace std;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "filebuf_virtuals-1.txt";
 
   FILE* ret = freopen(name, "r", stdin);

@@ -38,7 +38,7 @@ public:
   bool
   check_pointers()
   { 
-    bool test = true;
+    bool test __attribute__((unused)) = true;
     test = (this->pbase() == NULL);
     test &= (this->pptr() == NULL);
     return test;
@@ -57,9 +57,7 @@ void test05()
   typedef std::filebuf::off_type 	off_type;
   typedef size_t 			size_type;
 
-  bool 					test = true;
-
-  int_type c1;
+  bool test __attribute__((unused)) = true;
 
   {
     testbuf 				f_tmp;
@@ -74,7 +72,7 @@ void test05()
     testbuf 				f_tmp;
     
     f_tmp.open(name_01, ios_base::out | ios_base::in);
-    int_type c1 = f_tmp.sbumpc();
+    f_tmp.sbumpc();
     
     // setbuf
     // pubsetbuf(char_type* s, streamsize n)
@@ -83,7 +81,7 @@ void test05()
   }
 }
 
-main() 
+int main() 
 {
   test05();
   return 0;

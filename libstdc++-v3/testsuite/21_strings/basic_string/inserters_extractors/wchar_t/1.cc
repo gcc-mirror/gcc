@@ -33,12 +33,10 @@
 
 bool test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::const_reference cref;
   typedef std::wstring::reference ref;
-  csize_type npos = std::wstring::npos;
-  csize_type csz01, csz02;
 
   const std::wstring str01(L"sailing grand traverse bay\n"
 	       L"\t\t\t    from Elk Rapids to the point reminds me of miles");

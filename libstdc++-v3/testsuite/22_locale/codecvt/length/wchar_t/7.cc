@@ -47,9 +47,8 @@ void test07()
   typedef wchar_t				int_type;
   typedef char					ext_type;
 
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "a\xc0\xff";
-  const ext_type*       efrom_next;
   int 			size = strlen(e_lit);
 
   locale loc = __gnu_test::try_named_locale("en_US.UTF-8");

@@ -35,7 +35,7 @@ void test01()
 
   istringstream isstream("this tag");
   test_iterator  r_it(isstream);
-  base_iterator* base = &r_it;
+  base_iterator* base __attribute__((unused)) = &r_it;
 
   // Check for required typedefs
   typedef test_iterator::value_type value_type;
@@ -55,7 +55,7 @@ bool test02(void)
 
   typedef std::istreambuf_iterator<char> cistreambuf_iter;
   typedef cistreambuf_iter::streambuf_type cstreambuf_type;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char slit01[] = "playa hermosa, liberia, guanacaste";
   std::string str01(slit01);
   std::istringstream istrs00(str01);
@@ -120,7 +120,7 @@ bool test02(void)
   // istreambuf_iterator& operator++(int);
   cistreambuf_iter istrb_it27(istrs01.rdbuf());
   char c;
-  for (int i = 0; i < sizeof(slit01) - 2; ++i)
+  for (std::size_t i = 0; i < sizeof(slit01) - 2; ++i)
     {
       c = *istrb_it27++;
       VERIFY( c == slit01[i] );
@@ -128,7 +128,7 @@ bool test02(void)
 
   std::istringstream istrs02(str01);
   cistreambuf_iter istrb_it28(istrs02);
-  for (int i = 0; i < sizeof(slit01) - 2;)
+  for (std::size_t i = 0; i < sizeof(slit01) - 2;)
     {
       c = *++istrb_it28;
       VERIFY( c == slit01[++i] );
@@ -139,28 +139,28 @@ bool test02(void)
 // libstdc++/2627
 void test03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string s("free the vieques");
 
   // 1
   std::string res_postfix;
   std::istringstream iss01(s);
   std::istreambuf_iterator<char> isbufit01(iss01);
-  for (int j = 0; j < s.size(); ++j, isbufit01++)
+  for (std::size_t j = 0; j < s.size(); ++j, isbufit01++)
     res_postfix += *isbufit01;
 
   // 2
   std::string res_prefix;
   std::istringstream iss02(s);
   std::istreambuf_iterator<char> isbufit02(iss02);
-  for (int j = 0; j < s.size(); ++j, ++isbufit02)
+  for (std::size_t j = 0; j < s.size(); ++j, ++isbufit02)
     res_prefix += *isbufit02;
 
   // 3 mixed
   std::string res_mixed;
   std::istringstream iss03(s);
   std::istreambuf_iterator<char> isbufit03(iss03);
-  for (int j = 0; j < int(s.size() / 2); ++j)
+  for (std::size_t j = 0; j < (s.size() / 2); ++j)
     {
       res_mixed += *isbufit03;
       ++isbufit03;

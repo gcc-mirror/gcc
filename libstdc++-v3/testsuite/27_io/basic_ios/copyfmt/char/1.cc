@@ -36,15 +36,11 @@
 // 27.4.4.3 basic_ios iostate flags function
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef std::ios_base::fmtflags fmtflags;
   typedef std::ios_base::iostate iostate;
   using std::ios_base;
-
-  iostate iostate02, iostate03;
-  const iostate iostate01 = std::ios_base::badbit | std::ios_base::eofbit;
-  const iostate iostate04 = std::ios_base::badbit;
 
   // basic_ios& copyfmt(const basic_ios& rhs)
   {

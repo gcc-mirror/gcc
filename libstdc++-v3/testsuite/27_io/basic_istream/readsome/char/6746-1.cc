@@ -32,7 +32,7 @@
 void test12()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   streamsize sum = 0;
   istringstream iss("shamma shamma");
       

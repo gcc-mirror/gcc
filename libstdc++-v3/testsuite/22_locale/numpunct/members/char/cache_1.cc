@@ -47,7 +47,7 @@ void test01()
 {
   using namespace std;
 
-  bool 		test = true;
+  bool test __attribute__((unused)) = true;
   const string 	basestr("true");
   const string 	derivedstr("truest");
 

@@ -29,7 +29,7 @@ void test01()
   using namespace std;
   typedef std::collate<char>::string_type string_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
@@ -43,9 +43,6 @@ void test01()
 
   // cache the collate facets
   const collate<char>& coll_c = use_facet<collate<char> >(loc_c); 
-  const collate<char>& coll_us = use_facet<collate<char> >(loc_us); 
-  const collate<char>& coll_fr = use_facet<collate<char> >(loc_fr); 
-  const collate<char>& coll_de = use_facet<collate<char> >(loc_de); 
 
   // int compare(const charT*, const charT*, const charT*, const charT*) const
 

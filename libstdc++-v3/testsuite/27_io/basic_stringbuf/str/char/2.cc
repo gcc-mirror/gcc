@@ -27,7 +27,7 @@
 // which didn't notice the grow.
 void test07()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::stringbuf strb_01;
   strb_01.sputc('s');

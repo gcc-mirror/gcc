@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // splice(p, x, i) + remove_if + operator==
 void
@@ -52,7 +52,7 @@ test02()
   VERIFY(list0201 == list0204);
 }
 
-main(int argc, char* argv[])
+int main()
 {
   test02();
   return 0;

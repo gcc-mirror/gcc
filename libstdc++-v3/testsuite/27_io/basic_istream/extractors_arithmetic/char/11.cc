@@ -48,7 +48,7 @@ std::stringstream ss_01(str_01);
 // libstdc++/90
 bool test11()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* cstrlit = "0x2a";
 
   // sanity check via 'C' library call

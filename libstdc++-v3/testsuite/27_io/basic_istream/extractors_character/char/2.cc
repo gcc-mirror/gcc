@@ -28,7 +28,7 @@ void test02()
 {
   typedef std::ios::traits_type ctraits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str_01;
   const std::string str_02("or coltrane playing tunji with jimmy garrison");
   const std::string str_03("coltrane");

@@ -29,7 +29,7 @@ void test01()
   typedef std::ifstream test_type;
   typedef std::istream base_type;
   const test_type& obj = test_type();
-  const base_type* base = &obj;
+  const base_type* base __attribute__((unused)) = &obj;
 }
 
 int main()

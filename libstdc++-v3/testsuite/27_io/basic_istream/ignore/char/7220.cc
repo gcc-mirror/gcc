@@ -33,12 +33,11 @@ void
 test10()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef string string_type;
   typedef stringbuf stringbuf_type;
   typedef istream istream_type;
 
-  int res = 0;
   streamsize n;
   string_type  input("abcdefg\n");
   stringbuf_type sbuf(input);

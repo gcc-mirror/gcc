@@ -22,7 +22,7 @@
 
 void test09()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::wcout << L"Enter favorite beach: ";
   std::wcin.ignore(2048, '\n');
 }

@@ -27,7 +27,7 @@ void test02()
 {
   using namespace std;
   
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
@@ -46,8 +46,6 @@ void test02()
   const numpunct<wchar_t>& nump_de = use_facet<numpunct<wchar_t> >(loc_de); 
 
   // sanity check the data is correct.
-  wchar_t dp1 = nump_c.decimal_point();
-  wchar_t th1 = nump_c.thousands_sep();
   string g1 = nump_c.grouping();
   wstring t1 = nump_c.truename();
   wstring f1 = nump_c.falsename();

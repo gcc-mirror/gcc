@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // Fill assign
 //
@@ -34,11 +34,11 @@ bool test = true;
 void
 test06()
 {
-  const int BIG_LIST_SIZE = 11;
+  const std::size_t BIG_LIST_SIZE = 11;
   const int BIG_INIT_VALUE = 7;
-  const int SMALL_LIST_SIZE = 5;
+  const std::size_t SMALL_LIST_SIZE = 5;
   const int SMALL_INIT_VALUE = 17;
-  int count;
+  std::size_t count;
   std::list<int>::const_iterator i;
 
   std::list<int> list0601;

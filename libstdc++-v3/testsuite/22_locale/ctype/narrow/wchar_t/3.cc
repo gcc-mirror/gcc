@@ -36,7 +36,7 @@
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc = __gnu_test::try_named_locale("se_NO.UTF-8");
   const ctype<wchar_t>& wct = use_facet<ctype<wchar_t> >(loc);

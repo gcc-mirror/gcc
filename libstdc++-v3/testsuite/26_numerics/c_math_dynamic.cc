@@ -45,7 +45,7 @@ int
 test02 ()
 {
   float a = 0.0f;
-  float b = std::acos(b);
+  float b __attribute__((unused)) = std::acos(a);
   return 0;
 }
 

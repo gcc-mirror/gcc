@@ -28,7 +28,7 @@
 void test03()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
 
   locale loc = __gnu_test::try_named_locale("en_US.ISO-8859-15");

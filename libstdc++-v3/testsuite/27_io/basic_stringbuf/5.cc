@@ -28,7 +28,7 @@ void test01()
   typedef std::stringbuf test_type;
   typedef std::streambuf base_type;
   const test_type& obj = test_type();
-  const base_type* base = &obj;
+  const base_type* base __attribute__((unused)) = &obj;
 }
 
 int main()

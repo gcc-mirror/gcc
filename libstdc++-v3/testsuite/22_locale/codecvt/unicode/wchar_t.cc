@@ -103,7 +103,7 @@ void test01()
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   int 			size = 23;
   char  e_lit_base[96] __attribute__((aligned(__alignof__(ext_type)))) =
   {
@@ -155,8 +155,8 @@ void test01()
   unicode_codecvt::state_type state02("UCS-2BE", "UCS-4BE", 0, 0);
   initialize_state(state02);  
   result r2 = cvt.out(state02, i_lit, i_lit + size, ifrom_next, 
-		       e_arr, e_arr + size, eto_next);
-  // XXX   VERIFY( r2 == codecvt_base::ok );
+		       e_arr, e_arr + size, eto_next);   
+  VERIFY( r2 == codecvt_base::ok ); // XXX?
   VERIFY( !ext_traits::compare(e_arr, e_lit, size) ); 
   VERIFY( ifrom_next == i_lit + size );
   VERIFY( eto_next == e_arr + size );

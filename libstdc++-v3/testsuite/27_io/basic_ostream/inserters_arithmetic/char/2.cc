@@ -32,7 +32,7 @@ using namespace std;
 void
 test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Make sure we can output a long float in fixed format
   // without seg-faulting (libstdc++/4402)

@@ -28,5 +28,5 @@ bool operator< (const foo&, const foo&) { return true; };
 
 void bar(foo* a, foo* b, foo& x)
 {
-  foo* c = std::lower_bound(a, b, x);
+  foo* c __attribute__((unused)) = std::lower_bound(a, b, x);
 }

@@ -35,10 +35,9 @@ class gnu_ctype: public std::ctype<char_type> { };
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char_type strlit00[] = L"manilla, cebu, tandag PHILIPPINES";
   const char_type strlit01[] = L"MANILLA, CEBU, TANDAG PHILIPPINES";
-  const char_type strlit02[] = L"manilla, cebu, tandag philippines";
   const char_type c00 = L'S';
   const char_type c10 = L's';
   const char_type c20 = L'9';
@@ -46,13 +45,9 @@ void test01()
   const char_type c40 = L'!';
   const char_type c50 = L'F';
   const char_type c60 = L'f';
-  const char_type c70 = L'X';
   const char_type c80 = L'x';
 
   gnu_ctype gctype;
-  char_type c100;
-  int len = std::char_traits<char_type>::length(strlit00);
-  char_type c_array[len + 1];
 
   // sanity check ctype_base::mask members
   int i01 = std::ctype_base::space;
@@ -66,7 +61,6 @@ void test01()
   int i09 = std::ctype_base::graph;
   int i10 = std::ctype_base::print;
   int i11 = std::ctype_base::cntrl;
-  int i12 = sizeof(std::ctype_base::mask);
   VERIFY ( i01 != i02);
   VERIFY ( i02 != i03);
   VERIFY ( i03 != i04);
@@ -100,7 +94,6 @@ void test01()
   std::ctype_base::mask m02[13];
   const char_type* cc0 = strlit00;
   const char_type* cc1 = NULL;
-  const char_type* cc2 = NULL;
 
   cc0 = strlit00;
   m01[0] = m00;

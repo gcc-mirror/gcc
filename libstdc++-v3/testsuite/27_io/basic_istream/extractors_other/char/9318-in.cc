@@ -57,7 +57,7 @@ private:
 
 void test09()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   std::istringstream stream("Bad Moon Rising");
   Outbuf buf;

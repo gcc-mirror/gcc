@@ -96,7 +96,7 @@ const char Inbuf_2::buf[] = "Atteivlis";
 
 void test12()
 { 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
  
   Outbuf_2 outbuf2;
   std::ostream os (&outbuf2);

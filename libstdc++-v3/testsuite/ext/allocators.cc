@@ -64,7 +64,7 @@ operator delete(void *v) throw()
 template<typename Alloc, bool uses_global_new_and_delete>
 void check_allocator()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   new_called = false;
   delete_called = false;
   requested = 0;

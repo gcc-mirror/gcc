@@ -32,7 +32,7 @@ void test01()
 {
   using namespace std;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // construct a locale object with the C facet
   const locale& 	cloc = locale::classic();
@@ -45,17 +45,17 @@ void test01()
   VERIFY( has_facet<gnu_codecvt>(loc) );
 
   try 
-    { const ccodecvt& cvt01 = use_facet<ccodecvt>(cloc); }
+    { const ccodecvt& cvt01 __attribute__((unused)) = use_facet<ccodecvt>(cloc); }
   catch(...)
     { VERIFY( false ); }
 
   try
-    { const gnu_codecvt& cvt02 = use_facet<gnu_codecvt>(loc); } 
+    { const gnu_codecvt& cvt02 __attribute__((unused)) = use_facet<gnu_codecvt>(loc); } 
   catch(...)
     { VERIFY( false ); }
 
   try 
-    { const ccodecvt& cvt03 = use_facet<gnu_codecvt>(cloc); }
+    { const ccodecvt& cvt03 __attribute__((unused)) = use_facet<gnu_codecvt>(cloc); }
   catch(bad_cast& obj)
     { VERIFY( true ); }
   catch(...)

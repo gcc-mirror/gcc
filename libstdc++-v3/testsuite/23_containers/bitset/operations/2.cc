@@ -26,7 +26,7 @@
 bool
 test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::bitset<66>  b;
   b <<= 400;

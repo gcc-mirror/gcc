@@ -27,7 +27,7 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc (__gnu_test::try_named_locale("se_NO.UTF-8"));
@@ -41,7 +41,7 @@ void test01()
   fb_out.close();
 
   fb_in_out.open("tmp_underflow.tst", ios::in | ios::out);
-  while (fb_in_out.sbumpc() != filebuf::traits_type::eof());
+  while (fb_in_out.sbumpc() != wfilebuf::traits_type::eof());
 
   VERIFY( fb_in_out.sputc(L'x') == L'x' );
   fb_in_out.close();

@@ -32,9 +32,9 @@
 // testing basic_filebuf::xsputn via stress testing with large strings
 // based on a bug report libstdc++ 9
 // mode == out
-void test05(int size)
+void test05(std::size_t size)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char filename[] = "inserters_extractors-1.txt";
   const wchar_t fillc = L'f';
   std::wofstream ofs(filename);
@@ -60,7 +60,7 @@ void test05(int size)
 
   // sanity check on the written file
   std::wifstream ifs(filename);
-  int count = 0;
+  std::size_t count = 0;
   wchar_t c;
   while (count <= (2 * size) + 4)
     {

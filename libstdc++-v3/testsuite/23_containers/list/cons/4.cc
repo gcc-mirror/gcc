@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 // Range constructor
 //
@@ -35,8 +35,8 @@ void
 test03()
 {
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-  const int N = sizeof(A) / sizeof(int);
-  int count;
+  const std::size_t N = sizeof(A) / sizeof(int);
+  std::size_t count;
   std::list<int>::const_iterator i;
 
   // construct from a dissimilar range

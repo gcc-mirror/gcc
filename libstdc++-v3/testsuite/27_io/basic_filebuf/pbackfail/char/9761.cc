@@ -29,7 +29,7 @@ const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   filebuf fbuf;
   filebuf::int_type r1, r2;
@@ -48,7 +48,7 @@ void test01()
   VERIFY( r2 == filebuf::traits_type::eof() );
 }
 
-main() 
+int main() 
 {
   test01();
   return 0;

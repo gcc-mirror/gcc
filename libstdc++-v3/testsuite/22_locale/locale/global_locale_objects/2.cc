@@ -28,7 +28,7 @@
 void test02()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   const string ph("en_PH");
   const string mx("es_MX");

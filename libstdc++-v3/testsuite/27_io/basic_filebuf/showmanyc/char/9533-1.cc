@@ -33,7 +33,7 @@
 void test_01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "tmp_fifo1";
 
   const int count = 10000;

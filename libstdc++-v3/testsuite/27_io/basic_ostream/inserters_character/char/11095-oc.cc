@@ -29,7 +29,7 @@
 void
 test03() 
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::ostringstream oss_01;
 

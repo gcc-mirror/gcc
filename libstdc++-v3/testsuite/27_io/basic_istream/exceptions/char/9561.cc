@@ -40,7 +40,7 @@ struct buf: std::streambuf
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   buf b;
   std::istream strm (&b);

@@ -29,7 +29,7 @@ void test01()
   typedef std::num_put<char> test_type;
   typedef std::locale::facet base_type;
   const test_type& obj = std::use_facet<test_type>(std::locale()); 
-  const base_type* base = &obj;
+  const base_type* base __attribute__((unused)) = &obj;
   
   // Check for required typedefs
   typedef test_type::char_type char_type;

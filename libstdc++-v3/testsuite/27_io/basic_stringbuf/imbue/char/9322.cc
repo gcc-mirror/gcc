@@ -27,7 +27,7 @@
 void test03()
 {
   using std::locale;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   locale loc =  std::locale::classic();
   std::stringbuf ob;

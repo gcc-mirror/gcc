@@ -36,7 +36,7 @@ const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 
 void test_03()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   int first_fd = ::open(name_01, O_RDONLY);
   VERIFY( first_fd != -1 );
   FILE* first_file = ::fdopen(first_fd, "r");

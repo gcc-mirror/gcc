@@ -56,7 +56,7 @@ private:
 
 void test10()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::stringbuf sbuf("Bad Moon Rising", std::ios::in);
   Outbuf buf;

@@ -26,7 +26,7 @@
 // libstdc++/6503
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::deque<int> d(2);       
   typedef std::deque<int>::iterator iter;         
@@ -59,7 +59,7 @@ void test01()
 // libstdc++/7186
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::deque<int> d(2);       
   typedef std::deque<int>::iterator iter;         

@@ -54,7 +54,7 @@ std::string MyNP::do_falsename() const
 void
 test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char lit[] = "1 0\ntrue false\n:  true:\n:true  :\n: false:\n:  1:"
     		     "\n:1  :\n:  0:\nyea nay\n:   yea:\n:yea   :\n:   nay:\n";
   std::ostringstream oss;

@@ -29,14 +29,13 @@
 void test04()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // Check num_get works with other iterators besides streambuf
   // output iterators. (As long as output_iterator requirements are met.)
   typedef wstring::const_iterator iter_type;
   typedef num_get<wchar_t, iter_type> num_get_type;
   const ios_base::iostate goodbit = ios_base::goodbit;
-  const ios_base::iostate eofbit = ios_base::eofbit;
   ios_base::iostate err = ios_base::goodbit;
   const locale loc_c = locale::classic();
   const wstring str(L"20000106 Elizabeth Durack");

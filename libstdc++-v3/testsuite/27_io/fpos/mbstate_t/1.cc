@@ -35,7 +35,7 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   typedef std::mbstate_t state_type;
   state_type state01 = state_type();
@@ -43,12 +43,6 @@ void test01()
 
   std::streampos pos01(0);
   std::streampos pos02(0);
-
-  std::streamoff off01;
-  std::streamoff off02;
-  
-  std::streamsize size01;
-  std::streamsize size02;
 
   // 27.4.3.1 fpos members
   // void state(state_type s);

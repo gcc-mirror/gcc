@@ -25,7 +25,7 @@
 // libstdc++/3955 -- ios_base::app overwrites from the beginning
 void test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::ostringstream os ("foo");
   os << "bar";

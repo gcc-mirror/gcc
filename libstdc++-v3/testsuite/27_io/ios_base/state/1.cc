@@ -33,7 +33,7 @@
 void
 test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string strue("true");
   const std::string sfalse("false");
   std::string str01;
@@ -42,7 +42,7 @@ test02()
   std::locale loc_c = std::locale::classic();
   std::ostringstream ostr01;
   ostr01.imbue(loc_c);
-  std::ios_base::fmtflags ff = ostr01.flags(std::ios_base::boolalpha);
+  ostr01.flags(std::ios_base::boolalpha);
 
   ostr01 << true;
   str02 = ostr01.str();

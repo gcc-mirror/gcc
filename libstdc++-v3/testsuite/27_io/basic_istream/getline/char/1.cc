@@ -33,7 +33,7 @@ test02()
 {
   typedef std::char_traits<char>	traits_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char str_lit01[] = "\t\t\t    sun*ra \n"
   "                            "
   "and his myth science arkestra present\n"
@@ -51,7 +51,6 @@ test02()
   std::ios_base::iostate state1, state2, statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
-  std::streamsize count1, count2;
   char carray1[400] = "";
 
   // istream& getline(char* s, streamsize n, char delim)

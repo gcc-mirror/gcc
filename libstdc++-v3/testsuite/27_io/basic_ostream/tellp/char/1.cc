@@ -31,7 +31,7 @@ void test01()
   using namespace std;
   typedef ios::pos_type pos_type;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char str_lit01[] = "ostream_seeks-1.txt";
 
   // out

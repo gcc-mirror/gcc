@@ -35,12 +35,7 @@
 
 void test01()
 {
-  bool test = true;
-
-  std::ios_base::fmtflags flag02, flag03;
-  const std::ios_base::fmtflags flag01 = std::ios_base::skipws 
-                                         | std::ios_base::dec;
- 
+  bool test __attribute__((unused)) = true;
   const std::locale c_loc = std::locale::classic();
 
   std::ios ios_01(NULL);

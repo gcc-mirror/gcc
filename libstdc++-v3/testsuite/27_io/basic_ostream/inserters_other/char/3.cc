@@ -31,7 +31,7 @@
 void test04()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   istringstream istr("inside betty carter");
   ostringstream ostr;
   ostr << istr.rdbuf() << endl;

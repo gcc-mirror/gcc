@@ -35,7 +35,7 @@ public:
 void test15()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   
   OverBuf sb;
 
@@ -56,7 +56,7 @@ void test15()
   VERIFY( c == stringbuf::traits_type::eof() );
 }
 
-main() 
+int main() 
 {
   test15();
   return 0;

@@ -37,7 +37,7 @@
 void
 test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   std::stringbuf strbuf01;
   std::ostream strm1(&strbuf01);

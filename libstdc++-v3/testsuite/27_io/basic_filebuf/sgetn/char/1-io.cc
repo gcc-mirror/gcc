@@ -38,13 +38,13 @@ void test05()
   typedef filebuf::int_type 	int_type;
   typedef filebuf::traits_type 	traits_type;
 
-  bool 				test = true;
+  bool test __attribute__((unused)) = true;
 
-  streamsize 			strmsz_1, strmsz_2, strmsz_3;
+  streamsize 			strmsz_1, strmsz_2;
   char carray1[13] = "";
   char carray2[8192] = "";
   char buffer[8192] = "";
-  int_type 			c1, c2, c3, c4;
+  int_type 			c1, c4;
   
   // streamsize sgetn(char_type *s, streamsize n)
   // streamsize xsgetn(char_type *s, streamsize n)
@@ -92,7 +92,7 @@ void test05()
   }
 }
 
-main() 
+int main() 
 {
   test05();
   return 0;

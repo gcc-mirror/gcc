@@ -28,7 +28,7 @@
 void
 test05()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str01 = "londinium";
   std::string str02 = "cydonia";
 

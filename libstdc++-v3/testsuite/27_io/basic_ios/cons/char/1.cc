@@ -35,7 +35,7 @@
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   std::string str_01("jade cove, big sur");
   std::string str_05;
   std::stringbuf strb_01;
@@ -43,7 +43,7 @@ void test01()
   std::stringbuf strb_03(str_01, std::ios_base::out);
   const std::ios_base::fmtflags flag01 = std::ios_base::skipws | 
     					 std::ios_base::dec;
-  std::ios_base::fmtflags flag02, flag03;
+  std::ios_base::fmtflags flag02;
   const std::locale glocale = std::locale();
 
   // explicit basic_ios(streambuf* sb)

@@ -46,7 +46,7 @@ std::stringstream ss_01(str_01);
 // elaborated test for ints
 bool test02() {
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const std::string str_01("20000AB");
   std::stringbuf strb_01(str_01, std::ios_base::in);
   std::istream is(&strb_01);

@@ -31,7 +31,7 @@ void test01()
   
   std::stringbuf buf;
   const test_type& obj = test_type(&buf);
-  const base_type* base = &obj;
+  const base_type* base __attribute__((unused)) = &obj;
 }
 
 int main()

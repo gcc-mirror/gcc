@@ -22,7 +22,7 @@
 //#include <cmath>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 const int A[] = {1, 11, 12, 3, 10, 6, 17, 4, 8, 2, 5, 13, 9, 15, 14, 16, 7};
 const int B[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
@@ -123,10 +123,10 @@ test02()
 }
 
 int
-main(int argc, char* argv[])
+main()
 {
-    test01();
-    test02();
+  test01();
+  test02();
 
-    return !test;
+  return 0;
 }

@@ -28,7 +28,7 @@
 void test12()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   stringbuf sbuf;
   sbuf.sputn("crazy bees!", 11);
@@ -43,7 +43,7 @@ void test12()
   VERIFY( c == 'a' );
 }
 
-main() 
+int main() 
 {
   test12();
   return 0;

@@ -126,7 +126,7 @@ void test01()
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
 
@@ -215,7 +215,7 @@ void test02()
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
-  bool 			test = true;
+  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
 

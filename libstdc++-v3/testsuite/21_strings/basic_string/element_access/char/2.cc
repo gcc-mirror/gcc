@@ -29,11 +29,10 @@
 // underlying string implementation, of course.
 bool test01(void)
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::iterator siterator;
   typedef std::string::reverse_iterator sriterator;
-  csize_type npos = std::string::npos;
   csize_type csz01, csz02;
   siterator it1;
   sriterator rit1;  

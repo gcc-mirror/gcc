@@ -36,7 +36,7 @@ namespace std
 {
   template<>
     void
-    numpunct<podchar_type>::_M_initialize_numpunct(__c_locale __cloc)
+    numpunct<podchar_type>::_M_initialize_numpunct(__c_locale)
     {
       if (!_M_data)
 	_M_data = new __numpunct_cache<podchar_type>;
@@ -92,7 +92,7 @@ void test01()
   typedef basic_stringbuf<podchar_type> 	stringbuf_type;
   typedef basic_ostream<podchar_type> 		ostream_type;
   
-  bool 		test = true;
+  bool test __attribute__((unused)) = true;
 
   // Pre-cache sanity check.
   const locale 	loc(locale::classic(), new numpunct<podchar_type>);

@@ -33,7 +33,7 @@ void test01()
   typedef iterator<input_iterator_tag, long, ptrdiff_t, const long*, 
     		   const long&> base_iterator;
   test_iterator  r_it;
-  base_iterator* base = &r_it;
+  base_iterator* base __attribute__((unused)) = &r_it;
 
   // Check for required typedefs
   typedef test_iterator::value_type value_type;
@@ -53,7 +53,7 @@ template class std::istream_iterator<char>;
 void test02()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   string st("R.Rorty");
 

@@ -26,7 +26,7 @@ void test09()
 {
   using namespace std;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   const char* name = "tmp_09";
 
   FILE* fout = fopen(name, "w");

@@ -27,7 +27,7 @@
 void test01()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   typedef time_base::dateorder dateorder;
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
@@ -40,12 +40,6 @@ void test01()
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
-
-  // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
-  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
-  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
-  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
 
   const string empty;
 

@@ -110,7 +110,7 @@ void test01()
   typedef __enc_traits				enc_type;
   typedef codecvt<int_type, ext_type, enc_type>	unicode_codecvt;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
   string str1, str2;
 
   // construct a locale object with the C facet

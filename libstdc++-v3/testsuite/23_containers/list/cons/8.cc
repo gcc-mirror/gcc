@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 
 // A nontrivial type.
@@ -42,9 +42,9 @@ struct C {
 void
 test06D()
 {
-  const int LIST_SIZE = 5;
+  const std::size_t LIST_SIZE = 5;
   const int INIT_VALUE = 7;
-  int count = 0;
+  std::size_t count = 0;
   std::list<C> list0604;
   VERIFY(list0604.size() == 0);
   

@@ -33,7 +33,7 @@ void test01()
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   // basic construction and sanity checks.
   locale loc_c = locale::classic();
@@ -45,14 +45,8 @@ void test01()
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
 
-  // cache the __timepunct facets, for quicker gdb inspection
-  const __timepunct<wchar_t>& time_c = use_facet<__timepunct<wchar_t> >(loc_c); 
-  const __timepunct<wchar_t>& time_de = use_facet<__timepunct<wchar_t> >(loc_de); 
-  const __timepunct<wchar_t>& time_hk = use_facet<__timepunct<wchar_t> >(loc_hk); 
-  const __timepunct<wchar_t>& time_fr = use_facet<__timepunct<wchar_t> >(loc_fr); 
-
   // create "C" time objects
-  const tm time_bday = { 0, 0, 12, 4, 3, 71 };
+  const tm time_bday = { 0, 0, 12, 4, 3, 71, 0, 93, 0 };
 
   // iter_type 
   // get_monthname(iter_type, iter_type, ios_base&, 

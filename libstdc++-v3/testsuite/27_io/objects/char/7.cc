@@ -36,7 +36,7 @@
 void test07()
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   const char* name = "tmp_fifo4";
 

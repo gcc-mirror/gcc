@@ -50,7 +50,7 @@ struct buf: std::streambuf
 void
 test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   buf b(0);
   std::ostream strm(&b);

@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
-bool test = true;
+bool test __attribute__((unused)) = true;
 
 const int A[] = {1, 2, 3, 3, 3, 5, 8};
 const int C[] = {8, 5, 3, 3, 3, 2, 1};
@@ -172,12 +172,12 @@ test04()
 }
 
 int
-main(int argc, char* argv[])
+main()
 {
-    test01();
-    test02();
-    test03();
-    test04();
-
-    return !test;
+  test01();
+  test02();
+  test03();
+  test04();
+  
+  return 0;
 }

@@ -32,7 +32,7 @@ test03_check(T n)
   stringbuf strbuf;
   ostream o(&strbuf);
   const char *expect;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   if (numeric_limits<T>::digits + 1 == 16)
     expect = "177777 ffff";
