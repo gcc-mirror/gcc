@@ -1086,6 +1086,7 @@ expand_call (exp, target, ignore)
 	      MEM_IN_STRUCT_P (copy) = AGGREGATE_TYPE_P (type);
 
 	      store_expr (args[i].tree_value, copy, 0);
+	      is_const = 0;
 
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
