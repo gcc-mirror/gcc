@@ -80,6 +80,7 @@ case $machine in
 	hppa1.0-*-bsd* | \
 	hppa*-*-lites* | \
 	*-*-linux-gnu* | \
+	*-*-gnu* | \
 	i[34567]86-moss-msdos* | i[34567]86-*-moss* | \
 	i[34567]86-*-osf1* | \
 	i[34567]86-*-win32 | \
