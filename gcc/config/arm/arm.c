@@ -4449,7 +4449,7 @@ arm_gen_movstrqi (operands)
   fin_dst = dst = copy_to_mode_reg (SImode, st_dst);
   fin_src = src = copy_to_mode_reg (SImode, st_src);
 
-  in_words_to_go = NUM_INTS (INTVAL (operands[2]));
+  in_words_to_go = ARM_NUM_INTS (INTVAL (operands[2]));
   out_words_to_go = INTVAL (operands[2]) / 4;
   last_bytes = INTVAL (operands[2]) & 3;
 
@@ -8563,7 +8563,7 @@ arm_print_operand (stream, x, code)
     case 'M':
       asm_fprintf (stream, "{%r-%r}",
 		   REGNO (x),
-		   REGNO (x) + NUM_REGS (GET_MODE (x)) - 1);
+		   REGNO (x) + ARM_NUM_REGS (GET_MODE (x)) - 1);
       return;
 
     case 'd':
@@ -9164,7 +9164,7 @@ arm_hard_regno_mode_ok (regno, mode)
        register available to hold the upper part of the value.
        We probably we ought to ensure that the register is the
        start of an even numbered register pair.  */
-    return (NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
+    return (ARM_NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
   if (regno <= LAST_ARM_REGNUM)
     /* We allow any value to be stored in the general regisetrs.  */
@@ -10309,7 +10309,7 @@ thumb_output_function_prologue (f, size)
 	  
 	  asm_fprintf (f, "\tpush\t{");
 
-	  num_pushes = NUM_INTS (current_function_pretend_args_size);
+	  num_pushes = ARM_NUM_INTS (current_function_pretend_args_size);
 	  
 	  for (regno = LAST_ARG_REGNUM + 1 - num_pushes;
 	       regno <= LAST_ARG_REGNUM;
