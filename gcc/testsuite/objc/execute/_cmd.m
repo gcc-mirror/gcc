@@ -14,7 +14,7 @@
 @end
 
 @implementation TestClass
-+ (const char*) method;
++ (const char*) method
 {
   return sel_get_name (_cmd);
 }
