@@ -581,7 +581,6 @@ i960_output_ldconst (dst, src)
   register unsigned rsrc2;
   enum machine_mode mode = GET_MODE (dst);
   rtx operands[4];
-  union { long l[2]; double d; } x;
 
   operands[0] = operands[2] = dst;
   operands[1] = operands[3] = src;
@@ -631,18 +630,10 @@ i960_output_ldconst (dst, src)
   else if (mode == DImode)
     {
       rtx upperhalf, lowerhalf, xoperands[2];
-      char *string;
 
-      if (GET_CODE (src) == CONST_DOUBLE)
-	{
-	  upperhalf = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (src));
-	  lowerhalf = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (src));
-	}
-      else if (GET_CODE (src) == CONST_INT)
-	{
-	  lowerhalf = src;
-	  upperhalf = INTVAL (src) < 0 ? constm1_rtx : const0_rtx;
-	}
+      if (GET_CODE (src) == CONST_DOUBLE || GET_CODE (src) == CONST_INT)
+ 	split_double (src, &lowerhalf, &upperhalf);
+
       else
 	abort ();
 
@@ -1458,22 +1449,23 @@ i960_print_operand (file, x, code)
     }
   else if (rtxcode == CONST_DOUBLE)
     {
-      double d;
+      REAL_VALUE_TYPE d;
+      char dstr[30];
 
-      if (x == CONST0_RTX (DFmode) || x == CONST0_RTX (SFmode))
+      if (x == CONST0_RTX (GET_MODE (x)))
 	{
 	  fprintf (file, "0f0.0");
 	  return;
 	}
-      else if (x == CONST1_RTX (DFmode) || x == CONST1_RTX (SFmode))
+      else if (x == CONST1_RTX (GET_MODE (x)))
 	{
 	  fprintf (file, "0f1.0");
 	  return;
 	}
 
-      /* This better be a comment.  */
       REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-      fprintf (file, "%#g", d);
+      REAL_VALUE_TO_DECIMAL (d, "%#g", dstr);
+      fprintf (file, "0f%s", dstr);
       return;
     }
 
@@ -2115,41 +2107,24 @@ i960_function_arg (cum, mode, type, named)
 void
 i960_output_double (file, value)
      FILE *file;
-     double value;
+     REAL_VALUE_TYPE value;
 {
-#ifdef REAL_VALUE_TO_TARGET_DOUBLE
   long value_long[2];
   REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
 
-  fprintf (file, "\t.word\t0x%08lx\t\t# %.20g\n\t.word\t0x%08lx\n",
-	   value_long[0], value, value_long[1]);
-#else
-  if (REAL_VALUE_ISINF (value))
-    {
-      fprintf (file, "\t.word	0\n");
-      fprintf (file, "\t.word	0x7ff00000	# Infinity\n");
-    }
-  else
-    fprintf (file, "\t.double 0d%.17e\n", (value));
-#endif
+  fprintf (file, "\t.word\t0x%08lx\n\t.word\t0x%08lx\n",
+	   value_long[0], value_long[1]);
 }
-
+  
 void
 i960_output_float (file, value)
      FILE *file;
-     double value;
+     REAL_VALUE_TYPE value;
 {
-#ifdef REAL_VALUE_TO_TARGET_SINGLE
   long value_long;
   REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
 
-  fprintf (file, "\t.word\t0x%08lx\t\t# %.12g (float)\n", value_long, value);
-#else
-  if (REAL_VALUE_ISINF (value))
-    fprintf (file, "\t.word	0x7f800000	# Infinity\n");
-  else
-    fprintf (file, "\t.float 0f%.12e\n", (value));
-#endif
+  fprintf (file, "\t.word\t0x%08lx\n", value_long);
 }
 
 /* Return the number of bits that an object of size N bytes is aligned to.  */
