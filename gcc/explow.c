@@ -31,6 +31,10 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "insn-codes.h"
 
+#if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 static rtx break_out_memory_refs	PROTO((rtx));
 static void emit_stack_probe		PROTO((rtx));
 /* Return an rtx for the sum of X and the integer C.
@@ -830,8 +834,8 @@ rtx
 round_push (size)
      rtx size;
 {
-#ifdef STACK_BOUNDARY
-  int align = STACK_BOUNDARY / BITS_PER_UNIT;
+#ifdef PREFERRED_STACK_BOUNDARY
+  int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
   if (align == 1)
     return size;
   if (GET_CODE (size) == CONST_INT)
@@ -851,7 +855,7 @@ round_push (size)
 			    NULL_RTX, 1);
       size = expand_mult (Pmode, size, GEN_INT (align), NULL_RTX, 1);
     }
-#endif /* STACK_BOUNDARY */
+#endif /* PREFERRED_STACK_BOUNDARY */
   return size;
 }
 
@@ -1124,10 +1128,10 @@ allocate_dynamic_stack_space (size, target, known_align)
      If we have to align, we must leave space in SIZE for the hole
      that might result from the alignment operation.  */
 
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET) || ! defined (STACK_BOUNDARY)
+#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET) || ! defined (PREFERRED_STACK_BOUNDARY)
 #define MUST_ALIGN 1
 #else
-#define MUST_ALIGN (STACK_BOUNDARY < BIGGEST_ALIGNMENT)
+#define MUST_ALIGN (PREFERRED_STACK_BOUNDARY < BIGGEST_ALIGNMENT)
 #endif
 
   if (MUST_ALIGN)
@@ -1154,12 +1158,12 @@ allocate_dynamic_stack_space (size, target, known_align)
 
     if (!current_function_calls_setjmp)
       {
-	int align = STACK_BOUNDARY / BITS_PER_UNIT;
+	int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
 
 	/* See optimize_save_area_alloca to understand what is being
 	   set up here.  */
 
-#if !defined(STACK_BOUNDARY) || !defined(MUST_ALIGN) || (STACK_BOUNDARY != BIGGEST_ALIGNMENT)
+#if !defined(PREFERRED_STACK_BOUNDARY) || !defined(MUST_ALIGN) || (PREFERRED_STACK_BOUNDARY != BIGGEST_ALIGNMENT)
 	/* If anyone creates a target with these characteristics, let them
 	   know that our optimization cannot work correctly in such a case.  */
 	abort();
@@ -1209,11 +1213,11 @@ allocate_dynamic_stack_space (size, target, known_align)
      way of knowing which systems have this problem.  So we avoid even
      momentarily mis-aligning the stack.  */
 
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we added a variable amount to SIZE,
      we can no longer assume it is aligned.  */
 #if !defined (SETJMP_VIA_SAVE_AREA)
-  if (MUST_ALIGN || known_align % STACK_BOUNDARY != 0)
+  if (MUST_ALIGN || known_align % PREFERRED_STACK_BOUNDARY != 0)
 #endif
     size = round_push (size);
 #endif

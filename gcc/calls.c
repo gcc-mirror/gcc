@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "output.h"
 
+#if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 
@@ -43,8 +47,8 @@ Boston, MA 02111-1307, USA.  */
 
 #endif
 
-/* Like STACK_BOUNDARY but in units of bytes, not bits.  */
-#define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
+/* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
+#define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
 
 /* Data structure and subroutines used within expand_call.  */
 
@@ -311,7 +315,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    says that the pointer to this aggregate is to be popped by the callee.
 
    STACK_SIZE is the number of bytes of arguments on the stack,
-   rounded up to STACK_BOUNDARY; zero if the size is variable.
+   rounded up to PREFERRED_STACK_BOUNDARY; zero if the size is variable.
    This is both to put into the call insn and
    to generate explicit popping code if necessary.
 
@@ -1240,8 +1244,8 @@ expand_call (exp, target, ignore)
       args_size.var = ARGS_SIZE_TREE (args_size);
       args_size.constant = 0;
 
-#ifdef STACK_BOUNDARY
-      if (STACK_BOUNDARY != BITS_PER_UNIT)
+#ifdef PREFERRED_STACK_BOUNDARY
+      if (PREFERRED_STACK_BOUNDARY != BITS_PER_UNIT)
 	args_size.var = round_up (args_size.var, STACK_BYTES);
 #endif
 
@@ -1262,7 +1266,7 @@ expand_call (exp, target, ignore)
     }
   else
     {
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
       args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
 			     / STACK_BYTES) * STACK_BYTES);
 #endif
@@ -1589,7 +1593,7 @@ expand_call (exp, target, ignore)
     }
 					       
 #ifdef PUSH_ARGS_REVERSED
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
@@ -1838,7 +1842,7 @@ expand_call (exp, target, ignore)
 		       args_size.var != 0, reg_parm_stack_space);
 
 #ifndef PUSH_ARGS_REVERSED
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
@@ -2386,7 +2390,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   assemble_external_libcall (fun);
 
   original_args_size = args_size;
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
 			 / STACK_BYTES) * STACK_BYTES);
 #endif
@@ -2454,7 +2458,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 #endif
 
 #ifdef PUSH_ARGS_REVERSED
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
@@ -2599,7 +2603,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
     }
 
 #ifndef PUSH_ARGS_REVERSED
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
@@ -2950,7 +2954,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   assemble_external_libcall (fun);
 
   original_args_size = args_size;
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
 			 / STACK_BYTES) * STACK_BYTES);
 #endif
@@ -3018,7 +3022,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #endif
 
 #ifdef PUSH_ARGS_REVERSED
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
@@ -3164,7 +3168,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
     }
 
 #ifndef PUSH_ARGS_REVERSED
-#ifdef STACK_BOUNDARY
+#ifdef PREFERRED_STACK_BOUNDARY
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)

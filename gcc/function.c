@@ -57,6 +57,10 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 
+#if !defined PREFERRED_STACK_BOUNDARY && defined STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
 #endif
@@ -669,7 +673,7 @@ void pop_function_context ()
 /* Allocate fixed slots in the stack frame of the current function.  */
 
 /* Return size needed for stack frame based on slots so far allocated.
-   This size counts from zero.  It is not rounded to STACK_BOUNDARY;
+   This size counts from zero.  It is not rounded to PREFERRED_STACK_BOUNDARY;
    the caller may have to do that.  */
 
 HOST_WIDE_INT
@@ -4645,8 +4649,8 @@ assign_parms (fndecl, second_time)
 #endif
 #endif
 
-#ifdef STACK_BOUNDARY
-#define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
+#ifdef PREFERRED_STACK_BOUNDARY
+#define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
 
   current_function_args_size
     = ((current_function_args_size + STACK_BYTES - 1)
