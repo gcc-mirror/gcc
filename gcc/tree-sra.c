@@ -1293,10 +1293,15 @@ decide_block_copy (struct sra_elt *elt)
       tree size_tree = TYPE_SIZE_UNIT (elt->type);
       bool use_block_copy = true;
 
+      /* Tradeoffs for COMPLEX types pretty much always make it better
+	 to go ahead and split the components.  */
+      if (TREE_CODE (elt->type) == COMPLEX_TYPE)
+	use_block_copy = false;
+
       /* Don't bother trying to figure out the rest if the structure is
 	 so large we can't do easy arithmetic.  This also forces block
 	 copies for variable sized structures.  */
-      if (host_integerp (size_tree, 1))
+      else if (host_integerp (size_tree, 1))
 	{
 	  unsigned HOST_WIDE_INT full_size, inst_size = 0;
 	  unsigned int inst_count;
