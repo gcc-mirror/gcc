@@ -184,8 +184,7 @@ RUNTEST = `if [ -f $$s/dejagnu/runtest ] ; \
 CC_FOR_BUILD = $(CC)
 CXX_FOR_BUILD = $(CXX)
 
-SUBDIRS = "this is set via configure, don't edit this"
-OTHERS = 
+SUBDIRS = @configdirs@
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
