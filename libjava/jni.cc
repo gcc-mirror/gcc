@@ -18,27 +18,36 @@ details.  */
 
 #include <stddef.h>
 
-// Must define this before jni.h.
-#define GCJ_JV_JNIENV_FRIEND \
-    friend jthrowable &get_throwable (JNIEnv *)
+// Define this before including jni.h.
+#define __GCJ_JNI_IMPL__
 
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-assert.h>
 #include <jni.h>
-#include <gcj/field.h>
+
+#include <java/lang/Class.h>
+#include <java/lang/ClassLoader.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
+#include <java/lang/StringIndexOutOfBoundsException.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoSuchFieldError.h>
 #include <java/lang/NoSuchMethodError.h>
 #include <java/lang/reflect/Constructor.h>
+#include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Modifier.h>
+
+#include <gcj/method.h>
+#include <gcj/field.h>
 
 #define ClassClass _CL_Q34java4lang5Class
 extern java::lang::Class ClassClass;
 #define ObjectClass _CL_Q34java4lang6Object
 extern java::lang::Class ObjectClass;
+
+#define MethodClass _CL_Q44java4lang7reflect6Method
+extern java::lang::Class MethodClass;
 
 // This enum is used to select different template instantiations in
 // the invocation code.
@@ -49,6 +58,9 @@ enum invocation_type
   static_type,
   constructor
 };
+
+// Forward declaration.
+extern struct JNINativeInterface _Jv_JNIFunctions;
 
 
 
@@ -66,13 +78,6 @@ unmark_for_gc (void *)
   // FIXME.
 }
 
-// Return throwable in env.
-jthrowable &
-get_throwable (JNIEnv *env)
-{
-  return env->ex;
-}
-
 
 
 static jint
@@ -82,13 +87,55 @@ _Jv_JNI_GetVersion (JNIEnv *)
 }
 
 static jclass
+_Jv_JNI_DefineClass (JNIEnv *, jobject loader, 
+		     const jbyte *buf, jsize bufLen)
+{
+  jbyteArray bytes = JvNewByteArray (bufLen);
+  jbyte *elts = elements (bytes);
+  memcpy (elts, buf, bufLen * sizeof (jbyte));
+
+  java::lang::ClassLoader *l
+    = reinterpret_cast<java::lang::ClassLoader *> (loader);
+
+  // FIXME: exception processing.
+  jclass result = l->defineClass (bytes, 0, bufLen);
+  return result;
+}
+
+static jclass
+_Jv_JNI_FindClass (JNIEnv *env, const char *name)
+{
+  // FIXME: assume that NAME isn't too long.
+  int len = strlen (name);
+  char s[len + 1];
+  for (int i = 0; i <= len; ++i)
+    s[i] = (name[i] == '/') ? '.' : name[i];
+  jstring n = JvNewStringUTF (s);
+
+  java::lang::ClassLoader *loader;
+  if (env->klass == NULL)
+    {
+      // FIXME: should use getBaseClassLoader, but we don't have that
+      // yet.
+      loader = java::lang::ClassLoader::getSystemClassLoader ();
+    }
+  else
+    loader = env->klass->getClassLoader ();
+
+  // FIXME: exception processing.
+  jclass r = loader->findClass (n);
+
+  return r;
+}
+
+static jclass
 _Jv_JNI_GetSuperclass (JNIEnv *, jclass clazz)
 {
   return clazz->getSuperclass ();
 }
 
 static jboolean
-IsAssignableFrom(JNIEnv *, jclass clazz1, jclass clazz2)
+_Jv_JNI_IsAssignableFrom(JNIEnv *, jclass clazz1, jclass clazz2)
 {
   return clazz1->isAssignableFrom (clazz2);
 }
@@ -96,7 +143,7 @@ IsAssignableFrom(JNIEnv *, jclass clazz1, jclass clazz2)
 static jint
 _Jv_JNI_Throw (JNIEnv *env, jthrowable obj)
 {
-  get_throwable (env) = obj;
+  env->ex = obj;
   return 0;
 }
 
@@ -121,27 +168,34 @@ _Jv_JNI_ThrowNew (JNIEnv *env, jclass clazz, const char *message)
   // FIXME: exception processing.
   jobject obj = cons->newInstance (values);
 
-  get_throwable (env) = reinterpret_cast<jthrowable> (obj);
+  env->ex = reinterpret_cast<jthrowable> (obj);
   return 0;
 }
 
 static jthrowable
 _Jv_JNI_ExceptionOccurred (JNIEnv *env)
 {
-  return get_throwable (env);
+  // FIXME: create local reference.
+  return env->ex;
 }
 
 static void
 _Jv_JNI_ExceptionDescribe (JNIEnv *env)
 {
-  if (get_throwable (env) != NULL)
-    get_throwable (env)->printStackTrace();
+  if (env->ex != NULL)
+    env->ex->printStackTrace();
 }
 
 static void
 _Jv_JNI_ExceptionClear (JNIEnv *env)
 {
-  get_throwable (env) = NULL;
+  env->ex = NULL;
+}
+
+static jboolean
+_Jv_JNI_ExceptionCheck (JNIEnv *env)
+{
+  return env->ex != NULL;
 }
 
 static void
@@ -162,7 +216,7 @@ _Jv_JNI_AllocObject (JNIEnv *env, jclass clazz)
   jobject obj = NULL;
   using namespace java::lang::reflect;
   if (clazz->isInterface() || Modifier::isAbstract(clazz->getModifiers()))
-    get_throwable (env) = new java::lang::InstantiationException ();
+    env->ex = new java::lang::InstantiationException ();
   else
     {
       // FIXME: exception processing.
@@ -225,7 +279,7 @@ _Jv_JNI_GetAnyMethodID (JNIEnv *env, jclass clazz,
       clazz = clazz->getSuperclass ();
     }
 
-  get_throwable (env) = new java::lang::NoSuchMethodError ();
+  env->ex = new java::lang::NoSuchMethodError ();
   return NULL;
 }
 
@@ -290,7 +344,7 @@ _Jv_JNI_CallAnyMethodV (JNIEnv *env, jobject obj, jclass klass,
 				      arg_types, args, &result);
 
   if (ex != NULL)
-    get_throwable (env) = ex;
+    env->ex = ex;
 
   // We cheat a little here.  FIXME.
   return * (T *) &result;
@@ -334,7 +388,7 @@ _Jv_JNI_CallAnyMethodA (JNIEnv *env, jobject obj, jclass klass,
 				      arg_types, args, &result);
 
   if (ex != NULL)
-    get_throwable (env) = ex;
+    env->ex = ex;
 
   // We cheat a little here.  FIXME.
   return * (T *) &result;
@@ -365,7 +419,7 @@ _Jv_JNI_CallAnyVoidMethodV (JNIEnv *env, jobject obj, jclass klass,
 				      arg_types, args, NULL);
 
   if (ex != NULL)
-    get_throwable (env) = ex;
+    env->ex = ex;
 }
 
 template<invocation_type style>
@@ -402,7 +456,7 @@ _Jv_JNI_CallAnyVoidMethodA (JNIEnv *env, jobject obj, jclass klass,
 				      arg_types, args, NULL);
 
   if (ex != NULL)
-    get_throwable (env) = ex;
+    env->ex = ex;
 }
 
 // Functions with this signature are used to implement functions in
@@ -617,7 +671,7 @@ _Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
       clazz = clazz->getSuperclass ();
     }
 
-  get_throwable (env) = new java::lang::NoSuchFieldError ();
+  env->ex = new java::lang::NoSuchFieldError ();
   return NULL;
 }
 
@@ -702,6 +756,44 @@ _Jv_JNI_ReleaseStringUTFChars (JNIEnv *, jstring, const char *utf)
   _Jv_Free ((void *) utf);
 }
 
+static void
+_Jv_JNI_GetStringRegion (JNIEnv *env, jstring string, jsize start, jsize len,
+			 jchar *buf)
+{
+  jchar *result = _Jv_GetStringChars (string);
+  if (start < 0 || start > string->length ()
+      || len < 0 || start + len > string->length ())
+    env->ex = new java::lang::StringIndexOutOfBoundsException ();
+  else
+    memcpy (buf, &result[start], len * sizeof (jchar));
+}
+
+static void
+_Jv_JNI_GetStringUTFRegion (JNIEnv *env, jstring str, jsize start,
+			    jsize len, char *buf)
+{
+  if (start < 0 || start > str->length ()
+      || len < 0 || start + len > str->length ())
+    env->ex = new java::lang::StringIndexOutOfBoundsException ();
+  else
+    _Jv_GetStringUTFRegion (str, start, len, buf);
+}
+
+static const jchar *
+_Jv_JNI_GetStringCritical (JNIEnv *, jstring str, jboolean *isCopy)
+{
+  jchar *result = _Jv_GetStringChars (str);
+  if (isCopy)
+    *isCopy = false;
+  return result;
+}
+
+static void
+_Jv_JNI_ReleaseStringCritical (JNIEnv *, jstring, const jchar *)
+{
+  // Nothing.
+}
+
 static jsize
 _Jv_JNI_GetArrayLength (JNIEnv *, jarray array)
 {
@@ -776,7 +868,7 @@ _Jv_JNI_GetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
   if (start < 0 || len >= array->length || start + len >= array->length)
     {
       // FIXME: index.
-      get_throwable (env) = new java::lang::ArrayIndexOutOfBoundsException ();
+      env->ex = new java::lang::ArrayIndexOutOfBoundsException ();
     }
   else
     {
@@ -793,13 +885,32 @@ _Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
   if (start < 0 || len >= array->length || start + len >= array->length)
     {
       // FIXME: index.
-      get_throwable (env) = new java::lang::ArrayIndexOutOfBoundsException ();
+      env->ex = new java::lang::ArrayIndexOutOfBoundsException ();
     }
   else
     {
       T *elts = elements (array) + start;
       memcpy (elts, buf, len * sizeof (T));
     }
+}
+
+static void *
+_Jv_JNI_GetPrimitiveArrayCritical (JNIEnv *, jarray array,
+				   jboolean *isCopy)
+{
+  // FIXME: does this work?
+  jclass klass = array->getClass()->getComponentType();
+  JvAssert (klass->isPrimitive ());
+  char *r = _Jv_GetArrayElementFromElementType (array, klass);
+  if (isCopy)
+    *isCopy = false;
+  return r;
+}
+
+static void
+_Jv_JNI_ReleasePrimitiveArrayCritical (JNIEnv *, jarray, void *, jint)
+{
+  // Nothing.
 }
 
 static jint
@@ -820,21 +931,93 @@ _Jv_JNI_MonitorExit (JNIEnv *, jobject obj)
 
 // JDK 1.2
 jobject
-_Jv_JNI_ToReflectedField (JNIEnv *, jclass cls, jfieldID fieldID)
+_Jv_JNI_ToReflectedField (JNIEnv *, jclass cls, jfieldID fieldID,
+			  jboolean)
 {
+  // FIXME: exception processing.
   java::lang::reflect::Field *field = new java::lang::reflect::Field();
   field->declaringClass = cls;
   field->offset = (char*) fieldID - (char *) cls->fields;
   field->name = _Jv_NewStringUtf8Const (fieldID->getNameUtf8Const (cls));
+  // FIXME: make a local reference.
   return field;
 }
 
 // JDK 1.2
-jfieldID
-_Jv_JNI_FromReflectedField (JNIEnv *, java::lang::reflect::Field *field)
+static jfieldID
+_Jv_JNI_FromReflectedField (JNIEnv *, jobject f)
 {
+  using namespace java::lang::reflect;
+
+  Field *field = reinterpret_cast<Field *> (f);
   return _Jv_FromReflectedField (field);
 }
+
+jobject
+_Jv_JNI_ToReflectedMethod (JNIEnv *, jclass klass, jmethodID id,
+			   jboolean)
+{
+  using namespace java::lang::reflect;
+
+  // FIXME.
+  static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
+
+  jobject result;
+  if (_Jv_equalUtf8Consts (id->name, init_name))
+    {
+      // A constructor.
+      Constructor *cons = new Constructor ();
+      cons->offset = (char *) id - (char *) &klass->methods;
+      cons->declaringClass = klass;
+      result = cons;
+    }
+  else
+    {
+      Method *meth = new Method ();
+      meth->offset = (char *) id - (char *) &klass->methods;
+      meth->declaringClass = klass;
+      result = meth;
+    }
+
+  // FIXME: make a local reference.
+  return result;
+}
+
+static jmethodID
+_Jv_JNI_FromReflectedMethod (JNIEnv *, jobject method)
+{
+  using namespace java::lang::reflect;
+  if ((&MethodClass)->isInstance (method))
+    return _Jv_FromReflectedMethod (reinterpret_cast<Method *> (method));
+  return
+    _Jv_FromReflectedConstructor (reinterpret_cast<Constructor *> (method));
+}
+
+
+
+// This function is the stub which is used to turn an ordinary (CNI)
+// method call into a JNI call.
+#if 0
+template<typename T>
+static T
+_Jv_JNI_conversion_call (fixme)
+{
+  JNIEnv env;
+
+  env.p = &_Jv_JNIFunctions;
+  env.ex = NULL;
+  env.klass = FIXME;
+
+  T result = FIXME_ffi_call (args);
+
+  if (env.ex)
+    JvThrow (env.ex);
+
+  return T;
+}
+#endif
+
+
 
 #define NOT_IMPL NULL
 #define RESERVED NULL
@@ -846,28 +1029,28 @@ struct JNINativeInterface _Jv_JNIFunctions =
   RESERVED,
   RESERVED,
   _Jv_JNI_GetVersion,
-  NOT_IMPL /* DefineClass */,
-  NOT_IMPL /* FindClass */,
-  RESERVED,
-  RESERVED,
-  RESERVED,
+  _Jv_JNI_DefineClass,
+  _Jv_JNI_FindClass,
+  _Jv_JNI_FromReflectedMethod,
+  _Jv_JNI_FromReflectedField,
+  _Jv_JNI_ToReflectedMethod,
   _Jv_JNI_GetSuperclass,
-  IsAssignableFrom,
-  RESERVED,
+  _Jv_JNI_IsAssignableFrom,
+  _Jv_JNI_ToReflectedField,
   _Jv_JNI_Throw,
   _Jv_JNI_ThrowNew,
   _Jv_JNI_ExceptionOccurred,
   _Jv_JNI_ExceptionDescribe,
   _Jv_JNI_ExceptionClear,
   _Jv_JNI_FatalError,
-  RESERVED,
-  RESERVED,
+  NOT_IMPL,
+  NOT_IMPL,
   NOT_IMPL /* NewGlobalRef */,
   NOT_IMPL /* DeleteGlobalRef */,
   NOT_IMPL /* DeleteLocalRef */,
   _Jv_JNI_IsSameObject,
-  RESERVED,
-  RESERVED,
+  NOT_IMPL,
+  NOT_IMPL,
   _Jv_JNI_AllocObject,
   _Jv_JNI_NewObject,
   _Jv_JNI_NewObjectV,
@@ -1067,4 +1250,16 @@ struct JNINativeInterface _Jv_JNIFunctions =
   _Jv_JNI_MonitorEnter,
   _Jv_JNI_MonitorExit,
   NOT_IMPL /* GetJavaVM */,
+
+  _Jv_JNI_GetStringRegion,
+  _Jv_JNI_GetStringUTFRegion,
+  _Jv_JNI_GetPrimitiveArrayCritical,
+  _Jv_JNI_ReleasePrimitiveArrayCritical,
+  _Jv_JNI_GetStringCritical,
+  _Jv_JNI_ReleaseStringCritical,
+
+  NOT_IMPL /* newweakglobalref */,
+  NOT_IMPL /* deleteweakglobalref */,
+
+  _Jv_JNI_ExceptionCheck
 };

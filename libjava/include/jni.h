@@ -65,6 +65,9 @@ typedef const struct JNINativeInterface *JNIEnv;
 
 #endif /* __cplusplus */
 
+/* FIXME: this is wrong.  */
+typedef jobject jweak;
+
 /* Version numbers.  */
 #define JNI_VERSION_1_1 0x00010001
 #define JNI_VERSION_1_2 0x00010002
@@ -88,35 +91,57 @@ typedef union jvalue
 
 typedef void * (*_Jv_func)(...);
 
+/* This structure is used when registering native methods.  */
+typedef struct
+{
+  char *name;
+  char *signature;
+  void *fnPtr;			/* Sigh.  */
+} JNINativeMethod;
+
+/* FIXME: this is just a placeholder.  */
+typedef int JavaVM;
+
 struct JNINativeInterface
 {
   _Jv_func reserved0;
   _Jv_func reserved1;
   _Jv_func reserved2;
   _Jv_func reserved3;
-  jint     (*GetVersion)                   (JNIEnv*);
-  _Jv_func DefineClass;
-  _Jv_func FindClass;
-  _Jv_func reserved4;
-  _Jv_func reserved5;
-  _Jv_func reserved6;
-  jclass   (*GetSuperclass)                (JNIEnv*, jclass);
-  jboolean (*IsAssignableFrom)             (JNIEnv*, jclass, jclass);
-  _Jv_func reserved7;
-  jint     (*Throw)                        (JNIEnv*, jthrowable);
-  jint     (*ThrowNew)                     (JNIEnv*, jclass, const char *);
+
+  jint     (*GetVersion)                   (JNIEnv *);
+  jclass   (*DefineClass)                  (JNIEnv *, jobject,
+					    const jbyte *, jsize);
+  jclass   (*FindClass)                    (JNIEnv *, const char *);
+
+  jmethodID (*FromReflectedMethod)	   (JNIEnv *, jobject);
+  jfieldID  (*FromReflectedField)	   (JNIEnv *, jobject);
+  jobject   (*ToReflectedMethod)	   (JNIEnv *, jclass, jmethodID,
+					    jboolean);
+
+  jclass   (*GetSuperclass)                (JNIEnv *, jclass);
+  jboolean (*IsAssignableFrom)             (JNIEnv *, jclass, jclass);
+
+  jobject  (*ToReflectedField)		   (JNIEnv *, jclass, jfieldID,
+					    jboolean);
+
+  jint     (*Throw)                        (JNIEnv *, jthrowable);
+  jint     (*ThrowNew)                     (JNIEnv *, jclass, const char *);
   jthrowable (*ExceptionOccurred)          (JNIEnv *);
   void     (*ExceptionDescribe)            (JNIEnv *);
   void     (*ExceptionClear)               (JNIEnv *);
   void     (*FatalError)                   (JNIEnv *, const char *);
-  _Jv_func reserved8;
-  _Jv_func reserved9;
-  _Jv_func NewGlobalRef;
-  _Jv_func DeleteGlobalRef;
-  _Jv_func DeleteLocalRef;
+
+  jint     (*PushLocalFrame)		   (JNIEnv *, jint);
+  jobject  (*PopLocalFrame)		   (JNIEnv *, jobject result);
+
+  jobject  (*NewGlobalRef)                 (JNIEnv *, jobject);
+  void     (*DeleteGlobalRef)              (JNIEnv *, jobject);
+  void     (*DeleteLocalRef)               (JNIEnv *, jobject);;
   jboolean (*IsSameObject)                 (JNIEnv *, jobject, jobject);
-  _Jv_func reserved10;
-  _Jv_func reserved11;
+
+  jobject  (*NewLocalRef)		   (JNIEnv *, jobject);
+  jint     (*EnsureLocalCapacity)	   (JNIEnv *, jint);
 
   jobject  (*AllocObject)                  (JNIEnv *, jclass);
   jobject (*NewObject)			   (JNIEnv *, jclass, jmethodID, ...);
@@ -471,20 +496,29 @@ struct JNINativeInterface
   void 		(*SetDoubleArrayRegion)	   (JNIEnv *, jbooleanArray,
 					    jsize, jsize, jboolean *);
 
-  _Jv_func RegisterNatives;
-  _Jv_func UnregisterNatives;
+  jint     (*RegisterNatives)              (JNIEnv *, jclass,
+					    const JNINativeMethod *, jint);
+  jint     (*UnregisterNatives)            (JNIEnv *, jclass);
   jint     (*MonitorEnter)                 (JNIEnv *, jobject);
   jint     (*MonitorExit)                  (JNIEnv *, jobject);
-  _Jv_func GetJavaVM;
-};
+  jint     (*GetJavaVM)                    (JNIEnv *, JavaVM **);
 
-/* This structure is used when registering native methods.  */
-typedef struct
-{
-  char *name;
-  char *signature;
-  void *fnPtr;			/* Sigh.  */
-} JNINativeMethod;
+  void	   (*GetStringRegion)	           (JNIEnv *, jstring, jsize,
+					    jsize, jchar *);
+  void     (*GetStringUTFRegion)	   (JNIEnv *, jstring, jsize,
+					    jsize, char *);
+
+  void * (*GetPrimitiveArrayCritical)      (JNIEnv *, jarray, jboolean *);
+  void   (*ReleasePrimitiveArrayCritical)  (JNIEnv *, jarray, void *, jint);
+
+  const jchar * (*GetStringCritical)       (JNIEnv *, jstring, jboolean *);
+  void          (*ReleaseStringCritical)   (JNIEnv *, jstring, const jchar *);
+
+  jweak  (*NewWeakGlobalRef)               (JNIEnv *, jobject);
+  void   (*DeleteWeakGlobalRef)            (JNIEnv *, jweak);
+
+  jboolean	(*ExceptionCheck)	   (JNIEnv *);
+};
 
 #ifdef __cplusplus
 
@@ -494,16 +528,15 @@ public:
   /* The method table.  */
   struct JNINativeInterface *p;
 
+  /* FIXME: this is really ugly.  */
+#ifndef __GCJ_JNI_IMPL__
 private:
+#endif
   /* The current exception.  */
   jthrowable ex;
 
-  /* This doesn't really protect the private contents, because anybody
-     can set this macro.  However, if they do set it then they at
-     least know they are doing something unportable.  */
-#ifdef GCJ_JV_JNIENV_FRIEND
-  GCJ_JV_JNIENV_FRIEND;
-#endif
+  /* The class of the current native method.  */
+  jclass klass;
 
 public:
   jclass GetSuperclass (jclass cl)

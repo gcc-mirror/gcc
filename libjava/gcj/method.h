@@ -27,4 +27,16 @@ _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *constructor)
     ((char *) constructor->declaringClass->methods + constructor->offset);
 }
 
+extern inline jint
+JvNumMethods (jclass klass)
+{
+  return klass->method_count;
+}
+
+extern inline jmethodID
+JvGetFirstMethod (jclass klass)
+{
+  return &klass->methods[0];
+}
+
 #endif /* __GCJ_METHOD_H__ */
