@@ -383,9 +383,14 @@ do {									\
 #undef	STRICT_ALIGNMENT
 #define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN || TARGET_LITTLE_ENDIAN)
 
-/* Align stack to 8 byte boundaries for eabi, 16 byte boundaries for System V.4  */
+/* Alignment in bits of the stack boundary.  Note, in order to allow building
+   one set of libraries with -mno-eabi instead of eabi libraries and non-eabi
+   versions, just use 64 as the stack boundary.  */
 #undef	STACK_BOUNDARY
-#define	STACK_BOUNDARY	((TARGET_EABI) ? 64 : 128)
+#define	STACK_BOUNDARY	64
+
+/* Real stack boundary as mandated by the appropriate ABI */
+#define ABI_STACK_BOUNDARY ((TARGET_EABI) ? 64 : 128)
 
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
