@@ -1,3 +1,7 @@
+2003-05-21  David Taylor  <dtaylor@emc.com>
+
+	* gcc.dg/Wpadded.c: New file.
+
 2003-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/special/20000419-2.c: Fix dg-require-alias syntax.
