@@ -5693,6 +5693,15 @@ select_decl (binding, flags)
 {
   tree val;
   val = BINDING_VALUE (binding);
+
+  /* When we implicitly declare some builtin entity, we mark it
+     DECL_ANTICIPATED, so that we know to ignore it until it is
+     really declared.  */
+  if (val && DECL_P (val) 
+      && DECL_LANG_SPECIFIC (val) 
+      && DECL_ANTICIPATED (val))
+    return NULL_TREE;
+
   if (LOOKUP_NAMESPACES_ONLY (flags))
     {
       /* We are not interested in types. */
