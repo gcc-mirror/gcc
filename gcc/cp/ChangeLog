@@ -1,3 +1,7 @@
+Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* typeck.c: Include "tm_p.h".
+
 1999-09-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* ir.texi: New file.
