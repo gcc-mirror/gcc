@@ -1,3 +1,9 @@
+Sat Jul  8 01:38:25 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (call_pop, call, call_value_pop): Do not set
+	current_function_uses_pic_offset_table for calls to static
+	functions or indirect calls.
+
 2000-07-07  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c (rws_access_reg): New local write_count.  If
