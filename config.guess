@@ -679,7 +679,7 @@ EOF
 		echo ${UNAME_MACHINE}-pc-sysv${UNAME_RELEASE}
 	fi
 	exit 0 ;;
-    i?86:*:5:7)
+    i?86:*:5:7*)
        UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
        (/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
        (/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
