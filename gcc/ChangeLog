@@ -1,3 +1,13 @@
+2000-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (duplicate_decls, define_label): Restrict -Wtraditional
+	warnings to user code.
+
+	* c-lex.c (readescape, yylex): Likewise.
+
+	* c-typeck.c (store_init_value, process_init_element): Likewise
+	(c_expand_start_case): Format.
+
 2000-08-18  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
 	* mips/linux.h (LINK_SPEC): Use %(endian_spec).
