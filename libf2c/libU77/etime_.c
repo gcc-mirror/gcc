@@ -33,6 +33,11 @@ Boston, MA 02111-1307, USA.  */
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
+#if defined (_WIN32)
+#  include <windows.h>
+#  undef min
+#  undef max
+#endif
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
@@ -50,7 +55,72 @@ double G77_etime_0 (tarray)
 double G77_etime_0 (real tarray[2])
 #endif
 {
-#if defined (HAVE_GETRUSAGE) || defined (HAVE_TIMES)
+#if defined (_WIN32)
+  static int win32_platform = -1;
+  double usertime, systime;
+
+  if (win32_platform == -1)
+    {
+      OSVERSIONINFO osv;
+      osv.dwOSVersionInfoSize = sizeof (osv);
+      GetVersionEx (&osv);
+      win32_platform = osv.dwPlatformId;
+    }
+  
+  /* non-NT platforms don't have a clue as to how long a process has
+     been running, so simply return the uptime. Bad judgement call? */
+  if (win32_platform != VER_PLATFORM_WIN32_NT)
+    {
+      static unsigned long long clock_freq;
+      static unsigned long long old_count;
+      unsigned long long count;
+      LARGE_INTEGER counter_val;
+
+      if (clock_freq == 0)
+	{
+	  LARGE_INTEGER freq;
+	  if (! QueryPerformanceFrequency (&freq))
+	    {
+	      errno = ENOSYS;
+	      return 0.0;
+	    }
+	  else
+	    {
+	      clock_freq = ((unsigned long long) freq.HighPart << 32)
+                           + ((unsigned) freq.LowPart);
+	      if (! QueryPerformanceCounter (&counter_val))
+		return -1.0;
+	      old_count = ((unsigned long long) counter_val.HighPart << 32)
+	                  + (unsigned) counter_val.LowPart;
+	    }
+	}
+
+      if (! QueryPerformanceCounter (&counter_val))
+	return -1.0;
+
+      count = ((unsigned long long) counter_val.HighPart << 32)
+              + (unsigned) counter_val.LowPart;
+      tarray[0] = usertime = (double) (count - old_count) / clock_freq;
+      tarray[1] = systime = 0.0;
+    }
+  else
+    {
+      FILETIME creation_time, exit_time, kernel_time, user_time;
+      unsigned long long utime, stime;
+
+      GetProcessTimes (GetCurrentProcess (), &creation_time, &exit_time,
+		       &kernel_time, &user_time);
+      utime = ((unsigned long long) user_time.dwHighDateTime << 32)
+	      + (unsigned) user_time.dwLowDateTime;
+      stime = ((unsigned long long) kernel_time.dwHighDateTime << 32)
+	      + (unsigned) kernel_time.dwLowDateTime;
+
+      tarray[0] = usertime = utime / 1.0e7;
+      tarray[1] = systime = stime / 1.0e7;
+  }
+  return usertime + systime;
+
+#elif defined (HAVE_GETRUSAGE) || defined (HAVE_TIMES)
   /* The getrusage version is only the default for convenience. */
 #ifdef HAVE_GETRUSAGE
   struct rusage rbuff;

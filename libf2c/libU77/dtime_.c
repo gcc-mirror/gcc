@@ -33,6 +33,11 @@ Boston, MA 02111-1307, USA.  */
 #  include <sys/time.h>
 #  include <sys/resource.h>
 #endif
+#if defined (_WIN32)
+#  include <windows.h>
+#  undef min
+#  undef max
+#endif
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
@@ -50,7 +55,73 @@ double G77_dtime_0 (tarray)
 double G77_dtime_0 (real tarray[2])
 #endif
 {
-#if defined (HAVE_GETRUSAGE) || defined (HAVE_TIMES)
+#if defined (_WIN32)
+  static int win32_platform = -1;
+
+  if (win32_platform == -1)
+    {
+      OSVERSIONINFO osv;
+      osv.dwOSVersionInfoSize = sizeof (osv);
+      GetVersionEx (&osv);
+      win32_platform = osv.dwPlatformId;
+    }
+  
+  /* We need to use this hack on non-NT platforms, where the first call
+     returns 0.0 and subsequent ones return the correct value. */
+  if (win32_platform != VER_PLATFORM_WIN32_NT)
+    {
+      static unsigned long long clock_freq;
+      static unsigned long long old_count;
+      unsigned long long count;
+      double delta;
+      LARGE_INTEGER counter_val;
+
+      if (clock_freq == 0)
+	{
+	  LARGE_INTEGER freq;
+	  if (! QueryPerformanceFrequency (&freq))
+	    {
+	      errno = ENOSYS;
+	      return 0.0;
+	    }
+	  else
+	    {
+	      clock_freq = ((unsigned long long) freq.HighPart << 32)
+                           + ((unsigned) freq.LowPart);
+	    }
+	}
+
+      if (! QueryPerformanceCounter (&counter_val))
+	return -1.0;
+
+      count = ((unsigned long long) counter_val.HighPart << 32)
+              + (unsigned) counter_val.LowPart;
+      delta = ((double) (count - old_count)) / clock_freq;
+      tarray[0] = (float) delta;
+      tarray[1] = 0.0;
+      old_count = count;
+    }
+  else
+    {
+      static unsigned long long old_utime, old_stime;
+      unsigned long long utime, stime;
+      FILETIME creation_time, exit_time, kernel_time, user_time;
+
+      GetProcessTimes (GetCurrentProcess (), &creation_time, &exit_time,
+		       &kernel_time, &user_time);
+      utime = ((unsigned long long) user_time.dwHighDateTime << 32) 
+	      + (unsigned) user_time.dwLowDateTime;
+      stime = ((unsigned long long) kernel_time.dwHighDateTime << 32) 
+	      + (unsigned) kernel_time.dwLowDateTime;
+
+      tarray[0] = (utime - old_utime) / 1.0e7;
+      tarray[1] = (stime - old_stime) / 1.0e7;
+      old_utime = utime;
+      old_stime = stime;
+    }
+  return tarray[0] + tarray[1];
+
+#elif defined (HAVE_GETRUSAGE) || defined (HAVE_TIMES)
   /* The getrusage version is only the default for convenience. */
 #ifdef HAVE_GETRUSAGE
   float utime, stime;
