@@ -1,4 +1,15 @@
+1998-05-27  Brendan Kehoe  <brendan@cygnus.com>
+
+	* call.c (build_method_call): Make sure get_type_value returns
+	something before we try to use its TYPE_MAIN_VARIANT.
+
 1998-05-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (digest_init): Complain about getting a TREE_LIST to
+	initialize an array.
+
+	* search.c (expand_upcast_fixups): Don't set DECL_CONTEXT and
+	DECL_VIRTUAL_P.
 
 	* friend.c (do_friend): Clarify template warning.
 
