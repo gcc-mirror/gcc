@@ -2543,6 +2543,8 @@ int
 aggregate_value_p (exp)
      tree exp;
 {
+  int i, regno, nregs;
+  rtx reg;
   if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
     return 1;
   if (RETURN_IN_MEMORY (TREE_TYPE (exp)))
@@ -2551,6 +2553,14 @@ aggregate_value_p (exp)
       && (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE))
     return 1;
+  /* Make sure we have suitable call-clobbered regs to return
+     the value in; if not, we must return it in memory.  */
+  reg = hard_function_value (TREE_TYPE (exp), 0);
+  regno = REGNO (reg);
+  nregs = HARD_REGNO_NREGS (regno, TYPE_MODE (TREE_TYPE (exp)));
+  for (i = 0; i < nregs; i++)
+    if (! call_used_regs[regno + i])
+      return 1;
   return 0;
 }
 
