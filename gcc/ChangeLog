@@ -1,3 +1,12 @@
+2000-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* varasm.c (constant_descriptor): Make contents unsigned char.
+	(mark_const_hash_entry): Adjust.
+	(const_hash): Just hash the code of unknown nodes.
+	(compare_constant_1): Adjust for unsigned char.
+	Use language specific expander on unknown nodes.
+	(record_constant_1): Likewise.
+
 2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (cpp_make_system_header): New function.

@@ -156,7 +156,7 @@ static void decode_addr_const		PARAMS ((tree, struct addr_const *));
 static int const_hash			PARAMS ((tree));
 static int compare_constant		PARAMS ((tree,
 					       struct constant_descriptor *));
-static char *compare_constant_1		PARAMS ((tree, char *));
+static const unsigned char *compare_constant_1  PARAMS ((tree, const unsigned char *));
 static struct constant_descriptor *record_constant PARAMS ((tree));
 static void record_constant_1		PARAMS ((tree));
 static tree copy_constant		PARAMS ((tree));
@@ -2329,7 +2329,7 @@ struct constant_descriptor
   struct constant_descriptor *next;
   char *label;
   rtx rtl;
-  char contents[1];
+  unsigned char contents[1];
 };
 
 #define HASHBITS 30
@@ -2346,7 +2346,7 @@ mark_const_hash_entry (ptr)
 
   while (desc)
     {
-      ggc_mark_string (desc->label);
+      ggc_mark_string ((const char *)desc->label);
       ggc_mark_rtx (desc->rtl);
       desc = desc->next;
     }
@@ -2457,7 +2457,8 @@ const_hash (exp)
       return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
       
     default:
-      abort ();
+      /* A language specific constant. Just hash the code. */
+      return code % MAX_HASH_TABLE;
     }
 
   /* Compute hashing function */
@@ -2490,12 +2491,12 @@ compare_constant (exp, desc)
    against a subdescriptor, and if it succeeds it returns the
    address of the subdescriptor for the next operand.  */
 
-static char *
+static const unsigned char *
 compare_constant_1 (exp, p)
      tree exp;
-     char *p;
+     const unsigned char *p;
 {
-  register const char *strp;
+  register const unsigned char *strp;
   register int len;
   register enum tree_code code = TREE_CODE (exp);
 
@@ -2512,7 +2513,7 @@ compare_constant_1 (exp, p)
       if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
 	return 0;
 
-      strp = (char *) &TREE_INT_CST_LOW (exp);
+      strp = (unsigned char *) &TREE_INT_CST_LOW (exp);
       len = 2 * sizeof TREE_INT_CST_LOW (exp);
       break;
 
@@ -2521,7 +2522,7 @@ compare_constant_1 (exp, p)
       if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
 	return 0;
 
-      strp = (char *) &TREE_REAL_CST (exp);
+      strp = (unsigned char *) &TREE_REAL_CST (exp);
       len = sizeof TREE_REAL_CST (exp);
       break;
 
@@ -2532,7 +2533,7 @@ compare_constant_1 (exp, p)
       if ((enum machine_mode) *p++ != TYPE_MODE (TREE_TYPE (exp)))
 	return 0;
 
-      strp = TREE_STRING_POINTER (exp);
+      strp = (unsigned char *)TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       if (bcmp ((char *) &TREE_STRING_LENGTH (exp), p,
 		sizeof TREE_STRING_LENGTH (exp)))
@@ -2555,7 +2556,7 @@ compare_constant_1 (exp, p)
 	  unsigned char *tmp = (unsigned char *) alloca (len);
 
 	  get_set_constructor_bytes (exp, tmp, len);
-	  strp = (char *) tmp;
+	  strp = (unsigned char *) tmp;
 	  if (bcmp ((char *) &xlen, p, sizeof xlen))
 	    return 0;
 
@@ -2667,7 +2668,7 @@ compare_constant_1 (exp, p)
 	struct addr_const value;
 
 	decode_addr_const (exp, &value);
-	strp = (char *) &value.offset;
+	strp = (unsigned char *) &value.offset;
 	len = sizeof value.offset;
 	/* Compare the offset.  */
 	while (--len >= 0)
@@ -2675,8 +2676,8 @@ compare_constant_1 (exp, p)
 	    return 0;
 
 	/* Compare symbol name.  */
-	strp = XSTR (value.base, 0);
-	len = strlen (strp) + 1;
+	strp = (unsigned char *) XSTR (value.base, 0);
+	len = strlen ((char *) strp) + 1;
       }
       break;
 
@@ -2695,7 +2696,12 @@ compare_constant_1 (exp, p)
       return compare_constant_1 (TREE_OPERAND (exp, 0), p);
 
     default:
-      abort ();
+      if (lang_expand_constant)
+        {
+          exp = (*lang_expand_constant) (exp);
+          return compare_constant_1 (exp, p);
+        }
+      return 0;
     }
 
   /* Compare constant contents.  */
@@ -2736,7 +2742,7 @@ static void
 record_constant_1 (exp)
      tree exp;
 {
-  register char *strp;
+  register unsigned char *strp;
   register int len;
   register enum tree_code code = TREE_CODE (exp);
 
@@ -2746,13 +2752,13 @@ record_constant_1 (exp)
     {
     case INTEGER_CST:
       obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
-      strp = (char *) &TREE_INT_CST_LOW (exp);
+      strp = (unsigned char *) &TREE_INT_CST_LOW (exp);
       len = 2 * sizeof TREE_INT_CST_LOW (exp);
       break;
 
     case REAL_CST:
       obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
-      strp = (char *) &TREE_REAL_CST (exp);
+      strp = (unsigned char *) &TREE_REAL_CST (exp);
       len = sizeof TREE_REAL_CST (exp);
       break;
 
@@ -2761,7 +2767,7 @@ record_constant_1 (exp)
 	return;
 
       obstack_1grow (&permanent_obstack, TYPE_MODE (TREE_TYPE (exp)));
-      strp = TREE_STRING_POINTER (exp);
+      strp = (unsigned char *) TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       obstack_grow (&permanent_obstack, (char *) &TREE_STRING_LENGTH (exp),
 		    sizeof TREE_STRING_LENGTH (exp));
@@ -2893,7 +2899,12 @@ record_constant_1 (exp)
       return;
 
     default:
-      abort ();
+      if (lang_expand_constant)
+        {
+          exp = (*lang_expand_constant) (exp);
+          record_constant_1 (exp);
+        }
+      return;
     }
 
   /* Record constant contents.  */
