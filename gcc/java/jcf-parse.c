@@ -734,6 +734,8 @@ parse_class_file ()
 
       start_java_method (method);
 
+      note_instructions (jcf, method);
+
       give_name_to_locals (jcf);
 
       /* Actually generate code. */
