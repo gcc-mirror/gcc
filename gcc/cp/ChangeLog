@@ -1,3 +1,10 @@
+2002-11-21  Glen Nakamura  <glen@imodulo.com>
+
+	PR c++/8342
+	* typeck.c (get_member_function_from_ptrfunc): Make sure that a
+	SAVE_EXPR for instance_ptr doesn't get evaluated first inside one
+	of the branches of a COND_EXPR.
+
 2002-11-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (for_each_template_parm): Free allocated memory.
