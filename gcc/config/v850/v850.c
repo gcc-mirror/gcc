@@ -2261,7 +2261,7 @@ construct_save_jarl (op)
 
   /* Now compute the bit mask of registers to push.  */
   mask = 0;
-  for (i = 0; i < count; i++)
+  for (i = 1; i < count - 1; i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
