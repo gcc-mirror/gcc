@@ -2598,7 +2598,7 @@ scan_libraries (prog_name)
   /* Read each line of ldd output.  */
   while (fgets (buf, sizeof buf, inf) != (char *) 0)
     {
-      int ch, ch2;
+      int ch2;
       char *name, *end, *p = buf;
 
       /* Extract names of libraries and add to list.  */
@@ -2681,7 +2681,9 @@ scan_libraries (prog_name)
       || (HEADER (X).f_magic == 0757 && aix64_flag))
 #endif
 
-extern char *ldgetname ();
+extern char *ldgetname PARAMS ((LDFILE *, GCC_SYMENT *));
+extern int ldtbread PARAMS ((LDFILE *, long, GCC_SYMENT *));
+extern int ldclose PARAMS ((LDFILE *));
 
 /* COFF version to scan the name list of the loaded program for
    the symbols g++ uses for static constructors and destructors.

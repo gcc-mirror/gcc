@@ -217,7 +217,7 @@ dump_time_statistics ()
 static void
 cb_ident (pfile, str)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const cpp_string *str;
+     const cpp_string *str ATTRIBUTE_UNUSED;
 {
 #ifdef ASM_OUTPUT_IDENT
   if (! flag_no_ident)
