@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004,2005  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3687,13 +3687,13 @@ start_decl (const cp_declarator *declarator,
             int initialized,
             tree attributes,
             tree prefix_attributes, 
-	    bool *pop_scope_p)
+	    tree *pushed_scope_p)
 {
   tree decl;
   tree type, tem;
   tree context;
 
-  *pop_scope_p = false;
+  *pushed_scope_p = NULL_TREE;
  
   /* This should only be done once on the top most decl.  */
   if (have_extern_spec)
@@ -3725,11 +3725,13 @@ start_decl (const cp_declarator *declarator,
   context = DECL_CONTEXT (decl);
 
   if (context)
-    *pop_scope_p = push_scope (context);
+    {
+      *pushed_scope_p = push_scope (context);
   
-  /* We are only interested in class contexts, later.  */
-  if (context && TREE_CODE (context) == NAMESPACE_DECL)
-    context = NULL_TREE;
+      /* We are only interested in class contexts, later.  */
+      if (TREE_CODE (context) == NAMESPACE_DECL)
+	context = NULL_TREE;
+    }
 
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
@@ -5893,7 +5895,7 @@ grokfndecl (tree ctype,
       if (old_decl)
 	{
 	  tree ok;
-	  bool pop_p;
+	  tree pushed_scope;
 
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
@@ -5902,10 +5904,10 @@ grokfndecl (tree ctype,
 
 	  /* Attempt to merge the declarations.  This can fail, in
 	     the case of some invalid specialization declarations.  */
-	  pop_p = push_scope (ctype);
+	  pushed_scope = push_scope (ctype);
 	  ok = duplicate_decls (decl, old_decl);
-	  if (pop_p)
-	    pop_scope (ctype);
+	  if (pushed_scope)
+	    pop_scope (pushed_scope);
 	  if (!ok)
 	    {
 	      error ("no %q#D member function declared in class %qT",
