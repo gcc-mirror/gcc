@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    Enhanced by, and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -3377,7 +3377,7 @@ schedule_block (b, file)
 	  old_live_regs[j] = live;
 	  if (live)
 	    {
-	      register REGSET_ELT_TYPE bit;
+	      register int bit;
 	      for (bit = 0; bit < REGSET_ELT_BITS; bit++)
 		if (live & ((REGSET_ELT_TYPE) 1 << bit))
 		  sometimes_max = new_sometimes_live (regs_sometimes_live, j,
