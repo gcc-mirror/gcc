@@ -1,5 +1,11 @@
 2001-01-08  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/fpos.h (fpos:::fpos(streamoff __pos)): Explicitly
+	initialize mbstate_t member, name offset data members *off, not pos.
+	* include/bits/fstream.tcc (filebuf::filebuf): Same.
+	
+2001-01-08  Benjamin Kosnik  <bkoz@redhat.com>
+
 	reported by Chris G. Demetriou <cgd@sibyte.com>
 	* configure.in: Change -linux-* to -linux*.
 	* configure: Regenerate.
