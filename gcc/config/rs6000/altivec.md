@@ -101,15 +101,38 @@
     case 0: return \"stvx %1,%y0\";
     case 1: return \"lvx %0,%y1\";
     case 2: return \"vor %0,%1,%1\";
-    case 3: return \"stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0\";
-    case 4: return \"lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1\";
-    case 5: return \"mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1\";
+    case 3: return \"#\";
+    case 4: return \"#\";
+    case 5: return \"#\";
     case 6: return output_vec_const_move (operands);
     default: abort();
     }
 }"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")
-   (set_attr "length" "*,*,*,16,16,16,*")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+
+(define_split
+  [(set (match_operand:V4SI 0 "nonimmediate_operand" "")
+        (match_operand:V4SI 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
+
+(define_split
+  [(set (match_operand:V4SI 0 "nonimmediate_operand" "")
+        (match_operand:V4SI 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 6))
+   (set (match_dup 3) (match_dup 7))
+   (set (match_dup 4) (match_dup 8))
+   (set (match_dup 5) (match_dup 9))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
 
 (define_split
   [(set (match_operand:V4SI 0 "altivec_register_operand" "")
@@ -140,15 +163,38 @@
      case 0: return \"stvx %1,%y0\";
      case 1: return \"lvx %0,%y1\";
      case 2: return \"vor %0,%1,%1\";
-     case 3: return \"stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0\";
-     case 4: return \"lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1\";
-     case 5: return \"mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1\";
+     case 3: return \"#\";
+     case 4: return \"#\";
+     case 5: return \"#\";
      case 6: return output_vec_const_move (operands);
      default: abort ();
      }
 }"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")
-   (set_attr "length" "*,*,*,16,16,16,*")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+
+(define_split
+  [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
+        (match_operand:V8HI 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
+
+(define_split
+  [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
+        (match_operand:V8HI 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 6))
+   (set (match_dup 3) (match_dup 7))
+   (set (match_dup 4) (match_dup 8))
+   (set (match_dup 5) (match_dup 9))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
 
 (define_split
   [(set (match_operand:V8HI 0 "altivec_register_operand" "")
@@ -179,15 +225,38 @@
     case 0: return \"stvx %1,%y0\";
     case 1: return \"lvx %0,%y1\";
     case 2: return \"vor %0,%1,%1\";
-    case 3: return \"stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0\";
-    case 4: return \"lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1\";
-    case 5: return \"mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1\";
+    case 3: return \"#\";
+    case 4: return \"#\";
+    case 5: return \"#\";
     case 6: return output_vec_const_move (operands);
     default: abort ();
     }
 }"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")
-   (set_attr "length" "*,*,*,16,16,16,*")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+
+(define_split
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
+        (match_operand:V16QI 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
+
+(define_split
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
+        (match_operand:V16QI 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 6))
+   (set (match_dup 3) (match_dup 7))
+   (set (match_dup 4) (match_dup 8))
+   (set (match_dup 5) (match_dup 9))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
 
 (define_split
   [(set (match_operand:V16QI 0 "altivec_register_operand" "")
@@ -218,15 +287,38 @@
     case 0: return \"stvx %1,%y0\";
     case 1: return \"lvx %0,%y1\";
     case 2: return \"vor %0,%1,%1\";
-    case 3: return \"stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0\";
-    case 4: return \"lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1\";
-    case 5: return \"mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1\";
+    case 3: return \"#\";
+    case 4: return \"#\";
+    case 5: return \"#\";
     case 6: return output_vec_const_move (operands);
     default: abort ();
     }
 }"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")
-   (set_attr "length" "*,*,*,16,16,16,*")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+
+(define_split
+  [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
+        (match_operand:V4SF 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
+
+(define_split
+  [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
+        (match_operand:V4SF 1 "input_operand" ""))]
+  "TARGET_ALTIVEC && reload_completed && !TARGET_POWERPC64 
+   && altivec_in_gprs_p (operands[0], operands[1])"
+  [(set (match_dup 2) (match_dup 6))
+   (set (match_dup 3) (match_dup 7))
+   (set (match_dup 4) (match_dup 8))
+   (set (match_dup 5) (match_dup 9))]
+"{
+     rs6000_split_altivec_in_gprs (operands);
+}")
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")

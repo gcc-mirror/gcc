@@ -2308,6 +2308,21 @@ small_data_operand (op, mode)
   return 0;
 #endif
 }
+
+/* Return 1 for all valid move insn operand combination involving altivec      
+   vectors in gprs.  */
+
+int
+altivec_in_gprs_p (rtx op0, rtx op1)
+{
+  if (REG_P (op0) && REGNO_REG_CLASS (REGNO (op0)) == GENERAL_REGS)
+    return 1;
+
+  if (REG_P (op1) && REGNO_REG_CLASS (REGNO (op1)) == GENERAL_REGS) 
+    return 1;
+  return 0;
+}
+
 
 /* Subroutines of rs6000_legitimize_address and rs6000_legitimate_address.  */
 
@@ -9640,6 +9655,83 @@ rs6000_emit_minmax (dest, code, op0, op1)
   if (target != dest)
     emit_move_insn (dest, target);
 }
+
+/* Called by altivec splitter.
+   Input: 
+          operands[0] : Destination of move
+          operands[1] : Source of move
+	  noperands   : Size of operands vector
+   Output:
+	  operands[2-5] ([2-3] in 64 bit) : Destination slots
+	  operands[6-9] ([4-5] in 64 bit) : Source slots
+
+   Splits the move of operands[1] to operands[0].
+   This is done, if GPRs are one of the operands.  In this case
+   a sequence of simple move insns has to be issued.  The sequence of these
+   move insns has to be done in correct order to avoid early clobber of the
+   base register or destructive overlap of registers. 
+*/
+	  
+void
+rs6000_split_altivec_in_gprs (rtx *operands)
+{
+    int nregs, reg, i, j;
+  enum machine_mode mode; 
+
+  /* Calculate number to move (2/4 for 32/64 bit mode).  */ 
+
+  reg = REG_P (operands[0]) ? REGNO (operands[0]) : REGNO (operands[1]); 
+  mode = GET_MODE (operands[0]);
+  nregs = HARD_REGNO_NREGS (reg, mode);                                  
+  
+  if (REG_P (operands[1]) 
+      && REG_P (operands[0]) 
+      && (REGNO (operands[1]) < REGNO (operands[0])))
+    {  
+      /* Move register range backwards, if we have destructive overlap.  */
+
+      j = nregs;
+      for (i = 0; i < nregs; i++)
+        {
+          j--;
+          operands[i + 2] = operand_subword (operands[0], j, 0, mode);
+          operands[i + 2 + nregs] = 
+            operand_subword (operands[1], j, 0, mode);   
+        }
+    }     
+  else
+    {
+      j = -1;
+
+      if (GET_CODE (operands[1]) == MEM)
+        {
+          rtx breg;
+          /* We have offsettable addresses only. If we use one of the
+             registers to address memory, we have change that register last.  */            
+          breg = GET_CODE (XEXP (operands[1], 0)) == PLUS ?
+              XEXP (XEXP (operands[1], 0), 0) :
+              XEXP (operands[1], 0);
+
+          if (REGNO (breg) >= REGNO (operands[0]) 
+              && REGNO (breg) < REGNO (operands[0]) + nregs)
+              j = REGNO (breg) - REGNO (operands[0]);
+        }
+
+      for (i = 0; i < nregs; i++)
+        { 
+          /* Calculate index to next subword.  */
+          j++;
+          if (j == nregs) 
+            j = 0;
+
+          operands[i + 2] = operand_subword (operands[0], j, 0, mode);
+          operands[i + 2 + nregs] = 
+            operand_subword (operands[1], j, 0, mode);
+
+        }
+    }
+}
+
 
 /* This page contains routines that are used to determine what the
    function prologue and epilogue code will do and write them out.  */
