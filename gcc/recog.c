@@ -314,6 +314,7 @@ int
 apply_change_group ()
 {
   int i;
+  rtx last_validated = NULL_RTX;
 
   /* The changes have been applied and all INSN_CODEs have been reset to force
      rerecognition.
@@ -328,7 +329,9 @@ apply_change_group ()
     {
       rtx object = changes[i].object;
 
-      if (object == 0)
+      /* if there is no object to test or if it is the same as the one we
+         already tested, ignore it.  */
+      if (object == 0 || object == last_validated)
 	continue;
 
       if (GET_CODE (object) == MEM)
@@ -374,6 +377,7 @@ apply_change_group ()
 		  but this shouldn't occur.  */
 
 	       validate_change (object, &PATTERN (object), newpat, 1);
+	       continue;
 	     }
 	  else if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	    /* If this insn is a CLOBBER or USE, it is always valid, but is
@@ -382,6 +386,7 @@ apply_change_group ()
 	  else
 	    break;
 	}
+      last_validated = object;
     }
 
   if (i == num_changes)
