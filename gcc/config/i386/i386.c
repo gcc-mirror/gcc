@@ -5399,7 +5399,14 @@ ix86_expand_prologue (void)
 
       if (eax_live)
 	{
-	  rtx t = plus_constant (stack_pointer_rtx, allocate);
+	  rtx t;
+	  if (frame_pointer_needed)
+	    t = plus_constant (hard_frame_pointer_rtx,
+			       allocate
+			       - frame.to_allocate
+			       - frame.nregs * UNITS_PER_WORD);
+	  else
+	    t = plus_constant (stack_pointer_rtx, allocate);
 	  emit_move_insn (eax, gen_rtx_MEM (SImode, t));
 	}
     }
