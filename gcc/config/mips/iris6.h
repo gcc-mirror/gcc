@@ -287,7 +287,7 @@ Boston, MA 02111-1307, USA.  */
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
 const char *								\
-current_section_name ()							\
+current_section_name (void)						\
 {									\
   switch (in_section)							\
     {									\
@@ -307,7 +307,7 @@ current_section_name ()							\
 }									\
 									\
 unsigned int								\
-current_section_flags ()						\
+current_section_flags (void)						\
 {									\
   switch (in_section)							\
     {									\
