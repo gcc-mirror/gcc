@@ -1,3 +1,8 @@
+2002-02-18  Philipp Thomas  <pthomas@suse.de>
+
+	* es.po, fr.po: Updated to newest version.
+	* nl.po: New files.
+
 2002-02-17  Philipp Thomas  <pthomas@suse.de>
 
 	* gcc.pot: Regenerate.
