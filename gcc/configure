@@ -1354,7 +1354,7 @@ else
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -5983,7 +5983,7 @@ for machine in $build $host $target; do
                 xmake_file=sparc/x-sysv4
                 extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
                 case $machine in
-                *-*-solaris2.0-4)
+                *-*-solaris2.[0-4])
                         float_format=i128
                 ;;
                 *)
@@ -6312,16 +6312,16 @@ for machine in $build $host $target; do
 		then
 			if test x$gnu_ld = xyes
 			then
-				target_cpu_default2=20
+				target_cpu_default2="MASK_GAS|MASK_SPLIT_ADDR"
 			else
-				target_cpu_default2=16
+				target_cpu_default2="MASK_GAS"
 			fi
 		fi
 		;;
 	mips*-*-*)
 		if test x$gas = xyes
 		then
-			target_cpu_default2=16
+			target_cpu_default2="MASK_GAS"
 		fi
 		;;
 	powerpc*-*-* | rs6000-*-*)

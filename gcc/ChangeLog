@@ -1,3 +1,11 @@
+2000-04-28  Chris Demetriou  <cgd@sibyte.com>
+
+	* configure.in (sparc-hal-solaris2*): protect [] glob from
+	my expansion.
+	(mips*-*-ecoff*, mips*-*-elf*, mips*-*-*): use MASK_ defines
+	rather than hard-coded constants in target_cpu_default2.
+	* configure: Regenerate.
+
 2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tree.c (get_callee_fndecl): Extract the initial value from
