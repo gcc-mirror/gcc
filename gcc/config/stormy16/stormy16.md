@@ -130,9 +130,9 @@
   ""
   "{ xstormy16_expand_move (QImode, operands[0], operands[1]); DONE; }")
 
-(define_insn "*movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S")
-	(match_operand:QI 1 "general_operand"       "r,e,m,i,i,i,i"))]
+(define_insn "movqi_internal"
+  [(set (match_operand:QI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,r")
+	(match_operand:QI 1 "general_operand"       "r,e,m,i,i,i,i,ir,W"))]
   ""
   "@
    mov %0,%1
@@ -141,6 +141,8 @@
    mov %0,%1
    mov Rx,%1
    mov %0,%1
+   mov.b %0,%1
+   mov.b %0,%1
    mov.b %0,%1"
   [(set_attr_alternative "length" 
 	     [(const_int 2)
@@ -153,8 +155,10 @@
 	      (const_int 2)
 	      (const_int 2)
 	      (const_int 4)
-	      (const_int 4)])
-   (set_attr "psw_operand" "0,0,0,0,nop,0,nop")])
+	      (const_int 4)
+	      (const_int 2)
+	      (const_int 2)])
+   (set_attr "psw_operand" "0,0,0,0,nop,0,nop,0,0")])
 
 (define_insn "pushhi"
   [(set (mem:HI (post_inc (reg:HI 15)))
@@ -178,9 +182,9 @@
   ""
   "{ xstormy16_expand_move (HImode, operands[0], operands[1]); DONE; }")
 
-(define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S")
-	(match_operand:HI 1 "xs_hi_general_operand"       "r,e,m,L,L,i,i"))]
+(define_insn "movhi_internal"
+  [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,r")
+	(match_operand:HI 1 "xs_hi_general_operand"       "r,e,m,L,L,i,i,ir,W"))]
   ""
   "@
    mov %0,%1
@@ -188,6 +192,8 @@
    mov.w %0,%1
    mov.w %0,%1
    mov.w Rx,%1
+   mov.w %0,%1
+   mov.w %0,%1
    mov.w %0,%1
    mov.w %0,%1"
   [(set_attr_alternative "length" 
@@ -201,8 +207,10 @@
 	      (const_int 2)
 	      (const_int 2)
 	      (const_int 4)
+	      (const_int 4)
+	      (const_int 4)
 	      (const_int 4)])
-   (set_attr "psw_operand" "0,0,0,0,nop,0,nop")])
+   (set_attr "psw_operand" "0,0,0,0,nop,0,nop,0,0")])
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
@@ -552,29 +560,63 @@
 
 ;; Logical AND, 16 bit integers
 (define_insn "andhi3"
-  [(set (match_operand:HI 0 "register_operand" "=T,r,r,r")
-	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0")
-		(match_operand:HI 2 "nonmemory_operand" "L,r,K,i")))]
+  [(set (match_operand:HI 0 "xstormy16_splittable_below100_or_register" "=T,r,r,r,W")
+	(and:HI (match_operand:HI 1 "xstormy16_below100_or_register" "%0,0,0,0,0")
+		(match_operand:HI 2 "nonmemory_operand" "L,r,K,i,K")))]
   ""
   "@
    and Rx,%2
    and %0,%2
    clr1 %0,%B2
-   and %0,%2"
-  [(set_attr "length" "2,2,2,4")])
+   and %0,%2
+   #"
+  [(set_attr "length" "2,2,2,4,2")])
+
+(define_split
+  [(set (match_operand:HI 0 "xstormy16_below100_operand" "")
+	(and:HI (match_operand:HI 1 "xstormy16_below100_operand" "")
+		(match_operand:HI 2 "xstormy16_onebit_clr_operand" "")))]
+  ""
+  [(set (match_dup 3)
+	(and:QI (match_dup 4)
+		(match_dup 5)))]
+  "{ int s = ((INTVAL (operands[2]) & 0xff) == 0xff) ? 1 : 0;
+     operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, s);
+     operands[4] = simplify_gen_subreg (QImode, operands[1], HImode, s);
+     operands[5] = simplify_gen_subreg (QImode, operands[2], HImode, s);
+     operands[5] = GEN_INT (INTVAL (operands[5]) | ~(HOST_WIDE_INT)0xff);
+   }
+")
 
 ;; Inclusive OR, 16 bit integers
 (define_insn "iorhi3"
-  [(set (match_operand:HI 0 "register_operand" "=T,r,r,r")
-	(ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0")
-		(match_operand:HI 2 "nonmemory_operand" "L,r,J,i")))]
+  [(set (match_operand:HI 0 "xstormy16_splittable_below100_or_register" "=T,r,r,r,W")
+	(ior:HI (match_operand:HI 1 "xstormy16_below100_or_register" "%0,0,0,0,0")
+		(match_operand:HI 2 "nonmemory_operand" "L,r,J,i,J")))]
   ""
   "@
    or Rx,%2
    or %0,%2
    set1 %0,%B2
-   or %0,%2"
-  [(set_attr "length" "2,2,2,4")])
+   or %0,%2
+   #"
+  [(set_attr "length" "2,2,2,4,2")])
+
+(define_split
+  [(set (match_operand:HI 0 "xstormy16_below100_operand" "")
+	(ior:HI (match_operand:HI 1 "xstormy16_below100_operand" "")
+		(match_operand:HI 2 "xstormy16_onebit_set_operand" "")))]
+  ""
+  [(set (match_dup 3)
+	(ior:QI (match_dup 4)
+		(match_dup 5)))]
+  "{ int s = ((INTVAL (operands[2]) & 0xff) == 0x00) ? 1 : 0;
+     operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, s);
+     operands[4] = simplify_gen_subreg (QImode, operands[1], HImode, s);
+     operands[5] = simplify_gen_subreg (QImode, operands[2], HImode, s);
+     operands[5] = GEN_INT (INTVAL (operands[5]) & 0xff);
+   }
+")
 
 ;; Exclusive OR, 16 bit integers
 (define_insn "xorhi3"
@@ -796,7 +838,7 @@
   "{ xstormy16_emit_cbranch (LTU, operands[0]); DONE; }")
 
 
-(define_insn "*cbranchhi"
+(define_insn "cbranchhi"
   [(set (pc) 
 	(if_then_else (match_operator:HI 1 "comparison_operator"
 				      [(match_operand:HI 2 "nonmemory_operand" 
@@ -814,7 +856,7 @@
   [(set_attr "branch_class" "bcc12")
    (set_attr "psw_operand" "0,0,1")])
 
-(define_insn "*cbranchhi_neg"
+(define_insn "cbranchhi_neg"
   [(set (pc) 
 	(if_then_else (match_operator:HI 1 "comparison_operator"
 				      [(match_operand:HI 2 "nonmemory_operand" 
@@ -1094,4 +1136,209 @@
   ""
   ""
   [(set_attr "length" "0")
+   (set_attr "psw_operand" "nop")])
+
+;;---------------------------------------------------------------------------
+
+(define_expand "iorqi3"
+  [(match_operand:QI 0 "xstormy16_below100_or_register" "")
+   (match_operand:QI 1 "xstormy16_below100_or_register" "")
+   (match_operand:QI 2 "nonmemory_operand" "")]
+  ""
+  "
+{
+  xstormy16_expand_iorqi3 (operands);
+  DONE;
+}")
+
+(define_insn "iorqi3_internal"
+  [(set (match_operand:QI 0 "xstormy16_below100_or_register" "=Wr")
+	(ior:QI (match_operand:QI 1 "xstormy16_below100_or_register" "0")
+		(match_operand:QI 2 "xstormy16_onebit_set_operand" "i")))]
+  ""
+  "set1 %0,%B2"
+  [(set_attr "length" "2")
+   (set_attr "psw_operand" "0")])
+
+(define_peephole2
+  [(set (match_operand:QI 0 "register_operand" "")
+	(match_operand:QI 1 "xstormy16_below100_operand" ""))
+   (set (match_operand:HI 2 "register_operand" "")
+	(ior:HI (match_operand:HI 3 "register_operand" "")
+		(match_operand:QI 4 "xstormy16_onebit_set_operand" "")))
+   (set (match_operand:QI 5 "xstormy16_below100_operand" "")
+	(match_operand:QI 6 "register_operand" ""))
+   ]
+  "REGNO (operands[0]) == REGNO (operands[2])
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && REGNO (operands[0]) == REGNO (operands[6])
+   && rtx_equal_p (operands[1], operands[5])"
+  [(set (match_dup 1)
+	(ior:QI (match_dup 1)
+		(match_dup 4)))
+   ]
+  "")
+
+
+(define_expand "andqi3"
+  [(match_operand:QI 0 "xstormy16_below100_or_register" "")
+   (match_operand:QI 1 "xstormy16_below100_or_register" "")
+   (match_operand:QI 2 "nonmemory_operand" "")]
+  ""
+  "
+{
+  xstormy16_expand_andqi3 (operands);
+  DONE;
+}")
+
+(define_insn "andqi3_internal"
+  [(set (match_operand:QI 0 "xstormy16_below100_or_register" "=Wr")
+	(and:QI (match_operand:QI 1 "xstormy16_below100_or_register" "0")
+		(match_operand:QI 2 "xstormy16_onebit_clr_operand" "i")))]
+  ""
+  "clr1 %0,%B2"
+  [(set_attr "length" "2")
+   (set_attr "psw_operand" "0")])
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand" "")
+	(and:HI (match_operand:HI 1 "register_operand" "")
+		(match_operand 2 "immediate_operand" "")))
+   (set (match_operand:HI 3 "register_operand" "")
+	(zero_extend:HI (match_operand:QI 4 "register_operand" "")));
+   ]
+  "REGNO (operands[0]) == REGNO (operands[1])
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && REGNO (operands[0]) == REGNO (operands[4])"
+  [(set (match_dup 0)
+	(and:HI (match_dup 1)
+		(match_dup 5)))
+   ]
+  "operands[5] = GEN_INT (INTVAL (operands[2]) & 0xff);")
+
+(define_peephole2
+  [(set (match_operand:QI 0 "register_operand" "")
+	(match_operand:QI 1 "xstormy16_below100_operand" ""))
+   (set (match_operand:HI 2 "register_operand" "")
+	(and:HI (match_operand:HI 3 "register_operand" "")
+		(match_operand:QI 4 "xstormy16_onebit_clr_operand" "")))
+   (set (match_operand:QI 5 "xstormy16_below100_operand" "")
+	(match_operand:QI 6 "register_operand" ""))
+   ]
+  "REGNO (operands[0]) == REGNO (operands[2])
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && REGNO (operands[0]) == REGNO (operands[6])
+   && rtx_equal_p (operands[1], operands[5])"
+  [(set (match_dup 1)
+	(and:QI (match_dup 1)
+		(match_dup 4)))
+   ]
+  "")
+
+;; GCC uses different techniques to optimize MSB and LSB accesses, so
+;; we have to code those separately.
+
+(define_insn "*bclrx"
+  [(set (pc) 
+	(if_then_else (eq:HI (and:QI (match_operand:QI 1 "xstormy16_below100_operand" "W")
+				     (match_operand:HI 2 "immediate_operand" "i"))
+			     (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 3 "" "=y"))]
+  ""
+  "bn %1,%B2,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bclrx2"
+  [(set (pc) 
+	(if_then_else (zero_extract:HI
+		       (xor:HI (subreg:HI
+				(match_operand:QI 1 "xstormy16_below100_operand" "W") 0)
+			       (match_operand:HI 2 "xstormy16_onebit_set_operand" "J"))
+		       (const_int 1)
+		       (match_operand:HI 3 "immediate_operand" "i"))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 4 "" "=y"))]
+  ""
+  "bn %1,%B2,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bclr7"
+  [(set (pc) 
+	(if_then_else (xor:HI (lshiftrt:HI (subreg:HI
+					    (match_operand:QI 1 "xstormy16_below100_operand" "W") 0)
+					   (const_int 7))
+			      (const_int 1))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 2 "" "=y"))]
+  ""
+  "bn %1,#7,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bclr15"
+  [(set (pc) 
+	(if_then_else (ge:HI (sign_extend:HI (match_operand:QI 1 "xstormy16_below100_operand" "W"))
+			     (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 2 "" "=y"))]
+  ""
+  "bn %1,#7,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bsetx"
+  [(set (pc) 
+	(if_then_else (ne:HI (and:QI (match_operand:QI 1 "xstormy16_below100_operand" "W")
+				     (match_operand:HI 2 "immediate_operand" "i"))
+			     (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 3 "" "=y"))]
+  ""
+  "bp %1,%B2,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bsetx2"
+  [(set (pc) 
+	(if_then_else (zero_extract:HI (match_operand:QI 1 "xstormy16_below100_operand" "W")
+				       (const_int 1)
+				       (match_operand:HI 2 "immediate_operand" "i"))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 3 "" "=y"))]
+  ""
+  "bp %1,%b2,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bset7"
+  [(set (pc) 
+	(if_then_else (lshiftrt:HI (subreg:HI (match_operand:QI 1 "xstormy16_below100_operand" "W") 0)
+				   (const_int 7))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 2 "" "=y"))]
+  ""
+  "bp %1,#7,%l0"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "nop")])
+
+(define_insn "*bset15"
+  [(set (pc) 
+	(if_then_else (lt:HI (sign_extend:HI (match_operand:QI 1 "xstormy16_below100_operand" "W"))
+			     (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))
+   (clobber (match_operand:BI 2 "" "=y"))]
+  ""
+  "bp %1,#7,%l0"
+  [(set_attr "length" "4")
    (set_attr "psw_operand" "nop")])

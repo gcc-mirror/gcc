@@ -626,6 +626,26 @@ do {							\
 #undef DTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\""
+#define EXTRA_SECTIONS in_bss100
+
+/* We define the function body in a separate macro so that if we ever
+   add another section, we can just add an entry to
+   EXTRA_SECTION_FUNCTIONS without making it difficult to read.  It is
+   not used anywhere else.  */
+#define XSTORMY16_SECTION_FUNCTION(name, in, string, bits) 			  \
+  void										  \
+  name ()									  \
+  { 										  \
+    if (in_section != in)							  \
+      { 									  \
+	fprintf (asm_out_file, "\t.section %s,\"aw\",@%sbits\n", string, bits);   \
+	in_section = in;							  \
+      }										  \
+  }
+
+#undef  EXTRA_SECTION_FUNCTIONS
+#define EXTRA_SECTION_FUNCTIONS		\
+  XSTORMY16_SECTION_FUNCTION (bss100_section, in_bss100, ".bss_below100", "no")
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
@@ -642,15 +662,23 @@ do {							\
 
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '|')
 
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
+  xstormy16_asm_output_aligned_common(STREAM, DECL, NAME, SIZE, ALIGNMENT, 1)
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
+  xstormy16_asm_output_aligned_common(STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
+
 
 /* Output and Generation of Labels.  */
 
 #define ASM_OUTPUT_SYMBOL_REF(STREAM, SYMBOL)				\
   do {									\
+    const char *rn = XSTR (SYMBOL, 0);					\
+    if (rn[0] == '@' && rn[2] == '.')					\
+      rn += 3;								\
     if (SYMBOL_REF_FUNCTION_P (SYMBOL))					\
-      ASM_OUTPUT_LABEL_REF ((STREAM), XSTR (SYMBOL, 0));		\
+      ASM_OUTPUT_LABEL_REF ((STREAM), rn);				\
     else								\
-      assemble_name (STREAM, XSTR (SYMBOL, 0));				\
+      assemble_name (STREAM, rn);					\
   } while (0)
 
 #define ASM_OUTPUT_LABEL_REF(STREAM, NAME)	\
@@ -659,6 +687,9 @@ do  {						\
   assemble_name (STREAM, NAME);			\
   fputc (')', STREAM);				\
 } while (0)
+
+#define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
+  asm_fprintf ((STREAM), "%U%s", xstormy16_strip_name_encoding (NAME));
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
@@ -785,6 +816,11 @@ do  {						\
   {"equality_operator", {EQ, NE }},			\
   {"inequality_operator", {GE, GT, LE, LT, GEU, GTU, LEU, LTU }}, \
   {"xstormy16_ineqsi_operator", {LT, GE, LTU, GEU }}, \
+  {"xstormy16_below100_operand", {MEM }}, \
+  {"xstormy16_below100_or_register", {MEM, REG }}, \
+  {"xstormy16_splittable_below100_or_register", {MEM, REG }}, \
+  {"xstormy16_onebit_clr_operand", {CONST_INT }}, \
+  {"xstormy16_onebit_set_operand", {CONST_INT }}, \
   {"nonimmediate_nonstack_operand", {REG, MEM}},
 
 #define CASE_VECTOR_MODE SImode
