@@ -362,6 +362,17 @@ AC_FUNC_ALLOCA
 
 AC_CHECK_PROGS(PERL, perl, false)
 
+case "${host}" in
+  i?86-*-linux*)
+    SIGNAL_HANDLER=include/i386-signal.h
+	;;
+  *)
+    SIGNAL_HANDLER=include/default-signal.h
+	;;
+esac
+
+AC_LINK_FILES($SIGNAL_HANDLER, include/java-signal.h)
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else

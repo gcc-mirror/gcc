@@ -3298,6 +3298,17 @@ done
 test -n "$PERL" || PERL="false"
 
 
+case "${host}" in
+  i?86-*-linux*)
+    SIGNAL_HANDLER=include/i386-signal.h
+	;;
+  *)
+    SIGNAL_HANDLER=include/default-signal.h
+	;;
+esac
+
+
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
@@ -3714,8 +3725,8 @@ fi; done
 EOF
 
 cat >> $CONFIG_STATUS <<EOF
-ac_sources="java/io/$FILE_DESCRIPTOR include/$GCHDR include/$THREADH"
-ac_dests="java/io/natFileDescriptor.cc include/java-gc.h include/java-threads.h"
+ac_sources="java/io/$FILE_DESCRIPTOR include/$GCHDR include/$THREADH $SIGNAL_HANDLER"
+ac_dests="java/io/natFileDescriptor.cc include/java-gc.h include/java-threads.h include/java-signal.h"
 EOF
 
 cat >> $CONFIG_STATUS <<\EOF
