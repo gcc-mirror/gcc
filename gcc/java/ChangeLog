@@ -1,3 +1,9 @@
+2000-05-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_package): Correctly set `*next' (was off by
+	one.)
+	(resolve_qualified_expression_name): Fixed comment.
+
 Thu Apr 27 17:25:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (block_end:): If the collected block doesn't feature a
