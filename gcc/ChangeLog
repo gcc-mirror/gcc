@@ -1,5 +1,18 @@
 2004-09-21 Jeff Law  <law@redhat.com>
 
+	* tree-ssa-dom.c (opt_stats): Move so that it lives just after
+	the opt_stats_d structure.
+	(vrp_data): Change from a varray into a hash table.
+	(vrp_hash_elt): New structure for elements in the vrp hash table.
+	(vrp_hash, vrp_eq):New functions for hashing and testing equality
+	in the vrp hash table.
+	(tree_ssa_dominator_optimize): Initialize VRP_DATA.  Reorganize
+	initialization slightly to make it easier to read.  No longer need
+	to grow/clear the varray.  Instead empty and delete the hash table.
+	(dom_opt_finalize_block): Update due to change of VRP_DATA from
+	a varray to a hash table.
+	(simplify_cond_and_loop_avail_expr, record_range): Similarly.
+
 	* tree-ssa-ccp.c (get_default_value): If we have a constant
 	value recorded for an SSA_NAME, then use that constant as
 	the initial lattice value.
