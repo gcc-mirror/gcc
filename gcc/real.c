@@ -5922,5 +5922,43 @@ esqrt (x, y)
   emdnorm (sq, k, 0, exp, 64);
   emovo (sq, y);
 }
-
 #endif /* EMU_NON_COMPILE not defined */
+
+/* Return the binary precision of the significand for a given
+   floating point mode.  The mode can hold an integer value
+   that many bits wide, without losing any bits.  */
+
+int
+significand_size (mode)
+     enum machine_mode mode;
+{
+
+switch (mode)
+  {
+  case SFmode:
+    return 24;
+
+  case DFmode:
+#if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+    return 53;
+#else
+#if TARGET_FLOAT_FORMAT == IBM_FLOAT_FORMAT
+    return 56;
+#else
+#if TARGET_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+    return 56;
+#else
+    abort ();
+#endif
+#endif
+#endif
+
+  case XFmode:
+    return 64;
+  case TFmode:
+    return 113;
+
+  default:
+    abort ();
+  }
+}
