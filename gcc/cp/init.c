@@ -2388,6 +2388,9 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
   tree atype = TREE_TYPE (base);
   /* The type of an element in the array.  */
   tree type = TREE_TYPE (atype);
+  /* The element type reached after removing all outer array 
+     types.  */
+  tree inner_elt_type;
   /* The type of a pointer to an element in the array.  */
   tree ptype;
   tree stmt_expr;
@@ -2403,15 +2406,17 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
   if (maxindex == NULL_TREE || maxindex == error_mark_node)
     return error_mark_node;
 
+  inner_elt_type = strip_array_types (atype);
   if (init
       && (from_array == 2
-	  ? (!CLASS_TYPE_P (type) || !TYPE_HAS_COMPLEX_ASSIGN_REF (type))
+	  ? (!CLASS_TYPE_P (inner_elt_type) 
+	     || !TYPE_HAS_COMPLEX_ASSIGN_REF (inner_elt_type))
 	  : !TYPE_NEEDS_CONSTRUCTING (type))
       && ((TREE_CODE (init) == CONSTRUCTOR
 	   /* Don't do this if the CONSTRUCTOR might contain something
 	      that might throw and require us to clean up.  */
 	   && (CONSTRUCTOR_ELTS (init) == NULL_TREE
-	       || ! TYPE_HAS_NONTRIVIAL_DESTRUCTOR (target_type (type))))
+	       || ! TYPE_HAS_NONTRIVIAL_DESTRUCTOR (inner_elt_type)))
 	  || from_array))
     {
       /* Do non-default initialization of POD arrays resulting from
@@ -2602,14 +2607,12 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
       /* Flatten multi-dimensional array since build_vec_delete only
 	 expects one-dimensional array.  */
       if (TREE_CODE (type) == ARRAY_TYPE)
-	{
-	  m = cp_build_binary_op (MULT_EXPR, m,
-				  array_type_nelts_total (type));
-	  type = strip_array_types (type);
-	}
+	m = cp_build_binary_op (MULT_EXPR, m,
+				array_type_nelts_total (type));
 
       finish_cleanup_try_block (try_block);
-      e = build_vec_delete_1 (rval, m, type, sfk_base_destructor,
+      e = build_vec_delete_1 (rval, m, 
+			      inner_elt_type, sfk_base_destructor,
 			      /*use_global_delete=*/0);
       finish_cleanup (e, try_block);
     }

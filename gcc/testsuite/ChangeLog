@@ -1,3 +1,8 @@
+2005-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20142
+	* g++.dg/init/array18.C: New test.
+
 2005-03-08  Ira Rosen  <irar@il.ibm.com>
 
         * gcc.dg/vect/pr20122.c: New test.
