@@ -1,12 +1,5 @@
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
-// If using the namespace std, you need this. Eventually this should
-// not be an option. In the meantime, and as things like std_ctype.h
-// need to be hacked out, give people the option. If this is set to 1,
-// CXXFLAGS should include -fhonor-std. If this is undefined, CXXFLAGS
-// should include -fno-honor-std.
-#undef _GLIBCPP_USE_NAMESPACES
-
 // Include support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 

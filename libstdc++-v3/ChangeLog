@@ -1,10 +1,29 @@
 2000-05-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* bits/std_cmath.h: Tweaks.
+	* math/mathconf.h: Tweaks and fixes for HP-UX 11.
+	(sqrtf): Define away iff !builtin and !in <math.h>. 
+	(sinf): Same.
+	(cosf): Same.
+	(fabsf): Same.
+	At some point this directory should be converted to c++, the
+	autoconf tests should be run by the c++ compiler (not c), and
+	<cmath> should be used instead of math.h.
+	Move declaration of nan() here.
+	* math/complex-stub.h (cabsl): Remove nan() declaration.
+
 	Finish up FreeBSD4.0 support.
 	* config/bsd/ctype.cc: Scope out toupper, tolower calls.
 	* config/generic/ctype.cc: And here.
 	* testsuite/21_strings/char_traits.cc (test02): Guard with
 	_GLIBCPP_USE_WCHAR_T.
+
+	via Phil Edwards  <pme@sourceware.cygnus.com>
+	* bits/std_cctype.h: Remove _GLIBCPP_USE_NAMESPACES.
+	* acconfig.h: And here.
+	* acinclude.m4: Same.
+	* testsuite/27_io/istream.cc: And here.
+	* testsuite/27_io/ostream.cc: And here.
 
 2000-05-09  Benjamin Kosnik  <bkoz@gnu.org>
 

@@ -42,203 +42,203 @@
 
 namespace std {
 
-    inline long
-    abs(long __l) { return ::labs(__l); }
+  inline long
+  abs(long __l) { return ::labs(__l); }
 
-    inline ldiv_t
-    div(long __a, long __b) { return ::ldiv(__a, __b); }
+  inline ldiv_t
+  div(long __a, long __b) { return ::ldiv(__a, __b); }
 
-    // double
-    inline double
-    abs(double __x) { return ::fabs(__x); }
+  // double
+  inline double
+  abs(double __x) { return ::fabs(__x); }
 
-    double
-    pow(double, int);
+  double
+  pow(double, int);
 
-    // float
-    inline float
-    ceil(float __x) { return ::ceil(static_cast<double>(__x)); }
+  // float
+  inline float
+  ceil(float __x) { return ::ceil(static_cast<double>(__x)); }
 
-    inline float
-    floor(float __x) { return ::floor(static_cast<double>(__x)); }
+  inline float
+  floor(float __x) { return ::floor(static_cast<double>(__x)); }
 
-    inline float
-    fmod(float __x, float __y) 
-    { return ::fmod(static_cast<double>(__x), static_cast<double>(__y)); }
+  inline float
+  fmod(float __x, float __y) 
+  { return ::fmod(static_cast<double>(__x), static_cast<double>(__y)); }
 
-    inline float
-    frexp(float __x, int* __p) 
-    { return ::frexp(static_cast<double>(__x), __p); }
+  inline float
+  frexp(float __x, int* __p) 
+  { return ::frexp(static_cast<double>(__x), __p); }
 
-    inline float
-    ldexp(float __x, int __i) 
-    { return ::ldexp(static_cast<double>(__x), __i); }
+  inline float
+  ldexp(float __x, int __i) 
+  { return ::ldexp(static_cast<double>(__x), __i); }
 
-    inline float
-    pow(float __x, float __y) 
-    { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
+  inline float
+  pow(float __x, float __y) 
+  { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
 
-    float
-    pow(float, int); 
+  float
+  pow(float, int); 
 
 #if _GLIBCPP_HAVE_ABSF
-    inline float
-    abs(float __x) { return ::absf(__x); }
+  inline float
+  abs(float __x) { return ::absf(__x); }
 #else
-    inline float
-    abs(float __x) { return ::fabs(static_cast<double>(__x)); }
+  inline float
+  abs(float __x) { return ::fabs(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ACOSF
-    inline float
-    acos(float __x) { return ::acosf(__x); }
+  inline float
+  acos(float __x) { return ::acosf(__x); }
 #else
-    inline float
-    acos(float __x) { return ::acos(static_cast<double>(__x)); }
+  inline float
+  acos(float __x) { return ::acos(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ASINF
-    inline float
-    asin(float __x) { return ::asinf(__x); }
+  inline float
+  asin(float __x) { return ::asinf(__x); }
 #else
-    inline float
-    asin(float __x) { return ::asin(static_cast<double>(__x)); }
+  inline float
+  asin(float __x) { return ::asin(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ATANF
-    inline float
-    atan(float __x) { return ::atanf(__x); }
+  inline float
+  atan(float __x) { return ::atanf(__x); }
 #else
-    inline float
-    atan(float __x) { return ::atan(static_cast<double>(__x)); }
+  inline float
+  atan(float __x) { return ::atan(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ATAN2F
-    inline float
-    atan2(float __x, float __y) { return ::atan2f(__x, __y); }
+  inline float
+  atan2(float __x, float __y) { return ::atan2f(__x, __y); }
 #else
-    inline float
-    atan2(float __x, float __y) 
-    { return ::atan2(static_cast<double>(__x), static_cast<double>(__y)); }
+  inline float
+  atan2(float __x, float __y) 
+  { return ::atan2(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
 #if _GLIBCPP_HAVE_TANF
-    inline float
-    tan(float __x) { return ::tanf(__x); }
+  inline float
+  tan(float __x) { return ::tanf(__x); }
 #else
-    inline float
-    tan(float __x) { return ::tan(static_cast<double>(__x)); }
+  inline float
+  tan(float __x) { return ::tan(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_SINHF
-    inline float
-    sinh(float __x) { return ::sinhf(__x); }
+  inline float
+  sinh(float __x) { return ::sinhf(__x); }
 #else
-    inline float
-    sinh(float __x) { return ::sinh(static_cast<double>(__x)); }
+  inline float
+  sinh(float __x) { return ::sinh(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_TANHF
-    inline float
-    tanh(float __x) { return ::tanhf(__x); }
+  inline float
+  tanh(float __x) { return ::tanhf(__x); }
 #else
-    inline float
-    tanh(float __x) { return ::tanh(static_cast<double>(__x)); }
+  inline float
+  tanh(float __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_COSHF
-    inline float
-    cosh(float __x) { return ::coshf(__x); }
+  inline float
+  cosh(float __x) { return ::coshf(__x); }
 #else
-    inline float
-    cosh(float __x) { return ::cosh(static_cast<double>(__x)); }
+  inline float
+  cosh(float __x) { return ::cosh(static_cast<double>(__x)); }
 #endif
  
 #if _GLIBCPP_HAVE_EXPF
-    inline float
-    exp(float __x) { return ::expf(__x); }
+  inline float
+  exp(float __x) { return ::expf(__x); }
 #else
-    inline float
-    exp(float __x) { return ::exp(static_cast<double>(__x)); }
+  inline float
+  exp(float __x) { return ::exp(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_LOGF
-    inline float
-    log(float __x) { return ::logf(__x); }
+  inline float
+  log(float __x) { return ::logf(__x); }
 #else
-    inline float
-    log(float __x) { return ::log(static_cast<double>(__x)); }
+  inline float
+  log(float __x) { return ::log(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_LOG10F
-    inline float
-    log10(float __x) { return ::log10f(__x); }
+  inline float
+  log10(float __x) { return ::log10f(__x); }
 #else
-    inline float
-    log10(float __x) { return ::log10(static_cast<double>(__x)); }
+  inline float
+  log10(float __x) { return ::log10(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_MODFF
-    inline float
-    modf(float __x, float* __p) { return ::modff(__x, __p); }
+  inline float
+  modf(float __x, float* __p) { return ::modff(__x, __p); }
 #else
-    inline float
-    modf(float __x, float* __p) 
-    {
-      double __tmp;
-      double __res = ::modf(static_cast<double>(__x), &__tmp);
-      *__p = static_cast<float> (__tmp);
-      return __res;
-    }
+  inline float
+  modf(float __x, float* __p) 
+  {
+    double __tmp;
+    double __res = ::modf(static_cast<double>(__x), &__tmp);
+    *__p = static_cast<float> (__tmp);
+    return __res;
+  }
 #endif
 
 #if GLIBCPP_HAS_BUILTIN_SINF
-    inline float
-    sin(float __x) { return __builtin_sinf(__x); }
+  inline float
+  sin(float __x) { return __builtin_sinf(__x); }
 #elif _GLIBCPP_HAVE_SINF
-    inline float
-    sin(float __x) { return ::sinf(__x); }
+  inline float
+  sin(float __x) { return ::sinf(__x); }
 #else
-    inline float
-    sin(float __x) { return ::sin(static_cast<double>(__x)); }
+  inline float
+  sin(float __x) { return ::sin(static_cast<double>(__x)); }
 #endif
 
 #if GLIBCPP_HAS_BUILTIN_COSF
-    inline float
-    cos(float __x) { return __builtin_cosf(__x); }
+  inline float
+  cos(float __x) { return __builtin_cosf(__x); }
 #elif _GLIBCPP_HAVE_COSF
-    inline float
-    cos(float __x) { return ::cosf(__x); }
+  inline float
+  cos(float __x) { return ::cosf(__x); }
 #else
-    inline float
-    cos(float __x) { return ::cos(static_cast<double>(__x)); }
+  inline float
+  cos(float __x) { return ::cos(static_cast<double>(__x)); }
 #endif
 
 #if GLIBCPP_HAS_BUILTIN_FABSF
-    inline float
-    fabs(float __x) { return __builtin_fabsf(__x); }
+  inline float
+  fabs(float __x) { return __builtin_fabsf(__x); }
 #elif _GLIBCPP_HAVE_FABSF
-    inline float
-    fabs(float __x) { return ::fabsf(__x); }
+  inline float
+  fabs(float __x) { return ::fabsf(__x); }
 #else
-    inline float
-    fabs(float __x) { return ::fabs(static_cast<double>(__x)); }
+  inline float
+  fabs(float __x) { return ::fabs(static_cast<double>(__x)); }
 #endif
 
 #if GLIBCPP_HAS_BUILTIN_SQRTF
-    inline float
-    sqrt(float __x) { return __builtin_sqrtf(__x); }
+  inline float
+  sqrt(float __x) { return __builtin_sqrtf(__x); }
 #elif _GLIBCPP_HAVE_SQRTF
-    inline float
-    sqrt(float __x) { return ::sqrtf(__x); }
+  inline float
+  sqrt(float __x) { return ::sqrtf(__x); }
 #else
-    inline float
-    sqrt(float __x) { return ::fabs(static_cast<double>(__x)); }
+  inline float
+  sqrt(float __x) { return ::fabs(static_cast<double>(__x)); }
 #endif
 
-    // XXX long double
-    long double
-    pow(long double, int);
+  // XXX long double
+  long double
+  pow(long double, int);
 
 } // std
 

@@ -1,6 +1,6 @@
 /* Configuration data for libmath subpart of libstdc++. */
 
-/* Copyright (C) 1997-1999 Free Software Foundation, Inc.
+/* Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 
    This file is part of the GNU ISO C++ Library.  This library is free
    software; you can redistribute it and/or modify it under the
@@ -74,6 +74,11 @@ typedef int Int32_t __attribute ((mode (SI)));
 # include <nan.h>
 #endif
 
+#ifndef NAN
+# define NAN (nan())
+double nan (void);
+#endif
+
 #ifdef _GLIBCPP_HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
@@ -115,10 +120,6 @@ typedef int Int32_t __attribute ((mode (SI)));
 #   error "We need HUGE_VAL!"
 #  endif
 # endif
-#endif
-
-#ifndef NAN
-# define NAN (nan())
 #endif
 
 #ifndef M_PI
@@ -327,15 +328,10 @@ do {                                                            \
 
 
 /* Replacement for non-existing float functions.  */
-#ifndef _GLIBCPP_HAVE_FABSF
-# ifdef __GNUC__
-/* gcc has fabsf as a builtin command.  */
-extern float fabsf (float);
-# else
-#  define fabsf(x) fabs (x)
-# endif
+#if !defined(_GLIBCPP_HAVE_FABSF) && !defined(_GLIBCPP_HAS_BUILTIN_FABSF)
+# define fabsf(x) fabs (x)
 #endif
-#ifndef _GLIBCPP_HAVE_COSF
+#if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAS_BUILTIN_COSF)
 # define cosf(x) cos (x)
 #endif
 #ifndef _GLIBCPP_HAVE_COSHF
@@ -353,13 +349,13 @@ extern float fabsf (float);
 #ifndef _GLIBCPP_HAVE_POWF
 # define powf(x, y) pow (x, y)
 #endif
-#ifndef _GLIBCPP_HAVE_SINF
+#if !defined(_GLIBCPP_HAVE_SINF) && !defined(_GLIBCPP_HAS_BUILTIN_SINF)
 # define sinf(x) sin (x)
 #endif
 #ifndef _GLIBCPP_HAVE_SINHF
 # define sinhf(x) sinh (x)
 #endif
-#ifndef _GLIBCPP_HAVE_SQRTF
+#if !defined(_GLIBCPP_HAVE_SQRTF) && !defined(_GLIBCPP_HAS_BUILTIN_SQRTF)
 # define sqrtf(x) sqrt (x)
 #endif
 #ifndef _GLIBCPP_HAVE_TANF
@@ -375,7 +371,3 @@ extern float fabsf (float);
 #ifdef __cplusplus
 }
 #endif
-
-
-
-

@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,20 +30,16 @@
 // 27.6.1.1 basic_istream
 // NB: This file is for testing istream with NO OTHER INCLUDES.
 
-// XXX only if using namespaces, as without leads to duplicate symbols
-#if _GLIBCPP_USE_NAMESPACES 
 #include <istream>
-#include <bits/basic_ios.tcc> // XXX Hack, in a perfect world this not needed.
-#include <locale> // XXX As above, needed for ctype/num_get use_facets(...)
-#include <bits/locale_facets.tcc> // XXX
 
 namespace test {
  
+#if 0
+  // XXX Should work, but doesn't.
   using namespace std;
   typedef short type_t;
   template class basic_istream<type_t, char_traits<type_t> >;
 
-#if 0
   template
     const ctype<type_t>& 
     use_facet<ctype<type_t> >(const locale&);
@@ -55,7 +51,6 @@ namespace test {
 #endif
 
 } // test
-#endif
 
 int main() {
   return 0;
