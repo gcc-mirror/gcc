@@ -16,7 +16,7 @@
 	eval_type_intrinsic0, eval_intrinsic_f2, gfc_real2real,
 	gfc_real2complex, gfc_complex2int, gfc_complex2real,
 	gfc_complex2complex): Fix whitespace issues.
-	check.c (must_be, type_check, numeric_check, int_or_real_check,
+	* check.c (must_be, type_check, numeric_check, int_or_real_check,
 	logical_array_check, array_check, scalar_check, nonoptional_check,
 	variable_check, dim_check, check_a_kind, gfc_check_a_ikind,
 	gfc_check_a_xkind, gfc_check_abs, gfc_check_all_any,
