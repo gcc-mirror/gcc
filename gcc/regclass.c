@@ -829,9 +829,14 @@ scan_one_insn (insn, pass)
   if (code == NOTE)
     {
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	loop_depth++, loop_cost = 1 << (2 * MIN (loop_depth, 5));
+	loop_depth++;
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	loop_depth--, loop_cost = 1 << (2 * MIN (loop_depth, 5));
+	loop_depth--;
+
+      if (optimize_size)
+	loop_cost = 1;
+      else
+	loop_cost = 1 << (2 * MIN (loop_depth, 5));
 
       return insn;
     }
