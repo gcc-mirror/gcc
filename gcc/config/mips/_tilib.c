@@ -21,12 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "tconfig.h"
-#include "tsystem.h"
-#include "defaults.h"
-
-#ifndef LIBGCC2_WORDS_BIG_ENDIAN
-#define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
-#endif
+#include "coretypes.h"
+#include "tm.h"
 
 #if _MIPS_SIM == 2 /* N32 */ || _MIPS_SIM == 3 /* 64 */
 

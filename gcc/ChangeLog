@@ -1,3 +1,8 @@
+2003-02-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips/_tilib.c: Don't include tsystem.h or defaults.h.  Don't
+	define LIBGCC2_WORDS_BIG_ENDIAN.  Include coretypes.h and tm.h.
+
 2003-02-02  Andreas Schwab  <schwab@suse.de>
 
 	* varasm.c (asm_output_aligned_bss): Declare as possibly unused.
