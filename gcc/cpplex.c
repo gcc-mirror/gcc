@@ -83,7 +83,8 @@ static void parse_number PARAMS ((cpp_reader *, cpp_string *, int));
 static int unescaped_terminator_p PARAMS ((cpp_reader *, const U_CHAR *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static bool trigraph_p PARAMS ((cpp_reader *));
-static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
+static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *,
+				  cppchar_t));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 				   const unsigned char *, unsigned int *));
@@ -673,13 +674,14 @@ parse_string (pfile, token, terminator)
 
 /* The stored comment includes the comment start and any terminator.  */
 static void
-save_comment (pfile, token, from)
+save_comment (pfile, token, from, type)
      cpp_reader *pfile;
      cpp_token *token;
      const unsigned char *from;
+     cppchar_t type;
 {
   unsigned char *buffer;
-  unsigned int len;
+  unsigned int len, clen;
   
   len = pfile->buffer->cur - from + 1; /* + 1 for the initial '/'.  */
 
@@ -687,14 +689,31 @@ save_comment (pfile, token, from)
      line, which we don't want to save in the comment.  */
   if (is_vspace (pfile->buffer->cur[-1]))
     len--;
-  buffer = _cpp_unaligned_alloc (pfile, len);
+
+  /* If we are currently in a directive, then we need to store all
+     C++ comments as C comments internally, and so we need to
+     allocate a little extra space in that case.
+
+     Note that the only time we encounter a directive here is
+     when we are saving comments in a "#define".  */
+  clen = (pfile->state.in_directive && type == '/') ? len + 2 : len;
+
+  buffer = _cpp_unaligned_alloc (pfile, clen);
   
   token->type = CPP_COMMENT;
-  token->val.str.len = len;
+  token->val.str.len = clen;
   token->val.str.text = buffer;
 
   buffer[0] = '/';
   memcpy (buffer + 1, from, len - 1);
+
+  /* Finish conversion to a C comment, if necessary. */
+  if (pfile->state.in_directive && type == '/')
+    {
+      buffer[1] = '*';
+      buffer[clen - 2] = '*';
+      buffer[clen - 1] = '/';
+    }
 }
 
 /* Allocate COUNT tokens for RUN.  */
@@ -1021,7 +1040,7 @@ _cpp_lex_direct (pfile)
 	}
 
       /* Save the comment as a token in its own right.  */
-      save_comment (pfile, result, comment_start);
+      save_comment (pfile, result, comment_start, c);
       break;
 
     case '<':

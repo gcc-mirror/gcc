@@ -1015,6 +1015,9 @@ cpp_get_token (pfile)
 	  return &pfile->avoid_paste;
 	}
 
+      if (pfile->state.in_directive && result->type == CPP_COMMENT)
+	continue;
+
       if (result->type != CPP_NAME)
 	break;
 
@@ -1194,6 +1197,12 @@ parse_params (pfile, macro)
       switch (token->type)
 	{
 	default:
+	  /* Allow/ignore comments in parameter lists if we are
+	     preserving comments in macro expansions.  */
+	  if (token->type == CPP_COMMENT
+	      && ! CPP_OPTION (pfile, discard_comments_in_macro_exp))
+	    continue;
+
 	  cpp_error (pfile, "\"%s\" may not appear in macro parameter list",
 		     cpp_token_as_text (pfile, token));
 	  return 0;

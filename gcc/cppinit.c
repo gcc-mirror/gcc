@@ -488,6 +488,7 @@ cpp_create_reader (lang)
   set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
+  CPP_OPTION (pfile, discard_comments_in_macro_exp) = 1;
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
@@ -1172,6 +1173,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("-version",                 0,      OPT__version)                   \
   DEF_OPT("A",                        no_ass, OPT_A)                          \
   DEF_OPT("C",                        0,      OPT_C)                          \
+  DEF_OPT("CC",                       0,      OPT_CC)                         \
   DEF_OPT("D",                        no_mac, OPT_D)                          \
   DEF_OPT("H",                        0,      OPT_H)                          \
   DEF_OPT("I",                        no_dir, OPT_I)                          \
@@ -1452,6 +1454,10 @@ cpp_handle_option (pfile, argc, argv, ignore)
 
 	case OPT_C:
 	  CPP_OPTION (pfile, discard_comments) = 0;
+	  break;
+	case OPT_CC:
+	  CPP_OPTION (pfile, discard_comments) = 0;
+	  CPP_OPTION (pfile, discard_comments_in_macro_exp) = 0;
 	  break;
 	case OPT_P:
 	  CPP_OPTION (pfile, no_line_commands) = 1;
