@@ -1319,6 +1319,17 @@ enum reg_class
    :							\
    ((FROM) == HI_REGS || (TO) == HI_REGS) ? 4 : 2)
 
+/* Register Renaming Parameters.  */
+
+/* A C expression that is nonzero if hard register number TO can be
+   considered for use as a rename register for FROM.
+
+   If the return register isn't already live, we mustn't use it.  */
+
+#define HARD_REGNO_RENAME_OK(FROM,TO) \
+  ((TO) != LR_REGNUM || regs_ever_live[LR_REGNUM])
+
+
 /* Stack layout; function entry, exit and calling.  */
 
 /* Define this if pushing a word on the stack

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -2861,6 +2861,19 @@ s_register_operand (op, mode)
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 }
 
+/* A hard register operand (even before reload.  */
+int
+arm_hard_register_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+
+  return (GET_CODE (op) == REG
+	  && REGNO (op) < FIRST_PSEUDO_REGISTER);
+}
+    
 /* Only accept reg, subreg(reg), const_int.  */
 
 int

@@ -1,3 +1,15 @@
+2001-01-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (ldmsi_postinc): Avoid use of match_dup between input and
+	output operands.  Use arm_hard_register_operand for operand 4.
+	(stmsi_postinc): Similarly.
+	(ldmsi): Use arm_hard_register_operand for opernand 2.
+	(stmsi): Similarly.
+	* arm.c (arm_hard_register_operand): New function.
+	* arm-protos.h (arm_hard_register_operand): Prototype it.
+
+	* arm.h (HARD_REGNO_RENAME_OK): Define.
+
 Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (cfc_args): add "unordered" field.
