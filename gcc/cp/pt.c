@@ -5708,11 +5708,10 @@ type_unification (tparms, targs, parms, args, targs_in,
 
 /* Adjust types before performing type deduction, as described in
    [temp.deduct.call] and [temp.deduct.conv].  The rules in these two
-   sections are symmetric.  For calls, the value passed as PARM should
-   be a parameter to the template function, while ARG should be the
-   actual argument used in the call.  For conversions, PARM should be
-   the type required as the result of the conversion, while ARG should
-   be the return type of the template conversion function.  */
+   sections are symmetric.  PARM is the type of a function parameter
+   or the return type of the conversion function.  ARG is the type of
+   the argument passed to the call, or the type of the value
+   intialized with the result of the conversion function.  */
 
 void
 maybe_adjust_types_for_deduction (strict, parm, arg)
@@ -5727,8 +5726,9 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
 
     case DEDUCE_CONV:
       {
-	/* Swap PARM and ARG; the handling is precisely symmetric since
-	   PARM will initialize ARG rather than vice versa.  */
+	/* Swap PARM and ARG throughout the remainder of this
+	   function; the handling is precisely symmetric since PARM
+	   will initialize ARG rather than vice versa.  */
 	tree* temp = parm;
 	parm = arg;
 	arg = temp;
