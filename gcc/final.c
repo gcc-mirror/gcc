@@ -1898,16 +1898,12 @@ final (first, file, optimize, prescan)
 #ifdef HAVE_ATTR_length
       if ((unsigned) INSN_UID (insn) >= INSN_ADDRESSES_SIZE ())
 	{
-#ifdef STACK_REGS
-	  /* Irritatingly, the reg-stack pass is creating new instructions
-	     and because of REG_DEAD note abuse it has to run after
-	     shorten_branches.  Fake address of -1 then.  */
-	  insn_current_address = -1;
-#else
 	  /* This can be triggered by bugs elsewhere in the compiler if
 	     new insns are created after init_insn_lengths is called.  */
-	  abort ();
-#endif
+	  if (GET_CODE (insn) == NOTE)
+	    insn_current_address = -1;
+	  else
+	    abort ();
 	}
       else
 	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
