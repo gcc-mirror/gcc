@@ -2286,7 +2286,7 @@ struct lang_decl
 
 /* The number of levels of template parameters given by NODE.  */
 #define TMPL_PARMS_DEPTH(NODE) \
-  (TREE_INT_CST_LOW (TREE_PURPOSE (NODE)))
+  ((HOST_WIDE_INT) TREE_INT_CST_LOW (TREE_PURPOSE (NODE)))
 
 /* The TEMPLATE_DECL instantiated or specialized by NODE.  This
    TEMPLATE_DECL will be the immediate parent, not the most general
