@@ -50,7 +50,6 @@ h8 port			Kazu Hirata		kazu@hxi.com
 hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
-i860 port		Jason Eckhardt		jle@redhat.com
 i960 port		Jim Wilson		wilson@redhat.com
 ia64 port		Jim Wilson		wilson@redhat.com
 m32r port		Nick Clifton		nickc@redhat.com
@@ -132,7 +131,7 @@ global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
-basic block reordering	Jason Eckhardt		jle@redhat.com
+basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
