@@ -1,3 +1,10 @@
+2004-01-27  James E Wilson  <wilson@specifixinc.com>
+
+	* objc.dg/encode-2.m (main): New local string.  Set depending on
+	sizeof long.  Use in sscanf call.
+	* objc.dg/encode-3.m (main): New local string.  Set depending on
+	sizeof long.  Use in scan_initial call.
+
 2004-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc.dg/call-super-2.m: Make LP64-safe.
