@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "diagnostic.h"
 #include "intl.h"
+#include "target.h"
 #include "convert.h"
 
 static tree build_field_call (tree, tree, tree);
@@ -568,7 +569,7 @@ strip_top_quals (tree t)
 {
   if (TREE_CODE (t) == ARRAY_TYPE)
     return t;
-  return TYPE_MAIN_VARIANT (t);
+  return cp_build_qualified_type (t, 0);
 }
 
 /* Returns the standard conversion path (see [conv]) from type FROM to type
@@ -792,6 +793,10 @@ standard_conversion (tree to, tree from, tree expr)
 	  && ICS_STD_RANK (TREE_OPERAND (conv, 0)) <= PROMO_RANK)
 	ICS_STD_RANK (conv) = PROMO_RANK;
     }
+  else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
+      && ((*targetm.vector_opaque_p) (from)
+	  || (*targetm.vector_opaque_p) (to)))
+    return build_conv (STD_CONV, to, conv);
   else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && is_properly_derived_from (from, to))
     {
