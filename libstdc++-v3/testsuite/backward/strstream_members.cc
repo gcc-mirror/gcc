@@ -29,12 +29,21 @@ int test01()
    for (unsigned i=0 ; i!= 1000 ; ++i)
       s << i << std::endl;
    s << std::ends;
-
    return 0;
+}
+
+
+int test02()
+{
+  std::ostrstream buf;
+  buf << std::ends;
+  char *s = buf.str ();
+  delete [] s;
 }
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }

@@ -148,9 +148,12 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
 AM_RUNTESTFLAGS = 
 RUNTESTFLAGS = 
 
-CXX = @glibcpp_CXX@ @GLIBCPP_INCLUDES@
+CXX = @glibcpp_CXX@ 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-INCLUDES = @TOPLEVEL_INCLUDES@
+INCLUDES = \
+	-nostdinc++ \
+	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
+
 
 noinst_LIBRARIES = libv3test.a
 
