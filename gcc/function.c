@@ -3495,9 +3495,17 @@ assign_parms (fndecl, second_time)
 		   * (PARM_BOUNDARY / BITS_PER_UNIT));
 
 	      if (! second_time)
-		move_block_from_reg (REGNO (entry_parm),
-				     validize_mem (stack_parm), nregs,
-				     int_size_in_bytes (TREE_TYPE (parm)));
+		{
+		  /* Handle calls that pass values in multiple non-contiguous
+		     locations.  The Irix 6 ABI has examples of this.  */
+		  if (GET_CODE (entry_parm) == PARALLEL)
+		    emit_group_store (validize_mem (stack_parm),
+					 entry_parm);
+		  else
+		    move_block_from_reg (REGNO (entry_parm),
+					 validize_mem (stack_parm), nregs,
+					 int_size_in_bytes (TREE_TYPE (parm)));
+		}
 	      entry_parm = stack_parm;
 	    }
 	}
@@ -3621,10 +3629,13 @@ assign_parms (fndecl, second_time)
 
 	 Set DECL_RTL to that place.  */
 
-      if (nominal_mode == BLKmode)
+      if (nominal_mode == BLKmode || GET_CODE (entry_parm) == PARALLEL)
 	{
-	  /* If a BLKmode arrives in registers, copy it to a stack slot.  */
-	  if (GET_CODE (entry_parm) == REG)
+	  /* If a BLKmode arrives in registers, copy it to a stack slot.
+	     Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+	  if (GET_CODE (entry_parm) == REG
+	      || GET_CODE (entry_parm) == PARALLEL)
 	    {
 	      int size_stored
 		= CEIL_ROUND (int_size_in_bytes (TREE_TYPE (parm)),
@@ -3655,10 +3666,15 @@ assign_parms (fndecl, second_time)
 	      if (TREE_READONLY (parm))
 		RTX_UNCHANGING_P (stack_parm) = 1;
 
-	      move_block_from_reg (REGNO (entry_parm),
-				   validize_mem (stack_parm),
-				   size_stored / UNITS_PER_WORD,
-				   int_size_in_bytes (TREE_TYPE (parm)));
+	      /* Handle calls that pass values in multiple non-contiguous
+		 locations.  The Irix 6 ABI has examples of this.  */
+	      if (GET_CODE (entry_parm) == PARALLEL)
+		emit_group_store (validize_mem (stack_parm), entry_parm);
+	      else
+		move_block_from_reg (REGNO (entry_parm),
+				     validize_mem (stack_parm),
+				     size_stored / UNITS_PER_WORD,
+				     int_size_in_bytes (TREE_TYPE (parm)));
 	    }
 	  DECL_RTL (parm) = stack_parm;
 	}
