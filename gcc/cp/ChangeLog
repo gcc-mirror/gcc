@@ -1,5 +1,17 @@
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
+ 	PR c++/7931
+	* pt.c (for_each_template_parm_r): Handle BASELINKs.
+
+	PR c++/7754
+	* decl2.c (finish_anon_union): Do not expand anonymous unions when
+	procesing template functions.
+	* pt.c (tsubst_decl, case VAR_DECL): Try to complete the variable
+	type. Call layout_decl.
+	(tsubst_expr, case DECL_STMT): Handle anonymous unions.
+
+2002-10-03  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/8006
 	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Handle instances of template
 	template parameters.

@@ -1,5 +1,13 @@
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/7931
+	* g++.dg/template/ptrmem3.C: New test.
+	
+	PR c++/7754
+	* g++.dg/template/union1.C: New test.
+
+2002-10-03  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/8006
 	* g++.dg/abi/mangle9.C: New test.
 	* g++.dg/abi/mangle10.C: New test.
