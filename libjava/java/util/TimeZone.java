@@ -1,5 +1,6 @@
 /* java.util.TimeZone
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -809,6 +810,21 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   public abstract int getOffset(int era, int year, int month,
 				int day, int dayOfWeek, int milliseconds);
 
+  /**
+   * Get the time zone offset for the specified date, modified in case of
+   * daylight savings.  This is the offset to add to UTC to get the local
+   * time.
+   * @param date the date represented in millisecends
+   * since January 1, 1970 00:00:00 GMT.
+   * @since 1.4
+   */
+  public int getOffset(long date)
+  {
+    return (inDaylightTime(new Date(date))
+            ? getRawOffset() + getDSTSavings()
+            : getRawOffset());
+  }
+  
   /**
    * Gets the time zone offset, ignoring daylight savings.  This is
    * the offset to add to UTC to get the local time.
