@@ -1,19 +1,19 @@
 2004-11-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18507
-	* tree-flow.h (tree2): Typedef because there is already a VEC(tree).
-	Define a VEC(tree2) for head.
-	(register_new_def): Change second argument to be a VEC(tree2).
-	* tree-ssa-dom.c (block_defs_stack): Change to be a VEC(tree2).
+	* tree-flow.h (tree_on_heap): Typedef because there is already a VEC(tree).
+	Define a VEC(tree_on_heap) for head.
+	(register_new_def): Change second argument to be a VEC(tree_on_heap).
+	* tree-ssa-dom.c (block_defs_stack): Change to be a VEC(tree_on_heap).
 	(tree_ssa_dominator_optimize): Initialize block_defs_stack with
-	the VEC(tree2) function.  Also free it before returning.
+	the VEC(tree_on_heap) function.  Also free it before returning.
 	(dom_opt_initialize_block): Use VEC_safe_push instead of VARRAY_PUSH_TREE
 	for block_defs_stack.
 	(restore_currdefs_to_original_value): Use VEC_length instead of
 	VARRAY_ACTIVE_SIZE. VEC_pop instead of VARRAY_TOP_TREE/VARRAY_POP.
 	(dom_opt_finalize_block): Use VEC_safe_push instead of VARRAY_PUSH_TREE
 	for block_defs_stack.
-	* tree-into-ssa.c (block_defs_stack): Change to be a VEC(tree2).
+	* tree-into-ssa.c (block_defs_stack): Change to be a VEC(tree_on_heap).
 	(rewrite_initialize_block): Use VEC_safe_push instead of VARRAY_PUSH_TREE
 	for block_defs_stack.
 	(ssa_register_new_def): Likewise.
@@ -21,10 +21,10 @@
 	(rewrite_finalize_block): Use VEC_length instead of
 	VARRAY_ACTIVE_SIZE. VEC_pop instead of VARRAY_TOP_TREE/VARRAY_POP.
 	(ssa_rewrite_finalize_block): Likewise.
-	(register_new_def): Change second argument to be a VEC(tree2).
+	(register_new_def): Change second argument to be a VEC(tree_on_heap).
 	Use VEC_safe_push instead of VARRAY_PUSH_TREE.
 	(rewrite_blocks): Initialize block_defs_stack with
-	the VEC(tree2) function.  Also free it before returning.
+	the VEC(tree_on_heap) function.  Also free it before returning.
 	(rewrite_ssa_into_ssa): Likewise.
 
 2004-11-19  Fariborz Jahanian <fjahanian@apple.com>
