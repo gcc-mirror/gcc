@@ -533,8 +533,10 @@ enum update_life_extent
 #define PROP_REG_INFO		4	/* Update regs_ever_live et al.  */
 #define PROP_KILL_DEAD_CODE	8	/* Remove dead code.  */
 #define PROP_SCAN_DEAD_CODE	16	/* Scan for dead code.  */
-#define PROP_AUTOINC		32	/* Create autoinc mem references.  */
-#define PROP_FINAL		63	/* All of the above.  */
+#define PROP_ALLOW_CFG_CHANGES	32	/* Allow the CFG to be changed
+					   by dead code removal.  */
+#define PROP_AUTOINC		64	/* Create autoinc mem references.  */
+#define PROP_FINAL		127	/* All of the above.  */
 
 #define CLEANUP_EXPENSIVE	1	/* Do relativly expensive optimizations
 					   except for edge forwarding */
@@ -557,7 +559,7 @@ extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
 					 int));
 extern int count_or_remove_death_notes	PARAMS ((sbitmap, int));
-extern void propagate_block	PARAMS ((basic_block, regset, regset, regset,
+extern int propagate_block	PARAMS ((basic_block, regset, regset, regset,
 					 int));
 
 struct propagate_block_info;
