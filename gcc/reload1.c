@@ -6404,11 +6404,11 @@ gen_input_reload (reloadreg, in, opnum, type)
      register that didn't get a hard register.  In that case we can just
      call emit_move_insn.
 
-     We can also be asked to reload a PLUS that adds either two registers, or
-     a register and a constant or MEM, or a MEM and a constant.  This can
-     occur during frame pointer elimination and while reloading addresses.
-     This case is handled by trying to emit a single insn
-     to perform the add.  If it is not valid, we use a two insn sequence.
+     We can also be asked to reload a PLUS that adds a register or a MEM to
+     another register, constant or MEM.  This can occur during frame pointer
+     elimination and while reloading addresses.  This case is handled by
+     trying to emit a single insn to perform the add.  If it is not valid,
+     we use a two insn sequence.
 
      Finally, we could be called to handle an 'o' constraint by putting
      an address into a register.  In that case, we first try to do this
@@ -6426,16 +6426,14 @@ gen_input_reload (reloadreg, in, opnum, type)
      ??? At some point, this whole thing needs to be rethought.  */
 
   if (GET_CODE (in) == PLUS
-      && ((GET_CODE (XEXP (in, 0)) == REG
-	   && (GET_CODE (XEXP (in, 1)) == REG
-	       || CONSTANT_P (XEXP (in, 1))
-	       || GET_CODE (XEXP (in, 1)) == MEM))
-	  || (GET_CODE (XEXP (in, 0)) == MEM
-	      && CONSTANT_P (XEXP (in, 1)))))
+      && (GET_CODE (XEXP (in, 0)) == REG
+	  || GET_CODE (XEXP (in, 0)) == MEM)
+      && (GET_CODE (XEXP (in, 1)) == REG
+	  || CONSTANT_P (XEXP (in, 1))
+	  || GET_CODE (XEXP (in, 1)) == MEM))
     {
-      /* We need to compute the sum of what is either a register and a
-	 constant, a register and memory, a hard register and a pseudo
-	 register, or memory and a constant and put it into the reload
+      /* We need to compute the sum of a register or a MEM and another
+	 register, constant, or MEM, and put it into the reload
 	 register.  The best possible way of doing this is if the machine
 	 has a three-operand ADD insn that accepts the required operands.
 
