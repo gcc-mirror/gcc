@@ -1,3 +1,9 @@
+2004-11-24  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/i386/i386.c (override_options): Move
+	SUBTARGET_OVERRIDE_OPTIONS before defaulting
+	flag_omit_frame_pointer.
+
 2004-11-23  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (validate_subreg): Declare.
