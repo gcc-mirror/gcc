@@ -1267,7 +1267,7 @@ put_var_into_stack (decl)
 	 We do it so they end up consecutive.  */
       enum machine_mode part_mode = GET_MODE (XEXP (reg, 0));
       tree part_type = TREE_TYPE (TREE_TYPE (decl));
-#ifdef STACK_GROWS_DOWNWARD
+#ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1),
 			  part_type, part_mode, part_mode);
