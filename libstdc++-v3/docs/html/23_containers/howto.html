@@ -244,14 +244,22 @@
    </p>
    <p>The STL implementation is currently configured to use the
       high-speed caching memory allocator.  If you absolutely think
-      you must change this on a global basis for your platform to
-      better support multi-threading, then please consult all
-      commentary in include/bits/c++config.  (Explicit warning since
-      so many people post after getting confused while attempting
-      this:) Adding -D__USE_MALLOC on the command line is not a good
-      idea.  Related to threading or otherwise, the current
-      recommendation is that users not add any macro defines on the
-      command line to enable features out of libstdc++-v3.  There is
+      you must change this on a global basis for your platform to better
+      support multi-threading, then please consult all commentary in
+      include/bits/stl_alloc.h and the allocators link below.
+      <blockquote>
+      <p>(Explicit warning since so many people get confused while
+      attempting this:)
+      </p>
+      <p><strong>Adding -D__USE_MALLOC on the command
+      line is almost certainly a bad idea.</strong>  Memory efficiency is
+      almost guaranteed to suffer as a result; this is
+      <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">why
+      we disabled it for 3.0 in the first place</a>.
+      </p>
+      <p>Related to threading or otherwise, the current recommendation is
+      that users not add any macro defines on the command line to remove or
+      otherwise disable features of libstdc++-v3.  There is
       no condition under which it will help you without causing other
       issues to perhaps raise up (possible linkage/ABI problems).  In
       particular, __USE_MALLOC should only be added to a libstdc++-v3
@@ -259,22 +267,22 @@
       action is cautioned against), and the entire library should be
       rebuilt.  If you do not, then you might be violating the
       one-definition rule of C/C++ and you might cause yourself untold
-      problems.  If you find any platform where gcc reports a
-      threading model other than single and where libstdc++-v3 builds
+      problems.
+      </p>
+      </blockquote>
+      If you find any platform where gcc reports a
+      threading model other than single, and where libstdc++-v3 builds
       a buggy container allocator when used with threads unless you
       define __USE_MALLOC, we want to hear about it ASAP.  In the
       past, correctness was the main reason people were led to believe
       that they should define __USE_MALLOC when using threads.
    </p>
-   <p>There is a better way (not standardized yet): It is possible to
+   <p>There is a better way (not standardized yet):  It is possible to
       force the malloc-based allocator on a per-case-basis for some
       application code.  The library team generally believes that this
       is a better way to tune an application for high-speed using this
-      implementation of the STL.  Here is one possible example
-      displaying the forcing of the malloc-based allocator over the
-      typically higher-speed default allocator:
-      <pre>
-      std::list &lt;my_type, std::__malloc_alloc_template&lt;0&gt; &gt;  my_malloc_based_list;</pre>
+      implementation of the STL.  There is
+      <a href="../ext/howto.html#3">more information on allocators here</a>.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.

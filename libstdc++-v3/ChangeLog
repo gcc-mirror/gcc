@@ -1,3 +1,13 @@
+2001-11-27  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/explanations.html:  New section, empty for now.
+	* docs/html/17_intro/howto.html:  Cleanup.  Move unrelated link...
+	* docs/html/23_containers/howto.html:  ...to here.  Break up and
+	rewrap threading discussion to emphasize warning.  Move malloc text...
+	* docs/html/ext/howto.html:  ...to here.  New section.  Describe
+	allocators and __USE_MALLOC effects.
+	* docs/html/ext/sgiexts.html:  Mention their code.
+
 2001-11-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* docs/doxygen/maint.cfg.in, docs/doxygen/user.cfg.in,
