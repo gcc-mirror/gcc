@@ -359,7 +359,7 @@ do {									\
 /* Scale X by Y powers of 2.  */
 #ifndef REAL_VALUE_LDEXP
 #define REAL_VALUE_LDEXP(x, y) ldexp (x, y)
-extern double ldexp ();
+extern double ldexp PARAMS ((double, int));
 #endif
 
 /* Convert the string X to a floating-point value.  */

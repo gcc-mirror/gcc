@@ -3254,7 +3254,7 @@ mcore_function_arg_partial_nregs (cum, mode, type, named)
 /* Return non-zero if SYMBOL is marked as being dllexport'd.  */
 int
 mcore_dllexport_name_p (symbol)
-     char * symbol;
+     const char * symbol;
 {
   return symbol[0] == '@' && symbol[1] == 'e' && symbol[2] == '.';
 }
@@ -3262,7 +3262,7 @@ mcore_dllexport_name_p (symbol)
 /* Return non-zero if SYMBOL is marked as being dllimport'd.  */
 int
 mcore_dllimport_name_p (symbol)
-     char * symbol;
+     const char * symbol;
 {
   return symbol[0] == '@' && symbol[1] == 'i' && symbol[2] == '.';
 }
@@ -3272,7 +3272,7 @@ static void
 mcore_mark_dllexport (decl)
      tree decl;
 {
-  char * oldname;
+  const char * oldname;
   char * newname;
   rtx    rtlname;
   tree   idp;
@@ -3309,7 +3309,7 @@ static void
 mcore_mark_dllimport (decl)
      tree decl;
 {
-  char * oldname;
+  const char * oldname;
   char * newname;
   tree   idp;
   rtx    rtlname;

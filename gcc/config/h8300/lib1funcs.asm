@@ -95,6 +95,14 @@ Boston, MA 02111-1307, USA.  */
 #define A3E	e3
 #endif
 
+#ifdef __H8300H__
+	.h8300h
+#endif
+
+#ifdef __H8300S__
+	.h8300s
+#endif
+
 #ifdef L_cmpsi2
 #ifdef __H8300__
 	.section .text
@@ -303,14 +311,6 @@ setbit:	inc	A0L		; do insert bit
 ;; little ones which prepare the args and massage the sign.
 ;; We bunch all of this into one object file since there are several
 ;; "supporting routines".
-
-#ifdef __H8300H__
-	.h8300h
-#endif
-
-#ifdef __H8300S__
-	.h8300s
-#endif
 
 	.section .text
 	.align 2
@@ -735,14 +735,6 @@ _done:
 	rts
 
 #else /* __H8300H__ */
-
-#ifdef __H8300H__
-	.h8300h
-#endif
-
-#ifdef __H8300S__
-	.h8300s
-#endif
 
 	.global	___mulsi3
 ___mulsi3:
