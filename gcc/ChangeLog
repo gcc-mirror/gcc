@@ -1,3 +1,8 @@
+Thu Feb 25 18:46:26 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c (default_compilers): Define __FAST_MATH__ when appropriate.
+	* objc/lang-specs.h: Likewise.
+
 Thu Feb 25 16:19:43 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (call patterns): Lose unused argument to output_call.
