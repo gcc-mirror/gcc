@@ -41,11 +41,15 @@ package java.awt;
 import java.io.Serializable;
 
 /**
- * STUB CLASS ONLY
+ * @author Michael Koch
+ * @since 1.4
  */
 public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
   implements Serializable
 {
+  /**
+   * Compatible to JDK 1.4+
+   */
   static final long serialVersionUID = 486933713763926351L;
 
   private boolean implicitDownCycleTraversal = true;
@@ -55,31 +59,77 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
    */
   public ContainerOrderFocusTraversalPolicy()
   {
-    throw new Error("not implemented");
+    // Nothing to do here
   }
 
+  /**
+   * Returns the Component that should receive the focus after current.
+   * root must be a focus cycle root of current.
+   *
+   * @exception IllegalArgumentException If root is not a focus cycle
+   * root of current, or if either root or current is null.
+   */
   public Component getComponentAfter(Container root, Component current)
   {
+    if (root == null
+        || current == null)
+      throw new IllegalArgumentException ();
+    
     return null;
   }
 
+  /**
+   * Returns the Component that should receive the focus before current.
+   * root must be a focus cycle root of current.
+   *
+   * @exception IllegalArgumentException If root is not a focus cycle
+   * root of current, or if either root or current is null.
+   */
   public Component getComponentBefore(Container root, Component current)
   {
+    if (root == null
+        || current == null)
+      throw new IllegalArgumentException ();
+
     return null;
   }
 
+  /**
+   * Returns the first Component of root that should receive the focus.
+   *
+   * @exception IllegalArgumentException If root is null.
+   */
   public Component getFirstComponent(Container root)
   {
+    if (root == null)
+      throw new IllegalArgumentException ();
+
     return null;
   }
 
+  /**
+   * Returns the last Component of root that should receive the focus.
+   *
+   * @exception IllegalArgumentException If root is null.
+   */
   public Component getLastComponent(Container root)
   {
+    if (root == null)
+      throw new IllegalArgumentException ();
+
     return null;
   }
 
+  /**
+   * Returns the default Component of root that should receive the focus.
+   *
+   * @exception IllegalArgumentException If root is null.
+   */
   public Component getDefaultComponent(Container root)
   {
+    if (root == null)
+      throw new IllegalArgumentException ();
+
     return null;
   }
 

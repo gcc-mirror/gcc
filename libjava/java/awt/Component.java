@@ -4075,43 +4075,59 @@ p   * <li>the set of backward traversal keys
    */
   void dispatchEventImpl(AWTEvent e)
   {
-    // Make use of event id's in order to avoid multiple instanceof tests.
-    if (e.id <= ComponentEvent.COMPONENT_LAST
-        && e.id >= ComponentEvent.COMPONENT_FIRST
-        && (componentListener != null
-            || (eventMask & AWTEvent.COMPONENT_EVENT_MASK) != 0))
+    if (eventTypeEnabled (e.id))
       processEvent(e);
-    else if (e.id <= KeyEvent.KEY_LAST
-             && e.id >= KeyEvent.KEY_FIRST
-             && (keyListener != null
-                 || (eventMask & AWTEvent.KEY_EVENT_MASK) != 0))
-      processEvent(e);
-    else if (e.id <= MouseEvent.MOUSE_LAST
-             && e.id >= MouseEvent.MOUSE_FIRST
-             && (mouseListener != null
-                 || mouseMotionListener != null
-                 || (eventMask & AWTEvent.MOUSE_EVENT_MASK) != 0))
-      processEvent(e);
-    else if (e.id <= FocusEvent.FOCUS_LAST
-             && e.id >= FocusEvent.FOCUS_FIRST
-             && (focusListener != null
-                 || (eventMask & AWTEvent.FOCUS_EVENT_MASK) != 0))
-      processEvent(e);
-    else if (e.id <= InputMethodEvent.INPUT_METHOD_LAST
-             && e.id >= InputMethodEvent.INPUT_METHOD_FIRST
-             && (inputMethodListener != null
-                 || (eventMask & AWTEvent.INPUT_METHOD_EVENT_MASK) != 0))
-      processEvent(e);
-    else if (e.id <= HierarchyEvent.HIERARCHY_LAST
-             && e.id >= HierarchyEvent.HIERARCHY_FIRST
-             && (hierarchyListener != null
-                 || hierarchyBoundsListener != null
-                 || (eventMask & AWTEvent.HIERARCHY_EVENT_MASK) != 0))
-      processEvent(e);
-    else if (e.id <= PaintEvent.PAINT_LAST
-             && e.id >= PaintEvent.PAINT_FIRST
-             && (eventMask & AWTEvent.PAINT_EVENT_MASK) != 0)
-      processEvent(e);
+  }
+
+  /**
+   * Tells wether or not an event type is enabled.
+   */
+  boolean eventTypeEnabled (int type)
+  {
+    if (type > AWTEvent.RESERVED_ID_MAX)
+      return true;
+
+    switch (type)
+      {
+      case ComponentEvent.COMPONENT_HIDDEN:
+      case ComponentEvent.COMPONENT_MOVED:
+      case ComponentEvent.COMPONENT_RESIZED:
+      case ComponentEvent.COMPONENT_SHOWN:
+        return (componentListener != null
+                || (eventMask & AWTEvent.COMPONENT_EVENT_MASK) != 0);
+
+      case KeyEvent.KEY_PRESSED:
+      case KeyEvent.KEY_RELEASED:
+      case KeyEvent.KEY_TYPED:
+        return (keyListener != null
+                || (eventMask & AWTEvent.KEY_EVENT_MASK) != 0);
+
+      case MouseEvent.MOUSE_CLICKED:
+      case MouseEvent.MOUSE_ENTERED:
+      case MouseEvent.MOUSE_EXITED:
+      case MouseEvent.MOUSE_PRESSED:
+      case MouseEvent.MOUSE_RELEASED:
+        return (mouseListener != null
+                || mouseMotionListener != null
+                || (eventMask & AWTEvent.MOUSE_EVENT_MASK) != 0);
+        
+      case FocusEvent.FOCUS_GAINED:
+      case FocusEvent.FOCUS_LOST:
+        return (focusListener != null
+                || (eventMask & AWTEvent.FOCUS_EVENT_MASK) != 0);
+
+      case InputMethodEvent.INPUT_METHOD_TEXT_CHANGED:
+      case InputMethodEvent.CARET_POSITION_CHANGED:
+        return (inputMethodListener != null
+                || (eventMask & AWTEvent.INPUT_METHOD_EVENT_MASK) != 0);
+        
+      case PaintEvent.PAINT:
+      case PaintEvent.UPDATE:
+        return (eventMask & AWTEvent.PAINT_EVENT_MASK) != 0;
+        
+      default:
+        return false;
+      }
   }
 
   /**

@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.event.MouseEvent;
 import java.awt.peer.ScrollPanePeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.ComponentPeer;
@@ -105,6 +106,8 @@ private int scrollbarDisplayPolicy;
 // Current scroll position
 private Point scrollPosition = new Point(0, 0);
 
+private boolean wheelScrollingEnabled;
+
 /*************************************************************************/
 
 /*
@@ -153,6 +156,8 @@ ScrollPane(int scrollbarDisplayPolicy)
       hAdjustable = new ScrollPaneAdjustable(Scrollbar.HORIZONTAL);
       vAdjustable = new ScrollPaneAdjustable(Scrollbar.VERTICAL);
     }
+
+  wheelScrollingEnabled = true;
 }
 
 /*************************************************************************/
@@ -470,5 +475,37 @@ paramString()
   return(getClass().getName());
 }
 
+  /**
+   * Tells wether or not an event is enabled.
+   *
+   * @since 1.4
+   */
+  public boolean eventTypeEnabled (int type)
+  {
+    if (type == MouseEvent.MOUSE_WHEEL)
+      return wheelScrollingEnabled;
+
+    return super.eventTypeEnabled (type);
+  }
+
+  /**
+   * Tells wether or not wheel scrolling is enabled.
+   *
+   * @since 1.4
+   */
+  public boolean isWheelScrollingEnabled ()
+  {
+    return wheelScrollingEnabled;
+  }
+
+  /**
+   * Enables/disables wheel scrolling.
+   *
+   * @since 1.4
+   */
+  public void setWheelScrollingEnabled (boolean enable)
+  {
+    wheelScrollingEnabled = enable;
+  }
 } // class ScrollPane 
 
