@@ -10,11 +10,21 @@ Fri Jun 19 23:06:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* README.gnat: Add a build patch from Fred Fish.
+
 	* c-lang.c (GNU_xref_begin, GNU_xref_end): Deleted.
 
 	* Makefile.in (c-iterate.o): Depend on expr.h.
 
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
+
+	* dwarfout.c (getpwd): Add prototype.
+	(is_pseudo_reg, type_main_variant, is_tagged_type,
+	is_redundant_typedef): New declaration.
+	(output_decl): Add prototype for FUNC.
+	(type_main_variant): Make it static.
+	(is_tagged_type): Likewise.
+	(is_redundant_typedef): Likewise.
 
 	* expr.c (do_jump_by_parts_greater_rtx): Removed.
 	(truthvalue_conversion): Likewise.
