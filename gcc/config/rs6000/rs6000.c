@@ -63,15 +63,6 @@ struct rs6000_cpu_select rs6000_select[3] =
   { (const char *)0,	"-mtune=",		1,	0 },
 };
 
-/* Set to non-zero by "fix" operation to indicate that itrunc and
-   uitrunc must be defined.  */
-
-int rs6000_trunc_used;
-
-/* Set to non-zero once they have been defined.  */
-
-static int trunc_defined;
-
 /* Set to non-zero once AIX common-mode calls have been defined.  */
 static int common_mode_defined;
 
@@ -5793,14 +5784,6 @@ output_prolog (file, size)
     fprintf (file, "\t.extern %s%d%s\n\t.extern %s%d%s\n",
 	     SAVE_FP_PREFIX, info->first_fp_reg_save - 32, SAVE_FP_SUFFIX,
 	     RESTORE_FP_PREFIX, info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
-
-  /* Write .extern for truncation routines, if needed.  */
-  if (rs6000_trunc_used && ! trunc_defined)
-    {
-      fprintf (file, "\t.extern .%s\n\t.extern .%s\n",
-	       RS6000_ITRUNC, RS6000_UITRUNC);
-      trunc_defined = 1;
-    }
 
   /* Write .extern for AIX common mode routines, if needed.  */
   if (! TARGET_POWER && ! TARGET_POWERPC && ! common_mode_defined)
