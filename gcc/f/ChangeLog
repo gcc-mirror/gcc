@@ -1,3 +1,8 @@
+2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* Make-lang.in (f/str-*.h, f/str-*.j): Use stamp files and
+	move-if-change to avoid changing these files unnecessarily.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.
