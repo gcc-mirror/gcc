@@ -71,6 +71,7 @@ static void print_path ();
 char *xmalloc ();
 char *xrealloc ();
 static void fatal ();
+static void mybzero ();
 void fancy_abort ();
 
 static void
@@ -82,7 +83,7 @@ gen_insn (insn)
   dup_count = 0;
 
   /* No operands seen so far in this pattern.  */
-  bzero (operand_seen, operand_seen_length);
+  mybzero (operand_seen, operand_seen_length);
 
   printf ("    case %d:\n", insn_code_number);
 
@@ -293,6 +294,15 @@ void
 fancy_abort ()
 {
   fatal ("Internal gcc abort.");
+}
+
+static void
+mybzero (b, length)
+     register char *b;
+     register unsigned length;
+{
+  while (length-- > 0)
+    *b++ = 0;
 }
 
 int
