@@ -650,7 +650,7 @@ do {							\
 #define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
 #define MASK_DEBUG_A	0x20000000	/* don't allow <label>($reg) addrs */
 #define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0x08000000	/* allow new seq, sne, etc. patterns */
+#define MASK_DEBUG_C	0x08000000	/* don't expand seq, etc. */
 #define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
 #define MASK_DEBUG_E	0x02000000	/* function_arg debug */
 #define MASK_DEBUG_F	0x01000000	/* don't try to suppress load nop's */

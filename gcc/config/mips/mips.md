@@ -103,7 +103,7 @@
 (define_delay (eq_attr "type" "branch")
   [(and (eq_attr "dslot" "no") (eq_attr "length" "1"))
    (nil)
-   (eq_attr "branch_likely" "yes")])
+   (and (eq_attr "branch_likely" "yes") (and (eq_attr "dslot" "no") (eq_attr "length" "1")))])
 
 (define_delay (eq_attr "type" "call,jump")
   [(and (eq_attr "dslot" "no") (eq_attr "length" "1"))
@@ -1507,22 +1507,37 @@ move\\t%0,%z4\\n\\
 
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(float:DF (match_operand:SI 1 "register_operand" "d")))]
+  [(set (match_operand:DF 0 "register_operand" "=f,f,f")
+	(float:DF (match_operand:SI 1 "nonimmediate_operand" "d,R,m")))]
   "TARGET_HARD_FLOAT"
-  "mtc1\\t%1,%0\;cvt.d.w\\t%0,%0"
-  [(set_attr "type"	"fcvt")
-   (set_attr "mode"	"DF")
-   (set_attr "length"	"13")])
+  "*
+{
+  dslots_load_total++;
+  if (GET_CODE (operands[1]) == MEM)
+    return \"ld.s\\t%0,%1%#\;cvt.d.w\\t%0,%0\";
+
+  return \"mtc1\\t%1,%0%#\;cvt.d.w\\t%0,%0\";
+}"
+  [(set_attr "type"	"fcvt,fcvt,fcvt")
+   (set_attr "mode"	"DF,DF,DF")
+   (set_attr "length"	"3,4,3")])
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(float:SF (match_operand:SI 1 "register_operand" "d")))]
+  [(set (match_operand:SF 0 "register_operand" "=f,f,f")
+	(float:SF (match_operand:SI 1 "nonimmediate_operand" "d,R,m")))]
   "TARGET_HARD_FLOAT"
-  "mtc1\\t%1,%0\;cvt.s.w\\t%0,%0"
-  [(set_attr "type"	"fcvt")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"13")])
+  "*
+{
+  dslots_load_total++;
+  if (GET_CODE (operands[1]) == MEM)
+    return \"ld.s\\t%0,%1%#\;cvt.s.w\\t%0,%0\";
+
+  return \"mtc1\\t%1,%0%#\;cvt.s.w\\t%0,%0\";
+}"
+  [(set_attr "type"	"fcvt,fcvt,fcvt")
+   (set_attr "mode"	"SF,SF,SF")
+   (set_attr "length"	"3,4,3")])
+
 
 (define_expand "fixuns_truncdfsi2"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3049,7 +3064,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (EQ, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3076,7 +3091,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(eq:SI (match_operand:SI 1 "register_operand" "%d,d")
 	       (match_operand:SI 2 "uns_arith_operand" "d,K")))]
-  "!TARGET_DEBUG_C_MODE"
+  "TARGET_DEBUG_C_MODE"
   "@
    xor\\t%0,%1,%2\;sltu\\t%0,%0,1
    xori\\t%0,%1,%2\;sltu\\t%0,%0,1"
@@ -3088,7 +3103,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(eq:SI (match_operand:SI 1 "register_operand" "")
 	       (match_operand:SI 2 "uns_arith_operand" "")))]
-  "!TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
+  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
     && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
   [(set (match_dup 0)
 	(xor:SI (match_dup 1)
@@ -3114,7 +3129,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (NE, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3140,7 +3155,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(ne:SI (match_operand:SI 1 "register_operand" "%d,d")
 	       (match_operand:SI 2 "uns_arith_operand" "d,K")))]
-  "!TARGET_DEBUG_C_MODE"
+  "TARGET_DEBUG_C_MODE"
   "@
     xor\\t%0,%1,%2\;sltu\\t%0,%.,%0
     xori\\t%0,%1,%x2\;sltu\\t%0,%.,%0"
@@ -3152,7 +3167,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(ne:SI (match_operand:SI 1 "register_operand" "")
 	       (match_operand:SI 2 "uns_arith_operand" "")))]
-  "!TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
+  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE
     && (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 0)"
   [(set (match_dup 0)
 	(xor:SI (match_dup 1)
@@ -3178,7 +3193,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (GT, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3214,7 +3229,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (GE, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3227,7 +3242,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ge:SI (match_operand:SI 1 "register_operand" "d")
 	       (match_operand:SI 2 "arith_operand" "dI")))]
-  "!TARGET_DEBUG_C_MODE"
+  "TARGET_DEBUG_C_MODE"
   "slt\\t%0,%1,%2\;xori\\t%0,%0,0x0001"
  [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -3237,7 +3252,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(ge:SI (match_operand:SI 1 "register_operand" "")
 	       (match_operand:SI 2 "arith_operand" "")))]
-  "!TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
+  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(lt:SI (match_dup 1)
 	       (match_dup 2)))
@@ -3260,7 +3275,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (LT, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3295,7 +3310,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (LE, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3325,7 +3340,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(le:SI (match_operand:SI 1 "register_operand" "d")
 	       (match_operand:SI 2 "register_operand" "d")))]
-  "!TARGET_DEBUG_C_MODE"
+  "TARGET_DEBUG_C_MODE"
   "slt\\t%0,%z2,%1\;xori\\t%0,%0,0x0001"
  [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -3335,7 +3350,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(le:SI (match_operand:SI 1 "register_operand" "")
 	       (match_operand:SI 2 "register_operand" "")))]
-  "!TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
+  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(lt:SI (match_dup 2)
 	       (match_dup 1)))
@@ -3360,7 +3375,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (GTU, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3396,7 +3411,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (GEU, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3409,7 +3424,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(geu:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "arith_operand" "dI")))]
-  "!TARGET_DEBUG_C_MODE"
+  "TARGET_DEBUG_C_MODE"
   "sltu\\t%0,%1,%2\;xori\\t%0,%0,0x0001"
  [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -3419,7 +3434,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(geu:SI (match_operand:SI 1 "register_operand" "")
 		(match_operand:SI 2 "arith_operand" "")))]
-  "!TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
+  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(ltu:SI (match_dup 1)
 		(match_dup 2)))
@@ -3442,7 +3457,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (LTU, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3477,7 +3492,7 @@ move\\t%0,%z4\\n\\
   operands[1] = branch_cmp[0];
   operands[2] = branch_cmp[1];
 
-  if (TARGET_DEBUG_C_MODE)
+  if (!TARGET_DEBUG_C_MODE)
     {
       gen_int_relational (LEU, operands[0], operands[1], operands[2], (int *)0);
       DONE;
@@ -3507,7 +3522,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(leu:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "register_operand" "d")))]
-  "!TARGET_DEBUG_C_MODE"
+  "TARGET_DEBUG_C_MODE"
   "sltu\\t%0,%z2,%1\;xori\\t%0,%0,0x0001"
  [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -3517,7 +3532,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "register_operand" "")
 	(leu:SI (match_operand:SI 1 "register_operand" "")
 		(match_operand:SI 2 "register_operand" "")))]
-  "!TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
+  "TARGET_DEBUG_C_MODE && !TARGET_DEBUG_D_MODE"
   [(set (match_dup 0)
 	(ltu:SI (match_dup 2)
 		(match_dup 1)))
