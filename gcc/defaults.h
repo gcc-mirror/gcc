@@ -1,7 +1,7 @@
 /* Definitions of various defaults for how to do assembler output
    (most of which are designed to be appropriate for GAS or for
    some BSD assembler).
-   Copyright (C) 1992, 1996-1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GNU CC.
