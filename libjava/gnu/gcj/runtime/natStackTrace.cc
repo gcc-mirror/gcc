@@ -31,6 +31,8 @@ details.  */
 #include <java/util/IdentityHashMap.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 
+#include "platform.h"
+
 #include <sys/types.h>
 
 #include <stdlib.h>

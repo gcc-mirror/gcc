@@ -115,8 +115,6 @@ _Jv_read(int s, void *buf, int len)
 
 #endif /* DISABLE_JAVA_NET */
 
-#define HAVE_BACKTRACE
-
 /* Store up to SIZE return address of the current program state in
    ARRAY and return the exact number of values stored.  */
 extern int backtrace (void **__array, int __size);
