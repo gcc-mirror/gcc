@@ -115,6 +115,11 @@ struct processor_costs
   const int ddr;
   const int debr;
   const int der;
+  const int dlgr;
+  const int dlr;
+  const int dr;
+  const int dsgfr;
+  const int dsgr;
 };
 
 const struct processor_costs *s390_cost;
@@ -143,6 +148,11 @@ struct processor_costs z900_cost =
   COSTS_N_INSNS (30),    /* DDR  */
   COSTS_N_INSNS (27),    /* DEBR */
   COSTS_N_INSNS (26),    /* DER  */
+  COSTS_N_INSNS (220),   /* DLGR */
+  COSTS_N_INSNS (34),    /* DLR */
+  COSTS_N_INSNS (34),    /* DR */
+  COSTS_N_INSNS (32),    /* DSGFR */
+  COSTS_N_INSNS (32),    /* DSGR */
 };
 
 static const
@@ -169,6 +179,11 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (44),    /* DDR  */
   COSTS_N_INSNS (26),    /* DDBR */
   COSTS_N_INSNS (28),    /* DER  */
+  COSTS_N_INSNS (176),   /* DLGR */
+  COSTS_N_INSNS (31),    /* DLR */
+  COSTS_N_INSNS (31),    /* DR */
+  COSTS_N_INSNS (31),    /* DSGFR */
+  COSTS_N_INSNS (31),    /* DSGR */
 };
 
 
@@ -1906,6 +1921,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
+    case MEM:
       *total = 0;
       return true;
 
@@ -1998,8 +2014,38 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	}
       return false;
 
+    case UDIV:
+    case UMOD:
+      if (GET_MODE (x) == TImode) 	       /* 128 bit division */
+	*total = s390_cost->dlgr;
+      else if (GET_MODE (x) == DImode)
+	{
+	  rtx right = XEXP (x, 1);
+	  if (GET_CODE (right) == ZERO_EXTEND) /* 64 by 32 bit division */
+	    *total = s390_cost->dlr;
+	  else 	                               /* 64 by 64 bit division */
+	    *total = s390_cost->dlgr;
+	}
+      else if (GET_MODE (x) == SImode)         /* 32 bit division */
+	*total = s390_cost->dlr;
+      return false;
+
     case DIV:
-      if (GET_MODE (x) == SFmode)
+    case MOD:
+      if (GET_MODE (x) == DImode)
+	{
+	  rtx right = XEXP (x, 1);
+	  if (GET_CODE (right) == ZERO_EXTEND) /* 64 by 32 bit division */
+	    if (TARGET_64BIT)
+	      *total = s390_cost->dsgfr;
+	    else
+	      *total = s390_cost->dr;
+	  else 	                               /* 64 by 64 bit division */
+	    *total = s390_cost->dsgr;
+	}
+      else if (GET_MODE (x) == SImode)         /* 32 bit division */
+	*total = s390_cost->dlr;
+      else if (GET_MODE (x) == SFmode)
 	{
 	  if (TARGET_IEEE_FLOAT)
 	    *total = s390_cost->debr;
@@ -2013,14 +2059,6 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  else /* TARGET_IBM_FLOAT */
 	    *total = s390_cost->ddr;
 	}
-      else
-	*total = COSTS_N_INSNS (33);
-      return false;
-
-    case UDIV:
-    case MOD:
-    case UMOD:
-      *total = COSTS_N_INSNS (33);
       return false;
 
     case SQRT:
@@ -2032,8 +2070,29 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      if (outer_code == MULT)
+      if (outer_code == MULT || outer_code == DIV || outer_code == MOD
+	  || outer_code == PLUS || outer_code == MINUS
+	  || outer_code == COMPARE)
 	*total = 0;
+      return false;
+
+    case COMPARE:
+      *total = COSTS_N_INSNS (1);
+      if (GET_CODE (XEXP (x, 0)) == AND
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	{
+	  rtx op0 = XEXP (XEXP (x, 0), 0);
+	  rtx op1 = XEXP (XEXP (x, 0), 1);
+	  rtx op2 = XEXP (x, 1);
+
+	  if (memory_operand (op0, GET_MODE (op0))
+	      && s390_tm_ccmode (op1, op2, 0) != VOIDmode)
+	    return true;
+	  if (register_operand (op0, GET_MODE (op0))
+	      && s390_tm_ccmode (op1, op2, 1) != VOIDmode)
+	    return true;
+	}
       return false;
 
     default:

@@ -1,3 +1,12 @@
+2005-01-21  Mark Dettinger  <dettinge@de.ibm.com>
+
+	* config/s390/s390.c (struct processor_costs): New fields 
+	dlgr, dlr, dr, dsgfr, dsgr.
+	(z900_cost, z990_cost): Values for new fields.
+	(s390_rtx_costs): New cases MEM und COMPARE in switch
+	statement. Modified handling of SIGN_EXTEND, ZERO_EXTEND,
+	DIV, MOD, UDIV, UMOD.
+
 2005-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("doloop_si64"): Reload input value directly
