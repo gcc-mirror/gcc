@@ -17047,7 +17047,8 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 	   && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
   else if (TREE_CODE (valtype) == VECTOR_TYPE
-	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI)
+	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
+	   && ALTIVEC_VECTOR_MODE(mode))
     regno = ALTIVEC_ARG_RETURN;
   else
     regno = GP_ARG_RETURN;
