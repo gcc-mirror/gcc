@@ -1,3 +1,11 @@
+2003-08-27  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def (ptx_netswap): New disabled fix, ported from
+	fixinc.ptx.
+	* fixinc/inclhack.def (undefine_null):  Don't generate \r characters.
+	Prettify a little.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-08-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	* lib1funcs.asm (L_ieee754_sp): New.  Include ieee754-sf.S.
