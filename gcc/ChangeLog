@@ -1,3 +1,10 @@
+2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads_address): Split addresses of type
+	(plus (plus (reg) (reg)) (const_int)) only if one register
+	is either a valid base register or else one of the stack
+	frame related registers (sp/fp/ap).
+
 2003-12-01  Steven Bosscher  <stevenb@suse.de>
 
 	* function.c (update_epilogue_consts): Don't use PARAMS.
