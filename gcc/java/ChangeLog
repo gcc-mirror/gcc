@@ -1,3 +1,8 @@
+2000-03-26  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (jvgenmain_spec): Add `%{<...}' construct for each
+	Java-specific `-f' option.
+
 Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (init_decl_processing): Only call initialize_sizetypes once.

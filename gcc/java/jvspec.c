@@ -54,7 +54,14 @@ const char jvgenmain_spec[] =
    cc1 %{!pipe:%Umain.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} \
-		   %{v:-version} %{pg:-p} %{p} %{f*}\
+		   %{v:-version} %{pg:-p} %{p}\
+		   %{<fbounds-check} %{<fno-bounds-check}\
+		   %{<fassume-compiled} %{<fno-assume-compiled}\
+		   %{<femit-class-file} %{<femit-class-files}\
+		   %{<fuse-boehm-gc} %{<fhash-synchronization} %{<fjni}\
+		   %{<fclasspath*} %{<fCLASSPATH*} %{<foutput-class-dir}\
+		   %{<fuse-divide-subroutine} %{<fno-use-divide-subroutine}\
+		   %{f*}\
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%Umain.s}} |\n\
