@@ -220,7 +220,7 @@ extern int errno;
 extern void bcopy ();
 #  endif
 # else /* ! HAVE_BCOPY */
-#  define bcopy(src,dst,len) memcpy ((dst),(src),(len))
+#  define bcopy(src,dst,len) memmove((dst),(src),(len))
 # endif
 #endif
 
