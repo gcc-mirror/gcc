@@ -3883,6 +3883,8 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE, 0);
   builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE, 0);
   builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
+  builtin_define_with_value ("__INTMAX_TYPE__", INTMAX_TYPE, 0);
+  builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
 }
 
 static void
