@@ -49,10 +49,10 @@ target = @target@
 target_noncanonical:=@target_noncanonical@
 
 # The version of GCC in this tree
-gcc_version=@gcc_version@
+gcc_version := $(shell cat $(srcdir)/../gcc/BASE-VER)
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
+libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 # Directory in which the compiler finds executables
 libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(gcc_version)
 # Where our executable files go
@@ -130,7 +130,7 @@ mostlyclean :
 	rm -f *.o *-stamp $(AF) $(FI) *~ fixinc.sh
 
 clean: mostlyclean
-	rm -f mkheaders
+	rm -f mkheaders mkheaders.almost
 
 distclean: clean
 	rm -f Makefile config.h config.log config.status stamp-h
@@ -143,8 +143,13 @@ distclean : clean
 Makefile: $(srcdir)/Makefile.in config.status
 	$(SHELL) ./config.status Makefile
 
-mkheaders: $(srcdir)/mkheaders.in config.status
-	CONFIG_FILES=mkheaders CONFIG_HEADERS= ./config.status
+mkheaders.almost: $(srcdir)/mkheaders.in config.status
+	CONFIG_FILES=mkheaders.almost:mkheaders.in \
+	CONFIG_HEADERS= ./config.status
+
+mkheaders: mkheaders.almost $(srcdir)/../gcc/BASE-VER
+	sed -e 's/@gcc_version@/$(gcc_version)/' < $< > $@T
+	mv -f $@T $@
 
 config.h: stamp-h
 stamp-h: $(srcdir)/config.h.in config.status

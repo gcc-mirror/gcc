@@ -52,8 +52,6 @@ if test $TARGET = twoprocess; then
 		  [Define if testing and fixing are done by separate process])
 fi
 
-TL_AC_GCC_VERSION([$srcdir/..])
-
 case $host in
 	vax-dec-bsd* )
 		AC_DEFINE(exit, xexit, [Define to xexit if the host system does not support atexit])
@@ -94,5 +92,5 @@ fi
 AC_SUBST(MAINT)
 
 AC_CONFIG_HEADERS(config.h, [echo timestamp > stamp-h])
-AC_CONFIG_FILES(Makefile mkheaders)
+AC_CONFIG_FILES(Makefile mkheaders.almost:mkheaders.in)
 AC_OUTPUT
