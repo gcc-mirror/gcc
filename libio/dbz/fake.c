@@ -12,10 +12,6 @@
 #define	MAXSTR	500		/* For sizing strings -- DON'T use BUFSIZ! */
 #define	STREQ(a, b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
 
-#ifndef lint
-static char RCSid[] = "$Header: /egcs/carton/cvsfiles/egcs/libio/dbz/fake.c,v 1.1.1.1 1997/08/21 22:58:23 jason Exp $";
-#endif
-
 int midonly = 0;		/* just message ids, rest not realistic */
 int tag = 0;			/* tag lines with random digit for later use */
 int expired = -1;		/* percentage of lines to be expired */
