@@ -341,11 +341,7 @@ public class URLClassLoader extends SecureClassLoader
 	    {
 	      this.classPath = new Vector();
 	      
-	      StringTokenizer st
-		= new StringTokenizer 
-		(classPathString,
-		 System.getProperty ("path.separator", ":"));
-	      
+	      StringTokenizer st = new StringTokenizer(classPathString, " ");
 	      while (st.hasMoreElements ()) 
 		{  
 		  String e = st.nextToken ();
