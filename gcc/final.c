@@ -106,6 +106,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_COMMENT_START ";#"
 #endif
 
+/* Is the given character a logical line separator for the assembler?  */
+#ifndef IS_ASM_LOGICAL_LINE_SEPARATOR
+#define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == ';')
+#endif
+
 rtx peephole ();
 void output_asm_insn ();
 rtx alter_subreg ();
@@ -833,7 +838,7 @@ asm_insn_count (body)
   for (template = decode_asm_operands (body, NULL_PTR, NULL_PTR,
 				       NULL_PTR, NULL_PTR);
        *template; template++)
-    if (*template == ';' || *template == '\n')
+    if (IS_ASM_LOGICAL_LINE_SEPARATOR(*template) || *template == '\n')
       count++;
 
   return count;
