@@ -1,3 +1,8 @@
+Mon Jan 24 20:28:35 CET 2000  David M. Gay <dmg@bell-labs.com>
+
+	* libI77/endfile.c (t_runc): set state to writing
+	(b->uwrt = 1) when an endfile statement requires copying the file.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.
