@@ -1,3 +1,9 @@
+2005-02-07  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* doc/extend.texi: Document deprecated extensions allowing
+	static floating-point members to have initializers and allowing
+	floating-point literals in integral constant expressions.
+
 2005-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgcleanup.c, df.h, diagnostic.c, rtl.c, tree-vectorizer.h,
