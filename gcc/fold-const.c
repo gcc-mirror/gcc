@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3365,7 +3365,7 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
 	 end of the second.  */
       if (no_overlap)
 	in_p = 1, low = low1, high = high1;
-      else if (subset)
+      else if (subset || highequal)
 	in_p = 0, low = high = 0;
       else
 	{
