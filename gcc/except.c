@@ -2921,7 +2921,7 @@ expand_builtin_eh_return_data_regno (tree arglist)
 
   if (TREE_CODE (which) != INTEGER_CST)
     {
-      error ("argument of `__builtin_eh_return_regno' must be constant");
+      error ("argument of %<__builtin_eh_return_regno%> must be constant");
       return constm1_rtx;
     }
 

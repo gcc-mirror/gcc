@@ -73,5 +73,5 @@ set_param_value (const char *name, int value)
       }
 
   /* If we didn't find this parameter, issue an error message.  */
-  error ("invalid parameter `%s'", name);
+  error ("invalid parameter %qs", name);
 }

@@ -1,3 +1,17 @@
+2004-09-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* attribs.c, builtins.c, c-format.c, c-pch.c, coverage.c,
+	except.c, fold-const.c, function.c, langhooks.c, params.c,
+	reload.c, reload1.c, stmt.c, stor-layout.c, toplev.c, tree-cfg.c,
+	tree-dump.c, tree-mudflap.c, tree.c, varasm.c: Use %<, %> and %q
+	for quoting in diagnostics going through pretty-print.c.  Use ''
+	for quoting in other diagnostic text.
+	* langhooks.c: Include intl.h.  Mark text locating diagnostics for
+	translation.
+	* Makefile.in (langhooks.o): Update dependencies.
+	* pretty-print.h (pp_printf): Mark as accepting GCC diagnostic
+	formats.
+
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.ac: Check for COMDAT support.  Robustify check for

@@ -3274,7 +3274,7 @@ verify_stmt (tree stmt, bool last_in_block)
     {
       if (!tree_could_throw_p (stmt))
 	{
-	  error ("Statement marked for throw, but doesn't.");
+	  error ("Statement marked for throw, but doesn%'t.");
 	  goto fail;
 	}
       if (!last_in_block && tree_can_throw_internal (stmt))
@@ -3555,7 +3555,7 @@ tree_verify_flow_info (void)
 	    if (!has_label_p (true_edge->dest,
 			      GOTO_DESTINATION (COND_EXPR_THEN (stmt))))
 	      {
-		error ("`then' label does not match edge at end of bb %d\n",
+		error ("%<then%> label does not match edge at end of bb %d\n",
 		       bb->index);
 		err = 1;
 	      }
@@ -3563,7 +3563,7 @@ tree_verify_flow_info (void)
 	    if (!has_label_p (false_edge->dest,
 			      GOTO_DESTINATION (COND_EXPR_ELSE (stmt))))
 	      {
-		error ("`else' label does not match edge at end of bb %d\n",
+		error ("%<else%> label does not match edge at end of bb %d\n",
 		       bb->index);
 		err = 1;
 	      }
@@ -4842,7 +4842,8 @@ execute_warn_function_return (void)
       && !TREE_THIS_VOLATILE (cfun->decl)
       && EXIT_BLOCK_PTR->pred == NULL
       && !lang_hooks.function.missing_noreturn_ok_p (cfun->decl))
-    warning ("%Jfunction might be possible candidate for attribute `noreturn'",
+    warning ("%Jfunction might be possible candidate for "
+	     "attribute %<noreturn%>",
 	     cfun->decl);
 
   /* If we have a path to EXIT, then we do return.  */
@@ -4868,11 +4869,11 @@ execute_warn_function_return (void)
 #ifdef USE_MAPPED_LOCATION
       if (location == UNKNOWN_LOCATION)
 	location = cfun->function_end_locus;
-      warning ("%H`noreturn' function does return", &location);
+      warning ("%H%<noreturn%> function does return", &location);
 #else
       if (!locus)
 	locus = &cfun->function_end_locus;
-      warning ("%H`noreturn' function does return", locus);
+      warning ("%H%<noreturn%> function does return", locus);
 #endif
     }
 

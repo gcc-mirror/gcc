@@ -3072,7 +3072,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	}
       if (TREE_CODE (node) != RECORD_TYPE && TREE_CODE (node) != UNION_TYPE)
 	{
-	  warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
 	  *no_add_attrs = true;
 	}
 
@@ -3090,7 +3090,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       if (TREE_CODE (node) == FUNCTION_DECL  && DECL_INITIAL (node)
           && !DECL_DECLARED_INLINE_P (node))
 	{
-	  error ("%Jfunction `%D' definition is marked dllimport.", node, node);
+	  error ("%Jfunction %qD definition is marked dllimport.", node, node);
 	  *no_add_attrs = true;
 	}
 
@@ -3098,7 +3098,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	{
 	  if (DECL_INITIAL (node))
 	    {
-	      error ("%Jvariable `%D' definition is marked dllimport.",
+	      error ("%Jvariable %qD definition is marked dllimport.",
 		     node, node);
 	      *no_add_attrs = true;
 	    }
@@ -3118,8 +3118,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       && (TREE_CODE (node) == VAR_DECL
 	  || TREE_CODE (node) == FUNCTION_DECL))
     {
-      error ("%Jexternal linkage required for symbol '%D' because of "
-	     "'%s' attribute.", node, node, IDENTIFIER_POINTER (name));
+      error ("%Jexternal linkage required for symbol %qD because of "
+	     "%qs attribute.", node, node, IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -5316,7 +5316,7 @@ tree_class_check_failed (const tree node, int cl, const char *file,
 			 int line, const char *function)
 {
   internal_error
-    ("tree check: expected class '%c', have '%c' (%s) in %s, at %s:%d",
+    ("tree check: expected class %qc, have %qc (%s) in %s, at %s:%d",
      cl, TREE_CODE_CLASS (TREE_CODE (node)),
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }

@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "intl.h"
 #include "tm.h"
 #include "toplev.h"
 #include "tree.h"
@@ -512,16 +513,16 @@ lhd_print_error_function (diagnostic_context *context, const char *file)
       pp_set_prefix (context->printer, new_prefix);
 
       if (current_function_decl == NULL)
-	pp_printf (context->printer, "At top level:");
+	pp_printf (context->printer, _("At top level:"));
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
 	    pp_printf
-	      (context->printer, "In member function `%s':",
+	      (context->printer, _("In member function %qs:"),
 	       lang_hooks.decl_printable_name (current_function_decl, 2));
 	  else
 	    pp_printf
-	      (context->printer, "In function `%s':",
+	      (context->printer, _("In function %qs:"),
 	       lang_hooks.decl_printable_name (current_function_decl, 2));
 	}
 

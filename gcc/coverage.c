@@ -165,7 +165,7 @@ read_counts_file (void)
 
   if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
-      warning ("`%s' is not a gcov data file", da_file_name);
+      warning ("%qs is not a gcov data file", da_file_name);
       gcov_close ();
       return;
     }
@@ -176,7 +176,7 @@ read_counts_file (void)
       GCOV_UNSIGNED2STRING (v, tag);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
 
-      warning ("`%s' is version `%.*s', expected version `%.*s'",
+      warning ("%qs is version %q.*s, expected version %q.*s",
  	       da_file_name, 4, v, 4, e);
       gcov_close ();
       return;
@@ -293,7 +293,7 @@ read_counts_file (void)
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))
 	{
-	  error (is_error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
+	  error (is_error < 0 ? "%qs has overflowed" : "%qs is corrupted",
 		 da_file_name);
 	  htab_delete (counts_hash);
 	  break;
@@ -330,7 +330,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
   entry = htab_find (counts_hash, &elt);
   if (!entry)
     {
-      warning ("no coverage for function '%s' found.", IDENTIFIER_POINTER
+      warning ("no coverage for function %qs found.", IDENTIFIER_POINTER
 	       (DECL_ASSEMBLER_NAME (current_function_decl)));
       return 0;
     }
@@ -338,7 +338,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
   checksum = compute_checksum ();
   if (entry->checksum != checksum)
     {
-      error ("coverage mismatch for function '%s' while reading counter '%s'.",
+      error ("coverage mismatch for function %qs while reading counter %qs.",
 	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)),
 	     ctr_names[counter]);
       error ("checksum is %x instead of %x", entry->checksum, checksum);
@@ -346,7 +346,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
     }
   else if (entry->summary.num != expected)
     {
-      error ("coverage mismatch for function '%s' while reading counter '%s'.",
+      error ("coverage mismatch for function %qs while reading counter %qs.",
 	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)),
 	     ctr_names[counter]);
       error ("number of counters is %d instead of %d", entry->summary.num, expected);
@@ -564,7 +564,7 @@ coverage_end_function (void)
 
   if (bbg_file_opened > 1 && gcov_is_error ())
     {
-      warning ("error writing `%s'", bbg_file_name);
+      warning ("error writing %qs", bbg_file_name);
       bbg_file_opened = -1;
     }
 

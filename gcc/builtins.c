@@ -924,7 +924,7 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 1 (read/write flag) must be a compile-time constant int.  */
   if (TREE_CODE (arg1) != INTEGER_CST)
     {
-      error ("second arg to `__builtin_prefetch' must be a constant");
+      error ("second arg to %<__builtin_prefetch%> must be a constant");
       arg1 = integer_zero_node;
     }
   op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
@@ -938,7 +938,7 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 2 (locality) must be a compile-time constant int.  */
   if (TREE_CODE (arg2) != INTEGER_CST)
     {
-      error ("third arg to `__builtin_prefetch' must be a constant");
+      error ("third arg to %<__builtin_prefetch%> must be a constant");
       arg2 = integer_zero_node;
     }
   op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
@@ -4147,19 +4147,19 @@ expand_builtin_args_info (tree arglist)
   if (arglist != 0)
     {
       if (!host_integerp (TREE_VALUE (arglist), 0))
-	error ("argument of `__builtin_args_info' must be constant");
+	error ("argument of %<__builtin_args_info%> must be constant");
       else
 	{
 	  HOST_WIDE_INT wordnum = tree_low_cst (TREE_VALUE (arglist), 0);
 
 	  if (wordnum < 0 || wordnum >= nwords)
-	    error ("argument of `__builtin_args_info' out of range");
+	    error ("argument of %<__builtin_args_info%> out of range");
 	  else
 	    return GEN_INT (word_ptr[wordnum]);
 	}
     }
   else
-    error ("missing argument in `__builtin_args_info'");
+    error ("missing argument in %<__builtin_args_info%>");
 
   return const0_rtx;
 }
@@ -4175,7 +4175,7 @@ expand_builtin_next_arg (tree arglist)
       || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 	  == void_type_node))
     {
-      error ("`va_start' used in function with fixed args");
+      error ("%<va_start%> used in function with fixed args");
       return const0_rtx;
     }
 
@@ -4194,12 +4194,12 @@ expand_builtin_next_arg (tree arglist)
 	     || TREE_CODE (arg) == INDIRECT_REF)
 	arg = TREE_OPERAND (arg, 0);
       if (arg != last_parm)
-	warning ("second parameter of `va_start' not last named argument");
+	warning ("second parameter of %<va_start%> not last named argument");
     }
   else
     /* Evidently an out of date version of <stdarg.h>; can't validate
        va_start's second argument, but can still work as intended.  */
-    warning ("`__builtin_next_arg' called without an argument");
+    warning ("%<__builtin_next_arg%> called without an argument");
 
   return expand_binop (Pmode, add_optab,
 		       current_function_internal_arg_pointer,
@@ -4284,7 +4284,7 @@ expand_builtin_va_start (tree arglist)
   chain = TREE_CHAIN (arglist);
 
   if (TREE_CHAIN (chain))
-    error ("too many arguments to function `va_start'");
+    error ("too many arguments to function %<va_start%>");
 
   nextarg = expand_builtin_next_arg (chain);
   valist = stabilize_va_list (TREE_VALUE (arglist), 1);
@@ -4430,7 +4430,7 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
 
   if (TYPE_MAIN_VARIANT (want_va_type) != TYPE_MAIN_VARIANT (have_va_type))
     {
-      error ("first argument to `va_arg' not of type `va_list'");
+      error ("first argument to %<va_arg%> not of type %<va_list%>");
       return GS_ERROR;
     }
 
@@ -4444,12 +4444,12 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
       /* Unfortunately, this is merely undefined, rather than a constraint
 	 violation, so we cannot make this an error.  If this call is never
 	 executed, the program is still strictly conforming.  */
-      warning ("`%T' is promoted to `%T' when passed through `...'",
+      warning ("%qT is promoted to %qT when passed through %<...%>",
 	       type, promoted_type);
       if (! gave_help)
 	{
 	  gave_help = true;
-	  warning ("(so you should pass `%T' not `%T' to `va_arg')",
+	  warning ("(so you should pass %qT not %qT to %<va_arg%>)",
 		   promoted_type, type);
 	}
 
@@ -4573,9 +4573,9 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
   else if (! host_integerp (TREE_VALUE (arglist), 1))
     {
       if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	error ("invalid arg to `__builtin_frame_address'");
+	error ("invalid arg to %<__builtin_frame_address%>");
       else
-	error ("invalid arg to `__builtin_return_address'");
+	error ("invalid arg to %<__builtin_return_address%>");
       return const0_rtx;
     }
   else
@@ -4589,9 +4589,9 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
       if (tem == NULL)
 	{
 	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
-	    warning ("unsupported arg to `__builtin_frame_address'");
+	    warning ("unsupported arg to %<__builtin_frame_address%>");
 	  else
-	    warning ("unsupported arg to `__builtin_return_address'");
+	    warning ("unsupported arg to %<__builtin_return_address%>");
 	  return const0_rtx;
 	}
 
@@ -4757,7 +4757,7 @@ expand_builtin_expect (tree arglist, rtx target)
 
   if (TREE_CODE (c) != INTEGER_CST)
     {
-      error ("second arg to `__builtin_expect' must be a constant");
+      error ("second arg to %<__builtin_expect%> must be a constant");
       c = integer_zero_node;
     }
 
@@ -8040,19 +8040,19 @@ fold_builtin_classify (tree exp, int builtin_index)
       /* Check that we have exactly one argument.  */
       if (arglist == 0)
 	{
-	  error ("too few arguments to function `%s'",
+	  error ("too few arguments to function %qs",
 		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 	  return error_mark_node;
 	}
       else if (TREE_CHAIN (arglist) != 0)
 	{
-	  error ("too many arguments to function `%s'",
+	  error ("too many arguments to function %qs",
 		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 	  return error_mark_node;
 	}
       else
 	{
-	  error ("non-floating-point argument to function `%s'",
+	  error ("non-floating-point argument to function %qs",
 		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 	  return error_mark_node;
 	}
@@ -8136,13 +8136,13 @@ fold_builtin_unordered_cmp (tree exp,
       /* Check that we have exactly two arguments.  */
       if (arglist == 0 || TREE_CHAIN (arglist) == 0)
 	{
-	  error ("too few arguments to function `%s'",
+	  error ("too few arguments to function %qs",
 		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 	  return error_mark_node;
 	}
       else if (TREE_CHAIN (TREE_CHAIN (arglist)) != 0)
 	{
-	  error ("too many arguments to function `%s'",
+	  error ("too many arguments to function %qs",
 		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 	  return error_mark_node;
 	}
@@ -8166,7 +8166,7 @@ fold_builtin_unordered_cmp (tree exp,
 	cmp_type = type1;
       else
 	{
-	  error ("non-floating-point argument to function `%s'",
+	  error ("non-floating-point argument to function %qs",
 		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
 	  return error_mark_node;
 	}
@@ -9247,7 +9247,7 @@ simplify_builtin_va_start (tree arglist)
   tree chain = TREE_CHAIN (arglist);
 
   if (TREE_CHAIN (chain))
-    error ("too many arguments to function `va_start'");
+    error ("too many arguments to function %<va_start%>");
 
   simplify_builtin_next_arg (chain);
 }
@@ -9260,7 +9260,7 @@ simplify_builtin_next_arg (tree arglist)
   if (TYPE_ARG_TYPES (fntype) == 0
       || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 	  == void_type_node))
-    error ("`va_start' used in function with fixed args");
+    error ("%<va_start%> used in function with fixed args");
   else if (arglist)
     {
       tree last_parm = tree_last (DECL_ARGUMENTS (current_function_decl));
@@ -9276,13 +9276,13 @@ simplify_builtin_next_arg (tree arglist)
 	     || TREE_CODE (arg) == INDIRECT_REF)
 	arg = TREE_OPERAND (arg, 0);
       if (arg != last_parm)
-	warning ("second parameter of `va_start' not last named argument");
+	warning ("second parameter of %<va_start%> not last named argument");
       TREE_VALUE (arglist) = arg;
     }
   else
     /* Evidently an out of date version of <stdarg.h>; can't validate
        va_start's second argument, but can still work as intended.  */
-    warning ("`__builtin_next_arg' called without an argument");
+    warning ("%<__builtin_next_arg%> called without an argument");
 }
 
 

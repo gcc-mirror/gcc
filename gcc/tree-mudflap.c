@@ -1160,7 +1160,7 @@ mudflap_enqueue_decl (tree obj)
       for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_static_decls); i++)
         if (VARRAY_TREE (deferred_static_decls, i) == obj)
           {
-            warning ("mudflap cannot track lifetime of `%s'",
+            warning ("mudflap cannot track lifetime of %qs",
                      IDENTIFIER_POINTER (DECL_NAME (obj)));
             return;
           }

@@ -3,7 +3,7 @@
 #include <string.h>
 
 extern char end [];   /* Any old symbol we're sure will be defined. */
-/* { dg-warning "cannot track lifetime of `end'" "cannot track lifetime" { target *-*-* } 0 } */
+/* { dg-warning "cannot track lifetime of 'end'" "cannot track lifetime" { target *-*-* } 0 } */
 
 int main ()
 {

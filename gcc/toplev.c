@@ -534,7 +534,7 @@ read_integral_parameter (const char *p, const char *pname, const int  defval)
   if (*endp != 0)
     {
       if (pname != 0)
-	error ("invalid option argument `%s'", pname);
+	error ("invalid option argument %qs", pname);
       return defval;
     }
 
@@ -840,9 +840,10 @@ check_global_declarations (tree *vec, int len)
 	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	{
 	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    pedwarn ("%J'%F' used but never defined", decl, decl);
+	    pedwarn ("%J%qF used but never defined", decl, decl);
 	  else
-	    warning ("%J'%F' declared `static' but never defined", decl, decl);
+	    warning ("%J%qF declared %<static%> but never defined",
+		     decl, decl);
 	  /* This symbol is effectively an "extern" declaration now.  */
 	  TREE_PUBLIC (decl) = 1;
 	  assemble_external (decl);
@@ -867,7 +868,7 @@ check_global_declarations (tree *vec, int len)
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
 	  && lang_hooks.decls.warn_unused_global (decl))
-	warning ("%J'%D' defined but not used", decl, decl);
+	warning ("%J%qD defined but not used", decl, decl);
 
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
@@ -890,7 +891,7 @@ warn_deprecated_use (tree node)
   if (DECL_P (node))
     {
       expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
-      warning ("`%s' is deprecated (declared at %s:%d)",
+      warning ("%qs is deprecated (declared at %s:%d)",
 	       IDENTIFIER_POINTER (DECL_NAME (node)),
 	       xloc.file, xloc.line);
     }
@@ -913,7 +914,7 @@ warn_deprecated_use (tree node)
 	  expanded_location xloc
 	    = expand_location (DECL_SOURCE_LOCATION (decl));
 	  if (what)
-	    warning ("`%s' is deprecated (declared at %s:%d)", what,
+	    warning ("%qs is deprecated (declared at %s:%d)", what,
 		       xloc.file, xloc.line);
 	  else
 	    warning ("type is deprecated (declared at %s:%d)",
@@ -922,7 +923,7 @@ warn_deprecated_use (tree node)
       else
 	{
 	  if (what)
-	    warning ("`%s' is deprecated", what);
+	    warning ("%qs is deprecated", what);
 	  else
 	    warning ("type is deprecated");
 	}
@@ -1216,7 +1217,7 @@ set_target_switch (const char *name)
 #endif
 
   if (!valid_target_option)
-    error ("invalid option `%s'", name);
+    error ("invalid option %qs", name);
 }
 
 /* Print version information to FILE.
@@ -1393,7 +1394,7 @@ init_asm_output (const char *name)
       else
 	asm_out_file = fopen (asm_file_name, "w+b");
       if (asm_out_file == 0)
-	fatal_error ("can't open %s for writing: %m", asm_file_name);
+	fatal_error ("can%'t open %s for writing: %m", asm_file_name);
     }
 
 #ifdef IO_BUFFER_SIZE
@@ -1529,7 +1530,7 @@ default_pch_valid_p (const void *data_p, size_t len)
  make_message:
   {
     char *r;
-    asprintf (&r, _("created and used with differing settings of `-m%s'"),
+    asprintf (&r, _("created and used with differing settings of '-m%s'"),
 		  flag_that_differs);
     if (r == NULL)
       return _("out of memory");
@@ -1861,7 +1862,7 @@ process_options (void)
     {
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
-	fatal_error ("can't open %s: %m", aux_info_file_name);
+	fatal_error ("can%'t open %s: %m", aux_info_file_name);
     }
 
   if (! targetm.have_named_sections)

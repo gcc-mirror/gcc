@@ -831,7 +831,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
       if (decl && size == -1
 	  && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST)
 	{
-	  error ("%Jsize of variable '%D' is too large", decl, decl);
+	  error ("%Jsize of variable %qD is too large", decl, decl);
 	  size = 1;
 	}
 
@@ -1432,7 +1432,7 @@ static void
 instantiate_virtual_regs_lossage (rtx insn)
 {
   gcc_assert (asm_noperands (PATTERN (insn)) >= 0);
-  error_for_asm (insn, "impossible constraint in `asm'");
+  error_for_asm (insn, "impossible constraint in %<asm%>");
   delete_insn (insn);
 }
 /* Given a pointer to a piece of rtx and an optional pointer to the
@@ -3454,7 +3454,8 @@ setjmp_vars_warning (tree block)
 	  && DECL_RTL_SET_P (decl)
 	  && REG_P (DECL_RTL (decl))
 	  && regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-	warning ("%Jvariable '%D' might be clobbered by `longjmp' or `vfork'",
+	warning ("%Jvariable %qD might be clobbered by %<longjmp%>"
+		 " or %<vfork%>",
 		 decl, decl);
     }
 
@@ -3474,7 +3475,7 @@ setjmp_args_warning (void)
     if (DECL_RTL (decl) != 0
 	&& REG_P (DECL_RTL (decl))
 	&& regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-      warning ("%Jargument '%D' might be clobbered by `longjmp' or `vfork'",
+      warning ("%Jargument %qD might be clobbered by %<longjmp%> or %<vfork%>",
 	       decl, decl);
 }
 
@@ -4198,7 +4199,7 @@ do_warn_unused_parameter (tree fn)
        decl; decl = TREE_CHAIN (decl))
     if (!TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl))
-      warning ("%Junused parameter '%D'", decl, decl);
+      warning ("%Junused parameter %qD", decl, decl);
 }
 
 static GTY(()) rtx initial_trampoline;

@@ -842,7 +842,7 @@ dump_begin (enum tree_dump_index phase, int *flag_ptr)
   dfi = get_dump_file_info (phase);
   stream = fopen (name, dfi->state < 0 ? "w" : "a");
   if (!stream)
-    error ("could not open dump file `%s': %s", name, strerror (errno));
+    error ("could not open dump file %qs: %s", name, strerror (errno));
   else
     dfi->state = 1;
   free (name);
@@ -955,7 +955,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi)
 	    flags |= option_ptr->value;
 	    goto found;
 	  }
-      warning ("ignoring unknown option `%.*s' in `-fdump-%s'",
+      warning ("ignoring unknown option %q.*s in %<-fdump-%s%>",
 	       length, ptr, dfi->swtch);
     found:;
       ptr = end_ptr;

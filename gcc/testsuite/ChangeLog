@@ -1,3 +1,9 @@
+2004-09-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* g++.dg/ext/member-attr.C, g++.dg/warn/deprecated.C,
+	gcc.dg/deprecated.c, gcc.dg/noreturn-1.c, gcc.dg/noreturn-4.c:
+	Update expected messages.
+
 2004-09-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16485

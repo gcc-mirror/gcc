@@ -149,7 +149,7 @@ variable_size (tree size)
   if (lang_hooks.decls.global_bindings_p ())
     {
       if (TREE_CONSTANT (size))
-	error ("type size can't be explicitly evaluated");
+	error ("type size can%'t be explicitly evaluated");
       else
 	error ("variable-size type declared outside of any function");
 
@@ -455,9 +455,9 @@ layout_decl (tree decl, unsigned int known_align)
 	  int size_as_int = TREE_INT_CST_LOW (size);
 
 	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning ("%Jsize of '%D' is %d bytes", decl, decl, size_as_int);
+	    warning ("%Jsize of %qD is %d bytes", decl, decl, size_as_int);
 	  else
-	    warning ("%Jsize of '%D' is larger than %d bytes",
+	    warning ("%Jsize of %qD is larger than %d bytes",
                      decl, decl, larger_than_size);
 	}
     }
@@ -840,9 +840,9 @@ place_field (record_layout_info rli, tree field)
 	    {
 	      if (STRICT_ALIGNMENT)
 		warning ("%Jpacked attribute causes inefficient alignment "
-                         "for '%D'", field, field);
+                         "for %qD", field, field);
 	      else
-		warning ("%Jpacked attribute is unnecessary for '%D'",
+		warning ("%Jpacked attribute is unnecessary for %qD",
 			 field, field);
 	    }
 	}
@@ -858,7 +858,7 @@ place_field (record_layout_info rli, tree field)
 	 Bump the cumulative size to multiple of field alignment.  */
 
       if (warn_padded)
-	warning ("%Jpadding struct to align '%D'", field, field);
+	warning ("%Jpadding struct to align %qD", field, field);
 
       /* If the alignment is still within offset_align, just align
 	 the bit position.  */
@@ -1230,9 +1230,10 @@ finalize_record_size (record_layout_info rli)
 		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (rli->t)));
 
 	      if (STRICT_ALIGNMENT)
-		warning ("packed attribute causes inefficient alignment for `%s'", name);
+		warning ("packed attribute causes inefficient "
+			 "alignment for %qs", name);
 	      else
-		warning ("packed attribute is unnecessary for `%s'", name);
+		warning ("packed attribute is unnecessary for %qs", name);
 	    }
 	  else
 	    {
