@@ -43,7 +43,7 @@ namespace std
       else
 	  _M_streambuf_state = __state | badbit;
       if (this->exceptions() & this->rdstate())
-	__throw_ios_failure("basic_ios::clear");
+	__throw_ios_failure(__N("basic_ios::clear"));
     }
   
   template<typename _CharT, typename _Traits>

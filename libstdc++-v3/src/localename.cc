@@ -144,7 +144,7 @@ namespace std
 	  }
       }
     else
-      __throw_runtime_error("locale::locale NULL not valid");
+      __throw_runtime_error(__N("locale::locale NULL not valid"));
   }
 
   locale::locale(const locale& __base, const char* __s, category __cat)

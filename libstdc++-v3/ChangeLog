@@ -1,3 +1,21 @@
+2004-01-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/c_locale.cc: Fix throw messages
+	to use the __N marker.
+	* config/locale/gnu/c_locale.cc: Likewise.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h:
+	Likewise.
+	* docs/html/17_intro/C++STYLE: Likewise.
+	* include/bits/basic_ios.tcc: Likewise.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/fstream.tcc: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/std/std_bitset.h: Likewise.
+	* src/ios.cc: Likewise.
+	* src/locale.cc: Likewise.
+	* src/localename.cc: Likewise.
+
 2003-01-27  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/codecvt.h, include/bits/locale_facets.h,

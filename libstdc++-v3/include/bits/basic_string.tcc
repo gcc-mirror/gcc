@@ -153,7 +153,7 @@ namespace std
 
 	// NB: Not required, but considered best practice. 
 	if (__builtin_expect(__is_null_pointer(__beg), 0))
-	  __throw_logic_error("basic_string::_S_construct NULL not valid");
+	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
 	
@@ -277,7 +277,7 @@ namespace std
      {
        const size_type __strsize = __str.size();
        if (__pos > __strsize)
-	 __throw_out_of_range("basic_string::assign");
+	 __throw_out_of_range(__N("basic_string::assign"));
        const bool __testn = __n < __strsize - __pos;
        const size_type __newsize = __testn ? __n : __strsize - __pos;
        return this->assign(__str._M_data() + __pos, __newsize);
@@ -290,7 +290,7 @@ namespace std
      {
        __glibcxx_requires_string_len(__s, __n);
        if (__n > this->max_size())
-	 __throw_length_error("basic_string::assign");
+	 __throw_length_error(__N("basic_string::assign"));
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
 	   || less<const _CharT*>()(_M_data() + this->size(), __s))
 	 return _M_replace_safe(_M_ibegin(), _M_iend(), __s, __s + __n);
@@ -316,7 +316,7 @@ namespace std
      {
        const size_type __strsize = __str.size();
        if (__pos2 > __strsize)
-	 __throw_out_of_range("basic_string::insert");
+	 __throw_out_of_range(__N("basic_string::insert"));
        const bool __testn = __n < __strsize - __pos2;
        const size_type __newsize = __testn ? __n : __strsize - __pos2;
        return this->insert(__pos1, __str._M_data() + __pos2, __newsize);
@@ -330,9 +330,9 @@ namespace std
        __glibcxx_requires_string_len(__s, __n);
        const size_type __size = this->size();
        if (__pos > __size)
-         __throw_out_of_range("basic_string::insert");
+         __throw_out_of_range(__N("basic_string::insert"));
        if (__size > this->max_size() - __n)
-         __throw_length_error("basic_string::insert");
+         __throw_length_error(__N("basic_string::insert"));
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
            || less<const _CharT*>()(_M_data() + __size, __s))
          return _M_replace_safe(_M_ibegin() + __pos, _M_ibegin() + __pos,
@@ -368,11 +368,11 @@ namespace std
        __glibcxx_requires_string_len(__s, __n2);
        const size_type __size = this->size();
        if (__pos > __size)
-         __throw_out_of_range("basic_string::replace");
+         __throw_out_of_range(__N("basic_string::replace"));
        const bool __testn1 = __n1 < __size - __pos;
        const size_type __foldn1 = __testn1 ? __n1 : __size - __pos;
        if (__size - __foldn1 > this->max_size() - __n2)
-         __throw_length_error("basic_string::replace");
+         __throw_length_error(__N("basic_string::replace"));
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
            || less<const _CharT*>()(_M_data() + __size, __s))
          return _M_replace_safe(_M_ibegin() + __pos,
@@ -477,7 +477,7 @@ namespace std
       if (__res != this->capacity() || _M_rep()->_M_is_shared())
         {
 	  if (__res > this->max_size())
-	    __throw_length_error("basic_string::reserve");
+	    __throw_length_error(__N("basic_string::reserve"));
 	  // Make sure we don't shrink below the current size
 	  if (__res < this->size())
 	    __res = this->size();
@@ -521,7 +521,7 @@ namespace std
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
       if (__capacity > _S_max_size)
-	__throw_length_error("basic_string::_S_create");
+	__throw_length_error(__N("basic_string::_S_create"));
 
       // NB: Need an array of char_type[__capacity], plus a
       // terminating null char_type() element, plus enough for the
@@ -626,7 +626,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::resize(size_type __n, _CharT __c)
     {
       if (__n > max_size())
-	__throw_length_error("basic_string::resize");
+	__throw_length_error(__N("basic_string::resize"));
       const size_type __size = this->size();
       if (__size < __n)
 	this->append(__n - __size, __c);
@@ -643,7 +643,7 @@ namespace std
       const size_type __n1 = __i2 - __i1;
       const size_type __off1 = __i1 - _M_ibegin();
       if (max_size() - (this->size() - __n1) <= __n2)
-	__throw_length_error("basic_string::replace");
+	__throw_length_error(__N("basic_string::replace"));
       _M_mutate (__off1, __n1, __n2);
       // Invalidated __i1, __i2
       if (__n2)
@@ -681,7 +681,7 @@ namespace std
 	const size_type __dmax = this->max_size();
 
 	if (__dmax <= __dnew)
-	  __throw_length_error("basic_string::_M_replace");
+	  __throw_length_error(__N("basic_string::_M_replace"));
 	const size_type __off = __i1 - _M_ibegin();
 	_M_mutate(__off, __dold, __dnew);
 
@@ -700,7 +700,7 @@ namespace std
     {
       const size_type __strsize = __str.size();
       if (__pos2 > __strsize)
-	__throw_out_of_range("basic_string::replace");
+	__throw_out_of_range(__N("basic_string::replace"));
       const bool __testn2 = __n2 < __strsize - __pos2;
       const size_type __foldn2 = __testn2 ? __n2 : __strsize - __pos2;
       return this->replace(__pos1, __n1,
@@ -798,7 +798,7 @@ namespace std
     copy(_CharT* __s, size_type __n, size_type __pos) const
     {
       if (__pos > this->size())
-	__throw_out_of_range("basic_string::copy");
+	__throw_out_of_range(__N("basic_string::copy"));
       
       if (__n > this->size() - __pos)
 	__n = this->size() - __pos;
@@ -1000,7 +1000,7 @@ namespace std
       const size_type __size = this->size();
       const size_type __osize = __str.size();
       if (__pos > __size)
-	__throw_out_of_range("basic_string::compare");
+	__throw_out_of_range(__N("basic_string::compare"));
       
       const size_type __rsize= std::min(size_type(__size - __pos), __n);
       const size_type __len = std::min(__rsize, __osize);
@@ -1019,7 +1019,7 @@ namespace std
       const size_type __size = this->size();
       const size_type __osize = __str.size();
       if (__pos1 > __size || __pos2 > __osize)
-	__throw_out_of_range("basic_string::compare");
+	__throw_out_of_range(__N("basic_string::compare"));
       
       const size_type __rsize = std::min(size_type(__size - __pos1), __n1);
       const size_type __rosize = std::min(size_type(__osize - __pos2), __n2);
@@ -1058,7 +1058,7 @@ namespace std
 
       const size_type __size = this->size();
       if (__pos > __size)
-	__throw_out_of_range("basic_string::compare");
+	__throw_out_of_range(__N("basic_string::compare"));
       
       const size_type __osize = traits_type::length(__s);
       const size_type __rsize = std::min(size_type(__size - __pos), __n1);
@@ -1079,7 +1079,7 @@ namespace std
 
       const size_type __size = this->size();
       if (__pos > __size)
-	__throw_out_of_range("basic_string::compare");
+	__throw_out_of_range(__N("basic_string::compare"));
       
       const size_type __rsize = std::min(size_type(__size - __pos), __n1);
       const size_type __len = std::min(__rsize, __n2);

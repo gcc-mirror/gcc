@@ -210,7 +210,7 @@ Notable areas of divergence from what may be previous local practice
     All start with the name of the function where the exception is
     thrown, and then (optional) descriptive text is added. Example:
 
-    __throw_logic_error("basic_string::_S_construct NULL not valid");
+    __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
     Reason: The verbose terminate handler prints out exception::what(),
     as well as the typeinfo for the thrown exception. As this is the

@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -163,8 +163,8 @@ namespace std
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
-		  __throw_ios_failure("ios_base::_M_grow_words "
-				      "allocation failed");
+		  __throw_ios_failure(__N("ios_base::_M_grow_words "
+				      "allocation failed"));
 		if (iword)
 		  _M_word_zero._M_iword = 0;
 		else
@@ -183,7 +183,7 @@ namespace std
 	  {
 	    _M_streambuf_state |= badbit;
 	    if (_M_streambuf_state & _M_exception)
-	      __throw_ios_failure("ios_base::_M_grow_words is not valid");
+	      __throw_ios_failure(__N("ios_base::_M_grow_words is not valid"));
 	    if (iword)
 	      _M_word_zero._M_iword = 0;
 	    else
