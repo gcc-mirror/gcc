@@ -589,7 +589,6 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
   unsigned first_new_block;
   basic_block bb;
   unsigned i;
-  tree phi, arg, map, def;
   bitmap definitions;
 
   if (!(loops->state & LOOPS_HAVE_SIMPLE_LATCHES))
@@ -609,17 +608,7 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
     return false;
 
   /* Readd the removed phi args for e.  */
-  map = PENDING_STMT (e);
-  PENDING_STMT (e) = NULL;
-
-  for (phi = phi_nodes (e->dest), arg = map;
-       phi;
-       phi = TREE_CHAIN (phi), arg = TREE_CHAIN (arg))
-    {
-      def = TREE_VALUE (arg);
-      add_phi_arg (&phi, def, e);
-    }
-  gcc_assert (arg == NULL);
+  flush_pending_stmts (e);
 
   /* Copy the phi node arguments.  */
   copy_phi_node_args (first_new_block);
@@ -747,31 +736,6 @@ lv_adjust_loop_entry_edge (basic_block first_head,
   return new_head;
 }
 
-/* Add phi args using PENDINT_STMT list.  */
-
-static void
-lv_update_pending_stmts (edge e)
-{
-  basic_block dest;
-  tree phi, arg, def;
-
-  if (!PENDING_STMT (e))
-    return;
-
-  dest = e->dest;
-
-  for (phi = phi_nodes (dest), arg = PENDING_STMT (e);
-       phi;
-       phi = TREE_CHAIN (phi), arg = TREE_CHAIN (arg))
-    {
-      def = TREE_VALUE (arg);
-      add_phi_arg (&phi, def, e);
-    }
-
-  PENDING_STMT (e) = NULL;
-}
-
-
 /* Main entry point for Loop Versioning transformation.
    
 This transformation given a condition and a loop, creates
@@ -832,11 +796,11 @@ tree_ssa_loop_version (struct loops *loops, struct loop * loop,
     nloop->single_exit = find_edge (exit->src->rbi->copy, exit->dest);
 
   /* loopify redirected latch_edge. Update its PENDING_STMTS.  */ 
-  lv_update_pending_stmts (latch_edge);
+  flush_pending_stmts (latch_edge);
 
   /* loopify redirected condition_bb's succ edge. Update its PENDING_STMTS.  */ 
   extract_true_false_edges_from_block (*condition_bb, &true_edge, &false_edge);
-  lv_update_pending_stmts (false_edge);
+  flush_pending_stmts (false_edge);
 
   /* Adjust irreducible flag.  */
   if (irred_flag)

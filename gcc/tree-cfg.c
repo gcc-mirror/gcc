@@ -3692,12 +3692,7 @@ tree_make_forwarder_block (edge fallthru)
       if (e == fallthru)
 	continue;
 
-      for (phi = phi_nodes (bb), var = PENDING_STMT (e);
-	   phi;
-	   phi = PHI_CHAIN (phi), var = TREE_CHAIN (var))
-	add_phi_arg (&phi, TREE_VALUE (var), e);
-
-      PENDING_STMT (e) = NULL;
+      flush_pending_stmts (e);
     }
 }
 
@@ -4598,7 +4593,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
   bitmap definitions;
-  tree phi, var;
+  tree phi;
   basic_block *doms;
   htab_t ssa_name_map = NULL;
   edge redirected;
@@ -4667,11 +4662,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
   /* Redirect the entry and add the phi node arguments.  */
   redirected = redirect_edge_and_branch (entry, entry->dest->rbi->copy);
   gcc_assert (redirected != NULL);
-  for (phi = phi_nodes (entry->dest), var = PENDING_STMT (entry);
-       phi;
-       phi = TREE_CHAIN (phi), var = TREE_CHAIN (var))
-    add_phi_arg (&phi, TREE_VALUE (var), entry);
-  PENDING_STMT (entry) = NULL;
+  flush_pending_stmts (entry);
 
   /* Concerning updating of dominators:  We must recount dominators
      for entry block and its copy.  Anything that is outside of the region, but
