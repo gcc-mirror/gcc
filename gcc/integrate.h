@@ -152,6 +152,11 @@ extern union tree_node *copy_decl_for_inlining PARAMS ((union tree_node *,
 						      union tree_node *,
 						      union tree_node *));
 
+/* Check whether there's any attribute in a function declaration that
+   makes the function uninlinable.  Returns false if it finds any,
+   true otherwise.  */
+extern bool function_attribute_inlinable_p PARAMS ((union tree_node *));
+
 extern void try_constants PARAMS ((rtx, struct inline_remap *));
 
 /* Return the label indicated.  */

@@ -463,8 +463,13 @@ ggc_mark_trees ()
 	  ggc_mark_tree (DECL_VINDEX (t));
 	  if (DECL_ASSEMBLER_NAME_SET_P (t))
 	    ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
-	  if (TREE_CODE (t) == FUNCTION_DECL && DECL_SAVED_INSNS (t))
-	    ggc_mark_struct_function (DECL_SAVED_INSNS (t));
+	  if (TREE_CODE (t) == FUNCTION_DECL)
+	    {
+	      ggc_mark_tree (DECL_SAVED_TREE (t));
+	      ggc_mark_tree (DECL_INLINED_FNS (t));
+	      if (DECL_SAVED_INSNS (t))
+		ggc_mark_struct_function (DECL_SAVED_INSNS (t));
+	    }
 	  lang_mark_tree (t);
 	  break;
 
