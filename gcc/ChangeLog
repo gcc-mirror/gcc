@@ -1,3 +1,9 @@
+2000-07-08  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* fold-const.c (extract_muldiv) case PLUS_EXPR, MINUS_EXPR:
+	Check whether c divides op1 exactly if operation is not
+	multiplication.
+
 2000-07-08  Richard Henderson  <rth@cygnus.com>
 
         * final.c (final): Do not abort when reg-stack introduces
