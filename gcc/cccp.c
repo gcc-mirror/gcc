@@ -6384,8 +6384,8 @@ do_undef (buf, limit, op, keyword)
 }
 
 /*
- * Report a fatal error detected by the program we are processing.
- * Use the text of the line in the error message, then terminate.
+ * Report an error detected by the program we are processing.
+ * Use the text of the line in the error message.
  * (We use error because it prints the filename & line#.)
  */
 
@@ -6401,8 +6401,6 @@ do_error (buf, limit, op, keyword)
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
   error ("#error %s", copy);
-  exit (FAILURE_EXIT_CODE);
-  /* NOTREACHED */
   return 0;
 }
 
