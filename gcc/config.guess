@@ -275,6 +275,9 @@ EOF
     CRAY*Y-MP:UNICOS:*:*)
 	echo ymp-cray-unicos
         exit 0 ;;
+    CRAY*Y-MP:*:*:*)
+      echo ymp-cray-unicos${UNAME_RELEASE}
+      exit 0 ;;
     CRAY-2:UNICOS:*:*)
 	echo cray2-cray-unicos
         exit 0 ;;
