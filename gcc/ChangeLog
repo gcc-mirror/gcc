@@ -1,3 +1,13 @@
+2001-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* final.c (output_asm_insn): Make sure assembly dialects are
+	terminated, not nested.  Output `|' and `}' characters if they
+	don't appear inside assembly dialect selection.
+	* config/i386/i386.md (rep_movdi_rex64, rep_movsi, rep_movsi_rex64,
+	rep_movqi, rep_movqi_rex64, rep_stosdi_rex64, rep_stossi,
+	rep_stossi_rex64, rep_stosqi, rep_stosqi_rex64, strsetsi_1,
+	strsetsi_rex_1): Add {} braces.
+
 2001-10-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* toplev.c (compile_file): Ignore return value from yyparse.

@@ -3313,6 +3313,9 @@ output_asm_insn (template, operands)
 {
   const char *p;
   int c;
+#ifdef ASSEMBLER_DIALECT
+  int dialect = 0;
+#endif
 
   /* An insn may return a null string template
      in a case where no assembler code is needed.  */
@@ -3347,6 +3350,11 @@ output_asm_insn (template, operands)
 	{
 	  int i;
 
+	  if (dialect)
+	    output_operand_lossage ("nested assembly dialect alternatives");
+	  else
+	    dialect = 1;
+
 	  /* If we want the first dialect, do nothing.  Otherwise, skip
 	     DIALECT_NUMBER of strings ending with '|'.  */
 	  for (i = 0; i < dialect_number; i++)
@@ -3358,16 +3366,35 @@ output_asm_insn (template, operands)
 	      if (*p == '|')
 		p++;
 	    }
+
+	  if (*p == '\0')
+	    output_operand_lossage ("unterminated assembly dialect alternative");
 	}
 	break;
 
       case '|':
-	/* Skip to close brace.  */
-	while (*p && *p++ != '}')
-	  ;
+	if (dialect)
+	  {
+	    /* Skip to close brace.  */
+	    do
+	      {
+		if (*p == '\0')
+		  {
+		    output_operand_lossage ("unterminated assembly dialect alternative");
+		    break;
+		  }
+	      }	  
+	    while (*p++ != '}');
+	    dialect = 0;
+	  }
+	else
+	  putc (c, asm_out_file);
 	break;
 
       case '}':
+	if (! dialect)
+	  putc (c, asm_out_file);
+	dialect = 0;
 	break;
 #endif
 
