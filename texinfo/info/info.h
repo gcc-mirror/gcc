@@ -1,5 +1,5 @@
 /* info.h -- Header file which includes all of the other headers.
-   $Id: info.h,v 1.6 1997/07/15 18:34:15 karl Exp $
+   $Id: info.h,v 1.2 1998/03/24 18:06:31 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

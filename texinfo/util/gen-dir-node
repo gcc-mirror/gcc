@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: gen-dir-node,v 1.1 1997/05/22 22:02:43 karl Exp $
+# $Id: gen-dir-node,v 1.1.1.2 1998/03/22 20:43:12 law Exp $
 # Generate the top-level Info node, given a directory of Info files
 # and (optionally) a skeleton file.  The output will be suitable for a
 # top-level dir file.  The skeleton file contains info topic names in the

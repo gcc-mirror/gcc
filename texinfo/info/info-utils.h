@@ -1,5 +1,5 @@
 /* info-utils.h -- Exported functions and variables from info-util.c.
-   $Id: info-utils.h,v 1.3 1997/07/15 18:42:20 karl Exp $   
+   $Id: info-utils.h,v 1.1.1.2 1998/03/22 20:42:36 law Exp $   
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

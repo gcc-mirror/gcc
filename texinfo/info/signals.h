@@ -1,5 +1,5 @@
 /* signals.h -- Header to include system dependent signal definitions.
-   $Id: signals.h,v 1.3 1997/07/15 18:35:59 karl Exp $
+   $Id: signals.h,v 1.1.1.2 1998/03/22 20:42:55 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

@@ -4,7 +4,7 @@
 @set VERSION 1.61
 @paragraphindent none
 @comment %**start of header
-@comment $Id: makeinfo.texi,v 1.1 1997/08/21 22:58:08 jason Exp $
+@comment $Id: makeinfo.texi,v 1.1.1.1 1997/08/21 22:58:08 jason Exp $
 
 @ifinfo
 @format

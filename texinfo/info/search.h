@@ -1,5 +1,5 @@
 /* search.h -- Structure used to search large bodies of text, with bounds.
-   $Id: search.h,v 1.3 1997/07/15 18:43:49 karl Exp $
+   $Id: search.h,v 1.1.1.2 1998/03/22 20:42:51 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

@@ -3,7 +3,7 @@
 @setfilename info.info
 @settitle Info 1.0
 @comment %**end of header 
-@comment $Id: info.texi,v 1.1 1997/08/21 22:58:02 jason Exp $
+@comment $Id: info.texi,v 1.1.1.1 1997/08/21 22:58:02 jason Exp $
 
 @ifinfo
 @c This is a dir.info fragment to support semi-automated addition of

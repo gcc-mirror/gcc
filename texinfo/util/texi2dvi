@@ -3,7 +3,7 @@
 
 # Copyright (C) 1992, 93, 94, 95, 96 Free Software Foundation, Inc.
 
-# $Id: texi2dvi,v 0.6 1997/07/14 19:23:18 karl Exp $
+# $Id: texi2dvi,v 1.2 1998/03/24 18:08:49 law Exp $
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@
 progname=`echo "$0" | sed -e 's/[^\/]*\///g'`
 
 # This string is expanded by rcs automatically when this file is checked out.
-rcs_revision='$Revision: 0.6 $'
+rcs_revision='$Revision: 1.2 $'
 version=`set - $rcs_revision; echo $2`
 
 # To prevent hairy quoting and escaping later.
@@ -329,6 +329,3 @@ done
 
 $verbose "$0 done."
 true # exit successfully.
-# Do macro expansion with makeinfo before running TeX.
-# Various expansion safety measures added for test; avoid use of -o.
-#

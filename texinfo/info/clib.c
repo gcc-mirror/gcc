@@ -1,5 +1,5 @@
 /* clib.c: Functions which we normally expect to find in the C library.
-   $Id: clib.c,v 1.1 1997/08/21 22:57:59 jason Exp $
+   $Id: clib.c,v 1.1.1.1 1997/08/21 22:57:59 jason Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

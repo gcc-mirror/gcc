@@ -3,7 +3,7 @@
 @setfilename info.info
 @settitle Info 1.0
 @comment %**end of header 
-@comment $Id: info.texi,v 1.1 1998/03/23 04:42:12 law Exp $
+@comment $Id: info.texi,v 1.2 1998/03/24 18:05:37 law Exp $
 
 @dircategory Texinfo documentation system
 @direntry

@@ -1,5 +1,5 @@
 /* window.c -- Windows in Info.
-   $Id: window.c,v 1.4 1997/07/15 18:35:59 karl Exp $
+   $Id: window.c,v 1.2 1998/03/24 18:06:59 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

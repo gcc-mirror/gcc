@@ -9,7 +9,7 @@
 @synindex fn cp
 @synindex ky cp
 @comment %**end of header
-@comment $Id: info-stnd.texi,v 1.1 1997/08/21 22:58:01 jason Exp $
+@comment $Id: info-stnd.texi,v 1.1.1.1 1997/08/21 22:58:01 jason Exp $
 
 @dircategory Texinfo documentation system
 @direntry

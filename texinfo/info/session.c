@@ -1,5 +1,5 @@
 /* session.c -- The user windowing interface to Info.
-   $Id: session.c,v 1.12 1997/07/24 21:34:00 karl Exp $
+   $Id: session.c,v 1.2 1998/03/24 18:06:46 law Exp $
 
    Copyright (C) 1993, 96, 97 Free Software Foundation, Inc.
 

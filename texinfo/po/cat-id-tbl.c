@@ -498,4 +498,4 @@ Email bug reports to bug-texinfo@prep.ai.mit.edu.", 358},
   {"%s; for file `%s'.\n", 363},
   {"Virtual memory exhausted in %s ()!  Needed %d bytes.", 364},
 };
-
+int _msg_tbl_length = 364;
