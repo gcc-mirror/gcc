@@ -9458,8 +9458,8 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 	  /* Convert offset (presumably in bytes) into canonical units
 	     (presumably bits).  */
 	  *offset = size_binop (MULT_EXPR,
-				*offset,
-				TYPE_SIZE (TREE_TYPE (TREE_TYPE (t))));
+				TYPE_SIZE (TREE_TYPE (TREE_TYPE (t))),
+				*offset);
 	  break;
 	}
       /* Not a COMMON reference, so an unrecognized pattern.  */
@@ -9468,7 +9468,7 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 
     case PARM_DECL:
       *decl = t;
-      *offset = size_zero_node;
+      *offset =  bitsize_int (0L, 0L);
       break;
 
     case ADDR_EXPR:
@@ -9476,7 +9476,7 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 	{
 	  /* A reference to COMMON.  */
 	  *decl = TREE_OPERAND (t, 0);
-	  *offset = size_zero_node;
+	  *offset =  bitsize_int (0L, 0L);
 	  break;
 	}
       /* Fall through.  */
@@ -9597,7 +9597,7 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
     case VAR_DECL:
     case PARM_DECL:
       *decl = t;
-      *offset = size_zero_node;
+      *offset = bitsize_int (0L, 0L);
       *size = TYPE_SIZE (TREE_TYPE (t));
       return;
 
@@ -11809,16 +11809,8 @@ ffecom_init_0 ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
 			long_long_unsigned_type_node));
 
-  sizetype
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
-
-  TREE_TYPE (TYPE_SIZE (integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (char_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (unsigned_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_unsigned_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_long_integer_type_node)) = sizetype;
-  TREE_TYPE (TYPE_SIZE (long_long_unsigned_type_node)) = sizetype;
+  set_sizetype
+    (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE))));
 
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
