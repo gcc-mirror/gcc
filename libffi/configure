@@ -2497,7 +2497,135 @@ fi
 	 
 	 
 
-AC_FUNC_MMAP_BLACKLIST
+if test $ac_cv_header_sys_mman_h != yes \
+ || test $ac_cv_func_mmap != yes; then
+   ac_cv_func_mmap_file=no
+   ac_cv_func_mmap_dev_zero=no
+   ac_cv_func_mmap_anon=no
+else
+   echo $ac_n "checking whether read-only mmap of a plain file works""... $ac_c" 1>&6
+echo "configure:2508: checking whether read-only mmap of a plain file works" >&5
+if eval "test \"`echo '$''{'ac_cv_func_mmap_file'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  # Add a system to this blacklist if
+   # mmap(0, stat_size, PROT_READ, MAP_PRIVATE, fd, 0) doesn't return a
+   # memory area containing the same data that you'd get if you applied
+   # read() to the same fd.  The only system known to have a problem here
+   # is VMS, where text files have record structure.
+   case "$host_os" in
+     vms* | ultrix*)
+	ac_cv_func_mmap_file=no ;;
+     *)
+	ac_cv_func_mmap_file=yes;;
+   esac
+fi
+
+echo "$ac_t""$ac_cv_func_mmap_file" 1>&6
+   echo $ac_n "checking whether mmap from /dev/zero works""... $ac_c" 1>&6
+echo "configure:2527: checking whether mmap from /dev/zero works" >&5
+if eval "test \"`echo '$''{'ac_cv_func_mmap_dev_zero'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  # Add a system to this blacklist if it has mmap() but /dev/zero
+   # does not exist, or if mmapping /dev/zero does not give anonymous
+   # zeroed pages with both the following properties:
+   # 1. If you map N consecutive pages in with one call, and then
+   #    unmap any subset of those pages, the pages that were not
+   #    explicitly unmapped remain accessible.
+   # 2. If you map two adjacent blocks of memory and then unmap them
+   #    both at once, they must both go away.
+   # Systems known to be in this category are Windows (all variants),
+   # VMS, and Darwin.
+   case "$host_os" in
+     vms* | cygwin* | pe | mingw* | darwin* | ultrix* | hpux10* | hpux11.00)
+	ac_cv_func_mmap_dev_zero=no ;;
+     *)
+	ac_cv_func_mmap_dev_zero=yes;;
+   esac
+fi
+
+echo "$ac_t""$ac_cv_func_mmap_dev_zero" 1>&6
+
+   # Unlike /dev/zero, the MAP_ANON(YMOUS) defines can be probed for.
+   echo $ac_n "checking for MAP_ANON(YMOUS)""... $ac_c" 1>&6
+echo "configure:2553: checking for MAP_ANON(YMOUS)" >&5
+if eval "test \"`echo '$''{'ac_cv_decl_map_anon'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2558 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
+int main() {
+int n = MAP_ANONYMOUS;
+; return 0; }
+EOF
+if { (eval echo configure:2572: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ac_cv_decl_map_anon=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_cv_decl_map_anon=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$ac_cv_decl_map_anon" 1>&6
+
+   if test $ac_cv_decl_map_anon = no; then
+     ac_cv_func_mmap_anon=no
+   else
+     echo $ac_n "checking whether mmap with MAP_ANON(YMOUS) works""... $ac_c" 1>&6
+echo "configure:2590: checking whether mmap with MAP_ANON(YMOUS) works" >&5
+if eval "test \"`echo '$''{'ac_cv_func_mmap_anon'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  # Add a system to this blacklist if it has mmap() and MAP_ANON or
+   # MAP_ANONYMOUS, but using mmap(..., MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+   # doesn't give anonymous zeroed pages with the same properties listed
+   # above for use of /dev/zero.
+   # Systems known to be in this category are Windows, VMS, and SCO Unix.
+   case "$host_os" in
+     vms* | cygwin* | pe | mingw* | sco* | udk* )
+	ac_cv_func_mmap_anon=no ;;
+     *)
+	ac_cv_func_mmap_anon=yes;;
+   esac
+fi
+
+echo "$ac_t""$ac_cv_func_mmap_anon" 1>&6
+   fi
+fi
+
+if test $ac_cv_func_mmap_file = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_MMAP_FILE 1
+EOF
+
+fi
+if test $ac_cv_func_mmap_dev_zero = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_MMAP_DEV_ZERO 1
+EOF
+
+fi
+if test $ac_cv_func_mmap_anon = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_MMAP_ANON 1
+EOF
+
+fi
+
 
 
 
@@ -2701,7 +2829,7 @@ case x$TARGET in
 esac
 
 echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:2705: checking how to run the C preprocessor" >&5
+echo "configure:2833: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -2716,13 +2844,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 2720 "configure"
+#line 2848 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2726: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2854: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2733,13 +2861,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 2737 "configure"
+#line 2865 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2743: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2871: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2750,13 +2878,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 2754 "configure"
+#line 2882 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2760: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2888: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2781,12 +2909,12 @@ fi
 echo "$ac_t""$CPP" 1>&6
 
 echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
-echo "configure:2785: checking for ANSI C header files" >&5
+echo "configure:2913: checking for ANSI C header files" >&5
 if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2790 "configure"
+#line 2918 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -2794,7 +2922,7 @@ else
 #include <float.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2798: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2926: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2811,7 +2939,7 @@ rm -f conftest*
 if test $ac_cv_header_stdc = yes; then
   # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 2815 "configure"
+#line 2943 "configure"
 #include "confdefs.h"
 #include <string.h>
 EOF
@@ -2829,7 +2957,7 @@ fi
 if test $ac_cv_header_stdc = yes; then
   # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 2833 "configure"
+#line 2961 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 EOF
@@ -2850,7 +2978,7 @@ if test "$cross_compiling" = yes; then
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2854 "configure"
+#line 2982 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 #define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
@@ -2861,7 +2989,7 @@ if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
 exit (0); }
 
 EOF
-if { (eval echo configure:2865: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2993: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   :
 else
@@ -2887,12 +3015,12 @@ fi
 for ac_func in memcpy
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:2891: checking for $ac_func" >&5
+echo "configure:3019: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2896 "configure"
+#line 3024 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -2915,7 +3043,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2919: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3047: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -2942,19 +3070,19 @@ done
 # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
 # for constant arguments.  Useless!
 echo $ac_n "checking for working alloca.h""... $ac_c" 1>&6
-echo "configure:2946: checking for working alloca.h" >&5
+echo "configure:3074: checking for working alloca.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_alloca_h'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2951 "configure"
+#line 3079 "configure"
 #include "confdefs.h"
 #include <alloca.h>
 int main() {
 char *p = alloca(2 * sizeof(int));
 ; return 0; }
 EOF
-if { (eval echo configure:2958: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3086: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_header_alloca_h=yes
 else
@@ -2975,12 +3103,12 @@ EOF
 fi
 
 echo $ac_n "checking for alloca""... $ac_c" 1>&6
-echo "configure:2979: checking for alloca" >&5
+echo "configure:3107: checking for alloca" >&5
 if eval "test \"`echo '$''{'ac_cv_func_alloca_works'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2984 "configure"
+#line 3112 "configure"
 #include "confdefs.h"
 
 #ifdef __GNUC__
@@ -3008,7 +3136,7 @@ int main() {
 char *p = (char *) alloca(1);
 ; return 0; }
 EOF
-if { (eval echo configure:3012: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3140: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_func_alloca_works=yes
 else
@@ -3040,12 +3168,12 @@ EOF
 
 
 echo $ac_n "checking whether alloca needs Cray hooks""... $ac_c" 1>&6
-echo "configure:3044: checking whether alloca needs Cray hooks" >&5
+echo "configure:3172: checking whether alloca needs Cray hooks" >&5
 if eval "test \"`echo '$''{'ac_cv_os_cray'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3049 "configure"
+#line 3177 "configure"
 #include "confdefs.h"
 #if defined(CRAY) && ! defined(CRAY2)
 webecray
@@ -3070,12 +3198,12 @@ echo "$ac_t""$ac_cv_os_cray" 1>&6
 if test $ac_cv_os_cray = yes; then
 for ac_func in _getb67 GETB67 getb67; do
   echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:3074: checking for $ac_func" >&5
+echo "configure:3202: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 3079 "configure"
+#line 3207 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -3098,7 +3226,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:3102: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3230: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -3125,7 +3253,7 @@ done
 fi
 
 echo $ac_n "checking stack direction for C alloca""... $ac_c" 1>&6
-echo "configure:3129: checking stack direction for C alloca" >&5
+echo "configure:3257: checking stack direction for C alloca" >&5
 if eval "test \"`echo '$''{'ac_cv_c_stack_direction'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3133,7 +3261,7 @@ else
   ac_cv_c_stack_direction=0
 else
   cat > conftest.$ac_ext <<EOF
-#line 3137 "configure"
+#line 3265 "configure"
 #include "confdefs.h"
 find_stack_direction ()
 {
@@ -3152,7 +3280,7 @@ main ()
   exit (find_stack_direction() < 0);
 }
 EOF
-if { (eval echo configure:3156: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3284: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_c_stack_direction=1
 else
@@ -3175,13 +3303,13 @@ fi
 
 
 echo $ac_n "checking size of double""... $ac_c" 1>&6
-echo "configure:3179: checking size of double" >&5
+echo "configure:3307: checking size of double" >&5
 if eval "test \"`echo '$''{'ac_cv_sizeof_double'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   for ac_size in 4 8 1 2 16 12  ; do # List sizes in rough order of prevalence.
   cat > conftest.$ac_ext <<EOF
-#line 3185 "configure"
+#line 3313 "configure"
 #include "confdefs.h"
 #include "confdefs.h"
 #include <sys/types.h>
@@ -3191,7 +3319,7 @@ int main() {
 switch (0) case 0: case (sizeof (double) == $ac_size):;
 ; return 0; }
 EOF
-if { (eval echo configure:3195: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3323: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_sizeof_double=$ac_size
 else
@@ -3214,13 +3342,13 @@ EOF
 
 
 echo $ac_n "checking size of long double""... $ac_c" 1>&6
-echo "configure:3218: checking size of long double" >&5
+echo "configure:3346: checking size of long double" >&5
 if eval "test \"`echo '$''{'ac_cv_sizeof_long_double'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   for ac_size in 4 8 1 2 16 12  ; do # List sizes in rough order of prevalence.
   cat > conftest.$ac_ext <<EOF
-#line 3224 "configure"
+#line 3352 "configure"
 #include "confdefs.h"
 #include "confdefs.h"
 #include <sys/types.h>
@@ -3230,7 +3358,7 @@ int main() {
 switch (0) case 0: case (sizeof (long double) == $ac_size):;
 ; return 0; }
 EOF
-if { (eval echo configure:3234: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3362: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_sizeof_long_double=$ac_size
 else
@@ -3267,14 +3395,14 @@ fi
 
 
 echo $ac_n "checking whether byte ordering is bigendian""... $ac_c" 1>&6
-echo "configure:3271: checking whether byte ordering is bigendian" >&5
+echo "configure:3399: checking whether byte ordering is bigendian" >&5
 if eval "test \"`echo '$''{'ac_cv_c_bigendian'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   ac_cv_c_bigendian=unknown
 # See if sys/param.h defines the BYTE_ORDER macro.
 cat > conftest.$ac_ext <<EOF
-#line 3278 "configure"
+#line 3406 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <sys/param.h>
@@ -3285,11 +3413,11 @@ int main() {
 #endif
 ; return 0; }
 EOF
-if { (eval echo configure:3289: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3417: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   # It does; now see whether it defined to BIG_ENDIAN or not.
 cat > conftest.$ac_ext <<EOF
-#line 3293 "configure"
+#line 3421 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <sys/param.h>
@@ -3300,7 +3428,7 @@ int main() {
 #endif
 ; return 0; }
 EOF
-if { (eval echo configure:3304: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3432: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_c_bigendian=yes
 else
@@ -3320,7 +3448,7 @@ if test "$cross_compiling" = yes; then
    echo $ac_n "cross-compiling... " 2>&6 
 else
   cat > conftest.$ac_ext <<EOF
-#line 3324 "configure"
+#line 3452 "configure"
 #include "confdefs.h"
 main () {
   /* Are we little or big endian?  From Harbison&Steele.  */
@@ -3333,7 +3461,7 @@ main () {
   exit (u.c[sizeof (long) - 1] == 1);
 }
 EOF
-if { (eval echo configure:3337: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3465: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_c_bigendian=no
 else
@@ -3351,7 +3479,7 @@ fi
 echo "$ac_t""$ac_cv_c_bigendian" 1>&6
 if test $ac_cv_c_bigendian = unknown; then
 echo $ac_n "checking to probe for byte ordering""... $ac_c" 1>&6
-echo "configure:3355: checking to probe for byte ordering" >&5
+echo "configure:3483: checking to probe for byte ordering" >&5
 
 cat >conftest.c <<EOF
 short ascii_mm[] = { 0x4249, 0x4765, 0x6E44, 0x6961, 0x6E53, 0x7953, 0 };
@@ -3405,7 +3533,7 @@ fi
 
 if test x$TARGET = xSPARC; then
     echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
-echo "configure:3409: checking assembler and linker support unaligned pc related relocs" >&5
+echo "configure:3537: checking assembler and linker support unaligned pc related relocs" >&5
 if eval "test \"`echo '$''{'libffi_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3415,14 +3543,14 @@ else
 	CFLAGS="$CFLAGS -fpic"
 	LDFLAGS="$LDFLAGS -shared"
 	cat > conftest.$ac_ext <<EOF
-#line 3419 "configure"
+#line 3547 "configure"
 #include "confdefs.h"
 asm (".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo); .text");
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:3426: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:3554: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   libffi_cv_as_sparc_ua_pcrel=yes
 else
@@ -3445,7 +3573,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:3449: checking assembler .register pseudo-op support" >&5
+echo "configure:3577: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'libffi_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3453,14 +3581,14 @@ else
        libffi_cv_as_register_pseudo_op=unknown
        # Check if we have .register
        cat > conftest.$ac_ext <<EOF
-#line 3457 "configure"
+#line 3585 "configure"
 #include "confdefs.h"
 asm (".register %g2, #scratch");
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:3464: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:3592: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   libffi_cv_as_register_pseudo_op=yes
 else
@@ -3483,7 +3611,7 @@ EOF
 fi
 
 echo $ac_n "checking whether .eh_frame section should be read-only""... $ac_c" 1>&6
-echo "configure:3487: checking whether .eh_frame section should be read-only" >&5
+echo "configure:3615: checking whether .eh_frame section should be read-only" >&5
 if eval "test \"`echo '$''{'libffi_cv_ro_eh_frame'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else

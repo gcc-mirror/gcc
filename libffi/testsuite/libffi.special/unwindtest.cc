@@ -56,7 +56,7 @@ int main (void)
   ffi_type * cl_arg_types[17];
   int res;
 #ifdef USING_MMAP
-  pcl = allocate_mmap (sizeof(ffi_closure));
+  pcl = (ffi_closure*) allocate_mmap (sizeof(ffi_closure));
 #else
   pcl = &cl;
 #endif

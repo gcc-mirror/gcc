@@ -1,3 +1,10 @@
+2003-11-22  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.in: Rebuilt.
+	* configure: Likewise.
+	* testsuite/libffi.special/unwindtest.cc: Convert the mmap to
+	the right type.
+
 2003-11-21  Andreas Jaeger  <aj@suse.de>
 	    Andreas Tobler  <a.tobler@schweiz.ch>
 
