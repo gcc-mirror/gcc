@@ -6387,10 +6387,13 @@ expand_function_start (subr, parms_have_cleanups)
 #endif
 
       SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (mode));
+      /* Needed because we may need to move this to memory
+	 in case it's a named return value whose address is taken.  */
+      DECL_REGISTER (DECL_RESULT (subr)) = 1;
     }
   else
-    /* Scalar, returned in a register.  */
     {
+      /* Scalar, returned in a register.  */
       SET_DECL_RTL (DECL_RESULT (subr),
 		    hard_function_value (TREE_TYPE (DECL_RESULT (subr)), 
 					 subr, 1));
