@@ -1701,19 +1701,26 @@ gfc_resolve_index (gfc_expr * index, int check_scalar)
   if (gfc_resolve_expr (index) == FAILURE)
     return FAILURE;
 
-  if (index->ts.type != BT_INTEGER)
-    {
-      gfc_error ("Array index at %L must be of INTEGER type", &index->where);
-      return FAILURE;
-    }
-
   if (check_scalar && index->rank != 0)
     {
       gfc_error ("Array index at %L must be scalar", &index->where);
       return FAILURE;
     }
 
-  if (index->ts.kind != gfc_index_integer_kind)
+  if (index->ts.type != BT_INTEGER && index->ts.type != BT_REAL)
+    {
+      gfc_error ("Array index at %L must be of INTEGER type",
+		 &index->where);
+      return FAILURE;
+    }
+
+  if (index->ts.type == BT_REAL)
+    if (gfc_notify_std (GFC_STD_GNU, "Extension: REAL array index at %L",
+			&index->where) == FAILURE)
+      return FAILURE;
+
+  if (index->ts.kind != gfc_index_integer_kind
+      || index->ts.type != BT_INTEGER)
     {
       ts.type = BT_INTEGER;
       ts.kind = gfc_index_integer_kind;
