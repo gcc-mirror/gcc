@@ -765,9 +765,9 @@ public final class Locale implements Serializable, Cloneable
   private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
-    language = (String) s.readObject();
-    country = (String) s.readObject();
-    variant = (String) s.readObject();    
+    language = ((String) s.readObject()).intern();
+    country = ((String) s.readObject()).intern();
+    variant = ((String) s.readObject()).intern();
     // Recompute hashcode.
     hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
   }
