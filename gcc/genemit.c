@@ -217,6 +217,14 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     case PC:
       printf ("pc_rtx");
       return;
+    case CLOBBER:
+      if (REG_P (XEXP (x, 0)))
+	{
+	  printf ("gen_hard_reg_clobber (%smode, %i)", GET_MODE_NAME (GET_MODE (XEXP (x, 0))),
+			  			     REGNO (XEXP (x, 0)));
+	  return;
+	}
+      break;
 
     case CC0:
       printf ("cc0_rtx");

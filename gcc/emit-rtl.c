@@ -2231,8 +2231,12 @@ verify_rtx_sharing (rtx orig, rtx insn)
     case PC:
     case CC0:
     case SCRATCH:
-      /* SCRATCH must be shared because they represent distinct values.  */
       return;
+      /* SCRATCH must be shared because they represent distinct values.  */
+    case CLOBBER:
+      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
+	return;
+      break;
 
     case CONST:
       /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
@@ -2527,6 +2531,10 @@ repeat:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
+    case CLOBBER:
+      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
+	return;
+      break;
 
     case CONST:
       /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
@@ -5020,6 +5028,10 @@ copy_insn_1 (rtx orig)
     case CC0:
     case ADDRESSOF:
       return orig;
+    case CLOBBER:
+      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)
+	return orig;
+      break;
 
     case SCRATCH:
       for (i = 0; i < copy_insn_n_scratches; i++)
@@ -5534,6 +5546,17 @@ emit_copy_of_insn_after (rtx insn, rtx after)
     }
   INSN_CODE (new) = INSN_CODE (insn);
   return new;
+}
+
+static GTY((deletable(""))) rtx hard_reg_clobbers [NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
+rtx
+gen_hard_reg_clobber (enum machine_mode mode, unsigned int regno)
+{
+  if (hard_reg_clobbers[mode][regno])
+    return hard_reg_clobbers[mode][regno];
+  else
+    return (hard_reg_clobbers[mode][regno] =
+	    gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (mode, regno)));
 }
 
 #include "gt-emit-rtl.h"
