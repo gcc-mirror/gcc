@@ -1596,8 +1596,10 @@ fold_convert (t, arg1)
 	{
 	  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
 	    {
-	      t = arg1;
-	      TREE_TYPE (arg1) = type;
+	      /* We make a copy of ARG1 so that we don't modify an
+		 existing constant tree.  */
+	      t = copy_node (arg1);
+	      TREE_TYPE (t) = type;
 	      return t;
 	    }
 
