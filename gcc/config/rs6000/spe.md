@@ -1,0 +1,2550 @@
+;; e500 SPE description
+;; Copyright (C) 2002 Free Software Foundation, Inc.
+;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
+
+;; This file is part of GNU CC.
+
+;; GNU CC is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2, or (at your option)
+;; any later version.
+
+;; GNU CC is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU CC; see the file COPYING.  If not, write to
+;; the Free Software Foundation, 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+(define_constants
+  [(SPE_ACC_REGNO	111)
+   (SPEFSCR_REGNO	112)])
+
+(define_insn "*negsf2_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+        (neg:SF (match_operand:SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsneg %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "*abssf2_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+	(abs:SF (match_operand:SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsabs %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "*addsf3_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+	(plus:SF (match_operand:SF 1 "gpc_reg_operand" "%r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsadd %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "*subsf3_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+	(minus:SF (match_operand:SF 1 "gpc_reg_operand" "r")
+		  (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efssub %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "*mulsf3_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+        (mult:SF (match_operand:SF 1 "gpc_reg_operand" "%r")
+                 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsmul %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "*divsf3_gpr"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+        (div:SF (match_operand:SF 1 "gpc_reg_operand" "r")
+                (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsdiv %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "spe_efsctuiz"
+  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+        (unspec:SI [(match_operand:SF 1 "gpc_reg_operand" "r")] 700))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsctuiz %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "spe_fixunssfsi2"
+  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	(unsigned_fix:SI (fix:SF (match_operand:SF 1 "gpc_reg_operand" "r"))))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsctui %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "spe_fix_truncsfsi2"
+  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	(fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsctsi %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "spe_floatunssisf2"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+        (unsigned_float:SF (match_operand:SI 1 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efscfui %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_insn "spe_floatsisf2"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
+        (float:SF (match_operand:SI 1 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efscfsi %0,%1"
+  [(set_attr "type" "fp")])
+
+
+;; SPE SIMD instructions
+
+(define_insn "spe_evabs"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(abs:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evabs %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evandc"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (and:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		  (not:V2SI (match_operand:V2SI 2 "gpc_reg_operand" "r"))))]
+  "TARGET_SPE"
+  "evandc %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evand"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (and:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evand %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+;; Vector compare instructions
+
+(define_insn "spe_evcmpeq"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+	(unspec:CC [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 500))]
+  "TARGET_SPE"
+  "evcmpeq %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evcmpgts"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 501))]
+  "TARGET_SPE"
+  "evcmpgts %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evcmpgtu"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 502))]
+  "TARGET_SPE"
+  "evcmpgtu %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evcmplts"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 503))]
+  "TARGET_SPE"
+  "evcmplts %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evcmpltu"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 504))]
+  "TARGET_SPE"
+  "evcmpltu %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+;; Floating point vector compare instructions
+
+(define_insn "spe_evfscmpeq"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")] 538))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfscmpeq %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfscmpgt"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")] 539))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfscmpgt %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfscmplt"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")] 540))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfscmplt %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfststeq"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")] 541))]
+  "TARGET_SPE"
+  "evfststeq %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfststgt"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")] 542))]
+  "TARGET_SPE"
+  "evfststgt %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfststlt"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=y")
+        (unspec:CC [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")] 543))]
+  "TARGET_SPE"
+  "evfststlt %0,%1,%2"
+  [(set_attr "type" "veccmp")
+   (set_attr  "length" "4")])
+
+;; End of vector compare instructions
+
+(define_insn "spe_evcntlsw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")] 505))]
+  "TARGET_SPE"
+  "evcntlsw %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evcntlzw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")] 506))]
+  "TARGET_SPE"
+  "evcntlzw %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_eveqv"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (not:V2SI (xor:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+			    (match_operand:V2SI 2 "gpc_reg_operand" "r"))))]
+  "TARGET_SPE"
+  "eveqv %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evextsb"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")] 507))]
+  "TARGET_SPE"
+  "evextsb %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evextsh"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")] 508))]
+  "TARGET_SPE"
+  "evextsh %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlhhesplat"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 509)]
+  "TARGET_SPE"
+  "evlhhesplat %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlhhesplatx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 510)]
+  "TARGET_SPE"
+  "evlhhesplatx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlhhossplat"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 511)]
+  "TARGET_SPE"
+  "evlhhossplat %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlhhossplatx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 512)]
+  "TARGET_SPE"
+  "evlhhossplatx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlhhousplat"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 513)]
+  "TARGET_SPE"
+  "evlhhousplat %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlhhousplatx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 514)]
+  "TARGET_SPE"
+  "evlhhousplatx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhsplat"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 515)]
+  "TARGET_SPE"
+  "evlwhsplat %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhsplatx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 516)]
+  "TARGET_SPE"
+  "evlwhsplatx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwwsplat"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 517)]
+  "TARGET_SPE"
+  "evlwwsplat %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwwsplatx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 518)]
+  "TARGET_SPE"
+  "evlwwsplatx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmergehi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(vec_merge:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+			(vec_select:V2SI
+			 (match_operand:V2SI 2 "gpc_reg_operand" "r")
+			 (parallel [(const_int 1)
+				    (const_int 0)]))
+			(const_int 2)))]
+  "TARGET_SPE"
+  "evmergehi %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmergehilo"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(vec_merge:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+			(match_operand:V2SI 2 "gpc_reg_operand" "r")
+			(const_int 2)))]
+  "TARGET_SPE"
+  "evmergehilo %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmergelo"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(vec_merge:V2SI (vec_select:V2SI
+			 (match_operand:V2SI 1 "gpc_reg_operand" "r")
+			 (parallel [(const_int 1)
+				    (const_int 0)]))
+			(match_operand:V2SI 2 "gpc_reg_operand" "r")
+			(const_int 2)))]
+  "TARGET_SPE"
+  "evmergelo %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmergelohi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(vec_merge:V2SI (vec_select:V2SI
+			 (match_operand:V2SI 1 "gpc_reg_operand" "r")
+			 (parallel [(const_int 1)
+				    (const_int 0)]))
+			(vec_select:V2SI
+			 (match_operand:V2SI 2 "gpc_reg_operand" "r")
+			 (parallel [(const_int 1)
+				    (const_int 0)]))
+			(const_int 2)))]
+  "TARGET_SPE"
+  "evmergelohi %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evnand"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (not:V2SI (and:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+                            (match_operand:V2SI 2 "gpc_reg_operand" "r"))))]
+  "TARGET_SPE"
+  "evnand %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evneg"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (neg:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evneg %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evnor"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (not:V2SI  (ior:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+                             (match_operand:V2SI 2 "gpc_reg_operand" "r"))))]
+  "TARGET_SPE"
+  "evnor %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evorc"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (ior:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		  (not:V2SI (match_operand:V2SI 2 "gpc_reg_operand" "r"))))]
+  "TARGET_SPE"
+  "evorc %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evor"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (ior:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evor %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evrlwi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:QI 2 "immediate_operand" "i")] 519))]
+  "TARGET_SPE"
+  "evrlwi %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evrlw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 520))]
+  "TARGET_SPE"
+  "evrlw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evrndw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")] 521))]
+  "TARGET_SPE"
+  "evrndw %0,%1"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsel"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (match_operand:CC 3 "cc_reg_operand" "y")] 522))]
+  "TARGET_SPE"
+  "evsel %0,%1,%2,%3"
+  [(set_attr "type" "veccmp")
+   (set_attr "length" "4")])
+
+(define_insn "spe_evsel_fs"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+	(unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SF 2 "gpc_reg_operand" "r")
+		      (match_operand:CC 3 "cc_reg_operand" "y")] 725))]
+  "TARGET_SPE"
+  "evsel %0,%1,%2,%3"
+  [(set_attr "type" "veccmp")
+   (set_attr "length" "4")])
+
+(define_insn "spe_evslwi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:QI 2 "immediate_operand" "i")]
+		     523))]
+  "TARGET_SPE"
+  "evslwi %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evslw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 524))]
+  "TARGET_SPE"
+  "evslw %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsrwis"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:QI 2 "immediate_operand" "i")]
+		     525))]
+  "TARGET_SPE"
+  "evsrwis %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsrwiu"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:QI 2 "immediate_operand" "i")]
+		     526))]
+  "TARGET_SPE"
+  "evsrwiu %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsrws"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 527))]
+  "TARGET_SPE"
+  "evsrws %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsrwu"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 528))]
+  "TARGET_SPE"
+  "evsrwu %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evxor"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (xor:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evxor %0,%1,%2"
+  [(set_attr "type" "vecsimple")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsabs"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (abs:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evfsabs %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsadd"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (plus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "r")
+		   (match_operand:V2SF 2 "gpc_reg_operand" "r")))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfsadd %0,%1,%2"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfscfsf"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 529))]
+  "TARGET_SPE"
+  "evfscfsf %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfscfsi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (fix:V2SI (match_operand:V2SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evfscfsi %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfscfuf"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 530))]
+  "TARGET_SPE"
+  "evfscfuf %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfscfui"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+	(unspec:V2SF [(match_operand:V2SI 1 "gpc_reg_operand" "r")] 701))]
+  "TARGET_SPE"
+  "evfscfui %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsctsf"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 531))]
+  "TARGET_SPE"
+  "evfsctsf %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsctsi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(unspec:V2SI [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 532))]
+  "TARGET_SPE"
+  "evfsctsi %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsctsiz"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(unspec:V2SI [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 533))]
+  "TARGET_SPE"
+  "evfsctsiz %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsctuf"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 534))]
+  "TARGET_SPE"
+  "evfsctuf %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsctui"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 535))]
+  "TARGET_SPE"
+  "evfsctui %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsctuiz"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 536))]
+  "TARGET_SPE"
+  "evfsctuiz %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsdiv"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (div:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "r")
+		  (match_operand:V2SF 2 "gpc_reg_operand" "r")))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfsdiv %0,%1,%2"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsmul"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (mult:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "r")
+		   (match_operand:V2SF 2 "gpc_reg_operand" "r")))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfsmul %0,%1,%2"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsnabs"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+	(unspec:V2SF [(match_operand:V2SF 1 "gpc_reg_operand" "r")] 537))]
+  "TARGET_SPE"
+  "evfsnabs %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfsneg"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (neg:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evfsneg %0,%1"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evfssub"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (minus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "r")))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evfssub %0,%1,%2"
+  [(set_attr "type" "vecfloat")
+   (set_attr  "length" "4")])
+
+;; SPE SIMD load instructions.
+
+;; Only the hardware engineer who designed the SPE inderstands the
+;; plethora of load and store instructions ;-).  We have no way of
+;; differentiating between them with RTL so use an unspec of const_int 0 
+;; to avoid identical RTL.
+
+(define_insn "spe_evldd"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 544)]
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evldd %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlddx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 545)]
+  "TARGET_SPE"
+  "evlddx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evldh"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 546)]
+  "TARGET_SPE && INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) <= 31"
+  "evldh %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evldhx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 547)]
+  "TARGET_SPE"
+  "evldhx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evldw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 548)]
+  "TARGET_SPE"
+  "evldw %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evldwx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 549)]
+  "TARGET_SPE"
+  "evldwx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhe"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 550)]
+  "TARGET_SPE"
+  "evlwhe %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhex"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 551)]
+  "TARGET_SPE"
+  "evlwhex %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhos"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 552)]
+  "TARGET_SPE"
+  "evlwhos %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhosx"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 553)]
+  "TARGET_SPE"
+  "evlwhosx %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhou"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:QI 2 "immediate_operand" "i"))))
+   (unspec [(const_int 0)] 554)]
+  "TARGET_SPE"
+  "evlwhou %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evlwhoux"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(mem:V2SI (plus:SI (match_operand:SI 1 "gpc_reg_operand" "b")
+			   (match_operand:SI 2 "gpc_reg_operand" "r"))))
+   (unspec [(const_int 0)] 555)]
+  "TARGET_SPE"
+  "evlwhoux %0,%1,%2"
+  [(set_attr "type" "vecload")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_brinc"
+  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "gpc_reg_operand" "r")
+		    (match_operand:SI 2 "gpc_reg_operand" "r")] 556))]
+  "TARGET_SPE"
+  "brinc %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhegsmfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 557))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhegsmfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhegsmfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 558))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhegsmfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhegsmiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 559))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhegsmiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhegsmian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 560))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhegsmian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhegumiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 561))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhegumiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhegumian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 562))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhegumian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmfaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 563))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhesmfaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmfanw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 564))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhesmfanw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 565))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhesmfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 566))]
+  "TARGET_SPE"
+  "evmhesmf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 567))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhesmiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 568))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhesmianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 569))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhesmia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhesmi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 570))]
+  "TARGET_SPE"
+  "evmhesmi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhessfaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 571))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhessfaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhessfanw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 572))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhessfanw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhessfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 573))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhessfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhessf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 574))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evmhessf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhessiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 575))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhessiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhessianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 576))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhessianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmheumiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 577))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmheumiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmheumianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 578))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmheumianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmheumia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 579))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmheumia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmheumi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 580))]
+  "TARGET_SPE"
+  "evmheumi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmheusiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 581))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmheusiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmheusianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 582))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmheusianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhogsmfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 583))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhogsmfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhogsmfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 584))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhogsmfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhogsmiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 585))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhogsmiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhogsmian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 586))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhogsmian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhogumiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 587))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhogumiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhogumian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 588))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhogumian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmfaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 589))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhosmfaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmfanw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 590))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhosmfanw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 591))]
+  "TARGET_SPE"
+  "evmhosmfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 592))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhosmf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 593))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhosmiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 594))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhosmianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 595))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhosmia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhosmi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 596))]
+  "TARGET_SPE"
+  "evmhosmi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhossfaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 597))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhossfaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhossfanw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 598))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhossfanw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhossfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 599))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhossfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhossf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 600))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evmhossf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhossiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 601))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhossiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhossianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 602))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhossianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhoumiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 603))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhoumiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhoumianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 604))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhoumianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhoumia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 605))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhoumia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhoumi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 606))]
+  "TARGET_SPE"
+  "evmhoumi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhousiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 607))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhousiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmhousianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 608))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmhousianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmmlssfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 609))]
+  "TARGET_SPE"
+  "evmmlssfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmmlssf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 610))]
+  "TARGET_SPE"
+  "evmmlssf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 611))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhsmfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 612))]
+  "TARGET_SPE"
+  "evmwhsmf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 613))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhsmia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 614))]
+  "TARGET_SPE"
+  "evmwhsmi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhssfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 615))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhssfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhusian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 626))]
+  "TARGET_SPE"
+  "evmwhusian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhssf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 628))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evmwhssf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhumia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 629))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhumia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhumi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 630))]
+  "TARGET_SPE"
+  "evmwhumi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlsmfaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 631))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlsmfaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlsmfanw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 632))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlsmfanw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlsmfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 633))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlsmfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlsmf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 634))]
+  "TARGET_SPE"
+  "evmwlsmf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlsmiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 635))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlsmiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlsmianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 636))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlsmianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlssf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 637))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evmwlssf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlssfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 638))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlssfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlssfaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 639))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlssfaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlssfanw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 640))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlssfanw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlssiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 641))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlssiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlssianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 642))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlssianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlumiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 643))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlumiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlumianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 644))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlumianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlumia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 645))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlumia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlumi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 646))]
+  "TARGET_SPE"
+  "evmwlumi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlusiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 647))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlusiaaw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwlusianw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 648))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwlusianw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 649))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwsmfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 650))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwsmfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 651))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwsmfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 652))]
+  "TARGET_SPE"
+  "evmwsmf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 653))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwsmiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 654))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwsmian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 655))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwsmia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwsmi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 656))]
+  "TARGET_SPE"
+  "evmwsmi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwssfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 657))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwssfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwssfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 658))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwssfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwssfa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 659))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwssfa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwssf"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 660))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evmwssf %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwumiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 661))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwumiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwumian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 662))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwumian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwumia"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 663))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwumia %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwumi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 664))]
+  "TARGET_SPE"
+  "evmwumi %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evaddw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (plus:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		   (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evaddw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evaddusiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 673))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evaddusiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evaddumiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 674))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evaddumiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evaddssiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 675))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evaddssiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evaddsmiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 676))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evaddsmiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evaddiw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:QI 2 "immediate_operand" "i")] 677))]
+  "TARGET_SPE"
+  "evaddiw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsubifw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (match_operand:QI 2 "immediate_operand" "i")] 678))]
+  "TARGET_SPE"
+  "evsubifw %0,%2,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsubfw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (minus:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		    (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
+  "TARGET_SPE"
+  "evsubfw %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsubfusiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 679))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evsubfusiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsubfumiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 680))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evsubfumiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsubfssiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 681))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evsubfssiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsubfsmiaaw"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+		      (reg:V2SI SPE_ACC_REGNO)] 682))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evsubfsmiaaw %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmra"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (match_operand:V2SI 1 "gpc_reg_operand" "r"))
+   (set (reg:V2SI SPE_ACC_REGNO) (match_dup 1))]
+  "TARGET_SPE"
+  "evmra %0,%1"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evdivws"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (div:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))
+   (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evdivws %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evdivwu"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (udiv:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
+		   (match_operand:V2SI 2 "gpc_reg_operand" "r")))
+      (clobber (reg:SI SPEFSCR_REGNO))]
+  "TARGET_SPE"
+  "evdivwu %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsplatfi"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:QI 1 "immediate_operand" "i")] 684))]
+  "TARGET_SPE"
+  "evsplatfi %1,%0"
+  [(set_attr "type" "vecperm")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evsplati"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:QI 1 "immediate_operand" "i")] 685))]
+  "TARGET_SPE"
+  "evsplati %1,%0"
+  [(set_attr "type" "vecperm")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstdd"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 686)]
+  "TARGET_SPE"
+  "evstdd %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstddx"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 687)]
+  "TARGET_SPE"
+  "evstddx %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstdh"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 688)]
+  "TARGET_SPE"
+  "evstdh %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstdhx"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 689)]
+  "TARGET_SPE"
+  "evstdhx %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstdw"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 690)]
+  "TARGET_SPE"
+  "evstdw %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstdwx"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 691)]
+  "TARGET_SPE"
+  "evstdwx %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwhe"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 692)]
+  "TARGET_SPE"
+  "evstwhe %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwhex"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 693)]
+  "TARGET_SPE"
+  "evstwhex %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwho"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 694)]
+  "TARGET_SPE"
+  "evstwho %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwhox"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 695)]
+  "TARGET_SPE"
+  "evstwhox %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwwe"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 696)]
+  "TARGET_SPE"
+  "evstwwe %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwwex"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 697)]
+  "TARGET_SPE"
+  "evstwwex %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwwo"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:QI 1 "immediate_operand" "i")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 698)]
+  "TARGET_SPE"
+  "evstwwo %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evstwwox"
+  [(set (mem:V2SI (plus:SI (match_operand:SI 0 "gpc_reg_operand" "b")
+			   (match_operand:SI 1 "gpc_reg_operand" "r")))
+	(match_operand:V2SI 2 "gpc_reg_operand" "r"))
+   (unspec [(const_int 0)] 699)]
+  "TARGET_SPE"
+  "evstwwox %2,%0,%1"
+  [(set_attr "type" "vecstore")
+   (set_attr  "length" "4")])
+
+;; SPE vector clears
+
+(define_insn "*movv2si_const0"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+	(match_operand:V2SI 1 "zero_constant" ""))]
+  "TARGET_SPE"
+  "evxor %0,%0,%0"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "*movv2sf_const0"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+	(match_operand:V2SF 1 "zero_constant" ""))]
+  "TARGET_SPE"
+  "evxor %0,%0,%0"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "*movv4hi_const0"
+  [(set (match_operand:V4HI 0 "gpc_reg_operand" "=r")
+	(match_operand:V4HI 1 "zero_constant" ""))]
+  "TARGET_SPE"
+  "evxor %0,%0,%0"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector move instructions.
+
+(define_expand "movv2si"
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "")
+	(match_operand:V2SI 1 "any_operand" ""))]
+  "TARGET_SPE"
+  "{ rs6000_emit_move (operands[0], operands[1], V2SImode); DONE; }")
+
+
+(define_insn "*movv2si_internal"
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "=m,r,r")
+	(match_operand:V2SI 1 "input_operand" "r,m,r"))]
+  "TARGET_SPE"
+  "@
+   evstdd%X0 %1,%y0
+   evldd%X1 %0,%y1
+   evor %0,%1,%1"
+  [(set_attr "type" "vecload")])
+
+(define_expand "movv4hi"
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "")
+	(match_operand:V4HI 1 "any_operand" ""))]
+  "TARGET_SPE"
+  "{ rs6000_emit_move (operands[0], operands[1], V4HImode); DONE; }")
+
+(define_insn "*movv4hi_internal"
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "=m,r,r")
+	(match_operand:V4HI 1 "input_operand" "r,m,r"))]
+  "TARGET_SPE"
+  "@
+   evstdd%X0 %1,%y0
+   evldd%X1 %0,%y1
+   evor %0,%1,%1"
+  [(set_attr "type" "vecload")])
+
+(define_expand "movv2sf"
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "")
+	(match_operand:V2SF 1 "any_operand" ""))]
+  "TARGET_SPE"
+  "{ rs6000_emit_move (operands[0], operands[1], V2SFmode); DONE; }")
+
+(define_insn "*movv2sf_internal"
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=m,r,r")
+	(match_operand:V2SF 1 "input_operand" "r,m,r"))]
+  "TARGET_SPE"
+  "@
+   evstdd%X0 %1,%y0
+   evldd%X1 %0,%y1
+   evor %0,%1,%1"
+  [(set_attr "type" "vecload")])
+
+(define_insn "spe_evmwhssfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 702))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhssfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhssmaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 703))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhssmaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 704))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhsmfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 705))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhsmiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhusiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 706))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhusiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhumiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 707))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhumiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhssfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 708))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhssfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhssian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 709))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhssian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 710))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhsmfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhsmian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 711))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhsmian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhumian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 713))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhumian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgssfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 714))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgssfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgsmfaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 715))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgsmfaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgsmiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 716))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgsmiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgumiaa"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 717))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgumiaa %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgssfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 718))
+   (clobber (reg:SI SPEFSCR_REGNO))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgssfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgsmfan"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 719))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgsmfan %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgsmian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 720))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgsmian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_evmwhgumian"
+  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
+        (unspec:V2SI [(match_operand:V2SI 1 "gpc_reg_operand" "r")
+                      (match_operand:V2SI 2 "gpc_reg_operand" "r")] 721))
+   (clobber (reg:V2SI SPE_ACC_REGNO))]
+  "TARGET_SPE"
+  "evmwhgumian %0,%1,%2"
+  [(set_attr "type" "veccomplex")
+   (set_attr  "length" "4")])
+
+(define_insn "spe_mtspefscr"
+  [(set (reg:SI SPEFSCR_REGNO)
+	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+			    722))]
+  "TARGET_SPE"
+  "mtspefscr %0"
+  [(set_attr "type" "vecsimple")])
+
+(define_insn "spe_mfspefscr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(reg:SI SPEFSCR_REGNO)] 723))]
+  "TARGET_SPE"
+  "mfspefscr %0"
+  [(set_attr "type" "vecsimple")])
+
+;; MPC8540 single-precision FP instructions on GPRs.
+;; We have 2 variants for each.  One for IEEE compliant math and one
+;; for non IEEE compliant math.
+
+(define_insn "cmpsfeq_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(eq:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS && !flag_unsafe_math_optimizations"
+  "efscmpeq %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "tstsfeq_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(eq:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
+  "efststeq %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "cmpsfgt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(gt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS && !flag_unsafe_math_optimizations"
+  "efscmpgt %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "tstsfgt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(gt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
+  "efststgt %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "cmpsflt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(lt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS && !flag_unsafe_math_optimizations"
+  "efscmplt %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "tstsflt_gpr"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(lt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
+  "efststlt %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+

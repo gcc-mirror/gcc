@@ -42,3 +42,13 @@ Boston, MA 02111-1307, USA.  */
       builtin_assert ("machine=powerpc"); \
     }                                     \
   while (0)
+
+#undef TARGET_SPE_ABI
+#undef TARGET_SPE
+#undef TARGET_ISEL
+#undef TARGET_FPRS
+
+#define TARGET_SPE_ABI rs6000_spe_abi
+#define TARGET_SPE (rs6000_cpu == PROCESSOR_PPC8540)
+#define TARGET_ISEL rs6000_isel
+#define TARGET_FPRS rs6000_fprs

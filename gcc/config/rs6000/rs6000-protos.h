@@ -186,6 +186,8 @@ extern void rs6000_emit_load_toc_table PARAMS ((int));
 extern void rs6000_aix_emit_builtin_unwind_init PARAMS ((void));
 extern void rs6000_emit_epilogue PARAMS ((int));
 extern void debug_stack_info PARAMS ((rs6000_stack_t *));
+extern const char *output_isel PARAMS ((rtx *));
+extern int vrsave_operation PARAMS ((rtx, enum machine_mode));
 
 extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
 
