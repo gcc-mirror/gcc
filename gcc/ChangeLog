@@ -1,5 +1,7 @@
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.h: Fix typo in GEN_INT changes.
+
 	* bitmap.c (bitmap_element_allocate): Use "void" for arglist instead
 	of an empty arglist in prototype.
 
