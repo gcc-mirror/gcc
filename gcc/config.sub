@@ -307,6 +307,7 @@ case $basic_machine in
 		basic_machine=m68k-hp
 		os=-hpux
 		;;
+	hp9k2[0-9][0-9] | hp9k31[0-9])
 		basic_machine=m68000-hp
 		;;
 	hp9k3[2-9][0-9])
