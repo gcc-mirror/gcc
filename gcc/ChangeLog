@@ -1,3 +1,8 @@
+2004-05-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (svr4_profil): Don't apply on IRIX 5/6.
+	* fixinc/fixincl.x: Regenerate.
+
 2004-05-03  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (*fyl2x_sfxf3, *fyl2x_dfxf3): Remove insn
