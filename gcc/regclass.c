@@ -152,6 +152,13 @@ enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
 char *reg_names[] = REGISTER_NAMES;
 
+/* For each hard register, the widest mode object that it can contain.
+   This will be a MODE_INT mode if the register can hold integers.  Otherwise
+   it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
+   register.  */
+
+enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
+
 /* Indexed by n, gives number of times (REG n) is set or clobbered.
    This information remains valid for the rest of the compilation
    of the current function; it is used to control register allocation.
@@ -391,6 +398,57 @@ init_reg_sets_1 ()
       if (call_fixed_regs[i])
 	SET_HARD_REG_BIT (call_fixed_reg_set, i);
     }
+
+  /* Compute the table of register modes.
+     These values are used to record death information for individual registers
+     (as opposed to a multi-register mode).
+     This can't be done until HARD_REGNO_NREGS and HARD_REGNO_MODE_OK are
+     usable which is after OVERRIDE_OPTIONS on some targets.  */
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    reg_raw_mode[i] = choose_hard_reg_mode (i, 1);
+}
+
+/* Return a machine mode that is legitimate for hard reg REGNO and large
+   enough to save nregs.  If we can't find one, return VOIDmode.  */
+
+enum machine_mode
+choose_hard_reg_mode (regno, nregs)
+     int regno;
+     int nregs;
+{
+  enum machine_mode found_mode = VOIDmode, mode;
+
+  /* We first look for the largest integer mode that can be validly
+     held in REGNO.  If none, we look for the largest floating-point mode.
+     If we still didn't find a valid mode, try CCmode.  */
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (HARD_REGNO_NREGS (regno, mode) == nregs
+	&& HARD_REGNO_MODE_OK (regno, mode))
+      found_mode = mode;
+
+  if (found_mode != VOIDmode)
+    return found_mode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (HARD_REGNO_NREGS (regno, mode) == nregs
+	&& HARD_REGNO_MODE_OK (regno, mode))
+      found_mode = mode;
+
+  if (found_mode != VOIDmode)
+    return found_mode;
+
+  if (HARD_REGNO_NREGS (regno, CCmode) == nregs
+      && HARD_REGNO_MODE_OK (regno, CCmode))
+    return CCmode;
+
+  /* We can't find a mode valid for this register.  */
+  return VOIDmode;
 }
 
 /* Specify the usage characteristics of the register named NAME.
