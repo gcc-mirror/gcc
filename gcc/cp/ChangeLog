@@ -1,3 +1,8 @@
+1998-05-26  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+	* decl.c (start_decl): Check for DECL_LANG_SPECIFIC before
+ 	DECL_USE_TEMPLATE.
+
 1998-05-26  Per Bothner  <bothner@cygnus.com>
 
 	* language_as_string:  Handle lang_java.
