@@ -895,6 +895,7 @@ rest_of_handle_combine (void)
       rebuild_jump_labels (get_insns ());
       timevar_pop (TV_JUMP);
 
+      delete_dead_jumptables ();
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
     }
 
@@ -971,6 +972,9 @@ rest_of_handle_cse (void)
      expecting CSE to be run.  But always rerun it in a cheap mode.  */
   cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
 
+  if (tem)
+    delete_dead_jumptables ();
+
   if (tem || optimize > 1)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
@@ -1006,6 +1010,7 @@ rest_of_handle_cse2 (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
+      delete_dead_jumptables ();
       cleanup_cfg (CLEANUP_EXPENSIVE);
       timevar_pop (TV_JUMP);
     }
@@ -1053,6 +1058,7 @@ rest_of_handle_gcse (void)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
+      delete_dead_jumptables ();
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       timevar_pop (TV_JUMP);
     }
