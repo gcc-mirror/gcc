@@ -1,3 +1,8 @@
+2001-07-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	Fixes PRs bootstrap/3067, bootstrap/3249, bootstrap/3275.
+
 2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/cppinternals.texi: Improve formatting and logical markup.
