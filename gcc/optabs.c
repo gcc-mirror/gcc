@@ -5274,6 +5274,8 @@ init_optabs (void)
   sin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
   exp_optab = init_optab (UNKNOWN);
+  exp10_optab = init_optab (UNKNOWN);
+  exp2_optab = init_optab (UNKNOWN);
   log_optab = init_optab (UNKNOWN);
   log10_optab = init_optab (UNKNOWN);
   log2_optab = init_optab (UNKNOWN);

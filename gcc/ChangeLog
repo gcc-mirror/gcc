@@ -1,3 +1,19 @@
+2004-03-10  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_exp10 and OTI_exp2.
+	(exp10_optab, exp2_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize exp10_optab and exp2_optab.
+	* genopinit.c (optabs): Implement exp10_optab and exp2_optab
+	using exp10?f2 and exp2?f2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_EXP10{,F,L}
+	using exp10_optab, and BUILT_IN_EXP2{,F,L} using exp2_optab.
+	(expand_builtin): Expand BUILT_IN_EXP10{,F,L} and BUILT_IN_EXP2{,F,L}
+	using expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (exp10sf2, exp10df2, exp10xf2, exp2sf2,
+	exp2df2, exp2xf2): New patterns to implement exp10, exp10f, exp10l,
+	exp2, exp2f and exp2l built-ins as inline x87 intrinsics.
+
 2004-03-10  Anthony Green  <green@redhat.com>
 
 	* doc/invoke.texi (ARM Options): Fix -mpfu typo.

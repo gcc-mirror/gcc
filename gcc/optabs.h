@@ -154,6 +154,10 @@ enum optab_index
   OTI_cos,
   /* Exponential */
   OTI_exp,
+  /* Base-10 Exponential */
+  OTI_exp10,
+  /* Base-2 Exponential */
+  OTI_exp2,
   /* Natural Logarithm */
   OTI_log,
   /* Base-10 Logarithm */
@@ -263,6 +267,8 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define sin_optab (optab_table[OTI_sin])
 #define cos_optab (optab_table[OTI_cos])
 #define exp_optab (optab_table[OTI_exp])
+#define exp10_optab (optab_table[OTI_exp10])
+#define exp2_optab (optab_table[OTI_exp2])
 #define log_optab (optab_table[OTI_log])
 #define log10_optab (optab_table[OTI_log10])
 #define log2_optab (optab_table[OTI_log2])
