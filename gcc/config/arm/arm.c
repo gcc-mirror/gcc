@@ -168,6 +168,7 @@ static tree arm_cxx_guard_type (void);
 static bool arm_cxx_guard_mask_bit (void);
 static tree arm_get_cookie_size (tree);
 static bool arm_cookie_has_size (void);
+static bool arm_cxx_cdtor_returns_this (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -281,6 +282,9 @@ static bool arm_cookie_has_size (void);
 
 #undef TARGET_CXX_COOKIE_HAS_SIZE
 #define TARGET_CXX_COOKIE_HAS_SIZE arm_cookie_has_size
+
+#undef TARGET_CXX_CDTOR_RETURNS_THIS
+#define TARGET_CXX_CDTOR_RETURNS_THIS arm_cxx_cdtor_returns_this
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14575,6 +14579,16 @@ arm_get_cookie_size (tree type)
 
 static bool
 arm_cookie_has_size (void)
+{
+  return TARGET_AAPCS_BASED;
+}
+
+
+/* The EABI says constructors and destructors should return a pointer to
+   the object constructed/destroyed.  */
+
+static bool
+arm_cxx_cdtor_returns_this (void)
 {
   return TARGET_AAPCS_BASED;
 }

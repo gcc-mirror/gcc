@@ -929,13 +929,24 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 {
   tree fn;
   tree parameter_types = void_list_node;
-  tree return_type = void_type_node;
+  tree return_type;
   tree fn_type;
   tree raises = empty_except_spec;
   tree rhs_parm_type = NULL_TREE;
   tree name;
 
   type = TYPE_MAIN_VARIANT (type);
+
+  if (targetm.cxx.cdtor_returns_this () && !TYPE_FOR_JAVA (type))
+    {
+      if (kind == sfk_destructor)
+	/* See comment in check_special_function_return_type.  */
+	return_type = build_pointer_type (void_type_node);
+      else
+	return_type = build_pointer_type (type);
+    }
+  else
+    return_type = void_type_node;
 
   switch (kind)
     {
