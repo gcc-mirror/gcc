@@ -6,8 +6,6 @@
 // Subject: elide-constructors (aka return value optimization)
 // Date: Wed, 10 Nov 93 14:43:54 CST
 
-// execution test - XFAIL *-*-*
-
 #include <stdio.h>
 #include <stdlib.h>
 
