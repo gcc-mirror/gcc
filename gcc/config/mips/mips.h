@@ -2236,8 +2236,9 @@ typedef struct mips_args {
 	     MIPS assembler does not have syntax to generate the	\
 	     appropriate relocation.  */				\
 									\
-	  else if (!TARGET_DEBUG_A_MODE					\
-		   && CONSTANT_ADDRESS_P (xplus1))			\
+	  /* Also accept CONST_INT addresses here, so no else.  */	\
+	  if (!TARGET_DEBUG_A_MODE					\
+	      && CONSTANT_ADDRESS_P (xplus1))				\
 	    goto ADDR;							\
 	}								\
     }									\
@@ -2250,11 +2251,23 @@ typedef struct mips_args {
 /* A C expression that is 1 if the RTX X is a constant which is a
    valid address.  This is defined to be the same as `CONSTANT_P (X)',
    but rejecting CONST_DOUBLE.  */
+/* When pic, we must reject addresses of the form symbol+large int.
+   This is because an instruction `sw $4,s+70000' needs to be converted
+   by the assembler to `lw $at,s($gp);sw $4,70000($at)'.  Normally the
+   assembler would use $at as a temp to load in the large offset.  In this
+   case $at is already in use.  We convert such problem addresses to
+   `la $5,s;sw $4,70000($5)' via LEGITIMIZE_ADDRESS.  */
 #define CONSTANT_ADDRESS_P(X)						\
   ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
+    || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
+    || (GET_CODE (X) == CONST						\
+	&& ! (flag_pic && pic_address_needs_scratch (X))))		\
+   && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
 
+/* Define this, so that when PIC, reload won't try to reload invalid
+   addresses which require two reload registers.  */
+
+#define LEGITIMATE_PIC_OPERAND_P(X)  (! pic_address_needs_scratch (X))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
@@ -2300,7 +2313,11 @@ typedef struct mips_args {
 	Z = X + Y
 	memory (Z + (<large int> & 0x7fff));
 
-   This is for CSE to find several similar references, and only use one Z.  */
+   This is for CSE to find several similar references, and only use one Z.
+
+   When PIC, convert addresses of the form memory (symbol+large int) to
+   memory (reg+large int).  */
+   
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
 {									\
@@ -2344,6 +2361,16 @@ typedef struct mips_args {
 		       GEN_INT (INTVAL (xplus1) & 0x7fff));		\
 	  goto WIN;							\
 	}								\
+    }									\
+									\
+  if (flag_pic && pic_address_needs_scratch (xinsn))			\
+    {									\
+      rtx ptr_reg = gen_reg_rtx (Pmode);				\
+									\
+      emit_move_insn (ptr_reg, XEXP (XEXP (xinsn, 0), 0));		\
+									\
+      X = gen_rtx (PLUS, Pmode, ptr_reg, XEXP (XEXP (xinsn, 0), 1));	\
+      goto WIN;								\
     }									\
 									\
   if (TARGET_DEBUG_B_MODE)						\
@@ -3333,13 +3360,12 @@ do {									\
 	   VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   (We  do not use such vectors,
-   but we must define this macro anyway.)  */
+   This is used for pc-relative code (e.g. when TARGET_ABICALLS).  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, VALUE, REL)			\
-  fprintf (STREAM, "\t%s\t$L%d-$L%d\n",					\
-	   TARGET_LONG64 ? ".dword" : ".word",				\
-	   VALUE, REL)
+  fprintf (STREAM, "\t%s\t$L%d\n",					\
+	   TARGET_LONG64 ? ".gpdword" : ".gpword",			\
+	   VALUE)
 
 /* This is how to output an assembler line
    that says to advance the location counter
