@@ -34,6 +34,17 @@ int main ()
   strcpy (dst, s1); d2 = dst;
   if (strspn (++d2+5, "") != 0 || d2 != dst+1)
     abort();
+  if (strspn ("", s1) != 0)
+    abort();
+  strcpy (dst, s1);
+  if (strspn ("", dst) != 0)
+    abort();
+  strcpy (dst, s1); d2 = dst;
+  if (strspn ("", ++d2) != 0 || d2 != dst+1)
+    abort();
+  strcpy (dst, s1); d2 = dst;
+  if (strspn ("", ++d2+5) != 0 || d2 != dst+1)
+    abort();
 
   return 0;
 }

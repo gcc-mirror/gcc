@@ -1,3 +1,8 @@
+2000-12-03  Kaveh R. Ghazi  <ghazi@teal.rutgers.edu>
+
+	* gcc.c-torture/execute/string-opt-11.c: Add more strspn checks.
+	* gcc.c-torture/execute/string-opt-12.c: Add more strcspn checks.
+
 2000-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/20001203-1.c: New test.
