@@ -3,6 +3,11 @@
 	* reload1.c (delete_output_reload): Call eliminate_regs on substed.
 	(reload_as_needed): Call update_eliminable_offsets a bit later.
 
+	* expr.c (protect_from_queue): Protect against subsequent calls to
+	emit_queue.
+	(expand_expr, case ADDR_EXPR): Prevent protect_from_queue from being
+	too clever.
+
 2001-05-17  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* dbxout.c (dbxout_symbol_location): For CONCAT, skip types not

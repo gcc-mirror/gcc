@@ -408,6 +408,9 @@ protect_from_queue (x, modify)
 				QUEUED_INSN (y));
 	      return temp;
 	    }
+	  /* Copy the address into a pseudo, so that the returned value
+	     remains correct across calls to emit_queue.  */
+	  XEXP (new, 0) = copy_to_reg (XEXP (new, 0));
 	  return new;
 	}
       /* Otherwise, recursively protect the subexpressions of all
@@ -434,9 +437,11 @@ protect_from_queue (x, modify)
 	}
       return x;
     }
-  /* If the increment has not happened, use the variable itself.  */
+  /* If the increment has not happened, use the variable itself.  Copy it
+     into a new pseudo so that the value remains correct across calls to
+     emit_queue.  */
   if (QUEUED_INSN (x) == 0)
-    return QUEUED_VAR (x);
+    return copy_to_reg (QUEUED_VAR (x));
   /* If the increment has happened and a pre-increment copy exists,
      use that copy.  */
   if (QUEUED_COPY (x) != 0)
@@ -8478,7 +8483,9 @@ expand_expr (exp, target, tmode, modifier)
 	  if (ignore)
 	    return op0;
 
-	  op0 = protect_from_queue (op0, 0);
+	  /* Pass 1 for MODIFY, so that protect_from_queue doesn't get
+	     clever and returns a REG when given a MEM.  */
+	  op0 = protect_from_queue (op0, 1);
 
 	  /* We would like the object in memory.  If it is a constant, we can
 	     have it be statically allocated into memory.  For a non-constant,
