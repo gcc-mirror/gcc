@@ -1,3 +1,8 @@
+1999-04-01  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/genfixes:  new shell script that runs autogen
+	to create the generated files.
+
 1999-04-01  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (cppmain$(exeext)): Depend on intl.o.  Link in intl.o.
@@ -49,6 +54,7 @@ Wed Mar 31 12:10:00 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* inclhack.def (several): added spaces in tests to ensure
 	correct shell syntax.  Added c_asm.h fix from fixincludes.
+	Also corrected the corrected fix to C++ comments :-}
 
 	* inclhack.tpl: changed method of traversing symlink trees
 	so that file name matching will work correctly.
