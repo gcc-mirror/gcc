@@ -145,7 +145,9 @@ compilation is specified by a string called a "spec".  */
 #endif
 
 /* By default, the suffix for object files is ".o". */
-#ifndef OBJECT_SUFFIX
+#ifdef OBJECT_SUFFIX
+#define HAVE_OBJECT_SUFFIX
+#else
 #define OBJECT_SUFFIX ".o"
 #endif
 
@@ -2924,6 +2926,23 @@ process_command (argc, argv)
 	}
       else
 	{
+#ifdef HAVE_OBJECT_SUFFIX
+	  /* Convert x.o to x.obj if OBJECT_SUFFIX is ".obj".  */
+	  if (strlen (argv[i]) > 2
+	      && argv[i][strlen (argv[i]) - 2] == '.'
+	      && argv[i][strlen (argv[i]) - 1] == 'o')
+	    {
+	      int j;
+
+	      for (j = 0; j < strlen (argv[i]) - 2; j++)
+		obstack_1grow (&obstack, argv[i][j]);
+
+	      obstack_grow (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
+	      obstack_1grow (&obstack, 0);
+	      argv[i] = obstack_finish (&obstack);
+	    }
+#endif
+
 	  if (strcmp (argv[i], "-") != 0 && access (argv[i], R_OK) < 0)
 	    {
 	      perror_with_name (argv[i]);
@@ -3060,7 +3079,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	if (argbuf_index > 0 && !strcmp (argbuf[argbuf_index - 1], "|"))
 	  {
-	    int i;
 	    for (i = 0; i < n_switches; i++)
 	      if (!strcmp (switches[i].part1, "pipe"))
 		break;
@@ -3365,11 +3383,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case 'o':
-	    {
-	      register int f;
-	      for (f = 0; f < n_infiles; f++)
-		store_arg (outfiles[f], 0, 0);
-	    }
+	    for (i = 0; i < n_infiles; i++)
+	      store_arg (outfiles[i], 0, 0);
 	    break;
 
 	  case 'O':
