@@ -2858,16 +2858,20 @@
 	   && GET_CODE (XEXP (XEXP (operands[1], 0), 1)) == CONST_INT))"
   "adr%?\\t%0, %a1")
 
-/* When generating pic, we need to load the symbol offset into a register.
-   So that the optimizer does not confuse this with a normal symbol load
-   we use an unspec.  The offset will be loaded from a constant pool entry,
-   since that is the only type of relocation we can use.  */
+;; When generating pic, we need to load the symbol offset into a register.
+;; So that the optimizer does not confuse this with a normal symbol load
+;; we use an unspec.  The offset will be loaded from a constant pool entry,
+;; since that is the only type of relocation we can use.
+
+;; The rather odd constraints on the following are to force reload to leave
+;; the insn alone, and to force the minipool generation pass to then move
+;; the GOT symbol to memory.
 
 (define_insn "pic_load_addr"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec:SI [(match_operand 1 "" "")] 3))]
+	(unspec:SI [(match_operand:SI 1 "" "mX")] 3))]
   "flag_pic"
-  "ldr%?\\t%0, %a1"
+  "ldr%?\\t%0, %1"
  [(set_attr "type" "load")
   (set_attr "pool_range" "4096")])
 
