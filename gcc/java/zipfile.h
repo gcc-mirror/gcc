@@ -22,11 +22,15 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 struct ZipFile {
+  char *name;
   int fd;
   long size;
   long count;
   long dir_size;
   char *central_directory;
+
+  /* Chain together in SeenZipFiles. */
+  struct ZipFile *next;
 };
 
 typedef struct ZipFile ZipFile;
@@ -38,6 +42,7 @@ struct ZipDirectory {
   unsigned size; /* length of file */
   unsigned uncompressed_size; /* length of uncompressed data */
   unsigned filestart;  /* start of file in archive */
+  ZipFile *zipf;
   int filename_length;
   /* char mid_padding[...]; */
   /* char filename[filename_length]; */
@@ -46,13 +51,7 @@ struct ZipDirectory {
 
 typedef struct ZipDirectory ZipDirectory;
 
-struct ZipFileCache {
-  struct ZipFile z;
-  struct ZipFileCache *next;
-  char *name;
-};
-
-extern struct ZipFileCache *SeenZipFiles;
+extern struct ZipFile *SeenZipFiles;
 
 #define ZIPDIR_FILENAME(ZIPD) ((char*)(ZIPD)+(ZIPD)->filename_offset)
 #define ZIPDIR_NEXT(ZIPD) \
@@ -62,6 +61,7 @@ extern struct ZipFileCache *SeenZipFiles;
 extern ZipFile * opendir_in_zip PARAMS ((const char *, int));
 extern int read_zip_archive PARAMS ((ZipFile *));
 #ifdef JCF_ZIP
+extern int read_zip_member PARAMS ((JCF*, ZipDirectory*, ZipFile *));
 extern int open_in_zip PARAMS ((struct JCF *, const char *,
 			       const char *, int));
 #endif

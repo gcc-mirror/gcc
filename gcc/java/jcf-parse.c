@@ -91,7 +91,6 @@ static void process_zip_dir PARAMS ((FILE *));
 static void parse_source_file PARAMS ((tree, FILE *));
 static void jcf_parse_source PARAMS ((void));
 static int jcf_figure_file_type PARAMS ((JCF *));
-static int find_in_current_zip PARAMS ((const char *, struct JCF **));
 static void parse_class_file PARAMS ((void));
 static void set_source_filename PARAMS ((JCF *, int));
 static int predefined_filename_p PARAMS ((tree));
@@ -509,27 +508,29 @@ read_class (name)
      tree name;
 {
   JCF this_jcf, *jcf;
+  tree icv, class;
   tree save_current_class = current_class;
   const char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
-  long saved_pos = 0;
-  if (current_jcf->read_state)
-    saved_pos = ftell (current_jcf->read_state);
 
-  /* Search in current zip first.  */
-  if (find_in_current_zip (IDENTIFIER_POINTER (name), &jcf) == 0)
+  if ((icv = IDENTIFIER_CLASS_VALUE (name)) != NULL_TREE)
     {
+      class = TREE_TYPE (icv);
+      jcf = TYPE_JCF (class);
+    }
+  else
+    jcf = NULL;
+
+  if (jcf == NULL)
+    {
+      this_jcf.zipd = NULL;
+      jcf = &this_jcf;
       if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
 		      &this_jcf, 1) == 0)
 	return 0;
-      else
-	{
-	  this_jcf.seen_in_zip = 0;
-	  current_jcf = &this_jcf;
-	}
     }
-  else
-    current_jcf = jcf;
+
+  current_jcf = jcf;
 
   if (current_jcf->java_source)
     jcf_parse_source ();
@@ -537,19 +538,19 @@ read_class (name)
     java_parser_context_save_global ();
     java_push_parser_context ();
     input_filename = current_jcf->filename;
+    if (JCF_SEEN_IN_ZIP (current_jcf))
+      read_zip_member(current_jcf, current_jcf->zipd, current_jcf->zipd->zipf);
     jcf_parse (current_jcf);
     java_pop_parser_context (0);
     java_parser_context_restore_global ();
   }
 
-  if (!current_jcf->seen_in_zip)
+  if (! JCF_SEEN_IN_ZIP (current_jcf))
     JCF_FINISH (current_jcf);
 
   current_class = save_current_class;
   input_filename = save_input_filename;
   current_jcf = save_current_jcf;
-  if (current_jcf->read_state)
-    fseek (current_jcf->read_state, saved_pos, SEEK_SET);
   return 1;
 }
 
@@ -673,7 +674,7 @@ jcf_parse (jcf)
     all_class_list = tree_cons (NULL_TREE, 
 				TYPE_NAME (current_class), all_class_list );
 
-  /* And if we came accross inner classes, load them now. */
+  /* And if we came across inner classes, load them now. */
   for (current = DECL_INNER_CLASS_LIST (TYPE_NAME (current_class)); current;
        current = TREE_CHAIN (current))
     load_class (DECL_NAME (TREE_PURPOSE (current)), 1);
@@ -957,7 +958,7 @@ yyparse ()
   return 0;
 }
 
-static struct ZipFileCache *localToFile;
+static struct ZipFile *localToFile;
 
 /* Process all class entries found in the zip file.  */
 static void
@@ -966,8 +967,8 @@ parse_zip_file_entries (void)
   struct ZipDirectory *zdir;
   int i;
 
-  for (i = 0, zdir = (ZipDirectory *)localToFile->z.central_directory;
-       i < localToFile->z.count; i++, zdir = ZIPDIR_NEXT (zdir))
+  for (i = 0, zdir = (ZipDirectory *)localToFile->central_directory;
+       i < localToFile->count; i++, zdir = ZIPDIR_NEXT (zdir))
     {
       tree class;
       
@@ -981,7 +982,7 @@ parse_zip_file_entries (void)
 
       if ( !CLASS_LOADED_P (class))
 	{
-          fseek (current_jcf->read_state, current_jcf->zip_offset, SEEK_SET);
+	  read_zip_member(current_jcf, zdir, localToFile);
 	  jcf_parse (current_jcf);
 	}
 
@@ -1007,8 +1008,8 @@ process_zip_dir (FILE *finput)
   int i;
   ZipDirectory *zdir;
 
-  for (i = 0, zdir = (ZipDirectory *)localToFile->z.central_directory;
-       i < localToFile->z.count; i++, zdir = ZIPDIR_NEXT (zdir))
+  for (i = 0, zdir = (ZipDirectory *)localToFile->central_directory;
+       i < localToFile->count; i++, zdir = ZIPDIR_NEXT (zdir))
     {
       char *class_name, *file_name, *class_name_in_zip_dir;
       tree class;
@@ -1048,40 +1049,13 @@ process_zip_dir (FILE *finput)
 
       jcf->read_state  = finput;
       jcf->filbuf      = jcf_filbuf_from_stdio;
-      jcf->seen_in_zip = 1;
       jcf->java_source = 0;
-      jcf->zip_offset  = zdir->filestart;
       jcf->classname   = class_name;
       jcf->filename    = file_name;
+      jcf->zipd        = zdir;
 
       TYPE_JCF (class) = jcf;
     }
-}
-
-/* Lookup class NAME and figure whether is a class already found in the current
-   zip file.  */
-static int
-DEFUN(find_in_current_zip, (name, length, jcf),
-      const char *name AND JCF **jcf)
-{
-  JCF *local_jcf;
-  tree class_name = maybe_get_identifier (name), class, icv;
-
-  if (!class_name)
-    return 0;
-
-  if (!(icv = IDENTIFIER_CLASS_VALUE (class_name)))
-    return 0;
-
-  class = TREE_TYPE (icv);
-
-  /* Doesn't have jcf specific info ? It's not ours */
-  if (!TYPE_JCF (class))
-    return 0;
-
-  *jcf = local_jcf = TYPE_JCF (class);
-  fseek (local_jcf->read_state, local_jcf->zip_offset, SEEK_SET);
-  return 1;
 }
 
 /* Figure what kind of file we're dealing with */
@@ -1105,8 +1079,7 @@ DEFUN(jcf_figure_file_type, (jcf),
   if (magic ==  (JCF_u4)ZIPMAGIC
       && !open_in_zip (jcf, input_filename, NULL, 0))
     {
-      localToFile = ALLOC (sizeof (struct ZipFileCache));
-      memcpy (localToFile, SeenZipFiles, sizeof (struct ZipFileCache));
+      localToFile = SeenZipFiles;
       /* Register all the class defined there.  */
       process_zip_dir (jcf->read_state);
       return JCF_ZIP;
