@@ -15,7 +15,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* Written by Paul Eggert and Jim Meyering.  */
+/* Written by Paul Eggert.  */
 
 #if HAVE_CONFIG_H
 # include <config.h>
@@ -30,26 +30,30 @@
 #endif
 
 #if HAVE_SYS_SYSMP_H
-#include <sys/sysmp.h>
+# include <sys/sysmp.h>
 #endif
 
 #if HAVE_SYS_SYSINFO_H && HAVE_MACHINE_HAL_SYSINFO_H
-#  include <sys/sysinfo.h>
-#  include <machine/hal_sysinfo.h>
+# include <sys/sysinfo.h>
+# include <machine/hal_sysinfo.h>
 #endif
 
 #if HAVE_SYS_TABLE_H
-#  include <sys/table.h>
+# include <sys/table.h>
 #endif
 
 #include <sys/types.h>
 
 #if HAVE_SYS_PARAM_H
-#include <sys/param.h>
+# include <sys/param.h>
 #endif
 
 #if HAVE_SYS_SYSCTL_H
-#include <sys/sysctl.h>
+# include <sys/sysctl.h>
+#endif
+
+#if HAVE_SYS_SYSTEMCFG_H
+# include <sys/systemcfg.h>
 #endif
 
 #include "libiberty.h"
@@ -83,7 +87,7 @@ physmem_total ()
 #if HAVE_SYSMP && defined MP_SAGET && defined MPSA_RMINFO && defined _SC_PAGESIZE
   { /* This works on irix6. */
     struct rminfo realmem;
-    if (sysmp(MP_SAGET, MPSA_RMINFO, &realmem, sizeof(realmem)) == 0)
+    if (sysmp (MP_SAGET, MPSA_RMINFO, &realmem, sizeof realmem) == 0)
       {
 	double pagesize = sysconf (_SC_PAGESIZE);
 	double pages = realmem.physmem;
@@ -118,6 +122,11 @@ physmem_total ()
 	&& len == sizeof (physmem))
       return (double)physmem;
   }
+#endif
+
+#if HAVE__SYSTEM_CONFIGURATION
+  /* This works on AIX.  */
+  return _system_configuration.physmem;
 #endif
 
   /* Return 0 if we can't determine the value.  */
@@ -155,7 +164,7 @@ physmem_available ()
 #if HAVE_SYSMP && defined MP_SAGET && defined MPSA_RMINFO && defined _SC_PAGESIZE
   { /* This works on irix6. */
     struct rminfo realmem;
-    if (sysmp(MP_SAGET, MPSA_RMINFO, &realmem, sizeof(realmem)) == 0)
+    if (sysmp (MP_SAGET, MPSA_RMINFO, &realmem, sizeof realmem) == 0)
       {
 	double pagesize = sysconf (_SC_PAGESIZE);
 	double pages = realmem.availrmem;
