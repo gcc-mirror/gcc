@@ -3238,9 +3238,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	 tree) and ensure that any variable used as a prefix is marked
 	 addressable.  */
       for (x = TREE_OPERAND (t, 0);
-	   (handled_component_p (x)
-	    || TREE_CODE (x) == REALPART_EXPR
-	    || TREE_CODE (x) == IMAGPART_EXPR);
+	   handled_component_p (x);
 	   x = TREE_OPERAND (x, 0))
 	;
 
@@ -3288,8 +3286,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	 that determine where to reference is either a constant or a variable,
 	 verify that the base is valid, and then show we've already checked
 	 the subtrees.  */
-      while (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR
-	     || handled_component_p (t))
+      while (handled_component_p (t))
 	{
 	  if (TREE_CODE (t) == COMPONENT_REF && TREE_OPERAND (t, 2))
 	    CHECK_OP (2, "Invalid COMPONENT_REF offset operator");

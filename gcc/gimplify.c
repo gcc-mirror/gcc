@@ -1427,12 +1427,8 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
      it VARRAY_TREE.  */
   VARRAY_GENERIC_PTR_NOGC_INIT (stack, 10, "stack");
 
-  /* We can either handle REALPART_EXPR, IMAGEPART_EXPR anything that
-     handled_components can deal with.  */
-  for (p = expr_p;
-       (handled_component_p (*p)
-	|| TREE_CODE (*p) == REALPART_EXPR || TREE_CODE (*p) == IMAGPART_EXPR);
-       p = &TREE_OPERAND (*p, 0))
+  /* We can handle anything that get_inner_reference can deal with.  */
+  for (p = expr_p; handled_component_p (*p); p = &TREE_OPERAND (*p, 0))
     VARRAY_PUSH_GENERIC_PTR_NOGC (stack, *p);
 
   gcc_assert (VARRAY_ACTIVE_SIZE (stack));

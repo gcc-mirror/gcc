@@ -5311,65 +5311,90 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      and find the ultimate containing object.  */
   while (1)
     {
-      if (TREE_CODE (exp) == BIT_FIELD_REF)
-	bit_offset = size_binop (PLUS_EXPR, bit_offset, TREE_OPERAND (exp, 2));
-      else if (TREE_CODE (exp) == COMPONENT_REF)
+      switch (TREE_CODE (exp))
 	{
-	  tree field = TREE_OPERAND (exp, 1);
-	  tree this_offset = component_ref_field_offset (exp);
-
-	  /* If this field hasn't been filled in yet, don't go
-	     past it.  This should only happen when folding expressions
-	     made during type construction.  */
-	  if (this_offset == 0)
-	    break;
-
-	  offset = size_binop (PLUS_EXPR, offset, this_offset);
+	case BIT_FIELD_REF:
 	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
-				   DECL_FIELD_BIT_OFFSET (field));
+				   TREE_OPERAND (exp, 2));
+	  break;
 
-	  /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
+	case COMPONENT_REF:
+	  {
+	    tree field = TREE_OPERAND (exp, 1);
+	    tree this_offset = component_ref_field_offset (exp);
+
+	    /* If this field hasn't been filled in yet, don't go past it.
+	       This should only happen when folding expressions made during
+	       type construction.  */
+	    if (this_offset == 0)
+	      break;
+
+	    offset = size_binop (PLUS_EXPR, offset, this_offset);
+	    bit_offset = size_binop (PLUS_EXPR, bit_offset,
+				     DECL_FIELD_BIT_OFFSET (field));
+
+	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
+	  }
+	  break;
+
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  {
+	    tree index = TREE_OPERAND (exp, 1);
+	    tree low_bound = array_ref_low_bound (exp);
+	    tree unit_size = array_ref_element_size (exp);
+
+	    /* We assume all arrays have sizes that are a multiple of a byte.
+	       First subtract the lower bound, if any, in the type of the
+	       index, then convert to sizetype and multiply by the size of
+	       the array element.  */
+	    if (! integer_zerop (low_bound))
+	      index = fold (build2 (MINUS_EXPR, TREE_TYPE (index),
+				    index, low_bound));
+
+	    offset = size_binop (PLUS_EXPR, offset,
+			         size_binop (MULT_EXPR,
+					     convert (sizetype, index),
+					     unit_size));
+	  }
+	  break;
+
+	case REALPART_EXPR:
+	  bit_offset = bitsize_zero_node;
+	  break;
+
+	case IMAGPART_EXPR:
+	  bit_offset = build_int_cst (bitsizetype, *pbitsize);
+	  break;
+
+	/* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
+	   conversions that don't change the mode, and all view conversions
+	   except those that need to "step up" the alignment.  */
+
+	case NON_LVALUE_EXPR:
+	  break;
+
+	case NOP_EXPR:
+	case CONVERT_EXPR:
+	  if (TYPE_MODE (TREE_TYPE (exp))
+	      != TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	    goto done;
+	  break;
+
+	case VIEW_CONVERT_EXPR:
+	  if ((TYPE_ALIGN (TREE_TYPE (exp))
+	       > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	      && STRICT_ALIGNMENT
+	      && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
+		  < BIGGEST_ALIGNMENT)
+	      && (TYPE_ALIGN_OK (TREE_TYPE (exp))
+		  || TYPE_ALIGN_OK (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+	    goto done;
+	  break;
+
+	default:
+	  goto done;
 	}
-
-      else if (TREE_CODE (exp) == ARRAY_REF
-	       || TREE_CODE (exp) == ARRAY_RANGE_REF)
-	{
-	  tree index = TREE_OPERAND (exp, 1);
-	  tree low_bound = array_ref_low_bound (exp);
-	  tree unit_size = array_ref_element_size (exp);
-
-	  /* We assume all arrays have sizes that are a multiple of a byte.
-	     First subtract the lower bound, if any, in the type of the
-	     index, then convert to sizetype and multiply by the size of the
-	     array element.  */
-	  if (! integer_zerop (low_bound))
-	    index = fold (build2 (MINUS_EXPR, TREE_TYPE (index),
-				  index, low_bound));
-
-	  offset = size_binop (PLUS_EXPR, offset,
-			       size_binop (MULT_EXPR,
-					   convert (sizetype, index),
-					   unit_size));
-	}
-
-      /* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
-	 conversions that don't change the mode, and all view conversions
-	 except those that need to "step up" the alignment.  */
-      else if (TREE_CODE (exp) != NON_LVALUE_EXPR
-	       && ! (TREE_CODE (exp) == VIEW_CONVERT_EXPR
-		     && ! ((TYPE_ALIGN (TREE_TYPE (exp))
-			    > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
-			   && STRICT_ALIGNMENT
-			   && (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
-			       < BIGGEST_ALIGNMENT)
-			   && (TYPE_ALIGN_OK (TREE_TYPE (exp))
-			       || TYPE_ALIGN_OK (TREE_TYPE
-						 (TREE_OPERAND (exp, 0))))))
-	       && ! ((TREE_CODE (exp) == NOP_EXPR
-		      || TREE_CODE (exp) == CONVERT_EXPR)
-		     && (TYPE_MODE (TREE_TYPE (exp))
-			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
-	break;
 
       /* If any reference in the chain is volatile, the effect is volatile.  */
       if (TREE_THIS_VOLATILE (exp))
@@ -5377,6 +5402,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 
       exp = TREE_OPERAND (exp, 0);
     }
+ done:
 
   /* If OFFSET is constant, see if we can return the whole thing as a
      constant bit position.  Otherwise, split it up.  */
@@ -5499,6 +5525,8 @@ handled_component_p (tree t)
     case ARRAY_RANGE_REF:
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
       return 1;
 
     /* ??? Sure they are handled, but get_inner_reference may return

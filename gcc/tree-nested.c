@@ -155,8 +155,7 @@ build_addr (tree exp)
 {
   tree base = exp;
 
-  while (TREE_CODE (base) == REALPART_EXPR || TREE_CODE (base) == IMAGPART_EXPR
-	 || handled_component_p (base))
+  while (handled_component_p (base))
     base = TREE_OPERAND (base, 0);
 
   if (DECL_P (base))
@@ -849,9 +848,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	 anything that describes the references.  Otherwise, we lose track
 	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
       wi->val_only = true;
-      for (; handled_component_p (t)
-	   || TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR;
-	   tp = &TREE_OPERAND (t, 0), t = *tp)
+      for (; handled_component_p (t); tp = &TREE_OPERAND (t, 0), t = *tp)
 	{
 	  if (TREE_CODE (t) == COMPONENT_REF)
 	    walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference, wi,
@@ -966,9 +963,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	 anything that describes the references.  Otherwise, we lose track
 	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
       wi->val_only = true;
-      for (; handled_component_p (t)
-	   || TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR;
-	   tp = &TREE_OPERAND (t, 0), t = *tp)
+      for (; handled_component_p (t); tp = &TREE_OPERAND (t, 0), t = *tp)
 	{
 	  if (TREE_CODE (t) == COMPONENT_REF)
 	    walk_tree (&TREE_OPERAND (t, 2), convert_local_reference, wi,

@@ -384,30 +384,36 @@ find_base_decl (tree t)
 int
 can_address_p (tree t)
 {
-  /* If we're at the end, it is vacuously addressable.  */
-  if (! handled_component_p (t))
-    return 1;
+  while (1)
+    {
+      /* If we're at the end, it is vacuously addressable.  */
+      if (!handled_component_p (t))
+	return true;
 
-  /* Bitfields are never addressable.  */
-  else if (TREE_CODE (t) == BIT_FIELD_REF)
-    return 0;
+      switch (TREE_CODE (t))
+	{
+	case COMPONENT_REF:
+	  if (DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
+	    return false;
+	  break;
 
-  /* Fields are addressable unless they are marked as nonaddressable or
-     the containing type has alias set 0.  */
-  else if (TREE_CODE (t) == COMPONENT_REF
-	   && ! DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1))
-	   && get_alias_set (TREE_TYPE (TREE_OPERAND (t, 0))) != 0
-	   && can_address_p (TREE_OPERAND (t, 0)))
-    return 1;
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  if (TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0))))
+	    return false;
+	  break;
 
-  /* Likewise for arrays.  */
-  else if ((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-	   && ! TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0)))
-	   && get_alias_set (TREE_TYPE (TREE_OPERAND (t, 0))) != 0
-	   && can_address_p (TREE_OPERAND (t, 0)))
-    return 1;
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
+	  break;
 
-  return 0;
+	default:
+	  /* Bitfields and casts are never addressable.  */
+	  return false;
+	}
+
+      t = TREE_OPERAND (t, 0);
+    }
 }
 
 /* Return the alias set for T, which may be either a type or an
