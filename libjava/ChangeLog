@@ -1,3 +1,8 @@
+2001-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/List.java: Wrote.
+	* java/awt/Dialog.java: Wrote.
+
 2001-04-20  Warren Levy  <warrenl@redhat.com>
 
 	* java/lang/natSystem.cc (getSystemTimeZone): Adjust for DST.
