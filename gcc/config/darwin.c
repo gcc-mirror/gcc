@@ -1329,7 +1329,7 @@ darwin_assemble_visibility (tree decl, int vis)
       fputs ("\n", asm_out_file);
     }
   else
-    warning ("internal and protected visibility attributes not supported"
+    warning ("internal and protected visibility attributes not supported "
 	     "in this configuration; ignored");
 }
 
