@@ -2154,12 +2154,20 @@ of @var{frameaddr}---that is, the stack frame address is also the
 address of the stack word that points to the previous frame.
 
 @findex SETUP_FRAME_ADDRESSES
-@item SETUP_FRAME_ADDRESSES ()
+@item SETUP_FRAME_ADDRESSES
 If defined, a C expression that produces the machine-specific code to
 setup the stack so that arbitrary frames can be accessed.  For example,
 on the Sparc, we must flush all of the register windows to the stack
-before we can access arbitrary stack frames.
-This macro will seldom need to be defined.
+before we can access arbitrary stack frames.  You will seldom need to
+define this macro.
+
+@findex BUILTIN_SETJMP_FRAME_VALUE
+@item BUILTIN_SETJMP_FRAME_VALUE
+If defined, a C expression that contains an rtx that is used to store
+the address of the current frame into the built in @code{setjmp} buffer.
+The default value, @code{virtual_stack_vars_rtx}, is correct for most
+machines.  One reason you may need to define this macro is if
+@code{hard_frame_pointer_rtx} is the appropriate value on your machine.
 
 @findex RETURN_ADDR_RTX
 @item RETURN_ADDR_RTX (@var{count}, @var{frameaddr})
