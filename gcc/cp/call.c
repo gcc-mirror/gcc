@@ -715,8 +715,8 @@ standard_conversion (tree to, tree from, tree expr)
 	}
       else
 	{
-	  to_pointee = to;
-	  from_pointee = from;
+	  to_pointee = TYPE_PTRMEM_POINTED_TO_TYPE (to);
+	  from_pointee = TYPE_PTRMEM_POINTED_TO_TYPE (from);
 	}
 
       if (same_type_p (from, to))

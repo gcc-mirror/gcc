@@ -1,3 +1,11 @@
+2003-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (standard_conversion): Tweak handling of
+	pointer-to-member types.
+	* pt.c (tsubst): Correctly qualify pointers-to-data member types.
+	* typeck.c (comp_ptr_ttypes_real): Check qualifiers on
+	pointer-to-data member types.
+
 2003-07-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parser.c (cp_parser_type_parameter): Reformat.

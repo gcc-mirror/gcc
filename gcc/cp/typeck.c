@@ -6013,9 +6013,9 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	return 0;
 
       if (TREE_CODE (from) == OFFSET_TYPE
-	  && same_type_p (TYPE_OFFSET_BASETYPE (from),
-			  TYPE_OFFSET_BASETYPE (to)))
-	  continue;
+	  && !same_type_p (TYPE_OFFSET_BASETYPE (from),
+			   TYPE_OFFSET_BASETYPE (to)))
+	return 0;
 
       /* Const and volatile mean something different for function types,
 	 so the usual checks are not appropriate.  */
@@ -6035,7 +6035,7 @@ comp_ptr_ttypes_real (tree to, tree from, int constp)
 	    constp &= TYPE_READONLY (to);
 	}
 
-      if (TREE_CODE (to) != POINTER_TYPE)
+      if (TREE_CODE (to) != POINTER_TYPE && !TYPE_PTR_TO_MEMBER_P (to))
 	return ((constp >= 0 || to_more_cv_qualified)
 		&& same_type_ignoring_top_level_qualifiers_p (to, from));
     }

@@ -6827,7 +6827,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    return build_ptrmemfunc_type (build_pointer_type (method_type));
 	  }
 	else
-	  return build_ptrmem_type (r, type);
+	  return cp_build_qualified_type_real (build_ptrmem_type (r, type),
+					       TYPE_QUALS (t),
+					       complain);
       }
     case FUNCTION_TYPE:
     case METHOD_TYPE:

@@ -1,3 +1,7 @@
+2003-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/ptrmem6.C: New test.
+
 2003-07-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/compile/zero-strct-2.c: New test.
