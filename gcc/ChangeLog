@@ -1,3 +1,11 @@
+2001-09-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (mask_operand): Use signed vars to avoid
+	compiler warnings.
+	(mask64_operand): Likewise.
+	(includes_rldic_lshift_p): Likewise.
+	(includes_rldicr_lshift_p): Likewise.
+
 2001-09-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (mask_operand): Rewrite without
