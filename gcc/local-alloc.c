@@ -67,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
+#include "insn-attr.h"
 #include "recog.h"
 #include "output.h"
 
@@ -1414,8 +1415,48 @@ block_alloc (b)
       q = qty_order[i];
       if (qty_phys_reg[q] < 0)
 	{
+#ifdef INSN_SCHEDULING
+	  /* These values represent the adjusted lifetime of a qty so
+	     that it conflicts with qtys which appear near the start/end
+	     of this qty's lifetime.
+
+	     The purpose behind extending the lifetime of this qty is to
+	     discourage the register allocator from creating false
+	     dependencies.
+ 
+	     The adjustment by the value +-3 indicates precisely that
+	     this qty conflicts with qtys in the instructions immediately
+	     before and after the lifetime of this qty.
+
+	     Experiments have shown that higher values tend to hurt
+	     overall code performance.
+
+	     If allocation using the extended lifetime fails we will try
+	     again with the qty's unadjusted lifetime.  */
+	  int fake_birth = MAX (0, qty_birth[q] - 3);
+	  int fake_death = MIN (insn_number * 2 + 1, qty_death[q] + 3);
+#endif
+
 	  if (N_REG_CLASSES > 1)
 	    {
+#ifdef INSN_SCHEDULING
+	      /* We try to avoid using hard registers allocated to qtys which
+		 are born immediately after this qty or die immediately before
+		 this qty.
+
+		 This optimization is only appropriate when we will run
+		 a scheduling pass after reload and we are not optimizing
+		 for code size.  */
+	      if (flag_schedule_insns_after_reload && !optimize_size)
+		{
+		
+		  qty_phys_reg[q] = find_free_reg (qty_min_class[q], 
+						   qty_mode[q], q, 0, 0,
+						   fake_birth, fake_death);
+		  if (qty_phys_reg[q] >= 0)
+		    continue;
+		}
+#endif
 	      qty_phys_reg[q] = find_free_reg (qty_min_class[q], 
 					       qty_mode[q], q, 0, 0,
 					       qty_birth[q], qty_death[q]);
@@ -1423,6 +1464,14 @@ block_alloc (b)
 		continue;
 	    }
 
+#ifdef INSN_SCHEDULING
+	  /* Similarly, avoid false dependencies.  */
+	  if (flag_schedule_insns_after_reload && !optimize_size
+	      && qty_alternate_class[q] != NO_REGS)
+	    qty_phys_reg[q] = find_free_reg (qty_alternate_class[q],
+					     qty_mode[q], q, 0, 0,
+					     fake_birth, fake_death);
+#endif
 	  if (qty_alternate_class[q] != NO_REGS)
 	    qty_phys_reg[q] = find_free_reg (qty_alternate_class[q],
 					     qty_mode[q], q, 0, 0,

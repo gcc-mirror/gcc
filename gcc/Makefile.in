@@ -324,10 +324,8 @@ LIBGCC2 = libgcc2.a
 # we use this here because that should be enough, and also
 # so that -g1 will be tested.
 #
-# -fexceptions is necessary for eh.o now that the exceptions are
-# the default for g++ only.
 LIBGCC2_DEBUG_CFLAGS = -g1
-LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED -fexceptions @inhibit_libc@ 
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED @inhibit_libc@ 
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -Iinclude
@@ -689,7 +687,9 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _fixtfdi _fixunstfdi _floatditf \
     __gcc_bcmp _varargs __dummy _eprintf \
     _bb _shtab _clear_cache _trampoline __main _exit \
-    _ctors _eh  _pure
+    _ctors _pure
+
+LIB2FUNCS_EH = _eh
 
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
@@ -1016,6 +1016,15 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  echo $${name}; \
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	      $(srcdir)/libgcc2.c -o $${name}$(objext); \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	  $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	  rm -f $${name}$(objext); \
+	done
+	for name in $(LIB2FUNCS_EH); \
+	do \
+	  echo $${name}; \
+	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -fexceptions $(INCLUDES) -c \
+	      -DL$${name} $(srcdir)/libgcc2.c -o $${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
@@ -1431,7 +1440,8 @@ regclass.o : regclass.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h flags.h \
    $(BASIC_BLOCK_H) regs.h insn-config.h $(RECOG_H) reload.h real.h toplev.h \
    output.h
 local-alloc.o : local-alloc.c $(CONFIG_H) system.h $(RTL_H) flags.h \
-   $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h $(RECOG_H) output.h
+   $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h $(RECOG_H) output.h \
+   insn-attr.h
 bitmap.o : bitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H) \
    regs.h
 global.o : global.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
