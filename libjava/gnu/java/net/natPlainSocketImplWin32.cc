@@ -67,7 +67,6 @@ gnu::java::net::PlainSocketImpl::bind (::java::net::InetAddress *host, jint lpor
   jbyteArray haddress = host->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
-  int i = 1;
 
   if (len == 4)
     {
@@ -92,9 +91,6 @@ gnu::java::net::PlainSocketImpl::bind (::java::net::InetAddress *host, jint lpor
 #endif
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
-
-  // Enable SO_REUSEADDR, so that servers can reuse ports left in TIME_WAIT.
-  ::setsockopt(native_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof(i));
 
   if (::bind (native_fd, ptr, len) != SOCKET_ERROR)
     {
