@@ -1,3 +1,22 @@
+Tue Apr 21 12:05:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c (block_move_loop): Test Pmode == DImode instead of
+	TARGET_MIPS64.
+	(expand_block_move, save_restore_insns): Likewise.
+	(function_prologue, mips_expand_prologue): Likewise.
+	(mips_expand_epilogue): Likewise.
+	* mips.h (POINTER_SIZE): Allow specific targets to override.
+	(Pmode): Allow specific targets to override.
+	(FUNCTION_PROFILER): Test Pmode == DImode instead of TARGET_MIPS64
+	(POINTER_BOUNDARY, FUNCTION_MODE): Likewise.
+	(TRAMPOLINE_TEMPLATE, TRAMPOLINE_SIZE): Likewise.
+	(TRAMPOLINE_ALIGNMENT, INITIALIZE_TRAMPOLINE): Likewise.
+	(CASE_VECTOR_MODE, ASM_OUTPUT_ADDR_VEC_ELT): Likewise.
+	(ASM_OUTPUT_ADDR_DIFF_ELT, SIZE_TYPE, PTRDIFF_TYPE): Likewise.
+	* mips.md (indirect, tablejump & casesi support): Test for
+	Pmode == DImode instead of TARGET_MIPS64.
+	(call patterns): Likewise.
+
 Tue Apr 21 09:43:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc/sendmsg.c: Define gen_rtx_MEM() to 1, as is already done

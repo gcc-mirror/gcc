@@ -8598,7 +8598,7 @@ move\\t%0,%z4\\n\\
       if (GET_CODE (dest) != REG || GET_MODE (dest) != Pmode)
 	operands[0] = copy_to_mode_reg (Pmode, dest);
 
-      if (!TARGET_LONG64)
+      if (!(Pmode == DImode))
 	emit_jump_insn (gen_indirect_jump_internal1 (operands[0]));
       else
 	emit_jump_insn (gen_indirect_jump_internal2 (operands[0]));
@@ -8609,7 +8609,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "indirect_jump_internal1"
   [(set (pc) (match_operand:SI 0 "register_operand" "d"))]
-  "!TARGET_LONG64"
+  "!(Pmode == DImode)"
   "%*j\\t%0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -8617,7 +8617,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "indirect_jump_internal2"
   [(set (pc) (match_operand:DI 0 "se_register_operand" "d"))]
-  "TARGET_LONG64"
+  "Pmode == DImode"
   "%*j\\t%0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -8638,7 +8638,7 @@ move\\t%0,%z4\\n\\
 	{
 	  if (GET_MODE (operands[0]) != HImode)
 	    abort ();
-	  if (!TARGET_LONG64)
+	  if (!(Pmode == DImode))
 	    emit_jump_insn (gen_tablejump_mips161 (operands[0], operands[1]));
 	  else
 	    emit_jump_insn (gen_tablejump_mips162 (operands[0], operands[1]));
@@ -8650,14 +8650,14 @@ move\\t%0,%z4\\n\\
 
       if (! flag_pic)
 	{
-	  if (!TARGET_LONG64)
+	  if (!(Pmode == DImode))
 	    emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
 	  else
 	    emit_jump_insn (gen_tablejump_internal2 (operands[0], operands[1]));
 	}
       else
 	{
-	  if (!TARGET_LONG64)
+	  if (!(Pmode == DImode))
 	    emit_jump_insn (gen_tablejump_internal3 (operands[0], operands[1]));
 	  else
 	    emit_jump_insn (gen_tablejump_internal4 (operands[0], operands[1]));
@@ -8671,7 +8671,7 @@ move\\t%0,%z4\\n\\
   [(set (pc)
 	(match_operand:SI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
-  "!TARGET_LONG64"
+  "!(Pmode == DImode)"
   "%*j\\t%0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -8681,7 +8681,7 @@ move\\t%0,%z4\\n\\
   [(set (pc)
 	(match_operand:DI 0 "se_register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_LONG64"
+  "Pmode == DImode"
   "%*j\\t%0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -8698,7 +8698,7 @@ move\\t%0,%z4\\n\\
   [(set (pc) (plus:SI (sign_extend:SI
 		       (match_operand:HI 0 "register_operand" "d"))
 		      (label_ref:SI (match_operand:SI 1 "" ""))))]
-  "TARGET_MIPS16 && !TARGET_LONG64"
+  "TARGET_MIPS16 && !(Pmode == DImode)"
   "
 {
   if (operands[0])	/* eliminate unused code warnings.  */
@@ -8720,7 +8720,7 @@ move\\t%0,%z4\\n\\
   [(set (pc) (plus:DI (sign_extend:DI
 		       (match_operand:HI 0 "register_operand" "d"))
 		      (label_ref:DI (match_operand:SI 1 "" ""))))]
-  "TARGET_MIPS16 && TARGET_LONG64"
+  "TARGET_MIPS16 && Pmode == DImode"
   "
 {
   if (operands[0])	/* eliminate unused code warnings.  */
@@ -8748,7 +8748,7 @@ move\\t%0,%z4\\n\\
   [(set (pc)
 	(plus:SI (match_operand:SI 0 "register_operand" "d")
 		 (label_ref:SI (match_operand:SI 1 "" ""))))]
-  "!TARGET_LONG64 && next_active_insn (insn) != 0
+  "!(Pmode == DImode) && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
@@ -8776,7 +8776,7 @@ move\\t%0,%z4\\n\\
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "se_register_operand" "d")
 		 (label_ref:DI (match_operand:SI 1 "" ""))))]
-  "TARGET_LONG64 && next_active_insn (insn) != 0
+  "Pmode == DImode && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "%*j\\t%0"
@@ -8810,7 +8810,7 @@ move\\t%0,%z4\\n\\
   "
 {
   /* We need slightly different code for eight byte table entries.  */
-  if (TARGET_LONG64)
+  if (Pmode == DImode)
     abort ();
 
   if (operands[0])
@@ -8871,7 +8871,7 @@ move\\t%0,%z4\\n\\
   "TARGET_ABICALLS"
   "
 {
-  if (TARGET_LONG64)
+  if (Pmode == DImode)
     emit_insn (gen_builtin_setjmp_setup_64 (operands[0]));
   else
     emit_insn (gen_builtin_setjmp_setup_32 (operands[0]));
@@ -8882,14 +8882,14 @@ move\\t%0,%z4\\n\\
   [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "r")
 		   (const_int 12)))
       (reg:SI 28))]
-  "TARGET_ABICALLS && ! TARGET_LONG64"
+  "TARGET_ABICALLS && ! (Pmode == DImode)"
   "")
 
 (define_expand "builtin_setjmp_setup_64"
   [(set (mem:DI (plus:DI (match_operand:DI 0 "register_operand" "r")
 		   (const_int 24)))
       (reg:DI 28))]
-  "TARGET_ABICALLS && TARGET_LONG64"
+  "TARGET_ABICALLS && Pmode == DImode"
   "")
 
 ;; For o32/n32/n64, we need to arrange for longjmp to put the 
@@ -8901,7 +8901,7 @@ move\\t%0,%z4\\n\\
   "
 {
   /* The elements of the buffer are, in order:  */
-  int W = (TARGET_LONG64 ? 8 : 4);
+  int W = (Pmode == DImode ? 8 : 4);
   rtx fp = gen_rtx_MEM (Pmode, operands[0]);
   rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 1*W));
   rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 2*W));
@@ -9138,7 +9138,7 @@ move\\t%0,%z4\\n\\
   [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  "!TARGET_LONG64 && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "!(Pmode == DImode) && !TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%2,%0"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -9148,7 +9148,7 @@ move\\t%0,%z4\\n\\
   [(call (mem:DI (match_operand:DI 0 "se_register_operand" "r"))
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  "TARGET_LONG64 && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "Pmode == DImode && !TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%2,%0"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -9158,7 +9158,7 @@ move\\t%0,%z4\\n\\
   [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  "!TARGET_LONG64 && TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "!(Pmode == DImode) && TARGET_ABICALLS && TARGET_LONG_CALLS"
   "*
 {
   if (REGNO (operands[0]) != PIC_FUNCTION_ADDR_REGNUM)
@@ -9174,7 +9174,7 @@ move\\t%0,%z4\\n\\
   [(call (mem:DI (match_operand:DI 0 "se_register_operand" "r"))
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  "TARGET_LONG64 && TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "Pmode == DImode && TARGET_ABICALLS && TARGET_LONG_CALLS"
   "*
 {
   if (REGNO (operands[0]) != PIC_FUNCTION_ADDR_REGNUM)
@@ -9336,7 +9336,7 @@ move\\t%0,%z4\\n\\
         (call (mem:SI (match_operand:SI 1 "register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "!TARGET_LONG64 && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "!(Pmode == DImode) && !TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%3,%1"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -9347,7 +9347,7 @@ move\\t%0,%z4\\n\\
         (call (mem:DI (match_operand:DI 1 "se_register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "TARGET_LONG64 && !TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "Pmode == DImode && !TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%3,%1"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
@@ -9358,7 +9358,7 @@ move\\t%0,%z4\\n\\
         (call (mem:SI (match_operand:SI 1 "register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "!TARGET_LONG64 && TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "!(Pmode == DImode) && TARGET_ABICALLS && TARGET_LONG_CALLS"
   "*
 {
   if (REGNO (operands[1]) != PIC_FUNCTION_ADDR_REGNUM)
@@ -9375,7 +9375,7 @@ move\\t%0,%z4\\n\\
         (call (mem:DI (match_operand:DI 1 "se_register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "TARGET_LONG64 && TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "Pmode == DImode && TARGET_ABICALLS && TARGET_LONG_CALLS"
   "*
 {
   if (REGNO (operands[1]) != PIC_FUNCTION_ADDR_REGNUM)

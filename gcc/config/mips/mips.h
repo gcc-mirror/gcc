@@ -1314,10 +1314,12 @@ do {							\
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
+#ifndef POINTER_SIZE
 #define POINTER_SIZE (TARGET_LONG64 ? 64 : 32)
+#endif
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
-#define POINTER_BOUNDARY (TARGET_LONG64 ? 64 : 32)
+#define POINTER_BOUNDARY (Pmode == DImode ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY (TARGET_64BIT ? 64 : 32)
@@ -2495,7 +2497,7 @@ typedef struct mips_args {
 	   TARGET_64BIT ? "dsubu" : "subu",				\
 	   reg_names[STACK_POINTER_REGNUM],				\
 	   reg_names[STACK_POINTER_REGNUM],				\
-	   TARGET_LONG64 ? 16 : 8);					\
+	   Pmode == DImode ? 16 : 8);					\
   fprintf (FILE, "\t.set\treorder\n");					\
   fprintf (FILE, "\t.set\tat\n");					\
 }
@@ -2524,7 +2526,7 @@ typedef struct mips_args {
   fprintf (STREAM, "\t.word\t0x03e00821\t\t# move   $1,$31\n");		\
   fprintf (STREAM, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");		\
   fprintf (STREAM, "\t.word\t0x00000000\t\t# nop\n");			\
-  if (TARGET_LONG64)							\
+  if (Pmode == DImode)							\
     {									\
       fprintf (STREAM, "\t.word\t0xdfe30014\t\t# ld     $3,20($31)\n");	\
       fprintf (STREAM, "\t.word\t0xdfe2001c\t\t# ld     $2,28($31)\n");	\
@@ -2537,7 +2539,7 @@ typedef struct mips_args {
   fprintf (STREAM, "\t.word\t0x0060c821\t\t# move   $25,$3 (abicalls)\n"); \
   fprintf (STREAM, "\t.word\t0x00600008\t\t# jr     $3\n");		\
   fprintf (STREAM, "\t.word\t0x0020f821\t\t# move   $31,$1\n");		\
-  if (TARGET_LONG64)							\
+  if (Pmode == DImode)							\
     {									\
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <function address>\n"); \
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <static chain value>\n"); \
@@ -2552,11 +2554,11 @@ typedef struct mips_args {
 /* A C expression for the size in bytes of the trampoline, as an
    integer.  */
 
-#define TRAMPOLINE_SIZE (32 + (TARGET_LONG64 ? 16 : 8))
+#define TRAMPOLINE_SIZE (32 + (Pmode == DImode ? 16 : 8))
 
 /* Alignment required for trampolines, in bits.  */
 
-#define TRAMPOLINE_ALIGNMENT (TARGET_LONG64 ? 64 : 32)
+#define TRAMPOLINE_ALIGNMENT (Pmode == DImode ? 64 : 32)
 
 /* INITIALIZE_TRAMPOLINE calls this library function to flush
    program and data caches.  */
@@ -2574,7 +2576,7 @@ typedef struct mips_args {
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
 {									    \
   rtx addr = ADDR;							    \
-  if (TARGET_LONG64)							    \
+  if (Pmode == DImode)							    \
     {									    \
       emit_move_insn (gen_rtx (MEM, DImode, plus_constant (addr, 32)), FUNC); \
       emit_move_insn (gen_rtx (MEM, DImode, plus_constant (addr, 40)), CHAIN);\
@@ -3075,7 +3077,7 @@ while (0)
    overflow is no more likely than the overflow in a branch
    instruction.  Large functions can currently break in both ways.  */
 #define CASE_VECTOR_MODE \
-  (TARGET_MIPS16 ? HImode : TARGET_LONG64 ? DImode : SImode)
+  (TARGET_MIPS16 ? HImode : Pmode == DImode ? DImode : SImode)
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
@@ -3136,13 +3138,15 @@ while (0)
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 
+#ifndef Pmode
 #define Pmode (TARGET_LONG64 ? DImode : SImode)
+#endif
 
 /* A function address in a call instruction
    is a word address (for indexing purposes)
    so give the MEM rtx a words's mode.  */
 
-#define FUNCTION_MODE (TARGET_LONG64 ? DImode : SImode)
+#define FUNCTION_MODE (Pmode == DImode ? DImode : SImode)
 
 /* Define TARGET_MEM_FUNCTIONS if we want to use calls to memcpy and
    memset, instead of the BSD functions bcopy and bzero.  */
@@ -4147,7 +4151,7 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
   fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	   TARGET_LONG64 ? ".dword" : ".word",				\
+	   Pmode == DImode ? ".dword" : ".word",			\
 	   LOCAL_LABEL_PREFIX,						\
 	   VALUE)
 
@@ -4162,15 +4166,15 @@ do {									\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
   else if (TARGET_EMBEDDED_PIC)						\
     fprintf (STREAM, "\t%s\t%sL%d-%sLS%d\n",				\
-	     TARGET_LONG64 ? ".dword" : ".word",			\
+	     Pmode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
   else if (mips_abi == ABI_32)						\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	     TARGET_LONG64 ? ".gpdword" : ".gpword",			\
+	     Pmode == DImode ? ".gpdword" : ".gpword",			\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
   else									\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	     TARGET_LONG64 ? ".dword" : ".word",			\
+	     Pmode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
 
@@ -4410,12 +4414,12 @@ while (0)
 
 #ifndef SIZE_TYPE
 #define NO_BUILTIN_SIZE_TYPE
-#define SIZE_TYPE (TARGET_LONG64 ? "long unsigned int" : "unsigned int")
+#define SIZE_TYPE (Pmode == DImode ? "long unsigned int" : "unsigned int")
 #endif
 
 #ifndef PTRDIFF_TYPE
 #define NO_BUILTIN_PTRDIFF_TYPE
-#define PTRDIFF_TYPE (TARGET_LONG64 ? "long int" : "int")
+#define PTRDIFF_TYPE (Pmode == DImode ? "long int" : "int")
 #endif
 
 /* See mips_expand_prologue's use of loadgp for when this should be
