@@ -328,8 +328,8 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    the args to this call were processed.
    We restore `inhibit_defer_pop' to that value.
 
-   USE_INSNS is a chain of USE insns to be emitted immediately before
-   the actual CALL insn.
+   CALL_FUSAGE is either empty or an EXPR_LIST of USE expressions that
+   denote registers used by the called function.
 
    IS_CONST is true if this is a `const' call.  */
 
