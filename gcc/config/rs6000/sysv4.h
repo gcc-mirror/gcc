@@ -277,6 +277,8 @@ do {									\
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
 #undef  BIGGEST_FIELD_ALIGNMENT
+#undef  ADJUST_FIELD_ALIGN
+#undef  ROUND_TYPE_ALIGN
 #define BIGGEST_ALIGNMENT 128
 
 /* Use ELF style section commands.  */
