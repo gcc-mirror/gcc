@@ -32,6 +32,44 @@ CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
+/* A Short Introduction to Adding a Command-Line Option.
+
+   Before adding a command-line option, consider if it is really
+   necessary.  Each additional command-line option adds complexity and
+   is difficult to remove in subsequent versions.
+
+   In the following, consider adding the command-line argument
+   `--bar'.
+
+   1. Each command-line option is specified in the specs file.  The
+   notation is described below in the comment entitled "The Specs
+   Language".  Read it.
+
+   2. In this file, add an entry to "option_map" equating the long
+   `--' argument version and any shorter, single letter version.  Read
+   the comments in the declaration of "struct option_map" for an
+   explanation.  Do not omit the first `-'.
+
+   3. Look in the "specs" file to determine which program or option
+   list should be given the argument, e.g., "cc1_options".  Add the
+   appropriate syntax for the shorter option version to the
+   corresponding "const char *" entry in this file.  Omit the first
+   `-' from the option.  For example, use `-bar', rather than `--bar'.
+
+   4. If the argument takes an argument, e.g., `--baz argument1',
+   modify either DEFAULT_SWITCH_TAKES_ARG or
+   DEFAULT_WORD_SWITCH_TAKES_ARG in this file.  Omit the first `-'
+   from `--baz'.
+
+   5. Document the option in this file's display_help().  If the
+   option is passed to a subprogram, modify its corresponding
+   function, e.g., cppinit.c:print_help() or toplev.c:display_help(),
+   instead.
+
+   6. Compile and test.  Make sure that your new specs file is being
+   read.  For example, use a debugger to investigate the value of
+   "specs_file" in main().  */
+
 #include "config.h"
 #include "system.h"
 #include <signal.h>
@@ -272,7 +310,9 @@ static void init_gcc_specs              PARAMS ((struct obstack *,
 						 const char *,
 						 const char *));
 
-/* Specs are strings containing lines, each of which (if not blank)
+/* The Specs Language
+
+Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
 The program name must be exact and start from root, since no path
 is searched and it is unreliable to depend on the current working directory.
