@@ -1760,6 +1760,36 @@ for module in ${target_configdirs} ; do
 /^@if target-$module\$/d
 /^@endif target-$module\$/d"
 done
+
+AC_ARG_ENABLE([bootstrap],
+[  --enable-bootstrap     Enable bootstrapping [no]],,
+enable_bootstrap=no)
+if test -d ${srcdir}/gcc; then
+  case "$host:$target:$enable_bootstrap" in
+    $build:$build:yes | *:no) ;;
+    *:yes) AC_MSG_ERROR([cannot bootstrap a cross-compiler]) ;;
+    *) AC_MSG_ERROR([invalid option for --enable-bootstrap]) ;;
+  esac
+else
+  if test $enable_bootstrap = yes; then
+    AC_MSG_ERROR([cannot bootstrap without a compiler])
+  fi
+fi
+
+case "$enable_bootstrap" in
+  yes)
+    default_target=new-bootstrap
+    extrasub="$extrasub
+/^@if gcc-bootstrap\$/d
+/^@endif gcc-bootstrap\$/d" ;;
+  no)
+    default_target=all
+    extrasub="$extrasub
+/^@if gcc-no-bootstrap\$/d
+/^@endif gcc-no-bootstrap\$/d" ;;
+esac
+AC_SUBST(default_target)
+
 extrasub="$extrasub
 /^@if /,/^@endif /d"
 
