@@ -5768,6 +5768,10 @@ package body Sem_Util is
       --  has discriminant defaults if it is a discriminated record).
 
       elsif Is_Record_Type (Typ) then
+         if Has_Discriminants (Typ) then
+            return True;
+         end if;
+
          declare
             Comp : Entity_Id;
          begin
