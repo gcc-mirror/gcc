@@ -1,3 +1,10 @@
+2004-09-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR fortran/17180
+	* malloc.c (MALLOC_ALIGNMENT): Rename into MAX_ALIGNMENT
+	and use a host-based heuristics to determine it.
+	(ROUNDED_AREA_SIZE): Adjust.
+
 2004-09-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR fortran/17180

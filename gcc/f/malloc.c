@@ -83,8 +83,16 @@ static void malloc_verify_area_ (mallocPool pool, mallocArea_ a);
 
 /* Internal macros. */
 
-#define MALLOC_ALIGNMENT  (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
-#define ROUNDED_AREA_SIZE (MALLOC_ALIGNMENT * ((sizeof(mallocArea_) + MALLOC_ALIGNMENT - 1) / MALLOC_ALIGNMENT))
+struct max_alignment {
+  char c;
+  union {
+    HOST_WIDEST_INT i;
+    long double d;
+  } u;
+};
+
+#define MAX_ALIGNMENT (offsetof (struct max_alignment, u))
+#define ROUNDED_AREA_SIZE (MAX_ALIGNMENT * ((sizeof(mallocArea_) + MAX_ALIGNMENT - 1) / MAX_ALIGNMENT))
 
 #if MALLOC_DEBUG
 #define malloc_kill_(ptr,s) do {memset((ptr),127,(s));free((ptr));} while(0)
