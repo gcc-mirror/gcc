@@ -31,13 +31,6 @@ details.  */
 #include <stdio.h>
 #endif /* VERIFY_DEBUG */
 
-// TO DO
-// * read more about when classes must be loaded
-// * class loader madness
-// * Lots and lots of debugging and testing
-// * type representation is still ugly.  look for the big switches
-// * at least one GC problem :-(
-
 
 static void debug_print (const char *fmt, ...)
   __attribute__ ((format (printf, 1, 2)));
@@ -608,7 +601,8 @@ private:
     }
 
     // Merge OLD_TYPE into this.  On error throw exception.
-    bool merge (type& old_type, bool local_semantics, _Jv_BytecodeVerifier *verifier)
+    bool merge (type& old_type, bool local_semantics,
+		_Jv_BytecodeVerifier *verifier)
     {
       bool changed = false;
       bool refo = old_type.isreference ();
@@ -671,8 +665,9 @@ private:
 		    {
 		      while (arraycount > 0)
 			{
-			  // FIXME: Class loader.
-			  k = _Jv_GetArrayClass (k, NULL);
+			  java::lang::ClassLoader *loader
+			    = verifier->current_class->getClassLoader();
+			  k = _Jv_GetArrayClass (k, loader);
 			  --arraycount;
 			}
 		      data.klass = k;
@@ -903,7 +898,10 @@ private:
 	  subroutine = state_old->subroutine;
 	  changed = true;
 	}
-      else
+      // If we're handling the result of an unmerged `ret', then we
+      // can't trust that it has the correct PC setting.  So in this
+      // case we ignore what might otherwise look like a merge error.
+      else if (! state_old->is_unmerged_ret_state (max_locals))
 	verifier->verify_fail ("subroutines merged");
 
       // Merge stacks.
@@ -1013,7 +1011,11 @@ private:
       debug_print ("    [local] ");
       for (i = 0; i < max_locals; ++i)
 	locals[i].print ();
-      debug_print ("   | %p\n", this);
+      if (subroutine == 0)
+	debug_print ("   | None");
+      else
+	debug_print ("   | %4d", subroutine);
+      debug_print (" | %p\n", this);
     }
 #else
     inline void print (const char *, int, int, int) const
@@ -2335,7 +2337,6 @@ private:
 	    break;
 	  case op_dup2_x2:
 	    {
-	      // FIXME
 	      type t1 = pop_raw ();
 	      if (t1.iswide ())
 		{
