@@ -1,3 +1,8 @@
+2001-03-09  Nicola Pero <n.pero@mi.flashnet.it>
+
+	* configure.in: Only use `lang_requires' for languages athat are
+	actually enabled.
+
 2001-03-08  Phil Edwards  <pme@sources.redhat.com>
 
 	* MAINTAINERS (C++ runtime libs):  Update and alphabatize.
