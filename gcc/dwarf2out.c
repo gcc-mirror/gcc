@@ -9365,8 +9365,8 @@ add_name_and_src_coords_attributes (die, decl)
   /* Get the function's name, as described by its RTL.  This may be different
      from the DECL_NAME name used in the source file.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && TREE_ASM_WRITTEN (decl))
-    add_AT_string (die, DW_AT_VMS_rtnbeg_pd_address,
-		   xstrdup (XSTR (XEXP (DECL_RTL (decl), 0), 0)));
+    add_AT_addr (die, DW_AT_VMS_rtnbeg_pd_address,
+		 save_rtx (XEXP (DECL_RTL (decl), 0)));
 #endif
 }
 
