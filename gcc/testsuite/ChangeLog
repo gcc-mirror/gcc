@@ -1,3 +1,7 @@
+2004-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/20041023-1.c: New test.
+
 2004-10-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17407
