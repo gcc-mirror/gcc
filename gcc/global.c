@@ -1079,31 +1079,40 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
     {
       /* Count from the end, to find the least-used ones first.  */
       for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-	if (local_reg_n_refs[i] != 0
-	    /* Don't use a reg no good for this pseudo.  */
-	    && ! TEST_HARD_REG_BIT (used2, i)
-	    && HARD_REGNO_MODE_OK (i, mode)
-	    && ((double) local_reg_n_refs[i] / local_reg_live_length[i]
-		< ((double) allocno_n_refs[allocno]
-		   / allocno_live_length[allocno])))
-	  {
-	    /* Hard reg I was used less in total by local regs
-	       than it would be used by this one allocno!  */
-	    int k;
-	    for (k = 0; k < max_regno; k++)
-	      if (reg_renumber[k] >= 0)
-		{
-		  int regno = reg_renumber[k];
-		  int endregno
-		    = regno + HARD_REGNO_NREGS (regno, PSEUDO_REGNO_MODE (k));
+	{
+#ifdef REG_ALLOC_ORDER
+	  int regno = reg_alloc_order[i];
+#else
+	  int regno = i;
+#endif
 
-		  if (i >= regno && i < endregno)
-		    reg_renumber[k] = -1;
-		}
+	  if (local_reg_n_refs[regno] != 0
+	      /* Don't use a reg no good for this pseudo.  */
+	      && ! TEST_HARD_REG_BIT (used2, regno)
+	      && HARD_REGNO_MODE_OK (regno, mode)
+	      && (((double) local_reg_n_refs[regno]
+		   / local_reg_live_length[regno])
+		  < ((double) allocno_n_refs[allocno]
+		     / allocno_live_length[allocno])))
+	    {
+	      /* Hard reg REGNO was used less in total by local regs
+		 than it would be used by this one allocno!  */
+	      int k;
+	      for (k = 0; k < max_regno; k++)
+		if (reg_renumber[k] >= 0)
+		  {
+		    int r = reg_renumber[k];
+		    int endregno
+		      = r + HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (k));
 
-	    best_reg = i;
-	    break;
-	  }
+		    if (regno >= r && regno < endregno)
+		      reg_renumber[k] = -1;
+		  }
+
+	      best_reg = regno;
+	      break;
+	    }
+	}
     }
 
   /* Did we find a register?  */
