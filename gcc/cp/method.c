@@ -1480,11 +1480,13 @@ hack_identifier (value, name, yychar)
   if (really_overloaded_fn (value))
     {
       tree t = get_first_fn (value);
-      while (t)
+      for (; t; t = DECL_CHAIN (t))
 	{
+	  if (TREE_CODE (t) == TEMPLATE_DECL)
+	    continue;
+
 	  assemble_external (t);
 	  TREE_USED (t) = 1;
-	  t = DECL_CHAIN (t);
 	}
     }
   else if (TREE_CODE (value) == TREE_LIST)

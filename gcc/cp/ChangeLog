@@ -12,6 +12,33 @@ Wed Sep 14 10:17:27 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
 	* g++.c: Include <sys/errno.h> in case `errno' is a macro
 	as permitted by ANSI C.
 
+Thu Sep 29 16:58:52 1994  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (c_expand_return): Use magic so the backend can fixup the
+	assignment into the return register, so cleanups won't clobber it.
+
+Thu Sep 29 13:08:50 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* method.c (hack_identifier): Don't call assemble_external for
+	template decls.
+
+	* decl.c (finish_decl): Also end temporary allocation if the decl in
+	question has a type of error_mark_node.
+
+Wed Sep 28 21:45:00 1994  Mike Stump  (mrs@cygnus.com)
+
+	* typeck.c (build_modify_expr): When optimizing ?: on lhs, make sure
+	that if the ?: was a reference type, that the subparts will be also.
+
+Wed Sep 28 16:14:04 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* except.c (register_exception_table): Use Pmode, not PTRmode.
+
+Fri Sep 23 13:54:27 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* lex.c (do_pending_inlines): Do method synthesis after the
+	pending_inlines have been reversed.
+
 Thu Sep 22 12:53:03 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* decl2.c (finish_file):  Fix Brendan's fix:  Only call

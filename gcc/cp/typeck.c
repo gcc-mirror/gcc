@@ -5388,9 +5388,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	   so the code to compute it is only emitted once.  */
 	tree cond
 	  = build_conditional_expr (TREE_OPERAND (lhs, 0),
-				    build_modify_expr (TREE_OPERAND (lhs, 1),
+				    build_modify_expr (convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 1)),
 						       modifycode, rhs),
-				    build_modify_expr (TREE_OPERAND (lhs, 2),
+				    build_modify_expr (convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 2)),
 						       modifycode, rhs));
 	if (TREE_CODE (cond) == ERROR_MARK)
 	  return cond;
@@ -7099,9 +7099,11 @@ c_expand_return (retval)
 	  /* Here is where we finally get RETVAL into RESULT.
 	     `expand_return' does the magic of protecting
 	     RESULT from cleanups.  */
+	  retval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (result), retval);
+	  /* This part _must_ come second, because expand_return looks for
+	     the INIT_EXPR as the toplevel node only.  :-( */
 	  retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
 	  TREE_SIDE_EFFECTS (retval) = 1;
-	  retval = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (result), retval);
 	  expand_return (retval);
 	}
       else

@@ -1100,23 +1100,25 @@ do_pending_inlines ()
   if (yychar == PRE_PARSED_FUNCTION_DECL)
     return;
 
-  /* Note that we've seen these inlines and are dealing with them.  */
-  for (t = pending_inlines; t; t = t->next)
-    t->deja_vu = 1;
-
   /* Reverse the pending inline functions, since
      they were cons'd instead of appended.  */
   {
-    struct pending_inline *prev = 0, *tail;
+    struct pending_inline *prev = 0, *tail, *bottom = 0;
     t = pending_inlines;
     pending_inlines = 0;
 
     for (; t; t = tail)
       {
 	tail = t->next;
+	t->next = prev;
+	t->deja_vu = 1;
+	prev = t;
+      }
 
-	/* This kludge should go away when synthesized methods are handled
-	   properly, i.e. only when needed.  */
+    /* This kludge should go away when synthesized methods are handled
+       properly, i.e. only when needed.  */
+    for (t = prev; t; t = t->next)
+      {
 	if (t->lineno <= 0)
 	  {
 	    tree f = t->fndecl;
@@ -1134,13 +1136,18 @@ do_pending_inlines ()
 	      default:
 		;
 	      }
-	    obstack_free (&synth_obstack, t);
-	    continue;
+	    if (tail)
+	      tail->next = t->next;
+	    else
+	      prev = t->next;
+	    if (! bottom)
+	      bottom = t;
 	  }
-
-	t->next = prev;
-	prev = t;
+	else
+	  tail = t;
       }
+    if (bottom)
+      obstack_free (&synth_obstack, bottom);      
     t = prev;
   }
 

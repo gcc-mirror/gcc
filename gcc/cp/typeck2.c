@@ -906,7 +906,7 @@ process_init_constructor (type, init, elts)
 		{
 		  error ("non-empty initializer for array of empty elements");
 		  /* Just ignore what we were supposed to use.  */
-		  tail1 = 0;
+		  tail1 = NULL_TREE;
 		}
 	      tail = tail1;
 	    }
@@ -1154,7 +1154,9 @@ build_scoped_ref (datum, types)
   if (TREE_CODE (types) == SCOPE_REF)
     {
       /* We have some work to do.  */
-      struct type_chain { tree type; struct type_chain *next; } *chain = 0, *head = 0, scratch;
+      struct type_chain
+	{ tree type; struct type_chain *next; }
+      *chain = NULL, *head = NULL, scratch;
       ref = build_unary_op (ADDR_EXPR, datum, 0);
       while (TREE_CODE (types) == SCOPE_REF)
 	{
