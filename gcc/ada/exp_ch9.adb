@@ -8745,6 +8745,7 @@ package body Exp_Ch9 is
       end loop;
 
       P_Subtype  := Etype (Defining_Identifier (Obj_Decl));
+      Set_Ekind (Priv, E_Variable);
       Set_Etype (Priv, P_Subtype);
       Set_Is_Aliased (Priv);
       Set_Object_Ref (Body_Ent, Priv);
