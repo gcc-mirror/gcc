@@ -1,3 +1,8 @@
+2003-10-29  Richard Henderson  <rth@redhat.com>
+
+	* config/m68k/m68k.c (notice_update_cc): Clear cc status for
+	shifts and rotates.
+
 2003-10-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md: Remove duplicate pattern.
