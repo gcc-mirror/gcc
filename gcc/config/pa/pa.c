@@ -4472,7 +4472,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	else
 	  strcat (buf, "%S3");
 	if (useskip)
-	  strcat (buf, " %2,%r1,0");
+	  strcat (buf, " %2,%r1,%%r0");
 	else if (nullify)
 	  strcat (buf, ",n %2,%r1,%0");
 	else
@@ -4494,7 +4494,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	      strcat (buf, "%S3");
 	    else
 	      strcat (buf, "%B3");
-	    strcat (buf, ",n %2,%r1,.+12\n\tbl %0,0");
+	    strcat (buf, ",n %2,%r1,.+12\n\tb %0");
 	  }
 	/* Handle short backwards branch with an unfilled delay slot.
 	   Using a comb;nop rather than comiclr;bl saves 1 cycle for both
@@ -4519,9 +4519,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	    else
 	      strcat (buf, "%B3");
 	    if (nullify)
-	      strcat (buf, " %2,%r1,0\n\tbl,n %0,0");
+	      strcat (buf, " %2,%r1,%%r0\n\tb,n %0");
 	    else
-	      strcat (buf, " %2,%r1,0\n\tbl %0,0");
+	      strcat (buf, " %2,%r1,%%r0\n\tb %0");
 	  }
 	break;
 
@@ -4654,7 +4654,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 	else
 	  strcat (buf, "<");
 	if (useskip)
-	  strcat (buf, " %0,%1,1,0");
+	  strcat (buf, " %0,%1,1,%%r0");
 	else if (nullify && negated)
 	  strcat (buf, ",n %0,%1,%3");
 	else if (nullify && ! negated)
@@ -4682,9 +4682,9 @@ output_bb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (negated)
-	      strcat (buf, ",n %0,%1,.+12\n\tbl %3,0");
+	      strcat (buf, ",n %0,%1,.+12\n\tb %3");
 	    else
-	      strcat (buf, ",n %0,%1,.+12\n\tbl %2,0");
+	      strcat (buf, ",n %0,%1,.+12\n\tb %2");
 	  }
 	/* Handle short backwards branch with an unfilled delay slot.
 	   Using a bb;nop rather than extrs;bl saves 1 cycle for both
@@ -4715,13 +4715,13 @@ output_bb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (nullify && negated)
-	      strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
+	      strcat (buf, " %0,%1,1,%%r0\n\tbn %3");
 	    else if (nullify && ! negated)
-	      strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
+	      strcat (buf, " %0,%1,1,%%r0\n\tbn %2");
 	    else if (negated)
-	      strcat (buf, " %0,%1,1,0\n\tbl %3,0");
+	      strcat (buf, " %0,%1,1,%%r0\n\tb %3");
 	    else
-	      strcat (buf, " %0,%1,1,0\n\tbl %2,0");
+	      strcat (buf, " %0,%1,1,%%r0\n\tb %2");
 	  }
 	break;
 
@@ -4792,7 +4792,7 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	else
 	  strcat (buf, "<");
 	if (useskip)
-	  strcat (buf, " %0,1,0");
+	  strcat (buf, " %0,1,%%r0");
 	else if (nullify && negated)
 	  strcat (buf, ",n %0,%3");
 	else if (nullify && ! negated)
@@ -4820,9 +4820,9 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (negated)
-	      strcat (buf, ",n %0,.+12\n\tbl %3,0");
+	      strcat (buf, ",n %0,.+12\n\tb %3");
 	    else
-	      strcat (buf, ",n %0,.+12\n\tbl %2,0");
+	      strcat (buf, ",n %0,.+12\n\tb %2");
 	  }
 	/* Handle short backwards branch with an unfilled delay slot.
 	   Using a bb;nop rather than extrs;bl saves 1 cycle for both
@@ -4853,13 +4853,13 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (nullify && negated)
-	      strcat (buf, " %0,1,0\n\tbl,n %3,0");
+	      strcat (buf, " %0,1,%%r0\n\tbn %3");
 	    else if (nullify && ! negated)
-	      strcat (buf, " %0,1,0\n\tbl,n %2,0");
+	      strcat (buf, " %0,1,%%r0\n\tbn %2");
 	    else if (negated)
-	      strcat (buf, " %0,1,0\n\tbl %3,0");
+	      strcat (buf, " %0,1,%%r0\n\tb %3");
 	    else
-	      strcat (buf, " %0,1,0\n\tbl %2,0");
+	      strcat (buf, " %0,1,%%r0\n\tb %2");
 	  }
 	break;
 
@@ -4928,7 +4928,7 @@ output_dbra (operands, insn, which_alternative)
 	  if (dbr_sequence_length () != 0
 	      && ! forward_branch_p (insn)
 	      && nullify)
-	    return "addib,%N2,n %1,%0,.+12\n\tbl %3,0";
+	    return "addib,%N2,n %1,%0,.+12\n\tb %3";
 	  /* Handle short backwards branch with an unfilled delay slot.
 	     Using a addb;nop rather than addi;bl saves 1 cycle for both
 	     taken and untaken branches.  */
@@ -4941,9 +4941,9 @@ output_dbra (operands, insn, which_alternative)
 
 	  /* Handle normal cases.  */
 	  if (nullify)
-	    return "addi,%N2 %1,%0,%0\n\tbl,n %3,0";
+	    return "addi,%N2 %1,%0,%0\n\tb,n %3";
 	  else
-	    return "addi,%N2 %1,%0,%0\n\tbl %3,0";
+	    return "addi,%N2 %1,%0,%0\n\tb %3";
 	}
       else
 	abort();
@@ -4957,9 +4957,9 @@ output_dbra (operands, insn, which_alternative)
       output_asm_insn ("fstws %0,-16(%%r30)\n\tldw -16(%%r30),%4",operands);
       output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(%%r30)", operands);
       if (get_attr_length (insn) == 24)
-	return "comb,%S2 0,%4,%3\n\tfldws -16(%%r30),%0";
+	return "comb,%S2 %%r0,%4,%3\n\tfldws -16(%%r30),%0";
       else
-	return "comclr,%B2 0,%4,0\n\tbl %3,0\n\tfldws -16(%%r30),%0";
+	return "comclr,%B2 %%r0,%4,%%r0\n\tb %3\n\tfldws -16(%%r30),%0";
     }
   /* Deal with gross reload from memory case.  */
   else
@@ -4970,7 +4970,7 @@ output_dbra (operands, insn, which_alternative)
       if (get_attr_length (insn) == 12)
 	return "addib,%C2 %1,%4,%3\n\tstw %4,%0";
       else
-	return "addi,%N2 %1,%4,%4\n\tbl %3,0\n\tstw %4,%0";
+	return "addi,%N2 %1,%4,%4\n\tb %3\n\tstw %4,%0";
     }
 }
 
@@ -5035,7 +5035,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	  if (dbr_sequence_length () != 0
 	      && ! forward_branch_p (insn)
 	      && nullify)
-	    return "movb,%N2,n %1,%0,.+12\n\tbl %3,0";
+	    return "movb,%N2,n %1,%0,.+12\n\tb %3";
 
 	  /* Handle short backwards branch with an unfilled delay slot.
 	     Using a movb;nop rather than or;bl saves 1 cycle for both
@@ -5048,9 +5048,9 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	    return "movb,%C2 %1,%0,%3%#";
 	  /* Handle normal cases.  */
 	  if (nullify)
-	    return "or,%N2 %1,%%r0,%0\n\tbl,n %3,0";
+	    return "or,%N2 %1,%%r0,%0\n\tb,n %3";
 	  else
-	    return "or,%N2 %1,%%r0,%0\n\tbl %3,0";
+	    return "or,%N2 %1,%%r0,%0\n\tb %3";
 	}
       else
 	abort();
@@ -5063,9 +5063,9 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	 the FP register from MEM from within the branch's delay slot.  */
       output_asm_insn ("stw %1,-16(%%r30)",operands);
       if (get_attr_length (insn) == 12)
-	return "comb,%S2 0,%1,%3\n\tfldws -16(%%r30),%0";
+	return "comb,%S2 %%r0,%1,%3\n\tfldws -16(%%r30),%0";
       else
-	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tfldws -16(%%r30),%0";
+	return "comclr,%B2 %%r0,%1,%%r0\n\tb %3\n\tfldws -16(%%r30),%0";
     }
   /* Deal with gross reload from memory case.  */
   else if (which_alternative == 2)
@@ -5073,17 +5073,17 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
       /* Reload loop counter from memory, the store back to memory
 	 happens in the branch's delay slot.   */
       if (get_attr_length (insn) == 8)
-	return "comb,%S2 0,%1,%3\n\tstw %1,%0";
+	return "comb,%S2 %%r0,%1,%3\n\tstw %1,%0";
       else
-	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tstw %1,%0";
+	return "comclr,%B2 %%r0,%1,%%r0\n\tb %3\n\tstw %1,%0";
     }
   /* Handle SAR as a destination.  */
   else
     {
       if (get_attr_length (insn) == 8)
-	return "comb,%S2 0,%1,%3\n\tmtsar %r1";
+	return "comb,%S2 %%r0,%1,%3\n\tmtsar %r1";
       else
-	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tmtsar %r1";
+	return "comclr,%B2 %%r0,%1,%%r0\n\tbl %3\n\tmtsar %r1";
     }
 }
 
@@ -5157,7 +5157,7 @@ output_millicode_call (insn, call_dest)
 	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
 
 	  /* Get our return address into %r31.  */
-	  output_asm_insn ("blr 0,%%r31", xoperands);
+	  output_asm_insn ("blr %%r0,%%r31", xoperands);
 
 	  /* Jump to our target address in %r29.  */
 	  output_asm_insn ("bv,n %%r0(%%r29)", xoperands);
@@ -5415,7 +5415,7 @@ output_call (insn, call_dest)
 	      output_asm_insn ("ldo R%%$$dyncall-%1(%%r1),%%r1", xoperands);
 
 	      /* Get the return address into %r31.  */
-	      output_asm_insn ("blr 0,%%r31", xoperands);
+	      output_asm_insn ("blr %%r0,%%r31", xoperands);
 
 	      /* Branch to our target which is in %r1.  */
 	      output_asm_insn ("bv %%r0(%%r1)", xoperands);
@@ -5823,17 +5823,17 @@ output_parallel_movb (operands, length)
       /* Nothing in the delay slot, fake it by putting the combined
 	 insn (the copy or add) in the delay slot of a bl.  */
       if (GET_CODE (operands[1]) == CONST_INT)
-	return "bl %2,0\n\tldi %1,%0";
+	return "b %2\n\tldi %1,%0";
       else
-	return "bl %2,0\n\tcopy %1,%0";
+	return "b %2\n\tcopy %1,%0";
     }
   else
     {
       /* Something in the delay slot, but we've got a long branch.  */
       if (GET_CODE (operands[1]) == CONST_INT)
-	return "ldi %1,%0\n\tbl %2,0";
+	return "ldi %1,%0\n\tb %2";
       else
-	return "copy %1,%0\n\tbl %2,0";
+	return "copy %1,%0\n\tb %2";
     }
 }
 
@@ -5858,12 +5858,12 @@ output_parallel_addb (operands, length)
     {
       /* Nothing in the delay slot, fake it by putting the combined
 	 insn (the copy or add) in the delay slot of a bl.  */
-      return "bl %3,0\n\tadd%I1 %1,%0,%0";
+      return "b %3\n\tadd%I1 %1,%0,%0";
     }
   else
     {
       /* Something in the delay slot, but we've got a long branch.  */
-      return "add%I1 %1,%0,%0\n\tbl %3,0";
+      return "add%I1 %1,%0,%0\n\tb %3";
     }
 }
 
