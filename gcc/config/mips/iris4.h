@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
    our own exit function.  */
 #define HAVE_ATEXIT
 
-#include "mips/iris3.h"
-
 /* Profiling is supported via libprof1.a not -lc_p as in Irix 3.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
