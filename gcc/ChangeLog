@@ -1,3 +1,7 @@
+Mon Jul  7 02:03:56 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (fixup_reorder_chain): Call delete_dead_jumptables.
+
 2003-07-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c: Fix comment typos.
