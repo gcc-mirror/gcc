@@ -1,5 +1,7 @@
 2000-09-19  Richard Henderson  <rth@cygnus.com>
 
+	* c-decl.c (poplevel): Invoke warn_about_unused_variables.
+
 	* unroll.c (copy_loop_body): Update LABEL_NUSES before
 	calling invert_jump.
 
