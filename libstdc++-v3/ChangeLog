@@ -1,5 +1,9 @@
 2001-08-15  Andreas Schwab  <schwab@suse.de>
 
+	* configure.target (cpu_include_dir): Set to `config/cpu/m68k' for
+	m68k and m680[246]0.
+	* config/cpu/m68k/bits/atomicity.h: New file.
+
 	* include/bits/std_limits.h [__glibcpp_long_double_bits == 96]:
 	Define appropriate long double limits for m68k extended floating
 	point.
