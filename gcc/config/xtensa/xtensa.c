@@ -1560,6 +1560,15 @@ override_options (void)
   /* There's no need for -fPIC (as opposed to -fpic) on Xtensa.  */
   if (flag_pic > 1)
     flag_pic = 1;
+
+  /* Hot/cold partitioning does not work on this architecture, because of
+     constant pools (the load instruction cannot necessarily reach that far).
+     Therefore disable it on this architecture.  */
+  if (flag_reorder_blocks_and_partition)
+    {
+      flag_reorder_blocks_and_partition = 0;
+      flag_reorder_blocks = 1;
+    }
 }
 
 

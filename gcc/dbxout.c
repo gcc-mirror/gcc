@@ -275,7 +275,7 @@ static int pending_bincls = 0;
 static const char *base_input_file;
 
 #ifdef DEBUG_SYMS_TEXT
-#define FORCE_TEXT function_section (current_function_decl);
+#define FORCE_TEXT current_function_section (current_function_decl);
 #else
 #define FORCE_TEXT
 #endif
@@ -379,6 +379,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_rtx,		         /* label */
   dbxout_handle_pch,		         /* handle_pch */
   debug_nothing_rtx,		         /* var_location */
+  debug_nothing_void,                    /* switch_text_section */
   0                                      /* start_end_main_source_file */
 };
 #endif /* DBX_DEBUGGING_INFO  */
@@ -410,6 +411,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_rtx,		         /* label */
   dbxout_handle_pch,		         /* handle_pch */
   debug_nothing_rtx,		         /* var_location */
+  debug_nothing_void,                    /* switch_text_section */
   0                                      /* start_end_main_source_file */
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
@@ -934,9 +936,21 @@ dbxout_function_end (tree decl)
 #ifdef DBX_OUTPUT_NFUN
   DBX_OUTPUT_NFUN (asm_out_file, lscope_label_name, current_function_decl);
 #else
-  dbxout_begin_empty_stabs (N_FUN);
-  dbxout_stab_value_label_diff (lscope_label_name,
-				XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+  if (flag_reorder_blocks_and_partition)
+    {
+      dbxout_begin_empty_stabs (N_FUN);
+      dbxout_stab_value_label_diff (hot_section_end_label, hot_section_label);
+      dbxout_begin_empty_stabs (N_FUN);
+      dbxout_stab_value_label_diff (cold_section_end_label, 
+				    unlikely_section_label);
+    }
+  else
+    {
+      dbxout_begin_empty_stabs (N_FUN);
+      dbxout_stab_value_label_diff (lscope_label_name,
+				    XSTR (XEXP (DECL_RTL (current_function_decl), 
+						0), 0));
+    }
 				
 #endif
 

@@ -2074,7 +2074,7 @@ xstormy16_output_addr_vec (FILE *file, rtx label ATTRIBUTE_UNUSED, rtx table)
 { 
   int vlen, idx;
   
-  function_section (current_function_decl);
+  current_function_section (current_function_decl);
 
   vlen = XVECLEN (table, 0);
   for (idx = 0; idx < vlen; idx++)

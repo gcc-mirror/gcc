@@ -253,6 +253,11 @@ typedef struct dw_fde_struct GTY(())
   const char *dw_fde_begin;
   const char *dw_fde_current_label;
   const char *dw_fde_end;
+  const char *dw_fde_hot_section_label;
+  const char *dw_fde_hot_section_end_label;
+  const char *dw_fde_unlikely_section_label;
+  const char *dw_fde_unlikely_section_end_label;
+  bool dw_fde_switched_sections;
   dw_cfi_ref dw_fde_cfi;
   unsigned funcdef_number;
   unsigned all_throwers_are_sibcalls : 1;
@@ -2273,17 +2278,57 @@ output_call_frame_info (int for_eh)
 	  dw2_asm_output_encoded_addr_rtx (fde_encoding,
 					   sym_ref,
 					   "FDE initial location");
-	  dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
-				fde->dw_fde_end, fde->dw_fde_begin,
-				"FDE address range");
+	  if (fde->dw_fde_switched_sections)
+	    {
+	      rtx sym_ref2 = gen_rtx_SYMBOL_REF (Pmode, 
+				      fde->dw_fde_unlikely_section_label);
+	      rtx sym_ref3= gen_rtx_SYMBOL_REF (Pmode, 
+				      fde->dw_fde_hot_section_label);
+	      SYMBOL_REF_FLAGS (sym_ref2) |= SYMBOL_FLAG_LOCAL;
+	      SYMBOL_REF_FLAGS (sym_ref3) |= SYMBOL_FLAG_LOCAL;
+	      dw2_asm_output_encoded_addr_rtx (fde_encoding, sym_ref3,
+					       "FDE initial location");
+	      dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
+				    fde->dw_fde_hot_section_end_label,
+				    fde->dw_fde_hot_section_label,
+				    "FDE address range");
+	      dw2_asm_output_encoded_addr_rtx (fde_encoding, sym_ref2,
+					       "FDE initial location");
+	      dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
+				    fde->dw_fde_unlikely_section_end_label,
+				    fde->dw_fde_unlikely_section_label,
+				    "FDE address range");
+	    }
+	  else
+	    dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
+				  fde->dw_fde_end, fde->dw_fde_begin,
+				  "FDE address range");
 	}
       else
 	{
 	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
 			       "FDE initial location");
-	  dw2_asm_output_delta (DWARF2_ADDR_SIZE,
-				fde->dw_fde_end, fde->dw_fde_begin,
-				"FDE address range");
+	  if (fde->dw_fde_switched_sections)
+	    {
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE,
+				   fde->dw_fde_hot_section_label,
+				   "FDE initial location");
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE,
+				    fde->dw_fde_hot_section_end_label,
+				    fde->dw_fde_hot_section_label,
+				    "FDE address range");
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE,
+				   fde->dw_fde_unlikely_section_label,
+				   "FDE initial location");
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, 
+				    fde->dw_fde_unlikely_section_end_label,
+				    fde->dw_fde_unlikely_section_label,
+				    "FDE address range");
+	    }
+	  else
+	    dw2_asm_output_delta (DWARF2_ADDR_SIZE,
+				  fde->dw_fde_end, fde->dw_fde_begin,
+				  "FDE address range");
 	}
 
       if (augmentation[0])
@@ -2409,6 +2454,11 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde->decl = current_function_decl;
   fde->dw_fde_begin = dup_label;
   fde->dw_fde_current_label = NULL;
+  fde->dw_fde_hot_section_label = NULL;
+  fde->dw_fde_hot_section_end_label = NULL;
+  fde->dw_fde_unlikely_section_label = NULL;
+  fde->dw_fde_unlikely_section_end_label = NULL;
+  fde->dw_fde_switched_sections = false;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
   fde->funcdef_number = current_function_funcdef_no;
@@ -3418,6 +3468,7 @@ static void dwarf2out_imported_module_or_decl (tree, tree);
 static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx);
 static void dwarf2out_begin_function (tree);
+static void dwarf2out_switch_text_section (void);
 
 /* The debug hooks structure.  */
 
@@ -3450,6 +3501,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_rtx,		/* label */
   debug_nothing_int,		/* handle_pch */
   dwarf2out_var_location,
+  dwarf2out_switch_text_section,
   1                             /* start_end_main_source_file */
 };
 #endif
@@ -3651,6 +3703,7 @@ struct var_loc_node GTY ((chain_next ("%h.next")))
 {
   rtx GTY (()) var_loc_note;
   const char * GTY (()) label;
+  const char * GTY (()) section_label;
   struct var_loc_node * GTY (()) next;
 };
 
@@ -6742,6 +6795,20 @@ add_loc_descr_to_loc_list (dw_loc_list_ref *list_head, dw_loc_descr_ref descr,
   *d = new_loc_list (descr, begin, end, section, 0);
 }
 
+static void
+dwarf2out_switch_text_section (void)
+{
+  dw_fde_ref fde;
+
+  fde = &fde_table[fde_table_in_use - 1];
+  fde->dw_fde_switched_sections = true;
+  fde->dw_fde_hot_section_label = xstrdup (hot_section_label);
+  fde->dw_fde_hot_section_end_label = xstrdup (hot_section_end_label);
+  fde->dw_fde_unlikely_section_label = xstrdup (unlikely_section_label);
+  fde->dw_fde_unlikely_section_end_label = xstrdup (cold_section_end_label);
+  separate_line_info_table_in_use++;
+}
+
 /* Output the location list given to us.  */
 
 static void
@@ -7168,8 +7235,14 @@ output_aranges (void)
     }
 
   dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_section_label, "Address");
-  dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
-			text_section_label, "Length");
+  if (last_text_section == in_unlikely_executed_text
+      || (last_text_section == in_named
+	  && last_text_section_name == unlikely_text_section_name))
+    dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
+			  unlikely_section_label, "Length");
+  else
+    dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
+			  text_section_label, "Length");
 
   for (i = 0; i < arange_table_in_use; i++)
     {
@@ -7259,11 +7332,24 @@ output_ranges (void)
 	     base of the text section.  */
 	  if (separate_line_info_table_in_use == 0)
 	    {
-	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
-				    text_section_label,
-				    fmt, i * 2 * DWARF2_ADDR_SIZE);
-	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
-				    text_section_label, NULL);
+	      if (last_text_section == in_unlikely_executed_text
+		  || (last_text_section == in_named
+		      && last_text_section_name == unlikely_text_section_name))
+		{
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
+					unlikely_section_label,
+					fmt, i * 2 * DWARF2_ADDR_SIZE);
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
+					unlikely_section_label, NULL);
+		}
+	      else
+		{
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
+					text_section_label,
+					fmt, i * 2 * DWARF2_ADDR_SIZE);
+		  dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
+					text_section_label, NULL);
+		}
 	    }
 
 	  /* Otherwise, we add a DW_AT_entry_pc attribute to force the
@@ -7648,7 +7734,12 @@ output_line_info (void)
      a series of state machine operations.  */
   current_file = 1;
   current_line = 1;
-  strcpy (prev_line_label, text_section_label);
+  if (last_text_section == in_unlikely_executed_text
+      || (last_text_section == in_named
+	  && last_text_section_name == unlikely_text_section_name))
+    strcpy (prev_line_label, unlikely_section_label);
+  else
+    strcpy (prev_line_label, text_section_label);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
     {
       dw_line_info_ref line_info = &line_info_table[lt_index];
@@ -10028,6 +10119,10 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	  tree sectree = DECL_SECTION_NAME (current_function_decl);
 	  secname = TREE_STRING_POINTER (sectree);
 	}
+      else if (last_text_section == in_unlikely_executed_text
+	       || (last_text_section == in_named
+		   && last_text_section_name == unlikely_text_section_name))
+	secname = unlikely_section_label;
       else
 	secname = text_section_label;
 
@@ -11334,15 +11429,33 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       if (!old_die || !get_AT (old_die, DW_AT_inline))
 	equate_decl_number_to_die (decl, subr_die);
 
-      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
-				   current_function_funcdef_no);
-      add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
-      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-				   current_function_funcdef_no);
-      add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+      if (!flag_reorder_blocks_and_partition)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
+				       current_function_funcdef_no);
+	  add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
+	  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+				       current_function_funcdef_no);
+	  add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+	  
+	  add_pubname (decl, subr_die);
+	  add_arange (decl, subr_die);
+	}
+      else
+	{  /* Do nothing for now; maybe need to duplicate die, one for
+	      hot section and ond for cold section, then use the hot/cold
+	      section begin/end labels to generate the aranges...  */
+	  /*
+	    add_AT_lbl_id (subr_die, DW_AT_low_pc, hot_section_label);
+	    add_AT_lbl_id (subr_die, DW_AT_high_pc, hot_section_end_label);
+	    add_AT_lbl_id (subr_die, DW_AT_lo_user, unlikely_section_label);
+	    add_AT_lbl_id (subr_die, DW_AT_hi_user, cold_section_end_label);
 
-      add_pubname (decl, subr_die);
-      add_arange (decl, subr_die);
+	    add_pubname (decl, subr_die);
+	    add_arange (decl, subr_die);
+	    add_arange (decl, subr_die);
+	   */
+	}
 
 #ifdef MIPS_DEBUGGING_INFO
       /* Add a reference to the FDE for this routine.  */
@@ -12956,7 +13069,7 @@ static void
 dwarf2out_begin_block (unsigned int line ATTRIBUTE_UNUSED,
 		       unsigned int blocknum)
 {
-  function_section (current_function_decl);
+  current_function_section (current_function_decl);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_BEGIN_LABEL, blocknum);
 }
 
@@ -12966,7 +13079,7 @@ dwarf2out_begin_block (unsigned int line ATTRIBUTE_UNUSED,
 static void
 dwarf2out_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int blocknum)
 {
-  function_section (current_function_decl);
+  current_function_section (current_function_decl);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
@@ -13107,6 +13220,13 @@ dwarf2out_var_location (rtx loc_note)
   newloc->var_loc_note = loc_note;
   newloc->next = NULL;
 
+  if (last_text_section == in_unlikely_executed_text
+      || (last_text_section == in_named
+	  && last_text_section_name == unlikely_text_section_name))
+    newloc->section_label = unlikely_section_label;
+  else
+    newloc->section_label = text_section_label;
+
   last_insn = loc_note;
   last_label = newloc->label;
   decl = NOTE_VAR_LOCATION_DECL (loc_note);
@@ -13137,7 +13257,7 @@ dwarf2out_source_line (unsigned int line, const char *filename)
   if (debug_info_level >= DINFO_LEVEL_NORMAL
       && line != 0)
     {
-      function_section (current_function_decl);
+      current_function_section (current_function_decl);
 
       /* If requested, emit something human-readable.  */
       if (flag_debug_asm)

@@ -209,6 +209,9 @@ extern void named_section (tree, const char *, int);
 /* Tell assembler to switch to the section for function DECL.  */
 extern void function_section (tree);
 
+/* Tell assembler to switch to the most recently used text section.  */
+extern void current_function_section (tree);
+
 /* Tell assembler to switch to the section for string merging.  */
 extern void mergeable_string_section (tree, unsigned HOST_WIDE_INT,
 				      unsigned int);
@@ -431,6 +434,34 @@ extern rtx this_is_asm_operands;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
+enum in_section { no_section, in_text, in_unlikely_executed_text, in_data,
+                 in_named
+#ifdef BSS_SECTION_ASM_OP
+  , in_bss
+#endif
+#ifdef CTORS_SECTION_ASM_OP
+  , in_ctors
+#endif
+#ifdef DTORS_SECTION_ASM_OP
+  , in_dtors
+#endif
+#ifdef READONLY_DATA_SECTION_ASM_OP
+  , in_readonly_data
+#endif
+#ifdef EXTRA_SECTIONS
+  , EXTRA_SECTIONS
+#endif
+};
+
+extern char *unlikely_section_label;
+extern char *hot_section_label;
+extern char *hot_section_end_label;
+extern char *cold_section_end_label;
+extern char *unlikely_text_section_name;
+extern const char *last_text_section_name;
+extern enum in_section last_text_section;
+extern bool first_function_block_is_cold;
+
 /* Decide whether DECL needs to be in a writable section.
    RELOC is the same as for SELECT_SECTION.  */
 extern bool decl_readonly_section (tree, int);
@@ -518,6 +549,10 @@ extern void file_end_indicate_exec_stack (void);
 extern bool default_valid_pointer_mode (enum machine_mode);
 
 extern int default_address_cost (rtx);
+
+/* When performing hot/cold basic block partitioning, insert note in
+   instruction stream indicating boundary between hot and cold sections.  */
+extern void insert_section_boundary_note (void);
 
 /* dbxout helper functions */
 #if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO

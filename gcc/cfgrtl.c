@@ -92,8 +92,7 @@ static int
 can_delete_note_p (rtx note)
 {
   return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
-	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK
-	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_UNLIKELY_EXECUTED_CODE);
+	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK);
 }
 
 /* True if a given label can be deleted.  */
@@ -616,10 +615,7 @@ rtl_can_merge_blocks (basic_block a,basic_block b)
      partition boundaries).  See  the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
-	  || find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
-	  || BB_PARTITION (a) != BB_PARTITION (b)))
+  if (BB_PARTITION (a) != BB_PARTITION (b))
     return false;
 
   /* There must be exactly one edge in between the blocks.  */
@@ -678,9 +674,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
      partition boundaries).  See  the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
   
-  if (flag_reorder_blocks_and_partition
-      && (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
-	  || BB_PARTITION (src) != BB_PARTITION (target)))
+  if (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
+      || BB_PARTITION (src) != BB_PARTITION (target))
     return NULL;
 
   /* We can replace or remove a complex jump only when we have exactly
@@ -1108,29 +1103,16 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 
       BB_COPY_PARTITION (jump_block, e->src);
       if (flag_reorder_blocks_and_partition
-	  && targetm.have_named_sections)
-	{
-	  if (BB_PARTITION (jump_block) == BB_COLD_PARTITION)
-	    {
-	      rtx bb_note, new_note;
-	      for (bb_note = BB_HEAD (jump_block); 
-		   bb_note && bb_note != NEXT_INSN (BB_END (jump_block));
-		   bb_note = NEXT_INSN (bb_note))
-		if (NOTE_P (bb_note)
-		    && NOTE_LINE_NUMBER (bb_note) == NOTE_INSN_BASIC_BLOCK)
-		  break;
-	      new_note = emit_note_after (NOTE_INSN_UNLIKELY_EXECUTED_CODE,
-					  bb_note);
-	      NOTE_BASIC_BLOCK (new_note) = jump_block; 
-	    }
-	  if (JUMP_P (BB_END (jump_block))
-	      && !any_condjump_p (BB_END (jump_block))
-	      && (single_succ_edge (jump_block)->flags & EDGE_CROSSING))
-	    REG_NOTES (BB_END (jump_block)) = gen_rtx_EXPR_LIST 
-	      (REG_CROSSING_JUMP, NULL_RTX, 
-	       REG_NOTES (BB_END (jump_block)));
-	}
-
+	  && targetm.have_named_sections
+	  && JUMP_P (BB_END (jump_block))
+	  && !any_condjump_p (BB_END (jump_block))
+	  && (EDGE_SUCC (jump_block, 0)->flags & EDGE_CROSSING))
+	REG_NOTES (BB_END (jump_block)) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP,
+							     NULL_RTX,
+							     REG_NOTES
+							     (BB_END
+                                                              (jump_block)));
+      
       /* Wire edge in.  */
       new_edge = make_edge (e->src, jump_block, EDGE_FALLTHRU);
       new_edge->probability = e->probability;
@@ -1576,10 +1558,6 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	    tmp = NEXT_INSN (tmp);
 	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 	    tmp = NEXT_INSN (tmp);
-	  if (tmp 
-	      && NOTE_P (tmp)
-	      && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_UNLIKELY_EXECUTED_CODE)
-	    tmp = NEXT_INSN (tmp);
 	  if (tmp == BB_HEAD (bb))
 	    before = tmp;
 	  else if (tmp)
@@ -1629,7 +1607,7 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	      && BB_PARTITION (e->src) == BB_COLD_PARTITION
 	      && !(e->flags & EDGE_CROSSING))
 	    {
-	      rtx bb_note, new_note, cur_insn;
+	      rtx bb_note, cur_insn;
 
 	      bb_note = NULL_RTX;
 	      for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb));
@@ -1641,16 +1619,11 @@ commit_one_edge_insertion (edge e, int watch_calls)
 		    break;
 		  }
 
-	      new_note = emit_note_after (NOTE_INSN_UNLIKELY_EXECUTED_CODE,
-					  bb_note);
-	      NOTE_BASIC_BLOCK (new_note) = bb;
 	      if (JUMP_P (BB_END (bb))
 		  && !any_condjump_p (BB_END (bb))
   		  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
 		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
 		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
-	      if (after == bb_note)
-		after = new_note;
 	    }
 	}
     }
@@ -2717,10 +2690,7 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
      partition boundaries).  See  the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
-	  || find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
-	  || BB_PARTITION (a) != BB_PARTITION (b)))
+  if (BB_PARTITION (a) != BB_PARTITION (b))
     return false;
 
   /* There must be exactly one edge in between the blocks.  */
