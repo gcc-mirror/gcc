@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 122 fixup descriptions.
+ * This file contains 123 fixup descriptions.
  *
  * See README-fixinc for more information.
  *
@@ -4253,8 +4253,9 @@ tTestDesc aTinfo_CplusplusTests[] = {
 /*
  *  Fix Command Arguments for Tinfo_Cplusplus
  */
-const char* apzTinfo_CplusplusPatch[] = { "sed",
-    "-e", "s/[ \t]_cplusplus/ __cplusplus/",
+const char* apzTinfo_CplusplusPatch[] = {
+    "format",
+    " __cplusplus",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4309,29 +4310,68 @@ tSCC zUltrix_ConstList[] =
  *  Machine/OS name selection pattern
  */
 #define apzUltrix_ConstMachs (const char**)NULL
-#define ULTRIX_CONST_TEST_CT  0
-#define aUltrix_ConstTests   (tTestDesc*)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zUltrix_ConstSelect0[] =
+       "perror\\( char \\*";
+
+#define    ULTRIX_CONST_TEST_CT  1
+tTestDesc aUltrix_ConstTests[] = {
+  { TT_EGREP,    zUltrix_ConstSelect0, (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for Ultrix_Const
  */
-const char* apzUltrix_ConstPatch[] = { "sed",
-    "-e", "s@perror( char \\*__s );@perror( const char *__s );@",
-    "-e", "s@fputs( char \\*__s,@fputs( const char *__s,@",
-    "-e", "s@fopen( char \\*__filename, char \\*__type );@fopen( const char *__filename, const char *__type );@",
-    "-e", "s@fwrite( void \\*__ptr,@fwrite( const void *__ptr,@",
-    "-e", "s@fscanf( FILE \\*__stream, char \\*__format,@fscanf( FILE *__stream, const char *__format,@",
-    "-e", "s@scanf( char \\*__format,@scanf( const char *__format,@",
-    "-e", "s@sscanf( char \\*__s, char \\*__format,@sscanf( const char *__s, const char *__format,@",
-    "-e", "s@popen(char \\*, char \\*);@popen(const char *, const char *);@",
-    "-e", "s@tempnam(char\\*,char\\*);@tempnam(const char*,const char*);@",
+const char* apzUltrix_ConstPatch[] = {
+    "format",
+    "%1 const %3 *__",
+    "([ \t*](perror|fputs|fwrite|scanf|fscanf)\\(.*)[ \t]+(char|void) \\*__",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Ultrix_Const2 fix
+ */
+#define ULTRIX_CONST2_FIXIDX             107
+tSCC zUltrix_Const2Name[] =
+     "ultrix_const2";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zUltrix_Const2List[] =
+  "|stdio.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzUltrix_Const2Machs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zUltrix_Const2Select0[] =
+       "\\*fopen\\( char \\*";
+
+#define    ULTRIX_CONST2_TEST_CT  1
+tTestDesc aUltrix_Const2Tests[] = {
+  { TT_EGREP,    zUltrix_Const2Select0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Ultrix_Const2
+ */
+const char* apzUltrix_Const2Patch[] = {
+    "format",
+    "%1( const char *%3, const char *",
+    "([ \t*](fopen|sscanf|popen|tempnam))\\([ \t]*char[ \t]*\\*([^,]*),[ \t]*char[ \t]*\\*[ \t]*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of Ultrix_Fix_Fixproto fix
  */
-#define ULTRIX_FIX_FIXPROTO_FIXIDX       107
+#define ULTRIX_FIX_FIXPROTO_FIXIDX       108
 tSCC zUltrix_Fix_FixprotoName[] =
      "ultrix_fix_fixproto";
 
@@ -4367,7 +4407,7 @@ struct utsname;\n",
  *
  *  Description of Ultrix_Ifdef fix
  */
-#define ULTRIX_IFDEF_FIXIDX              108
+#define ULTRIX_IFDEF_FIXIDX              109
 tSCC zUltrix_IfdefName[] =
      "ultrix_ifdef";
 
@@ -4385,7 +4425,7 @@ tSCC zUltrix_IfdefList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zUltrix_IfdefSelect0[] =
-       "#ifdef KERNEL[ \t]*[^ \t]";
+       "#ifdef KERNEL[ \t]+[^ \t]";
 
 #define    ULTRIX_IFDEF_TEST_CT  1
 tTestDesc aUltrix_IfdefTests[] = {
@@ -4402,7 +4442,7 @@ const char* apzUltrix_IfdefPatch[] = { "sed",
  *
  *  Description of Ultrix_Static fix
  */
-#define ULTRIX_STATIC_FIXIDX             109
+#define ULTRIX_STATIC_FIXIDX             110
 tSCC zUltrix_StaticName[] =
      "ultrix_static";
 
@@ -4439,7 +4479,7 @@ const char* apzUltrix_StaticPatch[] = { "sed",
  *
  *  Description of Undefine_Null fix
  */
-#define UNDEFINE_NULL_FIXIDX             110
+#define UNDEFINE_NULL_FIXIDX             111
 tSCC zUndefine_NullName[] =
      "undefine_null";
 
@@ -4485,7 +4525,7 @@ const char* apzUndefine_NullPatch[] = {
  *
  *  Description of Unixware7_Byteorder_Fix fix
  */
-#define UNIXWARE7_BYTEORDER_FIX_FIXIDX   111
+#define UNIXWARE7_BYTEORDER_FIX_FIXIDX   112
 tSCC zUnixware7_Byteorder_FixName[] =
      "unixware7_byteorder_fix";
 
@@ -4528,7 +4568,7 @@ const char* apzUnixware7_Byteorder_FixPatch[] = { "sed",
  *
  *  Description of Va_I960_Macro fix
  */
-#define VA_I960_MACRO_FIXIDX             112
+#define VA_I960_MACRO_FIXIDX             113
 tSCC zVa_I960_MacroName[] =
      "va_i960_macro";
 
@@ -4555,18 +4595,16 @@ tTestDesc aVa_I960_MacroTests[] = {
 /*
  *  Fix Command Arguments for Va_I960_Macro
  */
-const char* apzVa_I960_MacroPatch[] = { "sed",
-    "-e", "s/__vsiz/__vxvsiz/",
-    "-e", "s/__vali/__vxvali/",
-    "-e", "s/__vpad/__vxvpad/",
-    "-e", "s/__alignof__/__vxalignof__/",
+const char* apzVa_I960_MacroPatch[] = {
+    "format",
+    "__vx%1",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of Void_Null fix
  */
-#define VOID_NULL_FIXIDX                 113
+#define VOID_NULL_FIXIDX                 114
 tSCC zVoid_NullName[] =
      "void_null";
 
@@ -4584,7 +4622,7 @@ tSCC zVoid_NullList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zVoid_NullSelect0[] =
-       "#[ \t]*define[ \t][ \t]*NULL[ \t].*void";
+       "^#[ \t]*define[ \t]+NULL[ \t]+\\(\\(void[ \t]*\\*\\)0\\)";
 
 #define    VOID_NULL_TEST_CT  1
 tTestDesc aVoid_NullTests[] = {
@@ -4593,15 +4631,16 @@ tTestDesc aVoid_NullTests[] = {
 /*
  *  Fix Command Arguments for Void_Null
  */
-const char* apzVoid_NullPatch[] = { "sed",
-    "-e", "s/^#[ \t]*define[ \t]*NULL[ \t]*((void[ \t]*\\*)0)/#define NULL 0/",
+const char* apzVoid_NullPatch[] = {
+    "format",
+    "#define NULL 0",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of Vxworks_Gcc_Problem fix
  */
-#define VXWORKS_GCC_PROBLEM_FIXIDX       114
+#define VXWORKS_GCC_PROBLEM_FIXIDX       115
 tSCC zVxworks_Gcc_ProblemName[] =
      "vxworks_gcc_problem";
 
@@ -4651,7 +4690,7 @@ const char* apzVxworks_Gcc_ProblemPatch[] = { "sed",
  *
  *  Description of Vxworks_Needs_Vxtypes fix
  */
-#define VXWORKS_NEEDS_VXTYPES_FIXIDX     115
+#define VXWORKS_NEEDS_VXTYPES_FIXIDX     116
 tSCC zVxworks_Needs_VxtypesName[] =
      "vxworks_needs_vxtypes";
 
@@ -4669,7 +4708,7 @@ tSCC zVxworks_Needs_VxtypesList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zVxworks_Needs_VxtypesSelect0[] =
-       "uint_t[ \t][ \t]*_clocks_per_sec";
+       "uint_t([ \t]+_clocks_per_sec)";
 
 #define    VXWORKS_NEEDS_VXTYPES_TEST_CT  1
 tTestDesc aVxworks_Needs_VxtypesTests[] = {
@@ -4678,15 +4717,16 @@ tTestDesc aVxworks_Needs_VxtypesTests[] = {
 /*
  *  Fix Command Arguments for Vxworks_Needs_Vxtypes
  */
-const char* apzVxworks_Needs_VxtypesPatch[] = { "sed",
-    "-e", "s/uint_t/unsigned int/",
+const char* apzVxworks_Needs_VxtypesPatch[] = {
+    "format",
+    "unsigned int%1",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of Vxworks_Needs_Vxworks fix
  */
-#define VXWORKS_NEEDS_VXWORKS_FIXIDX     116
+#define VXWORKS_NEEDS_VXWORKS_FIXIDX     117
 tSCC zVxworks_Needs_VxworksName[] =
      "vxworks_needs_vxworks";
 
@@ -4704,7 +4744,7 @@ tSCC zVxworks_Needs_VxworksList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zVxworks_Needs_VxworksSelect0[] =
-       "#[ \t]define[ \t][ \t]*__INCstath";
+       "#[ \t]define[ \t]+__INCstath";
 
 /*
  *  perform the 'test' shell command - do fix on success
@@ -4735,7 +4775,7 @@ const char* apzVxworks_Needs_VxworksPatch[] = { "sed",
  *
  *  Description of Vxworks_Time fix
  */
-#define VXWORKS_TIME_FIXIDX              117
+#define VXWORKS_TIME_FIXIDX              118
 tSCC zVxworks_TimeName[] =
      "vxworks_time";
 
@@ -4753,7 +4793,7 @@ tSCC zVxworks_TimeList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zVxworks_TimeSelect0[] =
-       "VOIDFUNCPTR";
+       "#[ \t]*define[ \t]+VOIDFUNCPTR[ \t].*";
 
 /*
  *  perform the 'test' shell command - do fix on success
@@ -4769,24 +4809,24 @@ tTestDesc aVxworks_TimeTests[] = {
 /*
  *  Fix Command Arguments for Vxworks_Time
  */
-const char* apzVxworks_TimePatch[] = { "sed",
-    "-e", "/VOIDFUNCPTR/i\\\n\
-#ifndef __gcc_VOIDFUNCPTR_defined\\\n\
-#ifdef __cplusplus\\\n\
-typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n\
-#else\\\n\
-typedef void (*__gcc_VOIDFUNCPTR) ();\\\n\
-#endif\\\n\
-#define __gcc_VOIDFUNCPTR_defined\\\n\
-#endif\n",
-    "-e", "s/VOIDFUNCPTR/__gcc_VOIDFUNCPTR/g",
+const char* apzVxworks_TimePatch[] = {
+    "format",
+    "#ifndef __gcc_VOIDFUNCPTR_defined\n\
+#ifdef __cplusplus\n\
+typedef void (*__gcc_VOIDFUNCPTR) (...);\n\
+#else\n\
+typedef void (*__gcc_VOIDFUNCPTR) ();\n\
+#endif\n\
+#define __gcc_VOIDFUNCPTR_defined\n\
+#endif\n\
+#define VOIDFUNCPTR __gcc_VOIDFUNCPTR",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of X11_Class fix
  */
-#define X11_CLASS_FIXIDX                 118
+#define X11_CLASS_FIXIDX                 119
 tSCC zX11_ClassName[] =
      "x11_class";
 
@@ -4826,7 +4866,7 @@ const char* apzX11_ClassPatch[] = { "sed",
  *
  *  Description of X11_Class_Usage fix
  */
-#define X11_CLASS_USAGE_FIXIDX           119
+#define X11_CLASS_USAGE_FIXIDX           120
 tSCC zX11_Class_UsageName[] =
      "x11_class_usage";
 
@@ -4841,27 +4881,35 @@ tSCC zX11_Class_UsageList[] =
 #define apzX11_Class_UsageMachs (const char**)NULL
 
 /*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zX11_Class_UsageSelect0[] =
+       " class\\)";
+
+/*
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zX11_Class_UsageBypass0[] =
        "__cplusplus";
 
-#define    X11_CLASS_USAGE_TEST_CT  1
+#define    X11_CLASS_USAGE_TEST_CT  2
 tTestDesc aX11_Class_UsageTests[] = {
-  { TT_NEGREP,   zX11_Class_UsageBypass0, (regex_t*)NULL }, };
+  { TT_NEGREP,   zX11_Class_UsageBypass0, (regex_t*)NULL },
+  { TT_EGREP,    zX11_Class_UsageSelect0, (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for X11_Class_Usage
  */
-const char* apzX11_Class_UsagePatch[] = { "sed",
-    "-e", "s/ class[)]/ c_class)/g",
+const char* apzX11_Class_UsagePatch[] = {
+    "format",
+    " c_class)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of X11_New fix
  */
-#define X11_NEW_FIXIDX                   120
+#define X11_NEW_FIXIDX                   121
 tSCC zX11_NewName[] =
      "x11_new";
 
@@ -4902,7 +4950,7 @@ const char* apzX11_NewPatch[] = { "sed",
  *
  *  Description of X11_Sprintf fix
  */
-#define X11_SPRINTF_FIXIDX               121
+#define X11_SPRINTF_FIXIDX               122
 tSCC zX11_SprintfName[] =
      "x11_sprintf";
 
@@ -4920,7 +4968,7 @@ tSCC zX11_SprintfList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zX11_SprintfSelect0[] =
-       "sprintf\\(\\)";
+       "^extern char \\*\tsprintf\\(\\);$";
 
 #define    X11_SPRINTF_TEST_CT  1
 tTestDesc aX11_SprintfTests[] = {
@@ -4929,10 +4977,11 @@ tTestDesc aX11_SprintfTests[] = {
 /*
  *  Fix Command Arguments for X11_Sprintf
  */
-const char* apzX11_SprintfPatch[] = { "sed",
-    "-e", "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n\
-extern char *\tsprintf();\\\n\
-#endif /* !defined __STDC__ */,",
+const char* apzX11_SprintfPatch[] = {
+    "format",
+    "#ifndef __STDC__\n\
+%0\n\
+#endif /* !defined __STDC__ */",
     (char*)NULL };
 
 
@@ -4940,9 +4989,9 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          121
+#define REGEX_COUNT          124
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            122
+#define FIX_COUNT            123
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAaa_Ki_IfaceName,    zAaa_Ki_IfaceList,
@@ -5467,7 +5516,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zTinfo_CplusplusName,    zTinfo_CplusplusList,
      apzTinfo_CplusplusMachs,
-     TINFO_CPLUSPLUS_TEST_CT, FD_MACH_ONLY,
+     TINFO_CPLUSPLUS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aTinfo_CplusplusTests,   apzTinfo_CplusplusPatch },
 
   {  zUltrix_Atof_ParamName,    zUltrix_Atof_ParamList,
@@ -5477,8 +5526,13 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zUltrix_ConstName,    zUltrix_ConstList,
      apzUltrix_ConstMachs,
-     ULTRIX_CONST_TEST_CT, FD_MACH_ONLY,
+     ULTRIX_CONST_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aUltrix_ConstTests,   apzUltrix_ConstPatch },
+
+  {  zUltrix_Const2Name,    zUltrix_Const2List,
+     apzUltrix_Const2Machs,
+     ULTRIX_CONST2_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aUltrix_Const2Tests,   apzUltrix_Const2Patch },
 
   {  zUltrix_Fix_FixprotoName,    zUltrix_Fix_FixprotoList,
      apzUltrix_Fix_FixprotoMachs,
@@ -5507,12 +5561,12 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zVa_I960_MacroName,    zVa_I960_MacroList,
      apzVa_I960_MacroMachs,
-     VA_I960_MACRO_TEST_CT, FD_MACH_ONLY,
+     VA_I960_MACRO_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aVa_I960_MacroTests,   apzVa_I960_MacroPatch },
 
   {  zVoid_NullName,    zVoid_NullList,
      apzVoid_NullMachs,
-     VOID_NULL_TEST_CT, FD_MACH_ONLY,
+     VOID_NULL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aVoid_NullTests,   apzVoid_NullPatch },
 
   {  zVxworks_Gcc_ProblemName,    zVxworks_Gcc_ProblemList,
@@ -5522,7 +5576,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zVxworks_Needs_VxtypesName,    zVxworks_Needs_VxtypesList,
      apzVxworks_Needs_VxtypesMachs,
-     VXWORKS_NEEDS_VXTYPES_TEST_CT, FD_MACH_ONLY,
+     VXWORKS_NEEDS_VXTYPES_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aVxworks_Needs_VxtypesTests,   apzVxworks_Needs_VxtypesPatch },
 
   {  zVxworks_Needs_VxworksName,    zVxworks_Needs_VxworksList,
@@ -5532,7 +5586,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zVxworks_TimeName,    zVxworks_TimeList,
      apzVxworks_TimeMachs,
-     VXWORKS_TIME_TEST_CT, FD_MACH_ONLY,
+     VXWORKS_TIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aVxworks_TimeTests,   apzVxworks_TimePatch },
 
   {  zX11_ClassName,    zX11_ClassList,
@@ -5542,7 +5596,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zX11_Class_UsageName,    zX11_Class_UsageList,
      apzX11_Class_UsageMachs,
-     X11_CLASS_USAGE_TEST_CT, FD_MACH_ONLY,
+     X11_CLASS_USAGE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aX11_Class_UsageTests,   apzX11_Class_UsagePatch },
 
   {  zX11_NewName,    zX11_NewList,
@@ -5552,6 +5606,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zX11_SprintfName,    zX11_SprintfList,
      apzX11_SprintfMachs,
-     X11_SPRINTF_TEST_CT, FD_MACH_ONLY,
+     X11_SPRINTF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aX11_SprintfTests,   apzX11_SprintfPatch }
 };

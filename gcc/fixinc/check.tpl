@@ -6,9 +6,12 @@
 =]#!/bin/sh
 
 set -e
-[ -d testdir ] && rm -rf testdir
-mkdir testdir
-cd testdir
+TESTDIR=tests
+TESTBASE=`cd $1;pwd`
+
+[ -d ${TESTDIR} ] || mkdir ${TESTDIR}
+cd ${TESTDIR}
+TESTDIR=`pwd`
 
 TARGET_MACHINE='*'
 DESTDIR=`pwd`/res
@@ -18,6 +21,7 @@ VERBOSE=1
 
 export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE VERBOSE
 
+rm -rf ${DESTDIR} ${SRCDIR}
 mkdir ${DESTDIR} ${SRCDIR}
 
 ( cd ${SRCDIR}
@@ -37,7 +41,38 @@ mkdir ${DESTDIR} ${SRCDIR}
     mkdir $f || mkdir -p $f
   done ) > /dev/null 2>&1
 
+cd inc
 [=
+
+_FOR fix =][=
+
+  _IF test_text _count 1 > =]
+#
+#  [=hackname=] has [=_EVAL test_text _count=] tests
+#
+sfile=[=
+    _IF files _exist =][=
+      files[0] =][=
+    _ELSE =]testing.h[=
+    _ENDIF =]
+dfile=`dirname $sfile`/[=hackname "_A-Z" "-a-z" _tr=]-[=_EVAL _index=].h
+fixnum=[=_EVAL _index=][=
+    _FOR test_text FROM 1 =]
+cat >> $sfile <<_HACK_EOF_
+
+
+#if defined( [=hackname _up=]_CHECK_[=_EVAL _index=] )
+[=test_text=]
+#endif  /* [=hackname _up=]_CHECK_[=_EVAL _index=] */
+_HACK_EOF_
+echo $sfile | ../../fixincl
+[ -f ${DESTDIR}/$sfile ] && mv ${DESTDIR}/$sfile ${DESTDIR}/$dfile[=
+    /test_text =][=
+  _ENDIF =][=
+
+/fix
+
+=][=
 
 _FOR fix =][=
 
@@ -50,16 +85,16 @@ echo No test for [=hackname=] in inc/[=
       _ENDIF =][=
     _ENDIF =][=
   _ELSE =]
-cat >> inc/[=
+cat >> [=
     _IF files _exist =][=
       files[0] =][=
     _ELSE =]testing.h[=
-    _ENDIF =] <<- _HACK_EOF_
+    _ENDIF =] <<_HACK_EOF_
 
 
-	#if defined( [=hackname _up=]_CHECK )
-[=test_text "\t" _prefix=]
-	#endif  /* [=hackname _up=]_CHECK */
+#if defined( [=hackname _up=]_CHECK )
+[=test_text=]
+#endif  /* [=hackname _up=]_CHECK */
 _HACK_EOF_
 [=_ENDIF =][=
 
@@ -67,40 +102,63 @@ _HACK_EOF_
 
 =]
 
-cd inc
-find . -type f | sed 's;\./;;' | sort > ../LIST
-../../fixincl < ../LIST
-cd ..
+find . -type f | sed 's;\./;;' | sort | ../../fixincl
+cd ${DESTDIR}
 
+exitok=true
+
+find * -type f -print > ${TESTDIR}/LIST
+
+exitok=`
+exec < ${TESTDIR}/LIST
 while read f
 do
-  if [ ! -f res/$f ]
+  if [ ! -f ${TESTBASE}/$f ]
   then
-    echo "Only in inc:  inc/$f"
+    echo "Newly fixed header:  $f" >&2
+    exitok=false
+
+  elif cmp $f ${TESTBASE}/$f >&2
+  then
+    :
+
   else
-    diff -c inc/$f res/$f | \
-      sed -e '1,2s;	.*;;' -e '/MACH_DIFF:/,/no uniform test,/d'
+    diff -c $f ${TESTBASE}/$f >&2
+    exitok=false
   fi
-done > NEWDIFF < LIST
+done
+echo $exitok`
+
+cd $TESTBASE
+
+find * -type f -print | \
+fgrep -v 'CVS/' > ${TESTDIR}/LIST
+
+exitok=`
+exec < ${TESTDIR}/LIST
+while read f
+do
+  if [ -s $f ] && [ ! -f ${DESTDIR}/$f ]
+  then
+    echo "Missing header fix:  $f" >&2
+    exitok=false
+  fi
+done
+echo $exitok`
 
 echo
-echo Test output check:
-[=
+if $exitok
+then
+  cd ${TESTDIR}
+  rm -rf inc res LIST
+  cd ..
+  rmdir ${TESTDIR} > /dev/null 2>&1 || :
+  echo All fixinclude tests pass >&2
+else
+  echo There were fixinclude test FAILURES  >&2
+fi
+$exitok[=
 
-_FOR fix =][=
-
-  _IF test_text _exist =]
-fgrep [=hackname _up=]_CHECK NEWDIFF > /dev/null 2>&1 || \
-  echo "[=_eval hackname _get "#%32s test failed.  See testdir/inc/"
-          _printf =][=
-    _IF files _exist =][=
-      files[0] =][=
-    _ELSE =]testing.h[=
-    _ENDIF =]"[=
-  _ENDIF =][=
-
-/fix
-
-=][=
 _eval _outfile "chmod +x %s" _printf _shell
+
 =]

@@ -1,3 +1,11 @@
+2000-05-31  Bruce Korb  <bkorb@gnu.org>
+
+	* check.tpl: rework to use test result tree
+	* fixincl.x: regenerate
+	* inclhack.def:  add new tests
+	* tests/base/arch/i960/archI960.h:  New test result
+	* tests/base/curses.h: modified test result
+
 Wed May 31 13:17:20 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* except.c (clear_function_eh_region): Do not free NULL.

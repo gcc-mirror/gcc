@@ -1612,7 +1612,7 @@ fix = {
     c_fix_arg = "__%0";
     c_fix_arg = "reg(ex|off|match)_t[^;]";
 
-    test_text = "`touch inc/sys/lc_core.h`"
+    test_text = "`touch sys/lc_core.h`"
     "typedef struct {\n  int stuff, mo_suff;\n} regex_t;\n"
     "extern regex_t    re;\n"
     "extern regoff_t   ro;\n"
@@ -2601,7 +2601,10 @@ fix = {
     hackname = tinfo_cplusplus;
     files    = tinfo.h;
     select   = "[ \t]_cplusplus";
-    sed      = "s/[ \t]_cplusplus/ __cplusplus/";
+
+    c_fix     = format;
+    c_fix_arg = " __cplusplus";
+    test_text = "#ifdef _cplusplus\nint bogus;\n#endif";
 };
 
 
@@ -2621,21 +2624,43 @@ fix = {
  *  parameters not const on DECstation Ultrix V4.0 and OSF/1.
  */
 fix = {
-    hackname = ultrix_const;
-    files    = stdio.h;
+    hackname  = ultrix_const;
+    files     = stdio.h;
+    select    = 'perror\( char \*';
 
-    sed   = 's@perror( char \*__s );@perror( const char *__s );@';
-    sed   = 's@fputs( char \*__s,@fputs( const char *__s,@';
-    sed   = 's@fopen( char \*__filename, char \*__type );@'
-              'fopen( const char *__filename, const char *__type );@';
-    sed   = 's@fwrite( void \*__ptr,@fwrite( const void *__ptr,@';
-    sed   = 's@fscanf( FILE \*__stream, char \*__format,@'
-              'fscanf( FILE *__stream, const char *__format,@';
-    sed   = 's@scanf( char \*__format,@scanf( const char *__format,@';
-    sed   = 's@sscanf( char \*__s, char \*__format,@'
-              'sscanf( const char *__s, const char *__format,@';
-    sed   = 's@popen(char \*, char \*);@popen(const char *, const char *);@';
-    sed   = 's@tempnam(char\*,char\*);@tempnam(const char*,const char*);@';
+    c_fix     = format;
+    c_fix_arg = "%1 const %3 *__";
+    c_fix_arg = "([ \t*](perror|fputs|fwrite|scanf|fscanf)\\(.*)"
+                "[ \t]+(char|void) \\*__";
+
+    test_text =
+    "extern void perror( char *__s );\n"
+    "extern int fputs( char *__s, FILE *);\n"
+    "extern size_t fwrite( void *__ptr, size_t, size_t, FILE *);\n"
+    "extern int fscanf( FILE *__stream, char *__format, ...);\n"
+    "extern int scanf( char *__format, ...);\n";
+};
+
+
+/*
+ *  parameters not const on DECstation Ultrix V4.0 and OSF/1.
+ */
+fix = {
+    hackname  = ultrix_const2;
+    files     = stdio.h;
+
+    select    = '\*fopen\( char \*';
+    c_fix     = format;
+    c_fix_arg = "%1( const char *%3, const char *";
+    c_fix_arg = "([ \t*](fopen|sscanf|popen|tempnam))\\("
+               "[ \t]*char[ \t]*\\*([^,]*),"
+               "[ \t]*char[ \t]*\\*[ \t]*";
+
+    test_text =
+    "extern FILE *fopen( char *__filename, char *__type );\n"
+    "extern int sscanf( char *__s, char *__format, ...);\n"
+    "extern FILE *popen(char *, char *);\n"
+    "extern char *tempnam(char*,char*);\n";
 };
 
 
@@ -2649,6 +2674,9 @@ fix = {
     select   = ULTRIX;
     sed      = "/^[ \t]*extern[ \t]*int[ \t]*uname();$/i\\\n"
                "struct utsname;\n";
+
+    test_text =
+    "/* ULTRIX's uname */\nextern\tint\tuname();";
 };
 
 
@@ -2657,9 +2685,12 @@ fix = {
  */
 fix = {
     hackname = ultrix_ifdef;
-    select   = "#ifdef KERNEL[ \t]*[^ \t]";
+    select   = "#ifdef KERNEL[ \t]+[^ \t]";
     files    = sys/file.h;
     sed      = "s/#ifdef KERNEL/#if defined(KERNEL)/";
+
+    test_text =
+    "#ifdef KERNEL\t&& defined( mumbojumbo )\nint oops;\n#endif";
 };
 
 
@@ -2721,13 +2752,18 @@ fix = {
  *  Fix definitions of macros used by va-i960.h in VxWorks header file.
  */
 fix = {
-    hackname = va_i960_macro;
-    files    = arch/i960/archI960.h;
-    select   = "__(vsiz|vali|vpad|alignof__)";
-    sed = "s/__vsiz/__vxvsiz/";
-    sed = "s/__vali/__vxvali/";
-    sed = "s/__vpad/__vxvpad/";
-    sed = "s/__alignof__/__vxalignof__/";
+    hackname  = va_i960_macro;
+    files     = arch/i960/archI960.h;
+    select    = "__(vsiz|vali|vpad|alignof__)";
+
+    c_fix     = format;
+    c_fix_arg = "__vx%1";
+
+    test_text =
+    "extern int __vsiz vsiz;\n"
+    "extern int __vali vali;\n"
+    "extern int __vpad vpad;\n"
+    "#define __alignof__(x) ...";
 };
 
 
@@ -2736,21 +2772,22 @@ fix = {
  *  which is illegal in ANSI C++.
  */
 fix = {
-    hackname = void_null;
-    files    = curses.h;
-    files    = dbm.h;
-    files    = locale.h;
-    files    = stdio.h;
-    files    = stdlib.h;
-    files    = string.h;
-    files    = time.h;
-    files    = unistd.h;
-    files    = sys/dir.h;
-    files    = sys/param.h;
-    files    = sys/types.h;
-    select   = "#[ \t]*define[ \t][ \t]*NULL[ \t].*void";
-    sed      = "s/^#[ \t]*define[ \t]*NULL[ \t]*((void[ \t]*\\*)0)"
-                "/#define NULL 0/";
+    hackname  = void_null;
+    files     = curses.h;
+    files     = dbm.h;
+    files     = locale.h;
+    files     = stdio.h;
+    files     = stdlib.h;
+    files     = string.h;
+    files     = time.h;
+    files     = unistd.h;
+    files     = sys/dir.h;
+    files     = sys/param.h;
+    files     = sys/types.h;
+    select    = "^#[ \t]*define[ \t]+NULL[ \t]+\\(\\(void[ \t]*\\*\\)0\\)";
+    c_fix     = format;
+    c_fix_arg = "#define NULL 0";
+    test_text = "# define\tNULL \t((void *)0)  /* typed NULL */";
 };
 
 
@@ -2785,6 +2822,13 @@ fix = {
 
     sed = "/[ \t]wchar_t/a\\\n"
         "#endif\n";
+
+    test_text =
+    "#ifdef __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__\n"
+    "typedef unsigned int size_t;\n"
+    "typedef long ptrdiff_t;\n"
+    "typedef unsigned short wchar_t;\n"
+    "#endif /* __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__ */\n";
 };
 
 
@@ -2792,10 +2836,11 @@ fix = {
  *  Fix VxWorks <time.h> to not require including <vxTypes.h>.
  */
 fix = {
-    hackname = vxworks_needs_vxtypes;
-    files    = time.h;
-    select   = "uint_t[ \t][ \t]*_clocks_per_sec";
-    sed      = "s/uint_t/unsigned int/";
+    hackname  = vxworks_needs_vxtypes;
+    files     = time.h;
+    select    = "uint_t([ \t]+_clocks_per_sec)";
+    c_fix     = format;
+    c_fix_arg = "unsigned int%1";
     test_text = "uint_t\t_clocks_per_sec;";
 };
 
@@ -2809,10 +2854,14 @@ fix = {
     test     = " -r types/vxTypesOld.h";
     test     = " -n \"`egrep '#include' $file`\"";
     test     = " -n \"`egrep ULONG $file`\"";
-    select   = "#[ \t]define[ \t][ \t]*__INCstath";
+    select   = "#[ \t]define[ \t]+__INCstath";
 
     sed = "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n"
           "#include <types/vxTypesOld.h>\n";
+
+    test_text = "`touch types/vxTypesOld.h`"
+    "#include </dev/null> /* ULONG */\n"
+    "# define\t__INCstath <sys/stat.h>";
 };
 
 
@@ -2822,19 +2871,24 @@ fix = {
 fix = {
     hackname = vxworks_time;
     files    = time.h;
-    select   = "VOIDFUNCPTR";
     test     = " -r vxWorks.h";
-    sed      = "/VOIDFUNCPTR/i\\\n"
-               "#ifndef __gcc_VOIDFUNCPTR_defined\\\n"
-               "#ifdef __cplusplus\\\n"
-               "typedef void (*__gcc_VOIDFUNCPTR) (...);\\\n"
-               "#else\\\n"
-               "typedef void (*__gcc_VOIDFUNCPTR) ();\\\n"
-               "#endif\\\n"
-               "#define __gcc_VOIDFUNCPTR_defined\\\n"
-               "#endif\n";
 
-    sed      = "s/VOIDFUNCPTR/__gcc_VOIDFUNCPTR/g";
+    select    = "#[ \t]*define[ \t]+VOIDFUNCPTR[ \t].*";
+    c_fix     = format;
+
+    c_fix_arg =
+    "#ifndef __gcc_VOIDFUNCPTR_defined\n"
+    "#ifdef __cplusplus\n"
+    "typedef void (*__gcc_VOIDFUNCPTR) (...);\n"
+    "#else\n"
+    "typedef void (*__gcc_VOIDFUNCPTR) ();\n"
+    "#endif\n"
+    "#define __gcc_VOIDFUNCPTR_defined\n"
+    "#endif\n"
+    "#define VOIDFUNCPTR __gcc_VOIDFUNCPTR";
+
+    test_text = "`touch vxWorks.h`"
+                "#define VOIDFUNCPTR (void(*)())";
 };
 
 
@@ -2867,7 +2921,11 @@ fix = {
     hackname = x11_class_usage;
     files    = Xm/BaseClassI.h;
     bypass   = "__cplusplus";
-    sed      = "s/ class[)]/ c_class)/g";
+
+    select    = " class\\)";
+    c_fix     = format;
+    c_fix_arg = " c_class)";
+
     test_text = "extern mumble (int  class);\n";
 };
 
@@ -2903,11 +2961,11 @@ fix = {
     hackname = x11_sprintf;
     files    = X11/Xmu.h;
     files    = X11/Xmu/Xmu.h;
-    select   = 'sprintf\(\)';
+    select   = "^extern char \\*\tsprintf\\(\\);$";
 
-    sed      = "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n"
-               "extern char *\tsprintf();\\\n"
-               "#endif /* !defined __STDC__ */,";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __STDC__\n%0\n#endif /* !defined __STDC__ */";
+
     test_text = "extern char *\tsprintf();";
 };
 
