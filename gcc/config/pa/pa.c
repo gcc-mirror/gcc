@@ -6436,3 +6436,31 @@ pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
   /* If we get here, then everything is good.  */
   return 1;
 }
+
+/* Return nonzero if sets and references for INSN are delayed.
+
+   Millicode insns are actually function calls with some special
+   constraints on arguments and register usage.
+
+   Millicode calls always expect their arguments in the integer argument
+   registers, and always return their result in %r29 (ret1).  They
+   are expected to clobber their arguments, %r1, %r29, and %r31 and
+   nothing else.
+
+   By considering this effects delayed reorg reorg can put insns
+   which set the argument registers into the delay slot of the millicode
+   call -- thus they act more like traditional CALL_INSNs.
+
+   get_attr_type will try to recognize the given insn, so make sure to
+   filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
+   in particular.  */
+int
+insn_sets_and_refs_are_delayed (insn)
+     rtx insn;
+{
+  return ((GET_CODE (insn) == INSN 
+	   && GET_CODE (PATTERN (insn)) != SEQUENCE
+	   && GET_CODE (PATTERN (insn)) != USE
+	   && GET_CODE (PATTERN (insn)) != CLOBBER
+	   && get_attr_type (insn) == TYPE_MILLI));
+}
