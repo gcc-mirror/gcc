@@ -1,3 +1,7 @@
+Sat Oct 18 12:47:31 1997  Doug Evans  <dje@canuck.cygnus.com>
+
+	* expr.c (use_group_regs): Don't call use_reg for MEMs.
+
 Sat Oct 18 00:43:59 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/freebsd.h (ASM_COMMENT_START): Fix.
