@@ -99,7 +99,6 @@ static int look_for_overrides_r (tree, tree);
 static struct search_level *push_search_level (struct stack_level *,
 					       struct obstack *);
 static struct search_level *pop_search_level (struct stack_level *);
-static void grow_bfs_bases (tree **, size_t *, size_t *);
 static tree bfs_walk (tree, tree (*) (tree, void *),
 		      tree (*) (tree, int, void *), void *);
 static tree lookup_field_queue_p (tree, int, void *);
@@ -1458,43 +1457,6 @@ adjust_result_of_qualified_name_lookup (tree decl,
 }
 
 
-/* Start with enough room for ten concurrent base classes.  That
-   will be enough for most hierarchies.  */
-#define BFS_WALK_INITIAL_QUEUE_SIZE 10
-
-/* Subroutine of bfs_walk; enlarges the buffer it uses for its
-   circular queue.  */
-static void
-grow_bfs_bases (tree **basep, size_t *sizep, size_t *headp)
-{
-  tree *base;
-  size_t size = *sizep;
-  size_t head = *headp;
-
-  /* If the size is BFS_WALK_INITIAL_QUEUE_SIZE, the old array is on
-     the stack.  */
-  if (size == BFS_WALK_INITIAL_QUEUE_SIZE)
-    {
-      base = xmalloc (size * 2 * sizeof(tree));
-      memcpy (base, *basep, size * sizeof(tree));
-    }
-  else
-    base = xrealloc (*basep, size * 2 * sizeof(tree));
-
-  *basep = base;
-  *sizep = size * 2;
-
-  /* Shift all the elements between head and the former end of the
-     array, opening up a gap between tail and head.  If head==0 we
-     don't need to do anything to achieve this.  */
-  if (head != 0)
-    {
-      memmove (&base[head + size], &base[head],
-	       (size - head) * sizeof (tree));
-      *headp = head + size;
-    }
-}
-
 /* Walk the class hierarchy dominated by TYPE.  FN is called for each
    type in the hierarchy, in a breadth-first preorder traversal.
    If it ever returns a non-NULL value, that value is immediately
@@ -1511,9 +1473,10 @@ grow_bfs_bases (tree **basep, size_t *sizep, size_t *headp)
    enlarged.  The underflow and overflow conditions are
    indistinguishable except by context: if head == tail and we just
    moved the head pointer, the queue is empty, but if we just moved
-   the tail pointer, the queue is full.  Base class vectors are only
-   put on the queue if they are nonempty, which is why it's safe to
-   use do-while for the inner loop.  */
+   the tail pointer, the queue is full.  
+   Start with enough room for ten concurrent base classes.  That
+   will be enough for most hierarchies.  */
+#define BFS_WALK_INITIAL_QUEUE_SIZE 10
 
 static tree
 bfs_walk (tree binfo,
@@ -1523,34 +1486,22 @@ bfs_walk (tree binfo,
 {
   tree rval = NULL_TREE;
 
-  tree bfs_bases_initial[BFS_WALK_INITIAL_QUEUE_SIZE];
+  tree bases_initial[BFS_WALK_INITIAL_QUEUE_SIZE];
   /* A circular queue of the base classes of BINFO.  These will be
      built up in breadth-first order, except where QFN prunes the
      search.  */
   size_t head, tail;
-  size_t bfs_bases_size = BFS_WALK_INITIAL_QUEUE_SIZE;
-  tree *bfs_bases = bfs_bases_initial;
-
-  /* Is the first one what we're looking for?  If so, we're done.  */
-  rval = fn (binfo, data);
-  if (rval)
-    return rval;
-
-  /* If it has no base types, we are also done.  */
-  if (!BINFO_BASETYPES (binfo))
-    return 0;
-
-  /* Otherwise, initialize the queue with its basetypes vector
-     and proceed.  */
+  size_t base_buffer_size = BFS_WALK_INITIAL_QUEUE_SIZE;
+  tree *base_buffer = bases_initial;
 
   head = tail = 0;
-  bfs_bases[tail++] = binfo;
+  base_buffer[tail++] = binfo;
 
   while (head != tail)
     {
       int n_bases, ix;
-      tree binfo = bfs_bases[head++];
-      if (head == bfs_bases_size)
+      tree binfo = base_buffer[head++];
+      if (head == base_buffer_size)
 	head = 0;
 
       /* Is this the one we're looking for?  If so, we're done.  */
@@ -1559,32 +1510,42 @@ bfs_walk (tree binfo,
 	goto done;
 
       n_bases = BINFO_N_BASETYPES (binfo);
-      if (n_bases)
+      for (ix = 0; ix != n_bases; ix++)
 	{
-	  for (ix = 0; ix != n_bases; ix++)
+	  tree base_binfo;
+	  
+	  if (qfn)
+	    base_binfo = (*qfn) (binfo, ix, data);
+	  else
+	    base_binfo = BINFO_BASETYPE (binfo, ix);
+	  
+ 	  if (base_binfo)
 	    {
-	      tree base_binfo;
-
-	      if (qfn)
-		base_binfo = (*qfn) (binfo, ix, data);
- 	      else
- 		base_binfo = BINFO_BASETYPE (binfo, ix);
-
-	      if (base_binfo)
+	      base_buffer[tail++] = base_binfo;
+	      if (tail == base_buffer_size)
+		tail = 0;
+	      if (tail == head)
 		{
-		  bfs_bases[tail++] = base_binfo;
-		  if (tail == bfs_bases_size)
-		    tail = 0;
-		  if (tail == head)
-		    grow_bfs_bases (&bfs_bases, &bfs_bases_size, &head);
+		  tree *new_buffer = xmalloc (2 * base_buffer_size
+					      * sizeof (tree));
+		  memcpy (&new_buffer[0], &base_buffer[0],
+			  tail * sizeof (tree));
+		  memcpy (&new_buffer[head + base_buffer_size],
+			  &base_buffer[head],
+			  (base_buffer_size - head) * sizeof (tree));
+		  if (base_buffer_size != BFS_WALK_INITIAL_QUEUE_SIZE)
+		    free (base_buffer);
+		  base_buffer = new_buffer;
+		  head += base_buffer_size;
+		  base_buffer_size *= 2;
 		}
 	    }
 	}
     }
 
  done:
-  if (bfs_bases != bfs_bases_initial)
-    free (bfs_bases);
+  if (base_buffer_size != BFS_WALK_INITIAL_QUEUE_SIZE)
+    free (base_buffer);
   return rval;
 }
 

@@ -1,3 +1,9 @@
+2003-02-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* search.c (bfs_walk_grow): Remove. Fold into ...
+	(bfs_walk): ... here, fix fencepost error. Fix merge lossage
+	in previous patch.
+
 2003-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9729
