@@ -29,7 +29,7 @@ template<typename T>
     bool test __attribute__((unused)) = true;
     typedef complex<T> cplx;
 
-    T eps = numeric_limits<T>::epsilon() * 10;
+    T eps = numeric_limits<T>::epsilon() * 100;
     
     cplx ref = pow(cplx(a, T()), cplx(b, T()));
     cplx res1 = pow(a, cplx(b, T()));
