@@ -1,5 +1,9 @@
 2003-03-11  Loren J. Rittle  <ljrittle@acm.org>
 
+	* config/os/bsd/freebsd/ctype_inline.h:  Support _M_table
+	when so installed.
+	* testsuite/22_locale/ctype/cons/char/1.cc: Fix typo.
+
 	* testsuite/testsuite_hooks.h (run_tests_wrapped_env): Do not
 	report lack of setenv().
 
