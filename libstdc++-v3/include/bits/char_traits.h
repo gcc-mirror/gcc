@@ -216,7 +216,7 @@ namespace std
       { return wmemchr(__s, __a, __n); }
 
       static char_type* 
-      move(char_type* __s1, const char_type* __s2, int_type __n)
+      move(char_type* __s1, const char_type* __s2, size_t __n)
       { return wmemmove(__s1, __s2, __n); }
 
       static char_type* 
