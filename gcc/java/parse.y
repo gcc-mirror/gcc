@@ -99,7 +99,6 @@ static int check_pkg_class_access PROTO ((tree, tree));
 static tree resolve_package PROTO ((tree, tree *));
 static tree lookup_package_type PROTO ((char *, int));
 static tree resolve_class PROTO ((tree, tree, tree));
-static tree do_resolve_class PROTO ((tree, tree, tree));
 static void declare_local_variables PROTO ((int, tree, tree));
 static void source_start_java_method PROTO ((tree));
 static void source_end_java_method PROTO ((void));
@@ -3806,16 +3805,14 @@ obtain_incomplete_type (type_name)
     fatal ("invalid type name - obtain_incomplete_type");
 
   for (ptr = ctxp->incomplete_class; ptr; ptr = TREE_CHAIN (ptr))
-    if (TYPE_NAME (TREE_PURPOSE (ptr)) == name)
+    if (TYPE_NAME (ptr) == name)
       break;
 
   if (!ptr)
     {
-      tree core;
       push_obstacks (&permanent_obstack, &permanent_obstack);
-      BUILD_PTR_FROM_NAME (core, name);
-      layout_type (core);
-      ptr = build_tree_list (core, NULL_TREE);
+      BUILD_PTR_FROM_NAME (ptr, name);
+      layout_type (ptr);
       pop_obstacks ();
       TREE_CHAIN (ptr) = ctxp->incomplete_class;
       ctxp->incomplete_class = ptr;
@@ -4077,8 +4074,22 @@ resolve_class (class_type, decl, cl)
 {
   char *name = IDENTIFIER_POINTER (TYPE_NAME (class_type));
   char *base = name;
-  tree resolved_type, resolved_type_decl;
+  tree resolved_type = TREE_TYPE (class_type);
+  tree resolved_type_decl;
   
+  if (resolved_type != NULL_TREE)
+    {
+      tree resolved_type_decl = TYPE_NAME (resolved_type);
+      if (resolved_type_decl == NULL_TREE
+	  || TREE_CODE (resolved_type_decl) == IDENTIFIER_NODE)
+	{
+	  resolved_type_decl = build_decl (TYPE_DECL,
+					   TYPE_NAME (class_type),
+					   resolved_type);
+	}
+      return resolved_type_decl;
+    }
+
   /* 1- Check to see if we have an array. If true, find what we really
      want to resolve  */
   while (name[0] == '[')
@@ -4109,14 +4120,16 @@ resolve_class (class_type, decl, cl)
       /* Figure how those two things are important for error report. FIXME */
       DECL_SOURCE_LINE (resolved_type_decl) = 0;
       DECL_SOURCE_FILE (resolved_type_decl) = input_filename;
+      TYPE_NAME (class_type) = TYPE_NAME (resolved_type);
     }
+  TREE_TYPE (class_type) = resolved_type;
   return resolved_type_decl;
 }
 
 /* Effectively perform the resolution of class CLASS_TYPE. DECL or CL
    are used to report error messages.  */
 
-static tree
+tree
 do_resolve_class (class_type, decl, cl)
      tree class_type;
      tree decl;

@@ -381,15 +381,11 @@ typedef struct _jdep {
 #define JDEP_APPLY_PATCH(J,P) (*(J)->patch = (P))
 #define JDEP_GET_PATCH(J)     ((J)->patch)
 #define JDEP_CHAIN(J)         ((J)->next)
-#define JDEP_TO_RESOLVE(J)    (TREE_PURPOSE ((J)->solv))
-#define JDEP_RESOLVED_DECL(J) ((J)->solv ? TREE_PURPOSE ((J)->solv):NULL_TREE)
-#define JDEP_RESOLVED(J, D)			\
-  {						\
-    TREE_PURPOSE ((J)->solv) = D;		\
-    TREE_VALUE ((J)->solv) = (J)->solv;		\
-  }
-#define JDEP_RESOLVED_P(J)    (!(J)->solv || 				\
-			       TREE_VALUE ((J)->solv) == (J)->solv)
+#define JDEP_TO_RESOLVE(J)    ((J)->solv)
+#define JDEP_RESOLVED_DECL(J) ((J)->solv)
+#define JDEP_RESOLVED(J, D)   ((J)->solv = D)
+#define JDEP_RESOLVED_P(J)    \
+	(!(J)->solv || TREE_CODE ((J)->solv) != POINTER_TYPE)
 
 typedef struct _jdeplist {
   jdep *first;
@@ -667,6 +663,7 @@ tree java_method_add_stmt PROTO ((tree, tree));
 char *java_get_line_col PROTO ((char *, int, int));
 void java_expand_switch PROTO ((tree));
 int java_report_errors PROTO (());
+extern tree do_resolve_class PROTO ((tree, tree, tree));
 #endif
 
 /* Always in use, no matter what you compile */
