@@ -122,6 +122,6 @@ extern void unicosmk_output_common (FILE *, const char *, int, int);
 extern int unicosmk_initial_elimination_offset (int, int);
 #endif
 
-extern int some_small_symbolic_operand (rtx, enum machine_mode);
+extern int some_small_symbolic_operand_int (rtx *, void *);
 extern int tls_symbolic_operand_1 (rtx, int, int);
 extern rtx resolve_reload_operand (rtx);

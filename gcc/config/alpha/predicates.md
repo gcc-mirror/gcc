@@ -550,3 +550,16 @@
        (match_test "register_operand (XEXP (op, 0), mode)
 		    && GET_CODE (XEXP (op, 1)) == CONST_INT
 		    && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op, 1)), 'K')")))
+
+;; For TARGET_EXPLICIT_RELOCS, we don't obfuscate a SYMBOL_REF to a
+;; small symbolic operand until after reload.  At which point we need
+;; to replace (mem (symbol_ref)) with (mem (lo_sum $29 symbol_ref))
+;; so that sched2 has the proper dependency information.  */
+(define_predicate "some_small_symbolic_operand"
+  (match_code "set,parallel,prefetch,unspec,unspec_volatile")
+{
+  /* Avoid search unless necessary.  */
+  if (!TARGET_EXPLICIT_RELOCS || !reload_completed)
+    return false;
+  return for_each_rtx (&op, some_small_symbolic_operand_int, NULL);
+})
