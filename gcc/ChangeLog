@@ -1,3 +1,10 @@
+2004-04-24  Roger Sayle  <roger@eyesopen.com>
+	    Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def (aix_syswait_2): New fix.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/sys/wait.h: Update for new test.
+
 2004-04-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/14960
