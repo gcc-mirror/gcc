@@ -86,12 +86,12 @@ gnat1$(exeext): prefix.o attribs.o $(LIBDEPS) $(BACKEND) force
 	$(MAKE) -C ada $(SUBDIR_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 		../gnat1$(exeext)
 
-gnatbind$(exeext): force
+gnatbind$(exeext): $(CONFIG_H) prefix.o force
 	$(MAKE) -C ada $(SUBDIR_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 		../gnatbind$(exeext)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink 
-gnattools: $(GCC_PARTS) force
+gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
 	$(MAKE) -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
 	   ADA_INCLUDES="-I- -I../rts"\
 	   CC="../../xgcc -B../../" STAGE_PREFIX=../../  gnattools1
@@ -563,16 +563,16 @@ ada.maintainer-clean:
 # Stage hooks:
 # The main makefile has already created stage?/ada
 
-ada.stage1:
+ada.stage1: stage1-start
 	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage1/ada
 	-$(MV) ada/stamp-* stage1/ada
-ada.stage2:
+ada.stage2: stage2-start
 	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage2/ada
 	-$(MV) ada/stamp-* stage2/ada
-ada.stage3:
+ada.stage3: stage3-start
 	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage3/ada
 	-$(MV) ada/stamp-* stage3/ada
-ada.stage4:
+ada.stage4: stage4-start
 	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage4/ada
 	-$(MV) ada/stamp-* stage4/ada
 

@@ -2109,7 +2109,7 @@ b_gnat1.c : $(GNAT1_ADA_OBJS)
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnat1.c -n gnat1drv.ali
 b_gnat1.o : b_gnat1.c
 
-b_gnatb.c : $(GNATBIND_OBJS)
+b_gnatb.c : $(GNATBIND_OBJS) interfac.o
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatb.c gnatbind.ali
 b_gnatb.o : b_gnatb.c
 

@@ -1,3 +1,11 @@
+2002-05-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (gnat1$(exeext), gnatbind$(exeext), gnattools):
+	Restore $(CONFIG_H) and prefix.o dependencies.
+	(ada.stage[1-4]): Depend on stage?-start.
+
+	* Makefile.in (b_gnatb.c): Depend on interfac.o.
+
 2002-05-02  Jim Wilson  <wilson@redhat.com>
 
 	* utils.c (finish_record_type): Change record_size to record_type.
