@@ -12,6 +12,18 @@ Sun May 17 01:12:27 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
+Sat May 16 23:20:32 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/osf.h (HAVE_STAMP_H): Define.
+	* alpha.c: Use it.
+	* alpha/netbsd.h, alpha/netbsd-elf.h: New files.
+	* configure.in (alpha*-*-netbsd*): New.
+	Based on patches from Paul H. Anderson <pha@pdq.com>.
+
+	* configure.in (alpha*-*-linux-*): Kill xm_defines.
+	(alpha*-*-linux-gnulibc1*) [fixincludes]: Define.
+	* alpha/xm-linux.h: Remove file.
+
 Sat May 16 18:32:45 1998  Doug Evans  <devans@canuck.cygnus.com>
 
 	* dbxout.c (dbxout_parms): If mode of type of parameter living
