@@ -6326,10 +6326,16 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
 	}
       else if (reload_completed)
 	setup_clocks_p = TRUE;
-      memcpy (curr_state, prev_cycle_state, dfa_state_size);
-      state_transition (curr_state, dfa_stop_insn);
-      state_transition (curr_state, dfa_pre_cycle_insn);
-      state_transition (curr_state, NULL);
+      if (GET_CODE (PATTERN (last_scheduled_insn)) == ASM_INPUT
+	  || asm_noperands (PATTERN (last_scheduled_insn)) >= 0)
+	state_reset (curr_state);
+      else
+	{
+	  memcpy (curr_state, prev_cycle_state, dfa_state_size);
+	  state_transition (curr_state, dfa_stop_insn);
+	  state_transition (curr_state, dfa_pre_cycle_insn);
+	  state_transition (curr_state, NULL);
+	}
     }
   else if (reload_completed)
     setup_clocks_p = TRUE;
