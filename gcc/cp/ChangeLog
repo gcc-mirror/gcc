@@ -1,5 +1,10 @@
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* call.c (maybe_handle_ref_bind): Copy ICS_USER_FLAG and
+	ICS_BAD_FLAG.
+
+2001-04-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* search.c (lookup_field_r): If looking for type and non-TYPE_DECL
 	is found, look first if name does not match the structure name.
 
