@@ -4713,7 +4713,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	  && rtx_equal_p (XEXP (op0, 1), op1)
 	  && rtx_equal_p (XEXP (op0, 0), op2))
 	return op2;
-      else if (! side_effects_p (op0))
+      else if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && ! side_effects_p (op0))
 	{
 	  rtx temp;
 	  temp = simplify_relational_operation (GET_CODE (op0), op0_mode,
