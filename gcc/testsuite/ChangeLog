@@ -1,5 +1,50 @@
 2000-06-29  Zack Weinberg  <zack@wolery.cumb.org>
 
+
+	Move the c-torture/noncompile tests to either gcc.dg/cpp or a new
+	gcc.dg/noncompile directory, depending on whether they're
+	preprocessor tests or not.  Annotate all the tests for the dg
+	framework.
+
+	* gcc.c-torture/noncompile/noncompile.exp: Delete.
+	* gcc.dg/noncompile/noncompile.exp: New.
+
+	* Moved files:
+	Old name				New name
+	gcc.c-torture/noncompile/920507-1.c	gcc.dg/noncompile/920507-1.c
+	gcc.c-torture/noncompile/920616-2.c	gcc.dg/noncompile/920616-2.c
+	gcc.c-torture/noncompile/920721-2.c	gcc.dg/noncompile/920721-2.c
+	gcc.c-torture/noncompile/920824-1.c	gcc.dg/noncompile/920824-1.c
+	gcc.c-torture/noncompile/920923-1.c	gcc.dg/noncompile/920923-1.c
+	gcc.c-torture/noncompile/921102-1.c	gcc.dg/noncompile/921102-1.c
+	gcc.c-torture/noncompile/921116-1.c	gcc.dg/noncompile/921116-1.c
+	gcc.c-torture/noncompile/930301-1.c	gcc.dg/noncompile/930301-1.c
+	gcc.c-torture/noncompile/930622-1.c	gcc.dg/noncompile/930622-1.c
+	gcc.c-torture/noncompile/930622-2.c	gcc.dg/noncompile/930622-2.c
+	gcc.c-torture/noncompile/930714-1.c	gcc.dg/noncompile/930714-1.c
+	gcc.c-torture/noncompile/931203-1.c	gcc.dg/noncompile/931203-1.c
+	gcc.c-torture/noncompile/940112-1.c	gcc.dg/noncompile/940112-1.c
+	gcc.c-torture/noncompile/940227-1.c	gcc.dg/noncompile/940227-1.c
+	gcc.c-torture/noncompile/940510-1.c	gcc.dg/noncompile/940510-1.c
+	gcc.c-torture/noncompile/950825-1.c	gcc.dg/noncompile/950825-1.c
+	gcc.c-torture/noncompile/950921-1.c	gcc.dg/noncompile/950921-1.c
+	gcc.c-torture/noncompile/951123-1.c	gcc.dg/noncompile/951123-1.c
+	gcc.c-torture/noncompile/971104-1.c	gcc.dg/noncompile/971104-1.c
+	gcc.c-torture/noncompile/990416-1.c	gcc.dg/noncompile/990416-1.c
+	gcc.c-torture/noncompile/init-1.c	gcc.dg/noncompile/init-1.c
+	gcc.c-torture/noncompile/init-2.c	gcc.dg/noncompile/init-2.c
+	gcc.c-torture/noncompile/invalid_asm.c	gcc.dg/noncompile/invalid_asm.c
+	gcc.c-torture/noncompile/va-arg-1.c	gcc.dg/noncompile/va-arg-1.c
+
+	gcc.c-torture/noncompile/940712-1.c	gcc.dg/cpp/19940712-1.c
+	gcc.c-torture/noncompile/940712-1.h	gcc.dg/cpp/19940712-1.h
+	gcc.c-torture/noncompile/940712-1a.h	gcc.dg/cpp/19940712-1a.h
+	gcc.c-torture/noncompile/940712-1b.h	gcc.dg/cpp/19940712-1b.h
+	gcc.c-torture/noncompile/951025-1.c	gcc.dg/cpp/19951025-1.c
+	gcc.c-torture/noncompile/951227-1.c	gcc.dg/cpp/19951227-1.c
+
+2000-06-29  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* gcc.dg/cpp/20000628-1a.h: On each of the first three inclusions,
 	declare one variable.  On the fourth, error.
 	* gcc.dg/cpp/20000628-1.c (main): Reference the three variables

@@ -7,5 +7,5 @@ typedef struct
 point_t
 f ()
 {
-  return 0;
+  return 0;	/* { dg-error "incompatible types" } */
 }
