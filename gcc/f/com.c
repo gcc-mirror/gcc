@@ -2266,8 +2266,7 @@ ffecom_check_size_overflow_ (ffesymbol s, tree type, bool dummy)
     return type;
 
   if ((tree_int_cst_sgn (TYPE_SIZE (type)) < 0)
-      || (!dummy && (((TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0))
-		     || TREE_OVERFLOW (TYPE_SIZE (type)))))
+      || (!dummy && TREE_OVERFLOW (TYPE_SIZE (type))))
     {
       ffebad_start (FFEBAD_ARRAY_LARGE);
       ffebad_string (ffesymbol_text (s));
