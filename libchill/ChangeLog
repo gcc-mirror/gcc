@@ -1,3 +1,7 @@
+Mon Apr  3 01:20:50 2000  George France <france@crl.dec.com>
+
+	* basicio.c (PATH_MAX): Always provide a definition.
+
 Wed Oct 27 01:13:12 1999  Alan Modra <alan@SPRI.Levels.UniSA.Edu.Au>
 
 	* Makefile.in (config.status): Fix leading whitespace.
