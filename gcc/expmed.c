@@ -4229,9 +4229,11 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	 comparison and then the scc insn.
 
 	 compare_from_rtx may call emit_queue, which would be deleted below
-	 if the scc insn fails.  So call it ourselves before setting LAST.  */
+	 if the scc insn fails.  So call it ourselves before setting LAST.
+	 Likewise for do_pending_stack_adjust.  */
 
       emit_queue ();
+      do_pending_stack_adjust ();
       last = get_last_insn ();
 
       comparison
