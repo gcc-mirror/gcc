@@ -163,6 +163,7 @@ static rtx rs6000_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int
 static rtx altivec_expand_builtin PARAMS ((tree, rtx));
 static rtx altivec_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
+static rtx altivec_expand_abs_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_predicate_builtin PARAMS ((enum insn_code, const char *, tree, rtx));
 static rtx altivec_expand_ternop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
@@ -3402,6 +3403,19 @@ static const struct builtin_description_predicates bdesc_altivec_preds[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_predicate_v16qi, "*vcmpgtub.", "__builtin_altivec_vcmpgtub_p", ALTIVEC_BUILTIN_VCMPGTUB_P }
 };
 
+/* ABS* opreations.  */
+
+static const struct builtin_description bdesc_abs[] =
+{
+  { MASK_ALTIVEC, CODE_FOR_absv4si2, "__builtin_altivec_abs_v4si", ALTIVEC_BUILTIN_ABS_V4SI },
+  { MASK_ALTIVEC, CODE_FOR_absv8hi2, "__builtin_altivec_abs_v8hi", ALTIVEC_BUILTIN_ABS_V8HI },
+  { MASK_ALTIVEC, CODE_FOR_absv4sf2, "__builtin_altivec_abs_v4sf", ALTIVEC_BUILTIN_ABS_V4SF },
+  { MASK_ALTIVEC, CODE_FOR_absv16qi2, "__builtin_altivec_abs_v16qi", ALTIVEC_BUILTIN_ABS_V16QI },
+  { MASK_ALTIVEC, CODE_FOR_altivec_abss_v4si, "__builtin_altivec_abss_v4si", ALTIVEC_BUILTIN_ABSS_V4SI },
+  { MASK_ALTIVEC, CODE_FOR_altivec_abss_v8hi, "__builtin_altivec_abss_v8hi", ALTIVEC_BUILTIN_ABSS_V8HI },
+  { MASK_ALTIVEC, CODE_FOR_altivec_abss_v16qi, "__builtin_altivec_abss_v16qi", ALTIVEC_BUILTIN_ABSS_V16QI }
+};
+
 /* Simple unary operations: VECb = foo (unsigned literal) or VECb =
    foo (VECa).  */
 
@@ -3451,6 +3465,41 @@ altivec_expand_unop_builtin (icode, arglist, target)
     op0 = copy_to_mode_reg (mode0, op0);
 
   pat = GEN_FCN (icode) (target, op0);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+
+  return target;
+}
+
+static rtx
+altivec_expand_abs_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist;
+     rtx target;
+{
+  rtx pat, scratch1, scratch2;
+  tree arg0 = TREE_VALUE (arglist);
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+
+  /* If we have invalid arguments, bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return NULL_RTX;
+
+  if (target == 0
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  scratch1 = gen_reg_rtx (mode0);
+  scratch2 = gen_reg_rtx (mode0);
+
+  pat = GEN_FCN (icode) (target, op0, scratch1, scratch2);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -3936,6 +3985,12 @@ altivec_expand_builtin (exp, target)
 	return NULL_RTX;
       }
 
+  /* Expand abs* operations.  */
+  d = (struct builtin_description *) bdesc_abs;
+  for (i = 0; i < sizeof (bdesc_abs) / sizeof *d; i++, d++)
+    if (d->code == fcode)
+      return altivec_expand_abs_builtin (d->icode, arglist, target);
+
   /* Handle simple unary operations.  */
   d = (struct builtin_description *) bdesc_1arg;
   for (i = 0; i < sizeof (bdesc_1arg) / sizeof *d; i++, d++)
@@ -4322,6 +4377,18 @@ altivec_init_builtins (void)
 				      tree_cons (NULL_TREE, V4SF_type_node,
 						 endlink)));
 
+  tree v4si_ftype_v4si
+    = build_function_type (V4SI_type_node,
+			   tree_cons (NULL_TREE, V4SI_type_node, endlink));
+
+  tree v8hi_ftype_v8hi
+    = build_function_type (V8HI_type_node,
+			   tree_cons (NULL_TREE, V8HI_type_node, endlink));
+
+  tree v16qi_ftype_v16qi
+    = build_function_type (V16QI_type_node,
+			   tree_cons (NULL_TREE, V16QI_type_node, endlink));
+
   tree v8hi_ftype_v16qi_v16qi
     = build_function_type (V8HI_type_node,
 			   tree_cons (NULL_TREE, V16QI_type_node,
@@ -4466,7 +4533,7 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvehx", void_ftype_v8hi_int_pvoid, ALTIVEC_BUILTIN_STVEHX);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvewx", void_ftype_v4si_int_pvoid, ALTIVEC_BUILTIN_STVEWX);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvxl", void_ftype_v4si_int_pvoid, ALTIVEC_BUILTIN_STVXL);
-  
+
   /* Add the simple ternary operators.  */
   d = (struct builtin_description *) bdesc_3arg;
   for (i = 0; i < sizeof (bdesc_3arg) / sizeof *d; i++, d++)
@@ -4710,6 +4777,36 @@ altivec_init_builtins (void)
       else
 	abort ();
 
+      def_builtin (d->mask, d->name, type, d->code);
+    }
+
+  /* Initialize the abs* operators.  */
+  d = (struct builtin_description *) bdesc_abs;
+  for (i = 0; i < sizeof (bdesc_abs) / sizeof *d; i++, d++)
+    {
+      enum machine_mode mode0;
+      tree type;
+
+      mode0 = insn_data[d->icode].operand[0].mode;
+
+      switch (mode0)
+	{
+	case V4SImode:
+	  type = v4si_ftype_v4si;
+	  break;
+	case V8HImode:
+	  type = v8hi_ftype_v8hi;
+	  break;
+	case V16QImode:
+	  type = v16qi_ftype_v16qi;
+	  break;
+	case V4SFmode:
+	  type = v4sf_ftype_v4sf;
+	  break;
+	default:
+	  abort ();
+	}
+      
       def_builtin (d->mask, d->name, type, d->code);
     }
 
