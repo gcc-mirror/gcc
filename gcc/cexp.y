@@ -26,17 +26,9 @@ Boston, MA 02111-1307, USA.
    
 %{
 #include "config.h"
+#include "system.h"
 #include <setjmp.h>
 /* #define YYDEBUG 1 */
-
-
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
@@ -45,8 +37,6 @@ Boston, MA 02111-1307, USA.
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
-
-#include <stdio.h>
 
 typedef unsigned char U_CHAR;
 

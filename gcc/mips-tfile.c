@@ -600,12 +600,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <stdio.h>
+#include "system.h"
 
 #ifndef __SABER__
 #define saber_stop()
@@ -615,7 +610,7 @@ Boston, MA 02111-1307, USA.  */
 #define __LINE__ 0
 #endif
 
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 typedef void *PTR_T;
 typedef const void *CPTR_T;
 #define __proto(x) x
@@ -5609,14 +5604,14 @@ free_thead (ptr)
 void
 fatal VPROTO((const char *format, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (ap, char *);
 #endif
 
@@ -5639,14 +5634,14 @@ fatal VPROTO((const char *format, ...))
 void
 error VPROTO((const char *format, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   format = va_arg (ap, char *);
 #endif
 

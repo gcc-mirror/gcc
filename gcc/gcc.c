@@ -30,42 +30,14 @@ and deleting the temporary files at the end.
 CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
-
+
+
 #include "config.h"
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#include <ctype.h>
+#include "system.h"
 #include <signal.h>
-
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
-
-#include <errno.h>
-
-#ifdef HAVE_SYS_FILE_H
-#include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
-#endif
-
 #include "obstack.h"
 #include "gansidecl.h"
 #include "intl.h"
-
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <stdio.h>
-
-#ifndef R_OK
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
-#endif
 
 /* ??? Need to find a GCC header to put these in.  */
 extern int pexecute PROTO ((const char *, char * const *, const char *,
@@ -78,40 +50,9 @@ extern char *update_path PROTO((char *, char *));
 #define PEXECUTE_SEARCH  4
 #define PEXECUTE_VERBOSE 8
 
-#ifndef WIFSIGNALED
-#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
-#endif
-#ifndef WTERMSIG
-#define WTERMSIG(S) ((S) & 0x7f)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(S) (((S) & 0xff) == 0)
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
-#endif
 
 #ifdef VMS
 #define exit __posix_exit
-#endif
-
-/* Define O_RDONLY if the system hasn't defined it for us.  */
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
-
-#ifdef USG
-#define vfork fork
-#endif /* USG */
-
-/* Test if something is a normal file.  */
-#ifndef S_ISREG
-#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
-
-/* Test if something is a directory.  */
-#ifndef S_ISDIR
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 /* By default there is no special suffix for executables.  */
@@ -142,21 +83,7 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
-extern char *getenv ();
-
 extern char *choose_temp_base PROTO((void));
-
-#ifndef errno
-extern int errno;
-#endif
-
-#ifndef HAVE_STRERROR
-extern int sys_nerr;
-extern char *sys_errlist[];
-#else
-extern char *strerror();
-#endif
 
 #ifndef HAVE_KILL
 #define kill(p,s) raise(s)
@@ -4944,14 +4871,14 @@ concat VPROTO((char *first, ...))
   register char *end;
   register char *arg;
   va_list args;
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *first;
 #endif
 
   /* First compute the size of the result and get sufficient memory.  */
 
   VA_START (args, first);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   first = va_arg (args, char *);
 #endif
 
@@ -4970,7 +4897,7 @@ concat VPROTO((char *first, ...))
   /* Now copy the individual pieces to the result string.  */
 
   VA_START (args, first);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   first = va_arg (args, char *);
 #endif
 
@@ -5052,14 +4979,14 @@ fancy_abort ()
 static void
 fatal VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -5074,14 +5001,14 @@ fatal VPROTO((char *msgid, ...))
 static void
 error VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -5095,14 +5022,14 @@ error VPROTO((char *msgid, ...))
 static void
 notice VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 

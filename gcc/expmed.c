@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -65,8 +65,8 @@ static int sdiv_pow2_cheap, smod_pow2_cheap;
 #define MAX_BITS_PER_WORD BITS_PER_WORD
 #endif
 
-/* Cost of various pieces of RTL.  Note that some of these are indexed by shift count,
-   and some by mode.  */
+/* Cost of various pieces of RTL.  Note that some of these are indexed by
+   shift count and some by mode.  */
 static int add_cost, negate_cost, zero_cost;
 static int shift_cost[MAX_BITS_PER_WORD];
 static int shiftadd_cost[MAX_BITS_PER_WORD];

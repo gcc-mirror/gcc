@@ -20,8 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <ctype.h>
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "real.h"
 
@@ -36,10 +35,6 @@ Boston, MA 02111-1307, USA.  */
    During optimization and output, this is function_obstack.  */
 
 extern struct obstack *rtl_obstack;
-
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-extern long atol();
-#endif
 
 /* Indexed by rtx code, gives number of operands for an rtx with that code.
    Does NOT include rtx header data (code and links).

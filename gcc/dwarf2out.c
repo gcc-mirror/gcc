@@ -27,8 +27,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    information.  */
 
 #include "config.h"
+#include "system.h"
 #include "defaults.h"
-#include <stdio.h>
 #include "tree.h"
 #include "flags.h"
 #include "rtl.h"

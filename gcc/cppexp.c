@@ -25,6 +25,7 @@ Written by Per Bothner 1994.  */
 /* Parse a C expression from text in a string  */
    
 #include "config.h"
+#include "system.h"
 #include "cpplib.h"
 #include "gansidecl.h"
 

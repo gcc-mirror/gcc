@@ -34,22 +34,13 @@ Boston, MA 02111-1307, USA.  */
    by all passes of the compiler.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "except.h"
 #include "function.h"
 #include "obstack.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -2920,7 +2911,7 @@ stabilize_reference_1 (e)
 tree
 build VPROTO((enum tree_code code, tree tt, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
   tree tt;
 #endif
@@ -2931,7 +2922,7 @@ build VPROTO((enum tree_code code, tree tt, ...))
 
   VA_START (p, tt);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
   tt = va_arg (p, tree);
 #endif
@@ -3044,7 +3035,7 @@ build1 (code, type, node)
 tree
 build_nt VPROTO((enum tree_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
 #endif
   va_list p;
@@ -3054,7 +3045,7 @@ build_nt VPROTO((enum tree_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
 #endif
 
@@ -3074,7 +3065,7 @@ build_nt VPROTO((enum tree_code code, ...))
 tree
 build_parse_node VPROTO((enum tree_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
 #endif
   register struct obstack *ambient_obstack = expression_obstack;
@@ -3085,7 +3076,7 @@ build_parse_node VPROTO((enum tree_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
 #endif
 

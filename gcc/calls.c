@@ -19,17 +19,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
 #include "expr.h"
 #include "regs.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include "insn-flags.h"
 
 /* Decide whether a function's arguments should be processed
@@ -2272,7 +2267,7 @@ void
 emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 			  int nargs, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx orgfun;
   int no_queue;
   enum machine_mode outmode;
@@ -2319,7 +2314,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   VA_START (p, nargs);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   orgfun = va_arg (p, rtx);
   no_queue = va_arg (p, int);
   outmode = va_arg (p, enum machine_mode);
@@ -2759,7 +2754,7 @@ rtx
 emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 				enum machine_mode outmode, int nargs, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx orgfun;
   rtx value;
   int no_queue;
@@ -2812,7 +2807,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
   VA_START (p, nargs);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   orgfun = va_arg (p, rtx);
   value = va_arg (p, rtx);
   no_queue = va_arg (p, int);

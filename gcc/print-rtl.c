@@ -1,5 +1,5 @@
 /* Print RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1992, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <ctype.h>
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 
 

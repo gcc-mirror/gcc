@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,25 +19,16 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "flags.h"
 #include "obstack.h"
 #include "regs.h"
 #include "basic-block.h"
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef NEED_DECLARATION_FREE
-extern void free PROTO((void *));
-#endif
-
 /* Obstack to allocate bitmap elements from.  */
 static struct obstack bitmap_obstack;
 static int bitmap_obstack_init = FALSE;
-
 
 #ifndef INLINE
 #ifndef __GNUC__

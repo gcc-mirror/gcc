@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 static rtx break_out_memory_refs	PROTO((rtx));
 static void emit_stack_probe		PROTO((rtx));
+
 /* Return an rtx for the sum of X and the integer C.
 
    This function should be used via the `plus_constant' macro.  */

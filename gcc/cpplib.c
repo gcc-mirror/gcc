@@ -19,83 +19,24 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include "system.h"
 
 #ifndef STDC_VALUE
 #define STDC_VALUE 1
 #endif
 
-#include <ctype.h>
-#include <stdio.h>
 #include <signal.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
-
-#ifdef HAVE_SYS_TIMES_H
-#include <sys/times.h>
-#endif
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
 #endif
-
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-# include <string.h>
-# else
-# ifdef HAVE_STRINGS_H
-#  include <strings.h>
-#endif
-#endif
-
-/* This defines "errno" properly for VMS, and gives us EACCES.  */
-#include <errno.h>
 
 #include "cpplib.h"
 #include "cpphash.h"
 #include "gansidecl.h"
 #include "intl.h"
 
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
-
-#ifdef NEED_DECLARATION_GETENV
-extern char *getenv ();
-#endif
-
 extern char *update_path ();
-
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
 
 #undef MIN
 #undef MAX
@@ -122,14 +63,6 @@ extern char *update_path ();
 #  endif
 #  endif
 # endif
-#endif
-
-#ifndef S_ISREG
-#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
-
-#ifndef S_ISDIR
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 /* By default, colon separates directories in a path.  */

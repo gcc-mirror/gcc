@@ -1,5 +1,5 @@
 /* Output bytecodes for GNU C-compiler.
-   Copyright (C) 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,12 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include "system.h"
 #include "machmode.h"
 #include "rtl.h"
 #include "real.h"
@@ -946,7 +941,7 @@ bc_emit_bytecode (bytecode)
 void
 bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum bytecode_opcode opcode;
 #endif
   va_list arguments;
@@ -954,7 +949,7 @@ bc_emit_instruction VPROTO((enum bytecode_opcode opcode, ...))
 
   VA_START (arguments, opcode);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   opcode = va_arg (arguments, enum bytecode_opcode);
 #endif
 

@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
    here if their preferred class is likely to be used by spills.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "flags.h"
 #include "basic-block.h"

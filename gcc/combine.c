@@ -75,15 +75,7 @@ Boston, MA 02111-1307, USA.  */
    combine anyway.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-/* Must precede rtl.h for FFS.  */
-#include <stdio.h>
-
+#include "system.h"
 #include "rtl.h"
 #include "flags.h"
 #include "regs.h"
@@ -9050,7 +9042,7 @@ gen_lowpart_for_combine (mode, x)
 static rtx
 gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum rtx_code code;
   enum machine_mode mode;
 #endif
@@ -9064,7 +9056,7 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 
   VA_START (p, mode);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum rtx_code);
   mode = va_arg (p, enum machine_mode);
 #endif

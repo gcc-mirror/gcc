@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -46,8 +46,8 @@ Boston, MA 02111-1307, USA.  */
    which returns 0 if the rtl could not be split, or
    it returns the split rtl in a SEQUENCE.  */
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
 
@@ -57,7 +57,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
 extern rtx read_rtx ();
 
 /* Data structure for a listhead of decision trees.  The alternatives
@@ -192,10 +191,15 @@ static char *copystr		PROTO((char *));
 static void mybzero		PROTO((char *, unsigned));
 static void mybcopy		PROTO((char *, char *, unsigned));
 static char *concat		PROTO((char *, char *));
-static void fatal		PROTO((char *));
 char *xrealloc			PROTO((char *, unsigned));
 char *xmalloc			PROTO((unsigned));
 void fancy_abort		PROTO((void));
+#ifdef HAVE_VPRINTF
+static void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+static void fatal PROTO(());
+#endif
 
 /* Construct and return a sequence of decisions
    that will recognize INSN.
@@ -1691,16 +1695,39 @@ xmalloc (size)
   return val;
 }
 
+#ifdef HAVE_VPRINTF
 static void
-fatal (s)
+fatal VPROTO((char *s, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genrecog: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
+static void
+fatal (s, a1, a2)
      char *s;
 {
   fprintf (stderr, "genrecog: ");
-  fprintf (stderr, s);
+  fprintf (stderr, s, a1, a2);
   fprintf (stderr, "\n");
-  fprintf (stderr, "after %d definitions\n", next_index);
   exit (FATAL_EXIT_CODE);
 }
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */

@@ -45,13 +45,7 @@ Boston, MA 02111-1307, USA.  */
    FUNCTION_EPILOGUE.  Those instructions never exist as rtl.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <stdio.h>
-
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -2901,7 +2895,7 @@ output_addr_const (file, x)
 void
 asm_fprintf VPROTO((FILE *file, char *p, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   FILE *file;
   char *p;
 #endif
@@ -2912,7 +2906,7 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
 
   VA_START (argptr, p);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (argptr, FILE *);
   p = va_arg (argptr, char *);
 #endif

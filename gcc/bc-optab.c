@@ -1,5 +1,5 @@
 /* Bytecode conversion definitions for GNU C-compiler.
-   Copyright (C) 1993, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,10 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "machmode.h"
@@ -35,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-extern char *xmalloc ();
 
 /* Table relating interpreter typecodes to machine modes.  */
 #define GET_TYPECODE_MODE(CODE) (typecode_mode[((int) CODE)])

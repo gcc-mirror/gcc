@@ -1,5 +1,5 @@
 /* scan-decls.c - Extracts declarations from cpp output.
-   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -17,9 +17,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
    Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include "hconfig.h"
+#include "system.h"
 #include "cpplib.h"
 
 int brace_nesting = 0;

@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
    forces the value to fit the type.  It returns an overflow indicator.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include <setjmp.h>
 #include "flags.h"
 #include "tree.h"

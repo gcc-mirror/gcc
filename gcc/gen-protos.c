@@ -1,5 +1,5 @@
 /* gen-protos.c - massages a list of prototypes, for use by fixproto.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 96, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -15,9 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include "hconfig.h"
+#include "system.h"
 #include "scan.h"
 #include "cpplib.h"
 #include "cpphash.h"

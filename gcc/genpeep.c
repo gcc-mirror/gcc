@@ -1,5 +1,5 @@
 /* Generate code from machine description to perform peephole optimizations.
-   Copyright (C) 1987, 1989, 1992, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,12 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#endif
-
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
 
@@ -34,7 +30,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
 extern rtx read_rtx ();
 
 /* While tree-walking an instruction pattern, we keep a chain
@@ -422,15 +417,15 @@ xrealloc (ptr, size)
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genpeep: ");

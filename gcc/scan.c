@@ -1,5 +1,5 @@
 /* Utility functions for scan-decls and fix-header programs.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -15,9 +15,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include "scan.h"
 #include "hconfig.h"
-#include <ctype.h>
+#include "system.h"
+#include "scan.h"
 
 int lineno = 1;
 int source_lineno = 1;

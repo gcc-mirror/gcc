@@ -1,5 +1,5 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
 This file is part of GNU CC.
@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 
 #ifdef DWARF_DEBUGGING_INFO
-#include <stdio.h>
+#include "system.h"
 #include "dwarf.h"
 #include "tree.h"
 #include "flags.h"
@@ -32,31 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "output.h"
 #include "defaults.h"
-
-#if defined(DWARF_TIMESTAMPS)
-#if defined(POSIX)
-#include <time.h>
-#else /* !defined(POSIX) */
-#include <sys/types.h>
-#if defined(__STDC__)
-extern time_t time (time_t *);
-#else /* !defined(__STDC__) */
-extern time_t time ();
-#endif /* !defined(__STDC__) */
-#endif /* !defined(POSIX) */
-#endif /* defined(DWARF_TIMESTAMPS) */
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
 
 /* We cannot use <assert.h> in GCC source, since that would include
    GCC's assert.h, which may not be compatible with the host compiler.  */
@@ -68,14 +43,6 @@ extern time_t time ();
 #endif
 
 extern char *getpwd ();
-
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */

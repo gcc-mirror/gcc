@@ -54,15 +54,15 @@ static void gencode			PROTO((void));
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genconfig: ");

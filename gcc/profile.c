@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    achieve this, see Dain Sample's UC Berkeley thesis.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "flags.h"
 #include "insn-flags.h"
@@ -53,7 +53,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "gcov-io.h"
 
 extern char * xmalloc ();
-extern void free ();
 
 /* One of these is dynamically created whenever we identify an arc in the
    function.  */

@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
    and a function init_reg_sets to initialize the tables.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "flags.h"

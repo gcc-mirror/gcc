@@ -26,10 +26,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #endif /* not EMACS */
 
-#include "cpplib.h"
+#ifdef IN_GCC
+#include "system.h"
+#else
 #include <stdio.h>
-#include "intl.h"
 #include <errno.h>
+#endif
+
+#include "cpplib.h"
+#include "intl.h"
 
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */

@@ -96,26 +96,9 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "hconfig.h"
-/* varargs must always be included after *config.h.  */
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -558,7 +541,7 @@ attr_hash_add_string (hashcode, str)
 static rtx
 attr_rtx VPROTO((enum rtx_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum rtx_code code;
 #endif
   va_list p;
@@ -571,7 +554,7 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum rtx_code);
 #endif
 
@@ -757,7 +740,7 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 static char *
 attr_printf VPROTO((register int len, char *fmt, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   register int len;
   char *fmt;
 #endif
@@ -766,7 +749,7 @@ attr_printf VPROTO((register int len, char *fmt, ...))
 
   VA_START (p, fmt);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   len = va_arg (p, int);
   fmt = va_arg (p, char *);
 #endif
@@ -5535,15 +5518,15 @@ copy_rtx_unchanging (orig)
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genattrtab: ");

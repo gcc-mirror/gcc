@@ -64,12 +64,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include "system.h"
 #include "gansidecl.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -117,14 +113,14 @@ concat VPROTO((char *first, ...))
   register char *end;
   register char *arg;
   va_list args;
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *first;
 #endif
 
   /* First compute the size of the result and get sufficient memory.  */
 
   VA_START (args, first);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   first = va_arg (args, char *);
 #endif
 
@@ -143,7 +139,7 @@ concat VPROTO((char *first, ...))
   /* Now copy the individual pieces to the result string.  */
 
   VA_START (args, first);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   first = va_arg (args, char *);
 #endif
 

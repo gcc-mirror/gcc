@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef VPROTO
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 #define PVPROTO(ARGS)		ARGS
 #define VPROTO(ARGS)            ARGS
 #define VA_START(va_list,var)  va_start(va_list,var)

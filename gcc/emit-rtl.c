@@ -35,12 +35,7 @@ Boston, MA 02111-1307, USA.  */
    is the kind of rtx's they make and what arguments they use.  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -177,7 +172,7 @@ rtx virtual_outgoing_args_rtx;	/* (REG:Pmode VIRTUAL_OUTGOING_ARGS_REGNUM) */
 
 #define MAX_SAVED_CONST_INT 64
 
-static rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
+static struct rtx_def const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
 /* The ends of the doubly-linked chain of rtl for the current function.
    Both are reset to null at the start of rtl generation for the function.
@@ -265,6 +260,86 @@ static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_node		PROTO((rtx));
 
+
+/* There are some RTL codes that require special attention; the generation
+   functions do the raw handling.  If you add to this list, modify
+   special_rtx in gengenrtl.c as well.  */
+
+rtx
+gen_rtx_CONST_INT (mode, arg)
+     enum machine_mode mode;
+     HOST_WIDE_INT arg;
+{
+  if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
+    return &const_int_rtx[arg + MAX_SAVED_CONST_INT];
+
+#if STORE_FLAG_VALUE != 1 && STORE_FLAG_VALUE != -1
+  if (const_true_rtx && arg == STORE_FLAG_VALUE)
+    return const_true_rtx;
+#endif
+
+  return gen_rtx_raw_CONST_INT (mode, arg);
+}
+
+rtx
+gen_rtx_REG (mode, regno)
+     enum machine_mode mode;
+     int regno;
+{
+  /* In case the MD file explicitly references the frame pointer, have
+     all such references point to the same frame pointer.  This is
+     used during frame pointer elimination to distinguish the explicit
+     references to these registers from pseudos that happened to be
+     assigned to them.
+
+     If we have eliminated the frame pointer or arg pointer, we will
+     be using it as a normal register, for example as a spill
+     register.  In such cases, we might be accessing it in a mode that
+     is not Pmode and therefore cannot use the pre-allocated rtx.
+
+     Also don't do this when we are making new REGs in reload, since
+     we don't want to get confused with the real pointers.  */
+
+  if (mode == Pmode && !reload_in_progress)
+    {
+      if (frame_pointer_rtx != 0 && regno == FRAME_POINTER_REGNUM)
+	return frame_pointer_rtx;
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+      if (hard_frame_pointer_rtx != 0 && regno == HARD_FRAME_POINTER_REGNUM)
+	return hard_frame_pointer_rtx;
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      if (arg_pointer_rtx != 0 && regno == ARG_POINTER_REGNUM)
+	return arg_pointer_rtx;
+#endif
+#ifdef RETURN_ADDRESS_POINTER_REGNUM
+      if (return_address_pointer_rtx != 0
+	  && regno == RETURN_ADDRESS_POINTER_REGNUM)
+	return return_address_pointer_rtx;
+#endif
+      if (stack_pointer_rtx != 0 && regno == STACK_POINTER_REGNUM)
+	return stack_pointer_rtx;
+    }
+
+  return gen_rtx_raw_REG (mode, regno);
+}
+
+rtx
+gen_rtx_MEM (mode, addr)
+     enum machine_mode mode;
+     rtx addr;
+{
+  rtx rt = gen_rtx_raw_MEM (mode, addr);
+
+#ifdef MEM_ALIAS_SET
+  /* This field is not cleared by the mere allocation of the rtx, so
+     we clear it here.  */
+  MEM_ALIAS_SET (rt) = 0;
+#endif
+
+  return rt;
+}
+
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
 **	    This routine generates an RTX of the size specified by
@@ -295,7 +370,7 @@ static rtx find_line_node		PROTO((rtx));
 rtx
 gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum rtx_code code;
   enum machine_mode mode;
 #endif
@@ -306,71 +381,17 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 
   VA_START (p, mode);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum rtx_code);
   mode = va_arg (p, enum machine_mode);
 #endif
 
   if (code == CONST_INT)
-    {
-      HOST_WIDE_INT arg = va_arg (p, HOST_WIDE_INT);
-
-      if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
-	return const_int_rtx[arg + MAX_SAVED_CONST_INT];
-
-      if (const_true_rtx && arg == STORE_FLAG_VALUE)
-	return const_true_rtx;
-
-      rt_val = rtx_alloc (code);
-      INTVAL (rt_val) = arg;
-    }
+    return gen_rtx_CONST_INT (mode, va_arg (p, HOST_WIDE_INT));
   else if (code == REG)
-    {
-      int regno = va_arg (p, int);
-
-      /* In case the MD file explicitly references the frame pointer, have
-	 all such references point to the same frame pointer.  This is used
-	 during frame pointer elimination to distinguish the explicit
-	 references to these registers from pseudos that happened to be
-	 assigned to them.
-
-	 If we have eliminated the frame pointer or arg pointer, we will
-	 be using it as a normal register, for example as a spill register.
-	 In such cases, we might be accessing it in a mode that is not
-	 Pmode and therefore cannot use the pre-allocated rtx.
-
-	 Also don't do this when we are making new REGs in reload,
-	 since we don't want to get confused with the real pointers.  */
-
-      if (frame_pointer_rtx && regno == FRAME_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return frame_pointer_rtx;
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      if (hard_frame_pointer_rtx && regno == HARD_FRAME_POINTER_REGNUM
-	  && mode == Pmode && ! reload_in_progress)
-	return hard_frame_pointer_rtx;
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (arg_pointer_rtx && regno == ARG_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return arg_pointer_rtx;
-#endif
-#ifdef RETURN_ADDRESS_POINTER_REGNUM
-      if (return_address_pointer_rtx && regno == RETURN_ADDRESS_POINTER_REGNUM
-	  && mode == Pmode && ! reload_in_progress)
-	return return_address_pointer_rtx;
-#endif
-      if (stack_pointer_rtx && regno == STACK_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return stack_pointer_rtx;
-      else
-	{
-	  rt_val = rtx_alloc (code);
-	  rt_val->mode = mode;
-	  REGNO (rt_val) = regno;
-	  return rt_val;
-	}
-    }
+    return gen_rtx_REG (mode, va_arg (p, int));
+  else if (code == MEM)
+    return gen_rtx_MEM (mode, va_arg (p, rtx));
   else
     {
       rt_val = rtx_alloc (code);	/* Allocate the storage space.  */
@@ -424,7 +445,7 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 rtvec
 gen_rtvec VPROTO((int n, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   int n;
 #endif
   int i;
@@ -433,7 +454,7 @@ gen_rtvec VPROTO((int n, ...))
 
   VA_START (p, n);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   n = va_arg (p, int);
 #endif
 
@@ -3396,9 +3417,9 @@ init_emit_once (line_numbers)
      tries to use these variables.  */
   for (i = - MAX_SAVED_CONST_INT; i <= MAX_SAVED_CONST_INT; i++)
     {
-      const_int_rtx[i + MAX_SAVED_CONST_INT] = rtx_alloc (CONST_INT);
-      PUT_MODE (const_int_rtx[i + MAX_SAVED_CONST_INT], VOIDmode);
-      INTVAL (const_int_rtx[i + MAX_SAVED_CONST_INT]) = i;
+      PUT_CODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], CONST_INT);
+      PUT_MODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], VOIDmode);
+      INTVAL (&const_int_rtx[i + MAX_SAVED_CONST_INT]) = i;
     }
 
   /* These four calls obtain some of the rtx expressions made above.  */

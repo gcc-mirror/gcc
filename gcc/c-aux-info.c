@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989, 1991, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 94, 95, 97, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
@@ -22,12 +22,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"
-
-extern char *xmalloc ();
 
 enum formals_style_enum {
   ansi,
@@ -35,7 +33,6 @@ enum formals_style_enum {
   k_and_r_decls
 };
 typedef enum formals_style_enum formals_style;
-
 
 static char *data_type;
 

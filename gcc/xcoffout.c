@@ -25,12 +25,13 @@ Boston, MA 02111-1307, USA.  */
    sdbout.c.  */
 
 #include "config.h"
-#include <stdio.h>
+
+#ifdef XCOFF_DEBUGGING_INFO
+
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"
-
-#ifdef XCOFF_DEBUGGING_INFO
 
 /* This defines the C_* storage classes.  */
 #include <dbxstclass.h>

@@ -1,5 +1,5 @@
 /* Bytecode definition file parser.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,8 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 %{
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "bi-defs.h"
 
 extern char yytext[];

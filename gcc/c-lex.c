@@ -19,15 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-
-#include <stdio.h>
-#include <errno.h>
+#include "system.h"
 #include <setjmp.h>
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
 #include "rtl.h"
 #include "tree.h"
 #include "input.h"
@@ -37,10 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-parse.h"
 #include "c-pragma.h"
 #include "intl.h"
-
-#ifdef MAP_CHARACTER
-#include <ctype.h>
-#endif
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
@@ -52,10 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
 #include <locale.h>
-#endif
-
-#ifndef errno
-extern int errno;
 #endif
 
 #if USE_CPPLIB

@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987, 88, 92, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 94, 95, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -90,12 +90,8 @@ insn_template[24] to be "clrd %0", and insn_n_operands[24] to be 1.
 It would not make an case in output_insn_hairy because the template
 given in the entry is a constant (it does not start with `*').  */
 
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#endif
-
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
 
@@ -924,15 +920,15 @@ mybcopy (b1, b2, length)
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genoutput: ");

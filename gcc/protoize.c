@@ -18,14 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Any reasonable C++ compiler should have all of the same features
-   as __STDC__ plus more, so make sure that __STDC__ is defined if
-   __cplusplus is defined.  */
-
-#if defined(__cplusplus) && !defined(__STDC__)
-#define __STDC__ 1
-#endif /* defined(__cplusplus) && !defined(__STDC__) */
-
 #if defined(__GNUC__) || defined (__GNUG__)
 #define VOLATILE volatile
 #else
@@ -38,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "config.h"
-
+#include "system.h"
 #include "intl.h"
 
 #if 0
@@ -59,15 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #define _POSIX_SOURCE
 #endif
 
-#include <varargs.h>
-/* On some systems stdio.h includes stdarg.h;
-   we must bring in varargs.h first.  */
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if ! defined (_WIN32) || defined (__CYGWIN32__)
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
 #else
@@ -75,18 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 #include <setjmp.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
 
 #include "gansidecl.h"
 
@@ -96,17 +67,6 @@ Boston, MA 02111-1307, USA.  */
 #define getopt getopt_loser
 #include "getopt.h"
 #undef getopt
-
-#ifndef errno
-extern int errno;
-#endif
-
-#ifndef HAVE_STRERROR
-extern int sys_nerr;
-extern char *sys_errlist[];
-#else
-extern char *strerror();
-#endif
 
 extern char *version_string;
 

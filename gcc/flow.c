@@ -109,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
    reg_n_calls_crosses and reg_basic_block.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "basic-block.h"
 #include "insn-config.h"
@@ -118,8 +118,8 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "except.h"
-
 #include "obstack.h"
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 

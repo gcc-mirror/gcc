@@ -19,12 +19,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#endif
-
 #include "hconfig.h"
+#include "system.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "obstack.h"
 #include "insn-config.h"
@@ -35,7 +32,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
 extern rtx read_rtx ();
 
 /* Names for patterns.  Need to allow linking with print-rtl.  */
@@ -377,15 +373,15 @@ xrealloc (ptr, size)
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genextract: ");

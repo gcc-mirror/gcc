@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,52 +24,12 @@ Boston, MA 02111-1307, USA.  */
    Error messages and low-level interface to malloc also handled here.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <stdio.h>
+#include "system.h"
 #include <signal.h>
 #include <setjmp.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
-#undef FLOAT
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-
-#undef FLOAT /* This is for hpux. They should change hpux.  */
-#undef FFS  /* Some systems define this in param.h.  */
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
-
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
-#endif
-
-#ifdef HAVE_SYS_TIMES_H
-# include <sys/times.h>
 #endif
 
 #include "input.h"
@@ -1255,14 +1215,14 @@ vnotice (file, msgid, ap)
 void
 notice VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -1273,7 +1233,7 @@ notice VPROTO((char *msgid, ...))
 void
 fnotice VPROTO((FILE *file, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   FILE *file;
   char *msgid;
 #endif
@@ -1281,7 +1241,7 @@ fnotice VPROTO((FILE *file, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, FILE *);
   msgid = va_arg (ap, char *);
 #endif
@@ -1433,7 +1393,7 @@ v_error_with_file_and_line (file, line, msgid, ap)
 void
 error_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   int line;
   char *msgid;
@@ -1442,7 +1402,7 @@ error_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   msgid = va_arg (ap, char *);
@@ -1470,7 +1430,7 @@ v_error_with_decl (decl, msgid, ap)
 void
 error_with_decl VPROTO((tree decl, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree decl;
   char *msgid;
 #endif
@@ -1478,7 +1438,7 @@ error_with_decl VPROTO((tree decl, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
   msgid = va_arg (ap, char *);
 #endif
@@ -1509,7 +1469,7 @@ v_error_for_asm (insn, msgid, ap)
 void
 error_for_asm VPROTO((rtx insn, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx insn;
   char *msgid;
 #endif
@@ -1517,7 +1477,7 @@ error_for_asm VPROTO((rtx insn, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   insn = va_arg (ap, rtx);
   msgid = va_arg (ap, char *);
 #endif
@@ -1539,14 +1499,14 @@ verror (msgid, ap)
 void
 error VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -1568,14 +1528,14 @@ vfatal (msgid, ap)
 void
 fatal VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -1602,7 +1562,7 @@ v_warning_with_file_and_line (file, line, msgid, ap)
 void
 warning_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   int line;
   char *msgid;
@@ -1611,7 +1571,7 @@ warning_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   msgid = va_arg (ap, char *);
@@ -1641,7 +1601,7 @@ v_warning_with_decl (decl, msgid, ap)
 void
 warning_with_decl VPROTO((tree decl, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree decl;
   char *msgid;
 #endif
@@ -1649,7 +1609,7 @@ warning_with_decl VPROTO((tree decl, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
   msgid = va_arg (ap, char *);
 #endif
@@ -1682,7 +1642,7 @@ v_warning_for_asm (insn, msgid, ap)
 void
 warning_for_asm VPROTO((rtx insn, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   rtx insn;
   char *msgid;
 #endif
@@ -1690,7 +1650,7 @@ warning_for_asm VPROTO((rtx insn, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   insn = va_arg (ap, rtx);
   msgid = va_arg (ap, char *);
 #endif
@@ -1712,14 +1672,14 @@ vwarning (msgid, ap)
 void
 warning VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -1744,14 +1704,14 @@ vpedwarn (msgid, ap)
 void
 pedwarn VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 
@@ -1784,7 +1744,7 @@ v_pedwarn_with_decl (decl, msgid, ap)
 void
 pedwarn_with_decl VPROTO((tree decl, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree decl;
   char *msgid;
 #endif
@@ -1792,7 +1752,7 @@ pedwarn_with_decl VPROTO((tree decl, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   decl = va_arg (ap, tree);
   msgid = va_arg (ap, char *);
 #endif
@@ -1817,7 +1777,7 @@ v_pedwarn_with_file_and_line (file, line, msgid, ap)
 void
 pedwarn_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *file;
   int line;
   char *msgid;
@@ -1826,7 +1786,7 @@ pedwarn_with_file_and_line VPROTO((char *file, int line, char *msgid, ...))
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   file = va_arg (ap, char *);
   line = va_arg (ap, int);
   msgid = va_arg (ap, char *);
@@ -1856,14 +1816,14 @@ vsorry (msgid, ap)
 void
 sorry VPROTO((char *msgid, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *msgid;
 #endif
   va_list ap;
 
   VA_START (ap, msgid);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, char *);
 #endif
 

@@ -1,5 +1,5 @@
 /* Reverse order of definitions obtained from bytecode definition file.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "hconfig.h"
+#include "system.h"
 #include "bi-defs.h"
 
 void

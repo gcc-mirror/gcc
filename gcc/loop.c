@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
    while to do these things.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
 #include "expr.h"

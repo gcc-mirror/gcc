@@ -19,15 +19,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#endif
-
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-#include <ctype.h>
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -35,16 +30,18 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
+
 extern rtx read_rtx ();
 
 char *xmalloc ();
+
 #ifdef HAVE_VPRINTF
 static void fatal PVPROTO((char *, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
 static void fatal PROTO(());
 #endif
+
 void fancy_abort ();
 
 /* Many parts of GCC use arrays that are indexed by machine mode and
@@ -319,15 +316,15 @@ xrealloc (ptr, size)
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genopinit: ");

@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
    intended to be called by the language-specific convert () functions.  */
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "flags.h"
 #include "convert.h"

@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -26,25 +26,8 @@ Boston, MA 02111-1307, USA.  */
 /* Build tables of static constructors and destructors and run ld.  */
 
 #include "config.h"
-#include <sys/types.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
+#include "system.h"
 #include <signal.h>
-#include <sys/file.h>
-#include <sys/stat.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
 
 #define COLLECT
 
@@ -53,43 +36,9 @@ Boston, MA 02111-1307, USA.  */
 #include "gansidecl.h"
 #include "intl.h"
 
-#ifndef errno
-extern int errno;
-#endif
-
-#ifndef HAVE_STRERROR
-extern char *sys_errlist[];
-extern int sys_nerr;
-#else
-char *strerror();
-#endif
-
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef USG
-#define vfork fork
-#endif
-
-#ifndef R_OK
-#define R_OK 4
-#define W_OK 2
-#define X_OK 1
-#endif
-
-#ifndef WIFSIGNALED
-#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
-#endif
-#ifndef WTERMSIG
-#define WTERMSIG(S) ((S) & 0x7f)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(S) (((S) & 0xff) == 0)
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
-#endif
 
 extern char *choose_temp_base ();
 

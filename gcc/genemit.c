@@ -19,12 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#endif
-
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
 
@@ -34,16 +30,17 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern void free ();
 extern rtx read_rtx ();
 
 char *xmalloc ();
+
 #ifdef HAVE_VPRINTF
 static void fatal PVPROTO((char *, ...));
 #else
 /* We must not provide any prototype here, even if ANSI C.  */
 static void fatal PROTO(());
 #endif
+
 void fancy_abort ();
 
 static int max_opno;
@@ -197,7 +194,7 @@ gen_exp (x)
       return;
 
     case MATCH_SCRATCH:
-      printf ("gen_rtx (SCRATCH, %smode, 0)", GET_MODE_NAME (GET_MODE (x)));
+      printf ("gen_rtx_SCRATCH (%smode)", GET_MODE_NAME (GET_MODE (x)));
       return;
 
     case ADDRESS:
@@ -236,9 +233,9 @@ gen_exp (x)
       abort ();
     }
 
-  printf ("gen_rtx (");
+  printf ("gen_rtx_");
   print_code (code);
-  printf (", %smode", GET_MODE_NAME (GET_MODE (x)));
+  printf (" (%smode", GET_MODE_NAME (GET_MODE (x)));
 
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
@@ -377,7 +374,9 @@ gen_insn (insn)
     }
   else
     {
-      printf ("  return gen_rtx (PARALLEL, VOIDmode, gen_rtvec (%d", XVECLEN (insn, 1));
+      printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d",
+	      XVECLEN (insn, 1));
+
       for (i = 0; i < XVECLEN (insn, 1); i++)
 	{
 	  printf (",\n\t\t");
@@ -704,15 +703,15 @@ xrealloc (ptr, size)
 static void
 fatal VPROTO((char *s, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  format = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "genemit: ");

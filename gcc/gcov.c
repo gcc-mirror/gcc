@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990, 91, 92, 93, 94, 96, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
 
@@ -42,33 +42,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    only get execution counts for one or the other of the including files.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "gansidecl.h"
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "intl.h"
-
-#ifdef __STDC__
-#include <stdarg.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
 #include "gcov-io.h"
 
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
 
 /* The .bb file format consists of several lists of 4-byte integers
    which are the line numbers of each basic block in the file.  Each

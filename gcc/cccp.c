@@ -19,58 +19,11 @@ Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
 #include "config.h"
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
-
-#include <ctype.h>
-#include <stdio.h>
+#include "system.h"
 #include <signal.h>
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
-#endif
-
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
-#include <errno.h>
-
-#if HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-# include <string.h>
-#else
-# ifdef HAVE_STRINGS_H
-#  include <strings.h>
-#endif
 #endif
 
 typedef unsigned char U_CHAR;
@@ -78,18 +31,6 @@ typedef unsigned char U_CHAR;
 #include "gansidecl.h"
 #include "pcp.h"
 #include "intl.h"
-
-#ifdef NEED_DECLARATION_INDEX
-extern char *index ();
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
-
-#ifdef NEED_DECLARATION_GETENV
-extern char *getenv ();
-#endif
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
@@ -111,13 +52,11 @@ extern char *getenv ();
 # define OBJECT_SUFFIX ".o"
 #endif
 
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
-# include <stdarg.h>
+#if defined (ANSI_PROTOTYPES) && defined (HAVE_VPRINTF)
 # define PRINTF_ALIST(msg) char *msg, ...
 # define PRINTF_DCL(msg)
 # define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
-# include <varargs.h>
 # define PRINTF_ALIST(msg) msg, va_alist
 # define PRINTF_DCL(msg) char *msg; va_dcl
 # define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
@@ -9029,7 +8968,7 @@ vwarning (msgid, args)
 }
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (ANSI_PROTOTYPES) && defined (HAVE_VPRINTF)
 error_with_line (int line, PRINTF_ALIST (msgid))
 #else
 error_with_line (line, PRINTF_ALIST (msgid))
@@ -9071,7 +9010,7 @@ verror_with_line (line, msgid, args)
 }
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (ANSI_PROTOTYPES) && defined (HAVE_VPRINTF)
 warning_with_line (int line, PRINTF_ALIST (msgid))
 #else
 warning_with_line (line, PRINTF_ALIST (msgid))
@@ -9135,7 +9074,7 @@ pedwarn (PRINTF_ALIST (msgid))
 }
 
 void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (ANSI_PROTOTYPES) && defined (HAVE_VPRINTF)
 pedwarn_with_line (int line, PRINTF_ALIST (msgid))
 #else
 pedwarn_with_line (line, PRINTF_ALIST (msgid))
@@ -9157,7 +9096,7 @@ pedwarn_with_line (line, PRINTF_ALIST (msgid))
    giving specified file name and line number, not current.  */
 
 static void
-#if defined (__STDC__) && defined (HAVE_VPRINTF)
+#if defined (ANSI_PROTOTYPES) && defined (HAVE_VPRINTF)
 pedwarn_with_file_and_line (char *file, size_t file_len, int line,
 			    PRINTF_ALIST (msgid))
 #else

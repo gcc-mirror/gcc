@@ -27,9 +27,8 @@ Boston, MA 02111-1307, USA.  */
    and are responsible for combining constants with the same value.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include <setjmp.h>
-/* #include <stab.h> */
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -42,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "real.h"
 #include "bytecode.h"
-
 #include "obstack.h"
 #include "c-pragma.h"
 

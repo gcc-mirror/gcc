@@ -24,28 +24,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #endif /* not EMACS */
 
-#include "cpplib.h"
+#ifdef IN_GCC
+#include "system."
+#else
 #include <stdio.h>
-#include "intl.h"
-
 extern char *getenv ();
+#endif
+
+#include "cpplib.h"
+#include "intl.h"
 
 char *progname;
 
 cpp_reader parse_in;
 cpp_options options;
-
-#ifdef abort
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-#endif
-
 
 int
 main (argc, argv)

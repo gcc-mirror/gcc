@@ -1,5 +1,5 @@
 /* fix-header.c - Make C header file suitable for C++.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -70,17 +70,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
    Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include "hconfig.h"
+#include "system.h"
 #include "obstack.h"
 #include "scan.h"
 #include "cpplib.h"
 #include "gansidecl.h"
-
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
 
 extern void cpp_fatal ();
 
