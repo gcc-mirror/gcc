@@ -88,7 +88,7 @@ int flag_non_call_exceptions;
 
 /* Protect cleanup actions with must-not-throw regions, with a call
    to the given failure handler.  */
-tree protect_cleanup_actions;
+tree (*lang_protect_cleanup_actions) PARAMS ((void));
 
 /* Return true if type A catches type B.  */
 int (*lang_eh_type_covers) PARAMS ((tree a, tree b));
@@ -367,7 +367,6 @@ void
 init_eh ()
 {
   ggc_add_rtx_root (&exception_handler_labels, 1);
-  ggc_add_tree_root (&protect_cleanup_actions, 1);
 
   if (! flag_exceptions)
     return;
@@ -691,6 +690,7 @@ expand_eh_region_end_cleanup (handler)
      tree handler;
 {
   struct eh_region *region;
+  tree protect_cleanup_actions;
   rtx around_label;
   rtx data_save[2];
 
@@ -706,6 +706,13 @@ expand_eh_region_end_cleanup (handler)
   emit_jump (around_label);
 
   emit_label (region->label);
+
+  /* Give the language a chance to specify an action to be taken if an
+     exception is thrown that would propogate out of the HANDLER.  */
+  protect_cleanup_actions 
+    = (lang_protect_cleanup_actions 
+       ? (*lang_protect_cleanup_actions) () 
+       : NULL_TREE);
 
   if (protect_cleanup_actions)
     expand_eh_region_start ();
@@ -3563,7 +3570,7 @@ output_function_exception_table ()
       ASM_OUTPUT_LABEL (asm_out_file, ttype_after_disp_label);
 #else
       /* Ug.  Alignment queers things.  */
-      unsigned int before_disp, after_disp, last_disp, disp, align;
+      unsigned int before_disp, after_disp, last_disp, disp;
 
       before_disp = 1 + 1;
       after_disp = (1 + size_of_uleb128 (call_site_len)

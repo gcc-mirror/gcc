@@ -147,8 +147,13 @@ extern int duplicate_eh_regions		PARAMS ((struct function *,
 extern void sjlj_emit_function_exit_after	PARAMS ((rtx));
 
 
-/* Nonzero to protect cleanup actions with must-not-throw regions.  */
-extern tree protect_cleanup_actions;
+/* If non-NULL, this is a function that returns an expression to be
+   executed if an unhandled exception is propogated out of a cleanup
+   region.  For example, in C++, an exception thrown by a destructor
+   during stack unwinding is required to result in a call to
+   `std::terminate', so the C++ version of this function returns a
+   CALL_EXPR for `std::terminate'.  */
+extern tree (*lang_protect_cleanup_actions) PARAMS ((void));
 
 /* Return true if type A catches type B.  */
 extern int (*lang_eh_type_covers) PARAMS ((tree a, tree b));

@@ -1,3 +1,17 @@
+2001-05-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.h (protect_cleanup_actions): Remove it.
+	(lang_protect_cleanup_actions): Declare it.
+	* except.c (protect_cleanup_actions): Remove it.
+	(lang_protect_cleanup_actions): New variable.
+	(init_eh): Don't make protect_cleanup_actions a GC root.
+	(expand_eh_region_and_cleanup): Call
+	lang_protect_cleanup_actions.
+	(output_function_exception_table): Remove unused `align'
+	variable.
+	* varasm.c (assemble_external): Abort if we have not yet
+	opened the assembly output file.
+	
 Thu May 17 11:53:49 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* except.c (sjlj_emit_function_enter): Call assemble_external_libcall
