@@ -203,7 +203,7 @@ public class JOptionPane extends JComponent implements Accessible
   protected Object inputValue = UNINITIALIZED_VALUE;
 
   /** The message displayed in the dialog/internal frame. */
-  protected Object message = "JOptionPane message";
+  protected Object message;
 
   /** The type of message displayed. */
   protected int messageType = PLAIN_MESSAGE;
@@ -235,7 +235,7 @@ public class JOptionPane extends JComponent implements Accessible
    */
   public JOptionPane()
   {
-    this(this.message, PLAIN_MESSAGE, DEFAULT_OPTION, null, null, null);
+    this("JOptionPane message", PLAIN_MESSAGE, DEFAULT_OPTION, null, null, null);
   }
 
   /**

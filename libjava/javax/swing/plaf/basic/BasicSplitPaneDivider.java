@@ -623,7 +623,6 @@ public class BasicSplitPaneDivider extends Container
     protected int positionForMouseEvent(MouseEvent e)
     {
       return e.getX() + getX() - offset;
-      ;
     }
 
     /**
@@ -650,7 +649,7 @@ public class BasicSplitPaneDivider extends Container
     protected void continueDrag(int newX, int newY)
     {
       if (isValid())
-	dragDividerTo(adjust(x, y));
+	dragDividerTo(adjust(newX, newY));
     }
 
     /**
