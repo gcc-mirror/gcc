@@ -1,3 +1,12 @@
+Thu Jan 10 11:19:18 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (expand_fix): Look for wider integer modes first.
+
+	* i386.md (mov?f): Avoid the fake const double trick for medium
+	memory model.
+	(min?f*/max?f*): Prohibit memory operands for i387 variant.
+	(fop_df_4): Disable for SSE compilation.
+
 2002-01-20  Graham Stott  <grahams@redhat.com>
 
 	* dwarf2out.c (indirect_string_alloc, output_indirect_string):
