@@ -1901,14 +1901,14 @@ stmt:
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_asm_operands ($4, $6, NULL_TREE, NULL_TREE,
-					 $2 == ridpointers[(int)RID_VOLATILE],
+					 $2 && C_RID_CODE ($2) == RID_VOLATILE,
 					 input_filename, lineno); }
 	/* This is the case with input operands as well.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':' asm_operands ')' ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_asm_operands ($4, $6, $8, NULL_TREE,
-					 $2 == ridpointers[(int)RID_VOLATILE],
+					 $2 && C_RID_CODE ($2) == RID_VOLATILE,
 					 input_filename, lineno); }
 	/* This is the case with clobbered registers as well.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
@@ -1916,7 +1916,7 @@ stmt:
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_asm_operands ($4, $6, $8, $10,
-					 $2 == ridpointers[(int)RID_VOLATILE],
+					 $2 && C_RID_CODE ($2) == RID_VOLATILE,
 					 input_filename, lineno); }
 	| GOTO identifier ';'
 		{ tree decl;

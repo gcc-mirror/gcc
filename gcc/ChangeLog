@@ -1,3 +1,7 @@
+2000-09-10  Richard Henderson  <rth@cygnus.com>
+
+	* c-parse.in (asm patterns): Fix volatile check.
+
 2000-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppmacro.c (check_trad_stringification): New function.
