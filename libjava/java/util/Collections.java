@@ -574,14 +574,26 @@ public class Collections
       {
 	ListIterator itr = l.listIterator();
         int i = 0;
+	Object o = itr.next(); // Assumes list is not empty (see isSequential)
+	boolean forward = true;
         while (low <= hi)
           {
             pos = (low + hi) >> 1;
             if (i < pos)
-              for ( ; i != pos; i++, itr.next());
+	      {
+		if (!forward)
+		  itr.next(); // Changing direction first.
+		for ( ; i != pos; i++, o = itr.next());
+		forward = true;
+	      }
             else
-              for ( ; i != pos; i--, itr.previous());
-	    final int d = compare(key, itr.next(), c);
+	      {
+		if (forward)
+		  itr.previous(); // Changing direction first.
+		for ( ; i != pos; i--, o = itr.previous());
+		forward = false;
+	      }
+	    final int d = compare(key, o, c);
 	    if (d == 0)
               return pos;
 	    else if (d < 0)
@@ -1110,6 +1122,8 @@ public class Collections
   public static void rotate(List list, int distance)
   {
     int size = list.size();
+    if (size == 0)
+      return;
     distance %= size;
     if (distance == 0)
       return;
